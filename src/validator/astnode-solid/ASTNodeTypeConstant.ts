@@ -1,11 +1,9 @@
 import * as assert from 'assert';
+import type {SyntaxNode} from 'tree-sitter';
 import {
 	SolidType,
 	SolidTypeUnit,
 	SolidBoolean,
-	Int16,
-	Float64,
-	SolidString,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
@@ -14,8 +12,11 @@ import {
 	SyntaxNodeType,
 	isSyntaxNodeType,
 } from './package.js';
+import {
+	valueOfTokenNumber,
+	valueOfTokenString,
+} from './utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
-import * as h from '../../../test/helpers-parse.js';
 
 
 
@@ -25,7 +26,25 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeConstant);
 		return typ;
 	}
-	private readonly type: SolidType;
+
+	private static keywordType(source: string): SolidType {
+		return (
+			(source === Keyword.VOID)  ? SolidType.VOID :
+			(source === Keyword.NULL)  ? SolidType.NULL :
+			(source === Keyword.BOOL)  ? SolidType.BOOL :
+			(source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
+			(source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
+			(source === Keyword.INT)   ? SolidType.INT :
+			(source === Keyword.FLOAT) ? SolidType.FLOAT :
+			(source === Keyword.STR)   ? SolidType.STR :
+			(source === Keyword.OBJ)   ? SolidType.OBJ :
+			(() => { throw new Error(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`); })()
+		);
+	}
+
+
+	private _type: SolidType | null = null;
+
 	constructor (start_node:
 		| TOKEN.TokenKeyword
 		| TOKEN.TokenNumber
@@ -34,34 +53,22 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'primitive_literal'>
 	) {
-		const value: SolidType = ((start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) => (
-			(start_node instanceof TOKEN.TokenKeyword) ?
-				(start_node.source === Keyword.VOID)  ? SolidType.VOID :
-				(start_node.source === Keyword.NULL)  ? SolidType.NULL :
-				(start_node.source === Keyword.BOOL)  ? SolidType.BOOL :
-				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
-				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
-				(start_node.source === Keyword.INT)   ? SolidType.INT :
-				(start_node.source === Keyword.FLOAT) ? SolidType.FLOAT :
-				(start_node.source === Keyword.STR)   ? SolidType.STR :
-				(start_node.source === Keyword.OBJ)   ? SolidType.OBJ :
-				(() => { throw new Error(`ASTNodeTypeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
-			: (start_node instanceof TOKEN.TokenNumber) ?
-				new SolidTypeUnit(
-					start_node.isFloat
-						? new Float64(start_node.cook())
-						: new Int16(BigInt(start_node.cook()))
-				)
-			: (start_node instanceof TOKEN.TokenString, (Dev.supports('literalString-cook')) ? new SolidTypeUnit(new SolidString(start_node.cook())) : (() => { throw new Error('`literalString-cook` not yet supported.'); })())
-		))(('tree' in start_node) ? (
-			(isSyntaxNodeType(start_node, 'keyword_type'))     ? h.tokenKeywordFromTypeString(start_node.text) :
-			(isSyntaxNodeType(start_node, 'integer'))          ? h.tokenLiteralFromTypeString(start_node.text) :
-			(isSyntaxNodeType(start_node, 'primitive_literal'),  h.tokenLiteralFromTypeString(start_node.children[0].text))
-		) : start_node);
-		super(start_node, {value});
-		this.type = value;
+		super(start_node);
 	}
 	protected override eval_do(): SolidType {
-		return this.type;
+		return this._type ??= ('tree' in this.start_node) ? (
+			(isSyntaxNodeType(this.start_node, 'keyword_type'))     ? ASTNodeTypeConstant.keywordType(this.start_node.text) :
+			(isSyntaxNodeType(this.start_node, 'integer'))          ? new SolidTypeUnit(valueOfTokenNumber(this.start_node.text)) :
+			(isSyntaxNodeType(this.start_node, 'primitive_literal'),  ((token: SyntaxNode) => (
+				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeTypeConstant.keywordType(token.text) :
+				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? new SolidTypeUnit(valueOfTokenNumber(token.text)) :
+				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? new SolidTypeUnit(valueOfTokenNumber(token.text)) :
+				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new SolidTypeUnit(valueOfTokenString(token.text)))
+			))(this.start_node.children[0]))
+		) : (
+			(this.start_node instanceof TOKEN.TokenKeyword) ? ASTNodeTypeConstant.keywordType(this.start_node.source) :
+			(this.start_node instanceof TOKEN.TokenNumber)  ? new SolidTypeUnit(valueOfTokenNumber(this.start_node)) :
+			(this.start_node instanceof TOKEN.TokenString,    (Dev.supports('literalString-cook')) ? new SolidTypeUnit(valueOfTokenString(this.start_node as TOKEN.TokenString)) : (() => { throw new Error('`literalString-cook` not yet supported.'); })())
+		);
 	}
 }

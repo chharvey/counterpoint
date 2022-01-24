@@ -94,7 +94,9 @@ export class TokenNumber extends TokenSolid {
 	) {
 		super('NUMBER', ...chars);
 	}
-	cook(): number {
+
+	/** @deprecated This method is going away soon. Use {@link Validator.cookTokenNumber} instead. */
+	override cook(): number {
 		let text: string = this.source
 		const multiplier: number = (text[0] === Punctuator.NEG) ? -1 : 1
 		if (this.has_unary) text = text.slice(1) // cut off unary, if any

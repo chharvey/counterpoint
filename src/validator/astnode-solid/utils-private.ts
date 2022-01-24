@@ -1,4 +1,11 @@
-import {SolidType} from './package.js';
+import {
+	SolidType,
+	Int16,
+	Float64,
+	SolidString,
+	TOKEN,
+	Validator,
+} from './package.js';
 
 
 
@@ -17,4 +24,28 @@ export function neitherFloats(t0: SolidType, t1: SolidType): boolean {
 }
 export function oneFloats(t0: SolidType, t1: SolidType): boolean {
 	return !neitherFloats(t0, t1) && !bothFloats(t0, t1)
+}
+
+
+
+export function valueOfTokenNumber(source: TOKEN.TokenNumber | string): Int16 | Float64 {
+	const is_float: boolean = (typeof source === 'string')
+		? source.indexOf(TOKEN.TokenNumber.POINT) > 0
+		: source.isFloat;
+	const cooked: number = (typeof source === 'string')
+		? Validator.cookTokenNumber(source)
+		: source.cook();
+	return (is_float) ? new Float64(cooked) : new Int16(BigInt(cooked));
+}
+
+export function valueOfTokenString(source: TOKEN.TokenString | string): SolidString {
+	return new SolidString((typeof source === 'string')
+		? Validator.cookTokenString(source)
+		: source.cook());
+}
+
+export function valueOfTokenTemplate(source: TOKEN.TokenTemplate | string): SolidString {
+	return new SolidString((typeof source === 'string')
+		? Validator.cookTokenTemplate(source)
+		: source.cook());
 }

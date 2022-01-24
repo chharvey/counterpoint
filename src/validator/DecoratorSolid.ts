@@ -10,6 +10,9 @@ import {
 	PARSENODE_SOLID as PARSENODE,
 } from './package.js';
 import {
+	Validator,
+} from './index.js';
+import {
 	SyntaxNodeType,
 	isSyntaxNodeType,
 	SyntaxNodeSupertype,
@@ -30,7 +33,6 @@ import {
 	DecoratorReturnType,
 	Decorator,
 } from './Decorator.js';
-import * as h from '../../test/helpers-parse.js';
 
 
 
@@ -708,7 +710,7 @@ class DecoratorSolid extends Decorator {
 						this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 						(node.children[2].text === Punctuator.BRAK_CLS)
 							? null
-							: BigInt((h.tokenLiteralFromTypeString(node.children[2].text) as TOKEN.TokenNumber).cook())
+							: BigInt(Validator.cookTokenNumber(node.children[2].text))
 					)
 					: new AST.ASTNodeTypeSet(
 						node as SyntaxNodeType<'type_unary_symbol'>,

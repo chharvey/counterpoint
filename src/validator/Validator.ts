@@ -50,6 +50,57 @@ export class Validator {
 		}
 	}
 
+	/**
+	 * Give the numeric value of a number token.
+	 * @param source the token’s text
+	 * @return       the numeric value, cooked
+	 */
+	static cookTokenNumber(source: string): ReturnType<typeof TOKEN.TokenNumber.prototype.cook> {
+		const is_float: boolean = source.indexOf(TOKEN.TokenNumber.POINT) > 0;
+		const has_unary: boolean = /[+-]/.test(source[0]);
+		return TOKEN.TokenNumber.prototype.cook.call({
+			source,
+			isFloat: is_float,
+			has_unary,
+			radix: (has_unary) ? source[1] === '/' : source[0] === '/',
+			allow_separators: true,
+		});
+	}
+
+	/**
+	 * Give the text value of a string token.
+	 * @param source the token’s text
+	 * @return       the text value, cooked
+	 */
+	static cookTokenString(source: string): ReturnType<typeof TOKEN.TokenString.prototype.cook> {
+		return TOKEN.TokenString.prototype.cook.call({
+			source,
+			allow_comments: true,
+			allow_separators: true,
+		});
+	}
+
+	/**
+	 * Give the text value of a template token.
+	 * @param source the token’s text
+	 * @return       the text value, cooked
+	 */
+	static cookTokenTemplate(source: string): ReturnType<typeof TOKEN.TokenTemplate.prototype.cook> {
+		return TOKEN.TokenTemplate.prototype.cook.call({
+			source,
+			delim_start: (
+				(source.slice(0, 3) === TOKEN.TokenTemplate.DELIM)            ? TOKEN.TokenTemplate.DELIM :
+				(source.slice(0, 2) === TOKEN.TokenTemplate.DELIM_INTERP_END) ? TOKEN.TokenTemplate.DELIM_INTERP_END :
+				''
+			),
+			delim_end: (
+				(source.slice(-3) === TOKEN.TokenTemplate.DELIM)              ? TOKEN.TokenTemplate.DELIM :
+				(source.slice(-2) === TOKEN.TokenTemplate.DELIM_INTERP_START) ? TOKEN.TokenTemplate.DELIM_INTERP_START :
+				''
+			),
+		});
+	}
+
 
 	/** A symbol table, which keeps tracks of variables. */
 	private readonly symbol_table: Map<bigint, SymbolStructure> = new Map();

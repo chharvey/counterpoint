@@ -21,7 +21,9 @@ export class TokenTemplate extends TokenSolid {
 	) {
 		super('TEMPLATE', ...chars);
 	}
-	cook(): CodeUnit[] {
+
+	/** @deprecated This method is going away soon. Use {@link Validator.cookTokenTemplate} instead. */
+	override cook(): CodeUnit[] {
 		return [...utf8.encode(
 			this.source.slice(this.delim_start.length, -this.delim_end.length),
 		)].map((ch) => ch.codePointAt(0)!);
