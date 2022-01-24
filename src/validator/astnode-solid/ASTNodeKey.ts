@@ -25,4 +25,8 @@ export class ASTNodeKey extends ASTNodeSolid {
 				? Validator.cookTokenKeyword(this.start_node.source as Keyword)
 				: this.validator.cookTokenIdentifier(this.start_node.source);
 	}
+
+	override varCheck(): void {
+		this.id; // initialize `this._id`
+	}
 }

@@ -32,22 +32,16 @@ describe('DecoratorSolid', () => {
 		describe('Word ::= KEYWORD | IDENTIFIER', () => {
 			it('makes an ASTNodeKey.', () => {
 				/*
-					<Key source="let" id=\x8f/>
-					<Key source="foobar" id=\x100/>
+					<Key source="let"/>
+					<Key source="foobar"/>
 				*/
 				const srcs: string[] = [
 					`let`,
 					`foobar`,
 				];
 				assert.deepStrictEqual(
-					srcs.map((src) => {
-						const key: AST.ASTNodeKey = DECORATOR_SOLID.decorate(h.wordFromString(src));
-						return [key.source, key.id];
-					}),
-					srcs.map((src, i) => [src, [
-						0x90n,
-						0x100n,
-					][i]]),
+					srcs,
+					srcs.map((src) => DECORATOR_SOLID.decorate(h.wordFromString(src)).source),
 				);
 			});
 		});
@@ -238,34 +232,13 @@ describe('DecoratorSolid', () => {
 		describe('TypeUnit ::= IDENTIFIER', () => {
 			it('makes an ASTNodeTypeAlias.', () => {
 				/*
-					<TypeAlias source="Foo" id=257/>
+					<TypeAlias source="Foo"/>
 				*/
-				assert.deepStrictEqual([
+				return [
 					`Foo`,
 					`Bar`,
 					`Qux`,
-				].map((src) => {
-					const constant: AST.ASTNodeType = DECORATOR_SOLID.decorate(h.unitTypeFromString(src));
-					assert.ok(constant instanceof AST.ASTNodeTypeAlias);
-					return constant.id;
-				}), [
-					// 257 because `T` is 256 from `type T = ` in `unitTypeFromString`
-					257n,
-					257n,
-					257n,
-				]);
-			});
-			it('assigns a unique ID starting from 256.', () => {
-				/*
-					<TypeOperation operator=OR>
-						<TypeAlias source="Foo" id=256/>
-						<TypeAlias source="Bar" id=257/>
-					</TypeOperation>
-				*/
-				assert.deepStrictEqual(DECORATOR_SOLID.decorate(h.unionTypeFromString(`Foo | Bar`)).children.map((op) => {
-					assert.ok(op instanceof AST.ASTNodeTypeAlias);
-					return op.id;
-				}), [257n, 258n]);
+				].forEach((src) => assert.ok(DECORATOR_SOLID.decorate(h.unitTypeFromString(src)) instanceof AST.ASTNodeTypeAlias));
 			});
 		});
 
@@ -732,58 +705,14 @@ describe('DecoratorSolid', () => {
 		});
 
 		context('ExpressionUnit ::= IDENTIFIER', () => {
-			it('assigns a unique ID starting from 256.', () => {
+			it('makes an ASTNodeVariable.', () => {
 				/*
-					<Variable source="variable" id="256"/>
+					<Variable source="variable"/>
 				*/
-				assert.deepStrictEqual([
+				return [
 					`variable;`,
 					`var;`,
-				].map((src) => {
-					const variable: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.unitExpressionFromSource(src));
-					assert.ok(variable instanceof AST.ASTNodeVariable)
-					return variable.id;
-				}), [
-					256n,
-					256n,
-				]);
-			});
-			it('increments IDs for each variable.', () => {
-				/*
-					<Operation operator=OR>
-						<Variable source="variable" id="256"/>
-						<Variable source="var" id="257"/>
-					</Operation>
-				*/
-				assert.deepStrictEqual(DECORATOR_SOLID.decorate(h.expressionFromSource(`
-					variable || var;
-				`)).children.map((op) => {
-					assert.ok(op instanceof AST.ASTNodeVariable);
-					return op.id;
-				}), [256n, 257n]);
-			});
-			it('increments IDs even across statements.', () => {
-				/*
-					<Goal source="␂ variable ; var ; ␃">
-						<StatementExpression>
-							<Variable source="variable" id="256"/>
-						</StatementExpression>
-						<StatementExpression>
-							<Variable source="var" id="257"/>
-						</StatementExpression>
-					</Goal>
-				*/
-				const goal: AST.ASTNodeGoal = DECORATOR_SOLID.decorate(h.goalFromSource(`
-					variable;
-					var;
-				`));
-				assert_arrayLength(goal.children, 2);
-				assert.deepStrictEqual(goal.children.map((stmt) => {
-					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
-					const ident: AST.ASTNodeExpression | null = stmt.expr || null;
-					assert.ok(ident instanceof AST.ASTNodeVariable);
-					return ident.id;
-				}), [256n, 257n]);
+				].forEach((src) => assert.ok(DECORATOR_SOLID.decorate(h.unitExpressionFromSource(src)) instanceof AST.ASTNodeVariable));
 			});
 		});
 
@@ -1196,12 +1125,10 @@ describe('DecoratorSolid', () => {
 				const decl: AST.ASTNodeDeclarationType = DECORATOR_SOLID.decorate(h.typeDeclarationFromSource(`
 					type T  =  int | float;
 				`));
-				assert.strictEqual(decl.assignee.id, 256n);
 				assert.ok(decl.assigned instanceof AST.ASTNodeTypeOperationBinary);
-				assert.strictEqual(decl.assigned.operator, Operator.OR);
 				assert.deepStrictEqual(
-					[decl.assignee.source, decl.assigned.source],
-					[`T`,                  `int | float`],
+					[decl.assignee.source, decl.assigned.source, decl.assigned.operator],
+					[`T`,                  `int | float`,        Operator.OR],
 				);
 			});
 		});
@@ -1218,12 +1145,11 @@ describe('DecoratorSolid', () => {
 				const decl: AST.ASTNodeDeclarationVariable = DECORATOR_SOLID.decorate(h.variableDeclarationFromSource(`
 					let unfixed the_answer:  int | float =  21  *  2;
 				`));
-				assert.strictEqual(decl.unfixed, true);
 				assert.ok(decl.typenode instanceof AST.ASTNodeTypeOperationBinary);
 				assert.ok(decl.assigned instanceof AST.ASTNodeOperationBinary);
 				assert.deepStrictEqual(
-					[decl.assignee.source, decl.assignee.id, decl.typenode.source, decl.typenode.operator, decl.assigned.source, decl.assigned.operator],
-					[`the_answer`,         256n,             `int | float`,        Operator.OR,            `21 * 2`,             Operator.MUL],
+					[decl.unfixed, decl.assignee.source, decl.typenode.source, decl.typenode.operator, decl.assigned.source, decl.assigned.operator],
+					[true,         `the_answer`,         `int | float`,        Operator.OR,            `21 * 2`,             Operator.MUL],
 				);
 			})
 			it('makes a fixed ASTNodeDeclarationVariable node.', () => {
@@ -1240,13 +1166,12 @@ describe('DecoratorSolid', () => {
 				const decl: AST.ASTNodeDeclarationVariable = DECORATOR_SOLID.decorate(h.variableDeclarationFromSource(`
 					let \`the £ answer\`: int = the_answer * 10;
 				`));
-				assert.strictEqual(decl.unfixed, false);
 				assert.ok(decl.typenode instanceof AST.ASTNodeTypeConstant);
 				assert.ok(decl.assigned instanceof AST.ASTNodeOperationBinary);
 				assert.ok(decl.assigned.operand0 instanceof AST.ASTNodeVariable);
 				assert.deepStrictEqual(
-					[decl.assignee.source, decl.assignee.id, decl.typenode.source, decl.assigned.source, decl.assigned.operator, decl.assigned.operand0.id],
-					[`\`the £ answer\``,   256n,             `int`,                `the_answer * 10`,    Operator.MUL,           257n],
+					[decl.unfixed, decl.assignee.source, decl.typenode.source, decl.assigned.source, decl.assigned.operator],
+					[false,        `\`the £ answer\``,   `int`,                `the_answer * 10`,    Operator.MUL],
 				);
 			})
 		})
@@ -1259,7 +1184,6 @@ describe('DecoratorSolid', () => {
 				const variable: AST.ASTNodeVariable = (DECORATOR_SOLID.decorate(h.assigneeFromSource(`
 					the_answer = the_answer - 40;
 				`)) as AST.ASTNodeVariable);
-				assert.strictEqual(variable.id, 256n);
 				assert.strictEqual(variable.source, `the_answer`);
 			});
 		});
@@ -1302,8 +1226,8 @@ describe('DecoratorSolid', () => {
 				assert.ok(assn.assigned instanceof AST.ASTNodeOperationBinary);
 				assert.ok(assn.assigned.operand0 instanceof AST.ASTNodeVariable);
 				assert.deepStrictEqual(
-					[assn.assignee.source, assn.assigned.source, assn.assigned.operator, assn.assigned.operand0.id],
-					[`the_answer`,         `the_answer - 40`,    Operator.ADD,           256n],
+					[assn.assignee.source, assn.assigned.source, assn.assigned.operator],
+					[`the_answer`,         `the_answer - 40`,    Operator.ADD],
 				);
 			})
 		})
