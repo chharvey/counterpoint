@@ -168,14 +168,14 @@ describe('DecoratorSolid', () => {
 						<PropertyType source="qux: null">...</PropertyType>
 					</TypeRecord>
 				*/
-				assert.deepStrictEqual(AST.ASTNodeTypeRecord.fromSource(`
+				assert.deepStrictEqual(DECORATOR_SOLID.decorate(h.recordTypeFromString(`
 					[
 						let: bool,
 						foobar: int,
 						diz?: str,
 						qux: null,
 					]
-				`).children.map((c) => c.source), [
+				`)).children.map((c) => c.source), [
 					`let : bool`,
 					`foobar : int`,
 					`diz ?: str`,
@@ -277,9 +277,8 @@ describe('DecoratorSolid', () => {
 						</IndexType>
 					</AccessType>
 				*/
-				const access: AST.ASTNodeTypeAccess = AST.ASTNodeTypeAccess.fromSource(`
-					[42, 420, 4200].1
-				`);
+				const access: AST.ASTNodeType = DECORATOR_SOLID.decorate(h.compoundTypeFromString(`[42, 420, 4200].1`));
+				assert.ok(access instanceof AST.ASTNodeTypeAccess, 'should be instance of ASTNodeTypeAccess.');
 				assert.ok(access.accessor instanceof AST.ASTNodeIndexType);
 				assert.deepStrictEqual(
 					[access.base.source,    access.accessor.source],
@@ -293,9 +292,8 @@ describe('DecoratorSolid', () => {
 						<Key source="b"/>
 					</AccessType>
 				*/
-				const access: AST.ASTNodeTypeAccess = AST.ASTNodeTypeAccess.fromSource(`
-					[c: 42, b: 420, a: 4200].b
-				`);
+				const access: AST.ASTNodeType = DECORATOR_SOLID.decorate(h.compoundTypeFromString(`[c: 42, b: 420, a: 4200].b`));
+				assert.ok(access instanceof AST.ASTNodeTypeAccess, 'should be instance of ASTNodeTypeAccess.');
 				assert.ok(access.accessor instanceof AST.ASTNodeKey);
 				assert.deepStrictEqual(
 					[access.base.source,                access.accessor.source],
