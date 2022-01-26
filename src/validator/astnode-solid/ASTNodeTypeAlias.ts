@@ -32,7 +32,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 
 	get id(): bigint {
 		return this._id ??= ('tree' in this.start_node)
-			? this.validator.cookTokenIdentifier(this.start_node.children[0].text)
+			? this.validator.cookTokenIdentifier(this.start_node.text)
 			: this.validator.cookTokenIdentifier(this.start_node.source);
 	}
 
