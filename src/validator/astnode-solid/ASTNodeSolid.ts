@@ -62,9 +62,11 @@ export abstract class ASTNodeSolid extends ASTNode {
 		override readonly children: readonly ASTNodeSolid[] = [],
 	) {
 		super(('tree' in start_node) ? ((node: SyntaxNode) => {
+			// @ts-expect-error
+			const tree_text:    string = node.tree.input;
 			const source:       string = node.text;
 			const source_index: number = node.startIndex;
-			const prev_chars:   readonly string[] = [...source.slice(0, source_index)];
+			const prev_chars:   readonly string[] = [...tree_text.slice(0, source_index)];
 			return {
 				source,
 				source_index,

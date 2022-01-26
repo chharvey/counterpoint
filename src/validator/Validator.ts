@@ -56,13 +56,21 @@ export class Validator {
 	 * @return       the numeric value, cooked
 	 */
 	static cookTokenNumber(source: string): ReturnType<typeof TOKEN.TokenNumber.prototype.cook> {
-		const is_float: boolean = source.indexOf(TOKEN.TokenNumber.POINT) > 0;
-		const has_unary: boolean = /[+-]/.test(source[0]);
+		const is_float:  boolean = source.indexOf(TOKEN.TokenNumber.POINT) > 0;
+		const has_unary: boolean = (TOKEN.TokenNumber.UNARY as readonly string[]).includes(source[0]);
+		const has_radix: boolean = (has_unary) ? source[1] === TOKEN.TokenNumber.ESCAPER : source[0] === TOKEN.TokenNumber.ESCAPER;
+		const radix = (has_radix)
+			? TOKEN.TokenNumber.BASES.get((has_unary)
+				? source[2]
+				: source[1]
+			)!
+			: TOKEN.TokenNumber.RADIX_DEFAULT;
 		return TOKEN.TokenNumber.prototype.cook.call({
 			source,
 			isFloat: is_float,
 			has_unary,
-			radix: (has_unary) ? source[1] === '/' : source[0] === '/',
+			has_radix,
+			radix,
 			allow_separators: true,
 		});
 	}
