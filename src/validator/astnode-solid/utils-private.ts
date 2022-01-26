@@ -1,4 +1,11 @@
-import {SolidType} from './package.js';
+import {
+	SolidType,
+	Int16,
+	Float64,
+	SolidString,
+	TOKEN,
+	Validator,
+} from './package.js';
 
 
 
@@ -21,41 +28,24 @@ export function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-/** Implementation of `xjs.Array.forEachAggregated` until it is released. */
-export function forEachAggregated<T>(array: readonly T[], callback: (item: T) => void): void {
-	const errors: readonly Error[] = array.map((it) => {
-		try {
-			callback(it);
-			return null;
-		} catch (err) {
-			return (err instanceof Error) ? err : new Error(`${ err }`);
-		}
-	}).filter((e): e is Error => e instanceof Error);
-	if (errors.length) {
-		throw (errors.length === 1)
-			? errors[0]
-			: new AggregateError(errors, errors.map((err) => err.message).join('\n'));
-	}
+export function valueOfTokenNumber(source: TOKEN.TokenNumber | string): Int16 | Float64 {
+	const is_float: boolean = (typeof source === 'string')
+		? source.indexOf(TOKEN.TokenNumber.POINT) > 0
+		: source.isFloat;
+	const cooked: number = (typeof source === 'string')
+		? Validator.cookTokenNumber(source)
+		: source.cook();
+	return (is_float) ? new Float64(cooked) : new Int16(BigInt(cooked));
 }
-/** Implementation of `xjs.Array.mapAggregated` until it is released. */
-export function mapAggregated<T, U>(array: readonly T[], callback: (item: T) => U): U[] {
-	const successes: U[]     = [];
-	const errors:    Error[] = [];
-	array.forEach((it) => {
-		let success: U;
-		try {
-			success = callback(it);
-		} catch (err) {
-			errors.push((err instanceof Error) ? err : new Error(`${ err }`));
-			return;
-		}
-		successes.push(success);
-	});
-	if (errors.length) {
-		throw (errors.length === 1)
-			? errors[0]
-			: new AggregateError(errors, errors.map((err) => err.message).join('\n'));
-	} else {
-		return successes;
-	}
+
+export function valueOfTokenString(source: TOKEN.TokenString | string): SolidString {
+	return new SolidString((typeof source === 'string')
+		? Validator.cookTokenString(source)
+		: source.cook());
+}
+
+export function valueOfTokenTemplate(source: TOKEN.TokenTemplate | string): SolidString {
+	return new SolidString((typeof source === 'string')
+		? Validator.cookTokenTemplate(source)
+		: source.cook());
 }

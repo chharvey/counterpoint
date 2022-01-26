@@ -49,18 +49,19 @@ export {
 	NanError01,
 	NanError02,
 	NonemptyArray,
+	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
 	Serializable,
 	stringifyAttributes,
+	TS_PARSER,
+	Punctuator,
 	Keyword,
 	Token,
 	TOKEN_SOLID as TOKEN,
 	ParseNode,
 	PARSENODE_SOLID as PARSENODE,
-	ParserSolid,
-	PARSER_SOLID as PARSER,
 } from '../package.js';
 export {
 	DECORATOR_SOLID as DECORATOR,
@@ -70,6 +71,11 @@ export {
 	SymbolStructureVar,
 	SymbolStructureType,
 } from '../index.js';
+export {
+	SyntaxNodeType,
+	isSyntaxNodeType,
+	SyntaxNodeSupertype,
+} from '../utils-private.js';
 export {
 	Operator,
 	ValidAccessOperator,

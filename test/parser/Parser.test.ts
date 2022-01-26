@@ -85,6 +85,33 @@ describe('ParserSolid', () => {
 			});
 		});
 
+		describe('TypeGrouped ::= "(" Type ")"', () => {
+			it('makes an TypeUnit node containing a Type node.', () => {
+				/*
+					<TypeGrouped>
+						<PUNCTUATOR>(</PUNCTUATOR>
+						<Type source="(obj | int) & float">...</Type>
+						<PUNCTUATOR>)</PUNCTUATOR>
+					</TypeGrouped>
+				*/
+				const type_grouped: PARSENODE_SOLID.ParseNodeTypeGrouped = h.groupedTypeFromString(`(obj | int & float)`);
+				assert_arrayLength(type_grouped.children, 3);
+				const [open, typ, close]: readonly [Token, PARSENODE_SOLID.ParseNodeType, Token] = type_grouped.children;
+				assert.ok(open  instanceof TOKEN.TokenPunctuator)
+				assert.ok(close instanceof TOKEN.TokenPunctuator)
+				assert.deepStrictEqual(
+					[open.source, typ.source, close.source],
+					[Punctuator.GRP_OPN, [
+						Keyword.OBJ,
+						Punctuator.UNION,
+						Keyword.INT,
+						Punctuator.INTER,
+						Keyword.FLOAT,
+					].join(' '), Punctuator.GRP_CLS],
+				)
+			})
+		})
+
 		describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
 			/*
 				<TypeTupleLiteral>
@@ -214,53 +241,34 @@ describe('ParserSolid', () => {
 			h.recordTypeFromString(`[a: T, b: U | V, c: W & X!]`); // assert does not throw
 		});
 
-		describe('TypeUnit ::= "(" Type ")"', () => {
-			it('makes an TypeUnit node containing a Type node.', () => {
-				/*
-					<TypeUnit>
-						<PUNCTUATOR>(</PUNCTUATOR>
-						<Type source="(obj | int) & float">...</Type>
-						<PUNCTUATOR>)</PUNCTUATOR>
-					</TypeUnit>
-				*/
-				const type_unit: PARSENODE_SOLID.ParseNodeTypeUnit = h.unitTypeFromString(`(obj | int & float)`);
-				assert_arrayLength(type_unit.children, 3)
-				const [open, typ, close]: readonly [Token, PARSENODE_SOLID.ParseNodeType, Token] = type_unit.children;
-				assert.ok(open  instanceof TOKEN.TokenPunctuator)
-				assert.ok(close instanceof TOKEN.TokenPunctuator)
-				assert.deepStrictEqual(
-					[open.source, typ.source, close.source],
-					[Punctuator.GRP_OPN, [
-						Keyword.OBJ,
-						Punctuator.UNION,
-						Keyword.INT,
-						Punctuator.INTER,
-						Keyword.FLOAT,
-					].join(' '), Punctuator.GRP_CLS],
-				)
-			})
-		})
-
-		specify('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
-			[
-				`A`,
-				`[A, B]`,
-				`[a: A, b: B]`,
-				`[:A]`,
-				`{A -> B}`,
-				`(A?)`,
-				`(A!)`,
-				`(A[])`,
-				`(A[3])`,
-				`(A{})`,
-				`(A & B)`,
-				`(A | B)`,
-			].flatMap((base) => [
-				`.1`,
-				`.b`,
-				`.<X, Y>`,
-			].map((dot) => `${ base }${ dot }`)).forEach((src) => {
-				assert.doesNotThrow(() => h.compoundTypeFromString(src), src);
+		describe('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
+			it('ok.', () => {
+				[
+					`A`,
+					`[A, B]`,
+					`[a: A, b: B]`,
+					`[:A]`,
+					`{A -> B}`,
+					`(A?)`,
+					`(A!)`,
+					`(A[])`,
+					`(A[3])`,
+					`(A{})`,
+					`(A & B)`,
+					`(A | B)`,
+				].flatMap((base) => [
+					`.1`,
+					`.b`,
+					`.<X, Y>`,
+				].map((dot) => `${ base }${ dot }`)).forEach((src) => {
+					assert.doesNotThrow(() => h.compoundTypeFromString(src), src);
+				});
+			});
+			it('chained integer access is not lexed as a float.', () => {
+				return assert.doesNotThrow(() => h.compoundTypeFromString(`A.1.b`), `A.1.b`);
+			});
+			it('integers chained side-by-side parsed as float.', () => {
+				return assert.throws(() => h.compoundTypeFromString(`A.1.2`), ParseError01);
 			});
 		});
 
@@ -403,6 +411,27 @@ describe('ParserSolid', () => {
 				);
 			});
 		});
+
+		context('ExpressionGrouped ::= "(" Expression ")"', () => {
+			it('makes an ExpressionGrouped node containing an Expression node.', () => {
+				/*
+					<ExpressionGrouped>
+						<PUNCTUATOR>(</PUNCTUATOR>
+						<Expression source="2 + -3">...</Expression>
+						<PUNCTUATOR>)</PUNCTUATOR>
+					</ExpressionGrouped>
+				*/
+				const expression_grouped: PARSENODE_SOLID.ParseNodeExpressionGrouped = h.groupedExpressionFromSource(`(2 + -3);`);
+				assert_arrayLength(expression_grouped.children, 3);
+				const [open, expr, close]: readonly [Token, PARSENODE_SOLID.ParseNodeExpression, Token] = expression_grouped.children;
+				assert.ok(open  instanceof TOKEN.TokenPunctuator)
+				assert.ok(close instanceof TOKEN.TokenPunctuator)
+				assert.deepStrictEqual(
+					[open.source,        expr.source, close.source],
+					[Punctuator.GRP_OPN, `2 + -3`,    Punctuator.GRP_CLS],
+				)
+			})
+		})
 
 		describe('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
 			it('with no leading or trailing comma.', () => {
@@ -547,46 +576,33 @@ describe('ParserSolid', () => {
 			`); // assert does not throw
 		});
 
-		context('ExpressionUnit ::= "(" Expression ")"', () => {
-			it('makes an ExpressionUnit node containing an Expression node.', () => {
-				/*
-					<ExpressionUnit>
-						<PUNCTUATOR>(</PUNCTUATOR>
-						<Expression source="2 + -3">...</Expression>
-						<PUNCTUATOR>)</PUNCTUATOR>
-					</ExpressionUnit>
-				*/
-				const expression_unit: PARSENODE_SOLID.ParseNodeExpressionUnit = h.unitExpressionFromSource(`(2 + -3);`);
-				assert_arrayLength(expression_unit.children, 3)
-				const [open, expr, close]: readonly [Token, PARSENODE_SOLID.ParseNodeExpression, Token] = expression_unit.children;
-				assert.ok(open  instanceof TOKEN.TokenPunctuator)
-				assert.ok(close instanceof TOKEN.TokenPunctuator)
-				assert.deepStrictEqual(
-					[open.source,        expr.source, close.source],
-					[Punctuator.GRP_OPN, `2 + -3`,    Punctuator.GRP_CLS],
-				)
-			})
-		})
-
-		specify('ExpressionCompound ::= ExpressionCompound (PropertyAccess | FunctionCall)', () => {
-			[
-				`a`,
-				`[a, b]`,
-				`[x= a, y= b]`,
-				`{a -> b}`,
-				`(!a)`,
-				`(?a)`,
-				`(+a)`,
-				`(-a)`,
-				`(a ^ b)`,
-				`(a || b)`,
-			].flatMap((base) => [
-				`.1`,
-				`.x`,
-				`.(x, y)`,
-				`.<X, Y>(x, y)`,
-			].map((dot) => `${ base }${ dot };`)).forEach((src) => {
-				assert.doesNotThrow(() => h.compoundExpressionFromSource(src), src);
+		describe('ExpressionCompound ::= ExpressionCompound (PropertyAccess | FunctionCall)', () => {
+			it('ok.', () => {
+				[
+					`a`,
+					`[a, b]`,
+					`[x= a, y= b]`,
+					`{a -> b}`,
+					`(!a)`,
+					`(?a)`,
+					`(+a)`,
+					`(-a)`,
+					`(a ^ b)`,
+					`(a || b)`,
+				].flatMap((base) => [
+					`.1`,
+					`.x`,
+					`.(x, y)`,
+					`.<X, Y>(x, y)`,
+				].map((dot) => `${ base }${ dot };`)).forEach((src) => {
+					assert.doesNotThrow(() => h.compoundExpressionFromSource(src), src);
+				});
+			});
+			it('chained integer access is not lexed as a float.', () => {
+				return assert.doesNotThrow(() => h.compoundExpressionFromSource(`a.1.b;`), `a.1.b;`);
+			});
+			it('integers chained side-by-side parsed as float.', () => {
+				return assert.throws(() => h.compoundExpressionFromSource(`a.1.2;`), ParseError01);
 			});
 		});
 
@@ -885,16 +901,16 @@ describe('ParserSolid', () => {
 			})
 		})
 
-		context('Statement ::= ";"', () => {
+		context('StatementExpression ::= ";"', () => {
 			it('returns a statement with only a punctuator.', () => {
 				/*
-					<Statement line="1" col="1" source=";">
+					<StatementExpression line="1" col="1" source=";">
 						<PUNCTUATOR line="1" col="1" value="7">;</PUNCTUATOR>
-					</Statement>
+					</StatementExpression>
 				*/
-				const statement: PARSENODE_SOLID.ParseNodeStatement = h.statementFromSource(`;`);
-				assert_arrayLength(statement.children, 1)
-				const token: PARSENODE_SOLID.ParseNodeDeclaration | PARSENODE_SOLID.ParseNodeStatementAssignment | Token = statement.children[0];
+				const statexpr: PARSENODE_SOLID.ParseNodeStatementExpression = h.statementExpressionFromSource(`;`);
+				assert_arrayLength(statexpr.children, 1);
+				const token: Token = statexpr.children[0];
 				assert.ok(token instanceof TOKEN.TokenPunctuator)
 				assert.strictEqual(token.source, Punctuator.ENDSTAT)
 			})

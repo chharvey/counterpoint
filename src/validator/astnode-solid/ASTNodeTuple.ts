@@ -1,14 +1,15 @@
 import * as assert from 'assert';
 import {
-	SolidConfig,
-	CONFIG_DEFAULT,
-	PARSENODE,
 	SolidType,
 	SolidTypeTuple,
 	SolidObject,
 	SolidTuple,
 	INST,
 	Builder,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	PARSENODE,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
@@ -22,7 +23,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTupleLiteral,
+		start_node: PARSENODE.ParseNodeTupleLiteral | SyntaxNodeType<'tuple_literal'>,
 		override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);

@@ -1,15 +1,16 @@
 import * as assert from 'assert';
 import {
-	NonemptyArray,
-	SolidConfig,
-	CONFIG_DEFAULT,
-	PARSENODE,
 	SolidType,
 	SolidTypeMap,
 	SolidObject,
 	SolidMap,
 	INST,
 	Builder,
+	NonemptyArray,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	PARSENODE,
+	SyntaxNodeType,
 } from './package.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -24,7 +25,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeMapLiteral,
+		start_node: PARSENODE.ParseNodeMapLiteral | SyntaxNodeType<'map_literal'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, {}, children);

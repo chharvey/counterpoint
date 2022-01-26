@@ -1,11 +1,5 @@
 import * as assert from 'assert';
 import {
-	TypeError01,
-	TypeError02,
-	TypeError04,
-	SolidConfig,
-	CONFIG_DEFAULT,
-	PARSENODE,
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
@@ -29,6 +23,13 @@ import {
 	SolidMap,
 	INST,
 	Builder,
+	TypeError01,
+	TypeError02,
+	TypeError04,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	PARSENODE,
+	SyntaxNodeType,
 	Operator,
 	ValidAccessOperator,
 } from './package.js';
@@ -46,7 +47,12 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
 	constructor (
-		start_node:        PARSENODE.ParseNodeExpressionCompound | PARSENODE.ParseNodeAssignee,
+		start_node:
+			| PARSENODE.ParseNodeExpressionCompound
+			| PARSENODE.ParseNodeAssignee
+			| SyntaxNodeType<'expression_compound'>
+			| SyntaxNodeType<'assignee'>
+		,
 		readonly kind:     ValidAccessOperator,
 		readonly base:     ASTNodeExpression,
 		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
@@ -73,8 +79,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	private type_do_do(base_type: SolidType): SolidType {
 		function updateAccessedDynamicType(type: SolidType, access_kind: ValidAccessOperator): SolidType {
 			return (
-				(access_kind === Operator.OPTDOT)   ? type.union(SolidType.NULL) :
 				(access_kind === Operator.CLAIMDOT) ? type.subtract(SolidType.VOID) :
+				(access_kind === Operator.OPTDOT)   ? type.union   (SolidType.NULL) :
 				type
 			);
 		}

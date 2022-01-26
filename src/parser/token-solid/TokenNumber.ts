@@ -77,8 +77,8 @@ export class TokenNumber extends TokenSolid {
 		const pointindex: number = text.indexOf(TokenNumber.POINT)
 		const expindex:   number = text.indexOf(TokenNumber.EXPONENT)
 		const wholepart:  string = text.slice(0, pointindex)
-		const fracpart:   string = ((expindex < 0) ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex)) || '0'
-		const exppart:    string =  (expindex < 0) ? '0'                        : text.slice(expindex   + 1)
+		const fracpart:   string = (expindex < 0) ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex);
+		const exppart:    string = (expindex < 0) ? '0'                        : text.slice(expindex   + 1);
 		const wholevalue: number =                  TokenNumber.tokenWorthInt(wholepart, TokenNumber.RADIX_DEFAULT, allow_separators)
 		const fracvalue:  number =                  TokenNumber.tokenWorthInt(fracpart,  TokenNumber.RADIX_DEFAULT, allow_separators) * base ** -fracpart.length
 		const expvalue:   number = parseFloat(`1e${ TokenNumber.tokenWorthInt(exppart,   TokenNumber.RADIX_DEFAULT, allow_separators) }`) // HACK: more accurate than `base ** exp`
@@ -94,7 +94,9 @@ export class TokenNumber extends TokenSolid {
 	) {
 		super('NUMBER', ...chars);
 	}
-	cook(): number {
+
+	/** @deprecated This method is going away soon. Use {@link Validator.cookTokenNumber} instead. */
+	override cook(): number {
 		let text: string = this.source
 		const multiplier: number = (text[0] === Punctuator.NEG) ? -1 : 1
 		if (this.has_unary) text = text.slice(1) // cut off unary, if any

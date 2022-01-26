@@ -4,6 +4,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
+	SyntaxNodeSupertype,
 	ValidOperatorBinary,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -11,6 +12,13 @@ import {ASTNodeOperation} from './ASTNodeOperation.js';
 
 
 
+/**
+ * Known subclasses:
+ * - ASTNodeOperationBinaryArithmetic
+ * - ASTNodeOperationBinaryComparative
+ * - ASTNodeOperationBinaryEquality
+ * - ASTNodeOperationBinaryLogical
+ */
 export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
@@ -18,7 +26,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		return expression;
 	}
 	constructor(
-		start_node: ParseNode,
+		start_node: ParseNode | SyntaxNodeSupertype<'expression'>,
 		readonly operator: ValidOperatorBinary,
 		readonly operand0: ASTNodeExpression,
 		readonly operand1: ASTNodeExpression,

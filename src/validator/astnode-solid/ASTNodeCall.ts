@@ -17,11 +17,12 @@ import {
 	Builder,
 	TypeError05,
 	TypeError06,
+	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
+	SyntaxNodeType,
 } from './package.js';
-import {forEachAggregated} from './utils-private.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -36,7 +37,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeExpressionCompound,
+		start_node: PARSENODE.ParseNodeExpressionCompound | SyntaxNodeType<'expression_compound'>,
 		readonly base: ASTNodeExpression,
 		readonly typeargs: readonly ASTNodeType[],
 		readonly exprargs: readonly ASTNodeExpression[],

@@ -1,3 +1,5 @@
+import Parser from 'tree-sitter';
+import Counterpoint from 'tree-sitter-counterpoint';
 import type {NonemptyArray} from './package.js';
 
 
@@ -70,3 +72,8 @@ export function stringifyAttributes(attributes: ReadonlyMap<string, string>): st
 		.replace(/[^\u0020-\u007e\u2402-\u2403]/g, (match) => `&#x${ match.codePointAt(0)!.toString(16) };`)
 	}"`).join(' ');
 }
+
+
+
+export const TS_PARSER: Parser = new Parser();
+TS_PARSER.setLanguage(Counterpoint);

@@ -8,7 +8,9 @@ import {TokenSolid} from './TokenSolid.js';
 
 
 export class TokenKeyword extends TokenSolid {
-	private static readonly MINIMUM_VALUE: 0x80n = 0x80n
+	/** The minimum allowed cooked value of a keyword token. */
+	static readonly MINIMUM_VALUE = 0x80n;
+
 	static readonly CHAR: RegExp = /^[a-z]$/
 	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>( // remove duplicates
 		Object.values(Keyword),
@@ -17,7 +19,9 @@ export class TokenKeyword extends TokenSolid {
 	constructor (...chars: NonemptyArray<Char>) {
 		super('KEYWORD', ...chars);
 	}
-	cook(): bigint {
+
+	/** @deprecated This method is going away soon. Use {@link Validator.cookTokenKeyword} instead. */
+	override cook(): bigint {
 		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source as Keyword)) + TokenKeyword.MINIMUM_VALUE
 	}
 }

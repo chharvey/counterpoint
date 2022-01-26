@@ -51,6 +51,7 @@ export {
 } from '../index.js';
 export {
 	NonemptyArray,
+	forEachAggregated,
 	Map_hasEq,
 	Map_getEq,
 	Map_setEq,
@@ -67,14 +68,13 @@ export {
 	EBNFSequence,
 	EBNFItem,
 	stringifyAttributes,
+	TS_PARSER,
 	Punctuator,
 	Keyword,
 	Token,
 	TOKEN_EBNF,
 	TOKEN_SOLID,
-	ParserSolid,
 	ParseNode,
 	PARSENODE_EBNF,
 	PARSENODE_SOLID,
-	PARSER_SOLID,
 } from '../parser/index.js';

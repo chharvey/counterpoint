@@ -1,4 +1,10 @@
 import * as assert from 'assert'
+import Parser, {
+	Query,
+	QueryCapture,
+	SyntaxNode,
+} from 'tree-sitter';
+import Counterpoint from 'tree-sitter-counterpoint';
 import type {NonemptyArray} from '../../src/lib/index.js';
 import {
 	SolidConfig,
@@ -26,22 +32,16 @@ describe('DecoratorSolid', () => {
 		describe('Word ::= KEYWORD | IDENTIFIER', () => {
 			it('makes an ASTNodeKey.', () => {
 				/*
-					<Key source="let" id=\x8f/>
-					<Key source="foobar" id=\x100/>
+					<Key source="let"/>
+					<Key source="foobar"/>
 				*/
 				const srcs: string[] = [
 					`let`,
 					`foobar`,
 				];
 				assert.deepStrictEqual(
-					srcs.map((src) => {
-						const key: AST.ASTNodeKey = DECORATOR_SOLID.decorate(h.wordFromString(src));
-						return [key.source, key.id];
-					}),
-					srcs.map((src, i) => [src, [
-						0x8fn,
-						0x100n,
-					][i]]),
+					srcs,
+					srcs.map((src) => DECORATOR_SOLID.decorate(h.wordFromString(src)).source),
 				);
 			});
 		});
@@ -65,29 +65,6 @@ describe('DecoratorSolid', () => {
 					`42`,
 					`4.2`,
 					`'hello'`,
-				])
-			})
-		})
-
-		describe('TypeKeyword ::= "void" | "bool" | "int" | "float" | "str" | "obj"', () => {
-			it('makes an ASTNodeTypeConstant.', () => {
-				/*
-					<TypeConstant source="void"/>
-				*/
-				assert.deepStrictEqual([
-					`void`,
-					`bool`,
-					`int`,
-					`float`,
-					`str`,
-					`obj`,
-				].map((src) => (DECORATOR_SOLID.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).source), [
-					`void`,
-					`bool`,
-					`int`,
-					`float`,
-					`str`,
-					`obj`,
 				])
 			})
 		})
@@ -191,14 +168,14 @@ describe('DecoratorSolid', () => {
 						<PropertyType source="qux: null">...</PropertyType>
 					</TypeRecord>
 				*/
-				assert.deepStrictEqual(AST.ASTNodeTypeRecord.fromSource(`
+				assert.deepStrictEqual(DECORATOR_SOLID.decorate(h.recordTypeFromString(`
 					[
 						let: bool,
 						foobar: int,
 						diz?: str,
 						qux: null,
 					]
-				`).children.map((c) => c.source), [
+				`)).children.map((c) => c.source), [
 					`let : bool`,
 					`foobar : int`,
 					`diz ?: str`,
@@ -255,34 +232,13 @@ describe('DecoratorSolid', () => {
 		describe('TypeUnit ::= IDENTIFIER', () => {
 			it('makes an ASTNodeTypeAlias.', () => {
 				/*
-					<TypeAlias source="Foo" id=257/>
+					<TypeAlias source="Foo"/>
 				*/
-				assert.deepStrictEqual([
+				return [
 					`Foo`,
 					`Bar`,
 					`Qux`,
-				].map((src) => {
-					const constant: AST.ASTNodeType = DECORATOR_SOLID.decorate(h.unitTypeFromString(src));
-					assert.ok(constant instanceof AST.ASTNodeTypeAlias);
-					return constant.id;
-				}), [
-					// 257 because `T` is 256 from `type T = ` in `unitTypeFromString`
-					257n,
-					257n,
-					257n,
-				]);
-			});
-			it('assigns a unique ID starting from 256.', () => {
-				/*
-					<TypeOperation operator=OR>
-						<TypeAlias source="Foo" id=256/>
-						<TypeAlias source="Bar" id=257/>
-					</TypeOperation>
-				*/
-				assert.deepStrictEqual(DECORATOR_SOLID.decorate(h.unionTypeFromString(`Foo | Bar`)).children.map((op) => {
-					assert.ok(op instanceof AST.ASTNodeTypeAlias);
-					return op.id;
-				}), [257n, 258n]);
+				].forEach((src) => assert.ok(DECORATOR_SOLID.decorate(h.unitTypeFromString(src)) instanceof AST.ASTNodeTypeAlias));
 			});
 		});
 
@@ -321,9 +277,8 @@ describe('DecoratorSolid', () => {
 						</IndexType>
 					</AccessType>
 				*/
-				const access: AST.ASTNodeTypeAccess = AST.ASTNodeTypeAccess.fromSource(`
-					[42, 420, 4200].1
-				`);
+				const access: AST.ASTNodeType = DECORATOR_SOLID.decorate(h.compoundTypeFromString(`[42, 420, 4200].1`));
+				assert.ok(access instanceof AST.ASTNodeTypeAccess, 'should be instance of ASTNodeTypeAccess.');
 				assert.ok(access.accessor instanceof AST.ASTNodeIndexType);
 				assert.deepStrictEqual(
 					[access.base.source,    access.accessor.source],
@@ -337,9 +292,8 @@ describe('DecoratorSolid', () => {
 						<Key source="b"/>
 					</AccessType>
 				*/
-				const access: AST.ASTNodeTypeAccess = AST.ASTNodeTypeAccess.fromSource(`
-					[c: 42, b: 420, a: 4200].b
-				`);
+				const access: AST.ASTNodeType = DECORATOR_SOLID.decorate(h.compoundTypeFromString(`[c: 42, b: 420, a: 4200].b`));
+				assert.ok(access instanceof AST.ASTNodeTypeAccess, 'should be instance of ASTNodeTypeAccess.');
 				assert.ok(access.accessor instanceof AST.ASTNodeKey);
 				assert.deepStrictEqual(
 					[access.base.source,                access.accessor.source],
@@ -543,14 +497,14 @@ describe('DecoratorSolid', () => {
 				/*
 					<Property>
 						<Key source="fontSize"/>
-						<Operation source="1. + 0.25">...</Operation>
+						<Operation source="1.0 + 0.25">...</Operation>
 					</Property>
 				*/
-				const property = DECORATOR_SOLID.decorate(h.propertyFromString(`fontSize= 1. + 0.25`));
+				const property = DECORATOR_SOLID.decorate(h.propertyFromString(`fontSize= 1.0 + 0.25`));
 				assert.ok(property instanceof AST.ASTNodeProperty); // FIXME: `AST.ASTNodeProperty` is assignable to `TemplatePartialType`, so `Decorator.decorate` overlads get confused
 				assert.deepStrictEqual(
 					[property.key.source, property.val.source],
-					[`fontSize`,          `1. + 0.25`],
+					[`fontSize`,          `1.0 + 0.25`],
 				);
 			});
 		});
@@ -570,6 +524,52 @@ describe('DecoratorSolid', () => {
 				);
 			});
 		});
+
+		context('ExpressionGrouped ::= "(" Expression ")"', () => {
+			it('returns the inner Expression node.', () => {
+				/*
+					<Operation operator=ADD>
+						<Constant source="2"/>
+						<Constant source="-3"/>
+					</Operation>
+				*/
+				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.groupedExpressionFromSource(`(2 + -3);`));
+				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
+				assert.ok(operation.operand0 instanceof AST.ASTNodeConstant);
+				assert.ok(operation.operand1 instanceof AST.ASTNodeConstant);
+				assert.deepStrictEqual(
+					[operation.operand0.source, operation.operator, operation.operand1.source],
+					[`2`,                       Operator.ADD,       `-3`],
+				)
+			})
+			it('recursively applies to several sub-expressions.', () => {
+				/*
+					<Operation operator=EXP>
+						<Operation operator=NEG>
+							<Constant source="42"/>
+						</Operation>
+						<Operation operator=MUL>
+							<Constant source="2"/>
+							<Constant source="420"/>
+						</Operation>
+					</Operation>
+				*/
+				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`(-(42) ^ +(2 * 420));`));
+				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
+				assert.strictEqual(operation.operator, Operator.EXP)
+				assert.ok(operation.operand0 instanceof AST.ASTNodeOperationUnary);
+				assert.strictEqual(operation.operand0.operator, Operator.NEG);
+				assert.ok(operation.operand0.operand instanceof AST.ASTNodeConstant);
+				assert.strictEqual(operation.operand0.operand.source, `42`);
+
+				assert.ok(operation.operand1 instanceof AST.ASTNodeOperationBinary);
+				assert.strictEqual(operation.operand1.operator, Operator.MUL);
+				assert.ok(operation.operand1.operand0 instanceof AST.ASTNodeConstant);
+				assert.ok(operation.operand1.operand1 instanceof AST.ASTNodeConstant);
+				assert.strictEqual(operation.operand1.operand0.source, `2`);
+				assert.strictEqual(operation.operand1.operand1.source, `420`);
+			})
+		})
 
 		describe('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
 			it('makes an empty ASTNodeTuple.', () => {
@@ -703,58 +703,14 @@ describe('DecoratorSolid', () => {
 		});
 
 		context('ExpressionUnit ::= IDENTIFIER', () => {
-			it('assigns a unique ID starting from 256.', () => {
+			it('makes an ASTNodeVariable.', () => {
 				/*
-					<Variable source="variable" id="256"/>
+					<Variable source="variable"/>
 				*/
-				assert.deepStrictEqual([
+				return [
 					`variable;`,
 					`var;`,
-				].map((src) => {
-					const variable: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.unitExpressionFromSource(src));
-					assert.ok(variable instanceof AST.ASTNodeVariable)
-					return variable.id;
-				}), [
-					256n,
-					256n,
-				]);
-			});
-			it('increments IDs for each variable.', () => {
-				/*
-					<Operation operator=OR>
-						<Variable source="variable" id="256"/>
-						<Variable source="var" id="257"/>
-					</Operation>
-				*/
-				assert.deepStrictEqual(DECORATOR_SOLID.decorate(h.expressionFromSource(`
-					variable || var;
-				`)).children.map((op) => {
-					assert.ok(op instanceof AST.ASTNodeVariable);
-					return op.id;
-				}), [256n, 257n]);
-			});
-			it('increments IDs even across statements.', () => {
-				/*
-					<Goal source="␂ variable ; var ; ␃">
-						<StatementExpression>
-							<Variable source="variable" id="256"/>
-						</StatementExpression>
-						<StatementExpression>
-							<Variable source="var" id="257"/>
-						</StatementExpression>
-					</Goal>
-				*/
-				const goal: AST.ASTNodeGoal = DECORATOR_SOLID.decorate(h.goalFromSource(`
-					variable;
-					var;
-				`));
-				assert_arrayLength(goal.children, 2);
-				assert.deepStrictEqual(goal.children.map((stmt) => {
-					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
-					const ident: AST.ASTNodeExpression | null = stmt.expr || null;
-					assert.ok(ident instanceof AST.ASTNodeVariable);
-					return ident.id;
-				}), [256n, 257n]);
+				].forEach((src) => assert.ok(DECORATOR_SOLID.decorate(h.unitExpressionFromSource(src)) instanceof AST.ASTNodeVariable));
 			});
 		});
 
@@ -774,52 +730,6 @@ describe('DecoratorSolid', () => {
 					`true`,
 					`42`,
 				])
-			})
-		})
-
-		context('ExpressionUnit ::= "(" Expression ")"', () => {
-			it('returns the inner Expression node.', () => {
-				/*
-					<Operation operator=ADD>
-						<Constant source="2"/>
-						<Constant source="-3"/>
-					</Operation>
-				*/
-				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`(2 + -3);`));
-				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
-				assert.ok(operation.operand0 instanceof AST.ASTNodeConstant);
-				assert.ok(operation.operand1 instanceof AST.ASTNodeConstant);
-				assert.deepStrictEqual(
-					[operation.operand0.source, operation.operator, operation.operand1.source],
-					[`2`,                       Operator.ADD,       `-3`],
-				)
-			})
-			it('recursively applies to several sub-expressions.', () => {
-				/*
-					<Operation operator=EXP>
-						<Operation operator=NEG>
-							<Constant source="42"/>
-						</Operation>
-						<Operation operator=MUL>
-							<Constant source="2"/>
-							<Constant source="420"/>
-						</Operation>
-					</Operation>
-				*/
-				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`(-(42) ^ +(2 * 420));`));
-				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
-				assert.strictEqual(operation.operator, Operator.EXP)
-				assert.ok(operation.operand0 instanceof AST.ASTNodeOperationUnary);
-				assert.strictEqual(operation.operand0.operator, Operator.NEG);
-				assert.ok(operation.operand0.operand instanceof AST.ASTNodeConstant);
-				assert.strictEqual(operation.operand0.operand.source, `42`);
-
-				assert.ok(operation.operand1 instanceof AST.ASTNodeOperationBinary);
-				assert.strictEqual(operation.operand1.operator, Operator.MUL);
-				assert.ok(operation.operand1.operand0 instanceof AST.ASTNodeConstant);
-				assert.ok(operation.operand1.operand1 instanceof AST.ASTNodeConstant);
-				assert.strictEqual(operation.operand1.operand0.source, `2`);
-				assert.strictEqual(operation.operand1.operand1.source, `420`);
 			})
 		})
 
@@ -1213,12 +1123,10 @@ describe('DecoratorSolid', () => {
 				const decl: AST.ASTNodeDeclarationType = DECORATOR_SOLID.decorate(h.typeDeclarationFromSource(`
 					type T  =  int | float;
 				`));
-				assert.strictEqual(decl.assignee.id, 256n);
 				assert.ok(decl.assigned instanceof AST.ASTNodeTypeOperationBinary);
-				assert.strictEqual(decl.assigned.operator, Operator.OR);
 				assert.deepStrictEqual(
-					[decl.assignee.source, decl.assigned.source],
-					[`T`,                  `int | float`],
+					[decl.assignee.source, decl.assigned.source, decl.assigned.operator],
+					[`T`,                  `int | float`,        Operator.OR],
 				);
 			});
 		});
@@ -1235,12 +1143,11 @@ describe('DecoratorSolid', () => {
 				const decl: AST.ASTNodeDeclarationVariable = DECORATOR_SOLID.decorate(h.variableDeclarationFromSource(`
 					let unfixed the_answer:  int | float =  21  *  2;
 				`));
-				assert.strictEqual(decl.unfixed, true);
 				assert.ok(decl.typenode instanceof AST.ASTNodeTypeOperationBinary);
 				assert.ok(decl.assigned instanceof AST.ASTNodeOperationBinary);
 				assert.deepStrictEqual(
-					[decl.assignee.source, decl.assignee.id, decl.typenode.source, decl.typenode.operator, decl.assigned.source, decl.assigned.operator],
-					[`the_answer`,         256n,             `int | float`,        Operator.OR,            `21 * 2`,             Operator.MUL],
+					[decl.unfixed, decl.assignee.source, decl.typenode.source, decl.typenode.operator, decl.assigned.source, decl.assigned.operator],
+					[true,         `the_answer`,         `int | float`,        Operator.OR,            `21 * 2`,             Operator.MUL],
 				);
 			})
 			it('makes a fixed ASTNodeDeclarationVariable node.', () => {
@@ -1257,13 +1164,12 @@ describe('DecoratorSolid', () => {
 				const decl: AST.ASTNodeDeclarationVariable = DECORATOR_SOLID.decorate(h.variableDeclarationFromSource(`
 					let \`the £ answer\`: int = the_answer * 10;
 				`));
-				assert.strictEqual(decl.unfixed, false);
 				assert.ok(decl.typenode instanceof AST.ASTNodeTypeConstant);
 				assert.ok(decl.assigned instanceof AST.ASTNodeOperationBinary);
 				assert.ok(decl.assigned.operand0 instanceof AST.ASTNodeVariable);
 				assert.deepStrictEqual(
-					[decl.assignee.source, decl.assignee.id, decl.typenode.source, decl.assigned.source, decl.assigned.operator, decl.assigned.operand0.id],
-					[`\`the £ answer\``,   256n,             `int`,                `the_answer * 10`,    Operator.MUL,           257n],
+					[decl.unfixed, decl.assignee.source, decl.typenode.source, decl.assigned.source, decl.assigned.operator],
+					[false,        `\`the £ answer\``,   `int`,                `the_answer * 10`,    Operator.MUL],
 				);
 			})
 		})
@@ -1276,7 +1182,6 @@ describe('DecoratorSolid', () => {
 				const variable: AST.ASTNodeVariable = (DECORATOR_SOLID.decorate(h.assigneeFromSource(`
 					the_answer = the_answer - 40;
 				`)) as AST.ASTNodeVariable);
-				assert.strictEqual(variable.id, 256n);
 				assert.strictEqual(variable.source, `the_answer`);
 			});
 		});
@@ -1319,8 +1224,8 @@ describe('DecoratorSolid', () => {
 				assert.ok(assn.assigned instanceof AST.ASTNodeOperationBinary);
 				assert.ok(assn.assigned.operand0 instanceof AST.ASTNodeVariable);
 				assert.deepStrictEqual(
-					[assn.assignee.source, assn.assigned.source, assn.assigned.operator, assn.assigned.operand0.id],
-					[`the_answer`,         `the_answer - 40`,    Operator.ADD,           256n],
+					[assn.assignee.source, assn.assigned.source, assn.assigned.operator],
+					[`the_answer`,         `the_answer - 40`,    Operator.ADD],
 				);
 			})
 		})
@@ -1355,4 +1260,375 @@ describe('DecoratorSolid', () => {
 			})
 		})
 	})
+
+
+	describe('#decorateTS', () => {
+		const parser: Parser = new Parser();
+		parser.setLanguage(Counterpoint);
+		function captureParseNode(source: string, query: string): SyntaxNode {
+			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(parser.parse(source).rootNode);
+			assert.ok(captures.length, 'could not find any captures.');
+			return captures[0].node;
+		}
+		new Map<string, [NewableFunction, string]>([
+			['Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey', [AST.ASTNodeKey, `
+				[mutable= 42];
+				% (word "mutable")
+			`]],
+			['Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey', [AST.ASTNodeKey, `
+				[void= 42];
+				% (word (keyword_type))
+			`]],
+			['Decorate(Word ::= KEYWORD_VALUE) -> SemanticKey', [AST.ASTNodeKey, `
+				[true= 42];
+				% (word (keyword_value))
+			`]],
+			['Decorate(Word ::= IDENTIFIER) -> SemanticKey', [AST.ASTNodeKey, `
+				[foobar= 42];
+				% (word (identifier))
+			`]],
+
+			['Decorate(Type > PrimitiveLiteral ::= KEYWORD_VALUE) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
+				type T = false;
+				% (primitive_literal (keyword_value))
+			`]],
+			['Decorate(Type > PrimitiveLiteral ::= INTEGER) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
+				type T = 42;
+				% (primitive_literal (integer))
+			`]],
+			['Decorate(Type > PrimitiveLiteral ::= FLOAT) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
+				type T = 42.69;
+				% (primitive_literal (float))
+			`]],
+			['Decorate(Type > PrimitiveLiteral ::= STRING) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
+				type T = 'hello';
+				% (primitive_literal (string))
+			`]],
+
+			['Decorate(Expression > PrimitiveLiteral ::= KEYWORD_VALUE) -> SemanticConstant', [AST.ASTNodeConstant, `
+				false;
+				% (primitive_literal (keyword_value))
+			`]],
+			['Decorate(Expression > PrimitiveLiteral ::= INTEGER) -> SemanticConstant', [AST.ASTNodeConstant, `
+				42;
+				% (primitive_literal (integer))
+			`]],
+			['Decorate(Expression > PrimitiveLiteral ::= FLOAT) -> SemanticConstant', [AST.ASTNodeConstant, `
+				42.69;
+				% (primitive_literal (float))
+			`]],
+			['Decorate(Expression > PrimitiveLiteral ::= STRING) -> SemanticConstant', [AST.ASTNodeConstant, `
+				'hello';
+				% (primitive_literal (string))
+			`]],
+
+			/* ## Types */
+			['Decorate(EntryType<-Named><-Optional> ::= Type) -> SemanticItemType', [AST.ASTNodeItemType, `
+				type T = [int];
+				% (entry_type)
+			`]],
+			['Decorate(EntryType<-Named><+Optional> ::= "?:" Type) -> SemanticItemType', [AST.ASTNodeItemType, `
+				type T = [?: int];
+				% (entry_type__optional)
+			`]],
+			['Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
+				type T = [a: int];
+				% (entry_type__named)
+			`]],
+			['Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
+				type T = [a?: int];
+				% (entry_type__named__optional)
+			`]],
+
+			['Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType', [AST.ASTNodeType, `
+				type T = (int | float);
+				% (type_grouped)
+			`]],
+
+			['Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
+				type T = [int, ?: float];
+				% (type_tuple_literal)
+			`]],
+
+			['Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
+				type T = [a?: int, b: float];
+				% (type_record_literal)
+			`]],
+
+			['Decorate(TypeHashLiteral ::= "[" ":" Type "]") -> SemanticTypeHash', [AST.ASTNodeTypeHash, `
+				type T = [:int];
+				% (type_hash_literal)
+			`]],
+
+			['Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMap', [AST.ASTNodeTypeMap, `
+				type T = {int -> float};
+				% (type_map_literal)
+			`]],
+
+			['Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndexType', [AST.ASTNodeIndexType, `
+				type T = U.1;
+				% (property_access_type)
+			`]],
+			['Decorate(PropertyAccessType ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
+				type T = U.p;
+				% (property_access_type)
+			`]],
+
+			['Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
+				type T = U.p;
+				% (type_compound)
+			`]],
+			['Decorate(TypeCompound ::= TypeCompound GenericCall) -> SemanticTypeCall', [AST.ASTNodeTypeCall, `
+				type T = List.<U>;
+				% (type_compound)
+			`]],
+
+			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "?") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+				type T = U?;
+				% (type_unary_symbol)
+			`]],
+			['skip: Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+				type T = U!;
+				% (type_unary_symbol)
+			`]],
+			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
+				type T = U[];
+				% (type_unary_symbol)
+			`]],
+			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" INTEGER "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
+				type T = U[3];
+				% (type_unary_symbol)
+			`]],
+			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "{" "}") -> SemanticTypeSet', [AST.ASTNodeTypeSet, `
+				type T = U{};
+				% (type_unary_symbol)
+			`]],
+
+			['Decorate(TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+				type T = mutable U;
+				% (type_unary_keyword)
+			`]],
+
+			['Decorate(TypeIntersection ::= TypeIntersection "&" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+				type T = U & V;
+				% (type_intersection)
+			`]],
+
+			['Decorate(TypeUnion ::= TypeUnion "|" TypeIntersection) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+				type T = U | V;
+				% (type_union)
+			`]],
+
+			/* ## Expressions */
+			['Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
+				'''full1''';
+				% (string_template)
+			`]],
+			['Decorate(StringTemplate ::= TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
+				'''hello {{ 'to' }} the {{ 'whole' }} great {{ 'big' }} world''';
+				% (string_template)
+			`]],
+			['Decorate(StringTemplate ::= TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
+				'''hello {{ '''to {{ '''the {{ 'whole' }} great''' }} big''' }} world''';
+				% (string_template)
+			`]],
+
+			['Decorate(Property ::= Word "=" Expression) -> SemanticProperty', [AST.ASTNodeProperty, `
+				[a= 42];
+				% (property)
+			`]],
+
+			['Decorate(Case ::= Expression "->" Expression) -> SemanticCase', [AST.ASTNodeCase, `
+				{42 -> 6.9};
+				% (case)
+			`]],
+
+			['Decorate(ExpressionGrouped ::= "(" Expression ")") -> SemanticExpression', [AST.ASTNodeExpression, `
+				(42 || 6.9);
+				% (expression_grouped)
+			`]],
+
+			['Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+				[42, 6.9];
+				% (tuple_literal)
+			`]],
+
+			['Decorate(RecordLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
+				[a= 42, b= 6.9];
+				% (record_literal)
+			`]],
+
+			['Decorate(SetLiteral ::= "{" ","? Expression# ","? "}") -> SemanticSet', [AST.ASTNodeSet, `
+				{42, 6.9};
+				% (set_literal)
+			`]],
+
+			['Decorate(MapLiteral ::= "{" ","? Case# ","? "}") -> SemanticMap', [AST.ASTNodeMap, `
+				{42 -> 6.9, 'hello' -> true};
+				% (map_literal)
+			`]],
+
+			['Decorate(PropertyAccess ::= ("." | "?." | "!.") INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
+				v.1;
+				% (property_access)
+			`]],
+			['Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey', [AST.ASTNodeKey, `
+				v?.p;
+				% (property_access)
+			`]],
+			['Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
+				v!.[a + b];
+				% (property_access)
+			`]],
+
+			['Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
+				v.1 = false;
+				% (property_assign)
+			`]],
+			['Decorate(PropertyAssign ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
+				v.p = false;
+				% (property_assign)
+			`]],
+			['Decorate(PropertyAssign ::= "." "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
+				v.[a + b] = false;
+				% (property_assign)
+			`]],
+
+			['Decorate(ExpressionCompound ::= ExpressionCompound PropertyAccess) -> SemanticAccess', [AST.ASTNodeAccess, `
+				v.p;
+				% (expression_compound)
+			`]],
+			['Decorate(ExpressionCompound ::= ExpressionCompound FunctionCall) -> SemanticCall', [AST.ASTNodeCall, `
+				List.<T>();
+				% (expression_compound)
+			`]],
+
+			['Decorate(Assignee ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
+				v = 42;
+				% (assignee)
+			`]],
+			['Decorate(Assignee ::= ExpressionCompound PropertyAssign) -> SemanticAccess', [AST.ASTNodeAccess, `
+				v.1 = 42;
+				% (assignee)
+			`]],
+
+			['Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation', [AST.ASTNodeOperation, `
+				!v;
+				% (expression_unary_symbol)
+			`]],
+			['Decorate(ExpressionUnarySymbol ::= "?" ExpressionUnarySymbol) -> SemanticOperation', [AST.ASTNodeOperation, `
+				?v;
+				% (expression_unary_symbol)
+			`]],
+			['Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticExpression', [AST.ASTNodeExpression, `
+				+v;
+				% (expression_unary_symbol)
+			`]],
+			['Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperation', [AST.ASTNodeOperation, `
+				-v;
+				% (expression_unary_symbol)
+			`]],
+
+			['Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a ^ b;
+				% (expression_exponential)
+			`]],
+
+			['Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a * b;
+				% (expression_multiplicative)
+			`]],
+			['Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a / b;
+				% (expression_multiplicative)
+			`]],
+
+			['Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a + b;
+				% (expression_additive)
+			`]],
+			['Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a - b;
+				% (expression_additive)
+			`]],
+
+			...['<', '>', '<=', '>=', '!<', '!>', /* 'is', 'isnt' */].map((op) => [`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, [AST.ASTNodeOperation, `
+				a ${ op } b;
+				% (expression_comparative)
+			`]] as [string, [NewableFunction, string]]),
+
+			...['===', '!==', '==', '!='].map((op) => [`Decorate(ExpressionEquality ::= ExpressionEquality "${ op }" ExpressionComparative) -> SemanticOperation`, [AST.ASTNodeOperation, `
+				a ${ op } b;
+				% (expression_equality)
+			`]] as [string, [NewableFunction, string]]),
+
+			['Decorate(ExpressionConjunctive ::= ExpressionConjunctive "&&" ExpressionEquality) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a && b;
+				% (expression_conjunctive)
+			`]],
+			['Decorate(ExpressionConjunctive ::= ExpressionConjunctive "!&" ExpressionEquality) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a !& b;
+				% (expression_conjunctive)
+			`]],
+
+			['Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "||" ExpressionConjunctive) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a || b;
+				% (expression_disjunctive)
+			`]],
+			['Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "!|" ExpressionConjunctive) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a !| b;
+				% (expression_disjunctive)
+			`]],
+
+			['Decorate(ExpressionConditional ::= "if" Expression "then" Expression "else" Expression) -> SemanticOperation', [AST.ASTNodeOperation, `
+				if a then b else c;
+				% (expression_conditional)
+			`]],
+
+			/* ## Statements */
+			['Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
+				type T = U;
+				% (declaration_type)
+			`]],
+
+			['Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let a: T = b;
+				% (declaration_variable)
+			`]],
+			['Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let unfixed a: T = b;
+				% (declaration_variable)
+			`]],
+
+			['Decorate(StatementExpression ::= Expression ";") -> SemanticStatementExpression', [AST.ASTNodeStatementExpression, `
+				a;
+				% (statement_expression)
+			`]],
+
+			['Decorate(StatementAssignment ::= Assignee "=" Expression ";") -> SemanticAssignment', [AST.ASTNodeAssignment, `
+				a = b;
+				% (statement_assignment)
+			`]],
+		]).forEach(([klass, text], description) => (description.slice(0, 5) === 'skip:' ? specify.skip : specify)(description, () => {
+			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
+			return assert.ok(
+				DECORATOR_SOLID.decorateTS(parsenode) instanceof klass,
+				`\`${ parsenode.text }\` not an instance of ${ klass.name }.`,
+			);
+		}));
+		describe('Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', () => {
+			it('type operator `!` is not yet supported.', () => {
+				return assert.throws(() => DECORATOR_SOLID.decorateTS(captureParseNode(`
+					type T = U!;
+				`, '(type_unary_symbol)')), /not yet supported/);
+			});
+		});
+		['is', 'isnt'].forEach((op) => describe(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
+			it(`operator \`${ op }\` is not yet supported.`, () => {
+				return assert.throws(() => DECORATOR_SOLID.decorateTS(captureParseNode(`
+					a ${ op } b;
+				`, '(expression_comparative)')), /not yet supported/);
+			});
+		}));
+	});
 })

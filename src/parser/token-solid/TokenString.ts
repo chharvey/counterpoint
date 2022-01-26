@@ -134,7 +134,9 @@ export class TokenString extends TokenSolid {
 	) {
 		super('STRING', ...chars);
 	}
-	cook(): CodeUnit[] {
+
+	/** @deprecated This method is going away soon. Use {@link Validator.cookTokenString} instead. */
+	override cook(): CodeUnit[] {
 		return TokenString.tokenWorth(
 			this.source.slice(TokenString.DELIM.length, -TokenString.DELIM.length),
 			this.allow_comments,

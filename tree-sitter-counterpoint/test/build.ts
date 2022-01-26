@@ -6,37 +6,6 @@ import * as path from 'path';
 
 
 
-const BOT_TYPE = 'type_unit';
-const TOP_TYPE = 'type';
-const BOT_EXPR = 'expression_unit';
-const TOP_EXPR = 'expression';
-
-const hierarchy_type = [
-	BOT_TYPE,
-	'type_compound',
-	'type_unary_symbol',
-	'type_unary_keyword',
-	'type_intersection',
-	'type_union',
-	TOP_TYPE,
-];
-
-const hierarchy_expr = [
-	BOT_EXPR,
-	'expression_compound',
-	'expression_unary_symbol',
-	'expression_exponential',
-	'expression_multiplicative',
-	'expression_additive',
-	'expression_comparative',
-	'expression_equality',
-	'expression_conjunctive',
-	'expression_disjunctive',
-	TOP_EXPR,
-];
-
-
-
 function s(name: string, ...operands: string[]): string {
 	return xjs.String.dedent`
 		(${ name }
@@ -45,45 +14,13 @@ function s(name: string, ...operands: string[]): string {
 	`;
 }
 
-function fromTypeUnit(name: string, primary: string): string {
-	if (name === BOT_TYPE) {
-		return s(name, primary);
-	}
-	const child = hierarchy_type.includes(name) ? hierarchy_type[hierarchy_type.indexOf(name) - 1] : BOT_TYPE;
-	return s(name, fromTypeUnit(child, primary));
-}
-
-function toType(name: string, ...operands: string[]): string {
-	const typ = s(name, ...operands);
-	if (name === TOP_TYPE) {
-		return typ;
-	}
-	const parent = hierarchy_type.includes(name) ? hierarchy_type[hierarchy_type.indexOf(name) + 1] : TOP_TYPE;
-	return toType(parent, typ);
-}
-
-function fromUnit(name: string, primary: string): string {
-	if (name === BOT_EXPR) {
-		return s(name, primary);
-	}
-	const child = hierarchy_expr.includes(name) ? hierarchy_expr[hierarchy_expr.indexOf(name) - 1] : BOT_EXPR;
-	return s(name, fromUnit(child, primary));
-}
-
-function toExpression(name: string, ...operands: string[]): string {
-	const exp = s(name, ...operands);
-	if (name === TOP_EXPR) {
-		return exp;
-	}
-	const parent = hierarchy_expr.includes(name) ? hierarchy_expr[hierarchy_expr.indexOf(name) + 1] : TOP_EXPR;
-	return toExpression(parent, exp);
-}
-
 function extractType(operand: string): string {
-	return toExpression('expression_compound',
-		fromUnit('expression_compound', s('identifier')),
+	return s('expression_compound',
+		s('identifier'),
 		s('function_call',
-			s('generic_arguments', operand),
+			s('generic_arguments',
+				operand,
+			),
 			s('function_arguments'),
 		),
 	);
@@ -91,7 +28,7 @@ function extractType(operand: string): string {
 
 function makeSourceFile(...expressions: string[]): string {
 	return s('source_file',
-		expressions.map((expr) => s('statement', expr)).join(''),
+		expressions.map((expr) => s('statement_expression', expr)).join(''),
 	);
 }
 
@@ -128,12 +65,12 @@ function buildTest(title: string, source: string, expected: string) {
 				f.<obj>();
 			`,
 			makeSourceFile(
-				extractType(fromTypeUnit('type', s('keyword_type'))),
-				extractType(fromTypeUnit('type', s('keyword_type'))),
-				extractType(fromTypeUnit('type', s('keyword_type'))),
-				extractType(fromTypeUnit('type', s('keyword_type'))),
-				extractType(fromTypeUnit('type', s('keyword_type'))),
-				extractType(fromTypeUnit('type', s('keyword_type'))),
+				extractType(s('keyword_type')),
+				extractType(s('keyword_type')),
+				extractType(s('keyword_type')),
+				extractType(s('keyword_type')),
+				extractType(s('keyword_type')),
+				extractType(s('keyword_type')),
 			),
 		],
 
@@ -144,9 +81,9 @@ function buildTest(title: string, source: string, expected: string) {
 				true;
 			`,
 			makeSourceFile(
-				fromUnit('expression', s('primitive_literal', s('keyword_value'))),
-				fromUnit('expression', s('primitive_literal', s('keyword_value'))),
-				fromUnit('expression', s('primitive_literal', s('keyword_value'))),
+				s('primitive_literal', s('keyword_value')),
+				s('primitive_literal', s('keyword_value')),
+				s('primitive_literal', s('keyword_value')),
 			),
 		],
 
@@ -155,7 +92,7 @@ function buildTest(title: string, source: string, expected: string) {
 				my_variable;
 			`,
 			makeSourceFile(
-				fromUnit('expression', s('identifier')),
+				s('identifier'),
 			),
 		],
 
@@ -167,37 +104,37 @@ function buildTest(title: string, source: string, expected: string) {
 				\\b0100_0101;
 			`,
 			makeSourceFile(
-				fromUnit('expression', s('primitive_literal', s('integer'))),
-				fromUnit('expression', s('primitive_literal', s('integer__radix'))),
-				fromUnit('expression', s('primitive_literal', s('integer__separator'))),
-				fromUnit('expression', s('primitive_literal', s('integer__radix__separator'))),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer__radix')),
+				s('primitive_literal', s('integer__separator')),
+				s('primitive_literal', s('integer__radix__separator')),
 			),
 		],
 
 		FLOAT: [
 			xjs.String.dedent`
-				42.;
+				42.0;
 				42.69;
 				42.69e15;
 				42.69e+15;
 				42.69e-15;
-				4_2.;
+				4_2.0;
 				4_2.6_9;
 				4_2.6_9e1_5;
 				4_2.6_9e+1_5;
 				4_2.6_9e-1_5;
 			`,
 			makeSourceFile(
-				fromUnit('expression', s('primitive_literal', s('float'))),
-				fromUnit('expression', s('primitive_literal', s('float'))),
-				fromUnit('expression', s('primitive_literal', s('float'))),
-				fromUnit('expression', s('primitive_literal', s('float'))),
-				fromUnit('expression', s('primitive_literal', s('float'))),
-				fromUnit('expression', s('primitive_literal', s('float__separator'))),
-				fromUnit('expression', s('primitive_literal', s('float__separator'))),
-				fromUnit('expression', s('primitive_literal', s('float__separator'))),
-				fromUnit('expression', s('primitive_literal', s('float__separator'))),
-				fromUnit('expression', s('primitive_literal', s('float__separator'))),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float__separator')),
+				s('primitive_literal', s('float__separator')),
+				s('primitive_literal', s('float__separator')),
+				s('primitive_literal', s('float__separator')),
+				s('primitive_literal', s('float__separator')),
 			),
 		],
 
@@ -221,13 +158,13 @@ function buildTest(title: string, source: string, expected: string) {
 				'hello\\u{00_20}world';
 			`,
 			makeSourceFile(
-				fromUnit('expression', s('primitive_literal', s('string'))),
-				fromUnit('expression', s('primitive_literal', s('string'))),
-				fromUnit('expression', s('primitive_literal', s('string'))),
-				fromUnit('expression', s('primitive_literal', s('string'))),
-				fromUnit('expression', s('primitive_literal', s('string'))),
-				fromUnit('expression', s('primitive_literal', s('string'))),
-				fromUnit('expression', s('primitive_literal', s('string__separator'))),
+				s('primitive_literal', s('string')),
+				s('primitive_literal', s('string')),
+				s('primitive_literal', s('string')),
+				s('primitive_literal', s('string')),
+				s('primitive_literal', s('string')),
+				s('primitive_literal', s('string')),
+				s('primitive_literal', s('string__separator')),
 			),
 		],
 
@@ -242,33 +179,33 @@ function buildTest(title: string, source: string, expected: string) {
 				the''' }} big''' }} world''';
 			`,
 			makeSourceFile(
-				fromUnit('expression', s('string_template',
+				s('string_template',
 					s('template_head'),
-					fromUnit('expression', s('identifier')),
+					s('identifier'),
 					s('template_middle'),
-					fromUnit('expression', s('identifier')),
+					s('identifier'),
 					s('template_tail'),
-				)),
-				fromUnit('expression', s('string_template',
+				),
+				s('string_template',
 					s('template_head'),
-					fromUnit('expression', s('identifier')),
+					s('identifier'),
 					s('template_middle'),
-					fromUnit('expression', s('identifier')),
+					s('identifier'),
 					s('template_middle'),
-					fromUnit('expression', s('identifier')),
+					s('identifier'),
 					s('template_tail'),
-				)),
-				fromUnit('expression', s('string_template',
+				),
+				s('string_template',
 					s('template_head'),
-					fromUnit('expression', s('string_template',
+					s('string_template',
 						s('template_head'),
-						fromUnit('expression', s('string_template',
+						s('string_template',
 							s('template_full'),
-						)),
+						),
 						s('template_tail'),
-					)),
+					),
 					s('template_tail'),
-				)),
+				),
 			),
 		],
 
@@ -292,16 +229,25 @@ function buildTest(title: string, source: string, expected: string) {
 		// PropertiesType
 		// see #TypeRecordLiteral
 
+		TypeGrouped: [
+			xjs.String.dedent`
+				f.<(T)>();
+			`,
+			makeSourceFile(
+				extractType(s('type_grouped', s('identifier'))),
+			),
+		],
+
 		TypeTupleLiteral: [
-				xjs.String.dedent`
+			xjs.String.dedent`
 				f.<[bool, int, ?: str]>();
 			`,
 			makeSourceFile(
-				extractType(fromTypeUnit('type', s('type_tuple_literal', s('items_type',
-					s('entry_type', fromTypeUnit('type', s('keyword_type'))),
-					s('entry_type', fromTypeUnit('type', s('keyword_type'))),
-					s('entry_type__optional', fromTypeUnit('type', s('keyword_type'))),
-				)))),
+				extractType(s('type_tuple_literal',
+					s('entry_type',           s('keyword_type')),
+					s('entry_type',           s('keyword_type')),
+					s('entry_type__optional', s('keyword_type')),
+				)),
 			),
 		],
 
@@ -310,11 +256,11 @@ function buildTest(title: string, source: string, expected: string) {
 				f.<[a: bool, b?: int, c: str]>();
 			`,
 			makeSourceFile(
-				extractType(fromTypeUnit('type', s('type_record_literal', s('properties_type',
-					s('entry_type__named', s('word', s('identifier')), fromTypeUnit('type', s('keyword_type'))),
-					s('entry_type__named__optional', s('word', s('identifier')), fromTypeUnit('type', s('keyword_type'))),
-					s('entry_type__named', s('word', s('identifier')), fromTypeUnit('type', s('keyword_type'))),
-				)))),
+				extractType(s('type_record_literal',
+					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
+				)),
 			),
 		],
 
@@ -323,9 +269,9 @@ function buildTest(title: string, source: string, expected: string) {
 				f.<[: bool]>();
 			`,
 			makeSourceFile(
-				extractType(fromTypeUnit('type', s('type_hash_literal',
-					fromTypeUnit('type', s('keyword_type')),
-				))),
+				extractType(s('type_hash_literal',
+					s('keyword_type'),
+				)),
 			),
 		],
 
@@ -334,21 +280,15 @@ function buildTest(title: string, source: string, expected: string) {
 				f.<{int -> float}>();
 			`,
 			makeSourceFile(
-				extractType(fromTypeUnit('type', s('type_map_literal',
-					fromTypeUnit('type', s('keyword_type')),
-					fromTypeUnit('type', s('keyword_type')),
-				))),
+				extractType(s('type_map_literal',
+					s('keyword_type'),
+					s('keyword_type'),
+				)),
 			),
 		],
 
-		TypeUnit: [
-			xjs.String.dedent`
-				f.<(T)>();
-			`,
-			makeSourceFile(
-				extractType(fromTypeUnit('type', fromTypeUnit('type', s('identifier')))),
-			),
-		],
+		// TypeUnit
+		// see #KEYWORDTYPE,IDENTIFIER,PrimitiveLiteral,Type{Grouped,{Tuple,Record,Hash,Map}Literal}
 
 		// PropertyAccessType
 		// see #TypeCompound
@@ -363,19 +303,19 @@ function buildTest(title: string, source: string, expected: string) {
 				f.<Set.<T>>();
 			`,
 			makeSourceFile(
-				extractType(toType('type_compound',
-					fromTypeUnit('type_compound', s('identifier')),
+				extractType(s('type_compound',
+					s('identifier'),
 					s('property_access_type', s('integer')),
 				)),
-				extractType(toType('type_compound',
-					fromTypeUnit('type_compound', s('identifier')),
+				extractType(s('type_compound',
+					s('identifier'),
 					s('property_access_type', s('word', s('identifier'))),
 				)),
-				extractType(toType('type_compound',
-					fromTypeUnit('type_compound', s('identifier')),
+				extractType(s('type_compound',
+					s('identifier'),
 					s('generic_call',
 						s('generic_arguments',
-							fromTypeUnit('type', s('identifier')),
+							s('identifier'),
 						),
 					),
 				)),
@@ -391,21 +331,21 @@ function buildTest(title: string, source: string, expected: string) {
 				f.<T{}>();
 			`,
 			makeSourceFile(
-				extractType(toType('type_unary_symbol',
-					fromTypeUnit('type_unary_symbol', s('identifier')),
+				extractType(s('type_unary_symbol',
+					s('identifier'),
 				)),
-				extractType(toType('type_unary_symbol',
-					fromTypeUnit('type_unary_symbol', s('identifier')),
+				extractType(s('type_unary_symbol',
+					s('identifier'),
 				)),
-				extractType(toType('type_unary_symbol',
-					fromTypeUnit('type_unary_symbol', s('identifier')),
+				extractType(s('type_unary_symbol',
+					s('identifier'),
 				)),
-				extractType(toType('type_unary_symbol',
-					fromTypeUnit('type_unary_symbol', s('identifier')),
+				extractType(s('type_unary_symbol',
+					s('identifier'),
 					s('integer'),
 				)),
-				extractType(toType('type_unary_symbol',
-					fromTypeUnit('type_unary_symbol', s('identifier')),
+				extractType(s('type_unary_symbol',
+					s('identifier'),
 				)),
 			),
 		],
@@ -415,8 +355,8 @@ function buildTest(title: string, source: string, expected: string) {
 				f.<mutable T>();
 			`,
 			makeSourceFile(
-				extractType(toType('type_unary_keyword',
-					fromTypeUnit('type_unary_keyword', s('identifier')),
+				extractType(s('type_unary_keyword',
+					s('identifier'),
 				)),
 			),
 		],
@@ -426,9 +366,9 @@ function buildTest(title: string, source: string, expected: string) {
 				f.<T & U>();
 			`,
 			makeSourceFile(
-				extractType(toType('type_intersection',
-					fromTypeUnit('type_intersection', s('identifier')),
-					fromTypeUnit('type_unary_keyword', s('identifier')),
+				extractType(s('type_intersection',
+					s('identifier'),
+					s('identifier'),
 				)),
 			),
 		],
@@ -438,9 +378,9 @@ function buildTest(title: string, source: string, expected: string) {
 				f.<T | U>();
 			`,
 			makeSourceFile(
-				extractType(toType('type_union',
-					fromTypeUnit('type_union', s('identifier')),
-					fromTypeUnit('type_intersection', s('identifier')),
+				extractType(s('type_union',
+					s('identifier'),
+					s('identifier'),
 				)),
 			),
 		],
@@ -459,16 +399,25 @@ function buildTest(title: string, source: string, expected: string) {
 		// Case
 		// see #MapLiteral
 
+		ExpressionGrouped: [
+			xjs.String.dedent`
+				(a);
+			`,
+			makeSourceFile(
+				s('expression_grouped', s('identifier')),
+			),
+		],
+
 		TupleLiteral: [
 			xjs.String.dedent`
 				[1, 2, 3];
 			`,
 			makeSourceFile(
-				fromUnit('expression', s('tuple_literal',
-					fromUnit('expression', s('primitive_literal', s('integer'))),
-					fromUnit('expression', s('primitive_literal', s('integer'))),
-					fromUnit('expression', s('primitive_literal', s('integer'))),
-				)),
+				s('tuple_literal',
+					s('primitive_literal', s('integer')),
+					s('primitive_literal', s('integer')),
+					s('primitive_literal', s('integer')),
+				),
 			),
 		],
 
@@ -477,20 +426,20 @@ function buildTest(title: string, source: string, expected: string) {
 				[a= 1, b= 2, c= 3];
 			`,
 			makeSourceFile(
-				fromUnit('expression', s('record_literal',
+				s('record_literal',
 					s('property',
 						s('word', s('identifier')),
-						fromUnit('expression', s('primitive_literal', s('integer'))),
+						s('primitive_literal', s('integer')),
 					),
 					s('property',
 						s('word', s('identifier')),
-						fromUnit('expression', s('primitive_literal', s('integer'))),
+						s('primitive_literal', s('integer')),
 					),
 					s('property',
 						s('word', s('identifier')),
-						fromUnit('expression', s('primitive_literal', s('integer'))),
+						s('primitive_literal', s('integer')),
 					),
-				)),
+				),
 			),
 		],
 
@@ -499,11 +448,11 @@ function buildTest(title: string, source: string, expected: string) {
 				{1, 2, 3};
 			`,
 			makeSourceFile(
-				fromUnit('expression', s('set_literal',
-					fromUnit('expression', s('primitive_literal', s('integer'))),
-					fromUnit('expression', s('primitive_literal', s('integer'))),
-					fromUnit('expression', s('primitive_literal', s('integer'))),
-				)),
+				s('set_literal',
+					s('primitive_literal', s('integer')),
+					s('primitive_literal', s('integer')),
+					s('primitive_literal', s('integer')),
+				),
 			),
 		],
 
@@ -512,34 +461,28 @@ function buildTest(title: string, source: string, expected: string) {
 				{'1' -> 1, '2' -> 2, '3' -> 3};
 			`,
 			makeSourceFile(
-				fromUnit('expression', s('map_literal',
+				s('map_literal',
 					s('case',
-						fromUnit('expression', s('primitive_literal', s('string'))),
-						fromUnit('expression', s('primitive_literal', s('integer'))),
+						s('primitive_literal', s('string')),
+						s('primitive_literal', s('integer')),
 					),
 					s('case',
-						fromUnit('expression', s('primitive_literal', s('string'))),
-						fromUnit('expression', s('primitive_literal', s('integer'))),
+						s('primitive_literal', s('string')),
+						s('primitive_literal', s('integer')),
 					),
 					s('case',
-						fromUnit('expression', s('primitive_literal', s('string'))),
-						fromUnit('expression', s('primitive_literal', s('integer'))),
+						s('primitive_literal', s('string')),
+						s('primitive_literal', s('integer')),
 					),
-				)),
+				),
 			),
 		],
 
 		// FunctionArguments
 		// see #FunctionCall
 
-		ExpressionUnit: [
-			xjs.String.dedent`
-				(a);
-			`,
-			makeSourceFile(
-				fromUnit('expression', fromUnit('expression', s('identifier'))),
-			),
-		],
+		// ExpressionUnit
+		// see #IDENTIFIER,PrimitiveLiteral,StringTemplate,ExpressionGrouped,{Tuple,Record,Set,Map}Literal
 
 		// PropertyAccess
 		// see #ExpressionCompound
@@ -566,59 +509,59 @@ function buildTest(title: string, source: string, expected: string) {
 				Set.<T>();
 			`,
 			makeSourceFile(
-				toExpression('expression_compound',
-					fromUnit('expression_compound', s('identifier')),
+				s('expression_compound',
+					s('identifier'),
 					s('property_access', s('integer')),
 				),
-				toExpression('expression_compound',
-					fromUnit('expression_compound', s('identifier')),
+				s('expression_compound',
+					s('identifier'),
 					s('property_access', s('integer')),
 				),
-				toExpression('expression_compound',
-					fromUnit('expression_compound', s('identifier')),
+				s('expression_compound',
+					s('identifier'),
 					s('property_access', s('integer')),
 				),
-				toExpression('expression_compound',
-					fromUnit('expression_compound', s('identifier')),
+				s('expression_compound',
+					s('identifier'),
 					s('property_access', s('word', s('identifier'))),
 				),
-				toExpression('expression_compound',
-					fromUnit('expression_compound', s('identifier')),
+				s('expression_compound',
+					s('identifier'),
 					s('property_access', s('word', s('identifier'))),
 				),
-				toExpression('expression_compound',
-					fromUnit('expression_compound', s('identifier')),
+				s('expression_compound',
+					s('identifier'),
 					s('property_access', s('word', s('identifier'))),
 				),
-				toExpression('expression_compound',
-					fromUnit('expression_compound', s('identifier')),
-					s('property_access', fromUnit('expression', s('identifier'))),
+				s('expression_compound',
+					s('identifier'),
+					s('property_access', s('identifier')),
 				),
-				toExpression('expression_compound',
-					fromUnit('expression_compound', s('identifier')),
-					s('property_access', fromUnit('expression', s('identifier'))),
+				s('expression_compound',
+					s('identifier'),
+					s('property_access', s('identifier')),
 				),
-				toExpression('expression_compound',
-					fromUnit('expression_compound', s('identifier')),
-					s('property_access', fromUnit('expression', s('identifier'))),
+				s('expression_compound',
+					s('identifier'),
+					s('property_access', s('identifier')),
 				),
-				toExpression('expression_compound',
-					fromUnit('expression_compound', s('identifier')),
+				s('expression_compound',
+					s('identifier'),
 					s('function_call', s('function_arguments')),
 				),
-				toExpression('expression_compound',
-					fromUnit('expression_compound', s('identifier')),
+				s('expression_compound',
+					s('identifier'),
 					s('function_call',
 						s('function_arguments',
-							fromUnit('expression', s('tuple_literal'))
+							s('tuple_literal')
 						),
 					),
 				),
-				toExpression('expression_compound',
-					fromUnit('expression_compound', s('identifier')),
+				s('expression_compound',
+					s('identifier'),
 					s('function_call',
 						s('generic_arguments',
-							fromTypeUnit('type', s('identifier')),
+							s('identifier'),
 						),
 						s('function_arguments'),
 					),
@@ -637,17 +580,17 @@ function buildTest(title: string, source: string, expected: string) {
 				-value;
 			`,
 			makeSourceFile(
-				toExpression('expression_unary_symbol',
-					fromUnit('expression_unary_symbol', s('identifier')),
+				s('expression_unary_symbol',
+					s('identifier'),
 				),
-				toExpression('expression_unary_symbol',
-					fromUnit('expression_unary_symbol', s('identifier')),
+				s('expression_unary_symbol',
+					s('identifier'),
 				),
-				toExpression('expression_unary_symbol',
-					fromUnit('expression_unary_symbol', s('identifier')),
+				s('expression_unary_symbol',
+					s('identifier'),
 				),
-				toExpression('expression_unary_symbol',
-					fromUnit('expression_unary_symbol', s('identifier')),
+				s('expression_unary_symbol',
+					s('identifier'),
 				),
 			),
 		],
@@ -658,15 +601,15 @@ function buildTest(title: string, source: string, expected: string) {
 				a ^ b ^ c;
 			`,
 			makeSourceFile(
-				toExpression('expression_exponential',
-					fromUnit('expression_unary_symbol', s('identifier')),
-					fromUnit('expression_exponential', s('identifier')),
+				s('expression_exponential',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_exponential',
-					fromUnit('expression_unary_symbol', s('identifier')),
+				s('expression_exponential',
+					s('identifier'),
 					s('expression_exponential',
-						fromUnit('expression_unary_symbol', s('identifier')),
-						fromUnit('expression_exponential', s('identifier')),
+						s('identifier'),
+						s('identifier'),
 					),
 				),
 			),
@@ -679,20 +622,20 @@ function buildTest(title: string, source: string, expected: string) {
 				a * b * c;
 			`,
 			makeSourceFile(
-				toExpression('expression_multiplicative',
-					fromUnit('expression_multiplicative', s('identifier')),
-					fromUnit('expression_exponential', s('identifier')),
+				s('expression_multiplicative',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_multiplicative',
-					fromUnit('expression_multiplicative', s('identifier')),
-					fromUnit('expression_exponential', s('identifier')),
+				s('expression_multiplicative',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_multiplicative',
+				s('expression_multiplicative',
 					s('expression_multiplicative',
-						fromUnit('expression_multiplicative', s('identifier')),
-						fromUnit('expression_exponential', s('identifier')),
+						s('identifier'),
+						s('identifier'),
 					),
-					fromUnit('expression_exponential', s('identifier')),
+					s('identifier'),
 				),
 			),
 		],
@@ -703,13 +646,13 @@ function buildTest(title: string, source: string, expected: string) {
 				a - b;
 			`,
 			makeSourceFile(
-				toExpression('expression_additive',
-					fromUnit('expression_additive', s('identifier')),
-					fromUnit('expression_multiplicative', s('identifier')),
+				s('expression_additive',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_additive',
-					fromUnit('expression_additive', s('identifier')),
-					fromUnit('expression_multiplicative', s('identifier')),
+				s('expression_additive',
+					s('identifier'),
+					s('identifier'),
 				),
 			),
 		],
@@ -726,37 +669,37 @@ function buildTest(title: string, source: string, expected: string) {
 				a isnt b;
 			`,
 			makeSourceFile(
-				toExpression('expression_comparative',
-					fromUnit('expression_comparative', s('identifier')),
-					fromUnit('expression_additive', s('identifier')),
+				s('expression_comparative',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_comparative',
-					fromUnit('expression_comparative', s('identifier')),
-					fromUnit('expression_additive', s('identifier')),
+				s('expression_comparative',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_comparative',
-					fromUnit('expression_comparative', s('identifier')),
-					fromUnit('expression_additive', s('identifier')),
+				s('expression_comparative',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_comparative',
-					fromUnit('expression_comparative', s('identifier')),
-					fromUnit('expression_additive', s('identifier')),
+				s('expression_comparative',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_comparative',
-					fromUnit('expression_comparative', s('identifier')),
-					fromUnit('expression_additive', s('identifier')),
+				s('expression_comparative',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_comparative',
-					fromUnit('expression_comparative', s('identifier')),
-					fromUnit('expression_additive', s('identifier')),
+				s('expression_comparative',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_comparative',
-					fromUnit('expression_comparative', s('identifier')),
-					fromUnit('expression_additive', s('identifier')),
+				s('expression_comparative',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_comparative',
-					fromUnit('expression_comparative', s('identifier')),
-					fromUnit('expression_additive', s('identifier')),
+				s('expression_comparative',
+					s('identifier'),
+					s('identifier'),
 				),
 			),
 		],
@@ -769,21 +712,21 @@ function buildTest(title: string, source: string, expected: string) {
 				a !== b;
 			`,
 			makeSourceFile(
-				toExpression('expression_equality',
-					fromUnit('expression_equality', s('identifier')),
-					fromUnit('expression_comparative', s('identifier')),
+				s('expression_equality',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_equality',
-					fromUnit('expression_equality', s('identifier')),
-					fromUnit('expression_comparative', s('identifier')),
+				s('expression_equality',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_equality',
-					fromUnit('expression_equality', s('identifier')),
-					fromUnit('expression_comparative', s('identifier')),
+				s('expression_equality',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_equality',
-					fromUnit('expression_equality', s('identifier')),
-					fromUnit('expression_comparative', s('identifier')),
+				s('expression_equality',
+					s('identifier'),
+					s('identifier'),
 				),
 			),
 		],
@@ -794,13 +737,13 @@ function buildTest(title: string, source: string, expected: string) {
 				a !& b;
 			`,
 			makeSourceFile(
-				toExpression('expression_conjunctive',
-					fromUnit('expression_conjunctive', s('identifier')),
-					fromUnit('expression_equality', s('identifier')),
+				s('expression_conjunctive',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_conjunctive',
-					fromUnit('expression_conjunctive', s('identifier')),
-					fromUnit('expression_equality', s('identifier')),
+				s('expression_conjunctive',
+					s('identifier'),
+					s('identifier'),
 				),
 			),
 		],
@@ -811,13 +754,13 @@ function buildTest(title: string, source: string, expected: string) {
 				a !| b;
 			`,
 			makeSourceFile(
-				toExpression('expression_disjunctive',
-					fromUnit('expression_disjunctive', s('identifier')),
-					fromUnit('expression_conjunctive', s('identifier')),
+				s('expression_disjunctive',
+					s('identifier'),
+					s('identifier'),
 				),
-				toExpression('expression_disjunctive',
-					fromUnit('expression_disjunctive', s('identifier')),
-					fromUnit('expression_conjunctive', s('identifier')),
+				s('expression_disjunctive',
+					s('identifier'),
+					s('identifier'),
 				),
 			),
 		],
@@ -827,12 +770,10 @@ function buildTest(title: string, source: string, expected: string) {
 				if a then b else c;
 			`,
 			makeSourceFile(
-				s('expression',
-					s('expression_conditional',
-						fromUnit('expression', s('identifier')),
-						fromUnit('expression', s('identifier')),
-						fromUnit('expression', s('identifier')),
-					),
+				s('expression_conditional',
+					s('identifier'),
+					s('identifier'),
+					s('identifier'),
 				),
 			),
 		],
@@ -847,16 +788,16 @@ function buildTest(title: string, source: string, expected: string) {
 				type T = A | B & C;
 			`,
 			s('source_file',
-				s('statement', s('declaration', s('declaration_type',
+				s('declaration_type',
 					s('identifier'),
-					toType('type_union',
-						fromTypeUnit('type_union', s('identifier')),
+					s('type_union',
+						s('identifier'),
 						s('type_intersection',
-							fromTypeUnit('type_intersection', s('identifier')),
-							fromTypeUnit('type_unary_keyword', s('identifier')),
+							s('identifier'),
+							s('identifier'),
 						),
 					),
-				))),
+				),
 			),
 		],
 
@@ -866,33 +807,40 @@ function buildTest(title: string, source: string, expected: string) {
 				let unfixed u: A | B & C = v;
 			`,
 			s('source_file',
-				s('statement', s('declaration', s('declaration_variable',
+				s('declaration_variable',
 					s('identifier'),
-					fromTypeUnit('type', s('identifier')),
-					toExpression('expression_additive',
-						fromUnit('expression_additive', s('identifier')),
+					s('identifier'),
+					s('expression_additive',
+						s('identifier'),
 						s('expression_multiplicative',
-							fromUnit('expression_multiplicative', s('identifier')),
-							fromUnit('expression_exponential', s('identifier')),
+							s('identifier'),
+							s('identifier'),
 						),
 					),
-				))),
-				s('statement', s('declaration', s('declaration_variable',
+				),
+				s('declaration_variable',
 					s('identifier'),
-					toType('type_union',
-						fromTypeUnit('type_union', s('identifier')),
+					s('type_union',
+						s('identifier'),
 						s('type_intersection',
-							fromTypeUnit('type_intersection', s('identifier')),
-							fromTypeUnit('type_unary_keyword', s('identifier')),
+							s('identifier'),
+							s('identifier'),
 						),
 					),
-					fromUnit('expression', s('identifier')),
-				))),
+					s('identifier'),
+				),
 			),
 		],
 
 		// Declaration
 		// see #Declaration{Type,Variable}
+
+		StatementExpression: [
+			xjs.String.dedent`
+				my_var;
+			`,
+			s('source_file', s('statement_expression', s('identifier'))),
+		],
 
 		StatementAssignment: [
 			xjs.String.dedent`
@@ -902,42 +850,38 @@ function buildTest(title: string, source: string, expected: string) {
 				list.[index] = d;
 			`,
 			s('source_file',
-				s('statement', s('statement_assignment',
+				s('statement_assignment',
 					s('assignee',
 						s('identifier'),
 					),
-					fromUnit('expression', s('identifier')),
-				)),
-				s('statement', s('statement_assignment',
+					s('identifier'),
+				),
+				s('statement_assignment',
 					s('assignee',
-						fromUnit('expression_compound', s('identifier')),
+						s('identifier'),
 						s('property_assign', s('integer')),
 					),
-					fromUnit('expression', s('identifier')),
-				)),
-				s('statement', s('statement_assignment',
+					s('identifier'),
+				),
+				s('statement_assignment',
 					s('assignee',
-						fromUnit('expression_compound', s('identifier')),
+						s('identifier'),
 						s('property_assign', s('word', s('identifier'))),
 					),
-					fromUnit('expression', s('identifier')),
-				)),
-				s('statement', s('statement_assignment',
+					s('identifier'),
+				),
+				s('statement_assignment',
 					s('assignee',
-						fromUnit('expression_compound', s('identifier')),
-						s('property_assign', fromUnit('expression', s('identifier'))),
+						s('identifier'),
+						s('property_assign', s('identifier')),
 					),
-					fromUnit('expression', s('identifier')),
-				)),
+					s('identifier'),
+				),
 			),
 		],
 
-		Statement: [
-			xjs.String.dedent`
-				;
-			`,
-			s('source_file', s('statement')),
-		],
+		// Statement
+		// see #{Declaration,Statement{Expression,Assignment}}
 	})
 		.map(([title, [source, expected]]) => buildTest(title, source, expected))
 		.filter((test) => !!test)

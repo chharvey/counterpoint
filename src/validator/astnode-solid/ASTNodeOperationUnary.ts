@@ -12,6 +12,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
+	SyntaxNodeSupertype,
 	Operator,
 	ValidOperatorUnary,
 } from './package.js';
@@ -27,7 +28,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return expression;
 	}
 	constructor(
-		start_node: ParseNode,
+		start_node: ParseNode | SyntaxNodeSupertype<'expression'>,
 		readonly operator: ValidOperatorUnary,
 		readonly operand: ASTNodeExpression,
 	) {

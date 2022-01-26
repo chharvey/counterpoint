@@ -128,6 +128,11 @@ export class Parser<GoalNodeType extends ParseNode> {
 				throw new Error(`Reduce-Reduce Conflict:\n${ reductions.map((r) => r.toString()).join('\n') }`);
 			};
 		};
+		console.error(
+			`Expected:`,
+			new Set([...curr_state].flatMap((config) => [...this.grammar.first(config.after[0])])),
+		);
+		// TODO: ParseError01 should take an `expected` argument
 		throw new ParseError01(this.lookahead);
 	}
 
@@ -191,10 +196,10 @@ export class Parser<GoalNodeType extends ParseNode> {
 	 * @returns an array containing Token–Configuration pairs represented as strings
 	 * @final
 	 */
-	viewStack(): [string, Set<string>][] {
-		return this.stack.map(([symb, state]) => [
-			symb.serialize(),
-			new Set([...state].map((e) => e.toString())),
-		]);
+	viewStack(): {stack: string[], state: Set<string>} {
+		return {
+			stack: this.stack.map(([symb]) => symb.serialize()),
+			state: new Set((this.stack.length) ? [...this.stack[this.stack.length - 1][1]].map((e) => e.toString()) : null),
+		};
 	}
 }

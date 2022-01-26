@@ -21,14 +21,17 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 	</thead>
 	<tbody>
 		<tr>
-			<th rowspan="2">1</th>
-			<td rowspan="2">Grouping</td>
-			<td rowspan="2">unary wrap</td>
-			<td rowspan="2">inner-to-outer</td>
+			<th rowspan="3">1</th>
+			<td rowspan="3">Grouping</td>
+			<td rowspan="3">unary wrap</td>
+			<td rowspan="3">inner-to-outer</td>
 			<td><code>( … )</code></td>
 		</tr>
 		<tr>
 			<td><code>[ … ]</code></td>
+		</tr>
+		<tr>
+			<td><code>{ … }</code></td>
 		</tr>
 		<tr>
 			<th rowspan="6">2</th>
@@ -209,6 +212,10 @@ or *right-to-left* `a + (b + c)`, the output remains the same.
 Operations that are associative are indicated as so in their respective sections below.
 
 
+### Grouping
+Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
+
+
 ### Property Access
 ```
 <obj> `.` int-literal
@@ -228,12 +235,12 @@ The object it operates on is called the **binding object** and
 the property it accesses is called the **bound property** (or index, field, member, etc.).
 There are two flavors of the operator: literal access and computed access.
 
-Literal access requires a literal (integer or word) and can be used on tuples, lists, records, and hashes.
+Literal access requires a literal (integer or word) and can be used to access a literal bound property.
 Tuples/lists take integer literal properties and records/hashes take word (key) properties.
 For example: `tuple.3` and `record.prop`.
 
-Computed access can be used on tuples and lists as well as on dynamic data types
-such as sets and maps, e.g., `map.[expr]`.
+Computed access must be used when the bound property name is computed,
+such as an operation of expressions, e.g., `map.[expr]`.
 The expression in the brackets evaluates to an item index, element, or case antecedent
 of the binding object and must be of the correct type.
 
@@ -315,7 +322,7 @@ or if it’s an empty string or empty collection (such as an array or set).
 |                | `0`            | all integers    |
 |                | `0.0`, `-0.0`  | all floats      |
 |                | `''`           | all strings     |
-|                | `[]`           | all collections |
+|                | `[]`, `{}`     | all collections |
 |                |                | any other value |
 
 
@@ -651,14 +658,17 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 	</thead>
 	<tbody>
 		<tr>
-			<th rowspan="2">1</th>
-			<td rowspan="2">Grouping</td>
-			<td rowspan="2">unary wrap</td>
-			<td rowspan="2">inner-to-outer</td>
+			<th rowspan="3">1</th>
+			<td rowspan="3">Grouping</td>
+			<td rowspan="3">unary wrap</td>
+			<td rowspan="3">inner-to-outer</td>
 			<td><code>( … )</code></td>
 		</tr>
 		<tr>
 			<td><code>[ … ]</code></td>
+		</tr>
+		<tr>
+			<td><code>{ … }</code></td>
 		</tr>
 		<tr>
 			<th>2</th>
@@ -694,6 +704,10 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 	</tbody>
 </table>
+
+
+### Grouping
+Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
 
 
 ### Type Property Access

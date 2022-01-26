@@ -1,4 +1,4 @@
-# Built-Ins
+# Intrinsics
 This chapter describes the objects built in to the standard “core” Solid library.
 
 
