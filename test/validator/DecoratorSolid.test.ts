@@ -520,14 +520,14 @@ describe('DecoratorSolid', () => {
 				/*
 					<Property>
 						<Key source="fontSize"/>
-						<Operation source="1. + 0.25">...</Operation>
+						<Operation source="1.0 + 0.25">...</Operation>
 					</Property>
 				*/
-				const property = DECORATOR_SOLID.decorate(h.propertyFromString(`fontSize= 1. + 0.25`));
+				const property = DECORATOR_SOLID.decorate(h.propertyFromString(`fontSize= 1.0 + 0.25`));
 				assert.ok(property instanceof AST.ASTNodeProperty); // FIXME: `AST.ASTNodeProperty` is assignable to `TemplatePartialType`, so `Decorator.decorate` overlads get confused
 				assert.deepStrictEqual(
 					[property.key.source, property.val.source],
-					[`fontSize`,          `1. + 0.25`],
+					[`fontSize`,          `1.0 + 0.25`],
 				);
 			});
 		});
@@ -976,7 +976,24 @@ describe('DecoratorSolid', () => {
 			})
 		})
 
-		context('ExpressionExponential ::= ExpressionUnarySymbol ("^" ExpressionExponential)?', () => {
+		context('ExpressionClaim ::= "<" Type ">" ExpressionClaim', () => {
+			it('makes an ASTNodeClaim.', () => {
+				/*
+					<Claim>
+						<TypeConstant source="float"/>
+						<Constant source="3"/>
+					</Claim>
+				*/
+				const claim: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.claimExpressionFromSource(`<float>3`));
+				assert.ok(claim instanceof AST.ASTNodeClaim);
+				assert.ok(claim.claimed_type instanceof AST.ASTNodeTypeConstant);
+				assert.ok(claim.operand      instanceof AST.ASTNodeConstant);
+				assert.strictEqual(claim.claimed_type.source, `float`);
+				assert.strictEqual(claim.operand.source,      `3`);
+			});
+		});
+
+		context('ExpressionExponential ::= ExpressionClaim ("^" ExpressionExponential)?', () => {
 			it('makes an ASTNodeOperationBinary.', () => {
 				/*
 					<Operation operator=EXP>

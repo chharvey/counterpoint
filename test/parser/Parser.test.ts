@@ -241,26 +241,34 @@ describe('ParserSolid', () => {
 			})
 		})
 
-		specify('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
-			[
-				`A`,
-				`[A, B]`,
-				`[a: A, b: B]`,
-				`[:A]`,
-				`{A -> B}`,
-				`(A?)`,
-				`(A!)`,
-				`(A[])`,
-				`(A[3])`,
-				`(A{})`,
-				`(A & B)`,
-				`(A | B)`,
-			].flatMap((base) => [
-				`.1`,
-				`.b`,
-				`.<X, Y>`,
-			].map((dot) => `${ base }${ dot }`)).forEach((src) => {
-				assert.doesNotThrow(() => h.compoundTypeFromString(src), src);
+		describe('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
+			it('ok.', () => {
+				[
+					`A`,
+					`[A, B]`,
+					`[a: A, b: B]`,
+					`[:A]`,
+					`{A -> B}`,
+					`(A?)`,
+					`(A!)`,
+					`(A[])`,
+					`(A[3])`,
+					`(A{})`,
+					`(A & B)`,
+					`(A | B)`,
+				].flatMap((base) => [
+					`.1`,
+					`.b`,
+					`.<X, Y>`,
+				].map((dot) => `${ base }${ dot }`)).forEach((src) => {
+					assert.doesNotThrow(() => h.compoundTypeFromString(src), src);
+				});
+			});
+			it('chained integer access is not lexed as a float.', () => {
+				return assert.doesNotThrow(() => h.compoundTypeFromString(`A.1.b`), `A.1.b`);
+			});
+			it('integers chained side-by-side parsed as float.', () => {
+				return assert.throws(() => h.compoundTypeFromString(`A.1.2`), ParseError01);
 			});
 		});
 
@@ -568,25 +576,33 @@ describe('ParserSolid', () => {
 			})
 		})
 
-		specify('ExpressionCompound ::= ExpressionCompound (PropertyAccess | FunctionCall)', () => {
-			[
-				`a`,
-				`[a, b]`,
-				`[x= a, y= b]`,
-				`{a -> b}`,
-				`(!a)`,
-				`(?a)`,
-				`(+a)`,
-				`(-a)`,
-				`(a ^ b)`,
-				`(a || b)`,
-			].flatMap((base) => [
-				`.1`,
-				`.x`,
-				`.(x, y)`,
-				`.<X, Y>(x, y)`,
-			].map((dot) => `${ base }${ dot }`)).forEach((src) => {
-				assert.doesNotThrow(() => h.compoundExpressionFromSource(src), src);
+		describe('ExpressionCompound ::= ExpressionCompound (PropertyAccess | FunctionCall)', () => {
+			it('ok.', () => {
+				[
+					`a`,
+					`[a, b]`,
+					`[x= a, y= b]`,
+					`{a -> b}`,
+					`(!a)`,
+					`(?a)`,
+					`(+a)`,
+					`(-a)`,
+					`(a ^ b)`,
+					`(a || b)`,
+				].flatMap((base) => [
+					`.1`,
+					`.x`,
+					`.(x, y)`,
+					`.<X, Y>(x, y)`,
+				].map((dot) => `${ base }${ dot }`)).forEach((src) => {
+					assert.doesNotThrow(() => h.compoundExpressionFromSource(src), src);
+				});
+			});
+			it('chained integer access is not lexed as a float.', () => {
+				return assert.doesNotThrow(() => h.compoundExpressionFromSource(`a.1.b`), `a.1.b`);
+			});
+			it('integers chained side-by-side parsed as float.', () => {
+				return assert.throws(() => h.compoundExpressionFromSource(`a.1.2`), ParseError01);
 			});
 		});
 
@@ -623,18 +639,38 @@ describe('ParserSolid', () => {
 			});
 		});
 
-		context('ExpressionExponential ::=  ExpressionUnarySymbol "^" ExpressionExponential', () => {
+		specify('ExpressionClaim ::= "<" Type ">" ExpressionClaim', () => {
+			/*
+				<ExpressionClaim>
+					<PUNCTUATOR>&lt;</PUNCTUATOR>
+					<Type source="float">...</Type>
+					<PUNCTUATOR>&gt;</PUNCTUATOR>
+					<ExpressionClaim source="3">...</ExpressionClaim>
+				</ExpressionClaim>
+			*/
+			const expression_claim: PARSENODE_SOLID.ParseNodeExpressionClaim = h.claimExpressionFromSource(`<float>3`);
+			assert_arrayLength(expression_claim.children, 4, 'claim expression should have 4 children');
+			const [ang_opn, typ, ang_cls, expr]: readonly [Token, PARSENODE_SOLID.ParseNodeType, Token, PARSENODE_SOLID.ParseNodeExpressionClaim] = expression_claim.children;
+			assert.ok(ang_opn instanceof TOKEN.TokenPunctuator);
+			assert.ok(ang_cls instanceof TOKEN.TokenPunctuator);
+			assert.deepStrictEqual(
+				[ang_opn.source, typ.source, ang_cls.source, expr.source],
+				[Punctuator.LT,  'float',    Punctuator.GT,  '3'],
+			);
+		});
+
+		context('ExpressionExponential ::= ExpressionClaim "^" ExpressionExponential', () => {
 			it('makes a ParseNodeExpressionExponential node.', () => {
 				/*
 					<ExpressionExponential>
-						<ExpressionUnarySymbol source="2">...</ExpressionUnarySymbol>
+						<ExpressionClaim source="2">...</ExpressionClaim>
 						<PUNCTUATOR>^</PUNCTUATOR>
 						<ExpressionExponential source="-3">...</ExpressionExponential>
 					</ExpressionExponential>
 				*/
 				const expression_exp: PARSENODE_SOLID.ParseNodeExpressionExponential = h.exponentialExpressionFromSource(`2 ^ -3`);
 				assert_arrayLength(expression_exp.children, 3, 'exponential expression should have 3 children')
-				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionUnarySymbol, Token, PARSENODE_SOLID.ParseNodeExpressionExponential] = expression_exp.children;
+				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionClaim, Token, PARSENODE_SOLID.ParseNodeExpressionExponential] = expression_exp.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],

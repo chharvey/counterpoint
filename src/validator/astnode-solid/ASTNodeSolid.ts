@@ -3,6 +3,7 @@ import {
 	TypeError03,
 	Token,
 	ParseNode,
+	forEachAggregated,
 	Validator,
 	ASTNode,
 } from './package.js';
@@ -10,7 +11,6 @@ import {
 	ASTNodeExpression,
 	ASTNodeCollectionLiteral,
 } from './index.js';
-import {forEachAggregated} from './utils-private.js';
 
 
 

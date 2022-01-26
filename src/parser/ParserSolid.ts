@@ -530,12 +530,22 @@ class ProductionExpressionUnarySymbol extends Production {
 	}
 }
 
+class ProductionExpressionClaim extends Production {
+	static readonly instance: ProductionExpressionClaim = new ProductionExpressionClaim();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionUnarySymbol.instance],
+			['<', ProductionType.instance, '>', ProductionExpressionClaim.instance],
+		];
+	}
+}
+
 class ProductionExpressionExponential extends Production {
 	static readonly instance: ProductionExpressionExponential = new ProductionExpressionExponential();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionUnarySymbol.instance],
-			[ProductionExpressionUnarySymbol.instance, '^', ProductionExpressionExponential.instance],
+			[ProductionExpressionClaim.instance],
+			[ProductionExpressionClaim.instance, '^', ProductionExpressionExponential.instance],
 		];
 	}
 }
@@ -1104,10 +1114,17 @@ export class ParseNodeExpressionUnarySymbol extends ParseNode {
 	;
 }
 
-export class ParseNodeExpressionExponential extends ParseNode {
+export class ParseNodeExpressionClaim extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpressionUnarySymbol]
-		| readonly [ParseNodeExpressionUnarySymbol, Token, ParseNodeExpressionExponential]
+		| readonly [Token, ParseNodeType, Token, ParseNodeExpressionClaim]
+	;
+}
+
+export class ParseNodeExpressionExponential extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpressionClaim]
+		| readonly [ParseNodeExpressionClaim, Token, ParseNodeExpressionExponential]
 	;
 }
 
@@ -1288,6 +1305,7 @@ export const GRAMMAR: Grammar = new Grammar([
 	ProductionExpressionCompound.instance,
 	ProductionAssignee.instance,
 	ProductionExpressionUnarySymbol.instance,
+	ProductionExpressionClaim.instance,
 	ProductionExpressionExponential.instance,
 	ProductionExpressionMultiplicative.instance,
 	ProductionExpressionAdditive.instance,
@@ -1361,6 +1379,7 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 		[ProductionExpressionCompound.instance, ParseNodeExpressionCompound],
 		[ProductionAssignee.instance, ParseNodeAssignee],
 		[ProductionExpressionUnarySymbol.instance, ParseNodeExpressionUnarySymbol],
+		[ProductionExpressionClaim.instance, ParseNodeExpressionClaim],
 		[ProductionExpressionExponential.instance, ParseNodeExpressionExponential],
 		[ProductionExpressionMultiplicative.instance, ParseNodeExpressionMultiplicative],
 		[ProductionExpressionAdditive.instance, ParseNodeExpressionAdditive],

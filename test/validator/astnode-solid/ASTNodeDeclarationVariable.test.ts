@@ -20,6 +20,7 @@ import {
 } from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
+	CONFIG_COERCION_OFF,
 	instructionConstInt,
 	instructionConstFloat,
 	typeConstInt,
@@ -171,13 +172,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('with int coersion off, throws when assigning int to float.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
-			`, {
-				...CONFIG_DEFAULT,
-				compilerOptions: {
-					...CONFIG_DEFAULT.compilerOptions,
-					intCoercion: false,
-				},
-			}).typeCheck(), TypeError03);
+			`, CONFIG_COERCION_OFF).typeCheck(), TypeError03);
 		})
 		it('with constant folding on, only sets `SymbolStructure#value` if type is immutable and variable is fixed.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde);

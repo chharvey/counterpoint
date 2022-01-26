@@ -127,6 +127,7 @@ class DecoratorSolid extends Decorator {
 		| PARSENODE.ParseNodeExpressionUnit
 		| PARSENODE.ParseNodeExpressionCompound
 		| PARSENODE.ParseNodeExpressionUnarySymbol
+		| PARSENODE.ParseNodeExpressionClaim
 		| PARSENODE.ParseNodeExpressionExponential
 		| PARSENODE.ParseNodeExpressionMultiplicative
 		| PARSENODE.ParseNodeExpressionAdditive
@@ -390,6 +391,11 @@ class DecoratorSolid extends Decorator {
 						DecoratorSolid.OPERATORS_UNARY.get(node.children[0].source as Punctuator) as ValidOperatorUnary,
 						this.decorate(node.children[1]),
 					);
+
+		} else if (node instanceof PARSENODE.ParseNodeExpressionClaim) {
+			return (node.children.length === 1)
+				? this.decorate(node.children[0])
+				: new AST.ASTNodeClaim(node, this.decorate(node.children[1]), this.decorate(node.children[3]));
 
 		} else if (
 			node instanceof PARSENODE.ParseNodeExpressionExponential    ||
