@@ -31,7 +31,7 @@
     "dist": "tsc",
     "postdist": "node ./tasks/build-parser.js",
     "test": "mocha -r ts-node/esm src/index.ts --loader='ts-node/esm' --timeout 10000 './test/**/*.test.ts'",
-    "prebuild": "npm run build -w tree-sitter-counterpoint && npm ci",
+    "prebuild": "npm run build -w tree-sitter-counterpoint && npm rebuild",
     "build": "rm -rf ./build/ && npm run dist && npm run test"
   },
   "dependencies": {
