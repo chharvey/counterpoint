@@ -18,6 +18,23 @@ export const CONFIG_FOLDING_OFF: SolidConfig = {
 	},
 };
 
+export const CONFIG_COERCION_OFF: SolidConfig = {
+	...CONFIG_DEFAULT,
+	compilerOptions: {
+		...CONFIG_DEFAULT.compilerOptions,
+		intCoercion: false,
+	},
+};
+
+export const CONFIG_FOLDING_COERCION_OFF: SolidConfig = {
+	...CONFIG_DEFAULT,
+	compilerOptions: {
+		...CONFIG_DEFAULT.compilerOptions,
+		constantFolding: false,
+		intCoercion:     false,
+	},
+};
+
 
 
 export function typeConstInt(x: bigint): SolidTypeUnit {

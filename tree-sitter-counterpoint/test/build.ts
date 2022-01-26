@@ -595,6 +595,18 @@ function buildTest(title: string, source: string, expected: string) {
 			),
 		],
 
+		ExpressionClaim: [
+			xjs.String.dedent`
+				<T>value;
+			`,
+			makeSourceFile(
+				s('expression_claim',
+					s('identifier'),
+					s('identifier'),
+				),
+			),
+		],
+
 		ExpressionExponential: [
 			xjs.String.dedent`
 				a ^ b;

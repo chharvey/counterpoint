@@ -137,6 +137,7 @@ class DecoratorSolid extends Decorator {
 		| PARSENODE.ParseNodeExpressionUnit
 		| PARSENODE.ParseNodeExpressionCompound
 		| PARSENODE.ParseNodeExpressionUnarySymbol
+		| PARSENODE.ParseNodeExpressionClaim
 		| PARSENODE.ParseNodeExpressionExponential
 		| PARSENODE.ParseNodeExpressionMultiplicative
 		| PARSENODE.ParseNodeExpressionAdditive
@@ -402,6 +403,11 @@ class DecoratorSolid extends Decorator {
 						this.decorate(node.children[1]),
 					);
 
+		} else if (node instanceof PARSENODE.ParseNodeExpressionClaim) {
+			return (node.children.length === 1)
+				? this.decorate(node.children[0])
+				: new AST.ASTNodeClaim(node, this.decorate(node.children[1]), this.decorate(node.children[3]));
+
 		} else if (
 			node instanceof PARSENODE.ParseNodeExpressionExponential    ||
 			node instanceof PARSENODE.ParseNodeExpressionMultiplicative ||
@@ -578,6 +584,7 @@ class DecoratorSolid extends Decorator {
 	decorateTS(node: SyntaxNodeType<'expression_compound'>):                     AST.ASTNodeAccess | AST.ASTNodeCall;
 	decorateTS(node: SyntaxNodeType<'assignee'>):                                AST.ASTNodeVariable | AST.ASTNodeAccess;
 	decorateTS(node: SyntaxNodeType<'expression_unary_symbol'>):                 AST.ASTNodeExpression | AST.ASTNodeOperationUnary;
+	decorateTS(node: SyntaxNodeType<'expression_claim'>):                        AST.ASTNodeClaim;
 	decorateTS(node: SyntaxNodeType<'expression_exponential'>):                  AST.ASTNodeOperationBinaryArithmetic;
 	decorateTS(node: SyntaxNodeType<'expression_multiplicative'>):               AST.ASTNodeOperationBinaryArithmetic;
 	decorateTS(node: SyntaxNodeType<'expression_additive'>):                     AST.ASTNodeOperationBinaryArithmetic;
@@ -846,6 +853,12 @@ class DecoratorSolid extends Decorator {
 					this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>),
 				),
 
+			expression_claim: (node) => new AST.ASTNodeClaim(
+				node as SyntaxNodeType<'expression_claim'>,
+				this.decorateTypeNode (node.children[1] as SyntaxNodeSupertype<'type'>),
+				this.decorateTS       (node.children[3] as SyntaxNodeSupertype<'expression'>),
+			),
+
 			expression_exponential: (node) => new AST.ASTNodeOperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_exponential'>,
 				DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
@@ -1014,13 +1027,9 @@ class DecoratorSolid extends Decorator {
 			declaration_variable: (node) => new AST.ASTNodeDeclarationVariable(
 				node as SyntaxNodeType<'declaration_variable'>,
 				node.children.length === 8,
-				new AST.ASTNodeVariable(((node.children.length === 7) ? node.children[1] : node.children[2]) as SyntaxNodeType<'identifier'>),
-				((typenode: SyntaxNodeSupertype<'type'>): AST.ASTNodeType => (
-					(isSyntaxNodeType(typenode, 'identifier'))        ? new AST.ASTNodeTypeAlias    (typenode) :
-					(isSyntaxNodeType(typenode, 'primitive_literal')) ? new AST.ASTNodeTypeConstant (typenode) :
-					this.decorateTS(typenode)
-				))(((node.children.length === 7) ? node.children[3] : node.children[4]) as SyntaxNodeSupertype<'type'>),
-				this.decorateTS(((node.children.length === 7) ? node.children[5] : node.children[6]) as SyntaxNodeSupertype<'expression'>),
+				new AST.ASTNodeVariable (((node.children.length === 7) ? node.children[1] : node.children[2]) as SyntaxNodeType<'identifier'>),
+				this.decorateTypeNode   (((node.children.length === 7) ? node.children[3] : node.children[4]) as SyntaxNodeSupertype<'type'>),
+				this.decorateTS         (((node.children.length === 7) ? node.children[5] : node.children[6]) as SyntaxNodeSupertype<'expression'>),
 			),
 
 			statement_expression: (node) => new AST.ASTNodeStatementExpression(
@@ -1036,6 +1045,14 @@ class DecoratorSolid extends Decorator {
 		})).get(node.type)?.(node) || (() => {
 			throw new TypeError(`Could not find type of parse node \`${ node.type }\`.`);
 		})();
+	}
+
+	private decorateTypeNode(typenode: SyntaxNodeSupertype<'type'>): AST.ASTNodeType {
+		return (
+			(isSyntaxNodeType(typenode, 'identifier'))        ? new AST.ASTNodeTypeAlias    (typenode) :
+			(isSyntaxNodeType(typenode, 'primitive_literal')) ? new AST.ASTNodeTypeConstant (typenode) :
+			this.decorateTS(typenode)
+		);
 	}
 }
 

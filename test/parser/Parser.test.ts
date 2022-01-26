@@ -639,18 +639,38 @@ describe('ParserSolid', () => {
 			});
 		});
 
-		context('ExpressionExponential ::=  ExpressionUnarySymbol "^" ExpressionExponential', () => {
+		specify('ExpressionClaim ::= "<" Type ">" ExpressionClaim', () => {
+			/*
+				<ExpressionClaim>
+					<PUNCTUATOR>&lt;</PUNCTUATOR>
+					<Type source="float">...</Type>
+					<PUNCTUATOR>&gt;</PUNCTUATOR>
+					<ExpressionClaim source="3">...</ExpressionClaim>
+				</ExpressionClaim>
+			*/
+			const expression_claim: PARSENODE_SOLID.ParseNodeExpressionClaim = h.claimExpressionFromSource(`<float>3;`);
+			assert_arrayLength(expression_claim.children, 4, 'claim expression should have 4 children');
+			const [ang_opn, typ, ang_cls, expr]: readonly [Token, PARSENODE_SOLID.ParseNodeType, Token, PARSENODE_SOLID.ParseNodeExpressionClaim] = expression_claim.children;
+			assert.ok(ang_opn instanceof TOKEN.TokenPunctuator);
+			assert.ok(ang_cls instanceof TOKEN.TokenPunctuator);
+			assert.deepStrictEqual(
+				[ang_opn.source, typ.source, ang_cls.source, expr.source],
+				[Punctuator.LT,  'float',    Punctuator.GT,  '3'],
+			);
+		});
+
+		context('ExpressionExponential ::= ExpressionClaim "^" ExpressionExponential', () => {
 			it('makes a ParseNodeExpressionExponential node.', () => {
 				/*
 					<ExpressionExponential>
-						<ExpressionUnarySymbol source="2">...</ExpressionUnarySymbol>
+						<ExpressionClaim source="2">...</ExpressionClaim>
 						<PUNCTUATOR>^</PUNCTUATOR>
 						<ExpressionExponential source="-3">...</ExpressionExponential>
 					</ExpressionExponential>
 				*/
 				const expression_exp: PARSENODE_SOLID.ParseNodeExpressionExponential = h.exponentialExpressionFromSource(`2 ^ -3;`);
 				assert_arrayLength(expression_exp.children, 3, 'exponential expression should have 3 children')
-				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionUnarySymbol, Token, PARSENODE_SOLID.ParseNodeExpressionExponential] = expression_exp.children;
+				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionClaim, Token, PARSENODE_SOLID.ParseNodeExpressionExponential] = expression_exp.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
