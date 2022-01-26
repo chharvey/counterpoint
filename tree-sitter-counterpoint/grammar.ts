@@ -229,7 +229,7 @@ module.exports = grammar({
 	name: 'counterpoint',
 
 	rules: {
-		source_file: $ => repeat($._statement),
+		source_file: $ => optional($.block),
 
 
 
@@ -473,6 +473,8 @@ module.exports = grammar({
 			$.statement_expression,
 			$.statement_assignment,
 		),
+
+		block: $ => seq('{', repeat1($._statement), '}'),
 	},
 
 	extras: _$ => [

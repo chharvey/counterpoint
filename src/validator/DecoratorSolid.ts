@@ -154,6 +154,7 @@ class DecoratorSolid extends Decorator {
 	override decorate(node: PARSENODE.ParseNodeStatementExpression):   AST.ASTNodeStatementExpression;
 	override decorate(node: PARSENODE.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
 	override decorate(node: PARSENODE.ParseNodeStatement):             AST.ASTNodeStatement;
+	override decorate(node: PARSENODE.ParseNodeBlock):                 AST.ASTNodeBlock;
 	override decorate(node: PARSENODE.ParseNodeGoal, config?: SolidConfig): AST.ASTNodeGoal;
 	override decorate(node: ParseNode): DecoratorReturnType;
 	override decorate(node: ParseNode, config: SolidConfig = CONFIG_DEFAULT): DecoratorReturnType {
@@ -543,10 +544,16 @@ class DecoratorSolid extends Decorator {
 		} else if (node instanceof PARSENODE.ParseNodeStatement) {
 			return this.decorate(node.children[0]);
 
+		} else if (node instanceof PARSENODE.ParseNodeBlock) {
+			return new AST.ASTNodeBlock(
+				node,
+				this.parseList<PARSENODE.ParseNodeStatement, AST.ASTNodeStatement>(node.children[1]),
+			);
+
 		} else if (node instanceof PARSENODE.ParseNodeGoal) {
 			return new AST.ASTNodeGoal(
 				node,
-				(node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeStatement, AST.ASTNodeStatement>(node.children[1]),
+				(node.children.length === 2) ? null : this.decorate(node.children[1]),
 				config,
 			);
 		}
@@ -600,15 +607,14 @@ class DecoratorSolid extends Decorator {
 	decorateTS(node: SyntaxNodeType<'statement_expression'>):                    AST.ASTNodeStatementExpression;
 	decorateTS(node: SyntaxNodeType<'statement_assignment'>):                    AST.ASTNodeAssignment;
 	decorateTS(node: SyntaxNodeSupertype<'statement'>):                          AST.ASTNodeStatement;
+	decorateTS(node: SyntaxNodeType<'block'>):                                   AST.ASTNodeBlock;
 	decorateTS(node: SyntaxNodeType<'source_file'>, config?: SolidConfig):       AST.ASTNodeGoal;
 	decorateTS(node: SyntaxNode): AST.ASTNodeSolid;
 	decorateTS(node: SyntaxNode, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeSolid {
 		return new Map<string, (node: SyntaxNode) => AST.ASTNodeSolid>(Object.entries({
 			source_file: (node) => new AST.ASTNodeGoal(
 				node as SyntaxNodeType<'source_file'>,
-				node.children
-					.filter((c): c is SyntaxNodeSupertype<'statement'> => isSyntaxNodeSupertype(c, 'statement'))
-					.map((c) => this.decorateTS(c)),
+				(node.children.length) ? this.decorateTS(node.children[0] as SyntaxNodeType<'block'>) : null,
 				config,
 			),
 
@@ -1041,6 +1047,13 @@ class DecoratorSolid extends Decorator {
 				node as SyntaxNodeType<'statement_assignment'>,
 				this.decorateTS(node.children[0] as SyntaxNodeType<'assignee'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
+			),
+
+			block: (node) => new AST.ASTNodeBlock(
+				node as SyntaxNodeType<'block'>,
+				node.children
+					.filter((c): c is SyntaxNodeSupertype<'statement'> => isSyntaxNodeSupertype(c, 'statement'))
+					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeStatement>,
 			),
 		})).get(node.type)?.(node) || (() => {
 			throw new TypeError(`Could not find type of parse node \`${ node.type }\`.`);

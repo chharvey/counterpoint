@@ -129,13 +129,13 @@ function typeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT
 	return typeDeclarationFromSource(`type T = ${ typestring };`, config).children[3];
 }
 export function propertyFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeProperty {
-	const record: PARSENODE.ParseNodeRecordLiteral = recordLiteralFromSource(`[${ propertystring }];`, config);
+	const record: PARSENODE.ParseNodeRecordLiteral = recordLiteralFromSource(`[${ propertystring }]`, config);
 	assert_arrayLength(record.children, 3, 'record should have 3 children');
 	assert_arrayLength(record.children[1].children, 1, 'property list should have 1 child');
 	return record.children[1].children[0];
 }
 export function caseFromString(casestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeCase {
-	const map: PARSENODE.ParseNodeMapLiteral = mapLiteralFromSource(`{${ casestring }};`, config);
+	const map: PARSENODE.ParseNodeMapLiteral = mapLiteralFromSource(`{${ casestring }}`, config);
 	assert_arrayLength(map.children, 3, 'map should have 3 children');
 	assert_arrayLength(map.children[1].children, 1, 'case list should have 1 child');
 	return map.children[1].children[0];
@@ -273,8 +273,8 @@ export function conditionalExpressionFromSource(src: string, config: SolidConfig
 	return expression_cond
 }
 export function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeExpression {
-	const statexpr: PARSENODE.ParseNodeStatementExpression = statementExpressionFromSource(src, config);
-	assert_arrayLength(statexpr.children, 2, 'statment-expression should have 2 children');
+	const statexpr: PARSENODE.ParseNodeStatementExpression = statementExpressionFromSource(`${ src };`, config);
+	assert_arrayLength(statexpr.children, 2, 'statement-expression should have 2 children');
 	const [expression, endstat]: readonly [PARSENODE.ParseNodeExpression, Token] = statexpr.children;
 	assert.ok(endstat instanceof TOKEN.TokenPunctuator)
 	assert.strictEqual(endstat.source, Punctuator.ENDSTAT)
@@ -316,15 +316,29 @@ export function assignmentFromSource(src: string, config: SolidConfig = CONFIG_D
 	return assignment;
 }
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeStatement {
-	const goal: PARSENODE.ParseNodeGoal = goalFromSource(src, config);
-	assert_arrayLength(goal.children, 3, 'goal should have 3 children')
-	const [sot, stat_list, eot]: readonly [Token, PARSENODE.ParseNodeGoal__0__List, Token] = goal.children
-	assert.ok(sot instanceof TokenFilebound)
-	assert.ok(eot instanceof TokenFilebound)
-	assert.strictEqual(sot.source, Filebound.SOT)
-	assert.strictEqual(eot.source, Filebound.EOT)
+	const block: PARSENODE.ParseNodeBlock = blockFromSource(`{ ${ src } }`, config);
+	assert_arrayLength(block.children, 3, 'block should have 3 children')
+	const [brak_opn, stat_list, brak_cls]: readonly [Token, PARSENODE.ParseNodeBlock__0__List, Token] = block.children
+	assert.ok(brak_opn instanceof TOKEN.TokenPunctuator);
+	assert.ok(brak_cls instanceof TOKEN.TokenPunctuator);
+	assert.deepStrictEqual(
+		[brak_opn.source,     brak_cls.source],
+		[Punctuator.BRAC_OPN, Punctuator.BRAC_CLS],
+	);
 	assert_arrayLength(stat_list.children, 1, 'statement list should have 1 child')
 	return stat_list.children[0]
+}
+export function blockFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeBlock {
+	const goal: PARSENODE.ParseNodeGoal = goalFromSource(src, config);
+	assert_arrayLength(goal.children, 3, 'goal should have 3 children')
+	const [sot, block, eot]: readonly [Token, PARSENODE.ParseNodeBlock, Token] = goal.children;
+	assert.ok(sot instanceof TokenFilebound)
+	assert.ok(eot instanceof TokenFilebound)
+	assert.deepStrictEqual(
+		[sot.source,    eot.source],
+		[Filebound.SOT, Filebound.EOT],
+	);
+	return block;
 }
 export function goalFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeGoal {
 	return ((config === CONFIG_DEFAULT) ? PARSER : new ParserSolid(config)).parse(src);

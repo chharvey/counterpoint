@@ -47,4 +47,5 @@ export * from './ASTNodeDeclarationType.js';
 export * from './ASTNodeDeclarationVariable.js';
 export * from './ASTNodeStatementExpression.js';
 export * from './ASTNodeAssignment.js';
+export * from './ASTNodeBlock.js';
 export * from './ASTNodeGoal.js';

@@ -31,9 +31,9 @@ import {
 describe('ASTNodeDeclarationVariable', () => {
 	describe('#varCheck', () => {
 		it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown` and a preset null `value` value.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 				let x: int = 42;
-			`);
+			}`);
 			assert.ok(!goal.validator.hasSymbol(256n));
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(256n));
@@ -43,26 +43,26 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.strictEqual(info.value, null);
 		});
 		it('throws if the validator already contains a record for the variable.', () => {
-			assert.throws(() => AST.ASTNodeGoal.fromSource(`
+			assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 				let i: int = 42;
 				let i: int = 43;
-			`).varCheck(), AssignmentError01);
-			assert.throws(() => AST.ASTNodeGoal.fromSource(`
+			}`).varCheck(), AssignmentError01);
+			assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 				type FOO = float;
 				let FOO: int = 42;
-			`).varCheck(), AssignmentError01);
+			}`).varCheck(), AssignmentError01);
 		});
 	});
 
 
 	describe('#typeCheck', () => {
-		const abcde: string = `
+		const abcde: string = `{
 			let a: int = 42;
 			let b: int[] = [42];
 			let unfixed c: int = 42;
 			let d: mutable [42] = [42];
 			let e: mutable int[] = List.<int>([42]);
-		`;
+		}`;
 		it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  int | float =  21  *  2;
@@ -74,7 +74,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			`).typeCheck(), TypeError03);
 		})
 		it('allows assigning a collection literal to a wider mutable type.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 				let t1: mutable [42]         = [42];
 				let r1: mutable [x: 42]      = [x= 42];
 				let s1: mutable 42{}         = {42};
@@ -96,17 +96,17 @@ describe('ASTNodeDeclarationVariable', () => {
 				let r4: mutable [x: T?]      = [x= v];
 				let s4: mutable T?{}         = {v};
 				let m4: mutable {bool -> T?} = {true -> v};
-			`);
+			}`);
 			goal.varCheck();
 			goal.typeCheck(); // assert does not throw
 		});
 		it('disallows assigning a constructor call to a wider mutable type.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 				let a: mutable int[]         = List.<42>([42]);
 				let b: mutable [:int]        = Hash.<42>([x= 42]);
 				let c: mutable int{}         = Set.<42>([42]);
 				let d: mutable {bool -> int} = Map.<true, 42>([[true, 42]]);
-			`);
+			}`);
 			goal.varCheck();
 			assert.throws(() => {
 				goal.typeCheck();
@@ -125,7 +125,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			});
 		});
 		it('allows assigning a tuple/record collection literal to a corresponding list/hash type.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 				let t1: mutable 42[]  = [42];
 				let r1: mutable [:42] = [x= 42];
 
@@ -134,7 +134,7 @@ describe('ASTNodeDeclarationVariable', () => {
 
 				let t3: mutable [int]  = [42];
 				let r3: mutable [:int] = [x= 42];
-			`);
+			}`);
 			goal.varCheck();
 			goal.typeCheck(); // assert does not throw
 		});
@@ -214,18 +214,18 @@ describe('ASTNodeDeclarationVariable', () => {
 
 	describe('#build', () => {
 		it('with constant folding on, returns InstructionNone for fixed & foldable variables.', () => {
-			const src: string = `
+			const src: string = `{
 				let x: int = 42;
 				let y: float = 4.2 * 10;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			goal.varCheck();
-			goal.typeCheck();
+			}`;
+			const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
+			block.varCheck();
+			block.typeCheck();
 			const builder: Builder = new Builder(src)
 			assert.deepStrictEqual(
 				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
+					block.children[0].build(builder),
+					block.children[1].build(builder),
 				],
 				[
 					new INST.InstructionNone(),
@@ -234,18 +234,18 @@ describe('ASTNodeDeclarationVariable', () => {
 			);
 		});
 		it('with constant folding on, returns InstructionDeclareGlobal for unfixed / non-foldable variables.', () => {
-			const src: string = `
+			const src: string = `{
 				let unfixed x: int = 42;
 				let y: int = x + 10;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			goal.varCheck();
-			goal.typeCheck();
+			}`;
+			const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
+			block.varCheck();
+			block.typeCheck();
 			const builder: Builder = new Builder(src)
 			assert.deepStrictEqual(
 				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
+					block.children[0].build(builder),
+					block.children[1].build(builder),
 				],
 				[
 					new INST.InstructionDeclareGlobal(0x100n, true,  instructionConstInt(42n)),
@@ -258,18 +258,18 @@ describe('ASTNodeDeclarationVariable', () => {
 			);
 		});
 		it('with constant folding off, always returns InstructionDeclareGlobal.', () => {
-			const src: string = `
+			const src: string = `{
 				let x: int = 42;
 				let unfixed y: float = 4.2;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
-			goal.varCheck();
-			goal.typeCheck();
+			}`;
+			const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src, CONFIG_FOLDING_OFF);
+			block.varCheck();
+			block.typeCheck();
 			const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 			assert.deepStrictEqual(
 				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
+					block.children[0].build(builder),
+					block.children[1].build(builder),
 				],
 				[
 					new INST.InstructionDeclareGlobal(0x100n, false, instructionConstInt(42n)),

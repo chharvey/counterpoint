@@ -183,4 +183,10 @@ Statement ::=
 
 
 
-Goal ::= #x02 Statement* #x03;
+Block
+	::= "{" Statement+ "}";
+
+
+
+Goal
+	::= #x02 Block? #x03;

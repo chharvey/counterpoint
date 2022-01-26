@@ -621,11 +621,18 @@ Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
 
 
 
+Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock
+	:= (SemanticBlock
+		...ParseList(Statement, SemanticStatement)
+	);
+
+
+
 Decorate(Goal ::= #x02 #x03) -> SemanticGoal
 	:= (SemanticGoal);
-Decorate(Goal ::= #x02 Statement+ #x03) -> SemanticGoal
+Decorate(Goal ::= #x02 Block #x03) -> SemanticGoal
 	:= (SemanticGoal
-		...ParseList(Statement, SemanticStatement)
+		Decorate(Block)
 	);
 
 

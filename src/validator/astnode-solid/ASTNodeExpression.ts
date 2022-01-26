@@ -40,7 +40,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * @returns      a new ASTNodeExpression representing the given source
 	 */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeExpression {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
+		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(`${ src };`, config);
 		assert.ok(statement instanceof ASTNodeStatementExpression);
 		assert.ok(statement.expr, 'semantic statement should have 1 child');
 		return statement.expr;

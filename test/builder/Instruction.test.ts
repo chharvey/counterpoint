@@ -240,7 +240,7 @@ describe('Instruction', () => {
 			it('creates a program.', () => {
 				const mods: (INST.InstructionNone | INST.InstructionModule)[] = [
 					``,
-					`;`,
+					`{;}`,
 				].map((src) => AST.ASTNodeGoal.fromSource(src).build(new Builder(src)));
 				assert.ok(mods[0] instanceof INST.InstructionNone);
 				assert.strictEqual(mods[0].toString(), ``)

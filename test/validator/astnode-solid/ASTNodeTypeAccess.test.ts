@@ -26,9 +26,9 @@ describe('ASTNodeTypeAccess', () => {
 			SolidType.FLOAT,
 			SolidType.STR,
 		];
-		let program: AST.ASTNodeGoal;
+		let program: AST.ASTNodeBlock;
 		before(() => {
-			program = AST.ASTNodeGoal.fromSource(`
+			program = AST.ASTNodeBlock.fromSource(`{
 				type TupC = [1,   2.0,   'three'];
 				type TupV = [int, float, str];
 
@@ -66,7 +66,7 @@ describe('ASTNodeTypeAccess', () => {
 
 				type E1 = RecoC.b; % type \`2.0 | void\`
 				type E2 = RecoV.b; % type \`float | void\`
-			`);
+			}`);
 			program.varCheck();
 			program.typeCheck();
 		});

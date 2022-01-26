@@ -319,43 +319,43 @@ describe('ParserSolid', () => {
 		Dev.supports('stringTemplate-parse') && describe('StringTemplate', () => {
 			specify('StringTemplate ::= TEMPLATE_FULL', () => {
 				h.templateSources(h.stringTemplateFromSource(`
-					'''full1''';
+					'''full1'''
 				`), `'''full1'''`);
 			});
 			specify('StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL', () => {
 				h.templateSources(h.stringTemplateFromSource(`
-					'''head1{{}}tail1''';
+					'''head1{{}}tail1'''
 				`), `'''head1{{`, `}}tail1'''`);
 			});
 			specify('StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL', () => {
 				h.templateSources(h.stringTemplateFromSource(`
-					'''head1{{ '''full1''' }}tail1''';
+					'''head1{{ '''full1''' }}tail1'''
 				`), `'''head1{{`, `'''full1'''`, `}}tail1'''`);
 			});
 			specify('StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL', () => {
 				h.templateSources(h.stringTemplateFromSource(`
-					'''head1{{}}midd1{{}}tail1''';
+					'''head1{{}}midd1{{}}tail1'''
 				`), `'''head1{{`, `}}midd1{{`, `}}tail1'''`);
 			});
 			specify('StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL', () => {
 				h.templateSources(h.stringTemplateFromSource(`
-					'''head1{{ '''full1''' }}midd1{{}}tail1''';
+					'''head1{{ '''full1''' }}midd1{{}}tail1'''
 				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `}}tail1'''`);
 			});
 
 			specify('StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression', () => {
 				h.templateSources(h.stringTemplateFromSource(`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1'''
 				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}tail1'''`);
 			});
 			specify('StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE', () => {
 				h.templateSources(h.stringTemplateFromSource(`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1'''
 				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}midd2{{`, `}}tail1'''`);
 			});
 			specify('StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression', () => {
 				h.templateSources(h.stringTemplateFromSource(`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1'''
 				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}midd2{{`, `'''head2{{ '''full3''' }}tail2'''`, `}}tail1'''`);
 			});
 
@@ -421,7 +421,7 @@ describe('ParserSolid', () => {
 						<PUNCTUATOR>)</PUNCTUATOR>
 					</ExpressionGrouped>
 				*/
-				const expression_grouped: PARSENODE_SOLID.ParseNodeExpressionGrouped = h.groupedExpressionFromSource(`(2 + -3);`);
+				const expression_grouped: PARSENODE_SOLID.ParseNodeExpressionGrouped = h.groupedExpressionFromSource(`(2 + -3)`);
 				assert_arrayLength(expression_grouped.children, 3);
 				const [open, expr, close]: readonly [Token, PARSENODE_SOLID.ParseNodeExpression, Token] = expression_grouped.children;
 				assert.ok(open  instanceof TOKEN.TokenPunctuator)
@@ -442,7 +442,7 @@ describe('ParserSolid', () => {
 						<PUNCTUATOR>]</PUNCTUATOR>
 					</TupleLiteral>
 				*/
-				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral = h.tupleLiteralFromSource(`[42, true, null || false];`);
+				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral = h.tupleLiteralFromSource(`[42, true, null || false]`);
 				assert_arrayLength(unit.children, 3);
 				assert.deepStrictEqual(
 					unit.children.map((c) => c.source),
@@ -455,7 +455,7 @@ describe('ParserSolid', () => {
 						, 42
 						, true
 						, null || false
-					];
+					]
 				`);
 				assert_arrayLength(unit.children, 4);
 				assert.deepStrictEqual(
@@ -469,7 +469,7 @@ describe('ParserSolid', () => {
 						42,
 						true,
 						null || false,
-					];
+					]
 				`);
 				assert_arrayLength(unit.children, 4);
 				assert.deepStrictEqual(
@@ -491,7 +491,7 @@ describe('ParserSolid', () => {
 						<Expression source="null || false">...</Expression>
 					</TupleLiteral__0__List>
 				*/
-				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral = h.tupleLiteralFromSource(`[42, true, null || false];`);
+				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral = h.tupleLiteralFromSource(`[42, true, null || false]`);
 				assert_arrayLength(unit.children, 3);
 				h.hashListSources(unit.children[1], `42`, `true`, `null || false`);
 			});
@@ -511,7 +511,7 @@ describe('ParserSolid', () => {
 					[
 						, let= true
 						, foobar= 42
-					];
+					]
 				`);
 				assert_arrayLength(unit.children, 4);
 				assert.ok(unit.children[2] instanceof PARSENODE_SOLID.ParseNodeRecordLiteral__0__List);
@@ -530,7 +530,7 @@ describe('ParserSolid', () => {
 						<Property source="foobar= 42">...</Property>
 					</RecordLiteral__0__List>
 				*/
-				const unit: PARSENODE_SOLID.ParseNodeRecordLiteral = h.recordLiteralFromSource(`[let= true, foobar= 42];`);
+				const unit: PARSENODE_SOLID.ParseNodeRecordLiteral = h.recordLiteralFromSource(`[let= true, foobar= 42]`);
 				assert_arrayLength(unit.children, 3);
 				h.hashListSources(unit.children[1], `let = true`, `foobar = 42`);
 			});
@@ -539,15 +539,15 @@ describe('ParserSolid', () => {
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			it('parses IDENTIFIER.', () => {
-				assert.strictEqual(h.tokenIdentifierFromSource(`ident;`).source, 'ident')
+				assert.strictEqual(h.tokenIdentifierFromSource(`ident`).source, 'ident')
 			})
 			it('parses NULL, BOOLEAN, INTEGER, FLOAT, or STRING.', () => {
 				assert.deepStrictEqual(([
-					[`null;`,   TOKEN.TokenKeyword],
-					[`false;`,  TOKEN.TokenKeyword],
-					[`true;`,   TOKEN.TokenKeyword],
-					[`42;`,     TOKEN.TokenNumber],
-					[`4.2e+1;`, TOKEN.TokenNumber],
+					[`null`,   TOKEN.TokenKeyword],
+					[`false`,  TOKEN.TokenKeyword],
+					[`true`,   TOKEN.TokenKeyword],
+					[`42`,     TOKEN.TokenNumber],
+					[`4.2e+1`, TOKEN.TokenNumber],
 				] as [string, typeof TOKEN.TokenKeyword | typeof TOKEN.TokenNumber][]).map(([src, tokentype]) => {
 					const token: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString = h.tokenLiteralFromSource(src)
 					assert.ok(token instanceof tokentype)
@@ -563,7 +563,7 @@ describe('ParserSolid', () => {
 		})
 
 		specify('ExpressionUnit ::= TupleLiteral', () => {
-			h.tupleLiteralFromSource(`[, 42, true, null || false,];`); // assert does not throw
+			h.tupleLiteralFromSource(`[, 42, true, null || false,]`); // assert does not throw
 		});
 
 		specify('ExpressionUnit ::= RecordLiteral', () => {
@@ -572,7 +572,7 @@ describe('ParserSolid', () => {
 					, let= true
 					, foobar= 42
 					,
-				];
+				]
 			`); // assert does not throw
 		});
 
@@ -594,15 +594,15 @@ describe('ParserSolid', () => {
 					`.x`,
 					`.(x, y)`,
 					`.<X, Y>(x, y)`,
-				].map((dot) => `${ base }${ dot };`)).forEach((src) => {
+				].map((dot) => `${ base }${ dot }`)).forEach((src) => {
 					assert.doesNotThrow(() => h.compoundExpressionFromSource(src), src);
 				});
 			});
 			it('chained integer access is not lexed as a float.', () => {
-				return assert.doesNotThrow(() => h.compoundExpressionFromSource(`a.1.b;`), `a.1.b;`);
+				return assert.doesNotThrow(() => h.compoundExpressionFromSource(`a.1.b`), `a.1.b`);
 			});
 			it('integers chained side-by-side parsed as float.', () => {
-				return assert.throws(() => h.compoundExpressionFromSource(`a.1.2;`), ParseError01);
+				return assert.throws(() => h.compoundExpressionFromSource(`a.1.2`), ParseError01);
 			});
 		});
 
@@ -648,7 +648,7 @@ describe('ParserSolid', () => {
 					<ExpressionClaim source="3">...</ExpressionClaim>
 				</ExpressionClaim>
 			*/
-			const expression_claim: PARSENODE_SOLID.ParseNodeExpressionClaim = h.claimExpressionFromSource(`<float>3;`);
+			const expression_claim: PARSENODE_SOLID.ParseNodeExpressionClaim = h.claimExpressionFromSource(`<float>3`);
 			assert_arrayLength(expression_claim.children, 4, 'claim expression should have 4 children');
 			const [ang_opn, typ, ang_cls, expr]: readonly [Token, PARSENODE_SOLID.ParseNodeType, Token, PARSENODE_SOLID.ParseNodeExpressionClaim] = expression_claim.children;
 			assert.ok(ang_opn instanceof TOKEN.TokenPunctuator);
@@ -668,7 +668,7 @@ describe('ParserSolid', () => {
 						<ExpressionExponential source="-3">...</ExpressionExponential>
 					</ExpressionExponential>
 				*/
-				const expression_exp: PARSENODE_SOLID.ParseNodeExpressionExponential = h.exponentialExpressionFromSource(`2 ^ -3;`);
+				const expression_exp: PARSENODE_SOLID.ParseNodeExpressionExponential = h.exponentialExpressionFromSource(`2 ^ -3`);
 				assert_arrayLength(expression_exp.children, 3, 'exponential expression should have 3 children')
 				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionClaim, Token, PARSENODE_SOLID.ParseNodeExpressionExponential] = expression_exp.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
@@ -688,7 +688,7 @@ describe('ParserSolid', () => {
 						<ExpressionExponential source="-3">...</ExpressionExponential>
 					</ExpressionMultiplicative>
 				*/
-				const expression_mul: PARSENODE_SOLID.ParseNodeExpressionMultiplicative = h.multiplicativeExpressionFromSource(`2 * -3;`);
+				const expression_mul: PARSENODE_SOLID.ParseNodeExpressionMultiplicative = h.multiplicativeExpressionFromSource(`2 * -3`);
 				assert_arrayLength(expression_mul.children, 3, 'multiplicative expression should have 3 children')
 				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionMultiplicative, Token, PARSENODE_SOLID.ParseNodeExpressionExponential] = expression_mul.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
@@ -708,7 +708,7 @@ describe('ParserSolid', () => {
 						<ExpressionMultiplicative source="-3">...</ExpressionMultiplicative>
 					</ExpressionAdditive>
 				*/
-				const expression_add: PARSENODE_SOLID.ParseNodeExpressionAdditive = h.additiveExpressionFromSource(`2 + -3;`);
+				const expression_add: PARSENODE_SOLID.ParseNodeExpressionAdditive = h.additiveExpressionFromSource(`2 + -3`);
 				assert_arrayLength(expression_add.children, 3, 'additive expression should have 3 children')
 				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionAdditive, Token, PARSENODE_SOLID.ParseNodeExpressionMultiplicative] = expression_add.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
@@ -729,8 +729,8 @@ describe('ParserSolid', () => {
 					</ExpressionComparative>
 				*/
 				assert.deepStrictEqual([
-					`2 < -3;`,
-					`2 is -3;`,
+					`2 < -3`,
+					`2 is -3`,
 				].map((src, i) => {
 					const expression_compare: PARSENODE_SOLID.ParseNodeExpressionComparative = h.comparativeExpressionFromSource(src);
 					assert_arrayLength(expression_compare.children, 3, 'comparative expression should have 3 children');
@@ -743,7 +743,7 @@ describe('ParserSolid', () => {
 				]);
 			})
 			it('allows chaining of `<` and `>`.', () => {
-				const expression_compare: PARSENODE_SOLID.ParseNodeExpressionComparative = h.comparativeExpressionFromSource(`2 < 3 > 4;`);
+				const expression_compare: PARSENODE_SOLID.ParseNodeExpressionComparative = h.comparativeExpressionFromSource(`2 < 3 > 4`);
 				assert_arrayLength(expression_compare.children, 3, 'comparative expression should have 3 children')
 				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionComparative, Token, PARSENODE_SOLID.ParseNodeExpressionAdditive] = expression_compare.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
@@ -764,8 +764,8 @@ describe('ParserSolid', () => {
 					</ExpressionEquality>
 				*/
 				assert.deepStrictEqual([
-					`2 === -3;`,
-					`2 == -3;`,
+					`2 === -3`,
+					`2 == -3`,
 				].map((src) => {
 					const expression_eq: PARSENODE_SOLID.ParseNodeExpressionEquality = h.equalityExpressionFromSource(src);
 					assert_arrayLength(expression_eq.children, 3, 'equality expression should have 3 children')
@@ -788,7 +788,7 @@ describe('ParserSolid', () => {
 						<ExpressionAdditive source="-3">...</ExpressionAdditive>
 					</ExpressionConjunctive>
 				*/
-				const expression_conj: PARSENODE_SOLID.ParseNodeExpressionConjunctive = h.conjunctiveExpressionFromSource(`2 && -3;`);
+				const expression_conj: PARSENODE_SOLID.ParseNodeExpressionConjunctive = h.conjunctiveExpressionFromSource(`2 && -3`);
 				assert_arrayLength(expression_conj.children, 3, 'conjunctive expression should have 3 children')
 				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionConjunctive, Token, PARSENODE_SOLID.ParseNodeExpressionEquality] = expression_conj.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
@@ -808,7 +808,7 @@ describe('ParserSolid', () => {
 						<ExpressionConjunctive source="-3">...</ExpressionConjunctive>
 					</ExpressionDisjunctive>
 				*/
-				const expression_disj: PARSENODE_SOLID.ParseNodeExpressionDisjunctive = h.disjunctiveExpressionFromSource(`2 || -3;`);
+				const expression_disj: PARSENODE_SOLID.ParseNodeExpressionDisjunctive = h.disjunctiveExpressionFromSource(`2 || -3`);
 				assert_arrayLength(expression_disj.children, 3, 'disjunctive expression should have 3 children')
 				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionDisjunctive, Token, PARSENODE_SOLID.ParseNodeExpressionConjunctive] = expression_disj.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
@@ -831,9 +831,7 @@ describe('ParserSolid', () => {
 						<Expression source="3">...</Expression>
 					</ExpressionConditional>
 				*/
-				const expression_cond: PARSENODE_SOLID.ParseNodeExpressionConditional = h.conditionalExpressionFromSource(`
-					if true then 2 else 3;
-				`)
+				const expression_cond: PARSENODE_SOLID.ParseNodeExpressionConditional = h.conditionalExpressionFromSource(`if true then 2 else 3`);
 				const
 					[_if,   condition,                           _then, consequent,                          _else, alternative]: readonly
 					[Token, PARSENODE_SOLID.ParseNodeExpression, Token, PARSENODE_SOLID.ParseNodeExpression, Token, PARSENODE_SOLID.ParseNodeExpression] = expression_cond.children;
@@ -936,6 +934,39 @@ describe('ParserSolid', () => {
 			})
 		})
 
+		context('Block ::= "{" Statement+ "}"', () => {
+			it('parses multiple statements.', () => {
+				/*
+					<Block>
+						<PUNCTUATOR source="{"/>...</PUNCTUATOR>
+						<Block__0__List>
+							<Block__0__List>
+								<Statement source="42 ;">...</Statement>
+							</Block__0__List>
+							<Statement source="420 ;"/>...</Statement>
+						</Block__0__List>
+						<PUNCTUATOR source="}"/>...</PUNCTUATOR>
+					</Block>
+				*/
+				const block: PARSENODE_SOLID.ParseNodeBlock = h.blockFromSource(`{ 42; 420; }`);
+				assert_arrayLength(block.children, 3, 'block should have 3 children');
+				const [brak_opn, stat_list, brak_cls]: readonly [Token, PARSENODE_SOLID.ParseNodeBlock__0__List, Token] = block.children;
+				assert.ok(brak_opn instanceof TOKEN.TokenPunctuator);
+				assert.ok(brak_cls instanceof TOKEN.TokenPunctuator);
+				assert_arrayLength(stat_list.children, 2, 'stat_list should have 2 children')
+				const stat0: PARSENODE_SOLID.ParseNodeStatement = (() => {
+					const stat_list_sub: PARSENODE_SOLID.ParseNodeBlock__0__List = stat_list.children[0];
+					assert_arrayLength(stat_list_sub.children, 1)
+					return stat_list_sub.children[0]
+				})()
+				const stat1: PARSENODE_SOLID.ParseNodeStatement = stat_list.children[1];
+				assert.deepStrictEqual(
+					[brak_opn.source,     stat0.source, stat1.source, brak_cls.source],
+					[Punctuator.BRAC_OPN, '42 ;',       '420 ;',      Punctuator.BRAC_CLS],
+				);
+			})
+		})
+
 		context('Goal ::= #x02 #x03', () => {
 			it('returns only file bounds.', () => {
 				/*
@@ -944,38 +975,30 @@ describe('ParserSolid', () => {
 						<FILEBOUND.../>...</FILEBOUND>
 					</Goal>
 				*/
-				const goal: PARSENODE_SOLID.ParseNodeGoal = PARSER.parse(``);
+				const goal: PARSENODE_SOLID.ParseNodeGoal = h.goalFromSource(``);
 				assert.strictEqual(goal.children.length, 2);
 				goal.children.forEach((c) => assert.ok(c instanceof TokenFilebound));
 			});
 		});
 
-		context('Goal ::= #x02 Statement* #x03', () => {
+		context('Goal ::= #x02 Block #x03', () => {
 			it('parses multiple statements.', () => {
 				/*
 					<Goal>
 						<FILEBOUND.../>...</FILEBOUND>
-						<Goal__0__List>
-							<Goal__0__List>
-								<Statement source="42 ;">...</Statement>
-							</Goal__0__List>
-							<Statement source="420 ;"/>...</Statement>
-						</Goal__0__List>
+						<Block source="{42; 420;}">...</Block>
 						<FILEBOUND.../>...</FILEBOUND>
 					</Goal>
 				*/
-				const goal: PARSENODE_SOLID.ParseNodeGoal = h.goalFromSource(`42; 420;`);
+				const goal: PARSENODE_SOLID.ParseNodeGoal = h.goalFromSource(`{ 42; 420; }`);
 				assert_arrayLength(goal.children, 3, 'goal should have 3 children')
-				const stat_list: PARSENODE_SOLID.ParseNodeGoal__0__List = goal.children[1];
-				assert_arrayLength(stat_list.children, 2, 'stat_list should have 2 children')
-				const stat0: PARSENODE_SOLID.ParseNodeStatement = (() => {
-					const stat_list_sub: PARSENODE_SOLID.ParseNodeGoal__0__List = stat_list.children[0];
-					assert_arrayLength(stat_list_sub.children, 1)
-					return stat_list_sub.children[0]
-				})()
-				const stat1: PARSENODE_SOLID.ParseNodeStatement = stat_list.children[1];
-				assert.strictEqual(stat0.source, '42 ;')
-				assert.strictEqual(stat1.source, '420 ;')
+				const [sot, block, eot]: readonly [Token, PARSENODE_SOLID.ParseNodeBlock, Token] = goal.children;
+				assert.ok(sot instanceof TokenFilebound);
+				assert.ok(eot instanceof TokenFilebound);
+				assert.deepStrictEqual(
+					[sot.source,    block.source,     eot.source],
+					[Filebound.SOT, '{ 42 ; 420 ; }', Filebound.EOT],
+				);
 			})
 		})
 	})

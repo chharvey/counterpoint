@@ -156,5 +156,10 @@ SemanticAssignment
 
 
 
+SemanticBlock
+	::= SemanticStatement+;
+
+
+
 SemanticGoal
-	::= SemanticStatement*;
+	::= SemanticBlock?;

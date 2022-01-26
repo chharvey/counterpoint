@@ -11,7 +11,7 @@ import {
 } from './package.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
-import type {ASTNodeStatement} from './ASTNodeStatement.js';
+import type {ASTNodeBlock} from './ASTNodeBlock.js';
 
 
 
@@ -29,10 +29,10 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	private readonly _validator: Validator;
 	constructor(
 		start_node: PARSENODE.ParseNodeGoal | SyntaxNodeType<'source_file'>,
-		override readonly children: readonly ASTNodeStatement[],
+		readonly block: ASTNodeBlock | null,
 		config: SolidConfig,
 	) {
-		super(start_node, {}, children)
+		super(start_node, {}, (block) ? [block] : []);
 		this._validator = new Validator(config);
 	}
 	override get validator(): Validator {
@@ -40,11 +40,6 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	}
 	/** @implements Buildable */
 	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
-		return (!this.children.length)
-			? new INST.InstructionNone()
-			: new INST.InstructionModule([
-				...Builder.IMPORTS,
-				...(this.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
-			])
+		return this.block?.build(builder) || new INST.InstructionNone();
 	}
 }

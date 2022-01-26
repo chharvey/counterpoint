@@ -64,8 +64,17 @@ Sequence<Instruction> Build(SemanticAssignment assign) :=
 
 
 
+Sequence<Instruction> Build(SemanticBlock block) :=
+	1. *Return:* a flattened mapping of `block.children` for each `stmt` to *UnwrapAffirm:* `Build(stmt)`.
+;
+
+
+
 Sequence<Instruction> Build(SemanticGoal goal) :=
-	1. *Return:* a flattened mapping of `goal.children` for each `stmt` to *UnwrapAffirm:* `Build(stmt)`.
+	1. *If* `goal.children.count` is 1:
+		1. *Return:* `Build(goal.children.0)`.
+	2. *Else:*
+		1. *Return:* [].
 ;
 
 
