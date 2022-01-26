@@ -613,7 +613,7 @@ describe('ParserSolid', () => {
 				</Assignee>
 			*/
 			it('makes a ParseNodeAssignee node.', () => {
-				const assignee: PARSENODE_SOLID.ParseNodeAssignee = h.assigneeFromSource(`this_answer  =  that_answer  -  40;`);
+				const assignee: PARSENODE_SOLID.ParseNodeAssignee = h.assigneeFromSource(`set  this_answer  =  that_answer  -  40;`);
 				assert_arrayLength(assignee.children, 1);
 				const id: Token = assignee.children[0];
 				assert.ok(id instanceof TOKEN.TokenIdentifier);
@@ -629,7 +629,7 @@ describe('ParserSolid', () => {
 				</Assignee>
 			*/
 			it('makes a ParseNodeAssignee node.', () => {
-				const assignee: PARSENODE_SOLID.ParseNodeAssignee = h.assigneeFromSource(`x.().y.z = a;`);
+				const assignee: PARSENODE_SOLID.ParseNodeAssignee = h.assigneeFromSource(`set x.().y.z = a;`);
 				assert_arrayLength(assignee.children, 2);
 				const [compound, assign]: readonly [PARSENODE_SOLID.ParseNodeExpressionCompound, PARSENODE_SOLID.ParseNodePropertyAssign] = assignee.children;
 				assert.deepStrictEqual(
@@ -902,19 +902,19 @@ describe('ParserSolid', () => {
 			})
 		})
 
-		describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
+		describe('DeclarationReassignment ::= "set" Assignee "=" Expression ";"', () => {
 			/*
-				<StatementAssignment>
+				<DeclarationReassignment>
 					<Assignee source="this_answer">...</Assignee>
 					<PUNCTUATOR>=</PUNCTUATOR>
 					<Expression source="that_answer - 40">...</Expression>
 					<PUNCTUATOR>;</PUNCTUATOR>
-				</StatementAssignment>
+				</DeclarationReassignment>
 			*/
-			it('makes a ParseNodeStatementAssignment node.', () => {
-				const assn: PARSENODE_SOLID.ParseNodeStatementAssignment = h.assignmentFromSource(`this_answer  =  that_answer  -  40;`);
+			it('makes a ParseNodeDeclarationReassignment node.', () => {
+				const assn: PARSENODE_SOLID.ParseNodeDeclarationReassignment = h.reassignmentDeclarationFromSource(`set  this_answer  =  that_answer  -  40;`);
 				assert.deepStrictEqual(assn.children.map((child) => child.source), [
-					'this_answer', '=', 'that_answer - 40', ';',
+					'set', 'this_answer', '=', 'that_answer - 40', ';',
 				])
 			})
 		})

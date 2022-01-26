@@ -885,6 +885,39 @@ describe('DecoratorSolid', () => {
 			});
 		});
 
+		describe('Assignee ::= IDENTIFIER', () => {
+			it('makes an ASTNodeVariable node.', () => {
+				/*
+					<Variable source="the_answer"/>
+				*/
+				const variable: AST.ASTNodeVariable = (DECORATOR_SOLID.decorate(h.assigneeFromSource(`
+					set the_answer = the_answer - 40;
+				`)) as AST.ASTNodeVariable);
+				assert.strictEqual(variable.source, `the_answer`);
+			});
+		});
+
+		describe('Assignee ::= ExpressionCompound PropertyAssign', () => {
+			it('makes an ASTNodeAccess node.', () => {
+				/*
+					<Access source="x.().y.z" kind=NORMAL>
+						<Access source="x.().y">...</Access>
+						<Key source="z"/>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = (DECORATOR_SOLID.decorate(h.assigneeFromSource(`
+					set x.().y.z = a;
+				`)) as AST.ASTNodeAccess);
+				const base: AST.ASTNodeExpression = access.base;
+				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.accessor;
+				assert.ok(accessor instanceof AST.ASTNodeKey);
+				assert.deepStrictEqual(
+					[access.source,     base.source,   accessor.source],
+					[`x . ( ) . y . z`, `x . ( ) . y`, `z`],
+				);
+			});
+		});
+
 		context('ExpressionUnarySymbol ::= ("!" | "?" | "-") ExpressionUnarySymbol', () => {
 			it('makes an ASTNodeOperationUnary.', () => {
 				/*
@@ -1191,52 +1224,47 @@ describe('DecoratorSolid', () => {
 			})
 		})
 
-		describe('Assignee ::= IDENTIFIER', () => {
-			it('makes an ASTNodeVariable node.', () => {
+		describe('DeclarationClaim ::= "claim" Assignee ":" Type ";"', () => {
+			it('makes a ASTNodeDeclarationClaim node.', () => {
 				/*
-					<Variable source="the_answer" id=256n/>
+					<DeclarationClaim>
+						<Variable source="my_var"/>
+						<TypeOperation source="int | float">...</TypeOperation>
+					</DeclarationClaim>
 				*/
-				const variable: AST.ASTNodeVariable = (DECORATOR_SOLID.decorate(h.assigneeFromSource(`
-					the_answer = the_answer - 40;
-				`)) as AST.ASTNodeVariable);
-				assert.strictEqual(variable.source, `the_answer`);
+				[
+					`my_var`,
+					`my_var.2`,
+					`my_var.prop`,
+					`my_var.2.prop`,
+					`my_var.prop.2`,
+				].forEach((assignee, i) => {
+					const decl: AST.ASTNodeDeclarationClaim = DECORATOR_SOLID.decorate(h.claimDeclarationFromSource(`
+						claim ${ assignee }: int | float;
+					`));
+					assert.ok(decl.claimed_type instanceof AST.ASTNodeTypeOperation);
+					assert.ok(decl.assignee instanceof ((i === 0) ? AST.ASTNodeVariable : AST.ASTNodeAccess));
+					return assert.deepStrictEqual(
+						[decl.assignee.source,            decl.claimed_type.source],
+						[assignee.replaceAll('.', ' . '), `int | float`],
+					);
+				});
 			});
 		});
 
-		describe('Assignee ::= ExpressionCompound PropertyAssign', () => {
-			it('makes an ASTNodeAccess node.', () => {
+		describe('DeclarationReassignment ::= "set" Assignee "=" Expression ";"', () => {
+			it('makes an ASTNodeDeclarationReassignment node.', () => {
 				/*
-					<Access source="x.().y.z" kind=NORMAL>
-						<Access source="x.().y">...</Access>
-						<Key source="z"/>
-					</Access>
-				*/
-				const access: AST.ASTNodeAccess = (DECORATOR_SOLID.decorate(h.assigneeFromSource(`
-					x.().y.z = a;
-				`)) as AST.ASTNodeAccess);
-				const base: AST.ASTNodeExpression = access.base;
-				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.accessor;
-				assert.ok(accessor instanceof AST.ASTNodeKey);
-				assert.deepStrictEqual(
-					[access.source,     base.source,   accessor.source],
-					[`x . ( ) . y . z`, `x . ( ) . y`, `z`],
-				);
-			});
-		});
-
-		describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
-			it('makes an ASTNodeAssignment node.', () => {
-				/*
-					<Assignment>
+					<DeclarationReassignment>
 						<Variable source="the_answer">...</Variable>
 						<Operation operator=ADD source="the_answer - 40">
 							<Variable source="the_answer" id="256"/>
 							<Operation operator=NEG source="40">...</Operation>
 						</Operation>
-					</Assignment>
+					</DeclarationReassignment>
 				*/
-				const assn: AST.ASTNodeAssignment = DECORATOR_SOLID.decorate(h.assignmentFromSource(`
-					the_answer = the_answer - 40;
+				const assn: AST.ASTNodeDeclarationReassignment = DECORATOR_SOLID.decorate(h.reassignmentDeclarationFromSource(`
+					set the_answer = the_answer - 40;
 				`));
 				assert.ok(assn.assigned instanceof AST.ASTNodeOperationBinary);
 				assert.ok(assn.assigned.operand0 instanceof AST.ASTNodeVariable);
@@ -1605,19 +1633,19 @@ describe('DecoratorSolid', () => {
 
 			['Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
 				{
-					v.1 = false;
+					set v.1 = false;
 				}
 				% (property_assign)
 			`]],
 			['Decorate(PropertyAssign ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
 				{
-					v.p = false;
+					set v.p = false;
 				}
 				% (property_assign)
 			`]],
 			['Decorate(PropertyAssign ::= "." "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
-					v.[a + b] = false;
+					set v.[a + b] = false;
 				}
 				% (property_assign)
 			`]],
@@ -1637,13 +1665,13 @@ describe('DecoratorSolid', () => {
 
 			['Decorate(Assignee ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
 				{
-					v = 42;
+					set v = 42;
 				}
 				% (assignee)
 			`]],
 			['Decorate(Assignee ::= ExpressionCompound PropertyAssign) -> SemanticAccess', [AST.ASTNodeAccess, `
 				{
-					v.1 = 42;
+					set v.1 = 42;
 				}
 				% (assignee)
 			`]],
@@ -1781,6 +1809,20 @@ describe('DecoratorSolid', () => {
 				% (declaration_variable)
 			`]],
 
+			['Decorate(DeclarationClaim ::= "claim" Assignee ":" Type ";") -> DeclarationClaim', [AST.ASTNodeDeclarationClaim, `
+				{
+					claim a: T;
+				}
+				% (declaration_claim)
+			`]],
+
+			['Decorate(DeclarationReassignment ::= "set" Assignee "=" Expression ";") -> DeclarationReassignment', [AST.ASTNodeDeclarationReassignment, `
+				{
+					set a = b;
+				}
+				% (declaration_reassignment)
+			`]],
+
 			['Decorate(StatementExpression ::= Expression ";") -> SemanticStatementExpression', [AST.ASTNodeStatementExpression, `
 				{
 					a;
@@ -1788,19 +1830,13 @@ describe('DecoratorSolid', () => {
 				% (statement_expression)
 			`]],
 
-			['Decorate(StatementAssignment ::= Assignee "=" Expression ";") -> SemanticAssignment', [AST.ASTNodeAssignment, `
-				{
-					a = b;
-				}
-				% (statement_assignment)
-			`]],
-
 			['Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock', [AST.ASTNodeBlock, `
 				{
 					type T = U;
 					let a: T = b;
+					claim a: U;
+					set a = b;
 					a;
-					a = b;
 				}
 				% (block)
 			`]],

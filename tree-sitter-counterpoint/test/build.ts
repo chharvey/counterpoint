@@ -622,7 +622,7 @@ function buildTest(title: string, source: string, expected: string) {
 		],
 
 		// Assignee
-		// see #StatementAssignment
+		// see #DeclarationReassignment
 
 		ExpressionUnarySymbol: [
 			xjs.String.dedent`
@@ -920,8 +920,88 @@ function buildTest(title: string, source: string, expected: string) {
 			),
 		],
 
+		DeclarationClaim: [
+			xjs.String.dedent`
+				{
+					claim my_var:       T;
+					claim tuple.1:      U;
+					claim record.prop:  V;
+					claim list.[index]: W;
+				}
+			`,
+			makeSourceFileFromStatements(
+				s('declaration_claim',
+					s('assignee',
+						s('identifier'),
+					),
+					s('identifier'),
+				),
+				s('declaration_claim',
+					s('assignee',
+						s('identifier'),
+						s('property_assign', s('integer')),
+					),
+					s('identifier'),
+				),
+				s('declaration_claim',
+					s('assignee',
+						s('identifier'),
+						s('property_assign', s('word', s('identifier'))),
+					),
+					s('identifier'),
+				),
+				s('declaration_claim',
+					s('assignee',
+						s('identifier'),
+						s('property_assign', s('identifier')),
+					),
+					s('identifier'),
+				),
+			),
+		],
+
+		DeclarationReassignment: [
+			xjs.String.dedent`
+				{
+					set my_var       = a;
+					set tuple.1      = b;
+					set record.prop  = c;
+					set list.[index] = d;
+				}
+			`,
+			makeSourceFileFromStatements(
+				s('declaration_reassignment',
+					s('assignee',
+						s('identifier'),
+					),
+					s('identifier'),
+				),
+				s('declaration_reassignment',
+					s('assignee',
+						s('identifier'),
+						s('property_assign', s('integer')),
+					),
+					s('identifier'),
+				),
+				s('declaration_reassignment',
+					s('assignee',
+						s('identifier'),
+						s('property_assign', s('word', s('identifier'))),
+					),
+					s('identifier'),
+				),
+				s('declaration_reassignment',
+					s('assignee',
+						s('identifier'),
+						s('property_assign', s('identifier')),
+					),
+					s('identifier'),
+				),
+			),
+		],
+
 		// Declaration
-		// see #Declaration{Type,Variable}
+		// see #Declaration{Type,Variable,Claim,Reassignment}
 
 		StatementExpression: [
 			xjs.String.dedent`
@@ -932,56 +1012,17 @@ function buildTest(title: string, source: string, expected: string) {
 			makeSourceFileFromStatements(s('statement_expression', s('identifier'))),
 		],
 
-		StatementAssignment: [
-			xjs.String.dedent`
-				{
-					my_var       = a;
-					tuple.1      = b;
-					record.prop  = c;
-					list.[index] = d;
-				}
-			`,
-			makeSourceFileFromStatements(
-				s('statement_assignment',
-					s('assignee',
-						s('identifier'),
-					),
-					s('identifier'),
-				),
-				s('statement_assignment',
-					s('assignee',
-						s('identifier'),
-						s('property_assign', s('integer')),
-					),
-					s('identifier'),
-				),
-				s('statement_assignment',
-					s('assignee',
-						s('identifier'),
-						s('property_assign', s('word', s('identifier'))),
-					),
-					s('identifier'),
-				),
-				s('statement_assignment',
-					s('assignee',
-						s('identifier'),
-						s('property_assign', s('identifier')),
-					),
-					s('identifier'),
-				),
-			),
-		],
-
 		// Statement
-		// see #{Declaration,Statement{Expression,Assignment}}
+		// see #{Declaration,StatementExpression}
 
 		Block: [
 			xjs.String.dedent`
 				{
 					type T = U;
 					let a: T = b;
+					claim a: U;
+					set a = b;
 					a;
-					a = b;
 				}
 			`,
 			s('source_file',
@@ -995,13 +1036,19 @@ function buildTest(title: string, source: string, expected: string) {
 						s('identifier'),
 						s('identifier'),
 					),
-					s('statement_expression',
-						s('identifier'),
-					),
-					s('statement_assignment',
+					s('declaration_claim',
 						s('assignee',
 							s('identifier'),
 						),
+						s('identifier'),
+					),
+					s('declaration_reassignment',
+						s('assignee',
+							s('identifier'),
+						),
+						s('identifier'),
+					),
+					s('statement_expression',
 						s('identifier'),
 					),
 				),

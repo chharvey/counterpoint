@@ -150,9 +150,10 @@ class DecoratorSolid extends Decorator {
 	override decorate(node: PARSENODE.ParseNodeExpressionConditional): AST.ASTNodeOperationTernary;
 	override decorate(node: PARSENODE.ParseNodeDeclarationType):       AST.ASTNodeDeclarationType;
 	override decorate(node: PARSENODE.ParseNodeDeclarationVariable):   AST.ASTNodeDeclarationVariable;
+	override decorate(node: PARSENODE.ParseNodeDeclarationClaim):      AST.ASTNodeDeclarationClaim;
+	override decorate(node: PARSENODE.ParseNodeDeclarationReassignment): AST.ASTNodeDeclarationReassignment;
 	override decorate(node: PARSENODE.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
 	override decorate(node: PARSENODE.ParseNodeStatementExpression):   AST.ASTNodeStatementExpression;
-	override decorate(node: PARSENODE.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
 	override decorate(node: PARSENODE.ParseNodeStatement):             AST.ASTNodeStatement;
 	override decorate(node: PARSENODE.ParseNodeBlock):                 AST.ASTNodeBlock;
 	override decorate(node: PARSENODE.ParseNodeGoal, config?: SolidConfig): AST.ASTNodeGoal;
@@ -528,15 +529,22 @@ class DecoratorSolid extends Decorator {
 				this.decorate((node.children.length === 7) ? node.children[5] : node.children[6]),
 			);
 
+		} else if (node instanceof PARSENODE.ParseNodeDeclarationClaim) {
+			return new AST.ASTNodeDeclarationClaim(
+				node,
+				this.decorate(node.children[1]),
+				this.decorate(node.children[3]),
+			);
+
+		} else if (node instanceof PARSENODE.ParseNodeDeclarationReassignment) {
+			return new AST.ASTNodeDeclarationReassignment(
+				node,
+				this.decorate(node.children[1]),
+				this.decorate(node.children[3]),
+			);
+
 		} else if (node instanceof PARSENODE.ParseNodeDeclaration) {
 			return this.decorate(node.children[0]);
-
-		} else if (node instanceof PARSENODE.ParseNodeStatementAssignment) {
-			return new AST.ASTNodeAssignment(
-				node,
-				this.decorate(node.children[0]),
-				this.decorate(node.children[2]),
-			);
 
 		} else if (node instanceof PARSENODE.ParseNodeStatementExpression) {
 			return new AST.ASTNodeStatementExpression(node, (node.children.length === 2) ? this.decorate(node.children[0]) : void 0);
@@ -603,9 +611,10 @@ class DecoratorSolid extends Decorator {
 	decorateTS(node: SyntaxNodeSupertype<'expression'>):                         AST.ASTNodeExpression;
 	decorateTS(node: SyntaxNodeType<'declaration_type'>):                        AST.ASTNodeDeclarationType;
 	decorateTS(node: SyntaxNodeType<'declaration_variable'>):                    AST.ASTNodeDeclarationVariable;
+	decorateTS(node: SyntaxNodeType<'declaration_claim'>):                       AST.ASTNodeDeclarationClaim;
+	decorateTS(node: SyntaxNodeType<'declaration_reassignment'>):                AST.ASTNodeDeclarationReassignment;
 	decorateTS(node: SyntaxNodeSupertype<'declaration'>):                        AST.ASTNodeDeclaration;
 	decorateTS(node: SyntaxNodeType<'statement_expression'>):                    AST.ASTNodeStatementExpression;
-	decorateTS(node: SyntaxNodeType<'statement_assignment'>):                    AST.ASTNodeAssignment;
 	decorateTS(node: SyntaxNodeSupertype<'statement'>):                          AST.ASTNodeStatement;
 	decorateTS(node: SyntaxNodeType<'block'>):                                   AST.ASTNodeBlock;
 	decorateTS(node: SyntaxNodeType<'source_file'>, config?: SolidConfig):       AST.ASTNodeGoal;
@@ -622,16 +631,16 @@ class DecoratorSolid extends Decorator {
 			keyword_type: (node) => new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'keyword_type'>),
 
 			identifier: (node) => (
-				(isSyntaxNodeSupertype(node.parent!, 'type'))      || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/)                                                            ? new AST.ASTNodeTypeAlias (node as SyntaxNodeType<'identifier'>) :
-				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|declaration_variable|statement_expression|statement_assignment)$/),  new AST.ASTNodeVariable  (node as SyntaxNodeType<'identifier'>))
+				(isSyntaxNodeSupertype(node.parent!, 'type'))      || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim))$/)                                       ? new AST.ASTNodeTypeAlias (node as SyntaxNodeType<'identifier'>) :
+				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_(access|assign)|declaration_(variable|reassignment)|statement_expression)$/),  new AST.ASTNodeVariable  (node as SyntaxNodeType<'identifier'>))
 			),
 
 			/* # PRODUCTIONS */
 			word: (node) => new AST.ASTNodeKey(node as SyntaxNodeType<'word'>),
 
 			primitive_literal: (node) => (
-				(isSyntaxNodeSupertype(node.parent!, 'type'))      || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/)                                                            ? new AST.ASTNodeTypeConstant (node as SyntaxNodeType<'primitive_literal'>) :
-				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|declaration_variable|statement_expression|statement_assignment)$/),  new AST.ASTNodeConstant     (node as SyntaxNodeType<'primitive_literal'>))
+				(isSyntaxNodeSupertype(node.parent!, 'type'))      || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim))$/)                                       ? new AST.ASTNodeTypeConstant (node as SyntaxNodeType<'primitive_literal'>) :
+				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_(access|assign)|declaration_(variable|reassignment)|statement_expression)$/),  new AST.ASTNodeConstant     (node as SyntaxNodeType<'primitive_literal'>))
 			),
 
 			/* ## Types */
@@ -1038,15 +1047,21 @@ class DecoratorSolid extends Decorator {
 				this.decorateTS         (((node.children.length === 7) ? node.children[5] : node.children[6]) as SyntaxNodeSupertype<'expression'>),
 			),
 
+			declaration_claim: (node) => new AST.ASTNodeDeclarationClaim(
+				node as SyntaxNodeType<'declaration_claim'>,
+				this.decorateTS(node.children[1] as SyntaxNodeType<'assignee'>),
+				this.decorateTS(node.children[3] as SyntaxNodeSupertype<'type'>),
+			),
+
+			declaration_reassignment: (node) => new AST.ASTNodeDeclarationReassignment(
+				node as SyntaxNodeType<'declaration_reassignment'>,
+				this.decorateTS(node.children[1] as SyntaxNodeType<'assignee'>),
+				this.decorateTS(node.children[3] as SyntaxNodeSupertype<'expression'>),
+			),
+
 			statement_expression: (node) => new AST.ASTNodeStatementExpression(
 				node as SyntaxNodeType<'statement_expression'>,
 				(node.children.length === 2) ? this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>) : void 0,
-			),
-
-			statement_assignment: (node) => new AST.ASTNodeAssignment(
-				node as SyntaxNodeType<'statement_assignment'>,
-				this.decorateTS(node.children[0] as SyntaxNodeType<'assignee'>),
-				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			),
 
 			block: (node) => new AST.ASTNodeBlock(

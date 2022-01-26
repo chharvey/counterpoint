@@ -226,7 +226,7 @@ Type! TypeOf(SemanticClaim claim) :=
 	4. Let `computed_type` be `TypeOf(claim.children.1)`.
 	5. *If* `Intersect(claimed_type, computed_type)` is `never`:
 		1. *Throw:* a new TypeError03.
-	6. Return `claimed_type`.
+	6. *Return:* `claimed_type`.
 ;
 
 

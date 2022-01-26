@@ -52,6 +52,10 @@ Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
 	].
 ;
 
+Sequence<Instruction> Build(SemanticDeclarationClaim decl) :=
+	1. *Return:* [].
+;
+
 Sequence<Instruction> Build(SemanticAssignment assign) :=
 	1. *Assert:* `assign.children.count` is 2.
 	2. *Let* `name` be the string-concatenation of "glb" and `assign.children.0.id`.

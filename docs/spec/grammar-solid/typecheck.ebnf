@@ -44,9 +44,26 @@ None! TypeCheck(SemanticDeclarationVariable decl) :=
 	6. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
 		1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
 		2. *Set* `symbol.type` to *UnwrapAffirm:* `TypeValueOf(decl.children.1)`.
-		3. *If* `decl.unfixed` is `false`:
+		3. *If* `decl.unfixed` is `false` *and* `symbol.type` is not a mutable type:
 			1. *Assert:* `symbol.unfixed` is `false`.
 			2. *Set* `symbol.value` to *Unwrap:* `ValueOf(decl.children.2)`.
+;
+
+
+
+Type! TypeCheck(SemanticDeclarationClaim claim) :=
+	1. *Assert:* `claim.children.count` is 2.
+	2. Let `claimed_type` be `TypeValueOf(claim.children.1)`.
+	3. Let `computed_type` be `TypeOf(claim.children.0)`.
+	4. *If* `Intersect(claimed_type, computed_type)` is `never`:
+		1. *Throw:* a new TypeError03.
+	5. *Let* `assignee` be `claim.children.0`.
+	6. *If* `assignee` is a SemanticVariable:
+		1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `assignee.id`:
+			1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
+			2. *Set* `symbol.type` to `claimed_type`.
+	7. *Else:*
+		// TODO
 ;
 
 

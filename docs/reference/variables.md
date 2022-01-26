@@ -66,7 +66,7 @@ let my_other_var: str = 'Hello, programmer!';
 By default, variables are **fixed** in that they cannot be reassigned.
 ```
 let my_var: str = 'Hello, world!';
-my_var = '¡Hola, mundo!';          %> AssignmentError
+set my_var = '¡Hola, mundo!';      %> AssignmentError
 ```
 > AssignmentError: Reassignment of a fixed variable: `my_var`.
 
@@ -76,13 +76,14 @@ However, changing a variable’s value is useful in some cases, such as in loops
 
 Therefore, we can declare a variables with the keywords `let unfixed`,
 which allows us to assign it a new value later.
+The variable is reassigned with the keyword `set`.
 ```
 let unfixed my_var = 'Hello, world!';
 my_var;                               %== 'Hello, world!'
-my_var = '¡Hola, mundo!';
+set my_var = '¡Hola, mundo!';
 my_var;                               %== '¡Hola, mundo!'
 ```
-The statement `my_var = '¡Hola, mundo!';` is called a **variable reassignment statement**.
+The statement `set my_var = '¡Hola, mundo!';` is called a **variable reassignment statement**.
 An unfixed variable can be reassigned anywhere in the scope in which it’s visible.
 
 
@@ -108,9 +109,53 @@ let unfixed a: int = 42;
 let unfixed b: int = a;
 a;                       %== 42
 b;                       % also `42`
-a = 420;
+set a = 420;
 a;                       % now `420`
 b;                       % still `42`
+```
+
+
+
+## Type Claim Declarations
+A type claim declaration is a [type claim](./expressions-operators.md#type-claim) for a variable at the block level.
+After a variable `expr` has been declared, we may want to **claim** that it has type `T` throughout the block,
+so we would declare the following:
+```
+claim expr: T;
+```
+This is convenient because we don’t have to claim the expression everywhere it’s used in the block.
+
+The code below has to claim that `item.1` is of type `int` every time it’s referenced.
+```
+let item: mutable [str, int | str] = ['apples', 42];
+'''
+	Clerk: How many {{ item.0 }} would you like?
+	Customer: {{ <int>item.1 }} please.
+	Clerk: Wow, {{ <int>item.1 }} is a lot!
+''';
+```
+One way to simplify this would be to declare a new variable:
+```
+let item: mutable [str, int | str] = ['apples', 42];
+let quantity: int = <int>item.1;
+'''
+	Clerk: How many {{ item.0 }} would you like?
+	Customer: {{ quantity }} please.
+	Clerk: Wow, {{ quantity }} is a lot!
+''';
+```
+But a new variable could take up space on the runtime machine.
+The only purpose of `quantity` is to make a type claim, so it’s not necessary at runtime.
+Instead, we should claim the expression’s type in a claim statement.
+Type claims take place only in the compiler, so no memory is wasted.
+```
+let item: mutable [str, int | str] = ['apples', 42];
+claim item.1: int;
+'''
+	Clerk: How many {{ item.0 }} would you like?
+	Customer: {{ item.1 }} please.
+	Clerk: Wow, {{ item.1 }} is a lot!
+''';
 ```
 
 
@@ -214,7 +259,7 @@ By convention, type aliases are named in *PascalCase*.
 Type aliases are initialized when they’re declared, and they’re always fixed — they can never be reassigned.
 ```
 type MyType = int | float;
-MyType = int;              % raises a ParseError or ReferenceError (depending on type expression)
+set MyType = int;          % raises a ParseError or ReferenceError (depending on type expression)
 ```
 
 Type aliases can be declared only once within a given scope.

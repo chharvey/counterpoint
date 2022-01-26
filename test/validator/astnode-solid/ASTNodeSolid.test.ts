@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import {
-	Operator,
 	ASTNODE_SOLID as AST,
 	SolidType,
 	INST,
@@ -11,14 +10,12 @@ import {
 	AssignmentError10,
 	TypeError01,
 	TypeError03,
-	MutabilityError01,
 } from '../../../src/index.js';
 import {
 	assertAssignable,
 } from '../../assert-helpers.js';
 import {
 	typeConstFloat,
-	instructionConstFloat,
 } from '../../helpers.js';
 
 
@@ -57,133 +54,6 @@ describe('ASTNodeSolid', () => {
 
 
 
-	describe('ASTNodeAssignment', () => {
-		describe('#varCheck', () => {
-			it('throws if the variable is not unfixed.', () => {
-				AST.ASTNodeGoal.fromSource(`{
-					let unfixed i: int = 42;
-					i = 43;
-				}`).varCheck(); // assert does not throw
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					let i: int = 42;
-					i = 43;
-				}`).varCheck(), AssignmentError10);
-			});
-			it('always throws for type alias reassignment.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					type T = 42;
-					T = 43;
-				}`).varCheck(), ReferenceError03);
-			});
-		});
-
-
-		describe('#typeCheck', () => {
-			context('for variable reassignment.', () => {
-				it('throws when variable assignee type is not supertype.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
-						let unfixed i: int = 42;
-						i = 4.3;
-					}`);
-					goal.varCheck();
-					assert.throws(() => goal.typeCheck(), TypeError03);
-				});
-			});
-
-			context('for property reassignment.', () => {
-				it('throws when property assignee type is not supertype.', () => {
-					[
-						`{
-							let t: mutable [42] = [42];
-							t.0 = 4.2;
-						}`,
-						`{
-							let r: mutable [i: 42] = [i= 42];
-							r.i = 4.2;
-						}`,
-						`{
-							let l: mutable int[] = List.<int>([42]);
-							l.0 = 4.2;
-						}`,
-						`{
-							let h: mutable [:int] = Hash.<int>([i= 42]);
-							h.i = 4.2;
-						}`,
-						`{
-							let s: mutable int{} = Set.<int>([42]);
-							s.[42] = 4.2;
-						}`,
-						`{
-							let m: mutable {bool -> int} = Map.<bool, int>([[true, 42]]);
-							m.[true] = 4.2;
-						}`,
-					].forEach((src) => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-						goal.varCheck();
-						assert.throws(() => goal.typeCheck(), TypeError03);
-					});
-				});
-				it('throws when assignee’s base type is not mutable.', () => {
-					[
-						`{
-							let t: [42] = [42];
-							t.0 = 4.2;
-						}`,
-						`{
-							let r: [i: 42] = [i= 42];
-							r.i = 4.2;
-						}`,
-						`{
-							let l: int[] = List.<int>([42]);
-							l.0 = 4.2;
-						}`,
-						`{
-							let h: [:int] = Hash.<int>([i= 42]);
-							h.i = 4.2;
-						}`,
-						`{
-							let s: int{} = Set.<int>([42]);
-							s.[42] = 4.2;
-						}`,
-						`{
-							let m: {bool -> int} = Map.<bool, int>([[true, 42]]);
-							m.[true] = 4.2;
-						}`,
-					].forEach((src) => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-						goal.varCheck();
-						assert.throws(() => goal.typeCheck(), MutabilityError01);
-					});
-				});
-			});
-		});
-
-
-		describe('#build', () => {
-			it('always returns InstructionStatement containing InstructionGlobalSet.', () => {
-				const src: string = `{
-					let unfixed y: float = 4.2;
-					y = y * 10;
-				}`;
-				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
-				const builder: Builder = new Builder(src);
-				assert.deepStrictEqual(
-					block.children[1].build(builder),
-					new INST.InstructionStatement(
-						0n,
-						new INST.InstructionGlobalSet(0x100n, new INST.InstructionBinopArithmetic(
-							Operator.MUL,
-							new INST.InstructionGlobalGet(0x100n, true),
-							instructionConstFloat(10.0),
-						)),
-					),
-				);
-			});
-		});
-	});
-
-
-
 	describe('ASTNodeGoal', () => {
 		describe('#varCheck', () => {
 			it('aggregates multiple errors.', () => {
@@ -192,7 +62,7 @@ describe('ASTNodeSolid', () => {
 					let y: V & W | X & Y = null;
 					let x: int = 42;
 					let x: int = 420;
-					x = 4200;
+					set x = 4200;
 					type T = int;
 					type T = float;
 					let z: x = null;

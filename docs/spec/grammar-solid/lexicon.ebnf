@@ -69,6 +69,8 @@ KeywordOther :::=
 	// storage
 		| "type"
 		| "let"
+		| "claim"
+		| "set"
 	// modifier
 		| "unfixed"
 ;

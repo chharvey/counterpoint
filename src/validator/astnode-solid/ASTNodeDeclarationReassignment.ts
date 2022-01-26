@@ -19,14 +19,14 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 
 
 
-export class ASTNodeAssignment extends ASTNodeStatement {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeAssignment {
+export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeDeclarationReassignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeAssignment);
+		assert.ok(statement instanceof ASTNodeDeclarationReassignment);
 		return statement;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeStatementAssignment | SyntaxNodeType<'statement_assignment'>,
+		start_node: PARSENODE.ParseNodeDeclarationReassignment | SyntaxNodeType<'declaration_reassignment'>,
 		readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		readonly assigned: ASTNodeExpression,
 	) {
