@@ -57,7 +57,7 @@ export class Grammar {
 	 * @param   symbol a terminal or nonterminal grammar symbol
 	 * @returns        the set of all possible terminal symbols, each of which may replace `symbol`
 	 */
-	private first(symbol: GrammarSymbol): Set<GrammarTerminal> {
+	first(symbol: GrammarSymbol): Set<GrammarTerminal> {
 		return new Set<GrammarTerminal>(
 			(typeof symbol === 'string' || symbol instanceof Terminal) ? [symbol] :
 			(symbol instanceof Production) ? symbol.sequences.flatMap<GrammarTerminal>((seq) =>

@@ -17,11 +17,11 @@ import {
 	Builder,
 	TypeError05,
 	TypeError06,
+	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
 } from './package.js';
-import {forEachAggregated} from './utils-private.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';

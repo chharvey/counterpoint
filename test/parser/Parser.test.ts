@@ -241,26 +241,34 @@ describe('ParserSolid', () => {
 			})
 		})
 
-		specify('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
-			[
-				`A`,
-				`[A, B]`,
-				`[a: A, b: B]`,
-				`[:A]`,
-				`{A -> B}`,
-				`(A?)`,
-				`(A!)`,
-				`(A[])`,
-				`(A[3])`,
-				`(A{})`,
-				`(A & B)`,
-				`(A | B)`,
-			].flatMap((base) => [
-				`.1`,
-				`.b`,
-				`.<X, Y>`,
-			].map((dot) => `${ base }${ dot }`)).forEach((src) => {
-				assert.doesNotThrow(() => h.compoundTypeFromString(src), src);
+		describe('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
+			it('ok.', () => {
+				[
+					`A`,
+					`[A, B]`,
+					`[a: A, b: B]`,
+					`[:A]`,
+					`{A -> B}`,
+					`(A?)`,
+					`(A!)`,
+					`(A[])`,
+					`(A[3])`,
+					`(A{})`,
+					`(A & B)`,
+					`(A | B)`,
+				].flatMap((base) => [
+					`.1`,
+					`.b`,
+					`.<X, Y>`,
+				].map((dot) => `${ base }${ dot }`)).forEach((src) => {
+					assert.doesNotThrow(() => h.compoundTypeFromString(src), src);
+				});
+			});
+			it('chained integer access is not lexed as a float.', () => {
+				return assert.doesNotThrow(() => h.compoundTypeFromString(`A.1.b`), `A.1.b`);
+			});
+			it('integers chained side-by-side parsed as float.', () => {
+				return assert.throws(() => h.compoundTypeFromString(`A.1.2`), ParseError01);
 			});
 		});
 
@@ -640,25 +648,33 @@ describe('ParserSolid', () => {
 			})
 		})
 
-		specify('ExpressionCompound ::= ExpressionCompound (PropertyAccess | FunctionCall)', () => {
-			[
-				`a`,
-				`[a, b]`,
-				`[x= a, y= b]`,
-				`{a -> b}`,
-				`(!a)`,
-				`(?a)`,
-				`(+a)`,
-				`(-a)`,
-				`(a ^ b)`,
-				`(a || b)`,
-			].flatMap((base) => [
-				`.1`,
-				`.x`,
-				`.(x, y)`,
-				`.<X, Y>(x, y)`,
-			].map((dot) => `${ base }${ dot };`)).forEach((src) => {
-				assert.doesNotThrow(() => h.compoundExpressionFromSource(src), src);
+		describe('ExpressionCompound ::= ExpressionCompound (PropertyAccess | FunctionCall)', () => {
+			it('ok.', () => {
+				[
+					`a`,
+					`[a, b]`,
+					`[x= a, y= b]`,
+					`{a -> b}`,
+					`(!a)`,
+					`(?a)`,
+					`(+a)`,
+					`(-a)`,
+					`(a ^ b)`,
+					`(a || b)`,
+				].flatMap((base) => [
+					`.1`,
+					`.x`,
+					`.(x, y)`,
+					`.<X, Y>(x, y)`,
+				].map((dot) => `${ base }${ dot };`)).forEach((src) => {
+					assert.doesNotThrow(() => h.compoundExpressionFromSource(src), src);
+				});
+			});
+			it('chained integer access is not lexed as a float.', () => {
+				return assert.doesNotThrow(() => h.compoundExpressionFromSource(`a.1.b;`), `a.1.b;`);
+			});
+			it('integers chained side-by-side parsed as float.', () => {
+				return assert.throws(() => h.compoundExpressionFromSource(`a.1.2;`), ParseError01);
 			});
 		});
 

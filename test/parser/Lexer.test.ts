@@ -5,6 +5,7 @@ import {
 	Dev,
 	Filebound,
 	TemplatePosition,
+	Punctuator,
 	Token,
 	TokenFilebound,
 	TokenWhitespace,
@@ -259,6 +260,10 @@ describe('LexerSolid', () => {
 					numericSeparators: true,
 				},
 			});
+			function tokenTypeAndSource(token: Token, type: NewableFunction, source: string) {
+				assert.ok(token instanceof type, `Token \`${ token.source }\` is not instance of ${ type.name }.`);
+				return assert.strictEqual(token.source, source);
+			}
 			specify('implicit radix integers.', () => {
 				[...LEXER.generate(TOKEN.TokenNumber.DIGITS.get(TOKEN.TokenNumber.RADIX_DEFAULT)!.join(' '))]
 					.slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
@@ -334,36 +339,40 @@ describe('LexerSolid', () => {
 			context('floats.', () => {
 				it('tokenizes floats.', () => {
 					const tokens: Token[] = [...LEXER.generate(`
-						55.  -55.  033.  -033.  2.007  -2.007
+						2.007  -2.007
 						91.27e4  -91.27e4  91.27e-4  -91.27e-4
-						-0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-						34.-78
+						-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 					`)];
-					assert.strictEqual(tokens[ 2].source, `55.`)
-					assert.strictEqual(tokens[ 4].source, `-55.`)
-					assert.strictEqual(tokens[ 6].source, `033.`)
-					assert.strictEqual(tokens[ 8].source, `-033.`)
-					assert.strictEqual(tokens[10].source, `2.007`)
-					assert.strictEqual(tokens[12].source, `-2.007`)
-					assert.strictEqual(tokens[14].source, `91.27e4`)
-					assert.strictEqual(tokens[16].source, `-91.27e4`)
-					assert.strictEqual(tokens[18].source, `91.27e-4`)
-					assert.strictEqual(tokens[20].source, `-91.27e-4`)
-					assert.strictEqual(tokens[22].source, `-0.`)
-					assert.strictEqual(tokens[24].source, `-0.0`)
-					assert.strictEqual(tokens[26].source, `6.8e+0`)
-					assert.strictEqual(tokens[28].source, `6.8e-0`)
-					assert.strictEqual(tokens[30].source, `0.0e+0`)
-					assert.strictEqual(tokens[32].source, `-0.0e-0`)
-					assert.strictEqual(tokens[34].source, `34.`)
-					assert.strictEqual(tokens[35].source, `-78`)
+					assert.strictEqual(tokens[ 2].source, `2.007`)
+					assert.strictEqual(tokens[ 4].source, `-2.007`)
+					assert.strictEqual(tokens[ 6].source, `91.27e4`)
+					assert.strictEqual(tokens[ 8].source, `-91.27e4`)
+					assert.strictEqual(tokens[10].source, `91.27e-4`)
+					assert.strictEqual(tokens[12].source, `-91.27e-4`)
+					assert.strictEqual(tokens[14].source, `-0.0`)
+					assert.strictEqual(tokens[16].source, `6.8e+0`)
+					assert.strictEqual(tokens[18].source, `6.8e-0`)
+					assert.strictEqual(tokens[20].source, `0.0e+0`)
+					assert.strictEqual(tokens[22].source, `-0.0e-0`)
 				})
+				it('when missing fractional part, lexes as 2 tokens: integer, dot.', () => {
+					const tokens: Token[] = [...LEXER.generate(`
+						55.  -55.  033.  -033.  -0.  34.-78
+					`)].filter((t) => !(t instanceof TokenFilebound || t instanceof TokenWhitespace));
+					assert.deepStrictEqual(
+						tokens.map((t) => t.source),
+						[`55`, Punctuator.DOT, `-55`, Punctuator.DOT, `033`, Punctuator.DOT, `-033`, Punctuator.DOT, `-0`, Punctuator.DOT, `34`, Punctuator.DOT, `-78`],
+					);
+					return tokens.forEach((t, i) => assert.ok(t instanceof ((i % 2 == 0)
+						? TOKEN.TokenNumber
+						: TOKEN.TokenPunctuator
+					), `${ t.source } was not the expected token type`));
+				});
 				it('recognizes exponent part not following fraction part as identifier.', () => {
 					const tokens: Token[] = [...LEXER.generate(`91.e27`)];
-						assert.ok(tokens[2] instanceof TOKEN.TokenNumber)
-						assert.strictEqual(tokens[2].source, `91.`)
-						assert.ok(tokens[3] instanceof TOKEN.TokenIdentifier)
-						assert.strictEqual(tokens[3].source, `e27`)
+					tokenTypeAndSource(tokens[2], TOKEN.TokenNumber,     `91`);
+					tokenTypeAndSource(tokens[3], TOKEN.TokenPunctuator, Punctuator.DOT);
+					tokenTypeAndSource(tokens[4], TOKEN.TokenIdentifier, `e27`);
 				})
 			})
 			context('numbers with separators.', () => {
@@ -393,7 +402,7 @@ describe('LexerSolid', () => {
 						\\d3_70  \\d0_37  +\\d9_037  -\\d9_037  +\\d0_6  -\\d0_6
 						\\xe_70  \\x0_e7  +\\x9_0e7  -\\x9_0e7  +\\x0_6  -\\x0_6
 						\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
-						5_5.  -5_5.  2.00_7  -2.00_7
+						2.00_7  -2.00_7
 						91.2e4_7  91.2e+4_7  91.2e-4_7
 					`.replace(/\n\t+/g, '  ').trim();
 					[...new LexerSolid({
@@ -417,24 +426,22 @@ describe('LexerSolid', () => {
 				specify('numeric separator at beginning of token is an identifier.', () => {
 					assert.throws(() => [...LEXER_SEPARATORS_ON.generate(`6.7e_12345`)],  LexError05);
 					assert.throws(() => [...LEXER_SEPARATORS_ON.generate(`6.7e-_12345`)], LexError05);
-						function tokenTypeAndSource(index: number, type: NewableFunction, source: string) {
-							assert.ok(tokens[index] instanceof type, `Token \`${ tokens[index].source }\` (${ index }) is not instance of ${ type.name }.`)
-							assert.strictEqual(tokens[index].source, source)
-						}
 					const tokens: Token[] = [...LEXER_SEPARATORS_ON.generate(`
 							_12345  -_12345  6._12345  6.-_12345
 					`, )];
-						tokenTypeAndSource(2, TOKEN.TokenIdentifier, `_12345`)
+					tokenTypeAndSource(tokens[2], TOKEN.TokenIdentifier, `_12345`);
 
-						tokenTypeAndSource(4, TOKEN.TokenPunctuator, `-`)
-						tokenTypeAndSource(5, TOKEN.TokenIdentifier, `_12345`)
+					tokenTypeAndSource(tokens[4], TOKEN.TokenPunctuator, `-`);
+					tokenTypeAndSource(tokens[5], TOKEN.TokenIdentifier, `_12345`);
 
-						tokenTypeAndSource(7, TOKEN.TokenNumber, `6.`)
-						tokenTypeAndSource(8, TOKEN.TokenIdentifier, `_12345`)
+					tokenTypeAndSource(tokens[7], TOKEN.TokenNumber, `6`);
+					tokenTypeAndSource(tokens[8], TOKEN.TokenPunctuator, Punctuator.DOT);
+					tokenTypeAndSource(tokens[9], TOKEN.TokenIdentifier, `_12345`);
 
-						tokenTypeAndSource(10, TOKEN.TokenNumber, `6.`)
-						tokenTypeAndSource(11, TOKEN.TokenPunctuator, `-`)
-						tokenTypeAndSource(12, TOKEN.TokenIdentifier, `_12345`)
+					tokenTypeAndSource(tokens[11], TOKEN.TokenNumber, `6`);
+					tokenTypeAndSource(tokens[12], TOKEN.TokenPunctuator, Punctuator.DOT);
+					tokenTypeAndSource(tokens[13], TOKEN.TokenPunctuator, `-`);
+					tokenTypeAndSource(tokens[14], TOKEN.TokenIdentifier, `_12345`);
 				})
 			})
 		})
