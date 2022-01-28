@@ -24,7 +24,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	}
 	private typed_?: SolidType;
 	constructor(
-		start_node: PARSENODE.ParseNodeExpressionClaim | SyntaxNodeType<'expression_claim'>,
+		start_node: PARSENODE.ParseNodeExpressionClaim$ | SyntaxNodeType<'expression_claim'>,
 		readonly claimed_type: ASTNodeType,
 		readonly operand: ASTNodeExpression,
 	) {

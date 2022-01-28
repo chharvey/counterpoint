@@ -327,6 +327,18 @@ class ProductionStringTemplate__0__List extends Production {
 	}
 }
 
+class ProductionStringTemplate_Variable__0__List extends Production {
+	static readonly instance: ProductionStringTemplate_Variable__0__List = new ProductionStringTemplate_Variable__0__List();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[TERMINAL.TerminalTemplateMiddle.instance],
+			[ProductionStringTemplate_Variable__0__List.instance, TERMINAL.TerminalTemplateMiddle.instance],
+			[TERMINAL.TerminalTemplateMiddle.instance, ProductionExpression_Variable.instance],
+			[ProductionStringTemplate_Variable__0__List.instance, TERMINAL.TerminalTemplateMiddle.instance, ProductionExpression_Variable.instance],
+		];
+	}
+}
+
 class ProductionStringTemplate extends Production {
 	static readonly instance: ProductionStringTemplate = new ProductionStringTemplate();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -340,6 +352,19 @@ class ProductionStringTemplate extends Production {
 	}
 }
 
+class ProductionStringTemplate_Variable extends Production {
+	static readonly instance: ProductionStringTemplate_Variable = new ProductionStringTemplate_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[TERMINAL.TerminalTemplateFull.instance],
+			[TERMINAL.TerminalTemplateHead.instance, TERMINAL.TerminalTemplateTail.instance],
+			[TERMINAL.TerminalTemplateHead.instance, ProductionStringTemplate_Variable__0__List.instance, TERMINAL.TerminalTemplateTail.instance],
+			[TERMINAL.TerminalTemplateHead.instance, ProductionExpression_Variable.instance, TERMINAL.TerminalTemplateTail.instance],
+			[TERMINAL.TerminalTemplateHead.instance, ProductionExpression_Variable.instance, ProductionStringTemplate_Variable__0__List.instance, TERMINAL.TerminalTemplateTail.instance],
+		];
+	}
+}
+
 class ProductionProperty extends Production {
 	static readonly instance: ProductionProperty = new ProductionProperty();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -349,11 +374,20 @@ class ProductionProperty extends Production {
 	}
 }
 
+class ProductionProperty_Variable extends Production {
+	static readonly instance: ProductionProperty_Variable = new ProductionProperty_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionWord.instance, '=', ProductionExpression_Variable.instance],
+		];
+	}
+}
+
 class ProductionCase extends Production {
 	static readonly instance: ProductionCase = new ProductionCase();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpression.instance, '->', ProductionExpression.instance],
+			[ProductionExpression_Variable.instance, '->', ProductionExpression_Variable.instance],
 		];
 	}
 }
@@ -363,6 +397,15 @@ class ProductionExpressionGrouped extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['(', ProductionExpression.instance, ')'],
+		];
+	}
+}
+
+class ProductionExpressionGrouped_Variable extends Production {
+	static readonly instance: ProductionExpressionGrouped_Variable = new ProductionExpressionGrouped_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['(', ProductionExpression_Variable.instance, ')'],
 		];
 	}
 }
@@ -377,15 +420,38 @@ class ProductionTupleLiteral__0__List extends Production {
 	}
 }
 
+class ProductionTupleLiteral_Variable__0__List extends Production {
+	static readonly instance: ProductionTupleLiteral_Variable__0__List = new ProductionTupleLiteral_Variable__0__List();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpression_Variable.instance],
+			[ProductionTupleLiteral_Variable__0__List.instance, ',', ProductionExpression_Variable.instance],
+		];
+	}
+}
+
 class ProductionTupleLiteral extends Production {
 	static readonly instance: ProductionTupleLiteral = new ProductionTupleLiteral();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
+			['@', '[', ']'],
+			['@', '[', ProductionTupleLiteral__0__List.instance, ']'],
+			['@', '[', ProductionTupleLiteral__0__List.instance, ',', ']'],
+			['@', '[', ',', ProductionTupleLiteral__0__List.instance, ']'],
+			['@', '[', ',', ProductionTupleLiteral__0__List.instance, ',', ']'],
+		];
+	}
+}
+
+class ProductionTupleLiteral_Variable extends Production {
+	static readonly instance: ProductionTupleLiteral_Variable = new ProductionTupleLiteral_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
 			['[', ']'],
-			['[', ProductionTupleLiteral__0__List.instance, ']'],
-			['[', ProductionTupleLiteral__0__List.instance, ',', ']'],
-			['[', ',', ProductionTupleLiteral__0__List.instance, ']'],
-			['[', ',', ProductionTupleLiteral__0__List.instance, ',', ']'],
+			['[', ProductionTupleLiteral_Variable__0__List.instance, ']'],
+			['[', ProductionTupleLiteral_Variable__0__List.instance, ',', ']'],
+			['[', ',', ProductionTupleLiteral_Variable__0__List.instance, ']'],
+			['[', ',', ProductionTupleLiteral_Variable__0__List.instance, ',', ']'],
 		];
 	}
 }
@@ -400,14 +466,36 @@ class ProductionRecordLiteral__0__List extends Production {
 	}
 }
 
+class ProductionRecordLiteral_Variable__0__List extends Production {
+	static readonly instance: ProductionRecordLiteral_Variable__0__List = new ProductionRecordLiteral_Variable__0__List();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionProperty_Variable.instance],
+			[ProductionRecordLiteral_Variable__0__List.instance, ',', ProductionProperty_Variable.instance],
+		];
+	}
+}
+
 class ProductionRecordLiteral extends Production {
 	static readonly instance: ProductionRecordLiteral = new ProductionRecordLiteral();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[', ProductionRecordLiteral__0__List.instance, ']'],
-			['[', ProductionRecordLiteral__0__List.instance, ',', ']'],
-			['[', ',', ProductionRecordLiteral__0__List.instance, ']'],
-			['[', ',', ProductionRecordLiteral__0__List.instance, ',', ']'],
+			['@', '[', ProductionRecordLiteral__0__List.instance, ']'],
+			['@', '[', ProductionRecordLiteral__0__List.instance, ',', ']'],
+			['@', '[', ',', ProductionRecordLiteral__0__List.instance, ']'],
+			['@', '[', ',', ProductionRecordLiteral__0__List.instance, ',', ']'],
+		];
+	}
+}
+
+class ProductionRecordLiteral_Variable extends Production {
+	static readonly instance: ProductionRecordLiteral_Variable = new ProductionRecordLiteral_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['[', ProductionRecordLiteral_Variable__0__List.instance, ']'],
+			['[', ProductionRecordLiteral_Variable__0__List.instance, ',', ']'],
+			['[', ',', ProductionRecordLiteral_Variable__0__List.instance, ']'],
+			['[', ',', ProductionRecordLiteral_Variable__0__List.instance, ',', ']'],
 		];
 	}
 }
@@ -417,10 +505,10 @@ class ProductionSetLiteral extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['{', '}'],
-			['{', ProductionTupleLiteral__0__List.instance, '}'],
-			['{', ProductionTupleLiteral__0__List.instance, ',', '}'],
-			['{', ',', ProductionTupleLiteral__0__List.instance, '}'],
-			['{', ',', ProductionTupleLiteral__0__List.instance, ',', '}'],
+			['{', ProductionTupleLiteral_Variable__0__List.instance, '}'],
+			['{', ProductionTupleLiteral_Variable__0__List.instance, ',', '}'],
+			['{', ',', ProductionTupleLiteral_Variable__0__List.instance, '}'],
+			['{', ',', ProductionTupleLiteral_Variable__0__List.instance, ',', '}'],
 		];
 	}
 }
@@ -452,10 +540,10 @@ class ProductionFunctionArguments extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['(', ')'],
-			['(', ProductionTupleLiteral__0__List.instance, ')'],
-			['(', ProductionTupleLiteral__0__List.instance, ',', ')'],
-			['(', ',', ProductionTupleLiteral__0__List.instance, ')'],
-			['(', ',', ProductionTupleLiteral__0__List.instance, ',', ')'],
+			['(', ProductionTupleLiteral_Variable__0__List.instance, ')'],
+			['(', ProductionTupleLiteral_Variable__0__List.instance, ',', ')'],
+			['(', ',', ProductionTupleLiteral_Variable__0__List.instance, ')'],
+			['(', ',', ProductionTupleLiteral_Variable__0__List.instance, ',', ')'],
 		];
 	}
 }
@@ -464,12 +552,27 @@ class ProductionExpressionUnit extends Production {
 	static readonly instance: ProductionExpressionUnit = new ProductionExpressionUnit();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[TERMINAL.TerminalIdentifier.instance],
 			[ProductionPrimitiveLiteral.instance],
 			[ProductionStringTemplate.instance],
 			[ProductionExpressionGrouped.instance],
 			[ProductionTupleLiteral.instance],
 			[ProductionRecordLiteral.instance],
+		];
+	}
+}
+
+class ProductionExpressionUnit_Variable extends Production {
+	static readonly instance: ProductionExpressionUnit_Variable = new ProductionExpressionUnit_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[TERMINAL.TerminalIdentifier.instance],
+			[ProductionPrimitiveLiteral.instance],
+			[ProductionStringTemplate_Variable.instance],
+			[ProductionExpressionGrouped_Variable.instance],
+			[ProductionTupleLiteral.instance],
+			[ProductionRecordLiteral.instance],
+			[ProductionTupleLiteral_Variable.instance],
+			[ProductionRecordLiteral_Variable.instance],
 			[ProductionSetLiteral.instance],
 			[ProductionMapLiteral.instance],
 		];
@@ -493,13 +596,30 @@ class ProductionPropertyAccess extends Production {
 	}
 }
 
+class ProductionPropertyAccess_Variable extends Production {
+	static readonly instance: ProductionPropertyAccess_Variable = new ProductionPropertyAccess_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['.', TERMINAL.TerminalInteger.instance],
+			['.', ProductionWord.instance],
+			['.', '[', ProductionExpression_Variable.instance, ']'],
+			['?.', TERMINAL.TerminalInteger.instance],
+			['?.', ProductionWord.instance],
+			['?.', '[', ProductionExpression_Variable.instance, ']'],
+			['!.', TERMINAL.TerminalInteger.instance],
+			['!.', ProductionWord.instance],
+			['!.', '[', ProductionExpression_Variable.instance, ']'],
+		];
+	}
+}
+
 class ProductionPropertyAssign extends Production {
 	static readonly instance: ProductionPropertyAssign = new ProductionPropertyAssign();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['.', TERMINAL.TerminalInteger.instance],
 			['.', ProductionWord.instance],
-			['.', '[', ProductionExpression.instance, ']'],
+			['.', '[', ProductionExpression_Variable.instance, ']'],
 		];
 	}
 }
@@ -520,7 +640,17 @@ class ProductionExpressionCompound extends Production {
 		return [
 			[ProductionExpressionUnit.instance],
 			[ProductionExpressionCompound.instance, ProductionPropertyAccess.instance],
-			[ProductionExpressionCompound.instance, ProductionFunctionCall.instance],
+		];
+	}
+}
+
+class ProductionExpressionCompound_Variable extends Production {
+	static readonly instance: ProductionExpressionCompound_Variable = new ProductionExpressionCompound_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionUnit_Variable.instance],
+			[ProductionExpressionCompound_Variable.instance, ProductionPropertyAccess_Variable.instance],
+			[ProductionExpressionCompound_Variable.instance, ProductionFunctionCall.instance],
 		];
 	}
 }
@@ -530,7 +660,7 @@ class ProductionAssignee extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[TERMINAL.TerminalIdentifier.instance],
-			[ProductionExpressionCompound.instance, ProductionPropertyAssign.instance],
+			[ProductionExpressionCompound_Variable.instance, ProductionPropertyAssign.instance],
 		];
 	}
 }
@@ -548,6 +678,19 @@ class ProductionExpressionUnarySymbol extends Production {
 	}
 }
 
+class ProductionExpressionUnarySymbol_Variable extends Production {
+	static readonly instance: ProductionExpressionUnarySymbol_Variable = new ProductionExpressionUnarySymbol_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionCompound_Variable.instance],
+			['!', ProductionExpressionUnarySymbol_Variable.instance],
+			['?', ProductionExpressionUnarySymbol_Variable.instance],
+			['+', ProductionExpressionUnarySymbol_Variable.instance],
+			['-', ProductionExpressionUnarySymbol_Variable.instance],
+		];
+	}
+}
+
 class ProductionExpressionClaim extends Production {
 	static readonly instance: ProductionExpressionClaim = new ProductionExpressionClaim();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -558,12 +701,32 @@ class ProductionExpressionClaim extends Production {
 	}
 }
 
+class ProductionExpressionClaim_Variable extends Production {
+	static readonly instance: ProductionExpressionClaim_Variable = new ProductionExpressionClaim_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionUnarySymbol_Variable.instance],
+			['<', ProductionType.instance, '>', ProductionExpressionClaim_Variable.instance],
+		];
+	}
+}
+
 class ProductionExpressionExponential extends Production {
 	static readonly instance: ProductionExpressionExponential = new ProductionExpressionExponential();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionClaim.instance],
 			[ProductionExpressionClaim.instance, '^', ProductionExpressionExponential.instance],
+		];
+	}
+}
+
+class ProductionExpressionExponential_Variable extends Production {
+	static readonly instance: ProductionExpressionExponential_Variable = new ProductionExpressionExponential_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionClaim_Variable.instance],
+			[ProductionExpressionClaim_Variable.instance, '^', ProductionExpressionExponential_Variable.instance],
 		];
 	}
 }
@@ -579,6 +742,17 @@ class ProductionExpressionMultiplicative extends Production {
 	}
 }
 
+class ProductionExpressionMultiplicative_Variable extends Production {
+	static readonly instance: ProductionExpressionMultiplicative_Variable = new ProductionExpressionMultiplicative_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionExponential_Variable.instance],
+			[ProductionExpressionMultiplicative_Variable.instance, '*', ProductionExpressionExponential_Variable.instance],
+			[ProductionExpressionMultiplicative_Variable.instance, '/', ProductionExpressionExponential_Variable.instance],
+		];
+	}
+}
+
 class ProductionExpressionAdditive extends Production {
 	static readonly instance: ProductionExpressionAdditive = new ProductionExpressionAdditive();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -586,6 +760,17 @@ class ProductionExpressionAdditive extends Production {
 			[ProductionExpressionMultiplicative.instance],
 			[ProductionExpressionAdditive.instance, '+', ProductionExpressionMultiplicative.instance],
 			[ProductionExpressionAdditive.instance, '-', ProductionExpressionMultiplicative.instance],
+		];
+	}
+}
+
+class ProductionExpressionAdditive_Variable extends Production {
+	static readonly instance: ProductionExpressionAdditive_Variable = new ProductionExpressionAdditive_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionMultiplicative_Variable.instance],
+			[ProductionExpressionAdditive_Variable.instance, '+', ProductionExpressionMultiplicative_Variable.instance],
+			[ProductionExpressionAdditive_Variable.instance, '-', ProductionExpressionMultiplicative_Variable.instance],
 		];
 	}
 }
@@ -607,6 +792,23 @@ class ProductionExpressionComparative extends Production {
 	}
 }
 
+class ProductionExpressionComparative_Variable extends Production {
+	static readonly instance: ProductionExpressionComparative_Variable = new ProductionExpressionComparative_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, '<', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, '>', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, '<=', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, '>=', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, '!<', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, '!>', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, 'is', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, 'isnt', ProductionExpressionAdditive_Variable.instance],
+		];
+	}
+}
+
 class ProductionExpressionEquality extends Production {
 	static readonly instance: ProductionExpressionEquality = new ProductionExpressionEquality();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -616,6 +818,19 @@ class ProductionExpressionEquality extends Production {
 			[ProductionExpressionEquality.instance, '!==', ProductionExpressionComparative.instance],
 			[ProductionExpressionEquality.instance, '==', ProductionExpressionComparative.instance],
 			[ProductionExpressionEquality.instance, '!=', ProductionExpressionComparative.instance],
+		];
+	}
+}
+
+class ProductionExpressionEquality_Variable extends Production {
+	static readonly instance: ProductionExpressionEquality_Variable = new ProductionExpressionEquality_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionComparative_Variable.instance],
+			[ProductionExpressionEquality_Variable.instance, '===', ProductionExpressionComparative_Variable.instance],
+			[ProductionExpressionEquality_Variable.instance, '!==', ProductionExpressionComparative_Variable.instance],
+			[ProductionExpressionEquality_Variable.instance, '==', ProductionExpressionComparative_Variable.instance],
+			[ProductionExpressionEquality_Variable.instance, '!=', ProductionExpressionComparative_Variable.instance],
 		];
 	}
 }
@@ -631,6 +846,17 @@ class ProductionExpressionConjunctive extends Production {
 	}
 }
 
+class ProductionExpressionConjunctive_Variable extends Production {
+	static readonly instance: ProductionExpressionConjunctive_Variable = new ProductionExpressionConjunctive_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionEquality_Variable.instance],
+			[ProductionExpressionConjunctive_Variable.instance, '&&', ProductionExpressionEquality_Variable.instance],
+			[ProductionExpressionConjunctive_Variable.instance, '!&', ProductionExpressionEquality_Variable.instance],
+		];
+	}
+}
+
 class ProductionExpressionDisjunctive extends Production {
 	static readonly instance: ProductionExpressionDisjunctive = new ProductionExpressionDisjunctive();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -638,6 +864,17 @@ class ProductionExpressionDisjunctive extends Production {
 			[ProductionExpressionConjunctive.instance],
 			[ProductionExpressionDisjunctive.instance, '||', ProductionExpressionConjunctive.instance],
 			[ProductionExpressionDisjunctive.instance, '!|', ProductionExpressionConjunctive.instance],
+		];
+	}
+}
+
+class ProductionExpressionDisjunctive_Variable extends Production {
+	static readonly instance: ProductionExpressionDisjunctive_Variable = new ProductionExpressionDisjunctive_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionConjunctive_Variable.instance],
+			[ProductionExpressionDisjunctive_Variable.instance, '||', ProductionExpressionConjunctive_Variable.instance],
+			[ProductionExpressionDisjunctive_Variable.instance, '!|', ProductionExpressionConjunctive_Variable.instance],
 		];
 	}
 }
@@ -651,12 +888,31 @@ class ProductionExpressionConditional extends Production {
 	}
 }
 
+class ProductionExpressionConditional_Variable extends Production {
+	static readonly instance: ProductionExpressionConditional_Variable = new ProductionExpressionConditional_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['if', ProductionExpression_Variable.instance, 'then', ProductionExpression_Variable.instance, 'else', ProductionExpression_Variable.instance],
+		];
+	}
+}
+
 class ProductionExpression extends Production {
 	static readonly instance: ProductionExpression = new ProductionExpression();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionDisjunctive.instance],
 			[ProductionExpressionConditional.instance],
+		];
+	}
+}
+
+class ProductionExpression_Variable extends Production {
+	static readonly instance: ProductionExpression_Variable = new ProductionExpression_Variable();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionDisjunctive_Variable.instance],
+			[ProductionExpressionConditional_Variable.instance],
 		];
 	}
 }
@@ -674,8 +930,8 @@ class ProductionDeclarationVariable extends Production {
 	static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['let', TERMINAL.TerminalIdentifier.instance, ':', ProductionType.instance, '=', ProductionExpression.instance, ';'],
-			['let', 'unfixed', TERMINAL.TerminalIdentifier.instance, ':', ProductionType.instance, '=', ProductionExpression.instance, ';'],
+			['let', TERMINAL.TerminalIdentifier.instance, ':', ProductionType.instance, '=', ProductionExpression_Variable.instance, ';'],
+			['let', 'unfixed', TERMINAL.TerminalIdentifier.instance, ':', ProductionType.instance, '=', ProductionExpression_Variable.instance, ';'],
 		];
 	}
 }
@@ -695,7 +951,7 @@ class ProductionStatementExpression extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[';'],
-			[ProductionExpression.instance, ';'],
+			[ProductionExpression_Variable.instance, ';'],
 		];
 	}
 }
@@ -704,7 +960,7 @@ class ProductionStatementAssignment extends Production {
 	static readonly instance: ProductionStatementAssignment = new ProductionStatementAssignment();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionAssignee.instance, '=', ProductionExpression.instance, ';'],
+			[ProductionAssignee.instance, '=', ProductionExpression_Variable.instance, ';'],
 		];
 	}
 }
@@ -962,7 +1218,20 @@ export class ParseNodeType extends ParseNode {
 	;
 }
 
-export class ParseNodeStringTemplate__0__List extends ParseNode {
+export abstract class ParseNodeStringTemplate$__0__List extends ParseNode {
+	declare readonly children:
+		| readonly [Token]
+		| readonly [ParseNodeStringTemplate__0__List, Token]
+		| readonly [Token, ParseNodeExpression]
+		| readonly [ParseNodeStringTemplate__0__List, Token, ParseNodeExpression]
+		| readonly [Token]
+		| readonly [ParseNodeStringTemplate_Variable__0__List, Token]
+		| readonly [Token, ParseNodeExpression_Variable]
+		| readonly [ParseNodeStringTemplate_Variable__0__List, Token, ParseNodeExpression_Variable]
+	;
+}
+
+export class ParseNodeStringTemplate__0__List extends ParseNodeStringTemplate$__0__List {
 	declare readonly children:
 		| readonly [Token]
 		| readonly [ParseNodeStringTemplate__0__List, Token]
@@ -971,7 +1240,31 @@ export class ParseNodeStringTemplate__0__List extends ParseNode {
 	;
 }
 
-export class ParseNodeStringTemplate extends ParseNode {
+export class ParseNodeStringTemplate_Variable__0__List extends ParseNodeStringTemplate$__0__List {
+	declare readonly children:
+		| readonly [Token]
+		| readonly [ParseNodeStringTemplate_Variable__0__List, Token]
+		| readonly [Token, ParseNodeExpression_Variable]
+		| readonly [ParseNodeStringTemplate_Variable__0__List, Token, ParseNodeExpression_Variable]
+	;
+}
+
+export abstract class ParseNodeStringTemplate$ extends ParseNode {
+	declare readonly children:
+		| readonly [Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeStringTemplate__0__List, Token]
+		| readonly [Token, ParseNodeExpression, Token]
+		| readonly [Token, ParseNodeExpression, ParseNodeStringTemplate__0__List, Token]
+		| readonly [Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeStringTemplate_Variable__0__List, Token]
+		| readonly [Token, ParseNodeExpression_Variable, Token]
+		| readonly [Token, ParseNodeExpression_Variable, ParseNodeStringTemplate_Variable__0__List, Token]
+	;
+}
+
+export class ParseNodeStringTemplate extends ParseNodeStringTemplate$ {
 	declare readonly children:
 		| readonly [Token]
 		| readonly [Token, Token]
@@ -981,64 +1274,179 @@ export class ParseNodeStringTemplate extends ParseNode {
 	;
 }
 
-export class ParseNodeProperty extends ParseNode {
+export class ParseNodeStringTemplate_Variable extends ParseNodeStringTemplate$ {
+	declare readonly children:
+		| readonly [Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeStringTemplate_Variable__0__List, Token]
+		| readonly [Token, ParseNodeExpression_Variable, Token]
+		| readonly [Token, ParseNodeExpression_Variable, ParseNodeStringTemplate_Variable__0__List, Token]
+	;
+}
+
+export abstract class ParseNodeProperty$ extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeWord, Token, ParseNodeExpression]
+		| readonly [ParseNodeWord, Token, ParseNodeExpression_Variable]
+	;
+}
+
+export class ParseNodeProperty extends ParseNodeProperty$ {
 	declare readonly children:
 		| readonly [ParseNodeWord, Token, ParseNodeExpression]
 	;
 }
 
-export class ParseNodeCase extends ParseNode {
+export class ParseNodeProperty_Variable extends ParseNodeProperty$ {
 	declare readonly children:
-		| readonly [ParseNodeExpression, Token, ParseNodeExpression]
+		| readonly [ParseNodeWord, Token, ParseNodeExpression_Variable]
 	;
 }
 
-export class ParseNodeExpressionGrouped extends ParseNode {
+export class ParseNodeCase extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpression_Variable, Token, ParseNodeExpression_Variable]
+	;
+}
+
+export abstract class ParseNodeExpressionGrouped$ extends ParseNode {
+	declare readonly children:
+		| readonly [Token, ParseNodeExpression, Token]
+		| readonly [Token, ParseNodeExpression_Variable, Token]
+	;
+}
+
+export class ParseNodeExpressionGrouped extends ParseNodeExpressionGrouped$ {
 	declare readonly children:
 		| readonly [Token, ParseNodeExpression, Token]
 	;
 }
 
-export class ParseNodeTupleLiteral__0__List extends ParseNode {
+export class ParseNodeExpressionGrouped_Variable extends ParseNodeExpressionGrouped$ {
+	declare readonly children:
+		| readonly [Token, ParseNodeExpression_Variable, Token]
+	;
+}
+
+export abstract class ParseNodeTupleLiteral$__0__List extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpression]
+		| readonly [ParseNodeTupleLiteral__0__List, Token, ParseNodeExpression]
+		| readonly [ParseNodeExpression_Variable]
+		| readonly [ParseNodeTupleLiteral_Variable__0__List, Token, ParseNodeExpression_Variable]
+	;
+}
+
+export class ParseNodeTupleLiteral__0__List extends ParseNodeTupleLiteral$__0__List {
 	declare readonly children:
 		| readonly [ParseNodeExpression]
 		| readonly [ParseNodeTupleLiteral__0__List, Token, ParseNodeExpression]
 	;
 }
 
-export class ParseNodeTupleLiteral extends ParseNode {
+export class ParseNodeTupleLiteral_Variable__0__List extends ParseNodeTupleLiteral$__0__List {
 	declare readonly children:
-		| readonly [Token, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [ParseNodeExpression_Variable]
+		| readonly [ParseNodeTupleLiteral_Variable__0__List, Token, ParseNodeExpression_Variable]
 	;
 }
 
-export class ParseNodeRecordLiteral__0__List extends ParseNode {
+export abstract class ParseNodeTupleLiteral$ extends ParseNode {
+	declare readonly children:
+		| readonly [Token, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, Token, Token, ParseNodeTupleLiteral__0__List, Token]
+		| readonly [Token, Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
+	;
+}
+
+export class ParseNodeTupleLiteral extends ParseNodeTupleLiteral$ {
+	declare readonly children:
+		| readonly [Token, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, Token, Token, ParseNodeTupleLiteral__0__List, Token]
+		| readonly [Token, Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+	;
+}
+
+export class ParseNodeTupleLiteral_Variable extends ParseNodeTupleLiteral$ {
+	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
+	;
+}
+
+export abstract class ParseNodeRecordLiteral$__0__List extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeProperty]
+		| readonly [ParseNodeRecordLiteral__0__List, Token, ParseNodeProperty]
+		| readonly [ParseNodeProperty_Variable]
+		| readonly [ParseNodeRecordLiteral_Variable__0__List, Token, ParseNodeProperty_Variable]
+	;
+}
+
+export class ParseNodeRecordLiteral__0__List extends ParseNodeRecordLiteral$__0__List {
 	declare readonly children:
 		| readonly [ParseNodeProperty]
 		| readonly [ParseNodeRecordLiteral__0__List, Token, ParseNodeProperty]
 	;
 }
 
-export class ParseNodeRecordLiteral extends ParseNode {
+export class ParseNodeRecordLiteral_Variable__0__List extends ParseNodeRecordLiteral$__0__List {
 	declare readonly children:
-		| readonly [Token, ParseNodeRecordLiteral__0__List, Token]
-		| readonly [Token, ParseNodeRecordLiteral__0__List, Token, Token]
+		| readonly [ParseNodeProperty_Variable]
+		| readonly [ParseNodeRecordLiteral_Variable__0__List, Token, ParseNodeProperty_Variable]
+	;
+}
+
+export abstract class ParseNodeRecordLiteral$ extends ParseNode {
+	declare readonly children:
 		| readonly [Token, Token, ParseNodeRecordLiteral__0__List, Token]
 		| readonly [Token, Token, ParseNodeRecordLiteral__0__List, Token, Token]
+		| readonly [Token, Token, Token, ParseNodeRecordLiteral__0__List, Token]
+		| readonly [Token, Token, Token, ParseNodeRecordLiteral__0__List, Token, Token]
+		| readonly [Token, ParseNodeRecordLiteral_Variable__0__List, Token]
+		| readonly [Token, ParseNodeRecordLiteral_Variable__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral_Variable__0__List, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral_Variable__0__List, Token, Token]
+	;
+}
+
+export class ParseNodeRecordLiteral extends ParseNodeRecordLiteral$ {
+	declare readonly children:
+		| readonly [Token, Token, ParseNodeRecordLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral__0__List, Token, Token]
+		| readonly [Token, Token, Token, ParseNodeRecordLiteral__0__List, Token]
+		| readonly [Token, Token, Token, ParseNodeRecordLiteral__0__List, Token, Token]
+	;
+}
+
+export class ParseNodeRecordLiteral_Variable extends ParseNodeRecordLiteral$ {
+	declare readonly children:
+		| readonly [Token, ParseNodeRecordLiteral_Variable__0__List, Token]
+		| readonly [Token, ParseNodeRecordLiteral_Variable__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral_Variable__0__List, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral_Variable__0__List, Token, Token]
 	;
 }
 
 export class ParseNodeSetLiteral extends ParseNode {
 	declare readonly children:
 		| readonly [Token, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
 	;
 }
 
@@ -1061,27 +1469,59 @@ export class ParseNodeMapLiteral extends ParseNode {
 export class ParseNodeFunctionArguments extends ParseNode {
 	declare readonly children:
 		| readonly [Token, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
 	;
 }
 
-export class ParseNodeExpressionUnit extends ParseNode {
+export abstract class ParseNodeExpressionUnit$ extends ParseNode {
 	declare readonly children:
-		| readonly [Token]
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeStringTemplate]
 		| readonly [ParseNodeExpressionGrouped]
 		| readonly [ParseNodeTupleLiteral]
 		| readonly [ParseNodeRecordLiteral]
+		| readonly [Token]
+		| readonly [ParseNodePrimitiveLiteral]
+		| readonly [ParseNodeStringTemplate_Variable]
+		| readonly [ParseNodeExpressionGrouped_Variable]
+		| readonly [ParseNodeTupleLiteral]
+		| readonly [ParseNodeRecordLiteral]
+		| readonly [ParseNodeTupleLiteral_Variable]
+		| readonly [ParseNodeRecordLiteral_Variable]
 		| readonly [ParseNodeSetLiteral]
 		| readonly [ParseNodeMapLiteral]
 	;
 }
 
-export class ParseNodePropertyAccess extends ParseNode {
+export class ParseNodeExpressionUnit extends ParseNodeExpressionUnit$ {
+	declare readonly children:
+		| readonly [ParseNodePrimitiveLiteral]
+		| readonly [ParseNodeStringTemplate]
+		| readonly [ParseNodeExpressionGrouped]
+		| readonly [ParseNodeTupleLiteral]
+		| readonly [ParseNodeRecordLiteral]
+	;
+}
+
+export class ParseNodeExpressionUnit_Variable extends ParseNodeExpressionUnit$ {
+	declare readonly children:
+		| readonly [Token]
+		| readonly [ParseNodePrimitiveLiteral]
+		| readonly [ParseNodeStringTemplate_Variable]
+		| readonly [ParseNodeExpressionGrouped_Variable]
+		| readonly [ParseNodeTupleLiteral]
+		| readonly [ParseNodeRecordLiteral]
+		| readonly [ParseNodeTupleLiteral_Variable]
+		| readonly [ParseNodeRecordLiteral_Variable]
+		| readonly [ParseNodeSetLiteral]
+		| readonly [ParseNodeMapLiteral]
+	;
+}
+
+export abstract class ParseNodePropertyAccess$ extends ParseNode {
 	declare readonly children:
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeWord]
@@ -1092,6 +1532,43 @@ export class ParseNodePropertyAccess extends ParseNode {
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeWord]
 		| readonly [Token, Token, ParseNodeExpression, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
+	;
+}
+
+export class ParseNodePropertyAccess extends ParseNodePropertyAccess$ {
+	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression, Token]
+	;
+}
+
+export class ParseNodePropertyAccess_Variable extends ParseNodePropertyAccess$ {
+	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
 	;
 }
 
@@ -1099,7 +1576,7 @@ export class ParseNodePropertyAssign extends ParseNode {
 	declare readonly children:
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeWord]
-		| readonly [Token, Token, ParseNodeExpression, Token]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
 	;
 }
 
@@ -1110,22 +1587,54 @@ export class ParseNodeFunctionCall extends ParseNode {
 	;
 }
 
-export class ParseNodeExpressionCompound extends ParseNode {
+export abstract class ParseNodeExpressionCompound$ extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpressionUnit]
 		| readonly [ParseNodeExpressionCompound, ParseNodePropertyAccess]
-		| readonly [ParseNodeExpressionCompound, ParseNodeFunctionCall]
+		| readonly [ParseNodeExpressionUnit_Variable]
+		| readonly [ParseNodeExpressionCompound_Variable, ParseNodePropertyAccess_Variable]
+		| readonly [ParseNodeExpressionCompound_Variable, ParseNodeFunctionCall]
+	;
+}
+
+export class ParseNodeExpressionCompound extends ParseNodeExpressionCompound$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionUnit]
+		| readonly [ParseNodeExpressionCompound, ParseNodePropertyAccess]
+	;
+}
+
+export class ParseNodeExpressionCompound_Variable extends ParseNodeExpressionCompound$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionUnit_Variable]
+		| readonly [ParseNodeExpressionCompound_Variable, ParseNodePropertyAccess_Variable]
+		| readonly [ParseNodeExpressionCompound_Variable, ParseNodeFunctionCall]
 	;
 }
 
 export class ParseNodeAssignee extends ParseNode {
 	declare readonly children:
 		| readonly [Token]
-		| readonly [ParseNodeExpressionCompound, ParseNodePropertyAssign]
+		| readonly [ParseNodeExpressionCompound_Variable, ParseNodePropertyAssign]
 	;
 }
 
-export class ParseNodeExpressionUnarySymbol extends ParseNode {
+export abstract class ParseNodeExpressionUnarySymbol$ extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpressionCompound]
+		| readonly [Token, ParseNodeExpressionUnarySymbol]
+		| readonly [Token, ParseNodeExpressionUnarySymbol]
+		| readonly [Token, ParseNodeExpressionUnarySymbol]
+		| readonly [Token, ParseNodeExpressionUnarySymbol]
+		| readonly [ParseNodeExpressionCompound_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+	;
+}
+
+export class ParseNodeExpressionUnarySymbol extends ParseNodeExpressionUnarySymbol$ {
 	declare readonly children:
 		| readonly [ParseNodeExpressionCompound]
 		| readonly [Token, ParseNodeExpressionUnarySymbol]
@@ -1135,21 +1644,74 @@ export class ParseNodeExpressionUnarySymbol extends ParseNode {
 	;
 }
 
-export class ParseNodeExpressionClaim extends ParseNode {
+export class ParseNodeExpressionUnarySymbol_Variable extends ParseNodeExpressionUnarySymbol$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionCompound_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+	;
+}
+
+export abstract class ParseNodeExpressionClaim$ extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpressionUnarySymbol]
+		| readonly [Token, ParseNodeType, Token, ParseNodeExpressionClaim]
+		| readonly [ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeType, Token, ParseNodeExpressionClaim_Variable]
+	;
+}
+
+export class ParseNodeExpressionClaim extends ParseNodeExpressionClaim$ {
 	declare readonly children:
 		| readonly [ParseNodeExpressionUnarySymbol]
 		| readonly [Token, ParseNodeType, Token, ParseNodeExpressionClaim]
 	;
 }
 
-export class ParseNodeExpressionExponential extends ParseNode {
+export class ParseNodeExpressionClaim_Variable extends ParseNodeExpressionClaim$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeType, Token, ParseNodeExpressionClaim_Variable]
+	;
+}
+
+export abstract class ParseNodeExpressionExponential$ extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpressionClaim]
+		| readonly [ParseNodeExpressionClaim, Token, ParseNodeExpressionExponential]
+		| readonly [ParseNodeExpressionClaim_Variable]
+		| readonly [ParseNodeExpressionClaim_Variable, Token, ParseNodeExpressionExponential_Variable]
+	;
+}
+
+export class ParseNodeExpressionExponential extends ParseNodeExpressionExponential$ {
 	declare readonly children:
 		| readonly [ParseNodeExpressionClaim]
 		| readonly [ParseNodeExpressionClaim, Token, ParseNodeExpressionExponential]
 	;
 }
 
-export class ParseNodeExpressionMultiplicative extends ParseNode {
+export class ParseNodeExpressionExponential_Variable extends ParseNodeExpressionExponential$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionClaim_Variable]
+		| readonly [ParseNodeExpressionClaim_Variable, Token, ParseNodeExpressionExponential_Variable]
+	;
+}
+
+export abstract class ParseNodeExpressionMultiplicative$ extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpressionExponential]
+		| readonly [ParseNodeExpressionMultiplicative, Token, ParseNodeExpressionExponential]
+		| readonly [ParseNodeExpressionMultiplicative, Token, ParseNodeExpressionExponential]
+		| readonly [ParseNodeExpressionExponential_Variable]
+		| readonly [ParseNodeExpressionMultiplicative_Variable, Token, ParseNodeExpressionExponential_Variable]
+		| readonly [ParseNodeExpressionMultiplicative_Variable, Token, ParseNodeExpressionExponential_Variable]
+	;
+}
+
+export class ParseNodeExpressionMultiplicative extends ParseNodeExpressionMultiplicative$ {
 	declare readonly children:
 		| readonly [ParseNodeExpressionExponential]
 		| readonly [ParseNodeExpressionMultiplicative, Token, ParseNodeExpressionExponential]
@@ -1157,7 +1719,26 @@ export class ParseNodeExpressionMultiplicative extends ParseNode {
 	;
 }
 
-export class ParseNodeExpressionAdditive extends ParseNode {
+export class ParseNodeExpressionMultiplicative_Variable extends ParseNodeExpressionMultiplicative$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionExponential_Variable]
+		| readonly [ParseNodeExpressionMultiplicative_Variable, Token, ParseNodeExpressionExponential_Variable]
+		| readonly [ParseNodeExpressionMultiplicative_Variable, Token, ParseNodeExpressionExponential_Variable]
+	;
+}
+
+export abstract class ParseNodeExpressionAdditive$ extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpressionMultiplicative]
+		| readonly [ParseNodeExpressionAdditive, Token, ParseNodeExpressionMultiplicative]
+		| readonly [ParseNodeExpressionAdditive, Token, ParseNodeExpressionMultiplicative]
+		| readonly [ParseNodeExpressionMultiplicative_Variable]
+		| readonly [ParseNodeExpressionAdditive_Variable, Token, ParseNodeExpressionMultiplicative_Variable]
+		| readonly [ParseNodeExpressionAdditive_Variable, Token, ParseNodeExpressionMultiplicative_Variable]
+	;
+}
+
+export class ParseNodeExpressionAdditive extends ParseNodeExpressionAdditive$ {
 	declare readonly children:
 		| readonly [ParseNodeExpressionMultiplicative]
 		| readonly [ParseNodeExpressionAdditive, Token, ParseNodeExpressionMultiplicative]
@@ -1165,7 +1746,38 @@ export class ParseNodeExpressionAdditive extends ParseNode {
 	;
 }
 
-export class ParseNodeExpressionComparative extends ParseNode {
+export class ParseNodeExpressionAdditive_Variable extends ParseNodeExpressionAdditive$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionMultiplicative_Variable]
+		| readonly [ParseNodeExpressionAdditive_Variable, Token, ParseNodeExpressionMultiplicative_Variable]
+		| readonly [ParseNodeExpressionAdditive_Variable, Token, ParseNodeExpressionMultiplicative_Variable]
+	;
+}
+
+export abstract class ParseNodeExpressionComparative$ extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+	;
+}
+
+export class ParseNodeExpressionComparative extends ParseNodeExpressionComparative$ {
 	declare readonly children:
 		| readonly [ParseNodeExpressionAdditive]
 		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
@@ -1179,7 +1791,36 @@ export class ParseNodeExpressionComparative extends ParseNode {
 	;
 }
 
-export class ParseNodeExpressionEquality extends ParseNode {
+export class ParseNodeExpressionComparative_Variable extends ParseNodeExpressionComparative$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+	;
+}
+
+export abstract class ParseNodeExpressionEquality$ extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpressionComparative]
+		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
+		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
+		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
+		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
+		| readonly [ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+	;
+}
+
+export class ParseNodeExpressionEquality extends ParseNodeExpressionEquality$ {
 	declare readonly children:
 		| readonly [ParseNodeExpressionComparative]
 		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
@@ -1189,7 +1830,28 @@ export class ParseNodeExpressionEquality extends ParseNode {
 	;
 }
 
-export class ParseNodeExpressionConjunctive extends ParseNode {
+export class ParseNodeExpressionEquality_Variable extends ParseNodeExpressionEquality$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+	;
+}
+
+export abstract class ParseNodeExpressionConjunctive$ extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpressionEquality]
+		| readonly [ParseNodeExpressionConjunctive, Token, ParseNodeExpressionEquality]
+		| readonly [ParseNodeExpressionConjunctive, Token, ParseNodeExpressionEquality]
+		| readonly [ParseNodeExpressionEquality_Variable]
+		| readonly [ParseNodeExpressionConjunctive_Variable, Token, ParseNodeExpressionEquality_Variable]
+		| readonly [ParseNodeExpressionConjunctive_Variable, Token, ParseNodeExpressionEquality_Variable]
+	;
+}
+
+export class ParseNodeExpressionConjunctive extends ParseNodeExpressionConjunctive$ {
 	declare readonly children:
 		| readonly [ParseNodeExpressionEquality]
 		| readonly [ParseNodeExpressionConjunctive, Token, ParseNodeExpressionEquality]
@@ -1197,7 +1859,26 @@ export class ParseNodeExpressionConjunctive extends ParseNode {
 	;
 }
 
-export class ParseNodeExpressionDisjunctive extends ParseNode {
+export class ParseNodeExpressionConjunctive_Variable extends ParseNodeExpressionConjunctive$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionEquality_Variable]
+		| readonly [ParseNodeExpressionConjunctive_Variable, Token, ParseNodeExpressionEquality_Variable]
+		| readonly [ParseNodeExpressionConjunctive_Variable, Token, ParseNodeExpressionEquality_Variable]
+	;
+}
+
+export abstract class ParseNodeExpressionDisjunctive$ extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpressionConjunctive]
+		| readonly [ParseNodeExpressionDisjunctive, Token, ParseNodeExpressionConjunctive]
+		| readonly [ParseNodeExpressionDisjunctive, Token, ParseNodeExpressionConjunctive]
+		| readonly [ParseNodeExpressionConjunctive_Variable]
+		| readonly [ParseNodeExpressionDisjunctive_Variable, Token, ParseNodeExpressionConjunctive_Variable]
+		| readonly [ParseNodeExpressionDisjunctive_Variable, Token, ParseNodeExpressionConjunctive_Variable]
+	;
+}
+
+export class ParseNodeExpressionDisjunctive extends ParseNodeExpressionDisjunctive$ {
 	declare readonly children:
 		| readonly [ParseNodeExpressionConjunctive]
 		| readonly [ParseNodeExpressionDisjunctive, Token, ParseNodeExpressionConjunctive]
@@ -1205,16 +1886,53 @@ export class ParseNodeExpressionDisjunctive extends ParseNode {
 	;
 }
 
-export class ParseNodeExpressionConditional extends ParseNode {
+export class ParseNodeExpressionDisjunctive_Variable extends ParseNodeExpressionDisjunctive$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionConjunctive_Variable]
+		| readonly [ParseNodeExpressionDisjunctive_Variable, Token, ParseNodeExpressionConjunctive_Variable]
+		| readonly [ParseNodeExpressionDisjunctive_Variable, Token, ParseNodeExpressionConjunctive_Variable]
+	;
+}
+
+export abstract class ParseNodeExpressionConditional$ extends ParseNode {
+	declare readonly children:
+		| readonly [Token, ParseNodeExpression, Token, ParseNodeExpression, Token, ParseNodeExpression]
+		| readonly [Token, ParseNodeExpression_Variable, Token, ParseNodeExpression_Variable, Token, ParseNodeExpression_Variable]
+	;
+}
+
+export class ParseNodeExpressionConditional extends ParseNodeExpressionConditional$ {
 	declare readonly children:
 		| readonly [Token, ParseNodeExpression, Token, ParseNodeExpression, Token, ParseNodeExpression]
 	;
 }
 
-export class ParseNodeExpression extends ParseNode {
+export class ParseNodeExpressionConditional_Variable extends ParseNodeExpressionConditional$ {
+	declare readonly children:
+		| readonly [Token, ParseNodeExpression_Variable, Token, ParseNodeExpression_Variable, Token, ParseNodeExpression_Variable]
+	;
+}
+
+export abstract class ParseNodeExpression$ extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpressionDisjunctive]
 		| readonly [ParseNodeExpressionConditional]
+		| readonly [ParseNodeExpressionDisjunctive_Variable]
+		| readonly [ParseNodeExpressionConditional_Variable]
+	;
+}
+
+export class ParseNodeExpression extends ParseNodeExpression$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionDisjunctive]
+		| readonly [ParseNodeExpressionConditional]
+	;
+}
+
+export class ParseNodeExpression_Variable extends ParseNodeExpression$ {
+	declare readonly children:
+		| readonly [ParseNodeExpressionDisjunctive_Variable]
+		| readonly [ParseNodeExpressionConditional_Variable]
 	;
 }
 
@@ -1226,8 +1944,8 @@ export class ParseNodeDeclarationType extends ParseNode {
 
 export class ParseNodeDeclarationVariable extends ParseNode {
 	declare readonly children:
-		| readonly [Token, Token, Token, ParseNodeType, Token, ParseNodeExpression, Token]
-		| readonly [Token, Token, Token, Token, ParseNodeType, Token, ParseNodeExpression, Token]
+		| readonly [Token, Token, Token, ParseNodeType, Token, ParseNodeExpression_Variable, Token]
+		| readonly [Token, Token, Token, Token, ParseNodeType, Token, ParseNodeExpression_Variable, Token]
 	;
 }
 
@@ -1241,13 +1959,13 @@ export class ParseNodeDeclaration extends ParseNode {
 export class ParseNodeStatementExpression extends ParseNode {
 	declare readonly children:
 		| readonly [Token]
-		| readonly [ParseNodeExpression, Token]
+		| readonly [ParseNodeExpression_Variable, Token]
 	;
 }
 
 export class ParseNodeStatementAssignment extends ParseNode {
 	declare readonly children:
-		| readonly [ParseNodeAssignee, Token, ParseNodeExpression, Token]
+		| readonly [ParseNodeAssignee, Token, ParseNodeExpression_Variable, Token]
 	;
 }
 
@@ -1303,35 +2021,57 @@ export const GRAMMAR: Grammar = new Grammar([
 	ProductionTypeUnion.instance,
 	ProductionType.instance,
 	ProductionStringTemplate__0__List.instance,
+	ProductionStringTemplate_Variable__0__List.instance,
 	ProductionStringTemplate.instance,
+	ProductionStringTemplate_Variable.instance,
 	ProductionProperty.instance,
+	ProductionProperty_Variable.instance,
 	ProductionCase.instance,
 	ProductionExpressionGrouped.instance,
+	ProductionExpressionGrouped_Variable.instance,
 	ProductionTupleLiteral__0__List.instance,
+	ProductionTupleLiteral_Variable__0__List.instance,
 	ProductionTupleLiteral.instance,
+	ProductionTupleLiteral_Variable.instance,
 	ProductionRecordLiteral__0__List.instance,
+	ProductionRecordLiteral_Variable__0__List.instance,
 	ProductionRecordLiteral.instance,
+	ProductionRecordLiteral_Variable.instance,
 	ProductionSetLiteral.instance,
 	ProductionMapLiteral__0__List.instance,
 	ProductionMapLiteral.instance,
 	ProductionFunctionArguments.instance,
 	ProductionExpressionUnit.instance,
+	ProductionExpressionUnit_Variable.instance,
 	ProductionPropertyAccess.instance,
+	ProductionPropertyAccess_Variable.instance,
 	ProductionPropertyAssign.instance,
 	ProductionFunctionCall.instance,
 	ProductionExpressionCompound.instance,
+	ProductionExpressionCompound_Variable.instance,
 	ProductionAssignee.instance,
 	ProductionExpressionUnarySymbol.instance,
+	ProductionExpressionUnarySymbol_Variable.instance,
 	ProductionExpressionClaim.instance,
+	ProductionExpressionClaim_Variable.instance,
 	ProductionExpressionExponential.instance,
+	ProductionExpressionExponential_Variable.instance,
 	ProductionExpressionMultiplicative.instance,
+	ProductionExpressionMultiplicative_Variable.instance,
 	ProductionExpressionAdditive.instance,
+	ProductionExpressionAdditive_Variable.instance,
 	ProductionExpressionComparative.instance,
+	ProductionExpressionComparative_Variable.instance,
 	ProductionExpressionEquality.instance,
+	ProductionExpressionEquality_Variable.instance,
 	ProductionExpressionConjunctive.instance,
+	ProductionExpressionConjunctive_Variable.instance,
 	ProductionExpressionDisjunctive.instance,
+	ProductionExpressionDisjunctive_Variable.instance,
 	ProductionExpressionConditional.instance,
+	ProductionExpressionConditional_Variable.instance,
 	ProductionExpression.instance,
+	ProductionExpression_Variable.instance,
 	ProductionDeclarationType.instance,
 	ProductionDeclarationVariable.instance,
 	ProductionDeclaration.instance,
@@ -1378,35 +2118,57 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 		[ProductionTypeUnion.instance, ParseNodeTypeUnion],
 		[ProductionType.instance, ParseNodeType],
 		[ProductionStringTemplate__0__List.instance, ParseNodeStringTemplate__0__List],
+		[ProductionStringTemplate_Variable__0__List.instance, ParseNodeStringTemplate_Variable__0__List],
 		[ProductionStringTemplate.instance, ParseNodeStringTemplate],
+		[ProductionStringTemplate_Variable.instance, ParseNodeStringTemplate_Variable],
 		[ProductionProperty.instance, ParseNodeProperty],
+		[ProductionProperty_Variable.instance, ParseNodeProperty_Variable],
 		[ProductionCase.instance, ParseNodeCase],
 		[ProductionExpressionGrouped.instance, ParseNodeExpressionGrouped],
+		[ProductionExpressionGrouped_Variable.instance, ParseNodeExpressionGrouped_Variable],
 		[ProductionTupleLiteral__0__List.instance, ParseNodeTupleLiteral__0__List],
+		[ProductionTupleLiteral_Variable__0__List.instance, ParseNodeTupleLiteral_Variable__0__List],
 		[ProductionTupleLiteral.instance, ParseNodeTupleLiteral],
+		[ProductionTupleLiteral_Variable.instance, ParseNodeTupleLiteral_Variable],
 		[ProductionRecordLiteral__0__List.instance, ParseNodeRecordLiteral__0__List],
+		[ProductionRecordLiteral_Variable__0__List.instance, ParseNodeRecordLiteral_Variable__0__List],
 		[ProductionRecordLiteral.instance, ParseNodeRecordLiteral],
+		[ProductionRecordLiteral_Variable.instance, ParseNodeRecordLiteral_Variable],
 		[ProductionSetLiteral.instance, ParseNodeSetLiteral],
 		[ProductionMapLiteral__0__List.instance, ParseNodeMapLiteral__0__List],
 		[ProductionMapLiteral.instance, ParseNodeMapLiteral],
 		[ProductionFunctionArguments.instance, ParseNodeFunctionArguments],
 		[ProductionExpressionUnit.instance, ParseNodeExpressionUnit],
+		[ProductionExpressionUnit_Variable.instance, ParseNodeExpressionUnit_Variable],
 		[ProductionPropertyAccess.instance, ParseNodePropertyAccess],
+		[ProductionPropertyAccess_Variable.instance, ParseNodePropertyAccess_Variable],
 		[ProductionPropertyAssign.instance, ParseNodePropertyAssign],
 		[ProductionFunctionCall.instance, ParseNodeFunctionCall],
 		[ProductionExpressionCompound.instance, ParseNodeExpressionCompound],
+		[ProductionExpressionCompound_Variable.instance, ParseNodeExpressionCompound_Variable],
 		[ProductionAssignee.instance, ParseNodeAssignee],
 		[ProductionExpressionUnarySymbol.instance, ParseNodeExpressionUnarySymbol],
+		[ProductionExpressionUnarySymbol_Variable.instance, ParseNodeExpressionUnarySymbol_Variable],
 		[ProductionExpressionClaim.instance, ParseNodeExpressionClaim],
+		[ProductionExpressionClaim_Variable.instance, ParseNodeExpressionClaim_Variable],
 		[ProductionExpressionExponential.instance, ParseNodeExpressionExponential],
+		[ProductionExpressionExponential_Variable.instance, ParseNodeExpressionExponential_Variable],
 		[ProductionExpressionMultiplicative.instance, ParseNodeExpressionMultiplicative],
+		[ProductionExpressionMultiplicative_Variable.instance, ParseNodeExpressionMultiplicative_Variable],
 		[ProductionExpressionAdditive.instance, ParseNodeExpressionAdditive],
+		[ProductionExpressionAdditive_Variable.instance, ParseNodeExpressionAdditive_Variable],
 		[ProductionExpressionComparative.instance, ParseNodeExpressionComparative],
+		[ProductionExpressionComparative_Variable.instance, ParseNodeExpressionComparative_Variable],
 		[ProductionExpressionEquality.instance, ParseNodeExpressionEquality],
+		[ProductionExpressionEquality_Variable.instance, ParseNodeExpressionEquality_Variable],
 		[ProductionExpressionConjunctive.instance, ParseNodeExpressionConjunctive],
+		[ProductionExpressionConjunctive_Variable.instance, ParseNodeExpressionConjunctive_Variable],
 		[ProductionExpressionDisjunctive.instance, ParseNodeExpressionDisjunctive],
+		[ProductionExpressionDisjunctive_Variable.instance, ParseNodeExpressionDisjunctive_Variable],
 		[ProductionExpressionConditional.instance, ParseNodeExpressionConditional],
+		[ProductionExpressionConditional_Variable.instance, ParseNodeExpressionConditional_Variable],
 		[ProductionExpression.instance, ParseNodeExpression],
+		[ProductionExpression_Variable.instance, ParseNodeExpression_Variable],
 		[ProductionDeclarationType.instance, ParseNodeDeclarationType],
 		[ProductionDeclarationVariable.instance, ParseNodeDeclarationVariable],
 		[ProductionDeclaration.instance, ParseNodeDeclaration],

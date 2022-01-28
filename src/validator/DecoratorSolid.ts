@@ -120,34 +120,34 @@ class DecoratorSolid extends Decorator {
 		| PARSENODE.ParseNodeTypeUnion
 		| PARSENODE.ParseNodeType
 	): AST.ASTNodeType;
-	override decorate(node: PARSENODE.ParseNodeStringTemplate):          AST.ASTNodeTemplate;
-	override decorate(node: PARSENODE.ParseNodeStringTemplate__0__List): TemplatePartialType;
-	override decorate(node: PARSENODE.ParseNodeProperty):                AST.ASTNodeProperty;
+	override decorate(node: PARSENODE.ParseNodeStringTemplate$):          AST.ASTNodeTemplate;
+	override decorate(node: PARSENODE.ParseNodeStringTemplate$__0__List): TemplatePartialType;
+	override decorate(node: PARSENODE.ParseNodeProperty$):                AST.ASTNodeProperty;
 	override decorate(node: PARSENODE.ParseNodeCase):                    AST.ASTNodeCase;
-	override decorate(node: PARSENODE.ParseNodeTupleLiteral):            AST.ASTNodeTuple;
-	override decorate(node: PARSENODE.ParseNodeRecordLiteral):           AST.ASTNodeRecord;
+	override decorate(node: PARSENODE.ParseNodeTupleLiteral$):           AST.ASTNodeTuple;
+	override decorate(node: PARSENODE.ParseNodeRecordLiteral$):          AST.ASTNodeRecord;
 	override decorate(node: PARSENODE.ParseNodeSetLiteral):              AST.ASTNodeSet;
 	override decorate(node: PARSENODE.ParseNodeMapLiteral):              AST.ASTNodeMap;
 	override decorate(node: PARSENODE.ParseNodeFunctionArguments):       AST.ASTNodeExpression[];
-	override decorate(node: PARSENODE.ParseNodePropertyAccess):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
+	override decorate(node: PARSENODE.ParseNodePropertyAccess$):         AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
 	override decorate(node: PARSENODE.ParseNodePropertyAssign):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
 	override decorate(node: PARSENODE.ParseNodeFunctionCall):            [AST.ASTNodeType[], AST.ASTNodeExpression[]];
 	override decorate(node: PARSENODE.ParseNodeAssignee):                AST.ASTNodeVariable | AST.ASTNodeAccess;
 	override decorate(node:
-		| PARSENODE.ParseNodeExpressionUnit
-		| PARSENODE.ParseNodeExpressionCompound
-		| PARSENODE.ParseNodeExpressionUnarySymbol
-		| PARSENODE.ParseNodeExpressionClaim
-		| PARSENODE.ParseNodeExpressionExponential
-		| PARSENODE.ParseNodeExpressionMultiplicative
-		| PARSENODE.ParseNodeExpressionAdditive
-		| PARSENODE.ParseNodeExpressionComparative
-		| PARSENODE.ParseNodeExpressionEquality
-		| PARSENODE.ParseNodeExpressionConjunctive
-		| PARSENODE.ParseNodeExpressionDisjunctive
-		| PARSENODE.ParseNodeExpression
+		| PARSENODE.ParseNodeExpressionUnit$
+		| PARSENODE.ParseNodeExpressionCompound$
+		| PARSENODE.ParseNodeExpressionUnarySymbol$
+		| PARSENODE.ParseNodeExpressionClaim$
+		| PARSENODE.ParseNodeExpressionExponential$
+		| PARSENODE.ParseNodeExpressionMultiplicative$
+		| PARSENODE.ParseNodeExpressionAdditive$
+		| PARSENODE.ParseNodeExpressionComparative$
+		| PARSENODE.ParseNodeExpressionEquality$
+		| PARSENODE.ParseNodeExpressionConjunctive$
+		| PARSENODE.ParseNodeExpressionDisjunctive$
+		| PARSENODE.ParseNodeExpression$
 	): AST.ASTNodeExpression;
-	override decorate(node: PARSENODE.ParseNodeExpressionConditional): AST.ASTNodeOperationTernary;
+	override decorate(node: PARSENODE.ParseNodeExpressionConditional$): AST.ASTNodeOperationTernary;
 	override decorate(node: PARSENODE.ParseNodeDeclarationType):       AST.ASTNodeDeclarationType;
 	override decorate(node: PARSENODE.ParseNodeDeclarationVariable):   AST.ASTNodeDeclarationVariable;
 	override decorate(node: PARSENODE.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
@@ -295,21 +295,21 @@ class DecoratorSolid extends Decorator {
 		} else if (node instanceof PARSENODE.ParseNodeType) {
 			return this.decorate(node.children[0])
 
-		} else if (node instanceof PARSENODE.ParseNodeStringTemplate) {
+		} else if (node instanceof PARSENODE.ParseNodeStringTemplate$) {
 			return new AST.ASTNodeTemplate(node, [...node.children].flatMap((c) =>
 				(c instanceof TOKEN.TokenTemplate) ? [new AST.ASTNodeConstant(c)] :
-				(c instanceof PARSENODE.ParseNodeExpression) ? [this.decorate(c)] :
-				this.decorate(c as PARSENODE.ParseNodeStringTemplate__0__List)
+				(c instanceof PARSENODE.ParseNodeExpression$) ? [this.decorate(c)] :
+				this.decorate(c as PARSENODE.ParseNodeStringTemplate$__0__List)
 			));
 
-		} else if (node instanceof PARSENODE.ParseNodeStringTemplate__0__List) {
+		} else if (node instanceof PARSENODE.ParseNodeStringTemplate$__0__List) {
 			return [...node.children].flatMap((c) =>
 				(c instanceof TOKEN.TokenTemplate) ? [new AST.ASTNodeConstant(c)] :
-				(c instanceof PARSENODE.ParseNodeExpression) ? [this.decorate(c)] :
-				this.decorate(c as PARSENODE.ParseNodeStringTemplate__0__List)
+				(c instanceof PARSENODE.ParseNodeExpression$) ? [this.decorate(c)] :
+				this.decorate(c as PARSENODE.ParseNodeStringTemplate$__0__List)
 			);
 
-		} else if (node instanceof PARSENODE.ParseNodeProperty) {
+		} else if (node instanceof PARSENODE.ParseNodeProperty$) {
 			return new AST.ASTNodeProperty(
 				node,
 				this.decorate(node.children[0]),
@@ -323,22 +323,22 @@ class DecoratorSolid extends Decorator {
 				this.decorate(node.children[2]),
 			);
 
-		} else if (node instanceof PARSENODE.ParseNodeExpressionGrouped) {
+		} else if (node instanceof PARSENODE.ParseNodeExpressionGrouped$) {
 			return this.decorate(node.children[1]);
 
-		} else if (node instanceof PARSENODE.ParseNodeTupleLiteral) {
+		} else if (node instanceof PARSENODE.ParseNodeTupleLiteral$) {
 			return new AST.ASTNodeTuple(node, (node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeExpression, AST.ASTNodeExpression>(
-				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral__0__List)!,
+				node.children.find((c) => c instanceof PARSENODE.ParseNodeTupleLiteral$__0__List) as PARSENODE.ParseNodeTupleLiteral$__0__List,
 			));
 
-		} else if (node instanceof PARSENODE.ParseNodeRecordLiteral) {
+		} else if (node instanceof PARSENODE.ParseNodeRecordLiteral$) {
 			return new AST.ASTNodeRecord(node, this.parseList<PARSENODE.ParseNodeProperty, AST.ASTNodeProperty>(
-				node.children.find((c): c is PARSENODE.ParseNodeRecordLiteral__0__List => c instanceof PARSENODE.ParseNodeRecordLiteral__0__List)!,
+				node.children.find((c) => c instanceof PARSENODE.ParseNodeRecordLiteral$__0__List) as PARSENODE.ParseNodeRecordLiteral$__0__List,
 			));
 
 		} else if (node instanceof PARSENODE.ParseNodeSetLiteral) {
 			return new AST.ASTNodeSet(node, (node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeExpression, AST.ASTNodeExpression>(
-				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral__0__List)!,
+				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral_Variable__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral_Variable__0__List)!,
 			));
 
 		} else if (node instanceof PARSENODE.ParseNodeMapLiteral) {
@@ -348,16 +348,19 @@ class DecoratorSolid extends Decorator {
 
 		} else if (node instanceof PARSENODE.ParseNodeFunctionArguments) {
 			return (node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeExpression, AST.ASTNodeExpression>(
-				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral__0__List)!,
+				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral_Variable__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral_Variable__0__List)!,
 			);
 
 		} else if (node instanceof PARSENODE.ParseNodeExpressionUnit) {
+			return this.decorate(node.children[0]);
+
+		} else if (node instanceof PARSENODE.ParseNodeExpressionUnit_Variable) {
 			return (node.children[0] instanceof ParseNode)
-				? this.decorate(node.children[0])
-				: new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier);
+					? this.decorate(node.children[0])
+					: new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier);
 
 		} else if (
-			node instanceof PARSENODE.ParseNodePropertyAccess
+			   node instanceof PARSENODE.ParseNodePropertyAccess$
 			|| node instanceof PARSENODE.ParseNodePropertyAssign
 		) {
 			return (
@@ -375,10 +378,10 @@ class DecoratorSolid extends Decorator {
 				this.decorate(node.children[2]),
 			];
 
-		} else if (node instanceof PARSENODE.ParseNodeExpressionCompound) {
+		} else if (node instanceof PARSENODE.ParseNodeExpressionCompound$) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: (node.children[1] instanceof PARSENODE.ParseNodePropertyAccess)
+				: (node.children[1] instanceof PARSENODE.ParseNodePropertyAccess$)
 					? new AST.ASTNodeAccess(node, DecoratorSolid.ACCESSORS.get(node.children[1].children[0].source as Punctuator)!, this.decorate(node.children[0]),    this.decorate(node.children[1]))
 					: new AST.ASTNodeCall  (node,                                                                                   this.decorate(node.children[0]), ...this.decorate(node.children[1]));
 
@@ -392,7 +395,7 @@ class DecoratorSolid extends Decorator {
 					this.decorate(node.children[1]),
 				);
 
-		} else if (node instanceof PARSENODE.ParseNodeExpressionUnarySymbol) {
+		} else if (node instanceof PARSENODE.ParseNodeExpressionUnarySymbol$) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
 				: (node.children[0].source === Punctuator.AFF) // `+a` is a no-op
@@ -403,19 +406,19 @@ class DecoratorSolid extends Decorator {
 						this.decorate(node.children[1]),
 					);
 
-		} else if (node instanceof PARSENODE.ParseNodeExpressionClaim) {
+		} else if (node instanceof PARSENODE.ParseNodeExpressionClaim$) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
 				: new AST.ASTNodeClaim(node, this.decorate(node.children[1]), this.decorate(node.children[3]));
 
 		} else if (
-			node instanceof PARSENODE.ParseNodeExpressionExponential    ||
-			node instanceof PARSENODE.ParseNodeExpressionMultiplicative ||
-			node instanceof PARSENODE.ParseNodeExpressionAdditive       ||
-			node instanceof PARSENODE.ParseNodeExpressionComparative    ||
-			node instanceof PARSENODE.ParseNodeExpressionEquality       ||
-			node instanceof PARSENODE.ParseNodeExpressionConjunctive    ||
-			node instanceof PARSENODE.ParseNodeExpressionDisjunctive
+			   node instanceof PARSENODE.ParseNodeExpressionExponential$
+			|| node instanceof PARSENODE.ParseNodeExpressionMultiplicative$
+			|| node instanceof PARSENODE.ParseNodeExpressionAdditive$
+			|| node instanceof PARSENODE.ParseNodeExpressionComparative$
+			|| node instanceof PARSENODE.ParseNodeExpressionEquality$
+			|| node instanceof PARSENODE.ParseNodeExpressionConjunctive$
+			|| node instanceof PARSENODE.ParseNodeExpressionDisjunctive$
 		) {
 			if (node.children.length === 1) {
 				return this.decorate(node.children[0])
@@ -426,9 +429,9 @@ class DecoratorSolid extends Decorator {
 					this.decorate(node.children[2]),
 				];
 				return (
-					node instanceof PARSENODE.ParseNodeExpressionExponential    ||
-					node instanceof PARSENODE.ParseNodeExpressionMultiplicative ||
-					node instanceof PARSENODE.ParseNodeExpressionAdditive
+					   node instanceof PARSENODE.ParseNodeExpressionExponential$
+					|| node instanceof PARSENODE.ParseNodeExpressionMultiplicative$
+					|| node instanceof PARSENODE.ParseNodeExpressionAdditive$
 				) ? (
 					// `a - b` is syntax sugar for `a + -(b)`
 					(operator === Operator.SUB) ? new AST.ASTNodeOperationBinaryArithmetic(
@@ -443,7 +446,7 @@ class DecoratorSolid extends Decorator {
 					) :
 					new AST.ASTNodeOperationBinaryArithmetic(node, operator as ValidOperatorArithmetic, ...operands)
 
-				) : (node instanceof PARSENODE.ParseNodeExpressionComparative) ? (
+				) : (node instanceof PARSENODE.ParseNodeExpressionComparative$) ? (
 					// `a !< b` is syntax sugar for `!(a < b)`
 					(operator === Operator.NLT) ? new AST.ASTNodeOperationUnary(
 						node,
@@ -464,7 +467,7 @@ class DecoratorSolid extends Decorator {
 					) :
 					new AST.ASTNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, ...operands)
 
-				) : (node instanceof PARSENODE.ParseNodeExpressionEquality) ? (
+				) : (node instanceof PARSENODE.ParseNodeExpressionEquality$) ? (
 					// `a !== b` is syntax sugar for `!(a === b)`
 					(operator === Operator.NID) ? new AST.ASTNodeOperationUnary(
 						node,
@@ -480,8 +483,8 @@ class DecoratorSolid extends Decorator {
 					new AST.ASTNodeOperationBinaryEquality(node, operator as ValidOperatorEquality, ...operands)
 
 				) : /* (
-					node instanceof PARSENODE.ParseNodeExpressionConjunctive ||
-					node instanceof PARSENODE.ParseNodeExpressionDisjunctive
+					   node instanceof PARSENODE.ParseNodeExpressionConjunctive$
+					|| node instanceof PARSENODE.ParseNodeExpressionDisjunctive$
 				) ? */ (
 					// `a !& b` is syntax sugar for `!(a && b)`
 					(operator === Operator.NAND) ? new AST.ASTNodeOperationUnary(
@@ -499,7 +502,7 @@ class DecoratorSolid extends Decorator {
 				)
 			}
 
-		} else if (node instanceof PARSENODE.ParseNodeExpressionConditional) {
+		} else if (node instanceof PARSENODE.ParseNodeExpressionConditional$) {
 			return new AST.ASTNodeOperationTernary(
 				node,
 				Operator.COND,
@@ -508,7 +511,7 @@ class DecoratorSolid extends Decorator {
 				this.decorate(node.children[5]),
 			);
 
-		} else if (node instanceof PARSENODE.ParseNodeExpression) {
+		} else if (node instanceof PARSENODE.ParseNodeExpression$) {
 			return this.decorate(node.children[0])
 
 		} else if (node instanceof PARSENODE.ParseNodeDeclarationType) {

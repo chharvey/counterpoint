@@ -685,7 +685,7 @@ describe('DecoratorSolid', () => {
 						<Variable source="diz"/>
 					</>
 				*/
-				const args: PARSENODE.ParseNodeExpressionCompound = h.compoundExpressionFromSource(`foo.(bar || qux, diz);`);
+				const args: PARSENODE.ParseNodeExpressionCompound$ = h.compoundExpressionFromSource(`foo.(bar || qux, diz);`);
 				assert_arrayLength(args.children, 2);
 				assert.ok(args.children[1] instanceof PARSENODE.ParseNodeFunctionCall);
 				const sequence: [AST.ASTNodeType[], AST.ASTNodeExpression[]] = DECORATOR_SOLID.decorate(args.children[1]);

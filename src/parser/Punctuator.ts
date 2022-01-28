@@ -6,6 +6,7 @@ export enum Punctuator {
 		BRAK_CLS = ']',
 		BRAC_OPN = '{',
 		BRAC_CLS = '}',
+		CONST    = '@',
 		COMMA    = ',',
 		MAPTO    = '->',
 	// compound

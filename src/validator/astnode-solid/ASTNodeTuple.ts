@@ -23,7 +23,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTupleLiteral | SyntaxNodeType<'tuple_literal'>,
+		start_node: PARSENODE.ParseNodeTupleLiteral$ | SyntaxNodeType<'tuple_literal'>,
 		override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);

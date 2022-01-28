@@ -48,7 +48,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
 	constructor (
 		start_node:
-			| PARSENODE.ParseNodeExpressionCompound
+			| PARSENODE.ParseNodeExpressionCompound$
 			| PARSENODE.ParseNodeAssignee
 			| SyntaxNodeType<'expression_compound'>
 			| SyntaxNodeType<'assignee'>

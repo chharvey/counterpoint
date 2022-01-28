@@ -25,7 +25,7 @@ import {Lexer} from '../../src/parser/Lexer.js';
 describe('LexerSolid', () => {
 	describe('#generate', () => {
 		it('rejects unrecognized characters.', () => {
-			`~ # $ @ "`.split(' ').forEach((c) => {
+			`~ # $ "`.split(' ').forEach((c) => {
 				assert.throws(() => [...LEXER.generate(`
 				5  +  30
 				+ 6 ^ - (${c} - 37 *

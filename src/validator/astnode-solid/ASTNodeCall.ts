@@ -37,7 +37,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeExpressionCompound | SyntaxNodeType<'expression_compound'>,
+		start_node: PARSENODE.ParseNodeExpressionCompound$ | SyntaxNodeType<'expression_compound'>,
 		readonly base: ASTNodeExpression,
 		readonly typeargs: readonly ASTNodeType[],
 		readonly exprargs: readonly ASTNodeExpression[],
