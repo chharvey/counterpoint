@@ -74,6 +74,7 @@ export {
 export {
 	SyntaxNodeType,
 	isSyntaxNodeType,
+	SyntaxNodeFamily,
 	SyntaxNodeSupertype,
 } from '../utils-private.js';
 export {

@@ -2,9 +2,20 @@
 
 
 
+function argsArr(nth: number, params: readonly string[]): readonly string[] {
+	// e.g. `['await', 'static', 'instance', 'method']`
+	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
+		.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
+		.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
+		.map(([param, _to_include]) => param);                   // `['static', 'method']`
+}
 function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
+function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
+	return [...new Array(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
+}
+
 /**
  * Generate a list of productions from a set of parameters.
  * E.g., to generate the following EBNF production:
@@ -35,17 +46,14 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
 	...params: readonly string[]
 ): RuleBuilders<RuleName, BaseGrammarRuleName> {
 	const rules_obj: RuleBuilders<RuleName, BaseGrammarRuleName> = {} as RuleBuilders<RuleName, BaseGrammarRuleName>;
-	new Map<RuleName, RuleBuilder<RuleName>>([...new Array(2 ** params.length)].map((_, nth) => { // e.g. `['await', 'static', 'instance', 'method']`
-		const args_arr: readonly string[] = [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
-			.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
-			.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
-			.map(([param, _to_include]) => param);                   // `['static', 'method']`
+	new Map<RuleName, RuleBuilder<RuleName>>([...new Array(2 ** params.length)].map((_, nth) => {
+		const args_arr: readonly string[] = argsArr(nth, params);
 		const args_obj: Record<string, boolean> = {};
 		args_arr.forEach((arg) => {
 			args_obj[arg] = true;
-		}); // `{static: true, method: true}`
+		});
 		return [
-			familyName(family_name, ...args_arr), // 'family_name__static__method'
+			familyName(family_name, ...args_arr),
 			parameterized_rule.call(null, args_obj),
 		];
 	})).forEach((rule, name) => {
@@ -498,8 +506,8 @@ module.exports = grammar({
 	word: $ => $.identifier,
 
 	conflicts: $ => [
-		[$.string_template,  $.string_template__variable],
-		[$._expression_unit, $._expression_unit__variable],
+		familyNameAll('string_template',  ['variable']).map((rule_name) => $[rule_name]),
+		familyNameAll('_expression_unit', ['variable']).map((rule_name) => $[rule_name]),
 	],
 
 	supertypes: $ => [

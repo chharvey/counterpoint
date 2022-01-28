@@ -9,7 +9,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
-	SyntaxNodeType,
+	SyntaxNodeFamily,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
@@ -23,7 +23,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTupleLiteral$ | SyntaxNodeType<'tuple_literal'>,
+		start_node: PARSENODE.ParseNodeTupleLiteral$ | SyntaxNodeFamily<'tuple_literal', ['variable']>,
 		override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);

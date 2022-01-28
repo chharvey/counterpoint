@@ -30,6 +30,7 @@ import {
 	CONFIG_DEFAULT,
 	PARSENODE,
 	SyntaxNodeType,
+	SyntaxNodeFamily,
 	Operator,
 	ValidAccessOperator,
 } from './package.js';
@@ -50,7 +51,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		start_node:
 			| PARSENODE.ParseNodeExpressionCompound$
 			| PARSENODE.ParseNodeAssignee
-			| SyntaxNodeType<'expression_compound'>
+			| SyntaxNodeFamily<'expression_compound', ['variable']>
 			| SyntaxNodeType<'assignee'>
 		,
 		readonly kind:     ValidAccessOperator,

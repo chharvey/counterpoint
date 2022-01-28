@@ -10,7 +10,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
-	SyntaxNodeType,
+	SyntaxNodeFamily,
 } from './package.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -25,7 +25,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeRecordLiteral$ | SyntaxNodeType<'record_literal'>,
+		start_node: PARSENODE.ParseNodeRecordLiteral$ | SyntaxNodeFamily<'record_literal', ['variable']>,
 		override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, {}, children);
