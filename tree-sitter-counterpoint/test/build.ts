@@ -410,22 +410,53 @@ function buildTest(title: string, source: string, expected: string) {
 
 		TupleLiteral: [
 			xjs.String.dedent`
-				[1, 2, 3];
+				@[1, @[2], @[3]];
+				 [1, @[2],  [3]];
 			`,
 			makeSourceFile(
+				s('tuple_literal',
+					                   s('primitive_literal', s('integer')),
+					s('tuple_literal', s('primitive_literal', s('integer'))),
+					s('tuple_literal', s('primitive_literal', s('integer'))),
+				),
 				s('tuple_literal__variable',
-					s('primitive_literal', s('integer')),
-					s('primitive_literal', s('integer')),
-					s('primitive_literal', s('integer')),
+					                             s('primitive_literal', s('integer')),
+					s('tuple_literal',           s('primitive_literal', s('integer'))),
+					s('tuple_literal__variable', s('primitive_literal', s('integer'))),
 				),
 			),
 		],
 
 		RecordLiteral: [
 			xjs.String.dedent`
-				[a= 1, b= 2, c= 3];
+				@[a= 1, b= @[x= 2], c= @[y= 3]];
+				 [a= 1, b= @[x= 2], c=  [y= 3]];
 			`,
 			makeSourceFile(
+				s('record_literal',
+					s('property',
+						s('word', s('identifier')),
+						s('primitive_literal', s('integer')),
+					),
+					s('property',
+						s('word', s('identifier')),
+						s('record_literal',
+							s('property',
+								s('word', s('identifier')),
+								s('primitive_literal', s('integer')),
+							),
+						),
+					),
+					s('property',
+						s('word', s('identifier')),
+						s('record_literal',
+							s('property',
+								s('word', s('identifier')),
+								s('primitive_literal', s('integer')),
+							),
+						),
+					),
+				),
 				s('record_literal__variable',
 					s('property__variable',
 						s('word', s('identifier')),
@@ -433,11 +464,21 @@ function buildTest(title: string, source: string, expected: string) {
 					),
 					s('property__variable',
 						s('word', s('identifier')),
-						s('primitive_literal', s('integer')),
+						s('record_literal',
+							s('property',
+								s('word', s('identifier')),
+								s('primitive_literal', s('integer')),
+							),
+						),
 					),
 					s('property__variable',
 						s('word', s('identifier')),
-						s('primitive_literal', s('integer')),
+						s('record_literal__variable',
+							s('property__variable',
+								s('word', s('identifier')),
+								s('primitive_literal', s('integer')),
+							),
+						),
 					),
 				),
 			),
