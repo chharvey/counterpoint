@@ -354,9 +354,9 @@ Decorate(ExpressionCompound<Variable> ::= ExpressionCompound<?Variable> Property
 		Decorate(ExpressionCompound<?Variable>)
 		Decorate(PropertyAccess<?Variable>)
 	);
-Decorate(ExpressionCompound<Variable> ::= <Variable+>(ExpressionCompound<?Variable> FunctionCall)) -> SemanticCall
+Decorate(ExpressionCompound<+Variable> ::= ExpressionCompound<+Variable> FunctionCall) -> SemanticCall
 	:= (SemanticCall
-		Decorate(ExpressionCompound<?Variable>)
+		Decorate(ExpressionCompound<+Variable>)
 		...(...Decorate(FunctionCall))
 	);
 
