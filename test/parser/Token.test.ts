@@ -42,20 +42,6 @@ describe('TokenSolid', () => {
 			return utf8.decode(String.fromCodePoint(...codeunits));
 		}
 
-		context('TokenPunctuator', () => {
-			it('assigns values 0n–127n to punctuator tokens.', () => {
-				const cooked: bigint[] = [...LEXER.generate(TOKEN.TokenPunctuator.PUNCTUATORS.join(' '))]
-					.filter((token): token is TOKEN.TokenPunctuator => token instanceof TOKEN.TokenPunctuator)
-					.map((punctuator) => punctuator.cook())
-				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i)).slice(0, TOKEN.TokenPunctuator.PUNCTUATORS.length)
-				assert.deepStrictEqual(cooked, expected)
-				cooked.forEach((value) => {
-					assert.ok(0n <= value, 'cooked value should be >= 0n.')
-					assert.ok(value < 128n, 'cooked value should be < 128n.')
-				})
-			})
-		})
-
 		context('TokenKeyword', () => {
 			it('assigns values 128n–255n to reserved keywords.', () => {
 				const cooked: bigint[] = [...LEXER.generate(TOKEN.TokenKeyword.KEYWORDS.join(' '))]

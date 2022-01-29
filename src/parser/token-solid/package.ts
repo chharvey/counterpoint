@@ -14,7 +14,10 @@ export {TemplatePosition} from '../utils-public.js';
 export {
 	RadixType,
 } from '../utils-private.js';
-export {Punctuator} from '../Punctuator.js';
+export {
+	Punctuator,
+	PUNCTUATORS,
+} from '../Punctuator.js';
 export {Keyword} from '../Keyword.js';
 export {Char} from '../Char.js';
 export {

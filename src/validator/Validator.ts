@@ -2,6 +2,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Punctuator,
+	PUNCTUATORS,
 	Keyword,
 	TOKEN_SOLID as TOKEN,
 } from './package.js';
@@ -20,6 +21,9 @@ import type {SymbolStructure} from './index.js';
  * 	to `(sum (const 2) (const 3))`
  */
 export class Validator {
+	/** The minimum allowed cooked value of a punctuator token. */
+	private static readonly MIN_VALUE_PUNCTUATOR = 0n;
+
 	/**
 	 * Give the unique integer identifier of a punctuator token.
 	 * The id is determined by the language specification.
@@ -27,9 +31,9 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	static cookTokenPunctuator(source: Punctuator): bigint {
-		const index: number = TOKEN.TokenPunctuator.PUNCTUATORS.indexOf(source);
-		if (0 <= index && index < TOKEN.TokenPunctuator.PUNCTUATORS.length) {
-			return BigInt(index) + TOKEN.TokenPunctuator.MINIMUM_VALUE;
+		const index: number = PUNCTUATORS.indexOf(source);
+		if (0 <= index && index < PUNCTUATORS.length) {
+			return BigInt(index) + Validator.MIN_VALUE_PUNCTUATOR;
 		} else {
 			throw new RangeError(`Token \`${ source }\` is not a valid punctuator.`);
 		}

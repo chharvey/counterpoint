@@ -70,6 +70,7 @@ export {
 	stringifyAttributes,
 	TS_PARSER,
 	Punctuator,
+	PUNCTUATORS,
 	Keyword,
 	Token,
 	TOKEN_EBNF,

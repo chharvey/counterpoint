@@ -15,6 +15,7 @@ import {
 import type {RadixType} from './utils-private.js';
 import {
 	Punctuator,
+	PUNCTUATORS,
 } from './Punctuator.js';
 import {Char} from './Char.js';
 import {Token} from './Token.js';
@@ -24,9 +25,9 @@ import {Lexer} from './Lexer.js';
 
 
 export class LexerSolid extends Lexer {
-	private static readonly PUNCTUATORS_3: readonly Punctuator[] = TOKEN.TokenPunctuator.PUNCTUATORS.filter((p) => p.length === 3)
-	private static readonly PUNCTUATORS_2: readonly Punctuator[] = TOKEN.TokenPunctuator.PUNCTUATORS.filter((p) => p.length === 2)
-	private static readonly PUNCTUATORS_1: readonly Punctuator[] = TOKEN.TokenPunctuator.PUNCTUATORS.filter((p) => p.length === 1)
+	private static readonly PUNCTUATORS_3: readonly Punctuator[] = PUNCTUATORS.filter((p) => p.length === 3)
+	private static readonly PUNCTUATORS_2: readonly Punctuator[] = PUNCTUATORS.filter((p) => p.length === 2)
+	private static readonly PUNCTUATORS_1: readonly Punctuator[] = PUNCTUATORS.filter((p) => p.length === 1)
 	private static readonly BASES_KEYS: readonly string[] = [...TOKEN.TokenNumber.BASES.keys()]
 	private static readonly DIGITS_DEFAULT: readonly string[] = TOKEN.TokenNumber.DIGITS.get(TOKEN.TokenNumber.RADIX_DEFAULT)!
 

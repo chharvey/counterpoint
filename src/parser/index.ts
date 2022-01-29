@@ -1,6 +1,6 @@
 export * from './utils-public.js';
 
-export {Punctuator} from './Punctuator.js';
+export * from './Punctuator.js';
 export {Keyword} from './Keyword.js';
 
 export * from './Char.js';
