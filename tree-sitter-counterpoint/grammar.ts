@@ -402,8 +402,8 @@ module.exports = grammar({
 			seq($.template_head, optional($[call('_expression', {variable})]), repeat(seq($.template_middle, optional($[call('_expression', {variable})]))), $.template_tail),
 		), 'variable'),
 
-		...parameterize('property', ({variable}) => $ => seq($.word,        '=',  $[call('_expression', {variable})]), 'variable'),
-		case:                                       $ => seq($._expression, '->', $._expression__variable),
+		...parameterize('property', ({variable}) => $ => seq($.word,                  '=',  $[call('_expression', {variable})]), 'variable'),
+		case:                                       $ => seq($._expression__variable, '->', $._expression__variable),
 
 		...parameterize('expression_grouped', ({variable}) => $ => seq(                     '(',                               $[call('_expression', {variable})],             ')'), 'variable'),
 		...parameterize('tuple_literal',      ({variable}) => $ => seq(iff(!variable, '@'), '[', optional(seq(OPT_COM, repCom1($[call('_expression', {variable})]), OPT_COM)), ']'), 'variable'),
