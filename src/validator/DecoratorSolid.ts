@@ -826,17 +826,23 @@ class DecoratorSolid extends Decorator {
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 					this.decorateTS(node.children[1] as SyntaxNodeFamily<'property_access', ['variable']>),
 				)
-				: (isSyntaxNodeType(node.children[1], 'function_call'), new AST.ASTNodeCall(
-					node as SyntaxNodeType<'expression_compound__variable'>,
+				: (isSyntaxNodeType(node.children[1], 'function_call'), ((
+					node: SyntaxNodeType<'expression_compound__variable'>,
+					function_call_children: SyntaxNode[],
+				) => new AST.ASTNodeCall(
+					node,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
-					(node.children[1] as SyntaxNodeType<'function_call'>).children
+					function_call_children
 						.find((c): c is SyntaxNodeType<'generic_arguments'> => isSyntaxNodeType(c, 'generic_arguments'))?.children
 						.filter((c): c is SyntaxNodeSupertype<'type'> => isSyntaxNodeSupertype(c, 'type'))
 						.map((c) => this.decorateTS(c)) || [],
-					(node.children[1] as SyntaxNodeType<'function_call'>).children
+					function_call_children
 						.find((c): c is SyntaxNodeType<'function_arguments'> => isSyntaxNodeType(c, 'function_arguments'))!.children
 						.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
 						.map((c) => this.decorateTS(c)),
+				))(
+					node as SyntaxNodeType<'expression_compound__variable'>,
+					(node.children[1] as SyntaxNodeType<'function_call'>).children,
 				))
 			)],
 
@@ -877,10 +883,14 @@ class DecoratorSolid extends Decorator {
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			[/^expression_additive(__variable)?$/, (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
+			[/^expression_additive(__variable)?$/, (node) => ((
+				node: SyntaxNodeFamily<'expression_additive', ['variable']>,
+				operator: Operator,
+				operands: [AST.ASTNodeExpression, AST.ASTNodeExpression],
+			) => (
 				// `a - b` is syntax sugar for `a + -(b)`
 				(operator === Operator.SUB) ? new AST.ASTNodeOperationBinaryArithmetic(
-					node as SyntaxNodeFamily<'expression_additive', ['variable']>,
+					node,
 					Operator.ADD,
 					operands[0],
 					new AST.ASTNodeOperationUnary(
@@ -890,19 +900,27 @@ class DecoratorSolid extends Decorator {
 					),
 				) :
 				new AST.ASTNodeOperationBinaryArithmetic(
-					node as SyntaxNodeFamily<'expression_additive', ['variable']>,
+					node,
 					operator as ValidOperatorArithmetic,
 					...operands,
 				)
-			))(DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
-				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
-				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
-			])],
+			))(
+				node as SyntaxNodeFamily<'expression_additive', ['variable']>,
+				DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!,
+				[
+					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
+					this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
+				],
+			)],
 
-			[/^expression_comparative(__variable)?$/, (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
+			[/^expression_comparative(__variable)?$/, (node) => ((
+				node: SyntaxNodeFamily<'expression_comparative', ['variable']>,
+				operator: Operator,
+				operands: [AST.ASTNodeExpression, AST.ASTNodeExpression],
+			) => (
 				// `a !< b` is syntax sugar for `!(a < b)`
 				(operator === Operator.NLT) ? new AST.ASTNodeOperationUnary(
-					node as SyntaxNodeFamily<'expression_comparative', ['variable']>,
+					node,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryComparative(
 						node.children[0] as SyntaxNodeSupertype<'expression'>,
@@ -912,7 +930,7 @@ class DecoratorSolid extends Decorator {
 				) :
 				// `a !> b` is syntax sugar for `!(a > b)`
 				(operator === Operator.NGT) ? new AST.ASTNodeOperationUnary(
-					node as SyntaxNodeFamily<'expression_comparative', ['variable']>,
+					node,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryComparative(
 						node.children[0] as SyntaxNodeSupertype<'expression'>,
@@ -922,7 +940,7 @@ class DecoratorSolid extends Decorator {
 				) :
 				// `a isnt b` is syntax sugar for `!(a is b)`
 				(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(
-					node as SyntaxNodeFamily<'expression_comparative', ['variable']>,
+					node,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryComparative(
 						node.children[0] as SyntaxNodeSupertype<'expression'>,
@@ -931,19 +949,27 @@ class DecoratorSolid extends Decorator {
 					),
 				) :
 				new AST.ASTNodeOperationBinaryComparative(
-					node as SyntaxNodeFamily<'expression_comparative', ['variable']>,
+					node,
 					operator as ValidOperatorComparative,
 					...operands,
 				)
-			))(DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
-				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
-				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
-			])],
+			))(
+				node as SyntaxNodeFamily<'expression_comparative', ['variable']>,
+				DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!,
+				[
+					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
+					this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
+				],
+			)],
 
-			[/^expression_equality(__variable)?$/, (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
+			[/^expression_equality(__variable)?$/, (node) => ((
+				node: SyntaxNodeFamily<'expression_equality', ['variable']>,
+				operator: Operator,
+				operands: [AST.ASTNodeExpression, AST.ASTNodeExpression],
+			) => (
 				// `a !== b` is syntax sugar for `!(a === b)`
 				(operator === Operator.NID) ? new AST.ASTNodeOperationUnary(
-					node as SyntaxNodeFamily<'expression_equality', ['variable']>,
+					node,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryEquality(
 						node.children[0] as SyntaxNodeSupertype<'expression'>,
@@ -953,7 +979,7 @@ class DecoratorSolid extends Decorator {
 				) :
 				// `a != b` is syntax sugar for `!(a == b)`
 				(operator === Operator.NEQ) ? new AST.ASTNodeOperationUnary(
-					node as SyntaxNodeFamily<'expression_equality', ['variable']>,
+					node,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryEquality(
 						node.children[0] as SyntaxNodeSupertype<'expression'>,
@@ -962,19 +988,27 @@ class DecoratorSolid extends Decorator {
 					),
 				) :
 				new AST.ASTNodeOperationBinaryEquality(
-					node as SyntaxNodeFamily<'expression_equality', ['variable']>,
+					node,
 					operator as ValidOperatorEquality,
 					...operands,
 				)
-			))(DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
-				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
-				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
-			])],
+			))(
+				node as SyntaxNodeFamily<'expression_equality', ['variable']>,
+				DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!,
+				[
+					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
+					this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
+				],
+			)],
 
-			[/^expression_conjunctive(__variable)?$/, (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
+			[/^expression_conjunctive(__variable)?$/, (node) => ((
+				node: SyntaxNodeFamily<'expression_conjunctive', ['variable']>,
+				operator: Operator,
+				operands: [AST.ASTNodeExpression, AST.ASTNodeExpression],
+			) => (
 				// `a !& b` is syntax sugar for `!(a && b)`
 				(operator === Operator.NAND) ? new AST.ASTNodeOperationUnary(
-					node as SyntaxNodeFamily<'expression_conjunctive', ['variable']>,
+					node,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryLogical(
 						node.children[0] as SyntaxNodeSupertype<'expression'>,
@@ -983,19 +1017,27 @@ class DecoratorSolid extends Decorator {
 					),
 				) :
 				new AST.ASTNodeOperationBinaryLogical(
-					node as SyntaxNodeFamily<'expression_conjunctive', ['variable']>,
+					node,
 					operator as ValidOperatorLogical,
 					...operands,
 				)
-			))(DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
-				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
-				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
-			])],
+			))(
+				node as SyntaxNodeFamily<'expression_conjunctive', ['variable']>,
+				DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!,
+				[
+					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
+					this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
+				],
+			)],
 
-			[/^expression_disjunctive(__variable)?$/, (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
+			[/^expression_disjunctive(__variable)?$/, (node) => ((
+				node: SyntaxNodeFamily<'expression_disjunctive', ['variable']>,
+				operator: Operator,
+				operands: [AST.ASTNodeExpression, AST.ASTNodeExpression],
+			) => (
 				// `a !| b` is syntax sugar for `!(a || b)`
 				(operator === Operator.NOR) ? new AST.ASTNodeOperationUnary(
-					node as SyntaxNodeFamily<'expression_disjunctive', ['variable']>,
+					node,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryLogical(
 						node.children[0] as SyntaxNodeSupertype<'expression'>,
@@ -1004,14 +1046,18 @@ class DecoratorSolid extends Decorator {
 					),
 				) :
 				new AST.ASTNodeOperationBinaryLogical(
-					node as SyntaxNodeFamily<'expression_disjunctive', ['variable']>,
+					node,
 					operator as ValidOperatorLogical,
 					...operands,
 				)
-			))(DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
-				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
-				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
-			])],
+			))(
+				node as SyntaxNodeFamily<'expression_disjunctive', ['variable']>,
+				DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!,
+				[
+					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
+					this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
+				],
+			)],
 
 			[/^expression_conditional(__variable)?$/, (node) => new AST.ASTNodeOperationTernary(
 				node as SyntaxNodeType<'expression_conditional'>,
