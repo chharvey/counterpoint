@@ -4,6 +4,7 @@ import {
 	Punctuator,
 	PUNCTUATORS,
 	Keyword,
+	KEYWORDS,
 	TOKEN_SOLID as TOKEN,
 } from './package.js';
 import type {SymbolStructure} from './index.js';
@@ -23,6 +24,9 @@ import type {SymbolStructure} from './index.js';
 export class Validator {
 	/** The minimum allowed cooked value of a punctuator token. */
 	private static readonly MIN_VALUE_PUNCTUATOR = 0n;
+
+	/** The minimum allowed cooked value of a keyword token. */
+	private static readonly MIN_VALUE_KEYWORD = 0x80n;
 
 	/**
 	 * Give the unique integer identifier of a punctuator token.
@@ -46,9 +50,9 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	static cookTokenKeyword(source: Keyword): bigint {
-		const index: number = TOKEN.TokenKeyword.KEYWORDS.indexOf(source);
-		if (0 <= index && index < TOKEN.TokenKeyword.KEYWORDS.length) {
-			return BigInt(index) + TOKEN.TokenKeyword.MINIMUM_VALUE;
+		const index: number = KEYWORDS.indexOf(source);
+		if (0 <= index && index < KEYWORDS.length) {
+			return BigInt(index) + Validator.MIN_VALUE_KEYWORD;
 		} else {
 			throw new RangeError(`Token \`${ source }\` is not a valid keyword.`);
 		}

@@ -72,6 +72,7 @@ export {
 	Punctuator,
 	PUNCTUATORS,
 	Keyword,
+	KEYWORDS,
 	Token,
 	TOKEN_EBNF,
 	TOKEN_SOLID,

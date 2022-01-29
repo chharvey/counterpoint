@@ -7,6 +7,7 @@ import {
 	TemplatePosition,
 	Punctuator,
 	PUNCTUATORS,
+	KEYWORDS,
 	Token,
 	TokenFilebound,
 	TokenWhitespace,
@@ -188,7 +189,7 @@ describe('LexerSolid', () => {
 		})
 
 		it('recognizes `TokenKeyword` conditions.', () => {
-			[...LEXER.generate(TOKEN.TokenKeyword.KEYWORDS.join(' '))].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
+			[...LEXER.generate(KEYWORDS.join(' '))].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 				assert.ok(token instanceof TOKEN.TokenKeyword)
 			})
 		})

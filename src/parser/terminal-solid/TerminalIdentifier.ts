@@ -1,6 +1,7 @@
 import {
 	Util,
 	maybe,
+	KEYWORDS,
 	Token,
 	TOKEN,
 	Terminal,
@@ -26,7 +27,7 @@ export class TerminalIdentifier extends Terminal {
 		if (Util.randomBool()) {
 			do {
 				returned = [TerminalIdentifier.charsBasic(true), maybe(TerminalIdentifier.charsBasic)].join('')
-			} while ((TOKEN.TokenKeyword.KEYWORDS as string[]).includes(returned))
+			} while ((KEYWORDS as string[]).includes(returned))
 		} else {
 			returned = `\`${ maybe(TerminalIdentifier.charsUnicode) }\``
 		}

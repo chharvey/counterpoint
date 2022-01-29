@@ -18,7 +18,10 @@ export {
 	Punctuator,
 	PUNCTUATORS,
 } from '../Punctuator.js';
-export {Keyword} from '../Keyword.js';
+export {
+	Keyword,
+	KEYWORDS,
+} from '../Keyword.js';
 export {Char} from '../Char.js';
 export {
 	Token,

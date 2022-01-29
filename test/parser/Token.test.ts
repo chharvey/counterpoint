@@ -42,20 +42,6 @@ describe('TokenSolid', () => {
 			return utf8.decode(String.fromCodePoint(...codeunits));
 		}
 
-		context('TokenKeyword', () => {
-			it('assigns values 128n–255n to reserved keywords.', () => {
-				const cooked: bigint[] = [...LEXER.generate(TOKEN.TokenKeyword.KEYWORDS.join(' '))]
-					.filter((token): token is TOKEN.TokenKeyword => token instanceof TOKEN.TokenKeyword)
-					.map((keyword) => keyword.cook())
-				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, TOKEN.TokenKeyword.KEYWORDS.length)
-				assert.deepStrictEqual(cooked, expected)
-				cooked.forEach((value) => {
-					assert.ok(128n <= value, 'cooked value should be >= 128n.')
-					assert.ok(value < 256n, 'cooked value should be < 256n.')
-				})
-			})
-		})
-
 		context('TokenIdentifier', () => {
 			context('TokenIdentifierBasic', () => {
 				let cooked: (bigint | null)[];

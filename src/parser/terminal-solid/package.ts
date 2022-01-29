@@ -17,7 +17,7 @@ export {
 	maybe,
 	choose,
 } from '../utils-private.js';
-export {Keyword} from '../Keyword.js';
+export {Keyword, KEYWORDS} from '../Keyword.js';
 export {Token} from '../Token.js';
 export * as TOKEN from '../token-solid/index.js';
 export {Terminal} from '../Terminal.js';
