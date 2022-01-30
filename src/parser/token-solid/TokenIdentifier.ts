@@ -8,7 +8,7 @@ import {TokenSolid} from './TokenSolid.js';
 
 export abstract class TokenIdentifier extends TokenSolid {
 	/** The minimum allowed cooked value of an identifier token. */
-	static readonly MINIMUM_VALUE = 0x100n;
+	private static readonly MINIMUM_VALUE = 0x100n;
 
 
 	/**

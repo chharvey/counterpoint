@@ -35,15 +35,49 @@ describe('Validator', () => {
 
 
 	describe('#cookTokenIdentifier', () => {
-		it('assigns a unique ID starting from 256.', () => {
+		[
+			`
+				this be a word
+				_words _can _start _with _underscores
+				_and0 _can1 contain2 numb3rs
+				a word _can repeat _with the same id
+			`,
+			`
+				\`this\` \`is\` \`a\` \`unicode word\`
+				\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
+				\`except\` \`back-ticks\` \`.\`
+			`,
+		].forEach((src, i) => {
 			const validator = new Validator();
-			assert.deepStrictEqual([
-				validator.cookTokenIdentifier(`Foo`),
-				validator.cookTokenIdentifier(`Bar`),
-			], [
-				0x100n,
-				0x101n,
-			]);
+			let cooked: bigint[];
+			context([
+				'basic identifiers.',
+				'unicode identifiers.',
+			][i], () => {
+				before(() => {
+					cooked = src.trim().split(/\s+/).map((word) => validator.cookTokenIdentifier(word));
+				});
+				it('assigns ids starting from 256n', () => {
+					return assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
+				});
+				it('assigns unique ids 256n or greater.', () => {
+					return cooked.forEach((value) => {
+						assert.ok(value >= 256n);
+					});
+				});
+			});
+		});
+
+		it('assigns the same value to identical identifier names.', () => {
+			const validator = new Validator();
+			const cooked: bigint[] = `
+				alpha bravo charlie delta echo
+				echo delta charlie bravo alpha
+			`.trim().split(/\s+/).map((word) => validator.cookTokenIdentifier(word));
+			return assert.deepStrictEqual(
+				cooked.slice(0, 5),
+				cooked.slice(5).reverse(),
+			);
 		});
 	});
 })

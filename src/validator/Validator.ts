@@ -28,6 +28,9 @@ export class Validator {
 	/** The minimum allowed cooked value of a keyword token. */
 	private static readonly MIN_VALUE_KEYWORD = 0x80n;
 
+	/** The minimum allowed cooked value of an identifier token. */
+	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
+
 	/**
 	 * Give the unique integer identifier of a punctuator token.
 	 * The id is determined by the language specification.
@@ -186,6 +189,6 @@ export class Validator {
 	 */
 	cookTokenIdentifier(source: string): bigint {
 		this.identifiers.add(source);
-		return BigInt([...this.identifiers].indexOf(source)) + TOKEN.TokenIdentifier.MINIMUM_VALUE;
+		return BigInt([...this.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
 	}
 }
