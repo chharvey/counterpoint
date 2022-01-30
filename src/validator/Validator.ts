@@ -66,24 +66,74 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the numeric value, cooked
 	 */
-	static cookTokenNumber(source: string): ReturnType<typeof TOKEN.TokenNumber.prototype.cook> {
-		const is_float:  boolean = source.indexOf(TOKEN.TokenNumber.POINT) > 0;
-		const has_unary: boolean = (TOKEN.TokenNumber.UNARY as readonly string[]).includes(source[0]);
-		const has_radix: boolean = (has_unary) ? source[1] === TOKEN.TokenNumber.ESCAPER : source[0] === TOKEN.TokenNumber.ESCAPER;
+	static cookTokenNumber(source: string): [number, boolean] {
+		type RadixType = 2n | 4n | 8n | 10n | 16n | 36n;
+		const RADIX_DEFAULT = 10n;
+		const POINT         = '.';
+		const ESCAPER       = '\\';
+		const SEPARATOR     = '_';
+		const EXPONENT      = 'e';
+		const unary: readonly Punctuator[] = [
+			Punctuator.AFF,
+			Punctuator.NEG,
+		];
+		const bases: ReadonlyMap<string, RadixType> = new Map<string, RadixType>([
+			['b',  2n],
+			['q',  4n],
+			['o',  8n],
+			['d', 10n],
+			['x', 16n],
+			['z', 36n],
+		]);
+		function tokenWorthInt(
+			text: string,
+			radix: RadixType = RADIX_DEFAULT,
+			allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+		): number {
+			if (text.length === 0) { throw new Error('Cannot compute mathematical value of empty string.'); }
+			if (allow_separators && text[text.length - 1] === SEPARATOR) {
+				text = text.slice(0, -1);
+			}
+			if (text.length === 1) {
+				const digitvalue: number = parseInt(text, Number(radix));
+				if (Number.isNaN(digitvalue)) { throw new Error(`Invalid number format: \`${text}\``); }
+				return digitvalue;
+			}
+			return Number(radix)
+				* tokenWorthInt(text.slice(0, -1),     radix, allow_separators)
+				+ tokenWorthInt(text[text.length - 1], radix, allow_separators);
+		}
+		function tokenWorthFloat(
+			text: string,
+			allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+		): number {
+			const base:       number = Number(RADIX_DEFAULT);
+			const pointindex: number = text.indexOf(POINT);
+			const expindex:   number = text.indexOf(EXPONENT);
+			const wholepart:  string = text.slice(0, pointindex);
+			const fracpart:   string = (expindex < 0) ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex);
+			const exppart:    string = (expindex < 0) ? '0'                        : text.slice(expindex   + 1);
+			const wholevalue: number = tokenWorthInt(wholepart, RADIX_DEFAULT, allow_separators);
+			const fracvalue:  number = tokenWorthInt(fracpart,  RADIX_DEFAULT, allow_separators) * base ** -fracpart.length;
+			const expvalue:   number = parseFloat(`1e${ Validator.cookTokenNumber(exppart) }`); // HACK: more accurate than `base ** Validator.cookTokenNumber(exppart)`
+			return (wholevalue + fracvalue) * expvalue;
+		}
+		const is_float:   boolean = source.indexOf(POINT) > 0;
+		const has_unary:  boolean = (unary as readonly string[]).includes(source[0]);
+		const multiplier: number  = (has_unary && source[0] === Punctuator.NEG) ? -1 : 1;
+		const has_radix:  boolean = (has_unary) ? source[1] === ESCAPER : source[0] === ESCAPER;
 		const radix = (has_radix)
-			? TOKEN.TokenNumber.BASES.get((has_unary)
-				? source[2]
-				: source[1]
-			)!
-			: TOKEN.TokenNumber.RADIX_DEFAULT;
-		return TOKEN.TokenNumber.prototype.cook.call({
-			source,
-			isFloat: is_float,
-			has_unary,
-			has_radix,
-			radix,
-			allow_separators: true,
-		});
+			? bases.get((has_unary) ? source[2] : source[1])!
+			: RADIX_DEFAULT;
+		if (has_unary) source = source.slice(1); // cut off unary, if any
+		if (has_radix) source = source.slice(2); // cut off radix, if any
+		return [
+			multiplier * ((is_float)
+				? tokenWorthFloat(source,        true)
+				: tokenWorthInt  (source, radix, true)
+			),
+			is_float,
+		];
 	}
 
 	/**
