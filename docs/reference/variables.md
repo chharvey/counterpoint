@@ -158,6 +158,22 @@ claim item.1: int;
 ''';
 ```
 
+Type claim declarations only apply to statements below, not to previous statements.
+```
+let unfixed x: bool | int = false;
+set x = true;
+claim x: int;
+```
+Even though we claimed `x` as type `int` on line 3, the reassignment to a boolean on line 2 is still valid.
+
+Any reassignments after a claim are still held to that claim, though.
+```
+let unfixed x: bool | int = false;
+claim x: int;
+set x = true; %> TypeError
+```
+Since we claimed `x` as type `int`, we cannot reassign it to a boolean after the claim is made.
+
 
 
 ## Unicode Identifiers
