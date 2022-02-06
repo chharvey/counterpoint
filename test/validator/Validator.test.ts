@@ -4,6 +4,9 @@ import {
 	KEYWORDS,
 	Validator,
 } from '../../src/index.js';
+import {
+	CONFIG_RADICES_SEPARATORS_ON,
+} from '../helpers.js';
 
 
 
@@ -102,7 +105,7 @@ describe('Validator', () => {
 		]).forEach(([source, values], description) => {
 			it(description, () => {
 				return assert.deepStrictEqual(
-					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number)[0]),
+					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)[0]),
 					values,
 				);
 			});

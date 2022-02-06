@@ -35,6 +35,7 @@ export {
 	INST,
 	Builder,
 	ErrorCode,
+	LexError01,
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,

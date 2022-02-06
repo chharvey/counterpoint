@@ -58,16 +58,16 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	protected override eval_do(): SolidType {
 		return this._type ??= ('tree' in this.start_node) ? (
 			(isSyntaxNodeType(this.start_node, 'keyword_type'))     ? ASTNodeTypeConstant.keywordType(this.start_node.text) :
-			(isSyntaxNodeType(this.start_node, 'integer'))          ? new SolidTypeUnit(valueOfTokenNumber(this.start_node.text)) :
+			(isSyntaxNodeType(this.start_node, 'integer'))          ? new SolidTypeUnit(valueOfTokenNumber(this.start_node.text, this.validator.config)) :
 			(isSyntaxNodeType(this.start_node, 'primitive_literal'),  ((token: SyntaxNode) => (
 				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeTypeConstant.keywordType(token.text) :
-				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? new SolidTypeUnit(valueOfTokenNumber(token.text)) :
-				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? new SolidTypeUnit(valueOfTokenNumber(token.text)) :
+				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? new SolidTypeUnit(valueOfTokenNumber(token.text, this.validator.config)) :
+				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? new SolidTypeUnit(valueOfTokenNumber(token.text, this.validator.config)) :
 				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new SolidTypeUnit(valueOfTokenString(token.text)))
 			))(this.start_node.children[0]))
 		) : (
 			(this.start_node instanceof TOKEN.TokenKeyword) ? ASTNodeTypeConstant.keywordType(this.start_node.source) :
-			(this.start_node instanceof TOKEN.TokenNumber)  ? new SolidTypeUnit(valueOfTokenNumber(this.start_node)) :
+			(this.start_node instanceof TOKEN.TokenNumber)  ? new SolidTypeUnit(valueOfTokenNumber(this.start_node, this.validator.config)) :
 			(this.start_node instanceof TOKEN.TokenString,    (Dev.supports('literalString-cook')) ? new SolidTypeUnit(valueOfTokenString(this.start_node as TOKEN.TokenString)) : (() => { throw new Error('`literalString-cook` not yet supported.'); })())
 		);
 	}

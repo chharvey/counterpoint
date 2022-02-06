@@ -717,7 +717,14 @@ class DecoratorSolid extends Decorator {
 						this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 						(node.children[2].text === Punctuator.BRAK_CLS)
 							? null
-							: BigInt(Validator.cookTokenNumber(node.children[2].text)[0])
+							: BigInt(Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
+								...CONFIG_DEFAULT,
+								languageFeatures: {
+									...CONFIG_DEFAULT.languageFeatures,
+									integerRadices:    true,
+									numericSeparators: true,
+								},
+							})[0])
 					)
 					: new AST.ASTNodeTypeSet(
 						node as SyntaxNodeType<'type_unary_symbol'>,

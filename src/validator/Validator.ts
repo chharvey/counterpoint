@@ -1,4 +1,5 @@
 import {
+	LexError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Punctuator,
@@ -8,6 +9,57 @@ import {
 	TOKEN_SOLID as TOKEN,
 } from './package.js';
 import type {SymbolStructure} from './index.js';
+
+
+
+type RadixType = 2n | 4n | 8n | 10n | 16n | 36n;
+const RADIX_DEFAULT = 10n;
+const ESCAPER       = '\\';
+const SEPARATOR     = '_';
+const POINT         = '.';
+const EXPONENT      = 'e';
+
+
+
+function tokenWorthInt(
+	text: string,
+	radix: RadixType = RADIX_DEFAULT,
+	allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+): number {
+	if (text.length === 0) { throw new Error('Cannot compute mathematical value of empty string.'); }
+	if (allow_separators && text[text.length - 1] === SEPARATOR) {
+		text = text.slice(0, -1);
+	}
+	if (text.length === 1) {
+		const digitvalue: number = parseInt(text, Number(radix));
+		if (Number.isNaN(digitvalue)) {
+			throw new Error(`Invalid number format: \`${ text }\``);
+		}
+		return digitvalue;
+	}
+	return Number(radix)
+		* tokenWorthInt(text.slice(0, -1),     radix, allow_separators)
+		+ tokenWorthInt(text[text.length - 1], radix, allow_separators);
+}
+function tokenWorthFloat(
+	text: string,
+	allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+): number {
+	const base:       number = Number(RADIX_DEFAULT);
+	const pointindex: number = text.indexOf(POINT);
+	const expindex:   number = text.indexOf(EXPONENT);
+	const wholepart:  string = text.slice(0, pointindex);
+	const fracpart:   string = (expindex < 0) ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex);
+	const exppart:    string = (expindex < 0) ? '0'                        : text.slice(expindex   + 1);
+	const wholevalue: number = tokenWorthInt(wholepart, RADIX_DEFAULT, allow_separators);
+	const fracvalue:  number = tokenWorthInt(fracpart,  RADIX_DEFAULT, allow_separators) * base ** -fracpart.length;
+	const expvalue:   number = parseFloat( // HACK: `` parseFloat(`1e${ ... }`) `` is more accurate than `base ** tokenWorthInt(...)`
+		(exppart[0] === Punctuator.AFF) ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
+		(exppart[0] === Punctuator.NEG) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
+		                                  `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT, allow_separators) }`,
+	);
+	return (wholevalue + fracvalue) * expvalue;
+}
 
 
 
@@ -66,71 +118,33 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the numeric value, cooked
 	 */
-	static cookTokenNumber(source: string): [number, boolean] {
-		type RadixType = 2n | 4n | 8n | 10n | 16n | 36n;
-		const RADIX_DEFAULT = 10n;
-		const POINT         = '.';
-		const ESCAPER       = '\\';
-		const SEPARATOR     = '_';
-		const EXPONENT      = 'e';
-		const unary: readonly Punctuator[] = [
-			Punctuator.AFF,
-			Punctuator.NEG,
-		];
-		const bases: ReadonlyMap<string, RadixType> = new Map<string, RadixType>([
+	static cookTokenNumber(source: string, config: SolidConfig): [number, boolean] {
+		const is_float:   boolean   = source.indexOf(POINT) > 0;
+		const has_unary:  boolean   = ([Punctuator.AFF, Punctuator.NEG] as string[]).includes(source[0]);
+		const multiplier: number    = (has_unary && source[0] === Punctuator.NEG) ? -1 : 1;
+		const has_radix:  boolean   = (has_unary) ? source[1] === ESCAPER : source[0] === ESCAPER;
+		const radix:      RadixType = (has_radix) ? new Map<string, RadixType>([
 			['b',  2n],
 			['q',  4n],
 			['o',  8n],
 			['d', 10n],
 			['x', 16n],
 			['z', 36n],
-		]);
-		function tokenWorthInt(
-			text: string,
-			radix: RadixType = RADIX_DEFAULT,
-			allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
-		): number {
-			if (text.length === 0) { throw new Error('Cannot compute mathematical value of empty string.'); }
-			if (allow_separators && text[text.length - 1] === SEPARATOR) {
-				text = text.slice(0, -1);
-			}
-			if (text.length === 1) {
-				const digitvalue: number = parseInt(text, Number(radix));
-				if (Number.isNaN(digitvalue)) { throw new Error(`Invalid number format: \`${text}\``); }
-				return digitvalue;
-			}
-			return Number(radix)
-				* tokenWorthInt(text.slice(0, -1),     radix, allow_separators)
-				+ tokenWorthInt(text[text.length - 1], radix, allow_separators);
+		]).get((has_unary) ? source[2] : source[1])! : RADIX_DEFAULT;
+		if (has_radix && !config.languageFeatures.integerRadices) {
+			// @ts-expect-error
+			throw new LexError01({
+				source,
+				line_index: -1,
+				col_index:  -1,
+			});
 		}
-		function tokenWorthFloat(
-			text: string,
-			allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
-		): number {
-			const base:       number = Number(RADIX_DEFAULT);
-			const pointindex: number = text.indexOf(POINT);
-			const expindex:   number = text.indexOf(EXPONENT);
-			const wholepart:  string = text.slice(0, pointindex);
-			const fracpart:   string = (expindex < 0) ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex);
-			const exppart:    string = (expindex < 0) ? '0'                        : text.slice(expindex   + 1);
-			const wholevalue: number = tokenWorthInt(wholepart, RADIX_DEFAULT, allow_separators);
-			const fracvalue:  number = tokenWorthInt(fracpart,  RADIX_DEFAULT, allow_separators) * base ** -fracpart.length;
-			const expvalue:   number = parseFloat(`1e${ Validator.cookTokenNumber(exppart) }`); // HACK: more accurate than `base ** Validator.cookTokenNumber(exppart)`
-			return (wholevalue + fracvalue) * expvalue;
-		}
-		const is_float:   boolean = source.indexOf(POINT) > 0;
-		const has_unary:  boolean = (unary as readonly string[]).includes(source[0]);
-		const multiplier: number  = (has_unary && source[0] === Punctuator.NEG) ? -1 : 1;
-		const has_radix:  boolean = (has_unary) ? source[1] === ESCAPER : source[0] === ESCAPER;
-		const radix = (has_radix)
-			? bases.get((has_unary) ? source[2] : source[1])!
-			: RADIX_DEFAULT;
 		if (has_unary) source = source.slice(1); // cut off unary, if any
 		if (has_radix) source = source.slice(2); // cut off radix, if any
 		return [
 			multiplier * ((is_float)
-				? tokenWorthFloat(source,        true)
-				: tokenWorthInt  (source, radix, true)
+				? tokenWorthFloat(source,        config.languageFeatures.numericSeparators)
+				: tokenWorthInt  (source, radix, config.languageFeatures.numericSeparators)
 			),
 			is_float,
 		];
