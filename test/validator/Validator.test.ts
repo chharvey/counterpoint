@@ -19,6 +19,16 @@ import {
 
 
 describe('Validator', () => {
+	/**
+	 * Decode a stream of numeric UTF-8 code units into a string.
+	 * @param   codeunits a stream of numeric code units, each conforming to the UTF-8 specification
+	 * @returns           a decoded string
+	 */
+	function utf8Decode(codeunits: readonly CodeUnit[]): string {
+		return utf8.decode(String.fromCodePoint(...codeunits));
+	}
+
+
 	describe('.cookTokenPunctuator', () => {
 		it('assigns values 0n–127n to punctuator tokens.', () => {
 			const cooked: bigint[] = PUNCTUATORS.map((p) => Validator.cookTokenPunctuator(p));
@@ -122,14 +132,6 @@ describe('Validator', () => {
 
 
 	Dev.supports('literalString-cook') && describe('.cookTokenString', () => {
-		/**
-		 * Decode a stream of numeric UTF-8 code units into a string.
-		 * @param   codeunits a stream of numeric code units, each conforming to the UTF-8 specification
-		 * @returns           a decoded string
-		 */
-		function utf8Decode(codeunits: readonly CodeUnit[]): string {
-			return utf8.decode(String.fromCodePoint(...codeunits));
-		}
 		function decodeCooked(source: string, config: SolidConfig): string {
 			return utf8Decode(Validator.cookTokenString(source, config));
 		}
@@ -239,6 +241,42 @@ describe('Validator', () => {
 					CONFIG_DEFAULT,
 				), RangeError);
 			});
+		});
+	});
+
+
+	Dev.supports('literalTemplate-cook') && describe('.cookTokenTemplate', () => {
+		function decodeCooked(source: string): string {
+			return utf8Decode(Validator.cookTokenTemplate(source));
+		}
+		it('produces the cooked template value.', () => {
+			assert.deepStrictEqual(
+				[
+					`''''''`,
+					`'''hello'''`,
+					`'''head{{`,
+					`}}midl{{`,
+					`}}tail'''`,
+					`'''0 \\\` 1'''`,
+					`'''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7'''`,
+					`'''0 \\u{24} 1 \\u{005f} 2 \\u{} 3'''`,
+					xjs.String.dedent`'''012\\
+					345
+					678'''`,
+					`'''😀 \\😀 \\u{1f600}'''`,
+				].map((src) => decodeCooked(src)),
+				[
+					``, `hello`,
+					`head`,
+					`midl`,
+					`tail`,
+					`0 \\\` 1`,
+					`0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`,
+					`0 \\u{24} 1 \\u{005f} 2 \\u{} 3`,
+					`012\\\n345\n678`,
+					`\u{1f600} \\\u{1f600} \\u{1f600}`,
+				],
+			);
 		});
 	});
 

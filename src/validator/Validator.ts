@@ -1,3 +1,4 @@
+import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
 	LexError01,
 	CodeUnit,
@@ -7,7 +8,6 @@ import {
 	PUNCTUATORS,
 	Keyword,
 	KEYWORDS,
-	TOKEN_SOLID as TOKEN,
 } from './package.js';
 import type {SymbolStructure} from './index.js';
 import {
@@ -20,14 +20,17 @@ type RadixType = 2n | 4n | 8n | 10n | 16n | 36n;
 
 
 
-const RADIX_DEFAULT   = 10n;
-const ESCAPER         = '\\';
-const SEPARATOR       = '_';
-const POINT           = '.';
-const EXPONENT        = 'e';
-const DELIM_STRING    = '\'';
-const COMMENTER_LINE  = '%';
-const COMMENTER_MULTI = '%%';
+const RADIX_DEFAULT      = 10n;
+const ESCAPER            = '\\';
+const SEPARATOR          = '_';
+const POINT              = '.';
+const EXPONENT           = 'e';
+const DELIM_STRING       = '\'';
+const DELIM_TEMPLATE     = '\'\'\'';
+const DELIM_INTERP_START = '{{';
+const DELIM_INTERP_END   = '}}';
+const COMMENTER_LINE     = '%';
+const COMMENTER_MULTI    = '%%';
 
 
 
@@ -253,20 +256,18 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the text value, cooked
 	 */
-	static cookTokenTemplate(source: string): ReturnType<typeof TOKEN.TokenTemplate.prototype.cook> {
-		return TOKEN.TokenTemplate.prototype.cook.call({
-			source,
-			delim_start: (
-				(source.slice(0, 3) === TOKEN.TokenTemplate.DELIM)            ? TOKEN.TokenTemplate.DELIM :
-				(source.slice(0, 2) === TOKEN.TokenTemplate.DELIM_INTERP_END) ? TOKEN.TokenTemplate.DELIM_INTERP_END :
-				''
-			),
-			delim_end: (
-				(source.slice(-3) === TOKEN.TokenTemplate.DELIM)              ? TOKEN.TokenTemplate.DELIM :
-				(source.slice(-2) === TOKEN.TokenTemplate.DELIM_INTERP_START) ? TOKEN.TokenTemplate.DELIM_INTERP_START :
-				''
-			),
-		});
+	static cookTokenTemplate(source: string): CodeUnit[] {
+		const delim_start = (
+			(source.slice(0, 3) === DELIM_TEMPLATE)   ? DELIM_TEMPLATE :
+			(source.slice(0, 2) === DELIM_INTERP_END) ? DELIM_INTERP_END :
+			''
+		);
+		const delim_end = (
+			(source.slice(-3) === DELIM_TEMPLATE)     ? DELIM_TEMPLATE :
+			(source.slice(-2) === DELIM_INTERP_START) ? DELIM_INTERP_START :
+			''
+		);
+		return [...utf8.encode(source.slice(delim_start.length, -delim_end.length))].map((ch) => ch.codePointAt(0)!);
 	}
 
 
