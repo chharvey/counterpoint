@@ -6,6 +6,8 @@ import {
 	Filebound,
 	TemplatePosition,
 	Punctuator,
+	PUNCTUATORS,
+	KEYWORDS,
 	Token,
 	TokenFilebound,
 	TokenWhitespace,
@@ -181,13 +183,13 @@ describe('LexerSolid', () => {
 		})
 
 		it('recognizes `TokenPunctuator` conditions.', () => {
-			[...LEXER.generate(TOKEN.TokenPunctuator.PUNCTUATORS.join(' '))].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((value) => {
+			[...LEXER.generate(PUNCTUATORS.join(' '))].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((value) => {
 				assert.ok(value instanceof TOKEN.TokenPunctuator)
 			})
 		})
 
 		it('recognizes `TokenKeyword` conditions.', () => {
-			[...LEXER.generate(TOKEN.TokenKeyword.KEYWORDS.join(' '))].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
+			[...LEXER.generate(KEYWORDS.join(' '))].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 				assert.ok(token instanceof TOKEN.TokenKeyword)
 			})
 		})

@@ -47,3 +47,8 @@ export enum Punctuator {
 		OPT     = '?:',
 		ASSIGN  = '=',
 }
+
+
+
+/** An iterable list of unique punctuators. */
+export const PUNCTUATORS: readonly Punctuator[] = [...new Set(Object.values(Punctuator))];

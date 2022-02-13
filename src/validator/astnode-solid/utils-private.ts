@@ -3,6 +3,7 @@ import {
 	Int16,
 	Float64,
 	SolidString,
+	SolidConfig,
 	TOKEN,
 	Validator,
 } from './package.js';
@@ -28,19 +29,16 @@ export function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export function valueOfTokenNumber(source: TOKEN.TokenNumber | string): Int16 | Float64 {
-	const is_float: boolean = (typeof source === 'string')
-		? source.indexOf(TOKEN.TokenNumber.POINT) > 0
-		: source.isFloat;
-	const cooked: number = (typeof source === 'string')
-		? Validator.cookTokenNumber(source)
-		: source.cook();
+export function valueOfTokenNumber(source: TOKEN.TokenNumber | string, config: SolidConfig): Int16 | Float64 {
+	const [cooked, is_float]: [number, boolean] = (typeof source === 'string')
+		? Validator.cookTokenNumber(source, config)
+		: [source.cook(), source.isFloat];
 	return (is_float) ? new Float64(cooked) : new Int16(BigInt(cooked));
 }
 
-export function valueOfTokenString(source: TOKEN.TokenString | string): SolidString {
+export function valueOfTokenString(source: TOKEN.TokenString | string, config: SolidConfig): SolidString {
 	return new SolidString((typeof source === 'string')
-		? Validator.cookTokenString(source)
+		? Validator.cookTokenString(source, config)
 		: source.cook());
 }
 

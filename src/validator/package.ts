@@ -35,6 +35,7 @@ export {
 	INST,
 	Builder,
 	ErrorCode,
+	LexError01,
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,
@@ -51,6 +52,7 @@ export {
 } from '../index.js';
 export {
 	NonemptyArray,
+	CodeUnit,
 	forEachAggregated,
 	Map_hasEq,
 	Map_getEq,
@@ -70,7 +72,9 @@ export {
 	stringifyAttributes,
 	TS_PARSER,
 	Punctuator,
+	PUNCTUATORS,
 	Keyword,
+	KEYWORDS,
 	Token,
 	TOKEN_EBNF,
 	TOKEN_SOLID,
