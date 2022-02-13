@@ -1,5 +1,6 @@
 import {
 	LexError01,
+	CodeUnit,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Punctuator,
@@ -9,15 +10,24 @@ import {
 	TOKEN_SOLID as TOKEN,
 } from './package.js';
 import type {SymbolStructure} from './index.js';
+import {
+	utf8Encode,
+} from './utils-private.js';
 
 
 
 type RadixType = 2n | 4n | 8n | 10n | 16n | 36n;
-const RADIX_DEFAULT = 10n;
-const ESCAPER       = '\\';
-const SEPARATOR     = '_';
-const POINT         = '.';
-const EXPONENT      = 'e';
+
+
+
+const RADIX_DEFAULT   = 10n;
+const ESCAPER         = '\\';
+const SEPARATOR       = '_';
+const POINT           = '.';
+const EXPONENT        = 'e';
+const DELIM_STRING    = '\'';
+const COMMENTER_LINE  = '%';
+const COMMENTER_MULTI = '%%';
 
 
 
@@ -59,6 +69,79 @@ function tokenWorthFloat(
 		                                  `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT, allow_separators) }`,
 	);
 	return (wholevalue + fracvalue) * expvalue;
+}
+function tokenWorthString(
+	text: string,
+	allow_comments:   SolidConfig['languageFeatures']['comments']          = CONFIG_DEFAULT.languageFeatures.comments,
+	allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+): CodeUnit[] {
+	if (text.length === 0) {
+		return [];
+	}
+	if (text[0] === ESCAPER) {
+		/* possible escape or line continuation */
+		if ([
+			DELIM_STRING,
+			ESCAPER,
+			COMMENTER_LINE,
+			's', 't', 'n', 'r',
+		].includes(text[1])) {
+			/* an escaped character literal */
+			return [
+				...new Map([
+					[DELIM_STRING,   utf8Encode(DELIM_STRING   .codePointAt(0)!)],
+					[ESCAPER,        utf8Encode(ESCAPER        .codePointAt(0)!)],
+					[COMMENTER_LINE, utf8Encode(COMMENTER_LINE .codePointAt(0)!)],
+					['s',            utf8Encode(0x20)],
+					['t',            utf8Encode(0x09)],
+					['n',            utf8Encode(0x0a)],
+					['r',            utf8Encode(0x0d)],
+				]).get(text[1])!,
+				...tokenWorthString(text.slice(2), allow_comments, allow_separators),
+			];
+
+		} else if (`${ text[1] }${ text[2] }` === 'u{') {
+			/* an escape sequence */
+			const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
+			return [
+				...utf8Encode(tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
+				...tokenWorthString(text.slice(sequence[0].length), allow_comments, allow_separators),
+			];
+
+		} else if (text[1] === '\n') {
+			/* a line continuation (LF) */
+			return [
+				...utf8Encode(0x20),
+				...tokenWorthString(text.slice(2), allow_comments, allow_separators),
+			];
+
+		} else {
+			/* a backslash escapes the following character */
+			return [
+				...utf8Encode(text.codePointAt(1)!),
+				...tokenWorthString([...text].slice(2).join('')/* UTF-16 */, allow_comments, allow_separators),
+			];
+		}
+
+	} else if (allow_comments && `${ text[0] }${ text[1] }` === COMMENTER_MULTI) {
+		/* an in-string multiline comment */
+		const match: string = text.match(/\%\%(?:\%?[^\'\%])*(?:\%\%)?/)![0];
+		return tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
+
+	} else if (allow_comments && text[0] === COMMENTER_LINE) {
+		/* an in-string line comment */
+		const match: string = text.match(/\%[^\'\n]*\n?/)![0];
+		const rest: CodeUnit[] = tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
+		return (match[match.length - 1] === '\n') // COMBAK `match.lastItem`
+			? [...utf8Encode(0x0a), ...rest]
+			: rest;
+
+	} else {
+		return [
+			...utf8Encode(text.codePointAt(0)!),
+			...tokenWorthString([...text].slice(1).join('')/* UTF-16 */, allow_comments, allow_separators),
+		];
+	}
 }
 
 
@@ -155,12 +238,12 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the text value, cooked
 	 */
-	static cookTokenString(source: string): ReturnType<typeof TOKEN.TokenString.prototype.cook> {
-		return TOKEN.TokenString.prototype.cook.call({
-			source,
-			allow_comments: true,
-			allow_separators: true,
-		});
+	static cookTokenString(source: string): CodeUnit[] {
+		return tokenWorthString(
+			source.slice(DELIM_STRING.length, -DELIM_STRING.length),
+			true,
+			true,
+		);
 	}
 
 	/**

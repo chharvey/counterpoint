@@ -52,6 +52,7 @@ export {
 } from '../index.js';
 export {
 	NonemptyArray,
+	CodeUnit,
 	forEachAggregated,
 	Map_hasEq,
 	Map_getEq,

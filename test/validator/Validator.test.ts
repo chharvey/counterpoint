@@ -1,9 +1,17 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
+import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Dev,
 	PUNCTUATORS,
 	KEYWORDS,
 	Validator,
 } from '../../src/index.js';
+import type {
+	CodeUnit,
+} from '../../src/lib/index.js';
 import {
 	CONFIG_RADICES_SEPARATORS_ON,
 } from '../helpers.js';
@@ -108,6 +116,127 @@ describe('Validator', () => {
 					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)[0]),
 					values,
 				);
+			});
+		});
+	});
+
+
+	Dev.supports('literalString-cook') && describe('.cookTokenString', () => {
+		/**
+		 * Decode a stream of numeric UTF-8 code units into a string.
+		 * @param   codeunits a stream of numeric code units, each conforming to the UTF-8 specification
+		 * @returns           a decoded string
+		 */
+		function utf8Decode(codeunits: readonly CodeUnit[]): string {
+			return utf8.decode(String.fromCodePoint(...codeunits));
+		}
+		function decodeCooked(source: string): string {
+			return utf8Decode(Validator.cookTokenString(source));
+		}
+		it('produces the cooked string value.', () => {
+			assert.deepStrictEqual([
+				`''`,
+				`'hello'`,
+				`'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6'`,
+				`'0 \\u{24} 1 \\u{005f} 2 \\u{} 3'`,
+				xjs.String.dedent`'012\\
+				345\\%
+				678'`,
+				`'😀'`,
+				`'\u{10001}'`,
+				`'\\\u{10001}'`,
+				`'\\u{10001}'`,
+			].map((src) => decodeCooked(src)), [
+				``,
+				`hello`,
+				`0 ' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`,
+				`0 $ 1 _ 2 \0 3`,
+				`012 345%\n678`,
+				`\u{1f600}`,
+				`\u{10001}`,
+				`\u{10001}`,
+				`\u{10001}`,
+			]);
+		});
+		it('may contain an escaped `u` anywhere.', () => {
+			assert.strictEqual(
+				decodeCooked(`'abc\\udef\\u'`),
+				`abcudefu`,
+			);
+		});
+		context('In-String Comments', () => {
+			function cook(_config: SolidConfig): string[] {
+				return [
+					xjs.String.dedent`'The five boxing wizards % jump quickly.'`,
+
+					xjs.String.dedent`'The five % boxing wizards
+					jump quickly.'`,
+
+					xjs.String.dedent`'The five boxing wizards %
+					jump quickly.'`,
+
+					xjs.String.dedent`'The five boxing wizards jump quickly.%
+					'`,
+
+					`'The five %% boxing wizards %% jump quickly.'`,
+
+					`'The five boxing wizards %%%% jump quickly.'`,
+
+					xjs.String.dedent`'The five %% boxing
+					wizards %% jump
+					quickly.'`,
+
+					xjs.String.dedent`'The five boxing
+					wizards %% jump
+					quickly.%%'`,
+
+					xjs.String.dedent`'The five boxing
+					wizards %% jump
+					quickly.'`,
+				].map((src) => decodeCooked(src));
+			}
+			context('with comments enabled.', () => {
+				const data: {description: string, expected: string}[] = [
+					{description: 'removes a line comment not ending in a LF.',   expected: 'The five boxing wizards '},
+					{description: 'preserves a LF when line comment ends in LF.', expected: 'The five \njump quickly.'},
+					{description: 'preserves a LF with empty line comment.',      expected: 'The five boxing wizards \njump quickly.'},
+					{description: 'preserves a LF with last empty line comment.', expected: 'The five boxing wizards jump quickly.\n'},
+					{description: 'removes multiline comments.',                  expected: 'The five  jump quickly.'},
+					{description: 'removes empty multiline comments.',            expected: 'The five boxing wizards  jump quickly.'},
+					{description: 'removes multiline comments containing LFs.',   expected: 'The five  jump\nquickly.'},
+					{description: 'removes last multiline comment.',              expected: 'The five boxing\nwizards '},
+					{description: 'removes multiline comment without end delim.', expected: 'The five boxing\nwizards '},
+				];
+				cook(CONFIG_DEFAULT).forEach((actual, i) => {
+					it(data[i].description, () => {
+						assert.strictEqual(actual, data[i].expected);
+					});
+				});
+			});
+			it.skip('with comments disabled.', () => {
+				assert.deepStrictEqual(cook({
+					...CONFIG_DEFAULT,
+					languageFeatures: {
+						...CONFIG_DEFAULT.languageFeatures,
+						comments: false,
+					},
+				}), [
+					'The five boxing wizards % jump quickly.',
+					'The five % boxing wizards\njump quickly.',
+					'The five boxing wizards %\njump quickly.',
+					'The five boxing wizards jump quickly.%\n',
+					'The five %% boxing wizards %% jump quickly.',
+					'The five boxing wizards %%%% jump quickly.',
+					'The five %% boxing\nwizards %% jump\nquickly.',
+					'The five boxing\nwizards %% jump\nquickly.%%',
+					'The five boxing\nwizards %% jump\nquickly.',
+				]);
+			});
+			it('`String.fromCodePoint` throws when UTF-8 encoding input is out of range.', () => {
+				const out_of_range = 'a00061'; // NOTE: the valid range of input may change as Unicode evolves
+				assert.throws(() => Validator.cookTokenString(
+					`'a string literal with a unicode \\u{${ out_of_range }} escape sequence out of range'`,
+				), RangeError);
 			});
 		});
 	});
