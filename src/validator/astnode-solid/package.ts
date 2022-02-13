@@ -58,7 +58,6 @@ export {
 	Punctuator,
 	Keyword,
 	Token,
-	TOKEN_SOLID as TOKEN,
 } from '../package.js';
 export {
 	DECORATOR_SOLID as DECORATOR,

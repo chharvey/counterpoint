@@ -5,7 +5,6 @@ import {
 	CONFIG_DEFAULT,
 	Punctuator,
 	Keyword,
-	TOKEN_SOLID as TOKEN,
 	ParseNode,
 	PARSENODE_SOLID as PARSENODE,
 } from './package.js';
@@ -157,13 +156,7 @@ class DecoratorSolid extends Decorator {
 	override decorate(node: PARSENODE.ParseNodeGoal, config?: SolidConfig): AST.ASTNodeGoal;
 	override decorate(node: ParseNode): DecoratorReturnType;
 	override decorate(node: ParseNode): DecoratorReturnType {
-		if (node instanceof PARSENODE.ParseNodeWord) {
-			return new AST.ASTNodeKey(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenIdentifier);
-
-		} else if (node instanceof PARSENODE.ParseNodePrimitiveLiteral) {
-			return new AST.ASTNodeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
-
-		} else if (node instanceof PARSENODE.ParseNodeItemsType) {
+		if (node instanceof PARSENODE.ParseNodeItemsType) {
 			return (node.children.length <= 2)
 				? this.parseList<PARSENODE.ParseNodeEntryType | PARSENODE.ParseNodeEntryType_Optional, AST.ASTNodeItemType>(node.children[0])
 				: [
@@ -183,9 +176,14 @@ class DecoratorSolid extends Decorator {
 			);
 
 		} else if (node instanceof PARSENODE.ParseNodeTypeUnit) {
-			return (node.children[0] instanceof ParseNode)
-				? this.decorate(node.children[0])
-				: new AST.ASTNodeTypeAlias(node.children[0] as TOKEN.TokenIdentifier);
+			return this.decorate(node.children[0] as
+				| PARSENODE.ParseNodePrimitiveLiteral
+				| PARSENODE.ParseNodeTypeGrouped
+				| PARSENODE.ParseNodeTypeTupleLiteral
+				| PARSENODE.ParseNodeTypeRecordLiteral
+				| PARSENODE.ParseNodeTypeHashLiteral
+				| PARSENODE.ParseNodeTypeMapLiteral
+			);
 
 		} else if (node instanceof PARSENODE.ParseNodeGenericCall) {
 			return this.decorate(node.children[1]);
@@ -210,7 +208,6 @@ class DecoratorSolid extends Decorator {
 
 		} else if (node instanceof PARSENODE.ParseNodeStringTemplate__0__List) {
 			return [...node.children].flatMap((c) =>
-				(c instanceof TOKEN.TokenTemplate) ? [new AST.ASTNodeConstant(c)] :
 				(c instanceof PARSENODE.ParseNodeExpression) ? [this.decorate(c)] :
 				this.decorate(c as PARSENODE.ParseNodeStringTemplate__0__List)
 			);
@@ -224,9 +221,15 @@ class DecoratorSolid extends Decorator {
 			);
 
 		} else if (node instanceof PARSENODE.ParseNodeExpressionUnit) {
-			return (node.children[0] instanceof ParseNode)
-				? this.decorate(node.children[0])
-				: new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier);
+			return this.decorate(node.children[0] as
+				| PARSENODE.ParseNodePrimitiveLiteral
+				| PARSENODE.ParseNodeStringTemplate
+				| PARSENODE.ParseNodeExpressionGrouped
+				| PARSENODE.ParseNodeTupleLiteral
+				| PARSENODE.ParseNodeRecordLiteral
+				| PARSENODE.ParseNodeSetLiteral
+				| PARSENODE.ParseNodeMapLiteral
+			);
 
 		} else if (node instanceof PARSENODE.ParseNodeFunctionCall) {
 			return (node.children.length === 2) ? [
@@ -239,9 +242,6 @@ class DecoratorSolid extends Decorator {
 
 		} else if (node instanceof PARSENODE.ParseNodeExpressionCompound) {
 			return this.decorate(node.children[0]);
-
-		} else if (node instanceof PARSENODE.ParseNodeAssignee) {
-			return new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier);
 
 		} else if (node instanceof PARSENODE.ParseNodeExpressionUnarySymbol) {
 			return (node.children.length === 1)

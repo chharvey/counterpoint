@@ -77,7 +77,6 @@ export {
 	KEYWORDS,
 	Token,
 	TOKEN_EBNF,
-	TOKEN_SOLID,
 	ParseNode,
 	PARSENODE_EBNF,
 	PARSENODE_SOLID,
