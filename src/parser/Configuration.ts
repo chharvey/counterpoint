@@ -15,7 +15,8 @@ import type {Token} from './Token.js';
  * @see http://www2.lawrence.edu/fast/GREGGJ/CMSC515/parsing/LR_parsing.html
  * @final
  */
-export class Configuration {
+// @ts-expect-error
+class Configuration {
 	/** The set of symbols before the current marker. */
 	readonly before: readonly GrammarSymbol[] = this.rule.symbols.slice(0, Number(this.marker));
 	/** The set of symbols after the current marker. */
