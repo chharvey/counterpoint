@@ -5,8 +5,6 @@ import {
 	CONFIG_DEFAULT,
 	Punctuator,
 	Keyword,
-	ParseNode,
-	PARSENODE_SOLID as PARSENODE,
 } from './package.js';
 import {
 	Validator,
@@ -32,16 +30,6 @@ import {
 	DecoratorReturnType,
 	Decorator,
 } from './Decorator.js';
-
-
-
-type TemplatePartialType = // FIXME spread types
-	| [                        AST.ASTNodeConstant                       ]
-	| [                        AST.ASTNodeConstant, AST.ASTNodeExpression]
-	// | [...TemplatePartialType, AST.ASTNodeConstant                       ]
-	// | [...TemplatePartialType, AST.ASTNodeConstant, AST.ASTNodeExpression]
-	| AST.ASTNodeExpression[]
-;
 
 
 
@@ -91,187 +79,8 @@ class DecoratorSolid extends Decorator {
 	])
 
 
-	override decorate(node: PARSENODE.ParseNodeWord):             AST.ASTNodeKey;
-	override decorate(node: PARSENODE.ParseNodePrimitiveLiteral): AST.ASTNodeConstant;
-	override decorate(node:
-		| PARSENODE.ParseNodeEntryType
-		| PARSENODE.ParseNodeEntryType_Optional
-	): AST.ASTNodeItemType;
-	override decorate(node:
-		| PARSENODE.ParseNodeEntryType_Named
-		| PARSENODE.ParseNodeEntryType_Named_Optional
-	): AST.ASTNodePropertyType;
-	override decorate(node: PARSENODE.ParseNodeItemsType):          NonemptyArray<AST.ASTNodeItemType>;
-	override decorate(node: PARSENODE.ParseNodePropertiesType):     NonemptyArray<AST.ASTNodePropertyType>;
-	override decorate(node: PARSENODE.ParseNodeTypeTupleLiteral):   AST.ASTNodeTypeTuple;
-	override decorate(node: PARSENODE.ParseNodeTypeRecordLiteral):  AST.ASTNodeTypeRecord;
-	override decorate(node: PARSENODE.ParseNodeTypeHashLiteral):    AST.ASTNodeTypeHash;
-	override decorate(node: PARSENODE.ParseNodeTypeMapLiteral):     AST.ASTNodeTypeMap;
-	override decorate(node: PARSENODE.ParseNodeGenericArguments):   NonemptyArray<AST.ASTNodeType>;
-	override decorate(node: PARSENODE.ParseNodePropertyAccessType): AST.ASTNodeIndexType | AST.ASTNodeKey;
-	override decorate(node: PARSENODE.ParseNodeGenericCall):        NonemptyArray<AST.ASTNodeType>;
-	override decorate(node:
-		| PARSENODE.ParseNodeTypeUnit
-		| PARSENODE.ParseNodeTypeCompound
-		| PARSENODE.ParseNodeTypeUnarySymbol
-		| PARSENODE.ParseNodeTypeUnaryKeyword
-		| PARSENODE.ParseNodeTypeIntersection
-		| PARSENODE.ParseNodeTypeUnion
-		| PARSENODE.ParseNodeType
-	): AST.ASTNodeType;
-	override decorate(node: PARSENODE.ParseNodeStringTemplate):          AST.ASTNodeTemplate;
-	override decorate(node: PARSENODE.ParseNodeStringTemplate__0__List): TemplatePartialType;
-	override decorate(node: PARSENODE.ParseNodeProperty):                AST.ASTNodeProperty;
-	override decorate(node: PARSENODE.ParseNodeCase):                    AST.ASTNodeCase;
-	override decorate(node: PARSENODE.ParseNodeTupleLiteral):            AST.ASTNodeTuple;
-	override decorate(node: PARSENODE.ParseNodeRecordLiteral):           AST.ASTNodeRecord;
-	override decorate(node: PARSENODE.ParseNodeSetLiteral):              AST.ASTNodeSet;
-	override decorate(node: PARSENODE.ParseNodeMapLiteral):              AST.ASTNodeMap;
-	override decorate(node: PARSENODE.ParseNodeFunctionArguments):       AST.ASTNodeExpression[];
-	override decorate(node: PARSENODE.ParseNodePropertyAccess):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
-	override decorate(node: PARSENODE.ParseNodePropertyAssign):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
-	override decorate(node: PARSENODE.ParseNodeFunctionCall):            [AST.ASTNodeType[], AST.ASTNodeExpression[]];
-	override decorate(node: PARSENODE.ParseNodeAssignee):                AST.ASTNodeVariable | AST.ASTNodeAccess;
-	override decorate(node:
-		| PARSENODE.ParseNodeExpressionUnit
-		| PARSENODE.ParseNodeExpressionCompound
-		| PARSENODE.ParseNodeExpressionUnarySymbol
-		| PARSENODE.ParseNodeExpressionClaim
-		| PARSENODE.ParseNodeExpressionExponential
-		| PARSENODE.ParseNodeExpressionMultiplicative
-		| PARSENODE.ParseNodeExpressionAdditive
-		| PARSENODE.ParseNodeExpressionComparative
-		| PARSENODE.ParseNodeExpressionEquality
-		| PARSENODE.ParseNodeExpressionConjunctive
-		| PARSENODE.ParseNodeExpressionDisjunctive
-		| PARSENODE.ParseNodeExpression
-	): AST.ASTNodeExpression;
-	override decorate(node: PARSENODE.ParseNodeExpressionConditional): AST.ASTNodeOperationTernary;
-	override decorate(node: PARSENODE.ParseNodeDeclarationType):       AST.ASTNodeDeclarationType;
-	override decorate(node: PARSENODE.ParseNodeDeclarationVariable):   AST.ASTNodeDeclarationVariable;
-	override decorate(node: PARSENODE.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
-	override decorate(node: PARSENODE.ParseNodeStatementExpression):   AST.ASTNodeStatementExpression;
-	override decorate(node: PARSENODE.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
-	override decorate(node: PARSENODE.ParseNodeStatement):             AST.ASTNodeStatement;
-	override decorate(node: PARSENODE.ParseNodeGoal, config?: SolidConfig): AST.ASTNodeGoal;
-	override decorate(node: ParseNode): DecoratorReturnType;
-	override decorate(node: ParseNode): DecoratorReturnType {
-		if (node instanceof PARSENODE.ParseNodeItemsType) {
-			return (node.children.length <= 2)
-				? this.parseList<PARSENODE.ParseNodeEntryType | PARSENODE.ParseNodeEntryType_Optional, AST.ASTNodeItemType>(node.children[0])
-				: [
-					...this.parseList<PARSENODE.ParseNodeEntryType,          AST.ASTNodeItemType>(node.children[0] as PARSENODE.ParseNodeItemsType__0__List),
-					...this.parseList<PARSENODE.ParseNodeEntryType_Optional, AST.ASTNodeItemType>(node.children[2]!),
-				];
-
-		} else if (node instanceof PARSENODE.ParseNodePropertiesType) {
-			return this.parseList<PARSENODE.ParseNodeEntryType_Named | PARSENODE.ParseNodeEntryType_Named_Optional, AST.ASTNodePropertyType>(node.children[0]);
-
-		} else if (node instanceof PARSENODE.ParseNodeTypeGrouped) {
-			return this.decorate(node.children[1]);
-
-		} else if (node instanceof PARSENODE.ParseNodeGenericArguments) {
-			return this.parseList<PARSENODE.ParseNodeType, AST.ASTNodeType>(
-				node.children.find((c): c is PARSENODE.ParseNodeGenericArguments__0__List => c instanceof PARSENODE.ParseNodeGenericArguments__0__List)!,
-			);
-
-		} else if (node instanceof PARSENODE.ParseNodeTypeUnit) {
-			return this.decorate(node.children[0] as
-				| PARSENODE.ParseNodePrimitiveLiteral
-				| PARSENODE.ParseNodeTypeGrouped
-				| PARSENODE.ParseNodeTypeTupleLiteral
-				| PARSENODE.ParseNodeTypeRecordLiteral
-				| PARSENODE.ParseNodeTypeHashLiteral
-				| PARSENODE.ParseNodeTypeMapLiteral
-			);
-
-		} else if (node instanceof PARSENODE.ParseNodeGenericCall) {
-			return this.decorate(node.children[1]);
-
-		} else if (node instanceof PARSENODE.ParseNodeTypeCompound) {
-			return this.decorate(node.children[0]);
-
-		} else if (node instanceof PARSENODE.ParseNodeTypeUnarySymbol) {
-			return this.decorate(node.children[0]);
-
-		} else if (node instanceof PARSENODE.ParseNodeTypeUnaryKeyword) {
-			return this.decorate(node.children[0] as PARSENODE.ParseNodeTypeUnarySymbol);
-
-		} else if (
-			node instanceof PARSENODE.ParseNodeTypeIntersection ||
-			node instanceof PARSENODE.ParseNodeTypeUnion
-		) {
-			return this.decorate(node.children[0]);
-
-		} else if (node instanceof PARSENODE.ParseNodeType) {
-			return this.decorate(node.children[0])
-
-		} else if (node instanceof PARSENODE.ParseNodeStringTemplate__0__List) {
-			return [...node.children].flatMap((c) =>
-				(c instanceof PARSENODE.ParseNodeExpression) ? [this.decorate(c)] :
-				this.decorate(c as PARSENODE.ParseNodeStringTemplate__0__List)
-			);
-
-		} else if (node instanceof PARSENODE.ParseNodeExpressionGrouped) {
-			return this.decorate(node.children[1]);
-
-		} else if (node instanceof PARSENODE.ParseNodeFunctionArguments) {
-			return (node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeExpression, AST.ASTNodeExpression>(
-				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral__0__List)!,
-			);
-
-		} else if (node instanceof PARSENODE.ParseNodeExpressionUnit) {
-			return this.decorate(node.children[0] as
-				| PARSENODE.ParseNodePrimitiveLiteral
-				| PARSENODE.ParseNodeStringTemplate
-				| PARSENODE.ParseNodeExpressionGrouped
-				| PARSENODE.ParseNodeTupleLiteral
-				| PARSENODE.ParseNodeRecordLiteral
-				| PARSENODE.ParseNodeSetLiteral
-				| PARSENODE.ParseNodeMapLiteral
-			);
-
-		} else if (node instanceof PARSENODE.ParseNodeFunctionCall) {
-			return (node.children.length === 2) ? [
-				[],
-				this.decorate(node.children[1]),
-			] : [
-				this.decorate(node.children[1]),
-				this.decorate(node.children[2]),
-			];
-
-		} else if (node instanceof PARSENODE.ParseNodeExpressionCompound) {
-			return this.decorate(node.children[0]);
-
-		} else if (node instanceof PARSENODE.ParseNodeExpressionUnarySymbol) {
-			return (node.children.length === 1)
-				? this.decorate(node.children[0])
-				: this.decorate(node.children[1]);
-
-		} else if (node instanceof PARSENODE.ParseNodeExpressionClaim) {
-			return this.decorate(node.children[0] as PARSENODE.ParseNodeExpressionUnarySymbol);
-
-		} else if (
-			node instanceof PARSENODE.ParseNodeExpressionExponential    ||
-			node instanceof PARSENODE.ParseNodeExpressionMultiplicative ||
-			node instanceof PARSENODE.ParseNodeExpressionAdditive       ||
-			node instanceof PARSENODE.ParseNodeExpressionComparative    ||
-			node instanceof PARSENODE.ParseNodeExpressionEquality       ||
-			node instanceof PARSENODE.ParseNodeExpressionConjunctive    ||
-			node instanceof PARSENODE.ParseNodeExpressionDisjunctive
-		) {
-			return this.decorate(node.children[0])
-
-		} else if (node instanceof PARSENODE.ParseNodeExpression) {
-			return this.decorate(node.children[0])
-
-		} else if (node instanceof PARSENODE.ParseNodeDeclaration) {
-			return this.decorate(node.children[0]);
-
-		} else if (node instanceof PARSENODE.ParseNodeStatement) {
-			return this.decorate(node.children[0]);
-		}
-		throw new TypeError(`Could not find type of parse node \`${ node.constructor.name }\`.`);
+	override decorate(): DecoratorReturnType {
+		throw new Error('`DecoratorSolid#decorate` no longer supported; try `DecoratorSolid#decorateTS` instead.');
 	}
 
 	decorateTS(node: SyntaxNodeType<'keyword_type'>):                            AST.ASTNodeTypeConstant;

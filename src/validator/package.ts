@@ -79,5 +79,4 @@ export {
 	TOKEN_EBNF,
 	ParseNode,
 	PARSENODE_EBNF,
-	PARSENODE_SOLID,
 } from '../parser/index.js';
