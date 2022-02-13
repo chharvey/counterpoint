@@ -4,7 +4,7 @@ import type {Production} from './Production.js';
 
 
 
-export type GrammarTerminal =
+type GrammarTerminal =
 	| string
 	| Terminal
 ;
