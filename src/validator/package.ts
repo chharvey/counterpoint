@@ -72,5 +72,4 @@ export {
 	Keyword,
 	KEYWORDS,
 	Token,
-	ParseNode,
 } from '../parser/index.js';

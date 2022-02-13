@@ -1,6 +1,5 @@
 import Parser from 'tree-sitter';
 import Counterpoint from 'tree-sitter-counterpoint';
-import type {NonemptyArray} from './package.js';
 
 
 
@@ -11,31 +10,6 @@ export enum Filebound {
 	/** U+0003 END OF TEXT */
 	EOT = '\u0003',
 }
-
-
-
-export type EBNFObject = {
-	/** The name of the production. */
-	readonly name: string,
-	/** The production definition. */
-	readonly defn: EBNFChoice,
-	/**
-	 * If `true`, this production is a family group, an abstract superclass.
-	 * If a string, the name of the family that this production extends.
-	 * Else, this is not a fmaily group nor does it belong to one.
-	 */
-	readonly family?: boolean | string,
-};
-
-type EBNFChoice = Readonly<NonemptyArray<EBNFSequence>>;
-
-type EBNFSequence = Readonly<NonemptyArray<EBNFItem>>;
-
-type EBNFItem =
-	| string
-	| { readonly term: string }
-	| { readonly prod: string }
-;
 
 
 

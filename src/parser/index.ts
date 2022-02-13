@@ -5,4 +5,3 @@ export * from './Keyword.js';
 
 export * from './Char.js';
 export * from './Token.js';
-export * from './ParseNode.js';
