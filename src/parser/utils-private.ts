@@ -4,10 +4,6 @@ import type {Production} from './Production.js';
 
 
 
-export type RadixType = 2n|4n|8n|10n|16n|36n
-
-
-
 export type GrammarTerminal =
 	| string
 	| Terminal
