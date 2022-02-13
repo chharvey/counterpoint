@@ -1,20 +1,4 @@
 import {Filebound} from './utils-public.js';
-import type {Terminal} from './Terminal.js';
-import type {Production} from './Production.js';
-
-
-
-type GrammarTerminal =
-	| string
-	| Terminal
-;
-
-
-
-export type GrammarSymbol =
-	| GrammarTerminal
-	| Production
-;
 
 
 
@@ -25,17 +9,6 @@ export type GrammarSymbol =
  */
 export function titleToMacro(s: string): string {
 	return s.replace(/[A-Z]/g, '_$&').slice(1).toUpperCase();
-}
-
-
-
-/**
- * Transform `MACRO_CASE` into `TitleCase`.
- * @param   s the string to transform, in `ABC_DEF` format
- * @returns   the string in `AbcDef` format
- */
-export function macroToTitle(s: string): string {
-	return s.split('_').map((ss) => ss[0].concat(ss.slice(1).toLowerCase())).join('');
 }
 
 

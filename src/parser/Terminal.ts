@@ -7,7 +7,8 @@ import type {Token} from './Token.js';
  * A Terminal is a symbol in a production (a formal context-free grammar) that cannot be reduced any further.
  * It serves as a distinction betwen different types of actual tokens.
  */
-export abstract class Terminal {
+// @ts-expect-error
+abstract class Terminal {
 	protected constructor () {
 	}
 
