@@ -36,11 +36,11 @@ export type EBNFObject = {
 	readonly family?: boolean | string,
 };
 
-export type EBNFChoice = Readonly<NonemptyArray<EBNFSequence>>;
+type EBNFChoice = Readonly<NonemptyArray<EBNFSequence>>;
 
-export type EBNFSequence = Readonly<NonemptyArray<EBNFItem>>;
+type EBNFSequence = Readonly<NonemptyArray<EBNFItem>>;
 
-export type EBNFItem =
+type EBNFItem =
 	| string
 	| { readonly term: string }
 	| { readonly prod: string }
