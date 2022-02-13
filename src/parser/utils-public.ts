@@ -14,15 +14,6 @@ export enum Filebound {
 
 
 
-export enum TemplatePosition {
-	FULL,
-	HEAD,
-	MIDDLE,
-	TAIL,
-}
-
-
-
 export type EBNFObject = {
 	/** The name of the production. */
 	readonly name: string,

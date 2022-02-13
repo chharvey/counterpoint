@@ -49,33 +49,4 @@ await Promise.all([
 		import {Parser} from './Parser.js';
 		${ generate(await fs.promises.readFile(path.join(DIRNAME, '../docs/spec/grammar-ebnf/syntax.ebnf'), 'utf8')) }
 	`))(),
-	(async () => fs.promises.writeFile(path.join(DIRNAME, '../src/parser/ParserSolid.ts'), xjs.String.dedent`
-		${ preamble }
-		import {
-			NonemptyArray,
-			SolidConfig,
-			CONFIG_DEFAULT,
-		} from './package.js';
-		import type {
-			GrammarSymbol,
-		} from './utils-private.js';
-		import * as TERMINAL from './terminal-solid/index.js';
-		import {Production} from './Production.js';
-		import {Grammar} from './Grammar.js';
-		import type {Token} from './Token.js';
-		import {ParseNode} from './ParseNode.js';
-		import {LexerSolid, LEXER} from './LexerSolid.js';
-		import {Parser} from './Parser.js';
-		${ generate(await fs.promises.readFile(path.join(DIRNAME, '../docs/spec/grammar-solid/syntax.ebnf'), 'utf8'))
-			.replace(/export const PARSER: Parser<ParseNodeGoal> = new Parser<ParseNodeGoal>\((.*)\);/s, xjs.String.dedent`
-				export class ParserSolid extends Parser<ParseNodeGoal> {
-					constructor (config: SolidConfig = CONFIG_DEFAULT) {
-						super($1);
-					}
-				}
-				export const PARSER: ParserSolid = new ParserSolid();
-			`)
-			.replace(`LEXER,`, `(config === CONFIG_DEFAULT) ? LEXER : new LexerSolid(config),`)
-		}
-	`))(),
 ]);
