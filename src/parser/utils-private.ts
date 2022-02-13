@@ -3,17 +3,6 @@ import {Filebound} from './utils-public.js';
 
 
 /**
- * Transform `TitleCase` into `MACRO_CASE`.
- * @param   s the string to transform, in `AbcDef` format
- * @returns   the string in `ABC_DEF` format
- */
-export function titleToMacro(s: string): string {
-	return s.replace(/[A-Z]/g, '_$&').slice(1).toUpperCase();
-}
-
-
-
-/**
  * Sanitize a string for the text content of an XML element.
  * @param   contents the original element contents
  * @returns          contents with XML special characters escaped
