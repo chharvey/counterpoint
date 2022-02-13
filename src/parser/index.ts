@@ -10,6 +10,4 @@ export * as TOKEN_SOLID from './token-solid/index.js';
 export * from './ParseNode.js';
 export * as PARSENODE_EBNF from './ParserEbnf.js';
 
-export * from './LexerSolid.js';
-
 export {PARSER as PARSER_EBNF} from './ParserEbnf.js';
