@@ -65,10 +65,6 @@ export {
 	Serializable,
 } from '../core/index.js';
 export {
-	EBNFObject,
-	EBNFChoice,
-	EBNFSequence,
-	EBNFItem,
 	stringifyAttributes,
 	TS_PARSER,
 	Punctuator,
@@ -76,7 +72,5 @@ export {
 	Keyword,
 	KEYWORDS,
 	Token,
-	TOKEN_EBNF,
 	ParseNode,
-	PARSENODE_EBNF,
 } from '../parser/index.js';
