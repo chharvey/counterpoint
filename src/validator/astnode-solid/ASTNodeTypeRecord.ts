@@ -5,7 +5,6 @@ import {
 	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeType,
 } from './package.js';
 import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
@@ -20,7 +19,7 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeRecordLiteral | SyntaxNodeType<'type_record_literal'>,
+		start_node: SyntaxNodeType<'type_record_literal'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
 	) {
 		super(start_node, {}, children);

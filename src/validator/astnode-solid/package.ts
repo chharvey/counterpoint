@@ -54,14 +54,10 @@ export {
 	CONFIG_DEFAULT,
 	Dev,
 	Serializable,
-	stringifyAttributes,
 	TS_PARSER,
 	Punctuator,
 	Keyword,
 	Token,
-	TOKEN_SOLID as TOKEN,
-	ParseNode,
-	PARSENODE_SOLID as PARSENODE,
 } from '../package.js';
 export {
 	DECORATOR_SOLID as DECORATOR,
