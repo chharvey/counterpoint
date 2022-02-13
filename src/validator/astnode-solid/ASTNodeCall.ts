@@ -20,7 +20,6 @@ import {
 	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
@@ -37,7 +36,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeExpressionCompound | SyntaxNodeType<'expression_compound'>,
+		start_node: SyntaxNodeType<'expression_compound'>,
 		readonly base: ASTNodeExpression,
 		readonly typeargs: readonly ASTNodeType[],
 		readonly exprargs: readonly ASTNodeExpression[],

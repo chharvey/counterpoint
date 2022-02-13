@@ -10,7 +10,6 @@ import {
 	TypeError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
 	SyntaxNodeSupertype,
 	Operator,
 	ValidOperatorComparative,
@@ -32,7 +31,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		return expression;
 	}
 	constructor (
-		start_node: ParseNode | SyntaxNodeSupertype<'expression'>,
+		start_node: SyntaxNodeSupertype<'expression'>,
 		override readonly operator: ValidOperatorComparative,
 		operand0: ASTNodeExpression,
 		operand1: ASTNodeExpression,

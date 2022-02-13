@@ -28,7 +28,6 @@ import {
 	TypeError04,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeType,
 	Operator,
 	ValidAccessOperator,
@@ -48,8 +47,6 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
 	constructor (
 		start_node:
-			| PARSENODE.ParseNodeExpressionCompound
-			| PARSENODE.ParseNodeAssignee
 			| SyntaxNodeType<'expression_compound'>
 			| SyntaxNodeType<'assignee'>
 		,

@@ -3,7 +3,6 @@ import {
 	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeType,
 	ValidTypeOperator,
 } from './package.js';
@@ -24,10 +23,6 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	}
 	constructor (
 		start_node:
-			| PARSENODE.ParseNodeTypeUnarySymbol
-			| PARSENODE.ParseNodeTypeUnaryKeyword
-			| PARSENODE.ParseNodeTypeIntersection
-			| PARSENODE.ParseNodeTypeUnion
 			| SyntaxNodeType<'type_unary_symbol'>
 			| SyntaxNodeType<'type_unary_keyword'>
 			| SyntaxNodeType<'type_intersection'>

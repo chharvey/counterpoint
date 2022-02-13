@@ -12,7 +12,6 @@ import {
 	NanError02,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
 	SyntaxNodeSupertype,
 	Operator,
 	ValidOperatorArithmetic,
@@ -35,7 +34,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		return expression;
 	}
 	constructor (
-		start_node: ParseNode | SyntaxNodeSupertype<'expression'>,
+		start_node: SyntaxNodeSupertype<'expression'>,
 		override readonly operator: ValidOperatorArithmetic,
 		operand0: ASTNodeExpression,
 		operand1: ASTNodeExpression,

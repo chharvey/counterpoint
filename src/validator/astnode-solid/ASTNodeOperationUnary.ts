@@ -11,7 +11,6 @@ import {
 	NanError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
 	SyntaxNodeSupertype,
 	Operator,
 	ValidOperatorUnary,
@@ -28,7 +27,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return expression;
 	}
 	constructor(
-		start_node: ParseNode | SyntaxNodeSupertype<'expression'>,
+		start_node: SyntaxNodeSupertype<'expression'>,
 		readonly operator: ValidOperatorUnary,
 		readonly operand: ASTNodeExpression,
 	) {

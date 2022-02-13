@@ -3,7 +3,6 @@ import {
 	SolidType,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeType,
 	Operator,
 	ValidTypeOperator,
@@ -21,8 +20,6 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	}
 	constructor (
 		start_node:
-			| PARSENODE.ParseNodeTypeIntersection
-			| PARSENODE.ParseNodeTypeUnion
 			| SyntaxNodeType<'type_intersection'>
 			| SyntaxNodeType<'type_union'>
 		,
