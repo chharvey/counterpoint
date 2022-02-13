@@ -7,7 +7,8 @@ import {LexError} from './LexError.js';
  * A LexError02 is thrown when the lexer reaches the end of the file before the end of a token.
  * @final
  */
-export class LexError02 extends LexError {
+// @ts-expect-error
+class LexError02 extends LexError {
 	/** The number series of this class of errors. */
 	static override readonly CODE = 2;
 

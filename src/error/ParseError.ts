@@ -37,7 +37,8 @@ class ParseError extends ErrorCode {
 /**
  * A ParseError01 is thrown when the parser does not recognize the lookahead token.
  */
-export class ParseError01 extends ParseError {
+// @ts-expect-error
+class ParseError01 extends ParseError {
 	/** The number series of this class of errors. */
 	static override readonly CODE = 1;
 

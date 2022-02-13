@@ -4,12 +4,14 @@ import {
 	Filebound,
 	Char,
 } from '../../src/index.js';
-import {Scanner} from '../../src/parser/Scanner.js';
 
 
 
 describe('Char', () => {
-	const source_text: string = Scanner.normalize(xjs.String.dedent`
+	function normalize(source: string): string {
+		return [Filebound.SOT, '\n', source.replace(/\r\n|\r/g, '\n'), '\n', Filebound.EOT].join('');
+	}
+	const source_text: string = normalize(xjs.String.dedent`
 		5  +  30 \u000d
 		6 ^ 2 - 37 *
 		( 4 * \u000d9 ^ 3
