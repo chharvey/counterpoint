@@ -72,12 +72,12 @@ export class ASTNodeConstant extends ASTNodeExpression {
 				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeConstant.keywordValue(token.text) :
 				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? valueOfTokenNumber(token.text, this.validator.config) :
 				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? valueOfTokenNumber(token.text, this.validator.config) :
-				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  valueOfTokenString(token.text))
+				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  valueOfTokenString(token.text, this.validator.config))
 			))(this.start_node.children[0]))
 		) : (
 			(this.start_node instanceof TOKEN.TokenKeyword) ? ASTNodeConstant.keywordValue(this.start_node.source) :
 			(this.start_node instanceof TOKEN.TokenNumber)  ? valueOfTokenNumber(this.start_node, this.validator.config) :
-			(this.start_node instanceof TOKEN.TokenString)  ? (Dev.supports('literalString-cook'))   ? valueOfTokenString   (this.start_node)                        : (() => { throw new Error('`literalString-cook` not yet supported.'); })() :
+			(this.start_node instanceof TOKEN.TokenString)  ? (Dev.supports('literalString-cook'))   ? valueOfTokenString   (this.start_node, this.validator.config) : (() => { throw new Error('`literalString-cook` not yet supported.'); })() :
 			(this.start_node instanceof TOKEN.TokenTemplate,  (Dev.supports('literalTemplate-cook')) ? valueOfTokenTemplate (this.start_node as TOKEN.TokenTemplate) : (() => { throw new Error('`literalTemplate-cook` not yet supported.'); })())
 		);
 	}

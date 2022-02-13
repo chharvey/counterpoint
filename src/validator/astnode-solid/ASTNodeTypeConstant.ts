@@ -63,12 +63,12 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeTypeConstant.keywordType(token.text) :
 				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? new SolidTypeUnit(valueOfTokenNumber(token.text, this.validator.config)) :
 				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? new SolidTypeUnit(valueOfTokenNumber(token.text, this.validator.config)) :
-				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new SolidTypeUnit(valueOfTokenString(token.text)))
+				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new SolidTypeUnit(valueOfTokenString(token.text, this.validator.config)))
 			))(this.start_node.children[0]))
 		) : (
 			(this.start_node instanceof TOKEN.TokenKeyword) ? ASTNodeTypeConstant.keywordType(this.start_node.source) :
 			(this.start_node instanceof TOKEN.TokenNumber)  ? new SolidTypeUnit(valueOfTokenNumber(this.start_node, this.validator.config)) :
-			(this.start_node instanceof TOKEN.TokenString,    (Dev.supports('literalString-cook')) ? new SolidTypeUnit(valueOfTokenString(this.start_node as TOKEN.TokenString)) : (() => { throw new Error('`literalString-cook` not yet supported.'); })())
+			(this.start_node instanceof TOKEN.TokenString,    (Dev.supports('literalString-cook')) ? new SolidTypeUnit(valueOfTokenString(this.start_node as TOKEN.TokenString, this.validator.config)) : (() => { throw new Error('`literalString-cook` not yet supported.'); })())
 		);
 	}
 }

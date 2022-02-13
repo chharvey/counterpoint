@@ -130,8 +130,8 @@ describe('Validator', () => {
 		function utf8Decode(codeunits: readonly CodeUnit[]): string {
 			return utf8.decode(String.fromCodePoint(...codeunits));
 		}
-		function decodeCooked(source: string): string {
-			return utf8Decode(Validator.cookTokenString(source));
+		function decodeCooked(source: string, config: SolidConfig): string {
+			return utf8Decode(Validator.cookTokenString(source, config));
 		}
 		it('produces the cooked string value.', () => {
 			assert.deepStrictEqual([
@@ -146,7 +146,7 @@ describe('Validator', () => {
 				`'\u{10001}'`,
 				`'\\\u{10001}'`,
 				`'\\u{10001}'`,
-			].map((src) => decodeCooked(src)), [
+			].map((src) => decodeCooked(src, CONFIG_DEFAULT)), [
 				``,
 				`hello`,
 				`0 ' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`,
@@ -160,12 +160,12 @@ describe('Validator', () => {
 		});
 		it('may contain an escaped `u` anywhere.', () => {
 			assert.strictEqual(
-				decodeCooked(`'abc\\udef\\u'`),
+				decodeCooked(`'abc\\udef\\u'`, CONFIG_DEFAULT),
 				`abcudefu`,
 			);
 		});
 		context('In-String Comments', () => {
-			function cook(_config: SolidConfig): string[] {
+			function cook(config: SolidConfig): string[] {
 				return [
 					xjs.String.dedent`'The five boxing wizards % jump quickly.'`,
 
@@ -193,7 +193,7 @@ describe('Validator', () => {
 					xjs.String.dedent`'The five boxing
 					wizards %% jump
 					quickly.'`,
-				].map((src) => decodeCooked(src));
+				].map((src) => decodeCooked(src, config));
 			}
 			context('with comments enabled.', () => {
 				const data: {description: string, expected: string}[] = [
@@ -213,7 +213,7 @@ describe('Validator', () => {
 					});
 				});
 			});
-			it.skip('with comments disabled.', () => {
+			it('with comments disabled.', () => {
 				assert.deepStrictEqual(cook({
 					...CONFIG_DEFAULT,
 					languageFeatures: {
@@ -236,6 +236,7 @@ describe('Validator', () => {
 				const out_of_range = 'a00061'; // NOTE: the valid range of input may change as Unicode evolves
 				assert.throws(() => Validator.cookTokenString(
 					`'a string literal with a unicode \\u{${ out_of_range }} escape sequence out of range'`,
+					CONFIG_DEFAULT,
 				), RangeError);
 			});
 		});

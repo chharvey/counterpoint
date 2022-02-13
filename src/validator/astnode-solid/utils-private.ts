@@ -36,9 +36,9 @@ export function valueOfTokenNumber(source: TOKEN.TokenNumber | string, config: S
 	return (is_float) ? new Float64(cooked) : new Int16(BigInt(cooked));
 }
 
-export function valueOfTokenString(source: TOKEN.TokenString | string): SolidString {
+export function valueOfTokenString(source: TOKEN.TokenString | string, config: SolidConfig): SolidString {
 	return new SolidString((typeof source === 'string')
-		? Validator.cookTokenString(source)
+		? Validator.cookTokenString(source, config)
 		: source.cook());
 }
 

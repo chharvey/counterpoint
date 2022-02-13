@@ -199,7 +199,8 @@ export class Validator {
 	/**
 	 * Give the numeric value of a number token.
 	 * @param source the token’s text
-	 * @return       the numeric value, cooked
+	 * @param config configuration settings
+	 * @return       the numeric value, cooked, along with whether the cooked value is a float
 	 */
 	static cookTokenNumber(source: string, config: SolidConfig): [number, boolean] {
 		const is_float:   boolean   = source.indexOf(POINT) > 0;
@@ -236,13 +237,14 @@ export class Validator {
 	/**
 	 * Give the text value of a string token.
 	 * @param source the token’s text
+	 * @param config configuration settings
 	 * @return       the text value, cooked
 	 */
-	static cookTokenString(source: string): CodeUnit[] {
+	static cookTokenString(source: string, config: SolidConfig): CodeUnit[] {
 		return tokenWorthString(
 			source.slice(DELIM_STRING.length, -DELIM_STRING.length),
-			true,
-			true,
+			config.languageFeatures.comments,
+			config.languageFeatures.numericSeparators,
 		);
 	}
 
