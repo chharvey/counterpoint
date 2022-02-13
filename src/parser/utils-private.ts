@@ -1,7 +1,3 @@
-import {
-	NonemptyArray,
-	Util,
-} from './package.js';
 import {Filebound} from './utils-public.js';
 import type {Terminal} from './Terminal.js';
 import type {Production} from './Production.js';
@@ -45,17 +41,6 @@ export function titleToMacro(s: string): string {
 export function macroToTitle(s: string): string {
 	return s.split('_').map((ss) => ss[0].concat(ss.slice(1).toLowerCase())).join('');
 }
-
-
-
-export function maybe(fun: () => string): string {
-	return Util.randomBool() ? '' : fun.call(null);
-}
-
-export function choose(...funs: Readonly<NonemptyArray<() => string>>): string {
-	return Util.arrayRandom(funs).call(null);
-}
-
 
 
 
