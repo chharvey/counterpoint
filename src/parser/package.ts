@@ -5,8 +5,6 @@
  * they are only for modules within this package.
  */
 export {
-	LexError01,
-	LexError02,
 	LexError03,
 	LexError04,
 	LexError05,

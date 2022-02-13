@@ -68,7 +68,8 @@ export class Token implements Serializable {
 
 
 /** @final */
-export class TokenFilebound extends Token {
+// @ts-expect-error
+class TokenFilebound extends Token {
 	static readonly CHARS: readonly Filebound[] = [Filebound.SOT, Filebound.EOT];
 	// declare readonly source: Filebound; // NB: https://github.com/microsoft/TypeScript/issues/40220
 
@@ -81,7 +82,8 @@ export class TokenFilebound extends Token {
 
 
 /** @final */
-export class TokenWhitespace extends Token {
+// @ts-expect-error
+class TokenWhitespace extends Token {
 	static readonly CHARS: readonly string[] = [' ', '\t', '\n'];
 
 
