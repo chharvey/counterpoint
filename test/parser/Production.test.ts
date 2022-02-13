@@ -8,7 +8,6 @@ import type {
 } from '../../src/index.js';
 import type {GrammarSymbol} from '../../src/parser/utils-private.js';
 import {Production} from '../../src/parser/Production.js';
-import {Rule} from '../../src/parser/Rule.js';
 
 
 
@@ -67,15 +66,6 @@ describe('Production', () => {
 	describe('#displayName', () => {
 		it('returns the display name.', () => {
 			assert.strictEqual(ProductionUnit.instance.displayName, 'Unit');
-		});
-	});
-
-	describe('#toRules', () => {
-		it('decomposes the production into a list of rules.', () => {
-			assert.deepStrictEqual(ProductionUnit.instance.toRules(), [
-				new Rule(ProductionUnit.instance, 0),
-				new Rule(ProductionUnit.instance, 1),
-			]);
 		});
 	});
 });

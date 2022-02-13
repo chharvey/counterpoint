@@ -5,7 +5,6 @@ import {
 	GrammarSymbol,
 	macroToTitle,
 } from './utils-private.js';
-import {Rule} from './Rule.js';
 
 
 
@@ -60,30 +59,4 @@ export abstract class Production {
 	 * A set of sequences of parse symbols (terminals and/or nonterminals) in this production.
 	 */
 	abstract get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>>;
-
-	/**
-	 * Is this production “equal to” the argument?
-	 *
-	 * Two productions are “equal” if they are the same object, or all of the following are true:
-	 * - The corresponding rules of both productions are “equal” (by {@link Rule#equals}).
-	 *
-	 * @param   prod the production to compare
-	 * @returns      is this production “equal to” the argument?
-	 * @final
-	 */
-	equals(prod: Production) {
-		return this === prod ||
-			this.displayName === prod.displayName &&
-			xjs.Array.is<Rule>(this.toRules(), prod.toRules(), (r1, r2) => r1.equals(r2));
-	}
-
-
-	/**
-	 * Generate grammar rules from this Production.
-	 * @returns this Production split into several rules
-	 * @final
-	 */
-	toRules(): Rule[] {
-		return this.sequences.map((_, i) => new Rule(this, i));
-	}
 }

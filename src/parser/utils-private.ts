@@ -55,20 +55,3 @@ export function sanitizeContent(contents: string): string {
 		.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 	;
 }
-
-
-
-/**
- * Display a string of grammar symbols for debugging purposes.
- *
- * @param   arr the array of grammar symbols
- * @returns     a string representing the sequence of those symbols
- */
-export function stringOfSymbols(arr: readonly GrammarSymbol[]): string {
-	return arr.map((symbol) => (typeof symbol === 'string')
-		? `"${ symbol }"`
-			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
-		: symbol.displayName
-	).join(' ');
-}
