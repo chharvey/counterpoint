@@ -18,7 +18,8 @@ import {Scanner} from './Scanner.js';
  * A Lexer (aka: Tokenizer, Lexical Analyzer).
  * @see http://parsingintro.sourceforge.net/#contents_item_6.5
  */
-export class Lexer {
+// @ts-expect-error
+class Lexer {
 	/** A character generator produced by a Scanner. */
 	private char_generator?: Generator<Char>;
 	/** The result of the scanner iterator. */
