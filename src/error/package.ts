@@ -5,9 +5,8 @@
  * they are only for modules within this package.
  */
 export type {
-	Char,
-	Token,
-} from '../parser/index.js';
+	Serializable,
+} from '../core/index.js';
 export type {
 	ASTNode,
 	ASTNODE_SOLID as AST,

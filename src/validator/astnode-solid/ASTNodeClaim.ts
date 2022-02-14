@@ -7,7 +7,6 @@ import {
 	TypeError03,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeFamily,
 } from './package.js';
 import type {ASTNodeType} from './ASTNodeType.js';
@@ -24,7 +23,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	}
 	private typed_?: SolidType;
 	constructor(
-		start_node: PARSENODE.ParseNodeExpressionClaim$ | SyntaxNodeFamily<'expression_claim', ['variable']>,
+		start_node: SyntaxNodeFamily<'expression_claim', ['variable']>,
 		readonly claimed_type: ASTNodeType,
 		readonly operand: ASTNodeExpression,
 	) {

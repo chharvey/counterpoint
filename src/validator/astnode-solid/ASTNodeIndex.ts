@@ -1,5 +1,4 @@
 import type {
-	PARSENODE,
 	SyntaxNodeType,
 	SyntaxNodeFamily,
 } from './package.js';
@@ -11,8 +10,6 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
 export class ASTNodeIndex extends ASTNodeSolid {
 	constructor (
 		start_node:
-			| PARSENODE.ParseNodePropertyAccess$
-			| PARSENODE.ParseNodePropertyAssign
 			| SyntaxNodeFamily<'property_access', ['variable']>
 			| SyntaxNodeType<'property_assign'>
 		,

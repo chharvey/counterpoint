@@ -2,9 +2,8 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	SolidType,
 	TypeError03,
+	serialize,
 	Punctuator,
-	Token,
-	ParseNode,
 	forEachAggregated,
 	Validator,
 	ASTNode,
@@ -57,11 +56,11 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * @param attributes - Any other attributes to attach.
 	 */
 	constructor(
-		protected readonly start_node: Token | ParseNode | SyntaxNode,
+		protected readonly start_node: SyntaxNode,
 		attributes: {[key: string]: unknown} = {},
 		override readonly children: readonly ASTNodeSolid[] = [],
 	) {
-		super(('tree' in start_node) ? ((node: SyntaxNode) => {
+		super(((node: SyntaxNode) => { // COMBAK: TypeScript 4.6+ allows non-`this` code before `super()`
 			// @ts-expect-error
 			const tree_text:    string = node.tree.input;
 			const source:       string = node.text;
@@ -74,10 +73,10 @@ export abstract class ASTNodeSolid extends ASTNode {
 				col_index:    source_index - (prev_chars.lastIndexOf('\n') + 1),
 				tagname:      Object.values(Punctuator).find((punct) => punct === node.type) ? 'PUNCTUATOR' : node.type,
 				serialize() {
-					return Token.prototype.serialize.call(this);
+					return serialize(this, this.source);
 				},
 			};
-		})(start_node) : start_node, attributes, children);
+		})(start_node), attributes, children);
 	}
 
 	get validator(): Validator {

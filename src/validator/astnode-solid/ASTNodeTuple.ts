@@ -8,7 +8,6 @@ import {
 	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeFamily,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -23,10 +22,10 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTupleLiteral$ | SyntaxNodeFamily<'tuple_literal', ['variable']>,
+		start_node: SyntaxNodeFamily<'tuple_literal', ['variable']>,
 		override readonly children: readonly ASTNodeExpression[],
 	) {
-		super(start_node, {}, children);
+		super(start_node, children);
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeTuple#build_do not yet supported.';

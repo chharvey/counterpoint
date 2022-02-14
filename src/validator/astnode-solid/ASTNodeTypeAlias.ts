@@ -5,7 +5,6 @@ import {
 	ReferenceError03,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	TOKEN,
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
@@ -26,14 +25,12 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 
 	private _id: bigint | null = null; // TODO use memoize decorator
 
-	constructor (start_node: TOKEN.TokenIdentifier | SyntaxNodeType<'identifier'>) {
+	constructor (start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
 	get id(): bigint {
-		return this._id ??= ('tree' in this.start_node)
-			? this.validator.cookTokenIdentifier(this.start_node.text)
-			: this.validator.cookTokenIdentifier(this.start_node.source);
+		return this._id ??= this.validator.cookTokenIdentifier(this.start_node.text);
 	}
 
 	override varCheck(): void {

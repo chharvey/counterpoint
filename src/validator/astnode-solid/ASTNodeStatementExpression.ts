@@ -4,7 +4,6 @@ import {
 	INST,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeType,
 } from './package.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -19,7 +18,7 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		return statement;
 	}
 	constructor(
-		start_node: PARSENODE.ParseNodeStatementExpression | SyntaxNodeType<'statement_expression'>,
+		start_node: SyntaxNodeType<'statement_expression'>,
 		readonly expr?: ASTNodeExpression,
 	) {
 		super(start_node, {}, (expr) ? [expr] : void 0);
