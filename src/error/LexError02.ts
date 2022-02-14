@@ -1,4 +1,6 @@
-import type {Token} from './package.js';
+import type {
+	Serializable,
+} from './package.js';
 import {LexError} from './LexError.js';
 
 
@@ -17,7 +19,7 @@ class LexError02 extends LexError {
 	 * Construct a new LexError02 object.
 	 * @param token the token that did not finish
 	 */
-	constructor (token: Token) {
+	constructor (token: Serializable) {
 		super(`Found end of file before end of ${ token.tagname }: \`${ token.source }\`.`, LexError02.CODE, token.line_index, token.col_index);
 	}
 }

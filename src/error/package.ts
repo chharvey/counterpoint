@@ -5,8 +5,10 @@
  * they are only for modules within this package.
  */
 export type {
+	Serializable,
+} from '../core/index.js';
+export type {
 	Char,
-	Token,
 } from '../parser/index.js';
 export type {
 	ASTNode,

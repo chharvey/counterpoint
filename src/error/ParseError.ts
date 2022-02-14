@@ -1,4 +1,6 @@
-import type {Token} from './package.js';
+import type {
+	Serializable,
+} from './package.js';
 import {ErrorCode} from './ErrorCode.js';
 
 
@@ -47,7 +49,7 @@ class ParseError01 extends ParseError {
 	 * Construct a new ParseError01 object.
 	 * @param token the unexpected token
 	 */
-	constructor (token: Token) {
+	constructor (token: Serializable) {
 		super(`Unexpected token: \`${ token.source }\` at line ${ token.line_index + 1 } col ${ token.col_index + 1 }.`, ParseError01.CODE, token.line_index, token.col_index);
 	}
 }

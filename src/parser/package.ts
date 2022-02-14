@@ -10,7 +10,6 @@ export {
 	LexError05,
 } from '../index.js';
 export type {
-	NonemptyArray,
 	CodeUnit,
 } from '../lib/index.js';
 export {
