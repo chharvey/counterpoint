@@ -6,7 +6,6 @@ import {
 	TypeError03,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SymbolStructureVar,
 	SyntaxNodeType,
 } from './package.js';
@@ -24,7 +23,7 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 		return statement;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeDeclarationClaim | SyntaxNodeType<'declaration_claim'>,
+		start_node: SyntaxNodeType<'declaration_claim'>,
 		readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		readonly claimed_type: ASTNodeType,
 	) {

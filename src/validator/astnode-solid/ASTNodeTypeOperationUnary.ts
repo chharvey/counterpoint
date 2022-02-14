@@ -3,7 +3,6 @@ import {
 	SolidType,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeType,
 	Operator,
 	ValidTypeOperator,
@@ -21,8 +20,6 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	}
 	constructor (
 		start_node:
-			| PARSENODE.ParseNodeTypeUnarySymbol
-			| PARSENODE.ParseNodeTypeUnaryKeyword
 			| SyntaxNodeType<'type_unary_symbol'>
 			| SyntaxNodeType<'type_unary_keyword'>
 		,

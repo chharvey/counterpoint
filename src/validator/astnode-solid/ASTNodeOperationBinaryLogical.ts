@@ -7,7 +7,6 @@ import {
 	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
 	SyntaxNodeSupertype,
 	Operator,
 	ValidOperatorLogical,
@@ -24,7 +23,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		return expression;
 	}
 	constructor (
-		start_node: ParseNode | SyntaxNodeSupertype<'expression'>,
+		start_node: SyntaxNodeSupertype<'expression'>,
 		override readonly operator: ValidOperatorLogical,
 		operand0: ASTNodeExpression,
 		operand1: ASTNodeExpression,

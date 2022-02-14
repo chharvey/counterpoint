@@ -25,3 +25,8 @@ export enum Keyword {
 	// modifier
 		UNFIXED = 'unfixed',
 }
+
+
+
+/** An iterable list of unique keywords. */
+export const KEYWORDS: readonly Keyword[] = [...new Set<Keyword>(Object.values(Keyword))];

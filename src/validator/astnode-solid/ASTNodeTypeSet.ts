@@ -4,7 +4,6 @@ import {
 	SolidTypeSet,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
@@ -18,7 +17,7 @@ export class ASTNodeTypeSet extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeUnarySymbol | SyntaxNodeType<'type_unary_symbol'>,
+		start_node: SyntaxNodeType<'type_unary_symbol'>,
 		readonly type: ASTNodeType,
 	) {
 		super(start_node, {}, [type]);

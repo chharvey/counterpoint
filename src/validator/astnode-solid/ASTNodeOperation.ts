@@ -3,7 +3,6 @@ import {
 	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
 	SyntaxNodeSupertype,
 	Operator,
 } from './package.js';
@@ -25,7 +24,7 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 	}
 	override readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
 	constructor(
-		start_node: ParseNode | SyntaxNodeSupertype<'expression'>,
+		start_node: SyntaxNodeSupertype<'expression'>,
 		operator: Operator,
 		override readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
 	) {
