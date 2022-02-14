@@ -14,9 +14,11 @@ export type {
 	CodeUnit,
 } from '../lib/index.js';
 export {
+	Filebound,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
 	Util,
 	Serializable,
+	serialize,
 } from '../core/index.js';

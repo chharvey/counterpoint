@@ -1,12 +1,9 @@
-import type {
-	NonemptyArray,
-	Serializable,
-} from './package.js';
 import {
+	NonemptyArray,
 	Filebound,
-	stringifyAttributes,
-} from './utils-public.js';
-import {sanitizeContent} from './utils-private.js';
+	Serializable,
+	serialize,
+} from './package.js';
 import type {Char} from './Char.js';
 
 
@@ -58,10 +55,7 @@ export class Token implements Serializable {
 
 	/** @implements Serializable */
 	serialize(): string {
-		return `<${ this.tagname } ${ stringifyAttributes(new Map<string, string>([
-			['line', (this.line_index + 1).toString()],
-			['col',  (this.col_index  + 1).toString()],
-		])) }>${ sanitizeContent(this.source) }</${ this.tagname }>`;
+		return serialize(this, this.source);
 	}
 }
 

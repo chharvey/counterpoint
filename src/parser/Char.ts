@@ -1,11 +1,8 @@
-import type {Serializable} from './package.js';
 import {
 	Filebound,
-	stringifyAttributes,
-} from './utils-public.js';
-import {
-	sanitizeContent,
-} from './utils-private.js';
+	Serializable,
+	serialize,
+} from './package.js';
 
 
 
@@ -90,10 +87,7 @@ export class Char implements Serializable {
 			.replace('\n'     /* LINE FEED (LF)       \u000a */, '\u240a' /* SYMBOL FOR LINE FEED             */)
 			.replace('\r'     /* CARRIAGE RETURN (CR) \u000d */, '\u240d' /* SYMBOL FOR CARRIAGE RETURN       */)
 		;
-		return `<${ this.tagname } ${ stringifyAttributes(new Map<string, string>([
-			['line', (this.line_index + 1).toString()],
-			['col',  (this.col_index  + 1).toString()],
-		])) }>${ sanitizeContent(formatted) }</${ this.tagname }>`;
+		return serialize(this, formatted);
 	}
 
 	/**
