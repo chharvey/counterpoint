@@ -26,14 +26,10 @@ import {
 	ValidOperatorLogical,
 } from './OperatorSolid.js';
 import * as AST from './astnode-solid/index.js';
-import {
-	DecoratorReturnType,
-	Decorator,
-} from './Decorator.js';
 
 
 
-class DecoratorSolid extends Decorator {
+class DecoratorSolid {
 	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
 		[Punctuator.DOT,      Operator.DOT],
 		[Punctuator.OPTDOT,   Operator.OPTDOT],
@@ -78,10 +74,6 @@ class DecoratorSolid extends Decorator {
 		[Punctuator.NOR,  Operator.NOR],
 	])
 
-
-	override decorate(): DecoratorReturnType {
-		throw new Error('`DecoratorSolid#decorate` no longer supported; try `DecoratorSolid#decorateTS` instead.');
-	}
 
 	decorateTS(node: SyntaxNodeType<'keyword_type'>):                            AST.ASTNodeTypeConstant;
 	decorateTS(node: SyntaxNodeType<'identifier'>):                              AST.ASTNodeTypeAlias | AST.ASTNodeVariable;

@@ -59,18 +59,17 @@ export {
 	Map_setEq,
 } from '../lib/index.js';
 export {
+	stringifyAttributes,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
 	Serializable,
+	serialize,
 } from '../core/index.js';
 export {
-	stringifyAttributes,
 	TS_PARSER,
 	Punctuator,
 	PUNCTUATORS,
 	Keyword,
 	KEYWORDS,
-	Token,
-	ParseNode,
 } from '../parser/index.js';

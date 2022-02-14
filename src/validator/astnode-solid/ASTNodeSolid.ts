@@ -2,8 +2,8 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	SolidType,
 	TypeError03,
+	serialize,
 	Punctuator,
-	Token,
 	forEachAggregated,
 	Validator,
 	ASTNode,
@@ -73,7 +73,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 				col_index:    source_index - (prev_chars.lastIndexOf('\n') + 1),
 				tagname:      Object.values(Punctuator).find((punct) => punct === node.type) ? 'PUNCTUATOR' : node.type,
 				serialize() {
-					return Token.prototype.serialize.call(this);
+					return serialize(this, this.source);
 				},
 			};
 		})(start_node), attributes, children);
