@@ -8,9 +8,6 @@ export type {
 	Serializable,
 } from '../core/index.js';
 export type {
-	Char,
-} from '../parser/index.js';
-export type {
 	ASTNode,
 	ASTNODE_SOLID as AST,
 	SymbolKind,
