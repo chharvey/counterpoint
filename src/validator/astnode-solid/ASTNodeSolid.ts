@@ -14,6 +14,21 @@ import {
 
 
 
+/**
+ * Known subclasses:
+ * - ASTNodeKey
+ * - ASTNodeIndexType
+ * - ASTNodeItemType
+ * - ASTNodePropertyType
+ * - ASTNodeIndex
+ * - ASTNodeProperty
+ * - ASTNodeCase
+ * - ASTNodeType
+ * - ASTNodeExpression
+ * - ASTNodeStatement
+ * - ASTNodeBlock
+ * - ASTNodeGoal
+ */
 export abstract class ASTNodeSolid extends ASTNode {
 	/**
 	 * Type-check an assignment.

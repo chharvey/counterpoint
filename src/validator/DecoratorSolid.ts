@@ -138,13 +138,13 @@ class DecoratorSolid extends Decorator {
 		| PARSENODE.ParseNodeExpression
 	): AST.ASTNodeExpression;
 	override decorate(node: PARSENODE.ParseNodeExpressionConditional): AST.ASTNodeOperationTernary;
+	override decorate(node: PARSENODE.ParseNodeStatementExpression):   AST.ASTNodeStatementExpression;
+	override decorate(node: PARSENODE.ParseNodeStatement):             AST.ASTNodeStatement;
 	override decorate(node: PARSENODE.ParseNodeDeclarationType):       AST.ASTNodeDeclarationType;
 	override decorate(node: PARSENODE.ParseNodeDeclarationVariable):   AST.ASTNodeDeclarationVariable;
 	override decorate(node: PARSENODE.ParseNodeDeclarationClaim):      AST.ASTNodeDeclarationClaim;
 	override decorate(node: PARSENODE.ParseNodeDeclarationReassignment): AST.ASTNodeDeclarationReassignment;
 	override decorate(node: PARSENODE.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
-	override decorate(node: PARSENODE.ParseNodeStatementExpression):   AST.ASTNodeStatementExpression;
-	override decorate(node: PARSENODE.ParseNodeStatement):             AST.ASTNodeStatement;
 	override decorate(node: PARSENODE.ParseNodeBlock):                 AST.ASTNodeBlock;
 	override decorate(node: PARSENODE.ParseNodeGoal, config?: SolidConfig): AST.ASTNodeGoal;
 	override decorate(node: ParseNode): DecoratorReturnType;
@@ -501,6 +501,18 @@ class DecoratorSolid extends Decorator {
 		} else if (node instanceof PARSENODE.ParseNodeExpression) {
 			return this.decorate(node.children[0])
 
+		} else if (node instanceof PARSENODE.ParseNodeStatementExpression) {
+			return new AST.ASTNodeStatementExpression(node, (node.children.length === 2) ? this.decorate(node.children[0]) : void 0);
+
+		} else if (node instanceof PARSENODE.ParseNodeStatement) {
+			return this.decorate(node.children[0]);
+
+		} else if (node instanceof PARSENODE.ParseNodeBlock) {
+			return new AST.ASTNodeBlock(
+				node,
+				this.parseList<PARSENODE.ParseNodeStatement, AST.ASTNodeStatement>(node.children[1]),
+			);
+
 		} else if (node instanceof PARSENODE.ParseNodeDeclarationType) {
 			return new AST.ASTNodeDeclarationType(
 				node,
@@ -533,18 +545,6 @@ class DecoratorSolid extends Decorator {
 
 		} else if (node instanceof PARSENODE.ParseNodeDeclaration) {
 			return this.decorate(node.children[0]);
-
-		} else if (node instanceof PARSENODE.ParseNodeStatementExpression) {
-			return new AST.ASTNodeStatementExpression(node, (node.children.length === 2) ? this.decorate(node.children[0]) : void 0);
-
-		} else if (node instanceof PARSENODE.ParseNodeStatement) {
-			return this.decorate(node.children[0]);
-
-		} else if (node instanceof PARSENODE.ParseNodeBlock) {
-			return new AST.ASTNodeBlock(
-				node,
-				this.parseList<PARSENODE.ParseNodeStatement, AST.ASTNodeStatement>(node.children[1]),
-			);
 
 		} else if (node instanceof PARSENODE.ParseNodeGoal) {
 			return new AST.ASTNodeGoal(
