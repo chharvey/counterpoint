@@ -9,7 +9,6 @@ import {
 	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeType,
 } from './package.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
@@ -25,10 +24,10 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeMapLiteral | SyntaxNodeType<'map_literal'>,
+		start_node: SyntaxNodeType<'map_literal'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
-		super(start_node, {}, children);
+		super(start_node, children);
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeMap#build_do not yet supported.';

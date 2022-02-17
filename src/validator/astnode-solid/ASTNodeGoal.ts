@@ -4,7 +4,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	TS_PARSER,
-	PARSENODE,
 	DECORATOR,
 	Validator,
 	SyntaxNodeType,
@@ -28,7 +27,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	}
 	private readonly _validator: Validator;
 	constructor(
-		start_node: PARSENODE.ParseNodeGoal | SyntaxNodeType<'source_file'>,
+		start_node: SyntaxNodeType<'source_file'>,
 		readonly block: ASTNodeBlock | null,
 		config: SolidConfig,
 	) {

@@ -8,7 +8,6 @@ import {
 	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SymbolStructureVar,
 	SyntaxNodeType,
 } from './package.js';
@@ -27,7 +26,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		return statement;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeDeclarationVariable | SyntaxNodeType<'declaration_variable'>,
+		start_node: SyntaxNodeType<'declaration_variable'>,
 		readonly unfixed: boolean,
 		readonly assignee: ASTNodeVariable,
 		readonly typenode: ASTNodeType,

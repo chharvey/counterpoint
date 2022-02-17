@@ -12,7 +12,6 @@ import {
 	TypeError04,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeType,
 	Operator,
 } from './package.js';
@@ -29,7 +28,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeCompound | SyntaxNodeType<'type_compound'>,
+		start_node: SyntaxNodeType<'type_compound'>,
 		readonly base:     ASTNodeType,
 		readonly accessor: ASTNodeIndexType | ASTNodeKey,
 	) {

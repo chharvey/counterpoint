@@ -5,7 +5,6 @@ import {
 	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeGoal} from './index.js';
@@ -29,7 +28,7 @@ export class ASTNodeBlock extends ASTNodeSolid implements Buildable {
 		return goal.block;
 	}
 	constructor(
-		start_node: PARSENODE.ParseNodeBlock | SyntaxNodeType<'block'>,
+		start_node: SyntaxNodeType<'block'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodeStatement>>,
 	) {
 		super(start_node, {}, children);

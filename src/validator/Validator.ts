@@ -1,11 +1,151 @@
+import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
+	LexError01,
+	CodeUnit,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Punctuator,
+	PUNCTUATORS,
 	Keyword,
-	TOKEN_SOLID as TOKEN,
+	KEYWORDS,
 } from './package.js';
 import type {SymbolStructure} from './index.js';
+import {
+	utf8Encode,
+} from './utils-private.js';
+
+
+
+type RadixType = 2n | 4n | 8n | 10n | 16n | 36n;
+
+
+
+const RADIX_DEFAULT      = 10n;
+const ESCAPER            = '\\';
+const SEPARATOR          = '_';
+const POINT              = '.';
+const EXPONENT           = 'e';
+const DELIM_STRING       = '\'';
+const DELIM_TEMPLATE     = '\'\'\'';
+const DELIM_INTERP_START = '{{';
+const DELIM_INTERP_END   = '}}';
+const COMMENTER_LINE     = '%';
+const COMMENTER_MULTI    = '%%';
+
+
+
+function tokenWorthInt(
+	text: string,
+	radix: RadixType = RADIX_DEFAULT,
+	allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+): number {
+	if (text.length === 0) { throw new Error('Cannot compute mathematical value of empty string.'); }
+	if (allow_separators && text[text.length - 1] === SEPARATOR) {
+		text = text.slice(0, -1);
+	}
+	if (text.length === 1) {
+		const digitvalue: number = parseInt(text, Number(radix));
+		if (Number.isNaN(digitvalue)) {
+			throw new Error(`Invalid number format: \`${ text }\``);
+		}
+		return digitvalue;
+	}
+	return Number(radix)
+		* tokenWorthInt(text.slice(0, -1),     radix, allow_separators)
+		+ tokenWorthInt(text[text.length - 1], radix, allow_separators);
+}
+function tokenWorthFloat(
+	text: string,
+	allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+): number {
+	const base:       number = Number(RADIX_DEFAULT);
+	const pointindex: number = text.indexOf(POINT);
+	const expindex:   number = text.indexOf(EXPONENT);
+	const wholepart:  string = text.slice(0, pointindex);
+	const fracpart:   string = (expindex < 0) ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex);
+	const exppart:    string = (expindex < 0) ? '0'                        : text.slice(expindex   + 1);
+	const wholevalue: number = tokenWorthInt(wholepart, RADIX_DEFAULT, allow_separators);
+	const fracvalue:  number = tokenWorthInt(fracpart,  RADIX_DEFAULT, allow_separators) * base ** -fracpart.length;
+	const expvalue:   number = parseFloat( // HACK: `` parseFloat(`1e${ ... }`) `` is more accurate than `base ** tokenWorthInt(...)`
+		(exppart[0] === Punctuator.AFF) ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
+		(exppart[0] === Punctuator.NEG) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
+		                                  `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT, allow_separators) }`,
+	);
+	return (wholevalue + fracvalue) * expvalue;
+}
+function tokenWorthString(
+	text: string,
+	allow_comments:   SolidConfig['languageFeatures']['comments']          = CONFIG_DEFAULT.languageFeatures.comments,
+	allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+): CodeUnit[] {
+	if (text.length === 0) {
+		return [];
+	}
+	if (text[0] === ESCAPER) {
+		/* possible escape or line continuation */
+		if ([
+			DELIM_STRING,
+			ESCAPER,
+			COMMENTER_LINE,
+			's', 't', 'n', 'r',
+		].includes(text[1])) {
+			/* an escaped character literal */
+			return [
+				...new Map([
+					[DELIM_STRING,   utf8Encode(DELIM_STRING   .codePointAt(0)!)],
+					[ESCAPER,        utf8Encode(ESCAPER        .codePointAt(0)!)],
+					[COMMENTER_LINE, utf8Encode(COMMENTER_LINE .codePointAt(0)!)],
+					['s',            utf8Encode(0x20)],
+					['t',            utf8Encode(0x09)],
+					['n',            utf8Encode(0x0a)],
+					['r',            utf8Encode(0x0d)],
+				]).get(text[1])!,
+				...tokenWorthString(text.slice(2), allow_comments, allow_separators),
+			];
+
+		} else if (`${ text[1] }${ text[2] }` === 'u{') {
+			/* an escape sequence */
+			const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
+			return [
+				...utf8Encode(tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
+				...tokenWorthString(text.slice(sequence[0].length), allow_comments, allow_separators),
+			];
+
+		} else if (text[1] === '\n') {
+			/* a line continuation (LF) */
+			return [
+				...utf8Encode(0x20),
+				...tokenWorthString(text.slice(2), allow_comments, allow_separators),
+			];
+
+		} else {
+			/* a backslash escapes the following character */
+			return [
+				...utf8Encode(text.codePointAt(1)!),
+				...tokenWorthString([...text].slice(2).join('')/* UTF-16 */, allow_comments, allow_separators),
+			];
+		}
+
+	} else if (allow_comments && `${ text[0] }${ text[1] }` === COMMENTER_MULTI) {
+		/* an in-string multiline comment */
+		const match: string = text.match(/\%\%(?:\%?[^\'\%])*(?:\%\%)?/)![0];
+		return tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
+
+	} else if (allow_comments && text[0] === COMMENTER_LINE) {
+		/* an in-string line comment */
+		const match: string = text.match(/\%[^\'\n]*\n?/)![0];
+		const rest: CodeUnit[] = tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
+		return (match[match.length - 1] === '\n') // COMBAK `match.lastItem`
+			? [...utf8Encode(0x0a), ...rest]
+			: rest;
+
+	} else {
+		return [
+			...utf8Encode(text.codePointAt(0)!),
+			...tokenWorthString([...text].slice(1).join('')/* UTF-16 */, allow_comments, allow_separators),
+		];
+	}
+}
 
 
 
@@ -20,6 +160,15 @@ import type {SymbolStructure} from './index.js';
  * 	to `(sum (const 2) (const 3))`
  */
 export class Validator {
+	/** The minimum allowed cooked value of a punctuator token. */
+	private static readonly MIN_VALUE_PUNCTUATOR = 0n;
+
+	/** The minimum allowed cooked value of a keyword token. */
+	private static readonly MIN_VALUE_KEYWORD = 0x80n;
+
+	/** The minimum allowed cooked value of an identifier token. */
+	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
+
 	/**
 	 * Give the unique integer identifier of a punctuator token.
 	 * The id is determined by the language specification.
@@ -27,9 +176,9 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	static cookTokenPunctuator(source: Punctuator): bigint {
-		const index: number = TOKEN.TokenPunctuator.PUNCTUATORS.indexOf(source);
-		if (0 <= index && index < TOKEN.TokenPunctuator.PUNCTUATORS.length) {
-			return BigInt(index) + TOKEN.TokenPunctuator.MINIMUM_VALUE;
+		const index: number = PUNCTUATORS.indexOf(source);
+		if (0 <= index && index < PUNCTUATORS.length) {
+			return BigInt(index) + Validator.MIN_VALUE_PUNCTUATOR;
 		} else {
 			throw new RangeError(`Token \`${ source }\` is not a valid punctuator.`);
 		}
@@ -42,9 +191,9 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	static cookTokenKeyword(source: Keyword): bigint {
-		const index: number = TOKEN.TokenKeyword.KEYWORDS.indexOf(source);
-		if (0 <= index && index < TOKEN.TokenKeyword.KEYWORDS.length) {
-			return BigInt(index) + TOKEN.TokenKeyword.MINIMUM_VALUE;
+		const index: number = KEYWORDS.indexOf(source);
+		if (0 <= index && index < KEYWORDS.length) {
+			return BigInt(index) + Validator.MIN_VALUE_KEYWORD;
 		} else {
 			throw new RangeError(`Token \`${ source }\` is not a valid keyword.`);
 		}
@@ -53,39 +202,53 @@ export class Validator {
 	/**
 	 * Give the numeric value of a number token.
 	 * @param source the token’s text
-	 * @return       the numeric value, cooked
+	 * @param config configuration settings
+	 * @return       the numeric value, cooked, along with whether the cooked value is a float
 	 */
-	static cookTokenNumber(source: string): ReturnType<typeof TOKEN.TokenNumber.prototype.cook> {
-		const is_float:  boolean = source.indexOf(TOKEN.TokenNumber.POINT) > 0;
-		const has_unary: boolean = (TOKEN.TokenNumber.UNARY as readonly string[]).includes(source[0]);
-		const has_radix: boolean = (has_unary) ? source[1] === TOKEN.TokenNumber.ESCAPER : source[0] === TOKEN.TokenNumber.ESCAPER;
-		const radix = (has_radix)
-			? TOKEN.TokenNumber.BASES.get((has_unary)
-				? source[2]
-				: source[1]
-			)!
-			: TOKEN.TokenNumber.RADIX_DEFAULT;
-		return TOKEN.TokenNumber.prototype.cook.call({
-			source,
-			isFloat: is_float,
-			has_unary,
-			has_radix,
-			radix,
-			allow_separators: true,
-		});
+	static cookTokenNumber(source: string, config: SolidConfig): [number, boolean] {
+		const is_float:   boolean   = source.indexOf(POINT) > 0;
+		const has_unary:  boolean   = ([Punctuator.AFF, Punctuator.NEG] as string[]).includes(source[0]);
+		const multiplier: number    = (has_unary && source[0] === Punctuator.NEG) ? -1 : 1;
+		const has_radix:  boolean   = (has_unary) ? source[1] === ESCAPER : source[0] === ESCAPER;
+		const radix:      RadixType = (has_radix) ? new Map<string, RadixType>([
+			['b',  2n],
+			['q',  4n],
+			['o',  8n],
+			['d', 10n],
+			['x', 16n],
+			['z', 36n],
+		]).get((has_unary) ? source[2] : source[1])! : RADIX_DEFAULT;
+		if (has_radix && !config.languageFeatures.integerRadices) {
+			// @ts-expect-error
+			throw new LexError01({
+				source,
+				line_index: -1,
+				col_index:  -1,
+			});
+		}
+		if (has_unary) source = source.slice(1); // cut off unary, if any
+		if (has_radix) source = source.slice(2); // cut off radix, if any
+		return [
+			multiplier * ((is_float)
+				? tokenWorthFloat(source,        config.languageFeatures.numericSeparators)
+				: tokenWorthInt  (source, radix, config.languageFeatures.numericSeparators)
+			),
+			is_float,
+		];
 	}
 
 	/**
 	 * Give the text value of a string token.
 	 * @param source the token’s text
+	 * @param config configuration settings
 	 * @return       the text value, cooked
 	 */
-	static cookTokenString(source: string): ReturnType<typeof TOKEN.TokenString.prototype.cook> {
-		return TOKEN.TokenString.prototype.cook.call({
-			source,
-			allow_comments: true,
-			allow_separators: true,
-		});
+	static cookTokenString(source: string, config: SolidConfig): CodeUnit[] {
+		return tokenWorthString(
+			source.slice(DELIM_STRING.length, -DELIM_STRING.length),
+			config.languageFeatures.comments,
+			config.languageFeatures.numericSeparators,
+		);
 	}
 
 	/**
@@ -93,20 +256,18 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the text value, cooked
 	 */
-	static cookTokenTemplate(source: string): ReturnType<typeof TOKEN.TokenTemplate.prototype.cook> {
-		return TOKEN.TokenTemplate.prototype.cook.call({
-			source,
-			delim_start: (
-				(source.slice(0, 3) === TOKEN.TokenTemplate.DELIM)            ? TOKEN.TokenTemplate.DELIM :
-				(source.slice(0, 2) === TOKEN.TokenTemplate.DELIM_INTERP_END) ? TOKEN.TokenTemplate.DELIM_INTERP_END :
-				''
-			),
-			delim_end: (
-				(source.slice(-3) === TOKEN.TokenTemplate.DELIM)              ? TOKEN.TokenTemplate.DELIM :
-				(source.slice(-2) === TOKEN.TokenTemplate.DELIM_INTERP_START) ? TOKEN.TokenTemplate.DELIM_INTERP_START :
-				''
-			),
-		});
+	static cookTokenTemplate(source: string): CodeUnit[] {
+		const delim_start = (
+			(source.slice(0, 3) === DELIM_TEMPLATE)   ? DELIM_TEMPLATE :
+			(source.slice(0, 2) === DELIM_INTERP_END) ? DELIM_INTERP_END :
+			''
+		);
+		const delim_end = (
+			(source.slice(-3) === DELIM_TEMPLATE)     ? DELIM_TEMPLATE :
+			(source.slice(-2) === DELIM_INTERP_START) ? DELIM_INTERP_START :
+			''
+		);
+		return [...utf8.encode(source.slice(delim_start.length, -delim_end.length))].map((ch) => ch.codePointAt(0)!);
 	}
 
 
@@ -178,6 +339,6 @@ export class Validator {
 	 */
 	cookTokenIdentifier(source: string): bigint {
 		this.identifiers.add(source);
-		return BigInt([...this.identifiers].indexOf(source)) + TOKEN.TokenIdentifier.MINIMUM_VALUE;
+		return BigInt([...this.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
 	}
 }

@@ -7,7 +7,6 @@ import {
 	MutabilityError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SymbolStructureVar,
 	SyntaxNodeType,
 } from './package.js';
@@ -26,7 +25,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		return statement;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeStatementAssignment | SyntaxNodeType<'statement_assignment'>,
+		start_node: SyntaxNodeType<'statement_assignment'>,
 		readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		readonly assigned: ASTNodeExpression,
 	) {

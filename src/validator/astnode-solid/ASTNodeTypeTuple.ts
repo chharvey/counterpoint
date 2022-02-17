@@ -4,7 +4,6 @@ import {
 	SolidTypeTuple,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
 	SyntaxNodeType,
 } from './package.js';
 import type {ASTNodeItemType} from './ASTNodeItemType.js';
@@ -19,7 +18,7 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeTupleLiteral | SyntaxNodeType<'type_tuple_literal'>,
+		start_node: SyntaxNodeType<'type_tuple_literal'>,
 		override readonly children: readonly ASTNodeItemType[],
 	) {
 		super(start_node, {}, children);

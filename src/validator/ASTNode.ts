@@ -7,7 +7,7 @@ import {
 
 /**
  * An ASTNode is a node in the Abstract Syntax Tree
- * and holds only the semantics of a {@link ParseNode}.
+ * and holds only the semantics of a parse node.
  *
  * An ASTNode is an abstraction of a ParseNode, without syntactic details.
  * For example, the expression `5 + 2 * 3` can be represented by the following abstract tree:
