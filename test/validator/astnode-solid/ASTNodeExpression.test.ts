@@ -561,6 +561,8 @@ describe('ASTNodeExpression', () => {
 			`-0.0`,
 			`-4.2e-2`,
 		];
+
+
 		describe('#type', () => {
 			it('returns the type value of the claimed type.', () => {
 				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3`).type().equals(SolidType.INT.union(SolidType.NULL)));
