@@ -306,6 +306,26 @@ describe('ASTNodeDeclaration', () => {
 					assert.throws(() => block_err.typeCheck(), TypeError03);
 				});
 			});
+			it('disallows reassigning incorrect type, but only after claim.', () => {
+				const block_ok = AST.ASTNodeBlock.fromSource(`
+					{
+						let unfixed x: bool? = false;
+						set x = true;
+						claim x: null;
+					}
+				`);
+				block_ok.varCheck();
+				block_ok.typeCheck(); // assert does not throw
+				const block_err = AST.ASTNodeBlock.fromSource(`
+					{
+						let unfixed x: bool? = false;
+						claim x: null;
+						set x = true;
+					}
+				`);
+				block_err.varCheck();
+				assert.throws(() => block_err.typeCheck(), TypeError03);
+			});
 		});
 
 

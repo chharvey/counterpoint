@@ -567,6 +567,27 @@ Decorate(Expression ::= ExpressionConditional) -> SemanticExpression
 
 
 
+Decorate(StatementExpression ::= ";") -> SemanticStatementExpression
+	:= (SemanticStatementExpression);
+Decorate(StatementExpression ::= Expression ";") -> SemanticStatementExpression
+	:= (SemanticStatementExpression Decorate(Expression));
+
+
+
+Decorate(Statement ::= StatementExpression) -> SemanticStatementExpression
+	:= Decorate(StatementExpression);
+Decorate(Statement ::= Declaration) -> SemanticDeclaration
+	:= Decorate(Declaration);
+
+
+
+Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock
+	:= (SemanticBlock
+		...ParseList(Statement, SemanticStatement)
+	);
+
+
+
 Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType
 	:= (SemanticDeclarationType
 		(SemanticTypeAlias[id=TokenWorth(IDENTIFIER)])
@@ -614,27 +635,6 @@ Decorate(Declaration ::= DeclarationClaim) -> SemanticDeclarationClaim
 	:= Decorate(DeclarationClaim);
 Decorate(Declaration ::= DeclarationReassignment) -> SemanticDeclarationReassignment
 	:= Decorate(StatementAssignment);
-
-
-
-Decorate(StatementExpression ::= ";") -> SemanticStatementExpression
-	:= (SemanticStatementExpression);
-Decorate(StatementExpression ::= Expression ";") -> SemanticStatementExpression
-	:= (SemanticStatementExpression Decorate(Expression));
-
-
-
-Decorate(Statement ::= Declaration) -> SemanticDeclaration
-	:= Decorate(Declaration);
-Decorate(Statement ::= StatementExpression) -> SemanticStatementExpression
-	:= Decorate(StatementExpression);
-
-
-
-Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock
-	:= (SemanticBlock
-		...ParseList(Statement, SemanticStatement)
-	);
 
 
 

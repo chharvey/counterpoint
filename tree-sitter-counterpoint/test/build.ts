@@ -867,6 +867,58 @@ function buildTest(title: string, source: string, expected: string) {
 
 
 		/* ## Statements */
+		StatementExpression: [
+			xjs.String.dedent`
+				{
+					my_var;
+				}
+			`,
+			makeSourceFileFromStatements(s('statement_expression', s('identifier'))),
+		],
+
+		// Statement
+		// see #{Declaration,StatementExpression}
+
+		Block: [
+			xjs.String.dedent`
+				{
+					type T = U;
+					let a: T = b;
+					claim a: U;
+					set a = b;
+					a;
+				}
+			`,
+			s('source_file',
+				s('block',
+					s('declaration_type',
+						s('identifier'),
+						s('identifier'),
+					),
+					s('declaration_variable',
+						s('identifier'),
+						s('identifier'),
+						s('identifier'),
+					),
+					s('declaration_claim',
+						s('assignee',
+							s('identifier'),
+						),
+						s('identifier'),
+					),
+					s('declaration_reassignment',
+						s('assignee',
+							s('identifier'),
+						),
+						s('identifier'),
+					),
+					s('statement_expression',
+						s('identifier'),
+					),
+				),
+			)
+		],
+
 		DeclarationType: [
 			xjs.String.dedent`
 				{
@@ -1002,58 +1054,6 @@ function buildTest(title: string, source: string, expected: string) {
 
 		// Declaration
 		// see #Declaration{Type,Variable,Claim,Reassignment}
-
-		StatementExpression: [
-			xjs.String.dedent`
-				{
-					my_var;
-				}
-			`,
-			makeSourceFileFromStatements(s('statement_expression', s('identifier'))),
-		],
-
-		// Statement
-		// see #{Declaration,StatementExpression}
-
-		Block: [
-			xjs.String.dedent`
-				{
-					type T = U;
-					let a: T = b;
-					claim a: U;
-					set a = b;
-					a;
-				}
-			`,
-			s('source_file',
-				s('block',
-					s('declaration_type',
-						s('identifier'),
-						s('identifier'),
-					),
-					s('declaration_variable',
-						s('identifier'),
-						s('identifier'),
-						s('identifier'),
-					),
-					s('declaration_claim',
-						s('assignee',
-							s('identifier'),
-						),
-						s('identifier'),
-					),
-					s('declaration_reassignment',
-						s('assignee',
-							s('identifier'),
-						),
-						s('identifier'),
-					),
-					s('statement_expression',
-						s('identifier'),
-					),
-				),
-			)
-		],
 	})
 		.map(([title, [source, expected]]) => buildTest(title, source, expected))
 		.filter((test) => !!test)

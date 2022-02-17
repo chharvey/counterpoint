@@ -458,6 +458,15 @@ module.exports = grammar({
 
 
 		/* ## Statements */
+		statement_expression: $ => seq(optional($._expression), ';'),
+
+		_statement: $ => choice(
+			$._declaration,
+			$.statement_expression,
+		),
+
+		block: $ => seq('{', repeat1($._statement), '}'),
+
 		declaration_type:         $ => seq('type',                       $.identifier, '=', $._type,                     ';'),
 		declaration_variable:     $ => seq('let',   optional('unfixed'), $.identifier, ':', $._type, '=', $._expression, ';'),
 		declaration_claim:        $ => seq('claim',                      $.assignee,   ':', $._type,                     ';'),
@@ -469,15 +478,6 @@ module.exports = grammar({
 			$.declaration_claim,
 			$.declaration_reassignment,
 		),
-
-		statement_expression: $ => seq(optional($._expression), ';'),
-
-		_statement: $ => choice(
-			$._declaration,
-			$.statement_expression,
-		),
-
-		block: $ => seq('{', repeat1($._statement), '}'),
 	},
 
 	extras: _$ => [

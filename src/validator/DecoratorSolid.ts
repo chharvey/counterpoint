@@ -116,14 +116,14 @@ class DecoratorSolid {
 	decorateTS(node: SyntaxNodeType<'expression_disjunctive'>):                  AST.ASTNodeOperationUnary | AST.ASTNodeOperationBinaryLogical;
 	decorateTS(node: SyntaxNodeType<'expression_conditional'>):                  AST.ASTNodeOperationTernary;
 	decorateTS(node: SyntaxNodeSupertype<'expression'>):                         AST.ASTNodeExpression;
+	decorateTS(node: SyntaxNodeType<'statement_expression'>):                    AST.ASTNodeStatementExpression;
+	decorateTS(node: SyntaxNodeSupertype<'statement'>):                          AST.ASTNodeStatement;
+	decorateTS(node: SyntaxNodeType<'block'>):                                   AST.ASTNodeBlock;
 	decorateTS(node: SyntaxNodeType<'declaration_type'>):                        AST.ASTNodeDeclarationType;
 	decorateTS(node: SyntaxNodeType<'declaration_variable'>):                    AST.ASTNodeDeclarationVariable;
 	decorateTS(node: SyntaxNodeType<'declaration_claim'>):                       AST.ASTNodeDeclarationClaim;
 	decorateTS(node: SyntaxNodeType<'declaration_reassignment'>):                AST.ASTNodeDeclarationReassignment;
 	decorateTS(node: SyntaxNodeSupertype<'declaration'>):                        AST.ASTNodeDeclaration;
-	decorateTS(node: SyntaxNodeType<'statement_expression'>):                    AST.ASTNodeStatementExpression;
-	decorateTS(node: SyntaxNodeSupertype<'statement'>):                          AST.ASTNodeStatement;
-	decorateTS(node: SyntaxNodeType<'block'>):                                   AST.ASTNodeBlock;
 	decorateTS(node: SyntaxNodeType<'source_file'>, config?: SolidConfig):       AST.ASTNodeGoal;
 	decorateTS(node: SyntaxNode): AST.ASTNodeSolid;
 	decorateTS(node: SyntaxNode, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeSolid {
@@ -547,6 +547,18 @@ class DecoratorSolid {
 			),
 
 			/* ## Statements */
+			statement_expression: (node) => new AST.ASTNodeStatementExpression(
+				node as SyntaxNodeType<'statement_expression'>,
+				(node.children.length === 2) ? this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>) : void 0,
+			),
+
+			block: (node) => new AST.ASTNodeBlock(
+				node as SyntaxNodeType<'block'>,
+				node.children
+					.filter((c): c is SyntaxNodeSupertype<'statement'> => isSyntaxNodeSupertype(c, 'statement'))
+					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeStatement>,
+			),
+
 			declaration_type: (node) => new AST.ASTNodeDeclarationType(
 				node as SyntaxNodeType<'declaration_type'>,
 				new AST.ASTNodeTypeAlias(node.children[1] as SyntaxNodeType<'identifier'>),
@@ -571,18 +583,6 @@ class DecoratorSolid {
 				node as SyntaxNodeType<'declaration_reassignment'>,
 				this.decorateTS(node.children[1] as SyntaxNodeType<'assignee'>),
 				this.decorateTS(node.children[3] as SyntaxNodeSupertype<'expression'>),
-			),
-
-			statement_expression: (node) => new AST.ASTNodeStatementExpression(
-				node as SyntaxNodeType<'statement_expression'>,
-				(node.children.length === 2) ? this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>) : void 0,
-			),
-
-			block: (node) => new AST.ASTNodeBlock(
-				node as SyntaxNodeType<'block'>,
-				node.children
-					.filter((c): c is SyntaxNodeSupertype<'statement'> => isSyntaxNodeSupertype(c, 'statement'))
-					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeStatement>,
 			),
 		})).get(node.type)?.(node) || (() => {
 			throw new TypeError(`Could not find type of parse node \`${ node.type }\`.`);

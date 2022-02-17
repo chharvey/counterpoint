@@ -126,9 +126,19 @@ SemanticOperation[operator: COND]
 
 
 SemanticStatement =:=
-	| SemanticDeclaration
 	| SemanticStatementExpression
+	| SemanticDeclaration
 ;
+
+
+
+SemanticStatementExpression
+	::= SemanticExpression?;
+
+
+
+SemanticBlock
+	::= SemanticStatement+;
 
 
 
@@ -150,16 +160,6 @@ SemanticDeclarationClaim
 
 SemanticDeclarationReassignment
 	::= (SemanticVariable | SemanticAccess) SemanticExpression;
-
-
-
-SemanticStatementExpression
-	::= SemanticExpression?;
-
-
-
-SemanticBlock
-	::= SemanticStatement+;
 
 
 

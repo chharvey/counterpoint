@@ -159,6 +159,21 @@ Expression ::=
 
 
 
+StatementExpression
+	::= Expression? ";";
+
+Statement ::=
+	| StatementExpression
+	| Declaration
+;
+
+
+
+Block
+	::= "{" Statement+ "}";
+
+
+
 DeclarationType         ::= "type"             IDENTIFIER "=" Type                ";";
 DeclarationVariable     ::= "let"   "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
 DeclarationClaim        ::= "claim"            Assignee   ":" Type                ";";
@@ -170,21 +185,6 @@ Declaration ::=
 	| DeclarationClaim
 	| DeclarationReassignment
 ;
-
-
-
-StatementExpression
-	::= Expression? ";";
-
-Statement ::=
-	| Declaration
-	| StatementExpression
-;
-
-
-
-Block
-	::= "{" Statement+ "}";
 
 
 
