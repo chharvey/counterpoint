@@ -1,4 +1,6 @@
-import type {PARSENODE} from './package.js';
+import type {
+	SyntaxNodeType,
+} from './package.js';
 import type {ASTNodeType} from './index.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 
@@ -7,8 +9,8 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
 export class ASTNodeItemType extends ASTNodeSolid {
 	constructor (
 		start_node:
-			| PARSENODE.ParseNodeEntryType
-			| PARSENODE.ParseNodeEntryType_Optional
+			| SyntaxNodeType<'entry_type'>
+			| SyntaxNodeType<'entry_type__optional'>
 		,
 		readonly optional: boolean,
 		readonly val: ASTNodeType,

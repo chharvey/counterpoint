@@ -1,11 +1,5 @@
 import * as assert from 'assert';
 import {
-	TypeError01,
-	TypeError02,
-	TypeError04,
-	SolidConfig,
-	CONFIG_DEFAULT,
-	PARSENODE,
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
@@ -29,6 +23,13 @@ import {
 	SolidMap,
 	INST,
 	Builder,
+	TypeError01,
+	TypeError02,
+	TypeError04,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	SyntaxNodeType,
+	SyntaxNodeFamily,
 	Operator,
 	ValidAccessOperator,
 } from './package.js';
@@ -46,7 +47,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
 	constructor (
-		start_node:        PARSENODE.ParseNodeExpressionCompound$ | PARSENODE.ParseNodeAssignee,
+		start_node:
+			| SyntaxNodeFamily<'expression_compound', ['variable']>
+			| SyntaxNodeType<'assignee'>
+		,
 		readonly kind:     ValidAccessOperator,
 		readonly base:     ASTNodeExpression,
 		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,

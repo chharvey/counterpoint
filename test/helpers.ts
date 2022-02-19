@@ -10,11 +10,37 @@ import {
 
 
 
+export const CONFIG_RADICES_SEPARATORS_ON: SolidConfig = {
+	...CONFIG_DEFAULT,
+	languageFeatures: {
+		...CONFIG_DEFAULT.languageFeatures,
+		integerRadices:    true,
+		numericSeparators: true,
+	},
+};
+
 export const CONFIG_FOLDING_OFF: SolidConfig = {
 	...CONFIG_DEFAULT,
 	compilerOptions: {
 		...CONFIG_DEFAULT.compilerOptions,
 		constantFolding: false,
+	},
+};
+
+export const CONFIG_COERCION_OFF: SolidConfig = {
+	...CONFIG_DEFAULT,
+	compilerOptions: {
+		...CONFIG_DEFAULT.compilerOptions,
+		intCoercion: false,
+	},
+};
+
+export const CONFIG_FOLDING_COERCION_OFF: SolidConfig = {
+	...CONFIG_DEFAULT,
+	compilerOptions: {
+		...CONFIG_DEFAULT.compilerOptions,
+		constantFolding: false,
+		intCoercion:     false,
 	},
 };
 

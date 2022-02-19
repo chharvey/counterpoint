@@ -40,24 +40,24 @@ TokenWorth(Punctuator :::= "=")   -> RealNumber := \x26;
 
 
 
-TokenWorth(Keyword :::= "void")    -> RealNumber := \x80;
-TokenWorth(Keyword :::= "null")    -> RealNumber := \x81;
-TokenWorth(Keyword :::= "bool")    -> RealNumber := \x82;
-TokenWorth(Keyword :::= "false")   -> RealNumber := \x83;
-TokenWorth(Keyword :::= "true")    -> RealNumber := \x84;
-TokenWorth(Keyword :::= "int")     -> RealNumber := \x85;
-TokenWorth(Keyword :::= "float")   -> RealNumber := \x86;
-TokenWorth(Keyword :::= "str")     -> RealNumber := \x87;
-TokenWorth(Keyword :::= "obj")     -> RealNumber := \x88;
-TokenWorth(Keyword :::= "mutable") -> RealNumber := \x89;
-TokenWorth(Keyword :::= "is")      -> RealNumber := \x8a;
-TokenWorth(Keyword :::= "isnt")    -> RealNumber := \x8b;
-TokenWorth(Keyword :::= "if")      -> RealNumber := \x8c;
-TokenWorth(Keyword :::= "then")    -> RealNumber := \x8d;
-TokenWorth(Keyword :::= "else")    -> RealNumber := \x8e;
-TokenWorth(Keyword :::= "let")     -> RealNumber := \x8f;
-TokenWorth(Keyword :::= "type")    -> RealNumber := \x90;
-TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x91;
+TokenWorth(KeywordType  :::= "void")    -> RealNumber := \x80;
+TokenWorth(KeywordType  :::= "bool")    -> RealNumber := \x81;
+TokenWorth(KeywordType  :::= "int")     -> RealNumber := \x82;
+TokenWorth(KeywordType  :::= "float")   -> RealNumber := \x83;
+TokenWorth(KeywordType  :::= "str")     -> RealNumber := \x84;
+TokenWorth(KeywordType  :::= "obj")     -> RealNumber := \x85;
+TokenWorth(KeywordValue :::= "null")    -> RealNumber := \x86;
+TokenWorth(KeywordValue :::= "false")   -> RealNumber := \x87;
+TokenWorth(KeywordValue :::= "true")    -> RealNumber := \x88;
+TokenWorth(KeywordOther :::= "mutable") -> RealNumber := \x89;
+TokenWorth(KeywordOther :::= "is")      -> RealNumber := \x8a;
+TokenWorth(KeywordOther :::= "isnt")    -> RealNumber := \x8b;
+TokenWorth(KeywordOther :::= "if")      -> RealNumber := \x8c;
+TokenWorth(KeywordOther :::= "then")    -> RealNumber := \x8d;
+TokenWorth(KeywordOther :::= "else")    -> RealNumber := \x8e;
+TokenWorth(KeywordOther :::= "type")    -> RealNumber := \x8f;
+TokenWorth(KeywordOther :::= "let")     -> RealNumber := \x90;
+TokenWorth(KeywordOther :::= "unfixed") -> RealNumber := \x91;
 
 
 
@@ -258,3 +258,18 @@ TokenWorth(TemplateTail :::= "}}" TemplateChars__EndDelim "'''") -> Sequence<Rea
 
 	TokenWorth(TemplateChars__EndInterp) -> Sequence<RealNumber>
 		:= "Return a mapping of `TemplateChars__EndInterp` for each `character` to `UTF8Encoding(CodePoint(character))`.";
+
+
+
+KeywordType(KEYWORD_TYPE :::= "void")  -> Type := Void;
+KeywordType(KEYWORD_TYPE :::= "bool")  -> Type := Boolean;
+KeywordType(KEYWORD_TYPE :::= "int")   -> Type := Integer;
+KeywordType(KEYWORD_TYPE :::= "float") -> Type := Float;
+KeywordType(KEYWORD_TYPE :::= "str")   -> Type := String;
+KeywordType(KEYWORD_TYPE :::= "obj")   -> Type := Object;
+
+
+
+KeywordValue(KEYWORD_VALUE :::= "null")  -> Object := null;
+KeywordValue(KEYWORD_VALUE :::= "false") -> Object := false;
+KeywordValue(KEYWORD_VALUE :::= "true")  -> Object := true;

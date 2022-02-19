@@ -1,0 +1,42 @@
+{
+  "name": "tree-sitter-counterpoint",
+  "version": "1.1.0",
+  "description": "Tree-sitter parser for the Counterpoint programming language.",
+  "keywords": [
+    "tree-sitter",
+    "Counterpoint",
+    "language",
+    "parser"
+  ],
+  "homepage": "https://github.com/chharvey/solid#readme",
+  "bugs": {
+    "url": "https://github.com/chharvey/solid/issues"
+  },
+  "license": "GPL-3.0-or-later",
+  "author": "Chris Harvey <chrisharvey2pi@gmail.com> (https://chharvey.github.io/)",
+  "files": [
+    "bindings",
+    "build",
+    "src"
+  ],
+  "main": "bindings/node",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chharvey/solid.git"
+  },
+  "scripts": {
+    "dist": "tsc",
+    "postdist": "tree-sitter generate",
+    "pretest": "ts-node ./test/build.ts",
+    "test": "tree-sitter test",
+    "build": "npm run dist && npm run test"
+  },
+  "dependencies": {
+    "nan": "^2.15.0"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.20.1",
+    "ts-node": "^10.4.0",
+    "typescript": "~4.5.0"
+  }
+}

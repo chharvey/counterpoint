@@ -1,15 +1,15 @@
 import * as assert from 'assert';
 import {
-	NonemptyArray,
-	SolidConfig,
-	CONFIG_DEFAULT,
-	PARSENODE,
 	SolidType,
 	SolidTypeRecord,
 	SolidObject,
 	SolidRecord,
 	INST,
 	Builder,
+	NonemptyArray,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	SyntaxNodeFamily,
 } from './package.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -24,10 +24,10 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeRecordLiteral$,
+		start_node: SyntaxNodeFamily<'record_literal', ['variable']>,
 		override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
-		super(start_node, {}, children);
+		super(start_node, children);
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
