@@ -22,29 +22,6 @@ export function assert_instanceof(obj: object, cons: Function): void {
 
 
 /**
- * Assert the length of an array or tuple.
- * Useful helper for determining types of items in heterogeneous tuples.
- * @param array the array or tuple to test
- * @param length the length to assert
- * @param message the message to send into {@link assert.strictEqual}
- */
-export function assert_arrayLength(array: readonly unknown[], length: 0      , message?: string | Error): asserts array is readonly [                                                                      ];
-export function assert_arrayLength(array: readonly unknown[], length: 1      , message?: string | Error): asserts array is readonly [unknown,                                                              ];
-export function assert_arrayLength(array: readonly unknown[], length: 2      , message?: string | Error): asserts array is readonly [unknown, unknown,                                                     ];
-export function assert_arrayLength(array: readonly unknown[], length: 3      , message?: string | Error): asserts array is readonly [unknown, unknown, unknown,                                            ];
-export function assert_arrayLength(array: readonly unknown[], length: 4      , message?: string | Error): asserts array is readonly [unknown, unknown, unknown, unknown,                                   ];
-export function assert_arrayLength(array: readonly unknown[], length: 5      , message?: string | Error): asserts array is readonly [unknown, unknown, unknown, unknown, unknown,                          ];
-export function assert_arrayLength(array: readonly unknown[], length: 6      , message?: string | Error): asserts array is readonly [unknown, unknown, unknown, unknown, unknown, unknown,                 ];
-export function assert_arrayLength(array: readonly unknown[], length: 7      , message?: string | Error): asserts array is readonly [unknown, unknown, unknown, unknown, unknown, unknown, unknown,        ];
-export function assert_arrayLength(array: readonly unknown[], length: 8      , message?: string | Error): asserts array is readonly [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown];
-export function assert_arrayLength(array: readonly unknown[], length: number , message?: string | Error): void;
-export function assert_arrayLength(array: readonly unknown[], length: number , message?: string | Error): void {
-	return assert.strictEqual(array.length, length, message)
-}
-
-
-
-/**
  * @param orig the original function; useful for setting & unsetting
  * @param spy  the wrapper function that is actually called during tests
  * @return     any return value
@@ -129,6 +106,7 @@ export function assertAssignable(actual: Error, validation: ValidationObject): v
 			validation.cons === AggregateError || validation.cons.prototype instanceof AggregateError, // validation.cons extends AggregateError
 			`The \`cons\` value of validation object ${ validation } with an \`errors\` property must be \`AggregateError\` or a subclass of it.`,
 		);
+		assert.strictEqual((actual as AggregateError).errors.length, validation.errors.length, 'Number of actual sub-errors should equal number of validation sub-errors.');
 		return validation.errors.forEach((subvalidation, i) => {
 			assertAssignable((actual as AggregateError).errors[i], subvalidation);
 		});

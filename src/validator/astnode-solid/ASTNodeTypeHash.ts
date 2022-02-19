@@ -4,7 +4,7 @@ import {
 	SolidTypeHash,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -17,7 +17,7 @@ export class ASTNodeTypeHash extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeHashLiteral,
+		start_node: SyntaxNodeType<'type_hash_literal'>,
 		readonly type: ASTNodeType,
 	) {
 		super(start_node, {}, [type]);

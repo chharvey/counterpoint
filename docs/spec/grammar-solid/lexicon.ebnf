@@ -80,11 +80,6 @@ Identifier
 
 
 
-Number<Radix, Separator> :::=
-	| Integer<?Radix><?Separator>
-	| Float<?Separator>
-;
-
 Integer<Radix, Separator>
 	:::= ("+" | "-")? <Radix->DigitSequenceDec<?Separator> . <Radix+>IntegerDigitsRadix<?Separator>;
 
@@ -389,7 +384,8 @@ Goal<Comment, Radix, Separator> :::=
 	| KeywordValue
 	| KeywordOther
 	| Identifier
-	| Number<?Radix><?Separator>
+	| Integer<?Radix><?Separator>
+	| Float<?Separator>
 	| String<?Comment><?Separator>
 	| TemplateFull
 	| TemplateHead

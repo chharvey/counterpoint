@@ -4,7 +4,7 @@ import {
 	SolidTypeMap,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -17,7 +17,7 @@ export class ASTNodeTypeMap extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeMapLiteral,
+		start_node: SyntaxNodeType<'type_map_literal'>,
 		readonly antecedenttype: ASTNodeType,
 		readonly consequenttype: ASTNodeType,
 	) {

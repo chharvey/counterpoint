@@ -1,14 +1,15 @@
 export enum Keyword {
-	// literal
+	// type literal
 		VOID  = 'void',
-		NULL  = 'null',
 		BOOL  = 'bool',
-		FALSE = 'false',
-		TRUE  = 'true',
 		INT   = 'int',
 		FLOAT = 'float',
 		STR   = 'str',
 		OBJ   = 'obj',
+	// value literal
+		NULL  = 'null',
+		FALSE = 'false',
+		TRUE  = 'true',
 	// operator
 		MUTABLE = 'mutable',
 		IS      = 'is',
@@ -22,3 +23,8 @@ export enum Keyword {
 	// modifier
 		UNFIXED = 'unfixed',
 }
+
+
+
+/** An iterable list of unique keywords. */
+export const KEYWORDS: readonly Keyword[] = [...new Set<Keyword>(Object.values(Keyword))];

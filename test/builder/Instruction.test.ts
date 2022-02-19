@@ -1,8 +1,8 @@
 import * as xjs from 'extrajs';
 import * as assert from 'assert'
 import {
-	ASTNODE_SOLID as AST,
 	Operator,
+	ASTNODE_SOLID as AST,
 } from '../../src/validator/index.js';
 import {
 	Int16,
@@ -241,10 +241,7 @@ describe('Instruction', () => {
 				const mods: (INST.InstructionNone | INST.InstructionModule)[] = [
 					``,
 					`{;}`,
-				].map((src) => AST.ASTNodeGoal
-					.fromSource(src)
-					.build(new Builder(src))
-				);
+				].map((src) => AST.ASTNodeGoal.fromSource(src).build(new Builder(src)));
 				assert.ok(mods[0] instanceof INST.InstructionNone);
 				assert.strictEqual(mods[0].toString(), ``)
 				assert.ok(mods[1] instanceof INST.InstructionModule);
