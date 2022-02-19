@@ -51,6 +51,7 @@ ItemsType ::=
 PropertiesType
 	::= EntryType<+Named><-Optional, +Optional># ","?;
 
+TypeGrouped       ::= "(" Type                 ")";
 TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
 TypeRecordLiteral ::= "["  ","? PropertiesType "]";
 TypeHashLiteral   ::= "[" ":" Type             "]";
@@ -61,11 +62,11 @@ TypeUnit ::=
 	| KEYWORD_TYPE
 	| IDENTIFIER
 	| PrimitiveLiteral
+	| TypeGrouped
 	| TypeTupleLiteral
 	| TypeRecordLiteral
 	| TypeHashLiteral
 	| TypeMapLiteral
-	| "(" Type ")"
 ;
 
 PropertyAccessType ::= "." (INTEGER | Word);
@@ -103,6 +104,7 @@ StringTemplate ::=
 Property ::= Word       "="  Expression;
 Case     ::= Expression "->" Expression;
 
+ExpressionGrouped ::= "("        Expression          ")";
 TupleLiteral      ::= "[" ( ","? Expression# ","? )? "]";
 RecordLiteral     ::= "["   ","? Property#   ","?    "]";
 SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
@@ -113,11 +115,11 @@ ExpressionUnit ::=
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate
+	| ExpressionGrouped
 	| TupleLiteral
 	| RecordLiteral
 	| SetLiteral
 	| MapLiteral
-	| "(" Expression ")"
 ;
 
 PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");

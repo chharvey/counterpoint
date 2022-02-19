@@ -3,11 +3,10 @@ import {
 	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
-	ParserSolid,
-	PARSER,
+	TS_PARSER,
 	DECORATOR,
 	Validator,
+	SyntaxNodeType,
 } from './package.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
@@ -24,11 +23,11 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	 * @returns      a new ASTNodeGoal representing the given source
 	 */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeGoal {
-		return DECORATOR.decorate(((config === CONFIG_DEFAULT) ? PARSER : new ParserSolid(config)).parse(src), config);
+		return DECORATOR.decorateTS(TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>, config);
 	}
 	private readonly _validator: Validator;
 	constructor(
-		start_node: ParseNode,
+		start_node: SyntaxNodeType<'source_file'>,
 		readonly block: ASTNodeBlock | null,
 		config: SolidConfig,
 	) {
