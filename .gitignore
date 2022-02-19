@@ -70,7 +70,6 @@ build/
 tree-sitter-counterpoint/grammar.js
 tree-sitter-counterpoint/src/grammar.json
 tree-sitter-counterpoint/src/node-types.json
-tree-sitter-counterpoint/src/parser.c
 tree-sitter-counterpoint/test/corpus/index.txt
 
 # Generated documentation & style guides
