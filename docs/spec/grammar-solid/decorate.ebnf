@@ -35,16 +35,16 @@ Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 
 
 
-Decorate(EntryType ::= Type) -> SemanticItemType
+Decorate(EntryType<-Named><-Optional> ::= Type) -> SemanticItemType
 	:= (SemanticItemType[optional=false] Decorate(Type));
-Decorate(EntryType_Optional ::= "?:" Type) -> SemanticItemType
+Decorate(EntryType<-Named><+Optional> ::= "?:" Type) -> SemanticItemType
 	:= (SemanticItemType[optional=true] Decorate(Type));
-Decorate(EntryType_Named ::= Word ":" Type) -> SemanticPropertyType
+Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType
 	:= (SemanticPropertyType[optional=false]
 		Decorate(Word)
 		Decorate(Type)
 	);
-Decorate(EntryType_Named_Optional ::= Word "?:" Type) -> SemanticPropertyType
+Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType
 	:= (SemanticPropertyType[optional=true]
 		Decorate(Word)
 		Decorate(Type)
@@ -68,6 +68,9 @@ Decorate(PropertiesType ::= EntryType_Named_Optional# ","?) -> Sequence<Semantic
 	:= ParseList(EntryType_Named_Optional, SemanticPropertyType);
 
 
+
+Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType
+	:= Decorate(Type);
 
 Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple
 	:= (SemanticTypeTuple);
@@ -103,12 +106,12 @@ Decorate(TypeUnit ::= IDENTIFIER) -> SemanticTypeAlias
 	:= (SemanticTypeAlias[id=TokenWorth(IDENTIFIER)]);
 Decorate(TypeUnit ::= PrimitiveLiteral) -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=ToType(Decorate(PrimitiveLiteral).value)]);
+Decorate(TypeUnit ::= TypeGrouped) -> SemanticType
+	:= Decorate(TypeGrouped);
 Decorate(TypeUnit ::= TypeTupleLiteral) -> SemanticTypeTuple
 	:= Decorate(TypeTupleLiteral);
 Decorate(TypeUnit ::= TypeRecordLiteral) -> SemanticTypeRecord
 	:= Decorate(TypeRecordLiteral);
-Decorate(TypeUnit ::= "(" Type ")") -> SemanticType
-	:= Decorate(Type);
 
 
 
@@ -260,6 +263,9 @@ Decorate(Case ::= Expression "->" Expression) -> SemanticCase
 		Decorate(Expression)
 	);
 
+Decorate(ExpressionGrouped ::= "(" Expression ")") -> SemanticExpression
+	:= Decorate(Expression);
+
 Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple
 	:= (SemanticTuple);
 Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple
@@ -293,6 +299,8 @@ Decorate(ExpressionUnit ::= PrimitiveLiteral) -> SemanticConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit ::= StringTemplate) -> SemanticTemplate
 	:= Decorate(StringTemplate);
+Decorate(ExpressionUnit ::= ExpressionGrouped) -> SemanticExpression
+	:= Decorate(ExpressionGrouped);
 Decorate(ExpressionUnit ::= TupleLiteral) -> SemanticTuple
 	:= Decorate(TupleLiteral);
 Decorate(ExpressionUnit ::= RecordLiteral) -> SemanticRecord
@@ -301,8 +309,6 @@ Decorate(ExpressionUnit ::= SetLiteral) -> SemanticSet
 	:= Decorate(SetLiteral);
 Decorate(ExpressionUnit ::= MapLiteral) -> SemanticMap
 	:= Decorate(MapLiteral);
-Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
-	:= Decorate(Expression);
 
 
 
@@ -545,7 +551,7 @@ Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "!|" ExpressionConjunct
 
 
 
-Decorate(ExpressionConditional ::= "if" Expression__0 "then" Expression__1 "else" Expression__2)
+Decorate(ExpressionConditional ::= "if" Expression__0 "then" Expression__1 "else" Expression__2) -> SemanticOperation
 	:= (SemanticOperation[operator=COND]
 		Decorate(Expression__0)
 		Decorate(Expression__1)

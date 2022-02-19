@@ -9,7 +9,7 @@ import {
 	TypeError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
+	SyntaxNodeSupertype,
 	Operator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -24,7 +24,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		return expression;
 	}
 	constructor(
-		start_node: ParseNode,
+		start_node: SyntaxNodeSupertype<'expression'>,
 		readonly operator: Operator.COND,
 		readonly operand0: ASTNodeExpression,
 		readonly operand1: ASTNodeExpression,

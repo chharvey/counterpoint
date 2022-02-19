@@ -29,8 +29,8 @@
     "solid:d-p": "solid d ./sample/test-v0.3.solid -p ./sample/solid-config.json",
     "solid:r": "solid r ./sample/test-v0.3.wasm",
     "dist": "tsc",
-    "postdist": "node ./tasks/build-parser.js",
     "test": "mocha -r ts-node/esm src/index.ts --loader='ts-node/esm' --timeout 10000 './test/**/*.test.ts'",
+    "prebuild": "npm run build -w tree-sitter-counterpoint && npm rebuild",
     "build": "rm -rf ./build/ && npm run dist && npm run test"
   },
   "dependencies": {
@@ -44,14 +44,18 @@
   "devDependencies": {
     "@types/minimist": "^1.2.0",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^16.0.0",
+    "@types/node": "^17.0.0",
     "@types/utf8": "^3.0.0",
     "mocha": "^9.0.0",
+    "tree-sitter": "^0.20.0",
     "ts-node": "^10.0.0",
-    "typescript": "~4.4.0"
+    "typescript": "~4.5.0"
   },
   "engines": {
     "node": ">=16"
   },
-  "private": true
+  "private": true,
+  "workspaces": [
+    "tree-sitter-counterpoint"
+  ]
 }

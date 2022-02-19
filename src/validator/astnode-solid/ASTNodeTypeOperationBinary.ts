@@ -3,7 +3,7 @@ import {
 	SolidType,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
+	SyntaxNodeType,
 	Operator,
 	ValidTypeOperator,
 } from './package.js';
@@ -19,7 +19,10 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		return typ;
 	}
 	constructor (
-		start_node: ParseNode,
+		start_node:
+			| SyntaxNodeType<'type_intersection'>
+			| SyntaxNodeType<'type_union'>
+		,
 		operator: ValidTypeOperator,
 		readonly operand0: ASTNodeType,
 		readonly operand1: ASTNodeType,

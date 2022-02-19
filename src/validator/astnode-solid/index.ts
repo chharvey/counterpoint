@@ -18,6 +18,7 @@ export * from './ASTNodeTypeSet.js';
 export * from './ASTNodeTypeMap.js';
 export * from './ASTNodeTypeAccess.js';
 export * from './ASTNodeTypeCall.js';
+export * from './ASTNodeTypeOperation.js';
 export * from './ASTNodeTypeOperationUnary.js';
 export * from './ASTNodeTypeOperationBinary.js';
 export * from './ASTNodeExpression.js';
