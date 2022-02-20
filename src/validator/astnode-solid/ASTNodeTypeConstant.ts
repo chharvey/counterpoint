@@ -7,7 +7,6 @@ import {
 	SolidString,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
 	Keyword,
 	Validator,
 	SyntaxNodeType,
@@ -60,7 +59,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeTypeConstant.keywordType(token.text) :
 				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? new SolidTypeUnit(valueOfTokenNumber(token.text, this.validator.config)) :
 				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? new SolidTypeUnit(valueOfTokenNumber(token.text, this.validator.config)) :
-				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  (Dev.supports('literalString-cook')) ? new SolidTypeUnit(new SolidString(Validator.cookTokenString(token.text, this.validator.config))) : (() => { throw new Error('`literalString-cook` not yet supported.'); })())
+				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new SolidTypeUnit(new SolidString(Validator.cookTokenString(token.text, this.validator.config))))
 			))(this.start_node.children[0]))
 		);
 	}

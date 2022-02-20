@@ -4,7 +4,6 @@ import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDe
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
 	PUNCTUATORS,
 	KEYWORDS,
 	Validator,
@@ -131,7 +130,7 @@ describe('Validator', () => {
 	});
 
 
-	Dev.supports('literalString-cook') && describe('.cookTokenString', () => {
+	describe('.cookTokenString', () => {
 		function decodeCooked(source: string, config: SolidConfig): string {
 			return utf8Decode(Validator.cookTokenString(source, config));
 		}
@@ -245,7 +244,7 @@ describe('Validator', () => {
 	});
 
 
-	Dev.supports('literalTemplate-cook') && describe('.cookTokenTemplate', () => {
+	describe('.cookTokenTemplate', () => {
 		function decodeCooked(source: string): string {
 			return utf8Decode(Validator.cookTokenTemplate(source));
 		}

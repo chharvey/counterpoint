@@ -52,7 +52,6 @@ export {
 	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
 	Serializable,
 	serialize,
 	TS_PARSER,

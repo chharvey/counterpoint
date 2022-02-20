@@ -62,7 +62,6 @@ export {
 	stringifyAttributes,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
 	Serializable,
 	serialize,
 } from '../core/index.js';
