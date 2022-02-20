@@ -122,14 +122,14 @@ class DecoratorSolid {
 	decorateTS(node: SyntaxNodeType<'statement_expression'>):                    AST.ASTNodeStatementExpression;
 	decorateTS(node: SyntaxNodeType<'statement_assignment'>):                    AST.ASTNodeAssignment;
 	decorateTS(node: SyntaxNodeSupertype<'statement'>):                          AST.ASTNodeStatement;
-	decorateTS(node: SyntaxNodeType<'block'>):                                   AST.ASTNodeBlock;
+	decorateTS(node: SyntaxNodeType<'block'>,       config?: SolidConfig):       AST.ASTNodeBlock;
 	decorateTS(node: SyntaxNodeType<'source_file'>, config?: SolidConfig):       AST.ASTNodeGoal;
 	decorateTS(node: SyntaxNode): AST.ASTNodeSolid;
 	decorateTS(node: SyntaxNode, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeSolid {
 		return new Map<string, (node: SyntaxNode) => AST.ASTNodeSolid>(Object.entries({
 			source_file: (node) => new AST.ASTNodeGoal(
 				node as SyntaxNodeType<'source_file'>,
-				(node.children.length) ? this.decorateTS(node.children[0] as SyntaxNodeType<'block'>) : null,
+				(node.children.length) ? this.decorateTS(node.children[0] as SyntaxNodeType<'block'>, config) : null,
 				config,
 			),
 
@@ -576,6 +576,7 @@ class DecoratorSolid {
 				node.children
 					.filter((c): c is SyntaxNodeSupertype<'statement'> => isSyntaxNodeSupertype(c, 'statement'))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeStatement>,
+				config,
 			),
 		})).get(node.type)?.(node) || (() => {
 			throw new TypeError(`Could not find type of parse node \`${ node.type }\`.`);

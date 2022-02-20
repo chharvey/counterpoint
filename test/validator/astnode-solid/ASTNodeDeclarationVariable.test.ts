@@ -34,10 +34,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 				let x: int = 42;
 			}`);
-			assert.ok(!goal.validator.hasSymbol(256n));
+			assert.ok(!goal.block!.validator.hasSymbol(256n));
 			goal.varCheck();
-			assert.ok(goal.validator.hasSymbol(256n));
-			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
+			assert.ok(goal.block!.validator.hasSymbol(256n));
+			const info: SymbolStructure | null = goal.block!.validator.getSymbolInfo(256n);
 			assert.ok(info instanceof SymbolStructureVar);
 			assert.strictEqual(info.type, SolidType.UNKNOWN);
 			assert.strictEqual(info.value, null);
@@ -148,11 +148,11 @@ describe('ASTNodeDeclarationVariable', () => {
 				goal.typeCheck();
 				assert.deepStrictEqual(
 					[
-						(goal.validator.getSymbolInfo(256n) as SymbolStructureVar).type,
-						(goal.validator.getSymbolInfo(257n) as SymbolStructureVar).type,
-						(goal.validator.getSymbolInfo(258n) as SymbolStructureVar).type,
-						(goal.validator.getSymbolInfo(259n) as SymbolStructureVar).type,
-						(goal.validator.getSymbolInfo(260n) as SymbolStructureVar).type,
+						(goal.block!.validator.getSymbolInfo(256n) as SymbolStructureVar).type,
+						(goal.block!.validator.getSymbolInfo(257n) as SymbolStructureVar).type,
+						(goal.block!.validator.getSymbolInfo(258n) as SymbolStructureVar).type,
+						(goal.block!.validator.getSymbolInfo(259n) as SymbolStructureVar).type,
+						(goal.block!.validator.getSymbolInfo(260n) as SymbolStructureVar).type,
 					],
 					[
 						SolidType.INT,
@@ -180,11 +180,11 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.typeCheck();
 			assert.deepStrictEqual(
 				[
-					(goal.validator.getSymbolInfo(256n) as SymbolStructureVar).value,
-					(goal.validator.getSymbolInfo(257n) as SymbolStructureVar).value,
-					(goal.validator.getSymbolInfo(258n) as SymbolStructureVar).value,
-					(goal.validator.getSymbolInfo(259n) as SymbolStructureVar).value,
-					(goal.validator.getSymbolInfo(260n) as SymbolStructureVar).value,
+					(goal.block!.validator.getSymbolInfo(256n) as SymbolStructureVar).value,
+					(goal.block!.validator.getSymbolInfo(257n) as SymbolStructureVar).value,
+					(goal.block!.validator.getSymbolInfo(258n) as SymbolStructureVar).value,
+					(goal.block!.validator.getSymbolInfo(259n) as SymbolStructureVar).value,
+					(goal.block!.validator.getSymbolInfo(260n) as SymbolStructureVar).value,
 				],
 				[
 					new Int16(42n),
@@ -200,11 +200,11 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			[
-				(goal.validator.getSymbolInfo(256n) as SymbolStructureVar),
-				(goal.validator.getSymbolInfo(257n) as SymbolStructureVar),
-				(goal.validator.getSymbolInfo(258n) as SymbolStructureVar),
-				(goal.validator.getSymbolInfo(259n) as SymbolStructureVar),
-				(goal.validator.getSymbolInfo(260n) as SymbolStructureVar),
+				(goal.block!.validator.getSymbolInfo(256n) as SymbolStructureVar),
+				(goal.block!.validator.getSymbolInfo(257n) as SymbolStructureVar),
+				(goal.block!.validator.getSymbolInfo(258n) as SymbolStructureVar),
+				(goal.block!.validator.getSymbolInfo(259n) as SymbolStructureVar),
+				(goal.block!.validator.getSymbolInfo(260n) as SymbolStructureVar),
 			].forEach((symbol) => {
 				assert.strictEqual(symbol.value, null, symbol.source);
 			});

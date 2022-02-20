@@ -6,6 +6,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
+	Validator,
 } from './package.js';
 import {ASTNodeGoal} from './index.js';
 import type {Buildable} from './Buildable.js';
@@ -27,12 +28,23 @@ export class ASTNodeBlock extends ASTNodeSolid implements Buildable {
 		assert.ok(goal.block, 'semantic goal should have 1 child');
 		return goal.block;
 	}
-	constructor(
+
+
+	private readonly _validator: Validator;
+
+	constructor (
 		start_node: SyntaxNodeType<'block'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodeStatement>>,
+		config: SolidConfig,
 	) {
 		super(start_node, {}, children);
+		this._validator = new Validator(config);
 	}
+
+	override get validator(): Validator {
+		return this._validator;
+	}
+
 	/** @implements Buildable */
 	build(builder: Builder): INST.InstructionModule {
 		return new INST.InstructionModule([
