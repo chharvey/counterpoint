@@ -1,4 +1,5 @@
 import {
+	INST,
 	Keys,
 	Map_hasEq,
 	Map_getEq,
@@ -33,6 +34,11 @@ export abstract class Collection extends SolidObject {
 		return Map_getEq(Collection.EQ_MEMO, memokey, Collection.EQ_MEMO_COMPARATOR)!;
 	}
 
+
+	override build(to_float: boolean = false): INST.InstructionConst {
+		to_float;
+		throw new Error('`Collection#build` not yet supported.');
+	}
 
 	abstract toType(): SolidType;
 }

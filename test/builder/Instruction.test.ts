@@ -8,10 +8,6 @@ import {
 	Operator,
 } from '../../src/validator/index.js';
 import {
-	Int16,
-	Float64,
-} from '../../src/typer/index.js';
-import {
 	Builder,
 	INST,
 } from '../../src/builder/index.js';
@@ -258,49 +254,4 @@ describe('Instruction', () => {
 			})
 		})
 	})
-
-	describe('InstructionConst', () => {
-	describe('.fromCPValue', () => {
-		specify('@value instanceof Int16', () => {
-			const data: bigint[] = [
-				42n + -420n,
-				...[
-					 126 /  3,
-					-126 /  3,
-					 126 / -3,
-					-126 / -3,
-					 200 /  3,
-					 200 / -3,
-					-200 /  3,
-					-200 / -3,
-				].map((x) => BigInt(Math.trunc(x))),
-				(42n ** 2n * 420n) % (2n ** 16n),
-				(-5n) ** (2n * 3n),
-			]
-			assert.deepStrictEqual(
-				data.map((x) => INST.InstructionConst.fromCPValue(new Int16(x))),
-				data.map((x) => instructionConstInt(x)),
-			)
-		})
-		specify('@value instanceof Float64', () => {
-			const data: number[] = [
-				55, -55, 33, -33, 2.007, -2.007,
-				91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
-				-0, -0, 6.8, 6.8, 0, -0,
-				3.0 - 2.7,
-			]
-			assert.deepStrictEqual(
-				data.map((x) => INST.InstructionConst.fromCPValue(new Float64(x))),
-				data.map((x) => instructionConstFloat(x)),
-			)
-		})
-		describe('@to_float === true', () => {
-			specify('@value instanceof Int16', () => {
-				const build: INST.InstructionConst = INST.InstructionConst.fromCPValue(new Int16(42n), true);
-				assert.deepStrictEqual   (build, instructionConstFloat(42));
-				assert.notDeepStrictEqual(build, instructionConstInt(42n));
-			})
-		})
-	});
-	});
 })

@@ -22,6 +22,9 @@ export class SolidString extends Primitive {
 	override get isEmpty(): boolean {
 		return this.codeunits.length === 0;
 	}
+	protected override get builtValue(): never {
+		throw new Error('`SolidString#built_value` not yet supported.');
+	}
 	override toString(): string {
 		return `'${ utf8.decode(String.fromCodePoint(...this.codeunits)) }'`;
 	}

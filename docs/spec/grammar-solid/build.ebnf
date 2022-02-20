@@ -13,6 +13,14 @@ Sequence<Instruction> Build(Number n) :=
 	1. *Return:* ["Push `n` onto the operand stack."].
 ;
 
+Sequence<Instruction> Build(String s) :=
+	// TO BE DETERMINED
+;
+
+Sequence<Instruction> Build(Collection c) :=
+	// TO BE DETERMINED
+;
+
 
 
 Sequence<Instruction> Build(SemanticExpression expr) :=

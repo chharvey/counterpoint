@@ -19,10 +19,6 @@ export {
 	ASTNODE_SOLID as AST,
 } from '../validator/index.js';
 export {
-	SolidObject,
-	SolidNull,
-	SolidBoolean,
 	SolidNumber,
-	Int16,
 	Float64,
 } from '../typer/index.js';

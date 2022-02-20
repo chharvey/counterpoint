@@ -6,7 +6,12 @@ import {
 	SolidString,
 	SolidSet,
 	SolidMap,
-} from '../../src/typer/index.js';
+	INST,
+} from '../../src/index.js';
+import {
+	instructionConstInt,
+	instructionConstFloat,
+} from '../helpers.js';
 
 
 
@@ -103,5 +108,56 @@ describe('SolidObject', () => {
 				);
 			});
 		});
+	});
+});
+
+
+
+describe('Int16', () => {
+	describe('#build', () => {
+		it('ok.', () => {
+			const data: bigint[] = [
+				42n + -420n,
+				...[
+					 126 /  3,
+					-126 /  3,
+					 126 / -3,
+					-126 / -3,
+					 200 /  3,
+					 200 / -3,
+					-200 /  3,
+					-200 / -3,
+				].map((x) => BigInt(Math.trunc(x))),
+				(42n ** 2n * 420n) % (2n ** 16n),
+				(-5n) ** (2n * 3n),
+			];
+			return assert.deepStrictEqual(
+				data.map((x) => new Int16(x).build()),
+				data.map((x) => instructionConstInt(x)),
+			);
+		});
+
+		it('@to_float === true', () => {
+			const build: INST.InstructionConst = new Int16(42n).build(true);
+			assert.deepStrictEqual   (build, instructionConstFloat(42));
+			assert.notDeepStrictEqual(build, instructionConstInt(42n));
+		});
+	});
+});
+
+
+
+describe('Float64', () => {
+	specify('#build', () => {
+		const data: number[] = [
+			55, -55, 33, -33, 2.007, -2.007,
+			91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+			-0, -0, 6.8, 6.8, 0, -0,
+			3.0 - 2.7,
+		];
+		return assert.deepStrictEqual(
+			data.map((x) => new Float64(x).build()),
+			data.map((x) => instructionConstFloat(x)),
+		);
 	});
 });

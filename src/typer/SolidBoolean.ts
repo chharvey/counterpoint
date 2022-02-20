@@ -1,3 +1,6 @@
+import {
+	Int16,
+} from './index.js';
 import {SolidTypeUnit} from './SolidTypeUnit.js';
 import type {SolidObject} from './SolidObject.js';
 import {Primitive} from './Primitive.js';
@@ -41,6 +44,9 @@ export class SolidBoolean extends Primitive {
 	}
 	override get isTruthy(): boolean {
 		return this.data;
+	}
+	protected override get builtValue(): Int16 {
+		return (this.isTruthy) ? Int16.UNIT : Int16.ZERO;
 	}
 	protected override identical_helper(value: SolidObject): boolean {
 		return value instanceof SolidBoolean && this.data === value.data;
