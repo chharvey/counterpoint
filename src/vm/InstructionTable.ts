@@ -6,9 +6,10 @@ import type {
 
 /**
  * An Instruction to the virtual machine.
+ * @typeparam T the type of items in an operand {@link Stack}
  * @see https://dev.to/jimsy/building-a-stack-based-virtual-machine-part-3---instructions-4b3a
  */
-export type Instruction = {
+export type Instruction<T> = {
 	/** A unique identifying number for this Instruction. */
 	readonly opcode: Opcode,
 	/** Readable name for this Instruction. */
@@ -16,17 +17,18 @@ export type Instruction = {
 	/** Number of arguments this Instruction takes. */
 	readonly arity: bigint,
 	/** The action that this Instruction will perform. */
-	readonly action: (machine: unknown, args: unknown[]) => void,
+	readonly action: (machine: unknown, args: T[]) => void,
 };
 
 
 
 /**
  * A catalog of instructions for the virtual machine.
+ * @typeparam T the type of items in an operand {@link Stack}
  */
-export class InstructionTable {
+export class InstructionTable<T> {
 	/** Internal implemenation of this InstructionTable’s data. */
-	private readonly map: Map<Opcode, Instruction> = new Map();
+	private readonly map: Map<Opcode, Instruction<T>> = new Map();
 
 	/**
 	 * Construct a new InstructionTable object.
@@ -47,7 +49,7 @@ export class InstructionTable {
 	 * @param  opcode the opcode of the Instruction to get
 	 * @return        the Instruction with the given opcode, or `null`
 	 */
-	getByOpcode(opcode: Opcode): Instruction | null {
+	getByOpcode(opcode: Opcode): Instruction<T> | null {
 		return this.map.get(opcode) || null;
 	}
 
@@ -56,7 +58,7 @@ export class InstructionTable {
 	 * @param  name the name of the Instruction to get
 	 * @return      the Instruction with the given name, or `null`
 	 */
-	getByName(name: string): Instruction | null {
+	getByName(name: string): Instruction<T> | null {
 		return [...this.map.values()].find((inst) => inst.name === name) || null;
 	}
 
@@ -73,7 +75,7 @@ export class InstructionTable {
 	 * @param  instruction the Instruction to add
 	 * @return             `this`
 	 */
-	add(instruction: Instruction): this {
+	add(instruction: Instruction<T>): this {
 		this.map.set(instruction.opcode, instruction);
 		return this;
 	}

@@ -30,7 +30,7 @@ export class Builder<T> {
 	 * @param instruction_table Gives access to labels, opcodes and instruction arities.
 	 */
 	constructor (
-		private readonly instruction_table: InstructionTable,
+		private readonly instruction_table: InstructionTable<T>,
 	) {
 	}
 
@@ -56,7 +56,7 @@ export class Builder<T> {
 	 */
 	push(name: string, args: T[]): void {
 		// Look up the instruction in the instruction table.
-		const instr: Instruction | null = this.instruction_table.getByName(name);
+		const instr: Instruction<T> | null = this.instruction_table.getByName(name);
 		if (!instr) {
 			throw new Error(`Unable to find instruction with name \`${ name }\`.`);
 		}

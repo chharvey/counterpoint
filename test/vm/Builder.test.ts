@@ -8,11 +8,11 @@ import {
 
 
 describe('Builder', () => {
-	const noop: Instruction['action'] = (_machine, _args) => {};
+	const noop: Instruction<number>['action'] = (_machine, _args) => {};
 
 
-	function newMockInstructionTable(): InstructionTable {
-		return new InstructionTable().add({
+	function newMockInstructionTable(): InstructionTable<number> {
+		return new InstructionTable<number>().add({
 			opcode: 0n,
 			name:   'noop',
 			arity:  0n,
