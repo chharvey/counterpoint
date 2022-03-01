@@ -48,4 +48,15 @@ describe('InstructionTable', () => {
 			assert.strictEqual(table.getByName('noop'), mock_instruction);
 		});
 	});
+
+
+	describe('#getSymbols', () => {
+		it('inspects the symbols in the table.', () => {
+			const table = new InstructionTable();
+			table.add(mock_instruction);
+			assert.deepStrictEqual(table.getSymbols(), new Map([
+				[mock_instruction.opcode, mock_instruction.name],
+			]));
+		});
+	});
 });

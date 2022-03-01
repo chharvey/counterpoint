@@ -1,4 +1,6 @@
-type Opcode = bigint;
+import type {
+	Opcode,
+} from './utils-private.js';
 
 
 
@@ -15,7 +17,7 @@ export type Instruction = {
 	readonly arity: bigint,
 	/** The action that this Instruction will perform. */
 	readonly action: (machine: unknown, args: unknown[]) => void,
-}
+};
 
 
 
@@ -56,6 +58,14 @@ export class InstructionTable {
 	 */
 	getByName(name: string): Instruction | null {
 		return [...this.map.values()].find((inst) => inst.name === name) || null;
+	}
+
+	/**
+	 * Returns a list of symbols for use in the `Code` struct.
+	 * @return a list of pairs of opcode and name of each instruction in this InstructionTable
+	 */
+	getSymbols(): Map<Opcode, string> {
+		return new Map([...this.map.values()].map((instr) => [instr.opcode, instr.name])); // using `instr.opcode` instead of map keys for robustness
 	}
 
 	/**

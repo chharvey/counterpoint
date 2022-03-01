@@ -7,5 +7,6 @@ export {
 	Stack,
 	Instruction as VMInstruction,
 	InstructionTable,
+	Builder as VMBuilder,
 } from './vm/index.js';
 export * from './error/index.js';
