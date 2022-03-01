@@ -9,9 +9,26 @@ import type {
 
 
 /**
- * An assembly code generator.
+ * A model for an assembly program that can be run.
  * @typeparam T the type of items in an operand {@link Stack}
  * @see https://dev.to/jimsy/building-a-stack-based-virtual-machine-part-4---code-3lmi
+ */
+type Code<T> = {
+	/** A list of constant operands. */
+	readonly data: readonly T[],
+	/** A list of instruction opcodes and indexes into the data section. */
+	readonly code: readonly Opcode[],
+	/** A mapping of labels to instruction pointers (or indexes into the program section). */
+	readonly labels: ReadonlyMap<Opcode, string>,
+	/** A list of instruction names (symbols) stored by opcode for easier debugging. */
+	readonly symbols: ReadonlyMap<Opcode, string>,
+};
+
+
+
+/**
+ * An assembly code generator.
+ * @typeparam T the type of items in an operand {@link Stack}
  */
 export class Builder<T> {
 	/** A list of constant operands. */
@@ -83,5 +100,18 @@ export class Builder<T> {
 	 */
 	label(name: string): void {
 		this._labels[name] = BigInt(this._instructions.length);
+	}
+
+	/**
+	 * Convert this Builder into a `Code` object.
+	 * @return a `Code` object
+	 */
+	toCode(): Code<T> {
+		return {
+			data:    this.data,
+			code:    this.instructions,
+			labels:  new Map(Object.entries(this._labels).map<[Opcode, string]>(([name, opcode]) => [opcode, name])),
+			symbols: this.instruction_table.getSymbols(),
+		};
 	}
 }

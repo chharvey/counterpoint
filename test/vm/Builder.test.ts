@@ -85,4 +85,34 @@ describe('Builder', () => {
 			assert.deepStrictEqual(builder.data, [123]);
 		});
 	});
+
+
+	describe('#toCode', () => {
+		it('builds a Code object.', () => {
+			const builder = new Builder<number>(newMockInstructionTable());
+			builder.push('noop', []);
+			builder.push('push', [123]);
+			builder.push('pop', []);
+			assert.deepStrictEqual(builder.toCode(), {
+				data: [123],
+				code: [
+					0n, // `noop` opcode
+					0n, // `noop` arity
+					1n, // `push` opcode
+					1n, // `push` arity
+					0n, // `push` arg index
+					2n, // `pop` opcode
+					0n, // `pop` arity
+				],
+				labels: new Map([
+					[0n, 'main'],
+				]),
+				symbols: new Map([
+					[0n, 'noop'],
+					[1n, 'push'],
+					[2n, 'pop'],
+				]),
+			});
+		});
+	});
 });
