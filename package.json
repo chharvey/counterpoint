@@ -37,7 +37,7 @@
     "@chharvey/requirejson": "^2.0.0",
     "extrajs": "^0.24.0",
     "fast-deep-equal": "^3.1.3",
-    "minimist": "^1.2.5",
+    "minimist": "^1.2.6",
     "utf8": "^3.0.0",
     "wabt": "^1.0.16"
   },
