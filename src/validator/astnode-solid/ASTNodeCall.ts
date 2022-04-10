@@ -3,7 +3,7 @@ import {
 	SolidType,
 	SolidTypeTuple,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	SolidObject,
@@ -79,7 +79,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			}],
 			[ValidFunctionName.DICT, () => {
 				this.countArgs(1n, [0n, 2n]);
-				const returntype: SolidType = new SolidTypeHash(this.typeargs[0].eval());
+				const returntype: SolidType = new SolidTypeDict(this.typeargs[0].eval());
 				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
 					returntype,
 					this.exprargs[0],

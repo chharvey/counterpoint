@@ -6,7 +6,7 @@ import {
 	SolidTypeTuple,
 	SolidTypeRecord,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	SolidBoolean,
@@ -164,7 +164,7 @@ describe('ASTNodeType', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeDict.fromSource(`[:int | bool]`).eval(),
-				new SolidTypeHash(SolidType.INT.union(SolidType.BOOL)),
+				new SolidTypeDict(SolidType.INT.union(SolidType.BOOL)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeSet.fromSource(`(int | bool){}`).eval(),

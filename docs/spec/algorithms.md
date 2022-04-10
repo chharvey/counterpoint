@@ -397,15 +397,15 @@ Boolean Subtype(Type a, Type b) :=
 				1. *Let* `ai` be the union of types in `a`.
 				2. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
 					1. *Return:* `true`.
-	13. *If* `Equal(b, Hash)`:
+	13. *If* `Equal(b, Dict)`:
 		1. *Let* `bv` be the union of value types in `b`.
 		2. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* `Equal(a, Hash)`:
+			1. *If* `a` is mutable *and* `Equal(a, Dict)`:
 				1. *Let* `av` be the union of value types in `a`.
 				2. *If* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
 					1. *Return:* `true`.
 		3. *Else:*
-			1. *If* `Equal(a, Hash)` *or* `Equal(a, Record)`:
+			1. *If* `Equal(a, Dict)` *or* `Equal(a, Record)`:
 				1. *Let* `av` be the union of value types in `a`.
 				2. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 					1. *Return:* `true`.

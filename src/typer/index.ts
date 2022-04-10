@@ -15,7 +15,7 @@ export * from './SolidTypeString.js';
 export * from './SolidTypeTuple.js';
 export * from './SolidTypeRecord.js';
 export * from './SolidTypeList.js';
-export * from './SolidTypeHash.js';
+export * from './SolidTypeDict.js';
 export * from './SolidTypeSet.js';
 export * from './SolidTypeMap.js';
 

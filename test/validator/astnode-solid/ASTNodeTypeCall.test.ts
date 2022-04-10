@@ -3,7 +3,7 @@ import {
 	ASTNODE_SOLID as AST,
 	SolidType,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	TypeError05,
@@ -24,7 +24,7 @@ describe('ASTNodeTypeCall', () => {
 				].map((src) => AST.ASTNodeTypeCall.fromSource(src).eval()),
 				[
 					new SolidTypeList(SolidType.NULL),
-					new SolidTypeHash(SolidType.BOOL),
+					new SolidTypeDict(SolidType.BOOL),
 					new SolidTypeSet(SolidType.STR),
 					new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
 				],

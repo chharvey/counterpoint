@@ -7,12 +7,12 @@ import {SolidType} from './SolidType.js';
 
 
 
-export class SolidTypeHash extends SolidType {
+export class SolidTypeDict extends SolidType {
 	override readonly isBottomType: boolean = false;
 
 	/**
-	 * Construct a new SolidTypeHash object.
-	 * @param types a union of types in this hash type
+	 * Construct a new SolidTypeDict object.
+	 * @param types a union of types in this dict type
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
@@ -39,7 +39,7 @@ export class SolidTypeHash extends SolidType {
 
 	protected override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidType.OBJ) || (
-			t instanceof SolidTypeHash
+			t instanceof SolidTypeDict
 			&& ((t.isMutable)
 				? this.isMutable && this.types.equals(t.types)
 				: this.types.isSubtypeOf(t.types)
@@ -47,11 +47,11 @@ export class SolidTypeHash extends SolidType {
 		);
 	}
 
-	override mutableOf(): SolidTypeHash {
-		return new SolidTypeHash(this.types, true);
+	override mutableOf(): SolidTypeDict {
+		return new SolidTypeDict(this.types, true);
 	}
 
-	override immutableOf(): SolidTypeHash {
-		return new SolidTypeHash(this.types, false);
+	override immutableOf(): SolidTypeDict {
+		return new SolidTypeDict(this.types, false);
 	}
 }

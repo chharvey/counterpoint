@@ -60,7 +60,7 @@ Type TypeValueOf(SemanticTypeList listtype) :=
 Type TypeValueOf(SemanticTypeDict dicttype) :=
 	1. *Assert:* `dicttype.children.count` is 1.
 	2. *Let* `valuetype` be *UnwrapAffirm:* `TypeValueOf(dicttype.children.0)`.
-	3. *Return:* a subtype of `Hash` whose values’ type is `valuetype`.
+	3. *Return:* a subtype of `Dict` whose values’ type is `valuetype`.
 ;
 
 
@@ -120,7 +120,7 @@ Type TypeValueOf(SemanticTypeCall call) :=
 			2. *If* `base.source` is "List":
 				1. *Return:* a subtype of `List` whose items’ type is `genericarg`.
 			3. *If* `base.source` is "Dict":
-				1. *Return:* a subtype of `Hash` whose values’ type is `genericarg`.
+				1. *Return:* a subtype of `Dict` whose values’ type is `genericarg`.
 			4. *If* `base.source` is "Set":
 				1. *Return:* a subtype of `Set` whose elements’ type is `genericarg`.
 		2. *Throw:* a new TypeError.

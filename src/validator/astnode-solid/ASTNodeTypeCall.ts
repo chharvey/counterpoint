@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {
 	SolidType,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	TypeError05,
@@ -46,7 +46,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		}
 		return (new Map<ValidFunctionName, () => SolidType>([
 			[ValidFunctionName.LIST, () => (this.countArgs(1n), new SolidTypeList(this.args[0].eval()))],
-			[ValidFunctionName.DICT, () => (this.countArgs(1n), new SolidTypeHash(this.args[0].eval()))],
+			[ValidFunctionName.DICT, () => (this.countArgs(1n), new SolidTypeDict(this.args[0].eval()))],
 			[ValidFunctionName.SET,  () => (this.countArgs(1n), new SolidTypeSet (this.args[0].eval()))],
 			[ValidFunctionName.MAP,  () => {
 				this.countArgs([1n, 3n]);

@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {
 	SolidType,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
@@ -23,6 +23,6 @@ export class ASTNodeTypeDict extends ASTNodeType {
 		super(start_node, {}, [type]);
 	}
 	protected override eval_do(): SolidType {
-		return new SolidTypeHash(this.type.eval());
+		return new SolidTypeDict(this.type.eval());
 	}
 }

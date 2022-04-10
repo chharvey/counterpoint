@@ -5,7 +5,7 @@ import {
 import {
 	SolidType,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	Int16,
@@ -39,7 +39,7 @@ describe('ASTNodeCall', () => {
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new SolidTypeList(SolidType.INT).mutableOf(),
-					new SolidTypeHash(SolidType.INT).mutableOf(),
+					new SolidTypeDict(SolidType.INT).mutableOf(),
 					new SolidTypeSet(SolidType.INT).mutableOf(),
 					new SolidTypeMap(SolidType.INT, SolidType.FLOAT).mutableOf(),
 				],
@@ -76,7 +76,7 @@ describe('ASTNodeCall', () => {
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new SolidTypeList(SolidType.INT).mutableOf(),
-					new SolidTypeHash(SolidType.INT).mutableOf(),
+					new SolidTypeDict(SolidType.INT).mutableOf(),
 					new SolidTypeSet(SolidType.INT).mutableOf(),
 					new SolidTypeMap(SolidType.INT, SolidType.FLOAT).mutableOf(),
 					new SolidTypeList(SolidType.INT).mutableOf(),

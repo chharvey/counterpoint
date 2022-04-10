@@ -804,9 +804,9 @@ The number of properties in a record is called its **count**; the count of a has
 Hashes are homogeneous, meaning all entries in the hash have the same type (or parent type).
 If a hash is mutable, the entries of the hash may be reassigned, and properties may be added and removed from the hash as well.
 
-Hash types are declared via the generic hash type syntax: `Dict.<T>`
-where `T` indicates the type of values in the hash.
-Hashes are constructed via the constructor syntax `Dict.<T>(arg)`,
+Dict types are declared via the generic dict type syntax: `Dict.<T>`
+where `T` indicates the type of values in the dict.
+Dicts are constructed via the constructor syntax `Dict.<T>(arg)`,
 where `arg` is a [Record](#record) object.
 ```
 let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
@@ -827,7 +827,7 @@ let my_styles: [: int | float | str] = [
 	fontWeight= 400,
 ];
 ```
-As shown above, we can mix value types, but the hash type must be homogeneous.
+As shown above, we can mix value types, but the dict type must be homogeneous.
 
 #### Hash Access
 Hash access is the same as [Record Access](#record-access).
