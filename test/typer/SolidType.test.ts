@@ -683,25 +683,25 @@ describe('SolidType', () => {
 
 		describe('SolidTypeHash', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new SolidTypeHash(SolidType.INT.union(SolidType.BOOL)).isSubtypeOf(SolidType.OBJ), `Hash.<int | bool> <: obj;`);
-				assert.ok(!SolidType.OBJ.isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.BOOL))), `obj !<: Hash.<int | bool>`);
+				assert.ok(new SolidTypeHash(SolidType.INT.union(SolidType.BOOL)).isSubtypeOf(SolidType.OBJ), `Dict.<int | bool> <: obj;`);
+				assert.ok(!SolidType.OBJ.isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.BOOL))), `obj !<: Dict.<int | bool>`);
 			});
-			it('Covariance for immutable hashes: `A <: B --> Hash.<A> <: Hash.<B>`.', () => {
-				assert.ok(new SolidTypeHash(SolidType.INT).isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT))), `Hash.<int> <: Hash.<int | float>`);
-				assert.ok(!new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT)).isSubtypeOf(new SolidTypeHash(SolidType.INT)), `Hash.<int | float> !<: Hash.<int>`);
+			it('Covariance for immutable hashes: `A <: B --> Dict.<A> <: Dict.<B>`.', () => {
+				assert.ok(new SolidTypeHash(SolidType.INT).isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT))), `Dict.<int> <: Dict.<int | float>`);
+				assert.ok(!new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT)).isSubtypeOf(new SolidTypeHash(SolidType.INT)), `Dict.<int | float> !<: Dict.<int>`);
 			});
-			it('Invariance for mutable hashes: `A == B --> mutable Hash.<A> <: mutable Hash.<B>`.', () => {
-				assert.ok(!new SolidTypeHash(SolidType.INT).mutableOf().isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT)).mutableOf()), `mutable Hash.<int> !<: mutable Hash.<int | float>`);
+			it('Invariance for mutable hashes: `A == B --> mutable Dict.<A> <: mutable Dict.<B>`.', () => {
+				assert.ok(!new SolidTypeHash(SolidType.INT).mutableOf().isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT)).mutableOf()), `mutable Dict.<int> !<: mutable Dict.<int | float>`);
 			});
-			it('Generalization: `A <: B --> Record.<A> <: Hash.<B>`.', () => {
+			it('Generalization: `A <: B --> Record.<A> <: Dict.<B>`.', () => {
 				assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, SolidType.FLOAT],
 					[0x101n, SolidType.INT],
-				])).isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT))), `[a: float, b: int] <: Hash.<int | float>`);
+				])).isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT))), `[a: float, b: int] <: Dict.<int | float>`);
 				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, SolidType.FLOAT],
 					[0x101n, SolidType.INT],
-				])).isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT)).mutableOf()), `[a: float, b: int] !<: mutable Hash.<int | float>`);
+				])).isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT)).mutableOf()), `[a: float, b: int] !<: mutable Dict.<int | float>`);
 			});
 		});
 

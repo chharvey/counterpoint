@@ -27,7 +27,7 @@ export class SolidTypeHash extends SolidType {
 	}
 
 	override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }Hash.<${ this.types }>`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }Dict.<${ this.types }>`;
 	}
 
 	override includes(v: SolidObject): boolean {

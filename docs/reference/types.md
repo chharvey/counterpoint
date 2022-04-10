@@ -475,7 +475,7 @@ Type              | Size     | Indices/Keys  | Generic Type Syntax | Explicit Ty
 [Tuple](#tuple)   | Fixed    | integers      | *(none)*            | `[str, str, str]` / `str[3]` | *(none)*                                     | `['x', 'y', 'z']`                      | `[]`
 [Record](#record) | Fixed    | words         | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= 'x', b= 'y', c= 'z']`             | *(none)*
 [List](#list)     | Variable | integers      | `List.<str>`        | `str[]`                      | `List.(['x', 'y', 'z'])`                     | *(none)*                               | *(none)*
-[Hash](#hash)     | Variable | atoms/strings | `Hash.<str>`        | `[:str]`                     | `Hash.([a= 'x', b= 'y', c= 'z'])`            | *(none)*                               | *(none)*
+[Hash](#hash)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                     | `Dict.([a= 'x', b= 'y', c= 'z'])`            | *(none)*                               | *(none)*
 [Set](#set)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                      | `Set.(['x', 'y', 'z'])`                      | `{'x', 'y', 'z'}`                      | `{}`
 [Map](#map)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`               | `Map.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' -> 'x', 'v' -> 'y', 'w' -> 'z'}` | *(none)*
 
@@ -804,19 +804,19 @@ The number of properties in a record is called its **count**; the count of a has
 Hashes are homogeneous, meaning all entries in the hash have the same type (or parent type).
 If a hash is mutable, the entries of the hash may be reassigned, and properties may be added and removed from the hash as well.
 
-Hash types are declared via the generic hash type syntax: `Hash.<T>`
+Hash types are declared via the generic hash type syntax: `Dict.<T>`
 where `T` indicates the type of values in the hash.
-Hashes are constructed via the constructor syntax `Hash.<T>(arg)`,
+Hashes are constructed via the constructor syntax `Dict.<T>(arg)`,
 where `arg` is a [Record](#record) object.
 ```
-let my_styles: Hash.<int | float | str> = Hash.<int | float | str>([
+let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
 	fontFamily= 'sans-serif',
 	fontSize=   1.25,
 	fontStyle=  'oblique',
 	fontWeight= 400,
 ]);
 ```
-A shorthand for the generic syntax `Hash.<T>` is `[:T]`.
+A shorthand for the generic syntax `Dict.<T>` is `[:T]`.
 We can also *initialize* a hash with a record literal,
 because records are generally assignable to hashes.
 ```
