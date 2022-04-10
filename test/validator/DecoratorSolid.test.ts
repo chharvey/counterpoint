@@ -207,7 +207,7 @@ describe('DecoratorSolid', () => {
 			});
 		});
 
-		describe('TypeHashLiteral ::= "[" ":" Type "]"', () => {
+		describe('TypeDictLiteral ::= "[" ":" Type "]"', () => {
 			it('makes an ASTNodeTypeHash.', () => {
 				/*
 					<TypeHash>
