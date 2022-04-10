@@ -5,7 +5,7 @@ import {
 	AST,
 } from './package.js';
 import {
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidObject,
 	SolidRecord,
 } from './index.js';
@@ -79,7 +79,7 @@ export class SolidTypeRecord extends SolidType {
 				);
 			})
 		) || (
-			t instanceof SolidTypeHash
+			t instanceof SolidTypeDict
 			&& !t.isMutable
 			&& this.valueTypes().isSubtypeOf(t.types)
 		);

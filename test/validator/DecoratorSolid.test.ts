@@ -144,11 +144,11 @@ describe('DecoratorSolid', () => {
 				% (type_record_literal)
 			`]],
 
-			['Decorate(TypeHashLiteral ::= "[" ":" Type "]") -> SemanticTypeHash', [AST.ASTNodeTypeHash, `
+			['Decorate(TypeDictLiteral ::= "[" ":" Type "]") -> SemanticTypeDict', [AST.ASTNodeTypeDict, `
 				{
 					type T = [:int];
 				}
-				% (type_hash_literal)
+				% (type_dict_literal)
 			`]],
 
 			['Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMap', [AST.ASTNodeTypeMap, `
@@ -434,7 +434,7 @@ describe('DecoratorSolid', () => {
 				% (expression_additive)
 			`]],
 
-			...['<', '>', '<=', '>=', '!<', '!>', /* 'is', 'isnt' */].map((op) => [`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, [AST.ASTNodeOperation, `
+			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ (['is', 'isnt'].includes(op) ? 'skip: ' : '') }Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				{
 					a ${ op } b;
 				}

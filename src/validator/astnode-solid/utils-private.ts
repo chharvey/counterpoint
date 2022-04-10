@@ -8,6 +8,19 @@ import {
 
 
 
+export enum ValidFunctionName {
+	LIST = 'List',
+	DICT = 'Dict',
+	SET  = 'Set',
+	MAP  = 'Map',
+};
+
+export function invalidFunctionName(source: string): never {
+	throw new SyntaxError(`Unexpected token: ${ source }; expected \`${ Object.values(ValidFunctionName).join(' | ') }\`.`);
+}
+
+
+
 export function bothNumeric(t0: SolidType, t1: SolidType): boolean {
 	const int_float: SolidType = SolidType.INT.union(SolidType.FLOAT);
 	return t0.isSubtypeOf(int_float) && t1.isSubtypeOf(int_float);

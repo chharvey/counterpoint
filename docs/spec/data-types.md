@@ -284,7 +284,7 @@ and the “absorption element” of the [union](#union) operation.
 - [Tuple](#tuple-type)
 - [Record](#record-type)
 - [List](#list-type)
-- [Hash](#hash-type)
+- [Dict](#dict-type)
 - [Set](#set-type)
 - [Map](#map-type)
 
@@ -304,11 +304,11 @@ representing items.
 The objects that any given List Type contains are `List` objects whose
 items are assignable to the type describing the List Type.
 
-#### Hash Type
-A **Hash Type** contains [`Hash` objects](./intrinsics.md#hash) and is described by a single type,
+#### Dict Type
+A **Dict Type** contains [`Dict` objects](./intrinsics.md#dict) and is described by a single type,
 representing values.
-The objects that any given Hash Type contains are `Hash` objects whose
-values are assignable to the type describing the Hash Type.
+The objects that any given Dict Type contains are `Dict` objects whose
+values are assignable to the type describing the Dict Type.
 
 #### Set Type
 A **Set Type** contains [`Set` objects](./intrinsics.md#set) and is described by a single type,
