@@ -84,8 +84,8 @@ Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType "]") -> SemanticTypeRecor
 		...Decorate(PropertiesType)
 	);
 
-Decorate(TypeHashLiteral ::= "[" ":" Type "]") -> SemanticTypeHash
-	:= (SemanticTypeHash
+Decorate(TypeDictLiteral ::= "[" ":" Type "]") -> SemanticTypeDict
+	:= (SemanticTypeDict
 		Decorate(Type)
 	);
 

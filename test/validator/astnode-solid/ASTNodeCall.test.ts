@@ -5,13 +5,13 @@ import {
 import {
 	SolidType,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	Int16,
 	Float64,
 	SolidList,
-	SolidHash,
+	SolidDict,
 	SolidSet,
 	SolidMap,
 } from '../../../src/typer/index.js';
@@ -25,11 +25,11 @@ import {
 
 describe('ASTNodeCall', () => {
 	describe('#type', () => {
-		it('evaluates List, Hash, Set, and Map.', () => {
+		it('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
 				[
 					`List.<int>([1, 2, 3]);`,
-					`Hash.<int>([a= 1, b= 2, c= 3]);`,
+					`Dict.<int>([a= 1, b= 2, c= 3]);`,
 					`Set.<int>([1, 2, 3]);`,
 					`Map.<int, float>([
 						[1, 0.1],
@@ -39,7 +39,7 @@ describe('ASTNodeCall', () => {
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new SolidTypeList(SolidType.INT).mutableOf(),
-					new SolidTypeHash(SolidType.INT).mutableOf(),
+					new SolidTypeDict(SolidType.INT).mutableOf(),
 					new SolidTypeSet(SolidType.INT).mutableOf(),
 					new SolidTypeMap(SolidType.INT, SolidType.FLOAT).mutableOf(),
 				],
@@ -67,7 +67,7 @@ describe('ASTNodeCall', () => {
 			assert.deepStrictEqual(
 				[
 					`List.<int>();`,
-					`Hash.<int>();`,
+					`Dict.<int>();`,
 					`Set.<int>();`,
 					`Map.<int, float>();`,
 					`List.<int>([]);`,
@@ -76,7 +76,7 @@ describe('ASTNodeCall', () => {
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new SolidTypeList(SolidType.INT).mutableOf(),
-					new SolidTypeHash(SolidType.INT).mutableOf(),
+					new SolidTypeDict(SolidType.INT).mutableOf(),
 					new SolidTypeSet(SolidType.INT).mutableOf(),
 					new SolidTypeMap(SolidType.INT, SolidType.FLOAT).mutableOf(),
 					new SolidTypeList(SolidType.INT).mutableOf(),
@@ -110,7 +110,7 @@ describe('ASTNodeCall', () => {
 		it('throws when providing incorrect number of arguments.', () => {
 			[
 				`List.<int>([], []);`,
-				`Hash.<int>([], []);`,
+				`Dict.<int>([], []);`,
 				`Set.<int>([], []);`,
 				`Map.<int>([], []);`,
 			].forEach((src) => {
@@ -120,7 +120,7 @@ describe('ASTNodeCall', () => {
 		it('throws when providing incorrect type of arguments.', () => {
 			[
 				`List.<int>(42);`,
-				`Hash.<int>([4.2]);`,
+				`Dict.<int>([4.2]);`,
 				`Set.<int>([42, '42']);`,
 				`Map.<int>([42, '42']);`,
 			].forEach((src) => {
@@ -131,11 +131,11 @@ describe('ASTNodeCall', () => {
 
 
 	describe('#fold', () => {
-		it('evaluates List, Hash, Set, and Map.', () => {
+		it('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
 				[
 					`List.<int>([1, 2, 3]);`,
-					`Hash.<int>([a= 1, b= 2, c= 3]);`,
+					`Dict.<int>([a= 1, b= 2, c= 3]);`,
 					`Set.<int>([1, 2, 3]);`,
 					`Map.<int, float>([
 						[1, 0.1],
@@ -149,7 +149,7 @@ describe('ASTNodeCall', () => {
 						new Int16(2n),
 						new Int16(3n),
 					]),
-					new SolidHash<Int16>(new Map<bigint, Int16>([
+					new SolidDict<Int16>(new Map<bigint, Int16>([
 						[0x100n, new Int16(1n)],
 						[0x101n, new Int16(2n)],
 						[0x102n, new Int16(3n)],
@@ -201,7 +201,7 @@ describe('ASTNodeCall', () => {
 			assert.deepStrictEqual(
 				[
 					`List.<int>();`,
-					`Hash.<int>();`,
+					`Dict.<int>();`,
 					`Set.<int>();`,
 					`Map.<int, float>();`,
 					`List.<int>([]);`,
@@ -210,7 +210,7 @@ describe('ASTNodeCall', () => {
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
 					new SolidList<never>(),
-					new SolidHash<never>(),
+					new SolidDict<never>(),
 					new SolidSet<never>(),
 					new SolidMap<never, never>(),
 					new SolidList<never>(),

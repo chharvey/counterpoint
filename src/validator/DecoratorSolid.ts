@@ -85,7 +85,7 @@ class DecoratorSolid {
 	decorateTS(node: SyntaxNodeType<'type_grouped'>):                              AST.ASTNodeType;
 	decorateTS(node: SyntaxNodeType<'type_tuple_literal'>):                        AST.ASTNodeTypeTuple;
 	decorateTS(node: SyntaxNodeType<'type_record_literal'>):                       AST.ASTNodeTypeRecord;
-	decorateTS(node: SyntaxNodeType<'type_hash_literal'>):                         AST.ASTNodeTypeHash;
+	decorateTS(node: SyntaxNodeType<'type_dict_literal'>):                         AST.ASTNodeTypeDict;
 	decorateTS(node: SyntaxNodeType<'type_map_literal'>):                          AST.ASTNodeTypeMap;
 	decorateTS(node: SyntaxNodeType<'property_access_type'>):                      AST.ASTNodeIndexType | AST.ASTNodeKey;
 	decorateTS(node: SyntaxNodeType<'type_compound'>):                             AST.ASTNodeTypeAccess | AST.ASTNodeTypeCall;
@@ -194,8 +194,8 @@ class DecoratorSolid {
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodePropertyType>,
 			)],
 
-			['type_hash_literal', (node) => new AST.ASTNodeTypeHash(
-				node as SyntaxNodeType<'type_hash_literal'>,
+			['type_dict_literal', (node) => new AST.ASTNodeTypeDict(
+				node as SyntaxNodeType<'type_dict_literal'>,
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'type'>),
 			)],
 

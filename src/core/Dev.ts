@@ -1,13 +1,7 @@
 type DevToggleKey =
-	// v0.4.0
-		| 'literalString-lex'
-		| 'literalString-cook'
-		| 'stringConstant-assess'
-		| 'literalTemplate-lex'
-		| 'literalTemplate-cook'
-		| 'stringTemplate-parse'
-		| 'stringTemplate-decorate'
-		| 'stringTemplate-assess'
+	// v0.5.0
+		| 'stringConstant-build'
+		| 'stringTemplate-build'
 ;
 type DevToggleVal = [boolean, DevToggleKey[]?];
 
@@ -31,15 +25,9 @@ export class Dev {
 	 * Released features may have an optional language feature option defined in {@link SolidConfig}.
 	 */
 	private static readonly TOGGLES: {[K in DevToggleKey]: DevToggleVal} = {
-		'literalString-lex':       [true],
-		'literalString-cook':      [true, ['literalString-lex']],
-		'stringConstant-assess':   [true, ['literalString-cook']],
-		'literalTemplate-lex':     [true],
-		'literalTemplate-cook':    [true, ['literalTemplate-lex']],
-		'stringTemplate-parse':    [true, ['literalTemplate-cook']],
-		'stringTemplate-decorate': [true, ['stringTemplate-parse']],
-		'stringTemplate-assess':   [true, ['stringTemplate-decorate']],
-	}
+		'stringConstant-build': [false],
+		'stringTemplate-build': [false],
+	};
 
 	/**
 	 * Return `true` if this project supports the given feature.
