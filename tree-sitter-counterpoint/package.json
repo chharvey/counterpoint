@@ -37,6 +37,6 @@
   "devDependencies": {
     "tree-sitter-cli": "^0.20.1",
     "ts-node": "^10.4.0",
-    "typescript": "~4.5.0"
+    "typescript": "~4.6.0"
   }
 }
