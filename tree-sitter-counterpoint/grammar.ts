@@ -339,7 +339,7 @@ module.exports = grammar({
 		type_grouped:        $ => seq('(', $._type,                                  ')'),
 		type_tuple_literal:  $ => seq('[', optional(seq(OPT_COM, $._items_type)),    ']'),
 		type_record_literal: $ => seq('[',              OPT_COM, $._properties_type, ']'),
-		type_hash_literal:   $ => seq('[', ':', $._type,                             ']'),
+		type_dict_literal:   $ => seq('[', ':', $._type,                             ']'),
 		type_map_literal:    $ => seq('{', $._type, '->', $._type,                   '}'),
 		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM,       '>'),
 
@@ -350,7 +350,7 @@ module.exports = grammar({
 			$.type_grouped,
 			$.type_tuple_literal,
 			$.type_record_literal,
-			$.type_hash_literal,
+			$.type_dict_literal,
 			$.type_map_literal,
 		),
 

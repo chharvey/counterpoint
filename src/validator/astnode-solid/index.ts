@@ -13,7 +13,7 @@ export * from './ASTNodeTypeAlias.js';
 export * from './ASTNodeTypeTuple.js';
 export * from './ASTNodeTypeRecord.js';
 export * from './ASTNodeTypeList.js';
-export * from './ASTNodeTypeHash.js';
+export * from './ASTNodeTypeDict.js';
 export * from './ASTNodeTypeSet.js';
 export * from './ASTNodeTypeMap.js';
 export * from './ASTNodeTypeAccess.js';
