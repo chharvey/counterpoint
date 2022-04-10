@@ -460,8 +460,8 @@ describe('SolidType', () => {
 					[new SolidRecord(input[0]), output[0]],
 					[new SolidRecord(input[1]), output[1]],
 					[new SolidRecord(input[2]), output[2]],
-				]).forEach((hashtype, value) => {
-					assert.ok(new SolidTypeUnit(value).isSubtypeOf(hashtype), `let x: ${ hashtype } = ${ value };`);
+				]).forEach((dicttype, value) => {
+					assert.ok(new SolidTypeUnit(value).isSubtypeOf(dicttype), `let x: ${ dicttype } = ${ value };`);
 				});
 			});
 			it('constant set types should be subtype of a set type instance.', () => {

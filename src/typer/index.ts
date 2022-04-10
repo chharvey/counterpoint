@@ -35,6 +35,6 @@ export * from './CollectionKeyed.js';
 export * from './SolidTuple.js';
 export * from './SolidRecord.js';
 export * from './SolidList.js';
-export * from './SolidHash.js';
+export * from './SolidDict.js';
 export * from './SolidSet.js';
 export * from './SolidMap.js';
