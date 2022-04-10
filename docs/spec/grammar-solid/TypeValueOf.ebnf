@@ -57,9 +57,9 @@ Type TypeValueOf(SemanticTypeList listtype) :=
 
 
 
-Type TypeValueOf(SemanticTypeHash hashtype) :=
-	1. *Assert:* `hashtype.children.count` is 1.
-	2. *Let* `valuetype` be *UnwrapAffirm:* `TypeValueOf(hashtype.children.0)`.
+Type TypeValueOf(SemanticTypeDict dicttype) :=
+	1. *Assert:* `dicttype.children.count` is 1.
+	2. *Let* `valuetype` be *UnwrapAffirm:* `TypeValueOf(dicttype.children.0)`.
 	3. *Return:* a subtype of `Hash` whose values’ type is `valuetype`.
 ;
 

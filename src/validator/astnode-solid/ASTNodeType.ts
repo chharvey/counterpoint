@@ -16,7 +16,7 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
  * - ASTNodeTypeTuple
  * - ASTNodeTypeRecord
  * - ASTNodeTypeList
- * - ASTNodeTypeHash
+ * - ASTNodeTypeDict
  * - ASTNodeTypeSet
  * - ASTNodeTypeMap
  * - ASTNodeTypeAccess

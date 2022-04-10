@@ -97,7 +97,7 @@ class DecoratorSolid extends Decorator {
 	override decorate(node: PARSENODE.ParseNodePropertiesType):     NonemptyArray<AST.ASTNodePropertyType>;
 	override decorate(node: PARSENODE.ParseNodeTypeTupleLiteral):   AST.ASTNodeTypeTuple;
 	override decorate(node: PARSENODE.ParseNodeTypeRecordLiteral):  AST.ASTNodeTypeRecord;
-	override decorate(node: PARSENODE.ParseNodeTypeDictLiteral):    AST.ASTNodeTypeHash;
+	override decorate(node: PARSENODE.ParseNodeTypeDictLiteral):    AST.ASTNodeTypeDict;
 	override decorate(node: PARSENODE.ParseNodeTypeMapLiteral):     AST.ASTNodeTypeMap;
 	override decorate(node: PARSENODE.ParseNodeGenericArguments):   NonemptyArray<AST.ASTNodeType>;
 	override decorate(node: PARSENODE.ParseNodePropertyAccessType): AST.ASTNodeIndexType | AST.ASTNodeKey;
@@ -207,7 +207,7 @@ class DecoratorSolid extends Decorator {
 			));
 
 		} else if (node instanceof PARSENODE.ParseNodeTypeDictLiteral) {
-			return new AST.ASTNodeTypeHash(node, this.decorate(node.children[2]));
+			return new AST.ASTNodeTypeDict(node, this.decorate(node.children[2]));
 
 		} else if (node instanceof PARSENODE.ParseNodeTypeMapLiteral) {
 			return new AST.ASTNodeTypeMap(node, this.decorate(node.children[1]), this.decorate(node.children[3]));

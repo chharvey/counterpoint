@@ -160,10 +160,10 @@ describe('ASTNodeType', () => {
 
 
 
-	describe('ASTNodeType{Hash,Set,Map}', () => {
+	describe('ASTNodeType{Dict,Set,Map}', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeHash.fromSource(`[:int | bool]`).eval(),
+				AST.ASTNodeTypeDict.fromSource(`[:int | bool]`).eval(),
 				new SolidTypeHash(SolidType.INT.union(SolidType.BOOL)),
 			);
 			assert.deepStrictEqual(

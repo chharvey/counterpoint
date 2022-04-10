@@ -208,15 +208,15 @@ describe('DecoratorSolid', () => {
 		});
 
 		describe('TypeDictLiteral ::= "[" ":" Type "]"', () => {
-			it('makes an ASTNodeTypeHash.', () => {
+			it('makes an ASTNodeTypeDict.', () => {
 				/*
-					<TypeHash>
+					<TypeDict>
 						<TypeConstant source="bool"/>
-					</TypeHash>
+					</TypeDict>
 				*/
-				const hash: AST.ASTNodeType = DECORATOR_SOLID.decorate(h.unitTypeFromString(`[:bool]`));
-				assert.ok(hash instanceof AST.ASTNodeTypeHash);
-				assert.deepStrictEqual(hash.type.source, `bool`);
+				const dict: AST.ASTNodeType = DECORATOR_SOLID.decorate(h.unitTypeFromString(`[:bool]`));
+				assert.ok(dict instanceof AST.ASTNodeTypeDict);
+				assert.deepStrictEqual(dict.type.source, `bool`);
 			});
 		});
 

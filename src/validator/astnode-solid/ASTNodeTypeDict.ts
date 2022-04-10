@@ -10,10 +10,10 @@ import {ASTNodeType} from './ASTNodeType.js';
 
 
 
-export class ASTNodeTypeHash extends ASTNodeType {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeHash {
+export class ASTNodeTypeDict extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeDict {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeHash);
+		assert.ok(typ instanceof ASTNodeTypeDict);
 		return typ;
 	}
 	constructor (
