@@ -160,7 +160,7 @@ describe('ASTNodeDeclaration', () => {
 			it('disallows assigning a constructor call to a wider mutable type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let a: mutable int[]         = List.<42>([42]);
-					let b: mutable [:int]        = Hash.<42>([x= 42]);
+					let b: mutable [:int]        = Dict.<42>([x= 42]);
 					let c: mutable int{}         = Set.<42>([42]);
 					let d: mutable {bool -> int} = Map.<true, 42>([[true, 42]]);
 				}`);
@@ -173,7 +173,7 @@ describe('ASTNodeDeclaration', () => {
 						cons: AggregateError,
 						errors: [
 							{cons: TypeError03, message: 'Expression of type mutable List.<42> is not assignable to type mutable List.<int>.'},
-							{cons: TypeError03, message: 'Expression of type mutable Hash.<42> is not assignable to type mutable Hash.<int>.'},
+							{cons: TypeError03, message: 'Expression of type mutable Dict.<42> is not assignable to type mutable Dict.<int>.'},
 							{cons: TypeError03, message: 'Expression of type mutable Set.<42> is not assignable to type mutable Set.<int>.'},
 							{cons: TypeError03, message: 'Expression of type mutable Map.<true, 42> is not assignable to type mutable Map.<bool, int>.'},
 						],
@@ -181,7 +181,7 @@ describe('ASTNodeDeclaration', () => {
 					return true;
 				});
 			});
-			it('allows assigning a tuple/record collection literal to a corresponding list/hash type.', () => {
+			it('allows assigning a tuple/record collection literal to a corresponding list/dict type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let t1: mutable 42[]  = [42];
 					let r1: mutable [:42] = [x= 42];
@@ -393,8 +393,8 @@ describe('ASTNodeDeclaration', () => {
 							set l.0 = 4.2;
 						}`,
 						`{
-							let h: mutable [:int] = Hash.<int>([i= 42]);
-							set h.i = 4.2;
+							let d: mutable [:int] = Dict.<int>([i= 42]);
+							set d.i = 4.2;
 						}`,
 						`{
 							let s: mutable int{} = Set.<int>([42]);
@@ -425,8 +425,8 @@ describe('ASTNodeDeclaration', () => {
 							set l.0 = 4.2;
 						}`,
 						`{
-							let h: [:int] = Hash.<int>([i= 42]);
-							set h.i = 4.2;
+							let d: [:int] = Dict.<int>([i= 42]);
+							set d.i = 4.2;
 						}`,
 						`{
 							let s: int{} = Set.<int>([42]);

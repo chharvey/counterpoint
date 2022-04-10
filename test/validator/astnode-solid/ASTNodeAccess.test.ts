@@ -102,8 +102,8 @@ describe('ASTNodeAccess', () => {
 		%% statements 0 – 4 %%
 		let         rec_fixed:    [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
 		let unfixed rec_unfixed:  [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
-		let         hash_fixed:   [: int | float | str]      = Hash.<int | float | str>([a= 1, b= 2.0, c= 'three']);
-		let unfixed hash_unfixed: [: int | float | str]      = Hash.<int | float | str>([a= 1, b= 2.0, c= 'three']);
+		let         dict_fixed:   [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, c= 'three']);
+		let unfixed dict_unfixed: [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, c= 'three']);
 
 		%% statements 4 – 10 %%
 		rec_fixed.a;   % type \`1\`       % value \`1\`
@@ -114,12 +114,12 @@ describe('ASTNodeAccess', () => {
 		rec_unfixed.c; % type \`str\`     % non-computable value
 
 		%% statements 10 – 16 %%
-		hash_fixed.a;   % type \`1\`                 % value \`1\`
-		hash_fixed.b;   % type \`2.0\`               % value \`2.0\`
-		hash_fixed.c;   % type \`'three'\`           % value \`'three'\`
-		hash_unfixed.a; % type \`int | float | str\` % non-computable value
-		hash_unfixed.b; % type \`int | float | str\` % non-computable value
-		hash_unfixed.c; % type \`int | float | str\` % non-computable value
+		dict_fixed.a;   % type \`1\`                 % value \`1\`
+		dict_fixed.b;   % type \`2.0\`               % value \`2.0\`
+		dict_fixed.c;   % type \`'three'\`           % value \`'three'\`
+		dict_unfixed.a; % type \`int | float | str\` % non-computable value
+		dict_unfixed.b; % type \`int | float | str\` % non-computable value
+		dict_unfixed.c; % type \`int | float | str\` % non-computable value
 
 		%% statements 16 – 24 %%
 		let         reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
@@ -141,8 +141,8 @@ describe('ASTNodeAccess', () => {
 		reco2_u?.b; % type \`str?\`    % non-computable value
 
 		%% statements 29 – 31 %%
-		hash_fixed?.c;   % type \`'three'\`                  % value \`'three'\`
-		hash_unfixed?.c; % type \`int | float | str | null\` % non-computable value
+		dict_fixed?.c;   % type \`'three'\`                  % value \`'three'\`
+		dict_unfixed?.c; % type \`int | float | str | null\` % non-computable value
 
 		%% statements 31 – 34 %%
 		reco1_f!.b; % type \`'three'\` % value \`'three'\`
@@ -453,7 +453,7 @@ describe('ASTNodeAccess', () => {
 					expected_o,
 				);
 			});
-			it('unions with null for hashes if access is optional.', () => {
+			it('unions with null for dicts if access is optional.', () => {
 				assert.deepStrictEqual(
 					program.children.slice(29, 31).map((c) => typeOfStmtExpr(c)),
 					[
@@ -478,10 +478,10 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d`)  .type(), TypeError04);
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d`) .type(), TypeError04);
 			});
-			it('returns the hash item type when key is out of bounds for hashes.', () => {
+			it('returns the dict item type when key is out of bounds for dicts.', () => {
 				const program: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
-					let unfixed hash: [: int | float | str] = Hash.<int | float| str>([a= 1, b= 2.0, c= 'three']);
-					hash.d;
+					let unfixed dict: [: int | float | str] = Dict.<int | float| str>([a= 1, b= 2.0, c= 'three']);
+					dict.d;
 				}`);
 				program.varCheck();
 				program.typeCheck();

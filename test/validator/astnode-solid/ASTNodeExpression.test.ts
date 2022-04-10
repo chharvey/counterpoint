@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
 	ASTNODE_SOLID as AST,
 	SolidType,
 	SolidTypeUnit,
@@ -57,7 +56,7 @@ describe('ASTNodeExpression', () => {
 					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-					${ (Dev.supports('stringConstant-assess')) ? `'42😀'  '42\\u{1f600}'` : `` }
+					'42😀'  '42\\u{1f600}'
 				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(src));
 				assert.deepStrictEqual(constants.map((c) => assert_wasCalled(c.fold, 1, (orig, spy) => {
 					c.fold = spy;
@@ -110,7 +109,7 @@ describe('ASTNodeExpression', () => {
 					-0, 6.8, 6.8, 0, -0,
 				].map((v) => new Float64(v)));
 			})
-			Dev.supports('stringConstant-assess') && it('computes string values.', () => {
+			it('computes string values.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeConstant.fromSource(`'42😀\\u{1f600}'`).type(),
 					typeConstStr('42😀\u{1f600}'),
@@ -336,7 +335,7 @@ describe('ASTNodeExpression', () => {
 
 
 
-	Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
+	describe('ASTNodeTemplate', () => {
 		describe('#type', () => {
 			let templates: readonly AST.ASTNodeTemplate[];
 			function initTemplates(config: SolidConfig = CONFIG_DEFAULT) {

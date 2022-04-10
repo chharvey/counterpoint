@@ -57,10 +57,10 @@ Type TypeValueOf(SemanticTypeList listtype) :=
 
 
 
-Type TypeValueOf(SemanticTypeHash hashtype) :=
-	1. *Assert:* `hashtype.children.count` is 1.
-	2. *Let* `valuetype` be *UnwrapAffirm:* `TypeValueOf(hashtype.children.0)`.
-	3. *Return:* a subtype of `Hash` whose values’ type is `valuetype`.
+Type TypeValueOf(SemanticTypeDict dicttype) :=
+	1. *Assert:* `dicttype.children.count` is 1.
+	2. *Let* `valuetype` be *UnwrapAffirm:* `TypeValueOf(dicttype.children.0)`.
+	3. *Return:* a subtype of `Dict` whose values’ type is `valuetype`.
 ;
 
 
@@ -112,15 +112,15 @@ Type TypeValueOf(SemanticTypeCall call) :=
 	1. *Assert:* `call.children.count` is greater than or equal to 2.
 	2. *Let* `base` be `call.children.0`.
 	3. *If* `base` is not a SemanticTypeAlias:
-		1. *Note:* Currently, the only allowed generic calls are `List.<T>`, `Hash.<T>`, `Set.<T>`, `Map.<K, V>`.
+		1. *Note:* Currently, the only allowed generic calls are `List.<T>`, `Dict.<T>`, `Set.<T>`, `Map.<K, V>`.
 		2. *Throw:* a new TypeError.
-	4. *If* `base.source` is one of "List", "Hash", or "Set":
+	4. *If* `base.source` is one of "List", "Dict", or "Set":
 		1. *If* `call.children.count` is 2:
 			1. *Let* `genericarg` be *UnwrapAffirm:* `TypeValueOf(call.children.1)`.
 			2. *If* `base.source` is "List":
 				1. *Return:* a subtype of `List` whose items’ type is `genericarg`.
-			3. *If* `base.source` is "Hash":
-				1. *Return:* a subtype of `Hash` whose values’ type is `genericarg`.
+			3. *If* `base.source` is "Dict":
+				1. *Return:* a subtype of `Dict` whose values’ type is `genericarg`.
 			4. *If* `base.source` is "Set":
 				1. *Return:* a subtype of `Set` whose elements’ type is `genericarg`.
 		2. *Throw:* a new TypeError.

@@ -101,7 +101,7 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 		2. *If* *UnwrapAffirm:* `Subtype(base_type, Record)` *and* `id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access)`.
-		3. *Else If* *UnwrapAffirm:* `Subtype(base_type, Hash)`:
+		3. *Else If* *UnwrapAffirm:* `Subtype(base_type, Dict)`:
 			1. *Let* `type` be the union of all value types in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access)`.
 		4. *Else:*
@@ -154,16 +154,16 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 	1. *Assert:* `call.children.count` is greater than or equal to 1.
 	2. *Let* `base` be `call.children.0`.
 	3. *If* `base` is not a SemanticVariable:
-		1. *Note:* Currently, the only allowed generics are `List.<T>(arg)`, `Hash.<T>(arg)`, `Set.<T>(arg)`, `Map.<K, V>(arg)`.
+		1. *Note:* Currently, the only allowed generics are `List.<T>(arg)`, `Dict.<T>(arg)`, `Set.<T>(arg)`, `Map.<K, V>(arg)`.
 		2. *Throw:* a new TypeError05.
-	4. *If* `base.source` is one of "List", "Hash", or "Set":
+	4. *If* `base.source` is one of "List", "Dict", or "Set":
 		1. *If* `call.children.count` is 2 or 3:
 			1. *If* `call.children.1` is a SemanticType:
 				1. *Let* `genericarg` be *UnwrapAffirm:* `TypeValueOf(call.children.1)`.
 				2. *If* `base.source` is "List":
 					1. *Let* `returntype` be a subtype of `List` whose items’ type is `genericarg`.
-				3. *Else If* `base.source` is "Hash":
-					1. *Let* `returntype` be a subtype of `Hash` whose values’ type is `genericarg`.
+				3. *Else If* `base.source` is "Dict":
+					1. *Let* `returntype` be a subtype of `Dict` whose values’ type is `genericarg`.
 				4. *Else If* `base.source` is "Set":
 					1. *Let* `returntype` be a subtype of `Set` whose elements’ type is `genericarg`.
 				5. *If* `call.children.count` is 3:
@@ -172,7 +172,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						2. *If* `base.source` is "List":
 							1. *If* `argtype` is not a subtype of `returntype`:
 								1. *Throw:* a new TypeError03.
-						3. *Else If* `base.source` is "Hash":
+						3. *Else If* `base.source` is "Dict":
 							1. *If* `argtype` is not a subtype of `returntype`:
 								1. *Throw:* a new TypeError03.
 						4. *Else If* `base.source` is "Set":

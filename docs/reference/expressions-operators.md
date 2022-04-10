@@ -243,7 +243,7 @@ the property it accesses is called the **bound property** (or index, field, memb
 There are two flavors of the operator: literal access and computed access.
 
 Literal access requires a literal (integer or word) and can be used to access a literal bound property.
-Tuples/lists take integer literal properties and records/hashes take word (key) properties.
+Tuples/lists take integer literal properties and records/dicts take word (key) properties.
 For example: `tuple.3` and `record.prop`.
 
 Computed access must be used when the bound property name is computed,
