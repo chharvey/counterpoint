@@ -3,7 +3,7 @@ import {
 	ASTNODE_SOLID as AST,
 	SolidType,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	TypeError05,
@@ -14,17 +14,17 @@ import {
 
 describe('ASTNodeTypeCall', () => {
 	describe('#eval', () => {
-		it('evaluates List, Hash, Set, and Map.', () => {
+		it('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
 				[
 					`List.<null>`,
-					`Hash.<bool>`,
+					`Dict.<bool>`,
 					`Set.<str>`,
 					`Map.<int, float>`,
 				].map((src) => AST.ASTNodeTypeCall.fromSource(src).eval()),
 				[
 					new SolidTypeList(SolidType.NULL),
-					new SolidTypeHash(SolidType.BOOL),
+					new SolidTypeDict(SolidType.BOOL),
 					new SolidTypeSet(SolidType.STR),
 					new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
 				],
@@ -39,7 +39,7 @@ describe('ASTNodeTypeCall', () => {
 		it('throws if base is not an ASTNodeTypeAlias.', () => {
 			[
 				`int.<str>`,
-				`(List | Hash).<bool>`,
+				`(List | Dict).<bool>`,
 			].forEach((src) => {
 				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeError05);
 			});
@@ -55,7 +55,7 @@ describe('ASTNodeTypeCall', () => {
 		it('throws when providing incorrect number of arguments.', () => {
 			[
 				`List.<null, null>`,
-				`Hash.<bool, bool, bool>`,
+				`Dict.<bool, bool, bool>`,
 				`Set.<str, str, str, str>`,
 				`Map.<int, int, int, int, int>`,
 			].forEach((src) => {

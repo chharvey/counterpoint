@@ -3,14 +3,14 @@ import {
 	SolidType,
 	SolidTypeTuple,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	SolidObject,
 	SolidTuple,
 	SolidRecord,
 	SolidList,
-	SolidHash,
+	SolidDict,
 	SolidSet,
 	SolidMap,
 	INST,
@@ -22,6 +22,10 @@ import {
 	CONFIG_DEFAULT,
 	PARSENODE,
 } from './package.js';
+import {
+	ValidFunctionName,
+	invalidFunctionName,
+} from './utils-private.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -45,7 +49,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	}
 	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
-		// (`this.base.source` must be `List | Hash | Set | Map`)
+		// (`this.base.source` must be a `ValidFunctionName`)
 		return forEachAggregated([
 			...this.typeargs,
 			...this.exprargs,
@@ -61,8 +65,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 		if (!(this.base instanceof ASTNodeVariable)) {
 			throw new TypeError05(this.base.type(), this.base);
 		}
-		return (new Map<string, () => SolidType>([
-			['List', () => {
+		return (new Map<ValidFunctionName, () => SolidType>([
+			[ValidFunctionName.LIST, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const returntype: SolidType = new SolidTypeList(this.typeargs[0].eval());
 				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
@@ -73,9 +77,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 				);
 				return returntype.mutableOf();
 			}],
-			['Hash', () => {
+			[ValidFunctionName.DICT, () => {
 				this.countArgs(1n, [0n, 2n]);
-				const returntype: SolidType = new SolidTypeHash(this.typeargs[0].eval());
+				const returntype: SolidType = new SolidTypeDict(this.typeargs[0].eval());
 				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
 					returntype,
 					this.exprargs[0],
@@ -84,7 +88,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				);
 				return returntype.mutableOf();
 			}],
-			['Set', () => {
+			[ValidFunctionName.SET, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const eltype:     SolidType = this.typeargs[0].eval();
 				const returntype: SolidType = new SolidTypeSet(eltype);
@@ -96,7 +100,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				);
 				return returntype.mutableOf();
 			}],
-			['Map', () => {
+			[ValidFunctionName.MAP, () => {
 				this.countArgs([1n, 3n], [0n, 2n]);
 				const anttype:    SolidType = this.typeargs[0].eval();
 				const contype:    SolidType = this.typeargs[1]?.eval() || anttype;
@@ -109,9 +113,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				);
 				return returntype.mutableOf();
 			}],
-		]).get(this.base.source) || (() => {
-			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Map\`.`);
-		}))();
+		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
 	}
 	protected override fold_do(): SolidObject | null {
 		const argvalue: SolidObject | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
@@ -120,12 +122,12 @@ export class ASTNodeCall extends ASTNodeExpression {
 		if (argvalue === null) {
 			return null;
 		}
-		return new Map<string, (argument: SolidObject | undefined) => SolidObject | null>([
-			['List', (tuple)  => (tuple === undefined)  ? new SolidList() : new SolidList((tuple as SolidTuple).items)],
-			['Hash', (record) => (record === undefined) ? new SolidHash() : new SolidHash((record as SolidRecord).properties)],
-			['Set',  (tuple)  => (tuple === undefined)  ? new SolidSet()  : new SolidSet(new Set<SolidObject>((tuple as SolidTuple).items))],
-			['Map',  (tuple)  => (tuple === undefined)  ? new SolidMap()  : new SolidMap(new Map<SolidObject, SolidObject>((tuple as SolidTuple).items.map((pair) => (pair as SolidTuple).items as [SolidObject, SolidObject])))],
-		]).get(this.base.source)!(argvalue);
+		return new Map<ValidFunctionName, (argument: SolidObject | undefined) => SolidObject | null>([
+			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new SolidList() : new SolidList((tuple as SolidTuple).items)],
+			[ValidFunctionName.DICT, (record) => (record === undefined) ? new SolidDict() : new SolidDict((record as SolidRecord).properties)],
+			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new SolidSet()  : new SolidSet(new Set<SolidObject>((tuple as SolidTuple).items))],
+			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new SolidMap()  : new SolidMap(new Map<SolidObject, SolidObject>((tuple as SolidTuple).items.map((pair) => (pair as SolidTuple).items as [SolidObject, SolidObject])))],
+		]).get(this.base.source as ValidFunctionName)!(argvalue);
 	}
 	/**
 	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,

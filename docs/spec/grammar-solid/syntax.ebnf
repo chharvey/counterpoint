@@ -50,7 +50,7 @@ PropertiesType
 
 TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
 TypeRecordLiteral ::= "["  ","? PropertiesType "]";
-TypeHashLiteral   ::= "[" ":" Type             "]";
+TypeDictLiteral   ::= "[" ":" Type             "]";
 TypeMapLiteral    ::= "{" Type "->" Type       "}";
 GenericArguments  ::= "<"  ","? Type# ","?     ">";
 
@@ -60,7 +60,7 @@ TypeUnit ::=
 	| TypeKeyword
 	| TypeTupleLiteral
 	| TypeRecordLiteral
-	| TypeHashLiteral
+	| TypeDictLiteral
 	| TypeMapLiteral
 	| "(" Type ")"
 ;
