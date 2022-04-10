@@ -256,7 +256,7 @@ Boolean Equal(Object a, Object b) :=
 			1. *If* *UnwrapAffirm*: `Equal(seq_a[i], seq_b[i])` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
-	5. *If* `a` is an instance of `Record` or `Hash` *and* `b` is an instance of `Record` or `Hash`:
+	5. *If* `a` is an instance of `Record` or `Dict` *and* `b` is an instance of `Record` or `Dict`:
 		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
 		3. *If* `struct_a.count` is not `struct_b.count`:

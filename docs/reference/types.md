@@ -475,7 +475,7 @@ Type              | Size     | Indices/Keys  | Generic Type Syntax | Explicit Ty
 [Tuple](#tuple)   | Fixed    | integers      | *(none)*            | `[str, str, str]` / `str[3]` | *(none)*                                     | `['x', 'y', 'z']`                      | `[]`
 [Record](#record) | Fixed    | words         | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= 'x', b= 'y', c= 'z']`             | *(none)*
 [List](#list)     | Variable | integers      | `List.<str>`        | `str[]`                      | `List.(['x', 'y', 'z'])`                     | *(none)*                               | *(none)*
-[Hash](#hash)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                     | `Dict.([a= 'x', b= 'y', c= 'z'])`            | *(none)*                               | *(none)*
+[Dict](#dict)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                     | `Dict.([a= 'x', b= 'y', c= 'z'])`            | *(none)*                               | *(none)*
 [Set](#set)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                      | `Set.(['x', 'y', 'z'])`                      | `{'x', 'y', 'z'}`                      | `{}`
 [Map](#map)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`               | `Map.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' -> 'x', 'v' -> 'y', 'w' -> 'z'}` | *(none)*
 
@@ -797,12 +797,12 @@ and if the list were mutable, we could reassign that entry to an integer or bool
 List access is the same as [Tuple Access](#tuple-access).
 
 
-### Hash
-Hashes are variable-size unordered lists of keyed values. Key–value pairs are called **properties**,
+### Dict
+Dicts (dictionaries) are variable-size unordered lists of keyed values. Key–value pairs are called **properties**,
 where **keys** are keywords or identifiers, and **values** are expressions.
-The number of properties in a record is called its **count**; the count of a hash is variable and unknown at compile-time.
-Hashes are homogeneous, meaning all entries in the hash have the same type (or parent type).
-If a hash is mutable, the entries of the hash may be reassigned, and properties may be added and removed from the hash as well.
+The number of properties in a record is called its **count**; the count of a dict is variable and unknown at compile-time.
+Dicts are homogeneous, meaning all entries in the dict have the same type (or parent type).
+If a dict is mutable, the entries of the dict may be reassigned, and properties may be added and removed from the dict as well.
 
 Dict types are declared via the generic dict type syntax: `Dict.<T>`
 where `T` indicates the type of values in the dict.
@@ -817,8 +817,8 @@ let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
 ]);
 ```
 A shorthand for the generic syntax `Dict.<T>` is `[:T]`.
-We can also *initialize* a hash with a record literal,
-because records are generally assignable to hashes.
+We can also *initialize* a dict with a record literal,
+because records are generally assignable to dicts.
 ```
 let my_styles: [: int | float | str] = [
 	fontFamily= 'sans-serif',
@@ -829,8 +829,8 @@ let my_styles: [: int | float | str] = [
 ```
 As shown above, we can mix value types, but the dict type must be homogeneous.
 
-#### Hash Access
-Hash access is the same as [Record Access](#record-access).
+#### Dict Access
+Dict access is the same as [Record Access](#record-access).
 
 
 ### Set

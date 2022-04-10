@@ -21,7 +21,7 @@ import {
 	SolidTuple,
 	SolidRecord,
 	SolidList,
-	SolidHash,
+	SolidDict,
 	SolidSet,
 	SolidMap,
 } from '../../src/typer/index.js';
@@ -454,9 +454,9 @@ describe('SolidType', () => {
 					SolidType.STR.union(SolidType.FLOAT),
 				].map((t) => new SolidTypeDict(t));
 				new Map<SolidObject, SolidTypeDict>([
-					[new SolidHash  (input[0]), output[0]],
-					[new SolidHash  (input[1]), output[1]],
-					[new SolidHash  (input[2]), output[2]],
+					[new SolidDict  (input[0]), output[0]],
+					[new SolidDict  (input[1]), output[1]],
+					[new SolidDict  (input[2]), output[2]],
 					[new SolidRecord(input[0]), output[0]],
 					[new SolidRecord(input[1]), output[1]],
 					[new SolidRecord(input[2]), output[2]],

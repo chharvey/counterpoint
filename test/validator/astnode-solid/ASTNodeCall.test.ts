@@ -11,7 +11,7 @@ import {
 	Int16,
 	Float64,
 	SolidList,
-	SolidHash,
+	SolidDict,
 	SolidSet,
 	SolidMap,
 } from '../../../src/typer/index.js';
@@ -149,7 +149,7 @@ describe('ASTNodeCall', () => {
 						new Int16(2n),
 						new Int16(3n),
 					]),
-					new SolidHash<Int16>(new Map<bigint, Int16>([
+					new SolidDict<Int16>(new Map<bigint, Int16>([
 						[0x101n, new Int16(1n)], // 0x100n is "Dict"
 						[0x102n, new Int16(2n)],
 						[0x103n, new Int16(3n)],
@@ -210,7 +210,7 @@ describe('ASTNodeCall', () => {
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
 					new SolidList<never>(),
-					new SolidHash<never>(),
+					new SolidDict<never>(),
 					new SolidSet<never>(),
 					new SolidMap<never, never>(),
 					new SolidList<never>(),

@@ -305,9 +305,9 @@ The objects that any given List Type contains are `List` objects whose
 items are assignable to the type describing the List Type.
 
 #### Dict Type
-A **Dict Type** contains [`Hash` objects](./intrinsics.md#hash) and is described by a single type,
+A **Dict Type** contains [`Dict` objects](./intrinsics.md#dict) and is described by a single type,
 representing values.
-The objects that any given Dict Type contains are `Hash` objects whose
+The objects that any given Dict Type contains are `Dict` objects whose
 values are assignable to the type describing the Dict Type.
 
 #### Set Type

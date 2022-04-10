@@ -1,7 +1,7 @@
 import {
 	SolidObject,
 	SolidRecord,
-	SolidHash,
+	SolidDict,
 } from './index.js';
 import {SolidType} from './SolidType.js';
 
@@ -19,7 +19,7 @@ export class SolidTypeDict extends SolidType {
 		readonly types: SolidType,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new SolidHash()]));
+		super(is_mutable, new Set([new SolidDict()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -32,7 +32,7 @@ export class SolidTypeDict extends SolidType {
 
 	override includes(v: SolidObject): boolean {
 		return (
-			   v instanceof SolidHash   && v.toType().isSubtypeOf(this)
+			   v instanceof SolidDict   && v.toType().isSubtypeOf(this)
 			|| v instanceof SolidRecord && v.toType().isSubtypeOf(this)
 		);
 	}

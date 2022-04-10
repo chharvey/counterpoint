@@ -24,7 +24,7 @@ import {
 	SolidTuple,
 	SolidRecord,
 	SolidList,
-	SolidHash,
+	SolidDict,
 	SolidSet,
 	SolidMap,
 	INST,
@@ -101,8 +101,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					? base_type.value.toType()
 					: base_type as SolidTypeRecord;
 				return base_type_record.get(this.accessor.id, this.kind, this.accessor);
-			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidHash || base_type instanceof SolidTypeDict) {
-				const base_type_dict: SolidTypeDict = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidHash)
+			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidDict || base_type instanceof SolidTypeDict) {
+				const base_type_dict: SolidTypeDict = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidDict)
 					? base_type.value.toType()
 					: base_type as SolidTypeDict;
 				return updateAccessedDynamicType(base_type_dict.types, this.kind);

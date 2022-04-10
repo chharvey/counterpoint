@@ -10,7 +10,7 @@ import {
 	SolidTuple,
 	SolidRecord,
 	SolidList,
-	SolidHash,
+	SolidDict,
 	SolidSet,
 	SolidMap,
 	INST,
@@ -124,7 +124,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		}
 		return new Map<ValidFunctionName, (argument: SolidObject | undefined) => SolidObject | null>([
 			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new SolidList() : new SolidList((tuple as SolidTuple).items)],
-			[ValidFunctionName.DICT, (record) => (record === undefined) ? new SolidHash() : new SolidHash((record as SolidRecord).properties)],
+			[ValidFunctionName.DICT, (record) => (record === undefined) ? new SolidDict() : new SolidDict((record as SolidRecord).properties)],
 			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new SolidSet()  : new SolidSet(new Set<SolidObject>((tuple as SolidTuple).items))],
 			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new SolidMap()  : new SolidMap(new Map<SolidObject, SolidObject>((tuple as SolidTuple).items.map((pair) => (pair as SolidTuple).items as [SolidObject, SolidObject])))],
 		]).get(this.base.source as ValidFunctionName)!(argvalue);

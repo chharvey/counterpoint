@@ -6,7 +6,7 @@ import {CollectionKeyed} from './CollectionKeyed.js';
 
 
 
-export class SolidHash<T extends SolidObject = SolidObject> extends CollectionKeyed<T> {
+export class SolidDict<T extends SolidObject = SolidObject> extends CollectionKeyed<T> {
 	override toString(): string {
 		return `Dict.(${ super.toString() })`;
 	}
