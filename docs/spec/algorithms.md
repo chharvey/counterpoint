@@ -256,7 +256,7 @@ Boolean Equal(Object a, Object b) :=
 			1. *If* *UnwrapAffirm*: `Equal(seq_a[i], seq_b[i])` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
-	5. *If* `a` is an instance of `Record` or `Hash` *and* `b` is an instance of `Record` or `Hash`:
+	5. *If* `a` is an instance of `Record` or `Dict` *and* `b` is an instance of `Record` or `Dict`:
 		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
 		3. *If* `struct_a.count` is not `struct_b.count`:
@@ -397,15 +397,15 @@ Boolean Subtype(Type a, Type b) :=
 				1. *Let* `ai` be the union of types in `a`.
 				2. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
 					1. *Return:* `true`.
-	13. *If* `Equal(b, Hash)`:
+	13. *If* `Equal(b, Dict)`:
 		1. *Let* `bv` be the union of value types in `b`.
 		2. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* `Equal(a, Hash)`:
+			1. *If* `a` is mutable *and* `Equal(a, Dict)`:
 				1. *Let* `av` be the union of value types in `a`.
 				2. *If* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
 					1. *Return:* `true`.
 		3. *Else:*
-			1. *If* `Equal(a, Hash)` *or* `Equal(a, Record)`:
+			1. *If* `Equal(a, Dict)` *or* `Equal(a, Record)`:
 				1. *Let* `av` be the union of value types in `a`.
 				2. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 					1. *Return:* `true`.
@@ -578,10 +578,10 @@ If the bound property is optional: Under claim access, subtracts Void; under opt
 ```
 Type UpdateAccessedStaticType(EntryTypeStructure entry, SemanticAccess access) :=
 	1. *Let* `type` be `entry.type`.
-	2. *If*: `access.kind` is `CLAIM`:
+	2. *If* `access.kind` is `CLAIM`:
 		1. *Return:* `Difference(type, Void)`.
-	3. *If*: `entry.optional` is `true`:
-		1. *If*: `access.kind` is `OPTIONAL`:
+	3. *If* `entry.optional` is `true`:
+		1. *If* `access.kind` is `OPTIONAL`:
 			1. *Return:* `Union(type, Null)`.
 		2. *Return:* `Union(type, Void)`.
 	4. *Return:* `type`.
@@ -595,10 +595,11 @@ Modifies the type of an accessed bound property of a dynamic data type.
 Under claim access, subtracts Void; under optional access, unions with Null; else returns unmodified type.
 ```
 Type UpdateAccessedDynamicType(Type type, SemanticAccess access) :=
-	1. *If*: `access.kind` is `OPTIONAL`:
-		1. *Return:* `Union(type, Null)`.
-	2. *If*: `access.kind` is `CLAIM`:
+	1. *If* `access.kind` is `CLAIM`:
 		1. *Return:* `Difference(type, Void)`.
-	3. *Return:* `type`.
+	2. *Else If* `access.kind` is `OPTIONAL`:
+		1. *Return:* `Union(type, Null)`.
+	3. *Else:*
+		1. *Return:* `type`.
 ;
 ```

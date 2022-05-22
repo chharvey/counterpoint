@@ -20,6 +20,7 @@ import {
 } from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
+	CONFIG_COERCION_OFF,
 	instructionConstInt,
 	instructionConstFloat,
 	typeConstInt,
@@ -102,7 +103,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('disallows assigning a constructor call to a wider mutable type.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let a: mutable int[]         = List.<42>([42]);
-				let b: mutable [:int]        = Hash.<42>([x= 42]);
+				let b: mutable [:int]        = Dict.<42>([x= 42]);
 				let c: mutable int{}         = Set.<42>([42]);
 				let d: mutable {bool -> int} = Map.<true, 42>([[true, 42]]);
 			`);
@@ -115,7 +116,7 @@ describe('ASTNodeDeclarationVariable', () => {
 					cons: AggregateError,
 					errors: [
 						{cons: TypeError03, message: 'Expression of type mutable List.<42> is not assignable to type mutable List.<int>.'},
-						{cons: TypeError03, message: 'Expression of type mutable Hash.<42> is not assignable to type mutable Hash.<int>.'},
+						{cons: TypeError03, message: 'Expression of type mutable Dict.<42> is not assignable to type mutable Dict.<int>.'},
 						{cons: TypeError03, message: 'Expression of type mutable Set.<42> is not assignable to type mutable Set.<int>.'},
 						{cons: TypeError03, message: 'Expression of type mutable Map.<true, 42> is not assignable to type mutable Map.<bool, int>.'},
 					],
@@ -123,7 +124,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				return true;
 			});
 		});
-		it('allows assigning a tuple/record collection literal to a corresponding list/hash type.', () => {
+		it('allows assigning a tuple/record collection literal to a corresponding list/dict type.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let t1: mutable 42[]  = [42];
 				let r1: mutable [:42] = [x= 42];
@@ -171,13 +172,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('with int coersion off, throws when assigning int to float.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
-			`, {
-				...CONFIG_DEFAULT,
-				compilerOptions: {
-					...CONFIG_DEFAULT.compilerOptions,
-					intCoercion: false,
-				},
-			}).typeCheck(), TypeError03);
+			`, CONFIG_COERCION_OFF).typeCheck(), TypeError03);
 		})
 		it('with constant folding on, only sets `SymbolStructure#value` if type is immutable and variable is fixed.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde);

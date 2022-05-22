@@ -31,7 +31,7 @@ SemanticType =:=
 	| SemanticTypeTuple
 	| SemanticTypeRecord
 	| SemanticTypeList
-	| SemanticTypeHash
+	| SemanticTypeDict
 	| SemanticTypeSet
 	| SemanticTypeMap
 	| SemanticTypeAccess
@@ -49,7 +49,7 @@ SemanticTypeAlias[id: RealNumber]
 
 SemanticTypeTuple  ::= SemanticItemType*;
 SemanticTypeRecord ::= SemanticPropertyType+;
-SemanticTypeHash   ::= SemanticType;
+SemanticTypeDict   ::= SemanticType;
 SemanticTypeSet    ::= SemanticType;
 SemanticTypeMap    ::= SemanticType SemanticType;
 SemanticTypeList[count: RealNumber | None]
@@ -78,6 +78,7 @@ SemanticExpression =:=
 	| SemanticMap
 	| SemanticCall
 	| SemanticAccess
+	| SemanticClaim
 	| SemanticOperation
 ;
 
@@ -106,6 +107,9 @@ SemanticAccess[kind: NORMAL | OPTIONAL | CLAIM]
 SemanticCall
 	::= SemanticExpression SemanticType* SemanticExpression*;
 
+SemanticClaim
+	::= SemanticType SemanticExpression;
+
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
 SemanticOperation[operator: NEG]
@@ -122,15 +126,10 @@ SemanticOperation[operator: COND]
 
 
 SemanticStatement =:=
-	| SemanticStatementExpression
 	| SemanticDeclaration
+	| SemanticStatementExpression
 	| SemanticAssignment
 ;
-
-
-
-SemanticStatementExpression
-	::= SemanticExpression?;
 
 
 
@@ -144,6 +143,11 @@ SemanticDeclarationType
 
 SemanticDeclarationVariable[unfixed: Boolean]
 	::= SemanticVariable SemanticType SemanticExpression;
+
+
+
+SemanticStatementExpression
+	::= SemanticExpression?;
 
 
 

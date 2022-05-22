@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
 	ASTNODE_SOLID as AST,
 	SolidType,
 	SolidTypeUnit,
@@ -25,10 +24,12 @@ import {
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
+	TypeError03,
 } from '../../../src/index.js';
 import {assert_wasCalled} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
+	CONFIG_COERCION_OFF,
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
@@ -52,10 +53,10 @@ describe('ASTNodeExpression', () => {
 				const constants: AST.ASTNodeConstant[] = `
 					null  false  true
 					55  -55  033  -033  0  -0
-					55.  -55.  033.  -033.  2.007  -2.007
+					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
-					0.  -0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-					${ (Dev.supports('stringConstant-assess')) ? `'42😀'  '42\\u{1f600}'` : `` }
+					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+					'42😀'  '42\\u{1f600}'
 				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
 				assert.deepStrictEqual(constants.map((c) => assert_wasCalled(c.fold, 1, (orig, spy) => {
 					c.fold = spy;
@@ -99,16 +100,16 @@ describe('ASTNodeExpression', () => {
 			});
 			it('computes float values.', () => {
 				assert.deepStrictEqual(`
-					55.  -55.  033.  -033.  2.007  -2.007
+					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
-					0.  -0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).fold()), [
-					55, -55, 33, -33, 2.007, -2.007,
+					2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
-					0, -0, -0, 6.8, 6.8, 0, -0,
+					-0, 6.8, 6.8, 0, -0,
 				].map((v) => new Float64(v)));
 			})
-			Dev.supports('stringConstant-assess') && it('computes string values.', () => {
+			it('computes string values.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeConstant.fromSource(`'42😀\\u{1f600}';`).type(),
 					typeConstStr('42😀\u{1f600}'),
@@ -301,7 +302,7 @@ describe('ASTNodeExpression', () => {
 
 
 
-	Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
+	describe('ASTNodeTemplate', () => {
 		describe('#type', () => {
 			let templates: readonly AST.ASTNodeTemplate[];
 			function initTemplates(config: SolidConfig = CONFIG_DEFAULT) {
@@ -505,6 +506,69 @@ describe('ASTNodeExpression', () => {
 				);
 			});
 			// TODO: SolidSet overwrites duplicate elements. // move this to SolidType.test.ts
+		});
+	});
+
+
+
+	describe('ASTNodeClaim', () => {
+		const samples: string[] = [
+			`null;`,
+			`false;`,
+			`true;`,
+			`0;`,
+			`+0;`,
+			`-0;`,
+			`42;`,
+			`+42;`,
+			`-42;`,
+			`0.0;`,
+			`+0.0;`,
+			`-0.0;`,
+			`-4.2e-2;`,
+		];
+		describe('#type', () => {
+			it('returns the type value of the claimed type.', () => {
+				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3;`).type().equals(SolidType.INT.union(SolidType.NULL)));
+			});
+			it('throws when the operand type and claimed type do not overlap.', () => {
+				assert.throws(() => AST.ASTNodeClaim.fromSource(`<str>3;`)      .type(), TypeError03);
+				assert.throws(() => AST.ASTNodeClaim.fromSource(`<int>'three';`).type(), TypeError03);
+			});
+			it('with int coersion off, does not allow converting between int and float.', () => {
+				AST.ASTNodeClaim.fromSource(`<float>3;`).type(); // assert does not throw
+				AST.ASTNodeClaim.fromSource(`<int>3.0;`).type(); // assert does not throw
+				assert.throws(() => AST.ASTNodeClaim.fromSource(`<float>3;`, CONFIG_COERCION_OFF).type(), TypeError03);
+				assert.throws(() => AST.ASTNodeClaim.fromSource(`<int>3.0;`, CONFIG_COERCION_OFF).type(), TypeError03);
+			});
+		});
+
+
+		describe('#fold', () => {
+			it('returns the fold of the operand.', () => {
+				samples.forEach((expr) => {
+					const src: string = `<obj>${ expr }`;
+					assert.deepStrictEqual(
+						AST.ASTNodeClaim     .fromSource(src) .fold(),
+						AST.ASTNodeExpression.fromSource(expr).fold(),
+						expr,
+					);
+				});
+			});
+		});
+
+
+		describe('#build', () => {
+			it('returns the build of the operand.', () => {
+				samples.forEach((expr) => {
+					const src: string = `<obj>${ expr }`;
+					assert.deepStrictEqual(
+						AST.ASTNodeClaim     .fromSource(src) .build(new Builder(src)),
+						AST.ASTNodeExpression.fromSource(expr).build(new Builder(expr)),
+						expr,
+					);
+				});
+			});
 		});
 	});
 });

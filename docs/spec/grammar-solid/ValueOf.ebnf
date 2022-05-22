@@ -87,7 +87,7 @@ Object! ValueOf(SemanticAccess access) :=
 			1. *Assert:* `id` is a key in `base_value`.
 			2. *Return:* the value accessed at key `id` in `base_value`.
 		3. *Else:*
-			1. *Assert:* `base_value` is an instance of `Hash`.
+			1. *Assert:* `base_value` is an instance of `Dict`.
 			2. *If* `id` is a key in `base_value`:
 				1. *Return:* the value accessed at key `id` in `base_value`.
 			3. *If* `access.kind` is `OPTIONAL`:
@@ -132,14 +132,14 @@ Object! ValueOf(SemanticCall call) :=
 		3. *Note:* The call looks like "List.<T>(arg)".
 		4. *Let* `tuple` be *Unwrap:* `ValueOf(call.children.2)`.
 		5. *Return:* a new List containing the items in `tuple`.
-	5. *Else If* `base.source` is "Hash":
+	5. *Else If* `base.source` is "Dict":
 		1. *Assert:* `call.children.count` is 2 or 3.
 		2. *If* `call.children.count` is 2:
-			1. *Note:* The call looks like "Hash.<T>()".
-			2. *Return:* a new empty Hash.
-		3. *Note:* The call looks like "Hash.<T>(arg)".
+			1. *Note:* The call looks like "Dict.<T>()".
+			2. *Return:* a new empty Dict.
+		3. *Note:* The call looks like "Dict.<T>(arg)".
 		4. *Let* `record` be *Unwrap:* `ValueOf(call.children.2)`.
-		5. *Return:* a new Hash containing the properties in `record`.
+		5. *Return:* a new Dict containing the properties in `record`.
 	6. *Else If* `base.source` is "Set":
 		1. *Assert:* `call.children.count` is 2 or 3.
 		2. *If* `call.children.count` is 2:
@@ -168,6 +168,13 @@ Object! ValueOf(SemanticCall call) :=
 
 
 
+Object! ValueOf(SemanticClaim claim) :=
+	1. *Assert:* `claim.children.count` is 2.
+	2. *Return:* `ValueOf(claim.children.1)`.
+;
+
+
+
 Boolean! ValueOf(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `ValueOf(expr.children.0)`.
@@ -187,7 +194,7 @@ Boolean! ValueOf(SemanticOperation[operator: EMP] expr) :=
 		1. *Return:* `true`.
 	6. *If* `operand` is an instance of `String` *and* `operand` contains 0 codepoints:
 		1. *Return:* `true`.
-	7. *If* `operand` is an instance of `Tuple` or `Record` or `List` or `Hash` or `Set` or `Map` *and* `operand.count` is 0:
+	7. *If* `operand` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `operand.count` is 0:
 		1. *Return:* `true`.
 	8. *Return:* `false`.
 ;

@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
 	Operator,
 	ASTNODE_SOLID as AST,
 	SolidType,
@@ -22,6 +21,7 @@ import {
 } from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
+	CONFIG_FOLDING_COERCION_OFF,
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
@@ -31,14 +31,6 @@ import {
 
 
 
-const CONFIG_FOLDING_COERCION_OFF: SolidConfig = {
-	...CONFIG_DEFAULT,
-	compilerOptions: {
-		...CONFIG_DEFAULT.compilerOptions,
-		constantFolding: false,
-		intCoercion: false,
-	},
-};
 function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: SolidConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type()),
@@ -231,26 +223,22 @@ describe('ASTNodeOperation', () => {
 		describe('#fold', () => {
 			specify('[operator=NOT]', () => {
 				foldOperations(new Map([
-					[`!false;`,  SolidBoolean.TRUE],
-					[`!true;`,   SolidBoolean.FALSE],
-					[`!null;`,   SolidBoolean.TRUE],
-					[`!0;`,      SolidBoolean.FALSE],
-					[`!42;`,     SolidBoolean.FALSE],
-					[`!0.0;`,    SolidBoolean.FALSE],
-					[`!-0.0;`,   SolidBoolean.FALSE],
-					[`!4.2e+1;`, SolidBoolean.FALSE],
-				]));
-				Dev.supports('stringConstant-assess') && foldOperations(new Map([
-					[`!'';`,      SolidBoolean.FALSE],
-					[`!'hello';`, SolidBoolean.FALSE],
-				]));
-				foldOperations(new Map([
+					[`!false;`,               SolidBoolean.TRUE],
+					[`!true;`,                SolidBoolean.FALSE],
+					[`!null;`,                SolidBoolean.TRUE],
+					[`!0;`,                   SolidBoolean.FALSE],
+					[`!42;`,                  SolidBoolean.FALSE],
+					[`!0.0;`,                 SolidBoolean.FALSE],
+					[`!-0.0;`,                SolidBoolean.FALSE],
+					[`!4.2e+1;`,              SolidBoolean.FALSE],
+					[`!'';`,                  SolidBoolean.FALSE],
+					[`!'hello';`,             SolidBoolean.FALSE],
 					[`![];`,                  SolidBoolean.FALSE],
 					[`![42];`,                SolidBoolean.FALSE],
 					[`![a= 42];`,             SolidBoolean.FALSE],
 					[`!List.<int>([]);`,      SolidBoolean.FALSE],
 					[`!List.<int>([42]);`,    SolidBoolean.FALSE],
-					[`!Hash.<int>([a= 42]);`, SolidBoolean.FALSE],
+					[`!Dict.<int>([a= 42]);`, SolidBoolean.FALSE],
 					[`!{};`,                  SolidBoolean.FALSE],
 					[`!{42};`,                SolidBoolean.FALSE],
 					[`!{41 -> 42};`,          SolidBoolean.FALSE],
@@ -258,26 +246,22 @@ describe('ASTNodeOperation', () => {
 			});
 			specify('[operator=EMP]', () => {
 				foldOperations(new Map([
-					[`?false;`,  SolidBoolean.TRUE],
-					[`?true;`,   SolidBoolean.FALSE],
-					[`?null;`,   SolidBoolean.TRUE],
-					[`?0;`,      SolidBoolean.TRUE],
-					[`?42;`,     SolidBoolean.FALSE],
-					[`?0.0;`,    SolidBoolean.TRUE],
-					[`?-0.0;`,   SolidBoolean.TRUE],
-					[`?4.2e+1;`, SolidBoolean.FALSE],
-				]));
-				Dev.supports('stringConstant-assess') && foldOperations(new Map([
-					[`?'';`,      SolidBoolean.TRUE],
-					[`?'hello';`, SolidBoolean.FALSE],
-				]));
-				foldOperations(new Map([
+					[`?false;`,               SolidBoolean.TRUE],
+					[`?true;`,                SolidBoolean.FALSE],
+					[`?null;`,                SolidBoolean.TRUE],
+					[`?0;`,                   SolidBoolean.TRUE],
+					[`?42;`,                  SolidBoolean.FALSE],
+					[`?0.0;`,                 SolidBoolean.TRUE],
+					[`?-0.0;`,                SolidBoolean.TRUE],
+					[`?4.2e+1;`,              SolidBoolean.FALSE],
+					[`?'';`,                  SolidBoolean.TRUE],
+					[`?'hello';`,             SolidBoolean.FALSE],
 					[`?[];`,                  SolidBoolean.TRUE],
 					[`?[42];`,                SolidBoolean.FALSE],
 					[`?[a= 42];`,             SolidBoolean.FALSE],
 					[`?List.<int>([]);`,      SolidBoolean.TRUE],
 					[`?List.<int>([42]);`,    SolidBoolean.FALSE],
-					[`?Hash.<int>([a= 42]);`, SolidBoolean.FALSE],
+					[`?Dict.<int>([a= 42]);`, SolidBoolean.FALSE],
 					[`?{};`,                  SolidBoolean.TRUE],
 					[`?{42};`,                SolidBoolean.FALSE],
 					[`?{41 -> 42};`,          SolidBoolean.FALSE],
@@ -355,7 +339,7 @@ describe('ASTNodeOperation', () => {
 					`false - 2;`,
 					`2 / true;`,
 					`null ^ false;`,
-					...(Dev.supports('stringConstant-assess') ? [`'hello' + 5;`] : []),
+					`'hello' + 5;`,
 				].forEach((src) => {
 					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).type(), TypeError01);
 				});
@@ -567,38 +551,36 @@ describe('ASTNodeOperation', () => {
 		describe('#fold', () => {
 			it('simple types.', () => {
 				foldOperations(new Map([
-					[`null === null;`, SolidBoolean.TRUE],
-					[`null ==  null;`, SolidBoolean.TRUE],
-					[`null === 5;`,    SolidBoolean.FALSE],
-					[`null ==  5;`,    SolidBoolean.FALSE],
-					[`true === 1;`,    SolidBoolean.FALSE],
-					[`true ==  1;`,    SolidBoolean.FALSE],
-					[`true === 1.0;`,  SolidBoolean.FALSE],
-					[`true ==  1.0;`,  SolidBoolean.FALSE],
-					[`true === 5.1;`,  SolidBoolean.FALSE],
-					[`true ==  5.1;`,  SolidBoolean.FALSE],
-					[`true === true;`, SolidBoolean.TRUE],
-					[`true ==  true;`, SolidBoolean.TRUE],
-					[`3.0 === 3;`,     SolidBoolean.FALSE],
-					[`3.0 ==  3;`,     SolidBoolean.TRUE],
-					[`3 === 3.0;`,     SolidBoolean.FALSE],
-					[`3 ==  3.0;`,     SolidBoolean.TRUE],
-					[`0.0 === 0.0;`,   SolidBoolean.TRUE],
-					[`0.0 ==  0.0;`,   SolidBoolean.TRUE],
-					[`0.0 === -0.0;`,  SolidBoolean.FALSE],
-					[`0.0 ==  -0.0;`,  SolidBoolean.TRUE],
-					[`0 === -0;`,      SolidBoolean.TRUE],
-					[`0 ==  -0;`,      SolidBoolean.TRUE],
-					[`0.0 === 0;`,     SolidBoolean.FALSE],
-					[`0.0 ==  0;`,     SolidBoolean.TRUE],
-					[`0.0 === -0;`,    SolidBoolean.FALSE],
-					[`0.0 ==  -0;`,    SolidBoolean.TRUE],
-					[`-0.0 === 0;`,    SolidBoolean.FALSE],
-					[`-0.0 ==  0;`,    SolidBoolean.TRUE],
-					[`-0.0 === 0.0;`,  SolidBoolean.FALSE],
-					[`-0.0 ==  0.0;`,  SolidBoolean.TRUE],
-				]));
-				Dev.supports('stringConstant-assess') && foldOperations(new Map([
+					[`null === null;`,                          SolidBoolean.TRUE],
+					[`null ==  null;`,                          SolidBoolean.TRUE],
+					[`null === 5;`,                             SolidBoolean.FALSE],
+					[`null ==  5;`,                             SolidBoolean.FALSE],
+					[`true === 1;`,                             SolidBoolean.FALSE],
+					[`true ==  1;`,                             SolidBoolean.FALSE],
+					[`true === 1.0;`,                           SolidBoolean.FALSE],
+					[`true ==  1.0;`,                           SolidBoolean.FALSE],
+					[`true === 5.1;`,                           SolidBoolean.FALSE],
+					[`true ==  5.1;`,                           SolidBoolean.FALSE],
+					[`true === true;`,                          SolidBoolean.TRUE],
+					[`true ==  true;`,                          SolidBoolean.TRUE],
+					[`3.0 === 3;`,                              SolidBoolean.FALSE],
+					[`3.0 ==  3;`,                              SolidBoolean.TRUE],
+					[`3 === 3.0;`,                              SolidBoolean.FALSE],
+					[`3 ==  3.0;`,                              SolidBoolean.TRUE],
+					[`0.0 === 0.0;`,                            SolidBoolean.TRUE],
+					[`0.0 ==  0.0;`,                            SolidBoolean.TRUE],
+					[`0.0 === -0.0;`,                           SolidBoolean.FALSE],
+					[`0.0 ==  -0.0;`,                           SolidBoolean.TRUE],
+					[`0 === -0;`,                               SolidBoolean.TRUE],
+					[`0 ==  -0;`,                               SolidBoolean.TRUE],
+					[`0.0 === 0;`,                              SolidBoolean.FALSE],
+					[`0.0 ==  0;`,                              SolidBoolean.TRUE],
+					[`0.0 === -0;`,                             SolidBoolean.FALSE],
+					[`0.0 ==  -0;`,                             SolidBoolean.TRUE],
+					[`-0.0 === 0;`,                             SolidBoolean.FALSE],
+					[`-0.0 ==  0;`,                             SolidBoolean.TRUE],
+					[`-0.0 === 0.0;`,                           SolidBoolean.FALSE],
+					[`-0.0 ==  0.0;`,                           SolidBoolean.TRUE],
 					[`'' == '';`,                               SolidBoolean.TRUE],
 					[`'a' === 'a';`,                            SolidBoolean.TRUE],
 					[`'a' ==  'a';`,                            SolidBoolean.TRUE],
@@ -617,7 +599,7 @@ describe('ASTNodeOperation', () => {
 					let c: obj = [x= 42];
 					let d: obj = List.<int>([]);
 					let e: obj = List.<int>([42]);
-					let f: obj = Hash.<int>([x= 42]);
+					let f: obj = Dict.<int>([x= 42]);
 					let g: obj = {};
 					let h: obj = {42};
 					let i: obj = {41 -> 42};
@@ -632,7 +614,7 @@ describe('ASTNodeOperation', () => {
 					c !== [x= 42];
 					d !== List.<int>([]);
 					e !== List.<int>([42]);
-					f !== Hash.<int>([x= 42]);
+					f !== Dict.<int>([x= 42]);
 					g !== {};
 					h !== {42};
 					i !== {41 -> 42};
@@ -650,7 +632,7 @@ describe('ASTNodeOperation', () => {
 					c == [x= 42];
 					d == List.<int>([]);
 					e == List.<int>([42]);
-					f == Hash.<int>([x= 42]);
+					f == Dict.<int>([x= 42]);
 					g == {};
 					h == {42};
 					i == {41 -> 42};

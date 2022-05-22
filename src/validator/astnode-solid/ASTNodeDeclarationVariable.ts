@@ -5,12 +5,12 @@ import {
 	INST,
 	Builder,
 	AssignmentError01,
+	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
 	SymbolStructureVar,
+	SyntaxNodeType,
 } from './package.js';
-import {forEachAggregated} from './utils-private.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -26,7 +26,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		return statement;
 	}
 	constructor (
-		start_node: ParseNode,
+		start_node: SyntaxNodeType<'declaration_variable'>,
 		readonly unfixed: boolean,
 		readonly assignee: ASTNodeVariable,
 		readonly typenode: ASTNodeType,

@@ -106,8 +106,8 @@ describe('ASTNodeSolid', () => {
 							l.0 = 4.2;
 						`,
 						`
-							let h: mutable [:int] = Hash.<int>([i= 42]);
-							h.i = 4.2;
+							let d: mutable [:int] = Dict.<int>([i= 42]);
+							d.i = 4.2;
 						`,
 						`
 							let s: mutable int{} = Set.<int>([42]);
@@ -138,8 +138,8 @@ describe('ASTNodeSolid', () => {
 							l.0 = 4.2;
 						`,
 						`
-							let h: [:int] = Hash.<int>([i= 42]);
-							h.i = 4.2;
+							let d: [:int] = Dict.<int>([i= 42]);
+							d.i = 4.2;
 						`,
 						`
 							let s: int{} = Set.<int>([42]);
