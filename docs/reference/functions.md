@@ -15,7 +15,8 @@ There are two ways to define functions: function declarations and function expre
 
 ## Function Declarations
 Function declarations are statements that declare and construct new functions.
-The new function object is called a **named function** because it’s given an identifier when constructed.
+The new function object is called a **named function** because it’s given an identifier when constructed
+and it must be called by name.
 The following statement is a function declaration.
 ```
 func computeHypotenuse(a: float, b: float): float {
@@ -36,6 +37,13 @@ which are values used as its inputs. When the function returns, it usually retur
 ```
 let result: float = computeHypotenuse.(3.0, 4.0); % returns `5.0`
 ```
+Named functions must be called by name. It’s a compile-time error to reference a named function without calling it.
+```
+computeHypotenuse || null;              %> Error
+(computeHypotenuse || null).(3.0, 4.0); %> Error
+```
+> Error: Named function `computeHypotenuse` is not called by name.
+
 
 Not all functions need to have an output when they return — those are called **void functions**.
 The function below does nothing but evaluate a string when called.
@@ -102,15 +110,15 @@ let add: (a: int, b: int) => int = (a: int, b: int): int { return a + b; };
 add.(2, 3); %== `5`
 ```
 
-There’s no major advantage of assigning a lambda to a variable,
-and in fact this practice is discouraged in favor of using a function declaration.
+Assigning lambdas to variables is discouraged in favor of using a function declaration,
+especially if all we’re going to do with the function object is call it.
 This can actually do harm if the variable is unfixed,
 since it could be reassigned later and could lead to unpredictable behavior.
 ```
 let unfixed add: (a: int, b: int) => int = (a: int, b: int): int => a + b; % allowed, but bad programming
-% calling the function here will yield one result...
-add = (a: int, b: int) => a - b; % reassign the function (not recommended) --- notice the mistake
-% calling the function here will yield a different result.
+% calling the function here will return one result...
+set add = (a: int, b: int) => a - b; % reassign the function (not recommended) --- notice the mistake
+% calling the function here will return a different result.
 ```
 Calling a function at different points at runtime should not produce different results.
 Furthermore, assigning a lambda to a variable requires a lot of upkeep, e.g.,
