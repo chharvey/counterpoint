@@ -494,7 +494,7 @@ describe('ASTNodeOperation', () => {
 						[`-0.0 == 0.0;`,  SolidBoolean.TRUE],
 					]));
 				});
-				it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
+				it('returns the result of `this#fold`, wrapped in a `new SolidTypeUnit`.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let a: obj = [];
 						let b: obj = [42];

@@ -1,4 +1,4 @@
-import {Set_differenceEq} from './package.js';
+import * as xjs from 'extrajs';
 import type {SolidObject} from './index.js';
 import {solidObjectsIdentical} from './utils-private.js';
 import {SolidType} from './SolidType.js';
@@ -21,7 +21,7 @@ export class SolidTypeDifference extends SolidType {
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
 	) {
-		super(false, Set_differenceEq(left.values, right.values, solidObjectsIdentical));
+		super(false, xjs.Set.difference(left.values, right.values, solidObjectsIdentical));
 		/*
 		We can assert that this is always non-empty because
 		the only cases in which it could be empty are

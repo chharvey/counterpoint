@@ -27,7 +27,7 @@
   "scripts": {
     "dist": "tsc",
     "postdist": "tree-sitter generate",
-    "pretest": "ts-node ./test/build.ts",
+    "pretest": "ts-node --esm --project ../tsconfig.json ./test/build.mts",
     "test": "tree-sitter test",
     "build": "npm run dist && npm run test"
   },
@@ -37,6 +37,6 @@
   "devDependencies": {
     "tree-sitter-cli": "^0.20.1",
     "ts-node": "^10.4.0",
-    "typescript": "~4.6.0"
+    "typescript": "~4.7.0"
   }
 }

@@ -1,11 +1,11 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
 	SolidType,
 	SolidObject,
 	INST,
 	Builder,
 	AssignmentError01,
-	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SymbolStructureVar,
@@ -38,7 +38,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		if (this.validator.hasSymbol(this.assignee.id)) {
 			throw new AssignmentError01(this.assignee);
 		};
-		forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
+		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
 		this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
 	}
 	override typeCheck(): void {

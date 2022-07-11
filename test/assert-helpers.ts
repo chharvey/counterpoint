@@ -1,7 +1,5 @@
 import * as assert from 'assert'
-import {
-	forEachAggregated,
-} from '../src/lib/index.js';
+import * as xjs from 'extrajs';
 import type {
 	SolidType,
 } from '../src/typer/index.js'
@@ -80,7 +78,7 @@ export function assertEqualTypes(param1: SolidType | SolidType[] | ReadonlyMap<S
 		try {
 			return assert.deepStrictEqual(param1, param2);
 		} catch {
-			return forEachAggregated(param1, (act, i) => assertEqualTypes(act, (param2 as SolidType[])[i]));
+			return xjs.Array.forEachAggregated(param1, (act, i) => assertEqualTypes(act, (param2 as SolidType[])[i]));
 		};
 	} else {
 		try {

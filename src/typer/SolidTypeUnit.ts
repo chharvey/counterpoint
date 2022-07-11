@@ -11,7 +11,7 @@ export class SolidTypeUnit extends SolidType {
 	override readonly isTopType:    boolean = false;
 
 	/**
-	 * Construct a new SolidTypeConstant object.
+	 * Construct a new SolidTypeUnit object.
 	 * @param value the Solid Language Value contained in this Type
 	 */
 	constructor (

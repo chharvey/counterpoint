@@ -1,9 +1,5 @@
-import {
-	Keys,
-	Map_hasEq,
-	Map_getEq,
-	Map_setEq,
-} from './package.js';
+import * as xjs from 'extrajs';
+import type {Keys} from './package.js';
 import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
 
@@ -26,11 +22,11 @@ export abstract class Collection extends SolidObject {
 
 	protected static do_Equal<T extends Collection>(o1: T, o2: T, definition: () => boolean): boolean {
 		const memokey: Keys<typeof Collection.EQ_MEMO> = [o1, o2];
-		if (!Map_hasEq(Collection.EQ_MEMO, memokey, Collection.EQ_MEMO_COMPARATOR)) {
-			Map_setEq(Collection.EQ_MEMO, memokey, false, Collection.EQ_MEMO_COMPARATOR); // use this assumption in the next step
-			Map_setEq(Collection.EQ_MEMO, memokey, definition.call(null), Collection.EQ_MEMO_COMPARATOR);
+		if (!xjs.Map.has(Collection.EQ_MEMO, memokey, Collection.EQ_MEMO_COMPARATOR)) {
+			xjs.Map.set(Collection.EQ_MEMO, memokey, false, Collection.EQ_MEMO_COMPARATOR); // use this assumption in the next step
+			xjs.Map.set(Collection.EQ_MEMO, memokey, definition.call(null), Collection.EQ_MEMO_COMPARATOR);
 		}
-		return Map_getEq(Collection.EQ_MEMO, memokey, Collection.EQ_MEMO_COMPARATOR)!;
+		return xjs.Map.get(Collection.EQ_MEMO, memokey, Collection.EQ_MEMO_COMPARATOR)!;
 	}
 
 

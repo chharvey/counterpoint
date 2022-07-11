@@ -1,6 +1,4 @@
-import {
-	Set_intersectionEq,
-} from './package.js';
+import * as xjs from 'extrajs';
 import {
 	SolidTypeTuple,
 	SolidTypeRecord,
@@ -27,7 +25,7 @@ export class SolidTypeIntersection extends SolidType {
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
 	) {
-		super(false, Set_intersectionEq(left.values, right.values, solidObjectsIdentical));
+		super(false, xjs.Set.intersection(left.values, right.values, solidObjectsIdentical));
 		this.isBottomType = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
 	}
 

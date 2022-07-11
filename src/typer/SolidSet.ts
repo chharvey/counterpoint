@@ -1,7 +1,6 @@
+import * as xjs from 'extrajs';
 import {
 	VoidError01,
-	Set_hasEq,
-	Set_addEq,
 	AST,
 } from './package.js';
 import {solidObjectsIdentical} from './utils-private.js';
@@ -21,7 +20,7 @@ export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
 		super();
 		const uniques: Set<T> = new Set();
 		[...elements].forEach((el) => {
-			Set_addEq(uniques, el, solidObjectsIdentical);
+			xjs.Set.add(uniques, el, solidObjectsIdentical);
 		});
 		this.elements = uniques;
 	}
@@ -51,7 +50,7 @@ export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
 	}
 
 	get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | SolidNull {
-		return (Set_hasEq(this.elements, el, solidObjectsIdentical))
+		return (xjs.Set.has(this.elements, el, solidObjectsIdentical))
 			? el
 			: (access_optional)
 				? SolidNull.NULL

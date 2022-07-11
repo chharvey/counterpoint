@@ -1,8 +1,6 @@
+import * as xjs from 'extrajs';
 import {
 	VoidError01,
-	Map_hasEq,
-	Map_getEq,
-	Map_setEq,
 	AST,
 } from './package.js';
 import {solidObjectsIdentical} from './utils-private.js';
@@ -22,7 +20,7 @@ export class SolidMap<K extends SolidObject = SolidObject, V extends SolidObject
 		super();
 		const uniques: Map<K, V> = new Map();
 		[...cases].forEach(([ant, con]) => {
-			Map_setEq(uniques, ant, con, solidObjectsIdentical);
+			xjs.Map.set(uniques, ant, con, solidObjectsIdentical);
 		});
 		this.cases = uniques;
 	}
@@ -51,8 +49,8 @@ export class SolidMap<K extends SolidObject = SolidObject, V extends SolidObject
 	}
 
 	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | SolidNull {
-		return (Map_hasEq(this.cases, ant, solidObjectsIdentical))
-			? Map_getEq(this.cases, ant, solidObjectsIdentical)!
+		return (xjs.Map.has(this.cases, ant, solidObjectsIdentical))
+			? xjs.Map.get(this.cases, ant, solidObjectsIdentical)!
 			: (access_optional)
 				? SolidNull.NULL
 				: (() => { throw new VoidError01(accessor); })();

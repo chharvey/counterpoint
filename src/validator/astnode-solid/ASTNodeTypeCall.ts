@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
 	SolidType,
 	SolidTypeList,
@@ -8,7 +9,6 @@ import {
 	TypeError05,
 	TypeError06,
 	NonemptyArray,
-	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -38,7 +38,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be a `ValidFunctionName`)
-		return forEachAggregated(this.args, (arg) => arg.varCheck());
+		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
 	protected override eval_do(): SolidType {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
