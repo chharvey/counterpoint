@@ -576,12 +576,12 @@ Modifies the type of an accessed bound property of a tuple or record.
 If the bound property is required: Under claim access, subtracts Void; else returns unmodified type.
 If the bound property is optional: Under claim access, subtracts Void; under optional access, unions with Null; else unions with Void.
 ```
-Type UpdateAccessedStaticType(EntryTypeStructure entry, SemanticAccess access) :=
+Type UpdateAccessedStaticType(EntryTypeStructure entry, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
 	1. *Let* `type` be `entry.type`.
-	2. *If* `access.kind` is `CLAIM`:
+	2. *If* `accesskind` is `CLAIM`:
 		1. *Return:* `Difference(type, Void)`.
 	3. *If* `entry.optional` is `true`:
-		1. *If* `access.kind` is `OPTIONAL`:
+		1. *If* `accesskind` is `OPTIONAL`:
 			1. *Return:* `Union(type, Null)`.
 		2. *Return:* `Union(type, Void)`.
 	4. *Return:* `type`.
@@ -594,10 +594,10 @@ Type UpdateAccessedStaticType(EntryTypeStructure entry, SemanticAccess access) :
 Modifies the type of an accessed bound property of a dynamic data type.
 Under claim access, subtracts Void; under optional access, unions with Null; else returns unmodified type.
 ```
-Type UpdateAccessedDynamicType(Type type, SemanticAccess access) :=
-	1. *If* `access.kind` is `CLAIM`:
+Type UpdateAccessedDynamicType(Type type, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
+	1. *If* `accesskind` is `CLAIM`:
 		1. *Return:* `Difference(type, Void)`.
-	2. *Else If* `access.kind` is `OPTIONAL`:
+	2. *Else If* `accesskind` is `OPTIONAL`:
 		1. *Return:* `Union(type, Null)`.
 	3. *Else:*
 		1. *Return:* `type`.

@@ -90,62 +90,63 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 		5. *Assert:* `i` is a instance of `Integer`.
 		6. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)` *and* `i` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access)`.
+			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
 		7. *Else If* *UnwrapAffirm:* `Subtype(base_type, List)`:
 			1. *Let* `type` be the union of all item types in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access)`.
+			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
 		8. *Else:*
 			1. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
 	8. *If* `accessor` is a SemanticKey:
 		1. *Let* `id` be `accessor.id`.
 		2. *If* *UnwrapAffirm:* `Subtype(base_type, Record)` *and* `id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access)`.
+			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
 		3. *Else If* *UnwrapAffirm:* `Subtype(base_type, Dict)`:
 			1. *Let* `type` be the union of all value types in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access)`.
+			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
 		4. *Else:*
 			1. *Throw:* a new TypeError04 "Property {{ id }} does not exist on type {{ base_type }}.".
-	9. *Assert:* `accessor` is a SemanticExpression.
-	10. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
-	11. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)`:
-		1. *If* `accessor_type` is a TypeConstant:
-			1. *Let* `i` be `accessor_type.value`.
-			2. *If* `i` is a instance of `Integer`:
-				1. *If* `i` is an index in `base_type`:
-					1. *Let* `entry` be the item accessed at index `i` in `base_type`.
-					2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access)`.
-				2. *Else:*
-					1. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
-		2. *Else If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
+	9: *Else:*
+		1. *Assert:* `accessor` is a SemanticExpression.
+		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
+		3. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)`:
+			1. *If* `accessor_type` is a TypeUnit:
+				1. *Let* `i` be `accessor_type.value`.
+				2. *If* `i` is a instance of `Integer`:
+					1. *If* `i` is an index in `base_type`:
+						1. *Let* `entry` be the item accessed at index `i` in `base_type`.
+						2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
+					2. *Else:*
+						1. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
+			2. *Else If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
+				1. *Let* `t` be the union of all item types in `base_type`.
+				2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
+			3. *Else:*
+				1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
+		4. *Else If* *UnwrapAffirm:* `Subtype(base_type, List)`:
 			1. *Let* `t` be the union of all item types in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access)`.
-		3. *Else:*
-			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
-	12. *Else If* *UnwrapAffirm:* `Subtype(base_type, List)`:
-		1. *Let* `t` be the union of all item types in `base_type`.
-		2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
-			1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access)`.
-		2. *Else:*
-			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
-	13. *Else If* *UnwrapAffirm:* `Subtype(base_type, Set)`:
-		1. *Let* `t` be the type of the elements in `base_type`.
-		2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)`:
-			1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access)`.
-		3. *Else:*
-			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ t }}.".
-	14. *Else If* *UnwrapAffirm:* `Subtype(base_type, Map)`:
-		1. *Let* `k` be the type of the antecedents in `base_type`.
-		2. *Let* `v` be the type of the consequents in `base_type`.
-		3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)`:
-			1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(v, access)`.
-		4. *Else:*
-			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ k }}.".
-	15. *If* `returned` is not `none`:
+			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
+				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
+			2. *Else:*
+				1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
+		5. *Else If* *UnwrapAffirm:* `Subtype(base_type, Set)`:
+			1. *Let* `t` be the type of the elements in `base_type`.
+			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)`:
+				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
+			3. *Else:*
+				1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ t }}.".
+		6. *Else If* *UnwrapAffirm:* `Subtype(base_type, Map)`:
+			1. *Let* `k` be the type of the antecedents in `base_type`.
+			2. *Let* `v` be the type of the consequents in `base_type`.
+			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)`:
+				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(v, access.kind)`.
+			4. *Else:*
+				1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ k }}.".
+	10. *If* `returned` is not `none`:
 		1. *If* `is_nullish` is `true`:
 			1. *Return:* `Union(returned, Null)`.
 		2. *Return*: `returned`.
-	16. *Throw:* a new TypeError01.
+	11. *Throw:* a new TypeError01.
 ;
 
 
