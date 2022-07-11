@@ -53,10 +53,6 @@ export {
 export {
 	NonemptyArray,
 	CodeUnit,
-	forEachAggregated,
-	Map_hasEq,
-	Map_getEq,
-	Map_setEq,
 } from '../lib/index.js';
 export {
 	stringifyAttributes,

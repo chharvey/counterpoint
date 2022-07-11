@@ -12,14 +12,6 @@ export {
 	IntRange,
 	CodeUnit,
 	Keys,
-	Set_hasEq,
-	Set_addEq,
-	Set_intersectionEq,
-	Set_unionEq,
-	Set_differenceEq,
-	Map_hasEq,
-	Map_getEq,
-	Map_setEq,
 } from '../lib/index.js';
 export {
 	Operator,

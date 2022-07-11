@@ -1,6 +1,4 @@
-import {
-	Set_hasEq,
-} from './package.js';
+import * as xjs from 'extrajs';
 import {
 	SolidTypeIntersection,
 	SolidTypeUnion,
@@ -107,7 +105,7 @@ export abstract class SolidType {
 	 * @returns Is `v` assignable to this type?
 	 */
 	includes(v: SolidObject): boolean {
-		return Set_hasEq(this.values, v, solidObjectsIdentical);
+		return xjs.Set.has(this.values, v, solidObjectsIdentical);
 	}
 	/**
 	 * Return the type intersection of this type with another.
