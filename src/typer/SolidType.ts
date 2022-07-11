@@ -26,7 +26,7 @@ import {solidObjectsIdentical} from './utils-private.js';
  * - SolidTypeInterface
  * - SolidTypeNever
  * - SolidTypeVoid
- * - SolidTypeConstant
+ * - SolidTypeUnit
  * - SolidTypeUnknown
  * - SolidTypeObject
  * - SolidTypeBoolean
