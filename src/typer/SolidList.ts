@@ -1,6 +1,8 @@
-import {SolidType} from './SolidType.js';
-import {SolidTypeUnit} from './SolidTypeUnit.js';
-import {SolidTypeList} from './SolidTypeList.js';
+import {
+	SolidType,
+	SolidTypeUnit,
+	SolidTypeList,
+} from './cp-type/index.js';
 import type {SolidObject} from './SolidObject.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
 

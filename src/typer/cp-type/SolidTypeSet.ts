@@ -1,25 +1,24 @@
 import {
 	SolidObject,
-	SolidRecord,
-	SolidDict,
-} from './index.js';
+	SolidSet,
+} from './package.js';
 import {SolidType} from './SolidType.js';
 
 
 
-export class SolidTypeDict extends SolidType {
+export class SolidTypeSet extends SolidType {
 	override readonly isBottomType: boolean = false;
 
 	/**
-	 * Construct a new SolidTypeDict object.
-	 * @param types a union of types in this dict type
+	 * Construct a new SolidTypeSet object.
+	 * @param types a union of types in this set type
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		readonly types: SolidType,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new SolidDict()]));
+		super(is_mutable, new Set([new SolidSet()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -27,19 +26,16 @@ export class SolidTypeDict extends SolidType {
 	}
 
 	override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }Dict.<${ this.types }>`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }Set.<${ this.types }>`;
 	}
 
 	override includes(v: SolidObject): boolean {
-		return (
-			   v instanceof SolidDict   && v.toType().isSubtypeOf(this)
-			|| v instanceof SolidRecord && v.toType().isSubtypeOf(this)
-		);
+		return v instanceof SolidSet && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidType.OBJ) || (
-			t instanceof SolidTypeDict
+			t instanceof SolidTypeSet
 			&& ((t.isMutable)
 				? this.isMutable && this.types.equals(t.types)
 				: this.types.isSubtypeOf(t.types)
@@ -47,11 +43,11 @@ export class SolidTypeDict extends SolidType {
 		);
 	}
 
-	override mutableOf(): SolidTypeDict {
-		return new SolidTypeDict(this.types, true);
+	override mutableOf(): SolidTypeSet {
+		return new SolidTypeSet(this.types, true);
 	}
 
-	override immutableOf(): SolidTypeDict {
-		return new SolidTypeDict(this.types, false);
+	override immutableOf(): SolidTypeSet {
+		return new SolidTypeSet(this.types, false);
 	}
 }

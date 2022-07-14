@@ -1,4 +1,4 @@
-import type {SolidObject} from './index.js';
+import type {SolidObject} from './package.js';
 import {SolidType} from './SolidType.js';
 
 

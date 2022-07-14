@@ -3,15 +3,13 @@ import {
 	IntRange,
 	ValidAccessOperator,
 	AST,
-} from './package.js';
-import {
-	SolidTypeDict,
 	SolidObject,
 	SolidRecord,
-} from './index.js';
+} from './package.js';
 import type {TypeEntry} from './utils-public.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {SolidType} from './SolidType.js';
+import {SolidTypeDict} from './index.js';
 
 
 

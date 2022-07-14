@@ -1,5 +1,7 @@
-import {SolidTypeUnit} from './SolidTypeUnit.js';
-import {SolidTypeTuple} from './SolidTypeTuple.js';
+import {
+	SolidTypeUnit,
+	SolidTypeTuple,
+} from './cp-type/index.js';
 import type {SolidObject} from './SolidObject.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
 

@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import type {Keys} from './package.js';
-import type {SolidType} from './SolidType.js';
+import type {SolidType} from './cp-type/index.js';
 import {SolidObject} from './SolidObject.js';
 
 

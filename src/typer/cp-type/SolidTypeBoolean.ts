@@ -1,7 +1,7 @@
 import {
 	SolidObject,
 	SolidBoolean,
-} from './index.js';
+} from './package.js';
 import {SolidType} from './SolidType.js';
 
 
