@@ -2,7 +2,7 @@ import {
 	SolidType,
 	SolidTypeUnit,
 	SolidTypeList,
-} from './cp-type/index.js';
+} from './package.js';
 import type {SolidObject} from './SolidObject.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
 

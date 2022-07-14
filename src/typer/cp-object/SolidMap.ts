@@ -2,13 +2,11 @@ import * as xjs from 'extrajs';
 import {
 	VoidError01,
 	AST,
-} from './package.js';
-import {solidObjectsIdentical} from './utils-private.js';
-import {
+	solidObjectsIdentical,
 	SolidType,
 	SolidTypeUnit,
 	SolidTypeMap,
-} from './cp-type/index.js';
+} from './package.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
 import {Collection} from './Collection.js';

@@ -1,7 +1,7 @@
 import {
 	SolidTypeUnit,
 	SolidTypeRecord,
-} from './cp-type/index.js';
+} from './package.js';
 import type {SolidObject} from './SolidObject.js';
 import {CollectionKeyed} from './CollectionKeyed.js';
 
