@@ -31,7 +31,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		throw builder && 'ASTNodeTuple#build_do not yet supported.';
 	}
 	protected override type_do(): SolidType {
-		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type())).mutableOf();
+		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type()), true);
 	}
 	protected override fold_do(): SolidObject | null {
 		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.fold());

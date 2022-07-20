@@ -157,8 +157,8 @@ describe('ASTNodeDeclarationVariable', () => {
 						SolidType.INT,
 						new SolidTypeList(SolidType.INT),
 						SolidType.INT,
-						SolidTypeTuple.fromTypes([typeConstInt(42n)]).mutableOf(),
-						new SolidTypeList(SolidType.INT).mutableOf(),
+						SolidTypeTuple.fromTypes([typeConstInt(42n)], true),
+						new SolidTypeList(SolidType.INT, true),
 					],
 				);
 			});
