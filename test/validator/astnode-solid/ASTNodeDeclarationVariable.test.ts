@@ -72,13 +72,8 @@ describe('ASTNodeDeclarationVariable', () => {
 				let  the_answer:  null =  21  *  2;
 			`).typeCheck(), TypeError03);
 		})
-		it('allows assigning a collection literal to a wider mutable type.', () => {
+		it('disallows assigning a collection literal to a wider mutable type.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let t1: mutable [42]         = [42];
-				let r1: mutable [x: 42]      = [x= 42];
-				let s1: mutable 42{}         = {42};
-				let m1: mutable {true -> 42} = {true -> 42};
-
 				let t2: mutable [42 | 4.3]          = [42];
 				let r2: mutable [x: 42 | 4.3]       = [x= 42];
 				let s2: mutable (42 | 4.3){}        = {42};
@@ -97,45 +92,29 @@ describe('ASTNodeDeclarationVariable', () => {
 				let m4: mutable {bool -> T?} = {true -> v};
 			`);
 			goal.varCheck();
-			goal.typeCheck(); // assert does not throw
-		});
-		it('disallows assigning a constructor call to a wider mutable type.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let a: mutable int[]         = List.<42>([42]);
-				let b: mutable [:int]        = Dict.<42>([x= 42]);
-				let c: mutable int{}         = Set.<42>([42]);
-				let d: mutable {bool -> int} = Map.<true, 42>([[true, 42]]);
-			`);
-			goal.varCheck();
-			assert.throws(() => {
-				goal.typeCheck();
-			}, (err) => {
+			assert.throws(() => goal.typeCheck(), (err) => {
 				assert.ok(err instanceof AggregateError);
 				assertAssignable(err, {
 					cons: AggregateError,
 					errors: [
-						{cons: TypeError03, message: 'Expression of type mutable List.<42> is not assignable to type mutable List.<int>.'},
-						{cons: TypeError03, message: 'Expression of type mutable Dict.<42> is not assignable to type mutable Dict.<int>.'},
+						{cons: TypeError03, message: 'Expression of type mutable [42] is not assignable to type mutable [42 | 4.3].'},
+						{cons: TypeError03, message: 'Expression of type mutable [258: 42] is not assignable to type mutable [258: 42 | 4.3].'},
+						{cons: TypeError03, message: 'Expression of type mutable Set.<42> is not assignable to type mutable Set.<42 | 4.3>.'},
+						{cons: TypeError03, message: 'Expression of type mutable Map.<true, 42> is not assignable to type mutable Map.<true | null, 42 | 4.3>.'},
+
+						{cons: TypeError03, message: 'Expression of type mutable [42] is not assignable to type mutable [int].'},
+						{cons: TypeError03, message: 'Expression of type mutable [258: 42] is not assignable to type mutable [258: int].'},
 						{cons: TypeError03, message: 'Expression of type mutable Set.<42> is not assignable to type mutable Set.<int>.'},
 						{cons: TypeError03, message: 'Expression of type mutable Map.<true, 42> is not assignable to type mutable Map.<bool, int>.'},
+
+						{cons: TypeError03, message: 'Expression of type mutable [[int]] is not assignable to type mutable [[int] | null].'},
+						{cons: TypeError03, message: 'Expression of type mutable [258: [int]] is not assignable to type mutable [258: [int] | null].'},
+						{cons: TypeError03, message: 'Expression of type mutable Set.<[int]> is not assignable to type mutable Set.<[int] | null>.'},
+						{cons: TypeError03, message: 'Expression of type mutable Map.<true, [int]> is not assignable to type mutable Map.<bool, [int] | null>.'},
 					],
 				});
 				return true;
 			});
-		});
-		it('allows assigning a tuple/record collection literal to a corresponding list/dict type.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let t1: mutable 42[]  = [42];
-				let r1: mutable [:42] = [x= 42];
-
-				let t2: mutable (42 | 4.3)[] = [42];
-				let r2: mutable [:42 | 4.3]  = [x= 42];
-
-				let t3: mutable [int]  = [42];
-				let r3: mutable [:int] = [x= 42];
-			`);
-			goal.varCheck();
-			goal.typeCheck(); // assert does not throw
 		});
 		it('always sets `SymbolStructure#type`.', () => {
 			[

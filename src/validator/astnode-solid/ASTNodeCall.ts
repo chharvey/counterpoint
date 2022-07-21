@@ -71,7 +71,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				const returntype: SolidType = new SolidTypeList(this.typeargs[0].eval());
 				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
 					returntype,
-					this.exprargs[0],
+					this.exprargs[0].type(),
 					this,
 					this.validator,
 				);
@@ -82,7 +82,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				const returntype: SolidType = new SolidTypeDict(this.typeargs[0].eval());
 				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
 					returntype,
-					this.exprargs[0],
+					this.exprargs[0].type(),
 					this,
 					this.validator,
 				);
@@ -94,7 +94,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				const returntype: SolidType = new SolidTypeSet(eltype);
 				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
 					new SolidTypeList(eltype),
-					this.exprargs[0],
+					this.exprargs[0].type(),
 					this,
 					this.validator,
 				);
@@ -107,7 +107,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				const returntype: SolidType = new SolidTypeMap(anttype, contype);
 				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
 					new SolidTypeList(SolidTypeTuple.fromTypes([anttype, contype])),
-					this.exprargs[0],
+					this.exprargs[0].type(),
 					this,
 					this.validator,
 				);
