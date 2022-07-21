@@ -5,7 +5,6 @@ import {
 	AST,
 } from './package.js';
 import {
-	SolidTypeList,
 	SolidObject,
 	Int16,
 	SolidTuple,
@@ -74,10 +73,6 @@ export class SolidTypeTuple extends SolidType {
 				? this.types[i].type.equals(thattype.type)
 				: this.types[i].type.isSubtypeOf(thattype.type)
 			))
-		) || (
-			t instanceof SolidTypeList
-			&& !t.isMutable
-			&& this.itemTypes().isSubtypeOf(t.types)
 		);
 	}
 

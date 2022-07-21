@@ -171,14 +171,29 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						1. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.2)`.
 						2. *If* `base.source` is "List":
 							1. *If* *UnwrapAffirm:* `Subtype(argtype, returntype)` is `false`:
-								1. *Throw:* a new TypeError03.
+								1. *If* `argtype` is a `Tuple` type:
+									1. *Let* `items` be the union of all item types in `argtype`.
+									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
+										1. *Throw:* a new TypeError03.
+								2. *Else*:
+									1. *Throw:* a new TypeError03.
 						3. *Else If* `base.source` is "Dict":
 							1. *If* *UnwrapAffirm:* `Subtype(argtype, returntype)` is `false`:
-								1. *Throw:* a new TypeError03.
+								1. *If* `argtype` is a `Record` type:
+									1. *Let* `values` be the union of all value types in `argtype`.
+									2. *If* *UnwrapAffirm:* `Subtype(values, genericarg)` is `false`:
+										1. *Throw:* a new TypeError03.
+								2. *Else*:
+									1. *Throw:* a new TypeError03.
 						4. *Else If* `base.source` is "Set":
 							1. *Let* `listtype` be a `List` type whose items’ type is `genericarg`.
 							2. *If* *UnwrapAffirm:* `Subtype(argtype, listtype)` is `false`:
-								1. *Throw:* a new TypeError03.
+								1. *If* `argtype` is a `Tuple` type:
+									1. *Let* `items` be the union of all item types in `argtype`.
+									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
+										1. *Throw:* a new TypeError03.
+								2. *Else*:
+									1. *Throw:* a new TypeError03.
 					2. *Else*:
 						1. *Throw:* a new TypeError06.
 				6. *Return:* a mutable copy of `returntype`.
@@ -210,6 +225,11 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 				5. *Let:* `keyvaluetype` be a `Tuple` type whose items are [`antecedenttype`, `consequenttype`].
 				6. *Let*: `paramtype` be a `List` type whose items’ type is `keyvaluetype`.
 				7. *If*: *UnwrapAffirm:* `Subtype(argtype, paramtype)` is `false`:
+					1. *If* `argtype` is a `Tuple` type:
+						1. *Let* `items` be the union of all item types in `argtype`.
+						2. *If* *UnwrapAffirm:* `Subtype(items, keyvaluetype)` is `false`:
+							1. *Throw:* a new TypeError03.
+					2. *Else*:
 						1. *Throw:* a new TypeError03.
 				8. *Return:* a mutable `Map` type whose antecedents’ type is `antecedenttype`
 					and whose consequents’ type is `consequenttype`.

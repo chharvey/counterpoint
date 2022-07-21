@@ -385,30 +385,24 @@ Boolean Subtype(Type a, Type b) :=
 				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 					1. *Return:* `false`.
 		8. *Return:* `true`.
-	12. *If* `b` is a `List` type:
-		1. *Let* `bi` be the union of types in `b`.
-		2. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* `a` is a `List` type:
-				1. *Let* `ai` be the union of types in `a`.
-				2. *If* *UnwrapAffirm:* `Equal(ai, bi)` is `true`:
-					1. *Return:* `true`.
-		3. *Else:*
-			1. *If* `a` is a `List` type *or* `a` is a `Tuple` type:
-				1. *Let* `ai` be the union of types in `a`.
-				2. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
-					1. *Return:* `true`.
-	13. *If* `b` is a `Dict` type:
-		1. *Let* `bv` be the union of value types in `b`.
-		2. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* `a` is a `Dict` type:
-				1. *Let* `av` be the union of value types in `a`.
-				2. *If* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
-					1. *Return:* `true`.
-		3. *Else:*
-			1. *If* `a` is a `Dict` type *or* `a` is a `Record` type:
-				1. *Let* `av` be the union of value types in `a`.
-				2. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
-					1. *Return:* `true`.
+	12. *If* `a` is a `List` type *and* `b` is a `List` type:
+		1. *Let* `ai` be the union of types in `a`.
+		2. *Let* `bi` be the union of types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ai, bi)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
+				1. *Return:* `true`.
+	13. *If* `a` is a `Dict` type *and* `b` is a `Dict` type:
+		1. *Let* `av` be the union of value types in `a`.
+		2. *Let* `bv` be the union of value types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+				1. *Return:* `true`.
 	14. *If* `a` is a `Set` type *and* `b` is a `Set` type:
 		1. *Let* `ae` be the union of types in `a`.
 		2. *Let* `be` be the union of types in `b`.

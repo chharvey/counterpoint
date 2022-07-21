@@ -6,10 +6,6 @@ import {
 	SymbolStructure,
 	SymbolStructureVar,
 	SolidType,
-	SolidTypeTuple,
-	SolidTypeList,
-	Int16,
-	SolidTuple,
 	INST,
 	Builder,
 	AssignmentError01,
@@ -22,7 +18,6 @@ import {
 	CONFIG_FOLDING_OFF,
 	instructionConstInt,
 	instructionConstFloat,
-	typeConstInt,
 } from '../../helpers.js';
 
 
@@ -55,13 +50,6 @@ describe('ASTNodeDeclarationVariable', () => {
 
 
 	describe('#typeCheck', () => {
-		const abcde: string = `
-			let a: int = 42;
-			let b: int[] = [42];
-			let unfixed c: int = 42;
-			let d: mutable [42] = [42];
-			let e: mutable int[] = List.<int>([42]);
-		`;
 		it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  int | float =  21  *  2;
@@ -116,32 +104,6 @@ describe('ASTNodeDeclarationVariable', () => {
 				return true;
 			});
 		});
-		it('always sets `SymbolStructure#type`.', () => {
-			[
-				CONFIG_DEFAULT,
-				CONFIG_FOLDING_OFF,
-			].forEach((config) => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde, config);
-				goal.varCheck();
-				goal.typeCheck();
-				assert.deepStrictEqual(
-					[
-						(goal.validator.getSymbolInfo(256n) as SymbolStructureVar).type,
-						(goal.validator.getSymbolInfo(257n) as SymbolStructureVar).type,
-						(goal.validator.getSymbolInfo(258n) as SymbolStructureVar).type,
-						(goal.validator.getSymbolInfo(259n) as SymbolStructureVar).type,
-						(goal.validator.getSymbolInfo(260n) as SymbolStructureVar).type,
-					],
-					[
-						SolidType.INT,
-						new SolidTypeList(SolidType.INT),
-						SolidType.INT,
-						SolidTypeTuple.fromTypes([typeConstInt(42n)], true),
-						new SolidTypeList(SolidType.INT, true),
-					],
-				);
-			});
-		});
 		it('with int coersion on, allows assigning ints to floats.', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
@@ -158,41 +120,6 @@ describe('ASTNodeDeclarationVariable', () => {
 				},
 			}).typeCheck(), TypeError03);
 		})
-		it('with constant folding on, only sets `SymbolStructure#value` if type is immutable and variable is fixed.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde);
-			goal.varCheck();
-			goal.typeCheck();
-			assert.deepStrictEqual(
-				[
-					(goal.validator.getSymbolInfo(256n) as SymbolStructureVar).value,
-					(goal.validator.getSymbolInfo(257n) as SymbolStructureVar).value,
-					(goal.validator.getSymbolInfo(258n) as SymbolStructureVar).value,
-					(goal.validator.getSymbolInfo(259n) as SymbolStructureVar).value,
-					(goal.validator.getSymbolInfo(260n) as SymbolStructureVar).value,
-				],
-				[
-					new Int16(42n),
-					new SolidTuple<Int16>([new Int16(42n)]),
-					null,
-					null,
-					null,
-				],
-			);
-		});
-		it('with constant folding off, never sets `SymbolStructure#value`.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde, CONFIG_FOLDING_OFF);
-			goal.varCheck();
-			goal.typeCheck();
-			[
-				(goal.validator.getSymbolInfo(256n) as SymbolStructureVar),
-				(goal.validator.getSymbolInfo(257n) as SymbolStructureVar),
-				(goal.validator.getSymbolInfo(258n) as SymbolStructureVar),
-				(goal.validator.getSymbolInfo(259n) as SymbolStructureVar),
-				(goal.validator.getSymbolInfo(260n) as SymbolStructureVar),
-			].forEach((symbol) => {
-				assert.strictEqual(symbol.value, null, symbol.source);
-			});
-		});
 	});
 
 
