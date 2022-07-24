@@ -46,15 +46,17 @@ Type TypeValueOf(SemanticTypeList listtype) :=
 	1. *Assert:* `listtype.children.count` is 1.
 	2. *Let* `itemtype` be *UnwrapAffirm:* `TypeValueOf(listtype.children.0)`.
 	3. *If* `listtype.count` is a RealNumber:
-		1. *Let* `data` be a new Sequence.
-		2. *Let* `i` be 0.
-		3. *While* `i` is less than `listtype.count`:
+		1. *If* `listtype.count` is less than *0*:
+			1. *Throw:* a new TypeError.
+		2. *Let* `data` be a new Sequence.
+		3. *Let* `i` be *0*.
+		4. *While* `i` is less than `listtype.count`:
 			1. Push a new EntryTypeStructure [
 				type:     `itemtype`,
 				optional: `false`,
 			] to `data`.
 			2. Increment `i`.
-		4. *Return:* a `Tuple` type whose items are `data`.
+		5. *Return:* a `Tuple` type whose items are `data`.
 	4. *Return:* a `List` type whose items’ type is `itemtype`.
 ;
 
