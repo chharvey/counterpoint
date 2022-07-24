@@ -289,12 +289,14 @@ and the “absorption element” of the [union](#union) operation.
 - [Map](#map-type)
 
 #### Tuple Type
-A **Tuple Type** contains [`Tuple` objects](./intrinsics.md#tuple) and is described by an ordered list of types.
+A **Tuple Type** contains [`Tuple` objects](./intrinsics.md#tuple) and is described by
+a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items.
 The objects that any given Tuple Type contains are `Tuple` objects whose items’ types
 match up with the types in the list in order.
 
 #### Record Type
-A **Record Type** contains [`Record` objects](./intrinsics.md#record) and is described by an unordered list of name–type pairs.
+A **Record Type** contains [`Record` objects](./intrinsics.md#record) and is described by
+a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values.
 The objects that any given Record Type contains are `Record` objects whose properties’ types
 match up with the types in the list by name.
 

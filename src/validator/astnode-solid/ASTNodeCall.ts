@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
 	SolidType,
 	SolidTypeTuple,
@@ -17,7 +18,6 @@ import {
 	Builder,
 	TypeError05,
 	TypeError06,
-	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -50,7 +50,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be a `ValidFunctionName`)
-		return forEachAggregated([
+		return xjs.Array.forEachAggregated([
 			...this.typeargs,
 			...this.exprargs,
 		], (arg) => arg.varCheck());

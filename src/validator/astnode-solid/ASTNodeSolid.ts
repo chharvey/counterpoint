@@ -1,10 +1,10 @@
+import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	SolidType,
 	TypeError03,
 	serialize,
 	Punctuator,
-	forEachAggregated,
 	Validator,
 	ASTNode,
 } from './package.js';
@@ -105,13 +105,13 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * - Check that fixed variables are not reassigned.
 	 */
 	varCheck(): void {
-		return forEachAggregated(this.children, (c) => c.varCheck());
+		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck());
 	}
 
 	/**
 	 * Type-check the node as part of semantic analysis.
 	 */
 	typeCheck(): void {
-		return forEachAggregated(this.children, (c) => c.typeCheck());
+		return xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck());
 	}
 }

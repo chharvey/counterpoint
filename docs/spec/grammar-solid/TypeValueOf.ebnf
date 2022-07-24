@@ -91,18 +91,18 @@ Type TypeValueOf(SemanticTypeAccess access) :=
 	5. *If* `accessor` is a SemanticIndexType:
 		1. *Assert:* `accessor.children.count` is 1.
 		2. *Let* `accessor_type` be *UnwrapAffirm:* `TypeValueOf(accessor.children.0)`.
-		3. *Assert:* `accessor_type` is a TypeConstant.
+		3. *Assert:* `accessor_type` is a TypeUnit.
 		4. *Let* `i` be `accessor_type.value`.
 		5. *Assert:* `i` is a instance of `Integer`.
 		6. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)` *and* `i` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
-			2. *Return:* *UnwrapAffirm:* `MaybeOptional(entry)`.
+			2. *Return:* *UnwrapAffirm:* `UpdateAccessedStaticType(entry, NORMAL)`.
 		7. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
 	6. *Assert:* `accessor` is a SemanticKey.
 	7. *Let* `id` be `accessor.id`.
 	8. *If* *UnwrapAffirm:* `Subtype(base_type, Record)` *and* `id` is a key in `base_type`:
 		1. *Let* `entry` be the item accessed at key `id` in `base_type`.
-		2. *Return:* *UnwrapAffirm:* `MaybeOptional(entry)`.
+		2. *Return:* *UnwrapAffirm:* `UpdateAccessedStaticType(entry, NORMAL)`.
 	9. *Throw:* a new TypeError04 "Property {{ id }} does not exist on type {{ base_type }}.".
 ;
 
