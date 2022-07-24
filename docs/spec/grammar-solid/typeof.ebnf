@@ -88,20 +88,20 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 		3. *Assert:* `accessor_type` is a TypeUnit.
 		4. *Let* `i` be `accessor_type.value`.
 		5. *Assert:* `i` is a instance of `Integer`.
-		6. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)` *and* `i` is an index in `base_type`:
+		6. *If* `base_type` is a `Tuple` type *and* `i` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
-		7. *Else If* *UnwrapAffirm:* `Subtype(base_type, List)`:
+		7. *Else If* `base_type` is a `List` type:
 			1. *Let* `type` be the union of all item types in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
 		8. *Else:*
 			1. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
 	8. *If* `accessor` is a SemanticKey:
 		1. *Let* `id` be `accessor.id`.
-		2. *If* *UnwrapAffirm:* `Subtype(base_type, Record)` *and* `id` is a key in `base_type`:
+		2. *If* `base_type` is a `Record` type *and* `id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
-		3. *Else If* *UnwrapAffirm:* `Subtype(base_type, Dict)`:
+		3. *Else If* `base_type` is a `Dict` type:
 			1. *Let* `type` be the union of all value types in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
 		4. *Else:*
@@ -109,7 +109,7 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 	9: *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
-		3. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)`:
+		3. *If* `base_type` is a `Tuple` type:
 			1. *If* `accessor_type` is a TypeUnit:
 				1. *Let* `i` be `accessor_type.value`.
 				2. *If* `i` is a instance of `Integer`:
@@ -123,19 +123,19 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 				2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
 			3. *Else:*
 				1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
-		4. *Else If* *UnwrapAffirm:* `Subtype(base_type, List)`:
+		4. *Else If* `base_type` is a `List` type:
 			1. *Let* `t` be the union of all item types in `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
 				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
 			2. *Else:*
 				1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
-		5. *Else If* *UnwrapAffirm:* `Subtype(base_type, Set)`:
+		5. *Else If* `base_type` is a `Set` type:
 			1. *Let* `t` be the type of the elements in `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)`:
 				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
 			3. *Else:*
 				1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ t }}.".
-		6. *Else If* *UnwrapAffirm:* `Subtype(base_type, Map)`:
+		6. *Else If* `base_type` is a `Map` type:
 			1. *Let* `k` be the type of the antecedents in `base_type`.
 			2. *Let* `v` be the type of the consequents in `base_type`.
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)`:
@@ -162,24 +162,39 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 			1. *If* `call.children.1` is a SemanticType:
 				1. *Let* `genericarg` be *UnwrapAffirm:* `TypeValueOf(call.children.1)`.
 				2. *If* `base.source` is "List":
-					1. *Let* `returntype` be a subtype of `List` whose items’ type is `genericarg`.
+					1. *Let* `returntype` be a `List` type whose items’ type is `genericarg`.
 				3. *Else If* `base.source` is "Dict":
-					1. *Let* `returntype` be a subtype of `Dict` whose values’ type is `genericarg`.
+					1. *Let* `returntype` be a `Dict` type whose values’ type is `genericarg`.
 				4. *Else If* `base.source` is "Set":
-					1. *Let* `returntype` be a subtype of `Set` whose elements’ type is `genericarg`.
+					1. *Let* `returntype` be a `Set` type whose elements’ type is `genericarg`.
 				5. *If* `call.children.count` is 3:
 					1. *If* `call.children.2` is a SemanticExpression:
 						1. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.2)`.
 						2. *If* `base.source` is "List":
-							1. *If* `argtype` is not a subtype of `returntype`:
-								1. *Throw:* a new TypeError03.
+							1. *If* *UnwrapAffirm:* `Subtype(argtype, returntype)` is `false`:
+								1. *If* `argtype` is a `Tuple` type:
+									1. *Let* `items` be the union of all item types in `argtype`.
+									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
+										1. *Throw:* a new TypeError03.
+								2. *Else*:
+									1. *Throw:* a new TypeError03.
 						3. *Else If* `base.source` is "Dict":
-							1. *If* `argtype` is not a subtype of `returntype`:
-								1. *Throw:* a new TypeError03.
+							1. *If* *UnwrapAffirm:* `Subtype(argtype, returntype)` is `false`:
+								1. *If* `argtype` is a `Record` type:
+									1. *Let* `values` be the union of all value types in `argtype`.
+									2. *If* *UnwrapAffirm:* `Subtype(values, genericarg)` is `false`:
+										1. *Throw:* a new TypeError03.
+								2. *Else*:
+									1. *Throw:* a new TypeError03.
 						4. *Else If* `base.source` is "Set":
-							1. *Let* `listtype` be a subtype of `List` whose items’ type is `genericarg`.
-							2. *If* `argtype` is not a subtype of `listtype`:
-								1. *Throw:* a new TypeError03.
+							1. *Let* `listtype` be a `List` type whose items’ type is `genericarg`.
+							2. *If* *UnwrapAffirm:* `Subtype(argtype, listtype)` is `false`:
+								1. *If* `argtype` is a `Tuple` type:
+									1. *Let* `items` be the union of all item types in `argtype`.
+									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
+										1. *Throw:* a new TypeError03.
+								2. *Else*:
+									1. *Throw:* a new TypeError03.
 					2. *Else*:
 						1. *Throw:* a new TypeError06.
 				6. *Return:* a mutable copy of `returntype`.
@@ -208,11 +223,16 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						3. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.3)`.
 					3. *Else:*
 						1. *Throw:* a new TypeError06.
-				5. *Let:* `keyvaluetype` be a subtype of `Tuple` whose items are [`antecedenttype`, `consequenttype`].
-				6. *Let*: `paramtype` be a subtype of `List` whose items’ type is `keyvaluetype`.
-				7. *If*: `argtype` is not a subtype of `paramtype`:
+				5. *Let:* `keyvaluetype` be a `Tuple` type whose items are [`antecedenttype`, `consequenttype`].
+				6. *Let*: `paramtype` be a `List` type whose items’ type is `keyvaluetype`.
+				7. *If*: *UnwrapAffirm:* `Subtype(argtype, paramtype)` is `false`:
+					1. *If* `argtype` is a `Tuple` type:
+						1. *Let* `items` be the union of all item types in `argtype`.
+						2. *If* *UnwrapAffirm:* `Subtype(items, keyvaluetype)` is `false`:
+							1. *Throw:* a new TypeError03.
+					2. *Else*:
 						1. *Throw:* a new TypeError03.
-				8. *Return:* a mutable subtype of `Map` whose antecedents’ type is `antecedenttype`
+				8. *Return:* a mutable `Map` type whose antecedents’ type is `antecedenttype`
 					and whose consequents’ type is `consequenttype`.
 		2. *Throw:* a new TypeError06.
 	6. *Throw* a new SyntaxError.
@@ -253,7 +273,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: EMP] expr) :=
 Type! TypeOfUnfolded(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *If* `t0` is a subtype of `Number`:
+	3. *If* *UnwrapAffirm:* `Subtype(t0, Number)`:
 		1. *Return:* `t0`.
 	4. *Throw:* a new TypeError01.
 ;
@@ -262,8 +282,8 @@ Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `t0` is a subtype of `Number` *and* `t1` is a subtype of `Number`:
-		1. *If* `t0` is a subtype of `Float` *or* `t1` is a subtype of `Float`:
+	4. *If* *UnwrapAffirm:* `Subtype(t0, Number)` *and* *UnwrapAffirm:* `Subtype(t1, Number)`:
+		1. *If* *UnwrapAffirm:* `Subtype(t0, Float)` *or* *UnwrapAffirm:* `Subtype(t1, Float)`:
 			1. *Return:* `Float`.
 		2. *Else*:
 			1. *Return:* `Integer`.
@@ -274,7 +294,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `t0` is a subtype of `Number` *and* `t1` is a subtype of `Number`:
+	4. *If* *UnwrapAffirm:* `Subtype(t0, Number)` *and* *UnwrapAffirm:* `Subtype(t1, Number)`:
 		1. *Return:* `Boolean`.
 	5. *Throw:* a new TypeError01.
 ;
@@ -287,9 +307,9 @@ Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `t0` is a subtype of `Number` *and* `t1` is a subtype of `Number`:
-		1. *If* `t0` is a subtype of `Integer` *or* `t1` is a subtype of `Integer`:
-			1. *If* `t0` is a subtype of `Float` *or* `t1` is a subtype of `Float`:
+	4. *If* *UnwrapAffirm:* `Subtype(t0, Number)` *and* *UnwrapAffirm:* `Subtype(t1, Number)`:
+		1. *If* *UnwrapAffirm:* `Subtype(t0, Integer)` *or* *UnwrapAffirm:* `Subtype(t1, Integer)`:
+			1. *If* *UnwrapAffirm:* `Subtype(t0, Float)` *or* *UnwrapAffirm:* `Subtype(t1, Float)`:
 				1. *If* `operator` is `IS`:
 					1. *Return:* `ToType(false)`.
 		2. *Return:* `Boolean`.
@@ -327,7 +347,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: COND] expr) :=
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *Let* `t2` be *Unwrap:* `TypeOf(expr.children.2)`.
-	5. *If* `t0` is a subtype of `Boolean`:
+	5. *If* *UnwrapAffirm:* `Subtype(t0, Boolean)`:
 		1. *If* `t0` is `ToType(false)`:
 			1. *Return:* `t2`.
 		2. *If* `t0` is `ToType(true)`:

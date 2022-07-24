@@ -2,7 +2,9 @@ import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	SolidType,
+	SolidTypeUnit,
 	SolidTypeTuple,
+	SolidTypeRecord,
 	SolidTypeList,
 	SolidTypeDict,
 	SolidTypeSet,
@@ -68,36 +70,59 @@ export class ASTNodeCall extends ASTNodeExpression {
 		return (new Map<ValidFunctionName, () => SolidType>([
 			[ValidFunctionName.LIST, () => {
 				this.countArgs(1n, [0n, 2n]);
-				const returntype: SolidType = new SolidTypeList(this.typeargs[0].eval());
-				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
-					returntype,
-					this.exprargs[0],
-					this,
-					this.validator,
-				);
+				const itemtype:   SolidType = this.typeargs[0].eval();
+				const returntype: SolidType = new SolidTypeList(itemtype);
+				if (this.exprargs.length) {
+					const argtype: SolidType = this.exprargs[0].type();
+					try {
+						ASTNodeSolid.typeCheckAssignment(returntype, argtype, this, this.validator);
+					} catch (err) {
+						const argitemtype: SolidType = (
+							(argtype instanceof SolidTypeUnit && argtype.value instanceof SolidTuple) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof SolidTypeTuple)                                       ? argtype.itemTypes()                :
+							(() => { throw err; })()
+						);
+						ASTNodeSolid.typeCheckAssignment(itemtype, argitemtype, this, this.validator);
+					}
+				}
 				return returntype.mutableOf();
 			}],
 			[ValidFunctionName.DICT, () => {
 				this.countArgs(1n, [0n, 2n]);
-				const returntype: SolidType = new SolidTypeDict(this.typeargs[0].eval());
-				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
-					returntype,
-					this.exprargs[0],
-					this,
-					this.validator,
-				);
+				const valuetype:  SolidType = this.typeargs[0].eval();
+				const returntype: SolidType = new SolidTypeDict(valuetype);
+				if (this.exprargs.length) {
+					const argtype: SolidType = this.exprargs[0].type();
+					try {
+						ASTNodeSolid.typeCheckAssignment(returntype, argtype, this, this.validator);
+					} catch (err) {
+						const argvaluetype: SolidType = (
+							(argtype instanceof SolidTypeUnit && argtype.value instanceof SolidRecord) ? argtype.value.toType().valueTypes() :
+							(argtype instanceof SolidTypeRecord)                                       ? argtype.valueTypes()                :
+							(() => { throw err; })()
+						);
+						ASTNodeSolid.typeCheckAssignment(valuetype, argvaluetype, this, this.validator);
+					}
+				}
 				return returntype.mutableOf();
 			}],
 			[ValidFunctionName.SET, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const eltype:     SolidType = this.typeargs[0].eval();
 				const returntype: SolidType = new SolidTypeSet(eltype);
-				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
-					new SolidTypeList(eltype),
-					this.exprargs[0],
-					this,
-					this.validator,
-				);
+				if (this.exprargs.length) {
+					const argtype: SolidType = this.exprargs[0].type();
+					try {
+						ASTNodeSolid.typeCheckAssignment(new SolidTypeList(eltype), argtype, this, this.validator);
+					} catch (err) {
+						const argitemtype: SolidType = (
+							(argtype instanceof SolidTypeUnit && argtype.value instanceof SolidTuple) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof SolidTypeTuple)                                       ? argtype.itemTypes()                :
+							(() => { throw err; })()
+						);
+						ASTNodeSolid.typeCheckAssignment(eltype, argitemtype, this, this.validator);
+					}
+				}
 				return returntype.mutableOf();
 			}],
 			[ValidFunctionName.MAP, () => {
@@ -105,12 +130,20 @@ export class ASTNodeCall extends ASTNodeExpression {
 				const anttype:    SolidType = this.typeargs[0].eval();
 				const contype:    SolidType = this.typeargs[1]?.eval() || anttype;
 				const returntype: SolidType = new SolidTypeMap(anttype, contype);
-				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
-					new SolidTypeList(SolidTypeTuple.fromTypes([anttype, contype])),
-					this.exprargs[0],
-					this,
-					this.validator,
-				);
+				const entrytype: SolidType = SolidTypeTuple.fromTypes([anttype, contype]);
+				if (this.exprargs.length) {
+					const argtype: SolidType = this.exprargs[0].type();
+					try {
+						ASTNodeSolid.typeCheckAssignment(new SolidTypeList(entrytype), argtype, this, this.validator);
+					} catch (err) {
+						const argitemtype: SolidType = (
+							(argtype instanceof SolidTypeUnit && argtype.value instanceof SolidTuple) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof SolidTypeTuple)                                       ? argtype.itemTypes()                :
+							(() => { throw err; })()
+						);
+						ASTNodeSolid.typeCheckAssignment(entrytype, argitemtype, this, this.validator);
+					}
+				}
 				return returntype.mutableOf();
 			}],
 		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();

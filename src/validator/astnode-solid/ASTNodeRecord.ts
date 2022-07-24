@@ -36,7 +36,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.type(),
-		]))).mutableOf();
+		])), true);
 	}
 	protected override fold_do(): SolidObject | null {
 		const properties: ReadonlyMap<bigint, SolidObject | null> = new Map(this.children.map((c) => [

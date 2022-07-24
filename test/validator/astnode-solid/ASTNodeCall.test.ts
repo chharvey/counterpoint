@@ -38,10 +38,10 @@ describe('ASTNodeCall', () => {
 					]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new SolidTypeList(SolidType.INT).mutableOf(),
-					new SolidTypeDict(SolidType.INT).mutableOf(),
-					new SolidTypeSet(SolidType.INT).mutableOf(),
-					new SolidTypeMap(SolidType.INT, SolidType.FLOAT).mutableOf(),
+					new SolidTypeList(SolidType.INT, true),
+					new SolidTypeDict(SolidType.INT, true),
+					new SolidTypeSet(SolidType.INT, true),
+					new SolidTypeMap(SolidType.INT, SolidType.FLOAT, true),
 				],
 			);
 		});
@@ -57,9 +57,9 @@ describe('ASTNodeCall', () => {
 					]));`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new SolidTypeList(SolidType.INT).mutableOf(),
-					new SolidTypeSet(SolidType.INT).mutableOf(),
-					new SolidTypeMap(SolidType.INT, SolidType.FLOAT).mutableOf(),
+					new SolidTypeList(SolidType.INT, true),
+					new SolidTypeSet(SolidType.INT, true),
+					new SolidTypeMap(SolidType.INT, SolidType.FLOAT, true),
 				],
 			);
 		});
@@ -75,20 +75,20 @@ describe('ASTNodeCall', () => {
 					`Map.<int, float>([]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new SolidTypeList(SolidType.INT).mutableOf(),
-					new SolidTypeDict(SolidType.INT).mutableOf(),
-					new SolidTypeSet(SolidType.INT).mutableOf(),
-					new SolidTypeMap(SolidType.INT, SolidType.FLOAT).mutableOf(),
-					new SolidTypeList(SolidType.INT).mutableOf(),
-					new SolidTypeSet(SolidType.INT).mutableOf(),
-					new SolidTypeMap(SolidType.INT, SolidType.FLOAT).mutableOf(),
+					new SolidTypeList(SolidType.INT, true),
+					new SolidTypeDict(SolidType.INT, true),
+					new SolidTypeSet(SolidType.INT, true),
+					new SolidTypeMap(SolidType.INT, SolidType.FLOAT, true),
+					new SolidTypeList(SolidType.INT, true),
+					new SolidTypeSet(SolidType.INT, true),
+					new SolidTypeMap(SolidType.INT, SolidType.FLOAT, true),
 				],
 			);
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeCall.fromSource(`Map.<int>();`).type(),
-				new SolidTypeMap(SolidType.INT, SolidType.INT).mutableOf(),
+				new SolidTypeMap(SolidType.INT, SolidType.INT, true),
 			);
 		});
 		it('throws if base is not an ASTNodeVariable.', () => {

@@ -1,6 +1,5 @@
 import {
 	SolidObject,
-	SolidRecord,
 	SolidDict,
 } from './index.js';
 import {SolidType} from './SolidType.js';
@@ -31,10 +30,7 @@ export class SolidTypeDict extends SolidType {
 	}
 
 	override includes(v: SolidObject): boolean {
-		return (
-			   v instanceof SolidDict   && v.toType().isSubtypeOf(this)
-			|| v instanceof SolidRecord && v.toType().isSubtypeOf(this)
-		);
+		return v instanceof SolidDict && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: SolidType): boolean {
