@@ -31,11 +31,10 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 		throw builder && 'ASTNodeSet#build_do not yet supported.';
 	}
 	protected override type_do(): SolidType {
-		return new SolidTypeSet(
-			(this.children.length)
-				? SolidType.unionAll(this.children.map((c) => c.type()))
-				: SolidType.NEVER,
-		).mutableOf();
+		return new SolidTypeSet(((this.children.length)
+			? SolidType.unionAll(this.children.map((c) => c.type()))
+			: SolidType.NEVER
+		), true);
 	}
 	protected override fold_do(): SolidObject | null {
 		const elements: readonly (SolidObject | null)[] = this.children.map((c) => c.fold());

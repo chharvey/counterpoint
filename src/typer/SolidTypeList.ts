@@ -1,6 +1,5 @@
 import {
 	SolidObject,
-	SolidTuple,
 	SolidList,
 } from './index.js';
 import {SolidType} from './SolidType.js';
@@ -31,10 +30,7 @@ export class SolidTypeList extends SolidType {
 	}
 
 	override includes(v: SolidObject): boolean {
-		return (
-			   v instanceof SolidList  && v.toType().isSubtypeOf(this)
-			|| v instanceof SolidTuple && v.toType().isSubtypeOf(this)
-		);
+		return v instanceof SolidList && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: SolidType): boolean {

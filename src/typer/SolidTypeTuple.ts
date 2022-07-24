@@ -5,7 +5,6 @@ import {
 	AST,
 } from './package.js';
 import {
-	SolidTypeList,
 	SolidObject,
 	Int16,
 	SolidTuple,
@@ -22,13 +21,14 @@ export class SolidTypeTuple extends SolidType {
 	/**
 	 * Construct a new SolidTypeTuple from type items, assuming each item is required.
 	 * @param types the types of the tuple
+	 * @param is_mutable is the tuple type mutable?
 	 * @return a new tuple type with the provided items
 	 */
-	static fromTypes(types: readonly SolidType[] = []): SolidTypeTuple {
+	static fromTypes(types: readonly SolidType[] = [], is_mutable: boolean = false): SolidTypeTuple {
 		return new SolidTypeTuple(types.map((t) => ({
 			type:     t,
 			optional: false,
-		})));
+		})), is_mutable);
 	}
 
 
@@ -73,10 +73,6 @@ export class SolidTypeTuple extends SolidType {
 				? this.types[i].type.equals(thattype.type)
 				: this.types[i].type.isSubtypeOf(thattype.type)
 			))
-		) || (
-			t instanceof SolidTypeList
-			&& !t.isMutable
-			&& this.itemTypes().isSubtypeOf(t.types)
 		);
 	}
 
