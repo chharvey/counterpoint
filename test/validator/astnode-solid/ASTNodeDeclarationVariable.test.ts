@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import {
-	CONFIG_DEFAULT,
 	Operator,
 	ASTNODE_SOLID as AST,
 	SymbolStructure,
