@@ -13,14 +13,14 @@ Your JSON file should be a single object, with two optional properties: `languag
 [Counterpoint API coming soon]
 
 - Without a config file, the Counterpoint compiler will use the configuration default values, listed in the next section.
-- To use a config file during compilation, you must specify it on the command line. Run `npx solid --help` for details.
-- Even with a config file, you may override it with per-option CLI arguments. Run `npx solid --config` for details.
+- To use a config file during compilation, you must specify it on the command line. Run `npx cpc --help` for details.
+- Even with a config file, you may override it with per-option CLI arguments. Run `npx cpc --config` for details.
 
 For example, the default value of [`comments`](#comments) is `true`.
 If in your `counterpoint-config.json` you have `{"languageFeatures": {"comments": false}}`,
 that would override the default. However, if you run
 ```shell
-$ npx solid c ./my-program.cp -p=./counterpoint-config.json --comments
+$ npx cpc c ./my-program.cp -p=./counterpoint-config.json --comments
 ```
 the `--comments` option would override your config file and turn comments back on again.
 

@@ -25,10 +25,10 @@ $ npm ci && npm run build
 
 To be sure it installed correctly, run this command to see the current version of `counterpoint`:
 ```shell
-$ npx solid --version # you should see:
-> solid version 0.2.0
+$ npx cpc --version # you should see:
+> counterpoint version 0.2.0
 ```
-Run `npx solid --help` for the full suite of CLI commands.
+Run `npx cpc --help` for the full suite of CLI commands.
 
 Now you’re ready to start coding!
 For this demo, we’ll write a simple calculation of only numbers and operators.
@@ -43,12 +43,12 @@ Make sure your current working directory is the `./counterpoint/` project direct
 (for now, you’ll need to be in this directory to run the compiler),
 and then run the following commands:
 ```shell
-$ npx solid c ./sample/my-program.cp
-$ npx solid r ./sample/my-program.wasm
+$ npx cpc c ./sample/my-program.cp
+$ npx cpc r ./sample/my-program.wasm
 ```
 The first line compiles your source code into an executable binary format,
 and the second line runs that executable.
-For a full description of what the `solid` command-line interface can do, run `npx solid --help`.
+For a full description of what the `cpc` command-line interface can do, run `npx cpc --help`.
 
 That’s it! You should see `[-15]` in the output,
 which is the result of evaluating the expression.

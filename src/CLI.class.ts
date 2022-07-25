@@ -61,37 +61,37 @@ type CustomArgsType = {
 export class CLI {
 	/** Text to print on --help. */
 	static readonly HELPTEXT: string = xjs.String.dedent`
-		Usage: solid <command> <filepath> [<options>]
+		Usage: cpc <command> <filepath> [<options>]
 
-		Parse, analyze, and compile a Solid source code file.
+		Parse, analyze, and compile a Counterpoint source code file.
 		Executables are in WASM binary format. Plaintext outputs are in WAT format.
 		See [WebAssembly](https://webassembly.org/) for details.
 
 		Examples:
 		\`\`\`
-		# Compile \`test.solid\` to \`test.wasm\`:
-		$ solid compile test.solid
+		# Compile \`test.cp\` to \`test.wasm\`:
+		$ cpc compile test.cp
 
-		# Compile \`src/input.solid\` to \`build/output.wasm\`:
-		$ solid compile src/input.solid --out build/output.wasm
+		# Compile \`src/input.cp\` to \`build/output.wasm\`:
+		$ cpc compile src/input.cp --out build/output.wasm
 
-		# Debug \`program.solid\` (writes to \`program.wat\`):
-		$ solid dev program.solid
+		# Debug \`program.cp\` (writes to \`program.wat\`):
+		$ cpc dev program.cp
 
 		# Execute \`program.wasm\`:
-		$ solid run program.wasm
+		$ cpc run program.wasm
 		\`\`\`
 
 		Commands:
 		help                           Print this help message.
-		version                        Print the version of Solid currently installed.
-		c, compile                     Compile a Solid file into a \`*.wasm\` executable binary.
-		d, dev                         Compile a Solid file into a \`*.wat\` text file for inspection.
+		version                        Print the version of Counterpoint currently installed.
+		c, compile                     Compile a Counterpoint file into a \`*.wasm\` executable binary.
+		d, dev                         Compile a Counterpoint file into a \`*.wat\` text file for inspection.
 		r, run                         Execute a compiled binary file. Ignore the \`--out\` option.
 
 		Options:
 		-h, --help                     Print this help message.
-		-v, --version                  Print the version of Solid currently installed.
+		-v, --version                  Print the version of Counterpoint currently installed.
 		-o, --out=file                 Specify the output file.
 		                               Otherwise, the default output filepath is the input filepath except
 		                               with the extension changed to \`.wasm\` (compile) or \`.wat\` (dev).
@@ -198,7 +198,7 @@ export class CLI {
 	/**
 	 * Compute the cascading configuration for this CLI.
 	 * Cascade in order of precedence (1 is lowest):
-	 * 1. The Solid Default Configuration file.
+	 * 1. The Counterpoint Default Configuration file.
 	 * 2. A configuration file specified via `--project` CLI option.
 	 * 3. Any individual CLI options.
 	 * @param cwd the current working directory, `process.cwd()`
