@@ -1,4 +1,4 @@
-import {SolidTypeUnit} from './SolidTypeUnit.js';
+import {SolidTypeUnit} from './package.js';
 import type {SolidObject} from './SolidObject.js';
 import {Primitive} from './Primitive.js';
 

@@ -3,12 +3,10 @@ import {
 	IntRange,
 	ValidAccessOperator,
 	AST,
-} from './package.js';
-import {
 	SolidObject,
 	Int16,
 	SolidTuple,
-} from './index.js';
+} from './package.js';
 import type {TypeEntry} from './utils-public.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {SolidType} from './SolidType.js';

@@ -1,5 +1,5 @@
-import type {Float64} from './index.js';
 import {Primitive} from './Primitive.js';
+import type {Float64} from './index.js';
 
 
 

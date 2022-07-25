@@ -1,5 +1,10 @@
 import * as xjs from 'extrajs';
 import {
+	solidObjectsIdentical,
+	SolidObject,
+	SolidNull,
+} from './package.js';
+import {
 	SolidTypeIntersection,
 	SolidTypeUnion,
 	SolidTypeDifference,
@@ -9,10 +14,7 @@ import {
 	SolidTypeInteger,
 	SolidTypeFloat,
 	SolidTypeString,
-	SolidObject,
-	SolidNull,
 } from './index.js';
-import {solidObjectsIdentical} from './utils-private.js';
 
 
 
@@ -21,6 +23,7 @@ import {solidObjectsIdentical} from './utils-private.js';
  * Known subclasses:
  * - SolidTypeIntersection
  * - SolidTypeUnion
+ * - SolidTypeDifference
  * - SolidTypeInterface
  * - SolidTypeNever
  * - SolidTypeVoid

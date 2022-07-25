@@ -1,6 +1,8 @@
-import {SolidType} from './SolidType.js';
-import {SolidTypeUnit} from './SolidTypeUnit.js';
-import {SolidTypeDict} from './SolidTypeDict.js';
+import {
+	SolidType,
+	SolidTypeUnit,
+	SolidTypeDict,
+} from './package.js';
 import type {SolidObject} from './SolidObject.js';
 import {CollectionKeyed} from './CollectionKeyed.js';
 

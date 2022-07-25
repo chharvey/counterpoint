@@ -1,5 +1,7 @@
-import {SolidTypeUnit} from './SolidTypeUnit.js';
-import {SolidTypeRecord} from './SolidTypeRecord.js';
+import {
+	SolidTypeUnit,
+	SolidTypeRecord,
+} from './package.js';
 import type {SolidObject} from './SolidObject.js';
 import {CollectionKeyed} from './CollectionKeyed.js';
 

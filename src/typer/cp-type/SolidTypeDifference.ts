@@ -1,6 +1,8 @@
 import * as xjs from 'extrajs';
-import type {SolidObject} from './index.js';
-import {solidObjectsIdentical} from './utils-private.js';
+import {
+	solidObjectsIdentical,
+	SolidObject,
+} from './package.js';
 import {SolidType} from './SolidType.js';
 
 
