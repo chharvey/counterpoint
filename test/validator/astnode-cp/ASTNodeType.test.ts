@@ -1,14 +1,7 @@
 import * as assert from 'assert';
 import {
 	AST,
-	TypeEntry,
-	SolidType,
-	SolidTypeTuple,
-	SolidTypeRecord,
-	SolidTypeList,
-	SolidTypeDict,
-	SolidTypeSet,
-	SolidTypeMap,
+	TYPE,
 	SolidBoolean,
 	SolidTypeError,
 	ReferenceError01,
@@ -32,7 +25,7 @@ describe('ASTNodeType', () => {
 					`42`,
 					`4.2e+3`,
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
-					SolidType.NULL,
+					TYPE.SolidType.NULL,
 					SolidBoolean.FALSETYPE,
 					SolidBoolean.TRUETYPE,
 					typeConstInt(42n),
@@ -46,10 +39,10 @@ describe('ASTNodeType', () => {
 					'float',
 					'obj',
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
-					SolidType.BOOL,
-					SolidType.INT,
-					SolidType.FLOAT,
-					SolidType.OBJ,
+					TYPE.SolidType.BOOL,
+					TYPE.SolidType.INT,
+					TYPE.SolidType.FLOAT,
+					TYPE.SolidType.OBJ,
 				]);
 			});
 		});
@@ -96,7 +89,7 @@ describe('ASTNodeType', () => {
 						.children[1] as AST.ASTNodeDeclarationType)
 						.assigned as AST.ASTNodeTypeAlias)
 						.eval(),
-					SolidType.INT,
+					TYPE.SolidType.INT,
 				);
 			});
 		});
@@ -108,10 +101,10 @@ describe('ASTNodeType', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).eval(),
-				new SolidTypeTuple([
-					{type: SolidType.INT,  optional: false},
-					{type: SolidType.BOOL, optional: false},
-					{type: SolidType.STR,  optional: true},
+				new TYPE.SolidTypeTuple([
+					{type: TYPE.SolidType.INT,  optional: false},
+					{type: TYPE.SolidType.BOOL, optional: false},
+					{type: TYPE.SolidType.STR,  optional: true},
 				]),
 			);
 		});
@@ -124,12 +117,12 @@ describe('ASTNodeType', () => {
 			const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, z: str]`);
 			assert.deepStrictEqual(
 				node.eval(),
-				new SolidTypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
+				new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>(node.children.map((c, i) => [
 					c.key.id,
 					[
-						{type: SolidType.INT,  optional: false},
-						{type: SolidType.BOOL, optional: true},
-						{type: SolidType.STR,  optional: false},
+						{type: TYPE.SolidType.INT,  optional: false},
+						{type: TYPE.SolidType.BOOL, optional: true},
+						{type: TYPE.SolidType.STR,  optional: false},
 					][i],
 				]))),
 			);
@@ -143,16 +136,16 @@ describe('ASTNodeType', () => {
 			it('returns a SolidTypeList if there is no count.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeList.fromSource(`(int | bool)[]`).eval(),
-					new SolidTypeList(SolidType.INT.union(SolidType.BOOL)),
+					new TYPE.SolidTypeList(TYPE.SolidType.INT.union(TYPE.SolidType.BOOL)),
 				);
 			});
 			it('returns a SolidTypeTuple if there is a count.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeList.fromSource(`(int | bool)[3]`).eval(),
-					SolidTypeTuple.fromTypes([
-						SolidType.INT.union(SolidType.BOOL),
-						SolidType.INT.union(SolidType.BOOL),
-						SolidType.INT.union(SolidType.BOOL),
+					TYPE.SolidTypeTuple.fromTypes([
+						TYPE.SolidType.INT.union(TYPE.SolidType.BOOL),
+						TYPE.SolidType.INT.union(TYPE.SolidType.BOOL),
+						TYPE.SolidType.INT.union(TYPE.SolidType.BOOL),
 					]),
 				);
 			});
@@ -168,15 +161,15 @@ describe('ASTNodeType', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeDict.fromSource(`[:int | bool]`).eval(),
-				new SolidTypeDict(SolidType.INT.union(SolidType.BOOL)),
+				new TYPE.SolidTypeDict(TYPE.SolidType.INT.union(TYPE.SolidType.BOOL)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeSet.fromSource(`(int | bool){}`).eval(),
-				new SolidTypeSet(SolidType.INT.union(SolidType.BOOL)),
+				new TYPE.SolidTypeSet(TYPE.SolidType.INT.union(TYPE.SolidType.BOOL)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeMap.fromSource(`{int -> bool}`).eval(),
-				new SolidTypeMap(SolidType.INT, SolidType.BOOL),
+				new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.BOOL),
 			);
 		});
 	});
@@ -187,19 +180,19 @@ describe('ASTNodeType', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationUnary.fromSource(`int?`).eval(),
-				SolidType.INT.union(SolidType.NULL),
+				TYPE.SolidType.INT.union(TYPE.SolidType.NULL),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationUnary.fromSource(`mutable int[]`).eval(),
-				new SolidTypeList(SolidType.INT, true),
+				new TYPE.SolidTypeList(TYPE.SolidType.INT, true),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource(`obj & 3`).eval(),
-				SolidType.OBJ.intersect(typeConstInt(3n)),
+				TYPE.SolidType.OBJ.intersect(typeConstInt(3n)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource(`4.2 | int`).eval(),
-				typeConstFloat(4.2).union(SolidType.INT),
+				typeConstFloat(4.2).union(TYPE.SolidType.INT),
 			);
 		});
 	});

@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
-	SolidTypeSet,
+	TYPE,
 	SolidObject,
 	SolidSet,
 	INST,
@@ -30,10 +29,10 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeSet#build_do not yet supported.';
 	}
-	protected override type_do(): SolidType {
-		return new SolidTypeSet(((this.children.length)
-			? SolidType.unionAll(this.children.map((c) => c.type()))
-			: SolidType.NEVER
+	protected override type_do(): TYPE.SolidType {
+		return new TYPE.SolidTypeSet(((this.children.length)
+			? TYPE.SolidType.unionAll(this.children.map((c) => c.type()))
+			: TYPE.SolidType.NEVER
 		), true);
 	}
 	protected override fold_do(): SolidObject | null {

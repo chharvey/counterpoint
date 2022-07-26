@@ -1,8 +1,7 @@
 import * as assert from 'assert';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	SolidType,
-	SolidTypeUnit,
+	TYPE,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -73,8 +72,8 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionConst {
 		return INST.InstructionConst.fromCPValue(this.fold(), to_float);
 	}
-	protected override type_do(): SolidType {
-		return new SolidTypeUnit(this.value);
+	protected override type_do(): TYPE.SolidType {
+		return new TYPE.SolidTypeUnit(this.value);
 	}
 	protected override fold_do(): SolidObject {
 		return this.value;

@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
+	TYPE,
 	ReferenceError01,
 	ReferenceError03,
 	CPConfig,
@@ -41,13 +41,13 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		};
 	}
-	protected override eval_do(): SolidType {
+	protected override eval_do(): TYPE.SolidType {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {
 				return symbol.typevalue;
 			};
 		};
-		return SolidType.NEVER;
+		return TYPE.SolidType.NEVER;
 	}
 }

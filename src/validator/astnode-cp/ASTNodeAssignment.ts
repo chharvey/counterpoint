@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
+	TYPE,
 	INST,
 	Builder,
 	AssignmentError10,
@@ -41,7 +41,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	override typeCheck(): void {
 		super.typeCheck();
 		if (this.assignee instanceof ASTNodeAccess) {
-			const base_type: SolidType = this.assignee.base.type();
+			const base_type: TYPE.SolidType = this.assignee.base.type();
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, this);
 			}
@@ -54,7 +54,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		);
 	}
 	override build(builder: Builder): INST.InstructionStatement {
-		const tofloat: boolean = this.assignee.type().isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat();
+		const tofloat: boolean = this.assignee.type().isSubtypeOf(TYPE.SolidType.FLOAT) || this.assigned.shouldFloat();
 		return new INST.InstructionStatement(
 			builder.stmtCount,
 			new INST.InstructionGlobalSet((this.assignee as ASTNodeVariable).id, this.assigned.build(builder, tofloat)),

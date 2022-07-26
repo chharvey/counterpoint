@@ -3,12 +3,7 @@ import {
 	CPConfig,
 	CONFIG_DEFAULT,
 	AST,
-	SolidType,
-	SolidTypeUnit,
-	SolidTypeTuple,
-	SolidTypeRecord,
-	SolidTypeSet,
-	SolidTypeMap,
+	TYPE,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -65,7 +60,7 @@ describe('ASTNodeExpression', () => {
 					} finally {
 						c.fold = orig;
 					};
-				})), constants.map((c) => new SolidTypeUnit(c.fold()!)));
+				})), constants.map((c) => new TYPE.SolidTypeUnit(c.fold()!)));
 			});
 		});
 
@@ -181,7 +176,7 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			it('returns Never for undeclared variables.', () => {
-				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(), SolidType.NEVER);
+				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(), TYPE.SolidType.NEVER);
 			});
 		});
 
@@ -318,7 +313,7 @@ describe('ASTNodeExpression', () => {
 				] as const;
 			}
 			context('with constant folding on.', () => {
-				let types: SolidType[];
+				let types: TYPE.SolidType[];
 				before(() => {
 					templates = initTemplates();
 					types = templates.map((t) => assert_wasCalled(t.fold, 1, (orig, spy) => {
@@ -333,18 +328,18 @@ describe('ASTNodeExpression', () => {
 				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new SolidTypeUnit`.', () => {
 					assert.deepStrictEqual(
 						types.slice(0, 2),
-						templates.slice(0, 2).map((t) => new SolidTypeUnit(t.fold()!)),
+						templates.slice(0, 2).map((t) => new TYPE.SolidTypeUnit(t.fold()!)),
 					);
 				});
 				it('for non-foldable interpolations, returns `String`.', () => {
-					assert.deepStrictEqual(types[2], SolidType.STR);
+					assert.deepStrictEqual(types[2], TYPE.SolidType.STR);
 				});
 			});
 			context('with constant folding off.', () => {
 				it('always returns `String`.', () => {
 					templates = initTemplates(CONFIG_FOLDING_OFF);
 					templates.forEach((t) => {
-						assert.deepStrictEqual(t.type(), SolidType.STR);
+						assert.deepStrictEqual(t.type(), TYPE.SolidType.STR);
 					});
 				});
 			});
@@ -391,10 +386,10 @@ describe('ASTNodeExpression', () => {
 	describe('ASTNode{Tuple,Record,Set,Map}', () => {
 		describe('#type', () => {
 			([
-				['with constant folding on.',  CONFIG_DEFAULT,     SolidType.unionAll([typeConstStr('a'), typeConstInt(42n), typeConstFloat(3.0)])],
-				['with constant folding off.', CONFIG_FOLDING_OFF, SolidType.unionAll([typeConstStr('a'), SolidType.INT,     SolidType.FLOAT])],
+				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.SolidType.unionAll([typeConstStr('a'), typeConstInt(42n),  typeConstFloat(3.0)])],
+				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.SolidType.unionAll([typeConstStr('a'), TYPE.SolidType.INT, TYPE.SolidType.FLOAT])],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
-				const expected: SolidTypeUnit[] = [typeConstInt(1n), typeConstFloat(2.0), typeConstStr('three')];
+				const expected: TYPE.SolidTypeUnit[] = [typeConstInt(1n), typeConstFloat(2.0), typeConstStr('three')];
 				const collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,
@@ -415,15 +410,15 @@ describe('ASTNodeExpression', () => {
 				assert.deepStrictEqual(
 					collections.map((node) => node.type()),
 					[
-						SolidTypeTuple.fromTypes(expected, true),
-						SolidTypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [
+						TYPE.SolidTypeTuple.fromTypes(expected, true),
+						TYPE.SolidTypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [
 							c.key.id,
 							expected[i],
 						])), true),
-						new SolidTypeSet(SolidType.unionAll(expected), true),
-						new SolidTypeMap(
+						new TYPE.SolidTypeSet(TYPE.SolidType.unionAll(expected), true),
+						new TYPE.SolidTypeMap(
 							map_ant_type,
-							SolidType.unionAll(expected),
+							TYPE.SolidType.unionAll(expected),
 							true,
 						),
 					],
@@ -530,7 +525,7 @@ describe('ASTNodeExpression', () => {
 		];
 		describe('#type', () => {
 			it('returns the type value of the claimed type.', () => {
-				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3;`).type().equals(SolidType.INT.union(SolidType.NULL)));
+				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3;`).type().equals(TYPE.SolidType.INT.union(TYPE.SolidType.NULL)));
 			});
 			it('throws when the operand type and claimed type do not overlap.', () => {
 				assert.throws(() => AST.ASTNodeClaim.fromSource(`<str>3;`)      .type(), TypeError03);

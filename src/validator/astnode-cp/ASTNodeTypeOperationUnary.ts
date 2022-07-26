@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
+	TYPE,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -31,9 +31,9 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
 		}
 	}
-	protected override eval_do(): SolidType {
+	protected override eval_do(): TYPE.SolidType {
 		return (
-			(this.operator === Operator.ORNULL)  ? this.operand.eval().union(SolidType.NULL) :
+			(this.operator === Operator.ORNULL)  ? this.operand.eval().union(TYPE.SolidType.NULL) :
 			(this.operator === Operator.MUTABLE) ? this.operand.eval().mutableOf() :
 			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`); })()
 		);

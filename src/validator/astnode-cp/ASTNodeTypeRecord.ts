@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
-	SolidTypeRecord,
+	TYPE,
 	NonemptyArray,
 	CPConfig,
 	CONFIG_DEFAULT,
@@ -24,8 +23,8 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	) {
 		super(start_node, {}, children);
 	}
-	protected override eval_do(): SolidType {
-		return new SolidTypeRecord(new Map(this.children.map((c) => [
+	protected override eval_do(): TYPE.SolidType {
+		return new TYPE.SolidTypeRecord(new Map(this.children.map((c) => [
 			c.key.id,
 			{
 				type:     c.val.eval(),

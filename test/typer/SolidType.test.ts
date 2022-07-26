@@ -1,18 +1,6 @@
 import * as assert from 'assert'
 import {
-	TypeEntry,
-	SolidType,
-	SolidTypeIntersection,
-	SolidTypeUnion,
-	SolidTypeDifference,
-	SolidTypeUnit,
-	SolidTypeInterface,
-	SolidTypeTuple,
-	SolidTypeRecord,
-	SolidTypeList,
-	SolidTypeDict,
-	SolidTypeSet,
-	SolidTypeMap,
+	TYPE,
 	SolidObject,
 	SolidBoolean,
 	Int16,
@@ -50,41 +38,41 @@ describe('SolidType', () => {
 			})
 		})
 	}
-	const builtin_types: SolidType[] = [
-		SolidType.NEVER,
-		SolidType.UNKNOWN,
-		SolidType.VOID,
-		SolidType.OBJ,
-		SolidType.NULL,
-		SolidType.BOOL,
-		SolidType.INT,
-		SolidType.FLOAT,
-		SolidType.STR,
+	const builtin_types: TYPE.SolidType[] = [
+		TYPE.SolidType.NEVER,
+		TYPE.SolidType.UNKNOWN,
+		TYPE.SolidType.VOID,
+		TYPE.SolidType.OBJ,
+		TYPE.SolidType.NULL,
+		TYPE.SolidType.BOOL,
+		TYPE.SolidType.INT,
+		TYPE.SolidType.FLOAT,
+		TYPE.SolidType.STR,
 	]
-	const t0: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidType>([
-		['foo', SolidType.OBJ],
-		['bar', SolidType.NULL],
-		['diz', SolidType.BOOL],
+	const t0: TYPE.SolidTypeInterface = new TYPE.SolidTypeInterface(new Map<string, TYPE.SolidType>([
+		['foo', TYPE.SolidType.OBJ],
+		['bar', TYPE.SolidType.NULL],
+		['diz', TYPE.SolidType.BOOL],
 	]))
-	const t1: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidType>([
-		['foo', SolidType.OBJ],
-		['qux', SolidType.INT.union(SolidType.FLOAT)],
-		['diz', SolidType.STR],
+	const t1: TYPE.SolidTypeInterface = new TYPE.SolidTypeInterface(new Map<string, TYPE.SolidType>([
+		['foo', TYPE.SolidType.OBJ],
+		['qux', TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT)],
+		['diz', TYPE.SolidType.STR],
 	]))
 
 
 	describe('#includes', () => {
 		it('uses `SolidObject#identical` to compare values.', () => {
-			function unionOfInts(ns: bigint[]): SolidType {
-				return SolidType.unionAll(ns.map<SolidType>(typeConstInt));
+			function unionOfInts(ns: bigint[]): TYPE.SolidType {
+				return TYPE.SolidType.unionAll(ns.map<TYPE.SolidType>(typeConstInt));
 			}
-			function unionOfFloats(ns: number[]): SolidType {
-				return SolidType.unionAll(ns.map<SolidType>(typeConstFloat));
+			function unionOfFloats(ns: number[]): TYPE.SolidType {
+				return TYPE.SolidType.unionAll(ns.map<TYPE.SolidType>(typeConstFloat));
 			}
-			const t1: SolidType = unionOfFloats([4.2, 4.3, 4.4]);
-			const t2: SolidType = unionOfFloats([4.3, 4.4, 4.5]);
-			const t3: SolidType = unionOfInts([42n, 43n, 44n]);
-			const t4: SolidType = unionOfInts([43n, 44n, 45n]);
+			const t1: TYPE.SolidType = unionOfFloats([4.2, 4.3, 4.4]);
+			const t2: TYPE.SolidType = unionOfFloats([4.3, 4.4, 4.5]);
+			const t3: TYPE.SolidType = unionOfInts([42n, 43n, 44n]);
+			const t4: TYPE.SolidType = unionOfInts([43n, 44n, 45n]);
 			assert.deepStrictEqual([
 				t1,
 				t2,
@@ -110,12 +98,12 @@ describe('SolidType', () => {
 	describe('#intersect', () => {
 		it('1-5 | `T  & never   == never`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.intersect(SolidType.NEVER).equals(SolidType.NEVER), `${ t }`);
+				assert.ok(t.intersect(TYPE.SolidType.NEVER).equals(TYPE.SolidType.NEVER), `${ t }`);
 			})
 		})
 		it('1-6 | `T  & unknown == T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.intersect(SolidType.UNKNOWN).equals(t), `${ t }`);
+				assert.ok(t.intersect(TYPE.SolidType.UNKNOWN).equals(t), `${ t }`);
 			})
 		})
 		it('2-1 | `A  & B == B  & A`', () => {
@@ -134,9 +122,9 @@ describe('SolidType', () => {
 			})
 		})
 		it('extracts constituents of discriminated unions.', () => {
-			assert.ok(SolidType.NULL.union(SolidType.BOOL).union(SolidType.INT)
-				.intersect(SolidType.BOOL.union(SolidType.INT).union(SolidType.FLOAT))
-				.equals(SolidType.BOOL.union(SolidType.INT))
+			assert.ok(TYPE.SolidType.NULL.union(TYPE.SolidType.BOOL).union(TYPE.SolidType.INT)
+				.intersect(TYPE.SolidType.BOOL.union(TYPE.SolidType.INT).union(TYPE.SolidType.FLOAT))
+				.equals(TYPE.SolidType.BOOL.union(TYPE.SolidType.INT))
 			, `
 				(null | bool | int) & (bool | int | float)
 				==
@@ -145,9 +133,9 @@ describe('SolidType', () => {
 		});
 		describe('SolidTypeUnion', () => {
 			it('distributes union operands over intersection: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
-				const expr = SolidType.NULL.union(SolidType.INT).intersect(SolidType.VOID.union(SolidType.NULL).union(SolidBoolean.FALSETYPE));
-				assert.ok(expr.equals(SolidType.NULL), `(null | int) & (void | null | false) == null`);
-				assert.deepStrictEqual(expr, SolidType.NULL);
+				const expr = TYPE.SolidType.NULL.union(TYPE.SolidType.INT).intersect(TYPE.SolidType.VOID.union(TYPE.SolidType.NULL).union(SolidBoolean.FALSETYPE));
+				assert.ok(expr.equals(TYPE.SolidType.NULL), `(null | int) & (void | null | false) == null`);
+				assert.deepStrictEqual(expr, TYPE.SolidType.NULL);
 			});
 		});
 	})
@@ -156,12 +144,12 @@ describe('SolidType', () => {
 	describe('#union', () => {
 		it('1-7 | `T \| never   == T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.union(SolidType.NEVER).equals(t), `${ t }`);
+				assert.ok(t.union(TYPE.SolidType.NEVER).equals(t), `${ t }`);
 			})
 		})
 		it('1-8 | `T \| unknown == unknown`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.union(SolidType.UNKNOWN).equals(SolidType.UNKNOWN), `${ t }`);
+				assert.ok(t.union(TYPE.SolidType.UNKNOWN).equals(TYPE.SolidType.UNKNOWN), `${ t }`);
 			})
 		})
 		it('2-2 | `A \| B == B \| A`', () => {
@@ -180,9 +168,9 @@ describe('SolidType', () => {
 			})
 		})
 		it('extracts constituents of discriminated unions.', () => {
-			assert.ok(SolidType.NULL.union(SolidType.BOOL).union(SolidType.INT)
-				.union(SolidType.BOOL.union(SolidType.INT).union(SolidType.FLOAT))
-				.equals(SolidType.NULL.union(SolidType.BOOL).union(SolidType.INT).union(SolidType.FLOAT))
+			assert.ok(TYPE.SolidType.NULL.union(TYPE.SolidType.BOOL).union(TYPE.SolidType.INT)
+				.union(TYPE.SolidType.BOOL.union(TYPE.SolidType.INT).union(TYPE.SolidType.FLOAT))
+				.equals(TYPE.SolidType.NULL.union(TYPE.SolidType.BOOL).union(TYPE.SolidType.INT).union(TYPE.SolidType.FLOAT))
 			, `
 				(null | bool | int) | (bool | int | float)
 				==
@@ -239,25 +227,25 @@ describe('SolidType', () => {
 	describe('#isSubtypeOf', () => {
 		it('1-1 | `never <: T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(SolidType.NEVER.isSubtypeOf(t), `${ t }`);
+				assert.ok(TYPE.SolidType.NEVER.isSubtypeOf(t), `${ t }`);
 			})
 		})
 		it('1-2 | `T     <: unknown`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.isSubtypeOf(SolidType.UNKNOWN), `${ t }`);
+				assert.ok(t.isSubtypeOf(TYPE.SolidType.UNKNOWN), `${ t }`);
 			})
 		})
 		it('1-3 | `T       <: never  <->  T == never`', () => {
 			builtin_types.forEach((t) => {
-				if (t.isSubtypeOf(SolidType.NEVER)) {
-					assert.ok(t.equals(SolidType.NEVER), `${ t }`);
+				if (t.isSubtypeOf(TYPE.SolidType.NEVER)) {
+					assert.ok(t.equals(TYPE.SolidType.NEVER), `${ t }`);
 				}
 			})
 		})
 		it('1-4 | `unknown <: T      <->  T == unknown`', () => {
 			builtin_types.forEach((t) => {
-				if (SolidType.UNKNOWN.isSubtypeOf(t)) {
-					assert.ok(t.equals(SolidType.UNKNOWN), `${ t }`);
+				if (TYPE.SolidType.UNKNOWN.isSubtypeOf(t)) {
+					assert.ok(t.equals(TYPE.SolidType.UNKNOWN), `${ t }`);
 				}
 			})
 		})
@@ -329,9 +317,9 @@ describe('SolidType', () => {
 				}
 			})
 			assert.ok(
-				SolidType.NULL.union(SolidType.INT).isSubtypeOf(SolidType.NULL.union(SolidType.INT)) &&
-				!SolidType.NULL.union(SolidType.INT).isSubtypeOf(SolidType.NULL) &&
-				!SolidType.NULL.union(SolidType.INT).isSubtypeOf(SolidType.INT),
+				TYPE.SolidType.NULL.union(TYPE.SolidType.INT).isSubtypeOf(TYPE.SolidType.NULL.union(TYPE.SolidType.INT)) &&
+				!TYPE.SolidType.NULL.union(TYPE.SolidType.INT).isSubtypeOf(TYPE.SolidType.NULL) &&
+				!TYPE.SolidType.NULL.union(TYPE.SolidType.INT).isSubtypeOf(TYPE.SolidType.INT),
 				'exists A, C, D s.t. `A <: C | D` but `!(A <: C)` and `!(A <: D)`'
 			)
 		})
@@ -352,21 +340,21 @@ describe('SolidType', () => {
 				}
 			})
 			assert.ok(
-				SolidType.NULL.intersect(SolidType.INT).isSubtypeOf(SolidType.NULL.intersect(SolidType.INT)) &&
-				!SolidType.NULL.isSubtypeOf(SolidType.NULL.intersect(SolidType.INT)) &&
-				!SolidType.INT.isSubtypeOf(SolidType.NULL.intersect(SolidType.INT)),
+				TYPE.SolidType.NULL.intersect(TYPE.SolidType.INT).isSubtypeOf(TYPE.SolidType.NULL.intersect(TYPE.SolidType.INT)) &&
+				!TYPE.SolidType.NULL.isSubtypeOf(TYPE.SolidType.NULL.intersect(TYPE.SolidType.INT)) &&
+				!TYPE.SolidType.INT.isSubtypeOf(TYPE.SolidType.NULL.intersect(TYPE.SolidType.INT)),
 				'exists A, B, C s.t. `A & B <: C` but `!(A <: C)` and `!(B <: C)`'
 			)
 		})
 
 		it('discrete types.', () => {
 			;[
-				SolidType.VOID,
-				SolidType.NULL,
-				SolidType.BOOL,
-				SolidType.INT,
-				SolidType.FLOAT,
-				SolidType.STR,
+				TYPE.SolidType.VOID,
+				TYPE.SolidType.NULL,
+				TYPE.SolidType.BOOL,
+				TYPE.SolidType.INT,
+				TYPE.SolidType.FLOAT,
+				TYPE.SolidType.STR,
 			].forEach((t, _, arr) => {
 				arr.filter((u) => u !== t).forEach((u) => {
 					assert.ok(!u.isSubtypeOf(t), `${ u }, ${ t }`)
@@ -376,40 +364,40 @@ describe('SolidType', () => {
 
 		describe('SolidTypeUnit', () => {
 			it('constant Boolean types should be subtypes of `bool`.', () => {
-				assert.ok(SolidBoolean.FALSETYPE.isSubtypeOf(SolidType.BOOL), 'SolidBoolean.FALSETYPE')
-				assert.ok(SolidBoolean.TRUETYPE .isSubtypeOf(SolidType.BOOL), 'SolidBoolean.TRUETYPE')
+				assert.ok(SolidBoolean.FALSETYPE.isSubtypeOf(TYPE.SolidType.BOOL), 'SolidBoolean.FALSETYPE')
+				assert.ok(SolidBoolean.TRUETYPE .isSubtypeOf(TYPE.SolidType.BOOL), 'SolidBoolean.TRUETYPE')
 			})
 			it('constant Integer types should be subtypes of `int`.', () => {
 				;[42n, -42n, 0n, -0n].map((v) => typeConstInt(v)).forEach((itype) => {
-					assert.ok(itype.isSubtypeOf(SolidType.INT), `${ itype }`)
+					assert.ok(itype.isSubtypeOf(TYPE.SolidType.INT), `${ itype }`)
 				})
 			})
 			it('constant Float types should be subtypes of `float`.', () => {
 				;[4.2, -4.2e-2, 0.0, -0.0].map((v) => typeConstFloat(v)).forEach((ftype) => {
-					assert.ok(ftype.isSubtypeOf(SolidType.FLOAT), `${ ftype }`)
+					assert.ok(ftype.isSubtypeOf(TYPE.SolidType.FLOAT), `${ ftype }`)
 				})
 			})
 			it('constant String types should be subtypes of `str`.', () => {
 				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => typeConstStr(v)).forEach((stype) => {
-					assert.ok(stype.isSubtypeOf(SolidType.STR), `${ stype }`);
+					assert.ok(stype.isSubtypeOf(TYPE.SolidType.STR), `${ stype }`);
 				});
 			});
 			it('constant tuple types should be subtype of a tuple type instance.', () => {
-				new Map<SolidObject, SolidTypeTuple>([
-					[new SolidTuple(),                                             SolidTypeTuple.fromTypes()],
-					[new SolidTuple([new Int16(42n)]),                             SolidTypeTuple.fromTypes([SolidType.INT])],
-					[new SolidTuple([new Float64(4.2), new SolidString('hello')]), SolidTypeTuple.fromTypes([SolidType.FLOAT, SolidType.STR])],
+				new Map<SolidObject, TYPE.SolidTypeTuple>([
+					[new SolidTuple(),                                             TYPE.SolidTypeTuple.fromTypes()],
+					[new SolidTuple([new Int16(42n)]),                             TYPE.SolidTypeTuple.fromTypes([TYPE.SolidType.INT])],
+					[new SolidTuple([new Float64(4.2), new SolidString('hello')]), TYPE.SolidTypeTuple.fromTypes([TYPE.SolidType.FLOAT, TYPE.SolidType.STR])],
 				]).forEach((tupletype, value) => {
-					assert.ok(new SolidTypeUnit(value).isSubtypeOf(tupletype),  `let x: ${ tupletype } = ${ value };`);
+					assert.ok(new TYPE.SolidTypeUnit(value).isSubtypeOf(tupletype),  `let x: ${ tupletype } = ${ value };`);
 				});
 			});
 			it('constant record types should be subtype of a record type instance.', () => {
-				new Map<SolidObject, SolidTypeRecord>([
-					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Int16(42n)]])),                                       SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([[0x100n, SolidType.INT]]))],
-					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Float64(4.2)], [0x101n, new SolidString('hello')]])), SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([[0x100n, SolidType.FLOAT], [0x101n, SolidType.STR]]))],
-					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new SolidString('hello')], [0x101n, new Float64(4.2)]])), SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([[0x100n, SolidType.STR], [0x101n, SolidType.FLOAT]]))],
+				new Map<SolidObject, TYPE.SolidTypeRecord>([
+					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Int16(42n)]])),                                       TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([[0x100n, TYPE.SolidType.INT]]))],
+					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Float64(4.2)], [0x101n, new SolidString('hello')]])), TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([[0x100n, TYPE.SolidType.FLOAT], [0x101n, TYPE.SolidType.STR]]))],
+					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new SolidString('hello')], [0x101n, new Float64(4.2)]])), TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([[0x100n, TYPE.SolidType.STR], [0x101n, TYPE.SolidType.FLOAT]]))],
 				]).forEach((recordtype, value) => {
-					assert.ok(new SolidTypeUnit(value).isSubtypeOf(recordtype),  `let x: ${ recordtype } = ${ value };`);
+					assert.ok(new TYPE.SolidTypeUnit(value).isSubtypeOf(recordtype),  `let x: ${ recordtype } = ${ value };`);
 				});
 			});
 			it('unit list types should be subtype of a list type instance.', () => {
@@ -418,17 +406,17 @@ describe('SolidType', () => {
 					[new Int16(42n)],
 					[new Float64(4.2), new SolidString('hello')],
 				] as const;
-				const output: SolidTypeList[] = [
-					SolidType.NEVER,
-					SolidType.INT,
-					SolidType.FLOAT.union(SolidType.STR),
-				].map((t) => new SolidTypeList(t));
-				new Map<SolidObject, SolidTypeList>([
+				const output: TYPE.SolidTypeList[] = [
+					TYPE.SolidType.NEVER,
+					TYPE.SolidType.INT,
+					TYPE.SolidType.FLOAT.union(TYPE.SolidType.STR),
+				].map((t) => new TYPE.SolidTypeList(t));
+				new Map<SolidObject, TYPE.SolidTypeList>([
 					[new SolidList(),         output[0]],
 					[new SolidList(input[1]), output[1]],
 					[new SolidList(input[2]), output[2]],
 				]).forEach((listtype, value) => {
-					assert.ok(new SolidTypeUnit(value).isSubtypeOf(listtype), `let x: ${ listtype } = ${ value };`);
+					assert.ok(new TYPE.SolidTypeUnit(value).isSubtypeOf(listtype), `let x: ${ listtype } = ${ value };`);
 				});
 			});
 			it('unit dict types should be subtype of a dict type instance.', () => {
@@ -445,271 +433,271 @@ describe('SolidType', () => {
 						[0x101n, new Float64(4.2)],
 					]),
 				] as const;
-				const output: SolidTypeDict[] = [
-					SolidType.INT,
-					SolidType.FLOAT.union(SolidType.STR),
-					SolidType.STR.union(SolidType.FLOAT),
-				].map((t) => new SolidTypeDict(t));
-				new Map<SolidObject, SolidTypeDict>([
+				const output: TYPE.SolidTypeDict[] = [
+					TYPE.SolidType.INT,
+					TYPE.SolidType.FLOAT.union(TYPE.SolidType.STR),
+					TYPE.SolidType.STR.union(TYPE.SolidType.FLOAT),
+				].map((t) => new TYPE.SolidTypeDict(t));
+				new Map<SolidObject, TYPE.SolidTypeDict>([
 					[new SolidDict(input[0]), output[0]],
 					[new SolidDict(input[1]), output[1]],
 					[new SolidDict(input[2]), output[2]],
 				]).forEach((dicttype, value) => {
-					assert.ok(new SolidTypeUnit(value).isSubtypeOf(dicttype), `let x: ${ dicttype } = ${ value };`);
+					assert.ok(new TYPE.SolidTypeUnit(value).isSubtypeOf(dicttype), `let x: ${ dicttype } = ${ value };`);
 				});
 			});
 			it('constant set types should be subtype of a set type instance.', () => {
-				new Map<SolidObject, SolidTypeSet>([
-					[new SolidSet(),                                                      new SolidTypeSet(SolidType.NEVER)],
-					[new SolidSet(new Set([new Int16(42n)])),                             new SolidTypeSet(SolidType.INT)],
-					[new SolidSet(new Set([new Float64(4.2), new SolidString('hello')])), new SolidTypeSet(SolidType.FLOAT.union(SolidType.STR))],
+				new Map<SolidObject, TYPE.SolidTypeSet>([
+					[new SolidSet(),                                                      new TYPE.SolidTypeSet(TYPE.SolidType.NEVER)],
+					[new SolidSet(new Set([new Int16(42n)])),                             new TYPE.SolidTypeSet(TYPE.SolidType.INT)],
+					[new SolidSet(new Set([new Float64(4.2), new SolidString('hello')])), new TYPE.SolidTypeSet(TYPE.SolidType.FLOAT.union(TYPE.SolidType.STR))],
 				]).forEach((settype, value) => {
-					assert.ok(new SolidTypeUnit(value).isSubtypeOf(settype), `let x: ${ settype } = ${ value };`);
+					assert.ok(new TYPE.SolidTypeUnit(value).isSubtypeOf(settype), `let x: ${ settype } = ${ value };`);
 				});
 			});
 			it('constant map types should be subtype of a map type instance.', () => {
-				new Map<SolidObject, SolidTypeMap>([
-					[new SolidMap(new Map<SolidObject, SolidObject>([[new Int16(0x100n), new Int16(42n)]])),                                                  new SolidTypeMap(SolidType.INT, SolidType.INT)],
-					[new SolidMap(new Map<SolidObject, SolidObject>([[new Int16(0x100n), new Float64(4.2)], [new Int16(0x101n), new SolidString('hello')]])), new SolidTypeMap(SolidType.INT, SolidType.FLOAT.union(SolidType.STR))],
-					[new SolidMap(new Map<SolidObject, SolidObject>([[new SolidString('hello'), new Int16(0x100n)], [new Float64(4.2), new Int16(0x101n)]])), new SolidTypeMap(SolidType.FLOAT.union(SolidType.STR), SolidType.INT)],
+				new Map<SolidObject, TYPE.SolidTypeMap>([
+					[new SolidMap(new Map<SolidObject, SolidObject>([[new Int16(0x100n), new Int16(42n)]])),                                                  new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.INT)],
+					[new SolidMap(new Map<SolidObject, SolidObject>([[new Int16(0x100n), new Float64(4.2)], [new Int16(0x101n), new SolidString('hello')]])), new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.FLOAT.union(TYPE.SolidType.STR))],
+					[new SolidMap(new Map<SolidObject, SolidObject>([[new SolidString('hello'), new Int16(0x100n)], [new Float64(4.2), new Int16(0x101n)]])), new TYPE.SolidTypeMap(TYPE.SolidType.FLOAT.union(TYPE.SolidType.STR), TYPE.SolidType.INT)],
 				]).forEach((maptype, value) => {
-					assert.ok(new SolidTypeUnit(value).isSubtypeOf(maptype), `let x: ${ maptype } = ${ value };`);
+					assert.ok(new TYPE.SolidTypeUnit(value).isSubtypeOf(maptype), `let x: ${ maptype } = ${ value };`);
 				});
 			});
 		})
 
 		describe('SolidTypeTuple', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(SolidTypeTuple.fromTypes([
-					SolidType.INT,
-					SolidType.BOOL,
-					SolidType.STR,
-				]).isSubtypeOf(SolidType.OBJ), `[int, bool, str] <: obj;`);
-				assert.ok(!SolidType.OBJ.isSubtypeOf(SolidTypeTuple.fromTypes([
-					SolidType.INT,
-					SolidType.BOOL,
-					SolidType.STR,
+				assert.ok(TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT,
+					TYPE.SolidType.BOOL,
+					TYPE.SolidType.STR,
+				]).isSubtypeOf(TYPE.SolidType.OBJ), `[int, bool, str] <: obj;`);
+				assert.ok(!TYPE.SolidType.OBJ.isSubtypeOf(TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT,
+					TYPE.SolidType.BOOL,
+					TYPE.SolidType.STR,
 				])), `obj !<: [int, bool, str]`);
 			});
 			it('matches per index.', () => {
-				assert.ok(SolidTypeTuple.fromTypes([
-					SolidType.INT,
-					SolidType.BOOL,
-					SolidType.STR,
-				]).isSubtypeOf(SolidTypeTuple.fromTypes([
-					SolidType.INT.union(SolidType.FLOAT),
-					SolidType.BOOL.union(SolidType.NULL),
-					SolidType.OBJ,
+				assert.ok(TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT,
+					TYPE.SolidType.BOOL,
+					TYPE.SolidType.STR,
+				]).isSubtypeOf(TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT),
+					TYPE.SolidType.BOOL.union(TYPE.SolidType.NULL),
+					TYPE.SolidType.OBJ,
 				])), `[int, bool, str] <: [int | float, bool?, obj];`);
-				assert.ok(!SolidTypeTuple.fromTypes([
-					SolidType.INT,
-					SolidType.BOOL,
-					SolidType.STR,
-				]).isSubtypeOf(SolidTypeTuple.fromTypes([
-					SolidType.BOOL.union(SolidType.NULL),
-					SolidType.OBJ,
-					SolidType.INT.union(SolidType.FLOAT),
+				assert.ok(!TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT,
+					TYPE.SolidType.BOOL,
+					TYPE.SolidType.STR,
+				]).isSubtypeOf(TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.BOOL.union(TYPE.SolidType.NULL),
+					TYPE.SolidType.OBJ,
+					TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT),
 				])), `[int, bool, str] !<: [bool!, obj, int | float];`);
 			});
 			it('returns false if assigned is smaller than assignee.', () => {
-				assert.ok(!SolidTypeTuple.fromTypes([
-					SolidType.INT,
-					SolidType.BOOL,
-				]).isSubtypeOf(SolidTypeTuple.fromTypes([
-					SolidType.INT.union(SolidType.FLOAT),
-					SolidType.BOOL.union(SolidType.NULL),
-					SolidType.OBJ,
+				assert.ok(!TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT,
+					TYPE.SolidType.BOOL,
+				]).isSubtypeOf(TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT),
+					TYPE.SolidType.BOOL.union(TYPE.SolidType.NULL),
+					TYPE.SolidType.OBJ,
 				])), `[int, bool] !<: [int | float, bool!, obj];`);
 			});
 			it('skips rest if assigned is larger than assignee.', () => {
-				assert.ok(SolidTypeTuple.fromTypes([
-					SolidType.INT,
-					SolidType.BOOL,
-					SolidType.STR,
-				]).isSubtypeOf(SolidTypeTuple.fromTypes([
-					SolidType.INT.union(SolidType.FLOAT),
-					SolidType.BOOL.union(SolidType.NULL),
+				assert.ok(TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT,
+					TYPE.SolidType.BOOL,
+					TYPE.SolidType.STR,
+				]).isSubtypeOf(TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT),
+					TYPE.SolidType.BOOL.union(TYPE.SolidType.NULL),
 				])), `[int, bool, str] <: [int | float, bool!];`);
 			});
 			it('with optional entries, checks minimum count only.', () => {
-				assert.ok(new SolidTypeTuple([
-					{type: SolidType.INT, optional: false},
-					{type: SolidType.INT, optional: false},
-					{type: SolidType.INT, optional: true},
-					{type: SolidType.INT, optional: true},
-				]).isSubtypeOf(new SolidTypeTuple([
-					{type: SolidType.INT, optional: false},
-					{type: SolidType.INT, optional: true},
-					{type: SolidType.INT, optional: true},
-					{type: SolidType.INT, optional: true},
-					{type: SolidType.INT, optional: true},
+				assert.ok(new TYPE.SolidTypeTuple([
+					{type: TYPE.SolidType.INT, optional: false},
+					{type: TYPE.SolidType.INT, optional: false},
+					{type: TYPE.SolidType.INT, optional: true},
+					{type: TYPE.SolidType.INT, optional: true},
+				]).isSubtypeOf(new TYPE.SolidTypeTuple([
+					{type: TYPE.SolidType.INT, optional: false},
+					{type: TYPE.SolidType.INT, optional: true},
+					{type: TYPE.SolidType.INT, optional: true},
+					{type: TYPE.SolidType.INT, optional: true},
+					{type: TYPE.SolidType.INT, optional: true},
 				])), `[int, int, ?:int, ?:int] <: [int, ?:int, ?:int, ?:int, ?:int]`);
-				assert.ok(!new SolidTypeTuple([
-					{type: SolidType.INT, optional: false},
-					{type: SolidType.INT, optional: true},
-					{type: SolidType.INT, optional: true},
-					{type: SolidType.INT, optional: true},
-					{type: SolidType.INT, optional: true},
-				]).isSubtypeOf(new SolidTypeTuple([
-					{type: SolidType.INT, optional: false},
-					{type: SolidType.INT, optional: false},
-					{type: SolidType.INT, optional: true},
-					{type: SolidType.INT, optional: true},
+				assert.ok(!new TYPE.SolidTypeTuple([
+					{type: TYPE.SolidType.INT, optional: false},
+					{type: TYPE.SolidType.INT, optional: true},
+					{type: TYPE.SolidType.INT, optional: true},
+					{type: TYPE.SolidType.INT, optional: true},
+					{type: TYPE.SolidType.INT, optional: true},
+				]).isSubtypeOf(new TYPE.SolidTypeTuple([
+					{type: TYPE.SolidType.INT, optional: false},
+					{type: TYPE.SolidType.INT, optional: false},
+					{type: TYPE.SolidType.INT, optional: true},
+					{type: TYPE.SolidType.INT, optional: true},
 				])), `[int, ?:int, ?:int, ?:int, ?:int] !<: [int, int, ?:int, ?:int]`);
 			});
 			it('Invariance for mutable tuples: `A == B --> mutable Tuple.<A> <: mutable Tuple.<B>`.', () => {
-				assert.ok(!SolidTypeTuple.fromTypes([SolidType.INT, SolidType.FLOAT], true).isSubtypeOf(SolidTypeTuple.fromTypes([SolidType.INT.union(SolidType.NULL), SolidType.FLOAT.union(SolidType.NULL)], true)), `mutable [int, float] !<: mutable [int?, float?]`);
+				assert.ok(!TYPE.SolidTypeTuple.fromTypes([TYPE.SolidType.INT, TYPE.SolidType.FLOAT], true).isSubtypeOf(TYPE.SolidTypeTuple.fromTypes([TYPE.SolidType.INT.union(TYPE.SolidType.NULL), TYPE.SolidType.FLOAT.union(TYPE.SolidType.NULL)], true)), `mutable [int, float] !<: mutable [int?, float?]`);
 			});
 		});
 
 		describe('SolidTypeRecord', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT],
-					[0x101n, SolidType.BOOL],
-					[0x102n, SolidType.STR],
-				])).isSubtypeOf(SolidType.OBJ), `[x: int, y: bool, z: str] <: obj;`);
-				assert.ok(!SolidType.OBJ.isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT],
-					[0x101n, SolidType.BOOL],
-					[0x102n, SolidType.STR],
+				assert.ok(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT],
+					[0x101n, TYPE.SolidType.BOOL],
+					[0x102n, TYPE.SolidType.STR],
+				])).isSubtypeOf(TYPE.SolidType.OBJ), `[x: int, y: bool, z: str] <: obj;`);
+				assert.ok(!TYPE.SolidType.OBJ.isSubtypeOf(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT],
+					[0x101n, TYPE.SolidType.BOOL],
+					[0x102n, TYPE.SolidType.STR],
 				]))), `obj !<: [x: int, y: bool, z: str]`);
 			});
 			it('matches per key.', () => {
-				assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT],
-					[0x101n, SolidType.BOOL],
-					[0x102n, SolidType.STR],
-				])).isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x101n, SolidType.BOOL.union(SolidType.NULL)],
-					[0x102n, SolidType.OBJ],
-					[0x100n, SolidType.INT.union(SolidType.FLOAT)],
+				assert.ok(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT],
+					[0x101n, TYPE.SolidType.BOOL],
+					[0x102n, TYPE.SolidType.STR],
+				])).isSubtypeOf(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x101n, TYPE.SolidType.BOOL.union(TYPE.SolidType.NULL)],
+					[0x102n, TYPE.SolidType.OBJ],
+					[0x100n, TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT)],
 				]))), `[x: int, y: bool, z: str] <: [y: bool!, z: obj, x: int | float];`);
-				false && assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT],
-					[0x101n, SolidType.BOOL],
-					[0x102n, SolidType.STR],
-				])).isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.BOOL.union(SolidType.NULL)],
-					[0x101n, SolidType.OBJ],
-					[0x102n, SolidType.INT.union(SolidType.FLOAT)],
+				false && assert.ok(!TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT],
+					[0x101n, TYPE.SolidType.BOOL],
+					[0x102n, TYPE.SolidType.STR],
+				])).isSubtypeOf(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.BOOL.union(TYPE.SolidType.NULL)],
+					[0x101n, TYPE.SolidType.OBJ],
+					[0x102n, TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT)],
 				]))), `[x: int, y: bool, z: str] !<: [x: bool!, y: obj, z: int | float];`);
 			});
 			it('returns false if assigned is smaller than assignee.', () => {
-				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT],
-					[0x101n, SolidType.BOOL],
-				])).isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x101n, SolidType.BOOL.union(SolidType.NULL)],
-					[0x102n, SolidType.OBJ],
-					[0x100n, SolidType.INT.union(SolidType.FLOAT)],
+				assert.ok(!TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT],
+					[0x101n, TYPE.SolidType.BOOL],
+				])).isSubtypeOf(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x101n, TYPE.SolidType.BOOL.union(TYPE.SolidType.NULL)],
+					[0x102n, TYPE.SolidType.OBJ],
+					[0x100n, TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT)],
 				]))), `[x: int, y: bool] !<: [y: bool!, z: obj, x: int | float];`);
 			});
 			it('skips rest if assigned is larger than assignee.', () => {
-				assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT],
-					[0x101n, SolidType.BOOL],
-					[0x102n, SolidType.STR],
-				])).isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x101n, SolidType.BOOL.union(SolidType.NULL)],
-					[0x100n, SolidType.INT.union(SolidType.FLOAT)],
+				assert.ok(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT],
+					[0x101n, TYPE.SolidType.BOOL],
+					[0x102n, TYPE.SolidType.STR],
+				])).isSubtypeOf(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x101n, TYPE.SolidType.BOOL.union(TYPE.SolidType.NULL)],
+					[0x100n, TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT)],
 				]))), `[x: int, y: bool, z: str] <: [y: bool!, x: int | float];`);
 			});
 			it('returns false if assignee contains keys that assigned does not.', () => {
-				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT],
-					[0x101n, SolidType.BOOL],
-					[0x102n, SolidType.STR],
-				])).isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x101n, SolidType.BOOL.union(SolidType.NULL)],
-					[0x102n, SolidType.OBJ],
-					[0x103n, SolidType.INT.union(SolidType.FLOAT)],
+				assert.ok(!TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT],
+					[0x101n, TYPE.SolidType.BOOL],
+					[0x102n, TYPE.SolidType.STR],
+				])).isSubtypeOf(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x101n, TYPE.SolidType.BOOL.union(TYPE.SolidType.NULL)],
+					[0x102n, TYPE.SolidType.OBJ],
+					[0x103n, TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT)],
 				]))), `[x: int, y: bool, z: str] !<: [y: bool!, z: obj, w: int | float]`);
 			});
 			it('optional entries are not assignable to required entries.', () => {
-				assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-					[0x100n, {type: SolidType.STR,  optional: false}],
-					[0x101n, {type: SolidType.INT,  optional: true}],
-					[0x102n, {type: SolidType.BOOL, optional: false}],
-				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-					[0x100n, {type: SolidType.STR,  optional: true}],
-					[0x101n, {type: SolidType.INT,  optional: true}],
-					[0x102n, {type: SolidType.BOOL, optional: false}],
+				assert.ok(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+					[0x100n, {type: TYPE.SolidType.STR,  optional: false}],
+					[0x101n, {type: TYPE.SolidType.INT,  optional: true}],
+					[0x102n, {type: TYPE.SolidType.BOOL, optional: false}],
+				])).isSubtypeOf(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+					[0x100n, {type: TYPE.SolidType.STR,  optional: true}],
+					[0x101n, {type: TYPE.SolidType.INT,  optional: true}],
+					[0x102n, {type: TYPE.SolidType.BOOL, optional: false}],
 				]))), `[a: str, b?: int, c: bool] <: [a?: str, b?: int, c: bool]`);
-				assert.ok(!new SolidTypeRecord(new Map<bigint, TypeEntry>([
-					[0x100n, {type: SolidType.STR,  optional: false}],
-					[0x101n, {type: SolidType.INT,  optional: true}],
-					[0x102n, {type: SolidType.BOOL, optional: false}],
-				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-					[0x100n, {type: SolidType.STR,  optional: true}],
-					[0x101n, {type: SolidType.INT,  optional: false}],
-					[0x102n, {type: SolidType.BOOL, optional: false}],
+				assert.ok(!new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+					[0x100n, {type: TYPE.SolidType.STR,  optional: false}],
+					[0x101n, {type: TYPE.SolidType.INT,  optional: true}],
+					[0x102n, {type: TYPE.SolidType.BOOL, optional: false}],
+				])).isSubtypeOf(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+					[0x100n, {type: TYPE.SolidType.STR,  optional: true}],
+					[0x101n, {type: TYPE.SolidType.INT,  optional: false}],
+					[0x102n, {type: TYPE.SolidType.BOOL, optional: false}],
 				]))), `[a: str, b?: int, c: bool] !<: [a?: str, b: int, c: bool]`);
 			});
 			it('Invariance for mutable records: `A == B --> mutable Record.<A> <: mutable Record.<B>`.', () => {
-				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT],
-					[0x101n, SolidType.FLOAT],
-				]), true).isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT.union(SolidType.NULL)],
-					[0x101n, SolidType.FLOAT.union(SolidType.NULL)],
+				assert.ok(!TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT],
+					[0x101n, TYPE.SolidType.FLOAT],
+				]), true).isSubtypeOf(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT.union(TYPE.SolidType.NULL)],
+					[0x101n, TYPE.SolidType.FLOAT.union(TYPE.SolidType.NULL)],
 				]), true)), `mutable [a: int, b: float] !<: mutable [a: int?, b: float?]`);
 			});
 		});
 
 		describe('SolidTypeList', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new SolidTypeList(SolidType.INT.union(SolidType.BOOL)).isSubtypeOf(SolidType.OBJ), `List.<int | bool> <: obj;`);
-				assert.ok(!SolidType.OBJ.isSubtypeOf(new SolidTypeList(SolidType.INT.union(SolidType.BOOL))), `obj !<: List.<int | bool>`);
+				assert.ok(new TYPE.SolidTypeList(TYPE.SolidType.INT.union(TYPE.SolidType.BOOL)).isSubtypeOf(TYPE.SolidType.OBJ), `List.<int | bool> <: obj;`);
+				assert.ok(!TYPE.SolidType.OBJ.isSubtypeOf(new TYPE.SolidTypeList(TYPE.SolidType.INT.union(TYPE.SolidType.BOOL))), `obj !<: List.<int | bool>`);
 			});
 			it('Covariance for immutable lists: `A <: B --> List.<A> <: List.<B>`.', () => {
-				assert.ok(new SolidTypeList(SolidType.INT).isSubtypeOf(new SolidTypeList(SolidType.INT.union(SolidType.FLOAT))), `List.<int> <: List.<int | float>`);
-				assert.ok(!new SolidTypeList(SolidType.INT.union(SolidType.FLOAT)).isSubtypeOf(new SolidTypeList(SolidType.INT)), `List.<int | float> !<: List.<int>`);
+				assert.ok(new TYPE.SolidTypeList(TYPE.SolidType.INT).isSubtypeOf(new TYPE.SolidTypeList(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT))), `List.<int> <: List.<int | float>`);
+				assert.ok(!new TYPE.SolidTypeList(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT)).isSubtypeOf(new TYPE.SolidTypeList(TYPE.SolidType.INT)), `List.<int | float> !<: List.<int>`);
 			});
 			it('Invariance for mutable lists: `A == B --> mutable List.<A> <: mutable List.<B>`.', () => {
-				assert.ok(!new SolidTypeList(SolidType.INT, true).isSubtypeOf(new SolidTypeList(SolidType.INT.union(SolidType.FLOAT), true)), `mutable List.<int> !<: mutable List.<int | float>`);
+				assert.ok(!new TYPE.SolidTypeList(TYPE.SolidType.INT, true).isSubtypeOf(new TYPE.SolidTypeList(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT), true)), `mutable List.<int> !<: mutable List.<int | float>`);
 			});
 		});
 
 		describe('SolidTypeDict', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new SolidTypeDict(SolidType.INT.union(SolidType.BOOL)).isSubtypeOf(SolidType.OBJ), `Dict.<int | bool> <: obj;`);
-				assert.ok(!SolidType.OBJ.isSubtypeOf(new SolidTypeDict(SolidType.INT.union(SolidType.BOOL))), `obj !<: Dict.<int | bool>`);
+				assert.ok(new TYPE.SolidTypeDict(TYPE.SolidType.INT.union(TYPE.SolidType.BOOL)).isSubtypeOf(TYPE.SolidType.OBJ), `Dict.<int | bool> <: obj;`);
+				assert.ok(!TYPE.SolidType.OBJ.isSubtypeOf(new TYPE.SolidTypeDict(TYPE.SolidType.INT.union(TYPE.SolidType.BOOL))), `obj !<: Dict.<int | bool>`);
 			});
 			it('Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.', () => {
-				assert.ok(new SolidTypeDict(SolidType.INT).isSubtypeOf(new SolidTypeDict(SolidType.INT.union(SolidType.FLOAT))), `Dict.<int> <: Dict.<int | float>`);
-				assert.ok(!new SolidTypeDict(SolidType.INT.union(SolidType.FLOAT)).isSubtypeOf(new SolidTypeDict(SolidType.INT)), `Dict.<int | float> !<: Dict.<int>`);
+				assert.ok(new TYPE.SolidTypeDict(TYPE.SolidType.INT).isSubtypeOf(new TYPE.SolidTypeDict(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT))), `Dict.<int> <: Dict.<int | float>`);
+				assert.ok(!new TYPE.SolidTypeDict(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT)).isSubtypeOf(new TYPE.SolidTypeDict(TYPE.SolidType.INT)), `Dict.<int | float> !<: Dict.<int>`);
 			});
 			it('Invariance for mutable dicts: `A == B --> mutable Dict.<A> <: mutable Dict.<B>`.', () => {
-				assert.ok(!new SolidTypeDict(SolidType.INT, true).isSubtypeOf(new SolidTypeDict(SolidType.INT.union(SolidType.FLOAT), true)), `mutable Dict.<int> !<: mutable Dict.<int | float>`);
+				assert.ok(!new TYPE.SolidTypeDict(TYPE.SolidType.INT, true).isSubtypeOf(new TYPE.SolidTypeDict(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT), true)), `mutable Dict.<int> !<: mutable Dict.<int | float>`);
 			});
 		});
 
 		describe('SolidTypeSet', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new SolidTypeSet(SolidType.INT).isSubtypeOf(SolidType.OBJ), `Set.<int> <: obj`);
-				assert.ok(!SolidType.OBJ.isSubtypeOf(new SolidTypeSet(SolidType.INT)), `obj !<: Set.<int>`);
+				assert.ok(new TYPE.SolidTypeSet(TYPE.SolidType.INT).isSubtypeOf(TYPE.SolidType.OBJ), `Set.<int> <: obj`);
+				assert.ok(!TYPE.SolidType.OBJ.isSubtypeOf(new TYPE.SolidTypeSet(TYPE.SolidType.INT)), `obj !<: Set.<int>`);
 			});
 			it('Covariance or immutable sets: `A <: B --> Set.<A> <: Set.<B>`.', () => {
-				assert.ok(new SolidTypeSet(SolidType.INT).isSubtypeOf(new SolidTypeSet(SolidType.INT.union(SolidType.FLOAT))), `Set.<int> <: Set.<int | float>`);
-				assert.ok(!new SolidTypeSet(SolidType.INT.union(SolidType.FLOAT)).isSubtypeOf(new SolidTypeSet(SolidType.INT)), `Set.<int | float> !<: Set.<int>`);
+				assert.ok(new TYPE.SolidTypeSet(TYPE.SolidType.INT).isSubtypeOf(new TYPE.SolidTypeSet(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT))), `Set.<int> <: Set.<int | float>`);
+				assert.ok(!new TYPE.SolidTypeSet(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT)).isSubtypeOf(new TYPE.SolidTypeSet(TYPE.SolidType.INT)), `Set.<int | float> !<: Set.<int>`);
 			});
 			it('Invariance for mutable sets: `A == B --> mutable Set.<A> <: mutable Set.<B>`.', () => {
-				assert.ok(!new SolidTypeSet(SolidType.INT, true).isSubtypeOf(new SolidTypeSet(SolidType.INT.union(SolidType.FLOAT), true)), `mutable Set.<int> !<: mutable Set.<int | float>`);
+				assert.ok(!new TYPE.SolidTypeSet(TYPE.SolidType.INT, true).isSubtypeOf(new TYPE.SolidTypeSet(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT), true)), `mutable Set.<int> !<: mutable Set.<int | float>`);
 			});
 		});
 
 		describe('SolidTypeMap', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new SolidTypeMap(SolidType.INT, SolidType.BOOL).isSubtypeOf(SolidType.OBJ), `Map.<int, bool> <: obj`);
-				assert.ok(!SolidType.OBJ.isSubtypeOf(new SolidTypeMap(SolidType.INT, SolidType.BOOL)), `obj !<: Map.<int, bool>`);
+				assert.ok(new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.BOOL).isSubtypeOf(TYPE.SolidType.OBJ), `Map.<int, bool> <: obj`);
+				assert.ok(!TYPE.SolidType.OBJ.isSubtypeOf(new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.BOOL)), `obj !<: Map.<int, bool>`);
 			});
 			it('Covariance for immutable maps: `A <: C && B <: D --> Map.<A, B> <: Map.<C, D>`.', () => {
-				assert.ok(new SolidTypeMap(SolidType.INT, SolidType.BOOL).isSubtypeOf(new SolidTypeMap(SolidType.INT.union(SolidType.FLOAT), SolidType.BOOL.union(SolidType.NULL))), `Map.<int, bool> <: Map.<int | float, bool | null>`);
-				assert.ok(!new SolidTypeMap(SolidType.INT.union(SolidType.FLOAT), SolidType.BOOL.union(SolidType.NULL)).isSubtypeOf(new SolidTypeMap(SolidType.INT, SolidType.BOOL)), `Map.<int | float, bool | null> !<: Map.<int, bool>`);
+				assert.ok(new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.BOOL).isSubtypeOf(new TYPE.SolidTypeMap(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT), TYPE.SolidType.BOOL.union(TYPE.SolidType.NULL))), `Map.<int, bool> <: Map.<int | float, bool | null>`);
+				assert.ok(!new TYPE.SolidTypeMap(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT), TYPE.SolidType.BOOL.union(TYPE.SolidType.NULL)).isSubtypeOf(new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.BOOL)), `Map.<int | float, bool | null> !<: Map.<int, bool>`);
 			});
 			it('Invariance for mutable maps: `A == C && B == D --> mutable Map.<A, B> <: mutable Map.<C, D>`.', () => {
-				assert.ok(!new SolidTypeMap(SolidType.INT, SolidType.BOOL, true).isSubtypeOf(new SolidTypeMap(SolidType.INT.union(SolidType.FLOAT), SolidType.BOOL.union(SolidType.NULL), true)), `mutable Map.<int, bool> !<: mutable Map.<int | float, bool | null>`);
+				assert.ok(!new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.BOOL, true).isSubtypeOf(new TYPE.SolidTypeMap(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT), TYPE.SolidType.BOOL.union(TYPE.SolidType.NULL), true)), `mutable Map.<int, bool> !<: mutable Map.<int | float, bool | null>`);
 			});
 		});
 
@@ -717,11 +705,11 @@ describe('SolidType', () => {
 			it('returns `true` if the subtype contains at least the properties of the supertype.', () => {
 				assert.ok(!t0.isSubtypeOf(t1))
 				assert.ok(!t1.isSubtypeOf(t0))
-				assert.ok(new SolidTypeInterface(new Map<string, SolidType>([
-					['foo', SolidType.STR],
-					['bar', SolidType.NULL],
-					['diz', SolidType.BOOL],
-					['qux', SolidType.INT.union(SolidType.FLOAT)],
+				assert.ok(new TYPE.SolidTypeInterface(new Map<string, TYPE.SolidType>([
+					['foo', TYPE.SolidType.STR],
+					['bar', TYPE.SolidType.NULL],
+					['diz', TYPE.SolidType.BOOL],
+					['qux', TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT)],
 				])).isSubtypeOf(t0))
 			})
 		})
@@ -732,113 +720,113 @@ describe('SolidType', () => {
 		it('mutable types are subtypes of their immutable counterparts.', () => {
 			[
 				...builtin_types,
-				SolidTypeTuple.fromTypes([
-					SolidType.INT,
-					SolidType.FLOAT,
-					SolidType.STR,
+				TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT,
+					TYPE.SolidType.FLOAT,
+					TYPE.SolidType.STR,
 				]),
-				SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT],
-					[0x101n, SolidType.FLOAT],
-					[0x102n, SolidType.STR],
+				TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT],
+					[0x101n, TYPE.SolidType.FLOAT],
+					[0x102n, TYPE.SolidType.STR],
 				])),
-				new SolidTypeList(SolidType.BOOL),
-				new SolidTypeDict(SolidType.BOOL),
-				new SolidTypeSet(SolidType.NULL),
-				new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
+				new TYPE.SolidTypeList(TYPE.SolidType.BOOL),
+				new TYPE.SolidTypeDict(TYPE.SolidType.BOOL),
+				new TYPE.SolidTypeSet(TYPE.SolidType.NULL),
+				new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.FLOAT),
 			].forEach((t) => {
 				assert.ok(t.mutableOf().isSubtypeOf(t), `mutable ${ t } <: ${ t }`);
 			});
 		});
 		it('non-constant mutable types are not equal to their immutable counterparts.', () => {
 			[
-				SolidTypeTuple.fromTypes([
-					SolidType.INT,
-					SolidType.FLOAT,
-					SolidType.STR,
+				TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT,
+					TYPE.SolidType.FLOAT,
+					TYPE.SolidType.STR,
 				]),
-				SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT],
-					[0x101n, SolidType.FLOAT],
-					[0x102n, SolidType.STR],
+				TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT],
+					[0x101n, TYPE.SolidType.FLOAT],
+					[0x102n, TYPE.SolidType.STR],
 				])),
-				new SolidTypeList(SolidType.BOOL),
-				new SolidTypeDict(SolidType.BOOL),
-				new SolidTypeSet(SolidType.NULL),
-				new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
+				new TYPE.SolidTypeList(TYPE.SolidType.BOOL),
+				new TYPE.SolidTypeDict(TYPE.SolidType.BOOL),
+				new TYPE.SolidTypeSet(TYPE.SolidType.NULL),
+				new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.FLOAT),
 			].forEach((t) => {
 				assert.ok(!t.mutableOf().equals(t), `mutable ${ t } != ${ t }`);
 			});
 		});
 		it('non-constant immutable types are not subtypes of their mutable counterparts.', () => {
 			[
-				SolidTypeTuple.fromTypes([
-					SolidType.INT,
-					SolidType.FLOAT,
-					SolidType.STR,
+				TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT,
+					TYPE.SolidType.FLOAT,
+					TYPE.SolidType.STR,
 				]),
-				SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT],
-					[0x101n, SolidType.FLOAT],
-					[0x102n, SolidType.STR],
+				TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT],
+					[0x101n, TYPE.SolidType.FLOAT],
+					[0x102n, TYPE.SolidType.STR],
 				])),
-				new SolidTypeList(SolidType.BOOL),
-				new SolidTypeDict(SolidType.BOOL),
-				new SolidTypeSet(SolidType.NULL),
-				new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
+				new TYPE.SolidTypeList(TYPE.SolidType.BOOL),
+				new TYPE.SolidTypeDict(TYPE.SolidType.BOOL),
+				new TYPE.SolidTypeSet(TYPE.SolidType.NULL),
+				new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.FLOAT),
 			].forEach((t) => {
 				assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mutable ${ t }`);
 			});
 		});
 		context('disributes over binary operations.', () => {
-			const types: SolidType[] = [
-				SolidType.NEVER,
-				SolidType.UNKNOWN,
-				SolidType.VOID,
-				SolidType.OBJ,
-				SolidType.NULL,
-				SolidType.BOOL,
-				SolidType.INT,
-				SolidType.FLOAT,
-				SolidType.STR,
-				SolidTypeTuple.fromTypes([
-					SolidType.INT,
-					SolidType.FLOAT,
-					SolidType.STR,
+			const types: TYPE.SolidType[] = [
+				TYPE.SolidType.NEVER,
+				TYPE.SolidType.UNKNOWN,
+				TYPE.SolidType.VOID,
+				TYPE.SolidType.OBJ,
+				TYPE.SolidType.NULL,
+				TYPE.SolidType.BOOL,
+				TYPE.SolidType.INT,
+				TYPE.SolidType.FLOAT,
+				TYPE.SolidType.STR,
+				TYPE.SolidTypeTuple.fromTypes([
+					TYPE.SolidType.INT,
+					TYPE.SolidType.FLOAT,
+					TYPE.SolidType.STR,
 				]),
-				SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.INT],
-					[0x101n, SolidType.FLOAT],
-					[0x102n, SolidType.STR],
+				TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+					[0x100n, TYPE.SolidType.INT],
+					[0x101n, TYPE.SolidType.FLOAT],
+					[0x102n, TYPE.SolidType.STR],
 				])),
-				new SolidTypeList(SolidType.BOOL),
-				new SolidTypeDict(SolidType.BOOL),
-				new SolidTypeSet(SolidType.NULL),
-				new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
+				new TYPE.SolidTypeList(TYPE.SolidType.BOOL),
+				new TYPE.SolidTypeDict(TYPE.SolidType.BOOL),
+				new TYPE.SolidTypeSet(TYPE.SolidType.NULL),
+				new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.FLOAT),
 			];
 			specify('mutable (A - B) == mutable A - mutable B', () => {
 				predicate2(types, (a, b) => {
-					const difference: SolidType = a.subtract(b).mutableOf();
+					const difference: TYPE.SolidType = a.subtract(b).mutableOf();
 					assert.ok(difference.equals(a.mutableOf().subtract(b.mutableOf())), `${ a }, ${ b }`);
-					if (difference instanceof SolidTypeDifference) {
+					if (difference instanceof TYPE.SolidTypeDifference) {
 						assert.ok(!difference.isMutable, 'SolidTypeDifference#isMutable === false');
 					}
 				});
 			});
 			specify('mutable (A & B) == mutable A & mutable B', () => {
 				predicate2(types, (a, b) => {
-					const intersection: SolidType = a.intersect(b).mutableOf();
+					const intersection: TYPE.SolidType = a.intersect(b).mutableOf();
 					assert.ok(intersection.equals(a.mutableOf().intersect(b.mutableOf())), `${ a }, ${ b }`);
-					if (intersection instanceof SolidTypeIntersection) {
+					if (intersection instanceof TYPE.SolidTypeIntersection) {
 						assert.ok(!intersection.isMutable, 'SolidTypeIntersection#isMutable === false');
 					}
 				});
 			});
 			specify('mutable (A | B) == mutable A | mutable B', () => {
 				predicate2(types, (a, b) => {
-					const union: SolidType = a.union(b).mutableOf();
+					const union: TYPE.SolidType = a.union(b).mutableOf();
 					assert.ok(union.equals(a.mutableOf().union(b.mutableOf())), `${ a }, ${ b }`);
-					if (union instanceof SolidTypeUnion) {
+					if (union instanceof TYPE.SolidTypeUnion) {
 						assert.ok(!union.isMutable, 'SolidTypeUnion#isMutable === false');
 					}
 				});
@@ -851,17 +839,17 @@ describe('SolidType', () => {
 		describe('#combineTuplesOrRecords', () => {
 			context('with tuple operands.', () => {
 				it('takes the union of indices of constituent types.', () => {
-					assert.ok(SolidTypeTuple.fromTypes([
-						SolidType.OBJ,
-						SolidType.NULL,
-						SolidType.BOOL,
-					]).intersectWithTuple(SolidTypeTuple.fromTypes([
-						SolidType.OBJ,
-						SolidType.INT,
-					])).equals(SolidTypeTuple.fromTypes([
-						SolidType.OBJ,
-						SolidType.NULL.intersect(SolidType.INT),
-						SolidType.BOOL,
+					assert.ok(TYPE.SolidTypeTuple.fromTypes([
+						TYPE.SolidType.OBJ,
+						TYPE.SolidType.NULL,
+						TYPE.SolidType.BOOL,
+					]).intersectWithTuple(TYPE.SolidTypeTuple.fromTypes([
+						TYPE.SolidType.OBJ,
+						TYPE.SolidType.INT,
+					])).equals(TYPE.SolidTypeTuple.fromTypes([
+						TYPE.SolidType.OBJ,
+						TYPE.SolidType.NULL.intersect(TYPE.SolidType.INT),
+						TYPE.SolidType.BOOL,
 					])), `
 						[obj, null, bool] & [obj, int]
 						==
@@ -869,18 +857,18 @@ describe('SolidType', () => {
 					`);
 				});
 				it('takes the conjunction of optionality.', () => {
-					assert.ok(new SolidTypeTuple([
-						{type: SolidType.OBJ,  optional: false},
-						{type: SolidType.NULL, optional: true},
-						{type: SolidType.BOOL, optional: true},
-					]).intersectWithTuple(new SolidTypeTuple([
-						{type: SolidType.OBJ,   optional: false},
-						{type: SolidType.INT,   optional: false},
-						{type: SolidType.FLOAT, optional: true},
-					])).equals(new SolidTypeTuple([
-						{type: SolidType.OBJ,                             optional: false},
-						{type: SolidType.NULL.intersect(SolidType.INT),   optional: false},
-						{type: SolidType.BOOL.intersect(SolidType.FLOAT), optional: true},
+					assert.ok(new TYPE.SolidTypeTuple([
+						{type: TYPE.SolidType.OBJ,  optional: false},
+						{type: TYPE.SolidType.NULL, optional: true},
+						{type: TYPE.SolidType.BOOL, optional: true},
+					]).intersectWithTuple(new TYPE.SolidTypeTuple([
+						{type: TYPE.SolidType.OBJ,   optional: false},
+						{type: TYPE.SolidType.INT,   optional: false},
+						{type: TYPE.SolidType.FLOAT, optional: true},
+					])).equals(new TYPE.SolidTypeTuple([
+						{type: TYPE.SolidType.OBJ,                                  optional: false},
+						{type: TYPE.SolidType.NULL.intersect(TYPE.SolidType.INT),   optional: false},
+						{type: TYPE.SolidType.BOOL.intersect(TYPE.SolidType.FLOAT), optional: true},
 					])), `
 						[obj, ?: null, ?: bool] & [obj, int, ?: float]
 						==
@@ -891,19 +879,19 @@ describe('SolidType', () => {
 			context('with record operands.', () => {
 				it('takes the union of properties of constituent types.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-					assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-						[foo, SolidType.OBJ],
-						[bar, SolidType.NULL],
-						[qux, SolidType.BOOL],
-					])).intersectWithRecord(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-						[foo, SolidType.OBJ],
-						[diz, SolidType.INT],
-						[qux, SolidType.STR],
-					]))).equals(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-						[foo, SolidType.OBJ],
-						[bar, SolidType.NULL],
-						[qux, SolidType.BOOL.intersect(SolidType.STR)],
-						[diz, SolidType.INT],
+					assert.ok(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+						[foo, TYPE.SolidType.OBJ],
+						[bar, TYPE.SolidType.NULL],
+						[qux, TYPE.SolidType.BOOL],
+					])).intersectWithRecord(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+						[foo, TYPE.SolidType.OBJ],
+						[diz, TYPE.SolidType.INT],
+						[qux, TYPE.SolidType.STR],
+					]))).equals(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+						[foo, TYPE.SolidType.OBJ],
+						[bar, TYPE.SolidType.NULL],
+						[qux, TYPE.SolidType.BOOL.intersect(TYPE.SolidType.STR)],
+						[diz, TYPE.SolidType.INT],
 					]))), `
 						[foo: obj, bar: null, qux: bool] & [foo: obj, diz: int, qux: str]
 						==
@@ -912,19 +900,19 @@ describe('SolidType', () => {
 				})
 				it('takes the conjunction of optionality.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-					assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-						[foo, {type: SolidType.OBJ,  optional: false}],
-						[bar, {type: SolidType.NULL, optional: true}],
-						[qux, {type: SolidType.BOOL, optional: true}],
-					])).intersectWithRecord(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-						[foo, {type: SolidType.OBJ, optional: false}],
-						[diz, {type: SolidType.INT, optional: true}],
-						[qux, {type: SolidType.STR, optional: false}],
-					]))).equals(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-						[foo, {type: SolidType.OBJ,                           optional: false}],
-						[bar, {type: SolidType.NULL,                          optional: true}],
-						[qux, {type: SolidType.BOOL.intersect(SolidType.STR), optional: false}],
-						[diz, {type: SolidType.INT,                           optional: true}],
+					assert.ok(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+						[foo, {type: TYPE.SolidType.OBJ,  optional: false}],
+						[bar, {type: TYPE.SolidType.NULL, optional: true}],
+						[qux, {type: TYPE.SolidType.BOOL, optional: true}],
+					])).intersectWithRecord(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+						[foo, {type: TYPE.SolidType.OBJ, optional: false}],
+						[diz, {type: TYPE.SolidType.INT, optional: true}],
+						[qux, {type: TYPE.SolidType.STR, optional: false}],
+					]))).equals(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+						[foo, {type: TYPE.SolidType.OBJ,                                optional: false}],
+						[bar, {type: TYPE.SolidType.NULL,                               optional: true}],
+						[qux, {type: TYPE.SolidType.BOOL.intersect(TYPE.SolidType.STR), optional: false}],
+						[diz, {type: TYPE.SolidType.INT,                                optional: true}],
 					]))), `
 						[foo: obj, bar?: null, qux?: bool] & [foo: obj, diz?: int, qux: str]
 						==
@@ -940,16 +928,16 @@ describe('SolidType', () => {
 		describe('#combineTuplesOrRecords', () => {
 			context('with tuple operands.', () => {
 				it('takes the intersection of indices of constituent types.', () => {
-					assert.ok(SolidTypeTuple.fromTypes([
-						SolidType.OBJ,
-						SolidType.NULL,
-						SolidType.BOOL,
-					]).unionWithTuple(SolidTypeTuple.fromTypes([
-						SolidType.OBJ,
-						SolidType.INT,
-					])).equals(SolidTypeTuple.fromTypes([
-						SolidType.OBJ,
-						SolidType.NULL.union(SolidType.INT),
+					assert.ok(TYPE.SolidTypeTuple.fromTypes([
+						TYPE.SolidType.OBJ,
+						TYPE.SolidType.NULL,
+						TYPE.SolidType.BOOL,
+					]).unionWithTuple(TYPE.SolidTypeTuple.fromTypes([
+						TYPE.SolidType.OBJ,
+						TYPE.SolidType.INT,
+					])).equals(TYPE.SolidTypeTuple.fromTypes([
+						TYPE.SolidType.OBJ,
+						TYPE.SolidType.NULL.union(TYPE.SolidType.INT),
 					])), `
 						[obj, null, bool] | [obj, int]
 						==
@@ -957,18 +945,18 @@ describe('SolidType', () => {
 					`);
 				});
 				it('takes the disjunction of optionality.', () => {
-					assert.ok(new SolidTypeTuple([
-						{type: SolidType.OBJ,  optional: false},
-						{type: SolidType.NULL, optional: true},
-						{type: SolidType.BOOL, optional: true},
-					]).unionWithTuple(new SolidTypeTuple([
-						{type: SolidType.OBJ,   optional: false},
-						{type: SolidType.INT,   optional: false},
-						{type: SolidType.FLOAT, optional: true},
-					])).equals(new SolidTypeTuple([
-						{type: SolidType.OBJ,                         optional: false},
-						{type: SolidType.NULL.union(SolidType.INT),   optional: true},
-						{type: SolidType.BOOL.union(SolidType.FLOAT), optional: true},
+					assert.ok(new TYPE.SolidTypeTuple([
+						{type: TYPE.SolidType.OBJ,  optional: false},
+						{type: TYPE.SolidType.NULL, optional: true},
+						{type: TYPE.SolidType.BOOL, optional: true},
+					]).unionWithTuple(new TYPE.SolidTypeTuple([
+						{type: TYPE.SolidType.OBJ,   optional: false},
+						{type: TYPE.SolidType.INT,   optional: false},
+						{type: TYPE.SolidType.FLOAT, optional: true},
+					])).equals(new TYPE.SolidTypeTuple([
+						{type: TYPE.SolidType.OBJ,                              optional: false},
+						{type: TYPE.SolidType.NULL.union(TYPE.SolidType.INT),   optional: true},
+						{type: TYPE.SolidType.BOOL.union(TYPE.SolidType.FLOAT), optional: true},
 					])), `
 						[obj, ?: null, ?: bool] | [obj, int, ?: float]
 						==
@@ -976,16 +964,16 @@ describe('SolidType', () => {
 					`);
 				});
 				it('some value assignable to combo type might not be assignable to union.', () => {
-					const left: SolidTypeTuple = SolidTypeTuple.fromTypes([
-						SolidType.BOOL,
-						SolidType.INT,
+					const left: TYPE.SolidTypeTuple = TYPE.SolidTypeTuple.fromTypes([
+						TYPE.SolidType.BOOL,
+						TYPE.SolidType.INT,
 					]);
-					const right: SolidTypeTuple = SolidTypeTuple.fromTypes([
-						SolidType.INT,
-						SolidType.BOOL,
+					const right: TYPE.SolidTypeTuple = TYPE.SolidTypeTuple.fromTypes([
+						TYPE.SolidType.INT,
+						TYPE.SolidType.BOOL,
 					]);
-					const union: SolidType = left.union(right);
-					assert.ok(union instanceof SolidTypeUnion);
+					const union: TYPE.SolidType = left.union(right);
+					assert.ok(union instanceof TYPE.SolidTypeUnion);
 					const v: SolidTuple<SolidBoolean> = new SolidTuple<SolidBoolean>([SolidBoolean.TRUE, SolidBoolean.TRUE]);
 					assert.ok(union.combineTuplesOrRecords().includes(v), `
 						let x: [bool | int, int | bool] = [true, true]; % ok
@@ -998,17 +986,17 @@ describe('SolidType', () => {
 			context('with record operands.', () => {
 				it('takes the intersection of properties of constituent types.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-					assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-						[foo, SolidType.OBJ],
-						[bar, SolidType.NULL],
-						[qux, SolidType.BOOL],
-					])).unionWithRecord(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-						[foo, SolidType.OBJ],
-						[diz, SolidType.INT],
-						[qux, SolidType.STR],
-					]))).equals(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-						[foo, SolidType.OBJ],
-						[qux, SolidType.BOOL.union(SolidType.STR)],
+					assert.ok(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+						[foo, TYPE.SolidType.OBJ],
+						[bar, TYPE.SolidType.NULL],
+						[qux, TYPE.SolidType.BOOL],
+					])).unionWithRecord(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+						[foo, TYPE.SolidType.OBJ],
+						[diz, TYPE.SolidType.INT],
+						[qux, TYPE.SolidType.STR],
+					]))).equals(TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+						[foo, TYPE.SolidType.OBJ],
+						[qux, TYPE.SolidType.BOOL.union(TYPE.SolidType.STR)],
 					]))), `
 						[foo: obj, bar: null, qux: bool] | [foo: obj, diz: int, qux: str]
 						==
@@ -1017,17 +1005,17 @@ describe('SolidType', () => {
 				});
 				it('takes the disjunction of optionality.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-					assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-						[foo, {type: SolidType.OBJ,  optional: false}],
-						[bar, {type: SolidType.NULL, optional: true}],
-						[qux, {type: SolidType.BOOL, optional: true}],
-					])).unionWithRecord(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-						[foo, {type: SolidType.OBJ, optional: false}],
-						[diz, {type: SolidType.INT, optional: true}],
-						[qux, {type: SolidType.STR, optional: false}],
-					]))).equals(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-						[foo, {type: SolidType.OBJ,                       optional: false}],
-						[qux, {type: SolidType.BOOL.union(SolidType.STR), optional: true}],
+					assert.ok(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+						[foo, {type: TYPE.SolidType.OBJ,  optional: false}],
+						[bar, {type: TYPE.SolidType.NULL, optional: true}],
+						[qux, {type: TYPE.SolidType.BOOL, optional: true}],
+					])).unionWithRecord(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+						[foo, {type: TYPE.SolidType.OBJ, optional: false}],
+						[diz, {type: TYPE.SolidType.INT, optional: true}],
+						[qux, {type: TYPE.SolidType.STR, optional: false}],
+					]))).equals(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+						[foo, {type: TYPE.SolidType.OBJ,                            optional: false}],
+						[qux, {type: TYPE.SolidType.BOOL.union(TYPE.SolidType.STR), optional: true}],
 					]))), `
 						[foo: obj, bar?: null, qux?: bool] | [foo: obj, diz?: int, qux: str]
 						==
@@ -1035,18 +1023,18 @@ describe('SolidType', () => {
 					`);
 				});
 				it('some value assignable to combo type might not be assignable to union.', () => {
-					const left: SolidTypeRecord = SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-						[0x100n, SolidType.BOOL],
-						[0x101n, SolidType.INT],
-						[0x102n, SolidType.STR],
+					const left: TYPE.SolidTypeRecord = TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+						[0x100n, TYPE.SolidType.BOOL],
+						[0x101n, TYPE.SolidType.INT],
+						[0x102n, TYPE.SolidType.STR],
 					]));
-					const right: SolidTypeRecord = SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-						[0x103n, SolidType.STR],
-						[0x100n, SolidType.INT],
-						[0x101n, SolidType.BOOL],
+					const right: TYPE.SolidTypeRecord = TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.SolidType>([
+						[0x103n, TYPE.SolidType.STR],
+						[0x100n, TYPE.SolidType.INT],
+						[0x101n, TYPE.SolidType.BOOL],
 					]));
-					const union: SolidType = left.union(right);
-					assert.ok(union instanceof SolidTypeUnion);
+					const union: TYPE.SolidType = left.union(right);
+					assert.ok(union instanceof TYPE.SolidTypeUnion);
 					const v: SolidRecord<SolidBoolean> = new SolidRecord<SolidBoolean>(new Map<bigint, SolidBoolean>([
 						[0x100n, SolidBoolean.TRUE],
 						[0x101n, SolidBoolean.TRUE],

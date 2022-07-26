@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
+	TYPE,
 	SolidObject,
 	SolidBoolean,
 	INST,
@@ -39,15 +39,15 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			this.operand1.build(builder, tofloat),
 		)
 	}
-	protected override type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
-		const falsytypes: SolidType = SolidType.VOID.union(SolidType.NULL).union(SolidBoolean.FALSETYPE);
+	protected override type_do_do(t0: TYPE.SolidType, t1: TYPE.SolidType, _int_coercion: boolean): TYPE.SolidType {
+		const falsytypes: TYPE.SolidType = TYPE.SolidType.VOID.union(TYPE.SolidType.NULL).union(SolidBoolean.FALSETYPE);
 		return (this.operator === Operator.AND)
 			? (t0.isSubtypeOf(falsytypes))
 				? t0
 				: t0.intersect(falsytypes).union(t1)
 			: (t0.isSubtypeOf(falsytypes))
 				? t1
-				: (SolidType.VOID.isSubtypeOf(t0) || SolidType.NULL.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
+				: (TYPE.SolidType.VOID.isSubtypeOf(t0) || TYPE.SolidType.NULL.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
 					? t0.subtract(falsytypes).union(t1)
 					: t0
 	}

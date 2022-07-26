@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
+	TYPE,
 	SolidObject,
 	SolidString,
 	INST,
@@ -39,8 +39,8 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	protected override build_do(_builder: Builder): INST.InstructionExpression {
 		throw new Error('ASTNodeTemplate#build_do not yet supported.');
 	}
-	protected override type_do(): SolidType {
-		return SolidType.STR;
+	protected override type_do(): TYPE.SolidType {
+		return TYPE.SolidType.STR;
 	}
 	protected override fold_do(): SolidString | null {
 		const values: (SolidObject | null)[] = [...this.children].map((expr) => expr.fold());

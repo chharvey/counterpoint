@@ -5,16 +5,7 @@
  * they are only for modules within this package.
  */
 export {
-	SolidType,
-	SolidTypeIntersection,
-	SolidTypeUnion,
-	SolidTypeUnit,
-	SolidTypeTuple,
-	SolidTypeRecord,
-	SolidTypeList,
-	SolidTypeDict,
-	SolidTypeSet,
-	SolidTypeMap,
+	TYPE,
 	SolidObject,
 	Primitive,
 	SolidNull,

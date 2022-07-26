@@ -2,8 +2,7 @@ import * as assert from 'assert';
 import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SolidType,
-	SolidTypeUnit,
+	TYPE,
 	SolidObject,
 	Primitive,
 	INST,
@@ -45,7 +44,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		assert.ok(statement.expr, 'semantic statement should have 1 child');
 		return statement.expr;
 	}
-	private typed?: SolidType;
+	private typed?: TYPE.SolidType;
 	private assessed?: SolidObject | null;
 	private built?: INST.InstructionExpression;
 	/**
@@ -79,7 +78,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @return the compile-time type of this node
 	 * @final
 	 */
-	type(): SolidType {
+	type(): TYPE.SolidType {
 		if (!this.typed) {
 			this.typed = this.type_do(); // type-check first, to re-throw any TypeErrors
 			if (this.validator.config.compilerOptions.constantFolding) {
@@ -89,19 +88,19 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 				} catch (err) {
 					if (err instanceof ErrorCode) {
 						// ignore evaluation errors such as VoidError, NanError, etc.
-						this.typed = SolidType.NEVER;
+						this.typed = TYPE.SolidType.NEVER;
 					} else {
 						throw err;
 					}
 				}
 				if (!!value && value instanceof Primitive) {
-					this.typed = new SolidTypeUnit(value);
+					this.typed = new TYPE.SolidTypeUnit(value);
 				};
 			};
 		};
 		return this.typed;
 	}
-	protected abstract type_do(): SolidType;
+	protected abstract type_do(): TYPE.SolidType;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * If {@link CPConfig|constant folding} is off, this should not be called.

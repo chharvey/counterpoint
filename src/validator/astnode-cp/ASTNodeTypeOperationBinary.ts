@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
+	TYPE,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -29,7 +29,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	) {
 		super(start_node, operator, [operand0, operand1]);
 	}
-	protected override eval_do(): SolidType {
+	protected override eval_do(): TYPE.SolidType {
 		return (
 			(this.operator === Operator.AND) ? this.operand0.eval().intersect(this.operand1.eval()) :
 			(this.operator === Operator.OR)  ? this.operand0.eval().union    (this.operand1.eval()) :

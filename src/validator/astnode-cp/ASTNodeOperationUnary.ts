@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs'
 import {
-	SolidType,
+	TYPE,
 	SolidObject,
 	SolidBoolean,
 	SolidNumber,
@@ -43,16 +43,16 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			this.operand.build(builder, tofloat),
 		)
 	}
-	protected override type_do(): SolidType {
-		const t0: SolidType = this.operand.type();
+	protected override type_do(): TYPE.SolidType {
+		const t0: TYPE.SolidType = this.operand.type();
 		return (
 			(this.operator === Operator.NOT) ? (
-				(t0.isSubtypeOf(SolidType.VOID.union(SolidType.NULL).union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
-				(SolidType.VOID.isSubtypeOf(t0) || SolidType.NULL.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? SolidType.BOOL :
+				(t0.isSubtypeOf(TYPE.SolidType.VOID.union(TYPE.SolidType.NULL).union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
+				(TYPE.SolidType.VOID.isSubtypeOf(t0) || TYPE.SolidType.NULL.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? TYPE.SolidType.BOOL :
 				SolidBoolean.FALSETYPE
 			) :
-			(this.operator === Operator.EMP) ? SolidType.BOOL :
-			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(SolidType.INT.union(SolidType.FLOAT)))
+			(this.operator === Operator.EMP) ? TYPE.SolidType.BOOL :
+			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT)))
 				? t0
 				: (() => { throw new TypeError01(this); })()
 		);

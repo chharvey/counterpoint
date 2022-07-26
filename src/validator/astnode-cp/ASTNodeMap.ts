@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
-	SolidTypeMap,
+	TYPE,
 	SolidObject,
 	SolidMap,
 	INST,
@@ -32,10 +31,10 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeMap#build_do not yet supported.';
 	}
-	protected override type_do(): SolidType {
-		return new SolidTypeMap(
-			SolidType.unionAll(this.children.map((c) => c.antecedent.type())),
-			SolidType.unionAll(this.children.map((c) => c.consequent.type())),
+	protected override type_do(): TYPE.SolidType {
+		return new TYPE.SolidTypeMap(
+			TYPE.SolidType.unionAll(this.children.map((c) => c.antecedent.type())),
+			TYPE.SolidType.unionAll(this.children.map((c) => c.consequent.type())),
 			true,
 		);
 	}
