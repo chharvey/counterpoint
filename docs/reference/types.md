@@ -10,21 +10,18 @@ This reference takes a more informative approach.
 
 
 ## Simple Types
+Simple types are primitive and basic types. They cannot be broken up into smaller types.
 
 
 ### Never
-The Never type, `never`, is the Bottom type in the type hierarchy —
+The Never type, `never`, is at the bottom of the type hierarchy —
 it contains no values and is a subtype of every other type.
 
-The Never type is used to describe the return type of functions that never return,
+`never` is used to describe the return type of functions that never return,
 or the type of an expression that never evaluates.
 
-The Never type is most commonly a result of a type operation that produces the Bottom type,
+`never` is most commonly a result of a type operation that produces the Bottom type,
 for example, the intersection of two disjoint types.
-
-There are no values assignble to the Never type.
-Currently, there are no expressions assignable to it either, but
-future versions of Solid will support expressions of type Never.
 
 
 ### Void
@@ -100,7 +97,7 @@ Exactly one decimal point must be present in a float literal.
 ```
 0.25;
 0.5;     % the leading whole number part is required
-1.;      % but we can omit the trailing fractional part
+1.0;     % the trailing fractional part is also requied
 0 . 5;   %> Error
 ```
 
@@ -110,8 +107,8 @@ This notation consts of the following parts:
 - the whole part (an integer)
 - a decimal point (`.`)
 - the fractional part (the decimal places)
-- the symbol `e`
-- the exponent part (an integer)
+- optionally, the symbol `e`
+- if `e` present, the exponent part (an integer)
 
 It’s called “scientific-like notation” because it’s technically not scientific notation:
 The coefficient need not be between 1 and 10. `-42.0e-1` is a valid floating-point value.
@@ -394,20 +391,15 @@ I {{ '\u{2764}' }} Unicode!
 
 ### Object
 The Object type, `obj`, is the type of all values, that is, every value is assignable to the Object type.
+Expressions of type `void` cannot hold values, so they are not assignable to `obj`.
 
 
 ### Unknown
-The Unknown type, `unknown`, is the Top type in the type hierarchy —
+The Unknown type, `unknown`, is at the top of the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
 
-The Unknown type is used to describe a value or expression about which nothing is known.
+`unknown` is used to describe a value or expression about which nothing is known.
 Therefore, the compiler will not assume it has any properties or is valid in some operations.
-
-Every value and expression is assignble to the Unknown type.
-Currently, since there are no valueless expressions,
-the Unknown type is equivalent to the [Object](#object) type.
-However, future versions of Solid will support expressions assignable to Unknown
-that are not assignable to Object.
 
 
 ### Unit Types
@@ -430,7 +422,7 @@ let CAT_FEET: \b100 = \o4;
 CAR_WHEELS = CAT_FEET;
 ```
 
-The assigned value doesn’t need to be a literal; it may be a expression,
+The assigned value doesn’t need to be a literal; it may be an expression,
 as long as it’s computable by the compiler’s [constant folding](./configuration.md#constantFolding) mechanism.
 ```
 let TAU: true = !false;
@@ -473,8 +465,9 @@ let GREETING: '''Hello World!''' = 'Hello World!'; %> ParseError
 ```
 
 
+
 ## Compound Types
-Compound types are subtypes of [Object](#object) and are composed of other types.
+Compound types are collections composed of other types.
 The following table summarizes the built-in compound types.
 
 Type              | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax         | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
@@ -482,7 +475,7 @@ Type              | Size     | Indices/Keys  | Generic Type Syntax | Explicit Ty
 [Tuple](#tuple)   | Fixed    | integers      | *(none)*            | `[str, str, str]` / `str[3]` | *(none)*                                     | `['x', 'y', 'z']`                      | `[]`
 [Record](#record) | Fixed    | words         | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= 'x', b= 'y', c= 'z']`             | *(none)*
 [List](#list)     | Variable | integers      | `List.<str>`        | `str[]`                      | `List.(['x', 'y', 'z'])`                     | *(none)*                               | *(none)*
-[Hash](#hash)     | Variable | atoms/strings | `Hash.<str>`        | `[:str]`                     | `Hash.([a= 'x', b= 'y', c= 'z'])`            | *(none)*                               | *(none)*
+[Dict](#dict)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                     | `Dict.([a= 'x', b= 'y', c= 'z'])`            | *(none)*                               | *(none)*
 [Set](#set)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                      | `Set.(['x', 'y', 'z'])`                      | `{'x', 'y', 'z'}`                      | `{}`
 [Map](#map)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`               | `Map.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' -> 'x', 'v' -> 'y', 'w' -> 'z'}` | *(none)*
 
@@ -804,28 +797,28 @@ and if the list were mutable, we could reassign that entry to an integer or bool
 List access is the same as [Tuple Access](#tuple-access).
 
 
-### Hash
-Hashes are variable-size unordered lists of keyed values. Key–value pairs are called **properties**,
+### Dict
+Dicts (dictionaries) are variable-size unordered lists of keyed values. Key–value pairs are called **properties**,
 where **keys** are keywords or identifiers, and **values** are expressions.
-The number of properties in a record is called its **count**; the count of a hash is variable and unknown at compile-time.
-Hashes are homogeneous, meaning all entries in the hash have the same type (or parent type).
-If a hash is mutable, the entries of the hash may be reassigned, and properties may be added and removed from the hash as well.
+The number of properties in a record is called its **count**; the count of a dict is variable and unknown at compile-time.
+Dicts are homogeneous, meaning all entries in the dict have the same type (or parent type).
+If a dict is mutable, the entries of the dict may be reassigned, and properties may be added and removed from the dict as well.
 
-Hash types are declared via the generic hash type syntax: `Hash.<T>`
-where `T` indicates the type of values in the hash.
-Hashes are constructed via the constructor syntax `Hash.<T>(arg)`,
+Dict types are declared via the generic dict type syntax: `Dict.<T>`
+where `T` indicates the type of values in the dict.
+Dicts are constructed via the constructor syntax `Dict.<T>(arg)`,
 where `arg` is a [Record](#record) object.
 ```
-let my_styles: Hash.<int | float | str> = Hash.<int | float | str>([
+let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
 	fontFamily= 'sans-serif',
 	fontSize=   1.25,
 	fontStyle=  'oblique',
 	fontWeight= 400,
 ]);
 ```
-A shorthand for the generic syntax `Hash.<T>` is `[:T]`.
-We can also *initialize* a hash with a record literal,
-because records are generally assignable to hashes.
+A shorthand for the generic syntax `Dict.<T>` is `[:T]`.
+We can also *initialize* a dict with a record literal,
+because records are generally assignable to dicts.
 ```
 let my_styles: [: int | float | str] = [
 	fontFamily= 'sans-serif',
@@ -834,10 +827,10 @@ let my_styles: [: int | float | str] = [
 	fontWeight= 400,
 ];
 ```
-As shown above, we can mix value types, but the hash type must be homogeneous.
+As shown above, we can mix value types, but the dict type must be homogeneous.
 
-#### Hash Access
-Hash access is the same as [Record Access](#record-access).
+#### Dict Access
+Dict access is the same as [Record Access](#record-access).
 
 
 ### Set

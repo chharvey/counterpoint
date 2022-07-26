@@ -4,7 +4,6 @@ import wabt from 'wabt'; // need `tsconfig.json#compilerOptions.allowSyntheticDe
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Validator,
 	AST,
 } from './package.js';
 
@@ -25,8 +24,6 @@ export class Builder {
 	]
 
 
-	/** The Validator for conducting semantic analysis. */
-	readonly validator: Validator;
 	/** An AST goal produced by a Decorator. */
 	private readonly ast_goal: AST.ASTNodeGoal;
 	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
@@ -39,14 +36,10 @@ export class Builder {
 	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor (
-		source: string,
-		readonly config: SolidConfig = CONFIG_DEFAULT,
-	) {
-		this.validator = new Validator(this.config);
+	constructor (source: string, config: SolidConfig = CONFIG_DEFAULT) {
 		this.ast_goal  = AST.ASTNodeGoal.fromSource(source, config);
-		this.ast_goal.varCheck (this.validator); // assert does not throw
-		this.ast_goal.typeCheck(this.validator); // assert does not throw
+		this.ast_goal.varCheck (); // assert does not throw
+		this.ast_goal.typeCheck(); // assert does not throw
 	}
 
 	/**

@@ -6,7 +6,6 @@ import {
 	PARSENODE,
 	SolidType,
 	SolidTypeTuple,
-	Validator,
 } from './package.js';
 import type {ASTNodeItemType} from './ASTNodeItemType.js';
 import {ASTNodeType} from './ASTNodeType.js';
@@ -26,9 +25,9 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 		super(start_node, {}, children);
 	}
 	@memoizeMethod
-	override eval(validator: Validator): SolidType {
+	override eval(): SolidType {
 		return new SolidTypeTuple(this.children.map((c) => ({
-			type:     c.val.eval(validator),
+			type:     c.val.eval(),
 			optional: c.optional,
 		})));
 	}

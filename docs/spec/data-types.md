@@ -198,16 +198,15 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 - [String](#string)
 - [Object](#object)
 - [Unknown](#unknown)
-- [Compound Types](#compound-types)
 
 #### Never
-The Botton Type represents the set of no values, called `never`.
-No value is assignable to `never`,
-and expressions of type `never` are accepted everywhere.
+The Never type is the Botton Type and it represents the set of no values.
+No value is assignable to Never,
+and expressions of type Never are accepted everywhere.
 
-`never` is a subtype of every type,
-and no type (except `never` itself) is a subtype of `never`.
-`never` is the the “absorption element” of the [intersection](#intersection) operation
+Never is a subtype of every type,
+and no type (except Never itself) is a subtype of Never.
+Never is the the “absorption element” of the [intersection](#intersection) operation
 and the “identity element” of the [union](#union) operation.
 
 #### Void
@@ -267,59 +266,58 @@ Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algori
 #### Object
 The Object type is the parent type of all Solid Language Types.
 Every Solid Language Value is an Object.
-Some specific built-in subtypes of Object are described in the [Built-Ins](./built-ins.md) chapter.
+Some specific built-in subtypes of Object are described in the [Intrinsics](./intrinsics.md) chapter.
 
 #### Unknown
-The Top Type represents the set of all possible values, called `unknown`.
-Any value or expression is assignable to `unknown`,
-and expressions of type `unknown` are accepted almost nowhere.
+The Unknown type is the Top Type and it represents the set of all possible values.
+Any value or expression is assignable to Unknown,
+and expressions of type Unknown are accepted almost nowhere.
 
-`unknown` is a supertype of every type,
-and no type (except `unknown` itself) is a supertype of `unknown`.
-`unknown` is the the “identity element” of the [intersection](#intersection) operation
+Unknown is a supertype of every type,
+and no type (except Unknown itself) is a supertype of Unknown.
+Unknown is the the “identity element” of the [intersection](#intersection) operation
 and the “absorption element” of the [union](#union) operation.
 
 
 ### Compound Types
-Compound types are subtypes of [Object](#object) and are composed of other types.
 
 - [Tuple](#tuple-type)
 - [Record](#record-type)
 - [List](#list-type)
-- [Hash](#hash-type)
+- [Dict](#dict-type)
 - [Set](#set-type)
 - [Map](#map-type)
 
 #### Tuple Type
-A **Tuple Type** contains [`Tuple` objects](./built-ins.md#tuple) and is described by an ordered list of types.
+A **Tuple Type** contains [`Tuple` objects](./intrinsics.md#tuple) and is described by an ordered list of types.
 The objects that any given Tuple Type contains are `Tuple` objects whose items’ types
 match up with the types in the list in order.
 
 #### Record Type
-A **Record Type** contains [`Record` objects](./built-ins.md#record) and is described by an unordered list of name–type pairs.
+A **Record Type** contains [`Record` objects](./intrinsics.md#record) and is described by an unordered list of name–type pairs.
 The objects that any given Record Type contains are `Record` objects whose properties’ types
 match up with the types in the list by name.
 
 #### List Type
-A **List Type** contains [`List` objects](./built-ins.md#list) and is described by a single type,
+A **List Type** contains [`List` objects](./intrinsics.md#list) and is described by a single type,
 representing items.
 The objects that any given List Type contains are `List` objects whose
 items are assignable to the type describing the List Type.
 
-#### Hash Type
-A **Hash Type** contains [`Hash` objects](./built-ins.md#hash) and is described by a single type,
+#### Dict Type
+A **Dict Type** contains [`Dict` objects](./intrinsics.md#dict) and is described by a single type,
 representing values.
-The objects that any given Hash Type contains are `Hash` objects whose
-values are assignable to the type describing the Hash Type.
+The objects that any given Dict Type contains are `Dict` objects whose
+values are assignable to the type describing the Dict Type.
 
 #### Set Type
-A **Set Type** contains [`Set` objects](./built-ins.md#set) and is described by a single type,
+A **Set Type** contains [`Set` objects](./intrinsics.md#set) and is described by a single type,
 representing elements.
 The objects that any given Set Type contains are `Set` objects whose
 elements are assignable to the type describing the Set Type.
 
 #### Map Type
-A **Map Type** contains [`Map` objects](./built-ins.md#map) and is described by a pair of two types,
+A **Map Type** contains [`Map` objects](./intrinsics.md#map) and is described by a pair of two types,
 the first of which represents antecedents and the second of which represents consequents.
 The objects that any given Map Type contains are `Map` objects whose
 antcedents and consequents are respectively assignable to the types describing the Map Type.

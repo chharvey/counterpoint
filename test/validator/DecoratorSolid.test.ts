@@ -207,16 +207,16 @@ describe('DecoratorSolid', () => {
 			});
 		});
 
-		describe('TypeHashLiteral ::= "[" ":" Type "]"', () => {
-			it('makes an ASTNodeTypeHash.', () => {
+		describe('TypeDictLiteral ::= "[" ":" Type "]"', () => {
+			it('makes an ASTNodeTypeDict.', () => {
 				/*
-					<TypeHash>
+					<TypeDict>
 						<TypeConstant source="bool"/>
-					</TypeHash>
+					</TypeDict>
 				*/
-				const hash: AST.ASTNodeType = DECORATOR_SOLID.decorate(h.unitTypeFromString(`[:bool]`));
-				assert.ok(hash instanceof AST.ASTNodeTypeHash);
-				assert.deepStrictEqual(hash.type.source, `bool`);
+				const dict: AST.ASTNodeType = DECORATOR_SOLID.decorate(h.unitTypeFromString(`[:bool]`));
+				assert.ok(dict instanceof AST.ASTNodeTypeDict);
+				assert.deepStrictEqual(dict.type.source, `bool`);
 			});
 		});
 
@@ -543,14 +543,14 @@ describe('DecoratorSolid', () => {
 				/*
 					<Property>
 						<Key source="fontSize"/>
-						<Operation source="1. + 0.25">...</Operation>
+						<Operation source="1.0 + 0.25">...</Operation>
 					</Property>
 				*/
-				const property = DECORATOR_SOLID.decorate(h.propertyFromString(`fontSize= 1. + 0.25`));
+				const property = DECORATOR_SOLID.decorate(h.propertyFromString(`fontSize= 1.0 + 0.25`));
 				assert.ok(property instanceof AST.ASTNodeProperty); // FIXME: `AST.ASTNodeProperty` is assignable to `TemplatePartialType`, so `Decorator.decorate` overlads get confused
 				assert.deepStrictEqual(
 					[property.key.source, property.val.source],
-					[`fontSize`,          `1. + 0.25`],
+					[`fontSize`,          `1.0 + 0.25`],
 				);
 			});
 		});

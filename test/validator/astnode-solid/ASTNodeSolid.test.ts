@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import {
 	Operator,
 	ASTNODE_SOLID as AST,
-	Validator,
 	SolidType,
 	INST,
 	Builder,
@@ -64,17 +63,17 @@ describe('ASTNodeSolid', () => {
 				AST.ASTNodeGoal.fromSource(`
 					let unfixed i: int = 42;
 					i = 43;
-				`).varCheck(new Validator()); // assert does not throw
+				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					let i: int = 42;
 					i = 43;
-				`).varCheck(new Validator()), AssignmentError10);
+				`).varCheck(), AssignmentError10);
 			});
 			it('always throws for type alias reassignment.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					type T = 42;
 					T = 43;
-				`).varCheck(new Validator()), ReferenceError03);
+				`).varCheck(), ReferenceError03);
 			});
 		});
 
@@ -82,13 +81,12 @@ describe('ASTNodeSolid', () => {
 		describe('#typeCheck', () => {
 			context('for variable reassignment.', () => {
 				it('throws when variable assignee type is not supertype.', () => {
-					const validator: Validator = new Validator();
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let unfixed i: int = 42;
 						i = 4.3;
 					`);
-					goal.varCheck(validator);
-					assert.throws(() => goal.typeCheck(validator), TypeError03);
+					goal.varCheck();
+					assert.throws(() => goal.typeCheck(), TypeError03);
 				});
 			});
 
@@ -108,8 +106,8 @@ describe('ASTNodeSolid', () => {
 							l.0 = 4.2;
 						`,
 						`
-							let h: mutable [:int] = Hash.<int>([i= 42]);
-							h.i = 4.2;
+							let d: mutable [:int] = Dict.<int>([i= 42]);
+							d.i = 4.2;
 						`,
 						`
 							let s: mutable int{} = Set.<int>([42]);
@@ -120,10 +118,9 @@ describe('ASTNodeSolid', () => {
 							m.[true] = 4.2;
 						`,
 					].forEach((src) => {
-						const validator: Validator = new Validator();
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-						goal.varCheck(validator);
-						assert.throws(() => goal.typeCheck(validator), TypeError03);
+						goal.varCheck();
+						assert.throws(() => goal.typeCheck(), TypeError03);
 					});
 				});
 				it('throws when assignee’s base type is not mutable.', () => {
@@ -141,8 +138,8 @@ describe('ASTNodeSolid', () => {
 							l.0 = 4.2;
 						`,
 						`
-							let h: [:int] = Hash.<int>([i= 42]);
-							h.i = 4.2;
+							let d: [:int] = Dict.<int>([i= 42]);
+							d.i = 4.2;
 						`,
 						`
 							let s: int{} = Set.<int>([42]);
@@ -153,10 +150,9 @@ describe('ASTNodeSolid', () => {
 							m.[true] = 4.2;
 						`,
 					].forEach((src) => {
-						const validator: Validator = new Validator();
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-						goal.varCheck(validator);
-						assert.throws(() => goal.typeCheck(validator), MutabilityError01);
+						goal.varCheck();
+						assert.throws(() => goal.typeCheck(), MutabilityError01);
 					});
 				});
 			});
@@ -201,7 +197,7 @@ describe('ASTNodeSolid', () => {
 					type T = float;
 					let z: x = null;
 					let z: int = T;
-				`).varCheck(new Validator()), (err) => {
+				`).varCheck(), (err) => {
 					assert.ok(err instanceof AggregateError);
 					assertAssignable(err, {
 						cons: AggregateError,
@@ -273,9 +269,8 @@ describe('ASTNodeSolid', () => {
 					if null then 42 else 4.2;
 					let x: int = 4.2;
 				`);
-				const validator: Validator = new Validator();
-				goal.varCheck(validator);
-				assert.throws(() => goal.typeCheck(validator), (err) => {
+				goal.varCheck();
+				assert.throws(() => goal.typeCheck(), (err) => {
 					assert.ok(err instanceof AggregateError);
 					assertAssignable(err, {
 						cons: AggregateError,

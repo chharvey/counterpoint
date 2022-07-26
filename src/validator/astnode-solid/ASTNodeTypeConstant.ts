@@ -12,7 +12,6 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-	Validator,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -50,7 +49,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		this.type = value;
 	}
 	@memoizeMethod
-	override eval(_validator: Validator): SolidType {
+	override eval(): SolidType {
 		return this.type
 	}
 }

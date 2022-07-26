@@ -6,7 +6,6 @@ import {
 	AST,
 } from './package.js';
 import {
-	SolidTypeHash,
 	SolidObject,
 	SolidRecord,
 } from './index.js';
@@ -22,13 +21,14 @@ export class SolidTypeRecord extends SolidType {
 	/**
 	 * Construct a new SolidTypeRecord from type properties, assuming each properties is required.
 	 * @param propertytypes the types of the record
+	 * @param is_mutable is the record type mutable?
 	 * @return a new record type with the provided properties
 	 */
-	static fromTypes(propertytypes: ReadonlyMap<bigint, SolidType> = new Map()): SolidTypeRecord {
+	static fromTypes(propertytypes: ReadonlyMap<bigint, SolidType> = new Map(), is_mutable: boolean = false): SolidTypeRecord {
 		return new SolidTypeRecord(new Map<bigint, TypeEntry>([...propertytypes].map(([id, t]) => [id, {
 			type:     t,
 			optional: false,
-		}])));
+		}])), is_mutable);
 	}
 
 
@@ -81,10 +81,6 @@ export class SolidTypeRecord extends SolidType {
 					))
 				);
 			})
-		) || (
-			t instanceof SolidTypeHash
-			&& !t.isMutable
-			&& this.valueTypes().isSubtypeOf(t.types)
 		);
 	}
 

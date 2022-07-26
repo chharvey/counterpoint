@@ -11,7 +11,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
-	Validator,
 } from './package.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -31,7 +30,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	) {
 		super(start_node, {}, children);
 	}
-	override shouldFloat(_validator: Validator): boolean {
+	override shouldFloat(): boolean {
 		throw 'ASTNodeRecord#shouldFloat not yet supported.';
 	}
 	@memoizeMethod
@@ -41,17 +40,17 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	override type(validator: Validator): SolidType {
+	override type(): SolidType {
 		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
-			c.val.type(validator),
-		]))).mutableOf();
+			c.val.type(),
+		])), true);
 	}
 	@memoizeMethod
-	override fold(validator: Validator): SolidObject | null {
+	override fold(): SolidObject | null {
 		const properties: ReadonlyMap<bigint, SolidObject | null> = new Map(this.children.map((c) => [
 			c.key.id,
-			c.val.fold(validator),
+			c.val.fold(),
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null

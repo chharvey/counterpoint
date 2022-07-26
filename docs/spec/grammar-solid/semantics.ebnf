@@ -31,7 +31,7 @@ SemanticType =:=
 	| SemanticTypeTuple
 	| SemanticTypeRecord
 	| SemanticTypeList
-	| SemanticTypeHash
+	| SemanticTypeDict
 	| SemanticTypeSet
 	| SemanticTypeMap
 	| SemanticTypeAccess
@@ -49,7 +49,7 @@ SemanticTypeAlias[id: RealNumber]
 
 SemanticTypeTuple  ::= SemanticItemType*;
 SemanticTypeRecord ::= SemanticPropertyType+;
-SemanticTypeHash   ::= SemanticType;
+SemanticTypeDict   ::= SemanticType;
 SemanticTypeSet    ::= SemanticType;
 SemanticTypeMap    ::= SemanticType SemanticType;
 SemanticTypeList[count: RealNumber | None]

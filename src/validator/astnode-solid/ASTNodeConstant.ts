@@ -16,7 +16,6 @@ import {
 	Dev,
 	Keyword,
 	TOKEN,
-	Validator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -45,21 +44,21 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node, {value})
 		this.value = value
 	}
-	override shouldFloat(_validator: Validator): boolean {
+	override shouldFloat(): boolean {
 		return this.value instanceof Float64
 	}
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	override build(builder: Builder, to_float: boolean = false): INST.InstructionConst {
-		return INST.InstructionConst.fromCPValue(this.fold(builder.validator), to_float);
+	override build(_builder: Builder, to_float: boolean = false): INST.InstructionConst {
+		return INST.InstructionConst.fromCPValue(this.fold(), to_float);
 	}
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	override type(_validator: Validator): SolidType {
+	override type(): SolidType {
 		return new SolidTypeUnit(this.value);
 	}
 	@memoizeMethod
-	override fold(_validator: Validator): SolidObject {
+	override fold(): SolidObject {
 		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {
 			throw new Error('`stringConstant-assess` not yet supported.');
 		};

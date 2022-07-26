@@ -13,7 +13,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	Operator,
 	ValidOperatorUnary,
 } from './package.js';
@@ -35,13 +34,13 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand]);
 	}
-	override shouldFloat(validator: Validator): boolean {
-		return this.operand.shouldFloat(validator);
+	override shouldFloat(): boolean {
+		return this.operand.shouldFloat();
 	}
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionUnop {
-		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
+		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionUnop(
 			this.operator,
 			this.operand.build(builder, tofloat),
@@ -49,8 +48,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	override type(validator: Validator): SolidType {
-		const t0: SolidType = this.operand.type(validator);
+	override type(): SolidType {
+		const t0: SolidType = this.operand.type();
 		return (
 			(this.operator === Operator.NOT) ? (
 				(t0.isSubtypeOf(SolidType.VOID.union(SolidType.NULL).union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
@@ -64,8 +63,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		);
 	}
 	@memoizeMethod
-	override fold(validator: Validator): SolidObject | null {
-		const v0: SolidObject | null = this.operand.fold(validator);
+	override fold(): SolidObject | null {
+		const v0: SolidObject | null = this.operand.fold();
 		if (!v0) {
 			return v0;
 		}

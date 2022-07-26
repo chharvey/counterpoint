@@ -1,4 +1,4 @@
-# Built-Ins
+# Intrinsics
 This chapter describes the objects built in to the standard “core” Solid library.
 
 
@@ -28,9 +28,9 @@ The values of lists are Solid Language Values.
 
 
 
-## Hash
-`Hash` objects are variable-size unordered lists of keyed values, with identifier keys.
-The values of hashes are Solid Language Values.
+## Dict
+`Dict` objects are variable-size unordered lists of keyed values, with identifier keys.
+The values of dicts are Solid Language Values.
 
 
 

@@ -30,7 +30,7 @@ export class ASTNodeRef extends ASTNodeExpr {
 	}
 	readonly name: string = (this.ref instanceof ASTNodeRef) ? this.ref.name : this.ref.source;
 
-	override transform(nt: ConcreteNonterminal, _data: EBNFObject[]): EBNFChoice {
+	override transform(nt: ConcreteNonterminal, _has_params: boolean, _data: EBNFObject[]): EBNFChoice {
 		return (this.name === this.name.toUpperCase())
 			/* ALLCAPS: terminal identifier */
 			? [

@@ -6,7 +6,7 @@ import {
 	SolidTypeUnit,
 	SolidTypeTuple,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeRecord,
 	SolidTypeSet,
 	SolidTypeMap,
@@ -18,7 +18,7 @@ import {
 	SolidTuple,
 	SolidRecord,
 	SolidList,
-	SolidHash,
+	SolidDict,
 	SolidSet,
 	SolidMap,
 	INST,
@@ -30,7 +30,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
-	Validator,
 	Operator,
 	ValidAccessOperator,
 } from './package.js';
@@ -55,7 +54,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	) {
 		super(start_node, {kind}, [base, accessor]);
 	}
-	override shouldFloat(_validator: Validator): boolean {
+	override shouldFloat(): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
 	}
 	@memoizeMethod
@@ -65,27 +64,27 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	override type(validator: Validator): SolidType {
-		let base_type: SolidType = this.base.type(validator);
+	override type(): SolidType {
+		let base_type: SolidType = this.base.type();
 		if (base_type instanceof SolidTypeIntersection || base_type instanceof SolidTypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		return (
 			(this.optional && base_type.isSubtypeOf(SolidType.NULL)) ? base_type :
-			(this.optional && SolidType.NULL.isSubtypeOf(base_type)) ? this.type_do(base_type.subtract(SolidType.NULL), validator).union(SolidType.NULL) :
-			this.type_do(base_type, validator)
+			(this.optional && SolidType.NULL.isSubtypeOf(base_type)) ? this.type_do(base_type.subtract(SolidType.NULL)).union(SolidType.NULL) :
+			this.type_do(base_type)
 		);
 	}
-	private type_do(base_type: SolidType, validator: Validator): SolidType {
+	private type_do(base_type: SolidType): SolidType {
 		function updateAccessedDynamicType(type: SolidType, access_kind: ValidAccessOperator): SolidType {
 			return (
-				(access_kind === Operator.OPTDOT)   ? type.union(SolidType.NULL) :
 				(access_kind === Operator.CLAIMDOT) ? type.subtract(SolidType.VOID) :
+				(access_kind === Operator.OPTDOT)   ? type.union   (SolidType.NULL) :
 				type
 			);
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			const accessor_type:  SolidTypeUnit = this.accessor.val.type(validator) as SolidTypeUnit;
+			const accessor_type:  SolidTypeUnit = this.accessor.val.type() as SolidTypeUnit;
 			const accessor_value: Int16         = accessor_type.value as Int16;
 			if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
 				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple)
@@ -107,16 +106,16 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					? base_type.value.toType()
 					: base_type as SolidTypeRecord;
 				return base_type_record.get(this.accessor.id, this.kind, this.accessor);
-			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidHash || base_type instanceof SolidTypeHash) {
-				const base_type_hash: SolidTypeHash = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidHash)
+			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidDict || base_type instanceof SolidTypeDict) {
+				const base_type_dict: SolidTypeDict = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidDict)
 					? base_type.value.toType()
-					: base_type as SolidTypeHash;
-				return updateAccessedDynamicType(base_type_hash.types, this.kind);
+					: base_type as SolidTypeDict;
+				return updateAccessedDynamicType(base_type_dict.types, this.kind);
 			} else {
 				throw new TypeError04('property', base_type, this.accessor);
 			}
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
-			const accessor_type: SolidType = this.accessor.type(validator);
+			const accessor_type: SolidType = this.accessor.type();
 			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: SolidType): never {
 				throw new TypeError02(accessor_type, supertype, accessor.line_index, accessor.col_index);
 			}
@@ -156,8 +155,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 	}
 	@memoizeMethod
-	override fold(validator: Validator): SolidObject | null {
-		const base_value: SolidObject | null = this.base.fold(validator);
+	override fold(): SolidObject | null {
+		const base_value: SolidObject | null = this.base.fold();
 		if (base_value === null) {
 			return null;
 		}
@@ -165,11 +164,11 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as CollectionIndexed).get(this.accessor.val.fold(validator) as Int16, this.optional, this.accessor);
+			return (base_value as CollectionIndexed).get(this.accessor.val.fold() as Int16, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (base_value as CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
-			const accessor_value: SolidObject | null = this.accessor.fold(validator);
+			const accessor_value: SolidObject | null = this.accessor.fold();
 			if (accessor_value === null) {
 				return null;
 			}

@@ -12,7 +12,7 @@ export {
 	SolidTypeTuple,
 	SolidTypeRecord,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	SolidObject,
@@ -28,7 +28,7 @@ export {
 	SolidTuple,
 	SolidRecord,
 	SolidList,
-	SolidHash,
+	SolidDict,
 	SolidSet,
 	SolidMap,
 	Instruction,
@@ -51,6 +51,7 @@ export {
 } from '../index.js';
 export {
 	NonemptyArray,
+	forEachAggregated,
 	memoizeMethod,
 	runOnceMethod,
 	Map_hasEq,

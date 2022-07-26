@@ -12,7 +12,7 @@ import {Collection} from './Collection.js';
 /**
  * Known subclasses:
  * - SolidRecord
- * - SolidHash
+ * - SolidDict
  */
 export abstract class CollectionKeyed<T extends SolidObject = SolidObject> extends Collection {
 	constructor (

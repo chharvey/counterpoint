@@ -1,5 +1,7 @@
 import {
 	NonemptyArray,
+	SolidConfig,
+	CONFIG_DEFAULT,
 	Punctuator,
 	Keyword,
 	TOKEN_SOLID as TOKEN,
@@ -95,7 +97,7 @@ class DecoratorSolid extends Decorator {
 	override decorate(node: PARSENODE.ParseNodePropertiesType):     NonemptyArray<AST.ASTNodePropertyType>;
 	override decorate(node: PARSENODE.ParseNodeTypeTupleLiteral):   AST.ASTNodeTypeTuple;
 	override decorate(node: PARSENODE.ParseNodeTypeRecordLiteral):  AST.ASTNodeTypeRecord;
-	override decorate(node: PARSENODE.ParseNodeTypeHashLiteral):    AST.ASTNodeTypeHash;
+	override decorate(node: PARSENODE.ParseNodeTypeDictLiteral):    AST.ASTNodeTypeDict;
 	override decorate(node: PARSENODE.ParseNodeTypeMapLiteral):     AST.ASTNodeTypeMap;
 	override decorate(node: PARSENODE.ParseNodeGenericArguments):   NonemptyArray<AST.ASTNodeType>;
 	override decorate(node: PARSENODE.ParseNodePropertyAccessType): AST.ASTNodeIndexType | AST.ASTNodeKey;
@@ -141,9 +143,9 @@ class DecoratorSolid extends Decorator {
 	override decorate(node: PARSENODE.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
 	override decorate(node: PARSENODE.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
 	override decorate(node: PARSENODE.ParseNodeStatement):             AST.ASTNodeStatement;
-	override decorate(node: PARSENODE.ParseNodeGoal):                  AST.ASTNodeGoal;
+	override decorate(node: PARSENODE.ParseNodeGoal, config?: SolidConfig): AST.ASTNodeGoal;
 	override decorate(node: ParseNode): DecoratorReturnType;
-	override decorate(node: ParseNode): DecoratorReturnType {
+	override decorate(node: ParseNode, config: SolidConfig = CONFIG_DEFAULT): DecoratorReturnType {
 		if (node instanceof PARSENODE.ParseNodeWord) {
 			return new AST.ASTNodeKey(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenIdentifier);
 
@@ -204,8 +206,8 @@ class DecoratorSolid extends Decorator {
 				node.children.find((c): c is PARSENODE.ParseNodePropertiesType => c instanceof PARSENODE.ParseNodePropertiesType)!
 			));
 
-		} else if (node instanceof PARSENODE.ParseNodeTypeHashLiteral) {
-			return new AST.ASTNodeTypeHash(node, this.decorate(node.children[2]));
+		} else if (node instanceof PARSENODE.ParseNodeTypeDictLiteral) {
+			return new AST.ASTNodeTypeDict(node, this.decorate(node.children[2]));
 
 		} else if (node instanceof PARSENODE.ParseNodeTypeMapLiteral) {
 			return new AST.ASTNodeTypeMap(node, this.decorate(node.children[1]), this.decorate(node.children[3]));
@@ -524,7 +526,11 @@ class DecoratorSolid extends Decorator {
 				: new AST.ASTNodeStatementExpression(node, (node.children.length === 2) ? this.decorate(node.children[0]) : void 0);
 
 		} else if (node instanceof PARSENODE.ParseNodeGoal) {
-			return new AST.ASTNodeGoal(node, (node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeStatement, AST.ASTNodeStatement>(node.children[1]));
+			return new AST.ASTNodeGoal(
+				node,
+				(node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeStatement, AST.ASTNodeStatement>(node.children[1]),
+				config,
+			);
 		}
 		throw new TypeError(`Could not find type of parse node \`${ node.constructor.name }\`.`);
 	}

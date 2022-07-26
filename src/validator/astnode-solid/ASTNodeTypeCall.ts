@@ -2,19 +2,22 @@ import * as assert from 'assert';
 import {
 	SolidType,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	TypeError05,
 	TypeError06,
 	memoizeMethod,
 	NonemptyArray,
+	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
-	Validator,
 } from './package.js';
-import {forEachAggregated} from './utils-private.js';
+import {
+	ValidFunctionName,
+	invalidFunctionName,
+} from './utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 
@@ -33,29 +36,27 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	) {
 		super(start_node, {}, [base, ...args]);
 	}
-	override varCheck(validator: Validator): void {
+	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
-		// (`this.base.source` must be `List | Hash | Set | Map`)
-		return forEachAggregated(this.args, (arg) => arg.varCheck(validator));
+		// (`this.base.source` must be a `ValidFunctionName`)
+		return forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
 	@memoizeMethod
-	override eval(validator: Validator): SolidType {
+	override eval(): SolidType {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
-			throw new TypeError05(this.base.eval(validator), this.base);
+			throw new TypeError05(this.base.eval(), this.base);
 		}
-		return (new Map<string, () => SolidType>([
-			['List', () => (this.countArgs(1n), new SolidTypeList(this.args[0].eval(validator)))],
-			['Hash', () => (this.countArgs(1n), new SolidTypeHash(this.args[0].eval(validator)))],
-			['Set',  () => (this.countArgs(1n), new SolidTypeSet (this.args[0].eval(validator)))],
-			['Map',  () => {
+		return (new Map<ValidFunctionName, () => SolidType>([
+			[ValidFunctionName.LIST, () => (this.countArgs(1n), new SolidTypeList(this.args[0].eval()))],
+			[ValidFunctionName.DICT, () => (this.countArgs(1n), new SolidTypeDict(this.args[0].eval()))],
+			[ValidFunctionName.SET,  () => (this.countArgs(1n), new SolidTypeSet (this.args[0].eval()))],
+			[ValidFunctionName.MAP,  () => {
 				this.countArgs([1n, 3n]);
-				const anttype: SolidType = this.args[0].eval(validator);
-				const contype: SolidType = this.args[1]?.eval(validator) || anttype;
+				const anttype: SolidType = this.args[0].eval();
+				const contype: SolidType = this.args[1]?.eval() || anttype;
 				return new SolidTypeMap(anttype, contype);
 			}],
-		]).get(this.base.source) || (() => {
-			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Map\`.`);
-		}))();
+		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
 	}
 	/**
 	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,

@@ -10,7 +10,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	TOKEN,
-	Validator,
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
@@ -31,28 +30,28 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		super(start_node, {id: start_node.cook()})
 		this.id = start_node.cook()!;
 	}
-	override shouldFloat(validator: Validator): boolean {
-		return this.type(validator).isSubtypeOf(SolidType.FLOAT);
+	override shouldFloat(): boolean {
+		return this.type().isSubtypeOf(SolidType.FLOAT);
 	}
-	override varCheck(validator: Validator): void {
-		if (!validator.hasSymbol(this.id)) {
+	override varCheck(): void {
+		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		};
-		if (validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
+		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
 			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		};
 	}
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	override build(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
-		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat(builder.validator));
+	override build(_builder: Builder, to_float: boolean = false): INST.InstructionExpression {
+		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
 	}
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	override type(validator: Validator): SolidType {
-		if (validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
+	override type(): SolidType {
+		if (this.validator.hasSymbol(this.id)) {
+			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar) {
 				return symbol.type;
 			};
@@ -60,9 +59,9 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		return SolidType.NEVER;
 	}
 	@memoizeMethod
-	override fold(validator: Validator): SolidObject | null {
-		if (validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
+	override fold(): SolidObject | null {
+		if (this.validator.hasSymbol(this.id)) {
+			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
 				return symbol.value;
 			};

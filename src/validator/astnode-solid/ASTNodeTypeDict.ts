@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {
 	SolidType,
-	SolidTypeSet,
+	SolidTypeDict,
 	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -11,20 +11,20 @@ import {ASTNodeType} from './ASTNodeType.js';
 
 
 
-export class ASTNodeTypeSet extends ASTNodeType {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeSet {
+export class ASTNodeTypeDict extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeDict {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeSet);
+		assert.ok(typ instanceof ASTNodeTypeDict);
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeUnarySymbol,
+		start_node: PARSENODE.ParseNodeTypeDictLiteral,
 		readonly type: ASTNodeType,
 	) {
 		super(start_node, {}, [type]);
 	}
 	@memoizeMethod
 	override eval(): SolidType {
-		return new SolidTypeSet(this.type.eval());
+		return new SolidTypeDict(this.type.eval());
 	}
 }

@@ -11,7 +11,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
-	Validator,
 } from './package.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -31,7 +30,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	) {
 		super(start_node, {}, children);
 	}
-	override shouldFloat(_validator: Validator): boolean {
+	override shouldFloat(): boolean {
 		throw 'ASTNodeMap#shouldFloat not yet supported.';
 	}
 	@memoizeMethod
@@ -41,17 +40,18 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	}
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	override type(validator: Validator): SolidType {
+	override type(): SolidType {
 		return new SolidTypeMap(
-			SolidType.unionAll(this.children.map((c) => c.antecedent.type(validator))),
-			SolidType.unionAll(this.children.map((c) => c.consequent.type(validator))),
-		).mutableOf();
+			SolidType.unionAll(this.children.map((c) => c.antecedent.type())),
+			SolidType.unionAll(this.children.map((c) => c.consequent.type())),
+			true,
+		);
 	}
 	@memoizeMethod
-	override fold(validator: Validator): SolidObject | null {
+	override fold(): SolidObject | null {
 		const cases: ReadonlyMap<SolidObject | null, SolidObject | null> = new Map(this.children.map((c) => [
-			c.antecedent.fold(validator),
-			c.consequent.fold(validator),
+			c.antecedent.fold(),
+			c.consequent.fold(),
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null

@@ -37,7 +37,7 @@ import {solidObjectsIdentical} from './utils-private.js';
  * - SolidTypeTuple
  * - SolidTypeRecord
  * - SolidTypeList
- * - SolidTypeHash
+ * - SolidTypeDict
  * - SolidTypeSet
  * - SolidTypeMap
  */

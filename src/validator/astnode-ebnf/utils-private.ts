@@ -6,6 +6,12 @@ import type {
 
 
 
+export type Mutable<T> = {
+	-readonly [P in keyof T]: T[P];
+};
+
+
+
 export const PARAM_SEPARATOR: '_'  = '_';
 export const SUB_SEPARATOR:   '__' = '__';
 export const FAMILY_SYMBOL:   '$'  = '$';

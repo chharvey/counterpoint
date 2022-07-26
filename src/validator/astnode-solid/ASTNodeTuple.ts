@@ -10,7 +10,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
-	Validator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
@@ -29,7 +28,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	) {
 		super(start_node, {}, children);
 	}
-	override shouldFloat(_validator: Validator): boolean {
+	override shouldFloat(): boolean {
 		throw 'ASTNodeTuple#shouldFloat not yet supported.';
 	}
 	@memoizeMethod
@@ -39,12 +38,12 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	override type(validator: Validator): SolidType {
-		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator))).mutableOf();
+	override type(): SolidType {
+		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type()), true);
 	}
 	@memoizeMethod
-	override fold(validator: Validator): SolidObject | null {
-		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.fold(validator));
+	override fold(): SolidObject | null {
+		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.fold());
 		return (items.includes(null))
 			? null
 			: new SolidTuple(items as SolidObject[]);

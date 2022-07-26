@@ -8,6 +8,7 @@ import {
 } from '../src/core/index.js';
 import {
 	Filebound,
+	TemplatePosition,
 	Punctuator,
 	Token,
 	TokenFilebound,
@@ -80,6 +81,16 @@ export function recordTypeFromString(typestring: string, config: SolidConfig = C
 	assert.ok(unit instanceof PARSENODE.ParseNodeTypeRecordLiteral, 'unit should be a ParseNodeTypeRecordLiteral');
 	return unit;
 }
+export function dictTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeDictLiteral {
+	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
+	assert.ok(unit instanceof PARSENODE.ParseNodeTypeDictLiteral, 'unit should be a ParseNodeTypeDictLiteral');
+	return unit;
+}
+export function mapTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeMapLiteral {
+	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
+	assert.ok(unit instanceof PARSENODE.ParseNodeTypeMapLiteral, 'unit should be a ParseNodeTypeMapLiteral');
+	return unit;
+}
 function typeLiteralFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeUnit['children'][0] {
 	const type_unit: PARSENODE.ParseNodeTypeUnit = unitTypeFromString(typestring, config);
 	assert_arrayLength(type_unit.children, 1, 'type unit should have 1 child');
@@ -137,6 +148,14 @@ export function tokenLiteralFromSource(src: string, config: SolidConfig = CONFIG
 		token instanceof TOKEN.TokenString
 	, 'token should be a TokenKeyword or TokenNumber or TokenString')
 	return token
+}
+export function tokenTemplateFullFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenTemplate {
+	const string_template: PARSENODE.ParseNodeStringTemplate = stringTemplateFromSource(src, config);
+	assert_arrayLength(string_template.children, 1, 'string template should have 1 child');
+	const token: Token = string_template.children[0];
+	assert.ok(token instanceof TOKEN.TokenTemplate);
+	assert.strictEqual(token.position, TemplatePosition.FULL);
+	return token;
 }
 export function tokenIdentifierFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenIdentifier {
 	const expression_unit: PARSENODE.ParseNodeExpressionUnit = unitExpressionFromSource(src, config)

@@ -12,7 +12,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	Operator,
 	ValidOperatorComparative,
 } from './package.js';
@@ -46,7 +45,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopComparative {
-		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
+		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionBinopComparative(
 			this.operator,
 			this.operand0.build(builder, tofloat),
@@ -62,12 +61,12 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		throw new TypeError01(this)
 	}
 	@memoizeMethod
-	override fold(validator: Validator): SolidObject | null {
-		const v0: SolidObject | null = this.operand0.fold(validator);
+	override fold(): SolidObject | null {
+		const v0: SolidObject | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: SolidObject | null = this.operand1.fold(validator);
+		const v1: SolidObject | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}

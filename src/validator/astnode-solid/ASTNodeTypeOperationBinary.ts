@@ -5,7 +5,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	Operator,
 	ValidTypeOperator,
 } from './package.js';
@@ -29,10 +28,10 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		super(start_node, operator, [operand0, operand1]);
 	}
 	@memoizeMethod
-	override eval(validator: Validator): SolidType {
+	override eval(): SolidType {
 		return (
-			(this.operator === Operator.AND) ? this.operand0.eval(validator).intersect(this.operand1.eval(validator)) :
-			(this.operator === Operator.OR)  ? this.operand0.eval(validator).union    (this.operand1.eval(validator)) :
+			(this.operator === Operator.AND) ? this.operand0.eval().intersect(this.operand1.eval()) :
+			(this.operator === Operator.OR)  ? this.operand0.eval().union    (this.operand1.eval()) :
 			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}

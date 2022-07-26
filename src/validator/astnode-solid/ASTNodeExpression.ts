@@ -9,7 +9,6 @@ import {
 	INST,
 	Builder,
 	ErrorCode,
-	Validator,
 } from './package.js';
 import {
 	ASTNodeStatement,
@@ -45,15 +44,15 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	protected static typeDeco(
 		_prototype: ASTNodeExpression,
 		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression, validator: Validator) => SolidType>,
+		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression) => SolidType>,
 	): typeof descriptor {
 		const method = descriptor.value!;
-		descriptor.value = function (validator) {
-			const type: SolidType = method.call(this, validator); // type-check first, to re-throw any TypeErrors
-			if (validator.config.compilerOptions.constantFolding) {
+		descriptor.value = function () {
+			const type: SolidType = method.call(this); // type-check first, to re-throw any TypeErrors
+			if (this.validator.config.compilerOptions.constantFolding) {
 				let value: SolidObject | null = null;
 				try {
-					value = this.fold(validator);
+					value = this.fold();
 				} catch (err) {
 					if (err instanceof ErrorCode) {
 						// ignore evaluation errors such as VoidError, NanError, etc.
@@ -86,7 +85,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (builder, to_float = false) {
-			const value: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.fold(builder.validator) : null;
+			const value: SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
 			return (!!value) ? INST.InstructionConst.fromCPValue(value, to_float) : method.call(this, builder, to_float);
 		};
 		return descriptor;
@@ -108,29 +107,29 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
 	 */
-	abstract shouldFloat(validator: Validator): boolean;
+	abstract shouldFloat(): boolean;
 	/**
 	 * @final
 	 */
-	override typeCheck(validator: Validator): void {
-		super.typeCheck(validator);
-		this.type(validator); // assert does not throw
+	override typeCheck(): void {
+		super.typeCheck();
+		this.type(); // assert does not throw
 	}
 	/**
+	 * @inheritdoc
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
+	 * @implements Buildable
 	 */
 	abstract build(builder: Builder, to_float?: boolean): INST.InstructionExpression;
 	/**
 	 * The Type of this expression.
-	 * @param validator stores validation and configuration information
 	 * @return the compile-time type of this node
 	 */
-	abstract type(validator: Validator): SolidType;
+	abstract type(): SolidType;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * If {@link SolidConfig|constant folding} is off, this should not be called.
-	 * @param validator stores validation and configuration information
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 */
-	abstract fold(validator: Validator): SolidObject | null;
+	abstract fold(): SolidObject | null;
 }

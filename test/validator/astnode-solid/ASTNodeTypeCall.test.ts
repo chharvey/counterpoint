@@ -1,10 +1,9 @@
 import * as assert from 'assert';
 import {
 	ASTNODE_SOLID as AST,
-	Validator,
 	SolidType,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	TypeError05,
@@ -15,18 +14,17 @@ import {
 
 describe('ASTNodeTypeCall', () => {
 	describe('#eval', () => {
-		const validator: Validator = new Validator();
-		it('evaluates List, Hash, Set, and Map.', () => {
+		it('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
 				[
 					`List.<null>`,
-					`Hash.<bool>`,
+					`Dict.<bool>`,
 					`Set.<str>`,
 					`Map.<int, float>`,
-				].map((src) => AST.ASTNodeTypeCall.fromSource(src).eval(validator)),
+				].map((src) => AST.ASTNodeTypeCall.fromSource(src).eval()),
 				[
 					new SolidTypeList(SolidType.NULL),
-					new SolidTypeHash(SolidType.BOOL),
+					new SolidTypeDict(SolidType.BOOL),
 					new SolidTypeSet(SolidType.STR),
 					new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
 				],
@@ -34,16 +32,16 @@ describe('ASTNodeTypeCall', () => {
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeCall.fromSource(`Map.<int>`).eval(validator),
+				AST.ASTNodeTypeCall.fromSource(`Map.<int>`).eval(),
 				new SolidTypeMap(SolidType.INT, SolidType.INT),
 			);
 		});
 		it('throws if base is not an ASTNodeTypeAlias.', () => {
 			[
 				`int.<str>`,
-				`(List | Hash).<bool>`,
+				`(List | Dict).<bool>`,
 			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(validator), TypeError05);
+				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeError05);
 			});
 		});
 		it('throws if base is not one of the allowed strings.', () => {
@@ -51,17 +49,17 @@ describe('ASTNodeTypeCall', () => {
 				`SET.<str>`,
 				`Mapping.<bool>`,
 			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(validator), SyntaxError);
+				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), SyntaxError);
 			});
 		});
 		it('throws when providing incorrect number of arguments.', () => {
 			[
 				`List.<null, null>`,
-				`Hash.<bool, bool, bool>`,
+				`Dict.<bool, bool, bool>`,
 				`Set.<str, str, str, str>`,
 				`Map.<int, int, int, int, int>`,
 			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(validator), TypeError06);
+				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeError06);
 			});
 		});
 	});
