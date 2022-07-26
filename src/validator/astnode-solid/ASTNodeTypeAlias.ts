@@ -4,6 +4,7 @@ import {
 	ReferenceError01,
 	ReferenceError03,
 	memoizeMethod,
+	memoizeGetter,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SymbolKind,
@@ -24,14 +25,13 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 	}
 
 
-	private _id: bigint | null = null; // TODO use memoize decorator
-
 	constructor (start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
+	@memoizeGetter
 	get id(): bigint {
-		return this._id ??= this.validator.cookTokenIdentifier(this.start_node.text);
+		return this.validator.cookTokenIdentifier(this.start_node.text);
 	}
 
 	override varCheck(): void {

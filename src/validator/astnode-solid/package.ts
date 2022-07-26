@@ -51,6 +51,7 @@ export {
 	NanError02,
 	NonemptyArray,
 	memoizeMethod,
+	memoizeGetter,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Serializable,

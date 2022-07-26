@@ -55,6 +55,7 @@ export {
 	NonemptyArray,
 	CodeUnit,
 	memoizeMethod,
+	memoizeGetter,
 } from '../lib/index.js';
 export {
 	stringifyAttributes,

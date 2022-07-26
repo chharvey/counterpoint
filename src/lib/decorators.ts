@@ -3,6 +3,7 @@
  * When getting a property, check whether it exists in the “database”.
  * If it does, return that value.
  * If it doen’t, compute the value, store it in the database, and then return it.
+ * @implements MethodDecorator
  * @typeparam Params      the method’s parameter types
  * @typeparam Return      the method’s return type
  * @param   _prototype    the prototype that has the method to be decorated
@@ -28,6 +29,7 @@ export function memoizeMethod<Params extends unknown[], Return>(
 
 /**
  * Like {@link memoizeMethod} but for getters.
+ * @implements MethodDecorator
  * @typeparam Return      the getter’s return type
  * @param   _prototype    the prototype that has the getter to be decorated
  * @param   _property_key the name of the getter to be decorated
@@ -54,6 +56,7 @@ export function memoizeGetter<Return>(
  * Decorator for run-once methods.
  * The first time the method is called, it should execute; any time after that, it should not.
  * Should only be used on methods that return `void`; for non-void methods, use {@link memoizeMethod}.
+ * @implements MethodDecorator
  * @typeparam Params      the method’s parameter types
  * @param   _prototype    the prototype that has the method to be decorated
  * @param   _property_key the name of the method to be decorated
@@ -80,6 +83,7 @@ export function runOnceMethod<Params extends unknown[]>(
 
 /**
  * Like {@link runOnceMethod} but for setters.
+ * @implements MethodDecorator
  * @typeparam Param       the setter’s parameter type
  * @param   _prototype    the prototype that has the getter to be decorated
  * @param   _property_key the name of the getter to be decorated
