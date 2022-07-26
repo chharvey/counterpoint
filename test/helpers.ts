@@ -1,5 +1,5 @@
 import {
-	SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
 	SolidTypeUnit,
 	Int16,
@@ -10,7 +10,7 @@ import {
 
 
 
-export const CONFIG_RADICES_SEPARATORS_ON: SolidConfig = {
+export const CONFIG_RADICES_SEPARATORS_ON: CPConfig = {
 	...CONFIG_DEFAULT,
 	languageFeatures: {
 		...CONFIG_DEFAULT.languageFeatures,
@@ -19,7 +19,7 @@ export const CONFIG_RADICES_SEPARATORS_ON: SolidConfig = {
 	},
 };
 
-export const CONFIG_FOLDING_OFF: SolidConfig = {
+export const CONFIG_FOLDING_OFF: CPConfig = {
 	...CONFIG_DEFAULT,
 	compilerOptions: {
 		...CONFIG_DEFAULT.compilerOptions,
@@ -27,7 +27,7 @@ export const CONFIG_FOLDING_OFF: SolidConfig = {
 	},
 };
 
-export const CONFIG_COERCION_OFF: SolidConfig = {
+export const CONFIG_COERCION_OFF: CPConfig = {
 	...CONFIG_DEFAULT,
 	compilerOptions: {
 		...CONFIG_DEFAULT.compilerOptions,
@@ -35,7 +35,7 @@ export const CONFIG_COERCION_OFF: SolidConfig = {
 	},
 };
 
-export const CONFIG_FOLDING_COERCION_OFF: SolidConfig = {
+export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
 	...CONFIG_DEFAULT,
 	compilerOptions: {
 		...CONFIG_DEFAULT.compilerOptions,

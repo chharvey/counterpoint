@@ -1,9 +1,6 @@
 export * from './utils-public.js';
 
-export {
-	SolidConfig,
-	CONFIG_DEFAULT,
-} from './SolidConfig.js';
+export * from './CPConfig.js';
 
 export {Dev} from './Dev.js';
 

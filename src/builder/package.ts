@@ -5,7 +5,7 @@
  * they are only for modules within this package.
  */
 export {
-	SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.js';
 export {

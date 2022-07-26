@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
 	ASTNODE_SOLID as AST,
 	SolidType,
@@ -83,7 +83,7 @@ describe('ASTNodeExpression', () => {
 				]);
 			})
 			it('computes int values.', () => {
-				const integer_radices_on: SolidConfig = {
+				const integer_radices_on: CPConfig = {
 					...CONFIG_DEFAULT,
 					languageFeatures: {
 						...CONFIG_DEFAULT.languageFeatures,
@@ -305,7 +305,7 @@ describe('ASTNodeExpression', () => {
 	describe('ASTNodeTemplate', () => {
 		describe('#type', () => {
 			let templates: readonly AST.ASTNodeTemplate[];
-			function initTemplates(config: SolidConfig = CONFIG_DEFAULT) {
+			function initTemplates(config: CPConfig = CONFIG_DEFAULT) {
 				return [
 					AST.ASTNodeTemplate.fromSource(`'''42😀''';`, config),
 					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, config),

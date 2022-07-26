@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
 	Operator,
 	ASTNODE_SOLID as AST,
@@ -31,7 +31,7 @@ import {
 
 
 
-function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: SolidConfig = CONFIG_DEFAULT): void {
+function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: CPConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type()),
 		[...tests.values()].map((expected) => new SolidTypeUnit(expected)),

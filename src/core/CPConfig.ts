@@ -8,7 +8,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 /**
  * Interface for Solid configurations.
  */
-export type SolidConfig = {
+export type CPConfig = {
 	/**
 	 * Options for which language features to enable/disable.
 	 * Disabling features can improve compiler speed.
@@ -52,4 +52,4 @@ export type SolidConfig = {
 	},
 }
 
-export const CONFIG_DEFAULT: SolidConfig = requireJSONSync(path.join(DIRNAME, '../../src/core/solid-config.default.json')) as SolidConfig;
+export const CONFIG_DEFAULT: CPConfig = requireJSONSync(path.join(DIRNAME, '../../src/core/solid-config.default.json')) as CPConfig;

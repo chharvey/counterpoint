@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import minimist from 'minimist'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
-	SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
 } from './core/index.js';
 import {
@@ -16,9 +16,9 @@ type Mutable<T> = { // NB https://github.com/microsoft/TypeScript/issues/24509
 	-readonly[P in keyof T]: Mutable<T[P]>
 }
 
-type PartialSolidConfig = Partial<{
-	readonly languageFeatures: Partial<SolidConfig['languageFeatures']>,
-	readonly compilerOptions:  Partial<SolidConfig['compilerOptions']>,
+type PartialCPConfig = Partial<{
+	readonly languageFeatures: Partial<CPConfig['languageFeatures']>,
+	readonly compilerOptions:  Partial<CPConfig['compilerOptions']>,
 }>
 
 export enum Command {
@@ -204,12 +204,12 @@ export class CLI {
 	 * @param cwd the current working directory, `process.cwd()`
 	 * @return the computed configuration object
 	 */
-	private async computeConfig(cwd: string): Promise<SolidConfig> {
-		const config: PartialSolidConfig | Promise<PartialSolidConfig> = this.argv.project ?
+	private async computeConfig(cwd: string): Promise<CPConfig> {
+		const config: PartialCPConfig | Promise<PartialCPConfig> = this.argv.project ?
 			fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8').then((text) => JSON.parse(text))
 		: {}
 
-		const returned: Mutable<SolidConfig> = {
+		const returned: Mutable<CPConfig> = {
 			...CONFIG_DEFAULT,
 			...await config,
 			languageFeatures: {
