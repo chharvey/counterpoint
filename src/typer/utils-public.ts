@@ -1,4 +1,4 @@
-import type {SolidType} from './index.js';
+import type {SolidType} from './cp-type/index.js';
 
 
 

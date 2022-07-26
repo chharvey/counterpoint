@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 import {
+	TypeEntry,
 	TYPE,
 	SolidObject,
 	SolidBoolean,
@@ -615,20 +616,20 @@ describe('SolidType', () => {
 				]))), `[x: int, y: bool, z: str] !<: [y: bool!, z: obj, w: int | float]`);
 			});
 			it('optional entries are not assignable to required entries.', () => {
-				assert.ok(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+				assert.ok(new TYPE.SolidTypeRecord(new Map<bigint, TypeEntry>([
 					[0x100n, {type: TYPE.SolidType.STR,  optional: false}],
 					[0x101n, {type: TYPE.SolidType.INT,  optional: true}],
 					[0x102n, {type: TYPE.SolidType.BOOL, optional: false}],
-				])).isSubtypeOf(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+				])).isSubtypeOf(new TYPE.SolidTypeRecord(new Map<bigint, TypeEntry>([
 					[0x100n, {type: TYPE.SolidType.STR,  optional: true}],
 					[0x101n, {type: TYPE.SolidType.INT,  optional: true}],
 					[0x102n, {type: TYPE.SolidType.BOOL, optional: false}],
 				]))), `[a: str, b?: int, c: bool] <: [a?: str, b?: int, c: bool]`);
-				assert.ok(!new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+				assert.ok(!new TYPE.SolidTypeRecord(new Map<bigint, TypeEntry>([
 					[0x100n, {type: TYPE.SolidType.STR,  optional: false}],
 					[0x101n, {type: TYPE.SolidType.INT,  optional: true}],
 					[0x102n, {type: TYPE.SolidType.BOOL, optional: false}],
-				])).isSubtypeOf(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+				])).isSubtypeOf(new TYPE.SolidTypeRecord(new Map<bigint, TypeEntry>([
 					[0x100n, {type: TYPE.SolidType.STR,  optional: true}],
 					[0x101n, {type: TYPE.SolidType.INT,  optional: false}],
 					[0x102n, {type: TYPE.SolidType.BOOL, optional: false}],
@@ -900,15 +901,15 @@ describe('SolidType', () => {
 				})
 				it('takes the conjunction of optionality.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-					assert.ok(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+					assert.ok(new TYPE.SolidTypeRecord(new Map<bigint, TypeEntry>([
 						[foo, {type: TYPE.SolidType.OBJ,  optional: false}],
 						[bar, {type: TYPE.SolidType.NULL, optional: true}],
 						[qux, {type: TYPE.SolidType.BOOL, optional: true}],
-					])).intersectWithRecord(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+					])).intersectWithRecord(new TYPE.SolidTypeRecord(new Map<bigint, TypeEntry>([
 						[foo, {type: TYPE.SolidType.OBJ, optional: false}],
 						[diz, {type: TYPE.SolidType.INT, optional: true}],
 						[qux, {type: TYPE.SolidType.STR, optional: false}],
-					]))).equals(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+					]))).equals(new TYPE.SolidTypeRecord(new Map<bigint, TypeEntry>([
 						[foo, {type: TYPE.SolidType.OBJ,                                optional: false}],
 						[bar, {type: TYPE.SolidType.NULL,                               optional: true}],
 						[qux, {type: TYPE.SolidType.BOOL.intersect(TYPE.SolidType.STR), optional: false}],
@@ -1005,15 +1006,15 @@ describe('SolidType', () => {
 				});
 				it('takes the disjunction of optionality.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-					assert.ok(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+					assert.ok(new TYPE.SolidTypeRecord(new Map<bigint, TypeEntry>([
 						[foo, {type: TYPE.SolidType.OBJ,  optional: false}],
 						[bar, {type: TYPE.SolidType.NULL, optional: true}],
 						[qux, {type: TYPE.SolidType.BOOL, optional: true}],
-					])).unionWithRecord(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+					])).unionWithRecord(new TYPE.SolidTypeRecord(new Map<bigint, TypeEntry>([
 						[foo, {type: TYPE.SolidType.OBJ, optional: false}],
 						[diz, {type: TYPE.SolidType.INT, optional: true}],
 						[qux, {type: TYPE.SolidType.STR, optional: false}],
-					]))).equals(new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>([
+					]))).equals(new TYPE.SolidTypeRecord(new Map<bigint, TypeEntry>([
 						[foo, {type: TYPE.SolidType.OBJ,                            optional: false}],
 						[qux, {type: TYPE.SolidType.BOOL.union(TYPE.SolidType.STR), optional: true}],
 					]))), `

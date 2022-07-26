@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import {
 	AST,
+	TypeEntry,
 	TYPE,
 	SolidBoolean,
 	SolidTypeError,
@@ -117,7 +118,7 @@ describe('ASTNodeType', () => {
 			const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, z: str]`);
 			assert.deepStrictEqual(
 				node.eval(),
-				new TYPE.SolidTypeRecord(new Map<bigint, TYPE.TypeEntry>(node.children.map((c, i) => [
+				new TYPE.SolidTypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
 					c.key.id,
 					[
 						{type: TYPE.SolidType.INT,  optional: false},

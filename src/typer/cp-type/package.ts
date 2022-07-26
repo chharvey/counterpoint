@@ -12,6 +12,9 @@ export {
 	AST,
 } from '../package.js';
 export {
+	TypeEntry,
+} from '../utils-public.js';
+export {
 	solidObjectsIdentical,
 } from '../utils-private.js';
 export {

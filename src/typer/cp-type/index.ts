@@ -1,5 +1,3 @@
-export * from './utils-public.js';
-
 export * from './SolidType.js';
 
 export * from './SolidTypeIntersection.js';

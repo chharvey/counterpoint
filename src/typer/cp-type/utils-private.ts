@@ -1,8 +1,8 @@
 import {
 	Operator,
 	ValidAccessOperator,
+	TypeEntry,
 } from './package.js';
-import type {TypeEntry} from './utils-public.js';
 import {SolidType} from './index.js';
 
 
