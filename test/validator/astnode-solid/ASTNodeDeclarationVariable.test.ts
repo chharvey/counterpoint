@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import {
-	CONFIG_DEFAULT,
 	Operator,
 	ASTNODE_SOLID as AST,
 	SymbolStructure,
@@ -16,6 +15,7 @@ import {
 } from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
+	CONFIG_COERCION_OFF,
 	instructionConstInt,
 	instructionConstFloat,
 } from '../../helpers.js';
@@ -112,13 +112,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('with int coersion off, throws when assigning int to float.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
-			`, {
-				...CONFIG_DEFAULT,
-				compilerOptions: {
-					...CONFIG_DEFAULT.compilerOptions,
-					intCoercion: false,
-				},
-			}).typeCheck(), TypeError03);
+			`, CONFIG_COERCION_OFF).typeCheck(), TypeError03);
 		})
 	});
 

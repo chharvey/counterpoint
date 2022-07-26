@@ -22,7 +22,8 @@
 
 		// Language and Environment
 		"experimentalDecorators": true,
-		"target":                 "ES2021",
+		"target":                 "ES2021", // set `"useDefineForClassFields": false` when upgrading to ES2022
+		// "useDefineForClassFields": false,
 
 		// Completeness
 		"skipLibCheck": true,

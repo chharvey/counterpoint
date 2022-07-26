@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
 	SolidType,
 	SolidTypeUnit,
@@ -19,11 +20,10 @@ import {
 	Builder,
 	TypeError05,
 	TypeError06,
-	forEachAggregated,
 	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
+	SyntaxNodeType,
 } from './package.js';
 import {
 	ValidFunctionName,
@@ -43,7 +43,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeExpressionCompound,
+		start_node: SyntaxNodeType<'expression_compound'>,
 		readonly base: ASTNodeExpression,
 		readonly typeargs: readonly ASTNodeType[],
 		readonly exprargs: readonly ASTNodeExpression[],
@@ -53,7 +53,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be a `ValidFunctionName`)
-		return forEachAggregated([
+		return xjs.Array.forEachAggregated([
 			...this.typeargs,
 			...this.exprargs,
 		], (arg) => arg.varCheck());

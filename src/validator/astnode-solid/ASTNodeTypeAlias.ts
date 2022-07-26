@@ -6,11 +6,11 @@ import {
 	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	TOKEN,
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
 	SymbolStructureType,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -22,11 +22,18 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeAlias);
 		return typ;
 	}
-	readonly id: bigint;
-	constructor (start_node: TOKEN.TokenIdentifier) {
-		super(start_node, {id: start_node.cook()})
-		this.id = start_node.cook()!;
+
+
+	private _id: bigint | null = null; // TODO use memoize decorator
+
+	constructor (start_node: SyntaxNodeType<'identifier'>) {
+		super(start_node);
 	}
+
+	get id(): bigint {
+		return this._id ??= this.validator.cookTokenIdentifier(this.start_node.text);
+	}
+
 	override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);

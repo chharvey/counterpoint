@@ -374,7 +374,7 @@ describe('SolidType', () => {
 			})
 		})
 
-		describe('SolidTypeConstant', () => {
+		describe('SolidTypeUnit', () => {
 			it('constant Boolean types should be subtypes of `bool`.', () => {
 				assert.ok(SolidBoolean.FALSETYPE.isSubtypeOf(SolidType.BOOL), 'SolidBoolean.FALSETYPE')
 				assert.ok(SolidBoolean.TRUETYPE .isSubtypeOf(SolidType.BOOL), 'SolidBoolean.TRUETYPE')

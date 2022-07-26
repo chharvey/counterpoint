@@ -150,9 +150,9 @@ describe('ASTNodeCall', () => {
 						new Int16(3n),
 					]),
 					new SolidDict<Int16>(new Map<bigint, Int16>([
-						[0x101n, new Int16(1n)], // 0x100n is "Dict"
-						[0x102n, new Int16(2n)],
-						[0x103n, new Int16(3n)],
+						[0x100n, new Int16(1n)],
+						[0x101n, new Int16(2n)],
+						[0x102n, new Int16(3n)],
 					])),
 					new SolidSet<Int16>(new Set<Int16>([
 						new Int16(1n),

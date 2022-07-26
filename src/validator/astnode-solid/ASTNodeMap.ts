@@ -10,7 +10,7 @@ import {
 	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
+	SyntaxNodeType,
 } from './package.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -25,10 +25,10 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeMapLiteral,
+		start_node: SyntaxNodeType<'map_literal'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
-		super(start_node, {}, children);
+		super(start_node, children);
 	}
 	override shouldFloat(): boolean {
 		throw 'ASTNodeMap#shouldFloat not yet supported.';

@@ -11,6 +11,7 @@ export * from './ReferenceError02.js';
 export * from './ReferenceError03.js';
 export * from './AssignmentError01.js';
 export * from './AssignmentError10.js';
+export * from './SolidTypeError.js';
 export * from './TypeError01.js';
 export * from './TypeError02.js';
 export * from './TypeError03.js';

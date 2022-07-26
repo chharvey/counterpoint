@@ -1,15 +1,15 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
 	SolidType,
 	SolidObject,
 	INST,
 	Builder,
 	AssignmentError01,
-	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
 	SymbolStructureVar,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeType} from './ASTNodeType.js';
@@ -26,7 +26,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		return statement;
 	}
 	constructor (
-		start_node: ParseNode,
+		start_node: SyntaxNodeType<'declaration_variable'>,
 		readonly unfixed: boolean,
 		readonly assignee: ASTNodeVariable,
 		readonly typenode: ASTNodeType,
@@ -38,7 +38,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		if (this.validator.hasSymbol(this.assignee.id)) {
 			throw new AssignmentError01(this.assignee);
 		};
-		forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
+		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
 		this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
 	}
 	override typeCheck(): void {

@@ -9,11 +9,11 @@ import {
 	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	TOKEN,
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
 	SymbolStructureType,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -25,11 +25,18 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeVariable);
 		return expression;
 	}
-	readonly id: bigint;
-	constructor (start_node: TOKEN.TokenIdentifier) {
-		super(start_node, {id: start_node.cook()})
-		this.id = start_node.cook()!;
+
+
+	private _id: bigint | null = null; // TODO use memoize decorator
+
+	constructor (start_node: SyntaxNodeType<'identifier'>) {
+		super(start_node);
 	}
+
+	get id(): bigint {
+		return this._id ??= this.validator.cookTokenIdentifier(this.start_node.text);
+	}
+
 	override shouldFloat(): boolean {
 		return this.type().isSubtypeOf(SolidType.FLOAT);
 	}

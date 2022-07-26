@@ -14,8 +14,8 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
 /**
  * A sematic node representing a statement.
  * Known subclasses:
- * - ASTNodeStatementExpression
  * - ASTNodeDeclaration
+ * - ASTNodeStatementExpression
  * - ASTNodeAssignment
  */
 export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable {

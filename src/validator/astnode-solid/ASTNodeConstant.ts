@@ -1,11 +1,11 @@
 import * as assert from 'assert';
+import type {SyntaxNode} from 'tree-sitter';
 import {
 	SolidType,
 	SolidTypeUnit,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
-	Int16,
 	Float64,
 	SolidString,
 	INST,
@@ -13,10 +13,14 @@ import {
 	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
 	Keyword,
-	TOKEN,
+	Validator,
+	SyntaxNodeType,
+	isSyntaxNodeType,
 } from './package.js';
+import {
+	valueOfTokenNumber,
+} from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
@@ -27,23 +31,43 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeConstant);
 		return expression;
 	}
-	private readonly value: SolidObject;
-	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
-		const value: SolidObject = (
-			(start_node instanceof TOKEN.TokenKeyword) ?
-				(start_node.source === Keyword.NULL)  ? SolidNull.NULL :
-				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
-				(start_node.source === Keyword.TRUE)  ? SolidBoolean.TRUE :
-				(() => { throw new Error(`ASTNodeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
-			: (start_node instanceof TOKEN.TokenNumber) ?
-				start_node.isFloat
-					? new Float64(start_node.cook())
-					: new Int16(BigInt(start_node.cook()))
-			: /* (start_node instanceof TOKEN.TokenString) */ (Dev.supports('literalString-cook')) ? new SolidString(start_node.cook()) : (() => { throw new Error('`literalString-cook` not yet supported.'); })()
+
+
+	private static keywordValue(source: string): SolidObject {
+		return (
+			(source === Keyword.NULL)  ? SolidNull.NULL :
+			(source === Keyword.FALSE) ? SolidBoolean.FALSE :
+			(source === Keyword.TRUE)  ? SolidBoolean.TRUE :
+			(() => { throw new Error(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`); })()
 		);
-		super(start_node, {value})
-		this.value = value
 	}
+
+	private _value: SolidObject | null = null;
+
+	constructor (start_node:
+		| SyntaxNodeType<'integer'>
+		| SyntaxNodeType<'template_full'>
+		| SyntaxNodeType<'template_head'>
+		| SyntaxNodeType<'template_middle'>
+		| SyntaxNodeType<'template_tail'>
+		| SyntaxNodeType<'primitive_literal'>
+	) {
+		super(start_node);
+	}
+
+	private get value(): SolidObject {
+		return this._value ??= (
+			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new SolidString(Validator.cookTokenTemplate(this.start_node.text)) :
+			(isSyntaxNodeType(this.start_node, 'integer'))                            ? valueOfTokenNumber(this.start_node.text, this.validator.config) :
+			(isSyntaxNodeType(this.start_node, 'primitive_literal'),                    ((token: SyntaxNode) => (
+				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeConstant.keywordValue(token.text) :
+				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? valueOfTokenNumber(token.text, this.validator.config) :
+				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? valueOfTokenNumber(token.text, this.validator.config) :
+				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new SolidString(Validator.cookTokenString(token.text, this.validator.config)))
+			))(this.start_node.children[0]))
+		);
+	}
+
 	override shouldFloat(): boolean {
 		return this.value instanceof Float64
 	}
@@ -59,9 +83,6 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 	@memoizeMethod
 	override fold(): SolidObject {
-		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {
-			throw new Error('`stringConstant-assess` not yet supported.');
-		};
 		return this.value;
 	}
 }

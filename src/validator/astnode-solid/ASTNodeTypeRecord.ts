@@ -1,12 +1,12 @@
 import * as assert from 'assert';
 import {
+	SolidType,
+	SolidTypeRecord,
 	NonemptyArray,
 	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
-	SolidType,
-	SolidTypeRecord,
+	SyntaxNodeType,
 } from './package.js';
 import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
 import {ASTNodeType} from './ASTNodeType.js';
@@ -20,7 +20,7 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeRecordLiteral,
+		start_node: SyntaxNodeType<'type_record_literal'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
 	) {
 		super(start_node, {}, children);

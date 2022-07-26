@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
 	SolidType,
 	SolidTypeList,
@@ -9,10 +10,9 @@ import {
 	TypeError06,
 	memoizeMethod,
 	NonemptyArray,
-	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
+	SyntaxNodeType,
 } from './package.js';
 import {
 	ValidFunctionName,
@@ -30,7 +30,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeCompound,
+		start_node: SyntaxNodeType<'type_compound'>,
 		readonly base: ASTNodeType,
 		readonly args: Readonly<NonemptyArray<ASTNodeType>>,
 	) {
@@ -39,7 +39,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be a `ValidFunctionName`)
-		return forEachAggregated(this.args, (arg) => arg.varCheck());
+		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
 	@memoizeMethod
 	override eval(): SolidType {

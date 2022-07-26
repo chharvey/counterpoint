@@ -10,6 +10,7 @@ import {
 	SolidTypeSet,
 	SolidTypeMap,
 	SolidBoolean,
+	SolidTypeError,
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
@@ -154,6 +155,9 @@ describe('ASTNodeType', () => {
 						SolidType.INT.union(SolidType.BOOL),
 					]),
 				);
+			});
+			it('throws if count is negative.', () => {
+				assert.throws(() => AST.ASTNodeTypeList.fromSource(`(int | bool)[-3]`).eval(), SolidTypeError);
 			});
 		});
 	});

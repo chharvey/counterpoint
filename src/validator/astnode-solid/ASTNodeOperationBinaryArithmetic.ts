@@ -13,7 +13,7 @@ import {
 	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
+	SyntaxNodeSupertype,
 	Operator,
 	ValidOperatorArithmetic,
 } from './package.js';
@@ -35,7 +35,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		return expression;
 	}
 	constructor (
-		start_node: ParseNode,
+		start_node: SyntaxNodeSupertype<'expression'>,
 		override readonly operator: ValidOperatorArithmetic,
 		operand0: ASTNodeExpression,
 		operand1: ASTNodeExpression,

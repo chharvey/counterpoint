@@ -1,4 +1,5 @@
-// KEYWORD         ::= [./lexicon.ebnf#Keyword];
+// KEYWORD_TYPE    ::= [./lexicon.ebnf#KeywordType];
+// KEYWORD_VALUE   ::= [./lexicon.ebnf#KeywordValue];
 // IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
 // INTEGER         ::= [./lexicon.ebnf#Integer];
 // FLOAT           ::= [./lexicon.ebnf#Float];
@@ -11,31 +12,33 @@
 
 
 Word ::=
-	| KEYWORD
+	// operator
+		| "mutable"
+		| "is"
+		| "isnt"
+		| "if"
+		| "then"
+		| "else"
+	// storage
+		| "type"
+		| "let"
+	// modifier
+		| "unfixed"
+	| KEYWORD_TYPE
+	| KEYWORD_VALUE
 	| IDENTIFIER
 ;
 
 
 
 PrimitiveLiteral ::=
-	| "null"
-	| "false"
-	| "true"
+	| KEYWORD_VALUE
 	| INTEGER
 	| FLOAT
 	| STRING
 ;
 
 
-
-TypeKeyword ::=
-	| "void"
-	| "bool"
-	| "int"
-	| "float"
-	| "str"
-	| "obj"
-;
 
 EntryType<Named, Optional>
 	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
@@ -48,6 +51,7 @@ ItemsType ::=
 PropertiesType
 	::= EntryType<+Named><-Optional, +Optional># ","?;
 
+TypeGrouped       ::= "(" Type                 ")";
 TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
 TypeRecordLiteral ::= "["  ","? PropertiesType "]";
 TypeDictLiteral   ::= "[" ":" Type             "]";
@@ -55,14 +59,14 @@ TypeMapLiteral    ::= "{" Type "->" Type       "}";
 GenericArguments  ::= "<"  ","? Type# ","?     ">";
 
 TypeUnit ::=
+	| KEYWORD_TYPE
 	| IDENTIFIER
 	| PrimitiveLiteral
-	| TypeKeyword
+	| TypeGrouped
 	| TypeTupleLiteral
 	| TypeRecordLiteral
 	| TypeDictLiteral
 	| TypeMapLiteral
-	| "(" Type ")"
 ;
 
 PropertyAccessType ::= "." (INTEGER | Word);
@@ -100,6 +104,7 @@ StringTemplate ::=
 Property ::= Word       "="  Expression;
 Case     ::= Expression "->" Expression;
 
+ExpressionGrouped ::= "("        Expression          ")";
 TupleLiteral      ::= "[" ( ","? Expression# ","? )? "]";
 RecordLiteral     ::= "["   ","? Property#   ","?    "]";
 SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
@@ -110,11 +115,11 @@ ExpressionUnit ::=
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate
+	| ExpressionGrouped
 	| TupleLiteral
 	| RecordLiteral
 	| SetLiteral
 	| MapLiteral
-	| "(" Expression ")"
 ;
 
 PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");
@@ -131,13 +136,11 @@ Assignee ::=
 	| ExpressionCompound PropertyAssign
 ;
 
-ExpressionUnarySymbol ::=
-	| ExpressionCompound
-	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol
-;
+ExpressionUnarySymbol ::= ExpressionCompound    | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
+ExpressionClaim       ::= ExpressionUnarySymbol | "<" Type ">"            ExpressionClaim;
 
 ExpressionExponential
-	::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
+	::= ExpressionClaim ("^" ExpressionExponential)?;
 
 ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                                            ExpressionExponential;
 ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                                            ExpressionMultiplicative;
@@ -164,12 +167,17 @@ Declaration ::=
 	| DeclarationVariable
 ;
 
+
+
+StatementExpression
+	::= Expression? ";";
+
 StatementAssignment
 	::= Assignee "=" Expression ";";
 
 Statement ::=
-	| Expression? ";"
 	| Declaration
+	| StatementExpression
 	| StatementAssignment
 ;
 

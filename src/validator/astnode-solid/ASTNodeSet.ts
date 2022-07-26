@@ -9,7 +9,7 @@ import {
 	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
@@ -23,10 +23,10 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTupleLiteral,
+		start_node: SyntaxNodeType<'set_literal'>,
 		override readonly children: readonly ASTNodeExpression[],
 	) {
-		super(start_node, {}, children);
+		super(start_node, children);
 	}
 	override shouldFloat(): boolean {
 		throw 'ASTNodeSet#shouldFloat not yet supported.';

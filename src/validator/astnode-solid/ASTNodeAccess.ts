@@ -29,7 +29,7 @@ import {
 	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
+	SyntaxNodeType,
 	Operator,
 	ValidAccessOperator,
 } from './package.js';
@@ -47,7 +47,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
 	constructor (
-		start_node:        PARSENODE.ParseNodeExpressionCompound | PARSENODE.ParseNodeAssignee,
+		start_node:
+			| SyntaxNodeType<'expression_compound'>
+			| SyntaxNodeType<'assignee'>
+		,
 		readonly kind:     ValidAccessOperator,
 		readonly base:     ASTNodeExpression,
 		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,

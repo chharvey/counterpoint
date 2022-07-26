@@ -13,7 +13,7 @@ import {
 	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
+	SyntaxNodeType,
 	Operator,
 } from './package.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
@@ -29,7 +29,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeCompound,
+		start_node: SyntaxNodeType<'type_compound'>,
 		readonly base:     ASTNodeType,
 		readonly accessor: ASTNodeIndexType | ASTNodeKey,
 	) {

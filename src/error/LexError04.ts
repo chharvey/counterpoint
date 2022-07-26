@@ -1,4 +1,6 @@
-import type {Char} from './package.js';
+import type {
+	Serializable,
+} from './package.js';
 import {LexError} from './LexError.js';
 
 
@@ -20,7 +22,7 @@ export class LexError04 extends LexError {
 	 * Construct a new LexError04 object.
 	 * @param char - the numeric separator character
 	 */
-	constructor (char: Char) {
+	constructor (char: Serializable) {
 		super(`Numeric separator not allowed: at line ${char.line_index + 1} col ${char.col_index + 1}.`, LexError04.CODE, char.line_index, char.col_index)
 	}
 }
