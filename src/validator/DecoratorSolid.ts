@@ -24,7 +24,7 @@ import {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-} from './OperatorSolid.js';
+} from './Operator.js';
 import * as AST from './astnode-solid/index.js';
 
 
