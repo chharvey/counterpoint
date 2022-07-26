@@ -6,7 +6,7 @@ import Parser, {
 } from 'tree-sitter';
 import Counterpoint from 'tree-sitter-counterpoint';
 import {
-	ASTNODE_SOLID as AST,
+	AST,
 	DECORATOR,
 } from '../../src/validator/index.js';
 

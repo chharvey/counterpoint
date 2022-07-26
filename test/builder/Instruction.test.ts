@@ -2,7 +2,7 @@ import * as xjs from 'extrajs';
 import * as assert from 'assert'
 import {
 	Operator,
-	ASTNODE_SOLID as AST,
+	AST,
 } from '../../src/validator/index.js';
 import {
 	Int16,

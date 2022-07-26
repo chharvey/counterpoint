@@ -2,7 +2,7 @@ import {
 	SolidType,
 	SolidObject,
 } from './package.js';
-import type * as AST from './astnode-solid/index.js';
+import type * as AST from './astnode-cp/index.js';
 
 
 

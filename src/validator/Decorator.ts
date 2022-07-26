@@ -25,7 +25,7 @@ import {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from './Operator.js';
-import * as AST from './astnode-solid/index.js';
+import * as AST from './astnode-cp/index.js';
 
 
 
@@ -123,9 +123,9 @@ class Decorator {
 	decorateTS(node: SyntaxNodeType<'statement_assignment'>):                    AST.ASTNodeAssignment;
 	decorateTS(node: SyntaxNodeSupertype<'statement'>):                          AST.ASTNodeStatement;
 	decorateTS(node: SyntaxNodeType<'source_file'>, config?: CPConfig):          AST.ASTNodeGoal;
-	decorateTS(node: SyntaxNode): AST.ASTNodeSolid;
-	decorateTS(node: SyntaxNode, config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeSolid {
-		return new Map<string, (node: SyntaxNode) => AST.ASTNodeSolid>(Object.entries({
+	decorateTS(node: SyntaxNode): AST.ASTNodeCP;
+	decorateTS(node: SyntaxNode, config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeCP {
+		return new Map<string, (node: SyntaxNode) => AST.ASTNodeCP>(Object.entries({
 			source_file: (node) => new AST.ASTNodeGoal(
 				node as SyntaxNodeType<'source_file'>,
 				node.children

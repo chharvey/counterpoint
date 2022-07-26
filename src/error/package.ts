@@ -9,7 +9,7 @@ export type {
 } from '../core/index.js';
 export type {
 	ASTNode,
-	ASTNODE_SOLID as AST,
+	AST,
 	SymbolKind,
 } from '../validator/index.js';
 export type {SolidType} from '../typer/index.js';
