@@ -1,7 +1,7 @@
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	NonemptyArray,
-	SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
 	Punctuator,
 	Keyword,
@@ -29,7 +29,7 @@ import * as AST from './astnode-solid/index.js';
 
 
 
-class DecoratorSolid {
+class Decorator {
 	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
 		[Punctuator.DOT,      Operator.DOT],
 		[Punctuator.OPTDOT,   Operator.OPTDOT],
@@ -122,9 +122,9 @@ class DecoratorSolid {
 	decorateTS(node: SyntaxNodeType<'statement_expression'>):                    AST.ASTNodeStatementExpression;
 	decorateTS(node: SyntaxNodeType<'statement_assignment'>):                    AST.ASTNodeAssignment;
 	decorateTS(node: SyntaxNodeSupertype<'statement'>):                          AST.ASTNodeStatement;
-	decorateTS(node: SyntaxNodeType<'source_file'>, config?: SolidConfig):       AST.ASTNodeGoal;
+	decorateTS(node: SyntaxNodeType<'source_file'>, config?: CPConfig):          AST.ASTNodeGoal;
 	decorateTS(node: SyntaxNode): AST.ASTNodeSolid;
-	decorateTS(node: SyntaxNode, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeSolid {
+	decorateTS(node: SyntaxNode, config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeSolid {
 		return new Map<string, (node: SyntaxNode) => AST.ASTNodeSolid>(Object.entries({
 			source_file: (node) => new AST.ASTNodeGoal(
 				node as SyntaxNodeType<'source_file'>,
@@ -230,7 +230,7 @@ class DecoratorSolid {
 			type_unary_symbol: (node) => (
 				(node.children.length === 2) ? new AST.ASTNodeTypeOperationUnary(
 					node as SyntaxNodeType<'type_unary_symbol'>,
-					DecoratorSolid.TYPEOPERATORS_UNARY.get(node.children[1].text as Punctuator)!,
+					Decorator.TYPEOPERATORS_UNARY.get(node.children[1].text as Punctuator)!,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 				) :
 				(node.children.length > 2, (node.children[1].text === Punctuator.BRAK_OPN)
@@ -257,20 +257,20 @@ class DecoratorSolid {
 
 			type_unary_keyword: (node) => new AST.ASTNodeTypeOperationUnary(
 				node as SyntaxNodeType<'type_unary_keyword'>,
-				DecoratorSolid.TYPEOPERATORS_UNARY.get(node.children[0].text as Keyword)!,
+				Decorator.TYPEOPERATORS_UNARY.get(node.children[0].text as Keyword)!,
 				this.decorateTS(node.children[1] as SyntaxNodeSupertype<'type'>),
 			),
 
 			type_intersection: (node) => new AST.ASTNodeTypeOperationBinary(
 				node as SyntaxNodeType<'type_intersection'>,
-				DecoratorSolid.TYPEOPERATORS_BINARY.get(node.children[1].text as Punctuator)!,
+				Decorator.TYPEOPERATORS_BINARY.get(node.children[1].text as Punctuator)!,
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'type'>),
 			),
 
 			type_union: (node) => new AST.ASTNodeTypeOperationBinary(
 				node as SyntaxNodeType<'type_union'>,
-				DecoratorSolid.TYPEOPERATORS_BINARY.get(node.children[1].text as Punctuator)!,
+				Decorator.TYPEOPERATORS_BINARY.get(node.children[1].text as Punctuator)!,
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'type'>),
 			),
@@ -347,7 +347,7 @@ class DecoratorSolid {
 			expression_compound: (node) => (
 				(isSyntaxNodeType(node.children[1], 'property_access')) ? new AST.ASTNodeAccess(
 					node as SyntaxNodeType<'expression_compound'>,
-					DecoratorSolid.ACCESSORS.get(node.children[1].children[0].text as Punctuator)!,
+					Decorator.ACCESSORS.get(node.children[1].children[0].text as Punctuator)!,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 					this.decorateTS(node.children[1] as SyntaxNodeType<'property_access'>),
 				)
@@ -378,7 +378,7 @@ class DecoratorSolid {
 				? this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>)
 				: new AST.ASTNodeOperationUnary(
 					node as SyntaxNodeType<'expression_unary_symbol'>,
-					DecoratorSolid.OPERATORS_UNARY.get(node.children[0].text as Punctuator) as ValidOperatorUnary,
+					Decorator.OPERATORS_UNARY.get(node.children[0].text as Punctuator) as ValidOperatorUnary,
 					this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>),
 				),
 
@@ -390,14 +390,14 @@ class DecoratorSolid {
 
 			expression_exponential: (node) => new AST.ASTNodeOperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_exponential'>,
-				DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
+				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			),
 
 			expression_multiplicative: (node) => new AST.ASTNodeOperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_multiplicative'>,
-				DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
+				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			),
@@ -419,7 +419,7 @@ class DecoratorSolid {
 					operator as ValidOperatorArithmetic,
 					...operands,
 				)
-			))(DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
+			))(Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			]),
@@ -460,7 +460,7 @@ class DecoratorSolid {
 					operator as ValidOperatorComparative,
 					...operands,
 				)
-			))(DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
+			))(Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			]),
@@ -491,7 +491,7 @@ class DecoratorSolid {
 					operator as ValidOperatorEquality,
 					...operands,
 				)
-			))(DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
+			))(Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			]),
@@ -512,7 +512,7 @@ class DecoratorSolid {
 					operator as ValidOperatorLogical,
 					...operands,
 				)
-			))(DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
+			))(Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			]),
@@ -533,7 +533,7 @@ class DecoratorSolid {
 					operator as ValidOperatorLogical,
 					...operands,
 				)
-			))(DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
+			))(Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!, [
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			]),
@@ -587,4 +587,4 @@ class DecoratorSolid {
 
 
 
-export const DECORATOR: DecoratorSolid = new DecoratorSolid();
+export const DECORATOR: Decorator = new Decorator();

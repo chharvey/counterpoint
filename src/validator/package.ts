@@ -57,7 +57,7 @@ export {
 } from '../lib/index.js';
 export {
 	stringifyAttributes,
-	CPConfig as SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
 	Serializable,
 	serialize,

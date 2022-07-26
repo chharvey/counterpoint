@@ -50,7 +50,7 @@ export {
 	NanError01,
 	NanError02,
 	NonemptyArray,
-	SolidConfig,
+	CPConfig as SolidConfig,
 	CONFIG_DEFAULT,
 	Serializable,
 	serialize,
@@ -59,7 +59,7 @@ export {
 	Keyword,
 } from '../package.js';
 export {
-	DECORATOR_SOLID as DECORATOR,
+	DECORATOR,
 	Validator,
 	SymbolKind,
 	SymbolStructure,

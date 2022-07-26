@@ -7,12 +7,12 @@ import Parser, {
 import Counterpoint from 'tree-sitter-counterpoint';
 import {
 	ASTNODE_SOLID as AST,
-	DECORATOR_SOLID,
+	DECORATOR,
 } from '../../src/validator/index.js';
 
 
 
-describe('DecoratorSolid', () => {
+describe('Decorator', () => {
 	describe('#decorateTS', () => {
 		const parser: Parser = new Parser();
 		parser.setLanguage(Counterpoint);
@@ -368,20 +368,20 @@ describe('DecoratorSolid', () => {
 		]).forEach(([klass, text], description) => (description.slice(0, 5) === 'skip:' ? specify.skip : specify)(description, () => {
 			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
 			return assert.ok(
-				DECORATOR_SOLID.decorateTS(parsenode) instanceof klass,
+				DECORATOR.decorateTS(parsenode) instanceof klass,
 				`\`${ parsenode.text }\` not an instance of ${ klass.name }.`,
 			);
 		}));
 		describe('Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', () => {
 			it('type operator `!` is not yet supported.', () => {
-				return assert.throws(() => DECORATOR_SOLID.decorateTS(captureParseNode(`
+				return assert.throws(() => DECORATOR.decorateTS(captureParseNode(`
 					type T = U!;
 				`, '(type_unary_symbol)')), /not yet supported/);
 			});
 		});
 		['is', 'isnt'].forEach((op) => describe(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
 			it(`operator \`${ op }\` is not yet supported.`, () => {
-				return assert.throws(() => DECORATOR_SOLID.decorateTS(captureParseNode(`
+				return assert.throws(() => DECORATOR.decorateTS(captureParseNode(`
 					a ${ op } b;
 				`, '(expression_comparative)')), /not yet supported/);
 			});
