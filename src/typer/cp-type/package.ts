@@ -15,7 +15,7 @@ export {
 	TypeEntry,
 } from '../utils-public.js';
 export {
-	solidObjectsIdentical,
+	languageValuesIdentical,
 } from '../utils-private.js';
 export {
 	OBJ,

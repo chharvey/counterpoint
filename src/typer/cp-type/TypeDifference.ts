@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import {
-	solidObjectsIdentical,
+	languageValuesIdentical,
 	OBJ,
 } from './package.js';
 import {Type} from './Type.js';
@@ -23,7 +23,7 @@ export class TypeDifference extends Type {
 		private readonly left:  Type,
 		private readonly right: Type,
 	) {
-		super(false, xjs.Set.difference(left.values, right.values, solidObjectsIdentical));
+		super(false, xjs.Set.difference(left.values, right.values, languageValuesIdentical));
 		/*
 		We can assert that this is always non-empty because
 		the only cases in which it could be empty are

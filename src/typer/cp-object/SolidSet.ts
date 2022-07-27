@@ -2,7 +2,7 @@ import * as xjs from 'extrajs';
 import {
 	VoidError01,
 	AST,
-	solidObjectsIdentical,
+	languageValuesIdentical,
 	Type,
 	TypeUnit,
 	TypeSet,
@@ -20,7 +20,7 @@ export class SolidSet<T extends Object = Object> extends Collection {
 		super();
 		const uniques: Set<T> = new Set();
 		[...elements].forEach((el) => {
-			xjs.Set.add(uniques, el, solidObjectsIdentical);
+			xjs.Set.add(uniques, el, languageValuesIdentical);
 		});
 		this.elements = uniques;
 	}
@@ -50,7 +50,7 @@ export class SolidSet<T extends Object = Object> extends Collection {
 	}
 
 	get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | SolidNull {
-		return (xjs.Set.has(this.elements, el, solidObjectsIdentical))
+		return (xjs.Set.has(this.elements, el, languageValuesIdentical))
 			? el
 			: (access_optional)
 				? SolidNull.NULL

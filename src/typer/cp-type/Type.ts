@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import {
-	solidObjectsIdentical,
+	languageValuesIdentical,
 	OBJ,
 } from './package.js';
 import {
@@ -107,7 +107,7 @@ export abstract class Type {
 	 * @returns Is `v` assignable to this type?
 	 */
 	includes(v: OBJ.Object): boolean {
-		return xjs.Set.has(this.values, v, solidObjectsIdentical);
+		return xjs.Set.has(this.values, v, languageValuesIdentical);
 	}
 	/**
 	 * Return the type intersection of this type with another.

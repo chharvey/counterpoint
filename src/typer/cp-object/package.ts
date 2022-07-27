@@ -11,7 +11,7 @@ export {
 	AST,
 } from '../package.js';
 export {
-	solidObjectsIdentical,
+	languageValuesIdentical,
 } from '../utils-private.js';
 export {
 	Type,

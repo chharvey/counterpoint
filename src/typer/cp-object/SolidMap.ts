@@ -2,7 +2,7 @@ import * as xjs from 'extrajs';
 import {
 	VoidError01,
 	AST,
-	solidObjectsIdentical,
+	languageValuesIdentical,
 	Type,
 	TypeUnit,
 	TypeMap,
@@ -20,7 +20,7 @@ export class SolidMap<K extends Object = Object, V extends Object = Object> exte
 		super();
 		const uniques: Map<K, V> = new Map();
 		[...cases].forEach(([ant, con]) => {
-			xjs.Map.set(uniques, ant, con, solidObjectsIdentical);
+			xjs.Map.set(uniques, ant, con, languageValuesIdentical);
 		});
 		this.cases = uniques;
 	}
@@ -49,8 +49,8 @@ export class SolidMap<K extends Object = Object, V extends Object = Object> exte
 	}
 
 	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | SolidNull {
-		return (xjs.Map.has(this.cases, ant, solidObjectsIdentical))
-			? xjs.Map.get(this.cases, ant, solidObjectsIdentical)!
+		return (xjs.Map.has(this.cases, ant, languageValuesIdentical))
+			? xjs.Map.get(this.cases, ant, languageValuesIdentical)!
 			: (access_optional)
 				? SolidNull.NULL
 				: (() => { throw new VoidError01(accessor); })();

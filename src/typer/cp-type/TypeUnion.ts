@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import {
-	solidObjectsIdentical,
+	languageValuesIdentical,
 	OBJ,
 } from './package.js';
 import {Type} from './Type.js';
@@ -27,7 +27,7 @@ export class TypeUnion extends Type {
 		private readonly left:  Type,
 		private readonly right: Type,
 	) {
-		super(false, xjs.Set.union(left.values, right.values, solidObjectsIdentical));
+		super(false, xjs.Set.union(left.values, right.values, languageValuesIdentical));
 		this.isBottomType = this.left.isBottomType && this.right.isBottomType;
 	}
 
