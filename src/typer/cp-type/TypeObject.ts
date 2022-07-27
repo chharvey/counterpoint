@@ -1,4 +1,4 @@
-import type {SolidObject} from './package.js';
+import type {OBJ} from './package.js';
 import {Type} from './Type.js';
 
 
@@ -17,7 +17,7 @@ export class TypeObject extends Type {
 	override toString(): string {
 		return 'obj';
 	}
-	override includes(_v: SolidObject): boolean {
+	override includes(_v: OBJ.SolidObject): boolean {
 		return true;
 	}
 }

@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import {
 	solidObjectsIdentical,
-	SolidObject,
+	OBJ,
 } from './package.js';
 import {Type} from './Type.js';
 
@@ -40,7 +40,7 @@ export class TypeDifference extends Type {
 	override toString(): string {
 		return `${ this.left } - ${ this.right }`;
 	}
-	override includes(v: SolidObject): boolean {
+	override includes(v: OBJ.SolidObject): boolean {
 		return this.left.includes(v) && !this.right.includes(v);
 	}
 	protected override isSubtypeOf_do(t: Type): boolean {

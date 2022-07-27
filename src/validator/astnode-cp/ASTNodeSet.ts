@@ -1,8 +1,7 @@
 import * as assert from 'assert';
 import {
 	TYPE,
-	SolidObject,
-	SolidSet,
+	OBJ,
 	INST,
 	Builder,
 	CPConfig,
@@ -35,10 +34,10 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 			: TYPE.Type.NEVER
 		), true);
 	}
-	protected override fold_do(): SolidObject | null {
-		const elements: readonly (SolidObject | null)[] = this.children.map((c) => c.fold());
+	protected override fold_do(): OBJ.SolidObject | null {
+		const elements: readonly (OBJ.SolidObject | null)[] = this.children.map((c) => c.fold());
 		return (elements.includes(null))
 			? null
-			: new SolidSet(new Set(elements as SolidObject[]));
+			: new OBJ.SolidSet(new Set(elements as OBJ.SolidObject[]));
 	}
 }

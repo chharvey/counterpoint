@@ -4,16 +4,7 @@ import {
 	CONFIG_DEFAULT,
 	AST,
 	TYPE,
-	SolidObject,
-	SolidNull,
-	SolidBoolean,
-	Int16,
-	Float64,
-	SolidString,
-	SolidTuple,
-	SolidRecord,
-	SolidSet,
-	SolidMap,
+	OBJ,
 	INST,
 	Builder,
 	ReferenceError01,
@@ -72,9 +63,9 @@ describe('ASTNodeExpression', () => {
 					'false;',
 					'true;',
 				].map((src) => AST.ASTNodeConstant.fromSource(src).fold()), [
-					SolidNull.NULL,
-					SolidBoolean.FALSE,
-					SolidBoolean.TRUE,
+					OBJ.SolidNull.NULL,
+					OBJ.SolidBoolean.FALSE,
+					OBJ.SolidBoolean.TRUE,
 				]);
 			})
 			it('computes int values.', () => {
@@ -91,7 +82,7 @@ describe('ASTNodeExpression', () => {
 				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`, integer_radices_on).fold()), [
 					55, -55, 33, -33, 0, 0,
 					parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
-				].map((v) => new Int16(BigInt(v))));
+				].map((v) => new OBJ.Int16(BigInt(v))));
 			});
 			it('computes float values.', () => {
 				assert.deepStrictEqual(`
@@ -102,7 +93,7 @@ describe('ASTNodeExpression', () => {
 					2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					-0, 6.8, 6.8, 0, -0,
-				].map((v) => new Float64(v)));
+				].map((v) => new OBJ.Float64(v)));
 			})
 			it('computes string values.', () => {
 				assert.deepStrictEqual(
@@ -192,7 +183,7 @@ describe('ASTNodeExpression', () => {
 				assert.ok(!(goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
-					new Int16(42n),
+					new OBJ.Int16(42n),
 				);
 			});
 			it('returns null for an unfixed variable.', () => {
@@ -363,13 +354,13 @@ describe('ASTNodeExpression', () => {
 			it('returns a constant String for ASTNodeTemplate with no interpolations.', () => {
 				assert.deepStrictEqual(
 					templates[0].fold(),
-					new SolidString('42😀'),
+					new OBJ.SolidString('42😀'),
 				);
 			});
 			it('returns a constant String for ASTNodeTemplate with foldable interpolations.', () => {
 				assert.deepStrictEqual(
 					templates[1].fold(),
-					new SolidString('the answer is 42 but what is the question?'),
+					new OBJ.SolidString('the answer is 42 but what is the question?'),
 				);
 			});
 			it('returns null for ASTNodeTemplate with dynamic interpolations.', () => {
@@ -443,25 +434,25 @@ describe('ASTNodeExpression', () => {
 						`),
 					].map((c) => c.fold()),
 					[
-						new SolidTuple([
-							new Int16(1n),
-							new Float64(2.0),
-							new SolidString('three'),
+						new OBJ.SolidTuple([
+							new OBJ.Int16(1n),
+							new OBJ.Float64(2.0),
+							new OBJ.SolidString('three'),
 						]),
-						new SolidRecord(new Map<bigint, SolidObject>([
-							[0x100n, new Int16(1n)],
-							[0x101n, new Float64(2.0)],
-							[0x102n, new SolidString('three')],
+						new OBJ.SolidRecord(new Map<bigint, OBJ.SolidObject>([
+							[0x100n, new OBJ.Int16(1n)],
+							[0x101n, new OBJ.Float64(2.0)],
+							[0x102n, new OBJ.SolidString('three')],
 						])),
-						new SolidSet(new Set([
-							new Int16(1n),
-							new Float64(2.0),
-							new SolidString('three'),
+						new OBJ.SolidSet(new Set([
+							new OBJ.Int16(1n),
+							new OBJ.Float64(2.0),
+							new OBJ.SolidString('three'),
 						])),
-						new SolidMap(new Map<SolidObject, SolidObject>([
-							[new SolidString('a'), new Int16(1n)],
-							[new Int16(42n),       new Float64(2.0)],
-							[new Float64(3.0),     new SolidString('three')],
+						new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([
+							[new OBJ.SolidString('a'), new OBJ.Int16(1n)],
+							[new OBJ.Int16(42n),       new OBJ.Float64(2.0)],
+							[new OBJ.Float64(3.0),     new OBJ.SolidString('three')],
 						])),
 					],
 				);
@@ -495,9 +486,9 @@ describe('ASTNodeExpression', () => {
 			it('ASTNodeRecord overwrites duplicate keys.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, a= 'three'];`).fold(),
-					new SolidRecord(new Map<bigint, SolidObject>([
-						[0x101n, new Float64(2.0)],
-						[0x100n, new SolidString('three')],
+					new OBJ.SolidRecord(new Map<bigint, OBJ.SolidObject>([
+						[0x101n, new OBJ.Float64(2.0)],
+						[0x100n, new OBJ.SolidString('three')],
 					])),
 				);
 			});

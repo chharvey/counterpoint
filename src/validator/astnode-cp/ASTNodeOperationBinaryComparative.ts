@@ -1,10 +1,7 @@
 import * as assert from 'assert';
 import {
 	TYPE,
-	SolidObject,
-	SolidBoolean,
-	SolidNumber,
-	Int16,
+	OBJ,
 	INST,
 	Builder,
 	TypeError01,
@@ -57,24 +54,24 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 		throw new TypeError01(this)
 	}
-	protected override fold_do(): SolidObject | null {
-		const v0: SolidObject | null = this.operand0.fold();
+	protected override fold_do(): OBJ.SolidObject | null {
+		const v0: OBJ.SolidObject | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: SolidObject | null = this.operand1.fold();
+		const v1: OBJ.SolidObject | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}
-		return (v0 instanceof Int16 && v1 instanceof Int16)
+		return (v0 instanceof OBJ.Int16 && v1 instanceof OBJ.Int16)
 			? this.foldComparative(v0, v1)
 			: this.foldComparative(
-				(v0 as SolidNumber).toFloat(),
-				(v1 as SolidNumber).toFloat(),
+				(v0 as OBJ.SolidNumber).toFloat(),
+				(v1 as OBJ.SolidNumber).toFloat(),
 			);
 	}
-	private foldComparative<T extends SolidNumber<T>>(x: T, y: T): SolidBoolean {
-		return SolidBoolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
+	private foldComparative<T extends OBJ.SolidNumber<T>>(x: T, y: T): OBJ.SolidBoolean {
+		return OBJ.SolidBoolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
 			[Operator.LT, (x, y) => x.lt(y)],
 			[Operator.GT, (x, y) => y.lt(x)],
 			[Operator.LE, (x, y) => x.equal(y) || x.lt(y)],

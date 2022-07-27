@@ -1,8 +1,7 @@
 import * as assert from 'assert';
 import {
 	TYPE,
-	SolidObject,
-	SolidTuple,
+	OBJ,
 	INST,
 	Builder,
 	CPConfig,
@@ -32,10 +31,10 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	protected override type_do(): TYPE.Type {
 		return TYPE.TypeTuple.fromTypes(this.children.map((c) => c.type()), true);
 	}
-	protected override fold_do(): SolidObject | null {
-		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.fold());
+	protected override fold_do(): OBJ.SolidObject | null {
+		const items: readonly (OBJ.SolidObject | null)[] = this.children.map((c) => c.fold());
 		return (items.includes(null))
 			? null
-			: new SolidTuple(items as SolidObject[]);
+			: new OBJ.SolidTuple(items as OBJ.SolidObject[]);
 	}
 }

@@ -1,7 +1,4 @@
-import {
-	SolidObject,
-	Int16,
-} from './package.js';
+import {OBJ} from './package.js';
 import {Type} from './Type.js';
 
 
@@ -15,12 +12,12 @@ export class TypeInteger extends Type {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
-		super(false, new Set([Int16.ZERO]));
+		super(false, new Set([OBJ.Int16.ZERO]));
 	}
 	override toString(): string {
 		return 'int';
 	}
-	override includes(v: SolidObject): boolean {
-		return v instanceof Int16;
+	override includes(v: OBJ.SolidObject): boolean {
+		return v instanceof OBJ.Int16;
 	}
 }

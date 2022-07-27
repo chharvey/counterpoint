@@ -2,9 +2,7 @@ import {
 	CPConfig,
 	CONFIG_DEFAULT,
 	TYPE,
-	Int16,
-	Float64,
-	SolidString,
+	OBJ,
 	INST,
 } from '../src/index.js';
 
@@ -47,18 +45,18 @@ export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
 
 
 export function typeConstInt(x: bigint): TYPE.TypeUnit {
-	return new TYPE.TypeUnit(new Int16(x));
+	return new TYPE.TypeUnit(new OBJ.Int16(x));
 }
 export function typeConstFloat(x: number): TYPE.TypeUnit {
-	return new TYPE.TypeUnit(new Float64(x));
+	return new TYPE.TypeUnit(new OBJ.Float64(x));
 }
 export function typeConstStr(x: string): TYPE.TypeUnit {
-	return new TYPE.TypeUnit(new SolidString(x));
+	return new TYPE.TypeUnit(new OBJ.SolidString(x));
 }
 
 export function instructionConstInt(x: bigint): INST.InstructionConst {
-	return new INST.InstructionConst(new Int16(x));
+	return new INST.InstructionConst(new OBJ.Int16(x));
 }
 export function instructionConstFloat(x: number): INST.InstructionConst {
-	return new INST.InstructionConst(new Float64(x));
+	return new INST.InstructionConst(new OBJ.Float64(x));
 }

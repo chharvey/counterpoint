@@ -5,9 +5,8 @@ import {
 	AST,
 } from '../../src/validator/index.js';
 import {
-	Int16,
-	Float64,
-} from '../../src/typer/index.js';
+	OBJ,
+} from '../../src/index.js';
 import {
 	Builder,
 	INST,
@@ -272,7 +271,7 @@ describe('Instruction', () => {
 				(-5n) ** (2n * 3n),
 			]
 			assert.deepStrictEqual(
-				data.map((x) => INST.InstructionConst.fromCPValue(new Int16(x))),
+				data.map((x) => INST.InstructionConst.fromCPValue(new OBJ.Int16(x))),
 				data.map((x) => instructionConstInt(x)),
 			)
 		})
@@ -284,13 +283,13 @@ describe('Instruction', () => {
 				3.0 - 2.7,
 			]
 			assert.deepStrictEqual(
-				data.map((x) => INST.InstructionConst.fromCPValue(new Float64(x))),
+				data.map((x) => INST.InstructionConst.fromCPValue(new OBJ.Float64(x))),
 				data.map((x) => instructionConstFloat(x)),
 			)
 		})
 		describe('@to_float === true', () => {
 			specify('@value instanceof Int16', () => {
-				const build: INST.InstructionConst = INST.InstructionConst.fromCPValue(new Int16(42n), true);
+				const build: INST.InstructionConst = INST.InstructionConst.fromCPValue(new OBJ.Int16(42n), true);
 				assert.deepStrictEqual   (build, instructionConstFloat(42));
 				assert.notDeepStrictEqual(build, instructionConstInt(42n));
 			})

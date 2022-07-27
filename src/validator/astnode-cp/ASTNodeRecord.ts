@@ -1,8 +1,7 @@
 import * as assert from 'assert';
 import {
 	TYPE,
-	SolidObject,
-	SolidRecord,
+	OBJ,
 	INST,
 	Builder,
 	NonemptyArray,
@@ -37,13 +36,13 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			c.val.type(),
 		])), true);
 	}
-	protected override fold_do(): SolidObject | null {
-		const properties: ReadonlyMap<bigint, SolidObject | null> = new Map(this.children.map((c) => [
+	protected override fold_do(): OBJ.SolidObject | null {
+		const properties: ReadonlyMap<bigint, OBJ.SolidObject | null> = new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.fold(),
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
-			: new SolidRecord(properties as ReadonlyMap<bigint, SolidObject>);
+			: new OBJ.SolidRecord(properties as ReadonlyMap<bigint, OBJ.SolidObject>);
 	}
 }

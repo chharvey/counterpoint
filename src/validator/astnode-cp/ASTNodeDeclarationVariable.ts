@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
-	SolidObject,
+	OBJ,
 	INST,
 	Builder,
 	AssignmentError01,
@@ -59,7 +59,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
 		const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.Type.FLOAT) || this.assigned.shouldFloat();
-		const value: SolidObject | null = this.assignee.fold();
+		const value: OBJ.SolidObject | null = this.assignee.fold();
 		return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
 			? new INST.InstructionNone()
 			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat))

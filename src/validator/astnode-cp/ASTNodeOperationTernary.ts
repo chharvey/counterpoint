@@ -1,8 +1,7 @@
 import * as assert from 'assert';
 import {
 	TYPE,
-	SolidObject,
-	SolidBoolean,
+	OBJ,
 	INST,
 	Builder,
 	TypeError01,
@@ -48,18 +47,18 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		const t2: TYPE.Type = this.operand2.type();
 		return (t0.isSubtypeOf(TYPE.Type.BOOL))
 			? (t0 instanceof TYPE.TypeUnit)
-				? (t0.value === SolidBoolean.FALSE)
+				? (t0.value === OBJ.SolidBoolean.FALSE)
 					? t2 // If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
 					: t1 // If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
 				: t1.union(t2)
 			: (() => { throw new TypeError01(this) })()
 	}
-	protected override fold_do(): SolidObject | null {
-		const v0: SolidObject | null = this.operand0.fold();
+	protected override fold_do(): OBJ.SolidObject | null {
+		const v0: OBJ.SolidObject | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		return (v0 === SolidBoolean.TRUE)
+		return (v0 === OBJ.SolidBoolean.TRUE)
 			? this.operand1.fold()
 			: this.operand2.fold();
 	}

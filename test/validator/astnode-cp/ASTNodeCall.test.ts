@@ -2,15 +2,8 @@ import * as assert from 'assert';
 import {
 	AST,
 	TYPE,
+	OBJ,
 } from '../../../src/index.js';
-import {
-	Int16,
-	Float64,
-	SolidList,
-	SolidDict,
-	SolidSet,
-	SolidMap,
-} from '../../../src/typer/index.js';
 import {
 	TypeError03,
 	TypeError05,
@@ -140,25 +133,25 @@ describe('ASTNodeCall', () => {
 					]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new SolidList<Int16>([
-						new Int16(1n),
-						new Int16(2n),
-						new Int16(3n),
+					new OBJ.SolidList<OBJ.Int16>([
+						new OBJ.Int16(1n),
+						new OBJ.Int16(2n),
+						new OBJ.Int16(3n),
 					]),
-					new SolidDict<Int16>(new Map<bigint, Int16>([
-						[0x100n, new Int16(1n)],
-						[0x101n, new Int16(2n)],
-						[0x102n, new Int16(3n)],
+					new OBJ.SolidDict<OBJ.Int16>(new Map<bigint, OBJ.Int16>([
+						[0x100n, new OBJ.Int16(1n)],
+						[0x101n, new OBJ.Int16(2n)],
+						[0x102n, new OBJ.Int16(3n)],
 					])),
-					new SolidSet<Int16>(new Set<Int16>([
-						new Int16(1n),
-						new Int16(2n),
-						new Int16(3n),
+					new OBJ.SolidSet<OBJ.Int16>(new Set<OBJ.Int16>([
+						new OBJ.Int16(1n),
+						new OBJ.Int16(2n),
+						new OBJ.Int16(3n),
 					])),
-					new SolidMap<Int16, Float64>(new Map<Int16, Float64>([
-						[new Int16(1n), new Float64(0.1)],
-						[new Int16(2n), new Float64(0.2)],
-						[new Int16(3n), new Float64(0.4)],
+					new OBJ.SolidMap<OBJ.Int16, OBJ.Float64>(new Map<OBJ.Int16, OBJ.Float64>([
+						[new OBJ.Int16(1n), new OBJ.Float64(0.1)],
+						[new OBJ.Int16(2n), new OBJ.Float64(0.2)],
+						[new OBJ.Int16(3n), new OBJ.Float64(0.4)],
 					])),
 				],
 			);
@@ -175,20 +168,20 @@ describe('ASTNodeCall', () => {
 					]));`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new SolidList<Int16>([
-						new Int16(1n),
-						new Int16(2n),
-						new Int16(3n),
+					new OBJ.SolidList<OBJ.Int16>([
+						new OBJ.Int16(1n),
+						new OBJ.Int16(2n),
+						new OBJ.Int16(3n),
 					]),
-					new SolidSet<Int16>(new Set<Int16>([
-						new Int16(1n),
-						new Int16(2n),
-						new Int16(3n),
+					new OBJ.SolidSet<OBJ.Int16>(new Set<OBJ.Int16>([
+						new OBJ.Int16(1n),
+						new OBJ.Int16(2n),
+						new OBJ.Int16(3n),
 					])),
-					new SolidMap<Int16, Float64>(new Map<Int16, Float64>([
-						[new Int16(1n), new Float64(0.1)],
-						[new Int16(2n), new Float64(0.2)],
-						[new Int16(3n), new Float64(0.4)],
+					new OBJ.SolidMap<OBJ.Int16, OBJ.Float64>(new Map<OBJ.Int16, OBJ.Float64>([
+						[new OBJ.Int16(1n), new OBJ.Float64(0.1)],
+						[new OBJ.Int16(2n), new OBJ.Float64(0.2)],
+						[new OBJ.Int16(3n), new OBJ.Float64(0.4)],
 					])),
 				],
 			);
@@ -205,13 +198,13 @@ describe('ASTNodeCall', () => {
 					`Map.<int, float>([]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new SolidList<never>(),
-					new SolidDict<never>(),
-					new SolidSet<never>(),
-					new SolidMap<never, never>(),
-					new SolidList<never>(),
-					new SolidSet<never>(),
-					new SolidMap<never, never>(),
+					new OBJ.SolidList<never>(),
+					new OBJ.SolidDict<never>(),
+					new OBJ.SolidSet<never>(),
+					new OBJ.SolidMap<never, never>(),
+					new OBJ.SolidList<never>(),
+					new OBJ.SolidSet<never>(),
+					new OBJ.SolidMap<never, never>(),
 				],
 			);
 		});

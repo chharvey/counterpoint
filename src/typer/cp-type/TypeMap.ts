@@ -1,7 +1,4 @@
-import {
-	SolidObject,
-	SolidMap,
-} from './package.js';
+import {OBJ} from './package.js';
 import {Type} from './Type.js';
 
 
@@ -20,7 +17,7 @@ export class TypeMap extends Type {
 		readonly consequenttypes: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new SolidMap()]));
+		super(is_mutable, new Set([new OBJ.SolidMap()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -31,8 +28,8 @@ export class TypeMap extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }Map.<${ this.antecedenttypes }, ${ this.consequenttypes }>`;
 	}
 
-	override includes(v: SolidObject): boolean {
-		return v instanceof SolidMap && v.toType().isSubtypeOf(this);
+	override includes(v: OBJ.SolidObject): boolean {
+		return v instanceof OBJ.SolidMap && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {

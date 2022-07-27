@@ -1,12 +1,7 @@
 import * as assert from 'assert'
 import {
-	SolidObject,
-	Int16,
-	Float64,
-	SolidString,
-	SolidSet,
-	SolidMap,
-} from '../../src/typer/index.js';
+	OBJ,
+} from '../../src/index.js';
 
 
 
@@ -14,26 +9,26 @@ describe('SolidObject', () => {
 	describe('#equal', () => {
 		describe('SolidSet', () => {
 			it('return false if sets have different counts.', () => {
-				assert.ok(!new SolidSet<SolidString>(new Set([
-					new SolidString('earth'),
-					new SolidString('wind'),
-					new SolidString('fire'),
-				])).equal(new SolidSet<SolidString>(new Set([
-					new SolidString('earth'),
-					new SolidString('wind'),
-					new SolidString('fire'),
-					new SolidString('water'),
+				assert.ok(!new OBJ.SolidSet<OBJ.SolidString>(new Set([
+					new OBJ.SolidString('earth'),
+					new OBJ.SolidString('wind'),
+					new OBJ.SolidString('fire'),
+				])).equal(new OBJ.SolidSet<OBJ.SolidString>(new Set([
+					new OBJ.SolidString('earth'),
+					new OBJ.SolidString('wind'),
+					new OBJ.SolidString('fire'),
+					new OBJ.SolidString('water'),
 				]))));
 			});
 			it('returns true if sets contain equal elements.', () => {
-				assert.ok(new SolidSet<SolidString>(new Set([
-					new SolidString('earth'),
-					new SolidString('wind'),
-					new SolidString('fire'),
-				])).equal(new SolidSet<SolidString>(new Set([
-					new SolidString('earth'),
-					new SolidString('fire'),
-					new SolidString('wind'),
+				assert.ok(new OBJ.SolidSet<OBJ.SolidString>(new Set([
+					new OBJ.SolidString('earth'),
+					new OBJ.SolidString('wind'),
+					new OBJ.SolidString('fire'),
+				])).equal(new OBJ.SolidSet<OBJ.SolidString>(new Set([
+					new OBJ.SolidString('earth'),
+					new OBJ.SolidString('fire'),
+					new OBJ.SolidString('wind'),
 				]))));
 			});
 		});
@@ -44,28 +39,28 @@ describe('SolidObject', () => {
 		describe('.constructor', () => {
 			it('overwrites identical elements.', () => {
 				assert.deepStrictEqual(
-					new SolidSet(new Set([
-						new SolidString('a'),
-						Int16.ZERO,
-						new Int16(-0n),
+					new OBJ.SolidSet(new Set([
+						new OBJ.SolidString('a'),
+						OBJ.Int16.ZERO,
+						new OBJ.Int16(-0n),
 					])),
-					new SolidSet(new Set([
-						new SolidString('a'),
-						Int16.ZERO,
+					new OBJ.SolidSet(new Set([
+						new OBJ.SolidString('a'),
+						OBJ.Int16.ZERO,
 					])),
 				);
 			});
 			it('does not overwrite non-identical (even if equal) elements.', () => {
 				assert.deepStrictEqual(
-					new SolidSet(new Set([
-						new SolidString('a'),
-						new Float64(0.0),
-						new Float64(-0.0),
+					new OBJ.SolidSet(new Set([
+						new OBJ.SolidString('a'),
+						new OBJ.Float64(0.0),
+						new OBJ.Float64(-0.0),
 					])),
-					new SolidSet(new Set([
-						new SolidString('a'),
-						new Float64(0.0),
-						new Float64(-0.0),
+					new OBJ.SolidSet(new Set([
+						new OBJ.SolidString('a'),
+						new OBJ.Float64(0.0),
+						new OBJ.Float64(-0.0),
 					])),
 				);
 			});
@@ -77,28 +72,28 @@ describe('SolidObject', () => {
 		describe('.constructor', () => {
 			it('overwrites identical antecedents.', () => {
 				assert.deepStrictEqual(
-					new SolidMap(new Map<SolidObject, SolidObject>([
-						[new SolidString('a'), Int16.UNIT],
-						[Int16.ZERO,           new Float64(2.0)],
-						[new Int16(-0n),       new SolidString('three')],
+					new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([
+						[new OBJ.SolidString('a'), OBJ.Int16.UNIT],
+						[OBJ.Int16.ZERO,           new OBJ.Float64(2.0)],
+						[new OBJ.Int16(-0n),       new OBJ.SolidString('three')],
 					])),
-					new SolidMap(new Map<SolidObject, SolidObject>([
-						[new SolidString('a'), Int16.UNIT],
-						[Int16.ZERO,           new SolidString('three')],
+					new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([
+						[new OBJ.SolidString('a'), OBJ.Int16.UNIT],
+						[OBJ.Int16.ZERO,           new OBJ.SolidString('three')],
 					])),
 				);
 			});
 			it('does not overwrite non-identical (even if equal) antecedents.', () => {
 				assert.deepStrictEqual(
-					new SolidMap(new Map<SolidObject, SolidObject>([
-						[new SolidString('a'), Int16.UNIT],
-						[new Float64(0.0),     new Float64(2.0)],
-						[new Float64(-0.0),    new SolidString('three')],
+					new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([
+						[new OBJ.SolidString('a'), OBJ.Int16.UNIT],
+						[new OBJ.Float64(0.0),     new OBJ.Float64(2.0)],
+						[new OBJ.Float64(-0.0),    new OBJ.SolidString('three')],
 					])),
-					new SolidMap(new Map<SolidObject, SolidObject>([
-						[new SolidString('a'), new Int16(1n)],
-						[new Float64(0.0),     new Float64(2.0)],
-						[new Float64(-0.0),    new SolidString('three')],
+					new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([
+						[new OBJ.SolidString('a'), new OBJ.Int16(1n)],
+						[new OBJ.Float64(0.0),     new OBJ.Float64(2.0)],
+						[new OBJ.Float64(-0.0),    new OBJ.SolidString('three')],
 					])),
 				);
 			});

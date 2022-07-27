@@ -1,7 +1,6 @@
 import {
 	TYPE,
-	Int16,
-	Float64,
+	OBJ,
 	CPConfig,
 	Validator,
 } from './package.js';
@@ -40,7 +39,7 @@ export function oneFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
 
 
 
-export function valueOfTokenNumber(source: string, config: CPConfig): Int16 | Float64 {
+export function valueOfTokenNumber(source: string, config: CPConfig): OBJ.Int16 | OBJ.Float64 {
 	const [cooked, is_float]: [number, boolean] = Validator.cookTokenNumber(source, config);
-	return (is_float) ? new Float64(cooked) : new Int16(BigInt(cooked));
+	return (is_float) ? new OBJ.Float64(cooked) : new OBJ.Int16(BigInt(cooked));
 }

@@ -3,8 +3,7 @@ import {
 	CPConfig,
 	CONFIG_DEFAULT,
 	TYPE,
-	SolidObject,
-	Primitive,
+	OBJ,
 	INST,
 	Builder,
 	ErrorCode,
@@ -45,7 +44,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		return statement.expr;
 	}
 	private typed?: TYPE.Type;
-	private assessed?: SolidObject | null;
+	private assessed?: OBJ.SolidObject | null;
 	private built?: INST.InstructionExpression;
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
@@ -67,7 +66,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 */
 	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
 		if (!this.built) {
-			const value: SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
+			const value: OBJ.SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
 			this.built = (!!value) ? INST.InstructionConst.fromCPValue(value, to_float) : this.build_do(builder, to_float);
 		}
 		return this.built;
@@ -82,7 +81,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		if (!this.typed) {
 			this.typed = this.type_do(); // type-check first, to re-throw any TypeErrors
 			if (this.validator.config.compilerOptions.constantFolding) {
-				let value: SolidObject | null = null;
+				let value: OBJ.SolidObject | null = null;
 				try {
 					value = this.fold();
 				} catch (err) {
@@ -93,7 +92,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 						throw err;
 					}
 				}
-				if (!!value && value instanceof Primitive) {
+				if (!!value && value instanceof OBJ.Primitive) {
 					this.typed = new TYPE.TypeUnit(value);
 				};
 			};
@@ -107,8 +106,8 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 * @final
 	 */
-	fold(): SolidObject | null {
+	fold(): OBJ.SolidObject | null {
 		return this.assessed ||= this.fold_do();
 	}
-	protected abstract fold_do(): SolidObject | null;
+	protected abstract fold_do(): OBJ.SolidObject | null;
 }

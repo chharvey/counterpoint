@@ -18,16 +18,5 @@ export {
 	solidObjectsIdentical,
 } from '../utils-private.js';
 export {
-	SolidObject,
-	SolidNull,
-	SolidBoolean,
-	Int16,
-	Float64,
-	SolidString,
-	SolidTuple,
-	SolidRecord,
-	SolidList,
-	SolidDict,
-	SolidSet,
-	SolidMap,
+	OBJ,
 } from '../index.js';
