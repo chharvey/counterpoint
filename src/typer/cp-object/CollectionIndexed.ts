@@ -3,8 +3,8 @@ import {
 	AST,
 } from './package.js';
 import type {Object} from './Object.js';
-import {SolidNull} from './SolidNull.js';
-import type {Int16} from './Int16.js';
+import {Null} from './Null.js';
+import type {Integer} from './Integer.js';
 import {Collection} from './Collection.js';
 
 
@@ -42,13 +42,13 @@ export abstract class CollectionIndexed<T extends Object = Object> extends Colle
 	}
 
 	/** @final */
-	get(index: Int16, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | SolidNull {
+	get(index: Integer, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | Null {
 		const n: number = this.items.length;
 		const i: number = Number(index.toNumeric());
 		return (
 			(-n <= i && i < 0) ? this.items[i + n] :
 			(0  <= i && i < n) ? this.items[i] :
-			(access_optional) ? SolidNull.NULL :
+			(access_optional) ? Null.NULL :
 			(() => { throw new VoidError01(accessor); })()
 		);
 	}

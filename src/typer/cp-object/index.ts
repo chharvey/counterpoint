@@ -1,12 +1,12 @@
 export * from './Object.js';
 
 export * from './Primitive.js';
-export * from './SolidNull.js';
-export * from './SolidBoolean.js';
-export * from './SolidNumber.js';
-export * from './Int16.js';
-export * from './Float64.js';
-export * from './SolidString.js';
+export * from './Null.js';
+export * from './Boolean.js';
+export * from './Number.js';
+export * from './Integer.js';
+export * from './Float.js';
+export * from './String.js';
 
 export * from './CollectionIndexed.js';
 export * from './CollectionKeyed.js';

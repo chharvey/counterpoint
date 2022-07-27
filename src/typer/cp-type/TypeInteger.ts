@@ -12,12 +12,12 @@ export class TypeInteger extends Type {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
-		super(false, new Set([OBJ.Int16.ZERO]));
+		super(false, new Set([OBJ.Integer.ZERO]));
 	}
 	override toString(): string {
 		return 'int';
 	}
 	override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Int16;
+		return v instanceof OBJ.Integer;
 	}
 }

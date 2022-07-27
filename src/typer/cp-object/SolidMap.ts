@@ -8,7 +8,7 @@ import {
 	TypeMap,
 } from './package.js';
 import type {Object} from './Object.js';
-import {SolidNull} from './SolidNull.js';
+import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
 
@@ -48,11 +48,11 @@ export class SolidMap<K extends Object = Object, V extends Object = Object> exte
 		) : new TypeMap(Type.NEVER, Type.NEVER);
 	}
 
-	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | SolidNull {
+	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | Null {
 		return (xjs.Map.has(this.cases, ant, languageValuesIdentical))
 			? xjs.Map.get(this.cases, ant, languageValuesIdentical)!
 			: (access_optional)
-				? SolidNull.NULL
+				? Null.NULL
 				: (() => { throw new VoidError01(accessor); })();
 	}
 }

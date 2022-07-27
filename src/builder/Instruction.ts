@@ -76,27 +76,27 @@ export class InstructionConst extends InstructionExpression {
 		if (!value) {
 			throw new Error('Cannot build an abrupt completion structure.')
 		}
-		const numeric: OBJ.SolidNumber =
-			(value instanceof OBJ.SolidNull)    ? OBJ.Int16.ZERO :
-			(value instanceof OBJ.SolidBoolean) ? (value.isTruthy) ? OBJ.Int16.UNIT : OBJ.Int16.ZERO :
-			(value instanceof OBJ.SolidNumber)  ? value :
+		const numeric: OBJ.Number =
+			(value instanceof OBJ.Null)    ? OBJ.Integer.ZERO :
+			(value instanceof OBJ.Boolean) ? (value.isTruthy) ? OBJ.Integer.UNIT : OBJ.Integer.ZERO :
+			(value instanceof OBJ.Number)  ? value :
 			(() => { throw new Error('not yet supported.') })()
 		return new InstructionConst((to_float) ? numeric.toFloat() : numeric)
 	}
 	/**
 	 * @param value the constant to push
 	 */
-	constructor (private readonly value: OBJ.SolidNumber) {
+	constructor (private readonly value: OBJ.Number) {
 		super()
 	}
 	/**
 	 * @return `'({i32|f64}.const ‹value›)'`
 	 */
 	override toString(): string {
-		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ (this.value.identical(new OBJ.Float64(-0.0))) ? '-0.0' : this.value })`;
+		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ (this.value.identical(new OBJ.Float(-0.0))) ? '-0.0' : this.value })`;
 	}
 	get isFloat(): boolean {
-		return this.value instanceof OBJ.Float64;
+		return this.value instanceof OBJ.Float;
 	}
 }
 /**

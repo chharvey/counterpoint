@@ -3,7 +3,7 @@ import {
 	AST,
 } from './package.js';
 import type {Object} from './Object.js';
-import {SolidNull} from './SolidNull.js';
+import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
 
@@ -41,11 +41,11 @@ export abstract class CollectionKeyed<T extends Object = Object> extends Collect
 	}
 
 	/** @final */
-	get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeKey): T | SolidNull {
+	get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeKey): T | Null {
 		return (this.properties.has(key))
 			? this.properties.get(key)!
 			: (access_optional)
-				? SolidNull.NULL
+				? Null.NULL
 				: (() => { throw new VoidError01(accessor); })();
 	}
 }

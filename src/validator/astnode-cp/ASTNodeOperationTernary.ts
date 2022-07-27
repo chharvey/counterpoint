@@ -47,7 +47,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		const t2: TYPE.Type = this.operand2.type();
 		return (t0.isSubtypeOf(TYPE.Type.BOOL))
 			? (t0 instanceof TYPE.TypeUnit)
-				? (t0.value === OBJ.SolidBoolean.FALSE)
+				? (t0.value === OBJ.Boolean.FALSE)
 					? t2 // If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
 					: t1 // If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
 				: t1.union(t2)
@@ -58,7 +58,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		if (!v0) {
 			return v0;
 		}
-		return (v0 === OBJ.SolidBoolean.TRUE)
+		return (v0 === OBJ.Boolean.TRUE)
 			? this.operand1.fold()
 			: this.operand2.fold();
 	}

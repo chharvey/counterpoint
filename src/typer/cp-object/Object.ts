@@ -1,4 +1,4 @@
-import {SolidString} from './index.js';
+import {String} from './index.js';
 
 
 
@@ -64,7 +64,7 @@ export abstract class Object {
 	 * (Not a native String — see {@link #toString}.)
 	 * @returns a string representation of this Object
 	 */
-	toSolidString(): SolidString {
-		return new SolidString(this.toString());
+	toSolidString(): String {
+		return new String(this.toString());
 	}
 }

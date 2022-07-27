@@ -37,12 +37,12 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 			return (
 				(base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidTuple) ? (
 					(accessor_type instanceof TYPE.TypeUnit)
-						? base_type.value.toType().get(accessor_type.value as OBJ.Int16, Operator.DOT, this.accessor)
+						? base_type.value.toType().get(accessor_type.value as OBJ.Integer, Operator.DOT, this.accessor)
 						: base_type.value.toType().itemTypes()
 				) :
 				(base_type instanceof TYPE.TypeTuple) ? (
 					(accessor_type instanceof TYPE.TypeUnit)
-						? base_type.get(accessor_type.value as OBJ.Int16, Operator.DOT, this.accessor)
+						? base_type.get(accessor_type.value as OBJ.Integer, Operator.DOT, this.accessor)
 						: base_type.itemTypes()
 				) :
 				(() => { throw new TypeError04('index', base_type, this.accessor); })()

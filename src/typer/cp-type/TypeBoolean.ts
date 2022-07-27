@@ -12,12 +12,12 @@ export class TypeBoolean extends Type {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
-		super(false, new Set([OBJ.SolidBoolean.FALSE, OBJ.SolidBoolean.TRUE]));
+		super(false, new Set([OBJ.Boolean.FALSE, OBJ.Boolean.TRUE]));
 	}
 	override toString(): string {
 		return 'bool';
 	}
 	override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.SolidBoolean;
+		return v instanceof OBJ.Boolean;
 	}
 }

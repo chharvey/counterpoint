@@ -29,9 +29,9 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	private static keywordValue(source: string): OBJ.Object {
 		return (
-			(source === Keyword.NULL)  ? OBJ.SolidNull.NULL :
-			(source === Keyword.FALSE) ? OBJ.SolidBoolean.FALSE :
-			(source === Keyword.TRUE)  ? OBJ.SolidBoolean.TRUE :
+			(source === Keyword.NULL)  ? OBJ.Null.NULL :
+			(source === Keyword.FALSE) ? OBJ.Boolean.FALSE :
+			(source === Keyword.TRUE)  ? OBJ.Boolean.TRUE :
 			(() => { throw new Error(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`); })()
 		);
 	}
@@ -51,19 +51,19 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	private get value(): OBJ.Object {
 		return this._value ??= (
-			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new OBJ.SolidString(Validator.cookTokenTemplate(this.start_node.text)) :
+			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new OBJ.String(Validator.cookTokenTemplate(this.start_node.text)) :
 			(isSyntaxNodeType(this.start_node, 'integer'))                            ? valueOfTokenNumber(this.start_node.text, this.validator.config) :
 			(isSyntaxNodeType(this.start_node, 'primitive_literal'),                    ((token: SyntaxNode) => (
 				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeConstant.keywordValue(token.text) :
 				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? valueOfTokenNumber(token.text, this.validator.config) :
 				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? valueOfTokenNumber(token.text, this.validator.config) :
-				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/) , new OBJ.SolidString(Validator.cookTokenString(token.text, this.validator.config)))
+				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/) , new OBJ.String(Validator.cookTokenString(token.text, this.validator.config)))
 			))(this.start_node.children[0]))
 		);
 	}
 
 	override shouldFloat(): boolean {
-		return this.value instanceof OBJ.Float64
+		return this.value instanceof OBJ.Float;
 	}
 	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionConst {
 		return INST.InstructionConst.fromCPValue(this.fold(), to_float);

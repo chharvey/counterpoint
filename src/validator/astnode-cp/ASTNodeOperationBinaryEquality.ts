@@ -51,12 +51,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		 */
 		if (bothNumeric(t0, t1)) {
 			if (oneFloats(t0, t1) && (this.operator === Operator.ID || !int_coercion)) {
-				return OBJ.SolidBoolean.FALSETYPE
+				return OBJ.Boolean.FALSETYPE;
 			}
 			return TYPE.Type.BOOL;
 		}
 		if (t0.intersect(t1).isBottomType) {
-			return OBJ.SolidBoolean.FALSETYPE
+			return OBJ.Boolean.FALSETYPE;
 		}
 		return TYPE.Type.BOOL;
 	}
@@ -71,8 +71,8 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		}
 		return this.foldEquality(v0, v1);
 	}
-	private foldEquality(x: OBJ.Object, y: OBJ.Object): OBJ.SolidBoolean {
-		return OBJ.SolidBoolean.fromBoolean(new Map<Operator, (x: OBJ.Object, y: OBJ.Object) => boolean>([
+	private foldEquality(x: OBJ.Object, y: OBJ.Object): OBJ.Boolean {
+		return OBJ.Boolean.fromBoolean(new Map<Operator, (x: OBJ.Object, y: OBJ.Object) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],
 			[Operator.EQ, (x, y) => x.equal(y)],
 			// [Operator.ISNT, (x, y) => !x.identical(y)],

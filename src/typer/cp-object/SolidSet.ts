@@ -8,7 +8,7 @@ import {
 	TypeSet,
 } from './package.js';
 import type {Object} from './Object.js';
-import {SolidNull} from './SolidNull.js';
+import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
 
@@ -49,11 +49,11 @@ export class SolidSet<T extends Object = Object> extends Collection {
 		);
 	}
 
-	get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | SolidNull {
+	get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | Null {
 		return (xjs.Set.has(this.elements, el, languageValuesIdentical))
 			? el
 			: (access_optional)
-				? SolidNull.NULL
+				? Null.NULL
 				: (() => { throw new VoidError01(accessor); })();
 	}
 }

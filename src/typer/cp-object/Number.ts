@@ -1,12 +1,15 @@
 import {Primitive} from './Primitive.js';
-import type {Float64} from './index.js';
+import type {Float} from './index.js';
 
 
 
 /**
- * A numeric Solid Language Value.
+ * A numeric Counterpoint Language Value.
+ * Known subclasses:
+ * - Integer
+ * - Float
  */
-export abstract class SolidNumber<T = unknown> extends Primitive {
+export abstract class Number<T = unknown> extends Primitive {
 	/**
 	 * @final
 	 */
@@ -18,7 +21,7 @@ export abstract class SolidNumber<T = unknown> extends Primitive {
 	 * Type-coerce this number into a float.
 	 * @returns the equivalent floating-point value
 	 */
-	abstract toFloat(): Float64;
+	abstract toFloat(): Float;
 
 	/**
 	 * Add two numbers.

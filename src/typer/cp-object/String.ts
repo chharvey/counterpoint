@@ -7,10 +7,10 @@ import {Primitive} from './Primitive.js';
 
 
 /**
- * A textual Solid Language Value.
+ * A textual value represented as utf-8 data.
  * @final
  */
-export class SolidString extends Primitive {
+class CPString extends Primitive {
 	private readonly codeunits: readonly CodeUnit[];
 	constructor (data: string | readonly CodeUnit[] = []) {
 		super();
@@ -26,10 +26,10 @@ export class SolidString extends Primitive {
 		return `'${ utf8.decode(String.fromCodePoint(...this.codeunits)) }'`;
 	}
 	protected override identical_helper(value: Object): boolean {
-		return value instanceof SolidString && xjs.Array.is(this.codeunits, value.codeunits);
+		return value instanceof CPString && xjs.Array.is(this.codeunits, value.codeunits);
 	}
 
-	override toSolidString(): SolidString {
+	override toSolidString(): CPString {
 		return this;
 	}
 
@@ -38,10 +38,11 @@ export class SolidString extends Primitive {
 	 * @param str the String to append to this String
 	 * @returns   a new String whose code units are this string’s concatenated with the argument’s
 	 */
-	concatenate(str: SolidString): SolidString {
-		return new SolidString([
+	concatenate(str: CPString): CPString {
+		return new CPString([
 			...this.codeunits,
 			...str.codeunits,
 		]);
 	}
 }
+export {CPString as String};

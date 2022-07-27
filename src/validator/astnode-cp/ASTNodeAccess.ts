@@ -64,7 +64,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			const accessor_type:  TYPE.TypeUnit = this.accessor.val.type() as TYPE.TypeUnit;
-			const accessor_value: OBJ.Int16     = accessor_type.value as OBJ.Int16;
+			const accessor_value: OBJ.Integer   = accessor_type.value as OBJ.Integer;
 			if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidTuple || base_type instanceof TYPE.TypeTuple) {
 				const base_type_tuple: TYPE.TypeTuple = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidTuple)
 					? base_type.value.toType()
@@ -102,7 +102,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				const base_type_tuple: TYPE.TypeTuple = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidTuple)
 					? base_type.value.toType()
 					: base_type as TYPE.TypeTuple;
-				return (accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof OBJ.Int16)
+				return (accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof OBJ.Integer)
 					? base_type_tuple.get(accessor_type.value, this.kind, this.accessor)
 					: (accessor_type.isSubtypeOf(TYPE.Type.INT))
 						? updateAccessedDynamicType(base_type_tuple.itemTypes(), this.kind)
@@ -138,11 +138,11 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (base_value === null) {
 			return null;
 		}
-		if (this.optional && base_value.equal(OBJ.SolidNull.NULL)) {
+		if (this.optional && base_value.equal(OBJ.Null.NULL)) {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as OBJ.CollectionIndexed).get(this.accessor.val.fold() as OBJ.Int16, this.optional, this.accessor);
+			return (base_value as OBJ.CollectionIndexed).get(this.accessor.val.fold() as OBJ.Integer, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (base_value as OBJ.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
@@ -151,9 +151,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				return null;
 			}
 			return (
-				(base_value instanceof OBJ.CollectionIndexed) ? (base_value as OBJ.CollectionIndexed).get(accessor_value as OBJ.Int16, this.optional, this.accessor) :
-				(base_value instanceof OBJ.SolidSet)          ? (base_value as OBJ.SolidSet)         .get(accessor_value,              this.optional, this.accessor) :
-				(base_value instanceof OBJ.SolidMap           , (base_value as OBJ.SolidMap)         .get(accessor_value,              this.optional, this.accessor) )
+				(base_value instanceof OBJ.CollectionIndexed) ? (base_value as OBJ.CollectionIndexed).get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
+				(base_value instanceof OBJ.SolidSet)          ? (base_value as OBJ.SolidSet)         .get(accessor_value,                this.optional, this.accessor) :
+				(base_value instanceof OBJ.SolidMap           , (base_value as OBJ.SolidMap)         .get(accessor_value,                this.optional, this.accessor) )
 			);
 		}
 	}

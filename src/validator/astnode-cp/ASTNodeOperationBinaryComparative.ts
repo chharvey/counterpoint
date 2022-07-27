@@ -63,15 +63,15 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		if (!v1) {
 			return v1;
 		}
-		return (v0 instanceof OBJ.Int16 && v1 instanceof OBJ.Int16)
+		return (v0 instanceof OBJ.Integer && v1 instanceof OBJ.Integer)
 			? this.foldComparative(v0, v1)
 			: this.foldComparative(
-				(v0 as OBJ.SolidNumber).toFloat(),
-				(v1 as OBJ.SolidNumber).toFloat(),
+				(v0 as OBJ.Number).toFloat(),
+				(v1 as OBJ.Number).toFloat(),
 			);
 	}
-	private foldComparative<T extends OBJ.SolidNumber<T>>(x: T, y: T): OBJ.SolidBoolean {
-		return OBJ.SolidBoolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
+	private foldComparative<T extends OBJ.Number<T>>(x: T, y: T): OBJ.Boolean {
+		return OBJ.Boolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
 			[Operator.LT, (x, y) => x.lt(y)],
 			[Operator.GT, (x, y) => y.lt(x)],
 			[Operator.LE, (x, y) => x.equal(y) || x.lt(y)],

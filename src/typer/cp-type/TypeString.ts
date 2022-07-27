@@ -12,12 +12,12 @@ export class TypeString extends Type {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
-		super(false, new Set([new OBJ.SolidString('')]));
+		super(false, new Set([new OBJ.String('')]));
 	}
 	override toString(): string {
 		return 'str';
 	}
 	override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.SolidString;
+		return v instanceof OBJ.String;
 	}
 }

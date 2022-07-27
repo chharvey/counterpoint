@@ -133,25 +133,25 @@ describe('ASTNodeCall', () => {
 					]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new OBJ.SolidList<OBJ.Int16>([
-						new OBJ.Int16(1n),
-						new OBJ.Int16(2n),
-						new OBJ.Int16(3n),
+					new OBJ.SolidList<OBJ.Integer>([
+						new OBJ.Integer(1n),
+						new OBJ.Integer(2n),
+						new OBJ.Integer(3n),
 					]),
-					new OBJ.SolidDict<OBJ.Int16>(new Map<bigint, OBJ.Int16>([
-						[0x100n, new OBJ.Int16(1n)],
-						[0x101n, new OBJ.Int16(2n)],
-						[0x102n, new OBJ.Int16(3n)],
+					new OBJ.SolidDict<OBJ.Integer>(new Map<bigint, OBJ.Integer>([
+						[0x100n, new OBJ.Integer(1n)],
+						[0x101n, new OBJ.Integer(2n)],
+						[0x102n, new OBJ.Integer(3n)],
 					])),
-					new OBJ.SolidSet<OBJ.Int16>(new Set<OBJ.Int16>([
-						new OBJ.Int16(1n),
-						new OBJ.Int16(2n),
-						new OBJ.Int16(3n),
+					new OBJ.SolidSet<OBJ.Integer>(new Set<OBJ.Integer>([
+						new OBJ.Integer(1n),
+						new OBJ.Integer(2n),
+						new OBJ.Integer(3n),
 					])),
-					new OBJ.SolidMap<OBJ.Int16, OBJ.Float64>(new Map<OBJ.Int16, OBJ.Float64>([
-						[new OBJ.Int16(1n), new OBJ.Float64(0.1)],
-						[new OBJ.Int16(2n), new OBJ.Float64(0.2)],
-						[new OBJ.Int16(3n), new OBJ.Float64(0.4)],
+					new OBJ.SolidMap<OBJ.Integer, OBJ.Float>(new Map<OBJ.Integer, OBJ.Float>([
+						[new OBJ.Integer(1n), new OBJ.Float(0.1)],
+						[new OBJ.Integer(2n), new OBJ.Float(0.2)],
+						[new OBJ.Integer(3n), new OBJ.Float(0.4)],
 					])),
 				],
 			);
@@ -168,20 +168,20 @@ describe('ASTNodeCall', () => {
 					]));`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new OBJ.SolidList<OBJ.Int16>([
-						new OBJ.Int16(1n),
-						new OBJ.Int16(2n),
-						new OBJ.Int16(3n),
+					new OBJ.SolidList<OBJ.Integer>([
+						new OBJ.Integer(1n),
+						new OBJ.Integer(2n),
+						new OBJ.Integer(3n),
 					]),
-					new OBJ.SolidSet<OBJ.Int16>(new Set<OBJ.Int16>([
-						new OBJ.Int16(1n),
-						new OBJ.Int16(2n),
-						new OBJ.Int16(3n),
+					new OBJ.SolidSet<OBJ.Integer>(new Set<OBJ.Integer>([
+						new OBJ.Integer(1n),
+						new OBJ.Integer(2n),
+						new OBJ.Integer(3n),
 					])),
-					new OBJ.SolidMap<OBJ.Int16, OBJ.Float64>(new Map<OBJ.Int16, OBJ.Float64>([
-						[new OBJ.Int16(1n), new OBJ.Float64(0.1)],
-						[new OBJ.Int16(2n), new OBJ.Float64(0.2)],
-						[new OBJ.Int16(3n), new OBJ.Float64(0.4)],
+					new OBJ.SolidMap<OBJ.Integer, OBJ.Float>(new Map<OBJ.Integer, OBJ.Float>([
+						[new OBJ.Integer(1n), new OBJ.Float(0.1)],
+						[new OBJ.Integer(2n), new OBJ.Float(0.2)],
+						[new OBJ.Integer(3n), new OBJ.Float(0.4)],
 					])),
 				],
 			);

@@ -72,7 +72,7 @@ describe('Type', () => {
 				[4.2, 4.3, 4.4],
 				[4.3, 4.4, 4.5],
 				[4.3, 4.4],
-			].map((set) => set.map((n) => new OBJ.Float64(n))), '(4.2 | 4.3 | 4.4) & (4.3 | 4.4 | 4.5) == (4.3 | 4.4)');
+			].map((set) => set.map((n) => new OBJ.Float(n))), '(4.2 | 4.3 | 4.4) & (4.3 | 4.4 | 4.5) == (4.3 | 4.4)');
 			assert.deepStrictEqual([
 				t3,
 				t4,
@@ -81,7 +81,7 @@ describe('Type', () => {
 				[42n, 43n, 44n],
 				[43n, 44n, 45n],
 				[42n, 43n, 44n, 45n],
-			].map((set) => set.map((n) => new OBJ.Int16(n))), '(42 | 43 | 44) | (43 | 44 | 45) == (42 | 43 | 44 | 45)');
+			].map((set) => set.map((n) => new OBJ.Integer(n))), '(42 | 43 | 44) | (43 | 44 | 45) == (42 | 43 | 44 | 45)');
 		});
 	});
 
@@ -124,7 +124,7 @@ describe('Type', () => {
 		});
 		describe('TypeUnion', () => {
 			it('distributes union operands over intersection: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
-				const expr = TYPE.Type.NULL.union(TYPE.Type.INT).intersect(TYPE.Type.VOID.union(TYPE.Type.NULL).union(OBJ.SolidBoolean.FALSETYPE));
+				const expr = TYPE.Type.NULL.union(TYPE.Type.INT).intersect(TYPE.Type.VOID.union(TYPE.Type.NULL).union(OBJ.Boolean.FALSETYPE));
 				assert.ok(expr.equals(TYPE.Type.NULL), `(null | int) & (void | null | false) == null`);
 				assert.deepStrictEqual(expr, TYPE.Type.NULL);
 			});
@@ -355,8 +355,8 @@ describe('Type', () => {
 
 		describe('TypeUnit', () => {
 			it('constant Boolean types should be subtypes of `bool`.', () => {
-				assert.ok(OBJ.SolidBoolean.FALSETYPE.isSubtypeOf(TYPE.Type.BOOL), 'SolidBoolean.FALSETYPE')
-				assert.ok(OBJ.SolidBoolean.TRUETYPE .isSubtypeOf(TYPE.Type.BOOL), 'SolidBoolean.TRUETYPE')
+				assert.ok(OBJ.Boolean.FALSETYPE.isSubtypeOf(TYPE.Type.BOOL), 'Boolean.FALSETYPE');
+				assert.ok(OBJ.Boolean.TRUETYPE .isSubtypeOf(TYPE.Type.BOOL), 'Boolean.TRUETYPE');
 			})
 			it('constant Integer types should be subtypes of `int`.', () => {
 				;[42n, -42n, 0n, -0n].map((v) => typeConstInt(v)).forEach((itype) => {
@@ -375,18 +375,18 @@ describe('Type', () => {
 			});
 			it('constant tuple types should be subtype of a tuple type instance.', () => {
 				new Map<OBJ.Object, TYPE.TypeTuple>([
-					[new OBJ.SolidTuple(),                                                     TYPE.TypeTuple.fromTypes()],
-					[new OBJ.SolidTuple([new OBJ.Int16(42n)]),                                 TYPE.TypeTuple.fromTypes([TYPE.Type.INT])],
-					[new OBJ.SolidTuple([new OBJ.Float64(4.2), new OBJ.SolidString('hello')]), TYPE.TypeTuple.fromTypes([TYPE.Type.FLOAT, TYPE.Type.STR])],
+					[new OBJ.SolidTuple(),                                              TYPE.TypeTuple.fromTypes()],
+					[new OBJ.SolidTuple([new OBJ.Integer(42n)]),                        TYPE.TypeTuple.fromTypes([TYPE.Type.INT])],
+					[new OBJ.SolidTuple([new OBJ.Float(4.2), new OBJ.String('hello')]), TYPE.TypeTuple.fromTypes([TYPE.Type.FLOAT, TYPE.Type.STR])],
 				]).forEach((tupletype, value) => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(tupletype), `let x: ${ tupletype } = ${ value };`);
 				});
 			});
 			it('constant record types should be subtype of a record type instance.', () => {
 				new Map<OBJ.Object, TYPE.TypeRecord>([
-					[new OBJ.SolidRecord(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Int16(42n)]])),                                           TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.INT]]))],
-					[new OBJ.SolidRecord(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Float64(4.2)], [0x101n, new OBJ.SolidString('hello')]])), TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.FLOAT], [0x101n, TYPE.Type.STR]]))],
-					[new OBJ.SolidRecord(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.SolidString('hello')], [0x101n, new OBJ.Float64(4.2)]])), TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.STR], [0x101n, TYPE.Type.FLOAT]]))],
+					[new OBJ.SolidRecord(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Integer(42n)]])),                                  TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.INT]]))],
+					[new OBJ.SolidRecord(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Float(4.2)], [0x101n, new OBJ.String('hello')]])), TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.FLOAT], [0x101n, TYPE.Type.STR]]))],
+					[new OBJ.SolidRecord(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.String('hello')], [0x101n, new OBJ.Float(4.2)]])), TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.STR], [0x101n, TYPE.Type.FLOAT]]))],
 				]).forEach((recordtype, value) => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(recordtype), `let x: ${ recordtype } = ${ value };`);
 				});
@@ -394,8 +394,8 @@ describe('Type', () => {
 			it('unit list types should be subtype of a list type instance.', () => {
 				const input = [
 					null,
-					[new OBJ.Int16(42n)],
-					[new OBJ.Float64(4.2), new OBJ.SolidString('hello')],
+					[new OBJ.Integer(42n)],
+					[new OBJ.Float(4.2), new OBJ.String('hello')],
 				] as const;
 				const output: TYPE.TypeList[] = [
 					TYPE.Type.NEVER,
@@ -413,15 +413,15 @@ describe('Type', () => {
 			it('unit dict types should be subtype of a dict type instance.', () => {
 				const input = [
 					new Map<bigint, OBJ.Object>([
-						[0x100n, new OBJ.Int16(42n)],
+						[0x100n, new OBJ.Integer(42n)],
 					]),
 					new Map<bigint, OBJ.Object>([
-						[0x100n, new OBJ.Float64(4.2)],
-						[0x101n, new OBJ.SolidString('hello')],
+						[0x100n, new OBJ.Float(4.2)],
+						[0x101n, new OBJ.String('hello')],
 					]),
 					new Map<bigint, OBJ.Object>([
-						[0x100n, new OBJ.SolidString('hello')],
-						[0x101n, new OBJ.Float64(4.2)],
+						[0x100n, new OBJ.String('hello')],
+						[0x101n, new OBJ.Float(4.2)],
 					]),
 				] as const;
 				const output: TYPE.TypeDict[] = [
@@ -439,18 +439,18 @@ describe('Type', () => {
 			});
 			it('constant set types should be subtype of a set type instance.', () => {
 				new Map<OBJ.Object, TYPE.TypeSet>([
-					[new OBJ.SolidSet(),                                                              new TYPE.TypeSet(TYPE.Type.NEVER)],
-					[new OBJ.SolidSet(new Set([new OBJ.Int16(42n)])),                                 new TYPE.TypeSet(TYPE.Type.INT)],
-					[new OBJ.SolidSet(new Set([new OBJ.Float64(4.2), new OBJ.SolidString('hello')])), new TYPE.TypeSet(TYPE.Type.FLOAT.union(TYPE.Type.STR))],
+					[new OBJ.SolidSet(),                                                       new TYPE.TypeSet(TYPE.Type.NEVER)],
+					[new OBJ.SolidSet(new Set([new OBJ.Integer(42n)])),                        new TYPE.TypeSet(TYPE.Type.INT)],
+					[new OBJ.SolidSet(new Set([new OBJ.Float(4.2), new OBJ.String('hello')])), new TYPE.TypeSet(TYPE.Type.FLOAT.union(TYPE.Type.STR))],
 				]).forEach((settype, value) => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(settype), `let x: ${ settype } = ${ value };`);
 				});
 			});
 			it('constant map types should be subtype of a map type instance.', () => {
 				new Map<OBJ.Object, TYPE.TypeMap>([
-					[new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([[new OBJ.Int16(0x100n), new OBJ.Int16(42n)]])),                                                          new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.INT)],
-					[new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([[new OBJ.Int16(0x100n), new OBJ.Float64(4.2)], [new OBJ.Int16(0x101n), new OBJ.SolidString('hello')]])), new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.FLOAT.union(TYPE.Type.STR))],
-					[new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([[new OBJ.SolidString('hello'), new OBJ.Int16(0x100n)], [new OBJ.Float64(4.2), new OBJ.Int16(0x101n)]])), new TYPE.TypeMap(TYPE.Type.FLOAT.union(TYPE.Type.STR), TYPE.Type.INT)],
+					[new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([[new OBJ.Integer(0x100n), new OBJ.Integer(42n)]])),                                                   new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.INT)],
+					[new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([[new OBJ.Integer(0x100n), new OBJ.Float(4.2)], [new OBJ.Integer(0x101n), new OBJ.String('hello')]])), new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.FLOAT.union(TYPE.Type.STR))],
+					[new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([[new OBJ.String('hello'), new OBJ.Integer(0x100n)], [new OBJ.Float(4.2), new OBJ.Integer(0x101n)]])), new TYPE.TypeMap(TYPE.Type.FLOAT.union(TYPE.Type.STR), TYPE.Type.INT)],
 				]).forEach((maptype, value) => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(maptype), `let x: ${ maptype } = ${ value };`);
 				});
@@ -965,7 +965,7 @@ describe('Type', () => {
 					]);
 					const union: TYPE.Type = left.union(right);
 					assert.ok(union instanceof TYPE.TypeUnion);
-					const v: OBJ.SolidTuple<OBJ.SolidBoolean> = new OBJ.SolidTuple<OBJ.SolidBoolean>([OBJ.SolidBoolean.TRUE, OBJ.SolidBoolean.TRUE]);
+					const v: OBJ.SolidTuple<OBJ.Boolean> = new OBJ.SolidTuple<OBJ.Boolean>([OBJ.Boolean.TRUE, OBJ.Boolean.TRUE]);
 					assert.ok(union.combineTuplesOrRecords().includes(v), `
 						let x: [bool | int, int | bool] = [true, true]; % ok
 					`);
@@ -1026,9 +1026,9 @@ describe('Type', () => {
 					]));
 					const union: TYPE.Type = left.union(right);
 					assert.ok(union instanceof TYPE.TypeUnion);
-					const v: OBJ.SolidRecord<OBJ.SolidBoolean> = new OBJ.SolidRecord<OBJ.SolidBoolean>(new Map<bigint, OBJ.SolidBoolean>([
-						[0x100n, OBJ.SolidBoolean.TRUE],
-						[0x101n, OBJ.SolidBoolean.TRUE],
+					const v: OBJ.SolidRecord<OBJ.Boolean> = new OBJ.SolidRecord<OBJ.Boolean>(new Map<bigint, OBJ.Boolean>([
+						[0x100n, OBJ.Boolean.TRUE],
+						[0x101n, OBJ.Boolean.TRUE],
 					]));
 					assert.ok(union.combineTuplesOrRecords().includes(v), `
 						let x: [a: bool | int, b: int | bool] = [a= true, b= true]; % ok

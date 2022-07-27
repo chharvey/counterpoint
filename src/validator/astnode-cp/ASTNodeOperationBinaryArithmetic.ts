@@ -66,17 +66,17 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		if (!v1) {
 			return v1;
 		}
-		if (this.operator === Operator.DIV && v1 instanceof OBJ.SolidNumber && v1.eq0()) {
+		if (this.operator === Operator.DIV && v1 instanceof OBJ.Number && v1.eq0()) {
 			throw new NanError02(this.operand1);
 		}
-		return (v0 instanceof OBJ.Int16 && v1 instanceof OBJ.Int16)
+		return (v0 instanceof OBJ.Integer && v1 instanceof OBJ.Integer)
 			? this.foldNumeric(v0, v1)
 			: this.foldNumeric(
-				(v0 as OBJ.SolidNumber).toFloat(),
-				(v1 as OBJ.SolidNumber).toFloat(),
+				(v0 as OBJ.Number).toFloat(),
+				(v1 as OBJ.Number).toFloat(),
 			);
 	}
-	private foldNumeric<T extends OBJ.SolidNumber<T>>(x: T, y: T): T {
+	private foldNumeric<T extends OBJ.Number<T>>(x: T, y: T): T {
 		try {
 			return new Map<Operator, (x: T, y: T) => T>([
 				[Operator.EXP, (x, y) => x.exp(y)],

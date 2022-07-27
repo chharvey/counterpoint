@@ -80,7 +80,7 @@ export class TypeTuple extends Type {
 		return new TypeTuple(this.types, false);
 	}
 
-	get(index: OBJ.Int16, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
+	get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
 		return updateAccessedStaticType((

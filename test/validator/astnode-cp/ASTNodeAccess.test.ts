@@ -678,15 +678,15 @@ describe('ASTNodeAccess', () => {
 			return stmt.expr!.fold();
 		}
 		const expected: (OBJ.Object | null)[] = [
-			new OBJ.Int16(1n),
-			new OBJ.Float64(2.0),
-			new OBJ.SolidString('three'),
+			new OBJ.Integer(1n),
+			new OBJ.Float(2.0),
+			new OBJ.String('three'),
 			null,
 			null,
 			null,
 		];
 		const expected_o: (OBJ.Object | null)[] = [
-			new OBJ.SolidString('three'),
+			new OBJ.String('three'),
 			null,
 			null,
 		];
@@ -701,7 +701,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource(`null?.four;`)      .fold(),
 					AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).fold(),
 				].forEach((t) => {
-					assert.strictEqual(t, OBJ.SolidNull.NULL);
+					assert.strictEqual(t, OBJ.Null.NULL);
 				});
 			});
 			it('chained optional access.', () => {
@@ -718,14 +718,14 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1: OBJ.SolidTuple = new OBJ.SolidTuple([OBJ.SolidBoolean.TRUE]);
+				const prop1: OBJ.SolidTuple = new OBJ.SolidTuple([OBJ.Boolean.TRUE]);
 				const prop2: OBJ.SolidTuple = new OBJ.SolidTuple();
 				assert.deepStrictEqual(
 					program.children.slice(2, 7).map((c) => foldStmtExpr(c)),
 					[
 						new OBJ.SolidRecord(new Map([[0x101n, prop1],])),
 						prop1,
-						OBJ.SolidBoolean.TRUE,
+						OBJ.Boolean.TRUE,
 						new OBJ.SolidRecord(new Map([[0x101n, prop2]])),
 						prop2,
 					],
@@ -733,7 +733,7 @@ describe('ASTNodeAccess', () => {
 				// must bypass type-checker:
 				assert.deepStrictEqual(
 					AST.ASTNodeAccess.fromSource(`[prop= []]?.prop?.0;`).fold(),
-					OBJ.SolidNull.NULL,
+					OBJ.Null.NULL,
 				);
 			});
 		});
@@ -784,7 +784,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .fold(),
 					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).fold(),
 				].forEach((v) => {
-					assert.deepStrictEqual(v, OBJ.SolidNull.NULL);
+					assert.deepStrictEqual(v, OBJ.Null.NULL);
 				});
 			});
 		});
@@ -827,7 +827,7 @@ describe('ASTNodeAccess', () => {
 				[
 					AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).fold(),
 				].forEach((v) => {
-					assert.deepStrictEqual(v, OBJ.SolidNull.NULL);
+					assert.deepStrictEqual(v, OBJ.Null.NULL);
 				});
 			});
 		});
@@ -861,7 +861,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(49, 51).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.SolidString('three'),
+						new OBJ.String('three'),
 						null,
 					],
 				);
@@ -874,7 +874,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(51, 53).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.SolidString('three'),
+						new OBJ.String('three'),
 						null,
 					],
 				);
@@ -887,7 +887,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(53, 55).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.SolidString('three'),
+						new OBJ.String('three'),
 						null,
 					],
 				);
@@ -903,7 +903,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}?.[3];`)                               .fold(),
 					AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}?.[['a']];`).fold(),
 				].forEach((v) => {
-					assert.deepStrictEqual(v, OBJ.SolidNull.NULL);
+					assert.deepStrictEqual(v, OBJ.Null.NULL);
 				});
 			});
 		});
