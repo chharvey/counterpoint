@@ -3,10 +3,10 @@ import {
 	solidObjectsIdentical,
 	SolidObject,
 } from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 import {
-	SolidTypeTuple,
-	SolidTypeRecord,
+	TypeTuple,
+	TypeRecord,
 } from './index.js';
 
 
@@ -15,17 +15,17 @@ import {
  * A type intersection of two types `T` and `U` is the type
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
-export class SolidTypeIntersection extends SolidType {
+export class TypeIntersection extends Type {
 	declare readonly isBottomType: boolean;
 
 	/**
-	 * Construct a new SolidTypeIntersection object.
+	 * Construct a new TypeIntersection object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
 	constructor (
-		private readonly left:  SolidType,
-		private readonly right: SolidType,
+		private readonly left:  Type,
+		private readonly right: Type,
 	) {
 		super(false, xjs.Set.intersection(left.values, right.values, solidObjectsIdentical));
 		this.isBottomType = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
@@ -40,27 +40,27 @@ export class SolidTypeIntersection extends SolidType {
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) && this.right.includes(v)
 	}
-	protected override isSubtypeOf_do(t: SolidType): boolean {
+	protected override isSubtypeOf_do(t: Type): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
 		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */
 		if (t.equals(this.left) || t.equals(this.right)) { return true }
 		return super.isSubtypeOf_do(t)
 	}
-	override mutableOf(): SolidTypeIntersection {
-		return new SolidTypeIntersection(this.left.mutableOf(), this.right.mutableOf());
+	override mutableOf(): TypeIntersection {
+		return new TypeIntersection(this.left.mutableOf(), this.right.mutableOf());
 	}
-	override immutableOf(): SolidTypeIntersection {
-		return new SolidTypeIntersection(this.left.immutableOf(), this.right.immutableOf());
+	override immutableOf(): TypeIntersection {
+		return new TypeIntersection(this.left.immutableOf(), this.right.immutableOf());
 	}
-	isSupertypeOf(t: SolidType): boolean {
+	isSupertypeOf(t: Type): boolean {
 		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 		return t.isSubtypeOf(this.left) && t.isSubtypeOf(this.right);
 	}
-	combineTuplesOrRecords(): SolidType {
+	combineTuplesOrRecords(): Type {
 		return (
-			(this.left instanceof SolidTypeTuple  && this.right instanceof SolidTypeTuple)  ? this.left.intersectWithTuple(this.right)  :
-			(this.left instanceof SolidTypeRecord && this.right instanceof SolidTypeRecord) ? this.left.intersectWithRecord(this.right) :
+			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? this.left.intersectWithTuple(this.right)  :
+			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? this.left.intersectWithRecord(this.right) :
 			this
 		);
 	}

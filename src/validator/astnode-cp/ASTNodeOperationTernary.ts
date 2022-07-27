@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
-	SolidTypeUnit,
+	TYPE,
 	SolidObject,
 	SolidBoolean,
 	INST,
@@ -43,12 +42,12 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			this.operand2.build(builder, tofloat),
 		)
 	}
-	protected override type_do(): SolidType {
-		const t0: SolidType = this.operand0.type();
-		const t1: SolidType = this.operand1.type();
-		const t2: SolidType = this.operand2.type();
-		return (t0.isSubtypeOf(SolidType.BOOL))
-			? (t0 instanceof SolidTypeUnit)
+	protected override type_do(): TYPE.Type {
+		const t0: TYPE.Type = this.operand0.type();
+		const t1: TYPE.Type = this.operand1.type();
+		const t2: TYPE.Type = this.operand2.type();
+		return (t0.isSubtypeOf(TYPE.Type.BOOL))
+			? (t0 instanceof TYPE.TypeUnit)
 				? (t0.value === SolidBoolean.FALSE)
 					? t2 // If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
 					: t1 // If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.

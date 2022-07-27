@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
-	SolidTypeTuple,
+	TYPE,
 	SolidObject,
 	SolidTuple,
 	INST,
@@ -30,8 +29,8 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeTuple#build_do not yet supported.';
 	}
-	protected override type_do(): SolidType {
-		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type()), true);
+	protected override type_do(): TYPE.Type {
+		return TYPE.TypeTuple.fromTypes(this.children.map((c) => c.type()), true);
 	}
 	protected override fold_do(): SolidObject | null {
 		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.fold());

@@ -1,8 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
-	SolidTypeTuple,
-	SolidTypeList,
+	TYPE,
 	SolidTypeError,
 	CPConfig,
 	CONFIG_DEFAULT,
@@ -25,12 +23,12 @@ export class ASTNodeTypeList extends ASTNodeType {
 	) {
 		super(start_node, {count}, [type]);
 	}
-	protected override eval_do(): SolidType {
-		const itemstype: SolidType = this.type.eval();
+	protected override eval_do(): TYPE.Type {
+		const itemstype: TYPE.Type = this.type.eval();
 		return (this.count === null)
-			? new SolidTypeList(itemstype)
+			? new TYPE.TypeList(itemstype)
 			: (this.count >= 0)
-				? SolidTypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype))
+				? TYPE.TypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype))
 				: (() => { throw new SolidTypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index); })();
 	}
 }

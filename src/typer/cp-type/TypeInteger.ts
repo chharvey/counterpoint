@@ -2,7 +2,7 @@ import {
 	SolidObject,
 	Int16,
 } from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
@@ -10,8 +10,8 @@ import {SolidType} from './SolidType.js';
  * Class for constructing the `int` type.
  * @final
  */
-export class SolidTypeInteger extends SolidType {
-	static get INSTANCE(): SolidTypeInteger { return new SolidTypeInteger(); }
+export class TypeInteger extends Type {
+	static get INSTANCE(): TypeInteger { return new TypeInteger(); }
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {

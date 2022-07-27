@@ -2,22 +2,22 @@ import {
 	SolidObject,
 	SolidMap,
 } from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
-export class SolidTypeMap extends SolidType {
+export class TypeMap extends Type {
 	override readonly isBottomType: boolean = false;
 
 	/**
-	 * Construct a new SolidTypeMap object.
+	 * Construct a new TypeMap object.
 	 * @param antecedenttypes a union of antecedent types in this map type
 	 * @param consequenttypes a union of consequent types in this map type
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		readonly antecedenttypes: SolidType,
-		readonly consequenttypes: SolidType,
+		readonly antecedenttypes: Type,
+		readonly consequenttypes: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new SolidMap()]));
@@ -35,9 +35,9 @@ export class SolidTypeMap extends SolidType {
 		return v instanceof SolidMap && v.toType().isSubtypeOf(this);
 	}
 
-	protected override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidType.OBJ) || (
-			t instanceof SolidTypeMap
+	protected override isSubtypeOf_do(t: Type): boolean {
+		return t.equals(Type.OBJ) || (
+			t instanceof TypeMap
 			&& ((t.isMutable)
 				? this.isMutable && this.antecedenttypes.equals(t.antecedenttypes) && this.consequenttypes.equals(t.consequenttypes)
 				: this.antecedenttypes.isSubtypeOf(t.antecedenttypes) && this.consequenttypes.isSubtypeOf(t.consequenttypes)
@@ -45,11 +45,11 @@ export class SolidTypeMap extends SolidType {
 		);
 	}
 
-	override mutableOf(): SolidTypeMap {
-		return new SolidTypeMap(this.antecedenttypes, this.consequenttypes, true);
+	override mutableOf(): TypeMap {
+		return new TypeMap(this.antecedenttypes, this.consequenttypes, true);
 	}
 
-	override immutableOf(): SolidTypeMap {
-		return new SolidTypeMap(this.antecedenttypes, this.consequenttypes, false);
+	override immutableOf(): TypeMap {
+		return new TypeMap(this.antecedenttypes, this.consequenttypes, false);
 	}
 }

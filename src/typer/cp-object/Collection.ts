@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import type {
 	Keys,
-	SolidType,
+	Type,
 } from './package.js';
 import {SolidObject} from './SolidObject.js';
 
@@ -32,5 +32,5 @@ export abstract class Collection extends SolidObject {
 	}
 
 
-	abstract toType(): SolidType;
+	abstract toType(): Type;
 }

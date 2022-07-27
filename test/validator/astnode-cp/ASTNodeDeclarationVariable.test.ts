@@ -4,7 +4,7 @@ import {
 	AST,
 	SymbolStructure,
 	SymbolStructureVar,
-	SolidType,
+	TYPE,
 	INST,
 	Builder,
 	AssignmentError01,
@@ -33,7 +33,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.ok(goal.validator.hasSymbol(256n));
 			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
 			assert.ok(info instanceof SymbolStructureVar);
-			assert.strictEqual(info.type, SolidType.UNKNOWN);
+			assert.strictEqual(info.type, TYPE.Type.UNKNOWN);
 			assert.strictEqual(info.value, null);
 		});
 		it('throws if the validator already contains a record for the variable.', () => {

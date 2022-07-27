@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
-	SolidTypeSet,
+	TYPE,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -22,7 +21,7 @@ export class ASTNodeTypeSet extends ASTNodeType {
 	) {
 		super(start_node, {}, [type]);
 	}
-	protected override eval_do(): SolidType {
-		return new SolidTypeSet(this.type.eval());
+	protected override eval_do(): TYPE.Type {
+		return new TYPE.TypeSet(this.type.eval());
 	}
 }

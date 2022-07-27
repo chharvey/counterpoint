@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
+	TYPE,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeSupertype,
@@ -38,12 +38,12 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	/**
 	 * @final
 	 */
-	protected override type_do(): SolidType {
+	protected override type_do(): TYPE.Type {
 		return this.type_do_do(
 			this.operand0.type(),
 			this.operand1.type(),
 			this.validator.config.compilerOptions.intCoercion,
 		)
 	}
-	protected abstract type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType;
+	protected abstract type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type;
 }

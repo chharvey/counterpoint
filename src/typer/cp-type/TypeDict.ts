@@ -2,20 +2,20 @@ import {
 	SolidObject,
 	SolidDict,
 } from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
-export class SolidTypeDict extends SolidType {
+export class TypeDict extends Type {
 	override readonly isBottomType: boolean = false;
 
 	/**
-	 * Construct a new SolidTypeDict object.
+	 * Construct a new TypeDict object.
 	 * @param types a union of types in this dict type
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		readonly types: SolidType,
+		readonly types: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new SolidDict()]));
@@ -33,9 +33,9 @@ export class SolidTypeDict extends SolidType {
 		return v instanceof SolidDict && v.toType().isSubtypeOf(this);
 	}
 
-	protected override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidType.OBJ) || (
-			t instanceof SolidTypeDict
+	protected override isSubtypeOf_do(t: Type): boolean {
+		return t.equals(Type.OBJ) || (
+			t instanceof TypeDict
 			&& ((t.isMutable)
 				? this.isMutable && this.types.equals(t.types)
 				: this.types.isSubtypeOf(t.types)
@@ -43,11 +43,11 @@ export class SolidTypeDict extends SolidType {
 		);
 	}
 
-	override mutableOf(): SolidTypeDict {
-		return new SolidTypeDict(this.types, true);
+	override mutableOf(): TypeDict {
+		return new TypeDict(this.types, true);
 	}
 
-	override immutableOf(): SolidTypeDict {
-		return new SolidTypeDict(this.types, false);
+	override immutableOf(): TypeDict {
+		return new TypeDict(this.types, false);
 	}
 }

@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
+	TYPE,
 	SolidObject,
 	SolidBoolean,
 	SolidNumber,
@@ -49,11 +49,11 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			this.operand1.build(builder, tofloat),
 		)
 	}
-	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
+	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		if (bothNumeric(t0, t1) && (int_coercion || (
 			bothFloats(t0, t1) || neitherFloats(t0, t1)
 		))) {
-			return SolidType.BOOL;
+			return TYPE.Type.BOOL;
 		}
 		throw new TypeError01(this)
 	}

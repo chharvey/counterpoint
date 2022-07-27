@@ -1,4 +1,4 @@
-import type {SolidType} from './index.js';
+import type {Type} from './cp-type/index.js';
 
 
 
@@ -8,6 +8,6 @@ import type {SolidType} from './index.js';
  * @property optional - is the entry optional on the collection?
  */
 export type TypeEntry = {
-	readonly type:     SolidType,
+	readonly type:     Type,
 	readonly optional: boolean,
 };

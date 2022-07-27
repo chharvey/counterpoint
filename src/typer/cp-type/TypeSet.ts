@@ -2,20 +2,20 @@ import {
 	SolidObject,
 	SolidSet,
 } from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
-export class SolidTypeSet extends SolidType {
+export class TypeSet extends Type {
 	override readonly isBottomType: boolean = false;
 
 	/**
-	 * Construct a new SolidTypeSet object.
+	 * Construct a new TypeSet object.
 	 * @param types a union of types in this set type
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		readonly types: SolidType,
+		readonly types: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new SolidSet()]));
@@ -33,9 +33,9 @@ export class SolidTypeSet extends SolidType {
 		return v instanceof SolidSet && v.toType().isSubtypeOf(this);
 	}
 
-	protected override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidType.OBJ) || (
-			t instanceof SolidTypeSet
+	protected override isSubtypeOf_do(t: Type): boolean {
+		return t.equals(Type.OBJ) || (
+			t instanceof TypeSet
 			&& ((t.isMutable)
 				? this.isMutable && this.types.equals(t.types)
 				: this.types.isSubtypeOf(t.types)
@@ -43,11 +43,11 @@ export class SolidTypeSet extends SolidType {
 		);
 	}
 
-	override mutableOf(): SolidTypeSet {
-		return new SolidTypeSet(this.types, true);
+	override mutableOf(): TypeSet {
+		return new TypeSet(this.types, true);
 	}
 
-	override immutableOf(): SolidTypeSet {
-		return new SolidTypeSet(this.types, false);
+	override immutableOf(): TypeSet {
+		return new TypeSet(this.types, false);
 	}
 }

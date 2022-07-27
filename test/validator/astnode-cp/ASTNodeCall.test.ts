@@ -1,13 +1,9 @@
 import * as assert from 'assert';
 import {
 	AST,
-} from '../../../src/validator/index.js';
+	TYPE,
+} from '../../../src/index.js';
 import {
-	SolidType,
-	SolidTypeList,
-	SolidTypeDict,
-	SolidTypeSet,
-	SolidTypeMap,
 	Int16,
 	Float64,
 	SolidList,
@@ -38,10 +34,10 @@ describe('ASTNodeCall', () => {
 					]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new SolidTypeList(SolidType.INT, true),
-					new SolidTypeDict(SolidType.INT, true),
-					new SolidTypeSet(SolidType.INT, true),
-					new SolidTypeMap(SolidType.INT, SolidType.FLOAT, true),
+					new TYPE.TypeList(TYPE.Type.INT, true),
+					new TYPE.TypeDict(TYPE.Type.INT, true),
+					new TYPE.TypeSet(TYPE.Type.INT, true),
+					new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.FLOAT, true),
 				],
 			);
 		});
@@ -57,9 +53,9 @@ describe('ASTNodeCall', () => {
 					]));`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new SolidTypeList(SolidType.INT, true),
-					new SolidTypeSet(SolidType.INT, true),
-					new SolidTypeMap(SolidType.INT, SolidType.FLOAT, true),
+					new TYPE.TypeList(TYPE.Type.INT, true),
+					new TYPE.TypeSet(TYPE.Type.INT, true),
+					new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.FLOAT, true),
 				],
 			);
 		});
@@ -75,20 +71,20 @@ describe('ASTNodeCall', () => {
 					`Map.<int, float>([]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new SolidTypeList(SolidType.INT, true),
-					new SolidTypeDict(SolidType.INT, true),
-					new SolidTypeSet(SolidType.INT, true),
-					new SolidTypeMap(SolidType.INT, SolidType.FLOAT, true),
-					new SolidTypeList(SolidType.INT, true),
-					new SolidTypeSet(SolidType.INT, true),
-					new SolidTypeMap(SolidType.INT, SolidType.FLOAT, true),
+					new TYPE.TypeList(TYPE.Type.INT, true),
+					new TYPE.TypeDict(TYPE.Type.INT, true),
+					new TYPE.TypeSet(TYPE.Type.INT, true),
+					new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.FLOAT, true),
+					new TYPE.TypeList(TYPE.Type.INT, true),
+					new TYPE.TypeSet(TYPE.Type.INT, true),
+					new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.FLOAT, true),
 				],
 			);
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeCall.fromSource(`Map.<int>();`).type(),
-				new SolidTypeMap(SolidType.INT, SolidType.INT, true),
+				new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.INT, true),
 			);
 		});
 		it('throws if base is not an ASTNodeVariable.', () => {

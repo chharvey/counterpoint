@@ -1,4 +1,4 @@
-import {SolidTypeUnit} from './package.js';
+import {TypeUnit} from './package.js';
 import type {SolidObject} from './SolidObject.js';
 import {Primitive} from './Primitive.js';
 
@@ -19,7 +19,7 @@ export class SolidNull extends Primitive {
 	/** The Solid Language Value `null`. */
 	static readonly NULL: SolidNull = new SolidNull();
 	/** A Unit Type containing only the Solid Language Value `null`. */
-	static readonly NULLTYPE: SolidTypeUnit = new SolidTypeUnit(SolidNull.NULL);
+	static readonly NULLTYPE: TypeUnit = new TypeUnit(SolidNull.NULL);
 
 
 	private constructor () {

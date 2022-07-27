@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
-	SolidTypeTuple,
+	TYPE,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -23,8 +22,8 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 	) {
 		super(start_node, {}, children);
 	}
-	protected override eval_do(): SolidType {
-		return new SolidTypeTuple(this.children.map((c) => ({
+	protected override eval_do(): TYPE.Type {
+		return new TYPE.TypeTuple(this.children.map((c) => ({
 			type:     c.val.eval(),
 			optional: c.optional,
 		})));

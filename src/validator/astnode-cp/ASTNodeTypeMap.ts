@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import {
-	SolidType,
-	SolidTypeMap,
+	TYPE,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -23,7 +22,7 @@ export class ASTNodeTypeMap extends ASTNodeType {
 	) {
 		super(start_node, {}, [antecedenttype, consequenttype]);
 	}
-	protected override eval_do(): SolidType {
-		return new SolidTypeMap(this.antecedenttype.eval(), this.consequenttype.eval());
+	protected override eval_do(): TYPE.Type {
+		return new TYPE.TypeMap(this.antecedenttype.eval(), this.consequenttype.eval());
 	}
 }

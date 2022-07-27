@@ -3,26 +3,26 @@ import {
 	IntRange,
 	ValidAccessOperator,
 	AST,
+	TypeEntry,
 	SolidObject,
 	SolidRecord,
 } from './package.js';
-import type {TypeEntry} from './utils-public.js';
 import {updateAccessedStaticType} from './utils-private.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
-export class SolidTypeRecord extends SolidType {
+export class TypeRecord extends Type {
 	override readonly isBottomType: boolean = false;
 
 	/**
-	 * Construct a new SolidTypeRecord from type properties, assuming each properties is required.
+	 * Construct a new TypeRecord from type properties, assuming each properties is required.
 	 * @param propertytypes the types of the record
 	 * @param is_mutable is the record type mutable?
 	 * @return a new record type with the provided properties
 	 */
-	static fromTypes(propertytypes: ReadonlyMap<bigint, SolidType> = new Map(), is_mutable: boolean = false): SolidTypeRecord {
-		return new SolidTypeRecord(new Map<bigint, TypeEntry>([...propertytypes].map(([id, t]) => [id, {
+	static fromTypes(propertytypes: ReadonlyMap<bigint, Type> = new Map(), is_mutable: boolean = false): TypeRecord {
+		return new TypeRecord(new Map<bigint, TypeEntry>([...propertytypes].map(([id, t]) => [id, {
 			type:     t,
 			optional: false,
 		}])), is_mutable);
@@ -30,7 +30,7 @@ export class SolidTypeRecord extends SolidType {
 
 
 	/**
-	 * Construct a new SolidTypeRecord object.
+	 * Construct a new TypeRecord object.
 	 * @param propertytypes a map of this type’s property ids along with their associated types
 	 * @param is_mutable is this type mutable?
 	 */
@@ -61,9 +61,9 @@ export class SolidTypeRecord extends SolidType {
 		return v instanceof SolidRecord && v.toType().isSubtypeOf(this);
 	}
 
-	protected override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidType.OBJ) || (
-			t instanceof SolidTypeRecord
+	protected override isSubtypeOf_do(t: Type): boolean {
+		return t.equals(Type.OBJ) || (
+			t instanceof TypeRecord
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
 			&& [...t.propertytypes].every(([id, thattype]) => {
@@ -79,32 +79,32 @@ export class SolidTypeRecord extends SolidType {
 		);
 	}
 
-	override mutableOf(): SolidTypeRecord {
-		return new SolidTypeRecord(this.propertytypes, true);
+	override mutableOf(): TypeRecord {
+		return new TypeRecord(this.propertytypes, true);
 	}
 
-	override immutableOf(): SolidTypeRecord {
-		return new SolidTypeRecord(this.propertytypes, false);
+	override immutableOf(): TypeRecord {
+		return new TypeRecord(this.propertytypes, false);
 	}
 
-	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): SolidType {
+	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): Type {
 		return updateAccessedStaticType(((this.propertytypes.has(key))
 			? this.propertytypes.get(key)!
 			: (() => { throw new TypeError04('property', this, accessor); })()
 		), access_kind);
 	}
 
-	valueTypes(): SolidType {
+	valueTypes(): Type {
 		return (this.propertytypes.size)
-			? SolidType.unionAll([...this.propertytypes.values()].map((t) => t.type))
-			: SolidType.NEVER;
+			? Type.unionAll([...this.propertytypes.values()].map((t) => t.type))
+			: Type.NEVER;
 	}
 
 	/**
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `S` with the set of properties on `T`.
 	 * For any overlapping properties, their type intersection is taken.
 	 */
-	intersectWithRecord(t: SolidTypeRecord): SolidTypeRecord {
+	intersectWithRecord(t: TypeRecord): TypeRecord {
 		const props: Map<bigint, TypeEntry> = new Map([...this.propertytypes]);
 		[...t.propertytypes].forEach(([id, typ]) => {
 			props.set(id, this.propertytypes.has(id) ? {
@@ -112,14 +112,14 @@ export class SolidTypeRecord extends SolidType {
 				optional: this.propertytypes.get(id)!.optional && typ.optional,
 			} : typ);
 		});
-		return new SolidTypeRecord(props);
+		return new TypeRecord(props);
 	}
 
 	/**
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `S` with the set of properties on `T`.
 	 * For any overlapping properties, their type union is taken.
 	 */
-	unionWithRecord(t: SolidTypeRecord): SolidTypeRecord {
+	unionWithRecord(t: TypeRecord): TypeRecord {
 		const props: Map<bigint, TypeEntry> = new Map();
 		[...t.propertytypes].forEach(([id, typ]) => {
 			if (this.propertytypes.has(id)) {
@@ -129,6 +129,6 @@ export class SolidTypeRecord extends SolidType {
 				});
 			}
 		})
-		return new SolidTypeRecord(props);
+		return new TypeRecord(props);
 	}
 }

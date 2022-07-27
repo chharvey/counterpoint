@@ -12,4 +12,4 @@ export type {
 	AST,
 	SymbolKind,
 } from '../validator/index.js';
-export type {SolidType} from '../typer/index.js';
+export type {TYPE} from '../typer/index.js';

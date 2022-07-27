@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {
 	Operator,
 	AST,
-	SolidType,
+	TYPE,
 	INST,
 	Builder,
 	ReferenceError01,
@@ -290,7 +290,7 @@ describe('ASTNodeCP', () => {
 								],
 							},
 							{cons: TypeError01, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
-							{cons: TypeError03, message: `Expression of type ${ typeConstFloat(4.2) } is not assignable to type ${ SolidType.INT }.`},
+							{cons: TypeError03, message: `Expression of type ${ typeConstFloat(4.2) } is not assignable to type ${ TYPE.Type.INT }.`},
 						],
 					});
 					return true;

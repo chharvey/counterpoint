@@ -1,7 +1,7 @@
 import {
+	TYPE,
 	CPConfig,
 	CONFIG_DEFAULT,
-	SolidType,
 } from './package.js';
 import {ASTNodeDeclarationType} from './index.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
@@ -35,7 +35,7 @@ export abstract class ASTNodeType extends ASTNodeCP {
 		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
 		return statement.assigned;
 	}
-	private assessed?: SolidType;
+	private assessed?: TYPE.Type;
 	/**
 	 * @final
 	 */
@@ -47,8 +47,8 @@ export abstract class ASTNodeType extends ASTNodeCP {
 	 * @returns the computed type-value of this node
 	 * @final
 	 */
-	eval(): SolidType {
+	eval(): TYPE.Type {
 		return this.assessed ||= this.eval_do();
 	}
-	protected abstract eval_do(): SolidType;
+	protected abstract eval_do(): TYPE.Type;
 }

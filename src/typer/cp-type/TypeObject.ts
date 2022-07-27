@@ -1,5 +1,5 @@
 import type {SolidObject} from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
@@ -7,8 +7,8 @@ import {SolidType} from './SolidType.js';
  * Class for constructing the `obj` type.
  * @final
  */
-export class SolidTypeObject extends SolidType {
-	static readonly INSTANCE: SolidTypeObject = new SolidTypeObject();
+export class TypeObject extends Type {
+	static readonly INSTANCE: TypeObject = new TypeObject();
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {

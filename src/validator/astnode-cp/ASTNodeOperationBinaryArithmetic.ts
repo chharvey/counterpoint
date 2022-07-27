@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs'
 import {
-	SolidType,
+	TYPE,
 	SolidObject,
 	SolidNumber,
 	Int16,
@@ -49,13 +49,13 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			this.operand1.build(builder, tofloat),
 		)
 	}
-	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
+	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		if (bothNumeric(t0, t1)) {
 			if (int_coercion) {
-				return (eitherFloats(t0, t1)) ? SolidType.FLOAT : SolidType.INT;
+				return (eitherFloats(t0, t1)) ? TYPE.Type.FLOAT : TYPE.Type.INT;
 			}
-			if (bothFloats   (t0, t1)) { return SolidType.FLOAT; }
-			if (neitherFloats(t0, t1)) { return SolidType.INT; }
+			if (bothFloats   (t0, t1)) { return TYPE.Type.FLOAT; }
+			if (neitherFloats(t0, t1)) { return TYPE.Type.INT; }
 		}
 		throw new TypeError01(this)
 	}

@@ -2,7 +2,7 @@ import {
 	SolidObject,
 	SolidString,
 } from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
@@ -10,8 +10,8 @@ import {SolidType} from './SolidType.js';
  * Class for constructing the `str` type.
  * @final
  */
-export class SolidTypeString extends SolidType {
-	static get INSTANCE(): SolidTypeString { return new SolidTypeString(); }
+export class TypeString extends Type {
+	static get INSTANCE(): TypeString { return new TypeString(); }
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
