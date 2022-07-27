@@ -4,7 +4,7 @@ import {
 	TypeEntry,
 	TYPE,
 	OBJ,
-	SolidTypeError,
+	TypeError,
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
@@ -151,7 +151,7 @@ describe('ASTNodeType', () => {
 				);
 			});
 			it('throws if count is negative.', () => {
-				assert.throws(() => AST.ASTNodeTypeList.fromSource(`(int | bool)[-3]`).eval(), SolidTypeError);
+				assert.throws(() => AST.ASTNodeTypeList.fromSource(`(int | bool)[-3]`).eval(), TypeError);
 			});
 		});
 	});

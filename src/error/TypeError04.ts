@@ -2,7 +2,7 @@ import type {
 	AST,
 	TYPE,
 } from './package.js';
-import {SolidTypeError} from './SolidTypeError.js';
+import {TypeError} from './TypeError.js';
 
 
 
@@ -14,7 +14,7 @@ import {SolidTypeError} from './SolidTypeError.js';
  * [a= 42, b= 420].c;               % TypeError04: Property `c` does not exist on type `[a= 42, b= 420]`.
  * ((x: int): int => x + 1)(y= 42); % TypeError04: Parameter `y` does not exist on type `(x: int) -> {int}`.
  */
-export class TypeError04 extends SolidTypeError {
+export class TypeError04 extends TypeError {
 	/** The number series of this class of errors. */
 	static override readonly CODE = 4;
 	/**

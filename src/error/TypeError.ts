@@ -5,7 +5,7 @@ import {ErrorCode} from './ErrorCode.js';
 /**
  * A TypeError is thrown when the validator recognizes a type mismatch.
  */
-export class SolidTypeError extends ErrorCode {
+export class TypeError extends ErrorCode {
 	/** The name of this class of errors. */
 	static override readonly NAME: string = 'TypeError';
 	/** The number series of this class of errors. */
@@ -20,8 +20,8 @@ export class SolidTypeError extends ErrorCode {
 	constructor (message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name: SolidTypeError.NAME,
-			code: SolidTypeError.CODE + code,
+			name: TypeError.NAME,
+			code: TypeError.CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
 		})

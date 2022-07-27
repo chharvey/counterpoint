@@ -2,7 +2,7 @@ import type {
 	AST,
 	TYPE,
 } from './package.js';
-import {SolidTypeError} from './SolidTypeError.js';
+import {TypeError} from './TypeError.js';
 
 
 
@@ -13,7 +13,7 @@ import {SolidTypeError} from './SolidTypeError.js';
  * let x: int = true;             % TypeError03: Expression of type `true` is not assignable to type `int`.
  * ((x: int): int => x + 1)(4.2); % TypeError03: Expression of type `4.2` is not assignable to type `int`.
  */
-export class TypeError03 extends SolidTypeError {
+export class TypeError03 extends TypeError {
 	/** The number series of this class of errors. */
 	static override readonly CODE = 3;
 	/**

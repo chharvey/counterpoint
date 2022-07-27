@@ -2,7 +2,7 @@ import type {
 	SymbolKind,
 	AST,
 } from './package.js';
-import {SolidReferenceError} from './SolidReferenceError.js';
+import {ReferenceError} from './ReferenceError.js';
 
 
 
@@ -15,7 +15,7 @@ import {SolidReferenceError} from './SolidReferenceError.js';
  * type FOO = int;
  * 42 || FOO;      % ReferenceError03: `FOO` refers to a type, but is used as a value.
  */
-export class ReferenceError03 extends SolidReferenceError {
+export class ReferenceError03 extends ReferenceError {
 	/** The number series of this class of errors. */
 	static override readonly CODE = 3;
 	/**

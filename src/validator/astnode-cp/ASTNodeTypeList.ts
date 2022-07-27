@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {
 	TYPE,
-	SolidTypeError,
+	TypeError,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -29,6 +29,6 @@ export class ASTNodeTypeList extends ASTNodeType {
 			? new TYPE.TypeList(itemstype)
 			: (this.count >= 0)
 				? TYPE.TypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype))
-				: (() => { throw new SolidTypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index); })();
+				: (() => { throw new TypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index); })();
 	}
 }

@@ -5,7 +5,7 @@ import {ErrorCode} from './ErrorCode.js';
 /**
  * A ReferenceError is thrown when the validator fails to dereference an identifier.
  */
-export class SolidReferenceError extends ErrorCode {
+export class ReferenceError extends ErrorCode {
 	/** The name of this class of errors. */
 	static override readonly NAME: string = 'ReferenceError';
 	/** The number series of this class of errors. */
@@ -20,8 +20,8 @@ export class SolidReferenceError extends ErrorCode {
 	constructor (message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name: SolidReferenceError.NAME,
-			code: SolidReferenceError.CODE + code,
+			name: ReferenceError.NAME,
+			code: ReferenceError.CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});

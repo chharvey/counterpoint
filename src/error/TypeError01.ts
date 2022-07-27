@@ -1,5 +1,5 @@
 import type {AST} from './package.js';
-import {SolidTypeError} from './SolidTypeError.js';
+import {TypeError} from './TypeError.js';
 
 
 
@@ -8,7 +8,7 @@ import {SolidTypeError} from './SolidTypeError.js';
  * @example
  * true + false; % TypeError01: Invalid operation.
  */
-export class TypeError01 extends SolidTypeError {
+export class TypeError01 extends TypeError {
 	/** The number series of this class of errors. */
 	static override readonly CODE = 1;
 	/**

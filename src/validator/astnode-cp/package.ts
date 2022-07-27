@@ -15,7 +15,7 @@ export {
 	ReferenceError03,
 	AssignmentError01,
 	AssignmentError10,
-	SolidTypeError,
+	TypeError,
 	TypeError01,
 	TypeError02,
 	TypeError03,
