@@ -21,7 +21,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeClaim);
 		return expression;
 	}
-	private typed_?: TYPE.SolidType;
+	private typed_?: TYPE.Type;
 	constructor(
 		start_node: SyntaxNodeType<'expression_claim'>,
 		readonly claimed_type: ASTNodeType,
@@ -30,28 +30,28 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		super(start_node, {}, [claimed_type, operand]);
 	}
 	override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.SolidType.FLOAT);
+		return this.type().isSubtypeOf(TYPE.Type.FLOAT);
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
 		const tofloat: boolean = to_float || this.shouldFloat();
 		return this.operand.build(builder, tofloat);
 	}
-	override type(): TYPE.SolidType { // WARNING: overriding a final method!
+	override type(): TYPE.Type { // WARNING: overriding a final method!
 		// TODO: use JS decorators for memoizing this method
 		if (!this.typed_) {
 			this.typed_ = this.type_do();
 		};
 		return this.typed_;
 	}
-	protected override type_do(): TYPE.SolidType {
-		const claimed_type:  TYPE.SolidType = this.claimed_type.eval();
-		const computed_type: TYPE.SolidType = this.operand.type();
-		const is_intersection_empty: boolean = claimed_type.intersect(computed_type).equals(TYPE.SolidType.NEVER);
+	protected override type_do(): TYPE.Type {
+		const claimed_type:  TYPE.Type = this.claimed_type.eval();
+		const computed_type: TYPE.Type = this.operand.type();
+		const is_intersection_empty: boolean = claimed_type.intersect(computed_type).equals(TYPE.Type.NEVER);
 		const treatIntAsSubtypeOfFloat: boolean = this.validator.config.compilerOptions.intCoercion && (
-			   computed_type.isSubtypeOf(TYPE.SolidType.INT) && TYPE.SolidType.FLOAT.isSubtypeOf(claimed_type)
-			|| claimed_type .isSubtypeOf(TYPE.SolidType.INT) && TYPE.SolidType.FLOAT.isSubtypeOf(computed_type)
-			|| TYPE.SolidType.INT.isSubtypeOf(computed_type) && claimed_type .isSubtypeOf(TYPE.SolidType.FLOAT)
-			|| TYPE.SolidType.INT.isSubtypeOf(claimed_type)  && computed_type.isSubtypeOf(TYPE.SolidType.FLOAT)
+			   computed_type.isSubtypeOf(TYPE.Type.INT) && TYPE.Type.FLOAT.isSubtypeOf(claimed_type)
+			|| claimed_type .isSubtypeOf(TYPE.Type.INT) && TYPE.Type.FLOAT.isSubtypeOf(computed_type)
+			|| TYPE.Type.INT.isSubtypeOf(computed_type) && claimed_type .isSubtypeOf(TYPE.Type.FLOAT)
+			|| TYPE.Type.INT.isSubtypeOf(claimed_type)  && computed_type.isSubtypeOf(TYPE.Type.FLOAT)
 		);
 		if (is_intersection_empty && !treatIntAsSubtypeOfFloat) {
 			/*

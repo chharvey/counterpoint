@@ -25,23 +25,23 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		return typ;
 	}
 
-	private static keywordType(source: string): TYPE.SolidType {
+	private static keywordType(source: string): TYPE.Type {
 		return (
-			(source === Keyword.VOID)  ? TYPE.SolidType.VOID :
-			(source === Keyword.NULL)  ? TYPE.SolidType.NULL :
-			(source === Keyword.BOOL)  ? TYPE.SolidType.BOOL :
+			(source === Keyword.VOID)  ? TYPE.Type.VOID :
+			(source === Keyword.NULL)  ? TYPE.Type.NULL :
+			(source === Keyword.BOOL)  ? TYPE.Type.BOOL :
 			(source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
 			(source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
-			(source === Keyword.INT)   ? TYPE.SolidType.INT :
-			(source === Keyword.FLOAT) ? TYPE.SolidType.FLOAT :
-			(source === Keyword.STR)   ? TYPE.SolidType.STR :
-			(source === Keyword.OBJ)   ? TYPE.SolidType.OBJ :
+			(source === Keyword.INT)   ? TYPE.Type.INT :
+			(source === Keyword.FLOAT) ? TYPE.Type.FLOAT :
+			(source === Keyword.STR)   ? TYPE.Type.STR :
+			(source === Keyword.OBJ)   ? TYPE.Type.OBJ :
 			(() => { throw new Error(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`); })()
 		);
 	}
 
 
-	private _type: TYPE.SolidType | null = null;
+	private _type: TYPE.Type | null = null;
 
 	constructor (start_node:
 		| SyntaxNodeType<'keyword_type'>
@@ -50,7 +50,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	) {
 		super(start_node);
 	}
-	protected override eval_do(): TYPE.SolidType {
+	protected override eval_do(): TYPE.Type {
 		return this._type ??= (
 			(isSyntaxNodeType(this.start_node, 'keyword_type'))     ? ASTNodeTypeConstant.keywordType(this.start_node.text) :
 			(isSyntaxNodeType(this.start_node, 'integer'))          ? new TYPE.SolidTypeUnit(valueOfTokenNumber(this.start_node.text, this.validator.config)) :

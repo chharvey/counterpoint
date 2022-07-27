@@ -21,20 +21,20 @@ export function invalidFunctionName(source: string): never {
 
 
 
-export function bothNumeric(t0: TYPE.SolidType, t1: TYPE.SolidType): boolean {
-	const int_float: TYPE.SolidType = TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT);
+export function bothNumeric(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	const int_float: TYPE.Type = TYPE.Type.INT.union(TYPE.Type.FLOAT);
 	return t0.isSubtypeOf(int_float) && t1.isSubtypeOf(int_float);
 }
-export function eitherFloats(t0: TYPE.SolidType, t1: TYPE.SolidType): boolean {
-	return t0.isSubtypeOf(TYPE.SolidType.FLOAT) || t1.isSubtypeOf(TYPE.SolidType.FLOAT);
+export function eitherFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.Type.FLOAT) || t1.isSubtypeOf(TYPE.Type.FLOAT);
 }
-export function bothFloats(t0: TYPE.SolidType, t1: TYPE.SolidType): boolean {
-	return t0.isSubtypeOf(TYPE.SolidType.FLOAT) && t1.isSubtypeOf(TYPE.SolidType.FLOAT);
+export function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.Type.FLOAT) && t1.isSubtypeOf(TYPE.Type.FLOAT);
 }
-export function neitherFloats(t0: TYPE.SolidType, t1: TYPE.SolidType): boolean {
+export function neitherFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return !eitherFloats(t0, t1)
 }
-export function oneFloats(t0: TYPE.SolidType, t1: TYPE.SolidType): boolean {
+export function oneFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return !neitherFloats(t0, t1) && !bothFloats(t0, t1)
 }
 

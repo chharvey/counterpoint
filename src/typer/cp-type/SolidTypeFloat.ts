@@ -2,7 +2,7 @@ import {
 	SolidObject,
 	Float64,
 } from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
@@ -10,7 +10,7 @@ import {SolidType} from './SolidType.js';
  * Class for constructing the `float` type.
  * @final
  */
-export class SolidTypeFloat extends SolidType {
+export class SolidTypeFloat extends Type {
 	static get INSTANCE(): SolidTypeFloat { return new SolidTypeFloat(); }
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;

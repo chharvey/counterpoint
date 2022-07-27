@@ -2,11 +2,11 @@ import {
 	SolidObject,
 	SolidList,
 } from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
-export class SolidTypeList extends SolidType {
+export class SolidTypeList extends Type {
 	override readonly isBottomType: boolean = false;
 
 	/**
@@ -15,7 +15,7 @@ export class SolidTypeList extends SolidType {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		readonly types: SolidType,
+		readonly types: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new SolidList()]));
@@ -33,8 +33,8 @@ export class SolidTypeList extends SolidType {
 		return v instanceof SolidList && v.toType().isSubtypeOf(this);
 	}
 
-	protected override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidType.OBJ) || (
+	protected override isSubtypeOf_do(t: Type): boolean {
+		return t.equals(Type.OBJ) || (
 			t instanceof SolidTypeList
 			&& ((t.isMutable)
 				? this.isMutable && this.types.equals(t.types)

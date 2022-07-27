@@ -49,13 +49,13 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			this.operand1.build(builder, tofloat),
 		)
 	}
-	protected override type_do_do(t0: TYPE.SolidType, t1: TYPE.SolidType, int_coercion: boolean): TYPE.SolidType {
+	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		if (bothNumeric(t0, t1)) {
 			if (int_coercion) {
-				return (eitherFloats(t0, t1)) ? TYPE.SolidType.FLOAT : TYPE.SolidType.INT;
+				return (eitherFloats(t0, t1)) ? TYPE.Type.FLOAT : TYPE.Type.INT;
 			}
-			if (bothFloats   (t0, t1)) { return TYPE.SolidType.FLOAT; }
-			if (neitherFloats(t0, t1)) { return TYPE.SolidType.INT; }
+			if (bothFloats   (t0, t1)) { return TYPE.Type.FLOAT; }
+			if (neitherFloats(t0, t1)) { return TYPE.Type.INT; }
 		}
 		throw new TypeError01(this)
 	}

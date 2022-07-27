@@ -1,5 +1,5 @@
 import {
-	SolidType,
+	Type,
 	SolidTypeUnit,
 	SolidTypeDict,
 } from './package.js';
@@ -15,8 +15,8 @@ export class SolidDict<T extends SolidObject = SolidObject> extends CollectionKe
 	override toType(): SolidTypeDict {
 		return new SolidTypeDict(
 			(this.properties.size)
-				? SolidType.unionAll([...this.properties.values()].map<SolidType>((value) => new SolidTypeUnit(value)))
-				: SolidType.NEVER,
+				? Type.unionAll([...this.properties.values()].map<Type>((value) => new SolidTypeUnit(value)))
+				: Type.NEVER,
 		);
 	}
 }

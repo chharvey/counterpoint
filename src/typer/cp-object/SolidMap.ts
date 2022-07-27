@@ -3,7 +3,7 @@ import {
 	VoidError01,
 	AST,
 	solidObjectsIdentical,
-	SolidType,
+	Type,
 	SolidTypeUnit,
 	SolidTypeMap,
 } from './package.js';
@@ -43,9 +43,9 @@ export class SolidMap<K extends SolidObject = SolidObject, V extends SolidObject
 
 	override toType(): SolidTypeMap {
 		return (this.cases.size) ? new SolidTypeMap(
-			SolidType.unionAll([...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeUnit(ant))),
-			SolidType.unionAll([...this.cases.values()].map<SolidType>((con) => new SolidTypeUnit(con))),
-		) : new SolidTypeMap(SolidType.NEVER, SolidType.NEVER);
+			Type.unionAll([...this.cases.keys()]  .map<Type>((ant) => new SolidTypeUnit(ant))),
+			Type.unionAll([...this.cases.values()].map<Type>((con) => new SolidTypeUnit(con))),
+		) : new SolidTypeMap(Type.NEVER, Type.NEVER);
 	}
 
 	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | SolidNull {

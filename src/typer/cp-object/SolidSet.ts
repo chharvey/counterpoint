@@ -3,7 +3,7 @@ import {
 	VoidError01,
 	AST,
 	solidObjectsIdentical,
-	SolidType,
+	Type,
 	SolidTypeUnit,
 	SolidTypeSet,
 } from './package.js';
@@ -44,8 +44,8 @@ export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
 	override toType(): SolidTypeSet {
 		return new SolidTypeSet(
 			(this.elements.size)
-				? SolidType.unionAll([...this.elements].map<SolidType>((el) => new SolidTypeUnit(el)))
-				: SolidType.NEVER,
+				? Type.unionAll([...this.elements].map<Type>((el) => new SolidTypeUnit(el)))
+				: Type.NEVER,
 		);
 	}
 

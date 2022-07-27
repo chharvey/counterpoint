@@ -36,18 +36,18 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		// (`this.base.source` must be a `ValidFunctionName`)
 		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
-	protected override eval_do(): TYPE.SolidType {
+	protected override eval_do(): TYPE.Type {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
 			throw new TypeError05(this.base.eval(), this.base);
 		}
-		return (new Map<ValidFunctionName, () => TYPE.SolidType>([
+		return (new Map<ValidFunctionName, () => TYPE.Type>([
 			[ValidFunctionName.LIST, () => (this.countArgs(1n), new TYPE.SolidTypeList(this.args[0].eval()))],
 			[ValidFunctionName.DICT, () => (this.countArgs(1n), new TYPE.SolidTypeDict(this.args[0].eval()))],
 			[ValidFunctionName.SET,  () => (this.countArgs(1n), new TYPE.SolidTypeSet (this.args[0].eval()))],
 			[ValidFunctionName.MAP,  () => {
 				this.countArgs([1n, 3n]);
-				const anttype: TYPE.SolidType = this.args[0].eval();
-				const contype: TYPE.SolidType = this.args[1]?.eval() || anttype;
+				const anttype: TYPE.Type = this.args[0].eval();
+				const contype: TYPE.Type = this.args[1]?.eval() || anttype;
 				return new TYPE.SolidTypeMap(anttype, contype);
 			}],
 		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();

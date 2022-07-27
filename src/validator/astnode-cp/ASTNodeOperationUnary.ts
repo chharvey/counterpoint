@@ -43,16 +43,16 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			this.operand.build(builder, tofloat),
 		)
 	}
-	protected override type_do(): TYPE.SolidType {
-		const t0: TYPE.SolidType = this.operand.type();
+	protected override type_do(): TYPE.Type {
+		const t0: TYPE.Type = this.operand.type();
 		return (
 			(this.operator === Operator.NOT) ? (
-				(t0.isSubtypeOf(TYPE.SolidType.VOID.union(TYPE.SolidType.NULL).union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
-				(TYPE.SolidType.VOID.isSubtypeOf(t0) || TYPE.SolidType.NULL.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? TYPE.SolidType.BOOL :
+				(t0.isSubtypeOf(TYPE.Type.VOID.union(TYPE.Type.NULL).union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
+				(TYPE.Type.VOID.isSubtypeOf(t0) || TYPE.Type.NULL.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? TYPE.Type.BOOL :
 				SolidBoolean.FALSETYPE
 			) :
-			(this.operator === Operator.EMP) ? TYPE.SolidType.BOOL :
-			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(TYPE.SolidType.INT.union(TYPE.SolidType.FLOAT)))
+			(this.operator === Operator.EMP) ? TYPE.Type.BOOL :
+			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(TYPE.Type.INT.union(TYPE.Type.FLOAT)))
 				? t0
 				: (() => { throw new TypeError01(this); })()
 		);

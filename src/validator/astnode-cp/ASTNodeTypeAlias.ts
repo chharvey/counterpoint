@@ -41,13 +41,13 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		};
 	}
-	protected override eval_do(): TYPE.SolidType {
+	protected override eval_do(): TYPE.Type {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {
 				return symbol.typevalue;
 			};
 		};
-		return TYPE.SolidType.NEVER;
+		return TYPE.Type.NEVER;
 	}
 }

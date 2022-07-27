@@ -53,22 +53,22 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeAccess#build_do not yet supported.';
 	}
-	protected override type_do(): TYPE.SolidType {
-		let base_type: TYPE.SolidType = this.base.type();
+	protected override type_do(): TYPE.Type {
+		let base_type: TYPE.Type = this.base.type();
 		if (base_type instanceof TYPE.SolidTypeIntersection || base_type instanceof TYPE.SolidTypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		return (
-			(this.optional && base_type.isSubtypeOf(TYPE.SolidType.NULL)) ? base_type :
-			(this.optional && TYPE.SolidType.NULL.isSubtypeOf(base_type)) ? this.type_do_do(base_type.subtract(TYPE.SolidType.NULL)).union(TYPE.SolidType.NULL) :
+			(this.optional && base_type.isSubtypeOf(TYPE.Type.NULL)) ? base_type :
+			(this.optional && TYPE.Type.NULL.isSubtypeOf(base_type)) ? this.type_do_do(base_type.subtract(TYPE.Type.NULL)).union(TYPE.Type.NULL) :
 			this.type_do_do(base_type)
 		);
 	}
-	private type_do_do(base_type: TYPE.SolidType): TYPE.SolidType {
-		function updateAccessedDynamicType(type: TYPE.SolidType, access_kind: ValidAccessOperator): TYPE.SolidType {
+	private type_do_do(base_type: TYPE.Type): TYPE.Type {
+		function updateAccessedDynamicType(type: TYPE.Type, access_kind: ValidAccessOperator): TYPE.Type {
 			return (
-				(access_kind === Operator.CLAIMDOT) ? type.subtract(TYPE.SolidType.VOID) :
-				(access_kind === Operator.OPTDOT)   ? type.union   (TYPE.SolidType.NULL) :
+				(access_kind === Operator.CLAIMDOT) ? type.subtract(TYPE.Type.VOID) :
+				(access_kind === Operator.OPTDOT)   ? type.union   (TYPE.Type.NULL) :
 				type
 			);
 		}
@@ -104,8 +104,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				throw new TypeError04('property', base_type, this.accessor);
 			}
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
-			const accessor_type: TYPE.SolidType = this.accessor.type();
-			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: TYPE.SolidType): never {
+			const accessor_type: TYPE.Type = this.accessor.type();
+			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: TYPE.Type): never {
 				throw new TypeError02(accessor_type, supertype, accessor.line_index, accessor.col_index);
 			}
 			if (base_type instanceof TYPE.SolidTypeUnit && base_type.value instanceof SolidTuple || base_type instanceof TYPE.SolidTypeTuple) {
@@ -114,16 +114,16 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					: base_type as TYPE.SolidTypeTuple;
 				return (accessor_type instanceof TYPE.SolidTypeUnit && accessor_type.value instanceof Int16)
 					? base_type_tuple.get(accessor_type.value, this.kind, this.accessor)
-					: (accessor_type.isSubtypeOf(TYPE.SolidType.INT))
+					: (accessor_type.isSubtypeOf(TYPE.Type.INT))
 						? updateAccessedDynamicType(base_type_tuple.itemTypes(), this.kind)
-						: throwWrongSubtypeError(this.accessor, TYPE.SolidType.INT);
+						: throwWrongSubtypeError(this.accessor, TYPE.Type.INT);
 			} else if (base_type instanceof TYPE.SolidTypeUnit && base_type.value instanceof SolidList || base_type instanceof TYPE.SolidTypeList) {
 				const base_type_list: TYPE.SolidTypeList = (base_type instanceof TYPE.SolidTypeUnit && base_type.value instanceof SolidList)
 					? base_type.value.toType()
 					: base_type as TYPE.SolidTypeList;
-				return (accessor_type.isSubtypeOf(TYPE.SolidType.INT))
+				return (accessor_type.isSubtypeOf(TYPE.Type.INT))
 					? updateAccessedDynamicType(base_type_list.types, this.kind)
-					: throwWrongSubtypeError(this.accessor, TYPE.SolidType.INT);
+					: throwWrongSubtypeError(this.accessor, TYPE.Type.INT);
 			} else if (base_type instanceof TYPE.SolidTypeUnit && base_type.value instanceof SolidSet || base_type instanceof TYPE.SolidTypeSet) {
 				const base_type_set: TYPE.SolidTypeSet = (base_type instanceof TYPE.SolidTypeUnit && base_type.value instanceof SolidSet)
 					? base_type.value.toType()

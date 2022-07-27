@@ -1,12 +1,12 @@
 import type {SolidObject} from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
 /**
  * Class for constructing unit types, types that contain exactly one value.
  */
-export class SolidTypeUnit extends SolidType {
+export class SolidTypeUnit extends Type {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 
@@ -26,7 +26,7 @@ export class SolidTypeUnit extends SolidType {
 	override includes(v: SolidObject): boolean {
 		return this.value.identical(v);
 	}
-	protected override isSubtypeOf_do(t: SolidType): boolean {
+	protected override isSubtypeOf_do(t: Type): boolean {
 		return t.includes(this.value);
 	}
 }

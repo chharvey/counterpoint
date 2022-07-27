@@ -29,7 +29,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeTuple#build_do not yet supported.';
 	}
-	protected override type_do(): TYPE.SolidType {
+	protected override type_do(): TYPE.Type {
 		return TYPE.SolidTypeTuple.fromTypes(this.children.map((c) => c.type()), true);
 	}
 	protected override fold_do(): SolidObject | null {

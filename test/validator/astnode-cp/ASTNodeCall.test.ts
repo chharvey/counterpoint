@@ -34,10 +34,10 @@ describe('ASTNodeCall', () => {
 					]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new TYPE.SolidTypeList(TYPE.SolidType.INT, true),
-					new TYPE.SolidTypeDict(TYPE.SolidType.INT, true),
-					new TYPE.SolidTypeSet(TYPE.SolidType.INT, true),
-					new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.FLOAT, true),
+					new TYPE.SolidTypeList(TYPE.Type.INT, true),
+					new TYPE.SolidTypeDict(TYPE.Type.INT, true),
+					new TYPE.SolidTypeSet(TYPE.Type.INT, true),
+					new TYPE.SolidTypeMap(TYPE.Type.INT, TYPE.Type.FLOAT, true),
 				],
 			);
 		});
@@ -53,9 +53,9 @@ describe('ASTNodeCall', () => {
 					]));`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new TYPE.SolidTypeList(TYPE.SolidType.INT, true),
-					new TYPE.SolidTypeSet(TYPE.SolidType.INT, true),
-					new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.FLOAT, true),
+					new TYPE.SolidTypeList(TYPE.Type.INT, true),
+					new TYPE.SolidTypeSet(TYPE.Type.INT, true),
+					new TYPE.SolidTypeMap(TYPE.Type.INT, TYPE.Type.FLOAT, true),
 				],
 			);
 		});
@@ -71,20 +71,20 @@ describe('ASTNodeCall', () => {
 					`Map.<int, float>([]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new TYPE.SolidTypeList(TYPE.SolidType.INT, true),
-					new TYPE.SolidTypeDict(TYPE.SolidType.INT, true),
-					new TYPE.SolidTypeSet(TYPE.SolidType.INT, true),
-					new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.FLOAT, true),
-					new TYPE.SolidTypeList(TYPE.SolidType.INT, true),
-					new TYPE.SolidTypeSet(TYPE.SolidType.INT, true),
-					new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.FLOAT, true),
+					new TYPE.SolidTypeList(TYPE.Type.INT, true),
+					new TYPE.SolidTypeDict(TYPE.Type.INT, true),
+					new TYPE.SolidTypeSet(TYPE.Type.INT, true),
+					new TYPE.SolidTypeMap(TYPE.Type.INT, TYPE.Type.FLOAT, true),
+					new TYPE.SolidTypeList(TYPE.Type.INT, true),
+					new TYPE.SolidTypeSet(TYPE.Type.INT, true),
+					new TYPE.SolidTypeMap(TYPE.Type.INT, TYPE.Type.FLOAT, true),
 				],
 			);
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeCall.fromSource(`Map.<int>();`).type(),
-				new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.INT, true),
+				new TYPE.SolidTypeMap(TYPE.Type.INT, TYPE.Type.INT, true),
 			);
 		});
 		it('throws if base is not an ASTNodeVariable.', () => {

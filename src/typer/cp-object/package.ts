@@ -14,7 +14,7 @@ export {
 	solidObjectsIdentical,
 } from '../utils-private.js';
 export {
-	SolidType,
+	Type,
 	SolidTypeUnit,
 	SolidTypeTuple,
 	SolidTypeRecord,

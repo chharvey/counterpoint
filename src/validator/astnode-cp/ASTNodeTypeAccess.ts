@@ -29,13 +29,13 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 	) {
 		super(start_node, {}, [base, accessor]);
 	}
-	protected override eval_do(): TYPE.SolidType {
-		let base_type: TYPE.SolidType = this.base.eval();
+	protected override eval_do(): TYPE.Type {
+		let base_type: TYPE.Type = this.base.eval();
 		if (base_type instanceof TYPE.SolidTypeIntersection || base_type instanceof TYPE.SolidTypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		if (this.accessor instanceof ASTNodeIndexType) {
-			const accessor_type: TYPE.SolidType = this.accessor.val.eval();
+			const accessor_type: TYPE.Type = this.accessor.val.eval();
 			return (
 				(base_type instanceof TYPE.SolidTypeUnit && base_type.value instanceof SolidTuple) ? (
 					(accessor_type instanceof TYPE.SolidTypeUnit)

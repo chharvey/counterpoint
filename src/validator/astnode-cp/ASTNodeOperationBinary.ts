@@ -38,12 +38,12 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	/**
 	 * @final
 	 */
-	protected override type_do(): TYPE.SolidType {
+	protected override type_do(): TYPE.Type {
 		return this.type_do_do(
 			this.operand0.type(),
 			this.operand1.type(),
 			this.validator.config.compilerOptions.intCoercion,
 		)
 	}
-	protected abstract type_do_do(t0: TYPE.SolidType, t1: TYPE.SolidType, int_coercion: boolean): TYPE.SolidType;
+	protected abstract type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type;
 }

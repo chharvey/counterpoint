@@ -2,7 +2,7 @@ import {
 	SolidObject,
 	SolidBoolean,
 } from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
@@ -10,7 +10,7 @@ import {SolidType} from './SolidType.js';
  * Class for constructing the `bool` type.
  * @final
  */
-export class SolidTypeBoolean extends SolidType {
+export class SolidTypeBoolean extends Type {
 	static get INSTANCE(): SolidTypeBoolean { return new SolidTypeBoolean(); }
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;

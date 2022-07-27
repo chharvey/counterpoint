@@ -31,10 +31,10 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeMap#build_do not yet supported.';
 	}
-	protected override type_do(): TYPE.SolidType {
+	protected override type_do(): TYPE.Type {
 		return new TYPE.SolidTypeMap(
-			TYPE.SolidType.unionAll(this.children.map((c) => c.antecedent.type())),
-			TYPE.SolidType.unionAll(this.children.map((c) => c.consequent.type())),
+			TYPE.Type.unionAll(this.children.map((c) => c.antecedent.type())),
+			TYPE.Type.unionAll(this.children.map((c) => c.consequent.type())),
 			true,
 		);
 	}

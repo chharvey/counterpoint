@@ -34,7 +34,7 @@ export abstract class SymbolStructure {
 
 export class SymbolStructureType extends SymbolStructure {
 	/** The assessed value of the symbol. */
-	typevalue: TYPE.SolidType = TYPE.SolidType.UNKNOWN;
+	typevalue: TYPE.Type = TYPE.Type.UNKNOWN;
 	constructor (
 		node: AST.ASTNodeTypeAlias,
 	) {
@@ -46,7 +46,7 @@ export class SymbolStructureType extends SymbolStructure {
 
 export class SymbolStructureVar extends SymbolStructure {
 	/** The variable’s Type. */
-	type: TYPE.SolidType = TYPE.SolidType.UNKNOWN;
+	type: TYPE.Type = TYPE.Type.UNKNOWN;
 	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
 	value: SolidObject | null = null;
 	constructor (

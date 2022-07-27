@@ -50,41 +50,41 @@ export function assert_wasCalled<Func extends (...args: any[]) => any, Return>(o
 
 /**
  * Assert equal types. First compares by `assert.deepStrictEqual`,
- * but if that fails, compares by `SolidType#equals`.
+ * but if that fails, compares by `Type#equals`.
  * @param actual   the actual type
  * @param expected what `actual` is expected to equal
  * @throws {AssertionError} actual and expected fail equality
  */
-export function assertEqualTypes(actual: TYPE.SolidType, expected: TYPE.SolidType): void;
+export function assertEqualTypes(actual: TYPE.Type, expected: TYPE.Type): void;
 /**
  * Assert equal types. First compares by `assert.deepStrictEqual`,
- * but if that fails, compares by `SolidType#equals`.
+ * but if that fails, compares by `Type#equals`.
  * @param actual   an array of actual types
  * @param expected an array of what `actual` is expected to equal
  * @throws {AssertionError} if a corresponding type fails equality
  */
-export function assertEqualTypes(actual: TYPE.SolidType[], expected: TYPE.SolidType[]): void;
+export function assertEqualTypes(actual: TYPE.Type[], expected: TYPE.Type[]): void;
 /**
  * Assert equal types. First compares by `assert.deepStrictEqual`,
- * but if that fails, compares by `SolidType#equals`.
+ * but if that fails, compares by `Type#equals`.
  * @param types a map of keys and values to compare
  * @throws {AssertionError} if one of the pairs fails equality
  */
-export function assertEqualTypes(types: ReadonlyMap<TYPE.SolidType, TYPE.SolidType>): void;
-export function assertEqualTypes(param1: TYPE.SolidType | TYPE.SolidType[] | ReadonlyMap<TYPE.SolidType, TYPE.SolidType>, param2?: TYPE.SolidType | TYPE.SolidType[]): void {
+export function assertEqualTypes(types: ReadonlyMap<TYPE.Type, TYPE.Type>): void;
+export function assertEqualTypes(param1: TYPE.Type | TYPE.Type[] | ReadonlyMap<TYPE.Type, TYPE.Type>, param2?: TYPE.Type | TYPE.Type[]): void {
 	if (param1 instanceof Map) {
 		return assertEqualTypes([...param1.keys()], [...param1.values()]);
 	} else if (param1 instanceof Array) {
 		try {
 			return assert.deepStrictEqual(param1, param2);
 		} catch {
-			return xjs.Array.forEachAggregated(param1, (act, i) => assertEqualTypes(act, (param2 as TYPE.SolidType[])[i]));
+			return xjs.Array.forEachAggregated(param1, (act, i) => assertEqualTypes(act, (param2 as TYPE.Type[])[i]));
 		};
 	} else {
 		try {
 			return assert.deepStrictEqual(param1, param2);
 		} catch {
-			return assert.ok((param1 as TYPE.SolidType).equals(param2 as TYPE.SolidType), `${ param1 } == ${ param2 }`);
+			return assert.ok((param1 as TYPE.Type).equals(param2 as TYPE.Type), `${ param1 } == ${ param2 }`);
 		}
 	}
 }

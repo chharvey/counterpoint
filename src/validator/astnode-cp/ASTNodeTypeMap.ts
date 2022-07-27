@@ -22,7 +22,7 @@ export class ASTNodeTypeMap extends ASTNodeType {
 	) {
 		super(start_node, {}, [antecedenttype, consequenttype]);
 	}
-	protected override eval_do(): TYPE.SolidType {
+	protected override eval_do(): TYPE.Type {
 		return new TYPE.SolidTypeMap(this.antecedenttype.eval(), this.consequenttype.eval());
 	}
 }

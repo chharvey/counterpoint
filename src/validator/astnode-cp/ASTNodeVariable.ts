@@ -37,7 +37,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 
 	override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.SolidType.FLOAT);
+		return this.type().isSubtypeOf(TYPE.Type.FLOAT);
 	}
 	override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
@@ -51,14 +51,14 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
 		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
 	}
-	protected override type_do(): TYPE.SolidType {
+	protected override type_do(): TYPE.Type {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar) {
 				return symbol.type;
 			};
 		};
-		return TYPE.SolidType.NEVER;
+		return TYPE.Type.NEVER;
 	}
 	protected override fold_do(): SolidObject | null {
 		if (this.validator.hasSymbol(this.id)) {

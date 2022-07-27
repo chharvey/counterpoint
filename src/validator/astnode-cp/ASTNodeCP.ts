@@ -22,16 +22,16 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
 	 */
 	static typeCheckAssignment(
-		assignee_type: TYPE.SolidType,
-		assigned_type: TYPE.SolidType,
+		assignee_type: TYPE.Type,
+		assigned_type: TYPE.Type,
 		node:          ASTNodeCP,
 		validator:     Validator,
 	): void {
 		const is_subtype: boolean = assigned_type.isSubtypeOf(assignee_type);
 		const treatIntAsSubtypeOfFloat: boolean = (
 			   validator.config.compilerOptions.intCoercion
-			&& assigned_type.isSubtypeOf(TYPE.SolidType.INT)
-			&& TYPE.SolidType.FLOAT.isSubtypeOf(assignee_type)
+			&& assigned_type.isSubtypeOf(TYPE.Type.INT)
+			&& TYPE.Type.FLOAT.isSubtypeOf(assignee_type)
 		);
 		if (!is_subtype && !treatIntAsSubtypeOfFloat) {
 			throw new TypeError03(assignee_type, assigned_type, node);

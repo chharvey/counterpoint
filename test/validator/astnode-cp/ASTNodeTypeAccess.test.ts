@@ -14,17 +14,17 @@ import {
 
 describe('ASTNodeTypeAccess', () => {
 	describe('#eval', () => {
-		function evalTypeDecl(decl: AST.ASTNodeStatement): TYPE.SolidType {
+		function evalTypeDecl(decl: AST.ASTNodeStatement): TYPE.Type {
 			assert.ok(decl instanceof AST.ASTNodeDeclarationType);
 			return decl.assigned.eval();
 		}
-		const expected: TYPE.SolidType[] = [
+		const expected: TYPE.Type[] = [
 			typeConstInt(1n),
 			typeConstFloat(2.0),
 			typeConstStr('three'),
-			TYPE.SolidType.INT,
-			TYPE.SolidType.FLOAT,
-			TYPE.SolidType.STR,
+			TYPE.Type.INT,
+			TYPE.Type.FLOAT,
+			TYPE.Type.STR,
 		];
 		let program: AST.ASTNodeGoal;
 		before(() => {
@@ -88,8 +88,8 @@ describe('ASTNodeTypeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 26).map((c) => evalTypeDecl(c)),
 					[
-						typeConstStr('three').union(TYPE.SolidType.VOID),
-						TYPE.SolidType.STR.union(TYPE.SolidType.VOID),
+						typeConstStr('three').union(TYPE.Type.VOID),
+						TYPE.Type.STR.union(TYPE.Type.VOID),
 					],
 				);
 			});
@@ -110,8 +110,8 @@ describe('ASTNodeTypeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(28, 30).map((c) => evalTypeDecl(c)),
 					[
-						typeConstFloat(2.0).union(TYPE.SolidType.VOID),
-						TYPE.SolidType.FLOAT.union(TYPE.SolidType.VOID),
+						typeConstFloat(2.0).union(TYPE.Type.VOID),
+						TYPE.Type.FLOAT.union(TYPE.Type.VOID),
 					],
 				);
 			});

@@ -35,7 +35,7 @@ export abstract class ASTNodeType extends ASTNodeCP {
 		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
 		return statement.assigned;
 	}
-	private assessed?: TYPE.SolidType;
+	private assessed?: TYPE.Type;
 	/**
 	 * @final
 	 */
@@ -47,8 +47,8 @@ export abstract class ASTNodeType extends ASTNodeCP {
 	 * @returns the computed type-value of this node
 	 * @final
 	 */
-	eval(): TYPE.SolidType {
+	eval(): TYPE.Type {
 		return this.assessed ||= this.eval_do();
 	}
-	protected abstract eval_do(): TYPE.SolidType;
+	protected abstract eval_do(): TYPE.Type;
 }

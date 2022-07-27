@@ -2,11 +2,11 @@ import {
 	SolidObject,
 	SolidMap,
 } from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
-export class SolidTypeMap extends SolidType {
+export class SolidTypeMap extends Type {
 	override readonly isBottomType: boolean = false;
 
 	/**
@@ -16,8 +16,8 @@ export class SolidTypeMap extends SolidType {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		readonly antecedenttypes: SolidType,
-		readonly consequenttypes: SolidType,
+		readonly antecedenttypes: Type,
+		readonly consequenttypes: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new SolidMap()]));
@@ -35,8 +35,8 @@ export class SolidTypeMap extends SolidType {
 		return v instanceof SolidMap && v.toType().isSubtypeOf(this);
 	}
 
-	protected override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidType.OBJ) || (
+	protected override isSubtypeOf_do(t: Type): boolean {
+		return t.equals(Type.OBJ) || (
 			t instanceof SolidTypeMap
 			&& ((t.isMutable)
 				? this.isMutable && this.antecedenttypes.equals(t.antecedenttypes) && this.consequenttypes.equals(t.consequenttypes)

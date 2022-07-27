@@ -49,11 +49,11 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			this.operand1.build(builder, tofloat),
 		)
 	}
-	protected override type_do_do(t0: TYPE.SolidType, t1: TYPE.SolidType, int_coercion: boolean): TYPE.SolidType {
+	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		if (bothNumeric(t0, t1) && (int_coercion || (
 			bothFloats(t0, t1) || neitherFloats(t0, t1)
 		))) {
-			return TYPE.SolidType.BOOL;
+			return TYPE.Type.BOOL;
 		}
 		throw new TypeError01(this)
 	}

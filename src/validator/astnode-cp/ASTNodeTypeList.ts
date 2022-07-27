@@ -23,8 +23,8 @@ export class ASTNodeTypeList extends ASTNodeType {
 	) {
 		super(start_node, {count}, [type]);
 	}
-	protected override eval_do(): TYPE.SolidType {
-		const itemstype: TYPE.SolidType = this.type.eval();
+	protected override eval_do(): TYPE.Type {
+		const itemstype: TYPE.Type = this.type.eval();
 		return (this.count === null)
 			? new TYPE.SolidTypeList(itemstype)
 			: (this.count >= 0)

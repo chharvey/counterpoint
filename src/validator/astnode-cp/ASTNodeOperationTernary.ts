@@ -42,11 +42,11 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			this.operand2.build(builder, tofloat),
 		)
 	}
-	protected override type_do(): TYPE.SolidType {
-		const t0: TYPE.SolidType = this.operand0.type();
-		const t1: TYPE.SolidType = this.operand1.type();
-		const t2: TYPE.SolidType = this.operand2.type();
-		return (t0.isSubtypeOf(TYPE.SolidType.BOOL))
+	protected override type_do(): TYPE.Type {
+		const t0: TYPE.Type = this.operand0.type();
+		const t1: TYPE.Type = this.operand1.type();
+		const t2: TYPE.Type = this.operand2.type();
+		return (t0.isSubtypeOf(TYPE.Type.BOOL))
 			? (t0 instanceof TYPE.SolidTypeUnit)
 				? (t0.value === SolidBoolean.FALSE)
 					? t2 // If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.

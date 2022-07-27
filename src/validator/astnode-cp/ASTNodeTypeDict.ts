@@ -21,7 +21,7 @@ export class ASTNodeTypeDict extends ASTNodeType {
 	) {
 		super(start_node, {}, [type]);
 	}
-	protected override eval_do(): TYPE.SolidType {
+	protected override eval_do(): TYPE.Type {
 		return new TYPE.SolidTypeDict(this.type.eval());
 	}
 }

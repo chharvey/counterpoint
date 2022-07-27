@@ -1,4 +1,4 @@
-export * from './SolidType.js';
+export * from './Type.js';
 
 export * from './SolidTypeIntersection.js';
 export * from './SolidTypeUnion.js';

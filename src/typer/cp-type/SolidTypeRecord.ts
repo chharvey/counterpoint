@@ -8,11 +8,11 @@ import {
 	SolidRecord,
 } from './package.js';
 import {updateAccessedStaticType} from './utils-private.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
-export class SolidTypeRecord extends SolidType {
+export class SolidTypeRecord extends Type {
 	override readonly isBottomType: boolean = false;
 
 	/**
@@ -21,7 +21,7 @@ export class SolidTypeRecord extends SolidType {
 	 * @param is_mutable is the record type mutable?
 	 * @return a new record type with the provided properties
 	 */
-	static fromTypes(propertytypes: ReadonlyMap<bigint, SolidType> = new Map(), is_mutable: boolean = false): SolidTypeRecord {
+	static fromTypes(propertytypes: ReadonlyMap<bigint, Type> = new Map(), is_mutable: boolean = false): SolidTypeRecord {
 		return new SolidTypeRecord(new Map<bigint, TypeEntry>([...propertytypes].map(([id, t]) => [id, {
 			type:     t,
 			optional: false,
@@ -61,8 +61,8 @@ export class SolidTypeRecord extends SolidType {
 		return v instanceof SolidRecord && v.toType().isSubtypeOf(this);
 	}
 
-	protected override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidType.OBJ) || (
+	protected override isSubtypeOf_do(t: Type): boolean {
+		return t.equals(Type.OBJ) || (
 			t instanceof SolidTypeRecord
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
@@ -87,17 +87,17 @@ export class SolidTypeRecord extends SolidType {
 		return new SolidTypeRecord(this.propertytypes, false);
 	}
 
-	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): SolidType {
+	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): Type {
 		return updateAccessedStaticType(((this.propertytypes.has(key))
 			? this.propertytypes.get(key)!
 			: (() => { throw new TypeError04('property', this, accessor); })()
 		), access_kind);
 	}
 
-	valueTypes(): SolidType {
+	valueTypes(): Type {
 		return (this.propertytypes.size)
-			? SolidType.unionAll([...this.propertytypes.values()].map((t) => t.type))
-			: SolidType.NEVER;
+			? Type.unionAll([...this.propertytypes.values()].map((t) => t.type))
+			: Type.NEVER;
 	}
 
 	/**

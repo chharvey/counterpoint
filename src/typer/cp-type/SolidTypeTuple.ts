@@ -9,11 +9,11 @@ import {
 	SolidTuple,
 } from './package.js';
 import {updateAccessedStaticType} from './utils-private.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
-export class SolidTypeTuple extends SolidType {
+export class SolidTypeTuple extends Type {
 	override readonly isBottomType: boolean = false;
 
 	/**
@@ -22,7 +22,7 @@ export class SolidTypeTuple extends SolidType {
 	 * @param is_mutable is the tuple type mutable?
 	 * @return a new tuple type with the provided items
 	 */
-	static fromTypes(types: readonly SolidType[] = [], is_mutable: boolean = false): SolidTypeTuple {
+	static fromTypes(types: readonly Type[] = [], is_mutable: boolean = false): SolidTypeTuple {
 		return new SolidTypeTuple(types.map((t) => ({
 			type:     t,
 			optional: false,
@@ -62,8 +62,8 @@ export class SolidTypeTuple extends SolidType {
 		return v instanceof SolidTuple && v.toType().isSubtypeOf(this);
 	}
 
-	protected override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidType.OBJ) || (
+	protected override isSubtypeOf_do(t: Type): boolean {
+		return t.equals(Type.OBJ) || (
 			t instanceof SolidTypeTuple
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
@@ -82,7 +82,7 @@ export class SolidTypeTuple extends SolidType {
 		return new SolidTypeTuple(this.types, false);
 	}
 
-	get(index: Int16, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): SolidType {
+	get(index: Int16, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
 		return updateAccessedStaticType((
@@ -92,10 +92,10 @@ export class SolidTypeTuple extends SolidType {
 		), access_kind);
 	}
 
-	itemTypes(): SolidType {
+	itemTypes(): Type {
 		return (this.types.length)
-			? SolidType.unionAll(this.types.map((t) => t.type))
-			: SolidType.NEVER;
+			? Type.unionAll(this.types.map((t) => t.type))
+			: Type.NEVER;
 	}
 
 	/**

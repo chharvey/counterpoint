@@ -19,17 +19,17 @@ describe('ASTNodeTypeCall', () => {
 					`Map.<int, float>`,
 				].map((src) => AST.ASTNodeTypeCall.fromSource(src).eval()),
 				[
-					new TYPE.SolidTypeList(TYPE.SolidType.NULL),
-					new TYPE.SolidTypeDict(TYPE.SolidType.BOOL),
-					new TYPE.SolidTypeSet(TYPE.SolidType.STR),
-					new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.FLOAT),
+					new TYPE.SolidTypeList(TYPE.Type.NULL),
+					new TYPE.SolidTypeDict(TYPE.Type.BOOL),
+					new TYPE.SolidTypeSet(TYPE.Type.STR),
+					new TYPE.SolidTypeMap(TYPE.Type.INT, TYPE.Type.FLOAT),
 				],
 			);
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeCall.fromSource(`Map.<int>`).eval(),
-				new TYPE.SolidTypeMap(TYPE.SolidType.INT, TYPE.SolidType.INT),
+				new TYPE.SolidTypeMap(TYPE.Type.INT, TYPE.Type.INT),
 			);
 		});
 		it('throws if base is not an ASTNodeTypeAlias.', () => {

@@ -3,7 +3,7 @@ import {
 	solidObjectsIdentical,
 	SolidObject,
 } from './package.js';
-import {SolidType} from './SolidType.js';
+import {Type} from './Type.js';
 
 
 
@@ -11,7 +11,7 @@ import {SolidType} from './SolidType.js';
  * A type difference of two types `T` and `U` is the type
  * that contains values assignable to `T` but *not* assignable to `U`.
  */
-export class SolidTypeDifference extends SolidType {
+export class SolidTypeDifference extends Type {
 	declare readonly isBottomType: boolean;
 
 	/**
@@ -20,8 +20,8 @@ export class SolidTypeDifference extends SolidType {
 	 * @param right the second type
 	 */
 	constructor (
-		private readonly left:  SolidType,
-		private readonly right: SolidType,
+		private readonly left:  Type,
+		private readonly right: Type,
 	) {
 		super(false, xjs.Set.difference(left.values, right.values, solidObjectsIdentical));
 		/*
@@ -43,7 +43,7 @@ export class SolidTypeDifference extends SolidType {
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) && !this.right.includes(v);
 	}
-	protected override isSubtypeOf_do(t: SolidType): boolean {
+	protected override isSubtypeOf_do(t: Type): boolean {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf_do(t);
 	}
 	override mutableOf(): SolidTypeDifference {
@@ -52,7 +52,7 @@ export class SolidTypeDifference extends SolidType {
 	override immutableOf(): SolidTypeDifference {
 		return new SolidTypeDifference(this.left.immutableOf(), this.right.immutableOf());
 	}
-	isSupertypeOf(t: SolidType): boolean {
+	isSupertypeOf(t: Type): boolean {
 		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
 		return t.isSubtypeOf(this.left) && t.intersect(this.right).isBottomType;
 	}
