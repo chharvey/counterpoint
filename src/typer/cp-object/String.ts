@@ -29,7 +29,7 @@ class CPString extends Primitive {
 		return value instanceof CPString && xjs.Array.is(this.codeunits, value.codeunits);
 	}
 
-	override toSolidString(): CPString {
+	override toCPString(): CPString {
 		return this;
 	}
 

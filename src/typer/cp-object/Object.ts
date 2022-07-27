@@ -60,11 +60,11 @@ export abstract class Object {
 	}
 
 	/**
-	 * Return a Solid string representation of this Object.
+	 * Return a Counterpoint string representation of this Object.
 	 * (Not a native String — see {@link #toString}.)
 	 * @returns a string representation of this Object
 	 */
-	toSolidString(): String {
+	toCPString(): String {
 		return new String(this.toString());
 	}
 }

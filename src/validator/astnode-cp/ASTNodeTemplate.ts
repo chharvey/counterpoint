@@ -46,7 +46,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return (values.includes(null))
 			? null
 			: (values as OBJ.Object[])
-				.map((value) => value.toSolidString())
+				.map((value) => value.toCPString())
 				.reduce((a, b) => a.concatenate(b));
 	}
 }

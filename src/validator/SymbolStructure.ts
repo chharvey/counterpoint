@@ -8,7 +8,7 @@ import type * as AST from './astnode-cp/index.js';
 
 /** Kinds of symbols. */
 export enum SymbolKind {
-	/** A value variable (a variable holding a Solid Language Value). */
+	/** A value variable (a variable holding a Counterpoint Language Value). */
 	VALUE = 'value',
 	/** A type variable / type alias. */
 	TYPE  = 'type',
