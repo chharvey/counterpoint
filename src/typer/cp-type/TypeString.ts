@@ -1,26 +1,26 @@
 import {
 	SolidObject,
-	Float64,
+	SolidString,
 } from './package.js';
 import {Type} from './Type.js';
 
 
 
 /**
- * Class for constructing the `float` type.
+ * Class for constructing the `str` type.
  * @final
  */
-export class SolidTypeFloat extends Type {
-	static get INSTANCE(): SolidTypeFloat { return new SolidTypeFloat(); }
+export class TypeString extends Type {
+	static get INSTANCE(): TypeString { return new TypeString(); }
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
-		super(false, new Set([new Float64(0.0)]));
+		super(false, new Set([new SolidString('')]));
 	}
 	override toString(): string {
-		return 'int';
+		return 'str';
 	}
 	override includes(v: SolidObject): boolean {
-		return v instanceof Float64;
+		return v instanceof SolidString;
 	}
 }

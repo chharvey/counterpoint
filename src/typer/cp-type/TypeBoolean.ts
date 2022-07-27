@@ -1,26 +1,26 @@
 import {
 	SolidObject,
-	Int16,
+	SolidBoolean,
 } from './package.js';
 import {Type} from './Type.js';
 
 
 
 /**
- * Class for constructing the `int` type.
+ * Class for constructing the `bool` type.
  * @final
  */
-export class SolidTypeInteger extends Type {
-	static get INSTANCE(): SolidTypeInteger { return new SolidTypeInteger(); }
+export class TypeBoolean extends Type {
+	static get INSTANCE(): TypeBoolean { return new TypeBoolean(); }
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
-		super(false, new Set([Int16.ZERO]));
+		super(false, new Set([SolidBoolean.FALSE, SolidBoolean.TRUE]));
 	}
 	override toString(): string {
-		return 'int';
+		return 'bool';
 	}
 	override includes(v: SolidObject): boolean {
-		return v instanceof Int16;
+		return v instanceof SolidBoolean;
 	}
 }
