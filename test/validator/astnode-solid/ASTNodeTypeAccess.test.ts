@@ -5,9 +5,9 @@ import {
 	TypeError04,
 } from '../../../src/index.js';
 import {
-	typeConstInt,
-	typeConstFloat,
-	typeConstStr,
+	typeUnitInt,
+	typeUnitFloat,
+	typeUnitStr,
 } from '../../helpers.js';
 
 
@@ -19,9 +19,9 @@ describe('ASTNodeTypeAccess', () => {
 			return decl.assigned.eval();
 		}
 		const expected: SolidType[] = [
-			typeConstInt(1n),
-			typeConstFloat(2.0),
-			typeConstStr('three'),
+			typeUnitInt(1n),
+			typeUnitFloat(2.0),
+			typeUnitStr('three'),
 			SolidType.INT,
 			SolidType.FLOAT,
 			SolidType.STR,
@@ -88,7 +88,7 @@ describe('ASTNodeTypeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 26).map((c) => evalTypeDecl(c)),
 					[
-						typeConstStr('three').union(SolidType.VOID),
+						typeUnitStr('three').union(SolidType.VOID),
 						SolidType.STR.union(SolidType.VOID),
 					],
 				);
@@ -110,7 +110,7 @@ describe('ASTNodeTypeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(28, 30).map((c) => evalTypeDecl(c)),
 					[
-						typeConstFloat(2.0).union(SolidType.VOID),
+						typeUnitFloat(2.0).union(SolidType.VOID),
 						SolidType.FLOAT.union(SolidType.VOID),
 					],
 				);

@@ -30,9 +30,9 @@ import {assert_wasCalled} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
-	typeConstInt,
-	typeConstFloat,
-	typeConstStr,
+	typeUnitInt,
+	typeUnitFloat,
+	typeUnitStr,
 	instructionConstInt,
 	instructionConstFloat,
 } from '../../helpers.js';
@@ -112,7 +112,7 @@ describe('ASTNodeExpression', () => {
 			it('computes string values.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeConstant.fromSource(`'42😀\\u{1f600}';`).type(),
-					typeConstStr('42😀\u{1f600}'),
+					typeUnitStr('42😀\u{1f600}'),
 				);
 			});
 		});
@@ -391,10 +391,10 @@ describe('ASTNodeExpression', () => {
 	describe('ASTNode{Tuple,Record,Set,Map}', () => {
 		describe('#type', () => {
 			([
-				['with constant folding on.',  CONFIG_DEFAULT,     SolidType.unionAll([typeConstStr('a'), typeConstInt(42n), typeConstFloat(3.0)])],
-				['with constant folding off.', CONFIG_FOLDING_OFF, SolidType.unionAll([typeConstStr('a'), SolidType.INT,     SolidType.FLOAT])],
+				['with constant folding on.',  CONFIG_DEFAULT,     SolidType.unionAll([typeUnitStr('a'), typeUnitInt(42n), typeUnitFloat(3.0)])],
+				['with constant folding off.', CONFIG_FOLDING_OFF, SolidType.unionAll([typeUnitStr('a'), SolidType.INT,    SolidType.FLOAT])],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
-				const expected: SolidTypeUnit[] = [typeConstInt(1n), typeConstFloat(2.0), typeConstStr('three')];
+				const expected: SolidTypeUnit[] = [typeUnitInt(1n), typeUnitFloat(2.0), typeUnitStr('three')];
 				const collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,

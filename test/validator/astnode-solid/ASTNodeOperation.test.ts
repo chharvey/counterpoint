@@ -22,9 +22,9 @@ import {
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_FOLDING_COERCION_OFF,
-	typeConstInt,
-	typeConstFloat,
-	typeConstStr,
+	typeUnitInt,
+	typeUnitFloat,
+	typeUnitStr,
 	instructionConstInt,
 	instructionConstFloat,
 } from '../../helpers.js';
@@ -296,11 +296,11 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			context('with constant folding and int coersion on.', () => {
 				it('returns a constant Integer type for any operation of integers.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3 * 2;`).type(), typeConstInt(7n * 3n * 2n));
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3 * 2;`).type(), typeUnitInt(7n * 3n * 2n));
 				});
 				it('returns a constant Float type for any operation of mix of integers and floats.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource(`3.0 * 2.7;`)   .type(), typeConstFloat(3.0 * 2.7));
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3.0 * 2;`) .type(), typeConstFloat(7 * 3.0 * 2));
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource(`3.0 * 2.7;`)   .type(), typeUnitFloat(3.0 * 2.7));
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3.0 * 2;`) .type(), typeUnitFloat(7 * 3.0 * 2));
 				});
 			});
 			context('with folding off but int coersion on.', () => {
@@ -309,7 +309,7 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(node.type(), SolidType.INT);
 					assert.deepStrictEqual(
 						[node.operand0.type(), node.operand1.type()],
-						[SolidType.INT,        typeConstInt(2n)],
+						[SolidType.INT,        typeUnitInt(2n)],
 					);
 				});
 				it('returns Float for float arithmetic.', () => {
@@ -317,7 +317,7 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(node.type(), SolidType.FLOAT);
 					assert.deepStrictEqual(
 						[node.operand0.type(), node.operand1.type()],
-						[typeConstInt(7n),     SolidType.FLOAT],
+						[typeUnitInt(7n),      SolidType.FLOAT],
 					);
 				});
 			});
@@ -783,7 +783,7 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: SolidTypeUnit = typeConstStr('hello');
+						const hello: SolidTypeUnit = typeUnitStr('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
@@ -803,7 +803,7 @@ describe('ASTNodeOperation', () => {
 							SolidType.NULL.union(hello),
 							SolidBoolean.FALSETYPE.union(hello),
 							SolidBoolean.FALSETYPE.union(hello),
-							SolidType.VOID.union(typeConstInt(42n)),
+							SolidType.VOID.union(typeUnitInt(42n)),
 						]);
 					});
 					it('returns `right` if left does not contain `void` nor `null` nor `false`.', () => {
@@ -835,12 +835,12 @@ describe('ASTNodeOperation', () => {
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidBoolean.FALSETYPE,
-							typeConstInt(42n),
-							typeConstFloat(4.2),
+							typeUnitInt(42n),
+							typeUnitFloat(4.2),
 						]);
 					});
 					it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: SolidTypeUnit = typeConstStr('hello');
+						const hello: SolidTypeUnit = typeUnitStr('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
@@ -860,7 +860,7 @@ describe('ASTNodeOperation', () => {
 							SolidType.INT.union(hello),
 							SolidBoolean.TRUETYPE.union(hello),
 							SolidBoolean.TRUETYPE.union(SolidType.FLOAT).union(hello),
-							SolidType.STR.union(typeConstInt(42n)),
+							SolidType.STR.union(typeUnitInt(42n)),
 						]);
 					});
 					it('returns `left` if it does not contain `void` nor `null` nor `false`.', () => {
