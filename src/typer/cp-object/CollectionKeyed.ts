@@ -2,7 +2,7 @@ import {
 	VoidError01,
 	AST,
 } from './package.js';
-import type {SolidObject} from './SolidObject.js';
+import type {Object} from './Object.js';
 import {SolidNull} from './SolidNull.js';
 import {Collection} from './Collection.js';
 
@@ -13,7 +13,7 @@ import {Collection} from './Collection.js';
  * - SolidRecord
  * - SolidDict
  */
-export abstract class CollectionKeyed<T extends SolidObject = SolidObject> extends Collection {
+export abstract class CollectionKeyed<T extends Object = Object> extends Collection {
 	constructor (
 		readonly properties: ReadonlyMap<bigint, T> = new Map(),
 	) {
@@ -30,7 +30,7 @@ export abstract class CollectionKeyed<T extends SolidObject = SolidObject> exten
 	}
 
 	/** @final */
-	protected override equal_helper(value: SolidObject): boolean {
+	protected override equal_helper(value: Object): boolean {
 		return (
 			value instanceof CollectionKeyed
 			&& this.properties.size === value.properties.size

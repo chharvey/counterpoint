@@ -135,18 +135,18 @@ export class ASTNodeCall extends ASTNodeExpression {
 			}],
 		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
 	}
-	protected override fold_do(): OBJ.SolidObject | null {
-		const argvalue: OBJ.SolidObject | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
+	protected override fold_do(): OBJ.Object | null {
+		const argvalue: OBJ.Object | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
 			? this.exprargs[0].fold()
 			: undefined;
 		if (argvalue === null) {
 			return null;
 		}
-		return new Map<ValidFunctionName, (argument: OBJ.SolidObject | undefined) => OBJ.SolidObject | null>([
+		return new Map<ValidFunctionName, (argument: OBJ.Object | undefined) => OBJ.Object | null>([
 			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new OBJ.SolidList() : new OBJ.SolidList((tuple as OBJ.SolidTuple).items)],
 			[ValidFunctionName.DICT, (record) => (record === undefined) ? new OBJ.SolidDict() : new OBJ.SolidDict((record as OBJ.SolidRecord).properties)],
-			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.SolidSet()  : new OBJ.SolidSet(new Set<OBJ.SolidObject>((tuple as OBJ.SolidTuple).items))],
-			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.SolidMap()  : new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>((tuple as OBJ.SolidTuple).items.map((pair) => (pair as OBJ.SolidTuple).items as [OBJ.SolidObject, OBJ.SolidObject])))],
+			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.SolidSet()  : new OBJ.SolidSet(new Set<OBJ.Object>((tuple as OBJ.SolidTuple).items))],
+			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.SolidMap()  : new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.SolidTuple).items.map((pair) => (pair as OBJ.SolidTuple).items as [OBJ.Object, OBJ.Object])))],
 		]).get(this.base.source as ValidFunctionName)!(argvalue);
 	}
 	/**

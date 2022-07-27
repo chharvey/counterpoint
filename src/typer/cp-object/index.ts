@@ -1,4 +1,4 @@
-export * from './SolidObject.js';
+export * from './Object.js';
 
 export * from './Primitive.js';
 export * from './SolidNull.js';

@@ -53,8 +53,8 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 				: t1.union(t2)
 			: (() => { throw new TypeError01(this) })()
 	}
-	protected override fold_do(): OBJ.SolidObject | null {
-		const v0: OBJ.SolidObject | null = this.operand0.fold();
+	protected override fold_do(): OBJ.Object | null {
+		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}

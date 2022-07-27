@@ -42,10 +42,10 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return TYPE.Type.STR;
 	}
 	protected override fold_do(): OBJ.SolidString | null {
-		const values: (OBJ.SolidObject | null)[] = [...this.children].map((expr) => expr.fold());
+		const values: (OBJ.Object | null)[] = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))
 			? null
-			: (values as OBJ.SolidObject[])
+			: (values as OBJ.Object[])
 				.map((value) => value.toSolidString())
 				.reduce((a, b) => a.concatenate(b));
 	}

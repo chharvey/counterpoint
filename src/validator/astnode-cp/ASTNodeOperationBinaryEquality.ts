@@ -60,19 +60,19 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		}
 		return TYPE.Type.BOOL;
 	}
-	protected override fold_do(): OBJ.SolidObject | null {
-		const v0: OBJ.SolidObject | null = this.operand0.fold();
+	protected override fold_do(): OBJ.Object | null {
+		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: OBJ.SolidObject | null = this.operand1.fold();
+		const v1: OBJ.Object | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}
 		return this.foldEquality(v0, v1);
 	}
-	private foldEquality(x: OBJ.SolidObject, y: OBJ.SolidObject): OBJ.SolidBoolean {
-		return OBJ.SolidBoolean.fromBoolean(new Map<Operator, (x: OBJ.SolidObject, y: OBJ.SolidObject) => boolean>([
+	private foldEquality(x: OBJ.Object, y: OBJ.Object): OBJ.SolidBoolean {
+		return OBJ.SolidBoolean.fromBoolean(new Map<Operator, (x: OBJ.Object, y: OBJ.Object) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],
 			[Operator.EQ, (x, y) => x.equal(y)],
 			// [Operator.ISNT, (x, y) => !x.identical(y)],

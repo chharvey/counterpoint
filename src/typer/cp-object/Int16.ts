@@ -1,4 +1,4 @@
-import type {SolidObject} from './SolidObject.js';
+import type {Object} from './Object.js';
 import {SolidNumber} from './SolidNumber.js';
 import {Float64} from './index.js';
 
@@ -41,10 +41,10 @@ export class Int16 extends SolidNumber<Int16> {
 	override toString(): string {
 		return `${ this.toNumeric() }`
 	}
-	protected override identical_helper(value: SolidObject): boolean {
+	protected override identical_helper(value: Object): boolean {
 		return value instanceof Int16 && this.internal.every((bit, i) => bit === value.internal[i]);
 	}
-	protected override equal_helper(value: SolidObject): boolean {
+	protected override equal_helper(value: Object): boolean {
 		return value instanceof Float64 && this.toFloat().equal(value);
 	}
 

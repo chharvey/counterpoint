@@ -63,7 +63,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		}
 		return claimed_type;
 	}
-	protected override fold_do(): OBJ.SolidObject | null {
+	protected override fold_do(): OBJ.Object | null {
 		return this.operand.fold();
 	}
 }

@@ -88,7 +88,7 @@ export abstract class Type {
 	 */
 	constructor (
 		readonly isMutable: boolean,
-		readonly values:    ReadonlySet<OBJ.SolidObject> = new Set(),
+		readonly values:    ReadonlySet<OBJ.Object> = new Set(),
 	) {
 	}
 
@@ -106,7 +106,7 @@ export abstract class Type {
 	 * @param v the value to check
 	 * @returns Is `v` assignable to this type?
 	 */
-	includes(v: OBJ.SolidObject): boolean {
+	includes(v: OBJ.Object): boolean {
 		return xjs.Set.has(this.values, v, solidObjectsIdentical);
 	}
 	/**
@@ -258,7 +258,7 @@ export class TypeInterface extends Type {
 	override get hasMutable(): boolean {
 		return super.hasMutable || [...this.properties.values()].some((t) => t.hasMutable);
 	}
-	override includes(v: OBJ.SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return [...this.properties.keys()].every((key) => key in v)
 	}
 	/**
@@ -322,7 +322,7 @@ class TypeNever extends Type {
 	override toString(): string {
 		return 'never';
 	}
-	override includes(_v: OBJ.SolidObject): boolean {
+	override includes(_v: OBJ.Object): boolean {
 		return false
 	}
 	override equals(t: Type): boolean {
@@ -349,7 +349,7 @@ class TypeVoid extends Type {
 	override toString(): string {
 		return 'void';
 	}
-	override includes(_v: OBJ.SolidObject): boolean {
+	override includes(_v: OBJ.Object): boolean {
 		return false;
 	}
 	protected override intersect_do(_t: Type): Type {
@@ -382,7 +382,7 @@ class TypeUnknown extends Type {
 	override toString(): string {
 		return 'unknown';
 	}
-	override includes(_v: OBJ.SolidObject): boolean {
+	override includes(_v: OBJ.Object): boolean {
 		return true
 	}
 	override equals(t: Type): boolean {

@@ -2,7 +2,7 @@ import {
 	VoidError01,
 	AST,
 } from './package.js';
-import type {SolidObject} from './SolidObject.js';
+import type {Object} from './Object.js';
 import {SolidNull} from './SolidNull.js';
 import type {Int16} from './Int16.js';
 import {Collection} from './Collection.js';
@@ -14,7 +14,7 @@ import {Collection} from './Collection.js';
  * - SolidTuple
  * - SolidList
  */
-export abstract class CollectionIndexed<T extends SolidObject = SolidObject> extends Collection {
+export abstract class CollectionIndexed<T extends Object = Object> extends Collection {
 	constructor (
 		readonly items: readonly T[] = [],
 	) {
@@ -31,7 +31,7 @@ export abstract class CollectionIndexed<T extends SolidObject = SolidObject> ext
 	}
 
 	/** @final */
-	protected override equal_helper(value: SolidObject): boolean {
+	protected override equal_helper(value: Object): boolean {
 		return (
 			value instanceof CollectionIndexed
 			&& this.items.length === value.items.length

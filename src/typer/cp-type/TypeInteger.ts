@@ -17,7 +17,7 @@ export class TypeInteger extends Type {
 	override toString(): string {
 		return 'int';
 	}
-	override includes(v: OBJ.SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.Int16;
 	}
 }

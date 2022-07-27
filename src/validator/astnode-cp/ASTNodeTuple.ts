@@ -31,10 +31,10 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	protected override type_do(): TYPE.Type {
 		return TYPE.TypeTuple.fromTypes(this.children.map((c) => c.type()), true);
 	}
-	protected override fold_do(): OBJ.SolidObject | null {
-		const items: readonly (OBJ.SolidObject | null)[] = this.children.map((c) => c.fold());
+	protected override fold_do(): OBJ.Object | null {
+		const items: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
 		return (items.includes(null))
 			? null
-			: new OBJ.SolidTuple(items as OBJ.SolidObject[]);
+			: new OBJ.SolidTuple(items as OBJ.Object[]);
 	}
 }

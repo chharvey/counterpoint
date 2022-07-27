@@ -17,7 +17,7 @@ export class TypeBoolean extends Type {
 	override toString(): string {
 		return 'bool';
 	}
-	override includes(v: OBJ.SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.SolidBoolean;
 	}
 }

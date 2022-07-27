@@ -56,7 +56,7 @@ export class TypeTuple extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }[${ this.types.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
-	override includes(v: OBJ.SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.SolidTuple && v.toType().isSubtypeOf(this);
 	}
 

@@ -36,13 +36,13 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			c.val.type(),
 		])), true);
 	}
-	protected override fold_do(): OBJ.SolidObject | null {
-		const properties: ReadonlyMap<bigint, OBJ.SolidObject | null> = new Map(this.children.map((c) => [
+	protected override fold_do(): OBJ.Object | null {
+		const properties: ReadonlyMap<bigint, OBJ.Object | null> = new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.fold(),
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
-			: new OBJ.SolidRecord(properties as ReadonlyMap<bigint, OBJ.SolidObject>);
+			: new OBJ.SolidRecord(properties as ReadonlyMap<bigint, OBJ.Object>);
 	}
 }

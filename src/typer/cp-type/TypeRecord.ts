@@ -56,7 +56,7 @@ export class TypeRecord extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }[${ [...this.propertytypes].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
-	override includes(v: OBJ.SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.SolidRecord && v.toType().isSubtypeOf(this);
 	}
 

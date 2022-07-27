@@ -26,7 +26,7 @@ export class TypeSet extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }Set.<${ this.types }>`;
 	}
 
-	override includes(v: OBJ.SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.SolidSet && v.toType().isSubtypeOf(this);
 	}
 

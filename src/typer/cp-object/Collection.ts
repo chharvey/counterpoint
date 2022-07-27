@@ -3,7 +3,7 @@ import type {
 	Keys,
 	Type,
 } from './package.js';
-import {SolidObject} from './SolidObject.js';
+import {Object} from './Object.js';
 
 
 
@@ -14,13 +14,13 @@ import {SolidObject} from './SolidObject.js';
  * - SolidSet
  * - SolidMap
  */
-export abstract class Collection extends SolidObject {
+export abstract class Collection extends Object {
 	private static readonly EQ_MEMO_COMPARATOR: (
 		a: Keys<typeof Collection.EQ_MEMO>,
 		b: Keys<typeof Collection.EQ_MEMO>,
 	) => boolean = (a, b) => a[0].identical(b[0]) && a[1].identical(b[1]);
 
-	private static readonly EQ_MEMO: Map<readonly [SolidObject, SolidObject], boolean> = new Map();
+	private static readonly EQ_MEMO: Map<readonly [Object, Object], boolean> = new Map();
 
 	protected static do_Equal<T extends Collection>(o1: T, o2: T, definition: () => boolean): boolean {
 		const memokey: Keys<typeof Collection.EQ_MEMO> = [o1, o2];

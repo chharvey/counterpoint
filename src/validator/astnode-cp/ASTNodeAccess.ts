@@ -133,8 +133,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 		}
 	}
-	protected override fold_do(): OBJ.SolidObject | null {
-		const base_value: OBJ.SolidObject | null = this.base.fold();
+	protected override fold_do(): OBJ.Object | null {
+		const base_value: OBJ.Object | null = this.base.fold();
 		if (base_value === null) {
 			return null;
 		}
@@ -146,7 +146,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (base_value as OBJ.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
-			const accessor_value: OBJ.SolidObject | null = this.accessor.fold();
+			const accessor_value: OBJ.Object | null = this.accessor.fold();
 			if (accessor_value === null) {
 				return null;
 			}

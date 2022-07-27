@@ -57,12 +57,12 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		}
 		throw new TypeError01(this)
 	}
-	protected override fold_do(): OBJ.SolidObject | null {
-		const v0: OBJ.SolidObject | null = this.operand0.fold();
+	protected override fold_do(): OBJ.Object | null {
+		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: OBJ.SolidObject | null = this.operand1.fold();
+		const v1: OBJ.Object | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}

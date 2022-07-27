@@ -48,7 +48,7 @@ export class SymbolStructureVar extends SymbolStructure {
 	/** The variable’s Type. */
 	type: TYPE.Type = TYPE.Type.UNKNOWN;
 	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
-	value: OBJ.SolidObject | null = null;
+	value: OBJ.Object | null = null;
 	constructor (
 		node: AST.ASTNodeVariable,
 		/** May the symbol be reassigned? */

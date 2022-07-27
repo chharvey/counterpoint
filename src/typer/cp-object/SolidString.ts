@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import type {CodeUnit} from './package.js';
-import type {SolidObject} from './SolidObject.js';
+import type {Object} from './Object.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -25,7 +25,7 @@ export class SolidString extends Primitive {
 	override toString(): string {
 		return `'${ utf8.decode(String.fromCodePoint(...this.codeunits)) }'`;
 	}
-	protected override identical_helper(value: SolidObject): boolean {
+	protected override identical_helper(value: Object): boolean {
 		return value instanceof SolidString && xjs.Array.is(this.codeunits, value.codeunits);
 	}
 

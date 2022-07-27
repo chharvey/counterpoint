@@ -5,7 +5,7 @@ import {
 
 
 
-describe('SolidObject', () => {
+describe('Object', () => {
 	describe('#equal', () => {
 		describe('SolidSet', () => {
 			it('return false if sets have different counts.', () => {
@@ -72,12 +72,12 @@ describe('SolidObject', () => {
 		describe('.constructor', () => {
 			it('overwrites identical antecedents.', () => {
 				assert.deepStrictEqual(
-					new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([
+					new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([
 						[new OBJ.SolidString('a'), OBJ.Int16.UNIT],
 						[OBJ.Int16.ZERO,           new OBJ.Float64(2.0)],
 						[new OBJ.Int16(-0n),       new OBJ.SolidString('three')],
 					])),
-					new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([
+					new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([
 						[new OBJ.SolidString('a'), OBJ.Int16.UNIT],
 						[OBJ.Int16.ZERO,           new OBJ.SolidString('three')],
 					])),
@@ -85,12 +85,12 @@ describe('SolidObject', () => {
 			});
 			it('does not overwrite non-identical (even if equal) antecedents.', () => {
 				assert.deepStrictEqual(
-					new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([
+					new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([
 						[new OBJ.SolidString('a'), OBJ.Int16.UNIT],
 						[new OBJ.Float64(0.0),     new OBJ.Float64(2.0)],
 						[new OBJ.Float64(-0.0),    new OBJ.SolidString('three')],
 					])),
-					new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([
+					new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([
 						[new OBJ.SolidString('a'), new OBJ.Int16(1n)],
 						[new OBJ.Float64(0.0),     new OBJ.Float64(2.0)],
 						[new OBJ.Float64(-0.0),    new OBJ.SolidString('three')],

@@ -53,7 +53,7 @@ describe('Type', () => {
 
 
 	describe('#includes', () => {
-		it('uses `SolidObject#identical` to compare values.', () => {
+		it('uses `Object#identical` to compare values.', () => {
 			function unionOfInts(ns: bigint[]): TYPE.Type {
 				return TYPE.Type.unionAll(ns.map<TYPE.Type>(typeConstInt));
 			}
@@ -374,7 +374,7 @@ describe('Type', () => {
 				});
 			});
 			it('constant tuple types should be subtype of a tuple type instance.', () => {
-				new Map<OBJ.SolidObject, TYPE.TypeTuple>([
+				new Map<OBJ.Object, TYPE.TypeTuple>([
 					[new OBJ.SolidTuple(),                                                     TYPE.TypeTuple.fromTypes()],
 					[new OBJ.SolidTuple([new OBJ.Int16(42n)]),                                 TYPE.TypeTuple.fromTypes([TYPE.Type.INT])],
 					[new OBJ.SolidTuple([new OBJ.Float64(4.2), new OBJ.SolidString('hello')]), TYPE.TypeTuple.fromTypes([TYPE.Type.FLOAT, TYPE.Type.STR])],
@@ -383,10 +383,10 @@ describe('Type', () => {
 				});
 			});
 			it('constant record types should be subtype of a record type instance.', () => {
-				new Map<OBJ.SolidObject, TYPE.TypeRecord>([
-					[new OBJ.SolidRecord(new Map<bigint, OBJ.SolidObject>([[0x100n, new OBJ.Int16(42n)]])),                                           TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.INT]]))],
-					[new OBJ.SolidRecord(new Map<bigint, OBJ.SolidObject>([[0x100n, new OBJ.Float64(4.2)], [0x101n, new OBJ.SolidString('hello')]])), TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.FLOAT], [0x101n, TYPE.Type.STR]]))],
-					[new OBJ.SolidRecord(new Map<bigint, OBJ.SolidObject>([[0x100n, new OBJ.SolidString('hello')], [0x101n, new OBJ.Float64(4.2)]])), TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.STR], [0x101n, TYPE.Type.FLOAT]]))],
+				new Map<OBJ.Object, TYPE.TypeRecord>([
+					[new OBJ.SolidRecord(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Int16(42n)]])),                                           TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.INT]]))],
+					[new OBJ.SolidRecord(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Float64(4.2)], [0x101n, new OBJ.SolidString('hello')]])), TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.FLOAT], [0x101n, TYPE.Type.STR]]))],
+					[new OBJ.SolidRecord(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.SolidString('hello')], [0x101n, new OBJ.Float64(4.2)]])), TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.STR], [0x101n, TYPE.Type.FLOAT]]))],
 				]).forEach((recordtype, value) => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(recordtype), `let x: ${ recordtype } = ${ value };`);
 				});
@@ -402,7 +402,7 @@ describe('Type', () => {
 					TYPE.Type.INT,
 					TYPE.Type.FLOAT.union(TYPE.Type.STR),
 				].map((t) => new TYPE.TypeList(t));
-				new Map<OBJ.SolidObject, TYPE.TypeList>([
+				new Map<OBJ.Object, TYPE.TypeList>([
 					[new OBJ.SolidList(),         output[0]],
 					[new OBJ.SolidList(input[1]), output[1]],
 					[new OBJ.SolidList(input[2]), output[2]],
@@ -412,14 +412,14 @@ describe('Type', () => {
 			});
 			it('unit dict types should be subtype of a dict type instance.', () => {
 				const input = [
-					new Map<bigint, OBJ.SolidObject>([
+					new Map<bigint, OBJ.Object>([
 						[0x100n, new OBJ.Int16(42n)],
 					]),
-					new Map<bigint, OBJ.SolidObject>([
+					new Map<bigint, OBJ.Object>([
 						[0x100n, new OBJ.Float64(4.2)],
 						[0x101n, new OBJ.SolidString('hello')],
 					]),
-					new Map<bigint, OBJ.SolidObject>([
+					new Map<bigint, OBJ.Object>([
 						[0x100n, new OBJ.SolidString('hello')],
 						[0x101n, new OBJ.Float64(4.2)],
 					]),
@@ -429,7 +429,7 @@ describe('Type', () => {
 					TYPE.Type.FLOAT.union(TYPE.Type.STR),
 					TYPE.Type.STR.union(TYPE.Type.FLOAT),
 				].map((t) => new TYPE.TypeDict(t));
-				new Map<OBJ.SolidObject, TYPE.TypeDict>([
+				new Map<OBJ.Object, TYPE.TypeDict>([
 					[new OBJ.SolidDict(input[0]), output[0]],
 					[new OBJ.SolidDict(input[1]), output[1]],
 					[new OBJ.SolidDict(input[2]), output[2]],
@@ -438,7 +438,7 @@ describe('Type', () => {
 				});
 			});
 			it('constant set types should be subtype of a set type instance.', () => {
-				new Map<OBJ.SolidObject, TYPE.TypeSet>([
+				new Map<OBJ.Object, TYPE.TypeSet>([
 					[new OBJ.SolidSet(),                                                              new TYPE.TypeSet(TYPE.Type.NEVER)],
 					[new OBJ.SolidSet(new Set([new OBJ.Int16(42n)])),                                 new TYPE.TypeSet(TYPE.Type.INT)],
 					[new OBJ.SolidSet(new Set([new OBJ.Float64(4.2), new OBJ.SolidString('hello')])), new TYPE.TypeSet(TYPE.Type.FLOAT.union(TYPE.Type.STR))],
@@ -447,10 +447,10 @@ describe('Type', () => {
 				});
 			});
 			it('constant map types should be subtype of a map type instance.', () => {
-				new Map<OBJ.SolidObject, TYPE.TypeMap>([
-					[new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([[new OBJ.Int16(0x100n), new OBJ.Int16(42n)]])),                                                          new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.INT)],
-					[new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([[new OBJ.Int16(0x100n), new OBJ.Float64(4.2)], [new OBJ.Int16(0x101n), new OBJ.SolidString('hello')]])), new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.FLOAT.union(TYPE.Type.STR))],
-					[new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([[new OBJ.SolidString('hello'), new OBJ.Int16(0x100n)], [new OBJ.Float64(4.2), new OBJ.Int16(0x101n)]])), new TYPE.TypeMap(TYPE.Type.FLOAT.union(TYPE.Type.STR), TYPE.Type.INT)],
+				new Map<OBJ.Object, TYPE.TypeMap>([
+					[new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([[new OBJ.Int16(0x100n), new OBJ.Int16(42n)]])),                                                          new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.INT)],
+					[new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([[new OBJ.Int16(0x100n), new OBJ.Float64(4.2)], [new OBJ.Int16(0x101n), new OBJ.SolidString('hello')]])), new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.FLOAT.union(TYPE.Type.STR))],
+					[new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([[new OBJ.SolidString('hello'), new OBJ.Int16(0x100n)], [new OBJ.Float64(4.2), new OBJ.Int16(0x101n)]])), new TYPE.TypeMap(TYPE.Type.FLOAT.union(TYPE.Type.STR), TYPE.Type.INT)],
 				]).forEach((maptype, value) => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(maptype), `let x: ${ maptype } = ${ value };`);
 				});

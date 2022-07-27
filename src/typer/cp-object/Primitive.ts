@@ -1,4 +1,4 @@
-import {SolidObject} from './SolidObject.js';
+import {Object} from './Object.js';
 
 
 
@@ -10,5 +10,5 @@ import {SolidObject} from './SolidObject.js';
  * - Float64
  * - SolidString
  */
-export abstract class Primitive extends SolidObject {
+export abstract class Primitive extends Object {
 }

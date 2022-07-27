@@ -673,11 +673,11 @@ describe('ASTNodeAccess', () => {
 
 
 	describe('#fold', () => {
-		function foldStmtExpr(stmt: AST.ASTNodeStatement): OBJ.SolidObject | null {
+		function foldStmtExpr(stmt: AST.ASTNodeStatement): OBJ.Object | null {
 			assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 			return stmt.expr!.fold();
 		}
-		const expected: (OBJ.SolidObject | null)[] = [
+		const expected: (OBJ.Object | null)[] = [
 			new OBJ.Int16(1n),
 			new OBJ.Float64(2.0),
 			new OBJ.SolidString('three'),
@@ -685,7 +685,7 @@ describe('ASTNodeAccess', () => {
 			null,
 			null,
 		];
-		const expected_o: (OBJ.SolidObject | null)[] = [
+		const expected_o: (OBJ.Object | null)[] = [
 			new OBJ.SolidString('three'),
 			null,
 			null,

@@ -60,7 +60,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		};
 		return TYPE.Type.NEVER;
 	}
-	protected override fold_do(): OBJ.SolidObject | null {
+	protected override fold_do(): OBJ.Object | null {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {

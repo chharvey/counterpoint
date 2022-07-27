@@ -26,7 +26,7 @@ export class TypeList extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }List.<${ this.types }>`;
 	}
 
-	override includes(v: OBJ.SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.SolidList && v.toType().isSubtypeOf(this);
 	}
 

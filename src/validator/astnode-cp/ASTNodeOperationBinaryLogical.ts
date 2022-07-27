@@ -50,8 +50,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					? t0.subtract(falsytypes).union(t1)
 					: t0
 	}
-	protected override fold_do(): OBJ.SolidObject | null {
-		const v0: OBJ.SolidObject | null = this.operand0.fold();
+	protected override fold_do(): OBJ.Object | null {
+		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}

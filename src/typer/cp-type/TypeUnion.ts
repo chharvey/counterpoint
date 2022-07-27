@@ -37,7 +37,7 @@ export class TypeUnion extends Type {
 	override toString(): string {
 		return `${ this.left } | ${ this.right }`;
 	}
-	override includes(v: OBJ.SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return this.left.includes(v) || this.right.includes(v)
 	}
 	/**

@@ -26,13 +26,13 @@ import {
 
 
 
-function typeOperations(tests: ReadonlyMap<string, OBJ.SolidObject>, config: CPConfig = CONFIG_DEFAULT): void {
+function typeOperations(tests: ReadonlyMap<string, OBJ.Object>, config: CPConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type()),
 		[...tests.values()].map((expected) => new TYPE.TypeUnit(expected)),
 	);
 }
-function foldOperations(tests: Map<string, OBJ.SolidObject>): void {
+function foldOperations(tests: Map<string, OBJ.Object>): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).fold()),
 		[...tests.values()],
@@ -371,7 +371,7 @@ describe('ASTNodeOperation', () => {
 				]);
 			});
 			it('computes the value of a float operation of constants.', () => {
-				foldOperations(new Map<string, OBJ.SolidObject>([
+				foldOperations(new Map<string, OBJ.Object>([
 					[`3.0e1 - 201.0e-1;`, new OBJ.Float64(30 - 20.1)],
 					[`3 * 2.1;`,          new OBJ.Float64(3 * 2.1)],
 				]));
@@ -745,7 +745,7 @@ describe('ASTNodeOperation', () => {
 	describe('ASTNodeOperationBinaryLogical', () => {
 		describe('#type', () => {
 			it('with constant folding on.', () => {
-				typeOperations(new Map<string, OBJ.SolidObject>([
+				typeOperations(new Map<string, OBJ.Object>([
 					[`null  && false;`, OBJ.SolidNull.NULL],
 					[`false && null;`,  OBJ.SolidBoolean.FALSE],
 					[`true  && null;`,  OBJ.SolidNull.NULL],
@@ -878,7 +878,7 @@ describe('ASTNodeOperation', () => {
 
 
 		specify('#fold', () => {
-			foldOperations(new Map<string, OBJ.SolidObject>([
+			foldOperations(new Map<string, OBJ.Object>([
 				[`null && 5;`,     OBJ.SolidNull.NULL],
 				[`null || 5;`,     new OBJ.Int16(5n)],
 				[`5 && null;`,     OBJ.SolidNull.NULL],
@@ -965,7 +965,7 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			context('with constant folding on', () => {
 				it('computes type for for conditionals', () => {
-					typeOperations(new Map<string, OBJ.SolidObject>([
+					typeOperations(new Map<string, OBJ.Object>([
 						[`if true then false else 2;`,          OBJ.SolidBoolean.FALSE],
 						[`if false then 3.0 else null;`,        OBJ.SolidNull.NULL],
 						[`if true then 2 else 3.0;`,            new OBJ.Int16(2n)],
@@ -980,7 +980,7 @@ describe('ASTNodeOperation', () => {
 
 
 		specify('#fold', () => {
-			foldOperations(new Map<string, OBJ.SolidObject>([
+			foldOperations(new Map<string, OBJ.Object>([
 				[`if true then false else 2;`,          OBJ.SolidBoolean.FALSE],
 				[`if false then 3.0 else null;`,        OBJ.SolidNull.NULL],
 				[`if true then 2 else 3.0;`,            new OBJ.Int16(2n)],

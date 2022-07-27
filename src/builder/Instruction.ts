@@ -72,7 +72,7 @@ export class InstructionConst extends InstructionExpression {
 	 * @param to_float Should the value be type-coerced into a floating-point number?
 	 * @return the directions to print
 	 */
-	static fromCPValue(value: OBJ.SolidObject | null, to_float: boolean = false): InstructionConst {
+	static fromCPValue(value: OBJ.Object | null, to_float: boolean = false): InstructionConst {
 		if (!value) {
 			throw new Error('Cannot build an abrupt completion structure.')
 		}

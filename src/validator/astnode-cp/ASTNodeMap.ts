@@ -37,13 +37,13 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 			true,
 		);
 	}
-	protected override fold_do(): OBJ.SolidObject | null {
-		const cases: ReadonlyMap<OBJ.SolidObject | null, OBJ.SolidObject | null> = new Map(this.children.map((c) => [
+	protected override fold_do(): OBJ.Object | null {
+		const cases: ReadonlyMap<OBJ.Object | null, OBJ.Object | null> = new Map(this.children.map((c) => [
 			c.antecedent.fold(),
 			c.consequent.fold(),
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null
-			: new OBJ.SolidMap(cases as ReadonlyMap<OBJ.SolidObject, OBJ.SolidObject>);
+			: new OBJ.SolidMap(cases as ReadonlyMap<OBJ.Object, OBJ.Object>);
 	}
 }

@@ -7,13 +7,13 @@ import {
 	TypeUnit,
 	TypeMap,
 } from './package.js';
-import type {SolidObject} from './SolidObject.js';
+import type {Object} from './Object.js';
 import {SolidNull} from './SolidNull.js';
 import {Collection} from './Collection.js';
 
 
 
-export class SolidMap<K extends SolidObject = SolidObject, V extends SolidObject = SolidObject> extends Collection {
+export class SolidMap<K extends Object = Object, V extends Object = Object> extends Collection {
 	constructor (
 		private readonly cases: ReadonlyMap<K, V> = new Map(),
 	) {
@@ -31,7 +31,7 @@ export class SolidMap<K extends SolidObject = SolidObject, V extends SolidObject
 		return this.cases.size === 0;
 	}
 	/** @final */
-	protected override equal_helper(value: SolidObject): boolean {
+	protected override equal_helper(value: Object): boolean {
 		return (
 			value instanceof SolidMap
 			&& this.cases.size === value.cases.size

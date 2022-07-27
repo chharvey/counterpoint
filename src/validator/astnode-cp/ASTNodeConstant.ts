@@ -27,7 +27,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 
-	private static keywordValue(source: string): OBJ.SolidObject {
+	private static keywordValue(source: string): OBJ.Object {
 		return (
 			(source === Keyword.NULL)  ? OBJ.SolidNull.NULL :
 			(source === Keyword.FALSE) ? OBJ.SolidBoolean.FALSE :
@@ -36,7 +36,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		);
 	}
 
-	private _value: OBJ.SolidObject | null = null;
+	private _value: OBJ.Object | null = null;
 
 	constructor (start_node:
 		| SyntaxNodeType<'integer'>
@@ -49,7 +49,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node);
 	}
 
-	private get value(): OBJ.SolidObject {
+	private get value(): OBJ.Object {
 		return this._value ??= (
 			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new OBJ.SolidString(Validator.cookTokenTemplate(this.start_node.text)) :
 			(isSyntaxNodeType(this.start_node, 'integer'))                            ? valueOfTokenNumber(this.start_node.text, this.validator.config) :
@@ -71,7 +71,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	protected override type_do(): TYPE.Type {
 		return new TYPE.TypeUnit(this.value);
 	}
-	protected override fold_do(): OBJ.SolidObject {
+	protected override fold_do(): OBJ.Object {
 		return this.value;
 	}
 }

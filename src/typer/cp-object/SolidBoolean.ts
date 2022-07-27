@@ -1,5 +1,5 @@
 import {TypeUnit} from './package.js';
-import type {SolidObject} from './SolidObject.js';
+import type {Object} from './Object.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -42,7 +42,7 @@ export class SolidBoolean extends Primitive {
 	override get isTruthy(): boolean {
 		return this.data;
 	}
-	protected override identical_helper(value: SolidObject): boolean {
+	protected override identical_helper(value: Object): boolean {
 		return value instanceof SolidBoolean && this.data === value.data;
 	}
 }

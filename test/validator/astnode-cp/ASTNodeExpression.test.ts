@@ -439,7 +439,7 @@ describe('ASTNodeExpression', () => {
 							new OBJ.Float64(2.0),
 							new OBJ.SolidString('three'),
 						]),
-						new OBJ.SolidRecord(new Map<bigint, OBJ.SolidObject>([
+						new OBJ.SolidRecord(new Map<bigint, OBJ.Object>([
 							[0x100n, new OBJ.Int16(1n)],
 							[0x101n, new OBJ.Float64(2.0)],
 							[0x102n, new OBJ.SolidString('three')],
@@ -449,7 +449,7 @@ describe('ASTNodeExpression', () => {
 							new OBJ.Float64(2.0),
 							new OBJ.SolidString('three'),
 						])),
-						new OBJ.SolidMap(new Map<OBJ.SolidObject, OBJ.SolidObject>([
+						new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>([
 							[new OBJ.SolidString('a'), new OBJ.Int16(1n)],
 							[new OBJ.Int16(42n),       new OBJ.Float64(2.0)],
 							[new OBJ.Float64(3.0),     new OBJ.SolidString('three')],
@@ -486,7 +486,7 @@ describe('ASTNodeExpression', () => {
 			it('ASTNodeRecord overwrites duplicate keys.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, a= 'three'];`).fold(),
-					new OBJ.SolidRecord(new Map<bigint, OBJ.SolidObject>([
+					new OBJ.SolidRecord(new Map<bigint, OBJ.Object>([
 						[0x101n, new OBJ.Float64(2.0)],
 						[0x100n, new OBJ.SolidString('three')],
 					])),

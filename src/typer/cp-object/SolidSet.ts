@@ -7,13 +7,13 @@ import {
 	TypeUnit,
 	TypeSet,
 } from './package.js';
-import type {SolidObject} from './SolidObject.js';
+import type {Object} from './Object.js';
 import {SolidNull} from './SolidNull.js';
 import {Collection} from './Collection.js';
 
 
 
-export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
+export class SolidSet<T extends Object = Object> extends Collection {
 	constructor (
 		private readonly elements: ReadonlySet<T> = new Set(),
 	) {
@@ -31,7 +31,7 @@ export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
 		return this.elements.size === 0;
 	}
 	/** @final */
-	protected override equal_helper(value: SolidObject): boolean {
+	protected override equal_helper(value: Object): boolean {
 		return (
 			value instanceof SolidSet
 			&& this.elements.size === value.elements.size

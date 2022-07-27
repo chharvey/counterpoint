@@ -44,7 +44,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		return statement.expr;
 	}
 	private typed?: TYPE.Type;
-	private assessed?: OBJ.SolidObject | null;
+	private assessed?: OBJ.Object | null;
 	private built?: INST.InstructionExpression;
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
@@ -66,7 +66,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 */
 	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
 		if (!this.built) {
-			const value: OBJ.SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
+			const value: OBJ.Object | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
 			this.built = (!!value) ? INST.InstructionConst.fromCPValue(value, to_float) : this.build_do(builder, to_float);
 		}
 		return this.built;
@@ -81,7 +81,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		if (!this.typed) {
 			this.typed = this.type_do(); // type-check first, to re-throw any TypeErrors
 			if (this.validator.config.compilerOptions.constantFolding) {
-				let value: OBJ.SolidObject | null = null;
+				let value: OBJ.Object | null = null;
 				try {
 					value = this.fold();
 				} catch (err) {
@@ -106,8 +106,8 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 * @final
 	 */
-	fold(): OBJ.SolidObject | null {
+	fold(): OBJ.Object | null {
 		return this.assessed ||= this.fold_do();
 	}
-	protected abstract fold_do(): OBJ.SolidObject | null;
+	protected abstract fold_do(): OBJ.Object | null;
 }

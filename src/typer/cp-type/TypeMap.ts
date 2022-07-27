@@ -28,7 +28,7 @@ export class TypeMap extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }Map.<${ this.antecedenttypes }, ${ this.consequenttypes }>`;
 	}
 
-	override includes(v: OBJ.SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.SolidMap && v.toType().isSubtypeOf(this);
 	}
 

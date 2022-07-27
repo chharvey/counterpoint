@@ -17,7 +17,7 @@ export class TypeObject extends Type {
 	override toString(): string {
 		return 'obj';
 	}
-	override includes(_v: OBJ.SolidObject): boolean {
+	override includes(_v: OBJ.Object): boolean {
 		return true;
 	}
 }

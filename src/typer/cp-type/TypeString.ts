@@ -17,7 +17,7 @@ export class TypeString extends Type {
 	override toString(): string {
 		return 'str';
 	}
-	override includes(v: OBJ.SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.SolidString;
 	}
 }

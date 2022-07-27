@@ -34,10 +34,10 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 			: TYPE.Type.NEVER
 		), true);
 	}
-	protected override fold_do(): OBJ.SolidObject | null {
-		const elements: readonly (OBJ.SolidObject | null)[] = this.children.map((c) => c.fold());
+	protected override fold_do(): OBJ.Object | null {
+		const elements: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
 		return (elements.includes(null))
 			? null
-			: new OBJ.SolidSet(new Set(elements as OBJ.SolidObject[]));
+			: new OBJ.SolidSet(new Set(elements as OBJ.Object[]));
 	}
 }

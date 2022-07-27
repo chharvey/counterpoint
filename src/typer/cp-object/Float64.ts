@@ -1,5 +1,5 @@
 import * as xjs from 'extrajs'
-import type {SolidObject} from './SolidObject.js';
+import type {Object as CPObject} from './Object.js';
 import {SolidNumber} from './SolidNumber.js';
 
 
@@ -17,10 +17,10 @@ export class Float64 extends SolidNumber<Float64> {
 	override toString(): string {
 		return `${ this.data }${ (this.data % 1 === 0) ? '.0' : '' }`;
 	}
-	protected override identical_helper(value: SolidObject): boolean {
+	protected override identical_helper(value: CPObject): boolean {
 		return value instanceof Float64 && Object.is(this.data, value.data);
 	}
-	protected override equal_helper(value: SolidObject): boolean {
+	protected override equal_helper(value: CPObject): boolean {
 		return value instanceof SolidNumber && this.data === value.toFloat().data;
 	}
 
