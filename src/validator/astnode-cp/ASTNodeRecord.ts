@@ -43,6 +43,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
-			: new OBJ.SolidRecord(properties as ReadonlyMap<bigint, OBJ.Object>);
+			: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
 	}
 }

@@ -11,8 +11,8 @@ import {Object} from './Object.js';
  * Known subclasses:
  * - CollectionIndexed
  * - CollectionKeyed
- * - SolidSet
- * - SolidMap
+ * - Set
+ * - Map
  */
 export abstract class Collection extends Object {
 	private static readonly EQ_MEMO_COMPARATOR: (

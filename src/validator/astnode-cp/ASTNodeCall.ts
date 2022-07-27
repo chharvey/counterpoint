@@ -65,8 +65,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 						ASTNodeCP.typeCheckAssignment(returntype, argtype, this, this.validator);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (
-							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.SolidTuple) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)                                           ? argtype.itemTypes()                :
+							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Tuple) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof TYPE.TypeTuple)                                      ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
 						ASTNodeCP.typeCheckAssignment(itemtype, argitemtype, this, this.validator);
@@ -84,8 +84,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 						ASTNodeCP.typeCheckAssignment(returntype, argtype, this, this.validator);
 					} catch (err) {
 						const argvaluetype: TYPE.Type = (
-							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.SolidRecord) ? argtype.value.toType().valueTypes() :
-							(argtype instanceof TYPE.TypeRecord)                                           ? argtype.valueTypes()                :
+							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Record) ? argtype.value.toType().valueTypes() :
+							(argtype instanceof TYPE.TypeRecord)                                      ? argtype.valueTypes()                :
 							(() => { throw err; })()
 						);
 						ASTNodeCP.typeCheckAssignment(valuetype, argvaluetype, this, this.validator);
@@ -103,8 +103,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 						ASTNodeCP.typeCheckAssignment(new TYPE.TypeList(eltype), argtype, this, this.validator);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (
-							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.SolidTuple) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)                                           ? argtype.itemTypes()                :
+							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Tuple) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof TYPE.TypeTuple)                                      ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
 						ASTNodeCP.typeCheckAssignment(eltype, argitemtype, this, this.validator);
@@ -124,8 +124,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 						ASTNodeCP.typeCheckAssignment(new TYPE.TypeList(entrytype), argtype, this, this.validator);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (
-							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.SolidTuple) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)                                           ? argtype.itemTypes()                :
+							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Tuple) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof TYPE.TypeTuple)                                      ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
 						ASTNodeCP.typeCheckAssignment(entrytype, argitemtype, this, this.validator);
@@ -143,10 +143,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 			return null;
 		}
 		return new Map<ValidFunctionName, (argument: OBJ.Object | undefined) => OBJ.Object | null>([
-			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new OBJ.SolidList() : new OBJ.SolidList((tuple as OBJ.SolidTuple).items)],
-			[ValidFunctionName.DICT, (record) => (record === undefined) ? new OBJ.SolidDict() : new OBJ.SolidDict((record as OBJ.SolidRecord).properties)],
-			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.SolidSet()  : new OBJ.SolidSet(new Set<OBJ.Object>((tuple as OBJ.SolidTuple).items))],
-			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.SolidMap()  : new OBJ.SolidMap(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.SolidTuple).items.map((pair) => (pair as OBJ.SolidTuple).items as [OBJ.Object, OBJ.Object])))],
+			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new OBJ.List() : new OBJ.List((tuple as OBJ.Tuple).items)],
+			[ValidFunctionName.DICT, (record) => (record === undefined) ? new OBJ.Dict() : new OBJ.Dict((record as OBJ.Record).properties)],
+			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.Set()  : new OBJ.Set(new Set<OBJ.Object>((tuple as OBJ.Tuple).items))],
+			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.Map()  : new OBJ.Map(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.Tuple).items.map((pair) => (pair as OBJ.Tuple).items as [OBJ.Object, OBJ.Object])))],
 		]).get(this.base.source as ValidFunctionName)!(argvalue);
 	}
 	/**

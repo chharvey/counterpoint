@@ -44,6 +44,6 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null
-			: new OBJ.SolidMap(cases as ReadonlyMap<OBJ.Object, OBJ.Object>);
+			: new OBJ.Map(cases as ReadonlyMap<OBJ.Object, OBJ.Object>);
 	}
 }

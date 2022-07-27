@@ -8,7 +8,7 @@ import {CollectionKeyed} from './CollectionKeyed.js';
 
 
 
-export class SolidDict<T extends Object = Object> extends CollectionKeyed<T> {
+export class Dict<T extends Object = Object> extends CollectionKeyed<T> {
 	override toString(): string {
 		return `Dict.(${ super.toString() })`;
 	}

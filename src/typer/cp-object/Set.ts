@@ -13,7 +13,7 @@ import {Collection} from './Collection.js';
 
 
 
-export class SolidSet<T extends Object = Object> extends Collection {
+class CPSet<T extends Object = Object> extends Collection {
 	constructor (
 		private readonly elements: ReadonlySet<T> = new Set(),
 	) {
@@ -33,9 +33,9 @@ export class SolidSet<T extends Object = Object> extends Collection {
 	/** @final */
 	protected override equal_helper(value: Object): boolean {
 		return (
-			value instanceof SolidSet
+			value instanceof CPSet
 			&& this.elements.size === value.elements.size
-			&& Collection.do_Equal<SolidSet>(this, value, () => [...(value as SolidSet).elements].every(
+			&& Collection.do_Equal<CPSet>(this, value, () => [...(value as CPSet).elements].every(
 				(thatelement) => !![...this.elements].find((el) => el.equal(thatelement)),
 			))
 		);
@@ -57,3 +57,4 @@ export class SolidSet<T extends Object = Object> extends Collection {
 				: (() => { throw new VoidError01(accessor); })();
 	}
 }
+export {CPSet as Set};

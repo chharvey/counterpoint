@@ -133,22 +133,22 @@ describe('ASTNodeCall', () => {
 					]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new OBJ.SolidList<OBJ.Integer>([
+					new OBJ.List<OBJ.Integer>([
 						new OBJ.Integer(1n),
 						new OBJ.Integer(2n),
 						new OBJ.Integer(3n),
 					]),
-					new OBJ.SolidDict<OBJ.Integer>(new Map<bigint, OBJ.Integer>([
+					new OBJ.Dict<OBJ.Integer>(new Map<bigint, OBJ.Integer>([
 						[0x100n, new OBJ.Integer(1n)],
 						[0x101n, new OBJ.Integer(2n)],
 						[0x102n, new OBJ.Integer(3n)],
 					])),
-					new OBJ.SolidSet<OBJ.Integer>(new Set<OBJ.Integer>([
+					new OBJ.Set<OBJ.Integer>(new Set<OBJ.Integer>([
 						new OBJ.Integer(1n),
 						new OBJ.Integer(2n),
 						new OBJ.Integer(3n),
 					])),
-					new OBJ.SolidMap<OBJ.Integer, OBJ.Float>(new Map<OBJ.Integer, OBJ.Float>([
+					new OBJ.Map<OBJ.Integer, OBJ.Float>(new Map<OBJ.Integer, OBJ.Float>([
 						[new OBJ.Integer(1n), new OBJ.Float(0.1)],
 						[new OBJ.Integer(2n), new OBJ.Float(0.2)],
 						[new OBJ.Integer(3n), new OBJ.Float(0.4)],
@@ -168,17 +168,17 @@ describe('ASTNodeCall', () => {
 					]));`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new OBJ.SolidList<OBJ.Integer>([
+					new OBJ.List<OBJ.Integer>([
 						new OBJ.Integer(1n),
 						new OBJ.Integer(2n),
 						new OBJ.Integer(3n),
 					]),
-					new OBJ.SolidSet<OBJ.Integer>(new Set<OBJ.Integer>([
+					new OBJ.Set<OBJ.Integer>(new Set<OBJ.Integer>([
 						new OBJ.Integer(1n),
 						new OBJ.Integer(2n),
 						new OBJ.Integer(3n),
 					])),
-					new OBJ.SolidMap<OBJ.Integer, OBJ.Float>(new Map<OBJ.Integer, OBJ.Float>([
+					new OBJ.Map<OBJ.Integer, OBJ.Float>(new Map<OBJ.Integer, OBJ.Float>([
 						[new OBJ.Integer(1n), new OBJ.Float(0.1)],
 						[new OBJ.Integer(2n), new OBJ.Float(0.2)],
 						[new OBJ.Integer(3n), new OBJ.Float(0.4)],
@@ -198,13 +198,13 @@ describe('ASTNodeCall', () => {
 					`Map.<int, float>([]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new OBJ.SolidList<never>(),
-					new OBJ.SolidDict<never>(),
-					new OBJ.SolidSet<never>(),
-					new OBJ.SolidMap<never, never>(),
-					new OBJ.SolidList<never>(),
-					new OBJ.SolidSet<never>(),
-					new OBJ.SolidMap<never, never>(),
+					new OBJ.List<never>(),
+					new OBJ.Dict<never>(),
+					new OBJ.Set<never>(),
+					new OBJ.Map<never, never>(),
+					new OBJ.List<never>(),
+					new OBJ.Set<never>(),
+					new OBJ.Map<never, never>(),
 				],
 			);
 		});

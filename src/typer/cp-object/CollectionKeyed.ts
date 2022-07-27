@@ -10,8 +10,8 @@ import {Collection} from './Collection.js';
 
 /**
  * Known subclasses:
- * - SolidRecord
- * - SolidDict
+ * - Record
+ * - Dict
  */
 export abstract class CollectionKeyed<T extends Object = Object> extends Collection {
 	constructor (

@@ -38,6 +38,6 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 		const elements: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
 		return (elements.includes(null))
 			? null
-			: new OBJ.SolidSet(new Set(elements as OBJ.Object[]));
+			: new OBJ.Set(new Set(elements as OBJ.Object[]));
 	}
 }

@@ -15,7 +15,7 @@ export class TypeDict extends Type {
 		readonly types: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.SolidDict()]));
+		super(is_mutable, new Set([new OBJ.Dict()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -27,7 +27,7 @@ export class TypeDict extends Type {
 	}
 
 	override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.SolidDict && v.toType().isSubtypeOf(this);
+		return v instanceof OBJ.Dict && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {

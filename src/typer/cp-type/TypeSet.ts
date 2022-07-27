@@ -15,7 +15,7 @@ export class TypeSet extends Type {
 		readonly types: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.SolidSet()]));
+		super(is_mutable, new Set([new OBJ.Set()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -27,7 +27,7 @@ export class TypeSet extends Type {
 	}
 
 	override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.SolidSet && v.toType().isSubtypeOf(this);
+		return v instanceof OBJ.Set && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {

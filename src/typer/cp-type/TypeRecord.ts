@@ -37,7 +37,7 @@ export class TypeRecord extends Type {
 		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.SolidRecord()]));
+		super(is_mutable, new Set([new OBJ.Record()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -57,7 +57,7 @@ export class TypeRecord extends Type {
 	}
 
 	override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.SolidRecord && v.toType().isSubtypeOf(this);
+		return v instanceof OBJ.Record && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {

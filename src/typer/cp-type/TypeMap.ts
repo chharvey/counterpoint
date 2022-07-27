@@ -17,7 +17,7 @@ export class TypeMap extends Type {
 		readonly consequenttypes: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.SolidMap()]));
+		super(is_mutable, new Set([new OBJ.Map()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -29,7 +29,7 @@ export class TypeMap extends Type {
 	}
 
 	override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.SolidMap && v.toType().isSubtypeOf(this);
+		return v instanceof OBJ.Map && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {

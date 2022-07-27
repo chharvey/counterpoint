@@ -15,7 +15,7 @@ export class TypeList extends Type {
 		readonly types: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.SolidList()]));
+		super(is_mutable, new Set([new OBJ.List()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -27,7 +27,7 @@ export class TypeList extends Type {
 	}
 
 	override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.SolidList && v.toType().isSubtypeOf(this);
+		return v instanceof OBJ.List && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {

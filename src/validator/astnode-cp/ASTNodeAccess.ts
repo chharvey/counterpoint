@@ -65,14 +65,14 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (this.accessor instanceof ASTNodeIndex) {
 			const accessor_type:  TYPE.TypeUnit = this.accessor.val.type() as TYPE.TypeUnit;
 			const accessor_value: OBJ.Integer   = accessor_type.value as OBJ.Integer;
-			if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidTuple || base_type instanceof TYPE.TypeTuple) {
-				const base_type_tuple: TYPE.TypeTuple = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidTuple)
+			if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Tuple || base_type instanceof TYPE.TypeTuple) {
+				const base_type_tuple: TYPE.TypeTuple = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Tuple)
 					? base_type.value.toType()
 					: base_type as TYPE.TypeTuple;
 				return base_type_tuple.get(accessor_value, this.kind, this.accessor);
 			}
-			else if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidList || base_type instanceof TYPE.TypeList) {
-				const base_type_list: TYPE.TypeList = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidList)
+			else if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.List || base_type instanceof TYPE.TypeList) {
+				const base_type_list: TYPE.TypeList = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.List)
 					? base_type.value.toType()
 					: base_type as TYPE.TypeList;
 				return updateAccessedDynamicType(base_type_list.types, this.kind);
@@ -80,13 +80,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				throw new TypeError04('index', base_type, this.accessor);
 			}
 		} else if (this.accessor instanceof ASTNodeKey) {
-			if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidRecord || base_type instanceof TYPE.TypeRecord) {
-				const base_type_record: TYPE.TypeRecord = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidRecord)
+			if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Record || base_type instanceof TYPE.TypeRecord) {
+				const base_type_record: TYPE.TypeRecord = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Record)
 					? base_type.value.toType()
 					: base_type as TYPE.TypeRecord;
 				return base_type_record.get(this.accessor.id, this.kind, this.accessor);
-			} else if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidDict || base_type instanceof TYPE.TypeDict) {
-				const base_type_dict: TYPE.TypeDict = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidDict)
+			} else if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Dict || base_type instanceof TYPE.TypeDict) {
+				const base_type_dict: TYPE.TypeDict = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Dict)
 					? base_type.value.toType()
 					: base_type as TYPE.TypeDict;
 				return updateAccessedDynamicType(base_type_dict.types, this.kind);
@@ -98,8 +98,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: TYPE.Type): never {
 				throw new TypeError02(accessor_type, supertype, accessor.line_index, accessor.col_index);
 			}
-			if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidTuple || base_type instanceof TYPE.TypeTuple) {
-				const base_type_tuple: TYPE.TypeTuple = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidTuple)
+			if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Tuple || base_type instanceof TYPE.TypeTuple) {
+				const base_type_tuple: TYPE.TypeTuple = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Tuple)
 					? base_type.value.toType()
 					: base_type as TYPE.TypeTuple;
 				return (accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof OBJ.Integer)
@@ -107,22 +107,22 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					: (accessor_type.isSubtypeOf(TYPE.Type.INT))
 						? updateAccessedDynamicType(base_type_tuple.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, TYPE.Type.INT);
-			} else if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidList || base_type instanceof TYPE.TypeList) {
-				const base_type_list: TYPE.TypeList = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidList)
+			} else if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.List || base_type instanceof TYPE.TypeList) {
+				const base_type_list: TYPE.TypeList = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.List)
 					? base_type.value.toType()
 					: base_type as TYPE.TypeList;
 				return (accessor_type.isSubtypeOf(TYPE.Type.INT))
 					? updateAccessedDynamicType(base_type_list.types, this.kind)
 					: throwWrongSubtypeError(this.accessor, TYPE.Type.INT);
-			} else if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidSet || base_type instanceof TYPE.TypeSet) {
-				const base_type_set: TYPE.TypeSet = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidSet)
+			} else if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Set || base_type instanceof TYPE.TypeSet) {
+				const base_type_set: TYPE.TypeSet = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Set)
 					? base_type.value.toType()
 					: base_type as TYPE.TypeSet;
 				return (accessor_type.isSubtypeOf(base_type_set.types))
 					? updateAccessedDynamicType(base_type_set.types, this.kind)
 					: throwWrongSubtypeError(this.accessor, base_type_set.types);
-			} else if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidMap || base_type instanceof TYPE.TypeMap) {
-				const base_type_map: TYPE.TypeMap = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.SolidMap)
+			} else if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Map || base_type instanceof TYPE.TypeMap) {
+				const base_type_map: TYPE.TypeMap = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Map)
 					? base_type.value.toType()
 					: base_type as TYPE.TypeMap;
 				return (accessor_type.isSubtypeOf(base_type_map.antecedenttypes))
@@ -152,8 +152,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 			return (
 				(base_value instanceof OBJ.CollectionIndexed) ? (base_value as OBJ.CollectionIndexed).get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
-				(base_value instanceof OBJ.SolidSet)          ? (base_value as OBJ.SolidSet)         .get(accessor_value,                this.optional, this.accessor) :
-				(base_value instanceof OBJ.SolidMap           , (base_value as OBJ.SolidMap)         .get(accessor_value,                this.optional, this.accessor) )
+				(base_value instanceof OBJ.Set)               ? (base_value as OBJ.Set)              .get(accessor_value,                this.optional, this.accessor) :
+				(base_value instanceof OBJ.Map                , (base_value as OBJ.Map)              .get(accessor_value,                this.optional, this.accessor) )
 			);
 		}
 	}

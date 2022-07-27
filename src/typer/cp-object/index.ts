@@ -11,9 +11,9 @@ export * from './String.js';
 export * from './CollectionIndexed.js';
 export * from './CollectionKeyed.js';
 
-export * from './SolidTuple.js';
-export * from './SolidRecord.js';
-export * from './SolidList.js';
-export * from './SolidDict.js';
-export * from './SolidSet.js';
-export * from './SolidMap.js';
+export * from './Tuple.js';
+export * from './Record.js';
+export * from './List.js';
+export * from './Dict.js';
+export * from './Set.js';
+export * from './Map.js';

@@ -13,7 +13,7 @@ import {Collection} from './Collection.js';
 
 
 
-export class SolidMap<K extends Object = Object, V extends Object = Object> extends Collection {
+class CPMap<K extends Object = Object, V extends Object = Object> extends Collection {
 	constructor (
 		private readonly cases: ReadonlyMap<K, V> = new Map(),
 	) {
@@ -33,9 +33,9 @@ export class SolidMap<K extends Object = Object, V extends Object = Object> exte
 	/** @final */
 	protected override equal_helper(value: Object): boolean {
 		return (
-			value instanceof SolidMap
+			value instanceof CPMap
 			&& this.cases.size === value.cases.size
-			&& Collection.do_Equal<SolidMap>(this, value, () => [...(value as SolidMap).cases].every(
+			&& Collection.do_Equal<CPMap>(this, value, () => [...(value as CPMap).cases].every(
 				([thatant, thatcon]) => !![...this.cases].find(([thisant, _]) => thisant.equal(thatant))?.[1].equal(thatcon),
 			))
 		);
@@ -56,3 +56,4 @@ export class SolidMap<K extends Object = Object, V extends Object = Object> exte
 				: (() => { throw new VoidError01(accessor); })();
 	}
 }
+export {CPMap as Map};

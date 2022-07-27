@@ -8,7 +8,7 @@ import {CollectionIndexed} from './CollectionIndexed.js';
 
 
 
-export class SolidList<T extends Object = Object> extends CollectionIndexed<T> {
+export class List<T extends Object = Object> extends CollectionIndexed<T> {
 	override toString(): string {
 		return `List.(${ super.toString() })`;
 	}

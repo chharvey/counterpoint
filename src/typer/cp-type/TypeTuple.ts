@@ -37,7 +37,7 @@ export class TypeTuple extends Type {
 		private readonly types: readonly TypeEntry[] = [],
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.SolidTuple()]));
+		super(is_mutable, new Set([new OBJ.Tuple()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -57,7 +57,7 @@ export class TypeTuple extends Type {
 	}
 
 	override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.SolidTuple && v.toType().isSubtypeOf(this);
+		return v instanceof OBJ.Tuple && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
