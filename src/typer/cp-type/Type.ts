@@ -5,10 +5,10 @@ import {
 	SolidNull,
 } from './package.js';
 import {
-	SolidTypeIntersection,
-	SolidTypeUnion,
-	SolidTypeDifference,
-	SolidTypeUnit,
+	TypeIntersection,
+	TypeUnion,
+	TypeDifference,
+	TypeUnit,
 	SolidTypeObject,
 	SolidTypeBoolean,
 	SolidTypeInteger,
@@ -21,13 +21,13 @@ import {
 /**
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
- * - SolidTypeIntersection
- * - SolidTypeUnion
- * - SolidTypeDifference
+ * - TypeIntersection
+ * - TypeUnion
+ * - TypeDifference
  * - TypeInterface
  * - TypeNever
  * - TypeVoid
- * - SolidTypeUnit
+ * - TypeUnit
  * - TypeUnknown
  * - SolidTypeObject
  * - SolidTypeBoolean
@@ -46,7 +46,7 @@ export abstract class Type {
 	/** The Top Type, containing all values. */                      static get UNKNOWN(): TypeUnknown { return TypeUnknown.INSTANCE; }
 	/** The Void Type, representing a completion but not a value. */ static get VOID():    TypeVoid    { return TypeVoid.INSTANCE; }
 	/** The Object Type. */                                          static get OBJ():     SolidTypeObject  { return SolidTypeObject.INSTANCE; }
-	/** The Null Type. */                                            static get NULL():    SolidTypeUnit    { return SolidNull.NULLTYPE; }
+	/** The Null Type. */                                            static get NULL():    TypeUnit    { return SolidNull.NULLTYPE; }
 	/** The Boolean Type. */                                         static get BOOL():    SolidTypeBoolean { return SolidTypeBoolean.INSTANCE; }
 	/** The Integer Type. */                                         static get INT():     SolidTypeInteger { return SolidTypeInteger.INSTANCE; }
 	/** The Float Type. */                                           static get FLOAT():   SolidTypeFloat   { return SolidTypeFloat.INSTANCE; }
@@ -131,9 +131,9 @@ export abstract class Type {
 	}
 	protected intersect_do(t: Type): Type {
 		/** 2-2 | `A \| B == B \| A` */
-		if (t instanceof SolidTypeUnion) { return t.intersect(this); }
+		if (t instanceof TypeUnion) { return t.intersect(this); }
 
-		return new SolidTypeIntersection(this, t)
+		return new TypeIntersection(this, t);
 	}
 	/**
 	 * Return the type union of this type with another.
@@ -156,9 +156,9 @@ export abstract class Type {
 	}
 	protected union_do(t: Type): Type {
 		/** 2-1 | `A  & B == B  & A` */
-		if (t instanceof SolidTypeIntersection) { return t.union(this); }
+		if (t instanceof TypeIntersection) { return t.union(this); }
 
-		return new SolidTypeUnion(this, t)
+		return new TypeUnion(this, t);
 	}
 	/**
 	 * Return a new type that includes the values in this type that are not included in the argument type.
@@ -173,14 +173,14 @@ export abstract class Type {
 		/** 4-2 | `A - B == never  <->  A <: B` */
 		if (this.isSubtypeOf(t)) { return Type.NEVER; }
 
-		if (t instanceof SolidTypeUnion) {
+		if (t instanceof TypeUnion) {
 			return t.subtractedFrom(this);
 		}
 
 		return this.subtract_do(t);
 	}
 	protected subtract_do(t: Type): Type {
-		return new SolidTypeDifference(this, t);
+		return new TypeDifference(this, t);
 	}
 	/**
 	 * Return whether this type is a structural subtype of the given type.
@@ -200,13 +200,13 @@ export abstract class Type {
 		/** 1-2 | `T     <: unknown` */
 		if (t.isTopType) { return true; }
 
-		if (t instanceof SolidTypeIntersection) {
+		if (t instanceof TypeIntersection) {
 			return t.isSupertypeOf(this);
 		}
-		if (t instanceof SolidTypeUnion) {
+		if (t instanceof TypeUnion) {
 			if (t.isNecessarilySupertypeOf(this)) { return true; }
 		}
-		if (t instanceof SolidTypeDifference) {
+		if (t instanceof TypeDifference) {
 			return t.isSupertypeOf(this);
 		}
 

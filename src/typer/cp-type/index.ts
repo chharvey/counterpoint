@@ -1,9 +1,9 @@
 export * from './Type.js';
 
-export * from './SolidTypeIntersection.js';
-export * from './SolidTypeUnion.js';
-export * from './SolidTypeDifference.js';
-export * from './SolidTypeUnit.js';
+export * from './TypeIntersection.js';
+export * from './TypeUnion.js';
+export * from './TypeDifference.js';
+export * from './TypeUnit.js';
 
 export * from './SolidTypeObject.js';
 export * from './SolidTypeBoolean.js';

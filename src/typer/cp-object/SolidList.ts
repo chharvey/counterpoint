@@ -1,6 +1,6 @@
 import {
 	Type,
-	SolidTypeUnit,
+	TypeUnit,
 	SolidTypeList,
 } from './package.js';
 import type {SolidObject} from './SolidObject.js';
@@ -15,7 +15,7 @@ export class SolidList<T extends SolidObject = SolidObject> extends CollectionIn
 	override toType(): SolidTypeList {
 		return new SolidTypeList(
 			(this.items.length)
-				? Type.unionAll(this.items.map<Type>((el) => new SolidTypeUnit(el)))
+				? Type.unionAll(this.items.map<Type>((el) => new TypeUnit(el)))
 				: Type.NEVER,
 		);
 	}

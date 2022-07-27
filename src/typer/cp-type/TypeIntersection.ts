@@ -15,11 +15,11 @@ import {
  * A type intersection of two types `T` and `U` is the type
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
-export class SolidTypeIntersection extends Type {
+export class TypeIntersection extends Type {
 	declare readonly isBottomType: boolean;
 
 	/**
-	 * Construct a new SolidTypeIntersection object.
+	 * Construct a new TypeIntersection object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
@@ -47,11 +47,11 @@ export class SolidTypeIntersection extends Type {
 		if (t.equals(this.left) || t.equals(this.right)) { return true }
 		return super.isSubtypeOf_do(t)
 	}
-	override mutableOf(): SolidTypeIntersection {
-		return new SolidTypeIntersection(this.left.mutableOf(), this.right.mutableOf());
+	override mutableOf(): TypeIntersection {
+		return new TypeIntersection(this.left.mutableOf(), this.right.mutableOf());
 	}
-	override immutableOf(): SolidTypeIntersection {
-		return new SolidTypeIntersection(this.left.immutableOf(), this.right.immutableOf());
+	override immutableOf(): TypeIntersection {
+		return new TypeIntersection(this.left.immutableOf(), this.right.immutableOf());
 	}
 	isSupertypeOf(t: Type): boolean {
 		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */

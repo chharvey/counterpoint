@@ -11,11 +11,11 @@ import {Type} from './Type.js';
  * A type difference of two types `T` and `U` is the type
  * that contains values assignable to `T` but *not* assignable to `U`.
  */
-export class SolidTypeDifference extends Type {
+export class TypeDifference extends Type {
 	declare readonly isBottomType: boolean;
 
 	/**
-	 * Construct a new SolidTypeDifference object.
+	 * Construct a new TypeDifference object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
@@ -46,11 +46,11 @@ export class SolidTypeDifference extends Type {
 	protected override isSubtypeOf_do(t: Type): boolean {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf_do(t);
 	}
-	override mutableOf(): SolidTypeDifference {
-		return new SolidTypeDifference(this.left.mutableOf(), this.right.mutableOf());
+	override mutableOf(): TypeDifference {
+		return new TypeDifference(this.left.mutableOf(), this.right.mutableOf());
 	}
-	override immutableOf(): SolidTypeDifference {
-		return new SolidTypeDifference(this.left.immutableOf(), this.right.immutableOf());
+	override immutableOf(): TypeDifference {
+		return new TypeDifference(this.left.immutableOf(), this.right.immutableOf());
 	}
 	isSupertypeOf(t: Type): boolean {
 		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */

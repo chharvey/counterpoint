@@ -132,7 +132,7 @@ describe('Type', () => {
 				(bool | int)
 			`);
 		});
-		describe('SolidTypeUnion', () => {
+		describe('TypeUnion', () => {
 			it('distributes union operands over intersection: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
 				const expr = TYPE.Type.NULL.union(TYPE.Type.INT).intersect(TYPE.Type.VOID.union(TYPE.Type.NULL).union(SolidBoolean.FALSETYPE));
 				assert.ok(expr.equals(TYPE.Type.NULL), `(null | int) & (void | null | false) == null`);
@@ -363,7 +363,7 @@ describe('Type', () => {
 			})
 		})
 
-		describe('SolidTypeUnit', () => {
+		describe('TypeUnit', () => {
 			it('constant Boolean types should be subtypes of `bool`.', () => {
 				assert.ok(SolidBoolean.FALSETYPE.isSubtypeOf(TYPE.Type.BOOL), 'SolidBoolean.FALSETYPE')
 				assert.ok(SolidBoolean.TRUETYPE .isSubtypeOf(TYPE.Type.BOOL), 'SolidBoolean.TRUETYPE')
@@ -389,7 +389,7 @@ describe('Type', () => {
 					[new SolidTuple([new Int16(42n)]),                             TYPE.SolidTypeTuple.fromTypes([TYPE.Type.INT])],
 					[new SolidTuple([new Float64(4.2), new SolidString('hello')]), TYPE.SolidTypeTuple.fromTypes([TYPE.Type.FLOAT, TYPE.Type.STR])],
 				]).forEach((tupletype, value) => {
-					assert.ok(new TYPE.SolidTypeUnit(value).isSubtypeOf(tupletype),  `let x: ${ tupletype } = ${ value };`);
+					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(tupletype), `let x: ${ tupletype } = ${ value };`);
 				});
 			});
 			it('constant record types should be subtype of a record type instance.', () => {
@@ -398,7 +398,7 @@ describe('Type', () => {
 					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Float64(4.2)], [0x101n, new SolidString('hello')]])), TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.FLOAT], [0x101n, TYPE.Type.STR]]))],
 					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new SolidString('hello')], [0x101n, new Float64(4.2)]])), TYPE.SolidTypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.Type.STR], [0x101n, TYPE.Type.FLOAT]]))],
 				]).forEach((recordtype, value) => {
-					assert.ok(new TYPE.SolidTypeUnit(value).isSubtypeOf(recordtype),  `let x: ${ recordtype } = ${ value };`);
+					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(recordtype), `let x: ${ recordtype } = ${ value };`);
 				});
 			});
 			it('unit list types should be subtype of a list type instance.', () => {
@@ -417,7 +417,7 @@ describe('Type', () => {
 					[new SolidList(input[1]), output[1]],
 					[new SolidList(input[2]), output[2]],
 				]).forEach((listtype, value) => {
-					assert.ok(new TYPE.SolidTypeUnit(value).isSubtypeOf(listtype), `let x: ${ listtype } = ${ value };`);
+					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(listtype), `let x: ${ listtype } = ${ value };`);
 				});
 			});
 			it('unit dict types should be subtype of a dict type instance.', () => {
@@ -444,7 +444,7 @@ describe('Type', () => {
 					[new SolidDict(input[1]), output[1]],
 					[new SolidDict(input[2]), output[2]],
 				]).forEach((dicttype, value) => {
-					assert.ok(new TYPE.SolidTypeUnit(value).isSubtypeOf(dicttype), `let x: ${ dicttype } = ${ value };`);
+					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(dicttype), `let x: ${ dicttype } = ${ value };`);
 				});
 			});
 			it('constant set types should be subtype of a set type instance.', () => {
@@ -453,7 +453,7 @@ describe('Type', () => {
 					[new SolidSet(new Set([new Int16(42n)])),                             new TYPE.SolidTypeSet(TYPE.Type.INT)],
 					[new SolidSet(new Set([new Float64(4.2), new SolidString('hello')])), new TYPE.SolidTypeSet(TYPE.Type.FLOAT.union(TYPE.Type.STR))],
 				]).forEach((settype, value) => {
-					assert.ok(new TYPE.SolidTypeUnit(value).isSubtypeOf(settype), `let x: ${ settype } = ${ value };`);
+					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(settype), `let x: ${ settype } = ${ value };`);
 				});
 			});
 			it('constant map types should be subtype of a map type instance.', () => {
@@ -462,7 +462,7 @@ describe('Type', () => {
 					[new SolidMap(new Map<SolidObject, SolidObject>([[new Int16(0x100n), new Float64(4.2)], [new Int16(0x101n), new SolidString('hello')]])), new TYPE.SolidTypeMap(TYPE.Type.INT, TYPE.Type.FLOAT.union(TYPE.Type.STR))],
 					[new SolidMap(new Map<SolidObject, SolidObject>([[new SolidString('hello'), new Int16(0x100n)], [new Float64(4.2), new Int16(0x101n)]])), new TYPE.SolidTypeMap(TYPE.Type.FLOAT.union(TYPE.Type.STR), TYPE.Type.INT)],
 				]).forEach((maptype, value) => {
-					assert.ok(new TYPE.SolidTypeUnit(value).isSubtypeOf(maptype), `let x: ${ maptype } = ${ value };`);
+					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(maptype), `let x: ${ maptype } = ${ value };`);
 				});
 			});
 		})
@@ -809,8 +809,8 @@ describe('Type', () => {
 				predicate2(types, (a, b) => {
 					const difference: TYPE.Type = a.subtract(b).mutableOf();
 					assert.ok(difference.equals(a.mutableOf().subtract(b.mutableOf())), `${ a }, ${ b }`);
-					if (difference instanceof TYPE.SolidTypeDifference) {
-						assert.ok(!difference.isMutable, 'SolidTypeDifference#isMutable === false');
+					if (difference instanceof TYPE.TypeDifference) {
+						assert.ok(!difference.isMutable, 'TypeDifference#isMutable === false');
 					}
 				});
 			});
@@ -818,8 +818,8 @@ describe('Type', () => {
 				predicate2(types, (a, b) => {
 					const intersection: TYPE.Type = a.intersect(b).mutableOf();
 					assert.ok(intersection.equals(a.mutableOf().intersect(b.mutableOf())), `${ a }, ${ b }`);
-					if (intersection instanceof TYPE.SolidTypeIntersection) {
-						assert.ok(!intersection.isMutable, 'SolidTypeIntersection#isMutable === false');
+					if (intersection instanceof TYPE.TypeIntersection) {
+						assert.ok(!intersection.isMutable, 'TypeIntersection#isMutable === false');
 					}
 				});
 			});
@@ -827,8 +827,8 @@ describe('Type', () => {
 				predicate2(types, (a, b) => {
 					const union: TYPE.Type = a.union(b).mutableOf();
 					assert.ok(union.equals(a.mutableOf().union(b.mutableOf())), `${ a }, ${ b }`);
-					if (union instanceof TYPE.SolidTypeUnion) {
-						assert.ok(!union.isMutable, 'SolidTypeUnion#isMutable === false');
+					if (union instanceof TYPE.TypeUnion) {
+						assert.ok(!union.isMutable, 'TypeUnion#isMutable === false');
 					}
 				});
 			});
@@ -836,7 +836,7 @@ describe('Type', () => {
 	});
 
 
-	describe('SolidTypeIntersection', () => {
+	describe('TypeIntersection', () => {
 		describe('#combineTuplesOrRecords', () => {
 			context('with tuple operands.', () => {
 				it('takes the union of indices of constituent types.', () => {
@@ -925,7 +925,7 @@ describe('Type', () => {
 	});
 
 
-	describe('SolidTypeUnion', () => {
+	describe('TypeUnion', () => {
 		describe('#combineTuplesOrRecords', () => {
 			context('with tuple operands.', () => {
 				it('takes the intersection of indices of constituent types.', () => {
@@ -974,7 +974,7 @@ describe('Type', () => {
 						TYPE.Type.BOOL,
 					]);
 					const union: TYPE.Type = left.union(right);
-					assert.ok(union instanceof TYPE.SolidTypeUnion);
+					assert.ok(union instanceof TYPE.TypeUnion);
 					const v: SolidTuple<SolidBoolean> = new SolidTuple<SolidBoolean>([SolidBoolean.TRUE, SolidBoolean.TRUE]);
 					assert.ok(union.combineTuplesOrRecords().includes(v), `
 						let x: [bool | int, int | bool] = [true, true]; % ok
@@ -1035,7 +1035,7 @@ describe('Type', () => {
 						[0x101n, TYPE.Type.BOOL],
 					]));
 					const union: TYPE.Type = left.union(right);
-					assert.ok(union instanceof TYPE.SolidTypeUnion);
+					assert.ok(union instanceof TYPE.TypeUnion);
 					const v: SolidRecord<SolidBoolean> = new SolidRecord<SolidBoolean>(new Map<bigint, SolidBoolean>([
 						[0x100n, SolidBoolean.TRUE],
 						[0x101n, SolidBoolean.TRUE],

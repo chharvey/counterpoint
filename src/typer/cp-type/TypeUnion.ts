@@ -15,11 +15,11 @@ import {
  * A type union of two types `T` and `U` is the type
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
-export class SolidTypeUnion extends Type {
+export class TypeUnion extends Type {
 	declare readonly isBottomType: boolean;
 
 	/**
-	 * Construct a new SolidTypeUnion object.
+	 * Construct a new TypeUnion object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
@@ -55,11 +55,11 @@ export class SolidTypeUnion extends Type {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
 	}
-	override mutableOf(): SolidTypeUnion {
-		return new SolidTypeUnion(this.left.mutableOf(), this.right.mutableOf());
+	override mutableOf(): TypeUnion {
+		return new TypeUnion(this.left.mutableOf(), this.right.mutableOf());
 	}
-	override immutableOf(): SolidTypeUnion {
-		return new SolidTypeUnion(this.left.immutableOf(), this.right.immutableOf());
+	override immutableOf(): TypeUnion {
+		return new TypeUnion(this.left.immutableOf(), this.right.immutableOf());
 	}
 	subtractedFrom(t: Type): Type {
 		/** 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */

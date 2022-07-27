@@ -44,7 +44,7 @@ describe('ASTNodeExpression', () => {
 
 
 		describe('#type', () => {
-			it('returns the result of `this#fold`, wrapped in a `new SolidTypeUnit`.', () => {
+			it('returns the result of `this#fold`, wrapped in a `new TypeUnit`.', () => {
 				const constants: AST.ASTNodeConstant[] = `
 					null  false  true
 					55  -55  033  -033  0  -0
@@ -60,7 +60,7 @@ describe('ASTNodeExpression', () => {
 					} finally {
 						c.fold = orig;
 					};
-				})), constants.map((c) => new TYPE.SolidTypeUnit(c.fold()!)));
+				})), constants.map((c) => new TYPE.TypeUnit(c.fold()!)));
 			});
 		});
 
@@ -325,10 +325,10 @@ describe('ASTNodeExpression', () => {
 						};
 					}));
 				});
-				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new SolidTypeUnit`.', () => {
+				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new TypeUnit`.', () => {
 					assert.deepStrictEqual(
 						types.slice(0, 2),
-						templates.slice(0, 2).map((t) => new TYPE.SolidTypeUnit(t.fold()!)),
+						templates.slice(0, 2).map((t) => new TYPE.TypeUnit(t.fold()!)),
 					);
 				});
 				it('for non-foldable interpolations, returns `String`.', () => {
@@ -389,7 +389,7 @@ describe('ASTNodeExpression', () => {
 				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.Type.unionAll([typeConstStr('a'), typeConstInt(42n),  typeConstFloat(3.0)])],
 				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.Type.unionAll([typeConstStr('a'), TYPE.Type.INT, TYPE.Type.FLOAT])],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
-				const expected: TYPE.SolidTypeUnit[] = [typeConstInt(1n), typeConstFloat(2.0), typeConstStr('three')];
+				const expected: TYPE.TypeUnit[] = [typeConstInt(1n), typeConstFloat(2.0), typeConstStr('three')];
 				const collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,

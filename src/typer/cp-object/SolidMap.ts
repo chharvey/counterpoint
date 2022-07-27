@@ -4,7 +4,7 @@ import {
 	AST,
 	solidObjectsIdentical,
 	Type,
-	SolidTypeUnit,
+	TypeUnit,
 	SolidTypeMap,
 } from './package.js';
 import type {SolidObject} from './SolidObject.js';
@@ -43,8 +43,8 @@ export class SolidMap<K extends SolidObject = SolidObject, V extends SolidObject
 
 	override toType(): SolidTypeMap {
 		return (this.cases.size) ? new SolidTypeMap(
-			Type.unionAll([...this.cases.keys()]  .map<Type>((ant) => new SolidTypeUnit(ant))),
-			Type.unionAll([...this.cases.values()].map<Type>((con) => new SolidTypeUnit(con))),
+			Type.unionAll([...this.cases.keys()]  .map<Type>((ant) => new TypeUnit(ant))),
+			Type.unionAll([...this.cases.values()].map<Type>((con) => new TypeUnit(con))),
 		) : new SolidTypeMap(Type.NEVER, Type.NEVER);
 	}
 

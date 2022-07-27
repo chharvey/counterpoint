@@ -15,7 +15,7 @@ export {
 } from '../utils-private.js';
 export {
 	Type,
-	SolidTypeUnit,
+	TypeUnit,
 	SolidTypeTuple,
 	SolidTypeRecord,
 	SolidTypeList,

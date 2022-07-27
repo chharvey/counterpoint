@@ -47,7 +47,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		const t1: TYPE.Type = this.operand1.type();
 		const t2: TYPE.Type = this.operand2.type();
 		return (t0.isSubtypeOf(TYPE.Type.BOOL))
-			? (t0 instanceof TYPE.SolidTypeUnit)
+			? (t0 instanceof TYPE.TypeUnit)
 				? (t0.value === SolidBoolean.FALSE)
 					? t2 // If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
 					: t1 // If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.

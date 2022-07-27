@@ -6,13 +6,13 @@ import {Type} from './Type.js';
 /**
  * Class for constructing unit types, types that contain exactly one value.
  */
-export class SolidTypeUnit extends Type {
+export class TypeUnit extends Type {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 
 	/**
-	 * Construct a new SolidTypeUnit object.
-	 * @param value the Solid Language Value contained in this Type
+	 * Construct a new TypeUnit object.
+	 * @param value the Counterpoint Language Value contained in this Type
 	 */
 	constructor (
 		readonly value: SolidObject,

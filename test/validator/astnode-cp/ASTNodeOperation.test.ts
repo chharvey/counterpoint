@@ -33,7 +33,7 @@ import {
 function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: CPConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type()),
-		[...tests.values()].map((expected) => new TYPE.SolidTypeUnit(expected)),
+		[...tests.values()].map((expected) => new TYPE.TypeUnit(expected)),
 	);
 }
 function foldOperations(tests: Map<string, SolidObject>): void {
@@ -493,7 +493,7 @@ describe('ASTNodeOperation', () => {
 						[`-0.0 == 0.0;`,  SolidBoolean.TRUE],
 					]));
 				});
-				it('returns the result of `this#fold`, wrapped in a `new SolidTypeUnit`.', () => {
+				it('returns the result of `this#fold`, wrapped in a `new TypeUnit`.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let a: obj = [];
 						let b: obj = [42];
@@ -523,7 +523,7 @@ describe('ASTNodeOperation', () => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
 						assert.deepStrictEqual(
 							expr.type(),
-							new TYPE.SolidTypeUnit(expr.fold()!),
+							new TYPE.TypeUnit(expr.fold()!),
 						);
 					});
 				});
@@ -782,7 +782,7 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: TYPE.SolidTypeUnit = typeConstStr('hello');
+						const hello: TYPE.TypeUnit = typeConstStr('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
@@ -839,7 +839,7 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: TYPE.SolidTypeUnit = typeConstStr('hello');
+						const hello: TYPE.TypeUnit = typeConstStr('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
