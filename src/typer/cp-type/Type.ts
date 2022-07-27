@@ -24,11 +24,11 @@ import {
  * - SolidTypeIntersection
  * - SolidTypeUnion
  * - SolidTypeDifference
- * - SolidTypeInterface
- * - SolidTypeNever
- * - SolidTypeVoid
+ * - TypeInterface
+ * - TypeNever
+ * - TypeVoid
  * - SolidTypeUnit
- * - SolidTypeUnknown
+ * - TypeUnknown
  * - SolidTypeObject
  * - SolidTypeBoolean
  * - SolidTypeInteger
@@ -42,9 +42,9 @@ import {
  * - SolidTypeMap
  */
 export abstract class Type {
-	/** The Bottom Type, containing no values. */                    static get NEVER():   SolidTypeNever   { return SolidTypeNever.INSTANCE; }
-	/** The Top Type, containing all values. */                      static get UNKNOWN(): SolidTypeUnknown { return SolidTypeUnknown.INSTANCE; }
-	/** The Void Type, representing a completion but not a value. */ static get VOID():    SolidTypeVoid    { return SolidTypeVoid.INSTANCE; }
+	/** The Bottom Type, containing no values. */                    static get NEVER():   TypeNever   { return TypeNever.INSTANCE; }
+	/** The Top Type, containing all values. */                      static get UNKNOWN(): TypeUnknown { return TypeUnknown.INSTANCE; }
+	/** The Void Type, representing a completion but not a value. */ static get VOID():    TypeVoid    { return TypeVoid.INSTANCE; }
 	/** The Object Type. */                                          static get OBJ():     SolidTypeObject  { return SolidTypeObject.INSTANCE; }
 	/** The Null Type. */                                            static get NULL():    SolidTypeUnit    { return SolidNull.NULLTYPE; }
 	/** The Boolean Type. */                                         static get BOOL():    SolidTypeBoolean { return SolidTypeBoolean.INSTANCE; }
@@ -240,12 +240,12 @@ export abstract class Type {
 /**
  * An Interface Type is a set of properties that a value must have.
  */
-export class SolidTypeInterface extends Type {
+export class TypeInterface extends Type {
 	override readonly isBottomType: boolean = [...this.properties.values()].some((value) => value.isBottomType);
 	override readonly isTopType: boolean = this.properties.size === 0;
 
 	/**
-	 * Construct a new SolidInterface object.
+	 * Construct a new TypeInterface object.
 	 * @param properties a map of this type’s members’ names along with their associated types
 	 * @param is_mutable is this type mutable?
 	 */
@@ -266,41 +266,41 @@ export class SolidTypeInterface extends Type {
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
-	protected override intersect_do(t: SolidTypeInterface): SolidTypeInterface {
+	protected override intersect_do(t: TypeInterface): TypeInterface {
 		const props: Map<string, Type> = new Map([...this.properties]);
 		;[...t.properties].forEach(([name, type_]) => {
 			props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_)
 		})
-		return new SolidTypeInterface(props)
+		return new TypeInterface(props)
 	}
 	/**
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
 	 */
-	protected override union_do(t: SolidTypeInterface): SolidTypeInterface {
+	protected override union_do(t: TypeInterface): TypeInterface {
 		const props: Map<string, Type> = new Map();
 		;[...this.properties].forEach(([name, type_]) => {
 			if (t.properties.has(name)) {
 				props.set(name, type_.union(t.properties.get(name)!))
 			}
 		})
-		return new SolidTypeInterface(props)
+		return new TypeInterface(props)
 	}
 	/**
 	 * In the general case, `S` is a subtype of `T` if every property of `T` exists in `S`,
 	 * and for each of those properties `#prop`, the type of `S#prop` is a subtype of `T#prop`.
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
 	 */
-	protected override isSubtypeOf_do(t: SolidTypeInterface) {
+	protected override isSubtypeOf_do(t: TypeInterface) {
 		return [...t.properties].every(([name, type_]) =>
 			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
 		)
 	}
-	override mutableOf(): SolidTypeInterface {
-		return new SolidTypeInterface(this.properties, true);
+	override mutableOf(): TypeInterface {
+		return new TypeInterface(this.properties, true);
 	}
-	override immutableOf(): SolidTypeInterface {
-		return new SolidTypeInterface(this.properties, false);
+	override immutableOf(): TypeInterface {
+		return new TypeInterface(this.properties, false);
 	}
 }
 
@@ -310,8 +310,8 @@ export class SolidTypeInterface extends Type {
  * Class for constructing the Bottom Type, the type containing no values.
  * @final
  */
-class SolidTypeNever extends Type {
-	static readonly INSTANCE: SolidTypeNever = new SolidTypeNever()
+class TypeNever extends Type {
+	static readonly INSTANCE: TypeNever = new TypeNever();
 
 	override readonly isBottomType: boolean = true;
 	override readonly isTopType: boolean = false;
@@ -337,8 +337,8 @@ class SolidTypeNever extends Type {
  * Class for constructing the `void` type.
  * @final
  */
-class SolidTypeVoid extends Type {
-	static readonly INSTANCE: SolidTypeVoid = new SolidTypeVoid();
+class TypeVoid extends Type {
+	static readonly INSTANCE: TypeVoid = new TypeVoid();
 
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType: boolean = false;
@@ -360,7 +360,7 @@ class SolidTypeVoid extends Type {
 		return false;
 	}
 	override equals(t: Type): boolean {
-		return t === SolidTypeVoid.INSTANCE || super.equals(t);
+		return t === TypeVoid.INSTANCE || super.equals(t);
 	}
 }
 
@@ -370,8 +370,8 @@ class SolidTypeVoid extends Type {
  * Class for constructing the Top Type, the type containing all values.
  * @final
  */
-class SolidTypeUnknown extends Type {
-	static readonly INSTANCE: SolidTypeUnknown = new SolidTypeUnknown()
+class TypeUnknown extends Type {
+	static readonly INSTANCE: TypeUnknown = new TypeUnknown();
 
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType: boolean = true;

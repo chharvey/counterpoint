@@ -50,12 +50,12 @@ describe('Type', () => {
 		TYPE.Type.FLOAT,
 		TYPE.Type.STR,
 	]
-	const t0: TYPE.SolidTypeInterface = new TYPE.SolidTypeInterface(new Map<string, TYPE.Type>([
+	const t0: TYPE.TypeInterface = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 		['foo', TYPE.Type.OBJ],
 		['bar', TYPE.Type.NULL],
 		['diz', TYPE.Type.BOOL],
 	]))
-	const t1: TYPE.SolidTypeInterface = new TYPE.SolidTypeInterface(new Map<string, TYPE.Type>([
+	const t1: TYPE.TypeInterface = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 		['foo', TYPE.Type.OBJ],
 		['qux', TYPE.Type.INT.union(TYPE.Type.FLOAT)],
 		['diz', TYPE.Type.STR],
@@ -702,11 +702,11 @@ describe('Type', () => {
 			});
 		});
 
-		describe('SolidTypeInterface', () => {
+		describe('TypeInterface', () => {
 			it('returns `true` if the subtype contains at least the properties of the supertype.', () => {
 				assert.ok(!t0.isSubtypeOf(t1))
 				assert.ok(!t1.isSubtypeOf(t0))
-				assert.ok(new TYPE.SolidTypeInterface(new Map<string, TYPE.Type>([
+				assert.ok(new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 					['foo', TYPE.Type.STR],
 					['bar', TYPE.Type.NULL],
 					['diz', TYPE.Type.BOOL],
