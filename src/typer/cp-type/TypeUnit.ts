@@ -1,4 +1,4 @@
-import type {SolidObject} from './package.js';
+import type {OBJ} from './package.js';
 import {Type} from './Type.js';
 
 
@@ -15,7 +15,7 @@ export class TypeUnit extends Type {
 	 * @param value the Counterpoint Language Value contained in this Type
 	 */
 	constructor (
-		readonly value: SolidObject,
+		readonly value: OBJ.Object,
 	) {
 		super(false, new Set([value]));
 	}
@@ -23,7 +23,7 @@ export class TypeUnit extends Type {
 	override toString(): string {
 		return this.value.toString();
 	}
-	override includes(v: SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return this.value.identical(v);
 	}
 	protected override isSubtypeOf_do(t: Type): boolean {

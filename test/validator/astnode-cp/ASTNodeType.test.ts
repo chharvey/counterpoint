@@ -3,7 +3,7 @@ import {
 	AST,
 	TypeEntry,
 	TYPE,
-	SolidBoolean,
+	OBJ,
 	SolidTypeError,
 	ReferenceError01,
 	ReferenceError02,
@@ -27,8 +27,8 @@ describe('ASTNodeType', () => {
 					`4.2e+3`,
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.Type.NULL,
-					SolidBoolean.FALSETYPE,
-					SolidBoolean.TRUETYPE,
+					OBJ.Boolean.FALSETYPE,
+					OBJ.Boolean.TRUETYPE,
 					typeConstInt(42n),
 					typeConstFloat(4.2e+3),
 				]);

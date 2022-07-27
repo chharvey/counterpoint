@@ -1,8 +1,7 @@
 import * as xjs from 'extrajs';
 import {
-	solidObjectsIdentical,
-	SolidObject,
-	SolidNull,
+	languageValuesIdentical,
+	OBJ,
 } from './package.js';
 import {
 	TypeIntersection,
@@ -45,7 +44,7 @@ export abstract class Type {
 	/** The Bottom Type, containing no values. */                    static get NEVER():   TypeNever   { return TypeNever.INSTANCE; }
 	/** The Void Type, representing a completion but not a value. */ static get VOID():    TypeVoid    { return TypeVoid.INSTANCE; }
 	/** The Top Type, containing all values. */                      static get UNKNOWN(): TypeUnknown { return TypeUnknown.INSTANCE; }
-	/** The Null Type. */                                            static get NULL():    TypeUnit    { return SolidNull.NULLTYPE; }
+	/** The Null Type. */                                            static get NULL():    TypeUnit    { return OBJ.Null.NULLTYPE; }
 	/** The Boolean Type. */                                         static get BOOL():    TypeBoolean { return TypeBoolean.INSTANCE; }
 	/** The Integer Type. */                                         static get INT():     TypeInteger { return TypeInteger.INSTANCE; }
 	/** The Float Type. */                                           static get FLOAT():   TypeFloat   { return TypeFloat.INSTANCE; }
@@ -89,7 +88,7 @@ export abstract class Type {
 	 */
 	constructor (
 		readonly isMutable: boolean,
-		readonly values:    ReadonlySet<SolidObject> = new Set(),
+		readonly values:    ReadonlySet<OBJ.Object> = new Set(),
 	) {
 	}
 
@@ -107,8 +106,8 @@ export abstract class Type {
 	 * @param v the value to check
 	 * @returns Is `v` assignable to this type?
 	 */
-	includes(v: SolidObject): boolean {
-		return xjs.Set.has(this.values, v, solidObjectsIdentical);
+	includes(v: OBJ.Object): boolean {
+		return xjs.Set.has(this.values, v, languageValuesIdentical);
 	}
 	/**
 	 * Return the type intersection of this type with another.
@@ -259,7 +258,7 @@ export class TypeInterface extends Type {
 	override get hasMutable(): boolean {
 		return super.hasMutable || [...this.properties.values()].some((t) => t.hasMutable);
 	}
-	override includes(v: SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return [...this.properties.keys()].every((key) => key in v)
 	}
 	/**
@@ -323,7 +322,7 @@ class TypeNever extends Type {
 	override toString(): string {
 		return 'never';
 	}
-	override includes(_v: SolidObject): boolean {
+	override includes(_v: OBJ.Object): boolean {
 		return false
 	}
 	override equals(t: Type): boolean {
@@ -350,7 +349,7 @@ class TypeVoid extends Type {
 	override toString(): string {
 		return 'void';
 	}
-	override includes(_v: SolidObject): boolean {
+	override includes(_v: OBJ.Object): boolean {
 		return false;
 	}
 	protected override intersect_do(_t: Type): Type {
@@ -383,7 +382,7 @@ class TypeUnknown extends Type {
 	override toString(): string {
 		return 'unknown';
 	}
-	override includes(_v: SolidObject): boolean {
+	override includes(_v: OBJ.Object): boolean {
 		return true
 	}
 	override equals(t: Type): boolean {

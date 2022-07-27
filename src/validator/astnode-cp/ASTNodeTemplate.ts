@@ -1,8 +1,7 @@
 import * as assert from 'assert';
 import {
 	TYPE,
-	SolidObject,
-	SolidString,
+	OBJ,
 	INST,
 	Builder,
 	CPConfig,
@@ -42,12 +41,12 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	protected override type_do(): TYPE.Type {
 		return TYPE.Type.STR;
 	}
-	protected override fold_do(): SolidString | null {
-		const values: (SolidObject | null)[] = [...this.children].map((expr) => expr.fold());
+	protected override fold_do(): OBJ.String | null {
+		const values: (OBJ.Object | null)[] = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))
 			? null
-			: (values as SolidObject[])
-				.map((value) => value.toSolidString())
+			: (values as OBJ.Object[])
+				.map((value) => value.toCPString())
 				.reduce((a, b) => a.concatenate(b));
 	}
 }

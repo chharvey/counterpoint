@@ -2,14 +2,7 @@ import * as assert from 'assert'
 import {
 	AST,
 	TYPE,
-	SolidObject,
-	SolidNull,
-	SolidBoolean,
-	Int16,
-	Float64,
-	SolidString,
-	SolidTuple,
-	SolidRecord,
+	OBJ,
 	TypeError01,
 	TypeError02,
 	TypeError04,
@@ -680,20 +673,20 @@ describe('ASTNodeAccess', () => {
 
 
 	describe('#fold', () => {
-		function foldStmtExpr(stmt: AST.ASTNodeStatement): SolidObject | null {
+		function foldStmtExpr(stmt: AST.ASTNodeStatement): OBJ.Object | null {
 			assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 			return stmt.expr!.fold();
 		}
-		const expected: (SolidObject | null)[] = [
-			new Int16(1n),
-			new Float64(2.0),
-			new SolidString('three'),
+		const expected: (OBJ.Object | null)[] = [
+			new OBJ.Integer(1n),
+			new OBJ.Float(2.0),
+			new OBJ.String('three'),
 			null,
 			null,
 			null,
 		];
-		const expected_o: (SolidObject | null)[] = [
-			new SolidString('three'),
+		const expected_o: (OBJ.Object | null)[] = [
+			new OBJ.String('three'),
 			null,
 			null,
 		];
@@ -708,7 +701,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource(`null?.four;`)      .fold(),
 					AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).fold(),
 				].forEach((t) => {
-					assert.strictEqual(t, SolidNull.NULL);
+					assert.strictEqual(t, OBJ.Null.NULL);
 				});
 			});
 			it('chained optional access.', () => {
@@ -725,22 +718,22 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1: SolidTuple = new SolidTuple([SolidBoolean.TRUE]);
-				const prop2: SolidTuple = new SolidTuple();
+				const prop1: OBJ.Tuple = new OBJ.Tuple([OBJ.Boolean.TRUE]);
+				const prop2: OBJ.Tuple = new OBJ.Tuple();
 				assert.deepStrictEqual(
 					program.children.slice(2, 7).map((c) => foldStmtExpr(c)),
 					[
-						new SolidRecord(new Map([[0x101n, prop1],])),
+						new OBJ.Record(new Map([[0x101n, prop1],])),
 						prop1,
-						SolidBoolean.TRUE,
-						new SolidRecord(new Map([[0x101n, prop2]])),
+						OBJ.Boolean.TRUE,
+						new OBJ.Record(new Map([[0x101n, prop2]])),
 						prop2,
 					],
 				);
 				// must bypass type-checker:
 				assert.deepStrictEqual(
 					AST.ASTNodeAccess.fromSource(`[prop= []]?.prop?.0;`).fold(),
-					SolidNull.NULL,
+					OBJ.Null.NULL,
 				);
 			});
 		});
@@ -791,7 +784,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .fold(),
 					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).fold(),
 				].forEach((v) => {
-					assert.deepStrictEqual(v, SolidNull.NULL);
+					assert.deepStrictEqual(v, OBJ.Null.NULL);
 				});
 			});
 		});
@@ -834,7 +827,7 @@ describe('ASTNodeAccess', () => {
 				[
 					AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).fold(),
 				].forEach((v) => {
-					assert.deepStrictEqual(v, SolidNull.NULL);
+					assert.deepStrictEqual(v, OBJ.Null.NULL);
 				});
 			});
 		});
@@ -868,7 +861,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(49, 51).map((c) => foldStmtExpr(c)),
 					[
-						new SolidString('three'),
+						new OBJ.String('three'),
 						null,
 					],
 				);
@@ -881,7 +874,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(51, 53).map((c) => foldStmtExpr(c)),
 					[
-						new SolidString('three'),
+						new OBJ.String('three'),
 						null,
 					],
 				);
@@ -894,7 +887,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(53, 55).map((c) => foldStmtExpr(c)),
 					[
-						new SolidString('three'),
+						new OBJ.String('three'),
 						null,
 					],
 				);
@@ -910,7 +903,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}?.[3];`)                               .fold(),
 					AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}?.[['a']];`).fold(),
 				].forEach((v) => {
-					assert.deepStrictEqual(v, SolidNull.NULL);
+					assert.deepStrictEqual(v, OBJ.Null.NULL);
 				});
 			});
 		});

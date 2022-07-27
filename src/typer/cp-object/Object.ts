@@ -1,14 +1,14 @@
-import {SolidString} from './index.js';
+import {String} from './index.js';
 
 
 
 /**
- * Parent class for all Solid Language Values.
+ * Parent class for all Counterpoint Language Values.
  * Known subclasses:
  * - Primitive
  * - Collection
  */
-export abstract class SolidObject {
+export abstract class Object {
 	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
@@ -29,7 +29,7 @@ export abstract class SolidObject {
 	 * @returns are the objects identically the same?
 	 * @final
 	 */
-	identical(value: SolidObject): boolean {
+	identical(value: Object): boolean {
 		return this === value || this.identical_helper(value)
 	}
 	/**
@@ -37,7 +37,7 @@ export abstract class SolidObject {
 	 * @param _value the object to compare
 	 * @returns are the objects identically the same?
 	 */
-	protected identical_helper(_value: SolidObject): boolean {
+	protected identical_helper(_value: Object): boolean {
 		return false
 	}
 	/**
@@ -47,7 +47,7 @@ export abstract class SolidObject {
 	 * @returns are the objects equal?
 	 * @final
 	 */
-	equal(value: SolidObject): boolean {
+	equal(value: Object): boolean {
 		return this.identical(value) || this.equal_helper(value)
 	}
 	/**
@@ -55,16 +55,16 @@ export abstract class SolidObject {
 	 * @param _value the object to compare
 	 * @returns are the objects equal?
 	 */
-	protected equal_helper(_value: SolidObject): boolean {
+	protected equal_helper(_value: Object): boolean {
 		return false
 	}
 
 	/**
-	 * Return a Solid string representation of this Object.
+	 * Return a Counterpoint string representation of this Object.
 	 * (Not a native String — see {@link #toString}.)
 	 * @returns a string representation of this Object
 	 */
-	toSolidString(): SolidString {
-		return new SolidString(this.toString());
+	toCPString(): String {
+		return new String(this.toString());
 	}
 }

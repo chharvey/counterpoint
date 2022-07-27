@@ -3,12 +3,12 @@ import {
 	TypeUnit,
 	TypeList,
 } from './package.js';
-import type {SolidObject} from './SolidObject.js';
+import type {Object} from './Object.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
 
 
 
-export class SolidList<T extends SolidObject = SolidObject> extends CollectionIndexed<T> {
+export class List<T extends Object = Object> extends CollectionIndexed<T> {
 	override toString(): string {
 		return `List.(${ super.toString() })`;
 	}

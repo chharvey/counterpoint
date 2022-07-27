@@ -1,11 +1,11 @@
 import {TypeUnit} from './package.js';
-import type {SolidObject} from './SolidObject.js';
+import type {Object} from './Object.js';
 import {Primitive} from './Primitive.js';
 
 
 
 /**
- * The class for the Solid Language Value `null`.
+ * The class for the Counterpoint Language Value `null`.
  *
  * A Null object is used as a placeholder for missing values.
  * It has no fields or methods, and it is “falsy” when used as a condition.
@@ -15,11 +15,11 @@ import {Primitive} from './Primitive.js';
  *
  * @final
  */
-export class SolidNull extends Primitive {
-	/** The Solid Language Value `null`. */
-	static readonly NULL: SolidNull = new SolidNull();
-	/** A Unit Type containing only the Solid Language Value `null`. */
-	static readonly NULLTYPE: TypeUnit = new TypeUnit(SolidNull.NULL);
+export class Null extends Primitive {
+	/** The Counterpoint Language Value `null`. */
+	static readonly NULL: Null = new Null();
+	/** A Unit Type containing only the Counterpoint Language Value `null`. */
+	static readonly NULLTYPE: TypeUnit = new TypeUnit(Null.NULL);
 
 
 	private constructor () {
@@ -32,7 +32,7 @@ export class SolidNull extends Primitive {
 	override get isTruthy(): boolean {
 		return false;
 	}
-	protected override identical_helper(value: SolidObject): boolean {
-		return value instanceof SolidNull
+	protected override identical_helper(value: Object): boolean {
+		return value instanceof Null;
 	}
 }

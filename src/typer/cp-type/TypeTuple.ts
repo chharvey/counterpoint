@@ -4,9 +4,7 @@ import {
 	ValidAccessOperator,
 	AST,
 	TypeEntry,
-	SolidObject,
-	Int16,
-	SolidTuple,
+	OBJ,
 } from './package.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
@@ -39,7 +37,7 @@ export class TypeTuple extends Type {
 		private readonly types: readonly TypeEntry[] = [],
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new SolidTuple()]));
+		super(is_mutable, new Set([new OBJ.Tuple()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -58,8 +56,8 @@ export class TypeTuple extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }[${ this.types.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
-	override includes(v: SolidObject): boolean {
-		return v instanceof SolidTuple && v.toType().isSubtypeOf(this);
+	override includes(v: OBJ.Object): boolean {
+		return v instanceof OBJ.Tuple && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
@@ -82,7 +80,7 @@ export class TypeTuple extends Type {
 		return new TypeTuple(this.types, false);
 	}
 
-	get(index: Int16, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
+	get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
 		return updateAccessedStaticType((

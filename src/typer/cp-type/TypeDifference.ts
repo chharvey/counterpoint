@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import {
-	solidObjectsIdentical,
-	SolidObject,
+	languageValuesIdentical,
+	OBJ,
 } from './package.js';
 import {Type} from './Type.js';
 
@@ -23,7 +23,7 @@ export class TypeDifference extends Type {
 		private readonly left:  Type,
 		private readonly right: Type,
 	) {
-		super(false, xjs.Set.difference(left.values, right.values, solidObjectsIdentical));
+		super(false, xjs.Set.difference(left.values, right.values, languageValuesIdentical));
 		/*
 		We can assert that this is always non-empty because
 		the only cases in which it could be empty are
@@ -40,7 +40,7 @@ export class TypeDifference extends Type {
 	override toString(): string {
 		return `${ this.left } - ${ this.right }`;
 	}
-	override includes(v: SolidObject): boolean {
+	override includes(v: OBJ.Object): boolean {
 		return this.left.includes(v) && !this.right.includes(v);
 	}
 	protected override isSubtypeOf_do(t: Type): boolean {

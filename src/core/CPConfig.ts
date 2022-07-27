@@ -6,7 +6,7 @@ import * as path from 'path';
 const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 
 /**
- * Interface for Solid configurations.
+ * Interface for compiler configurations.
  */
 export type CPConfig = {
 	/**
@@ -15,7 +15,7 @@ export type CPConfig = {
 	 */
 	readonly languageFeatures: {
 		/**
-		 * Solid code comments.
+		 * Counterpoint code comments.
 		 * @version v0.2.0
 		 * @default true
 		 */

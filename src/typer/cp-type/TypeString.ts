@@ -1,7 +1,4 @@
-import {
-	SolidObject,
-	SolidString,
-} from './package.js';
+import {OBJ} from './package.js';
 import {Type} from './Type.js';
 
 
@@ -15,12 +12,12 @@ export class TypeString extends Type {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
-		super(false, new Set([new SolidString('')]));
+		super(false, new Set([new OBJ.String('')]));
 	}
 	override toString(): string {
 		return 'str';
 	}
-	override includes(v: SolidObject): boolean {
-		return v instanceof SolidString;
+	override includes(v: OBJ.Object): boolean {
+		return v instanceof OBJ.String;
 	}
 }

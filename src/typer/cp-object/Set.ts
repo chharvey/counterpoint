@@ -2,25 +2,25 @@ import * as xjs from 'extrajs';
 import {
 	VoidError01,
 	AST,
-	solidObjectsIdentical,
+	languageValuesIdentical,
 	Type,
 	TypeUnit,
 	TypeSet,
 } from './package.js';
-import type {SolidObject} from './SolidObject.js';
-import {SolidNull} from './SolidNull.js';
+import type {Object} from './Object.js';
+import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
 
 
-export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
+class CPSet<T extends Object = Object> extends Collection {
 	constructor (
 		private readonly elements: ReadonlySet<T> = new Set(),
 	) {
 		super();
 		const uniques: Set<T> = new Set();
 		[...elements].forEach((el) => {
-			xjs.Set.add(uniques, el, solidObjectsIdentical);
+			xjs.Set.add(uniques, el, languageValuesIdentical);
 		});
 		this.elements = uniques;
 	}
@@ -31,11 +31,11 @@ export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
 		return this.elements.size === 0;
 	}
 	/** @final */
-	protected override equal_helper(value: SolidObject): boolean {
+	protected override equal_helper(value: Object): boolean {
 		return (
-			value instanceof SolidSet
+			value instanceof CPSet
 			&& this.elements.size === value.elements.size
-			&& Collection.do_Equal<SolidSet>(this, value, () => [...(value as SolidSet).elements].every(
+			&& Collection.do_Equal<CPSet>(this, value, () => [...(value as CPSet).elements].every(
 				(thatelement) => !![...this.elements].find((el) => el.equal(thatelement)),
 			))
 		);
@@ -49,11 +49,12 @@ export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
 		);
 	}
 
-	get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | SolidNull {
-		return (xjs.Set.has(this.elements, el, solidObjectsIdentical))
+	get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | Null {
+		return (xjs.Set.has(this.elements, el, languageValuesIdentical))
 			? el
 			: (access_optional)
-				? SolidNull.NULL
+				? Null.NULL
 				: (() => { throw new VoidError01(accessor); })();
 	}
 }
+export {CPSet as Set};

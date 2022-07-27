@@ -4,8 +4,7 @@ import {
 	ValidAccessOperator,
 	AST,
 	TypeEntry,
-	SolidObject,
-	SolidRecord,
+	OBJ,
 } from './package.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
@@ -38,7 +37,7 @@ export class TypeRecord extends Type {
 		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new SolidRecord()]));
+		super(is_mutable, new Set([new OBJ.Record()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -57,8 +56,8 @@ export class TypeRecord extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }[${ [...this.propertytypes].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
-	override includes(v: SolidObject): boolean {
-		return v instanceof SolidRecord && v.toType().isSubtypeOf(this);
+	override includes(v: OBJ.Object): boolean {
+		return v instanceof OBJ.Record && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {

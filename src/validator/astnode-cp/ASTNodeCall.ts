@@ -2,13 +2,7 @@ import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
-	SolidObject,
-	SolidTuple,
-	SolidRecord,
-	SolidList,
-	SolidDict,
-	SolidSet,
-	SolidMap,
+	OBJ,
 	INST,
 	Builder,
 	TypeError05,
@@ -71,8 +65,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 						ASTNodeCP.typeCheckAssignment(returntype, argtype, this, this.validator);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (
-							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof SolidTuple) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)                                       ? argtype.itemTypes()                :
+							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Tuple) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof TYPE.TypeTuple)                                      ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
 						ASTNodeCP.typeCheckAssignment(itemtype, argitemtype, this, this.validator);
@@ -90,8 +84,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 						ASTNodeCP.typeCheckAssignment(returntype, argtype, this, this.validator);
 					} catch (err) {
 						const argvaluetype: TYPE.Type = (
-							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof SolidRecord) ? argtype.value.toType().valueTypes() :
-							(argtype instanceof TYPE.TypeRecord)                                       ? argtype.valueTypes()                :
+							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Record) ? argtype.value.toType().valueTypes() :
+							(argtype instanceof TYPE.TypeRecord)                                      ? argtype.valueTypes()                :
 							(() => { throw err; })()
 						);
 						ASTNodeCP.typeCheckAssignment(valuetype, argvaluetype, this, this.validator);
@@ -109,8 +103,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 						ASTNodeCP.typeCheckAssignment(new TYPE.TypeList(eltype), argtype, this, this.validator);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (
-							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof SolidTuple) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)                                       ? argtype.itemTypes()                :
+							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Tuple) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof TYPE.TypeTuple)                                      ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
 						ASTNodeCP.typeCheckAssignment(eltype, argitemtype, this, this.validator);
@@ -130,8 +124,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 						ASTNodeCP.typeCheckAssignment(new TYPE.TypeList(entrytype), argtype, this, this.validator);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (
-							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof SolidTuple) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)                                       ? argtype.itemTypes()                :
+							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Tuple) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof TYPE.TypeTuple)                                      ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
 						ASTNodeCP.typeCheckAssignment(entrytype, argitemtype, this, this.validator);
@@ -141,18 +135,18 @@ export class ASTNodeCall extends ASTNodeExpression {
 			}],
 		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
 	}
-	protected override fold_do(): SolidObject | null {
-		const argvalue: SolidObject | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
+	protected override fold_do(): OBJ.Object | null {
+		const argvalue: OBJ.Object | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
 			? this.exprargs[0].fold()
 			: undefined;
 		if (argvalue === null) {
 			return null;
 		}
-		return new Map<ValidFunctionName, (argument: SolidObject | undefined) => SolidObject | null>([
-			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new SolidList() : new SolidList((tuple as SolidTuple).items)],
-			[ValidFunctionName.DICT, (record) => (record === undefined) ? new SolidDict() : new SolidDict((record as SolidRecord).properties)],
-			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new SolidSet()  : new SolidSet(new Set<SolidObject>((tuple as SolidTuple).items))],
-			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new SolidMap()  : new SolidMap(new Map<SolidObject, SolidObject>((tuple as SolidTuple).items.map((pair) => (pair as SolidTuple).items as [SolidObject, SolidObject])))],
+		return new Map<ValidFunctionName, (argument: OBJ.Object | undefined) => OBJ.Object | null>([
+			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new OBJ.List() : new OBJ.List((tuple as OBJ.Tuple).items)],
+			[ValidFunctionName.DICT, (record) => (record === undefined) ? new OBJ.Dict() : new OBJ.Dict((record as OBJ.Record).properties)],
+			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.Set()  : new OBJ.Set(new Set<OBJ.Object>((tuple as OBJ.Tuple).items))],
+			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.Map()  : new OBJ.Map(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.Tuple).items.map((pair) => (pair as OBJ.Tuple).items as [OBJ.Object, OBJ.Object])))],
 		]).get(this.base.source as ValidFunctionName)!(argvalue);
 	}
 	/**

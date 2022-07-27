@@ -2,11 +2,7 @@ import * as assert from 'assert';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	TYPE,
-	SolidObject,
-	SolidNull,
-	SolidBoolean,
-	Float64,
-	SolidString,
+	OBJ,
 	INST,
 	Builder,
 	CPConfig,
@@ -31,16 +27,16 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 
-	private static keywordValue(source: string): SolidObject {
+	private static keywordValue(source: string): OBJ.Object {
 		return (
-			(source === Keyword.NULL)  ? SolidNull.NULL :
-			(source === Keyword.FALSE) ? SolidBoolean.FALSE :
-			(source === Keyword.TRUE)  ? SolidBoolean.TRUE :
+			(source === Keyword.NULL)  ? OBJ.Null.NULL :
+			(source === Keyword.FALSE) ? OBJ.Boolean.FALSE :
+			(source === Keyword.TRUE)  ? OBJ.Boolean.TRUE :
 			(() => { throw new Error(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`); })()
 		);
 	}
 
-	private _value: SolidObject | null = null;
+	private _value: OBJ.Object | null = null;
 
 	constructor (start_node:
 		| SyntaxNodeType<'integer'>
@@ -53,21 +49,21 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node);
 	}
 
-	private get value(): SolidObject {
+	private get value(): OBJ.Object {
 		return this._value ??= (
-			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new SolidString(Validator.cookTokenTemplate(this.start_node.text)) :
+			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new OBJ.String(Validator.cookTokenTemplate(this.start_node.text)) :
 			(isSyntaxNodeType(this.start_node, 'integer'))                            ? valueOfTokenNumber(this.start_node.text, this.validator.config) :
 			(isSyntaxNodeType(this.start_node, 'primitive_literal'),                    ((token: SyntaxNode) => (
 				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeConstant.keywordValue(token.text) :
 				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? valueOfTokenNumber(token.text, this.validator.config) :
 				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? valueOfTokenNumber(token.text, this.validator.config) :
-				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new SolidString(Validator.cookTokenString(token.text, this.validator.config)))
+				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/) , new OBJ.String(Validator.cookTokenString(token.text, this.validator.config)))
 			))(this.start_node.children[0]))
 		);
 	}
 
 	override shouldFloat(): boolean {
-		return this.value instanceof Float64
+		return this.value instanceof OBJ.Float;
 	}
 	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionConst {
 		return INST.InstructionConst.fromCPValue(this.fold(), to_float);
@@ -75,7 +71,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	protected override type_do(): TYPE.Type {
 		return new TYPE.TypeUnit(this.value);
 	}
-	protected override fold_do(): SolidObject {
+	protected override fold_do(): OBJ.Object {
 		return this.value;
 	}
 }

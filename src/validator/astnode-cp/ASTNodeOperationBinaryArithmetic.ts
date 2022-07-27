@@ -2,9 +2,7 @@ import * as assert from 'assert';
 import * as xjs from 'extrajs'
 import {
 	TYPE,
-	SolidObject,
-	SolidNumber,
-	Int16,
+	OBJ,
 	INST,
 	Builder,
 	TypeError01,
@@ -59,26 +57,26 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		}
 		throw new TypeError01(this)
 	}
-	protected override fold_do(): SolidObject | null {
-		const v0: SolidObject | null = this.operand0.fold();
+	protected override fold_do(): OBJ.Object | null {
+		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: SolidObject | null = this.operand1.fold();
+		const v1: OBJ.Object | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}
-		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
+		if (this.operator === Operator.DIV && v1 instanceof OBJ.Number && v1.eq0()) {
 			throw new NanError02(this.operand1);
 		}
-		return (v0 instanceof Int16 && v1 instanceof Int16)
+		return (v0 instanceof OBJ.Integer && v1 instanceof OBJ.Integer)
 			? this.foldNumeric(v0, v1)
 			: this.foldNumeric(
-				(v0 as SolidNumber).toFloat(),
-				(v1 as SolidNumber).toFloat(),
+				(v0 as OBJ.Number).toFloat(),
+				(v1 as OBJ.Number).toFloat(),
 			);
 	}
-	private foldNumeric<T extends SolidNumber<T>>(x: T, y: T): T {
+	private foldNumeric<T extends OBJ.Number<T>>(x: T, y: T): T {
 		try {
 			return new Map<Operator, (x: T, y: T) => T>([
 				[Operator.EXP, (x, y) => x.exp(y)],

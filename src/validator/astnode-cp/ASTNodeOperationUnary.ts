@@ -2,9 +2,7 @@ import * as assert from 'assert';
 import * as xjs from 'extrajs'
 import {
 	TYPE,
-	SolidObject,
-	SolidBoolean,
-	SolidNumber,
+	OBJ,
 	INST,
 	Builder,
 	TypeError01,
@@ -47,9 +45,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const t0: TYPE.Type = this.operand.type();
 		return (
 			(this.operator === Operator.NOT) ? (
-				(t0.isSubtypeOf(TYPE.Type.VOID.union(TYPE.Type.NULL).union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
-				(TYPE.Type.VOID.isSubtypeOf(t0) || TYPE.Type.NULL.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? TYPE.Type.BOOL :
-				SolidBoolean.FALSETYPE
+				(t0.isSubtypeOf(TYPE.Type.VOID.union(TYPE.Type.NULL).union(OBJ.Boolean.FALSETYPE))) ? OBJ.Boolean.TRUETYPE :
+				(TYPE.Type.VOID.isSubtypeOf(t0) || TYPE.Type.NULL.isSubtypeOf(t0) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t0)) ? TYPE.Type.BOOL :
+				OBJ.Boolean.FALSETYPE
 			) :
 			(this.operator === Operator.EMP) ? TYPE.Type.BOOL :
 			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(TYPE.Type.INT.union(TYPE.Type.FLOAT)))
@@ -57,19 +55,19 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				: (() => { throw new TypeError01(this); })()
 		);
 	}
-	protected override fold_do(): SolidObject | null {
-		const v0: SolidObject | null = this.operand.fold();
+	protected override fold_do(): OBJ.Object | null {
+		const v0: OBJ.Object | null = this.operand.fold();
 		if (!v0) {
 			return v0;
 		}
 		return (
-			(this.operator === Operator.NOT) ? SolidBoolean.fromBoolean(!v0.isTruthy) :
-			(this.operator === Operator.EMP) ? SolidBoolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
-			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as SolidNumber<any>) :
+			(this.operator === Operator.NOT) ? OBJ.Boolean.fromBoolean(!v0.isTruthy) :
+			(this.operator === Operator.EMP) ? OBJ.Boolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
+			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as OBJ.Number<any>) :
 			(() => { throw new ReferenceError(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}
-	private foldNumeric<T extends SolidNumber<T>>(z: T): T {
+	private foldNumeric<T extends OBJ.Number<T>>(z: T): T {
 		try {
 			return new Map<Operator, (z: T) => T>([
 				[Operator.AFF, (z) => z],

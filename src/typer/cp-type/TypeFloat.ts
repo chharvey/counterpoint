@@ -1,7 +1,4 @@
-import {
-	SolidObject,
-	Float64,
-} from './package.js';
+import {OBJ} from './package.js';
 import {Type} from './Type.js';
 
 
@@ -15,12 +12,12 @@ export class TypeFloat extends Type {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
-		super(false, new Set([new Float64(0.0)]));
+		super(false, new Set([new OBJ.Float(0.0)]));
 	}
 	override toString(): string {
 		return 'int';
 	}
-	override includes(v: SolidObject): boolean {
-		return v instanceof Float64;
+	override includes(v: OBJ.Object): boolean {
+		return v instanceof OBJ.Float;
 	}
 }

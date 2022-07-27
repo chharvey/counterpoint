@@ -1,7 +1,4 @@
-import {
-	SolidObject,
-	SolidBoolean,
-} from './package.js';
+import {OBJ} from './package.js';
 import {Type} from './Type.js';
 
 
@@ -15,12 +12,12 @@ export class TypeBoolean extends Type {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
-		super(false, new Set([SolidBoolean.FALSE, SolidBoolean.TRUE]));
+		super(false, new Set([OBJ.Boolean.FALSE, OBJ.Boolean.TRUE]));
 	}
 	override toString(): string {
 		return 'bool';
 	}
-	override includes(v: SolidObject): boolean {
-		return v instanceof SolidBoolean;
+	override includes(v: OBJ.Object): boolean {
+		return v instanceof OBJ.Boolean;
 	}
 }

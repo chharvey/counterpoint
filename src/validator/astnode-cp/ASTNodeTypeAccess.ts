@@ -1,9 +1,7 @@
 import * as assert from 'assert';
 import {
 	TYPE,
-	Int16,
-	SolidTuple,
-	SolidRecord,
+	OBJ,
 	TypeError04,
 	CPConfig,
 	CONFIG_DEFAULT,
@@ -37,21 +35,21 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		if (this.accessor instanceof ASTNodeIndexType) {
 			const accessor_type: TYPE.Type = this.accessor.val.eval();
 			return (
-				(base_type instanceof TYPE.TypeUnit && base_type.value instanceof SolidTuple) ? (
+				(base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Tuple) ? (
 					(accessor_type instanceof TYPE.TypeUnit)
-						? base_type.value.toType().get(accessor_type.value as Int16, Operator.DOT, this.accessor)
+						? base_type.value.toType().get(accessor_type.value as OBJ.Integer, Operator.DOT, this.accessor)
 						: base_type.value.toType().itemTypes()
 				) :
 				(base_type instanceof TYPE.TypeTuple) ? (
 					(accessor_type instanceof TYPE.TypeUnit)
-						? base_type.get(accessor_type.value as Int16, Operator.DOT, this.accessor)
+						? base_type.get(accessor_type.value as OBJ.Integer, Operator.DOT, this.accessor)
 						: base_type.itemTypes()
 				) :
 				(() => { throw new TypeError04('index', base_type, this.accessor); })()
 			);
 		} else /* (this.accessor instanceof ASTNodeKey) */ {
 			return (
-				(base_type instanceof TYPE.TypeUnit && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, Operator.DOT, this.accessor) :
+				(base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Record) ? base_type.value.toType().get(this.accessor.id, Operator.DOT, this.accessor) :
 				(base_type instanceof TYPE.TypeRecord) ? base_type.get(this.accessor.id, Operator.DOT, this.accessor) :
 				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);

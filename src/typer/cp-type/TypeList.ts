@@ -1,7 +1,4 @@
-import {
-	SolidObject,
-	SolidList,
-} from './package.js';
+import {OBJ} from './package.js';
 import {Type} from './Type.js';
 
 
@@ -18,7 +15,7 @@ export class TypeList extends Type {
 		readonly types: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new SolidList()]));
+		super(is_mutable, new Set([new OBJ.List()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -29,8 +26,8 @@ export class TypeList extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }List.<${ this.types }>`;
 	}
 
-	override includes(v: SolidObject): boolean {
-		return v instanceof SolidList && v.toType().isSubtypeOf(this);
+	override includes(v: OBJ.Object): boolean {
+		return v instanceof OBJ.List && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
