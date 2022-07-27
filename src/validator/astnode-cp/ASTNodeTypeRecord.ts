@@ -24,7 +24,7 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		super(start_node, {}, children);
 	}
 	protected override eval_do(): TYPE.Type {
-		return new TYPE.SolidTypeRecord(new Map(this.children.map((c) => [
+		return new TYPE.TypeRecord(new Map(this.children.map((c) => [
 			c.key.id,
 			{
 				type:     c.val.eval(),

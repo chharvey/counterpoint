@@ -5,7 +5,7 @@ import {
 	solidObjectsIdentical,
 	Type,
 	TypeUnit,
-	SolidTypeSet,
+	TypeSet,
 } from './package.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
@@ -41,8 +41,8 @@ export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
 		);
 	}
 
-	override toType(): SolidTypeSet {
-		return new SolidTypeSet(
+	override toType(): TypeSet {
+		return new TypeSet(
 			(this.elements.size)
 				? Type.unionAll([...this.elements].map<Type>((el) => new TypeUnit(el)))
 				: Type.NEVER,

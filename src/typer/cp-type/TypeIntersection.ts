@@ -5,8 +5,8 @@ import {
 } from './package.js';
 import {Type} from './Type.js';
 import {
-	SolidTypeTuple,
-	SolidTypeRecord,
+	TypeTuple,
+	TypeRecord,
 } from './index.js';
 
 
@@ -59,8 +59,8 @@ export class TypeIntersection extends Type {
 	}
 	combineTuplesOrRecords(): Type {
 		return (
-			(this.left instanceof SolidTypeTuple  && this.right instanceof SolidTypeTuple)  ? this.left.intersectWithTuple(this.right)  :
-			(this.left instanceof SolidTypeRecord && this.right instanceof SolidTypeRecord) ? this.left.intersectWithRecord(this.right) :
+			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? this.left.intersectWithTuple(this.right)  :
+			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? this.left.intersectWithRecord(this.right) :
 			this
 		);
 	}

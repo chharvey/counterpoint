@@ -1,6 +1,6 @@
 import {
 	TypeUnit,
-	SolidTypeRecord,
+	TypeRecord,
 } from './package.js';
 import type {SolidObject} from './SolidObject.js';
 import {CollectionKeyed} from './CollectionKeyed.js';
@@ -8,7 +8,7 @@ import {CollectionKeyed} from './CollectionKeyed.js';
 
 
 export class SolidRecord<T extends SolidObject = SolidObject> extends CollectionKeyed<T> {
-	override toType(): SolidTypeRecord {
-		return SolidTypeRecord.fromTypes(new Map([...this.properties].map(([key, value]) => [key, new TypeUnit(value)])));
+	override toType(): TypeRecord {
+		return TypeRecord.fromTypes(new Map([...this.properties].map(([key, value]) => [key, new TypeUnit(value)])));
 	}
 }

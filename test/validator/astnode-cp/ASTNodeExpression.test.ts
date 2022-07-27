@@ -410,13 +410,13 @@ describe('ASTNodeExpression', () => {
 				assert.deepStrictEqual(
 					collections.map((node) => node.type()),
 					[
-						TYPE.SolidTypeTuple.fromTypes(expected, true),
-						TYPE.SolidTypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [
+						TYPE.TypeTuple.fromTypes(expected, true),
+						TYPE.TypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [
 							c.key.id,
 							expected[i],
 						])), true),
-						new TYPE.SolidTypeSet(TYPE.Type.unionAll(expected), true),
-						new TYPE.SolidTypeMap(
+						new TYPE.TypeSet(TYPE.Type.unionAll(expected), true),
+						new TYPE.TypeMap(
 							map_ant_type,
 							TYPE.Type.unionAll(expected),
 							true,

@@ -11,9 +11,9 @@ export * from './TypeFloat.js';
 export * from './TypeString.js';
 export * from './TypeObject.js';
 
-export * from './SolidTypeTuple.js';
-export * from './SolidTypeRecord.js';
-export * from './SolidTypeList.js';
-export * from './SolidTypeDict.js';
-export * from './SolidTypeSet.js';
-export * from './SolidTypeMap.js';
+export * from './TypeTuple.js';
+export * from './TypeRecord.js';
+export * from './TypeList.js';
+export * from './TypeDict.js';
+export * from './TypeSet.js';
+export * from './TypeMap.js';

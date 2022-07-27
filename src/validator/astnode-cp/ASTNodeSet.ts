@@ -30,7 +30,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 		throw builder && 'ASTNodeSet#build_do not yet supported.';
 	}
 	protected override type_do(): TYPE.Type {
-		return new TYPE.SolidTypeSet(((this.children.length)
+		return new TYPE.TypeSet(((this.children.length)
 			? TYPE.Type.unionAll(this.children.map((c) => c.type()))
 			: TYPE.Type.NEVER
 		), true);

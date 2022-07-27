@@ -32,7 +32,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	protected override type_do(): TYPE.Type {
-		return TYPE.SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
+		return TYPE.TypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.type(),
 		])), true);

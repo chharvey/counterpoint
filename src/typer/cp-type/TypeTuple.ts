@@ -13,17 +13,17 @@ import {Type} from './Type.js';
 
 
 
-export class SolidTypeTuple extends Type {
+export class TypeTuple extends Type {
 	override readonly isBottomType: boolean = false;
 
 	/**
-	 * Construct a new SolidTypeTuple from type items, assuming each item is required.
+	 * Construct a new TypeTuple from type items, assuming each item is required.
 	 * @param types the types of the tuple
 	 * @param is_mutable is the tuple type mutable?
 	 * @return a new tuple type with the provided items
 	 */
-	static fromTypes(types: readonly Type[] = [], is_mutable: boolean = false): SolidTypeTuple {
-		return new SolidTypeTuple(types.map((t) => ({
+	static fromTypes(types: readonly Type[] = [], is_mutable: boolean = false): TypeTuple {
+		return new TypeTuple(types.map((t) => ({
 			type:     t,
 			optional: false,
 		})), is_mutable);
@@ -31,7 +31,7 @@ export class SolidTypeTuple extends Type {
 
 
 	/**
-	 * Construct a new SolidTypeTuple object.
+	 * Construct a new TypeTuple object.
 	 * @param types this type’s item types
 	 * @param is_mutable is this type mutable?
 	 */
@@ -64,7 +64,7 @@ export class SolidTypeTuple extends Type {
 
 	protected override isSubtypeOf_do(t: Type): boolean {
 		return t.equals(Type.OBJ) || (
-			t instanceof SolidTypeTuple
+			t instanceof TypeTuple
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
 			&& t.types.every((thattype, i) => !this.types[i] || ((t.isMutable)
@@ -74,12 +74,12 @@ export class SolidTypeTuple extends Type {
 		);
 	}
 
-	override mutableOf(): SolidTypeTuple {
-		return new SolidTypeTuple(this.types, true);
+	override mutableOf(): TypeTuple {
+		return new TypeTuple(this.types, true);
 	}
 
-	override immutableOf(): SolidTypeTuple {
-		return new SolidTypeTuple(this.types, false);
+	override immutableOf(): TypeTuple {
+		return new TypeTuple(this.types, false);
 	}
 
 	get(index: Int16, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
@@ -102,7 +102,7 @@ export class SolidTypeTuple extends Type {
 	 * The *intersection* of types `S` and `T` is the *union* of the set of items on `S` with the set of items on `T`.
 	 * For any overlapping items, their type intersection is taken.
 	 */
-	intersectWithTuple(t: SolidTypeTuple): SolidTypeTuple {
+	intersectWithTuple(t: TypeTuple): TypeTuple {
 		const items: TypeEntry[] = [...this.types];
 		[...t.types].forEach((typ, i) => {
 			items[i] = this.types[i] ? {
@@ -110,14 +110,14 @@ export class SolidTypeTuple extends Type {
 				optional: this.types[i].optional && typ.optional,
 			} : typ;
 		});
-		return new SolidTypeTuple(items);
+		return new TypeTuple(items);
 	}
 
 	/**
 	 * The *union* of types `S` and `T` is the *intersection* of the set of items on `S` with the set of items on `T`.
 	 * For any overlapping items, their type union is taken.
 	 */
-	unionWithTuple(t: SolidTypeTuple): SolidTypeTuple {
+	unionWithTuple(t: TypeTuple): TypeTuple {
 		const items: TypeEntry[] = [];
 		t.types.forEach((typ, i) => {
 			if (this.types[i]) {
@@ -127,6 +127,6 @@ export class SolidTypeTuple extends Type {
 				};
 			}
 		})
-		return new SolidTypeTuple(items);
+		return new TypeTuple(items);
 	}
 }

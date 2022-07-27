@@ -16,10 +16,10 @@ export {
 export {
 	Type,
 	TypeUnit,
-	SolidTypeTuple,
-	SolidTypeRecord,
-	SolidTypeList,
-	SolidTypeDict,
-	SolidTypeSet,
-	SolidTypeMap,
+	TypeTuple,
+	TypeRecord,
+	TypeList,
+	TypeDict,
+	TypeSet,
+	TypeMap,
 } from '../cp-type/index.js';

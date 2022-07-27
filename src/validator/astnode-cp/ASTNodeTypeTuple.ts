@@ -23,7 +23,7 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 		super(start_node, {}, children);
 	}
 	protected override eval_do(): TYPE.Type {
-		return new TYPE.SolidTypeTuple(this.children.map((c) => ({
+		return new TYPE.TypeTuple(this.children.map((c) => ({
 			type:     c.val.eval(),
 			optional: c.optional,
 		})));

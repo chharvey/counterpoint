@@ -26,9 +26,9 @@ export class ASTNodeTypeList extends ASTNodeType {
 	protected override eval_do(): TYPE.Type {
 		const itemstype: TYPE.Type = this.type.eval();
 		return (this.count === null)
-			? new TYPE.SolidTypeList(itemstype)
+			? new TYPE.TypeList(itemstype)
 			: (this.count >= 0)
-				? TYPE.SolidTypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype))
+				? TYPE.TypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype))
 				: (() => { throw new SolidTypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index); })();
 	}
 }

@@ -34,12 +34,12 @@ import {
  * - TypeFloat
  * - TypeString
  * - TypeObject
- * - SolidTypeTuple
- * - SolidTypeRecord
- * - SolidTypeList
- * - SolidTypeDict
- * - SolidTypeSet
- * - SolidTypeMap
+ * - TypeTuple
+ * - TypeRecord
+ * - TypeList
+ * - TypeDict
+ * - TypeSet
+ * - TypeMap
  */
 export abstract class Type {
 	/** The Bottom Type, containing no values. */                    static get NEVER():   TypeNever   { return TypeNever.INSTANCE; }

@@ -102,7 +102,7 @@ describe('ASTNodeType', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).eval(),
-				new TYPE.SolidTypeTuple([
+				new TYPE.TypeTuple([
 					{type: TYPE.Type.INT,  optional: false},
 					{type: TYPE.Type.BOOL, optional: false},
 					{type: TYPE.Type.STR,  optional: true},
@@ -118,7 +118,7 @@ describe('ASTNodeType', () => {
 			const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, z: str]`);
 			assert.deepStrictEqual(
 				node.eval(),
-				new TYPE.SolidTypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
+				new TYPE.TypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
 					c.key.id,
 					[
 						{type: TYPE.Type.INT,  optional: false},
@@ -134,16 +134,16 @@ describe('ASTNodeType', () => {
 
 	describe('ASTNodeTypeList', () => {
 		describe('#eval', () => {
-			it('returns a SolidTypeList if there is no count.', () => {
+			it('returns a TypeList if there is no count.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeList.fromSource(`(int | bool)[]`).eval(),
-					new TYPE.SolidTypeList(TYPE.Type.INT.union(TYPE.Type.BOOL)),
+					new TYPE.TypeList(TYPE.Type.INT.union(TYPE.Type.BOOL)),
 				);
 			});
-			it('returns a SolidTypeTuple if there is a count.', () => {
+			it('returns a TypeTuple if there is a count.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeList.fromSource(`(int | bool)[3]`).eval(),
-					TYPE.SolidTypeTuple.fromTypes([
+					TYPE.TypeTuple.fromTypes([
 						TYPE.Type.INT.union(TYPE.Type.BOOL),
 						TYPE.Type.INT.union(TYPE.Type.BOOL),
 						TYPE.Type.INT.union(TYPE.Type.BOOL),
@@ -162,15 +162,15 @@ describe('ASTNodeType', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeDict.fromSource(`[:int | bool]`).eval(),
-				new TYPE.SolidTypeDict(TYPE.Type.INT.union(TYPE.Type.BOOL)),
+				new TYPE.TypeDict(TYPE.Type.INT.union(TYPE.Type.BOOL)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeSet.fromSource(`(int | bool){}`).eval(),
-				new TYPE.SolidTypeSet(TYPE.Type.INT.union(TYPE.Type.BOOL)),
+				new TYPE.TypeSet(TYPE.Type.INT.union(TYPE.Type.BOOL)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeMap.fromSource(`{int -> bool}`).eval(),
-				new TYPE.SolidTypeMap(TYPE.Type.INT, TYPE.Type.BOOL),
+				new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.BOOL),
 			);
 		});
 	});
@@ -185,7 +185,7 @@ describe('ASTNodeType', () => {
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationUnary.fromSource(`mutable int[]`).eval(),
-				new TYPE.SolidTypeList(TYPE.Type.INT, true),
+				new TYPE.TypeList(TYPE.Type.INT, true),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource(`obj & 3`).eval(),

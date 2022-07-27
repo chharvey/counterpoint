@@ -41,14 +41,14 @@ export class ASTNodeTypeCall extends ASTNodeType {
 			throw new TypeError05(this.base.eval(), this.base);
 		}
 		return (new Map<ValidFunctionName, () => TYPE.Type>([
-			[ValidFunctionName.LIST, () => (this.countArgs(1n), new TYPE.SolidTypeList(this.args[0].eval()))],
-			[ValidFunctionName.DICT, () => (this.countArgs(1n), new TYPE.SolidTypeDict(this.args[0].eval()))],
-			[ValidFunctionName.SET,  () => (this.countArgs(1n), new TYPE.SolidTypeSet (this.args[0].eval()))],
+			[ValidFunctionName.LIST, () => (this.countArgs(1n), new TYPE.TypeList(this.args[0].eval()))],
+			[ValidFunctionName.DICT, () => (this.countArgs(1n), new TYPE.TypeDict(this.args[0].eval()))],
+			[ValidFunctionName.SET,  () => (this.countArgs(1n), new TYPE.TypeSet (this.args[0].eval()))],
 			[ValidFunctionName.MAP,  () => {
 				this.countArgs([1n, 3n]);
 				const anttype: TYPE.Type = this.args[0].eval();
 				const contype: TYPE.Type = this.args[1]?.eval() || anttype;
-				return new TYPE.SolidTypeMap(anttype, contype);
+				return new TYPE.TypeMap(anttype, contype);
 			}],
 		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
 	}

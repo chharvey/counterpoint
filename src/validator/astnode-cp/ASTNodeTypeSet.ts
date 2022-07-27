@@ -22,6 +22,6 @@ export class ASTNodeTypeSet extends ASTNodeType {
 		super(start_node, {}, [type]);
 	}
 	protected override eval_do(): TYPE.Type {
-		return new TYPE.SolidTypeSet(this.type.eval());
+		return new TYPE.TypeSet(this.type.eval());
 	}
 }

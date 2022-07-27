@@ -64,7 +64,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.LIST, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const itemtype:   TYPE.Type = this.typeargs[0].eval();
-				const returntype: TYPE.Type = new TYPE.SolidTypeList(itemtype);
+				const returntype: TYPE.Type = new TYPE.TypeList(itemtype);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
@@ -72,7 +72,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					} catch (err) {
 						const argitemtype: TYPE.Type = (
 							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof SolidTuple) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.SolidTypeTuple)                                  ? argtype.itemTypes()                :
+							(argtype instanceof TYPE.TypeTuple)                                       ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
 						ASTNodeCP.typeCheckAssignment(itemtype, argitemtype, this, this.validator);
@@ -83,7 +83,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.DICT, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const valuetype:  TYPE.Type = this.typeargs[0].eval();
-				const returntype: TYPE.Type = new TYPE.SolidTypeDict(valuetype);
+				const returntype: TYPE.Type = new TYPE.TypeDict(valuetype);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
@@ -91,7 +91,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					} catch (err) {
 						const argvaluetype: TYPE.Type = (
 							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof SolidRecord) ? argtype.value.toType().valueTypes() :
-							(argtype instanceof TYPE.SolidTypeRecord)                                  ? argtype.valueTypes()                :
+							(argtype instanceof TYPE.TypeRecord)                                       ? argtype.valueTypes()                :
 							(() => { throw err; })()
 						);
 						ASTNodeCP.typeCheckAssignment(valuetype, argvaluetype, this, this.validator);
@@ -102,15 +102,15 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.SET, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const eltype:     TYPE.Type = this.typeargs[0].eval();
-				const returntype: TYPE.Type = new TYPE.SolidTypeSet(eltype);
+				const returntype: TYPE.Type = new TYPE.TypeSet(eltype);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(new TYPE.SolidTypeList(eltype), argtype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(new TYPE.TypeList(eltype), argtype, this, this.validator);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (
 							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof SolidTuple) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.SolidTypeTuple)                                  ? argtype.itemTypes()                :
+							(argtype instanceof TYPE.TypeTuple)                                       ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
 						ASTNodeCP.typeCheckAssignment(eltype, argitemtype, this, this.validator);
@@ -122,16 +122,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 				this.countArgs([1n, 3n], [0n, 2n]);
 				const anttype:    TYPE.Type = this.typeargs[0].eval();
 				const contype:    TYPE.Type = this.typeargs[1]?.eval() || anttype;
-				const returntype: TYPE.Type = new TYPE.SolidTypeMap(anttype, contype);
-				const entrytype:  TYPE.Type = TYPE.SolidTypeTuple.fromTypes([anttype, contype]);
+				const returntype: TYPE.Type = new TYPE.TypeMap(anttype, contype);
+				const entrytype:  TYPE.Type = TYPE.TypeTuple.fromTypes([anttype, contype]);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(new TYPE.SolidTypeList(entrytype), argtype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(new TYPE.TypeList(entrytype), argtype, this, this.validator);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (
 							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof SolidTuple) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.SolidTypeTuple)                                  ? argtype.itemTypes()                :
+							(argtype instanceof TYPE.TypeTuple)                                       ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
 						ASTNodeCP.typeCheckAssignment(entrytype, argitemtype, this, this.validator);
