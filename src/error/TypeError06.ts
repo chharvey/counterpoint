@@ -1,7 +1,7 @@
 import type {
 	AST,
 } from './package.js';
-import {SolidTypeError} from './SolidTypeError.js';
+import {TypeError} from './TypeError.js';
 
 
 
@@ -13,7 +13,7 @@ import {SolidTypeError} from './SolidTypeError.js';
  * func x(y: int): int => y + 42;
  * x.(2, 4);                      % TypeError06: Got 2 arguments, but expected 1.
  */
-export class TypeError06 extends SolidTypeError {
+export class TypeError06 extends TypeError {
 	/** The number series of this class of errors. */
 	static override readonly CODE = 6;
 	/**

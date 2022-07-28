@@ -1,0 +1,62 @@
+import * as xjs from 'extrajs';
+import {
+	strictEqual,
+	languageValuesIdentical,
+	OBJ,
+} from './package.js';
+import {Type} from './Type.js';
+
+
+
+/**
+ * A type difference of two types `T` and `U` is the type
+ * that contains values assignable to `T` but *not* assignable to `U`.
+ */
+export class TypeDifference extends Type {
+	declare readonly isBottomType: boolean;
+
+	/**
+	 * Construct a new TypeDifference object.
+	 * @param left the first type
+	 * @param right the second type
+	 */
+	constructor (
+		private readonly left:  Type,
+		private readonly right: Type,
+	) {
+		super(false, xjs.Set.difference(left.values, right.values, languageValuesIdentical));
+		/*
+		We can assert that this is always non-empty because
+		the only cases in which it could be empty are
+		1. if left is empty
+		2. if left is a subtype of right
+		each of which is impossible because the algorithm would have already produced the `never` type.
+		*/
+		this.isBottomType = false;
+	}
+
+	override get hasMutable(): boolean {
+		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
+	}
+	override toString(): string {
+		return `${ this.left } - ${ this.right }`;
+	}
+	override includes(v: OBJ.Object): boolean {
+		return this.left.includes(v) && !this.right.includes(v);
+	}
+	@strictEqual
+	@Type.subtypeDeco
+	override isSubtypeOf(t: Type): boolean {
+		return this.left.isSubtypeOf(t) || super.isSubtypeOf(t);
+	}
+	override mutableOf(): TypeDifference {
+		return new TypeDifference(this.left.mutableOf(), this.right.mutableOf());
+	}
+	override immutableOf(): TypeDifference {
+		return new TypeDifference(this.left.immutableOf(), this.right.immutableOf());
+	}
+	isSupertypeOf(t: Type): boolean {
+		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
+		return t.isSubtypeOf(this.left) && t.intersect(this.right).isBottomType;
+	}
+}
