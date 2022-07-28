@@ -52,4 +52,4 @@ export type CPConfig = {
 	},
 }
 
-export const CONFIG_DEFAULT: CPConfig = requireJSONSync(path.join(DIRNAME, '../../src/core/solid-config.default.json')) as CPConfig;
+export const CONFIG_DEFAULT: CPConfig = requireJSONSync(path.join(DIRNAME, '../../src/core/counterpoint-config.default.json')) as CPConfig;
