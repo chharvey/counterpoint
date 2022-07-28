@@ -1,19 +1,19 @@
-export * from './SolidObject.js';
+export * from './Object.js';
 
 export * from './Primitive.js';
-export * from './SolidNull.js';
-export * from './SolidBoolean.js';
-export * from './SolidNumber.js';
-export * from './Int16.js';
-export * from './Float64.js';
-export * from './SolidString.js';
+export * from './Null.js';
+export * from './Boolean.js';
+export * from './Number.js';
+export * from './Integer.js';
+export * from './Float.js';
+export * from './String.js';
 
 export * from './CollectionIndexed.js';
 export * from './CollectionKeyed.js';
 
-export * from './SolidTuple.js';
-export * from './SolidRecord.js';
-export * from './SolidList.js';
-export * from './SolidDict.js';
-export * from './SolidSet.js';
-export * from './SolidMap.js';
+export * from './Tuple.js';
+export * from './Record.js';
+export * from './List.js';
+export * from './Dict.js';
+export * from './Set.js';
+export * from './Map.js';

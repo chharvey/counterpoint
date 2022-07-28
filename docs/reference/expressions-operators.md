@@ -443,7 +443,7 @@ where *a<sup>b<sup>c</sup></sup>* is interpreted as *a<sup>(b<sup>c</sup>)</sup>
 
 #### Exponentiation: Order of Operations
 In mathematics, exponents are applied before negation (which is multiplication).
-However, in Solid, [mathematical negation](#mathematical-affirmation-mathematical-negation)
+However, in Counterpoint, [mathematical negation](#mathematical-affirmation-mathematical-negation)
 is a unary operator, which is stronger than any binary operator.
 **Mathematical negation is not considered multiplication**,
 even if it indeed produces the same mathematical result of multiplying by -1.
@@ -452,8 +452,8 @@ Therefore, we can end up with confusing syntax such as this:
 -3 ^ 2
 ```
 While *mathematically*, *&minus;3<sup>2</sup>* is equivalent to *&minus;1&middot;3<sup>2</sup>*,
-producing *&minus;9*, the Solid expression `-3 ^ 2`, is *not equivalent*.
-Mathematical negation is stronger than exponentiation, so Solid will compute `-3`
+producing *&minus;9*, the Counterpoint expression `-3 ^ 2`, is *not equivalent*.
+Mathematical negation is stronger than exponentiation, so Counterpoint will compute `-3`
 first as a unary operation (or, in this case, as a single token),
 and then raise that value to the power of `2`, producing `9`.
 Writing such an ambiguous syntax could cause developers to scratch their heads

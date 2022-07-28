@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import wabt from 'wabt'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
-	SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
 	AST,
 } from './package.js';
@@ -36,7 +36,7 @@ export class Builder {
 	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor (source: string, config: SolidConfig = CONFIG_DEFAULT) {
+	constructor (source: string, config: CPConfig = CONFIG_DEFAULT) {
 		this.ast_goal  = AST.ASTNodeGoal.fromSource(source, config);
 		this.ast_goal.varCheck (); // assert does not throw
 		this.ast_goal.typeCheck(); // assert does not throw

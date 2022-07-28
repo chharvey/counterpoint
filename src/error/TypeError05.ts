@@ -1,8 +1,8 @@
 import type {
 	AST,
-	SolidType,
+	TYPE,
 } from './package.js';
-import {SolidTypeError} from './SolidTypeError.js';
+import {TypeError} from './TypeError.js';
 
 
 
@@ -14,7 +14,7 @@ import {SolidTypeError} from './SolidTypeError.js';
  * let x: int = 42;
  * x.(24);          % TypeError05: Type `int` is not callable.
  */
-export class TypeError05 extends SolidTypeError {
+export class TypeError05 extends TypeError {
 	/** The number series of this class of errors. */
 	static override readonly CODE = 5;
 	/**
@@ -22,7 +22,7 @@ export class TypeError05 extends SolidTypeError {
 	 * @param typ  - the type trying to be called
 	 * @param base - the object expression being called
 	 */
-	constructor (typ: SolidType, base: AST.ASTNodeType | AST.ASTNodeExpression) {
+	constructor (typ: TYPE.Type, base: AST.ASTNodeType | AST.ASTNodeExpression) {
 		super(`Type \`${ typ }\` is not callable.`, TypeError05.CODE, base.line_index, base.col_index);
 	}
 }
