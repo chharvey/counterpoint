@@ -8,13 +8,13 @@ import {
 	TypeUnit,
 	TypeSet,
 } from './package.js';
-import {Object} from './Object.js';
+import {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
 
 
-class CPSet<T extends Object = Object> extends Collection {
+class CPSet<T extends CPObject = CPObject> extends Collection {
 	constructor (
 		private readonly elements: ReadonlySet<T> = new Set(),
 	) {
@@ -33,8 +33,8 @@ class CPSet<T extends Object = Object> extends Collection {
 	}
 	/** @final */
 	@strictEqual
-	@Object.equalsDeco
-	override equal(value: Object): boolean {
+	@CPObject.equalsDeco
+	override equal(value: CPObject): boolean {
 		return (
 			value instanceof CPSet
 			&& this.elements.size === value.elements.size

@@ -9,10 +9,10 @@ import {String} from './index.js';
  * - Primitive
  * - Collection
  */
-export abstract class Object {
+abstract class CPObject {
 	/**
-	 * Decorator for {@link Object#equal} method and any overrides.
-	 * Performs the Equality algorithm — returns whether two Objects (Counterpoint Language Values)
+	 * Decorator for {@link CPObject#equal} method and any overrides.
+	 * Performs the Equality algorithm — returns whether two CPObjects (Counterpoint Language Values)
 	 * are equal by some definition.
 	 * @param   _prototype    the prototype that has the method to be decorated
 	 * @param   _property_key the name of the method to be decorated
@@ -20,9 +20,9 @@ export abstract class Object {
 	 * @returns               `descriptor`, with a new value that is the decorated method
 	 */
 	protected static equalsDeco(
-		_prototype: Object,
+		_prototype: CPObject,
 		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: Object, value: Object) => boolean>,
+		descriptor: TypedPropertyDescriptor<(this: CPObject, value: CPObject) => boolean>,
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (value) {
@@ -52,7 +52,7 @@ export abstract class Object {
 	 * @returns are the objects identically the same?
 	 */
 	@strictEqual
-	identical(_value: Object): boolean {
+	identical(_value: CPObject): boolean {
 		return false
 	}
 	/**
@@ -62,8 +62,8 @@ export abstract class Object {
 	 * @returns are the objects equal?
 	 */
 	@strictEqual
-	@Object.equalsDeco
-	equal(_value: Object): boolean {
+	@CPObject.equalsDeco
+	equal(_value: CPObject): boolean {
 		return false
 	}
 
@@ -76,3 +76,4 @@ export abstract class Object {
 		return new String(this.toString());
 	}
 }
+export {CPObject as Object};

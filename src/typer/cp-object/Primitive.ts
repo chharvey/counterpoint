@@ -1,4 +1,4 @@
-import {Object} from './Object.js';
+import {Object as CPObject} from './Object.js';
 
 
 
@@ -9,5 +9,5 @@ import {Object} from './Object.js';
  * - Number
  * - String
  */
-export abstract class Primitive extends Object {
+export abstract class Primitive extends CPObject {
 }

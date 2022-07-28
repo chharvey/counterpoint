@@ -1,6 +1,6 @@
 import {strictEqual} from './package.js';
 import {Float} from './index.js';
-import {Object} from './Object.js';
+import {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
 
 
@@ -43,11 +43,11 @@ export class Integer extends CPNumber<Integer> {
 		return `${ this.toNumeric() }`
 	}
 	@strictEqual
-	override identical(value: Object): boolean {
+	override identical(value: CPObject): boolean {
 		return value instanceof Integer && this.internal.every((bit, i) => bit === value.internal[i]);
 	}
-	@Object.equalsDeco
-	override equal(value: Object): boolean {
+	@CPObject.equalsDeco
+	override equal(value: CPObject): boolean {
 		return value instanceof Float && this.toFloat().equal(value);
 	}
 

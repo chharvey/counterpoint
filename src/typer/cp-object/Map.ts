@@ -8,13 +8,13 @@ import {
 	TypeUnit,
 	TypeMap,
 } from './package.js';
-import {Object} from './Object.js';
+import {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
 
 
-class CPMap<K extends Object = Object, V extends Object = Object> extends Collection {
+class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extends Collection {
 	constructor (
 		private readonly cases: ReadonlyMap<K, V> = new Map(),
 	) {
@@ -33,8 +33,8 @@ class CPMap<K extends Object = Object, V extends Object = Object> extends Collec
 	}
 	/** @final */
 	@strictEqual
-	@Object.equalsDeco
-	override equal(value: Object): boolean {
+	@CPObject.equalsDeco
+	override equal(value: CPObject): boolean {
 		return (
 			value instanceof CPMap
 			&& this.cases.size === value.cases.size
