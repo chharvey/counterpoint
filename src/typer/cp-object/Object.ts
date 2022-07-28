@@ -8,7 +8,7 @@ import {String} from './index.js';
  * - Primitive
  * - Collection
  */
-export abstract class Object {
+abstract class CPObject {
 	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
@@ -29,7 +29,7 @@ export abstract class Object {
 	 * @returns are the objects identically the same?
 	 * @final
 	 */
-	identical(value: Object): boolean {
+	identical(value: CPObject): boolean {
 		return this === value || this.identical_helper(value)
 	}
 	/**
@@ -37,7 +37,7 @@ export abstract class Object {
 	 * @param _value the object to compare
 	 * @returns are the objects identically the same?
 	 */
-	protected identical_helper(_value: Object): boolean {
+	protected identical_helper(_value: CPObject): boolean {
 		return false
 	}
 	/**
@@ -47,7 +47,7 @@ export abstract class Object {
 	 * @returns are the objects equal?
 	 * @final
 	 */
-	equal(value: Object): boolean {
+	equal(value: CPObject): boolean {
 		return this.identical(value) || this.equal_helper(value)
 	}
 	/**
@@ -55,7 +55,7 @@ export abstract class Object {
 	 * @param _value the object to compare
 	 * @returns are the objects equal?
 	 */
-	protected equal_helper(_value: Object): boolean {
+	protected equal_helper(_value: CPObject): boolean {
 		return false
 	}
 
@@ -68,3 +68,4 @@ export abstract class Object {
 		return new String(this.toString());
 	}
 }
+export {CPObject as Object};
