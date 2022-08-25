@@ -15,5 +15,16 @@
 	"reportUnusedDisableDirectives": true,
 	"root": true,
 	"rules": {
+		/* File Conventions (should be consistent with `/.editorconfig` file) */
+		"eol-last":           "error",
+		"linebreak-style":    "error",
+		"no-trailing-spaces": "error",
+
+		/* Layout & Formatting --- https://eslint.org/docs/latest/rules/#layout--formatting */
+		"indent": ["error", "tab", {
+			"SwitchCase":             1,
+			"flatTernaryExpressions": true
+		}],
+		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"]
 	}
 }

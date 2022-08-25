@@ -205,9 +205,9 @@ export class CLI {
 	 * @return the computed configuration object
 	 */
 	private async computeConfig(cwd: string): Promise<CPConfig> {
-		const config: PartialCPConfig | Promise<PartialCPConfig> = this.argv.project ?
-			fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8').then((text) => JSON.parse(text))
-		: {}
+		const config: PartialCPConfig | Promise<PartialCPConfig> = (this.argv.project)
+			? fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8').then((text) => JSON.parse(text))
+			: {}
 
 		const returned: Mutable<CPConfig> = {
 			...CONFIG_DEFAULT,

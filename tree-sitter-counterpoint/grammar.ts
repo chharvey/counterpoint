@@ -293,17 +293,17 @@ module.exports = grammar({
 		/* # SYNTAX */
 		word: $ => choice(
 			// operator
-				'mutable',
-				'is',
-				'isnt',
-				'if',
-				'then',
-				'else',
+			'mutable',
+			'is',
+			'isnt',
+			'if',
+			'then',
+			'else',
 			// storage
-				'type',
-				'let',
+			'type',
+			'let',
 			// modifier
-				'unfixed',
+			'unfixed',
 			$.keyword_type,
 			$.keyword_value,
 			$.identifier,
