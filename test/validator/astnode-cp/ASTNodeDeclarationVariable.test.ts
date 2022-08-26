@@ -83,7 +83,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.throws(() => goal.typeCheck(), (err) => {
 				assert.ok(err instanceof AggregateError);
 				assertAssignable(err, {
-					cons: AggregateError,
+					cons:   AggregateError,
 					errors: [
 						{cons: TypeError03, message: 'Expression of type mutable [42] is not assignable to type mutable [42 | 4.3].'},
 						{cons: TypeError03, message: 'Expression of type mutable [258: 42] is not assignable to type mutable [258: 42 | 4.3].'},

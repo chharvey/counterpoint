@@ -11,7 +11,7 @@ export class TypeFloat extends Type {
 	static get INSTANCE(): TypeFloat { return new TypeFloat(); }
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
-	private constructor () {
+	private constructor() {
 		super(false, new Set([new OBJ.Float(0.0)]));
 	}
 	override toString(): string {

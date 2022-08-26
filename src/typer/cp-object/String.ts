@@ -12,7 +12,7 @@ import {Primitive} from './Primitive.js';
  */
 class CPString extends Primitive {
 	private readonly codeunits: readonly CodeUnit[];
-	constructor (data: string | readonly CodeUnit[] = []) {
+	constructor(data: string | readonly CodeUnit[] = []) {
 		super();
 		this.codeunits = (typeof data === 'string')
 			? [...utf8.encode(data)].map((ch) => ch.codePointAt(0)!)

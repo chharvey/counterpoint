@@ -15,7 +15,7 @@ import {Collection} from './Collection.js';
  * - List
  */
 export abstract class CollectionIndexed<T extends Object = Object> extends Collection {
-	constructor (
+	constructor(
 		readonly items: readonly T[] = [],
 	) {
 		super();

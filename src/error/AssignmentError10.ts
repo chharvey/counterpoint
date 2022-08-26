@@ -16,7 +16,7 @@ export class AssignmentError10 extends AssignmentError {
 	 * Construct a new AssignmentError10 object.
 	 * @param variable the undeclared variable
 	 */
-	constructor (variable: AST.ASTNodeVariable) {
+	constructor(variable: AST.ASTNodeVariable) {
 		super(`Reassignment of a fixed variable: \`${ variable.source }\`.`, AssignmentError10.CODE, variable.line_index, variable.col_index);
 	}
 }

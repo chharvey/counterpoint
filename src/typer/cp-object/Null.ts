@@ -22,7 +22,7 @@ export class Null extends Primitive {
 	static readonly NULLTYPE: TypeUnit = new TypeUnit(Null.NULL);
 
 
-	private constructor () {
+	private constructor() {
 		super()
 	}
 

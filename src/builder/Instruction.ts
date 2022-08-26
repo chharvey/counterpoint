@@ -86,7 +86,7 @@ export class InstructionConst extends InstructionExpression {
 	/**
 	 * @param value the constant to push
 	 */
-	constructor (private readonly value: OBJ.Number) {
+	constructor(private readonly value: OBJ.Number) {
 		super()
 	}
 	/**
@@ -108,7 +108,7 @@ abstract class InstructionVariable extends InstructionExpression {
 	 * @param name the variable name (must begin with `'$'`)
 	 * @param op an optional expression to manipulate, or a type to declare
 	 */
-	constructor (
+	constructor(
 		protected readonly name: string,
 		protected readonly op: InstructionExpression | boolean = false,
 	) {
@@ -124,7 +124,7 @@ abstract class InstructionVariable extends InstructionExpression {
  * - InstructionGlobalSet
  */
 abstract class InstructionGlobal extends InstructionVariable {
-	constructor (name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
+	constructor(name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
 		super((typeof name_or_id === 'bigint') ? `$glb${ name_or_id.toString(16) }` : name_or_id, op);
 	}
 }
@@ -132,7 +132,7 @@ abstract class InstructionGlobal extends InstructionVariable {
  * Get a global variable.
  */
 export class InstructionGlobalGet extends InstructionGlobal {
-	constructor (name: bigint | string, to_float: boolean = false) {
+	constructor(name: bigint | string, to_float: boolean = false) {
 		super(name, to_float);
 	}
 	/** @return `'(global.get ‹name›)'` */
@@ -144,7 +144,7 @@ export class InstructionGlobalGet extends InstructionGlobal {
  * Set a global variable.
  */
 export class InstructionGlobalSet extends InstructionGlobal {
-	constructor (name: bigint | string, op: InstructionExpression) {
+	constructor(name: bigint | string, op: InstructionExpression) {
 		super(name, op);
 	}
 	/** @return `'(global.set ‹name› ‹op›)'` */
@@ -159,7 +159,7 @@ export class InstructionGlobalSet extends InstructionGlobal {
  * - InstructionLocalTee
  */
 abstract class InstructionLocal extends InstructionVariable {
-	constructor (name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
+	constructor(name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
 		super((typeof name_or_id === 'bigint') ? `$var${ name_or_id.toString(16) }` : name_or_id, op);
 	}
 }
@@ -167,7 +167,7 @@ abstract class InstructionLocal extends InstructionVariable {
  * Get a local variable.
  */
 export class InstructionLocalGet extends InstructionLocal {
-	constructor (name: bigint | string, to_float: boolean = false) {
+	constructor(name: bigint | string, to_float: boolean = false) {
 		super(name, to_float)
 	}
 	/** @return `'(local.get ‹name›)'` */
@@ -179,7 +179,7 @@ export class InstructionLocalGet extends InstructionLocal {
  * Set a local variable.
  */
 export class InstructionLocalSet extends InstructionLocal {
-	constructor (name: bigint | string, op: InstructionExpression) {
+	constructor(name: bigint | string, op: InstructionExpression) {
 		super(name, op)
 	}
 	/** @return `'(local.set ‹name› ‹op›)'` */
@@ -191,7 +191,7 @@ export class InstructionLocalSet extends InstructionLocal {
  * Tee a local variable.
  */
 export class InstructionLocalTee extends InstructionLocal {
-	constructor (name: bigint | string, op: InstructionExpression) {
+	constructor(name: bigint | string, op: InstructionExpression) {
 		super(name, op)
 	}
 	/** @return `'(local.tee ‹name› ‹op›)'` */
@@ -207,7 +207,7 @@ export class InstructionUnop extends InstructionExpression {
 	 * @param op a punctuator representing the operation to perform
 	 * @param arg the operand
 	 */
-	constructor (
+	constructor(
 		private readonly op: ValidOperatorUnary,
 		private readonly arg: InstructionExpression,
 	) {
@@ -245,7 +245,7 @@ export abstract class InstructionBinop extends InstructionExpression {
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
-	constructor (
+	constructor(
 		protected readonly op:   ValidOperatorBinary,
 		protected readonly arg0: InstructionExpression,
 		protected readonly arg1: InstructionExpression,
@@ -259,7 +259,7 @@ export class InstructionBinopArithmetic extends InstructionBinop {
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
-	constructor (
+	constructor(
 		op:   ValidOperatorArithmetic,
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
@@ -291,7 +291,7 @@ export class InstructionBinopComparative extends InstructionBinop {
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
-	constructor (
+	constructor(
 		op:   ValidOperatorComparative,
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
@@ -322,7 +322,7 @@ export class InstructionBinopEquality extends InstructionBinop {
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
-	constructor (
+	constructor(
 		op:   ValidOperatorEquality,
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
@@ -354,7 +354,7 @@ export class InstructionBinopLogical extends InstructionBinop {
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
-	constructor (
+	constructor(
 		private readonly count: bigint,
 		op:   ValidOperatorLogical,
 		arg0: InstructionExpression,
@@ -398,7 +398,7 @@ export class InstructionCond extends InstructionExpression {
 	 * @param arg1 the consequent
 	 * @param arg2 the alterantive
 	 */
-	constructor (
+	constructor(
 		private readonly arg0: InstructionExpression,
 		private readonly arg1: InstructionExpression,
 		private readonly arg2: InstructionExpression,
@@ -426,7 +426,7 @@ export class InstructionStatement extends Instruction {
 	 * @param count the index of the statement within its scope
 	 * @param expr the expression
 	 */
-	constructor (
+	constructor(
 		private readonly count: bigint,
 		private readonly expr: InstructionExpression,
 	) {
@@ -457,7 +457,7 @@ export class InstructionDeclareGlobal extends Instruction {
 	 * @param mut  is the variable mutable? (may it be reassigned?)
 	 * @param init the initial value of the variable
 	 */
-	constructor (
+	constructor(
 		private readonly name: bigint | string,
 		private readonly mut: boolean,
 		private readonly init: InstructionExpression,
@@ -478,7 +478,7 @@ export class InstructionDeclareLocal extends Instruction {
 	 * @param name the variable name (must begin with `'$'`)
 	 * @param to_float `true` if declaring a float
 	 */
-	constructor (
+	constructor(
 		private readonly name: string,
 		private readonly to_float: boolean,
 	) {
@@ -496,7 +496,7 @@ export class InstructionModule extends Instruction {
 	/**
 	 * @param comps the components of the program
 	 */
-	constructor (private readonly comps: (string | Instruction)[] = []) {
+	constructor(private readonly comps: (string | Instruction)[] = []) {
 		super()
 	}
 	/**

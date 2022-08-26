@@ -23,7 +23,7 @@ class ParseError extends ErrorCode {
 	 * @param line    the line index in source code
 	 * @param col     the column index in source code
 	 */
-	constructor (message: string, code: number = 0, line?: number, col?: number) {
+	constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
 			name: ParseError.NAME,
@@ -49,7 +49,7 @@ class ParseError01 extends ParseError {
 	 * Construct a new ParseError01 object.
 	 * @param token the unexpected token
 	 */
-	constructor (token: Serializable) {
+	constructor(token: Serializable) {
 		super(`Unexpected token: \`${ token.source }\` at line ${ token.line_index + 1 } col ${ token.col_index + 1 }.`, ParseError01.CODE, token.line_index, token.col_index);
 	}
 }

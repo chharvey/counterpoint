@@ -21,10 +21,35 @@
 		"no-trailing-spaces": "error",
 
 		/* Layout & Formatting --- https://eslint.org/docs/latest/rules/#layout--formatting */
-		"indent": ["error", "tab", {
+		"arrow-spacing":             "error",
+		"comma-spacing":             "error",
+		"computed-property-spacing": "error",
+		"dot-location":              ["error", "property"],
+		"func-call-spacing":         "warn",
+		"generator-star-spacing":    ["error", "both"],
+		"indent":                    ["error", "tab", {
 			"SwitchCase":             1,
 			"flatTernaryExpressions": true
 		}],
-		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"]
+		"key-spacing": ["error", {
+			"align": "value",
+			"mode":  "minimum"
+		}],
+		"keyword-spacing":             "error",
+		"no-mixed-spaces-and-tabs":    ["error", "smart-tabs"],
+		"rest-spread-spacing":         "error",
+		"semi-spacing":                "error",
+		"space-before-blocks":         "error",
+		"space-before-function-paren": ["error", {
+			"anonymous":  "always",
+			"asyncArrow": "always",
+			"named":      "never"
+		}],
+		"space-infix-ops":        "error",
+		"space-unary-ops":        "error",
+		"switch-colon-spacing":   "error",
+		"template-curly-spacing": ["error", "always"],
+		"template-tag-spacing":   "error",
+		"yield-star-spacing":     ["error", "both"]
 	}
 }

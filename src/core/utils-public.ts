@@ -14,9 +14,9 @@ import {
  */
 export function stringifyAttributes(attributes: ReadonlyMap<string, string>): string {
 	return [...attributes].map(([attr, val]) => `${ attr }="${ val
-		.replace(/\&/g, '&amp;' )
-		.replace(/\</g, '&lt;'  )
-		.replace(/\>/g, '&gt;'  )
+		.replace(/\&/g, '&amp;')
+		.replace(/\</g, '&lt;')
+		.replace(/\>/g, '&gt;')
 		.replace(/\'/g, '&apos;')
 		.replace(/\"/g, '&quot;')
 		.replace(/\\/g, '&#x5c;')

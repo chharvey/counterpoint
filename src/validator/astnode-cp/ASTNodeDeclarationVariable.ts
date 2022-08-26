@@ -25,7 +25,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		assert.ok(statement instanceof ASTNodeDeclarationVariable);
 		return statement;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'declaration_variable'>,
 		readonly unfixed: boolean,
 		readonly assignee: ASTNodeVariable,

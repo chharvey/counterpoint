@@ -60,9 +60,9 @@ export abstract class ASTNodeCP extends ASTNode {
 			return {
 				source,
 				source_index,
-				line_index:   prev_chars.filter((c) => c === '\n').length,
-				col_index:    source_index - (prev_chars.lastIndexOf('\n') + 1),
-				tagname:      Object.values(Punctuator).find((punct) => punct === node.type) ? 'PUNCTUATOR' : node.type,
+				line_index: prev_chars.filter((c) => c === '\n').length,
+				col_index:  source_index - (prev_chars.lastIndexOf('\n') + 1),
+				tagname:    Object.values(Punctuator).find((punct) => punct === node.type) ? 'PUNCTUATOR' : node.type,
 				serialize() {
 					return serialize(this, this.source);
 				},

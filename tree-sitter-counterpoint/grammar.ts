@@ -377,6 +377,7 @@ module.exports = grammar({
 
 		_type_intersection: $ => choice($._type_unary_keyword, alias($.type_intersection_dfn, $.type_intersection)),
 		_type_union:        $ => choice($._type_intersection,  alias($.type_union_dfn,        $.type_union)),
+
 		type_intersection_dfn: $ => seq($._type_intersection, '&', $._type_unary_keyword),
 		type_union_dfn:        $ => seq($._type_union,        '|', $._type_intersection),
 
@@ -429,6 +430,7 @@ module.exports = grammar({
 
 		_expression_unary_symbol: $ => choice($._expression_compound,     alias($.expression_unary_symbol_dfn, $.expression_unary_symbol)),
 		_expression_claim:        $ => choice($._expression_unary_symbol, alias($.expression_claim_dfn,        $.expression_claim)),
+
 		expression_unary_symbol_dfn: $ => seq(choice('!', '?', '+', '-'), $._expression_unary_symbol),
 		expression_claim_dfn:        $ => seq("<", $._type, ">",          $._expression_claim),
 
@@ -439,6 +441,7 @@ module.exports = grammar({
 		_expression_equality:       $ => choice($._expression_comparative,    alias($.expression_equality_dfn,       $.expression_equality)),
 		_expression_conjunctive:    $ => choice($._expression_equality,       alias($.expression_conjunctive_dfn,    $.expression_conjunctive)),
 		_expression_disjunctive:    $ => choice($._expression_conjunctive,    alias($.expression_disjunctive_dfn,    $.expression_disjunctive)),
+
 		expression_exponential_dfn:    $ => seq($._expression_claim,          '^',                                                    $._expression_exponential),
 		expression_multiplicative_dfn: $ => seq($._expression_multiplicative, choice('*', '/'),                                       $._expression_exponential),
 		expression_additive_dfn:       $ => seq($._expression_additive,       choice('+', '-'),                                       $._expression_multiplicative),

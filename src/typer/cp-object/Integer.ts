@@ -31,7 +31,7 @@ export class Integer extends CPNumber<Integer> {
 	 * @param data - a numeric value or data
 	 * @returns the value represented as a 16-bit signed integer
 	 */
-	constructor (data: bigint | Datatype = 0n) {
+	constructor(data: bigint | Datatype = 0n) {
 		super()
 		this.internal = (typeof data === 'bigint')
 			? [...Integer.mod(data, 2n ** BigInt(Integer.BITCOUNT)).toString(2).padStart(Integer.BITCOUNT, '0')].map((bit) => !!+bit) as DatatypeMutable
@@ -61,7 +61,7 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	override plus(addend: Integer): Integer {
-		type Carry = [bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint]
+		type Carry = [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
 		const sum:   Carry = [...new Array(Integer.BITCOUNT).fill(0n)] as Carry;
 		const carry: Carry = [...new Array(Integer.BITCOUNT).fill(0n)] as Carry;
 		for (let i = Integer.BITCOUNT - 1; i >= 0; i--) {

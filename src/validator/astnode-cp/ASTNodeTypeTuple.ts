@@ -16,7 +16,7 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeTuple);
 		return typ;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'type_tuple_literal'>,
 		override readonly children: readonly ASTNodeItemType[],
 	) {

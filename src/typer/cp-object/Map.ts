@@ -14,7 +14,7 @@ import {Collection} from './Collection.js';
 
 
 class CPMap<K extends Object = Object, V extends Object = Object> extends Collection {
-	constructor (
+	constructor(
 		private readonly cases: ReadonlyMap<K, V> = new Map(),
 	) {
 		super();

@@ -15,7 +15,7 @@ export class ASTNodeTypeMap extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeMap);
 		return typ;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'type_map_literal'>,
 		readonly antecedenttype: ASTNodeType,
 		readonly consequenttype: ASTNodeType,

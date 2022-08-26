@@ -23,7 +23,7 @@ export class TypeError06 extends TypeError {
 	 * @param generic  - whether the arguments are generic arguments (true) or function arguments (false)
 	 * @param call     - the function call
 	 */
-	constructor (actual: bigint, expected: bigint, generic: boolean, call: AST.ASTNodeTypeCall | AST.ASTNodeCall) {
+	constructor(actual: bigint, expected: bigint, generic: boolean, call: AST.ASTNodeTypeCall | AST.ASTNodeCall) {
 		super(`Got \`${ actual }\` ${ (generic) ? 'type ' : '' }arguments, but expected \`${ expected }\`.`, TypeError06.CODE, call.line_index, call.col_index);
 	}
 }

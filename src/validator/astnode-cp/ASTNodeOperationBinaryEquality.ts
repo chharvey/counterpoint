@@ -25,7 +25,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		assert.ok(expression instanceof ASTNodeOperationBinaryEquality);
 		return expression;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		override readonly operator: ValidOperatorEquality,
 		operand0: ASTNodeExpression,

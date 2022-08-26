@@ -7,7 +7,7 @@ import {ASTNodeCP} from './ASTNodeCP.js';
 
 
 export class ASTNodeCase extends ASTNodeCP {
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'case'>,
 		readonly antecedent: ASTNodeExpression,
 		readonly consequent: ASTNodeExpression,

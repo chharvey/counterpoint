@@ -33,7 +33,7 @@ export class TypeRecord extends Type {
 	 * @param propertytypes a map of this type’s property ids along with their associated types
 	 * @param is_mutable is this type mutable?
 	 */
-	constructor (
+	constructor(
 		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 		is_mutable: boolean = false,
 	) {

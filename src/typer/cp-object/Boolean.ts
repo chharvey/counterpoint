@@ -32,7 +32,7 @@ export class Boolean extends Primitive {
 	 * Construct a new Boolean object.
 	 * @param data The native boolean value of this object.
 	 */
-	private constructor (private readonly data: boolean) {
+	private constructor(private readonly data: boolean) {
 		super()
 	}
 

@@ -19,7 +19,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		assert.ok(expression instanceof ASTNodeTuple);
 		return expression;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'tuple_literal'>,
 		override readonly children: readonly ASTNodeExpression[],
 	) {

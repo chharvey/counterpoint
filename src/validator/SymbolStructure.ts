@@ -17,7 +17,7 @@ export enum SymbolKind {
 
 
 export abstract class SymbolStructure {
-	constructor (
+	constructor(
 		/** The unique identifier of the symbol, the cooked value of the token. */
 		readonly id: bigint,
 		/** The 0-based line index of where the symbol was declared. */
@@ -35,7 +35,7 @@ export abstract class SymbolStructure {
 export class SymbolStructureType extends SymbolStructure {
 	/** The assessed value of the symbol. */
 	typevalue: TYPE.Type = TYPE.Type.UNKNOWN;
-	constructor (
+	constructor(
 		node: AST.ASTNodeTypeAlias,
 	) {
 		super(node.id, node.line_index, node.col_index, node.source);
@@ -49,7 +49,7 @@ export class SymbolStructureVar extends SymbolStructure {
 	type: TYPE.Type = TYPE.Type.UNKNOWN;
 	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
 	value: OBJ.Object | null = null;
-	constructor (
+	constructor(
 		node: AST.ASTNodeVariable,
 		/** May the symbol be reassigned? */
 		readonly unfixed: boolean,

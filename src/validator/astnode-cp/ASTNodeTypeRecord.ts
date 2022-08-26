@@ -17,7 +17,7 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeRecord);
 		return typ;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'type_record_literal'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
 	) {

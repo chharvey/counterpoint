@@ -19,7 +19,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 		assert.ok(expression instanceof ASTNodeSet);
 		return expression;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'set_literal'>,
 		override readonly children: readonly ASTNodeExpression[],
 	) {

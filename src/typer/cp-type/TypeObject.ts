@@ -11,7 +11,7 @@ export class TypeObject extends Type {
 	static readonly INSTANCE: TypeObject = new TypeObject();
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
-	private constructor () {
+	private constructor() {
 		super(false);
 	}
 	override toString(): string {

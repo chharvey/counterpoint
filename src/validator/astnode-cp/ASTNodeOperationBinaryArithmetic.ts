@@ -31,7 +31,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		assert.ok(expression instanceof ASTNodeOperationBinaryArithmetic);
 		return expression;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		override readonly operator: ValidOperatorArithmetic,
 		operand0: ASTNodeExpression,

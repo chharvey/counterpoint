@@ -25,7 +25,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 
 	private _id: bigint | null = null; // TODO use memoize decorator
 
-	constructor (start_node: SyntaxNodeType<'identifier'>) {
+	constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 

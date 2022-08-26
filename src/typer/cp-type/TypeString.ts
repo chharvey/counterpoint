@@ -11,7 +11,7 @@ export class TypeString extends Type {
 	static get INSTANCE(): TypeString { return new TypeString(); }
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
-	private constructor () {
+	private constructor() {
 		super(false, new Set([new OBJ.String('')]));
 	}
 	override toString(): string {

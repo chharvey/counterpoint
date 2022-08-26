@@ -27,7 +27,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		assert.ok(expression instanceof ASTNodeOperationBinaryComparative);
 		return expression;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		override readonly operator: ValidOperatorComparative,
 		operand0: ASTNodeExpression,

@@ -11,7 +11,7 @@ export class TypeSet extends Type {
 	 * @param types a union of types in this set type
 	 * @param is_mutable is this type mutable?
 	 */
-	constructor (
+	constructor(
 		readonly types: Type,
 		is_mutable: boolean = false,
 	) {

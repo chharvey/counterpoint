@@ -12,7 +12,7 @@ export class TypeMap extends Type {
 	 * @param consequenttypes a union of consequent types in this map type
 	 * @param is_mutable is this type mutable?
 	 */
-	constructor (
+	constructor(
 		readonly antecedenttypes: Type,
 		readonly consequenttypes: Type,
 		is_mutable: boolean = false,

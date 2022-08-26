@@ -17,7 +17,7 @@ export class ReferenceError extends ErrorCode {
 	 * @param line    the line index in source code
 	 * @param col     the column index in source code
 	 */
-	constructor (message: string, code: number = 0, line?: number, col?: number) {
+	constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
 			name: ReferenceError.NAME,

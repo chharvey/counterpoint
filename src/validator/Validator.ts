@@ -284,7 +284,7 @@ export class Validator {
 	 * Construct a new Validator object.
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor (
+	constructor(
 		readonly config: CPConfig = CONFIG_DEFAULT,
 	) {
 	}

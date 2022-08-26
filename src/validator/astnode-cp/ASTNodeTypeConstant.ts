@@ -30,7 +30,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			(source === Keyword.NULL)  ? TYPE.Type.NULL :
 			(source === Keyword.BOOL)  ? TYPE.Type.BOOL :
 			(source === Keyword.FALSE) ? OBJ.Boolean.FALSETYPE :
-			(source === Keyword.TRUE ) ? OBJ.Boolean.TRUETYPE :
+			(source === Keyword.TRUE)  ? OBJ.Boolean.TRUETYPE :
 			(source === Keyword.INT)   ? TYPE.Type.INT :
 			(source === Keyword.FLOAT) ? TYPE.Type.FLOAT :
 			(source === Keyword.STR)   ? TYPE.Type.STR :
@@ -42,7 +42,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 
 	private _type: TYPE.Type | null = null;
 
-	constructor (start_node:
+	constructor(start_node:
 		| SyntaxNodeType<'keyword_type'>
 		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'primitive_literal'>
@@ -57,7 +57,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeTypeConstant.keywordType(token.text) :
 				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? new TYPE.TypeUnit(valueOfTokenNumber(token.text, this.validator.config)) :
 				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? new TYPE.TypeUnit(valueOfTokenNumber(token.text, this.validator.config)) :
-				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/) , new TYPE.TypeUnit(new OBJ.String(Validator.cookTokenString(token.text, this.validator.config))))
+				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new TYPE.TypeUnit(new OBJ.String(Validator.cookTokenString(token.text, this.validator.config))))
 			))(this.start_node.children[0]))
 		);
 	}

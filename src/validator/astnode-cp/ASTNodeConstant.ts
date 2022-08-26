@@ -38,7 +38,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	private _value: OBJ.Object | null = null;
 
-	constructor (start_node:
+	constructor(start_node:
 		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'template_full'>
 		| SyntaxNodeType<'template_head'>
@@ -57,7 +57,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeConstant.keywordValue(token.text) :
 				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? valueOfTokenNumber(token.text, this.validator.config) :
 				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? valueOfTokenNumber(token.text, this.validator.config) :
-				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/) , new OBJ.String(Validator.cookTokenString(token.text, this.validator.config)))
+				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new OBJ.String(Validator.cookTokenString(token.text, this.validator.config)))
 			))(this.start_node.children[0]))
 		);
 	}

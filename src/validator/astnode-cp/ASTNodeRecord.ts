@@ -21,7 +21,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		assert.ok(expression instanceof ASTNodeRecord);
 		return expression;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'record_literal'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {

@@ -36,9 +36,9 @@ export class Builder {
 	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor (source: string, config: CPConfig = CONFIG_DEFAULT) {
+	constructor(source: string, config: CPConfig = CONFIG_DEFAULT) {
 		this.ast_goal  = AST.ASTNodeGoal.fromSource(source, config);
-		this.ast_goal.varCheck (); // assert does not throw
+		this.ast_goal.varCheck();  // assert does not throw
 		this.ast_goal.typeCheck(); // assert does not throw
 	}
 

@@ -21,7 +21,7 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeOperation);
 		return typ;
 	}
-	constructor (
+	constructor(
 		start_node:
 			| SyntaxNodeType<'type_unary_symbol'>
 			| SyntaxNodeType<'type_unary_keyword'>

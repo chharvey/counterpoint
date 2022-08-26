@@ -86,7 +86,7 @@ export abstract class Type {
 	 * @param isMutable Whether this type is `mutable`. Mutable objects may change fields/entries and call mutating methods.
 	 * @param values    An enumerated set of values that are assignable to this type.
 	 */
-	constructor (
+	constructor(
 		readonly isMutable: boolean,
 		readonly values:    ReadonlySet<OBJ.Object> = new Set(),
 	) {
@@ -248,7 +248,7 @@ export class TypeInterface extends Type {
 	 * @param properties a map of this type’s members’ names along with their associated types
 	 * @param is_mutable is this type mutable?
 	 */
-	constructor (
+	constructor(
 		private readonly properties: ReadonlyMap<string, Type>,
 		is_mutable: boolean = false,
 	) {
@@ -315,7 +315,7 @@ class TypeNever extends Type {
 	override readonly isBottomType: boolean = true;
 	override readonly isTopType: boolean = false;
 
-	private constructor () {
+	private constructor() {
 		super(false);
 	}
 
@@ -342,7 +342,7 @@ class TypeVoid extends Type {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType: boolean = false;
 
-	private constructor () {
+	private constructor() {
 		super(false);
 	}
 
@@ -375,7 +375,7 @@ class TypeUnknown extends Type {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType: boolean = true;
 
-	private constructor () {
+	private constructor() {
 		super(false);
 	}
 

@@ -21,7 +21,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		assert.ok(expression instanceof ASTNodeMap);
 		return expression;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'map_literal'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {

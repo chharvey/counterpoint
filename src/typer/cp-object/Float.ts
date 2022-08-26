@@ -9,7 +9,7 @@ import {Number} from './Number.js';
  * @final
  */
 export class Float extends Number<Float> {
-	constructor (private readonly data: number = 0) {
+	constructor(private readonly data: number = 0) {
 		super()
 		xjs.Number.assertType(this.data, xjs.NumericType.FINITE);
 	}

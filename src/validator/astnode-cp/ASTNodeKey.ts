@@ -11,7 +11,7 @@ import {ASTNodeCP} from './ASTNodeCP.js';
 export class ASTNodeKey extends ASTNodeCP {
 	private _id: bigint | null = null; // TODO use memoize decorator
 
-	constructor (start_node: SyntaxNodeType<'word'>) {
+	constructor(start_node: SyntaxNodeType<'word'>) {
 		super(start_node);
 	}
 

@@ -23,7 +23,7 @@ export class TypeUnion extends Type {
 	 * @param left the first type
 	 * @param right the second type
 	 */
-	constructor (
+	constructor(
 		private readonly left:  Type,
 		private readonly right: Type,
 	) {

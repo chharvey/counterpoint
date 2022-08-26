@@ -26,7 +26,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		return expression;
 	}
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
-	constructor (
+	constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
 			| SyntaxNodeType<'assignee'>
@@ -153,7 +153,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return (
 				(base_value instanceof OBJ.CollectionIndexed) ? (base_value as OBJ.CollectionIndexed).get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
 				(base_value instanceof OBJ.Set)               ? (base_value as OBJ.Set)              .get(accessor_value,                this.optional, this.accessor) :
-				(base_value instanceof OBJ.Map                , (base_value as OBJ.Map)              .get(accessor_value,                this.optional, this.accessor) )
+				(base_value instanceof OBJ.Map,                 (base_value as OBJ.Map)              .get(accessor_value,                this.optional, this.accessor))
 			);
 		}
 	}

@@ -14,7 +14,7 @@ import {Collection} from './Collection.js';
  * - Dict
  */
 export abstract class CollectionKeyed<T extends Object = Object> extends Collection {
-	constructor (
+	constructor(
 		readonly properties: ReadonlyMap<bigint, T> = new Map(),
 	) {
 		super();

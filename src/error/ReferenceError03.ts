@@ -24,7 +24,7 @@ export class ReferenceError03 extends ReferenceError {
 	 * @param refers_to what the symbol was declared as
 	 * @param used_as   what the symbol is used as
 	 */
-	constructor (symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable, refers_to: SymbolKind, used_as: SymbolKind) {
+	constructor(symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable, refers_to: SymbolKind, used_as: SymbolKind) {
 		super(`\`${ symbol.source }\` refers to a ${ refers_to }, but is used as a ${ used_as }.`, ReferenceError03.CODE, symbol.line_index, symbol.col_index);
 	}
 }

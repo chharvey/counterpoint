@@ -16,7 +16,7 @@ export class ASTNodeTypeList extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeList);
 		return typ;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'type_unary_symbol'>,
 		readonly type:  ASTNodeType,
 		readonly count: bigint | null,

@@ -24,7 +24,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeCall);
 		return typ;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
 		readonly base: ASTNodeType,
 		readonly args: Readonly<NonemptyArray<ASTNodeType>>,

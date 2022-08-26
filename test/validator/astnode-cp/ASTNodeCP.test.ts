@@ -200,20 +200,20 @@ describe('ASTNodeCP', () => {
 				`).varCheck(), (err) => {
 					assert.ok(err instanceof AggregateError);
 					assertAssignable(err, {
-						cons: AggregateError,
+						cons:   AggregateError,
 						errors: [
 							{
-								cons: AggregateError,
+								cons:   AggregateError,
 								errors: [
 									{
-										cons: AggregateError,
+										cons:   AggregateError,
 										errors: [
 											{cons: ReferenceError01, message: '`a` is never declared.'},
 											{cons: ReferenceError01, message: '`b` is never declared.'},
 										],
 									},
 									{
-										cons: AggregateError,
+										cons:   AggregateError,
 										errors: [
 											{cons: ReferenceError01, message: '`c` is never declared.'},
 											{cons: ReferenceError01, message: '`d` is never declared.'},
@@ -222,17 +222,17 @@ describe('ASTNodeCP', () => {
 								],
 							},
 							{
-								cons: AggregateError,
+								cons:   AggregateError,
 								errors: [
 									{
-										cons: AggregateError,
+										cons:   AggregateError,
 										errors: [
 											{cons: ReferenceError01, message: '`V` is never declared.'},
 											{cons: ReferenceError01, message: '`W` is never declared.'},
 										],
 									},
 									{
-										cons: AggregateError,
+										cons:   AggregateError,
 										errors: [
 											{cons: ReferenceError01, message: '`X` is never declared.'},
 											{cons: ReferenceError01, message: '`Y` is never declared.'},
@@ -273,17 +273,17 @@ describe('ASTNodeCP', () => {
 				assert.throws(() => goal.typeCheck(), (err) => {
 					assert.ok(err instanceof AggregateError);
 					assertAssignable(err, {
-						cons: AggregateError,
+						cons:   AggregateError,
 						errors: [
 							{
-								cons: AggregateError,
+								cons:   AggregateError,
 								errors: [
 									{cons: TypeError01, message: 'Invalid operation: `a * b` at line 6 col 6.'}, // TODO remove line&col numbers from message
 									{cons: TypeError01, message: 'Invalid operation: `c * d` at line 6 col 14.'},
 								],
 							},
 							{
-								cons: AggregateError,
+								cons:   AggregateError,
 								errors: [
 									{cons: TypeError01, message: 'Invalid operation: `e * f` at line 11 col 6.'},
 									{cons: TypeError01, message: 'Invalid operation: `g * h` at line 11 col 14.'},

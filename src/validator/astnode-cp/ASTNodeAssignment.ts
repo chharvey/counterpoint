@@ -24,7 +24,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		assert.ok(statement instanceof ASTNodeAssignment);
 		return statement;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'statement_assignment'>,
 		readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		readonly assigned: ASTNodeExpression,

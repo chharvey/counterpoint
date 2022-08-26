@@ -20,7 +20,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		assert.ok(statement instanceof ASTNodeDeclarationType);
 		return statement;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'declaration_type'>,
 		readonly assignee: ASTNodeTypeAlias,
 		readonly assigned: ASTNodeType,

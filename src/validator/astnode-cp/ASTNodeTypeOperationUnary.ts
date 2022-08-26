@@ -18,7 +18,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		assert.ok(typ instanceof ASTNodeTypeOperationUnary);
 		return typ;
 	}
-	constructor (
+	constructor(
 		start_node:
 			| SyntaxNodeType<'type_unary_symbol'>
 			| SyntaxNodeType<'type_unary_keyword'>

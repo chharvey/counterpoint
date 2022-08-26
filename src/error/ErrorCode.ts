@@ -69,7 +69,7 @@ export class ErrorCode extends Error {
 	 * @param props the properties of the error
 	 */
 	constructor (props: ErrorCodeConstructorProperties);
-	constructor (props: string | ErrorCodeConstructorProperties) {
+	constructor(props: string | ErrorCodeConstructorProperties) {
 		if (typeof props === 'string') {
 			props = {message: props};
 		};

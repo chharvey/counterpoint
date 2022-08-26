@@ -11,7 +11,7 @@ export class TypeBoolean extends Type {
 	static get INSTANCE(): TypeBoolean { return new TypeBoolean(); }
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
-	private constructor () {
+	private constructor() {
 		super(false, new Set([OBJ.Boolean.FALSE, OBJ.Boolean.TRUE]));
 	}
 	override toString(): string {

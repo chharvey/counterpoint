@@ -20,7 +20,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeAccess);
 		return typ;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
 		readonly base:     ASTNodeType,
 		readonly accessor: ASTNodeIndexType | ASTNodeKey,

@@ -28,7 +28,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeCall);
 		return expression;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
 		readonly base: ASTNodeExpression,
 		readonly typeargs: readonly ASTNodeType[],

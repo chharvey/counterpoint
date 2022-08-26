@@ -18,7 +18,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		assert.ok(typ instanceof ASTNodeTypeOperationBinary);
 		return typ;
 	}
-	constructor (
+	constructor(
 		start_node:
 			| SyntaxNodeType<'type_intersection'>
 			| SyntaxNodeType<'type_union'>

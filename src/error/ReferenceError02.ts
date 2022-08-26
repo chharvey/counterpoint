@@ -17,7 +17,7 @@ export class ReferenceError02 extends ReferenceError {
 	 * Construct a new ReferenceError02 object.
 	 * @param variable the not-yet-declared variable
 	 */
-	constructor (variable: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
+	constructor(variable: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
 		super(`\`${ variable.source }\` is used before it is declared.`, ReferenceError02.CODE, variable.line_index, variable.col_index);
 	}
 }

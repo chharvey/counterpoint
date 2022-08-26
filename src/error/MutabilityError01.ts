@@ -20,7 +20,7 @@ export class MutabilityError01 extends MutabilityError {
 	 * @param typ  the type that is being mutated
 	 * @param node the reassignment node where it happens
 	 */
-	constructor (typ: TYPE.Type, node: AST.ASTNodeAssignment) {
+	constructor(typ: TYPE.Type, node: AST.ASTNodeAssignment) {
 		super(`Mutation of an object of immutable type \`${ typ }\`.`, MutabilityError01.CODE, node.line_index, node.col_index);
 	}
 }

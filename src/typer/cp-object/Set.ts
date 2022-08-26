@@ -14,7 +14,7 @@ import {Collection} from './Collection.js';
 
 
 class CPSet<T extends Object = Object> extends Collection {
-	constructor (
+	constructor(
 		private readonly elements: ReadonlySet<T> = new Set(),
 	) {
 		super();

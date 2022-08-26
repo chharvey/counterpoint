@@ -14,7 +14,7 @@ export class TypeUnit extends Type {
 	 * Construct a new TypeUnit object.
 	 * @param value the Counterpoint Language Value contained in this Type
 	 */
-	constructor (
+	constructor(
 		readonly value: OBJ.Object,
 	) {
 		super(false, new Set([value]));

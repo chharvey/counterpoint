@@ -142,13 +142,15 @@ export class CLI {
 		},
 		default: {
 			// CLI Options
-			help    : false,
-			version : false,
-			config  : false,
+			help:    false,
+			version: false,
+			config:  false,
+
 			// Language Features
-			comments          : null,
-			integerRadices    : null,
-			numericSeparators : null,
+			comments:          null,
+			integerRadices:    null,
+			numericSeparators: null,
+
 			// Compiler Options
 			constantFolding: null,
 			intCoercion:     null,
@@ -171,20 +173,20 @@ export class CLI {
 	 * Construct a new CLI object.
 	 * @param process_argv the arguments sent to NodeJS.Process.argv
 	 */
-	constructor (process_argv: readonly string[]) {
+	constructor(process_argv: readonly string[]) {
 		this.argv = minimist<CustomArgsType>(process_argv.slice(2), CLI.MINIMIST_OPTS)
 		this.command =
 			(this.argv.help || this.argv.config) ? Command.HELP :
 			(this.argv.version) ? Command.VERSION :
 			new Map<string, Command>([
-				['help'    , Command.HELP],
-				['version' , Command.VERSION],
-				['compile' , Command.COMPILE],
-				['c'       , Command.COMPILE],
-				['dev'     , Command.DEV],
-				['d'       , Command.DEV],
-				['run'     , Command.RUN],
-				['r'       , Command.RUN],
+				['help',    Command.HELP],
+				['version', Command.VERSION],
+				['compile', Command.COMPILE],
+				['c',       Command.COMPILE],
+				['dev',     Command.DEV],
+				['d',       Command.DEV],
+				['run',     Command.RUN],
+				['r',       Command.RUN],
 			]).get(this.argv._[0]) || Command.HELP
 		if (!(
 			(this.argv.out     === void 0 || typeof this.argv.out     === 'string' && this.argv.out     !== '') &&
@@ -253,7 +255,7 @@ export class CLI {
 		const outputfilepath: string = this.argv.out ? path.join(cwd, path.normalize(this.argv.out)) : path.format({
 			...path.parse(inputfilepath),
 			base: void 0,
-			ext: this.command === Command.DEV ? '.wat' : '.wasm',
+			ext:  this.command === Command.DEV ? '.wat' : '.wasm',
 		})
 		const cg: Builder = new Builder(...await Promise.all([
 			fs.promises.readFile(inputfilepath, 'utf8'),
@@ -263,10 +265,7 @@ export class CLI {
 			xjs.String.dedent`
 				Compiling………
 				Source file: ${ inputfilepath }
-				${this.command === Command.DEV
-					? `Intermediate text file (for debugging):`
-					: `Destination binary file:`
-				} ${ outputfilepath }
+				${ (this.command === Command.DEV) ? `Intermediate text file (for debugging):` : `Destination binary file:` } ${ outputfilepath }
 			`.trimStart(),
 			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? cg.print() : await cg.compile()),
 		])

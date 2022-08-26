@@ -15,7 +15,7 @@ export class TypeError02 extends TypeError {
 	 * @param subtype   - the expected subtype
 	 * @param supertype - the supertype
 	 */
-	constructor (subtype: TYPE.Type, supertype: TYPE.Type, line_index: number, col_index: number) {
+	constructor(subtype: TYPE.Type, supertype: TYPE.Type, line_index: number, col_index: number) {
 		super(`Type ${ subtype } is not a subtype of type ${ supertype }.`, TypeError02.CODE, line_index, col_index)
 	}
 }

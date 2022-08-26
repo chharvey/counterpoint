@@ -15,7 +15,7 @@ export class ASTNodeTypeDict extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeDict);
 		return typ;
 	}
-	constructor (
+	constructor(
 		start_node: SyntaxNodeType<'type_dict_literal'>,
 		readonly type: ASTNodeType,
 	) {

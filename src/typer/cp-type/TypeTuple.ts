@@ -33,7 +33,7 @@ export class TypeTuple extends Type {
 	 * @param types this type’s item types
 	 * @param is_mutable is this type mutable?
 	 */
-	constructor (
+	constructor(
 		private readonly types: readonly TypeEntry[] = [],
 		is_mutable: boolean = false,
 	) {

@@ -42,7 +42,7 @@ export class ASTNode implements Serializable {
 	 * @param attributes Any other attributes to attach.
 	 * @param children   The set of child inputs that creates this ASTNode.
 	 */
-	constructor (
+	constructor(
 		private readonly start: Serializable,
 		private readonly attributes: {[key: string]: unknown} = {},
 		readonly children: readonly ASTNode[] = [],
