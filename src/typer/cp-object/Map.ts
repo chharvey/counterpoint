@@ -1,6 +1,7 @@
 import * as xjs from 'extrajs';
 import {
 	VoidError01,
+	throw_expression,
 	AST,
 	languageValuesIdentical,
 	Type,
@@ -56,7 +57,7 @@ class CPMap<K extends Object = Object, V extends Object = Object> extends Collec
 			? xjs.Map.get(this.cases, ant, languageValuesIdentical)!
 			: (access_optional)
 				? Null.NULL
-				: (() => { throw new VoidError01(accessor); })();
+				: throw_expression(new VoidError01(accessor));
 	}
 }
 export {CPMap as Map};

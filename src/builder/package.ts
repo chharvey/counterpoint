@@ -5,6 +5,9 @@
  * they are only for modules within this package.
  */
 export {
+	throw_expression,
+} from '../lib/index.js';
+export {
 	CPConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.js';

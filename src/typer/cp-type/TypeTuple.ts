@@ -1,6 +1,7 @@
 import {
 	TypeError04,
 	IntRange,
+	throw_expression,
 	ValidAccessOperator,
 	AST,
 	TypeEntry,
@@ -86,7 +87,7 @@ export class TypeTuple extends Type {
 		return updateAccessedStaticType((
 			(-n <= i && i < 0) ? this.types[i + n] :
 			(0  <= i && i < n) ? this.types[i] :
-			(() => { throw new TypeError04('index', this, accessor); })()
+			throw_expression(new TypeError04('index', this, accessor))
 		), access_kind);
 	}
 

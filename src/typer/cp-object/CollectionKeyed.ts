@@ -1,5 +1,6 @@
 import {
 	VoidError01,
+	throw_expression,
 	AST,
 } from './package.js';
 import type {Object} from './Object.js';
@@ -46,6 +47,6 @@ export abstract class CollectionKeyed<T extends Object = Object> extends Collect
 			? this.properties.get(key)!
 			: (access_optional)
 				? Null.NULL
-				: (() => { throw new VoidError01(accessor); })();
+				: throw_expression(new VoidError01(accessor));
 	}
 }

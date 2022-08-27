@@ -7,6 +7,7 @@
 export {
 	TypeError04,
 	IntRange,
+	throw_expression,
 	Operator,
 	ValidAccessOperator,
 	AST,

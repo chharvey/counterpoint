@@ -8,6 +8,7 @@ export {
 	VoidError01,
 	CodeUnit,
 	Keys,
+	throw_expression,
 	AST,
 } from '../package.js';
 export {

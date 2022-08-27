@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import {
 	TYPE,
 	TypeError,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -31,6 +32,6 @@ export class ASTNodeTypeList extends ASTNodeType {
 			? new TYPE.TypeList(itemstype)
 			: (this.count >= 0)
 				? TYPE.TypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype))
-				: (() => { throw new TypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index); })();
+				: throw_expression(new TypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index));
 	}
 }

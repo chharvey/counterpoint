@@ -7,6 +7,7 @@ import {
 	Builder,
 	TypeError01,
 	NanError01,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeSupertype,
@@ -56,7 +57,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			(this.operator === Operator.EMP) ? TYPE.Type.BOOL :
 			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(TYPE.Type.INT.union(TYPE.Type.FLOAT)))
 				? t0
-				: (() => { throw new TypeError01(this); })()
+				: throw_expression(new TypeError01(this))
 		);
 	}
 
@@ -69,7 +70,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			(this.operator === Operator.NOT) ? OBJ.Boolean.fromBoolean(!v0.isTruthy) :
 			(this.operator === Operator.EMP) ? OBJ.Boolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
 			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as OBJ.Number<any>) :
-			(() => { throw new ReferenceError(`Operator ${ Operator[this.operator] } not found.`) })()
+			throw_expression(new ReferenceError(`Operator ${ Operator[this.operator] } not found.`))
 		)
 	}
 

@@ -1,5 +1,6 @@
 import * as xjs from 'extrajs';
 import {
+	throw_expression,
 	Operator,
 	ValidOperatorUnary,
 	ValidOperatorBinary,
@@ -80,7 +81,7 @@ export class InstructionConst extends InstructionExpression {
 			(value instanceof OBJ.Null)    ? OBJ.Integer.ZERO :
 			(value instanceof OBJ.Boolean) ? (value.isTruthy) ? OBJ.Integer.UNIT : OBJ.Integer.ZERO :
 			(value instanceof OBJ.Number)  ? value :
-			(() => { throw new Error('not yet supported.') })()
+			throw_expression(new Error('not yet supported.'))
 		return new InstructionConst((to_float) ? numeric.toFloat() : numeric)
 	}
 

@@ -8,6 +8,7 @@ import {
 	TypeError01,
 	NanError01,
 	NanError02,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeSupertype,
@@ -51,14 +52,17 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
-		if (bothNumeric(t0, t1)) {
-			if (int_coercion) {
-				return (eitherFloats(t0, t1)) ? TYPE.Type.FLOAT : TYPE.Type.INT;
-			}
-			if (bothFloats   (t0, t1)) { return TYPE.Type.FLOAT; }
-			if (neitherFloats(t0, t1)) { return TYPE.Type.INT; }
-		}
-		throw new TypeError01(this)
+		return (bothNumeric(t0, t1))
+			? (int_coercion)
+				? (eitherFloats(t0, t1))
+					? TYPE.Type.FLOAT
+					: TYPE.Type.INT
+				: (
+					(bothFloats   (t0, t1)) ? TYPE.Type.FLOAT :
+					(neitherFloats(t0, t1)) ? TYPE.Type.INT   :
+					throw_expression(new TypeError01(this))
+				)
+			: throw_expression(new TypeError01(this));
 	}
 
 	protected override fold_do(): OBJ.Object | null {

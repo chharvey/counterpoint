@@ -1,3 +1,4 @@
+import {throw_expression} from './package.js';
 import type {Object} from './Object.js';
 import {Number as CPNumber} from './Number.js';
 import {Float} from './index.js';
@@ -177,7 +178,7 @@ export class Integer extends CPNumber<Integer> {
 	 */
 	override divide(divisor: Integer): Integer {
 		return (
-			(divisor.eq0()) ? (() => { throw new RangeError('Division by zero.') })() :
+			(divisor.eq0()) ? throw_expression(new RangeError('Division by zero.')) :
 			(this   .eq0()) ? Integer.ZERO                     :
 			(divisor.lt0()) ? this.divide(divisor.neg()).neg() :
 			(this   .lt0()) ? this.neg().divide(divisor).neg() :

@@ -5,8 +5,10 @@ import {
 	OBJ,
 	INST,
 	Builder,
+	TypeError03,
 	TypeError05,
 	TypeError06,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -72,7 +74,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 						const argitemtype: TYPE.Type = (
 							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Tuple) ? argtype.value.toType().itemTypes() :
 							(argtype instanceof TYPE.TypeTuple)                                      ? argtype.itemTypes()                :
-							(() => { throw err; })()
+							throw_expression(err as TypeError03)
 						);
 						ASTNodeCP.typeCheckAssignment(itemtype, argitemtype, this, this.validator);
 					}
@@ -91,7 +93,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 						const argvaluetype: TYPE.Type = (
 							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Record) ? argtype.value.toType().valueTypes() :
 							(argtype instanceof TYPE.TypeRecord)                                      ? argtype.valueTypes()                :
-							(() => { throw err; })()
+							throw_expression(err as TypeError03)
 						);
 						ASTNodeCP.typeCheckAssignment(valuetype, argvaluetype, this, this.validator);
 					}
@@ -110,7 +112,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 						const argitemtype: TYPE.Type = (
 							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Tuple) ? argtype.value.toType().itemTypes() :
 							(argtype instanceof TYPE.TypeTuple)                                      ? argtype.itemTypes()                :
-							(() => { throw err; })()
+							throw_expression(err as TypeError03)
 						);
 						ASTNodeCP.typeCheckAssignment(eltype, argitemtype, this, this.validator);
 					}
@@ -131,7 +133,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 						const argitemtype: TYPE.Type = (
 							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Tuple) ? argtype.value.toType().itemTypes() :
 							(argtype instanceof TYPE.TypeTuple)                                      ? argtype.itemTypes()                :
-							(() => { throw err; })()
+							throw_expression(err as TypeError03)
 						);
 						ASTNodeCP.typeCheckAssignment(entrytype, argitemtype, this, this.validator);
 					}

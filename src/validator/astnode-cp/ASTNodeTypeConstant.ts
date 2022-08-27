@@ -3,6 +3,7 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	TYPE,
 	OBJ,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	Keyword,
@@ -35,7 +36,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			(source === Keyword.FLOAT) ? TYPE.Type.FLOAT :
 			(source === Keyword.STR)   ? TYPE.Type.STR :
 			(source === Keyword.OBJ)   ? TYPE.Type.OBJ :
-			(() => { throw new Error(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`); })()
+			throw_expression(new Error(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`))
 		);
 	}
 

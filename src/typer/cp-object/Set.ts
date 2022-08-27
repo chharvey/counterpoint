@@ -1,6 +1,7 @@
 import * as xjs from 'extrajs';
 import {
 	VoidError01,
+	throw_expression,
 	AST,
 	languageValuesIdentical,
 	Type,
@@ -57,7 +58,7 @@ class CPSet<T extends Object = Object> extends Collection {
 			? el
 			: (access_optional)
 				? Null.NULL
-				: (() => { throw new VoidError01(accessor); })();
+				: throw_expression(new VoidError01(accessor));
 	}
 }
 export {CPSet as Set};

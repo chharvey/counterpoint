@@ -1,6 +1,7 @@
 import {
 	TypeError04,
 	IntRange,
+	throw_expression,
 	ValidAccessOperator,
 	AST,
 	TypeEntry,
@@ -89,7 +90,7 @@ export class TypeRecord extends Type {
 	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): Type {
 		return updateAccessedStaticType(((this.propertytypes.has(key))
 			? this.propertytypes.get(key)!
-			: (() => { throw new TypeError04('property', this, accessor); })()
+			: throw_expression(new TypeError04('property', this, accessor))
 		), access_kind);
 	}
 

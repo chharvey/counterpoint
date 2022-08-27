@@ -5,6 +5,7 @@ import {
 	INST,
 	Builder,
 	TypeError01,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeSupertype,
@@ -55,7 +56,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 					? t2 // If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
 					: t1 // If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
 				: t1.union(t2)
-			: (() => { throw new TypeError01(this) })()
+			: throw_expression(new TypeError01(this));
 	}
 
 	protected override fold_do(): OBJ.Object | null {
