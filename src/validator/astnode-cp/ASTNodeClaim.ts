@@ -21,6 +21,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeClaim);
 		return expression;
 	}
+
 	private typed_?: TYPE.Type;
 	constructor(
 		start_node: SyntaxNodeType<'expression_claim'>,
@@ -29,13 +30,16 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	) {
 		super(start_node, {}, [claimed_type, operand]);
 	}
+
 	override shouldFloat(): boolean {
 		return this.type().isSubtypeOf(TYPE.Type.FLOAT);
 	}
+
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
 		const tofloat: boolean = to_float || this.shouldFloat();
 		return this.operand.build(builder, tofloat);
 	}
+
 	override type(): TYPE.Type { // WARNING: overriding a final method!
 		// TODO: use JS decorators for memoizing this method
 		if (!this.typed_) {
@@ -43,6 +47,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		};
 		return this.typed_;
 	}
+
 	protected override type_do(): TYPE.Type {
 		const claimed_type:  TYPE.Type = this.claimed_type.eval();
 		const computed_type: TYPE.Type = this.operand.type();
@@ -63,6 +68,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		}
 		return claimed_type;
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		return this.operand.fold();
 	}

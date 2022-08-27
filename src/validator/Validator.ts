@@ -39,7 +39,9 @@ function tokenWorthInt(
 	radix: RadixType = RADIX_DEFAULT,
 	allow_separators: CPConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
 ): number {
-	if (text.length === 0) { throw new Error('Cannot compute mathematical value of empty string.'); }
+	if (text.length === 0) {
+		throw new Error('Cannot compute mathematical value of empty string.');
+	}
 	if (allow_separators && text[text.length - 1] === SEPARATOR) {
 		text = text.slice(0, -1);
 	}
@@ -54,6 +56,9 @@ function tokenWorthInt(
 		* tokenWorthInt(text.slice(0, -1),     radix, allow_separators)
 		+ tokenWorthInt(text[text.length - 1], radix, allow_separators);
 }
+
+
+
 function tokenWorthFloat(
 	text: string,
 	allow_separators: CPConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
@@ -73,6 +78,9 @@ function tokenWorthFloat(
 	);
 	return (wholevalue + fracvalue) * expvalue;
 }
+
+
+
 function tokenWorthString(
 	text: string,
 	allow_comments:   CPConfig['languageFeatures']['comments']          = CONFIG_DEFAULT.languageFeatures.comments,
@@ -102,7 +110,6 @@ function tokenWorthString(
 				]).get(text[1])!,
 				...tokenWorthString(text.slice(2), allow_comments, allow_separators),
 			];
-
 		} else if (`${ text[1] }${ text[2] }` === 'u{') {
 			/* an escape sequence */
 			const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
@@ -110,14 +117,12 @@ function tokenWorthString(
 				...utf8Encode(tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
 				...tokenWorthString(text.slice(sequence[0].length), allow_comments, allow_separators),
 			];
-
 		} else if (text[1] === '\n') {
 			/* a line continuation (LF) */
 			return [
 				...utf8Encode(0x20),
 				...tokenWorthString(text.slice(2), allow_comments, allow_separators),
 			];
-
 		} else {
 			/* a backslash escapes the following character */
 			return [
@@ -125,12 +130,10 @@ function tokenWorthString(
 				...tokenWorthString([...text].slice(2).join('')/* UTF-16 */, allow_comments, allow_separators),
 			];
 		}
-
 	} else if (allow_comments && `${ text[0] }${ text[1] }` === COMMENTER_MULTI) {
 		/* an in-string multiline comment */
 		const match: string = text.match(/\%\%(?:\%?[^\'\%])*(?:\%\%)?/)![0];
 		return tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
-
 	} else if (allow_comments && text[0] === COMMENTER_LINE) {
 		/* an in-string line comment */
 		const match: string = text.match(/\%[^\'\n]*\n?/)![0];
@@ -138,7 +141,6 @@ function tokenWorthString(
 		return (match[match.length - 1] === '\n') // COMBAK `match.lastItem`
 			? [...utf8Encode(0x0a), ...rest]
 			: rest;
-
 	} else {
 		return [
 			...utf8Encode(text.codePointAt(0)!),
@@ -298,6 +300,7 @@ export class Validator {
 		this.symbol_table.set(symbol.id, symbol);
 		return this
 	}
+
 	/**
 	 * Remove a symbol from this Validator’s symbol table.
 	 * @param id the id of the symbol to remove
@@ -307,6 +310,7 @@ export class Validator {
 		this.symbol_table.delete(id);
 		return this
 	}
+
 	/**
 	 * Check whether this Validator’s symbol table has the symbol.
 	 * @param id the symbol id to check
@@ -315,6 +319,7 @@ export class Validator {
 	hasSymbol(id: bigint): boolean {
 		return this.symbol_table.has(id);
 	}
+
 	/**
 	 * Return the information of a symbol in this Validator’s symbol table.
 	 * @param id the symbol id to check
@@ -323,6 +328,7 @@ export class Validator {
 	getSymbolInfo(id: bigint): SymbolStructure | null {
 		return this.symbol_table.get(id) || null;
 	}
+
 	/**
 	 * Remove all symbols from this Validator’s symbol table.
 	 * @returns this

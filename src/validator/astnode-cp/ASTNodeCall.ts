@@ -28,6 +28,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeCall);
 		return expression;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
 		readonly base: ASTNodeExpression,
@@ -36,6 +37,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	) {
 		super(start_node, {}, [base, ...typeargs, ...exprargs]);
 	}
+
 	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be a `ValidFunctionName`)
@@ -44,12 +46,15 @@ export class ASTNodeCall extends ASTNodeExpression {
 			...this.exprargs,
 		], (arg) => arg.varCheck());
 	}
+
 	override shouldFloat(): boolean {
 		return false;
 	}
+
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
 		throw builder && to_float && '`ASTNodeCall#build_do` not yet supported.'
 	}
+
 	protected override type_do(): TYPE.Type {
 		if (!(this.base instanceof ASTNodeVariable)) {
 			throw new TypeError05(this.base.type(), this.base);
@@ -135,6 +140,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			}],
 		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const argvalue: OBJ.Object | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
 			? this.exprargs[0].fold()
@@ -149,6 +155,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.Map()  : new OBJ.Map(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.Tuple).items.map((pair) => (pair as OBJ.Tuple).items as [OBJ.Object, OBJ.Object])))],
 		]).get(this.base.source as ValidFunctionName)!(argvalue);
 	}
+
 	/**
 	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
 	 * and throw if the number is incorrect.

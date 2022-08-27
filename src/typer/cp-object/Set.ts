@@ -24,12 +24,15 @@ class CPSet<T extends Object = Object> extends Collection {
 		});
 		this.elements = uniques;
 	}
+
 	override toString(): string {
 		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
 	}
+
 	override get isEmpty(): boolean {
 		return this.elements.size === 0;
 	}
+
 	/** @final */
 	protected override equal_helper(value: Object): boolean {
 		return (

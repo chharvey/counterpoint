@@ -24,6 +24,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		assert.ok(expression instanceof ASTNodeOperationUnary);
 		return expression;
 	}
+
 	constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		readonly operator: ValidOperatorUnary,
@@ -31,9 +32,11 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand]);
 	}
+
 	override shouldFloat(): boolean {
 		return this.operand.shouldFloat();
 	}
+
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
 		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionUnop(
@@ -41,6 +44,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			this.operand.build(builder, tofloat),
 		)
 	}
+
 	protected override type_do(): TYPE.Type {
 		const t0: TYPE.Type = this.operand.type();
 		return (
@@ -55,6 +59,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				: (() => { throw new TypeError01(this); })()
 		);
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand.fold();
 		if (!v0) {
@@ -67,6 +72,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			(() => { throw new ReferenceError(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}
+
 	private foldNumeric<T extends OBJ.Number<T>>(z: T): T {
 		try {
 			return new Map<Operator, (z: T) => T>([

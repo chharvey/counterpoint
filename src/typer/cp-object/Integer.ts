@@ -41,9 +41,11 @@ export class Integer extends CPNumber<Integer> {
 	override toString(): string {
 		return `${ this.toNumeric() }`
 	}
+
 	protected override identical_helper(value: Object): boolean {
 		return value instanceof Integer && this.internal.every((bit, i) => bit === value.internal[i]);
 	}
+
 	protected override equal_helper(value: Object): boolean {
 		return value instanceof Float && this.toFloat().equal(value);
 	}
@@ -51,6 +53,7 @@ export class Integer extends CPNumber<Integer> {
 	override toFloat(): Float {
 		return new Float(Number(this.toNumeric()));
 	}
+
 	/**
 	 * Return the signed interpretation of this integer.
 	 * @returns the numeric value
@@ -77,9 +80,11 @@ export class Integer extends CPNumber<Integer> {
 		}
 		return new Integer(sum.map((bit) => !!bit) as DatatypeMutable);
 	}
+
 	override minus(subtrahend: Integer): Integer {
 		return this.plus(subtrahend.neg())
 	}
+
 	/**
 	 * ```ts
 	 * function mulSlow(multiplier: number, multiplicand: number): number {
@@ -124,6 +129,7 @@ export class Integer extends CPNumber<Integer> {
 				: this.plus(this.times(Integer.RADIX).times(multiplicand.minus(Integer.UNIT).divide(Integer.RADIX)))
 		)
 	}
+
 	/**
 	 * ```ts
 	 * function divSlow(dividend: number, divisor: number): number {
@@ -195,6 +201,7 @@ export class Integer extends CPNumber<Integer> {
 			})()
 		)
 	}
+
 	/**
 	 * ```ts
 	 * function expSlow(base: number, exponent: number): number {
@@ -245,30 +252,36 @@ export class Integer extends CPNumber<Integer> {
 		// }
 		// return returned
 	}
+
 	/**
 	 * Equivalently, this is the “two’s complement” of the integer.
 	 */
 	override neg(): Integer {
 		return this.cpl().plus(Integer.UNIT);
 	}
+
 	override eq0(): boolean {
 		return this.equal(Integer.ZERO);
 	}
+
 	/**
 	 * Is the 16-bit signed integer equal to `1`?
 	 */
 	private eq1(): boolean {
 		return this.equal(Integer.UNIT);
 	}
+
 	/**
 	 * Is the 16-bit signed integer equal to `2`?
 	 */
 	private eq2(): boolean {
 		return this.equal(Integer.RADIX);
 	}
+
 	override lt(y: Integer): boolean {
 		return this.minus(y).lt0()
 	}
+
 	/**
 	 * Return the ones’ complement of a 16-bit signed integer.
 	 * @see https://en.wikipedia.org/wiki/Ones%27_complement
@@ -278,6 +291,7 @@ export class Integer extends CPNumber<Integer> {
 	private cpl(): Integer {
 		return new Integer(this.internal.map((bit) => !bit) as DatatypeMutable);
 	}
+
 	/**
 	 * Perform an arithmetic left bit shift of a 16-bit signed integer.
 	 * @param int - the integer
@@ -289,6 +303,7 @@ export class Integer extends CPNumber<Integer> {
 			false,
 		] as DatatypeMutable);
 	}
+
 	/**
 	 * Perform an arithmetic right bit shift of a 16-bit signed integer.
 	 * The shift is arithmetic, which means that the new first bit is the same as the original first bit.
@@ -301,6 +316,7 @@ export class Integer extends CPNumber<Integer> {
 			...this.internal.slice(0, -1)
 		] as DatatypeMutable);
 	}
+
 	/**
 	 * Is the 16-bit signed integer negative?
 	 * @returns Is this integer less than `0`?
@@ -308,6 +324,7 @@ export class Integer extends CPNumber<Integer> {
 	private lt0(): boolean {
 		return this.internal[0] === true
 	}
+
 	/**
 	 * Is the 16-bit signed integer even?
 	 * @returns Is this integer divisible by `2`?

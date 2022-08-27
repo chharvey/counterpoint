@@ -19,6 +19,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeTemplate);
 		return expression;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'string_template'>,
 		override readonly children: // FIXME spread types
@@ -32,15 +33,19 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children)
 	}
+
 	override shouldFloat(): boolean {
 		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
+
 	protected override build_do(_builder: Builder): INST.InstructionExpression {
 		throw new Error('ASTNodeTemplate#build_do not yet supported.');
 	}
+
 	protected override type_do(): TYPE.Type {
 		return TYPE.Type.STR;
 	}
+
 	protected override fold_do(): OBJ.String | null {
 		const values: (OBJ.Object | null)[] = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))

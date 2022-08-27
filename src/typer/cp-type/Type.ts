@@ -41,6 +41,7 @@ import {
  * - TypeMap
  */
 export abstract class Type {
+	/* eslint-disable brace-style */
 	/** The Bottom Type, containing no values. */                    static get NEVER():   TypeNever   { return TypeNever.INSTANCE; }
 	/** The Void Type, representing a completion but not a value. */ static get VOID():    TypeVoid    { return TypeVoid.INSTANCE; }
 	/** The Top Type, containing all values. */                      static get UNKNOWN(): TypeUnknown { return TypeUnknown.INSTANCE; }
@@ -50,6 +51,8 @@ export abstract class Type {
 	/** The Float Type. */                                           static get FLOAT():   TypeFloat   { return TypeFloat.INSTANCE; }
 	/** The String Type. */                                          static get STR():     TypeString  { return TypeString.INSTANCE; }
 	/** The Object Type. */                                          static get OBJ():     TypeObject  { return TypeObject.INSTANCE; }
+	/* eslint-enable brace-style */
+
 	/**
 	 * Intersect all the given types.
 	 * @param types the types to intersect
@@ -58,6 +61,7 @@ export abstract class Type {
 	static intersectAll(types: Type[]): Type {
 		return types.reduce((a, b) => a.intersect(b));
 	}
+
 	/**
 	 * Unions all the given types.
 	 * @param types the types to union
@@ -109,6 +113,7 @@ export abstract class Type {
 	includes(v: OBJ.Object): boolean {
 		return xjs.Set.has(this.values, v, languageValuesIdentical);
 	}
+
 	/**
 	 * Return the type intersection of this type with another.
 	 * @param t the other type
@@ -117,23 +122,39 @@ export abstract class Type {
 	 */
 	intersect(t: Type): Type {
 		/** 1-5 | `T  & never   == never` */
-		if (t.isBottomType) { return Type.NEVER; }
-		if (this.isBottomType) { return this }
+		if (t.isBottomType) {
+			return Type.NEVER;
+		}
+		if (this.isBottomType) {
+			return this;
+		}
 		/** 1-6 | `T  & unknown == T` */
-		if (t.isTopType) { return this; }
-		if (this.isTopType) { return t; }
+		if (t.isTopType) {
+			return this;
+		}
+		if (this.isTopType) {
+			return t;
+		}
 		/** 3-3 | `A <: B  <->  A  & B == A` */
-		if (this.isSubtypeOf(t)) { return this }
-		if (t.isSubtypeOf(this)) { return t }
+		if (this.isSubtypeOf(t)) {
+			return this;
+		}
+		if (t.isSubtypeOf(this)) {
+			return t;
+		}
 
 		return this.intersect_do(t)
 	}
+
 	protected intersect_do(t: Type): Type {
 		/** 2-2 | `A \| B == B \| A` */
-		if (t instanceof TypeUnion) { return t.intersect(this); }
+		if (t instanceof TypeUnion) {
+			return t.intersect(this);
+		}
 
 		return new TypeIntersection(this, t);
 	}
+
 	/**
 	 * Return the type union of this type with another.
 	 * @param t the other type
@@ -142,23 +163,39 @@ export abstract class Type {
 	 */
 	union(t: Type): Type {
 		/** 1-7 | `T \| never   == T` */
-		if (t.isBottomType) { return this; }
-		if (this.isBottomType) { return t; }
+		if (t.isBottomType) {
+			return this;
+		}
+		if (this.isBottomType) {
+			return t;
+		}
 		/** 1-8 | `T \| unknown == unknown` */
-		if (t.isTopType) { return t; }
-		if (this.isTopType) { return Type.UNKNOWN; }
+		if (t.isTopType) {
+			return t;
+		}
+		if (this.isTopType) {
+			return Type.UNKNOWN;
+		}
 		/** 3-4 | `A <: B  <->  A \| B == B` */
-		if (this.isSubtypeOf(t)) { return t }
-		if (t.isSubtypeOf(this)) { return this }
+		if (this.isSubtypeOf(t)) {
+			return t;
+		}
+		if (t.isSubtypeOf(this)) {
+			return this;
+		}
 
 		return this.union_do(t)
 	}
+
 	protected union_do(t: Type): Type {
 		/** 2-1 | `A  & B == B  & A` */
-		if (t instanceof TypeIntersection) { return t.union(this); }
+		if (t instanceof TypeIntersection) {
+			return t.union(this);
+		}
 
 		return new TypeUnion(this, t);
 	}
+
 	/**
 	 * Return a new type that includes the values in this type that are not included in the argument type.
 	 * @param t the other type
@@ -167,10 +204,14 @@ export abstract class Type {
 	 */
 	subtract(t: Type): Type {
 		/** 4-1 | `A - B == A  <->  A & B == never` */
-		if (this.intersect(t).isBottomType) { return this; }
+		if (this.intersect(t).isBottomType) {
+			return this;
+		}
 
 		/** 4-2 | `A - B == never  <->  A <: B` */
-		if (this.isSubtypeOf(t)) { return Type.NEVER; }
+		if (this.isSubtypeOf(t)) {
+			return Type.NEVER;
+		}
 
 		if (t instanceof TypeUnion) {
 			return t.subtractedFrom(this);
@@ -178,9 +219,11 @@ export abstract class Type {
 
 		return this.subtract_do(t);
 	}
+
 	protected subtract_do(t: Type): Type {
 		return new TypeDifference(this, t);
 	}
+
 	/**
 	 * Return whether this type is a structural subtype of the given type.
 	 * @param t the type to compare
@@ -189,21 +232,33 @@ export abstract class Type {
 	 */
 	isSubtypeOf(t: Type): boolean {
 		/** 2-7 | `A <: A` */
-		if (this === t) { return true }
+		if (this === t) {
+			return true;
+		}
 		/** 1-1 | `never <: T` */
-		if (this.isBottomType) { return true; };
+		if (this.isBottomType) {
+			return true;
+		};
 		/** 1-3 | `T       <: never  <->  T == never` */
-		if (t.isBottomType) { return this.isBottomType; }
+		if (t.isBottomType) {
+			return this.isBottomType;
+		}
 		/** 1-4 | `unknown <: T      <->  T == unknown` */
-		if (this.isTopType) { return t.isTopType; };
+		if (this.isTopType) {
+			return t.isTopType;
+		};
 		/** 1-2 | `T     <: unknown` */
-		if (t.isTopType) { return true; }
+		if (t.isTopType) {
+			return true;
+		}
 
 		if (t instanceof TypeIntersection) {
 			return t.isSupertypeOf(this);
 		}
 		if (t instanceof TypeUnion) {
-			if (t.isNecessarilySupertypeOf(this)) { return true; }
+			if (t.isNecessarilySupertypeOf(this)) {
+				return true;
+			}
 		}
 		if (t instanceof TypeDifference) {
 			return t.isSupertypeOf(this);
@@ -211,10 +266,12 @@ export abstract class Type {
 
 		return this.isSubtypeOf_do(t)
 	}
+
 	protected isSubtypeOf_do(t: Type): boolean {
 		return !this.isBottomType && !!this.values.size // these checks are needed in cases of `obj` and `void`, which don’t store values
 			&& [...this.values].every((v) => t.includes(v));
 	}
+
 	/**
 	 * Return whether this type is structurally equal to the given type.
 	 * Two types are structurally equal if they are subtypes of each other.
@@ -226,9 +283,11 @@ export abstract class Type {
 	equals(t: Type): boolean {
 		return this.isMutable === t.isMutable && this.isSubtypeOf(t) && t.isSubtypeOf(this);
 	}
+
 	mutableOf(): Type {
 		return this;
 	}
+
 	immutableOf(): Type {
 		return this;
 	}
@@ -258,9 +317,11 @@ export class TypeInterface extends Type {
 	override get hasMutable(): boolean {
 		return super.hasMutable || [...this.properties.values()].some((t) => t.hasMutable);
 	}
+
 	override includes(v: OBJ.Object): boolean {
 		return [...this.properties.keys()].every((key) => key in v)
 	}
+
 	/**
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type intersection is taken.
@@ -272,6 +333,7 @@ export class TypeInterface extends Type {
 		})
 		return new TypeInterface(props)
 	}
+
 	/**
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
@@ -285,6 +347,7 @@ export class TypeInterface extends Type {
 		})
 		return new TypeInterface(props)
 	}
+
 	/**
 	 * In the general case, `S` is a subtype of `T` if every property of `T` exists in `S`,
 	 * and for each of those properties `#prop`, the type of `S#prop` is a subtype of `T#prop`.
@@ -295,9 +358,11 @@ export class TypeInterface extends Type {
 			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
 		)
 	}
+
 	override mutableOf(): TypeInterface {
 		return new TypeInterface(this.properties, true);
 	}
+
 	override immutableOf(): TypeInterface {
 		return new TypeInterface(this.properties, false);
 	}
@@ -322,9 +387,11 @@ class TypeNever extends Type {
 	override toString(): string {
 		return 'never';
 	}
+
 	override includes(_v: OBJ.Object): boolean {
 		return false
 	}
+
 	override equals(t: Type): boolean {
 		return t.isBottomType;
 	}
@@ -349,15 +416,19 @@ class TypeVoid extends Type {
 	override toString(): string {
 		return 'void';
 	}
+
 	override includes(_v: OBJ.Object): boolean {
 		return false;
 	}
+
 	protected override intersect_do(_t: Type): Type {
 		return Type.NEVER;
 	}
+
 	protected override isSubtypeOf_do(_t: Type): boolean {
 		return false;
 	}
+
 	override equals(t: Type): boolean {
 		return t === TypeVoid.INSTANCE || super.equals(t);
 	}
@@ -382,9 +453,11 @@ class TypeUnknown extends Type {
 	override toString(): string {
 		return 'unknown';
 	}
+
 	override includes(_v: OBJ.Object): boolean {
 		return true
 	}
+
 	override equals(t: Type): boolean {
 		return t.isTopType;
 	}

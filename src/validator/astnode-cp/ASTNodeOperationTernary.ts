@@ -21,6 +21,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		assert.ok(expression instanceof ASTNodeOperationTernary);
 		return expression;
 	}
+
 	constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		readonly operator: Operator.COND,
@@ -30,9 +31,11 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
+
 	override shouldFloat(): boolean {
 		return this.operand1.shouldFloat() || this.operand2.shouldFloat();
 	}
+
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionCond {
 		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionCond(
@@ -41,6 +44,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			this.operand2.build(builder, tofloat),
 		)
 	}
+
 	protected override type_do(): TYPE.Type {
 		const t0: TYPE.Type = this.operand0.type();
 		const t1: TYPE.Type = this.operand1.type();
@@ -53,6 +57,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 				: t1.union(t2)
 			: (() => { throw new TypeError01(this) })()
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {

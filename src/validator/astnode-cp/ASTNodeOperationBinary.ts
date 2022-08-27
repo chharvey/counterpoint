@@ -24,6 +24,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		assert.ok(expression instanceof ASTNodeOperationBinary);
 		return expression;
 	}
+
 	constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		readonly operator: ValidOperatorBinary,
@@ -32,9 +33,11 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand0, operand1]);
 	}
+
 	override shouldFloat(): boolean {
 		return this.operand0.shouldFloat() || this.operand1.shouldFloat();
 	}
+
 	/**
 	 * @final
 	 */
@@ -45,5 +48,6 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 			this.validator.config.compilerOptions.intCoercion,
 		)
 	}
+
 	protected abstract type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type;
 }

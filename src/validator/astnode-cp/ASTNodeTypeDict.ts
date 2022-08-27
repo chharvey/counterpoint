@@ -15,12 +15,14 @@ export class ASTNodeTypeDict extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeDict);
 		return typ;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'type_dict_literal'>,
 		readonly type: ASTNodeType,
 	) {
 		super(start_node, {}, [type]);
 	}
+
 	protected override eval_do(): TYPE.Type {
 		return new TYPE.TypeDict(this.type.eval());
 	}

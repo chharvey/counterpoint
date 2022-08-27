@@ -18,6 +18,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		assert.ok(typ instanceof ASTNodeTypeOperationUnary);
 		return typ;
 	}
+
 	constructor(
 		start_node:
 			| SyntaxNodeType<'type_unary_symbol'>
@@ -31,6 +32,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
 		}
 	}
+
 	protected override eval_do(): TYPE.Type {
 		return (
 			(this.operator === Operator.ORNULL)  ? this.operand.eval().union(TYPE.Type.NULL) :

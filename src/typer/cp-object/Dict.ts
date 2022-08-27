@@ -12,6 +12,7 @@ export class Dict<T extends Object = Object> extends CollectionKeyed<T> {
 	override toString(): string {
 		return `Dict.(${ super.toString() })`;
 	}
+
 	override toType(): TypeDict {
 		return new TypeDict(
 			(this.properties.size)

@@ -18,6 +18,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		assert.ok(typ instanceof ASTNodeTypeOperationBinary);
 		return typ;
 	}
+
 	constructor(
 		start_node:
 			| SyntaxNodeType<'type_intersection'>
@@ -29,6 +30,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	) {
 		super(start_node, operator, [operand0, operand1]);
 	}
+
 	protected override eval_do(): TYPE.Type {
 		return (
 			(this.operator === Operator.AND) ? this.operand0.eval().intersect(this.operand1.eval()) :

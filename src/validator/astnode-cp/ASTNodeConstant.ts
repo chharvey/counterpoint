@@ -65,12 +65,15 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	override shouldFloat(): boolean {
 		return this.value instanceof OBJ.Float;
 	}
+
 	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionConst {
 		return INST.InstructionConst.fromCPValue(this.fold(), to_float);
 	}
+
 	protected override type_do(): TYPE.Type {
 		return new TYPE.TypeUnit(this.value);
 	}
+
 	protected override fold_do(): OBJ.Object {
 		return this.value;
 	}

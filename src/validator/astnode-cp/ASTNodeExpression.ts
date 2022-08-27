@@ -43,6 +43,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		assert.ok(statement.expr, 'semantic statement should have 1 child');
 		return statement.expr;
 	}
+
 	private typed?: TYPE.Type;
 	private assessed?: OBJ.Object | null;
 	private built?: INST.InstructionExpression;
@@ -58,6 +59,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		super.typeCheck();
 		this.type(); // assert does not throw
 	}
+
 	/**
 	 * @inheritdoc
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
@@ -71,6 +73,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		}
 		return this.built;
 	}
+
 	protected abstract build_do(builder: Builder, to_float?: boolean): INST.InstructionExpression;
 	/**
 	 * The Type of this expression.
@@ -99,6 +102,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		};
 		return this.typed;
 	}
+
 	protected abstract type_do(): TYPE.Type;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
@@ -109,5 +113,6 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	fold(): OBJ.Object | null {
 		return this.assessed ||= this.fold_do();
 	}
+
 	protected abstract fold_do(): OBJ.Object | null;
 }

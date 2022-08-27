@@ -24,12 +24,15 @@ class CPMap<K extends Object = Object, V extends Object = Object> extends Collec
 		});
 		this.cases = uniques;
 	}
+
 	override toString(): string {
 		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
 	}
+
 	override get isEmpty(): boolean {
 		return this.cases.size === 0;
 	}
+
 	/** @final */
 	protected override equal_helper(value: Object): boolean {
 		return (

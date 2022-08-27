@@ -31,6 +31,7 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
 		return goal.children[0];
 	}
+
 	/** @implements Buildable */
 	abstract build(builder: Builder): Instruction;
 }

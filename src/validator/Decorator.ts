@@ -35,21 +35,25 @@ class Decorator {
 		[Punctuator.OPTDOT,   Operator.OPTDOT],
 		[Punctuator.CLAIMDOT, Operator.CLAIMDOT],
 	]);
+
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, ValidTypeOperator> = new Map<Punctuator | Keyword, ValidTypeOperator>([
 		[Punctuator.ORNULL,  Operator.ORNULL],
 		[Punctuator.OREXCP,  Operator.OREXCP],
 		[Keyword   .MUTABLE, Operator.MUTABLE],
 	])
+
 	private static readonly TYPEOPERATORS_BINARY: ReadonlyMap<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
 		[Punctuator.INTER, Operator.AND],
 		[Punctuator.UNION, Operator.OR],
 	])
+
 	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator, Operator> = new Map<Punctuator, Operator>([
 		[Punctuator.NOT, Operator.NOT],
 		[Punctuator.EMP, Operator.EMP],
 		[Punctuator.AFF, Operator.AFF],
 		[Punctuator.NEG, Operator.NEG],
 	])
+
 	private static readonly OPERATORS_BINARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
 		[Punctuator.EXP,  Operator.EXP],
 		[Punctuator.MUL,  Operator.MUL],

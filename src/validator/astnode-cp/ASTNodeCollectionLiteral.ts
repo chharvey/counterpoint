@@ -25,6 +25,7 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children);
 	}
+
 	override shouldFloat(): boolean {
 		throw 'ASTNodeCollectionLiteral#shouldFloat not yet supported.';
 	}

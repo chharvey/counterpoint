@@ -17,12 +17,14 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeRecord);
 		return typ;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'type_record_literal'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
 	) {
 		super(start_node, {}, children);
 	}
+
 	protected override eval_do(): TYPE.Type {
 		return new TYPE.TypeRecord(new Map(this.children.map((c) => [
 			c.key.id,

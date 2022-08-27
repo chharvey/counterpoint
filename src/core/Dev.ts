@@ -38,6 +38,7 @@ export class Dev {
 		const toggle: DevToggleVal = Dev.TOGGLES[feature];
 		return toggle[0] && Dev.supportsAll(...toggle[1] || []);
 	}
+
 	/**
 	 * Returns `true` if this project supports at least one of the given features.
 	 * @param features the features to test
@@ -47,6 +48,7 @@ export class Dev {
 	static supportsAny(...features: DevToggleKey[]): boolean {
 		return features.some((feature) => Dev.supports(feature))
 	}
+
 	/**
 	 * Returns `true` if this project supports every one of the given features.
 	 * @param features the features to test

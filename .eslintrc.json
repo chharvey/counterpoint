@@ -22,6 +22,7 @@
 
 		/* Layout & Formatting --- https://eslint.org/docs/latest/rules/#layout--formatting */
 		"arrow-spacing":             "error",
+		"brace-style":               "error",
 		"comma-spacing":             "error",
 		"computed-property-spacing": "error",
 		"dot-location":              ["error", "property"],
@@ -36,7 +37,9 @@
 			"mode":  "minimum"
 		}],
 		"keyword-spacing":             "error",
+		"lines-between-class-members": ["error", "always", {"exceptAfterSingleLine": true}],
 		"no-mixed-spaces-and-tabs":    ["error", "smart-tabs"],
+		"padded-blocks":               ["error", "never"],
 		"rest-spread-spacing":         "error",
 		"semi-spacing":                "error",
 		"space-before-blocks":         "error",

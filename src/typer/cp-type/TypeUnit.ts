@@ -23,9 +23,11 @@ export class TypeUnit extends Type {
 	override toString(): string {
 		return this.value.toString();
 	}
+
 	override includes(v: OBJ.Object): boolean {
 		return this.value.identical(v);
 	}
+
 	protected override isSubtypeOf_do(t: Type): boolean {
 		return t.includes(this.value);
 	}

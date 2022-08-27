@@ -37,21 +37,27 @@ export class TypeDifference extends Type {
 	override get hasMutable(): boolean {
 		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
 	}
+
 	override toString(): string {
 		return `${ this.left } - ${ this.right }`;
 	}
+
 	override includes(v: OBJ.Object): boolean {
 		return this.left.includes(v) && !this.right.includes(v);
 	}
+
 	protected override isSubtypeOf_do(t: Type): boolean {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf_do(t);
 	}
+
 	override mutableOf(): TypeDifference {
 		return new TypeDifference(this.left.mutableOf(), this.right.mutableOf());
 	}
+
 	override immutableOf(): TypeDifference {
 		return new TypeDifference(this.left.immutableOf(), this.right.immutableOf());
 	}
+
 	isSupertypeOf(t: Type): boolean {
 		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
 		return t.isSubtypeOf(this.left) && t.intersect(this.right).isBottomType;

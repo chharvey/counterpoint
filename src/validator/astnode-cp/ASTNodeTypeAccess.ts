@@ -20,6 +20,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeAccess);
 		return typ;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
 		readonly base:     ASTNodeType,
@@ -27,6 +28,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 	) {
 		super(start_node, {}, [base, accessor]);
 	}
+
 	protected override eval_do(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.eval();
 		if (base_type instanceof TYPE.TypeIntersection || base_type instanceof TYPE.TypeUnion) {

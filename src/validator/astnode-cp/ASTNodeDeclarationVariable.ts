@@ -25,6 +25,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		assert.ok(statement instanceof ASTNodeDeclarationVariable);
 		return statement;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'declaration_variable'>,
 		readonly unfixed: boolean,
@@ -34,6 +35,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	) {
 		super(start_node, {unfixed}, [assignee, typenode, assigned]);
 	}
+
 	override varCheck(): void {
 		if (this.validator.hasSymbol(this.assignee.id)) {
 			throw new AssignmentError01(this.assignee);
@@ -41,6 +43,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
 		this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
 	}
+
 	override typeCheck(): void {
 		this.assigned.typeCheck();
 		ASTNodeCP.typeCheckAssignment(
@@ -57,6 +60,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			}
 		}
 	}
+
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
 		const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.Type.FLOAT) || this.assigned.shouldFloat();
 		const value: OBJ.Object | null = this.assignee.fold();

@@ -49,6 +49,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	) {
 		super(start_node);
 	}
+
 	protected override eval_do(): TYPE.Type {
 		return this._type ??= (
 			(isSyntaxNodeType(this.start_node, 'keyword_type'))     ? ASTNodeTypeConstant.keywordType(this.start_node.text) :

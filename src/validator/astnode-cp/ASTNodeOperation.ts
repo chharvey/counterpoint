@@ -22,6 +22,7 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeOperation);
 		return expression;
 	}
+
 	override readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
 	constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,

@@ -16,6 +16,7 @@ export class ASTNodeTypeList extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeList);
 		return typ;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'type_unary_symbol'>,
 		readonly type:  ASTNodeType,
@@ -23,6 +24,7 @@ export class ASTNodeTypeList extends ASTNodeType {
 	) {
 		super(start_node, {count}, [type]);
 	}
+
 	protected override eval_do(): TYPE.Type {
 		const itemstype: TYPE.Type = this.type.eval();
 		return (this.count === null)

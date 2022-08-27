@@ -39,6 +39,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	override shouldFloat(): boolean {
 		return this.type().isSubtypeOf(TYPE.Type.FLOAT);
 	}
+
 	override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
@@ -48,9 +49,11 @@ export class ASTNodeVariable extends ASTNodeExpression {
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		};
 	}
+
 	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
 		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
 	}
+
 	protected override type_do(): TYPE.Type {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
@@ -60,6 +63,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		};
 		return TYPE.Type.NEVER;
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;

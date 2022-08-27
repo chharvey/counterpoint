@@ -25,6 +25,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeGoal {
 		return DECORATOR.decorateTS(TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>, config);
 	}
+
 	private readonly _validator: Validator;
 	constructor(
 		start_node: SyntaxNodeType<'source_file'>,
@@ -34,9 +35,11 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 		super(start_node, {}, children)
 		this._validator = new Validator(config);
 	}
+
 	override get validator(): Validator {
 		return this._validator;
 	}
+
 	/** @implements Buildable */
 	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
 		return (!this.children.length)
