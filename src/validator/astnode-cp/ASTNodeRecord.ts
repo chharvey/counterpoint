@@ -21,21 +21,25 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		assert.ok(expression instanceof ASTNodeRecord);
 		return expression;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'record_literal'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, children);
 	}
+
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
+
 	protected override type_do(): TYPE.Type {
 		return TYPE.TypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.type(),
 		])), true);
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const properties: ReadonlyMap<bigint, OBJ.Object | null> = new Map(this.children.map((c) => [
 			c.key.id,

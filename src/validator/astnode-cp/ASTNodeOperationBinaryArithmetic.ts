@@ -8,6 +8,7 @@ import {
 	TypeError01,
 	NanError01,
 	NanError02,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeSupertype,
@@ -31,6 +32,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		assert.ok(expression instanceof ASTNodeOperationBinaryArithmetic);
 		return expression;
 	}
+
 	constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		override readonly operator: ValidOperatorArithmetic,
@@ -39,6 +41,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	) {
 		super(start_node, operator, operand0, operand1);
 	}
+
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopArithmetic {
 		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionBinopArithmetic(
@@ -47,16 +50,21 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			this.operand1.build(builder, tofloat),
 		)
 	}
+
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
-		if (bothNumeric(t0, t1)) {
-			if (int_coercion) {
-				return (eitherFloats(t0, t1)) ? TYPE.Type.FLOAT : TYPE.Type.INT;
-			}
-			if (bothFloats   (t0, t1)) { return TYPE.Type.FLOAT; }
-			if (neitherFloats(t0, t1)) { return TYPE.Type.INT; }
-		}
-		throw new TypeError01(this)
+		return (bothNumeric(t0, t1))
+			? (int_coercion)
+				? (eitherFloats(t0, t1))
+					? TYPE.Type.FLOAT
+					: TYPE.Type.INT
+				: (
+					(bothFloats   (t0, t1)) ? TYPE.Type.FLOAT :
+					(neitherFloats(t0, t1)) ? TYPE.Type.INT   :
+					throw_expression(new TypeError01(this))
+				)
+			: throw_expression(new TypeError01(this));
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
@@ -76,6 +84,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				(v1 as OBJ.Number).toFloat(),
 			);
 	}
+
 	private foldNumeric<T extends OBJ.Number<T>>(x: T, y: T): T {
 		try {
 			return new Map<Operator, (x: T, y: T) => T>([

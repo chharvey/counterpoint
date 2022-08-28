@@ -24,6 +24,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeCall);
 		return typ;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
 		readonly base: ASTNodeType,
@@ -31,11 +32,13 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	) {
 		super(start_node, {}, [base, ...args]);
 	}
+
 	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be a `ValidFunctionName`)
 		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
+
 	protected override eval_do(): TYPE.Type {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
 			throw new TypeError05(this.base.eval(), this.base);
@@ -52,6 +55,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 			}],
 		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
 	}
+
 	/**
 	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
 	 * and throw if the number is incorrect.

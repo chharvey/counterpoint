@@ -6,9 +6,7 @@ import {
 	Punctuator,
 	Keyword,
 } from './package.js';
-import {
-	Validator,
-} from './index.js';
+import {Validator} from './index.js';
 import {
 	SyntaxNodeType,
 	isSyntaxNodeType,
@@ -35,21 +33,25 @@ class Decorator {
 		[Punctuator.OPTDOT,   Operator.OPTDOT],
 		[Punctuator.CLAIMDOT, Operator.CLAIMDOT],
 	]);
+
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, ValidTypeOperator> = new Map<Punctuator | Keyword, ValidTypeOperator>([
 		[Punctuator.ORNULL,  Operator.ORNULL],
 		[Punctuator.OREXCP,  Operator.OREXCP],
 		[Keyword   .MUTABLE, Operator.MUTABLE],
 	])
+
 	private static readonly TYPEOPERATORS_BINARY: ReadonlyMap<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
 		[Punctuator.INTER, Operator.AND],
 		[Punctuator.UNION, Operator.OR],
 	])
+
 	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator, Operator> = new Map<Punctuator, Operator>([
 		[Punctuator.NOT, Operator.NOT],
 		[Punctuator.EMP, Operator.EMP],
 		[Punctuator.AFF, Operator.AFF],
 		[Punctuator.NEG, Operator.NEG],
 	])
+
 	private static readonly OPERATORS_BINARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
 		[Punctuator.EXP,  Operator.EXP],
 		[Punctuator.MUL,  Operator.MUL],
@@ -278,10 +280,10 @@ class Decorator {
 			/* ## Expressions */
 			string_template: (node) => new AST.ASTNodeTemplate(
 				node as SyntaxNodeType<'string_template'>,
-				node.children.map((c) => (isSyntaxNodeType(c, /^template_(full|head|middle|tail)$/))
+				node.children.map((c) => ((isSyntaxNodeType(c, /^template_(full|head|middle|tail)$/))
 					? new AST.ASTNodeConstant(c as SyntaxNodeType<`template_${ 'full' | 'head' | 'middle' | 'tail' }`>)
 					: this.decorateTS(c as SyntaxNodeSupertype<'expression'>)
-				),
+				)),
 			),
 
 			property: (node) => new AST.ASTNodeProperty(

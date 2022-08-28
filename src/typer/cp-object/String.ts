@@ -22,9 +22,11 @@ class CPString extends Primitive {
 	override get isEmpty(): boolean {
 		return this.codeunits.length === 0;
 	}
+
 	override toString(): string {
 		return `'${ utf8.decode(String.fromCodePoint(...this.codeunits)) }'`;
 	}
+
 	protected override identical_helper(value: Object): boolean {
 		return value instanceof CPString && xjs.Array.is(this.codeunits, value.codeunits);
 	}

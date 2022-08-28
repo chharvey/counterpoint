@@ -1,6 +1,4 @@
-import type {
-	SyntaxNodeType,
-} from './package.js';
+import type {SyntaxNodeType} from './package.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -25,6 +23,7 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children);
 	}
+
 	override shouldFloat(): boolean {
 		throw 'ASTNodeCollectionLiteral#shouldFloat not yet supported.';
 	}

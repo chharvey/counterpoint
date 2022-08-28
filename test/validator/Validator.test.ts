@@ -8,12 +8,8 @@ import {
 	KEYWORDS,
 	Validator,
 } from '../../src/index.js';
-import type {
-	CodeUnit,
-} from '../../src/lib/index.js';
-import {
-	CONFIG_RADICES_SEPARATORS_ON,
-} from '../helpers.js';
+import type {CodeUnit} from '../../src/lib/index.js';
+import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.js';
 
 
 
@@ -55,6 +51,7 @@ describe('Validator', () => {
 
 	describe('.cookTokenNumber', () => {
 		new Map<string, [string, number[]]>([
+			/* eslint-disable array-element-newline */
 			['implicit radix integers', [
 				`
 					370  037  +9037  -9037  +06  -06
@@ -119,6 +116,7 @@ describe('Validator', () => {
 					18396, 511, 420415, -420415, 6, -6,
 				],
 			]],
+			/* eslint-enable array-element-newline */
 		]).forEach(([source, values], description) => {
 			it(description, () => {
 				return assert.deepStrictEqual(
@@ -265,7 +263,8 @@ describe('Validator', () => {
 					`'''😀 \\😀 \\u{1f600}'''`,
 				].map((src) => decodeCooked(src)),
 				[
-					``, `hello`,
+					``,
+					`hello`,
 					`head`,
 					`midl`,
 					`tail`,

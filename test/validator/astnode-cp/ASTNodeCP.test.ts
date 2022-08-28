@@ -13,9 +13,7 @@ import {
 	TypeError03,
 	MutabilityError01,
 } from '../../../src/index.js';
-import {
-	assertAssignable,
-} from '../../assert-helpers.js';
+import {assertAssignable} from '../../assert-helpers.js';
 import {
 	typeUnitFloat,
 	instructionConstFloat,

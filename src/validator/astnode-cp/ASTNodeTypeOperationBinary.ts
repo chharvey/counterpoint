@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import {
 	TYPE,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -18,6 +19,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		assert.ok(typ instanceof ASTNodeTypeOperationBinary);
 		return typ;
 	}
+
 	constructor(
 		start_node:
 			| SyntaxNodeType<'type_intersection'>
@@ -29,11 +31,12 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	) {
 		super(start_node, operator, [operand0, operand1]);
 	}
+
 	protected override eval_do(): TYPE.Type {
 		return (
 			(this.operator === Operator.AND) ? this.operand0.eval().intersect(this.operand1.eval()) :
 			(this.operator === Operator.OR)  ? this.operand0.eval().union    (this.operand1.eval()) :
-			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
+			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
 		)
 	}
 }

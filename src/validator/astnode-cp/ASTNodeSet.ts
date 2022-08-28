@@ -19,21 +19,25 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 		assert.ok(expression instanceof ASTNodeSet);
 		return expression;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'set_literal'>,
 		override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
 	}
+
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeSet#build_do not yet supported.';
 	}
+
 	protected override type_do(): TYPE.Type {
-		return new TYPE.TypeSet(((this.children.length)
-			? TYPE.Type.unionAll(this.children.map((c) => c.type()))
-			: TYPE.Type.NEVER
-		), true);
+		return new TYPE.TypeSet(
+			TYPE.Type.unionAll(this.children.map((c) => c.type())),
+			true,
+		);
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const elements: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
 		return (elements.includes(null))

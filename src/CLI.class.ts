@@ -6,9 +6,7 @@ import {
 	CPConfig,
 	CONFIG_DEFAULT,
 } from './core/index.js';
-import {
-	Builder,
-} from './builder/index.js';
+import {Builder} from './builder/index.js';
 
 
 

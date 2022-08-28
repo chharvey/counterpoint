@@ -17,12 +17,14 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		assert.ok(statement instanceof ASTNodeStatementExpression);
 		return statement;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'statement_expression'>,
 		readonly expr?: ASTNodeExpression,
 	) {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
+
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionStatement {
 		return (this.expr)
 			? new INST.InstructionStatement(builder.stmtCount, this.expr.build(builder))

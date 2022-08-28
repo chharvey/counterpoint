@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import {
 	TYPE,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -18,6 +19,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		assert.ok(typ instanceof ASTNodeTypeOperationUnary);
 		return typ;
 	}
+
 	constructor(
 		start_node:
 			| SyntaxNodeType<'type_unary_symbol'>
@@ -31,11 +33,12 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
 		}
 	}
+
 	protected override eval_do(): TYPE.Type {
 		return (
 			(this.operator === Operator.ORNULL)  ? this.operand.eval().union(TYPE.Type.NULL) :
 			(this.operator === Operator.MUTABLE) ? this.operand.eval().mutableOf() :
-			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`); })()
+			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
 		);
 	}
 }

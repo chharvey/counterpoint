@@ -16,12 +16,14 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeTuple);
 		return typ;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'type_tuple_literal'>,
 		override readonly children: readonly ASTNodeItemType[],
 	) {
 		super(start_node, {}, children);
 	}
+
 	protected override eval_do(): TYPE.Type {
 		return new TYPE.TypeTuple(this.children.map((c) => ({
 			type:     c.val.eval(),

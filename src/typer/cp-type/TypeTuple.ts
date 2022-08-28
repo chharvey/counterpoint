@@ -1,6 +1,7 @@
 import {
 	TypeError04,
 	IntRange,
+	throw_expression,
 	ValidAccessOperator,
 	AST,
 	TypeEntry,
@@ -83,17 +84,18 @@ export class TypeTuple extends Type {
 	get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
-		return updateAccessedStaticType((
-			(-n <= i && i < 0) ? this.types[i + n] :
-			(0  <= i && i < n) ? this.types[i] :
-			(() => { throw new TypeError04('index', this, accessor); })()
-		), access_kind);
+		return updateAccessedStaticType(
+			(
+				(-n <= i && i < 0) ? this.types[i + n] :
+				(0  <= i && i < n) ? this.types[i] :
+				throw_expression(new TypeError04('index', this, accessor))
+			),
+			access_kind,
+		);
 	}
 
 	itemTypes(): Type {
-		return (this.types.length)
-			? Type.unionAll(this.types.map((t) => t.type))
-			: Type.NEVER;
+		return Type.unionAll(this.types.map((t) => t.type));
 	}
 
 	/**

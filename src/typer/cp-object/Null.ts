@@ -29,9 +29,11 @@ export class Null extends Primitive {
 	override toString(): string {
 		return 'null'
 	}
+
 	override get isTruthy(): boolean {
 		return false;
 	}
+
 	protected override identical_helper(value: Object): boolean {
 		return value instanceof Null;
 	}

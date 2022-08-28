@@ -28,6 +28,7 @@ export class Boolean extends Primitive {
 	static fromBoolean(b: boolean): Boolean {
 		return (b) ? Boolean.TRUE : Boolean.FALSE;
 	}
+
 	/**
 	 * Construct a new Boolean object.
 	 * @param data The native boolean value of this object.
@@ -39,9 +40,11 @@ export class Boolean extends Primitive {
 	override toString(): string {
 		return `${ this.data }`;
 	}
+
 	override get isTruthy(): boolean {
 		return this.data;
 	}
+
 	protected override identical_helper(value: Object): boolean {
 		return value instanceof Boolean && this.data === value.data;
 	}

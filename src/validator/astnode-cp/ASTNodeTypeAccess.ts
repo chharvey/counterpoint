@@ -3,6 +3,7 @@ import {
 	TYPE,
 	OBJ,
 	TypeError04,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -20,6 +21,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeAccess);
 		return typ;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
 		readonly base:     ASTNodeType,
@@ -27,6 +29,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 	) {
 		super(start_node, {}, [base, accessor]);
 	}
+
 	protected override eval_do(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.eval();
 		if (base_type instanceof TYPE.TypeIntersection || base_type instanceof TYPE.TypeUnion) {
@@ -45,13 +48,13 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 						? base_type.get(accessor_type.value as OBJ.Integer, Operator.DOT, this.accessor)
 						: base_type.itemTypes()
 				))() :
-				(() => { throw new TypeError04('index', base_type, this.accessor); })()
+				throw_expression(new TypeError04('index', base_type, this.accessor))
 			);
 		} else /* (this.accessor instanceof ASTNodeKey) */ {
 			return (
 				(base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Record) ? base_type.value.toType().get(this.accessor.id, Operator.DOT, this.accessor) :
 				(base_type instanceof TYPE.TypeRecord)                                        ? base_type.get(this.accessor.id, Operator.DOT, this.accessor)                :
-				(() => { throw new TypeError04('property', base_type, this.accessor); })()
+				throw_expression(new TypeError04('property', base_type, this.accessor))
 			);
 		}
 	}

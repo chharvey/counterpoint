@@ -25,6 +25,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		assert.ok(expression instanceof ASTNodeOperationBinaryEquality);
 		return expression;
 	}
+
 	constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		override readonly operator: ValidOperatorEquality,
@@ -33,9 +34,11 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	) {
 		super(start_node, operator, operand0, operand1);
 	}
+
 	override shouldFloat(): boolean {
 		return this.operator === Operator.EQ && super.shouldFloat();
 	}
+
 	protected override build_do(builder: Builder, _to_float: boolean = false): INST.InstructionBinopEquality {
 		const tofloat: boolean = this.validator.config.compilerOptions.intCoercion && this.shouldFloat();
 		return new INST.InstructionBinopEquality(
@@ -44,6 +47,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			this.operand1.build(builder, tofloat),
 		)
 	}
+
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		/*
 		 * If `a` and `b` are of disjoint numeric types, then `a === b` will always return `false`.
@@ -60,6 +64,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		}
 		return TYPE.Type.BOOL;
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
@@ -71,6 +76,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		}
 		return this.foldEquality(v0, v1);
 	}
+
 	private foldEquality(x: OBJ.Object, y: OBJ.Object): OBJ.Boolean {
 		return OBJ.Boolean.fromBoolean(new Map<Operator, (x: OBJ.Object, y: OBJ.Object) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],

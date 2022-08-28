@@ -21,13 +21,19 @@
 		"no-trailing-spaces": "error",
 
 		/* Layout & Formatting --- https://eslint.org/docs/latest/rules/#layout--formatting */
-		"arrow-spacing":             "error",
-		"comma-spacing":             "error",
-		"computed-property-spacing": "error",
-		"dot-location":              ["error", "property"],
-		"func-call-spacing":         "warn",
-		"generator-star-spacing":    ["error", "both"],
-		"indent":                    ["error", "tab", {
+		"array-bracket-newline":          ["error", "consistent"], // FIXME: require line breaks exactly when there exist line breaks between elements (ignoring inside elements)
+		"array-bracket-spacing":          "warn",
+		"array-element-newline":          ["error", "consistent"],
+		"arrow-spacing":                  "error",
+		"brace-style":                    "error",
+		"comma-spacing":                  "error",
+		"computed-property-spacing":      "error",
+		"dot-location":                   ["error", "property"],
+		"func-call-spacing":              "warn",
+		"function-call-argument-newline": ["error", "consistent"],
+		"function-paren-newline":         "error",
+		"generator-star-spacing":         ["error", "both"],
+		"indent":                         ["error", "tab", {
 			"SwitchCase":             1,
 			"flatTernaryExpressions": true
 		}],
@@ -36,7 +42,12 @@
 			"mode":  "minimum"
 		}],
 		"keyword-spacing":             "error",
+		"lines-between-class-members": ["error", "always", {"exceptAfterSingleLine": true}],
 		"no-mixed-spaces-and-tabs":    ["error", "smart-tabs"],
+		"object-curly-newline":        ["error", {"multiline": true}],
+		"object-curly-spacing":        "warn",
+		"object-property-newline":     ["error", {"allowAllPropertiesOnSameLine": true}],
+		"padded-blocks":               ["error", "never"],
 		"rest-spread-spacing":         "error",
 		"semi-spacing":                "error",
 		"space-before-blocks":         "error",
@@ -45,6 +56,7 @@
 			"asyncArrow": "always",
 			"named":      "never"
 		}],
+		"space-in-parens":        "warn",
 		"space-infix-ops":        "error",
 		"space-unary-ops":        "error",
 		"switch-colon-spacing":   "error",

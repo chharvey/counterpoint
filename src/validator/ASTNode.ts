@@ -47,7 +47,9 @@ export class ASTNode implements Serializable {
 		private readonly attributes: {[key: string]: unknown} = {},
 		readonly children: readonly ASTNode[] = [],
 	) {
-		children.forEach((c) => { c._parent = this; });
+		children.forEach((c) => {
+			c._parent = this;
+		});
 	}
 
 	/** The unique parent node containing this node. */

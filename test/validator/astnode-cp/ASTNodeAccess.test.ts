@@ -824,11 +824,10 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`).fold(), VoidError01);
 			});
 			it('returns null when optionally accessing key out of bounds.', () => {
-				[
+				assert.deepStrictEqual(
 					AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).fold(),
-				].forEach((v) => {
-					assert.deepStrictEqual(v, OBJ.Null.NULL);
-				});
+					OBJ.Null.NULL,
+				);
 			});
 		});
 

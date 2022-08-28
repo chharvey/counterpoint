@@ -15,12 +15,14 @@ export class ASTNodeTypeSet extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeSet);
 		return typ;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'type_unary_symbol'>,
 		readonly type: ASTNodeType,
 	) {
 		super(start_node, {}, [type]);
 	}
+
 	protected override eval_do(): TYPE.Type {
 		return new TYPE.TypeSet(this.type.eval());
 	}

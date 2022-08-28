@@ -8,15 +8,20 @@ import {Type} from './Type.js';
  * @final
  */
 export class TypeBoolean extends Type {
-	static get INSTANCE(): TypeBoolean { return new TypeBoolean(); }
+	static get INSTANCE(): TypeBoolean {
+		return new TypeBoolean();
+	}
+
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor() {
 		super(false, new Set([OBJ.Boolean.FALSE, OBJ.Boolean.TRUE]));
 	}
+
 	override toString(): string {
 		return 'bool';
 	}
+
 	override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.Boolean;
 	}

@@ -1,9 +1,5 @@
-import {
-	stringifyAttributes,
-} from './utils-public.js';
-import {
-	Filebound,
-} from './utils-private.js';
+import {stringifyAttributes} from './utils-public.js';
+import {Filebound} from './utils-private.js';
 
 
 

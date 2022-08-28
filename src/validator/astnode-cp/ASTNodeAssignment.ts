@@ -24,6 +24,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		assert.ok(statement instanceof ASTNodeAssignment);
 		return statement;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'statement_assignment'>,
 		readonly assignee: ASTNodeVariable | ASTNodeAccess,
@@ -31,6 +32,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
+
 	override varCheck(): void {
 		super.varCheck();
 		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
@@ -38,6 +40,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			throw new AssignmentError10(assignee);
 		};
 	}
+
 	override typeCheck(): void {
 		super.typeCheck();
 		if (this.assignee instanceof ASTNodeAccess) {
@@ -53,6 +56,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			this.validator,
 		);
 	}
+
 	override build(builder: Builder): INST.InstructionStatement {
 		const tofloat: boolean = this.assignee.type().isSubtypeOf(TYPE.Type.FLOAT) || this.assigned.shouldFloat();
 		return new INST.InstructionStatement(

@@ -20,6 +20,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		assert.ok(statement instanceof ASTNodeDeclarationType);
 		return statement;
 	}
+
 	constructor(
 		start_node: SyntaxNodeType<'declaration_type'>,
 		readonly assignee: ASTNodeTypeAlias,
@@ -27,6 +28,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
+
 	override varCheck(): void {
 		if (this.validator.hasSymbol(this.assignee.id)) {
 			throw new AssignmentError01(this.assignee);
@@ -34,12 +36,14 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		this.assigned.varCheck();
 		this.validator.addSymbol(new SymbolStructureType(this.assignee));
 	}
+
 	override typeCheck(): void {
 		const symbol: SymbolStructureType | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureType | null;
 		if (symbol) {
 			symbol.typevalue = this.assigned.eval();
 		}
 	}
+
 	override build(_builder: Builder): INST.InstructionNone {
 		return new INST.InstructionNone();
 	}

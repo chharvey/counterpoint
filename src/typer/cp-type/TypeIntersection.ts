@@ -34,29 +34,40 @@ export class TypeIntersection extends Type {
 	override get hasMutable(): boolean {
 		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
 	}
+
 	override toString(): string {
 		return `${ this.left } & ${ this.right }`;
 	}
+
 	override includes(v: OBJ.Object): boolean {
 		return this.left.includes(v) && this.right.includes(v)
 	}
+
 	protected override isSubtypeOf_do(t: Type): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
-		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
+		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) {
+			return true;
+		}
 		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */
-		if (t.equals(this.left) || t.equals(this.right)) { return true }
+		if (t.equals(this.left) || t.equals(this.right)) {
+			return true;
+		}
 		return super.isSubtypeOf_do(t)
 	}
+
 	override mutableOf(): TypeIntersection {
 		return new TypeIntersection(this.left.mutableOf(), this.right.mutableOf());
 	}
+
 	override immutableOf(): TypeIntersection {
 		return new TypeIntersection(this.left.immutableOf(), this.right.immutableOf());
 	}
+
 	isSupertypeOf(t: Type): boolean {
 		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 		return t.isSubtypeOf(this.left) && t.isSubtypeOf(this.right);
 	}
+
 	combineTuplesOrRecords(): Type {
 		return (
 			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? this.left.intersectWithTuple(this.right)  :

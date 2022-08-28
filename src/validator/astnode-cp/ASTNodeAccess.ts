@@ -25,6 +25,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeAccess);
 		return expression;
 	}
+
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
 	constructor(
 		start_node:
@@ -37,12 +38,15 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	) {
 		super(start_node, {kind}, [base, accessor]);
 	}
+
 	override shouldFloat(): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
 	}
+
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeAccess#build_do not yet supported.';
 	}
+
 	protected override type_do(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.type();
 		if (base_type instanceof TYPE.TypeIntersection || base_type instanceof TYPE.TypeUnion) {
@@ -54,6 +58,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			this.type_do_do(base_type)
 		);
 	}
+
 	private type_do_do(base_type: TYPE.Type): TYPE.Type {
 		function updateAccessedDynamicType(type: TYPE.Type, access_kind: ValidAccessOperator): TYPE.Type {
 			return (
@@ -70,8 +75,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					? base_type.value.toType()
 					: base_type as TYPE.TypeTuple;
 				return base_type_tuple.get(accessor_value, this.kind, this.accessor);
-			}
-			else if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.List || base_type instanceof TYPE.TypeList) {
+			} else if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.List || base_type instanceof TYPE.TypeList) {
 				const base_type_list: TYPE.TypeList = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.List)
 					? base_type.value.toType()
 					: base_type as TYPE.TypeList;
@@ -133,6 +137,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 		}
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const base_value: OBJ.Object | null = this.base.fold();
 		if (base_value === null) {

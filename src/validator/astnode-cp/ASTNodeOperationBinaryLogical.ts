@@ -21,6 +21,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		assert.ok(expression instanceof ASTNodeOperationBinaryLogical);
 		return expression;
 	}
+
 	constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		override readonly operator: ValidOperatorLogical,
@@ -29,6 +30,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	) {
 		super(start_node, operator, operand0, operand1);
 	}
+
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopLogical {
 		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionBinopLogical(
@@ -38,6 +40,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			this.operand1.build(builder, tofloat),
 		)
 	}
+
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
 		const falsytypes: TYPE.Type = TYPE.Type.VOID.union(TYPE.Type.NULL).union(OBJ.Boolean.FALSETYPE);
 		return (this.operator === Operator.AND)
@@ -50,6 +53,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					? t0.subtract(falsytypes).union(t1)
 					: t0
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
