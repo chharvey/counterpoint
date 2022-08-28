@@ -95,9 +95,7 @@ export class TypeTuple extends Type {
 	}
 
 	itemTypes(): Type {
-		return (this.types.length)
-			? Type.unionAll(this.types.map((t) => t.type))
-			: Type.NEVER;
+		return Type.unionAll(this.types.map((t) => t.type));
 	}
 
 	/**

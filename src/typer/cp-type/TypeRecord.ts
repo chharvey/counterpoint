@@ -98,9 +98,7 @@ export class TypeRecord extends Type {
 	}
 
 	valueTypes(): Type {
-		return (this.propertytypes.size)
-			? Type.unionAll([...this.propertytypes.values()].map((t) => t.type))
-			: Type.NEVER;
+		return Type.unionAll([...this.propertytypes.values()].map((t) => t.type));
 	}
 
 	/**

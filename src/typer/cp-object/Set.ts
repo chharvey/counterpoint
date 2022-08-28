@@ -46,10 +46,7 @@ class CPSet<T extends Object = Object> extends Collection {
 	}
 
 	override toType(): TypeSet {
-		return new TypeSet(((this.elements.size)
-			? Type.unionAll([...this.elements].map<Type>((el) => new TypeUnit(el)))
-			: Type.NEVER
-		));
+		return new TypeSet(Type.unionAll([...this.elements].map<Type>((el) => new TypeUnit(el))));
 	}
 
 	get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | Null {

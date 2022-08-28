@@ -14,9 +14,6 @@ export class Dict<T extends Object = Object> extends CollectionKeyed<T> {
 	}
 
 	override toType(): TypeDict {
-		return new TypeDict(((this.properties.size)
-			? Type.unionAll([...this.properties.values()].map<Type>((value) => new TypeUnit(value)))
-			: Type.NEVER
-		));
+		return new TypeDict(Type.unionAll([...this.properties.values()].map<Type>((value) => new TypeUnit(value))));
 	}
 }

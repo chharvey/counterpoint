@@ -55,20 +55,22 @@ export abstract class Type {
 
 	/**
 	 * Intersect all the given types.
+	 * If an empty array is given, return type `never`.
 	 * @param types the types to intersect
 	 * @returns the intersection
 	 */
 	static intersectAll(types: Type[]): Type {
-		return types.reduce((a, b) => a.intersect(b));
+		return (types.length) ? types.reduce((a, b) => a.intersect(b)) : Type.NEVER;
 	}
 
 	/**
 	 * Unions all the given types.
+	 * If an empty array is given, return type `never`.
 	 * @param types the types to union
 	 * @returns the union
 	 */
 	static unionAll(types: Type[]): Type {
-		return types.reduce((a, b) => a.union(b));
+		return (types.length) ? types.reduce((a, b) => a.union(b)) : Type.NEVER;
 	};
 
 
