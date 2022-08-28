@@ -12,12 +12,6 @@ export {
 	ValidAccessOperator,
 	AST,
 } from '../package.js';
-export {
-	TypeEntry,
-} from '../utils-public.js';
-export {
-	languageValuesIdentical,
-} from '../utils-private.js';
-export {
-	OBJ,
-} from '../index.js';
+export {TypeEntry} from '../utils-public.js';
+export {languageValuesIdentical} from '../utils-private.js';
+export {OBJ} from '../index.js';

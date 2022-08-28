@@ -1,6 +1,4 @@
-import {
-	Filebound,
-} from './utils-private.js';
+import {Filebound} from './utils-private.js';
 
 
 

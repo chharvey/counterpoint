@@ -11,9 +11,7 @@ import {
 	TypeError01,
 	NanError01,
 } from '../../../src/index.js';
-import {
-	assertEqualTypes,
-} from '../../assert-helpers.js';
+import {assertEqualTypes} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_FOLDING_COERCION_OFF,

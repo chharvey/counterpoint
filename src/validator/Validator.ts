@@ -10,9 +10,7 @@ import {
 	KEYWORDS,
 } from './package.js';
 import type {SymbolStructure} from './index.js';
-import {
-	utf8Encode,
-} from './utils-private.js';
+import {utf8Encode} from './utils-private.js';
 
 
 

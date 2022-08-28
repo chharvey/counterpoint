@@ -1,8 +1,6 @@
 import * as assert from 'assert'
 import * as xjs from 'extrajs';
-import type {
-	TYPE,
-} from '../src/index.js'
+import type {TYPE} from '../src/index.js'
 
 
 

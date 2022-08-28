@@ -1,7 +1,5 @@
 import * as assert from 'assert'
-import {
-	OBJ,
-} from '../../src/index.js';
+import {OBJ} from '../../src/index.js';
 
 
 

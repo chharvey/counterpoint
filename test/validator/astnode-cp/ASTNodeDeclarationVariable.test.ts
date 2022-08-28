@@ -10,9 +10,7 @@ import {
 	AssignmentError01,
 	TypeError03,
 } from '../../../src/index.js';
-import {
-	assertAssignable,
-} from '../../assert-helpers.js';
+import {assertAssignable} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,

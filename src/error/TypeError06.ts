@@ -1,6 +1,4 @@
-import type {
-	AST,
-} from './package.js';
+import type {AST} from './package.js';
 import {TypeError} from './TypeError.js';
 
 

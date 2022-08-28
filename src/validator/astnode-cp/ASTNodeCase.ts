@@ -1,6 +1,4 @@
-import type {
-	SyntaxNodeType,
-} from './package.js';
+import type {SyntaxNodeType} from './package.js';
 import type {ASTNodeExpression} from './index.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 

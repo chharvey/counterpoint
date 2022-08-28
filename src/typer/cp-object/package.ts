@@ -11,9 +11,7 @@ export {
 	throw_expression,
 	AST,
 } from '../package.js';
-export {
-	languageValuesIdentical,
-} from '../utils-private.js';
+export {languageValuesIdentical} from '../utils-private.js';
 export {
 	Type,
 	TypeUnit,

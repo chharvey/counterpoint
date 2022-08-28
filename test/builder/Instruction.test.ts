@@ -4,9 +4,7 @@ import {
 	Operator,
 	AST,
 } from '../../src/validator/index.js';
-import {
-	OBJ,
-} from '../../src/index.js';
+import {OBJ} from '../../src/index.js';
 import {
 	Builder,
 	INST,

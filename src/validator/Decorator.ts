@@ -6,9 +6,7 @@ import {
 	Punctuator,
 	Keyword,
 } from './package.js';
-import {
-	Validator,
-} from './index.js';
+import {Validator} from './index.js';
 import {
 	SyntaxNodeType,
 	isSyntaxNodeType,

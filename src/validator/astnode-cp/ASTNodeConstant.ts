@@ -13,9 +13,7 @@ import {
 	SyntaxNodeType,
 	isSyntaxNodeType,
 } from './package.js';
-import {
-	valueOfTokenNumber,
-} from './utils-private.js';
+import {valueOfTokenNumber} from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
