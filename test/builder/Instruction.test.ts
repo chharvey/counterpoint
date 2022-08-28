@@ -78,8 +78,16 @@ describe('Instruction', () => {
 			})
 			it('pushes the constant float onto the stack.', () => {
 				const values: number[] = [
-					55, -55, 33, -33, 2.007, -2.007,
-					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+					55,
+					-55,
+					33,
+					-33,
+					2.007,
+					-2.007,
+					91.27e4,
+					-91.27e4,
+					91.27e-4,
+					-91.27e-4,
 				]
 				assert.deepStrictEqual(
 					values.map((x) => instructionConstFloat(x).toString()),
@@ -275,9 +283,22 @@ describe('Instruction', () => {
 			})
 			specify('@value instanceof Float64', () => {
 				const data: number[] = [
-					55, -55, 33, -33, 2.007, -2.007,
-					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
-					-0, -0, 6.8, 6.8, 0, -0,
+					55,
+					-55,
+					33,
+					-33,
+					2.007,
+					-2.007,
+					91.27e4,
+					-91.27e4,
+					91.27e-4,
+					-91.27e-4,
+					-0,
+					-0,
+					6.8,
+					6.8,
+					0,
+					-0,
 					3.0 - 2.7,
 				]
 				assert.deepStrictEqual(

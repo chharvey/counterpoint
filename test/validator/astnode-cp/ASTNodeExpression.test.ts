@@ -57,6 +57,7 @@ describe('ASTNodeExpression', () => {
 
 
 		describe('#fold', () => {
+			/* eslint-disable array-element-newline */
 			it('computes null and boolean values.', () => {
 				assert.deepStrictEqual([
 					'null;',
@@ -101,6 +102,7 @@ describe('ASTNodeExpression', () => {
 					typeUnitStr('42😀\u{1f600}'),
 				);
 			});
+			/* eslint-enable array-element-newline */
 		});
 
 

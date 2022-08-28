@@ -21,6 +21,9 @@
 		"no-trailing-spaces": "error",
 
 		/* Layout & Formatting --- https://eslint.org/docs/latest/rules/#layout--formatting */
+		"array-bracket-newline":          ["error", "consistent"], // FIXME: require line breaks exactly when there exist line breaks between elements (ignoring inside elements)
+		"array-bracket-spacing":          "warn",
+		"array-element-newline":          ["error", "consistent"],
 		"arrow-spacing":                  "error",
 		"brace-style":                    "error",
 		"comma-spacing":                  "error",

@@ -93,7 +93,7 @@ function tokenWorthString(
 			DELIM_STRING,
 			ESCAPER,
 			COMMENTER_LINE,
-			's', 't', 'n', 'r',
+			's', 't', 'n', 'r', // eslint-disable-line array-element-newline
 		].includes(text[1])) {
 			/* an escaped character literal */
 			return [
