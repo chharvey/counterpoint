@@ -15,9 +15,7 @@ import {Collection} from './Collection.js';
 
 
 class CPSet<T extends Object = Object> extends Collection {
-	constructor(
-		private readonly elements: ReadonlySet<T> = new Set(),
-	) {
+	constructor(private readonly elements: ReadonlySet<T> = new Set()) {
 		super();
 		const uniques: Set<T> = new Set();
 		[...elements].forEach((el) => {
@@ -39,18 +37,19 @@ class CPSet<T extends Object = Object> extends Collection {
 		return (
 			value instanceof CPSet
 			&& this.elements.size === value.elements.size
-			&& Collection.do_Equal<CPSet>(this, value, () => [...(value as CPSet).elements].every(
-				(thatelement) => !![...this.elements].find((el) => el.equal(thatelement)),
+			&& Collection.do_Equal<CPSet>(this, value, () => (
+				[...value.elements].every((thatelement) => (
+					!![...this.elements].find((el) => el.equal(thatelement))
+				))
 			))
 		);
 	}
 
 	override toType(): TypeSet {
-		return new TypeSet(
-			(this.elements.size)
-				? Type.unionAll([...this.elements].map<Type>((el) => new TypeUnit(el)))
-				: Type.NEVER,
-		);
+		return new TypeSet(((this.elements.size)
+			? Type.unionAll([...this.elements].map<Type>((el) => new TypeUnit(el)))
+			: Type.NEVER
+		));
 	}
 
 	get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | Null {

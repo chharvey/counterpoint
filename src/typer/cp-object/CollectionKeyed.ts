@@ -15,9 +15,7 @@ import {Collection} from './Collection.js';
  * - Dict
  */
 export abstract class CollectionKeyed<T extends Object = Object> extends Collection {
-	constructor(
-		readonly properties: ReadonlyMap<bigint, T> = new Map(),
-	) {
+	constructor(readonly properties: ReadonlyMap<bigint, T> = new Map()) {
 		super();
 	}
 
@@ -35,8 +33,10 @@ export abstract class CollectionKeyed<T extends Object = Object> extends Collect
 		return (
 			value instanceof CollectionKeyed
 			&& this.properties.size === value.properties.size
-			&& Collection.do_Equal<CollectionKeyed>(this, value, () => [...(value as CollectionKeyed).properties].every(
-				([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue),
+			&& Collection.do_Equal<CollectionKeyed>(this, value, () => (
+				[...value.properties].every(([thatkey, thatvalue]) => (
+					!!this.properties.get(thatkey)?.equal(thatvalue)
+				))
 			))
 		);
 	}

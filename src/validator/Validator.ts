@@ -69,11 +69,11 @@ function tokenWorthFloat(
 	const exppart:    string = (expindex < 0) ? '0'                        : text.slice(expindex   + 1);
 	const wholevalue: number = tokenWorthInt(wholepart, RADIX_DEFAULT, allow_separators);
 	const fracvalue:  number = tokenWorthInt(fracpart,  RADIX_DEFAULT, allow_separators) * base ** -fracpart.length;
-	const expvalue:   number = parseFloat( // HACK: `` parseFloat(`1e${ ... }`) `` is more accurate than `base ** tokenWorthInt(...)`
+	const expvalue:   number = parseFloat(( // HACK: `` parseFloat(`1e${ ... }`) `` is more accurate than `base ** tokenWorthInt(...)`
 		(exppart[0] === Punctuator.AFF) ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
 		(exppart[0] === Punctuator.NEG) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
-		                                  `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT, allow_separators) }`,
-	);
+		                                  `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT, allow_separators) }`
+	));
 	return (wholevalue + fracvalue) * expvalue;
 }
 
@@ -284,9 +284,7 @@ export class Validator {
 	 * Construct a new Validator object.
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor(
-		readonly config: CPConfig = CONFIG_DEFAULT,
-	) {
+	constructor(readonly config: CPConfig = CONFIG_DEFAULT) {
 	}
 
 	/**

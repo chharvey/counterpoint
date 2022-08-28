@@ -84,11 +84,14 @@ export class TypeTuple extends Type {
 	get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
-		return updateAccessedStaticType((
-			(-n <= i && i < 0) ? this.types[i + n] :
-			(0  <= i && i < n) ? this.types[i] :
-			throw_expression(new TypeError04('index', this, accessor))
-		), access_kind);
+		return updateAccessedStaticType(
+			(
+				(-n <= i && i < 0) ? this.types[i + n] :
+				(0  <= i && i < n) ? this.types[i] :
+				throw_expression(new TypeError04('index', this, accessor))
+			),
+			access_kind,
+		);
 	}
 
 	itemTypes(): Type {

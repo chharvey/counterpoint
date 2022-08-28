@@ -37,14 +37,14 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	private _value: OBJ.Object | null = null;
 
-	constructor(start_node:
+	constructor(start_node: (
 		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'template_full'>
 		| SyntaxNodeType<'template_head'>
 		| SyntaxNodeType<'template_middle'>
 		| SyntaxNodeType<'template_tail'>
 		| SyntaxNodeType<'primitive_literal'>
-	) {
+	)) {
 		super(start_node);
 	}
 

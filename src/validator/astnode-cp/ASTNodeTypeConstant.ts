@@ -41,11 +41,11 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 
 	private _type: TYPE.Type | null = null;
 
-	constructor(start_node:
+	constructor(start_node: (
 		| SyntaxNodeType<'keyword_type'>
 		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'primitive_literal'>
-	) {
+	)) {
 		super(start_node);
 	}
 

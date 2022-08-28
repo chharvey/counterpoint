@@ -88,10 +88,13 @@ export class TypeRecord extends Type {
 	}
 
 	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): Type {
-		return updateAccessedStaticType(((this.propertytypes.has(key))
-			? this.propertytypes.get(key)!
-			: throw_expression(new TypeError04('property', this, accessor))
-		), access_kind);
+		return updateAccessedStaticType(
+			((this.propertytypes.has(key))
+				? this.propertytypes.get(key)!
+				: throw_expression(new TypeError04('property', this, accessor))
+			),
+			access_kind,
+		);
 	}
 
 	valueTypes(): Type {

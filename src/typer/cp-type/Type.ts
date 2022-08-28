@@ -354,9 +354,9 @@ export class TypeInterface extends Type {
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
 	 */
 	protected override isSubtypeOf_do(t: TypeInterface) {
-		return [...t.properties].every(([name, type_]) =>
+		return [...t.properties].every(([name, type_]) => (
 			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
-		)
+		))
 	}
 
 	override mutableOf(): TypeInterface {

@@ -15,9 +15,7 @@ import {Collection} from './Collection.js';
 
 
 class CPMap<K extends Object = Object, V extends Object = Object> extends Collection {
-	constructor(
-		private readonly cases: ReadonlyMap<K, V> = new Map(),
-	) {
+	constructor(private readonly cases: ReadonlyMap<K, V> = new Map()) {
 		super();
 		const uniques: Map<K, V> = new Map();
 		[...cases].forEach(([ant, con]) => {
@@ -39,8 +37,10 @@ class CPMap<K extends Object = Object, V extends Object = Object> extends Collec
 		return (
 			value instanceof CPMap
 			&& this.cases.size === value.cases.size
-			&& Collection.do_Equal<CPMap>(this, value, () => [...(value as CPMap).cases].every(
-				([thatant, thatcon]) => !![...this.cases].find(([thisant, _]) => thisant.equal(thatant))?.[1].equal(thatcon),
+			&& Collection.do_Equal<CPMap>(this, value, () => (
+				[...value.cases].every(([thatant, thatcon]) => (
+					!![...this.cases].find(([thisant, _]) => thisant.equal(thatant))?.[1].equal(thatcon)
+				))
 			))
 		);
 	}

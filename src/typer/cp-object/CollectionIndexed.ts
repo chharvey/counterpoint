@@ -16,9 +16,7 @@ import {Collection} from './Collection.js';
  * - List
  */
 export abstract class CollectionIndexed<T extends Object = Object> extends Collection {
-	constructor(
-		readonly items: readonly T[] = [],
-	) {
+	constructor(readonly items: readonly T[] = []) {
 		super();
 	}
 
@@ -36,8 +34,10 @@ export abstract class CollectionIndexed<T extends Object = Object> extends Colle
 		return (
 			value instanceof CollectionIndexed
 			&& this.items.length === value.items.length
-			&& Collection.do_Equal<CollectionIndexed>(this, value, () => (value as CollectionIndexed).items.every(
-				(thatitem, i) => this.items[i].equal(thatitem),
+			&& Collection.do_Equal<CollectionIndexed>(this, value, () => (
+				value.items.every((thatitem, i) => (
+					this.items[i].equal(thatitem)
+				))
 			))
 		);
 	}

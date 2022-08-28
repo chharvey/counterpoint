@@ -69,12 +69,12 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
  * @returns           a property name of the `$` object
  */
 function call<RuleName extends string>(family_name: string, ...args: readonly (string | Record<string, boolean>)[]): RuleName {
-	return familyName(family_name, ...args.flatMap((arg) => (typeof arg === 'string')
+	return familyName(family_name, ...args.flatMap((arg) => ((typeof arg === 'string')
 		? [arg]
 		: Object.entries(arg)
 			.filter(([_,    is_true]) => is_true)
 			.map   (([name, _])       => name)
-	));
+	)));
 }
 
 
@@ -116,6 +116,7 @@ const SIGNED_DIGIT_SEQ_DEC__SEPARATOR = seq(/[+-]?/, DIGIT_SEQ_DEC__SEPARATOR);
 const EXPONENT_PART            = seq('e', SIGNED_DIGIT_SEQ_DEC);
 const EXPONENT_PART__SEPARATOR = seq('e', SIGNED_DIGIT_SEQ_DEC__SEPARATOR);
 
+/* eslint-disable function-call-argument-newline */
 const STRING_ESCAPE = choice(
 	'\'', '\\',
 	's', 't', 'n', 'r',
@@ -144,6 +145,7 @@ const STRING_ESCAPE__COMMENT_SEPARATOR = choice(
 	'\n',
 	/[^'\\%stnru\n]/,
 );
+/* eslint-enable function-call-argument-newline */
 
 const STRING_CHAR = choice(
 	/[^'\\]/,
@@ -254,10 +256,10 @@ module.exports = grammar({
 		)),
 
 		...parameterize('integer', ({radix, separator}) => (
-			_$ => token(seq(/[+-]?/, (!radix)
+			_$ => token(seq(/[+-]?/, ((!radix)
 				? (!separator) ? DIGIT_SEQ_DEC        : DIGIT_SEQ_DEC__SEPARATOR
-				: (!separator) ? INTEGER_DIGITS_RADIX : INTEGER_DIGITS_RADIX__SEPARATOR,
-			))
+				: (!separator) ? INTEGER_DIGITS_RADIX : INTEGER_DIGITS_RADIX__SEPARATOR
+			)))
 		), 'radix', 'separator'),
 
 		...parameterize('float', ({separator}) => (
@@ -274,10 +276,10 @@ module.exports = grammar({
 		...parameterize('string', ({comment, separator}) => (
 			_$ => token(seq(
 				'\'',
-				optional((!comment)
+				optional(((!comment)
 					? (!separator) ? STRING_CHARS          : STRING_CHARS__SEPARATOR
-					: (!separator) ? STRING_CHARS__COMMENT : STRING_CHARS__COMMENT__SEPARATOR,
-				),
+					: (!separator) ? STRING_CHARS__COMMENT : STRING_CHARS__COMMENT__SEPARATOR
+				)),
 				optional((!comment) ? STRING_UNFINISHED : STRING_UNFINISHED__COMMENT),
 				'\'',
 			))
@@ -381,9 +383,11 @@ module.exports = grammar({
 		type_intersection_dfn: $ => seq($._type_intersection, '&', $._type_unary_keyword),
 		type_union_dfn:        $ => seq($._type_union,        '|', $._type_intersection),
 
+		/* eslint-disable function-paren-newline */
 		_type: $ => choice(
 			$._type_union,
 		),
+		/* eslint-enable function-paren-newline */
 
 
 		/* ## Expressions */

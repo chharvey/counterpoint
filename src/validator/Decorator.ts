@@ -280,10 +280,10 @@ class Decorator {
 			/* ## Expressions */
 			string_template: (node) => new AST.ASTNodeTemplate(
 				node as SyntaxNodeType<'string_template'>,
-				node.children.map((c) => (isSyntaxNodeType(c, /^template_(full|head|middle|tail)$/))
+				node.children.map((c) => ((isSyntaxNodeType(c, /^template_(full|head|middle|tail)$/))
 					? new AST.ASTNodeConstant(c as SyntaxNodeType<`template_${ 'full' | 'head' | 'middle' | 'tail' }`>)
 					: this.decorateTS(c as SyntaxNodeSupertype<'expression'>)
-				),
+				)),
 			),
 
 			property: (node) => new AST.ASTNodeProperty(

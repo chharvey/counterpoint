@@ -113,14 +113,16 @@ describe('Type', () => {
 			})
 		})
 		it('extracts constituents of discriminated unions.', () => {
-			assert.ok(TYPE.Type.NULL.union(TYPE.Type.BOOL).union(TYPE.Type.INT)
-				.intersect(TYPE.Type.BOOL.union(TYPE.Type.INT).union(TYPE.Type.FLOAT))
-				.equals(TYPE.Type.BOOL.union(TYPE.Type.INT))
-			, `
-				(null | bool | int) & (bool | int | float)
-				==
-				(bool | int)
-			`);
+			assert.ok(
+				TYPE.Type.NULL.union(TYPE.Type.BOOL).union(TYPE.Type.INT)
+					.intersect(TYPE.Type.BOOL.union(TYPE.Type.INT).union(TYPE.Type.FLOAT))
+					.equals(TYPE.Type.BOOL.union(TYPE.Type.INT)),
+				`
+					(null | bool | int) & (bool | int | float)
+					==
+					(bool | int)
+				`,
+			);
 		});
 		describe('TypeUnion', () => {
 			it('distributes union operands over intersection: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
@@ -159,14 +161,16 @@ describe('Type', () => {
 			})
 		})
 		it('extracts constituents of discriminated unions.', () => {
-			assert.ok(TYPE.Type.NULL.union(TYPE.Type.BOOL).union(TYPE.Type.INT)
-				.union(TYPE.Type.BOOL.union(TYPE.Type.INT).union(TYPE.Type.FLOAT))
-				.equals(TYPE.Type.NULL.union(TYPE.Type.BOOL).union(TYPE.Type.INT).union(TYPE.Type.FLOAT))
-			, `
-				(null | bool | int) | (bool | int | float)
-				==
-				(null | bool | int | float)
-			`);
+			assert.ok(
+				TYPE.Type.NULL.union(TYPE.Type.BOOL).union(TYPE.Type.INT)
+					.union(TYPE.Type.BOOL.union(TYPE.Type.INT).union(TYPE.Type.FLOAT))
+					.equals(TYPE.Type.NULL.union(TYPE.Type.BOOL).union(TYPE.Type.INT).union(TYPE.Type.FLOAT)),
+				`
+					(null | bool | int) | (bool | int | float)
+					==
+					(null | bool | int | float)
+				`,
+			);
 		});
 	})
 

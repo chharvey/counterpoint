@@ -32,10 +32,13 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	}
 
 	protected override type_do(): TYPE.Type {
-		return new TYPE.TypeSet(((this.children.length)
-			? TYPE.Type.unionAll(this.children.map((c) => c.type()))
-			: TYPE.Type.NEVER
-		), true);
+		return new TYPE.TypeSet(
+			((this.children.length)
+				? TYPE.Type.unionAll(this.children.map((c) => c.type()))
+				: TYPE.Type.NEVER
+			),
+			true,
+		);
 	}
 
 	protected override fold_do(): OBJ.Object | null {
