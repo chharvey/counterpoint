@@ -44,15 +44,17 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	protected override type_do(): TYPE.Type {
 		const t0: TYPE.Type = this.operand.type();
 		return (
-			(this.operator === Operator.NOT) ? (
-				(t0.isSubtypeOf(TYPE.Type.VOID.union(TYPE.Type.NULL).union(OBJ.Boolean.FALSETYPE))) ? OBJ.Boolean.TRUETYPE :
-				(TYPE.Type.VOID.isSubtypeOf(t0) || TYPE.Type.NULL.isSubtypeOf(t0) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t0)) ? TYPE.Type.BOOL :
+			(this.operator === Operator.NOT) ? (() => (
+				(t0.isSubtypeOf(TYPE.Type.VOID.union(TYPE.Type.NULL).union(OBJ.Boolean.FALSETYPE)))                         ? OBJ.Boolean.TRUETYPE :
+				(TYPE.Type.VOID.isSubtypeOf(t0) || TYPE.Type.NULL.isSubtypeOf(t0) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t0)) ? TYPE.Type.BOOL       :
 				OBJ.Boolean.FALSETYPE
-			) :
+			))() :
 			(this.operator === Operator.EMP) ? TYPE.Type.BOOL :
-			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(TYPE.Type.INT.union(TYPE.Type.FLOAT)))
-				? t0
-				: (() => { throw new TypeError01(this); })()
+			(this.operator === Operator.NEG, (
+				(t0.isSubtypeOf(TYPE.Type.INT.union(TYPE.Type.FLOAT)))
+					? t0
+					: (() => { throw new TypeError01(this); })()
+			))
 		);
 	}
 	protected override fold_do(): OBJ.Object | null {
