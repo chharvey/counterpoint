@@ -26,6 +26,7 @@ import {
 
 
 describe('ASTNodeExpression', () => {
+	/* eslint-disable quotes */
 	describe('ASTNodeConstant', () => {
 		describe('#varCheck', () => {
 			it('never throws.', () => {
@@ -68,7 +69,7 @@ describe('ASTNodeExpression', () => {
 					OBJ.Boolean.FALSE,
 					OBJ.Boolean.TRUE,
 				]);
-			})
+			});
 			it('computes int values.', () => {
 				const integer_radices_on: CPConfig = {
 					...CONFIG_DEFAULT,
@@ -95,7 +96,7 @@ describe('ASTNodeExpression', () => {
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					-0, 6.8, 6.8, 0, -0,
 				].map((v) => new OBJ.Float(v)));
-			})
+			});
 			it('computes string values.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeConstant.fromSource(`'42😀\\u{1f600}';`).type(),
@@ -560,4 +561,5 @@ describe('ASTNodeExpression', () => {
 			});
 		});
 	});
+	/* eslint-enable quotes */
 });

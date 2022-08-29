@@ -11,7 +11,7 @@ import type {
  * - ASTNodeDeclarationType
  * - ASTNodeDeclarationVariable
  */
-export type ASTNodeDeclaration =
+export type ASTNodeDeclaration = (
 	| ASTNodeDeclarationType
 	| ASTNodeDeclarationVariable
-;
+);

@@ -23,6 +23,6 @@ export class TypeError03 extends TypeError {
 	 * @param assignment    - the node where the assignment took place
 	 */
 	constructor(assignee_type: TYPE.Type, assigned_type: TYPE.Type, assignment: AST.ASTNodeCP) {
-		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`, TypeError03.CODE, assignment.line_index, assignment.col_index)
+		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`, TypeError03.CODE, assignment.line_index, assignment.col_index);
 	}
 }

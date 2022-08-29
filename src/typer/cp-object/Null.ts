@@ -23,11 +23,11 @@ export class Null extends Primitive {
 
 
 	private constructor() {
-		super()
+		super();
 	}
 
 	override toString(): string {
-		return 'null'
+		return 'null';
 	}
 
 	override get isTruthy(): boolean {

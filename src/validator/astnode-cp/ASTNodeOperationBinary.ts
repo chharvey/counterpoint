@@ -46,7 +46,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 			this.operand0.type(),
 			this.operand1.type(),
 			this.validator.config.compilerOptions.intCoercion,
-		)
+		);
 	}
 
 	protected abstract type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type;

@@ -15,14 +15,14 @@ type DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, boolean, 
  * @final
  */
 export class Integer extends CPNumber<Integer> {
-	private static readonly BITCOUNT: number = 16
+	private static readonly BITCOUNT: number = 16;
 
 	public  static readonly ZERO:  Integer = new Integer(0n);
 	public  static readonly UNIT:  Integer = new Integer(1n);
 	private static readonly RADIX: Integer = new Integer(2n);
 
 	private static mod(n: bigint, modulus: bigint): bigint {
-		return (n % modulus + modulus) % modulus
+		return (n % modulus + modulus) % modulus;
 	}
 
 	private readonly internal: Datatype;
@@ -33,14 +33,14 @@ export class Integer extends CPNumber<Integer> {
 	 * @returns the value represented as a 16-bit signed integer
 	 */
 	constructor(data: bigint | Datatype = 0n) {
-		super()
+		super();
 		this.internal = (typeof data === 'bigint')
 			? [...Integer.mod(data, 2n ** BigInt(Integer.BITCOUNT)).toString(2).padStart(Integer.BITCOUNT, '0')].map((bit) => !!+bit) as DatatypeMutable
-			: data
+			: data;
 	}
 
 	override toString(): string {
-		return `${ this.toNumeric() }`
+		return `${ this.toNumeric() }`;
 	}
 
 	protected override identical_helper(value: Object): boolean {
@@ -69,13 +69,13 @@ export class Integer extends CPNumber<Integer> {
 		const sum:   Carry = [...new Array(Integer.BITCOUNT).fill(0n)] as Carry;
 		const carry: Carry = [...new Array(Integer.BITCOUNT).fill(0n)] as Carry;
 		for (let i = Integer.BITCOUNT - 1; i >= 0; i--) {
-			const digit: bigint = carry[i] + BigInt(this.internal[i]) + BigInt(addend.internal[i])
+			const digit: bigint = carry[i] + BigInt(this.internal[i]) + BigInt(addend.internal[i]);
 			if (digit <= 1n) {
-				sum[i] = digit
+				sum[i] = digit;
 			} else {
-				sum[i] = digit - 2n
+				sum[i] = digit - 2n;
 				if (i > 0) {
-					carry[i - 1] = 1n
+					carry[i - 1] = 1n;
 				} // else do nothing (drop the overflow)
 			}
 		}
@@ -83,7 +83,7 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	override minus(subtrahend: Integer): Integer {
-		return this.plus(subtrahend.neg())
+		return this.plus(subtrahend.neg());
 	}
 
 	/**
@@ -128,7 +128,7 @@ export class Integer extends CPNumber<Integer> {
 			(multiplicand.isEven())
 				?           this.times(Integer.RADIX).times(multiplicand                    .divide(Integer.RADIX))
 				: this.plus(this.times(Integer.RADIX).times(multiplicand.minus(Integer.UNIT).divide(Integer.RADIX)))
-		)
+		);
 	}
 
 	/**
@@ -195,12 +195,12 @@ export class Integer extends CPNumber<Integer> {
 					const diff: Integer = new Integer(remainder).minus(divisor);
 					if (!diff.lt0()) {
 						remainder = diff.internal as DatatypeMutable;
-						quotient[i] = true
+						quotient[i] = true;
 					}
 				}
 				return new Integer(quotient);
 			})()
-		)
+		);
 	}
 
 	/**
@@ -241,17 +241,17 @@ export class Integer extends CPNumber<Integer> {
 			(exponent.isEven())
 				?            this.exp(Integer.RADIX).exp(exponent                    .divide(Integer.RADIX))
 				: this.times(this.exp(Integer.RADIX).exp(exponent.minus(Integer.UNIT).divide(Integer.RADIX)))
-		)
-		// let returned: Integer = Integer.UNIT
+		);
+		// let returned: Integer = Integer.UNIT;
 		// while (true) {
 		// 	if (!exponent.isEven()) {
-		// 		returned = returned.times(base) // returned *= base
+		// 		returned = returned.times(base); // returned *= base
 		// 	}
-		// 	exponent = exponent.divide(Integer.RADIX) // exponent /= 2n
-		// 	if (exponent.eq0()) break
-		// 	base = base.times(base) // base *= base
+		// 	exponent = exponent.divide(Integer.RADIX); // exponent /= 2n
+		// 	if (exponent.eq0()) break;
+		// 	base = base.times(base); // base *= base
 		// }
-		// return returned
+		// return returned;
 	}
 
 	/**
@@ -280,7 +280,7 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	override lt(y: Integer): boolean {
-		return this.minus(y).lt0()
+		return this.minus(y).lt0();
 	}
 
 	/**
@@ -314,7 +314,7 @@ export class Integer extends CPNumber<Integer> {
 	private bsr(): Integer {
 		return new Integer([
 			this.internal[0],
-			...this.internal.slice(0, -1)
+			...this.internal.slice(0, -1),
 		] as DatatypeMutable);
 	}
 
@@ -323,7 +323,7 @@ export class Integer extends CPNumber<Integer> {
 	 * @returns Is this integer less than `0`?
 	 */
 	private lt0(): boolean {
-		return this.internal[0] === true
+		return this.internal[0] === true;
 	}
 
 	/**

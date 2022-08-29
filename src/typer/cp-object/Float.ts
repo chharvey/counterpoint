@@ -1,4 +1,4 @@
-import * as xjs from 'extrajs'
+import * as xjs from 'extrajs';
 import type {Object as CPObject} from './Object.js';
 import {Number} from './Number.js';
 
@@ -10,7 +10,7 @@ import {Number} from './Number.js';
  */
 export class Float extends Number<Float> {
 	constructor(private readonly data: number = 0) {
-		super()
+		super();
 		xjs.Number.assertType(this.data, xjs.NumericType.FINITE);
 	}
 
@@ -27,7 +27,7 @@ export class Float extends Number<Float> {
 	}
 
 	override toFloat(): this {
-		return this
+		return this;
 	}
 
 	override plus(addend: Float): Float {

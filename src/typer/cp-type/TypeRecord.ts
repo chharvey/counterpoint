@@ -129,7 +129,7 @@ export class TypeRecord extends Type {
 					optional: this.propertytypes.get(id)!.optional || typ.optional,
 				});
 			}
-		})
+		});
 		return new TypeRecord(props);
 	}
 }

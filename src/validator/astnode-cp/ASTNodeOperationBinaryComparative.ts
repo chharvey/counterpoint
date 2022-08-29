@@ -46,7 +46,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			this.operator,
 			this.operand0.build(builder, tofloat),
 			this.operand1.build(builder, tofloat),
-		)
+		);
 	}
 
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
@@ -55,7 +55,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		))) {
 			return TYPE.Type.BOOL;
 		}
-		throw new TypeError01(this)
+		throw new TypeError01(this);
 	}
 
 	protected override fold_do(): OBJ.Object | null {
@@ -83,6 +83,6 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			[Operator.GE, (x, y) => x.equal(y) || y.lt(x)],
 			// [Operator.NLT, (x, y) => !x.lt(y)],
 			// [Operator.NGT, (x, y) => !y.lt(x)],
-		]).get(this.operator)!(x, y))
+		]).get(this.operator)!(x, y));
 	}
 }

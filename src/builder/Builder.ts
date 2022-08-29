@@ -1,5 +1,5 @@
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'fs';
+import * as path from 'path';
 import wabt from 'wabt'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
 	CPConfig,
@@ -21,13 +21,13 @@ export class Builder {
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/neg.wat'), 'utf8'),
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/exp.wat'), 'utf8'),
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/fid.wat'), 'utf8'),
-	]
+	];
 
 
 	/** An AST goal produced by a Decorator. */
 	private readonly ast_goal: AST.ASTNodeGoal;
 	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
-	private var_count: bigint = 0n
+	private var_count: bigint = 0n;
 	/** A counter for statements. */
 	private stmt_count: bigint = 0n;
 
@@ -47,7 +47,7 @@ export class Builder {
 	 * @return this Builder’s current variable counter
 	 */
 	get varCount(): bigint {
-		return this.var_count++
+		return this.var_count++;
 	}
 
 	/**
@@ -56,8 +56,8 @@ export class Builder {
 	 * @return this Builder’s current statement counter
 	 */
 	get stmtCount(): bigint {
-		this.var_count = 0n
-		return this.stmt_count++
+		this.var_count = 0n;
+		return this.stmt_count++;
 	}
 
 	/**
@@ -65,7 +65,7 @@ export class Builder {
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	print(): string {
-		return this.ast_goal.build(this).toString()
+		return this.ast_goal.build(this).toString();
 	}
 
 	/**
@@ -73,8 +73,8 @@ export class Builder {
 	 * @return a binary output in WASM format, which can be executed
 	 */
 	async compile(): Promise<Uint8Array> {
-		const waModule = (await wabt()).parseWat('', this.print(), {})
-		waModule.validate()
-		return waModule.toBinary({}).buffer
+		const waModule = (await wabt()).parseWat('', this.print(), {});
+		waModule.validate();
+		return waModule.toBinary({}).buffer;
 	}
 }

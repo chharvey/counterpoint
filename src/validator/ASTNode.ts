@@ -68,6 +68,6 @@ export class ASTNode implements Serializable {
 			attributes.set(key, `${ value }`);
 		});
 		const contents: string = this.children.map((child) => child.serialize()).join('');
-		return `<${ this.tagname } ${ stringifyAttributes(attributes) }${ (contents) ? `>${ contents }</${ this.tagname }>` : `/>` }`;
+		return `<${ this.tagname } ${ stringifyAttributes(attributes) }${ (contents) ? `>${ contents }</${ this.tagname }>` : '/>' }`;
 	}
 }

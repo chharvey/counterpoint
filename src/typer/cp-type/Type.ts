@@ -145,7 +145,7 @@ export abstract class Type {
 			return t;
 		}
 
-		return this.intersect_do(t)
+		return this.intersect_do(t);
 	}
 
 	protected intersect_do(t: Type): Type {
@@ -186,7 +186,7 @@ export abstract class Type {
 			return this;
 		}
 
-		return this.union_do(t)
+		return this.union_do(t);
 	}
 
 	protected union_do(t: Type): Type {
@@ -266,7 +266,7 @@ export abstract class Type {
 			return t.isSupertypeOf(this);
 		}
 
-		return this.isSubtypeOf_do(t)
+		return this.isSubtypeOf_do(t);
 	}
 
 	protected isSubtypeOf_do(t: Type): boolean {
@@ -321,7 +321,7 @@ export class TypeInterface extends Type {
 	}
 
 	override includes(v: OBJ.Object): boolean {
-		return [...this.properties.keys()].every((key) => key in v)
+		return [...this.properties.keys()].every((key) => key in v);
 	}
 
 	/**
@@ -330,10 +330,10 @@ export class TypeInterface extends Type {
 	 */
 	protected override intersect_do(t: TypeInterface): TypeInterface {
 		const props: Map<string, Type> = new Map([...this.properties]);
-		;[...t.properties].forEach(([name, type_]) => {
-			props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_)
-		})
-		return new TypeInterface(props)
+		[...t.properties].forEach(([name, type_]) => {
+			props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_);
+		});
+		return new TypeInterface(props);
 	}
 
 	/**
@@ -344,10 +344,10 @@ export class TypeInterface extends Type {
 		const props: Map<string, Type> = new Map();
 		;[...this.properties].forEach(([name, type_]) => {
 			if (t.properties.has(name)) {
-				props.set(name, type_.union(t.properties.get(name)!))
+				props.set(name, type_.union(t.properties.get(name)!));
 			}
-		})
-		return new TypeInterface(props)
+		});
+		return new TypeInterface(props);
 	}
 
 	/**
@@ -358,7 +358,7 @@ export class TypeInterface extends Type {
 	protected override isSubtypeOf_do(t: TypeInterface) {
 		return [...t.properties].every(([name, type_]) => (
 			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
-		))
+		));
 	}
 
 	override mutableOf(): TypeInterface {
@@ -391,7 +391,7 @@ class TypeNever extends Type {
 	}
 
 	override includes(_v: OBJ.Object): boolean {
-		return false
+		return false;
 	}
 
 	override equals(t: Type): boolean {
@@ -457,7 +457,7 @@ class TypeUnknown extends Type {
 	}
 
 	override includes(_v: OBJ.Object): boolean {
-		return true
+		return true;
 	}
 
 	override equals(t: Type): boolean {

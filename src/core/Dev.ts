@@ -46,7 +46,7 @@ export class Dev {
 	 * @return are any of the given features supported?
 	 */
 	static supportsAny(...features: DevToggleKey[]): boolean {
-		return features.some((feature) => Dev.supports(feature))
+		return features.some((feature) => Dev.supports(feature));
 	}
 
 	/**
@@ -56,6 +56,6 @@ export class Dev {
 	 * @return are all of the given features supported?
 	 */
 	static supportsAll(...features: DevToggleKey[]): boolean {
-		return features.every((feature) => Dev.supports(feature))
+		return features.every((feature) => Dev.supports(feature));
 	}
 }

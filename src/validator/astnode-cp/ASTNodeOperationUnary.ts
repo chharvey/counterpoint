@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import * as xjs from 'extrajs'
+import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
@@ -43,7 +43,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return new INST.InstructionUnop(
 			this.operator,
 			this.operand.build(builder, tofloat),
-		)
+		);
 	}
 
 	protected override type_do(): TYPE.Type {
@@ -73,7 +73,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			(this.operator === Operator.EMP) ? OBJ.Boolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
 			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as OBJ.Number<any>) :
 			throw_expression(new ReferenceError(`Operator ${ Operator[this.operator] } not found.`))
-		)
+		);
 	}
 
 	private foldNumeric<T extends OBJ.Number<T>>(z: T): T {
@@ -81,7 +81,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			return new Map<Operator, (z: T) => T>([
 				[Operator.AFF, (z) => z],
 				[Operator.NEG, (z) => z.neg()],
-			]).get(this.operator)!(z)
+			]).get(this.operator)!(z);
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
 		}

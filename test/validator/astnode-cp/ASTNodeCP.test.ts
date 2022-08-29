@@ -25,22 +25,22 @@ describe('ASTNodeCP', () => {
 	describe('ASTNodeStatementExpression', () => {
 		describe('#build', () => {
 			it('returns InstructionNone for empty statement expression.', () => {
-				const src: string = `;`;
+				const src: string = ';';
 				const instr: INST.InstructionNone | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src)
-					.build(new Builder(src))
+					.build(new Builder(src));
 				assert.ok(instr instanceof INST.InstructionNone);
-			})
+			});
 			it('returns InstructionStatement for nonempty statement expression.', () => {
-				const src: string = `42 + 420;`;
+				const src: string = '42 + 420;';
 				const builder: Builder = new Builder(src);
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
 				assert.deepStrictEqual(
 					stmt.build(builder),
 					new INST.InstructionStatement(0n, AST.ASTNodeOperationBinaryArithmetic.fromSource(src).build(builder)),
 				);
-			})
+			});
 			it('multiple statements.', () => {
-				const src: string = `42; 420;`;
+				const src: string = '42; 420;';
 				const generator: Builder = new Builder(src);
 				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
@@ -299,7 +299,7 @@ describe('ASTNodeCP', () => {
 
 		describe('#build', () => {
 			it('returns InstructionNone.', () => {
-				const src: string = ``;
+				const src: string = '';
 				const instr: INST.InstructionNone | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
 				assert.ok(instr instanceof INST.InstructionNone);
 			});

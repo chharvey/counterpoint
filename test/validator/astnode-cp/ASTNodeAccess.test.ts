@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import * as assert from 'assert';
 import {
 	AST,
 	TYPE,
@@ -18,6 +18,7 @@ import {
 
 
 describe('ASTNodeAccess', () => {
+	/* eslint-disable quotes */
 	const INDEX_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
 		let         tup_fixed:    [int, float, str]     = [1, 2.0, 'three'];
@@ -723,7 +724,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(2, 7).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.Record(new Map([[0x101n, prop1],])),
+						new OBJ.Record(new Map([[0x101n, prop1]])),
 						prop1,
 						OBJ.Boolean.TRUE,
 						new OBJ.Record(new Map([[0x101n, prop2]])),
@@ -761,7 +762,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					[
 						...program.children.slice(43, 46),
-						program.children[47]
+						program.children[47],
 					].map((c) => foldStmtExpr(c)),
 					[
 						...expected_o,
@@ -907,4 +908,5 @@ describe('ASTNodeAccess', () => {
 			});
 		});
 	});
+	/* eslint-enable quotes */
 });

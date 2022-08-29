@@ -38,7 +38,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			this.operator,
 			this.operand0.build(builder, tofloat),
 			this.operand1.build(builder, tofloat),
-		)
+		);
 	}
 
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
@@ -51,7 +51,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 				? t1
 				: (TYPE.Type.VOID.isSubtypeOf(t0) || TYPE.Type.NULL.isSubtypeOf(t0) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t0))
 					? t0.subtract(falsytypes).union(t1)
-					: t0
+					: t0;
 	}
 
 	protected override fold_do(): OBJ.Object | null {

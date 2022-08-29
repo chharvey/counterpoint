@@ -40,7 +40,7 @@ export class TypeIntersection extends Type {
 	}
 
 	override includes(v: OBJ.Object): boolean {
-		return this.left.includes(v) && this.right.includes(v)
+		return this.left.includes(v) && this.right.includes(v);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
@@ -52,7 +52,7 @@ export class TypeIntersection extends Type {
 		if (t.equals(this.left) || t.equals(this.right)) {
 			return true;
 		}
-		return super.isSubtypeOf_do(t)
+		return super.isSubtypeOf_do(t);
 	}
 
 	override mutableOf(): TypeIntersection {

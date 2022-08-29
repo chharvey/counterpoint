@@ -18,6 +18,6 @@ export class LexError05 extends LexError {
 	 * @param token - the float literal token
 	 */
 	constructor(char: Serializable) {
-		super(`Invalid exponential notation: at line ${ char.line_index + 1 } col ${ char.col_index + 1 }.`, LexError05.CODE, char.line_index, char.col_index)
+		super(`Invalid exponential notation: at line ${ char.line_index + 1 } col ${ char.col_index + 1 }.`, LexError05.CODE, char.line_index, char.col_index);
 	}
 }

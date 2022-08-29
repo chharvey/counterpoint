@@ -40,7 +40,7 @@ export class TypeUnion extends Type {
 	}
 
 	override includes(v: OBJ.Object): boolean {
-		return this.left.includes(v) || this.right.includes(v)
+		return this.left.includes(v) || this.right.includes(v);
 	}
 
 	/**
@@ -58,7 +58,7 @@ export class TypeUnion extends Type {
 
 	protected override isSubtypeOf_do(t: Type): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
-		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
+		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t);
 	}
 
 	override mutableOf(): TypeUnion {

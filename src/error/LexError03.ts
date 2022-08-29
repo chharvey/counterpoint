@@ -17,6 +17,6 @@ export class LexError03 extends LexError {
 	 * @param col  - the column index of the string’s location
 	 */
 	constructor(span: string, line: number, col: number) {
-		super(`Invalid escape sequence: \`${ span }\` at line ${ line + 1 } col ${ col + 1 }.`, LexError03.CODE, line, col)
+		super(`Invalid escape sequence: \`${ span }\` at line ${ line + 1 } col ${ col + 1 }.`, LexError03.CODE, line, col);
 	}
 }

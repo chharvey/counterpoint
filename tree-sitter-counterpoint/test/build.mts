@@ -96,7 +96,7 @@ function buildTest(title: string, source: string, expected: string) {
 			xjs.String.dedent`
 				my_variable;
 			`,
-			makeSourceFile(s('identifier'),),
+			makeSourceFile(s('identifier')),
 		],
 
 		INTEGER: [
@@ -241,7 +241,7 @@ function buildTest(title: string, source: string, expected: string) {
 			xjs.String.dedent`
 				f.<(T)>();
 			`,
-			makeSourceFile(extractType(s('type_grouped', s('identifier'))),),
+			makeSourceFile(extractType(s('type_grouped', s('identifier')))),
 		],
 
 		TypeTupleLiteral: [
@@ -253,7 +253,7 @@ function buildTest(title: string, source: string, expected: string) {
 				s('entry_type',           s('keyword_type')),
 				s('entry_type',           s('keyword_type')),
 				s('entry_type__optional', s('keyword_type')),
-			)),),
+			))),
 		],
 
 		TypeRecordLiteral: [
@@ -265,7 +265,7 @@ function buildTest(title: string, source: string, expected: string) {
 				s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
 				s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
 				s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
-			)),),
+			))),
 		],
 
 		TypeDictLiteral: [
@@ -275,7 +275,7 @@ function buildTest(title: string, source: string, expected: string) {
 			makeSourceFile(extractType(s(
 				'type_dict_literal',
 				s('keyword_type'),
-			)),),
+			))),
 		],
 
 		TypeMapLiteral: [
@@ -286,7 +286,7 @@ function buildTest(title: string, source: string, expected: string) {
 				'type_map_literal',
 				s('keyword_type'),
 				s('keyword_type'),
-			)),),
+			))),
 		],
 
 		// TypeUnit
@@ -369,7 +369,7 @@ function buildTest(title: string, source: string, expected: string) {
 			makeSourceFile(extractType(s(
 				'type_unary_keyword',
 				s('identifier'),
-			)),),
+			))),
 		],
 
 		TypeIntersection: [
@@ -380,7 +380,7 @@ function buildTest(title: string, source: string, expected: string) {
 				'type_intersection',
 				s('identifier'),
 				s('identifier'),
-			)),),
+			))),
 		],
 
 		TypeUnion: [
@@ -391,7 +391,7 @@ function buildTest(title: string, source: string, expected: string) {
 				'type_union',
 				s('identifier'),
 				s('identifier'),
-			)),),
+			))),
 		],
 
 		// Type
@@ -412,7 +412,7 @@ function buildTest(title: string, source: string, expected: string) {
 			xjs.String.dedent`
 				(a);
 			`,
-			makeSourceFile(s('expression_grouped', s('identifier')),),
+			makeSourceFile(s('expression_grouped', s('identifier'))),
 		],
 
 		TupleLiteral: [
@@ -424,7 +424,7 @@ function buildTest(title: string, source: string, expected: string) {
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
-			),),
+			)),
 		],
 
 		RecordLiteral: [
@@ -448,7 +448,7 @@ function buildTest(title: string, source: string, expected: string) {
 					s('word', s('identifier')),
 					s('primitive_literal', s('integer')),
 				),
-			),),
+			)),
 		],
 
 		SetLiteral: [
@@ -460,7 +460,7 @@ function buildTest(title: string, source: string, expected: string) {
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
-			),),
+			)),
 		],
 
 		MapLiteral: [
@@ -484,7 +484,7 @@ function buildTest(title: string, source: string, expected: string) {
 					s('primitive_literal', s('string')),
 					s('primitive_literal', s('integer')),
 				),
-			),),
+			)),
 		],
 
 		// FunctionArguments
@@ -575,7 +575,7 @@ function buildTest(title: string, source: string, expected: string) {
 						'function_call',
 						s(
 							'function_arguments',
-							s('tuple_literal')
+							s('tuple_literal'),
 						),
 					),
 				),
@@ -632,7 +632,7 @@ function buildTest(title: string, source: string, expected: string) {
 				'expression_claim',
 				s('identifier'),
 				s('identifier'),
-			),),
+			)),
 		],
 
 		ExpressionExponential: [
@@ -839,7 +839,7 @@ function buildTest(title: string, source: string, expected: string) {
 				s('identifier'),
 				s('identifier'),
 				s('identifier'),
-			),),
+			)),
 		],
 
 		// Expression

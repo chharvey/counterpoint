@@ -9,7 +9,7 @@ export class TypeError extends ErrorCode {
 	/** The name of this class of errors. */
 	static override readonly NAME: string = 'TypeError';
 	/** The number series of this class of errors. */
-	static readonly CODE: number = 2300
+	static readonly CODE: number = 2300;
 	/**
 	 * Construct a new TypeError object.
 	 * @param message - a message to the user
@@ -24,6 +24,6 @@ export class TypeError extends ErrorCode {
 			code: TypeError.CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
-		})
+		});
 	}
 }

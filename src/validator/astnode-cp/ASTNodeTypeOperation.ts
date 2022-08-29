@@ -32,6 +32,6 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 		readonly operator: ValidTypeOperator,
 		override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
 	) {
-		super(start_node, {operator}, children)
+		super(start_node, {operator}, children);
 	}
 }

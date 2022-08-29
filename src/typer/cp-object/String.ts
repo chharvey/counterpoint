@@ -16,7 +16,7 @@ class CPString extends Primitive {
 		super();
 		this.codeunits = (typeof data === 'string')
 			? [...utf8.encode(data)].map((ch) => ch.codePointAt(0)!)
-			: data
+			: data;
 	}
 
 	override get isEmpty(): boolean {

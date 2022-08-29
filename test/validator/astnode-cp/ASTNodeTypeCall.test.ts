@@ -9,6 +9,7 @@ import {
 
 
 describe('ASTNodeTypeCall', () => {
+	/* eslint-disable quotes */
 	describe('#eval', () => {
 		it('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
@@ -59,4 +60,5 @@ describe('ASTNodeTypeCall', () => {
 			});
 		});
 	});
+	/* eslint-enable quotes */
 });

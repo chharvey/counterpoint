@@ -43,7 +43,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			this.operand0.build(builder, false),
 			this.operand1.build(builder, tofloat),
 			this.operand2.build(builder, tofloat),
-		)
+		);
 	}
 
 	protected override type_do(): TYPE.Type {

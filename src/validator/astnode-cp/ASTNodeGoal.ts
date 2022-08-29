@@ -32,7 +32,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 		override readonly children: readonly ASTNodeStatement[],
 		config: CPConfig,
 	) {
-		super(start_node, {}, children)
+		super(start_node, {}, children);
 		this._validator = new Validator(config);
 	}
 
@@ -47,6 +47,6 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 			: new INST.InstructionModule([
 				...Builder.IMPORTS,
 				...(this.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
-			])
+			]);
 	}
 }

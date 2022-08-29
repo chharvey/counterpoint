@@ -9,14 +9,14 @@ import {Filebound} from './utils-private.js';
  * @returns          contents with XML special characters escaped
  */
 function sanitizeContent(contents: string): string {
-	return contents
+	return (contents
 		.replace(/\&/g, '&amp;')
 		.replace(/\</g, '&lt;')
 		.replace(/\>/g, '&gt;')
 		.replace(/\\/g, '&#x5c;')
 		.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
 		.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
-	;
+	);
 }
 
 

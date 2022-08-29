@@ -38,19 +38,19 @@ class Decorator {
 		[Punctuator.ORNULL,  Operator.ORNULL],
 		[Punctuator.OREXCP,  Operator.OREXCP],
 		[Keyword   .MUTABLE, Operator.MUTABLE],
-	])
+	]);
 
 	private static readonly TYPEOPERATORS_BINARY: ReadonlyMap<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
 		[Punctuator.INTER, Operator.AND],
 		[Punctuator.UNION, Operator.OR],
-	])
+	]);
 
 	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator, Operator> = new Map<Punctuator, Operator>([
 		[Punctuator.NOT, Operator.NOT],
 		[Punctuator.EMP, Operator.EMP],
 		[Punctuator.AFF, Operator.AFF],
 		[Punctuator.NEG, Operator.NEG],
-	])
+	]);
 
 	private static readonly OPERATORS_BINARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
 		[Punctuator.EXP,  Operator.EXP],
@@ -74,7 +74,7 @@ class Decorator {
 		[Punctuator.NAND, Operator.NAND],
 		[Punctuator.OR,   Operator.OR],
 		[Punctuator.NOR,  Operator.NOR],
-	])
+	]);
 
 
 	decorateTS(node: SyntaxNodeType<'keyword_type'>):                            AST.ASTNodeTypeConstant;
@@ -248,7 +248,7 @@ class Decorator {
 									integerRadices:    true,
 									numericSeparators: true,
 								},
-							})[0])
+							})[0]),
 					)
 					: new AST.ASTNodeTypeSet(
 						node as SyntaxNodeType<'type_unary_symbol'>,

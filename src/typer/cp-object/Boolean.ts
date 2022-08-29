@@ -34,7 +34,7 @@ export class Boolean extends Primitive {
 	 * @param data The native boolean value of this object.
 	 */
 	private constructor(private readonly data: boolean) {
-		super()
+		super();
 	}
 
 	override toString(): string {

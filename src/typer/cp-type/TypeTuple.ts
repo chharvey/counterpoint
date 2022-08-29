@@ -126,7 +126,7 @@ export class TypeTuple extends Type {
 					optional: this.types[i].optional || typ.optional,
 				};
 			}
-		})
+		});
 		return new TypeTuple(items);
 	}
 }

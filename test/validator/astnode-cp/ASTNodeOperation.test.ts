@@ -49,6 +49,7 @@ function typeOfOperationFromSource(src: string): TYPE.Type {
 
 
 describe('ASTNodeOperation', () => {
+	/* eslint-disable quotes */
 	function typeOfStmtExpr(stmt: AST.ASTNodeStatement): TYPE.Type {
 		assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 		return stmt.expr!.type();
@@ -63,7 +64,7 @@ describe('ASTNodeOperation', () => {
 				AST.ASTNodeOperationBinaryArithmetic.fromSource(`1.5 / 0.0;`).type(),
 			].forEach((typ) => {
 				assert.strictEqual(typ, TYPE.Type.NEVER);
-			})
+			});
 		});
 	});
 
@@ -317,10 +318,10 @@ describe('ASTNodeOperation', () => {
 			context('with folding and int coersion off.', () => {
 				it('returns `Integer` if both operands are ints.', () => {
 					assert.deepStrictEqual(typeOfOperationFromSource(`7 * 3;`), TYPE.Type.INT);
-				})
+				});
 				it('returns `Float` if both operands are floats.', () => {
 					assert.deepStrictEqual(typeOfOperationFromSource(`7.0 - 3.0;`), TYPE.Type.FLOAT);
-				})
+				});
 				it('throws TypeError for invalid type operations.', () => {
 					assert.throws(() => typeOfOperationFromSource(`7.0 + 3;`), TypeError01);
 				});
@@ -933,7 +934,7 @@ describe('ASTNodeOperation', () => {
 				]);
 			});
 			it('counts internal variables correctly.', () => {
-				const src: string = `1 && 2 || 3 && 4;`
+				const src: string = `1 && 2 || 3 && 4;`;
 				assert.deepStrictEqual(
 					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF)),
 					new INST.InstructionBinopLogical(
@@ -995,4 +996,5 @@ describe('ASTNodeOperation', () => {
 			])));
 		});
 	});
+	/* eslint-enable quotes */
 });

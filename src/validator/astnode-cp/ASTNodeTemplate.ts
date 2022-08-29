@@ -31,7 +31,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 			| readonly ASTNodeExpression[]
 		,
 	) {
-		super(start_node, {}, children)
+		super(start_node, {}, children);
 	}
 
 	override shouldFloat(): boolean {

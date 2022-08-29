@@ -66,7 +66,6 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		const value: OBJ.Object | null = this.assignee.fold();
 		return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
 			? new INST.InstructionNone()
-			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat))
-		;
+			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat));
 	}
 }

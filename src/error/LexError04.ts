@@ -21,6 +21,6 @@ export class LexError04 extends LexError {
 	 * @param char - the numeric separator character
 	 */
 	constructor(char: Serializable) {
-		super(`Numeric separator not allowed: at line ${ char.line_index + 1 } col ${ char.col_index + 1 }.`, LexError04.CODE, char.line_index, char.col_index)
+		super(`Numeric separator not allowed: at line ${ char.line_index + 1 } col ${ char.col_index + 1 }.`, LexError04.CODE, char.line_index, char.col_index);
 	}
 }

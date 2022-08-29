@@ -252,7 +252,7 @@ module.exports = grammar({
 
 		identifier: _$ => token(choice(
 			/[A-Za-z_][A-Za-z0-9_]*/,
-			/`[^`]*`/
+			/`[^`]*`/,
 		)),
 
 		...parameterize('integer', ({radix, separator}) => (
@@ -436,7 +436,7 @@ module.exports = grammar({
 		_expression_claim:        $ => choice($._expression_unary_symbol, alias($.expression_claim_dfn,        $.expression_claim)),
 
 		expression_unary_symbol_dfn: $ => seq(choice('!', '?', '+', '-'), $._expression_unary_symbol),
-		expression_claim_dfn:        $ => seq("<", $._type, ">",          $._expression_claim),
+		expression_claim_dfn:        $ => seq('<', $._type, '>',          $._expression_claim),
 
 		_expression_exponential:    $ => choice($._expression_claim,          alias($.expression_exponential_dfn,    $.expression_exponential)),
 		_expression_multiplicative: $ => choice($._expression_exponential,    alias($.expression_multiplicative_dfn, $.expression_multiplicative)),

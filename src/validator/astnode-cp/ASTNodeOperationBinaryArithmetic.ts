@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import * as xjs from 'extrajs'
+import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
@@ -48,7 +48,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			this.operator,
 			this.operand0.build(builder, tofloat),
 			this.operand1.build(builder, tofloat),
-		)
+		);
 	}
 
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
@@ -93,7 +93,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.DIV, (x, y) => x.divide(y)],
 				[Operator.ADD, (x, y) => x.plus(y)],
 				// [Operator.SUB, (x, y) => x.minus(y)],
-			]).get(this.operator)!(x, y)
+			]).get(this.operator)!(x, y);
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
 		}

@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import * as assert from 'assert';
 import {
 	TypeEntry,
 	TYPE,
@@ -16,18 +16,18 @@ describe('Type', () => {
 	function predicate2<T>(array: T[], p: (a: T, b: T) => void): void {
 		array.forEach((a) => {
 			array.forEach((b) => {
-				p(a, b)
-			})
-		})
+				p(a, b);
+			});
+		});
 	}
 	function predicate3<T>(array: T[], p: (a: T, b: T, c: T) => void): void {
 		array.forEach((a) => {
 			array.forEach((b) => {
 				array.forEach((c) => {
-					p(a, b, c)
-				})
-			})
-		})
+					p(a, b, c);
+				});
+			});
+		});
 	}
 	const builtin_types: TYPE.Type[] = [
 		TYPE.Type.NEVER,
@@ -39,17 +39,17 @@ describe('Type', () => {
 		TYPE.Type.INT,
 		TYPE.Type.FLOAT,
 		TYPE.Type.STR,
-	]
+	];
 	const t0: TYPE.TypeInterface = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 		['foo', TYPE.Type.OBJ],
 		['bar', TYPE.Type.NULL],
 		['diz', TYPE.Type.BOOL],
-	]))
+	]));
 	const t1: TYPE.TypeInterface = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 		['foo', TYPE.Type.OBJ],
 		['qux', TYPE.Type.INT.union(TYPE.Type.FLOAT)],
 		['diz', TYPE.Type.STR],
-	]))
+	]));
 
 
 	describe('#includes', () => {
@@ -90,28 +90,28 @@ describe('Type', () => {
 		it('1-5 | `T  & never   == never`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.intersect(TYPE.Type.NEVER).equals(TYPE.Type.NEVER), `${ t }`);
-			})
-		})
+			});
+		});
 		it('1-6 | `T  & unknown == T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.intersect(TYPE.Type.UNKNOWN).equals(t), `${ t }`);
-			})
-		})
+			});
+		});
 		it('2-1 | `A  & B == B  & A`', () => {
 			predicate2(builtin_types, (a, b) => {
-				assert.ok(a.intersect(b).equals(b.intersect(a)), `${ a }, ${ b }`)
-			})
-		})
+				assert.ok(a.intersect(b).equals(b.intersect(a)), `${ a }, ${ b }`);
+			});
+		});
 		it('2-3 | `(A  & B)  & C == A  & (B  & C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
-				assert.ok(a.intersect(b).intersect(c).equals(a.intersect(b.intersect(c))), `${ a }, ${ b }, ${ c }`)
-			})
-		})
+				assert.ok(a.intersect(b).intersect(c).equals(a.intersect(b.intersect(c))), `${ a }, ${ b }, ${ c }`);
+			});
+		});
 		it('2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
-				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${ a }, ${ b }, ${ c }`)
-			})
-		})
+				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${ a }, ${ b }, ${ c }`);
+			});
+		});
 		it('extracts constituents of discriminated unions.', () => {
 			assert.ok(
 				TYPE.Type.NULL.union(TYPE.Type.BOOL).union(TYPE.Type.INT)
@@ -127,39 +127,39 @@ describe('Type', () => {
 		describe('TypeUnion', () => {
 			it('distributes union operands over intersection: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
 				const expr = TYPE.Type.NULL.union(TYPE.Type.INT).intersect(TYPE.Type.VOID.union(TYPE.Type.NULL).union(OBJ.Boolean.FALSETYPE));
-				assert.ok(expr.equals(TYPE.Type.NULL), `(null | int) & (void | null | false) == null`);
+				assert.ok(expr.equals(TYPE.Type.NULL), '(null | int) & (void | null | false) == null');
 				assert.deepStrictEqual(expr, TYPE.Type.NULL);
 			});
 		});
-	})
+	});
 
 
 	describe('#union', () => {
 		it('1-7 | `T \| never   == T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.union(TYPE.Type.NEVER).equals(t), `${ t }`);
-			})
-		})
+			});
+		});
 		it('1-8 | `T \| unknown == unknown`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.union(TYPE.Type.UNKNOWN).equals(TYPE.Type.UNKNOWN), `${ t }`);
-			})
-		})
+			});
+		});
 		it('2-2 | `A \| B == B \| A`', () => {
 			predicate2(builtin_types, (a, b) => {
-				assert.ok(a.union(b).equals(b.union(a)), `${ a }, ${ b }`)
-			})
-		})
+				assert.ok(a.union(b).equals(b.union(a)), `${ a }, ${ b }`);
+			});
+		});
 		it('2-4 | `(A \| B) \| C == A \| (B \| C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
-				assert.ok(a.union(b).union(c).equals(a.union(b.union(c))), `${ a }, ${ b }, ${ c }`)
-			})
-		})
+				assert.ok(a.union(b).union(c).equals(a.union(b.union(c))), `${ a }, ${ b }, ${ c }`);
+			});
+		});
 		it('2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
-				assert.ok(a.union(b.intersect(c)).equals(a.union(b).intersect(a.union(c))), `${ a }, ${ b }, ${ c }`)
-			})
-		})
+				assert.ok(a.union(b.intersect(c)).equals(a.union(b).intersect(a.union(c))), `${ a }, ${ b }, ${ c }`);
+			});
+		});
 		it('extracts constituents of discriminated unions.', () => {
 			assert.ok(
 				TYPE.Type.NULL.union(TYPE.Type.BOOL).union(TYPE.Type.INT)
@@ -172,7 +172,7 @@ describe('Type', () => {
 				`,
 			);
 		});
-	})
+	});
 
 
 	describe('#subtract', () => {
@@ -223,124 +223,124 @@ describe('Type', () => {
 		it('1-1 | `never <: T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(TYPE.Type.NEVER.isSubtypeOf(t), `${ t }`);
-			})
-		})
+			});
+		});
 		it('1-2 | `T     <: unknown`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.isSubtypeOf(TYPE.Type.UNKNOWN), `${ t }`);
-			})
-		})
+			});
+		});
 		it('1-3 | `T       <: never  <->  T == never`', () => {
 			builtin_types.forEach((t) => {
 				if (t.isSubtypeOf(TYPE.Type.NEVER)) {
 					assert.ok(t.equals(TYPE.Type.NEVER), `${ t }`);
 				}
-			})
-		})
+			});
+		});
 		it('1-4 | `unknown <: T      <->  T == unknown`', () => {
 			builtin_types.forEach((t) => {
 				if (TYPE.Type.UNKNOWN.isSubtypeOf(t)) {
 					assert.ok(t.equals(TYPE.Type.UNKNOWN), `${ t }`);
 				}
-			})
-		})
+			});
+		});
 		it('2-7 | `A <: A`', () => {
 			builtin_types.forEach((a) => {
-				assert.ok(a.isSubtypeOf(a), `${ a }`)
-			})
-		})
+				assert.ok(a.isSubtypeOf(a), `${ a }`);
+			});
+		});
 		it('2-8 | `A <: B  &&  B <: A  -->  A == B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b) && b.isSubtypeOf(a)) {
-					assert.ok(a.equals(b), `${ a }, ${ b }`)
+					assert.ok(a.equals(b), `${ a }, ${ b }`);
 				}
-			})
-		})
+			});
+		});
 		it('2-9 | `A <: B  &&  B <: C  -->  A <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(b) && b.isSubtypeOf(c)) {
-					assert.ok(a.isSubtypeOf(c), `${ a }, ${ b }, ${ c }`)
+					assert.ok(a.isSubtypeOf(c), `${ a }, ${ b }, ${ c }`);
 				}
-			})
-		})
+			});
+		});
 		it('3-1 | `A  & B <: A  &&  A  & B <: B`', () => {
 			predicate2(builtin_types, (a, b) => {
-				assert.ok(a.intersect(b).isSubtypeOf(a), `${ a }, ${ b }`)
-				assert.ok(a.intersect(b).isSubtypeOf(b), `${ a }, ${ b }`)
-			})
-		})
+				assert.ok(a.intersect(b).isSubtypeOf(a), `${ a }, ${ b }`);
+				assert.ok(a.intersect(b).isSubtypeOf(b), `${ a }, ${ b }`);
+			});
+		});
 		it('3-2 | `A <: A \| B  &&  B <: A \| B`', () => {
 			predicate2(builtin_types, (a, b) => {
-				assert.ok(a.isSubtypeOf(a.union(b)), `${ a }, ${ b }`)
-				assert.ok(b.isSubtypeOf(a.union(b)), `${ a }, ${ b }`)
-			})
-		})
+				assert.ok(a.isSubtypeOf(a.union(b)), `${ a }, ${ b }`);
+				assert.ok(b.isSubtypeOf(a.union(b)), `${ a }, ${ b }`);
+			});
+		});
 		it('3-3 | `A <: B  <->  A  & B == A`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b)) {
-					assert.ok(a.intersect(b).equals(a), `forward: ${ a }, ${ b }`)
+					assert.ok(a.intersect(b).equals(a), `forward: ${ a }, ${ b }`);
 				}
 				if (a.intersect(b).equals(a)) {
-					assert.ok(a.isSubtypeOf(b), `backward: ${ a }, ${ b }`)
+					assert.ok(a.isSubtypeOf(b), `backward: ${ a }, ${ b }`);
 				}
-			})
-		})
+			});
+		});
 		it('3-4 | `A <: B  <->  A \| B == B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b)) {
-					assert.ok(a.union(b).equals(b), `forward: ${ a }, ${ b }`)
+					assert.ok(a.union(b).equals(b), `forward: ${ a }, ${ b }`);
 				}
 				if (a.union(b).equals(b)) {
-					assert.ok(a.isSubtypeOf(b), `backward: ${ a }, ${ b }`)
+					assert.ok(a.isSubtypeOf(b), `backward: ${ a }, ${ b }`);
 				}
-			})
-		})
+			});
+		});
 		it('3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`', () => {
 			predicate3(builtin_types, (a, c, d) => {
 				if (a.isSubtypeOf(c) && a.isSubtypeOf(d)) {
-					assert.ok(a.isSubtypeOf(c.intersect(d)), `forward: ${ a }, ${ c }, ${ d }`)
+					assert.ok(a.isSubtypeOf(c.intersect(d)), `forward: ${ a }, ${ c }, ${ d }`);
 				}
 				if (a.isSubtypeOf(c.intersect(d))) {
-					assert.ok(a.isSubtypeOf(c) && a.isSubtypeOf(d), `backward: ${ a }, ${ c }, ${ d }`)
+					assert.ok(a.isSubtypeOf(c) && a.isSubtypeOf(d), `backward: ${ a }, ${ c }, ${ d }`);
 				}
-			})
-		})
+			});
+		});
 		it('3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`', () => {
 			predicate3(builtin_types, (a, c, d) => {
 				if (a.isSubtypeOf(c) || a.isSubtypeOf(d)) {
-					assert.ok(a.isSubtypeOf(c.union(d)), `${ a }, ${ c }, ${ d }`)
+					assert.ok(a.isSubtypeOf(c.union(d)), `${ a }, ${ c }, ${ d }`);
 				}
-			})
+			});
 			assert.ok(
-				TYPE.Type.NULL.union(TYPE.Type.INT).isSubtypeOf(TYPE.Type.NULL.union(TYPE.Type.INT)) &&
-				!TYPE.Type.NULL.union(TYPE.Type.INT).isSubtypeOf(TYPE.Type.NULL) &&
-				!TYPE.Type.NULL.union(TYPE.Type.INT).isSubtypeOf(TYPE.Type.INT),
-				'exists A, C, D s.t. `A <: C | D` but `!(A <: C)` and `!(A <: D)`'
-			)
-		})
+				   TYPE.Type.NULL.union(TYPE.Type.INT).isSubtypeOf(TYPE.Type.NULL.union(TYPE.Type.INT))
+				&& !TYPE.Type.NULL.union(TYPE.Type.INT).isSubtypeOf(TYPE.Type.NULL)
+				&& !TYPE.Type.NULL.union(TYPE.Type.INT).isSubtypeOf(TYPE.Type.INT),
+				'exists A, C, D s.t. `A <: C | D` but `!(A <: C)` and `!(A <: D)`',
+			);
+		});
 		it('3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(c) && b.isSubtypeOf(c)) {
-					assert.ok(a.union(b).isSubtypeOf(c), `forward: ${ a }, ${ b }, ${ c }`)
+					assert.ok(a.union(b).isSubtypeOf(c), `forward: ${ a }, ${ b }, ${ c }`);
 				}
 				if (a.union(b).isSubtypeOf(c)) {
-					assert.ok(a.isSubtypeOf(c) && b.isSubtypeOf(c), `backward: ${ a }, ${ b }, ${ c }`)
+					assert.ok(a.isSubtypeOf(c) && b.isSubtypeOf(c), `backward: ${ a }, ${ b }, ${ c }`);
 				}
-			})
-		})
+			});
+		});
 		it('3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(c) || b.isSubtypeOf(c)) {
-					assert.ok(a.intersect(b).isSubtypeOf(c), `${ a }, ${ b }, ${ c }`)
+					assert.ok(a.intersect(b).isSubtypeOf(c), `${ a }, ${ b }, ${ c }`);
 				}
-			})
+			});
 			assert.ok(
-				TYPE.Type.NULL.intersect(TYPE.Type.INT).isSubtypeOf(TYPE.Type.NULL.intersect(TYPE.Type.INT)) &&
-				!TYPE.Type.NULL.isSubtypeOf(TYPE.Type.NULL.intersect(TYPE.Type.INT)) &&
-				!TYPE.Type.INT.isSubtypeOf(TYPE.Type.NULL.intersect(TYPE.Type.INT)),
-				'exists A, B, C s.t. `A & B <: C` but `!(A <: C)` and `!(B <: C)`'
-			)
-		})
+				   TYPE.Type.NULL.intersect(TYPE.Type.INT).isSubtypeOf(TYPE.Type.NULL.intersect(TYPE.Type.INT))
+				&& !TYPE.Type.NULL.isSubtypeOf(TYPE.Type.NULL.intersect(TYPE.Type.INT))
+				&& !TYPE.Type.INT.isSubtypeOf(TYPE.Type.NULL.intersect(TYPE.Type.INT)),
+				'exists A, B, C s.t. `A & B <: C` but `!(A <: C)` and `!(B <: C)`',
+			);
+		});
 
 		it('discrete types.', () => {
 			;[
@@ -352,26 +352,26 @@ describe('Type', () => {
 				TYPE.Type.STR,
 			].forEach((t, _, arr) => {
 				arr.filter((u) => u !== t).forEach((u) => {
-					assert.ok(!u.isSubtypeOf(t), `${ u }, ${ t }`)
-				})
-			})
-		})
+					assert.ok(!u.isSubtypeOf(t), `${ u }, ${ t }`);
+				});
+			});
+		});
 
 		describe('TypeUnit', () => {
 			it('constant Boolean types should be subtypes of `bool`.', () => {
 				assert.ok(OBJ.Boolean.FALSETYPE.isSubtypeOf(TYPE.Type.BOOL), 'Boolean.FALSETYPE');
 				assert.ok(OBJ.Boolean.TRUETYPE .isSubtypeOf(TYPE.Type.BOOL), 'Boolean.TRUETYPE');
-			})
+			});
 			it('constant Integer types should be subtypes of `int`.', () => {
 				;[42n, -42n, 0n, -0n].map((v) => typeUnitInt(v)).forEach((itype) => {
-					assert.ok(itype.isSubtypeOf(TYPE.Type.INT), `${ itype }`)
-				})
-			})
+					assert.ok(itype.isSubtypeOf(TYPE.Type.INT), `${ itype }`);
+				});
+			});
 			it('constant Float types should be subtypes of `float`.', () => {
 				;[4.2, -4.2e-2, 0.0, -0.0].map((v) => typeUnitFloat(v)).forEach((ftype) => {
-					assert.ok(ftype.isSubtypeOf(TYPE.Type.FLOAT), `${ ftype }`)
-				})
-			})
+					assert.ok(ftype.isSubtypeOf(TYPE.Type.FLOAT), `${ ftype }`);
+				});
+			});
 			it('constant String types should be subtypes of `str`.', () => {
 				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => typeUnitStr(v)).forEach((stype) => {
 					assert.ok(stype.isSubtypeOf(TYPE.Type.STR), `${ stype }`);
@@ -459,7 +459,7 @@ describe('Type', () => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(maptype), `let x: ${ maptype } = ${ value };`);
 				});
 			});
-		})
+		});
 
 		describe('TypeTuple', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
@@ -467,12 +467,12 @@ describe('Type', () => {
 					TYPE.Type.INT,
 					TYPE.Type.BOOL,
 					TYPE.Type.STR,
-				]).isSubtypeOf(TYPE.Type.OBJ), `[int, bool, str] <: obj;`);
+				]).isSubtypeOf(TYPE.Type.OBJ), '[int, bool, str] <: obj;');
 				assert.ok(!TYPE.Type.OBJ.isSubtypeOf(TYPE.TypeTuple.fromTypes([
 					TYPE.Type.INT,
 					TYPE.Type.BOOL,
 					TYPE.Type.STR,
-				])), `obj !<: [int, bool, str]`);
+				])), 'obj !<: [int, bool, str]');
 			});
 			it('matches per index.', () => {
 				assert.ok(TYPE.TypeTuple.fromTypes([
@@ -483,7 +483,7 @@ describe('Type', () => {
 					TYPE.Type.INT.union(TYPE.Type.FLOAT),
 					TYPE.Type.BOOL.union(TYPE.Type.NULL),
 					TYPE.Type.OBJ,
-				])), `[int, bool, str] <: [int | float, bool?, obj];`);
+				])), '[int, bool, str] <: [int | float, bool?, obj];');
 				assert.ok(!TYPE.TypeTuple.fromTypes([
 					TYPE.Type.INT,
 					TYPE.Type.BOOL,
@@ -492,7 +492,7 @@ describe('Type', () => {
 					TYPE.Type.BOOL.union(TYPE.Type.NULL),
 					TYPE.Type.OBJ,
 					TYPE.Type.INT.union(TYPE.Type.FLOAT),
-				])), `[int, bool, str] !<: [bool!, obj, int | float];`);
+				])), '[int, bool, str] !<: [bool!, obj, int | float];');
 			});
 			it('returns false if assigned is smaller than assignee.', () => {
 				assert.ok(!TYPE.TypeTuple.fromTypes([
@@ -502,7 +502,7 @@ describe('Type', () => {
 					TYPE.Type.INT.union(TYPE.Type.FLOAT),
 					TYPE.Type.BOOL.union(TYPE.Type.NULL),
 					TYPE.Type.OBJ,
-				])), `[int, bool] !<: [int | float, bool!, obj];`);
+				])), '[int, bool] !<: [int | float, bool!, obj];');
 			});
 			it('skips rest if assigned is larger than assignee.', () => {
 				assert.ok(TYPE.TypeTuple.fromTypes([
@@ -512,7 +512,7 @@ describe('Type', () => {
 				]).isSubtypeOf(TYPE.TypeTuple.fromTypes([
 					TYPE.Type.INT.union(TYPE.Type.FLOAT),
 					TYPE.Type.BOOL.union(TYPE.Type.NULL),
-				])), `[int, bool, str] <: [int | float, bool!];`);
+				])), '[int, bool, str] <: [int | float, bool!];');
 			});
 			it('with optional entries, checks minimum count only.', () => {
 				assert.ok(new TYPE.TypeTuple([
@@ -526,7 +526,7 @@ describe('Type', () => {
 					{type: TYPE.Type.INT, optional: true},
 					{type: TYPE.Type.INT, optional: true},
 					{type: TYPE.Type.INT, optional: true},
-				])), `[int, int, ?:int, ?:int] <: [int, ?:int, ?:int, ?:int, ?:int]`);
+				])), '[int, int, ?:int, ?:int] <: [int, ?:int, ?:int, ?:int, ?:int]');
 				assert.ok(!new TYPE.TypeTuple([
 					{type: TYPE.Type.INT, optional: false},
 					{type: TYPE.Type.INT, optional: true},
@@ -538,10 +538,10 @@ describe('Type', () => {
 					{type: TYPE.Type.INT, optional: false},
 					{type: TYPE.Type.INT, optional: true},
 					{type: TYPE.Type.INT, optional: true},
-				])), `[int, ?:int, ?:int, ?:int, ?:int] !<: [int, int, ?:int, ?:int]`);
+				])), '[int, ?:int, ?:int, ?:int, ?:int] !<: [int, int, ?:int, ?:int]');
 			});
 			it('Invariance for mutable tuples: `A == B --> mutable Tuple.<A> <: mutable Tuple.<B>`.', () => {
-				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.Type.INT, TYPE.Type.FLOAT], true).isSubtypeOf(TYPE.TypeTuple.fromTypes([TYPE.Type.INT.union(TYPE.Type.NULL), TYPE.Type.FLOAT.union(TYPE.Type.NULL)], true)), `mutable [int, float] !<: mutable [int?, float?]`);
+				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.Type.INT, TYPE.Type.FLOAT], true).isSubtypeOf(TYPE.TypeTuple.fromTypes([TYPE.Type.INT.union(TYPE.Type.NULL), TYPE.Type.FLOAT.union(TYPE.Type.NULL)], true)), 'mutable [int, float] !<: mutable [int?, float?]');
 			});
 		});
 
@@ -551,12 +551,12 @@ describe('Type', () => {
 					[0x100n, TYPE.Type.INT],
 					[0x101n, TYPE.Type.BOOL],
 					[0x102n, TYPE.Type.STR],
-				])).isSubtypeOf(TYPE.Type.OBJ), `[x: int, y: bool, z: str] <: obj;`);
+				])).isSubtypeOf(TYPE.Type.OBJ), '[x: int, y: bool, z: str] <: obj;');
 				assert.ok(!TYPE.Type.OBJ.isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.Type.INT],
 					[0x101n, TYPE.Type.BOOL],
 					[0x102n, TYPE.Type.STR],
-				]))), `obj !<: [x: int, y: bool, z: str]`);
+				]))), 'obj !<: [x: int, y: bool, z: str]');
 			});
 			it('matches per key.', () => {
 				assert.ok(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
@@ -567,7 +567,7 @@ describe('Type', () => {
 					[0x101n, TYPE.Type.BOOL.union(TYPE.Type.NULL)],
 					[0x102n, TYPE.Type.OBJ],
 					[0x100n, TYPE.Type.INT.union(TYPE.Type.FLOAT)],
-				]))), `[x: int, y: bool, z: str] <: [y: bool!, z: obj, x: int | float];`);
+				]))), '[x: int, y: bool, z: str] <: [y: bool!, z: obj, x: int | float];');
 				false && assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.Type.INT],
 					[0x101n, TYPE.Type.BOOL],
@@ -576,7 +576,7 @@ describe('Type', () => {
 					[0x100n, TYPE.Type.BOOL.union(TYPE.Type.NULL)],
 					[0x101n, TYPE.Type.OBJ],
 					[0x102n, TYPE.Type.INT.union(TYPE.Type.FLOAT)],
-				]))), `[x: int, y: bool, z: str] !<: [x: bool!, y: obj, z: int | float];`);
+				]))), '[x: int, y: bool, z: str] !<: [x: bool!, y: obj, z: int | float];');
 			});
 			it('returns false if assigned is smaller than assignee.', () => {
 				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
@@ -586,7 +586,7 @@ describe('Type', () => {
 					[0x101n, TYPE.Type.BOOL.union(TYPE.Type.NULL)],
 					[0x102n, TYPE.Type.OBJ],
 					[0x100n, TYPE.Type.INT.union(TYPE.Type.FLOAT)],
-				]))), `[x: int, y: bool] !<: [y: bool!, z: obj, x: int | float];`);
+				]))), '[x: int, y: bool] !<: [y: bool!, z: obj, x: int | float];');
 			});
 			it('skips rest if assigned is larger than assignee.', () => {
 				assert.ok(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
@@ -596,7 +596,7 @@ describe('Type', () => {
 				])).isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x101n, TYPE.Type.BOOL.union(TYPE.Type.NULL)],
 					[0x100n, TYPE.Type.INT.union(TYPE.Type.FLOAT)],
-				]))), `[x: int, y: bool, z: str] <: [y: bool!, x: int | float];`);
+				]))), '[x: int, y: bool, z: str] <: [y: bool!, x: int | float];');
 			});
 			it('returns false if assignee contains keys that assigned does not.', () => {
 				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
@@ -607,7 +607,7 @@ describe('Type', () => {
 					[0x101n, TYPE.Type.BOOL.union(TYPE.Type.NULL)],
 					[0x102n, TYPE.Type.OBJ],
 					[0x103n, TYPE.Type.INT.union(TYPE.Type.FLOAT)],
-				]))), `[x: int, y: bool, z: str] !<: [y: bool!, z: obj, w: int | float]`);
+				]))), '[x: int, y: bool, z: str] !<: [y: bool!, z: obj, w: int | float]');
 			});
 			it('optional entries are not assignable to required entries.', () => {
 				assert.ok(new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
@@ -618,7 +618,7 @@ describe('Type', () => {
 					[0x100n, {type: TYPE.Type.STR,  optional: true}],
 					[0x101n, {type: TYPE.Type.INT,  optional: true}],
 					[0x102n, {type: TYPE.Type.BOOL, optional: false}],
-				]))), `[a: str, b?: int, c: bool] <: [a?: str, b?: int, c: bool]`);
+				]))), '[a: str, b?: int, c: bool] <: [a?: str, b?: int, c: bool]');
 				assert.ok(!new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
 					[0x100n, {type: TYPE.Type.STR,  optional: false}],
 					[0x101n, {type: TYPE.Type.INT,  optional: true}],
@@ -627,7 +627,7 @@ describe('Type', () => {
 					[0x100n, {type: TYPE.Type.STR,  optional: true}],
 					[0x101n, {type: TYPE.Type.INT,  optional: false}],
 					[0x102n, {type: TYPE.Type.BOOL, optional: false}],
-				]))), `[a: str, b?: int, c: bool] !<: [a?: str, b: int, c: bool]`);
+				]))), '[a: str, b?: int, c: bool] !<: [a?: str, b: int, c: bool]');
 			});
 			it('Invariance for mutable records: `A == B --> mutable Record.<A> <: mutable Record.<B>`.', () => {
 				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
@@ -636,79 +636,79 @@ describe('Type', () => {
 				]), true).isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.Type.INT.union(TYPE.Type.NULL)],
 					[0x101n, TYPE.Type.FLOAT.union(TYPE.Type.NULL)],
-				]), true)), `mutable [a: int, b: float] !<: mutable [a: int?, b: float?]`);
+				]), true)), 'mutable [a: int, b: float] !<: mutable [a: int?, b: float?]');
 			});
 		});
 
 		describe('TypeList', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new TYPE.TypeList(TYPE.Type.INT.union(TYPE.Type.BOOL)).isSubtypeOf(TYPE.Type.OBJ), `List.<int | bool> <: obj;`);
-				assert.ok(!TYPE.Type.OBJ.isSubtypeOf(new TYPE.TypeList(TYPE.Type.INT.union(TYPE.Type.BOOL))), `obj !<: List.<int | bool>`);
+				assert.ok(new TYPE.TypeList(TYPE.Type.INT.union(TYPE.Type.BOOL)).isSubtypeOf(TYPE.Type.OBJ), 'List.<int | bool> <: obj;');
+				assert.ok(!TYPE.Type.OBJ.isSubtypeOf(new TYPE.TypeList(TYPE.Type.INT.union(TYPE.Type.BOOL))), 'obj !<: List.<int | bool>');
 			});
 			it('Covariance for immutable lists: `A <: B --> List.<A> <: List.<B>`.', () => {
-				assert.ok(new TYPE.TypeList(TYPE.Type.INT).isSubtypeOf(new TYPE.TypeList(TYPE.Type.INT.union(TYPE.Type.FLOAT))), `List.<int> <: List.<int | float>`);
-				assert.ok(!new TYPE.TypeList(TYPE.Type.INT.union(TYPE.Type.FLOAT)).isSubtypeOf(new TYPE.TypeList(TYPE.Type.INT)), `List.<int | float> !<: List.<int>`);
+				assert.ok(new TYPE.TypeList(TYPE.Type.INT).isSubtypeOf(new TYPE.TypeList(TYPE.Type.INT.union(TYPE.Type.FLOAT))), 'List.<int> <: List.<int | float>');
+				assert.ok(!new TYPE.TypeList(TYPE.Type.INT.union(TYPE.Type.FLOAT)).isSubtypeOf(new TYPE.TypeList(TYPE.Type.INT)), 'List.<int | float> !<: List.<int>');
 			});
 			it('Invariance for mutable lists: `A == B --> mutable List.<A> <: mutable List.<B>`.', () => {
-				assert.ok(!new TYPE.TypeList(TYPE.Type.INT, true).isSubtypeOf(new TYPE.TypeList(TYPE.Type.INT.union(TYPE.Type.FLOAT), true)), `mutable List.<int> !<: mutable List.<int | float>`);
+				assert.ok(!new TYPE.TypeList(TYPE.Type.INT, true).isSubtypeOf(new TYPE.TypeList(TYPE.Type.INT.union(TYPE.Type.FLOAT), true)), 'mutable List.<int> !<: mutable List.<int | float>');
 			});
 		});
 
 		describe('TypeDict', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new TYPE.TypeDict(TYPE.Type.INT.union(TYPE.Type.BOOL)).isSubtypeOf(TYPE.Type.OBJ), `Dict.<int | bool> <: obj;`);
-				assert.ok(!TYPE.Type.OBJ.isSubtypeOf(new TYPE.TypeDict(TYPE.Type.INT.union(TYPE.Type.BOOL))), `obj !<: Dict.<int | bool>`);
+				assert.ok(new TYPE.TypeDict(TYPE.Type.INT.union(TYPE.Type.BOOL)).isSubtypeOf(TYPE.Type.OBJ), 'Dict.<int | bool> <: obj;');
+				assert.ok(!TYPE.Type.OBJ.isSubtypeOf(new TYPE.TypeDict(TYPE.Type.INT.union(TYPE.Type.BOOL))), 'obj !<: Dict.<int | bool>');
 			});
 			it('Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.', () => {
-				assert.ok(new TYPE.TypeDict(TYPE.Type.INT).isSubtypeOf(new TYPE.TypeDict(TYPE.Type.INT.union(TYPE.Type.FLOAT))), `Dict.<int> <: Dict.<int | float>`);
-				assert.ok(!new TYPE.TypeDict(TYPE.Type.INT.union(TYPE.Type.FLOAT)).isSubtypeOf(new TYPE.TypeDict(TYPE.Type.INT)), `Dict.<int | float> !<: Dict.<int>`);
+				assert.ok(new TYPE.TypeDict(TYPE.Type.INT).isSubtypeOf(new TYPE.TypeDict(TYPE.Type.INT.union(TYPE.Type.FLOAT))), 'Dict.<int> <: Dict.<int | float>');
+				assert.ok(!new TYPE.TypeDict(TYPE.Type.INT.union(TYPE.Type.FLOAT)).isSubtypeOf(new TYPE.TypeDict(TYPE.Type.INT)), 'Dict.<int | float> !<: Dict.<int>');
 			});
 			it('Invariance for mutable dicts: `A == B --> mutable Dict.<A> <: mutable Dict.<B>`.', () => {
-				assert.ok(!new TYPE.TypeDict(TYPE.Type.INT, true).isSubtypeOf(new TYPE.TypeDict(TYPE.Type.INT.union(TYPE.Type.FLOAT), true)), `mutable Dict.<int> !<: mutable Dict.<int | float>`);
+				assert.ok(!new TYPE.TypeDict(TYPE.Type.INT, true).isSubtypeOf(new TYPE.TypeDict(TYPE.Type.INT.union(TYPE.Type.FLOAT), true)), 'mutable Dict.<int> !<: mutable Dict.<int | float>');
 			});
 		});
 
 		describe('TypeSet', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new TYPE.TypeSet(TYPE.Type.INT).isSubtypeOf(TYPE.Type.OBJ), `Set.<int> <: obj`);
-				assert.ok(!TYPE.Type.OBJ.isSubtypeOf(new TYPE.TypeSet(TYPE.Type.INT)), `obj !<: Set.<int>`);
+				assert.ok(new TYPE.TypeSet(TYPE.Type.INT).isSubtypeOf(TYPE.Type.OBJ), 'Set.<int> <: obj');
+				assert.ok(!TYPE.Type.OBJ.isSubtypeOf(new TYPE.TypeSet(TYPE.Type.INT)), 'obj !<: Set.<int>');
 			});
 			it('Covariance or immutable sets: `A <: B --> Set.<A> <: Set.<B>`.', () => {
-				assert.ok(new TYPE.TypeSet(TYPE.Type.INT).isSubtypeOf(new TYPE.TypeSet(TYPE.Type.INT.union(TYPE.Type.FLOAT))), `Set.<int> <: Set.<int | float>`);
-				assert.ok(!new TYPE.TypeSet(TYPE.Type.INT.union(TYPE.Type.FLOAT)).isSubtypeOf(new TYPE.TypeSet(TYPE.Type.INT)), `Set.<int | float> !<: Set.<int>`);
+				assert.ok(new TYPE.TypeSet(TYPE.Type.INT).isSubtypeOf(new TYPE.TypeSet(TYPE.Type.INT.union(TYPE.Type.FLOAT))), 'Set.<int> <: Set.<int | float>');
+				assert.ok(!new TYPE.TypeSet(TYPE.Type.INT.union(TYPE.Type.FLOAT)).isSubtypeOf(new TYPE.TypeSet(TYPE.Type.INT)), 'Set.<int | float> !<: Set.<int>');
 			});
 			it('Invariance for mutable sets: `A == B --> mutable Set.<A> <: mutable Set.<B>`.', () => {
-				assert.ok(!new TYPE.TypeSet(TYPE.Type.INT, true).isSubtypeOf(new TYPE.TypeSet(TYPE.Type.INT.union(TYPE.Type.FLOAT), true)), `mutable Set.<int> !<: mutable Set.<int | float>`);
+				assert.ok(!new TYPE.TypeSet(TYPE.Type.INT, true).isSubtypeOf(new TYPE.TypeSet(TYPE.Type.INT.union(TYPE.Type.FLOAT), true)), 'mutable Set.<int> !<: mutable Set.<int | float>');
 			});
 		});
 
 		describe('TypeMap', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.BOOL).isSubtypeOf(TYPE.Type.OBJ), `Map.<int, bool> <: obj`);
-				assert.ok(!TYPE.Type.OBJ.isSubtypeOf(new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.BOOL)), `obj !<: Map.<int, bool>`);
+				assert.ok(new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.BOOL).isSubtypeOf(TYPE.Type.OBJ), 'Map.<int, bool> <: obj');
+				assert.ok(!TYPE.Type.OBJ.isSubtypeOf(new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.BOOL)), 'obj !<: Map.<int, bool>');
 			});
 			it('Covariance for immutable maps: `A <: C && B <: D --> Map.<A, B> <: Map.<C, D>`.', () => {
-				assert.ok(new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.BOOL).isSubtypeOf(new TYPE.TypeMap(TYPE.Type.INT.union(TYPE.Type.FLOAT), TYPE.Type.BOOL.union(TYPE.Type.NULL))), `Map.<int, bool> <: Map.<int | float, bool | null>`);
-				assert.ok(!new TYPE.TypeMap(TYPE.Type.INT.union(TYPE.Type.FLOAT), TYPE.Type.BOOL.union(TYPE.Type.NULL)).isSubtypeOf(new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.BOOL)), `Map.<int | float, bool | null> !<: Map.<int, bool>`);
+				assert.ok(new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.BOOL).isSubtypeOf(new TYPE.TypeMap(TYPE.Type.INT.union(TYPE.Type.FLOAT), TYPE.Type.BOOL.union(TYPE.Type.NULL))), 'Map.<int, bool> <: Map.<int | float, bool | null>');
+				assert.ok(!new TYPE.TypeMap(TYPE.Type.INT.union(TYPE.Type.FLOAT), TYPE.Type.BOOL.union(TYPE.Type.NULL)).isSubtypeOf(new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.BOOL)), 'Map.<int | float, bool | null> !<: Map.<int, bool>');
 			});
 			it('Invariance for mutable maps: `A == C && B == D --> mutable Map.<A, B> <: mutable Map.<C, D>`.', () => {
-				assert.ok(!new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.BOOL, true).isSubtypeOf(new TYPE.TypeMap(TYPE.Type.INT.union(TYPE.Type.FLOAT), TYPE.Type.BOOL.union(TYPE.Type.NULL), true)), `mutable Map.<int, bool> !<: mutable Map.<int | float, bool | null>`);
+				assert.ok(!new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.BOOL, true).isSubtypeOf(new TYPE.TypeMap(TYPE.Type.INT.union(TYPE.Type.FLOAT), TYPE.Type.BOOL.union(TYPE.Type.NULL), true)), 'mutable Map.<int, bool> !<: mutable Map.<int | float, bool | null>');
 			});
 		});
 
 		describe('TypeInterface', () => {
 			it('returns `true` if the subtype contains at least the properties of the supertype.', () => {
-				assert.ok(!t0.isSubtypeOf(t1))
-				assert.ok(!t1.isSubtypeOf(t0))
+				assert.ok(!t0.isSubtypeOf(t1));
+				assert.ok(!t1.isSubtypeOf(t0));
 				assert.ok(new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 					['foo', TYPE.Type.STR],
 					['bar', TYPE.Type.NULL],
 					['diz', TYPE.Type.BOOL],
 					['qux', TYPE.Type.INT.union(TYPE.Type.FLOAT)],
-				])).isSubtypeOf(t0))
-			})
-		})
-	})
+				])).isSubtypeOf(t0));
+			});
+		});
+	});
 
 
 	describe('#mutableOf', () => {
@@ -892,7 +892,7 @@ describe('Type', () => {
 						==
 						[foo: obj, bar: null, qux: bool & str, diz: int]
 					`);
-				})
+				});
 				it('takes the conjunction of optionality.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
 					assert.ok(new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
@@ -1044,4 +1044,4 @@ describe('Type', () => {
 			});
 		});
 	});
-})
+});

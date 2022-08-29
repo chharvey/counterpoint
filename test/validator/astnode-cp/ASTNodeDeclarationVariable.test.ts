@@ -52,12 +52,12 @@ describe('ASTNodeDeclarationVariable', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  int | float =  21  *  2;
 			`).typeCheck();
-		})
+		});
 		it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  null =  21  *  2;
 			`).typeCheck(), TypeError03);
-		})
+		});
 		it('disallows assigning a collection literal to a wider mutable type.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let t2: mutable [42 | 4.3]          = [42];
@@ -106,12 +106,12 @@ describe('ASTNodeDeclarationVariable', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
 			`).typeCheck();
-		})
+		});
 		it('with int coersion off, throws when assigning int to float.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
 			`, CONFIG_COERCION_OFF).typeCheck(), TypeError03);
-		})
+		});
 	});
 
 
@@ -124,7 +124,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 			goal.varCheck();
 			goal.typeCheck();
-			const builder: Builder = new Builder(src)
+			const builder: Builder = new Builder(src);
 			assert.deepStrictEqual(
 				[
 					goal.children[0].build(builder),
@@ -144,7 +144,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 			goal.varCheck();
 			goal.typeCheck();
-			const builder: Builder = new Builder(src)
+			const builder: Builder = new Builder(src);
 			assert.deepStrictEqual(
 				[
 					goal.children[0].build(builder),

@@ -45,7 +45,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			this.operator,
 			this.operand0.build(builder, tofloat),
 			this.operand1.build(builder, tofloat),
-		)
+		);
 	}
 
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
@@ -83,6 +83,6 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			[Operator.EQ, (x, y) => x.equal(y)],
 			// [Operator.ISNT, (x, y) => !x.identical(y)],
 			// [Operator.NEQ,  (x, y) => !x.equal(y)],
-		]).get(this.operator)!(x, y))
+		]).get(this.operator)!(x, y));
 	}
 }

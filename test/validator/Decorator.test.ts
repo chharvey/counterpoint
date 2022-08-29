@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import * as assert from 'assert';
 import Parser, {
 	Query,
 	QueryCapture,
@@ -387,4 +387,4 @@ describe('Decorator', () => {
 			});
 		}));
 	});
-})
+});

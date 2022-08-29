@@ -26,7 +26,7 @@ export class InstructionNone extends Instruction {
 	 * @return `''`
 	 */
 	override toString(): string {
-		return ''
+		return '';
 	}
 }
 /**
@@ -37,7 +37,7 @@ class InstructionUnreachable extends Instruction {
 	 * @return `'(unreachable)'`
 	 */
 	override toString(): string {
-		return `(unreachable)`
+		return '(unreachable)';
 	}
 }
 /**
@@ -49,7 +49,7 @@ class InstructionNop extends Instruction {
 	 * @return `'(nop)'`
 	 */
 	override toString(): string {
-		return `(nop)`
+		return '(nop)';
 	}
 }
 /**
@@ -75,21 +75,22 @@ export class InstructionConst extends InstructionExpression {
 	 */
 	static fromCPValue(value: OBJ.Object | null, to_float: boolean = false): InstructionConst {
 		if (!value) {
-			throw new Error('Cannot build an abrupt completion structure.')
+			throw new Error('Cannot build an abrupt completion structure.');
 		}
-		const numeric: OBJ.Number =
+		const numeric: OBJ.Number = (
 			(value instanceof OBJ.Null)    ? OBJ.Integer.ZERO :
 			(value instanceof OBJ.Boolean) ? (value.isTruthy) ? OBJ.Integer.UNIT : OBJ.Integer.ZERO :
 			(value instanceof OBJ.Number)  ? value :
 			throw_expression(new Error('not yet supported.'))
-		return new InstructionConst((to_float) ? numeric.toFloat() : numeric)
+		);
+		return new InstructionConst((to_float) ? numeric.toFloat() : numeric);
 	}
 
 	/**
 	 * @param value the constant to push
 	 */
 	constructor(private readonly value: OBJ.Number) {
-		super()
+		super();
 	}
 
 	/**
@@ -116,11 +117,11 @@ abstract class InstructionVariable extends InstructionExpression {
 		protected readonly name: string,
 		protected readonly op: InstructionExpression | boolean = false,
 	) {
-		super()
+		super();
 	}
 
 	get isFloat(): boolean {
-		return this.op instanceof InstructionExpression ? this.op.isFloat : this.op
+		return this.op instanceof InstructionExpression ? this.op.isFloat : this.op;
 	}
 }
 /**
@@ -175,12 +176,12 @@ abstract class InstructionLocal extends InstructionVariable {
  */
 export class InstructionLocalGet extends InstructionLocal {
 	constructor(name: bigint | string, to_float: boolean = false) {
-		super(name, to_float)
+		super(name, to_float);
 	}
 
 	/** @return `'(local.get ‹name›)'` */
 	override toString(): string {
-		return `(local.get ${ this.name })`
+		return `(local.get ${ this.name })`;
 	}
 }
 /**
@@ -188,12 +189,12 @@ export class InstructionLocalGet extends InstructionLocal {
  */
 export class InstructionLocalSet extends InstructionLocal {
 	constructor(name: bigint | string, op: InstructionExpression) {
-		super(name, op)
+		super(name, op);
 	}
 
 	/** @return `'(local.set ‹name› ‹op›)'` */
 	override toString(): string {
-		return `(local.set ${ this.name } ${ this.op })`
+		return `(local.set ${ this.name } ${ this.op })`;
 	}
 }
 /**
@@ -201,12 +202,12 @@ export class InstructionLocalSet extends InstructionLocal {
  */
 export class InstructionLocalTee extends InstructionLocal {
 	constructor(name: bigint | string, op: InstructionExpression) {
-		super(name, op)
+		super(name, op);
 	}
 
 	/** @return `'(local.tee ‹name› ‹op›)'` */
 	override toString(): string {
-		return `(local.tee ${ this.name } ${ this.op })`
+		return `(local.tee ${ this.name } ${ this.op })`;
 	}
 }
 /**
@@ -221,7 +222,7 @@ export class InstructionUnop extends InstructionExpression {
 		private readonly op: ValidOperatorUnary,
 		private readonly arg: InstructionExpression,
 	) {
-		super()
+		super();
 	}
 
 	/**
@@ -229,15 +230,15 @@ export class InstructionUnop extends InstructionExpression {
 	 */
 	override toString(): string {
 		return `(${ new Map<Operator, string>([
-			// [Operator.AFF, `nop`],
-			[Operator.NEG, (!this.arg.isFloat) ? `call $neg`  : `f64.neg`],
-			[Operator.NOT, (!this.arg.isFloat) ? `call $inot` : `call $fnot`],
-			[Operator.EMP, (!this.arg.isFloat) ? `call $iemp` : `call $femp`],
-		]).get(this.op)! } ${ this.arg })`
+			// [Operator.AFF, 'nop'],
+			[Operator.NEG, (!this.arg.isFloat) ? 'call $neg'  : 'f64.neg'],
+			[Operator.NOT, (!this.arg.isFloat) ? 'call $inot' : 'call $fnot'],
+			[Operator.EMP, (!this.arg.isFloat) ? 'call $iemp' : 'call $femp'],
+		]).get(this.op)! } ${ this.arg })`;
 	}
 
 	get isFloat(): boolean {
-		return [Operator.AFF, Operator.NEG].includes(this.op) && this.arg.isFloat
+		return [Operator.AFF, Operator.NEG].includes(this.op) && this.arg.isFloat;
 	}
 }
 /**
@@ -249,9 +250,9 @@ export class InstructionUnop extends InstructionExpression {
  */
 export abstract class InstructionBinop extends InstructionExpression {
 	/** Is either one of the arguments of type `i32`? */
-	protected readonly intarg: boolean = !this.arg0.isFloat || !this.arg1.isFloat
+	protected readonly intarg: boolean = !this.arg0.isFloat || !this.arg1.isFloat;
 	/** Is either one of the arguments of type `f64`? */
-	protected readonly floatarg: boolean = this.arg0.isFloat || this.arg1.isFloat
+	protected readonly floatarg: boolean = this.arg0.isFloat || this.arg1.isFloat;
 	/**
 	 * @param op a punctuator representing the operation to perform
 	 * @param arg0 the first operand
@@ -262,7 +263,7 @@ export abstract class InstructionBinop extends InstructionExpression {
 		protected readonly arg0: InstructionExpression,
 		protected readonly arg1: InstructionExpression,
 	) {
-		super()
+		super();
 	}
 }
 export class InstructionBinopArithmetic extends InstructionBinop {
@@ -276,9 +277,9 @@ export class InstructionBinopArithmetic extends InstructionBinop {
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
 	) {
-		super(op, arg0, arg1)
+		super(op, arg0, arg1);
 		if (this.intarg && this.floatarg) {
-			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
+			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`);
 		}
 	}
 
@@ -287,16 +288,16 @@ export class InstructionBinopArithmetic extends InstructionBinop {
 	 */
 	override toString(): string {
 		return `(${ new Map<Operator, string>([
-			[Operator.EXP, (!this.floatarg) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
-			[Operator.MUL, (!this.floatarg) ? `i32.mul`   : `f64.mul`],
-			[Operator.DIV, (!this.floatarg) ? `i32.div_s` : `f64.div`],
-			[Operator.ADD, (!this.floatarg) ? `i32.add`   : `f64.add`],
-			[Operator.SUB, (!this.floatarg) ? `i32.sub`   : `f64.sub`],
-		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`
+			[Operator.EXP, (!this.floatarg) ? 'call $exp' : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
+			[Operator.MUL, (!this.floatarg) ? 'i32.mul'   : 'f64.mul'],
+			[Operator.DIV, (!this.floatarg) ? 'i32.div_s' : 'f64.div'],
+			[Operator.ADD, (!this.floatarg) ? 'i32.add'   : 'f64.add'],
+			[Operator.SUB, (!this.floatarg) ? 'i32.sub'   : 'f64.sub'],
+		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`;
 	}
 
 	get isFloat(): boolean {
-		return this.floatarg
+		return this.floatarg;
 	}
 }
 export class InstructionBinopComparative extends InstructionBinop {
@@ -310,9 +311,9 @@ export class InstructionBinopComparative extends InstructionBinop {
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
 	) {
-		super(op, arg0, arg1)
+		super(op, arg0, arg1);
 		if (this.intarg && this.floatarg) {
-			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
+			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`);
 		}
 	}
 
@@ -321,15 +322,15 @@ export class InstructionBinopComparative extends InstructionBinop {
 	 */
 	override toString(): string {
 		return `(${ new Map<Operator, string>([
-			[Operator.LT, (!this.floatarg) ? `i32.lt_s` : `f64.lt`],
-			[Operator.GT, (!this.floatarg) ? `i32.gt_s` : `f64.gt`],
-			[Operator.LE, (!this.floatarg) ? `i32.le_s` : `f64.le`],
-			[Operator.GE, (!this.floatarg) ? `i32.ge_s` : `f64.ge`],
-		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`
+			[Operator.LT, (!this.floatarg) ? 'i32.lt_s' : 'f64.lt'],
+			[Operator.GT, (!this.floatarg) ? 'i32.gt_s' : 'f64.gt'],
+			[Operator.LE, (!this.floatarg) ? 'i32.le_s' : 'f64.le'],
+			[Operator.GE, (!this.floatarg) ? 'i32.ge_s' : 'f64.ge'],
+		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`;
 	}
 
 	get isFloat(): boolean {
-		return false
+		return false;
 	}
 }
 export class InstructionBinopEquality extends InstructionBinop {
@@ -343,7 +344,7 @@ export class InstructionBinopEquality extends InstructionBinop {
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
 	) {
-		super(op, arg0, arg1)
+		super(op, arg0, arg1);
 	}
 
 	/**
@@ -351,18 +352,18 @@ export class InstructionBinopEquality extends InstructionBinop {
 	 */
 	override toString(): string {
 		return `(${
-			(!this.arg0.isFloat && !this.arg1.isFloat) ? `i32.eq` :
-			(!this.arg0.isFloat &&  this.arg1.isFloat) ? `call $i_f_id` :
-			( this.arg0.isFloat && !this.arg1.isFloat) ? `call $f_i_id` :
+			(!this.arg0.isFloat && !this.arg1.isFloat) ? 'i32.eq' :
+			(!this.arg0.isFloat &&  this.arg1.isFloat) ? 'call $i_f_id' :
+			( this.arg0.isFloat && !this.arg1.isFloat) ? 'call $f_i_id' :
 			new Map<Operator, string>([
-				[Operator.ID, `call $fid`],
-				[Operator.EQ, `f64.eq`],
+				[Operator.ID, 'call $fid'],
+				[Operator.EQ, 'f64.eq'],
 			]).get(this.op)!
-		} ${ this.arg0 } ${ this.arg1 })`
+		} ${ this.arg0 } ${ this.arg1 })`;
 	}
 
 	get isFloat(): boolean {
-		return false
+		return false;
 	}
 }
 export class InstructionBinopLogical extends InstructionBinop {
@@ -378,9 +379,9 @@ export class InstructionBinopLogical extends InstructionBinop {
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
 	) {
-		super(op, arg0, arg1)
+		super(op, arg0, arg1);
 		if (this.intarg && this.floatarg) {
-			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
+			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`);
 		}
 	}
 
@@ -395,18 +396,18 @@ export class InstructionBinopLogical extends InstructionBinop {
 				Operator.NOT,
 				new InstructionLocalTee(varname, this.arg0),
 			),
-		)
-		const left:  InstructionExpression = new InstructionLocalGet(varname, this.arg0.isFloat)
-		const right: InstructionExpression = this.arg1
+		);
+		const left:  InstructionExpression = new InstructionLocalGet(varname, this.arg0.isFloat);
+		const right: InstructionExpression = this.arg1;
 		return `${ new InstructionDeclareLocal(varname, this.arg0.isFloat) } ${
 			(this.op === Operator.AND)
 				? new InstructionCond(condition, right, left)
 				: new InstructionCond(condition, left, right)
-		}`
+		}`;
 	}
 
 	get isFloat(): boolean {
-		return this.floatarg
+		return this.floatarg;
 	}
 }
 /**
@@ -423,9 +424,9 @@ export class InstructionCond extends InstructionExpression {
 		private readonly arg1: InstructionExpression,
 		private readonly arg2: InstructionExpression,
 	) {
-		super()
+		super();
 		if ((this.arg1.isFloat || this.arg2.isFloat) && (!this.arg1.isFloat || !this.arg2.isFloat)) {
-			throw new TypeError(`Both branches must be either integers or floats, but not a mix.\nOperands: ${ this.arg1 } ${ this.arg2 }`)
+			throw new TypeError(`Both branches must be either integers or floats, but not a mix.\nOperands: ${ this.arg1 } ${ this.arg2 }`);
 		}
 	}
 
@@ -433,11 +434,11 @@ export class InstructionCond extends InstructionExpression {
 	 * @return `'(if (result {i32|f64}) ‹arg0› (then ‹arg1›) (else ‹arg2›))'`
 	 */
 	override toString(): string {
-		return `(if (result ${ (!this.isFloat) ? `i32` : `f64` }) ${ this.arg0 } (then ${ this.arg1 }) (else ${ this.arg2 }))`
+		return `(if (result ${ (!this.isFloat) ? 'i32' : 'f64' }) ${ this.arg0 } (then ${ this.arg1 }) (else ${ this.arg2 }))`;
 	}
 
 	get isFloat(): boolean {
-		return this.arg1.isFloat || this.arg2.isFloat
+		return this.arg1.isFloat || this.arg2.isFloat;
 	}
 }
 /**
@@ -452,7 +453,7 @@ export class InstructionStatement extends Instruction {
 		private readonly count: bigint,
 		private readonly expr: InstructionExpression,
 	) {
-		super()
+		super();
 	}
 
 	/**
@@ -461,13 +462,12 @@ export class InstructionStatement extends Instruction {
 	override toString(): string {
 		const result: string = (this.expr instanceof InstructionGlobalSet)
 			? ''
-			: `(result ${ (this.expr.isFloat) ? 'f64' : 'i32' })`
-		;
+			: `(result ${ (this.expr.isFloat) ? 'f64' : 'i32' })`;
 		return xjs.String.dedent`
 			(func (export "f${ this.count }") ${ result }
 				${ this.expr }
 			)
-		`
+		`;
 	}
 }
 /**
@@ -522,7 +522,7 @@ export class InstructionModule extends Instruction {
 	 * @param comps the components of the program
 	 */
 	constructor(private readonly comps: (string | Instruction)[] = []) {
-		super()
+		super();
 	}
 
 	/**
@@ -533,6 +533,6 @@ export class InstructionModule extends Instruction {
 			(module
 				${ this.comps.join('\n') }
 			)
-		`
+		`;
 	}
 }

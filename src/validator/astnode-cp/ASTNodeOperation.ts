@@ -23,12 +23,12 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 		return expression;
 	}
 
-	override readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
+	override readonly tagname: string = 'Operation'; // TODO remove after refactoring tests using `#serialize`
 	constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		operator: Operator,
 		override readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
 	) {
-		super(start_node, {operator}, children)
+		super(start_node, {operator}, children);
 	}
 }

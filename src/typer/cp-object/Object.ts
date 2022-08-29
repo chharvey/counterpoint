@@ -32,7 +32,7 @@ abstract class CPObject {
 	 * @final
 	 */
 	identical(value: CPObject): boolean {
-		return this === value || this.identical_helper(value)
+		return this === value || this.identical_helper(value);
 	}
 
 	/**
@@ -41,7 +41,7 @@ abstract class CPObject {
 	 * @returns are the objects identically the same?
 	 */
 	protected identical_helper(_value: CPObject): boolean {
-		return false
+		return false;
 	}
 
 	/**
@@ -52,7 +52,7 @@ abstract class CPObject {
 	 * @final
 	 */
 	equal(value: CPObject): boolean {
-		return this.identical(value) || this.equal_helper(value)
+		return this.identical(value) || this.equal_helper(value);
 	}
 
 	/**
@@ -61,7 +61,7 @@ abstract class CPObject {
 	 * @returns are the objects equal?
 	 */
 	protected equal_helper(_value: CPObject): boolean {
-		return false
+		return false;
 	}
 
 	/**
