@@ -24,6 +24,7 @@
 		"array-bracket-newline":          ["error", "consistent"], // FIXME: require line breaks exactly when there exist line breaks between elements (ignoring inside elements)
 		"array-bracket-spacing":          "warn",
 		"array-element-newline":          ["error", "consistent"],
+		"arrow-parens":                   "error",
 		"arrow-spacing":                  "error",
 		"brace-style":                    "error",
 		"comma-dangle":                   ["error", "always-multiline"],
@@ -35,6 +36,7 @@
 		"function-call-argument-newline": ["error", "consistent"],
 		"function-paren-newline":         "error",
 		"generator-star-spacing":         ["error", "both"],
+		"implicit-arrow-linebreak":       "error",
 		"indent":                         ["error", "tab", {
 			"SwitchCase":             1,
 			"flatTernaryExpressions": true
@@ -45,6 +47,7 @@
 		}],
 		"keyword-spacing":             "error",
 		"lines-between-class-members": ["error", "always", {"exceptAfterSingleLine": true}],
+		"new-parens":                  "error",
 		"no-mixed-spaces-and-tabs":    ["error", "smart-tabs"],
 		"object-curly-newline":        ["error", {"multiline": true}],
 		"object-curly-spacing":        "warn",
@@ -88,6 +91,7 @@
 		"switch-colon-spacing":   "error",
 		"template-curly-spacing": ["error", "always"],
 		"template-tag-spacing":   "error",
+		"wrap-iife":              ["error", "inside", {"functionPrototypeMethods": true}],
 		"yield-star-spacing":     ["error", "both"]
 	}
 }

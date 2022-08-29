@@ -228,6 +228,7 @@ function repCom1(production: RuleOrLiteral): SeqRule {
 
 
 module.exports = grammar({
+	/* eslint-disable arrow-parens */
 	name: 'counterpoint',
 
 	rules: {
@@ -504,4 +505,5 @@ module.exports = grammar({
 		$._declaration,
 		$._statement,
 	],
+	/* eslint-enable arrow-parens */
 });
