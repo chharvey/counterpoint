@@ -65,7 +65,7 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	override plus(addend: Integer): Integer {
-		type Carry = [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+		type Carry = [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint];
 		const sum:   Carry = [...new Array(Integer.BITCOUNT).fill(0n)] as Carry;
 		const carry: Carry = [...new Array(Integer.BITCOUNT).fill(0n)] as Carry;
 		for (let i = Integer.BITCOUNT - 1; i >= 0; i--) {

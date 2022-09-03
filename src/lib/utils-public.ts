@@ -17,16 +17,18 @@ export type IntRange = [bigint, bigint];
 export type CodeUnit = number;
 
 /* The type of keys in a map or record. */
-export type Keys<M> =
-	M extends Map<infer K, unknown> ? K :
+export type Keys<M> = (
+	M extends Map<infer K, unknown>    ? K :
 	M extends Record<infer K, unknown> ? K :
-	never;
+	never
+);
 
 /* The type of values in a map or record. */
-export type Values<M> =
-	M extends Map<unknown, infer V> ? V :
-	M extends Record<PropertyKey, infer V> ? V:
-	never;
+export type Values<M> = (
+	M extends Map<unknown, infer V>        ? V :
+	M extends Record<PropertyKey, infer V> ? V :
+	never
+);
 
 /**
  * Throw the given expression.

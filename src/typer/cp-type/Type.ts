@@ -41,7 +41,7 @@ import {
  * - TypeMap
  */
 export abstract class Type {
-	/* eslint-disable brace-style */
+	/* eslint-disable @typescript-eslint/brace-style */
 	/** The Bottom Type, containing no values. */                    static get NEVER():   TypeNever   { return TypeNever.INSTANCE; }
 	/** The Void Type, representing a completion but not a value. */ static get VOID():    TypeVoid    { return TypeVoid.INSTANCE; }
 	/** The Top Type, containing all values. */                      static get UNKNOWN(): TypeUnknown { return TypeUnknown.INSTANCE; }
@@ -51,7 +51,7 @@ export abstract class Type {
 	/** The Float Type. */                                           static get FLOAT():   TypeFloat   { return TypeFloat.INSTANCE; }
 	/** The String Type. */                                          static get STR():     TypeString  { return TypeString.INSTANCE; }
 	/** The Object Type. */                                          static get OBJ():     TypeObject  { return TypeObject.INSTANCE; }
-	/* eslint-enable brace-style */
+	/* eslint-enable @typescript-eslint/brace-style */
 
 	/**
 	 * Intersect all the given types.

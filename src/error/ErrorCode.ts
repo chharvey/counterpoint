@@ -63,12 +63,12 @@ export class ErrorCode extends Error {
 	 * Construct a new ErrorCode object.
 	 * @param  message a message to the user
 	 */
-	constructor (message: string);
+	constructor(message: string);
 	/**
 	 * Construct a new ErrorCode object.
 	 * @param props the properties of the error
 	 */
-	constructor (props: ErrorCodeConstructorProperties);
+	constructor(props: ErrorCodeConstructorProperties);
 	constructor(props: string | ErrorCodeConstructorProperties) {
 		if (typeof props === 'string') {
 			props = {message: props};

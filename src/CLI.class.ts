@@ -11,13 +11,13 @@ import {Builder} from './builder/index.js';
 
 
 type Mutable<T> = { // NB https://github.com/microsoft/TypeScript/issues/24509
-	-readonly[P in keyof T]: Mutable<T[P]>
-}
+	-readonly [P in keyof T]: Mutable<T[P]>
+};
 
 type PartialCPConfig = Partial<{
 	readonly languageFeatures: Partial<CPConfig['languageFeatures']>,
 	readonly compilerOptions:  Partial<CPConfig['compilerOptions']>,
-}>
+}>;
 
 export enum Command {
 	HELP,
@@ -48,7 +48,7 @@ type CustomArgsType = {
 	// Compiler Options
 	constantFolding: null | boolean,
 	intCoercion:     null | boolean,
-}
+};
 
 
 
