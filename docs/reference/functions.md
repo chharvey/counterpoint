@@ -1,9 +1,9 @@
 # Functions
 Functions are objects that encapsulate a set of procedures to be executed later.
 A function may be parameterized (which means it takes inputs), and it may return a value (produce an output).
-In this way, Solid functions and mathematical functions have some basic similarities.
+In this way, Counterpoint functions and mathematical functions have some basic similarities.
 
-Mathematical functions are necessarily pure, stateless, and deterministic, but Solid functions need not be.
+Mathematical functions are necessarily pure, stateless, and deterministic, but Counterpoint functions need not be.
 
 - A **pure function** does not modify its inputs or any non-local variables.
 - A **stateless function** has no knowledge of any non-local variables.
