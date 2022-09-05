@@ -8,10 +8,7 @@ import {
 	Builder,
 	ErrorCode,
 } from './package.js';
-import {
-	ASTNodeStatement,
-	ASTNodeStatementExpression,
-} from './index.js';
+import {ASTNodeStatementExpression} from './index.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 
@@ -38,10 +35,9 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @returns      a new ASTNodeExpression representing the given source
 	 */
 	static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeExpression {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(`${ src };`, config);
-		assert.ok(statement instanceof ASTNodeStatementExpression);
-		assert.ok(statement.expr, 'semantic statement should have 1 child');
-		return statement.expr;
+		const statement_expr: ASTNodeStatementExpression = ASTNodeStatementExpression.fromSource(`${ src };`, config);
+		assert.ok(statement_expr.expr, 'semantic statement expression should have 1 child');
+		return statement_expr.expr;
 	}
 	private typed?: TYPE.Type;
 	private assessed?: OBJ.Object | null;
