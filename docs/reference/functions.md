@@ -72,7 +72,7 @@ let z: float = computeHypotenuse.(12.0, 16.0); % returns `20.0`
 One of the most confusing things to understand about functions
 is the difference between *defining* them and *calling* them.
 When we define a function, we’re setting up the steps that *will* be performed when the function executes.
-Those steps aren’t performed where they’re written, they’re performed whereever the function is executed.
+Those steps aren’t performed where they’re written, they’re performed wherever the function is executed.
 To do that, we need to call it, and this could happen at a point
 much farther away in our code, and it could even happen more than once.
 
@@ -107,7 +107,7 @@ This isn’t particularly helpful — Once the function above is defined, it can
 However, we can assign it to a variable.
 ```
 let add: (a: int, b: int) => int = (a: int, b: int): int { return a + b; };
-add.(2, 3); %== `5`
+add.(2, 3); %== 5
 ```
 
 Assigning lambdas to variables is discouraged in favor of using a function declaration,
@@ -117,7 +117,7 @@ since it could be reassigned later and could lead to unpredictable behavior.
 ```
 let unfixed add: (a: int, b: int) => int = (a: int, b: int): int => a + b; % allowed, but bad programming
 % calling the function here will return one result...
-set add = (a: int, b: int) => a - b; % reassign the function (not recommended) --- notice the mistake
+set add = (a: int, b: int): int => a - b; % reassign the function (not recommended) --- notice the mistake
 % calling the function here will return a different result.
 ```
 Calling a function at different points at runtime should not produce different results.
@@ -156,22 +156,20 @@ value; %== 8
 An immediately-invoked function expression (“IIFE”) is a lambda called immediately after it’s defined.
 The IIFE is called only once and then discarded.
 ```
-((a: int, b: int): int {
+let eight: int = ((a: int, b: int): int {
 	return a + b;
 }).(3, 5);
 ```
 Here, we’ve defined a lambda `(a: int, b: int) { return a + b; }`, and then called it immediately
 with the arguments `3` and `5`. After this statement, the lambda can never be accessed again.
-In fact, the expression evaluates to a single integer, but unless it’s assigned to a variable,
-operated on, or sent somewhere, it also can’t be accessed again.
 
 IIFEs are powerful in that they allow us to encapsulate code and hide it from the surrounding scope.
 For example, inside an IIFE we can perform prerequisite computations before returning the final result.
 ```
 let message: str = ((): str {
 	let unfixed m: str = '';
-	m = '''{{ m }}Hello ''';
-	m = '''{{ m }}world!''';
+	set m = '''{{ m }}Hello ''';
+	set m = '''{{ m }}world!''';
 	return m;
 }).();
 % m is not visible outside the function
@@ -412,7 +410,7 @@ Outside the function, the argument sent (if it was a variable) will still point 
 ```
 let arg: int = 42;
 func reassign(unfixed param: int): void {
-	param = 43;
+	set param = 43;
 }
 reassign.(arg);
 arg; % still 42, not 43
@@ -423,8 +421,8 @@ not the object, is sent into the function and thus may be reassigned by it.
 Notice that a parameter must be declared `unfixed` in order for it to be reassigned.
 ```
 func reassignBoth(unfixed a: int, b: int): void {
-	a = a + 1; % ok
-	b = b - 1; %> AssignmentError
+	set a += 1; % ok
+	set b -= 1; %> AssignmentError
 }
 ```
 
@@ -434,7 +432,7 @@ since those mutations apply to the shared object.
 ```
 let arg: mutable [int] = [42];
 func mutate(param: mutable [int]): void {
-	param.0 = 43;
+	set param.0 = 43;
 }
 mutate.(arg);
 arg; % modified to [43]
