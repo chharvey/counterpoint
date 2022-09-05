@@ -1,8 +1,8 @@
 import type {
 	AST,
-	SolidType,
+	TYPE,
 } from './package.js';
-import {SolidTypeError} from './SolidTypeError.js';
+import {TypeError} from './TypeError.js';
 
 
 
@@ -14,7 +14,7 @@ import {SolidTypeError} from './SolidTypeError.js';
  * [a= 42, b= 420].c;               % TypeError04: Property `c` does not exist on type `[a= 42, b= 420]`.
  * ((x: int): int => x + 1)(y= 42); % TypeError04: Parameter `y` does not exist on type `(x: int) -> {int}`.
  */
-export class TypeError04 extends SolidTypeError {
+export class TypeError04 extends TypeError {
 	/** The number series of this class of errors. */
 	static override readonly CODE = 4;
 	/**
@@ -23,7 +23,7 @@ export class TypeError04 extends SolidTypeError {
 	 * @param accessee - the type of expression to which property access is performed
 	 * @param accessor - the property access index/key/expression
 	 */
-	constructor (kind: 'index' | 'property' | 'parameter', accessee: SolidType, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression) {
+	constructor (kind: 'index' | 'property' | 'parameter', accessee: TYPE.Type, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression) {
 		super(`${ kind[0].toUpperCase() }${ kind.slice(1) } \`${ accessor.source }\` does not exist on type \`${ accessee }\`.`, TypeError04.CODE, accessor.line_index, accessor.col_index);
 	}
 }

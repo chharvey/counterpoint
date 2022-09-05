@@ -1,5 +1,5 @@
-# Solid Language: Expressions
-This chapter defines the syntax, semantics, and behavior of expressions in the Solid programming language.
+# Counterpoint Programming Language: Expressions
+This chapter defines the syntax, semantics, and behavior of expressions in the Counterpoint Programming Language.
 
 
 

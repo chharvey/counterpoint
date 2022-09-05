@@ -2,18 +2,18 @@ import {
 	VoidError01,
 	AST,
 } from './package.js';
-import type {SolidObject} from './SolidObject.js';
-import {SolidNull} from './SolidNull.js';
+import type {Object} from './Object.js';
+import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
 
 
 /**
  * Known subclasses:
- * - SolidRecord
- * - SolidDict
+ * - Record
+ * - Dict
  */
-export abstract class CollectionKeyed<T extends SolidObject = SolidObject> extends Collection {
+export abstract class CollectionKeyed<T extends Object = Object> extends Collection {
 	constructor (
 		readonly properties: ReadonlyMap<bigint, T> = new Map(),
 	) {
@@ -30,7 +30,7 @@ export abstract class CollectionKeyed<T extends SolidObject = SolidObject> exten
 	}
 
 	/** @final */
-	protected override equal_helper(value: SolidObject): boolean {
+	protected override equal_helper(value: Object): boolean {
 		return (
 			value instanceof CollectionKeyed
 			&& this.properties.size === value.properties.size
@@ -41,11 +41,11 @@ export abstract class CollectionKeyed<T extends SolidObject = SolidObject> exten
 	}
 
 	/** @final */
-	get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeKey): T | SolidNull {
+	get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeKey): T | Null {
 		return (this.properties.has(key))
 			? this.properties.get(key)!
 			: (access_optional)
-				? SolidNull.NULL
+				? Null.NULL
 				: (() => { throw new VoidError01(accessor); })();
 	}
 }

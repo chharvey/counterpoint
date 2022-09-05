@@ -16,5 +16,5 @@ export {
 export {
 	Operator,
 	ValidAccessOperator,
-	ASTNODE_SOLID as AST,
+	AST,
 } from '../validator/index.js';

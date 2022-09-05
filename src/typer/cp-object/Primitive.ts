@@ -1,14 +1,13 @@
-import {SolidObject} from './SolidObject.js';
+import {Object as CPObject} from './Object.js';
 
 
 
 /**
  * Known subclasses:
- * - SolidNull
- * - SolidBoolean
- * - Int16
- * - Float64
- * - SolidString
+ * - Null
+ * - Boolean
+ * - Number
+ * - String
  */
-export abstract class Primitive extends SolidObject {
+export abstract class Primitive extends CPObject {
 }

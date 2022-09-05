@@ -11,15 +11,15 @@ export {
 	AST,
 } from '../package.js';
 export {
-	solidObjectsIdentical,
+	languageValuesIdentical,
 } from '../utils-private.js';
 export {
-	SolidType,
-	SolidTypeUnit,
-	SolidTypeTuple,
-	SolidTypeRecord,
-	SolidTypeList,
-	SolidTypeDict,
-	SolidTypeSet,
-	SolidTypeMap,
+	Type,
+	TypeUnit,
+	TypeTuple,
+	TypeRecord,
+	TypeList,
+	TypeDict,
+	TypeSet,
+	TypeMap,
 } from '../cp-type/index.js';

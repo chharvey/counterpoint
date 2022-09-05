@@ -1,16 +1,14 @@
 import {
-	SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
-	SolidTypeUnit,
-	Int16,
-	Float64,
-	SolidString,
+	TYPE,
+	OBJ,
 	INST,
 } from '../src/index.js';
 
 
 
-export const CONFIG_RADICES_SEPARATORS_ON: SolidConfig = {
+export const CONFIG_RADICES_SEPARATORS_ON: CPConfig = {
 	...CONFIG_DEFAULT,
 	languageFeatures: {
 		...CONFIG_DEFAULT.languageFeatures,
@@ -19,7 +17,7 @@ export const CONFIG_RADICES_SEPARATORS_ON: SolidConfig = {
 	},
 };
 
-export const CONFIG_FOLDING_OFF: SolidConfig = {
+export const CONFIG_FOLDING_OFF: CPConfig = {
 	...CONFIG_DEFAULT,
 	compilerOptions: {
 		...CONFIG_DEFAULT.compilerOptions,
@@ -27,7 +25,7 @@ export const CONFIG_FOLDING_OFF: SolidConfig = {
 	},
 };
 
-export const CONFIG_COERCION_OFF: SolidConfig = {
+export const CONFIG_COERCION_OFF: CPConfig = {
 	...CONFIG_DEFAULT,
 	compilerOptions: {
 		...CONFIG_DEFAULT.compilerOptions,
@@ -35,7 +33,7 @@ export const CONFIG_COERCION_OFF: SolidConfig = {
 	},
 };
 
-export const CONFIG_FOLDING_COERCION_OFF: SolidConfig = {
+export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
 	...CONFIG_DEFAULT,
 	compilerOptions: {
 		...CONFIG_DEFAULT.compilerOptions,
@@ -46,19 +44,19 @@ export const CONFIG_FOLDING_COERCION_OFF: SolidConfig = {
 
 
 
-export function typeConstInt(x: bigint): SolidTypeUnit {
-	return new SolidTypeUnit(new Int16(x));
+export function typeUnitInt(x: bigint): TYPE.TypeUnit {
+	return new TYPE.TypeUnit(new OBJ.Integer(x));
 }
-export function typeConstFloat(x: number): SolidTypeUnit {
-	return new SolidTypeUnit(new Float64(x));
+export function typeUnitFloat(x: number): TYPE.TypeUnit {
+	return new TYPE.TypeUnit(new OBJ.Float(x));
 }
-export function typeConstStr(x: string): SolidTypeUnit {
-	return new SolidTypeUnit(new SolidString(x));
+export function typeUnitStr(x: string): TYPE.TypeUnit {
+	return new TYPE.TypeUnit(new OBJ.String(x));
 }
 
 export function instructionConstInt(x: bigint): INST.InstructionConst {
-	return new INST.InstructionConst(new Int16(x));
+	return new INST.InstructionConst(new OBJ.Integer(x));
 }
 export function instructionConstFloat(x: number): INST.InstructionConst {
-	return new INST.InstructionConst(new Float64(x));
+	return new INST.InstructionConst(new OBJ.Float(x));
 }
