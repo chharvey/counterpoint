@@ -5,7 +5,7 @@
  * they are only for modules within this package.
  */
 export {
-	SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.js';
 export {
@@ -16,13 +16,8 @@ export {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-	ASTNODE_SOLID as AST,
+	AST,
 } from '../validator/index.js';
 export {
-	SolidObject,
-	SolidNull,
-	SolidBoolean,
-	SolidNumber,
-	Int16,
-	Float64,
+	OBJ,
 } from '../typer/index.js';

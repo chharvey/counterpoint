@@ -1,10 +1,10 @@
 # Types
-This chapter describes types of values in the Solid Language.
+This chapter describes types of values in the Counterpoint Programming Language.
 
-Solid is a strongly-typed language, meaning that types of values are determined at compile-time.
+Counterpoint is a strongly-typed language, meaning that types of values are determined at compile-time.
 A strong type system can help prevent many runtime errors.
 
-Solid Language Types are described in the [formal specification](../spec/data-types.md#solid-language-types).
+Counterpoint Language Types are described in the [formal specification](../spec/data-types.md#counterpoint-language-types).
 This reference takes a more informative approach.
 
 
@@ -224,7 +224,7 @@ Other than for the special cases listed above, a backslash has no effect.
 > 'Any non-special character may be escaped.'
 
 ##### In-String Comments
-String literals may contain Solid comments.
+String literals may contain Counterpoint comments.
 Line comments begin with `%` (**U+0025 PERCENT SIGN**) and continue until (but not including) the next line break, and
 multiline comments begin with `%%` and continue until (and including) the next `%%`.
 Both kinds of comments will continue until their end delimiter unless the end of the string is reached first.
@@ -517,6 +517,12 @@ However, assigning a smaller tuple to a larger tuple results in a TypeError.
 let elements_and_more: [str, str, str, bool, int] = ['earth', 'wind', 'fire']; %> TypeError
 ```
 
+Note: If a tuple is homogeneous (its items are all of the same type),
+then we can use shorthand notation to annotate it:
+```
+let elements: str[3] = ['earth', 'wind', 'fire']; % shorthand for `[str, str, str]`
+```
+
 #### Tuple Access
 Items of a tuple can be accessed via 0-based **dot-accessor notation**
 (index `0` represents the first item).
@@ -780,14 +786,9 @@ where `arg` is a [Tuple](#tuple) object.
 let elements: List.<str> = List.<str>(['earth', 'wind', 'fire']);
 ```
 A shorthand for the generic syntax `List.<T>` is `T[]`.
-We can also *initialize* a list with a tuple literal,
-because tuples are generally assignable to lists.
-```
-let elements: str[] = ['earth', 'wind', 'fire'];
-```
 We can mix item types, but the list type must be homogeneous.
 ```
-let elements: (str | bool | int)[] = ['earth', 'wind', 'fire', true, 42];
+let elements: (str | bool | int)[] = List.<str | bool | int>(['earth', 'wind', 'fire', true, 42]);
 ```
 The compiler considers all items in the list as having the same type.
 For example, the expression `elements.[0]` is of type `str | bool | int`,
@@ -817,16 +818,6 @@ let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
 ]);
 ```
 A shorthand for the generic syntax `Dict.<T>` is `[:T]`.
-We can also *initialize* a dict with a record literal,
-because records are generally assignable to dicts.
-```
-let my_styles: [: int | float | str] = [
-	fontFamily= 'sans-serif',
-	fontSize=   1.25,
-	fontStyle=  'oblique',
-	fontWeight= 400,
-];
-```
 As shown above, we can mix value types, but the dict type must be homogeneous.
 
 #### Dict Access
