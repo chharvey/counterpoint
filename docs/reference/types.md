@@ -874,31 +874,22 @@ Even though `0.0 == -0.0` and `x == y`, this set has four elements.
 #### Set Access
 Elements of a set can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the element to get.
+The value is `true` if the element is in the set, and `false` if not.
 ```
 let bases: obj{} = {
 	'who',
 	['what'],
 	{ 'i' -> {'don’t' -> 'know'} },
 };
-bases.['''{{ 'w' }}{{ 'h' }}{{ 'o' }}''']; %== 'who'
-bases.[['what']];                          %== ['what']
+bases.['''{{ 'w' }}{{ 'h' }}{{ 'o' }}''']; %== true
+bases.[['what']];                          %== true
+bases.['idk'];                             %== false
 ```
 
-A VoidError is produced when the compiler can determine if the element does not exist.
+A TypeError is produced when the expression is not assignable to the set’s invariant.
 ```
-let a: str = '3rd';
-bases.[a];          %> VoidError
-```
-If the compiler can’t compute the antecedent, it won’t error at all,
-but this means the program could crash at runtime.
-```
-let unfixed a: str = '3rd';
-bases.[a];                  % no compile-time error, but value at runtime will be undefined
-```
-We can avoid the potential crash using the
-[optional access operator](./expressions-operators.md#optional-access).
-```
-bases?.[a]; % produces the element if it exists, else `null`
+let a: int = 3;
+bases.[a];      %> TypeError
 ```
 
 
