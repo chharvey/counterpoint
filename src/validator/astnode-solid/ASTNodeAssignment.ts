@@ -47,8 +47,8 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			}
 		}
 		return ASTNodeSolid.typeCheckAssignment(
-			this.assignee.type(),
 			this.assigned.type(),
+			this.assignee.type(),
 			this,
 			this.validator,
 		);

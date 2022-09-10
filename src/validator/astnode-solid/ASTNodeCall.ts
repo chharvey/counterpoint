@@ -75,14 +75,14 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const argtype: SolidType = this.exprargs[0].type();
 					try {
-						ASTNodeSolid.typeCheckAssignment(returntype, argtype, this, this.validator);
+						ASTNodeSolid.typeCheckAssignment(argtype, returntype, this, this.validator);
 					} catch (err) {
 						const argitemtype: SolidType = (
 							(argtype instanceof SolidTypeUnit && argtype.value instanceof SolidTuple) ? argtype.value.toType().itemTypes() :
 							(argtype instanceof SolidTypeTuple)                                       ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
-						ASTNodeSolid.typeCheckAssignment(itemtype, argitemtype, this, this.validator);
+						ASTNodeSolid.typeCheckAssignment(argitemtype, itemtype, this, this.validator);
 					}
 				}
 				return returntype.mutableOf();
@@ -94,14 +94,14 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const argtype: SolidType = this.exprargs[0].type();
 					try {
-						ASTNodeSolid.typeCheckAssignment(returntype, argtype, this, this.validator);
+						ASTNodeSolid.typeCheckAssignment(argtype, returntype, this, this.validator);
 					} catch (err) {
 						const argvaluetype: SolidType = (
 							(argtype instanceof SolidTypeUnit && argtype.value instanceof SolidRecord) ? argtype.value.toType().valueTypes() :
 							(argtype instanceof SolidTypeRecord)                                       ? argtype.valueTypes()                :
 							(() => { throw err; })()
 						);
-						ASTNodeSolid.typeCheckAssignment(valuetype, argvaluetype, this, this.validator);
+						ASTNodeSolid.typeCheckAssignment(argvaluetype, valuetype, this, this.validator);
 					}
 				}
 				return returntype.mutableOf();
@@ -113,14 +113,14 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const argtype: SolidType = this.exprargs[0].type();
 					try {
-						ASTNodeSolid.typeCheckAssignment(new SolidTypeList(eltype), argtype, this, this.validator);
+						ASTNodeSolid.typeCheckAssignment(argtype, new SolidTypeList(eltype), this, this.validator);
 					} catch (err) {
 						const argitemtype: SolidType = (
 							(argtype instanceof SolidTypeUnit && argtype.value instanceof SolidTuple) ? argtype.value.toType().itemTypes() :
 							(argtype instanceof SolidTypeTuple)                                       ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
-						ASTNodeSolid.typeCheckAssignment(eltype, argitemtype, this, this.validator);
+						ASTNodeSolid.typeCheckAssignment(argitemtype, eltype, this, this.validator);
 					}
 				}
 				return returntype.mutableOf();
@@ -134,14 +134,14 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const argtype: SolidType = this.exprargs[0].type();
 					try {
-						ASTNodeSolid.typeCheckAssignment(new SolidTypeList(entrytype), argtype, this, this.validator);
+						ASTNodeSolid.typeCheckAssignment(argtype, new SolidTypeList(entrytype), this, this.validator);
 					} catch (err) {
 						const argitemtype: SolidType = (
 							(argtype instanceof SolidTypeUnit && argtype.value instanceof SolidTuple) ? argtype.value.toType().itemTypes() :
 							(argtype instanceof SolidTypeTuple)                                       ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
-						ASTNodeSolid.typeCheckAssignment(entrytype, argitemtype, this, this.validator);
+						ASTNodeSolid.typeCheckAssignment(argitemtype, entrytype, this, this.validator);
 					}
 				}
 				return returntype.mutableOf();

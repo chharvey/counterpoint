@@ -44,8 +44,8 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	override typeCheck(): void {
 		this.assigned.typeCheck();
 		ASTNodeSolid.typeCheckAssignment(
-			this.typenode.eval(),
 			this.assigned.type(),
+			this.typenode.eval(),
 			this,
 			this.validator,
 		);
