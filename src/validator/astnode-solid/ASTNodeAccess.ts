@@ -168,7 +168,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 			return (
 				(base_value instanceof CollectionIndexed) ?    (base_value as CollectionIndexed).get(accessor_value as Int16, this.optional, this.accessor) :
-				(base_value instanceof SolidSet)          ?    (base_value as SolidSet)         .get(accessor_value,          this.optional, this.accessor) :
+				(base_value instanceof SolidSet)          ?    (base_value as SolidSet)         .get(accessor_value                                       ) :
 				/* (base_value instanceof SolidMap)       ? */ (base_value as SolidMap)         .get(accessor_value,          this.optional, this.accessor)
 			);
 		}
