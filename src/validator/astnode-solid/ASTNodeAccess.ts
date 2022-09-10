@@ -135,7 +135,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					? base_type.value.toType()
 					: base_type as SolidTypeSet;
 				return (accessor_type.isSubtypeOf(base_type_set.types))
-					? updateAccessedDynamicType(base_type_set.types, this.kind)
+					? SolidType.BOOL
 					: throwWrongSubtypeError(this.accessor, base_type_set.types);
 			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidMap || base_type instanceof SolidTypeMap) {
 				const base_type_map: SolidTypeMap = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidMap)
@@ -168,7 +168,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 			return (
 				(base_value instanceof CollectionIndexed) ?    (base_value as CollectionIndexed).get(accessor_value as Int16, this.optional, this.accessor) :
-				(base_value instanceof SolidSet)          ?    (base_value as SolidSet)         .get(accessor_value,          this.optional, this.accessor) :
+				(base_value instanceof SolidSet)          ?    (base_value as SolidSet)         .get(accessor_value                                       ) :
 				/* (base_value instanceof SolidMap)       ? */ (base_value as SolidMap)         .get(accessor_value,          this.optional, this.accessor)
 			);
 		}

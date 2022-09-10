@@ -1,15 +1,13 @@
 import {
-	VoidError01,
 	Set_hasEq,
 	Set_addEq,
-	AST,
 } from './package.js';
 import {solidObjectsIdentical} from './utils-private.js';
 import {SolidType} from './SolidType.js';
 import {SolidTypeUnit} from './SolidTypeUnit.js';
 import {SolidTypeSet} from './SolidTypeSet.js';
 import type {SolidObject} from './SolidObject.js';
-import {SolidNull} from './SolidNull.js';
+import {SolidBoolean} from './SolidBoolean.js';
 import {Collection} from './Collection.js';
 
 
@@ -50,11 +48,9 @@ export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
 		);
 	}
 
-	get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | SolidNull {
+	get(el: T): SolidBoolean {
 		return (Set_hasEq(this.elements, el, solidObjectsIdentical))
-			? el
-			: (access_optional)
-				? SolidNull.NULL
-				: (() => { throw new VoidError01(accessor); })();
+			? SolidBoolean.TRUE
+			: SolidBoolean.FALSE;
 	}
 }
