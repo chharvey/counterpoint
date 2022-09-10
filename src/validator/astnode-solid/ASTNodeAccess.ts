@@ -135,7 +135,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					? base_type.value.toType()
 					: base_type as SolidTypeSet;
 				return (accessor_type.isSubtypeOf(base_type_set.types))
-					? updateAccessedDynamicType(base_type_set.types, this.kind)
+					? SolidType.BOOL
 					: throwWrongSubtypeError(this.accessor, base_type_set.types);
 			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidMap || base_type instanceof SolidTypeMap) {
 				const base_type_map: SolidTypeMap = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidMap)

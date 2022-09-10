@@ -187,12 +187,12 @@ describe('ASTNodeAccess', () => {
 		list_unfixed.[0 + 2]; % type \`int | float | str\` % non-computable value
 
 		%% statements 24 – 30 %%
-		set_fixed  .[1];       % type \`1\`                 % value \`1\`
-		set_fixed  .[2.0];     % type \`2.0\`               % value \`2.0\`
-		set_fixed  .['three']; % type \`'three'\`           % value \`'three'\`
-		set_unfixed.[1];       % type \`int | float | str\` % non-computable value
-		set_unfixed.[2.0];     % type \`int | float | str\` % non-computable value
-		set_unfixed.['three']; % type \`int | float | str\` % non-computable value
+		set_fixed  .[1];       % type \`1\`       % value \`1\`
+		set_fixed  .[2.0];     % type \`2.0\`     % value \`2.0\`
+		set_fixed  .['three']; % type \`'three'\` % value \`'three'\`
+		set_unfixed.[1];       % type \`bool\`    % non-computable value
+		set_unfixed.[2.0];     % type \`bool\`    % non-computable value
+		set_unfixed.['three']; % type \`bool\`    % non-computable value
 
 		%% statements 30 – 36 %%
 		map_fixed  .[a]; % type \`1\`             % value \`1\`
@@ -225,7 +225,7 @@ describe('ASTNodeAccess', () => {
 		list_fixed  ?.[2];       % type \`'three'\`                  % value \`'three'\`
 		list_unfixed?.[2];       % type \`int | float | str | null\` % non-computable value
 		set_fixed   ?.['three']; % type \`'three'\`                  % value \`'three'\`
-		set_unfixed ?.[three];   % type \`int | float | str | null\` % non-computable value
+		set_unfixed ?.[three];   % type \`bool\`                     % non-computable value
 		map_fixed   ?.[c];       % type \`'three'\`                  % value \`'three'\`
 		map_unfixed ?.[c];       % type \`int | float | str | null\` % non-computable value
 
@@ -517,14 +517,14 @@ describe('ASTNodeAccess', () => {
 						],
 					);
 				});
-				it('returns the union of all element types, constants, for sets.', () => {
+				it('returns boolean values for sets.', () => {
 					assert.deepStrictEqual(
 						program.children.slice(24, 30).map((c) => typeOfStmtExpr(c)),
 						[
 							...expected.slice(0, 3),
-							COMMON_TYPES.int_float_str,
-							COMMON_TYPES.int_float_str,
-							COMMON_TYPES.int_float_str,
+							SolidType.BOOL,
+							SolidType.BOOL,
+							SolidType.BOOL,
 						],
 					);
 				});
@@ -554,16 +554,26 @@ describe('ASTNodeAccess', () => {
 						expected_o,
 					);
 				});
-				it('unions with null if list/set/mappping access is optional.', () => {
+				it('unions with null if list/map access is optional.', () => {
 					assert.deepStrictEqual(
-						program.children.slice(49, 55).map((c) => typeOfStmtExpr(c)),
+						[
+							...program.children.slice(49, 51),
+							...program.children.slice(53, 55),
+						].map((c) => typeOfStmtExpr(c)),
 						[
 							typeConstStr('three'),
 							COMMON_TYPES.int_float_str.union(SolidType.NULL),
 							typeConstStr('three'),
 							COMMON_TYPES.int_float_str.union(SolidType.NULL),
+						],
+					);
+				});
+				it('does not union with null even when set access is optional.', () => {
+					assert.deepStrictEqual(
+						program.children.slice(51, 53).map((c) => typeOfStmtExpr(c)),
+						[
 							typeConstStr('three'),
-							COMMON_TYPES.int_float_str.union(SolidType.NULL),
+							SolidType.BOOL,
 						],
 					);
 				});
@@ -623,11 +633,11 @@ describe('ASTNodeAccess', () => {
 						);
 					});
 				});
-				it('returns the union of all element types for sets.', () => {
+				it('returns type `bool` for sets.', () => {
 					program.children.slice(24, 30).forEach((c) => {
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
-							COMMON_TYPES.int_float_str,
+							SolidType.BOOL,
 						);
 					});
 				});
@@ -647,21 +657,30 @@ describe('ASTNodeAccess', () => {
 						);
 					});
 				});
-				it('unions with null if access is optional.', () => {
-					assert.deepStrictEqual(
-						program.children.slice(46, 49).map((c) => typeOfStmtExpr(c)),
-						[
+				it('unions with null if tuple entry and access are optional.', () => {
+					program.children.slice(46, 49).forEach((c) => {
+						assert.deepStrictEqual(
+							typeOfStmtExpr(c),
 							COMMON_TYPES.int_float_str_null,
-							COMMON_TYPES.int_float_str_null,
-							COMMON_TYPES.int_float_str_null,
-						],
-					);
-					program.children.slice(49, 55).forEach((c) => {
+						);
+					});
+				});
+				it('unions with null if list/map access is optional.', () => {
+					[
+						...program.children.slice(49, 51),
+						...program.children.slice(53, 55),
+					].forEach((c) => {
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
 							COMMON_TYPES.int_float_str.union(SolidType.NULL),
 						);
 					});
+				});
+				it('does not union with null even when set access is optional.', () => {
+					return program.children.slice(51, 53).forEach((c) => assert.deepStrictEqual(
+						typeOfStmtExpr(c),
+						SolidType.BOOL,
+					));
 				});
 				it('claim access always subtracts void.', () => {
 					assert.deepStrictEqual(
