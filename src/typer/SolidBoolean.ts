@@ -16,9 +16,9 @@ export class SolidBoolean extends Primitive {
 	/** The Solid Language Value `true`. */
 	static readonly TRUE: SolidBoolean = new SolidBoolean(true);
 	/** A Unit Type containing only the Solid Language Value `false`. */
-	static readonly FALSETYPE: SolidTypeUnit = new SolidTypeUnit(SolidBoolean.FALSE);
+	static readonly FALSETYPE = new SolidTypeUnit<SolidBoolean>(SolidBoolean.FALSE);
 	/** A Unit Type containing only the Solid Language Value `true`. */
-	static readonly TRUETYPE: SolidTypeUnit = new SolidTypeUnit(SolidBoolean.TRUE);
+	static readonly TRUETYPE = new SolidTypeUnit<SolidBoolean>(SolidBoolean.TRUE);
 
 	/**
 	 * Return the Solid Language Value `true` or `false` based on the argument.

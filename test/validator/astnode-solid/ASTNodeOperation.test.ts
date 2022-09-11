@@ -12,6 +12,7 @@ import {
 	SolidBoolean,
 	Int16,
 	Float64,
+	SolidString,
 	INST,
 	Builder,
 	TypeError01,
@@ -510,7 +511,7 @@ describe('ASTNodeOperation', () => {
 						[`-0.0 == 0.0;`,  SolidBoolean.TRUE],
 					]));
 				});
-				it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
+				it('returns the result of `this#fold`, wrapped in a `new SolidTypeUnit`.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let a: obj = [];
 						let b: obj = [42];
@@ -801,7 +802,7 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: SolidTypeUnit = typeConstStr('hello');
+						const hello: SolidTypeUnit<SolidString> = typeConstStr('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
@@ -858,7 +859,7 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: SolidTypeUnit = typeConstStr('hello');
+						const hello: SolidTypeUnit<SolidString> = typeConstStr('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;

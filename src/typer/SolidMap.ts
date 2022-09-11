@@ -45,8 +45,8 @@ export class SolidMap<K extends SolidObject = SolidObject, V extends SolidObject
 
 	override toType(): SolidTypeMap {
 		return (this.cases.size) ? new SolidTypeMap(
-			SolidType.unionAll([...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeUnit(ant))),
-			SolidType.unionAll([...this.cases.values()].map<SolidType>((con) => new SolidTypeUnit(con))),
+			SolidType.unionAll([...this.cases.keys  ()].map<SolidType>((ant) => new SolidTypeUnit<K>(ant))),
+			SolidType.unionAll([...this.cases.values()].map<SolidType>((con) => new SolidTypeUnit<V>(con))),
 		) : new SolidTypeMap(SolidType.NEVER, SolidType.NEVER);
 	}
 

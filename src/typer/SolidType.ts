@@ -26,7 +26,7 @@ import {solidObjectsIdentical} from './utils-private.js';
  * - SolidTypeInterface
  * - SolidTypeNever
  * - SolidTypeVoid
- * - SolidTypeConstant
+ * - SolidTypeUnit
  * - SolidTypeUnknown
  * - SolidTypeObject
  * - SolidTypeBoolean
@@ -41,15 +41,15 @@ import {solidObjectsIdentical} from './utils-private.js';
  * - SolidTypeMap
  */
 export abstract class SolidType {
-	/** The Bottom Type, containing no values. */                    static get NEVER():   SolidTypeNever   { return SolidTypeNever.INSTANCE; }
-	/** The Top Type, containing all values. */                      static get UNKNOWN(): SolidTypeUnknown { return SolidTypeUnknown.INSTANCE; }
-	/** The Void Type, representing a completion but not a value. */ static get VOID():    SolidTypeVoid    { return SolidTypeVoid.INSTANCE; }
-	/** The Object Type. */                                          static get OBJ():     SolidTypeObject  { return SolidTypeObject.INSTANCE; }
-	/** The Null Type. */                                            static get NULL():    SolidTypeUnit    { return SolidNull.NULLTYPE; }
-	/** The Boolean Type. */                                         static get BOOL():    SolidTypeBoolean { return SolidTypeBoolean.INSTANCE; }
-	/** The Integer Type. */                                         static get INT():     SolidTypeInteger { return SolidTypeInteger.INSTANCE; }
-	/** The Float Type. */                                           static get FLOAT():   SolidTypeFloat   { return SolidTypeFloat.INSTANCE; }
-	/** The String Type. */                                          static get STR():     SolidTypeString  { return SolidTypeString.INSTANCE; }
+	/** The Bottom Type, containing no values. */                    static get NEVER():   SolidTypeNever           { return SolidTypeNever.INSTANCE; }
+	/** The Top Type, containing all values. */                      static get UNKNOWN(): SolidTypeUnknown         { return SolidTypeUnknown.INSTANCE; }
+	/** The Void Type, representing a completion but not a value. */ static get VOID():    SolidTypeVoid            { return SolidTypeVoid.INSTANCE; }
+	/** The Object Type. */                                          static get OBJ():     SolidTypeObject          { return SolidTypeObject.INSTANCE; }
+	/** The Null Type. */                                            static get NULL():    SolidTypeUnit<SolidNull> { return SolidNull.NULLTYPE; }
+	/** The Boolean Type. */                                         static get BOOL():    SolidTypeBoolean         { return SolidTypeBoolean.INSTANCE; }
+	/** The Integer Type. */                                         static get INT():     SolidTypeInteger         { return SolidTypeInteger.INSTANCE; }
+	/** The Float Type. */                                           static get FLOAT():   SolidTypeFloat           { return SolidTypeFloat.INSTANCE; }
+	/** The String Type. */                                          static get STR():     SolidTypeString          { return SolidTypeString.INSTANCE; }
 	/**
 	 * Intersect all the given types.
 	 * @param types the types to intersect

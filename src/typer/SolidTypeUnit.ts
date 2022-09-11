@@ -5,17 +5,18 @@ import {SolidType} from './SolidType.js';
 
 /**
  * Class for constructing unit types, types that contain exactly one value.
+ * @typeparam Value the type of value this unit type holds
  */
-export class SolidTypeUnit extends SolidType {
+export class SolidTypeUnit<Value extends SolidObject = SolidObject> extends SolidType {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 
 	/**
-	 * Construct a new SolidTypeConstant object.
+	 * Construct a new SolidTypeUnit object.
 	 * @param value the Solid Language Value contained in this Type
 	 */
 	constructor (
-		readonly value: SolidObject,
+		readonly value: Value,
 	) {
 		super(false, new Set([value]));
 	}

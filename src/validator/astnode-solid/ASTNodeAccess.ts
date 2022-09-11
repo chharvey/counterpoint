@@ -79,8 +79,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			);
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			const accessor_type:  SolidTypeUnit = this.accessor.val.type() as SolidTypeUnit;
-			const accessor_value: Int16         = accessor_type.value as Int16;
+			const accessor_type         = this.accessor.val.type() as SolidTypeUnit<Int16>;
+			const accessor_value: Int16 = accessor_type.value;
 			if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
 				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple)
 					? base_type.value.toType()
