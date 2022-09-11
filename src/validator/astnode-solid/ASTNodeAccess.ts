@@ -21,10 +21,6 @@ import {
 	Int16,
 	CollectionIndexed,
 	CollectionKeyed,
-	SolidTuple,
-	SolidRecord,
-	SolidList,
-	SolidDict,
 	SolidSet,
 	SolidMap,
 	INST,
@@ -81,30 +77,30 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (this.accessor instanceof ASTNodeIndex) {
 			const accessor_type         = this.accessor.val.type() as SolidTypeUnit<Int16>;
 			const accessor_value: Int16 = accessor_type.value;
-			if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
-				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple)
+			if (SolidTypeTuple.isUnitType(base_type) || base_type instanceof SolidTypeTuple) {
+				const base_type_tuple: SolidTypeTuple = (SolidTypeTuple.isUnitType(base_type))
 					? base_type.value.toType()
-					: base_type as SolidTypeTuple;
+					: base_type;
 				return base_type_tuple.get(accessor_value, this.kind, this.accessor);
 			}
-			else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidList || base_type instanceof SolidTypeList) {
-				const base_type_list: SolidTypeList = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidList)
+			else if (SolidTypeList.isUnitType(base_type) || base_type instanceof SolidTypeList) {
+				const base_type_list: SolidTypeList = (SolidTypeList.isUnitType(base_type))
 					? base_type.value.toType()
-					: base_type as SolidTypeList;
+					: base_type;
 				return updateAccessedDynamicType(base_type_list.types, this.kind);
 			} else {
 				throw new TypeError04('index', base_type, this.accessor);
 			}
 		} else if (this.accessor instanceof ASTNodeKey) {
-			if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidRecord || base_type instanceof SolidTypeRecord) {
-				const base_type_record: SolidTypeRecord = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidRecord)
+			if (SolidTypeRecord.isUnitType(base_type) || base_type instanceof SolidTypeRecord) {
+				const base_type_record: SolidTypeRecord = (SolidTypeRecord.isUnitType(base_type))
 					? base_type.value.toType()
-					: base_type as SolidTypeRecord;
+					: base_type;
 				return base_type_record.get(this.accessor.id, this.kind, this.accessor);
-			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidDict || base_type instanceof SolidTypeDict) {
-				const base_type_dict: SolidTypeDict = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidDict)
+			} else if (SolidTypeDict.isUnitType(base_type) || base_type instanceof SolidTypeDict) {
+				const base_type_dict: SolidTypeDict = (SolidTypeDict.isUnitType(base_type))
 					? base_type.value.toType()
-					: base_type as SolidTypeDict;
+					: base_type;
 				return updateAccessedDynamicType(base_type_dict.types, this.kind);
 			} else {
 				throw new TypeError04('property', base_type, this.accessor);
@@ -114,33 +110,33 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: SolidType): never {
 				throw new TypeError02(accessor_type, supertype, accessor.line_index, accessor.col_index);
 			}
-			if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
-				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple)
+			if (SolidTypeTuple.isUnitType(base_type) || base_type instanceof SolidTypeTuple) {
+				const base_type_tuple: SolidTypeTuple = (SolidTypeTuple.isUnitType(base_type))
 					? base_type.value.toType()
-					: base_type as SolidTypeTuple;
+					: base_type;
 				return (accessor_type instanceof SolidTypeUnit && accessor_type.value instanceof Int16)
 					? base_type_tuple.get(accessor_type.value, this.kind, this.accessor)
 					: (accessor_type.isSubtypeOf(SolidType.INT))
 						? updateAccessedDynamicType(base_type_tuple.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, SolidType.INT);
-			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidList || base_type instanceof SolidTypeList) {
-				const base_type_list: SolidTypeList = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidList)
+			} else if (SolidTypeList.isUnitType(base_type) || base_type instanceof SolidTypeList) {
+				const base_type_list: SolidTypeList = (SolidTypeList.isUnitType(base_type))
 					? base_type.value.toType()
-					: base_type as SolidTypeList;
+					: base_type;
 				return (accessor_type.isSubtypeOf(SolidType.INT))
 					? updateAccessedDynamicType(base_type_list.types, this.kind)
 					: throwWrongSubtypeError(this.accessor, SolidType.INT);
-			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidSet || base_type instanceof SolidTypeSet) {
-				const base_type_set: SolidTypeSet = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidSet)
+			} else if (SolidTypeSet.isUnitType(base_type) || base_type instanceof SolidTypeSet) {
+				const base_type_set: SolidTypeSet = (SolidTypeSet.isUnitType(base_type))
 					? base_type.value.toType()
-					: base_type as SolidTypeSet;
+					: base_type;
 				return (accessor_type.isSubtypeOf(base_type_set.types))
 					? SolidType.BOOL
 					: throwWrongSubtypeError(this.accessor, base_type_set.types);
-			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidMap || base_type instanceof SolidTypeMap) {
-				const base_type_map: SolidTypeMap = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidMap)
+			} else if (SolidTypeMap.isUnitType(base_type) || base_type instanceof SolidTypeMap) {
+				const base_type_map: SolidTypeMap = (SolidTypeMap.isUnitType(base_type))
 					? base_type.value.toType()
-					: base_type as SolidTypeMap;
+					: base_type;
 				return (accessor_type.isSubtypeOf(base_type_map.antecedenttypes))
 					? updateAccessedDynamicType(base_type_map.consequenttypes, this.kind)
 					: throwWrongSubtypeError(this.accessor, base_type_map.antecedenttypes);

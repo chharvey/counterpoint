@@ -11,10 +11,20 @@ import {
 import type {TypeEntry} from './utils-public.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {SolidType} from './SolidType.js';
+import {SolidTypeUnit} from './SolidTypeUnit.js';
 
 
 
 export class SolidTypeRecord extends SolidType {
+	/**
+	 * Is the argument a unit record type?
+	 * @return whether the argument is a `SolidTypeUnit` and its value is a `SolidRecord`
+	 */
+	static isUnitType(type: SolidType): type is SolidTypeUnit<SolidRecord> {
+		return type instanceof SolidTypeUnit && type.value instanceof SolidRecord;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**

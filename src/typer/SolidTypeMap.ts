@@ -3,10 +3,20 @@ import {
 	SolidMap,
 } from './index.js';
 import {SolidType} from './SolidType.js';
+import {SolidTypeUnit} from './SolidTypeUnit.js';
 
 
 
 export class SolidTypeMap extends SolidType {
+	/**
+	 * Is the argument a unit map type?
+	 * @return whether the argument is a `SolidTypeUnit` and its value is a `SolidMap`
+	 */
+	static isUnitType(type: SolidType): type is SolidTypeUnit<SolidMap> {
+		return type instanceof SolidTypeUnit && type.value instanceof SolidMap;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**

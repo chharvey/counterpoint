@@ -12,10 +12,20 @@ import {
 import type {TypeEntry} from './utils-public.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {SolidType} from './SolidType.js';
+import {SolidTypeUnit} from './SolidTypeUnit.js';
 
 
 
 export class SolidTypeTuple extends SolidType {
+	/**
+	 * Is the argument a unit tuple type?
+	 * @return whether the argument is a `SolidTypeUnit` and its value is a `SolidTuple`
+	 */
+	static isUnitType(type: SolidType): type is SolidTypeUnit<SolidTuple> {
+		return type instanceof SolidTypeUnit && type.value instanceof SolidTuple;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**

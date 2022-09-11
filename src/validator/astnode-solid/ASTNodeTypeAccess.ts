@@ -11,8 +11,6 @@ import {
 	SolidTypeTuple,
 	SolidTypeRecord,
 	Int16,
-	SolidTuple,
-	SolidRecord,
 	Operator,
 } from './package.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
@@ -42,7 +40,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		if (this.accessor instanceof ASTNodeIndexType) {
 			const accessor_type: SolidType = this.accessor.val.eval();
 			return (
-				(base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple) ? (
+				(SolidTypeTuple.isUnitType(base_type)) ? (
 					(accessor_type instanceof SolidTypeUnit)
 						? base_type.value.toType().get(accessor_type.value as Int16, Operator.DOT, this.accessor)
 						: base_type.value.toType().itemTypes()
@@ -56,7 +54,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 			);
 		} else /* (this.accessor instanceof ASTNodeKey) */ {
 			return (
-				(base_type instanceof SolidTypeUnit && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, Operator.DOT, this.accessor) :
+				(SolidTypeRecord.isUnitType(base_type)) ? base_type.value.toType().get(this.accessor.id, Operator.DOT, this.accessor) :
 				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, Operator.DOT, this.accessor) :
 				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);
