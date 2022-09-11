@@ -75,13 +75,12 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			);
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			const accessor_type         = this.accessor.val.type() as SolidTypeUnit<Int16>;
-			const accessor_value: Int16 = accessor_type.value;
+			const accessor_type = this.accessor.val.type() as SolidTypeUnit<Int16>;
 			if (SolidTypeTuple.isUnitType(base_type) || base_type instanceof SolidTypeTuple) {
 				const base_type_tuple: SolidTypeTuple = (SolidTypeTuple.isUnitType(base_type))
 					? base_type.value.toType()
 					: base_type;
-				return base_type_tuple.get(accessor_value, this.kind, this.accessor);
+				return base_type_tuple.get(accessor_type.value, this.kind, this.accessor);
 			}
 			else if (SolidTypeList.isUnitType(base_type) || base_type instanceof SolidTypeList) {
 				const base_type_list: SolidTypeList = (SolidTypeList.isUnitType(base_type))
