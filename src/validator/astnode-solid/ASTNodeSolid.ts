@@ -14,15 +14,15 @@ export abstract class ASTNodeSolid extends ASTNode {
 	/**
 	 * Type-check an assignment.
 	 * @final
-	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
 	 * @param assigned_type the type of the expression assigned
+	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
 	 * @param node          the node where the assignment took place
 	 * @param validator     a validator for type-checking purposes
 	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
 	 */
 	static typeCheckAssignment(
-		assignee_type: SolidType,
 		assigned_type: SolidType,
+		assignee_type: SolidType,
 		node:          ASTNodeSolid,
 		validator:     Validator,
 	): void {
@@ -33,7 +33,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 			&& SolidType.FLOAT.isSubtypeOf(assignee_type)
 		);
 		if (!is_subtype && !treatIntAsSubtypeOfFloat) {
-			throw new TypeError03(assignee_type, assigned_type, node);
+			throw new TypeError03(assigned_type, assignee_type, node);
 		}
 	}
 

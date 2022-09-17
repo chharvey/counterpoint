@@ -48,7 +48,7 @@ describe('ASTNodeExpression', () => {
 
 
 		describe('#type', () => {
-			it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
+			it('returns the result of `this#fold`, wrapped in a `new SolidTypeUnit`.', () => {
 				const constants: AST.ASTNodeConstant[] = `
 					null  false  true
 					55  -55  033  -033  0  -0
@@ -329,7 +329,7 @@ describe('ASTNodeExpression', () => {
 						};
 					}));
 				});
-				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
+				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new SolidTypeUnit`.', () => {
 					assert.deepStrictEqual(
 						types.slice(0, 2),
 						templates.slice(0, 2).map((t) => new SolidTypeUnit(t.fold()!)),

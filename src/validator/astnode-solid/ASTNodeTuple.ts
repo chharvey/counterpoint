@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import {
+	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
@@ -10,6 +11,7 @@ import {
 	INST,
 	Builder,
 } from './package.js';
+import {ASTNodeSolid} from './ASTNodeSolid.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
@@ -38,5 +40,29 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		return (items.includes(null))
 			? null
 			: new SolidTuple(items as SolidObject[]);
+	}
+
+	protected override assignTo_do(assignee: SolidType): boolean {
+		if (SolidTypeTuple.isUnitType(assignee) || assignee instanceof SolidTypeTuple) {
+			const assignee_type_tuple: SolidTypeTuple = (SolidTypeTuple.isUnitType(assignee))
+				? assignee.value.toType()
+				: assignee;
+			if (this.children.length < assignee_type_tuple.count[0]) {
+				return false;
+			}
+			forEachAggregated(assignee_type_tuple.types, (thattype, i) => {
+				const expr: ASTNodeExpression | undefined = this.children[i];
+				if (expr) {
+					return ASTNodeSolid.typeCheckAssignment(
+						expr.type(),
+						thattype.type,
+						expr,
+						this.validator,
+					);
+				}
+			});
+			return true;
+		}
+		return false;
 	}
 }

@@ -374,7 +374,7 @@ describe('SolidType', () => {
 			})
 		})
 
-		describe('SolidTypeConstant', () => {
+		describe('SolidTypeUnit', () => {
 			it('constant Boolean types should be subtypes of `bool`.', () => {
 				assert.ok(SolidBoolean.FALSETYPE.isSubtypeOf(SolidType.BOOL), 'SolidBoolean.FALSETYPE')
 				assert.ok(SolidBoolean.TRUETYPE .isSubtypeOf(SolidType.BOOL), 'SolidBoolean.TRUETYPE')
@@ -560,6 +560,9 @@ describe('SolidType', () => {
 			it('Invariance for mutable tuples: `A == B --> mutable Tuple.<A> <: mutable Tuple.<B>`.', () => {
 				assert.ok(!SolidTypeTuple.fromTypes([SolidType.INT, SolidType.FLOAT], true).isSubtypeOf(SolidTypeTuple.fromTypes([SolidType.INT.union(SolidType.NULL), SolidType.FLOAT.union(SolidType.NULL)], true)), `mutable [int, float] !<: mutable [int?, float?]`);
 			});
+			it('is not a subtype of List', () => {
+				return assert.ok(!SolidTypeTuple.fromTypes([SolidType.INT], true).isSubtypeOf(new SolidTypeList(SolidType.INT, true)), `mutable [int] !<: mutable int[]`);
+			});
 		});
 
 		describe('SolidTypeRecord', () => {
@@ -585,7 +588,7 @@ describe('SolidType', () => {
 					[0x102n, SolidType.OBJ],
 					[0x100n, SolidType.INT.union(SolidType.FLOAT)],
 				]))), `[x: int, y: bool, z: str] <: [y: bool!, z: obj, x: int | float];`);
-				false && assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, SolidType.INT],
 					[0x101n, SolidType.BOOL],
 					[0x102n, SolidType.STR],
@@ -654,6 +657,11 @@ describe('SolidType', () => {
 					[0x100n, SolidType.INT.union(SolidType.NULL)],
 					[0x101n, SolidType.FLOAT.union(SolidType.NULL)],
 				]), true)), `mutable [a: int, b: float] !<: mutable [a: int?, b: float?]`);
+			});
+			it('is not a subtype of Dict', () => {
+				return assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+					[0x100n, SolidType.INT],
+				]), true).isSubtypeOf(new SolidTypeDict(SolidType.INT, true)), `mutable [a: int] !<: mutable [: int]`);
 			});
 		});
 

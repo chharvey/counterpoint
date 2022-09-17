@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import {
+	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
@@ -10,6 +11,7 @@ import {
 	INST,
 	Builder,
 } from './package.js';
+import {ASTNodeSolid} from './ASTNodeSolid.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
@@ -41,5 +43,21 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 		return (elements.includes(null))
 			? null
 			: new SolidSet(new Set(elements as SolidObject[]));
+	}
+
+	protected override assignTo_do(assignee: SolidType): boolean {
+		if (SolidTypeSet.isUnitType(assignee) || assignee instanceof SolidTypeSet) {
+			const assignee_type_set: SolidTypeSet = (SolidTypeSet.isUnitType(assignee))
+				? assignee.value.toType()
+				: assignee;
+			forEachAggregated(this.children, (expr) => ASTNodeSolid.typeCheckAssignment(
+				expr.type(),
+				assignee_type_set.types,
+				expr,
+				this.validator,
+			));
+			return true;
+		}
+		return false;
 	}
 }

@@ -3,10 +3,20 @@ import {
 	SolidDict,
 } from './index.js';
 import {SolidType} from './SolidType.js';
+import {SolidTypeUnit} from './SolidTypeUnit.js';
 
 
 
 export class SolidTypeDict extends SolidType {
+	/**
+	 * Is the argument a unit dict type?
+	 * @return whether the argument is a `SolidTypeUnit` and its value is a `SolidDict`
+	 */
+	static isUnitType(type: SolidType): type is SolidTypeUnit<SolidDict> {
+		return type instanceof SolidTypeUnit && type.value instanceof SolidDict;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**

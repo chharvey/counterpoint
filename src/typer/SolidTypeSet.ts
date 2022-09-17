@@ -3,10 +3,20 @@ import {
 	SolidSet,
 } from './index.js';
 import {SolidType} from './SolidType.js';
+import {SolidTypeUnit} from './SolidTypeUnit.js';
 
 
 
 export class SolidTypeSet extends SolidType {
+	/**
+	 * Is the argument a unit set type?
+	 * @return whether the argument is a `SolidTypeUnit` and its value is a `SolidSet`
+	 */
+	static isUnitType(type: SolidType): type is SolidTypeUnit<SolidSet> {
+		return type instanceof SolidTypeUnit && type.value instanceof SolidSet;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**
@@ -15,7 +25,7 @@ export class SolidTypeSet extends SolidType {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		readonly types: SolidType,
+		public readonly types: SolidType,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new SolidSet()]));

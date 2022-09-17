@@ -11,10 +11,20 @@ import {
 import type {TypeEntry} from './utils-public.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {SolidType} from './SolidType.js';
+import {SolidTypeUnit} from './SolidTypeUnit.js';
 
 
 
 export class SolidTypeRecord extends SolidType {
+	/**
+	 * Is the argument a unit record type?
+	 * @return whether the argument is a `SolidTypeUnit` and its value is a `SolidRecord`
+	 */
+	static isUnitType(type: SolidType): type is SolidTypeUnit<SolidRecord> {
+		return type instanceof SolidTypeUnit && type.value instanceof SolidRecord;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**
@@ -37,7 +47,7 @@ export class SolidTypeRecord extends SolidType {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
+		public readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new SolidRecord()]));
@@ -48,9 +58,9 @@ export class SolidTypeRecord extends SolidType {
 	}
 
 	/** The possible number of values in this record type. */
-	private get count(): IntRange {
+	public get count(): IntRange {
 		return [
-			BigInt([...this.propertytypes].filter(([_, entry]) => !entry.optional).length),
+			BigInt([...this.propertytypes.values()].filter((val) => !val.optional).length),
 			BigInt(this.propertytypes.size) + 1n,
 		];
 	}
