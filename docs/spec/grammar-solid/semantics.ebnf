@@ -72,10 +72,7 @@ SemanticExpression =:=
 	| SemanticConstant
 	| SemanticVariable
 	| SemanticTemplate
-	| SemanticTuple
-	| SemanticRecord
-	| SemanticSet
-	| SemanticMap
+	| SemanticCollectionLiteral
 	| SemanticCall
 	| SemanticAccess
 	| SemanticOperation
@@ -94,6 +91,13 @@ SemanticTemplate
 
 SemanticTemplatePartial
 	::= (SemanticConstant SemanticExpression?)+;
+
+SemanticCollectionLiteral =:=
+	| SemanticTuple
+	| SemanticRecord
+	| SemanticSet
+	| SemanticMap
+;
 
 SemanticTuple  ::= SemanticExpression*;
 SemanticRecord ::= SemanticProperty+;

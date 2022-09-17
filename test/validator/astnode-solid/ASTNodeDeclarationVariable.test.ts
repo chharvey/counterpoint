@@ -60,36 +60,6 @@ describe('ASTNodeDeclarationVariable', () => {
 				let  the_answer:  null =  21  *  2;
 			`).typeCheck(), TypeError03);
 		})
-		it('disallows assigning a collection literal to a wider mutable type.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				type T = [int];
-				let v: T = [42];
-			`);
-			goal.varCheck();
-			assert.throws(() => goal.typeCheck(), (err) => {
-				assert.ok(err instanceof AggregateError);
-				assertAssignable(err, {
-					cons: AggregateError,
-					errors: [
-						{cons: TypeError03, message: 'Expression of type mutable [42] is not assignable to type mutable [42 | 4.3].'},
-						{cons: TypeError03, message: 'Expression of type mutable [258: 42] is not assignable to type mutable [258: 42 | 4.3].'},
-						{cons: TypeError03, message: 'Expression of type mutable Set.<42> is not assignable to type mutable Set.<42 | 4.3>.'},
-						{cons: TypeError03, message: 'Expression of type mutable Map.<true, 42> is not assignable to type mutable Map.<true | null, 42 | 4.3>.'},
-
-						{cons: TypeError03, message: 'Expression of type mutable [42] is not assignable to type mutable [int].'},
-						{cons: TypeError03, message: 'Expression of type mutable [258: 42] is not assignable to type mutable [258: int].'},
-						{cons: TypeError03, message: 'Expression of type mutable Set.<42> is not assignable to type mutable Set.<int>.'},
-						{cons: TypeError03, message: 'Expression of type mutable Map.<true, 42> is not assignable to type mutable Map.<bool, int>.'},
-
-						{cons: TypeError03, message: 'Expression of type mutable [[int]] is not assignable to type mutable [[int] | null].'},
-						{cons: TypeError03, message: 'Expression of type mutable [258: [int]] is not assignable to type mutable [258: [int] | null].'},
-						{cons: TypeError03, message: 'Expression of type mutable Set.<[int]> is not assignable to type mutable Set.<[int] | null>.'},
-						{cons: TypeError03, message: 'Expression of type mutable Map.<true, [int]> is not assignable to type mutable Map.<bool, [int] | null>.'},
-					],
-				});
-				return true;
-			});
-		});
 		it('with int coersion on, allows assigning ints to floats.', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
