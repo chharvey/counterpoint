@@ -33,7 +33,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 			&& SolidType.FLOAT.isSubtypeOf(assignee_type)
 		);
 		if (!is_subtype && !treatIntAsSubtypeOfFloat) {
-			throw new TypeError03(assignee_type, assigned_type, node);
+			throw new TypeError03(assigned_type, assignee_type, node);
 		}
 	}
 
