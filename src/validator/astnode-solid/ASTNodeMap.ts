@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import {
 	NonemptyArray,
+	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
@@ -11,6 +12,7 @@ import {
 	INST,
 	Builder,
 } from './package.js';
+import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
@@ -47,5 +49,21 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null
 			: new SolidMap(cases as ReadonlyMap<SolidObject, SolidObject>);
+	}
+
+	protected override assignTo_do(assignee: SolidType): boolean {
+		if (SolidTypeMap.isUnitType(assignee) || assignee instanceof SolidTypeMap) {
+			const assignee_type_map: SolidTypeMap = (SolidTypeMap.isUnitType(assignee))
+				? assignee.value.toType()
+				: assignee;
+			forEachAggregated(this.children, (case_) => forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => ASTNodeSolid.typeCheckAssignment(
+				expr.type(),
+				[assignee_type_map.antecedenttypes, assignee_type_map.consequenttypes][i],
+				expr,
+				this.validator,
+			)));
+			return true;
+		}
+		return false;
 	}
 }

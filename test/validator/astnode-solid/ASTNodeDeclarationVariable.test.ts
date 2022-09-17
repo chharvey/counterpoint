@@ -62,13 +62,8 @@ describe('ASTNodeDeclarationVariable', () => {
 		})
 		it('disallows assigning a collection literal to a wider mutable type.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let m2: mutable {true? -> 42 | 4.3} = {true -> 42};
-
-				let m3: mutable {bool -> int} = {true -> 42};
-
 				type T = [int];
 				let v: T = [42];
-				let m4: mutable {bool -> T?} = {true -> v};
 			`);
 			goal.varCheck();
 			assert.throws(() => goal.typeCheck(), (err) => {
@@ -172,6 +167,7 @@ describe('ASTNodeDeclarationVariable', () => {
 					let t: mutable [a: int, b: str] = [   42,    '43'];
 					let r: mutable [   int,    str] = [a= 42, b= '43'];
 					let s: mutable {int -> str}     = {   42,    '43'};
+					let s: mutable (int | str){}    = {   42 ->  '43'};
 				`.split('\n'), TypeError03);
 				typeCheckGoal(`
 					let t1: mutable obj                                = [42, '43'];
@@ -189,6 +185,12 @@ describe('ASTNodeDeclarationVariable', () => {
 					let s3: mutable obj                     = {42};
 					let s4: mutable (int{} | {str -> bool}) = {42};
 					let s5: mutable (int{} | obj)           = {42};
+
+					let m1: mutable {int -> float}           = {42 -> 4.3};
+					let m2: mutable {int? -> float?}         = {42 -> 4.3};
+					let m3: mutable obj                      = {42 -> 4.3};
+					let m4: mutable ({int -> float} | str{}) = {42 -> 4.3};
+					let m5: mutable ({int -> float} | obj)   = {42 -> 4.3};
 				`);
 			});
 			it('throws when entries mismatch.', () => {
@@ -201,11 +203,20 @@ describe('ASTNodeDeclarationVariable', () => {
 
 					let s1: mutable int{} = {'42'};
 					let s2: mutable int{} = {42, '43'};
+
+					let m1: mutable {int -> str} = {4.2 -> '43'};
+					let m2: mutable {int -> str} = {42  -> 4.3};
 				`.split('\n'), TypeError03);
 				typeCheckGoal(`
 					let t3: mutable [   bool,    str] = [   42,    43];
 					let r3: mutable [a: bool, b: str] = [a= 44, b= 45];
 					let s3: mutable (bool | str){}    = {   46,    47};
+
+					let m3_1: mutable {str -> bool} = {1 -> false, 2.0 -> true};
+					let m3_2: mutable {str -> bool} = {'a' -> 3,   'b' -> 4.0};
+					let m3_3: mutable {str -> bool} = {5 -> false, 'b' -> 6.0};
+					let m3_4: mutable {str -> bool} = {7 -> 8.0};
+					let m3_5: mutable {str -> bool} = {9 -> 'a', 10.0 -> 'b'};
 				`, (err) => {
 					assert.ok(err instanceof AggregateError);
 					assertAssignable(err, {
@@ -230,6 +241,53 @@ describe('ASTNodeDeclarationVariable', () => {
 								errors: [
 									{cons: TypeError03, message: 'Expression of type 46 is not assignable to type bool | str.'},
 									{cons: TypeError03, message: 'Expression of type 47 is not assignable to type bool | str.'},
+								],
+							},
+							{
+								cons: AggregateError,
+								errors: [
+									{cons: TypeError03, message: 'Expression of type 1 is not assignable to type str.'},
+									{cons: TypeError03, message: 'Expression of type 2.0 is not assignable to type str.'},
+								],
+							},
+							{
+								cons: AggregateError,
+								errors: [
+									{cons: TypeError03, message: 'Expression of type 3 is not assignable to type bool.'},
+									{cons: TypeError03, message: 'Expression of type 4.0 is not assignable to type bool.'},
+								],
+							},
+							{
+								cons: AggregateError,
+								errors: [
+									{cons: TypeError03, message: 'Expression of type 5 is not assignable to type str.'},
+									{cons: TypeError03, message: 'Expression of type 6.0 is not assignable to type bool.'},
+								],
+							},
+							{
+								cons: AggregateError,
+								errors: [
+									{cons: TypeError03, message: 'Expression of type 7 is not assignable to type str.'},
+									{cons: TypeError03, message: 'Expression of type 8.0 is not assignable to type bool.'},
+								],
+							},
+							{
+								cons: AggregateError,
+								errors: [
+									{
+										cons: AggregateError,
+										errors: [
+											{cons: TypeError03, message: 'Expression of type 9 is not assignable to type str.'},
+											{cons: TypeError03, message: 'Expression of type \'a\' is not assignable to type bool.'},
+										],
+									},
+									{
+										cons: AggregateError,
+										errors: [
+											{cons: TypeError03, message: 'Expression of type 10.0 is not assignable to type str.'},
+											{cons: TypeError03, message: 'Expression of type \'b\' is not assignable to type bool.'},
+										],
+									},
 								],
 							},
 						],

@@ -476,7 +476,18 @@ Boolean AssignTo(SemanticExpression expr, Type type) :=
 			2. *If* *UnwrapAffirm:* `Subtype(a_type, b_type)` is `false`:
 				1. *Return:* `false`.
 		3. *Return:* `true`.
-	5. *Return:* `false`.
+	5. *If* `expr` is a SemanticMap *and* `type` is a `Map` type:
+		1. *Let* `b_ant_type` be the antecedent invariant over `type`.
+		2. *Let* `b_con_type` be the consequent invariant over `type`.
+		3. *For each* `a_case` in `expr`:
+			1. *Let* `a_ant_type` be *Unwrap:* `TypeOf(a_case.0)`.
+			2. *Let* `a_con_type` be *Unwrap:* `TypeOf(a_case.1)`.
+			3. *If* *UnwrapAffirm:* `Subtype(a_ant_type, b_ant_type)` is `false`:
+				1. *Return:* `false`.
+			4. *If* *UnwrapAffirm:* `Subtype(a_con_type, b_con_type)` is `false`:
+				1. *Return:* `false`.
+		4. *Return:* `true`.
+	6. *Return:* `false`.
 ;
 ```
 

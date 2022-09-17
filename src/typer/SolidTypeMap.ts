@@ -26,8 +26,8 @@ export class SolidTypeMap extends SolidType {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		readonly antecedenttypes: SolidType,
-		readonly consequenttypes: SolidType,
+		public readonly antecedenttypes: SolidType,
+		public readonly consequenttypes: SolidType,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new SolidMap()]));
