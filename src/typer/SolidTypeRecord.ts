@@ -47,7 +47,7 @@ export class SolidTypeRecord extends SolidType {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
+		public readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new SolidRecord()]));
@@ -58,9 +58,9 @@ export class SolidTypeRecord extends SolidType {
 	}
 
 	/** The possible number of values in this record type. */
-	private get count(): IntRange {
+	public get count(): IntRange {
 		return [
-			BigInt([...this.propertytypes].filter(([_, entry]) => !entry.optional).length),
+			BigInt([...this.propertytypes.values()].filter((val) => !val.optional).length),
 			BigInt(this.propertytypes.size) + 1n,
 		];
 	}
