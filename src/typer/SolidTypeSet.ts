@@ -25,7 +25,7 @@ export class SolidTypeSet extends SolidType {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		readonly types: SolidType,
+		public readonly types: SolidType,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new SolidSet()]));

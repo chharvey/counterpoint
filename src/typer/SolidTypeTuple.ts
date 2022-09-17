@@ -48,7 +48,7 @@ export class SolidTypeTuple extends SolidType {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		private readonly types: readonly TypeEntry[] = [],
+		public readonly types: readonly TypeEntry[] = [],
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new SolidTuple()]));
@@ -59,7 +59,7 @@ export class SolidTypeTuple extends SolidType {
 	}
 
 	/** The possible number of items in this tuple type. */
-	private get count(): IntRange {
+	public get count(): IntRange {
 		return [
 			BigInt(this.types.filter((it) => !it.optional).length),
 			BigInt(this.types.length) + 1n,
