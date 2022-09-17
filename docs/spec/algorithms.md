@@ -440,7 +440,21 @@ This assignment is attempted on an entry-by-entry basis.
 Boolean AssignTo(SemanticExpression expr, Type type) :=
 	1. *If* `expr` is not a SemanticTuple, SemanticRecord, SemanticSet, or SemanticMap:
 		1. *Return:* `false`.
-	2. *Return:* `false`.
+	2. *If* `expr` is a SemanticTuple *and* `type` is a `Tuple` type:
+		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `expr`.
+		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.
+		3. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
+		4. *If* `seq_a.count` is less than `seq_b_req.count`:
+			1. *Return:* `false`.
+		5. *For index* `i` in `seq_b`:
+			1. *If* `seq_b[i].optional` is `false`:
+				1. *Assert:* `seq_a[i]` is set.
+			2. *If* `seq_a[i]` is set:
+				1. *Let* `a_type` be *Unwrap:* `TypeOf(seq_a[i])`.
+				2. *If* *UnwrapAffirm:* `Subtype(a_type, seq_b[i].type)` is `false`:
+					1. *Return:* `false`.
+		6. *Return:* `true`.
+	3. *Return:* `false`.
 ;
 ```
 

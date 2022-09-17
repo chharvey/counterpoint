@@ -62,19 +62,16 @@ describe('ASTNodeDeclarationVariable', () => {
 		})
 		it('disallows assigning a collection literal to a wider mutable type.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let t2: mutable [42 | 4.3]          = [42];
 				let r2: mutable [x: 42 | 4.3]       = [x= 42];
 				let s2: mutable (42 | 4.3){}        = {42};
 				let m2: mutable {true? -> 42 | 4.3} = {true -> 42};
 
-				let t3: mutable [int]         = [42];
 				let r3: mutable [x: int]      = [x= 42];
 				let s3: mutable int{}         = {42};
 				let m3: mutable {bool -> int} = {true -> 42};
 
 				type T = [int];
 				let v: T = [42];
-				let t4: mutable [T?]         = [v];
 				let r4: mutable [x: T?]      = [x= v];
 				let s4: mutable T?{}         = {v};
 				let m4: mutable {bool -> T?} = {true -> v};
@@ -120,6 +117,71 @@ describe('ASTNodeDeclarationVariable', () => {
 				},
 			}).typeCheck(), TypeError03);
 		})
+		context('allows assigning a collection literal to a wider mutable type.', () => {
+			function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
+				if (src instanceof Array) {
+					return src
+						.map((s) => s.trim())
+						.filter((s) => !!s)
+						.forEach((s) => typeCheckGoal(s, expect_thrown));
+				}
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				goal.varCheck();
+				return (expect_thrown)
+					? assert.throws(() => goal.typeCheck(), expect_thrown)
+					: goal.typeCheck();
+			}
+			it('tuples: only allows greater or equal items.', () => {
+				typeCheckGoal(`
+					type T = [int];
+					let unfixed i: int = 42;
+					let v: T = [42];
+
+					let t1_1: mutable [42 | 4.3] = [42];
+					let t2_1: mutable [int]      = [42];
+					let t3_1: mutable [int]      = [i];
+					let t4_1: mutable [T?]       = [v];
+
+					let t1_2: mutable [?: 42 | 4.3] = [42];
+					let t2_2: mutable [?: int]      = [i];
+					let t3_2: mutable [   42 | 4.3] = [42, '43'];
+					let t4_2: mutable [int, ?: str] = [42, '43'];
+				`);
+				typeCheckGoal(`
+					let t: mutable [int, str] = [42];
+				`, TypeError03);
+			});
+			it('throws when not assigned to correct type.', () => {
+				typeCheckGoal(`
+					let t: mutable [a: int, b: str] = [42, '43'];
+				`.split('\n'), TypeError03);
+				typeCheckGoal(`
+					let t1: mutable obj                                = [42, '43'];
+					let t2: mutable ([int, str] | [   bool,    float]) = [42, '43'];
+					let t3: mutable ([int, str] | [a: bool, b: float]) = [42, '43'];
+					let t4: mutable ([int, str] | obj)                 = [42, '43'];
+				`);
+			});
+			it('throws when entries mismatch.', () => {
+				typeCheckGoal(`
+					let t1: mutable [int, str]    = [42, 43];
+					let t2: mutable [int, ?: str] = [42, 43];
+				`.split('\n'), TypeError03);
+				typeCheckGoal(`
+					let t3: mutable [bool, str] = [42, 43];
+				`.split('\n'), (err) => {
+					assert.ok(err instanceof AggregateError);
+					assertAssignable(err, {
+						cons: AggregateError,
+						errors: [
+							{cons: TypeError03, message: 'Expression of type 42 is not assignable to type bool.'},
+							{cons: TypeError03, message: 'Expression of type 43 is not assignable to type str.'},
+						],
+					});
+					return true;
+				});
+			});
+		});
 	});
 
 
