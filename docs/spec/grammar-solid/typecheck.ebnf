@@ -39,7 +39,7 @@ None! TypeCheck(SemanticDeclarationVariable decl) :=
 	2. *Perform:* *UnwrapAffirm:* `TypeCheck(decl.children.2)`.
 	3. *Let* `assignee_type` be *UnwrapAffirm:* `TypeValueOf(decl.children.1)`.
 	4. *Let* `assigned_type` be *Unwrap:* `TypeOf(decl.children.2)`.
-	5. *If* *UnwrapAffirm:* `Subtype(assigned_type, assignee_type)` is `false`:
+	5. *If* *UnwrapAffirm:* `Subtype(assigned_type, assignee_type)` is `false` *and* *UnwrapAffirm:* `AssignTo(decl.children.2, assignee_type)` is `false`:
 		1. *Throw:* a new TypeError03.
 	6. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
 		1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
@@ -62,6 +62,6 @@ None! TypeCheck(SemanticAssignment assignment) :=
 			1. *Throw:* a new MutabilityError01.
 	6. *Let* `assignee_type` be *Unwrap:* `TypeOf(assignee)`.
 	7. *Let* `assigned_type` be *Unwrap:* `TypeOf(assignment.children.1)`.
-	8. *If* *UnwrapAffirm:* `Subtype(assigned_type, assignee_type)` is `false`:
+	8. *If* *UnwrapAffirm:* `Subtype(assigned_type, assignee_type)` is `false` *and* *UnwrapAffirm:* `AssignTo(assignment.children.1, assignee_type)` is `false`:
 		1. *Throw:* a new TypeError03.
 ;

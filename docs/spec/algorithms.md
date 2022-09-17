@@ -433,6 +433,19 @@ Boolean Subtype(Type a, Type b) :=
 
 
 
+## AssignTo
+Attempt to assign a collection literal to a type when type-checking fails.
+This assignment is attempted on an entry-by-entry basis.
+```
+Boolean AssignTo(SemanticExpression expr, Type type) :=
+	1. *If* `expr` is not a SemanticTuple, SemanticRecord, SemanticSet, or SemanticMap:
+		1. *Return:* `false`.
+	2. *Return:* `false`.
+;
+```
+
+
+
 ## PerformBinaryArithmetic
 Performs a binary arithmetic operation.
 ```
