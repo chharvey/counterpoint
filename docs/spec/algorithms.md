@@ -469,7 +469,14 @@ Boolean AssignTo(SemanticExpression expr, Type type) :=
 				2. *If* *UnwrapAffirm:* `Subtype(a_type, struct_b[k].type)` is `false`:
 					1. *Return:* `false`.
 		6. *Return:* `true`.
-	4. *Return:* `false`.
+	4. *If* `expr` is a SemanticSet *and* `type` is a `Set` type:
+		1. *Let* `b_type` be the invariant over `type`.
+		2. *For each* `a_el` in `expr`:
+			1. *Let* `a_type` be *Unwrap:* `TypeOf(a_el)`.
+			2. *If* *UnwrapAffirm:* `Subtype(a_type, b_type)` is `false`:
+				1. *Return:* `false`.
+		3. *Return:* `true`.
+	5. *Return:* `false`.
 ;
 ```
 
