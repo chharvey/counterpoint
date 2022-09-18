@@ -15,7 +15,7 @@ export class TypeFloat extends Type {
 		super(false, new Set([new OBJ.Float(0.0)]));
 	}
 	override toString(): string {
-		return 'int';
+		return 'float';
 	}
 	override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.Float;

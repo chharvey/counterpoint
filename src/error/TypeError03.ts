@@ -18,11 +18,11 @@ export class TypeError03 extends TypeError {
 	static override readonly CODE = 3;
 	/**
 	 * Construct a new TypeError03 object.
-	 * @param assignee_type - the type to which the expression is assigned
 	 * @param assigned_type - the type of the expression
+	 * @param assignee_type - the type to which the expression is assigned
 	 * @param assignment    - the node where the assignment took place
 	 */
-	constructor (assignee_type: TYPE.Type, assigned_type: TYPE.Type, assignment: AST.ASTNodeCP) {
+	constructor (assigned_type: TYPE.Type, assignee_type: TYPE.Type, assignment: AST.ASTNodeCP) {
 		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`, TypeError03.CODE, assignment.line_index, assignment.col_index)
 	}
 }

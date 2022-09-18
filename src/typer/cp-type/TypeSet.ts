@@ -1,9 +1,19 @@
 import {OBJ} from './package.js';
 import {Type} from './Type.js';
+import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeSet extends Type {
+	/**
+	 * Is the argument a unit set type?
+	 * @return whether the argument is a `TypeUnit` and its value is a `Set`
+	 */
+	static isUnitType(type: Type): type is TypeUnit<OBJ.Set> {
+		return type instanceof TypeUnit && type.value instanceof OBJ.Set;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**
@@ -12,7 +22,7 @@ export class TypeSet extends Type {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		readonly types: Type,
+		public readonly types: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new OBJ.Set()]));

@@ -8,10 +8,20 @@ import {
 } from './package.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
+import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeRecord extends Type {
+	/**
+	 * Is the argument a unit record type?
+	 * @return whether the argument is a `TypeUnit` and its value is a `Record`
+	 */
+	static isUnitType(type: Type): type is TypeUnit<OBJ.Record> {
+		return type instanceof TypeUnit && type.value instanceof OBJ.Record;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**
@@ -34,7 +44,7 @@ export class TypeRecord extends Type {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
+		public readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new OBJ.Record()]));
@@ -45,9 +55,9 @@ export class TypeRecord extends Type {
 	}
 
 	/** The possible number of values in this record type. */
-	private get count(): IntRange {
+	public get count(): IntRange {
 		return [
-			BigInt([...this.propertytypes].filter(([_, entry]) => !entry.optional).length),
+			BigInt([...this.propertytypes.values()].filter((val) => !val.optional).length),
 			BigInt(this.propertytypes.size) + 1n,
 		];
 	}

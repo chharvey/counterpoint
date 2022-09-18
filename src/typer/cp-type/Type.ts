@@ -41,15 +41,15 @@ import {
  * - TypeMap
  */
 export abstract class Type {
-	/** The Bottom Type, containing no values. */                    static get NEVER():   TypeNever   { return TypeNever.INSTANCE; }
-	/** The Void Type, representing a completion but not a value. */ static get VOID():    TypeVoid    { return TypeVoid.INSTANCE; }
-	/** The Top Type, containing all values. */                      static get UNKNOWN(): TypeUnknown { return TypeUnknown.INSTANCE; }
-	/** The Null Type. */                                            static get NULL():    TypeUnit    { return OBJ.Null.NULLTYPE; }
-	/** The Boolean Type. */                                         static get BOOL():    TypeBoolean { return TypeBoolean.INSTANCE; }
-	/** The Integer Type. */                                         static get INT():     TypeInteger { return TypeInteger.INSTANCE; }
-	/** The Float Type. */                                           static get FLOAT():   TypeFloat   { return TypeFloat.INSTANCE; }
-	/** The String Type. */                                          static get STR():     TypeString  { return TypeString.INSTANCE; }
-	/** The Object Type. */                                          static get OBJ():     TypeObject  { return TypeObject.INSTANCE; }
+	/** The Bottom Type, containing no values. */                    static get NEVER():   TypeNever          { return TypeNever.INSTANCE; }
+	/** The Void Type, representing a completion but not a value. */ static get VOID():    TypeVoid           { return TypeVoid.INSTANCE; }
+	/** The Top Type, containing all values. */                      static get UNKNOWN(): TypeUnknown        { return TypeUnknown.INSTANCE; }
+	/** The Null Type. */                                            static get NULL():    TypeUnit<OBJ.Null> { return OBJ.Null.NULLTYPE; }
+	/** The Boolean Type. */                                         static get BOOL():    TypeBoolean        { return TypeBoolean.INSTANCE; }
+	/** The Integer Type. */                                         static get INT():     TypeInteger        { return TypeInteger.INSTANCE; }
+	/** The Float Type. */                                           static get FLOAT():   TypeFloat          { return TypeFloat.INSTANCE; }
+	/** The String Type. */                                          static get STR():     TypeString         { return TypeString.INSTANCE; }
+	/** The Object Type. */                                          static get OBJ():     TypeObject         { return TypeObject.INSTANCE; }
 	/**
 	 * Intersect all the given types.
 	 * @param types the types to intersect

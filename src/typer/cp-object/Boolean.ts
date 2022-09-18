@@ -16,9 +16,9 @@ export class Boolean extends Primitive {
 	/** The Counterpoint Language Value `true`. */
 	static readonly TRUE: Boolean = new Boolean(true);
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
-	static readonly FALSETYPE: TypeUnit = new TypeUnit(Boolean.FALSE);
+	static readonly FALSETYPE = new TypeUnit<Boolean>(Boolean.FALSE);
 	/** A Unit Type containing only the Counterpoint Language Value `true`. */
-	static readonly TRUETYPE: TypeUnit = new TypeUnit(Boolean.TRUE);
+	static readonly TRUETYPE = new TypeUnit<Boolean>(Boolean.TRUE);
 
 	/**
 	 * Return the Counterpoint Language Value `true` or `false` based on the argument.
