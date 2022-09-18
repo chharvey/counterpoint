@@ -97,9 +97,9 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 				}
 				if (!!value && value instanceof OBJ.Primitive) {
 					this.typed = new TYPE.TypeUnit(value);
-				};
-			};
-		};
+				}
+			}
+		}
 		return this.typed;
 	}
 

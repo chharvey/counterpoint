@@ -43,11 +43,11 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
-		};
+		}
 		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
 			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
-		};
+		}
 	}
 
 	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
@@ -59,8 +59,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar) {
 				return symbol.type;
-			};
-		};
+			}
+		}
 		return TYPE.Type.NEVER;
 	}
 
@@ -69,8 +69,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
 				return symbol.value;
-			};
-		};
+			}
+		}
 		return null;
 	}
 }

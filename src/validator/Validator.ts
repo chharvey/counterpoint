@@ -226,8 +226,10 @@ export class Validator {
 				col_index:  -1,
 			});
 		}
+		/* eslint-disable curly */
 		if (has_unary) source = source.slice(1); // cut off unary, if any
 		if (has_radix) source = source.slice(2); // cut off radix, if any
+		/* eslint-enable curly */
 		return [
 			multiplier * ((is_float)
 				? tokenWorthFloat(source,        config.languageFeatures.numericSeparators)

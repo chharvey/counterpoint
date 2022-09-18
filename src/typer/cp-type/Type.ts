@@ -71,7 +71,7 @@ export abstract class Type {
 	 */
 	static unionAll(types: Type[]): Type {
 		return (types.length) ? types.reduce((a, b) => a.union(b)) : Type.NEVER;
-	};
+	}
 
 
 	/**
@@ -240,7 +240,7 @@ export abstract class Type {
 		/** 1-1 | `never <: T` */
 		if (this.isBottomType) {
 			return true;
-		};
+		}
 		/** 1-3 | `T       <: never  <->  T == never` */
 		if (t.isBottomType) {
 			return this.isBottomType;
@@ -248,7 +248,7 @@ export abstract class Type {
 		/** 1-4 | `unknown <: T      <->  T == unknown` */
 		if (this.isTopType) {
 			return t.isTopType;
-		};
+		}
 		/** 1-2 | `T     <: unknown` */
 		if (t.isTopType) {
 			return true;
@@ -342,7 +342,7 @@ export class TypeInterface extends Type {
 	 */
 	protected override union_do(t: TypeInterface): TypeInterface {
 		const props: Map<string, Type> = new Map();
-		;[...this.properties].forEach(([name, type_]) => {
+		[...this.properties].forEach(([name, type_]) => {
 			if (t.properties.has(name)) {
 				props.set(name, type_.union(t.properties.get(name)!));
 			}

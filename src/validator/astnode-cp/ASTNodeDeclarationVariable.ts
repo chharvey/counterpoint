@@ -39,7 +39,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	override varCheck(): void {
 		if (this.validator.hasSymbol(this.assignee.id)) {
 			throw new AssignmentError01(this.assignee);
-		};
+		}
 		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
 		this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
 	}

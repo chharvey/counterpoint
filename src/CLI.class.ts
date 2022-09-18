@@ -30,20 +30,20 @@ export enum Command {
 type CustomArgsType = {
 	// CLI Options
 	/** Display help text. */
-	help: boolean;
+	help: boolean,
 	/** Display version number. */
-	version: boolean;
+	version: boolean,
 	/** Specify output filepath. */
-	out: string;
+	out: string,
 	/** Specify configuration filepath. */
-	project: string;
+	project: string,
 	/** Display configuration options. */
-	config: boolean;
+	config: boolean,
 
 	// Language Features
-	comments          : null | boolean,
-	integerRadices    : null | boolean,
-	numericSeparators : null | boolean,
+	comments:          null | boolean,
+	integerRadices:    null | boolean,
+	numericSeparators: null | boolean,
 
 	// Compiler Options
 	constantFolding: null | boolean,
@@ -190,10 +190,12 @@ export class CLI {
 		if (!(
 			   (this.argv.out     === void 0 || typeof this.argv.out     === 'string' && this.argv.out     !== '')
 			&& (this.argv.project === void 0 || typeof this.argv.project === 'string' && this.argv.project !== '')
-		)) throw new Error(`
-			Invalid CLI arguments!
-			${ CLI.HELPTEXT }
-		`);
+		)) {
+			throw new Error(`
+				Invalid CLI arguments!
+				${ CLI.HELPTEXT }
+			`);
+		}
 	}
 
 	/**
@@ -223,11 +225,13 @@ export class CLI {
 			},
 		};
 
+		/* eslint-disable curly */
 		if (this.argv.comments          !== null) returned.languageFeatures.comments          = this.argv.comments;
 		if (this.argv.integerRadices    !== null) returned.languageFeatures.integerRadices    = this.argv.integerRadices;
 		if (this.argv.numericSeparators !== null) returned.languageFeatures.numericSeparators = this.argv.numericSeparators;
 		if (this.argv.constantFolding   !== null) returned.compilerOptions.constantFolding    = this.argv.constantFolding;
 		if (this.argv.intCoercion       !== null) returned.compilerOptions.intCoercion        = this.argv.intCoercion;
+		/* eslint-enable curly */
 
 		return returned;
 	}
@@ -238,10 +242,12 @@ export class CLI {
 	 * @return a valid path to the input file
 	 */
 	private inputPath(cwd: string): string {
-		if (!this.argv._[1]) throw new Error(`
-			No path specified!
-			${ CLI.HELPTEXT }
-		`);
+		if (!this.argv._[1]) {
+			throw new Error(`
+				No path specified!
+				${ CLI.HELPTEXT }
+			`);
+		}
 		return path.join(cwd, path.normalize(this.argv._[1]));
 	}
 

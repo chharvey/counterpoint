@@ -38,7 +38,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
 		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolStructureVar).unfixed) {
 			throw new AssignmentError10(assignee);
-		};
+		}
 	}
 
 	override typeCheck(): void {

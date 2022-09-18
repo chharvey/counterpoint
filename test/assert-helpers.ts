@@ -41,8 +41,8 @@ export function assert_wasCalled<Func extends (...args: any[]) => any, Return>(o
 			tracker.verify();
 		} catch {
 			throw new AggregateError(tracker.report().map((info) => new assert.AssertionError(info)));
-		};
-	};
+		}
+	}
 }
 
 
@@ -77,7 +77,7 @@ export function assertEqualTypes(param1: TYPE.Type | TYPE.Type[] | ReadonlyMap<T
 			return assert.deepStrictEqual(param1, param2);
 		} catch {
 			return xjs.Array.forEachAggregated(param1, (act, i) => assertEqualTypes(act, (param2 as TYPE.Type[])[i]));
-		};
+		}
 	} else {
 		try {
 			return assert.deepStrictEqual(param1, param2);

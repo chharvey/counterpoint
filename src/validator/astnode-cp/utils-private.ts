@@ -12,7 +12,7 @@ export enum ValidFunctionName {
 	DICT = 'Dict',
 	SET  = 'Set',
 	MAP  = 'Map',
-};
+}
 
 export function invalidFunctionName(source: string): never {
 	throw new SyntaxError(`Unexpected token: ${ source }; expected \`${ Object.values(ValidFunctionName).join(' | ') }\`.`);

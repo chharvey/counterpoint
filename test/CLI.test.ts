@@ -41,7 +41,7 @@ describe('CLI', () => {
 		});
 		context('compile', () => {
 			it('same as `c`; compiles given file.', () => {
-				;['compile', 'c'].forEach((command) => {
+				['compile', 'c'].forEach((command) => {
 					const cli: CLI = new CLI(`npx cpc ${ command } ./sample/test-v0.1.cp`.split(' '));
 					assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cp');
 					assert.strictEqual(cli.command, Command.COMPILE);
@@ -66,7 +66,7 @@ describe('CLI', () => {
 		});
 		context('dev', () => {
 			it('same as `d`; debugs given file.', () => {
-				;['dev', 'd'].forEach((command) => {
+				['dev', 'd'].forEach((command) => {
 					const cli: CLI = new CLI(`npx cpc ${ command } ./sample/test-v0.1.cp`.split(' '));
 					assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cp');
 					assert.strictEqual(cli.command, Command.DEV);
@@ -91,7 +91,7 @@ describe('CLI', () => {
 		});
 		context('run', () => {
 			it('same as `r`; runs given file.', () => {
-				;['run', 'r'].forEach((command) => {
+				['run', 'r'].forEach((command) => {
 					const cli: CLI = new CLI(`npx cpc ${ command } ./sample/test-v0.1.wasm`.split(' '));
 					assert.strictEqual(cli.argv._[1], './sample/test-v0.1.wasm');
 					assert.strictEqual(cli.command, Command.RUN);

@@ -36,10 +36,10 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 	override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
-		};
+		}
 		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureVar) {
 			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
-		};
+		}
 	}
 
 	protected override eval_do(): TYPE.Type {
@@ -47,8 +47,8 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {
 				return symbol.typevalue;
-			};
-		};
+			}
+		}
 		return TYPE.Type.NEVER;
 	}
 }

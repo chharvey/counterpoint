@@ -343,7 +343,7 @@ describe('Type', () => {
 		});
 
 		it('discrete types.', () => {
-			;[
+			[
 				TYPE.Type.VOID,
 				TYPE.Type.NULL,
 				TYPE.Type.BOOL,
@@ -363,12 +363,12 @@ describe('Type', () => {
 				assert.ok(OBJ.Boolean.TRUETYPE .isSubtypeOf(TYPE.Type.BOOL), 'Boolean.TRUETYPE');
 			});
 			it('constant Integer types should be subtypes of `int`.', () => {
-				;[42n, -42n, 0n, -0n].map((v) => typeUnitInt(v)).forEach((itype) => {
+				[42n, -42n, 0n, -0n].map((v) => typeUnitInt(v)).forEach((itype) => {
 					assert.ok(itype.isSubtypeOf(TYPE.Type.INT), `${ itype }`);
 				});
 			});
 			it('constant Float types should be subtypes of `float`.', () => {
-				;[4.2, -4.2e-2, 0.0, -0.0].map((v) => typeUnitFloat(v)).forEach((ftype) => {
+				[4.2, -4.2e-2, 0.0, -0.0].map((v) => typeUnitFloat(v)).forEach((ftype) => {
 					assert.ok(ftype.isSubtypeOf(TYPE.Type.FLOAT), `${ ftype }`);
 				});
 			});

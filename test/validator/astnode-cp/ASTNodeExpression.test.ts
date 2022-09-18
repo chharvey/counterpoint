@@ -51,7 +51,7 @@ describe('ASTNodeExpression', () => {
 						return c.type();
 					} finally {
 						c.fold = orig;
-					};
+					}
 				})), constants.map((c) => new TYPE.TypeUnit(c.fold()!)));
 			});
 		});
@@ -316,7 +316,7 @@ describe('ASTNodeExpression', () => {
 							return t.type();
 						} finally {
 							t.fold = orig;
-						};
+						}
 					}));
 				});
 				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new TypeUnit`.', () => {

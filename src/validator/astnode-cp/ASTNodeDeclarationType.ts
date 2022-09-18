@@ -32,7 +32,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	override varCheck(): void {
 		if (this.validator.hasSymbol(this.assignee.id)) {
 			throw new AssignmentError01(this.assignee);
-		};
+		}
 		this.assigned.varCheck();
 		this.validator.addSymbol(new SymbolStructureType(this.assignee));
 	}

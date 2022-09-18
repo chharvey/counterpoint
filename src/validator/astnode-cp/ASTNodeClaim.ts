@@ -44,7 +44,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		// TODO: use JS decorators for memoizing this method
 		if (!this.typed_) {
 			this.typed_ = this.type_do();
-		};
+		}
 		return this.typed_;
 	}
 

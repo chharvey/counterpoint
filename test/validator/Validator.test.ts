@@ -119,7 +119,7 @@ describe('Validator', () => {
 			/* eslint-enable array-element-newline */
 		]).forEach(([source, values], description) => {
 			it(description, () => {
-				return assert.deepStrictEqual(
+				assert.deepStrictEqual(
 					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)[0]),
 					values,
 				);
@@ -307,12 +307,10 @@ describe('Validator', () => {
 					cooked = src.trim().split(/\s+/).map((word) => validator.cookTokenIdentifier(word));
 				});
 				it('assigns ids starting from 256n', () => {
-					return assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
+					assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
 				});
 				it('assigns unique ids 256n or greater.', () => {
-					return cooked.forEach((value) => {
-						assert.ok(value >= 256n);
-					});
+					cooked.forEach((value) => assert.ok(value >= 256n));
 				});
 			});
 		});

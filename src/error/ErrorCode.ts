@@ -72,7 +72,7 @@ export class ErrorCode extends Error {
 	constructor(props: string | ErrorCodeConstructorProperties) {
 		if (typeof props === 'string') {
 			props = {message: props};
-		};
+		}
 		super(props.message);
 		this.code       = props.code || 0;
 		this.name       = (props.name) ? props.name.concat((this.code) ? `${ this.code }` : '') : ErrorCode.NAME;

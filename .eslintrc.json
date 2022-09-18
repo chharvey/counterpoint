@@ -4,6 +4,25 @@
 		"node": true
 	},
 	"overrides": [
+		{
+			"files": ["*.{cts,mts,ts}"],
+			"rules": {
+				/* # Layout & Formatting */
+				/* ## Indentation, Spacing, and Alignment */
+				"@typescript-eslint/type-annotation-spacing": ["error"],
+
+				/* ## Grouping Structure Style */
+				"@typescript-eslint/adjacent-overload-signatures": "error",
+				"@typescript-eslint/member-delimiter-style":       ["error", {
+					"overrides": {
+						"typeLiteral": {
+							"multiline":  {"delimiter": "comma"},
+							"singleline": {"delimiter": "comma"}
+						}
+					}
+				}]
+			}
+		}
 	],
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
@@ -20,7 +39,7 @@
 		"linebreak-style":    "error",
 		"no-trailing-spaces": "error",
 
-		/* # Layout & Formatting --- https://eslint.org/docs/latest/rules/#layout--formatting */
+		/* # Layout & Formatting */
 		/* ## Indentation, Spacing, and Alignment */
 		"arrow-spacing":                        "error",
 		"comma-spacing":                        "error",
@@ -61,28 +80,37 @@
 		"array-bracket-newline":                          ["error", "consistent"], // FIXME: require line breaks exactly when there exist line breaks between elements (ignoring inside elements)
 		"array-bracket-spacing":                          "warn",
 		"array-element-newline":                          ["error", "consistent"],
+		"arrow-body-style":                               "error",
 		"brace-style":                                    "off",
 		"@typescript-eslint/brace-style":                 "error",
 		"computed-property-spacing":                      "error",
+		"curly":                                          "error",
 		"function-call-argument-newline":                 ["error", "consistent"],
 		"function-paren-newline":                         "error",
+		"func-style":                                     ["error", "declaration", {"allowArrowFunctions": true}],
 		"lines-between-class-members":                    "off",
 		"@typescript-eslint/lines-between-class-members": ["error", "always", {"exceptAfterSingleLine": true}],
 		"object-curly-newline":                           ["error", {"multiline": true}],
+		"object-shorthand":                               ["error", "properties", {"avoidQuotes": true}],
+		"no-useless-computed-key":                        ["error", {"enforceForClassMembers": true}],
 		"object-curly-spacing":                           "off",
 		"@typescript-eslint/object-curly-spacing":        "warn",
 		"object-property-newline":                        ["error", {"allowAllPropertiesOnSameLine": true}],
 		"padded-blocks":                                  ["error", "never"],
+		"prefer-arrow-callback":                          ["error", {"allowUnboundThis": false}],
+		"quote-props":                                    ["error", "consistent-as-needed"],
 		"space-in-parens":                                "warn",
 
 		/* ## Operator Style */
-		"arrow-parens":                    "error",
-		"comma-dangle":                    "off",
-		"@typescript-eslint/comma-dangle": ["error", "always-multiline"],
-		"comma-style":                     "error",
-		"implicit-arrow-linebreak":        "error",
-		"new-parens":                      "error",
-		"operator-linebreak":              ["error", "before", {
+		"arrow-parens":                     "error",
+		"comma-dangle":                     "off",
+		"@typescript-eslint/comma-dangle":  ["error", "always-multiline"],
+		"comma-style":                      "error",
+		"implicit-arrow-linebreak":         "error",
+		"new-parens":                       "error",
+		"no-extra-semi":                    "off",
+		"@typescript-eslint/no-extra-semi": "error",
+		"operator-linebreak":               ["error", "before", {
 			"overrides": {
 				"=":    "none",
 				"*=":   "none",
