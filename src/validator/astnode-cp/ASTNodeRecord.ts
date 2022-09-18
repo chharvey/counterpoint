@@ -57,7 +57,8 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
 	}
 
-	protected override assignTo_do(assignee: TYPE.Type): boolean {
+	@ASTNodeCollectionLiteral.assignToDeco
+	public override assignTo(assignee: TYPE.Type): boolean {
 		if (TYPE.TypeRecord.isUnitType(assignee) || assignee instanceof TYPE.TypeRecord) {
 			const assignee_type_record: TYPE.TypeRecord = (TYPE.TypeRecord.isUnitType(assignee))
 				? assignee.value.toType()

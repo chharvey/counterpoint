@@ -15,6 +15,40 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
  * - ASTNodeMap
  */
 export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
+	/**
+	 * Decorator for {@link ASTNodeCollectionLiteral#assignTo} method and any overrides.
+	 * Simplifies assignments by handling type operations.
+	 * @param   _prototype    the prototype that has the method to be decorated
+	 * @param   _property_key the name of the method to be decorated
+	 * @param   descriptor    the Property Descriptor of the prototype’s method
+	 * @returns               `descriptor`, with a new value that is the decorated method
+	 */
+	protected static assignToDeco(
+		_prototype: ASTNodeCollectionLiteral,
+		_property_key: string,
+		descriptor: TypedPropertyDescriptor<(this: ASTNodeCollectionLiteral, assignee: TYPE.Type) => boolean>,
+	): typeof descriptor {
+		const method = descriptor.value!;
+		descriptor.value = function (assignee: TYPE.Type) {
+			if (assignee instanceof TYPE.TypeIntersection || assignee instanceof TYPE.TypeUnion) {
+				assignee = assignee.combineTuplesOrRecords();
+			}
+			if (assignee instanceof TYPE.TypeIntersection) {
+				/* A value is assignable to a type intersection if and only if
+					it is assignable to both operands of that intersection. */
+				return this.assignTo(assignee.left) && this.assignTo(assignee.right);
+			} else if (assignee instanceof TYPE.TypeUnion) {
+				/* A value is assignable to a type union if and only if
+					it is assignable to either operand of that union. */
+				return this.assignTo(assignee.left) || this.assignTo(assignee.right);
+			} else {
+				return method.call(this, assignee);
+			}
+		};
+		return descriptor;
+	}
+
+
 	constructor (
 		start_node:
 			| SyntaxNodeType<'tuple_literal'>
@@ -36,23 +70,6 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	 * When we assign collection literals, we want to check entry by entry.
 	 * @param  assignee the type to assign to
 	 * @return          Is this node assignable to the assignee?
-	 * @final
 	 */
-	assignTo(assignee: TYPE.Type): boolean {
-		if (assignee instanceof TYPE.TypeIntersection || assignee instanceof TYPE.TypeUnion) {
-			assignee = assignee.combineTuplesOrRecords();
-		}
-		if (assignee instanceof TYPE.TypeIntersection) {
-			/* A value is assignable to a type intersection if and only if
-				it is assignable to both operands of that intersection. */
-			return this.assignTo(assignee.left) && this.assignTo(assignee.right);
-		} else if (assignee instanceof TYPE.TypeUnion) {
-			/* A value is assignable to a type union if and only if
-				it is assignable to either operand of that union. */
-			return this.assignTo(assignee.left) || this.assignTo(assignee.right);
-		} else {
-			return this.assignTo_do(assignee);
-		}
-	}
-	protected abstract assignTo_do(assignee: TYPE.Type): boolean; // TODO: use decorators
+	public abstract assignTo(assignee: TYPE.Type): boolean;
 }

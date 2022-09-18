@@ -58,7 +58,8 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 			: new OBJ.Map(cases as ReadonlyMap<OBJ.Object, OBJ.Object>);
 	}
 
-	protected override assignTo_do(assignee: TYPE.Type): boolean {
+	@ASTNodeCollectionLiteral.assignToDeco
+	public override assignTo(assignee: TYPE.Type): boolean {
 		if (TYPE.TypeMap.isUnitType(assignee) || assignee instanceof TYPE.TypeMap) {
 			const assignee_type_map: TYPE.TypeMap = (TYPE.TypeMap.isUnitType(assignee))
 				? assignee.value.toType()

@@ -49,7 +49,8 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 			: new OBJ.Tuple(items as OBJ.Object[]);
 	}
 
-	protected override assignTo_do(assignee: TYPE.Type): boolean {
+	@ASTNodeCollectionLiteral.assignToDeco
+	public override assignTo(assignee: TYPE.Type): boolean {
 		if (TYPE.TypeTuple.isUnitType(assignee) || assignee instanceof TYPE.TypeTuple) {
 			const assignee_type_tuple: TYPE.TypeTuple = (TYPE.TypeTuple.isUnitType(assignee))
 				? assignee.value.toType()

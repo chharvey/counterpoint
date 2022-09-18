@@ -52,7 +52,8 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 			: new OBJ.Set(new Set(elements as OBJ.Object[]));
 	}
 
-	protected override assignTo_do(assignee: TYPE.Type): boolean {
+	@ASTNodeCollectionLiteral.assignToDeco
+	public override assignTo(assignee: TYPE.Type): boolean {
 		if (TYPE.TypeSet.isUnitType(assignee) || assignee instanceof TYPE.TypeSet) {
 			const assignee_type_set: TYPE.TypeSet = (TYPE.TypeSet.isUnitType(assignee))
 				? assignee.value.toType()
