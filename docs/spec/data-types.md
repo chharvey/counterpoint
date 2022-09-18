@@ -4,14 +4,14 @@ This chapter defines the types of data used by grammars and algorithms throughou
 Grammars and algorithms manipulate values, each of which has an associated type.
 Types can be thought of as sets of values.
 Types are further subclassified into
-[Solid Specification Types](#solid-specification-types) and
-[Solid Language Types](#solid-language-types).
+[Counterpoint Specification Types](#counterpoint-specification-types) and
+[Counterpoint Language Types](#counterpoint-language-types).
 
 
 
-## Solid Specification Types
-Solid Specification Types are only used internally within this specification to define and convey abstract concepts.
-They are not directly observable from Solid code.
+## Counterpoint Specification Types
+Counterpoint Specification Types are only used internally within this specification to define and convey abstract concepts.
+They are not directly observable from Counterpoint code.
 
 
 ### None
@@ -24,7 +24,7 @@ with no \`value\` property.
 ### Enumerated Words
 Some sections in this specification may define a set of enumerated words used for a specific purpose.
 The enumerated words along with any associated meanings are defined together within the relevant section.
-These words are considered Solid Specification Values, but with no defined type;
+These words are considered Counterpoint Specification Values, but with no defined type;
 for intents and purposes they can be thought of as strings.
 Where a type description is required (such as in the input of an algorithm), the type «Text» may be used.
 
@@ -42,13 +42,13 @@ Real numbers are subclassified into the following kinds. The kinds are not neces
 
 #### Real Integer Numbers
 Real integer numbers are the whole numbers *1, 2, 3, …*, their negatives, and *0*.
-The term “real integer number” is used to distinguish from [Solid Language Type Integers](#integer).
+The term “real integer number” is used to distinguish from [Counterpoint Language Type Integers](#integer).
 The real integer numbers refer to the well-understood set of integers in mathematics.
 There is no least or greatest real integer number.
 
 #### Real Rational Numbers
 Real rational numbers are ratios of integers.
-The term “real rational number” is used to distinguish from [Solid Language Type Floats](#float).
+The term “real rational number” is used to distinguish from [Counterpoint Language Type Floats](#float).
 The real rational numbers refer to the well-understood set of rationals in mathematics.
 
 Real rational numbers may be represented as fractions (*a/b* means the integer *a* divided by the integer *b*),
@@ -100,12 +100,12 @@ A **CompletionStructure** is a specific subtype of [Structure](#structure) with
 a mandatory property \`type\` and an optional property \`value\`.
 The value of the \`type\` property must be one of the [enumerated](#enumerated-values) specification values
 *normal*, *break*, *continue*, *return*, or *throw*, which are described below.
-The value of the \`value\` property must be a [Solid Language Value](#solid-language-types).
+The value of the \`value\` property must be a [Counterpoint Language Value](#Counterpoint-language-types).
 
 Property  | Description
 --------- | -----------
 \`type\`  | the kind of completion structure
-\`value\` | the Solid Language Value carried with the structure
+\`value\` | the Counterpoint Language Value carried with the structure
 
 Completion structures are the default values returned by all specification algorithms,
 unless explicitly stated otherwise.
@@ -130,33 +130,33 @@ It contains the type value and whether the entry is optional.
 
 Property     | Description
 ------------ | -----------
-\`type\`     | the Solid Language Type
+\`type\`     | the Counterpoint Language Type
 \`optional\` | a Boolean, whether the entry is optional
 
 
 #### SymbolStructure
-A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Solid source code.
-Symbols are identifiers that refer to Solid Language Values or Solid Language Types.
+A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Counterpoint source code.
+Symbols are identifiers that refer to Counterpoint Language Values or Counterpoint Language Types.
 
 Symbol structures’ properties are described in the tables below.
 
 ##### SymbolStructureType
-A **SymbolStructureType** represents a type alias referencing a Solid Language Type.
+A **SymbolStructureType** represents a type alias referencing a Counterpoint Language Type.
 
 Property      | Description
 ------------- | -----------
 \`id\`        | the unique identifier of the declared symbol
-\`typevalue\` | the assessed type (a Solid Language Type) of this symbol
+\`typevalue\` | the assessed type (a Counterpoint Language Type) of this symbol
 
 ##### SymbolStructureVar
-A **SymbolStructureVar** represents a variable referencing a Solid Language Value.
+A **SymbolStructureVar** represents a variable referencing a Counterpoint Language Value.
 
 Property    | Description
 ----------- | -----------
 \`id\`      | the unique identifier of the declared symbol
 \`unfixed\` | a Boolean, whether the variable may be reassigned
-\`type\`    | the Solid Language Type of the variable
-\`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Solid Language Value) of this symbol; otherwise: *none*
+\`type\`    | the Counterpoint Language Type of the variable
+\`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
 
 
 ### Nodes
@@ -179,12 +179,12 @@ such as `SemanticOperation ::= SemanticExpression+;`.
 
 
 
-## Solid Language Types
-Solid Language Types characterize Solid Language Values, which are
-values directly manipulated by a Solid program.
+## Counterpoint Language Types
+Counterpoint Language Types characterize Counterpoint Language Values, which are
+values directly manipulated by a Counterpoint program.
 
-Solid has the following built-in types.
-This list is not exhaustive, as Solid Types may be created in any Solid program.
+Counterpoint has the following built-in types.
+This list is not exhaustive, as Counterpoint Types may be created in any Counterpoint program.
 
 
 ### Simple Types
@@ -222,7 +222,7 @@ In general, given a type \`‹T›\`,
 the [intersection](#intersection) \`And<‹T›, Void>\` is not necessarily the same as Void, and
 the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T›\`.
 
-The Void type is also unlike Null in that no Solid Language Value has type Void.
+The Void type is also unlike Null in that no Counterpoint Language Value has type Void.
 
 #### Null
 The Null type has exactly one value, called `null`.
@@ -236,7 +236,7 @@ The Number type is partitioned into two disjoint subtypes: Integer and Float.
 
 ##### Integer
 The Integer type represents [mathematical integers](#real-integer-numbers).
-The Solid compiler represents Integers as 16-bit signed two’s complement values.
+The Counterpoint compiler represents Integers as 16-bit signed two’s complement values.
 
 `0` and `-0` represent the same value, *0*.
 The maximum value of the Integer type is mathematically equal to
@@ -264,8 +264,8 @@ The String type represents textual data and is stored as an immutable tuple of [
 Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
 
 #### Object
-The Object type is the parent type of all Solid Language Types.
-Every Solid Language Value is an Object.
+The Object type is the parent type of all Counterpoint Language Types.
+Every Counterpoint Language Value is an Object.
 Some specific built-in subtypes of Object are described in the [Intrinsics](./intrinsics.md) chapter.
 
 #### Unknown
@@ -289,12 +289,14 @@ and the “absorption element” of the [union](#union) operation.
 - [Map](#map-type)
 
 #### Tuple Type
-A **Tuple Type** contains [`Tuple` objects](./intrinsics.md#tuple) and is described by an ordered list of types.
+A **Tuple Type** contains [`Tuple` objects](./intrinsics.md#tuple) and is described by
+a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items.
 The objects that any given Tuple Type contains are `Tuple` objects whose items’ types
 match up with the types in the list in order.
 
 #### Record Type
-A **Record Type** contains [`Record` objects](./intrinsics.md#record) and is described by an unordered list of name–type pairs.
+A **Record Type** contains [`Record` objects](./intrinsics.md#record) and is described by
+a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values.
 The objects that any given Record Type contains are `Record` objects whose properties’ types
 match up with the types in the list by name.
 
@@ -411,7 +413,7 @@ That is, their intersection is empty, or equal to the [Bottom Type](#never).
 The following tables describe laws that hold true for all types in general.
 
 For brevity, this section uses the following notational conventions:
-- Metavariables such as \`‹A›\`, \`‹B›\`, \`‹C›\` denote placeholders for Solid Language Types
+- Metavariables such as \`‹A›\`, \`‹B›\`, \`‹C›\` denote placeholders for Counterpoint Language Types
 	and do not refer to real variables or real types.
 - Angle quotes and back-ticks will be omitted. Instead, a `monospace font face` is used.
 - The [intersection](#intersection) of `A` and `B`, `And<A, B>`,  is written `A & B`.

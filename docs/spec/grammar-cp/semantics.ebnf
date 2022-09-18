@@ -1,0 +1,164 @@
+SemanticKey[id: RealNumber]
+	::= ();
+
+
+
+SemanticIndexType
+	::= SemanticTypeConstant;
+
+SemanticItemType[optional: Boolean]
+	::= SemanticType;
+
+SemanticPropertyType[optional: Boolean]
+	::= SemanticKey SemanticType;
+
+
+
+SemanticIndex
+	::= SemanticConstant;
+
+SemanticProperty
+	::= SemanticKey SemanticExpression;
+
+SemanticCase
+	::= SemanticExpression SemanticExpression;
+
+
+
+SemanticType =:=
+	| SemanticTypeConstant
+	| SemanticTypeAlias
+	| SemanticTypeTuple
+	| SemanticTypeRecord
+	| SemanticTypeList
+	| SemanticTypeDict
+	| SemanticTypeSet
+	| SemanticTypeMap
+	| SemanticTypeAccess
+	| SemanticTypeCall
+	| SemanticTypeOperation
+;
+
+
+
+SemanticTypeConstant[value: Type]
+	::= ();
+
+SemanticTypeAlias[id: RealNumber]
+	::= ();
+
+SemanticTypeTuple  ::= SemanticItemType*;
+SemanticTypeRecord ::= SemanticPropertyType+;
+SemanticTypeDict   ::= SemanticType;
+SemanticTypeSet    ::= SemanticType;
+SemanticTypeMap    ::= SemanticType SemanticType;
+SemanticTypeList[count: RealNumber | None]
+	::= SemanticType; // Note: a SemanticTypeList with a `count` represents a Tuple Type; otherwise it represents a List Type.
+
+SemanticTypeAccess
+	::= SemanticType (SemanticIndexType | SemanticKey);
+
+SemanticTypeCall
+	::= SemanticType SemanticType+;
+
+SemanticTypeOperation[operator: ORNULL | OREXCP | MUTABLE]
+	::= SemanticType;
+SemanticTypeOperation[operator: AND | OR]
+	::= SemanticType SemanticType;
+
+
+
+SemanticExpression =:=
+	| SemanticConstant
+	| SemanticVariable
+	| SemanticTemplate
+	| SemanticCollectionLiteral
+	| SemanticCall
+	| SemanticAccess
+	| SemanticClaim
+	| SemanticOperation
+;
+
+
+
+SemanticConstant[value: Null | Boolean | Number | String]
+	::= ();
+
+SemanticVariable[id: RealNumber]
+	::= ();
+
+SemanticTemplate
+	::= (SemanticConstant SemanticExpression?)* SemanticConstant;
+
+SemanticTemplatePartial
+	::= (SemanticConstant SemanticExpression?)+;
+
+SemanticCollectionLiteral =:=
+	| SemanticTuple
+	| SemanticRecord
+	| SemanticSet
+	| SemanticMap
+;
+
+SemanticTuple  ::= SemanticExpression*;
+SemanticRecord ::= SemanticProperty+;
+SemanticSet    ::= SemanticExpression*;
+SemanticMap    ::= SemanticCase+;
+
+SemanticAccess[kind: NORMAL | OPTIONAL | CLAIM]
+	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
+
+SemanticCall
+	::= SemanticExpression SemanticType* SemanticExpression*;
+
+SemanticClaim
+	::= SemanticType SemanticExpression;
+
+SemanticOperation[operator: NOT | EMP]
+	::= SemanticExpression;
+SemanticOperation[operator: NEG]
+	::= SemanticExpression[type: Number];
+SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE | IS]
+	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
+SemanticOperation[operator: ID | EQ]
+	::= SemanticExpression[type: Object] SemanticExpression[type: Object];
+SemanticOperation[operator: AND | OR]
+	::= SemanticExpression SemanticExpression;
+SemanticOperation[operator: COND]
+	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
+
+
+
+SemanticStatement =:=
+	| SemanticDeclaration
+	| SemanticStatementExpression
+	| SemanticAssignment
+;
+
+
+
+SemanticDeclaration =:=
+	| SemanticDeclarationType
+	| SemanticDeclarationVariable
+;
+
+SemanticDeclarationType
+	::= SemanticTypeAlias SemanticType;
+
+SemanticDeclarationVariable[unfixed: Boolean]
+	::= SemanticVariable SemanticType SemanticExpression;
+
+
+
+SemanticStatementExpression
+	::= SemanticExpression?;
+
+
+
+SemanticAssignment
+	::= (SemanticVariable | SemanticAccess) SemanticExpression;
+
+
+
+SemanticGoal
+	::= SemanticStatement*;

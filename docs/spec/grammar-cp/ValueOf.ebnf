@@ -1,0 +1,272 @@
+Or<Null, Boolean, Number, String> ValueOf(SemanticConstant const) :=
+	1. *Return:* `const.value`.
+;
+
+
+
+Object! ValueOf(SemanticVariable var) :=
+	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
+		1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
+		2. *If* `symbol.unfixed` is `false`:
+			1. *Assert:* `symbol.value` is not *none*.
+			2. *Return:* `symbol.value`.
+	2. *Throw:* `none`.
+;
+
+
+
+String! ValueOf(SemanticTemplate tpl) :=
+	1. *Let* `values` be a mapping for each `node` in `tpl.children` to *Unwrap:* `ValueOf(node)`.
+	2. *Let* `strings` be a mapping for each `value` in `values` to `ToString(value)`.
+	3. *Return:* the string-concatenation of each item in `strings`, preserving order.
+;
+
+
+
+Tuple! ValueOf(SemanticTuple tuple) :=
+	1. *Let* `data` be a mapping of `tuple` for each `it` to *Unwrap:* `ValueOf(it)`.
+	2. *Return:* a new Tuple containing the items in the sequence `data`.
+;
+
+
+
+Record! ValueOf(SemanticRecord record) :=
+	1. *Let* `data` be a new Structure.
+	2. *For each* `property` in `record`:
+		1. Set `data` to a new Structure [
+			...data,
+			`property.children.0.id`= *Unwrap:* `ValueOf(property.children.1)`,
+		].
+	3. *Return:* a new Record containing the properties in the structure `data`.
+;
+
+
+
+Set! ValueOf(SemanticSet set) :=
+	1. *Let* `data` be a mapping of `set` for each `el` to *Unwrap:* `ValueOf(el)`.
+	2. *Return:* a new Set containing the items in the sequence `data`.
+;
+
+
+
+Map! ValueOf(SemanticMap map) :=
+	1. *Let* `data` be a mapping of `map` for each `case` to a new Sequence [
+		*Unwrap:* `ValueOf(case.children.0)`,
+		*Unwrap:* `ValueOf(case.children.1)`,
+	].
+	2. *For each* `it` in `data`:
+		1. *Assert:* `it.count` is 2.
+	3. *Return:* a new Map containing the pairs in the sequence `data`.
+;
+
+
+
+Object! ValueOf(SemanticAccess access) :=
+	1. *Assert:* `access.children.count` is 2.
+	2. *Let* `base` be `access.children.0`.
+	3. *Let* `accessor` be `access.children.1`.
+	4. *Let* `base_value` be *Unwrap:* `ValueOf(base)`.
+	5. *If* `access.kind` is `OPTIONAL` *and* *UnwrapAffirm:* `Equal(base_value, null)`:
+		1. *Return:* `base_value`.
+	6. *If* `accessor` is a SemanticIndex:
+		1. *Assert:* `accessor.children.count` is 1.
+		2. *Let* `accessor_value` be *Unwrap:* `ValueOf(accessor.children.0)`.
+		3. *Assert:* `accessor_value` is an instance of `Integer`.
+		4. *If* `base_value` is an instance of `Tuple`:
+			1. *Assert:* `accessor_value` is an index in `base_value`.
+			2. *Return:* the item accessed at index `accessor_value` in `base_value`.
+		5. *Else:*
+			1. *Assert:* `base_value` is an instance of `List`.
+			2. *If* `accessor_value` is an index in `base_value`:
+				1. *Return:* the item accessed at index `accessor_value` in `base_value`.
+			3. *If* `access.kind` is `OPTIONAL`:
+				1. *Return:* `null`.
+	7. *Else If* `accessor` is a SemanticKey:
+		1. *Let* `id` be `accessor.id`.
+		2. *If* `base_value` is an instance of `Record`:
+			1. *Assert:* `id` is a key in `base_value`.
+			2. *Return:* the value accessed at key `id` in `base_value`.
+		3. *Else:*
+			1. *Assert:* `base_value` is an instance of `Dict`.
+			2. *If* `id` is a key in `base_value`:
+				1. *Return:* the value accessed at key `id` in `base_value`.
+			3. *If* `access.kind` is `OPTIONAL`:
+				1. *Return:* `null`.
+	8. *Else:*
+		1. *Assert:* `accessor` is a SemanticExpression.
+		2. *Let* `accessor_value` be *Unwrap:* `ValueOf(accessor)`.
+		3. *If* `base_value` is an instance of `Tuple`:
+			1. *Assert:* `accessor_value` is an instance of `Integer` *and* `accessor_value` is an index in `base_value`.
+			2. *Return:* the item accessed at index `accessor_value` in `base_value`.
+		4. *Else If* `base_value` is an instance of `List`:
+			1. *If* `accessor_value` is an index in `base_value`:
+				1. *Return:* the item accessed at index `accessor_value` in `base_value`.
+			2. *If* `access.kind` is `OPTIONAL`:
+				1. *Return:* `null`.
+		5. *Else If* `base_value` is an instance of `Set`:
+			1. *If* `accessor_value` is in `base_value`:
+				1. *Return:* `true`.
+			2. *Else*:
+				1. *Return:* `false`.
+		6. *Else:*
+			1. *Assert*: `base_value` is an instance of `Map`.
+			2. Find an antecedent `k` in `base_value` such that `Identical(k, accessor_value)`.
+			3. *If* `k` exists:
+				1. *Return:* the consequent accessed at antecedent `k` in `base_value`.
+			4. *If*: `access.kind` is `OPTIONAL`:
+				1. *Return:* `null`.
+	9. *Throw:* a new VoidError.
+;
+
+
+
+Object! ValueOf(SemanticCall call) :=
+	1. *Assert:* `call.children.count` is greater than or equal to 1.
+	2. *Let* `base` be `call.children.0`.
+	3. *If* `base.source` is "List":
+		1. *Assert:* `call.children.count` is 2 or 3.
+		2. *If* `call.children.count` is 2:
+			1. *Note:* The call looks like "List.<T>()".
+			2. *Return:* a new empty List.
+		3. *Note:* The call looks like "List.<T>(arg)".
+		4. *Let* `tuple` be *Unwrap:* `ValueOf(call.children.2)`.
+		5. *Return:* a new List containing the items in `tuple`.
+	5. *Else If* `base.source` is "Dict":
+		1. *Assert:* `call.children.count` is 2 or 3.
+		2. *If* `call.children.count` is 2:
+			1. *Note:* The call looks like "Dict.<T>()".
+			2. *Return:* a new empty Dict.
+		3. *Note:* The call looks like "Dict.<T>(arg)".
+		4. *Let* `record` be *Unwrap:* `ValueOf(call.children.2)`.
+		5. *Return:* a new Dict containing the properties in `record`.
+	6. *Else If* `base.source` is "Set":
+		1. *Assert:* `call.children.count` is 2 or 3.
+		2. *If* `call.children.count` is 2:
+			1. *Note:* The call looks like "Set.<T>()".
+			2. *Return:* a new empty Set.
+		3. *Note:* The call looks like "Set.<T>(arg)".
+		4. *Let* `tuple` be *Unwrap:* `ValueOf(call.children.2)`.
+		5. *Return:* a new Set containing the items in `tuple`.
+	7. *Assert:* `base.source` is "Map".
+	8. *Assert:* `call.children.count` is 2 or 3 or 4.
+	9. *If* `call.children.count` is 2:
+		1. *Note:* The call looks like "Map.<K>()".
+		2. *Return:* a new empty Map.
+	10. *Else If* `call.children.count` is 3:
+		1. *If* `call.children.2` is a SemanticType:
+			1. *Note:* The call looks like "Map.<K, V>()".
+			2. *Return:* a new empty Map.
+		2. *Else:*
+			1. *Note:* The call looks like "Map.<K>(arg)".
+			2. *Let* `tuple` be *Unwrap:* `ValueOf(call.children.2)`.
+			3. *Return:* a new Map containing the pairs in `tuple`.
+	11. *Note:* The call looks like "Map.<K, V>(arg)".
+	12. *Let* `tuple` be *Unwrap:* `ValueOf(call.children.3)`.
+	13. *Return:* a new Map containing the pairs in `tuple`.
+;
+
+
+
+Object! ValueOf(SemanticClaim claim) :=
+	1. *Assert:* `claim.children.count` is 2.
+	2. *Return:* `ValueOf(claim.children.1)`.
+;
+
+
+
+Boolean! ValueOf(SemanticOperation[operator: NOT] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *If* *UnwrapAffirm:* `ToBoolean(operand)` is `true`:
+		1. *Return:* `false`.
+	4. *Return:* `true`.
+;
+
+Boolean! ValueOf(SemanticOperation[operator: EMP] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *If* *UnwrapAffirm:* `ToBoolean(operand)` is `false`:
+		1. *Return:* `true`.
+	4. *If* `operand` is an instance of `Integer` *and* `operand` is `0`:
+		1. *Return:* `true`.
+	5. *If* `operand` is an instance of `Float` *and* `operand` is `0.0` or `-0.0`:
+		1. *Return:* `true`.
+	6. *If* `operand` is an instance of `String` *and* `operand` contains 0 codepoints:
+		1. *Return:* `true`.
+	7. *If* `operand` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `operand.count` is 0:
+		1. *Return:* `true`.
+	8. *Return:* `false`.
+;
+
+Number! ValueOf(SemanticOperation[operator: NEG] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Assert:* `operand` is an instance of `Number`.
+	4. *Let* `negation` be the additive inverse, `-operand`,
+		obtained by negating `operand`.
+	5. *Return:* `negation`.
+;
+
+Number! ValueOf(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Let* `operand1` be *Unwrap:* `ValueOf(expr.children.1)`.
+	4. *Assert*: `operand0` is an instance of `Number` *and* `operand1` is an instance of `Number`.
+	5. *If* `operand0` is an instance of `Integer` *and* `operand1` is an instance of `Integer`:
+		1. *Return:* `Integer(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, operand0, operand1))`.
+	6. *Return:* `Float(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, Float(operand0), Float(operand1)))`.
+;
+
+Boolean! ValueOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Let* `operand1` be *Unwrap:* `ValueOf(expr.children.1)`.
+	4. *Assert*: `operand0` is an instance of `Number` *and* `operand1` is an instance of `Number`.
+	5. *If* `operand0` is an instance of `Integer` *and* `operand1` is an instance of `Integer`:
+		1. *Return:* `PerformBinaryCompare(expr.operator, operand0, operand1)`.
+	6. *Return:* `PerformBinaryCompare(expr.operator, Float(float0), Float(float1))`.
+;
+
+Boolean! ValueOf(SemanticOperation[operator: IS] expr) :=
+	1. *Throw:* new TypeError "Operator not yet supported.".
+;
+
+Boolean! ValueOf(SemanticOperation[operator: ID] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Let* `operand1` be *Unwrap:* `ValueOf(expr.children.1)`.
+	4. *Return:* `Identical(operand0, operand1)`.
+;
+
+Boolean! ValueOf(SemanticOperation[operator: EQ] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Let* `operand1` be *Unwrap:* `ValueOf(expr.children.1)`.
+	4. *Return:* `Equal(operand0, operand1)`.
+;
+
+Object! ValueOf(SemanticOperation[operator: AND] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *If* *UnwrapAffirm:* `ToBoolean(operand0)` is `false`:
+		1. *Return:* `operand0`.
+	4. *Return:* `ValueOf(expr.children.1)`.
+;
+
+Object! ValueOf(SemanticOperation[operator: OR] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *If* *UnwrapAffirm:* `ToBoolean(operand0)` is `true`:
+		1. *Return:* `operand0`.
+	4. *Return:* `ValueOf(expr.children.1)`.
+;
+
+Object! ValueOf(SemanticOperation[operator: COND] expr) :=
+	1. *Assert:* `expr.children.count` is 3.
+	2. *Let* `condition` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Assert:* `condition` is an instance of `Boolean`.
+	4. *If* `condition` is `true`:
+		1. *Return:* `ValueOf(expr.children.1)`.
+	5. *Else:*
+		1. *Return:* `ValueOf(expr.children.2)`.
+;

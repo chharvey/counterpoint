@@ -2,7 +2,7 @@ import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDe
 import {
 	LexError01,
 	CodeUnit,
-	SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
 	Punctuator,
 	PUNCTUATORS,
@@ -37,7 +37,7 @@ const COMMENTER_MULTI    = '%%';
 function tokenWorthInt(
 	text: string,
 	radix: RadixType = RADIX_DEFAULT,
-	allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+	allow_separators: CPConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
 ): number {
 	if (text.length === 0) { throw new Error('Cannot compute mathematical value of empty string.'); }
 	if (allow_separators && text[text.length - 1] === SEPARATOR) {
@@ -56,7 +56,7 @@ function tokenWorthInt(
 }
 function tokenWorthFloat(
 	text: string,
-	allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+	allow_separators: CPConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
 ): number {
 	const base:       number = Number(RADIX_DEFAULT);
 	const pointindex: number = text.indexOf(POINT);
@@ -75,8 +75,8 @@ function tokenWorthFloat(
 }
 function tokenWorthString(
 	text: string,
-	allow_comments:   SolidConfig['languageFeatures']['comments']          = CONFIG_DEFAULT.languageFeatures.comments,
-	allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+	allow_comments:   CPConfig['languageFeatures']['comments']          = CONFIG_DEFAULT.languageFeatures.comments,
+	allow_separators: CPConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
 ): CodeUnit[] {
 	if (text.length === 0) {
 		return [];
@@ -205,7 +205,7 @@ export class Validator {
 	 * @param config configuration settings
 	 * @return       the numeric value, cooked, along with whether the cooked value is a float
 	 */
-	static cookTokenNumber(source: string, config: SolidConfig): [number, boolean] {
+	static cookTokenNumber(source: string, config: CPConfig): [number, boolean] {
 		const is_float:   boolean   = source.indexOf(POINT) > 0;
 		const has_unary:  boolean   = ([Punctuator.AFF, Punctuator.NEG] as string[]).includes(source[0]);
 		const multiplier: number    = (has_unary && source[0] === Punctuator.NEG) ? -1 : 1;
@@ -243,7 +243,7 @@ export class Validator {
 	 * @param config configuration settings
 	 * @return       the text value, cooked
 	 */
-	static cookTokenString(source: string, config: SolidConfig): CodeUnit[] {
+	static cookTokenString(source: string, config: CPConfig): CodeUnit[] {
 		return tokenWorthString(
 			source.slice(DELIM_STRING.length, -DELIM_STRING.length),
 			config.languageFeatures.comments,
@@ -285,7 +285,7 @@ export class Validator {
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		readonly config: SolidConfig = CONFIG_DEFAULT,
+		readonly config: CPConfig = CONFIG_DEFAULT,
 	) {
 	}
 

@@ -1,5 +1,5 @@
 import type {AST} from './package.js';
-import {SolidReferenceError} from './SolidReferenceError.js';
+import {ReferenceError} from './ReferenceError.js';
 
 
 
@@ -10,7 +10,7 @@ import {SolidReferenceError} from './SolidReferenceError.js';
  * % (This is called a Temporal Dead Zone.)
  * let my_var: int = 42;
  */
-export class ReferenceError02 extends SolidReferenceError {
+export class ReferenceError02 extends ReferenceError {
 	/** The number series of this class of errors. */
 	static override readonly CODE = 2;
 	/**
