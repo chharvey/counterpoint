@@ -67,14 +67,14 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(returntype, argtype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argtype, returntype, this, this.validator);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (
-							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Tuple) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)                                      ? argtype.itemTypes()                :
+							(TYPE.TypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof TYPE.TypeTuple)  ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
-						ASTNodeCP.typeCheckAssignment(itemtype, argitemtype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this, this.validator);
 					}
 				}
 				return returntype.mutableOf();
@@ -86,14 +86,14 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(returntype, argtype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argtype, returntype, this, this.validator);
 					} catch (err) {
 						const argvaluetype: TYPE.Type = (
-							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Record) ? argtype.value.toType().valueTypes() :
-							(argtype instanceof TYPE.TypeRecord)                                      ? argtype.valueTypes()                :
+							(TYPE.TypeRecord.isUnitType(argtype)) ? argtype.value.toType().valueTypes() :
+							(argtype instanceof TYPE.TypeRecord)  ? argtype.valueTypes()                :
 							(() => { throw err; })()
 						);
-						ASTNodeCP.typeCheckAssignment(valuetype, argvaluetype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this, this.validator);
 					}
 				}
 				return returntype.mutableOf();
@@ -105,14 +105,14 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(new TYPE.TypeList(eltype), argtype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(eltype), this, this.validator);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (
-							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Tuple) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)                                      ? argtype.itemTypes()                :
+							(TYPE.TypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof TYPE.TypeTuple)  ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
-						ASTNodeCP.typeCheckAssignment(eltype, argitemtype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this, this.validator);
 					}
 				}
 				return returntype.mutableOf();
@@ -126,14 +126,14 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(new TYPE.TypeList(entrytype), argtype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(entrytype), this, this.validator);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (
-							(argtype instanceof TYPE.TypeUnit && argtype.value instanceof OBJ.Tuple) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)                                      ? argtype.itemTypes()                :
+							(TYPE.TypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof TYPE.TypeTuple)  ? argtype.itemTypes()                :
 							(() => { throw err; })()
 						);
-						ASTNodeCP.typeCheckAssignment(entrytype, argitemtype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this, this.validator);
 					}
 				}
 				return returntype.mutableOf();

@@ -539,6 +539,9 @@ describe('Type', () => {
 			it('Invariance for mutable tuples: `A == B --> mutable Tuple.<A> <: mutable Tuple.<B>`.', () => {
 				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.Type.INT, TYPE.Type.FLOAT], true).isSubtypeOf(TYPE.TypeTuple.fromTypes([TYPE.Type.INT.union(TYPE.Type.NULL), TYPE.Type.FLOAT.union(TYPE.Type.NULL)], true)), `mutable [int, float] !<: mutable [int?, float?]`);
 			});
+			it('is not a subtype of List', () => {
+				return assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.Type.INT], true).isSubtypeOf(new TYPE.TypeList(TYPE.Type.INT, true)), `mutable [int] !<: mutable int[]`);
+			});
 		});
 
 		describe('TypeRecord', () => {
@@ -564,7 +567,7 @@ describe('Type', () => {
 					[0x102n, TYPE.Type.OBJ],
 					[0x100n, TYPE.Type.INT.union(TYPE.Type.FLOAT)],
 				]))), `[x: int, y: bool, z: str] <: [y: bool!, z: obj, x: int | float];`);
-				false && assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.Type.INT],
 					[0x101n, TYPE.Type.BOOL],
 					[0x102n, TYPE.Type.STR],
@@ -633,6 +636,11 @@ describe('Type', () => {
 					[0x100n, TYPE.Type.INT.union(TYPE.Type.NULL)],
 					[0x101n, TYPE.Type.FLOAT.union(TYPE.Type.NULL)],
 				]), true)), `mutable [a: int, b: float] !<: mutable [a: int?, b: float?]`);
+			});
+			it('is not a subtype of Dict', () => {
+				return assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+					[0x100n, TYPE.Type.INT],
+				]), true).isSubtypeOf(new TYPE.TypeDict(TYPE.Type.INT, true)), `mutable [a: int] !<: mutable [: int]`);
 			});
 		});
 

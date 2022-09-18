@@ -44,14 +44,14 @@ export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
 
 
 
-export function typeUnitInt(x: bigint): TYPE.TypeUnit {
-	return new TYPE.TypeUnit(new OBJ.Integer(x));
+export function typeUnitInt(x: bigint): TYPE.TypeUnit<OBJ.Integer> {
+	return new TYPE.TypeUnit<OBJ.Integer>(new OBJ.Integer(x));
 }
-export function typeUnitFloat(x: number): TYPE.TypeUnit {
-	return new TYPE.TypeUnit(new OBJ.Float(x));
+export function typeUnitFloat(x: number): TYPE.TypeUnit<OBJ.Float> {
+	return new TYPE.TypeUnit<OBJ.Float>(new OBJ.Float(x));
 }
-export function typeUnitStr(x: string): TYPE.TypeUnit {
-	return new TYPE.TypeUnit(new OBJ.String(x));
+export function typeUnitStr(x: string): TYPE.TypeUnit<OBJ.String> {
+	return new TYPE.TypeUnit<OBJ.String>(new OBJ.String(x));
 }
 
 export function instructionConstInt(x: bigint): INST.InstructionConst {

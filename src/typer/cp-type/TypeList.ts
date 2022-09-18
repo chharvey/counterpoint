@@ -3,10 +3,20 @@ import {
 	OBJ,
 } from './package.js';
 import {Type} from './Type.js';
+import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeList extends Type {
+	/**
+	 * Is the argument a unit list type?
+	 * @return whether the argument is a `TypeUnit` and its value is a `List`
+	 */
+	static isUnitType(type: Type): type is TypeUnit<OBJ.List> {
+		return type instanceof TypeUnit && type.value instanceof OBJ.List;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**

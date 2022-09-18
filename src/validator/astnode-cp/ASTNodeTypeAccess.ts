@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import {
 	TYPE,
 	OBJ,
-	TypeError04,
 	memoizeMethod,
 	CPConfig,
 	CONFIG_DEFAULT,
@@ -35,26 +34,16 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		if (this.accessor instanceof ASTNodeIndexType) {
-			const accessor_type: TYPE.Type = this.accessor.val.eval();
-			return (
-				(base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Tuple) ? (
-					(accessor_type instanceof TYPE.TypeUnit)
-						? base_type.value.toType().get(accessor_type.value as OBJ.Integer, Operator.DOT, this.accessor)
-						: base_type.value.toType().itemTypes()
-				) :
-				(base_type instanceof TYPE.TypeTuple) ? (
-					(accessor_type instanceof TYPE.TypeUnit)
-						? base_type.get(accessor_type.value as OBJ.Integer, Operator.DOT, this.accessor)
-						: base_type.itemTypes()
-				) :
-				(() => { throw new TypeError04('index', base_type, this.accessor); })()
-			);
+			const accessor_type = this.accessor.val.eval() as TYPE.TypeUnit<OBJ.Integer>;
+			const base_type_tuple: TYPE.TypeTuple = (TYPE.TypeTuple.isUnitType(base_type))
+				? base_type.value.toType()
+				: base_type as TYPE.TypeTuple;
+			return base_type_tuple.get(accessor_type.value, Operator.DOT, this.accessor);
 		} else /* (this.accessor instanceof ASTNodeKey) */ {
-			return (
-				(base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Record) ? base_type.value.toType().get(this.accessor.id, Operator.DOT, this.accessor) :
-				(base_type instanceof TYPE.TypeRecord) ? base_type.get(this.accessor.id, Operator.DOT, this.accessor) :
-				(() => { throw new TypeError04('property', base_type, this.accessor); })()
-			);
+			const base_type_record: TYPE.TypeRecord = (TYPE.TypeRecord.isUnitType(base_type))
+				? base_type.value.toType()
+				: base_type as TYPE.TypeRecord;
+			return base_type_record.get(this.accessor.id, Operator.DOT, this.accessor);
 		}
 	}
 }

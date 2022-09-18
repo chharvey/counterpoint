@@ -46,8 +46,8 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 
 	override toType(): TypeMap {
 		return (this.cases.size) ? new TypeMap(
-			Type.unionAll([...this.cases.keys()]  .map<Type>((ant) => new TypeUnit(ant))),
-			Type.unionAll([...this.cases.values()].map<Type>((con) => new TypeUnit(con))),
+			Type.unionAll([...this.cases.keys()]  .map<Type>((ant) => new TypeUnit<K>(ant))),
+			Type.unionAll([...this.cases.values()].map<Type>((con) => new TypeUnit<V>(con))),
 		) : new TypeMap(Type.NEVER, Type.NEVER);
 	}
 

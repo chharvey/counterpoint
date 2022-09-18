@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
@@ -9,6 +10,7 @@ import {
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
 } from './package.js';
+import {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
@@ -45,5 +47,29 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		return (items.includes(null))
 			? null
 			: new OBJ.Tuple(items as OBJ.Object[]);
+	}
+
+	protected override assignTo_do(assignee: TYPE.Type): boolean {
+		if (TYPE.TypeTuple.isUnitType(assignee) || assignee instanceof TYPE.TypeTuple) {
+			const assignee_type_tuple: TYPE.TypeTuple = (TYPE.TypeTuple.isUnitType(assignee))
+				? assignee.value.toType()
+				: assignee;
+			if (this.children.length < assignee_type_tuple.count[0]) {
+				return false;
+			}
+			xjs.Array.forEachAggregated(assignee_type_tuple.types, (thattype, i) => {
+				const expr: ASTNodeExpression | undefined = this.children[i];
+				if (expr) {
+					return ASTNodeCP.typeCheckAssignment(
+						expr.type(),
+						thattype.type,
+						expr,
+						this.validator,
+					);
+				}
+			});
+			return true;
+		}
+		return false;
 	}
 }

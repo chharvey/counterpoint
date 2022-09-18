@@ -25,8 +25,8 @@ export class TypeUnion extends Type {
 	 * @param right the second type
 	 */
 	constructor (
-		private readonly left:  Type,
-		private readonly right: Type,
+		public readonly left:  Type,
+		public readonly right: Type,
 	) {
 		super(false, xjs.Set.union(left.values, right.values, languageValuesIdentical));
 		this.isBottomType = this.left.isBottomType && this.right.isBottomType;

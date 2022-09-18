@@ -37,7 +37,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		);
 	}
 
-	private _value: OBJ.Object | null = null;
+	private _value: OBJ.Primitive | null = null;
 
 	constructor (start_node:
 		| SyntaxNodeType<'integer'>
@@ -74,7 +74,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	override type(): TYPE.Type {
-		return new TYPE.TypeUnit(this.value);
+		return new TYPE.TypeUnit<OBJ.Primitive>(this.value);
 	}
 	@memoizeMethod
 	override fold(): OBJ.Object {
