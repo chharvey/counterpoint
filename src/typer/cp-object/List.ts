@@ -15,7 +15,7 @@ export class List<T extends Object = Object> extends CollectionIndexed<T> {
 	override toType(): TypeList {
 		return new TypeList(
 			(this.items.length)
-				? Type.unionAll(this.items.map<Type>((el) => new TypeUnit(el)))
+				? Type.unionAll(this.items.map<Type>((el) => new TypeUnit<T>(el)))
 				: Type.NEVER,
 		);
 	}

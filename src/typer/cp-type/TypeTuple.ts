@@ -8,10 +8,20 @@ import {
 } from './package.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
+import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeTuple extends Type {
+	/**
+	 * Is the argument a unit tuple type?
+	 * @return whether the argument is a `TypeUnit` and its value is a `Tuple`
+	 */
+	static isUnitType(type: Type): type is TypeUnit<OBJ.Tuple> {
+		return type instanceof TypeUnit && type.value instanceof OBJ.Tuple;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**
@@ -34,7 +44,7 @@ export class TypeTuple extends Type {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		private readonly types: readonly TypeEntry[] = [],
+		public readonly types: readonly TypeEntry[] = [],
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new OBJ.Tuple()]));
@@ -45,7 +55,7 @@ export class TypeTuple extends Type {
 	}
 
 	/** The possible number of items in this tuple type. */
-	private get count(): IntRange {
+	public get count(): IntRange {
 		return [
 			BigInt(this.types.filter((it) => !it.optional).length),
 			BigInt(this.types.length) + 1n,

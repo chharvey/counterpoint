@@ -13,6 +13,7 @@ import {
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 import {ASTNodeAccess} from './ASTNodeAccess.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
 
@@ -46,12 +47,19 @@ export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
 				throw new MutabilityError01(base_type, this);
 			}
 		}
-		return ASTNodeCP.typeCheckAssignment(
-			this.assignee.type(),
-			this.assigned.type(),
-			this,
-			this.validator,
-		);
+		const assignee_type: TYPE.Type = this.assignee.type();
+		try {
+			return ASTNodeCP.typeCheckAssignment(
+				this.assigned.type(),
+				assignee_type,
+				this,
+				this.validator,
+			);
+		} catch (err) {
+			if (!(this.assigned instanceof ASTNodeCollectionLiteral && this.assigned.assignTo(assignee_type))) {
+				throw err;
+			}
+		}
 	}
 	override build(builder: Builder): INST.InstructionStatement {
 		const tofloat: boolean = this.assignee.type().isSubtypeOf(TYPE.Type.FLOAT) || this.assigned.shouldFloat();

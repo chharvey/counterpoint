@@ -1,9 +1,19 @@
 import {OBJ} from './package.js';
 import {Type} from './Type.js';
+import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeMap extends Type {
+	/**
+	 * Is the argument a unit map type?
+	 * @return whether the argument is a `TypeUnit` and its value is a `Map`
+	 */
+	static isUnitType(type: Type): type is TypeUnit<OBJ.Map> {
+		return type instanceof TypeUnit && type.value instanceof OBJ.Map;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**
@@ -13,8 +23,8 @@ export class TypeMap extends Type {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		readonly antecedenttypes: Type,
-		readonly consequenttypes: Type,
+		public readonly antecedenttypes: Type,
+		public readonly consequenttypes: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new OBJ.Map()]));
