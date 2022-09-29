@@ -35,7 +35,7 @@ The **return statement** declares the return value, or “output”, which is pr
 To execute the function, we have to **call** it. Calling a function involves sending in **arguments**,
 which are values used as its inputs. When the function returns, it usually returns a result.
 ```
-let result: float = compute_hypotenuse.(3.0, 4.0); % returns `5.0`
+let result: float = compute_hypotenuse.(3.0, 4.0); %=> 5.0
 ```
 Named functions must be called by name. It’s a compile-time error to reference a named function without calling it.
 ```
@@ -64,9 +64,9 @@ In the example above, `message` is a parameter, and `'Hello world!'` is an argum
 The caller of a function may supply different arguments every time the function is called.
 If that function is not void, then it’s most likely going to return different outputs.
 ```
-let x: float = compute_hypotenuse.( 3.0,  4.0); % returns  `5.0`
-let y: float = compute_hypotenuse.( 6.0,  8.0); % returns `10.0`
-let z: float = compute_hypotenuse.(12.0, 16.0); % returns `20.0`
+let x: float = compute_hypotenuse.( 3.0,  4.0); %=>  5.0
+let y: float = compute_hypotenuse.( 6.0,  8.0); %=> 10.0
+let z: float = compute_hypotenuse.(12.0, 16.0); %=> 20.0
 ```
 
 One of the most confusing things to understand about functions
@@ -138,7 +138,7 @@ fold.([1, 2, 3], (a: int, b: int): int { return a + b; }); %== 6
 ```
 we can return them as [closures](#closures),
 ```
-func adder(augend: int): (int) => int {
+func adder(augend: int): ((int) => int) {
 	return [augend](addend: int): int { return augend + addend; };
 	%      ^ this is called ‘capturing’ --- don’t worry about it for now
 }
@@ -172,7 +172,7 @@ let message: str = ((): str {
 	set m = '''{{ m }}world!''';
 	return m;
 }).();
-% m is not visible outside the function
+% `m` is not visible outside the function
 message; %== 'Hello world!'
 ```
 
@@ -209,7 +209,7 @@ move_2d.(my_player,    1.0,    2.0);
 move_2d.(my_player, x= 1.0, y= 2.0); % same as above
 move_2d.(my_player, y= 2.0, x= 1.0); % same as above
 
-move_2d.(x= 2.0, y= 1.0, my_player); % ParseError
+move_2d.(x= 2.0, y= 1.0, my_player); %> ParseError
 ```
 Notice that not all arguments have to be named, but the arguments that *are* named
 don’t have to appear in the same order as their assigned parameters.
@@ -435,7 +435,7 @@ func mutate(param: mutable [int]): void {
 	set param.0 = 43;
 }
 mutate.(arg);
-arg; % modified to [43]
+arg; % modified to `[43]`
 ```
 This contrasts to “call-by-value”, where a *copy* of the object
 is sent into the function so that no modifications apply to the original.
