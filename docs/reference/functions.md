@@ -19,7 +19,7 @@ The new function object is called a **named function** because it’s given an i
 and it must be called by name.
 The following statement is a function declaration.
 ```
-func computeHypotenuse(a: float, b: float): float {
+func compute_hypotenuse(a: float, b: float): float {
 	let aa: float = a ^ 2;
 	let bb: float = b ^ 2;
 	let cc: float = aa + bb;
@@ -35,14 +35,14 @@ The **return statement** declares the return value, or “output”, which is pr
 To execute the function, we have to **call** it. Calling a function involves sending in **arguments**,
 which are values used as its inputs. When the function returns, it usually returns a result.
 ```
-let result: float = computeHypotenuse.(3.0, 4.0); % returns `5.0`
+let result: float = compute_hypotenuse.(3.0, 4.0); % returns `5.0`
 ```
 Named functions must be called by name. It’s a compile-time error to reference a named function without calling it.
 ```
-computeHypotenuse || null;              %> Error
-(computeHypotenuse || null).(3.0, 4.0); %> Error
+compute_hypotenuse || null;              %> Error
+(compute_hypotenuse || null).(3.0, 4.0); %> Error
 ```
-> Error: Named function `computeHypotenuse` is not called by name.
+> Error: Named function `compute_hypotenuse` is not called by name.
 
 
 Not all functions need to have an output when they return — those are called **void functions**.
@@ -64,9 +64,9 @@ In the example above, `message` is a parameter, and `'Hello world!'` is an argum
 The caller of a function may supply different arguments every time the function is called.
 If that function is not void, then it’s most likely going to return different outputs.
 ```
-let x: float = computeHypotenuse.( 3.0,  4.0); % returns  `5.0`
-let y: float = computeHypotenuse.( 6.0,  8.0); % returns `10.0`
-let z: float = computeHypotenuse.(12.0, 16.0); % returns `20.0`
+let x: float = compute_hypotenuse.( 3.0,  4.0); % returns  `5.0`
+let y: float = compute_hypotenuse.( 6.0,  8.0); % returns `10.0`
+let z: float = compute_hypotenuse.(12.0, 16.0); % returns `20.0`
 ```
 
 One of the most confusing things to understand about functions
@@ -201,15 +201,15 @@ we would have to explicitly enclose the function in grouping symbols: `((): bool
 The arguments we send into a function may be **named**, which only means they’re preceded by a label.
 The labels indicate which of the function’s parameters the argument is assigned to.
 ```
-func move2D(player: Player, x: float, y: float): void {
+func move_2d(player: Player, x: float, y: float): void {
 	'''Player {{ player }} has moved {{ x }} horizontally and {{ y }} vertically.''';
 }
 
-move2D.(my_player,    1.0,    2.0);
-move2D.(my_player, x= 1.0, y= 2.0); % same as above
-move2D.(my_player, y= 2.0, x= 1.0); % same as above
+move_2d.(my_player,    1.0,    2.0);
+move_2d.(my_player, x= 1.0, y= 2.0); % same as above
+move_2d.(my_player, y= 2.0, x= 1.0); % same as above
 
-move2D.(x= 2.0, y= 1.0, my_player); % ParseError
+move_2d.(x= 2.0, y= 1.0, my_player); % ParseError
 ```
 Notice that not all arguments have to be named, but the arguments that *are* named
 don’t have to appear in the same order as their assigned parameters.
@@ -354,19 +354,19 @@ iterate.([2.0, 4.0, 8.0, 16.0], (n: float): void {
 In a function call, arguments are evaluated *before* being sent.
 This might be counter-intuitive for some programmers who are used to evaluation being left-to-right.
 ```
-func sayAll(message1: str, message2: str): void {
+func say_all(message1: str, message2: str): void {
 	print.('printing...');
 	print.('''{{ message1 }} {{ message2 }}''');
 }
-func sayHello(): str {
+func say_hello(): str {
 	print.('hello');
 	return 'hello';
 }
-func sayHello(): str {
+func say_world(): str {
 	print.('world');
 	return 'world';
 }
-sayAll.(sayHello.(), sayWorld.());
+say_all.(say_hello.(), say_world.());
 ```
 In this example, the order of prints is:
 1. `'hello'`
@@ -376,22 +376,22 @@ In this example, the order of prints is:
 
 To emulate lazy evaluation, we can use lambdas.
 ```
-func sayAll(message1: () => str, message2: () => str): void {
+func say_all(message1: () => str, message2: () => str): void {
 	print.('printing...');
 	% call in any order you like
 	let w: str = message2.();
 	let h: str = message1.();
 	print.('''{{ h }} {{ w }}''');
 }
-func sayHello(): str {
+func say_hello(): str {
 	print.('hello');
 	return 'hello';
 }
-func sayHello(): str {
+func say_world(): str {
 	print.('world');
 	return 'world';
 }
-sayAll.(() => sayHello.(), () => sayWorld.());
+say_all.(() => say_hello.(), () => say_world.());
 ```
 1. `'printing...'`
 2. `'world'`
@@ -420,7 +420,7 @@ not the object, is sent into the function and thus may be reassigned by it.
 
 Notice that a parameter must be declared `unfixed` in order for it to be reassigned.
 ```
-func reassignBoth(unfixed a: int, b: int): void {
+func reassign_both(unfixed a: int, b: int): void {
 	set a += 1; % ok
 	set b -= 1; %> AssignmentError
 }
