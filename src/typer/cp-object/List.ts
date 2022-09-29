@@ -3,12 +3,12 @@ import {
 	TypeUnit,
 	TypeList,
 } from './package.js';
-import type {Object} from './Object.js';
+import type {Object as CPObject} from './Object.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
 
 
 
-export class List<T extends Object = Object> extends CollectionIndexed<T> {
+export class List<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 	override toString(): string {
 		return `List.(${ super.toString() })`;
 	}

@@ -4,6 +4,7 @@ import {
 	CodeUnit,
 	CPConfig,
 	CONFIG_DEFAULT,
+	Serializable,
 	Punctuator,
 	PUNCTUATORS,
 	Keyword,
@@ -130,11 +131,11 @@ function tokenWorthString(
 		}
 	} else if (allow_comments && `${ text[0] }${ text[1] }` === COMMENTER_MULTI) {
 		/* an in-string multiline comment */
-		const match: string = text.match(/\%\%(?:\%?[^\'\%])*(?:\%\%)?/)![0];
+		const match: string = text.match(/%%(?:%?[^'%])*(?:%%)?/)![0];
 		return tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
 	} else if (allow_comments && text[0] === COMMENTER_LINE) {
 		/* an in-string line comment */
-		const match: string = text.match(/\%[^\'\n]*\n?/)![0];
+		const match: string = text.match(/%[^'\n]*\n?/)![0];
 		const rest: CodeUnit[] = tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
 		return (match[match.length - 1] === '\n') // COMBAK `match.lastItem`
 			? [...utf8Encode(0x0a), ...rest]
@@ -219,12 +220,11 @@ export class Validator {
 			['z', 36n],
 		]).get((has_unary) ? source[2] : source[1])! : RADIX_DEFAULT;
 		if (has_radix && !config.languageFeatures.integerRadices) {
-			// @ts-expect-error
 			throw new LexError01({
 				source,
 				line_index: -1,
 				col_index:  -1,
-			});
+			} as Serializable);
 		}
 		/* eslint-disable curly */
 		if (has_unary) source = source.slice(1); // cut off unary, if any

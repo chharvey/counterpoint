@@ -69,7 +69,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
 		if (!this.built) {
 			const value: OBJ.Object | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			this.built = (!!value) ? INST.InstructionConst.fromCPValue(value, to_float) : this.build_do(builder, to_float);
+			this.built = (value) ? INST.InstructionConst.fromCPValue(value, to_float) : this.build_do(builder, to_float);
 		}
 		return this.built;
 	}

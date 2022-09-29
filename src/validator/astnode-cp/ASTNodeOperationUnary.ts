@@ -71,7 +71,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return (
 			(this.operator === Operator.NOT) ? OBJ.Boolean.fromBoolean(!v0.isTruthy) :
 			(this.operator === Operator.EMP) ? OBJ.Boolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
-			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as OBJ.Number<any>) :
+			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as OBJ.Number<any>) : // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
 			throw_expression(new ReferenceError(`Operator ${ Operator[this.operator] } not found.`))
 		);
 	}

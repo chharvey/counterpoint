@@ -1,5 +1,5 @@
 import {TypeUnit} from './package.js';
-import type {Object} from './Object.js';
+import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -34,7 +34,7 @@ export class Null extends Primitive {
 		return false;
 	}
 
-	protected override identical_helper(value: Object): boolean {
+	protected override identical_helper(value: CPObject): boolean {
 		return value instanceof Null;
 	}
 }

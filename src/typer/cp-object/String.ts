@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import type {CodeUnit} from './package.js';
-import type {Object} from './Object.js';
+import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -27,7 +27,7 @@ class CPString extends Primitive {
 		return `'${ utf8.decode(String.fromCodePoint(...this.codeunits)) }'`;
 	}
 
-	protected override identical_helper(value: Object): boolean {
+	protected override identical_helper(value: CPObject): boolean {
 		return value instanceof CPString && xjs.Array.is(this.codeunits, value.codeunits);
 	}
 

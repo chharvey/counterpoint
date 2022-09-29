@@ -1,5 +1,5 @@
 import {throw_expression} from './package.js';
-import type {Object} from './Object.js';
+import type {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
 import {Float} from './index.js';
 
@@ -43,11 +43,11 @@ export class Integer extends CPNumber<Integer> {
 		return `${ this.toNumeric() }`;
 	}
 
-	protected override identical_helper(value: Object): boolean {
+	protected override identical_helper(value: CPObject): boolean {
 		return value instanceof Integer && this.internal.every((bit, i) => bit === value.internal[i]);
 	}
 
-	protected override equal_helper(value: Object): boolean {
+	protected override equal_helper(value: CPObject): boolean {
 		return value instanceof Float && this.toFloat().equal(value);
 	}
 

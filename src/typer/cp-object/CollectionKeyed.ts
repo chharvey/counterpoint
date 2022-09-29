@@ -3,7 +3,7 @@ import {
 	throw_expression,
 	AST,
 } from './package.js';
-import type {Object} from './Object.js';
+import type {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
@@ -14,7 +14,7 @@ import {Collection} from './Collection.js';
  * - Record
  * - Dict
  */
-export abstract class CollectionKeyed<T extends Object = Object> extends Collection {
+export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Collection {
 	constructor(readonly properties: ReadonlyMap<bigint, T> = new Map()) {
 		super();
 	}
@@ -29,7 +29,7 @@ export abstract class CollectionKeyed<T extends Object = Object> extends Collect
 	}
 
 	/** @final */
-	protected override equal_helper(value: Object): boolean {
+	protected override equal_helper(value: CPObject): boolean {
 		return (
 			value instanceof CollectionKeyed
 			&& this.properties.size === value.properties.size

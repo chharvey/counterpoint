@@ -67,6 +67,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				type
 			);
 		}
+		function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: TYPE.Type): never {
+			throw new TypeError02(accessor.type(), supertype, accessor.line_index, accessor.col_index);
+		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			const accessor_type:  TYPE.TypeUnit = this.accessor.val.type() as TYPE.TypeUnit;
 			const accessor_value: OBJ.Integer   = accessor_type.value as OBJ.Integer;
@@ -99,9 +102,6 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
 			const accessor_type: TYPE.Type = this.accessor.type();
-			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: TYPE.Type): never {
-				throw new TypeError02(accessor_type, supertype, accessor.line_index, accessor.col_index);
-			}
 			if (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Tuple || base_type instanceof TYPE.TypeTuple) {
 				const base_type_tuple: TYPE.TypeTuple = (base_type instanceof TYPE.TypeUnit && base_type.value instanceof OBJ.Tuple)
 					? base_type.value.toType()

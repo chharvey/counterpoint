@@ -86,6 +86,7 @@ describe('Type', () => {
 	});
 
 
+	/* eslint-disable no-useless-escape --- escapes are copied from markdown file; easier for search-and-replace */
 	describe('#intersect', () => {
 		it('1-5 | `T  & never   == never`', () => {
 			builtin_types.forEach((t) => {
@@ -709,6 +710,7 @@ describe('Type', () => {
 			});
 		});
 	});
+	/* eslint-enable no-useless-escape */
 
 
 	describe('#mutableOf', () => {

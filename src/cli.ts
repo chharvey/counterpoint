@@ -9,7 +9,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 
 
 /** The current version of this project (as defined in `package.json`). */
-const VERSION: Promise<string> = requireJSON(path.join(DIRNAME, '../package.json')).then((pkg: any) => pkg.version);
+const VERSION: Promise<string> = (requireJSON(path.join(DIRNAME, '../package.json')) as Promise<{version: string}>).then((pkg) => pkg.version);
 
 
 (async () => {

@@ -3,13 +3,23 @@
 		"es2021": true,
 		"node": true
 	},
+	"extends": [
+		"eslint:recommended",                           // https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
+		"plugin:@typescript-eslint/eslint-recommended", // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/configs/eslint-recommended.ts
+		"plugin:@typescript-eslint/recommended"         // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/configs/recommended.ts
+	],
 	"overrides": [
 		{
 			"files": ["*.{cts,mts,ts}"],
 			"rules": {
+				/* # Overrides of Recommended Rules */
+				"@typescript-eslint/no-explicit-any":       ["error", {"fixToUnknown": true}], // report as errors & quickfix `any` to `unknown`
+				"@typescript-eslint/no-inferrable-types":   "off",                             // don’t rely on TypeScript inference
+				"@typescript-eslint/no-non-null-assertion": "off",                             // non-null assertions can be useful
+
 				/* # Layout & Formatting */
 				/* ## Indentation, Spacing, and Alignment */
-				"@typescript-eslint/type-annotation-spacing": ["error"],
+				"@typescript-eslint/type-annotation-spacing": "error",
 
 				/* ## Grouping Structure Style */
 				"@typescript-eslint/adjacent-overload-signatures": "error",
@@ -34,6 +44,14 @@
 	"reportUnusedDisableDirectives": true,
 	"root": true,
 	"rules": {
+		/* # Overrides of Recommended Rules */
+		"no-irregular-whitespace": ["error", {
+			"skipStrings":  false, // disallow in strings
+			"skipComments": true   // allow in comments
+		}],
+		"no-mixed-spaces-and-tabs":          ["error", "smart-tabs"], // allow smart-tabs
+		"@typescript-eslint/no-unused-vars": "off",                   // ts(6196) & tsconfig(noUnusedLocals, noUnusedParameters)
+
 		/* # File Conventions (should be consistent with `/.editorconfig` file) */
 		"eol-last":           "error",
 		"linebreak-style":    "error",
@@ -57,7 +75,6 @@
 		}],
 		"keyword-spacing":                                "off",
 		"@typescript-eslint/keyword-spacing":             "error",
-		"no-mixed-spaces-and-tabs":                       ["error", "smart-tabs"],
 		"rest-spread-spacing":                            "error",
 		"semi-spacing":                                   "error",
 		"space-before-blocks":                            "off",
@@ -108,8 +125,6 @@
 		"comma-style":                      "error",
 		"implicit-arrow-linebreak":         "error",
 		"new-parens":                       "error",
-		"no-extra-semi":                    "off",
-		"@typescript-eslint/no-extra-semi": "error",
 		"operator-linebreak":               ["error", "before", {
 			"overrides": {
 				"=":    "none",

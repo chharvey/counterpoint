@@ -1,5 +1,5 @@
 import {TypeUnit} from './package.js';
-import type {Object} from './Object.js';
+import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -10,27 +10,27 @@ import {Primitive} from './Primitive.js';
  *
  * @final
  */
-export class Boolean extends Primitive {
+class CPBoolean extends Primitive {
 	/** The Counterpoint Language Value `false`. */
-	static readonly FALSE: Boolean = new Boolean(false);
+	static readonly FALSE: CPBoolean = new CPBoolean(false);
 	/** The Counterpoint Language Value `true`. */
-	static readonly TRUE: Boolean = new Boolean(true);
+	static readonly TRUE: CPBoolean = new CPBoolean(true);
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
-	static readonly FALSETYPE: TypeUnit = new TypeUnit(Boolean.FALSE);
+	static readonly FALSETYPE: TypeUnit = new TypeUnit(CPBoolean.FALSE);
 	/** A Unit Type containing only the Counterpoint Language Value `true`. */
-	static readonly TRUETYPE: TypeUnit = new TypeUnit(Boolean.TRUE);
+	static readonly TRUETYPE: TypeUnit = new TypeUnit(CPBoolean.TRUE);
 
 	/**
 	 * Return the Counterpoint Language Value `true` or `false` based on the argument.
 	 * @param b a native boolean value
-	 * @returns the argument converted into a Boolean
+	 * @returns the argument converted into a CPBoolean
 	 */
-	static fromBoolean(b: boolean): Boolean {
-		return (b) ? Boolean.TRUE : Boolean.FALSE;
+	static fromBoolean(b: boolean): CPBoolean {
+		return (b) ? CPBoolean.TRUE : CPBoolean.FALSE;
 	}
 
 	/**
-	 * Construct a new Boolean object.
+	 * Construct a new CPBoolean object.
 	 * @param data The native boolean value of this object.
 	 */
 	private constructor(private readonly data: boolean) {
@@ -45,7 +45,8 @@ export class Boolean extends Primitive {
 		return this.data;
 	}
 
-	protected override identical_helper(value: Object): boolean {
-		return value instanceof Boolean && this.data === value.data;
+	protected override identical_helper(value: CPObject): boolean {
+		return value instanceof CPBoolean && this.data === value.data;
 	}
 }
+export {CPBoolean as Boolean};

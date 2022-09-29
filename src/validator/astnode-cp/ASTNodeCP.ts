@@ -52,7 +52,7 @@ export abstract class ASTNodeCP extends ASTNode {
 		override readonly children: readonly ASTNodeCP[] = [],
 	) {
 		super(((node: SyntaxNode) => { // COMBAK: TypeScript 4.6+ allows non-`this` code before `super()`
-			// @ts-expect-error
+			// @ts-expect-error --- Property `input` does actually exist on type `Tree`
 			const tree_text:    string = node.tree.input;
 			const source:       string = node.text;
 			const source_index: number = node.startIndex;

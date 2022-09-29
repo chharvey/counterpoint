@@ -12,11 +12,11 @@ import {Filebound} from './utils-private.js';
  */
 export function stringifyAttributes(attributes: ReadonlyMap<string, string>): string {
 	return [...attributes].map(([attr, val]) => `${ attr }="${ val
-		.replace(/\&/g, '&amp;')
-		.replace(/\</g, '&lt;')
-		.replace(/\>/g, '&gt;')
-		.replace(/\'/g, '&apos;')
-		.replace(/\"/g, '&quot;')
+		.replace(/&/g,  '&amp;')
+		.replace(/</g,  '&lt;')
+		.replace(/>/g,  '&gt;')
+		.replace(/'/g,  '&apos;')
+		.replace(/"/g,  '&quot;')
 		.replace(/\\/g, '&#x5c;')
 		.replace(/\t/g, '&#x09;')
 		.replace(/\n/g, '&#x0a;')

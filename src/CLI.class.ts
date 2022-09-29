@@ -288,7 +288,7 @@ export class CLI {
 				Executing………
 				Binary path: ${ inputfilepath }
 			`.trimStart(),
-			...(Object.values((await WebAssembly.instantiate(await bytes)).instance.exports) as Function[]).map((func) => func()),
+			...(Object.values((await WebAssembly.instantiate(await bytes)).instance.exports) as Array<() => unknown>).map((func) => func()),
 		];
 	}
 }

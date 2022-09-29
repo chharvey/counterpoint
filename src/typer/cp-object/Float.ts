@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import type {Object as CPObject} from './Object.js';
-import {Number} from './Number.js';
+import {Number as CPNumber} from './Number.js';
 
 
 
@@ -8,7 +8,7 @@ import {Number} from './Number.js';
  * A 64-bit floating-point number.
  * @final
  */
-export class Float extends Number<Float> {
+export class Float extends CPNumber<Float> {
 	constructor(private readonly data: number = 0) {
 		super();
 		xjs.Number.assertType(this.data, xjs.NumericType.FINITE);
@@ -23,7 +23,7 @@ export class Float extends Number<Float> {
 	}
 
 	protected override equal_helper(value: CPObject): boolean {
-		return value instanceof Number && this.data === value.toFloat().data;
+		return value instanceof CPNumber && this.data === value.toFloat().data;
 	}
 
 	override toFloat(): this {

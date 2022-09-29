@@ -8,13 +8,13 @@ import {
 	TypeUnit,
 	TypeSet,
 } from './package.js';
-import type {Object} from './Object.js';
+import type {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
 
 
-class CPSet<T extends Object = Object> extends Collection {
+class CPSet<T extends CPObject = CPObject> extends Collection {
 	constructor(private readonly elements: ReadonlySet<T> = new Set()) {
 		super();
 		const uniques: Set<T> = new Set();
@@ -33,7 +33,7 @@ class CPSet<T extends Object = Object> extends Collection {
 	}
 
 	/** @final */
-	protected override equal_helper(value: Object): boolean {
+	protected override equal_helper(value: CPObject): boolean {
 		return (
 			value instanceof CPSet
 			&& this.elements.size === value.elements.size

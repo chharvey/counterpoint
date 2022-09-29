@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../node_modules/tree-sitter-cli/dsl.d.ts"/>
 
 
@@ -216,7 +217,7 @@ const OPT_COM = optional(',');
  * @returns           either `consequent` or `alternative` based on `condition`
  */
 function iff(condition: boolean, consequent: RuleOrLiteral, alternative: RuleOrLiteral = blank()): RuleOrLiteral {
-	return (!!condition) ? consequent : alternative;
+	return (condition) ? consequent : alternative;
 }
 function repCom(production: RuleOrLiteral): ChoiceRule {
 	return optional(repCom1(production));

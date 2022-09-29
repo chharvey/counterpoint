@@ -3,12 +3,12 @@ import {
 	TypeUnit,
 	TypeDict,
 } from './package.js';
-import type {Object} from './Object.js';
+import type {Object as CPObject} from './Object.js';
 import {CollectionKeyed} from './CollectionKeyed.js';
 
 
 
-export class Dict<T extends Object = Object> extends CollectionKeyed<T> {
+export class Dict<T extends CPObject = CPObject> extends CollectionKeyed<T> {
 	override toString(): string {
 		return `Dict.(${ super.toString() })`;
 	}

@@ -1,4 +1,4 @@
-import {String} from './index.js';
+import {String as CPString} from './index.js';
 
 
 
@@ -69,8 +69,8 @@ abstract class CPObject {
 	 * (Not a native String — see {@link #toString}.)
 	 * @returns a string representation of this Object
 	 */
-	toCPString(): String {
-		return new String(this.toString());
+	toCPString(): CPString {
+		return new CPString(this.toString());
 	}
 }
 export {CPObject as Object};

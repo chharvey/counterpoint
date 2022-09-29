@@ -3,7 +3,7 @@ import {
 	throw_expression,
 	AST,
 } from './package.js';
-import type {Object} from './Object.js';
+import type {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import type {Integer} from './Integer.js';
 import {Collection} from './Collection.js';
@@ -15,7 +15,7 @@ import {Collection} from './Collection.js';
  * - Tuple
  * - List
  */
-export abstract class CollectionIndexed<T extends Object = Object> extends Collection {
+export abstract class CollectionIndexed<T extends CPObject = CPObject> extends Collection {
 	constructor(readonly items: readonly T[] = []) {
 		super();
 	}
@@ -30,7 +30,7 @@ export abstract class CollectionIndexed<T extends Object = Object> extends Colle
 	}
 
 	/** @final */
-	protected override equal_helper(value: Object): boolean {
+	protected override equal_helper(value: CPObject): boolean {
 		return (
 			value instanceof CollectionIndexed
 			&& this.items.length === value.items.length

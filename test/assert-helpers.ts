@@ -4,6 +4,10 @@ import type {TYPE} from '../src/index.js';
 
 
 
+type Class = Function; // eslint-disable-line @typescript-eslint/ban-types --- alias `Function` to mean “any class object”
+
+
+
 /**
  * Assert an object is an instance of a class,
  * using the `instanceof` operator.
@@ -11,18 +15,19 @@ import type {TYPE} from '../src/index.js';
  * @param cons - the class or constructor function
  * @throws {AssertionError} if false
  */
-export function assert_instanceof(obj: object, cons: Function): void {
+export function assert_instanceof(obj: object, cons: Class): void {
 	assert.ok(obj instanceof cons, `${ obj } should be an instance of ${ cons }.`);
 }
 
 
 
+type CallTrackerFunction = NonNullable<Parameters<assert.CallTracker['calls']>[0]>; // (...args: any[]) => any
 /**
  * @param orig the original function; useful for setting & unsetting
  * @param spy  the wrapper function that is actually called during tests
  * @return     any return value
  */
-type ExpectCallback<Func extends (...args: any[]) => any, Return> = (orig: Func, spy: Func) => Return;
+type ExpectCallback<Func extends CallTrackerFunction, Return> = (orig: Func, spy: Func) => Return;
 /**
  * Assert that, while a callback is performed, the given function is called a specified number of times.
  * @param orig     the function, a copy of which is expected to actually be called
@@ -32,7 +37,7 @@ type ExpectCallback<Func extends (...args: any[]) => any, Return> = (orig: Func,
  * @throw          if `orig` was not called the exact specified number of times
  * @throw          if `callback` itself throws
  */
-export function assert_wasCalled<Func extends (...args: any[]) => any, Return>(orig: Func, times: number, callback: ExpectCallback<Func, Return>): Return {
+export function assert_wasCalled<Func extends CallTrackerFunction, Return>(orig: Func, times: number, callback: ExpectCallback<Func, Return>): Return {
 	const tracker: assert.CallTracker = new assert.CallTracker();
 	try {
 		return callback.call(null, orig, tracker.calls(orig, times));
@@ -40,7 +45,7 @@ export function assert_wasCalled<Func extends (...args: any[]) => any, Return>(o
 		try {
 			tracker.verify();
 		} catch {
-			throw new AggregateError(tracker.report().map((info) => new assert.AssertionError(info)));
+			throw new AggregateError(tracker.report().map((info) => new assert.AssertionError(info))); // eslint-disable-line no-unsafe-finally --- we want this behavior
 		}
 	}
 }
@@ -89,7 +94,7 @@ export function assertEqualTypes(param1: TYPE.Type | TYPE.Type[] | ReadonlyMap<T
 
 
 
-type ValidationObject = {cons: Function} & (
+type ValidationObject = {cons: Class} & (
 	| {message: string}
 	| {errors: ValidationObject[]}
 );

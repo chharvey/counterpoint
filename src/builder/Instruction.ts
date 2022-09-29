@@ -43,7 +43,7 @@ class InstructionUnreachable extends Instruction {
 /**
  * Do nothing at runtime.
  */
-// @ts-expect-error noUnusedLocals
+// @ts-expect-error --- noUnusedLocals
 class InstructionNop extends Instruction {
 	/**
 	 * @return `'(nop)'`
