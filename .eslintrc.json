@@ -162,6 +162,14 @@
 		"semi":                    "off",
 		"@typescript-eslint/semi": "error",
 		"semi-style":              "error",
-		"wrap-iife":               ["error", "inside", {"functionPrototypeMethods": true}]
+		"wrap-iife":               ["error", "inside", {"functionPrototypeMethods": true}],
+
+		/* # Best Practices */
+		/* ## Preferred Operators */
+		"eqeqeq":               "error",
+		"no-useless-concat":    "error",
+		"operator-assignment":  "error",
+		"prefer-object-spread": "error",
+		"prefer-template":      "error"
 	}
 }

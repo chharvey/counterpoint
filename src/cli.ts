@@ -23,7 +23,7 @@ const VERSION: Promise<string> = (requireJSON(path.join(DIRNAME, '../package.jso
 		[Command.HELP, () => {
 			console.log(CLI.HELPTEXT);
 			if (cli.argv.config) {
-				console.log('\n' + CLI.CONFIGTEXT);
+				console.log(`\n${ CLI.CONFIGTEXT }`);
 			}
 		}],
 		[Command.VERSION, async () => {
