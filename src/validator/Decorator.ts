@@ -404,7 +404,7 @@ class Decorator {
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			),
 
-			expression_additive: (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
+			expression_additive: (node) => ((operator: Operator, operands: readonly [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
 				// `a - b` is syntax sugar for `a + -(b)`
 				(operator === Operator.SUB) ? new AST.ASTNodeOperationBinaryArithmetic(
 					node as SyntaxNodeType<'expression_additive'>,
@@ -426,7 +426,7 @@ class Decorator {
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			]),
 
-			expression_comparative: (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
+			expression_comparative: (node) => ((operator: Operator, operands: readonly [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
 				// `a !< b` is syntax sugar for `!(a < b)`
 				(operator === Operator.NLT) ? new AST.ASTNodeOperationUnary(
 					node as SyntaxNodeType<'expression_comparative'>,
@@ -467,7 +467,7 @@ class Decorator {
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			]),
 
-			expression_equality: (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
+			expression_equality: (node) => ((operator: Operator, operands: readonly [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
 				// `a !== b` is syntax sugar for `!(a === b)`
 				(operator === Operator.NID) ? new AST.ASTNodeOperationUnary(
 					node as SyntaxNodeType<'expression_equality'>,
@@ -498,7 +498,7 @@ class Decorator {
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			]),
 
-			expression_conjunctive: (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
+			expression_conjunctive: (node) => ((operator: Operator, operands: readonly [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
 				// `a !& b` is syntax sugar for `!(a && b)`
 				(operator === Operator.NAND) ? new AST.ASTNodeOperationUnary(
 					node as SyntaxNodeType<'expression_conjunctive'>,
@@ -519,7 +519,7 @@ class Decorator {
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			]),
 
-			expression_disjunctive: (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
+			expression_disjunctive: (node) => ((operator: Operator, operands: readonly [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
 				// `a !| b` is syntax sugar for `!(a || b)`
 				(operator === Operator.NOR) ? new AST.ASTNodeOperationUnary(
 					node as SyntaxNodeType<'expression_disjunctive'>,

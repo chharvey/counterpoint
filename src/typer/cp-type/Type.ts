@@ -59,7 +59,7 @@ export abstract class Type {
 	 * @param types the types to intersect
 	 * @returns the intersection
 	 */
-	public static intersectAll(types: Type[]): Type {
+	public static intersectAll(types: readonly Type[]): Type {
 		return (types.length) ? types.reduce((a, b) => a.intersect(b)) : Type.NEVER;
 	}
 
@@ -69,7 +69,7 @@ export abstract class Type {
 	 * @param types the types to union
 	 * @returns the union
 	 */
-	public static unionAll(types: Type[]): Type {
+	public static unionAll(types: readonly Type[]): Type {
 		return (types.length) ? types.reduce((a, b) => a.union(b)) : Type.NEVER;
 	}
 

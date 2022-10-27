@@ -13,14 +13,14 @@ import {
 
 
 describe('Type', () => {
-	function predicate2<T>(array: T[], p: (a: T, b: T) => void): void {
+	function predicate2<T>(array: readonly T[], p: (a: T, b: T) => void): void {
 		array.forEach((a) => {
 			array.forEach((b) => {
 				p(a, b);
 			});
 		});
 	}
-	function predicate3<T>(array: T[], p: (a: T, b: T, c: T) => void): void {
+	function predicate3<T>(array: readonly T[], p: (a: T, b: T, c: T) => void): void {
 		array.forEach((a) => {
 			array.forEach((b) => {
 				array.forEach((c) => {
@@ -54,10 +54,10 @@ describe('Type', () => {
 
 	describe('#includes', () => {
 		it('uses `Object#identical` to compare values.', () => {
-			function unionOfInts(ns: bigint[]): TYPE.Type {
+			function unionOfInts(ns: readonly bigint[]): TYPE.Type {
 				return TYPE.Type.unionAll(ns.map((v) => typeUnitInt(v)));
 			}
-			function unionOfFloats(ns: number[]): TYPE.Type {
+			function unionOfFloats(ns: readonly number[]): TYPE.Type {
 				return TYPE.Type.unionAll(ns.map((v) => typeUnitFloat(v)));
 			}
 			const u1: TYPE.Type = unionOfFloats([4.2, 4.3, 4.4]);

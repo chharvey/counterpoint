@@ -5,7 +5,7 @@ import type {CodeUnit} from './package.js';
 
 
 
-export type SyntaxNodeType<T extends string> = SyntaxNode & {type: T} & {isNamed: true};
+export type SyntaxNodeType<T extends string> = SyntaxNode & {readonly type: T} & {readonly isNamed: true};
 
 
 

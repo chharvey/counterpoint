@@ -6,7 +6,7 @@ import * as path from 'path';
 
 
 
-function s(name: string, ...operands: string[]): string {
+function s(name: string, ...operands: readonly string[]): string {
 	return xjs.String.dedent`
 		(${ name }
 			${ operands.join('\n\t') }
@@ -29,7 +29,7 @@ function extractType(operand: string): string {
 	);
 }
 
-function makeSourceFile(...expressions: string[]): string {
+function makeSourceFile(...expressions: readonly string[]): string {
 	return s(
 		'source_file',
 		expressions.map((expr) => s('statement_expression', expr)).join(''),

@@ -7,6 +7,10 @@ import {
 
 
 
+export type ArgCount = bigint | readonly [bigint, bigint];
+
+
+
 export enum ValidFunctionName {
 	LIST = 'List',
 	DICT = 'Dict',

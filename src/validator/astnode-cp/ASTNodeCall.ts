@@ -14,6 +14,7 @@ import {
 	SyntaxNodeType,
 } from './package.js';
 import {
+	ArgCount,
 	ValidFunctionName,
 	invalidFunctionName,
 } from './utils-private.js';
@@ -169,7 +170,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	 * @param expected_function - the number of expected function arguments, or a half-open range
 	 * @throws if this call’s number of actual arguments does not satisfy the expected number
 	 */
-	private countArgs(expected_generic: bigint | [bigint, bigint], expected_function: bigint | [bigint, bigint]): void {
+	private countArgs(expected_generic: ArgCount, expected_function: ArgCount): void {
 		const actual_generic:  bigint = BigInt(this.typeargs.length);
 		const actual_function: bigint = BigInt(this.exprargs.length);
 		if (typeof expected_generic === 'bigint') {

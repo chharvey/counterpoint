@@ -1,26 +1,26 @@
 type ErrorCodeConstructorProperties = {
 	/** A message to the user. */
-	message: string,
+	readonly message: string,
 	/**
 	 * The name of the error.
 	 * @default ErrorCode.NAME
 	 */
-	name?: string,
+	readonly name?: string,
 	/**
 	 * The error number.
 	 * @default 0
 	 */
-	code?: number,
+	readonly code?: number,
 	/**
 	 * The line index in source code.
 	 * @default null
 	 */
-	line_index?: number,
+	readonly line_index?: number,
 	/**
 	 * The column index in source code.
 	 * @default null
 	 */
-	col_index?: number,
+	readonly col_index?: number,
 };
 
 

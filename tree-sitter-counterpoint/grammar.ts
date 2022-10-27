@@ -32,7 +32,7 @@ function familyName<RuleName extends string>(family_name: string, ...suffices: r
  */
 function parameterize<RuleName extends string, BaseGrammarRuleName extends string>(
 	family_name: string,
-	parameterized_rule: (args_obj: Record<string, boolean>) => RuleBuilder<RuleName>,
+	parameterized_rule: (args_obj: Readonly<Record<string, boolean>>) => RuleBuilder<RuleName>,
 	...params: readonly string[]
 ): RuleBuilders<RuleName, BaseGrammarRuleName> {
 	const rules_obj: RuleBuilders<RuleName, BaseGrammarRuleName> = {} as RuleBuilders<RuleName, BaseGrammarRuleName>;
@@ -69,7 +69,7 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
  * @param args        argument names or objects of inherited argument values from the containing production
  * @returns           a property name of the `$` object
  */
-function call<RuleName extends string>(family_name: string, ...args: readonly (string | Record<string, boolean>)[]): RuleName {
+function call<RuleName extends string>(family_name: string, ...args: readonly (string | Readonly<Record<string, boolean>>)[]): RuleName {
 	return familyName(family_name, ...args.flatMap((arg) => ((typeof arg === 'string')
 		? [arg]
 		: Object.entries(arg)

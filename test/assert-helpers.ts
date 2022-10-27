@@ -66,7 +66,7 @@ export function assertEqualTypes(actual: TYPE.Type, expected: TYPE.Type): void;
  * @param expected an array of what `actual` is expected to equal
  * @throws {AssertionError} if a corresponding type fails equality
  */
-export function assertEqualTypes(actual: TYPE.Type[], expected: TYPE.Type[]): void;
+export function assertEqualTypes(actual: readonly TYPE.Type[], expected: readonly TYPE.Type[]): void;
 /**
  * Assert equal types. First compares by `assert.deepStrictEqual`,
  * but if that fails, compares by `Type#equals`.
@@ -74,7 +74,7 @@ export function assertEqualTypes(actual: TYPE.Type[], expected: TYPE.Type[]): vo
  * @throws {AssertionError} if one of the pairs fails equality
  */
 export function assertEqualTypes(types: ReadonlyMap<TYPE.Type, TYPE.Type>): void;
-export function assertEqualTypes(param1: TYPE.Type | TYPE.Type[] | ReadonlyMap<TYPE.Type, TYPE.Type>, param2?: TYPE.Type | TYPE.Type[]): void {
+export function assertEqualTypes(param1: TYPE.Type | readonly TYPE.Type[] | ReadonlyMap<TYPE.Type, TYPE.Type>, param2?: TYPE.Type | readonly TYPE.Type[]): void {
 	if (param1 instanceof Map) {
 		return assertEqualTypes([...param1.keys()], [...param1.values()]);
 	} else if (param1 instanceof Array) {
