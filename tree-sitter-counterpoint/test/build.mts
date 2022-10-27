@@ -38,7 +38,7 @@ function makeSourceFile(...expressions: string[]): string {
 
 
 
-function buildTest(title: string, source: string, expected: string) {
+function buildTest(title: string, source: string, expected: string): string {
 	return xjs.String.dedent`
 		${ '='.repeat(title.length) }
 		${ title }

@@ -43,7 +43,7 @@
 				"dot-notation":                    "off",
 				"@typescript-eslint/dot-notation": "error", // needed here due to `parserOptions.project`
 
-				/* ## Type Annotation Style */
+				/* ## Type Annotations */
 				"@typescript-eslint/array-type": ["error", {
 					"default":  "array-simple",
 					"readonly": "array"
@@ -51,6 +51,10 @@
 				"@typescript-eslint/consistent-generic-constructors": "error",
 				"@typescript-eslint/consistent-indexed-object-style": "error",
 				"@typescript-eslint/consistent-type-assertions":      "error",
+				"@typescript-eslint/explicit-function-return-type":   ["error", {
+					"allowExpressions":          true,
+					"allowHigherOrderFunctions": false
+				}],
 
 				/* # Best Practices */
 				/* ## Function Design */

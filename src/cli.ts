@@ -13,7 +13,7 @@ const VERSION: Promise<string> = (requireJSON(path.join(DIRNAME, '../package.jso
 
 
 (async () => {
-	async function handleCompileOrDev() {
+	async function handleCompileOrDev(): Promise<void> {
 		const result: [string, void] = await cli.compileOrDev(process.cwd());
 		console.log(result[0]);
 		console.log('Success!');

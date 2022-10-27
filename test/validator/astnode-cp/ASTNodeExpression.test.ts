@@ -294,7 +294,7 @@ describe('ASTNodeExpression', () => {
 	describe('ASTNodeTemplate', () => {
 		describe('#type', () => {
 			let templates: readonly AST.ASTNodeTemplate[] = [];
-			function initTemplates(config: CPConfig = CONFIG_DEFAULT) {
+			function initTemplates(config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeTemplate[] {
 				return [
 					AST.ASTNodeTemplate.fromSource(`'''42😀''';`, config),
 					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, config),
@@ -304,7 +304,7 @@ describe('ASTNodeExpression', () => {
 					`, config)
 						.children[1] as AST.ASTNodeStatementExpression)
 						.expr as AST.ASTNodeTemplate,
-				] as const;
+				];
 			}
 			context('with constant folding on.', () => {
 				let types: TYPE.Type[] = [];
