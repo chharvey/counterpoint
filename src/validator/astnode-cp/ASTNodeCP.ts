@@ -48,7 +48,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	 */
 	constructor(
 		protected readonly start_node: SyntaxNode,
-		attributes: {[key: string]: unknown} = {},
+		attributes: Record<string, unknown> = {},
 		override readonly children: readonly ASTNodeCP[] = [],
 	) {
 		super(((node: SyntaxNode) => { // COMBAK: TypeScript 4.6+ allows non-`this` code before `super()`

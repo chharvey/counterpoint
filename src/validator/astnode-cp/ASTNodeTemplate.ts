@@ -47,7 +47,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 
 	protected override fold_do(): OBJ.String | null {
-		const values: (OBJ.Object | null)[] = [...this.children].map((expr) => expr.fold());
+		const values: Array<OBJ.Object | null> = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))
 			? null
 			: (values as OBJ.Object[])

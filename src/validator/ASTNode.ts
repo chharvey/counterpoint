@@ -44,7 +44,7 @@ export class ASTNode implements Serializable {
 	 */
 	constructor(
 		private readonly start: Serializable,
-		private readonly attributes: {[key: string]: unknown} = {},
+		private readonly attributes: Record<string, unknown> = {},
 		readonly children: readonly ASTNode[] = [],
 	) {
 		children.forEach((c) => {

@@ -17,7 +17,7 @@ import {Collection} from './Collection.js';
 class CPSet<T extends CPObject = CPObject> extends Collection {
 	constructor(private readonly elements: ReadonlySet<T> = new Set()) {
 		super();
-		const uniques: Set<T> = new Set();
+		const uniques = new Set<T>();
 		[...elements].forEach((el) => {
 			xjs.Set.add(uniques, el, languageValuesIdentical);
 		});

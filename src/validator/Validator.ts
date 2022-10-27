@@ -274,13 +274,13 @@ export class Validator {
 
 
 	/** A symbol table, which keeps tracks of variables. */
-	private readonly symbol_table: Map<bigint, SymbolStructure> = new Map();
+	private readonly symbol_table = new Map<bigint, SymbolStructure>();
 
 	/**
 	 * A bank of unique identifier names.
 	 * COMBAK: Note that this is only temporary, until we have identifiers bound to object and lexical environments.
 	 */
-	private readonly identifiers: Set<string> = new Set();
+	private readonly identifiers = new Set<string>();
 
 	/**
 	 * Construct a new Validator object.

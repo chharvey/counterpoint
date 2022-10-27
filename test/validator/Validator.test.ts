@@ -196,7 +196,7 @@ describe('Validator', () => {
 				].map((src) => decodeCooked(src, config));
 			}
 			context('with comments enabled.', () => {
-				const data: {description: string, expected: string}[] = [
+				const data: Array<{description: string, expected: string}> = [
 					{description: 'removes a line comment not ending in a LF.',   expected: 'The five boxing wizards '},
 					{description: 'preserves a LF when line comment ends in LF.', expected: 'The five \njump quickly.'},
 					{description: 'preserves a LF with empty line comment.',      expected: 'The five boxing wizards \njump quickly.'},

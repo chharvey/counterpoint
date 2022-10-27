@@ -678,7 +678,7 @@ describe('ASTNodeAccess', () => {
 			assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 			return stmt.expr!.fold();
 		}
-		const expected: (OBJ.Object | null)[] = [
+		const expected: Array<OBJ.Object | null> = [
 			new OBJ.Integer(1n),
 			new OBJ.Float(2.0),
 			new OBJ.String('three'),
@@ -686,7 +686,7 @@ describe('ASTNodeAccess', () => {
 			null,
 			null,
 		];
-		const expected_o: (OBJ.Object | null)[] = [
+		const expected_o: Array<OBJ.Object | null> = [
 			new OBJ.String('three'),
 			null,
 			null,

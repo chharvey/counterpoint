@@ -243,7 +243,7 @@ describe('Instruction', () => {
 
 		context('InstructionModule', () => {
 			it('creates a program.', () => {
-				const mods: (INST.InstructionNone | INST.InstructionModule)[] = [
+				const mods: Array<INST.InstructionNone | INST.InstructionModule> = [
 					'',
 					';',
 				].map((src) => AST.ASTNodeGoal.fromSource(src).build(new Builder(src)));

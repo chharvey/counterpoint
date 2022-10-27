@@ -329,7 +329,7 @@ export class TypeInterface extends Type {
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
 	protected override intersect_do(t: TypeInterface): TypeInterface {
-		const props: Map<string, Type> = new Map([...this.properties]);
+		const props = new Map<string, Type>([...this.properties]);
 		[...t.properties].forEach(([name, type_]) => {
 			props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_);
 		});
@@ -341,7 +341,7 @@ export class TypeInterface extends Type {
 	 * If any properties disagree on type, their type union is taken.
 	 */
 	protected override union_do(t: TypeInterface): TypeInterface {
-		const props: Map<string, Type> = new Map();
+		const props = new Map<string, Type>();
 		[...this.properties].forEach(([name, type_]) => {
 			if (t.properties.has(name)) {
 				props.set(name, type_.union(t.properties.get(name)!));

@@ -17,7 +17,7 @@ import {Collection} from './Collection.js';
 class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extends Collection {
 	constructor(private readonly cases: ReadonlyMap<K, V> = new Map()) {
 		super();
-		const uniques: Map<K, V> = new Map();
+		const uniques = new Map<K, V>();
 		[...cases].forEach(([ant, con]) => {
 			xjs.Map.set(uniques, ant, con, languageValuesIdentical);
 		});

@@ -106,7 +106,7 @@ export class TypeRecord extends Type {
 	 * For any overlapping properties, their type intersection is taken.
 	 */
 	intersectWithRecord(t: TypeRecord): TypeRecord {
-		const props: Map<bigint, TypeEntry> = new Map([...this.propertytypes]);
+		const props = new Map<bigint, TypeEntry>([...this.propertytypes]);
 		[...t.propertytypes].forEach(([id, typ]) => {
 			props.set(id, this.propertytypes.has(id) ? {
 				type:     this.propertytypes.get(id)!.type.intersect(typ.type),
@@ -121,7 +121,7 @@ export class TypeRecord extends Type {
 	 * For any overlapping properties, their type union is taken.
 	 */
 	unionWithRecord(t: TypeRecord): TypeRecord {
-		const props: Map<bigint, TypeEntry> = new Map();
+		const props = new Map<bigint, TypeEntry>();
 		[...t.propertytypes].forEach(([id, typ]) => {
 			if (this.propertytypes.has(id)) {
 				props.set(id, {

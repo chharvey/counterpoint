@@ -521,7 +521,7 @@ export class InstructionModule extends Instruction {
 	/**
 	 * @param comps the components of the program
 	 */
-	constructor(private readonly comps: (string | Instruction)[] = []) {
+	constructor(private readonly comps: Array<string | Instruction> = []) {
 		super();
 	}
 
