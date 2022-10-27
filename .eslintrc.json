@@ -11,6 +11,13 @@
 	"overrides": [
 		{
 			"files": ["*.{cts,mts,ts}"],
+			"parserOptions": {
+				"project": [
+					"./tsconfig.json",
+					"./test/tsconfig.json",
+					"./tree-sitter-counterpoint/tsconfig.json"
+				]
+			},
 			"rules": {
 				/* # Overrides of Recommended Rules */
 				"@typescript-eslint/no-explicit-any":       ["error", {"fixToUnknown": true}], // report as errors & quickfix `any` to `unknown`
@@ -30,7 +37,11 @@
 							"singleline": {"delimiter": "comma"}
 						}
 					}
-				}]
+				}],
+
+				/* ## Operator Style */
+				"dot-notation":                    "off",
+				"@typescript-eslint/dot-notation": "error" // needed here due to `parserOptions.project`
 			}
 		}
 	],
@@ -123,6 +134,7 @@
 		"comma-dangle":                     "off",
 		"@typescript-eslint/comma-dangle":  ["error", "always-multiline"],
 		"comma-style":                      "error",
+		"dot-notation":                     "error",
 		"implicit-arrow-linebreak":         "error",
 		"new-parens":                       "error",
 		"operator-linebreak":               ["error", "before", {
