@@ -39,6 +39,11 @@ type CustomArgsType = {
 	project: string,
 	/** Display configuration options. */
 	config: boolean,
+	// abbrevs
+	h: boolean,
+	v: boolean,
+	o: string,
+	p: string,
 
 	// Language Features
 	comments:          null | boolean,

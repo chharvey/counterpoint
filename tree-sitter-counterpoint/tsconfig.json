@@ -11,5 +11,6 @@
 		// Language and Environment
 		"target": "ESnext",
 	},
+	"include": ["**/*"],
 	"files": ["grammar.ts"],
 }
