@@ -22,15 +22,15 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
 export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryComparative {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryComparative {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeOperationBinaryComparative);
 		return expression;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		override readonly operator: ValidOperatorComparative,
+		protected override readonly operator: ValidOperatorComparative,
 		operand0: ASTNodeExpression,
 		operand1: ASTNodeExpression,
 	) {

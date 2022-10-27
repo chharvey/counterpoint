@@ -13,7 +13,7 @@ import {Type} from './Type.js';
 
 
 export class TypeRecord extends Type {
-	override readonly isBottomType: boolean = false;
+	public override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new TypeRecord from type properties, assuming each properties is required.
@@ -21,7 +21,7 @@ export class TypeRecord extends Type {
 	 * @param is_mutable is the record type mutable?
 	 * @return a new record type with the provided properties
 	 */
-	static fromTypes(propertytypes: ReadonlyMap<bigint, Type> = new Map(), is_mutable: boolean = false): TypeRecord {
+	public static fromTypes(propertytypes: ReadonlyMap<bigint, Type> = new Map(), is_mutable: boolean = false): TypeRecord {
 		return new TypeRecord(new Map<bigint, TypeEntry>([...propertytypes].map(([id, t]) => [id, {
 			type:     t,
 			optional: false,
@@ -34,14 +34,14 @@ export class TypeRecord extends Type {
 	 * @param propertytypes a map of this type’s property ids along with their associated types
 	 * @param is_mutable is this type mutable?
 	 */
-	constructor(
+	public constructor(
 		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new OBJ.Record()]));
 	}
 
-	override get hasMutable(): boolean {
+	public override get hasMutable(): boolean {
 		return super.hasMutable || [...this.propertytypes.values()].some((t) => t.type.hasMutable);
 	}
 
@@ -53,11 +53,11 @@ export class TypeRecord extends Type {
 		];
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `${ (this.isMutable) ? 'mutable ' : '' }[${ [...this.propertytypes].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
-	override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.Record && v.toType().isSubtypeOf(this);
 	}
 
@@ -79,15 +79,15 @@ export class TypeRecord extends Type {
 		);
 	}
 
-	override mutableOf(): TypeRecord {
+	public override mutableOf(): TypeRecord {
 		return new TypeRecord(this.propertytypes, true);
 	}
 
-	override immutableOf(): TypeRecord {
+	public override immutableOf(): TypeRecord {
 		return new TypeRecord(this.propertytypes, false);
 	}
 
-	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): Type {
+	public get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): Type {
 		return updateAccessedStaticType(
 			((this.propertytypes.has(key))
 				? this.propertytypes.get(key)!
@@ -97,7 +97,7 @@ export class TypeRecord extends Type {
 		);
 	}
 
-	valueTypes(): Type {
+	public valueTypes(): Type {
 		return Type.unionAll([...this.propertytypes.values()].map((t) => t.type));
 	}
 
@@ -105,7 +105,7 @@ export class TypeRecord extends Type {
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `S` with the set of properties on `T`.
 	 * For any overlapping properties, their type intersection is taken.
 	 */
-	intersectWithRecord(t: TypeRecord): TypeRecord {
+	public intersectWithRecord(t: TypeRecord): TypeRecord {
 		const props = new Map<bigint, TypeEntry>([...this.propertytypes]);
 		[...t.propertytypes].forEach(([id, typ]) => {
 			props.set(id, this.propertytypes.has(id) ? {
@@ -120,7 +120,7 @@ export class TypeRecord extends Type {
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `S` with the set of properties on `T`.
 	 * For any overlapping properties, their type union is taken.
 	 */
-	unionWithRecord(t: TypeRecord): TypeRecord {
+	public unionWithRecord(t: TypeRecord): TypeRecord {
 		const props = new Map<bigint, TypeEntry>();
 		[...t.propertytypes].forEach(([id, typ]) => {
 			if (this.propertytypes.has(id)) {

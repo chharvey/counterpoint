@@ -58,7 +58,7 @@ type CustomArgsType = {
  */
 export class CLI {
 	/** Text to print on --help. */
-	static readonly HELPTEXT: string = xjs.String.dedent`
+	public static readonly HELPTEXT: string = xjs.String.dedent`
 		Usage: cpc <command> <filepath> [<options>]
 
 		Parse, analyze, and compile a Counterpoint source code file.
@@ -98,7 +98,7 @@ export class CLI {
 	`.trimStart();
 
 	/** Text to print on --config. */
-	static readonly CONFIGTEXT: string = xjs.String.dedent`
+	public static readonly CONFIGTEXT: string = xjs.String.dedent`
 		The following options set individual language features and compiler options.
 		These options will override those in the configuration file provided by \`--project\`.
 
@@ -165,13 +165,13 @@ export class CLI {
 	};
 
 
-	readonly command: Command;
-	readonly argv: CustomArgsType & minimist.ParsedArgs;
+	public readonly command: Command;
+	public readonly argv:    CustomArgsType & minimist.ParsedArgs;
 	/**
 	 * Construct a new CLI object.
 	 * @param process_argv the arguments sent to NodeJS.Process.argv
 	 */
-	constructor(process_argv: readonly string[]) {
+	public constructor(process_argv: readonly string[]) {
 		this.argv = minimist<CustomArgsType>(process_argv.slice(2), CLI.MINIMIST_OPTS);
 		this.command = (
 			(this.argv.help || this.argv.config) ? Command.HELP :
@@ -255,7 +255,7 @@ export class CLI {
 	 * Run the command `compile` or `dev`.
 	 * @param cwd the current working directory, `process.cwd()`
 	 */
-	async compileOrDev(cwd: string): Promise<[string, void]> {
+	public async compileOrDev(cwd: string): Promise<[string, void]> {
 		const inputfilepath: string = this.inputPath(cwd);
 		const outputfilepath: string = this.argv.out ? path.join(cwd, path.normalize(this.argv.out)) : path.format({
 			...path.parse(inputfilepath),
@@ -280,7 +280,7 @@ export class CLI {
 	 * Run the command `run`.
 	 * @param cwd the current working directory, `process.cwd()`
 	 */
-	async run(cwd: string): Promise<[string, ...unknown[]]> {
+	public async run(cwd: string): Promise<[string, ...unknown[]]> {
 		const inputfilepath: string          = this.inputPath(cwd);
 		const bytes:         Promise<Buffer> = fs.promises.readFile(inputfilepath);
 		return [

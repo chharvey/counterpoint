@@ -19,21 +19,21 @@ import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 
 
 export class ASTNodeTypeCall extends ASTNodeType {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeCall {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeCall {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeCall);
 		return typ;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
-		readonly base: ASTNodeType,
-		readonly args: Readonly<NonemptyArray<ASTNodeType>>,
+		private readonly base: ASTNodeType,
+		private readonly args: Readonly<NonemptyArray<ASTNodeType>>,
 	) {
 		super(start_node, {}, [base, ...args]);
 	}
 
-	override varCheck(): void {
+	public override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be a `ValidFunctionName`)
 		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());

@@ -17,7 +17,7 @@ import {ASTNodeType} from './ASTNodeType.js';
 
 
 export class ASTNodeTypeConstant extends ASTNodeType {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeConstant {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeConstant {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeConstant);
 		return typ;
@@ -41,7 +41,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 
 	private _type: TYPE.Type | null = null;
 
-	constructor(start_node: (
+	public constructor(start_node: (
 		| SyntaxNodeType<'keyword_type'>
 		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'primitive_literal'>

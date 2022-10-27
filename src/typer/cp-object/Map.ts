@@ -15,7 +15,7 @@ import {Collection} from './Collection.js';
 
 
 class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extends Collection {
-	constructor(private readonly cases: ReadonlyMap<K, V> = new Map()) {
+	public constructor(private readonly cases: ReadonlyMap<K, V> = new Map()) {
 		super();
 		const uniques = new Map<K, V>();
 		[...cases].forEach(([ant, con]) => {
@@ -24,11 +24,11 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 		this.cases = uniques;
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
 	}
 
-	override get isEmpty(): boolean {
+	public override get isEmpty(): boolean {
 		return this.cases.size === 0;
 	}
 
@@ -45,14 +45,14 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 		);
 	}
 
-	override toType(): TypeMap {
+	public override toType(): TypeMap {
 		return new TypeMap(
 			Type.unionAll([...this.cases.keys()]  .map<Type>((ant) => new TypeUnit(ant))),
 			Type.unionAll([...this.cases.values()].map<Type>((con) => new TypeUnit(con))),
 		);
 	}
 
-	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | Null {
+	public get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | Null {
 		return (xjs.Map.has(this.cases, ant, languageValuesIdentical))
 			? xjs.Map.get(this.cases, ant, languageValuesIdentical)!
 			: (access_optional)

@@ -32,14 +32,14 @@ export class Integer extends CPNumber<Integer> {
 	 * @param data - a numeric value or data
 	 * @returns the value represented as a 16-bit signed integer
 	 */
-	constructor(data: bigint | Datatype = 0n) {
+	public constructor(data: bigint | Datatype = 0n) {
 		super();
 		this.internal = (typeof data === 'bigint')
 			? [...Integer.mod(data, 2n ** BigInt(Integer.BITCOUNT)).toString(2).padStart(Integer.BITCOUNT, '0')].map((bit) => !!+bit) as DatatypeMutable
 			: data;
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `${ this.toNumeric() }`;
 	}
 
@@ -51,7 +51,7 @@ export class Integer extends CPNumber<Integer> {
 		return value instanceof Float && this.toFloat().equal(value);
 	}
 
-	override toFloat(): Float {
+	public override toFloat(): Float {
 		return new Float(Number(this.toNumeric()));
 	}
 
@@ -59,12 +59,12 @@ export class Integer extends CPNumber<Integer> {
 	 * Return the signed interpretation of this integer.
 	 * @returns the numeric value
 	 */
-	toNumeric(): bigint {
+	public toNumeric(): bigint {
 		const unsigned: number = this.internal.map((bit, i) => +bit * 2 ** (Integer.BITCOUNT - 1 - i)).reduce((a, b) => a + b);
 		return BigInt(unsigned < 2 ** (Integer.BITCOUNT - 1) ? unsigned : unsigned - 2 ** Integer.BITCOUNT);
 	}
 
-	override plus(addend: Integer): Integer {
+	public override plus(addend: Integer): Integer {
 		type Carry = [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint];
 		const sum:   Carry = [...new Array(Integer.BITCOUNT).fill(0n)] as Carry;
 		const carry: Carry = [...new Array(Integer.BITCOUNT).fill(0n)] as Carry;
@@ -82,7 +82,7 @@ export class Integer extends CPNumber<Integer> {
 		return new Integer(sum.map((bit) => !!bit) as DatatypeMutable);
 	}
 
-	override minus(subtrahend: Integer): Integer {
+	public override minus(subtrahend: Integer): Integer {
 		return this.plus(subtrahend.neg());
 	}
 
@@ -116,7 +116,7 @@ export class Integer extends CPNumber<Integer> {
 	 * }
 	 * ```
 	 */
-	override times(multiplicand: Integer): Integer {
+	public override times(multiplicand: Integer): Integer {
 		return (
 			(this.eq0()) ? Integer.ZERO       :
 			(this.eq1()) ? multiplicand       :
@@ -176,7 +176,7 @@ export class Integer extends CPNumber<Integer> {
 	 * }
 	 * ```
 	 */
-	override divide(divisor: Integer): Integer {
+	public override divide(divisor: Integer): Integer {
 		return (
 			(divisor.eq0()) ? throw_expression(new RangeError('Division by zero.')) :
 			(this   .eq0()) ? Integer.ZERO                     :
@@ -230,7 +230,7 @@ export class Integer extends CPNumber<Integer> {
 	 * ```
 	 * @see https://stackoverflow.com/a/101613/877703
 	 */
-	override exp(exponent: Integer): Integer {
+	public override exp(exponent: Integer): Integer {
 		return (
 			(exponent.lt0()) ? Integer.ZERO     :
 			(exponent.eq0()) ? Integer.UNIT     :
@@ -257,11 +257,11 @@ export class Integer extends CPNumber<Integer> {
 	/**
 	 * Equivalently, this is the “two’s complement” of the integer.
 	 */
-	override neg(): Integer {
+	public override neg(): Integer {
 		return this.cpl().plus(Integer.UNIT);
 	}
 
-	override eq0(): boolean {
+	public override eq0(): boolean {
 		return this.equal(Integer.ZERO);
 	}
 
@@ -279,7 +279,7 @@ export class Integer extends CPNumber<Integer> {
 		return this.equal(Integer.RADIX);
 	}
 
-	override lt(y: Integer): boolean {
+	public override lt(y: Integer): boolean {
 		return this.minus(y).lt0();
 	}
 

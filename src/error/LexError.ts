@@ -8,9 +8,9 @@ import {ErrorCode} from './ErrorCode.js';
  */
 export class LexError extends ErrorCode {
 	/** The name of this class of errors. */
-	static override readonly NAME = 'LexError';
+	public static override readonly NAME = 'LexError';
 	/** The number series of this class of errors. */
-	static readonly CODE: number = 1100;
+	public static readonly CODE: number = 1100;
 
 
 	/**
@@ -20,7 +20,7 @@ export class LexError extends ErrorCode {
 	 * @param line    the line index in source code
 	 * @param col     the column index in source code
 	 */
-	constructor(message: string, code: number = 0, line?: number, col?: number) {
+	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
 			name: LexError.NAME,

@@ -20,22 +20,22 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
 export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryEquality {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryEquality {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeOperationBinaryEquality);
 		return expression;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		override readonly operator: ValidOperatorEquality,
+		protected override readonly operator: ValidOperatorEquality,
 		operand0: ASTNodeExpression,
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	override shouldFloat(): boolean {
+	public override shouldFloat(): boolean {
 		return this.operator === Operator.EQ && super.shouldFloat();
 	}
 

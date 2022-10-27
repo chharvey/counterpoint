@@ -16,15 +16,15 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 export class ASTNodeRecord extends ASTNodeCollectionLiteral {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeRecord {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeRecord {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeRecord);
 		return expression;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'record_literal'>,
-		override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
+		public override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, children);
 	}

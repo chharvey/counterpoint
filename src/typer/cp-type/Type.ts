@@ -42,15 +42,15 @@ import {
  */
 export abstract class Type {
 	/* eslint-disable @typescript-eslint/brace-style */
-	/** The Bottom Type, containing no values. */                    static get NEVER():   TypeNever   { return TypeNever.INSTANCE; }
-	/** The Void Type, representing a completion but not a value. */ static get VOID():    TypeVoid    { return TypeVoid.INSTANCE; }
-	/** The Top Type, containing all values. */                      static get UNKNOWN(): TypeUnknown { return TypeUnknown.INSTANCE; }
-	/** The Null Type. */                                            static get NULL():    TypeUnit    { return OBJ.Null.NULLTYPE; }
-	/** The Boolean Type. */                                         static get BOOL():    TypeBoolean { return TypeBoolean.INSTANCE; }
-	/** The Integer Type. */                                         static get INT():     TypeInteger { return TypeInteger.INSTANCE; }
-	/** The Float Type. */                                           static get FLOAT():   TypeFloat   { return TypeFloat.INSTANCE; }
-	/** The String Type. */                                          static get STR():     TypeString  { return TypeString.INSTANCE; }
-	/** The Object Type. */                                          static get OBJ():     TypeObject  { return TypeObject.INSTANCE; }
+	/** The Bottom Type, containing no values. */                    public static get NEVER():   TypeNever   { return TypeNever.INSTANCE; }
+	/** The Void Type, representing a completion but not a value. */ public static get VOID():    TypeVoid    { return TypeVoid.INSTANCE; }
+	/** The Top Type, containing all values. */                      public static get UNKNOWN(): TypeUnknown { return TypeUnknown.INSTANCE; }
+	/** The Null Type. */                                            public static get NULL():    TypeUnit    { return OBJ.Null.NULLTYPE; }
+	/** The Boolean Type. */                                         public static get BOOL():    TypeBoolean { return TypeBoolean.INSTANCE; }
+	/** The Integer Type. */                                         public static get INT():     TypeInteger { return TypeInteger.INSTANCE; }
+	/** The Float Type. */                                           public static get FLOAT():   TypeFloat   { return TypeFloat.INSTANCE; }
+	/** The String Type. */                                          public static get STR():     TypeString  { return TypeString.INSTANCE; }
+	/** The Object Type. */                                          public static get OBJ():     TypeObject  { return TypeObject.INSTANCE; }
 	/* eslint-enable @typescript-eslint/brace-style */
 
 	/**
@@ -59,7 +59,7 @@ export abstract class Type {
 	 * @param types the types to intersect
 	 * @returns the intersection
 	 */
-	static intersectAll(types: Type[]): Type {
+	public static intersectAll(types: Type[]): Type {
 		return (types.length) ? types.reduce((a, b) => a.intersect(b)) : Type.NEVER;
 	}
 
@@ -69,7 +69,7 @@ export abstract class Type {
 	 * @param types the types to union
 	 * @returns the union
 	 */
-	static unionAll(types: Type[]): Type {
+	public static unionAll(types: Type[]): Type {
 		return (types.length) ? types.reduce((a, b) => a.union(b)) : Type.NEVER;
 	}
 
@@ -79,22 +79,22 @@ export abstract class Type {
 	 * i.e., it is equal to the type `never`.
 	 * Used internally for special cases of computations.
 	 */
-	readonly isBottomType: boolean = this.values.size === 0;
+	public readonly isBottomType: boolean = this.values.size === 0;
 	/**
 	 * Whether this type has all values assignable to it,
 	 * i.e., it is equal to the type `unknown`.
 	 * Used internally for special cases of computations.
 	 */
-	readonly isTopType: boolean = false;
+	public readonly isTopType: boolean = false;
 
 	/**
 	 * Construct a new Type object.
 	 * @param isMutable Whether this type is `mutable`. Mutable objects may change fields/entries and call mutating methods.
 	 * @param values    An enumerated set of values that are assignable to this type.
 	 */
-	constructor(
-		readonly isMutable: boolean,
-		readonly values:    ReadonlySet<OBJ.Object> = new Set(),
+	public constructor(
+		public readonly isMutable: boolean,
+		public readonly values:    ReadonlySet<OBJ.Object> = new Set(),
 	) {
 	}
 
@@ -102,7 +102,7 @@ export abstract class Type {
 	 * Return whether this type is mutable or has a mutable operand or component.
 	 * @return `true` if this type is mutable or has a mutable operand/component
 	 */
-	get hasMutable(): boolean {
+	public get hasMutable(): boolean {
 		return this.isMutable;
 	}
 
@@ -112,7 +112,7 @@ export abstract class Type {
 	 * @param v the value to check
 	 * @returns Is `v` assignable to this type?
 	 */
-	includes(v: OBJ.Object): boolean {
+	public includes(v: OBJ.Object): boolean {
 		return xjs.Set.has(this.values, v, languageValuesIdentical);
 	}
 
@@ -122,7 +122,7 @@ export abstract class Type {
 	 * @returns the type intersection
 	 * @final
 	 */
-	intersect(t: Type): Type {
+	public intersect(t: Type): Type {
 		/** 1-5 | `T  & never   == never` */
 		if (t.isBottomType) {
 			return Type.NEVER;
@@ -163,7 +163,7 @@ export abstract class Type {
 	 * @returns the type union
 	 * @final
 	 */
-	union(t: Type): Type {
+	public union(t: Type): Type {
 		/** 1-7 | `T \| never   == T` */
 		if (t.isBottomType) {
 			return this;
@@ -204,7 +204,7 @@ export abstract class Type {
 	 * @returns the type difference
 	 * @final
 	 */
-	subtract(t: Type): Type {
+	public subtract(t: Type): Type {
 		/** 4-1 | `A - B == A  <->  A & B == never` */
 		if (this.intersect(t).isBottomType) {
 			return this;
@@ -232,7 +232,7 @@ export abstract class Type {
 	 * @returns Is this type a subtype of the argument?
 	 * @final
 	 */
-	isSubtypeOf(t: Type): boolean {
+	public isSubtypeOf(t: Type): boolean {
 		/** 2-7 | `A <: A` */
 		if (this === t) {
 			return true;
@@ -282,15 +282,15 @@ export abstract class Type {
 	 * @param t the type to compare
 	 * @returns Is this type equal to the argument?
 	 */
-	equals(t: Type): boolean {
+	public equals(t: Type): boolean {
 		return this.isMutable === t.isMutable && this.isSubtypeOf(t) && t.isSubtypeOf(this);
 	}
 
-	mutableOf(): Type {
+	public mutableOf(): Type {
 		return this;
 	}
 
-	immutableOf(): Type {
+	public immutableOf(): Type {
 		return this;
 	}
 }
@@ -301,26 +301,26 @@ export abstract class Type {
  * An Interface Type is a set of properties that a value must have.
  */
 export class TypeInterface extends Type {
-	override readonly isBottomType: boolean = [...this.properties.values()].some((value) => value.isBottomType);
-	override readonly isTopType: boolean = this.properties.size === 0;
+	public override readonly isBottomType: boolean = [...this.properties.values()].some((value) => value.isBottomType);
+	public override readonly isTopType:    boolean = this.properties.size === 0;
 
 	/**
 	 * Construct a new TypeInterface object.
 	 * @param properties a map of this type’s members’ names along with their associated types
 	 * @param is_mutable is this type mutable?
 	 */
-	constructor(
+	public constructor(
 		private readonly properties: ReadonlyMap<string, Type>,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable);
 	}
 
-	override get hasMutable(): boolean {
+	public override get hasMutable(): boolean {
 		return super.hasMutable || [...this.properties.values()].some((t) => t.hasMutable);
 	}
 
-	override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Object): boolean {
 		return [...this.properties.keys()].every((key) => key in v);
 	}
 
@@ -361,11 +361,11 @@ export class TypeInterface extends Type {
 		));
 	}
 
-	override mutableOf(): TypeInterface {
+	public override mutableOf(): TypeInterface {
 		return new TypeInterface(this.properties, true);
 	}
 
-	override immutableOf(): TypeInterface {
+	public override immutableOf(): TypeInterface {
 		return new TypeInterface(this.properties, false);
 	}
 }
@@ -377,24 +377,24 @@ export class TypeInterface extends Type {
  * @final
  */
 class TypeNever extends Type {
-	static readonly INSTANCE: TypeNever = new TypeNever();
+	public static readonly INSTANCE: TypeNever = new TypeNever();
 
-	override readonly isBottomType: boolean = true;
-	override readonly isTopType: boolean = false;
+	public override readonly isBottomType: boolean = true;
+	public override readonly isTopType:    boolean = false;
 
 	private constructor() {
 		super(false);
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return 'never';
 	}
 
-	override includes(_v: OBJ.Object): boolean {
+	public override includes(_v: OBJ.Object): boolean {
 		return false;
 	}
 
-	override equals(t: Type): boolean {
+	public override equals(t: Type): boolean {
 		return t.isBottomType;
 	}
 }
@@ -406,20 +406,20 @@ class TypeNever extends Type {
  * @final
  */
 class TypeVoid extends Type {
-	static readonly INSTANCE: TypeVoid = new TypeVoid();
+	public static readonly INSTANCE: TypeVoid = new TypeVoid();
 
-	override readonly isBottomType: boolean = false;
-	override readonly isTopType: boolean = false;
+	public override readonly isBottomType: boolean = false;
+	public override readonly isTopType:    boolean = false;
 
 	private constructor() {
 		super(false);
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return 'void';
 	}
 
-	override includes(_v: OBJ.Object): boolean {
+	public override includes(_v: OBJ.Object): boolean {
 		return false;
 	}
 
@@ -431,7 +431,7 @@ class TypeVoid extends Type {
 		return false;
 	}
 
-	override equals(t: Type): boolean {
+	public override equals(t: Type): boolean {
 		return t === TypeVoid.INSTANCE || super.equals(t);
 	}
 }
@@ -443,24 +443,24 @@ class TypeVoid extends Type {
  * @final
  */
 class TypeUnknown extends Type {
-	static readonly INSTANCE: TypeUnknown = new TypeUnknown();
+	public static readonly INSTANCE: TypeUnknown = new TypeUnknown();
 
-	override readonly isBottomType: boolean = false;
-	override readonly isTopType: boolean = true;
+	public override readonly isBottomType: boolean = false;
+	public override readonly isTopType:    boolean = true;
 
 	private constructor() {
 		super(false);
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return 'unknown';
 	}
 
-	override includes(_v: OBJ.Object): boolean {
+	public override includes(_v: OBJ.Object): boolean {
 		return true;
 	}
 
-	override equals(t: Type): boolean {
+	public override equals(t: Type): boolean {
 		return t.isTopType;
 	}
 }

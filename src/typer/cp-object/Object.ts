@@ -13,7 +13,7 @@ abstract class CPObject {
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
 	 */
-	get isTruthy(): boolean {
+	public get isTruthy(): boolean {
 		return true;
 	}
 
@@ -21,7 +21,7 @@ abstract class CPObject {
 	 * Return whether this value is “empty”, that is,
 	 * it is either falsy, a zero number, an empty string, or an empty collection.
 	 */
-	get isEmpty(): boolean {
+	public get isEmpty(): boolean {
 		return !this.isTruthy;
 	}
 
@@ -31,7 +31,7 @@ abstract class CPObject {
 	 * @returns are the objects identically the same?
 	 * @final
 	 */
-	identical(value: CPObject): boolean {
+	public identical(value: CPObject): boolean {
 		return this === value || this.identical_helper(value);
 	}
 
@@ -51,7 +51,7 @@ abstract class CPObject {
 	 * @returns are the objects equal?
 	 * @final
 	 */
-	equal(value: CPObject): boolean {
+	public equal(value: CPObject): boolean {
 		return this.identical(value) || this.equal_helper(value);
 	}
 
@@ -69,7 +69,7 @@ abstract class CPObject {
 	 * (Not a native String — see {@link #toString}.)
 	 * @returns a string representation of this Object
 	 */
-	toCPString(): CPString {
+	public toCPString(): CPString {
 		return new CPString(this.toString());
 	}
 }

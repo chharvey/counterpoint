@@ -16,16 +16,16 @@ import {Collection} from './Collection.js';
  * - List
  */
 export abstract class CollectionIndexed<T extends CPObject = CPObject> extends Collection {
-	constructor(readonly items: readonly T[] = []) {
+	public constructor(public readonly items: readonly T[] = []) {
 		super();
 	}
 
 	/** @final */
-	override get isEmpty(): boolean {
+	public override get isEmpty(): boolean {
 		return this.items.length === 0;
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `[${ this.items.map((it) => it.toString()).join(', ') }]`;
 	}
 
@@ -43,7 +43,7 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 	}
 
 	/** @final */
-	get(index: Integer, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | Null {
+	public get(index: Integer, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | Null {
 		const n: number = this.items.length;
 		const i: number = Number(index.toNumeric());
 		return (

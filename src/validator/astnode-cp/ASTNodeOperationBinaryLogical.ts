@@ -16,15 +16,15 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
 export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryLogical {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryLogical {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeOperationBinaryLogical);
 		return expression;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		override readonly operator: ValidOperatorLogical,
+		protected override readonly operator: ValidOperatorLogical,
 		operand0: ASTNodeExpression,
 		operand1: ASTNodeExpression,
 	) {

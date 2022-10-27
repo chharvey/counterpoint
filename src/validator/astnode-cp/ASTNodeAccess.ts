@@ -20,26 +20,26 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
 export class ASTNodeAccess extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAccess {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAccess {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeAccess);
 		return expression;
 	}
 
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
-	constructor(
+	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
 			| SyntaxNodeType<'assignee'>
 		,
-		readonly kind:     ValidAccessOperator,
-		readonly base:     ASTNodeExpression,
-		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
+		private readonly kind:     ValidAccessOperator,
+		public  readonly base:     ASTNodeExpression,
+		private readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
 	}
 
-	override shouldFloat(): boolean {
+	public override shouldFloat(): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
 	}
 

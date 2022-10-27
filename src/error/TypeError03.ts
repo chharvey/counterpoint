@@ -15,14 +15,14 @@ import {TypeError} from './TypeError.js';
  */
 export class TypeError03 extends TypeError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 3;
+	public static override readonly CODE = 3;
 	/**
 	 * Construct a new TypeError03 object.
 	 * @param assignee_type - the type to which the expression is assigned
 	 * @param assigned_type - the type of the expression
 	 * @param assignment    - the node where the assignment took place
 	 */
-	constructor(assignee_type: TYPE.Type, assigned_type: TYPE.Type, assignment: AST.ASTNodeCP) {
+	public constructor(assignee_type: TYPE.Type, assigned_type: TYPE.Type, assignment: AST.ASTNodeCP) {
 		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`, TypeError03.CODE, assignment.line_index, assignment.col_index);
 	}
 }

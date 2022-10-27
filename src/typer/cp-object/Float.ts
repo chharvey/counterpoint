@@ -9,12 +9,12 @@ import {Number as CPNumber} from './Number.js';
  * @final
  */
 export class Float extends CPNumber<Float> {
-	constructor(private readonly data: number = 0) {
+	public constructor(private readonly data: number = 0) {
 		super();
 		xjs.Number.assertType(this.data, xjs.NumericType.FINITE);
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `${ this.data }${ (this.data % 1 === 0) ? '.0' : '' }`;
 	}
 
@@ -26,45 +26,45 @@ export class Float extends CPNumber<Float> {
 		return value instanceof CPNumber && this.data === value.toFloat().data;
 	}
 
-	override toFloat(): this {
+	public override toFloat(): this {
 		return this;
 	}
 
-	override plus(addend: Float): Float {
+	public override plus(addend: Float): Float {
 		return new Float(this.data + addend.data);
 	}
 
-	override minus(subtrahend: Float): Float {
+	public override minus(subtrahend: Float): Float {
 		return new Float(this.data - subtrahend.data);
 	}
 
-	override times(multiplicand: Float): Float {
+	public override times(multiplicand: Float): Float {
 		return new Float(this.data * multiplicand.data);
 	}
 
-	override divide(divisor: Float): Float {
+	public override divide(divisor: Float): Float {
 		if (divisor.data === 0) {
 			throw new RangeError('Division by zero.');
 		}
 		return new Float(this.data / divisor.data);
 	}
 
-	override exp(exponent: Float): Float {
+	public override exp(exponent: Float): Float {
 		return new Float(this.data ** exponent.data);
 	}
 
-	override neg(): Float {
+	public override neg(): Float {
 		return new Float(-this.data);
 	}
 
 	/**
 	 * The floating-point numbers `0.0` and `-0.0`, while not identical, are mathematically equal.
 	 */
-	override eq0(): boolean {
+	public override eq0(): boolean {
 		return this.data === 0;
 	}
 
-	override lt(y: Float): boolean {
+	public override lt(y: Float): boolean {
 		return this.data < y.data;
 	}
 }

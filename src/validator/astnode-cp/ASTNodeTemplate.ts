@@ -14,15 +14,15 @@ import type {ASTNodeConstant} from './ASTNodeConstant.js';
 
 
 export class ASTNodeTemplate extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTemplate {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTemplate {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeTemplate);
 		return expression;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'string_template'>,
-		override readonly children: // FIXME spread types
+		public override readonly children: // FIXME spread types
 			| readonly [ASTNodeConstant]
 			| readonly [ASTNodeConstant,                                                           ASTNodeConstant]
 			| readonly [ASTNodeConstant, ASTNodeExpression,                                        ASTNodeConstant]
@@ -34,7 +34,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		super(start_node, {}, children);
 	}
 
-	override shouldFloat(): boolean {
+	public override shouldFloat(): boolean {
 		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
 

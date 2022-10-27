@@ -12,16 +12,16 @@ import {ASTNodeType} from './ASTNodeType.js';
 
 
 export class ASTNodeTypeList extends ASTNodeType {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeList {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeList {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeList);
 		return typ;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'type_unary_symbol'>,
-		readonly type:  ASTNodeType,
-		readonly count: bigint | null,
+		private readonly type:  ASTNodeType,
+		private readonly count: bigint | null,
 	) {
 		super(start_node, {count}, [type]);
 	}

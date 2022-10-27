@@ -14,20 +14,20 @@ import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
 
 
 export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperationBinary {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperationBinary {
 		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeOperationBinary);
 		return typ;
 	}
 
-	constructor(
+	public constructor(
 		start_node:
 			| SyntaxNodeType<'type_intersection'>
 			| SyntaxNodeType<'type_union'>
 		,
 		operator: ValidTypeOperator,
-		readonly operand0: ASTNodeType,
-		readonly operand1: ASTNodeType,
+		private readonly operand0: ASTNodeType,
+		private readonly operand1: ASTNodeType,
 	) {
 		super(start_node, operator, [operand0, operand1]);
 	}

@@ -16,14 +16,14 @@ import {
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
 export class TypeUnion extends Type {
-	declare readonly isBottomType: boolean;
+	public declare readonly isBottomType: boolean;
 
 	/**
 	 * Construct a new TypeUnion object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
-	constructor(
+	public constructor(
 		private readonly left:  Type,
 		private readonly right: Type,
 	) {
@@ -31,15 +31,15 @@ export class TypeUnion extends Type {
 		this.isBottomType = this.left.isBottomType && this.right.isBottomType;
 	}
 
-	override get hasMutable(): boolean {
+	public override get hasMutable(): boolean {
 		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `${ this.left } | ${ this.right }`;
 	}
 
-	override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Object): boolean {
 		return this.left.includes(v) || this.right.includes(v);
 	}
 
@@ -61,20 +61,20 @@ export class TypeUnion extends Type {
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t);
 	}
 
-	override mutableOf(): TypeUnion {
+	public override mutableOf(): TypeUnion {
 		return new TypeUnion(this.left.mutableOf(), this.right.mutableOf());
 	}
 
-	override immutableOf(): TypeUnion {
+	public override immutableOf(): TypeUnion {
 		return new TypeUnion(this.left.immutableOf(), this.right.immutableOf());
 	}
 
-	subtractedFrom(t: Type): Type {
+	public subtractedFrom(t: Type): Type {
 		/** 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
 		return t.subtract(this.left).intersect(t.subtract(this.right));
 	}
 
-	isNecessarilySupertypeOf(t: Type): boolean {
+	public isNecessarilySupertypeOf(t: Type): boolean {
 		/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
 		if (t.isSubtypeOf(this.left) || t.isSubtypeOf(this.right)) {
 			return true;
@@ -86,7 +86,7 @@ export class TypeUnion extends Type {
 		return false;
 	}
 
-	combineTuplesOrRecords(): Type {
+	public combineTuplesOrRecords(): Type {
 		return (
 			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? this.left.unionWithTuple(this.right)  :
 			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? this.left.unionWithRecord(this.right) :

@@ -5,10 +5,10 @@ import {ASTNodeCP} from './ASTNodeCP.js';
 
 
 export class ASTNodeCase extends ASTNodeCP {
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'case'>,
-		readonly antecedent: ASTNodeExpression,
-		readonly consequent: ASTNodeExpression,
+		public readonly antecedent: ASTNodeExpression,
+		public readonly consequent: ASTNodeExpression,
 	) {
 		super(start_node, {}, [antecedent, consequent]);
 	}

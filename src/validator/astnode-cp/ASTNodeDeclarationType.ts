@@ -15,21 +15,21 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 
 
 export class ASTNodeDeclarationType extends ASTNodeStatement {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationType {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationType {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeDeclarationType);
 		return statement;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'declaration_type'>,
-		readonly assignee: ASTNodeTypeAlias,
-		readonly assigned: ASTNodeType,
+		private readonly assignee: ASTNodeTypeAlias,
+		public  readonly assigned: ASTNodeType,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
 
-	override varCheck(): void {
+	public override varCheck(): void {
 		if (this.validator.hasSymbol(this.assignee.id)) {
 			throw new AssignmentError01(this.assignee);
 		}
@@ -37,14 +37,14 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		this.validator.addSymbol(new SymbolStructureType(this.assignee));
 	}
 
-	override typeCheck(): void {
+	public override typeCheck(): void {
 		const symbol: SymbolStructureType | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureType | null;
 		if (symbol) {
 			symbol.typevalue = this.assigned.eval();
 		}
 	}
 
-	override build(_builder: Builder): INST.InstructionNone {
+	public override build(_builder: Builder): INST.InstructionNone {
 		return new INST.InstructionNone();
 	}
 }

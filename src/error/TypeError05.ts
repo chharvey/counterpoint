@@ -16,13 +16,13 @@ import {TypeError} from './TypeError.js';
  */
 export class TypeError05 extends TypeError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 5;
+	public static override readonly CODE = 5;
 	/**
 	 * Construct a new TypeError05 object.
 	 * @param typ  - the type trying to be called
 	 * @param base - the object expression being called
 	 */
-	constructor(typ: TYPE.Type, base: AST.ASTNodeType | AST.ASTNodeExpression) {
+	public constructor(typ: TYPE.Type, base: AST.ASTNodeType | AST.ASTNodeExpression) {
 		super(`Type \`${ typ }\` is not callable.`, TypeError05.CODE, base.line_index, base.col_index);
 	}
 }

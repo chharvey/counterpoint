@@ -61,7 +61,10 @@
 				"require-await":                    "off",
 				"@typescript-eslint/require-await": "error", // needed here due to `parserOptions.project`
 				"no-return-await":                  "off",
-				"@typescript-eslint/return-await":  "error" // needed here due to `parserOptions.project` // note: overrides "no-return-await" (despite different name)
+				"@typescript-eslint/return-await":  "error", // needed here due to `parserOptions.project` // note: overrides "no-return-await" (despite different name)
+
+				/* ## Strictness */
+				"@typescript-eslint/explicit-member-accessibility": "error"
 			}
 		}
 	],

@@ -7,22 +7,22 @@ import {Type} from './Type.js';
  * Class for constructing unit types, types that contain exactly one value.
  */
 export class TypeUnit extends Type {
-	override readonly isBottomType: boolean = false;
-	override readonly isTopType:    boolean = false;
+	public override readonly isBottomType: boolean = false;
+	public override readonly isTopType:    boolean = false;
 
 	/**
 	 * Construct a new TypeUnit object.
 	 * @param value the Counterpoint Language Value contained in this Type
 	 */
-	constructor(readonly value: OBJ.Object) {
+	public constructor(public readonly value: OBJ.Object) {
 		super(false, new Set([value]));
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return this.value.toString();
 	}
 
-	override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Object): boolean {
 		return this.value.identical(v);
 	}
 

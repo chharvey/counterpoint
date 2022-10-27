@@ -16,22 +16,22 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
 export class ASTNodeClaim extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeClaim {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeClaim {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeClaim);
 		return expression;
 	}
 
 	private typed_?: TYPE.Type;
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'expression_claim'>,
-		readonly claimed_type: ASTNodeType,
-		readonly operand: ASTNodeExpression,
+		private readonly claimed_type: ASTNodeType,
+		private readonly operand: ASTNodeExpression,
 	) {
 		super(start_node, {}, [claimed_type, operand]);
 	}
 
-	override shouldFloat(): boolean {
+	public override shouldFloat(): boolean {
 		return this.type().isSubtypeOf(TYPE.Type.FLOAT);
 	}
 
@@ -40,7 +40,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		return this.operand.build(builder, tofloat);
 	}
 
-	override type(): TYPE.Type { // WARNING: overriding a final method!
+	public override type(): TYPE.Type { // WARNING: overriding a final method!
 		// TODO: use JS decorators for memoizing this method
 		if (!this.typed_) {
 			this.typed_ = this.type_do();

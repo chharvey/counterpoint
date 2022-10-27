@@ -15,7 +15,7 @@ import {Collection} from './Collection.js';
 
 
 class CPSet<T extends CPObject = CPObject> extends Collection {
-	constructor(private readonly elements: ReadonlySet<T> = new Set()) {
+	public constructor(private readonly elements: ReadonlySet<T> = new Set()) {
 		super();
 		const uniques = new Set<T>();
 		[...elements].forEach((el) => {
@@ -24,11 +24,11 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 		this.elements = uniques;
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
 	}
 
-	override get isEmpty(): boolean {
+	public override get isEmpty(): boolean {
 		return this.elements.size === 0;
 	}
 
@@ -45,11 +45,11 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 		);
 	}
 
-	override toType(): TypeSet {
+	public override toType(): TypeSet {
 		return new TypeSet(Type.unionAll([...this.elements].map<Type>((el) => new TypeUnit(el))));
 	}
 
-	get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | Null {
+	public get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | Null {
 		return (xjs.Set.has(this.elements, el, languageValuesIdentical))
 			? el
 			: (access_optional)

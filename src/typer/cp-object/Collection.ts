@@ -32,5 +32,5 @@ export abstract class Collection extends CPObject {
 	}
 
 
-	abstract toType(): Type;
+	public abstract toType(): Type;
 }

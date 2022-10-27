@@ -20,21 +20,21 @@ import {ASTNodeOperation} from './ASTNodeOperation.js';
 
 
 export class ASTNodeOperationUnary extends ASTNodeOperation {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeOperationUnary);
 		return expression;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		readonly operator: ValidOperatorUnary,
-		readonly operand: ASTNodeExpression,
+		private readonly operator: ValidOperatorUnary,
+		private readonly operand:  ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand]);
 	}
 
-	override shouldFloat(): boolean {
+	public override shouldFloat(): boolean {
 		return this.operand.shouldFloat();
 	}
 

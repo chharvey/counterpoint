@@ -31,7 +31,7 @@ export abstract class ASTNodeType extends ASTNodeCP {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeType representing the given source
 	 */
-	static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeType {
+	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeType {
 		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
 		return statement.assigned;
 	}
@@ -40,7 +40,7 @@ export abstract class ASTNodeType extends ASTNodeCP {
 	/**
 	 * @final
 	 */
-	override typeCheck(): void {
+	public override typeCheck(): void {
 		return; // no type-checking necessary
 	}
 
@@ -49,7 +49,7 @@ export abstract class ASTNodeType extends ASTNodeCP {
 	 * @returns the computed type-value of this node
 	 * @final
 	 */
-	eval(): TYPE.Type {
+	public eval(): TYPE.Type {
 		return this.assessed ||= this.eval_do();
 	}
 

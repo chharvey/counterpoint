@@ -4,7 +4,7 @@ import {Type} from './Type.js';
 
 
 export class TypeMap extends Type {
-	override readonly isBottomType: boolean = false;
+	public override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new TypeMap object.
@@ -12,23 +12,23 @@ export class TypeMap extends Type {
 	 * @param consequenttypes a union of consequent types in this map type
 	 * @param is_mutable is this type mutable?
 	 */
-	constructor(
-		readonly antecedenttypes: Type,
-		readonly consequenttypes: Type,
+	 public constructor(
+		public readonly antecedenttypes: Type,
+		public readonly consequenttypes: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new OBJ.Map()]));
 	}
 
-	override get hasMutable(): boolean {
+	public override get hasMutable(): boolean {
 		return super.hasMutable || this.antecedenttypes.hasMutable || this.consequenttypes.hasMutable;
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `${ (this.isMutable) ? 'mutable ' : '' }Map.<${ this.antecedenttypes }, ${ this.consequenttypes }>`;
 	}
 
-	override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.Map && v.toType().isSubtypeOf(this);
 	}
 
@@ -42,11 +42,11 @@ export class TypeMap extends Type {
 		);
 	}
 
-	override mutableOf(): TypeMap {
+	public override mutableOf(): TypeMap {
 		return new TypeMap(this.antecedenttypes, this.consequenttypes, true);
 	}
 
-	override immutableOf(): TypeMap {
+	public override immutableOf(): TypeMap {
 		return new TypeMap(this.antecedenttypes, this.consequenttypes, false);
 	}
 }

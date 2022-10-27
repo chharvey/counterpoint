@@ -14,19 +14,19 @@ import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
 
 
 export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperationUnary {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperationUnary {
 		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeOperationUnary);
 		return typ;
 	}
 
-	constructor(
+	public constructor(
 		start_node:
 			| SyntaxNodeType<'type_unary_symbol'>
 			| SyntaxNodeType<'type_unary_keyword'>
 		,
 		operator: ValidTypeOperator,
-		readonly operand: ASTNodeType,
+		private readonly operand: ASTNodeType,
 	) {
 		super(start_node, operator, [operand]);
 		if ([Operator.OREXCP].includes(this.operator)) {

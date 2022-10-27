@@ -9,9 +9,9 @@ import {ErrorCode} from './ErrorCode.js';
  */
 class ParseError extends ErrorCode {
 	/** The name of this class of errors. */
-	static override readonly NAME = 'ParseError';
+	public static override readonly NAME = 'ParseError';
 	/** The number series of this class of errors. */
-	static readonly CODE: number = 1200;
+	public static readonly CODE: number = 1200;
 
 
 	/**
@@ -21,7 +21,7 @@ class ParseError extends ErrorCode {
 	 * @param line    the line index in source code
 	 * @param col     the column index in source code
 	 */
-	constructor(message: string, code: number = 0, line?: number, col?: number) {
+	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
 			name: ParseError.NAME,
@@ -40,14 +40,14 @@ class ParseError extends ErrorCode {
 // @ts-expect-error --- noUnusedLocals
 class ParseError01 extends ParseError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 1;
+	public static override readonly CODE = 1;
 
 
 	/**
 	 * Construct a new ParseError01 object.
 	 * @param token the unexpected token
 	 */
-	constructor(token: Serializable) {
+	public constructor(token: Serializable) {
 		super(`Unexpected token: \`${ token.source }\` at line ${ token.line_index + 1 } col ${ token.col_index + 1 }.`, ParseError01.CODE, token.line_index, token.col_index);
 	}
 }

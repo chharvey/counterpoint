@@ -22,26 +22,26 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeGoal representing the given source
 	 */
-	static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeGoal {
+	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeGoal {
 		return DECORATOR.decorateTS(TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>, config);
 	}
 
 	private readonly _validator: Validator;
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'source_file'>,
-		override readonly children: readonly ASTNodeStatement[],
+		public override readonly children: readonly ASTNodeStatement[],
 		config: CPConfig,
 	) {
 		super(start_node, {}, children);
 		this._validator = new Validator(config);
 	}
 
-	override get validator(): Validator {
+	public override get validator(): Validator {
 		return this._validator;
 	}
 
 	/** @implements Buildable */
-	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
+	public build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
 		return (!this.children.length)
 			? new INST.InstructionNone()
 			: new INST.InstructionModule([

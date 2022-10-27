@@ -37,7 +37,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeExpression representing the given source
 	 */
-	static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeExpression {
+	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeStatementExpression);
 		assert.ok(statement.expr, 'semantic statement should have 1 child');
@@ -51,11 +51,11 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
 	 */
-	abstract shouldFloat(): boolean;
+	public abstract shouldFloat(): boolean;
 	/**
 	 * @final
 	 */
-	override typeCheck(): void {
+	public override typeCheck(): void {
 		super.typeCheck();
 		this.type(); // assert does not throw
 	}
@@ -66,7 +66,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @implements Buildable
 	 * @final
 	 */
-	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
+	public build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
 		if (!this.built) {
 			const value: OBJ.Object | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
 			this.built = (value) ? INST.InstructionConst.fromCPValue(value, to_float) : this.build_do(builder, to_float);
@@ -80,7 +80,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @return the compile-time type of this node
 	 * @final
 	 */
-	type(): TYPE.Type {
+	public type(): TYPE.Type {
 		if (!this.typed) {
 			this.typed = this.type_do(); // type-check first, to re-throw any TypeErrors
 			if (this.validator.config.compilerOptions.constantFolding) {
@@ -110,7 +110,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 * @final
 	 */
-	fold(): OBJ.Object | null {
+	public fold(): OBJ.Object | null {
 		return this.assessed ||= this.fold_do();
 	}
 

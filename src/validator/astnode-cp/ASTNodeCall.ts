@@ -25,22 +25,22 @@ import {ASTNodeVariable} from './ASTNodeVariable.js';
 
 
 export class ASTNodeCall extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeCall {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeCall {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeCall);
 		return expression;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
-		readonly base: ASTNodeExpression,
-		readonly typeargs: readonly ASTNodeType[],
-		readonly exprargs: readonly ASTNodeExpression[],
+		private readonly base: ASTNodeExpression,
+		private readonly typeargs: readonly ASTNodeType[],
+		private readonly exprargs: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, [base, ...typeargs, ...exprargs]);
 	}
 
-	override varCheck(): void {
+	public override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be a `ValidFunctionName`)
 		return xjs.Array.forEachAggregated([
@@ -49,7 +49,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		], (arg) => arg.varCheck());
 	}
 
-	override shouldFloat(): boolean {
+	public override shouldFloat(): boolean {
 		return false;
 	}
 

@@ -19,7 +19,7 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
 export class ASTNodeConstant extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeConstant {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeConstant {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeConstant);
 		return expression;
@@ -37,7 +37,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	private _value: OBJ.Object | null = null;
 
-	constructor(start_node: (
+	public constructor(start_node: (
 		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'template_full'>
 		| SyntaxNodeType<'template_head'>
@@ -61,7 +61,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		);
 	}
 
-	override shouldFloat(): boolean {
+	public override shouldFloat(): boolean {
 		return this.value instanceof OBJ.Float;
 	}
 

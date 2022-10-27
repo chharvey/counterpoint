@@ -8,21 +8,21 @@ import {Type} from './Type.js';
  * @final
  */
 export class TypeString extends Type {
-	static get INSTANCE(): TypeString {
+	public static get INSTANCE(): TypeString {
 		return new TypeString();
 	}
 
-	override readonly isBottomType: boolean = false;
-	override readonly isTopType:    boolean = false;
+	public override readonly isBottomType: boolean = false;
+	public override readonly isTopType:    boolean = false;
 	private constructor() {
 		super(false, new Set([new OBJ.String('')]));
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return 'str';
 	}
 
-	override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.String;
 	}
 }

@@ -16,15 +16,15 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 export class ASTNodeMap extends ASTNodeCollectionLiteral {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeMap {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeMap {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeMap);
 		return expression;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'map_literal'>,
-		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
+		public override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, children);
 	}

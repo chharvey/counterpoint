@@ -14,15 +14,15 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 export class ASTNodeTuple extends ASTNodeCollectionLiteral {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTuple {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTuple {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeTuple);
 		return expression;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'tuple_literal'>,
-		override readonly children: readonly ASTNodeExpression[],
+		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
 	}

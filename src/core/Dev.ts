@@ -34,7 +34,7 @@ export class Dev {
 	 * @param feature the feature to test
 	 * @return is this project’s version number in the range of the feature?
 	 */
-	static supports(feature: DevToggleKey): boolean {
+	public static supports(feature: DevToggleKey): boolean {
 		const toggle: DevToggleVal = Dev.TOGGLES[feature];
 		return toggle[0] && Dev.supportsAll(...toggle[1] || []);
 	}
@@ -45,7 +45,7 @@ export class Dev {
 	 * @see Dev.supports
 	 * @return are any of the given features supported?
 	 */
-	static supportsAny(...features: DevToggleKey[]): boolean {
+	public static supportsAny(...features: DevToggleKey[]): boolean {
 		return features.some((feature) => Dev.supports(feature));
 	}
 
@@ -55,7 +55,7 @@ export class Dev {
 	 * @see Dev.supports
 	 * @return are all of the given features supported?
 	 */
-	static supportsAll(...features: DevToggleKey[]): boolean {
+	public static supportsAll(...features: DevToggleKey[]): boolean {
 		return features.every((feature) => Dev.supports(feature));
 	}
 }

@@ -13,7 +13,7 @@ import {TypeError} from './TypeError.js';
  */
 export class TypeError06 extends TypeError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 6;
+	public static override readonly CODE = 6;
 	/**
 	 * Construct a new TypeError06 object.
 	 * @param actual   - the number of arguments received
@@ -21,7 +21,7 @@ export class TypeError06 extends TypeError {
 	 * @param generic  - whether the arguments are generic arguments (true) or function arguments (false)
 	 * @param call     - the function call
 	 */
-	constructor(actual: bigint, expected: bigint, generic: boolean, call: AST.ASTNodeTypeCall | AST.ASTNodeCall) {
+	public constructor(actual: bigint, expected: bigint, generic: boolean, call: AST.ASTNodeTypeCall | AST.ASTNodeCall) {
 		super(`Got \`${ actual }\` ${ (generic) ? 'type ' : '' }arguments, but expected \`${ expected }\`.`, TypeError06.CODE, call.line_index, call.col_index);
 	}
 }

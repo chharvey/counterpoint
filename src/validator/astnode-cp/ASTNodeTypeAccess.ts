@@ -16,16 +16,16 @@ import {ASTNodeType} from './ASTNodeType.js';
 
 
 export class ASTNodeTypeAccess extends ASTNodeType {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeAccess {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeAccess {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeAccess);
 		return typ;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
-		readonly base:     ASTNodeType,
-		readonly accessor: ASTNodeIndexType | ASTNodeKey,
+		private readonly base:     ASTNodeType,
+		private readonly accessor: ASTNodeIndexType | ASTNodeKey,
 	) {
 		super(start_node, {}, [base, accessor]);
 	}

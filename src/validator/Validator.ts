@@ -176,7 +176,7 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the unique id identifying the token
 	 */
-	static cookTokenPunctuator(source: Punctuator): bigint {
+	public static cookTokenPunctuator(source: Punctuator): bigint {
 		const index: number = PUNCTUATORS.indexOf(source);
 		if (0 <= index && index < PUNCTUATORS.length) {
 			return BigInt(index) + Validator.MIN_VALUE_PUNCTUATOR;
@@ -191,7 +191,7 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the unique id identifying the token
 	 */
-	static cookTokenKeyword(source: Keyword): bigint {
+	public static cookTokenKeyword(source: Keyword): bigint {
 		const index: number = KEYWORDS.indexOf(source);
 		if (0 <= index && index < KEYWORDS.length) {
 			return BigInt(index) + Validator.MIN_VALUE_KEYWORD;
@@ -206,7 +206,7 @@ export class Validator {
 	 * @param config configuration settings
 	 * @return       the numeric value, cooked, along with whether the cooked value is a float
 	 */
-	static cookTokenNumber(source: string, config: CPConfig): [number, boolean] {
+	public static cookTokenNumber(source: string, config: CPConfig): [number, boolean] {
 		const is_float:   boolean   = source.indexOf(POINT) > 0;
 		const has_unary:  boolean   = ([Punctuator.AFF, Punctuator.NEG] as string[]).includes(source[0]);
 		const multiplier: number    = (has_unary && source[0] === Punctuator.NEG) ? -1 : 1;
@@ -245,7 +245,7 @@ export class Validator {
 	 * @param config configuration settings
 	 * @return       the text value, cooked
 	 */
-	static cookTokenString(source: string, config: CPConfig): CodeUnit[] {
+	public static cookTokenString(source: string, config: CPConfig): CodeUnit[] {
 		return tokenWorthString(
 			source.slice(DELIM_STRING.length, -DELIM_STRING.length),
 			config.languageFeatures.comments,
@@ -258,7 +258,7 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the text value, cooked
 	 */
-	static cookTokenTemplate(source: string): CodeUnit[] {
+	public static cookTokenTemplate(source: string): CodeUnit[] {
 		const delim_start = (
 			(source.slice(0, 3) === DELIM_TEMPLATE)   ? DELIM_TEMPLATE :
 			(source.slice(0, 2) === DELIM_INTERP_END) ? DELIM_INTERP_END :
@@ -286,7 +286,7 @@ export class Validator {
 	 * Construct a new Validator object.
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor(readonly config: CPConfig = CONFIG_DEFAULT) {
+	public constructor(public readonly config: CPConfig = CONFIG_DEFAULT) {
 	}
 
 	/**
@@ -294,7 +294,7 @@ export class Validator {
 	 * @param symbol the object encoding data of the symbol
 	 * @returns this
 	 */
-	addSymbol(symbol: SymbolStructure): this {
+	public addSymbol(symbol: SymbolStructure): this {
 		this.symbol_table.set(symbol.id, symbol);
 		return this;
 	}
@@ -304,7 +304,7 @@ export class Validator {
 	 * @param id the id of the symbol to remove
 	 * @returns this
 	 */
-	removeSymbol(id: bigint): this {
+	public removeSymbol(id: bigint): this {
 		this.symbol_table.delete(id);
 		return this;
 	}
@@ -314,7 +314,7 @@ export class Validator {
 	 * @param id the symbol id to check
 	 * @returns Does the symbol table have a symbol with the given id?
 	 */
-	hasSymbol(id: bigint): boolean {
+	public hasSymbol(id: bigint): boolean {
 		return this.symbol_table.has(id);
 	}
 
@@ -323,7 +323,7 @@ export class Validator {
 	 * @param id the symbol id to check
 	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
 	 */
-	getSymbolInfo(id: bigint): SymbolStructure | null {
+	public getSymbolInfo(id: bigint): SymbolStructure | null {
 		return this.symbol_table.get(id) || null;
 	}
 
@@ -331,7 +331,7 @@ export class Validator {
 	 * Remove all symbols from this Validator’s symbol table.
 	 * @returns this
 	 */
-	clearSymbols(): this {
+	public clearSymbols(): this {
 		this.symbol_table.clear();
 		return this;
 	}
@@ -341,7 +341,7 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the unique id identifying the token
 	 */
-	cookTokenIdentifier(source: string): bigint {
+	public cookTokenIdentifier(source: string): bigint {
 		this.identifiers.add(source);
 		return BigInt([...this.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
 	}

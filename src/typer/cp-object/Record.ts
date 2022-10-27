@@ -8,7 +8,7 @@ import {CollectionKeyed} from './CollectionKeyed.js';
 
 
 export class Record<T extends CPObject = CPObject> extends CollectionKeyed<T> {
-	override toType(): TypeRecord {
+	public override toType(): TypeRecord {
 		return TypeRecord.fromTypes(new Map([...this.properties].map(([key, value]) => [key, new TypeUnit(value)])));
 	}
 }

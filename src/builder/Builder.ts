@@ -15,7 +15,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
  * The Builder generates assembly code.
  */
 export class Builder {
-	static readonly IMPORTS: readonly string[] = [
+	public static readonly IMPORTS: readonly string[] = [
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/not.wat'), 'utf8'),
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/emp.wat'), 'utf8'),
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/neg.wat'), 'utf8'),
@@ -36,7 +36,7 @@ export class Builder {
 	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor(source: string, config: CPConfig = CONFIG_DEFAULT) {
+	public constructor(source: string, config: CPConfig = CONFIG_DEFAULT) {
 		this.ast_goal  = AST.ASTNodeGoal.fromSource(source, config);
 		this.ast_goal.varCheck();  // assert does not throw
 		this.ast_goal.typeCheck(); // assert does not throw
@@ -46,7 +46,7 @@ export class Builder {
 	 * Return this Builder’s short-circuit variable count, and then increment it.
 	 * @return this Builder’s current variable counter
 	 */
-	get varCount(): bigint {
+	public get varCount(): bigint {
 		return this.var_count++;
 	}
 
@@ -55,7 +55,7 @@ export class Builder {
 	 * Also resets the short-circuit variable count.
 	 * @return this Builder’s current statement counter
 	 */
-	get stmtCount(): bigint {
+	public get stmtCount(): bigint {
 		this.var_count = 0n;
 		return this.stmt_count++;
 	}
@@ -64,7 +64,7 @@ export class Builder {
 	 * Return the instructions to print to file.
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
-	print(): string {
+	public print(): string {
 		return this.ast_goal.build(this).toString();
 	}
 
@@ -72,7 +72,7 @@ export class Builder {
 	 * Return a binary format of the program.
 	 * @return a binary output in WASM format, which can be executed
 	 */
-	async compile(): Promise<Uint8Array> {
+	public async compile(): Promise<Uint8Array> {
 		const waModule = (await wabt()).parseWat('', this.print(), {});
 		waModule.validate();
 		return waModule.toBinary({}).buffer;

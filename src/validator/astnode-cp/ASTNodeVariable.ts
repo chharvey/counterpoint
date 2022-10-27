@@ -19,7 +19,7 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
 export class ASTNodeVariable extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeVariable {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeVariable {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeVariable);
 		return expression;
@@ -28,19 +28,19 @@ export class ASTNodeVariable extends ASTNodeExpression {
 
 	private _id: bigint | null = null; // TODO use memoize decorator
 
-	constructor(start_node: SyntaxNodeType<'identifier'>) {
+	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
-	get id(): bigint {
+	public get id(): bigint {
 		return this._id ??= this.validator.cookTokenIdentifier(this.start_node.text);
 	}
 
-	override shouldFloat(): boolean {
+	public override shouldFloat(): boolean {
 		return this.type().isSubtypeOf(TYPE.Type.FLOAT);
 	}
 
-	override varCheck(): void {
+	public override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		}

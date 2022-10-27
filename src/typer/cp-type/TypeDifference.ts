@@ -12,14 +12,14 @@ import {Type} from './Type.js';
  * that contains values assignable to `T` but *not* assignable to `U`.
  */
 export class TypeDifference extends Type {
-	declare readonly isBottomType: boolean;
+	public declare readonly isBottomType: boolean;
 
 	/**
 	 * Construct a new TypeDifference object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
-	constructor(
+	 public constructor(
 		private readonly left:  Type,
 		private readonly right: Type,
 	) {
@@ -34,15 +34,15 @@ export class TypeDifference extends Type {
 		this.isBottomType = false;
 	}
 
-	override get hasMutable(): boolean {
+	public override get hasMutable(): boolean {
 		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `${ this.left } - ${ this.right }`;
 	}
 
-	override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Object): boolean {
 		return this.left.includes(v) && !this.right.includes(v);
 	}
 
@@ -50,15 +50,15 @@ export class TypeDifference extends Type {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf_do(t);
 	}
 
-	override mutableOf(): TypeDifference {
+	public override mutableOf(): TypeDifference {
 		return new TypeDifference(this.left.mutableOf(), this.right.mutableOf());
 	}
 
-	override immutableOf(): TypeDifference {
+	public override immutableOf(): TypeDifference {
 		return new TypeDifference(this.left.immutableOf(), this.right.immutableOf());
 	}
 
-	isSupertypeOf(t: Type): boolean {
+	public isSupertypeOf(t: Type): boolean {
 		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
 		return t.isSubtypeOf(this.left) && t.intersect(this.right).isBottomType;
 	}

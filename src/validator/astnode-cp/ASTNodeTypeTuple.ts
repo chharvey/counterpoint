@@ -11,15 +11,15 @@ import {ASTNodeType} from './ASTNodeType.js';
 
 
 export class ASTNodeTypeTuple extends ASTNodeType {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeTuple);
 		return typ;
 	}
 
-	constructor(
+	public constructor(
 		start_node: SyntaxNodeType<'type_tuple_literal'>,
-		override readonly children: readonly ASTNodeItemType[],
+		public override readonly children: readonly ASTNodeItemType[],
 	) {
 		super(start_node, {}, children);
 	}

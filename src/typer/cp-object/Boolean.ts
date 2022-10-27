@@ -12,20 +12,20 @@ import {Primitive} from './Primitive.js';
  */
 class CPBoolean extends Primitive {
 	/** The Counterpoint Language Value `false`. */
-	static readonly FALSE: CPBoolean = new CPBoolean(false);
+	public static readonly FALSE: CPBoolean = new CPBoolean(false);
 	/** The Counterpoint Language Value `true`. */
-	static readonly TRUE: CPBoolean = new CPBoolean(true);
+	public static readonly TRUE: CPBoolean = new CPBoolean(true);
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
-	static readonly FALSETYPE: TypeUnit = new TypeUnit(CPBoolean.FALSE);
+	public static readonly FALSETYPE: TypeUnit = new TypeUnit(CPBoolean.FALSE);
 	/** A Unit Type containing only the Counterpoint Language Value `true`. */
-	static readonly TRUETYPE: TypeUnit = new TypeUnit(CPBoolean.TRUE);
+	public static readonly TRUETYPE: TypeUnit = new TypeUnit(CPBoolean.TRUE);
 
 	/**
 	 * Return the Counterpoint Language Value `true` or `false` based on the argument.
 	 * @param b a native boolean value
 	 * @returns the argument converted into a CPBoolean
 	 */
-	static fromBoolean(b: boolean): CPBoolean {
+	public static fromBoolean(b: boolean): CPBoolean {
 		return (b) ? CPBoolean.TRUE : CPBoolean.FALSE;
 	}
 
@@ -37,11 +37,11 @@ class CPBoolean extends Primitive {
 		super();
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `${ this.data }`;
 	}
 
-	override get isTruthy(): boolean {
+	public override get isTruthy(): boolean {
 		return this.data;
 	}
 

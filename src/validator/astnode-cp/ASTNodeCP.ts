@@ -21,7 +21,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * @param validator     a validator for type-checking purposes
 	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
 	 */
-	static typeCheckAssignment(
+	public static typeCheckAssignment(
 		assignee_type: TYPE.Type,
 		assigned_type: TYPE.Type,
 		node:          ASTNodeCP,
@@ -46,10 +46,10 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * @param children   - The set of child inputs that creates this ASTNode.
 	 * @param attributes - Any other attributes to attach.
 	 */
-	constructor(
+	public constructor(
 		protected readonly start_node: SyntaxNode,
 		attributes: Record<string, unknown> = {},
-		override readonly children: readonly ASTNodeCP[] = [],
+		public override readonly children: readonly ASTNodeCP[] = [],
 	) {
 		super(((node: SyntaxNode) => { // COMBAK: TypeScript 4.6+ allows non-`this` code before `super()`
 			// @ts-expect-error --- Property `input` does actually exist on type `Tree`
@@ -70,7 +70,7 @@ export abstract class ASTNodeCP extends ASTNode {
 		})(start_node), attributes, children);
 	}
 
-	get validator(): Validator {
+	public get validator(): Validator {
 		return (this.parent as ASTNodeCP).validator;
 	}
 
@@ -80,14 +80,14 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * - Check that no varaible is declared more than once.
 	 * - Check that fixed variables are not reassigned.
 	 */
-	varCheck(): void {
+	public varCheck(): void {
 		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck());
 	}
 
 	/**
 	 * Type-check the node as part of semantic analysis.
 	 */
-	typeCheck(): void {
+	public typeCheck(): void {
 		return xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck());
 	}
 }

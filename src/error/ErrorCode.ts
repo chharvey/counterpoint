@@ -38,38 +38,38 @@ type ErrorCodeConstructorProperties = {
  */
 export class ErrorCode extends Error {
 	/** The name of this class of errors. */
-	static readonly NAME: string = 'Error';
+	public static readonly NAME: string = 'Error';
 
 
 	/** The name of this error. */
-	declare readonly name: string;
+	public declare readonly name: string;
 	/** A message to the user. */
-	declare readonly message: string;
+	public declare readonly message: string;
 
 	/** The error number. */
-	readonly code: number;
+	public readonly code: number;
 	/**
 	 * The (zero-based) line index of the source code that caused the error.
 	 * `null` if the line number cannot be determined.
 	 */
-	readonly line_index: number | null;
+	public readonly line_index: number | null;
 	/**
 	 * The (zero-based) column index of the source code that caused the error.
 	 * `null` if the column number cannot be determined.
 	 */
-	readonly col_index: number | null;
+	public readonly col_index: number | null;
 
 	/**
 	 * Construct a new ErrorCode object.
 	 * @param  message a message to the user
 	 */
-	constructor(message: string);
+	public constructor(message: string);
 	/**
 	 * Construct a new ErrorCode object.
 	 * @param props the properties of the error
 	 */
-	constructor(props: ErrorCodeConstructorProperties);
-	constructor(props: string | ErrorCodeConstructorProperties) {
+	public constructor(props: ErrorCodeConstructorProperties);
+	public constructor(props: string | ErrorCodeConstructorProperties) {
 		if (typeof props === 'string') {
 			props = {message: props};
 		}
