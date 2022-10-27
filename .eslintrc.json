@@ -178,6 +178,12 @@
 		"prefer-object-spread": "error",
 		"prefer-template":      "error",
 
+		/* ## Variable Declarations */
+		"init-declarations":            "error",
+		"no-shadow":                    "off",
+		"@typescript-eslint/no-shadow": "error",
+		"one-var":                      ["error", "never"],
+
 		/* ## Function Design */
 		"default-param-last":                    "off",
 		"@typescript-eslint/default-param-last": "error",

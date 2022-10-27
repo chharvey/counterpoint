@@ -298,7 +298,7 @@ describe('Validator', () => {
 			`,
 		].forEach((src, i) => {
 			const validator = new Validator();
-			let cooked: bigint[];
+			let cooked: bigint[] = [];
 			context([
 				'basic identifiers.',
 				'unicode identifiers.',

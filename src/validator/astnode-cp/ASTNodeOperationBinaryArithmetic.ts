@@ -85,7 +85,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			);
 	}
 
-	private foldNumeric<T extends OBJ.Number<T>>(x: T, y: T): T {
+	private foldNumeric<T extends OBJ.Number<T>>(v0: T, v1: T): T {
 		try {
 			return new Map<Operator, (x: T, y: T) => T>([
 				[Operator.EXP, (x, y) => x.exp(y)],
@@ -93,7 +93,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.DIV, (x, y) => x.divide(y)],
 				[Operator.ADD, (x, y) => x.plus(y)],
 				// [Operator.SUB, (x, y) => x.minus(y)],
-			]).get(this.operator)!(x, y);
+			]).get(this.operator)!(v0, v1);
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
 		}

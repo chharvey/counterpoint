@@ -77,12 +77,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return this.foldEquality(v0, v1);
 	}
 
-	private foldEquality(x: OBJ.Object, y: OBJ.Object): OBJ.Boolean {
+	private foldEquality(v0: OBJ.Object, v1: OBJ.Object): OBJ.Boolean {
 		return OBJ.Boolean.fromBoolean(new Map<Operator, (x: OBJ.Object, y: OBJ.Object) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],
 			[Operator.EQ, (x, y) => x.equal(y)],
 			// [Operator.ISNT, (x, y) => !x.identical(y)],
 			// [Operator.NEQ,  (x, y) => !x.equal(y)],
-		]).get(this.operator)!(x, y));
+		]).get(this.operator)!(v0, v1));
 	}
 }

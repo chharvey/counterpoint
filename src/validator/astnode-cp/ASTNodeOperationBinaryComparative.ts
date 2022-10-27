@@ -75,7 +75,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			);
 	}
 
-	private foldComparative<T extends OBJ.Number<T>>(x: T, y: T): OBJ.Boolean {
+	private foldComparative<T extends OBJ.Number<T>>(v0: T, v1: T): OBJ.Boolean {
 		return OBJ.Boolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
 			[Operator.LT, (x, y) => x.lt(y)],
 			[Operator.GT, (x, y) => y.lt(x)],
@@ -83,6 +83,6 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			[Operator.GE, (x, y) => x.equal(y) || y.lt(x)],
 			// [Operator.NLT, (x, y) => !x.lt(y)],
 			// [Operator.NGT, (x, y) => !y.lt(x)],
-		]).get(this.operator)!(x, y));
+		]).get(this.operator)!(v0, v1));
 	}
 }

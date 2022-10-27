@@ -11,7 +11,7 @@ export enum SymbolKind {
 	/** A value variable (a variable holding a Counterpoint Language Value). */
 	VALUE = 'value',
 	/** A type variable / type alias. */
-	TYPE  = 'type',
+	TYPE  = 'type', // eslint-disable-line @typescript-eslint/no-shadow --- not a variable declaration
 }
 
 

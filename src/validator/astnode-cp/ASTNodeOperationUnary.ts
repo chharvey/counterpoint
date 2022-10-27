@@ -76,12 +76,12 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		);
 	}
 
-	private foldNumeric<T extends OBJ.Number<T>>(z: T): T {
+	private foldNumeric<T extends OBJ.Number<T>>(v0: T): T {
 		try {
 			return new Map<Operator, (z: T) => T>([
 				[Operator.AFF, (z) => z],
 				[Operator.NEG, (z) => z.neg()],
-			]).get(this.operator)!(z);
+			]).get(this.operator)!(v0);
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
 		}

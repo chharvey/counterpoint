@@ -293,7 +293,7 @@ describe('ASTNodeExpression', () => {
 
 	describe('ASTNodeTemplate', () => {
 		describe('#type', () => {
-			let templates: readonly AST.ASTNodeTemplate[];
+			let templates: readonly AST.ASTNodeTemplate[] = [];
 			function initTemplates(config: CPConfig = CONFIG_DEFAULT) {
 				return [
 					AST.ASTNodeTemplate.fromSource(`'''42😀''';`, config),
@@ -307,7 +307,7 @@ describe('ASTNodeExpression', () => {
 				] as const;
 			}
 			context('with constant folding on.', () => {
-				let types: TYPE.Type[];
+				let types: TYPE.Type[] = [];
 				before(() => {
 					templates = initTemplates();
 					types = templates.map((t) => assert_wasCalled(t.fold, 1, (orig, spy) => {
@@ -341,7 +341,7 @@ describe('ASTNodeExpression', () => {
 
 
 		describe('#fold', () => {
-			let templates: AST.ASTNodeTemplate[];
+			let templates: AST.ASTNodeTemplate[] = [];
 			before(() => {
 				templates = [
 					AST.ASTNodeTemplate.fromSource(`'''42😀''';`),

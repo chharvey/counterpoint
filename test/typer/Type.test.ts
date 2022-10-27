@@ -60,23 +60,23 @@ describe('Type', () => {
 			function unionOfFloats(ns: number[]): TYPE.Type {
 				return TYPE.Type.unionAll(ns.map((v) => typeUnitFloat(v)));
 			}
-			const t1: TYPE.Type = unionOfFloats([4.2, 4.3, 4.4]);
-			const t2: TYPE.Type = unionOfFloats([4.3, 4.4, 4.5]);
-			const t3: TYPE.Type = unionOfInts([42n, 43n, 44n]);
-			const t4: TYPE.Type = unionOfInts([43n, 44n, 45n]);
+			const u1: TYPE.Type = unionOfFloats([4.2, 4.3, 4.4]);
+			const u2: TYPE.Type = unionOfFloats([4.3, 4.4, 4.5]);
+			const u3: TYPE.Type = unionOfInts([42n, 43n, 44n]);
+			const u4: TYPE.Type = unionOfInts([43n, 44n, 45n]);
 			assert.deepStrictEqual([
-				t1,
-				t2,
-				t1.intersect(t2),
+				u1,
+				u2,
+				u1.intersect(u2),
 			].map((typ) => [...typ.values]), [
 				[4.2, 4.3, 4.4],
 				[4.3, 4.4, 4.5],
 				[4.3, 4.4],
 			].map((set) => set.map((n) => new OBJ.Float(n))), '(4.2 | 4.3 | 4.4) & (4.3 | 4.4 | 4.5) == (4.3 | 4.4)');
 			assert.deepStrictEqual([
-				t3,
-				t4,
-				t3.union(t4),
+				u3,
+				u4,
+				u3.union(u4),
 			].map((t) => [...t.values]), [
 				[42n, 43n, 44n],
 				[43n, 44n, 45n],

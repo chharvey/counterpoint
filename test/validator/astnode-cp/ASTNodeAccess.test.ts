@@ -313,7 +313,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by index.', () => {
-			let program: AST.ASTNodeGoal;
+			let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
 			before(() => {
 				program = AST.ASTNodeGoal.fromSource(INDEX_ACCESS_SRC);
 				program.varCheck();
@@ -392,14 +392,14 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).type(), TypeError04);
 			});
 			it('returns the list item type when index is out of bounds for lists.', () => {
-				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
 					list.3;
 					list.-4;
 				`);
-				program.varCheck();
-				program.typeCheck();
-				program.children.slice(1, 3).forEach((c) => {
+				goal.varCheck();
+				goal.typeCheck();
+				goal.children.slice(1, 3).forEach((c) => {
 					assert.deepStrictEqual(
 						typeOfStmtExpr(c),
 						COMMON_TYPES.int_float_str,
@@ -409,7 +409,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by key.', () => {
-			let program: AST.ASTNodeGoal;
+			let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
 			before(() => {
 				program = AST.ASTNodeGoal.fromSource(KEY_ACCESS_SRC);
 				program.varCheck();
@@ -471,14 +471,14 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).type(), TypeError04);
 			});
 			it('returns the dict item type when key is out of bounds for dicts.', () => {
-				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let unfixed dict: [: int | float | str] = Dict.<int | float| str>([a= 1, b= 2.0, c= 'three']);
 					dict.d;
 				`);
-				program.varCheck();
-				program.typeCheck();
+				goal.varCheck();
+				goal.typeCheck();
 				assert.deepStrictEqual(
-					typeOfStmtExpr(program.children[1]),
+					typeOfStmtExpr(goal.children[1]),
 					COMMON_TYPES.int_float_str,
 				);
 			});
@@ -486,7 +486,7 @@ describe('ASTNodeAccess', () => {
 
 		context('access by computed expression.', () => {
 			context('with constant folding on, folds expression accessor.', () => {
-				let program: AST.ASTNodeGoal;
+				let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
 				before(() => {
 					program = AST.ASTNodeGoal.fromSource(EXPR_ACCESS_SRC);
 					program.varCheck();
@@ -572,14 +572,14 @@ describe('ASTNodeAccess', () => {
 					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(), TypeError04);
 				});
 				it('returns the list item type when accessor expression is correct type but out of bounds for lists.', () => {
-					const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
 						list.[3];
 						list.[-4];
 					`);
-					program.varCheck();
-					program.typeCheck();
-					program.children.slice(1, 3).forEach((c) => {
+					goal.varCheck();
+					goal.typeCheck();
+					goal.children.slice(1, 3).forEach((c) => {
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
 							COMMON_TYPES.int_float_str,
@@ -593,7 +593,7 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			context('with constant folding off.', () => {
-				let program: AST.ASTNodeGoal;
+				let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
 				before(() => {
 					program = AST.ASTNodeGoal.fromSource(EXPR_ACCESS_SRC, CONFIG_FOLDING_OFF);
 					program.varCheck();
@@ -740,7 +740,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by index.', () => {
-			let program: AST.ASTNodeGoal;
+			let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
 			before(() => {
 				program = AST.ASTNodeGoal.fromSource(INDEX_ACCESS_SRC);
 				program.varCheck();
@@ -791,7 +791,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by key.', () => {
-			let program: AST.ASTNodeGoal;
+			let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
 			before(() => {
 				program = AST.ASTNodeGoal.fromSource(KEY_ACCESS_SRC);
 				program.varCheck();
@@ -833,7 +833,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by computed expression.', () => {
-			let program: AST.ASTNodeGoal;
+			let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
 			before(() => {
 				program = AST.ASTNodeGoal.fromSource(EXPR_ACCESS_SRC);
 				program.varCheck();

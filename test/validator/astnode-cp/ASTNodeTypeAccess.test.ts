@@ -26,7 +26,7 @@ describe('ASTNodeTypeAccess', () => {
 			TYPE.Type.FLOAT,
 			TYPE.Type.STR,
 		];
-		let program: AST.ASTNodeGoal;
+		let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
 		before(() => {
 			program = AST.ASTNodeGoal.fromSource(`
 				type TupC = [1,   2.0,   'three'];
