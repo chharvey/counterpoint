@@ -5,8 +5,9 @@ import {Type} from './Type.js';
 
 /**
  * Class for constructing unit types, types that contain exactly one value.
+ * @typeparam Value the type of value this unit type holds
  */
-export class TypeUnit extends Type {
+export class TypeUnit<Value extends OBJ.Object = OBJ.Object> extends Type {
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
 
@@ -14,7 +15,7 @@ export class TypeUnit extends Type {
 	 * Construct a new TypeUnit object.
 	 * @param value the Counterpoint Language Value contained in this Type
 	 */
-	public constructor(public readonly value: OBJ.Object) {
+	public constructor(public readonly value: Value) {
 		super(false, new Set([value]));
 	}
 

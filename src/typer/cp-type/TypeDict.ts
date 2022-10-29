@@ -1,9 +1,19 @@
 import {OBJ} from './package.js';
 import {Type} from './Type.js';
+import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeDict extends Type {
+	/**
+	 * Is the argument a unit dict type?
+	 * @return whether the argument is a `TypeUnit` and its value is a `Dict`
+	 */
+	public static isUnitType(type: Type): type is TypeUnit<OBJ.Dict> {
+		return type instanceof TypeUnit && type.value instanceof OBJ.Dict;
+	}
+
+
 	public override readonly isBottomType: boolean = false;
 
 	/**

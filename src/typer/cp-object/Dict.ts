@@ -14,6 +14,6 @@ export class Dict<T extends CPObject = CPObject> extends CollectionKeyed<T> {
 	}
 
 	public override toType(): TypeDict {
-		return new TypeDict(Type.unionAll([...this.properties.values()].map<Type>((value) => new TypeUnit(value))));
+		return new TypeDict(Type.unionAll([...this.properties.values()].map<Type>((value) => new TypeUnit<T>(value))));
 	}
 }

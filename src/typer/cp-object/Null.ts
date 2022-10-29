@@ -19,7 +19,7 @@ export class Null extends Primitive {
 	/** The Counterpoint Language Value `null`. */
 	public static readonly NULL: Null = new Null();
 	/** A Unit Type containing only the Counterpoint Language Value `null`. */
-	public static readonly NULLTYPE: TypeUnit = new TypeUnit(Null.NULL);
+	public static readonly NULLTYPE = new TypeUnit<Null>(Null.NULL);
 
 
 	private constructor() {

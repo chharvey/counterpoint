@@ -15,6 +15,7 @@ import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeVariable} from './ASTNodeVariable.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
 
 
@@ -46,15 +47,22 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 
 	public override typeCheck(): void {
 		this.assigned.typeCheck();
-		ASTNodeCP.typeCheckAssignment(
-			this.typenode.eval(),
-			this.assigned.type(),
-			this,
-			this.validator,
-		);
+		const assignee_type: TYPE.Type = this.typenode.eval();
+		try {
+			ASTNodeCP.typeCheckAssignment(
+				this.assigned.type(),
+				assignee_type,
+				this,
+				this.validator,
+			);
+		} catch (err) {
+			if (!(this.assigned instanceof ASTNodeCollectionLiteral && this.assigned.assignTo(assignee_type))) {
+				throw err;
+			}
+		}
 		const symbol: SymbolStructureVar | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
 		if (symbol) {
-			symbol.type = this.typenode.eval();
+			symbol.type = assignee_type;
 			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
 				symbol.value = this.assigned.fold();
 			}

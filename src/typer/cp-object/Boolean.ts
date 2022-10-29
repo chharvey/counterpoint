@@ -16,9 +16,9 @@ class CPBoolean extends Primitive {
 	/** The Counterpoint Language Value `true`. */
 	public static readonly TRUE: CPBoolean = new CPBoolean(true);
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
-	public static readonly FALSETYPE: TypeUnit = new TypeUnit(CPBoolean.FALSE);
+	public static readonly FALSETYPE = new TypeUnit<CPBoolean>(CPBoolean.FALSE);
 	/** A Unit Type containing only the Counterpoint Language Value `true`. */
-	public static readonly TRUETYPE: TypeUnit = new TypeUnit(CPBoolean.TRUE);
+	public static readonly TRUETYPE = new TypeUnit<CPBoolean>(CPBoolean.TRUE);
 
 	/**
 	 * Return the Counterpoint Language Value `true` or `false` based on the argument.

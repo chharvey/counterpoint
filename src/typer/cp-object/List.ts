@@ -14,6 +14,6 @@ export class List<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 	}
 
 	public override toType(): TypeList {
-		return new TypeList(Type.unionAll(this.items.map<Type>((el) => new TypeUnit(el))));
+		return new TypeList(Type.unionAll(this.items.map<Type>((el) => new TypeUnit<T>(el))));
 	}
 }

@@ -1,15 +1,12 @@
 import * as xjs from 'extrajs';
 import {
-	VoidError01,
-	throw_expression,
-	AST,
 	languageValuesIdentical,
 	Type,
 	TypeUnit,
 	TypeSet,
 } from './package.js';
 import type {Object as CPObject} from './Object.js';
-import {Null} from './Null.js';
+import {Boolean as CPBoolean} from './Boolean.js';
 import {Collection} from './Collection.js';
 
 
@@ -46,15 +43,13 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 	}
 
 	public override toType(): TypeSet {
-		return new TypeSet(Type.unionAll([...this.elements].map<Type>((el) => new TypeUnit(el))));
+		return new TypeSet(Type.unionAll([...this.elements].map<Type>((el) => new TypeUnit<T>(el))));
 	}
 
-	public get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | Null {
+	public get(el: T): CPBoolean {
 		return (xjs.Set.has(this.elements, el, languageValuesIdentical))
-			? el
-			: (access_optional)
-				? Null.NULL
-				: throw_expression(new VoidError01(accessor));
+			? CPBoolean.TRUE
+			: CPBoolean.FALSE;
 	}
 }
 export {CPSet as Set};

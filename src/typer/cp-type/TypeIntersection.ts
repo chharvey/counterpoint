@@ -24,8 +24,8 @@ export class TypeIntersection extends Type {
 	 * @param right the second type
 	 */
 	public constructor(
-		private readonly left:  Type,
-		private readonly right: Type,
+		public readonly left:  Type,
+		public readonly right: Type,
 	) {
 		super(false, xjs.Set.intersection(left.values, right.values, languageValuesIdentical));
 		this.isBottomType = this.left.isBottomType || this.right.isBottomType || this.isBottomType;

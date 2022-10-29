@@ -19,7 +19,7 @@ export class TypeFloat extends Type {
 	}
 
 	public override toString(): string {
-		return 'int';
+		return 'float';
 	}
 
 	public override includes(v: OBJ.Object): boolean {

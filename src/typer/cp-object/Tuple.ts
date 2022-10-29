@@ -9,6 +9,6 @@ import {CollectionIndexed} from './CollectionIndexed.js';
 
 export class Tuple<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 	public override toType(): TypeTuple {
-		return TypeTuple.fromTypes(this.items.map((it) => new TypeUnit(it)));
+		return TypeTuple.fromTypes(this.items.map((it) => new TypeUnit<T>(it)));
 	}
 }

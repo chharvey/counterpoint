@@ -42,15 +42,15 @@ import {
  */
 export abstract class Type {
 	/* eslint-disable @typescript-eslint/brace-style */
-	/** The Bottom Type, containing no values. */                    public static get NEVER():   TypeNever   { return TypeNever.INSTANCE; }
-	/** The Void Type, representing a completion but not a value. */ public static get VOID():    TypeVoid    { return TypeVoid.INSTANCE; }
-	/** The Top Type, containing all values. */                      public static get UNKNOWN(): TypeUnknown { return TypeUnknown.INSTANCE; }
-	/** The Null Type. */                                            public static get NULL():    TypeUnit    { return OBJ.Null.NULLTYPE; }
-	/** The Boolean Type. */                                         public static get BOOL():    TypeBoolean { return TypeBoolean.INSTANCE; }
-	/** The Integer Type. */                                         public static get INT():     TypeInteger { return TypeInteger.INSTANCE; }
-	/** The Float Type. */                                           public static get FLOAT():   TypeFloat   { return TypeFloat.INSTANCE; }
-	/** The String Type. */                                          public static get STR():     TypeString  { return TypeString.INSTANCE; }
-	/** The Object Type. */                                          public static get OBJ():     TypeObject  { return TypeObject.INSTANCE; }
+	/** The Bottom Type, containing no values. */                    public static get NEVER():   TypeNever          { return TypeNever.INSTANCE; }
+	/** The Void Type, representing a completion but not a value. */ public static get VOID():    TypeVoid           { return TypeVoid.INSTANCE; }
+	/** The Top Type, containing all values. */                      public static get UNKNOWN(): TypeUnknown        { return TypeUnknown.INSTANCE; }
+	/** The Null Type. */                                            public static get NULL():    TypeUnit<OBJ.Null> { return OBJ.Null.NULLTYPE; }
+	/** The Boolean Type. */                                         public static get BOOL():    TypeBoolean        { return TypeBoolean.INSTANCE; }
+	/** The Integer Type. */                                         public static get INT():     TypeInteger        { return TypeInteger.INSTANCE; }
+	/** The Float Type. */                                           public static get FLOAT():   TypeFloat          { return TypeFloat.INSTANCE; }
+	/** The String Type. */                                          public static get STR():     TypeString         { return TypeString.INSTANCE; }
+	/** The Object Type. */                                          public static get OBJ():     TypeObject         { return TypeObject.INSTANCE; }
 	/* eslint-enable @typescript-eslint/brace-style */
 
 	/**
