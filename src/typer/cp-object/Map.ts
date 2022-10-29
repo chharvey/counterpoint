@@ -3,9 +3,7 @@ import {
 	VoidError01,
 	AST,
 	languageValuesIdentical,
-	Type,
-	TypeUnit,
-	TypeMap,
+	TYPE,
 } from './package.js';
 import type {Object} from './Object.js';
 import {Null} from './Null.js';
@@ -41,11 +39,11 @@ class CPMap<K extends Object = Object, V extends Object = Object> extends Collec
 		);
 	}
 
-	override toType(): TypeMap {
-		return (this.cases.size) ? new TypeMap(
-			Type.unionAll([...this.cases.keys()]  .map<Type>((ant) => new TypeUnit<K>(ant))),
-			Type.unionAll([...this.cases.values()].map<Type>((con) => new TypeUnit<V>(con))),
-		) : new TypeMap(Type.NEVER, Type.NEVER);
+	override toType(): TYPE.TypeMap {
+		return (this.cases.size) ? new TYPE.TypeMap(
+			TYPE.Type.unionAll([...this.cases.keys()]  .map<TYPE.Type>((ant) => new TYPE.TypeUnit<K>(ant))),
+			TYPE.Type.unionAll([...this.cases.values()].map<TYPE.Type>((con) => new TYPE.TypeUnit<V>(con))),
+		) : new TYPE.TypeMap(TYPE.Type.NEVER, TYPE.Type.NEVER);
 	}
 
 	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | Null {
