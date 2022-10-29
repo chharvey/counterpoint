@@ -41,7 +41,7 @@ class CPSet<T extends Object = Object> extends Collection {
 		return new TYPE.TypeSet(
 			(this.elements.size)
 				? TYPE.Type.unionAll([...this.elements].map<TYPE.Type>((el) => new TYPE.TypeUnit<T>(el)))
-				: TYPE.Type.NEVER,
+				: TYPE.NEVER,
 		);
 	}
 

@@ -22,7 +22,7 @@ describe('ASTNodeDeclarationType', () => {
 			assert.ok(goal.validator.hasSymbol(256n));
 			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
 			assert.ok(info instanceof SymbolStructureType);
-			assert.strictEqual(info.typevalue, TYPE.Type.UNKNOWN);
+			assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
 		});
 		it('throws if the validator already contains a record for the symbol.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
@@ -46,7 +46,7 @@ describe('ASTNodeDeclarationType', () => {
 			goal.typeCheck();
 			assert.deepStrictEqual(
 				(goal.validator.getSymbolInfo(256n) as SymbolStructureType).typevalue,
-				TYPE.Type.INT,
+				TYPE.INT,
 			);
 		});
 	});

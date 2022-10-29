@@ -1,5 +1,6 @@
 import type {OBJ} from './package.js';
 import {Type} from './Type.js';
+import {NEVER} from './index.js';
 
 
 
@@ -26,7 +27,7 @@ export class TypeVoid extends Type {
 	}
 
 	protected override intersect_do(_t: Type): Type {
-		return Type.NEVER;
+		return NEVER;
 	}
 
 	protected override isSubtypeOf_do(_t: Type): boolean {

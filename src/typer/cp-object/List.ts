@@ -12,7 +12,7 @@ export class List<T extends Object = Object> extends CollectionIndexed<T> {
 		return new TYPE.TypeList(
 			(this.items.length)
 				? TYPE.Type.unionAll(this.items.map<TYPE.Type>((el) => new TYPE.TypeUnit<T>(el)))
-				: TYPE.Type.NEVER,
+				: TYPE.NEVER,
 		);
 	}
 }

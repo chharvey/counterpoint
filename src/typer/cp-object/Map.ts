@@ -43,7 +43,7 @@ class CPMap<K extends Object = Object, V extends Object = Object> extends Collec
 		return (this.cases.size) ? new TYPE.TypeMap(
 			TYPE.Type.unionAll([...this.cases.keys()]  .map<TYPE.Type>((ant) => new TYPE.TypeUnit<K>(ant))),
 			TYPE.Type.unionAll([...this.cases.values()].map<TYPE.Type>((con) => new TYPE.TypeUnit<V>(con))),
-		) : new TYPE.TypeMap(TYPE.Type.NEVER, TYPE.Type.NEVER);
+		) : new TYPE.TypeMap(TYPE.NEVER, TYPE.NEVER);
 	}
 
 	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | Null {

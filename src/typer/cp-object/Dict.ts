@@ -12,7 +12,7 @@ export class Dict<T extends Object = Object> extends CollectionKeyed<T> {
 		return new TYPE.TypeDict(
 			(this.properties.size)
 				? TYPE.Type.unionAll([...this.properties.values()].map<TYPE.Type>((value) => new TYPE.TypeUnit<T>(value)))
-				: TYPE.Type.NEVER,
+				: TYPE.NEVER,
 		);
 	}
 }

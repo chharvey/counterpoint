@@ -4,11 +4,15 @@ import {
 	ValidAccessOperator,
 	AST,
 	TypeEntry,
-	OBJ,
+	OBJ as VALUE,
 } from './package.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
+import {
+	NEVER,
+	OBJ,
+} from './index.js';
 
 
 
@@ -17,8 +21,8 @@ export class TypeTuple extends Type {
 	 * Is the argument a unit tuple type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Tuple`
 	 */
-	static isUnitType(type: Type): type is TypeUnit<OBJ.Tuple> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Tuple;
+	static isUnitType(type: Type): type is TypeUnit<VALUE.Tuple> {
+		return type instanceof TypeUnit && type.value instanceof VALUE.Tuple;
 	}
 
 
@@ -47,7 +51,7 @@ export class TypeTuple extends Type {
 		public readonly types: readonly TypeEntry[] = [],
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.Tuple()]));
+		super(is_mutable, new Set([new VALUE.Tuple()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -66,12 +70,12 @@ export class TypeTuple extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }[${ this.types.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
-	override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Tuple && v.toType().isSubtypeOf(this);
+	override includes(v: VALUE.Object): boolean {
+		return v instanceof VALUE.Tuple && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
-		return t.equals(Type.OBJ) || (
+		return t.equals(OBJ) || (
 			t instanceof TypeTuple
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
@@ -90,7 +94,7 @@ export class TypeTuple extends Type {
 		return new TypeTuple(this.types, false);
 	}
 
-	get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
+	get(index: VALUE.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
 		return updateAccessedStaticType((
@@ -103,7 +107,7 @@ export class TypeTuple extends Type {
 	itemTypes(): Type {
 		return (this.types.length)
 			? Type.unionAll(this.types.map((t) => t.type))
-			: Type.NEVER;
+			: NEVER;
 	}
 
 	/**

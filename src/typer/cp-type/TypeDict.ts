@@ -1,6 +1,7 @@
-import {OBJ} from './package.js';
+import {OBJ as VALUE} from './package.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
+import {OBJ} from './index.js';
 
 
 
@@ -9,8 +10,8 @@ export class TypeDict extends Type {
 	 * Is the argument a unit dict type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Dict`
 	 */
-	static isUnitType(type: Type): type is TypeUnit<OBJ.Dict> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Dict;
+	static isUnitType(type: Type): type is TypeUnit<VALUE.Dict> {
+		return type instanceof TypeUnit && type.value instanceof VALUE.Dict;
 	}
 
 
@@ -25,7 +26,7 @@ export class TypeDict extends Type {
 		readonly types: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.Dict()]));
+		super(is_mutable, new Set([new VALUE.Dict()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -36,12 +37,12 @@ export class TypeDict extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }Dict.<${ this.types }>`;
 	}
 
-	override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Dict && v.toType().isSubtypeOf(this);
+	override includes(v: VALUE.Object): boolean {
+		return v instanceof VALUE.Dict && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
-		return t.equals(Type.OBJ) || (
+		return t.equals(OBJ) || (
 			t instanceof TypeDict
 			&& ((t.isMutable)
 				? this.isMutable && this.types.equals(t.types)
