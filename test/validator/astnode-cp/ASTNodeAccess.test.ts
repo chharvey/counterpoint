@@ -313,7 +313,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by index.', () => {
-			let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
+			let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
 			before(() => {
 				program = AST.ASTNodeGoal.fromSource(INDEX_ACCESS_SRC);
 				program.varCheck();
@@ -409,7 +409,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by key.', () => {
-			let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
+			let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
 			before(() => {
 				program = AST.ASTNodeGoal.fromSource(KEY_ACCESS_SRC);
 				program.varCheck();
@@ -486,7 +486,7 @@ describe('ASTNodeAccess', () => {
 
 		context('access by computed expression.', () => {
 			context('with constant folding on, folds expression accessor.', () => {
-				let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
+				let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
 				before(() => {
 					program = AST.ASTNodeGoal.fromSource(EXPR_ACCESS_SRC);
 					program.varCheck();
@@ -593,7 +593,7 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			context('with constant folding off.', () => {
-				let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
+				let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
 				before(() => {
 					program = AST.ASTNodeGoal.fromSource(EXPR_ACCESS_SRC, CONFIG_FOLDING_OFF);
 					program.varCheck();
@@ -740,7 +740,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by index.', () => {
-			let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
+			let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
 			before(() => {
 				program = AST.ASTNodeGoal.fromSource(INDEX_ACCESS_SRC);
 				program.varCheck();
@@ -791,7 +791,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by key.', () => {
-			let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
+			let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
 			before(() => {
 				program = AST.ASTNodeGoal.fromSource(KEY_ACCESS_SRC);
 				program.varCheck();
@@ -833,7 +833,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by computed expression.', () => {
-			let program: AST.ASTNodeGoal; // eslint-disable-line init-declarations
+			let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
 			before(() => {
 				program = AST.ASTNodeGoal.fromSource(EXPR_ACCESS_SRC);
 				program.varCheck();

@@ -196,10 +196,11 @@
 		"prefer-template":      "error",
 
 		/* ## Variable Declarations */
-		"init-declarations":            "error",
-		"no-shadow":                    "off",
-		"@typescript-eslint/no-shadow": "error",
-		"one-var":                      ["error", "never"],
+		"init-declarations":                    "off",
+		"@typescript-eslint/init-declarations": "error",
+		"no-shadow":                            "off",
+		"@typescript-eslint/no-shadow":         "error",
+		"one-var":                              ["error", "never"],
 
 		/* ## Function Design */
 		"default-param-last":                    "off",
