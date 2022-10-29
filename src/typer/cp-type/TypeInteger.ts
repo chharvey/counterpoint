@@ -8,7 +8,7 @@ import {Type} from './Type.js';
  * @final
  */
 export class TypeInteger extends Type {
-	static get INSTANCE(): TypeInteger { return new TypeInteger(); }
+	static readonly INSTANCE = new TypeInteger();
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
