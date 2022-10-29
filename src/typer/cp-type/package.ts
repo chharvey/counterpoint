@@ -17,6 +17,4 @@ export {
 export {
 	languageValuesIdentical,
 } from '../utils-private.js';
-export {
-	OBJ,
-} from '../index.js';
+export * as OBJ from '../cp-object/index.js';
