@@ -234,38 +234,38 @@ describe('ASTNodeAccess', () => {
 		}
 		const COMMON_TYPES = {
 			int_float: TYPE.Type.unionAll([
-				TYPE.Type.INT,
-				TYPE.Type.FLOAT,
+				TYPE.INT,
+				TYPE.FLOAT,
 			]),
 			int_float_str: TYPE.Type.unionAll([
-				TYPE.Type.INT,
-				TYPE.Type.FLOAT,
-				TYPE.Type.STR,
+				TYPE.INT,
+				TYPE.FLOAT,
+				TYPE.STR,
 			]),
 			int_float_str_null: TYPE.Type.unionAll([
-				TYPE.Type.INT,
-				TYPE.Type.FLOAT,
-				TYPE.Type.STR,
-				TYPE.Type.NULL,
+				TYPE.INT,
+				TYPE.FLOAT,
+				TYPE.STR,
+				TYPE.NULL,
 			]),
 		};
 		const expected: TYPE.Type[] = [
 			typeUnitInt(1n),
 			typeUnitFloat(2.0),
 			typeUnitStr('three'),
-			TYPE.Type.INT,
-			TYPE.Type.FLOAT,
-			TYPE.Type.STR,
+			TYPE.INT,
+			TYPE.FLOAT,
+			TYPE.STR,
 		];
 		const expected_o: TYPE.Type[] = [
 			typeUnitStr('three'),
-			TYPE.Type.STR.union(TYPE.Type.NULL),
-			TYPE.Type.STR.union(TYPE.Type.NULL),
+			TYPE.STR.union(TYPE.NULL),
+			TYPE.STR.union(TYPE.NULL),
 		];
 		const expected_c: TYPE.Type[] = [
 			typeUnitStr('three'),
-			TYPE.Type.STR,
-			TYPE.Type.STR,
+			TYPE.STR,
+			TYPE.STR,
 		];
 		context('when base is nullish.', () => {
 			it('optional access returns type of base when it is a subtype of null.', () => {
@@ -277,7 +277,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource(`null?.four;`)      .type(),
 					AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).type(),
 				].forEach((t) => {
-					assert.ok(t.isSubtypeOf(TYPE.Type.NULL));
+					assert.ok(t.isSubtypeOf(TYPE.NULL));
 				});
 			});
 			it('chained optional access.', () => {
@@ -295,17 +295,17 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.Type.BOOL]);
-				const prop2: TYPE.TypeTuple = new TYPE.TypeTuple([{type: TYPE.Type.BOOL, optional: true}]);
+				const prop1: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL]);
+				const prop2: TYPE.TypeTuple = new TYPE.TypeTuple([{type: TYPE.BOOL, optional: true}]);
 				assert.deepStrictEqual(
 					program.children.slice(2, 8).map((c) => typeOfStmtExpr(c)),
 					[
 						new TYPE.TypeRecord(new Map([[0x101n, {type: prop1, optional: true}]])),
-						prop1.union(TYPE.Type.NULL),
-						TYPE.Type.BOOL.union(TYPE.Type.NULL),
+						prop1.union(TYPE.NULL),
+						TYPE.BOOL.union(TYPE.NULL),
 						new TYPE.TypeRecord(new Map([[0x101n, {type: prop2, optional: true}]])),
-						prop2.union(TYPE.Type.NULL),
-						TYPE.Type.BOOL.union(TYPE.Type.NULL),
+						prop2.union(TYPE.NULL),
+						TYPE.BOOL.union(TYPE.NULL),
 					],
 				);
 			});
@@ -352,8 +352,8 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(36, 38).map((c) => typeOfStmtExpr(c)),
 					[
-						TYPE.Type.STR.union(TYPE.Type.VOID),
-						TYPE.Type.STR.union(TYPE.Type.VOID),
+						TYPE.STR.union(TYPE.VOID),
+						TYPE.STR.union(TYPE.VOID),
 					],
 				);
 			});
@@ -368,7 +368,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(41, 43).map((c) => typeOfStmtExpr(c)),
 					[
 						typeUnitStr('three'),
-						COMMON_TYPES.int_float_str.union(TYPE.Type.NULL),
+						COMMON_TYPES.int_float_str.union(TYPE.NULL),
 					],
 				);
 			});
@@ -380,7 +380,7 @@ describe('ASTNodeAccess', () => {
 					].map((c) => typeOfStmtExpr(c)),
 					[
 						...expected_c,
-						TYPE.Type.INT,
+						TYPE.INT,
 					],
 				);
 			});
@@ -433,8 +433,8 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 26).map((c) => typeOfStmtExpr(c)),
 					[
-						TYPE.Type.STR.union(TYPE.Type.VOID),
-						TYPE.Type.STR.union(TYPE.Type.VOID),
+						TYPE.STR.union(TYPE.VOID),
+						TYPE.STR.union(TYPE.VOID),
 					],
 				);
 			});
@@ -449,7 +449,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(29, 31).map((c) => typeOfStmtExpr(c)),
 					[
 						typeUnitStr('three'),
-						COMMON_TYPES.int_float_str.union(TYPE.Type.NULL),
+						COMMON_TYPES.int_float_str.union(TYPE.NULL),
 					],
 				);
 			});
@@ -461,7 +461,7 @@ describe('ASTNodeAccess', () => {
 					].map((c) => typeOfStmtExpr(c)),
 					[
 						...expected_c,
-						TYPE.Type.INT,
+						TYPE.INT,
 					],
 				);
 			});
@@ -518,7 +518,7 @@ describe('ASTNodeAccess', () => {
 					return program.children.slice(27, 30).forEach((c) => (
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
-							TYPE.Type.BOOL,
+							TYPE.BOOL,
 						)
 					));
 				});
@@ -537,8 +537,8 @@ describe('ASTNodeAccess', () => {
 					assert.deepStrictEqual(
 						program.children.slice(44, 46).map((c) => typeOfStmtExpr(c)),
 						[
-							TYPE.Type.STR.union(TYPE.Type.VOID),
-							TYPE.Type.STR.union(TYPE.Type.VOID),
+							TYPE.STR.union(TYPE.VOID),
+							TYPE.STR.union(TYPE.VOID),
 						],
 					);
 				});
@@ -556,9 +556,9 @@ describe('ASTNodeAccess', () => {
 						].map((c) => typeOfStmtExpr(c)),
 						[
 							typeUnitStr('three'),
-							COMMON_TYPES.int_float_str.union(TYPE.Type.NULL),
+							COMMON_TYPES.int_float_str.union(TYPE.NULL),
 							typeUnitStr('three'),
-							COMMON_TYPES.int_float_str.union(TYPE.Type.NULL),
+							COMMON_TYPES.int_float_str.union(TYPE.NULL),
 						],
 					);
 				});
@@ -567,7 +567,7 @@ describe('ASTNodeAccess', () => {
 						program.children.slice(51, 53).map((c) => typeOfStmtExpr(c)),
 						[
 							OBJ.Boolean.TRUETYPE,
-							TYPE.Type.BOOL,
+							TYPE.BOOL,
 						],
 					);
 				});
@@ -631,7 +631,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(24, 30).forEach((c) => {
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
-							TYPE.Type.BOOL,
+							TYPE.BOOL,
 						);
 					});
 				});
@@ -666,14 +666,14 @@ describe('ASTNodeAccess', () => {
 					].forEach((c) => {
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
-							COMMON_TYPES.int_float_str.union(TYPE.Type.NULL),
+							COMMON_TYPES.int_float_str.union(TYPE.NULL),
 						);
 					});
 				});
 				it('does not union with null even when set access is optional.', () => {
 					return program.children.slice(51, 53).forEach((c) => assert.deepStrictEqual(
 						typeOfStmtExpr(c),
-						TYPE.Type.BOOL,
+						TYPE.BOOL,
 					));
 				});
 				it('claim access always subtracts void.', () => {

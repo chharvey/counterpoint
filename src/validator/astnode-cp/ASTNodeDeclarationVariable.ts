@@ -66,7 +66,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.Type.FLOAT) || this.assigned.shouldFloat();
+		const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
 		const value: OBJ.Object | null = this.assignee.fold();
 		return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
 			? new INST.InstructionNone()

@@ -50,10 +50,10 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		if (bothNumeric(t0, t1)) {
 			if (int_coercion) {
-				return (eitherFloats(t0, t1)) ? TYPE.Type.FLOAT : TYPE.Type.INT;
+				return (eitherFloats(t0, t1)) ? TYPE.FLOAT : TYPE.INT;
 			}
-			if (bothFloats   (t0, t1)) { return TYPE.Type.FLOAT; }
-			if (neitherFloats(t0, t1)) { return TYPE.Type.INT; }
+			if (bothFloats   (t0, t1)) { return TYPE.FLOAT; }
+			if (neitherFloats(t0, t1)) { return TYPE.INT; }
 		}
 		throw new TypeError01(this)
 	}

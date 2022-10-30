@@ -39,7 +39,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		throw new Error('ASTNodeTemplate#build_do not yet supported.');
 	}
 	protected override type_do(): TYPE.Type {
-		return TYPE.Type.STR;
+		return TYPE.STR;
 	}
 	protected override fold_do(): OBJ.String | null {
 		const values: (OBJ.Object | null)[] = [...this.children].map((expr) => expr.fold());

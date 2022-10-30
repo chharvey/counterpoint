@@ -167,7 +167,7 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			it('returns Never for undeclared variables.', () => {
-				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(), TYPE.Type.NEVER);
+				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(), TYPE.NEVER);
 			});
 		});
 
@@ -323,14 +323,14 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('for non-foldable interpolations, returns `String`.', () => {
-					assert.deepStrictEqual(types[2], TYPE.Type.STR);
+					assert.deepStrictEqual(types[2], TYPE.STR);
 				});
 			});
 			context('with constant folding off.', () => {
 				it('always returns `String`.', () => {
 					templates = initTemplates(CONFIG_FOLDING_OFF);
 					templates.forEach((t) => {
-						assert.deepStrictEqual(t.type(), TYPE.Type.STR);
+						assert.deepStrictEqual(t.type(), TYPE.STR);
 					});
 				});
 			});
@@ -378,7 +378,7 @@ describe('ASTNodeExpression', () => {
 		describe('#type', () => {
 			([
 				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.Type.unionAll([typeUnitStr('a'), typeUnitInt(42n), typeUnitFloat(3.0)])],
-				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.Type.unionAll([typeUnitStr('a'), TYPE.Type.INT,    TYPE.Type.FLOAT])],
+				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.Type.unionAll([typeUnitStr('a'), TYPE.INT,         TYPE.FLOAT])],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
 				const expected: TYPE.TypeUnit[] = [typeUnitInt(1n), typeUnitFloat(2.0), typeUnitStr('three')];
 				const collections: readonly [
@@ -516,7 +516,7 @@ describe('ASTNodeExpression', () => {
 		];
 		describe('#type', () => {
 			it('returns the type value of the claimed type.', () => {
-				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3;`).type().equals(TYPE.Type.INT.union(TYPE.Type.NULL)));
+				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3;`).type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
 			it('throws when the operand type and claimed type do not overlap.', () => {
 				assert.throws(() => AST.ASTNodeClaim.fromSource(`<str>3;`)      .type(), TypeError03);

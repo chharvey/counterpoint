@@ -37,7 +37,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 
 	override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.Type.FLOAT);
+		return this.type().isSubtypeOf(TYPE.FLOAT);
 	}
 	override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
@@ -58,7 +58,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 				return symbol.type;
 			};
 		};
-		return TYPE.Type.NEVER;
+		return TYPE.NEVER;
 	}
 	protected override fold_do(): OBJ.Object | null {
 		if (this.validator.hasSymbol(this.id)) {

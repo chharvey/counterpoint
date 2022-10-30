@@ -30,8 +30,8 @@ export abstract class ASTNodeCP extends ASTNode {
 		const is_subtype: boolean = assigned_type.isSubtypeOf(assignee_type);
 		const treatIntAsSubtypeOfFloat: boolean = (
 			   validator.config.compilerOptions.intCoercion
-			&& assigned_type.isSubtypeOf(TYPE.Type.INT)
-			&& TYPE.Type.FLOAT.isSubtypeOf(assignee_type)
+			&& assigned_type.isSubtypeOf(TYPE.INT)
+			&& TYPE.FLOAT.isSubtypeOf(assignee_type)
 		);
 		if (!is_subtype && !treatIntAsSubtypeOfFloat) {
 			throw new TypeError03(assigned_type, assignee_type, node);

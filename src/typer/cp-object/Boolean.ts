@@ -1,4 +1,4 @@
-import {TypeUnit} from './package.js';
+import {TYPE} from './package.js';
 import type {Object} from './Object.js';
 import {Primitive} from './Primitive.js';
 
@@ -16,9 +16,13 @@ export class Boolean extends Primitive {
 	/** The Counterpoint Language Value `true`. */
 	static readonly TRUE: Boolean = new Boolean(true);
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
-	static readonly FALSETYPE = new TypeUnit<Boolean>(Boolean.FALSE);
+	static get FALSETYPE(): TYPE.TypeUnit<Boolean> {
+		return new TYPE.TypeUnit<Boolean>(Boolean.FALSE);
+	}
 	/** A Unit Type containing only the Counterpoint Language Value `true`. */
-	static readonly TRUETYPE = new TypeUnit<Boolean>(Boolean.TRUE);
+	static get TRUETYPE(): TYPE.TypeUnit<Boolean> {
+		return new TYPE.TypeUnit<Boolean>(Boolean.TRUE);
+	}
 
 	/**
 	 * Return the Counterpoint Language Value `true` or `false` based on the argument.

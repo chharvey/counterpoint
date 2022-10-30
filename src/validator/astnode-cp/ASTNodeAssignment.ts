@@ -62,7 +62,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		}
 	}
 	override build(builder: Builder): INST.InstructionStatement {
-		const tofloat: boolean = this.assignee.type().isSubtypeOf(TYPE.Type.FLOAT) || this.assigned.shouldFloat();
+		const tofloat: boolean = this.assignee.type().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
 		return new INST.InstructionStatement(
 			builder.stmtCount,
 			new INST.InstructionGlobalSet((this.assignee as ASTNodeVariable).id, this.assigned.build(builder, tofloat)),

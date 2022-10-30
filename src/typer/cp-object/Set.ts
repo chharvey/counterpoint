@@ -1,9 +1,7 @@
 import * as xjs from 'extrajs';
 import {
 	languageValuesIdentical,
-	Type,
-	TypeUnit,
-	TypeSet,
+	TYPE,
 } from './package.js';
 import type {Object} from './Object.js';
 import {Boolean} from './Boolean.js';
@@ -39,11 +37,11 @@ class CPSet<T extends Object = Object> extends Collection {
 		);
 	}
 
-	override toType(): TypeSet {
-		return new TypeSet(
+	override toType(): TYPE.TypeSet {
+		return new TYPE.TypeSet(
 			(this.elements.size)
-				? Type.unionAll([...this.elements].map<Type>((el) => new TypeUnit<T>(el)))
-				: Type.NEVER,
+				? TYPE.Type.unionAll([...this.elements].map<TYPE.Type>((el) => new TYPE.TypeUnit<T>(el)))
+				: TYPE.NEVER,
 		);
 	}
 

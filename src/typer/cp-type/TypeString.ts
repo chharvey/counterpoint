@@ -8,7 +8,7 @@ import {Type} from './Type.js';
  * @final
  */
 export class TypeString extends Type {
-	static get INSTANCE(): TypeString { return new TypeString(); }
+	static readonly INSTANCE = new TypeString();
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {

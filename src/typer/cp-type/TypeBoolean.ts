@@ -8,7 +8,7 @@ import {Type} from './Type.js';
  * @final
  */
 export class TypeBoolean extends Type {
-	static get INSTANCE(): TypeBoolean { return new TypeBoolean(); }
+	static readonly INSTANCE = new TypeBoolean();
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {

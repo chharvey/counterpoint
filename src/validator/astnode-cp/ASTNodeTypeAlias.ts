@@ -48,6 +48,6 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 				return symbol.typevalue;
 			};
 		};
-		return TYPE.Type.NEVER;
+		return TYPE.NEVER;
 	}
 }

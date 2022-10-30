@@ -49,16 +49,16 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		return (
-			(this.optional && base_type.isSubtypeOf(TYPE.Type.NULL)) ? base_type :
-			(this.optional && TYPE.Type.NULL.isSubtypeOf(base_type)) ? this.type_do_do(base_type.subtract(TYPE.Type.NULL)).union(TYPE.Type.NULL) :
+			(this.optional && base_type.isSubtypeOf(TYPE.NULL)) ? base_type :
+			(this.optional && TYPE.NULL.isSubtypeOf(base_type)) ? this.type_do_do(base_type.subtract(TYPE.NULL)).union(TYPE.NULL) :
 			this.type_do_do(base_type)
 		);
 	}
 	private type_do_do(base_type: TYPE.Type): TYPE.Type {
 		function updateAccessedDynamicType(type: TYPE.Type, access_kind: ValidAccessOperator): TYPE.Type {
 			return (
-				(access_kind === Operator.CLAIMDOT) ? type.subtract(TYPE.Type.VOID) :
-				(access_kind === Operator.OPTDOT)   ? type.union   (TYPE.Type.NULL) :
+				(access_kind === Operator.CLAIMDOT) ? type.subtract(TYPE.VOID) :
+				(access_kind === Operator.OPTDOT)   ? type.union   (TYPE.NULL) :
 				type
 			);
 		}
@@ -103,22 +103,22 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					: base_type;
 				return (accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof OBJ.Integer)
 					? base_type_tuple.get(accessor_type.value, this.kind, this.accessor)
-					: (accessor_type.isSubtypeOf(TYPE.Type.INT))
+					: (accessor_type.isSubtypeOf(TYPE.INT))
 						? updateAccessedDynamicType(base_type_tuple.itemTypes(), this.kind)
-						: throwWrongSubtypeError(this.accessor, TYPE.Type.INT);
+						: throwWrongSubtypeError(this.accessor, TYPE.INT);
 			} else if (TYPE.TypeList.isUnitType(base_type) || base_type instanceof TYPE.TypeList) {
 				const base_type_list: TYPE.TypeList = (TYPE.TypeList.isUnitType(base_type))
 					? base_type.value.toType()
 					: base_type;
-				return (accessor_type.isSubtypeOf(TYPE.Type.INT))
+				return (accessor_type.isSubtypeOf(TYPE.INT))
 					? updateAccessedDynamicType(base_type_list.types, this.kind)
-					: throwWrongSubtypeError(this.accessor, TYPE.Type.INT);
+					: throwWrongSubtypeError(this.accessor, TYPE.INT);
 			} else if (TYPE.TypeSet.isUnitType(base_type) || base_type instanceof TYPE.TypeSet) {
 				const base_type_set: TYPE.TypeSet = (TYPE.TypeSet.isUnitType(base_type))
 					? base_type.value.toType()
 					: base_type;
 				return (accessor_type.isSubtypeOf(base_type_set.types))
-					? TYPE.Type.BOOL
+					? TYPE.BOOL
 					: throwWrongSubtypeError(this.accessor, base_type_set.types);
 			} else if (TYPE.TypeMap.isUnitType(base_type) || base_type instanceof TYPE.TypeMap) {
 				const base_type_map: TYPE.TypeMap = (TYPE.TypeMap.isUnitType(base_type))

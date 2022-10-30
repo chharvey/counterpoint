@@ -26,15 +26,15 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 
 	private static keywordType(source: string): TYPE.Type {
 		return (
-			(source === Keyword.VOID)  ? TYPE.Type.VOID :
-			(source === Keyword.NULL)  ? TYPE.Type.NULL :
-			(source === Keyword.BOOL)  ? TYPE.Type.BOOL :
+			(source === Keyword.VOID)  ? TYPE.VOID :
+			(source === Keyword.NULL)  ? TYPE.NULL :
+			(source === Keyword.BOOL)  ? TYPE.BOOL :
 			(source === Keyword.FALSE) ? OBJ.Boolean.FALSETYPE :
 			(source === Keyword.TRUE ) ? OBJ.Boolean.TRUETYPE :
-			(source === Keyword.INT)   ? TYPE.Type.INT :
-			(source === Keyword.FLOAT) ? TYPE.Type.FLOAT :
-			(source === Keyword.STR)   ? TYPE.Type.STR :
-			(source === Keyword.OBJ)   ? TYPE.Type.OBJ :
+			(source === Keyword.INT)   ? TYPE.INT :
+			(source === Keyword.FLOAT) ? TYPE.FLOAT :
+			(source === Keyword.STR)   ? TYPE.STR :
+			(source === Keyword.OBJ)   ? TYPE.OBJ :
 			(() => { throw new Error(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`); })()
 		);
 	}
