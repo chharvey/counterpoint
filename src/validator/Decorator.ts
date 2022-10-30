@@ -218,7 +218,7 @@ class Decorator {
 				(isSyntaxNodeType(node.children[1], 'property_access_type')) ? new AST.ASTNodeTypeAccess(
 					node as SyntaxNodeType<'type_compound'>,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
-					this.decorateTS(node.children[1] as SyntaxNodeType<'property_access_type'>),
+					this.decorateTS(node.children[1]),
 				) :
 				(isSyntaxNodeType(node.children[1], 'generic_call'), new AST.ASTNodeTypeCall(
 					node as SyntaxNodeType<'type_compound'>,
@@ -333,7 +333,7 @@ class Decorator {
 					node as SyntaxNodeType<'property_access'>,
 					new AST.ASTNodeConstant(node.children[1]),
 				) :
-				(isSyntaxNodeType     (node.children[1], 'word'))      ? this.decorateTS(node.children[1] as SyntaxNodeType<'word'>) :
+				(isSyntaxNodeType     (node.children[1], 'word'))      ? this.decorateTS(node.children[1]) :
 				(isSyntaxNodeSupertype(node.children[2], 'expression'),  this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>))
 			),
 
@@ -342,7 +342,7 @@ class Decorator {
 					node as SyntaxNodeType<'property_assign'>,
 					new AST.ASTNodeConstant(node.children[1]),
 				) :
-				(isSyntaxNodeType     (node.children[1], 'word'))      ? this.decorateTS(node.children[1] as SyntaxNodeType<'word'>) :
+				(isSyntaxNodeType     (node.children[1], 'word'))      ? this.decorateTS(node.children[1]) :
 				(isSyntaxNodeSupertype(node.children[2], 'expression'),  this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>))
 			),
 
@@ -351,7 +351,7 @@ class Decorator {
 					node as SyntaxNodeType<'expression_compound'>,
 					Decorator.ACCESSORS.get(node.children[1].children[0].text as Punctuator)!,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
-					this.decorateTS(node.children[1] as SyntaxNodeType<'property_access'>),
+					this.decorateTS(node.children[1]),
 				)
 				: (isSyntaxNodeType(node.children[1], 'function_call'), new AST.ASTNodeCall(
 					node as SyntaxNodeType<'expression_compound'>,
