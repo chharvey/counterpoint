@@ -219,11 +219,11 @@ const OPT_COM = optional(',');
 function iff(condition: boolean, consequent: RuleOrLiteral, alternative: RuleOrLiteral = blank()): RuleOrLiteral {
 	return (condition) ? consequent : alternative;
 }
-function repCom(production: RuleOrLiteral): ChoiceRule {
-	return optional(repCom1(production));
-}
 function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
+}
+function repCom(production: RuleOrLiteral): ChoiceRule {
+	return optional(repCom1(production));
 }
 
 

@@ -13,12 +13,12 @@ const VERSION: Promise<string> = (requireJSON(path.join(DIRNAME, '../package.jso
 
 
 (async () => {
+	const cli = new CLI(process.argv);
 	async function handleCompileOrDev(): Promise<void> {
 		const result: [string, void] = await cli.compileOrDev(process.cwd());
 		console.log(result[0]);
 		console.log('Success!');
 	}
-	const cli: CLI = new CLI(process.argv);
 	await new Map<Command, () => void | Promise<void>>([
 		[Command.HELP, () => {
 			console.log(CLI.HELPTEXT);
