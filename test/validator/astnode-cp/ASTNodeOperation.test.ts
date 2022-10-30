@@ -11,9 +11,7 @@ import {
 	TypeError01,
 	NanError01,
 } from '../../../src/index.js';
-import {
-	assertEqualTypes,
-} from '../../assert-helpers.js';
+import {assertEqualTypes} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_FOLDING_COERCION_OFF,
@@ -51,6 +49,7 @@ function typeOfOperationFromSource(src: string): TYPE.Type {
 
 
 describe('ASTNodeOperation', () => {
+	/* eslint-disable quotes */
 	function typeOfStmtExpr(stmt: AST.ASTNodeStatement): TYPE.Type {
 		assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 		return stmt.expr!.type();
@@ -64,8 +63,8 @@ describe('ASTNodeOperation', () => {
 				AST.ASTNodeOperationBinaryArithmetic.fromSource(`-4 ^ -0.5;`).type(),
 				AST.ASTNodeOperationBinaryArithmetic.fromSource(`1.5 / 0.0;`).type(),
 			].forEach((typ) => {
-				assert.strictEqual(typ, TYPE.Type.NEVER);
-			})
+				assert.strictEqual(typ, TYPE.NEVER);
+			});
 		});
 	});
 
@@ -163,7 +162,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(5).forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.Type.BOOL);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.BOOL);
 						});
 					});
 					it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
@@ -207,7 +206,7 @@ describe('ASTNodeOperation', () => {
 							`?[a= 42];`,
 							`?{41 -> 42};`,
 						].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type()).forEach((typ) => {
-							assert.deepStrictEqual(typ, TYPE.Type.BOOL);
+							assert.deepStrictEqual(typ, TYPE.BOOL);
 						});
 					});
 				});
@@ -301,28 +300,28 @@ describe('ASTNodeOperation', () => {
 			context('with folding off but int coersion on.', () => {
 				it('returns Integer for integer arithmetic.', () => {
 					const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource(`(7 + 3) * 2;`, CONFIG_FOLDING_OFF);
-					assert.deepStrictEqual(node.type(), TYPE.Type.INT);
+					assert.deepStrictEqual(node.type(), TYPE.INT);
 					assert.deepStrictEqual(
 						[node.operand0.type(), node.operand1.type()],
-						[TYPE.Type.INT,        typeUnitInt(2n)],
+						[TYPE.INT,             typeUnitInt(2n)],
 					);
 				});
 				it('returns Float for float arithmetic.', () => {
 					const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3.0 ^ 2;`, CONFIG_FOLDING_OFF);
-					assert.deepStrictEqual(node.type(), TYPE.Type.FLOAT);
+					assert.deepStrictEqual(node.type(), TYPE.FLOAT);
 					assert.deepStrictEqual(
 						[node.operand0.type(), node.operand1.type()],
-						[typeUnitInt(7n),      TYPE.Type.FLOAT],
+						[typeUnitInt(7n),      TYPE.FLOAT],
 					);
 				});
 			});
 			context('with folding and int coersion off.', () => {
 				it('returns `Integer` if both operands are ints.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource(`7 * 3;`), TYPE.Type.INT);
-				})
+					assert.deepStrictEqual(typeOfOperationFromSource(`7 * 3;`), TYPE.INT);
+				});
 				it('returns `Float` if both operands are floats.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource(`7.0 - 3.0;`), TYPE.Type.FLOAT);
-				})
+					assert.deepStrictEqual(typeOfOperationFromSource(`7.0 - 3.0;`), TYPE.FLOAT);
+				});
 				it('throws TypeError for invalid type operations.', () => {
 					assert.throws(() => typeOfOperationFromSource(`7.0 + 3;`), TypeError01);
 				});
@@ -418,13 +417,13 @@ describe('ASTNodeOperation', () => {
 			});
 			context('with folding off but int coersion on.', () => {
 				it('allows coercing of ints to floats if there are any floats.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryComparative.fromSource(`7.0 > 3;`, CONFIG_FOLDING_OFF).type(), TYPE.Type.BOOL);
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryComparative.fromSource(`7.0 > 3;`, CONFIG_FOLDING_OFF).type(), TYPE.BOOL);
 				});
 			});
 			context('with folding and int coersion off.', () => {
 				it('returns `Boolean` if both operands are of the same numeric type.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource(`7 < 3;`), TYPE.Type.BOOL);
-					assert.deepStrictEqual(typeOfOperationFromSource(`7.0 >= 3.0;`), TYPE.Type.BOOL);
+					assert.deepStrictEqual(typeOfOperationFromSource(`7 < 3;`), TYPE.BOOL);
+					assert.deepStrictEqual(typeOfOperationFromSource(`7.0 >= 3.0;`), TYPE.BOOL);
 				});
 				it('throws TypeError if operands have different types.', () => {
 					assert.throws(() => typeOfOperationFromSource(`7.0 <= 3;`), TypeError01);
@@ -526,7 +525,7 @@ describe('ASTNodeOperation', () => {
 			});
 			context('with folding off but int coersion on.', () => {
 				it('allows coercing of ints to floats if there are any floats.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 == 7.0;`, CONFIG_FOLDING_OFF).type(), TYPE.Type.BOOL);
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 == 7.0;`, CONFIG_FOLDING_OFF).type(), TYPE.BOOL);
 				});
 				it('returns `false` if operands are of different numeric types.', () => {
 					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 === 7.0;`, CONFIG_FOLDING_OFF).type(), OBJ.Boolean.FALSETYPE);
@@ -772,9 +771,9 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
-							TYPE.Type.NULL,
-							TYPE.Type.NULL.union(OBJ.Boolean.FALSETYPE),
-							TYPE.Type.NULL.union(TYPE.Type.VOID),
+							TYPE.NULL,
+							TYPE.NULL.union(OBJ.Boolean.FALSETYPE),
+							TYPE.NULL.union(TYPE.VOID),
 						]);
 					});
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
@@ -794,11 +793,11 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
-							TYPE.Type.NULL.union(hello),
-							TYPE.Type.NULL.union(hello),
+							TYPE.NULL.union(hello),
+							TYPE.NULL.union(hello),
 							OBJ.Boolean.FALSETYPE.union(hello),
 							OBJ.Boolean.FALSETYPE.union(hello),
-							TYPE.Type.VOID.union(typeUnitInt(42n)),
+							TYPE.VOID.union(typeUnitInt(42n)),
 						]);
 					});
 					it('returns `right` if left does not contain `void` nor `null` nor `false`.', () => {
@@ -812,7 +811,7 @@ describe('ASTNodeOperation', () => {
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							OBJ.Boolean.TRUETYPE,
-							TYPE.Type.NULL,
+							TYPE.NULL,
 						]);
 					});
 				});
@@ -851,11 +850,11 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
-							TYPE.Type.INT.union(hello),
-							TYPE.Type.INT.union(hello),
+							TYPE.INT.union(hello),
+							TYPE.INT.union(hello),
 							OBJ.Boolean.TRUETYPE.union(hello),
-							OBJ.Boolean.TRUETYPE.union(TYPE.Type.FLOAT).union(hello),
-							TYPE.Type.STR.union(typeUnitInt(42n)),
+							OBJ.Boolean.TRUETYPE.union(TYPE.FLOAT).union(hello),
+							TYPE.STR.union(typeUnitInt(42n)),
 						]);
 					});
 					it('returns `left` if it does not contain `void` nor `null` nor `false`.', () => {
@@ -868,8 +867,8 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
-							TYPE.Type.INT,
-							TYPE.Type.FLOAT,
+							TYPE.INT,
+							TYPE.FLOAT,
 						]);
 					});
 				});
@@ -935,7 +934,7 @@ describe('ASTNodeOperation', () => {
 				]);
 			});
 			it('counts internal variables correctly.', () => {
-				const src: string = `1 && 2 || 3 && 4;`
+				const src: string = `1 && 2 || 3 && 4;`;
 				assert.deepStrictEqual(
 					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF)),
 					new INST.InstructionBinopLogical(
@@ -997,4 +996,5 @@ describe('ASTNodeOperation', () => {
 			])));
 		});
 	});
+	/* eslint-enable quotes */
 });

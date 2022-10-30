@@ -16,21 +16,22 @@ import {ASTNodeType} from './ASTNodeType.js';
  * - ASTNodeTypeOperationBinary
  */
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperation {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperation {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeOperation);
 		return typ;
 	}
-	constructor (
+
+	public constructor(
 		start_node:
 			| SyntaxNodeType<'type_unary_symbol'>
 			| SyntaxNodeType<'type_unary_keyword'>
 			| SyntaxNodeType<'type_intersection'>
 			| SyntaxNodeType<'type_union'>
 		,
-		readonly operator: ValidTypeOperator,
-		override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
+		protected readonly operator: ValidTypeOperator,
+		public override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
 	) {
-		super(start_node, {operator}, children)
+		super(start_node, {operator}, children);
 	}
 }

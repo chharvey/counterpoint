@@ -12,6 +12,7 @@ export {
 	IntRange,
 	CodeUnit,
 	Keys,
+	throw_expression,
 } from '../lib/index.js';
 export {
 	Operator,

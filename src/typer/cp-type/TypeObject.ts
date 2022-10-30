@@ -8,16 +8,18 @@ import {Type} from './Type.js';
  * @final
  */
 export class TypeObject extends Type {
-	static readonly INSTANCE: TypeObject = new TypeObject();
-	override readonly isBottomType: boolean = false;
-	override readonly isTopType:    boolean = false;
-	private constructor () {
+	public static readonly INSTANCE: TypeObject = new TypeObject();
+	public override readonly isBottomType: boolean = false;
+	public override readonly isTopType:    boolean = false;
+	private constructor() {
 		super(false);
 	}
-	override toString(): string {
+
+	public override toString(): string {
 		return 'obj';
 	}
-	override includes(_v: OBJ.Object): boolean {
+
+	public override includes(_v: OBJ.Object): boolean {
 		return true;
 	}
 }
