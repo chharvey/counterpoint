@@ -12,13 +12,4 @@ export {
 	AST,
 } from '../package.js';
 export {languageValuesIdentical} from '../utils-private.js';
-export {
-	Type,
-	TypeUnit,
-	TypeTuple,
-	TypeRecord,
-	TypeList,
-	TypeDict,
-	TypeSet,
-	TypeMap,
-} from '../cp-type/index.js';
+export {TYPE} from '../index.js';

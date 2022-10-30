@@ -57,12 +57,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			if (oneFloats(t0, t1) && (this.operator === Operator.ID || !int_coercion)) {
 				return OBJ.Boolean.FALSETYPE;
 			}
-			return TYPE.Type.BOOL;
+			return TYPE.BOOL;
 		}
 		if (t0.intersect(t1).isBottomType) {
 			return OBJ.Boolean.FALSETYPE;
 		}
-		return TYPE.Type.BOOL;
+		return TYPE.BOOL;
 	}
 
 	protected override fold_do(): OBJ.Object | null {

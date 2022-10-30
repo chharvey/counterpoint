@@ -1,4 +1,4 @@
-import {TypeUnit} from './package.js';
+import {TYPE} from './package.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
@@ -16,9 +16,14 @@ class CPBoolean extends Primitive {
 	/** The Counterpoint Language Value `true`. */
 	public static readonly TRUE: CPBoolean = new CPBoolean(true);
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
-	public static readonly FALSETYPE = new TypeUnit<CPBoolean>(CPBoolean.FALSE);
+	public static get FALSETYPE(): TYPE.TypeUnit<CPBoolean> {
+		return new TYPE.TypeUnit<CPBoolean>(CPBoolean.FALSE);
+	}
+
 	/** A Unit Type containing only the Counterpoint Language Value `true`. */
-	public static readonly TRUETYPE = new TypeUnit<CPBoolean>(CPBoolean.TRUE);
+	public static get TRUETYPE(): TYPE.TypeUnit<CPBoolean> {
+		return new TYPE.TypeUnit<CPBoolean>(CPBoolean.TRUE);
+	}
 
 	/**
 	 * Return the Counterpoint Language Value `true` or `false` based on the argument.

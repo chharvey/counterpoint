@@ -5,11 +5,12 @@ import {
 	ValidAccessOperator,
 	AST,
 	TypeEntry,
-	OBJ,
+	OBJ as VALUE,
 } from './package.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
+import {OBJ} from './index.js';
 
 
 
@@ -18,8 +19,8 @@ export class TypeRecord extends Type {
 	 * Is the argument a unit record type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Record`
 	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Record> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Record;
+	public static isUnitType(type: Type): type is TypeUnit<VALUE.Record> {
+		return type instanceof TypeUnit && type.value instanceof VALUE.Record;
 	}
 
 
@@ -48,7 +49,7 @@ export class TypeRecord extends Type {
 		public readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.Record()]));
+		super(is_mutable, new Set([new VALUE.Record()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -67,12 +68,12 @@ export class TypeRecord extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }[${ [...this.propertytypes].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
-	public override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Record && v.toType().isSubtypeOf(this);
+	public override includes(v: VALUE.Object): boolean {
+		return v instanceof VALUE.Record && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
-		return t.equals(Type.OBJ) || (
+		return t.equals(OBJ) || (
 			t instanceof TypeRecord
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)

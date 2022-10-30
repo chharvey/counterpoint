@@ -43,7 +43,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 
 	protected override type_do(): TYPE.Type {
-		return TYPE.Type.STR;
+		return TYPE.STR;
 	}
 
 	protected override fold_do(): OBJ.String | null {

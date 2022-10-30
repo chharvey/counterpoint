@@ -1,6 +1,7 @@
-import {OBJ} from './package.js';
+import {OBJ as VALUE} from './package.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
+import {OBJ} from './index.js';
 
 
 
@@ -9,8 +10,8 @@ export class TypeMap extends Type {
 	 * Is the argument a unit map type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Map`
 	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Map> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Map;
+	public static isUnitType(type: Type): type is TypeUnit<VALUE.Map> {
+		return type instanceof TypeUnit && type.value instanceof VALUE.Map;
 	}
 
 
@@ -27,7 +28,7 @@ export class TypeMap extends Type {
 		public readonly consequenttypes: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.Map()]));
+		super(is_mutable, new Set([new VALUE.Map()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -38,12 +39,12 @@ export class TypeMap extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }Map.<${ this.antecedenttypes }, ${ this.consequenttypes }>`;
 	}
 
-	public override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Map && v.toType().isSubtypeOf(this);
+	public override includes(v: VALUE.Object): boolean {
+		return v instanceof VALUE.Map && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
-		return t.equals(Type.OBJ) || (
+		return t.equals(OBJ) || (
 			t instanceof TypeMap
 			&& ((t.isMutable)
 				? this.isMutable && this.antecedenttypes.equals(t.antecedenttypes) && this.consequenttypes.equals(t.consequenttypes)

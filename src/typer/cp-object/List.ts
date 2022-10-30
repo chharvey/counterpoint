@@ -1,8 +1,4 @@
-import {
-	Type,
-	TypeUnit,
-	TypeList,
-} from './package.js';
+import {TYPE} from './package.js';
 import type {Object as CPObject} from './Object.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
 
@@ -13,7 +9,7 @@ export class List<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 		return `List.(${ super.toString() })`;
 	}
 
-	public override toType(): TypeList {
-		return new TypeList(Type.unionAll(this.items.map<Type>((el) => new TypeUnit<T>(el))));
+	public override toType(): TYPE.TypeList {
+		return new TYPE.TypeList(TYPE.Type.unionAll(this.items.map<TYPE.Type>((el) => new TYPE.TypeUnit<T>(el))));
 	}
 }

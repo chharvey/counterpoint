@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import type {
 	Keys,
-	Type,
+	TYPE,
 } from './package.js';
 import {Object as CPObject} from './Object.js';
 
@@ -32,5 +32,5 @@ export abstract class Collection extends CPObject {
 	}
 
 
-	public abstract toType(): Type;
+	public abstract toType(): TYPE.Type;
 }

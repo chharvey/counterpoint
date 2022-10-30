@@ -8,10 +8,7 @@ import {Type} from './Type.js';
  * @final
  */
 export class TypeFloat extends Type {
-	public static get INSTANCE(): TypeFloat {
-		return new TypeFloat();
-	}
-
+	public static readonly INSTANCE = new TypeFloat();
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
 	private constructor() {

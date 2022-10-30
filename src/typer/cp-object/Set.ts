@@ -1,9 +1,7 @@
 import * as xjs from 'extrajs';
 import {
 	languageValuesIdentical,
-	Type,
-	TypeUnit,
-	TypeSet,
+	TYPE,
 } from './package.js';
 import type {Object as CPObject} from './Object.js';
 import {Boolean as CPBoolean} from './Boolean.js';
@@ -42,8 +40,8 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 		);
 	}
 
-	public override toType(): TypeSet {
-		return new TypeSet(Type.unionAll([...this.elements].map<Type>((el) => new TypeUnit<T>(el))));
+	public override toType(): TYPE.TypeSet {
+		return new TYPE.TypeSet(TYPE.Type.unionAll([...this.elements].map<TYPE.Type>((el) => new TYPE.TypeUnit<T>(el))));
 	}
 
 	public get(el: T): CPBoolean {
