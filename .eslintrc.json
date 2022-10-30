@@ -1,7 +1,7 @@
 {
 	"env": {
 		"es2021": true,
-		"node": true
+		"node":   true
 	},
 	"extends": [
 		"eslint:recommended",                           // https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
@@ -10,7 +10,7 @@
 	],
 	"overrides": [
 		{
-			"files": ["*.{cts,mts,ts}"],
+			"files":         ["*.{cts,mts,ts}"],
 			"parserOptions": {
 				"project": [
 					"./tsconfig.json",
@@ -62,10 +62,10 @@
 				"@typescript-eslint/no-unnecessary-type-arguments": "error",
 
 				/* ## Function Design */
+				"no-return-await":                  "off",
+				"@typescript-eslint/return-await":  "error", // needed here due to `parserOptions.project` // NOTE: overrides "no-return-await" (despite different name)
 				"require-await":                    "off",
 				"@typescript-eslint/require-await": "error", // needed here due to `parserOptions.project`
-				"no-return-await":                  "off",
-				"@typescript-eslint/return-await":  "error", // needed here due to `parserOptions.project` // note: overrides "no-return-await" (despite different name)
 
 				/* ## Strictness */
 				"@typescript-eslint/explicit-member-accessibility":           "error",
@@ -76,7 +76,7 @@
 			}
 		}
 	],
-	"parser": "@typescript-eslint/parser",
+	"parser":        "@typescript-eslint/parser",
 	"parserOptions": {
 		"sourceType": "module"
 	},
@@ -84,8 +84,8 @@
 		"@typescript-eslint"
 	],
 	"reportUnusedDisableDirectives": true,
-	"root": true,
-	"rules": {
+	"root":                          true,
+	"rules":                         {
 		/* # Overrides of Recommended Rules */
 		"no-irregular-whitespace": ["error", {
 			"skipStrings":  false, // disallow in strings
@@ -102,12 +102,12 @@
 		/* # Layout & Formatting */
 		/* ## Indentation, Spacing, and Alignment */
 		"arrow-spacing":                        "error",
-		"comma-spacing":                        "error",
+		"comma-spacing":                        "error", // NOTE: "@typescript-eslint/comma-spacing" is defective
 		"dot-location":                         ["error", "property"],
 		"func-call-spacing":                    "off",
 		"@typescript-eslint/func-call-spacing": "warn",
 		"generator-star-spacing":               ["error", "both"],
-		"indent":                               ["error", "tab", {
+		"indent":                               ["error", "tab", { // NOTE: "@typescript-eslint/indent" is defective
 			"SwitchCase":             1,
 			"flatTernaryExpressions": true
 		}],
