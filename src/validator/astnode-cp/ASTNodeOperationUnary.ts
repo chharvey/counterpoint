@@ -55,7 +55,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				OBJ.Boolean.FALSETYPE
 			))() :
 			(this.operator === Operator.EMP) ? TYPE.BOOL :
-			(this.operator === Operator.NEG, (
+			(this.operator === Operator.NEG, ( // eslint-disable-line @typescript-eslint/no-unnecessary-condition
 				(t0.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)))
 					? t0
 					: throw_expression(new TypeError01(this))
@@ -71,7 +71,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return (
 			(this.operator === Operator.NOT) ? OBJ.Boolean.fromBoolean(!v0.isTruthy) :
 			(this.operator === Operator.EMP) ? OBJ.Boolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
-			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as OBJ.Number<any>) : // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
+			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as OBJ.Number<any>) : // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-condition --- cyclical types
 			throw_expression(new ReferenceError(`Operator ${ Operator[this.operator] } not found.`))
 		);
 	}

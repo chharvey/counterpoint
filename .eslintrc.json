@@ -57,6 +57,10 @@
 				}],
 
 				/* # Best Practices */
+				/* ## Conciseness */
+				"@typescript-eslint/no-unnecessary-condition":      "error",
+				"@typescript-eslint/no-unnecessary-type-arguments": "error",
+
 				/* ## Function Design */
 				"require-await":                    "off",
 				"@typescript-eslint/require-await": "error", // needed here due to `parserOptions.project`
@@ -208,11 +212,13 @@
 		"one-var":                                 ["error", "never"],
 
 		/* ## Function Design */
-		"default-param-last":                    "off",
-		"@typescript-eslint/default-param-last": "error",
-		"func-names":                            ["error", "never"],
-		"no-return-await":                       "error",
-		"prefer-arrow-callback":                 ["error", {"allowUnboundThis": false}],
-		"require-await":                         "error"
+		"default-param-last":                        "off",
+		"@typescript-eslint/default-param-last":     "error",
+		"func-names":                                ["error", "never"],
+		"no-return-await":                           "error",
+		"no-useless-constructor":                    "off",
+		"@typescript-eslint/no-useless-constructor": "error",
+		"prefer-arrow-callback":                     ["error", {"allowUnboundThis": false}],
+		"require-await":                             "error"
 	}
 }

@@ -30,7 +30,8 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeTuple#build_do not yet supported.';
+		builder;
+		throw 'ASTNodeTuple#build_do not yet supported.';
 	}
 
 	protected override type_do(): TYPE.Type {
@@ -54,7 +55,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 			}
 			xjs.Array.forEachAggregated(assignee_type_tuple.types, (thattype, i) => {
 				const expr: ASTNodeExpression | undefined = this.children[i];
-				if (expr) {
+				if (expr) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- bug
 					return ASTNodeCP.typeCheckAssignment(
 						expr.type(),
 						thattype.type,
