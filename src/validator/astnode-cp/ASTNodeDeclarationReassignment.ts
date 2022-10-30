@@ -20,26 +20,29 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 
 
 export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationReassignment {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationReassignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeDeclarationReassignment);
 		return statement;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeType<'declaration_reassignment'>,
-		readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		readonly assigned: ASTNodeExpression,
+		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
+		private readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
-	override varCheck(): void {
+
+	public override varCheck(): void {
 		super.varCheck();
 		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
 		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolStructureVar).unfixed) {
 			throw new AssignmentError10(assignee);
-		};
+		}
 	}
-	override typeCheck(): void {
+
+	public override typeCheck(): void {
 		super.typeCheck();
 		if (this.assignee instanceof ASTNodeAccess) {
 			const base_type: TYPE.Type = this.assignee.base.type();
@@ -61,8 +64,9 @@ export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
 			}
 		}
 	}
-	override build(builder: Builder): INST.InstructionStatement {
-		const tofloat: boolean = this.assignee.type().isSubtypeOf(TYPE.Type.FLOAT) || this.assigned.shouldFloat();
+
+	public override build(builder: Builder): INST.InstructionStatement {
+		const tofloat: boolean = this.assignee.type().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
 		return new INST.InstructionStatement(
 			builder.stmtCount,
 			new INST.InstructionGlobalSet((this.assignee as ASTNodeVariable).id, this.assigned.build(builder, tofloat)),

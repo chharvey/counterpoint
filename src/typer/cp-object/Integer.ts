@@ -1,4 +1,5 @@
-import type {Object} from './Object.js';
+import {throw_expression} from './package.js';
+import type {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
 import {Float} from './index.js';
 
@@ -14,14 +15,14 @@ type DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, boolean, 
  * @final
  */
 export class Integer extends CPNumber<Integer> {
-	private static readonly BITCOUNT: number = 16
+	private static readonly BITCOUNT: number = 16;
 
 	public  static readonly ZERO:  Integer = new Integer(0n);
 	public  static readonly UNIT:  Integer = new Integer(1n);
 	private static readonly RADIX: Integer = new Integer(2n);
 
 	private static mod(n: bigint, modulus: bigint): bigint {
-		return (n % modulus + modulus) % modulus
+		return (n % modulus + modulus) % modulus;
 	}
 
 	private readonly internal: Datatype;
@@ -31,55 +32,60 @@ export class Integer extends CPNumber<Integer> {
 	 * @param data - a numeric value or data
 	 * @returns the value represented as a 16-bit signed integer
 	 */
-	constructor (data: bigint | Datatype = 0n) {
-		super()
+	public constructor(data: bigint | Datatype = 0n) {
+		super();
 		this.internal = (typeof data === 'bigint')
 			? [...Integer.mod(data, 2n ** BigInt(Integer.BITCOUNT)).toString(2).padStart(Integer.BITCOUNT, '0')].map((bit) => !!+bit) as DatatypeMutable
-			: data
+			: data;
 	}
 
-	override toString(): string {
-		return `${ this.toNumeric() }`
+	public override toString(): string {
+		return `${ this.toNumeric() }`;
 	}
-	protected override identical_helper(value: Object): boolean {
+
+	protected override identical_helper(value: CPObject): boolean {
 		return value instanceof Integer && this.internal.every((bit, i) => bit === value.internal[i]);
 	}
-	protected override equal_helper(value: Object): boolean {
+
+	protected override equal_helper(value: CPObject): boolean {
 		return value instanceof Float && this.toFloat().equal(value);
 	}
 
-	override toFloat(): Float {
+	public override toFloat(): Float {
 		return new Float(Number(this.toNumeric()));
 	}
+
 	/**
 	 * Return the signed interpretation of this integer.
 	 * @returns the numeric value
 	 */
-	toNumeric(): bigint {
+	public toNumeric(): bigint {
 		const unsigned: number = this.internal.map((bit, i) => +bit * 2 ** (Integer.BITCOUNT - 1 - i)).reduce((a, b) => a + b);
 		return BigInt(unsigned < 2 ** (Integer.BITCOUNT - 1) ? unsigned : unsigned - 2 ** Integer.BITCOUNT);
 	}
 
-	override plus(addend: Integer): Integer {
-		type Carry = [bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint]
+	public override plus(addend: Integer): Integer {
+		type Carry = [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint];
 		const sum:   Carry = [...new Array(Integer.BITCOUNT).fill(0n)] as Carry;
 		const carry: Carry = [...new Array(Integer.BITCOUNT).fill(0n)] as Carry;
 		for (let i = Integer.BITCOUNT - 1; i >= 0; i--) {
-			const digit: bigint = carry[i] + BigInt(this.internal[i]) + BigInt(addend.internal[i])
+			const digit: bigint = carry[i] + BigInt(this.internal[i]) + BigInt(addend.internal[i]);
 			if (digit <= 1n) {
-				sum[i] = digit
+				sum[i] = digit;
 			} else {
-				sum[i] = digit - 2n
+				sum[i] = digit - 2n;
 				if (i > 0) {
-					carry[i - 1] = 1n
+					carry[i - 1] = 1n;
 				} // else do nothing (drop the overflow)
 			}
 		}
 		return new Integer(sum.map((bit) => !!bit) as DatatypeMutable);
 	}
-	override minus(subtrahend: Integer): Integer {
-		return this.plus(subtrahend.neg())
+
+	public override minus(subtrahend: Integer): Integer {
+		return this.plus(subtrahend.neg());
 	}
+
 	/**
 	 * ```ts
 	 * function mulSlow(multiplier: number, multiplicand: number): number {
@@ -110,7 +116,7 @@ export class Integer extends CPNumber<Integer> {
 	 * }
 	 * ```
 	 */
-	override times(multiplicand: Integer): Integer {
+	public override times(multiplicand: Integer): Integer {
 		return (
 			(this.eq0()) ? Integer.ZERO       :
 			(this.eq1()) ? multiplicand       :
@@ -122,8 +128,9 @@ export class Integer extends CPNumber<Integer> {
 			(multiplicand.isEven())
 				?           this.times(Integer.RADIX).times(multiplicand                    .divide(Integer.RADIX))
 				: this.plus(this.times(Integer.RADIX).times(multiplicand.minus(Integer.UNIT).divide(Integer.RADIX)))
-		)
+		);
 	}
+
 	/**
 	 * ```ts
 	 * function divSlow(dividend: number, divisor: number): number {
@@ -169,9 +176,9 @@ export class Integer extends CPNumber<Integer> {
 	 * }
 	 * ```
 	 */
-	override divide(divisor: Integer): Integer {
+	public override divide(divisor: Integer): Integer {
 		return (
-			(divisor.eq0()) ? (() => { throw new RangeError('Division by zero.') })() :
+			(divisor.eq0()) ? throw_expression(new RangeError('Division by zero.')) :
 			(this   .eq0()) ? Integer.ZERO                     :
 			(divisor.lt0()) ? this.divide(divisor.neg()).neg() :
 			(this   .lt0()) ? this.neg().divide(divisor).neg() :
@@ -188,13 +195,14 @@ export class Integer extends CPNumber<Integer> {
 					const diff: Integer = new Integer(remainder).minus(divisor);
 					if (!diff.lt0()) {
 						remainder = diff.internal as DatatypeMutable;
-						quotient[i] = true
+						quotient[i] = true;
 					}
 				}
 				return new Integer(quotient);
 			})()
-		)
+		);
 	}
+
 	/**
 	 * ```ts
 	 * function expSlow(base: number, exponent: number): number {
@@ -222,7 +230,7 @@ export class Integer extends CPNumber<Integer> {
 	 * ```
 	 * @see https://stackoverflow.com/a/101613/877703
 	 */
-	override exp(exponent: Integer): Integer {
+	public override exp(exponent: Integer): Integer {
 		return (
 			(exponent.lt0()) ? Integer.ZERO     :
 			(exponent.eq0()) ? Integer.UNIT     :
@@ -233,42 +241,48 @@ export class Integer extends CPNumber<Integer> {
 			(exponent.isEven())
 				?            this.exp(Integer.RADIX).exp(exponent                    .divide(Integer.RADIX))
 				: this.times(this.exp(Integer.RADIX).exp(exponent.minus(Integer.UNIT).divide(Integer.RADIX)))
-		)
-		// let returned: Integer = Integer.UNIT
+		);
+		// let returned: Integer = Integer.UNIT;
 		// while (true) {
 		// 	if (!exponent.isEven()) {
-		// 		returned = returned.times(base) // returned *= base
+		// 		returned = returned.times(base); // returned *= base
 		// 	}
-		// 	exponent = exponent.divide(Integer.RADIX) // exponent /= 2n
-		// 	if (exponent.eq0()) break
-		// 	base = base.times(base) // base *= base
+		// 	exponent = exponent.divide(Integer.RADIX); // exponent /= 2n
+		// 	if (exponent.eq0()) break;
+		// 	base = base.times(base); // base *= base
 		// }
-		// return returned
+		// return returned;
 	}
+
 	/**
 	 * Equivalently, this is the “two’s complement” of the integer.
 	 */
-	override neg(): Integer {
+	public override neg(): Integer {
 		return this.cpl().plus(Integer.UNIT);
 	}
-	override eq0(): boolean {
+
+	public override eq0(): boolean {
 		return this.equal(Integer.ZERO);
 	}
+
 	/**
 	 * Is the 16-bit signed integer equal to `1`?
 	 */
 	private eq1(): boolean {
 		return this.equal(Integer.UNIT);
 	}
+
 	/**
 	 * Is the 16-bit signed integer equal to `2`?
 	 */
 	private eq2(): boolean {
 		return this.equal(Integer.RADIX);
 	}
-	override lt(y: Integer): boolean {
-		return this.minus(y).lt0()
+
+	public override lt(y: Integer): boolean {
+		return this.minus(y).lt0();
 	}
+
 	/**
 	 * Return the ones’ complement of a 16-bit signed integer.
 	 * @see https://en.wikipedia.org/wiki/Ones%27_complement
@@ -278,6 +292,7 @@ export class Integer extends CPNumber<Integer> {
 	private cpl(): Integer {
 		return new Integer(this.internal.map((bit) => !bit) as DatatypeMutable);
 	}
+
 	/**
 	 * Perform an arithmetic left bit shift of a 16-bit signed integer.
 	 * @param int - the integer
@@ -289,6 +304,7 @@ export class Integer extends CPNumber<Integer> {
 			false,
 		] as DatatypeMutable);
 	}
+
 	/**
 	 * Perform an arithmetic right bit shift of a 16-bit signed integer.
 	 * The shift is arithmetic, which means that the new first bit is the same as the original first bit.
@@ -298,16 +314,18 @@ export class Integer extends CPNumber<Integer> {
 	private bsr(): Integer {
 		return new Integer([
 			this.internal[0],
-			...this.internal.slice(0, -1)
+			...this.internal.slice(0, -1),
 		] as DatatypeMutable);
 	}
+
 	/**
 	 * Is the 16-bit signed integer negative?
 	 * @returns Is this integer less than `0`?
 	 */
 	private lt0(): boolean {
-		return this.internal[0] === true
+		return this.internal[0] === true;
 	}
+
 	/**
 	 * Is the 16-bit signed integer even?
 	 * @returns Is this integer divisible by `2`?

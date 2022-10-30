@@ -14,9 +14,7 @@ import {
 	TypeError03,
 	MutabilityError01,
 } from '../../../src/index.js';
-import {
-	assertAssignable,
-} from '../../assert-helpers.js';
+import {assertAssignable} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
@@ -38,7 +36,7 @@ describe('ASTNodeDeclaration', () => {
 				assert.ok(goal.validator.hasSymbol(256n));
 				const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
 				assert.ok(info instanceof SymbolStructureType);
-				assert.strictEqual(info.typevalue, TYPE.Type.UNKNOWN);
+				assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
 			});
 			it('throws if the validator already contains a record for the symbol.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
@@ -62,7 +60,7 @@ describe('ASTNodeDeclaration', () => {
 				goal.typeCheck();
 				assert.deepStrictEqual(
 					(goal.validator.getSymbolInfo(256n) as SymbolStructureType).typevalue,
-					TYPE.Type.INT,
+					TYPE.INT,
 				);
 			});
 		});
@@ -103,7 +101,7 @@ describe('ASTNodeDeclaration', () => {
 				assert.ok(goal.validator.hasSymbol(256n));
 				const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
 				assert.ok(info instanceof SymbolStructureVar);
-				assert.strictEqual(info.type, TYPE.Type.UNKNOWN);
+				assert.strictEqual(info.type, TYPE.UNKNOWN);
 				assert.strictEqual(info.value, null);
 			});
 			it('throws if the validator already contains a record for the variable.', () => {
@@ -124,22 +122,22 @@ describe('ASTNodeDeclaration', () => {
 				AST.ASTNodeDeclarationVariable.fromSource(`
 					let  the_answer:  int | float =  21  *  2;
 				`).typeCheck();
-			})
+			});
 			it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 				assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 					let  the_answer:  null =  21  *  2;
 				`).typeCheck(), TypeError03);
-			})
+			});
 			it('with int coersion on, allows assigning ints to floats.', () => {
 				AST.ASTNodeDeclarationVariable.fromSource(`
 					let x: float = 42;
 				`).typeCheck();
-			})
+			});
 			it('with int coersion off, throws when assigning int to float.', () => {
 				assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 					let x: float = 42;
 				`, CONFIG_COERCION_OFF).typeCheck(), TypeError03);
-			})
+			});
 			context('allows assigning a collection literal to a wider mutable type.', () => {
 				function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
 					if (src instanceof Array) {
@@ -254,69 +252,69 @@ describe('ASTNodeDeclaration', () => {
 					}`, (err) => {
 						assert.ok(err instanceof AggregateError);
 						assertAssignable(err, {
-							cons: AggregateError,
+							cons:   AggregateError,
 							errors: [
 								{
-									cons: AggregateError,
+									cons:   AggregateError,
 									errors: [
 										{cons: TypeError03, message: 'Expression of type 42 is not assignable to type bool.'},
 										{cons: TypeError03, message: 'Expression of type 43 is not assignable to type str.'},
 									],
 								},
 								{
-									cons: AggregateError,
+									cons:   AggregateError,
 									errors: [
 										{cons: TypeError03, message: 'Expression of type 44 is not assignable to type bool.'},
 										{cons: TypeError03, message: 'Expression of type 45 is not assignable to type str.'},
 									],
 								},
 								{
-									cons: AggregateError,
+									cons:   AggregateError,
 									errors: [
 										{cons: TypeError03, message: 'Expression of type 46 is not assignable to type bool | str.'},
 										{cons: TypeError03, message: 'Expression of type 47 is not assignable to type bool | str.'},
 									],
 								},
 								{
-									cons: AggregateError,
+									cons:   AggregateError,
 									errors: [
 										{cons: TypeError03, message: 'Expression of type 1 is not assignable to type str.'},
 										{cons: TypeError03, message: 'Expression of type 2.0 is not assignable to type str.'},
 									],
 								},
 								{
-									cons: AggregateError,
+									cons:   AggregateError,
 									errors: [
 										{cons: TypeError03, message: 'Expression of type 3 is not assignable to type bool.'},
 										{cons: TypeError03, message: 'Expression of type 4.0 is not assignable to type bool.'},
 									],
 								},
 								{
-									cons: AggregateError,
+									cons:   AggregateError,
 									errors: [
 										{cons: TypeError03, message: 'Expression of type 5 is not assignable to type str.'},
 										{cons: TypeError03, message: 'Expression of type 6.0 is not assignable to type bool.'},
 									],
 								},
 								{
-									cons: AggregateError,
+									cons:   AggregateError,
 									errors: [
 										{cons: TypeError03, message: 'Expression of type 7 is not assignable to type str.'},
 										{cons: TypeError03, message: 'Expression of type 8.0 is not assignable to type bool.'},
 									],
 								},
 								{
-									cons: AggregateError,
+									cons:   AggregateError,
 									errors: [
 										{
-											cons: AggregateError,
+											cons:   AggregateError,
 											errors: [
 												{cons: TypeError03, message: 'Expression of type 9 is not assignable to type str.'},
 												{cons: TypeError03, message: 'Expression of type \'a\' is not assignable to type bool.'},
 											],
 										},
 										{
-											cons: AggregateError,
+											cons:   AggregateError,
 											errors: [
 												{cons: TypeError03, message: 'Expression of type 10.0 is not assignable to type str.'},
 												{cons: TypeError03, message: 'Expression of type \'b\' is not assignable to type bool.'},
@@ -342,7 +340,7 @@ describe('ASTNodeDeclaration', () => {
 				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
 				block.varCheck();
 				block.typeCheck();
-				const builder: Builder = new Builder(src)
+				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					[
 						block.children[0].build(builder),
@@ -362,7 +360,7 @@ describe('ASTNodeDeclaration', () => {
 				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
 				block.varCheck();
 				block.typeCheck();
-				const builder: Builder = new Builder(src)
+				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					[
 						block.children[0].build(builder),

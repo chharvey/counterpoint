@@ -4,9 +4,7 @@
  * Other packages should not import them from here;
  * they are only for modules within this package.
  */
-export type {
-	Serializable,
-} from '../core/index.js';
+export type {Serializable} from '../core/index.js';
 export type {
 	ASTNode,
 	AST,

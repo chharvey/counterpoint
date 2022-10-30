@@ -15,18 +15,19 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
  * - ASTNodeMap
  */
 export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
-	constructor (
+	public constructor(
 		start_node:
 			| SyntaxNodeType<'tuple_literal'>
 			| SyntaxNodeType<'record_literal'>
 			| SyntaxNodeType<'set_literal'>
 			| SyntaxNodeType<'map_literal'>
 		,
-		override readonly children: readonly ASTNodeCP[],
+		public override readonly children: readonly ASTNodeCP[],
 	) {
 		super(start_node, {}, children);
 	}
-	override shouldFloat(): boolean {
+
+	public override shouldFloat(): boolean {
 		throw 'ASTNodeCollectionLiteral#shouldFloat not yet supported.';
 	}
 
@@ -38,7 +39,7 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	 * @return          Is this node assignable to the assignee?
 	 * @final
 	 */
-	assignTo(assignee: TYPE.Type): boolean {
+	public assignTo(assignee: TYPE.Type): boolean {
 		if (assignee instanceof TYPE.TypeIntersection || assignee instanceof TYPE.TypeUnion) {
 			assignee = assignee.combineTuplesOrRecords();
 		}

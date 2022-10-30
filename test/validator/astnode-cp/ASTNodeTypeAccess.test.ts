@@ -22,11 +22,11 @@ describe('ASTNodeTypeAccess', () => {
 			typeUnitInt(1n),
 			typeUnitFloat(2.0),
 			typeUnitStr('three'),
-			TYPE.Type.INT,
-			TYPE.Type.FLOAT,
-			TYPE.Type.STR,
+			TYPE.INT,
+			TYPE.FLOAT,
+			TYPE.STR,
 		];
-		let program: AST.ASTNodeBlock;
+		let program: AST.ASTNodeBlock; // eslint-disable-line @typescript-eslint/init-declarations
 		before(() => {
 			program = AST.ASTNodeBlock.fromSource(`{
 				type TupC = [1,   2.0,   'three'];
@@ -88,14 +88,16 @@ describe('ASTNodeTypeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 26).map((c) => evalTypeDecl(c)),
 					[
-						typeUnitStr('three').union(TYPE.Type.VOID),
-						TYPE.Type.STR.union(TYPE.Type.VOID),
+						typeUnitStr('three').union(TYPE.VOID),
+						TYPE.STR.union(TYPE.VOID),
 					],
 				);
 			});
 			it('throws when index is out of bounds.', () => {
+				/* eslint-disable quotes */
 				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].3`) .eval(), TypeError04);
 				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].-4`).eval(), TypeError04);
+				/* eslint-enable quotes */
 			});
 		});
 
@@ -110,13 +112,15 @@ describe('ASTNodeTypeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(28, 30).map((c) => evalTypeDecl(c)),
 					[
-						typeUnitFloat(2.0).union(TYPE.Type.VOID),
-						TYPE.Type.FLOAT.union(TYPE.Type.VOID),
+						typeUnitFloat(2.0).union(TYPE.VOID),
+						TYPE.FLOAT.union(TYPE.VOID),
 					],
 				);
 			});
 			it('throws when key is out of bounds.', () => {
+				/* eslint-disable quotes */
 				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[a: 1, b: 2.0, c: 'three'].d`).eval(), TypeError04);
+				/* eslint-enable quotes */
 			});
 		});
 	});

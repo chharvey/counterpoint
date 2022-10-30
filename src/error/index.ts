@@ -19,9 +19,7 @@ export * from './TypeError04.js';
 export * from './TypeError05.js';
 export * from './TypeError06.js';
 export * from './MutabilityError01.js';
-export {
-	VoidError01,
-} from './VoidError.js';
+export {VoidError01} from './VoidError.js';
 export {
 	NanError01,
 	NanError02,

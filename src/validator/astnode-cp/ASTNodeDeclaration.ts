@@ -15,9 +15,9 @@ import type {
  * - ASTNodeDeclarationClaim
  * - ASTNodeDeclarationReassignment
  */
-export type ASTNodeDeclaration =
+export type ASTNodeDeclaration = (
 	| ASTNodeDeclarationType
 	| ASTNodeDeclarationVariable
 	| ASTNodeDeclarationClaim
 	| ASTNodeDeclarationReassignment
-;
+);

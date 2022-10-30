@@ -22,19 +22,21 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeGoal representing the given source
 	 */
-	static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeBlock {
+	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeBlock {
 		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(src, config);
 		assert.ok(goal.block, 'semantic goal should have 1 child');
 		return goal.block;
 	}
-	constructor(
+
+	public constructor(
 		start_node: SyntaxNodeType<'block'>,
-		override readonly children: Readonly<NonemptyArray<ASTNodeStatement>>,
+		public override readonly children: Readonly<NonemptyArray<ASTNodeStatement>>,
 	) {
 		super(start_node, {}, children);
 	}
+
 	/** @implements Buildable */
-	build(builder: Builder): INST.InstructionModule {
+	public build(builder: Builder): INST.InstructionModule {
 		return new INST.InstructionModule([
 			...Builder.IMPORTS,
 			...this.children.map((child) => child.build(builder)),

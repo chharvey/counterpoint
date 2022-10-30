@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import type {
 	Keys,
-	Type,
+	TYPE,
 } from './package.js';
 import {Object as CPObject} from './Object.js';
 
@@ -20,7 +20,7 @@ export abstract class Collection extends CPObject {
 		b: Keys<typeof Collection.EQ_MEMO>,
 	) => boolean = (a, b) => a[0].identical(b[0]) && a[1].identical(b[1]);
 
-	private static readonly EQ_MEMO: Map<readonly [CPObject, CPObject], boolean> = new Map();
+	private static readonly EQ_MEMO = new Map<readonly [CPObject, CPObject], boolean>();
 
 	protected static do_Equal<T extends Collection>(o1: T, o2: T, definition: () => boolean): boolean {
 		const memokey: Keys<typeof Collection.EQ_MEMO> = [o1, o2];
@@ -32,5 +32,5 @@ export abstract class Collection extends CPObject {
 	}
 
 
-	abstract toType(): Type;
+	public abstract toType(): TYPE.Type;
 }

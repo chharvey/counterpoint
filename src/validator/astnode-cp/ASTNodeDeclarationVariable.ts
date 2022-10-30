@@ -21,28 +21,31 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 
 
 export class ASTNodeDeclarationVariable extends ASTNodeStatement {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeDeclarationVariable);
 		return statement;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeType<'declaration_variable'>,
-		readonly unfixed: boolean,
-		readonly assignee: ASTNodeVariable,
-		readonly typenode: ASTNodeType,
-		readonly assigned: ASTNodeExpression,
+		public  readonly unfixed:  boolean,
+		private readonly assignee: ASTNodeVariable,
+		public  readonly typenode: ASTNodeType,
+		private readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {unfixed}, [assignee, typenode, assigned]);
 	}
-	override varCheck(): void {
+
+	public override varCheck(): void {
 		if (this.validator.hasSymbol(this.assignee.id)) {
 			throw new AssignmentError01(this.assignee);
-		};
+		}
 		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
 		this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
 	}
-	override typeCheck(): void {
+
+	public override typeCheck(): void {
 		this.assigned.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode.eval();
 		try {
@@ -65,12 +68,12 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			}
 		}
 	}
-	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.Type.FLOAT) || this.assigned.shouldFloat();
+
+	public override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
+		const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
 		const value: OBJ.Object | null = this.assignee.fold();
 		return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
 			? new INST.InstructionNone()
-			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat))
-		;
+			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat));
 	}
 }

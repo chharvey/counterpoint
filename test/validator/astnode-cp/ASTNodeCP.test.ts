@@ -11,9 +11,7 @@ import {
 	TypeError01,
 	TypeError03,
 } from '../../../src/index.js';
-import {
-	assertAssignable,
-} from '../../assert-helpers.js';
+import {assertAssignable} from '../../assert-helpers.js';
 import {typeUnitFloat} from '../../helpers.js';
 
 
@@ -22,21 +20,21 @@ describe('ASTNodeCP', () => {
 	describe('ASTNodeStatementExpression', () => {
 		describe('#build', () => {
 			it('returns InstructionNone for empty statement expression.', () => {
-				const src: string = `;`;
+				const src: string = ';';
 				const instr: INST.InstructionNone | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src).build(new Builder(`{ ${ src } }`));
 				assert.ok(instr instanceof INST.InstructionNone);
-			})
+			});
 			it('returns InstructionStatement for nonempty statement expression.', () => {
-				const src: string = `42 + 420`;
+				const src: string = '42 + 420';
 				const builder: Builder = new Builder(`{ ${ src }; }`);
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(`${ src };`);
 				assert.deepStrictEqual(
 					stmt.build(builder),
 					new INST.InstructionStatement(0n, AST.ASTNodeOperationBinaryArithmetic.fromSource(src).build(builder)),
 				);
-			})
+			});
 			it('multiple statements.', () => {
-				const src: string = `{ 42; 420; }`;
+				const src: string = '{ 42; 420; }';
 				const generator: Builder = new Builder(src);
 				AST.ASTNodeBlock.fromSource(src).children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
@@ -68,20 +66,20 @@ describe('ASTNodeCP', () => {
 				}`).varCheck(), (err) => {
 					assert.ok(err instanceof AggregateError);
 					assertAssignable(err, {
-						cons: AggregateError,
+						cons:   AggregateError,
 						errors: [
 							{
-								cons: AggregateError,
+								cons:   AggregateError,
 								errors: [
 									{
-										cons: AggregateError,
+										cons:   AggregateError,
 										errors: [
 											{cons: ReferenceError01, message: '`a` is never declared.'},
 											{cons: ReferenceError01, message: '`b` is never declared.'},
 										],
 									},
 									{
-										cons: AggregateError,
+										cons:   AggregateError,
 										errors: [
 											{cons: ReferenceError01, message: '`c` is never declared.'},
 											{cons: ReferenceError01, message: '`d` is never declared.'},
@@ -90,17 +88,17 @@ describe('ASTNodeCP', () => {
 								],
 							},
 							{
-								cons: AggregateError,
+								cons:   AggregateError,
 								errors: [
 									{
-										cons: AggregateError,
+										cons:   AggregateError,
 										errors: [
 											{cons: ReferenceError01, message: '`V` is never declared.'},
 											{cons: ReferenceError01, message: '`W` is never declared.'},
 										],
 									},
 									{
-										cons: AggregateError,
+										cons:   AggregateError,
 										errors: [
 											{cons: ReferenceError01, message: '`X` is never declared.'},
 											{cons: ReferenceError01, message: '`Y` is never declared.'},
@@ -141,24 +139,24 @@ describe('ASTNodeCP', () => {
 				assert.throws(() => goal.typeCheck(), (err) => {
 					assert.ok(err instanceof AggregateError);
 					assertAssignable(err, {
-						cons: AggregateError,
+						cons:   AggregateError,
 						errors: [
 							{
-								cons: AggregateError,
+								cons:   AggregateError,
 								errors: [
 									{cons: TypeError01, message: 'Invalid operation: `a * b` at line 6 col 6.'}, // TODO remove line&col numbers from message
 									{cons: TypeError01, message: 'Invalid operation: `c * d` at line 6 col 14.'},
 								],
 							},
 							{
-								cons: AggregateError,
+								cons:   AggregateError,
 								errors: [
 									{cons: TypeError01, message: 'Invalid operation: `e * f` at line 11 col 6.'},
 									{cons: TypeError01, message: 'Invalid operation: `g * h` at line 11 col 14.'},
 								],
 							},
 							{cons: TypeError01, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
-							{cons: TypeError03, message: `Expression of type ${ typeUnitFloat(4.2) } is not assignable to type ${ TYPE.Type.INT }.`},
+							{cons: TypeError03, message: `Expression of type ${ typeUnitFloat(4.2) } is not assignable to type ${ TYPE.INT }.`},
 						],
 					});
 					return true;
@@ -169,7 +167,7 @@ describe('ASTNodeCP', () => {
 
 		describe('#build', () => {
 			it('returns InstructionNone.', () => {
-				const src: string = ``;
+				const src: string = '';
 				const instr: INST.InstructionNone | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
 				assert.ok(instr instanceof INST.InstructionNone);
 			});

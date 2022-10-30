@@ -14,13 +14,13 @@ import {MutabilityError} from './MutabilityError.js';
  */
 export class MutabilityError01 extends MutabilityError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 1;
+	public static override readonly CODE = 1;
 	/**
 	 * Construct a new MutabilityError01 object.
 	 * @param typ  the type that is being mutated
 	 * @param node the reassignment node where it happens
 	 */
-	constructor (typ: TYPE.Type, node: AST.ASTNodeDeclarationReassignment) {
+	public constructor(typ: TYPE.Type, node: AST.ASTNodeDeclarationReassignment) {
 		super(`Mutation of an object of immutable type \`${ typ }\`.`, MutabilityError01.CODE, node.line_index, node.col_index);
 	}
 }

@@ -17,28 +17,30 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 
 
 export class ASTNodeDeclarationClaim extends ASTNodeStatement {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationClaim {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationClaim {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeDeclarationClaim);
 		return statement;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeType<'declaration_claim'>,
-		readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		readonly claimed_type: ASTNodeType,
+		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
+		private readonly claimed_type: ASTNodeType,
 	) {
 		super(start_node, {}, [assignee, claimed_type]);
 	}
-	override typeCheck(): void {
+
+	public override typeCheck(): void {
 		super.typeCheck();
 		const claimed_type:  TYPE.Type = this.claimed_type.eval();
 		const computed_type: TYPE.Type = this.assignee.type();
-		const is_intersection_empty: boolean = claimed_type.intersect(computed_type).equals(TYPE.Type.NEVER);
+		const is_intersection_empty: boolean = claimed_type.intersect(computed_type).equals(TYPE.NEVER);
 		const treatIntAsSubtypeOfFloat: boolean = this.validator.config.compilerOptions.intCoercion && (
-			   computed_type.isSubtypeOf(TYPE.Type.INT) && TYPE.Type.FLOAT.isSubtypeOf(claimed_type)
-			|| claimed_type.isSubtypeOf(TYPE.Type.INT)  && TYPE.Type.FLOAT.isSubtypeOf(computed_type)
-			|| TYPE.Type.INT.isSubtypeOf(computed_type) && claimed_type.isSubtypeOf(TYPE.Type.FLOAT)
-			|| TYPE.Type.INT.isSubtypeOf(claimed_type)  && computed_type.isSubtypeOf(TYPE.Type.FLOAT)
+			   computed_type.isSubtypeOf(TYPE.INT) && TYPE.FLOAT.isSubtypeOf(claimed_type)
+			|| claimed_type.isSubtypeOf(TYPE.INT)  && TYPE.FLOAT.isSubtypeOf(computed_type)
+			|| TYPE.INT.isSubtypeOf(computed_type) && claimed_type.isSubtypeOf(TYPE.FLOAT)
+			|| TYPE.INT.isSubtypeOf(claimed_type)  && computed_type.isSubtypeOf(TYPE.FLOAT)
 		);
 		if (is_intersection_empty && !treatIntAsSubtypeOfFloat) {
 			/*
@@ -56,10 +58,11 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 		} else {
 			this.assignee instanceof ASTNodeAccess;
 			// TODO
-			throw '`ASTNodeDeclarationClaim[assignee: ASTNodeAccess]#typeCheck` not yet supported.'
+			throw '`ASTNodeDeclarationClaim[assignee: ASTNodeAccess]#typeCheck` not yet supported.';
 		}
 	}
-	override build(_builder: Builder): INST.InstructionNone {
+
+	public override build(_builder: Builder): INST.InstructionNone {
 		return new INST.InstructionNone();
 	}
 }
