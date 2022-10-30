@@ -26,7 +26,7 @@ describe('ASTNodeTypeAccess', () => {
 			TYPE.FLOAT,
 			TYPE.STR,
 		];
-		let program: AST.ASTNodeGoal;
+		let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
 		before(() => {
 			program = AST.ASTNodeGoal.fromSource(`
 				type TupC = [1,   2.0,   'three'];
@@ -94,8 +94,10 @@ describe('ASTNodeTypeAccess', () => {
 				);
 			});
 			it('throws when index is out of bounds.', () => {
+				/* eslint-disable quotes */
 				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].3`) .eval(), TypeError04);
 				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].-4`).eval(), TypeError04);
+				/* eslint-enable quotes */
 			});
 		});
 
@@ -116,7 +118,9 @@ describe('ASTNodeTypeAccess', () => {
 				);
 			});
 			it('throws when key is out of bounds.', () => {
+				/* eslint-disable quotes */
 				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[a: 1, b: 2.0, c: 'three'].d`).eval(), TypeError04);
+				/* eslint-enable quotes */
 			});
 		});
 	});

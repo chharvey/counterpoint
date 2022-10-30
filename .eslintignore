@@ -1,0 +1,3 @@
+build/
+tree-sitter-counterpoint/grammar.js
+tree-sitter-counterpoint/bindings/node/index.js

@@ -1,6 +1,4 @@
-import type {
-	Serializable,
-} from './package.js';
+import type {Serializable} from './package.js';
 import {LexError} from './LexError.js';
 
 
@@ -11,14 +9,14 @@ import {LexError} from './LexError.js';
  */
 export class LexError01 extends LexError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 1;
+	public static override readonly CODE = 1;
 
 
 	/**
 	 * Construct a new LexError01 object.
 	 * @param char the unrecognized character
 	 */
-	constructor (char: Serializable) {
+	public constructor(char: Serializable) {
 		super(`Unrecognized character: \`${ char.source }\` at line ${ char.line_index + 1 } col ${ char.col_index + 1 }.`, LexError01.CODE, char.line_index, char.col_index);
 	}
 }

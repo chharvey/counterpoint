@@ -16,6 +16,7 @@ import {
 
 
 describe('ASTNodeType', () => {
+	/* eslint-disable quotes */
 	describe('ASTNodeTypeConstant', () => {
 		describe('#eval', () => {
 			it('computes the value of constant null, boolean, or number types.', () => {
@@ -197,4 +198,5 @@ describe('ASTNodeType', () => {
 			);
 		});
 	});
+	/* eslint-enable quotes */
 });

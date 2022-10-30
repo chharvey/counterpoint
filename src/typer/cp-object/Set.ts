@@ -3,52 +3,51 @@ import {
 	languageValuesIdentical,
 	TYPE,
 } from './package.js';
-import type {Object} from './Object.js';
-import {Boolean} from './Boolean.js';
+import type {Object as CPObject} from './Object.js';
+import {Boolean as CPBoolean} from './Boolean.js';
 import {Collection} from './Collection.js';
 
 
 
-class CPSet<T extends Object = Object> extends Collection {
-	constructor (
-		private readonly elements: ReadonlySet<T> = new Set(),
-	) {
+class CPSet<T extends CPObject = CPObject> extends Collection {
+	public constructor(private readonly elements: ReadonlySet<T> = new Set()) {
 		super();
-		const uniques: Set<T> = new Set();
+		const uniques = new Set<T>();
 		[...elements].forEach((el) => {
 			xjs.Set.add(uniques, el, languageValuesIdentical);
 		});
 		this.elements = uniques;
 	}
-	override toString(): string {
+
+	public override toString(): string {
 		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
 	}
-	override get isEmpty(): boolean {
+
+	public override get isEmpty(): boolean {
 		return this.elements.size === 0;
 	}
+
 	/** @final */
-	protected override equal_helper(value: Object): boolean {
+	protected override equal_helper(value: CPObject): boolean {
 		return (
 			value instanceof CPSet
 			&& this.elements.size === value.elements.size
-			&& Collection.do_Equal<CPSet>(this, value, () => [...(value as CPSet).elements].every(
-				(thatelement) => !![...this.elements].find((el) => el.equal(thatelement)),
+			&& Collection.do_Equal<CPSet>(this, value, () => (
+				[...value.elements].every((thatelement) => (
+					!![...this.elements].find((el) => el.equal(thatelement))
+				))
 			))
 		);
 	}
 
-	override toType(): TYPE.TypeSet {
-		return new TYPE.TypeSet(
-			(this.elements.size)
-				? TYPE.Type.unionAll([...this.elements].map<TYPE.Type>((el) => new TYPE.TypeUnit<T>(el)))
-				: TYPE.NEVER,
-		);
+	public override toType(): TYPE.TypeSet {
+		return new TYPE.TypeSet(TYPE.Type.unionAll([...this.elements].map<TYPE.Type>((el) => new TYPE.TypeUnit<T>(el))));
 	}
 
-	get(el: T): Boolean {
+	public get(el: T): CPBoolean {
 		return (xjs.Set.has(this.elements, el, languageValuesIdentical))
-			? Boolean.TRUE
-			: Boolean.FALSE;
+			? CPBoolean.TRUE
+			: CPBoolean.FALSE;
 	}
 }
 export {CPSet as Set};

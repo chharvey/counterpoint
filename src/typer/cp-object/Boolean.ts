@@ -1,5 +1,5 @@
 import {TYPE} from './package.js';
-import type {Object} from './Object.js';
+import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -10,43 +10,48 @@ import {Primitive} from './Primitive.js';
  *
  * @final
  */
-export class Boolean extends Primitive {
+class CPBoolean extends Primitive {
 	/** The Counterpoint Language Value `false`. */
-	static readonly FALSE: Boolean = new Boolean(false);
+	public static readonly FALSE: CPBoolean = new CPBoolean(false);
 	/** The Counterpoint Language Value `true`. */
-	static readonly TRUE: Boolean = new Boolean(true);
+	public static readonly TRUE: CPBoolean = new CPBoolean(true);
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
-	static get FALSETYPE(): TYPE.TypeUnit<Boolean> {
-		return new TYPE.TypeUnit<Boolean>(Boolean.FALSE);
+	public static get FALSETYPE(): TYPE.TypeUnit<CPBoolean> {
+		return new TYPE.TypeUnit<CPBoolean>(CPBoolean.FALSE);
 	}
+
 	/** A Unit Type containing only the Counterpoint Language Value `true`. */
-	static get TRUETYPE(): TYPE.TypeUnit<Boolean> {
-		return new TYPE.TypeUnit<Boolean>(Boolean.TRUE);
+	public static get TRUETYPE(): TYPE.TypeUnit<CPBoolean> {
+		return new TYPE.TypeUnit<CPBoolean>(CPBoolean.TRUE);
 	}
 
 	/**
 	 * Return the Counterpoint Language Value `true` or `false` based on the argument.
 	 * @param b a native boolean value
-	 * @returns the argument converted into a Boolean
+	 * @returns the argument converted into a CPBoolean
 	 */
-	static fromBoolean(b: boolean): Boolean {
-		return (b) ? Boolean.TRUE : Boolean.FALSE;
-	}
-	/**
-	 * Construct a new Boolean object.
-	 * @param data The native boolean value of this object.
-	 */
-	private constructor (private readonly data: boolean) {
-		super()
+	public static fromBoolean(b: boolean): CPBoolean {
+		return (b) ? CPBoolean.TRUE : CPBoolean.FALSE;
 	}
 
-	override toString(): string {
+	/**
+	 * Construct a new CPBoolean object.
+	 * @param data The native boolean value of this object.
+	 */
+	private constructor(private readonly data: boolean) {
+		super();
+	}
+
+	public override toString(): string {
 		return `${ this.data }`;
 	}
-	override get isTruthy(): boolean {
+
+	public override get isTruthy(): boolean {
 		return this.data;
 	}
-	protected override identical_helper(value: Object): boolean {
-		return value instanceof Boolean && this.data === value.data;
+
+	protected override identical_helper(value: CPObject): boolean {
+		return value instanceof CPBoolean && this.data === value.data;
 	}
 }
+export {CPBoolean as Boolean};

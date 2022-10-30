@@ -10,12 +10,12 @@ export class TypeMap extends Type {
 	 * Is the argument a unit map type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Map`
 	 */
-	static isUnitType(type: Type): type is TypeUnit<VALUE.Map> {
+	public static isUnitType(type: Type): type is TypeUnit<VALUE.Map> {
 		return type instanceof TypeUnit && type.value instanceof VALUE.Map;
 	}
 
 
-	override readonly isBottomType: boolean = false;
+	public override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new TypeMap object.
@@ -23,7 +23,7 @@ export class TypeMap extends Type {
 	 * @param consequenttypes a union of consequent types in this map type
 	 * @param is_mutable is this type mutable?
 	 */
-	constructor (
+	public constructor(
 		public readonly antecedenttypes: Type,
 		public readonly consequenttypes: Type,
 		is_mutable: boolean = false,
@@ -31,15 +31,15 @@ export class TypeMap extends Type {
 		super(is_mutable, new Set([new VALUE.Map()]));
 	}
 
-	override get hasMutable(): boolean {
+	public override get hasMutable(): boolean {
 		return super.hasMutable || this.antecedenttypes.hasMutable || this.consequenttypes.hasMutable;
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `${ (this.isMutable) ? 'mutable ' : '' }Map.<${ this.antecedenttypes }, ${ this.consequenttypes }>`;
 	}
 
-	override includes(v: VALUE.Object): boolean {
+	public override includes(v: VALUE.Object): boolean {
 		return v instanceof VALUE.Map && v.toType().isSubtypeOf(this);
 	}
 
@@ -53,11 +53,11 @@ export class TypeMap extends Type {
 		);
 	}
 
-	override mutableOf(): TypeMap {
+	public override mutableOf(): TypeMap {
 		return new TypeMap(this.antecedenttypes, this.consequenttypes, true);
 	}
 
-	override immutableOf(): TypeMap {
+	public override immutableOf(): TypeMap {
 		return new TypeMap(this.antecedenttypes, this.consequenttypes, false);
 	}
 }

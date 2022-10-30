@@ -20,30 +20,34 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
 export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryEquality {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryEquality {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeOperationBinaryEquality);
 		return expression;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		override readonly operator: ValidOperatorEquality,
+		protected override readonly operator: ValidOperatorEquality,
 		operand0: ASTNodeExpression,
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
 	}
-	override shouldFloat(): boolean {
+
+	public override shouldFloat(): boolean {
 		return this.operator === Operator.EQ && super.shouldFloat();
 	}
+
 	protected override build_do(builder: Builder, _to_float: boolean = false): INST.InstructionBinopEquality {
 		const tofloat: boolean = this.validator.config.compilerOptions.intCoercion && this.shouldFloat();
 		return new INST.InstructionBinopEquality(
 			this.operator,
 			this.operand0.build(builder, tofloat),
 			this.operand1.build(builder, tofloat),
-		)
+		);
 	}
+
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		/*
 		 * If `a` and `b` are of disjoint numeric types, then `a === b` will always return `false`.
@@ -60,6 +64,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		}
 		return TYPE.BOOL;
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
@@ -71,12 +76,13 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		}
 		return this.foldEquality(v0, v1);
 	}
-	private foldEquality(x: OBJ.Object, y: OBJ.Object): OBJ.Boolean {
+
+	private foldEquality(v0: OBJ.Object, v1: OBJ.Object): OBJ.Boolean {
 		return OBJ.Boolean.fromBoolean(new Map<Operator, (x: OBJ.Object, y: OBJ.Object) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],
 			[Operator.EQ, (x, y) => x.equal(y)],
 			// [Operator.ISNT, (x, y) => !x.identical(y)],
 			// [Operator.NEQ,  (x, y) => !x.equal(y)],
-		]).get(this.operator)!(x, y))
+		]).get(this.operator)!(v0, v1));
 	}
 }

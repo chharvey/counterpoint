@@ -7,14 +7,11 @@
 export {
 	TypeError04,
 	IntRange,
+	throw_expression,
 	Operator,
 	ValidAccessOperator,
 	AST,
 } from '../package.js';
-export {
-	TypeEntry,
-} from '../utils-public.js';
-export {
-	languageValuesIdentical,
-} from '../utils-private.js';
+export {TypeEntry} from '../utils-public.js';
+export {languageValuesIdentical} from '../utils-private.js';
 export * as OBJ from '../cp-object/index.js';

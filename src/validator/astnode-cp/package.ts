@@ -26,6 +26,7 @@ export {
 	NanError01,
 	NanError02,
 	NonemptyArray,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	Serializable,

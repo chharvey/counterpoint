@@ -10,6 +10,7 @@ import {
 	SyntaxNodeType,
 } from './package.js';
 import {
+	ArgCount,
 	ValidFunctionName,
 	invalidFunctionName,
 } from './utils-private.js';
@@ -19,23 +20,26 @@ import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 
 
 export class ASTNodeTypeCall extends ASTNodeType {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeCall {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeCall {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeCall);
 		return typ;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
-		readonly base: ASTNodeType,
-		readonly args: Readonly<NonemptyArray<ASTNodeType>>,
+		private readonly base: ASTNodeType,
+		private readonly args: Readonly<NonemptyArray<ASTNodeType>>,
 	) {
 		super(start_node, {}, [base, ...args]);
 	}
-	override varCheck(): void {
+
+	public override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be a `ValidFunctionName`)
 		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
+
 	protected override eval_do(): TYPE.Type {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
 			throw new TypeError05(this.base.eval(), this.base);
@@ -47,11 +51,12 @@ export class ASTNodeTypeCall extends ASTNodeType {
 			[ValidFunctionName.MAP,  () => {
 				this.countArgs([1n, 3n]);
 				const anttype: TYPE.Type = this.args[0].eval();
-				const contype: TYPE.Type = this.args[1]?.eval() || anttype;
+				const contype: TYPE.Type = this.args[1]?.eval() ?? anttype; // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- `this.args[1]` could be undefined
 				return new TYPE.TypeMap(anttype, contype);
 			}],
 		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
 	}
+
 	/**
 	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
 	 * and throw if the number is incorrect.
@@ -62,7 +67,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	 * @param expected - the number of expected arguments, or a half-open range
 	 * @throws if this call’s number of actual arguments does not satisfy the expected number
 	 */
-	private countArgs(expected: bigint | [bigint, bigint]): void {
+	private countArgs(expected: ArgCount): void {
 		const actual: bigint = BigInt(this.args.length);
 		if (typeof expected === 'bigint') {
 			expected = [expected, expected + 1n];
