@@ -26,6 +26,7 @@ import {
 
 
 describe('ASTNodeExpression', () => {
+	/* eslint-disable quotes */
 	describe('ASTNodeConstant', () => {
 		describe('#varCheck', () => {
 			it('never throws.', () => {
@@ -50,13 +51,14 @@ describe('ASTNodeExpression', () => {
 						return c.type();
 					} finally {
 						c.fold = orig;
-					};
+					}
 				})), constants.map((c) => new TYPE.TypeUnit(c.fold()!)));
 			});
 		});
 
 
 		describe('#fold', () => {
+			/* eslint-disable array-element-newline */
 			it('computes null and boolean values.', () => {
 				assert.deepStrictEqual([
 					'null',
@@ -67,7 +69,7 @@ describe('ASTNodeExpression', () => {
 					OBJ.Boolean.FALSE,
 					OBJ.Boolean.TRUE,
 				]);
-			})
+			});
 			it('computes int values.', () => {
 				const integer_radices_on: CPConfig = {
 					...CONFIG_DEFAULT,
@@ -94,13 +96,14 @@ describe('ASTNodeExpression', () => {
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					-0, 6.8, 6.8, 0, -0,
 				].map((v) => new OBJ.Float(v)));
-			})
+			});
 			it('computes string values.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeConstant.fromSource(`'42😀\\u{1f600}'`).type(),
 					typeUnitStr('42😀\u{1f600}'),
 				);
 			});
+			/* eslint-enable array-element-newline */
 		});
 
 
@@ -167,7 +170,7 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			it('returns Never for undeclared variables.', () => {
-				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x`).type(), TYPE.Type.NEVER);
+				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x`).type(), TYPE.NEVER);
 			});
 		});
 
@@ -290,8 +293,8 @@ describe('ASTNodeExpression', () => {
 
 	describe('ASTNodeTemplate', () => {
 		describe('#type', () => {
-			let templates: readonly AST.ASTNodeTemplate[];
-			function initTemplates(config: CPConfig = CONFIG_DEFAULT) {
+			let templates: readonly AST.ASTNodeTemplate[] = [];
+			function initTemplates(config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeTemplate[] {
 				return [
 					AST.ASTNodeTemplate.fromSource(`'''42😀'''`, config),
 					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?'''`, config),
@@ -301,10 +304,10 @@ describe('ASTNodeExpression', () => {
 					}`, config)
 						.children[1] as AST.ASTNodeStatementExpression)
 						.expr as AST.ASTNodeTemplate,
-				] as const;
+				];
 			}
 			context('with constant folding on.', () => {
-				let types: TYPE.Type[];
+				let types: TYPE.Type[] = [];
 				before(() => {
 					templates = initTemplates();
 					types = templates.map((t) => assert_wasCalled(t.fold, 1, (orig, spy) => {
@@ -313,7 +316,7 @@ describe('ASTNodeExpression', () => {
 							return t.type();
 						} finally {
 							t.fold = orig;
-						};
+						}
 					}));
 				});
 				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new TypeUnit`.', () => {
@@ -323,14 +326,14 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('for non-foldable interpolations, returns `String`.', () => {
-					assert.deepStrictEqual(types[2], TYPE.Type.STR);
+					assert.deepStrictEqual(types[2], TYPE.STR);
 				});
 			});
 			context('with constant folding off.', () => {
 				it('always returns `String`.', () => {
 					templates = initTemplates(CONFIG_FOLDING_OFF);
 					templates.forEach((t) => {
-						assert.deepStrictEqual(t.type(), TYPE.Type.STR);
+						assert.deepStrictEqual(t.type(), TYPE.STR);
 					});
 				});
 			});
@@ -338,7 +341,7 @@ describe('ASTNodeExpression', () => {
 
 
 		describe('#fold', () => {
-			let templates: AST.ASTNodeTemplate[];
+			let templates: AST.ASTNodeTemplate[] = [];
 			before(() => {
 				templates = [
 					AST.ASTNodeTemplate.fromSource(`'''42😀'''`),
@@ -378,7 +381,7 @@ describe('ASTNodeExpression', () => {
 		describe('#type', () => {
 			([
 				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.Type.unionAll([typeUnitStr('a'), typeUnitInt(42n), typeUnitFloat(3.0)])],
-				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.Type.unionAll([typeUnitStr('a'), TYPE.Type.INT,    TYPE.Type.FLOAT])],
+				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.Type.unionAll([typeUnitStr('a'), TYPE.INT,         TYPE.FLOAT])],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
 				const expected: TYPE.TypeUnit[] = [typeUnitInt(1n), typeUnitFloat(2.0), typeUnitStr('three')];
 				const collections: readonly [
@@ -518,7 +521,7 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			it('returns the type value of the claimed type.', () => {
-				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3`).type().equals(TYPE.Type.INT.union(TYPE.Type.NULL)));
+				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3`).type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
 			it('throws when the operand type and claimed type do not overlap.', () => {
 				assert.throws(() => AST.ASTNodeClaim.fromSource(`<str>3`)      .type(), TypeError03);
@@ -560,4 +563,5 @@ describe('ASTNodeExpression', () => {
 			});
 		});
 	});
+	/* eslint-enable quotes */
 });

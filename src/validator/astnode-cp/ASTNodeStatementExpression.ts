@@ -12,18 +12,20 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 
 
 export class ASTNodeStatementExpression extends ASTNodeStatement {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeStatementExpression);
 		return statement;
 	}
-	constructor(
+
+	public constructor(
 		start_node: SyntaxNodeType<'statement_expression'>,
-		readonly expr?: ASTNodeExpression,
+		public readonly expr?: ASTNodeExpression,
 	) {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
-	override build(builder: Builder): INST.InstructionNone | INST.InstructionStatement {
+
+	public override build(builder: Builder): INST.InstructionNone | INST.InstructionStatement {
 		return (this.expr)
 			? new INST.InstructionStatement(builder.stmtCount, this.expr.build(builder))
 			: new INST.InstructionNone();

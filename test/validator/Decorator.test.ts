@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import * as assert from 'assert';
 import Parser, {
 	Query,
 	QueryCapture,
@@ -534,7 +534,7 @@ describe('Decorator', () => {
 		}));
 		describe('Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', () => {
 			it('type operator `!` is not yet supported.', () => {
-				return assert.throws(() => DECORATOR.decorateTS(captureParseNode(`
+				assert.throws(() => DECORATOR.decorateTS(captureParseNode(`
 					{
 						type T = U!;
 					}
@@ -543,7 +543,7 @@ describe('Decorator', () => {
 		});
 		['is', 'isnt'].forEach((op) => describe(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
 			it(`operator \`${ op }\` is not yet supported.`, () => {
-				return assert.throws(() => DECORATOR.decorateTS(captureParseNode(`
+				assert.throws(() => DECORATOR.decorateTS(captureParseNode(`
 					{
 						a ${ op } b;
 					}
@@ -551,4 +551,4 @@ describe('Decorator', () => {
 			});
 		}));
 	});
-})
+});

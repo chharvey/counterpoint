@@ -50,6 +50,6 @@ export type CPConfig = {
 		 */
 		readonly intCoercion: boolean,
 	},
-}
+};
 
 export const CONFIG_DEFAULT: CPConfig = requireJSONSync(path.join(DIRNAME, '../../src/core/counterpoint-config.default.json')) as CPConfig;

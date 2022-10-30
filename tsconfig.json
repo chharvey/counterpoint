@@ -1,12 +1,13 @@
 {
 	"compilerOptions": {
 		// Type Checking
-		"exactOptionalPropertyTypes": true,
-		"noImplicitOverride":         true,
-		"noImplicitReturns":          true,
-		"noUnusedLocals":             true,
-		"noUnusedParameters":         true,
-		"strict":                     true,
+		"exactOptionalPropertyTypes":         true,
+		"noImplicitOverride":                 true,
+		"noImplicitReturns":                  true,
+		"noPropertyAccessFromIndexSignature": true,
+		"noUnusedLocals":                     true,
+		"noUnusedParameters":                 true,
+		"strict":                             true,
 
 		// Modules
 		"module":           "ES2020",
@@ -28,4 +29,5 @@
 		"skipLibCheck": true,
 	},
 	"include": ["./src/"],
+	"files": ["./tree-sitter-counterpoint/test/build.mts"],
 }

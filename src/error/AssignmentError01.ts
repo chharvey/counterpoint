@@ -14,12 +14,12 @@ import {AssignmentError} from './AssignmentError.js';
  */
 export class AssignmentError01 extends AssignmentError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 1;
+	public static override readonly CODE = 1;
 	/**
 	 * Construct a new AssignmentError01 object.
 	 * @param symbol the duplicate symbol
 	 */
-	constructor (symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
+	public constructor(symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
 		super(`Duplicate declaration: \`${ symbol.source }\` is already declared.`, AssignmentError01.CODE, symbol.line_index, symbol.col_index);
 	}
 }

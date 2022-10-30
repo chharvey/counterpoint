@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import * as assert from 'assert';
 import {
 	AST,
 	TYPE,
@@ -18,6 +18,7 @@ import {
 
 
 describe('ASTNodeAccess', () => {
+	/* eslint-disable quotes */
 	const INDEX_ACCESS_SRC: string = `{
 		%% statements 0 – 4 %%
 		let         tup_fixed:    [int, float, str]     = [1, 2.0, 'three'];
@@ -234,38 +235,38 @@ describe('ASTNodeAccess', () => {
 		}
 		const COMMON_TYPES = {
 			int_float: TYPE.Type.unionAll([
-				TYPE.Type.INT,
-				TYPE.Type.FLOAT,
+				TYPE.INT,
+				TYPE.FLOAT,
 			]),
 			int_float_str: TYPE.Type.unionAll([
-				TYPE.Type.INT,
-				TYPE.Type.FLOAT,
-				TYPE.Type.STR,
+				TYPE.INT,
+				TYPE.FLOAT,
+				TYPE.STR,
 			]),
 			int_float_str_null: TYPE.Type.unionAll([
-				TYPE.Type.INT,
-				TYPE.Type.FLOAT,
-				TYPE.Type.STR,
-				TYPE.Type.NULL,
+				TYPE.INT,
+				TYPE.FLOAT,
+				TYPE.STR,
+				TYPE.NULL,
 			]),
 		};
 		const expected: TYPE.Type[] = [
 			typeUnitInt(1n),
 			typeUnitFloat(2.0),
 			typeUnitStr('three'),
-			TYPE.Type.INT,
-			TYPE.Type.FLOAT,
-			TYPE.Type.STR,
+			TYPE.INT,
+			TYPE.FLOAT,
+			TYPE.STR,
 		];
 		const expected_o: TYPE.Type[] = [
 			typeUnitStr('three'),
-			TYPE.Type.STR.union(TYPE.Type.NULL),
-			TYPE.Type.STR.union(TYPE.Type.NULL),
+			TYPE.STR.union(TYPE.NULL),
+			TYPE.STR.union(TYPE.NULL),
 		];
 		const expected_c: TYPE.Type[] = [
 			typeUnitStr('three'),
-			TYPE.Type.STR,
-			TYPE.Type.STR,
+			TYPE.STR,
+			TYPE.STR,
 		];
 		context('when base is nullish.', () => {
 			it('optional access returns type of base when it is a subtype of null.', () => {
@@ -277,7 +278,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource(`null?.four`)       .type(),
 					AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]]`) .type(),
 				].forEach((t) => {
-					assert.ok(t.isSubtypeOf(TYPE.Type.NULL));
+					assert.ok(t.isSubtypeOf(TYPE.NULL));
 				});
 			});
 			it('chained optional access.', () => {
@@ -295,24 +296,24 @@ describe('ASTNodeAccess', () => {
 				}`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.Type.BOOL]);
-				const prop2: TYPE.TypeTuple = new TYPE.TypeTuple([{type: TYPE.Type.BOOL, optional: true}]);
+				const prop1: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL]);
+				const prop2: TYPE.TypeTuple = new TYPE.TypeTuple([{type: TYPE.BOOL, optional: true}]);
 				assert.deepStrictEqual(
 					program.children.slice(2, 8).map((c) => typeOfStmtExpr(c)),
 					[
 						new TYPE.TypeRecord(new Map([[0x101n, {type: prop1, optional: true}]])),
-						prop1.union(TYPE.Type.NULL),
-						TYPE.Type.BOOL.union(TYPE.Type.NULL),
+						prop1.union(TYPE.NULL),
+						TYPE.BOOL.union(TYPE.NULL),
 						new TYPE.TypeRecord(new Map([[0x101n, {type: prop2, optional: true}]])),
-						prop2.union(TYPE.Type.NULL),
-						TYPE.Type.BOOL.union(TYPE.Type.NULL),
+						prop2.union(TYPE.NULL),
+						TYPE.BOOL.union(TYPE.NULL),
 					],
 				);
 			});
 		});
 
 		context('access by index.', () => {
-			let program: AST.ASTNodeBlock;
+			let program: AST.ASTNodeBlock; // eslint-disable-line @typescript-eslint/init-declarations
 			before(() => {
 				program = AST.ASTNodeBlock.fromSource(INDEX_ACCESS_SRC);
 				program.varCheck();
@@ -352,8 +353,8 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(36, 38).map((c) => typeOfStmtExpr(c)),
 					[
-						TYPE.Type.STR.union(TYPE.Type.VOID),
-						TYPE.Type.STR.union(TYPE.Type.VOID),
+						TYPE.STR.union(TYPE.VOID),
+						TYPE.STR.union(TYPE.VOID),
 					],
 				);
 			});
@@ -368,7 +369,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(41, 43).map((c) => typeOfStmtExpr(c)),
 					[
 						typeUnitStr('three'),
-						COMMON_TYPES.int_float_str.union(TYPE.Type.NULL),
+						COMMON_TYPES.int_float_str.union(TYPE.NULL),
 					],
 				);
 			});
@@ -380,7 +381,7 @@ describe('ASTNodeAccess', () => {
 					].map((c) => typeOfStmtExpr(c)),
 					[
 						...expected_c,
-						TYPE.Type.INT,
+						TYPE.INT,
 					],
 				);
 			});
@@ -391,14 +392,14 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4`) .type(), TypeError04);
 			});
 			it('returns the list item type when index is out of bounds for lists.', () => {
-				const program: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 					let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
 					list.3;
 					list.-4;
 				}`);
-				program.varCheck();
-				program.typeCheck();
-				program.children.slice(1, 3).forEach((c) => {
+				block.varCheck();
+				block.typeCheck();
+				block.children.slice(1, 3).forEach((c) => {
 					assert.deepStrictEqual(
 						typeOfStmtExpr(c),
 						COMMON_TYPES.int_float_str,
@@ -408,7 +409,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by key.', () => {
-			let program: AST.ASTNodeBlock;
+			let program: AST.ASTNodeBlock; // eslint-disable-line @typescript-eslint/init-declarations
 			before(() => {
 				program = AST.ASTNodeBlock.fromSource(KEY_ACCESS_SRC);
 				program.varCheck();
@@ -433,8 +434,8 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 26).map((c) => typeOfStmtExpr(c)),
 					[
-						TYPE.Type.STR.union(TYPE.Type.VOID),
-						TYPE.Type.STR.union(TYPE.Type.VOID),
+						TYPE.STR.union(TYPE.VOID),
+						TYPE.STR.union(TYPE.VOID),
 					],
 				);
 			});
@@ -449,7 +450,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(29, 31).map((c) => typeOfStmtExpr(c)),
 					[
 						typeUnitStr('three'),
-						COMMON_TYPES.int_float_str.union(TYPE.Type.NULL),
+						COMMON_TYPES.int_float_str.union(TYPE.NULL),
 					],
 				);
 			});
@@ -461,7 +462,7 @@ describe('ASTNodeAccess', () => {
 					].map((c) => typeOfStmtExpr(c)),
 					[
 						...expected_c,
-						TYPE.Type.INT,
+						TYPE.INT,
 					],
 				);
 			});
@@ -470,14 +471,14 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d`) .type(), TypeError04);
 			});
 			it('returns the dict item type when key is out of bounds for dicts.', () => {
-				const program: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 					let unfixed dict: [: int | float | str] = Dict.<int | float| str>([a= 1, b= 2.0, c= 'three']);
 					dict.d;
 				}`);
-				program.varCheck();
-				program.typeCheck();
+				block.varCheck();
+				block.typeCheck();
 				assert.deepStrictEqual(
-					typeOfStmtExpr(program.children[1]),
+					typeOfStmtExpr(block.children[1]),
 					COMMON_TYPES.int_float_str,
 				);
 			});
@@ -485,7 +486,7 @@ describe('ASTNodeAccess', () => {
 
 		context('access by computed expression.', () => {
 			context('with constant folding on, folds expression accessor.', () => {
-				let program: AST.ASTNodeBlock;
+				let program: AST.ASTNodeBlock; // eslint-disable-line @typescript-eslint/init-declarations
 				before(() => {
 					program = AST.ASTNodeBlock.fromSource(EXPR_ACCESS_SRC);
 					program.varCheck();
@@ -518,7 +519,7 @@ describe('ASTNodeAccess', () => {
 					return program.children.slice(27, 30).forEach((c) => (
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
-							TYPE.Type.BOOL,
+							TYPE.BOOL,
 						)
 					));
 				});
@@ -537,8 +538,8 @@ describe('ASTNodeAccess', () => {
 					assert.deepStrictEqual(
 						program.children.slice(44, 46).map((c) => typeOfStmtExpr(c)),
 						[
-							TYPE.Type.STR.union(TYPE.Type.VOID),
-							TYPE.Type.STR.union(TYPE.Type.VOID),
+							TYPE.STR.union(TYPE.VOID),
+							TYPE.STR.union(TYPE.VOID),
 						],
 					);
 				});
@@ -556,9 +557,9 @@ describe('ASTNodeAccess', () => {
 						].map((c) => typeOfStmtExpr(c)),
 						[
 							typeUnitStr('three'),
-							COMMON_TYPES.int_float_str.union(TYPE.Type.NULL),
+							COMMON_TYPES.int_float_str.union(TYPE.NULL),
 							typeUnitStr('three'),
-							COMMON_TYPES.int_float_str.union(TYPE.Type.NULL),
+							COMMON_TYPES.int_float_str.union(TYPE.NULL),
 						],
 					);
 				});
@@ -567,7 +568,7 @@ describe('ASTNodeAccess', () => {
 						program.children.slice(51, 53).map((c) => typeOfStmtExpr(c)),
 						[
 							OBJ.Boolean.TRUETYPE,
-							TYPE.Type.BOOL,
+							TYPE.BOOL,
 						],
 					);
 				});
@@ -584,14 +585,14 @@ describe('ASTNodeAccess', () => {
 					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4]`) .type(), TypeError04);
 				});
 				it('returns the list item type when accessor expression is correct type but out of bounds for lists.', () => {
-					const program: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+					const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 						let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
 						list.[3];
 						list.[-4];
 					}`);
-					program.varCheck();
-					program.typeCheck();
-					program.children.slice(1, 3).forEach((c) => {
+					block.varCheck();
+					block.typeCheck();
+					block.children.slice(1, 3).forEach((c) => {
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
 							COMMON_TYPES.int_float_str,
@@ -605,7 +606,7 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			context('with constant folding off.', () => {
-				let program: AST.ASTNodeBlock;
+				let program: AST.ASTNodeBlock; // eslint-disable-line @typescript-eslint/init-declarations
 				before(() => {
 					program = AST.ASTNodeBlock.fromSource(EXPR_ACCESS_SRC, CONFIG_FOLDING_OFF);
 					program.varCheck();
@@ -631,7 +632,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(24, 30).forEach((c) => {
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
-							TYPE.Type.BOOL,
+							TYPE.BOOL,
 						);
 					});
 				});
@@ -666,14 +667,14 @@ describe('ASTNodeAccess', () => {
 					].forEach((c) => {
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
-							COMMON_TYPES.int_float_str.union(TYPE.Type.NULL),
+							COMMON_TYPES.int_float_str.union(TYPE.NULL),
 						);
 					});
 				});
 				it('does not union with null even when set access is optional.', () => {
-					return program.children.slice(51, 53).forEach((c) => assert.deepStrictEqual(
+					program.children.slice(51, 53).forEach((c) => assert.deepStrictEqual(
 						typeOfStmtExpr(c),
-						TYPE.Type.BOOL,
+						TYPE.BOOL,
 					));
 				});
 				it('claim access always subtracts void.', () => {
@@ -699,7 +700,7 @@ describe('ASTNodeAccess', () => {
 			assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 			return stmt.expr!.fold();
 		}
-		const expected: (OBJ.Object | null)[] = [
+		const expected: Array<OBJ.Object | null> = [
 			new OBJ.Integer(1n),
 			new OBJ.Float(2.0),
 			new OBJ.String('three'),
@@ -707,7 +708,7 @@ describe('ASTNodeAccess', () => {
 			null,
 			null,
 		];
-		const expected_o: (OBJ.Object | null)[] = [
+		const expected_o: Array<OBJ.Object | null> = [
 			new OBJ.String('three'),
 			null,
 			null,
@@ -745,7 +746,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(2, 7).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.Record(new Map([[0x101n, prop1],])),
+						new OBJ.Record(new Map([[0x101n, prop1]])),
 						prop1,
 						OBJ.Boolean.TRUE,
 						new OBJ.Record(new Map([[0x101n, prop2]])),
@@ -761,7 +762,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by index.', () => {
-			let program: AST.ASTNodeBlock;
+			let program: AST.ASTNodeBlock; // eslint-disable-line @typescript-eslint/init-declarations
 			before(() => {
 				program = AST.ASTNodeBlock.fromSource(INDEX_ACCESS_SRC);
 				program.varCheck();
@@ -783,7 +784,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					[
 						...program.children.slice(43, 46),
-						program.children[47]
+						program.children[47],
 					].map((c) => foldStmtExpr(c)),
 					[
 						...expected_o,
@@ -812,7 +813,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by key.', () => {
-			let program: AST.ASTNodeBlock;
+			let program: AST.ASTNodeBlock; // eslint-disable-line @typescript-eslint/init-declarations
 			before(() => {
 				program = AST.ASTNodeBlock.fromSource(KEY_ACCESS_SRC);
 				program.varCheck();
@@ -846,16 +847,15 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d`).fold(), VoidError01);
 			});
 			it('returns null when optionally accessing key out of bounds.', () => {
-				[
+				assert.deepStrictEqual(
 					AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d`).fold(),
-				].forEach((v) => {
-					assert.deepStrictEqual(v, OBJ.Null.NULL);
-				});
+					OBJ.Null.NULL,
+				);
 			});
 		});
 
 		context('access by computed expression.', () => {
-			let program: AST.ASTNodeBlock;
+			let program: AST.ASTNodeBlock; // eslint-disable-line @typescript-eslint/init-declarations
 			before(() => {
 				program = AST.ASTNodeBlock.fromSource(EXPR_ACCESS_SRC);
 				program.varCheck();
@@ -926,7 +926,7 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.[['a']]`) .fold(), VoidError01);
 			});
 			it('returns false when (optionally) accessing element not in set.', () => {
-				return [
+				[
 					'{1, 2.0, \'three\'} .[3]',
 					'{1, 2.0, \'three\'}?.[3]',
 				].forEach((src) => assert.deepStrictEqual(
@@ -944,4 +944,5 @@ describe('ASTNodeAccess', () => {
 			});
 		});
 	});
+	/* eslint-enable quotes */
 });

@@ -6,7 +6,7 @@ import * as path from 'path';
 
 
 
-function s(name: string, ...operands: string[]): string {
+function s(name: string, ...operands: readonly string[]): string {
 	return xjs.String.dedent`
 		(${ name }
 			${ operands.join('\n\t') }
@@ -15,10 +15,13 @@ function s(name: string, ...operands: string[]): string {
 }
 
 function extractType(operand: string): string {
-	return s('expression_compound',
+	return s(
+		'expression_compound',
 		s('identifier'),
-		s('function_call',
-			s('generic_arguments',
+		s(
+			'function_call',
+			s(
+				'generic_arguments',
 				operand,
 			),
 			s('function_arguments'),
@@ -26,9 +29,11 @@ function extractType(operand: string): string {
 	);
 }
 
-function makeSourceFileFromStatements(...statements: string[]): string {
-	return s('source_file',
-		s('block',
+function makeSourceFileFromStatements(...statements: readonly string[]): string {
+	return s(
+		'source_file',
+		s(
+			'block',
 			statements.join(''),
 		),
 	);
@@ -40,7 +45,7 @@ function makeSourceFileFromExpressions(...expressions: string[]): string {
 
 
 
-function buildTest(title: string, source: string, expected: string) {
+function buildTest(title: string, source: string, expected: string): string {
 	return xjs.String.dedent`
 		${ '='.repeat(title.length) }
 		${ title }
@@ -104,9 +109,7 @@ function buildTest(title: string, source: string, expected: string) {
 					my_variable;
 				}
 			`,
-			makeSourceFileFromExpressions(
-				s('identifier'),
-			),
+			makeSourceFileFromExpressions(s('identifier')),
 		],
 
 		INTEGER: [
@@ -200,14 +203,16 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromExpressions(
-				s('string_template',
+				s(
+					'string_template',
 					s('template_head'),
 					s('identifier'),
 					s('template_middle'),
 					s('identifier'),
 					s('template_tail'),
 				),
-				s('string_template',
+				s(
+					'string_template',
 					s('template_head'),
 					s('identifier'),
 					s('template_middle'),
@@ -216,11 +221,14 @@ function buildTest(title: string, source: string, expected: string) {
 					s('identifier'),
 					s('template_tail'),
 				),
-				s('string_template',
+				s(
+					'string_template',
 					s('template_head'),
-					s('string_template',
+					s(
+						'string_template',
 						s('template_head'),
-						s('string_template',
+						s(
+							'string_template',
 							s('template_full'),
 						),
 						s('template_tail'),
@@ -256,9 +264,7 @@ function buildTest(title: string, source: string, expected: string) {
 					f.<(T)>();
 				}
 			`,
-			makeSourceFileFromExpressions(
-				extractType(s('type_grouped', s('identifier'))),
-			),
+			makeSourceFileFromExpressions(extractType(s('type_grouped', s('identifier')))),
 		],
 
 		TypeTupleLiteral: [
@@ -267,13 +273,12 @@ function buildTest(title: string, source: string, expected: string) {
 					f.<[bool, int, ?: str]>();
 				}
 			`,
-			makeSourceFileFromExpressions(
-				extractType(s('type_tuple_literal',
-					s('entry_type',           s('keyword_type')),
-					s('entry_type',           s('keyword_type')),
-					s('entry_type__optional', s('keyword_type')),
-				)),
-			),
+			makeSourceFileFromExpressions(extractType(s(
+				'type_tuple_literal',
+				s('entry_type',           s('keyword_type')),
+				s('entry_type',           s('keyword_type')),
+				s('entry_type__optional', s('keyword_type')),
+			))),
 		],
 
 		TypeRecordLiteral: [
@@ -282,13 +287,12 @@ function buildTest(title: string, source: string, expected: string) {
 					f.<[a: bool, b?: int, c: str]>();
 				}
 			`,
-			makeSourceFileFromExpressions(
-				extractType(s('type_record_literal',
-					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
-					s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
-					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
-				)),
-			),
+			makeSourceFileFromExpressions(extractType(s(
+				'type_record_literal',
+				s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
+				s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
+				s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
+			))),
 		],
 
 		TypeDictLiteral: [
@@ -297,11 +301,10 @@ function buildTest(title: string, source: string, expected: string) {
 					f.<[:bool]>();
 				}
 			`,
-			makeSourceFileFromExpressions(
-				extractType(s('type_dict_literal',
-					s('keyword_type'),
-				)),
-			),
+			makeSourceFileFromExpressions(extractType(s(
+				'type_dict_literal',
+				s('keyword_type'),
+			))),
 		],
 
 		TypeMapLiteral: [
@@ -310,12 +313,11 @@ function buildTest(title: string, source: string, expected: string) {
 					f.<{int -> float}>();
 				}
 			`,
-			makeSourceFileFromExpressions(
-				extractType(s('type_map_literal',
-					s('keyword_type'),
-					s('keyword_type'),
-				)),
-			),
+			makeSourceFileFromExpressions(extractType(s(
+				'type_map_literal',
+				s('keyword_type'),
+				s('keyword_type'),
+			))),
 		],
 
 		// TypeUnit
@@ -336,18 +338,23 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromExpressions(
-				extractType(s('type_compound',
+				extractType(s(
+					'type_compound',
 					s('identifier'),
 					s('property_access_type', s('integer')),
 				)),
-				extractType(s('type_compound',
+				extractType(s(
+					'type_compound',
 					s('identifier'),
 					s('property_access_type', s('word', s('identifier'))),
 				)),
-				extractType(s('type_compound',
+				extractType(s(
+					'type_compound',
 					s('identifier'),
-					s('generic_call',
-						s('generic_arguments',
+					s(
+						'generic_call',
+						s(
+							'generic_arguments',
 							s('identifier'),
 						),
 					),
@@ -366,20 +373,25 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromExpressions(
-				extractType(s('type_unary_symbol',
+				extractType(s(
+					'type_unary_symbol',
 					s('identifier'),
 				)),
-				extractType(s('type_unary_symbol',
+				extractType(s(
+					'type_unary_symbol',
 					s('identifier'),
 				)),
-				extractType(s('type_unary_symbol',
+				extractType(s(
+					'type_unary_symbol',
 					s('identifier'),
 				)),
-				extractType(s('type_unary_symbol',
+				extractType(s(
+					'type_unary_symbol',
 					s('identifier'),
 					s('integer'),
 				)),
-				extractType(s('type_unary_symbol',
+				extractType(s(
+					'type_unary_symbol',
 					s('identifier'),
 				)),
 			),
@@ -391,11 +403,10 @@ function buildTest(title: string, source: string, expected: string) {
 					f.<mutable T>();
 				}
 			`,
-			makeSourceFileFromExpressions(
-				extractType(s('type_unary_keyword',
-					s('identifier'),
-				)),
-			),
+			makeSourceFileFromExpressions(extractType(s(
+				'type_unary_keyword',
+				s('identifier'),
+			))),
 		],
 
 		TypeIntersection: [
@@ -404,12 +415,11 @@ function buildTest(title: string, source: string, expected: string) {
 					f.<T & U>();
 				}
 			`,
-			makeSourceFileFromExpressions(
-				extractType(s('type_intersection',
-					s('identifier'),
-					s('identifier'),
-				)),
-			),
+			makeSourceFileFromExpressions(extractType(s(
+				'type_intersection',
+				s('identifier'),
+				s('identifier'),
+			))),
 		],
 
 		TypeUnion: [
@@ -418,12 +428,11 @@ function buildTest(title: string, source: string, expected: string) {
 					f.<T | U>();
 				}
 			`,
-			makeSourceFileFromExpressions(
-				extractType(s('type_union',
-					s('identifier'),
-					s('identifier'),
-				)),
-			),
+			makeSourceFileFromExpressions(extractType(s(
+				'type_union',
+				s('identifier'),
+				s('identifier'),
+			))),
 		],
 
 		// Type
@@ -446,9 +455,7 @@ function buildTest(title: string, source: string, expected: string) {
 					(a);
 				}
 			`,
-			makeSourceFileFromExpressions(
-				s('expression_grouped', s('identifier')),
-			),
+			makeSourceFileFromExpressions(s('expression_grouped', s('identifier'))),
 		],
 
 		TupleLiteral: [
@@ -457,13 +464,12 @@ function buildTest(title: string, source: string, expected: string) {
 					[1, 2, 3];
 				}
 			`,
-			makeSourceFileFromExpressions(
-				s('tuple_literal',
-					s('primitive_literal', s('integer')),
-					s('primitive_literal', s('integer')),
-					s('primitive_literal', s('integer')),
-				),
-			),
+			makeSourceFileFromExpressions(s(
+				'tuple_literal',
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+			)),
 		],
 
 		RecordLiteral: [
@@ -472,22 +478,24 @@ function buildTest(title: string, source: string, expected: string) {
 					[a= 1, b= 2, c= 3];
 				}
 			`,
-			makeSourceFileFromExpressions(
-				s('record_literal',
-					s('property',
-						s('word', s('identifier')),
-						s('primitive_literal', s('integer')),
-					),
-					s('property',
-						s('word', s('identifier')),
-						s('primitive_literal', s('integer')),
-					),
-					s('property',
-						s('word', s('identifier')),
-						s('primitive_literal', s('integer')),
-					),
+			makeSourceFileFromExpressions(s(
+				'record_literal',
+				s(
+					'property',
+					s('word', s('identifier')),
+					s('primitive_literal', s('integer')),
 				),
-			),
+				s(
+					'property',
+					s('word', s('identifier')),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'property',
+					s('word', s('identifier')),
+					s('primitive_literal', s('integer')),
+				),
+			)),
 		],
 
 		SetLiteral: [
@@ -496,13 +504,12 @@ function buildTest(title: string, source: string, expected: string) {
 					{1, 2, 3};
 				}
 			`,
-			makeSourceFileFromExpressions(
-				s('set_literal',
-					s('primitive_literal', s('integer')),
-					s('primitive_literal', s('integer')),
-					s('primitive_literal', s('integer')),
-				),
-			),
+			makeSourceFileFromExpressions(s(
+				'set_literal',
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+			)),
 		],
 
 		MapLiteral: [
@@ -511,22 +518,24 @@ function buildTest(title: string, source: string, expected: string) {
 					{'1' -> 1, '2' -> 2, '3' -> 3};
 				}
 			`,
-			makeSourceFileFromExpressions(
-				s('map_literal',
-					s('case',
-						s('primitive_literal', s('string')),
-						s('primitive_literal', s('integer')),
-					),
-					s('case',
-						s('primitive_literal', s('string')),
-						s('primitive_literal', s('integer')),
-					),
-					s('case',
-						s('primitive_literal', s('string')),
-						s('primitive_literal', s('integer')),
-					),
+			makeSourceFileFromExpressions(s(
+				'map_literal',
+				s(
+					'case',
+					s('primitive_literal', s('string')),
+					s('primitive_literal', s('integer')),
 				),
-			),
+				s(
+					'case',
+					s('primitive_literal', s('string')),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'case',
+					s('primitive_literal', s('string')),
+					s('primitive_literal', s('integer')),
+				),
+			)),
 		],
 
 		// FunctionArguments
@@ -562,58 +571,74 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromExpressions(
-				s('expression_compound',
+				s(
+					'expression_compound',
 					s('identifier'),
 					s('property_access', s('integer')),
 				),
-				s('expression_compound',
+				s(
+					'expression_compound',
 					s('identifier'),
 					s('property_access', s('integer')),
 				),
-				s('expression_compound',
+				s(
+					'expression_compound',
 					s('identifier'),
 					s('property_access', s('integer')),
 				),
-				s('expression_compound',
+				s(
+					'expression_compound',
 					s('identifier'),
 					s('property_access', s('word', s('identifier'))),
 				),
-				s('expression_compound',
+				s(
+					'expression_compound',
 					s('identifier'),
 					s('property_access', s('word', s('identifier'))),
 				),
-				s('expression_compound',
+				s(
+					'expression_compound',
 					s('identifier'),
 					s('property_access', s('word', s('identifier'))),
 				),
-				s('expression_compound',
+				s(
+					'expression_compound',
 					s('identifier'),
 					s('property_access', s('identifier')),
 				),
-				s('expression_compound',
+				s(
+					'expression_compound',
 					s('identifier'),
 					s('property_access', s('identifier')),
 				),
-				s('expression_compound',
+				s(
+					'expression_compound',
 					s('identifier'),
 					s('property_access', s('identifier')),
 				),
-				s('expression_compound',
+				s(
+					'expression_compound',
 					s('identifier'),
 					s('function_call', s('function_arguments')),
 				),
-				s('expression_compound',
+				s(
+					'expression_compound',
 					s('identifier'),
-					s('function_call',
-						s('function_arguments',
-							s('tuple_literal')
+					s(
+						'function_call',
+						s(
+							'function_arguments',
+							s('tuple_literal'),
 						),
 					),
 				),
-				s('expression_compound',
+				s(
+					'expression_compound',
 					s('identifier'),
-					s('function_call',
-						s('generic_arguments',
+					s(
+						'function_call',
+						s(
+							'generic_arguments',
 							s('identifier'),
 						),
 						s('function_arguments'),
@@ -635,16 +660,20 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromExpressions(
-				s('expression_unary_symbol',
+				s(
+					'expression_unary_symbol',
 					s('identifier'),
 				),
-				s('expression_unary_symbol',
+				s(
+					'expression_unary_symbol',
 					s('identifier'),
 				),
-				s('expression_unary_symbol',
+				s(
+					'expression_unary_symbol',
 					s('identifier'),
 				),
-				s('expression_unary_symbol',
+				s(
+					'expression_unary_symbol',
 					s('identifier'),
 				),
 			),
@@ -656,12 +685,11 @@ function buildTest(title: string, source: string, expected: string) {
 					<T>value;
 				}
 			`,
-			makeSourceFileFromExpressions(
-				s('expression_claim',
-					s('identifier'),
-					s('identifier'),
-				),
-			),
+			makeSourceFileFromExpressions(s(
+				'expression_claim',
+				s('identifier'),
+				s('identifier'),
+			)),
 		],
 
 		ExpressionExponential: [
@@ -672,13 +700,16 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromExpressions(
-				s('expression_exponential',
+				s(
+					'expression_exponential',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_exponential',
+				s(
+					'expression_exponential',
 					s('identifier'),
-					s('expression_exponential',
+					s(
+						'expression_exponential',
 						s('identifier'),
 						s('identifier'),
 					),
@@ -695,16 +726,20 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromExpressions(
-				s('expression_multiplicative',
+				s(
+					'expression_multiplicative',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_multiplicative',
+				s(
+					'expression_multiplicative',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_multiplicative',
-					s('expression_multiplicative',
+				s(
+					'expression_multiplicative',
+					s(
+						'expression_multiplicative',
 						s('identifier'),
 						s('identifier'),
 					),
@@ -721,11 +756,13 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromExpressions(
-				s('expression_additive',
+				s(
+					'expression_additive',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_additive',
+				s(
+					'expression_additive',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -746,35 +783,43 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromExpressions(
-				s('expression_comparative',
+				s(
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_comparative',
+				s(
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_comparative',
+				s(
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_comparative',
+				s(
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_comparative',
+				s(
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_comparative',
+				s(
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_comparative',
+				s(
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_comparative',
+				s(
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -791,19 +836,23 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromExpressions(
-				s('expression_equality',
+				s(
+					'expression_equality',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_equality',
+				s(
+					'expression_equality',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_equality',
+				s(
+					'expression_equality',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_equality',
+				s(
+					'expression_equality',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -818,11 +867,13 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromExpressions(
-				s('expression_conjunctive',
+				s(
+					'expression_conjunctive',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_conjunctive',
+				s(
+					'expression_conjunctive',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -837,11 +888,13 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromExpressions(
-				s('expression_disjunctive',
+				s(
+					'expression_disjunctive',
 					s('identifier'),
 					s('identifier'),
 				),
-				s('expression_disjunctive',
+				s(
+					'expression_disjunctive',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -854,13 +907,12 @@ function buildTest(title: string, source: string, expected: string) {
 					if a then b else c;
 				}
 			`,
-			makeSourceFileFromExpressions(
-				s('expression_conditional',
-					s('identifier'),
-					s('identifier'),
-					s('identifier'),
-				),
-			),
+			makeSourceFileFromExpressions(s(
+				'expression_conditional',
+				s('identifier'),
+				s('identifier'),
+				s('identifier'),
+			)),
 		],
 
 		// Expression
@@ -874,18 +926,19 @@ function buildTest(title: string, source: string, expected: string) {
 					type T = A | B & C;
 				}
 			`,
-			makeSourceFileFromStatements(
-				s('declaration_type',
+			makeSourceFileFromStatements(s(
+				'declaration_type',
+				s('identifier'),
+				s(
+					'type_union',
 					s('identifier'),
-					s('type_union',
+					s(
+						'type_intersection',
 						s('identifier'),
-						s('type_intersection',
-							s('identifier'),
-							s('identifier'),
-						),
+						s('identifier'),
 					),
 				),
-			),
+			)),
 		],
 
 		DeclarationVariable: [
@@ -896,22 +949,28 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromStatements(
-				s('declaration_variable',
+				s(
+					'declaration_variable',
 					s('identifier'),
 					s('identifier'),
-					s('expression_additive',
+					s(
+						'expression_additive',
 						s('identifier'),
-						s('expression_multiplicative',
+						s(
+							'expression_multiplicative',
 							s('identifier'),
 							s('identifier'),
 						),
 					),
 				),
-				s('declaration_variable',
+				s(
+					'declaration_variable',
 					s('identifier'),
-					s('type_union',
+					s(
+						'type_union',
 						s('identifier'),
-						s('type_intersection',
+						s(
+							'type_intersection',
 							s('identifier'),
 							s('identifier'),
 						),
@@ -943,28 +1002,36 @@ function buildTest(title: string, source: string, expected: string) {
 				}
 			`,
 			makeSourceFileFromStatements(
-				s('statement_assignment',
-					s('assignee',
+				s(
+					'statement_assignment',
+					s(
+						'assignee',
 						s('identifier'),
 					),
 					s('identifier'),
 				),
-				s('statement_assignment',
-					s('assignee',
+				s(
+					'statement_assignment',
+					s(
+						'assignee',
 						s('identifier'),
 						s('property_assign', s('integer')),
 					),
 					s('identifier'),
 				),
-				s('statement_assignment',
-					s('assignee',
+				s(
+					'statement_assignment',
+					s(
+						'assignee',
 						s('identifier'),
 						s('property_assign', s('word', s('identifier'))),
 					),
 					s('identifier'),
 				),
-				s('statement_assignment',
-					s('assignee',
+				s(
+					'statement_assignment',
+					s(
+						'assignee',
 						s('identifier'),
 						s('property_assign', s('identifier')),
 					),
@@ -985,34 +1052,40 @@ function buildTest(title: string, source: string, expected: string) {
 					a = b;
 				}
 			`,
-			s('source_file',
-				s('block',
-					s('declaration_type',
+			s(
+				'source_file',
+				s(
+					'block',
+					s(
+						'declaration_type',
 						s('identifier'),
 						s('identifier'),
 					),
-					s('declaration_variable',
+					s(
+						'declaration_variable',
 						s('identifier'),
 						s('identifier'),
 						s('identifier'),
 					),
-					s('statement_expression',
+					s(
+						'statement_expression',
 						s('identifier'),
 					),
-					s('statement_assignment',
-						s('assignee',
+					s(
+						'statement_assignment',
+						s(
+							'assignee',
 							s('identifier'),
 						),
 						s('identifier'),
 					),
 				),
-			)
+			),
 		],
 	})
 		.map(([title, [source, expected]]) => buildTest(title, source, expected))
 		.filter((test) => !!test)
-		.join('')
-	);
+		.join(''));
 })().catch((err) => {
 	console.error(err);
 	process.exit(1);

@@ -9,13 +9,13 @@ import {TypeError} from './TypeError.js';
  */
 export class TypeError02 extends TypeError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 2;
+	public static override readonly CODE = 2;
 	/**
 	 * Construct a new TypeError02 object.
 	 * @param subtype   - the expected subtype
 	 * @param supertype - the supertype
 	 */
-	constructor (subtype: TYPE.Type, supertype: TYPE.Type, line_index: number, col_index: number) {
-		super(`Type ${ subtype } is not a subtype of type ${ supertype }.`, TypeError02.CODE, line_index, col_index)
+	public constructor(subtype: TYPE.Type, supertype: TYPE.Type, line_index: number, col_index: number) {
+		super(`Type ${ subtype } is not a subtype of type ${ supertype }.`, TypeError02.CODE, line_index, col_index);
 	}
 }

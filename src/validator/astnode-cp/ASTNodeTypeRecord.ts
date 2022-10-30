@@ -12,17 +12,19 @@ import {ASTNodeType} from './ASTNodeType.js';
 
 
 export class ASTNodeTypeRecord extends ASTNodeType {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeRecord {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeRecord {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeRecord);
 		return typ;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeType<'type_record_literal'>,
-		override readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
+		public override readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
 	) {
 		super(start_node, {}, children);
 	}
+
 	protected override eval_do(): TYPE.Type {
 		return new TYPE.TypeRecord(new Map(this.children.map((c) => [
 			c.key.id,
