@@ -1,3 +1,1 @@
-export type {
-	NonemptyArray,
-} from '../lib/index.js';
+export type {NonemptyArray} from '../lib/index.js';

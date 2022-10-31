@@ -1,5 +1,5 @@
 import {strictEqual} from './package.js';
-import {String} from './index.js';
+import {String as CPString} from './index.js';
 
 
 
@@ -36,25 +36,28 @@ abstract class CPObject {
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
 	 */
-	get isTruthy(): boolean {
+	public get isTruthy(): boolean {
 		return true;
 	}
+
 	/**
 	 * Return whether this value is “empty”, that is,
 	 * it is either falsy, a zero number, an empty string, or an empty collection.
 	 */
-	get isEmpty(): boolean {
+	public get isEmpty(): boolean {
 		return !this.isTruthy;
 	}
+
 	/**
 	 * Is this value the same exact object as the argument?
 	 * @param value the object to compare
 	 * @returns are the objects identically the same?
 	 */
 	@strictEqual
-	identical(_value: CPObject): boolean {
-		return false
+	public identical(_value: CPObject): boolean {
+		return false;
 	}
+
 	/**
 	 * Are the values considered equal?
 	 * If {@link this.identical} returns `true`, this method will return `true`.
@@ -63,8 +66,8 @@ abstract class CPObject {
 	 */
 	@strictEqual
 	@CPObject.equalsDeco
-	equal(_value: CPObject): boolean {
-		return false
+	public equal(_value: CPObject): boolean {
+		return false;
 	}
 
 	/**
@@ -72,8 +75,8 @@ abstract class CPObject {
 	 * (Not a native String — see {@link #toString}.)
 	 * @returns a string representation of this Object
 	 */
-	toCPString(): String {
-		return new String(this.toString());
+	public toCPString(): CPString {
+		return new CPString(this.toString());
 	}
 }
 export {CPObject as Object};

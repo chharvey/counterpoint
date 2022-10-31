@@ -5,14 +5,17 @@ import {
 	OBJ,
 	INST,
 	Builder,
+	TypeError03,
 	TypeError05,
 	TypeError06,
+	throw_expression,
 	memoizeMethod,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
 } from './package.js';
 import {
+	ArgCount,
 	ValidFunctionName,
 	invalidFunctionName,
 } from './utils-private.js';
@@ -24,20 +27,22 @@ import {ASTNodeVariable} from './ASTNodeVariable.js';
 
 
 export class ASTNodeCall extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeCall {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeCall {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeCall);
 		return expression;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
-		readonly base: ASTNodeExpression,
-		readonly typeargs: readonly ASTNodeType[],
-		readonly exprargs: readonly ASTNodeExpression[],
+		private readonly base: ASTNodeExpression,
+		private readonly typeargs: readonly ASTNodeType[],
+		private readonly exprargs: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, [base, ...typeargs, ...exprargs]);
 	}
-	override varCheck(): void {
+
+	public override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be a `ValidFunctionName`)
 		return xjs.Array.forEachAggregated([
@@ -45,17 +50,21 @@ export class ASTNodeCall extends ASTNodeExpression {
 			...this.exprargs,
 		], (arg) => arg.varCheck());
 	}
-	override shouldFloat(): boolean {
+
+	public override shouldFloat(): boolean {
 		return false;
 	}
+
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	override build(builder: Builder): INST.InstructionExpression {
-		throw builder && '`ASTNodeCall#build` not yet supported.'
+	public override build(builder: Builder): INST.InstructionExpression {
+		builder;
+		throw '`ASTNodeCall#build` not yet supported.';
 	}
+
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	override type(): TYPE.Type {
+	public override type(): TYPE.Type {
 		if (!(this.base instanceof ASTNodeVariable)) {
 			throw new TypeError05(this.base.type(), this.base);
 		}
@@ -72,7 +81,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 						const argitemtype: TYPE.Type = (
 							(TYPE.TypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
 							(argtype instanceof TYPE.TypeTuple)  ? argtype.itemTypes()                :
-							(() => { throw err; })()
+							throw_expression(err as TypeError03)
 						);
 						ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this, this.validator);
 					}
@@ -91,7 +100,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 						const argvaluetype: TYPE.Type = (
 							(TYPE.TypeRecord.isUnitType(argtype)) ? argtype.value.toType().valueTypes() :
 							(argtype instanceof TYPE.TypeRecord)  ? argtype.valueTypes()                :
-							(() => { throw err; })()
+							throw_expression(err as TypeError03)
 						);
 						ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this, this.validator);
 					}
@@ -110,7 +119,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 						const argitemtype: TYPE.Type = (
 							(TYPE.TypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
 							(argtype instanceof TYPE.TypeTuple)  ? argtype.itemTypes()                :
-							(() => { throw err; })()
+							throw_expression(err as TypeError03)
 						);
 						ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this, this.validator);
 					}
@@ -120,7 +129,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.MAP, () => {
 				this.countArgs([1n, 3n], [0n, 2n]);
 				const anttype:    TYPE.Type = this.typeargs[0].eval();
-				const contype:    TYPE.Type = this.typeargs[1]?.eval() || anttype;
+				const contype:    TYPE.Type = this.typeargs[1]?.eval() ?? anttype;
 				const returntype: TYPE.Type = new TYPE.TypeMap(anttype, contype);
 				const entrytype:  TYPE.Type = TYPE.TypeTuple.fromTypes([anttype, contype]);
 				if (this.exprargs.length) {
@@ -131,7 +140,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 						const argitemtype: TYPE.Type = (
 							(TYPE.TypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
 							(argtype instanceof TYPE.TypeTuple)  ? argtype.itemTypes()                :
-							(() => { throw err; })()
+							throw_expression(err as TypeError03)
 						);
 						ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this, this.validator);
 					}
@@ -140,8 +149,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 			}],
 		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
 	}
+
 	@memoizeMethod
-	override fold(): OBJ.Object | null {
+	public override fold(): OBJ.Object | null {
 		const argvalue: OBJ.Object | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
 			? this.exprargs[0].fold()
 			: undefined;
@@ -155,6 +165,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.Map()  : new OBJ.Map(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.Tuple).items.map((pair) => (pair as OBJ.Tuple).items as [OBJ.Object, OBJ.Object])))],
 		]).get(this.base.source as ValidFunctionName)!(argvalue);
 	}
+
 	/**
 	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
 	 * and throw if the number is incorrect.
@@ -166,7 +177,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	 * @param expected_function - the number of expected function arguments, or a half-open range
 	 * @throws if this call’s number of actual arguments does not satisfy the expected number
 	 */
-	private countArgs(expected_generic: bigint | [bigint, bigint], expected_function: bigint | [bigint, bigint]): void {
+	private countArgs(expected_generic: ArgCount, expected_function: ArgCount): void {
 		const actual_generic:  bigint = BigInt(this.typeargs.length);
 		const actual_function: bigint = BigInt(this.exprargs.length);
 		if (typeof expected_generic === 'bigint') {

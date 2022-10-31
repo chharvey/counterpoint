@@ -15,14 +15,15 @@ import type {ASTNodeConstant} from './ASTNodeConstant.js';
 
 
 export class ASTNodeTemplate extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTemplate {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTemplate {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeTemplate);
 		return expression;
 	}
-	constructor(
+
+	public constructor(
 		start_node: SyntaxNodeType<'string_template'>,
-		override readonly children: // FIXME spread types
+		public override readonly children: // FIXME spread types
 			| readonly [ASTNodeConstant]
 			| readonly [ASTNodeConstant,                                                           ASTNodeConstant]
 			| readonly [ASTNodeConstant, ASTNodeExpression,                                        ASTNodeConstant]
@@ -31,24 +32,28 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 			| readonly ASTNodeExpression[]
 		,
 	) {
-		super(start_node, {}, children)
+		super(start_node, {}, children);
 	}
-	override shouldFloat(): boolean {
+
+	public override shouldFloat(): boolean {
 		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
+
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	override build(_builder: Builder): INST.InstructionExpression {
+	public override build(_builder: Builder): INST.InstructionExpression {
 		throw new Error('ASTNodeTemplate#build not yet supported.');
 	}
+
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	override type(): TYPE.Type {
-		return TYPE.Type.STR;
+	public override type(): TYPE.Type {
+		return TYPE.STR;
 	}
+
 	@memoizeMethod
-	override fold(): OBJ.String | null {
-		const values: (OBJ.Object | null)[] = [...this.children].map((expr) => expr.fold());
+	public override fold(): OBJ.String | null {
+		const values: Array<OBJ.Object | null> = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))
 			? null
 			: (values as OBJ.Object[])

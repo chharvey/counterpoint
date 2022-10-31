@@ -1,22 +1,15 @@
-import {
-	Type,
-	TypeUnit,
-	TypeDict,
-} from './package.js';
-import type {Object} from './Object.js';
+import {TYPE} from './package.js';
+import type {Object as CPObject} from './Object.js';
 import {CollectionKeyed} from './CollectionKeyed.js';
 
 
 
-export class Dict<T extends Object = Object> extends CollectionKeyed<T> {
-	override toString(): string {
+export class Dict<T extends CPObject = CPObject> extends CollectionKeyed<T> {
+	public override toString(): string {
 		return `Dict.(${ super.toString() })`;
 	}
-	override toType(): TypeDict {
-		return new TypeDict(
-			(this.properties.size)
-				? Type.unionAll([...this.properties.values()].map<Type>((value) => new TypeUnit<T>(value)))
-				: Type.NEVER,
-		);
+
+	public override toType(): TYPE.TypeDict {
+		return new TYPE.TypeDict(TYPE.Type.unionAll([...this.properties.values()].map<TYPE.Type>((value) => new TYPE.TypeUnit<T>(value))));
 	}
 }

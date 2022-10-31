@@ -8,19 +8,9 @@ export {
 	VoidError01,
 	CodeUnit,
 	Keys,
+	throw_expression,
 	strictEqual,
 	AST,
 } from '../package.js';
-export {
-	languageValuesIdentical,
-} from '../utils-private.js';
-export {
-	Type,
-	TypeUnit,
-	TypeTuple,
-	TypeRecord,
-	TypeList,
-	TypeDict,
-	TypeSet,
-	TypeMap,
-} from '../cp-type/index.js';
+export {languageValuesIdentical} from '../utils-private.js';
+export {TYPE} from '../index.js';

@@ -30,6 +30,7 @@ export {
 export {
 	NonemptyArray,
 	CodeUnit,
+	throw_expression,
 	memoizeMethod,
 	memoizeGetter,
 } from '../lib/index.js';

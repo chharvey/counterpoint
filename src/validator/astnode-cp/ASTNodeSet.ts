@@ -17,35 +17,41 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 export class ASTNodeSet extends ASTNodeCollectionLiteral {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeSet {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeSet {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeSet);
 		return expression;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeType<'set_literal'>,
-		override readonly children: readonly ASTNodeExpression[],
+		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
 	}
-	override shouldFloat(): boolean {
+
+	public override shouldFloat(): boolean {
 		throw 'ASTNodeSet#shouldFloat not yet supported.';
 	}
+
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	override build(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeSet#build_do not yet supported.';
+	public override build(builder: Builder): INST.InstructionExpression {
+		builder;
+		throw 'ASTNodeSet#build_do not yet supported.';
 	}
+
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	override type(): TYPE.Type {
-		return new TYPE.TypeSet(((this.children.length)
-			? TYPE.Type.unionAll(this.children.map((c) => c.type()))
-			: TYPE.Type.NEVER
-		), true);
+	public override type(): TYPE.Type {
+		return new TYPE.TypeSet(
+			TYPE.Type.unionAll(this.children.map((c) => c.type())),
+			true,
+		);
 	}
+
 	@memoizeMethod
-	override fold(): OBJ.Object | null {
+	public override fold(): OBJ.Object | null {
 		const elements: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
 		return (elements.includes(null))
 			? null

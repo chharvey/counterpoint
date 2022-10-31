@@ -9,14 +9,14 @@ import {LexError} from './LexError.js';
  */
 export class LexError03 extends LexError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 3;
+	public static override readonly CODE = 3;
 	/**
 	 * Construct a new LexError03 object.
 	 * @param span - the invalid escape sequence
 	 * @param line - the line   index of the string’s location
 	 * @param col  - the column index of the string’s location
 	 */
-	constructor (span: string, line: number, col: number) {
-		super(`Invalid escape sequence: \`${span}\` at line ${line + 1} col ${col + 1}.`, LexError03.CODE, line, col)
+	public constructor(span: string, line: number, col: number) {
+		super(`Invalid escape sequence: \`${ span }\` at line ${ line + 1 } col ${ col + 1 }.`, LexError03.CODE, line, col);
 	}
 }

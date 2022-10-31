@@ -1,5 +1,6 @@
 import {
 	VoidError01,
+	throw_expression,
 	strictEqual,
 	AST,
 } from './package.js';
@@ -15,40 +16,40 @@ import {Collection} from './Collection.js';
  * - Dict
  */
 export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Collection {
-	constructor (
-		readonly properties: ReadonlyMap<bigint, T> = new Map(),
-	) {
+	public constructor(public readonly properties: ReadonlyMap<bigint, T> = new Map()) {
 		super();
 	}
 
 	/** @final */
-	override get isEmpty(): boolean {
+	public override get isEmpty(): boolean {
 		return this.properties.size === 0;
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `[${ [...this.properties].map(([key, value]) => `${ key }n= ${ value }`).join(', ') }]`;
 	}
 
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
-	override equal(value: CPObject): boolean {
+	public override equal(value: CPObject): boolean {
 		return (
 			value instanceof CollectionKeyed
 			&& this.properties.size === value.properties.size
-			&& Collection.do_Equal<CollectionKeyed>(this, value, () => [...(value as CollectionKeyed).properties].every(
-				([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue),
+			&& Collection.do_Equal<CollectionKeyed>(this, value, () => (
+				[...value.properties].every(([thatkey, thatvalue]) => (
+					!!this.properties.get(thatkey)?.equal(thatvalue)
+				))
 			))
 		);
 	}
 
 	/** @final */
-	get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeKey): T | Null {
+	public get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeKey): T | Null {
 		return (this.properties.has(key))
 			? this.properties.get(key)!
 			: (access_optional)
 				? Null.NULL
-				: (() => { throw new VoidError01(accessor); })();
+				: throw_expression(new VoidError01(accessor));
 	}
 }

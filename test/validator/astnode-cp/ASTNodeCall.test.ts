@@ -13,6 +13,7 @@ import {
 
 
 describe('ASTNodeCall', () => {
+	/* eslint-disable quotes */
 	describe('#type', () => {
 		it('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
@@ -27,10 +28,10 @@ describe('ASTNodeCall', () => {
 					]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new TYPE.TypeList(TYPE.Type.INT, true),
-					new TYPE.TypeDict(TYPE.Type.INT, true),
-					new TYPE.TypeSet(TYPE.Type.INT, true),
-					new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.FLOAT, true),
+					new TYPE.TypeList(TYPE.INT, true),
+					new TYPE.TypeDict(TYPE.INT, true),
+					new TYPE.TypeSet(TYPE.INT, true),
+					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
 				],
 			);
 		});
@@ -46,9 +47,9 @@ describe('ASTNodeCall', () => {
 					]));`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new TYPE.TypeList(TYPE.Type.INT, true),
-					new TYPE.TypeSet(TYPE.Type.INT, true),
-					new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.FLOAT, true),
+					new TYPE.TypeList(TYPE.INT, true),
+					new TYPE.TypeSet(TYPE.INT, true),
+					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
 				],
 			);
 		});
@@ -64,20 +65,20 @@ describe('ASTNodeCall', () => {
 					`Map.<int, float>([]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new TYPE.TypeList(TYPE.Type.INT, true),
-					new TYPE.TypeDict(TYPE.Type.INT, true),
-					new TYPE.TypeSet(TYPE.Type.INT, true),
-					new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.FLOAT, true),
-					new TYPE.TypeList(TYPE.Type.INT, true),
-					new TYPE.TypeSet(TYPE.Type.INT, true),
-					new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.FLOAT, true),
+					new TYPE.TypeList(TYPE.INT, true),
+					new TYPE.TypeDict(TYPE.INT, true),
+					new TYPE.TypeSet(TYPE.INT, true),
+					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
+					new TYPE.TypeList(TYPE.INT, true),
+					new TYPE.TypeSet(TYPE.INT, true),
+					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
 				],
 			);
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeCall.fromSource(`Map.<int>();`).type(),
-				new TYPE.TypeMap(TYPE.Type.INT, TYPE.Type.INT, true),
+				new TYPE.TypeMap(TYPE.INT, TYPE.INT, true),
 			);
 		});
 		it('throws if base is not an ASTNodeVariable.', () => {
@@ -209,4 +210,5 @@ describe('ASTNodeCall', () => {
 			);
 		});
 	});
+	/* eslint-enable quotes */
 });

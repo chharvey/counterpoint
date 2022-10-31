@@ -1,8 +1,8 @@
 import {
 	strictEqual,
-	TypeUnit,
+	TYPE,
 } from './package.js';
-import type {Object} from './Object.js';
+import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -20,23 +20,27 @@ import {Primitive} from './Primitive.js';
  */
 export class Null extends Primitive {
 	/** The Counterpoint Language Value `null`. */
-	static readonly NULL: Null = new Null();
+	public static readonly NULL: Null = new Null();
 	/** A Unit Type containing only the Counterpoint Language Value `null`. */
-	static readonly NULLTYPE = new TypeUnit<Null>(Null.NULL);
-
-
-	private constructor () {
-		super()
+	public static get NULLTYPE(): TYPE.TypeUnit<Null> {
+		return new TYPE.TypeUnit<Null>(Null.NULL);
 	}
 
-	override toString(): string {
-		return 'null'
+
+	private constructor() {
+		super();
 	}
-	override get isTruthy(): boolean {
+
+	public override toString(): string {
+		return 'null';
+	}
+
+	public override get isTruthy(): boolean {
 		return false;
 	}
+
 	@strictEqual
-	override identical(value: Object): boolean {
+	public override identical(value: CPObject): boolean {
 		return value instanceof Null;
 	}
 }

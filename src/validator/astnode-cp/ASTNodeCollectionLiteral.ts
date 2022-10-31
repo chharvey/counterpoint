@@ -49,18 +49,19 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	}
 
 
-	constructor (
+	public constructor(
 		start_node:
 			| SyntaxNodeType<'tuple_literal'>
 			| SyntaxNodeType<'record_literal'>
 			| SyntaxNodeType<'set_literal'>
 			| SyntaxNodeType<'map_literal'>
 		,
-		override readonly children: readonly ASTNodeCP[],
+		public override readonly children: readonly ASTNodeCP[],
 	) {
 		super(start_node, {}, children);
 	}
-	override shouldFloat(): boolean {
+
+	public override shouldFloat(): boolean {
 		throw 'ASTNodeCollectionLiteral#shouldFloat not yet supported.';
 	}
 

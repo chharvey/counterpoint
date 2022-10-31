@@ -8,12 +8,8 @@ import {
 	KEYWORDS,
 	Validator,
 } from '../../src/index.js';
-import type {
-	CodeUnit,
-} from '../../src/lib/index.js';
-import {
-	CONFIG_RADICES_SEPARATORS_ON,
-} from '../helpers.js';
+import type {CodeUnit} from '../../src/lib/index.js';
+import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.js';
 
 
 
@@ -55,6 +51,7 @@ describe('Validator', () => {
 
 	describe('.cookTokenNumber', () => {
 		new Map<string, [string, number[]]>([
+			/* eslint-disable array-element-newline */
 			['implicit radix integers', [
 				`
 					370  037  +9037  -9037  +06  -06
@@ -119,9 +116,10 @@ describe('Validator', () => {
 					18396, 511, 420415, -420415, 6, -6,
 				],
 			]],
+			/* eslint-enable array-element-newline */
 		]).forEach(([source, values], description) => {
 			it(description, () => {
-				return assert.deepStrictEqual(
+				assert.deepStrictEqual(
 					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)[0]),
 					values,
 				);
@@ -131,6 +129,7 @@ describe('Validator', () => {
 
 
 	describe('.cookTokenString', () => {
+		/* eslint-disable quotes */
 		function decodeCooked(source: string, config: CPConfig): string {
 			return utf8Decode(Validator.cookTokenString(source, config));
 		}
@@ -148,21 +147,21 @@ describe('Validator', () => {
 				`'\\\u{10001}'`,
 				`'\\u{10001}'`,
 			].map((src) => decodeCooked(src, CONFIG_DEFAULT)), [
-				``,
-				`hello`,
-				`0 ' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`,
-				`0 $ 1 _ 2 \0 3`,
-				`012 345%\n678`,
-				`\u{1f600}`,
-				`\u{10001}`,
-				`\u{10001}`,
-				`\u{10001}`,
+				'',
+				'hello',
+				'0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6',
+				'0 $ 1 _ 2 \0 3',
+				'012 345%\n678',
+				'\u{1f600}',
+				'\u{10001}',
+				'\u{10001}',
+				'\u{10001}',
 			]);
 		});
 		it('may contain an escaped `u` anywhere.', () => {
 			assert.strictEqual(
 				decodeCooked(`'abc\\udef\\u'`, CONFIG_DEFAULT),
-				`abcudefu`,
+				'abcudefu',
 			);
 		});
 		context('In-String Comments', () => {
@@ -197,7 +196,7 @@ describe('Validator', () => {
 				].map((src) => decodeCooked(src, config));
 			}
 			context('with comments enabled.', () => {
-				const data: {description: string, expected: string}[] = [
+				const data: Array<{description: string, expected: string}> = [
 					{description: 'removes a line comment not ending in a LF.',   expected: 'The five boxing wizards '},
 					{description: 'preserves a LF when line comment ends in LF.', expected: 'The five \njump quickly.'},
 					{description: 'preserves a LF with empty line comment.',      expected: 'The five boxing wizards \njump quickly.'},
@@ -241,10 +240,12 @@ describe('Validator', () => {
 				), RangeError);
 			});
 		});
+		/* eslint-enable quotes */
 	});
 
 
 	describe('.cookTokenTemplate', () => {
+		/* eslint-disable quotes */
 		function decodeCooked(source: string): string {
 			return utf8Decode(Validator.cookTokenTemplate(source));
 		}
@@ -265,18 +266,20 @@ describe('Validator', () => {
 					`'''😀 \\😀 \\u{1f600}'''`,
 				].map((src) => decodeCooked(src)),
 				[
-					``, `hello`,
-					`head`,
-					`midl`,
-					`tail`,
-					`0 \\\` 1`,
-					`0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`,
-					`0 \\u{24} 1 \\u{005f} 2 \\u{} 3`,
-					`012\\\n345\n678`,
-					`\u{1f600} \\\u{1f600} \\u{1f600}`,
+					'',
+					'hello',
+					'head',
+					'midl',
+					'tail',
+					'0 \\` 1',
+					'0 \\\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\` 7',
+					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3',
+					'012\\\n345\n678',
+					'\u{1f600} \\\u{1f600} \\u{1f600}',
 				],
 			);
 		});
+		/* eslint-enable quotes */
 	});
 
 
@@ -295,7 +298,7 @@ describe('Validator', () => {
 			`,
 		].forEach((src, i) => {
 			const validator = new Validator();
-			let cooked: bigint[];
+			let cooked: bigint[] = [];
 			context([
 				'basic identifiers.',
 				'unicode identifiers.',
@@ -304,12 +307,10 @@ describe('Validator', () => {
 					cooked = src.trim().split(/\s+/).map((word) => validator.cookTokenIdentifier(word));
 				});
 				it('assigns ids starting from 256n', () => {
-					return assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
+					assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
 				});
 				it('assigns unique ids 256n or greater.', () => {
-					return cooked.forEach((value) => {
-						assert.ok(value >= 256n);
-					});
+					cooked.forEach((value) => assert.ok(value >= 256n));
 				});
 			});
 		});
@@ -326,4 +327,4 @@ describe('Validator', () => {
 			);
 		});
 	});
-})
+});

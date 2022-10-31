@@ -17,38 +17,42 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
 export class ASTNodeClaim extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeClaim {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeClaim {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeClaim);
 		return expression;
 	}
-	constructor(
+
+	public constructor(
 		start_node: SyntaxNodeType<'expression_claim'>,
-		readonly claimed_type: ASTNodeType,
-		readonly operand: ASTNodeExpression,
+		private readonly claimed_type: ASTNodeType,
+		private readonly operand: ASTNodeExpression,
 	) {
 		super(start_node, {}, [claimed_type, operand]);
 	}
-	override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.Type.FLOAT);
+
+	public override shouldFloat(): boolean {
+		return this.type().isSubtypeOf(TYPE.FLOAT);
 	}
+
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	override build(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
+	public override build(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
 		const tofloat: boolean = to_float || this.shouldFloat();
 		return this.operand.build(builder, tofloat);
 	}
+
 	@memoizeMethod
 	// Explicitly omitting `@ASTNodeExpression.typeDeco` because we don’t want to include folding logic.
-	override type(): TYPE.Type {
+	public override type(): TYPE.Type {
 		const claimed_type:  TYPE.Type = this.claimed_type.eval();
 		const computed_type: TYPE.Type = this.operand.type();
-		const is_intersection_empty: boolean = claimed_type.intersect(computed_type).equals(TYPE.Type.NEVER);
+		const is_intersection_empty: boolean = claimed_type.intersect(computed_type).equals(TYPE.NEVER);
 		const treatIntAsSubtypeOfFloat: boolean = this.validator.config.compilerOptions.intCoercion && (
-			   computed_type.isSubtypeOf(TYPE.Type.INT) && TYPE.Type.FLOAT.isSubtypeOf(claimed_type)
-			|| claimed_type .isSubtypeOf(TYPE.Type.INT) && TYPE.Type.FLOAT.isSubtypeOf(computed_type)
-			|| TYPE.Type.INT.isSubtypeOf(computed_type) && claimed_type .isSubtypeOf(TYPE.Type.FLOAT)
-			|| TYPE.Type.INT.isSubtypeOf(claimed_type)  && computed_type.isSubtypeOf(TYPE.Type.FLOAT)
+			   computed_type.isSubtypeOf(TYPE.INT) && TYPE.FLOAT.isSubtypeOf(claimed_type)
+			|| claimed_type .isSubtypeOf(TYPE.INT) && TYPE.FLOAT.isSubtypeOf(computed_type)
+			|| TYPE.INT.isSubtypeOf(computed_type) && claimed_type .isSubtypeOf(TYPE.FLOAT)
+			|| TYPE.INT.isSubtypeOf(claimed_type)  && computed_type.isSubtypeOf(TYPE.FLOAT)
 		);
 		if (is_intersection_empty && !treatIntAsSubtypeOfFloat) {
 			/*
@@ -60,8 +64,9 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		}
 		return claimed_type;
 	}
+
 	@memoizeMethod
-	override fold(): OBJ.Object | null {
+	public override fold(): OBJ.Object | null {
 		return this.operand.fold();
 	}
 }

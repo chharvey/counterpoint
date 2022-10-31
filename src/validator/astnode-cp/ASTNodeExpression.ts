@@ -55,19 +55,20 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 				} catch (err) {
 					if (err instanceof ErrorCode) {
 						// ignore evaluation errors such as VoidError, NanError, etc.
-						return TYPE.Type.NEVER;
+						return TYPE.NEVER;
 					} else {
 						throw err;
 					}
 				}
-				if (!!value && value instanceof OBJ.Primitive) {
+				if (value && value instanceof OBJ.Primitive) {
 					return new TYPE.TypeUnit<OBJ.Primitive>(value);
-				};
-			};
+				}
+			}
 			return type;
 		};
 		return descriptor;
 	}
+
 	/**
 	 * Decorator for {@link ASTNodeExpression#build} method and any overrides.
 	 * First tries to compute the assessed value, and if successful, builds the assessed value.
@@ -85,10 +86,11 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		const method = descriptor.value!;
 		descriptor.value = function (builder, to_float = false) {
 			const value: OBJ.Object | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			return (!!value) ? INST.InstructionConst.fromCPValue(value, to_float) : method.call(this, builder, to_float);
+			return (value) ? INST.InstructionConst.fromCPValue(value, to_float) : method.call(this, builder, to_float);
 		};
 		return descriptor;
 	}
+
 	/**
 	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -96,39 +98,43 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeExpression representing the given source
 	 */
-	static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeExpression {
+	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeStatementExpression);
 		assert.ok(statement.expr, 'semantic statement should have 1 child');
 		return statement.expr;
 	}
+
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
 	 */
-	abstract shouldFloat(): boolean;
+	public abstract shouldFloat(): boolean;
 	/**
 	 * @final
 	 */
-	override typeCheck(): void {
+	public override typeCheck(): void {
 		super.typeCheck();
 		this.type(); // assert does not throw
 	}
+
 	/**
 	 * @inheritdoc
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
 	 * @implements Buildable
 	 */
-	abstract build(builder: Builder, to_float?: boolean): INST.InstructionExpression;
+	public abstract build(builder: Builder, to_float?: boolean): INST.InstructionExpression;
+
 	/**
 	 * The Type of this expression.
 	 * @return the compile-time type of this node
 	 */
-	abstract type(): TYPE.Type;
+	public abstract type(): TYPE.Type;
+
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * If {@link CPConfig|constant folding} is off, this should not be called.
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 */
-	abstract fold(): OBJ.Object | null;
+	public abstract fold(): OBJ.Object | null;
 }

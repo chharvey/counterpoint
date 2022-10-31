@@ -21,58 +21,62 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
 export class ASTNodeVariable extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeVariable {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeVariable {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeVariable);
 		return expression;
 	}
 
 
-	constructor (start_node: SyntaxNodeType<'identifier'>) {
+	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
 	@memoizeGetter
-	get id(): bigint {
+	public get id(): bigint {
 		return this.validator.cookTokenIdentifier(this.start_node.text);
 	}
 
-	override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.Type.FLOAT);
+	public override shouldFloat(): boolean {
+		return this.type().isSubtypeOf(TYPE.FLOAT);
 	}
-	override varCheck(): void {
+
+	public override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
-		};
+		}
 		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
 			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
-		};
+		}
 	}
+
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	override build(_builder: Builder, to_float: boolean = false): INST.InstructionExpression {
+	public override build(_builder: Builder, to_float: boolean = false): INST.InstructionExpression {
 		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
 	}
+
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	override type(): TYPE.Type {
+	public override type(): TYPE.Type {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar) {
 				return symbol.type;
-			};
-		};
-		return TYPE.Type.NEVER;
+			}
+		}
+		return TYPE.NEVER;
 	}
+
 	@memoizeMethod
-	override fold(): OBJ.Object | null {
+	public override fold(): OBJ.Object | null {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
 				return symbol.value;
-			};
-		};
+			}
+		}
 		return null;
 	}
 }

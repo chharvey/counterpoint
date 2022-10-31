@@ -17,14 +17,14 @@ import {
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
 export class TypeIntersection extends Type {
-	declare readonly isBottomType: boolean;
+	public declare readonly isBottomType: boolean;
 
 	/**
 	 * Construct a new TypeIntersection object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
-	constructor (
+	public constructor(
 		public readonly left:  Type,
 		public readonly right: Type,
 	) {
@@ -32,35 +32,46 @@ export class TypeIntersection extends Type {
 		this.isBottomType = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
 	}
 
-	override get hasMutable(): boolean {
+	public override get hasMutable(): boolean {
 		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
 	}
-	override toString(): string {
+
+	public override toString(): string {
 		return `${ this.left } & ${ this.right }`;
 	}
-	override includes(v: OBJ.Object): boolean {
-		return this.left.includes(v) && this.right.includes(v)
+
+	public override includes(v: OBJ.Object): boolean {
+		return this.left.includes(v) && this.right.includes(v);
 	}
+
 	@strictEqual
 	@Type.subtypeDeco
-	override isSubtypeOf(t: Type): boolean {
+	public override isSubtypeOf(t: Type): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
-		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
+		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) {
+			return true;
+		}
 		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */
-		if (t.equals(this.left) || t.equals(this.right)) { return true }
+		if (t.equals(this.left) || t.equals(this.right)) {
+			return true;
+		}
 		return super.isSubtypeOf(t);
 	}
-	override mutableOf(): TypeIntersection {
+
+	public override mutableOf(): TypeIntersection {
 		return new TypeIntersection(this.left.mutableOf(), this.right.mutableOf());
 	}
-	override immutableOf(): TypeIntersection {
+
+	public override immutableOf(): TypeIntersection {
 		return new TypeIntersection(this.left.immutableOf(), this.right.immutableOf());
 	}
-	isSupertypeOf(t: Type): boolean {
+
+	public isSupertypeOf(t: Type): boolean {
 		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 		return t.isSubtypeOf(this.left) && t.isSubtypeOf(this.right);
 	}
-	combineTuplesOrRecords(): Type {
+
+	public combineTuplesOrRecords(): Type {
 		return (
 			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? this.left.intersectWithTuple(this.right)  :
 			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? this.left.intersectWithRecord(this.right) :

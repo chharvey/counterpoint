@@ -17,7 +17,7 @@ export function memoizeMethod<Params extends unknown[], Return>(
 	descriptor:    TypedPropertyDescriptor<(this: object, ...args: Params) => Return>,
 ): typeof descriptor {
 	const method = descriptor.value!;
-	const memomap: WeakMap<object, Return> = new WeakMap();
+	const memomap = new WeakMap<object, Return>();
 	descriptor.value = function (...args) {
 		memomap.has(this) || memomap.set(this, method.call(this, ...args));
 		return memomap.get(this)!;
@@ -42,7 +42,7 @@ export function memoizeGetter<Return>(
 	descriptor:    TypedPropertyDescriptor<Return>,
 ): typeof descriptor {
 	const method = descriptor.get!;
-	const memomap: WeakMap<object, Return> = new WeakMap();
+	const memomap = new WeakMap<object, Return>();
 	descriptor.get = function () {
 		memomap.has(this) || memomap.set(this, method.call(this));
 		return memomap.get(this)!;
@@ -69,12 +69,12 @@ export function runOnceMethod<Params extends unknown[]>(
 	descriptor:    TypedPropertyDescriptor<(this: object, ...args: Params) => void>,
 ): typeof descriptor {
 	const method = descriptor.value!;
-	const memoset: WeakSet<object> = new WeakSet();
+	const memoset = new WeakSet();
 	descriptor.value = function (...args) {
 		if (!memoset.has(this)) {
 			memoset.add(this);
 			return method.call(this, ...args);
-		};
+		}
 	};
 	return descriptor;
 }
@@ -96,12 +96,12 @@ export function runOnceSetter<Param>(
 	descriptor:    TypedPropertyDescriptor<Param>,
 ): typeof descriptor {
 	const method = descriptor.set!;
-	const memoset: WeakSet<object> = new WeakSet();
+	const memoset = new WeakSet();
 	descriptor.set = function (arg) {
 		if (!memoset.has(this)) {
 			memoset.add(this);
 			return method.call(this, arg);
-		};
+		}
 	};
 	return descriptor;
 }

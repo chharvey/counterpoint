@@ -26,6 +26,7 @@ export {
 	NanError01,
 	NanError02,
 	NonemptyArray,
+	throw_expression,
 	memoizeMethod,
 	memoizeGetter,
 	CPConfig,
