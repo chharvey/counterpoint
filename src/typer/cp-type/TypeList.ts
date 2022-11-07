@@ -19,22 +19,22 @@ export class TypeList extends Type {
 
 	/**
 	 * Construct a new TypeList object.
-	 * @param types a union of types in this list type
+	 * @param invariant a union of types in this list type
 	 * @param is_mutable is this type mutable?
 	 */
 	public constructor(
-		public readonly types: Type,
+		public readonly invariant: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new VALUE.List()]));
 	}
 
 	public override get hasMutable(): boolean {
-		return super.hasMutable || this.types.hasMutable;
+		return super.hasMutable || this.invariant.hasMutable;
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }List.<${ this.types }>`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }List.<${ this.invariant }>`;
 	}
 
 	public override includes(v: VALUE.Object): boolean {
@@ -45,17 +45,17 @@ export class TypeList extends Type {
 		return t.equals(OBJ) || (
 			t instanceof TypeList
 			&& ((t.isMutable)
-				? this.isMutable && this.types.equals(t.types)
-				: this.types.isSubtypeOf(t.types)
+				? this.isMutable && this.invariant.equals(t.invariant)
+				: this.invariant.isSubtypeOf(t.invariant)
 			)
 		);
 	}
 
 	public override mutableOf(): TypeList {
-		return new TypeList(this.types, true);
+		return new TypeList(this.invariant, true);
 	}
 
 	public override immutableOf(): TypeList {
-		return new TypeList(this.types, false);
+		return new TypeList(this.invariant, false);
 	}
 }
