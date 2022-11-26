@@ -290,39 +290,39 @@ and the “absorption element” of the [union](#union) operation.
 
 #### Tuple Type
 A **Tuple Type** contains [`Tuple` objects](./intrinsics.md#tuple) and is described by
-a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items.
+a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items, called invariants.
 The objects that any given Tuple Type contains are `Tuple` objects whose items’ types
-match up with the types in the list in order.
+match up with the invariants in the sequence in order.
 
 #### Record Type
 A **Record Type** contains [`Record` objects](./intrinsics.md#record) and is described by
-a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values.
+a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values, called invariants.
 The objects that any given Record Type contains are `Record` objects whose properties’ types
-match up with the types in the list by name.
+match up with the invariants in the structure by name.
 
 #### List Type
 A **List Type** contains [`List` objects](./intrinsics.md#list) and is described by a single type,
-representing items.
+called an invariant, representing items.
 The objects that any given List Type contains are `List` objects whose
-items are assignable to the type describing the List Type.
+items are assignable to the invariant describing the List Type.
 
 #### Dict Type
 A **Dict Type** contains [`Dict` objects](./intrinsics.md#dict) and is described by a single type,
-representing values.
+called an invariant, representing values.
 The objects that any given Dict Type contains are `Dict` objects whose
-values are assignable to the type describing the Dict Type.
+values are assignable to the invariant describing the Dict Type.
 
 #### Set Type
 A **Set Type** contains [`Set` objects](./intrinsics.md#set) and is described by a single type,
-representing elements.
+called an invariant, representing elements.
 The objects that any given Set Type contains are `Set` objects whose
-elements are assignable to the type describing the Set Type.
+elements are assignable to the invariant describing the Set Type.
 
 #### Map Type
 A **Map Type** contains [`Map` objects](./intrinsics.md#map) and is described by a pair of two types,
-the first of which represents antecedents and the second of which represents consequents.
+called invariants, the first of which represents antecedents and the second of which represents consequents.
 The objects that any given Map Type contains are `Map` objects whose
-antcedents and consequents are respectively assignable to the types describing the Map Type.
+antcedents and consequents are respectively assignable to the invariants describing the Map Type.
 
 
 

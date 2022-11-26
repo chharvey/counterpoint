@@ -32,5 +32,10 @@ export abstract class Collection extends CPObject {
 	}
 
 
+	/**
+	 * Convert this Collection to a type.
+	 * See method implementations for details.
+	 * @return a compound type representing this CPObject
+	 */
 	public abstract toType(): TYPE.Type;
 }
