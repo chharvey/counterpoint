@@ -654,6 +654,16 @@ it will never stand alone, so there’s no risk of syntax error.
 Conventionally, whitespace is omitted between the key name and the equals sign delimiter `=`.
 This practice helps programmers differentiate between record properties and variable declarations/assignments.
 
+Record literals cannot contain the same key more than once.
+```
+[
+	fontFamily= 'sans-serif',
+	fontSize=   1.25,
+	fontFamily= 'serif',      %> AssignmentError
+];
+```
+> AssignmentError: Duplicate record key: `fontFamily` is already set.
+
 Record literal types are similar to record values, except that the colon `:` is used as the key–value delimiter,
 and the property values are replaced with types.
 ```
