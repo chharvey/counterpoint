@@ -1,10 +1,4 @@
-/** Characters representing bounds of a file. */
-export enum Filebound {
-	/** U+0002 START OF TEXT */
-	SOT = '\u0002',
-	/** U+0003 END OF TEXT */
-	EOT = '\u0003',
-}
+import {Filebound} from './utils-private.js';
 
 
 
@@ -18,11 +12,11 @@ export enum Filebound {
  */
 export function stringifyAttributes(attributes: ReadonlyMap<string, string>): string {
 	return [...attributes].map(([attr, val]) => `${ attr }="${ val
-		.replace(/\&/g, '&amp;' )
-		.replace(/\</g, '&lt;'  )
-		.replace(/\>/g, '&gt;'  )
-		.replace(/\'/g, '&apos;')
-		.replace(/\"/g, '&quot;')
+		.replace(/&/g,  '&amp;')
+		.replace(/</g,  '&lt;')
+		.replace(/>/g,  '&gt;')
+		.replace(/'/g,  '&apos;')
+		.replace(/"/g,  '&quot;')
 		.replace(/\\/g, '&#x5c;')
 		.replace(/\t/g, '&#x09;')
 		.replace(/\n/g, '&#x0a;')

@@ -1,6 +1,4 @@
-import type {
-	Serializable,
-} from './package.js';
+import type {Serializable} from './package.js';
 import {LexError} from './LexError.js';
 
 
@@ -14,12 +12,12 @@ import {LexError} from './LexError.js';
  */
 export class LexError05 extends LexError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 5;
+	public static override readonly CODE = 5;
 	/**
 	 * Construct a new LexError05 object.
 	 * @param token - the float literal token
 	 */
-	constructor (char: Serializable) {
-		super(`Invalid exponential notation: at line ${char.line_index + 1} col ${char.col_index + 1}.`, LexError05.CODE, char.line_index, char.col_index)
+	public constructor(char: Serializable) {
+		super(`Invalid exponential notation: at line ${ char.line_index + 1 } col ${ char.col_index + 1 }.`, LexError05.CODE, char.line_index, char.col_index);
 	}
 }

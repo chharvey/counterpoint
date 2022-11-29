@@ -191,7 +191,7 @@ Performs the type-checking piece during semantic analysis.
 
 
 ## ToBoolean
-Returns an associated [boolean value](./data-types#boolean), `true` or `false`, with a Solid Language Value.
+Returns an associated [boolean value](./data-types#boolean), `true` or `false`, with a Counterpoint Language Value.
 ```
 Boolean ToBoolean(Object value) :=
 	1. *If* `value` is an instance of `Null`:
@@ -256,7 +256,7 @@ Boolean Equal(Object a, Object b) :=
 			1. *If* *UnwrapAffirm*: `Equal(seq_a[i], seq_b[i])` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
-	5. *If* `a` is an instance of `Record` or `Hash` *and* `b` is an instance of `Record` or `Hash`:
+	5. *If* `a` is an instance of `Record` or `Dict` *and* `b` is an instance of `Record` or `Dict`:
 		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
 		3. *If* `struct_a.count` is not `struct_b.count`:
@@ -346,7 +346,7 @@ Boolean Subtype(Type a, Type b) :=
 		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
 			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
 			1. *Return:* `true`.
-	10. *If* `Equal(a, Tuple)` *and* `Equal(b, Tuple)`:
+	10. *If* `a` is a `Tuple` type *and* `b` is a `Tuple` type:
 		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
 		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
@@ -365,7 +365,7 @@ Boolean Subtype(Type a, Type b) :=
 				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
 					1. *Return:* `false`.
 		8. *Return:* `true`.
-	11. *If* `Equal(a, Record)` *and* `Equal(b, Record)`:
+	11. *If* `a` is a `Record` type *and* `b` is a `Record` type:
 		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
 		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
@@ -385,31 +385,25 @@ Boolean Subtype(Type a, Type b) :=
 				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 					1. *Return:* `false`.
 		8. *Return:* `true`.
-	12. *If* `Equal(b, List)`:
-		1. *Let* `bi` be the union of types in `b`.
-		2. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* `Equal(a, List)`:
-				1. *Let* `ai` be the union of types in `a`.
-				2. *If* *UnwrapAffirm:* `Equal(ai, bi)` is `true`:
-					1. *Return:* `true`.
-		3. *Else:*
-			1. *If* `Equal(a, List)` *or* `Equal(a, Tuple)`:
-				1. *Let* `ai` be the union of types in `a`.
-				2. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
-					1. *Return:* `true`.
-	13. *If* `Equal(b, Hash)`:
-		1. *Let* `bv` be the union of value types in `b`.
-		2. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* `Equal(a, Hash)`:
-				1. *Let* `av` be the union of value types in `a`.
-				2. *If* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
-					1. *Return:* `true`.
-		3. *Else:*
-			1. *If* `Equal(a, Hash)` *or* `Equal(a, Record)`:
-				1. *Let* `av` be the union of value types in `a`.
-				2. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
-					1. *Return:* `true`.
-	14. *If* `Equal(a, Set)` *and* `Equal(b, Set)`:
+	12. *If* `a` is a `List` type *and* `b` is a `List` type:
+		1. *Let* `ai` be the union of types in `a`.
+		2. *Let* `bi` be the union of types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ai, bi)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
+				1. *Return:* `true`.
+	13. *If* `a` is a `Dict` type *and* `b` is a `Dict` type:
+		1. *Let* `av` be the union of value types in `a`.
+		2. *Let* `bv` be the union of value types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+				1. *Return:* `true`.
+	14. *If* `a` is a `Set` type *and* `b` is a `Set` type:
 		1. *Let* `ae` be the union of types in `a`.
 		2. *Let* `be` be the union of types in `b`.
 		3. *If* `b` is mutable:
@@ -418,7 +412,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
 				1. *Return:* `true`.
-	15. *If* `Equal(a, Map)` *and* `Equal(b, Map)`:
+	15. *If* `a` is a `Map` type *and* `b` is a `Map` type:
 		1. *Let* `ak` be the union of antecedent types in `a`.
 		2. *Let* `av` be the union of consequent types in `a`.
 		3. *Let* `bk` be the union of antecedent types in `b`.
@@ -434,6 +428,64 @@ Boolean Subtype(Type a, Type b) :=
 			because an instance of `Integer` is an instance of `Object`.
 		2. *Return:* `true`.
 	17. *Return:* `false`.
+;
+```
+
+
+
+## AssignTo
+Attempt to assign a collection literal to a type when type-checking fails.
+This assignment is attempted on an entry-by-entry basis.
+```
+Boolean AssignTo(SemanticCollectionLiteral expr, Type type) :=
+	1. *If* `expr` is a SemanticTuple *and* `type` is a `Tuple` type:
+		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `expr`.
+		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.
+		3. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
+		4. *If* `seq_a.count` is less than `seq_b_req.count`:
+			1. *Return:* `false`.
+		5. *For index* `i` in `seq_b`:
+			1. *If* `seq_b[i].optional` is `false`:
+				1. *Assert:* `seq_a[i]` is set.
+			2. *If* `seq_a[i]` is set:
+				1. *Let* `a_type` be *Unwrap:* `TypeOf(seq_a[i])`.
+				2. *If* *UnwrapAffirm:* `Subtype(a_type, seq_b[i].type)` is `false`:
+					1. *Return:* `false`.
+		6. *Return:* `true`.
+	2. *If* `expr` is a SemanticRecord *and* `type` is a `Record` type:
+		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `expr`.
+		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `type`.
+		3. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
+		4. *If* `seq_a.count` is less than `struct_b_req.count`:
+			1. *Return:* `false`.
+		5. *For key* `k` in `struct_b`:
+			1. *Let* `a_prop` be an item `ai` in `seq_a` such that `ai.0.id` is `k`, if it exists, else the value *none*.
+			2. *If* `struct_b[k].optional` is `false` *and* `a_prop` is *none*:
+				1. *Return:* `false`.
+			3. *If* `a_prop` is not *none*:
+				1. *Let* `a_type` be *Unwrap:* `TypeOf(a_prop)`.
+				2. *If* *UnwrapAffirm:* `Subtype(a_type, struct_b[k].type)` is `false`:
+					1. *Return:* `false`.
+		6. *Return:* `true`.
+	3. *If* `expr` is a SemanticSet *and* `type` is a `Set` type:
+		1. *Let* `b_type` be the invariant over `type`.
+		2. *For each* `a_el` in `expr`:
+			1. *Let* `a_type` be *Unwrap:* `TypeOf(a_el)`.
+			2. *If* *UnwrapAffirm:* `Subtype(a_type, b_type)` is `false`:
+				1. *Return:* `false`.
+		3. *Return:* `true`.
+	4. *If* `expr` is a SemanticMap *and* `type` is a `Map` type:
+		1. *Let* `b_ant_type` be the antecedent invariant over `type`.
+		2. *Let* `b_con_type` be the consequent invariant over `type`.
+		3. *For each* `a_case` in `expr`:
+			1. *Let* `a_ant_type` be *Unwrap:* `TypeOf(a_case.0)`.
+			2. *Let* `a_con_type` be *Unwrap:* `TypeOf(a_case.1)`.
+			3. *If* *UnwrapAffirm:* `Subtype(a_ant_type, b_ant_type)` is `false`:
+				1. *Return:* `false`.
+			4. *If* *UnwrapAffirm:* `Subtype(a_con_type, b_con_type)` is `false`:
+				1. *Return:* `false`.
+		4. *Return:* `true`.
+	5. *Return:* `false`.
 ;
 ```
 
@@ -576,12 +628,12 @@ Modifies the type of an accessed bound property of a tuple or record.
 If the bound property is required: Under claim access, subtracts Void; else returns unmodified type.
 If the bound property is optional: Under claim access, subtracts Void; under optional access, unions with Null; else unions with Void.
 ```
-Type UpdateAccessedStaticType(EntryTypeStructure entry, SemanticAccess access) :=
+Type UpdateAccessedStaticType(EntryTypeStructure entry, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
 	1. *Let* `type` be `entry.type`.
-	2. *If* `access.kind` is `CLAIM`:
+	2. *If* `accesskind` is `CLAIM`:
 		1. *Return:* `Difference(type, Void)`.
 	3. *If* `entry.optional` is `true`:
-		1. *If* `access.kind` is `OPTIONAL`:
+		1. *If* `accesskind` is `OPTIONAL`:
 			1. *Return:* `Union(type, Null)`.
 		2. *Return:* `Union(type, Void)`.
 	4. *Return:* `type`.
@@ -594,10 +646,10 @@ Type UpdateAccessedStaticType(EntryTypeStructure entry, SemanticAccess access) :
 Modifies the type of an accessed bound property of a dynamic data type.
 Under claim access, subtracts Void; under optional access, unions with Null; else returns unmodified type.
 ```
-Type UpdateAccessedDynamicType(Type type, SemanticAccess access) :=
-	1. *If* `access.kind` is `CLAIM`:
+Type UpdateAccessedDynamicType(Type type, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
+	1. *If* `accesskind` is `CLAIM`:
 		1. *Return:* `Difference(type, Void)`.
-	2. *Else If* `access.kind` is `OPTIONAL`:
+	2. *Else If* `accesskind` is `OPTIONAL`:
 		1. *Return:* `Union(type, Null)`.
 	3. *Else:*
 		1. *Return:* `type`.

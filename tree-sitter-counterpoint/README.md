@@ -1,2 +1,2 @@
 # tree-sitter-counterpoint
-Tree-sitter parser for the Counterpoint programming language.
+Tree-sitter parser for the Counterpoint Programming Language.

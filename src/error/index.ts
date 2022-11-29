@@ -11,6 +11,7 @@ export * from './ReferenceError02.js';
 export * from './ReferenceError03.js';
 export * from './AssignmentError01.js';
 export * from './AssignmentError10.js';
+export * from './TypeError.js';
 export * from './TypeError01.js';
 export * from './TypeError02.js';
 export * from './TypeError03.js';
@@ -18,9 +19,7 @@ export * from './TypeError04.js';
 export * from './TypeError05.js';
 export * from './TypeError06.js';
 export * from './MutabilityError01.js';
-export {
-	VoidError01,
-} from './VoidError.js';
+export {VoidError01} from './VoidError.js';
 export {
 	NanError01,
 	NanError02,

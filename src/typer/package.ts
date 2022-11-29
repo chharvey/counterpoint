@@ -12,17 +12,10 @@ export {
 	IntRange,
 	CodeUnit,
 	Keys,
-	Set_hasEq,
-	Set_addEq,
-	Set_intersectionEq,
-	Set_unionEq,
-	Set_differenceEq,
-	Map_hasEq,
-	Map_getEq,
-	Map_setEq,
+	throw_expression,
 } from '../lib/index.js';
 export {
 	Operator,
 	ValidAccessOperator,
-	ASTNODE_SOLID as AST,
+	AST,
 } from '../validator/index.js';

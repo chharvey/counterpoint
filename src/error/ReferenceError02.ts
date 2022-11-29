@@ -1,5 +1,5 @@
 import type {AST} from './package.js';
-import {SolidReferenceError} from './SolidReferenceError.js';
+import {ReferenceError} from './ReferenceError.js';
 
 
 
@@ -10,14 +10,14 @@ import {SolidReferenceError} from './SolidReferenceError.js';
  * % (This is called a Temporal Dead Zone.)
  * let my_var: int = 42;
  */
-export class ReferenceError02 extends SolidReferenceError {
+export class ReferenceError02 extends ReferenceError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 2;
+	public static override readonly CODE = 2;
 	/**
 	 * Construct a new ReferenceError02 object.
 	 * @param variable the not-yet-declared variable
 	 */
-	constructor (variable: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
+	public constructor(variable: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
 		super(`\`${ variable.source }\` is used before it is declared.`, ReferenceError02.CODE, variable.line_index, variable.col_index);
 	}
 }

@@ -4,12 +4,10 @@
  * Other packages should not import them from here;
  * they are only for modules within this package.
  */
-export type {
-	Serializable,
-} from '../core/index.js';
+export type {Serializable} from '../core/index.js';
 export type {
 	ASTNode,
-	ASTNODE_SOLID as AST,
+	AST,
 	SymbolKind,
 } from '../validator/index.js';
-export type {SolidType} from '../typer/index.js';
+export type {TYPE} from '../typer/index.js';

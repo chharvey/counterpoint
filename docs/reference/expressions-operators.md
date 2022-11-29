@@ -243,7 +243,7 @@ the property it accesses is called the **bound property** (or index, field, memb
 There are two flavors of the operator: literal access and computed access.
 
 Literal access requires a literal (integer or word) and can be used to access a literal bound property.
-Tuples/lists take integer literal properties and records/hashes take word (key) properties.
+Tuples/lists take integer literal properties and records/dicts take word (key) properties.
 For example: `tuple.3` and `record.prop`.
 
 Computed access must be used when the bound property name is computed,
@@ -443,7 +443,7 @@ where *a<sup>b<sup>c</sup></sup>* is interpreted as *a<sup>(b<sup>c</sup>)</sup>
 
 #### Exponentiation: Order of Operations
 In mathematics, exponents are applied before negation (which is multiplication).
-However, in Solid, [mathematical negation](#mathematical-affirmation-mathematical-negation)
+However, in Counterpoint, [mathematical negation](#mathematical-affirmation-mathematical-negation)
 is a unary operator, which is stronger than any binary operator.
 **Mathematical negation is not considered multiplication**,
 even if it indeed produces the same mathematical result of multiplying by -1.
@@ -452,8 +452,8 @@ Therefore, we can end up with confusing syntax such as this:
 -3 ^ 2
 ```
 While *mathematically*, *&minus;3<sup>2</sup>* is equivalent to *&minus;1&middot;3<sup>2</sup>*,
-producing *&minus;9*, the Solid expression `-3 ^ 2`, is *not equivalent*.
-Mathematical negation is stronger than exponentiation, so Solid will compute `-3`
+producing *&minus;9*, the Counterpoint expression `-3 ^ 2`, is *not equivalent*.
+Mathematical negation is stronger than exponentiation, so Counterpoint will compute `-3`
 first as a unary operation (or, in this case, as a single token),
 and then raise that value to the power of `2`, producing `9`.
 Writing such an ambiguous syntax could cause developers to scratch their heads
@@ -734,10 +734,10 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… . …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">3</th>
+			<th rowspan="5">3</th>
 			<td>Nullish</td>
-			<td rowspan="2">unary postfix</td>
-			<td rowspan="2">left-to-right</td>
+			<td rowspan="5">unary postfix</td>
+			<td rowspan="5">left-to-right</td>
 			<td><code>… ?</code></td>
 		</tr>
 		<tr>
@@ -745,14 +745,33 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !</code></td>
 		</tr>
 		<tr>
+			<td>List</td>
+			<td><code>… []</code></td>
+		</tr>
+		<tr>
+			<td>Tuple</td>
+			<td><code>… […]</code></td>
+		</tr>
+		<tr>
+			<td>Set</td>
+			<td><code>… {}</code></td>
+		</tr>
+		<tr>
 			<th>4</th>
+			<td>Mutable</td>
+			<td>unary prefix</td>
+			<td>right-to-left</td>
+			<td><code>mutable …</code></td>
+		</tr>
+		<tr>
+			<th>5</th>
 			<td>Intersection</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
 			<td><code>… & …</code></td>
 		</tr>
 		<tr>
-			<th>5</th>
+			<th>6</th>
 			<td>Union</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
@@ -794,6 +813,11 @@ The **nullish** operator creates a [union](#union) of the operand and the `null`
 ```
 type T = int?; % equivalent to `type T = int | null;`
 ```
+This operator is useful for describing values that might be null.
+```
+let unfixed hello: str? = null;
+hello = 'world';
+```
 
 
 ### TBA
@@ -801,6 +825,45 @@ type T = int?; % equivalent to `type T = int | null;`
 <Type> `!`
 ```
 To be announced.
+
+
+### List
+```
+<Type> `[]`
+```
+The **List** operator `T[]` is shorthand for `List.<T>`.
+
+
+### Tuple
+```
+<Type> `[` <Integer> `]`
+```
+The **Tuple** operator `T[‹n›]` (where `‹n›` is 0 or greater) is shorthand for a tuple type with repeated entries of `T`.
+E.g., `int[3]` is shorthand for `[int, int, int]`.
+
+
+### Set
+```
+<Type> `{}`
+```
+The **Set** operator `T{}` is shorthand for `Set.<T>`.
+
+
+### Mutable
+```
+`mutable` <Type>
+```
+The `mutable` type operator allows properties in a complex type to be reassigned.
+It allows us to reassign tuple indices and record keys, as well as modify sets and maps
+by adding, removing, and changing entries.
+It will also allow us to reassign fields and call mutating methods on class instances.
+```
+let elements: mutable str[4] = ['water', 'earth', 'fire', 'wind'];
+elements.3 = 'air';
+elements; %== ['water', 'earth', 'fire', 'air']
+```
+If `elements` were just of type `str[4]` (without `mutable`),
+then attempting to modify it would result in a Mutability Error.
 
 
 ### Intersection

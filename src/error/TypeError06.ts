@@ -1,7 +1,5 @@
-import type {
-	AST,
-} from './package.js';
-import {SolidTypeError} from './SolidTypeError.js';
+import type {AST} from './package.js';
+import {TypeError} from './TypeError.js';
 
 
 
@@ -13,17 +11,17 @@ import {SolidTypeError} from './SolidTypeError.js';
  * func x(y: int): int => y + 42;
  * x.(2, 4);                      % TypeError06: Got 2 arguments, but expected 1.
  */
-export class TypeError06 extends SolidTypeError {
+export class TypeError06 extends TypeError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 6;
+	public static override readonly CODE = 6;
 	/**
 	 * Construct a new TypeError06 object.
 	 * @param actual   - the number of arguments received
 	 * @param expected - the number of arguments expected
-	 * @param call     - the function call
 	 * @param generic  - whether the arguments are generic arguments (true) or function arguments (false)
+	 * @param call     - the function call
 	 */
-	constructor (actual: bigint, expected: bigint, generic: boolean, call: AST.ASTNodeTypeCall | AST.ASTNodeCall) {
+	public constructor(actual: bigint, expected: bigint, generic: boolean, call: AST.ASTNodeTypeCall | AST.ASTNodeCall) {
 		super(`Got \`${ actual }\` ${ (generic) ? 'type ' : '' }arguments, but expected \`${ expected }\`.`, TypeError06.CODE, call.line_index, call.col_index);
 	}
 }

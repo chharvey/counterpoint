@@ -4,8 +4,9 @@
  * Other packages should not import them from here;
  * they are only for modules within this package.
  */
+export {throw_expression} from '../lib/index.js';
 export {
-	SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.js';
 export {
@@ -16,13 +17,6 @@ export {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-	ASTNODE_SOLID as AST,
+	AST,
 } from '../validator/index.js';
-export {
-	SolidObject,
-	SolidNull,
-	SolidBoolean,
-	SolidNumber,
-	Int16,
-	Float64,
-} from '../typer/index.js';
+export {OBJ} from '../typer/index.js';
