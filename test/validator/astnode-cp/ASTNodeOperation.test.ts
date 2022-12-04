@@ -972,7 +972,10 @@ describe('ASTNodeOperation', () => {
 					]));
 				});
 			});
-			it('throws when condition is not boolean.', () => {
+			it('returns `never` when condition is `never`.', () => {
+				assert.ok(AST.ASTNodeOperationTernary.fromSource(`if <never>n then true else false;`).type().equals(TYPE.NEVER));
+			});
+			it('throws when condition is not a subtype of `boolean`.', () => {
 				assert.throws(() => AST.ASTNodeOperationTernary.fromSource(`if 2 then true else false;`).type(), TypeError01);
 			});
 		});
