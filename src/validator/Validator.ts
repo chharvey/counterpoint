@@ -2,6 +2,7 @@ import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDe
 import {
 	LexError01,
 	CodeUnit,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	Serializable,
@@ -178,11 +179,9 @@ export class Validator {
 	 */
 	public static cookTokenPunctuator(source: Punctuator): bigint {
 		const index: number = PUNCTUATORS.indexOf(source);
-		if (0 <= index && index < PUNCTUATORS.length) {
-			return BigInt(index) + Validator.MIN_VALUE_PUNCTUATOR;
-		} else {
-			throw new RangeError(`Token \`${ source }\` is not a valid punctuator.`);
-		}
+		return (0 <= index && index < PUNCTUATORS.length)
+			? BigInt(index) + Validator.MIN_VALUE_PUNCTUATOR
+			: throw_expression(new RangeError(`Token \`${ source }\` is not a valid punctuator.`));
 	}
 
 	/**
@@ -193,11 +192,9 @@ export class Validator {
 	 */
 	public static cookTokenKeyword(source: Keyword): bigint {
 		const index: number = KEYWORDS.indexOf(source);
-		if (0 <= index && index < KEYWORDS.length) {
-			return BigInt(index) + Validator.MIN_VALUE_KEYWORD;
-		} else {
-			throw new RangeError(`Token \`${ source }\` is not a valid keyword.`);
-		}
+		return (0 <= index && index < KEYWORDS.length)
+			? BigInt(index) + Validator.MIN_VALUE_KEYWORD
+			: throw_expression(new RangeError(`Token \`${ source }\` is not a valid keyword.`));
 	}
 
 	/**
