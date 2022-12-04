@@ -549,6 +549,11 @@ describe('ASTNodeExpression', () => {
 			it('returns the type value of the claimed type.', () => {
 				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3;`).type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
+			it('`never` is assignable to any type (even though intersection is empty).', () => {
+				assert.ok(AST.ASTNodeClaim.fromSource(`<never>n;`).type().equals(TYPE.NEVER));
+				assert.ok(AST.ASTNodeClaim.fromSource(`<int>n;`).type().equals(TYPE.INT));
+				assert.throws(() => AST.ASTNodeClaim.fromSource(`<never>3;`).type(), TypeError03);
+			});
 			it('throws when the operand type and claimed type do not overlap.', () => {
 				assert.throws(() => AST.ASTNodeClaim.fromSource(`<str>3;`)      .type(), TypeError03);
 				assert.throws(() => AST.ASTNodeClaim.fromSource(`<int>'three';`).type(), TypeError03);
