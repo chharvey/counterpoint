@@ -64,8 +64,6 @@
 				/* ## Function Design */
 				"no-return-await":                  "off",
 				"@typescript-eslint/return-await":  "error", // needed here due to `parserOptions.project` // NOTE: overrides "no-return-await" (despite different name)
-				"require-await":                    "off",
-				"@typescript-eslint/require-await": "error", // needed here due to `parserOptions.project`
 
 				/* ## Strictness */
 				"@typescript-eslint/explicit-member-accessibility":           "error",
@@ -223,7 +221,6 @@
 		"no-return-await":                           "error",
 		"no-useless-constructor":                    "off",
 		"@typescript-eslint/no-useless-constructor": "error",
-		"prefer-arrow-callback":                     ["error", {"allowUnboundThis": false}],
-		"require-await":                             "error"
+		"prefer-arrow-callback":                     ["error", {"allowUnboundThis": false}]
 	}
 }
