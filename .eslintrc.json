@@ -15,7 +15,8 @@
 				"project": [
 					"./tsconfig.json",
 					"./test/tsconfig.json",
-					"./tree-sitter-counterpoint/tsconfig.json"
+					"./tree-sitter-counterpoint/tsconfig.json",
+					"./tree-sitter-counterpoint/test/tsconfig.json"
 				]
 			},
 			"rules": {
