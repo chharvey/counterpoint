@@ -14,6 +14,7 @@ export {
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,
+	AssignmentError02,
 	AssignmentError10,
 	TypeError,
 	TypeError01,

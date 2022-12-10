@@ -66,7 +66,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 				: assignee;
 			xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssignment(
 				expr.type(),
-				assignee_type_set.types,
+				assignee_type_set.invariant,
 				expr,
 				this.validator,
 			));

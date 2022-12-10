@@ -64,7 +64,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 			if (this.children.length < assignee_type_tuple.count[0]) {
 				return false;
 			}
-			xjs.Array.forEachAggregated(assignee_type_tuple.types, (thattype, i) => {
+			xjs.Array.forEachAggregated(assignee_type_tuple.invariants, (thattype, i) => {
 				const expr: ASTNodeExpression | undefined = this.children[i];
 				if (expr) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- bug
 					return ASTNodeCP.typeCheckAssignment(

@@ -22,22 +22,22 @@ export class TypeSet extends Type {
 
 	/**
 	 * Construct a new TypeSet object.
-	 * @param types a union of types in this set type
+	 * @param invariant a union of types in this set type
 	 * @param is_mutable is this type mutable?
 	 */
 	public constructor(
-		public readonly types: Type,
+		public readonly invariant: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new VALUE.Set()]));
 	}
 
 	public override get hasMutable(): boolean {
-		return super.hasMutable || this.types.hasMutable;
+		return super.hasMutable || this.invariant.hasMutable;
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }Set.<${ this.types }>`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }Set.<${ this.invariant }>`;
 	}
 
 	public override includes(v: VALUE.Object): boolean {
@@ -50,17 +50,17 @@ export class TypeSet extends Type {
 		return t.equals(OBJ) || (
 			t instanceof TypeSet
 			&& ((t.isMutable)
-				? this.isMutable && this.types.equals(t.types)
-				: this.types.isSubtypeOf(t.types)
+				? this.isMutable && this.invariant.equals(t.invariant)
+				: this.invariant.isSubtypeOf(t.invariant)
 			)
 		);
 	}
 
 	public override mutableOf(): TypeSet {
-		return new TypeSet(this.types, true);
+		return new TypeSet(this.invariant, true);
 	}
 
 	public override immutableOf(): TypeSet {
-		return new TypeSet(this.types, false);
+		return new TypeSet(this.invariant, false);
 	}
 }

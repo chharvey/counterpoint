@@ -28,6 +28,21 @@ export class TypeNever extends Type {
 		return false;
 	}
 
+	/** 1-5 | `T  & never   == never` */
+	public override intersect(_: Type): Type {
+		return this;
+	}
+
+	/** 1-7 | `T \| never   == T` */
+	public override union(t: Type): Type {
+		return t;
+	}
+
+	/** 1-1 | `never <: T` */
+	public override isSubtypeOf(_: Type): boolean {
+		return true;
+	}
+
 	@strictEqual
 	public override equals(t: Type): boolean {
 		return t.isBottomType;

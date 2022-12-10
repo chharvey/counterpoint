@@ -87,7 +87,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				const base_type_list: TYPE.TypeList = (TYPE.TypeList.isUnitType(base_type))
 					? base_type.value.toType()
 					: base_type;
-				return updateAccessedDynamicType(base_type_list.types, this.kind);
+				return updateAccessedDynamicType(base_type_list.invariant, this.kind);
 			} else {
 				throw new TypeError04('index', base_type, this.accessor);
 			}
@@ -101,7 +101,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				const base_type_dict: TYPE.TypeDict = TYPE.TypeDict.isUnitType(base_type)
 					? base_type.value.toType()
 					: base_type;
-				return updateAccessedDynamicType(base_type_dict.types, this.kind);
+				return updateAccessedDynamicType(base_type_dict.invariant, this.kind);
 			} else {
 				throw new TypeError04('property', base_type, this.accessor);
 			}
@@ -121,22 +121,22 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					? base_type.value.toType()
 					: base_type;
 				return (accessor_type.isSubtypeOf(TYPE.INT))
-					? updateAccessedDynamicType(base_type_list.types, this.kind)
+					? updateAccessedDynamicType(base_type_list.invariant, this.kind)
 					: throwWrongSubtypeError(this.accessor, TYPE.INT);
 			} else if (TYPE.TypeSet.isUnitType(base_type) || base_type instanceof TYPE.TypeSet) {
 				const base_type_set: TYPE.TypeSet = (TYPE.TypeSet.isUnitType(base_type))
 					? base_type.value.toType()
 					: base_type;
-				return (accessor_type.isSubtypeOf(base_type_set.types))
+				return (accessor_type.isSubtypeOf(base_type_set.invariant))
 					? TYPE.BOOL
-					: throwWrongSubtypeError(this.accessor, base_type_set.types);
+					: throwWrongSubtypeError(this.accessor, base_type_set.invariant);
 			} else if (TYPE.TypeMap.isUnitType(base_type) || base_type instanceof TYPE.TypeMap) {
 				const base_type_map: TYPE.TypeMap = (TYPE.TypeMap.isUnitType(base_type))
 					? base_type.value.toType()
 					: base_type;
-				return (accessor_type.isSubtypeOf(base_type_map.antecedenttypes))
-					? updateAccessedDynamicType(base_type_map.consequenttypes, this.kind)
-					: throwWrongSubtypeError(this.accessor, base_type_map.antecedenttypes);
+				return (accessor_type.isSubtypeOf(base_type_map.invariant_ant))
+					? updateAccessedDynamicType(base_type_map.invariant_con, this.kind)
+					: throwWrongSubtypeError(this.accessor, base_type_map.invariant_ant);
 			} else {
 				throw new TypeError01(this);
 			}

@@ -52,6 +52,11 @@ describe('Type', () => {
 	]));
 
 
+	it('false | true == bool', () => {
+		assert.ok(OBJ.Boolean.FALSETYPE.union(OBJ.Boolean.TRUETYPE).equals(TYPE.BOOL));
+	});
+
+
 	describe('#includes', () => {
 		it('uses `Object#identical` to compare values.', () => {
 			function unionOfInts(ns: readonly bigint[]): TYPE.Type {
@@ -90,7 +95,7 @@ describe('Type', () => {
 	describe('#intersect', () => {
 		it('1-5 | `T  & never   == never`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.intersect(TYPE.NEVER).equals(TYPE.NEVER), `${ t }`);
+				assert.ok(t.intersect(TYPE.NEVER).isBottomType, `${ t }`);
 			});
 		});
 		it('1-6 | `T  & unknown == T`', () => {
@@ -143,7 +148,7 @@ describe('Type', () => {
 		});
 		it('1-8 | `T \| unknown == unknown`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.union(TYPE.UNKNOWN).equals(TYPE.UNKNOWN), `${ t }`);
+				assert.ok(t.union(TYPE.UNKNOWN).isTopType, `${ t }`);
 			});
 		});
 		it('2-2 | `A \| B == B \| A`', () => {
@@ -234,14 +239,14 @@ describe('Type', () => {
 		it('1-3 | `T       <: never  <->  T == never`', () => {
 			builtin_types.forEach((t) => {
 				if (t.isSubtypeOf(TYPE.NEVER)) {
-					assert.ok(t.equals(TYPE.NEVER), `${ t }`);
+					assert.ok(t.isBottomType, `${ t }`);
 				}
 			});
 		});
 		it('1-4 | `unknown <: T      <->  T == unknown`', () => {
 			builtin_types.forEach((t) => {
 				if (TYPE.UNKNOWN.isSubtypeOf(t)) {
-					assert.ok(t.equals(TYPE.UNKNOWN), `${ t }`);
+					assert.ok(t.isTopType, `${ t }`);
 				}
 			});
 		});

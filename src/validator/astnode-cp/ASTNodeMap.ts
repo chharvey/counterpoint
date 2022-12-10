@@ -72,7 +72,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 				: assignee;
 			xjs.Array.forEachAggregated(this.children, (case_) => xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => ASTNodeCP.typeCheckAssignment(
 				expr.type(),
-				[assignee_type_map.antecedenttypes, assignee_type_map.consequenttypes][i],
+				[assignee_type_map.invariant_ant, assignee_type_map.invariant_con][i],
 				expr,
 				this.validator,
 			)));

@@ -54,18 +54,15 @@ export abstract class Type {
 		const method = descriptor.value!;
 		descriptor.value = function (t) {
 			/** 1-5 | `T  & never   == never` */
-			if (t.isBottomType) {
+			if (this.isBottomType || t.isBottomType) {
 				return NEVER;
 			}
-			if (this.isBottomType) {
-				return this;
-			}
 			/** 1-6 | `T  & unknown == T` */
-			if (t.isTopType) {
-				return this;
-			}
 			if (this.isTopType) {
 				return t;
+			}
+			if (t.isTopType) {
+				return this;
 			}
 			/** 3-3 | `A <: B  <->  A  & B == A` */
 			if (this.isSubtypeOf(t)) {
@@ -96,17 +93,14 @@ export abstract class Type {
 		const method = descriptor.value!;
 		descriptor.value = function (t) {
 			/** 1-7 | `T \| never   == T` */
-			if (t.isBottomType) {
-				return this;
-			}
 			if (this.isBottomType) {
 				return t;
 			}
-			/** 1-8 | `T \| unknown == unknown` */
-			if (t.isTopType) {
-				return t;
+			if (t.isBottomType) {
+				return this;
 			}
-			if (this.isTopType) {
+			/** 1-8 | `T \| unknown == unknown` */
+			if (this.isTopType || t.isTopType) {
 				return UNKNOWN;
 			}
 			/** 3-4 | `A <: B  <->  A \| B == B` */
