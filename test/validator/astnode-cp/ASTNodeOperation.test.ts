@@ -63,7 +63,7 @@ describe('ASTNodeOperation', () => {
 				AST.ASTNodeOperationBinaryArithmetic.fromSource(`-4 ^ -0.5;`).type(),
 				AST.ASTNodeOperationBinaryArithmetic.fromSource(`1.5 / 0.0;`).type(),
 			].forEach((typ) => {
-				assert.strictEqual(typ, TYPE.NEVER);
+				assert.ok(typ.isBottomType);
 			});
 		});
 	});
@@ -973,7 +973,7 @@ describe('ASTNodeOperation', () => {
 				});
 			});
 			it('returns `never` when condition is `never`.', () => {
-				assert.ok(AST.ASTNodeOperationTernary.fromSource(`if <never>n then true else false;`).type().equals(TYPE.NEVER));
+				assert.ok(AST.ASTNodeOperationTernary.fromSource(`if <never>n then true else false;`).type().isBottomType);
 			});
 			it('throws when condition is not a subtype of `boolean`.', () => {
 				assert.throws(() => AST.ASTNodeOperationTernary.fromSource(`if 2 then true else false;`).type(), TypeError01);

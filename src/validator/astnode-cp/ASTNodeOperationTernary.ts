@@ -55,7 +55,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 				(t0.equals(TYPE.BOOL))           ? t1.union(t2) :
 				(t0.includes(OBJ.Boolean.FALSE)) ? t2           : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
 				(t0.includes(OBJ.Boolean.TRUE))  ? t1           : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
-				(t0.equals(TYPE.NEVER),            TYPE.NEVER)
+				(t0.isBottomType,                  TYPE.NEVER)
 			)
 			: throw_expression(new TypeError01(this));
 	}

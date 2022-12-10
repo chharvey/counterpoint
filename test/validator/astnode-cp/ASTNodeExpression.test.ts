@@ -174,7 +174,7 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			it('returns Never for undeclared variables.', () => {
-				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(), TYPE.NEVER);
+				assert.ok(AST.ASTNodeVariable.fromSource(`x;`).type().isBottomType);
 			});
 		});
 
@@ -550,7 +550,7 @@ describe('ASTNodeExpression', () => {
 				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3;`).type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
 			it('`never` is assignable to any type (even though intersection is empty).', () => {
-				assert.ok(AST.ASTNodeClaim.fromSource(`<never>n;`).type().equals(TYPE.NEVER));
+				assert.ok(AST.ASTNodeClaim.fromSource(`<never>n;`).type().isBottomType);
 				assert.ok(AST.ASTNodeClaim.fromSource(`<int>n;`).type().equals(TYPE.INT));
 				assert.throws(() => AST.ASTNodeClaim.fromSource(`<never>3;`).type(), TypeError03);
 			});

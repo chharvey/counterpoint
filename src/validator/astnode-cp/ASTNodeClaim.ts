@@ -51,8 +51,8 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	protected override type_do(): TYPE.Type {
 		const claimed_type:  TYPE.Type = this.claimed_type.eval();
 		const computed_type: TYPE.Type = this.operand.type();
-		const is_intersection_empty:         boolean = claimed_type.intersect(computed_type).equals(TYPE.NEVER);
-		const is_computed_empty:             boolean = computed_type.equals(TYPE.NEVER);
+		const is_intersection_empty:         boolean = claimed_type.intersect(computed_type).isBottomType;
+		const is_computed_empty:             boolean = computed_type.isBottomType;
 		const treat_int_as_subtype_of_float: boolean = this.validator.config.compilerOptions.intCoercion && (
 			   computed_type.isSubtypeOf(TYPE.INT) && TYPE.FLOAT.isSubtypeOf(claimed_type)
 			|| claimed_type .isSubtypeOf(TYPE.INT) && TYPE.FLOAT.isSubtypeOf(computed_type)
