@@ -25,6 +25,21 @@ export class TypeUnknown extends Type {
 		return true;
 	}
 
+	/** 1-6 | `T  & unknown == T` */
+	public override intersect(t: Type): Type {
+		return t;
+	}
+
+	/** 1-8 | `T \| unknown == unknown` */
+	public override union(_: Type): Type {
+		return this;
+	}
+
+	/** 1-4 | `unknown <: T      <->  T == unknown` */
+	public override isSubtypeOf(t: Type): boolean {
+		return t.isTopType;
+	}
+
 	public override equals(t: Type): boolean {
 		return t.isTopType;
 	}
