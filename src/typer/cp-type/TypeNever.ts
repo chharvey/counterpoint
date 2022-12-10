@@ -25,18 +25,18 @@ export class TypeNever extends Type {
 		return false;
 	}
 
-	/** 1-5 | `T  & never   == never` */
 	public override intersect(_: Type): Type {
+		/** 1-5 | `T  & never   == never` */
 		return this;
 	}
 
-	/** 1-7 | `T \| never   == T` */
 	public override union(t: Type): Type {
+		/** 1-7 | `T \| never   == T` */
 		return t;
 	}
 
-	/** 1-1 | `never <: T` */
 	public override isSubtypeOf(_: Type): boolean {
+		/** 1-1 | `never <: T` */
 		return true;
 	}
 

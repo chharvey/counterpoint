@@ -129,7 +129,7 @@ export abstract class Type {
 	}
 
 	protected intersect_do(t: Type): Type {
-		/** 2-2 | `A \| B == B \| A` */
+		/** 2-1 | `A  & B == B  & A` */
 		if (t instanceof TypeUnion) {
 			return t.intersect(this);
 		}
@@ -166,7 +166,7 @@ export abstract class Type {
 	}
 
 	protected union_do(t: Type): Type {
-		/** 2-1 | `A  & B == B  & A` */
+		/** 2-2 | `A \| B == B \| A` */
 		if (t instanceof TypeIntersection) {
 			return t.union(this);
 		}
