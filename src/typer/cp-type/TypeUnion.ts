@@ -44,12 +44,12 @@ export class TypeUnion extends Type {
 		return this.left.includes(v) || this.right.includes(v);
 	}
 
-	/**
-	 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
-	 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
-	 */
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
+		/**
+		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
+		 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
+		 */
 		return this.left.intersect(t).union(this.right.intersect(t));
 	}
 
