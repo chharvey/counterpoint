@@ -52,6 +52,11 @@ describe('Type', () => {
 	]));
 
 
+	it('false | true == bool', () => {
+		assert.ok(OBJ.Boolean.FALSETYPE.union(OBJ.Boolean.TRUETYPE).equals(TYPE.BOOL));
+	});
+
+
 	describe('#includes', () => {
 		it('uses `Object#identical` to compare values.', () => {
 			function unionOfInts(ns: readonly bigint[]): TYPE.Type {
