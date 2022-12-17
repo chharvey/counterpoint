@@ -15,6 +15,7 @@ import {
 	oneFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -66,6 +67,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	protected override fold_do(): OBJ.Object | null {
+		if (this.operator === Operator.ID && (
+			   this.operand0 instanceof ASTNodeCollectionLiteral
+			|| this.operand1 instanceof ASTNodeCollectionLiteral
+		)) {
+			return OBJ.Boolean.FALSE;
+		}
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;

@@ -656,6 +656,52 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), OBJ.Boolean.TRUE, stmt.source);
 				});
 			});
+			it('returns false when either operand of `===` is a collection literal.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let unfixed a: obj = [];
+					let unfixed b: obj = [42];
+					let unfixed c: obj = [x= 42];
+					let unfixed g: obj = {};
+					let unfixed h: obj = {42};
+					let unfixed i: obj = {41 -> 42};
+
+					% should all be false at compile-time (even if non-foldable):
+					[]         === [];
+					[42]       === [42];
+					[x= 42]    === [x= 42];
+					{}         === {};
+					{42}       === {42};
+					{41 -> 42} === {41 -> 42};
+					a === [];
+					b === [42];
+					c === [x= 42];
+					g === {};
+					h === {42};
+					i === {41 -> 42};
+
+					% should all be indeterminate at compile-time:
+					a === a;
+					b === b;
+					c === c;
+					g === g;
+					h === h;
+					i === i;
+					a == [];
+					b == [42];
+					c == [x= 42];
+					g == {};
+					h == {42};
+					i == {41 -> 42};
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.children.slice(6, 18).forEach((stmt) => {
+					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), OBJ.Boolean.FALSE, stmt.source);
+				});
+				goal.children.slice(18).forEach((stmt) => {
+					assert.strictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), null, stmt.source);
+				});
+			});
 		});
 
 
