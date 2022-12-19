@@ -8,6 +8,7 @@ import {
 	ReferenceError03,
 	CPConfig,
 	CONFIG_DEFAULT,
+	Validator,
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
@@ -33,7 +34,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 
 	public get id(): bigint {
-		return this._id ??= this.validator.cookTokenIdentifier(this.start_node.text);
+		return this._id ??= Validator.cookTokenIdentifier(this.start_node.text, this.validator);
 	}
 
 	public override shouldFloat(): boolean {

@@ -304,7 +304,7 @@ describe('Validator', () => {
 				'unicode identifiers.',
 			][i], () => {
 				before(() => {
-					cooked = src.trim().split(/\s+/).map((word) => validator.cookTokenIdentifier(word));
+					cooked = src.trim().split(/\s+/).map((word) => Validator.cookTokenIdentifier(word, validator));
 				});
 				it('assigns ids starting from 256n', () => {
 					assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
@@ -320,7 +320,7 @@ describe('Validator', () => {
 			const cooked: bigint[] = `
 				alpha bravo charlie delta echo
 				echo delta charlie bravo alpha
-			`.trim().split(/\s+/).map((word) => validator.cookTokenIdentifier(word));
+			`.trim().split(/\s+/).map((word) => Validator.cookTokenIdentifier(word, validator));
 			return assert.deepStrictEqual(
 				cooked.slice(0, 5),
 				cooked.slice(5).reverse(),

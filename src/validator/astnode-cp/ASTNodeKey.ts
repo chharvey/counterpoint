@@ -17,7 +17,7 @@ export class ASTNodeKey extends ASTNodeCP {
 
 	public get id(): bigint {
 		return this._id ??= (isSyntaxNodeType(this.start_node.children[0], 'identifier'))
-			? this.validator.cookTokenIdentifier(this.start_node.children[0].text)
+			? Validator.cookTokenIdentifier(this.start_node.children[0].text, this.validator)
 			: Validator.cookTokenKeyword(this.start_node.children[0].text as Keyword);
 	}
 

@@ -198,6 +198,17 @@ export class Validator {
 	}
 
 	/**
+	 * Give a uniquely-generated integer identifier of a custom identifier token.
+	 * @param source    the token’s text
+	 * @param validator the Validator whose set of identifiers is used to compute the new cooked value
+	 * @return          the unique id identifying the token
+	 */
+	public static cookTokenIdentifier(source: string, validator: Validator): bigint {
+		validator.identifiers.add(source);
+		return BigInt([...validator.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
+	}
+
+	/**
 	 * Give the numeric value of a number token.
 	 * @param source the token’s text
 	 * @param config configuration settings
@@ -331,15 +342,5 @@ export class Validator {
 	public clearSymbols(): this {
 		this.symbol_table.clear();
 		return this;
-	}
-
-	/**
-	 * Give a uniquely-generated integer identifier of a custom identifier token.
-	 * @param source the token’s text
-	 * @return       the unique id identifying the token
-	 */
-	public cookTokenIdentifier(source: string): bigint {
-		this.identifiers.add(source);
-		return BigInt([...this.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
 	}
 }
