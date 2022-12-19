@@ -51,23 +51,21 @@ export abstract class ASTNodeCP extends ASTNode {
 		attributes: Record<string, unknown> = {},
 		public override readonly children: readonly ASTNodeCP[] = [],
 	) {
-		super(((node: SyntaxNode) => { // COMBAK: TypeScript 4.6+ allows non-`this` code before `super()`
-			// @ts-expect-error --- Property `input` does actually exist on type `Tree`
-			const tree_text:    string = node.tree.input;
-			const source:       string = node.text;
-			const source_index: number = node.startIndex;
-			const prev_chars:   readonly string[] = [...tree_text.slice(0, source_index)];
-			return {
-				source,
-				source_index,
-				line_index: prev_chars.filter((c) => c === '\n').length,
-				col_index:  source_index - (prev_chars.lastIndexOf('\n') + 1),
-				tagname:    Object.values(Punctuator).find((punct) => punct === node.type) ? 'PUNCTUATOR' : node.type,
-				serialize() {
-					return serialize(this, this.source);
-				},
-			};
-		})(start_node), attributes, children);
+		// @ts-expect-error --- Property `input` does actually exist on type `Tree`
+		const tree_text:    string = start_node.tree.input;
+		const source:       string = start_node.text;
+		const source_index: number = start_node.startIndex;
+		const prev_chars:   readonly string[] = [...tree_text.slice(0, source_index)];
+		super({
+			source,
+			source_index,
+			line_index: prev_chars.filter((c) => c === '\n').length,
+			col_index:  source_index - (prev_chars.lastIndexOf('\n') + 1),
+			tagname:    Object.values(Punctuator).find((punct) => punct === start_node.type) ? 'PUNCTUATOR' : start_node.type,
+			serialize() {
+				return serialize(this, this.source);
+			},
+		}, attributes, children);
 	}
 
 	public get validator(): Validator {

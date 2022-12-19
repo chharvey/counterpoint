@@ -27,6 +27,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	}
 
 	private readonly _validator: Validator;
+
 	public constructor(
 		start_node: SyntaxNodeType<'source_file'>,
 		public override readonly children: readonly ASTNodeStatement[],
