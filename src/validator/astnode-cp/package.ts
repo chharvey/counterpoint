@@ -30,11 +30,11 @@ export {
 	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
-	Serializable,
-	serialize,
 	TS_PARSER,
 	Punctuator,
 	Keyword,
+	Serializable,
+	serialize,
 } from '../package.js';
 export {
 	DECORATOR,

@@ -37,8 +37,6 @@ export {
 	stringifyAttributes,
 	CPConfig,
 	CONFIG_DEFAULT,
-	Serializable,
-	serialize,
 } from '../core/index.js';
 export {
 	TS_PARSER,
@@ -46,4 +44,6 @@ export {
 	PUNCTUATORS,
 	Keyword,
 	KEYWORDS,
+	Serializable,
+	serialize,
 } from '../parser/index.js';

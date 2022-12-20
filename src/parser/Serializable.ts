@@ -1,5 +1,4 @@
-import {stringifyAttributes} from './utils-public.js';
-import {Filebound} from './utils-private.js';
+import {stringifyAttributes} from './package.js';
 
 
 
@@ -14,8 +13,8 @@ function sanitizeContent(contents: string): string {
 		.replace(/</g,  '&lt;')
 		.replace(/>/g,  '&gt;')
 		.replace(/\\/g, '&#x5c;')
-		.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
-		.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+		.replace('\u0002', '\u2402') // U+0002 START OF TEXT // U+2402 SYMBOL FOR START OF TEXT
+		.replace('\u0003', '\u2403') // U+0003 END   OF TEXT // U+2403 SYMBOL FOR END   OF TEXT
 	);
 }
 
