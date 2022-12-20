@@ -12,6 +12,7 @@ export {
 	Builder,
 	ErrorCode,
 	LexError01,
+	ParseError01,
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,

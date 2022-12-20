@@ -11,6 +11,7 @@ export {
 	INST,
 	Builder,
 	ErrorCode,
+	ParseError01,
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,
@@ -32,6 +33,7 @@ export {
 	CONFIG_DEFAULT,
 	TS_PARSER,
 	Keyword,
+	Serializable,
 	to_serializable,
 } from '../package.js';
 export {
