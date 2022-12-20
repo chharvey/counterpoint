@@ -31,10 +31,8 @@ export {
 	CPConfig,
 	CONFIG_DEFAULT,
 	TS_PARSER,
-	Punctuator,
 	Keyword,
-	Serializable,
-	serialize,
+	to_serializable,
 } from '../package.js';
 export {
 	DECORATOR,

@@ -45,5 +45,5 @@ export {
 	Keyword,
 	KEYWORDS,
 	Serializable,
-	serialize,
+	to_serializable,
 } from '../parser/index.js';
