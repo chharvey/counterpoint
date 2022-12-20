@@ -11,6 +11,7 @@ export {
 	INST,
 	Builder,
 	ErrorCode,
+	ParseError01,
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,
@@ -30,11 +31,10 @@ export {
 	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
-	Serializable,
-	serialize,
 	TS_PARSER,
-	Punctuator,
 	Keyword,
+	Serializable,
+	to_serializable,
 } from '../package.js';
 export {
 	DECORATOR,
