@@ -412,12 +412,12 @@ module.exports = grammar({
 		...parameterize('property', ({variable}) => $ => seq($.word,                  '=',  $[call('_expression', {variable})]), 'variable'),
 		case:                                       $ => seq($._expression__variable, '->', $._expression__variable),
 
-		...parameterize('expression_grouped', ({variable}) => $ => seq(                     '(',                               $[call('_expression', {variable})],             ')'), 'variable'),
-		...parameterize('tuple_literal',      ({variable}) => $ => seq(iff(!variable, '@'), '[', optional(seq(OPT_COM, repCom1($[call('_expression', {variable})]), OPT_COM)), ']'), 'variable'),
-		...parameterize('record_literal',     ({variable}) => $ => seq(iff(!variable, '@'), '[',              OPT_COM, repCom1($[call('property',    {variable})]), OPT_COM,   ']'), 'variable'),
-		set_literal:                                          $ => seq(                     '{', optional(seq(OPT_COM, repCom1($._expression__variable),            OPT_COM)), '}'),
-		map_literal:                                          $ => seq(                     '{',              OPT_COM, repCom1($.case),                             OPT_COM,   '}'),
-		function_arguments:                                   $ => seq(                     '(', optional(seq(OPT_COM, repCom1($._expression__variable),            OPT_COM)), ')'),
+		...parameterize('expression_grouped', ({variable}) => $ => seq(                      '(',                                $[call('_expression', {variable})],             ')'), 'variable'),
+		...parameterize('tuple_literal',      ({variable}) => $ => seq(iff(!variable, '\\[', '['), optional(seq(OPT_COM, repCom1($[call('_expression', {variable})]), OPT_COM)), ']'), 'variable'),
+		...parameterize('record_literal',     ({variable}) => $ => seq(iff(!variable, '\\[', '['),              OPT_COM, repCom1($[call('property',    {variable})]), OPT_COM,   ']'), 'variable'),
+		set_literal:                                          $ => seq(                      '{',  optional(seq(OPT_COM, repCom1($._expression__variable),            OPT_COM)), '}'),
+		map_literal:                                          $ => seq(                      '{',               OPT_COM, repCom1($.case),                             OPT_COM,   '}'),
+		function_arguments:                                   $ => seq(                      '(',  optional(seq(OPT_COM, repCom1($._expression__variable),            OPT_COM)), ')'),
 
 		...parameterize('_expression_unit', ({variable}) => $ => choice(
 			...ifSpread(variable, $.identifier),

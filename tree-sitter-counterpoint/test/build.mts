@@ -417,8 +417,8 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		TupleLiteral: [
 			xjs.String.dedent`
-				@[1, @[2], @[3]];
-				 [1, @[2],  [3]];
+				\\[1, \\[2], \\[3]];
+				  [1, \\[2],   [3]];
 			`,
 			makeSourceFile(
 				s(
@@ -438,8 +438,8 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		RecordLiteral: [
 			xjs.String.dedent`
-				@[a= 1, b= @[x= 2], c= @[y= 3]];
-				 [a= 1, b= @[x= 2], c=  [y= 3]];
+				\\[a= 1, b= \\[x= 2], c= \\[y= 3]];
+				  [a= 1, b= \\[x= 2], c=   [y= 3]];
 			`,
 			makeSourceFile(
 				s(

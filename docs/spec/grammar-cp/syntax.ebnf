@@ -104,12 +104,12 @@ StringTemplate<Variable> ::=
 Property <Variable> ::= Word                  "="  Expression<?Variable>;
 Case                ::= Expression<+Variable> "->" Expression<+Variable>;
 
-ExpressionGrouped <Variable> ::=                "("        Expression <?Variable>          ")";
-TupleLiteral      <Variable> ::= <Variable->"@" "[" ( ","? Expression <?Variable># ","? )? "]";
-RecordLiteral     <Variable> ::= <Variable->"@" "["   ","? Property   <?Variable># ","?    "]";
-SetLiteral                   ::=                "{" ( ","? Expression <+Variable># ","? )? "}";
-MapLiteral                   ::=                "{"   ","? Case#                   ","?    "}";
-FunctionArguments            ::=                "(" ( ","? Expression <+Variable># ","? )? ")";
+ExpressionGrouped <Variable> ::=                            "("        Expression <?Variable>          ")";
+TupleLiteral      <Variable> ::= <Variable->"\[" <Variable+>"[" ( ","? Expression <?Variable># ","? )? "]";
+RecordLiteral     <Variable> ::= <Variable->"\[" <Variable+>"["   ","? Property   <?Variable># ","?    "]";
+SetLiteral                   ::=                            "{" ( ","? Expression <+Variable># ","? )? "}";
+MapLiteral                   ::=                            "{"   ","? Case#                   ","?    "}";
+FunctionArguments            ::=                            "(" ( ","? Expression <+Variable># ","? )? ")";
 
 ExpressionUnit<Variable> ::=
 	| <Variable+>IDENTIFIER

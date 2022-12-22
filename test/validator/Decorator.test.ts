@@ -199,8 +199,8 @@ describe('Decorator', () => {
 				% (expression_grouped__variable)
 			`]],
 
-			['Decorate(TupleLiteral<-Variable> ::= "@" "[" ","? Expression<-Variable># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
-				@[42, 6.9];
+			['Decorate(TupleLiteral<-Variable> ::= "\\[" ","? Expression<-Variable># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+				\\[42, 6.9];
 				% (tuple_literal)
 			`]],
 			['Decorate(TupleLiteral<+Variable> ::= "[" ","? Expression<+Variable># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
@@ -208,8 +208,8 @@ describe('Decorator', () => {
 				% (tuple_literal__variable)
 			`]],
 
-			['Decorate(RecordLiteral<-Variable> ::= "@" "[" ","? Property<-Variable># ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
-				@[a= 42, b= 6.9];
+			['Decorate(RecordLiteral<-Variable> ::= "\\[" ","? Property<-Variable># ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
+				\\[a= 42, b= 6.9];
 				% (record_literal)
 			`]],
 			['Decorate(RecordLiteral<+Variable> ::= "[" ","? Property<+Variable># ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
