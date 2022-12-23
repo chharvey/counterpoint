@@ -3,88 +3,17 @@
 		"es2021": true,
 		"node":   true
 	},
-	"extends": [
+	"parser":                        "@typescript-eslint/parser",
+	"parserOptions":                 {"sourceType": "module"},
+	"plugins":                       ["@typescript-eslint"],
+	"reportUnusedDisableDirectives": true,
+	"root":                          true,
+	"extends":                       [
 		"eslint:recommended",                           // https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
 		"plugin:@typescript-eslint/eslint-recommended", // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/configs/eslint-recommended.ts
 		"plugin:@typescript-eslint/recommended"         // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/configs/recommended.ts
 	],
-	"overrides": [
-		{
-			"files":         ["*.{cts,mts,ts}"],
-			"parserOptions": {
-				"project": [
-					"./tsconfig.json",
-					"./test/tsconfig.json",
-					"./tree-sitter-counterpoint/tsconfig.json",
-					"./tree-sitter-counterpoint/test/tsconfig.json"
-				]
-			},
-			"rules": {
-				/* # Overrides of Recommended Rules */
-				"@typescript-eslint/no-explicit-any":       ["error", {"fixToUnknown": true}], // report as errors & quickfix `any` to `unknown`
-				"@typescript-eslint/no-inferrable-types":   "off",                             // don’t rely on TypeScript inference
-				"@typescript-eslint/no-non-null-assertion": "off",                             // non-null assertions can be useful
-
-				/* # Layout & Formatting */
-				/* ## Indentation, Spacing, and Alignment */
-				"@typescript-eslint/type-annotation-spacing": "error",
-
-				/* ## Grouping Structure Style */
-				"@typescript-eslint/adjacent-overload-signatures": "error",
-				"@typescript-eslint/member-delimiter-style":       ["error", {
-					"overrides": {
-						"typeLiteral": {
-							"multiline":  {"delimiter": "comma"},
-							"singleline": {"delimiter": "comma"}
-						}
-					}
-				}],
-
-				/* ## Operator Style */
-				"dot-notation":                    "off",
-				"@typescript-eslint/dot-notation": "error", // needed here due to `parserOptions.project`
-
-				/* ## Type Annotations */
-				"@typescript-eslint/array-type": ["error", {
-					"default":  "array-simple",
-					"readonly": "array"
-				}],
-				"@typescript-eslint/consistent-generic-constructors": "error",
-				"@typescript-eslint/consistent-indexed-object-style": "error",
-				"@typescript-eslint/consistent-type-assertions":      "error",
-				"@typescript-eslint/explicit-function-return-type":   ["error", {
-					"allowExpressions":          true,
-					"allowHigherOrderFunctions": false
-				}],
-
-				/* # Best Practices */
-				/* ## Conciseness */
-				"@typescript-eslint/no-unnecessary-condition":      "error",
-				"@typescript-eslint/no-unnecessary-type-arguments": "error",
-
-				/* ## Function Design */
-				"no-return-await":                  "off",
-				"@typescript-eslint/return-await":  "error", // needed here due to `parserOptions.project` // NOTE: overrides "no-return-await" (despite different name)
-
-				/* ## Strictness */
-				"@typescript-eslint/explicit-member-accessibility":           "error",
-				"@typescript-eslint/no-non-null-asserted-nullish-coalescing": "error",
-				"@typescript-eslint/no-unnecessary-type-assertion":           "error",
-				"@typescript-eslint/non-nullable-type-assertion-style":       "error",
-				"@typescript-eslint/prefer-readonly":                         "error"
-			}
-		}
-	],
-	"parser":        "@typescript-eslint/parser",
-	"parserOptions": {
-		"sourceType": "module"
-	},
-	"plugins": [
-		"@typescript-eslint"
-	],
-	"reportUnusedDisableDirectives": true,
-	"root":                          true,
-	"rules":                         {
+	"rules": {
 		/* # Overrides of Recommended Rules */
 		"no-irregular-whitespace": ["error", {
 			"skipStrings":  false, // disallow in strings
@@ -164,14 +93,14 @@
 		"space-in-parens":                         "warn",
 
 		/* ## Operator Style */
-		"arrow-parens":                     "error",
-		"comma-dangle":                     "off",
-		"@typescript-eslint/comma-dangle":  ["error", "always-multiline"],
-		"comma-style":                      "error",
-		"dot-notation":                     "error",
-		"implicit-arrow-linebreak":         "error",
-		"new-parens":                       "error",
-		"operator-linebreak":               ["error", "before", {
+		"arrow-parens":                    "error",
+		"comma-dangle":                    "off",
+		"@typescript-eslint/comma-dangle": ["error", "always-multiline"],
+		"comma-style":                     "error",
+		"dot-notation":                    "error",
+		"implicit-arrow-linebreak":        "error",
+		"new-parens":                      "error",
+		"operator-linebreak":              ["error", "before", {
 			"overrides": {
 				"=":    "none",
 				"*=":   "none",
@@ -223,5 +152,72 @@
 		"no-useless-constructor":                    "off",
 		"@typescript-eslint/no-useless-constructor": "error",
 		"prefer-arrow-callback":                     ["error", {"allowUnboundThis": false}]
-	}
+	},
+	"overrides": [
+		{
+			"files":         ["*.{cts,mts,ts}"],
+			"parserOptions": {
+				"project": [
+					"./tsconfig.json",
+					"./test/tsconfig.json",
+					"./tree-sitter-counterpoint/tsconfig.json",
+					"./tree-sitter-counterpoint/test/tsconfig.json"
+				]
+			},
+			"rules": {
+				/* # Overrides of Recommended Rules */
+				"@typescript-eslint/no-explicit-any":       ["error", {"fixToUnknown": true}], // report as errors & quickfix `any` to `unknown`
+				"@typescript-eslint/no-inferrable-types":   "off",                             // don’t rely on TypeScript inference
+				"@typescript-eslint/no-non-null-assertion": "off",                             // non-null assertions can be useful
+
+				/* # Layout & Formatting */
+				/* ## Indentation, Spacing, and Alignment */
+				"@typescript-eslint/type-annotation-spacing": "error",
+
+				/* ## Grouping Structure Style */
+				"@typescript-eslint/adjacent-overload-signatures": "error",
+				"@typescript-eslint/member-delimiter-style":       ["error", {
+					"overrides": {
+						"typeLiteral": {
+							"multiline":  {"delimiter": "comma"},
+							"singleline": {"delimiter": "comma"}
+						}
+					}
+				}],
+
+				/* ## Operator Style */
+				"dot-notation":                    "off",
+				"@typescript-eslint/dot-notation": "error", // needed here due to `parserOptions.project`
+
+				/* ## Type Annotations */
+				"@typescript-eslint/array-type": ["error", {
+					"default":  "array-simple",
+					"readonly": "array"
+				}],
+				"@typescript-eslint/consistent-generic-constructors": "error",
+				"@typescript-eslint/consistent-indexed-object-style": "error",
+				"@typescript-eslint/consistent-type-assertions":      "error",
+				"@typescript-eslint/explicit-function-return-type":   ["error", {
+					"allowExpressions":          true,
+					"allowHigherOrderFunctions": false
+				}],
+
+				/* # Best Practices */
+				/* ## Conciseness */
+				"@typescript-eslint/no-unnecessary-condition":      "error",
+				"@typescript-eslint/no-unnecessary-type-arguments": "error",
+
+				/* ## Function Design */
+				"no-return-await":                 "off",
+				"@typescript-eslint/return-await": "error", // needed here due to `parserOptions.project` // NOTE: overrides "no-return-await" (despite different name)
+
+				/* ## Strictness */
+				"@typescript-eslint/explicit-member-accessibility":           "error",
+				"@typescript-eslint/no-non-null-asserted-nullish-coalescing": "error",
+				"@typescript-eslint/no-unnecessary-type-assertion":           "error",
+				"@typescript-eslint/non-nullable-type-assertion-style":       "error",
+				"@typescript-eslint/prefer-readonly":                         "error"
+			}
+		}
+	]
 }
