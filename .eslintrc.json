@@ -148,17 +148,17 @@
 		"func-style":                                     ["error", "declaration", {"allowArrowFunctions": true}],
 		"lines-between-class-members":                    "off",
 		"@typescript-eslint/lines-between-class-members": ["error", "always", {"exceptAfterSingleLine": true}],
+		"no-useless-computed-key":                        ["error", {"enforceForClassMembers": true}],
 		"object-curly-newline":                           ["error", {
 			"ObjectExpression":  {"multiline": true},
 			"ObjectPattern":     {"multiline": true},
 			"ImportDeclaration": {"multiline": true, "minProperties": 2},
 			"ExportDeclaration": {"multiline": true, "minProperties": 2}
 		}],
-		"object-shorthand":                        ["error", "properties", {"avoidQuotes": true}],
-		"no-useless-computed-key":                 ["error", {"enforceForClassMembers": true}],
 		"object-curly-spacing":                    "off",
 		"@typescript-eslint/object-curly-spacing": "warn",
 		"object-property-newline":                 ["error", {"allowAllPropertiesOnSameLine": true}],
+		"object-shorthand":                        ["error", "properties", {"avoidQuotes": true}],
 		"padded-blocks":                           ["error", "never"],
 		"quote-props":                             ["error", "consistent-as-needed"],
 		"space-in-parens":                         "warn",
@@ -189,7 +189,7 @@
 				"&&=":  "none",
 				"||=":  "none",
 				"??=":  "none",
-				":"  :  "ignore"
+				":":    "ignore"
 			}
 		}],
 		"quotes":                  ["error", "single"],
