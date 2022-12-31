@@ -35,6 +35,7 @@
     "nan": "^2.15.0"
   },
   "devDependencies": {
+    "extrajs": "^0.25.0",
     "tree-sitter-cli": "0.20.6",
     "ts-node": "^10.4.0",
     "typescript": "~4.9.0"
