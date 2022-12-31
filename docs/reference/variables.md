@@ -9,26 +9,26 @@ In order to use a variable, it must be **declared** first,
 in what we call a **variable declaration statement**.
 We declare variables with the keyword `let`.
 ```
-let my_var: str = 'Hello, world!';
+let my_var: str = "Hello, world!";
 ```
 When we declare a variable, we must assign it a value, using the **assignment operator** `=`.
 In some languages, declaring a variable and at the same time assigning it a value is called **initialization**.
 In Counterpoint, this is mandatory — It’s not possible to declare a value without initializing it.
 The assignment operator is an equals sign, but it does not represent equality in the mathematical sense.
 It means we’re setting the value on the right-hand side to the variable on the left.
-In programming terms, we say, “the variable `my_var` is **assigned the value** `'Hello, world!'`”,
-or, “the value `'Hello, world!'` is **assigned *to* the variable** `my_var`”.
+In programming terms, we say, “the variable `my_var` is **assigned the value** `"Hello, world!"`”,
+or, “the value `"Hello, world!"` is **assigned *to* the variable** `my_var`”.
 
 When we access the variable, we reference the value it’s assigned.
 ```
-my_var; %== 'Hello, world!'
+my_var; %== "Hello, world!"
 ```
 
 Variables can be declared only once within a given scope.
 Attempting to declare a new varible with the same name will result in a semantic error.
 ```
-let my_var: str = 'Hello, world!';
-let my_var: str = '¡Hola, mundo!'; %> AssignmentError
+let my_var: str = "Hello, world!";
+let my_var: str = "¡Hola, mundo!"; %> AssignmentError
 ```
 > AssignmentError: Duplicate declaration: `my_var` is already declared.
 
@@ -56,7 +56,7 @@ my_other_var;              %> ReferenceError
 %%------------------------
 --- TEMPORAL DEAD ZONE ---
 ------------------------%%
-let my_other_var: str = 'Hello, programmer!';
+let my_other_var: str = "Hello, programmer!";
 ```
 > ReferenceError: `my_other_var` is used before it is declared.
 
@@ -65,8 +65,8 @@ let my_other_var: str = 'Hello, programmer!';
 ## Variable Reassignment
 By default, variables are **fixed** in that they cannot be reassigned.
 ```
-let my_var: str = 'Hello, world!';
-my_var = '¡Hola, mundo!';          %> AssignmentError
+let my_var: str = "Hello, world!";
+my_var = "¡Hola, mundo!";          %> AssignmentError
 ```
 > AssignmentError: Reassignment of a fixed variable: `my_var`.
 
@@ -77,12 +77,12 @@ However, changing a variable’s value is useful in some cases, such as in loops
 Therefore, we can declare a variables with the keywords `let unfixed`,
 which allows us to assign it a new value later.
 ```
-let unfixed my_var = 'Hello, world!';
-my_var;                               %== 'Hello, world!'
-my_var = '¡Hola, mundo!';
-my_var;                               %== '¡Hola, mundo!'
+let unfixed my_var = "Hello, world!";
+my_var;                               %== "Hello, world!"
+my_var = "¡Hola, mundo!";
+my_var;                               %== "¡Hola, mundo!"
 ```
-The statement `my_var = '¡Hola, mundo!';` is called a **variable reassignment statement**.
+The statement `my_var = "¡Hola, mundo!";` is called a **variable reassignment statement**.
 An unfixed variable can be reassigned anywhere in the scope in which it’s visible.
 
 
@@ -90,8 +90,8 @@ An unfixed variable can be reassigned anywhere in the scope in which it’s visi
 Variables are pointers, which reference preexisting values.
 When we access a variable, we reference the value that it points to.
 ```
-let my_var: str = 'Hello, world!';
-my_var;                            % references the string `'Hello, world!'`
+let my_var: str = "Hello, world!";
+my_var;                            % references the string `"Hello, world!"`
 ```
 
 When a variable is assigned another variable, it points to the evaluated value of that variable.
@@ -128,12 +128,12 @@ almost any character in the Unicode character set: **Unicode identifiers**.
 By wrapping the identifier name with \`back-ticks\`,
 we can include non-ASCII letters.
 ```
-let `español`: str = 'Spanish for “Spanish”';
+let `español`: str = "Spanish for “Spanish”";
 ```
 In the identifier above, notice the letter `ñ`.
 We can access the variable just like any other, as long as we include the name in back-tick delimiters.
 ```
-`español`; %== 'Spanish for “Spanish”'
+`español`; %== "Spanish for “Spanish”"
 ```
 
 When an identifier is written with back-ticks, it must always be referred to as such,
@@ -175,7 +175,7 @@ let `Svaret på den ultimata frågan.`: int = 42;
 
 Unicode identifiers may also contain no characters: The token `` `​` `` is a valid identifier.
 ```
-let ``: str = 'What’s my name?';
+let ``: str = "What’s my name?";
 ```
 
 Note that Unicode identifiers *are not strings*; they’re simply names of declared variables.
@@ -195,7 +195,7 @@ Like template literals,
 
 But unlike template literals,
 
-- Unicode identifiers may contain the character sequences `'''` and `{{` in them,
+- Unicode identifiers may contain the character sequences `"""` and `{{` in them,
 	since they are not delimited by those characters.
 - Unicode identifiers must not contain the character `` ` `` **U+0060 GRAVE ACCENT**,
 	as that would end the token. There is no way to escape this character.
@@ -231,8 +231,8 @@ Also like variables, type aliases can create temporal dead zones.
 Counterpoint does not hoist type aliases.
 *(NOTE: This may change in future versions.)*
 ```
-let my_first_var: MyFirstType = 'Hello, world!';      %> ReferenceError [1]
-let my_next_var:  MyNextType  = 'Hello, programmer!'; %> ReferenceError [2]
+let my_first_var: MyFirstType = "Hello, world!";      %> ReferenceError [1]
+let my_next_var:  MyNextType  = "Hello, programmer!"; %> ReferenceError [2]
 %%------------------------
 --- TEMPORAL DEAD ZONE ---
 ------------------------%%

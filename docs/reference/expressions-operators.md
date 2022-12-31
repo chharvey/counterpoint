@@ -284,7 +284,7 @@ Claim access has the same runtime behavior of regular property access.
 Its purpose is to tell the type-checker,
 “I know what I’m doing; This property exists and its type is not type `void`.”
 ```
-let unfixed item: [str, ?: int] = ['apples', 42];
+let unfixed item: [str, ?: int] = ["apples", 42];
 let quantity: int = item!.1;
 ```
 The expression `item!.1` has type `int`, despite being an optional entry.
@@ -292,7 +292,7 @@ It will produce the value `42` at runtime.
 Note that bypassing the compiler’s type-checking process should be done carefully.
 If not used correctly, it could lead to runtime errors.
 ```
-let unfixed item: [str, ?: int] = ['apples'];
+let unfixed item: [str, ?: int] = ["apples"];
 let quantity: int = item!.1; % runtime error!
 ```
 An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
@@ -321,7 +321,7 @@ or if it’s an empty string or empty collection (such as an array or set).
 | `false`        | `false`        | `true`          |
 |                | `0`            | all integers    |
 |                | `0.0`, `-0.0`  | all floats      |
-|                | `''`           | all strings     |
+|                | `""`           | all strings     |
 |                | `[]`, `{}`     | all collections |
 |                |                | any other value |
 
@@ -760,7 +760,7 @@ type T = int?; % equivalent to `type T = int | null;`
 This operator is useful for describing values that might be null.
 ```
 let unfixed hello: str? = null;
-hello = 'world';
+hello = "world";
 ```
 
 
@@ -802,9 +802,9 @@ It allows us to reassign tuple indices and record keys, as well as modify sets a
 by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
-let elements: mutable str[4] = ['water', 'earth', 'fire', 'wind'];
-elements.3 = 'air';
-elements; %== ['water', 'earth', 'fire', 'air']
+let elements: mutable str[4] = ["water", "earth", "fire", "wind"];
+elements.3 = "air";
+elements; %== ["water", "earth", "fire", "air"]
 ```
 If `elements` were just of type `str[4]` (without `mutable`),
 then attempting to modify it would result in a Mutability Error.
