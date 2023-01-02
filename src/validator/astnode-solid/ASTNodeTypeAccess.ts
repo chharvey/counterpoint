@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import {
-	TypeError04,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
@@ -11,8 +10,6 @@ import {
 	SolidTypeTuple,
 	SolidTypeRecord,
 	Int16,
-	SolidTuple,
-	SolidRecord,
 	Operator,
 } from './package.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
@@ -40,26 +37,16 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		if (this.accessor instanceof ASTNodeIndexType) {
-			const accessor_type: SolidType = this.accessor.val.eval();
-			return (
-				(base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple) ? (
-					(accessor_type instanceof SolidTypeUnit)
-						? base_type.value.toType().get(accessor_type.value as Int16, Operator.DOT, this.accessor)
-						: base_type.value.toType().itemTypes()
-				) :
-				(base_type instanceof SolidTypeTuple) ? (
-					(accessor_type instanceof SolidTypeUnit)
-						? base_type.get(accessor_type.value as Int16, Operator.DOT, this.accessor)
-						: base_type.itemTypes()
-				) :
-				(() => { throw new TypeError04('index', base_type, this.accessor); })()
-			);
+			const accessor_type = this.accessor.val.eval() as SolidTypeUnit<Int16>;
+			const base_type_tuple: SolidTypeTuple = (SolidTypeTuple.isUnitType(base_type))
+				? base_type.value.toType()
+				: base_type as SolidTypeTuple;
+			return base_type_tuple.get(accessor_type.value, Operator.DOT, this.accessor);
 		} else /* (this.accessor instanceof ASTNodeKey) */ {
-			return (
-				(base_type instanceof SolidTypeUnit && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, Operator.DOT, this.accessor) :
-				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, Operator.DOT, this.accessor) :
-				(() => { throw new TypeError04('property', base_type, this.accessor); })()
-			);
+			const base_type_record: SolidTypeRecord = (SolidTypeRecord.isUnitType(base_type))
+				? base_type.value.toType()
+				: base_type as SolidTypeRecord;
+			return base_type_record.get(this.accessor.id, Operator.DOT, this.accessor);
 		}
 	}
 }

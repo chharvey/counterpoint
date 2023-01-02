@@ -24,8 +24,8 @@ export class SolidTypeIntersection extends SolidType {
 	 * @param right the second type
 	 */
 	constructor (
-		private readonly left:  SolidType,
-		private readonly right: SolidType,
+		public readonly left:  SolidType,
+		public readonly right: SolidType,
 	) {
 		super(false, Set_intersectionEq(left.values, right.values, solidObjectsIdentical));
 		this.isBottomType = this.left.isBottomType || this.right.isBottomType || this.isBottomType;

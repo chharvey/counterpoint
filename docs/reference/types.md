@@ -475,7 +475,7 @@ Type              | Size     | Indices/Keys  | Generic Type Syntax | Explicit Ty
 [Tuple](#tuple)   | Fixed    | integers      | *(none)*            | `[str, str, str]` / `str[3]` | *(none)*                                     | `['x', 'y', 'z']`                      | `[]`
 [Record](#record) | Fixed    | words         | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= 'x', b= 'y', c= 'z']`             | *(none)*
 [List](#list)     | Variable | integers      | `List.<str>`        | `str[]`                      | `List.(['x', 'y', 'z'])`                     | *(none)*                               | *(none)*
-[Hash](#hash)     | Variable | atoms/strings | `Hash.<str>`        | `[:str]`                     | `Hash.([a= 'x', b= 'y', c= 'z'])`            | *(none)*                               | *(none)*
+[Dict](#dict)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                     | `Dict.([a= 'x', b= 'y', c= 'z'])`            | *(none)*                               | *(none)*
 [Set](#set)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                      | `Set.(['x', 'y', 'z'])`                      | `{'x', 'y', 'z'}`                      | `{}`
 [Map](#map)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`               | `Map.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' -> 'x', 'v' -> 'y', 'w' -> 'z'}` | *(none)*
 
@@ -797,28 +797,28 @@ and if the list were mutable, we could reassign that entry to an integer or bool
 List access is the same as [Tuple Access](#tuple-access).
 
 
-### Hash
-Hashes are variable-size unordered lists of keyed values. Key–value pairs are called **properties**,
+### Dict
+Dicts (dictionaries) are variable-size unordered lists of keyed values. Key–value pairs are called **properties**,
 where **keys** are keywords or identifiers, and **values** are expressions.
-The number of properties in a record is called its **count**; the count of a hash is variable and unknown at compile-time.
-Hashes are homogeneous, meaning all entries in the hash have the same type (or parent type).
-If a hash is mutable, the entries of the hash may be reassigned, and properties may be added and removed from the hash as well.
+The number of properties in a record is called its **count**; the count of a dict is variable and unknown at compile-time.
+Dicts are homogeneous, meaning all entries in the dict have the same type (or parent type).
+If a dict is mutable, the entries of the dict may be reassigned, and properties may be added and removed from the dict as well.
 
-Hash types are declared via the generic hash type syntax: `Hash.<T>`
-where `T` indicates the type of values in the hash.
-Hashes are constructed via the constructor syntax `Hash.<T>(arg)`,
+Dict types are declared via the generic dict type syntax: `Dict.<T>`
+where `T` indicates the type of values in the dict.
+Dicts are constructed via the constructor syntax `Dict.<T>(arg)`,
 where `arg` is a [Record](#record) object.
 ```
-let my_styles: Hash.<int | float | str> = Hash.<int | float | str>([
+let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
 	fontFamily= 'sans-serif',
 	fontSize=   1.25,
 	fontStyle=  'oblique',
 	fontWeight= 400,
 ]);
 ```
-A shorthand for the generic syntax `Hash.<T>` is `[:T]`.
-We can also *initialize* a hash with a record literal,
-because records are generally assignable to hashes.
+A shorthand for the generic syntax `Dict.<T>` is `[:T]`.
+We can also *initialize* a dict with a record literal,
+because records are generally assignable to dicts.
 ```
 let my_styles: [: int | float | str] = [
 	fontFamily= 'sans-serif',
@@ -827,10 +827,10 @@ let my_styles: [: int | float | str] = [
 	fontWeight= 400,
 ];
 ```
-As shown above, we can mix value types, but the hash type must be homogeneous.
+As shown above, we can mix value types, but the dict type must be homogeneous.
 
-#### Hash Access
-Hash access is the same as [Record Access](#record-access).
+#### Dict Access
+Dict access is the same as [Record Access](#record-access).
 
 
 ### Set
@@ -874,31 +874,22 @@ Even though `0.0 == -0.0` and `x == y`, this set has four elements.
 #### Set Access
 Elements of a set can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the element to get.
+The value is `true` if the element is in the set, and `false` if not.
 ```
 let bases: obj{} = {
 	'who',
 	['what'],
 	{ 'i' -> {'don’t' -> 'know'} },
 };
-bases.['''{{ 'w' }}{{ 'h' }}{{ 'o' }}''']; %== 'who'
-bases.[['what']];                          %== ['what']
+bases.['''{{ 'w' }}{{ 'h' }}{{ 'o' }}''']; %== true
+bases.[['what']];                          %== true
+bases.['idk'];                             %== false
 ```
 
-A VoidError is produced when the compiler can determine if the element does not exist.
+A TypeError is produced when the expression is not assignable to the set’s invariant.
 ```
-let a: str = '3rd';
-bases.[a];          %> VoidError
-```
-If the compiler can’t compute the antecedent, it won’t error at all,
-but this means the program could crash at runtime.
-```
-let unfixed a: str = '3rd';
-bases.[a];                  % no compile-time error, but value at runtime will be undefined
-```
-We can avoid the potential crash using the
-[optional access operator](./expressions-operators.md#optional-access).
-```
-bases?.[a]; % produces the element if it exists, else `null`
+let a: int = 3;
+bases.[a];      %> TypeError
 ```
 
 

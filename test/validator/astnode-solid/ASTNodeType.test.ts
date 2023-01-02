@@ -6,7 +6,7 @@ import {
 	SolidTypeTuple,
 	SolidTypeRecord,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	SolidBoolean,
@@ -160,11 +160,11 @@ describe('ASTNodeType', () => {
 
 
 
-	describe('ASTNodeType{Hash,Set,Map}', () => {
+	describe('ASTNodeType{Dict,Set,Map}', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeHash.fromSource(`[:int | bool]`).eval(),
-				new SolidTypeHash(SolidType.INT.union(SolidType.BOOL)),
+				AST.ASTNodeTypeDict.fromSource(`[:int | bool]`).eval(),
+				new SolidTypeDict(SolidType.INT.union(SolidType.BOOL)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeSet.fromSource(`(int | bool){}`).eval(),
@@ -187,7 +187,7 @@ describe('ASTNodeType', () => {
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationUnary.fromSource(`mutable int[]`).eval(),
-				new SolidTypeList(SolidType.INT).mutableOf(),
+				new SolidTypeList(SolidType.INT, true),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource(`obj & 3`).eval(),

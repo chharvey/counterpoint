@@ -129,6 +129,11 @@ export function assertAssignable(actual: Error, validation: ValidationObject): v
 			validation.cons === AggregateError || validation.cons.prototype instanceof AggregateError, // validation.cons extends AggregateError
 			`The \`cons\` value of validation object ${ validation } with an \`errors\` property must be \`AggregateError\` or a subclass of it.`,
 		);
+		assert.strictEqual(
+			(actual as AggregateError).errors.length,
+			validation.errors.length,
+			'The number of error validations does not match the number of actual errors.',
+		);
 		return validation.errors.forEach((subvalidation, i) => {
 			assertAssignable((actual as AggregateError).errors[i], subvalidation);
 		});

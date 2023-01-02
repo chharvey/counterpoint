@@ -10,7 +10,7 @@ import {
 	SolidTypeTuple,
 	SolidTypeRecord,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	SolidObject,
@@ -21,7 +21,7 @@ import {
 	SolidTuple,
 	SolidRecord,
 	SolidList,
-	SolidHash,
+	SolidDict,
 	SolidSet,
 	SolidMap,
 } from '../../src/typer/index.js';
@@ -374,7 +374,7 @@ describe('SolidType', () => {
 			})
 		})
 
-		describe('SolidTypeConstant', () => {
+		describe('SolidTypeUnit', () => {
 			it('constant Boolean types should be subtypes of `bool`.', () => {
 				assert.ok(SolidBoolean.FALSETYPE.isSubtypeOf(SolidType.BOOL), 'SolidBoolean.FALSETYPE')
 				assert.ok(SolidBoolean.TRUETYPE .isSubtypeOf(SolidType.BOOL), 'SolidBoolean.TRUETYPE')
@@ -412,7 +412,7 @@ describe('SolidType', () => {
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(recordtype),  `let x: ${ recordtype } = ${ value };`);
 				});
 			});
-			it('constant list/tuple types should be subtype of a list type instance.', () => {
+			it('unit list types should be subtype of a list type instance.', () => {
 				const input = [
 					null,
 					[new Int16(42n)],
@@ -424,17 +424,14 @@ describe('SolidType', () => {
 					SolidType.FLOAT.union(SolidType.STR),
 				].map((t) => new SolidTypeList(t));
 				new Map<SolidObject, SolidTypeList>([
-					[new SolidList (),         output[0]],
-					[new SolidList (input[1]), output[1]],
-					[new SolidList (input[2]), output[2]],
-					[new SolidTuple(),         output[0]],
-					[new SolidTuple(input[1]), output[1]],
-					[new SolidTuple(input[2]), output[2]],
+					[new SolidList(),         output[0]],
+					[new SolidList(input[1]), output[1]],
+					[new SolidList(input[2]), output[2]],
 				]).forEach((listtype, value) => {
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(listtype), `let x: ${ listtype } = ${ value };`);
 				});
 			});
-			it('constant hash/record types should be subtype of a hash type instance.', () => {
+			it('unit dict types should be subtype of a dict type instance.', () => {
 				const input = [
 					new Map<bigint, SolidObject>([
 						[0x100n, new Int16(42n)],
@@ -448,20 +445,17 @@ describe('SolidType', () => {
 						[0x101n, new Float64(4.2)],
 					]),
 				] as const;
-				const output: SolidTypeHash[] = [
+				const output: SolidTypeDict[] = [
 					SolidType.INT,
 					SolidType.FLOAT.union(SolidType.STR),
 					SolidType.STR.union(SolidType.FLOAT),
-				].map((t) => new SolidTypeHash(t));
-				new Map<SolidObject, SolidTypeHash>([
-					[new SolidHash  (input[0]), output[0]],
-					[new SolidHash  (input[1]), output[1]],
-					[new SolidHash  (input[2]), output[2]],
-					[new SolidRecord(input[0]), output[0]],
-					[new SolidRecord(input[1]), output[1]],
-					[new SolidRecord(input[2]), output[2]],
-				]).forEach((hashtype, value) => {
-					assert.ok(new SolidTypeUnit(value).isSubtypeOf(hashtype), `let x: ${ hashtype } = ${ value };`);
+				].map((t) => new SolidTypeDict(t));
+				new Map<SolidObject, SolidTypeDict>([
+					[new SolidDict(input[0]), output[0]],
+					[new SolidDict(input[1]), output[1]],
+					[new SolidDict(input[2]), output[2]],
+				]).forEach((dicttype, value) => {
+					assert.ok(new SolidTypeUnit(value).isSubtypeOf(dicttype), `let x: ${ dicttype } = ${ value };`);
 				});
 			});
 			it('constant set types should be subtype of a set type instance.', () => {
@@ -564,7 +558,10 @@ describe('SolidType', () => {
 				])), `[int, ?:int, ?:int, ?:int, ?:int] !<: [int, int, ?:int, ?:int]`);
 			});
 			it('Invariance for mutable tuples: `A == B --> mutable Tuple.<A> <: mutable Tuple.<B>`.', () => {
-				assert.ok(!SolidTypeTuple.fromTypes([SolidType.INT, SolidType.FLOAT]).mutableOf().isSubtypeOf(SolidTypeTuple.fromTypes([SolidType.INT.union(SolidType.NULL), SolidType.FLOAT.union(SolidType.NULL)]).mutableOf()), `mutable [int, float] !<: mutable [int?, float?]`);
+				assert.ok(!SolidTypeTuple.fromTypes([SolidType.INT, SolidType.FLOAT], true).isSubtypeOf(SolidTypeTuple.fromTypes([SolidType.INT.union(SolidType.NULL), SolidType.FLOAT.union(SolidType.NULL)], true)), `mutable [int, float] !<: mutable [int?, float?]`);
+			});
+			it('is not a subtype of List', () => {
+				return assert.ok(!SolidTypeTuple.fromTypes([SolidType.INT], true).isSubtypeOf(new SolidTypeList(SolidType.INT, true)), `mutable [int] !<: mutable int[]`);
 			});
 		});
 
@@ -591,7 +588,7 @@ describe('SolidType', () => {
 					[0x102n, SolidType.OBJ],
 					[0x100n, SolidType.INT.union(SolidType.FLOAT)],
 				]))), `[x: int, y: bool, z: str] <: [y: bool!, z: obj, x: int | float];`);
-				false && assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, SolidType.INT],
 					[0x101n, SolidType.BOOL],
 					[0x102n, SolidType.STR],
@@ -656,10 +653,15 @@ describe('SolidType', () => {
 				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, SolidType.INT],
 					[0x101n, SolidType.FLOAT],
-				])).mutableOf().isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+				]), true).isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, SolidType.INT.union(SolidType.NULL)],
 					[0x101n, SolidType.FLOAT.union(SolidType.NULL)],
-				])).mutableOf()), `mutable [a: int, b: float] !<: mutable [a: int?, b: float?]`);
+				]), true)), `mutable [a: int, b: float] !<: mutable [a: int?, b: float?]`);
+			});
+			it('is not a subtype of Dict', () => {
+				return assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+					[0x100n, SolidType.INT],
+				]), true).isSubtypeOf(new SolidTypeDict(SolidType.INT, true)), `mutable [a: int] !<: mutable [: int]`);
 			});
 		});
 
@@ -673,35 +675,21 @@ describe('SolidType', () => {
 				assert.ok(!new SolidTypeList(SolidType.INT.union(SolidType.FLOAT)).isSubtypeOf(new SolidTypeList(SolidType.INT)), `List.<int | float> !<: List.<int>`);
 			});
 			it('Invariance for mutable lists: `A == B --> mutable List.<A> <: mutable List.<B>`.', () => {
-				assert.ok(!new SolidTypeList(SolidType.INT).mutableOf().isSubtypeOf(new SolidTypeList(SolidType.INT.union(SolidType.FLOAT)).mutableOf()), `mutable List.<int> !<: mutable List.<int | float>`);
-			});
-			it('Generalization: `A <: B --> Tuple.<A> <: List.<B>`.', () => {
-				assert.ok(SolidTypeTuple.fromTypes([SolidType.FLOAT, SolidType.INT]).isSubtypeOf(new SolidTypeList(SolidType.INT.union(SolidType.FLOAT))), `[float, int] <: List.<int | float>`);
-				assert.ok(!SolidTypeTuple.fromTypes([SolidType.FLOAT, SolidType.INT]).isSubtypeOf(new SolidTypeList(SolidType.INT.union(SolidType.FLOAT)).mutableOf()), `[float, int] !<: mutable List.<int | float>`);
+				assert.ok(!new SolidTypeList(SolidType.INT, true).isSubtypeOf(new SolidTypeList(SolidType.INT.union(SolidType.FLOAT), true)), `mutable List.<int> !<: mutable List.<int | float>`);
 			});
 		});
 
-		describe('SolidTypeHash', () => {
+		describe('SolidTypeDict', () => {
 			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new SolidTypeHash(SolidType.INT.union(SolidType.BOOL)).isSubtypeOf(SolidType.OBJ), `Hash.<int | bool> <: obj;`);
-				assert.ok(!SolidType.OBJ.isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.BOOL))), `obj !<: Hash.<int | bool>`);
+				assert.ok(new SolidTypeDict(SolidType.INT.union(SolidType.BOOL)).isSubtypeOf(SolidType.OBJ), `Dict.<int | bool> <: obj;`);
+				assert.ok(!SolidType.OBJ.isSubtypeOf(new SolidTypeDict(SolidType.INT.union(SolidType.BOOL))), `obj !<: Dict.<int | bool>`);
 			});
-			it('Covariance for immutable hashes: `A <: B --> Hash.<A> <: Hash.<B>`.', () => {
-				assert.ok(new SolidTypeHash(SolidType.INT).isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT))), `Hash.<int> <: Hash.<int | float>`);
-				assert.ok(!new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT)).isSubtypeOf(new SolidTypeHash(SolidType.INT)), `Hash.<int | float> !<: Hash.<int>`);
+			it('Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.', () => {
+				assert.ok(new SolidTypeDict(SolidType.INT).isSubtypeOf(new SolidTypeDict(SolidType.INT.union(SolidType.FLOAT))), `Dict.<int> <: Dict.<int | float>`);
+				assert.ok(!new SolidTypeDict(SolidType.INT.union(SolidType.FLOAT)).isSubtypeOf(new SolidTypeDict(SolidType.INT)), `Dict.<int | float> !<: Dict.<int>`);
 			});
-			it('Invariance for mutable hashes: `A == B --> mutable Hash.<A> <: mutable Hash.<B>`.', () => {
-				assert.ok(!new SolidTypeHash(SolidType.INT).mutableOf().isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT)).mutableOf()), `mutable Hash.<int> !<: mutable Hash.<int | float>`);
-			});
-			it('Generalization: `A <: B --> Record.<A> <: Hash.<B>`.', () => {
-				assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.FLOAT],
-					[0x101n, SolidType.INT],
-				])).isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT))), `[a: float, b: int] <: Hash.<int | float>`);
-				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[0x100n, SolidType.FLOAT],
-					[0x101n, SolidType.INT],
-				])).isSubtypeOf(new SolidTypeHash(SolidType.INT.union(SolidType.FLOAT)).mutableOf()), `[a: float, b: int] !<: mutable Hash.<int | float>`);
+			it('Invariance for mutable dicts: `A == B --> mutable Dict.<A> <: mutable Dict.<B>`.', () => {
+				assert.ok(!new SolidTypeDict(SolidType.INT, true).isSubtypeOf(new SolidTypeDict(SolidType.INT.union(SolidType.FLOAT), true)), `mutable Dict.<int> !<: mutable Dict.<int | float>`);
 			});
 		});
 
@@ -715,7 +703,7 @@ describe('SolidType', () => {
 				assert.ok(!new SolidTypeSet(SolidType.INT.union(SolidType.FLOAT)).isSubtypeOf(new SolidTypeSet(SolidType.INT)), `Set.<int | float> !<: Set.<int>`);
 			});
 			it('Invariance for mutable sets: `A == B --> mutable Set.<A> <: mutable Set.<B>`.', () => {
-				assert.ok(!new SolidTypeSet(SolidType.INT).mutableOf().isSubtypeOf(new SolidTypeSet(SolidType.INT.union(SolidType.FLOAT)).mutableOf()), `mutable Set.<int> !<: mutable Set.<int | float>`);
+				assert.ok(!new SolidTypeSet(SolidType.INT, true).isSubtypeOf(new SolidTypeSet(SolidType.INT.union(SolidType.FLOAT), true)), `mutable Set.<int> !<: mutable Set.<int | float>`);
 			});
 		});
 
@@ -729,7 +717,7 @@ describe('SolidType', () => {
 				assert.ok(!new SolidTypeMap(SolidType.INT.union(SolidType.FLOAT), SolidType.BOOL.union(SolidType.NULL)).isSubtypeOf(new SolidTypeMap(SolidType.INT, SolidType.BOOL)), `Map.<int | float, bool | null> !<: Map.<int, bool>`);
 			});
 			it('Invariance for mutable maps: `A == C && B == D --> mutable Map.<A, B> <: mutable Map.<C, D>`.', () => {
-				assert.ok(!new SolidTypeMap(SolidType.INT, SolidType.BOOL).mutableOf().isSubtypeOf(new SolidTypeMap(SolidType.INT.union(SolidType.FLOAT), SolidType.BOOL.union(SolidType.NULL)).mutableOf()), `mutable Map.<int, bool> !<: mutable Map.<int | float, bool | null>`);
+				assert.ok(!new SolidTypeMap(SolidType.INT, SolidType.BOOL, true).isSubtypeOf(new SolidTypeMap(SolidType.INT.union(SolidType.FLOAT), SolidType.BOOL.union(SolidType.NULL), true)), `mutable Map.<int, bool> !<: mutable Map.<int | float, bool | null>`);
 			});
 		});
 
@@ -763,7 +751,7 @@ describe('SolidType', () => {
 					[0x102n, SolidType.STR],
 				])),
 				new SolidTypeList(SolidType.BOOL),
-				new SolidTypeHash(SolidType.BOOL),
+				new SolidTypeDict(SolidType.BOOL),
 				new SolidTypeSet(SolidType.NULL),
 				new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
 			].forEach((t) => {
@@ -783,7 +771,7 @@ describe('SolidType', () => {
 					[0x102n, SolidType.STR],
 				])),
 				new SolidTypeList(SolidType.BOOL),
-				new SolidTypeHash(SolidType.BOOL),
+				new SolidTypeDict(SolidType.BOOL),
 				new SolidTypeSet(SolidType.NULL),
 				new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
 			].forEach((t) => {
@@ -803,7 +791,7 @@ describe('SolidType', () => {
 					[0x102n, SolidType.STR],
 				])),
 				new SolidTypeList(SolidType.BOOL),
-				new SolidTypeHash(SolidType.BOOL),
+				new SolidTypeDict(SolidType.BOOL),
 				new SolidTypeSet(SolidType.NULL),
 				new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
 			].forEach((t) => {
@@ -832,7 +820,7 @@ describe('SolidType', () => {
 					[0x102n, SolidType.STR],
 				])),
 				new SolidTypeList(SolidType.BOOL),
-				new SolidTypeHash(SolidType.BOOL),
+				new SolidTypeDict(SolidType.BOOL),
 				new SolidTypeSet(SolidType.NULL),
 				new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
 			];

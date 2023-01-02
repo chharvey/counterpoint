@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {
 	SolidType,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	TypeError05,
@@ -13,6 +13,10 @@ import {
 	CONFIG_DEFAULT,
 	PARSENODE,
 } from './package.js';
+import {
+	ValidFunctionName,
+	invalidFunctionName,
+} from './utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 
@@ -33,26 +37,24 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	}
 	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
-		// (`this.base.source` must be `List | Hash | Set | Map`)
+		// (`this.base.source` must be a `ValidFunctionName`)
 		return forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
 	protected override eval_do(): SolidType {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
 			throw new TypeError05(this.base.eval(), this.base);
 		}
-		return (new Map<string, () => SolidType>([
-			['List', () => (this.countArgs(1n), new SolidTypeList(this.args[0].eval()))],
-			['Hash', () => (this.countArgs(1n), new SolidTypeHash(this.args[0].eval()))],
-			['Set',  () => (this.countArgs(1n), new SolidTypeSet (this.args[0].eval()))],
-			['Map',  () => {
+		return (new Map<ValidFunctionName, () => SolidType>([
+			[ValidFunctionName.LIST, () => (this.countArgs(1n), new SolidTypeList(this.args[0].eval()))],
+			[ValidFunctionName.DICT, () => (this.countArgs(1n), new SolidTypeDict(this.args[0].eval()))],
+			[ValidFunctionName.SET,  () => (this.countArgs(1n), new SolidTypeSet (this.args[0].eval()))],
+			[ValidFunctionName.MAP,  () => {
 				this.countArgs([1n, 3n]);
 				const anttype: SolidType = this.args[0].eval();
 				const contype: SolidType = this.args[1]?.eval() || anttype;
 				return new SolidTypeMap(anttype, contype);
 			}],
-		]).get(this.base.source) || (() => {
-			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Map\`.`);
-		}))();
+		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
 	}
 	/**
 	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,

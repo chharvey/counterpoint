@@ -20,8 +20,8 @@ export class TypeError06 extends SolidTypeError {
 	 * Construct a new TypeError06 object.
 	 * @param actual   - the number of arguments received
 	 * @param expected - the number of arguments expected
-	 * @param call     - the function call
 	 * @param generic  - whether the arguments are generic arguments (true) or function arguments (false)
+	 * @param call     - the function call
 	 */
 	constructor (actual: bigint, expected: bigint, generic: boolean, call: AST.ASTNodeTypeCall | AST.ASTNodeCall) {
 		super(`Got \`${ actual }\` ${ (generic) ? 'type ' : '' }arguments, but expected \`${ expected }\`.`, TypeError06.CODE, call.line_index, call.col_index);
