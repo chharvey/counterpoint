@@ -143,22 +143,22 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		STRING: [
 			xjs.String.dedent`
-				'hello world';
+				"hello world";
 
-				'hello world %ignore';
+				"hello world %ignore";
 
-				'hello %ignore
-				world';
+				"hello %ignore
+				world";
 
-				'hello world %%ignore
-				ignore';
+				"hello world %%ignore
+				ignore";
 
-				'hello %%ignore
-				ignore%% world';
+				"hello %%ignore
+				ignore%% world";
 
-				'hello\\u{0020}world';
+				"hello\\u{0020}world";
 
-				'hello\\u{00_20}world';
+				"hello\\u{00_20}world";
 			`,
 			makeSourceFile(
 				s('primitive_literal', s('string')),
@@ -173,13 +173,13 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		TEMPLATE: [
 			xjs.String.dedent`
-				'''hello {{ to }} the
-				the {{ big }} world''';
+				"""hello {{ to }} the
+				the {{ big }} world""";
 
-				'''hello {{ to }} the {{ whole }} great {{ big }} world''';
+				"""hello {{ to }} the {{ whole }} great {{ big }} world""";
 
-				'''hello {{ '''to {{ '''the
-				the''' }} big''' }} world''';
+				"""hello {{ """to {{ """the
+				the""" }} big""" }} world""";
 			`,
 			makeSourceFile(
 				s(
@@ -465,7 +465,7 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		MapLiteral: [
 			xjs.String.dedent`
-				{'1' -> 1, '2' -> 2, '3' -> 3};
+				{"1" -> 1, "2" -> 2, "3" -> 3};
 			`,
 			makeSourceFile(s(
 				'map_literal',

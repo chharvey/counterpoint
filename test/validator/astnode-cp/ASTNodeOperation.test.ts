@@ -152,7 +152,7 @@ describe('ASTNodeOperation', () => {
 							let unfixed b: null | int = 42;
 							let unfixed c: bool = false;
 							let unfixed d: bool | float = 4.2;
-							let unfixed e: str | void = 'hello';
+							let unfixed e: str | void = "hello";
 							!a;
 							!b;
 							!c;
@@ -225,8 +225,8 @@ describe('ASTNodeOperation', () => {
 					[`!0.0;`,                 OBJ.Boolean.FALSE],
 					[`!-0.0;`,                OBJ.Boolean.FALSE],
 					[`!4.2e+1;`,              OBJ.Boolean.FALSE],
-					[`!'';`,                  OBJ.Boolean.FALSE],
-					[`!'hello';`,             OBJ.Boolean.FALSE],
+					[`!"";`,                  OBJ.Boolean.FALSE],
+					[`!"hello";`,             OBJ.Boolean.FALSE],
 					[`![];`,                  OBJ.Boolean.FALSE],
 					[`![42];`,                OBJ.Boolean.FALSE],
 					[`![a= 42];`,             OBJ.Boolean.FALSE],
@@ -248,8 +248,8 @@ describe('ASTNodeOperation', () => {
 					[`?0.0;`,                 OBJ.Boolean.TRUE],
 					[`?-0.0;`,                OBJ.Boolean.TRUE],
 					[`?4.2e+1;`,              OBJ.Boolean.FALSE],
-					[`?'';`,                  OBJ.Boolean.TRUE],
-					[`?'hello';`,             OBJ.Boolean.FALSE],
+					[`?"";`,                  OBJ.Boolean.TRUE],
+					[`?"hello";`,             OBJ.Boolean.FALSE],
 					[`?[];`,                  OBJ.Boolean.TRUE],
 					[`?[42];`,                OBJ.Boolean.FALSE],
 					[`?[a= 42];`,             OBJ.Boolean.FALSE],
@@ -333,7 +333,7 @@ describe('ASTNodeOperation', () => {
 					`false - 2;`,
 					`2 / true;`,
 					`null ^ false;`,
-					`'hello' + 5;`,
+					`"hello" + 5;`,
 				].forEach((src) => {
 					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).type(), TypeError01);
 				});
@@ -575,15 +575,15 @@ describe('ASTNodeOperation', () => {
 					[`-0.0 ==  0;`,                             OBJ.Boolean.TRUE],
 					[`-0.0 === 0.0;`,                           OBJ.Boolean.FALSE],
 					[`-0.0 ==  0.0;`,                           OBJ.Boolean.TRUE],
-					[`'' == '';`,                               OBJ.Boolean.TRUE],
-					[`'a' === 'a';`,                            OBJ.Boolean.TRUE],
-					[`'a' ==  'a';`,                            OBJ.Boolean.TRUE],
-					[`'hello\\u{20}world' === 'hello world';`,  OBJ.Boolean.TRUE],
-					[`'hello\\u{20}world' ==  'hello world';`,  OBJ.Boolean.TRUE],
-					[`'a' !== 'b';`,                            OBJ.Boolean.TRUE],
-					[`'a' !=  'b';`,                            OBJ.Boolean.TRUE],
-					[`'hello\\u{20}world' !== 'hello20world';`, OBJ.Boolean.TRUE],
-					[`'hello\\u{20}world' !=  'hello20world';`, OBJ.Boolean.TRUE],
+					[`"" == "";`,                               OBJ.Boolean.TRUE],
+					[`"a" === "a";`,                            OBJ.Boolean.TRUE],
+					[`"a" ==  "a";`,                            OBJ.Boolean.TRUE],
+					[`"hello\\u{20}world" === "hello world";`,  OBJ.Boolean.TRUE],
+					[`"hello\\u{20}world" ==  "hello world";`,  OBJ.Boolean.TRUE],
+					[`"a" !== "b";`,                            OBJ.Boolean.TRUE],
+					[`"a" !=  "b";`,                            OBJ.Boolean.TRUE],
+					[`"hello\\u{20}world" !== "hello20world";`, OBJ.Boolean.TRUE],
+					[`"hello\\u{20}world" !=  "hello20world";`, OBJ.Boolean.TRUE],
 				]));
 			});
 			it('compound types.', () => {
@@ -783,11 +783,11 @@ describe('ASTNodeOperation', () => {
 							let unfixed b: null | int = 42;
 							let unfixed c: bool = false;
 							let unfixed d: bool | float = 4.2;
-							let unfixed e: str | void = 'hello';
-							a && 'hello';
-							b && 'hello';
-							c && 'hello';
-							d && 'hello';
+							let unfixed e: str | void = "hello";
+							a && "hello";
+							b && "hello";
+							c && "hello";
+							d && "hello";
 							e && 42;
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
@@ -840,11 +840,11 @@ describe('ASTNodeOperation', () => {
 							let unfixed b: null | int = 42;
 							let unfixed c: bool = false;
 							let unfixed d: bool | float = 4.2;
-							let unfixed e: str | void = 'hello';
-							a || 'hello';
-							b || 'hello';
-							c || 'hello';
-							d || 'hello';
+							let unfixed e: str | void = "hello";
+							a || "hello";
+							b || "hello";
+							c || "hello";
+							d || "hello";
 							e || 42;
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();

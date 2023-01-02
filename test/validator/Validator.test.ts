@@ -135,21 +135,21 @@ describe('Validator', () => {
 		}
 		it('produces the cooked string value.', () => {
 			assert.deepStrictEqual([
-				`''`,
-				`'hello'`,
-				`'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6'`,
-				`'0 \\u{24} 1 \\u{005f} 2 \\u{} 3'`,
-				xjs.String.dedent`'012\\
+				`""`,
+				`"hello"`,
+				`"0 \\" 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6"`,
+				`"0 \\u{24} 1 \\u{005f} 2 \\u{} 3"`,
+				xjs.String.dedent`"012\\
 				345\\%
-				678'`,
-				`'😀'`,
-				`'\u{10001}'`,
-				`'\\\u{10001}'`,
-				`'\\u{10001}'`,
+				678"`,
+				`"😀"`,
+				`"\u{10001}"`,
+				`"\\\u{10001}"`,
+				`"\\u{10001}"`,
 			].map((src) => decodeCooked(src, CONFIG_DEFAULT)), [
 				'',
 				'hello',
-				'0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6',
+				'0 " 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6',
 				'0 $ 1 _ 2 \0 3',
 				'012 345%\n678',
 				'\u{1f600}',
@@ -160,39 +160,39 @@ describe('Validator', () => {
 		});
 		it('may contain an escaped `u` anywhere.', () => {
 			assert.strictEqual(
-				decodeCooked(`'abc\\udef\\u'`, CONFIG_DEFAULT),
+				decodeCooked(`"abc\\udef\\u"`, CONFIG_DEFAULT),
 				'abcudefu',
 			);
 		});
 		context('In-String Comments', () => {
 			function cook(config: CPConfig): string[] {
 				return [
-					xjs.String.dedent`'The five boxing wizards % jump quickly.'`,
+					xjs.String.dedent`"The five boxing wizards % jump quickly."`,
 
-					xjs.String.dedent`'The five % boxing wizards
-					jump quickly.'`,
+					xjs.String.dedent`"The five % boxing wizards
+					jump quickly."`,
 
-					xjs.String.dedent`'The five boxing wizards %
-					jump quickly.'`,
+					xjs.String.dedent`"The five boxing wizards %
+					jump quickly."`,
 
-					xjs.String.dedent`'The five boxing wizards jump quickly.%
-					'`,
+					xjs.String.dedent`"The five boxing wizards jump quickly.%
+					"`,
 
-					`'The five %% boxing wizards %% jump quickly.'`,
+					`"The five %% boxing wizards %% jump quickly."`,
 
-					`'The five boxing wizards %%%% jump quickly.'`,
+					`"The five boxing wizards %%%% jump quickly."`,
 
-					xjs.String.dedent`'The five %% boxing
+					xjs.String.dedent`"The five %% boxing
 					wizards %% jump
-					quickly.'`,
+					quickly."`,
 
-					xjs.String.dedent`'The five boxing
+					xjs.String.dedent`"The five boxing
 					wizards %% jump
-					quickly.%%'`,
+					quickly.%%"`,
 
-					xjs.String.dedent`'The five boxing
+					xjs.String.dedent`"The five boxing
 					wizards %% jump
-					quickly.'`,
+					quickly."`,
 				].map((src) => decodeCooked(src, config));
 			}
 			context('with comments enabled.', () => {
@@ -252,18 +252,18 @@ describe('Validator', () => {
 		it('produces the cooked template value.', () => {
 			assert.deepStrictEqual(
 				[
-					`''''''`,
-					`'''hello'''`,
-					`'''head{{`,
+					`""""""`,
+					`"""hello"""`,
+					`"""head{{`,
 					`}}midl{{`,
-					`}}tail'''`,
-					`'''0 \\\` 1'''`,
-					`'''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7'''`,
-					`'''0 \\u{24} 1 \\u{005f} 2 \\u{} 3'''`,
-					xjs.String.dedent`'''012\\
+					`}}tail"""`,
+					`"""0 ' \` \\' \\\` 1"""`,
+					`"""0 \\" 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6"""`,
+					`"""0 \\u{24} 1 \\u{005f} 2 \\u{} 3"""`,
+					xjs.String.dedent`"""012\\
 					345
-					678'''`,
-					`'''😀 \\😀 \\u{1f600}'''`,
+					678"""`,
+					`"""😀 \\😀 \\u{1f600}"""`,
 				].map((src) => decodeCooked(src)),
 				[
 					'',
@@ -271,8 +271,8 @@ describe('Validator', () => {
 					'head',
 					'midl',
 					'tail',
-					'0 \\` 1',
-					'0 \\\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\` 7',
+					'0 \' ` \\\' \\` 1',
+					'0 \\" 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6',
 					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3',
 					'012\\\n345\n678',
 					'\u{1f600} \\\u{1f600} \\u{1f600}',

@@ -111,8 +111,8 @@ describe('ASTNodeCall', () => {
 			[
 				`List.<int>(42);`,
 				`Dict.<int>([4.2]);`,
-				`Set.<int>([42, '42']);`,
-				`Map.<int>([42, '42']);`,
+				`Set.<int>([42, "42"]);`,
+				`Map.<int>([42, "42"]);`,
 			].forEach((src) => {
 				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeError03);
 			});
