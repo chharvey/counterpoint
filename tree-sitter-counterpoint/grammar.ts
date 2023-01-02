@@ -272,7 +272,7 @@ module.exports = grammar({
 
 		identifier: _$ => token(choice(
 			/[A-Za-z_][A-Za-z0-9_]*/,
-			/`[^`]*`/,
+			/'[^']*'/,
 		)),
 
 		...parameterize('integer', ({radix, separator}) => (

@@ -125,33 +125,34 @@ Many other languages have characters in their alphabet that are not allowed by t
 Therefore, Counterpoint offers a flexible mechanism for allowing identifiers with
 almost any character in the Unicode character set: **Unicode identifiers**.
 
-By wrapping the identifier name with \`back-ticks\`,
+By wrapping the identifier name with 'apostrophes' (**U+0027**)
+(also known as “single-quotes”),
 we can include non-ASCII letters.
 ```
-let `español`: str = "Spanish for “Spanish”";
+let 'español': str = "Spanish for “Spanish”";
 ```
 In the identifier above, notice the letter `ñ`.
-We can access the variable just like any other, as long as we include the name in back-tick delimiters.
+We can access the variable just like any other, as long as we include the name in the delimiters.
 ```
-`español`; %== "Spanish for “Spanish”"
+'español'; %== "Spanish for “Spanish”"
 ```
 
-When an identifier is written with back-ticks, it must always be referred to as such,
+When an identifier is quoted, it must always be referred to as such,
 even if it doesn’t contain “special characters”. The converse is true as well.
 ```
-let `foo`: int = 42;
+let 'foo': int = 42;
 foo * 2;             %> ReferenceError
 let bar: int = 420;
-`bar` * 2;           %> ReferenceError
+'bar' * 2;           %> ReferenceError
 ```
 > ReferenceError: `foo` is never declared.
 >
-> ReferenceError: `` `bar` `` is never declared.
+> ReferenceError: `'bar'` is never declared.
 
-This means that the identifiers `foo` and `` `foo` `` can refer to different values.
+This means that the identifiers `foo` and `'foo'` can refer to different values.
 ```
 let foo:   int = 42;
-let `foo`: int = 420;
+let 'foo': int = 420;
 ```
 
 We can use Unicode identifiers to name variables with words that appear in the set of reserved keywords.
@@ -163,19 +164,19 @@ let let: int = 42; %> ParseError
 The reserved keyword `let` cannot be used as an identifier name,
 but we can turn it into a Unicode identifier to work around this limitation.
 ```
-let `let`: int = 42;
+let 'let': int = 42;
 ```
 
 With Unicode identifiers, we can insert almost any character,
 including spaces and punctuation symbols.
 ```
-let `Svaret på den ultimata frågan.`: int = 42;
-`Svaret på den ultimata frågan.` / 2;           %== 21
+let 'Svaret på den ultimata frågan.': int = 42;
+'Svaret på den ultimata frågan.' / 2;           %== 21
 ```
 
-Unicode identifiers may also contain no characters: The token `` `​` `` is a valid identifier.
+Unicode identifiers may also contain no characters: The token `''` is a valid identifier.
 ```
-let ``: str = "What’s my name?";
+let '': str = "What’s my name?";
 ```
 
 Note that Unicode identifiers *are not strings*; they’re simply names of declared variables.
@@ -185,9 +186,9 @@ that template literals are, with a few differences.
 Like template literals,
 
 - Unicode identifiers are not “cooked”, so there are no escape sequences.
-	That is, an identifier named `` `1\u{24}2` `` remains exactly as typed;
-	it does not become `` `1$2` `` and cannot be accessed as such.
-	`` `1\u{24}2` `` and `` `1$2` `` are two different identifiers.
+	That is, an identifier named `'1\u{24}2'` remains exactly as typed;
+	it does not become `'1$2'` and cannot be accessed as such.
+	`'1\u{24}2'` and `'1$2'` are two different identifiers.
 - Line breaks, whitespace, and non-printing characters are allowed in Unicode identifiers,
 	however, keep in mind that this might result in very unreadable code.
 - The character **U+0003 END OF TEXT** is not allowed in Unicode identifiers
@@ -197,8 +198,9 @@ But unlike template literals,
 
 - Unicode identifiers may contain the character sequences `"""` and `{{` in them,
 	since they are not delimited by those characters.
-- Unicode identifiers must not contain the character `` ` `` **U+0060 GRAVE ACCENT**,
+- Unicode identifiers must not contain the character `'` **U+0027 APOSTROPHE**,
 	as that would end the token. There is no way to escape this character.
+	See the Unicode specification for similar alternative characters.
 
 
 

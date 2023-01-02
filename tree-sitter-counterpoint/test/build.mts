@@ -95,8 +95,12 @@ function buildTest(title: string, source: string, expected: string): string {
 		IDENTIFIER: [
 			xjs.String.dedent`
 				my_variable;
+				'my variable';
 			`,
-			makeSourceFile(s('identifier')),
+			makeSourceFile(
+				s('identifier'),
+				s('identifier'),
+			),
 		],
 
 		INTEGER: [
@@ -839,6 +843,7 @@ function buildTest(title: string, source: string, expected: string): string {
 		DeclarationType: [
 			xjs.String.dedent`
 				type T = A | B & C;
+				type 'Ü' = T;
 			`,
 			s(
 				'source_file',
@@ -855,6 +860,11 @@ function buildTest(title: string, source: string, expected: string): string {
 						),
 					),
 				),
+				s(
+					'declaration_type',
+					s('identifier'),
+					s('identifier'),
+				),
 			),
 		],
 
@@ -862,6 +872,8 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				let v: T = a + b * c;
 				let unfixed u: A | B & C = v;
+				let 'å': A = a;
+				let unfixed 'é': E = e;
 			`,
 			s(
 				'source_file',
@@ -891,6 +903,18 @@ function buildTest(title: string, source: string, expected: string): string {
 							s('identifier'),
 						),
 					),
+					s('identifier'),
+				),
+				s(
+					'declaration_variable',
+					s('identifier'),
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'declaration_variable',
+					s('identifier'),
+					s('identifier'),
 					s('identifier'),
 				),
 			),
