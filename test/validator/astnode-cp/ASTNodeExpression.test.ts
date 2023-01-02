@@ -28,11 +28,10 @@ import {
 
 
 describe('ASTNodeExpression', () => {
-	/* eslint-disable quotes */
 	describe('ASTNodeConstant', () => {
 		describe('#varCheck', () => {
 			it('never throws.', () => {
-				AST.ASTNodeConstant.fromSource(`42;`).varCheck();
+				AST.ASTNodeConstant.fromSource('42;').varCheck();
 			});
 		});
 
@@ -101,7 +100,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('computes string values.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeConstant.fromSource(`"42😀\\u{1f600}";`).type(),
+					AST.ASTNodeConstant.fromSource('"42😀\\u{1f600}";').type(),
 					typeUnitStr('42😀\u{1f600}'),
 				);
 			});
@@ -153,7 +152,7 @@ describe('ASTNodeExpression', () => {
 					let unfixed i: int = 42;
 					i;
 				`).varCheck(); // assert does not throw
-				assert.throws(() => AST.ASTNodeVariable.fromSource(`i;`).varCheck(), ReferenceError01);
+				assert.throws(() => AST.ASTNodeVariable.fromSource('i;').varCheck(), ReferenceError01);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
@@ -172,7 +171,7 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			it('returns Never for undeclared variables.', () => {
-				assert.ok(AST.ASTNodeVariable.fromSource(`x;`).type().isBottomType);
+				assert.ok(AST.ASTNodeVariable.fromSource('x;').type().isBottomType);
 			});
 		});
 
@@ -375,20 +374,20 @@ describe('ASTNodeExpression', () => {
 			describe('ASTNodeRecord', () => {
 				it('throws if containing duplicate keys.', () => {
 					[
-						AST.ASTNodeTypeRecord .fromSource(`[a: int, b: float, c: str]`),
-						AST.ASTNodeRecord     .fromSource(`[a= 1, b= 2.0, c= "three"];`),
+						AST.ASTNodeTypeRecord .fromSource('[a: int, b: float, c: str]'),
+						AST.ASTNodeRecord     .fromSource('[a= 1, b= 2.0, c= "three"];'),
 					].forEach((node) => node.varCheck()); // assert does not throw
 
 					[
-						AST.ASTNodeTypeRecord .fromSource(`[a: int, b: float, a: str]`),
-						AST.ASTNodeRecord     .fromSource(`[a= 1, b= 2.0, a= "three"];`),
+						AST.ASTNodeTypeRecord .fromSource('[a: int, b: float, a: str]'),
+						AST.ASTNodeRecord     .fromSource('[a= 1, b= 2.0, a= "three"];'),
 					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentError02));
 
 					new Map<AST.ASTNodeCP, string[]>([
-						[AST.ASTNodeTypeRecord .fromSource(`[c: int, d: float, c: str, d: bool]`),   ['c', 'd']],
-						[AST.ASTNodeRecord     .fromSource(`[c= 1, d= 2.0, c= "three", d= false];`), ['c', 'd']],
-						[AST.ASTNodeTypeRecord .fromSource(`[e: int, f: float, e: str, e: bool]`),   ['e', 'e']],
-						[AST.ASTNodeRecord     .fromSource(`[e= 1, f= 2.0, e= "three", e= false];`), ['e', 'e']],
+						[AST.ASTNodeTypeRecord .fromSource('[c: int, d: float, c: str, d: bool]'),   ['c', 'd']],
+						[AST.ASTNodeRecord     .fromSource('[c= 1, d= 2.0, c= "three", d= false];'), ['c', 'd']],
+						[AST.ASTNodeTypeRecord .fromSource('[e: int, f: float, e: str, e: bool]'),   ['e', 'e']],
+						[AST.ASTNodeRecord     .fromSource('[e= 1, f= 2.0, e= "three", e= false];'), ['e', 'e']],
 					]).forEach((dupes, node) => assert.throws(() => node.varCheck(), (err) => {
 						assert.ok(err instanceof AggregateError);
 						assertAssignable(err, {
@@ -417,9 +416,9 @@ describe('ASTNodeExpression', () => {
 					AST.ASTNodeSet,
 					AST.ASTNodeMap,
 				] = [
-					AST.ASTNodeTuple.fromSource(`[1, 2.0, "three"];`, config),
-					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= "three"];`, config),
-					AST.ASTNodeSet.fromSource(`{1, 2.0, "three"};`, config),
+					AST.ASTNodeTuple.fromSource('[1, 2.0, "three"];', config),
+					AST.ASTNodeRecord.fromSource('[a= 1, b= 2.0, c= "three"];', config),
+					AST.ASTNodeSet.fromSource('{1, 2.0, "three"};', config),
 					AST.ASTNodeMap.fromSource(`
 						{
 							"a" || "" -> 1,
@@ -452,9 +451,9 @@ describe('ASTNodeExpression', () => {
 			it('returns a constant Tuple/Record/Set/Map for foldable entries.', () => {
 				assert.deepStrictEqual(
 					[
-						AST.ASTNodeTuple.fromSource(`[1, 2.0, "three"];`),
-						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= "three"];`),
-						AST.ASTNodeSet.fromSource(`{1, 2.0, "three"};`),
+						AST.ASTNodeTuple.fromSource('[1, 2.0, "three"];'),
+						AST.ASTNodeRecord.fromSource('[a= 1, b= 2.0, c= "three"];'),
+						AST.ASTNodeSet.fromSource('{1, 2.0, "three"};'),
 						AST.ASTNodeMap.fromSource(`
 							{
 								"a" || "" -> 1,
@@ -515,5 +514,4 @@ describe('ASTNodeExpression', () => {
 			});
 		});
 	});
-	/* eslint-enable quotes */
 });

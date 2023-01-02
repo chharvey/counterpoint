@@ -755,7 +755,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				a === b;
 				a !== b;
 				a == b;
-				a !== b;
+				a != b;
 			`,
 			makeSourceFile(
 				s(
