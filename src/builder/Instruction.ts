@@ -55,7 +55,7 @@ class InstructionNop extends Instruction {
 /**
  * A superclass abstracting:
  * - InstructionConst
- * - InstructionLocal
+ * - InstructionVariable
  * - InstructionUnop
  * - InstructionBinop
  * - InstructionCond
@@ -86,6 +86,7 @@ export class InstructionConst extends InstructionExpression {
 /**
  * Variable operations.
  * - InstructionLocal
+ * - InstructionGlobal
  */
 abstract class InstructionVariable extends InstructionExpression {
 	/**
