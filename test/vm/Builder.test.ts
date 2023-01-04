@@ -8,11 +8,13 @@ import {
 
 
 describe('Builder', () => {
+	let builder: Builder<number>;
+
 	const noop: Instruction<number>['action'] = (_machine, _args) => {};
 
 
-	function newMockInstructionTable(): InstructionTable<number> {
-		return new InstructionTable<number>().add({
+	beforeEach(() => {
+		builder = new Builder<number>(new InstructionTable<number>().add({
 			opcode: 0n,
 			name:   'noop',
 			arity:  0n,
@@ -27,13 +29,12 @@ describe('Builder', () => {
 			name:   'pop',
 			arity:  0n,
 			action: noop,
-		});
-	}
+		}));
+	});
 
 
 	describe('.constructor', () => {
 		it('constructs a new empty builder.', () => {
-			const builder = new Builder<number>(newMockInstructionTable());
 			assert.deepStrictEqual(builder.instructions, []);
 		});
 	});
@@ -41,7 +42,6 @@ describe('Builder', () => {
 
 	describe('#push', () => {
 		it('pushes an instruction to the builder.', () => {
-			const builder = new Builder<number>(newMockInstructionTable());
 			builder.push('noop', []);
 			assert.deepStrictEqual(builder.instructions, [
 				0n, // opcode
@@ -50,7 +50,6 @@ describe('Builder', () => {
 		});
 
 		it('pushses an instruction and arguments to the builder.', () => {
-			const builder = new Builder<number>(newMockInstructionTable());
 			builder.push('push', [123]);
 			assert.deepStrictEqual(builder.instructions, [
 				1n, // opcode
@@ -60,7 +59,6 @@ describe('Builder', () => {
 		});
 
 		it('should throw when pushing an incorrect arity.', () => {
-			const builder = new Builder<number>(newMockInstructionTable());
 			assert.throws(() => builder.push('pop', [1]));
 		});
 	});
@@ -68,7 +66,6 @@ describe('Builder', () => {
 
 	describe('#label', () => {
 		it('sets a label to the current number of instructions.', () => {
-			const builder = new Builder<number>(newMockInstructionTable());
 			builder.push('noop', []);
 			builder.label('wow');
 			assert.strictEqual(builder.labels['wow'], 2n);
@@ -78,7 +75,6 @@ describe('Builder', () => {
 
 	describe('#data', () => {
 		it('data is deduped.', () => {
-			const builder = new Builder<number>(newMockInstructionTable());
 			builder.push('push', [123]);
 			builder.push('push', [123]);
 			builder.push('push', [123]);
@@ -89,7 +85,6 @@ describe('Builder', () => {
 
 	describe('#toCode', () => {
 		it('builds a Code object.', () => {
-			const builder = new Builder<number>(newMockInstructionTable());
 			builder.push('noop', []);
 			builder.push('push', [123]);
 			builder.push('pop', []);

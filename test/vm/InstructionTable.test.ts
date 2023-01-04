@@ -7,6 +7,8 @@ import {
 
 
 describe('InstructionTable', () => {
+	let table: InstructionTable<number>;
+
 	const mock_instruction: Instruction<number> = {
 		opcode: 0n,
 		name:   'noop',
@@ -15,9 +17,13 @@ describe('InstructionTable', () => {
 	};
 
 
+	beforeEach(() => {
+		table = new InstructionTable<number>();
+	});
+
+
 	describe('.constructor', () => {
 		it('constructs a new empty table.', () => {
-			const table = new InstructionTable<number>();
 			assert.ok(table.isEmpty);
 		});
 	});
@@ -25,7 +31,6 @@ describe('InstructionTable', () => {
 
 	describe('#add', () => {
 		it('adds to the table.', () => {
-			const table = new InstructionTable<number>();
 			table.add(mock_instruction);
 			assert.ok(!table.isEmpty);
 		});
@@ -34,7 +39,6 @@ describe('InstructionTable', () => {
 
 	describe('#getByOpcode', () => {
 		it('gets an instruction given its opcode.', () => {
-			const table = new InstructionTable<number>();
 			table.add(mock_instruction);
 			assert.strictEqual(table.getByOpcode(0n), mock_instruction);
 		});
@@ -42,8 +46,7 @@ describe('InstructionTable', () => {
 
 
 	describe('#getByName', () => {
-		it('gets an instruction given its opcode.', () => {
-			const table = new InstructionTable<number>();
+		it('gets an instruction given its name.', () => {
 			table.add(mock_instruction);
 			assert.strictEqual(table.getByName('noop'), mock_instruction);
 		});
@@ -52,7 +55,6 @@ describe('InstructionTable', () => {
 
 	describe('#getSymbols', () => {
 		it('inspects the symbols in the table.', () => {
-			const table = new InstructionTable<number>();
 			table.add(mock_instruction);
 			assert.deepStrictEqual(table.getSymbols(), new Map([
 				[mock_instruction.opcode, mock_instruction.name],
