@@ -12,12 +12,6 @@ export class Stack<T> {
 	private readonly array: T[] = [];
 
 	/**
-	 * Construct a new Stack object.
-	 */
-	constructor () {
-	}
-
-	/**
 	 * Is this Stack empty?
 	 * @return `true` if this Stack contains no items
 	 */
@@ -32,7 +26,7 @@ export class Stack<T> {
 	 */
 	peek(): T {
 		if (this.isEmpty) {
-			throw new Error('Cannot peek empty stack.')
+			throw new Error('Cannot peek empty stack.');
 		}
 		return this.array[this.array.length - 1];
 	}

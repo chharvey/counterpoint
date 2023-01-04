@@ -1,7 +1,5 @@
 import * as assert from 'assert';
-import {
-	Stack,
-} from '../../src/index.js';
+import {Stack} from '../../src/index.js';
 
 
 

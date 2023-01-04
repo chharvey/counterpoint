@@ -1,6 +1,4 @@
-import type {
-	Opcode,
-} from './utils-private.js';
+import type {Opcode} from './utils-private.js';
 
 
 
@@ -28,13 +26,7 @@ export type Instruction<T> = {
  */
 export class InstructionTable<T> {
 	/** Internal implemenation of this InstructionTable’s data. */
-	private readonly map: Map<Opcode, Instruction<T>> = new Map();
-
-	/**
-	 * Construct a new InstructionTable object.
-	 */
-	constructor () {
-	}
+	private readonly map = new Map<Opcode, Instruction<T>>();
 
 	/**
 	 * Is this InstructionTable empty?
@@ -50,7 +42,7 @@ export class InstructionTable<T> {
 	 * @return        the Instruction with the given opcode, or `null`
 	 */
 	getByOpcode(opcode: Opcode): Instruction<T> | null {
-		return this.map.get(opcode) || null;
+		return this.map.get(opcode) ?? null;
 	}
 
 	/**
@@ -59,7 +51,7 @@ export class InstructionTable<T> {
 	 * @return      the Instruction with the given name, or `null`
 	 */
 	getByName(name: string): Instruction<T> | null {
-		return [...this.map.values()].find((inst) => inst.name === name) || null;
+		return [...this.map.values()].find((inst) => inst.name === name) ?? null;
 	}
 
 	/**

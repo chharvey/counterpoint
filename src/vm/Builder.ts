@@ -1,6 +1,4 @@
-import type {
-	Opcode,
-} from './utils-private.js';
+import type {Opcode} from './utils-private.js';
 import type {
 	Instruction,
 	InstructionTable,
@@ -35,9 +33,7 @@ export class Builder<T> {
 	private readonly _data: T[] = [];
 
 	/** A mapping of labels to instruction pointers (or indexes into the program section). */
-	private readonly _labels: Record<string, Opcode> = {
-		main: 0n,
-	};
+	private readonly _labels: Record<string, Opcode> = {main: 0n};
 
 	/** A list of instruction names (symbols) stored by op code for easier debugging. */
 	private readonly _instructions: Opcode[] = [];
@@ -46,23 +42,20 @@ export class Builder<T> {
 	 * Construct a new Builder object.
 	 * @param instruction_table Gives access to labels, opcodes and instruction arities.
 	 */
-	constructor (
-		private readonly instruction_table: InstructionTable<T>,
-	) {
-	}
+	constructor(private readonly instruction_table: InstructionTable<T>) {}
 
 	/** A list of constant operands. */
-	get data(): readonly T[] {
+	get data(): T[] {
 		return [...this._data];
 	}
 
 	/** A mapping of labels to instruction pointers (or indexes into the program section). */
-	get labels(): Readonly<Record<string, Opcode>> {
+	get labels(): Record<string, Opcode> {
 		return {...this._labels};
 	}
 
 	/** A list of instruction names (symbols) stored by op code for easier debugging. */
-	get instructions(): readonly Opcode[] {
+	get instructions(): Opcode[] {
 		return [...this._instructions];
 	}
 
