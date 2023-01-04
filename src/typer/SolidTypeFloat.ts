@@ -18,7 +18,7 @@ export class SolidTypeFloat extends SolidType {
 		super(false, new Set([new Float64(0.0)]));
 	}
 	override toString(): string {
-		return 'int';
+		return 'float';
 	}
 	override includes(v: SolidObject): boolean {
 		return v instanceof Float64;

@@ -48,7 +48,7 @@ describe('ASTNodeExpression', () => {
 
 
 		describe('#type', () => {
-			it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
+			it('returns the result of `this#fold`, wrapped in a `new SolidTypeUnit`.', () => {
 				const constants: AST.ASTNodeConstant[] = `
 					null  false  true
 					55  -55  033  -033  0  -0
@@ -329,7 +329,7 @@ describe('ASTNodeExpression', () => {
 						};
 					}));
 				});
-				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
+				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new SolidTypeUnit`.', () => {
 					assert.deepStrictEqual(
 						types.slice(0, 2),
 						templates.slice(0, 2).map((t) => new SolidTypeUnit(t.fold()!)),
@@ -414,16 +414,17 @@ describe('ASTNodeExpression', () => {
 				assert.deepStrictEqual(
 					collections.map((node) => node.type()),
 					[
-						SolidTypeTuple.fromTypes(expected).mutableOf(),
+						SolidTypeTuple.fromTypes(expected, true),
 						SolidTypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [
 							c.key.id,
 							expected[i],
-						]))).mutableOf(),
-						new SolidTypeSet(SolidType.unionAll(expected)).mutableOf(),
+						])), true),
+						new SolidTypeSet(SolidType.unionAll(expected), true),
 						new SolidTypeMap(
 							map_ant_type,
 							SolidType.unionAll(expected),
-						).mutableOf(),
+							true,
+						),
 					],
 				);
 			}));

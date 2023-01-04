@@ -1,13 +1,22 @@
 import {
 	SolidObject,
-	SolidTuple,
 	SolidList,
 } from './index.js';
 import {SolidType} from './SolidType.js';
+import {SolidTypeUnit} from './SolidTypeUnit.js';
 
 
 
 export class SolidTypeList extends SolidType {
+	/**
+	 * Is the argument a unit list type?
+	 * @return whether the argument is a `SolidTypeUnit` and its value is a `SolidList`
+	 */
+	static isUnitType(type: SolidType): type is SolidTypeUnit<SolidList> {
+		return type instanceof SolidTypeUnit && type.value instanceof SolidList;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**
@@ -31,10 +40,7 @@ export class SolidTypeList extends SolidType {
 	}
 
 	override includes(v: SolidObject): boolean {
-		return (
-			   v instanceof SolidList  && v.toType().isSubtypeOf(this)
-			|| v instanceof SolidTuple && v.toType().isSubtypeOf(this)
-		);
+		return v instanceof SolidList && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: SolidType): boolean {

@@ -94,7 +94,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 					}
 				}
 				if (!!value && value instanceof Primitive) {
-					this.typed = new SolidTypeUnit(value);
+					this.typed = new SolidTypeUnit<Primitive>(value);
 				};
 			};
 		};

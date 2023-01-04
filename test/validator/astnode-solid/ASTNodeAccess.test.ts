@@ -102,8 +102,8 @@ describe('ASTNodeAccess', () => {
 		%% statements 0 – 4 %%
 		let         rec_fixed:    [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
 		let unfixed rec_unfixed:  [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
-		let         hash_fixed:   [: int | float | str]      = Hash.<int | float | str>([a= 1, b= 2.0, c= 'three']);
-		let unfixed hash_unfixed: [: int | float | str]      = Hash.<int | float | str>([a= 1, b= 2.0, c= 'three']);
+		let         dict_fixed:   [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, c= 'three']);
+		let unfixed dict_unfixed: [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, c= 'three']);
 
 		%% statements 4 – 10 %%
 		rec_fixed.a;   % type \`1\`       % value \`1\`
@@ -114,12 +114,12 @@ describe('ASTNodeAccess', () => {
 		rec_unfixed.c; % type \`str\`     % non-computable value
 
 		%% statements 10 – 16 %%
-		hash_fixed.a;   % type \`1\`                 % value \`1\`
-		hash_fixed.b;   % type \`2.0\`               % value \`2.0\`
-		hash_fixed.c;   % type \`'three'\`           % value \`'three'\`
-		hash_unfixed.a; % type \`int | float | str\` % non-computable value
-		hash_unfixed.b; % type \`int | float | str\` % non-computable value
-		hash_unfixed.c; % type \`int | float | str\` % non-computable value
+		dict_fixed.a;   % type \`1\`                 % value \`1\`
+		dict_fixed.b;   % type \`2.0\`               % value \`2.0\`
+		dict_fixed.c;   % type \`'three'\`           % value \`'three'\`
+		dict_unfixed.a; % type \`int | float | str\` % non-computable value
+		dict_unfixed.b; % type \`int | float | str\` % non-computable value
+		dict_unfixed.c; % type \`int | float | str\` % non-computable value
 
 		%% statements 16 – 24 %%
 		let         reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
@@ -141,8 +141,8 @@ describe('ASTNodeAccess', () => {
 		reco2_u?.b; % type \`str?\`    % non-computable value
 
 		%% statements 29 – 31 %%
-		hash_fixed?.c;   % type \`'three'\`                  % value \`'three'\`
-		hash_unfixed?.c; % type \`int | float | str | null\` % non-computable value
+		dict_fixed?.c;   % type \`'three'\`                  % value \`'three'\`
+		dict_unfixed?.c; % type \`int | float | str | null\` % non-computable value
 
 		%% statements 31 – 34 %%
 		reco1_f!.b; % type \`'three'\` % value \`'three'\`
@@ -187,12 +187,12 @@ describe('ASTNodeAccess', () => {
 		list_unfixed.[0 + 2]; % type \`int | float | str\` % non-computable value
 
 		%% statements 24 – 30 %%
-		set_fixed  .[1];       % type \`1\`                 % value \`1\`
-		set_fixed  .[2.0];     % type \`2.0\`               % value \`2.0\`
-		set_fixed  .['three']; % type \`'three'\`           % value \`'three'\`
-		set_unfixed.[1];       % type \`int | float | str\` % non-computable value
-		set_unfixed.[2.0];     % type \`int | float | str\` % non-computable value
-		set_unfixed.['three']; % type \`int | float | str\` % non-computable value
+		set_fixed  .[1];       % type \`true\` % value \`true\`
+		set_fixed  .[2.0];     % type \`true\` % value \`true\`
+		set_fixed  .['three']; % type \`true\` % value \`true\`
+		set_unfixed.[1];       % type \`bool\` % non-computable value
+		set_unfixed.[2.0];     % type \`bool\` % non-computable value
+		set_unfixed.['three']; % type \`bool\` % non-computable value
 
 		%% statements 30 – 36 %%
 		map_fixed  .[a]; % type \`1\`             % value \`1\`
@@ -224,8 +224,8 @@ describe('ASTNodeAccess', () => {
 		%% statements 49 – 55 %%
 		list_fixed  ?.[2];       % type \`'three'\`                  % value \`'three'\`
 		list_unfixed?.[2];       % type \`int | float | str | null\` % non-computable value
-		set_fixed   ?.['three']; % type \`'three'\`                  % value \`'three'\`
-		set_unfixed ?.[three];   % type \`int | float | str | null\` % non-computable value
+		set_fixed   ?.['three']; % type \`true\`                     % value\`true\`
+		set_unfixed ?.[three];   % type \`bool\`                     % non-computable value
 		map_fixed   ?.[c];       % type \`'three'\`                  % value \`'three'\`
 		map_unfixed ?.[c];       % type \`int | float | str | null\` % non-computable value
 
@@ -453,7 +453,7 @@ describe('ASTNodeAccess', () => {
 					expected_o,
 				);
 			});
-			it('unions with null for hashes if access is optional.', () => {
+			it('unions with null for dicts if access is optional.', () => {
 				assert.deepStrictEqual(
 					program.children.slice(29, 31).map((c) => typeOfStmtExpr(c)),
 					[
@@ -478,10 +478,10 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`) .type(), TypeError04);
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).type(), TypeError04);
 			});
-			it('returns the hash item type when key is out of bounds for hashes.', () => {
+			it('returns the dict item type when key is out of bounds for dicts.', () => {
 				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed hash: [: int | float | str] = Hash.<int | float| str>([a= 1, b= 2.0, c= 'three']);
-					hash.d;
+					let unfixed dict: [: int | float | str] = Dict.<int | float| str>([a= 1, b= 2.0, c= 'three']);
+					dict.d;
 				`);
 				program.varCheck();
 				program.typeCheck();
@@ -517,16 +517,19 @@ describe('ASTNodeAccess', () => {
 						],
 					);
 				});
-				it('returns the union of all element types, constants, for sets.', () => {
-					assert.deepStrictEqual(
-						program.children.slice(24, 30).map((c) => typeOfStmtExpr(c)),
-						[
-							...expected.slice(0, 3),
-							COMMON_TYPES.int_float_str,
-							COMMON_TYPES.int_float_str,
-							COMMON_TYPES.int_float_str,
-						],
-					);
+				it('returns boolean values for sets.', () => {
+					program.children.slice(24, 27).forEach((c) => (
+						assert.deepStrictEqual(
+							typeOfStmtExpr(c),
+							SolidBoolean.TRUETYPE,
+						)
+					));
+					return program.children.slice(27, 30).forEach((c) => (
+						assert.deepStrictEqual(
+							typeOfStmtExpr(c),
+							SolidType.BOOL,
+						)
+					));
 				});
 				it('returns the union of all consequent types, constants, for maps.', () => {
 					assert.deepStrictEqual(
@@ -554,16 +557,26 @@ describe('ASTNodeAccess', () => {
 						expected_o,
 					);
 				});
-				it('unions with null if list/set/mappping access is optional.', () => {
+				it('unions with null if list/map access is optional.', () => {
 					assert.deepStrictEqual(
-						program.children.slice(49, 55).map((c) => typeOfStmtExpr(c)),
+						[
+							...program.children.slice(49, 51),
+							...program.children.slice(53, 55),
+						].map((c) => typeOfStmtExpr(c)),
 						[
 							typeConstStr('three'),
 							COMMON_TYPES.int_float_str.union(SolidType.NULL),
 							typeConstStr('three'),
 							COMMON_TYPES.int_float_str.union(SolidType.NULL),
-							typeConstStr('three'),
-							COMMON_TYPES.int_float_str.union(SolidType.NULL),
+						],
+					);
+				});
+				it('does not union with null even when set access is optional.', () => {
+					assert.deepStrictEqual(
+						program.children.slice(51, 53).map((c) => typeOfStmtExpr(c)),
+						[
+							SolidBoolean.TRUETYPE,
+							SolidType.BOOL,
 						],
 					);
 				});
@@ -623,11 +636,11 @@ describe('ASTNodeAccess', () => {
 						);
 					});
 				});
-				it('returns the union of all element types for sets.', () => {
+				it('returns type `bool` for sets.', () => {
 					program.children.slice(24, 30).forEach((c) => {
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
-							COMMON_TYPES.int_float_str,
+							SolidType.BOOL,
 						);
 					});
 				});
@@ -647,21 +660,30 @@ describe('ASTNodeAccess', () => {
 						);
 					});
 				});
-				it('unions with null if access is optional.', () => {
-					assert.deepStrictEqual(
-						program.children.slice(46, 49).map((c) => typeOfStmtExpr(c)),
-						[
+				it('unions with null if tuple entry and access are optional.', () => {
+					program.children.slice(46, 49).forEach((c) => {
+						assert.deepStrictEqual(
+							typeOfStmtExpr(c),
 							COMMON_TYPES.int_float_str_null,
-							COMMON_TYPES.int_float_str_null,
-							COMMON_TYPES.int_float_str_null,
-						],
-					);
-					program.children.slice(49, 55).forEach((c) => {
+						);
+					});
+				});
+				it('unions with null if list/map access is optional.', () => {
+					[
+						...program.children.slice(49, 51),
+						...program.children.slice(53, 55),
+					].forEach((c) => {
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
 							COMMON_TYPES.int_float_str.union(SolidType.NULL),
 						);
 					});
+				});
+				it('does not union with null even when set access is optional.', () => {
+					return program.children.slice(51, 53).forEach((c) => assert.deepStrictEqual(
+						typeOfStmtExpr(c),
+						SolidType.BOOL,
+					));
 				});
 				it('claim access always subtracts void.', () => {
 					assert.deepStrictEqual(
@@ -878,12 +900,19 @@ describe('ASTNodeAccess', () => {
 			it('returns individual entries for sets.', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 30).map((c) => foldStmtExpr(c)),
-					expected,
+					[
+						SolidBoolean.TRUE,
+						SolidBoolean.TRUE,
+						SolidBoolean.TRUE,
+						null,
+						null,
+						null,
+					],
 				);
 				assert.deepStrictEqual(
 					program.children.slice(51, 53).map((c) => foldStmtExpr(c)),
 					[
-						new SolidString('three'),
+						SolidBoolean.TRUE,
 						null,
 					],
 				);
@@ -903,13 +932,20 @@ describe('ASTNodeAccess', () => {
 			});
 			it('throws when accessor expression is out of bounds.', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`)                               .fold(), VoidError01);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}.[3];`)                               .fold(), VoidError01);
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.[['a']];`).fold(), VoidError01);
+			});
+			it('returns false when (optionally) accessing element not in set.', () => {
+				return [
+					'{1, 2.0, \'three\'} .[3];',
+					'{1, 2.0, \'three\'}?.[3];',
+				].forEach((src) => assert.deepStrictEqual(
+					AST.ASTNodeAccess.fromSource(src).fold(),
+					SolidBoolean.FALSE,
+				));
 			});
 			it('returns null when optionally accessing index/antecedent out of bounds.', () => {
 				[
 					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`)                               .fold(),
-					AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}?.[3];`)                               .fold(),
 					AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}?.[['a']];`).fold(),
 				].forEach((v) => {
 					assert.deepStrictEqual(v, SolidNull.NULL);
