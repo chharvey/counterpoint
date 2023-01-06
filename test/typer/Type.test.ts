@@ -178,6 +178,11 @@ describe('Type', () => {
 				`,
 			);
 		});
+		describe('TypeIntersection', () => {
+			it.skip('distributes intersection operands over union: `(B  & C) \| A == (B \| A)  & (C \| A)`.', () => {
+				'TODO';
+			});
+		});
 	});
 
 
