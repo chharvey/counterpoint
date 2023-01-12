@@ -8,5 +8,6 @@ export {
 	Instruction as VMInstruction,
 	InstructionTable,
 	Builder as VMBuilder,
+	Machine,
 } from './vm/index.js';
 export * from './error/index.js';

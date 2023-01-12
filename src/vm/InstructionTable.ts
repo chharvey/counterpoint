@@ -1,4 +1,5 @@
 import type {Opcode} from './utils-private.js';
+import type {Machine} from './Machine.js';
 
 
 
@@ -15,7 +16,7 @@ export type Instruction<T> = {
 	/** Number of arguments this Instruction takes. */
 	readonly arity: bigint,
 	/** The action that this Instruction will perform. */
-	readonly action: (machine: unknown, args: T[]) => void,
+	readonly action: (machine: Machine<T>, args: bigint[]) => void,
 };
 
 

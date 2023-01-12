@@ -11,7 +11,7 @@ import type {
  * @typeparam T the type of items in an operand {@link Stack}
  * @see https://dev.to/jimsy/building-a-stack-based-virtual-machine-part-4---code-3lmi
  */
-type Code<T> = {
+export type Code<T> = {
 	/** A list of constant operands. */
 	readonly data: readonly T[],
 	/** A list of instruction opcodes and indexes into the data section. */
@@ -64,7 +64,7 @@ export class Builder<T> {
 	 * @param name the name of the instruction to add
 	 * @param args the arguments to the instruction
 	 */
-	push(name: string, args: T[]): void {
+	push(name: string, args: T[] = []): this {
 		// Look up the instruction in the instruction table.
 		const instr: Instruction<T> | null = this.instruction_table.getByName(name);
 		if (!instr) {
@@ -85,14 +85,16 @@ export class Builder<T> {
 				: this._data.push(arg) - 1
 			));
 		});
+		return this;
 	}
 
 	/**
 	 * Look up the number of instructions currently in the program and store the name pointing to it.
 	 * @param name the name to give the new label
 	 */
-	label(name: string): void {
+	label(name: string): this {
 		this._labels[name] = BigInt(this._instructions.length);
+		return this;
 	}
 
 	/**
