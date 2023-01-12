@@ -32,11 +32,11 @@ export class Builder<T> {
 	/** A list of constant operands. */
 	private readonly _data: T[] = [];
 
+	/** A list of instruction opcodes and indexes into the data section. */
+	private readonly _instructions: Opcode[] = [];
+
 	/** A mapping of labels to instruction pointers (or indexes into the program section). */
 	private readonly _labels: Record<string, Opcode> = {main: 0n};
-
-	/** A list of instruction names (symbols) stored by op code for easier debugging. */
-	private readonly _instructions: Opcode[] = [];
 
 	/**
 	 * Construct a new Builder object.
@@ -49,14 +49,14 @@ export class Builder<T> {
 		return [...this._data];
 	}
 
+	/** A list of instruction opcodes and indexes into the data section. */
+	get instructions(): Opcode[] {
+		return [...this._instructions];
+	}
+
 	/** A mapping of labels to instruction pointers (or indexes into the program section). */
 	get labels(): Record<string, Opcode> {
 		return {...this._labels};
-	}
-
-	/** A list of instruction names (symbols) stored by op code for easier debugging. */
-	get instructions(): Opcode[] {
-		return [...this._instructions];
 	}
 
 	/**
