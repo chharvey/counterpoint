@@ -9,6 +9,14 @@ import type {Code} from './Builder.js';
 
 
 /**
+ * A function call stack frame.
+ * @see https://dev.to/jimsy/building-a-stack-based-virtual-machine-part-6---function-calls-2md5
+ */
+type Frame = {readonly returnAddress: bigint};
+
+
+
+/**
  * Assmbles the constituent parts into a greater whole.
  * @see https://dev.to/jimsy/building-a-stack-based-virtual-machine-part-5---the-machine-3jif
  */
@@ -17,6 +25,8 @@ export class Machine<T> {
 	private instruction_pointer: bigint = 0n;
 	/** Operand stack. */
 	private readonly operand_stack = new Stack<T>();
+	/** Call stack. */
+	private readonly call_stack = new Stack<Frame>();
 
 	/**
 	 * Construct a new Machine object.
@@ -26,7 +36,9 @@ export class Machine<T> {
 	constructor(
 		private readonly code: Code<T>,
 		private readonly instruction_table: InstructionTable<T>,
-	) {}
+	) {
+		this.call_stack.push({returnAddress: BigInt(this.code.code.length)});
+	}
 
 	/**
 	 * Push an operand to the operand stack.
@@ -59,6 +71,26 @@ export class Machine<T> {
 	}
 
 	/**
+	 * Call a function given its label.
+	 * @param  label the label of the function to call
+	 * @return       `this`
+	 */
+	call(label: string): this {
+		this.call_stack.push({returnAddress: this.instruction_pointer});
+		this.jump(label);
+		return this;
+	}
+
+	/**
+	 * Return from a called function.
+	 * @return `this`
+	 */
+	return(): this {
+		this.instruction_pointer = this.call_stack.pop()[1].returnAddress;
+		return this;
+	}
+
+	/**
 	 * Main run function.
 	 */
 	run(): void {
@@ -78,6 +110,19 @@ export class Machine<T> {
 			// call the instruction with the arguments
 			instr.action.call(null, this, args);
 		}
+	}
+
+	/**
+	 * Jump to the given label.
+	 * @param  label the label to jump to
+	 * @return       `this`
+	 */
+	private jump(label: string): this {
+		this.instruction_pointer = [...this.code.labels].find((entry) => entry[1] === label)?.[0] ?? (() => {
+			// TODO use `throw_expression`
+			throw new Error(`Attempted to jump to unknown label ${ label }`);
+		})();
+		return this;
 	}
 
 	/**
