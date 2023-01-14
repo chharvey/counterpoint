@@ -59,7 +59,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	override shouldFloat(): boolean {
 		return false;
 	}
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
+	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
 		throw builder && to_float && '`ASTNodeCall#build_do` not yet supported.'
 	}
 	protected override type_do(): SolidType {
