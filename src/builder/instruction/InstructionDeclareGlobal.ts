@@ -1,3 +1,4 @@
+import binaryen from 'binaryen';
 import {Instruction} from './Instruction.js';
 import type {InstructionExpression} from './InstructionExpression.js';
 
@@ -24,5 +25,9 @@ export class InstructionDeclareGlobal extends Instruction {
 	/** @return `'(global ‹name› ‹type› ‹init›)'` */
 	override toString(): string {
 		return `(global ${ this.name } ${ (this.mut) ? `(mut ${ this.type })` : this.type } ${ this.init })`;
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.addGlobal(this.name as string, (!this.init.isFloat) ? binaryen.i32 : binaryen.f64, this.mut, this.init.buildBin(mod));
 	}
 }

@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {
 	Operator,
 	ValidOperatorLogical,
@@ -52,5 +53,23 @@ export class InstructionBinopLogical extends InstructionBinop {
 	}
 	get isFloat(): boolean {
 		return this.floatarg
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		const varname: string = `$o${ this.count.toString(16) }`;
+		const condition: InstructionExpression = new InstructionUnop(
+			Operator.NOT,
+			new InstructionUnop(
+				Operator.NOT,
+				new InstructionLocalTee(varname, this.arg0),
+			),
+		);
+		const inst_left:  InstructionExpression = new InstructionLocalGet(varname, this.arg0.isFloat);
+		const inst_right: InstructionExpression = this.arg1;
+
+		new InstructionDeclareLocal(varname, this.arg0.isFloat).buildBin(mod);
+		return ((this.op === Operator.AND)
+			? new InstructionCond(condition, inst_right, inst_left)
+			: new InstructionCond(condition, inst_left,  inst_right)).buildBin(mod);
 	}
 }

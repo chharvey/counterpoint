@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {Instruction} from './Instruction.js';
 import type {InstructionNone} from './InstructionNone.js';
@@ -25,5 +26,14 @@ export class InstructionModule extends Instruction {
 				${ this.comps.join('\n') }
 			)
 		`
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		this.comps.forEach((comp) => {
+			// TODO: use xjs.Array.aggregateForEach
+			(comp instanceof Instruction) && comp.buildBin(mod);
+		});
+		mod.optimize();
+		return mod.validate();
 	}
 }

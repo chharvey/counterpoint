@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {
 	Operator,
 	ValidOperatorComparative,
@@ -34,5 +35,18 @@ export class InstructionBinopComparative extends InstructionBinop {
 	}
 	get isFloat(): boolean {
 		return false
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		const [left, right] = [this.arg0, this.arg1].map((arg) => arg.buildBin(mod));
+		const opname = new Map<Operator, 'lt' | 'gt' | 'le' | 'ge'>([
+			[Operator.LT, 'lt'],
+			[Operator.GT, 'gt'],
+			[Operator.LE, 'le'],
+			[Operator.GE, 'ge'],
+		]).get(this.op)!;
+		return ((!this.floatarg)
+			? mod.i32[`${ opname }_s`]
+			: mod.f64[opname])(left, right);
 	}
 }

@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {Instruction} from './Instruction.js';
 
 
@@ -11,5 +12,9 @@ export class InstructionUnreachable extends Instruction {
 	 */
 	override toString(): string {
 		return `(unreachable)`
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.unreachable();
 	}
 }

@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {Instruction} from './Instruction.js';
 
 
@@ -19,5 +20,9 @@ export class InstructionDeclareLocal extends Instruction {
 	/** @return `'(local ‹name› ‹type›)'` */
 	override toString(): string {
 		return `(local ${ this.name } ${ (this.to_float) ? 'f64' : 'i32' })`;
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		throw mod && '`InstructionDeclareLocal#buildBin` not yet supported.';
 	}
 }

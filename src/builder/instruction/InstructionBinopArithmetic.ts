@@ -1,3 +1,4 @@
+import binaryen from 'binaryen';
 import {
 	Operator,
 	ValidOperatorArithmetic,
@@ -36,5 +37,24 @@ export class InstructionBinopArithmetic extends InstructionBinop {
 	}
 	get isFloat(): boolean {
 		return this.floatarg
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		const [left, right] = [this.arg0, this.arg1].map((arg) => arg.buildBin(mod));
+		if (this.op === Operator.EXP) {
+			return (this.floatarg)
+				? new InstructionUnreachable().buildBin(mod) // TODO: support runtime exponentiation for floats
+				: mod.call('$exp', [left, right], binaryen.i32);
+		}
+		if (this.op === Operator.DIV) {
+			return !this.floatarg
+				? mod.i32.div_s(left, right)
+				: mod.f64.div(left, right);
+		}
+		return mod[(!this.floatarg) ? 'i32' : 'f64'][new Map<Operator, 'mul' | 'add' | 'sub'>([
+			[Operator.MUL, 'mul'],
+			[Operator.ADD, 'add'],
+			[Operator.SUB, 'sub'],
+		]).get(this.op)!](left, right);
 	}
 }

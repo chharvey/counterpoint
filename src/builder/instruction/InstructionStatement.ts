@@ -1,3 +1,4 @@
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {Instruction} from './Instruction.js';
 import type {InstructionExpression} from './InstructionExpression.js';
@@ -32,5 +33,17 @@ export class InstructionStatement extends Instruction {
 				${ this.expr }
 			)
 		`
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.addFunction(
+			`f${ this.count }`,
+			binaryen.createType([]),
+			(this.expr instanceof InstructionGlobalSet)
+				? binaryen.createType([])
+				: (!this.expr.isFloat) ? binaryen.i32 : binaryen.f64,
+			[],
+			this.expr.buildBin(mod),
+		);
 	}
 }

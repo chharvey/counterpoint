@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {InstructionLocal} from './InstructionLocal.js';
 
 
@@ -12,5 +13,10 @@ export class InstructionLocalGet extends InstructionLocal {
 	/** @return `'(local.get ‹name›)'` */
 	override toString(): string {
 		return `(local.get ${ this.name })`
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		const idx = +this.name; // TODO don’t allow string names
+		return mod.local.get(idx, this.binType);
 	}
 }

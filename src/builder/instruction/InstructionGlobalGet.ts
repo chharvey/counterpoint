@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {InstructionGlobal} from './InstructionGlobal.js';
 
 
@@ -12,5 +13,9 @@ export class InstructionGlobalGet extends InstructionGlobal {
 	/** @return `'(global.get ‹name›)'` */
 	override toString(): string {
 		return `(global.get ${ this.name })`;
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.global.get(this.name, this.binType);
 	}
 }

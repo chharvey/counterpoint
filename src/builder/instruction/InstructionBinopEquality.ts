@@ -1,3 +1,4 @@
+import binaryen from 'binaryen';
 import {
 	Operator,
 	ValidOperatorEquality,
@@ -36,5 +37,18 @@ export class InstructionBinopEquality extends InstructionBinop {
 	}
 	get isFloat(): boolean {
 		return false
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		const [left, right] = [this.arg0, this.arg1].map((arg) => arg.buildBin(mod));
+		return (
+			(!this.arg0.isFloat && !this.arg1.isFloat) ? mod.i32.eq(left, right) : // `ID` and `EQ` give the same result
+			(!this.arg0.isFloat &&  this.arg1.isFloat) ? mod.call('$i_f_id', [left, right], binaryen.i32) :
+			( this.arg0.isFloat && !this.arg1.isFloat) ? mod.call('$f_i_id', [left, right], binaryen.i32) :
+			( this.arg0.isFloat &&  this.arg1.isFloat,   (this.op === Operator.ID)
+				? mod.call('$fid', [left, right], binaryen.i32)
+				: mod.f64.eq(left, right)
+			)
+		);
 	}
 }
