@@ -17,7 +17,9 @@ export class InstructionCond extends InstructionExpression {
 		private readonly arg2: InstructionExpression,
 	) {
 		super()
-		if ((this.arg1.isFloat || this.arg2.isFloat) && (!this.arg1.isFloat || !this.arg2.isFloat)) {
+		const intarg: boolean   = !this.arg1.isFloat || !this.arg2.isFloat;
+		const floatarg: boolean =  this.arg1.isFloat ||  this.arg2.isFloat;
+		if (intarg && floatarg) {
 			throw new TypeError(`Both branches must be either integers or floats, but not a mix.\nOperands: ${ this.arg1 } ${ this.arg2 }`)
 		}
 	}
