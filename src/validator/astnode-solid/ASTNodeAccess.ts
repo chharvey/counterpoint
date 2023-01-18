@@ -53,7 +53,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeAccess#build_do not yet supported.';
+		throw builder && '`ASTNodeAccess#build_do` not yet supported.';
 	}
 	protected override type_do(): SolidType {
 		let base_type: SolidType = this.base.type();
