@@ -61,13 +61,10 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			}
 		}
 	}
-	override build(builder: Builder): INST.InstructionStatement {
-		return new INST.InstructionStatement(
-			builder.stmtCount,
-			new INST.InstructionGlobalSet(
-				(this.assignee as ASTNodeVariable).id,
-				this.assigned.build(builder, this.assignee.type().isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat()),
-			),
+	override build(builder: Builder): INST.InstructionGlobalSet {
+		return new INST.InstructionGlobalSet(
+			(this.assignee as ASTNodeVariable).id,
+			this.assigned.build(builder, this.assignee.type().isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat()),
 		);
 	}
 }

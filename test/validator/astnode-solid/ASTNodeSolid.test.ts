@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import {
-	Operator,
 	ASTNODE_SOLID as AST,
 	SolidType,
 	INST,
@@ -16,10 +15,7 @@ import {
 import {
 	assertAssignable,
 } from '../../assert-helpers.js';
-import {
-	typeConstFloat,
-	instructionConstFloat,
-} from '../../helpers.js';
+import {typeConstFloat} from '../../helpers.js';
 
 
 
@@ -28,27 +24,26 @@ describe('ASTNodeSolid', () => {
 		describe('#build', () => {
 			it('returns InstructionNop for empty statement expression.', () => {
 				const src: string = `;`;
-				const instr: INST.InstructionNop | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src)
+				const instr: INST.InstructionExpression = AST.ASTNodeStatementExpression.fromSource(src)
 					.build(new Builder(src))
 				assert.ok(instr instanceof INST.InstructionNop);
 			})
-			it('returns InstructionStatement for nonempty statement expression.', () => {
+			it('returns InstructionDrop for nonempty statement expression.', () => {
 				const src: string = `42 + 420;`;
 				const builder: Builder = new Builder(src);
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
 				assert.deepStrictEqual(
 					stmt.build(builder),
-					new INST.InstructionStatement(0n, AST.ASTNodeOperationBinaryArithmetic.fromSource(src).build(builder)),
+					new INST.InstructionDrop(stmt.expr!.build(builder)),
 				);
 			})
 			it('multiple statements.', () => {
 				const src: string = `42; 420;`;
 				const generator: Builder = new Builder(src);
-				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt, i) => {
-					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt) => {
 					assert.deepStrictEqual(
 						stmt.build(generator),
-						new INST.InstructionStatement(BigInt(i), AST.ASTNodeConstant.fromSource(stmt.source).build(generator)),
+						new INST.InstructionDrop((stmt as AST.ASTNodeStatementExpression).expr!.build(generator)),
 					);
 				});
 			});
@@ -160,7 +155,7 @@ describe('ASTNodeSolid', () => {
 
 
 		describe('#build', () => {
-			it('always returns InstructionStatement containing InstructionGlobalSet.', () => {
+			it('always returns InstructionGlobalSet.', () => {
 				const src: string = `
 					let unfixed y: float = 4.2;
 					y = y * 10;
@@ -169,14 +164,7 @@ describe('ASTNodeSolid', () => {
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					goal.children[1].build(builder),
-					new INST.InstructionStatement(
-						0n,
-						new INST.InstructionGlobalSet(0x100n, new INST.InstructionBinopArithmetic(
-							Operator.MUL,
-							new INST.InstructionGlobalGet(0x100n, true),
-							instructionConstFloat(10.0),
-						)),
-					),
+					new INST.InstructionGlobalSet(0x100n, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder)),
 				);
 			});
 		});

@@ -28,8 +28,6 @@ export class Builder {
 	private readonly ast_goal: AST.ASTNodeGoal;
 	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
 	private var_count: bigint = 0n
-	/** A counter for statements. */
-	private stmt_count: bigint = 0n;
 
 	/**
 	 * Construct a new Builder object.
@@ -48,16 +46,6 @@ export class Builder {
 	 */
 	get varCount(): bigint {
 		return this.var_count++
-	}
-
-	/**
-	 * Return this Builder’s statement count, and then increment it.
-	 * Also resets the short-circuit variable count.
-	 * @return this Builder’s current statement counter
-	 */
-	get stmtCount(): bigint {
-		this.var_count = 0n
-		return this.stmt_count++
 	}
 
 	/**

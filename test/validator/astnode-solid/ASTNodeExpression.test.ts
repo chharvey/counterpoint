@@ -243,12 +243,12 @@ describe('ASTNodeExpression', () => {
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					[
-						goal.children[2].build(builder),
-						goal.children[3].build(builder),
+						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
+						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, instructionConstInt(42n)),
-						new INST.InstructionStatement(1n, instructionConstFloat(42.0)),
+						instructionConstInt(42n),
+						instructionConstFloat(42.0),
 					],
 				);
 			});
@@ -265,12 +265,12 @@ describe('ASTNodeExpression', () => {
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					[
-						goal.children[2].build(builder),
-						goal.children[3].build(builder),
+						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
+						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n)),
+						new INST.InstructionGlobalGet(0x100n),
+						new INST.InstructionGlobalGet(0x101n),
 					],
 				);
 			});
@@ -287,12 +287,12 @@ describe('ASTNodeExpression', () => {
 				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 				assert.deepStrictEqual(
 					[
-						goal.children[2].build(builder),
-						goal.children[3].build(builder),
+						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
+						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n, true)),
+						new INST.InstructionGlobalGet(0x100n),
+						new INST.InstructionGlobalGet(0x101n, true),
 					],
 				);
 			});

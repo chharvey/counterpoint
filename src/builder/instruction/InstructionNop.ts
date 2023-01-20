@@ -1,12 +1,16 @@
 import type binaryen from 'binaryen';
-import {Instruction} from './Instruction.js';
+import {InstructionExpression} from './InstructionExpression.js';
 
 
 
 /**
  * Do nothing at runtime.
  */
-export class InstructionNop extends Instruction {
+export class InstructionNop extends InstructionExpression {
+	public override get isFloat(): boolean {
+		return false;
+	}
+
 	/**
 	 * @return `'(nop)'`
 	 */

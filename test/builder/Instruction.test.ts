@@ -228,20 +228,6 @@ describe('Instruction', () => {
 			);
 		});
 
-		describe('InstructionStatement', () => {
-			it('returns the expression.', () => {
-				const expr: INST.InstructionBinopArithmetic = new INST.InstructionBinopArithmetic(
-					Operator.MUL,
-					instructionConstInt(21n),
-					instructionConstInt(2n),
-				)
-				assert.strictEqual(
-					new INST.InstructionStatement(0n, expr).toString(),
-					expr.toString(),
-				)
-			})
-		})
-
 		describe('InstructionFunction', () => {
 			it('returns a wasm function.', () => {
 				const expr: INST.InstructionBinopArithmetic = new INST.InstructionBinopArithmetic(
