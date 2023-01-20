@@ -17,4 +17,5 @@ export * from './InstructionCond.js';
 export * from './InstructionStatement.js';
 export * from './InstructionDeclareGlobal.js';
 export * from './InstructionDeclareLocal.js';
+export * from './InstructionFunction.js';
 export * from './InstructionModule.js';

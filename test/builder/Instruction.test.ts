@@ -229,7 +229,7 @@ describe('Instruction', () => {
 		});
 
 		describe('InstructionStatement', () => {
-			it('returns a wasm function.', () => {
+			it('returns the expression.', () => {
 				const expr: INST.InstructionBinopArithmetic = new INST.InstructionBinopArithmetic(
 					Operator.MUL,
 					instructionConstInt(21n),
@@ -237,14 +237,28 @@ describe('Instruction', () => {
 				)
 				assert.strictEqual(
 					new INST.InstructionStatement(0n, expr).toString(),
-					xjs.String.dedent`
-						(func (export "f0") (result i32)
-							${ expr }
-						)
-					`,
+					expr.toString(),
 				)
 			})
 		})
+
+		describe('InstructionFunction', () => {
+			it('returns a wasm function.', () => {
+				const expr: INST.InstructionBinopArithmetic = new INST.InstructionBinopArithmetic(
+					Operator.MUL,
+					instructionConstInt(21n),
+					instructionConstInt(2n),
+				);
+				assert.strictEqual(
+					new INST.InstructionFunction(0n, [expr]).toString(),
+					xjs.String.dedent`
+						(func $fn0
+							${ expr }
+						)
+					`,
+				);
+			});
+		});
 
 		context('InstructionModule', () => {
 			it('creates a program.', () => {
@@ -260,7 +274,7 @@ describe('Instruction', () => {
 				assert.ok(mods[1] instanceof INST.InstructionModule);
 				assert.deepStrictEqual(mods[1], new INST.InstructionModule([
 					...Builder.IMPORTS,
-					new INST.InstructionNop(),
+					new INST.InstructionFunction(0n, [new INST.InstructionNop()]),
 				]))
 			})
 		})

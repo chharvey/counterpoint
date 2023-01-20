@@ -1,8 +1,6 @@
-import binaryen from 'binaryen';
-import * as xjs from 'extrajs';
+import type binaryen from 'binaryen';
 import {Instruction} from './Instruction.js';
 import type {InstructionExpression} from './InstructionExpression.js';
-import {InstructionGlobalSet} from './InstructionGlobalSet.js';
 
 
 
@@ -19,31 +17,16 @@ export class InstructionStatement extends Instruction {
 		private readonly expr: InstructionExpression,
 	) {
 		super()
+		this.count;
 	}
 	/**
 	 * @return a new function evaluating the argument
 	 */
 	override toString(): string {
-		const result: string = (this.expr instanceof InstructionGlobalSet)
-			? ''
-			: `(result ${ (this.expr.isFloat) ? 'f64' : 'i32' })`
-		;
-		return xjs.String.dedent`
-			(func (export "f${ this.count }") ${ result }
-				${ this.expr }
-			)
-		`
+		return this.expr.toString();
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
-		return mod.addFunction(
-			`f${ this.count }`,
-			binaryen.createType([]),
-			(this.expr instanceof InstructionGlobalSet)
-				? binaryen.createType([])
-				: (!this.expr.isFloat) ? binaryen.i32 : binaryen.f64,
-			[],
-			this.expr.buildBin(mod),
-		);
+		return this.expr.buildBin(mod);
 	}
 }

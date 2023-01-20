@@ -18,7 +18,7 @@ export class InstructionDeclareGlobal extends Instruction {
 
 	private readonly type: string = (this.init.isFloat) ? 'f64' : 'i32';
 	/**
-	 * @param id   an unique id number
+	 * @param id   a unique id number
 	 * @param mut  is the variable mutable? (may it be reassigned?)
 	 * @param init the initial value of the variable
 	 */

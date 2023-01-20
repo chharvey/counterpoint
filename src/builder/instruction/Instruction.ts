@@ -9,6 +9,7 @@ import type binaryen from 'binaryen';
  * - InstructionStatement
  * - InstructionDeclareGlobal
  * - InstructionDeclareLocal
+ * - InstructionFunction
  * - InstructionModule
  */
 export abstract class Instruction {
