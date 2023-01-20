@@ -3,8 +3,6 @@ import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
-	INST,
-	Builder,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -27,11 +25,6 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
-	}
-
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeSet#build_do not yet supported.';
 	}
 
 	protected override type_do(): TYPE.Type {

@@ -3,8 +3,6 @@ import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
-	INST,
-	Builder,
 	NonemptyArray,
 	CPConfig,
 	CONFIG_DEFAULT,
@@ -29,11 +27,6 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		public override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, children);
-	}
-
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeMap#build_do not yet supported.';
 	}
 
 	protected override type_do(): TYPE.Type {

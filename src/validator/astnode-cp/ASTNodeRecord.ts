@@ -3,8 +3,6 @@ import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
-	INST,
-	Builder,
 	AssignmentError02,
 	NonemptyArray,
 	CPConfig,
@@ -41,11 +39,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				throw new AssignmentError02(keys[i]);
 			}
 		});
-	}
-
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeRecord#build_do not yet supported.';
 	}
 
 	protected override type_do(): TYPE.Type {

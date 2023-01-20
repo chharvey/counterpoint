@@ -39,10 +39,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
-		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionUnop(
 			this.operator,
-			this.operand.build(builder, tofloat),
+			this.operand.build(builder, to_float || this.shouldFloat()),
 		);
 	}
 

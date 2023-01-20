@@ -23,6 +23,10 @@ class CPString extends Primitive {
 		return this.codeunits.length === 0;
 	}
 
+	protected override get builtValue(): never {
+		throw new Error('`SolidString#built_value` not yet supported.');
+	}
+
 	public override toString(): string {
 		return `'${ utf8.decode(String.fromCodePoint(...this.codeunits)) }'`;
 	}

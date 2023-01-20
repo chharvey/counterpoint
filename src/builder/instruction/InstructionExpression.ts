@@ -5,7 +5,7 @@ import {Instruction} from './Instruction.js';
 /**
  * Known subclasses:
  * - InstructionConst
- * - InstructionLocal
+ * - InstructionVariable
  * - InstructionUnop
  * - InstructionBinop
  * - InstructionCond

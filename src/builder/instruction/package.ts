@@ -5,7 +5,6 @@
  * they are only for modules within this package.
  */
 export {
-	throw_expression,
 	Operator,
 	ValidOperatorUnary,
 	ValidOperatorBinary,

@@ -20,9 +20,7 @@ export class InstructionBinopArithmetic extends InstructionBinop {
 		arg1: InstructionExpression,
 	) {
 		super(op, arg0, arg1);
-		if (this.intarg && this.floatarg) {
-			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`);
-		}
+		this.typecheckArgs();
 	}
 
 	/**

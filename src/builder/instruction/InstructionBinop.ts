@@ -29,4 +29,14 @@ export abstract class InstructionBinop extends InstructionExpression {
 	) {
 		super();
 	}
+
+	/**
+	 * Ensure that both args are either both ints or both floats.
+	 * @throw if one arg is an int and the other is a float
+	 */
+	protected typecheckArgs(): void {
+		if (this.intarg && this.floatarg) {
+			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`);
+		}
+	}
 }

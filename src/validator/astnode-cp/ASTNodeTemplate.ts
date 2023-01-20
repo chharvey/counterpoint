@@ -38,8 +38,9 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
 
-	protected override build_do(_builder: Builder): INST.InstructionExpression {
-		throw new Error('ASTNodeTemplate#build_do not yet supported.');
+	protected override build_do(builder: Builder): INST.InstructionExpression {
+		builder;
+		throw '`ASTNodeTemplate#build_do` not yet supported.';
 	}
 
 	protected override type_do(): TYPE.Type {

@@ -26,7 +26,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 
-	private static keywordValue(source: string): OBJ.Object {
+	private static keywordValue(source: string): OBJ.Primitive {
 		return (
 			(source === Keyword.NULL)  ? OBJ.Null.NULL :
 			(source === Keyword.FALSE) ? OBJ.Boolean.FALSE :
@@ -48,7 +48,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node);
 	}
 
-	private get value(): OBJ.Object {
+	private get value(): OBJ.Primitive {
 		return this._value ??= (
 			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new OBJ.String(Validator.cookTokenTemplate(this.start_node.text)) :
 			(isSyntaxNodeType(this.start_node, 'integer'))                            ? valueOfTokenNumber(this.start_node.text, this.validator.config) :
@@ -66,7 +66,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionConst {
-		return INST.InstructionConst.fromCPValue(this.fold(), to_float);
+		return this.value.build(to_float || this.shouldFloat());
 	}
 
 	protected override type_do(): TYPE.Type {

@@ -1,6 +1,7 @@
 import {TYPE} from './package.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
+import {Integer} from './index.js';
 
 
 
@@ -34,6 +35,10 @@ export class Null extends Primitive {
 
 	public override get isTruthy(): boolean {
 		return false;
+	}
+
+	protected override get builtValue(): Integer {
+		return Integer.ZERO;
 	}
 
 	protected override identical_helper(value: CPObject): boolean {

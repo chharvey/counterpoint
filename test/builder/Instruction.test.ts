@@ -4,7 +4,6 @@ import {
 	Operator,
 	AST,
 } from '../../src/validator/index.js';
-import {OBJ} from '../../src/index.js';
 import {
 	Builder,
 	INST,
@@ -22,6 +21,17 @@ describe('Instruction', () => {
 			it('throws when operands are a mix of ints and floats.', () => {
 				assert.throws(() => new INST.InstructionBinopArithmetic(
 					Operator.MUL,
+					instructionConstInt(5n),
+					instructionConstFloat(2.5),
+				), TypeError);
+				assert.throws(() => new INST.InstructionBinopComparative(
+					Operator.IS,
+					instructionConstInt(5n),
+					instructionConstFloat(2.5),
+				), TypeError);
+				assert.throws(() => new INST.InstructionBinopLogical(
+					-1n,
+					Operator.AND,
 					instructionConstInt(5n),
 					instructionConstFloat(2.5),
 				), TypeError);
@@ -254,64 +264,6 @@ describe('Instruction', () => {
 					...Builder.IMPORTS,
 					new INST.InstructionNone(),
 				]));
-			});
-		});
-	});
-
-	describe('InstructionConst', () => {
-		describe('.fromCPValue', () => {
-			specify('@value instanceof Integer', () => {
-				const data: bigint[] = [
-					42n + -420n,
-					...[
-						 126 /  3,
-						-126 /  3,
-						 126 / -3,
-						-126 / -3,
-						 200 /  3,
-						 200 / -3,
-						-200 /  3,
-						-200 / -3,
-					].map((x) => BigInt(Math.trunc(x))),
-					(42n ** 2n * 420n) % (2n ** 16n),
-					(-5n) ** (2n * 3n),
-				];
-				assert.deepStrictEqual(
-					data.map((x) => INST.InstructionConst.fromCPValue(new OBJ.Integer(x))),
-					data.map((x) => instructionConstInt(x)),
-				);
-			});
-			specify('@value instanceof Float64', () => {
-				const data: number[] = [
-					55,
-					-55,
-					33,
-					-33,
-					2.007,
-					-2.007,
-					91.27e4,
-					-91.27e4,
-					91.27e-4,
-					-91.27e-4,
-					-0,
-					-0,
-					6.8,
-					6.8,
-					0,
-					-0,
-					3.0 - 2.7,
-				];
-				assert.deepStrictEqual(
-					data.map((x) => INST.InstructionConst.fromCPValue(new OBJ.Float(x))),
-					data.map((x) => instructionConstFloat(x)),
-				);
-			});
-			describe('@to_float === true', () => {
-				specify('@value instanceof Integer', () => {
-					const build: INST.InstructionConst = INST.InstructionConst.fromCPValue(new OBJ.Integer(42n), true);
-					assert.deepStrictEqual   (build, instructionConstFloat(42));
-					assert.notDeepStrictEqual(build, instructionConstInt(42n));
-				});
 			});
 		});
 	});
