@@ -7,8 +7,8 @@ import {InstructionLocal} from './InstructionLocal.js';
  * Get a local variable.
  */
 export class InstructionLocalGet extends InstructionLocal {
-	constructor (name: bigint | string, to_float: boolean = false) {
-		super(name, to_float)
+	public constructor(index: bigint, to_float: boolean = false) {
+		super(index, to_float);
 	}
 	/** @return `'(local.get ‹name›)'` */
 	override toString(): string {
@@ -16,7 +16,6 @@ export class InstructionLocalGet extends InstructionLocal {
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
-		const idx = +this.name; // TODO don’t allow string names
-		return mod.local.get(idx, this.binType);
+		return mod.local.get(Number(this.index), this.binType);
 	}
 }

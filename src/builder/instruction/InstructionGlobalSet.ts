@@ -10,8 +10,8 @@ import {InstructionGlobal} from './InstructionGlobal.js';
 export class InstructionGlobalSet extends InstructionGlobal {
 	declare op: InstructionExpression;
 
-	constructor (name: bigint | string, op: InstructionExpression) {
-		super(name, op);
+	public constructor(id: bigint, op: InstructionExpression) {
+		super(id, op);
 	}
 	/** @return `'(global.set ‹name› ‹op›)'` */
 	override toString(): string {

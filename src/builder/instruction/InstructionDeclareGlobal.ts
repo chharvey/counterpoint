@@ -8,19 +8,27 @@ import type {InstructionExpression} from './InstructionExpression.js';
  * Declare a global variable.
  */
 export class InstructionDeclareGlobal extends Instruction {
+	public static friendlyName(id: bigint): string {
+		return `$glb${ id.toString(16) }`; // must begin with `'$'`
+	}
+
+
+	/** The readable variable name. */
+	private readonly name: string;
+
 	private readonly type: string = (this.init.isFloat) ? 'f64' : 'i32';
 	/**
-	 * @param name the variable name (must begin with `'$'`)
+	 * @param id   an unique id number
 	 * @param mut  is the variable mutable? (may it be reassigned?)
 	 * @param init the initial value of the variable
 	 */
 	constructor (
-		private readonly name: bigint | string,
+		id: bigint,
 		private readonly mut: boolean,
 		private readonly init: InstructionExpression,
 	) {
 		super();
-		this.name = (typeof name === 'bigint') ? `$glb${ name.toString(16) }` : name;
+		this.name = InstructionDeclareGlobal.friendlyName(id);
 	}
 	/** @return `'(global ‹name› ‹type› ‹init›)'` */
 	override toString(): string {
@@ -28,6 +36,6 @@ export class InstructionDeclareGlobal extends Instruction {
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
-		return mod.addGlobal(this.name as string, (!this.init.isFloat) ? binaryen.i32 : binaryen.f64, this.mut, this.init.buildBin(mod));
+		return mod.addGlobal(this.name, (!this.init.isFloat) ? binaryen.i32 : binaryen.f64, this.mut, this.init.buildBin(mod));
 	}
 }

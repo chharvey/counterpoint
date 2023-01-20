@@ -1,5 +1,6 @@
 import type {InstructionExpression} from './InstructionExpression.js';
 import {InstructionVariable} from './InstructionVariable.js';
+import {InstructionDeclareGlobal} from './index.js';
 
 
 
@@ -10,7 +11,7 @@ import {InstructionVariable} from './InstructionVariable.js';
  * - InstructionGlobalSet
  */
 export abstract class InstructionGlobal extends InstructionVariable {
-	constructor (name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
-		super((typeof name_or_id === 'bigint') ? `$glb${ name_or_id.toString(16) }` : name_or_id, op);
+	public constructor(id: bigint, op: InstructionExpression | boolean = false) {
+		super(InstructionDeclareGlobal.friendlyName(id), op);
 	}
 }

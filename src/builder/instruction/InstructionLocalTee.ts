@@ -10,8 +10,8 @@ import {InstructionLocal} from './InstructionLocal.js';
 export class InstructionLocalTee extends InstructionLocal {
 	declare op: InstructionExpression;
 
-	constructor (name: bigint | string, op: InstructionExpression) {
-		super(name, op)
+	public constructor(index: bigint, op: InstructionExpression) {
+		super(index, op);
 	}
 	/** @return `'(local.tee ‹name› ‹op›)'` */
 	override toString(): string {
@@ -19,7 +19,6 @@ export class InstructionLocalTee extends InstructionLocal {
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
-		const idx = +this.name; // TODO don’t allow string names
-		return mod.local.tee(idx, this.op.buildBin(mod), this.binType);
+		return mod.local.tee(Number(this.index), this.op.buildBin(mod), this.binType);
 	}
 }

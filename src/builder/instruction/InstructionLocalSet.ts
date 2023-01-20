@@ -10,8 +10,8 @@ import {InstructionLocal} from './InstructionLocal.js';
 export class InstructionLocalSet extends InstructionLocal {
 	declare op: InstructionExpression;
 
-	constructor (name: bigint | string, op: InstructionExpression) {
-		super(name, op)
+	public constructor(index: bigint, op: InstructionExpression) {
+		super(index, op);
 	}
 	/** @return `'(local.set ‹name› ‹op›)'` */
 	override toString(): string {
@@ -19,7 +19,6 @@ export class InstructionLocalSet extends InstructionLocal {
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
-		const idx = +this.name; // TODO don’t allow string names
-		return mod.local.set(idx, this.op.buildBin(mod));
+		return mod.local.set(Number(this.index), this.op.buildBin(mod));
 	}
 }

@@ -1,5 +1,6 @@
 import type {InstructionExpression} from './InstructionExpression.js';
 import {InstructionVariable} from './InstructionVariable.js';
+import {InstructionDeclareLocal} from './index.js';
 
 
 
@@ -11,7 +12,10 @@ import {InstructionVariable} from './InstructionVariable.js';
  * - InstructionLocalTee
  */
 export abstract class InstructionLocal extends InstructionVariable {
-	constructor (name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
-		super((typeof name_or_id === 'bigint') ? `$var${ name_or_id.toString(16) }` : name_or_id, op);
+	public constructor(
+		protected readonly index: bigint,
+		op: InstructionExpression | boolean = false,
+	) {
+		super(InstructionDeclareLocal.friendlyName(index), op);
 	}
 }

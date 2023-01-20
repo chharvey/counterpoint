@@ -7,15 +7,24 @@ import {Instruction} from './Instruction.js';
  * Declare a local variable.
  */
 export class InstructionDeclareLocal extends Instruction {
+	public static friendlyName(index: bigint): string {
+		return `$var${ index.toString(16) }`; // must begin with `'$'`
+	}
+
+
+	/** The readable variable name. */
+	private readonly name: string;
+
 	/**
-	 * @param name the variable name (must begin with `'$'`)
+	 * @param index    the index of the variable
 	 * @param to_float `true` if declaring a float
 	 */
 	constructor (
-		private readonly name: string,
+		index: bigint,
 		private readonly to_float: boolean,
 	) {
 		super();
+		this.name = InstructionDeclareLocal.friendlyName(index);
 	}
 	/** @return `'(local ‹name› ‹type›)'` */
 	override toString(): string {
