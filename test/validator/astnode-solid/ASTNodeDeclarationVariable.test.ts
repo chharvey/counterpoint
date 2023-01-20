@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import {
 	CONFIG_DEFAULT,
-	Operator,
 	ASTNODE_SOLID as AST,
 	SymbolStructure,
 	SymbolStructureVar,
@@ -14,11 +13,7 @@ import {
 import {
 	assertAssignable,
 } from '../../assert-helpers.js';
-import {
-	CONFIG_FOLDING_OFF,
-	instructionConstInt,
-	instructionConstFloat,
-} from '../../helpers.js';
+import {CONFIG_FOLDING_OFF} from '../../helpers.js';
 
 
 
@@ -276,9 +271,10 @@ describe('ASTNodeDeclarationVariable', () => {
 				let y: float = 4.2 * 10;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+			const builder: Builder = new Builder(src);
 			goal.varCheck();
 			goal.typeCheck();
-			const builder: Builder = new Builder(src)
+			goal.build(builder);
 			assert.deepStrictEqual(
 				[
 					goal.children[0].build(builder),
@@ -290,47 +286,45 @@ describe('ASTNodeDeclarationVariable', () => {
 				],
 			);
 		});
-		it('with constant folding on, returns InstructionDeclareGlobal for unfixed / non-foldable variables.', () => {
+		it('with constant folding on, returns InstructionLocalSet for unfixed / non-foldable variables.', () => {
 			const src: string = `
 				let unfixed x: int = 42;
 				let y: int = x + 10;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+			const builder: Builder = new Builder(src);
 			goal.varCheck();
 			goal.typeCheck();
-			const builder: Builder = new Builder(src)
+			goal.build(builder);
 			assert.deepStrictEqual(
 				[
 					goal.children[0].build(builder),
 					goal.children[1].build(builder),
 				],
 				[
-					new INST.InstructionDeclareGlobal(0x100n, true,  instructionConstInt(42n)),
-					new INST.InstructionDeclareGlobal(0x101n, false, new INST.InstructionBinopArithmetic(
-						Operator.ADD,
-						new INST.InstructionGlobalGet(0x100n),
-						instructionConstInt(10n),
-					)),
+					new INST.InstructionLocalSet(0n, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+					new INST.InstructionLocalSet(1n, (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
 				],
 			);
 		});
-		it('with constant folding off, always returns InstructionDeclareGlobal.', () => {
+		it('with constant folding off, always returns InstructionLocalSet.', () => {
 			const src: string = `
 				let x: int = 42;
 				let unfixed y: float = 4.2;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+			const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();
-			const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
+			goal.build(builder);
 			assert.deepStrictEqual(
 				[
 					goal.children[0].build(builder),
 					goal.children[1].build(builder),
 				],
 				[
-					new INST.InstructionDeclareGlobal(0x100n, false, instructionConstInt(42n)),
-					new INST.InstructionDeclareGlobal(0x101n, true,  instructionConstFloat(4.2)),
+					new INST.InstructionLocalSet(0n, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+					new INST.InstructionLocalSet(1n, (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
 				],
 			);
 		});

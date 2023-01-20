@@ -1,6 +1,7 @@
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {Instruction} from './Instruction.js';
+import type {InstructionExpression} from './InstructionExpression.js';
 
 
 
@@ -14,7 +15,7 @@ export class InstructionFunction extends Instruction {
 	 */
 	public constructor(
 		private readonly id: bigint,
-		private readonly exprs: readonly Instruction[], // TODO: should be InstructionExpression
+		private readonly exprs: readonly InstructionExpression[],
 	) {
 		super();
 	}

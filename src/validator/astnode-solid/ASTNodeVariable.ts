@@ -41,8 +41,11 @@ export class ASTNodeVariable extends ASTNodeExpression {
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		};
 	}
-	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
-		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
+	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionLocalGet {
+		const local = builder.getLocalInfo(this.id);
+		return (local)
+			? new INST.InstructionLocalGet(local.index, to_float || this.shouldFloat())
+			: (() => { throw new ReferenceError(`Variable with id ${ this.id } not found.`) })(); // TODO use throw_expression
 	}
 	protected override type_do(): SolidType {
 		if (this.validator.hasSymbol(this.id)) {

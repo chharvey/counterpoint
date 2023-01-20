@@ -32,5 +32,5 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		return goal.children[0];
 	}
 	/** @implements Buildable */
-	abstract build(builder: Builder): INST.InstructionExpression | INST.InstructionDeclareGlobal;
+	abstract build(builder: Builder): INST.InstructionNop | INST.InstructionDrop | INST.InstructionLocalSet;
 }

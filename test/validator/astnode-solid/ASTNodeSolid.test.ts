@@ -155,16 +155,17 @@ describe('ASTNodeSolid', () => {
 
 
 		describe('#build', () => {
-			it('always returns InstructionGlobalSet.', () => {
+			it('always returns InstructionLocalSet.', () => {
 				const src: string = `
 					let unfixed y: float = 4.2;
 					y = y * 10;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder: Builder = new Builder(src);
+				goal.build(builder);
 				assert.deepStrictEqual(
 					goal.children[1].build(builder),
-					new INST.InstructionGlobalSet(0x100n, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder)),
+					new INST.InstructionLocalSet(0n, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder)),
 				);
 			});
 		});

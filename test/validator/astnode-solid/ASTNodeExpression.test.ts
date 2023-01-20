@@ -238,9 +238,10 @@ describe('ASTNodeExpression', () => {
 					y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const builder: Builder = new Builder(src);
 				goal.varCheck();
 				goal.typeCheck();
-				const builder: Builder = new Builder(src);
+				goal.build(builder);
 				assert.deepStrictEqual(
 					[
 						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
@@ -252,7 +253,7 @@ describe('ASTNodeExpression', () => {
 					],
 				);
 			});
-			it('with constant folding on, returns InstructionGlobalGet for unfixed / non-foldable variables.', () => {
+			it('with constant folding on, returns InstructionLocalGet for unfixed / non-foldable variables.', () => {
 				const src: string = `
 					let unfixed x: int = 42;
 					let y: int = x + 10;
@@ -260,21 +261,22 @@ describe('ASTNodeExpression', () => {
 					y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const builder: Builder = new Builder(src);
 				goal.varCheck();
 				goal.typeCheck();
-				const builder: Builder = new Builder(src);
+				goal.build(builder);
 				assert.deepStrictEqual(
 					[
 						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
 						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
 					],
 					[
-						new INST.InstructionGlobalGet(0x100n),
-						new INST.InstructionGlobalGet(0x101n),
+						new INST.InstructionLocalGet(0n),
+						new INST.InstructionLocalGet(1n),
 					],
 				);
 			});
-			it('with constant folding off, always returns InstructionGlobalGet.', () => {
+			it('with constant folding off, always returns InstructionLocalGet.', () => {
 				const src: string = `
 					let x: int = 42;
 					let unfixed y: float = 4.2;
@@ -282,17 +284,18 @@ describe('ASTNodeExpression', () => {
 					y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 				goal.varCheck();
 				goal.typeCheck();
-				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
+				goal.build(builder);
 				assert.deepStrictEqual(
 					[
 						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
 						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
 					],
 					[
-						new INST.InstructionGlobalGet(0x100n),
-						new INST.InstructionGlobalGet(0x101n, true),
+						new INST.InstructionLocalGet(0n),
+						new INST.InstructionLocalGet(1n, true),
 					],
 				);
 			});
