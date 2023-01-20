@@ -1,4 +1,2 @@
-export {Instruction} from './Instruction.js';
-export * as INST from './Instruction.js';
-
-export {Builder} from './Builder.js';
+export * as INST from './instruction/index.js';
+export * from './Builder.js';

@@ -54,7 +54,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		return false;
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
+	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
 		builder;
 		to_float;
 		throw '`ASTNodeCall#build_do` not yet supported.';

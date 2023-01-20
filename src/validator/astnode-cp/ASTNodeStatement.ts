@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	Instruction,
+	INST,
 	Builder,
 } from './package.js';
 import {ASTNodeGoal} from './index.js';
@@ -33,5 +33,5 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 	}
 
 	/** @implements Buildable */
-	public abstract build(builder: Builder): Instruction;
+	public abstract build(builder: Builder): INST.Instruction;
 }
