@@ -60,7 +60,7 @@ export class Builder {
 	 */
 	public addLocal(id: bigint, is_float: boolean): [this, boolean] {
 		let did: boolean = false;
-		if (!this.locals.find((v) => v.id === id)) {
+		if (!this.locals.find((var_) => var_.id === id)) {
 			this.locals.push({id, isFloat: is_float});
 			did = true;
 		}
@@ -75,7 +75,7 @@ export class Builder {
 	 */
 	public removeLocal(id: bigint): [this, boolean] {
 		let did = false;
-		const found = this.locals.find((v) => v.id === id);
+		const found = this.locals.find((var_) => var_.id === id);
 		if (found) {
 			this.locals.splice(this.locals.indexOf(found), 1);
 			did = true;
@@ -89,7 +89,7 @@ export class Builder {
 	 * @return Does the setlist of locals include the id?
 	 */
 	public hasLocal(id: bigint): boolean {
-		return !!this.locals.find((v) => v.id === id);
+		return !!this.locals.find((var_) => var_.id === id);
 	}
 
 	/**
@@ -98,7 +98,7 @@ export class Builder {
 	 * @return the index or `null`
 	 */
 	public getLocalInfo(id: bigint): {index: number, isFloat: boolean} | null {
-		const found = this.locals.find((v) => v.id === id);
+		const found = this.locals.find((var_) => var_.id === id);
 		return (found)
 			? {
 				index:   this.locals.indexOf(found),
@@ -111,8 +111,8 @@ export class Builder {
 	 * Return a copy of a list of this Builder’s local variables.
 	 * @return the local variables in an array
 	 */
-	public getLocals(): Map<bigint, boolean> {
-		return new Map(this.locals.map((v) => [v.id, v.isFloat]));
+	public getLocals(): Array<{id: bigint, isFloat: boolean}> {
+		return [...this.locals];
 	}
 
 	/**

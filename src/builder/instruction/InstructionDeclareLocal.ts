@@ -28,7 +28,7 @@ export class InstructionDeclareLocal extends Instruction {
 	}
 	/** @return `'(local ‹name› ‹type›)'` */
 	override toString(): string {
-		return `(local ${ this.name } ${ (this.to_float) ? 'f64' : 'i32' })`;
+		return `(local ${ this.name } ${ (!this.to_float) ? 'i32' : 'f64' })`;
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {

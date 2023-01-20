@@ -16,7 +16,6 @@ export class InstructionDeclareGlobal extends Instruction {
 	/** The readable variable name. */
 	private readonly name: string;
 
-	private readonly type: string = (this.init.isFloat) ? 'f64' : 'i32';
 	/**
 	 * @param id   a unique id number
 	 * @param mut  is the variable mutable? (may it be reassigned?)
@@ -32,7 +31,8 @@ export class InstructionDeclareGlobal extends Instruction {
 	}
 	/** @return `'(global ‹name› ‹type› ‹init›)'` */
 	override toString(): string {
-		return `(global ${ this.name } ${ (this.mut) ? `(mut ${ this.type })` : this.type } ${ this.init })`;
+		const type: string = (!this.init.isFloat) ? 'i32' : 'f64';
+		return `(global ${ this.name } ${ (this.mut) ? `(mut ${ type })` : type } ${ this.init })`;
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
