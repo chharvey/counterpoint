@@ -7,7 +7,7 @@ import {InstructionLocal} from './InstructionLocal.js';
  * Get a local variable.
  */
 export class InstructionLocalGet extends InstructionLocal {
-	public constructor(index: bigint, to_float: boolean = false) {
+	public constructor(index: number, to_float: boolean = false) {
 		super(index, to_float);
 	}
 	/** @return `'(local.get ‹name›)'` */

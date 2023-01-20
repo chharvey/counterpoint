@@ -10,7 +10,7 @@ import {InstructionLocal} from './InstructionLocal.js';
 export class InstructionLocalSet extends InstructionLocal {
 	declare op: InstructionExpression;
 
-	public constructor(index: bigint, op: InstructionExpression) {
+	public constructor(index: number, op: InstructionExpression) {
 		super(index, op);
 	}
 	/** @return `'(local.set ‹name› ‹op›)'` */

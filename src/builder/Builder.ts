@@ -97,11 +97,11 @@ export class Builder {
 	 * @param id the local whose index to get
 	 * @return the index or `null`
 	 */
-	public getLocalInfo(id: bigint): {index: bigint, isFloat: boolean} | null {
+	public getLocalInfo(id: bigint): {index: number, isFloat: boolean} | null {
 		const found = this.locals.find((v) => v.id === id);
 		return (found)
 			? {
-				index:   BigInt(this.locals.indexOf(found)),
+				index:   this.locals.indexOf(found),
 				isFloat: found.isFloat,
 			}
 			: null;

@@ -271,8 +271,8 @@ describe('ASTNodeExpression', () => {
 						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
 					],
 					[
-						new INST.InstructionLocalGet(0n),
-						new INST.InstructionLocalGet(1n),
+						new INST.InstructionLocalGet(0),
+						new INST.InstructionLocalGet(1),
 					],
 				);
 			});
@@ -294,8 +294,8 @@ describe('ASTNodeExpression', () => {
 						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
 					],
 					[
-						new INST.InstructionLocalGet(0n),
-						new INST.InstructionLocalGet(1n, true),
+						new INST.InstructionLocalGet(0),
+						new INST.InstructionLocalGet(1, true),
 					],
 				);
 			});

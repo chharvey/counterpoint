@@ -302,8 +302,8 @@ describe('ASTNodeDeclarationVariable', () => {
 					goal.children[1].build(builder),
 				],
 				[
-					new INST.InstructionLocalSet(0n, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
-					new INST.InstructionLocalSet(1n, (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+					new INST.InstructionLocalSet(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+					new INST.InstructionLocalSet(1, (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
 				],
 			);
 		});
@@ -323,8 +323,8 @@ describe('ASTNodeDeclarationVariable', () => {
 					goal.children[1].build(builder),
 				],
 				[
-					new INST.InstructionLocalSet(0n, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
-					new INST.InstructionLocalSet(1n, (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+					new INST.InstructionLocalSet(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+					new INST.InstructionLocalSet(1, (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
 				],
 			);
 		});

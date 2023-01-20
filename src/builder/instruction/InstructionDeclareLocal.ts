@@ -7,7 +7,7 @@ import {Instruction} from './Instruction.js';
  * Declare a local variable.
  */
 export class InstructionDeclareLocal extends Instruction {
-	public static friendlyName(index: bigint): string {
+	public static friendlyName(index: number): string {
 		return `$var${ index.toString(16) }`; // must begin with `'$'`
 	}
 
@@ -20,7 +20,7 @@ export class InstructionDeclareLocal extends Instruction {
 	 * @param to_float `true` if declaring a float
 	 */
 	constructor (
-		index: bigint,
+		index: number,
 		private readonly to_float: boolean,
 	) {
 		super();

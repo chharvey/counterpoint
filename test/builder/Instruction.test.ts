@@ -60,9 +60,9 @@ describe('Instruction', () => {
 
 		specify('InstructionLocal', () => {
 			const expr: INST.InstructionConst = instructionConstInt(42n);
-			assert.strictEqual(new INST.InstructionLocalSet(0x100n, expr)  .toString(), `(local.set $var100 ${ instructionConstInt(42n) })`);
-			assert.strictEqual(new INST.InstructionLocalGet(0x100n, false) .toString(), `(local.get $var100)`);
-			assert.strictEqual(new INST.InstructionLocalTee(0x100n, expr)  .toString(), `(local.tee $var100 ${ instructionConstInt(42n) })`);
+			assert.strictEqual(new INST.InstructionLocalSet(0, expr)  .toString(), `(local.set $var0 ${ instructionConstInt(42n) })`);
+			assert.strictEqual(new INST.InstructionLocalGet(0, false) .toString(), `(local.get $var0)`);
+			assert.strictEqual(new INST.InstructionLocalTee(1, expr)  .toString(), `(local.tee $var1 ${ instructionConstInt(42n) })`);
 		})
 
 		context('InstructionConst', () => {
@@ -187,19 +187,19 @@ describe('Instruction', () => {
 					Operator.AND,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
-				).toString(), `${ new INST.InstructionDeclareLocal(0n, false) } ${ new INST.InstructionCond(
-					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(0n, instructionConstInt(30n)))),
+				).toString(), `${ new INST.InstructionDeclareLocal(64, false) } ${ new INST.InstructionCond(
+					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(64, instructionConstInt(30n)))),
 					instructionConstInt(18n),
-					new INST.InstructionLocalGet(0n, false),
+					new INST.InstructionLocalGet(64, false),
 				) }`);
 				assert.strictEqual(new INST.InstructionBinopLogical(
 					3n,
 					Operator.OR,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
-				).toString(), `${ new INST.InstructionDeclareLocal(3n, true) } ${ new INST.InstructionCond(
-					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(3n, instructionConstFloat(30.1)))),
-					new INST.InstructionLocalGet(3n, true),
+				).toString(), `${ new INST.InstructionDeclareLocal(67, true) } ${ new INST.InstructionCond(
+					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(67, instructionConstFloat(30.1)))),
+					new INST.InstructionLocalGet(67, true),
 					instructionConstFloat(18.1),
 				) }`);
 			})

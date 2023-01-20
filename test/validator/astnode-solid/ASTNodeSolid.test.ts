@@ -165,7 +165,7 @@ describe('ASTNodeSolid', () => {
 				goal.build(builder);
 				assert.deepStrictEqual(
 					goal.children[1].build(builder),
-					new INST.InstructionLocalSet(0n, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder)),
+					new INST.InstructionLocalSet(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder)),
 				);
 			});
 		});

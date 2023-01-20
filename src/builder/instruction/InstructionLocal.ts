@@ -13,7 +13,7 @@ import {InstructionDeclareLocal} from './index.js';
  */
 export abstract class InstructionLocal extends InstructionVariable {
 	public constructor(
-		protected readonly index: bigint,
+		protected readonly index: number,
 		op: InstructionExpression | boolean = false,
 	) {
 		super(InstructionDeclareLocal.friendlyName(index), op);
