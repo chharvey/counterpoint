@@ -248,19 +248,19 @@ describe('Instruction', () => {
 
 		context('InstructionModule', () => {
 			it('creates a program.', () => {
-				const mods: (INST.InstructionNone | INST.InstructionModule)[] = [
+				const mods: Array<INST.InstructionNop | INST.InstructionModule> = [
 					``,
 					`;`,
 				].map((src) => DECORATOR
 					.decorate(PARSER.parse(src))
 					.build(new Builder(src))
 				);
-				assert.ok(mods[0] instanceof INST.InstructionNone);
-				assert.strictEqual(mods[0].toString(), ``)
+				assert.ok(mods[0] instanceof INST.InstructionNop);
+				assert.strictEqual(mods[0].toString(), '(nop)');
 				assert.ok(mods[1] instanceof INST.InstructionModule);
 				assert.deepStrictEqual(mods[1], new INST.InstructionModule([
 					...Builder.IMPORTS,
-					new INST.InstructionNone(),
+					new INST.InstructionNop(),
 				]))
 			})
 		})

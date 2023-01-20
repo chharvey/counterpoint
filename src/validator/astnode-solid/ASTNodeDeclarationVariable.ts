@@ -64,9 +64,9 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			}
 		}
 	}
-	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
+	override build(builder: Builder): INST.InstructionNop | INST.InstructionDeclareGlobal {
 		return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold())
-			? new INST.InstructionNone()
+			? new INST.InstructionNop()
 			: new INST.InstructionDeclareGlobal(
 				this.assignee.id,
 				this.unfixed,

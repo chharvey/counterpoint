@@ -39,9 +39,9 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 		return this._validator;
 	}
 	/** @implements Buildable */
-	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
+	build(builder: Builder): INST.InstructionNop | INST.InstructionModule {
 		return (!this.children.length)
-			? new INST.InstructionNone()
+			? new INST.InstructionNop()
 			: new INST.InstructionModule([
 				...Builder.IMPORTS,
 				...this.children.map((child) => child.build(builder)),

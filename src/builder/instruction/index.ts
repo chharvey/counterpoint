@@ -1,6 +1,6 @@
 export * from './Instruction.js';
 
-export * from './InstructionNone.js';
+export * from './InstructionNop.js';
 export * from './InstructionExpression.js';
 export * from './InstructionConst.js';
 export * from './InstructionGlobalGet.js';

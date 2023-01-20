@@ -4,7 +4,6 @@ import type binaryen from 'binaryen';
 
 /**
  * Known subclasses:
- * - InstructionNone
  * - InstructionUnreachable
  * - InstructionNop
  * - InstructionExpression

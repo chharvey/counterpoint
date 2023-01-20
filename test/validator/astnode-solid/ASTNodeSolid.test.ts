@@ -26,11 +26,11 @@ import {
 describe('ASTNodeSolid', () => {
 	describe('ASTNodeStatementExpression', () => {
 		describe('#build', () => {
-			it('returns InstructionNone for empty statement expression.', () => {
+			it('returns InstructionNop for empty statement expression.', () => {
 				const src: string = `;`;
-				const instr: INST.InstructionNone | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src)
+				const instr: INST.InstructionNop | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src)
 					.build(new Builder(src))
-				assert.ok(instr instanceof INST.InstructionNone);
+				assert.ok(instr instanceof INST.InstructionNop);
 			})
 			it('returns InstructionStatement for nonempty statement expression.', () => {
 				const src: string = `42 + 420;`;
@@ -300,10 +300,10 @@ describe('ASTNodeSolid', () => {
 
 
 		describe('#build', () => {
-			it('returns InstructionNone.', () => {
+			it('returns InstructionNop.', () => {
 				const src: string = ``;
-				const instr: INST.InstructionNone | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
-				assert.ok(instr instanceof INST.InstructionNone);
+				const instr: INST.InstructionNop | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
+				assert.ok(instr instanceof INST.InstructionNop);
 			});
 		});
 	});

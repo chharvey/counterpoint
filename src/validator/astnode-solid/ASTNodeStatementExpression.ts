@@ -23,9 +23,9 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	) {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
-	override build(builder: Builder): INST.InstructionNone | INST.InstructionStatement {
+	override build(builder: Builder): INST.InstructionNop | INST.InstructionStatement {
 		return (this.expr)
 			? new INST.InstructionStatement(builder.stmtCount, this.expr.build(builder))
-			: new INST.InstructionNone();
+			: new INST.InstructionNop();
 	}
 }

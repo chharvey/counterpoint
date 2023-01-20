@@ -270,7 +270,7 @@ describe('ASTNodeDeclarationVariable', () => {
 
 
 	describe('#build', () => {
-		it('with constant folding on, returns InstructionNone for fixed & foldable variables.', () => {
+		it('with constant folding on, returns InstructionNop for fixed & foldable variables.', () => {
 			const src: string = `
 				let x: int = 42;
 				let y: float = 4.2 * 10;
@@ -285,8 +285,8 @@ describe('ASTNodeDeclarationVariable', () => {
 					goal.children[1].build(builder),
 				],
 				[
-					new INST.InstructionNone(),
-					new INST.InstructionNone(),
+					new INST.InstructionNop(),
+					new INST.InstructionNop(),
 				],
 			);
 		});
