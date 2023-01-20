@@ -27,6 +27,17 @@ describe('Instruction', () => {
 					instructionConstInt(5n),
 					instructionConstFloat(2.5),
 				), TypeError)
+				assert.throws(() => new INST.InstructionBinopComparative(
+					Operator.IS,
+					instructionConstInt(5n),
+					instructionConstFloat(2.5),
+				), TypeError);
+				assert.throws(() => new INST.InstructionBinopLogical(
+					-1n,
+					Operator.AND,
+					instructionConstInt(5n),
+					instructionConstFloat(2.5),
+				), TypeError);
 			})
 		})
 		context('InstructionCond', () => {

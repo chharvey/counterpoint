@@ -2,6 +2,8 @@ import {
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
+	INST,
+	Builder,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -17,6 +19,10 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	override shouldFloat(): boolean {
 		throw 'ASTNodeCollectionLiteral#shouldFloat not yet supported.';
+	}
+
+	protected override build_do(builder: Builder): INST.InstructionExpression {
+		throw builder && '`ASTNodeCollectionLiteral#build_do` not yet supported.';
 	}
 
 	/**

@@ -44,7 +44,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 			? new INST.InstructionNone()
 			: new INST.InstructionModule([
 				...Builder.IMPORTS,
-				...(this.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
+				...this.children.map((child) => child.build(builder)),
 			])
 	}
 }

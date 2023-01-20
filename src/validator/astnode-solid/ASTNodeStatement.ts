@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Instruction,
+	INST,
 	Builder,
 } from './package.js';
 import {ASTNodeGoal} from './index.js';
@@ -32,5 +32,5 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		return goal.children[0];
 	}
 	/** @implements Buildable */
-	abstract build(builder: Builder): Instruction;
+	abstract build(builder: Builder): INST.InstructionNone | INST.InstructionStatement | INST.InstructionDeclareGlobal;
 }
