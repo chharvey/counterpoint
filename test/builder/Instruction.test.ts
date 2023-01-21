@@ -33,7 +33,7 @@ describe('Instruction', () => {
 					instructionConstFloat(2.5),
 				), TypeError);
 				assert.throws(() => new INST.InstructionBinopLogical(
-					-1n,
+					-1,
 					Operator.AND,
 					instructionConstInt(5n),
 					instructionConstFloat(2.5),
@@ -182,26 +182,28 @@ describe('Instruction', () => {
 					instructionConstFloat(18.1),
 					instructionConstInt(30n),
 				).toString(), `(call $f_i_id ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
+			});
+			it('creates variables for logical operations.', () => {
 				assert.strictEqual(new INST.InstructionBinopLogical(
-					0n,
+					0,
 					Operator.AND,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
-				).toString(), `${ new INST.InstructionDeclareLocal(64, false) } ${ new INST.InstructionCond(
-					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(64, instructionConstInt(30n)))),
+				).toString(), new INST.InstructionCond(
+					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(0, instructionConstInt(30n)))),
 					instructionConstInt(18n),
-					new INST.InstructionLocalGet(64, false),
-				) }`);
+					new INST.InstructionLocalGet(0, false),
+				).toString());
 				assert.strictEqual(new INST.InstructionBinopLogical(
-					3n,
+					3,
 					Operator.OR,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
-				).toString(), `${ new INST.InstructionDeclareLocal(67, true) } ${ new INST.InstructionCond(
-					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(67, instructionConstFloat(30.1)))),
-					new INST.InstructionLocalGet(67, true),
+				).toString(), new INST.InstructionCond(
+					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(3, instructionConstFloat(30.1)))),
+					new INST.InstructionLocalGet(3, true),
 					instructionConstFloat(18.1),
-				) }`);
+				).toString());
 			})
 		})
 
@@ -225,6 +227,19 @@ describe('Instruction', () => {
 			assert.strictEqual(
 				new INST.InstructionDeclareGlobal(0x42n, true, expr).toString(),
 				`(global $glb42 (mut i32) ${ expr })`,
+			);
+		});
+
+		specify('InstructionDeclareLocal', () => {
+			assert.deepStrictEqual(
+				[
+					new INST.InstructionDeclareLocal(0, false) .toString(),
+					new INST.InstructionDeclareLocal(1, true)  .toString(),
+				],
+				[
+					'(local $var0 i32)',
+					'(local $var1 f64)',
+				],
 			);
 		});
 
