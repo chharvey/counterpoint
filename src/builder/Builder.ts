@@ -26,9 +26,12 @@ export class Builder {
 
 	/** An AST goal produced by a Decorator. */
 	private readonly ast_goal: AST.ASTNodeGoal;
-	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
-	private var_count: bigint = 0n
-
+	/**
+	 * A counter for internal variables.
+	 * Used for optimizing short-circuited expressions.
+	 * Starts at a low negative number so as not to conflict with ‘real’ varible ids.
+	 */
+	private _varCount: bigint = -0x40n;
 	/** A setlist containing ids of local variables. */
 	private locals: Array<{id: bigint, isFloat: boolean}> = [];
 
@@ -48,7 +51,7 @@ export class Builder {
 	 * @return this Builder’s current variable counter
 	 */
 	get varCount(): bigint {
-		return this.var_count++
+		return this._varCount++;
 	}
 
 	/**
