@@ -291,10 +291,13 @@ describe('Instruction', () => {
 				assert.ok(mods[0] instanceof INST.InstructionNop);
 				assert.strictEqual(mods[0].toString(), '(nop)');
 				assert.ok(mods[1] instanceof INST.InstructionModule);
-				assert.deepStrictEqual(mods[1], new INST.InstructionModule([
-					...Builder.IMPORTS,
-					new INST.InstructionFunction(0n, [], [new INST.InstructionNop()]),
-				]))
+				const comp = new INST.InstructionFunction(0n, [], [new INST.InstructionNop()]);
+				assert.deepStrictEqual(mods[1], new INST.InstructionModule([comp]));
+				assert.strictEqual(mods[1].toString(), xjs.String.dedent`
+					(module
+						${ [...Builder.IMPORTS, comp].join('\n') }
+					)
+				`);
 			})
 		})
 	})

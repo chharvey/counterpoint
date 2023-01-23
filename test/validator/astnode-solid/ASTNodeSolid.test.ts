@@ -289,10 +289,15 @@ describe('ASTNodeSolid', () => {
 
 
 		describe('#build', () => {
-			it('returns InstructionNop.', () => {
+			it('returns InstructionNop for empty program.', () => {
 				const src: string = ``;
 				const instr: INST.InstructionNop | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
 				assert.ok(instr instanceof INST.InstructionNop);
+			});
+			it('returns InstructionModule for non-empty program.', () => {
+				const src: string = `42;`;
+				const instr: INST.InstructionNop | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
+				assert.ok(instr instanceof INST.InstructionModule);
 			});
 		});
 	});
