@@ -1,4 +1,3 @@
-import binaryen from 'binaryen';
 import {InstructionExpression} from './InstructionExpression.js';
 
 
@@ -22,9 +21,5 @@ export abstract class InstructionVariable extends InstructionExpression {
 	}
 	get isFloat(): boolean {
 		return this.op instanceof InstructionExpression ? this.op.isFloat : this.op
-	}
-
-	protected get binType(): typeof binaryen.i32 | typeof binaryen.f64 {
-		return (!this.isFloat) ? binaryen.i32 : binaryen.f64;
 	}
 }
