@@ -35,7 +35,7 @@ export class InstructionDeclareGlobal extends Instruction {
 		return `(global ${ this.name } ${ (this.mut) ? `(mut ${ type })` : type } ${ this.init })`;
 	}
 
-	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+	override buildBin(mod: binaryen.Module): binaryen.GlobalRef {
 		return mod.addGlobal(this.name, this.init.binType, this.mut, this.init.buildBin(mod));
 	}
 }

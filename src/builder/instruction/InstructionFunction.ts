@@ -31,13 +31,13 @@ export class InstructionFunction extends Instruction {
 		`;
 	}
 
-	public override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+	public override buildBin(mod: binaryen.Module): binaryen.FunctionRef {
 		return mod.addFunction(
-			`$fn${ this.id.toString(16) }`,
+			`fn${ this.id.toString(16) }`,
 			binaryen.createType([]),
 			binaryen.createType([]),
 			this.locals.map((var_) => (!var_.isFloat) ? binaryen.i32 : binaryen.f64),
-			this.exprs.map((expr) => expr.buildBin(mod)).at(-1) ?? mod.nop(),
+			mod.block(null, this.exprs.map((expr) => expr.buildBin(mod))),
 		);
 	}
 }

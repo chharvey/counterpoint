@@ -27,12 +27,14 @@ export class InstructionModule extends Instruction {
 		`
 	}
 
-	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+	override buildBin(mod: binaryen.Module) {
 		this.comps.forEach((comp) => {
-			// TODO: use xjs.Array.aggregateForEach
 			comp.buildBin(mod);
 		});
-		mod.optimize();
-		return mod.validate();
+		const validation = mod.validate();
+		if (!validation) {
+			throw new Error('Invalid WebAssembly module.');
+		}
+		return validation;
 	}
 }
