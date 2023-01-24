@@ -14,13 +14,16 @@ export class InstructionFunction extends Instruction {
 	private readonly name: string;
 
 	/**
-	 * @param id    a unique id number
-	 * @param exprs the body of the function
+	 * @param id       a unique id number
+	 * @param locals   the local variables in the function
+	 * @param exprs    the body of the function
+	 * @param exported Should this function be exported?
 	 */
 	public constructor(
-		private readonly id: bigint,
-		private readonly locals: readonly {id: bigint, isFloat: boolean}[],
-		private readonly exprs: readonly InstructionExpression[],
+		private readonly id:       bigint,
+		private readonly locals:   readonly {id: bigint, isFloat: boolean}[],
+		private readonly exprs:    readonly InstructionExpression[],
+		private readonly exported: boolean = false,
 	) {
 		super();
 		this.name = `fn${ this.id.toString(16) }`;
@@ -29,13 +32,14 @@ export class InstructionFunction extends Instruction {
 	public override toString(): string {
 		const locals: string[] = this.locals.map((var_, i) => new InstructionDeclareLocal(i, var_.isFloat).toString());
 		return xjs.String.dedent`
-			(func $${ this.name } ${ locals.join(' ') }
+			(func $${ this.name } ${ (this.exported) ? `(export "${ this.name }")` : '' } ${ locals.join(' ') }
 				${ this.exprs.join('\n') }
 			)
 		`;
 	}
 
 	public override buildBin(mod: binaryen.Module): binaryen.FunctionRef {
+		(this.exported) && mod.addFunctionExport(this.name, this.name);
 		return mod.addFunction(
 			this.name,
 			binaryen.createType([]),

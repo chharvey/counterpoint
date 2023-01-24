@@ -226,7 +226,7 @@ describe('Instruction', () => {
 			const expr: INST.InstructionConst = instructionConstInt(42n);
 			assert.strictEqual(
 				new INST.InstructionDeclareGlobal(0x42n, true, expr).toString(),
-				`(global $glb42 (mut i32) ${ expr })`,
+				`(global $glb42  (mut i32) ${ expr })`,
 			);
 		});
 
@@ -253,7 +253,7 @@ describe('Instruction', () => {
 				assert.strictEqual(
 					new INST.InstructionFunction(0n, [], [expr]).toString(),
 					xjs.String.dedent`
-						(func $fn0\u0020
+						(func $fn0\u0020\u0020
 							${ expr }
 						)
 					`,
@@ -271,7 +271,7 @@ describe('Instruction', () => {
 				assert.strictEqual(
 					new INST.InstructionFunction(1n, locals, exprs).toString(),
 					xjs.String.dedent`
-						(func $fn1 (local $var0 i32) (local $var1 f64)
+						(func $fn1  (local $var0 i32) (local $var1 f64)
 							${ exprs.join('\n') }
 						)
 					`,
@@ -291,7 +291,7 @@ describe('Instruction', () => {
 				assert.strictEqual(mods[0], INST.NOP);
 				assert.strictEqual(mods[0].toString(), '(nop)');
 				assert.ok(mods[1] instanceof INST.InstructionModule);
-				const comp = new INST.InstructionFunction(0n, [], [INST.NOP]);
+				const comp = new INST.InstructionFunction(0n, [], [INST.NOP], true);
 				assert.deepStrictEqual(mods[1], new INST.InstructionModule([comp]));
 				assert.strictEqual(mods[1].toString(), xjs.String.dedent`
 					(module

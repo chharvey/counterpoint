@@ -14,7 +14,7 @@ export class InstructionModule extends Instruction {
 	/**
 	 * @param comps the components of the program
 	 */
-	public constructor(private readonly comps: Array<InstructionDeclareGlobal | InstructionFunction> = []) {
+	public constructor(private readonly comps: readonly (InstructionDeclareGlobal | InstructionFunction)[] = []) {
 		super()
 	}
 	/**
