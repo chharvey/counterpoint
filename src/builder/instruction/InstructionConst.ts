@@ -29,7 +29,7 @@ export class InstructionConst extends InstructionExpression {
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
 		if (this.value.identical(new Float64(-0.0))) {
-			return mod.f64.ceil(-0.5); // -0.0
+			return mod.f64.ceil(mod.f64.const(-0.5)); // -0.0
 		}
 		return mod[(!this.isFloat) ? 'i32' : 'f64'].const(Number(this.value.toString()));
 	}

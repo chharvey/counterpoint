@@ -1,6 +1,6 @@
+import binaryen from 'binaryen';
 import * as fs from 'fs'
 import * as path from 'path'
-import wabt from 'wabt'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -34,6 +34,13 @@ export class Builder {
 	private _varCount: bigint = -0x40n;
 	/** A setlist containing ids of local variables. */
 	private locals: Array<{id: bigint, isFloat: boolean}> = [];
+	/** The Binaryen module to build upon construction. */
+	private readonly module: binaryen.Module = binaryen.parseText(`
+		(module
+			${ Builder.IMPORTS.join('') }
+		)
+	`);
+
 
 	/**
 	 * Construct a new Builder object.
@@ -128,20 +135,27 @@ export class Builder {
 	}
 
 	/**
+	 * Prepare this builder.
+	 * @return `this`
+	 */
+	public build(): this {
+		this.ast_goal.build(this).buildBin(this.module);
+		return this;
+	}
+
+	/**
 	 * Return the instructions to print to file.
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	print(): string {
-		return this.ast_goal.build(this).toString()
+		return this.module.emitText();
 	}
 
 	/**
 	 * Return a binary format of the program.
 	 * @return a binary output in WASM format, which can be executed
 	 */
-	async compile(): Promise<Uint8Array> {
-		const waModule = (await wabt()).parseWat('', this.print(), {})
-		waModule.validate()
-		return waModule.toBinary({}).buffer
+	public compile(): Uint8Array {
+		return this.module.emitBinary();
 	}
 }
