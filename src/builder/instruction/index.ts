@@ -19,3 +19,5 @@ export * from './InstructionDeclareGlobal.js';
 export * from './InstructionDeclareLocal.js';
 export * from './InstructionFunction.js';
 export * from './InstructionModule.js';
+
+export * from './exports.js';

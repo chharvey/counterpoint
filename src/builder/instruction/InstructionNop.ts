@@ -7,6 +7,14 @@ import {InstructionExpression} from './InstructionExpression.js';
  * Do nothing at runtime.
  */
 export class InstructionNop extends InstructionExpression {
+	/** The single instance of this class. */
+	public static readonly INSTANCE: InstructionNop = new InstructionNop();
+
+
+	private constructor() {
+		super();
+	}
+
 	public override get isFloat(): boolean {
 		return false;
 	}

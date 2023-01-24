@@ -66,8 +66,8 @@ describe('ASTNodeDeclarationType', () => {
 					goal.children[1].build(builder),
 				],
 				[
-					new INST.InstructionNop(),
-					new INST.InstructionNop(),
+					INST.NOP,
+					INST.NOP,
 				],
 			);
 		});

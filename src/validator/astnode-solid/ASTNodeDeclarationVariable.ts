@@ -66,7 +66,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 	public override build(builder: Builder): INST.InstructionNop | INST.InstructionLocalSet {
 		if (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold()) {
-			return new INST.InstructionNop();
+			return INST.NOP;
 		} else {
 			const local = builder.addLocal(
 				this.assignee.id,

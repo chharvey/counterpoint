@@ -288,10 +288,10 @@ describe('Instruction', () => {
 					.decorate(PARSER.parse(src))
 					.build(new Builder(src))
 				);
-				assert.ok(mods[0] instanceof INST.InstructionNop);
+				assert.strictEqual(mods[0], INST.NOP);
 				assert.strictEqual(mods[0].toString(), '(nop)');
 				assert.ok(mods[1] instanceof INST.InstructionModule);
-				const comp = new INST.InstructionFunction(0n, [], [new INST.InstructionNop()]);
+				const comp = new INST.InstructionFunction(0n, [], [INST.NOP]);
 				assert.deepStrictEqual(mods[1], new INST.InstructionModule([comp]));
 				assert.strictEqual(mods[1].toString(), xjs.String.dedent`
 					(module

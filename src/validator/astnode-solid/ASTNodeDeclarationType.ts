@@ -41,6 +41,6 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 	override build(_builder: Builder): INST.InstructionNop {
-		return new INST.InstructionNop();
+		return INST.NOP;
 	}
 }

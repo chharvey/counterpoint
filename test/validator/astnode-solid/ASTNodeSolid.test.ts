@@ -26,7 +26,7 @@ describe('ASTNodeSolid', () => {
 				const src: string = `;`;
 				const instr: INST.InstructionExpression = AST.ASTNodeStatementExpression.fromSource(src)
 					.build(new Builder(src))
-				assert.ok(instr instanceof INST.InstructionNop);
+				assert.strictEqual(instr, INST.NOP);
 			})
 			it('returns InstructionDrop for nonempty statement expression.', () => {
 				const src: string = `42 + 420;`;
@@ -292,7 +292,7 @@ describe('ASTNodeSolid', () => {
 			it('returns InstructionNop for empty program.', () => {
 				const src: string = ``;
 				const instr: INST.InstructionNop | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
-				assert.ok(instr instanceof INST.InstructionNop);
+				assert.strictEqual(instr, INST.NOP)
 			});
 			it('returns InstructionModule for non-empty program.', () => {
 				const src: string = `42;`;

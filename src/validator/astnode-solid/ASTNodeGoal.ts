@@ -42,7 +42,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	build(builder: Builder): INST.InstructionNop | INST.InstructionModule {
 		const children: INST.InstructionExpression[] = this.children.map((child) => child.build(builder)); // must build before calling `.getLocals()`
 		return (!this.children.length)
-			? new INST.InstructionNop()
+			? INST.NOP
 			: new INST.InstructionModule([new INST.InstructionFunction(0n, builder.getLocals(), children)]);
 	}
 }
