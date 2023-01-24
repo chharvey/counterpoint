@@ -1,6 +1,6 @@
+import binaryen from 'binaryen';
 import * as fs from 'fs'
 import * as path from 'path'
-import wabt from 'wabt'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -26,10 +26,21 @@ export class Builder {
 
 	/** An AST goal produced by a Decorator. */
 	private readonly ast_goal: AST.ASTNodeGoal;
-	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
-	private var_count: bigint = 0n
-	/** A counter for statements. */
-	private stmt_count: bigint = 0n;
+	/**
+	 * A counter for internal variables.
+	 * Used for optimizing short-circuited expressions.
+	 * Starts at a low negative number so as not to conflict with ‘real’ varible ids.
+	 */
+	private _varCount: bigint = -0x40n;
+	/** A setlist containing ids of local variables. */
+	private locals: Array<{id: bigint, isFloat: boolean}> = [];
+	/** The Binaryen module to build upon construction. */
+	private readonly module: binaryen.Module = binaryen.parseText(`
+		(module
+			${ Builder.IMPORTS.join('') }
+		)
+	`);
+
 
 	/**
 	 * Construct a new Builder object.
@@ -47,17 +58,89 @@ export class Builder {
 	 * @return this Builder’s current variable counter
 	 */
 	get varCount(): bigint {
-		return this.var_count++
+		return this._varCount++;
 	}
 
 	/**
-	 * Return this Builder’s statement count, and then increment it.
-	 * Also resets the short-circuit variable count.
-	 * @return this Builder’s current statement counter
+	 * Add a local variable.
+	 * If the variable has already been added, do nothing.
+	 * If the variable is added, return the new index.
+	 * @param id the id of the variable to add
+	 * @return : [`this`, Was the operation performed?]
 	 */
-	get stmtCount(): bigint {
-		this.var_count = 0n
-		return this.stmt_count++
+	public addLocal(id: bigint, is_float: boolean): [this, boolean] {
+		let did: boolean = false;
+		if (!this.locals.find((var_) => var_.id === id)) {
+			this.locals.push({id, isFloat: is_float});
+			did = true;
+		}
+		return [this, did];
+	}
+
+	/**
+	 * Remove a local variable.
+	 * If the local variable doesn’t exist, do nothing.
+	 * @param id the id of the variable to remove
+	 * @return [`this`, Was the operation performed?]
+	 */
+	public removeLocal(id: bigint): [this, boolean] {
+		let did = false;
+		const found = this.locals.find((var_) => var_.id === id);
+		if (found) {
+			this.locals.splice(this.locals.indexOf(found), 1);
+			did = true;
+		}
+		return [this, did];
+	}
+
+	/**
+	 * Check whether this Builder’s setlist of locals has the given id.
+	 * @param id the id to check
+	 * @return Does the setlist of locals include the id?
+	 */
+	public hasLocal(id: bigint): boolean {
+		return !!this.locals.find((var_) => var_.id === id);
+	}
+
+	/**
+	 * Get the index of the given local in this Builder’s list, if it’s been added; else, return `null`.
+	 * @param id the local whose index to get
+	 * @return the index or `null`
+	 */
+	public getLocalInfo(id: bigint): {index: number, isFloat: boolean} | null {
+		const found = this.locals.find((var_) => var_.id === id);
+		return (found)
+			? {
+				index:   this.locals.indexOf(found),
+				isFloat: found.isFloat,
+			}
+			: null;
+	}
+
+	/**
+	 * Return a copy of a list of this Builder’s local variables.
+	 * @return the local variables in an array
+	 */
+	public getLocals(): Array<{id: bigint, isFloat: boolean}> {
+		return [...this.locals];
+	}
+
+	/**
+	 * Remove all local variables in this Builder.
+	 * @return `this`
+	 */
+	public clearLocals(): this {
+		this.locals.length = 0;
+		return this;
+	}
+
+	/**
+	 * Prepare this builder.
+	 * @return `this`
+	 */
+	public build(): this {
+		this.ast_goal.build(this).buildBin(this.module);
+		return this;
 	}
 
 	/**
@@ -65,16 +148,14 @@ export class Builder {
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	print(): string {
-		return this.ast_goal.build(this).toString()
+		return this.module.emitText();
 	}
 
 	/**
 	 * Return a binary format of the program.
 	 * @return a binary output in WASM format, which can be executed
 	 */
-	async compile(): Promise<Uint8Array> {
-		const waModule = (await wabt()).parseWat('', this.print(), {})
-		waModule.validate()
-		return waModule.toBinary({}).buffer
+	public compile(): Uint8Array {
+		return this.module.emitBinary();
 	}
 }

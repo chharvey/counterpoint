@@ -40,7 +40,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 			symbol.typevalue = this.assigned.eval();
 		}
 	}
-	override build(_builder: Builder): INST.InstructionNone {
-		return new INST.InstructionNone();
+	override build(_builder: Builder): INST.InstructionNop {
+		return INST.NOP;
 	}
 }

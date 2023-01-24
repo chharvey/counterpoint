@@ -927,31 +927,31 @@ describe('ASTNodeOperation', () => {
 					`false || null;`,
 				].map((src) => AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))), [
 					new INST.InstructionBinopLogical(
-						0n,
+						0,
 						Operator.AND,
 						instructionConstInt(42n),
 						instructionConstInt(420n),
 					),
 					new INST.InstructionBinopLogical(
-						0n,
+						0,
 						Operator.OR,
 						instructionConstFloat(4.2),
 						instructionConstFloat(-420.0),
 					),
 					new INST.InstructionBinopLogical(
-						0n,
+						0,
 						Operator.AND,
 						instructionConstFloat(0.0),
 						instructionConstFloat(20.1),
 					),
 					new INST.InstructionBinopLogical(
-						0n,
+						0,
 						Operator.AND,
 						instructionConstFloat(1.0),
 						instructionConstFloat(20.1),
 					),
 					new INST.InstructionBinopLogical(
-						0n,
+						0,
 						Operator.OR,
 						instructionConstInt(0n),
 						instructionConstInt(0n),
@@ -963,16 +963,16 @@ describe('ASTNodeOperation', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF)),
 					new INST.InstructionBinopLogical(
-						0n,
+						0,
 						Operator.OR,
 						new INST.InstructionBinopLogical(
-							1n,
+							1,
 							Operator.AND,
 							instructionConstInt(1n),
 							instructionConstInt(2n),
 						),
 						new INST.InstructionBinopLogical(
-							2n,
+							2,
 							Operator.AND,
 							instructionConstInt(3n),
 							instructionConstInt(4n),

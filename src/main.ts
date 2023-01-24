@@ -21,6 +21,6 @@ export function print(sourcecode: string, config: SolidConfig = CONFIG_DEFAULT):
  * @param sourcecode - the Solid source text
  * @return the output as a binary format
  */
-export function compile(sourcecode: string, config: SolidConfig = CONFIG_DEFAULT): Promise<Uint8Array> {
+export function compile(sourcecode: string, config: SolidConfig = CONFIG_DEFAULT): Uint8Array {
 	return new Builder(sourcecode, config).compile();
 }

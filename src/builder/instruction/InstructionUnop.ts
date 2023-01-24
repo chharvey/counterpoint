@@ -1,3 +1,4 @@
+import binaryen from 'binaryen';
 import {
 	Operator,
 	ValidOperatorUnary,
@@ -32,6 +33,17 @@ export class InstructionUnop extends InstructionExpression {
 		]).get(this.op)! } ${ this.arg })`
 	}
 	get isFloat(): boolean {
-		return [Operator.AFF, Operator.NEG].includes(this.op) && this.arg.isFloat
+		return this.op === Operator.NEG && this.arg.isFloat;
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		if (this.op === Operator.NEG && this.arg.isFloat) {
+			return mod.f64.neg(this.arg.buildBin(mod));
+		}
+		return mod.call(new Map<Operator, string>([
+			[Operator.NEG, 'neg'],
+			[Operator.NOT, (!this.arg.isFloat) ? 'inot' : 'fnot'],
+			[Operator.EMP, (!this.arg.isFloat) ? 'iemp' : 'femp'],
+		]).get(this.op)!, [this.arg.buildBin(mod)], binaryen.i32);
 	}
 }

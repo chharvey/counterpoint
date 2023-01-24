@@ -61,13 +61,14 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			}
 		}
 	}
-	override build(builder: Builder): INST.InstructionStatement {
-		return new INST.InstructionStatement(
-			builder.stmtCount,
-			new INST.InstructionGlobalSet(
-				(this.assignee as ASTNodeVariable).id,
+	public override build(builder: Builder): INST.InstructionLocalSet {
+		const id: bigint = (this.assignee as ASTNodeVariable).id;
+		const local = builder.getLocalInfo(id);
+		return (local)
+			? new INST.InstructionLocalSet(
+				local.index,
 				this.assigned.build(builder, this.assignee.type().isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat()),
-			),
-		);
+			)
+			: (() => { throw new ReferenceError(`Variable with id ${ id } not found.`) })(); // TODO use throw_expression
 	}
 }

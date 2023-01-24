@@ -53,7 +53,7 @@ describe('ASTNodeDeclarationType', () => {
 
 
 	describe('#build', () => {
-		it('always returns InstructionNone.', () => {
+		it('always returns InstructionNop.', () => {
 			const src: string = `
 				type T = int;
 				type U = T | float;
@@ -66,8 +66,8 @@ describe('ASTNodeDeclarationType', () => {
 					goal.children[1].build(builder),
 				],
 				[
-					new INST.InstructionNone(),
-					new INST.InstructionNone(),
+					INST.NOP,
+					INST.NOP,
 				],
 			);
 		});

@@ -11,7 +11,15 @@ import {InstructionVariable} from './InstructionVariable.js';
  * - InstructionLocalTee
  */
 export abstract class InstructionLocal extends InstructionVariable {
-	constructor (name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
-		super((typeof name_or_id === 'bigint') ? `$var${ name_or_id.toString(16) }` : name_or_id, op);
+	public static friendlyName(index: number): string {
+		return `var${ index.toString(16) }`;
+	}
+
+
+	public constructor(
+		protected readonly index: number,
+		op: InstructionExpression | boolean = false,
+	) {
+		super(InstructionLocal.friendlyName(index), op);
 	}
 }

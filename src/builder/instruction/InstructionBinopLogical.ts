@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {
 	Operator,
 	ValidOperatorLogical,
@@ -7,22 +8,19 @@ import {InstructionLocalGet} from './InstructionLocalGet.js';
 import {InstructionLocalTee} from './InstructionLocalTee.js';
 import {InstructionUnop} from './InstructionUnop.js';
 import {InstructionBinop} from './InstructionBinop.js';
-import {
-	InstructionCond,
-	InstructionDeclareLocal,
-} from './index.js';
+import {InstructionCond} from './index.js';
 
 
 
 export class InstructionBinopLogical extends InstructionBinop {
 	/**
-	 * @param count the index of a temporary optimization variable
+	 * @param var_index the index of a temporary optimization variable
 	 * @param op an operator representing the operation to perform
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
 	constructor (
-		private readonly count: bigint,
+		private readonly var_index: number,
 		op:   ValidOperatorLogical,
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
@@ -34,23 +32,35 @@ export class InstructionBinopLogical extends InstructionBinop {
 	 * @return a `(select)` instruction determining which operand to produce
 	 */
 	override toString(): string {
-		const varname: string = `$o${ this.count.toString(16) }`;
 		const condition: InstructionExpression = new InstructionUnop(
 			Operator.NOT,
 			new InstructionUnop(
 				Operator.NOT,
-				new InstructionLocalTee(varname, this.arg0),
+				new InstructionLocalTee(this.var_index, this.arg0),
 			),
 		)
-		const left:  InstructionExpression = new InstructionLocalGet(varname, this.arg0.isFloat)
+		const left:  InstructionExpression = new InstructionLocalGet(this.var_index, this.arg0.isFloat);
 		const right: InstructionExpression = this.arg1
-		return `${ new InstructionDeclareLocal(varname, this.arg0.isFloat) } ${
-			(this.op === Operator.AND)
-				? new InstructionCond(condition, right, left)
-				: new InstructionCond(condition, left, right)
-		}`
+		return ((this.op === Operator.AND)
+			? new InstructionCond(condition, right, left)
+			: new InstructionCond(condition, left, right)).toString();
 	}
 	get isFloat(): boolean {
 		return this.floatarg
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		const condition: InstructionExpression = new InstructionUnop(
+			Operator.NOT,
+			new InstructionUnop(
+				Operator.NOT,
+				new InstructionLocalTee(this.var_index, this.arg0),
+			),
+		);
+		const inst_left:  InstructionExpression = new InstructionLocalGet(this.var_index, this.arg0.isFloat);
+		const inst_right: InstructionExpression = this.arg1;
+		return ((this.op === Operator.AND)
+			? new InstructionCond(condition, inst_right, inst_left)
+			: new InstructionCond(condition, inst_left,  inst_right)).buildBin(mod);
 	}
 }

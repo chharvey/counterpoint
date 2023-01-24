@@ -1,8 +1,9 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
+import {Builder} from './package.js';
 import {Instruction} from './Instruction.js';
-import type {InstructionNone} from './InstructionNone.js';
-import type {InstructionStatement} from './InstructionStatement.js';
 import type {InstructionDeclareGlobal} from './InstructionDeclareGlobal.js';
+import type {InstructionFunction} from './InstructionFunction.js';
 
 
 
@@ -13,7 +14,7 @@ export class InstructionModule extends Instruction {
 	/**
 	 * @param comps the components of the program
 	 */
-	constructor (private readonly comps: Array<string | InstructionNone | InstructionStatement | InstructionDeclareGlobal> = []) {
+	public constructor(private readonly comps: readonly (InstructionDeclareGlobal | InstructionFunction)[] = []) {
 		super()
 	}
 	/**
@@ -22,8 +23,19 @@ export class InstructionModule extends Instruction {
 	override toString(): string {
 		return xjs.String.dedent`
 			(module
-				${ this.comps.join('\n') }
+				${ [...Builder.IMPORTS, ...this.comps].join('\n') }
 			)
 		`
+	}
+
+	override buildBin(mod: binaryen.Module) {
+		this.comps.forEach((comp) => {
+			comp.buildBin(mod);
+		});
+		const validation = mod.validate();
+		if (!validation) {
+			throw new Error('Invalid WebAssembly module.');
+		}
+		return validation;
 	}
 }

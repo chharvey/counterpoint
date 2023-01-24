@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {
 	SolidNumber,
 	Float64,
@@ -24,5 +25,12 @@ export class InstructionConst extends InstructionExpression {
 	}
 	get isFloat(): boolean {
 		return this.value instanceof Float64
+	}
+
+	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		if (this.value.identical(new Float64(-0.0))) {
+			return mod.f64.ceil(mod.f64.const(-0.5)); // -0.0
+		}
+		return mod[(!this.isFloat) ? 'i32' : 'f64'].const(Number(this.value.toString()));
 	}
 }
