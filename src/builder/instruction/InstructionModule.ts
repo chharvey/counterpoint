@@ -2,6 +2,7 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {Builder} from './package.js';
 import {Instruction} from './Instruction.js';
+import type {InstructionDeclareGlobal} from './InstructionDeclareGlobal.js';
 import type {InstructionFunction} from './InstructionFunction.js';
 
 
@@ -13,7 +14,7 @@ export class InstructionModule extends Instruction {
 	/**
 	 * @param comps the components of the program
 	 */
-	public constructor(private readonly comps: InstructionFunction[] = []) {
+	public constructor(private readonly comps: Array<InstructionDeclareGlobal | InstructionFunction> = []) {
 		super()
 	}
 	/**

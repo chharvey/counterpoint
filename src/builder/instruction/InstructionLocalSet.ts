@@ -15,7 +15,7 @@ export class InstructionLocalSet extends InstructionLocal {
 	}
 	/** @return `'(local.set ‹name› ‹op›)'` */
 	override toString(): string {
-		return `(local.set ${ this.name } ${ this.op })`
+		return `(local.set $${ this.name } ${ this.op })`
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {

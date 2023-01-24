@@ -12,7 +12,7 @@ export class InstructionGlobalGet extends InstructionGlobal {
 	}
 	/** @return `'(global.get ‹name›)'` */
 	override toString(): string {
-		return `(global.get ${ this.name })`;
+		return `(global.get $${ this.name })`;
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {

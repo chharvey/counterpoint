@@ -15,7 +15,7 @@ export class InstructionGlobalSet extends InstructionGlobal {
 	}
 	/** @return `'(global.set ‹name› ‹op›)'` */
 	override toString(): string {
-		return `(global.set ${ this.name } ${ this.op })`;
+		return `(global.set $${ this.name } ${ this.op })`;
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {

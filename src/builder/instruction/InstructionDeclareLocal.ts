@@ -1,5 +1,6 @@
 import type binaryen from 'binaryen';
 import {Instruction} from './Instruction.js';
+import {InstructionLocal} from './InstructionLocal.js';
 
 
 
@@ -7,11 +8,6 @@ import {Instruction} from './Instruction.js';
  * Declare a local variable.
  */
 export class InstructionDeclareLocal extends Instruction {
-	public static friendlyName(index: number): string {
-		return `$var${ index.toString(16) }`; // must begin with `'$'`
-	}
-
-
 	/** The readable variable name. */
 	private readonly name: string;
 
@@ -24,11 +20,11 @@ export class InstructionDeclareLocal extends Instruction {
 		private readonly to_float: boolean,
 	) {
 		super();
-		this.name = InstructionDeclareLocal.friendlyName(index);
+		this.name = InstructionLocal.friendlyName(index);
 	}
 	/** @return `'(local ‹name› ‹type›)'` */
 	override toString(): string {
-		return `(local ${ this.name } ${ (!this.to_float) ? 'i32' : 'f64' })`;
+		return `(local $${ this.name } ${ (!this.to_float) ? 'i32' : 'f64' })`;
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {

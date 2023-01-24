@@ -15,7 +15,7 @@ export class InstructionLocalTee extends InstructionLocal {
 	}
 	/** @return `'(local.tee ‹name› ‹op›)'` */
 	override toString(): string {
-		return `(local.tee ${ this.name } ${ this.op })`
+		return `(local.tee $${ this.name } ${ this.op })`
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {

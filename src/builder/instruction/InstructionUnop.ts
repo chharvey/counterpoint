@@ -41,9 +41,9 @@ export class InstructionUnop extends InstructionExpression {
 			return mod.f64.neg(this.arg.buildBin(mod));
 		}
 		return mod.call(new Map<Operator, string>([
-			[Operator.NEG, '$neg'],
-			[Operator.NOT, (!this.arg.isFloat) ? '$inot' : '$fnot'],
-			[Operator.EMP, (!this.arg.isFloat) ? '$iemp' : '$femp'],
+			[Operator.NEG, 'neg'],
+			[Operator.NOT, (!this.arg.isFloat) ? 'inot' : 'fnot'],
+			[Operator.EMP, (!this.arg.isFloat) ? 'iemp' : 'femp'],
 		]).get(this.op)!, [this.arg.buildBin(mod)], binaryen.i32);
 	}
 }

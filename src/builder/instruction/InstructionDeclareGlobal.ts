@@ -1,6 +1,7 @@
 import type binaryen from 'binaryen';
 import {Instruction} from './Instruction.js';
 import type {InstructionExpression} from './InstructionExpression.js';
+import {InstructionGlobal} from './InstructionGlobal.js';
 
 
 
@@ -8,11 +9,6 @@ import type {InstructionExpression} from './InstructionExpression.js';
  * Declare a global variable.
  */
 export class InstructionDeclareGlobal extends Instruction {
-	public static friendlyName(id: bigint): string {
-		return `$glb${ id.toString(16) }`; // must begin with `'$'`
-	}
-
-
 	/** The readable variable name. */
 	private readonly name: string;
 
@@ -27,12 +23,12 @@ export class InstructionDeclareGlobal extends Instruction {
 		private readonly init: InstructionExpression,
 	) {
 		super();
-		this.name = InstructionDeclareGlobal.friendlyName(id);
+		this.name = InstructionGlobal.friendlyName(id);
 	}
 	/** @return `'(global ‹name› ‹type› ‹init›)'` */
 	override toString(): string {
 		const type: string = (!this.init.isFloat) ? 'i32' : 'f64';
-		return `(global ${ this.name } ${ (this.mut) ? `(mut ${ type })` : type } ${ this.init })`;
+		return `(global $${ this.name } ${ (this.mut) ? `(mut ${ type })` : type } ${ this.init })`;
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.GlobalRef {

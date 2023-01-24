@@ -43,7 +43,7 @@ export class InstructionBinopArithmetic extends InstructionBinop {
 		if (this.op === Operator.EXP) {
 			return (this.floatarg)
 				? mod.unreachable() // TODO: support runtime exponentiation for floats
-				: mod.call('$exp', [left, right], binaryen.i32);
+				: mod.call('exp', [left, right], binaryen.i32);
 		}
 		if (this.op === Operator.DIV) {
 			return !this.floatarg

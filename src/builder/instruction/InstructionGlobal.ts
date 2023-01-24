@@ -1,6 +1,5 @@
 import type {InstructionExpression} from './InstructionExpression.js';
 import {InstructionVariable} from './InstructionVariable.js';
-import {InstructionDeclareGlobal} from './index.js';
 
 
 
@@ -11,7 +10,12 @@ import {InstructionDeclareGlobal} from './index.js';
  * - InstructionGlobalSet
  */
 export abstract class InstructionGlobal extends InstructionVariable {
+	public static friendlyName(id: bigint): string {
+		return `glb${ id.toString(16) }`;
+	}
+
+
 	public constructor(id: bigint, op: InstructionExpression | boolean = false) {
-		super(InstructionDeclareGlobal.friendlyName(id), op);
+		super(InstructionGlobal.friendlyName(id), op);
 	}
 }

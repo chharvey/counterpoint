@@ -12,7 +12,7 @@ export class InstructionLocalGet extends InstructionLocal {
 	}
 	/** @return `'(local.get ‹name›)'` */
 	override toString(): string {
-		return `(local.get ${ this.name })`
+		return `(local.get $${ this.name })`
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
