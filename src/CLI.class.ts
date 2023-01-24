@@ -268,13 +268,14 @@ export class CLI {
 			fs.promises.readFile(inputfilepath, 'utf8'),
 			this.computeConfig(cwd),
 		]));
+		cg.build();
 		return Promise.all([
 			xjs.String.dedent`
 				Compiling………
 				Source file: ${ inputfilepath }
 				${ (this.command === Command.DEV) ? 'Intermediate text file (for debugging):' : 'Destination binary file:' } ${ outputfilepath }
 			`.trimStart(),
-			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? cg.print() : await cg.compile()),
+			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? cg.print() : cg.compile()),
 		]);
 	}
 

@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import {
-	Operator,
 	AST,
 	TYPE,
 	INST,
@@ -14,39 +13,35 @@ import {
 	MutabilityError01,
 } from '../../../src/index.js';
 import {assertAssignable} from '../../assert-helpers.js';
-import {
-	typeUnitFloat,
-	instructionConstFloat,
-} from '../../helpers.js';
+import {typeUnitFloat} from '../../helpers.js';
 
 
 
 describe('ASTNodeCP', () => {
 	describe('ASTNodeStatementExpression', () => {
 		describe('#build', () => {
-			it('returns InstructionNone for empty statement expression.', () => {
+			it('returns InstructionNop for empty statement expression.', () => {
 				const src: string = ';';
-				const instr: INST.InstructionNone | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src)
+				const instr: INST.InstructionExpression = AST.ASTNodeStatementExpression.fromSource(src)
 					.build(new Builder(src));
-				assert.ok(instr instanceof INST.InstructionNone);
+				assert.strictEqual(instr, INST.NOP);
 			});
-			it('returns InstructionStatement for nonempty statement expression.', () => {
+			it('returns InstructionDrop for nonempty statement expression.', () => {
 				const src: string = '42 + 420;';
 				const builder: Builder = new Builder(src);
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
 				assert.deepStrictEqual(
 					stmt.build(builder),
-					new INST.InstructionStatement(0n, AST.ASTNodeOperationBinaryArithmetic.fromSource(src).build(builder)),
+					new INST.InstructionDrop(stmt.expr!.build(builder)),
 				);
 			});
 			it('multiple statements.', () => {
 				const src: string = '42; 420;';
 				const generator: Builder = new Builder(src);
-				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt, i) => {
-					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt) => {
 					assert.deepStrictEqual(
 						stmt.build(generator),
-						new INST.InstructionStatement(BigInt(i), AST.ASTNodeConstant.fromSource(stmt.source).build(generator)),
+						new INST.InstructionDrop((stmt as AST.ASTNodeStatementExpression).expr!.build(generator)),
 					);
 				});
 			});
@@ -158,23 +153,17 @@ describe('ASTNodeCP', () => {
 
 
 		describe('#build', () => {
-			it('always returns InstructionStatement containing InstructionGlobalSet.', () => {
+			it('always returns InstructionLocalSet.', () => {
 				const src: string = `
 					let unfixed y: float = 4.2;
 					y = y * 10;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder: Builder = new Builder(src);
+				goal.build(builder);
 				assert.deepStrictEqual(
 					goal.children[1].build(builder),
-					new INST.InstructionStatement(
-						0n,
-						new INST.InstructionGlobalSet(0x100n, new INST.InstructionBinopArithmetic(
-							Operator.MUL,
-							new INST.InstructionGlobalGet(0x100n, true),
-							instructionConstFloat(10.0),
-						)),
-					),
+					new INST.InstructionLocalSet(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder)),
 				);
 			});
 		});
@@ -298,10 +287,15 @@ describe('ASTNodeCP', () => {
 
 
 		describe('#build', () => {
-			it('returns InstructionNone.', () => {
+			it('returns InstructionNop for empty program.', () => {
 				const src: string = '';
-				const instr: INST.InstructionNone | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
-				assert.ok(instr instanceof INST.InstructionNone);
+				const instr: INST.InstructionNop | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
+				assert.strictEqual(instr, INST.NOP);
+			});
+			it('returns InstructionModule for non-empty program.', () => {
+				const src: string = '42;';
+				const instr: INST.InstructionNop | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
+				assert.ok(instr instanceof INST.InstructionModule);
 			});
 		});
 	});

@@ -33,5 +33,5 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 	}
 
 	/** @implements Buildable */
-	public abstract build(builder: Builder): INST.InstructionNone | INST.InstructionStatement | INST.InstructionDeclareGlobal;
+	public abstract build(builder: Builder): INST.InstructionNop | INST.InstructionDrop | INST.InstructionLocalSet;
 }

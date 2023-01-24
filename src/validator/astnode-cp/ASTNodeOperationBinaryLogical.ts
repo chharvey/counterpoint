@@ -33,8 +33,10 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopLogical {
 		const tofloat: boolean = to_float || this.shouldFloat();
+		/** A temporary variable id used for optimizing short-circuited operations. */
+		const temp_id: bigint = builder.varCount;
 		return new INST.InstructionBinopLogical(
-			builder.varCount,
+			builder.addLocal(temp_id, tofloat)[0].getLocalInfo(temp_id)!.index,
 			this.operator,
 			this.operand0.build(builder, tofloat),
 			this.operand1.build(builder, tofloat),

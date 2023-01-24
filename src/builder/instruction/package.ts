@@ -14,3 +14,4 @@ export {
 	ValidOperatorLogical,
 	OBJ,
 } from '../package.js';
+export {Builder} from '../index.js';

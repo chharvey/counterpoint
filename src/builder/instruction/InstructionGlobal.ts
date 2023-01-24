@@ -10,7 +10,12 @@ import {InstructionVariable} from './InstructionVariable.js';
  * - InstructionGlobalSet
  */
 export abstract class InstructionGlobal extends InstructionVariable {
-	public constructor(name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
-		super((typeof name_or_id === 'bigint') ? `$glb${ name_or_id.toString(16) }` : name_or_id, op);
+	public static friendlyName(id: bigint): string {
+		return `glb${ id.toString(16) }`;
+	}
+
+
+	public constructor(id: bigint, op: InstructionExpression | boolean = false) {
+		super(InstructionGlobal.friendlyName(id), op);
 	}
 }

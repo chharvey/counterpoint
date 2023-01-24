@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {InstructionLocal} from './InstructionLocal.js';
 
 
@@ -6,12 +7,16 @@ import {InstructionLocal} from './InstructionLocal.js';
  * Get a local variable.
  */
 export class InstructionLocalGet extends InstructionLocal {
-	public constructor(name: bigint | string, to_float: boolean = false) {
-		super(name, to_float);
+	public constructor(index: number, to_float: boolean = false) {
+		super(index, to_float);
 	}
 
 	/** @return `'(local.get ‹name›)'` */
 	public override toString(): string {
-		return `(local.get ${ this.name })`;
+		return `(local.get $${ this.name })`;
+	}
+
+	public override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.local.get(Number(this.index), this.binType);
 	}
 }

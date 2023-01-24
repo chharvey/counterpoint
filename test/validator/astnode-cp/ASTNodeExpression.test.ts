@@ -232,21 +232,22 @@ describe('ASTNodeExpression', () => {
 					y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const builder: Builder = new Builder(src);
 				goal.varCheck();
 				goal.typeCheck();
-				const builder: Builder = new Builder(src);
+				goal.build(builder);
 				assert.deepStrictEqual(
 					[
-						goal.children[2].build(builder),
-						goal.children[3].build(builder),
+						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
+						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, instructionConstInt(42n)),
-						new INST.InstructionStatement(1n, instructionConstFloat(42.0)),
+						instructionConstInt(42n),
+						instructionConstFloat(42.0),
 					],
 				);
 			});
-			it('with constant folding on, returns InstructionGlobalGet for unfixed / non-foldable variables.', () => {
+			it('with constant folding on, returns InstructionLocalGet for unfixed / non-foldable variables.', () => {
 				const src: string = `
 					let unfixed x: int = 42;
 					let y: int = x + 10;
@@ -254,21 +255,22 @@ describe('ASTNodeExpression', () => {
 					y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const builder: Builder = new Builder(src);
 				goal.varCheck();
 				goal.typeCheck();
-				const builder: Builder = new Builder(src);
+				goal.build(builder);
 				assert.deepStrictEqual(
 					[
-						goal.children[2].build(builder),
-						goal.children[3].build(builder),
+						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
+						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n)),
+						new INST.InstructionLocalGet(0),
+						new INST.InstructionLocalGet(1),
 					],
 				);
 			});
-			it('with constant folding off, always returns InstructionGlobalGet.', () => {
+			it('with constant folding off, always returns InstructionLocalGet.', () => {
 				const src: string = `
 					let x: int = 42;
 					let unfixed y: float = 4.2;
@@ -276,17 +278,18 @@ describe('ASTNodeExpression', () => {
 					y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 				goal.varCheck();
 				goal.typeCheck();
-				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
+				goal.build(builder);
 				assert.deepStrictEqual(
 					[
-						goal.children[2].build(builder),
-						goal.children[3].build(builder),
+						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
+						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n, true)),
+						new INST.InstructionLocalGet(0),
+						new INST.InstructionLocalGet(1, true),
 					],
 				);
 			});

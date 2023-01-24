@@ -31,7 +31,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		public  readonly unfixed:  boolean,
 		private readonly assignee: ASTNodeVariable,
 		private readonly typenode: ASTNodeType,
-		private readonly assigned: ASTNodeExpression,
+		public readonly assigned:  ASTNodeExpression,
 	) {
 		super(start_node, {unfixed}, [assignee, typenode, assigned]);
 	}
@@ -68,13 +68,18 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 	}
 
-	public override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold())
-			? new INST.InstructionNone()
-			: new INST.InstructionDeclareGlobal(
+	public override build(builder: Builder): INST.InstructionNop | INST.InstructionLocalSet {
+		if (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold()) {
+			return INST.NOP;
+		} else {
+			const local = builder.addLocal(
 				this.assignee.id,
-				this.unfixed,
-				this.assigned.build(builder, this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat()),
+				this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat(),
+			)[0].getLocalInfo(this.assignee.id);
+			return new INST.InstructionLocalSet(
+				local!.index,
+				this.assigned.build(builder, local!.isFloat),
 			);
+		}
 	}
 }

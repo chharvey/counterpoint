@@ -30,7 +30,7 @@ describe('Instruction', () => {
 					instructionConstFloat(2.5),
 				), TypeError);
 				assert.throws(() => new INST.InstructionBinopLogical(
-					-1n,
+					-1,
 					Operator.AND,
 					instructionConstInt(5n),
 					instructionConstFloat(2.5),
@@ -51,15 +51,15 @@ describe('Instruction', () => {
 	describe('#toString', () => {
 		specify('InstructionGlobal', () => {
 			const expr: INST.InstructionConst = instructionConstInt(42n);
-			assert.strictEqual(new INST.InstructionGlobalSet('$x', expr)  .toString(), `(global.set $x ${ instructionConstInt(42n) })`);
-			assert.strictEqual(new INST.InstructionGlobalGet('$x', false) .toString(), '(global.get $x)');
+			assert.strictEqual(new INST.InstructionGlobalSet(0x100n, expr)  .toString(), `(global.set $glb100 ${ instructionConstInt(42n) })`);
+			assert.strictEqual(new INST.InstructionGlobalGet(0x100n, false) .toString(), '(global.get $glb100)');
 		});
 
 		specify('InstructionLocal', () => {
 			const expr: INST.InstructionConst = instructionConstInt(42n);
-			assert.strictEqual(new INST.InstructionLocalSet('$x', expr)  .toString(), `(local.set $x ${ instructionConstInt(42n) })`);
-			assert.strictEqual(new INST.InstructionLocalGet('$x', false) .toString(), '(local.get $x)');
-			assert.strictEqual(new INST.InstructionLocalTee('$x', expr)  .toString(), `(local.tee $x ${ instructionConstInt(42n) })`);
+			assert.strictEqual(new INST.InstructionLocalSet(0, expr)  .toString(), `(local.set $var0 ${ instructionConstInt(42n) })`);
+			assert.strictEqual(new INST.InstructionLocalGet(0, false) .toString(), '(local.get $var0)');
+			assert.strictEqual(new INST.InstructionLocalTee(1, expr)  .toString(), `(local.tee $var1 ${ instructionConstInt(42n) })`);
 		});
 
 		context('InstructionConst', () => {
@@ -187,26 +187,28 @@ describe('Instruction', () => {
 					instructionConstFloat(18.1),
 					instructionConstInt(30n),
 				).toString(), `(call $f_i_id ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`);
+			});
+			it('creates variables for logical operations.', () => {
 				assert.strictEqual(new INST.InstructionBinopLogical(
-					0n,
+					0,
 					Operator.AND,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
-				).toString(), ((varname) => `${ new INST.InstructionDeclareLocal(varname, false) } ${ new INST.InstructionCond(
-					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(varname, instructionConstInt(30n)))),
+				).toString(), new INST.InstructionCond(
+					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(0, instructionConstInt(30n)))),
 					instructionConstInt(18n),
-					new INST.InstructionLocalGet(varname, false),
-				) }`)('$o0'));
+					new INST.InstructionLocalGet(0, false),
+				).toString());
 				assert.strictEqual(new INST.InstructionBinopLogical(
-					3n,
+					3,
 					Operator.OR,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
-				).toString(), ((varname) => `${ new INST.InstructionDeclareLocal(varname, true) } ${ new INST.InstructionCond(
-					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(varname, instructionConstFloat(30.1)))),
-					new INST.InstructionLocalGet(varname, true),
+				).toString(), new INST.InstructionCond(
+					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(3, instructionConstFloat(30.1)))),
+					new INST.InstructionLocalGet(3, true),
 					instructionConstFloat(18.1),
-				) }`)('$o3'));
+				).toString());
 			});
 		});
 
@@ -228,12 +230,25 @@ describe('Instruction', () => {
 		specify('InstructionDeclareGlobal', () => {
 			const expr: INST.InstructionConst = instructionConstInt(42n);
 			assert.strictEqual(
-				new INST.InstructionDeclareGlobal('$x', true, expr).toString(),
-				`(global $x (mut i32) ${ expr })`,
+				new INST.InstructionDeclareGlobal(0x42n, true, expr).toString(),
+				`(global $glb42  (mut i32) ${ expr })`,
 			);
 		});
 
-		describe('InstructionStatement', () => {
+		specify('InstructionDeclareLocal', () => {
+			assert.deepStrictEqual(
+				[
+					new INST.InstructionDeclareLocal(0, false) .toString(),
+					new INST.InstructionDeclareLocal(1, true)  .toString(),
+				],
+				[
+					'(local $var0 i32)',
+					'(local $var1 f64)',
+				],
+			);
+		});
+
+		describe('InstructionFunction', () => {
 			it('returns a wasm function.', () => {
 				const expr: INST.InstructionBinopArithmetic = new INST.InstructionBinopArithmetic(
 					Operator.MUL,
@@ -241,11 +256,29 @@ describe('Instruction', () => {
 					instructionConstInt(2n),
 				);
 				assert.strictEqual(
-					new INST.InstructionStatement(0n, expr).toString(),
+					new INST.InstructionFunction(0n, [], [expr]).toString(),
 					xjs.String.dedent`
-						(func (export "f0") (result i32)
+						(func $fn0\u0020\u0020
 							${ expr }
 						)
+					`,
+				);
+			});
+			it('hoists local variables.', () => {
+				const locals = [
+					{id: 0x100n, isFloat: false},
+					{id: 0x101n, isFloat: true},
+				];
+				const exprs = [
+					new INST.InstructionLocalSet(0, instructionConstInt(21n)),
+					new INST.InstructionLocalSet(1, instructionConstFloat(2.1)),
+				];
+				assert.strictEqual(
+					new INST.InstructionFunction(1n, locals, exprs).toString(),
+					xjs.String.dedent`
+						(func $fn1  (local $var0 i32) (local $var1 f64)
+							${ exprs.join('\n') }
+						);
 					`,
 				);
 			});
@@ -253,17 +286,20 @@ describe('Instruction', () => {
 
 		context('InstructionModule', () => {
 			it('creates a program.', () => {
-				const mods: Array<INST.InstructionNone | INST.InstructionModule> = [
+				const mods: Array<INST.InstructionNop | INST.InstructionModule> = [
 					'',
 					';',
 				].map((src) => AST.ASTNodeGoal.fromSource(src).build(new Builder(src)));
-				assert.ok(mods[0] instanceof INST.InstructionNone);
-				assert.strictEqual(mods[0].toString(), '');
+				assert.strictEqual(mods[0], INST.NOP);
+				assert.strictEqual(mods[0].toString(), '(nop)');
 				assert.ok(mods[1] instanceof INST.InstructionModule);
-				assert.deepStrictEqual(mods[1], new INST.InstructionModule([
-					...Builder.IMPORTS,
-					new INST.InstructionNone(),
-				]));
+				const comp = new INST.InstructionFunction(0n, [], [INST.NOP], true);
+				assert.deepStrictEqual(mods[1], new INST.InstructionModule([comp]));
+				assert.strictEqual(mods[1].toString(), xjs.String.dedent`
+					(module
+						${ [...Builder.IMPORTS, comp].join('\n') }
+					)
+				`);
 			});
 		});
 	});

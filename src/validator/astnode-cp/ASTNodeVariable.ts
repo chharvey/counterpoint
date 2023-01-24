@@ -6,6 +6,7 @@ import {
 	Builder,
 	ReferenceError01,
 	ReferenceError03,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SymbolKind,
@@ -50,8 +51,11 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		}
 	}
 
-	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
-		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
+	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionLocalGet {
+		const local = builder.getLocalInfo(this.id);
+		return (local)
+			? new INST.InstructionLocalGet(local.index, to_float || this.shouldFloat())
+			: throw_expression(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 
 	protected override type_do(): TYPE.Type {

@@ -5,6 +5,7 @@ import {
 	Builder,
 	AssignmentError10,
 	MutabilityError01,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SymbolStructureVar,
@@ -29,7 +30,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	public constructor(
 		start_node: SyntaxNodeType<'statement_assignment'>,
 		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		private readonly assigned: ASTNodeExpression,
+		public readonly assigned:  ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
@@ -65,13 +66,14 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		}
 	}
 
-	public override build(builder: Builder): INST.InstructionStatement {
-		return new INST.InstructionStatement(
-			builder.stmtCount,
-			new INST.InstructionGlobalSet(
-				(this.assignee as ASTNodeVariable).id,
+	public override build(builder: Builder): INST.InstructionLocalSet {
+		const id: bigint = (this.assignee as ASTNodeVariable).id;
+		const local = builder.getLocalInfo(id);
+		return (local)
+			? new INST.InstructionLocalSet(
+				local.index,
 				this.assigned.build(builder, this.assignee.type().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat()),
-			),
-		);
+			)
+			: throw_expression(new ReferenceError(`Variable with id ${ id } not found.`));
 	}
 }

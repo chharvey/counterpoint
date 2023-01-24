@@ -25,9 +25,9 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 
-	public override build(builder: Builder): INST.InstructionNone | INST.InstructionStatement {
+	public override build(builder: Builder): INST.InstructionNop | INST.InstructionDrop {
 		return (this.expr)
-			? new INST.InstructionStatement(builder.stmtCount, this.expr.build(builder))
-			: new INST.InstructionNone();
+			? new INST.InstructionDrop(this.expr.build(builder))
+			: INST.NOP;
 	}
 }

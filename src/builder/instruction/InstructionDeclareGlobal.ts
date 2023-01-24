@@ -1,5 +1,7 @@
+import type binaryen from 'binaryen';
 import {Instruction} from './Instruction.js';
 import type {InstructionExpression} from './InstructionExpression.js';
+import {InstructionGlobal} from './InstructionGlobal.js';
 
 
 
@@ -7,23 +9,33 @@ import type {InstructionExpression} from './InstructionExpression.js';
  * Declare a global variable.
  */
 export class InstructionDeclareGlobal extends Instruction {
-	private readonly type: string = (this.init.isFloat) ? 'f64' : 'i32';
+	/** The readable variable name. */
+	private readonly name: string;
+
 	/**
-	 * @param name the variable name (must begin with `'$'`)
-	 * @param mut  is the variable mutable? (may it be reassigned?)
-	 * @param init the initial value of the variable
+	 * @param id       a unique id number
+	 * @param mut      is the variable mutable? (may it be reassigned?)
+	 * @param init     the initial value of the variable
+	 * @param exported Should this global be exported?
 	 */
 	public constructor(
-		private readonly name: bigint | string,
-		private readonly mut: boolean,
-		private readonly init: InstructionExpression,
+		id:                        bigint,
+		private readonly mut:      boolean,
+		private readonly init:     InstructionExpression,
+		private readonly exported: boolean = false,
 	) {
 		super();
-		this.name = (typeof name === 'bigint') ? `$glb${ name.toString(16) }` : name;
+		this.name = InstructionGlobal.friendlyName(id);
 	}
 
 	/** @return `'(global ‹name› ‹type› ‹init›)'` */
 	public override toString(): string {
-		return `(global ${ this.name } ${ (this.mut) ? `(mut ${ this.type })` : this.type } ${ this.init })`;
+		const type: string = (!this.init.isFloat) ? 'i32' : 'f64';
+		return `(global $${ this.name } ${ (this.exported) ? `(export "${ this.name }")` : '' } ${ (this.mut) ? `(mut ${ type })` : type } ${ this.init })`;
+	}
+
+	public override buildBin(mod: binaryen.Module): binaryen.GlobalRef {
+		(this.exported) && mod.addGlobalExport(this.name, this.name);
+		return mod.addGlobal(this.name, this.init.binType, this.mut, this.init.buildBin(mod));
 	}
 }

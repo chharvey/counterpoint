@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {InstructionExpression} from './InstructionExpression.js';
 
 
@@ -33,5 +34,9 @@ export class InstructionCond extends InstructionExpression {
 
 	public get isFloat(): boolean {
 		return this.arg1.isFloat || this.arg2.isFloat;
+	}
+
+	public override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.if(this.arg0.buildBin(mod), this.arg1.buildBin(mod), this.arg2.buildBin(mod));
 	}
 }
