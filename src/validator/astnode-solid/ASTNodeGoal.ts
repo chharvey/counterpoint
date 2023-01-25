@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {
 	INST,
 	Builder,
@@ -39,10 +40,17 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 		return this._validator;
 	}
 	/** @implements Buildable */
-	build(builder: Builder): INST.InstructionNop | INST.InstructionModule {
-		const children: INST.InstructionExpression[] = this.children.map((child) => child.build(builder)); // must build before calling `.getLocals()`
-		return (!this.children.length)
-			? INST.NOP
-			: new INST.InstructionModule([new INST.InstructionFunction(0n, builder.getLocals(), children, true)]);
+	public build(builder: Builder): binaryen.ExpressionRef | binaryen.Module {
+		if (!this.children.length) {
+			return builder.module.nop();
+		} else {
+			const children: INST.InstructionExpression[] = this.children.map((child) => child.build(builder)); // must build before calling `.getLocals()`
+			new INST.InstructionFunction(0n, builder.getLocals(), children, true).buildBin(builder.module);
+			const validation = builder.module.validate();
+			if (!validation) {
+				throw new Error('Invalid WebAssembly module.');
+			}
+			return builder.module;
+		}
 	}
 }

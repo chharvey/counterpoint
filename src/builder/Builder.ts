@@ -15,7 +15,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
  * The Builder generates assembly code.
  */
 export class Builder {
-	static readonly IMPORTS: readonly string[] = [
+	private static readonly IMPORTS: readonly string[] = [
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/not.wat'), 'utf8'),
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/emp.wat'), 'utf8'),
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/neg.wat'), 'utf8'),
@@ -34,8 +34,8 @@ export class Builder {
 	private _varCount: bigint = -0x40n;
 	/** A setlist containing ids of local variables. */
 	private locals: Array<{id: bigint, isFloat: boolean}> = [];
-	/** The Binaryen module to build upon construction. */
-	private readonly module: binaryen.Module = binaryen.parseText(`
+	/** The Binaryen module to build upon building. */
+	public readonly module: binaryen.Module = binaryen.parseText(`
 		(module
 			${ Builder.IMPORTS.join('') }
 		)
@@ -139,7 +139,7 @@ export class Builder {
 	 * @return `this`
 	 */
 	public build(): this {
-		this.ast_goal.build(this).buildBin(this.module);
+		this.ast_goal.build(this);
 		return this;
 	}
 

@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	ASTNODE_SOLID as AST,
 	SolidType,
@@ -14,6 +15,7 @@ import {
 } from '../../../src/index.js';
 import {
 	assertAssignable,
+	assertBinEqual,
 } from '../../assert-helpers.js';
 import {typeConstFloat} from '../../helpers.js';
 
@@ -289,15 +291,17 @@ describe('ASTNodeSolid', () => {
 
 
 		describe('#build', () => {
-			it('returns InstructionNop for empty program.', () => {
+			it('returns `(nop)` for empty program.', () => {
 				const src: string = ``;
-				const instr: INST.InstructionNop | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
-				assert.strictEqual(instr, INST.NOP)
+				const builder = new Builder(src);
+				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
+				assertBinEqual(instr, builder.module.nop());
 			});
-			it('returns InstructionModule for non-empty program.', () => {
+			it('returns binaryen.Module for non-empty program.', () => {
 				const src: string = `42;`;
-				const instr: INST.InstructionNop | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
-				assert.ok(instr instanceof INST.InstructionModule);
+				const builder = new Builder(src);
+				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
+				assert.strictEqual(instr, builder.module);
 			});
 		});
 	});

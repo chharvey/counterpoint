@@ -1,16 +1,9 @@
 import * as xjs from 'extrajs';
 import * as assert from 'assert'
 import {
-	PARSER_SOLID as PARSER,
-} from '../../src/parser/index.js';
-import {
-	DECORATOR_SOLID as DECORATOR,
 	Operator,
-} from '../../src/validator/index.js';
-import {
-	Builder,
 	INST,
-} from '../../src/builder/index.js';
+} from '../../src/index.js';
 import {
 	instructionConstInt,
 	instructionConstFloat,
@@ -278,27 +271,5 @@ describe('Instruction', () => {
 				);
 			});
 		});
-
-		context('InstructionModule', () => {
-			it('creates a program.', () => {
-				const mods: Array<INST.InstructionNop | INST.InstructionModule> = [
-					``,
-					`;`,
-				].map((src) => DECORATOR
-					.decorate(PARSER.parse(src))
-					.build(new Builder(src))
-				);
-				assert.strictEqual(mods[0], INST.NOP);
-				assert.strictEqual(mods[0].toString(), '(nop)');
-				assert.ok(mods[1] instanceof INST.InstructionModule);
-				const comp = new INST.InstructionFunction(0n, [], [INST.NOP], true);
-				assert.deepStrictEqual(mods[1], new INST.InstructionModule([comp]));
-				assert.strictEqual(mods[1].toString(), xjs.String.dedent`
-					(module
-						${ [...Builder.IMPORTS, comp].join('\n') }
-					)
-				`);
-			})
-		})
 	})
 })

@@ -1,4 +1,5 @@
 import * as assert from 'assert'
+import binaryen from 'binaryen';
 import {
 	forEachAggregated,
 } from '../src/lib/index.js';
@@ -112,6 +113,12 @@ export function assertEqualTypes(param1: SolidType | SolidType[] | ReadonlyMap<S
 			return assert.ok((param1 as SolidType).equals(param2 as SolidType), `${ param1 } == ${ param2 }`);
 		}
 	}
+}
+
+
+
+export function assertBinEqual<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(r1: Ref, r2: Ref): void {
+	return assert.strictEqual(binaryen.emitText(r1), binaryen.emitText(r2));
 }
 
 
