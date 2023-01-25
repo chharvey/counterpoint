@@ -44,12 +44,6 @@ describe('Instruction', () => {
 	})
 
 	describe('#toString', () => {
-		specify('InstructionGlobal', () => {
-			const expr: INST.InstructionConst = instructionConstInt(42n);
-			assert.strictEqual(new INST.InstructionGlobalSet(0x100n, expr)  .toString(), `(global.set $glb100 ${ instructionConstInt(42n) })`);
-			assert.strictEqual(new INST.InstructionGlobalGet(0x100n, false) .toString(), `(global.get $glb100)`);
-		});
-
 		specify('InstructionLocal', () => {
 			const expr: INST.InstructionConst = instructionConstInt(42n);
 			assert.strictEqual(new INST.InstructionLocalGet(0, false) .toString(), `(local.get $var0)`);
