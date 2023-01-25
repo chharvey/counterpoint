@@ -213,26 +213,5 @@ describe('Instruction', () => {
 				).toString(), `(if (result f64) ${ instructionConstInt(0n) } (then ${ instructionConstFloat(2.2) }) (else ${ instructionConstFloat(3.3) }))`)
 			})
 		})
-
-		specify('InstructionDeclareGlobal', () => {
-			const expr: INST.InstructionConst = instructionConstInt(42n);
-			assert.strictEqual(
-				new INST.InstructionDeclareGlobal(0x42n, true, expr).toString(),
-				`(global $glb42  (mut i32) ${ expr })`,
-			);
-		});
-
-		specify('InstructionDeclareLocal', () => {
-			assert.deepStrictEqual(
-				[
-					new INST.InstructionDeclareLocal(0, false) .toString(),
-					new INST.InstructionDeclareLocal(1, true)  .toString(),
-				],
-				[
-					'(local $var0 i32)',
-					'(local $var1 f64)',
-				],
-			);
-		});
 	})
 })

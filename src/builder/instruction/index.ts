@@ -15,7 +15,5 @@ export * from './InstructionBinopComparative.js';
 export * from './InstructionBinopEquality.js';
 export * from './InstructionBinopLogical.js';
 export * from './InstructionCond.js';
-export * from './InstructionDeclareGlobal.js';
-export * from './InstructionDeclareLocal.js';
 
 export * from './exports.js';
