@@ -1,4 +1,3 @@
-import * as xjs from 'extrajs';
 import * as assert from 'assert'
 import {
 	Operator,
@@ -234,42 +233,6 @@ describe('Instruction', () => {
 					'(local $var1 f64)',
 				],
 			);
-		});
-
-		describe('InstructionFunction', () => {
-			it('returns a wasm function.', () => {
-				const expr: INST.InstructionBinopArithmetic = new INST.InstructionBinopArithmetic(
-					Operator.MUL,
-					instructionConstInt(21n),
-					instructionConstInt(2n),
-				);
-				assert.strictEqual(
-					new INST.InstructionFunction(0n, [], [expr]).toString(),
-					xjs.String.dedent`
-						(func $fn0\u0020\u0020
-							${ expr }
-						)
-					`,
-				);
-			});
-			it('hoists local variables.', () => {
-				const locals = [
-					{id: 0x100n, isFloat: false},
-					{id: 0x101n, isFloat: true},
-				];
-				const exprs = [
-					new INST.InstructionLocalSet(0, instructionConstInt(21n)),
-					new INST.InstructionLocalSet(1, instructionConstFloat(2.1)),
-				];
-				assert.strictEqual(
-					new INST.InstructionFunction(1n, locals, exprs).toString(),
-					xjs.String.dedent`
-						(func $fn1  (local $var0 i32) (local $var1 f64)
-							${ exprs.join('\n') }
-						)
-					`,
-				);
-			});
 		});
 	})
 })

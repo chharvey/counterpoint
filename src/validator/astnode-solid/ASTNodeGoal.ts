@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	INST,
 	Builder,
@@ -45,7 +45,16 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 			return builder.module.nop();
 		} else {
 			const children: INST.InstructionExpression[] = this.children.map((child) => child.build(builder)); // must build before calling `.getLocals()`
-			new INST.InstructionFunction(0n, builder.getLocals(), children, true).buildBin(builder.module);
+			const fn_name:  string                       = 'fn0';
+			builder.module.addFunction(
+				fn_name,
+				binaryen.createType([]),
+				binaryen.createType([]),
+				builder.getLocals().map((var_) => (!var_.isFloat) ? binaryen.i32 : binaryen.f64),
+				builder.module.block(null, children.map((expr) => expr.buildBin(builder.module))),
+			);
+			builder.module.addFunctionExport(fn_name, fn_name);
+
 			const validation = builder.module.validate();
 			if (!validation) {
 				throw new Error('Invalid WebAssembly module.');
