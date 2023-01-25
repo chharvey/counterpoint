@@ -1,7 +1,6 @@
 export * from './Instruction.js';
 
 export * from './InstructionExpression.js';
-export * from './InstructionNop.js';
 export * from './InstructionDrop.js';
 export * from './InstructionConst.js';
 export * from './InstructionGlobalGet.js';
@@ -15,5 +14,3 @@ export * from './InstructionBinopComparative.js';
 export * from './InstructionBinopEquality.js';
 export * from './InstructionBinopLogical.js';
 export * from './InstructionCond.js';
-
-export * from './exports.js';

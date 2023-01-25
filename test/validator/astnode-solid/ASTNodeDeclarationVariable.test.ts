@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	CONFIG_DEFAULT,
 	ASTNODE_SOLID as AST,
@@ -10,8 +11,10 @@ import {
 	AssignmentError01,
 	TypeError03,
 } from '../../../src/index.js';
+import {forEachAggregated} from '../../../src/lib/index.js';
 import {
 	assertAssignable,
+	assertBinEqual,
 } from '../../assert-helpers.js';
 import {CONFIG_FOLDING_OFF} from '../../helpers.js';
 
@@ -265,26 +268,22 @@ describe('ASTNodeDeclarationVariable', () => {
 
 
 	describe('#build', () => {
-		it('with constant folding on, returns InstructionNop for fixed & foldable variables.', () => {
+		it('with constant folding on, returns `(nop)` for fixed & foldable variables.', () => {
 			const src: string = `
 				let x: int = 42;
-				let y: float = 4.2 * 10;
+				let y: float = 4.2 * x;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 			const builder: Builder = new Builder(src);
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build(builder);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
-					INST.NOP,
-					INST.NOP,
-				],
-			);
+			return forEachAggregated(goal.children, (stmt) => {
+				assert.ok(stmt instanceof AST.ASTNodeDeclarationVariable);
+				const instr: binaryen.ExpressionRef | INST.InstructionLocalSet = stmt.build(builder);
+				assert.ok(!(instr instanceof INST.Instruction));
+				assertBinEqual(instr, builder.module.nop());
+			});
 		});
 		it('with constant folding on, returns InstructionLocalSet for unfixed / non-foldable variables.', () => {
 			const src: string = `

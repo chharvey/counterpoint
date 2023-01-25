@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidType,
 	INST,
@@ -64,9 +65,9 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			}
 		}
 	}
-	public override build(builder: Builder): INST.InstructionNop | INST.InstructionLocalSet {
+	public override build(builder: Builder): binaryen.ExpressionRef | INST.InstructionLocalSet {
 		if (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold()) {
-			return INST.NOP;
+			return builder.module.nop();
 		} else {
 			const local = builder.addLocal(
 				this.assignee.id,

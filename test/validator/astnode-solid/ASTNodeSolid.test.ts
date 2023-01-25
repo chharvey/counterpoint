@@ -24,11 +24,12 @@ import {typeConstFloat} from '../../helpers.js';
 describe('ASTNodeSolid', () => {
 	describe('ASTNodeStatementExpression', () => {
 		describe('#build', () => {
-			it('returns InstructionNop for empty statement expression.', () => {
+			it('returns `(nop)` for empty statement expression.', () => {
 				const src: string = `;`;
-				const instr: INST.InstructionExpression = AST.ASTNodeStatementExpression.fromSource(src)
-					.build(new Builder(src))
-				assert.strictEqual(instr, INST.NOP);
+				const builder = new Builder(src);
+				const instr: binaryen.ExpressionRef | INST.InstructionDrop = AST.ASTNodeStatementExpression.fromSource(src).build(builder);
+				assert.ok(!(instr instanceof INST.Instruction));
+				assertBinEqual(instr, builder.module.nop());
 			})
 			it('returns InstructionDrop for nonempty statement expression.', () => {
 				const src: string = `42 + 420;`;

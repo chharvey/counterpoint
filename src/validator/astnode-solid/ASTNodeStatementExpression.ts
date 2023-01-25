@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	Builder,
 	INST,
@@ -23,9 +24,9 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	) {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
-	override build(builder: Builder): INST.InstructionNop | INST.InstructionDrop {
+	override build(builder: Builder): binaryen.ExpressionRef | INST.InstructionDrop {
 		return (this.expr)
 			? new INST.InstructionDrop(this.expr.build(builder))
-			: INST.NOP;
+			: builder.module.nop();
 	}
 }
