@@ -1,7 +1,6 @@
 export * from './Instruction.js';
 
 export * from './InstructionExpression.js';
-export * from './InstructionDrop.js';
 export * from './InstructionConst.js';
 export * from './InstructionGlobalGet.js';
 export * from './InstructionGlobalSet.js';

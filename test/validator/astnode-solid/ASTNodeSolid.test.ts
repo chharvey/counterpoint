@@ -27,26 +27,26 @@ describe('ASTNodeSolid', () => {
 			it('returns `(nop)` for empty statement expression.', () => {
 				const src: string = `;`;
 				const builder = new Builder(src);
-				const instr: binaryen.ExpressionRef | INST.InstructionDrop = AST.ASTNodeStatementExpression.fromSource(src).build(builder);
-				assert.ok(!(instr instanceof INST.Instruction));
+				const instr: binaryen.ExpressionRef = AST.ASTNodeStatementExpression.fromSource(src).build(builder);
 				assertBinEqual(instr, builder.module.nop());
 			})
-			it('returns InstructionDrop for nonempty statement expression.', () => {
+			it('returns `(drop)` for nonempty statement expression.', () => {
 				const src: string = `42 + 420;`;
 				const builder: Builder = new Builder(src);
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
-				assert.deepStrictEqual(
+				assertBinEqual(
 					stmt.build(builder),
-					new INST.InstructionDrop(stmt.expr!.build(builder)),
+					builder.module.drop(stmt.expr!.build(builder).buildBin(builder.module)),
 				);
 			})
 			it('multiple statements.', () => {
 				const src: string = `42; 420;`;
 				const generator: Builder = new Builder(src);
 				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt) => {
-					assert.deepStrictEqual(
+					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+					assertBinEqual(
 						stmt.build(generator),
-						new INST.InstructionDrop((stmt as AST.ASTNodeStatementExpression).expr!.build(generator)),
+						generator.module.drop(stmt.expr!.build(generator).buildBin(generator.module)),
 					);
 				});
 			});

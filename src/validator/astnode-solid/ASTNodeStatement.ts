@@ -33,5 +33,5 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		return goal.children[0];
 	}
 	/** @implements Buildable */
-	abstract build(builder: Builder): binaryen.ExpressionRef | INST.InstructionDrop | INST.InstructionLocalSet;
+	abstract build(builder: Builder): binaryen.ExpressionRef | INST.InstructionLocalSet;
 }
