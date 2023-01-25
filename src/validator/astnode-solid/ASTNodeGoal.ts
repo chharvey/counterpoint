@@ -1,6 +1,5 @@
 import binaryen from 'binaryen';
 import {
-	INST,
 	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -44,14 +43,14 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 		if (!this.children.length) {
 			return builder.module.nop();
 		} else {
-			const children: Array<binaryen.ExpressionRef | INST.InstructionExpression> = this.children.map((child) => child.build(builder)); // must build before calling `.getLocals()`
-			const fn_name:  string                       = 'fn0';
+			const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build(builder)); // must build before calling `.getLocals()`
+			const fn_name:    string                   = 'fn0';
 			builder.module.addFunction(
 				fn_name,
 				binaryen.createType([]),
 				binaryen.createType([]),
 				builder.getLocals().map((var_) => (!var_.isFloat) ? binaryen.i32 : binaryen.f64),
-				builder.module.block(null, children.map((expr) => (expr instanceof INST.Instruction) ? expr.buildBin(builder.module) : expr)),
+				builder.module.block(null, [...statements]),
 			);
 			builder.module.addFunctionExport(fn_name, fn_name);
 

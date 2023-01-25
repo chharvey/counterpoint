@@ -1,7 +1,7 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidType,
-	INST,
 	Builder,
 	AssignmentError10,
 	MutabilityError01,
@@ -61,13 +61,13 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			}
 		}
 	}
-	public override build(builder: Builder): INST.InstructionLocalSet {
+	public override build(builder: Builder): binaryen.ExpressionRef {
 		const id: bigint = (this.assignee as ASTNodeVariable).id;
 		const local = builder.getLocalInfo(id);
 		return (local)
-			? new INST.InstructionLocalSet(
+			? builder.module.local.set(
 				local.index,
-				this.assigned.build(builder, this.assignee.type().isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat()),
+				this.assigned.build(builder, this.assignee.type().isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat()).buildBin(builder.module),
 			)
 			: (() => { throw new ReferenceError(`Variable with id ${ id } not found.`) })(); // TODO use throw_expression
 	}

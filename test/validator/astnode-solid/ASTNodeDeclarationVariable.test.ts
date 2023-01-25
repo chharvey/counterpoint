@@ -1,12 +1,10 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
 import {
 	CONFIG_DEFAULT,
 	ASTNODE_SOLID as AST,
 	SymbolStructure,
 	SymbolStructureVar,
 	SolidType,
-	INST,
 	Builder,
 	AssignmentError01,
 	TypeError03,
@@ -279,13 +277,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.typeCheck();
 			goal.build(builder);
 			return forEachAggregated(goal.children, (stmt) => {
-				assert.ok(stmt instanceof AST.ASTNodeDeclarationVariable);
-				const instr: binaryen.ExpressionRef | INST.InstructionLocalSet = stmt.build(builder);
-				assert.ok(!(instr instanceof INST.Instruction));
-				assertBinEqual(instr, builder.module.nop());
+				assertBinEqual(stmt.build(builder), builder.module.nop());
 			});
 		});
-		it('with constant folding on, returns InstructionLocalSet for unfixed / non-foldable variables.', () => {
+		it('with constant folding on, returns `(local.set)` for unfixed / non-foldable variables.', () => {
 			const src: string = `
 				let unfixed x: int = 42;
 				let y: int = x + 10;
@@ -295,18 +290,14 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build(builder);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
-					new INST.InstructionLocalSet(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
-					new INST.InstructionLocalSet(1, (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
-				],
-			);
+			return forEachAggregated(goal.children, (stmt, i) => {
+				assertBinEqual(
+					stmt.build(builder),
+					builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder).buildBin(builder.module)),
+				);
+			});
 		});
-		it('with constant folding off, always returns InstructionLocalSet.', () => {
+		it('with constant folding off, always returns `(local.set)`.', () => {
 			const src: string = `
 				let x: int = 42;
 				let unfixed y: float = 4.2;
@@ -316,16 +307,12 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build(builder);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
-					new INST.InstructionLocalSet(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
-					new INST.InstructionLocalSet(1, (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
-				],
-			);
+			return forEachAggregated(goal.children, (stmt, i) => {
+				assertBinEqual(
+					stmt.build(builder),
+					builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder).buildBin(builder.module)),
+				);
+			});
 		});
 	});
 });

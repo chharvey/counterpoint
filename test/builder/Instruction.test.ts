@@ -52,7 +52,6 @@ describe('Instruction', () => {
 
 		specify('InstructionLocal', () => {
 			const expr: INST.InstructionConst = instructionConstInt(42n);
-			assert.strictEqual(new INST.InstructionLocalSet(0, expr)  .toString(), `(local.set $var0 ${ instructionConstInt(42n) })`);
 			assert.strictEqual(new INST.InstructionLocalGet(0, false) .toString(), `(local.get $var0)`);
 			assert.strictEqual(new INST.InstructionLocalTee(1, expr)  .toString(), `(local.tee $var1 ${ instructionConstInt(42n) })`);
 		})

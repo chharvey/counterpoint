@@ -3,7 +3,6 @@ import type binaryen from 'binaryen';
 import {
 	ASTNODE_SOLID as AST,
 	SolidType,
-	INST,
 	Builder,
 	ReferenceError01,
 	ReferenceError03,
@@ -158,7 +157,7 @@ describe('ASTNodeSolid', () => {
 
 
 		describe('#build', () => {
-			it('always returns InstructionLocalSet.', () => {
+			it('always returns `(local.set)`.', () => {
 				const src: string = `
 					let unfixed y: float = 4.2;
 					y = y * 10;
@@ -166,9 +165,9 @@ describe('ASTNodeSolid', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder: Builder = new Builder(src);
 				goal.build(builder);
-				assert.deepStrictEqual(
+				return assertBinEqual(
 					goal.children[1].build(builder),
-					new INST.InstructionLocalSet(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder)),
+					builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder).buildBin(builder.module)),
 				);
 			});
 		});

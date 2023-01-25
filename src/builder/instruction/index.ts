@@ -5,7 +5,6 @@ export * from './InstructionConst.js';
 export * from './InstructionGlobalGet.js';
 export * from './InstructionGlobalSet.js';
 export * from './InstructionLocalGet.js';
-export * from './InstructionLocalSet.js';
 export * from './InstructionLocalTee.js';
 export * from './InstructionUnop.js';
 export * from './InstructionBinopArithmetic.js';
