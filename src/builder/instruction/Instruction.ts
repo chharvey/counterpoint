@@ -5,10 +5,6 @@ import type binaryen from 'binaryen';
 /**
  * Known subclasses:
  * - InstructionExpression
- * - InstructionDeclareGlobal
- * - InstructionDeclareLocal
- * - InstructionFunction
- * - InstructionModule
  */
 export abstract class Instruction {
 	/**

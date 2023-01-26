@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
-	INST,
 	Builder,
 	AssignmentError01,
 	CPConfig,
@@ -68,17 +68,17 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 	}
 
-	public override build(builder: Builder): INST.InstructionNop | INST.InstructionLocalSet {
+	public override build(builder: Builder): binaryen.ExpressionRef {
 		if (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold()) {
-			return INST.NOP;
+			return builder.module.nop();
 		} else {
 			const local = builder.addLocal(
 				this.assignee.id,
 				this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat(),
 			)[0].getLocalInfo(this.assignee.id);
-			return new INST.InstructionLocalSet(
+			return builder.module.local.set(
 				local!.index,
-				this.assigned.build(builder, local!.isFloat),
+				this.assigned.build(builder, local!.isFloat).buildBin(builder.module),
 			);
 		}
 	}

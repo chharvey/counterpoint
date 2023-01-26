@@ -5,8 +5,6 @@ import {Instruction} from './Instruction.js';
 
 /**
  * Known subclasses:
- * - InstructionNop
- * - InstructionDrop
  * - InstructionConst
  * - InstructionVariable
  * - InstructionUnop

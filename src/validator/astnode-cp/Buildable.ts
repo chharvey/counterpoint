@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import type {
 	INST,
 	Builder,
@@ -18,5 +19,5 @@ export interface Buildable extends ASTNodeCP {
 	 * @param builder the builder to direct
 	 * @return the directions to print
 	 */
-	build(builder: Builder): INST.Instruction;
+	build(builder: Builder): INST.Instruction | binaryen.ExpressionRef | binaryen.Module;
 }

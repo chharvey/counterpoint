@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	INST,
 	Builder,
 } from './package.js';
 import {ASTNodeGoal} from './index.js';
@@ -33,5 +33,5 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 	}
 
 	/** @implements Buildable */
-	public abstract build(builder: Builder): INST.InstructionNop | INST.InstructionDrop | INST.InstructionLocalSet;
+	public abstract build(builder: Builder): binaryen.ExpressionRef;
 }
