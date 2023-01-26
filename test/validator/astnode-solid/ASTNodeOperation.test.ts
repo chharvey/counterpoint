@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -18,8 +19,10 @@ import {
 	TypeError01,
 	NanError01,
 } from '../../../src/index.js';
+import {forEachAggregated} from '../../../src/lib/index.js';
 import {
 	assertEqualTypes,
+	assertBinEqual,
 } from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
@@ -918,64 +921,95 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			it('returns InstructionBinopLogical.', () => {
-				assert.deepStrictEqual([
-					`42 && 420;`,
-					`4.2 || -420;`,
-					`null && 201.0e-1;`,
-					`true && 201.0e-1;`,
-					`false || null;`,
-				].map((src) => AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))), [
-					new INST.InstructionBinopLogical(
-						0,
+			function buildBinopLogical(
+				mod:       binaryen.Module,
+				operator:  Operator,
+				arg0:      binaryen.ExpressionRef,
+				arg1:      binaryen.ExpressionRef,
+				arg0_type: binaryen.Type = binaryen.i32,
+				var_index: number = 0,
+			): binaryen.ExpressionRef {
+				const condition = mod.call(
+					'inot',
+					[mod.call(
+						(arg0_type === binaryen.i32) ? 'inot' : 'fnot',
+						[mod.local.tee(var_index, arg0, arg0_type)],
+						binaryen.i32,
+					)],
+					binaryen.i32,
+				);
+				const left:  binaryen.ExpressionRef = mod.local.get(var_index, arg0_type);
+				const right: binaryen.ExpressionRef = arg1;
+				return (operator === Operator.AND)
+					? mod.if(condition, right, left)
+					: mod.if(condition, left, right);
+			}
+			it('returns `(if)`.', () => {
+				forEachAggregated([...new Map<string, (mod: binaryen.Module) => binaryen.ExpressionRef>([
+					['42 && 420;', (mod) => buildBinopLogical(
+						mod,
 						Operator.AND,
-						instructionConstInt(42n),
-						instructionConstInt(420n),
-					),
-					new INST.InstructionBinopLogical(
-						0,
+						instructionConstInt(42n).buildBin(mod),
+						instructionConstInt(420n).buildBin(mod),
+					)],
+					['4.2 || -420;', (mod) => buildBinopLogical(
+						mod,
 						Operator.OR,
-						instructionConstFloat(4.2),
-						instructionConstFloat(-420.0),
-					),
-					new INST.InstructionBinopLogical(
-						0,
+						instructionConstFloat(4.2).buildBin(mod),
+						instructionConstFloat(-420.0).buildBin(mod),
+						binaryen.f64,
+					)],
+					['null && 201.0e-1;', (mod) => buildBinopLogical(
+						mod,
 						Operator.AND,
-						instructionConstFloat(0.0),
-						instructionConstFloat(20.1),
-					),
-					new INST.InstructionBinopLogical(
-						0,
+						instructionConstFloat(0.0).buildBin(mod),
+						instructionConstFloat(20.1).buildBin(mod),
+						binaryen.f64,
+					)],
+					['true && 201.0e-1;', (mod) => buildBinopLogical(
+						mod,
 						Operator.AND,
-						instructionConstFloat(1.0),
-						instructionConstFloat(20.1),
-					),
-					new INST.InstructionBinopLogical(
-						0,
+						instructionConstFloat(1.0).buildBin(mod),
+						instructionConstFloat(20.1).buildBin(mod),
+						binaryen.f64,
+					)],
+					['false || null;', (mod) => buildBinopLogical(
+						mod,
 						Operator.OR,
-						instructionConstInt(0n),
-						instructionConstInt(0n),
-					),
-				]);
+						instructionConstInt(0n).buildBin(mod),
+						instructionConstInt(0n).buildBin(mod),
+					)],
+				])], ([src, callback]) => {
+					const builder = new Builder(src, CONFIG_FOLDING_OFF);
+					return assertBinEqual(
+						AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build__temp(builder),
+						callback(builder.module),
+					);
+				});
 			});
 			it('counts internal variables correctly.', () => {
 				const src: string = `1 && 2 || 3 && 4;`
-				assert.deepStrictEqual(
-					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF)),
-					new INST.InstructionBinopLogical(
-						0,
+				const builder = new Builder(src, CONFIG_FOLDING_OFF);
+				return assertBinEqual(
+					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build__temp(builder),
+					buildBinopLogical(
+						builder.module,
 						Operator.OR,
-						new INST.InstructionBinopLogical(
+						buildBinopLogical(
+							builder.module,
+							Operator.AND,
+							instructionConstInt(1n).buildBin(builder.module),
+							instructionConstInt(2n).buildBin(builder.module),
+							binaryen.i32,
 							1,
-							Operator.AND,
-							instructionConstInt(1n),
-							instructionConstInt(2n),
 						),
-						new INST.InstructionBinopLogical(
-							2,
+						buildBinopLogical(
+							builder.module,
 							Operator.AND,
-							instructionConstInt(3n),
-							instructionConstInt(4n),
+							instructionConstInt(3n).buildBin(builder.module),
+							instructionConstInt(4n).buildBin(builder.module),
+							binaryen.i32,
+							2,
 						),
 					),
 				);

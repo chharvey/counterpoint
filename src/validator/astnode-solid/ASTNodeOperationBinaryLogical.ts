@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	SolidType,
 	SolidObject,
@@ -40,6 +41,29 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			this.operand0.build(builder, tofloat),
 			this.operand1.build(builder, tofloat),
 		)
+	}
+	public build__temp(builder: Builder, to_float: boolean = false): binaryen.ExpressionRef {
+		const tofloat: boolean = to_float || this.shouldFloat();
+		/** A temporary variable id used for optimizing short-circuited operations. */
+		const temp_id: bigint = builder.varCount;
+		const var_index: number = builder.addLocal(temp_id, tofloat)[0].getLocalInfo(temp_id)!.index;
+		const arg0: binaryen.ExpressionRef = this.operand0.build(builder, tofloat).buildBin(builder.module);
+		const arg1: binaryen.ExpressionRef = this.operand1.build(builder, tofloat).buildBin(builder.module);
+		const arg0_type: binaryen.Type = (!tofloat) ? binaryen.i32 : binaryen.f64;
+		const condition: binaryen.ExpressionRef = builder.module.call(
+			'inot',
+			[builder.module.call(
+				(!tofloat) ? 'inot' : 'fnot',
+				[builder.module.local.tee(var_index, arg0, arg0_type)],
+				binaryen.i32,
+			)],
+			binaryen.i32,
+		);
+		const left:  binaryen.ExpressionRef = builder.module.local.get(var_index, arg0_type);
+		const right: binaryen.ExpressionRef = arg1;
+		return (this.operator === Operator.AND)
+			? builder.module.if(condition, right, left)
+			: builder.module.if(condition, left,  right);
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
 		const falsytypes: SolidType = SolidType.VOID.union(SolidType.NULL).union(SolidBoolean.FALSETYPE);
