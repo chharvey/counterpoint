@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidType,
 	SolidTypeUnit,
@@ -42,6 +43,14 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			this.operand1.build(builder, tofloat),
 			this.operand2.build(builder, tofloat),
 		)
+	}
+	public build__temp(builder: Builder, to_float: boolean = false): binaryen.ExpressionRef {
+		const tofloat: boolean = to_float || this.shouldFloat();
+		return builder.module.if(
+			this.operand0.build(builder, false)   .buildBin(builder.module),
+			this.operand1.build(builder, tofloat) .buildBin(builder.module),
+			this.operand2.build(builder, tofloat) .buildBin(builder.module),
+		);
 	}
 	protected override type_do(): SolidType {
 		const t0: SolidType = this.operand0.type();

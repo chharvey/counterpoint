@@ -1048,11 +1048,17 @@ describe('ASTNodeOperation', () => {
 
 
 		specify('#build', () => {
-			buildOperations((new Map([
-				[`if true  then false else 2;`,    new INST.InstructionCond(instructionConstInt(1n), instructionConstInt(0n),    instructionConstInt(2n))],
-				[`if false then 3.0   else null;`, new INST.InstructionCond(instructionConstInt(0n), instructionConstFloat(3.0), instructionConstFloat(0.0))],
-				[`if true  then 2     else 3.0;`,  new INST.InstructionCond(instructionConstInt(1n), instructionConstFloat(2.0), instructionConstFloat(3.0))],
-			])));
+			forEachAggregated([...new Map<string, (mod: binaryen.Module) => binaryen.ExpressionRef>([
+				['if true  then false else 2;',    (mod) => mod.if(instructionConstInt(1n).buildBin(mod), instructionConstInt   (0n)  .buildBin(mod), instructionConstInt   (2n)  .buildBin(mod))],
+				['if false then 3.0   else null;', (mod) => mod.if(instructionConstInt(0n).buildBin(mod), instructionConstFloat (3.0) .buildBin(mod), instructionConstFloat (0.0) .buildBin(mod))],
+				['if true  then 2     else 3.0;',  (mod) => mod.if(instructionConstInt(1n).buildBin(mod), instructionConstFloat (2.0) .buildBin(mod), instructionConstFloat (3.0) .buildBin(mod))],
+			])], ([src, callback]) => {
+				const builder = new Builder(src, CONFIG_FOLDING_OFF);
+				return assertBinEqual(
+					AST.ASTNodeOperationTernary.fromSource(src, CONFIG_FOLDING_OFF).build__temp(builder),
+					callback(builder.module),
+				);
+			});
 		});
 	});
 });
