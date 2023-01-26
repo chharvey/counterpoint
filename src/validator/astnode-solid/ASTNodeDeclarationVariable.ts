@@ -1,7 +1,7 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidType,
-	INST,
 	Builder,
 	AssignmentError01,
 	forEachAggregated,
@@ -64,17 +64,17 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			}
 		}
 	}
-	public override build(builder: Builder): INST.InstructionNop | INST.InstructionLocalSet {
+	public override build(builder: Builder): binaryen.ExpressionRef {
 		if (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold()) {
-			return INST.NOP;
+			return builder.module.nop();
 		} else {
 			const local = builder.addLocal(
 				this.assignee.id,
 				this.typenode.eval().isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat(),
 			)[0].getLocalInfo(this.assignee.id);
-			return new INST.InstructionLocalSet(
+			return builder.module.local.set(
 				local!.index,
-				this.assigned.build(builder, local!.isFloat),
+				this.assigned.build(builder, local!.isFloat).buildBin(builder.module),
 			);
 		}
 	}

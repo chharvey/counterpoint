@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	INST,
 	Builder,
 } from './package.js';
 import {ASTNodeGoal} from './index.js';
@@ -32,5 +32,5 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		return goal.children[0];
 	}
 	/** @implements Buildable */
-	abstract build(builder: Builder): INST.InstructionNop | INST.InstructionDrop | INST.InstructionLocalSet;
+	abstract build(builder: Builder): binaryen.ExpressionRef;
 }

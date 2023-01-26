@@ -1,16 +1,8 @@
-import * as xjs from 'extrajs';
 import * as assert from 'assert'
 import {
-	PARSER_SOLID as PARSER,
-} from '../../src/parser/index.js';
-import {
-	DECORATOR_SOLID as DECORATOR,
 	Operator,
-} from '../../src/validator/index.js';
-import {
-	Builder,
 	INST,
-} from '../../src/builder/index.js';
+} from '../../src/index.js';
 import {
 	instructionConstInt,
 	instructionConstFloat,
@@ -52,15 +44,8 @@ describe('Instruction', () => {
 	})
 
 	describe('#toString', () => {
-		specify('InstructionGlobal', () => {
-			const expr: INST.InstructionConst = instructionConstInt(42n);
-			assert.strictEqual(new INST.InstructionGlobalSet(0x100n, expr)  .toString(), `(global.set $glb100 ${ instructionConstInt(42n) })`);
-			assert.strictEqual(new INST.InstructionGlobalGet(0x100n, false) .toString(), `(global.get $glb100)`);
-		});
-
 		specify('InstructionLocal', () => {
 			const expr: INST.InstructionConst = instructionConstInt(42n);
-			assert.strictEqual(new INST.InstructionLocalSet(0, expr)  .toString(), `(local.set $var0 ${ instructionConstInt(42n) })`);
 			assert.strictEqual(new INST.InstructionLocalGet(0, false) .toString(), `(local.get $var0)`);
 			assert.strictEqual(new INST.InstructionLocalTee(1, expr)  .toString(), `(local.tee $var1 ${ instructionConstInt(42n) })`);
 		})
@@ -219,85 +204,6 @@ describe('Instruction', () => {
 					instructionConstFloat(2.2),
 					instructionConstFloat(3.3),
 				).toString(), `(if (result f64) ${ instructionConstInt(0n) } (then ${ instructionConstFloat(2.2) }) (else ${ instructionConstFloat(3.3) }))`)
-			})
-		})
-
-		specify('InstructionDeclareGlobal', () => {
-			const expr: INST.InstructionConst = instructionConstInt(42n);
-			assert.strictEqual(
-				new INST.InstructionDeclareGlobal(0x42n, true, expr).toString(),
-				`(global $glb42  (mut i32) ${ expr })`,
-			);
-		});
-
-		specify('InstructionDeclareLocal', () => {
-			assert.deepStrictEqual(
-				[
-					new INST.InstructionDeclareLocal(0, false) .toString(),
-					new INST.InstructionDeclareLocal(1, true)  .toString(),
-				],
-				[
-					'(local $var0 i32)',
-					'(local $var1 f64)',
-				],
-			);
-		});
-
-		describe('InstructionFunction', () => {
-			it('returns a wasm function.', () => {
-				const expr: INST.InstructionBinopArithmetic = new INST.InstructionBinopArithmetic(
-					Operator.MUL,
-					instructionConstInt(21n),
-					instructionConstInt(2n),
-				);
-				assert.strictEqual(
-					new INST.InstructionFunction(0n, [], [expr]).toString(),
-					xjs.String.dedent`
-						(func $fn0\u0020\u0020
-							${ expr }
-						)
-					`,
-				);
-			});
-			it('hoists local variables.', () => {
-				const locals = [
-					{id: 0x100n, isFloat: false},
-					{id: 0x101n, isFloat: true},
-				];
-				const exprs = [
-					new INST.InstructionLocalSet(0, instructionConstInt(21n)),
-					new INST.InstructionLocalSet(1, instructionConstFloat(2.1)),
-				];
-				assert.strictEqual(
-					new INST.InstructionFunction(1n, locals, exprs).toString(),
-					xjs.String.dedent`
-						(func $fn1  (local $var0 i32) (local $var1 f64)
-							${ exprs.join('\n') }
-						)
-					`,
-				);
-			});
-		});
-
-		context('InstructionModule', () => {
-			it('creates a program.', () => {
-				const mods: Array<INST.InstructionNop | INST.InstructionModule> = [
-					``,
-					`;`,
-				].map((src) => DECORATOR
-					.decorate(PARSER.parse(src))
-					.build(new Builder(src))
-				);
-				assert.strictEqual(mods[0], INST.NOP);
-				assert.strictEqual(mods[0].toString(), '(nop)');
-				assert.ok(mods[1] instanceof INST.InstructionModule);
-				const comp = new INST.InstructionFunction(0n, [], [INST.NOP], true);
-				assert.deepStrictEqual(mods[1], new INST.InstructionModule([comp]));
-				assert.strictEqual(mods[1].toString(), xjs.String.dedent`
-					(module
-						${ [...Builder.IMPORTS, comp].join('\n') }
-					)
-				`);
 			})
 		})
 	})

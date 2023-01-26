@@ -1,4 +1,5 @@
 import * as assert from 'assert'
+import binaryen from 'binaryen';
 import {
 	forEachAggregated,
 } from '../src/lib/index.js';
@@ -88,7 +89,7 @@ export function assertEqualTypes(actual: SolidType, expected: SolidType): void;
  * @param expected an array of what `actual` is expected to equal
  * @throws {AssertionError} if a corresponding type fails equality
  */
-export function assertEqualTypes(actual: SolidType[], expected: SolidType[]): void;
+export function assertEqualTypes(actual: readonly SolidType[], expected: readonly SolidType[]): void;
 /**
  * Assert equal types. First compares by `assert.deepStrictEqual`,
  * but if that fails, compares by `SolidType#equals`.
@@ -96,10 +97,10 @@ export function assertEqualTypes(actual: SolidType[], expected: SolidType[]): vo
  * @throws {AssertionError} if one of the pairs fails equality
  */
 export function assertEqualTypes(types: ReadonlyMap<SolidType, SolidType>): void;
-export function assertEqualTypes(param1: SolidType | SolidType[] | ReadonlyMap<SolidType, SolidType>, param2?: SolidType | SolidType[]): void {
+export function assertEqualTypes(param1: SolidType | readonly SolidType[] | ReadonlyMap<SolidType, SolidType>, param2?: SolidType | readonly SolidType[]): void {
 	if (param1 instanceof Map) {
 		return assertEqualTypes([...param1.keys()], [...param1.values()]);
-	} else if (param1 instanceof Array) {
+	} else if (Array.isArray(param1)) {
 		try {
 			return assert.deepStrictEqual(param1, param2);
 		} catch {
@@ -110,6 +111,26 @@ export function assertEqualTypes(param1: SolidType | SolidType[] | ReadonlyMap<S
 			return assert.deepStrictEqual(param1, param2);
 		} catch {
 			return assert.ok((param1 as SolidType).equals(param2 as SolidType), `${ param1 } == ${ param2 }`);
+		}
+	}
+}
+
+
+
+export function assertBinEqual<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref, expected: Ref): void;
+export function assertBinEqual<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: readonly Ref[], expected: readonly Ref[]): void;
+export function assertBinEqual<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref | readonly Ref[], expected: Ref | readonly Ref[]): void {
+	if (Array.isArray(actual)) {
+		try {
+			return assert.deepStrictEqual(actual, expected);
+		} catch {
+			return forEachAggregated(actual, (act, i) => assertBinEqual(act, (expected as Ref[])[i]))
+		}
+	} else {
+		try {
+			return assert.deepStrictEqual(actual, expected);
+		} catch {
+			return assert.strictEqual(binaryen.emitText(actual as Ref), binaryen.emitText(expected as Ref));
 		}
 	}
 }

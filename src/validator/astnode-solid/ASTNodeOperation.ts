@@ -10,6 +10,12 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
 
+/**
+ * Known subclasses:
+ * - ASNodeOperationUnary
+ * - ASNodeOperationBinary
+ * - ASNodeOperationTernary
+ */
 export abstract class ASTNodeOperation extends ASTNodeExpression {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperation {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);

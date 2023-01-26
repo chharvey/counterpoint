@@ -11,6 +11,13 @@ import {ASTNodeOperation} from './ASTNodeOperation.js';
 
 
 
+/**
+ * Known subclasses:
+ * - ASNodeOperationBinaryArithmetic
+ * - ASNodeOperationBinaryComparative
+ * - ASNodeOperationBinaryEquality
+ * - ASNodeOperationBinaryLogical
+ */
 export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);

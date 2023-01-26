@@ -7,7 +7,6 @@ import {InstructionVariable} from './InstructionVariable.js';
  * Local variable operations.
  * Known subclasses:
  * - InstructionLocalGet
- * - InstructionLocalSet
  * - InstructionLocalTee
  */
 export abstract class InstructionLocal extends InstructionVariable {

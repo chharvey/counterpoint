@@ -5,7 +5,6 @@ import {InstructionExpression} from './InstructionExpression.js';
 /**
  * Variable operations.
  * Known subclasses:
- * - InstructionGlobal
  * - InstructionLocal
  */
 export abstract class InstructionVariable extends InstructionExpression {
