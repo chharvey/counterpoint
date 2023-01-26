@@ -963,16 +963,16 @@ describe('ASTNodeOperation', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF)),
 					new INST.InstructionBinopLogical(
-						0,
+						2,
 						Operator.OR,
 						new INST.InstructionBinopLogical(
-							1,
+							0,
 							Operator.AND,
 							instructionConstInt(1n),
 							instructionConstInt(2n),
 						),
 						new INST.InstructionBinopLogical(
-							2,
+							1,
 							Operator.AND,
 							instructionConstInt(3n),
 							instructionConstInt(4n),

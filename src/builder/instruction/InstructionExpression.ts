@@ -15,7 +15,7 @@ export abstract class InstructionExpression extends Instruction {
 	abstract get isFloat(): boolean;
 
 	/** @final */
-	public get binType(): typeof binaryen.i32 | typeof binaryen.f64 {
+	public get binType(): binaryen.Type {
 		return (!this.isFloat) ? binaryen.i32 : binaryen.f64;
 	}
 }
