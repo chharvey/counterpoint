@@ -66,7 +66,7 @@ Object! ValueOf(SemanticAccess access) :=
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
 	4. *Let* `base_value` be *Unwrap:* `ValueOf(base)`.
-	5. *If* `access.kind` is `OPTIONAL` *and* *UnwrapAffirm:* `Equal(base_value, null)`:
+	5. *If* `access.kind` is `OPTIONAL` *and* *UnwrapAffirm:* `Identical(base_value, null)`:
 		1. *Return:* `base_value`.
 	6. *If* `accessor` is a SemanticIndex:
 		1. *Assert:* `accessor.children.count` is 1.
