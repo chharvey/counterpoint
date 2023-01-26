@@ -12,6 +12,7 @@ export {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
+	SolidNull,
 	SolidNumber,
 	Float64,
 } from '../package.js';

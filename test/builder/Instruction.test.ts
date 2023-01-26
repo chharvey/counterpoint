@@ -4,6 +4,7 @@ import {
 	INST,
 } from '../../src/index.js';
 import {
+	INSTRUCTION_CONST_NULL,
 	instructionConstInt,
 	instructionConstFloat,
 } from '../helpers.js';
@@ -51,6 +52,9 @@ describe('Instruction', () => {
 		})
 
 		context('InstructionConst', () => {
+			it('returns the null reference.', () => {
+				assert.strictEqual(INSTRUCTION_CONST_NULL.toString(), '(ref.null func)');
+			});
 			it('pushes the constant integer onto the stack.', () => {
 				const values: number[] = [
 					0,

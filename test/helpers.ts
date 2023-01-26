@@ -2,6 +2,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SolidTypeUnit,
+	SolidNull,
 	Int16,
 	Float64,
 	SolidString,
@@ -17,6 +18,8 @@ export const CONFIG_FOLDING_OFF: SolidConfig = {
 		constantFolding: false,
 	},
 };
+
+export const INSTRUCTION_CONST_NULL = new INST.InstructionConst(SolidNull.NULL);
 
 
 
