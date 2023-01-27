@@ -44,14 +44,18 @@ describe('Instruction', () => {
 		})
 	})
 
-	describe('#toString', () => {
-		specify('InstructionLocal', () => {
+
+	describe('InstructionLocal', () => {
+		specify('#toString', () => {
 			const expr: INST.InstructionConst = instructionConstInt(42n);
 			assert.strictEqual(new INST.InstructionLocalGet(0, binaryen.i32) .toString(), `(local.get $var0)`);
 			assert.strictEqual(new INST.InstructionLocalTee(1, expr)  .toString(), `(local.tee $var1 ${ instructionConstInt(42n) })`);
 		})
+	});
 
-		context('InstructionConst', () => {
+
+	describe('InstructionConst', () => {
+		describe('#toString', () => {
 			it('pushes the constant integer onto the stack.', () => {
 				const values: number[] = [
 					0,
@@ -89,8 +93,11 @@ describe('Instruction', () => {
 				assert.strictEqual(instructionConstFloat(-0.0).toString(), `(f64.const -0.0)`)
 			})
 		})
+	});
 
-		describe('InstructionConvert', () => {
+
+	describe('InstructionConvert', () => {
+		describe('#toString', () => {
 			it('converts an i32 into an f64.', () => {
 				const exprs = [
 					instructionConstInt(3n),
@@ -106,8 +113,11 @@ describe('Instruction', () => {
 				);
 			});
 		});
+	});
 
-		context('InstructionUnop', () => {
+
+	describe('InstructionUnop', () => {
+		describe('#toString', () => {
 			it('performs a unary operation.', () => {
 				assert.deepStrictEqual([
 					new INST.InstructionUnop(Operator.NOT, instructionConstInt(0n)),
@@ -132,8 +142,11 @@ describe('Instruction', () => {
 				])
 			})
 		})
+	});
 
-		context('InstructionBinop', () => {
+
+	describe('InstructionBinop', () => {
+		describe('#toString', () => {
 			it('performs a binary operation.', () => {
 				assert.strictEqual(new INST.InstructionBinopArithmetic(
 					Operator.MUL,
@@ -209,8 +222,11 @@ describe('Instruction', () => {
 				).toString());
 			})
 		})
+	});
 
-		context('InstructionCond', () => {
+
+	describe('InstructionCond', () => {
+		describe('#toString', () => {
 			it('performs a conditional operation.', () => {
 				assert.strictEqual(new INST.InstructionCond(
 					instructionConstInt(1n),
