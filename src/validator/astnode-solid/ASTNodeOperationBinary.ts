@@ -1,6 +1,9 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	SolidType,
+	INST,
+	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
@@ -46,4 +49,18 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		)
 	}
 	protected abstract type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType;
+
+	/** @final */
+	protected buildOps(builder: Builder): [INST.InstructionExpression, INST.InstructionExpression] {
+		let [inst0, inst1]: INST.InstructionExpression[] = [this.operand0, this.operand1].map((expr) => expr.build(builder));
+		if (this.shouldFloat()) {
+			if (inst0.binType === binaryen.i32) {
+				inst0 = new INST.InstructionConvert(inst0);
+			}
+			if (inst1.binType === binaryen.i32) {
+				inst1 = new INST.InstructionConvert(inst1);
+			}
+		}
+		return [inst0, inst1];
+	}
 }

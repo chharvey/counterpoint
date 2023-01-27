@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -69,7 +70,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 		if (!this.built) {
 			const value: SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
 			this.built = (!!value) ? value.build() : this.build_do(builder, to_float);
-			if (to_float && !this.built.isFloat) {
+			if (to_float && this.built.binType === binaryen.i32) {
 				this.built = new INST.InstructionConvert(this.built);
 			}
 		}
