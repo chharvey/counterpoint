@@ -31,29 +31,28 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	) {
 		super(start_node, operator, operand0, operand1);
 	}
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopLogical {
-		const tofloat: boolean = to_float || this.shouldFloat();
+
+	protected override build_do(builder: Builder): INST.InstructionBinopLogical {
+		const [inst0, inst1]: [INST.InstructionExpression, INST.InstructionExpression] = this.buildOps(builder);
 		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint = builder.varCount;
 		return new INST.InstructionBinopLogical(
-			builder.addLocal(temp_id, tofloat)[0].getLocalInfo(temp_id)!.index,
+			builder.addLocal(temp_id, inst0.binType)[0].getLocalInfo(temp_id)!.index,
 			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
+			inst0,
+			inst1,
 		)
 	}
-	public build__temp(builder: Builder, to_float: boolean = false): binaryen.ExpressionRef {
-		const tofloat: boolean = to_float || this.shouldFloat();
+	public build__temp(builder: Builder): binaryen.ExpressionRef {
+		const [arg0, arg1]: binaryen.ExpressionRef[] = this.buildOps(builder).map((inst) => inst.buildBin(builder.module));
+		const arg0_type: binaryen.Type = (!this.shouldFloat()) ? binaryen.i32 : binaryen.f64;
 		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint = builder.varCount;
-		const var_index: number = builder.addLocal(temp_id, tofloat)[0].getLocalInfo(temp_id)!.index;
-		const arg0: binaryen.ExpressionRef = this.operand0.build(builder, tofloat).buildBin(builder.module);
-		const arg1: binaryen.ExpressionRef = this.operand1.build(builder, tofloat).buildBin(builder.module);
-		const arg0_type: binaryen.Type = (!tofloat) ? binaryen.i32 : binaryen.f64;
+		const var_index: number = builder.addLocal(temp_id, arg0_type)[0].getLocalInfo(temp_id)!.index;
 		const condition: binaryen.ExpressionRef = builder.module.call(
 			'inot',
 			[builder.module.call(
-				(!tofloat) ? 'inot' : 'fnot',
+				(arg0_type === binaryen.i32) ? 'inot' : 'fnot',
 				[builder.module.local.tee(var_index, arg0, arg0_type)],
 				binaryen.i32,
 			)],

@@ -73,8 +73,7 @@ export abstract class SolidObject {
 
 	/**
 	 * Construct a new Instruction from this value.
-	 * @param to_float Should this value be type-coerced into a floating-point number? @default false
 	 * @return the directions to print
 	 */
-	abstract build(to_float?: boolean): INST.InstructionConst;
+	public abstract build(): INST.InstructionConst;
 }

@@ -35,8 +35,7 @@ export abstract class Collection extends SolidObject {
 	}
 
 
-	override build(to_float: boolean = false): INST.InstructionConst {
-		to_float;
+	public override build(): INST.InstructionConst {
 		throw new Error('`Collection#build` not yet supported.');
 	}
 

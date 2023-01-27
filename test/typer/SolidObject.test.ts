@@ -6,7 +6,6 @@ import {
 	SolidString,
 	SolidSet,
 	SolidMap,
-	INST,
 } from '../../src/index.js';
 import {
 	instructionConstInt,
@@ -135,12 +134,6 @@ describe('Int16', () => {
 				data.map((x) => new Int16(x).build()),
 				data.map((x) => instructionConstInt(x)),
 			);
-		});
-
-		it('@to_float === true', () => {
-			const build: INST.InstructionConst = new Int16(42n).build(true);
-			assert.deepStrictEqual   (build, instructionConstFloat(42));
-			assert.notDeepStrictEqual(build, instructionConstInt(42n));
 		});
 	});
 });

@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	CONFIG_DEFAULT,
 	ASTNODE_SOLID as AST,
@@ -290,6 +291,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build(builder);
+			assert.deepStrictEqual(builder.getLocals(), [
+				{id: 0x100n, type: binaryen.i32},
+				{id: 0x101n, type: binaryen.i32},
+			]);
 			return forEachAggregated(goal.children, (stmt, i) => {
 				assertBinEqual(
 					stmt.build(builder),
@@ -307,6 +312,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build(builder);
+			assert.deepStrictEqual(builder.getLocals(), [
+				{id: 0x100n, type: binaryen.i32},
+				{id: 0x101n, type: binaryen.f64},
+			]);
 			return forEachAggregated(goal.children, (stmt, i) => {
 				assertBinEqual(
 					stmt.build(builder),

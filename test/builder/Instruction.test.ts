@@ -1,4 +1,5 @@
 import * as assert from 'assert'
+import binaryen from 'binaryen';
 import {
 	Operator,
 	INST,
@@ -46,7 +47,7 @@ describe('Instruction', () => {
 	describe('#toString', () => {
 		specify('InstructionLocal', () => {
 			const expr: INST.InstructionConst = instructionConstInt(42n);
-			assert.strictEqual(new INST.InstructionLocalGet(0, false) .toString(), `(local.get $var0)`);
+			assert.strictEqual(new INST.InstructionLocalGet(0, binaryen.i32) .toString(), `(local.get $var0)`);
 			assert.strictEqual(new INST.InstructionLocalTee(1, expr)  .toString(), `(local.tee $var1 ${ instructionConstInt(42n) })`);
 		})
 
@@ -88,6 +89,23 @@ describe('Instruction', () => {
 				assert.strictEqual(instructionConstFloat(-0.0).toString(), `(f64.const -0.0)`)
 			})
 		})
+
+		describe('InstructionConvert', () => {
+			it('converts an i32 into an f64.', () => {
+				const exprs = [
+					instructionConstInt(3n),
+					new INST.InstructionBinopArithmetic(
+						Operator.MUL,
+						instructionConstInt(21n),
+						instructionConstInt(2n),
+					),
+				];
+				assert.deepStrictEqual(
+					exprs.map((expr) => new INST.InstructionConvert(expr).toString()),
+					exprs.map((expr) => `(f64.convert_i32_u ${ expr })`),
+				);
+			});
+		});
 
 		context('InstructionUnop', () => {
 			it('performs a unary operation.', () => {
@@ -177,7 +195,7 @@ describe('Instruction', () => {
 				).toString(), new INST.InstructionCond(
 					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(0, instructionConstInt(30n)))),
 					instructionConstInt(18n),
-					new INST.InstructionLocalGet(0, false),
+					new INST.InstructionLocalGet(0, binaryen.i32),
 				).toString());
 				assert.strictEqual(new INST.InstructionBinopLogical(
 					3,
@@ -186,7 +204,7 @@ describe('Instruction', () => {
 					instructionConstFloat(18.1),
 				).toString(), new INST.InstructionCond(
 					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(3, instructionConstFloat(30.1)))),
-					new INST.InstructionLocalGet(3, true),
+					new INST.InstructionLocalGet(3, binaryen.f64),
 					instructionConstFloat(18.1),
 				).toString());
 			})
