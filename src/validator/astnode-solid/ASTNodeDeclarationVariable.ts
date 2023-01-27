@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {
 	SolidType,
 	INST,
@@ -70,7 +70,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			return builder.module.nop();
 		} else {
 			let inst: INST.InstructionExpression = this.assigned.build(builder);
-			if (this.typenode.eval().isSubtypeOf(SolidType.FLOAT) && inst.binType === binaryen.i32) {
+			if (this.typenode.eval().isSubtypeOf(SolidType.FLOAT) && !this.assigned.shouldFloat()) {
 				inst = new INST.InstructionConvert(inst);
 			}
 			const local = builder.addLocal(this.assignee.id, inst.binType)[0].getLocalInfo(this.assignee.id);

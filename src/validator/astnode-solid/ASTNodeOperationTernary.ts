@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import binaryen from 'binaryen';
 import {
 	SolidType,
 	SolidTypeUnit,
@@ -40,10 +39,10 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	protected override build_do(builder: Builder): INST.InstructionCond {
 		let [inst0, inst1, inst2]: INST.InstructionExpression[] = [this.operand0, this.operand1, this.operand2].map((expr) => expr.build(builder));
 		if (this.shouldFloat()) {
-			if (inst1.binType === binaryen.i32) {
+			if (!this.operand1.shouldFloat()) {
 				inst1 = new INST.InstructionConvert(inst1);
 			}
-			if (inst2.binType === binaryen.i32) {
+			if (!this.operand2.shouldFloat()) {
 				inst2 = new INST.InstructionConvert(inst2);
 			}
 		}
