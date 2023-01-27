@@ -22,7 +22,7 @@ import {
 import {forEachAggregated} from '../../../src/lib/index.js';
 import {
 	assertEqualTypes,
-	assertBinEqual,
+	assertEqualBins,
 } from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
@@ -742,7 +742,7 @@ describe('ASTNodeOperation', () => {
 					const builder = new Builder(src, CONFIG_FOLDING_OFF);
 					const actual: INST.InstructionExpression = AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
 					assert.ok(actual instanceof INST.InstructionBinopEquality);
-					return assertBinEqual(actual.buildBin(builder.module), callback(builder.module));
+					return assertEqualBins(actual.buildBin(builder.module), callback(builder.module));
 				});
 			});
 			it('with int coercion off, does not coerce ints into floats.', () => {
@@ -765,7 +765,7 @@ describe('ASTNodeOperation', () => {
 					const builder = new Builder(src, CONFIG_FOLDING_COERCION_OFF);
 					const actual: INST.InstructionExpression = AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_COERCION_OFF).build(builder);
 					assert.ok(actual instanceof INST.InstructionBinopEquality);
-					return assertBinEqual(actual.buildBin(builder.module), callback(builder.module));
+					return assertEqualBins(actual.buildBin(builder.module), callback(builder.module));
 				});
 			});
 		});
@@ -961,7 +961,7 @@ describe('ASTNodeOperation', () => {
 					const builder = new Builder(src, CONFIG_FOLDING_OFF);
 					const actual: INST.InstructionExpression = AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
 					assert.ok(actual instanceof INST.InstructionBinopLogical);
-					return assertBinEqual(actual.buildBin(builder.module), expected.buildBin(builder.module));
+					return assertEqualBins(actual.buildBin(builder.module), expected.buildBin(builder.module));
 				});
 			});
 			it('counts internal variables correctly.', () => {
@@ -985,7 +985,7 @@ describe('ASTNodeOperation', () => {
 					),
 				);
 				assert.ok(actual instanceof INST.InstructionBinopLogical);
-				return assertBinEqual(actual.buildBin(builder.module), expected.buildBin(builder.module));
+				return assertEqualBins(actual.buildBin(builder.module), expected.buildBin(builder.module));
 			});
 		});
 	});
@@ -1029,7 +1029,7 @@ describe('ASTNodeOperation', () => {
 				const builder = new Builder(src, CONFIG_FOLDING_OFF);
 				const actual: INST.InstructionExpression = AST.ASTNodeOperationTernary.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
 				assert.ok(actual instanceof INST.InstructionCond);
-				return assertBinEqual(actual.buildBin(builder.module), callback(builder.module));
+				return assertEqualBins(actual.buildBin(builder.module), callback(builder.module));
 			});
 		});
 	});
