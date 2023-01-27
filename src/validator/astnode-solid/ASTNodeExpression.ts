@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -111,3 +112,10 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	}
 	protected abstract fold_do(): SolidObject | null;
 }
+
+
+
+export type BuildType = {
+	readonly bin:  binaryen.ExpressionRef,
+	readonly type: binaryen.Type,
+};

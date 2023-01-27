@@ -16,7 +16,10 @@ import {
 	bothNumeric,
 	oneFloats,
 } from './utils-private.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {
+	ASTNodeExpression,
+	BuildType,
+} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -46,18 +49,21 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	protected override build_do(builder: Builder): INST.InstructionBinopEquality {
 		return new INST.InstructionBinopEquality(this.operator, ...this.buildOps(builder));
 	}
-	public build__temp(builder: Builder): binaryen.ExpressionRef {
+	public build__temp(builder: Builder): BuildType {
 		const [inst0, inst1]: [INST.InstructionExpression, INST.InstructionExpression] = this.buildOps(builder);
 		const [arg0, arg1]: binaryen.ExpressionRef[] = [inst0, inst1].map((inst) => inst.buildBin(builder.module));
-		return (
-			(!inst0.isFloat && !inst1.isFloat) ? builder.module.i32.eq(arg0, arg1) : // `ID` and `EQ` give the same result
-			(!inst0.isFloat &&  inst1.isFloat) ? builder.module.call('i_f_id', [arg0, arg1], binaryen.i32) :
-			( inst0.isFloat && !inst1.isFloat) ? builder.module.call('f_i_id', [arg0, arg1], binaryen.i32) :
-			( inst0.isFloat &&  inst1.isFloat,   (this.operator === Operator.ID)
-				? builder.module.call('fid', [arg0, arg1], binaryen.i32)
-				: builder.module.f64.eq(arg0, arg1)
-			)
-		);
+		return {
+			bin: (
+				(!inst0.isFloat && !inst1.isFloat) ? builder.module.i32.eq(arg0, arg1) : // `ID` and `EQ` give the same result
+				(!inst0.isFloat &&  inst1.isFloat) ? builder.module.call('i_f_id', [arg0, arg1], binaryen.i32) :
+				( inst0.isFloat && !inst1.isFloat) ? builder.module.call('f_i_id', [arg0, arg1], binaryen.i32) :
+				( inst0.isFloat &&  inst1.isFloat,   (this.operator === Operator.ID)
+					? builder.module.call('fid', [arg0, arg1], binaryen.i32)
+					: builder.module.f64.eq(arg0, arg1)
+				)
+			),
+			type: binaryen.i32,
+		};
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		/*

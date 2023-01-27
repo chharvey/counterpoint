@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	SolidType,
 	SolidTypeUnit,
@@ -13,7 +13,10 @@ import {
 	ParseNode,
 	Operator,
 } from './package.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {
+	ASTNodeExpression,
+	BuildType,
+} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 
 
@@ -49,9 +52,11 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		}
 		return new INST.InstructionCond(inst0, inst1, inst2);
 	}
-	public build__temp(builder: Builder): binaryen.ExpressionRef {
+	public build__temp(builder: Builder): BuildType {
 		let [inst0, inst1, inst2]: INST.InstructionExpression[] = [this.operand0, this.operand1, this.operand2].map((expr) => expr.build(builder));
+		let resulttype = binaryen.i32;
 		if (this.shouldFloat()) {
+			resulttype = binaryen.f64;
 			if (!this.operand1.shouldFloat()) {
 				inst1 = new INST.InstructionConvert(inst1);
 			}
@@ -59,11 +64,14 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 				inst2 = new INST.InstructionConvert(inst2);
 			}
 		}
-		return builder.module.if(
-			inst0.buildBin(builder.module),
-			inst1.buildBin(builder.module),
-			inst2.buildBin(builder.module),
-		);
+		return {
+			bin: builder.module.if(
+				inst0.buildBin(builder.module),
+				inst1.buildBin(builder.module),
+				inst2.buildBin(builder.module),
+			),
+			type: resulttype,
+		};
 	}
 	protected override type_do(): SolidType {
 		const t0: SolidType = this.operand0.type();
