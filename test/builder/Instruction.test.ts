@@ -89,6 +89,23 @@ describe('Instruction', () => {
 			})
 		})
 
+		describe('InstructionConvert', () => {
+			it('converts an i32 into an f64.', () => {
+				const exprs = [
+					instructionConstInt(3n),
+					new INST.InstructionBinopArithmetic(
+						Operator.MUL,
+						instructionConstInt(21n),
+						instructionConstInt(2n),
+					),
+				];
+				assert.deepStrictEqual(
+					exprs.map((expr) => new INST.InstructionConvert(expr).toString()),
+					exprs.map((expr) => `(f64.convert_i32_u ${ expr })`),
+				);
+			});
+		});
+
 		context('InstructionUnop', () => {
 			it('performs a unary operation.', () => {
 				assert.deepStrictEqual([

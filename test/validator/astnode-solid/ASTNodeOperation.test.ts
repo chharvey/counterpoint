@@ -28,6 +28,7 @@ import {
 	typeConstStr,
 	instructionConstInt,
 	instructionConstFloat,
+	instructionConvert,
 } from '../../helpers.js';
 
 
@@ -101,10 +102,10 @@ describe('ASTNodeOperation', () => {
 					Operator.ADD,
 					new INST.InstructionBinopArithmetic(
 						Operator.MUL,
-						instructionConstFloat(2.0),
+						instructionConvert(2n),
 						instructionConstFloat(3.0),
 					),
-					instructionConstFloat(5.0),
+					instructionConvert(5n),
 				)],
 			]));
 		});
@@ -408,7 +409,7 @@ describe('ASTNodeOperation', () => {
 			it('returns InstructionBinopArithmetic.', () => {
 				buildOperations(new Map([
 					[`42 + 420;`, new INST.InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
-					[`3 * 2.1;`,  new INST.InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
+					[`3 * 2.1;`,  new INST.InstructionBinopArithmetic(Operator.MUL, instructionConvert(3n),     instructionConstFloat(2.1))],
 				]));
 				buildOperations(new Map([
 					[' 126 /  3;', new INST.InstructionBinopArithmetic(Operator.DIV, instructionConstInt( 126n), instructionConstInt( 3n))],
@@ -715,7 +716,7 @@ describe('ASTNodeOperation', () => {
 					new INST.InstructionBinopEquality(
 						Operator.EQ,
 						instructionConstFloat(4.2),
-						instructionConstFloat(42.0),
+						instructionConvert(42n),
 					),
 					new INST.InstructionBinopEquality(
 						Operator.ID,
@@ -739,12 +740,12 @@ describe('ASTNodeOperation', () => {
 					),
 					new INST.InstructionBinopEquality(
 						Operator.EQ,
-						instructionConstFloat(0.0),
+						instructionConvert(0n),
 						instructionConstFloat(0.0),
 					),
 				]);
 			});
-			it('with int coersion on, does not coerse ints into floats.', () => {
+			it('with int coersion off, does not coerse ints into floats.', () => {
 				assert.deepStrictEqual([
 					`42 == 420;`,
 					`4.2 == 42;`,
@@ -936,18 +937,18 @@ describe('ASTNodeOperation', () => {
 						0,
 						Operator.OR,
 						instructionConstFloat(4.2),
-						instructionConstFloat(-420.0),
+						instructionConvert(-420n),
 					),
 					new INST.InstructionBinopLogical(
 						0,
 						Operator.AND,
-						instructionConstFloat(0.0),
+						instructionConvert(0n),
 						instructionConstFloat(20.1),
 					),
 					new INST.InstructionBinopLogical(
 						0,
 						Operator.AND,
-						instructionConstFloat(1.0),
+						instructionConvert(1n),
 						instructionConstFloat(20.1),
 					),
 					new INST.InstructionBinopLogical(
@@ -1016,8 +1017,8 @@ describe('ASTNodeOperation', () => {
 		specify('#build', () => {
 			buildOperations((new Map([
 				[`if true  then false else 2;`,    new INST.InstructionCond(instructionConstInt(1n), instructionConstInt(0n),    instructionConstInt(2n))],
-				[`if false then 3.0   else null;`, new INST.InstructionCond(instructionConstInt(0n), instructionConstFloat(3.0), instructionConstFloat(0.0))],
-				[`if true  then 2     else 3.0;`,  new INST.InstructionCond(instructionConstInt(1n), instructionConstFloat(2.0), instructionConstFloat(3.0))],
+				[`if false then 3.0   else null;`, new INST.InstructionCond(instructionConstInt(0n), instructionConstFloat(3.0), instructionConvert(0n))],
+				[`if true  then 2     else 3.0;`,  new INST.InstructionCond(instructionConstInt(1n), instructionConvert(2n),     instructionConstFloat(3.0))],
 			])));
 		});
 	});
