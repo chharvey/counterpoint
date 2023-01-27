@@ -740,9 +740,9 @@ describe('ASTNodeOperation', () => {
 					['null ==  true;',  (mod) => mod.i32.eq(instr.const['0'].buildBin(mod), instr.const['1'].buildBin(mod))],
 				])], ([src, callback]) => {
 					const builder = new Builder(src, CONFIG_FOLDING_OFF);
-					const actual: AST.BuildType = AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_OFF).build__temp(builder);
-					assert.strictEqual(actual.type, binaryen.i32);
-					return assertBinEqual(actual.bin, callback(builder.module));
+					const actual: INST.InstructionExpression = AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
+					assert.ok(actual instanceof INST.InstructionBinopEquality);
+					return assertBinEqual(actual.buildBin(builder.module), callback(builder.module));
 				});
 			});
 			it('with int coercion off, does not coerce ints into floats.', () => {
@@ -763,9 +763,9 @@ describe('ASTNodeOperation', () => {
 					['true ==  1.0;', (mod) => mod.call('i_f_id', [instr.const['1'].buildBin(mod), instr.const['1.0'].buildBin(mod)], binaryen.i32)],
 				])], ([src, callback]) => {
 					const builder = new Builder(src, CONFIG_FOLDING_COERCION_OFF);
-					const actual: AST.BuildType = AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_COERCION_OFF).build__temp(builder);
-					assert.strictEqual(actual.type, binaryen.i32);
-					return assertBinEqual(actual.bin, callback(builder.module));
+					const actual: INST.InstructionExpression = AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_COERCION_OFF).build(builder);
+					assert.ok(actual instanceof INST.InstructionBinopEquality);
+					return assertBinEqual(actual.buildBin(builder.module), callback(builder.module));
 				});
 			});
 		});
@@ -925,107 +925,67 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			function buildBinopLogical(
-				mod:       binaryen.Module,
-				operator:  Operator,
-				arg0:      binaryen.ExpressionRef,
-				arg1:      binaryen.ExpressionRef,
-				args_type: binaryen.Type = binaryen.i32,
-				var_index: number = 0,
-			): AST.BuildType {
-				const condition = mod.call(
-					'inot',
-					[mod.call(
-						(args_type === binaryen.i32) ? 'inot' : 'fnot',
-						[mod.local.tee(var_index, arg0, args_type)],
-						binaryen.i32,
-					)],
-					binaryen.i32,
-				);
-				const left:  binaryen.ExpressionRef = mod.local.get(var_index, args_type);
-				const right: binaryen.ExpressionRef = arg1;
-				return {
-					bin: (operator === Operator.AND)
-						? mod.if(condition, right, left)
-						: mod.if(condition, left, right),
-					type: args_type,
-				};
-			}
 			it('returns `(if)`.', () => {
-				forEachAggregated([...new Map<string, (mod: binaryen.Module) => AST.BuildType>([
-					['42 && 420;', (mod) => buildBinopLogical(
-						mod,
+				forEachAggregated([...new Map<string, INST.InstructionBinopLogical>([
+					['42 && 420;', new INST.InstructionBinopLogical(
+						0,
 						Operator.AND,
-						instructionConstInt(42n).buildBin(mod),
-						instructionConstInt(420n).buildBin(mod),
+						instructionConstInt(42n),
+						instructionConstInt(420n),
 					)],
-					['4.2 || -420;', (mod) => buildBinopLogical(
-						mod,
+					['4.2 || -420;', new INST.InstructionBinopLogical(
+						0,
 						Operator.OR,
-						instructionConstFloat(4.2).buildBin(mod),
-						instructionConvert(-420n).buildBin(mod),
-						binaryen.f64,
+						instructionConstFloat(4.2),
+						instructionConvert(-420n),
 					)],
-					['null && 201.0e-1;', (mod) => buildBinopLogical(
-						mod,
+					['null && 201.0e-1;', new INST.InstructionBinopLogical(
+						0,
 						Operator.AND,
-						instructionConvert(0n).buildBin(mod),
-						instructionConstFloat(20.1).buildBin(mod),
-						binaryen.f64,
+						instructionConvert(0n),
+						instructionConstFloat(20.1),
 					)],
-					['true && 201.0e-1;', (mod) => buildBinopLogical(
-						mod,
+					['true && 201.0e-1;', new INST.InstructionBinopLogical(
+						0,
 						Operator.AND,
-						instructionConvert(1n).buildBin(mod),
-						instructionConstFloat(20.1).buildBin(mod),
-						binaryen.f64,
+						instructionConvert(1n),
+						instructionConstFloat(20.1),
 					)],
-					['false || null;', (mod) => buildBinopLogical(
-						mod,
+					['false || null;', new INST.InstructionBinopLogical(
+						0,
 						Operator.OR,
-						instructionConstInt(0n).buildBin(mod),
-						instructionConstInt(0n).buildBin(mod),
+						instructionConstInt(0n),
+						instructionConstInt(0n),
 					)],
-				])], ([src, callback]) => {
+				])], ([src, expected]) => {
 					const builder = new Builder(src, CONFIG_FOLDING_OFF);
-					const [actual, expected]: [AST.BuildType, AST.BuildType] = [
-						AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build__temp(builder),
-						callback(builder.module),
-					];
-					assert.strictEqual(actual.type, expected.type);
-					return assertBinEqual(actual.bin, expected.bin);
+					const actual: INST.InstructionExpression = AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
+					assert.ok(actual instanceof INST.InstructionBinopLogical);
+					return assertBinEqual(actual.buildBin(builder.module), expected.buildBin(builder.module));
 				});
 			});
 			it('counts internal variables correctly.', () => {
 				const src: string = `1 && 2 || 3 && 4;`
 				const builder = new Builder(src, CONFIG_FOLDING_OFF);
-				const [actual, expected]: [AST.BuildType, AST.BuildType] = [
-					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build__temp(builder),
-					buildBinopLogical(
-						builder.module,
-						Operator.OR,
-						buildBinopLogical(
-							builder.module,
-							Operator.AND,
-							instructionConstInt(1n).buildBin(builder.module),
-							instructionConstInt(2n).buildBin(builder.module),
-							binaryen.i32,
-							0,
-						).bin,
-						buildBinopLogical(
-							builder.module,
-							Operator.AND,
-							instructionConstInt(3n).buildBin(builder.module),
-							instructionConstInt(4n).buildBin(builder.module),
-							binaryen.i32,
-							1,
-						).bin,
-						binaryen.i32,
-						2,
+				const actual: INST.InstructionExpression = AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
+				const expected = new INST.InstructionBinopLogical(
+					2,
+					Operator.OR,
+					new INST.InstructionBinopLogical(
+						0,
+						Operator.AND,
+						instructionConstInt(1n),
+						instructionConstInt(2n),
 					),
-				];
-				assert.strictEqual(actual.type, expected.type);
-				return assertBinEqual(actual.bin, expected.bin);
+					new INST.InstructionBinopLogical(
+						1,
+						Operator.AND,
+						instructionConstInt(3n),
+						instructionConstInt(4n),
+					),
+				);
+				assert.ok(actual instanceof INST.InstructionBinopLogical);
+				return assertBinEqual(actual.buildBin(builder.module), expected.buildBin(builder.module));
 			});
 		});
 	});
@@ -1061,15 +1021,15 @@ describe('ASTNodeOperation', () => {
 
 
 		specify('#build', () => {
-			forEachAggregated([...new Map<string, [binaryen.Type, (mod: binaryen.Module) => binaryen.ExpressionRef]>([
-				['if true  then false else 2;',    [binaryen.i32, (mod) => mod.if(instructionConstInt(1n).buildBin(mod), instructionConstInt   (0n)  .buildBin(mod), instructionConstInt   (2n)  .buildBin(mod))]],
-				['if false then 3.0   else null;', [binaryen.f64, (mod) => mod.if(instructionConstInt(0n).buildBin(mod), instructionConstFloat (3.0) .buildBin(mod), instructionConvert    (0n)  .buildBin(mod))]],
-				['if true  then 2     else 3.0;',  [binaryen.f64, (mod) => mod.if(instructionConstInt(1n).buildBin(mod), instructionConvert    (2n)  .buildBin(mod), instructionConstFloat (3.0) .buildBin(mod))]],
-			])], ([src, [expected_type, callback]]) => {
+			forEachAggregated([...new Map<string, (mod: binaryen.Module) => binaryen.ExpressionRef>([
+				['if true  then false else 2;',    (mod) => mod.if(instructionConstInt(1n).buildBin(mod), instructionConstInt   (0n)  .buildBin(mod), instructionConstInt   (2n)  .buildBin(mod))],
+				['if false then 3.0   else null;', (mod) => mod.if(instructionConstInt(0n).buildBin(mod), instructionConstFloat (3.0) .buildBin(mod), instructionConvert    (0n)  .buildBin(mod))],
+				['if true  then 2     else 3.0;',  (mod) => mod.if(instructionConstInt(1n).buildBin(mod), instructionConvert    (2n)  .buildBin(mod), instructionConstFloat (3.0) .buildBin(mod))],
+			])], ([src, callback]) => {
 				const builder = new Builder(src, CONFIG_FOLDING_OFF);
-				const actual: AST.BuildType = AST.ASTNodeOperationTernary.fromSource(src, CONFIG_FOLDING_OFF).build__temp(builder);
-				assert.strictEqual(actual.type, expected_type);
-				return assertBinEqual(actual.bin, callback(builder.module));
+				const actual: INST.InstructionExpression = AST.ASTNodeOperationTernary.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
+				assert.ok(actual instanceof INST.InstructionCond);
+				return assertBinEqual(actual.buildBin(builder.module), callback(builder.module));
 			});
 		});
 	});

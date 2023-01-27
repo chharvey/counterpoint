@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import binaryen from 'binaryen';
 import {
 	SolidType,
 	SolidObject,
@@ -12,10 +11,7 @@ import {
 	Operator,
 	ValidOperatorLogical,
 } from './package.js';
-import {
-	ASTNodeExpression,
-	BuildType,
-} from './ASTNodeExpression.js';
+import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -45,30 +41,6 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			inst0,
 			inst1,
 		)
-	}
-	public build__temp(builder: Builder): BuildType {
-		const [arg0, arg1]: binaryen.ExpressionRef[] = this.buildOps(builder).map((inst) => inst.buildBin(builder.module));
-		const args_type: binaryen.Type = (!this.shouldFloat()) ? binaryen.i32 : binaryen.f64;
-		/** A temporary variable id used for optimizing short-circuited operations. */
-		const temp_id: bigint = builder.varCount;
-		const var_index: number = builder.addLocal(temp_id, args_type)[0].getLocalInfo(temp_id)!.index;
-		const condition: binaryen.ExpressionRef = builder.module.call(
-			'inot',
-			[builder.module.call(
-				(args_type === binaryen.i32) ? 'inot' : 'fnot',
-				[builder.module.local.tee(var_index, arg0, args_type)],
-				binaryen.i32,
-			)],
-			binaryen.i32,
-		);
-		const left:  binaryen.ExpressionRef = builder.module.local.get(var_index, args_type);
-		const right: binaryen.ExpressionRef = arg1;
-		return {
-			bin: (this.operator === Operator.AND)
-				? builder.module.if(condition, right, left)
-				: builder.module.if(condition, left, right),
-			type: args_type,
-		};
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
 		const falsytypes: SolidType = SolidType.VOID.union(SolidType.NULL).union(SolidBoolean.FALSETYPE);
