@@ -689,81 +689,86 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			it('with int coersion on, coerse ints into floats when needed.', () => {
-				assert.deepStrictEqual([
-					`42 == 420;`,
-					`4.2 === 42;`,
-					`42 === 4.2;`,
-					`4.2 == 42;`,
-					`true === 1;`,
-					`true == 1;`,
-					`null === false;`,
-					`null == false;`,
-					`false == 0.0;`,
-				].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))), [
-					new INST.InstructionBinopEquality(
-						Operator.EQ,
-						instructionConstInt(42n),
-						instructionConstInt(420n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.ID,
-						instructionConstFloat(4.2),
-						instructionConstInt(42n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.ID,
-						instructionConstInt(42n),
-						instructionConstFloat(4.2),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.EQ,
-						instructionConstFloat(4.2),
-						instructionConvert(42n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.ID,
-						instructionConstInt(1n),
-						instructionConstInt(1n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.EQ,
-						instructionConstInt(1n),
-						instructionConstInt(1n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.ID,
-						instructionConstInt(0n),
-						instructionConstInt(0n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.EQ,
-						instructionConstInt(0n),
-						instructionConstInt(0n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.EQ,
-						instructionConvert(0n),
-						instructionConstFloat(0.0),
-					),
-				]);
+			const instr = {
+				const: {
+					'42':   instructionConstInt(42n),
+					'420':  instructionConstInt(420n),
+					'4.2':  instructionConstFloat(4.2),
+					'42.0': instructionConstFloat(42.0),
+					'0':    instructionConstInt(0n),
+					'1':    instructionConstInt(1n),
+					'0.0':  instructionConstFloat(0.0),
+					'1.0':  instructionConstFloat(1.0),
+				},
+				convert: {
+					'42':  instructionConvert(42n),
+					'420': instructionConstInt(420n),
+					'0':   instructionConvert(0n),
+					'1':   instructionConvert(1n),
+				},
+			} as const;
+			it('with int coercion on, coerces ints into floats when needed.', () => {
+				forEachAggregated([...new Map<string, (mod: binaryen.Module) => binaryen.ExpressionRef>([
+					['42 === 420;', (mod) => mod.i32.eq (           instr.const['42']   .buildBin(mod), instr.const['420'].buildBin(mod))],
+					['42 ==  420;', (mod) => mod.i32.eq (           instr.const['42']   .buildBin(mod), instr.const['420'].buildBin(mod))],
+					['42 === 4.2;', (mod) => mod.call   ('i_f_id', [instr.const['42']   .buildBin(mod), instr.const['4.2'].buildBin(mod)], binaryen.i32)],
+					['42 ==  4.2;', (mod) => mod.f64.eq (           instr.convert['42'] .buildBin(mod), instr.const['4.2'].buildBin(mod))],
+
+					['4.2 === 42;',   (mod) => mod.call   ('f_i_id', [instr.const['4.2'].buildBin(mod), instr.const['42']   .buildBin(mod)], binaryen.i32)],
+					['4.2 ==  42;',   (mod) => mod.f64.eq (           instr.const['4.2'].buildBin(mod), instr.convert['42'] .buildBin(mod))],
+					['4.2 === 42.0;', (mod) => mod.call   ('fid',    [instr.const['4.2'].buildBin(mod), instr.const['42.0'] .buildBin(mod)], binaryen.i32)],
+					['4.2 ==  42.0;', (mod) => mod.f64.eq (           instr.const['4.2'].buildBin(mod), instr.const['42.0'] .buildBin(mod))],
+
+					['null === 0;',   (mod) => mod.i32.eq (           instr.const['0']   .buildBin(mod), instr.const['0']   .buildBin(mod))],
+					['null ==  0;',   (mod) => mod.i32.eq (           instr.const['0']   .buildBin(mod), instr.const['0']   .buildBin(mod))],
+					['null === 0.0;', (mod) => mod.call   ('i_f_id', [instr.const['0']   .buildBin(mod), instr.const['0.0'] .buildBin(mod)], binaryen.i32)],
+					['null ==  0.0;', (mod) => mod.f64.eq (           instr.convert['0'] .buildBin(mod), instr.const['0.0'] .buildBin(mod))],
+
+					['false === 0;',   (mod) => mod.i32.eq (           instr.const['0']   .buildBin(mod), instr.const['0']   .buildBin(mod))],
+					['false ==  0;',   (mod) => mod.i32.eq (           instr.const['0']   .buildBin(mod), instr.const['0']   .buildBin(mod))],
+					['false === 0.0;', (mod) => mod.call   ('i_f_id', [instr.const['0']   .buildBin(mod), instr.const['0.0'] .buildBin(mod)], binaryen.i32)],
+					['false ==  0.0;', (mod) => mod.f64.eq (           instr.convert['0'] .buildBin(mod), instr.const['0.0'] .buildBin(mod))],
+
+					['true === 1;',   (mod) => mod.i32.eq (           instr.const['1']   .buildBin(mod), instr.const['1']   .buildBin(mod))],
+					['true ==  1;',   (mod) => mod.i32.eq (           instr.const['1']   .buildBin(mod), instr.const['1']   .buildBin(mod))],
+					['true === 1.0;', (mod) => mod.call   ('i_f_id', [instr.const['1']   .buildBin(mod), instr.const['1.0'] .buildBin(mod)], binaryen.i32)],
+					['true ==  1.0;', (mod) => mod.f64.eq (           instr.convert['1'] .buildBin(mod), instr.const['1.0'] .buildBin(mod))],
+
+					['null === false;', (mod) => mod.i32.eq(instr.const['0'].buildBin(mod), instr.const['0'].buildBin(mod))],
+					['null ==  false;', (mod) => mod.i32.eq(instr.const['0'].buildBin(mod), instr.const['0'].buildBin(mod))],
+					['null === true;',  (mod) => mod.i32.eq(instr.const['0'].buildBin(mod), instr.const['1'].buildBin(mod))],
+					['null ==  true;',  (mod) => mod.i32.eq(instr.const['0'].buildBin(mod), instr.const['1'].buildBin(mod))],
+				])], ([src, callback]) => {
+					const builder = new Builder(src, CONFIG_FOLDING_OFF);
+					return assertBinEqual(
+						AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_OFF).build__temp(builder),
+						callback(builder.module),
+					);
+				});
 			});
-			it('with int coersion off, does not coerse ints into floats.', () => {
-				assert.deepStrictEqual([
-					`42 == 420;`,
-					`4.2 == 42;`,
-					`42 == 4.2;`,
-					`null == 0.0;`,
-					`false == 0.0;`,
-					`true == 1.0;`,
-				].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_COERCION_OFF).build(new Builder(src, CONFIG_FOLDING_COERCION_OFF))), [
-					[instructionConstInt(42n),   instructionConstInt(420n)],
-					[instructionConstFloat(4.2), instructionConstInt(42n)],
-					[instructionConstInt(42n),   instructionConstFloat(4.2)],
-					[instructionConstInt(0n),    instructionConstFloat(0.0)],
-					[instructionConstInt(0n),    instructionConstFloat(0.0)],
-					[instructionConstInt(1n),    instructionConstFloat(1.0)],
-				].map(([left, right]) => new INST.InstructionBinopEquality(Operator.EQ, left, right)));
+			it('with int coercion off, does not coerce ints into floats.', () => {
+				forEachAggregated([...new Map<string, (mod: binaryen.Module) => binaryen.ExpressionRef>([
+					['42 === 4.2;', (mod) => mod.call('i_f_id', [instr.const['42'].buildBin(mod), instr.const['4.2'].buildBin(mod)], binaryen.i32)],
+					['42 ==  4.2;', (mod) => mod.call('i_f_id', [instr.const['42'].buildBin(mod), instr.const['4.2'].buildBin(mod)], binaryen.i32)],
+
+					['4.2 === 42;', (mod) => mod.call('f_i_id', [instr.const['4.2'].buildBin(mod), instr.const['42'].buildBin(mod)], binaryen.i32)],
+					['4.2 ==  42;', (mod) => mod.call('f_i_id', [instr.const['4.2'].buildBin(mod), instr.const['42'].buildBin(mod)], binaryen.i32)],
+
+					['null === 0.0;', (mod) => mod.call('i_f_id', [instr.const['0'].buildBin(mod), instr.const['0.0'].buildBin(mod)], binaryen.i32)],
+					['null ==  0.0;', (mod) => mod.call('i_f_id', [instr.const['0'].buildBin(mod), instr.const['0.0'].buildBin(mod)], binaryen.i32)],
+
+					['false === 0.0;', (mod) => mod.call('i_f_id', [instr.const['0'].buildBin(mod), instr.const['0.0'].buildBin(mod)], binaryen.i32)],
+					['false ==  0.0;', (mod) => mod.call('i_f_id', [instr.const['0'].buildBin(mod), instr.const['0.0'].buildBin(mod)], binaryen.i32)],
+
+					['true === 1.0;', (mod) => mod.call('i_f_id', [instr.const['1'].buildBin(mod), instr.const['1.0'].buildBin(mod)], binaryen.i32)],
+					['true ==  1.0;', (mod) => mod.call('i_f_id', [instr.const['1'].buildBin(mod), instr.const['1.0'].buildBin(mod)], binaryen.i32)],
+				])], ([src, callback]) => {
+					const builder = new Builder(src, CONFIG_FOLDING_COERCION_OFF);
+					return assertBinEqual(
+						AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_COERCION_OFF).build__temp(builder),
+						callback(builder.module),
+					);
+				});
 			});
 		});
 	});
