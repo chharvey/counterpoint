@@ -37,7 +37,7 @@ export class InstructionBinopLogical extends InstructionBinop {
 				new InstructionLocalTee(var_index, this.arg0),
 			),
 		)
-		const left                         = new InstructionLocalGet(var_index, this.arg0.isFloat);
+		const left                         = new InstructionLocalGet(var_index, this.arg0.binType);
 		const right: InstructionExpression = this.arg1
 		this.instructionCond = (this.op === Operator.AND)
 			? new InstructionCond(condition, right, left)

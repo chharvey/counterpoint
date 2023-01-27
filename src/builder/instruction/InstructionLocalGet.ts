@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {InstructionLocal} from './InstructionLocal.js';
 
 
@@ -7,8 +7,8 @@ import {InstructionLocal} from './InstructionLocal.js';
  * Get a local variable.
  */
 export class InstructionLocalGet extends InstructionLocal {
-	public constructor(index: number, to_float: boolean = false) {
-		super(index, to_float);
+	public constructor(var_index: number, bin_type: binaryen.Type) {
+		super(var_index, bin_type === binaryen.f64);
 	}
 	/** @return `'(local.get ‹name›)'` */
 	override toString(): string {
