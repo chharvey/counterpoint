@@ -9,6 +9,7 @@ import {assertEqualBins} from '../assert-helpers.js';
 import {
 	instructionConstInt,
 	instructionConstFloat,
+	instructionConvert,
 } from '../helpers.js';
 
 
@@ -195,46 +196,136 @@ describe('Instruction', () => {
 
 	describe('InstructionBinop', () => {
 		describe('#{toString,buildBin}', () => {
-			it('performs a binary operation.', () => {
-				const actuals: readonly INST.Instruction[] = [
-					new INST.InstructionBinopArithmetic(Operator.MUL, instructionConstInt(21n),    instructionConstInt(2n)),
-					new INST.InstructionBinopArithmetic(Operator.ADD, instructionConstFloat(30.1), instructionConstFloat(18.1)),
-					new INST.InstructionBinopComparative(Operator.LT, instructionConstInt(30n),    instructionConstInt(18n)),
-					new INST.InstructionBinopComparative(Operator.GE, instructionConstFloat(30.1), instructionConstFloat(18.1)),
-					new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(30n),    instructionConstInt(18n)),
-					new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(30.1), instructionConstFloat(18.1)),
-					new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(30n),    instructionConstFloat(18.1)),
-					new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(18.1), instructionConstInt(30n)),
-					new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(30n),    instructionConstFloat(18.1)),
-					new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(18.1), instructionConstInt(30n)),
-				];
-				assert.deepStrictEqual(actuals.map((actual) => actual.toString()), [
-					`(i32.mul ${      instructionConstInt(21n)    } ${ instructionConstInt(2n) })`,
-					`(f64.add ${      instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`,
-					`(i32.lt_s ${     instructionConstInt(30n)    } ${ instructionConstInt(18n) })`,
-					`(f64.ge ${       instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`,
-					`(i32.eq ${       instructionConstInt(30n)    } ${ instructionConstInt(18n) })`,
-					`(call $fid ${    instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`,
-					`(call $i_f_id ${ instructionConstInt(30n)    } ${ instructionConstFloat(18.1) })`,
-					`(call $f_i_id ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`,
-					`(call $i_f_id ${ instructionConstInt(30n)    } ${ instructionConstFloat(18.1) })`,
-					`(call $f_i_id ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`,
-				]);
-				const mod: binaryen.Module = new Builder('').module;
-				return assertEqualBins(actuals.map((actual) => actual.buildBin(mod)), [
-					mod.i32.mul  (instructionConstInt(21n)    .buildBin(mod), instructionConstInt(2n)     .buildBin(mod)),
-					mod.f64.add  (instructionConstFloat(30.1) .buildBin(mod), instructionConstFloat(18.1) .buildBin(mod)),
-					mod.i32.lt_s (instructionConstInt(30n)    .buildBin(mod), instructionConstInt(18n)    .buildBin(mod)),
-					mod.f64.ge   (instructionConstFloat(30.1) .buildBin(mod), instructionConstFloat(18.1) .buildBin(mod)),
-					mod.i32.eq   (instructionConstInt(30n)    .buildBin(mod), instructionConstInt(18n)    .buildBin(mod)),
-					mod.call('fid',    [instructionConstFloat(30.1) .buildBin(mod), instructionConstFloat(18.1) .buildBin(mod)], binaryen.i32),
-					mod.call('i_f_id', [instructionConstInt(30n)    .buildBin(mod), instructionConstFloat(18.1) .buildBin(mod)], binaryen.i32),
-					mod.call('f_i_id', [instructionConstFloat(18.1) .buildBin(mod), instructionConstInt(30n)    .buildBin(mod)], binaryen.i32),
-					mod.call('i_f_id', [instructionConstInt(30n)    .buildBin(mod), instructionConstFloat(18.1) .buildBin(mod)], binaryen.i32),
-					mod.call('f_i_id', [instructionConstFloat(18.1) .buildBin(mod), instructionConstInt(30n)    .buildBin(mod)], binaryen.i32),
-				]);
+			context('performs a binary operation.', () => {
+				specify('InstructionBinopArithmetic', () => {
+					const actuals: readonly INST.InstructionBinopArithmetic[] = [
+						new INST.InstructionBinopArithmetic(Operator.MUL, instructionConstInt(21n),    instructionConstInt(2n)),
+						new INST.InstructionBinopArithmetic(Operator.ADD, instructionConstFloat(30.1), instructionConstFloat(18.1)),
+					];
+					assert.deepStrictEqual(actuals.map((actual) => actual.toString()), [
+						`(i32.mul ${ instructionConstInt(21n)    } ${ instructionConstInt(2n) })`,
+						`(f64.add ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`,
+					]);
+					const mod: binaryen.Module = new Builder('').module;
+					return assertEqualBins(actuals.map((actual) => actual.buildBin(mod)), [
+						mod.i32.mul(instructionConstInt(21n)    .buildBin(mod), instructionConstInt(2n)     .buildBin(mod)),
+						mod.f64.add(instructionConstFloat(30.1) .buildBin(mod), instructionConstFloat(18.1) .buildBin(mod)),
+					]);
+				});
+				specify('InstructionBinopComparative', () => {
+					const actuals: readonly INST.InstructionBinopComparative[] = [
+						new INST.InstructionBinopComparative(Operator.LT, instructionConstInt(30n),    instructionConstInt(18n)),
+						new INST.InstructionBinopComparative(Operator.GE, instructionConstFloat(30.1), instructionConstFloat(18.1)),
+					];
+					assert.deepStrictEqual(actuals.map((actual) => actual.toString()), [
+						`(i32.lt_s ${ instructionConstInt(30n)    } ${ instructionConstInt(18n) })`,
+						`(f64.ge ${   instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`,
+					]);
+					const mod: binaryen.Module = new Builder('').module;
+					return assertEqualBins(actuals.map((actual) => actual.buildBin(mod)), [
+						mod.i32.lt_s (instructionConstInt(30n)    .buildBin(mod), instructionConstInt(18n)    .buildBin(mod)),
+						mod.f64.ge   (instructionConstFloat(30.1) .buildBin(mod), instructionConstFloat(18.1) .buildBin(mod)),
+					]);
+				});
+				specify('InstructionBinopEquality', () => {
+					const actuals: readonly INST.InstructionBinopEquality[] = [
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstInt(420n)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstInt(420n)),
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstFloat(4.2)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(42n),  instructionConstFloat(4.2)),
+
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstInt(42n)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConvert(42n)),
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstFloat(42.0)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstFloat(42.0)),
+
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n)),
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(0n),  instructionConstFloat(0.0)),
+
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n)),
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(0n),  instructionConstFloat(0.0)),
+
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstInt(1n)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstInt(1n)),
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstFloat(1.0)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(1n),  instructionConstFloat(1.0)),
+
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n)),
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(1n)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(1n)),
+
+
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstFloat(4.2)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstFloat(4.2)),
+
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstInt(42n)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstInt(42n)),
+
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0)),
+
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0)),
+
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstFloat(1.0)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstFloat(1.0)),
+					];
+					const mod: binaryen.Module = new Builder('').module;
+					return assertEqualBins(actuals.map((actual) => actual.buildBin(mod)), [
+						mod.i32.eq (           instructionConstInt(42n) .buildBin(mod), instructionConstInt(420n)  .buildBin(mod)),
+						mod.i32.eq (           instructionConstInt(42n) .buildBin(mod), instructionConstInt(420n)  .buildBin(mod)),
+						mod.call   ('i_f_id', [instructionConstInt(42n) .buildBin(mod), instructionConstFloat(4.2) .buildBin(mod)], binaryen.i32),
+						mod.f64.eq (           instructionConvert(42n)  .buildBin(mod), instructionConstFloat(4.2) .buildBin(mod)),
+
+						mod.call   ('f_i_id', [instructionConstFloat(4.2).buildBin(mod), instructionConstInt(42n)    .buildBin(mod)], binaryen.i32),
+						mod.f64.eq (           instructionConstFloat(4.2).buildBin(mod), instructionConvert(42n)     .buildBin(mod)),
+						mod.call   ('fid',    [instructionConstFloat(4.2).buildBin(mod), instructionConstFloat(42.0) .buildBin(mod)], binaryen.i32),
+						mod.f64.eq (           instructionConstFloat(4.2).buildBin(mod), instructionConstFloat(42.0) .buildBin(mod)),
+
+						mod.i32.eq (           instructionConstInt(0n) .buildBin(mod), instructionConstInt(0n)    .buildBin(mod)),
+						mod.i32.eq (           instructionConstInt(0n) .buildBin(mod), instructionConstInt(0n)    .buildBin(mod)),
+						mod.call   ('i_f_id', [instructionConstInt(0n) .buildBin(mod), instructionConstFloat(0.0) .buildBin(mod)], binaryen.i32),
+						mod.f64.eq (           instructionConvert(0n)  .buildBin(mod), instructionConstFloat(0.0) .buildBin(mod)),
+
+						mod.i32.eq (           instructionConstInt(0n) .buildBin(mod), instructionConstInt(0n)    .buildBin(mod)),
+						mod.i32.eq (           instructionConstInt(0n) .buildBin(mod), instructionConstInt(0n)    .buildBin(mod)),
+						mod.call   ('i_f_id', [instructionConstInt(0n) .buildBin(mod), instructionConstFloat(0.0) .buildBin(mod)], binaryen.i32),
+						mod.f64.eq (           instructionConvert(0n)  .buildBin(mod), instructionConstFloat(0.0) .buildBin(mod)),
+
+						mod.i32.eq (           instructionConstInt(1n) .buildBin(mod), instructionConstInt(1n)    .buildBin(mod)),
+						mod.i32.eq (           instructionConstInt(1n) .buildBin(mod), instructionConstInt(1n)    .buildBin(mod)),
+						mod.call   ('i_f_id', [instructionConstInt(1n) .buildBin(mod), instructionConstFloat(1.0) .buildBin(mod)], binaryen.i32),
+						mod.f64.eq (           instructionConvert(1n)  .buildBin(mod), instructionConstFloat(1.0) .buildBin(mod)),
+
+						mod.i32.eq(instructionConstInt(0n).buildBin(mod), instructionConstInt(0n).buildBin(mod)),
+						mod.i32.eq(instructionConstInt(0n).buildBin(mod), instructionConstInt(0n).buildBin(mod)),
+						mod.i32.eq(instructionConstInt(0n).buildBin(mod), instructionConstInt(1n).buildBin(mod)),
+						mod.i32.eq(instructionConstInt(0n).buildBin(mod), instructionConstInt(1n).buildBin(mod)),
+
+
+						mod.call('i_f_id', [instructionConstInt(42n).buildBin(mod), instructionConstFloat(4.2).buildBin(mod)], binaryen.i32),
+						mod.call('i_f_id', [instructionConstInt(42n).buildBin(mod), instructionConstFloat(4.2).buildBin(mod)], binaryen.i32),
+
+						mod.call('f_i_id', [instructionConstFloat(4.2).buildBin(mod), instructionConstInt(42n).buildBin(mod)], binaryen.i32),
+						mod.call('f_i_id', [instructionConstFloat(4.2).buildBin(mod), instructionConstInt(42n).buildBin(mod)], binaryen.i32),
+
+						mod.call('i_f_id', [instructionConstInt(0n).buildBin(mod), instructionConstFloat(0.0).buildBin(mod)], binaryen.i32),
+						mod.call('i_f_id', [instructionConstInt(0n).buildBin(mod), instructionConstFloat(0.0).buildBin(mod)], binaryen.i32),
+
+						mod.call('i_f_id', [instructionConstInt(0n).buildBin(mod), instructionConstFloat(0.0).buildBin(mod)], binaryen.i32),
+						mod.call('i_f_id', [instructionConstInt(0n).buildBin(mod), instructionConstFloat(0.0).buildBin(mod)], binaryen.i32),
+
+						mod.call('i_f_id', [instructionConstInt(1n).buildBin(mod), instructionConstFloat(1.0).buildBin(mod)], binaryen.i32),
+						mod.call('i_f_id', [instructionConstInt(1n).buildBin(mod), instructionConstFloat(1.0).buildBin(mod)], binaryen.i32),
+					]);
+				});
 			});
-			it('creates variables for logical operations.', () => {
+			it('creates variables for InstructionBinopLogical.', () => {
 				const actuals: readonly INST.InstructionBinopLogical[] = [
 					new INST.InstructionBinopLogical(0, Operator.AND, instructionConstInt(30n),    instructionConstInt(18n)),
 					new INST.InstructionBinopLogical(3, Operator.OR,  instructionConstFloat(30.1), instructionConstFloat(18.1)),
