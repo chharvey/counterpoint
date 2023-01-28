@@ -490,6 +490,30 @@ describe('ASTNodeOperation', () => {
 				[`3 >= 3.0;`,   SolidBoolean.TRUE],
 			]));
 		});
+
+
+		describe('#build', () => {
+			it('returns InstructionBinopComparative.', () => {
+				buildOperations(new Map<string, INST.InstructionBinopComparative>([
+					[`3   <  3;`,   new INST.InstructionBinopComparative(Operator.LT, instructionConstInt(3n),    instructionConstInt(3n))],
+					[`3   >  3;`,   new INST.InstructionBinopComparative(Operator.GT, instructionConstInt(3n),    instructionConstInt(3n))],
+					[`3   <= 3;`,   new INST.InstructionBinopComparative(Operator.LE, instructionConstInt(3n),    instructionConstInt(3n))],
+					[`3   >= 3;`,   new INST.InstructionBinopComparative(Operator.GE, instructionConstInt(3n),    instructionConstInt(3n))],
+					[`5   <  9.2;`, new INST.InstructionBinopComparative(Operator.LT, instructionConvert(5n),     instructionConstFloat(9.2))],
+					[`5   >  9.2;`, new INST.InstructionBinopComparative(Operator.GT, instructionConvert(5n),     instructionConstFloat(9.2))],
+					[`5   <= 9.2;`, new INST.InstructionBinopComparative(Operator.LE, instructionConvert(5n),     instructionConstFloat(9.2))],
+					[`5   >= 9.2;`, new INST.InstructionBinopComparative(Operator.GE, instructionConvert(5n),     instructionConstFloat(9.2))],
+					[`5.2 <  3;`,   new INST.InstructionBinopComparative(Operator.LT, instructionConstFloat(5.2), instructionConvert(3n))],
+					[`5.2 >  3;`,   new INST.InstructionBinopComparative(Operator.GT, instructionConstFloat(5.2), instructionConvert(3n))],
+					[`5.2 <= 3;`,   new INST.InstructionBinopComparative(Operator.LE, instructionConstFloat(5.2), instructionConvert(3n))],
+					[`5.2 >= 3;`,   new INST.InstructionBinopComparative(Operator.GE, instructionConstFloat(5.2), instructionConvert(3n))],
+					[`5.2 <  9.2;`, new INST.InstructionBinopComparative(Operator.LT, instructionConstFloat(5.2), instructionConstFloat(9.2))],
+					[`5.2 >  9.2;`, new INST.InstructionBinopComparative(Operator.GT, instructionConstFloat(5.2), instructionConstFloat(9.2))],
+					[`5.2 <= 9.2;`, new INST.InstructionBinopComparative(Operator.LE, instructionConstFloat(5.2), instructionConstFloat(9.2))],
+					[`5.2 >= 9.2;`, new INST.InstructionBinopComparative(Operator.GE, instructionConstFloat(5.2), instructionConstFloat(9.2))],
+				]));
+			});
+		});
 	});
 
 
