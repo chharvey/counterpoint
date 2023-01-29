@@ -16,8 +16,8 @@ export abstract class InstructionExpression extends Instruction {
 	public abstract readonly binType: binaryen.Type;
 
 	/** @final */
-	public get binTypeString() {
-		return new Map([
+	public get binTypeString(): 'i32' | 'f64' {
+		return new Map<binaryen.Type, 'i32' | 'f64'>([
 			[binaryen.i32, 'i32'],
 			[binaryen.f64, 'f64'],
 		] as const).get(this.binType) ?? throwUnsupportedType(this.binType);
