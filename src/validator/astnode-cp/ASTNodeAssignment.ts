@@ -2,10 +2,10 @@ import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	TYPE,
+	INST,
 	Builder,
 	AssignmentError10,
 	MutabilityError01,
-	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SymbolStructureVar,
@@ -69,11 +69,13 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	public override build(builder: Builder): binaryen.ExpressionRef {
 		const id: bigint = (this.assignee as ASTNodeVariable).id;
 		const local = builder.getLocalInfo(id);
-		return (local)
-			? builder.module.local.set(
-				local.index,
-				this.assigned.build(builder, this.assignee.type().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat()).buildBin(builder.module),
-			)
-			: throw_expression(new ReferenceError(`Variable with id ${ id } not found.`));
+		if (!local) {
+			throw new ReferenceError(`Variable with id ${ id } not found.`);
+		}
+		let inst: INST.InstructionExpression = this.assigned.build(builder);
+		if (this.assignee.type().isSubtypeOf(TYPE.FLOAT) && !this.assigned.shouldFloat()) {
+			inst = new INST.InstructionConvert(inst);
+		}
+		return builder.module.local.set(local.index, inst.buildBin(builder.module));
 	}
 }

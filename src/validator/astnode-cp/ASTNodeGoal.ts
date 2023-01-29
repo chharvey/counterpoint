@@ -78,7 +78,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 				fn_name,
 				binaryen.createType([]),
 				binaryen.createType([]),
-				builder.getLocals().map((var_) => (!var_.isFloat) ? binaryen.i32 : binaryen.f64),
+				builder.getLocals().map((var_) => var_.type),
 				builder.module.block(null, [...statements]),
 			);
 			builder.module.addFunctionExport(fn_name, fn_name);

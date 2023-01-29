@@ -35,9 +35,8 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		return this.type().isSubtypeOf(TYPE.FLOAT);
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return this.operand.build(builder, tofloat);
+	protected override build_do(builder: Builder): INST.InstructionExpression {
+		return this.operand.build(builder);
 	}
 
 	public override type(): TYPE.Type { // WARNING: overriding a final method!

@@ -14,7 +14,7 @@ import {
 } from '../../../src/index.js';
 import {
 	assertAssignable,
-	assertBinEqual,
+	assertEqualBins,
 } from '../../assert-helpers.js';
 import {typeUnitFloat} from '../../helpers.js';
 
@@ -27,13 +27,13 @@ describe('ASTNodeCP', () => {
 				const src: string = ';';
 				const builder = new Builder(src);
 				const instr: binaryen.ExpressionRef = AST.ASTNodeStatementExpression.fromSource(src).build(builder);
-				assertBinEqual(instr, builder.module.nop());
+				return assertEqualBins(instr, builder.module.nop());
 			});
 			it('returns `(drop)` for nonempty statement expression.', () => {
 				const src: string = '42 + 420;';
 				const builder: Builder = new Builder(src);
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
-				assertBinEqual(
+				return assertEqualBins(
 					stmt.build(builder),
 					builder.module.drop(stmt.expr!.build(builder).buildBin(builder.module)),
 				);
@@ -41,9 +41,9 @@ describe('ASTNodeCP', () => {
 			it('multiple statements.', () => {
 				const src: string = '42; 420;';
 				const generator: Builder = new Builder(src);
-				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt) => {
+				return AST.ASTNodeGoal.fromSource(src).children.forEach((stmt) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
-					assertBinEqual(
+					return assertEqualBins(
 						stmt.build(generator),
 						generator.module.drop(stmt.expr!.build(generator).buildBin(generator.module)),
 					);
@@ -165,7 +165,7 @@ describe('ASTNodeCP', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder: Builder = new Builder(src);
 				goal.build(builder);
-				return assertBinEqual(
+				return assertEqualBins(
 					goal.children[1].build(builder),
 					builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder).buildBin(builder.module)),
 				);
@@ -295,7 +295,7 @@ describe('ASTNodeCP', () => {
 				const src: string = '';
 				const builder = new Builder(src);
 				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
-				assertBinEqual(instr, builder.module.nop());
+				return assertEqualBins(instr, builder.module.nop());
 			});
 			it('returns binaryen.Module for non-empty program.', () => {
 				const src: string = '42;';

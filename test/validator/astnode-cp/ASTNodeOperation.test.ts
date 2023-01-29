@@ -1,4 +1,6 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	CPConfig,
 	CONFIG_DEFAULT,
@@ -11,7 +13,10 @@ import {
 	TypeError01,
 	NanError01,
 } from '../../../src/index.js';
-import {assertEqualTypes} from '../../assert-helpers.js';
+import {
+	assertEqualTypes,
+	assertEqualBins,
+} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_FOLDING_COERCION_OFF,
@@ -20,6 +25,7 @@ import {
 	typeUnitStr,
 	instructionConstInt,
 	instructionConstFloat,
+	instructionConvert,
 } from '../../helpers.js';
 
 
@@ -36,9 +42,9 @@ function foldOperations(tests: Map<string, OBJ.Object>): void {
 		[...tests.values()],
 	);
 }
-function buildOperations(tests: ReadonlyMap<string, INST.InstructionExpression>): void {
+function buildOperations(tests: ReadonlyMap<string, INST.InstructionExpression>, config: CPConfig = CONFIG_FOLDING_OFF): void {
 	assert.deepStrictEqual(
-		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))),
+		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).build(new Builder(src, config))),
 		[...tests.values()],
 	);
 }
@@ -86,10 +92,10 @@ describe('ASTNodeOperation', () => {
 					Operator.ADD,
 					new INST.InstructionBinopArithmetic(
 						Operator.MUL,
-						instructionConstFloat(2.0),
+						instructionConvert(2n),
 						instructionConstFloat(3.0),
 					),
-					instructionConstFloat(5.0),
+					instructionConvert(5n),
 				)],
 			]));
 		});
@@ -384,8 +390,8 @@ describe('ASTNodeOperation', () => {
 		describe('#build', () => {
 			it('returns InstructionBinopArithmetic.', () => {
 				buildOperations(new Map([
-					[`42 + 420;`, new INST.InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
-					[`3 * 2.1;`,  new INST.InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
+					[`42 + 420;`, new INST.InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n), instructionConstInt(420n))],
+					[`3 * 2.1;`,  new INST.InstructionBinopArithmetic(Operator.MUL, instructionConvert(3n),   instructionConstFloat(2.1))],
 				]));
 				buildOperations(new Map([
 					[' 126 /  3;', new INST.InstructionBinopArithmetic(Operator.DIV, instructionConstInt( 126n), instructionConstInt( 3n))],
@@ -462,6 +468,30 @@ describe('ASTNodeOperation', () => {
 				[`3 <= 3.0;`,   OBJ.Boolean.TRUE],
 				[`3 >= 3.0;`,   OBJ.Boolean.TRUE],
 			]));
+		});
+
+
+		describe('#build', () => {
+			it('returns InstructionBinopComparative.', () => {
+				buildOperations(new Map<string, INST.InstructionBinopComparative>([
+					[`3   <  3;`,   new INST.InstructionBinopComparative(Operator.LT, instructionConstInt(3n),    instructionConstInt(3n))],
+					[`3   >  3;`,   new INST.InstructionBinopComparative(Operator.GT, instructionConstInt(3n),    instructionConstInt(3n))],
+					[`3   <= 3;`,   new INST.InstructionBinopComparative(Operator.LE, instructionConstInt(3n),    instructionConstInt(3n))],
+					[`3   >= 3;`,   new INST.InstructionBinopComparative(Operator.GE, instructionConstInt(3n),    instructionConstInt(3n))],
+					[`5   <  9.2;`, new INST.InstructionBinopComparative(Operator.LT, instructionConvert(5n),     instructionConstFloat(9.2))],
+					[`5   >  9.2;`, new INST.InstructionBinopComparative(Operator.GT, instructionConvert(5n),     instructionConstFloat(9.2))],
+					[`5   <= 9.2;`, new INST.InstructionBinopComparative(Operator.LE, instructionConvert(5n),     instructionConstFloat(9.2))],
+					[`5   >= 9.2;`, new INST.InstructionBinopComparative(Operator.GE, instructionConvert(5n),     instructionConstFloat(9.2))],
+					[`5.2 <  3;`,   new INST.InstructionBinopComparative(Operator.LT, instructionConstFloat(5.2), instructionConvert(3n))],
+					[`5.2 >  3;`,   new INST.InstructionBinopComparative(Operator.GT, instructionConstFloat(5.2), instructionConvert(3n))],
+					[`5.2 <= 3;`,   new INST.InstructionBinopComparative(Operator.LE, instructionConstFloat(5.2), instructionConvert(3n))],
+					[`5.2 >= 3;`,   new INST.InstructionBinopComparative(Operator.GE, instructionConstFloat(5.2), instructionConvert(3n))],
+					[`5.2 <  9.2;`, new INST.InstructionBinopComparative(Operator.LT, instructionConstFloat(5.2), instructionConstFloat(9.2))],
+					[`5.2 >  9.2;`, new INST.InstructionBinopComparative(Operator.GT, instructionConstFloat(5.2), instructionConstFloat(9.2))],
+					[`5.2 <= 9.2;`, new INST.InstructionBinopComparative(Operator.LE, instructionConstFloat(5.2), instructionConstFloat(9.2))],
+					[`5.2 >= 9.2;`, new INST.InstructionBinopComparative(Operator.GE, instructionConstFloat(5.2), instructionConstFloat(9.2))],
+				]));
+			});
 		});
 	});
 
@@ -660,81 +690,56 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			it('with int coersion on, coerse ints into floats when needed.', () => {
-				assert.deepStrictEqual([
-					`42 == 420;`,
-					`4.2 === 42;`,
-					`42 === 4.2;`,
-					`4.2 == 42;`,
-					`true === 1;`,
-					`true == 1;`,
-					`null === false;`,
-					`null == false;`,
-					`false == 0.0;`,
-				].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))), [
-					new INST.InstructionBinopEquality(
-						Operator.EQ,
-						instructionConstInt(42n),
-						instructionConstInt(420n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.ID,
-						instructionConstFloat(4.2),
-						instructionConstInt(42n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.ID,
-						instructionConstInt(42n),
-						instructionConstFloat(4.2),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.EQ,
-						instructionConstFloat(4.2),
-						instructionConstFloat(42.0),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.ID,
-						instructionConstInt(1n),
-						instructionConstInt(1n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.EQ,
-						instructionConstInt(1n),
-						instructionConstInt(1n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.ID,
-						instructionConstInt(0n),
-						instructionConstInt(0n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.EQ,
-						instructionConstInt(0n),
-						instructionConstInt(0n),
-					),
-					new INST.InstructionBinopEquality(
-						Operator.EQ,
-						instructionConstFloat(0.0),
-						instructionConstFloat(0.0),
-					),
-				]);
+			it('with int coercion on, coerces ints into floats when needed.', () => {
+				buildOperations(new Map<string, INST.InstructionBinopEquality>([
+					['42 === 420;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstInt(420n))],
+					['42 ==  420;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstInt(420n))],
+					['42 === 4.2;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstFloat(4.2))],
+					['42 ==  4.2;', new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(42n),  instructionConstFloat(4.2))],
+
+					['4.2 === 42;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstInt(42n))],
+					['4.2 ==  42;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConvert(42n))],
+					['4.2 === 42.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstFloat(42.0))],
+					['4.2 ==  42.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstFloat(42.0))],
+
+					['null === 0;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n))],
+					['null ==  0;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n))],
+					['null === 0.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0))],
+					['null ==  0.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(0n),  instructionConstFloat(0.0))],
+
+					['false === 0;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n))],
+					['false ==  0;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n))],
+					['false === 0.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0))],
+					['false ==  0.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(0n),  instructionConstFloat(0.0))],
+
+					['true === 1;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstInt(1n))],
+					['true ==  1;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstInt(1n))],
+					['true === 1.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstFloat(1.0))],
+					['true ==  1.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(1n),  instructionConstFloat(1.0))],
+
+					['null === false;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n))],
+					['null ==  false;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n))],
+					['null === true;',  new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(1n))],
+					['null ==  true;',  new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(1n))],
+				]));
 			});
-			it('with int coersion on, does not coerse ints into floats.', () => {
-				assert.deepStrictEqual([
-					`42 == 420;`,
-					`4.2 == 42;`,
-					`42 == 4.2;`,
-					`null == 0.0;`,
-					`false == 0.0;`,
-					`true == 1.0;`,
-				].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_COERCION_OFF).build(new Builder(src, CONFIG_FOLDING_COERCION_OFF))), [
-					[instructionConstInt(42n),   instructionConstInt(420n)],
-					[instructionConstFloat(4.2), instructionConstInt(42n)],
-					[instructionConstInt(42n),   instructionConstFloat(4.2)],
-					[instructionConstInt(0n),    instructionConstFloat(0.0)],
-					[instructionConstInt(0n),    instructionConstFloat(0.0)],
-					[instructionConstInt(1n),    instructionConstFloat(1.0)],
-				].map(([left, right]) => new INST.InstructionBinopEquality(Operator.EQ, left, right)));
+			it('with int coercion off, does not coerce ints into floats.', () => {
+				buildOperations(new Map<string, INST.InstructionBinopEquality>([
+					['42 === 4.2;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstFloat(4.2))],
+					['42 ==  4.2;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstFloat(4.2))],
+
+					['4.2 === 42;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstInt(42n))],
+					['4.2 ==  42;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstInt(42n))],
+
+					['null === 0.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0))],
+					['null ==  0.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0))],
+
+					['false === 0.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0))],
+					['false ==  0.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0))],
+
+					['true === 1.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstFloat(1.0))],
+					['true ==  1.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstFloat(1.0))],
+				]), CONFIG_FOLDING_COERCION_OFF);
 			});
 		});
 	});
@@ -893,67 +898,67 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			it('returns InstructionBinopLogical.', () => {
-				assert.deepStrictEqual([
-					`42 && 420;`,
-					`4.2 || -420;`,
-					`null && 201.0e-1;`,
-					`true && 201.0e-1;`,
-					`false || null;`,
-				].map((src) => AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))), [
-					new INST.InstructionBinopLogical(
+			it('returns `(if)`.', () => {
+				xjs.Array.forEachAggregated([...new Map<string, INST.InstructionBinopLogical>([
+					['42 && 420;', new INST.InstructionBinopLogical(
 						0,
 						Operator.AND,
 						instructionConstInt(42n),
 						instructionConstInt(420n),
-					),
-					new INST.InstructionBinopLogical(
+					)],
+					['4.2 || -420;', new INST.InstructionBinopLogical(
 						0,
 						Operator.OR,
 						instructionConstFloat(4.2),
-						instructionConstFloat(-420.0),
-					),
-					new INST.InstructionBinopLogical(
+						instructionConvert(-420n),
+					)],
+					['null && 201.0e-1;', new INST.InstructionBinopLogical(
 						0,
 						Operator.AND,
-						instructionConstFloat(0.0),
+						instructionConvert(0n),
 						instructionConstFloat(20.1),
-					),
-					new INST.InstructionBinopLogical(
+					)],
+					['true && 201.0e-1;', new INST.InstructionBinopLogical(
 						0,
 						Operator.AND,
-						instructionConstFloat(1.0),
+						instructionConvert(1n),
 						instructionConstFloat(20.1),
-					),
-					new INST.InstructionBinopLogical(
+					)],
+					['false || null;', new INST.InstructionBinopLogical(
 						0,
 						Operator.OR,
 						instructionConstInt(0n),
 						instructionConstInt(0n),
-					),
-				]);
+					)],
+				])], ([src, expected]) => {
+					const builder = new Builder(src, CONFIG_FOLDING_OFF);
+					const actual: INST.InstructionExpression = AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
+					assert.ok(actual instanceof INST.InstructionBinopLogical);
+					return assertEqualBins(actual.buildBin(builder.module), expected.buildBin(builder.module));
+				});
 			});
 			it('counts internal variables correctly.', () => {
-				const src: string = `1 && 2 || 3 && 4;`;
-				assert.deepStrictEqual(
-					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF)),
+				const src: string = '1 && 2 || 3 && 4;';
+				const builder = new Builder(src, CONFIG_FOLDING_OFF);
+				const actual: INST.InstructionExpression = AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
+				const expected = new INST.InstructionBinopLogical(
+					2,
+					Operator.OR,
 					new INST.InstructionBinopLogical(
 						0,
-						Operator.OR,
-						new INST.InstructionBinopLogical(
-							1,
-							Operator.AND,
-							instructionConstInt(1n),
-							instructionConstInt(2n),
-						),
-						new INST.InstructionBinopLogical(
-							2,
-							Operator.AND,
-							instructionConstInt(3n),
-							instructionConstInt(4n),
-						),
+						Operator.AND,
+						instructionConstInt(1n),
+						instructionConstInt(2n),
+					),
+					new INST.InstructionBinopLogical(
+						1,
+						Operator.AND,
+						instructionConstInt(3n),
+						instructionConstInt(4n),
 					),
 				);
+				assert.ok(actual instanceof INST.InstructionBinopLogical);
+				return assertEqualBins(actual.buildBin(builder.module), expected.buildBin(builder.module));
 			});
 		});
 	});
@@ -992,11 +997,16 @@ describe('ASTNodeOperation', () => {
 
 
 		specify('#build', () => {
-			buildOperations((new Map([
-				[`if true  then false else 2;`,    new INST.InstructionCond(instructionConstInt(1n), instructionConstInt(0n),    instructionConstInt(2n))],
-				[`if false then 3.0   else null;`, new INST.InstructionCond(instructionConstInt(0n), instructionConstFloat(3.0), instructionConstFloat(0.0))],
-				[`if true  then 2     else 3.0;`,  new INST.InstructionCond(instructionConstInt(1n), instructionConstFloat(2.0), instructionConstFloat(3.0))],
-			])));
+			xjs.Array.forEachAggregated([...new Map<string, (mod: binaryen.Module) => binaryen.ExpressionRef>([
+				['if true  then false else 2;',    (mod) => mod.if(instructionConstInt(1n).buildBin(mod), instructionConstInt   (0n)  .buildBin(mod), instructionConstInt   (2n)  .buildBin(mod))],
+				['if false then 3.0   else null;', (mod) => mod.if(instructionConstInt(0n).buildBin(mod), instructionConstFloat (3.0) .buildBin(mod), instructionConvert    (0n)  .buildBin(mod))],
+				['if true  then 2     else 3.0;',  (mod) => mod.if(instructionConstInt(1n).buildBin(mod), instructionConvert    (2n)  .buildBin(mod), instructionConstFloat (3.0) .buildBin(mod))],
+			])], ([src, callback]) => {
+				const builder = new Builder(src, CONFIG_FOLDING_OFF);
+				const actual: INST.InstructionExpression = AST.ASTNodeOperationTernary.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
+				assert.ok(actual instanceof INST.InstructionCond);
+				return assertEqualBins(actual.buildBin(builder.module), callback(builder.module));
+			});
 		});
 	});
 	/* eslint-enable quotes */

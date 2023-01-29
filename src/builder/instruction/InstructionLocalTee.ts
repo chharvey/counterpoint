@@ -8,11 +8,13 @@ import {InstructionLocal} from './InstructionLocal.js';
  * Tee a local variable.
  */
 export class InstructionLocalTee extends InstructionLocal {
+	public override readonly binType: binaryen.Type = this.op.binType;
+
 	public constructor(
-		index: number,
-		protected override readonly op: InstructionExpression,
+		var_index: number,
+		private readonly op: InstructionExpression,
 	) {
-		super(index, op);
+		super(var_index);
 	}
 
 	/** @return `'(local.tee ‹name› ‹op›)'` */
@@ -21,6 +23,6 @@ export class InstructionLocalTee extends InstructionLocal {
 	}
 
 	public override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
-		return mod.local.tee(Number(this.index), this.op.buildBin(mod), this.binType);
+		return mod.local.tee(this.index, this.op.buildBin(mod), this.binType);
 	}
 }

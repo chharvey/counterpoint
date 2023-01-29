@@ -1,5 +1,4 @@
-import type {InstructionExpression} from './InstructionExpression.js';
-import {InstructionVariable} from './InstructionVariable.js';
+import {InstructionExpression} from './InstructionExpression.js';
 
 
 
@@ -9,16 +8,11 @@ import {InstructionVariable} from './InstructionVariable.js';
  * - InstructionLocalGet
  * - InstructionLocalTee
  */
-export abstract class InstructionLocal extends InstructionVariable {
-	public static friendlyName(index: number): string {
-		return `var${ index.toString(16) }`;
-	}
+export abstract class InstructionLocal extends InstructionExpression {
+	/** The variable name. */
+	protected readonly name: string = `var${ this.index.toString(16) }`;
 
-
-	public constructor(
-		protected readonly index: number,
-		op: InstructionExpression | boolean = false,
-	) {
-		super(InstructionLocal.friendlyName(index), op);
+	public constructor(protected readonly index: number) {
+		super();
 	}
 }

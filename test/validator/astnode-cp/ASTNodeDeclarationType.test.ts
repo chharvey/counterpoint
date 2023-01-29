@@ -8,7 +8,7 @@ import {
 	Builder,
 	AssignmentError01,
 } from '../../../src/index.js';
-import {assertBinEqual} from '../../assert-helpers.js';
+import {assertEqualBins} from '../../assert-helpers.js';
 
 
 
@@ -63,7 +63,7 @@ describe('ASTNodeDeclarationType', () => {
 			const builder: Builder = new Builder(src);
 			return xjs.Array.forEachAggregated(goal.children, (stmt) => {
 				assert.ok(stmt instanceof AST.ASTNodeDeclarationType);
-				assertBinEqual(stmt.build(builder), builder.module.nop());
+				return assertEqualBins(stmt.build(builder), builder.module.nop());
 			});
 		});
 	});

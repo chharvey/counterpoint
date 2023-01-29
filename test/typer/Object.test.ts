@@ -1,8 +1,5 @@
 import * as assert from 'assert';
-import {
-	OBJ,
-	INST,
-} from '../../src/index.js';
+import {OBJ} from '../../src/index.js';
 import {
 	instructionConstInt,
 	instructionConstFloat,
@@ -130,12 +127,6 @@ describe('Integer', () => {
 				data.map((x) => new OBJ.Integer(x).build()),
 				data.map((x) => instructionConstInt(x)),
 			);
-		});
-
-		it('@to_float === true', () => {
-			const build: INST.InstructionConst = new OBJ.Integer(42n).build(true);
-			assert.deepStrictEqual   (build, instructionConstFloat(42));
-			assert.notDeepStrictEqual(build, instructionConstInt(42n));
 		});
 	});
 });

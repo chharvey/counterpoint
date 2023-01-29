@@ -51,10 +51,10 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		}
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionLocalGet {
+	protected override build_do(builder: Builder): INST.InstructionLocalGet {
 		const local = builder.getLocalInfo(this.id);
 		return (local)
-			? new INST.InstructionLocalGet(local.index, to_float || this.shouldFloat())
+			? new INST.InstructionLocalGet(local.index, local.type)
 			: throw_expression(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 

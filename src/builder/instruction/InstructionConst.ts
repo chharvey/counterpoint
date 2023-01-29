@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {OBJ} from './package.js';
 import {InstructionExpression} from './InstructionExpression.js';
 
@@ -8,6 +8,8 @@ import {InstructionExpression} from './InstructionExpression.js';
  * Push a constant onto the stack.
  */
 export class InstructionConst extends InstructionExpression {
+	public override readonly binType: binaryen.Type = (!(this.value instanceof OBJ.Float)) ? binaryen.i32 : binaryen.f64;
+
 	/**
 	 * @param value the constant to push
 	 */
@@ -19,7 +21,7 @@ export class InstructionConst extends InstructionExpression {
 	 * @return `'({i32|f64}.const ‹value›)'`
 	 */
 	public override toString(): string {
-		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ (this.value.identical(new OBJ.Float(-0.0))) ? '-0.0' : this.value })`;
+		return `(${ this.binTypeString }.const ${ (this.value.identical(new OBJ.Float(-0.0))) ? '-0.0' : this.value })`;
 	}
 
 	public get isFloat(): boolean {
@@ -30,6 +32,6 @@ export class InstructionConst extends InstructionExpression {
 		if (this.value.identical(new OBJ.Float(-0.0))) {
 			return mod.f64.ceil(mod.f64.const(-0.5)); // -0.0
 		}
-		return mod[(!this.isFloat) ? 'i32' : 'f64'].const(Number(this.value.toString()));
+		return mod[this.binTypeString].const(Number(this.value.toString()));
 	}
 }

@@ -40,13 +40,8 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopComparative {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionBinopComparative(
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
-		);
+	protected override build_do(builder: Builder): INST.InstructionBinopComparative {
+		return new INST.InstructionBinopComparative(this.operator, ...this.buildOps(builder));
 	}
 
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
