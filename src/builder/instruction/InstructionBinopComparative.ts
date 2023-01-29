@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	Operator,
 	ValidOperatorComparative,
@@ -9,6 +9,9 @@ import {InstructionBinop} from './InstructionBinop.js';
 
 
 export class InstructionBinopComparative extends InstructionBinop {
+	public override readonly binType: binaryen.Type = binaryen.i32;
+	private readonly eitherFloats: boolean = [this.arg0.binType, this.arg1.binType].includes(binaryen.f64);
+
 	/**
 	 * @param op an operator representing the operation to perform
 	 * @param arg0 the first operand
@@ -26,15 +29,20 @@ export class InstructionBinopComparative extends InstructionBinop {
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
 	 */
 	override toString(): string {
-		return `(${ new Map<Operator, string>([
-			[Operator.LT, (!this.floatarg) ? `i32.lt_s` : `f64.lt`],
-			[Operator.GT, (!this.floatarg) ? `i32.gt_s` : `f64.gt`],
-			[Operator.LE, (!this.floatarg) ? `i32.le_s` : `f64.le`],
-			[Operator.GE, (!this.floatarg) ? `i32.ge_s` : `f64.ge`],
-		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`
-	}
-	get isFloat(): boolean {
-		return false
+		return `(${ new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
+			[binaryen.i32, new Map<Operator, string>([
+				[Operator.LT, 'i32.lt_s'],
+				[Operator.GT, 'i32.gt_s'],
+				[Operator.LE, 'i32.le_s'],
+				[Operator.GE, 'i32.ge_s'],
+			])],
+			[binaryen.f64, new Map<Operator, string>([
+				[Operator.LT, 'f64.lt'],
+				[Operator.GT, 'f64.gt'],
+				[Operator.LE, 'f64.le'],
+				[Operator.GE, 'f64.ge'],
+			])],
+		]).get((!this.eitherFloats) ? binaryen.i32 : binaryen.f64)!.get(this.op)! } ${ this.arg0 } ${ this.arg1 })`;
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
@@ -45,7 +53,7 @@ export class InstructionBinopComparative extends InstructionBinop {
 			[Operator.LE, 'le'],
 			[Operator.GE, 'ge'],
 		]).get(this.op)!;
-		return ((!this.floatarg)
+		return ((!this.eitherFloats)
 			? mod.i32[`${ opname }_s`]
 			: mod.f64[opname])(left, right);
 	}

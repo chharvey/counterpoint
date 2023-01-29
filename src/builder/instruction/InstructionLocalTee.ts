@@ -8,15 +8,13 @@ import {InstructionLocal} from './InstructionLocal.js';
  * Tee a local variable.
  */
 export class InstructionLocalTee extends InstructionLocal {
+	public override readonly binType: binaryen.Type = this.op.binType;
+
 	public constructor(
 		var_index: number,
 		private readonly op: InstructionExpression,
 	) {
 		super(var_index);
-	}
-
-	public override get isFloat(): boolean {
-		return this.op.isFloat;
 	}
 
 	/** @return `'(local.tee ‹name› ‹op›)'` */

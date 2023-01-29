@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	Operator,
 	ValidOperatorLogical,
@@ -13,6 +13,8 @@ import {InstructionCond} from './index.js';
 
 
 export class InstructionBinopLogical extends InstructionBinop {
+	public override readonly binType: typeof binaryen.i32 | typeof binaryen.f64 = (![this.arg0.binType, this.arg1.binType].includes(binaryen.f64)) ? binaryen.i32 : binaryen.f64;
+
 	private readonly instructionCond: InstructionCond;
 
 	/**
@@ -48,9 +50,6 @@ export class InstructionBinopLogical extends InstructionBinop {
 	 */
 	public override toString(): string {
 		return this.instructionCond.toString();
-	}
-	get isFloat(): boolean {
-		return this.floatarg
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {

@@ -1,4 +1,4 @@
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {InstructionLocal} from './InstructionLocal.js';
 
 
@@ -7,19 +7,13 @@ import {InstructionLocal} from './InstructionLocal.js';
  * Get a local variable.
  */
 export class InstructionLocalGet extends InstructionLocal {
+	public override readonly binType: binaryen.Type = this._binType;
+
 	public constructor(
 		var_index: number,
 		private readonly _binType: binaryen.Type,
 	) {
 		super(var_index);
-	}
-
-	public override get isFloat(): boolean {
-		return this._binType === binaryen.f64;
-	}
-
-	public override get binType(): binaryen.Type {
-		return this._binType;
 	}
 
 	/** @return `'(local.get ‹name›)'` */
