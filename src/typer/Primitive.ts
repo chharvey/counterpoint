@@ -20,7 +20,7 @@ export abstract class Primitive extends SolidObject {
 	protected abstract get builtValue(): SolidNumber;
 
 	/** @final */
-	override build(to_float: boolean = false): INST.InstructionConst {
-		return new INST.InstructionConst((to_float) ? this.builtValue.toFloat() : this.builtValue);
+	public override build(): INST.InstructionConst {
+		return new INST.InstructionConst(this.builtValue);
 	}
 }

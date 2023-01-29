@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	Operator,
 	ValidOperatorLogical,
@@ -13,6 +13,10 @@ import {InstructionCond} from './index.js';
 
 
 export class InstructionBinopLogical extends InstructionBinop {
+	public override readonly binType: typeof binaryen.i32 | typeof binaryen.f64 = (![this.arg0.binType, this.arg1.binType].includes(binaryen.f64)) ? binaryen.i32 : binaryen.f64;
+
+	private readonly instructionCond: InstructionCond;
+
 	/**
 	 * @param var_index the index of a temporary optimization variable
 	 * @param op an operator representing the operation to perform
@@ -20,47 +24,35 @@ export class InstructionBinopLogical extends InstructionBinop {
 	 * @param arg1 the second operand
 	 */
 	constructor (
-		private readonly var_index: number,
+		var_index: number,
 		op:   ValidOperatorLogical,
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
 	) {
 		super(op, arg0, arg1)
 		this.typecheckArgs();
-	}
-	/**
-	 * @return a `(select)` instruction determining which operand to produce
-	 */
-	override toString(): string {
-		const condition: InstructionExpression = new InstructionUnop(
+
+		const condition = new InstructionUnop(
 			Operator.NOT,
 			new InstructionUnop(
 				Operator.NOT,
-				new InstructionLocalTee(this.var_index, this.arg0),
+				new InstructionLocalTee(var_index, this.arg0),
 			),
 		)
-		const left:  InstructionExpression = new InstructionLocalGet(this.var_index, this.arg0.isFloat);
+		const left                         = new InstructionLocalGet(var_index, this.arg0.binType);
 		const right: InstructionExpression = this.arg1
-		return ((this.op === Operator.AND)
+		this.instructionCond = (this.op === Operator.AND)
 			? new InstructionCond(condition, right, left)
-			: new InstructionCond(condition, left, right)).toString();
+			: new InstructionCond(condition, left, right);
 	}
-	get isFloat(): boolean {
-		return this.floatarg
+	/**
+	 * @return an `(if)` instruction determining which operand to produce
+	 */
+	public override toString(): string {
+		return this.instructionCond.toString();
 	}
 
 	override buildBin(mod: binaryen.Module): binaryen.ExpressionRef {
-		const condition: InstructionExpression = new InstructionUnop(
-			Operator.NOT,
-			new InstructionUnop(
-				Operator.NOT,
-				new InstructionLocalTee(this.var_index, this.arg0),
-			),
-		);
-		const inst_left:  InstructionExpression = new InstructionLocalGet(this.var_index, this.arg0.isFloat);
-		const inst_right: InstructionExpression = this.arg1;
-		return ((this.op === Operator.AND)
-			? new InstructionCond(condition, inst_right, inst_left)
-			: new InstructionCond(condition, inst_left,  inst_right)).buildBin(mod);
+		return this.instructionCond.buildBin(mod);
 	}
 }

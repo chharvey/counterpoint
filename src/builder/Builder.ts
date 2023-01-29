@@ -9,6 +9,11 @@ import {
 
 
 
+type Local = {
+	readonly id:   bigint,
+	readonly type: binaryen.Type,
+};
+
 const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 
 /**
@@ -33,7 +38,7 @@ export class Builder {
 	 */
 	private _varCount: bigint = -0x40n;
 	/** A setlist containing ids of local variables. */
-	private locals: Array<{id: bigint, isFloat: boolean}> = [];
+	private readonly locals: Local[] = [];
 	/** The Binaryen module to build upon building. */
 	public readonly module: binaryen.Module = binaryen.parseText(`
 		(module
@@ -68,10 +73,10 @@ export class Builder {
 	 * @param id the id of the variable to add
 	 * @return : [`this`, Was the operation performed?]
 	 */
-	public addLocal(id: bigint, is_float: boolean): [this, boolean] {
+	public addLocal(id: bigint, type: binaryen.Type): [this, boolean] {
 		let did: boolean = false;
 		if (!this.locals.find((var_) => var_.id === id)) {
-			this.locals.push({id, isFloat: is_float});
+			this.locals.push({id, type});
 			did = true;
 		}
 		return [this, did];
@@ -107,12 +112,12 @@ export class Builder {
 	 * @param id the local whose index to get
 	 * @return the index or `null`
 	 */
-	public getLocalInfo(id: bigint): {index: number, isFloat: boolean} | null {
+	public getLocalInfo(id: bigint): {index: number, type: binaryen.Type} | null {
 		const found = this.locals.find((var_) => var_.id === id);
 		return (found)
 			? {
-				index:   this.locals.indexOf(found),
-				isFloat: found.isFloat,
+				index: this.locals.indexOf(found),
+				type:  found.type,
 			}
 			: null;
 	}
@@ -121,7 +126,7 @@ export class Builder {
 	 * Return a copy of a list of this Builder’s local variables.
 	 * @return the local variables in an array
 	 */
-	public getLocals(): Array<{id: bigint, isFloat: boolean}> {
+	public getLocals(): Local[] {
 		return [...this.locals];
 	}
 

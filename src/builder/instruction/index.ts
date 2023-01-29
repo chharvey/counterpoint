@@ -2,6 +2,7 @@ export * from './Instruction.js';
 
 export * from './InstructionExpression.js';
 export * from './InstructionConst.js';
+export * from './InstructionConvert.js';
 export * from './InstructionLocalGet.js';
 export * from './InstructionLocalTee.js';
 export * from './InstructionUnop.js';
