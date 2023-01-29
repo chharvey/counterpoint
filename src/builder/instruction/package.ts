@@ -14,6 +14,7 @@ export {
 	ValidOperatorLogical,
 	SolidNull,
 	SolidNumber,
+	Int16,
 	Float64,
 } from '../package.js';
 export {Builder} from '../index.js';

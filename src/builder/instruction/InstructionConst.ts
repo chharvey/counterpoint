@@ -2,6 +2,7 @@ import binaryen from 'binaryen';
 import {
 	SolidNull,
 	SolidNumber,
+	Int16,
 	Float64,
 } from './package.js';
 import {InstructionExpression} from './InstructionExpression.js';
@@ -12,7 +13,11 @@ import {InstructionExpression} from './InstructionExpression.js';
  * Push a constant onto the stack.
  */
 export class InstructionConst extends InstructionExpression {
-	public override readonly binType: binaryen.Type = (!(this.value instanceof Float64)) ? binaryen.i32 : binaryen.f64
+	public override readonly binType: binaryen.Type = (
+		(this.value instanceof SolidNull) ? binaryen.funcref :
+		(this.value instanceof Int16)     ? binaryen.i32 :
+		(this.value instanceof Float64,     binaryen.f64)
+	);
 
 	/**
 	 * @param value the constant to push

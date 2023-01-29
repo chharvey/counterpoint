@@ -29,6 +29,7 @@ import {
 import {assert_wasCalled} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
+	INSTRUCTION_CONST_NULL,
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
@@ -134,7 +135,7 @@ describe('ASTNodeExpression', () => {
 					'-0.0;',
 					'-4.2e-2;',
 				].map((src) => AST.ASTNodeConstant.fromSource(src).build(new Builder(src))), [
-					instructionConstInt(0n),
+					INSTRUCTION_CONST_NULL,
 					instructionConstInt(0n),
 					instructionConstInt(1n),
 					instructionConstInt(0n),

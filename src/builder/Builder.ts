@@ -144,6 +144,7 @@ export class Builder {
 	 * @return `this`
 	 */
 	public build(): this {
+		this.module.setFeatures(binaryen.Features.ReferenceTypes);
 		this.ast_goal.build(this);
 		return this;
 	}

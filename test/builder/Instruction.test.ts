@@ -62,6 +62,8 @@ describe('Instruction', () => {
 		describe('#{toString,buildBin}', () => {
 			it('returns the null reference.', () => {
 				assert.strictEqual(INSTRUCTION_CONST_NULL.toString(), '(ref.null func)');
+				const mod: binaryen.Module = new Builder('').module;
+				assertEqualBins(INSTRUCTION_CONST_NULL.buildBin(mod), mod.ref.null(binaryen.funcref));
 			});
 			it('pushes the constant integer onto the stack.', () => {
 				const values: number[] = [
