@@ -1,4 +1,5 @@
 import binaryen from 'binaryen';
+import {throwUnsupportedType} from './utils-private.js';
 import {Instruction} from './Instruction.js';
 
 
@@ -6,16 +7,19 @@ import {Instruction} from './Instruction.js';
 /**
  * Known subclasses:
  * - InstructionConst
- * - InstructionVariable
+ * - InstructionLocal
  * - InstructionUnop
  * - InstructionBinop
  * - InstructionCond
  */
 export abstract class InstructionExpression extends Instruction {
-	abstract get isFloat(): boolean;
+	public abstract readonly binType: binaryen.Type;
 
 	/** @final */
-	public get binType(): typeof binaryen.i32 | typeof binaryen.f64 {
-		return (!this.isFloat) ? binaryen.i32 : binaryen.f64;
+	public get binTypeString(): 'i32' | 'f64' {
+		return new Map<binaryen.Type, 'i32' | 'f64'>([
+			[binaryen.i32, 'i32'],
+			[binaryen.f64, 'f64'],
+		] as const).get(this.binType) ?? throwUnsupportedType(this.binType);
 	}
 }

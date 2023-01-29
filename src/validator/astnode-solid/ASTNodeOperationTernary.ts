@@ -35,13 +35,18 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	override shouldFloat(): boolean {
 		return this.operand1.shouldFloat() || this.operand2.shouldFloat();
 	}
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionCond {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionCond(
-			this.operand0.build(builder, false),
-			this.operand1.build(builder, tofloat),
-			this.operand2.build(builder, tofloat),
-		)
+
+	protected override build_do(builder: Builder): INST.InstructionCond {
+		let [inst0, inst1, inst2]: INST.InstructionExpression[] = [this.operand0, this.operand1, this.operand2].map((expr) => expr.build(builder));
+		if (this.shouldFloat()) {
+			if (!this.operand1.shouldFloat()) {
+				inst1 = new INST.InstructionConvert(inst1);
+			}
+			if (!this.operand2.shouldFloat()) {
+				inst2 = new INST.InstructionConvert(inst2);
+			}
+		}
+		return new INST.InstructionCond(inst0, inst1, inst2);
 	}
 	protected override type_do(): SolidType {
 		const t0: SolidType = this.operand0.type();

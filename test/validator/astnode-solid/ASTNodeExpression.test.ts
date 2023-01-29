@@ -265,14 +265,21 @@ describe('ASTNodeExpression', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
+				const var0 = (goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
+				const var1 = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
+				const [
+					{id: id0, type: type0},
+					{id: id1, type: type1},
+				] = builder.getLocals();
+				assert.deepStrictEqual([var0.id, var1.id], [id0, id1]);
 				assert.deepStrictEqual(
 					[
-						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
-						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
+						var0.build(builder),
+						var1.build(builder),
 					],
 					[
-						new INST.InstructionLocalGet(0),
-						new INST.InstructionLocalGet(1),
+						new INST.InstructionLocalGet(0, type0),
+						new INST.InstructionLocalGet(1, type1),
 					],
 				);
 			});
@@ -288,14 +295,21 @@ describe('ASTNodeExpression', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
+				const var0 = (goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
+				const var1 = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
+				const [
+					{id: id0, type: type0},
+					{id: id1, type: type1},
+				] = builder.getLocals();
+				assert.deepStrictEqual([var0.id, var1.id], [id0, id1]);
 				assert.deepStrictEqual(
 					[
-						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
-						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
+						var0.build(builder),
+						var1.build(builder),
 					],
 					[
-						new INST.InstructionLocalGet(0),
-						new INST.InstructionLocalGet(1, true),
+						new INST.InstructionLocalGet(0, type0),
+						new INST.InstructionLocalGet(1, type1),
 					],
 				);
 			});

@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	CONFIG_DEFAULT,
 	ASTNODE_SOLID as AST,
@@ -12,7 +13,7 @@ import {
 import {forEachAggregated} from '../../../src/lib/index.js';
 import {
 	assertAssignable,
-	assertBinEqual,
+	assertEqualBins,
 } from '../../assert-helpers.js';
 import {CONFIG_FOLDING_OFF} from '../../helpers.js';
 
@@ -276,9 +277,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build(builder);
-			return forEachAggregated(goal.children, (stmt) => {
-				assertBinEqual(stmt.build(builder), builder.module.nop());
-			});
+			return forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(builder), builder.module.nop()));
 		});
 		it('with constant folding on, returns `(local.set)` for unfixed / non-foldable variables.', () => {
 			const src: string = `
@@ -290,12 +289,14 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build(builder);
-			return forEachAggregated(goal.children, (stmt, i) => {
-				assertBinEqual(
-					stmt.build(builder),
-					builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder).buildBin(builder.module)),
-				);
-			});
+			assert.deepStrictEqual(builder.getLocals(), [
+				{id: 0x100n, type: binaryen.i32},
+				{id: 0x101n, type: binaryen.i32},
+			]);
+			return forEachAggregated(goal.children, (stmt, i) => assertEqualBins(
+				stmt.build(builder),
+				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder).buildBin(builder.module)),
+			));
 		});
 		it('with constant folding off, always returns `(local.set)`.', () => {
 			const src: string = `
@@ -307,12 +308,14 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build(builder);
-			return forEachAggregated(goal.children, (stmt, i) => {
-				assertBinEqual(
-					stmt.build(builder),
-					builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder).buildBin(builder.module)),
-				);
-			});
+			assert.deepStrictEqual(builder.getLocals(), [
+				{id: 0x100n, type: binaryen.i32},
+				{id: 0x101n, type: binaryen.f64},
+			]);
+			return forEachAggregated(goal.children, (stmt, i) => assertEqualBins(
+				stmt.build(builder),
+				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder).buildBin(builder.module)),
+			));
 		});
 	});
 });

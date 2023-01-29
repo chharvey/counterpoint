@@ -39,3 +39,6 @@ export function instructionConstInt(x: bigint): INST.InstructionConst {
 export function instructionConstFloat(x: number): INST.InstructionConst {
 	return new INST.InstructionConst(new Float64(x));
 }
+export function instructionConvert(x: bigint): INST.InstructionConvert {
+	return new INST.InstructionConvert(instructionConstInt(x));
+}

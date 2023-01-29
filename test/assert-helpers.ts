@@ -117,14 +117,14 @@ export function assertEqualTypes(param1: SolidType | readonly SolidType[] | Read
 
 
 
-export function assertBinEqual<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref, expected: Ref): void;
-export function assertBinEqual<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: readonly Ref[], expected: readonly Ref[]): void;
-export function assertBinEqual<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref | readonly Ref[], expected: Ref | readonly Ref[]): void {
+export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref, expected: Ref): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: readonly Ref[], expected: readonly Ref[]): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref | readonly Ref[], expected: Ref | readonly Ref[]): void {
 	if (Array.isArray(actual)) {
 		try {
 			return assert.deepStrictEqual(actual, expected);
 		} catch {
-			return forEachAggregated(actual, (act, i) => assertBinEqual(act, (expected as Ref[])[i]))
+			return forEachAggregated(actual, (act, i) => assertEqualBins(act, (expected as Ref[])[i]))
 		}
 	} else {
 		try {
