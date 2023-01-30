@@ -5,11 +5,11 @@ import {
 	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
-	Serializable,
 	Punctuator,
 	PUNCTUATORS,
 	Keyword,
 	KEYWORDS,
+	Serializable,
 } from './package.js';
 import type {SymbolStructure} from './index.js';
 import {utf8Encode} from './utils-private.js';

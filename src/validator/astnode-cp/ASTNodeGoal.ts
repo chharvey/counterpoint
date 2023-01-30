@@ -1,9 +1,14 @@
+import * as xjs from 'extrajs';
+import type {SyntaxNode} from 'tree-sitter';
 import {
 	INST,
 	Builder,
+	ParseError01,
 	CPConfig,
 	CONFIG_DEFAULT,
 	TS_PARSER,
+	Serializable,
+	to_serializable,
 	DECORATOR,
 	Validator,
 	SyntaxNodeType,
@@ -11,6 +16,26 @@ import {
 import type {Buildable} from './Buildable.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeStatement} from './ASTNodeStatement.js';
+
+
+
+function report_syntax_errors(node: SyntaxNode): void {
+	xjs.Array.forEachAggregated<SyntaxNode>(node.children, (n) => {
+		if (n.type === 'ERROR') {
+			throw new ParseError01(to_serializable(n));
+		} else if (n.type === 'MISSING' || n.text === '') {
+			const serializable: Serializable = to_serializable(n);
+			const err = new ParseError01(to_serializable(n));
+			// @ts-expect-error --- TODO: write class for `ParseError02`
+			err.message = (n.type === 'MISSING')
+				? err.message.replace(/Unexpected/, 'Expected')
+				: `Expected token: \`${ n.type }\` at line ${ serializable.line_index + 1 } col ${ serializable.col_index + 1 }.`;
+			throw err;
+		} else if (n.childCount > 0) {
+			report_syntax_errors(n);
+		}
+	});
+}
 
 
 
@@ -23,7 +48,9 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	 * @returns      a new ASTNodeGoal representing the given source
 	 */
 	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeGoal {
-		return DECORATOR.decorateTS(TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>, config);
+		const root_node = TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>;
+		report_syntax_errors(root_node);
+		return DECORATOR.decorateTS(root_node, config);
 	}
 
 	private readonly _validator: Validator;
