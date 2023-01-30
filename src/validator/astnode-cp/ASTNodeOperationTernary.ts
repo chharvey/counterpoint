@@ -40,7 +40,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionCond {
+	public override build(builder: Builder): INST.InstructionExpression {
 		let [inst0, inst1, inst2]: INST.InstructionExpression[] = [this.operand0, this.operand1, this.operand2].map((expr) => expr.build(builder)); // eslint-disable-line prefer-const
 		if (this.shouldFloat()) {
 			if (!this.operand1.shouldFloat()) {

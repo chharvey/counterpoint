@@ -41,7 +41,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionUnop {
+	public override build(builder: Builder): INST.InstructionExpression {
 		return new INST.InstructionUnop(this.operator, this.operand.build(builder));
 	}
 

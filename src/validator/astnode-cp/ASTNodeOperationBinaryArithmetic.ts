@@ -45,7 +45,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionBinopArithmetic {
+	public override build(builder: Builder): INST.InstructionExpression {
 		return new INST.InstructionBinopArithmetic(this.operator, ...this.buildOps(builder));
 	}
 

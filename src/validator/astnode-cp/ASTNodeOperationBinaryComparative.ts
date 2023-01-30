@@ -43,7 +43,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionBinopComparative {
+	public override build(builder: Builder): INST.InstructionExpression {
 		return new INST.InstructionBinopComparative(this.operator, ...this.buildOps(builder));
 	}
 

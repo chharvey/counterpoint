@@ -78,10 +78,10 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @param   descriptor    the Property Descriptor of the prototype’s method
 	 * @returns               `descriptor`, with a new value that is the decorated method
 	 */
-	protected static buildDeco<T extends INST.InstructionExpression>(
+	protected static buildDeco(
 		_prototype: ASTNodeExpression,
 		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression, builder: Builder) => INST.InstructionConst | T>,
+		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression, builder: Builder) => INST.InstructionExpression>,
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (builder) {

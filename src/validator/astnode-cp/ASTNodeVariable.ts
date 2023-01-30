@@ -54,7 +54,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionLocalGet {
+	public override build(builder: Builder): INST.InstructionExpression {
 		const local = builder.getLocalInfo(this.id);
 		return (local)
 			? new INST.InstructionLocalGet(local.index, local.type)

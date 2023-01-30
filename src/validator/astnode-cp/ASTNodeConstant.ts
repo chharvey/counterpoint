@@ -68,7 +68,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(_builder: Builder): INST.InstructionConst {
+	public override build(_builder: Builder): INST.InstructionExpression {
 		return this.value.build();
 	}
 
