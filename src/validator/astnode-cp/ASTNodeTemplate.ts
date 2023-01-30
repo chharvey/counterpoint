@@ -41,8 +41,9 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(_builder: Builder): INST.InstructionExpression {
-		throw new Error('ASTNodeTemplate#build not yet supported.');
+	public override build(builder: Builder): INST.InstructionExpression {
+		builder;
+		throw '`ASTNodeTemplate#build` not yet supported.';
 	}
 
 	@memoizeMethod

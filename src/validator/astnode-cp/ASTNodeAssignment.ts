@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	TYPE,
 	INST,
@@ -29,7 +30,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	public constructor(
 		start_node: SyntaxNodeType<'statement_assignment'>,
 		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		private readonly assigned: ASTNodeExpression,
+		public readonly assigned:  ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
@@ -65,11 +66,16 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		}
 	}
 
-	public override build(builder: Builder): INST.InstructionStatement {
-		const tofloat: boolean = this.assignee.type().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
-		return new INST.InstructionStatement(
-			builder.stmtCount,
-			new INST.InstructionGlobalSet((this.assignee as ASTNodeVariable).id, this.assigned.build(builder, tofloat)),
-		);
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		const id: bigint = (this.assignee as ASTNodeVariable).id;
+		const local = builder.getLocalInfo(id);
+		if (!local) {
+			throw new ReferenceError(`Variable with id ${ id } not found.`);
+		}
+		let inst: INST.InstructionExpression = this.assigned.build(builder);
+		if (this.assignee.type().isSubtypeOf(TYPE.FLOAT) && !this.assigned.shouldFloat()) {
+			inst = new INST.InstructionConvert(inst);
+		}
+		return builder.module.local.set(local.index, inst.buildBin(builder.module));
 	}
 }

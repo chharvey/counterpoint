@@ -34,13 +34,15 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopLogical {
-		const tofloat: boolean = to_float || this.shouldFloat();
+	public override build(builder: Builder): INST.InstructionBinopLogical {
+		const [inst0, inst1]: [INST.InstructionExpression, INST.InstructionExpression] = this.buildOps(builder);
+		/** A temporary variable id used for optimizing short-circuited operations. */
+		const temp_id: bigint = builder.varCount;
 		return new INST.InstructionBinopLogical(
-			builder.varCount,
+			builder.addLocal(temp_id, inst0.binType)[0].getLocalInfo(temp_id)!.index,
 			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
+			inst0,
+			inst1,
 		);
 	}
 

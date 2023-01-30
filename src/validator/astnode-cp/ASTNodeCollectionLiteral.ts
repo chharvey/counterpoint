@@ -1,5 +1,8 @@
 import {
 	TYPE,
+	INST,
+	Builder,
+	memoizeMethod,
 	SyntaxNodeType,
 } from './package.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
@@ -63,6 +66,13 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 
 	public override shouldFloat(): boolean {
 		throw 'ASTNodeCollectionLiteral#shouldFloat not yet supported.';
+	}
+
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): INST.InstructionExpression {
+		builder;
+		throw '`ASTNodeCollectionLiteral#build_do` not yet supported.';
 	}
 
 	/**

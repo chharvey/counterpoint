@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
+import binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	INST,
 	Builder,
 	ParseError01,
 	CPConfig,
@@ -68,12 +68,26 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	}
 
 	/** @implements Buildable */
-	public build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
-		return (!this.children.length)
-			? new INST.InstructionNone()
-			: new INST.InstructionModule([
-				...Builder.IMPORTS,
-				...this.children.map((child) => child.build(builder)),
-			]);
+	public build(builder: Builder): binaryen.ExpressionRef | binaryen.Module {
+		if (!this.children.length) {
+			return builder.module.nop();
+		} else {
+			const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build(builder)); // must build before calling `.getLocals()`
+			const fn_name:    string                   = 'fn0';
+			builder.module.addFunction(
+				fn_name,
+				binaryen.createType([]),
+				binaryen.createType([]),
+				builder.getLocals().map((var_) => var_.type),
+				builder.module.block(null, [...statements]),
+			);
+			builder.module.addFunctionExport(fn_name, fn_name);
+
+			const validation = builder.module.validate();
+			if (!validation) {
+				throw new Error('Invalid WebAssembly module.');
+			}
+			return builder.module;
+		}
 	}
 }

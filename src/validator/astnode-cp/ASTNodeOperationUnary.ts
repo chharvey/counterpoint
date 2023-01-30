@@ -41,12 +41,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionUnop {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionUnop(
-			this.operator,
-			this.operand.build(builder, tofloat),
-		);
+	public override build(builder: Builder): INST.InstructionUnop {
+		return new INST.InstructionUnop(this.operator, this.operand.build(builder));
 	}
 
 	@memoizeMethod

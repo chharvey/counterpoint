@@ -8,6 +8,7 @@ import {
 	ReferenceError03,
 	memoizeMethod,
 	memoizeGetter,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SymbolKind,
@@ -53,8 +54,11 @@ export class ASTNodeVariable extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(_builder: Builder, to_float: boolean = false): INST.InstructionExpression {
-		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
+	public override build(builder: Builder): INST.InstructionLocalGet {
+		const local = builder.getLocalInfo(this.id);
+		return (local)
+			? new INST.InstructionLocalGet(local.index, local.type)
+			: throw_expression(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 
 	@memoizeMethod

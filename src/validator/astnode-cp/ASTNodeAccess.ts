@@ -48,7 +48,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	@ASTNodeExpression.buildDeco
 	public override build(builder: Builder): INST.InstructionExpression {
 		builder;
-		throw 'ASTNodeAccess#build_do not yet supported.';
+		throw '`ASTNodeAccess#build_do` not yet supported.';
 	}
 
 	@memoizeMethod

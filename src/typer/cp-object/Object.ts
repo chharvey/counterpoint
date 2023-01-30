@@ -1,4 +1,7 @@
-import {strictEqual} from './package.js';
+import {
+	INST,
+	strictEqual,
+} from './package.js';
 import {String as CPString} from './index.js';
 
 
@@ -78,5 +81,11 @@ abstract class CPObject {
 	public toCPString(): CPString {
 		return new CPString(this.toString());
 	}
+
+	/**
+	 * Construct a new Instruction from this value.
+	 * @return the directions to print
+	 */
+	public abstract build(): INST.InstructionConst;
 }
 export {CPObject as Object};

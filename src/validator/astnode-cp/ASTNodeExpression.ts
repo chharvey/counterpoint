@@ -81,12 +81,12 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	protected static buildDeco<T extends INST.InstructionExpression>(
 		_prototype: ASTNodeExpression,
 		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression, builder: Builder, to_float?: boolean) => INST.InstructionConst | T>,
+		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression, builder: Builder) => INST.InstructionConst | T>,
 	): typeof descriptor {
 		const method = descriptor.value!;
-		descriptor.value = function (builder, to_float = false) {
+		descriptor.value = function (builder) {
 			const value: OBJ.Object | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			return (value) ? INST.InstructionConst.fromCPValue(value, to_float) : method.call(this, builder, to_float);
+			return (value) ? value.build() : method.call(this, builder);
 		};
 		return descriptor;
 	}
@@ -120,10 +120,9 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 
 	/**
 	 * @inheritdoc
-	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
 	 * @implements Buildable
 	 */
-	public abstract build(builder: Builder, to_float?: boolean): INST.InstructionExpression;
+	public abstract build(builder: Builder): INST.InstructionExpression;
 
 	/**
 	 * The Type of this expression.

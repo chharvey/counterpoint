@@ -3,8 +3,6 @@ import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
-	INST,
-	Builder,
 	NonemptyArray,
 	memoizeMethod,
 	CPConfig,
@@ -30,17 +28,6 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		public override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, children);
-	}
-
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeMap#shouldFloat not yet supported.';
-	}
-
-	@memoizeMethod
-	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeMap#build not yet supported.';
 	}
 
 	@memoizeMethod

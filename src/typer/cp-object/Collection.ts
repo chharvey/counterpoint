@@ -1,5 +1,6 @@
 import * as xjs from 'extrajs';
 import type {
+	INST,
 	Keys,
 	TYPE,
 } from './package.js';
@@ -31,6 +32,10 @@ export abstract class Collection extends CPObject {
 		return xjs.Map.get(Collection.EQ_MEMO, memokey, Collection.EQ_MEMO_COMPARATOR)!;
 	}
 
+
+	public override build(): INST.InstructionConst {
+		throw new Error('`Collection#build` not yet supported.');
+	}
 
 	/**
 	 * Convert this Collection to a type.

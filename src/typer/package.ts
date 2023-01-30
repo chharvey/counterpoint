@@ -5,6 +5,7 @@
  * they are only for modules within this package.
  */
 export {
+	INST,
 	TypeError04,
 	VoidError01,
 } from '../index.js';

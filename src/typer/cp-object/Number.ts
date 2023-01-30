@@ -17,6 +17,11 @@ abstract class CPNumber<T = unknown> extends Primitive {
 		return this.eq0();
 	}
 
+	/** @final */
+	protected override get builtValue(): this {
+		return this;
+	}
+
 	/**
 	 * Type-coerce this number into a float.
 	 * @returns the equivalent floating-point value

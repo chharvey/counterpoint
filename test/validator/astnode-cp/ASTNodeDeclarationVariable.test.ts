@@ -1,21 +1,22 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
-	Operator,
 	AST,
 	SymbolStructure,
 	SymbolStructureVar,
 	TYPE,
-	INST,
 	Builder,
 	AssignmentError01,
 	TypeError03,
 } from '../../../src/index.js';
-import {assertAssignable} from '../../assert-helpers.js';
+import {
+	assertAssignable,
+	assertEqualBins,
+} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
-	instructionConstInt,
-	instructionConstFloat,
 } from '../../helpers.js';
 
 
@@ -262,69 +263,55 @@ describe('ASTNodeDeclarationVariable', () => {
 
 
 	describe('#build', () => {
-		it('with constant folding on, returns InstructionNone for fixed & foldable variables.', () => {
+		it('with constant folding on, returns `(nop)` for fixed & foldable variables.', () => {
 			const src: string = `
 				let x: int = 42;
-				let y: float = 4.2 * 10;
+				let y: float = 4.2 * x;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+			const builder: Builder = new Builder(src);
 			goal.varCheck();
 			goal.typeCheck();
-			const builder: Builder = new Builder(src);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
-					new INST.InstructionNone(),
-					new INST.InstructionNone(),
-				],
-			);
+			goal.build(builder);
+			return xjs.Array.forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(builder), builder.module.nop()));
 		});
-		it('with constant folding on, returns InstructionDeclareGlobal for unfixed / non-foldable variables.', () => {
+		it('with constant folding on, returns `(local.set)` for unfixed / non-foldable variables.', () => {
 			const src: string = `
 				let unfixed x: int = 42;
 				let y: int = x + 10;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+			const builder: Builder = new Builder(src);
 			goal.varCheck();
 			goal.typeCheck();
-			const builder: Builder = new Builder(src);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
-					new INST.InstructionDeclareGlobal(0x100n, true,  instructionConstInt(42n)),
-					new INST.InstructionDeclareGlobal(0x101n, false, new INST.InstructionBinopArithmetic(
-						Operator.ADD,
-						new INST.InstructionGlobalGet(0x100n),
-						instructionConstInt(10n),
-					)),
-				],
-			);
+			goal.build(builder);
+			assert.deepStrictEqual(builder.getLocals(), [
+				{id: 0x100n, type: binaryen.i32},
+				{id: 0x101n, type: binaryen.i32},
+			]);
+			return xjs.Array.forEachAggregated(goal.children, (stmt, i) => assertEqualBins(
+				stmt.build(builder),
+				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder).buildBin(builder.module)),
+			));
 		});
-		it('with constant folding off, always returns InstructionDeclareGlobal.', () => {
+		it('with constant folding off, always returns `(local.set)`.', () => {
 			const src: string = `
 				let x: int = 42;
 				let unfixed y: float = 4.2;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+			const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();
-			const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
-					new INST.InstructionDeclareGlobal(0x100n, false, instructionConstInt(42n)),
-					new INST.InstructionDeclareGlobal(0x101n, true,  instructionConstFloat(4.2)),
-				],
-			);
+			goal.build(builder);
+			assert.deepStrictEqual(builder.getLocals(), [
+				{id: 0x100n, type: binaryen.i32},
+				{id: 0x101n, type: binaryen.f64},
+			]);
+			return xjs.Array.forEachAggregated(goal.children, (stmt, i) => assertEqualBins(
+				stmt.build(builder),
+				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder).buildBin(builder.module)),
+			));
 		});
 	});
 });

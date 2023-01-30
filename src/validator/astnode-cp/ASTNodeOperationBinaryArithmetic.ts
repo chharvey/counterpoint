@@ -45,13 +45,8 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopArithmetic {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionBinopArithmetic(
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
-		);
+	public override build(builder: Builder): INST.InstructionBinopArithmetic {
+		return new INST.InstructionBinopArithmetic(this.operator, ...this.buildOps(builder));
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {

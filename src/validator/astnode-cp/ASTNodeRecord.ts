@@ -3,8 +3,6 @@ import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
-	INST,
-	Builder,
 	AssignmentError02,
 	NonemptyArray,
 	memoizeMethod,
@@ -46,13 +44,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				throw new AssignmentError02(keys[i]);
 			}
 		});
-	}
-
-	@memoizeMethod
-	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeRecord#build not yet supported.';
 	}
 
 	@memoizeMethod

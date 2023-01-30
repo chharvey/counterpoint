@@ -7,7 +7,6 @@
 export {
 	TYPE,
 	OBJ,
-	Instruction,
 	INST,
 	Builder,
 	ErrorCode,

@@ -1,9 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
-	Operator,
 	AST,
 	TYPE,
-	INST,
 	Builder,
 	ReferenceError01,
 	ReferenceError03,
@@ -13,40 +12,40 @@ import {
 	TypeError03,
 	MutabilityError01,
 } from '../../../src/index.js';
-import {assertAssignable} from '../../assert-helpers.js';
 import {
-	typeUnitFloat,
-	instructionConstFloat,
-} from '../../helpers.js';
+	assertAssignable,
+	assertEqualBins,
+} from '../../assert-helpers.js';
+import {typeUnitFloat} from '../../helpers.js';
 
 
 
 describe('ASTNodeCP', () => {
 	describe('ASTNodeStatementExpression', () => {
 		describe('#build', () => {
-			it('returns InstructionNone for empty statement expression.', () => {
+			it('returns `(nop)` for empty statement expression.', () => {
 				const src: string = ';';
-				const instr: INST.InstructionNone | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src)
-					.build(new Builder(src));
-				assert.ok(instr instanceof INST.InstructionNone);
+				const builder = new Builder(src);
+				const instr: binaryen.ExpressionRef = AST.ASTNodeStatementExpression.fromSource(src).build(builder);
+				return assertEqualBins(instr, builder.module.nop());
 			});
-			it('returns InstructionStatement for nonempty statement expression.', () => {
+			it('returns `(drop)` for nonempty statement expression.', () => {
 				const src: string = '42 + 420;';
 				const builder: Builder = new Builder(src);
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
-				assert.deepStrictEqual(
+				return assertEqualBins(
 					stmt.build(builder),
-					new INST.InstructionStatement(0n, AST.ASTNodeOperationBinaryArithmetic.fromSource(src).build(builder)),
+					builder.module.drop(stmt.expr!.build(builder).buildBin(builder.module)),
 				);
 			});
 			it('multiple statements.', () => {
 				const src: string = '42; 420;';
 				const generator: Builder = new Builder(src);
-				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt, i) => {
+				return AST.ASTNodeGoal.fromSource(src).children.forEach((stmt) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
-					assert.deepStrictEqual(
+					return assertEqualBins(
 						stmt.build(generator),
-						new INST.InstructionStatement(BigInt(i), AST.ASTNodeConstant.fromSource(stmt.source).build(generator)),
+						generator.module.drop(stmt.expr!.build(generator).buildBin(generator.module)),
 					);
 				});
 			});
@@ -158,23 +157,17 @@ describe('ASTNodeCP', () => {
 
 
 		describe('#build', () => {
-			it('always returns InstructionStatement containing InstructionGlobalSet.', () => {
+			it('always returns `(local.set)`.', () => {
 				const src: string = `
 					let unfixed y: float = 4.2;
 					y = y * 10;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder: Builder = new Builder(src);
-				assert.deepStrictEqual(
+				goal.build(builder);
+				return assertEqualBins(
 					goal.children[1].build(builder),
-					new INST.InstructionStatement(
-						0n,
-						new INST.InstructionGlobalSet(0x100n, new INST.InstructionBinopArithmetic(
-							Operator.MUL,
-							new INST.InstructionGlobalGet(0x100n, true),
-							instructionConstFloat(10.0),
-						)),
-					),
+					builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder).buildBin(builder.module)),
 				);
 			});
 		});
@@ -298,10 +291,17 @@ describe('ASTNodeCP', () => {
 
 
 		describe('#build', () => {
-			it('returns InstructionNone.', () => {
+			it('returns `(nop)` for empty program.', () => {
 				const src: string = '';
-				const instr: INST.InstructionNone | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
-				assert.ok(instr instanceof INST.InstructionNone);
+				const builder = new Builder(src);
+				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
+				return assertEqualBins(instr, builder.module.nop());
+			});
+			it('returns binaryen.Module for non-empty program.', () => {
+				const src: string = '42;';
+				const builder = new Builder(src);
+				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
+				assert.strictEqual(instr, builder.module);
 			});
 		});
 	});

@@ -5,10 +5,6 @@
  * they are only for modules within this package.
  */
 export {
-	CPConfig,
-	CONFIG_DEFAULT,
-} from '../core/index.js';
-export {
 	Operator,
 	ValidOperatorUnary,
 	ValidOperatorBinary,
@@ -16,6 +12,6 @@ export {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-	AST,
-} from '../validator/index.js';
-export {OBJ} from '../typer/index.js';
+	OBJ,
+} from '../package.js';
+export {Builder} from '../index.js';

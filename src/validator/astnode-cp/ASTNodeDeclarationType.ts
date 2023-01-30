@@ -1,6 +1,6 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
-	INST,
 	Builder,
 	AssignmentError01,
 	CPConfig,
@@ -44,7 +44,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
-	public override build(_builder: Builder): INST.InstructionNone {
-		return new INST.InstructionNone();
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.nop();
 	}
 }

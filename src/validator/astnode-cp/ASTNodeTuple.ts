@@ -3,8 +3,6 @@ import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
-	INST,
-	Builder,
 	memoizeMethod,
 	CPConfig,
 	CONFIG_DEFAULT,
@@ -28,17 +26,6 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
-	}
-
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeTuple#shouldFloat not yet supported.';
-	}
-
-	@memoizeMethod
-	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeTuple#build not yet supported.';
 	}
 
 	@memoizeMethod

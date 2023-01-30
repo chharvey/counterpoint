@@ -37,9 +37,8 @@ export class ASTNodeClaim extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return this.operand.build(builder, tofloat);
+	public override build(builder: Builder): INST.InstructionExpression {
+		return this.operand.build(builder);
 	}
 
 	@memoizeMethod

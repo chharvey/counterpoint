@@ -1,0 +1,15 @@
+import type binaryen from 'binaryen';
+
+
+
+/**
+ * Known subclasses:
+ * - InstructionExpression
+ */
+export abstract class Instruction {
+	/**
+	 * Modify the compiled module with this instruction.
+	 * @param _mod the binaryen module to modify
+	 */
+	public abstract buildBin(_mod: binaryen.Module): binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef;
+}

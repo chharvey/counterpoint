@@ -4,6 +4,7 @@ import {
 } from './package.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
+import {Integer} from './index.js';
 
 
 
@@ -51,6 +52,10 @@ class CPBoolean extends Primitive {
 
 	public override get isTruthy(): boolean {
 		return this.data;
+	}
+
+	protected override get builtValue(): Integer {
+		return (this.isTruthy) ? Integer.UNIT : Integer.ZERO;
 	}
 
 	@strictEqual

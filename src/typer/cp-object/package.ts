@@ -5,6 +5,7 @@
  * they are only for modules within this package.
  */
 export {
+	INST,
 	VoidError01,
 	CodeUnit,
 	Keys,

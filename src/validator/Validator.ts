@@ -325,6 +325,14 @@ export class Validator {
 	}
 
 	/**
+	 * Return a copy of this Validator’s symbols.
+	 * @return the symbols in a new map
+	 */
+	public getSymbols(): Map<bigint, SymbolStructure> {
+		return new Map([...this.symbol_table]);
+	}
+
+	/**
 	 * Remove all symbols from this Validator’s symbol table.
 	 * @returns this
 	 */

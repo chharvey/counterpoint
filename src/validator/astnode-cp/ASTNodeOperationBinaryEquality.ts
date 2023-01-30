@@ -37,18 +37,17 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	public override shouldFloat(): boolean {
-		return this.operator === Operator.EQ && super.shouldFloat();
+		return (
+			   this.validator.config.compilerOptions.intCoercion
+			&& this.operator === Operator.EQ
+			&& super.shouldFloat()
+		);
 	}
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, _to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopEquality {
-		const tofloat: boolean = this.validator.config.compilerOptions.intCoercion && this.shouldFloat();
-		return new INST.InstructionBinopEquality(
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
-		);
+	public override build(builder: Builder): INST.InstructionBinopEquality {
+		return new INST.InstructionBinopEquality(this.operator, ...this.buildOps(builder));
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
