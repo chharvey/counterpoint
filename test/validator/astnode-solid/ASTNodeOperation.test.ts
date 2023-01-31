@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -19,11 +18,7 @@ import {
 	TypeError01,
 	NanError01,
 } from '../../../src/index.js';
-import {forEachAggregated} from '../../../src/lib/index.js';
-import {
-	assertEqualTypes,
-	assertEqualBins,
-} from '../../assert-helpers.js';
+import {assertEqualTypes} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	typeConstInt,
@@ -921,8 +916,8 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			it('returns `(if)`.', () => {
-				forEachAggregated([...new Map<string, INST.InstructionBinopLogical>([
+			it('returns InstructionBinopLogical.', () => {
+				buildOperations(new Map<string, INST.InstructionBinopLogical>([
 					['42 && 420;', new INST.InstructionBinopLogical(
 						0,
 						Operator.AND,
@@ -953,35 +948,27 @@ describe('ASTNodeOperation', () => {
 						instructionConstInt(0n),
 						instructionConstInt(0n),
 					)],
-				])], ([src, expected]) => {
-					const builder = new Builder(src, CONFIG_FOLDING_OFF);
-					const actual: INST.InstructionExpression = AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
-					assert.ok(actual instanceof INST.InstructionBinopLogical);
-					return assertEqualBins(actual.buildBin(builder.module), expected.buildBin(builder.module));
-				});
+				]));
 			});
 			it('counts internal variables correctly.', () => {
-				const src: string = `1 && 2 || 3 && 4;`
-				const builder = new Builder(src, CONFIG_FOLDING_OFF);
-				const actual: INST.InstructionExpression = AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
-				const expected = new INST.InstructionBinopLogical(
-					2,
-					Operator.OR,
-					new INST.InstructionBinopLogical(
-						0,
-						Operator.AND,
-						instructionConstInt(1n),
-						instructionConstInt(2n),
-					),
-					new INST.InstructionBinopLogical(
-						1,
-						Operator.AND,
-						instructionConstInt(3n),
-						instructionConstInt(4n),
-					),
-				);
-				assert.ok(actual instanceof INST.InstructionBinopLogical);
-				return assertEqualBins(actual.buildBin(builder.module), expected.buildBin(builder.module));
+				buildOperations(new Map<string, INST.InstructionBinopLogical>([
+					['1 && 2 || 3 && 4;', new INST.InstructionBinopLogical(
+						2,
+						Operator.OR,
+						new INST.InstructionBinopLogical(
+							0,
+							Operator.AND,
+							instructionConstInt(1n),
+							instructionConstInt(2n),
+						),
+						new INST.InstructionBinopLogical(
+							1,
+							Operator.AND,
+							instructionConstInt(3n),
+							instructionConstInt(4n),
+						),
+					)],
+				]));
 			});
 		});
 	});
@@ -1016,16 +1003,13 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		specify('#build', () => {
-			forEachAggregated([...new Map<string, (mod: binaryen.Module) => binaryen.ExpressionRef>([
-				['if true  then false else 2;',    (mod) => mod.if(instructionConstInt(1n).buildBin(mod), instructionConstInt   (0n)  .buildBin(mod), instructionConstInt   (2n)  .buildBin(mod))],
-				['if false then 3.0   else null;', (mod) => mod.if(instructionConstInt(0n).buildBin(mod), instructionConstFloat (3.0) .buildBin(mod), instructionConvert    (0n)  .buildBin(mod))],
-				['if true  then 2     else 3.0;',  (mod) => mod.if(instructionConstInt(1n).buildBin(mod), instructionConvert    (2n)  .buildBin(mod), instructionConstFloat (3.0) .buildBin(mod))],
-			])], ([src, callback]) => {
-				const builder = new Builder(src, CONFIG_FOLDING_OFF);
-				const actual: INST.InstructionExpression = AST.ASTNodeOperationTernary.fromSource(src, CONFIG_FOLDING_OFF).build(builder);
-				assert.ok(actual instanceof INST.InstructionCond);
-				return assertEqualBins(actual.buildBin(builder.module), callback(builder.module));
+		describe('#build', () => {
+			it('returns InstructionCond.', () => {
+				buildOperations(new Map<string, INST.InstructionCond>([
+					['if true  then false else 2;',    new INST.InstructionCond(instructionConstInt(1n), instructionConstInt(0n),    instructionConstInt(2n))],
+					['if false then 3.0   else null;', new INST.InstructionCond(instructionConstInt(0n), instructionConstFloat(3.0), instructionConvert(0n))],
+					['if true  then 2     else 3.0;',  new INST.InstructionCond(instructionConstInt(1n), instructionConvert(2n),     instructionConstFloat(3.0))],
+				]));
 			});
 		});
 	});
