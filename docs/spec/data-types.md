@@ -188,6 +188,7 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 
 
 ### Simple Types
+Simple types do not comprise other types.
 
 - [Never](#never)
 - [Void](#void)
@@ -200,7 +201,7 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 - [Unknown](#unknown)
 
 #### Never
-The Never type is the Botton Type and it represents the set of no values.
+The **Never** type is the Botton Type and it represents the set of no values.
 No value is assignable to Never,
 and expressions of type Never are accepted everywhere.
 
@@ -210,7 +211,7 @@ Never is the the “absorption element” of the [intersection](#intersection) o
 and the “identity element” of the [union](#union) operation.
 
 #### Void
-The Void type represents the completion of an evaluation but the absence of a value.
+The **Void** type represents the completion of an evaluation but the absence of a value.
 It is the return type of a function that may have side-effects but that does not return a value.
 It is also partly the type of an optional entry in a collection.
 
@@ -225,17 +226,17 @@ the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T�
 The Void type is also unlike Null in that no Solid Language Value has type Void.
 
 #### Null
-The Null type has exactly one value, called `null`.
+The **Null** type has exactly one value, called `null`.
 
 #### Boolean
-The Boolean type has two logical values, called `true` and `false`.
+The **Boolean** type has two logical values, called `true` and `false`.
 
 #### Number
-The Number type represents numerical values.
+The **Number** type represents numerical values.
 The Number type is partitioned into two disjoint subtypes: Integer and Float.
 
 ##### Integer
-The Integer type represents [mathematical integers](#real-integer-numbers).
+The **Integer** type represents [mathematical integers](#real-integer-numbers).
 The Solid compiler represents Integers as 16-bit signed two’s complement values.
 
 The Integers `0` and `-0` represent the same mathematical value, *0*.
@@ -278,33 +279,30 @@ The behavior of performing arithmetic operations that are invalid in the integer
 The result of division is rounded towards zero. Dividing by zero results in an error.
 
 ##### Float
-The Float type represents [mathematical rational numbers](#real-rational-numbers)
+The **Float** type represents [mathematical rational numbers](#real-rational-numbers)
 whose decimals terminate in base 10.
 (That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
 The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
 *IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.
 
 #### String
-The String type represents textual data and is stored as an immutable sequence of bytes.
+The **String** type represents textual data and is stored as an immutable sequence of bytes.
 Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
 
-A String’s **size** indicates the number of code points in the String, that is,
-the number of characters in its raw unencoded form.
-The maximum size of any String is the maximum Integer value, *32,767*.
-This is likely to change in future versions of Counterpoint:
-if unsigned integers are supported, the maximum size would be increased to *65,535*.
+Conceptually, strings are treated as immutable lists of [Integers](#integer),
+where each integer represents a Unicode code point.
+A String’s **count** indicates the number of code points in the String, that is,
+the number of characters in its unencoded form.
 This is compared to its **length**, which is the number of bytes it stores
 encoded in memory (see UTF-8 for details).
-String length is limited to a maximum of *65,535* bytes,
-but it is not directly observable within any Counterpoint program.
 
 #### Object
-The Object type is the parent type of all Solid Language Types.
+The **Object** type is the parent type of all Solid Language Types.
 Every Solid Language Value is an Object.
 Some specific built-in subtypes of Object are described in the [Intrinsics](./intrinsics.md) chapter.
 
 #### Unknown
-The Unknown type is the Top Type and it represents the set of all possible values.
+The **Unknown** type is the Top Type and it represents the set of all possible values.
 Any value or expression is assignable to Unknown,
 and expressions of type Unknown are accepted almost nowhere.
 
@@ -315,10 +313,7 @@ and the “absorption element” of the [union](#union) operation.
 
 
 ### Compound Types
-Compound types are collections of objects with a static or dynamic size.
-The maximum size of any compound type is the maximum Integer value, *32,767*.
-This is likely to change in future versions of Counterpoint:
-if unsigned integers are supported, the maximum size would be increased to *65,535*.
+Compound types are derived from other types.
 
 - [Tuple](#tuple-type)
 - [Record](#record-type)
