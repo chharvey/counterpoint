@@ -524,5 +524,17 @@ describe('ASTNodeExpression', () => {
 			});
 			// TODO: SolidSet overwrites duplicate elements. // move this to SolidType.test.ts
 		});
+
+
+		describe('#build', () => {
+			describe('ASTNodeTuple', () => {
+				it('returns InstructionTupleMake.', () => {
+					assert.deepStrictEqual(
+						AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF).build(new Builder('')),
+						new INST.InstructionTupleMake([instructionConstInt(1n), instructionConstFloat(2.0)]),
+					);
+				});
+			});
+		});
 	});
 });

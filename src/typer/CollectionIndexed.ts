@@ -1,4 +1,6 @@
 import {
+	INST,
+	Builder,
 	VoidError01,
 	AST,
 } from './package.js';
@@ -39,6 +41,10 @@ export abstract class CollectionIndexed<T extends SolidObject = SolidObject> ext
 				(thatitem, i) => this.items[i].equal(thatitem),
 			))
 		);
+	}
+
+	public override build(builder: Builder): INST.InstructionExpression {
+		return new INST.InstructionTupleMake(this.items.map((item) => item.build(builder)));
 	}
 
 	/** @final */

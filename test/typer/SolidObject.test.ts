@@ -4,8 +4,11 @@ import {
 	Int16,
 	Float64,
 	SolidString,
+	SolidTuple,
 	SolidSet,
 	SolidMap,
+	INST,
+	Builder,
 } from '../../src/index.js';
 import {
 	instructionConstInt,
@@ -39,6 +42,18 @@ describe('SolidObject', () => {
 					new SolidString('fire'),
 					new SolidString('wind'),
 				]))));
+			});
+		});
+	});
+
+
+	describe('#build', () => {
+		describe('SolidTuple', () => {
+			it('returns InstructionTupleMake.', () => {
+				assert.deepStrictEqual(
+					new SolidTuple([Int16.UNIT, new Float64(2.0)]).build(new Builder('')),
+					new INST.InstructionTupleMake([instructionConstInt(1n), instructionConstFloat(2.0)]),
+				);
 			});
 		});
 	});
