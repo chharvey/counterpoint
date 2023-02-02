@@ -43,7 +43,11 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): INST.InstructionBinopComparative {
-		return new INST.InstructionBinopComparative(this.operator, ...this.buildOps(builder));
+		return new INST.InstructionBinopComparative(
+			this.operator,
+			this.operand0.build(builder),
+			this.operand1.build(builder),
+		);
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		if (bothNumeric(t0, t1) && (int_coercion || (

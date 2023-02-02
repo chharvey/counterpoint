@@ -43,7 +43,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): INST.InstructionBinopEquality {
-		return new INST.InstructionBinopEquality(this.operator, ...this.buildOps(builder), this.validator.config.compilerOptions.intCoercion);
+		return new INST.InstructionBinopEquality(
+			this.operator,
+			this.operand0.build(builder),
+			this.operand1.build(builder),
+			this.validator.config.compilerOptions.intCoercion,
+		);
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		/*

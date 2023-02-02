@@ -26,7 +26,6 @@ import {
 	typeConstStr,
 	instructionConstInt,
 	instructionConstFloat,
-	instructionConvert,
 } from '../../helpers.js';
 
 
@@ -100,10 +99,10 @@ describe('ASTNodeOperation', () => {
 					Operator.ADD,
 					new INST.InstructionBinopArithmetic(
 						Operator.MUL,
-						instructionConvert(2n),
+						instructionConstInt(2n),
 						instructionConstFloat(3.0),
 					),
-					instructionConvert(5n),
+					instructionConstInt(5n),
 				)],
 			]));
 		});
@@ -406,8 +405,8 @@ describe('ASTNodeOperation', () => {
 		describe('#build', () => {
 			it('returns InstructionBinopArithmetic.', () => {
 				buildOperations(new Map([
-					[`42 + 420;`, new INST.InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
-					[`3 * 2.1;`,  new INST.InstructionBinopArithmetic(Operator.MUL, instructionConvert(3n),     instructionConstFloat(2.1))],
+					[`42 + 420;`, new INST.InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n), instructionConstInt(420n))],
+					[`3 * 2.1;`,  new INST.InstructionBinopArithmetic(Operator.MUL, instructionConstInt(3n),  instructionConstFloat(2.1))],
 				]));
 				buildOperations(new Map([
 					[' 126 /  3;', new INST.InstructionBinopArithmetic(Operator.DIV, instructionConstInt( 126n), instructionConstInt( 3n))],
@@ -494,14 +493,14 @@ describe('ASTNodeOperation', () => {
 					[`3   >  3;`,   new INST.InstructionBinopComparative(Operator.GT, instructionConstInt(3n),    instructionConstInt(3n))],
 					[`3   <= 3;`,   new INST.InstructionBinopComparative(Operator.LE, instructionConstInt(3n),    instructionConstInt(3n))],
 					[`3   >= 3;`,   new INST.InstructionBinopComparative(Operator.GE, instructionConstInt(3n),    instructionConstInt(3n))],
-					[`5   <  9.2;`, new INST.InstructionBinopComparative(Operator.LT, instructionConvert(5n),     instructionConstFloat(9.2))],
-					[`5   >  9.2;`, new INST.InstructionBinopComparative(Operator.GT, instructionConvert(5n),     instructionConstFloat(9.2))],
-					[`5   <= 9.2;`, new INST.InstructionBinopComparative(Operator.LE, instructionConvert(5n),     instructionConstFloat(9.2))],
-					[`5   >= 9.2;`, new INST.InstructionBinopComparative(Operator.GE, instructionConvert(5n),     instructionConstFloat(9.2))],
-					[`5.2 <  3;`,   new INST.InstructionBinopComparative(Operator.LT, instructionConstFloat(5.2), instructionConvert(3n))],
-					[`5.2 >  3;`,   new INST.InstructionBinopComparative(Operator.GT, instructionConstFloat(5.2), instructionConvert(3n))],
-					[`5.2 <= 3;`,   new INST.InstructionBinopComparative(Operator.LE, instructionConstFloat(5.2), instructionConvert(3n))],
-					[`5.2 >= 3;`,   new INST.InstructionBinopComparative(Operator.GE, instructionConstFloat(5.2), instructionConvert(3n))],
+					[`5   <  9.2;`, new INST.InstructionBinopComparative(Operator.LT, instructionConstInt(5n),    instructionConstFloat(9.2))],
+					[`5   >  9.2;`, new INST.InstructionBinopComparative(Operator.GT, instructionConstInt(5n),    instructionConstFloat(9.2))],
+					[`5   <= 9.2;`, new INST.InstructionBinopComparative(Operator.LE, instructionConstInt(5n),    instructionConstFloat(9.2))],
+					[`5   >= 9.2;`, new INST.InstructionBinopComparative(Operator.GE, instructionConstInt(5n),    instructionConstFloat(9.2))],
+					[`5.2 <  3;`,   new INST.InstructionBinopComparative(Operator.LT, instructionConstFloat(5.2), instructionConstInt(3n))],
+					[`5.2 >  3;`,   new INST.InstructionBinopComparative(Operator.GT, instructionConstFloat(5.2), instructionConstInt(3n))],
+					[`5.2 <= 3;`,   new INST.InstructionBinopComparative(Operator.LE, instructionConstFloat(5.2), instructionConstInt(3n))],
+					[`5.2 >= 3;`,   new INST.InstructionBinopComparative(Operator.GE, instructionConstFloat(5.2), instructionConstInt(3n))],
 					[`5.2 <  9.2;`, new INST.InstructionBinopComparative(Operator.LT, instructionConstFloat(5.2), instructionConstFloat(9.2))],
 					[`5.2 >  9.2;`, new INST.InstructionBinopComparative(Operator.GT, instructionConstFloat(5.2), instructionConstFloat(9.2))],
 					[`5.2 <= 9.2;`, new INST.InstructionBinopComparative(Operator.LE, instructionConstFloat(5.2), instructionConstFloat(9.2))],
@@ -713,27 +712,27 @@ describe('ASTNodeOperation', () => {
 					['42 === 420;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstInt(420n))],
 					['42 ==  420;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstInt(420n))],
 					['42 === 4.2;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstFloat(4.2))],
-					['42 ==  4.2;', new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(42n),  instructionConstFloat(4.2))],
+					['42 ==  4.2;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstFloat(4.2))],
 
 					['4.2 === 42;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstInt(42n))],
-					['4.2 ==  42;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConvert(42n))],
+					['4.2 ==  42;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstInt(42n))],
 					['4.2 === 42.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstFloat(42.0))],
 					['4.2 ==  42.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstFloat(42.0))],
 
 					['null === 0;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n))],
 					['null ==  0;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n))],
 					['null === 0.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0))],
-					['null ==  0.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(0n),  instructionConstFloat(0.0))],
+					['null ==  0.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0))],
 
 					['false === 0;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n))],
 					['false ==  0;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n))],
 					['false === 0.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0))],
-					['false ==  0.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(0n),  instructionConstFloat(0.0))],
+					['false ==  0.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0))],
 
 					['true === 1;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstInt(1n))],
 					['true ==  1;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstInt(1n))],
 					['true === 1.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstFloat(1.0))],
-					['true ==  1.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(1n),  instructionConstFloat(1.0))],
+					['true ==  1.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstFloat(1.0))],
 
 					['null === false;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n))],
 					['null ==  false;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n))],
@@ -929,18 +928,18 @@ describe('ASTNodeOperation', () => {
 						0,
 						Operator.OR,
 						instructionConstFloat(4.2),
-						instructionConvert(-420n),
+						instructionConstInt(-420n),
 					)],
 					['null && 201.0e-1;', new INST.InstructionBinopLogical(
 						0,
 						Operator.AND,
-						instructionConvert(0n),
+						instructionConstInt(0n),
 						instructionConstFloat(20.1),
 					)],
 					['true && 201.0e-1;', new INST.InstructionBinopLogical(
 						0,
 						Operator.AND,
-						instructionConvert(1n),
+						instructionConstInt(1n),
 						instructionConstFloat(20.1),
 					)],
 					['false || null;', new INST.InstructionBinopLogical(
@@ -1008,8 +1007,8 @@ describe('ASTNodeOperation', () => {
 			it('returns InstructionCond.', () => {
 				buildOperations(new Map<string, INST.InstructionCond>([
 					['if true  then false else 2;',    new INST.InstructionCond(instructionConstInt(1n), instructionConstInt(0n),    instructionConstInt(2n))],
-					['if false then 3.0   else null;', new INST.InstructionCond(instructionConstInt(0n), instructionConstFloat(3.0), instructionConvert(0n))],
-					['if true  then 2     else 3.0;',  new INST.InstructionCond(instructionConstInt(1n), instructionConvert(2n),     instructionConstFloat(3.0))],
+					['if false then 3.0   else null;', new INST.InstructionCond(instructionConstInt(0n), instructionConstFloat(3.0), instructionConstInt(0n))],
+					['if true  then 2     else 3.0;',  new INST.InstructionCond(instructionConstInt(1n), instructionConstInt(2n),    instructionConstFloat(3.0))],
 				]));
 			});
 		});
