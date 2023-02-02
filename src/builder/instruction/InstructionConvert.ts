@@ -14,6 +14,9 @@ export class InstructionConvert extends InstructionExpression {
 	 */
 	public constructor(private readonly expr: InstructionExpression) {
 		super();
+		if (this.expr.binType !== binaryen.i32) {
+			throw new TypeError(`Expected an argument of type \`i32\`; got: ${ this.expr }`);
+		}
 	}
 
 	/**

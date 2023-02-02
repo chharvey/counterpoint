@@ -3,7 +3,6 @@ import binaryen from 'binaryen';
 import {
 	Operator,
 	INST,
-	Builder,
 } from '../../src/index.js';
 import {assertEqualBins} from '../assert-helpers.js';
 import {
@@ -81,7 +80,7 @@ describe('Instruction', () => {
 					values.map((x) => instructionConstInt(BigInt(x)).toString()),
 					values.map((x) => `(i32.const ${ x })`),
 				)
-				const mod: binaryen.Module = new Builder('').module;
+				const mod: binaryen.Module = new binaryen.Module();
 				return assertEqualBins(
 					values.map((x) => instructionConstInt(BigInt(x)).buildBin(mod)),
 					values.map((x) => mod.i32.const(x)),
@@ -96,7 +95,7 @@ describe('Instruction', () => {
 					values.map((x) => instructionConstFloat(x).toString()),
 					values.map((x) => `(f64.const ${ x }${ (x % 1 === 0) ? '.0' : '' })`),
 				)
-				const mod: binaryen.Module = new Builder('').module;
+				const mod: binaryen.Module = new binaryen.Module();
 				return assertEqualBins(
 					values.map((x) => instructionConstFloat(x).buildBin(mod)),
 					values.map((x) => mod.f64.const(x)),
@@ -104,7 +103,7 @@ describe('Instruction', () => {
 			})
 			it('prints Float64 negative zero correctly.', () => {
 				assert.strictEqual(instructionConstFloat(-0.0).toString(), `(f64.const -0.0)`)
-				const mod: binaryen.Module = new Builder('').module;
+				const mod: binaryen.Module = new binaryen.Module();
 				assert.throws(() => assertEqualBins(
 					instructionConstFloat(-0.0).buildBin(mod),
 					mod.f64.const(-0.0),
@@ -133,7 +132,7 @@ describe('Instruction', () => {
 					exprs.map((expr) => new INST.InstructionConvert(expr).toString()),
 					exprs.map((expr) => `(f64.convert_i32_u ${ expr })`),
 				);
-				const mod: binaryen.Module = new Builder('').module;
+				const mod: binaryen.Module = new binaryen.Module();
 				return assertEqualBins(
 					exprs.map((expr) => new INST.InstructionConvert(expr).buildBin(mod)),
 					exprs.map((expr) => mod.f64.convert_u.i32(expr.buildBin(mod))),
@@ -167,7 +166,7 @@ describe('Instruction', () => {
 					`(call $femp ${ instructionConstFloat(4.2) })`,
 					`(call $neg ${ instructionConstInt(42n) })`,
 				])
-				const mod: binaryen.Module = new Builder('').module;
+				const mod: binaryen.Module = new binaryen.Module();
 				return assertEqualBins([
 					new INST.InstructionUnop(Operator.NOT, instructionConstInt(0n)),
 					new INST.InstructionUnop(Operator.NOT, instructionConstInt(42n)),
@@ -206,7 +205,7 @@ describe('Instruction', () => {
 						`(i32.mul ${ instructionConstInt(21n)    } ${ instructionConstInt(2n) })`,
 						`(f64.add ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`,
 					]);
-					const mod: binaryen.Module = new Builder('').module;
+					const mod: binaryen.Module = new binaryen.Module();
 					return assertEqualBins(actuals.map((actual) => actual.buildBin(mod)), [
 						mod.i32.mul(instructionConstInt(21n)    .buildBin(mod), instructionConstInt(2n)     .buildBin(mod)),
 						mod.f64.add(instructionConstFloat(30.1) .buildBin(mod), instructionConstFloat(18.1) .buildBin(mod)),
@@ -221,7 +220,7 @@ describe('Instruction', () => {
 						`(i32.lt_s ${ instructionConstInt(30n)    } ${ instructionConstInt(18n) })`,
 						`(f64.ge ${   instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`,
 					]);
-					const mod: binaryen.Module = new Builder('').module;
+					const mod: binaryen.Module = new binaryen.Module();
 					return assertEqualBins(actuals.map((actual) => actual.buildBin(mod)), [
 						mod.i32.lt_s (instructionConstInt(30n)    .buildBin(mod), instructionConstInt(18n)    .buildBin(mod)),
 						mod.f64.ge   (instructionConstFloat(30.1) .buildBin(mod), instructionConstFloat(18.1) .buildBin(mod)),
@@ -275,7 +274,7 @@ describe('Instruction', () => {
 						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstFloat(1.0)),
 						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstFloat(1.0)),
 					];
-					const mod: binaryen.Module = new Builder('').module;
+					const mod: binaryen.Module = new binaryen.Module();
 					return assertEqualBins(actuals.map((actual) => actual.buildBin(mod)), [
 						mod.i32.eq (           instructionConstInt(42n) .buildBin(mod), instructionConstInt(420n)  .buildBin(mod)),
 						mod.i32.eq (           instructionConstInt(42n) .buildBin(mod), instructionConstInt(420n)  .buildBin(mod)),
@@ -346,7 +345,7 @@ describe('Instruction', () => {
 					actuals   .map((actual) =>   actual.toString()),
 					expecteds .map((expected) => expected.toString()),
 				);
-				const mod: binaryen.Module = new Builder('').module;
+				const mod: binaryen.Module = new binaryen.Module();
 				return assertEqualBins(
 					actuals   .map((actual) =>   actual.buildBin(mod)),
 					expecteds .map((expected) => expected.buildBin(mod)),
@@ -375,7 +374,7 @@ describe('Instruction', () => {
 					`(if (result i32) ${ instructionConstInt(1n) } (then ${ instructionConstInt(2n)    }) (else ${ instructionConstInt(3n) }))`,
 					`(if (result f64) ${ instructionConstInt(0n) } (then ${ instructionConstFloat(2.2) }) (else ${ instructionConstFloat(3.3) }))`,
 				]);
-				const mod: binaryen.Module = new Builder('').module;
+				const mod: binaryen.Module = new binaryen.Module();
 				return assertEqualBins(actuals.map((actual) => actual.buildBin(mod)), [
 					mod.if(instructionConstInt(1n).buildBin(mod), instructionConstInt(2n)    .buildBin(mod), instructionConstInt(3n)    .buildBin(mod)),
 					mod.if(instructionConstInt(0n).buildBin(mod), instructionConstFloat(2.2) .buildBin(mod), instructionConstFloat(3.3) .buildBin(mod)),
