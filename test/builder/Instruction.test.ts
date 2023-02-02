@@ -143,6 +143,28 @@ describe('Instruction', () => {
 	});
 
 
+	describe('InstructionTupleMake', () => {
+		describe('#buildBin', () => {
+			it('makes a tuple of expressions.', () => {
+				const exprs = [
+					instructionConstInt(3n),
+					instructionConstFloat(3.6),
+					new INST.InstructionBinopArithmetic(
+						Operator.ADD,
+						instructionConstInt(2n),
+						instructionConstInt(21n),
+					),
+				];
+				const mod: binaryen.Module = new binaryen.Module();
+				return assertEqualBins(
+					new INST.InstructionTupleMake(exprs).buildBin(mod),
+					mod.tuple.make(exprs.map((expr) => expr.buildBin(mod))),
+				);
+			});
+		});
+	});
+
+
 	describe('InstructionUnop', () => {
 		describe('#{toString,buildBin}', () => {
 			it('performs a unary operation.', () => {
