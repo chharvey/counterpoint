@@ -5,6 +5,7 @@ import {
 	INST,
 	Builder,
 } from '../../src/index.js';
+import {forEachAggregated} from '../../src/lib/index.js';
 import {assertEqualBins} from '../assert-helpers.js';
 import {
 	instructionConstInt,
@@ -17,32 +18,85 @@ import {
 describe('Instruction', () => {
 	describe('.constructor', () => {
 		context('InstructionBinop', () => {
-			it('throws when operands are a mix of ints and floats.', () => {
-				assert.throws(() => new INST.InstructionBinopArithmetic(
+			it('does not throw when operands are a mix of ints and floats.', () => {
+				new INST.InstructionBinopArithmetic(
 					Operator.MUL,
 					instructionConstInt(5n),
 					instructionConstFloat(2.5),
-				), TypeError)
-				assert.throws(() => new INST.InstructionBinopComparative(
+				);
+				new INST.InstructionBinopComparative(
 					Operator.IS,
 					instructionConstInt(5n),
 					instructionConstFloat(2.5),
-				), TypeError);
-				assert.throws(() => new INST.InstructionBinopLogical(
+				);
+				new INST.InstructionBinopEquality(
+					Operator.ID,
+					instructionConstInt(5n),
+					instructionConstFloat(2.5),
+				);
+				new INST.InstructionBinopLogical(
 					-1,
 					Operator.AND,
 					instructionConstInt(5n),
 					instructionConstFloat(2.5),
-				), TypeError);
+				);
 			})
+			it('coerces ints to floats when either floats.', () => {
+				assert.deepStrictEqual(
+					new INST.InstructionBinopArithmetic(Operator.MUL, instructionConstInt(5n), instructionConstFloat(2.5)),
+					new INST.InstructionBinopArithmetic(Operator.MUL, instructionConvert(5n),  instructionConstFloat(2.5)),
+				);
+			});
+			it('does not coerce ints to floats when neither floats.', () => {
+				assert.notDeepStrictEqual(
+					new INST.InstructionBinopArithmetic(Operator.ADD, instructionConstInt(5n), instructionConstInt(2n)),
+					new INST.InstructionBinopArithmetic(Operator.ADD, instructionConvert(5n),  instructionConstInt(2n)),
+				);
+				assert.notDeepStrictEqual(
+					new INST.InstructionBinopComparative(Operator.LT, instructionConstInt(5n), instructionConstInt(2n)),
+					new INST.InstructionBinopComparative(Operator.LT, instructionConstInt(5n), instructionConvert(2n)),
+				);
+				assert.notDeepStrictEqual(
+					new INST.InstructionBinopLogical(-1, Operator.OR, instructionConstInt(5n), instructionConstInt(2n)),
+					new INST.InstructionBinopLogical(-1, Operator.OR, instructionConvert(5n),  instructionConvert(2n)),
+				);
+			});
+			describe('InsructionBinopEquality', () => {
+				it('coerces ints to floats when: either floats, AND when operation is `==`, AND when int coercion is on.', () => {
+					assert.deepStrictEqual(
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(5n), instructionConstFloat(2.5)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(5n),  instructionConstFloat(2.5)),
+					);
+				});
+				it('does not coerce ints to floats when: neither floats, OR when operation is `===`, OR when int coercion is off.', () => {
+					forEachAggregated([
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(5n),  instructionConstInt(2n)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(5n), instructionConvert(2n)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(5n),  instructionConvert(2n)),
+					], (unexpected) => {
+						assert.notDeepStrictEqual(
+							new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(5n), instructionConstInt(2n)),
+							unexpected,
+						);
+					});
+					assert.notDeepStrictEqual(
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(5n), instructionConstFloat(2.5)),
+						new INST.InstructionBinopEquality(Operator.ID, instructionConvert(5n),  instructionConstFloat(2.5)),
+					);
+					assert.notDeepStrictEqual(
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(5n), instructionConstFloat(2.5), false),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(5n),  instructionConstFloat(2.5), false),
+					);
+				});
+			});
 		})
 		context('InstructionCond', () => {
-			it('throws when branches are a mix of ints and floats.', () => {
-				assert.throws(() => new INST.InstructionCond(
+			it('does not throw when branches are a mix of ints and floats.', () => {
+				new INST.InstructionCond(
 					instructionConstInt(0n),
 					instructionConstInt(2n),
 					instructionConstFloat(3.3),
-				), TypeError)
+				);
 			})
 		})
 	})
@@ -254,27 +308,27 @@ describe('Instruction', () => {
 						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstInt(420n)),
 						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstInt(420n)),
 						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstFloat(4.2)),
-						new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(42n),  instructionConstFloat(4.2)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstFloat(4.2)),
 
 						new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstInt(42n)),
-						new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConvert(42n)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstInt(42n)),
 						new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstFloat(42.0)),
 						new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstFloat(42.0)),
 
 						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n)),
 						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n)),
 						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0)),
-						new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(0n),  instructionConstFloat(0.0)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0)),
 
 						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n)),
 						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n)),
 						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0)),
-						new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(0n),  instructionConstFloat(0.0)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0)),
 
 						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstInt(1n)),
 						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstInt(1n)),
 						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstFloat(1.0)),
-						new INST.InstructionBinopEquality(Operator.EQ, instructionConvert(1n),  instructionConstFloat(1.0)),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstFloat(1.0)),
 
 						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n)),
 						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n)),
@@ -282,20 +336,20 @@ describe('Instruction', () => {
 						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(1n)),
 
 
-						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstFloat(4.2)),
-						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstFloat(4.2)),
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstFloat(4.2), false),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstFloat(4.2), false),
 
-						new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstInt(42n)),
-						new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstInt(42n)),
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstInt(42n), false),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstInt(42n), false),
 
-						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0)),
-						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0)),
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0), false),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0), false),
 
-						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0)),
-						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0)),
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0), false),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0), false),
 
-						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstFloat(1.0)),
-						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstFloat(1.0)),
+						new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstFloat(1.0), false),
+						new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstFloat(1.0), false),
 					];
 					const mod: binaryen.Module = new Builder('').module;
 					return assertEqualBins(actuals.map((actual) => actual.buildBin(mod)), [
