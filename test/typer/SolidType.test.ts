@@ -1,4 +1,5 @@
 import * as assert from 'assert'
+import binaryen from 'binaryen';
 import {
 	TypeEntry,
 	SolidType,
@@ -1068,5 +1069,28 @@ describe('SolidType', () => {
 				});
 			});
 		});
+	});
+
+
+	specify('#binType', () => {
+		const tests = new Map<SolidType, binaryen.Type>([
+			[SolidType.NEVER, binaryen.unreachable],
+			[SolidType.VOID,  binaryen.none],
+			[SolidType.NULL,  binaryen.i32],
+			[SolidType.BOOL,  binaryen.i32],
+			[SolidType.INT,   binaryen.i32],
+			[SolidType.FLOAT, binaryen.f64],
+			[SolidType.NULL.union(SolidType.BOOL),  binaryen.i32],
+			[SolidType.BOOL.union(SolidType.INT),   binaryen.i32],
+			[SolidType.NULL.union(SolidType.INT),   binaryen.i32],
+			[SolidType.VOID.union(SolidType.NULL),  binaryen.i32],
+			[SolidType.VOID.union(SolidType.BOOL),  binaryen.i32],
+			[SolidType.VOID.union(SolidType.INT),   binaryen.i32],
+			[SolidType.VOID.union(SolidType.FLOAT), binaryen.f64],
+			[SolidType.NULL.union(SolidType.FLOAT), binaryen.createType([binaryen.i32, binaryen.i32, binaryen.f64])],
+			[SolidType.BOOL.union(SolidType.FLOAT), binaryen.createType([binaryen.i32, binaryen.i32, binaryen.f64])],
+			[SolidType.INT .union(SolidType.FLOAT), binaryen.createType([binaryen.i32, binaryen.i32, binaryen.f64])],
+		]);
+		return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
 	});
 })

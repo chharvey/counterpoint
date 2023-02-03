@@ -44,9 +44,6 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node, {value})
 		this.value = value
 	}
-	override shouldFloat(): boolean {
-		return this.value instanceof Float64
-	}
 	protected override build_do(_builder: Builder): INST.InstructionConst {
 		return this.value.build();
 	}

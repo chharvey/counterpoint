@@ -17,10 +17,6 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
  * - ASTNodeMap
  */
 export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
-	override shouldFloat(): boolean {
-		throw 'ASTNodeCollectionLiteral#shouldFloat not yet supported.';
-	}
-
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && '`ASTNodeCollectionLiteral#build_do` not yet supported.';
 	}

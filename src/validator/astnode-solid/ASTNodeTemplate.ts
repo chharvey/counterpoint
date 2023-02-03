@@ -33,9 +33,6 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children)
 	}
-	override shouldFloat(): boolean {
-		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
-	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && '`ASTNodeTemplate#build_do` not yet supported.';
 	}

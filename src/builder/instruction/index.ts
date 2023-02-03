@@ -5,6 +5,7 @@ export * from './InstructionConst.js';
 export * from './InstructionConvert.js';
 export * from './InstructionLocalGet.js';
 export * from './InstructionLocalTee.js';
+export * from './InstructionTupleMake.js';
 export * from './InstructionUnop.js';
 export * from './InstructionBinopArithmetic.js';
 export * from './InstructionBinopComparative.js';

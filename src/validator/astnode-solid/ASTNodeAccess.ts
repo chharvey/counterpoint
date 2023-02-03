@@ -49,9 +49,6 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	) {
 		super(start_node, {kind}, [base, accessor]);
 	}
-	override shouldFloat(): boolean {
-		throw 'ASTNodeAccess#shouldFloat not yet supported.';
-	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && '`ASTNodeAccess#build_do` not yet supported.';
 	}

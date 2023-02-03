@@ -1,5 +1,6 @@
 import type {
 	INST,
+	Builder,
 } from './package.js';
 import {SolidString} from './index.js';
 
@@ -75,5 +76,5 @@ export abstract class SolidObject {
 	 * Construct a new Instruction from this value.
 	 * @return the directions to print
 	 */
-	public abstract build(): INST.InstructionConst;
+	public abstract build(builder: Builder): INST.InstructionExpression;
 }

@@ -1,5 +1,6 @@
 import {
 	INST,
+	Builder,
 	Keys,
 	Map_hasEq,
 	Map_getEq,
@@ -35,7 +36,8 @@ export abstract class Collection extends SolidObject {
 	}
 
 
-	public override build(): INST.InstructionConst {
+	public override build(builder: Builder): INST.InstructionExpression {
+		builder;
 		throw new Error('`Collection#build` not yet supported.');
 	}
 

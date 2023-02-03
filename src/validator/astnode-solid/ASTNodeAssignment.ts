@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	SolidType,
-	INST,
 	Builder,
 	AssignmentError10,
 	MutabilityError01,
@@ -68,10 +67,12 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		if (!local) {
 			throw new ReferenceError(`Variable with id ${ id } not found.`);
 		}
-		let inst: INST.InstructionExpression = this.assigned.build(builder);
-		if (this.assignee.type().isSubtypeOf(SolidType.FLOAT) && !this.assigned.shouldFloat()) {
-			inst = new INST.InstructionConvert(inst);
-		}
-		return builder.module.local.set(local.index, inst.buildBin(builder.module));
+		return builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+			builder.module,
+			this.assignee.type(),
+			this.assigned.type(),
+			this.assigned.build(builder).buildBin(builder.module),
+			this.validator.config.compilerOptions.intCoercion,
+		));
 	}
 }

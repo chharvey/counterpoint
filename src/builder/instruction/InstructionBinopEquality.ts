@@ -15,13 +15,17 @@ export class InstructionBinopEquality extends InstructionBinop {
 	 * @param op an operator representing the operation to perform
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
+	 * @param int_coercion compiler option
 	 */
 	constructor (
 		op:   ValidOperatorEquality,
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
+		int_coercion: boolean = true,
 	) {
-		super(op, arg0, arg1)
+		super(op, ...(int_coercion && op === Operator.EQ)
+			? InstructionBinop.coerceOperands(arg0, arg1)
+			: [arg0, arg1] as const);
 	}
 	/**
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`

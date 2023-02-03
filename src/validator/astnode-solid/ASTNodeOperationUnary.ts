@@ -33,9 +33,6 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand]);
 	}
-	override shouldFloat(): boolean {
-		return this.operand.shouldFloat();
-	}
 	protected override build_do(builder: Builder): INST.InstructionUnop {
 		return new INST.InstructionUnop(this.operator, this.operand.build(builder));
 	}
