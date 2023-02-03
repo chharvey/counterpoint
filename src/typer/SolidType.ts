@@ -1,3 +1,4 @@
+import binaryen from 'binaryen';
 import {
 	Set_hasEq,
 } from './package.js';
@@ -231,6 +232,21 @@ export abstract class SolidType {
 	}
 	immutableOf(): SolidType {
 		return this;
+	}
+
+	/**
+	 * Return a corresponding Binaryen type.
+	 * @return the best match for a Binaryen type equivalent to this type
+	 * @final
+	 */
+	public binType(): binaryen.Type {
+		return (
+			(this.isBottomType)                                                                     ? binaryen.unreachable :
+			(this.isSubtypeOf(SolidType.VOID))                                                      ? binaryen.none        :
+			(this.isSubtypeOf(SolidType.unionAll([SolidType.NULL, SolidType.BOOL, SolidType.INT]))) ? binaryen.i32         :
+			(this.isSubtypeOf(SolidType.FLOAT))                                                     ? binaryen.f64         :
+			binaryen.unreachable
+		);
 	}
 }
 

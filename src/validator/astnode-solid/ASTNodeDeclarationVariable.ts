@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	SolidType,
-	INST,
 	Builder,
 	AssignmentError01,
 	forEachAggregated,
@@ -69,12 +68,12 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		if (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold()) {
 			return builder.module.nop();
 		} else {
-			let inst: INST.InstructionExpression = this.assigned.build(builder);
+			let value: binaryen.ExpressionRef = this.assigned.build(builder).buildBin(builder.module);
 			if (this.typenode.eval().isSubtypeOf(SolidType.FLOAT) && !this.assigned.shouldFloat()) {
-				inst = new INST.InstructionConvert(inst);
+				value = builder.module.f64.convert_u.i32(value);
 			}
-			const local = builder.addLocal(this.assignee.id, inst.binType)[0].getLocalInfo(this.assignee.id);
-			return builder.module.local.set(local!.index, inst.buildBin(builder.module));
+			const local = builder.addLocal(this.assignee.id, this.assigned.type().binType())[0].getLocalInfo(this.assignee.id);
+			return builder.module.local.set(local!.index, value);
 		}
 	}
 }

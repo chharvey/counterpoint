@@ -36,7 +36,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint = builder.varCount;
 		return new INST.InstructionBinopLogical(
-			builder.addLocal(temp_id, inst0.binType)[0].getLocalInfo(temp_id)!.index,
+			builder.addLocal(temp_id, this.operand0.type().binType())[0].getLocalInfo(temp_id)!.index,
 			this.operator,
 			inst0,
 			inst1,
