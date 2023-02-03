@@ -68,12 +68,15 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		if (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold()) {
 			return builder.module.nop();
 		} else {
-			let value: binaryen.ExpressionRef = this.assigned.build(builder).buildBin(builder.module);
-			if (this.typenode.eval().isSubtypeOf(SolidType.FLOAT) && !this.assigned.shouldFloat()) {
-				value = builder.module.f64.convert_u.i32(value);
-			}
-			const local = builder.addLocal(this.assignee.id, this.assigned.type().binType())[0].getLocalInfo(this.assignee.id);
-			return builder.module.local.set(local!.index, value);
+			const assignee_type: SolidType = this.typenode.eval();
+			const local = builder.addLocal(this.assignee.id, assignee_type.binType())[0].getLocalInfo(this.assignee.id);
+			return builder.module.local.set(local!.index, ASTNodeStatement.coerceAssignment(
+				builder.module,
+				assignee_type,
+				this.assigned.type(),
+				this.assigned.build(builder).buildBin(builder.module),
+				this.validator.config.compilerOptions.intCoercion,
+			));
 		}
 	}
 }

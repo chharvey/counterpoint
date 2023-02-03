@@ -245,6 +245,11 @@ export abstract class SolidType {
 			(this.isSubtypeOf(SolidType.VOID))                                                      ? binaryen.none        :
 			(this.isSubtypeOf(SolidType.unionAll([SolidType.NULL, SolidType.BOOL, SolidType.INT]))) ? binaryen.i32         :
 			(this.isSubtypeOf(SolidType.FLOAT))                                                     ? binaryen.f64         :
+			(this instanceof SolidTypeUnion) ? ((left_type: binaryen.Type, right_type: binaryen.Type) => (
+				([binaryen.none, binaryen.unreachable].includes(left_type))  ? right_type :
+				([binaryen.none, binaryen.unreachable].includes(right_type)) ? left_type  :
+				binaryen.createType([binaryen.i32, left_type, right_type]) // create an `Either<L, R>` monad-like thing
+			))(this.left.binType(), this.right.binType()) :
 			binaryen.unreachable
 		);
 	}

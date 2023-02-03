@@ -1083,13 +1083,13 @@ describe('SolidType', () => {
 			[SolidType.NULL.union(SolidType.BOOL),  binaryen.i32],
 			[SolidType.BOOL.union(SolidType.INT),   binaryen.i32],
 			[SolidType.NULL.union(SolidType.INT),   binaryen.i32],
-			[SolidType.VOID.union(SolidType.NULL),  binaryen.unreachable],
-			[SolidType.VOID.union(SolidType.BOOL),  binaryen.unreachable],
-			[SolidType.VOID.union(SolidType.INT),   binaryen.unreachable],
-			[SolidType.VOID.union(SolidType.FLOAT), binaryen.unreachable],
-			[SolidType.NULL.union(SolidType.FLOAT), binaryen.unreachable],
-			[SolidType.BOOL.union(SolidType.FLOAT), binaryen.unreachable],
-			[SolidType.INT .union(SolidType.FLOAT), binaryen.unreachable],
+			[SolidType.VOID.union(SolidType.NULL),  binaryen.i32],
+			[SolidType.VOID.union(SolidType.BOOL),  binaryen.i32],
+			[SolidType.VOID.union(SolidType.INT),   binaryen.i32],
+			[SolidType.VOID.union(SolidType.FLOAT), binaryen.f64],
+			[SolidType.NULL.union(SolidType.FLOAT), binaryen.createType([binaryen.i32, binaryen.i32, binaryen.f64])],
+			[SolidType.BOOL.union(SolidType.FLOAT), binaryen.createType([binaryen.i32, binaryen.i32, binaryen.f64])],
+			[SolidType.INT .union(SolidType.FLOAT), binaryen.createType([binaryen.i32, binaryen.i32, binaryen.f64])],
 		]);
 		return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
 	});

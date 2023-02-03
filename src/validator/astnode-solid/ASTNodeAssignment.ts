@@ -67,10 +67,12 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		if (!local) {
 			throw new ReferenceError(`Variable with id ${ id } not found.`);
 		}
-		let value: binaryen.ExpressionRef = this.assigned.build(builder).buildBin(builder.module);
-		if (this.assignee.type().isSubtypeOf(SolidType.FLOAT) && !this.assigned.shouldFloat()) {
-			value = builder.module.f64.convert_u.i32(value);
-		}
-		return builder.module.local.set(local.index, value);
+		return builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+			builder.module,
+			this.assignee.type(),
+			this.assigned.type(),
+			this.assigned.build(builder).buildBin(builder.module),
+			this.validator.config.compilerOptions.intCoercion,
+		));
 	}
 }
