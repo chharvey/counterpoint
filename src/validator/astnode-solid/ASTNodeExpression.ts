@@ -48,11 +48,6 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	private assessed?: SolidObject | null;
 	private built?: INST.InstructionExpression;
 	/**
-	 * Determine whether this expression should build to a float-type instruction.
-	 * @return Should the built instruction be type-coerced into a floating-point number?
-	 */
-	abstract shouldFloat(): boolean;
-	/**
 	 * @final
 	 */
 	override typeCheck(): void {

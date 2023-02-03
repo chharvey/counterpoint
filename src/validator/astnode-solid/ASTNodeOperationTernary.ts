@@ -32,9 +32,6 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
-	override shouldFloat(): boolean {
-		return this.operand1.shouldFloat() || this.operand2.shouldFloat();
-	}
 
 	protected override build_do(builder: Builder): INST.InstructionCond {
 		return new INST.InstructionCond(
