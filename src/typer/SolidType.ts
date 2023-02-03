@@ -256,6 +256,18 @@ export abstract class SolidType {
 			(() => { throw new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`); })() // TODO use throw_expression
 		);
 	}
+
+	/**
+	 * @return a default Binaryen value given this type
+	 */
+	public defaultBinValue(mod: binaryen.Module): binaryen.ExpressionRef {
+		return (
+			(this.binType() === binaryen.i32) ? mod.i32.const(0) :
+			(this.binType() === binaryen.f64) ? mod.f64.const(0) :
+			(this instanceof SolidTypeUnion)  ? mod.tuple.make([mod.i32.const(0), this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)]) :
+			(() => { throw new TypeError(`Could not determine a default value for \`${ this }\`.`); })() // TODO use throw_expression
+		);
+	};
 }
 
 

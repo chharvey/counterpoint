@@ -48,17 +48,17 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		) {
 			value = mod.f64.convert_u.i32(value);
 		}
-		if (assignee_type instanceof SolidTypeUnion) {
+		if (assignee_type instanceof SolidTypeUnion) { // `assignee_type.binType()` is a result of calling `binaryen.createType()`
 			// create an `Either<L, R>` monad-like thing
 			let side:    0 | 1                  = 0;
-			let left:    binaryen.ExpressionRef = mod.nop();
-			let right:   binaryen.ExpressionRef = mod.nop();
+			let left:    binaryen.ExpressionRef = assignee_type.left  .defaultBinValue(mod);
+			let right:   binaryen.ExpressionRef = assignee_type.right .defaultBinValue(mod);
 			if (assigned_type.isSubtypeOf(assignee_type.left)) {
 				[side, left] = [0, value];
 			} else if (assigned_type.isSubtypeOf(assignee_type.right)) {
 				[side, right] = [1, value];
 			} else {
-				throw new TypeError(`Expected \`${ assigned_type }\` to be a subtype of \`${ assignee_type.left }\` or ${ assignee_type.right }`);
+				throw new TypeError(`Expected \`${ assigned_type }\` to be a subtype of \`${ assignee_type.left }\` or \`${ assignee_type.right }\``);
 			}
 			value = mod.tuple.make([mod.i32.const(side), left, right]);
 		}
