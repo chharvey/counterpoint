@@ -3,6 +3,8 @@ import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
+	INST,
+	Builder,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -25,6 +27,10 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
+	}
+
+	protected override build_do(builder: Builder): INST.InstructionExpression {
+		return new INST.InstructionTupleMake(this.children.map((expr) => expr.build(builder)));
 	}
 
 	protected override type_do(): TYPE.Type {

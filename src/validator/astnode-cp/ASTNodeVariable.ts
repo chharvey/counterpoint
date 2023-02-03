@@ -37,10 +37,6 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		return this._id ??= this.validator.cookTokenIdentifier(this.start_node.text);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.FLOAT);
-	}
-
 	public override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);

@@ -33,21 +33,12 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operand1.shouldFloat() || this.operand2.shouldFloat();
-	}
-
 	protected override build_do(builder: Builder): INST.InstructionCond {
-		let [inst0, inst1, inst2]: INST.InstructionExpression[] = [this.operand0, this.operand1, this.operand2].map((expr) => expr.build(builder)); // eslint-disable-line prefer-const
-		if (this.shouldFloat()) {
-			if (!this.operand1.shouldFloat()) {
-				inst1 = new INST.InstructionConvert(inst1);
-			}
-			if (!this.operand2.shouldFloat()) {
-				inst2 = new INST.InstructionConvert(inst2);
-			}
-		}
-		return new INST.InstructionCond(inst0, inst1, inst2);
+		return new INST.InstructionCond(
+			this.operand0.build(builder),
+			this.operand1.build(builder),
+			this.operand2.build(builder),
+		);
 	}
 
 	protected override type_do(): TYPE.Type {

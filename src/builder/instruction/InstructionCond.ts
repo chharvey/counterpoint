@@ -1,5 +1,6 @@
 import binaryen from 'binaryen';
 import {InstructionExpression} from './InstructionExpression.js';
+import {InstructionBinop} from './InstructionBinop.js';
 
 
 
@@ -20,9 +21,7 @@ export class InstructionCond extends InstructionExpression {
 		private readonly arg2: InstructionExpression,
 	) {
 		super();
-		if (this.arg1.binType !== this.arg2.binType) {
-			throw new TypeError(`Both branches must be the same type.\nOperands: ${ this.arg1 } ${ this.arg2 }`);
-		}
+		[this.arg1, this.arg2] = InstructionBinop.coerceOperands(this.arg1, this.arg2);
 	}
 
 	/**

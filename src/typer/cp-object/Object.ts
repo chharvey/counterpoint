@@ -1,4 +1,7 @@
-import type {INST} from './package.js';
+import type {
+	INST,
+	Builder,
+} from './package.js';
 import {String as CPString} from './index.js';
 
 
@@ -78,6 +81,6 @@ abstract class CPObject {
 	 * Construct a new Instruction from this value.
 	 * @return the directions to print
 	 */
-	public abstract build(): INST.InstructionConst;
+	public abstract build(builder: Builder): INST.InstructionExpression;
 }
 export {CPObject as Object};

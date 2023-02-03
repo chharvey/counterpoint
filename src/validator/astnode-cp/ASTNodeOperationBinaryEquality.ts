@@ -35,16 +35,13 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	public override shouldFloat(): boolean {
-		return (
-			   this.validator.config.compilerOptions.intCoercion
-			&& this.operator === Operator.EQ
-			&& super.shouldFloat()
-		);
-	}
-
 	protected override build_do(builder: Builder): INST.InstructionBinopEquality {
-		return new INST.InstructionBinopEquality(this.operator, ...this.buildOps(builder));
+		return new INST.InstructionBinopEquality(
+			this.operator,
+			this.operand0.build(builder),
+			this.operand1.build(builder),
+			this.validator.config.compilerOptions.intCoercion,
+		);
 	}
 
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {

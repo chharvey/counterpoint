@@ -50,10 +50,6 @@ export class ASTNodeCall extends ASTNodeExpression {
 		], (arg) => arg.varCheck());
 	}
 
-	public override shouldFloat(): boolean {
-		return false;
-	}
-
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		builder;
 		throw '`ASTNodeCall#build_do` not yet supported.';

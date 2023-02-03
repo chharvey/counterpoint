@@ -48,11 +48,6 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	private assessed?: OBJ.Object | null;
 	private built?: INST.InstructionExpression;
 	/**
-	 * Determine whether this expression should build to a float-type instruction.
-	 * @return Should the built instruction be type-coerced into a floating-point number?
-	 */
-	public abstract shouldFloat(): boolean;
-	/**
 	 * @final
 	 */
 	public override typeCheck(): void {
@@ -68,7 +63,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	public build(builder: Builder): INST.InstructionExpression {
 		if (!this.built) {
 			const value: OBJ.Object | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			this.built = (value) ? value.build() : this.build_do(builder);
+			this.built = (value) ? value.build(builder) : this.build_do(builder);
 		}
 		return this.built;
 	}

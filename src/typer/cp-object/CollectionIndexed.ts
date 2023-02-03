@@ -1,4 +1,6 @@
 import {
+	INST,
+	Builder,
 	VoidError01,
 	throw_expression,
 	AST,
@@ -40,6 +42,10 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 				))
 			))
 		);
+	}
+
+	public override build(builder: Builder): INST.InstructionExpression {
+		return new INST.InstructionTupleMake(this.items.map((item) => item.build(builder)));
 	}
 
 	/** @final */

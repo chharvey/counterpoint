@@ -1,5 +1,9 @@
 import * as assert from 'assert';
-import {OBJ} from '../../src/index.js';
+import {
+	OBJ,
+	INST,
+	Builder,
+} from '../../src/index.js';
 import {
 	instructionConstInt,
 	instructionConstFloat,
@@ -32,6 +36,18 @@ describe('Object', () => {
 					new OBJ.String('fire'),
 					new OBJ.String('wind'),
 				]))));
+			});
+		});
+	});
+
+
+	describe('#build', () => {
+		describe('SolidTuple', () => {
+			it('returns InstructionTupleMake.', () => {
+				assert.deepStrictEqual(
+					new OBJ.Tuple([OBJ.Integer.UNIT, new OBJ.Float(2.0)]).build(new Builder('')),
+					new INST.InstructionTupleMake([instructionConstInt(1n), instructionConstFloat(2.0)]),
+				);
 			});
 		});
 	});

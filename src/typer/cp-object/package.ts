@@ -6,6 +6,7 @@
  */
 export {
 	INST,
+	Builder,
 	VoidError01,
 	CodeUnit,
 	Keys,

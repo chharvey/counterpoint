@@ -31,10 +31,6 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		super(start_node, {}, [claimed_type, operand]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.FLOAT);
-	}
-
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		return this.operand.build(builder);
 	}

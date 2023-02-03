@@ -6,6 +6,7 @@
  */
 export {
 	INST,
+	Builder,
 	TypeError04,
 	VoidError01,
 } from '../index.js';

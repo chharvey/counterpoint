@@ -29,8 +29,7 @@ export class InstructionBinopLogical extends InstructionBinop {
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
 	) {
-		super(op, arg0, arg1);
-		this.typecheckArgs();
+		super(op, ...InstructionBinop.coerceOperands(arg0, arg1));
 
 		const condition = new InstructionUnop(
 			Operator.NOT,

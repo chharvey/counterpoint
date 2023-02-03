@@ -1,6 +1,7 @@
 import * as xjs from 'extrajs';
 import type {
 	INST,
+	Builder,
 	Keys,
 	TYPE,
 } from './package.js';
@@ -33,7 +34,8 @@ export abstract class Collection extends CPObject {
 	}
 
 
-	public override build(): INST.InstructionConst {
+	public override build(builder: Builder): INST.InstructionExpression {
+		builder;
 		throw new Error('`Collection#build` not yet supported.');
 	}
 

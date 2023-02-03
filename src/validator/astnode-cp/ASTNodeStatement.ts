@@ -1,6 +1,7 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
+	TYPE,
 	CPConfig,
 	CONFIG_DEFAULT,
 	Builder,
@@ -31,6 +32,38 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
 		return goal.children[0];
 	}
+
+	protected static coerceAssignment(
+		mod:           binaryen.Module,
+		assignee_type: TYPE.Type,
+		assigned_type: TYPE.Type,
+		value:         binaryen.ExpressionRef,
+		int_coercion:  boolean = true,
+	): binaryen.ExpressionRef {
+		if (
+			   int_coercion
+			&& assignee_type.binType() === binaryen.f64
+			&& assigned_type.binType() === binaryen.i32
+		) {
+			value = mod.f64.convert_u.i32(value);
+		}
+		if (assignee_type instanceof TYPE.TypeUnion) {
+			// create an `Either<L, R>` monad-like thing
+			let side:    0 | 1                  = 0;
+			let left:    binaryen.ExpressionRef = mod.nop();
+			let right:   binaryen.ExpressionRef = mod.nop();
+			if (assigned_type.isSubtypeOf(assignee_type.left)) {
+				[side, left] = [0, value];
+			} else if (assigned_type.isSubtypeOf(assignee_type.right)) {
+				[side, right] = [1, value];
+			} else {
+				throw new TypeError(`Expected \`${ assigned_type }\` to be a subtype of \`${ assignee_type.left }\` or ${ assignee_type.right }`);
+			}
+			value = mod.tuple.make([mod.i32.const(side), left, right]);
+		}
+		return value;
+	}
+
 
 	/** @implements Buildable */
 	public abstract build(builder: Builder): binaryen.ExpressionRef;

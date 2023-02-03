@@ -61,10 +61,6 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.value instanceof OBJ.Float;
-	}
-
 	protected override build_do(_builder: Builder): INST.InstructionConst {
 		return this.value.build();
 	}

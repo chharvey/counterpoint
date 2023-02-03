@@ -1,5 +1,7 @@
+import binaryen from 'binaryen';
 import type {ValidOperatorBinary} from './package.js';
 import {InstructionExpression} from './InstructionExpression.js';
+import {InstructionConvert} from './InstructionConvert.js';
 
 
 
@@ -13,6 +15,29 @@ import {InstructionExpression} from './InstructionExpression.js';
  */
 export abstract class InstructionBinop extends InstructionExpression {
 	/**
+	 * Coerce either operand from an i32 into an f64 if necessary and possible.
+	 * @param arg0 the left argument
+	 * @param arg1 the right argument
+	 * @return the pair of arguments, updated
+	 * @throws if the arguments have different types even after the coercion
+	 */
+	public static coerceOperands(arg0: InstructionExpression, arg1: InstructionExpression): [InstructionExpression, InstructionExpression] {
+		if ([arg0.binType, arg1.binType].includes(binaryen.f64)) {
+			if (arg0.binType === binaryen.i32) {
+				arg0 = new InstructionConvert(arg0);
+			}
+			if (arg1.binType === binaryen.i32) {
+				arg1 = new InstructionConvert(arg1);
+			}
+			if (arg0.binType !== arg1.binType) {
+				throw new TypeError(`Both operands must be the same type.\nOperands: ${ arg0 } ${ arg1 }`);
+			}
+		}
+		return [arg0, arg1];
+	}
+
+
+	/**
 	 * @param op a punctuator representing the operation to perform
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
@@ -23,15 +48,5 @@ export abstract class InstructionBinop extends InstructionExpression {
 		protected readonly arg1: InstructionExpression,
 	) {
 		super();
-	}
-
-	/**
-	 * Ensure that both args are either both ints or both floats.
-	 * @throw if one arg is an int and the other is a float
-	 */
-	protected typecheckArgs(): void {
-		if (this.arg0.binType !== this.arg1.binType) {
-			throw new TypeError(`Both operands must be the same type.\nOperands: ${ this.arg0 } ${ this.arg1 }`);
-		}
 	}
 }
