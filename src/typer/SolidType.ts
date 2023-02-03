@@ -82,6 +82,8 @@ export abstract class SolidType {
 	 */
 	readonly isTopType: boolean = false;
 
+	private _binType: binaryen.Type | null = null; // TODO: use memoize decorator on `.binType()`
+
 	/**
 	 * Construct a new SolidType object.
 	 * @param isMutable Whether this type is `mutable`. Mutable objects may change fields/entries and call mutating methods.
@@ -237,10 +239,11 @@ export abstract class SolidType {
 	/**
 	 * Return a corresponding Binaryen type.
 	 * @return the best match for a Binaryen type equivalent to this type
+	 * @todo use memoize decorator on this method
 	 * @final
 	 */
 	public binType(): binaryen.Type {
-		return (
+		return this._binType ??= ( // TODO: use memoize decorator
 			(this.isBottomType)                                                                     ? binaryen.unreachable :
 			(this.isSubtypeOf(SolidType.VOID))                                                      ? binaryen.none        :
 			(this.isSubtypeOf(SolidType.unionAll([SolidType.NULL, SolidType.BOOL, SolidType.INT]))) ? binaryen.i32         :
@@ -250,7 +253,7 @@ export abstract class SolidType {
 				([binaryen.none, binaryen.unreachable].includes(right_type)) ? left_type  :
 				binaryen.createType([binaryen.i32, left_type, right_type]) // create an `Either<L, R>` monad-like thing
 			))(this.left.binType(), this.right.binType()) :
-			binaryen.unreachable
+			(() => { throw new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`); })() // TODO use throw_expression
 		);
 	}
 }
