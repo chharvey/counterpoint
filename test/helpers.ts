@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -38,4 +39,14 @@ export function instructionConstFloat(x: number): INST.InstructionConst {
 }
 export function instructionConvert(x: bigint): INST.InstructionConvert {
 	return new INST.InstructionConvert(instructionConstInt(x));
+}
+
+export function buildConstInt(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
+	return new Int16(x).build().buildBin(mod);
+}
+export function buildConstFloat(x: number, mod: binaryen.Module): binaryen.ExpressionRef {
+	return new Float64(x).build().buildBin(mod);
+}
+export function buildConvert(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
+	return mod.f64.convert_u.i32(buildConstInt(x, mod));
 }

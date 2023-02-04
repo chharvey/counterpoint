@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -18,7 +19,10 @@ import {
 	TypeError01,
 	NanError01,
 } from '../../../src/index.js';
-import {assertEqualTypes} from '../../assert-helpers.js';
+import {
+	assertEqualTypes,
+	assertEqualBins,
+} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	typeConstInt,
@@ -26,6 +30,9 @@ import {
 	typeConstStr,
 	instructionConstInt,
 	instructionConstFloat,
+	buildConstInt,
+	buildConstFloat,
+	buildConvert,
 } from '../../helpers.js';
 
 
@@ -53,6 +60,12 @@ function foldOperations(tests: Map<string, SolidObject>): void {
 function buildOperations(tests: ReadonlyMap<string, INST.InstructionExpression>, config: SolidConfig = CONFIG_FOLDING_OFF): void {
 	assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).build(new Builder(src, config))),
+		[...tests.values()],
+	);
+}
+function buildOperations_bin(tests: ReadonlyMap<string, binaryen.ExpressionRef>, config: SolidConfig = CONFIG_FOLDING_OFF): void {
+	return assertEqualBins(
+		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).build_bin(new Builder(src, config))),
 		[...tests.values()],
 	);
 }
@@ -1009,6 +1022,18 @@ describe('ASTNodeOperation', () => {
 					['if true  then false else 2;',    new INST.InstructionCond(instructionConstInt(1n), instructionConstInt(0n),    instructionConstInt(2n))],
 					['if false then 3.0   else null;', new INST.InstructionCond(instructionConstInt(0n), instructionConstFloat(3.0), instructionConstInt(0n))],
 					['if true  then 2     else 3.0;',  new INST.InstructionCond(instructionConstInt(1n), instructionConstInt(2n),    instructionConstFloat(3.0))],
+				]));
+			});
+		});
+
+
+		describe('#build_bin', () => {
+			it('returns `(mod.if)`.', () => {
+				const mod = new binaryen.Module();
+				return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+					['if true  then false else 2;',    mod.if(buildConstInt(1n, mod), buildConstInt   (0n,  mod), buildConstInt   (2n,  mod))],
+					['if false then 3.0   else null;', mod.if(buildConstInt(0n, mod), buildConstFloat (3.0, mod), buildConvert    (0n,  mod))],
+					['if true  then 2     else 3.0;',  mod.if(buildConstInt(1n, mod), buildConvert    (2n,  mod), buildConstFloat (3.0, mod))],
 				]));
 			});
 		});

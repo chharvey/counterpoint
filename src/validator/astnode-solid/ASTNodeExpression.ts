@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -47,6 +48,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	private typed?: SolidType;
 	private assessed?: SolidObject | null;
 	private built?: INST.InstructionExpression;
+	#built_bin?: binaryen.ExpressionRef;
+
 	/**
 	 * @final
 	 */
@@ -67,6 +70,20 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 		return this.built;
 	}
 	protected abstract build_do(builder: Builder): INST.InstructionExpression;
+
+	public build_bin(builder: Builder): binaryen.ExpressionRef {
+		if (!this.#built_bin) {
+			const value: SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
+			this.#built_bin = (value) ? value.build(builder).buildBin(builder.module) : this.build_bin_do(builder);
+		}
+		return this.#built_bin;
+	}
+
+	protected build_bin_do(builder: Builder): binaryen.ExpressionRef {
+		// please override me!
+		return this.build_do(builder).buildBin(builder.module);
+	}
+
 	/**
 	 * The Type of this expression.
 	 * @return the compile-time type of this node
