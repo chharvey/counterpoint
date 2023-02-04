@@ -521,6 +521,29 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 		});
+
+
+		specify('#build_bin', () => {
+			const mod = new binaryen.Module();
+			return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+				['3   <  3;',   mod.i32.lt_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
+				['3   >  3;',   mod.i32.gt_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
+				['3   <= 3;',   mod.i32.le_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
+				['3   >= 3;',   mod.i32.ge_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
+				['5   <  9.2;', mod.f64.lt   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
+				['5   >  9.2;', mod.f64.gt   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
+				['5   <= 9.2;', mod.f64.le   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
+				['5   >= 9.2;', mod.f64.ge   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
+				['5.2 <  3;',   mod.f64.lt   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
+				['5.2 >  3;',   mod.f64.gt   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
+				['5.2 <= 3;',   mod.f64.le   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
+				['5.2 >= 3;',   mod.f64.ge   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
+				['5.2 <  9.2;', mod.f64.lt   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
+				['5.2 >  9.2;', mod.f64.gt   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
+				['5.2 <= 9.2;', mod.f64.le   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
+				['5.2 >= 9.2;', mod.f64.ge   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
+			]));
+		});
 	});
 
 
