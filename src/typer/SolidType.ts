@@ -1,5 +1,6 @@
 import binaryen from 'binaryen';
 import {
+	Builder,
 	Set_hasEq,
 } from './package.js';
 import {
@@ -81,6 +82,8 @@ export abstract class SolidType {
 	 * Used internally for special cases of computations.
 	 */
 	readonly isTopType: boolean = false;
+
+	#binType: binaryen.Type | null = null; // TODO: use memoize decorator on `.binType()`
 
 	/**
 	 * Construct a new SolidType object.
@@ -237,10 +240,11 @@ export abstract class SolidType {
 	/**
 	 * Return a corresponding Binaryen type.
 	 * @return the best match for a Binaryen type equivalent to this type
+	 * @todo use memoize decorator on this method
 	 * @final
 	 */
 	public binType(): binaryen.Type {
-		return (
+		return this.#binType ??= ( // TODO: use memoize decorator
 			(this.isBottomType)                                                                     ? binaryen.unreachable :
 			(this.isSubtypeOf(SolidType.VOID))                                                      ? binaryen.none        :
 			(this.isSubtypeOf(SolidType.unionAll([SolidType.NULL, SolidType.BOOL, SolidType.INT]))) ? binaryen.i32         :
@@ -248,11 +252,23 @@ export abstract class SolidType {
 			(this instanceof SolidTypeUnion) ? ((left_type: binaryen.Type, right_type: binaryen.Type) => (
 				([binaryen.none, binaryen.unreachable].includes(left_type))  ? right_type :
 				([binaryen.none, binaryen.unreachable].includes(right_type)) ? left_type  :
-				binaryen.createType([binaryen.i32, left_type, right_type]) // create an `Either<L, R>` monad-like thing
+				Builder.createBinTypeEither(left_type, right_type)
 			))(this.left.binType(), this.right.binType()) :
-			binaryen.unreachable
+			(() => { throw new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`); })() // TODO use throw_expression
 		);
 	}
+
+	/**
+	 * @return a default Binaryen value given this type
+	 */
+	public defaultBinValue(mod: binaryen.Module): binaryen.ExpressionRef {
+		return (
+			(this.binType() === binaryen.i32) ? mod.i32.const(0) :
+			(this.binType() === binaryen.f64) ? mod.f64.const(0) :
+			(this instanceof SolidTypeUnion)  ? Builder.createBinEither(mod, false, this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)) :
+			(() => { throw new TypeError(`Could not determine a default value for \`${ this }\`.`); })() // TODO use throw_expression
+		);
+	};
 }
 
 

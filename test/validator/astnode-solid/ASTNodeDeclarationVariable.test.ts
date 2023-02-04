@@ -298,6 +298,29 @@ describe('ASTNodeDeclarationVariable', () => {
 				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder).buildBin(builder.module)),
 			));
 		});
+		it('with constant folding on, coerces as necessary.', () => {
+			const src: string = `
+				let unfixed x: float = 42;   % should coerce into 42.0, assuming int-coercion is on
+				let y: float | int = x * 10; % should *always* transform into Either<float, int>
+			`;
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+			const builder = new Builder(src);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.build(builder);
+			assert.deepStrictEqual(builder.getLocals(), [
+				{id: 0x100n, type: binaryen.f64},
+				{id: 0x101n, type: Builder.createBinTypeEither(binaryen.f64, binaryen.i32)},
+			]);
+			const exprs: binaryen.ExpressionRef[] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder).buildBin(builder.module));
+			return assertEqualBins(
+				goal.children.map((stmt) => stmt.build(builder)),
+				[
+					builder.module.f64.convert_u.i32(exprs[0]),
+					Builder.createBinEither(builder.module, false, exprs[1], builder.module.i32.const(0)),
+				].map((expected, i) => builder.module.local.set(i, expected)),
+			);
+		});
 		it('with constant folding off, always returns `(local.set)`.', () => {
 			const src: string = `
 				let x: int = 42;
