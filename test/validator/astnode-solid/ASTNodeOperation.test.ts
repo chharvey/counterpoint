@@ -984,6 +984,80 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 		});
+
+
+		describe('#build_bin', () => {
+			function createInstructionCond(
+				var_index: number,
+				condition: INST.InstructionExpression,
+				if_true:   INST.InstructionExpression,
+				if_false:  INST.InstructionExpression,
+			): INST.InstructionCond {
+				return new INST.InstructionCond(
+					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(var_index, condition))),
+					if_true,
+					if_false,
+				);
+			}
+			it('returns result of `InstructionCond#buildBin`.', () => {
+				const mod = new binaryen.Module();
+				return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+					['42 && 420;', createInstructionCond(
+						0,
+						instructionConstInt(42n),
+						instructionConstInt(420n),
+						new INST.InstructionLocalGet(0, binaryen.i32),
+					).buildBin(mod)],
+					['4.2 || -420;', createInstructionCond(
+						0,
+						instructionConstFloat(4.2),
+						new INST.InstructionLocalGet(0, binaryen.f64),
+						instructionConstInt(-420n),
+					).buildBin(mod)],
+					['null && 201.0e-1;', createInstructionCond(
+						0,
+						instructionConstInt(0n),
+						instructionConstFloat(20.1),
+						new INST.InstructionLocalGet(0, binaryen.i32),
+					).buildBin(mod)],
+					['true && 201.0e-1;', createInstructionCond(
+						0,
+						instructionConstInt(1n),
+						instructionConstFloat(20.1),
+						new INST.InstructionLocalGet(0, binaryen.i32),
+					).buildBin(mod)],
+					['false || null;', createInstructionCond(
+						0,
+						instructionConstInt(0n),
+						new INST.InstructionLocalGet(0, binaryen.i32),
+						instructionConstInt(0n),
+					).buildBin(mod)],
+				]));
+			});
+			it('counts internal variables correctly.', () => {
+				const src = '1 && 2 || 3 && 4;';
+				const builder = new Builder(src, CONFIG_FOLDING_OFF);
+				return assertEqualBins(
+					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build_bin(builder),
+					createInstructionCond(
+						2,
+						createInstructionCond(
+							0,
+							instructionConstInt(1n),
+							instructionConstInt(2n),
+							new INST.InstructionLocalGet(0, binaryen.i32),
+						),
+						new INST.InstructionLocalGet(2, binaryen.i32),
+						createInstructionCond(
+							1,
+							instructionConstInt(3n),
+							instructionConstInt(4n),
+							new INST.InstructionLocalGet(1, binaryen.i32),
+						),
+					).buildBin(builder.module),
+				);
+			});
+		});
 	});
 
 
