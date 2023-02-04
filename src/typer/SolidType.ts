@@ -1,5 +1,6 @@
 import binaryen from 'binaryen';
 import {
+	Builder,
 	Set_hasEq,
 } from './package.js';
 import {
@@ -251,7 +252,7 @@ export abstract class SolidType {
 			(this instanceof SolidTypeUnion) ? ((left_type: binaryen.Type, right_type: binaryen.Type) => (
 				([binaryen.none, binaryen.unreachable].includes(left_type))  ? right_type :
 				([binaryen.none, binaryen.unreachable].includes(right_type)) ? left_type  :
-				binaryen.createType([binaryen.i32, left_type, right_type]) // create an `Either<L, R>` monad-like thing
+				Builder.createBinTypeEither(left_type, right_type)
 			))(this.left.binType(), this.right.binType()) :
 			(() => { throw new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`); })() // TODO use throw_expression
 		);
@@ -264,7 +265,7 @@ export abstract class SolidType {
 		return (
 			(this.binType() === binaryen.i32) ? mod.i32.const(0) :
 			(this.binType() === binaryen.f64) ? mod.f64.const(0) :
-			(this instanceof SolidTypeUnion)  ? mod.tuple.make([mod.i32.const(0), this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)]) :
+			(this instanceof SolidTypeUnion)  ? Builder.createBinEither(mod, false, this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)) :
 			(() => { throw new TypeError(`Could not determine a default value for \`${ this }\`.`); })() // TODO use throw_expression
 		);
 	};

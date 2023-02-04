@@ -3,9 +3,9 @@ import binaryen from 'binaryen';
 import {
 	SolidType,
 	SolidTypeUnion,
+	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Builder,
 } from './package.js';
 import {ASTNodeGoal} from './index.js';
 import type {Buildable} from './Buildable.js';
@@ -50,17 +50,17 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		}
 		if (assignee_type instanceof SolidTypeUnion) { // `assignee_type.binType()` is a result of calling `binaryen.createType()`
 			// create an `Either<L, R>` monad-like thing
-			let side:    0 | 1                  = 0;
+			let side:    boolean                = false;
 			let left:    binaryen.ExpressionRef = assignee_type.left  .defaultBinValue(mod);
 			let right:   binaryen.ExpressionRef = assignee_type.right .defaultBinValue(mod);
 			if (assigned_type.isSubtypeOf(assignee_type.left)) {
-				[side, left] = [0, value];
+				[side, left] = [false, value];
 			} else if (assigned_type.isSubtypeOf(assignee_type.right)) {
-				[side, right] = [1, value];
+				[side, right] = [true, value];
 			} else {
 				throw new TypeError(`Expected \`${ assigned_type }\` to be a subtype of \`${ assignee_type.left }\` or \`${ assignee_type.right }\``);
 			}
-			value = mod.tuple.make([mod.i32.const(side), left, right]);
+			value = Builder.createBinEither(mod, side, left, right);
 		}
 		return value;
 	}

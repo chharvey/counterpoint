@@ -185,8 +185,8 @@ describe('ASTNodeSolid', () => {
 				return assertEqualBins(
 					goal.children.slice(1).map((stmt) => stmt.build(builder)),
 					[
-						builder.module.tuple.make([builder.module.i32.const(0), exprs[0],                    builder.module.i32.const(0)]),
-						builder.module.tuple.make([builder.module.i32.const(1), builder.module.f64.const(0), exprs[1]]),
+						Builder.createBinEither(builder.module, false, exprs[0],                    builder.module.i32.const(0)),
+						Builder.createBinEither(builder.module, true,  builder.module.f64.const(0), exprs[1]),
 					].map((expected) => builder.module.local.set(0, expected)),
 				);
 			});
