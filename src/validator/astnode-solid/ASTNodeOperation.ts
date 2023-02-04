@@ -32,20 +32,24 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 	 * @return       the pair of operands, built and updated
 	 * @throws       if the operands have different types even after the coercion
 	 */
-	protected static coerceOperands(builder: Builder, expr_a: ASTNodeExpression, expr_b: ASTNodeExpression): [binaryen.ExpressionRef, binaryen.ExpressionRef] {
-		const type_a: binaryen.Type          = expr_a.type().binType();
-		const type_b: binaryen.Type          = expr_b.type().binType();
-		let arg_a:    binaryen.ExpressionRef = expr_a.build(builder).buildBin(builder.module);
-		let arg_b:    binaryen.ExpressionRef = expr_b.build(builder).buildBin(builder.module);
-		if ([type_a, type_b].includes(binaryen.f64)) {
+	protected static coerceOperands(builder: Builder, expr_a: ASTNodeExpression, expr_b: ASTNodeExpression, condition: () => boolean = () => true): {
+		exprs: [binaryen.ExpressionRef, binaryen.ExpressionRef],
+		types: [binaryen.Type,          binaryen.Type],
+	} {
+		let [type_a, type_b]: binaryen.Type[]          = [expr_a, expr_b].map((expr) => expr.type().binType());
+		let [arg_a,  arg_b]:  binaryen.ExpressionRef[] = [expr_a, expr_b].map((expr) => expr.build(builder).buildBin(builder.module));
+		if (condition() && [type_a, type_b].includes(binaryen.f64)) {
 			if (type_a === binaryen.i32) {
-				arg_a = builder.module.f64.convert_u.i32(arg_a);
+				[arg_a, type_a] = [builder.module.f64.convert_u.i32(arg_a), binaryen.f64];
 			}
 			if (type_b === binaryen.i32) {
-				arg_b = builder.module.f64.convert_u.i32(arg_b);
+				[arg_b, type_b] = [builder.module.f64.convert_u.i32(arg_b), binaryen.f64];
 			}
 		}
-		return [arg_a, arg_b];
+		return {
+			exprs: [arg_a,  arg_b],
+			types: [type_a, type_b],
+		};
 	}
 
 
