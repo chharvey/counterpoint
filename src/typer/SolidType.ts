@@ -82,7 +82,7 @@ export abstract class SolidType {
 	 */
 	readonly isTopType: boolean = false;
 
-	private _binType: binaryen.Type | null = null; // TODO: use memoize decorator on `.binType()`
+	#binType: binaryen.Type | null = null; // TODO: use memoize decorator on `.binType()`
 
 	/**
 	 * Construct a new SolidType object.
@@ -243,7 +243,7 @@ export abstract class SolidType {
 	 * @final
 	 */
 	public binType(): binaryen.Type {
-		return this._binType ??= ( // TODO: use memoize decorator
+		return this.#binType ??= ( // TODO: use memoize decorator
 			(this.isBottomType)                                                                     ? binaryen.unreachable :
 			(this.isSubtypeOf(SolidType.VOID))                                                      ? binaryen.none        :
 			(this.isSubtypeOf(SolidType.unionAll([SolidType.NULL, SolidType.BOOL, SolidType.INT]))) ? binaryen.i32         :
