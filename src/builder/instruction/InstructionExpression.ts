@@ -20,6 +20,6 @@ export abstract class InstructionExpression extends Instruction {
 		return new Map<binaryen.Type, 'i32' | 'f64'>([
 			[binaryen.i32, 'i32'],
 			[binaryen.f64, 'f64'],
-		] as const).get(this.binType) ?? throwUnsupportedType(this.binType);
+		]).get(this.binType) ?? throwUnsupportedType(this.binType);
 	}
 }

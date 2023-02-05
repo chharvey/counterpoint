@@ -433,6 +433,25 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 		});
+
+
+		specify('#build_bin', () => {
+			const mod = new binaryen.Module();
+			buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+				['42 + 420;', mod.i32.add(buildConstInt (42n, mod), buildConstInt   (420n, mod))],
+				['3 * 2.1;',  mod.f64.mul(buildConvert  (3n,  mod), buildConstFloat (2.1,  mod))],
+			]));
+			return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+				[' 126 /  3;', mod.i32.div_s(buildConstInt( 126n, mod), buildConstInt( 3n, mod))],
+				['-126 /  3;', mod.i32.div_s(buildConstInt(-126n, mod), buildConstInt( 3n, mod))],
+				[' 126 / -3;', mod.i32.div_s(buildConstInt( 126n, mod), buildConstInt(-3n, mod))],
+				['-126 / -3;', mod.i32.div_s(buildConstInt(-126n, mod), buildConstInt(-3n, mod))],
+				[' 200 /  3;', mod.i32.div_s(buildConstInt( 200n, mod), buildConstInt( 3n, mod))],
+				[' 200 / -3;', mod.i32.div_s(buildConstInt( 200n, mod), buildConstInt(-3n, mod))],
+				['-200 /  3;', mod.i32.div_s(buildConstInt(-200n, mod), buildConstInt( 3n, mod))],
+				['-200 / -3;', mod.i32.div_s(buildConstInt(-200n, mod), buildConstInt(-3n, mod))],
+			]));
+		});
 	});
 
 
