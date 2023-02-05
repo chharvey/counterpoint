@@ -31,16 +31,16 @@ export class InstructionUnop extends InstructionExpression {
 	override toString(): string {
 		return `(${ (new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
 			[binaryen.i32, new Map<Operator, string>([
-				// [Operator.AFF, 'nop'],
-				[Operator.NEG, 'call $neg'],
 				[Operator.NOT, 'call $inot'],
 				[Operator.EMP, 'call $iemp'],
+				// [Operator.AFF, 'nop'],
+				[Operator.NEG, 'call $neg'],
 			])],
 			[binaryen.f64, new Map<Operator, string>([
-				// [Operator.AFF, 'nop'],
-				[Operator.NEG, 'f64.neg'],
 				[Operator.NOT, 'call $fnot'],
 				[Operator.EMP, 'call $femp'],
+				// [Operator.AFF, 'nop'],
+				[Operator.NEG, 'f64.neg'],
 			])],
 		]).get(this.arg.binType) ?? throwUnsupportedType(this.arg.binType)).get(this.op)! } ${ this.arg })`;
 	}
@@ -51,12 +51,11 @@ export class InstructionUnop extends InstructionExpression {
 		}
 		return mod.call((new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
 			[binaryen.i32, new Map<Operator, string>([
-				[Operator.NEG, 'neg'],
 				[Operator.NOT, 'inot'],
 				[Operator.EMP, 'iemp'],
+				[Operator.NEG, 'neg'],
 			])],
 			[binaryen.f64, new Map<Operator, string>([
-				[Operator.NEG, 'neg'],
 				[Operator.NOT, 'fnot'],
 				[Operator.EMP, 'femp'],
 			])],

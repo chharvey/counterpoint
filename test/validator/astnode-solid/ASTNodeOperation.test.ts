@@ -316,6 +316,25 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 		});
+
+
+		specify('#build_bin', () => {
+			const mod = new binaryen.Module();
+			return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+				[`!null;`,  mod.call('inot', [buildConstInt   (0n,  mod)], binaryen.i32)],
+				[`!false;`, mod.call('inot', [buildConstInt   (0n,  mod)], binaryen.i32)],
+				[`!true;`,  mod.call('inot', [buildConstInt   (1n,  mod)], binaryen.i32)],
+				[`!42;`,    mod.call('inot', [buildConstInt   (42n, mod)], binaryen.i32)],
+				[`!4.2;`,   mod.call('fnot', [buildConstFloat (4.2, mod)], binaryen.i32)],
+				[`?null;`,  mod.call('iemp', [buildConstInt   (0n,  mod)], binaryen.i32)],
+				[`?false;`, mod.call('iemp', [buildConstInt   (0n,  mod)], binaryen.i32)],
+				[`?true;`,  mod.call('iemp', [buildConstInt   (1n,  mod)], binaryen.i32)],
+				[`?42;`,    mod.call('iemp', [buildConstInt   (42n, mod)], binaryen.i32)],
+				[`?4.2;`,   mod.call('femp', [buildConstFloat (4.2, mod)], binaryen.i32)],
+				[`-(4);`,   mod.call('neg',  [buildConstInt   (4n,  mod)], binaryen.i32)],
+				[`-(4.2);`, mod.f64.neg(buildConstFloat(4.2, mod))],
+			]));
+		});
 	});
 
 

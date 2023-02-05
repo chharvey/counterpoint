@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs'
 import {
 	SolidType,
@@ -36,6 +37,25 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	protected override build_do(builder: Builder): INST.InstructionUnop {
 		return new INST.InstructionUnop(this.operator, this.operand.build(builder));
 	}
+
+	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
+		const arg:  binaryen.ExpressionRef = this.operand.build(builder).buildBin(builder.module);
+		const type: binaryen.Type          = this.operand.type().binType();
+		return (this.operator === Operator.NEG && type === binaryen.f64)
+			? builder.module.f64.neg(arg)
+			: builder.module.call((new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
+				[binaryen.i32, new Map<Operator, string>([
+					[Operator.NOT, 'inot'],
+					[Operator.EMP, 'iemp'],
+					[Operator.NEG, 'neg'],
+				])],
+				[binaryen.f64, new Map<Operator, string>([
+					[Operator.NOT, 'fnot'],
+					[Operator.EMP, 'femp'],
+				])],
+			]).get(type)!).get(this.operator)!, [arg], binaryen.i32);
+	}
+
 	protected override type_do(): SolidType {
 		const t0: SolidType = this.operand.type();
 		return (
