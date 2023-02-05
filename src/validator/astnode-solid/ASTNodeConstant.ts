@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -47,6 +48,11 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	protected override build_do(_builder: Builder): INST.InstructionConst {
 		return this.value.build();
 	}
+
+	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
+		return this.value.build_bin(builder);
+	}
+
 	protected override type_do(): SolidType {
 		return new SolidTypeUnit<Primitive>(this.value);
 	}

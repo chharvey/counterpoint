@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -152,6 +153,30 @@ describe('ASTNodeExpression', () => {
 					instructionConstFloat(-0.042),
 				]);
 			});
+		});
+
+
+		specify('#build_bin', () => {
+			const mod = new binaryen.Module();
+			const tests = new Map<string, binaryen.ExpressionRef>([
+				['null;',    mod.i32.const(0)],
+				['false;',   mod.i32.const(0)],
+				['true;',    mod.i32.const(1)],
+				['0;',       mod.i32.const(0)],
+				['+0;',      mod.i32.const(0)],
+				['-0;',      mod.i32.const(0)],
+				['42;',      mod.i32.const(42)],
+				['+42;',     mod.i32.const(42)],
+				['-42;',     mod.i32.const(-42)],
+				['0.0;',     mod.f64.const(0)],
+				['+0.0;',    mod.f64.const(0)],
+				['-0.0;',    mod.f64.ceil(mod.f64.const(-0.5))],
+				['-4.2e-2;', mod.f64.const(-0.042)],
+			]);
+			return assertEqualBins(
+				[...tests.keys()].map((src) => AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF).build_bin(new Builder(src, CONFIG_FOLDING_OFF))),
+				[...tests.values()],
+			);
 		});
 	});
 
