@@ -26,7 +26,10 @@ import {
 	ReferenceError02,
 	ReferenceError03,
 } from '../../../src/index.js';
-import {assert_wasCalled} from '../../assert-helpers.js';
+import {
+	assert_wasCalled,
+	assertEqualBins,
+} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	typeConstInt,
@@ -310,6 +313,70 @@ describe('ASTNodeExpression', () => {
 					[
 						new INST.InstructionLocalGet(0, type0),
 						new INST.InstructionLocalGet(1, type1),
+					],
+				);
+			});
+		});
+
+
+		describe('#build_bin', () => {
+			it('with constant folding on, returns `(local.get)` for unfixed / non-foldable variables.', () => {
+				const src: string = `
+					let unfixed x: int = 42;
+					let y: int = x + 10;
+					x;
+					y;
+				`;
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const builder = new Builder(src);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build(builder);
+				const var0 = (goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
+				const var1 = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
+				const [
+					{id: id0, type: type0},
+					{id: id1, type: type1},
+				] = builder.getLocals();
+				assert.deepStrictEqual([var0.id, var1.id], [id0, id1]);
+				assertEqualBins(
+					[
+						var0.build_bin(builder),
+						var1.build_bin(builder),
+					],
+					[
+						builder.module.local.get(0, type0),
+						builder.module.local.get(1, type1),
+					],
+				);
+			});
+			it('with constant folding off, always returns `(local.get)`.', () => {
+				const src: string = `
+					let x: int = 42;
+					let unfixed y: float = 4.2;
+					x;
+					y;
+				`;
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build(builder);
+				const var0 = (goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
+				const var1 = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
+				const [
+					{id: id0, type: type0},
+					{id: id1, type: type1},
+				] = builder.getLocals();
+				assert.deepStrictEqual([var0.id, var1.id], [id0, id1]);
+				assertEqualBins(
+					[
+						var0.build_bin(builder),
+						var1.build_bin(builder),
+					],
+					[
+						builder.module.local.get(0, type0),
+						builder.module.local.get(1, type1),
 					],
 				);
 			});

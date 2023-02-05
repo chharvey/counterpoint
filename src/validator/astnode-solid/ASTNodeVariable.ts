@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	ReferenceError01,
 	ReferenceError03,
@@ -44,6 +45,14 @@ export class ASTNodeVariable extends ASTNodeExpression {
 			? new INST.InstructionLocalGet(local.index, local.type)
 			: (() => { throw new ReferenceError(`Variable with id ${ this.id } not found.`) })(); // TODO use throw_expression
 	}
+
+	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
+		const local = builder.getLocalInfo(this.id);
+		return (local)
+			? builder.module.local.get(local.index, local.type)
+			: (() => { throw new ReferenceError(`Variable with id ${ this.id } not found.`) })(); // TODO use throw_expression
+	}
+
 	protected override type_do(): SolidType {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
