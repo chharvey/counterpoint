@@ -67,7 +67,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	public build_bin(builder: Builder): binaryen.ExpressionRef {
 		if (!this.#built_bin) {
 			const value: SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			this.#built_bin = (value) ? value.build(builder).buildBin(builder.module) : this.build_bin_do(builder);
+			this.#built_bin = (value) ? value.build(builder.module) : this.build_bin_do(builder);
 		}
 		return this.#built_bin;
 	}

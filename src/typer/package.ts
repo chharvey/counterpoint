@@ -5,7 +5,6 @@
  * they are only for modules within this package.
  */
 export {
-	INST,
 	Builder,
 	TypeError04,
 	VoidError01,

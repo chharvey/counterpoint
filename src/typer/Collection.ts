@@ -1,6 +1,5 @@
+import type binaryen from 'binaryen';
 import {
-	INST,
-	Builder,
 	Keys,
 	Map_hasEq,
 	Map_getEq,
@@ -36,8 +35,8 @@ export abstract class Collection extends SolidObject {
 	}
 
 
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		mod;
 		throw new Error('`Collection#build` not yet supported.');
 	}
 

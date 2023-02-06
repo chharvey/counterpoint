@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {Float64} from './index.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNumber} from './SolidNumber.js';
@@ -46,6 +47,10 @@ export class Int16 extends SolidNumber<Int16> {
 	}
 	protected override equal_helper(value: SolidObject): boolean {
 		return value instanceof Float64 && this.toFloat().equal(value);
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.i32.const(Number(this.toNumeric()));
 	}
 
 	override toFloat(): Float64 {

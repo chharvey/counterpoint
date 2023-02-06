@@ -46,7 +46,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
-		return this.value.build_bin(builder);
+		return this.value.build(builder.module);
 	}
 
 	protected override type_do(): SolidType {

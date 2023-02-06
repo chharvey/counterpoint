@@ -1,6 +1,5 @@
+import type binaryen from 'binaryen';
 import {
-	INST,
-	Builder,
 	VoidError01,
 	AST,
 } from './package.js';
@@ -43,8 +42,8 @@ export abstract class CollectionIndexed<T extends SolidObject = SolidObject> ext
 		);
 	}
 
-	public override build(builder: Builder): INST.InstructionExpression {
-		return new INST.InstructionTupleMake(this.items.map((item) => item.build(builder)));
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.tuple.make(this.items.map((item) => item.build(mod)));
 	}
 
 	/** @final */

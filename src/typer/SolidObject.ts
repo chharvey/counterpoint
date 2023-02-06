@@ -1,7 +1,4 @@
-import type {
-	INST,
-	Builder,
-} from './package.js';
+import type binaryen from 'binaryen';
 import {SolidString} from './index.js';
 
 
@@ -73,8 +70,9 @@ export abstract class SolidObject {
 	}
 
 	/**
-	 * Construct a new Instruction from this value.
+	 * Create an ExpressionRef that implements this object.
+	 * @param mod the module to build from
 	 * @return the directions to print
 	 */
-	public abstract build(builder: Builder): INST.InstructionExpression;
+	public abstract build(mod: binaryen.Module): binaryen.ExpressionRef;
 }
