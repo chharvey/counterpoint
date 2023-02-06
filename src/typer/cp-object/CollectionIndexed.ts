@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {
 	VoidError01,
 	throw_expression,
@@ -43,6 +44,10 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 				))
 			))
 		);
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.tuple.make(this.items.map((item) => item.build(mod)));
 	}
 
 	/** @final */

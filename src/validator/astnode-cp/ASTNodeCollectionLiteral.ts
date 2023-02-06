@@ -1,6 +1,6 @@
+import type binaryen from 'binaryen';
 import {
 	TYPE,
-	INST,
 	Builder,
 	memoizeMethod,
 	SyntaxNodeType,
@@ -64,13 +64,9 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 		super(start_node, {}, children);
 	}
 
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeCollectionLiteral#shouldFloat not yet supported.';
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
+	public override build(builder: Builder): binaryen.ExpressionRef {
 		builder;
 		throw '`ASTNodeCollectionLiteral#build_do` not yet supported.';
 	}

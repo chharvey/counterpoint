@@ -1,9 +1,9 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	throw_expression,
 	memoizeMethod,
@@ -62,14 +62,10 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.value instanceof OBJ.Float;
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(_builder: Builder): INST.InstructionExpression {
-		return this.value.build();
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return this.value.build(builder.module);
 	}
 
 	@memoizeMethod

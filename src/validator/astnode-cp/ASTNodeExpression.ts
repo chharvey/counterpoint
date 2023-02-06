@@ -1,10 +1,10 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	CPConfig,
 	CONFIG_DEFAULT,
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	ErrorCode,
 } from './package.js';
@@ -81,12 +81,12 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	protected static buildDeco(
 		_prototype: ASTNodeExpression,
 		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression, builder: Builder) => INST.InstructionExpression>,
+		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression, builder: Builder) => binaryen.ExpressionRef>,
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (builder) {
 			const value: OBJ.Object | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			return (value) ? value.build() : method.call(this, builder);
+			return (value) ? value.build(builder.module) : method.call(this, builder);
 		};
 		return descriptor;
 	}
@@ -106,11 +106,6 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	}
 
 	/**
-	 * Determine whether this expression should build to a float-type instruction.
-	 * @return Should the built instruction be type-coerced into a floating-point number?
-	 */
-	public abstract shouldFloat(): boolean;
-	/**
 	 * @final
 	 */
 	public override typeCheck(): void {
@@ -122,7 +117,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @inheritdoc
 	 * @implements Buildable
 	 */
-	public abstract build(builder: Builder): INST.InstructionExpression;
+	public abstract build(builder: Builder): binaryen.ExpressionRef;
 
 	/**
 	 * The Type of this expression.

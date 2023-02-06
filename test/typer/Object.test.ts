@@ -1,8 +1,10 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {OBJ} from '../../src/index.js';
+import {assertEqualBins} from '../assert-helpers.js';
 import {
-	instructionConstInt,
-	instructionConstFloat,
+	buildConstInt,
+	buildConstFloat,
 } from '../helpers.js';
 
 
@@ -32,6 +34,19 @@ describe('Object', () => {
 					new OBJ.String('fire'),
 					new OBJ.String('wind'),
 				]))));
+			});
+		});
+	});
+
+
+	describe('#build', () => {
+		describe('SolidTuple', () => {
+			it('returns `(tuple.make)`.', () => {
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					new OBJ.Tuple([OBJ.Integer.UNIT, new OBJ.Float(2.0)]).build(mod),
+					mod.tuple.make([buildConstInt(1n, mod), buildConstFloat(2.0, mod)]),
+				);
 			});
 		});
 	});
@@ -123,9 +138,10 @@ describe('Integer', () => {
 				(42n ** 2n * 420n) % (2n ** 16n),
 				(-5n) ** (2n * 3n),
 			];
-			return assert.deepStrictEqual(
-				data.map((x) => new OBJ.Integer(x).build()),
-				data.map((x) => instructionConstInt(x)),
+			const mod = new binaryen.Module();
+			return assertEqualBins(
+				data.map((x) => new OBJ.Integer(x).build(mod)),
+				data.map((x) => buildConstInt(x, mod)),
 			);
 		});
 	});
@@ -143,9 +159,10 @@ describe('Float64', () => {
 			3.0 - 2.7,
 			/* eslint-enable array-element-newline */
 		];
-		return assert.deepStrictEqual(
-			data.map((x) => new OBJ.Float(x).build()),
-			data.map((x) => instructionConstFloat(x)),
+		const mod = new binaryen.Module();
+		return assertEqualBins(
+			data.map((x) => new OBJ.Float(x).build(mod)),
+			data.map((x) => buildConstFloat(x, mod)),
 		);
 	});
 });

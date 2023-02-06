@@ -1,9 +1,9 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	TypeError01,
 	NanError01,
@@ -35,14 +35,24 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		super(start_node, operator, [operand]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operand.shouldFloat();
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		return new INST.InstructionUnop(this.operator, this.operand.build(builder));
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		const arg:  binaryen.ExpressionRef = this.operand.build(builder);
+		const type: binaryen.Type          = this.operand.type().binType();
+		return (this.operator === Operator.NEG && type === binaryen.f64)
+			? builder.module.f64.neg(arg)
+			: builder.module.call((new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
+				[binaryen.i32, new Map<Operator, string>([
+					[Operator.NOT, 'inot'],
+					[Operator.EMP, 'iemp'],
+					[Operator.NEG, 'neg'],
+				])],
+				[binaryen.f64, new Map<Operator, string>([
+					[Operator.NOT, 'fnot'],
+					[Operator.EMP, 'femp'],
+				])],
+			]).get(type)!).get(this.operator)!, [arg], binaryen.i32);
 	}
 
 	@memoizeMethod

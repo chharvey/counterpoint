@@ -1,7 +1,5 @@
-import {
-	INST,
-	strictEqual,
-} from './package.js';
+import type binaryen from 'binaryen';
+import {strictEqual} from './package.js';
 import {String as CPString} from './index.js';
 
 
@@ -83,9 +81,10 @@ abstract class CPObject {
 	}
 
 	/**
-	 * Construct a new Instruction from this value.
+	 * Create an ExpressionRef that implements this object.
+	 * @param mod the module to build from
 	 * @return the directions to print
 	 */
-	public abstract build(): INST.InstructionConst;
+	public abstract build(mod: binaryen.Module): binaryen.ExpressionRef;
 }
 export {CPObject as Object};

@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	TypeError01,
 	memoizeMethod,
@@ -18,6 +18,7 @@ import {
 	neitherFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -43,8 +44,20 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		return new INST.InstructionBinopComparative(this.operator, ...this.buildOps(builder));
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		const {
+			exprs: [arg0,  arg1],
+			types: [type0, type1],
+		} = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1);
+		const opname = new Map<Operator, 'lt' | 'gt' | 'le' | 'ge'>([
+			[Operator.LT, 'lt'],
+			[Operator.GT, 'gt'],
+			[Operator.LE, 'le'],
+			[Operator.GE, 'ge'],
+		]).get(this.operator)!;
+		return ((![type0, type1].includes(binaryen.f64))
+			? builder.module.i32[`${ opname }_s`]
+			: builder.module.f64[opname])(arg0,  arg1);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {

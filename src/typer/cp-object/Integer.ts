@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {
 	throw_expression,
 	strictEqual,
@@ -54,6 +55,10 @@ export class Integer extends CPNumber<Integer> {
 	@CPObject.equalsDeco
 	public override equal(value: CPObject): boolean {
 		return value instanceof Float && this.toFloat().equal(value);
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.i32.const(Number(this.toNumeric()));
 	}
 
 	public override toFloat(): Float {

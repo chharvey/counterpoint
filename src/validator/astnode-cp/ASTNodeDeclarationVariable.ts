@@ -3,7 +3,6 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
-	INST,
 	Builder,
 	AssignmentError01,
 	CPConfig,
@@ -73,12 +72,15 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		if (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold()) {
 			return builder.module.nop();
 		} else {
-			let inst: INST.InstructionExpression = this.assigned.build(builder);
-			if (this.typenode.eval().isSubtypeOf(TYPE.FLOAT) && !this.assigned.shouldFloat()) {
-				inst = new INST.InstructionConvert(inst);
-			}
-			const local = builder.addLocal(this.assignee.id, inst.binType)[0].getLocalInfo(this.assignee.id);
-			return builder.module.local.set(local!.index, inst.buildBin(builder.module));
+			const assignee_type: TYPE.Type = this.typenode.eval();
+			const local = builder.addLocal(this.assignee.id, assignee_type.binType())[0].getLocalInfo(this.assignee.id)!;
+			return builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+				builder.module,
+				assignee_type,
+				this.assigned.type(),
+				this.assigned.build(builder),
+				this.validator.config.compilerOptions.intCoercion,
+			));
 		}
 	}
 }

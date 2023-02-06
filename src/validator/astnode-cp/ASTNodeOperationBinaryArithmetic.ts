@@ -1,9 +1,9 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	TypeError01,
 	NanError01,
@@ -23,6 +23,7 @@ import {
 	neitherFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -45,8 +46,27 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		return new INST.InstructionBinopArithmetic(this.operator, ...this.buildOps(builder));
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		const {exprs: [arg0, arg1]} = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1);
+		const bintype: binaryen.Type = this.type().binType();
+		return (
+			(this.operator === Operator.EXP) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
+				[binaryen.i32, builder.module.call('exp', [arg0, arg1], binaryen.i32)],
+				[binaryen.f64, builder.module.unreachable()], // TODO: support runtime exponentiation for floats
+			]).get(bintype)! :
+			(this.operator === Operator.DIV) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
+				[binaryen.i32, builder.module.i32.div_s (arg0, arg1)],
+				[binaryen.f64, builder.module.f64.div   (arg0, arg1)],
+			]).get(bintype)! :
+			builder.module[new Map<binaryen.Type, 'i32' | 'f64'>([
+				[binaryen.i32, 'i32'],
+				[binaryen.f64, 'f64'],
+			]).get(bintype)!][new Map<Operator, 'mul' | 'add' | 'sub'>([
+				[Operator.MUL, 'mul'],
+				[Operator.ADD, 'add'],
+				[Operator.SUB, 'sub'],
+			]).get(this.operator)!](arg0, arg1)
+		);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {

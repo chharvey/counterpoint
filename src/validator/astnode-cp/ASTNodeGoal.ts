@@ -82,11 +82,6 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 				builder.module.block(null, [...statements]),
 			);
 			builder.module.addFunctionExport(fn_name, fn_name);
-
-			const validation = builder.module.validate();
-			if (!validation) {
-				throw new Error('Invalid WebAssembly module.');
-			}
 			return builder.module;
 		}
 	}

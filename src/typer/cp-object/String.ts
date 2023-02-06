@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import {
@@ -26,10 +27,6 @@ class CPString extends Primitive {
 		return this.codeunits.length === 0;
 	}
 
-	protected override get builtValue(): never {
-		throw new Error('`SolidString#built_value` not yet supported.');
-	}
-
 	public override toString(): string {
 		return `'${ utf8.decode(String.fromCodePoint(...this.codeunits)) }'`;
 	}
@@ -41,6 +38,11 @@ class CPString extends Primitive {
 
 	public override toCPString(): CPString {
 		return this;
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		mod;
+		throw '`SolidString#build` not yet supported.';
 	}
 
 	/**

@@ -5,6 +5,7 @@
  * they are only for modules within this package.
  */
 export {
+	Builder,
 	TypeError04,
 	IntRange,
 	throw_expression,

@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	memoizeMethod,
 	CPConfig,
@@ -35,13 +35,9 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		super(start_node, {}, children);
 	}
 
-	public override shouldFloat(): boolean {
-		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
+	public override build(builder: Builder): binaryen.ExpressionRef {
 		builder;
 		throw '`ASTNodeTemplate#build` not yet supported.';
 	}

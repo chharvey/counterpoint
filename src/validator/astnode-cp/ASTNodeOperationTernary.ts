@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	TypeError01,
 	throw_expression,
@@ -34,23 +34,13 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operand1.shouldFloat() || this.operand2.shouldFloat();
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		let [inst0, inst1, inst2]: INST.InstructionExpression[] = [this.operand0, this.operand1, this.operand2].map((expr) => expr.build(builder)); // eslint-disable-line prefer-const
-		if (this.shouldFloat()) {
-			if (!this.operand1.shouldFloat()) {
-				inst1 = new INST.InstructionConvert(inst1);
-			}
-			if (!this.operand2.shouldFloat()) {
-				inst2 = new INST.InstructionConvert(inst2);
-			}
-		}
-		return new INST.InstructionCond(inst0, inst1, inst2);
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.if(
+			this.operand0.build(builder),
+			...ASTNodeOperation.coerceOperands(builder, this.operand1, this.operand2).exprs,
+		);
 	}
 
 	@memoizeMethod

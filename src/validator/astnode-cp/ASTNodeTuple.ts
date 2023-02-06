@@ -1,8 +1,10 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
+	Builder,
 	memoizeMethod,
 	CPConfig,
 	CONFIG_DEFAULT,
@@ -26,6 +28,12 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
+	}
+
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.tuple.make(this.children.map((expr) => expr.build(builder)));
 	}
 
 	@memoizeMethod

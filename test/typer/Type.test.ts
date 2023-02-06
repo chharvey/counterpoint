@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	TypeEntry,
 	TYPE,
@@ -847,6 +848,29 @@ describe('Type', () => {
 				});
 			});
 		});
+	});
+
+
+	specify('#binType', () => {
+		const tests = new Map<TYPE.Type, binaryen.Type>([
+			[TYPE.NEVER, binaryen.unreachable],
+			[TYPE.VOID,  binaryen.none],
+			[TYPE.NULL,  binaryen.i32],
+			[TYPE.BOOL,  binaryen.i32],
+			[TYPE.INT,   binaryen.i32],
+			[TYPE.FLOAT, binaryen.f64],
+			[TYPE.NULL.union(TYPE.BOOL),  binaryen.i32],
+			[TYPE.BOOL.union(TYPE.INT),   binaryen.i32],
+			[TYPE.NULL.union(TYPE.INT),   binaryen.i32],
+			[TYPE.VOID.union(TYPE.NULL),  binaryen.i32],
+			[TYPE.VOID.union(TYPE.BOOL),  binaryen.i32],
+			[TYPE.VOID.union(TYPE.INT),   binaryen.i32],
+			[TYPE.VOID.union(TYPE.FLOAT), binaryen.f64],
+			[TYPE.NULL.union(TYPE.FLOAT), binaryen.createType([binaryen.i32, binaryen.i32, binaryen.f64])],
+			[TYPE.BOOL.union(TYPE.FLOAT), binaryen.createType([binaryen.i32, binaryen.i32, binaryen.f64])],
+			[TYPE.INT .union(TYPE.FLOAT), binaryen.createType([binaryen.i32, binaryen.i32, binaryen.f64])],
+		]);
+		return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
 	});
 
 

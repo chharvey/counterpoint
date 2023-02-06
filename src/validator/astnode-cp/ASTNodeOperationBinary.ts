@@ -1,8 +1,6 @@
 import * as assert from 'assert';
 import {
 	TYPE,
-	INST,
-	Builder,
 	memoizeMethod,
 	CPConfig,
 	CONFIG_DEFAULT,
@@ -37,10 +35,6 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		super(start_node, operator, [operand0, operand1]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operand0.shouldFloat() || this.operand1.shouldFloat();
-	}
-
 	/**
 	 * @final
 	 */
@@ -55,18 +49,4 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	}
 
 	protected abstract type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type;
-
-	/** @final */
-	protected buildOps(builder: Builder): [INST.InstructionExpression, INST.InstructionExpression] {
-		let [inst0, inst1]: INST.InstructionExpression[] = [this.operand0, this.operand1].map((expr) => expr.build(builder));
-		if (this.shouldFloat()) {
-			if (!this.operand0.shouldFloat()) {
-				inst0 = new INST.InstructionConvert(inst0);
-			}
-			if (!this.operand1.shouldFloat()) {
-				inst1 = new INST.InstructionConvert(inst1);
-			}
-		}
-		return [inst0, inst1];
-	}
 }

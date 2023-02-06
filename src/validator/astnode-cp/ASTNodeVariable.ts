@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	ReferenceError01,
 	ReferenceError03,
@@ -38,10 +38,6 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		return this.validator.cookTokenIdentifier(this.start_node.text);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.FLOAT);
-	}
-
 	public override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
@@ -54,10 +50,10 @@ export class ASTNodeVariable extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
+	public override build(builder: Builder): binaryen.ExpressionRef {
 		const local = builder.getLocalInfo(this.id);
 		return (local)
-			? new INST.InstructionLocalGet(local.index, local.type)
+			? builder.module.local.get(local.index, local.type)
 			: throw_expression(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 
