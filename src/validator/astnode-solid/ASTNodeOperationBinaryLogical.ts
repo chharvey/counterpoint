@@ -39,11 +39,11 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		const temp_id: bigint = builder.varCount;
 		const local           = builder.addLocal(temp_id, type0)[0].getLocalInfo(temp_id)!;
 
-		const condition = builder.module.call('inot', [builder.module.call(
+		const condition = builder.module.i32.eqz(builder.module.call(
 			(type0 === binaryen.i32) ? 'inot' : 'fnot',
 			[builder.module.local.tee(local.index, arg0, type0)],
 			binaryen.i32,
-		)], binaryen.i32);
+		));
 		arg0 = builder.module.local.get(local.index, local.type);
 
 		// int-coercion copied from `ASTNodeOperation.coerceOperands`

@@ -930,11 +930,11 @@ describe('ASTNodeOperation', () => {
 			): binaryen.ExpressionRef {
 				const local_get: binaryen.ExpressionRef = mod.local.get(index, type);
 				return mod.if(
-					mod.call('inot', [mod.call(
+					mod.i32.eqz(mod.call(
 						(type === binaryen.i32) ? 'inot' : 'fnot',
 						[mod.local.tee(index, arg, type)],
 						binaryen.i32,
-					)], binaryen.i32),
+					)),
 					...branches.call(null, local_get),
 				);
 			}
