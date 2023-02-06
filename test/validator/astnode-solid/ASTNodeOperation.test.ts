@@ -938,7 +938,7 @@ describe('ASTNodeOperation', () => {
 					...branches.call(null, local_get),
 				);
 			}
-			it('returns result of `InstructionCond#buildBin`.', () => {
+			it('returns a special case of `(if)`.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
 					['42 && 420;', create_if(

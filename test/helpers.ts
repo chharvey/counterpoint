@@ -6,7 +6,6 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-	INST,
 } from '../src/index.js';
 
 
@@ -29,16 +28,6 @@ export function typeConstFloat(x: number): SolidTypeUnit<Float64> {
 }
 export function typeConstStr(x: string): SolidTypeUnit<SolidString> {
 	return new SolidTypeUnit<SolidString>(new SolidString(x));
-}
-
-export function instructionConstInt(x: bigint): INST.InstructionConst {
-	return new INST.InstructionConst(new Int16(x));
-}
-export function instructionConstFloat(x: number): INST.InstructionConst {
-	return new INST.InstructionConst(new Float64(x));
-}
-export function instructionConvert(x: bigint): INST.InstructionConvert {
-	return new INST.InstructionConvert(instructionConstInt(x));
 }
 
 export function buildConstInt(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
