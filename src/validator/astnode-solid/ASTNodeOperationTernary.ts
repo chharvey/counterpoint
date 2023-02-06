@@ -1,10 +1,10 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidType,
 	SolidTypeUnit,
 	SolidObject,
 	SolidBoolean,
-	INST,
 	Builder,
 	TypeError01,
 	SolidConfig,
@@ -33,13 +33,13 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionCond {
-		return new INST.InstructionCond(
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.if(
 			this.operand0.build(builder),
-			this.operand1.build(builder),
-			this.operand2.build(builder),
+			...ASTNodeOperation.coerceOperands(builder, this.operand1, this.operand2).exprs,
 		);
 	}
+
 	protected override type_do(): SolidType {
 		const t0: SolidType = this.operand0.type();
 		const t1: SolidType = this.operand1.type();

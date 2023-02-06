@@ -1,6 +1,4 @@
-import {
-	Int16,
-} from './index.js';
+import type binaryen from 'binaryen';
 import {SolidTypeUnit} from './SolidTypeUnit.js';
 import type {SolidObject} from './SolidObject.js';
 import {Primitive} from './Primitive.js';
@@ -45,10 +43,11 @@ export class SolidBoolean extends Primitive {
 	override get isTruthy(): boolean {
 		return this.data;
 	}
-	protected override get builtValue(): Int16 {
-		return (this.isTruthy) ? Int16.UNIT : Int16.ZERO;
-	}
 	protected override identical_helper(value: SolidObject): boolean {
 		return value instanceof SolidBoolean && this.data === value.data;
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.i32.const((this.isTruthy) ? 1 : 0);
 	}
 }
