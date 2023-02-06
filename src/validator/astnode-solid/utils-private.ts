@@ -29,5 +29,5 @@ export function neitherFloats(t0: SolidType, t1: SolidType): boolean {
 	return !eitherFloats(t0, t1)
 }
 export function oneFloats(t0: SolidType, t1: SolidType): boolean {
-	return !neitherFloats(t0, t1) && !bothFloats(t0, t1)
+	return eitherFloats(t0, t1) && !bothFloats(t0, t1)
 }
