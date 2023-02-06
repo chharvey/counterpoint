@@ -14,6 +14,7 @@ export {
 	CodeUnit,
 	Keys,
 	throw_expression,
+	memoizeMethod,
 	strictEqual,
 } from '../lib/index.js';
 export {

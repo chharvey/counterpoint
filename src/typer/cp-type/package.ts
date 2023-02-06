@@ -9,6 +9,7 @@ export {
 	TypeError04,
 	IntRange,
 	throw_expression,
+	memoizeMethod,
 	strictEqual,
 	Operator,
 	ValidAccessOperator,

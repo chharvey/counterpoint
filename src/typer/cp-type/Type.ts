@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	Builder,
 	throw_expression,
+	memoizeMethod,
 	strictEqual,
 	languageValuesIdentical,
 	OBJ,
@@ -245,8 +246,6 @@ export abstract class Type {
 	 */
 	public readonly isTopType: boolean = false;
 
-	#binType: binaryen.Type | null = null; // TODO: use memoize decorator on `.binType()`
-
 	/**
 	 * Construct a new Type object.
 	 * @param isMutable Whether this type is `mutable`. Mutable objects may change fields/entries and call mutating methods.
@@ -352,11 +351,11 @@ export abstract class Type {
 	/**
 	 * Return a corresponding Binaryen type.
 	 * @return the best match for a Binaryen type equivalent to this type
-	 * @todo use memoize decorator on this method
 	 * @final
 	 */
+	@memoizeMethod
 	public binType(): binaryen.Type {
-		return this.#binType ??= ( // TODO: use memoize decorator
+		return (
 			(this.isBottomType)                                  ? binaryen.unreachable :
 			(this.isSubtypeOf(VOID))                             ? binaryen.none        :
 			(this.isSubtypeOf(Type.unionAll([NULL, BOOL, INT]))) ? binaryen.i32         :
