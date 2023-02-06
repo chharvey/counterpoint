@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	CPConfig,
 	CONFIG_DEFAULT,
@@ -31,16 +31,33 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionBinopLogical {
-		const [inst0, inst1]: INST.InstructionExpression[] = [this.operand0, this.operand1].map((expr) => expr.build(builder));
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
+		const [type0, type1]: binaryen.Type[] =          [this.operand0, this.operand1].map((expr) => expr.type().binType());
+		let   [arg0,  arg1]:  binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build(builder));
+
 		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint = builder.varCount;
-		return new INST.InstructionBinopLogical(
-			builder.addLocal(temp_id, this.operand0.type().binType())[0].getLocalInfo(temp_id)!.index,
-			this.operator,
-			inst0,
-			inst1,
-		);
+		const local           = builder.addLocal(temp_id, type0)[0].getLocalInfo(temp_id)!;
+
+		const condition = builder.module.call('inot', [builder.module.call(
+			(type0 === binaryen.i32) ? 'inot' : 'fnot',
+			[builder.module.local.tee(local.index, arg0, type0)],
+			binaryen.i32,
+		)], binaryen.i32);
+		arg0 = builder.module.local.get(local.index, local.type);
+
+		// int-coercion copied from `ASTNodeOperation.coerceOperands`
+		if ([type0, type1].includes(binaryen.f64)) {
+			if (type0 === binaryen.i32) {
+				arg0 = builder.module.f64.convert_u.i32(arg0);
+			}
+			if (type1 === binaryen.i32) {
+				arg1 = builder.module.f64.convert_u.i32(arg1);
+			}
+		}
+
+		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
+		return builder.module.if(condition, if_true, if_false);
 	}
 
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {

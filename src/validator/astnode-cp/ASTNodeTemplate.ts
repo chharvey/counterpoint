@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	CPConfig,
 	CONFIG_DEFAULT,
@@ -34,7 +34,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		super(start_node, {}, children);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionExpression {
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		builder;
 		throw '`ASTNodeTemplate#build_do` not yet supported.';
 	}

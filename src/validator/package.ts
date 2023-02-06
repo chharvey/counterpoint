@@ -7,7 +7,6 @@
 export {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	ErrorCode,
 	LexError01,

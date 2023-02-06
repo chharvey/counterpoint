@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	TypeError03,
 	CPConfig,
@@ -31,7 +31,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		super(start_node, {}, [claimed_type, operand]);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionExpression {
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		return this.operand.build(builder);
 	}
 

@@ -75,7 +75,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			builder.module,
 			this.assignee.type(),
 			this.assigned.type(),
-			this.assigned.build(builder).buildBin(builder.module),
+			this.assigned.build(builder),
 			this.validator.config.compilerOptions.intCoercion,
 		));
 	}

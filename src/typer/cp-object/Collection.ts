@@ -1,7 +1,6 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import type {
-	INST,
-	Builder,
 	Keys,
 	TYPE,
 } from './package.js';
@@ -34,8 +33,8 @@ export abstract class Collection extends CPObject {
 	}
 
 
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		mod;
 		throw new Error('`Collection#build` not yet supported.');
 	}
 

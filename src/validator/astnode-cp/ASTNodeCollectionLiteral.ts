@@ -1,6 +1,6 @@
+import type binaryen from 'binaryen';
 import {
 	TYPE,
-	INST,
 	Builder,
 	SyntaxNodeType,
 } from './package.js';
@@ -29,7 +29,7 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 		super(start_node, {}, children);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionExpression {
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		builder;
 		throw '`ASTNodeCollectionLiteral#build_do` not yet supported.';
 	}

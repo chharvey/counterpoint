@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	ReferenceError01,
 	ReferenceError03,
@@ -47,10 +47,10 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		}
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionLocalGet {
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		const local = builder.getLocalInfo(this.id);
 		return (local)
-			? new INST.InstructionLocalGet(local.index, local.type)
+			? builder.module.local.get(local.index, local.type)
 			: throw_expression(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 

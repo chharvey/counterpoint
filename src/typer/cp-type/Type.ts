@@ -1,6 +1,8 @@
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	Builder,
+	throw_expression,
 	languageValuesIdentical,
 	OBJ,
 } from './package.js';
@@ -76,6 +78,8 @@ export abstract class Type {
 	 * Used internally for special cases of computations.
 	 */
 	public readonly isTopType: boolean = false;
+
+	#binType: binaryen.Type | null = null; // TODO: use memoize decorator on `.binType()`
 
 	/**
 	 * Construct a new Type object.
@@ -278,10 +282,11 @@ export abstract class Type {
 	/**
 	 * Return a corresponding Binaryen type.
 	 * @return the best match for a Binaryen type equivalent to this type
+	 * @todo use memoize decorator on this method
 	 * @final
 	 */
 	public binType(): binaryen.Type {
-		return (
+		return this.#binType ??= ( // TODO: use memoize decorator
 			(this.isBottomType)                                  ? binaryen.unreachable :
 			(this.isSubtypeOf(VOID))                             ? binaryen.none        :
 			(this.isSubtypeOf(Type.unionAll([NULL, BOOL, INT]))) ? binaryen.i32         :
@@ -289,9 +294,21 @@ export abstract class Type {
 			(this instanceof TypeUnion) ? ((left_type: binaryen.Type, right_type: binaryen.Type) => (
 				([binaryen.none, binaryen.unreachable].includes(left_type))  ? right_type :
 				([binaryen.none, binaryen.unreachable].includes(right_type)) ? left_type  :
-				binaryen.createType([binaryen.i32, left_type, right_type]) // create an `Either<L, R>` monad-like thing
+				Builder.createBinTypeEither(left_type, right_type)
 			))(this.left.binType(), this.right.binType()) :
-			binaryen.unreachable
+			throw_expression(new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`))
+		);
+	}
+
+	/**
+	 * @return a default Binaryen value given this type
+	 */
+	public defaultBinValue(mod: binaryen.Module): binaryen.ExpressionRef {
+		return (
+			(this.binType() === binaryen.i32) ? mod.i32.const(0) :
+			(this.binType() === binaryen.f64) ? mod.f64.const(0) :
+			(this instanceof TypeUnion)       ? Builder.createBinEither(mod, false, this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)) :
+			throw_expression(new TypeError(`Could not determine a default value for \`${ this }\`.`))
 		);
 	}
 }

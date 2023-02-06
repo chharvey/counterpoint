@@ -1,7 +1,7 @@
+import type binaryen from 'binaryen';
 import {TYPE} from './package.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
-import {Integer} from './index.js';
 
 
 
@@ -51,12 +51,12 @@ class CPBoolean extends Primitive {
 		return this.data;
 	}
 
-	protected override get builtValue(): Integer {
-		return (this.isTruthy) ? Integer.UNIT : Integer.ZERO;
-	}
-
 	protected override identical_helper(value: CPObject): boolean {
 		return value instanceof CPBoolean && this.data === value.data;
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.i32.const((this.isTruthy) ? 1 : 0);
 	}
 }
 export {CPBoolean as Boolean};

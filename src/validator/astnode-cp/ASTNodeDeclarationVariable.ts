@@ -73,12 +73,12 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			return builder.module.nop();
 		} else {
 			const assignee_type: TYPE.Type = this.typenode.eval();
-			const local = builder.addLocal(this.assignee.id, assignee_type.binType())[0].getLocalInfo(this.assignee.id);
-			return builder.module.local.set(local!.index, ASTNodeStatement.coerceAssignment(
+			const local = builder.addLocal(this.assignee.id, assignee_type.binType())[0].getLocalInfo(this.assignee.id)!;
+			return builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
 				builder.module,
 				assignee_type,
 				this.assigned.type(),
-				this.assigned.build(builder).buildBin(builder.module),
+				this.assigned.build(builder),
 				this.validator.config.compilerOptions.intCoercion,
 			));
 		}

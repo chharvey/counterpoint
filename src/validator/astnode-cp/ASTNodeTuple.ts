@@ -1,9 +1,9 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	CPConfig,
 	CONFIG_DEFAULT,
@@ -29,8 +29,8 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		super(start_node, children);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		return new INST.InstructionTupleMake(this.children.map((expr) => expr.build(builder)));
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.tuple.make(this.children.map((expr) => expr.build(builder)));
 	}
 
 	protected override type_do(): TYPE.Type {

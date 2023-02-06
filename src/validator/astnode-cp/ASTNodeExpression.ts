@@ -1,10 +1,10 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	CPConfig,
 	CONFIG_DEFAULT,
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	ErrorCode,
 } from './package.js';
@@ -46,7 +46,8 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 
 	private typed?: TYPE.Type;
 	private assessed?: OBJ.Object | null;
-	private built?: INST.InstructionExpression;
+	#built?: binaryen.ExpressionRef;
+
 	/**
 	 * @final
 	 */
@@ -60,15 +61,16 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @implements Buildable
 	 * @final
 	 */
-	public build(builder: Builder): INST.InstructionExpression {
-		if (!this.built) {
+	public build(builder: Builder): binaryen.ExpressionRef {
+		if (!this.#built) {
 			const value: OBJ.Object | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			this.built = (value) ? value.build(builder) : this.build_do(builder);
+			this.#built = (value) ? value.build(builder.module) : this.build_do(builder);
 		}
-		return this.built;
+		return this.#built;
 	}
 
-	protected abstract build_do(builder: Builder): INST.InstructionExpression;
+	protected abstract build_do(builder: Builder): binaryen.ExpressionRef;
+
 	/**
 	 * The Type of this expression.
 	 * @return the compile-time type of this node

@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	TypeError01,
 	TypeError02,
@@ -39,7 +39,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		super(start_node, {kind}, [base, accessor]);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionExpression {
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		builder;
 		throw '`ASTNodeAccess#build_do` not yet supported.';
 	}

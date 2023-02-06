@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	TypeError01,
 	throw_expression,
@@ -33,11 +33,10 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionCond {
-		return new INST.InstructionCond(
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.if(
 			this.operand0.build(builder),
-			this.operand1.build(builder),
-			this.operand2.build(builder),
+			...ASTNodeOperation.coerceOperands(builder, this.operand1, this.operand2).exprs,
 		);
 	}
 

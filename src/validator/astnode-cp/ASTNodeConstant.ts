@@ -1,9 +1,9 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	TYPE,
 	OBJ,
-	INST,
 	Builder,
 	throw_expression,
 	CPConfig,
@@ -61,8 +61,8 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		);
 	}
 
-	protected override build_do(_builder: Builder): INST.InstructionConst {
-		return this.value.build();
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
+		return this.value.build(builder.module);
 	}
 
 	protected override type_do(): TYPE.Type {
