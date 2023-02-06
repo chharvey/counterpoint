@@ -53,9 +53,9 @@ function foldOperations(tests: Map<string, SolidObject>): void {
 		[...tests.values()],
 	);
 }
-function buildOperations_bin(tests: ReadonlyMap<string, binaryen.ExpressionRef>, config: SolidConfig = CONFIG_FOLDING_OFF): void {
+function buildOperations(tests: ReadonlyMap<string, binaryen.ExpressionRef>, config: SolidConfig = CONFIG_FOLDING_OFF): void {
 	return assertEqualBins(
-		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).build_bin(new Builder(src, config))),
+		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).build(new Builder(src, config))),
 		[...tests.values()],
 	);
 }
@@ -86,10 +86,10 @@ describe('ASTNodeOperation', () => {
 
 
 
-	describe('#build_bin', () => {
+	describe('#build', () => {
 		it('compound expression.', () => {
 			const mod = new binaryen.Module();
-			return buildOperations_bin(new Map([
+			return buildOperations(new Map([
 				[`42 ^ 2 * 420;`, mod.i32.mul(
 					mod.call('exp', [buildConstInt(42n, mod), buildConstInt(2n, mod)], binaryen.i32),
 					buildConstInt(420n, mod),
@@ -279,9 +279,9 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		specify('#build_bin', () => {
+		specify('#build', () => {
 			const mod = new binaryen.Module();
-			return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+			return buildOperations(new Map<string, binaryen.ExpressionRef>([
 				[`!null;`,  mod.call('inot', [buildConstInt   (0n,  mod)], binaryen.i32)],
 				[`!false;`, mod.call('inot', [buildConstInt   (0n,  mod)], binaryen.i32)],
 				[`!true;`,  mod.call('inot', [buildConstInt   (1n,  mod)], binaryen.i32)],
@@ -395,13 +395,13 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		specify('#build_bin', () => {
+		specify('#build', () => {
 			const mod = new binaryen.Module();
-			buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+			buildOperations(new Map<string, binaryen.ExpressionRef>([
 				['42 + 420;', mod.i32.add(buildConstInt (42n, mod), buildConstInt   (420n, mod))],
 				['3 * 2.1;',  mod.f64.mul(buildConvert  (3n,  mod), buildConstFloat (2.1,  mod))],
 			]));
-			return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+			return buildOperations(new Map<string, binaryen.ExpressionRef>([
 				[' 126 /  3;', mod.i32.div_s(buildConstInt( 126n, mod), buildConstInt( 3n, mod))],
 				['-126 /  3;', mod.i32.div_s(buildConstInt(-126n, mod), buildConstInt( 3n, mod))],
 				[' 126 / -3;', mod.i32.div_s(buildConstInt( 126n, mod), buildConstInt(-3n, mod))],
@@ -478,9 +478,9 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		specify('#build_bin', () => {
+		specify('#build', () => {
 			const mod = new binaryen.Module();
-			return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+			return buildOperations(new Map<string, binaryen.ExpressionRef>([
 				['3   <  3;',   mod.i32.lt_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
 				['3   >  3;',   mod.i32.gt_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
 				['3   <= 3;',   mod.i32.le_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
@@ -697,10 +697,10 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#build_bin', () => {
+		describe('#build', () => {
 			it('with int coercion on, coerces ints into floats when needed.', () => {
 				const mod = new binaryen.Module();
-				return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+				return buildOperations(new Map<string, binaryen.ExpressionRef>([
 					['42 === 420;', mod.i32.eq (           buildConstInt (42n, mod), buildConstInt   (420n, mod))],
 					['42 ==  420;', mod.i32.eq (           buildConstInt (42n, mod), buildConstInt   (420n, mod))],
 					['42 === 4.2;', mod.call   ('i_f_id', [buildConstInt (42n, mod), buildConstFloat (4.2,  mod)], binaryen.i32)],
@@ -734,7 +734,7 @@ describe('ASTNodeOperation', () => {
 			});
 			it('with int coercion off, does not coerce ints into floats.', () => {
 				const mod = new binaryen.Module();
-				return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+				return buildOperations(new Map<string, binaryen.ExpressionRef>([
 					['42 === 4.2;', mod.call('i_f_id', [buildConstInt(42n, mod), buildConstFloat(4.2, mod)], binaryen.i32)],
 					['42 ==  4.2;', mod.call('i_f_id', [buildConstInt(42n, mod), buildConstFloat(4.2, mod)], binaryen.i32)],
 
@@ -907,7 +907,7 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#build_bin', () => {
+		describe('#build', () => {
 			/**
 			 * A helper for creating a conditional expression.
 			 * Given a value to tee and a callback to perform giving the branches,
@@ -940,7 +940,7 @@ describe('ASTNodeOperation', () => {
 			}
 			it('returns a special case of `(if)`.', () => {
 				const mod = new binaryen.Module();
-				return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+				return buildOperations(new Map<string, binaryen.ExpressionRef>([
 					['42 && 420;', create_if(
 						mod,
 						[0, buildConstInt(42n, mod), binaryen.i32],
@@ -972,7 +972,7 @@ describe('ASTNodeOperation', () => {
 				const src = '1 && 2 || 3 && 4;';
 				const builder = new Builder(src, CONFIG_FOLDING_OFF);
 				return assertEqualBins(
-					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build_bin(builder),
+					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(builder),
 					create_if(
 						builder.module,
 						[2, create_if(
@@ -1021,10 +1021,10 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#build_bin', () => {
+		describe('#build', () => {
 			it('returns `(mod.if)`.', () => {
 				const mod = new binaryen.Module();
-				return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
+				return buildOperations(new Map<string, binaryen.ExpressionRef>([
 					['if true  then false else 2;',    mod.if(buildConstInt(1n, mod), buildConstInt   (0n,  mod), buildConstInt   (2n,  mod))],
 					['if false then 3.0   else null;', mod.if(buildConstInt(0n, mod), buildConstFloat (3.0, mod), buildConvert    (0n,  mod))],
 					['if true  then 2     else 3.0;',  mod.if(buildConstInt(1n, mod), buildConvert    (2n,  mod), buildConstFloat (3.0, mod))],

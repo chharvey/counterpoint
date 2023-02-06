@@ -50,9 +50,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		super(start_node, {kind}, [base, accessor]);
 	}
 
-	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		builder;
-		throw '`ASTNodeAccess#build_bin_do` not yet supported.';
+		throw '`ASTNodeAccess#build_do` not yet supported.';
 	}
 	protected override type_do(): SolidType {
 		let base_type: SolidType = this.base.type();

@@ -295,7 +295,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			]);
 			return forEachAggregated(goal.children, (stmt, i) => assertEqualBins(
 				stmt.build(builder),
-				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build_bin(builder)),
+				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
 			));
 		});
 		it('with constant folding on, coerces as necessary.', () => {
@@ -312,7 +312,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				{id: 0x100n, type: binaryen.f64},
 				{id: 0x101n, type: Builder.createBinTypeEither(binaryen.f64, binaryen.i32)},
 			]);
-			const exprs: binaryen.ExpressionRef[] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned.build_bin(builder));
+			const exprs: binaryen.ExpressionRef[] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder));
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build(builder)),
 				[
@@ -337,7 +337,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			]);
 			return forEachAggregated(goal.children, (stmt, i) => assertEqualBins(
 				stmt.build(builder),
-				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build_bin(builder)),
+				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
 			));
 		});
 	});

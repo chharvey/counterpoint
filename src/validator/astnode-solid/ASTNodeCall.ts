@@ -57,9 +57,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 		], (arg) => arg.varCheck());
 	}
 
-	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		builder;
-		throw '`ASTNodeCall#build_bin_do` not yet supported.'
+		throw '`ASTNodeCall#build_do` not yet supported.'
 	}
 	protected override type_do(): SolidType {
 		if (!(this.base instanceof ASTNodeVariable)) {

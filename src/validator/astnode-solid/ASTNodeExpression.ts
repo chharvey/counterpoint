@@ -46,7 +46,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	}
 	private typed?: SolidType;
 	private assessed?: SolidObject | null;
-	#built_bin?: binaryen.ExpressionRef;
+	#built?: binaryen.ExpressionRef;
 
 	/**
 	 * @final
@@ -60,19 +60,15 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * @implements Buildable
 	 * @final
 	 */
-	public build(_builder: Builder): never {
-		throw new Error('OBSOLETE. use `#build_bin` instead');
-	}
-
-	public build_bin(builder: Builder): binaryen.ExpressionRef {
-		if (!this.#built_bin) {
+	public build(builder: Builder): binaryen.ExpressionRef {
+		if (!this.#built) {
 			const value: SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			this.#built_bin = (value) ? value.build(builder.module) : this.build_bin_do(builder);
+			this.#built = (value) ? value.build(builder.module) : this.build_do(builder);
 		}
-		return this.#built_bin;
+		return this.#built;
 	}
 
-	protected abstract build_bin_do(builder: Builder): binaryen.ExpressionRef;
+	protected abstract build_do(builder: Builder): binaryen.ExpressionRef;
 
 	/**
 	 * The Type of this expression.

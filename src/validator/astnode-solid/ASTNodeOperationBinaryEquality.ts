@@ -36,7 +36,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		const {
 			exprs: [arg0,  arg1],
 			types: [type0, type1],

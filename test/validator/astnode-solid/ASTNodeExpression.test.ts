@@ -120,7 +120,7 @@ describe('ASTNodeExpression', () => {
 		});
 
 
-		specify('#build_bin', () => {
+		specify('#build', () => {
 			const mod = new binaryen.Module();
 			const tests = new Map<string, binaryen.ExpressionRef>([
 				['null;',    mod.i32.const(0)],
@@ -138,7 +138,7 @@ describe('ASTNodeExpression', () => {
 				['-4.2e-2;', mod.f64.const(-0.042)],
 			]);
 			return assertEqualBins(
-				[...tests.keys()].map((src) => AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF).build_bin(new Builder(src, CONFIG_FOLDING_OFF))),
+				[...tests.keys()].map((src) => AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))),
 				[...tests.values()],
 			);
 		});
@@ -221,7 +221,7 @@ describe('ASTNodeExpression', () => {
 		});
 
 
-		describe('#build_bin', () => {
+		describe('#build', () => {
 			it('with constant folding on, returns `({i32,f64}.const)` for fixed & foldable variables.', () => {
 				const src: string = `
 					let x: int = 42;
@@ -236,8 +236,8 @@ describe('ASTNodeExpression', () => {
 				goal.build(builder);
 				assertEqualBins(
 					[
-						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build_bin(builder),
-						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build_bin(builder),
+						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
+						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
 					],
 					[
 						buildConstInt   (42n,  builder.module),
@@ -266,8 +266,8 @@ describe('ASTNodeExpression', () => {
 				assert.deepStrictEqual([var0.id, var1.id], [id0, id1]);
 				assertEqualBins(
 					[
-						var0.build_bin(builder),
-						var1.build_bin(builder),
+						var0.build(builder),
+						var1.build(builder),
 					],
 					[
 						builder.module.local.get(0, type0),
@@ -296,8 +296,8 @@ describe('ASTNodeExpression', () => {
 				assert.deepStrictEqual([var0.id, var1.id], [id0, id1]);
 				assertEqualBins(
 					[
-						var0.build_bin(builder),
-						var1.build_bin(builder),
+						var0.build(builder),
+						var1.build(builder),
 					],
 					[
 						builder.module.local.get(0, type0),
@@ -518,11 +518,11 @@ describe('ASTNodeExpression', () => {
 		});
 
 
-		describe('#build_bin', () => {
+		describe('#build', () => {
 			specify('ASTNodeTuple', () => {
 				const builder = new Builder('');
 				assertEqualBins(
-					AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF).build_bin(builder),
+					AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF).build(builder),
 					builder.module.tuple.make([buildConstInt(1n, builder.module), buildConstFloat(2.0, builder.module)]),
 				);
 			});

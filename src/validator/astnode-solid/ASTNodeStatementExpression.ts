@@ -25,7 +25,7 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	}
 	override build(builder: Builder): binaryen.ExpressionRef {
 		return (this.expr)
-			? builder.module.drop(this.expr.build_bin(builder))
+			? builder.module.drop(this.expr.build(builder))
 			: builder.module.nop();
 	}
 }

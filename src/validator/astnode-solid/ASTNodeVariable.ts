@@ -39,7 +39,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		};
 	}
 
-	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		const local = builder.getLocalInfo(this.id);
 		return (local)
 			? builder.module.local.get(local.index, local.type)

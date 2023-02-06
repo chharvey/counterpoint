@@ -17,9 +17,9 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
  * - ASTNodeMap
  */
 export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
-	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		builder;
-		throw '`ASTNodeCollectionLiteral#build_bin_do` not yet supported.';
+		throw '`ASTNodeCollectionLiteral#build_do` not yet supported.';
 	}
 
 	/**

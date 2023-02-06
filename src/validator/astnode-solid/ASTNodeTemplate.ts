@@ -34,9 +34,9 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		super(start_node, {}, children)
 	}
 
-	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		builder;
-		throw '`ASTNodeTemplate#build_bin_do` not yet supported.';
+		throw '`ASTNodeTemplate#build_do` not yet supported.';
 	}
 	protected override type_do(): SolidType {
 		return SolidType.STR;

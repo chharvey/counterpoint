@@ -43,22 +43,22 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		const {exprs: [arg0, arg1]} = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1);
-		const this_bintype: binaryen.Type = this.type().binType();
+		const bintype: binaryen.Type = this.type().binType();
 		return (
 			(this.operator === Operator.EXP) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
 				[binaryen.i32, builder.module.call('exp', [arg0, arg1], binaryen.i32)],
 				[binaryen.f64, builder.module.unreachable()], // TODO: support runtime exponentiation for floats
-			]).get(this_bintype)! :
+			]).get(bintype)! :
 			(this.operator === Operator.DIV) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
 				[binaryen.i32, builder.module.i32.div_s (arg0, arg1)],
 				[binaryen.f64, builder.module.f64.div   (arg0, arg1)],
-			]).get(this_bintype)! :
+			]).get(bintype)! :
 			builder.module[new Map<binaryen.Type, 'i32' | 'f64'>([
 				[binaryen.i32, 'i32'],
 				[binaryen.f64, 'f64'],
-			]).get(this_bintype)!][new Map<Operator, 'mul' | 'add' | 'sub'>([
+			]).get(bintype)!][new Map<Operator, 'mul' | 'add' | 'sub'>([
 				[Operator.MUL, 'mul'],
 				[Operator.ADD, 'add'],
 				[Operator.SUB, 'sub'],

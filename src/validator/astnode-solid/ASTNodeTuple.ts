@@ -30,8 +30,8 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		super(start_node, {}, children);
 	}
 
-	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.tuple.make(this.children.map((expr) => expr.build_bin(builder)));
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.tuple.make(this.children.map((expr) => expr.build(builder)));
 	}
 
 	protected override type_do(): SolidType {
