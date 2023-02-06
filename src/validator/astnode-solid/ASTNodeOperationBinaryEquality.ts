@@ -4,7 +4,6 @@ import {
 	SolidType,
 	SolidObject,
 	SolidBoolean,
-	INST,
 	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -35,15 +34,6 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
-	}
-
-	protected override build_do(builder: Builder): INST.InstructionBinopEquality {
-		return new INST.InstructionBinopEquality(
-			this.operator,
-			this.operand0.build(builder),
-			this.operand1.build(builder),
-			this.validator.config.compilerOptions.intCoercion,
-		);
 	}
 
 	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {

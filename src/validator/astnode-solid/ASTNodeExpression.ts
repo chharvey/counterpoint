@@ -7,7 +7,6 @@ import {
 	SolidTypeUnit,
 	SolidObject,
 	Primitive,
-	INST,
 	Builder,
 	ErrorCode,
 } from './package.js';
@@ -47,7 +46,6 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	}
 	private typed?: SolidType;
 	private assessed?: SolidObject | null;
-	private built?: INST.InstructionExpression;
 	#built_bin?: binaryen.ExpressionRef;
 
 	/**
@@ -62,14 +60,9 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * @implements Buildable
 	 * @final
 	 */
-	public build(builder: Builder): INST.InstructionExpression {
-		if (!this.built) {
-			const value: SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			this.built = (!!value) ? value.build(builder) : this.build_do(builder);
-		}
-		return this.built;
+	public build(_builder: Builder): never {
+		throw new Error('OBSOLETE. use `#build_bin` instead');
 	}
-	protected abstract build_do(builder: Builder): INST.InstructionExpression;
 
 	public build_bin(builder: Builder): binaryen.ExpressionRef {
 		if (!this.#built_bin) {
@@ -79,10 +72,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 		return this.#built_bin;
 	}
 
-	protected build_bin_do(builder: Builder): binaryen.ExpressionRef {
-		// please override me!
-		return this.build_do(builder).buildBin(builder.module);
-	}
+	protected abstract build_bin_do(builder: Builder): binaryen.ExpressionRef;
 
 	/**
 	 * The Type of this expression.

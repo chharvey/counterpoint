@@ -31,7 +31,6 @@ export {
 	SolidDict,
 	SolidSet,
 	SolidMap,
-	INST,
 	Builder,
 	ErrorCode,
 	ReferenceError01,

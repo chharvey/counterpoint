@@ -6,7 +6,6 @@ import {
 	SolidObject,
 	SolidNumber,
 	Int16,
-	INST,
 	Builder,
 	TypeError01,
 	NanError01,
@@ -44,24 +43,6 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionBinopArithmetic {
-		return new INST.InstructionBinopArithmetic(
-			this.operator,
-			this.operand0.build(builder),
-			this.operand1.build(builder),
-		);
-	}
-	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
-		if (bothNumeric(t0, t1)) {
-			if (int_coercion) {
-				return (eitherFloats(t0, t1)) ? SolidType.FLOAT : SolidType.INT;
-			}
-			if (bothFloats   (t0, t1)) { return SolidType.FLOAT; }
-			if (neitherFloats(t0, t1)) { return SolidType.INT; }
-		}
-		throw new TypeError01(this)
-	}
-
 	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
 		const {exprs: [arg0, arg1]} = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1);
 		const this_bintype: binaryen.Type = this.type().binType();
@@ -83,6 +64,17 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.SUB, 'sub'],
 			]).get(this.operator)!](arg0, arg1)
 		);
+	}
+
+	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
+		if (bothNumeric(t0, t1)) {
+			if (int_coercion) {
+				return (eitherFloats(t0, t1)) ? SolidType.FLOAT : SolidType.INT;
+			}
+			if (bothFloats   (t0, t1)) { return SolidType.FLOAT; }
+			if (neitherFloats(t0, t1)) { return SolidType.INT; }
+		}
+		throw new TypeError01(this)
 	}
 
 	protected override fold_do(): SolidObject | null {

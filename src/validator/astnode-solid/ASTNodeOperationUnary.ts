@@ -6,7 +6,6 @@ import {
 	SolidObject,
 	SolidBoolean,
 	SolidNumber,
-	INST,
 	Builder,
 	TypeError01,
 	NanError01,
@@ -33,9 +32,6 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		readonly operand: ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand]);
-	}
-	protected override build_do(builder: Builder): INST.InstructionUnop {
-		return new INST.InstructionUnop(this.operator, this.operand.build(builder));
 	}
 
 	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {

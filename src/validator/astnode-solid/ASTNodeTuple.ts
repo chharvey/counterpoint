@@ -9,7 +9,6 @@ import {
 	SolidTypeTuple,
 	SolidObject,
 	SolidTuple,
-	INST,
 	Builder,
 } from './package.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
@@ -29,10 +28,6 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);
-	}
-
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		return new INST.InstructionTupleMake(this.children.map((expr) => expr.build(builder)));
 	}
 
 	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {

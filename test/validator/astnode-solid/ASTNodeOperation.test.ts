@@ -4,7 +4,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-	Operator,
 	ASTNODE_SOLID as AST,
 	SolidType,
 	SolidTypeUnit,
@@ -14,7 +13,6 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-	INST,
 	Builder,
 	TypeError01,
 	NanError01,
@@ -28,8 +26,6 @@ import {
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
-	instructionConstInt,
-	instructionConstFloat,
 	buildConstInt,
 	buildConstFloat,
 	buildConvert,
@@ -54,12 +50,6 @@ function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: SolidCo
 function foldOperations(tests: Map<string, SolidObject>): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).fold()),
-		[...tests.values()],
-	);
-}
-function buildOperations(tests: ReadonlyMap<string, INST.InstructionExpression>, config: SolidConfig = CONFIG_FOLDING_OFF): void {
-	assert.deepStrictEqual(
-		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).build(new Builder(src, config))),
 		[...tests.values()],
 	);
 }
@@ -289,26 +279,6 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#build', () => {
-			it('returns InstructionUnop.', () => {
-				buildOperations(new Map<string, INST.InstructionUnop>([
-					[`!null;`,  new INST.InstructionUnop(Operator.NOT, instructionConstInt(0n))],
-					[`!false;`, new INST.InstructionUnop(Operator.NOT, instructionConstInt(0n))],
-					[`!true;`,  new INST.InstructionUnop(Operator.NOT, instructionConstInt(1n))],
-					[`!42;`,    new INST.InstructionUnop(Operator.NOT, instructionConstInt(42n))],
-					[`!4.2;`,   new INST.InstructionUnop(Operator.NOT, instructionConstFloat(4.2))],
-					[`?null;`,  new INST.InstructionUnop(Operator.EMP, instructionConstInt(0n))],
-					[`?false;`, new INST.InstructionUnop(Operator.EMP, instructionConstInt(0n))],
-					[`?true;`,  new INST.InstructionUnop(Operator.EMP, instructionConstInt(1n))],
-					[`?42;`,    new INST.InstructionUnop(Operator.EMP, instructionConstInt(42n))],
-					[`?4.2;`,   new INST.InstructionUnop(Operator.EMP, instructionConstFloat(4.2))],
-					[`-(4);`,   new INST.InstructionUnop(Operator.NEG, instructionConstInt(4n))],
-					[`-(4.2);`, new INST.InstructionUnop(Operator.NEG, instructionConstFloat(4.2))],
-				]));
-			});
-		});
-
-
 		specify('#build_bin', () => {
 			const mod = new binaryen.Module();
 			return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
@@ -425,26 +395,6 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#build', () => {
-			it('returns InstructionBinopArithmetic.', () => {
-				buildOperations(new Map([
-					[`42 + 420;`, new INST.InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n), instructionConstInt(420n))],
-					[`3 * 2.1;`,  new INST.InstructionBinopArithmetic(Operator.MUL, instructionConstInt(3n),  instructionConstFloat(2.1))],
-				]));
-				buildOperations(new Map([
-					[' 126 /  3;', new INST.InstructionBinopArithmetic(Operator.DIV, instructionConstInt( 126n), instructionConstInt( 3n))],
-					['-126 /  3;', new INST.InstructionBinopArithmetic(Operator.DIV, instructionConstInt(-126n), instructionConstInt( 3n))],
-					[' 126 / -3;', new INST.InstructionBinopArithmetic(Operator.DIV, instructionConstInt( 126n), instructionConstInt(-3n))],
-					['-126 / -3;', new INST.InstructionBinopArithmetic(Operator.DIV, instructionConstInt(-126n), instructionConstInt(-3n))],
-					[' 200 /  3;', new INST.InstructionBinopArithmetic(Operator.DIV, instructionConstInt( 200n), instructionConstInt( 3n))],
-					[' 200 / -3;', new INST.InstructionBinopArithmetic(Operator.DIV, instructionConstInt( 200n), instructionConstInt(-3n))],
-					['-200 /  3;', new INST.InstructionBinopArithmetic(Operator.DIV, instructionConstInt(-200n), instructionConstInt( 3n))],
-					['-200 / -3;', new INST.InstructionBinopArithmetic(Operator.DIV, instructionConstInt(-200n), instructionConstInt(-3n))],
-				]));
-			});
-		});
-
-
 		specify('#build_bin', () => {
 			const mod = new binaryen.Module();
 			buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
@@ -525,30 +475,6 @@ describe('ASTNodeOperation', () => {
 				[`3 <= 3.0;`,   SolidBoolean.TRUE],
 				[`3 >= 3.0;`,   SolidBoolean.TRUE],
 			]));
-		});
-
-
-		describe('#build', () => {
-			it('returns InstructionBinopComparative.', () => {
-				buildOperations(new Map<string, INST.InstructionBinopComparative>([
-					[`3   <  3;`,   new INST.InstructionBinopComparative(Operator.LT, instructionConstInt(3n),    instructionConstInt(3n))],
-					[`3   >  3;`,   new INST.InstructionBinopComparative(Operator.GT, instructionConstInt(3n),    instructionConstInt(3n))],
-					[`3   <= 3;`,   new INST.InstructionBinopComparative(Operator.LE, instructionConstInt(3n),    instructionConstInt(3n))],
-					[`3   >= 3;`,   new INST.InstructionBinopComparative(Operator.GE, instructionConstInt(3n),    instructionConstInt(3n))],
-					[`5   <  9.2;`, new INST.InstructionBinopComparative(Operator.LT, instructionConstInt(5n),    instructionConstFloat(9.2))],
-					[`5   >  9.2;`, new INST.InstructionBinopComparative(Operator.GT, instructionConstInt(5n),    instructionConstFloat(9.2))],
-					[`5   <= 9.2;`, new INST.InstructionBinopComparative(Operator.LE, instructionConstInt(5n),    instructionConstFloat(9.2))],
-					[`5   >= 9.2;`, new INST.InstructionBinopComparative(Operator.GE, instructionConstInt(5n),    instructionConstFloat(9.2))],
-					[`5.2 <  3;`,   new INST.InstructionBinopComparative(Operator.LT, instructionConstFloat(5.2), instructionConstInt(3n))],
-					[`5.2 >  3;`,   new INST.InstructionBinopComparative(Operator.GT, instructionConstFloat(5.2), instructionConstInt(3n))],
-					[`5.2 <= 3;`,   new INST.InstructionBinopComparative(Operator.LE, instructionConstFloat(5.2), instructionConstInt(3n))],
-					[`5.2 >= 3;`,   new INST.InstructionBinopComparative(Operator.GE, instructionConstFloat(5.2), instructionConstInt(3n))],
-					[`5.2 <  9.2;`, new INST.InstructionBinopComparative(Operator.LT, instructionConstFloat(5.2), instructionConstFloat(9.2))],
-					[`5.2 >  9.2;`, new INST.InstructionBinopComparative(Operator.GT, instructionConstFloat(5.2), instructionConstFloat(9.2))],
-					[`5.2 <= 9.2;`, new INST.InstructionBinopComparative(Operator.LE, instructionConstFloat(5.2), instructionConstFloat(9.2))],
-					[`5.2 >= 9.2;`, new INST.InstructionBinopComparative(Operator.GE, instructionConstFloat(5.2), instructionConstFloat(9.2))],
-				]));
-			});
 		});
 
 
@@ -771,62 +697,6 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#build', () => {
-			it('with int coercion on, coerces ints into floats when needed.', () => {
-				buildOperations(new Map<string, INST.InstructionBinopEquality>([
-					['42 === 420;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstInt(420n))],
-					['42 ==  420;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstInt(420n))],
-					['42 === 4.2;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstFloat(4.2))],
-					['42 ==  4.2;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstFloat(4.2))],
-
-					['4.2 === 42;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstInt(42n))],
-					['4.2 ==  42;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstInt(42n))],
-					['4.2 === 42.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstFloat(42.0))],
-					['4.2 ==  42.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstFloat(42.0))],
-
-					['null === 0;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n))],
-					['null ==  0;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n))],
-					['null === 0.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0))],
-					['null ==  0.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0))],
-
-					['false === 0;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n))],
-					['false ==  0;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n))],
-					['false === 0.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0))],
-					['false ==  0.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0))],
-
-					['true === 1;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstInt(1n))],
-					['true ==  1;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstInt(1n))],
-					['true === 1.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstFloat(1.0))],
-					['true ==  1.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstFloat(1.0))],
-
-					['null === false;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(0n))],
-					['null ==  false;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(0n))],
-					['null === true;',  new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstInt(1n))],
-					['null ==  true;',  new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstInt(1n))],
-				]));
-			});
-			it('with int coercion off, does not coerce ints into floats.', () => {
-				const int_coercion: boolean = CONFIG_FOLDING_COERCION_OFF.compilerOptions.intCoercion;
-				buildOperations(new Map<string, INST.InstructionBinopEquality>([
-					['42 === 4.2;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(42n), instructionConstFloat(4.2), int_coercion)],
-					['42 ==  4.2;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(42n), instructionConstFloat(4.2), int_coercion)],
-
-					['4.2 === 42;',   new INST.InstructionBinopEquality(Operator.ID, instructionConstFloat(4.2), instructionConstInt(42n), int_coercion)],
-					['4.2 ==  42;',   new INST.InstructionBinopEquality(Operator.EQ, instructionConstFloat(4.2), instructionConstInt(42n), int_coercion)],
-
-					['null === 0.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0), int_coercion)],
-					['null ==  0.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0), int_coercion)],
-
-					['false === 0.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(0n), instructionConstFloat(0.0), int_coercion)],
-					['false ==  0.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(0n), instructionConstFloat(0.0), int_coercion)],
-
-					['true === 1.0;', new INST.InstructionBinopEquality(Operator.ID, instructionConstInt(1n), instructionConstFloat(1.0), int_coercion)],
-					['true ==  1.0;', new INST.InstructionBinopEquality(Operator.EQ, instructionConstInt(1n), instructionConstFloat(1.0), int_coercion)],
-				]), CONFIG_FOLDING_COERCION_OFF);
-			});
-		});
-
-
 		describe('#build_bin', () => {
 			it('with int coercion on, coerces ints into floats when needed.', () => {
 				const mod = new binaryen.Module();
@@ -1037,64 +907,6 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#build', () => {
-			it('returns InstructionBinopLogical.', () => {
-				buildOperations(new Map<string, INST.InstructionBinopLogical>([
-					['42 && 420;', new INST.InstructionBinopLogical(
-						0,
-						Operator.AND,
-						instructionConstInt(42n),
-						instructionConstInt(420n),
-					)],
-					['4.2 || -420;', new INST.InstructionBinopLogical(
-						0,
-						Operator.OR,
-						instructionConstFloat(4.2),
-						instructionConstInt(-420n),
-					)],
-					['null && 201.0e-1;', new INST.InstructionBinopLogical(
-						0,
-						Operator.AND,
-						instructionConstInt(0n),
-						instructionConstFloat(20.1),
-					)],
-					['true && 201.0e-1;', new INST.InstructionBinopLogical(
-						0,
-						Operator.AND,
-						instructionConstInt(1n),
-						instructionConstFloat(20.1),
-					)],
-					['false || null;', new INST.InstructionBinopLogical(
-						0,
-						Operator.OR,
-						instructionConstInt(0n),
-						instructionConstInt(0n),
-					)],
-				]));
-			});
-			it('counts internal variables correctly.', () => {
-				buildOperations(new Map<string, INST.InstructionBinopLogical>([
-					['1 && 2 || 3 && 4;', new INST.InstructionBinopLogical(
-						2,
-						Operator.OR,
-						new INST.InstructionBinopLogical(
-							0,
-							Operator.AND,
-							instructionConstInt(1n),
-							instructionConstInt(2n),
-						),
-						new INST.InstructionBinopLogical(
-							1,
-							Operator.AND,
-							instructionConstInt(3n),
-							instructionConstInt(4n),
-						),
-					)],
-				]));
-			});
-		});
-
-
 		describe('#build_bin', () => {
 			/**
 			 * A helper for creating a conditional expression.
@@ -1206,17 +1018,6 @@ describe('ASTNodeOperation', () => {
 				[`if true then 2 else 3.0;`,            new Int16(2n)],
 				[`if false then 2 + 3.0 else 1.0 * 2;`, new Float64(2.0)],
 			]));
-		});
-
-
-		describe('#build', () => {
-			it('returns InstructionCond.', () => {
-				buildOperations(new Map<string, INST.InstructionCond>([
-					['if true  then false else 2;',    new INST.InstructionCond(instructionConstInt(1n), instructionConstInt(0n),    instructionConstInt(2n))],
-					['if false then 3.0   else null;', new INST.InstructionCond(instructionConstInt(0n), instructionConstFloat(3.0), instructionConstInt(0n))],
-					['if true  then 2     else 3.0;',  new INST.InstructionCond(instructionConstInt(1n), instructionConstInt(2n),    instructionConstFloat(3.0))],
-				]));
-			});
 		});
 
 

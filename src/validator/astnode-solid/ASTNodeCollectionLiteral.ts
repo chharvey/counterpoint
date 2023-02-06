@@ -1,8 +1,8 @@
+import type binaryen from 'binaryen';
 import {
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
-	INST,
 	Builder,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -17,8 +17,9 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
  * - ASTNodeMap
  */
 export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && '`ASTNodeCollectionLiteral#build_do` not yet supported.';
+	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
+		builder;
+		throw '`ASTNodeCollectionLiteral#build_bin_do` not yet supported.';
 	}
 
 	/**

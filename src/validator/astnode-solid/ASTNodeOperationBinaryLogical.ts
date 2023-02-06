@@ -4,7 +4,6 @@ import {
 	SolidType,
 	SolidObject,
 	SolidBoolean,
-	INST,
 	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -30,18 +29,6 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
-	}
-
-	protected override build_do(builder: Builder): INST.InstructionBinopLogical {
-		const [inst0, inst1]: INST.InstructionExpression[] = [this.operand0, this.operand1].map((expr) => expr.build(builder));
-		/** A temporary variable id used for optimizing short-circuited operations. */
-		const temp_id: bigint = builder.varCount;
-		return new INST.InstructionBinopLogical(
-			builder.addLocal(temp_id, this.operand0.type().binType())[0].getLocalInfo(temp_id)!.index,
-			this.operator,
-			inst0,
-			inst1,
-		)
 	}
 
 	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {

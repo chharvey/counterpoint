@@ -8,7 +8,6 @@ import {
 	TOKEN,
 	SolidType,
 	SolidObject,
-	INST,
 	Builder,
 	SymbolKind,
 	SymbolStructure,
@@ -38,12 +37,6 @@ export class ASTNodeVariable extends ASTNodeExpression {
 			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		};
-	}
-	protected override build_do(builder: Builder): INST.InstructionLocalGet {
-		const local = builder.getLocalInfo(this.id);
-		return (local)
-			? new INST.InstructionLocalGet(local.index, local.type)
-			: (() => { throw new ReferenceError(`Variable with id ${ this.id } not found.`) })(); // TODO use throw_expression
 	}
 
 	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
