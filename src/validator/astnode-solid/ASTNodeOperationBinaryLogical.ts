@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	SolidType,
 	SolidObject,
@@ -45,25 +45,32 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
-		const [inst0, inst1]: INST.InstructionExpression[] = [this.operand0, this.operand1].map((expr) => expr.build(builder));
+		const [type0, type1]: binaryen.Type[] =          [this.operand0, this.operand1].map((expr) => expr.type().binType());
+		let   [arg0,  arg1]:  binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build(builder).buildBin(builder.module));
 
 		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint = builder.varCount;
-		const local           = builder.addLocal(temp_id, this.operand0.type().binType())[0].getLocalInfo(temp_id)!;
+		const local           = builder.addLocal(temp_id, type0)[0].getLocalInfo(temp_id)!;
 
-		const condition = new INST.InstructionUnop(
-			Operator.NOT,
-			new INST.InstructionUnop(
-				Operator.NOT,
-				new INST.InstructionLocalTee(local.index, inst0),
-			),
-		)
-		const left                              = new INST.InstructionLocalGet(local.index, local.type);
-		const right: INST.InstructionExpression = inst1;
+		const condition = builder.module.call('inot', [builder.module.call(
+			(type0 === binaryen.i32) ? 'inot' : 'fnot',
+			[builder.module.local.tee(local.index, arg0, type0)],
+			binaryen.i32,
+		)], binaryen.i32);
+		arg0 = builder.module.local.get(local.index, local.type);
 
-		return ((this.operator === Operator.AND)
-			? new INST.InstructionCond(condition, right, left)
-			: new INST.InstructionCond(condition, left, right)).buildBin(builder.module);
+		// int-coercion copied from `ASTNodeOperation.coerceOperands`
+		if ([type0, type1].includes(binaryen.f64)) {
+			if (type0 === binaryen.i32) {
+				arg0 = builder.module.f64.convert_u.i32(arg0);
+			}
+			if (type1 === binaryen.i32) {
+				arg1 = builder.module.f64.convert_u.i32(arg1);
+			}
+		}
+
+		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
+		return builder.module.if(condition, if_true, if_false);
 	}
 
 	protected override type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {

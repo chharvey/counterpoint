@@ -1105,51 +1105,64 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build_bin', () => {
-			function createInstructionCond(
-				var_index: number,
-				condition: INST.InstructionExpression,
-				if_true:   INST.InstructionExpression,
-				if_false:  INST.InstructionExpression,
-			): INST.InstructionCond {
-				return new INST.InstructionCond(
-					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(var_index, condition))),
-					if_true,
-					if_false,
+			/**
+			 * A helper for creating a conditional expression.
+			 * Given a value to tee and a callback to perform giving the branches,
+			 * return an `(if)` whose condition is the double-negated teed variable
+			 * and whose branches are given by the callback.
+			 * @param mod      the module to perform the conditional
+			 * @param tee      parameters for teeing the value:
+			 *                 [
+			 *                 	the local index to tee the value,
+			 *                 	the value,
+			 *                 	the value’s type,
+			 *                 ]
+			 * @param branches the callback to perform; given a getter, returns two branches: [if_true, if_false]
+			 * @return         the new `(if)` expression
+			 */
+			function create_if(
+				mod:                binaryen.Module,
+				[index, arg, type]: [index: number, arg: binaryen.ExpressionRef, type: binaryen.Type],
+				branches:           (local_get: binaryen.ExpressionRef) => [binaryen.ExpressionRef, binaryen.ExpressionRef],
+			): binaryen.ExpressionRef {
+				const local_get: binaryen.ExpressionRef = mod.local.get(index, type);
+				return mod.if(
+					mod.call('inot', [mod.call(
+						(type === binaryen.i32) ? 'inot' : 'fnot',
+						[mod.local.tee(index, arg, type)],
+						binaryen.i32,
+					)], binaryen.i32),
+					...branches.call(null, local_get),
 				);
 			}
 			it('returns result of `InstructionCond#buildBin`.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations_bin(new Map<string, binaryen.ExpressionRef>([
-					['42 && 420;', createInstructionCond(
-						0,
-						instructionConstInt(42n),
-						instructionConstInt(420n),
-						new INST.InstructionLocalGet(0, binaryen.i32),
-					).buildBin(mod)],
-					['4.2 || -420;', createInstructionCond(
-						0,
-						instructionConstFloat(4.2),
-						new INST.InstructionLocalGet(0, binaryen.f64),
-						instructionConstInt(-420n),
-					).buildBin(mod)],
-					['null && 201.0e-1;', createInstructionCond(
-						0,
-						instructionConstInt(0n),
-						instructionConstFloat(20.1),
-						new INST.InstructionLocalGet(0, binaryen.i32),
-					).buildBin(mod)],
-					['true && 201.0e-1;', createInstructionCond(
-						0,
-						instructionConstInt(1n),
-						instructionConstFloat(20.1),
-						new INST.InstructionLocalGet(0, binaryen.i32),
-					).buildBin(mod)],
-					['false || null;', createInstructionCond(
-						0,
-						instructionConstInt(0n),
-						new INST.InstructionLocalGet(0, binaryen.i32),
-						instructionConstInt(0n),
-					).buildBin(mod)],
+					['42 && 420;', create_if(
+						mod,
+						[0, buildConstInt(42n, mod), binaryen.i32],
+						(getter) => [buildConstInt(420n, mod), getter],
+					)],
+					['4.2 || -420;', create_if(
+						mod,
+						[0, buildConstFloat(4.2, mod), binaryen.f64],
+						(getter) => [getter, buildConvert(-420n, mod)],
+					)],
+					['null && 201.0e-1;', create_if(
+						mod,
+						[0, buildConstInt(0n, mod), binaryen.i32],
+						(getter) => [buildConstFloat(20.1, mod), mod.f64.convert_u.i32(getter)],
+					)],
+					['true && 201.0e-1;', create_if(
+						mod,
+						[0, buildConstInt(1n, mod), binaryen.i32],
+						(getter) => [buildConstFloat(20.1, mod), mod.f64.convert_u.i32(getter)],
+					)],
+					['false || null;', create_if(
+						mod,
+						[0, buildConstInt(0n, mod), binaryen.i32],
+						(getter) => [getter, buildConstInt(0n, mod)],
+					)],
 				]));
 			});
 			it('counts internal variables correctly.', () => {
@@ -1157,22 +1170,19 @@ describe('ASTNodeOperation', () => {
 				const builder = new Builder(src, CONFIG_FOLDING_OFF);
 				return assertEqualBins(
 					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build_bin(builder),
-					createInstructionCond(
-						2,
-						createInstructionCond(
-							0,
-							instructionConstInt(1n),
-							instructionConstInt(2n),
-							new INST.InstructionLocalGet(0, binaryen.i32),
-						),
-						new INST.InstructionLocalGet(2, binaryen.i32),
-						createInstructionCond(
-							1,
-							instructionConstInt(3n),
-							instructionConstInt(4n),
-							new INST.InstructionLocalGet(1, binaryen.i32),
-						),
-					).buildBin(builder.module),
+					create_if(
+						builder.module,
+						[2, create_if(
+							builder.module,
+							[0, buildConstInt(1n, builder.module), binaryen.i32],
+							(getter) => [buildConstInt(2n, builder.module), getter],
+						), binaryen.i32],
+						(getter) => [getter, create_if(
+							builder.module,
+							[1, buildConstInt(3n, builder.module), binaryen.i32],
+							(getter) => [buildConstInt(4n, builder.module), getter],
+						)],
+					),
 				);
 			});
 		});
