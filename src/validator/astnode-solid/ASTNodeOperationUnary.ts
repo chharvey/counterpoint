@@ -39,7 +39,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
-		const arg:  binaryen.ExpressionRef = this.operand.build(builder).buildBin(builder.module);
+		const arg:  binaryen.ExpressionRef = this.operand.build_bin(builder);
 		const type: binaryen.Type          = this.operand.type().binType();
 		return (this.operator === Operator.NEG && type === binaryen.f64)
 			? builder.module.f64.neg(arg)

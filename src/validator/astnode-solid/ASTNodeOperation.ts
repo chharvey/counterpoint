@@ -37,7 +37,7 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 		types: [binaryen.Type,          binaryen.Type],
 	} {
 		let [type_a, type_b]: binaryen.Type[]          = [expr_a, expr_b].map((expr) => expr.type().binType());
-		let [arg_a,  arg_b]:  binaryen.ExpressionRef[] = [expr_a, expr_b].map((expr) => expr.build(builder).buildBin(builder.module));
+		let [arg_a,  arg_b]:  binaryen.ExpressionRef[] = [expr_a, expr_b].map((expr) => expr.build_bin(builder));
 		if (condition() && [type_a, type_b].includes(binaryen.f64)) {
 			if (type_a === binaryen.i32) {
 				[arg_a, type_a] = [builder.module.f64.convert_u.i32(arg_a), binaryen.f64];

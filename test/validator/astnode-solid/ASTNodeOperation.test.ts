@@ -96,26 +96,17 @@ describe('ASTNodeOperation', () => {
 
 
 
-	describe('#build', () => {
+	describe('#build_bin', () => {
 		it('compound expression.', () => {
-			buildOperations(new Map([
-				[`42 ^ 2 * 420;`, new INST.InstructionBinopArithmetic(
-					Operator.MUL,
-					new INST.InstructionBinopArithmetic(
-						Operator.EXP,
-						instructionConstInt(42n),
-						instructionConstInt(2n),
-					),
-					instructionConstInt(420n),
+			const mod = new binaryen.Module();
+			return buildOperations_bin(new Map([
+				[`42 ^ 2 * 420;`, mod.i32.mul(
+					mod.call('exp', [buildConstInt(42n, mod), buildConstInt(2n, mod)], binaryen.i32),
+					buildConstInt(420n, mod),
 				)],
-				[`2 * 3.0 + 5;`, new INST.InstructionBinopArithmetic(
-					Operator.ADD,
-					new INST.InstructionBinopArithmetic(
-						Operator.MUL,
-						instructionConstInt(2n),
-						instructionConstFloat(3.0),
-					),
-					instructionConstInt(5n),
+				[`2 * 3.0 + 5;`, mod.f64.add(
+					mod.f64.mul(buildConvert(2n, mod), buildConstFloat(3.0, mod)),
+					buildConvert(5n, mod),
 				)],
 			]));
 		});

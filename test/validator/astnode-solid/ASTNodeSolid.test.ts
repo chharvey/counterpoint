@@ -35,7 +35,7 @@ describe('ASTNodeSolid', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
 				return assertEqualBins(
 					stmt.build(builder),
-					builder.module.drop(stmt.expr!.build(builder).buildBin(builder.module)),
+					builder.module.drop(stmt.expr!.build_bin(builder)),
 				);
 			})
 			it('multiple statements.', () => {
@@ -45,7 +45,7 @@ describe('ASTNodeSolid', () => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 					return assertEqualBins(
 						stmt.build(generator),
-						generator.module.drop(stmt.expr!.build(generator).buildBin(generator.module)),
+						generator.module.drop(stmt.expr!.build_bin(generator)),
 					);
 				});
 			});
@@ -167,7 +167,7 @@ describe('ASTNodeSolid', () => {
 				goal.build(builder);
 				return assertEqualBins(
 					goal.children[1].build(builder),
-					builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder).buildBin(builder.module)),
+					builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build_bin(builder)),
 				);
 			});
 			it('coerces as necessary.', () => {
@@ -181,7 +181,7 @@ describe('ASTNodeSolid', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const exprs: binaryen.ExpressionRef[] = goal.children.slice(1).map((stmt) => (stmt as AST.ASTNodeAssignment).assigned.build(builder).buildBin(builder.module));
+				const exprs: binaryen.ExpressionRef[] = goal.children.slice(1).map((stmt) => (stmt as AST.ASTNodeAssignment).assigned.build_bin(builder));
 				return assertEqualBins(
 					goal.children.slice(1).map((stmt) => stmt.build(builder)),
 					[

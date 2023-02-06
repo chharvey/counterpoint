@@ -46,7 +46,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
 		const [type0, type1]: binaryen.Type[] =          [this.operand0, this.operand1].map((expr) => expr.type().binType());
-		let   [arg0,  arg1]:  binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build(builder).buildBin(builder.module));
+		let   [arg0,  arg1]:  binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build_bin(builder));
 
 		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint = builder.varCount;
