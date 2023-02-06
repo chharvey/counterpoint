@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	forEachAggregated,
 	SolidConfig,
@@ -32,6 +33,10 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		return new INST.InstructionTupleMake(this.children.map((expr) => expr.build(builder)));
+	}
+
+	protected override build_bin_do(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.tuple.make(this.children.map((expr) => expr.build(builder).buildBin(builder.module)));
 	}
 
 	protected override type_do(): SolidType {

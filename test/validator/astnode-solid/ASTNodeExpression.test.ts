@@ -38,6 +38,8 @@ import {
 	typeConstStr,
 	instructionConstInt,
 	instructionConstFloat,
+	buildConstInt,
+	buildConstFloat,
 } from '../../helpers.js';
 
 
@@ -618,14 +620,13 @@ describe('ASTNodeExpression', () => {
 		});
 
 
-		describe('#build', () => {
-			describe('ASTNodeTuple', () => {
-				it('returns InstructionTupleMake.', () => {
-					assert.deepStrictEqual(
-						AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF).build(new Builder('')),
-						new INST.InstructionTupleMake([instructionConstInt(1n), instructionConstFloat(2.0)]),
-					);
-				});
+		describe('#build_bin', () => {
+			specify('ASTNodeTuple', () => {
+				const builder = new Builder('');
+				assertEqualBins(
+					AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF).build_bin(builder),
+					builder.module.tuple.make([buildConstInt(1n, builder.module), buildConstFloat(2.0, builder.module)]),
+				);
 			});
 		});
 	});
