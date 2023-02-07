@@ -49,7 +49,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 				? builder.module.call('fid', [arg0, arg1], binaryen.i32)
 				: builder.module.f64.eq(arg0, arg1)
 			) :
-			(type0 !== binaryen.i32, builder.module.i32.const(0)) // ints and floats are never identical when folding is off
+			(assert.notStrictEqual(type0, type1), builder.module.i32.const(0)) // ints and floats are never identical when folding is off
 		);
 	}
 
