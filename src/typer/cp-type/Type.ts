@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
@@ -10,6 +11,7 @@ import {
 	TypeIntersection,
 	TypeUnion,
 	TypeDifference,
+	TypeUnit,
 	NEVER,
 	VOID,
 	UNKNOWN,
@@ -286,16 +288,28 @@ export abstract class Type {
 	 * @final
 	 */
 	public binType(): binaryen.Type {
+		const is_bin_int: boolean = (
+			   this.equals(NULL)
+			|| this.equals(BOOL) || this.equals(OBJ.Boolean.FALSETYPE) || this.equals(OBJ.Boolean.TRUETYPE)
+			|| this.equals(INT) || (this instanceof TypeUnit && this.value instanceof OBJ.Integer)
+		);
+		const is_bin_float: boolean = this.equals(FLOAT) || (this instanceof TypeUnit && this.value instanceof OBJ.Float);
 		return this.#binType ??= ( // TODO: use memoize decorator
-			(this.isBottomType)                                  ? binaryen.unreachable :
-			(this.isSubtypeOf(VOID))                             ? binaryen.none        :
-			(this.isSubtypeOf(Type.unionAll([NULL, BOOL, INT]))) ? binaryen.i32         :
-			(this.isSubtypeOf(FLOAT))                            ? binaryen.f64         :
-			(this instanceof TypeUnion) ? ((left_type: binaryen.Type, right_type: binaryen.Type) => (
-				([binaryen.none, binaryen.unreachable].includes(left_type))  ? right_type :
-				([binaryen.none, binaryen.unreachable].includes(right_type)) ? left_type  :
-				Builder.createBinTypeEither(left_type, right_type)
-			))(this.left.binType(), this.right.binType()) :
+			(this.isBottomType) ? binaryen.unreachable :
+			(this.equals(VOID)) ? binaryen.none        :
+			(is_bin_int)        ? binaryen.i32         :
+			(is_bin_float)      ? binaryen.f64         :
+			(this instanceof TypeUnion) ? ((left_type: binaryen.Type, right_type: binaryen.Type): binaryen.Type => {
+				assert.notStrictEqual(left_type,  binaryen.unreachable);
+				assert.notStrictEqual(right_type, binaryen.unreachable);
+				if (left_type === binaryen.none) {
+					left_type = right_type;
+				}
+				if (right_type === binaryen.none) {
+					right_type = left_type;
+				}
+				return Builder.createBinTypeEither(left_type, right_type);
+			})(this.left.binType(), this.right.binType()) :
 			throw_expression(new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`))
 		);
 	}

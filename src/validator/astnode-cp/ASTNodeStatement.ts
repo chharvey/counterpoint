@@ -3,6 +3,7 @@ import binaryen from 'binaryen';
 import {
 	TYPE,
 	Builder,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 } from './package.js';
@@ -47,19 +48,35 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 		) {
 			value = mod.f64.convert_u.i32(value);
 		}
-		if (assignee_type instanceof TYPE.TypeUnion) { // `assignee_type.binType()` is a result of calling `binaryen.createType()`
-			// create an `Either<L, R>` monad-like thing
-			let side:    boolean                = false;
-			let left:    binaryen.ExpressionRef = assignee_type.left  .defaultBinValue(mod);
-			let right:   binaryen.ExpressionRef = assignee_type.right .defaultBinValue(mod);
-			if (assigned_type.isSubtypeOf(assignee_type.left)) {
-				[side, left] = [false, value];
-			} else if (assigned_type.isSubtypeOf(assignee_type.right)) {
-				[side, right] = [true, value];
-			} else {
-				throw new TypeError(`Expected \`${ assigned_type }\` to be a subtype of \`${ assignee_type.left }\` or \`${ assignee_type.right }\``);
-			}
-			value = Builder.createBinEither(mod, side, left, right);
+		if (assigned_type instanceof TYPE.TypeUnion) {
+			// `assigned_type.binType()` is a result of calling `Builder.createBinTypeEither()`
+			// `value` is a result of calling `Builder.createBinEither()`
+			return mod.if(
+				mod.i32.eqz(mod.tuple.extract(value, 0)),
+				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.left,  mod.tuple.extract(value, 1), int_coercion),
+				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.right, mod.tuple.extract(value, 2), int_coercion),
+			);
+		}
+		if (assignee_type instanceof TYPE.TypeUnion) {
+			// `assignee_type.binType()` is a result of calling `binaryen.createType()`
+			const [side, left, right]: [boolean, binaryen.ExpressionRef, binaryen.ExpressionRef] = (
+				(assigned_type.isSubtypeOf(assignee_type.left)) ? [
+					false,
+					(assigned_type.binType() === assignee_type.left.binType())
+						? value
+						: ASTNodeStatement.coerceAssignment(mod, assignee_type.left, assigned_type, value, int_coercion),
+					assignee_type.right.defaultBinValue(mod),
+				] :
+				(assigned_type.isSubtypeOf(assignee_type.right)) ? [
+					true,
+					assignee_type.left.defaultBinValue(mod),
+					(assigned_type.binType() === assignee_type.right.binType())
+						? value
+						: ASTNodeStatement.coerceAssignment(mod, assignee_type.right, assigned_type, value, int_coercion),
+				] :
+				throw_expression(new TypeError(`Expected \`${ assigned_type }\` to be a subtype of \`${ assignee_type.left }\` or \`${ assignee_type.right }\``))
+			);
+			return Builder.createBinEither(mod, side, left, right);
 		}
 		return value;
 	}
