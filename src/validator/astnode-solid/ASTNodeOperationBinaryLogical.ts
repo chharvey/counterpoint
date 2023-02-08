@@ -32,16 +32,16 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		const [type0, type1]: binaryen.Type[] =          [this.operand0, this.operand1].map((expr) => expr.type().binType());
 		let   [arg0,  arg1]:  binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build(builder));
+		const [type0, type1]: binaryen.Type[]          = [arg0, arg1].map((arg) => binaryen.getExpressionType(arg));
 
 		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint = builder.varCount;
 		const local           = builder.addLocal(temp_id, type0)[0].getLocalInfo(temp_id)!;
 
 		const condition = builder.module.i32.eqz(builder.module.call(
-			(type0 === binaryen.i32) ? 'inot' : 'fnot',
-			[builder.module.local.tee(local.index, arg0, type0)],
+			(local.type === binaryen.i32) ? 'inot' : 'fnot',
+			[builder.module.local.tee(local.index, arg0, local.type)],
 			binaryen.i32,
 		));
 		arg0 = builder.module.local.get(local.index, local.type);

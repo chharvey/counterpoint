@@ -37,17 +37,15 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		const {
-			exprs: [arg0,  arg1],
-			types: [type0, type1],
-		} = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1, () => (
+		const args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1, () => (
 			this.validator.config.compilerOptions.intCoercion && this.operator === Operator.EQ
 		));
+		const [type0, type1]: binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
 		return (
-			(type0 === binaryen.i32 && type1 === binaryen.i32) ? builder.module.i32.eq(arg0, arg1) : // `ID` and `EQ` give the same result
+			(type0 === binaryen.i32 && type1 === binaryen.i32) ? builder.module.i32.eq(...args) : // `ID` and `EQ` give the same result
 			(type0 === binaryen.f64 && type1 === binaryen.f64) ? ((this.operator === Operator.ID)
-				? builder.module.call('fid', [arg0, arg1], binaryen.i32)
-				: builder.module.f64.eq(arg0, arg1)
+				? builder.module.call('fid', [...args], binaryen.i32)
+				: builder.module.f64.eq(...args)
 			) :
 			(assert.notStrictEqual(type0, type1), builder.module.i32.const(0)) // ints and floats are never identical when folding is off
 		);
