@@ -16,7 +16,11 @@ import {
 	assertAssignable,
 	assertEqualBins,
 } from '../../assert-helpers.js';
-import {typeConstFloat} from '../../helpers.js';
+import {
+	typeConstFloat,
+	buildConstInt,
+	buildConstFloat,
+} from '../../helpers.js';
 
 
 
@@ -184,21 +188,25 @@ describe('ASTNodeSolid', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
+				const default_ = {
+					int:   buildConstInt(0n, builder.module),
+					float: buildConstFloat(0, builder.module),
+				} as const;
 				const exprs: binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeAssignment).assigned.build(builder));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						Builder.createBinEither(builder.module, false, exprs[0],                    builder.module.i32.const(0)),
-						Builder.createBinEither(builder.module, true,  builder.module.f64.const(0), exprs[1]),
+						Builder.createBinEither(builder.module, false, exprs[0],       default_.int),
+						Builder.createBinEither(builder.module, true,  default_.float, exprs[1]),
 						builder.module.if(
 							builder.module.i32.eqz(builder.module.tuple.extract(exprs[2], 0)),
-							Builder.createBinEither(builder.module, false, builder.module.tuple.extract(exprs[2], 1), builder.module.i32.const(0)),
-							Builder.createBinEither(builder.module, true,  builder.module.f64.const(0),               builder.module.tuple.extract(exprs[2], 2)),
+							Builder.createBinEither(builder.module, false, builder.module.tuple.extract(exprs[2], 1), default_.int),
+							Builder.createBinEither(builder.module, true,  default_.float,                            builder.module.tuple.extract(exprs[2], 2)),
 						),
 						builder.module.if(
 							builder.module.i32.eqz(builder.module.tuple.extract(exprs[3], 0)),
-							Builder.createBinEither(builder.module, true,  builder.module.f64.const(0),               builder.module.tuple.extract(exprs[3], 1)),
-							Builder.createBinEither(builder.module, false, builder.module.tuple.extract(exprs[3], 2), builder.module.i32.const(0)),
+							Builder.createBinEither(builder.module, true,  default_.float,                            builder.module.tuple.extract(exprs[3], 1)),
+							Builder.createBinEither(builder.module, false, builder.module.tuple.extract(exprs[3], 2), default_.int),
 						),
 					].map((expected) => builder.module.local.set(0, expected)),
 				);

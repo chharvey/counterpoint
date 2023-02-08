@@ -752,7 +752,7 @@ describe('ASTNodeOperation', () => {
 					const builder = new Builder(src, CONFIG_FOLDING_COERCION_OFF);
 					return assertEqualBins(
 						AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_COERCION_OFF).build(builder),
-						builder.module.i32.const(0),
+						buildConstInt(0n, builder.module),
 					)
 				});
 			});

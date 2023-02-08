@@ -31,7 +31,11 @@ export function typeConstStr(x: string): SolidTypeUnit<SolidString> {
 }
 
 export function buildConstInt(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
-	return new Int16(x).build(mod);
+	return (
+		(x === 0n) ? Int16.ZERO :
+		(x === 1n) ? Int16.UNIT :
+		new Int16(x)
+	).build(mod);
 }
 export function buildConstFloat(x: number, mod: binaryen.Module): binaryen.ExpressionRef {
 	return new Float64(x).build(mod);
