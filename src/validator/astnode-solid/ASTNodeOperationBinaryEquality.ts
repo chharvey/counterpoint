@@ -43,11 +43,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		const [type0, type1]: binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
 		return (
 			(type0 === binaryen.i32 && type1 === binaryen.i32) ? builder.module.i32.eq(...args) : // `ID` and `EQ` give the same result
-			(type0 === binaryen.f64 && type1 === binaryen.f64) ? ((this.operator === Operator.ID)
+			(type0 === binaryen.i32 && type1 === binaryen.f64) ? builder.module.call('i_f_id', [...args], binaryen.i32) :
+			(type0 === binaryen.f64 && type1 === binaryen.i32) ? builder.module.call('f_i_id', [...args], binaryen.i32) :
+			(type0 === binaryen.f64 && type1 === binaryen.f64,   (this.operator === Operator.ID)
 				? builder.module.call('fid', [...args], binaryen.i32)
 				: builder.module.f64.eq(...args)
-			) :
-			(assert.notStrictEqual(type0, type1), builder.module.i32.const(0)) // ints and floats are never identical when folding is off
+			)
 		);
 	}
 
