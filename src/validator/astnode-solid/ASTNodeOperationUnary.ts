@@ -3,6 +3,7 @@ import binaryen from 'binaryen';
 import * as xjs from 'extrajs'
 import {
 	SolidType,
+	SolidTypeUnion,
 	SolidObject,
 	SolidBoolean,
 	SolidNumber,
@@ -34,22 +35,44 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		super(start_node, operator, [operand]);
 	}
 
+	/**
+	 * Return an instruction performing the operation on the argument.
+	 * @param mod   the binaryen module
+	 * @param type_ the compile-time type of the operand
+	 * @param arg   the operand
+	 * @return      an instruction that performs the operation at runtime
+	 */
+	private operate(mod: binaryen.Module, type_: SolidType, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
+		assert.strictEqual(bintype, type_.binType());
+		if (type_ instanceof SolidTypeUnion) {
+			// assert: `arg` is equivalent to a result of `Builder.createBinEither()`
+			return Builder.createBinEither(
+				mod,
+				mod.tuple.extract(arg, 0),
+				this.operate(mod, type_.left,  mod.tuple.extract(arg, 1)),
+				this.operate(mod, type_.right, mod.tuple.extract(arg, 2)),
+			);
+		} else {
+			ASTNodeOperation.expectIntOrFloat(bintype);
+			return (this.operator === Operator.NEG && bintype === binaryen.f64)
+				? mod.f64.neg(arg)
+				: mod.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
+					[binaryen.i32, new Map<Operator, string>([
+						[Operator.NOT, 'inot'],
+						[Operator.EMP, 'iemp'],
+						[Operator.NEG, 'neg'],
+					])],
+					[binaryen.f64, new Map<Operator, string>([
+						[Operator.NOT, 'fnot'],
+						[Operator.EMP, 'femp'],
+					])],
+				]).get(bintype)!.get(this.operator)!, [arg], binaryen.i32);
+		}
+	}
+
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		const arg:  binaryen.ExpressionRef = this.operand.build(builder);
-		const type: binaryen.Type          = binaryen.getExpressionType(arg);
-		return (this.operator === Operator.NEG && type === binaryen.f64)
-			? builder.module.f64.neg(arg)
-			: builder.module.call((new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
-				[binaryen.i32, new Map<Operator, string>([
-					[Operator.NOT, 'inot'],
-					[Operator.EMP, 'iemp'],
-					[Operator.NEG, 'neg'],
-				])],
-				[binaryen.f64, new Map<Operator, string>([
-					[Operator.NOT, 'fnot'],
-					[Operator.EMP, 'femp'],
-				])],
-			]).get(type)!).get(this.operator)!, [arg], binaryen.i32);
+		return this.operate(builder.module, this.operand.type(), this.operand.build(builder));
 	}
 
 	protected override type_do(): SolidType {

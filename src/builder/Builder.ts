@@ -49,11 +49,14 @@ export class Builder {
 	 */
 	public static createBinEither(
 		mod:      binaryen.Module,
-		is_right: boolean,
+		is_right: boolean | binaryen.ExpressionRef,
 		left:     binaryen.ExpressionRef,
 		right:    binaryen.ExpressionRef,
 	): binaryen.ExpressionRef {
-		return mod.tuple.make([mod.i32.const(Number(is_right)), left, right]);
+		if (typeof is_right === 'boolean') {
+			is_right = mod.i32.const(Number(is_right));
+		}
+		return mod.tuple.make([is_right, left, right]);
 	}
 
 

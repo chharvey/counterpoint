@@ -26,6 +26,30 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 	}
 
 	/**
+	 * Assert that the given binaryen type is either `i32` or `f64`.
+	 * @throws {TypeError} if not
+	 */
+	public static expectIntOrFloat(bintype: binaryen.Type): void {
+		try {
+			assert.strictEqual(bintype, binaryen.i32);
+		} catch (err) {
+			if (err instanceof assert.AssertionError) {
+				try {
+					assert.strictEqual(bintype, binaryen.f64);
+				} catch (er) {
+					if (er instanceof assert.AssertionError) {
+						throw new TypeError(`Expected \`${ bintype }\` to be \`int\` or \`float\`.`);
+					} else {
+						throw er;
+					}
+				}
+			} else {
+				throw err;
+			}
+		}
+	}
+
+	/**
 	 * Coerce either operand from an i32 into an f64 if necessary and possible.
 	 * @param expr_a the first operand
 	 * @param expr_b the second operand

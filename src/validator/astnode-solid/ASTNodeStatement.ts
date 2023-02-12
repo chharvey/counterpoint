@@ -49,8 +49,7 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 			value = mod.f64.convert_u.i32(value);
 		}
 		if (assigned_type instanceof SolidTypeUnion) {
-			// `assigned_type.binType()` is a result of calling `Builder.createBinTypeEither()`
-			// `value` is a result of calling `Builder.createBinEither()`
+			// assert: `value` is equivalent to a result of `Builder.createBinEither()`
 			return mod.if(
 				mod.i32.eqz(mod.tuple.extract(value, 0)),
 				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.left,  mod.tuple.extract(value, 1), int_coercion),
@@ -58,7 +57,6 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 			);
 		}
 		if (assignee_type instanceof SolidTypeUnion) {
-			// `assignee_type.binType()` is a result of calling `binaryen.createType()`
 			const [side, left, right]: [boolean, binaryen.ExpressionRef, binaryen.ExpressionRef] = (
 				(assigned_type.isSubtypeOf(assignee_type.left)) ? [
 					false,
