@@ -323,44 +323,46 @@ Compound types are derived from other types.
 - [Map](#map-type)
 
 #### Tuple Type
-A **Tuple Type** contains [`Tuple` objects](./intrinsics.md#tuple) and is described by an ordered list of types.
-The objects that any given Tuple Type contains are `Tuple` objects whose items’ types
-match up with the types in the list in order.
-Tuples have a static size and are indexable by Integers.
+A **Tuple Type** is described by an ordered sequence of types.
+The objects that any given Tuple Type contains are objects whose items’ types
+match up with the types in the sequence in order.
+Tuples have a static size, are ordered, and are indexable by Integers, with indices starting at *0*.
 
 #### Record Type
-A **Record Type** contains [`Record` objects](./intrinsics.md#record) and is described by an unordered list of name–type pairs.
-The objects that any given Record Type contains are `Record` objects whose properties’ types
-match up with the types in the list by name.
-Records have a static size and are indexable by keys.
+A **Record Type** is described by an unordered sequence of name–type pairs.
+The objects that any given Record Type contains are objects whose properties’ types
+match up with the types in the sequence by name.
+Records have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
 #### List Type
-A **List Type** contains [`List` objects](./intrinsics.md#list) and is described by a single type,
+A **List Type** contains instances of [`List`](./intrinsics.md#list) and is described by a single type,
 representing items.
 The objects that any given List Type contains are `List` objects whose
 items are assignable to the type describing the List Type.
-Lists have a dynamic size and are indexable by Integers.
+Lists have a dynamic size, are ordered, and are indexable by Integers, with indices starting at *0*.
 
 #### Dict Type
-A **Dict Type** contains [`Dict` objects](./intrinsics.md#dict) and is described by a single type,
+A **Dict Type** contains instances of [`Dict`](./intrinsics.md#dict) and is described by a single type,
 representing values.
 The objects that any given Dict Type contains are `Dict` objects whose
 values are assignable to the type describing the Dict Type.
-Dicts have a dynamic size and are indexable by keys.
+Dicts have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
 #### Set Type
-A **Set Type** contains [`Set` objects](./intrinsics.md#set) and is described by a single type,
+A **Set Type** contains instances of [`Set`](./intrinsics.md#set) and is described by a single type,
 representing elements.
 The objects that any given Set Type contains are `Set` objects whose
 elements are assignable to the type describing the Set Type.
-Sets have a dynamic size and are indexable by their elements.
+Sets have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by their elements.
 
 #### Map Type
-A **Map Type** contains [`Map` objects](./intrinsics.md#map) and is described by a pair of two types,
+A **Map Type** contains instances of [`Map`](./intrinsics.md#map) and is described by a pair of two types,
 the first of which represents antecedents and the second of which represents consequents.
 The objects that any given Map Type contains are `Map` objects whose
 antcedents and consequents are respectively assignable to the types describing the Map Type.
-Maps have a dynamic size and are indexable by their antecedents.
+Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by their antecedents.
+
+<sup>&lowast;</sup>Rather, developers should not depend on any implementation of order.
 
 
 
