@@ -337,7 +337,7 @@ Compound types are derived from other types.
 A **Tuple Type** is described by an ordered sequence of types.
 The objects that any given Tuple Type contains are objects whose items’ types
 match up with the types in the sequence in order.
-Tuples have a static size, are ordered, and are indexable by Integers, with indices starting at *0*.
+Tuples have a static size, are ordered, and are 0-origin indexable by Integers.
 
 #### Record Type
 A **Record Type** is described by an unordered sequence of name–type pairs.
@@ -350,7 +350,7 @@ A **List Type** contains instances of [`List`](./intrinsics.md#list) and is desc
 representing items.
 The objects that any given List Type contains are `List` objects whose
 items are assignable to the type describing the List Type.
-Lists have a dynamic size, are ordered, and are indexable by Integers, with indices starting at *0*.
+Lists have a dynamic size, are ordered, and are 0-origin indexable by Integers.
 
 #### Dict Type
 A **Dict Type** contains instances of [`Dict`](./intrinsics.md#dict) and is described by a single type,
