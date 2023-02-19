@@ -26,7 +26,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 
-	private static keywordValue(source: string): OBJ.Object {
+	private static keywordValue(source: string): OBJ.Null | OBJ.Boolean {
 		return (
 			(source === Keyword.NULL)  ? OBJ.Null.NULL :
 			(source === Keyword.FALSE) ? OBJ.Boolean.FALSE :
@@ -70,7 +70,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	protected override type_do(): TYPE.Type {
-		return new TYPE.TypeUnit<OBJ.Primitive>(this.value);
+		return this.value.toType();
 	}
 
 	protected override fold_do(): OBJ.Object {
