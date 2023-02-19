@@ -4,7 +4,6 @@ import {
 	Map_getEq,
 	Map_setEq,
 } from './package.js';
-import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
 
 
@@ -32,7 +31,4 @@ export abstract class Collection extends SolidObject {
 		}
 		return Map_getEq(Collection.EQ_MEMO, memokey, Collection.EQ_MEMO_COMPARATOR)!;
 	}
-
-
-	abstract toType(): SolidType;
 }

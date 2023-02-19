@@ -1,3 +1,4 @@
+import type {SolidType} from './SolidType.js';
 import {SolidString} from './index.js';
 
 
@@ -67,4 +68,11 @@ export abstract class SolidObject {
 	toSolidString(): SolidString {
 		return new SolidString(this.toString());
 	}
+
+	/**
+	 * Return the canonical type of this Object.
+	 * The returned type is as reasonably narrow as possible.
+	 * @return a Type that contains this Object
+	 */
+	public abstract toType(): SolidType;
 }

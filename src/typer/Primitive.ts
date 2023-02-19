@@ -1,3 +1,4 @@
+import {SolidTypeUnit} from './SolidTypeUnit.js';
 import {SolidObject} from './SolidObject.js';
 
 
@@ -11,4 +12,7 @@ import {SolidObject} from './SolidObject.js';
  * - SolidString
  */
 export abstract class Primitive extends SolidObject {
+	/** @final */ public override toType(): SolidTypeUnit<this> {
+		return new SolidTypeUnit<this>(this);
+	}
 }
