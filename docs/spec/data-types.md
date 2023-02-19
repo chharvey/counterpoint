@@ -227,6 +227,7 @@ The Void type is also unlike Null in that no Solid Language Value has type Void.
 
 #### Null
 The **Null** type has exactly one value, called `null`.
+It represents an object without any semantics.
 
 #### Boolean
 The **Boolean** type has two logical values, called `true` and `false`.
@@ -289,12 +290,22 @@ The Float type contains “floating-point numbers”, which are 64-bit format va
 The **String** type represents textual data and is stored as an immutable sequence of bytes.
 Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
 
-Conceptually, strings are treated as immutable lists of [Integers](#integer),
+Conceptually, strings are treated as immutable lists of [mathematical integers](#real-integer-numbers),
 where each integer represents a Unicode code point.
 A String’s **count** indicates the number of code points in the String, that is,
 the number of characters in its unencoded form.
 This is compared to its **length**, which is the number of bytes it stores
 encoded in memory (see UTF-8 for details).
+String length is limited to a maximum of *65,535* bytes,
+but it is not directly observable within any Counterpoint program.
+
+Though `String` objects are treated conceptually as lists, they are considered
+[primitive objects](./intrinsics.md#primitive-and-composite-objects) and
+[value objects](./intrinsics.md#value-objects-and-reference-objects).
+They are primitives because the “items” of these lists are not directly observable —
+accessing an index of a string yields another string — and
+they are value objects because the string values themselves are copied when assigned
+(though the compiler may make any optimizations necessary).
 
 #### Object
 The **Object** type is the parent type of all Solid Language Types.

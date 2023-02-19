@@ -4,7 +4,7 @@ This chapter describes the objects built in to the standard “core” Solid lib
 
 
 ## Primitive and Composite Objects
-Primitive objects are unbreakable and are instances of `Null`, `Boolean`, `Integer`, or `Float`.
+Primitive objects are unbreakable and are instances of `Null`, `Boolean`, `Integer`, `Float`, or `String`.
 These types are discussed in the [Data Types](./data-types.md#simple-types) chapter.
 
 Composite objects are not primitive objects and are composed of other objects (of any kind).
@@ -21,14 +21,14 @@ if unsigned integers are supported, the maximum count would be increased to *65,
 Value objects are described completely by their value and have no identity;
 they are [identical](./algorithms.md#identical) if and only if they have the “same value”.
 Primitive objects are value objects because two primitive objects that have the same value are one in the same.
-Even though `String` objects are not primitive, they are also value objects:
-if two String values are the same, they have been constructed with the same `String` object.
-Future versions of Counterpoint may add more types of value objects.
+When a value object is assigned to a variable or parameter, a copy of its value is assigned.
 All value objects are immutable.
 
 Reference objects have an identity and are identifiable by reference;
 they are [identical](./algorithms.md#identical) if and only if they have the same reference.
 Reference objects that have the “same value” are not necessarily identical.
+When a reference object is assigned to a variable or parameter, a new reference to the object is assigned,
+and any change to the object is observable in every reference.
 
 
 
@@ -40,12 +40,28 @@ Most instances of `Object` are reference objects, unless otherwise specified.
 
 
 
+## `Null`
+There is only one `Null` object: `null`.
+
+
+
+## `Boolean`
+`Boolean` objects are the binary logical values `true` and `false`.
+
+
+
+## `Integer`
+`Integer` objects are integer numbers with 16-bit encodings.
+
+
+
+## `Float`
+`Float` objects are rational numbers encoded in IEEE 754-2019 format.
+
+
+
 ## `String`
-`String` objects are textual data encoded as a sequence of bytes (in UTF-8 format).
-String length is limited to a maximum of *65,535* bytes,
-but it is not directly observable within any Counterpoint program.
-Instances of `String` are value objects.
-The String type is discussed in the [Data Types](./data-types.md#string) chapter.
+`String` objects are textual data encoded as sequences of bytes (in UTF-8 format).
 
 
 
