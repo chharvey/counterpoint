@@ -1,5 +1,5 @@
-import * as VALUE from '../cp-object/index.js';
-import {OBJ} from './index.js';
+import * as OBJ from '../cp-object/index.js';
+import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
 
@@ -10,8 +10,8 @@ export class TypeMap extends Type {
 	 * Is the argument a unit map type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Map`
 	 */
-	public static isUnitType(type: Type): type is TypeUnit<VALUE.Map> {
-		return type instanceof TypeUnit && type.value instanceof VALUE.Map;
+	public static isUnitType(type: Type): type is TypeUnit<OBJ.Map> {
+		return type instanceof TypeUnit && type.value instanceof OBJ.Map;
 	}
 
 
@@ -28,7 +28,7 @@ export class TypeMap extends Type {
 		public readonly invariant_con: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new VALUE.Map()]));
+		super(is_mutable, new Set([new OBJ.Map()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -39,12 +39,12 @@ export class TypeMap extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }Map.<${ this.invariant_ant }, ${ this.invariant_con }>`;
 	}
 
-	public override includes(v: VALUE.Object): boolean {
-		return v instanceof VALUE.Map && v.toType().isSubtypeOf(this);
+	public override includes(v: OBJ.Object): boolean {
+		return v instanceof OBJ.Map && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
-		return t.equals(OBJ) || (
+		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeMap
 			&& ((t.isMutable)
 				? this.isMutable && this.invariant_ant.equals(t.invariant_ant) && this.invariant_con.equals(t.invariant_con)

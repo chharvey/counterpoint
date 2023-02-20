@@ -8,8 +8,8 @@ import type {
 	AST,
 } from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
-import * as VALUE from '../cp-object/index.js';
-import {OBJ} from './index.js';
+import * as OBJ from '../cp-object/index.js';
+import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
@@ -21,8 +21,8 @@ export class TypeTuple extends Type {
 	 * Is the argument a unit tuple type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Tuple`
 	 */
-	public static isUnitType(type: Type): type is TypeUnit<VALUE.Tuple> {
-		return type instanceof TypeUnit && type.value instanceof VALUE.Tuple;
+	public static isUnitType(type: Type): type is TypeUnit<OBJ.Tuple> {
+		return type instanceof TypeUnit && type.value instanceof OBJ.Tuple;
 	}
 
 
@@ -51,7 +51,7 @@ export class TypeTuple extends Type {
 		public readonly invariants: readonly TypeEntry[] = [],
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new VALUE.Tuple()]));
+		super(is_mutable, new Set([new OBJ.Tuple()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -70,12 +70,12 @@ export class TypeTuple extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }[${ this.invariants.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
-	public override includes(v: VALUE.Object): boolean {
-		return v instanceof VALUE.Tuple && v.toType().isSubtypeOf(this);
+	public override includes(v: OBJ.Object): boolean {
+		return v instanceof OBJ.Tuple && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
-		return t.equals(OBJ) || (
+		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeTuple
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
@@ -94,7 +94,7 @@ export class TypeTuple extends Type {
 		return new TypeTuple(this.invariants, false);
 	}
 
-	public get(index: VALUE.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
+	public get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.invariants.length;
 		const i: number = Number(index.toNumeric());
 		return updateAccessedStaticType(

@@ -1,5 +1,5 @@
-import * as VALUE from '../cp-object/index.js';
-import {OBJ} from './index.js';
+import * as OBJ from '../cp-object/index.js';
+import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
 
@@ -10,8 +10,8 @@ export class TypeSet extends Type {
 	 * Is the argument a unit set type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Set`
 	 */
-	public static isUnitType(type: Type): type is TypeUnit<VALUE.Set> {
-		return type instanceof TypeUnit && type.value instanceof VALUE.Set;
+	public static isUnitType(type: Type): type is TypeUnit<OBJ.Set> {
+		return type instanceof TypeUnit && type.value instanceof OBJ.Set;
 	}
 
 
@@ -26,7 +26,7 @@ export class TypeSet extends Type {
 		public readonly invariant: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new VALUE.Set()]));
+		super(is_mutable, new Set([new OBJ.Set()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -37,12 +37,12 @@ export class TypeSet extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }Set.<${ this.invariant }>`;
 	}
 
-	public override includes(v: VALUE.Object): boolean {
-		return v instanceof VALUE.Set && v.toType().isSubtypeOf(this);
+	public override includes(v: OBJ.Object): boolean {
+		return v instanceof OBJ.Set && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
-		return t.equals(OBJ) || (
+		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeSet
 			&& ((t.isMutable)
 				? this.isMutable && this.invariant.equals(t.invariant)
