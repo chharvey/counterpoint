@@ -10,43 +10,43 @@ This reference takes a more informative approach.
 
 
 ## Simple Types
-Simple types are primitive and basic types. They cannot be broken up into smaller types.
+Simple types are individual basic types. They cannot be broken up into smaller types.
 
 
-### Never
-The Never type, `never`, is at the bottom of the type hierarchy —
+### `never`
+Type `never` is at the bottom of the type hierarchy —
 it contains no values and is a subtype of every other type.
 
-`never` is used to describe the return type of functions that never return,
+Type `never` is used to describe the return type of functions that never return,
 or the type of an expression that never evaluates.
 
-`never` is most commonly a result of a type operation that produces the Bottom type,
+Type `never` is most commonly a result of a type operation that produces the Bottom type,
 for example, the intersection of two disjoint types.
 
 
-### Void
-The Void type, `void`, represents the completion of an evaluation but the absence of a value.
+### `void`
+Type `void` represents the completion of an evaluation but the absence of a value.
 It is used to describe functions that complete execution (and may have side-effects), but return no value.
 (Unlike `never`, `void` indicates that the function has returned.)
-The Void type is also used to represent part of the types of optional entries in collections,
+Type `void` is also used to represent part of the types of optional entries in collections,
 such as a record’s optional property.
-There are no values assignble to the Void type, but some expressions may have type `void`,
+There are no values assignble to `void`, but some expressions may have type `void`,
 for example, property access and function calls.
 
 
-### Null
-The Null type, `null`, has exactly one value, also called `null`.
+### `null`
+Type `null` has exactly one value, also called `null`.
 The meaning of the `null` value is not specified, but it’s most commonly used as a placeholder
 when no other value is appropriate.
 
 
-### Boolean
-The Boolean type, `bool`, has two logical values, called `true` and `false`.
+### `bool`
+Type `bool` has two logical values, called `true` and `false`.
 These values are used for binary states.
 
 
-### Integer
-Integers, type `int`, are whole numbers, their negatives, and zero.
+### `int`
+Type `int` contains whole numbers, their negatives, and zero.
 
 Integers are written as a series of digits, such as `0123`,
 optionally preceded by a negative sign (`-0123`).
@@ -88,8 +88,8 @@ In all operations on integers, bases can be mixed.
 ```
 
 
-### Float
-Floating-point numbers, type `float`, are decimals, which offer finer precision for numerical data than integers do.
+### `float`
+Type `float` contains decimals, which offer finer precision for numerical data than integers do.
 (In computers, there are no irrational (non-fractional) numbers, but we approximate them well.)
 
 Floating numbers cannot be declared in any base other than decimal (10).
@@ -124,8 +124,8 @@ If an expression contains *any* float value anywhere, then
 *all* the integers in the expression are coerced into floats.
 
 
-### String
-The String type, type `str`, represents textual data.
+### `str`
+Type `str` represents textual data.
 
 A “raw string” is the code written to construct the string, whereas
 the “cooked string” is the actual string value.
@@ -389,16 +389,16 @@ I {{ '\u{2764}' }} Unicode!
 > '
 
 
-### Object
-The Object type, `obj`, is the type of all values, that is, every value is assignable to the Object type.
+### `obj`
+Type `obj` is the type of all values, that is, every value is assignable to `obj`.
 Expressions of type `void` cannot hold values, so they are not assignable to `obj`.
 
 
-### Unknown
-The Unknown type, `unknown`, is at the top of the type hierarchy —
+### `unknown`
+Type  `unknown` is at the top of the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
 
-`unknown` is used to describe a value or expression about which nothing is known.
+Type `unknown` is used to describe a value or expression about which nothing is known.
 Therefore, the compiler will not assume it has any properties or is valid in some operations.
 
 
@@ -430,7 +430,7 @@ let CAR_WHEELS: \b100 = \o10 / 2;
 ```
 
 #### String Unit Types
-Unit types may also be [strings](#String), but there are few details that should be noted.
+Unit types may also be [strings](#str), but there are few details that should be noted.
 
 String unit types are compared by **string value**.
 This means both the type and the value are computed before the assignment takes place.
@@ -467,20 +467,19 @@ let GREETING: '''Hello World!''' = 'Hello World!'; %> ParseError
 
 
 ## Compound Types
-Compound types are collections composed of other types.
-The following table summarizes the built-in compound types.
+Compound types are composed of other types.
 
-Type              | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax         | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
------------------ | -------- | ------------  | ------------------- | ---------------------------- | -------------------------------------------- | -------------------------------------- | --------------------
-[Tuple](#tuple)   | Fixed    | integers      | *(none)*            | `[str, str, str]` / `str[3]` | *(none)*                                     | `['x', 'y', 'z']`                      | `[]`
-[Record](#record) | Fixed    | words         | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= 'x', b= 'y', c= 'z']`             | *(none)*
-[List](#list)     | Variable | integers      | `List.<str>`        | `str[]`                      | `List.(['x', 'y', 'z'])`                     | *(none)*                               | *(none)*
-[Dict](#dict)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                     | `Dict.([a= 'x', b= 'y', c= 'z'])`            | *(none)*                               | *(none)*
-[Set](#set)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                      | `Set.(['x', 'y', 'z'])`                      | `{'x', 'y', 'z'}`                      | `{}`
-[Map](#map)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`               | `Map.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' -> 'x', 'v' -> 'y', 'w' -> 'z'}` | *(none)*
+Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax         | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
+------------------ | -------- | ------------  | ------------------- | ---------------------------- | -------------------------------------------- | -------------------------------------- | --------------------
+[Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `[str, str, str]` / `str[3]` | *(none)*                                     | `['x', 'y', 'z']`                      | `[]`
+[Record](#records) | Fixed    | words         | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= 'x', b= 'y', c= 'z']`             | *(none)*
+[List](#lists)     | Variable | integers      | `List.<str>`        | `str[]`                      | `List.(['x', 'y', 'z'])`                     | *(none)*                               | *(none)*
+[Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                     | `Dict.([a= 'x', b= 'y', c= 'z'])`            | *(none)*                               | *(none)*
+[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                      | `Set.(['x', 'y', 'z'])`                      | `{'x', 'y', 'z'}`                      | `{}`
+[Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`               | `Map.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' -> 'x', 'v' -> 'y', 'w' -> 'z'}` | *(none)*
 
 
-### Tuple
+### Tuples
 Tuples are fixed-size ordered lists of indexed values, with indices starting at `0`.
 The values in a tuple are called **items** (the actual values) or **entries** (the slots the values are stored in).
 The number of entries in a tuple is called its **count**.
@@ -602,7 +601,7 @@ let x2: bool = x!.2;
 The expression `x!.2` behaves just like `x.2`, except that it bypasses the compiler’s TypeError.
 
 
-### Record
+### Records
 Records are fixed-size unordered lists of keyed values. Key–value pairs are called **properties**,
 where **keys** are keywords or identifiers, and **values** are expressions.
 The number of properties in a record is called its **count**.
@@ -765,7 +764,7 @@ let ym: str = y!.middlename;
 The expression `y!.middlename` behaves just like `y.middlename`, except that it bypasses the compiler’s TypeError.
 
 
-### List
+### Lists
 Lists are variable-size ordered lists of indexed values, with indices starting at `0`.
 The values in a list are called **items** (the actual values) or **entries** (the slots the values are stored in).
 The number of entries in a list is called its **count**; the count of a list is variable and unknown at compile-time.
@@ -775,7 +774,7 @@ If a list is mutable, the entries of the list may be reassigned, and items may b
 List types are declared via the generic list type syntax: `List.<T>`
 where `T` indicates the type of items in the list.
 Lists are constructed via the constructor syntax `List.<T>(arg)`,
-where `arg` is a [Tuple](#tuple) object.
+where `arg` is a [Tuple](#tuples) object.
 ```
 let elements: List.<str> = List.<str>(['earth', 'wind', 'fire']);
 ```
@@ -797,7 +796,7 @@ and if the list were mutable, we could reassign that entry to an integer or bool
 List access is the same as [Tuple Access](#tuple-access).
 
 
-### Dict
+### Dicts
 Dicts (dictionaries) are variable-size unordered lists of keyed values. Key–value pairs are called **properties**,
 where **keys** are keywords or identifiers, and **values** are expressions.
 The number of properties in a record is called its **count**; the count of a dict is variable and unknown at compile-time.
@@ -807,7 +806,7 @@ If a dict is mutable, the entries of the dict may be reassigned, and properties 
 Dict types are declared via the generic dict type syntax: `Dict.<T>`
 where `T` indicates the type of values in the dict.
 Dicts are constructed via the constructor syntax `Dict.<T>(arg)`,
-where `arg` is a [Record](#record) object.
+where `arg` is a [Record](#records) object.
 ```
 let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
 	fontFamily= 'sans-serif',
@@ -833,14 +832,14 @@ As shown above, we can mix value types, but the dict type must be homogeneous.
 Dict access is the same as [Record Access](#record-access).
 
 
-### Set
+### Sets
 Sets are variable-sized unordered lists of values.
 The values in a set are called **elements**. The number of elements in a set is called its **count**.
 
 Set types are declared via the generic set type syntax: `Set.<T>`
 where `T` indicates the type of elements in the set.
 Sets may be constructed via the constructor syntax `Set.<T>(arg)`,
-where `arg` is a [Tuple](#tuple) object of elements.
+where `arg` is a [Tuple](#tuples) object of elements.
 ```
 let elements: Set.<str> = Set.<str>(['earth', 'wind', 'fire']);
 ```
@@ -893,7 +892,7 @@ bases.[a];      %> TypeError
 ```
 
 
-### Map
+### Maps
 Maps are variable-sized unordered lists of antecedent-consequent pairs.
 Maps form associations (**cases**) of values (**antecedents**) to other values (**consequents**).
 The antecedents are unique (by identity) in that each antecedent can be associated with only one consequent.
@@ -902,7 +901,7 @@ The number of cases in a map is called its **count**.
 Map types are declared via the **generic map type syntax**: `Map.<K, V>`
 where `K` indicates the type of antecedents and `V` indicates the type of consequents in the map.
 Maps may be constructed via the constructor syntax `Map.<K, V>(arg)`,
-where `arg` is a [Tuple](#tuple) object of key-value pairs (also tuples).
+where `arg` is a [Tuple](#tuples) object of key-value pairs (also tuples).
 ```
 let bases: Map.<int | str, obj> = Map.<int | str, obj>([
 	[1,     'who'],

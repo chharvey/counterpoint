@@ -15,7 +15,7 @@ import {TokenNumber} from './TokenNumber.js';
 
 
 /**
- * A code point is a number within [0, 0x10_ffff] that represents
+ * A code point is an integer within the closed interval [0, 0x10_ffff] that represents
  * the index of a character in the Unicode Universal Character Set.
  */
 type CodePoint = number;
@@ -46,7 +46,7 @@ export class TokenString extends TokenSolid {
 	];
 	/**
 	 * The UTF-8 encoding of a numeric code point value.
-	 * @param   codepoint a positive integer within [0x0, 0x10_ffff]
+	 * @param   codepoint a Unicode code point
 	 * @returns           a code unit sequence representing the code point
 	 */
 	private static utf8Encode(codepoint: CodePoint): EncodedChar {

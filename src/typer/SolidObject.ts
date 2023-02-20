@@ -1,5 +1,6 @@
 import type binaryen from 'binaryen';
 import {SolidString} from './index.js';
+import type {SolidType} from './SolidType.js';
 
 
 
@@ -68,6 +69,13 @@ export abstract class SolidObject {
 	toSolidString(): SolidString {
 		return new SolidString(this.toString());
 	}
+
+	/**
+	 * Return the canonical type of this Object.
+	 * The returned type is as reasonably narrow as possible.
+	 * @return a Type that contains this Object
+	 */
+	public abstract toType(): SolidType;
 
 	/**
 	 * Create an ExpressionRef that implements this object.
