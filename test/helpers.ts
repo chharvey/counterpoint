@@ -55,7 +55,11 @@ export function typeUnitStr(x: string): TYPE.TypeUnit<OBJ.String> {
 }
 
 export function buildConstInt(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
-	return new OBJ.Integer(x).build(mod);
+	return (
+		(x === 0n) ? OBJ.Integer.ZERO :
+		(x === 1n) ? OBJ.Integer.UNIT :
+		new OBJ.Integer(x)
+	).build(mod);
 }
 export function buildConstFloat(x: number, mod: binaryen.Module): binaryen.ExpressionRef {
 	return new OBJ.Float(x).build(mod);

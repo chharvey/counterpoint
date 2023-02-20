@@ -258,22 +258,59 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		specify('#build', () => {
-			const mod = new binaryen.Module();
-			return buildOperations(new Map<string, binaryen.ExpressionRef>([
-				[`!null;`,  mod.call('inot', [buildConstInt   (0n,  mod)], binaryen.i32)],
-				[`!false;`, mod.call('inot', [buildConstInt   (0n,  mod)], binaryen.i32)],
-				[`!true;`,  mod.call('inot', [buildConstInt   (1n,  mod)], binaryen.i32)],
-				[`!42;`,    mod.call('inot', [buildConstInt   (42n, mod)], binaryen.i32)],
-				[`!4.2;`,   mod.call('fnot', [buildConstFloat (4.2, mod)], binaryen.i32)],
-				[`?null;`,  mod.call('iemp', [buildConstInt   (0n,  mod)], binaryen.i32)],
-				[`?false;`, mod.call('iemp', [buildConstInt   (0n,  mod)], binaryen.i32)],
-				[`?true;`,  mod.call('iemp', [buildConstInt   (1n,  mod)], binaryen.i32)],
-				[`?42;`,    mod.call('iemp', [buildConstInt   (42n, mod)], binaryen.i32)],
-				[`?4.2;`,   mod.call('femp', [buildConstFloat (4.2, mod)], binaryen.i32)],
-				[`-(4);`,   mod.call('neg',  [buildConstInt   (4n,  mod)], binaryen.i32)],
-				[`-(4.2);`, mod.f64.neg(buildConstFloat(4.2, mod))],
-			]));
+		describe('#build', () => {
+			function callUnaryOp(mod: binaryen.Module, name: string, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
+				return mod.call(name, [arg], binaryen.i32);
+			}
+			it('returns the correct operation.', () => {
+				const mod = new binaryen.Module();
+				return buildOperations(new Map<string, binaryen.ExpressionRef>([
+					[`!null;`,  callUnaryOp(mod, 'inot', buildConstInt   (0n,  mod))],
+					[`!false;`, callUnaryOp(mod, 'inot', buildConstInt   (0n,  mod))],
+					[`!true;`,  callUnaryOp(mod, 'inot', buildConstInt   (1n,  mod))],
+					[`!42;`,    callUnaryOp(mod, 'inot', buildConstInt   (42n, mod))],
+					[`!4.2;`,   callUnaryOp(mod, 'fnot', buildConstFloat (4.2, mod))],
+					[`?null;`,  callUnaryOp(mod, 'iemp', buildConstInt   (0n,  mod))],
+					[`?false;`, callUnaryOp(mod, 'iemp', buildConstInt   (0n,  mod))],
+					[`?true;`,  callUnaryOp(mod, 'iemp', buildConstInt   (1n,  mod))],
+					[`?42;`,    callUnaryOp(mod, 'iemp', buildConstInt   (42n, mod))],
+					[`?4.2;`,   callUnaryOp(mod, 'femp', buildConstFloat (4.2, mod))],
+					[`-(4);`,   callUnaryOp(mod, 'neg',  buildConstInt   (4n,  mod))],
+					[`-(4.2);`, mod.f64.neg(buildConstFloat(4.2, mod))],
+				]));
+			});
+			it('works with Either<Left, Right>.', () => {
+				const src = `
+					let unfixed x: int | float = 42;
+					let unfixed y: int | float = 4.2;
+					!x; % should return \`Either [left,  $inot(42), $fnot(0.0)]\`
+					?x; % should return \`Either [left,  $iemp(42), $femp(0.0)]\`
+					-x; % should return \`Either [left,  $neg(42),  f64.neg(0.0)]\`
+					!y; % should return \`Either [right, $inot(0),  $fnot(4.2)]\`
+					?y; % should return \`Either [right, $iemp(0),  $femp(4.2)]\`
+					-y; % should return \`Either [right, $neg(0),   f64.neg(4.2)]\`
+				`;
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const builder = new Builder(src);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build(builder);
+				const extracts: binaryen.ExpressionRef[][] = goal.children.slice(2).map((stmt) => [0, 1, 2].map((i) => builder.module.tuple.extract(
+					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder),
+					i,
+				)));
+				return assertEqualBins(
+					goal.children.slice(2).map((stmt) => stmt.build(builder)),
+					[
+						Builder.createBinEither(builder.module, extracts[0][0], callUnaryOp(builder.module, 'inot', extracts[0][1]), callUnaryOp(builder.module, 'fnot', extracts[0][2])),
+						Builder.createBinEither(builder.module, extracts[1][0], callUnaryOp(builder.module, 'iemp', extracts[1][1]), callUnaryOp(builder.module, 'femp', extracts[1][2])),
+						Builder.createBinEither(builder.module, extracts[2][0], callUnaryOp(builder.module, 'neg',  extracts[2][1]), builder.module.f64.neg(extracts[2][2])),
+						Builder.createBinEither(builder.module, extracts[3][0], callUnaryOp(builder.module, 'inot', extracts[3][1]), callUnaryOp(builder.module, 'fnot', extracts[3][2])),
+						Builder.createBinEither(builder.module, extracts[4][0], callUnaryOp(builder.module, 'iemp', extracts[4][1]), callUnaryOp(builder.module, 'femp', extracts[4][2])),
+						Builder.createBinEither(builder.module, extracts[5][0], callUnaryOp(builder.module, 'neg',  extracts[5][1]), builder.module.f64.neg(extracts[5][2])),
+					].map((expected) => builder.module.drop(expected)),
+				);
+			});
 		});
 	});
 
@@ -678,60 +715,55 @@ describe('ASTNodeOperation', () => {
 			it('with int coercion on, coerces ints into floats when needed.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['42 ==  420;', mod.i32.eq(buildConstInt (42n, mod), buildConstInt   (420n, mod))],
-					['42 === 420;', mod.i32.eq(buildConstInt (42n, mod), buildConstInt   (420n, mod))],
-					['42 ==  4.2;', mod.f64.eq(buildConvert  (42n, mod), buildConstFloat (4.2,  mod))],
-					['42 === 4.2;', mod.i32.const(0)],
+					['42 === 420;', mod.i32.eq (           buildConstInt (42n, mod), buildConstInt   (420n, mod))],
+					['42 ==  420;', mod.i32.eq (           buildConstInt (42n, mod), buildConstInt   (420n, mod))],
+					['42 === 4.2;', mod.call   ('i_f_id', [buildConstInt (42n, mod), buildConstFloat (4.2,  mod)], binaryen.i32)],
+					['42 ==  4.2;', mod.f64.eq (           buildConvert  (42n, mod), buildConstFloat (4.2,  mod))],
 
-					['4.2 ==  42;',   mod.f64.eq (        buildConstFloat(4.2, mod), buildConvert    (42n,  mod))],
-					['4.2 === 42;',   mod.i32.const(0)],
-					['4.2 ==  42.0;', mod.f64.eq (        buildConstFloat(4.2, mod), buildConstFloat (42.0, mod))],
-					['4.2 === 42.0;', mod.call   ('fid', [buildConstFloat(4.2, mod), buildConstFloat (42.0, mod)], binaryen.i32)],
+					['4.2 === 42;',   mod.call   ('f_i_id', [buildConstFloat(4.2, mod), buildConstInt   (42n,  mod)], binaryen.i32)],
+					['4.2 ==  42;',   mod.f64.eq (           buildConstFloat(4.2, mod), buildConvert    (42n,  mod))],
+					['4.2 === 42.0;', mod.call   ('fid',    [buildConstFloat(4.2, mod), buildConstFloat (42.0, mod)], binaryen.i32)],
+					['4.2 ==  42.0;', mod.f64.eq (           buildConstFloat(4.2, mod), buildConstFloat (42.0, mod))],
 
-					['null ==  0;',   mod.i32.eq(buildConstInt (0n, mod), buildConstInt   (0n,  mod))],
-					['null === 0;',   mod.i32.eq(buildConstInt (0n, mod), buildConstInt   (0n,  mod))],
-					['null ==  0.0;', mod.f64.eq(buildConvert  (0n, mod), buildConstFloat (0.0, mod))],
-					['null === 0.0;', mod.i32.const(0)],
+					['null === 0;',   mod.i32.eq (           buildConstInt (0n, mod), buildConstInt   (0n,  mod))],
+					['null ==  0;',   mod.i32.eq (           buildConstInt (0n, mod), buildConstInt   (0n,  mod))],
+					['null === 0.0;', mod.call   ('i_f_id', [buildConstInt (0n, mod), buildConstFloat (0.0, mod)], binaryen.i32)],
+					['null ==  0.0;', mod.f64.eq (           buildConvert  (0n, mod), buildConstFloat (0.0, mod))],
 
-					['false ==  0;',   mod.i32.eq(buildConstInt (0n, mod), buildConstInt  (0n,  mod))],
-					['false === 0;',   mod.i32.eq(buildConstInt (0n, mod), buildConstInt  (0n,  mod))],
-					['false ==  0.0;', mod.f64.eq(buildConvert  (0n, mod), buildConstFloat(0.0, mod))],
-					['false === 0.0;', mod.i32.const(0)],
+					['false === 0;',   mod.i32.eq (           buildConstInt (0n, mod), buildConstInt  (0n,  mod))],
+					['false ==  0;',   mod.i32.eq (           buildConstInt (0n, mod), buildConstInt  (0n,  mod))],
+					['false === 0.0;', mod.call   ('i_f_id', [buildConstInt (0n, mod), buildConstFloat(0.0, mod)], binaryen.i32)],
+					['false ==  0.0;', mod.f64.eq (           buildConvert  (0n, mod), buildConstFloat(0.0, mod))],
 
-					['true ==  1;',   mod.i32.eq(buildConstInt (1n, mod), buildConstInt   (1n,  mod))],
-					['true === 1;',   mod.i32.eq(buildConstInt (1n, mod), buildConstInt   (1n,  mod))],
-					['true ==  1.0;', mod.f64.eq(buildConvert  (1n, mod), buildConstFloat (1.0, mod))],
-					['true === 1.0;', mod.i32.const(0)],
+					['true === 1;',   mod.i32.eq (           buildConstInt (1n, mod), buildConstInt   (1n,  mod))],
+					['true ==  1;',   mod.i32.eq (           buildConstInt (1n, mod), buildConstInt   (1n,  mod))],
+					['true === 1.0;', mod.call   ('i_f_id', [buildConstInt (1n, mod), buildConstFloat (1.0, mod)], binaryen.i32)],
+					['true ==  1.0;', mod.f64.eq (           buildConvert  (1n, mod), buildConstFloat (1.0, mod))],
 
-					['null ==  false;', mod.i32.eq(buildConstInt(0n, mod), buildConstInt(0n, mod))],
 					['null === false;', mod.i32.eq(buildConstInt(0n, mod), buildConstInt(0n, mod))],
-					['null ==  true;',  mod.i32.eq(buildConstInt(0n, mod), buildConstInt(1n, mod))],
+					['null ==  false;', mod.i32.eq(buildConstInt(0n, mod), buildConstInt(0n, mod))],
 					['null === true;',  mod.i32.eq(buildConstInt(0n, mod), buildConstInt(1n, mod))],
+					['null ==  true;',  mod.i32.eq(buildConstInt(0n, mod), buildConstInt(1n, mod))],
 				]));
 			});
 			it('with int coercion off, does not coerce ints into floats.', () => {
-				[
-					'42 ==  4.2;',
-					'42 === 4.2;',
+				const mod = new binaryen.Module();
+				return buildOperations(new Map<string, binaryen.ExpressionRef>([
+					['42 === 4.2;', mod.call('i_f_id', [buildConstInt(42n, mod), buildConstFloat(4.2, mod)], binaryen.i32)],
+					['42 ==  4.2;', mod.call('i_f_id', [buildConstInt(42n, mod), buildConstFloat(4.2, mod)], binaryen.i32)],
 
-					'4.2 ==  42;',
-					'4.2 === 42;',
+					['4.2 === 42;',   mod.call('f_i_id', [buildConstFloat(4.2, mod), buildConstInt(42n, mod)], binaryen.i32)],
+					['4.2 ==  42;',   mod.call('f_i_id', [buildConstFloat(4.2, mod), buildConstInt(42n, mod)], binaryen.i32)],
 
-					'null ==  0.0;',
-					'null === 0.0;',
+					['null === 0.0;', mod.call('i_f_id', [buildConstInt(0n, mod), buildConstFloat(0.0, mod)], binaryen.i32)],
+					['null ==  0.0;', mod.call('i_f_id', [buildConstInt(0n, mod), buildConstFloat(0.0, mod)], binaryen.i32)],
 
-					'false ==  0.0;',
-					'false === 0.0;',
+					['false === 0.0;', mod.call('i_f_id', [buildConstInt(0n, mod), buildConstFloat(0.0, mod)], binaryen.i32)],
+					['false ==  0.0;', mod.call('i_f_id', [buildConstInt(0n, mod), buildConstFloat(0.0, mod)], binaryen.i32)],
 
-					'true ==  1.0;',
-					'true === 1.0;',
-				].forEach((src) => {
-					const builder = new Builder(src, CONFIG_FOLDING_COERCION_OFF);
-					return assertEqualBins(
-						AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_COERCION_OFF).build(builder),
-						builder.module.i32.const(0),
-					);
-				});
+					['true === 1.0;', mod.call('i_f_id', [buildConstInt(1n, mod), buildConstFloat(1.0, mod)], binaryen.i32)],
+					['true ==  1.0;', mod.call('i_f_id', [buildConstInt(1n, mod), buildConstFloat(1.0, mod)], binaryen.i32)],
+				]), CONFIG_FOLDING_COERCION_OFF);
 			});
 		});
 	});
