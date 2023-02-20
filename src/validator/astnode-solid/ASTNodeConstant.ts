@@ -7,7 +7,6 @@ import {
 	Keyword,
 	TOKEN,
 	SolidType,
-	SolidTypeUnit,
 	SolidObject,
 	Primitive,
 	SolidNull,
@@ -50,7 +49,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	protected override type_do(): SolidType {
-		return new SolidTypeUnit<Primitive>(this.value);
+		return this.value.toType();
 	}
 	protected override fold_do(): SolidObject {
 		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {

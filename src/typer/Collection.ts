@@ -5,7 +5,6 @@ import {
 	Map_getEq,
 	Map_setEq,
 } from './package.js';
-import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
 
 
@@ -39,6 +38,4 @@ export abstract class Collection extends SolidObject {
 		mod;
 		throw new Error('`Collection#build` not yet supported.');
 	}
-
-	abstract toType(): SolidType;
 }

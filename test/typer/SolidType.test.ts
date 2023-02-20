@@ -376,26 +376,26 @@ describe('SolidType', () => {
 		})
 
 		describe('SolidTypeUnit', () => {
-			it('constant Boolean types should be subtypes of `bool`.', () => {
+			it('unit Boolean types should be subtypes of `bool`.', () => {
 				assert.ok(SolidBoolean.FALSETYPE.isSubtypeOf(SolidType.BOOL), 'SolidBoolean.FALSETYPE')
 				assert.ok(SolidBoolean.TRUETYPE .isSubtypeOf(SolidType.BOOL), 'SolidBoolean.TRUETYPE')
 			})
-			it('constant Integer types should be subtypes of `int`.', () => {
+			it('unit Integer types should be subtypes of `int`.', () => {
 				;[42n, -42n, 0n, -0n].map((v) => typeConstInt(v)).forEach((itype) => {
 					assert.ok(itype.isSubtypeOf(SolidType.INT), `${ itype }`)
 				})
 			})
-			it('constant Float types should be subtypes of `float`.', () => {
+			it('unit Float types should be subtypes of `float`.', () => {
 				;[4.2, -4.2e-2, 0.0, -0.0].map((v) => typeConstFloat(v)).forEach((ftype) => {
 					assert.ok(ftype.isSubtypeOf(SolidType.FLOAT), `${ ftype }`)
 				})
 			})
-			it('constant String types should be subtypes of `str`.', () => {
+			it('unit String types should be subtypes of `str`.', () => {
 				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => typeConstStr(v)).forEach((stype) => {
 					assert.ok(stype.isSubtypeOf(SolidType.STR), `${ stype }`);
 				});
 			});
-			it('constant tuple types should be subtype of a tuple type instance.', () => {
+			it('unit Tuple types should be subtype of a tuple type instance.', () => {
 				new Map<SolidObject, SolidTypeTuple>([
 					[new SolidTuple(),                                             SolidTypeTuple.fromTypes()],
 					[new SolidTuple([new Int16(42n)]),                             SolidTypeTuple.fromTypes([SolidType.INT])],
@@ -404,7 +404,7 @@ describe('SolidType', () => {
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(tupletype),  `let x: ${ tupletype } = ${ value };`);
 				});
 			});
-			it('constant record types should be subtype of a record type instance.', () => {
+			it('unit Record types should be subtype of a record type instance.', () => {
 				new Map<SolidObject, SolidTypeRecord>([
 					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Int16(42n)]])),                                       SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([[0x100n, SolidType.INT]]))],
 					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Float64(4.2)], [0x101n, new SolidString('hello')]])), SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([[0x100n, SolidType.FLOAT], [0x101n, SolidType.STR]]))],
@@ -413,7 +413,7 @@ describe('SolidType', () => {
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(recordtype),  `let x: ${ recordtype } = ${ value };`);
 				});
 			});
-			it('unit list types should be subtype of a list type instance.', () => {
+			it('unit List types should be subtype of a list type instance.', () => {
 				const input = [
 					null,
 					[new Int16(42n)],
@@ -432,7 +432,7 @@ describe('SolidType', () => {
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(listtype), `let x: ${ listtype } = ${ value };`);
 				});
 			});
-			it('unit dict types should be subtype of a dict type instance.', () => {
+			it('unit Dict types should be subtype of a dict type instance.', () => {
 				const input = [
 					new Map<bigint, SolidObject>([
 						[0x100n, new Int16(42n)],
@@ -459,7 +459,7 @@ describe('SolidType', () => {
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(dicttype), `let x: ${ dicttype } = ${ value };`);
 				});
 			});
-			it('constant set types should be subtype of a set type instance.', () => {
+			it('unit Set types should be subtype of a set type instance.', () => {
 				new Map<SolidObject, SolidTypeSet>([
 					[new SolidSet(),                                                      new SolidTypeSet(SolidType.NEVER)],
 					[new SolidSet(new Set([new Int16(42n)])),                             new SolidTypeSet(SolidType.INT)],
@@ -468,7 +468,7 @@ describe('SolidType', () => {
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(settype), `let x: ${ settype } = ${ value };`);
 				});
 			});
-			it('constant map types should be subtype of a map type instance.', () => {
+			it('unit Map types should be subtype of a map type instance.', () => {
 				new Map<SolidObject, SolidTypeMap>([
 					[new SolidMap(new Map<SolidObject, SolidObject>([[new Int16(0x100n), new Int16(42n)]])),                                                  new SolidTypeMap(SolidType.INT, SolidType.INT)],
 					[new SolidMap(new Map<SolidObject, SolidObject>([[new Int16(0x100n), new Float64(4.2)], [new Int16(0x101n), new SolidString('hello')]])), new SolidTypeMap(SolidType.INT, SolidType.FLOAT.union(SolidType.STR))],

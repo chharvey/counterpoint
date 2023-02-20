@@ -1,5 +1,4 @@
 import type binaryen from 'binaryen';
-import {SolidTypeUnit} from './SolidTypeUnit.js';
 import type {SolidObject} from './SolidObject.js';
 import {Primitive} from './Primitive.js';
 
@@ -17,9 +16,9 @@ export class SolidBoolean extends Primitive {
 	/** The Solid Language Value `true`. */
 	static readonly TRUE: SolidBoolean = new SolidBoolean(true);
 	/** A Unit Type containing only the Solid Language Value `false`. */
-	static readonly FALSETYPE = new SolidTypeUnit<SolidBoolean>(SolidBoolean.FALSE);
+	public static readonly FALSETYPE = SolidBoolean.FALSE.toType();
 	/** A Unit Type containing only the Solid Language Value `true`. */
-	static readonly TRUETYPE = new SolidTypeUnit<SolidBoolean>(SolidBoolean.TRUE);
+	public static readonly TRUETYPE = SolidBoolean.TRUE.toType();
 
 	/**
 	 * Return the Solid Language Value `true` or `false` based on the argument.
