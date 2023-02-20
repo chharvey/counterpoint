@@ -334,15 +334,15 @@ Compound types are derived from other types.
 - [Map](#map-type)
 
 #### Tuple Type
-A **Tuple Type** is described by an ordered sequence of types.
-The objects that any given Tuple Type contains are objects whose items’ types
-match up with the types in the sequence in order.
+A **Tuple Type** contains instances of [`Tuple`](./intrinsics.md#tuple) and is described by an ordered sequence of types.
+The objects that any given Tuple Type contains are `Tuple` objects whose
+items’ types match up with the types in the sequence in order.
 Tuples have a static size, are ordered, and are 0-origin indexable by Integers.
 
 #### Record Type
-A **Record Type** is described by an unordered sequence of name–type pairs.
-The objects that any given Record Type contains are objects whose properties’ types
-match up with the types in the sequence by name.
+A **Record Type** contains instances of [`Record`](./intrinsics.md#record) and is described by an unordered sequence of name–type pairs.
+The objects that any given Record Type contains are `Record` objects whose
+properties’ types match up with the types in the sequence by name.
 Records have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
 #### List Type
