@@ -1,7 +1,7 @@
-import {throw_expression} from './package.js';
+import {throw_expression} from '../../lib/index.js';
+import {Float} from './index.js';
 import type {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
-import {Float} from './index.js';
 
 
 

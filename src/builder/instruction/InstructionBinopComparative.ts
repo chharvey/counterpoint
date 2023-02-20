@@ -1,7 +1,7 @@
 import {
 	Operator,
 	ValidOperatorComparative,
-} from './package.js';
+} from '../../validator/index.js';
 import type {InstructionExpression} from './InstructionExpression.js';
 import {InstructionBinop} from './InstructionBinop.js';
 

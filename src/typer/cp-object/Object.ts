@@ -1,4 +1,4 @@
-import type {TYPE} from './package.js';
+import type {TYPE} from '../index.js';
 import {String as CPString} from './index.js';
 
 

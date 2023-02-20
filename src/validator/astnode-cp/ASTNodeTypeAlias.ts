@@ -3,14 +3,18 @@ import {
 	TYPE,
 	ReferenceError01,
 	ReferenceError03,
+} from '../../index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
+} from '../../core/index.js';
+import {
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
 	SymbolStructureType,
-	SyntaxNodeType,
-} from './package.js';
+} from '../index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
 

@@ -1,10 +1,12 @@
 import * as assert from 'assert';
+import type {
+	INST,
+	Builder,
+} from '../../index.js';
 import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	INST,
-	Builder,
-} from './package.js';
+} from '../../core/index.js';
 import {ASTNodeGoal} from './index.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeCP} from './ASTNodeCP.js';

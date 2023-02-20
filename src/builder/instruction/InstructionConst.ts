@@ -1,4 +1,4 @@
-import {OBJ} from './package.js';
+import {OBJ} from '../../typer/index.js';
 import {InstructionExpression} from './InstructionExpression.js';
 
 

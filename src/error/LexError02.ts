@@ -1,4 +1,4 @@
-import type {Serializable} from './package.js';
+import type {Serializable} from '../parser/index.js';
 import {LexError} from './LexError.js';
 
 

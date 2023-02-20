@@ -1,7 +1,7 @@
-import {OBJ as VALUE} from './package.js';
+import * as VALUE from '../cp-object/index.js';
+import {OBJ} from './index.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
-import {OBJ} from './index.js';
 
 
 

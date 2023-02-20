@@ -1,4 +1,4 @@
-import type {TYPE} from './package.js';
+import type {TYPE} from '../typer/index.js';
 import {TypeError} from './TypeError.js';
 
 

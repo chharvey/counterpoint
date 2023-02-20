@@ -1,4 +1,4 @@
-import type {SyntaxNodeType} from './package.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeConstant} from './index.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 

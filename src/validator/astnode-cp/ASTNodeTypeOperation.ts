@@ -1,11 +1,11 @@
 import * as assert from 'assert';
+import type {NonemptyArray} from '../../lib/index.js';
 import {
-	NonemptyArray,
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-	ValidTypeOperator,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
+import type {ValidTypeOperator} from '../Operator.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
 

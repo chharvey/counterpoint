@@ -1,16 +1,18 @@
+import {TypeError04} from '../../index.js';
 import {
-	TypeError04,
 	IntRange,
 	throw_expression,
+} from '../../lib/index.js';
+import type {
 	ValidAccessOperator,
 	AST,
-	TypeEntry,
-	OBJ as VALUE,
-} from './package.js';
+} from '../../validator/index.js';
+import type {TypeEntry} from '../utils-public.js';
+import * as VALUE from '../cp-object/index.js';
+import {OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
-import {OBJ} from './index.js';
 
 
 
