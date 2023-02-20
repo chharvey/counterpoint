@@ -290,39 +290,39 @@ and the “absorption element” of the [union](#union) operation.
 
 #### Tuple Type
 A **Tuple Type** contains [`Tuple` objects](./intrinsics.md#tuple) and is described by
-a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items.
+a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items, called invariants.
 The objects that any given Tuple Type contains are `Tuple` objects whose items’ types
-match up with the types in the list in order.
+match up with the invariants in the sequence in order.
 
 #### Record Type
 A **Record Type** contains [`Record` objects](./intrinsics.md#record) and is described by
-a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values.
+a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values, called invariants.
 The objects that any given Record Type contains are `Record` objects whose properties’ types
-match up with the types in the list by name.
+match up with the invariants in the structure by name.
 
 #### List Type
 A **List Type** contains [`List` objects](./intrinsics.md#list) and is described by a single type,
-representing items.
+called an invariant, representing items.
 The objects that any given List Type contains are `List` objects whose
-items are assignable to the type describing the List Type.
+items are assignable to the invariant describing the List Type.
 
 #### Dict Type
 A **Dict Type** contains [`Dict` objects](./intrinsics.md#dict) and is described by a single type,
-representing values.
+called an invariant, representing values.
 The objects that any given Dict Type contains are `Dict` objects whose
-values are assignable to the type describing the Dict Type.
+values are assignable to the invariant describing the Dict Type.
 
 #### Set Type
 A **Set Type** contains [`Set` objects](./intrinsics.md#set) and is described by a single type,
-representing elements.
+called an invariant, representing elements.
 The objects that any given Set Type contains are `Set` objects whose
-elements are assignable to the type describing the Set Type.
+elements are assignable to the invariant describing the Set Type.
 
 #### Map Type
 A **Map Type** contains [`Map` objects](./intrinsics.md#map) and is described by a pair of two types,
-the first of which represents antecedents and the second of which represents consequents.
+called invariants, the first of which represents antecedents and the second of which represents consequents.
 The objects that any given Map Type contains are `Map` objects whose
-antcedents and consequents are respectively assignable to the types describing the Map Type.
+antcedents and consequents are respectively assignable to the invariants describing the Map Type.
 
 
 
@@ -397,6 +397,130 @@ Such a data type is called the **difference** of \`‹T›\` and \`‹U›\`.
 
 ### Subtype
 A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignable to \`‹T›\` is also assignable to \`‹U›\`.
+
+```
+Boolean Subtype(Type a, Type b) :=
+	1. *If* *UnwrapAffirm:* `Identical(a, b)`:
+		// 2-7 | `A <: A`
+		1. *Return:* `true`.
+	2. *If* *UnwrapAffirm:* `IsBottomType(a)`:
+		// 1-1 | `never <: T`
+		1. *Return:* `true`.
+	3. *If* *UnwrapAffirm:* `IsBottomType(b)`:
+		// 1-3 | `T       <: never  <->  T == never`
+		1. *Return:* `IsBottomType(a)`.
+	4. *If* *UnwrapAffirm:* `IsTopType(a)`:
+		// 1-4 | `unknown <: T      <->  T == unknown`
+		1. *Return:* `IsTopType(b)`.
+	5. *If* *UnwrapAffirm:* `IsTopType(b)`:
+		// 1-2 | `T     <: unknown`
+		1. *Return:* `true`.
+	6. *If* `a` is the intersection of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Equal(x, b)` *or* *UnwrapAffirm:* `Equal(y, b)`:
+			// 3-1 | `A  & B <: A  &&  A  & B <: B`
+			1. *Return:* `true`.
+		2. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
+			// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
+			1. *Return:* `true`.
+	7. *If* `b` is the intersection of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+			// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
+			1. *Return:* `true`.
+	8. *If* `a` is the union of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
+			// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
+			1. *Return:* `true`.
+	9. *If* `b` is the union of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Equal(a, x)` *or* *UnwrapAffirm:* `Equal(a, y)`:
+			// 3-2 | `A <: A \| B  &&  B <: A \| B`
+			1. *Return:* `true`.
+		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
+			1. *Return:* `true`.
+	10. *If* `a` is a `Tuple` type *and* `b` is a `Tuple` type:
+		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
+		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
+		4. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
+		5. *If* `seq_a_req.count` is less than `seq_b_req.count`:
+			1. *Return:* `false`.
+		6. *If* `b` is mutable:
+			1. *If* `a` is not mutable:
+				1. *Return:* `false`.
+		7. *For index* `i` in `seq_b`:
+			1. *If* `seq_b[i].optional` is `false`:
+				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
+			2. *If* `seq_a[i]` is set:
+				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(seq_a[i].type, seq_b[i].type)` is `false`:
+					1. *Return:* `false`.
+				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
+					1. *Return:* `false`.
+		8. *Return:* `true`.
+	11. *If* `a` is a `Record` type *and* `b` is a `Record` type:
+		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
+		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
+		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
+			1. *Return:* `false`.
+		6. *If* `b` is mutable:
+			1. *If* `a` is not mutable:
+				1. *Return:* `false`.
+		7. *For key* `k` in `struct_b`:
+			1. *If* `struct_b[k].optional` is `false`:
+				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
+					1. *Return:* `false`.
+			2. *If* `struct_a[k]` is set:
+				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(struct_a[k].type, struct_b[k].type)` is `false`:
+					1. *Return:* `false`.
+				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
+					1. *Return:* `false`.
+		8. *Return:* `true`.
+	12. *If* `a` is a `List` type *and* `b` is a `List` type:
+		1. *Let* `ai` be the union of types in `a`.
+		2. *Let* `bi` be the union of types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ai, bi)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
+				1. *Return:* `true`.
+	13. *If* `a` is a `Dict` type *and* `b` is a `Dict` type:
+		1. *Let* `av` be the union of value types in `a`.
+		2. *Let* `bv` be the union of value types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+				1. *Return:* `true`.
+	14. *If* `a` is a `Set` type *and* `b` is a `Set` type:
+		1. *Let* `ae` be the union of types in `a`.
+		2. *Let* `be` be the union of types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ae, be)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
+				1. *Return:* `true`.
+	15. *If* `a` is a `Map` type *and* `b` is a `Map` type:
+		1. *Let* `ak` be the union of antecedent types in `a`.
+		2. *Let* `av` be the union of consequent types in `a`.
+		3. *Let* `bk` be the union of antecedent types in `b`.
+		4. *Let* `bv` be the union of consequent types in `b`.
+		5. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ak, bk)` is `true` *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
+					1. *Return:* `true`.
+		6. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+				1. *Return:* `true`.
+	16. *If* every value that is assignable to `a` is also assignable to `b`:
+		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
+			because an instance of `Integer` is an instance of `Object`.
+		2. *Return:* `true`.
+	17. *Return:* `false`.
+;
+```
 
 
 ### Equality

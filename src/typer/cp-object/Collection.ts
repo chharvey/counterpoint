@@ -1,8 +1,5 @@
 import * as xjs from 'extrajs';
-import type {
-	Keys,
-	TYPE,
-} from './package.js';
+import type {Keys} from '../../lib/index.js';
 import {Object as CPObject} from './Object.js';
 
 
@@ -30,7 +27,4 @@ export abstract class Collection extends CPObject {
 		}
 		return xjs.Map.get(Collection.EQ_MEMO, memokey, Collection.EQ_MEMO_COMPARATOR)!;
 	}
-
-
-	public abstract toType(): TYPE.Type;
 }

@@ -1,13 +1,11 @@
 import * as xjs from 'extrajs';
-import {
-	languageValuesIdentical,
-	OBJ,
-} from './package.js';
-import {Type} from './Type.js';
+import {languageValuesIdentical} from '../utils-private.js';
+import type * as OBJ from '../cp-object/index.js';
 import {
 	TypeTuple,
 	TypeRecord,
 } from './index.js';
+import {Type} from './Type.js';
 
 
 
@@ -43,11 +41,11 @@ export class TypeUnion extends Type {
 		return this.left.includes(v) || this.right.includes(v);
 	}
 
-	/**
-	 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
-	 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
-	 */
 	protected override intersect_do(t: Type): Type {
+		/**
+		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
+		 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
+		 */
 		return this.left.intersect(t).union(this.right.intersect(t));
 	}
 

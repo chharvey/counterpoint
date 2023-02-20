@@ -1,8 +1,6 @@
 import * as xjs from 'extrajs';
-import {
-	languageValuesIdentical,
-	TYPE,
-} from './package.js';
+import {TYPE} from '../index.js';
+import {languageValuesIdentical} from '../utils-private.js';
 import type {Object as CPObject} from './Object.js';
 import {Boolean as CPBoolean} from './Boolean.js';
 import {Collection} from './Collection.js';
@@ -40,8 +38,12 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 		);
 	}
 
+	/**
+	 * @inheritdoc
+	 * Returns a TypeSet whose invariant is the union of the types of this Set’s elements.
+	 */
 	public override toType(): TYPE.TypeSet {
-		return new TYPE.TypeSet(TYPE.Type.unionAll([...this.elements].map<TYPE.Type>((el) => new TYPE.TypeUnit<T>(el))));
+		return new TYPE.TypeSet(TYPE.Type.unionAll([...this.elements].map<TYPE.Type>((el) => el.toType())));
 	}
 
 	public get(el: T): CPBoolean {

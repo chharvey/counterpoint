@@ -1,16 +1,18 @@
+import {TypeError04} from '../../index.js';
 import {
-	TypeError04,
 	IntRange,
 	throw_expression,
+} from '../../lib/index.js';
+import type {
 	ValidAccessOperator,
 	AST,
-	TypeEntry,
-	OBJ as VALUE,
-} from './package.js';
+} from '../../validator/index.js';
+import type {TypeEntry} from '../utils-public.js';
+import * as OBJ from '../cp-object/index.js';
+import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
-import {OBJ} from './index.js';
 
 
 
@@ -19,8 +21,8 @@ export class TypeRecord extends Type {
 	 * Is the argument a unit record type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Record`
 	 */
-	public static isUnitType(type: Type): type is TypeUnit<VALUE.Record> {
-		return type instanceof TypeUnit && type.value instanceof VALUE.Record;
+	public static isUnitType(type: Type): type is TypeUnit<OBJ.Record> {
+		return type instanceof TypeUnit && type.value instanceof OBJ.Record;
 	}
 
 
@@ -42,43 +44,43 @@ export class TypeRecord extends Type {
 
 	/**
 	 * Construct a new TypeRecord object.
-	 * @param propertytypes a map of this type’s property ids along with their associated types
+	 * @param invariants a map of this type’s property ids along with their associated types
 	 * @param is_mutable is this type mutable?
 	 */
 	public constructor(
-		public readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
+		public readonly invariants: ReadonlyMap<bigint, TypeEntry> = new Map(),
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new VALUE.Record()]));
+		super(is_mutable, new Set([new OBJ.Record()]));
 	}
 
 	public override get hasMutable(): boolean {
-		return super.hasMutable || [...this.propertytypes.values()].some((t) => t.type.hasMutable);
+		return super.hasMutable || [...this.invariants.values()].some((t) => t.type.hasMutable);
 	}
 
 	/** The possible number of values in this record type. */
 	public get count(): IntRange {
 		return [
-			BigInt([...this.propertytypes.values()].filter((val) => !val.optional).length),
-			BigInt(this.propertytypes.size) + 1n,
+			BigInt([...this.invariants.values()].filter((val) => !val.optional).length),
+			BigInt(this.invariants.size) + 1n,
 		];
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }[${ [...this.propertytypes].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }[${ [...this.invariants].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
-	public override includes(v: VALUE.Object): boolean {
-		return v instanceof VALUE.Record && v.toType().isSubtypeOf(this);
+	public override includes(v: OBJ.Object): boolean {
+		return v instanceof OBJ.Record && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
-		return t.equals(OBJ) || (
+		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeRecord
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
-			&& [...t.propertytypes].every(([id, thattype]) => {
-				const thistype: TypeEntry | null = this.propertytypes.get(id) || null;
+			&& [...t.invariants].every(([id, thattype]) => {
+				const thistype: TypeEntry | null = this.invariants.get(id) || null;
 				return (
 					(thattype.optional || thistype && !thistype.optional)
 					&& (!thistype || ((t.isMutable)
@@ -91,17 +93,17 @@ export class TypeRecord extends Type {
 	}
 
 	public override mutableOf(): TypeRecord {
-		return new TypeRecord(this.propertytypes, true);
+		return new TypeRecord(this.invariants, true);
 	}
 
 	public override immutableOf(): TypeRecord {
-		return new TypeRecord(this.propertytypes, false);
+		return new TypeRecord(this.invariants, false);
 	}
 
 	public get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): Type {
 		return updateAccessedStaticType(
-			((this.propertytypes.has(key))
-				? this.propertytypes.get(key)!
+			((this.invariants.has(key))
+				? this.invariants.get(key)!
 				: throw_expression(new TypeError04('property', this, accessor))
 			),
 			access_kind,
@@ -109,7 +111,7 @@ export class TypeRecord extends Type {
 	}
 
 	public valueTypes(): Type {
-		return Type.unionAll([...this.propertytypes.values()].map((t) => t.type));
+		return Type.unionAll([...this.invariants.values()].map((t) => t.type));
 	}
 
 	/**
@@ -117,11 +119,11 @@ export class TypeRecord extends Type {
 	 * For any overlapping properties, their type intersection is taken.
 	 */
 	public intersectWithRecord(t: TypeRecord): TypeRecord {
-		const props = new Map<bigint, TypeEntry>([...this.propertytypes]);
-		[...t.propertytypes].forEach(([id, typ]) => {
-			props.set(id, this.propertytypes.has(id) ? {
-				type:     this.propertytypes.get(id)!.type.intersect(typ.type),
-				optional: this.propertytypes.get(id)!.optional && typ.optional,
+		const props = new Map<bigint, TypeEntry>([...this.invariants]);
+		[...t.invariants].forEach(([id, typ]) => {
+			props.set(id, this.invariants.has(id) ? {
+				type:     this.invariants.get(id)!.type.intersect(typ.type),
+				optional: this.invariants.get(id)!.optional && typ.optional,
 			} : typ);
 		});
 		return new TypeRecord(props);
@@ -133,11 +135,11 @@ export class TypeRecord extends Type {
 	 */
 	public unionWithRecord(t: TypeRecord): TypeRecord {
 		const props = new Map<bigint, TypeEntry>();
-		[...t.propertytypes].forEach(([id, typ]) => {
-			if (this.propertytypes.has(id)) {
+		[...t.invariants].forEach(([id, typ]) => {
+			if (this.invariants.has(id)) {
 				props.set(id, {
-					type:     this.propertytypes.get(id)!.type.union(typ.type),
-					optional: this.propertytypes.get(id)!.optional || typ.optional,
+					type:     this.invariants.get(id)!.type.union(typ.type),
+					optional: this.invariants.get(id)!.optional || typ.optional,
 				});
 			}
 		});

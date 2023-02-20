@@ -1,13 +1,11 @@
 import * as xjs from 'extrajs';
-import {
-	languageValuesIdentical,
-	OBJ,
-} from './package.js';
-import {Type} from './Type.js';
+import {languageValuesIdentical} from '../utils-private.js';
+import type * as OBJ from '../cp-object/index.js';
 import {
 	TypeTuple,
 	TypeRecord,
 } from './index.js';
+import {Type} from './Type.js';
 
 
 
@@ -41,6 +39,14 @@ export class TypeIntersection extends Type {
 
 	public override includes(v: OBJ.Object): boolean {
 		return this.left.includes(v) && this.right.includes(v);
+	}
+
+	protected override union_do(t: Type): Type {
+		/**
+		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
+		 *     |  (B  & C) \| A == (B \| A)  & (C \| A)
+		 */
+		return this.left.union(t).intersect(this.right.union(t));
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {

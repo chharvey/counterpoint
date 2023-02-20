@@ -1,4 +1,4 @@
-import type {ASTNode} from './package.js';
+import type {ASTNode} from '../validator/index.js';
 import {ErrorCode} from './ErrorCode.js';
 
 

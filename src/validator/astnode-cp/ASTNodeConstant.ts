@@ -1,18 +1,22 @@
 import * as assert from 'assert';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
-	throw_expression,
+} from '../../index.js';
+import {throw_expression} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	Keyword,
-	Validator,
+} from '../../core/index.js';
+import {Keyword} from '../../parser/index.js';
+import {Validator} from '../index.js';
+import {
 	SyntaxNodeType,
 	isSyntaxNodeType,
-} from './package.js';
+} from '../utils-private.js';
 import {valueOfTokenNumber} from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -26,7 +30,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 
-	private static keywordValue(source: string): OBJ.Object {
+	private static keywordValue(source: string): OBJ.Null | OBJ.Boolean {
 		return (
 			(source === Keyword.NULL)  ? OBJ.Null.NULL :
 			(source === Keyword.FALSE) ? OBJ.Boolean.FALSE :
@@ -70,7 +74,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	protected override type_do(): TYPE.Type {
-		return new TYPE.TypeUnit<OBJ.Primitive>(this.value);
+		return this.value.toType();
 	}
 
 	protected override fold_do(): OBJ.Object {

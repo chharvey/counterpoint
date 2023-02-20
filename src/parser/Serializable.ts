@@ -1,5 +1,6 @@
-import {stringifyAttributes} from './utils-public.js';
-import {Filebound} from './utils-private.js';
+import type {SyntaxNode} from 'tree-sitter';
+import {stringifyAttributes} from '../core/index.js';
+import {Punctuator} from './Punctuator.js';
 
 
 
@@ -14,8 +15,8 @@ function sanitizeContent(contents: string): string {
 		.replace(/</g,  '&lt;')
 		.replace(/>/g,  '&gt;')
 		.replace(/\\/g, '&#x5c;')
-		.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
-		.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+		.replace('\u0002', '\u2402') // U+0002 START OF TEXT // U+2402 SYMBOL FOR START OF TEXT
+		.replace('\u0003', '\u2403') // U+0003 END   OF TEXT // U+2403 SYMBOL FOR END   OF TEXT
 	);
 }
 
@@ -45,9 +46,24 @@ export interface Serializable {
 }
 
 
-export function serialize(serializable: Serializable, content: string): string {
-	return `<${ serializable.tagname } ${ stringifyAttributes(new Map<string, string>([
-		['line', (serializable.line_index + 1).toString()],
-		['col',  (serializable.col_index  + 1).toString()],
-	])) }>${ sanitizeContent(content) }</${ serializable.tagname }>`;
+
+/**
+ * Construct a new Serializable object given a SyntaxNode.
+ * @param node the SyntaxNode to construct from
+ * @return     the new Serializable object
+ */
+export function to_serializable(node: SyntaxNode): Serializable {
+	return {
+		tagname:      Object.values(Punctuator).find((punct) => punct === node.type) ? 'PUNCTUATOR' : node.type,
+		source:       node.text,
+		source_index: node.startIndex,
+		line_index:   node.startPosition.row,
+		col_index:    node.startPosition.column,
+		serialize() {
+			return `<${ this.tagname } ${ stringifyAttributes(new Map<string, string>([
+				['line', (this.line_index + 1).toString()],
+				['col',  (this.col_index  + 1).toString()],
+			])) }>${ sanitizeContent(this.source) }</${ this.tagname }>`;
+		},
+	};
 }

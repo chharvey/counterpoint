@@ -4,7 +4,7 @@ import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDe
 import type {
 	NonemptyArray,
 	CodeUnit,
-} from './package.js';
+} from '../lib/index.js';
 
 
 

@@ -1,14 +1,16 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
+} from '../../index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeFamily,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
@@ -53,7 +55,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 			if (this.children.length < assignee_type_tuple.count[0]) {
 				return false;
 			}
-			xjs.Array.forEachAggregated(assignee_type_tuple.types, (thattype, i) => {
+			xjs.Array.forEachAggregated(assignee_type_tuple.invariants, (thattype, i) => {
 				const expr: ASTNodeExpression | undefined = this.children[i];
 				if (expr) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- bug
 					return ASTNodeCP.typeCheckAssignment(

@@ -1,8 +1,6 @@
 import * as xjs from 'extrajs';
-import {
-	languageValuesIdentical,
-	OBJ,
-} from './package.js';
+import {languageValuesIdentical} from '../utils-private.js';
+import type * as OBJ from '../cp-object/index.js';
 import {
 	TypeIntersection,
 	TypeUnion,
@@ -104,22 +102,18 @@ export abstract class Type {
 	 * Return the type intersection of this type with another.
 	 * @param t the other type
 	 * @returns the type intersection
-	 * @final
 	 */
 	public intersect(t: Type): Type {
 		/** 1-5 | `T  & never   == never` */
-		if (t.isBottomType) {
+		if (this.isBottomType || t.isBottomType) {
 			return NEVER;
 		}
-		if (this.isBottomType) {
-			return this;
-		}
 		/** 1-6 | `T  & unknown == T` */
-		if (t.isTopType) {
-			return this;
-		}
 		if (this.isTopType) {
 			return t;
+		}
+		if (t.isTopType) {
+			return this;
 		}
 		/** 3-3 | `A <: B  <->  A  & B == A` */
 		if (this.isSubtypeOf(t)) {
@@ -133,7 +127,7 @@ export abstract class Type {
 	}
 
 	protected intersect_do(t: Type): Type {
-		/** 2-2 | `A \| B == B \| A` */
+		/** 2-1 | `A  & B == B  & A` */
 		if (t instanceof TypeUnion) {
 			return t.intersect(this);
 		}
@@ -145,21 +139,17 @@ export abstract class Type {
 	 * Return the type union of this type with another.
 	 * @param t the other type
 	 * @returns the type union
-	 * @final
 	 */
 	public union(t: Type): Type {
 		/** 1-7 | `T \| never   == T` */
-		if (t.isBottomType) {
-			return this;
-		}
 		if (this.isBottomType) {
 			return t;
 		}
-		/** 1-8 | `T \| unknown == unknown` */
-		if (t.isTopType) {
-			return t;
+		if (t.isBottomType) {
+			return this;
 		}
-		if (this.isTopType) {
+		/** 1-8 | `T \| unknown == unknown` */
+		if (this.isTopType || t.isTopType) {
 			return UNKNOWN;
 		}
 		/** 3-4 | `A <: B  <->  A \| B == B` */
@@ -174,7 +164,7 @@ export abstract class Type {
 	}
 
 	protected union_do(t: Type): Type {
-		/** 2-1 | `A  & B == B  & A` */
+		/** 2-2 | `A \| B == B \| A` */
 		if (t instanceof TypeIntersection) {
 			return t.union(this);
 		}
@@ -214,7 +204,6 @@ export abstract class Type {
 	 * Return whether this type is a structural subtype of the given type.
 	 * @param t the type to compare
 	 * @returns Is this type a subtype of the argument?
-	 * @final
 	 */
 	public isSubtypeOf(t: Type): boolean {
 		/** 2-7 | `A <: A` */
@@ -267,7 +256,7 @@ export abstract class Type {
 	 * @returns Is this type equal to the argument?
 	 */
 	public equals(t: Type): boolean {
-		return this.isMutable === t.isMutable && this.isSubtypeOf(t) && t.isSubtypeOf(this);
+		return this === t || this.isMutable === t.isMutable && this.isSubtypeOf(t) && t.isSubtypeOf(this); // TODO: remove `===` once applying decorator
 	}
 
 	public mutableOf(): Type {

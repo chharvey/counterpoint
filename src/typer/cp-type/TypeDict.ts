@@ -1,7 +1,7 @@
-import {OBJ as VALUE} from './package.js';
+import * as OBJ from '../cp-object/index.js';
+import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
-import {OBJ} from './index.js';
 
 
 
@@ -10,8 +10,8 @@ export class TypeDict extends Type {
 	 * Is the argument a unit dict type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Dict`
 	 */
-	public static isUnitType(type: Type): type is TypeUnit<VALUE.Dict> {
-		return type instanceof TypeUnit && type.value instanceof VALUE.Dict;
+	public static isUnitType(type: Type): type is TypeUnit<OBJ.Dict> {
+		return type instanceof TypeUnit && type.value instanceof OBJ.Dict;
 	}
 
 
@@ -19,43 +19,43 @@ export class TypeDict extends Type {
 
 	/**
 	 * Construct a new TypeDict object.
-	 * @param types a union of types in this dict type
+	 * @param invariant a union of types in this dict type
 	 * @param is_mutable is this type mutable?
 	 */
 	public constructor(
-		public readonly types: Type,
+		public readonly invariant: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new VALUE.Dict()]));
+		super(is_mutable, new Set([new OBJ.Dict()]));
 	}
 
 	public override get hasMutable(): boolean {
-		return super.hasMutable || this.types.hasMutable;
+		return super.hasMutable || this.invariant.hasMutable;
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }Dict.<${ this.types }>`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }Dict.<${ this.invariant }>`;
 	}
 
-	public override includes(v: VALUE.Object): boolean {
-		return v instanceof VALUE.Dict && v.toType().isSubtypeOf(this);
+	public override includes(v: OBJ.Object): boolean {
+		return v instanceof OBJ.Dict && v.toType().isSubtypeOf(this);
 	}
 
 	protected override isSubtypeOf_do(t: Type): boolean {
-		return t.equals(OBJ) || (
+		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeDict
 			&& ((t.isMutable)
-				? this.isMutable && this.types.equals(t.types)
-				: this.types.isSubtypeOf(t.types)
+				? this.isMutable && this.invariant.equals(t.invariant)
+				: this.invariant.isSubtypeOf(t.invariant)
 			)
 		);
 	}
 
 	public override mutableOf(): TypeDict {
-		return new TypeDict(this.types, true);
+		return new TypeDict(this.invariant, true);
 	}
 
 	public override immutableOf(): TypeDict {
-		return new TypeDict(this.types, false);
+		return new TypeDict(this.invariant, false);
 	}
 }

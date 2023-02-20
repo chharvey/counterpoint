@@ -1,4 +1,4 @@
-import type {OBJ} from './package.js';
+import type * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
 
 
@@ -23,6 +23,21 @@ export class TypeNever extends Type {
 
 	public override includes(_v: OBJ.Object): boolean {
 		return false;
+	}
+
+	public override intersect(_: Type): Type {
+		/** 1-5 | `T  & never   == never` */
+		return this;
+	}
+
+	public override union(t: Type): Type {
+		/** 1-7 | `T \| never   == T` */
+		return t;
+	}
+
+	public override isSubtypeOf(_: Type): boolean {
+		/** 1-1 | `never <: T` */
+		return true;
 	}
 
 	public override equals(t: Type): boolean {

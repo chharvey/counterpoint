@@ -1,16 +1,18 @@
 import * as assert from 'assert';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
 	TypeError01,
-	throw_expression,
+} from '../../index.js';
+import {throw_expression} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
-	Operator,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeSupertype} from '../utils-private.js';
+import type {Operator} from '../Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 
@@ -51,11 +53,12 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		const t1: TYPE.Type = this.operand1.type();
 		const t2: TYPE.Type = this.operand2.type();
 		return (t0.isSubtypeOf(TYPE.BOOL))
-			? (t0 instanceof TYPE.TypeUnit)
-				? (t0.value === OBJ.Boolean.FALSE)
-					? t2 // If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
-					: t1 // If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
-				: t1.union(t2)
+			? (
+				(t0.equals(TYPE.BOOL))           ? t1.union(t2) :
+				(t0.includes(OBJ.Boolean.FALSE)) ? t2           : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
+				(t0.includes(OBJ.Boolean.TRUE))  ? t1           : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
+				(t0.isBottomType,                  TYPE.NEVER)
+			)
 			: throw_expression(new TypeError01(this));
 	}
 

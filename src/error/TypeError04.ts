@@ -1,7 +1,5 @@
-import type {
-	AST,
-	TYPE,
-} from './package.js';
+import type {AST} from '../validator/index.js';
+import type {TYPE} from '../typer/index.js';
 import {TypeError} from './TypeError.js';
 
 

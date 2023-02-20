@@ -1,7 +1,5 @@
-import {
-	Serializable,
-	stringifyAttributes,
-} from './package.js';
+import {stringifyAttributes} from '../core/index.js';
+import type {Serializable} from '../parser/index.js';
 
 
 

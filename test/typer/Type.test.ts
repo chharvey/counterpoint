@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import {
 	TypeEntry,
-	TYPE,
 	OBJ,
+	TYPE,
 } from '../../src/typer/index.js';
 import {
 	typeUnitInt,
@@ -52,6 +52,11 @@ describe('Type', () => {
 	]));
 
 
+	it('false | true == bool', () => {
+		assert.ok(OBJ.Boolean.FALSETYPE.union(OBJ.Boolean.TRUETYPE).equals(TYPE.BOOL));
+	});
+
+
 	describe('#includes', () => {
 		it('uses `Object#identical` to compare values.', () => {
 			function unionOfInts(ns: readonly bigint[]): TYPE.Type {
@@ -90,7 +95,7 @@ describe('Type', () => {
 	describe('#intersect', () => {
 		it('1-5 | `T  & never   == never`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.intersect(TYPE.NEVER).equals(TYPE.NEVER), `${ t }`);
+				assert.ok(t.intersect(TYPE.NEVER).isBottomType, `${ t }`);
 			});
 		});
 		it('1-6 | `T  & unknown == T`', () => {
@@ -143,7 +148,7 @@ describe('Type', () => {
 		});
 		it('1-8 | `T \| unknown == unknown`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.union(TYPE.UNKNOWN).equals(TYPE.UNKNOWN), `${ t }`);
+				assert.ok(t.union(TYPE.UNKNOWN).isTopType, `${ t }`);
 			});
 		});
 		it('2-2 | `A \| B == B \| A`', () => {
@@ -172,6 +177,11 @@ describe('Type', () => {
 					(null | bool | int | float)
 				`,
 			);
+		});
+		describe('TypeIntersection', () => {
+			it.skip('distributes intersection operands over union: `(B  & C) \| A == (B \| A)  & (C \| A)`.', () => {
+				'TODO';
+			});
 		});
 	});
 
@@ -234,14 +244,14 @@ describe('Type', () => {
 		it('1-3 | `T       <: never  <->  T == never`', () => {
 			builtin_types.forEach((t) => {
 				if (t.isSubtypeOf(TYPE.NEVER)) {
-					assert.ok(t.equals(TYPE.NEVER), `${ t }`);
+					assert.ok(t.isBottomType, `${ t }`);
 				}
 			});
 		});
 		it('1-4 | `unknown <: T      <->  T == unknown`', () => {
 			builtin_types.forEach((t) => {
 				if (TYPE.UNKNOWN.isSubtypeOf(t)) {
-					assert.ok(t.equals(TYPE.UNKNOWN), `${ t }`);
+					assert.ok(t.isTopType, `${ t }`);
 				}
 			});
 		});
@@ -359,26 +369,26 @@ describe('Type', () => {
 		});
 
 		describe('TypeUnit', () => {
-			it('constant Boolean types should be subtypes of `bool`.', () => {
+			it('unit Boolean types should be subtypes of `bool`.', () => {
 				assert.ok(OBJ.Boolean.FALSETYPE.isSubtypeOf(TYPE.BOOL), 'Boolean.FALSETYPE');
 				assert.ok(OBJ.Boolean.TRUETYPE .isSubtypeOf(TYPE.BOOL), 'Boolean.TRUETYPE');
 			});
-			it('constant Integer types should be subtypes of `int`.', () => {
+			it('unit Integer types should be subtypes of `int`.', () => {
 				[42n, -42n, 0n, -0n].map((v) => typeUnitInt(v)).forEach((itype) => {
 					assert.ok(itype.isSubtypeOf(TYPE.INT), `${ itype }`);
 				});
 			});
-			it('constant Float types should be subtypes of `float`.', () => {
+			it('unit Float types should be subtypes of `float`.', () => {
 				[4.2, -4.2e-2, 0.0, -0.0].map((v) => typeUnitFloat(v)).forEach((ftype) => {
 					assert.ok(ftype.isSubtypeOf(TYPE.FLOAT), `${ ftype }`);
 				});
 			});
-			it('constant String types should be subtypes of `str`.', () => {
+			it('unit String types should be subtypes of `str`.', () => {
 				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => typeUnitStr(v)).forEach((stype) => {
 					assert.ok(stype.isSubtypeOf(TYPE.STR), `${ stype }`);
 				});
 			});
-			it('constant tuple types should be subtype of a tuple type instance.', () => {
+			it('unit Tuple types should be subtype of a tuple type instance.', () => {
 				new Map<OBJ.Object, TYPE.TypeTuple>([
 					[new OBJ.Tuple(),                                              TYPE.TypeTuple.fromTypes()],
 					[new OBJ.Tuple([new OBJ.Integer(42n)]),                        TYPE.TypeTuple.fromTypes([TYPE.INT])],
@@ -387,7 +397,7 @@ describe('Type', () => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(tupletype), `let x: ${ tupletype } = ${ value };`);
 				});
 			});
-			it('constant record types should be subtype of a record type instance.', () => {
+			it('unit Record types should be subtype of a record type instance.', () => {
 				new Map<OBJ.Object, TYPE.TypeRecord>([
 					[new OBJ.Record(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Integer(42n)]])),                                  TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]))],
 					[new OBJ.Record(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Float(4.2)], [0x101n, new OBJ.String('hello')]])), TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.FLOAT], [0x101n, TYPE.STR]]))],
@@ -396,7 +406,7 @@ describe('Type', () => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(recordtype), `let x: ${ recordtype } = ${ value };`);
 				});
 			});
-			it('unit list types should be subtype of a list type instance.', () => {
+			it('unit List types should be subtype of a list type instance.', () => {
 				const input = [
 					null,
 					[new OBJ.Integer(42n)],
@@ -415,7 +425,7 @@ describe('Type', () => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(listtype), `let x: ${ listtype } = ${ value };`);
 				});
 			});
-			it('unit dict types should be subtype of a dict type instance.', () => {
+			it('unit Dict types should be subtype of a dict type instance.', () => {
 				const input = [
 					new Map<bigint, OBJ.Object>([
 						[0x100n, new OBJ.Integer(42n)],
@@ -442,7 +452,7 @@ describe('Type', () => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(dicttype), `let x: ${ dicttype } = ${ value };`);
 				});
 			});
-			it('constant set types should be subtype of a set type instance.', () => {
+			it('unit Set types should be subtype of a set type instance.', () => {
 				new Map<OBJ.Object, TYPE.TypeSet>([
 					[new OBJ.Set(),                                                       new TYPE.TypeSet(TYPE.NEVER)],
 					[new OBJ.Set(new Set([new OBJ.Integer(42n)])),                        new TYPE.TypeSet(TYPE.INT)],
@@ -451,7 +461,7 @@ describe('Type', () => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(settype), `let x: ${ settype } = ${ value };`);
 				});
 			});
-			it('constant map types should be subtype of a map type instance.', () => {
+			it('unit Map types should be subtype of a map type instance.', () => {
 				new Map<OBJ.Object, TYPE.TypeMap>([
 					[new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([[new OBJ.Integer(0x100n), new OBJ.Integer(42n)]])),                                                   new TYPE.TypeMap(TYPE.INT, TYPE.INT)],
 					[new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([[new OBJ.Integer(0x100n), new OBJ.Float(4.2)], [new OBJ.Integer(0x101n), new OBJ.String('hello')]])), new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT.union(TYPE.STR))],

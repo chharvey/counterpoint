@@ -1,7 +1,7 @@
 import type {
 	SyntaxNodeType,
 	SyntaxNodeFamily,
-} from './package.js';
+} from '../utils-private.js';
 import type {ASTNodeConstant} from './index.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 

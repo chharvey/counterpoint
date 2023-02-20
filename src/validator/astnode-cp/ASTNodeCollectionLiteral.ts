@@ -1,8 +1,8 @@
-import {
-	TYPE,
+import {TYPE} from '../../index.js';
+import type {
 	SyntaxNodeType,
 	SyntaxNodeFamily,
-} from './package.js';
+} from '../utils-private.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 

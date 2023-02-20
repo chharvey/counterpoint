@@ -1,4 +1,4 @@
-import type {Serializable} from './package.js';
+import type {Serializable} from '../parser/index.js';
 import {ErrorCode} from './ErrorCode.js';
 
 
@@ -37,8 +37,7 @@ class ParseError extends ErrorCode {
 /**
  * A ParseError01 is thrown when the parser does not recognize the lookahead token.
  */
-// @ts-expect-error --- noUnusedLocals
-class ParseError01 extends ParseError {
+export class ParseError01 extends ParseError {
 	/** The number series of this class of errors. */
 	public static override readonly CODE = 1;
 

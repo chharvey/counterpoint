@@ -1,18 +1,20 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
 	TypeError03,
 	TypeError05,
 	TypeError06,
-	throw_expression,
+} from '../../index.js';
+import {throw_expression} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeFamily,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import {
 	ArgCount,
 	ValidFunctionName,
@@ -54,7 +56,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		return false;
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
+	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
 		builder;
 		to_float;
 		throw '`ASTNodeCall#build_do` not yet supported.';

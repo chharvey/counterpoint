@@ -1,13 +1,15 @@
 import * as assert from 'assert';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
+} from '../../index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeFamily,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeConstant} from './ASTNodeConstant.js';
 

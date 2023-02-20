@@ -3,16 +3,20 @@ import {
 	CPConfig,
 	CONFIG_DEFAULT,
 	AST,
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
+	AssignmentError02,
 	TypeError03,
 } from '../../../src/index.js';
-import {assert_wasCalled} from '../../assert-helpers.js';
+import {
+	assert_wasCalled,
+	assertAssignable,
+} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
@@ -170,7 +174,7 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			it('returns Never for undeclared variables.', () => {
-				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(), TYPE.NEVER);
+				assert.ok(AST.ASTNodeVariable.fromSource(`x;`).type().isBottomType);
 			});
 		});
 
@@ -378,6 +382,40 @@ describe('ASTNodeExpression', () => {
 
 
 	describe('ASTNode{Tuple,Record,Set,Map}', () => {
+		describe('#varCheck', () => {
+			describe('ASTNodeRecord', () => {
+				it('throws if containing duplicate keys.', () => {
+					[
+						AST.ASTNodeTypeRecord .fromSource(`[a: int, b: float, c: str]`),
+						AST.ASTNodeRecord     .fromSource(`[a= 1, b= 2.0, c= 'three'];`),
+					].forEach((node) => node.varCheck()); // assert does not throw
+
+					[
+						AST.ASTNodeTypeRecord .fromSource(`[a: int, b: float, a: str]`),
+						AST.ASTNodeRecord     .fromSource(`[a= 1, b= 2.0, a= 'three'];`),
+					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentError02));
+
+					new Map<AST.ASTNodeCP, string[]>([
+						[AST.ASTNodeTypeRecord .fromSource(`[c: int, d: float, c: str, d: bool]`),   ['c', 'd']],
+						[AST.ASTNodeRecord     .fromSource(`[c= 1, d= 2.0, c= 'three', d= false];`), ['c', 'd']],
+						[AST.ASTNodeTypeRecord .fromSource(`[e: int, f: float, e: str, e: bool]`),   ['e', 'e']],
+						[AST.ASTNodeRecord     .fromSource(`[e= 1, f= 2.0, e= 'three', e= false];`), ['e', 'e']],
+					]).forEach((dupes, node) => assert.throws(() => node.varCheck(), (err) => {
+						assert.ok(err instanceof AggregateError);
+						assertAssignable(err, {
+							cons:   AggregateError,
+							errors: dupes.map((k) => ({
+								cons:    AssignmentError02,
+								message: `Duplicate record key: \`${ k }\` is already set.`,
+							})),
+						});
+						return true;
+					}));
+				});
+			});
+		});
+
+
 		describe('#type', () => {
 			([
 				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.Type.unionAll([typeUnitStr('a'), typeUnitInt(42n), typeUnitFloat(3.0)])],
@@ -486,16 +524,6 @@ describe('ASTNodeExpression', () => {
 					[null, null, null],
 				);
 			});
-			it('ASTNodeRecord overwrites duplicate keys.', () => {
-				assert.deepStrictEqual(
-					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, a= 'three'];`).fold(),
-					new OBJ.Record(new Map<bigint, OBJ.Object>([
-						[0x101n, new OBJ.Float(2.0)],
-						[0x100n, new OBJ.String('three')],
-					])),
-				);
-			});
-			// TODO: Set overwrites duplicate elements. // move this to Type.test.ts
 		});
 	});
 
@@ -520,6 +548,11 @@ describe('ASTNodeExpression', () => {
 		describe('#type', () => {
 			it('returns the type value of the claimed type.', () => {
 				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3;`).type().equals(TYPE.INT.union(TYPE.NULL)));
+			});
+			it('`never` is assignable to any type (even though intersection is empty).', () => {
+				assert.ok(AST.ASTNodeClaim.fromSource(`<never>n;`).type().isBottomType);
+				assert.ok(AST.ASTNodeClaim.fromSource(`<int>n;`).type().equals(TYPE.INT));
+				assert.throws(() => AST.ASTNodeClaim.fromSource(`<never>3;`).type(), TypeError03);
 			});
 			it('throws when the operand type and claimed type do not overlap.', () => {
 				assert.throws(() => AST.ASTNodeClaim.fromSource(`<str>3;`)      .type(), TypeError03);

@@ -1,8 +1,8 @@
 import {
 	Operator,
 	ValidAccessOperator,
-	TypeEntry,
-} from './package.js';
+} from '../../validator/index.js';
+import type {TypeEntry} from '../utils-public.js';
 import {
 	Type,
 	VOID,

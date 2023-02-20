@@ -2,10 +2,12 @@ import * as assert from 'assert';
 import {
 	Builder,
 	INST,
+} from '../../index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
 

@@ -1,4 +1,4 @@
-import type {Type} from './cp-type/index.js';
+import type {TYPE} from './index.js';
 
 
 
@@ -8,6 +8,6 @@ import type {Type} from './cp-type/index.js';
  * @property optional - is the entry optional on the collection?
  */
 export type TypeEntry = {
-	readonly type:     Type,
+	readonly type:     TYPE.Type,
 	readonly optional: boolean,
 };

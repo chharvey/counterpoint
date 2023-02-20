@@ -1,11 +1,13 @@
 import type {SyntaxNode} from 'tree-sitter';
+import type {NonemptyArray} from '../lib/index.js';
 import {
-	NonemptyArray,
 	CPConfig,
 	CONFIG_DEFAULT,
+} from '../core/index.js';
+import {
 	Punctuator,
 	Keyword,
-} from './package.js';
+} from '../parser/index.js';
 import {Validator} from './index.js';
 import {
 	SyntaxNodeType,

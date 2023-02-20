@@ -3,11 +3,10 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	TYPE,
 	TypeError03,
-	serialize,
-	Punctuator,
-	Validator,
-	ASTNode,
-} from './package.js';
+} from '../../index.js';
+import {to_serializable} from '../../parser/index.js';
+import type {Validator} from '../index.js';
+import {ASTNode} from '../ASTNode.js';
 
 
 
@@ -27,13 +26,13 @@ export abstract class ASTNodeCP extends ASTNode {
 		node:          ASTNodeCP,
 		validator:     Validator,
 	): void {
-		const is_subtype: boolean = assigned_type.isSubtypeOf(assignee_type);
-		const treatIntAsSubtypeOfFloat: boolean = (
+		const is_subtype:                    boolean = assigned_type.isSubtypeOf(assignee_type);
+		const treat_int_as_subtype_of_float: boolean = (
 			   validator.config.compilerOptions.intCoercion
 			&& assigned_type.isSubtypeOf(TYPE.INT)
 			&& TYPE.FLOAT.isSubtypeOf(assignee_type)
 		);
-		if (!is_subtype && !treatIntAsSubtypeOfFloat) {
+		if (!is_subtype && !treat_int_as_subtype_of_float) {
 			throw new TypeError03(assigned_type, assignee_type, node);
 		}
 	}
@@ -51,23 +50,7 @@ export abstract class ASTNodeCP extends ASTNode {
 		attributes: Record<string, unknown> = {},
 		public override readonly children: readonly ASTNodeCP[] = [],
 	) {
-		super(((node: SyntaxNode) => { // COMBAK: TypeScript 4.6+ allows non-`this` code before `super()`
-			// @ts-expect-error --- Property `input` does actually exist on type `Tree`
-			const tree_text:    string = node.tree.input;
-			const source:       string = node.text;
-			const source_index: number = node.startIndex;
-			const prev_chars:   readonly string[] = [...tree_text.slice(0, source_index)];
-			return {
-				source,
-				source_index,
-				line_index: prev_chars.filter((c) => c === '\n').length,
-				col_index:  source_index - (prev_chars.lastIndexOf('\n') + 1),
-				tagname:    Object.values(Punctuator).find((punct) => punct === node.type) ? 'PUNCTUATOR' : node.type,
-				serialize() {
-					return serialize(this, this.source);
-				},
-			};
-		})(start_node), attributes, children);
+		super(to_serializable(start_node), attributes, children);
 	}
 
 	public get validator(): Validator {

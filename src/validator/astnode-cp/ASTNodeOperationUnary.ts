@@ -1,19 +1,23 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
 	TypeError01,
 	NanError01,
-	throw_expression,
+} from '../../index.js';
+import {throw_expression} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
+} from '../../core/index.js';
+import type {SyntaxNodeSupertype} from '../utils-private.js';
+import {
 	Operator,
 	ValidOperatorUnary,
-} from './package.js';
+} from '../Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 

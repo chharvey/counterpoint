@@ -1,15 +1,17 @@
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
+import {LexError01} from '../index.js';
+import type {CodeUnit} from '../lib/index.js';
 import {
-	LexError01,
-	CodeUnit,
 	CPConfig,
 	CONFIG_DEFAULT,
-	Serializable,
+} from '../core/index.js';
+import {
 	Punctuator,
 	PUNCTUATORS,
 	Keyword,
 	KEYWORDS,
-} from './package.js';
+	Serializable,
+} from '../parser/index.js';
 import type {SymbolStructure} from './index.js';
 import {utf8Encode} from './utils-private.js';
 

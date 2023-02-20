@@ -10,8 +10,7 @@
 		"strict":                             true,
 
 		// Modules
-		"module":           "ES2020",
-		"moduleResolution": "Node",
+		"module": "node16",
 
 		// Emit
 		"importsNotUsedAsValues": "error",
@@ -22,12 +21,11 @@
 		"allowSyntheticDefaultImports": true,
 
 		// Language and Environment
-		"target": "ES2021", // set `"useDefineForClassFields": false` when upgrading to ES2022
-		// "useDefineForClassFields": false,
+		"target": "es2022",
+		"useDefineForClassFields": false, // instance fields using `[[define]]` semantics don’t play nicely with constructor parameter fields
 
 		// Completeness
 		"skipLibCheck": true,
 	},
 	"include": ["./src/"],
-	"files": ["./tree-sitter-counterpoint/test/build.mts"],
 }

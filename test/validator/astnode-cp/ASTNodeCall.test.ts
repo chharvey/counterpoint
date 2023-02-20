@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import {
 	AST,
-	TYPE,
 	OBJ,
+	TYPE,
 } from '../../../src/index.js';
 import {
 	TypeError03,

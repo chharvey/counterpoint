@@ -1,14 +1,16 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
+} from '../../index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
@@ -55,7 +57,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 				: assignee;
 			xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssignment(
 				expr.type(),
-				assignee_type_set.types,
+				assignee_type_set.invariant,
 				expr,
 				this.validator,
 			));
