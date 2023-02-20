@@ -14,6 +14,6 @@ export class List<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 	 * Returns a TypeList whose invariant is the union of the types of this List’s items.
 	 */
 	public override toType(): TYPE.TypeList {
-		return new TYPE.TypeList(TYPE.Type.unionAll(this.items.map<TYPE.Type>((el) => new TYPE.TypeUnit<T>(el))));
+		return new TYPE.TypeList(TYPE.Type.unionAll(this.items.map<TYPE.Type>((it) => it.toType())));
 	}
 }

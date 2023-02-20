@@ -52,12 +52,12 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	protected override eval_do(): TYPE.Type {
 		return this._type ??= (
 			(isSyntaxNodeType(this.start_node, 'keyword_type'))     ? ASTNodeTypeConstant.keywordType(this.start_node.text) :
-			(isSyntaxNodeType(this.start_node, 'integer'))          ? new TYPE.TypeUnit<OBJ.Integer | OBJ.Float>(valueOfTokenNumber(this.start_node.text, this.validator.config)) :
+			(isSyntaxNodeType(this.start_node, 'integer'))          ? valueOfTokenNumber(this.start_node.text, this.validator.config).toType() :
 			(isSyntaxNodeType(this.start_node, 'primitive_literal'),  ((token: SyntaxNode) => (
 				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeTypeConstant.keywordType(token.text) :
-				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? new TYPE.TypeUnit<OBJ.Integer | OBJ.Float>(valueOfTokenNumber(token.text, this.validator.config)) :
-				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? new TYPE.TypeUnit<OBJ.Integer | OBJ.Float>(valueOfTokenNumber(token.text, this.validator.config)) :
-				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new TYPE.TypeUnit<OBJ.String>(new OBJ.String(Validator.cookTokenString(token.text, this.validator.config))))
+				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? valueOfTokenNumber(token.text, this.validator.config).toType() :
+				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? valueOfTokenNumber(token.text, this.validator.config).toType() :
+				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new OBJ.String(Validator.cookTokenString(token.text, this.validator.config)).toType())
 			))(this.start_node.children[0]))
 		);
 	}

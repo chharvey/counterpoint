@@ -66,7 +66,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	protected override type_do(): TYPE.Type {
-		return new TYPE.TypeUnit<OBJ.Primitive>(this.value);
+		return this.value.toType();
 	}
 
 	protected override fold_do(): OBJ.Object {
