@@ -2,8 +2,8 @@ import * as assert from 'assert';
 import binaryen from 'binaryen';
 import {
 	TypeEntry,
-	TYPE,
 	OBJ,
+	TYPE,
 	Builder,
 } from '../../src/index.js';
 import {

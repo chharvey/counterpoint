@@ -1,7 +1,7 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
-import type {CodeUnit} from './package.js';
+import type {CodeUnit} from '../../lib/index.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 

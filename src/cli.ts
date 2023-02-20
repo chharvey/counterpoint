@@ -12,7 +12,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 const VERSION: Promise<string> = (requireJSON(path.join(DIRNAME, '../package.json')) as Promise<{version: string}>).then((pkg) => pkg.version);
 
 
-(async () => {
+(async (): Promise<void> => {
 	const cli = new CLI(process.argv);
 	async function handleCompileOrDev(): Promise<void> {
 		const result: [string, void] = await cli.compileOrDev(process.cwd());

@@ -1,12 +1,14 @@
 import * as assert from 'assert';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
+} from '../../index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-	Operator,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
+import {Operator} from '../Operator.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndexType} from './ASTNodeIndexType.js';
 import {ASTNodeType} from './ASTNodeType.js';

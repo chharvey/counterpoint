@@ -2,8 +2,8 @@ import type binaryen from 'binaryen';
 import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	TYPE,
 	OBJ,
+	TYPE,
 } from '../src/index.js';
 
 

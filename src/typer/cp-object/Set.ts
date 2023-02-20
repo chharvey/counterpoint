@@ -1,8 +1,6 @@
 import * as xjs from 'extrajs';
-import {
-	languageValuesIdentical,
-	TYPE,
-} from './package.js';
+import {TYPE} from '../index.js';
+import {languageValuesIdentical} from '../utils-private.js';
 import type {Object as CPObject} from './Object.js';
 import {Boolean as CPBoolean} from './Boolean.js';
 import {Collection} from './Collection.js';

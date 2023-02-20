@@ -1,5 +1,5 @@
 import type binaryen from 'binaryen';
-import type {TYPE} from './package.js';
+import type {TYPE} from '../index.js';
 import {String as CPString} from './index.js';
 
 

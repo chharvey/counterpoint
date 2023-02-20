@@ -3,10 +3,12 @@ import binaryen from 'binaryen';
 import {
 	TYPE,
 	Builder,
-	throw_expression,
+} from '../../index.js';
+import {throw_expression} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-} from './package.js';
+} from '../../core/index.js';
 import {ASTNodeGoal} from './index.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeCP} from './ASTNodeCP.js';

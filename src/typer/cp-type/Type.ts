@@ -1,12 +1,10 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	Builder,
-	throw_expression,
-	languageValuesIdentical,
-	OBJ,
-} from './package.js';
+import {Builder} from '../../index.js';
+import {throw_expression} from '../../lib/index.js';
+import {languageValuesIdentical} from '../utils-private.js';
+import * as OBJ from '../cp-object/index.js';
 import {
 	TypeIntersection,
 	TypeUnion,

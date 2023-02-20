@@ -2,8 +2,8 @@ import type binaryen from 'binaryen';
 import {
 	TYPE,
 	Builder,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 

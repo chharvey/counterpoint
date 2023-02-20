@@ -1,13 +1,15 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
-	TYPE,
 	OBJ,
-	NonemptyArray,
+	TYPE,
+} from '../../index.js';
+import type {NonemptyArray} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';

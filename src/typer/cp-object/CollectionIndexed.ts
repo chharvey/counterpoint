@@ -1,9 +1,7 @@
 import type binaryen from 'binaryen';
-import {
-	VoidError01,
-	throw_expression,
-	AST,
-} from './package.js';
+import {VoidError01} from '../../index.js';
+import {throw_expression} from '../../lib/index.js';
+import type {AST} from '../../validator/index.js';
 import type {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import type {Integer} from './Integer.js';

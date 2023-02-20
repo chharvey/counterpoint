@@ -1,7 +1,7 @@
 import type {
-	SymbolKind,
 	AST,
-} from './package.js';
+	SymbolKind,
+} from '../validator/index.js';
 import {ReferenceError} from './ReferenceError.js';
 
 

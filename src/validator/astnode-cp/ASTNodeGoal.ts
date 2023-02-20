@@ -4,15 +4,21 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	Builder,
 	ParseError01,
+} from '../../index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
+} from '../../core/index.js';
+import {
 	TS_PARSER,
 	Serializable,
 	to_serializable,
+} from '../../parser/index.js';
+import {
 	DECORATOR,
 	Validator,
-	SyntaxNodeType,
-} from './package.js';
+} from '../index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeStatement} from './ASTNodeStatement.js';

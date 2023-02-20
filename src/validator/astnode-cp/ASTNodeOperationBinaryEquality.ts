@@ -1,15 +1,19 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	Builder,
+} from '../../index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
+} from '../../core/index.js';
+import type {SyntaxNodeSupertype} from '../utils-private.js';
+import {
 	Operator,
 	ValidOperatorEquality,
-} from './package.js';
+} from '../Operator.js';
 import {
 	bothNumeric,
 	oneFloats,

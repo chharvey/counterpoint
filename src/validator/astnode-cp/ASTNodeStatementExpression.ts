@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
+import type {Builder} from '../../index.js';
 import {
-	Builder,
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
 

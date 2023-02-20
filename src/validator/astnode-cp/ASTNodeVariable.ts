@@ -1,20 +1,24 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	Builder,
 	ReferenceError01,
 	ReferenceError03,
-	throw_expression,
+} from '../../index.js';
+import {throw_expression} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
+} from '../../core/index.js';
+import {
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
 	SymbolStructureType,
-	SyntaxNodeType,
-} from './package.js';
+} from '../index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 

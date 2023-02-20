@@ -5,11 +5,13 @@ import {
 	TYPE,
 	Builder,
 	AssignmentError01,
+} from '../../index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SymbolStructureVar,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import {SymbolStructureVar} from '../index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
