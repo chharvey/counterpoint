@@ -1,4 +1,4 @@
-import type {TYPE} from './package.js';
+import type {TYPE} from '../index.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 

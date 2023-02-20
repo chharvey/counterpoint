@@ -1,4 +1,4 @@
-import type {AST} from './package.js';
+import type {AST} from '../validator/index.js';
 import {ReferenceError} from './ReferenceError.js';
 
 

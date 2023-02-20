@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import {
 	TypeEntry,
-	TYPE,
 	OBJ,
+	TYPE,
 } from '../../src/typer/index.js';
 import {
 	typeUnitInt,

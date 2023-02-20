@@ -1,7 +1,7 @@
 import {
 	Operator,
 	ValidOperatorLogical,
-} from './package.js';
+} from '../../validator/index.js';
 import type {InstructionExpression} from './InstructionExpression.js';
 import {InstructionLocalGet} from './InstructionLocalGet.js';
 import {InstructionLocalTee} from './InstructionLocalTee.js';

@@ -1,9 +1,9 @@
+import type {Keyword} from '../../parser/index.js';
+import {Validator} from '../index.js';
 import {
-	Keyword,
-	Validator,
 	SyntaxNodeType,
 	isSyntaxNodeType,
-} from './package.js';
+} from '../utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 
 

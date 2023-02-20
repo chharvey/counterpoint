@@ -1,13 +1,11 @@
 import * as xjs from 'extrajs';
-import {
-	languageValuesIdentical,
-	OBJ,
-} from './package.js';
-import {Type} from './Type.js';
+import {languageValuesIdentical} from '../utils-private.js';
+import type * as OBJ from '../cp-object/index.js';
 import {
 	TypeTuple,
 	TypeRecord,
 } from './index.js';
+import {Type} from './Type.js';
 
 
 

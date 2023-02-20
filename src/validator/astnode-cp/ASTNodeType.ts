@@ -1,8 +1,8 @@
+import type {TYPE} from '../../index.js';
 import {
-	TYPE,
 	CPConfig,
 	CONFIG_DEFAULT,
-} from './package.js';
+} from '../../core/index.js';
 import {ASTNodeDeclarationType} from './index.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 

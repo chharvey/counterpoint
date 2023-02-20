@@ -1,7 +1,7 @@
 import {
 	Operator,
 	ValidOperatorArithmetic,
-} from './package.js';
+} from '../../validator/index.js';
 import {InstructionUnreachable} from './InstructionUnreachable.js';
 import type {InstructionExpression} from './InstructionExpression.js';
 import {InstructionBinop} from './InstructionBinop.js';

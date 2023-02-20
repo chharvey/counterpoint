@@ -1,5 +1,5 @@
 import * as xjs from 'extrajs';
-import type {Keys} from './package.js';
+import type {Keys} from '../../lib/index.js';
 import {Object as CPObject} from './Object.js';
 
 
