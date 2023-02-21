@@ -16,6 +16,7 @@ import {
 	Builder,
 	TypeError01,
 	NanError01,
+	NanError02,
 } from '../../../src/index.js';
 import {
 	assertEqualTypes,
@@ -390,6 +391,7 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 			it('throws when performing an operation that does not yield a valid number.', () => {
+				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(`42 / 0;`)   .fold(), NanError02);
 				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(`-4 ^ -0.5;`).fold(), NanError01);
 			});
 		});

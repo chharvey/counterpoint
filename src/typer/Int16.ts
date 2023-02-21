@@ -5,8 +5,7 @@ import {SolidNumber} from './SolidNumber.js';
 
 
 
-type Int16Datatype = readonly [boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean];
-type Int16DatatypeMutable = [boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean];
+const BITS_PER_BYTE = 8;
 
 
 
@@ -15,28 +14,27 @@ type Int16DatatypeMutable = [boolean, boolean, boolean, boolean, boolean, boolea
  * @final
  */
 export class Int16 extends SolidNumber<Int16> {
-	private static readonly BITCOUNT = 16;
+	private static readonly BITCOUNT: number = Int16Array.BYTES_PER_ELEMENT * BITS_PER_BYTE;
+	public  static readonly ZERO             = new Int16(0n);
+	public  static readonly UNIT             = new Int16(1n);
 
-	public  static readonly ZERO  = new Int16(0n);
-	public  static readonly UNIT  = new Int16(1n);
-	private static readonly RADIX = new Int16(2n);
 
-	private static mod(n: bigint, modulus: bigint): bigint {
-		return (n % modulus + modulus) % modulus;
-	}
-
-	private readonly internal: Int16Datatype;
+	/**
+	 * Internal implementation of this Int16.
+	 * A signed array of 16-bit integers with length 1.
+	 */
+	private readonly internal: Readonly<Int16Array>;
 
 	/**
 	 * Construct a new Int16 object from a bigint or from data.
 	 * @param data - a numeric value or data
 	 * @returns the value represented as a 16-bit signed integer
 	 */
-	constructor (data: bigint | Int16Datatype = 0n) {
+	public constructor(data: bigint = 0n) {
+		const internal = new Int16Array(1);
+		internal[0] = Number(data);
 		super();
-		this.internal = (typeof data === 'bigint')
-			? [...Int16.mod(data, 2n ** BigInt(Int16.BITCOUNT)).toString(2).padStart(Int16.BITCOUNT, '0')].map((bit) => !!+bit) as Int16DatatypeMutable
-			: data;
+		this.internal = internal;
 	}
 
 	override toString(): string {
@@ -44,7 +42,7 @@ export class Int16 extends SolidNumber<Int16> {
 	}
 
 	protected override identical_helper(value: SolidObject): boolean {
-		return value instanceof Int16 && this.internal.every((bit, i) => bit === value.internal[i]);
+		return value instanceof Int16 && this.internal[0] === value.internal[0];
 	}
 
 	protected override equal_helper(value: SolidObject): boolean {
@@ -65,30 +63,16 @@ export class Int16 extends SolidNumber<Int16> {
 	 * @return   the numeric value
 	 */
 	public toNumeric(u: boolean = false): bigint {
-		const unsigned: number = this.internal.map((bit, i) => +bit * 2 ** (Int16.BITCOUNT - 1 - i)).reduce((a, b) => a + b)
-		return BigInt((u || unsigned < 2 ** (Int16.BITCOUNT - 1) ? unsigned : unsigned - 2 ** Int16.BITCOUNT));
+		const signed: number = this.internal[0];
+		return BigInt(u && signed < 0 ? signed + 2 ** Int16.BITCOUNT : signed);
 	}
 
 	public override plus(addend: Int16): Int16 {
-		type Carry = [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint];
-		const sum   = new Array(Int16.BITCOUNT).fill(0n) as Carry;
-		const carry = new Array(Int16.BITCOUNT).fill(0n) as Carry;
-		for (let i = Int16.BITCOUNT - 1; i >= 0; i--) {
-			const digit: bigint = carry[i] + BigInt(this.internal[i]) + BigInt(addend.internal[i]);
-			if (digit <= 1n) {
-				sum[i] = digit;
-			} else {
-				sum[i] = digit - 2n;
-				if (i > 0) {
-					carry[i - 1] = 1n;
-				} // else do nothing (drop the overflow)
-			}
-		}
-		return new Int16(sum.map((bit) => !!bit) as Int16DatatypeMutable);
+		return new Int16(BigInt(this.internal[0] + addend.internal[0]));
 	}
 
 	public override minus(subtrahend: Int16): Int16 {
-		return this.plus(subtrahend.neg());
+		return new Int16(BigInt(this.internal[0] - subtrahend.internal[0]));
 	}
 
 	/**
@@ -122,18 +106,7 @@ export class Int16 extends SolidNumber<Int16> {
 	 * ```
 	 */
 	public override times(multiplicand: Int16): Int16 {
-		return (
-			(this.eq0()) ? Int16.ZERO         :
-			(this.eq1()) ? multiplicand       :
-			(this.eq2()) ? multiplicand.bsl() :
-			(multiplicand.lt0()) ? this.times(multiplicand.neg()).neg() :
-			(multiplicand.eq0()) ? Int16.ZERO                           :
-			(multiplicand.eq1()) ? this                                 :
-			(multiplicand.eq2()) ? this.bsl()                           :
-			(multiplicand.isEven())
-				?           this.times(Int16.RADIX).times(multiplicand                  .divide(Int16.RADIX))
-				: this.plus(this.times(Int16.RADIX).times(multiplicand.minus(Int16.UNIT).divide(Int16.RADIX)))
-		);
+		return new Int16(BigInt(this.internal[0] * multiplicand.internal[0]));
 	}
 
 	/**
@@ -182,30 +155,10 @@ export class Int16 extends SolidNumber<Int16> {
 	 * ```
 	 */
 	public override divide(divisor: Int16): Int16 {
-		return (
-			(divisor .eq0()) ? (() => { throw new RangeError('Division by zero.') })() : // TODO: use throw_expression
-			(this    .eq0()) ? Int16.ZERO                       :
-			(divisor .lt0()) ? this.divide(divisor.neg()).neg() :
-			(this    .lt0()) ? this.neg().divide(divisor).neg() :
-			(divisor .eq1()) ? this       :
-			(divisor .eq2()) ? this.bsr() :
-			((): Int16 => {
-				const quotient  = [...new Array(Int16.BITCOUNT).fill(false)] as Int16DatatypeMutable;
-				let   remainder = [...new Array(Int16.BITCOUNT).fill(false)] as Int16DatatypeMutable;
-				for (let i = 0; i < Int16.BITCOUNT; i++) {
-					remainder = [
-						...remainder.slice(1),
-						this.internal[i],
-					] as Int16DatatypeMutable;
-					const diff: Int16 = new Int16(remainder).minus(divisor);
-					if (!diff.lt0()) {
-						remainder = diff.internal as Int16DatatypeMutable;
-						quotient[i] = true;
-					}
-				}
-				return new Int16(quotient);
-			})()
-		);
+		if (divisor.eq0()) {
+			throw new RangeError('Division by zero.');
+		}
+		return new Int16(BigInt(Math.trunc(this.internal[0] / divisor.internal[0])));
 	}
 
 	/**
@@ -236,106 +189,21 @@ export class Int16 extends SolidNumber<Int16> {
 	 * @see https://stackoverflow.com/a/101613/877703
 	 */
 	public override exp(exponent: Int16): Int16 {
-		return (
-			(exponent.lt0()) ? Int16.ZERO       :
-			(exponent.eq0()) ? Int16.UNIT       :
-			(exponent.eq1()) ? this             :
-			(exponent.eq2()) ? this.times(this) :
-			(this.eq0()) ? Int16.ZERO :
-			(this.eq1()) ? Int16.UNIT :
-			(exponent.isEven())
-				?            this.exp(Int16.RADIX).exp(exponent                  .divide(Int16.RADIX))
-				: this.times(this.exp(Int16.RADIX).exp(exponent.minus(Int16.UNIT).divide(Int16.RADIX)))
-		);
-		// let returned: Int16 = Int16.UNIT;
-		// while (true) {
-		// 	if (!exponent.isEven()) {
-		// 		returned = returned.times(base); // returned *= base
-		// 	}
-		// 	exponent = exponent.divide(Int16.RADIX); // exponent /= 2n
-		// 	if (exponent.eq0()) break;
-		// 	base = base.times(base); // base *= base
-		// }
-		// return returned;
+		return new Int16(BigInt(this.internal[0] ** exponent.internal[0]));
 	}
 
 	/**
 	 * Equivalently, this is the “two’s complement” of the integer.
 	 */
 	public override neg(): Int16 {
-		return this.cpl().plus(Int16.UNIT);
+		return new Int16(BigInt(-this.internal[0]));
 	}
 
 	public override eq0(): boolean {
 		return this.equal(Int16.ZERO);
 	}
 
-	/**
-	 * Is the 16-bit signed integer equal to `1`?
-	 */
-	private eq1(): boolean {
-		return this.equal(Int16.UNIT);
-	}
-
-	/**
-	 * Is the 16-bit signed integer equal to `2`?
-	 */
-	private eq2(): boolean {
-		return this.equal(Int16.RADIX);
-	}
-
 	public override lt(y: Int16): boolean {
-		return this.minus(y).lt0();
-	}
-
-	/**
-	 * Return the ones’ complement of a 16-bit signed integer.
-	 * @see https://en.wikipedia.org/wiki/Ones%27_complement
-	 * @param int - the integer
-	 * @return the ones’ complement, equivalent to `-a - 1`
-	 */
-	private cpl(): Int16 {
-		return new Int16(this.internal.map((bit) => !bit) as Int16DatatypeMutable);
-	}
-
-	/**
-	 * Perform an arithmetic left bit shift of a 16-bit signed integer.
-	 * @param int - the integer
-	 * @return a left bit shift of 1 bit, dropping the first bit and appending `false` to the end
-	 */
-	private bsl(): Int16 {
-		return new Int16([
-			...this.internal.slice(1),
-			false,
-		] as Int16DatatypeMutable);
-	}
-
-	/**
-	 * Perform an arithmetic right bit shift of a 16-bit signed integer.
-	 * The shift is arithmetic, which means that the new first bit is the same as the original first bit.
-	 * @param int - the integer
-	 * @return a right bit shift of 1 bit, dropping the last bit and prepending a copy of the original first bit
-	 */
-	private bsr(): Int16 {
-		return new Int16([
-			this.internal[0],
-			...this.internal.slice(0, -1)
-		] as Int16DatatypeMutable);
-	}
-
-	/**
-	 * Is the 16-bit signed integer negative?
-	 * @returns Is this integer less than `0`?
-	 */
-	private lt0(): boolean {
-		return this.internal[0] === true;
-	}
-
-	/**
-	 * Is the 16-bit signed integer even?
-	 * @returns Is this integer divisible by `2`?
-	 */
-	private isEven(): boolean {
-		return this.internal[Int16.BITCOUNT - 1] === false;
+		return this.internal[0] < y.internal[0];
 	}
 }
