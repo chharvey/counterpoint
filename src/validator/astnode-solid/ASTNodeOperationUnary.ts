@@ -27,35 +27,34 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		assert.ok(expression instanceof ASTNodeOperationUnary);
 		return expression;
 	}
-	constructor(
-		start_node: ParseNode,
-		readonly operator: ValidOperatorUnary,
-		readonly operand: ASTNodeExpression,
-	) {
-		super(start_node, operator, [operand]);
-	}
 
 	/**
-	 * Return an instruction performing the operation on the argument.
-	 * @param mod   the binaryen module
-	 * @param type_ the compile-time type of the operand
-	 * @param arg   the operand
-	 * @return      an instruction that performs the operation at runtime
+	 * Return an instruction performing an operation on an argument.
+	 * @param mod the binaryen module
+	 * @param op  the unary operator
+	 * @param typ the compile-time type of the operand
+	 * @param arg the operand
+	 * @return    an instruction that performs the operation at runtime
 	 */
-	private operate(mod: binaryen.Module, type_: SolidType, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
+	private static operate(
+		mod: binaryen.Module,
+		op:  ValidOperatorUnary,
+		typ: SolidType,
+		arg: binaryen.ExpressionRef,
+	): binaryen.ExpressionRef {
 		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
-		assert.strictEqual(bintype, type_.binType());
-		if (type_ instanceof SolidTypeUnion) {
+		assert.strictEqual(bintype, typ.binType());
+		if (typ instanceof SolidTypeUnion) {
 			// assert: `arg` is equivalent to a result of `Builder.createBinEither()`
 			return Builder.createBinEither(
 				mod,
 				mod.tuple.extract(arg, 0),
-				this.operate(mod, type_.left,  mod.tuple.extract(arg, 1)),
-				this.operate(mod, type_.right, mod.tuple.extract(arg, 2)),
+				ASTNodeOperationUnary.operate(mod, op, typ.left,  mod.tuple.extract(arg, 1)),
+				ASTNodeOperationUnary.operate(mod, op, typ.right, mod.tuple.extract(arg, 2)),
 			);
 		} else {
 			ASTNodeOperation.expectIntOrFloat(bintype);
-			return (this.operator === Operator.NEG && bintype === binaryen.f64)
+			return (op === Operator.NEG && bintype === binaryen.f64)
 				? mod.f64.neg(arg)
 				: mod.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
 					[binaryen.i32, new Map<Operator, string>([
@@ -67,12 +66,21 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 						[Operator.NOT, 'fnot'],
 						[Operator.EMP, 'femp'],
 					])],
-				]).get(bintype)!.get(this.operator)!, [arg], binaryen.i32);
+				]).get(bintype)!.get(op)!, [arg], binaryen.i32);
 		}
 	}
 
+
+	constructor(
+		start_node: ParseNode,
+		readonly operator: ValidOperatorUnary,
+		readonly operand: ASTNodeExpression,
+	) {
+		super(start_node, operator, [operand]);
+	}
+
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		return this.operate(builder.module, this.operand.type(), this.operand.build(builder));
+		return ASTNodeOperationUnary.operate(builder.module, this.operator, this.operand.type(), this.operand.build(builder));
 	}
 
 	protected override type_do(): SolidType {
