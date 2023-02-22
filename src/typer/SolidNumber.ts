@@ -63,6 +63,7 @@ export abstract class SolidNumber<T = unknown> extends Primitive {
 	abstract eq0(): boolean;
 	/**
 	 * Is the number strictly less than the argument?
+	 * @param y - the argument
 	 * @returns Is the number strictly less than the argument?
 	 */
 	abstract lt(y: T): boolean;

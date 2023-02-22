@@ -49,7 +49,7 @@ export abstract class CollectionIndexed<T extends SolidObject = SolidObject> ext
 	/** @final */
 	get(index: Int16, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | SolidNull {
 		const n: number = this.items.length;
-		const i: number = Number(index.toNumeric());
+		const i: number = index.toNumber();
 		return (
 			(-n <= i && i < 0) ? this.items[i + n] :
 			(0  <= i && i < n) ? this.items[i] :
