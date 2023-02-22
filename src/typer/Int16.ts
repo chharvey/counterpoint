@@ -20,9 +20,9 @@ export class Int16 extends SolidNumber<Int16> {
 
 	/**
 	 * Internal implementation of this Int16.
-	 * A signed array of 16-bit integers with length 1.
+	 * A 16-bit integer stored in a Int16Array.
 	 */
-	private readonly internal: Readonly<Int16Array>;
+	private readonly data: number;
 
 	/**
 	 * Construct a new Int16 object from a bigint or from data.
@@ -31,9 +31,9 @@ export class Int16 extends SolidNumber<Int16> {
 	 */
 	public constructor(data: bigint = 0n) {
 		const internal = new Int16Array(1);
-		internal[0] = Number(data);
+		internal[0] = Number(data); // need to store in Int16Array first to ensure 16-bit
 		super();
-		this.internal = internal;
+		this.data = internal[0];
 	}
 
 	override toString(): string {
@@ -41,7 +41,7 @@ export class Int16 extends SolidNumber<Int16> {
 	}
 
 	protected override identical_helper(value: SolidObject): boolean {
-		return value instanceof Int16 && this.internal[0] === value.internal[0];
+		return value instanceof Int16 && this.data === value.data;
 	}
 
 	protected override equal_helper(value: SolidObject): boolean {
@@ -62,16 +62,15 @@ export class Int16 extends SolidNumber<Int16> {
 	 * @return   the numeric value
 	 */
 	public toNumber(u: boolean = false): number {
-		const signed: number = this.internal[0];
-		return u && signed < 0 ? signed + 2 ** (Int16Array.BYTES_PER_ELEMENT * BITS_PER_BYTE) : signed;
+		return u && this.data < 0 ? this.data + 2 ** (Int16Array.BYTES_PER_ELEMENT * BITS_PER_BYTE) : this.data;
 	}
 
 	public override plus(addend: Int16): Int16 {
-		return new Int16(BigInt(this.internal[0] + addend.internal[0]));
+		return new Int16(BigInt(this.data + addend.data));
 	}
 
 	public override minus(subtrahend: Int16): Int16 {
-		return new Int16(BigInt(this.internal[0] - subtrahend.internal[0]));
+		return new Int16(BigInt(this.data - subtrahend.data));
 	}
 
 	/**
@@ -105,7 +104,7 @@ export class Int16 extends SolidNumber<Int16> {
 	 * ```
 	 */
 	public override times(multiplicand: Int16): Int16 {
-		return new Int16(BigInt(this.internal[0] * multiplicand.internal[0]));
+		return new Int16(BigInt(this.data * multiplicand.data));
 	}
 
 	/**
@@ -157,7 +156,7 @@ export class Int16 extends SolidNumber<Int16> {
 		if (divisor.eq0()) {
 			throw new RangeError('Division by zero.');
 		}
-		return new Int16(BigInt(Math.trunc(this.internal[0] / divisor.internal[0])));
+		return new Int16(BigInt(Math.trunc(this.data / divisor.data)));
 	}
 
 	/**
@@ -188,14 +187,14 @@ export class Int16 extends SolidNumber<Int16> {
 	 * @see https://stackoverflow.com/a/101613/877703
 	 */
 	public override exp(exponent: Int16): Int16 {
-		return new Int16(BigInt(this.internal[0] ** exponent.internal[0]));
+		return new Int16(BigInt(this.data ** exponent.data));
 	}
 
 	/**
 	 * Equivalently, this is the “two’s complement” of the integer.
 	 */
 	public override neg(): Int16 {
-		return new Int16(BigInt(-this.internal[0]));
+		return new Int16(BigInt(-this.data));
 	}
 
 	public override eq0(): boolean {
@@ -203,6 +202,6 @@ export class Int16 extends SolidNumber<Int16> {
 	}
 
 	public override lt(y: Int16): boolean {
-		return this.internal[0] < y.internal[0];
+		return this.data < y.data;
 	}
 }
