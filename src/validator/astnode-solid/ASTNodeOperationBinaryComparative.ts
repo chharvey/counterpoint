@@ -44,7 +44,11 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		const args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1);
+		const args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(
+			builder.module,
+			this.operand0.build(builder),
+			this.operand1.build(builder),
+		);
 		const opname = new Map<Operator, 'lt' | 'gt' | 'le' | 'ge'>([
 			[Operator.LT, 'lt'],
 			[Operator.GT, 'gt'],

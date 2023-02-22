@@ -44,8 +44,12 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		const args:    readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1);
-		const bintype: binaryen.Type                                             = this.type().binType();
+		const args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(
+			builder.module,
+			this.operand0.build(builder),
+			this.operand1.build(builder),
+		);
+		const bintype: binaryen.Type = this.type().binType();
 		return (
 			(this.operator === Operator.EXP) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
 				[binaryen.i32, builder.module.call('exp', [...args], binaryen.i32)],

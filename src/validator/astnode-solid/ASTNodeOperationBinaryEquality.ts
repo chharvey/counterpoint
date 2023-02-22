@@ -37,9 +37,14 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		const args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1, () => (
-			this.validator.config.compilerOptions.intCoercion && this.operator === Operator.EQ
-		));
+		const args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(
+			builder.module,
+			this.operand0.build(builder),
+			this.operand1.build(builder),
+			() => (
+				this.validator.config.compilerOptions.intCoercion && this.operator === Operator.EQ
+			),
+		);
 		const [type0, type1]: binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
 		return (
 			(type0 === binaryen.i32 && type1 === binaryen.i32) ? builder.module.i32.eq(...args) : // `ID` and `EQ` give the same result
