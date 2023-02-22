@@ -96,7 +96,7 @@ export class SolidTypeTuple extends SolidType {
 
 	get(index: Int16, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): SolidType {
 		const n: number = this.types.length;
-		const i: number = Number(index.toNumeric());
+		const i: number = index.toNumber();
 		return updateAccessedStaticType((
 			(-n <= i && i < 0) ? this.types[i + n] :
 			(0  <= i && i < n) ? this.types[i] :
