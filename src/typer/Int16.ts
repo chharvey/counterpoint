@@ -14,9 +14,8 @@ const BITS_PER_BYTE = 8;
  * @final
  */
 export class Int16 extends SolidNumber<Int16> {
-	private static readonly BITCOUNT: number = Int16Array.BYTES_PER_ELEMENT * BITS_PER_BYTE;
-	public  static readonly ZERO             = new Int16(0n);
-	public  static readonly UNIT             = new Int16(1n);
+	public static readonly ZERO = new Int16(0n);
+	public static readonly UNIT = new Int16(1n);
 
 
 	/**
@@ -38,7 +37,7 @@ export class Int16 extends SolidNumber<Int16> {
 	}
 
 	override toString(): string {
-		return `${ this.toNumeric() }`;
+		return `${ this.toNumber() }`;
 	}
 
 	protected override identical_helper(value: SolidObject): boolean {
@@ -50,11 +49,11 @@ export class Int16 extends SolidNumber<Int16> {
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		return mod.i32.const(Number(this.toNumeric()));
+		return mod.i32.const(this.toNumber());
 	}
 
 	public override toFloat(): Float64 {
-		return new Float64(Number(this.toNumeric()));
+		return new Float64(this.toNumber());
 	}
 
 	/**
@@ -62,9 +61,9 @@ export class Int16 extends SolidNumber<Int16> {
 	 * @param  u Interpret as unsigned?
 	 * @return   the numeric value
 	 */
-	public toNumeric(u: boolean = false): bigint {
+	public toNumber(u: boolean = false): number {
 		const signed: number = this.internal[0];
-		return BigInt(u && signed < 0 ? signed + 2 ** Int16.BITCOUNT : signed);
+		return u && signed < 0 ? signed + 2 ** (Int16Array.BYTES_PER_ELEMENT * BITS_PER_BYTE) : signed;
 	}
 
 	public override plus(addend: Int16): Int16 {
