@@ -20,14 +20,14 @@ export const CONFIG_FOLDING_OFF: SolidConfig = {
 
 
 
-export function typeConstInt(x: bigint): SolidTypeUnit {
-	return new SolidTypeUnit(new Int16(x));
+export function typeConstInt(x: bigint): SolidTypeUnit<Int16> {
+	return new Int16(x).toType();
 }
-export function typeConstFloat(x: number): SolidTypeUnit {
-	return new SolidTypeUnit(new Float64(x));
+export function typeConstFloat(x: number): SolidTypeUnit<Float64> {
+	return new Float64(x).toType();
 }
-export function typeConstStr(x: string): SolidTypeUnit {
-	return new SolidTypeUnit(new SolidString(x));
+export function typeConstStr(x: string): SolidTypeUnit<SolidString> {
+	return new SolidString(x).toType();
 }
 
 export function instructionConstInt(x: bigint): INST.InstructionConst {

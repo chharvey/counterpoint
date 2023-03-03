@@ -5,7 +5,6 @@ import {
 	AST,
 } from './package.js';
 import {
-	SolidTypeList,
 	SolidObject,
 	Int16,
 	SolidTuple,
@@ -13,22 +12,33 @@ import {
 import type {TypeEntry} from './utils-public.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {SolidType} from './SolidType.js';
+import {SolidTypeUnit} from './SolidTypeUnit.js';
 
 
 
 export class SolidTypeTuple extends SolidType {
+	/**
+	 * Is the argument a unit tuple type?
+	 * @return whether the argument is a `SolidTypeUnit` and its value is a `SolidTuple`
+	 */
+	static isUnitType(type: SolidType): type is SolidTypeUnit<SolidTuple> {
+		return type instanceof SolidTypeUnit && type.value instanceof SolidTuple;
+	}
+
+
 	override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeTuple from type items, assuming each item is required.
 	 * @param types the types of the tuple
+	 * @param is_mutable is the tuple type mutable?
 	 * @return a new tuple type with the provided items
 	 */
-	static fromTypes(types: readonly SolidType[] = []): SolidTypeTuple {
+	static fromTypes(types: readonly SolidType[] = [], is_mutable: boolean = false): SolidTypeTuple {
 		return new SolidTypeTuple(types.map((t) => ({
 			type:     t,
 			optional: false,
-		})));
+		})), is_mutable);
 	}
 
 
@@ -38,7 +48,7 @@ export class SolidTypeTuple extends SolidType {
 	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
-		private readonly types: readonly TypeEntry[] = [],
+		public readonly types: readonly TypeEntry[] = [],
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new SolidTuple()]));
@@ -49,7 +59,7 @@ export class SolidTypeTuple extends SolidType {
 	}
 
 	/** The possible number of items in this tuple type. */
-	private get count(): IntRange {
+	public get count(): IntRange {
 		return [
 			BigInt(this.types.filter((it) => !it.optional).length),
 			BigInt(this.types.length) + 1n,
@@ -73,10 +83,6 @@ export class SolidTypeTuple extends SolidType {
 				? this.types[i].type.equals(thattype.type)
 				: this.types[i].type.isSubtypeOf(thattype.type)
 			))
-		) || (
-			t instanceof SolidTypeList
-			&& !t.isMutable
-			&& this.itemTypes().isSubtypeOf(t.types)
 		);
 	}
 

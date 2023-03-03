@@ -81,9 +81,9 @@ export function recordTypeFromString(typestring: string, config: SolidConfig = C
 	assert.ok(unit instanceof PARSENODE.ParseNodeTypeRecordLiteral, 'unit should be a ParseNodeTypeRecordLiteral');
 	return unit;
 }
-export function hashTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeHashLiteral {
+export function dictTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeDictLiteral {
 	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
-	assert.ok(unit instanceof PARSENODE.ParseNodeTypeHashLiteral, 'unit should be a ParseNodeTypeHashLiteral');
+	assert.ok(unit instanceof PARSENODE.ParseNodeTypeDictLiteral, 'unit should be a ParseNodeTypeDictLiteral');
 	return unit;
 }
 export function mapTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeMapLiteral {

@@ -8,6 +8,6 @@ import type {SolidType} from './index.js';
  * @property optional - is the entry optional on the collection?
  */
 export type TypeEntry = {
-	type:     SolidType,
-	optional: boolean,
+	readonly type:     SolidType,
+	readonly optional: boolean,
 };

@@ -2,15 +2,16 @@ import * as assert from 'assert';
 import {
 	SolidType,
 	SolidTypeTuple,
+	SolidTypeRecord,
 	SolidTypeList,
-	SolidTypeHash,
+	SolidTypeDict,
 	SolidTypeSet,
 	SolidTypeMap,
 	SolidObject,
 	SolidTuple,
 	SolidRecord,
 	SolidList,
-	SolidHash,
+	SolidDict,
 	SolidSet,
 	SolidMap,
 	INST,
@@ -22,6 +23,10 @@ import {
 	CONFIG_DEFAULT,
 	PARSENODE,
 } from './package.js';
+import {
+	ValidFunctionName,
+	invalidFunctionName,
+} from './utils-private.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -45,7 +50,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	}
 	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
-		// (`this.base.source` must be `List | Hash | Set | Map`)
+		// (`this.base.source` must be a `ValidFunctionName`)
 		return forEachAggregated([
 			...this.typeargs,
 			...this.exprargs,
@@ -54,64 +59,93 @@ export class ASTNodeCall extends ASTNodeExpression {
 	override shouldFloat(): boolean {
 		return false;
 	}
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
+	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
 		throw builder && to_float && '`ASTNodeCall#build_do` not yet supported.'
 	}
 	protected override type_do(): SolidType {
 		if (!(this.base instanceof ASTNodeVariable)) {
 			throw new TypeError05(this.base.type(), this.base);
 		}
-		return (new Map<string, () => SolidType>([
-			['List', () => {
+		return (new Map<ValidFunctionName, () => SolidType>([
+			[ValidFunctionName.LIST, () => {
 				this.countArgs(1n, [0n, 2n]);
-				const returntype: SolidType = new SolidTypeList(this.typeargs[0].eval());
-				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
-					returntype,
-					this.exprargs[0],
-					this,
-					this.validator,
-				);
+				const itemtype:   SolidType = this.typeargs[0].eval();
+				const returntype: SolidType = new SolidTypeList(itemtype);
+				if (this.exprargs.length) {
+					const argtype: SolidType = this.exprargs[0].type();
+					try {
+						ASTNodeSolid.typeCheckAssignment(argtype, returntype, this, this.validator);
+					} catch (err) {
+						const argitemtype: SolidType = (
+							(SolidTypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof SolidTypeTuple)  ? argtype.itemTypes()                :
+							(() => { throw err; })()
+						);
+						ASTNodeSolid.typeCheckAssignment(argitemtype, itemtype, this, this.validator);
+					}
+				}
 				return returntype.mutableOf();
 			}],
-			['Hash', () => {
+			[ValidFunctionName.DICT, () => {
 				this.countArgs(1n, [0n, 2n]);
-				const returntype: SolidType = new SolidTypeHash(this.typeargs[0].eval());
-				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
-					returntype,
-					this.exprargs[0],
-					this,
-					this.validator,
-				);
+				const valuetype:  SolidType = this.typeargs[0].eval();
+				const returntype: SolidType = new SolidTypeDict(valuetype);
+				if (this.exprargs.length) {
+					const argtype: SolidType = this.exprargs[0].type();
+					try {
+						ASTNodeSolid.typeCheckAssignment(argtype, returntype, this, this.validator);
+					} catch (err) {
+						const argvaluetype: SolidType = (
+							(SolidTypeRecord.isUnitType(argtype)) ? argtype.value.toType().valueTypes() :
+							(argtype instanceof SolidTypeRecord)  ? argtype.valueTypes()                :
+							(() => { throw err; })()
+						);
+						ASTNodeSolid.typeCheckAssignment(argvaluetype, valuetype, this, this.validator);
+					}
+				}
 				return returntype.mutableOf();
 			}],
-			['Set', () => {
+			[ValidFunctionName.SET, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const eltype:     SolidType = this.typeargs[0].eval();
 				const returntype: SolidType = new SolidTypeSet(eltype);
-				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
-					new SolidTypeList(eltype),
-					this.exprargs[0],
-					this,
-					this.validator,
-				);
+				if (this.exprargs.length) {
+					const argtype: SolidType = this.exprargs[0].type();
+					try {
+						ASTNodeSolid.typeCheckAssignment(argtype, new SolidTypeList(eltype), this, this.validator);
+					} catch (err) {
+						const argitemtype: SolidType = (
+							(SolidTypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof SolidTypeTuple)  ? argtype.itemTypes()                :
+							(() => { throw err; })()
+						);
+						ASTNodeSolid.typeCheckAssignment(argitemtype, eltype, this, this.validator);
+					}
+				}
 				return returntype.mutableOf();
 			}],
-			['Map', () => {
+			[ValidFunctionName.MAP, () => {
 				this.countArgs([1n, 3n], [0n, 2n]);
 				const anttype:    SolidType = this.typeargs[0].eval();
 				const contype:    SolidType = this.typeargs[1]?.eval() || anttype;
 				const returntype: SolidType = new SolidTypeMap(anttype, contype);
-				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
-					new SolidTypeList(SolidTypeTuple.fromTypes([anttype, contype])),
-					this.exprargs[0],
-					this,
-					this.validator,
-				);
+				const entrytype: SolidType = SolidTypeTuple.fromTypes([anttype, contype]);
+				if (this.exprargs.length) {
+					const argtype: SolidType = this.exprargs[0].type();
+					try {
+						ASTNodeSolid.typeCheckAssignment(argtype, new SolidTypeList(entrytype), this, this.validator);
+					} catch (err) {
+						const argitemtype: SolidType = (
+							(SolidTypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
+							(argtype instanceof SolidTypeTuple)  ? argtype.itemTypes()                :
+							(() => { throw err; })()
+						);
+						ASTNodeSolid.typeCheckAssignment(argitemtype, entrytype, this, this.validator);
+					}
+				}
 				return returntype.mutableOf();
 			}],
-		]).get(this.base.source) || (() => {
-			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Map\`.`);
-		}))();
+		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
 	}
 	protected override fold_do(): SolidObject | null {
 		const argvalue: SolidObject | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
@@ -120,12 +154,12 @@ export class ASTNodeCall extends ASTNodeExpression {
 		if (argvalue === null) {
 			return null;
 		}
-		return new Map<string, (argument: SolidObject | undefined) => SolidObject | null>([
-			['List', (tuple)  => (tuple === undefined)  ? new SolidList() : new SolidList((tuple as SolidTuple).items)],
-			['Hash', (record) => (record === undefined) ? new SolidHash() : new SolidHash((record as SolidRecord).properties)],
-			['Set',  (tuple)  => (tuple === undefined)  ? new SolidSet()  : new SolidSet(new Set<SolidObject>((tuple as SolidTuple).items))],
-			['Map',  (tuple)  => (tuple === undefined)  ? new SolidMap()  : new SolidMap(new Map<SolidObject, SolidObject>((tuple as SolidTuple).items.map((pair) => (pair as SolidTuple).items as [SolidObject, SolidObject])))],
-		]).get(this.base.source)!(argvalue);
+		return new Map<ValidFunctionName, (argument: SolidObject | undefined) => SolidObject | null>([
+			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new SolidList() : new SolidList((tuple as SolidTuple).items)],
+			[ValidFunctionName.DICT, (record) => (record === undefined) ? new SolidDict() : new SolidDict((record as SolidRecord).properties)],
+			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new SolidSet()  : new SolidSet(new Set<SolidObject>((tuple as SolidTuple).items))],
+			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new SolidMap()  : new SolidMap(new Map<SolidObject, SolidObject>((tuple as SolidTuple).items.map((pair) => (pair as SolidTuple).items as [SolidObject, SolidObject])))],
+		]).get(this.base.source as ValidFunctionName)!(argvalue);
 	}
 	/**
 	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,

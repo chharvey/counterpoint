@@ -12,6 +12,7 @@ import {
 	SolidBoolean,
 	Int16,
 	Float64,
+	SolidString,
 	INST,
 	Builder,
 	TypeError01,
@@ -250,7 +251,7 @@ describe('ASTNodeOperation', () => {
 					[`![a= 42];`,             SolidBoolean.FALSE],
 					[`!List.<int>([]);`,      SolidBoolean.FALSE],
 					[`!List.<int>([42]);`,    SolidBoolean.FALSE],
-					[`!Hash.<int>([a= 42]);`, SolidBoolean.FALSE],
+					[`!Dict.<int>([a= 42]);`, SolidBoolean.FALSE],
 					[`!{};`,                  SolidBoolean.FALSE],
 					[`!{42};`,                SolidBoolean.FALSE],
 					[`!{41 -> 42};`,          SolidBoolean.FALSE],
@@ -277,7 +278,7 @@ describe('ASTNodeOperation', () => {
 					[`?[a= 42];`,             SolidBoolean.FALSE],
 					[`?List.<int>([]);`,      SolidBoolean.TRUE],
 					[`?List.<int>([42]);`,    SolidBoolean.FALSE],
-					[`?Hash.<int>([a= 42]);`, SolidBoolean.FALSE],
+					[`?Dict.<int>([a= 42]);`, SolidBoolean.FALSE],
 					[`?{};`,                  SolidBoolean.TRUE],
 					[`?{42};`,                SolidBoolean.FALSE],
 					[`?{41 -> 42};`,          SolidBoolean.FALSE],
@@ -510,7 +511,7 @@ describe('ASTNodeOperation', () => {
 						[`-0.0 == 0.0;`,  SolidBoolean.TRUE],
 					]));
 				});
-				it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
+				it('returns the result of `this#fold`, wrapped in a `new SolidTypeUnit`.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let a: obj = [];
 						let b: obj = [42];
@@ -617,7 +618,7 @@ describe('ASTNodeOperation', () => {
 					let c: obj = [x= 42];
 					let d: obj = List.<int>([]);
 					let e: obj = List.<int>([42]);
-					let f: obj = Hash.<int>([x= 42]);
+					let f: obj = Dict.<int>([x= 42]);
 					let g: obj = {};
 					let h: obj = {42};
 					let i: obj = {41 -> 42};
@@ -632,7 +633,7 @@ describe('ASTNodeOperation', () => {
 					c !== [x= 42];
 					d !== List.<int>([]);
 					e !== List.<int>([42]);
-					f !== Hash.<int>([x= 42]);
+					f !== Dict.<int>([x= 42]);
 					g !== {};
 					h !== {42};
 					i !== {41 -> 42};
@@ -650,7 +651,7 @@ describe('ASTNodeOperation', () => {
 					c == [x= 42];
 					d == List.<int>([]);
 					e == List.<int>([42]);
-					f == Hash.<int>([x= 42]);
+					f == Dict.<int>([x= 42]);
 					g == {};
 					h == {42};
 					i == {41 -> 42};
@@ -801,7 +802,7 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: SolidTypeUnit = typeConstStr('hello');
+						const hello: SolidTypeUnit<SolidString> = typeConstStr('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
@@ -858,7 +859,7 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: SolidTypeUnit = typeConstStr('hello');
+						const hello: SolidTypeUnit<SolidString> = typeConstStr('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;

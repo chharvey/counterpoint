@@ -188,6 +188,7 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 
 
 ### Simple Types
+Simple types do not comprise other types.
 
 - [Never](#never)
 - [Void](#void)
@@ -200,7 +201,7 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 - [Unknown](#unknown)
 
 #### Never
-The Never type is the Botton Type and it represents the set of no values.
+The **Never** type is the Botton Type and it represents the set of no values.
 No value is assignable to Never,
 and expressions of type Never are accepted everywhere.
 
@@ -210,7 +211,7 @@ Never is the the “absorption element” of the [intersection](#intersection) o
 and the “identity element” of the [union](#union) operation.
 
 #### Void
-The Void type represents the completion of an evaluation but the absence of a value.
+The **Void** type represents the completion of an evaluation but the absence of a value.
 It is the return type of a function that may have side-effects but that does not return a value.
 It is also partly the type of an optional entry in a collection.
 
@@ -225,24 +226,50 @@ the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T�
 The Void type is also unlike Null in that no Solid Language Value has type Void.
 
 #### Null
-The Null type has exactly one value, called `null`.
+The **Null** type has exactly one value, called `null`.
+It represents an object without any semantics.
 
 #### Boolean
-The Boolean type has two logical values, called `true` and `false`.
+The **Boolean** type has two logical values, called `true` and `false`.
 
 #### Number
-The Number type represents numerical values.
+The **Number** type represents numerical values.
 The Number type is partitioned into two disjoint subtypes: Integer and Float.
 
 ##### Integer
-The Integer type represents [mathematical integers](#real-integer-numbers).
+The **Integer** type represents [mathematical integers](#real-integer-numbers).
 The Solid compiler represents Integers as 16-bit signed two’s complement values.
 
-`0` and `-0` represent the same value, *0*.
-The maximum value of the Integer type is mathematically equal to
-*2<sup>15</sup> &minus; 1 = 32,767 = FFFF<sub>16</sub>*.
-The minimum value is mathematically equal to
-*&minus;2<sup>15</sup> = &minus;32,768 = &minus;10000<sub>16</sub>*.
+The Integers `0` and `-0` represent the same mathematical value, *0*.
+The maximum possible value of an Integer is *32,767* and the minimum value is *&minus;32,768*.
+
+The following table lays out some integers and their encodings.
+
+| Encoding                                       | Value      | Notes
+| ---------------------------------------------- | ---------- | ---
+| `\b0000_0000 \b0000_0000` &emsp; (`\x00 \x00`) | *0* = *&minus;0*
+| `\b0000_0000 \b0000_0001` &emsp; (`\x00 \x01`) | *1*
+| `\b0000_0000 \b0000_0010` &emsp; (`\x00 \x02`) | *2*
+| `\b0000_0000 \b0000_0011` &emsp; (`\x00 \x03`) | *3*
+…
+| `\b0111_1111 \b1111_1100` &emsp; (`\x7f \xfc`) | *32,764* &emsp; (*7FFC<sub>16</sub>*)
+| `\b0111_1111 \b1111_1101` &emsp; (`\x7f \xfd`) | *32,765* &emsp; (*7FFD<sub>16</sub>*)
+| `\b0111_1111 \b1111_1110` &emsp; (`\x7f \xfe`) | *32,766* &emsp; (*7FFE<sub>16</sub>*)
+| `\b0111_1111 \b1111_1111` &emsp; (`\x7f \xff`) | *32,767* &emsp; (*7FFF<sub>16</sub>*)               | maximum value, *2<sup>15</sup> &minus; 1*
+| `\b1000_0000 \b0000_0000` &emsp; (`\x80 \x00`) | *&minus;32,768* &emsp; (*&minus;8000<sub>16</sub>*) | minimum value, *&minus;2<sup>15</sup>*
+| `\b1000_0000 \b0000_0001` &emsp; (`\x80 \x01`) | *&minus;32,767* &emsp; (*&minus;7FFF<sub>16</sub>*)
+| `\b1000_0000 \b0000_0010` &emsp; (`\x80 \x02`) | *&minus;32,766* &emsp; (*&minus;7FFE<sub>16</sub>*)
+| `\b1000_0000 \b0000_0011` &emsp; (`\x80 \x03`) | *&minus;32,765* &emsp; (*&minus;7FFD<sub>16</sub>*)
+…
+| `\b1111_1111 \b1111_1100` &emsp; (`\xff \xfc`) | *&minus;4*
+| `\b1111_1111 \b1111_1101` &emsp; (`\xff \xfd`) | *&minus;3*
+| `\b1111_1111 \b1111_1110` &emsp; (`\xff \xfe`) | *&minus;2*
+| `\b1111_1111 \b1111_1111` &emsp; (`\xff \xff`) | *&minus;1*
+
+Note: To encode a mathematical integer *i* in two’s complement:
+If *i* is within the interval *[0, 2<sup>15</sup> - 1]*, simply return its representation in base 2.
+If *i* is within the interval *[&minus;2<sup>15</sup>, -1]*, return the binary representation of *i + 2<sup>16</sup>*.
+Else, *i* cannot be encoded.
 
 When performing arithmetic operations such as addition, subtraction, and multiplication,
 computed values that are out of range will overflow as if doing modular arithmetic modulus *2<sup>16</sup>*,
@@ -253,23 +280,40 @@ The behavior of performing arithmetic operations that are invalid in the integer
 The result of division is rounded towards zero. Dividing by zero results in an error.
 
 ##### Float
-The Float type represents [mathematical rational numbers](#real-rational-numbers)
+The **Float** type represents [mathematical rational numbers](#real-rational-numbers)
 whose decimals terminate in base 10.
 (That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
 The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
 *IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.
 
 #### String
-The String type represents textual data and is stored as an immutable tuple of [integers](#integer).
+The **String** type represents textual data and is stored as an immutable sequence of bytes.
 Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
 
+Conceptually, strings are treated as immutable lists of [mathematical integers](#real-integer-numbers),
+where each integer represents a Unicode code point.
+A String’s **count** indicates the number of code points in the String, that is,
+the number of characters in its unencoded form.
+This is compared to its **length**, which is the number of bytes it stores
+encoded in memory (see UTF-8 for details).
+String length is limited to a maximum of *65,535* bytes,
+but it is not directly observable within any Counterpoint program.
+
+Though `String` objects are treated conceptually as lists, they are considered
+[primitive objects](./intrinsics.md#primitive-and-composite-objects) and
+[value objects](./intrinsics.md#value-objects-and-reference-objects).
+They are primitives because the “items” of these lists are not directly observable —
+accessing an index of a string yields another string — and
+they are value objects because the string values themselves are copied when assigned
+(though the compiler may make any optimizations necessary).
+
 #### Object
-The Object type is the parent type of all Solid Language Types.
+The **Object** type is the parent type of all Solid Language Types.
 Every Solid Language Value is an Object.
 Some specific built-in subtypes of Object are described in the [Intrinsics](./intrinsics.md) chapter.
 
 #### Unknown
-The Unknown type is the Top Type and it represents the set of all possible values.
+The **Unknown** type is the Top Type and it represents the set of all possible values.
 Any value or expression is assignable to Unknown,
 and expressions of type Unknown are accepted almost nowhere.
 
@@ -280,47 +324,56 @@ and the “absorption element” of the [union](#union) operation.
 
 
 ### Compound Types
+Compound types are derived from other types.
 
 - [Tuple](#tuple-type)
 - [Record](#record-type)
 - [List](#list-type)
-- [Hash](#hash-type)
+- [Dict](#dict-type)
 - [Set](#set-type)
 - [Map](#map-type)
 
 #### Tuple Type
-A **Tuple Type** contains [`Tuple` objects](./intrinsics.md#tuple) and is described by an ordered list of types.
-The objects that any given Tuple Type contains are `Tuple` objects whose items’ types
-match up with the types in the list in order.
+A **Tuple Type** contains instances of [`Tuple`](./intrinsics.md#tuple) and is described by an ordered sequence of types.
+The objects that any given Tuple Type contains are `Tuple` objects whose
+items’ types match up with the types in the sequence in order.
+Tuples have a static size, are ordered, and are 0-origin indexable by Integers.
 
 #### Record Type
-A **Record Type** contains [`Record` objects](./intrinsics.md#record) and is described by an unordered list of name–type pairs.
-The objects that any given Record Type contains are `Record` objects whose properties’ types
-match up with the types in the list by name.
+A **Record Type** contains instances of [`Record`](./intrinsics.md#record) and is described by an unordered sequence of name–type pairs.
+The objects that any given Record Type contains are `Record` objects whose
+properties’ types match up with the types in the sequence by name.
+Records have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
 #### List Type
-A **List Type** contains [`List` objects](./intrinsics.md#list) and is described by a single type,
+A **List Type** contains instances of [`List`](./intrinsics.md#list) and is described by a single type,
 representing items.
 The objects that any given List Type contains are `List` objects whose
 items are assignable to the type describing the List Type.
+Lists have a dynamic size, are ordered, and are 0-origin indexable by Integers.
 
-#### Hash Type
-A **Hash Type** contains [`Hash` objects](./intrinsics.md#hash) and is described by a single type,
+#### Dict Type
+A **Dict Type** contains instances of [`Dict`](./intrinsics.md#dict) and is described by a single type,
 representing values.
-The objects that any given Hash Type contains are `Hash` objects whose
-values are assignable to the type describing the Hash Type.
+The objects that any given Dict Type contains are `Dict` objects whose
+values are assignable to the type describing the Dict Type.
+Dicts have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
 #### Set Type
-A **Set Type** contains [`Set` objects](./intrinsics.md#set) and is described by a single type,
+A **Set Type** contains instances of [`Set`](./intrinsics.md#set) and is described by a single type,
 representing elements.
 The objects that any given Set Type contains are `Set` objects whose
 elements are assignable to the type describing the Set Type.
+Sets have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by their elements.
 
 #### Map Type
-A **Map Type** contains [`Map` objects](./intrinsics.md#map) and is described by a pair of two types,
+A **Map Type** contains instances of [`Map`](./intrinsics.md#map) and is described by a pair of two types,
 the first of which represents antecedents and the second of which represents consequents.
 The objects that any given Map Type contains are `Map` objects whose
 antcedents and consequents are respectively assignable to the types describing the Map Type.
+Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by their antecedents.
+
+<sup>&lowast;</sup>Rather, developers should not depend on any implementation of order.
 
 
 

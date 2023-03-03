@@ -6,8 +6,8 @@ import {
 	Keyword,
 	TOKEN,
 	SolidType,
-	SolidTypeUnit,
 	SolidObject,
+	Primitive,
 	SolidNull,
 	SolidBoolean,
 	Int16,
@@ -26,9 +26,9 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeConstant);
 		return expression;
 	}
-	private readonly value: SolidObject;
+	private readonly value: Primitive;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
-		const value: SolidObject = (
+		const value: Primitive = (
 			(start_node instanceof TOKEN.TokenKeyword) ?
 				(start_node.source === Keyword.NULL)  ? SolidNull.NULL :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
@@ -50,7 +50,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return INST.InstructionConst.fromCPValue(this.fold(), to_float);
 	}
 	protected override type_do(): SolidType {
-		return new SolidTypeUnit(this.value);
+		return this.value.toType();
 	}
 	protected override fold_do(): SolidObject {
 		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {

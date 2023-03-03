@@ -31,7 +31,7 @@ SemanticType =:=
 	| SemanticTypeTuple
 	| SemanticTypeRecord
 	| SemanticTypeList
-	| SemanticTypeHash
+	| SemanticTypeDict
 	| SemanticTypeSet
 	| SemanticTypeMap
 	| SemanticTypeAccess
@@ -49,7 +49,7 @@ SemanticTypeAlias[id: RealNumber]
 
 SemanticTypeTuple  ::= SemanticItemType*;
 SemanticTypeRecord ::= SemanticPropertyType+;
-SemanticTypeHash   ::= SemanticType;
+SemanticTypeDict   ::= SemanticType;
 SemanticTypeSet    ::= SemanticType;
 SemanticTypeMap    ::= SemanticType SemanticType;
 SemanticTypeList[count: RealNumber | None]
@@ -72,10 +72,7 @@ SemanticExpression =:=
 	| SemanticConstant
 	| SemanticVariable
 	| SemanticTemplate
-	| SemanticTuple
-	| SemanticRecord
-	| SemanticSet
-	| SemanticMap
+	| SemanticCollectionLiteral
 	| SemanticCall
 	| SemanticAccess
 	| SemanticOperation
@@ -94,6 +91,13 @@ SemanticTemplate
 
 SemanticTemplatePartial
 	::= (SemanticConstant SemanticExpression?)+;
+
+SemanticCollectionLiteral =:=
+	| SemanticTuple
+	| SemanticRecord
+	| SemanticSet
+	| SemanticMap
+;
 
 SemanticTuple  ::= SemanticExpression*;
 SemanticRecord ::= SemanticProperty+;

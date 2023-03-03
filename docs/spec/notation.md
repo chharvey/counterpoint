@@ -1299,6 +1299,13 @@ is shorthand for the following steps:
 	1. Perform the substeps listed under the *For each* step, replacing `‹it›` with `‹s›[i]`.
 ```
 
+A step that reads «*For each* ‹val› in ‹s›:» (where ‹val› is a variable and ‹s› is a structure)
+is shorthand for the following steps:
+```
+1. *For key* `k` in `‹s›`:
+	1. Perform the substeps listed under the *For each* step, replacing `‹val›` with `‹s›[k]`.
+```
+
 ##### Spread
 An algorithm step that contains «...‹s›» (where ‹s› is a sequence)
 is shorthand for the following steps:
