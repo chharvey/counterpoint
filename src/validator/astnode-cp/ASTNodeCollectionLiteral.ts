@@ -38,9 +38,6 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	 * @final
 	 */
 	public assignTo(assignee: TYPE.Type): boolean {
-		if (assignee instanceof TYPE.TypeIntersection || assignee instanceof TYPE.TypeUnion) {
-			assignee = assignee.combineTuplesOrRecords();
-		}
 		if (assignee instanceof TYPE.TypeIntersection) {
 			/* A value is assignable to a type intersection if and only if
 				it is assignable to both operands of that intersection. */
