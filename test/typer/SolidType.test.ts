@@ -334,6 +334,10 @@ describe('SolidType', () => {
 				!SolidType.NULL.union(SolidType.INT).isSubtypeOf(SolidType.INT),
 				'exists A, C, D s.t. `A <: C | D` but `!(A <: C)` and `!(A <: D)`'
 			)
+			return assert.ok(
+				SolidType.BOOL.union(SolidType.INT).isSubtypeOf(SolidType.NULL.union(SolidType.BOOL).union(SolidType.INT.union(SolidType.FLOAT))),
+				'`U | V <: (T | U) | (V | W)` but `!(U | V <: T | U)` and `!(U | V <: V | W)`',
+			);
 		})
 		it('3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
