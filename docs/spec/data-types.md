@@ -440,10 +440,25 @@ Type Union(Type a, Type b) :=
 
 
 ### Difference
-A data type specified as \`Diff<‹T›, ‹U›>\`,
+A data type specified as \`Minus<‹T›, ‹U›>\`,
 where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
 is a data type that contains values assignable *only* to type \`‹T›\` and *not* to type \`‹U›\`.
 Such a data type is called the **difference** of \`‹T›\` and \`‹U›\`.
+
+
+### Disjunctive Union
+A data type specified as \`Xor<‹T›, ‹U›>\`,
+where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
+is a data type that contains values assignable *either* to type \`‹T›\` *or* to type \`‹U›\`, but not both.
+It is formed by taking the difference of the union of \`‹T›\` and \`‹U›\` and the intersection of \`‹T›\` and \`‹U›\`;
+that is, by the formula \`Minus< Or<‹T›, ‹U›>, And<‹T›, ‹U›> >\`.
+Such a data type is called the **disjunctive union** of \`‹T›\` and \`‹U›\`.
+
+The **symmetric difference** of \`‹T›\` and \`‹U›\`, is formed by taking
+the union of the difference of \`‹T›\` and \`‹U›\` and the difference of of \`‹U›\` and \`‹T›\`;
+that is, by the formula \`Or< Minus<‹T›, ‹U›>, Minus<‹U›, ‹T›> >\`.
+The symmetric difference is equal to to the disjunctive union.
+
 
 
 ### Subtype
@@ -467,11 +482,12 @@ For brevity, this section uses the following notational conventions:
 - Metavariables such as \`‹A›\`, \`‹B›\`, \`‹C›\` denote placeholders for Solid Language Types
 	and do not refer to real variables or real types.
 - Angle quotes and back-ticks will be omitted. Instead, a `monospace font face` is used.
-- The [intersection](#intersection) of `A` and `B`, `And<A, B>`,  is written `A & B`.
-- The [union](#union)               of `A` and `B`, `Or<A, B>`,   is written `A | B`. The symbol `|`  is weaker than `&`.
-- The [difference](#difference)     of `A` and `B`, `Diff<A, B>`, is written `A - B`. The symbol `-`  has the same precedence as `|`.
-- If `A` is a [subtype](#subtype) of `B`, we write `A <: B`.                          The symbol `<:` is weaker than `|` and `-`.
-- If `A` is [equal](#equality)    to `B`, we write `A == B`.                          The symbol `==` is weaker than `<:`.
+- The [intersection](#intersection)           of `A` and `B`, `And<A, B>`,   is written `A & B`.
+- The [difference](#difference)               of `A` and `B`, `Minus<A, B>`, is written `A - B`. The symbol `-`  has the same precedence as `&`.
+- The [union](#union)                         of `A` and `B`, `Or<A, B>`,    is written `A | B`. The symbol `|`  is weaker than `&` and `-`.
+- The [disjunctive union](#disjunctive-union) of `A` and `B`, `Xor<A, B>`,   is written `A ^ B`. The symbol `^`  has the same precedence as `|`.
+- If `A` is a [subtype](#subtype) of `B`, we write `A <: B`.                                     The symbol `<:` is weaker than `|` and `^`.
+- If `A` is [equal](#equality)    to `B`, we write `A == B`.                                     The symbol `==` is weaker than `<:`.
 - Where ‹X› and ‹Y› represent statements in prose:
 	- `‹X› &&  ‹Y›` denotes “‹X› and            ‹Y›”. The symbol `&&`  is weaker than `<:`.
 	- `‹X› ||  ‹Y›` denotes “‹X› or             ‹Y›”. The symbol `||`  is weaker than `&&`.

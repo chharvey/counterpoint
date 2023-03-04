@@ -755,31 +755,30 @@ The **intersection** operator creates a strict combination of the operands.
 ```
 type T = [foo: bool] & [bar: int];
 let v: T = [
-	foo = false,
-	bar = 42,
+	foo= false,
+	bar= 42,
 ];
 ```
 
-The *intersection* of types forms the *union* of the properties of each type.
+When accessing an *intersection* of record types, we can access the *union* of the properties of each type.
 ```
 type Employee = [
-	name:         str,
-	id:           int,
-	job_title:    str,
-	hours_worked: float,
+	name:        str,
+	id:          int,
+	jobTitle:    str,
+	hoursWorked: float,
 ];
 type Volunteer = [
-	name:         str,
-	agency:       str,
-	hours_worked: float,
+	name:        str,
+	agency:      str,
+	hoursWorked: float,
 ];
-let alice: Employee & Volunteer = [
-	name=         'Alice',     %: str
-	id=           42444648,    %: int
-	jobTitle=     'Volunteer', %: str
-	agency=       'Agency',    %: str
-	hours_worked= 80.0,        %: float
-];
+% claim alice: Employee & Volunteer;
+alice.name;        %: str
+alice.id;          %: int
+alice.jobTitle;    %: str
+alice.hoursWorked; %: float
+alice.agency;      %: str
 ```
 Type `Employee & Volunteer` is *both* an employee *and* a volunteer,
 so we’re guaranteed it will have the properties that are present in *either* type.
@@ -787,18 +786,17 @@ so we’re guaranteed it will have the properties that are present in *either* t
 Overlapping properties in an intersection are themselves intersected.
 ```
 type A = [
-	key: 1 | 2 | 3,
-	value_a: int,
+	key:    1 | 2 | 3,
+	valueA: int,
 ];
 type B = [
-	key: 2 | 3 | 4,
-	value_b: float,
+	key:    2 | 3 | 4,
+	valueB: float,
 ];
-let data: A & B = [
-	key=      2,   %: 2 | 3 % `(1 | 2 | 3) & (2 | 3 | 4)`
-	value_a= 42,   %: int
-	value_b=  4.2, %: float
-];
+% claim data: A & B;
+data.key;    %: 2 | 3 % `(1 | 2 | 3) & (2 | 3 | 4)`
+data.valueA; %: int
+data.valueB; %: float
 ```
 
 This holds for tuple types as well, accounting for indices rather than keys.
@@ -815,40 +813,42 @@ let unfixed v: T = false;
 v = 42;
 ```
 
-The *union* of types forms the *intersection* of the properties of each type.
+When accessing a *union* of record types, we can only access the *intersection* of the properties of each type.
 ```
 type Employee = [
-	name:         str,
-	id:           int,
-	job_title:    str,
-	hours_worked: float,
+	name:        str,
+	id:          int,
+	jobTitle:    str,
+	hoursWorked: float,
 ];
 type Volunteer = [
-	name:         str,
-	agency:       str,
-	hours_worked: float,
+	name:        str,
+	agency:      str,
+	hoursWorked: float,
 ];
-let bob: Employee | Volunteer = [
-	name=         'Bob', %: str
-	hours_worked= 80.0,  %: float
-];
+% claim bob: Employee | Volunteer;
+bob.name;        %: str
+bob.hoursWorked; %: float
+bob.id;          %> TypeError
+bob.jobTitle;    %> TypeError
+bob.agency;      %> TypeError
 ```
 Type `Employee | Volunteer` is *either* an employee *or* a volunteer,
 so we’re only guaranteed it will have the properties that are present in *both* types.
+We can’t access properties that are in one type but not the other.
 
 Overlapping properties in a union are themselves unioned.
 ```
 type A = [
-	key: 1 | 2 | 3,
-	value_a: int,
+	key:    1 | 2 | 3,
+	valueA: int,
 ];
 type B = [
-	key: 2 | 3 | 4,
-	value_b: float,
+	key:    2 | 3 | 4,
+	valueB: float,
 ];
-let data: A | B = [
-	key= 4, %: 1 | 2 | 3 | 4 % `(1 | 2 | 3) | (2 | 3 | 4)`
-];
+% claim data: A | B;
+data.key; %: 1 | 2 | 3 | 4 % `(1 | 2 | 3) | (2 | 3 | 4)`
 ```
 
 This holds for tuple types as well, accounting for indices rather than keys.

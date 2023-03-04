@@ -11,7 +11,7 @@ import {SolidTypeError} from './SolidTypeError.js';
  * or when a named argument does not match a known parameter name.
  * @example
  * [42, 420].2;                      % TypeError04: Index `2` does not exist on type `[42, 420]`.
- * [a= 42, b= 420].c;                % TypeError04: Property `c` does not exist on type `[a= 42, b= 420]`.
+ * [a= 42, b= 420].c;                % TypeError04: Property `c` does not exist on type `[a: 42, b: 420]`.
  * ((x: int): int => x + 1).(y= 42); % TypeError04: Parameter `y` does not exist on type `(x: int) => int`.
  */
 export class TypeError04 extends SolidTypeError {

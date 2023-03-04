@@ -28,9 +28,6 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	 * @final
 	 */
 	assignTo(assignee: SolidType): boolean {
-		if (assignee instanceof SolidTypeIntersection || assignee instanceof SolidTypeUnion) {
-			assignee = assignee.combineTuplesOrRecords();
-		}
 		if (assignee instanceof SolidTypeIntersection) {
 			/* A value is assignable to a type intersection if and only if
 				it is assignable to both operands of that intersection. */
