@@ -1,21 +1,27 @@
 import * as assert from 'assert';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
 	ReferenceError01,
 	ReferenceError03,
+} from '../../index.js';
+import {
 	memoizeMethod,
 	memoizeGetter,
+} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
+} from '../../core/index.js';
+import {
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
 	SymbolStructureType,
-	SyntaxNodeType,
-} from './package.js';
+} from '../index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 

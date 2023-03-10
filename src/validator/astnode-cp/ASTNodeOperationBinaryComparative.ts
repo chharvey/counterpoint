@@ -1,17 +1,21 @@
 import * as assert from 'assert';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
 	TypeError01,
-	memoizeMethod,
+} from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
+} from '../../core/index.js';
+import type {SyntaxNodeSupertype} from '../utils-private.js';
+import {
 	Operator,
 	ValidOperatorComparative,
-} from './package.js';
+} from '../Operator.js';
 import {
 	bothNumeric,
 	bothFloats,

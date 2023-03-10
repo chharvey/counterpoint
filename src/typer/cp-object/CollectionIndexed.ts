@@ -1,9 +1,9 @@
+import {VoidError01} from '../../index.js';
 import {
-	VoidError01,
 	throw_expression,
 	strictEqual,
-	AST,
-} from './package.js';
+} from '../../lib/index.js';
+import type {AST} from '../../validator/index.js';
 import {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import type {Integer} from './Integer.js';

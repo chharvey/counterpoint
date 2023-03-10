@@ -1,14 +1,18 @@
 import * as assert from 'assert';
+import type {TYPE} from '../../index.js';
 import {
-	TYPE,
 	throw_expression,
 	memoizeMethod,
+} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
+import {
 	Operator,
 	ValidTypeOperator,
-} from './package.js';
+} from '../Operator.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
 

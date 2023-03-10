@@ -3,12 +3,16 @@ import * as xjs from 'extrajs';
 import {
 	TYPE,
 	AssignmentError02,
+} from '../../index.js';
+import {
 	NonemptyArray,
 	memoizeMethod,
+} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
 import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
 import {ASTNodeType} from './ASTNodeType.js';

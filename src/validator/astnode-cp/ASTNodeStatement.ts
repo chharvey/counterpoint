@@ -1,10 +1,12 @@
 import * as assert from 'assert';
+import type {
+	INST,
+	Builder,
+} from '../../index.js';
 import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	Instruction,
-	Builder,
-} from './package.js';
+} from '../../core/index.js';
 import {ASTNodeGoal} from './index.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
@@ -33,5 +35,5 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 	}
 
 	/** @implements Buildable */
-	public abstract build(builder: Builder): Instruction;
+	public abstract build(builder: Builder): INST.Instruction;
 }

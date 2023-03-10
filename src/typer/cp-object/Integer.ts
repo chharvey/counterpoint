@@ -1,10 +1,10 @@
 import {
 	throw_expression,
 	strictEqual,
-} from './package.js';
+} from '../../lib/index.js';
+import {Float} from './index.js';
 import {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
-import {Float} from './index.js';
 
 
 

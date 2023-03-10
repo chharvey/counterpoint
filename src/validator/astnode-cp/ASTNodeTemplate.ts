@@ -1,14 +1,16 @@
 import * as assert from 'assert';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
-	memoizeMethod,
+} from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeConstant} from './ASTNodeConstant.js';
 

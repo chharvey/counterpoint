@@ -1,7 +1,5 @@
-import {
-	strictEqual,
-	TYPE,
-} from './package.js';
+import {strictEqual} from '../../lib/index.js';
+import type {TYPE} from '../index.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
@@ -20,12 +18,12 @@ class CPBoolean extends Primitive {
 	public static readonly TRUE: CPBoolean = new CPBoolean(true);
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
 	public static get FALSETYPE(): TYPE.TypeUnit<CPBoolean> {
-		return new TYPE.TypeUnit<CPBoolean>(CPBoolean.FALSE);
+		return CPBoolean.FALSE.toType();
 	}
 
 	/** A Unit Type containing only the Counterpoint Language Value `true`. */
 	public static get TRUETYPE(): TYPE.TypeUnit<CPBoolean> {
-		return new TYPE.TypeUnit<CPBoolean>(CPBoolean.TRUE);
+		return CPBoolean.TRUE.toType();
 	}
 
 	/**

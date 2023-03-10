@@ -1,7 +1,5 @@
-import {
-	TYPE,
-	SyntaxNodeType,
-} from './package.js';
+import {TYPE} from '../../index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -30,9 +28,6 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (assignee: TYPE.Type) {
-			if (assignee instanceof TYPE.TypeIntersection || assignee instanceof TYPE.TypeUnion) {
-				assignee = assignee.combineTuplesOrRecords();
-			}
 			if (assignee instanceof TYPE.TypeIntersection) {
 				/* A value is assignable to a type intersection if and only if
 					it is assignable to both operands of that intersection. */

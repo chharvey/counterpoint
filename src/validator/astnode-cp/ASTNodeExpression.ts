@@ -1,13 +1,15 @@
 import * as assert from 'assert';
 import {
-	CPConfig,
-	CONFIG_DEFAULT,
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
 	ErrorCode,
-} from './package.js';
+} from '../../index.js';
+import {
+	CPConfig,
+	CONFIG_DEFAULT,
+} from '../../core/index.js';
 import {
 	ASTNodeStatement,
 	ASTNodeStatementExpression,
@@ -60,8 +62,8 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 						throw err;
 					}
 				}
-				if (value && value instanceof OBJ.Primitive) {
-					return new TYPE.TypeUnit<OBJ.Primitive>(value);
+				if (!!value && value instanceof OBJ.Primitive) {
+					return value.toType();
 				}
 			}
 			return type;

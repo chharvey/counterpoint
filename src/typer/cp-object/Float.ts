@@ -1,5 +1,5 @@
 import * as xjs from 'extrajs';
-import {strictEqual} from './package.js';
+import {strictEqual} from '../../lib/index.js';
 import {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
 

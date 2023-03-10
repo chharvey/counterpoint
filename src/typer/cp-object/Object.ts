@@ -1,4 +1,5 @@
-import {strictEqual} from './package.js';
+import {strictEqual} from '../../lib/index.js';
+import type {TYPE} from '../index.js';
 import {String as CPString} from './index.js';
 
 
@@ -78,5 +79,12 @@ abstract class CPObject {
 	public toCPString(): CPString {
 		return new CPString(this.toString());
 	}
+
+	/**
+	 * Return the canonical type of this Object.
+	 * The returned type is as reasonably narrow as possible.
+	 * @return a Type that contains this Object
+	 */
+	public abstract toType(): TYPE.Type;
 }
 export {CPObject as Object};
