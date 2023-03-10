@@ -1,12 +1,12 @@
 import * as xjs from 'extrajs';
+import {VoidError01} from '../../index.js';
 import {
-	VoidError01,
-	strictEqual,
 	throw_expression,
-	AST,
-	languageValuesIdentical,
-	TYPE,
-} from './package.js';
+	strictEqual,
+} from '../../lib/index.js';
+import type {AST} from '../../validator/index.js';
+import {TYPE} from '../index.js';
+import {languageValuesIdentical} from '../utils-private.js';
 import {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
@@ -52,8 +52,8 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 	 */
 	public override toType(): TYPE.TypeMap {
 		return new TYPE.TypeMap(
-			TYPE.Type.unionAll([...this.cases.keys()]  .map<TYPE.Type>((ant) => new TYPE.TypeUnit<K>(ant))),
-			TYPE.Type.unionAll([...this.cases.values()].map<TYPE.Type>((con) => new TYPE.TypeUnit<V>(con))),
+			TYPE.Type.unionAll([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
+			TYPE.Type.unionAll([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
 		);
 	}
 

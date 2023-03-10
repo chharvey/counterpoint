@@ -2,19 +2,25 @@ import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	Builder,
 	TypeError01,
 	NanError01,
+} from '../../index.js';
+import {
 	throw_expression,
 	memoizeMethod,
+} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
+} from '../../core/index.js';
+import type {SyntaxNodeSupertype} from '../utils-private.js';
+import {
 	Operator,
 	ValidOperatorUnary,
-} from './package.js';
+} from '../Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 

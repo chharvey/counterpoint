@@ -4,7 +4,7 @@ import utf8 from 'utf8';
 import {
 	CodeUnit,
 	strictEqual,
-} from './package.js';
+} from '../../lib/index.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 

@@ -1,8 +1,6 @@
 import type binaryen from 'binaryen';
-import {
-	strictEqual,
-	TYPE,
-} from './package.js';
+import {strictEqual} from '../../lib/index.js';
+import type {TYPE} from '../index.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
@@ -24,7 +22,7 @@ export class Null extends Primitive {
 	public static readonly NULL: Null = new Null();
 	/** A Unit Type containing only the Counterpoint Language Value `null`. */
 	public static get NULLTYPE(): TYPE.TypeUnit<Null> {
-		return new TYPE.TypeUnit<Null>(Null.NULL);
+		return Null.NULL.toType();
 	}
 
 

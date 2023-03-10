@@ -11,7 +11,7 @@ export type NonemptyArray<T> = [T, ...T[]];
 export type IntRange = [bigint, bigint];
 
 /**
- * A code unit is a number within [0, 0xff] that represents
+ * A code unit is an integer within the closed interval [0, 0xff] that represents
  * a byte of an encoded Unicode code point.
  */
 export type CodeUnit = number;

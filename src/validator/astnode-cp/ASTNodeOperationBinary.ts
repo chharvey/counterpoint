@@ -1,12 +1,12 @@
 import * as assert from 'assert';
+import type {TYPE} from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
 import {
-	TYPE,
-	memoizeMethod,
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
-	ValidOperatorBinary,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeSupertype} from '../utils-private.js';
+import type {ValidOperatorBinary} from '../Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 

@@ -1,9 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {
-	Keys,
-	TYPE,
-} from './package.js';
+import type {Keys} from '../../lib/index.js';
 import {Object as CPObject} from './Object.js';
 
 
@@ -37,11 +34,4 @@ export abstract class Collection extends CPObject {
 		mod;
 		throw new Error('`Collection#build` not yet supported.');
 	}
-
-	/**
-	 * Convert this Collection to a type.
-	 * See method implementations for details.
-	 * @return a compound type representing this CPObject
-	 */
-	public abstract toType(): TYPE.Type;
 }

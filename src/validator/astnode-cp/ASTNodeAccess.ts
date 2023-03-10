@@ -1,19 +1,23 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	Builder,
 	TypeError01,
 	TypeError02,
 	TypeError04,
-	memoizeMethod,
+} from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
+import {
 	Operator,
 	ValidAccessOperator,
-} from './package.js';
+} from '../Operator.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';

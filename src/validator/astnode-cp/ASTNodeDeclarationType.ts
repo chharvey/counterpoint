@@ -3,11 +3,13 @@ import type binaryen from 'binaryen';
 import {
 	Builder,
 	AssignmentError01,
+} from '../../index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SymbolStructureType,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import {SymbolStructureType} from '../index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';

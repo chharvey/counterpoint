@@ -2,12 +2,16 @@ import * as assert from 'assert';
 import {
 	TYPE,
 	TypeError,
+} from '../../index.js';
+import {
 	throw_expression,
 	memoizeMethod,
+} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
 

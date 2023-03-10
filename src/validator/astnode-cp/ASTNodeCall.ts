@@ -2,18 +2,22 @@ import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	Builder,
 	TypeError03,
 	TypeError05,
 	TypeError06,
+} from '../../index.js';
+import {
 	throw_expression,
 	memoizeMethod,
+} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {
 	ArgCount,
 	ValidFunctionName,

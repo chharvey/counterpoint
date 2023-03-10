@@ -1,10 +1,8 @@
-import {
-	strictEqual,
-	OBJ as VALUE,
-} from './package.js';
+import {strictEqual} from '../../lib/index.js';
+import * as OBJ from '../cp-object/index.js';
+import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
-import {OBJ} from './index.js';
 
 
 
@@ -13,8 +11,8 @@ export class TypeList extends Type {
 	 * Is the argument a unit list type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `List`
 	 */
-	public static isUnitType(type: Type): type is TypeUnit<VALUE.List> {
-		return type instanceof TypeUnit && type.value instanceof VALUE.List;
+	public static isUnitType(type: Type): type is TypeUnit<OBJ.List> {
+		return type instanceof TypeUnit && type.value instanceof OBJ.List;
 	}
 
 
@@ -29,7 +27,7 @@ export class TypeList extends Type {
 		public readonly invariant: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new VALUE.List()]));
+		super(is_mutable, new Set([new OBJ.List()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -40,14 +38,14 @@ export class TypeList extends Type {
 		return `${ (this.isMutable) ? 'mutable ' : '' }List.<${ this.invariant }>`;
 	}
 
-	public override includes(v: VALUE.Object): boolean {
-		return v instanceof VALUE.List && v.toType().isSubtypeOf(this);
+	public override includes(v: OBJ.Object): boolean {
+		return v instanceof OBJ.List && v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
-		return t.equals(OBJ) || (
+		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeList
 			&& ((t.isMutable)
 				? this.isMutable && this.invariant.equals(t.invariant)

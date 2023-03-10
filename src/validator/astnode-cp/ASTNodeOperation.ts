@@ -1,13 +1,13 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
+import type {Builder} from '../../index.js';
+import type {NonemptyArray} from '../../lib/index.js';
 import {
-	Builder,
-	NonemptyArray,
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
-	Operator,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeSupertype} from '../utils-private.js';
+import type {Operator} from '../Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 

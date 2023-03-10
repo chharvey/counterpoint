@@ -1,13 +1,13 @@
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
+import {Builder} from '../../index.js';
 import {
-	Builder,
 	throw_expression,
 	memoizeMethod,
 	strictEqual,
-	languageValuesIdentical,
-	OBJ,
-} from './package.js';
+} from '../../lib/index.js';
+import {languageValuesIdentical} from '../utils-private.js';
+import type * as OBJ from '../cp-object/index.js';
 import {
 	TypeIntersection,
 	TypeUnion,

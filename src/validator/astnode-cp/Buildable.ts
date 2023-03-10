@@ -1,5 +1,5 @@
 import type binaryen from 'binaryen';
-import type {Builder} from './package.js';
+import type {Builder} from '../../index.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
 
 
