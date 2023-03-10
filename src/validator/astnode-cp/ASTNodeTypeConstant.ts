@@ -9,13 +9,13 @@ import {
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {Keyword} from '../../parser/index.js';
 import {Validator} from '../index.js';
 import {
-	SyntaxNodeType,
+	type SyntaxNodeType,
 	isSyntaxNodeType,
 } from '../utils-private.js';
 import {valueOfTokenNumber} from './utils-private.js';

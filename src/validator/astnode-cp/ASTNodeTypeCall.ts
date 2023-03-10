@@ -6,16 +6,16 @@ import {
 	TypeError06,
 } from '../../index.js';
 import {
-	NonemptyArray,
+	type NonemptyArray,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import {
-	ArgCount,
+	type ArgCount,
 	ValidFunctionName,
 	invalidFunctionName,
 } from './utils-private.js';

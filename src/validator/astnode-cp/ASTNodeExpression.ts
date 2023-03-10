@@ -3,11 +3,11 @@ import {
 	OBJ,
 	TYPE,
 	INST,
-	Builder,
+	type Builder,
 	ErrorCode,
 } from '../../index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {

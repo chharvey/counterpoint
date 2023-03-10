@@ -1,6 +1,6 @@
 import {
 	Operator,
-	ValidOperatorLogical,
+	type ValidOperatorLogical,
 } from '../../validator/index.js';
 import type {InstructionExpression} from './InstructionExpression.js';
 import {InstructionLocalGet} from './InstructionLocalGet.js';

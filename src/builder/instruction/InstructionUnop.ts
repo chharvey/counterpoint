@@ -1,6 +1,6 @@
 import {
 	Operator,
-	ValidOperatorUnary,
+	type ValidOperatorUnary,
 } from '../../validator/index.js';
 import {InstructionExpression} from './InstructionExpression.js';
 

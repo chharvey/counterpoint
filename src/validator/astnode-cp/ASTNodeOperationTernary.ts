@@ -3,7 +3,7 @@ import {
 	OBJ,
 	TYPE,
 	INST,
-	Builder,
+	type Builder,
 	TypeError01,
 } from '../../index.js';
 import {
@@ -11,7 +11,7 @@ import {
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeSupertype} from '../utils-private.js';

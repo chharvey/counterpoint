@@ -1,7 +1,7 @@
 import type {Keyword} from '../../parser/index.js';
 import {Validator} from '../index.js';
 import {
-	SyntaxNodeType,
+	type SyntaxNodeType,
 	isSyntaxNodeType,
 } from '../utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';

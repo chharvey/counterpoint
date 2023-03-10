@@ -4,7 +4,7 @@ import {
 	OBJ,
 	TYPE,
 	INST,
-	Builder,
+	type Builder,
 	TypeError01,
 	NanError01,
 	NanError02,
@@ -14,13 +14,13 @@ import {
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeSupertype} from '../utils-private.js';
 import {
 	Operator,
-	ValidOperatorArithmetic,
+	type ValidOperatorArithmetic,
 } from '../Operator.js';
 import {
 	bothNumeric,

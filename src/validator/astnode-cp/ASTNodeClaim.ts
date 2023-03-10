@@ -1,14 +1,14 @@
 import * as assert from 'assert';
 import {
-	OBJ,
+	type OBJ,
 	TYPE,
-	INST,
-	Builder,
+	type INST,
+	type Builder,
 	TypeError03,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';

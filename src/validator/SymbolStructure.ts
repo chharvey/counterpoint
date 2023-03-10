@@ -1,5 +1,5 @@
 import {
-	OBJ,
+	type OBJ,
 	TYPE,
 } from '../index.js';
 import type * as AST from './astnode-cp/index.js';

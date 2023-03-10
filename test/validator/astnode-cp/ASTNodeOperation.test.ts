@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 	Operator,
 	AST,
