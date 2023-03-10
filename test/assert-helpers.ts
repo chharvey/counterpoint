@@ -97,8 +97,11 @@ export function assertEqualTypes(param1: TYPE.Type | readonly TYPE.Type[] | Read
 
 export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref, expected: Ref): void;
 export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: readonly Ref[], expected: readonly Ref[]): void;
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref | readonly Ref[], expected: Ref | readonly Ref[]): void {
-	if (Array.isArray(actual)) {
+export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(bins: ReadonlyMap<Ref, Ref>): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref | readonly Ref[] | ReadonlyMap<Ref, Ref>, expected?: Ref | readonly Ref[]): void {
+	if (actual instanceof Map) {
+		return assertEqualBins([...actual.keys()], [...actual.values()]);
+	} if (Array.isArray(actual)) {
 		try {
 			return assert.deepStrictEqual(actual, expected);
 		} catch {

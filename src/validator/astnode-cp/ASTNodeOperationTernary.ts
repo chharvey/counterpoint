@@ -43,7 +43,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	public override build(builder: Builder): binaryen.ExpressionRef {
 		return builder.module.if(
 			this.operand0.build(builder),
-			...ASTNodeOperation.coerceOperands(builder, this.operand1, this.operand2).exprs,
+			...ASTNodeOperation.coerceOperands(builder, this.operand1, this.operand2),
 		);
 	}
 
