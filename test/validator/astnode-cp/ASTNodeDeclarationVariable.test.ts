@@ -126,6 +126,29 @@ describe('ASTNodeDeclarationVariable', () => {
 					let r3: mutable [a: int, b: str] = [c= 42, d= '43'];
 				`.split('\n'), TypeError03);
 			});
+			it('should throw when assigning combo type to union.', () => {
+				typeCheckGoal([
+					'let x: [bool, int]       | [int, bool]       = [true, true];',
+					'let x: [a: bool, b: int] | [a: int, b: bool] = [a= true, b= true];',
+				], TypeError03);
+				return typeCheckGoal(`
+					type Employee = [
+						name:         str,
+						id:           int,
+						job_title:    str,
+						hours_worked: float,
+					];
+					type Volunteer = [
+						name:         str,
+						agency:       str,
+						hours_worked: float,
+					];
+					let bob: Employee | Volunteer = [
+						name=         'Bob', %: str
+						hours_worked= 80.0,  %: float
+					];
+				`, TypeError03);
+			});
 			it('throws when not assigned to correct type.', () => {
 				typeCheckGoal(`
 					let t: mutable [a: int, b: str] = [   42,    '43'];

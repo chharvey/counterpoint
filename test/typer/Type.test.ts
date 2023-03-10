@@ -330,6 +330,10 @@ describe('Type', () => {
 				&& !TYPE.NULL.union(TYPE.INT).isSubtypeOf(TYPE.INT),
 				'exists A, C, D s.t. `A <: C | D` but `!(A <: C)` and `!(A <: D)`',
 			);
+			return assert.ok(
+				TYPE.BOOL.union(TYPE.INT).isSubtypeOf(TYPE.NULL.union(TYPE.BOOL).union(TYPE.INT.union(TYPE.FLOAT))),
+				'`U | V <: (T | U) | (V | W)` but `!(U | V <: T | U)` and `!(U | V <: V | W)`',
+			);
 		});
 		it('3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
