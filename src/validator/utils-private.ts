@@ -45,7 +45,7 @@ export function isSyntaxNodeType<T extends string>(node: SyntaxNode, type_or_reg
 
 type Join<Strings extends NonemptyArray<string>> =
 	Strings extends [infer S0, ...infer SRest]
-		? `${ S0 extends string ? '' | `__${ S0 }` : '' }${ SRest extends NonemptyArray<string> ? `${ Join<SRest> }` : '' }`
+		? `${ S0 extends string ? '' | `__${ S0 }` : '' }${ SRest extends NonemptyArray<string> ? Join<SRest> : '' }`
 		: '';
 export type SyntaxNodeFamily<Name extends string, Suffices extends NonemptyArray<string>> =
 	SyntaxNodeType<`${ Name }${ Join<Suffices> }`>;

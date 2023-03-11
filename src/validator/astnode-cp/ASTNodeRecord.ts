@@ -31,10 +31,15 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	public constructor(
 		start_node: SyntaxNodeFamily<'record_literal', ['variable']>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
-		private readonly isRef: boolean = true,
+		private readonly isRef: boolean,
 	) {
 		super(start_node, children);
-		this.isRef;
+		if (start_node.type === 'record_literal') {
+			assert.ok(!this.isRef);
+		} else {
+			assert.strictEqual(start_node.type, 'record_literal__variable');
+			assert.ok(this.isRef);
+		}
 	}
 
 	public override varCheck(): void {
