@@ -82,6 +82,16 @@ The values in records are Counterpoint Language Values.
 
 
 
+## `Vect`
+`Vect` objects have the same shape as `Tuple` objects, except `Vect` objects are value objects.
+
+
+
+## `Struct`
+`Struct` objects have the same shape as `Record` objects, except `Struct` objects are value objects.
+
+
+
 ## `List`
 `List` objects are variable-size ordered lists of indexed values, with indices starting at *0*.
 The values in lists are Counterpoint Language Values.
