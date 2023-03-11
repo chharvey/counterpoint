@@ -31,8 +31,13 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 	}
 
 
+	// HACK: adding a private instance field to fix an issue where emitted JS is broken.
+	// See https://github.com/microsoft/TypeScript/issues/53204
+	readonly #HACK = 0 as const;
+
 	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
+		this.#HACK;
 	}
 
 	@memoizeGetter

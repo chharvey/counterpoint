@@ -25,8 +25,13 @@ export class Null extends Primitive {
 	}
 
 
+	// HACK: adding a private instance field to fix an issue where emitted JS is broken.
+	// See https://github.com/microsoft/TypeScript/issues/53204
+	readonly #HACK = 0 as const;
+
 	private constructor() {
 		super();
+		this.#HACK;
 	}
 
 	public override toString(): string {
