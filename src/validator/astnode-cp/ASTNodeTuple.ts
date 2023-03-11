@@ -30,12 +30,6 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		private readonly isRef: boolean,
 	) {
 		super(start_node, children);
-		if (start_node.type === 'tuple_literal') {
-			assert.ok(!this.isRef);
-		} else {
-			assert.strictEqual(start_node.type, 'tuple_literal__variable');
-			assert.ok(this.isRef);
-		}
 	}
 
 	protected override build_do(builder: Builder): INST.InstructionExpression {
@@ -51,7 +45,9 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		const items: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
 		return (items.includes(null))
 			? null
-			: new OBJ.Tuple(items as OBJ.Object[]);
+			: !this.isRef
+				? new OBJ.Vect(items as OBJ.Object[])
+				: new OBJ.Tuple(items as OBJ.Object[]);
 	}
 
 	protected override assignTo_do(assignee: TYPE.Type): boolean {

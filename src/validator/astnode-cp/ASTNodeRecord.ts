@@ -34,12 +34,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		private readonly isRef: boolean,
 	) {
 		super(start_node, children);
-		if (start_node.type === 'record_literal') {
-			assert.ok(!this.isRef);
-		} else {
-			assert.strictEqual(start_node.type, 'record_literal__variable');
-			assert.ok(this.isRef);
-		}
 	}
 
 	public override varCheck(): void {
@@ -71,7 +65,9 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
-			: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
+			: !this.isRef
+				? new OBJ.Struct(properties as ReadonlyMap<bigint, OBJ.Object>)
+				: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
 	}
 
 	protected override assignTo_do(assignee: TYPE.Type): boolean {
