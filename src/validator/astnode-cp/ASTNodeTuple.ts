@@ -27,8 +27,10 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	public constructor(
 		start_node: SyntaxNodeFamily<'tuple_literal', ['variable']>,
 		public override readonly children: readonly ASTNodeExpression[],
+		private readonly isRef: boolean = true,
 	) {
 		super(start_node, children);
+		this.isRef;
 	}
 
 	protected override build_do(builder: Builder): INST.InstructionExpression {

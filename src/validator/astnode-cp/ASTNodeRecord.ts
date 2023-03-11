@@ -31,8 +31,10 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	public constructor(
 		start_node: SyntaxNodeFamily<'record_literal', ['variable']>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
+		private readonly isRef: boolean = true,
 	) {
 		super(start_node, children);
+		this.isRef;
 	}
 
 	public override varCheck(): void {
