@@ -39,18 +39,13 @@ export abstract class Type {
 	/**
 	 * Decorator for {@link Type#intersect} method and any overrides.
 	 * Contains shortcuts for constructing type intersections.
-	 * @param   _prototype    the prototype that has the method to be decorated
-	 * @param   _property_key the name of the method to be decorated
-	 * @param   descriptor    the Property Descriptor of the prototype’s method
-	 * @returns               `descriptor`, with a new value that is the decorated method
+	 * @implements MethodDecorator<Type, (this: Type, t: Type) => Type>
 	 */
 	protected static intersectDeco(
-		_prototype: Type,
-		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: Type, t: Type) => Type>,
-	): typeof descriptor {
-		const method = descriptor.value!;
-		descriptor.value = function (t) {
+		method:   (this: Type, t: Type) => Type,
+		_context: ClassMethodDecoratorContext<Type, typeof method>,
+	): typeof method {
+		return function (t) {
 			/** 1-5 | `T  & never   == never` */
 			if (this.isBottomType || t.isBottomType) {
 				return NEVER;
@@ -72,24 +67,18 @@ export abstract class Type {
 
 			return method.call(this, t);
 		};
-		return descriptor;
 	}
 
 	/**
 	 * Decorator for {@link Type#union} method and any overrides.
 	 * Contains shortcuts for constructing type unions.
-	 * @param   _prototype    the prototype that has the method to be decorated
-	 * @param   _property_key the name of the method to be decorated
-	 * @param   descriptor    the Property Descriptor of the prototype’s method
-	 * @returns               `descriptor`, with a new value that is the decorated method
+	 * @implements MethodDecorator<Type, (this: Type, t: Type) => Type>
 	 */
 	protected static unionDeco(
-		_prototype: Type,
-		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: Type, t: Type) => Type>,
-	): typeof descriptor {
-		const method = descriptor.value!;
-		descriptor.value = function (t) {
+		method:   (this: Type, t: Type) => Type,
+		_context: ClassMethodDecoratorContext<Type, typeof method>,
+	): typeof method {
+		return function (t) {
 			/** 1-7 | `T \| never   == T` */
 			if (this.isBottomType) {
 				return t;
@@ -111,24 +100,18 @@ export abstract class Type {
 
 			return method.call(this, t);
 		};
-		return descriptor;
 	}
 
 	/**
 	 * Decorator for {@link Type#subtract} method and any overrides.
 	 * Contains shortcuts for constructing type differences.
-	 * @param   _prototype    the prototype that has the method to be decorated
-	 * @param   _property_key the name of the method to be decorated
-	 * @param   descriptor    the Property Descriptor of the prototype’s method
-	 * @returns               `descriptor`, with a new value that is the decorated method
+	 * @implements MethodDecorator<Type, (this: Type, t: Type) => Type>
 	 */
 	protected static subtractDeco(
-		_prototype: Type,
-		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: Type, t: Type) => Type>,
-	): typeof descriptor {
-		const method = descriptor.value!;
-		descriptor.value = function (t) {
+		method:   (this: Type, t: Type) => Type,
+		_context: ClassMethodDecoratorContext<Type, typeof method>,
+	): typeof method {
+		return function (t) {
 			/** 4-1 | `A - B == A  <->  A & B == never` */
 			if (this.intersect(t).isBottomType) {
 				return this;
@@ -145,24 +128,18 @@ export abstract class Type {
 
 			return method.call(this, t);
 		};
-		return descriptor;
 	}
 
 	/**
 	 * Decorator for {@link Type#isSubtypeOf} method and any overrides.
 	 * Contains shortcuts for determining subtypes.
-	 * @param   _prototype    the prototype that has the method to be decorated
-	 * @param   _property_key the name of the method to be decorated
-	 * @param   descriptor    the Property Descriptor of the prototype’s method
-	 * @returns               `descriptor`, with a new value that is the decorated method
+	 * @implements MethodDecorator<Type, (this: Type, t: Type) => boolean>
 	 */
 	protected static subtypeDeco(
-		_prototype: Type,
-		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: Type, t: Type) => boolean>,
-	): typeof descriptor {
-		const method = descriptor.value!;
-		descriptor.value = function (t) {
+		method:   (this: Type, t: Type) => boolean,
+		_context: ClassMethodDecoratorContext<Type, typeof method>,
+	): typeof method {
+		return function (t) {
 			/** 2-7 | `A <: A` */
 			if (this === t) {
 				return true;
@@ -198,7 +175,6 @@ export abstract class Type {
 
 			return method.call(this, t);
 		};
-		return descriptor;
 	}
 
 	/**

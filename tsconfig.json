@@ -20,7 +20,6 @@
 		"allowSyntheticDefaultImports": true,
 
 		// Language and Environment
-		"experimentalDecorators":  true,
 		"target":                  "es2022",
 		"useDefineForClassFields": false, // instance fields using `[[define]]` semantics don’t play nicely with constructor parameter fields
 

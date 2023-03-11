@@ -16,18 +16,13 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	/**
 	 * Decorator for {@link ASTNodeCollectionLiteral#assignTo} method and any overrides.
 	 * Simplifies assignments by handling type operations.
-	 * @param   _prototype    the prototype that has the method to be decorated
-	 * @param   _property_key the name of the method to be decorated
-	 * @param   descriptor    the Property Descriptor of the prototype’s method
-	 * @returns               `descriptor`, with a new value that is the decorated method
+	 * @implements MethodDecorator<ASTNodeCollectionLiteral, (this: ASTNodeCollectionLiteral, assignee: TYPE.Type) => boolean>
 	 */
 	protected static assignToDeco(
-		_prototype: ASTNodeCollectionLiteral,
-		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: ASTNodeCollectionLiteral, assignee: TYPE.Type) => boolean>,
-	): typeof descriptor {
-		const method = descriptor.value!;
-		descriptor.value = function (assignee: TYPE.Type) {
+		method:   (this: ASTNodeCollectionLiteral, assignee: TYPE.Type) => boolean,
+		_context: ClassMethodDecoratorContext<ASTNodeCollectionLiteral, typeof method>,
+	): typeof method {
+		return function (assignee: TYPE.Type) {
 			if (assignee instanceof TYPE.TypeIntersection) {
 				/* A value is assignable to a type intersection if and only if
 					it is assignable to both operands of that intersection. */
@@ -40,7 +35,6 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 				return method.call(this, assignee);
 			}
 		};
-		return descriptor;
 	}
 
 

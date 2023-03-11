@@ -1,53 +1,95 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * The type for instance method decorators.
+ * @typeparam This    the `this` ‘parameter’ of the instance method
+ * @typeparam Value   the type of the decorated value — in this case, the instance method
+ * @param     method  the method to decorate
+ * @param     context a standard `ClassMethodDecoratorContext` object
+ * @returns           a new value that is the result of decorating `method`
+ */
+export type MethodDecorator<
+	This                                            = any,
+	Value extends (this: This, ...args: any) => any = (this: This, ...args: any) => any,
+> = (
+	method:  Value,
+	context: ClassMethodDecoratorContext<This, Value>,
+) => typeof method;
+
+
+
+/**
+ * The type for instance getter decorators.
+ * @typeparam This    the `this` ‘parameter’ of the instance getter
+ * @typeparam Value   the type of the decorated value — in this case, the instance getter
+ * @param     getter  the getter to decorate
+ * @param     context a standard `ClassGetterDecoratorContext` object
+ * @returns           a new value that is the result of decorating `getter`
+ */
+export type GetterDecorator<
+	This  = any,
+	Value = any,
+> = (
+	getter:  (this: This) => Value,
+	context: ClassGetterDecoratorContext<This, Value>,
+) => typeof getter;
+
+
+
+/**
+ * The type for instance setter decorators.
+ * @typeparam This    the `this` ‘parameter’ of the instance setter
+ * @typeparam Value   the type of the decorated value — in this case, the instance setter
+ * @param     setter  the setter to decorate
+ * @param     context a standard `ClassSetterDecoratorContext` object
+ * @returns           a new value that is the result of decorating `setter`
+ */
+export type SetterDecorator<
+	This  = any,
+	Value = any,
+> = (
+	setter:  (this: This, value: Value) => void,
+	context: ClassSetterDecoratorContext<This, Value>,
+) => typeof setter;
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+
+
 /**
  * Decorator for memoizing properties.
  * When getting a property, check whether it exists in the “database”.
  * If it does, return that value.
  * If it doen’t, compute the value, store it in the database, and then return it.
- * @implements MethodDecorator
+ * @implements MethodDecorator<object, (this: object, ...args: Params) => Return>
  * @typeparam Params      the method’s parameter types
  * @typeparam Return      the method’s return type
- * @param   _prototype    the prototype that has the method to be decorated
- * @param   _property_key the name of the method to be decorated
- * @param   descriptor    the Property Descriptor of the prototype’s method
- * @returns               `descriptor`, with a new value that is the decorated method
  */
 export function memoizeMethod<Params extends unknown[], Return>(
-	_prototype:    object,
-	_property_key: string,
-	descriptor:    TypedPropertyDescriptor<(this: object, ...args: Params) => Return>,
-): typeof descriptor {
-	const method = descriptor.value!;
+	method:   (this: object, ...args: Params) => Return,
+	_context: ClassMethodDecoratorContext<object, typeof method>,
+): typeof method {
 	const memomap = new WeakMap<object, Return>();
-	descriptor.value = function (...args) {
+	return function (...args) {
 		memomap.has(this) || memomap.set(this, method.call(this, ...args));
 		return memomap.get(this)!;
 	};
-	return descriptor;
 }
 
 
 
 /**
  * Like {@link memoizeMethod} but for getters.
- * @implements MethodDecorator
+ * @implements GetterDecorator<object, Return>
  * @typeparam Return      the getter’s return type
- * @param   _prototype    the prototype that has the getter to be decorated
- * @param   _property_key the name of the getter to be decorated
- * @param   descriptor    the Property Descriptor of the prototype’s getter
- * @returns               `descriptor`, with a new `get` that is the decorated getter
  */
 export function memoizeGetter<Return>(
-	_prototype:    object,
-	_property_key: string,
-	descriptor:    TypedPropertyDescriptor<Return>,
-): typeof descriptor {
-	const method = descriptor.get!;
+	getter:   (this: object) => Return,
+	_context: ClassGetterDecoratorContext<object, Return>,
+): typeof getter {
 	const memomap = new WeakMap<object, Return>();
-	descriptor.get = function () {
-		memomap.has(this) || memomap.set(this, method.call(this));
+	return function () {
+		memomap.has(this) || memomap.set(this, getter.call(this));
 		return memomap.get(this)!;
 	};
-	return descriptor;
 }
 
 
@@ -56,54 +98,40 @@ export function memoizeGetter<Return>(
  * Decorator for run-once methods.
  * The first time the method is called, it should execute; any time after that, it should not.
  * Should only be used on methods that return `void`; for non-void methods, use {@link memoizeMethod}.
- * @implements MethodDecorator
+ * @implements MethodDecorator<object, (this: object, ...args: Params) => void>
  * @typeparam Params      the method’s parameter types
- * @param   _prototype    the prototype that has the method to be decorated
- * @param   _property_key the name of the method to be decorated
- * @param   descriptor    the Property Descriptor of the prototype’s method
- * @returns               `descriptor`, with a new value that is the decorated method
  */
 export function runOnceMethod<Params extends unknown[]>(
-	_prototype:    object,
-	_property_key: string,
-	descriptor:    TypedPropertyDescriptor<(this: object, ...args: Params) => void>,
-): typeof descriptor {
-	const method = descriptor.value!;
+	method:   (this: object, ...args: Params) => void,
+	_context: ClassMethodDecoratorContext<object, typeof method>,
+): typeof method {
 	const memoset = new WeakSet();
-	descriptor.value = function (...args) {
+	return function (...args) {
 		if (!memoset.has(this)) {
 			memoset.add(this);
 			return method.call(this, ...args);
 		}
 	};
-	return descriptor;
 }
 
 
 
 /**
  * Like {@link runOnceMethod} but for setters.
- * @implements MethodDecorator
+ * @implements SetterDecorator<object, Param>
  * @typeparam Param       the setter’s parameter type
- * @param   _prototype    the prototype that has the getter to be decorated
- * @param   _property_key the name of the getter to be decorated
- * @param   descriptor    the Property Descriptor of the prototype’s getter
- * @returns               `descriptor`, with a new `get` that is the decorated getter
  */
 export function runOnceSetter<Param>(
-	_prototype:    object,
-	_property_key: string,
-	descriptor:    TypedPropertyDescriptor<Param>,
-): typeof descriptor {
-	const method = descriptor.set!;
+	setter:   (this: object, value: Param) => void,
+	_context: ClassSetterDecoratorContext<object, Param>,
+): typeof setter {
 	const memoset = new WeakSet();
-	descriptor.set = function (arg) {
+	return function (arg) {
 		if (!memoset.has(this)) {
 			memoset.add(this);
-			return method.call(this, arg);
+			return setter.call(this, arg);
 		}
 	};
-	return descriptor;
 }
 
 
@@ -111,21 +139,15 @@ export function runOnceSetter<Param>(
 /**
  * Decorator for performing strict equality (`===`), and then disjuncting (`||`) that result
  * with the results of performing the method.
+ * @implements MethodDecorator<Proto, (this: Proto, that: Proto, ...args: Params) => boolean>
  * @typeparam Proto       the type of the prototype
  * @typeparam Params      the method’s parameter types
- * @param   _prototype    the prototype that has the method to be decorated
- * @param   _property_key the name of the method to be decorated
- * @param   descriptor    the Property Descriptor of the prototype’s method
- * @returns               `descriptor`, with a new value that is the decorated method
  */
 export function strictEqual<Proto extends object, Params extends unknown[]>(
-	_prototype:    Proto,
-	_property_key: string,
-	descriptor:    TypedPropertyDescriptor<(this: Proto, that: Proto, ...args: Params) => boolean>,
-): typeof descriptor {
-	const method = descriptor.value!;
-	descriptor.value = function (that, ...args) {
+	method:   (this: Proto, that: Proto, ...args: Params) => boolean,
+	_context: ClassMethodDecoratorContext<Proto, typeof method>,
+): typeof method {
+	return function (that, ...args) {
 		return this === that || method.call(this, that, ...args);
 	};
-	return descriptor;
 }
