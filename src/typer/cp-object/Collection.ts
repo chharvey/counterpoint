@@ -15,7 +15,7 @@ export abstract class Collection extends CPObject {
 	private static readonly EQ_MEMO_COMPARATOR: (
 		a: Keys<typeof Collection.EQ_MEMO>,
 		b: Keys<typeof Collection.EQ_MEMO>,
-	) => boolean = (a, b) => a[0].identical(b[0]) && a[1].identical(b[1]);
+	) => boolean = (a, b) => a[0] === b[0] && a[1] === b[1]; // cannot test `.identical` for value objects without resulting in infinite recursion
 
 	private static readonly EQ_MEMO = new Map<readonly [CPObject, CPObject], boolean>();
 

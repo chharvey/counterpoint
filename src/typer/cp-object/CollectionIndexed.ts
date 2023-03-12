@@ -29,6 +29,16 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 
 	/** @final */
 	protected override equal_helper(value: CPObject): boolean {
+		return this.equalSubsteps(value);
+	}
+
+	/**
+	 * Substeps extracted from Equal algorithm for indexed collections.
+	 * This extraction is needed to prevent infinite recursion when performing Identical on Vects.
+	 * @param value the object to compare
+	 * @returns are the objects equal?
+	 */
+	protected equalSubsteps(value: CPObject): boolean {
 		return (
 			value instanceof CollectionIndexed
 			&& this.items.length === value.items.length

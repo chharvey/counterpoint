@@ -28,6 +28,16 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 
 	/** @final */
 	protected override equal_helper(value: CPObject): boolean {
+		return this.equalSubsteps(value);
+	}
+
+	/**
+	 * Substeps extracted from Equal algorithm for keyed collections.
+	 * This extraction is needed to prevent infinite recursion when performing Identical on Structs.
+	 * @param value the object to compare
+	 * @returns are the objects equal?
+	 */
+	protected equalSubsteps(value: CPObject): boolean {
 		return (
 			value instanceof CollectionKeyed
 			&& this.properties.size === value.properties.size
