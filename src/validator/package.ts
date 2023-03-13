@@ -39,6 +39,7 @@ export {
 	ReferenceError03,
 	AssignmentError01,
 	AssignmentError10,
+	SolidTypeError,
 	TypeError01,
 	TypeError02,
 	TypeError03,
@@ -61,7 +62,6 @@ export {
 	stringifyAttributes,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
 	Serializable,
 	serialize,
 } from '../core/index.js';

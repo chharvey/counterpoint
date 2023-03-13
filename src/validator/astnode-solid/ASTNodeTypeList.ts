@@ -3,6 +3,7 @@ import {
 	SolidType,
 	SolidTypeTuple,
 	SolidTypeList,
+	SolidTypeError,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
@@ -28,6 +29,8 @@ export class ASTNodeTypeList extends ASTNodeType {
 		const itemstype: SolidType = this.type.eval();
 		return (this.count === null)
 			? new SolidTypeList(itemstype)
-			: SolidTypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype));
+			: (this.count >= 0)
+				? SolidTypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype))
+				: (() => { throw new SolidTypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index); })();
 	}
 }

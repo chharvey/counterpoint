@@ -678,10 +678,10 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… . …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">3</th>
+			<th rowspan="5">3</th>
 			<td>Nullish</td>
-			<td rowspan="2">unary postfix</td>
-			<td rowspan="2">left-to-right</td>
+			<td rowspan="5">unary postfix</td>
+			<td rowspan="5">left-to-right</td>
 			<td><code>… ?</code></td>
 		</tr>
 		<tr>
@@ -689,14 +689,33 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !</code></td>
 		</tr>
 		<tr>
+			<td>List</td>
+			<td><code>… []</code></td>
+		</tr>
+		<tr>
+			<td>Tuple</td>
+			<td><code>… […]</code></td>
+		</tr>
+		<tr>
+			<td>Set</td>
+			<td><code>… {}</code></td>
+		</tr>
+		<tr>
 			<th>4</th>
+			<td>Mutable</td>
+			<td>unary prefix</td>
+			<td>right-to-left</td>
+			<td><code>mutable …</code></td>
+		</tr>
+		<tr>
+			<th>5</th>
 			<td>Intersection</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
 			<td><code>… & …</code></td>
 		</tr>
 		<tr>
-			<th>5</th>
+			<th>6</th>
 			<td>Union</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
@@ -738,6 +757,11 @@ The **nullish** operator creates a [union](#union) of the operand and the `null`
 ```
 type T = int?; % equivalent to `type T = int | null;`
 ```
+This operator is useful for describing values that might be null.
+```
+let unfixed hello: str? = null;
+hello = 'world';
+```
 
 
 ### TBA
@@ -745,6 +769,45 @@ type T = int?; % equivalent to `type T = int | null;`
 <Type> `!`
 ```
 To be announced.
+
+
+### List
+```
+<Type> `[]`
+```
+The **List** operator `T[]` is shorthand for `List.<T>`.
+
+
+### Tuple
+```
+<Type> `[` <Integer> `]`
+```
+The **Tuple** operator `T[‹n›]` (where `‹n›` is 0 or greater) is shorthand for a tuple type with repeated entries of `T`.
+E.g., `int[3]` is shorthand for `[int, int, int]`.
+
+
+### Set
+```
+<Type> `{}`
+```
+The **Set** operator `T{}` is shorthand for `Set.<T>`.
+
+
+### Mutable
+```
+`mutable` <Type>
+```
+The `mutable` type operator allows properties in a complex type to be reassigned.
+It allows us to reassign tuple indices and record keys, as well as modify sets and maps
+by adding, removing, and changing entries.
+It will also allow us to reassign fields and call mutating methods on class instances.
+```
+let elements: mutable str[4] = ['water', 'earth', 'fire', 'wind'];
+elements.3 = 'air';
+elements; %== ['water', 'earth', 'fire', 'air']
+```
+If `elements` were just of type `str[4]` (without `mutable`),
+then attempting to modify it would result in a Mutability Error.
 
 
 ### Intersection

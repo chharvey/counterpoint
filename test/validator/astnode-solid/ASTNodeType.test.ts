@@ -10,13 +10,14 @@ import {
 	SolidTypeSet,
 	SolidTypeMap,
 	SolidBoolean,
+	SolidTypeError,
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
 } from '../../../src/index.js';
 import {
-	typeConstInt,
-	typeConstFloat,
+	typeUnitInt,
+	typeUnitFloat,
 } from '../../helpers.js';
 
 
@@ -34,8 +35,8 @@ describe('ASTNodeType', () => {
 					SolidType.NULL,
 					SolidBoolean.FALSETYPE,
 					SolidBoolean.TRUETYPE,
-					typeConstInt(42n),
-					typeConstFloat(4.2e+3),
+					typeUnitInt(42n),
+					typeUnitFloat(4.2e+3),
 				]);
 			});
 			it('computes the value of keyword type.', () => {
@@ -155,6 +156,9 @@ describe('ASTNodeType', () => {
 					]),
 				);
 			});
+			it('throws if count is negative.', () => {
+				assert.throws(() => AST.ASTNodeTypeList.fromSource(`(int | bool)[-3]`).eval(), SolidTypeError);
+			});
 		});
 	});
 
@@ -191,11 +195,11 @@ describe('ASTNodeType', () => {
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource(`obj & 3`).eval(),
-				SolidType.OBJ.intersect(typeConstInt(3n)),
+				SolidType.OBJ.intersect(typeUnitInt(3n)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource(`4.2 | int`).eval(),
-				typeConstFloat(4.2).union(SolidType.INT),
+				typeUnitFloat(4.2).union(SolidType.INT),
 			);
 		});
 	});

@@ -51,6 +51,7 @@ function buildTest(title: string, source: string, expected: string) {
 
 
 (async (): Promise<void> => {
+	const __dirname = path.dirname(new URL(import.meta.url).pathname);
 	const FILEPATH = path.join(__dirname, './corpus/index.txt');
 	await fs.promises.mkdir(path.dirname(FILEPATH), {recursive: true});
 	return fs.promises.writeFile(FILEPATH, Object.entries({

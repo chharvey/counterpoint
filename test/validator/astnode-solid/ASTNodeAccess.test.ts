@@ -19,9 +19,9 @@ import {
 } from '../../../src/index.js';
 import {
 	CONFIG_FOLDING_OFF,
-	typeConstInt,
-	typeConstFloat,
-	typeConstStr,
+	typeUnitInt,
+	typeUnitFloat,
+	typeUnitStr,
 } from '../../helpers.js';
 
 
@@ -259,20 +259,20 @@ describe('ASTNodeAccess', () => {
 			]),
 		};
 		const expected: SolidType[] = [
-			typeConstInt(1n),
-			typeConstFloat(2.0),
-			typeConstStr('three'),
+			typeUnitInt(1n),
+			typeUnitFloat(2.0),
+			typeUnitStr('three'),
 			SolidType.INT,
 			SolidType.FLOAT,
 			SolidType.STR,
 		];
 		const expected_o: SolidType[] = [
-			typeConstStr('three'),
+			typeUnitStr('three'),
 			SolidType.STR.union(SolidType.NULL),
 			SolidType.STR.union(SolidType.NULL),
 		];
 		const expected_c: SolidType[] = [
-			typeConstStr('three'),
+			typeUnitStr('three'),
 			SolidType.STR,
 			SolidType.STR,
 		];
@@ -376,7 +376,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(41, 43).map((c) => typeOfStmtExpr(c)),
 					[
-						typeConstStr('three'),
+						typeUnitStr('three'),
 						COMMON_TYPES.int_float_str.union(SolidType.NULL),
 					],
 				);
@@ -457,7 +457,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(29, 31).map((c) => typeOfStmtExpr(c)),
 					[
-						typeConstStr('three'),
+						typeUnitStr('three'),
 						COMMON_TYPES.int_float_str.union(SolidType.NULL),
 					],
 				);
@@ -564,9 +564,9 @@ describe('ASTNodeAccess', () => {
 							...program.children.slice(53, 55),
 						].map((c) => typeOfStmtExpr(c)),
 						[
-							typeConstStr('three'),
+							typeUnitStr('three'),
 							COMMON_TYPES.int_float_str.union(SolidType.NULL),
-							typeConstStr('three'),
+							typeUnitStr('three'),
 							COMMON_TYPES.int_float_str.union(SolidType.NULL),
 						],
 					);

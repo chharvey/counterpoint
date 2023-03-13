@@ -29,13 +29,13 @@ export const CONFIG_FOLDING_OFF: SolidConfig = {
 
 
 
-export function typeConstInt(x: bigint): SolidTypeUnit<Int16> {
+export function typeUnitInt(x: bigint): SolidTypeUnit<Int16> {
 	return new Int16(x).toType();
 }
-export function typeConstFloat(x: number): SolidTypeUnit<Float64> {
+export function typeUnitFloat(x: number): SolidTypeUnit<Float64> {
 	return new Float64(x).toType();
 }
-export function typeConstStr(x: string): SolidTypeUnit<SolidString> {
+export function typeUnitStr(x: string): SolidTypeUnit<SolidString> {
 	return new SolidString(x).toType();
 }
 

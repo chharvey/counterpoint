@@ -12,7 +12,6 @@ import {
 	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
 	Keyword,
 	Validator,
 	SyntaxNodeType,
@@ -57,13 +56,13 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	private get value(): Primitive {
 		return this._value ??= (
-			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? (Dev.supports('literalTemplate-cook')) ? new SolidString(Validator.cookTokenTemplate(this.start_node.text)) : (() => { throw new Error('`literalTemplate-cook` not yet supported.'); })() :
-			(isSyntaxNodeType(this.start_node, 'integer')) ? valueOfTokenNumber(this.start_node.text, this.validator.config) :
-			(isSyntaxNodeType(this.start_node, 'primitive_literal'),  ((token: SyntaxNode) => (
+			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new SolidString(Validator.cookTokenTemplate(this.start_node.text)) :
+			(isSyntaxNodeType(this.start_node, 'integer'))                            ? valueOfTokenNumber(this.start_node.text, this.validator.config) :
+			(isSyntaxNodeType(this.start_node, 'primitive_literal'),                    ((token: SyntaxNode) => (
 				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeConstant.keywordValue(token.text) :
 				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? valueOfTokenNumber(token.text, this.validator.config) :
 				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? valueOfTokenNumber(token.text, this.validator.config) :
-				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  (Dev.supports('literalString-cook')) ? new SolidString(Validator.cookTokenString(token.text, this.validator.config)) : (() => { throw new Error('`literalString-cook` not yet supported.'); })())
+				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new SolidString(Validator.cookTokenString(token.text, this.validator.config)))
 			))(this.start_node.children[0]))
 		);
 	}
@@ -78,9 +77,6 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return this.value.toType();
 	}
 	protected override fold_do(): SolidObject {
-		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {
-			throw new Error('`stringConstant-assess` not yet supported.');
-		};
 		return this.value;
 	}
 }

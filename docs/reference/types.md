@@ -516,6 +516,12 @@ However, assigning a smaller tuple to a larger tuple results in a TypeError.
 let elements_and_more: [str, str, str, bool, int] = ['earth', 'wind', 'fire']; %> TypeError
 ```
 
+Note: If a tuple is homogeneous (its items are all of the same type),
+then we can use shorthand notation to annotate it:
+```
+let elements: str[3] = ['earth', 'wind', 'fire']; % shorthand for `[str, str, str]`
+```
+
 #### Tuple Access
 Items of a tuple can be accessed via 0-based **dot-accessor notation**
 (index `0` represents the first item).
@@ -779,14 +785,9 @@ where `arg` is a [Tuple](#tuples) object.
 let elements: List.<str> = List.<str>(['earth', 'wind', 'fire']);
 ```
 A shorthand for the generic syntax `List.<T>` is `T[]`.
-We can also *initialize* a list with a tuple literal,
-because tuples are generally assignable to lists.
-```
-let elements: str[] = ['earth', 'wind', 'fire'];
-```
 We can mix item types, but the list type must be homogeneous.
 ```
-let elements: (str | bool | int)[] = ['earth', 'wind', 'fire', true, 42];
+let elements: (str | bool | int)[] = List.<str | bool | int>(['earth', 'wind', 'fire', true, 42]);
 ```
 The compiler considers all items in the list as having the same type.
 For example, the expression `elements.[0]` is of type `str | bool | int`,
@@ -816,16 +817,6 @@ let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
 ]);
 ```
 A shorthand for the generic syntax `Dict.<T>` is `[:T]`.
-We can also *initialize* a dict with a record literal,
-because records are generally assignable to dicts.
-```
-let my_styles: [: int | float | str] = [
-	fontFamily= 'sans-serif',
-	fontSize=   1.25,
-	fontStyle=  'oblique',
-	fontWeight= 400,
-];
-```
 As shown above, we can mix value types, but the dict type must be homogeneous.
 
 #### Dict Access
