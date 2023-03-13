@@ -1,16 +1,16 @@
 import * as assert from 'assert';
 import {
-	NonemptyArray,
-	forEachAggregated,
-	SolidConfig,
-	CONFIG_DEFAULT,
-	PARSENODE,
 	SolidType,
 	SolidTypeMap,
 	SolidObject,
 	SolidMap,
 	INST,
 	Builder,
+	NonemptyArray,
+	forEachAggregated,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
@@ -26,10 +26,10 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeMapLiteral,
+		start_node: SyntaxNodeType<'map_literal'>,
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
-		super(start_node, {}, children);
+		super(start_node, children);
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeMap#build_do not yet supported.';

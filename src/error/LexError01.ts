@@ -1,4 +1,6 @@
-import type {Char} from './package.js';
+import type {
+	Serializable,
+} from './package.js';
 import {LexError} from './LexError.js';
 
 
@@ -16,7 +18,7 @@ export class LexError01 extends LexError {
 	 * Construct a new LexError01 object.
 	 * @param char the unrecognized character
 	 */
-	constructor (char: Char) {
+	constructor (char: Serializable) {
 		super(`Unrecognized character: \`${ char.source }\` at line ${ char.line_index + 1 } col ${ char.col_index + 1 }.`, LexError01.CODE, char.line_index, char.col_index);
 	}
 }

@@ -10,6 +10,15 @@ import {
 
 
 
+export const CONFIG_RADICES_SEPARATORS_ON: SolidConfig = {
+	...CONFIG_DEFAULT,
+	languageFeatures: {
+		...CONFIG_DEFAULT.languageFeatures,
+		integerRadices:    true,
+		numericSeparators: true,
+	},
+};
+
 export const CONFIG_FOLDING_OFF: SolidConfig = {
 	...CONFIG_DEFAULT,
 	compilerOptions: {

@@ -126,15 +126,10 @@ SemanticOperation[operator: COND]
 
 
 SemanticStatement =:=
-	| SemanticStatementExpression
 	| SemanticDeclaration
+	| SemanticStatementExpression
 	| SemanticAssignment
 ;
-
-
-
-SemanticStatementExpression
-	::= SemanticExpression?;
 
 
 
@@ -148,6 +143,11 @@ SemanticDeclarationType
 
 SemanticDeclarationVariable[unfixed: Boolean]
 	::= SemanticVariable SemanticType SemanticExpression;
+
+
+
+SemanticStatementExpression
+	::= SemanticExpression?;
 
 
 

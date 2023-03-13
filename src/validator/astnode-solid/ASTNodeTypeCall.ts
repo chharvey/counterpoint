@@ -11,7 +11,7 @@ import {
 	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
+	SyntaxNodeType,
 } from './package.js';
 import {
 	ValidFunctionName,
@@ -29,7 +29,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeCompound,
+		start_node: SyntaxNodeType<'type_compound'>,
 		readonly base: ASTNodeType,
 		readonly args: Readonly<NonemptyArray<ASTNodeType>>,
 	) {

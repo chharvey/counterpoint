@@ -1,3 +1,12 @@
+import {
+	stringifyAttributes,
+} from './utils-public.js';
+import {
+	sanitizeContent,
+} from './utils-private.js';
+
+
+
 /**
  * A Serializable object is a piece of source code with a line and column number,
  * and can be serialized into a representation string.
@@ -19,4 +28,12 @@ export interface Serializable {
 	 * @returns a string formatted as an XML element
 	 */
 	serialize(): string;
+}
+
+
+export function serialize(serializable: Serializable, content: string): string {
+	return `<${ serializable.tagname } ${ stringifyAttributes(new Map<string, string>([
+		['line', (serializable.line_index + 1).toString()],
+		['col',  (serializable.col_index  + 1).toString()],
+	])) }>${ sanitizeContent(content) }</${ serializable.tagname }>`;
 }

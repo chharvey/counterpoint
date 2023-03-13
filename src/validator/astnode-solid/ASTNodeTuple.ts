@@ -1,15 +1,15 @@
 import * as assert from 'assert';
 import {
-	forEachAggregated,
-	SolidConfig,
-	CONFIG_DEFAULT,
-	PARSENODE,
 	SolidType,
 	SolidTypeTuple,
 	SolidObject,
 	SolidTuple,
 	INST,
 	Builder,
+	forEachAggregated,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -24,10 +24,10 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTupleLiteral,
+		start_node: SyntaxNodeType<'tuple_literal'>,
 		override readonly children: readonly ASTNodeExpression[],
 	) {
-		super(start_node, {}, children);
+		super(start_node, children);
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeTuple#build_do not yet supported.';

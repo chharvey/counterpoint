@@ -1,3 +1,5 @@
+export * from './utils-public.js';
+
 export {
 	SolidConfig,
 	CONFIG_DEFAULT,

@@ -4,7 +4,7 @@ import {
 	SolidTypeDict,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSENODE,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -17,7 +17,7 @@ export class ASTNodeTypeDict extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeDictLiteral,
+		start_node: SyntaxNodeType<'type_hash_literal'>,
 		readonly type: ASTNodeType,
 	) {
 		super(start_node, {}, [type]);

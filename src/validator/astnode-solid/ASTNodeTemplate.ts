@@ -7,7 +7,7 @@ import {
 	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeConstant} from './ASTNodeConstant.js';
@@ -21,7 +21,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return expression;
 	}
 	constructor(
-		start_node: ParseNode,
+		start_node: SyntaxNodeType<'string_template'>,
 		override readonly children: // FIXME spread types
 			| readonly [ASTNodeConstant]
 			| readonly [ASTNodeConstant,                                                           ASTNodeConstant]
