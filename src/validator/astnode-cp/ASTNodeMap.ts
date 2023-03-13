@@ -32,7 +32,8 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	}
 
 	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeMap#build_do not yet supported.';
+		builder;
+		throw 'ASTNodeMap#build_do not yet supported.';
 	}
 
 	protected override type_do(): TYPE.Type {

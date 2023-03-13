@@ -34,9 +34,9 @@ type CustomArgsType = {
 	/** Display version number. */
 	version: boolean,
 	/** Specify output filepath. */
-	out: string,
+	out?: string,
 	/** Specify configuration filepath. */
-	project: string,
+	project?: string,
 	/** Display configuration options. */
 	config: boolean,
 	// abbrevs
@@ -192,10 +192,7 @@ export class CLI {
 				['r',       Command.RUN],
 			]).get(this.argv._[0]) || Command.HELP
 		);
-		if (!(
-			   (this.argv.out     === void 0 || typeof this.argv.out     === 'string' && this.argv.out     !== '')
-			&& (this.argv.project === void 0 || typeof this.argv.project === 'string' && this.argv.project !== '')
-		)) {
+		if (this.argv.out === '' || this.argv.project === '') {
 			throw new Error(`
 				Invalid CLI arguments!
 				${ CLI.HELPTEXT }

@@ -44,7 +44,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 
 	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeAccess#build_do not yet supported.';
+		builder;
+		throw 'ASTNodeAccess#build_do not yet supported.';
 	}
 
 	protected override type_do(): TYPE.Type {

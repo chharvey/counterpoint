@@ -53,13 +53,6 @@ export type ValidOperatorUnary = (
 	| Operator.NEG
 );
 
-export type ValidOperatorBinary = (
-	| ValidOperatorArithmetic
-	| ValidOperatorComparative
-	| ValidOperatorEquality
-	| ValidOperatorLogical
-);
-
 export type ValidOperatorArithmetic = (
 	| Operator.EXP
 	| Operator.MUL
@@ -83,4 +76,11 @@ export type ValidOperatorEquality = (
 export type ValidOperatorLogical = (
 	| Operator.AND
 	| Operator.OR
+);
+
+export type ValidOperatorBinary = (
+	| ValidOperatorArithmetic
+	| ValidOperatorComparative
+	| ValidOperatorEquality
+	| ValidOperatorLogical
 );

@@ -1,7 +1,7 @@
 {
 	"env": {
 		"es2021": true,
-		"node": true
+		"node":   true
 	},
 	"extends": [
 		"eslint:recommended",                           // https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
@@ -10,7 +10,7 @@
 	],
 	"overrides": [
 		{
-			"files": ["*.{cts,mts,ts}"],
+			"files":         ["*.{cts,mts,ts}"],
 			"parserOptions": {
 				"project": [
 					"./tsconfig.json",
@@ -57,19 +57,26 @@
 				}],
 
 				/* # Best Practices */
+				/* ## Conciseness */
+				"@typescript-eslint/no-unnecessary-condition":      "error",
+				"@typescript-eslint/no-unnecessary-type-arguments": "error",
+
 				/* ## Function Design */
+				"no-return-await":                  "off",
+				"@typescript-eslint/return-await":  "error", // needed here due to `parserOptions.project` // NOTE: overrides "no-return-await" (despite different name)
 				"require-await":                    "off",
 				"@typescript-eslint/require-await": "error", // needed here due to `parserOptions.project`
-				"no-return-await":                  "off",
-				"@typescript-eslint/return-await":  "error", // needed here due to `parserOptions.project` // note: overrides "no-return-await" (despite different name)
 
 				/* ## Strictness */
-				"@typescript-eslint/explicit-member-accessibility": "error",
-				"@typescript-eslint/prefer-readonly":               "error"
+				"@typescript-eslint/explicit-member-accessibility":           "error",
+				"@typescript-eslint/no-non-null-asserted-nullish-coalescing": "error",
+				"@typescript-eslint/no-unnecessary-type-assertion":           "error",
+				"@typescript-eslint/non-nullable-type-assertion-style":       "error",
+				"@typescript-eslint/prefer-readonly":                         "error"
 			}
 		}
 	],
-	"parser": "@typescript-eslint/parser",
+	"parser":        "@typescript-eslint/parser",
 	"parserOptions": {
 		"sourceType": "module"
 	},
@@ -77,8 +84,8 @@
 		"@typescript-eslint"
 	],
 	"reportUnusedDisableDirectives": true,
-	"root": true,
-	"rules": {
+	"root":                          true,
+	"rules":                         {
 		/* # Overrides of Recommended Rules */
 		"no-irregular-whitespace": ["error", {
 			"skipStrings":  false, // disallow in strings
@@ -95,12 +102,12 @@
 		/* # Layout & Formatting */
 		/* ## Indentation, Spacing, and Alignment */
 		"arrow-spacing":                        "error",
-		"comma-spacing":                        "error",
+		"comma-spacing":                        "error", // NOTE: "@typescript-eslint/comma-spacing" is defective
 		"dot-location":                         ["error", "property"],
 		"func-call-spacing":                    "off",
 		"@typescript-eslint/func-call-spacing": "warn",
 		"generator-star-spacing":               ["error", "both"],
-		"indent":                               ["error", "tab", {
+		"indent":                               ["error", "tab", { // NOTE: "@typescript-eslint/indent" is defective
 			"SwitchCase":             1,
 			"flatTernaryExpressions": true
 		}],
@@ -196,18 +203,22 @@
 		"prefer-template":      "error",
 
 		/* ## Variable Declarations */
-		"init-declarations":                    "off",
-		"@typescript-eslint/init-declarations": "error",
-		"no-shadow":                            "off",
-		"@typescript-eslint/no-shadow":         "error",
-		"one-var":                              ["error", "never"],
+		"init-declarations":                       "off",
+		"@typescript-eslint/init-declarations":    "error",
+		"no-shadow":                               "off",
+		"@typescript-eslint/no-shadow":            "error",
+		"no-use-before-define":                    "off",
+		"@typescript-eslint/no-use-before-define": ["error", {"ignoreTypeReferences": false}],
+		"one-var":                                 ["error", "never"],
 
 		/* ## Function Design */
-		"default-param-last":                    "off",
-		"@typescript-eslint/default-param-last": "error",
-		"func-names":                            ["error", "never"],
-		"no-return-await":                       "error",
-		"prefer-arrow-callback":                 ["error", {"allowUnboundThis": false}],
-		"require-await":                         "error"
+		"default-param-last":                        "off",
+		"@typescript-eslint/default-param-last":     "error",
+		"func-names":                                ["error", "never"],
+		"no-return-await":                           "error",
+		"no-useless-constructor":                    "off",
+		"@typescript-eslint/no-useless-constructor": "error",
+		"prefer-arrow-callback":                     ["error", {"allowUnboundThis": false}],
+		"require-await":                             "error"
 	}
 }

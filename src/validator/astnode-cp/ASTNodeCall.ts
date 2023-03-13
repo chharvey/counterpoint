@@ -55,7 +55,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 	}
 
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
-		throw builder && to_float && '`ASTNodeCall#build_do` not yet supported.';
+		builder;
+		to_float;
+		throw '`ASTNodeCall#build_do` not yet supported.';
 	}
 
 	protected override type_do(): TYPE.Type {
@@ -123,7 +125,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.MAP, () => {
 				this.countArgs([1n, 3n], [0n, 2n]);
 				const anttype:    TYPE.Type = this.typeargs[0].eval();
-				const contype:    TYPE.Type = this.typeargs[1]?.eval() || anttype;
+				const contype:    TYPE.Type = this.typeargs[1]?.eval() ?? anttype;
 				const returntype: TYPE.Type = new TYPE.TypeMap(anttype, contype);
 				const entrytype:  TYPE.Type = TYPE.TypeTuple.fromTypes([anttype, contype]);
 				if (this.exprargs.length) {
