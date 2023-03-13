@@ -11,5 +11,5 @@ import {Instruction} from './Instruction.js';
  * - InstructionCond
  */
 export abstract class InstructionExpression extends Instruction {
-	abstract get isFloat(): boolean;
+	public abstract get isFloat(): boolean;
 }

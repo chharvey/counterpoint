@@ -15,23 +15,25 @@ import {Primitive} from './Primitive.js';
  * @final
  */
 export class Null extends Primitive {
-	/** The Solid Language Value `null`. */
-	static readonly NULL: Null = new Null();
-	/** A Unit Type containing only the Solid Language Value `null`. */
-	static readonly NULLTYPE = Null.NULL.toType();
+	/** The Counterpoint Language Value `null`. */
+	public static readonly NULL: Null = new Null();
+	/** A Unit Type containing only the Counterpoint Language Value `null`. */
+	public static readonly NULLTYPE = Null.NULL.toType();
 
 
-	private constructor () {
-		super()
+	private constructor() {
+		super();
 	}
 
-	override toString(): string {
-		return 'null'
+	public override toString(): string {
+		return 'null';
 	}
-	override get isTruthy(): boolean {
+
+	public override get isTruthy(): boolean {
 		return false;
 	}
+
 	protected override identical_helper(value: CPObject): boolean {
-		return value instanceof Null
+		return value instanceof Null;
 	}
 }

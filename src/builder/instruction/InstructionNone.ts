@@ -9,7 +9,7 @@ export class InstructionNone extends Instruction {
 	/**
 	 * @return `''`
 	 */
-	override toString(): string {
-		return ''
+	public override toString(): string {
+		return '';
 	}
 }

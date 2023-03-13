@@ -9,7 +9,7 @@ export class InstructionUnreachable extends Instruction {
 	/**
 	 * @return `'(unreachable)'`
 	 */
-	override toString(): string {
-		return `(unreachable)`
+	public override toString(): string {
+		return '(unreachable)';
 	}
 }

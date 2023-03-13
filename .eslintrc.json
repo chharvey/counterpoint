@@ -1,0 +1,213 @@
+{
+	"env": {
+		"es2021": true,
+		"node": true
+	},
+	"extends": [
+		"eslint:recommended",                           // https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
+		"plugin:@typescript-eslint/eslint-recommended", // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/configs/eslint-recommended.ts
+		"plugin:@typescript-eslint/recommended"         // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/configs/recommended.ts
+	],
+	"overrides": [
+		{
+			"files": ["*.{cts,mts,ts}"],
+			"parserOptions": {
+				"project": [
+					"./tsconfig.json",
+					"./test/tsconfig.json",
+					"./tree-sitter-counterpoint/tsconfig.json"
+				]
+			},
+			"rules": {
+				/* # Overrides of Recommended Rules */
+				"@typescript-eslint/no-explicit-any":       ["error", {"fixToUnknown": true}], // report as errors & quickfix `any` to `unknown`
+				"@typescript-eslint/no-inferrable-types":   "off",                             // don’t rely on TypeScript inference
+				"@typescript-eslint/no-non-null-assertion": "off",                             // non-null assertions can be useful
+
+				/* # Layout & Formatting */
+				/* ## Indentation, Spacing, and Alignment */
+				"@typescript-eslint/type-annotation-spacing": "error",
+
+				/* ## Grouping Structure Style */
+				"@typescript-eslint/adjacent-overload-signatures": "error",
+				"@typescript-eslint/member-delimiter-style":       ["error", {
+					"overrides": {
+						"typeLiteral": {
+							"multiline":  {"delimiter": "comma"},
+							"singleline": {"delimiter": "comma"}
+						}
+					}
+				}],
+
+				/* ## Operator Style */
+				"dot-notation":                    "off",
+				"@typescript-eslint/dot-notation": "error", // needed here due to `parserOptions.project`
+
+				/* ## Type Annotations */
+				"@typescript-eslint/array-type": ["error", {
+					"default":  "array-simple",
+					"readonly": "array"
+				}],
+				"@typescript-eslint/consistent-generic-constructors": "error",
+				"@typescript-eslint/consistent-indexed-object-style": "error",
+				"@typescript-eslint/consistent-type-assertions":      "error",
+				"@typescript-eslint/explicit-function-return-type":   ["error", {
+					"allowExpressions":          true,
+					"allowHigherOrderFunctions": false
+				}],
+
+				/* # Best Practices */
+				/* ## Function Design */
+				"require-await":                    "off",
+				"@typescript-eslint/require-await": "error", // needed here due to `parserOptions.project`
+				"no-return-await":                  "off",
+				"@typescript-eslint/return-await":  "error", // needed here due to `parserOptions.project` // note: overrides "no-return-await" (despite different name)
+
+				/* ## Strictness */
+				"@typescript-eslint/explicit-member-accessibility": "error",
+				"@typescript-eslint/prefer-readonly":               "error"
+			}
+		}
+	],
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"sourceType": "module"
+	},
+	"plugins": [
+		"@typescript-eslint"
+	],
+	"reportUnusedDisableDirectives": true,
+	"root": true,
+	"rules": {
+		/* # Overrides of Recommended Rules */
+		"no-irregular-whitespace": ["error", {
+			"skipStrings":  false, // disallow in strings
+			"skipComments": true   // allow in comments
+		}],
+		"no-mixed-spaces-and-tabs":          ["error", "smart-tabs"], // allow smart-tabs
+		"@typescript-eslint/no-unused-vars": "off",                   // ts(6196) & tsconfig(noUnusedLocals, noUnusedParameters)
+
+		/* # File Conventions (should be consistent with `/.editorconfig` file) */
+		"eol-last":           "error",
+		"linebreak-style":    "error",
+		"no-trailing-spaces": "error",
+
+		/* # Layout & Formatting */
+		/* ## Indentation, Spacing, and Alignment */
+		"arrow-spacing":                        "error",
+		"comma-spacing":                        "error",
+		"dot-location":                         ["error", "property"],
+		"func-call-spacing":                    "off",
+		"@typescript-eslint/func-call-spacing": "warn",
+		"generator-star-spacing":               ["error", "both"],
+		"indent":                               ["error", "tab", {
+			"SwitchCase":             1,
+			"flatTernaryExpressions": true
+		}],
+		"key-spacing": ["error", {
+			"align": "value",
+			"mode":  "minimum"
+		}],
+		"keyword-spacing":                                "off",
+		"@typescript-eslint/keyword-spacing":             "error",
+		"rest-spread-spacing":                            "error",
+		"semi-spacing":                                   "error",
+		"space-before-blocks":                            "off",
+		"@typescript-eslint/space-before-blocks":         "error",
+		"space-before-function-paren":                    "off",
+		"@typescript-eslint/space-before-function-paren": ["warn", {
+			"anonymous":  "always",
+			"asyncArrow": "always",
+			"named":      "never"
+		}],
+		"space-infix-ops":                    "off",
+		"@typescript-eslint/space-infix-ops": "error",
+		"space-unary-ops":                    "error",
+		"switch-colon-spacing":               "error",
+		"template-curly-spacing":             ["error", "always"],
+		"template-tag-spacing":               "error",
+		"yield-star-spacing":                 ["error", "both"],
+
+		/* ## Grouping Structure Style */
+		"array-bracket-newline":                          ["error", "consistent"], // FIXME: require line breaks exactly when there exist line breaks between elements (ignoring inside elements)
+		"array-bracket-spacing":                          "warn",
+		"array-element-newline":                          ["error", "consistent"],
+		"arrow-body-style":                               "error",
+		"brace-style":                                    "off",
+		"@typescript-eslint/brace-style":                 "error",
+		"computed-property-spacing":                      "error",
+		"curly":                                          "error",
+		"function-call-argument-newline":                 ["error", "consistent"],
+		"function-paren-newline":                         "error",
+		"func-style":                                     ["error", "declaration", {"allowArrowFunctions": true}],
+		"lines-between-class-members":                    "off",
+		"@typescript-eslint/lines-between-class-members": ["error", "always", {"exceptAfterSingleLine": true}],
+		"object-curly-newline":                           ["error", {"multiline": true}],
+		"object-shorthand":                               ["error", "properties", {"avoidQuotes": true}],
+		"no-useless-computed-key":                        ["error", {"enforceForClassMembers": true}],
+		"object-curly-spacing":                           "off",
+		"@typescript-eslint/object-curly-spacing":        "warn",
+		"object-property-newline":                        ["error", {"allowAllPropertiesOnSameLine": true}],
+		"padded-blocks":                                  ["error", "never"],
+		"quote-props":                                    ["error", "consistent-as-needed"],
+		"space-in-parens":                                "warn",
+
+		/* ## Operator Style */
+		"arrow-parens":                     "error",
+		"comma-dangle":                     "off",
+		"@typescript-eslint/comma-dangle":  ["error", "always-multiline"],
+		"comma-style":                      "error",
+		"dot-notation":                     "error",
+		"implicit-arrow-linebreak":         "error",
+		"new-parens":                       "error",
+		"operator-linebreak":               ["error", "before", {
+			"overrides": {
+				"=":    "none",
+				"*=":   "none",
+				"/=":   "none",
+				"%=":   "none",
+				"+=":   "none",
+				"-=":   "none",
+				"<<=":  "none",
+				">>=":  "none",
+				">>>=": "none",
+				"&=":   "none",
+				"^=":   "none",
+				"|=":   "none",
+				"**=":  "none",
+				"&&=":  "none",
+				"||=":  "none",
+				"??=":  "none",
+				":"  :  "ignore"
+			}
+		}],
+		"quotes":                  ["error", "single"],
+		"semi":                    "off",
+		"@typescript-eslint/semi": "error",
+		"semi-style":              "error",
+		"wrap-iife":               ["error", "inside", {"functionPrototypeMethods": true}],
+
+		/* # Best Practices */
+		/* ## Preferred Operators */
+		"eqeqeq":               "error",
+		"no-useless-concat":    "error",
+		"operator-assignment":  "error",
+		"prefer-object-spread": "error",
+		"prefer-template":      "error",
+
+		/* ## Variable Declarations */
+		"init-declarations":                    "off",
+		"@typescript-eslint/init-declarations": "error",
+		"no-shadow":                            "off",
+		"@typescript-eslint/no-shadow":         "error",
+		"one-var":                              ["error", "never"],
+
+		/* ## Function Design */
+		"default-param-last":                    "off",
+		"@typescript-eslint/default-param-last": "error",
+		"func-names":                            ["error", "never"],
+		"no-return-await":                       "error",
+		"prefer-arrow-callback":                 ["error", {"allowUnboundThis": false}],
+		"require-await":                         "error"
+	}
+}

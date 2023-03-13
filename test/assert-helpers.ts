@@ -1,8 +1,10 @@
-import * as assert from 'assert'
+import * as assert from 'assert';
 import * as xjs from 'extrajs';
-import type {
-	TYPE,
-} from '../src/index.js'
+import type {TYPE} from '../src/index.js';
+
+
+
+type Class = Function; // eslint-disable-line @typescript-eslint/ban-types --- alias `Function` to mean “any class object”
 
 
 
@@ -13,18 +15,19 @@ import type {
  * @param cons - the class or constructor function
  * @throws {AssertionError} if false
  */
-export function assert_instanceof(obj: object, cons: Function): void {
+export function assert_instanceof(obj: object, cons: Class): void {
 	assert.ok(obj instanceof cons, `${ obj } should be an instance of ${ cons }.`);
 }
 
 
 
+type CallTrackerFunction = NonNullable<Parameters<assert.CallTracker['calls']>[0]>; // (...args: any[]) => any
 /**
  * @param orig the original function; useful for setting & unsetting
  * @param spy  the wrapper function that is actually called during tests
  * @return     any return value
  */
-type ExpectCallback<Func extends (...args: any[]) => any, Return> = (orig: Func, spy: Func) => Return;
+type ExpectCallback<Func extends CallTrackerFunction, Return> = (orig: Func, spy: Func) => Return;
 /**
  * Assert that, while a callback is performed, the given function is called a specified number of times.
  * @param orig     the function, a copy of which is expected to actually be called
@@ -34,7 +37,7 @@ type ExpectCallback<Func extends (...args: any[]) => any, Return> = (orig: Func,
  * @throw          if `orig` was not called the exact specified number of times
  * @throw          if `callback` itself throws
  */
-export function assert_wasCalled<Func extends (...args: any[]) => any, Return>(orig: Func, times: number, callback: ExpectCallback<Func, Return>): Return {
+export function assert_wasCalled<Func extends CallTrackerFunction, Return>(orig: Func, times: number, callback: ExpectCallback<Func, Return>): Return {
 	const tracker: assert.CallTracker = new assert.CallTracker();
 	try {
 		return callback.call(null, orig, tracker.calls(orig, times));
@@ -42,9 +45,9 @@ export function assert_wasCalled<Func extends (...args: any[]) => any, Return>(o
 		try {
 			tracker.verify();
 		} catch {
-			throw new AggregateError(tracker.report().map((info) => new assert.AssertionError(info)));
-		};
-	};
+			throw new AggregateError(tracker.report().map((info) => new assert.AssertionError(info))); // eslint-disable-line no-unsafe-finally --- we want this behavior
+		}
+	}
 }
 
 
@@ -63,7 +66,7 @@ export function assertEqualTypes(actual: TYPE.Type, expected: TYPE.Type): void;
  * @param expected an array of what `actual` is expected to equal
  * @throws {AssertionError} if a corresponding type fails equality
  */
-export function assertEqualTypes(actual: TYPE.Type[], expected: TYPE.Type[]): void;
+export function assertEqualTypes(actual: readonly TYPE.Type[], expected: readonly TYPE.Type[]): void;
 /**
  * Assert equal types. First compares by `assert.deepStrictEqual`,
  * but if that fails, compares by `Type#equals`.
@@ -71,7 +74,7 @@ export function assertEqualTypes(actual: TYPE.Type[], expected: TYPE.Type[]): vo
  * @throws {AssertionError} if one of the pairs fails equality
  */
 export function assertEqualTypes(types: ReadonlyMap<TYPE.Type, TYPE.Type>): void;
-export function assertEqualTypes(param1: TYPE.Type | TYPE.Type[] | ReadonlyMap<TYPE.Type, TYPE.Type>, param2?: TYPE.Type | TYPE.Type[]): void {
+export function assertEqualTypes(param1: TYPE.Type | readonly TYPE.Type[] | ReadonlyMap<TYPE.Type, TYPE.Type>, param2?: TYPE.Type | readonly TYPE.Type[]): void {
 	if (param1 instanceof Map) {
 		return assertEqualTypes([...param1.keys()], [...param1.values()]);
 	} else if (param1 instanceof Array) {
@@ -79,7 +82,7 @@ export function assertEqualTypes(param1: TYPE.Type | TYPE.Type[] | ReadonlyMap<T
 			return assert.deepStrictEqual(param1, param2);
 		} catch {
 			return xjs.Array.forEachAggregated(param1, (act, i) => assertEqualTypes(act, (param2 as TYPE.Type[])[i]));
-		};
+		}
 	} else {
 		try {
 			return assert.deepStrictEqual(param1, param2);
@@ -91,7 +94,7 @@ export function assertEqualTypes(param1: TYPE.Type | TYPE.Type[] | ReadonlyMap<T
 
 
 
-type ValidationObject = {cons: Function} & (
+type ValidationObject = {cons: Class} & (
 	| {message: string}
 	| {errors: ValidationObject[]}
 );

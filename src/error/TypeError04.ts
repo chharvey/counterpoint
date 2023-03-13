@@ -16,14 +16,14 @@ import {TypeError} from './TypeError.js';
  */
 export class TypeError04 extends TypeError {
 	/** The number series of this class of errors. */
-	static override readonly CODE = 4;
+	public static override readonly CODE = 4;
 	/**
 	 * Construct a new TypeError04 object.
 	 * @param kind     - the kind of access
 	 * @param accessee - the type of expression to which property access is performed
 	 * @param accessor - the property access index/key/expression
 	 */
-	constructor (kind: 'index' | 'property' | 'parameter', accessee: TYPE.Type, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression) {
+	public constructor(kind: 'index' | 'property' | 'parameter', accessee: TYPE.Type, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression) {
 		super(`${ kind[0].toUpperCase() }${ kind.slice(1) } \`${ accessor.source }\` does not exist on type \`${ accessee }\`.`, TypeError04.CODE, accessor.line_index, accessor.col_index);
 	}
 }

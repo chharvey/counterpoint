@@ -18,26 +18,30 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 export class ASTNodeRecord extends ASTNodeCollectionLiteral {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeRecord {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeRecord {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeRecord);
 		return expression;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeType<'record_literal'>,
-		override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
+		public override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, children);
 	}
+
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
+
 	protected override type_do(): TYPE.Type {
 		return TYPE.TypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.type(),
 		])), true);
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const properties: ReadonlyMap<bigint, OBJ.Object | null> = new Map(this.children.map((c) => [
 			c.key.id,
@@ -58,7 +62,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			}
 			try {
 				xjs.Array.forEachAggregated([...assignee_type_record.propertytypes], ([id, thattype]) => {
-					const prop: ASTNodeProperty | undefined = this.children.find((prop) => prop.key.id === id);
+					const prop: ASTNodeProperty | undefined = this.children.find((c) => c.key.id === id);
 					if (!thattype.optional && !prop) {
 						throw new TypeError(`Property \`${ id }\` does not exist on type \`${ this.type() }\`.`);
 					}
@@ -68,7 +72,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				return false;
 			}
 			xjs.Array.forEachAggregated([...assignee_type_record.propertytypes], ([id, thattype]) => {
-				const prop: ASTNodeProperty | undefined = this.children.find((prop) => prop.key.id === id);
+				const prop: ASTNodeProperty | undefined = this.children.find((c) => c.key.id === id);
 				const expr: ASTNodeExpression | undefined = prop?.val;
 				if (expr) {
 					return ASTNodeCP.typeCheckAssignment(

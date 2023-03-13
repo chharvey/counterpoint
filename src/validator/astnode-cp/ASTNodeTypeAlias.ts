@@ -16,7 +16,7 @@ import {ASTNodeType} from './ASTNodeType.js';
 
 
 export class ASTNodeTypeAlias extends ASTNodeType {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeAlias {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeAlias {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeAlias);
 		return typ;
@@ -25,29 +25,30 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 
 	private _id: bigint | null = null; // TODO use memoize decorator
 
-	constructor (start_node: SyntaxNodeType<'identifier'>) {
+	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
-	get id(): bigint {
+	public get id(): bigint {
 		return this._id ??= this.validator.cookTokenIdentifier(this.start_node.text);
 	}
 
-	override varCheck(): void {
+	public override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
-		};
+		}
 		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureVar) {
 			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
-		};
+		}
 	}
+
 	protected override eval_do(): TYPE.Type {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {
 				return symbol.typevalue;
-			};
-		};
+			}
+		}
 		return TYPE.Type.NEVER;
 	}
 }

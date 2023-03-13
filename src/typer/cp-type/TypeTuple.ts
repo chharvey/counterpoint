@@ -1,6 +1,7 @@
 import {
 	TypeError04,
 	IntRange,
+	throw_expression,
 	ValidAccessOperator,
 	AST,
 	TypeEntry,
@@ -17,12 +18,12 @@ export class TypeTuple extends Type {
 	 * Is the argument a unit tuple type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Tuple`
 	 */
-	static isUnitType(type: Type): type is TypeUnit<OBJ.Tuple> {
+	public static isUnitType(type: Type): type is TypeUnit<OBJ.Tuple> {
 		return type instanceof TypeUnit && type.value instanceof OBJ.Tuple;
 	}
 
 
-	override readonly isBottomType: boolean = false;
+	public override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new TypeTuple from type items, assuming each item is required.
@@ -30,7 +31,7 @@ export class TypeTuple extends Type {
 	 * @param is_mutable is the tuple type mutable?
 	 * @return a new tuple type with the provided items
 	 */
-	static fromTypes(types: readonly Type[] = [], is_mutable: boolean = false): TypeTuple {
+	public static fromTypes(types: readonly Type[] = [], is_mutable: boolean = false): TypeTuple {
 		return new TypeTuple(types.map((t) => ({
 			type:     t,
 			optional: false,
@@ -43,14 +44,14 @@ export class TypeTuple extends Type {
 	 * @param types this type’s item types
 	 * @param is_mutable is this type mutable?
 	 */
-	constructor (
+	public constructor(
 		public readonly types: readonly TypeEntry[] = [],
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new OBJ.Tuple()]));
 	}
 
-	override get hasMutable(): boolean {
+	public override get hasMutable(): boolean {
 		return super.hasMutable || this.types.some((t) => t.type.hasMutable);
 	}
 
@@ -62,11 +63,11 @@ export class TypeTuple extends Type {
 		];
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `${ (this.isMutable) ? 'mutable ' : '' }[${ this.types.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
-	override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.Tuple && v.toType().isSubtypeOf(this);
 	}
 
@@ -82,35 +83,36 @@ export class TypeTuple extends Type {
 		);
 	}
 
-	override mutableOf(): TypeTuple {
+	public override mutableOf(): TypeTuple {
 		return new TypeTuple(this.types, true);
 	}
 
-	override immutableOf(): TypeTuple {
+	public override immutableOf(): TypeTuple {
 		return new TypeTuple(this.types, false);
 	}
 
-	get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
+	public get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
-		return updateAccessedStaticType((
-			(-n <= i && i < 0) ? this.types[i + n] :
-			(0  <= i && i < n) ? this.types[i] :
-			(() => { throw new TypeError04('index', this, accessor); })()
-		), access_kind);
+		return updateAccessedStaticType(
+			(
+				(-n <= i && i < 0) ? this.types[i + n] :
+				(0  <= i && i < n) ? this.types[i] :
+				throw_expression(new TypeError04('index', this, accessor))
+			),
+			access_kind,
+		);
 	}
 
-	itemTypes(): Type {
-		return (this.types.length)
-			? Type.unionAll(this.types.map((t) => t.type))
-			: Type.NEVER;
+	public itemTypes(): Type {
+		return Type.unionAll(this.types.map((t) => t.type));
 	}
 
 	/**
 	 * The *intersection* of types `S` and `T` is the *union* of the set of items on `S` with the set of items on `T`.
 	 * For any overlapping items, their type intersection is taken.
 	 */
-	intersectWithTuple(t: TypeTuple): TypeTuple {
+	public intersectWithTuple(t: TypeTuple): TypeTuple {
 		const items: TypeEntry[] = [...this.types];
 		[...t.types].forEach((typ, i) => {
 			items[i] = this.types[i] ? {
@@ -125,7 +127,7 @@ export class TypeTuple extends Type {
 	 * The *union* of types `S` and `T` is the *intersection* of the set of items on `S` with the set of items on `T`.
 	 * For any overlapping items, their type union is taken.
 	 */
-	unionWithTuple(t: TypeTuple): TypeTuple {
+	public unionWithTuple(t: TypeTuple): TypeTuple {
 		const items: TypeEntry[] = [];
 		t.types.forEach((typ, i) => {
 			if (this.types[i]) {
@@ -134,7 +136,7 @@ export class TypeTuple extends Type {
 					optional: this.types[i].optional || typ.optional,
 				};
 			}
-		})
+		});
 		return new TypeTuple(items);
 	}
 }

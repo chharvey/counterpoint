@@ -13,7 +13,7 @@ export class InstructionDeclareGlobal extends Instruction {
 	 * @param mut  is the variable mutable? (may it be reassigned?)
 	 * @param init the initial value of the variable
 	 */
-	constructor (
+	public constructor(
 		private readonly name: bigint | string,
 		private readonly mut: boolean,
 		private readonly init: InstructionExpression,
@@ -21,8 +21,9 @@ export class InstructionDeclareGlobal extends Instruction {
 		super();
 		this.name = (typeof name === 'bigint') ? `$glb${ name.toString(16) }` : name;
 	}
+
 	/** @return `'(global ‹name› ‹type› ‹init›)'` */
-	override toString(): string {
+	public override toString(): string {
 		return `(global ${ this.name } ${ (this.mut) ? `(mut ${ this.type })` : this.type } ${ this.init })`;
 	}
 }

@@ -9,7 +9,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 
 
 /** The current version of this project (as defined in `package.json`). */
-const VERSION: Promise<string> = requireJSON(path.join(DIRNAME, '../package.json')).then((pkg: any) => pkg.version);
+const VERSION: Promise<string> = (requireJSON(path.join(DIRNAME, '../package.json')) as Promise<{version: string}>).then((pkg) => pkg.version);
 
 
 (async (): Promise<void> => {
@@ -23,8 +23,8 @@ const VERSION: Promise<string> = requireJSON(path.join(DIRNAME, '../package.json
 		[Command.HELP, () => {
 			console.log(CLI.HELPTEXT);
 			if (cli.argv.config) {
-				console.log('\n' + CLI.CONFIGTEXT);
-			};
+				console.log(`\n${ CLI.CONFIGTEXT }`);
+			}
 		}],
 		[Command.VERSION, async () => {
 			console.log(`counterpoint version ${ await VERSION }`);
@@ -42,6 +42,6 @@ const VERSION: Promise<string> = requireJSON(path.join(DIRNAME, '../package.json
 		err.errors.forEach((er) => console.error(er));
 	} else {
 		console.error(err);
-	};
+	}
 	process.exit(1);
 });

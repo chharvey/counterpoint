@@ -26,11 +26,12 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeStatement representing the given source
 	 */
-	static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatement {
+	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatement {
 		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(src, config);
 		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
 		return goal.children[0];
 	}
+
 	/** @implements Buildable */
-	abstract build(builder: Builder): INST.Instruction;
+	public abstract build(builder: Builder): INST.Instruction;
 }

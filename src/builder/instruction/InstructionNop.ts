@@ -9,7 +9,7 @@ export class InstructionNop extends Instruction {
 	/**
 	 * @return `'(nop)'`
 	 */
-	override toString(): string {
-		return `(nop)`
+	public override toString(): string {
+		return '(nop)';
 	}
 }

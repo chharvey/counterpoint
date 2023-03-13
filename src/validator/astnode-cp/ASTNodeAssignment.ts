@@ -20,26 +20,29 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 
 
 export class ASTNodeAssignment extends ASTNodeStatement {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAssignment {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAssignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeAssignment);
 		return statement;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeType<'statement_assignment'>,
-		readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		readonly assigned: ASTNodeExpression,
+		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
+		private readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
-	override varCheck(): void {
+
+	public override varCheck(): void {
 		super.varCheck();
 		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
 		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolStructureVar).unfixed) {
 			throw new AssignmentError10(assignee);
-		};
+		}
 	}
-	override typeCheck(): void {
+
+	public override typeCheck(): void {
 		super.typeCheck();
 		if (this.assignee instanceof ASTNodeAccess) {
 			const base_type: TYPE.Type = this.assignee.base.type();
@@ -61,7 +64,8 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			}
 		}
 	}
-	override build(builder: Builder): INST.InstructionStatement {
+
+	public override build(builder: Builder): INST.InstructionStatement {
 		const tofloat: boolean = this.assignee.type().isSubtypeOf(TYPE.Type.FLOAT) || this.assigned.shouldFloat();
 		return new INST.InstructionStatement(
 			builder.stmtCount,

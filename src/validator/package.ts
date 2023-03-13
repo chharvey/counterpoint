@@ -29,6 +29,7 @@ export {
 export {
 	NonemptyArray,
 	CodeUnit,
+	throw_expression,
 } from '../lib/index.js';
 export {
 	stringifyAttributes,

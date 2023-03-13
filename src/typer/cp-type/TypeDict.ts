@@ -9,34 +9,34 @@ export class TypeDict extends Type {
 	 * Is the argument a unit dict type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Dict`
 	 */
-	static isUnitType(type: Type): type is TypeUnit<OBJ.Dict> {
+	public static isUnitType(type: Type): type is TypeUnit<OBJ.Dict> {
 		return type instanceof TypeUnit && type.value instanceof OBJ.Dict;
 	}
 
 
-	override readonly isBottomType: boolean = false;
+	public override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new TypeDict object.
 	 * @param types a union of types in this dict type
 	 * @param is_mutable is this type mutable?
 	 */
-	constructor (
-		readonly types: Type,
+	public constructor(
+		public readonly types: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new OBJ.Dict()]));
 	}
 
-	override get hasMutable(): boolean {
+	public override get hasMutable(): boolean {
 		return super.hasMutable || this.types.hasMutable;
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `${ (this.isMutable) ? 'mutable ' : '' }Dict.<${ this.types }>`;
 	}
 
-	override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Object): boolean {
 		return v instanceof OBJ.Dict && v.toType().isSubtypeOf(this);
 	}
 
@@ -50,11 +50,11 @@ export class TypeDict extends Type {
 		);
 	}
 
-	override mutableOf(): TypeDict {
+	public override mutableOf(): TypeDict {
 		return new TypeDict(this.types, true);
 	}
 
-	override immutableOf(): TypeDict {
+	public override immutableOf(): TypeDict {
 		return new TypeDict(this.types, false);
 	}
 }

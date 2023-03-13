@@ -11,9 +11,9 @@ import {Primitive} from './Primitive.js';
  */
 class CPBoolean extends Primitive {
 	/** The Counterpoint Language Value `false`. */
-	static readonly FALSE: CPBoolean = new CPBoolean(false);
+	public static readonly FALSE: CPBoolean = new CPBoolean(false);
 	/** The Counterpoint Language Value `true`. */
-	static readonly TRUE: CPBoolean = new CPBoolean(true);
+	public static readonly TRUE: CPBoolean = new CPBoolean(true);
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
 	public static readonly FALSETYPE = CPBoolean.FALSE.toType();
 	/** A Unit Type containing only the Counterpoint Language Value `true`. */
@@ -24,23 +24,26 @@ class CPBoolean extends Primitive {
 	 * @param b a native boolean value
 	 * @returns the argument converted into a CPBoolean
 	 */
-	static fromBoolean(b: boolean): CPBoolean {
+	public static fromBoolean(b: boolean): CPBoolean {
 		return (b) ? CPBoolean.TRUE : CPBoolean.FALSE;
 	}
+
 	/**
 	 * Construct a new CPBoolean object.
 	 * @param data The native boolean value of this object.
 	 */
-	private constructor (private readonly data: boolean) {
-		super()
+	private constructor(private readonly data: boolean) {
+		super();
 	}
 
-	override toString(): string {
+	public override toString(): string {
 		return `${ this.data }`;
 	}
-	override get isTruthy(): boolean {
+
+	public override get isTruthy(): boolean {
 		return this.data;
 	}
+
 	protected override identical_helper(value: CPObject): boolean {
 		return value instanceof CPBoolean && this.data === value.data;
 	}

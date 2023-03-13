@@ -13,19 +13,19 @@ import {InstructionExpression} from './InstructionExpression.js';
  */
 export abstract class InstructionBinop extends InstructionExpression {
 	/** Is either one of the arguments of type `i32`? */
-	protected readonly intarg: boolean = !this.arg0.isFloat || !this.arg1.isFloat
+	protected readonly intarg: boolean = !this.arg0.isFloat || !this.arg1.isFloat;
 	/** Is either one of the arguments of type `f64`? */
-	protected readonly floatarg: boolean = this.arg0.isFloat || this.arg1.isFloat
+	protected readonly floatarg: boolean = this.arg0.isFloat || this.arg1.isFloat;
 	/**
 	 * @param op a punctuator representing the operation to perform
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
-	constructor (
+	public constructor(
 		protected readonly op:   ValidOperatorBinary,
 		protected readonly arg0: InstructionExpression,
 		protected readonly arg1: InstructionExpression,
 	) {
-		super()
+		super();
 	}
 }

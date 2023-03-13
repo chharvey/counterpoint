@@ -8,14 +8,11 @@ import {CollectionIndexed} from './CollectionIndexed.js';
 
 
 export class List<T extends CPObject = CPObject> extends CollectionIndexed<T> {
-	override toString(): string {
+	public override toString(): string {
 		return `List.(${ super.toString() })`;
 	}
-	override toType(): TypeList {
-		return new TypeList(
-			(this.items.length)
-				? Type.unionAll(this.items.map<Type>((it) => it.toType()))
-				: Type.NEVER,
-		);
+
+	public override toType(): TypeList {
+		return new TypeList(Type.unionAll(this.items.map<Type>((it) => it.toType())));
 	}
 }

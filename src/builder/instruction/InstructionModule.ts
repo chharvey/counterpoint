@@ -10,17 +10,18 @@ export class InstructionModule extends Instruction {
 	/**
 	 * @param comps the components of the program
 	 */
-	constructor (private readonly comps: (string | Instruction)[] = []) {
-		super()
+	public constructor(private readonly comps: Array<string | Instruction> = []) {
+		super();
 	}
+
 	/**
 	 * @return a new module containing the components
 	 */
-	override toString(): string {
+	public override toString(): string {
 		return xjs.String.dedent`
 			(module
 				${ this.comps.join('\n') }
 			)
-		`
+		`;
 	}
 }

@@ -20,29 +20,33 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
 export class ASTNodeAccess extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAccess {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAccess {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeAccess);
 		return expression;
 	}
+
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
-	constructor (
+	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
 			| SyntaxNodeType<'assignee'>
 		,
-		readonly kind:     ValidAccessOperator,
-		readonly base:     ASTNodeExpression,
-		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
+		private readonly kind:     ValidAccessOperator,
+		public  readonly base:     ASTNodeExpression,
+		private readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
 	}
-	override shouldFloat(): boolean {
+
+	public override shouldFloat(): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
 	}
+
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeAccess#build_do not yet supported.';
 	}
+
 	protected override type_do(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.type();
 		if (base_type instanceof TYPE.TypeIntersection || base_type instanceof TYPE.TypeUnion) {
@@ -54,6 +58,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			this.type_do_do(base_type)
 		);
 	}
+
 	private type_do_do(base_type: TYPE.Type): TYPE.Type {
 		function updateAccessedDynamicType(type: TYPE.Type, access_kind: ValidAccessOperator): TYPE.Type {
 			return (
@@ -62,6 +67,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				type
 			);
 		}
+		function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: TYPE.Type): never {
+			throw new TypeError02(accessor.type(), supertype, accessor.line_index, accessor.col_index);
+		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			const accessor_type = this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>;
 			if (TYPE.TypeTuple.isUnitType(base_type) || base_type instanceof TYPE.TypeTuple) {
@@ -69,8 +77,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					? base_type.value.toType()
 					: base_type;
 				return base_type_tuple.get(accessor_type.value, this.kind, this.accessor);
-			}
-			else if (TYPE.TypeList.isUnitType(base_type) || base_type instanceof TYPE.TypeList) {
+			} else if (TYPE.TypeList.isUnitType(base_type) || base_type instanceof TYPE.TypeList) {
 				const base_type_list: TYPE.TypeList = (TYPE.TypeList.isUnitType(base_type))
 					? base_type.value.toType()
 					: base_type;
@@ -94,9 +101,6 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
 			const accessor_type: TYPE.Type = this.accessor.type();
-			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: TYPE.Type): never {
-				throw new TypeError02(accessor_type, supertype, accessor.line_index, accessor.col_index);
-			}
 			if (TYPE.TypeTuple.isUnitType(base_type) || base_type instanceof TYPE.TypeTuple) {
 				const base_type_tuple: TYPE.TypeTuple = (TYPE.TypeTuple.isUnitType(base_type))
 					? base_type.value.toType()
@@ -132,6 +136,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 		}
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const base_value: OBJ.Object | null = this.base.fold();
 		if (base_value === null) {
@@ -150,9 +155,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				return null;
 			}
 			return (
-				(base_value instanceof OBJ.CollectionIndexed) ?    (base_value as OBJ.CollectionIndexed).get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
-				(base_value instanceof OBJ.Set)               ?    (base_value as OBJ.Set)              .get(accessor_value                                             ) :
-				/* (base_value instanceof OBJ.Map)            ? */ (base_value as OBJ.Map)              .get(accessor_value,                this.optional, this.accessor)
+				(base_value instanceof OBJ.CollectionIndexed) ? (base_value as OBJ.CollectionIndexed).get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
+				(base_value instanceof OBJ.Set)               ? (base_value as OBJ.Set)              .get(accessor_value                                             ) :
+				(base_value instanceof OBJ.Map,                 (base_value as OBJ.Map)              .get(accessor_value,                this.optional, this.accessor))
 			);
 		}
 	}

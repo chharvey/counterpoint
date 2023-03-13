@@ -18,20 +18,23 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 export class ASTNodeMap extends ASTNodeCollectionLiteral {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeMap {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeMap {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeMap);
 		return expression;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeType<'map_literal'>,
-		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
+		public override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, children);
 	}
+
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeMap#build_do not yet supported.';
 	}
+
 	protected override type_do(): TYPE.Type {
 		return new TYPE.TypeMap(
 			TYPE.Type.unionAll(this.children.map((c) => c.antecedent.type())),
@@ -39,6 +42,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 			true,
 		);
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const cases: ReadonlyMap<OBJ.Object | null, OBJ.Object | null> = new Map(this.children.map((c) => [
 			c.antecedent.fold(),

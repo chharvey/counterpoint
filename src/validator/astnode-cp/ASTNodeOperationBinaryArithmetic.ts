@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import * as xjs from 'extrajs'
+import * as xjs from 'extrajs';
 import {
 	TYPE,
 	OBJ,
@@ -8,6 +8,7 @@ import {
 	TypeError01,
 	NanError01,
 	NanError02,
+	throw_expression,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeSupertype,
@@ -26,37 +27,44 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
 export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryArithmetic {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryArithmetic {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeOperationBinaryArithmetic);
 		return expression;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		override readonly operator: ValidOperatorArithmetic,
+		protected override readonly operator: ValidOperatorArithmetic,
 		operand0: ASTNodeExpression,
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
 	}
+
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopArithmetic {
 		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionBinopArithmetic(
 			this.operator,
 			this.operand0.build(builder, tofloat),
 			this.operand1.build(builder, tofloat),
-		)
+		);
 	}
+
 	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
-		if (bothNumeric(t0, t1)) {
-			if (int_coercion) {
-				return (eitherFloats(t0, t1)) ? TYPE.Type.FLOAT : TYPE.Type.INT;
-			}
-			if (bothFloats   (t0, t1)) { return TYPE.Type.FLOAT; }
-			if (neitherFloats(t0, t1)) { return TYPE.Type.INT; }
-		}
-		throw new TypeError01(this)
+		return (bothNumeric(t0, t1))
+			? (int_coercion)
+				? (eitherFloats(t0, t1))
+					? TYPE.Type.FLOAT
+					: TYPE.Type.INT
+				: (
+					(bothFloats   (t0, t1)) ? TYPE.Type.FLOAT :
+					(neitherFloats(t0, t1)) ? TYPE.Type.INT   :
+					throw_expression(new TypeError01(this))
+				)
+			: throw_expression(new TypeError01(this));
 	}
+
 	protected override fold_do(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
@@ -76,7 +84,8 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				(v1 as OBJ.Number).toFloat(),
 			);
 	}
-	private foldNumeric<T extends OBJ.Number<T>>(x: T, y: T): T {
+
+	private foldNumeric<T extends OBJ.Number<T>>(v0: T, v1: T): T {
 		try {
 			return new Map<Operator, (x: T, y: T) => T>([
 				[Operator.EXP, (x, y) => x.exp(y)],
@@ -84,7 +93,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.DIV, (x, y) => x.divide(y)],
 				[Operator.ADD, (x, y) => x.plus(y)],
 				// [Operator.SUB, (x, y) => x.minus(y)],
-			]).get(this.operator)!(x, y)
+			]).get(this.operator)!(v0, v1);
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
 		}

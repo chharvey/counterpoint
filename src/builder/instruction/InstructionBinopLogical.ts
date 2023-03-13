@@ -21,21 +21,22 @@ export class InstructionBinopLogical extends InstructionBinop {
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
-	constructor (
+	public constructor(
 		private readonly count: bigint,
 		op:   ValidOperatorLogical,
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
 	) {
-		super(op, arg0, arg1)
+		super(op, arg0, arg1);
 		if (this.intarg && this.floatarg) {
-			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
+			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`);
 		}
 	}
+
 	/**
 	 * @return a `(select)` instruction determining which operand to produce
 	 */
-	override toString(): string {
+	public override toString(): string {
 		const varname: string = `$o${ this.count.toString(16) }`;
 		const condition: InstructionExpression = new InstructionUnop(
 			Operator.NOT,
@@ -43,16 +44,17 @@ export class InstructionBinopLogical extends InstructionBinop {
 				Operator.NOT,
 				new InstructionLocalTee(varname, this.arg0),
 			),
-		)
-		const left:  InstructionExpression = new InstructionLocalGet(varname, this.arg0.isFloat)
-		const right: InstructionExpression = this.arg1
+		);
+		const left:  InstructionExpression = new InstructionLocalGet(varname, this.arg0.isFloat);
+		const right: InstructionExpression = this.arg1;
 		return `${ new InstructionDeclareLocal(varname, this.arg0.isFloat) } ${
 			(this.op === Operator.AND)
 				? new InstructionCond(condition, right, left)
 				: new InstructionCond(condition, left, right)
-		}`
+		}`;
 	}
-	get isFloat(): boolean {
-		return this.floatarg
+
+	public get isFloat(): boolean {
+		return this.floatarg;
 	}
 }

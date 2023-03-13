@@ -11,21 +11,21 @@ export enum SymbolKind {
 	/** A value variable (a variable holding a Counterpoint Language Value). */
 	VALUE = 'value',
 	/** A type variable / type alias. */
-	TYPE  = 'type',
+	TYPE  = 'type', // eslint-disable-line @typescript-eslint/no-shadow --- not a variable declaration
 }
 
 
 
 export abstract class SymbolStructure {
-	constructor (
+	public constructor(
 		/** The unique identifier of the symbol, the cooked value of the token. */
-		readonly id: bigint,
+		public readonly id: bigint,
 		/** The 0-based line index of where the symbol was declared. */
-		readonly line: number,
+		public readonly line: number,
 		/** The 0-based column index of where the symbol was declared. */
-		readonly col: number,
+		public readonly col: number,
 		/** The source text of the symbol. */
-		readonly source: string,
+		public readonly source: string,
 	) {
 	}
 }
@@ -34,10 +34,8 @@ export abstract class SymbolStructure {
 
 export class SymbolStructureType extends SymbolStructure {
 	/** The assessed value of the symbol. */
-	typevalue: TYPE.Type = TYPE.Type.UNKNOWN;
-	constructor (
-		node: AST.ASTNodeTypeAlias,
-	) {
+	public typevalue: TYPE.Type = TYPE.Type.UNKNOWN;
+	public constructor(node: AST.ASTNodeTypeAlias) {
 		super(node.id, node.line_index, node.col_index, node.source);
 	}
 }
@@ -46,13 +44,13 @@ export class SymbolStructureType extends SymbolStructure {
 
 export class SymbolStructureVar extends SymbolStructure {
 	/** The variable’s Type. */
-	type: TYPE.Type = TYPE.Type.UNKNOWN;
+	public type: TYPE.Type = TYPE.Type.UNKNOWN;
 	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
-	value: OBJ.Object | null = null;
-	constructor (
+	public value: OBJ.Object | null = null;
+	public constructor(
 		node: AST.ASTNodeVariable,
 		/** May the symbol be reassigned? */
-		readonly unfixed: boolean,
+		public readonly unfixed: boolean,
 	) {
 		super(node.id, node.line_index, node.col_index, node.source);
 	}

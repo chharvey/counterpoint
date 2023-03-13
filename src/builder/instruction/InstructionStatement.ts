@@ -13,24 +13,24 @@ export class InstructionStatement extends Instruction {
 	 * @param count the index of the statement within its scope
 	 * @param expr the expression
 	 */
-	constructor (
+	public constructor(
 		private readonly count: bigint,
 		private readonly expr: InstructionExpression,
 	) {
-		super()
+		super();
 	}
+
 	/**
 	 * @return a new function evaluating the argument
 	 */
-	override toString(): string {
+	public override toString(): string {
 		const result: string = (this.expr instanceof InstructionGlobalSet)
 			? ''
-			: `(result ${ (this.expr.isFloat) ? 'f64' : 'i32' })`
-		;
+			: `(result ${ (this.expr.isFloat) ? 'f64' : 'i32' })`;
 		return xjs.String.dedent`
 			(func (export "f${ this.count }") ${ result }
 				${ this.expr }
 			)
-		`
+		`;
 	}
 }
