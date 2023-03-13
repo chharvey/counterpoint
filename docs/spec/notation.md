@@ -1510,6 +1510,7 @@ An assignment error is raised when the compiler detects an illegal declaration o
 
 2200. A general assignment error not covered by one of the following cases.
 2201. The validator encountered a duplicate declaration.
+2202. The validator encountered a duplicate record key.
 2210. A reassignment of a fixed variable was attempted.
 
 

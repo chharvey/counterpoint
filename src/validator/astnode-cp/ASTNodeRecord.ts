@@ -5,12 +5,14 @@ import {
 	OBJ,
 	INST,
 	Builder,
+	AssignmentError02,
 	NonemptyArray,
 	CPConfig,
 	CONFIG_DEFAULT,
 	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
+import type {ASTNodeKey} from './ASTNodeKey.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
@@ -29,6 +31,16 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		public override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, children);
+	}
+
+	public override varCheck(): void {
+		super.varCheck();
+		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
+		xjs.Array.forEachAggregated(keys.map((key) => key.id), (id, i, ids) => {
+			if (ids.slice(0, i).includes(id)) {
+				throw new AssignmentError02(keys[i]);
+			}
+		});
 	}
 
 	protected override build_do(builder: Builder): INST.InstructionExpression {

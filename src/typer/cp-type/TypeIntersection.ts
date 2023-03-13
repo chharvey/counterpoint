@@ -43,6 +43,14 @@ export class TypeIntersection extends Type {
 		return this.left.includes(v) && this.right.includes(v);
 	}
 
+	protected override union_do(t: Type): Type {
+		/**
+		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
+		 *     |  (B  & C) \| A == (B \| A)  & (C \| A)
+		 */
+		return this.left.union(t).intersect(this.right.union(t));
+	}
+
 	protected override isSubtypeOf_do(t: Type): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) {
