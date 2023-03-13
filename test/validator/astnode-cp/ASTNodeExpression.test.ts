@@ -232,7 +232,7 @@ describe('ASTNodeExpression', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				goal.varCheck();
 				goal.typeCheck();
-				const builder: Builder = new Builder(src);
+				const builder = new Builder(src);
 				assert.deepStrictEqual(
 					[
 						goal.children[2].build(builder),
@@ -254,7 +254,7 @@ describe('ASTNodeExpression', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				goal.varCheck();
 				goal.typeCheck();
-				const builder: Builder = new Builder(src);
+				const builder = new Builder(src);
 				assert.deepStrictEqual(
 					[
 						goal.children[2].build(builder),
@@ -276,7 +276,7 @@ describe('ASTNodeExpression', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
 				goal.varCheck();
 				goal.typeCheck();
-				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
+				const builder = new Builder(src, CONFIG_FOLDING_OFF);
 				assert.deepStrictEqual(
 					[
 						goal.children[2].build(builder),

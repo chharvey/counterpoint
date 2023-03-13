@@ -584,4 +584,4 @@ class Decorator {
 
 
 
-export const DECORATOR: Decorator = new Decorator();
+export const DECORATOR = new Decorator();

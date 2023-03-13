@@ -14,7 +14,7 @@ import {
 
 describe('Decorator', () => {
 	describe('#decorateTS', () => {
-		const parser: Parser = new Parser();
+		const parser = new Parser();
 		parser.setLanguage(Counterpoint);
 		function captureParseNode(source: string, query: string): SyntaxNode {
 			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(parser.parse(source).rootNode);

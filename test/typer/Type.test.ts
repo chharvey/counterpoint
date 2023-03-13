@@ -40,12 +40,12 @@ describe('Type', () => {
 		TYPE.FLOAT,
 		TYPE.STR,
 	];
-	const t0: TYPE.TypeInterface = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
+	const t0 = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 		['foo', TYPE.OBJ],
 		['bar', TYPE.NULL],
 		['diz', TYPE.BOOL],
 	]));
-	const t1: TYPE.TypeInterface = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
+	const t1 = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 		['foo', TYPE.OBJ],
 		['qux', TYPE.INT.union(TYPE.FLOAT)],
 		['diz', TYPE.STR],
@@ -993,7 +993,7 @@ describe('Type', () => {
 					]);
 					const union: TYPE.Type = left.union(right);
 					assert.ok(union instanceof TYPE.TypeUnion);
-					const v: OBJ.Tuple<OBJ.Boolean> = new OBJ.Tuple<OBJ.Boolean>([OBJ.Boolean.TRUE, OBJ.Boolean.TRUE]);
+					const v = new OBJ.Tuple<OBJ.Boolean>([OBJ.Boolean.TRUE, OBJ.Boolean.TRUE]);
 					assert.ok(union.combineTuplesOrRecords().includes(v), `
 						let x: [bool | int, int | bool] = [true, true]; % ok
 					`);
@@ -1054,7 +1054,7 @@ describe('Type', () => {
 					]));
 					const union: TYPE.Type = left.union(right);
 					assert.ok(union instanceof TYPE.TypeUnion);
-					const v: OBJ.Record<OBJ.Boolean> = new OBJ.Record<OBJ.Boolean>(new Map<bigint, OBJ.Boolean>([
+					const v = new OBJ.Record<OBJ.Boolean>(new Map<bigint, OBJ.Boolean>([
 						[0x100n, OBJ.Boolean.TRUE],
 						[0x101n, OBJ.Boolean.TRUE],
 					]));

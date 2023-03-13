@@ -17,9 +17,9 @@ type DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, boolean, 
 export class Integer extends CPNumber<Integer> {
 	private static readonly BITCOUNT: number = 16;
 
-	public  static readonly ZERO:  Integer = new Integer(0n);
-	public  static readonly UNIT:  Integer = new Integer(1n);
-	private static readonly RADIX: Integer = new Integer(2n);
+	public  static readonly ZERO  = new Integer(0n);
+	public  static readonly UNIT  = new Integer(1n);
+	private static readonly RADIX = new Integer(2n);
 
 	private static mod(n: bigint, modulus: bigint): bigint {
 		return (n % modulus + modulus) % modulus;

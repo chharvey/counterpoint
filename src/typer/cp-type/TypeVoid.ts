@@ -9,7 +9,7 @@ import {Type} from './Type.js';
  * @final
  */
 export class TypeVoid extends Type {
-	public static readonly INSTANCE: TypeVoid = new TypeVoid();
+	public static readonly INSTANCE = new TypeVoid();
 
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;

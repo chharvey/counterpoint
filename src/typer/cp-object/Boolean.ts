@@ -12,9 +12,9 @@ import {Primitive} from './Primitive.js';
  */
 class CPBoolean extends Primitive {
 	/** The Counterpoint Language Value `false`. */
-	public static readonly FALSE: CPBoolean = new CPBoolean(false);
+	public static readonly FALSE = new CPBoolean(false);
 	/** The Counterpoint Language Value `true`. */
-	public static readonly TRUE: CPBoolean = new CPBoolean(true);
+	public static readonly TRUE = new CPBoolean(true);
 
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
 	public static get FALSETYPE(): TYPE.TypeUnit<CPBoolean> {

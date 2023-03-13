@@ -38,7 +38,7 @@ type ExpectCallback<Func extends CallTrackerFunction, Return> = (orig: Func, spy
  * @throw          if `callback` itself throws
  */
 export function assert_wasCalled<Func extends CallTrackerFunction, Return>(orig: Func, times: number, callback: ExpectCallback<Func, Return>): Return {
-	const tracker: assert.CallTracker = new assert.CallTracker();
+	const tracker = new assert.CallTracker();
 	try {
 		return callback.call(null, orig, tracker.calls(orig, times));
 	} finally {
