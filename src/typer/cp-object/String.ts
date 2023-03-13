@@ -28,7 +28,9 @@ class CPString extends Primitive {
 	}
 
 	protected override identical_helper(value: CPObject): boolean {
-		return value instanceof CPString && xjs.Array.is(this.codeunits, value.codeunits);
+		return value instanceof CPString && this.isEqualTo(value as this, (this_, that_) => (
+			xjs.Array.is<CodeUnit>(this_.codeunits, that_.codeunits)
+		));
 	}
 
 	public override toCPString(): CPString {

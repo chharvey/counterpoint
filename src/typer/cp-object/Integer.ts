@@ -1,3 +1,4 @@
+import * as xjs from 'extrajs';
 import {throw_expression} from '../../lib/index.js';
 import {Float} from './index.js';
 import type {Object as CPObject} from './Object.js';
@@ -44,7 +45,9 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	protected override identical_helper(value: CPObject): boolean {
-		return value instanceof Integer && this.internal.every((bit, i) => bit === value.internal[i]);
+		return value instanceof Integer && this.isEqualTo(value as this, (this_, that_) => (
+			xjs.Array.is<boolean>(this_.internal, that_.internal)
+		));
 	}
 
 	protected override equal_helper(value: CPObject): boolean {

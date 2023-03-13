@@ -3,7 +3,10 @@ import {VoidError01} from '../../index.js';
 import {throw_expression} from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {TYPE} from '../index.js';
-import {languageValuesIdentical} from '../utils-private.js';
+import {
+	languageValuesIdentical,
+	language_values_equal,
+} from '../utils-private.js';
 import type {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
@@ -31,12 +34,10 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 	/** @final */
 	protected override equal_helper(value: CPObject): boolean {
 		return (
-			value instanceof CPMap
+			   value instanceof CPMap
 			&& this.cases.size === value.cases.size
-			&& Collection.do_Equal<CPMap>(this, value, () => (
-				[...value.cases].every(([thatant, thatcon]) => (
-					!![...this.cases].find(([thisant, _]) => thisant.equal(thatant))?.[1].equal(thatcon)
-				))
+			&& this.isEqualTo(value as this, (this_, that_) => (
+				[...that_.cases].every(([thatant, thatcon]) => !!xjs.Map.get<K, V>(this_.cases, thatant, language_values_equal)?.equal(thatcon))
 			))
 		);
 	}
