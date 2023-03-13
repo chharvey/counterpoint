@@ -12,10 +12,5 @@ export {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-	SolidObject,
-	SolidNull,
-	SolidBoolean,
-	SolidNumber,
-	Int16,
-	Float64,
+	OBJ,
 } from '../package.js';

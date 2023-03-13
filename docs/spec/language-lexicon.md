@@ -1,20 +1,20 @@
-# Solid Language: Lexicon
-This chapter defines the lexical composition of the Solid programming language.
+# Counterpoint Programming Language: Lexicon
+This chapter defines the lexical composition of the Counterpoint Programming Language.
 
 
 
-## Solid Source Code
-Solid source text (Solid code) is expressed using characters from the
+## Counterpoint Source Code
+Counterpoint source text (Counterpoint code) is expressed using characters from the
 [Unicode](https://www.unicode.org/) character set.
-Solid source text is a sequence of Unicode code points,
+Counterpoint source text is a sequence of Unicode code points,
 values ranging from U+0000 to U+10FFFF (including surrogate code points).
 Not all code points are permitted everywhere;
 the next section explicitly defines these permissions.
 
-When stored and transmitted, Solid source text should be encoded and decoded via the
+When stored and transmitted, Counterpoint source text should be encoded and decoded via the
 [UTF-8](https://tools.ietf.org/html/rfc3629) transmission format.
 
-Solid programs are often stored in text files, which, for editing convenience, are organized into lines.
+Counterpoint programs are often stored in text files, which, for editing convenience, are organized into lines.
 These lines are typically separated by some combination of the characters
 **U+000D CARRIAGE RETURN (CR)** and **U+000A LINE FEED (LF)**.
 For example, it is common for Windows systems to represent a newline as a CR–LF pair,
@@ -23,7 +23,7 @@ whereas on Unix-based systems the representation is a single LF.
 
 ### Line Normalization
 To simplify the tasks of external applications and to delineate file bounds,
-the Solid compiler **normalizes** all line breaks in a source file on input, before parsing.
+the Counterpoint compiler **normalizes** all line breaks in a source file on input, before parsing.
 This line normalization consists of three steps:
 
 1. Prepend the file with a **U+0002 START OF TEXT** (“SOT”) character followed by an LF.
@@ -34,7 +34,7 @@ This line normalization consists of three steps:
 Note that if the source file already contains an LF at the end,
 the last step will result in an extra LF character preceding the EOT.
 This does not matter, however, since additional whitespace does not affect parsing.
-Even though Solid is a [whitespace-independent language](#whitespace),
+Even though Counterpoint is a [whitespace-independent language](#whitespace),
 line break normalization is important to the compilation process,
 during which line and column numbers of any invalid source input might be reported.
 
@@ -42,10 +42,10 @@ during which line and column numbers of any invalid source input might be report
 
 ## Token Formation
 After line break normalization,
-the source text of a Solid file is converted into a sequence of input elements, called tokens.
+the source text of a Counterpoint file is converted into a sequence of input elements, called tokens.
 The source text is scanned from left to right, repeatedly taking the longest possible
 sequence of code points as the next token.
-The lexical structure of Solid describes what sequence of characters form valid tokens,
+The lexical structure of Counterpoint describes what sequence of characters form valid tokens,
 which form the lowest-level building blocks of the language.
 
 There are a small number of token types, each of which have a specific purpose.
@@ -76,13 +76,13 @@ U+0020     | SPACE                | Basic Latin | Separator, Space [Zs]
 U+0009     | CHARACTER TABULATION | Basic Latin | Other, Control [Cc]
 U+000A     | LINE FEED (LF)       | Basic Latin | Other, Control [Cc]
 
-Solid is whitespace-independent.
+Counterpoint is whitespace-independent.
 This means that a programmer should be able to add more whitespace where whitespace already exists,
 and remove any amount of whitespace from existing whitespace (but not remove all of it)
 without affecting the syntax or semantics of the program.
 Whitespace tokens are not sent to the parser for syntactic analysis.
 
-The Solid lexical grammar does not currently recognize the following characters as whitespace:
+The Counterpoint lexical grammar does not currently recognize the following characters as whitespace:
 
 Code Point | Name                      | Block                       | Category
 ---------- | ------------------------- | --------------------------- | -------------------------
@@ -114,7 +114,7 @@ U+3000     | IDEOGRAPHIC SPACE         | CJK Symbols and Punctuation | Separator
 Comments are tokens of arbitrary text,
 mainly used to add human-readable language to code
 or to provide other types of annotations.
-Comment tokens are not sent to the Solid parser.
+Comment tokens are not sent to the Counterpoint parser.
 
 #### Line Comments
 Line comments begin with `%` (**U+0025 PERCENT SIGN**).
@@ -133,7 +133,7 @@ the comment documents the code structure that follows it.
 
 ### Punctuators
 Punctuators are non-alphanumeric characters in the ASCII character set, or spans of such characters,
-that add to the semantics of the Solid language.
+that add to the semantics of the language.
 Some punctuators are operators, which perform computations on values, and
 some punctuators are delimiters, which separate certain code constructs from each other or group them together.
 
@@ -148,7 +148,7 @@ as not to be confused with [Identifier tokens](#identifiers).
 
 
 ### Keywords
-Keywords are sequences of alphanumeric characters reserved by the Solid language
+Keywords are sequences of alphanumeric characters reserved by the language
 and enumerated in the lexical grammar.
 Keywords convey certain semantics to the compiler and to programmers.
 

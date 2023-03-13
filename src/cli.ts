@@ -27,7 +27,7 @@ const VERSION: Promise<string> = requireJSON(path.join(DIRNAME, '../package.json
 			};
 		}],
 		[Command.VERSION, async () => {
-			console.log(`solid version ${ await VERSION }`);
+			console.log(`counterpoint version ${ await VERSION }`);
 		}],
 		[Command.COMPILE, handleCompileOrDev],
 		[Command.DEV,     handleCompileOrDev],
