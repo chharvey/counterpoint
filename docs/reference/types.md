@@ -484,6 +484,7 @@ Tuples are fixed-size ordered lists of indexed values, with indices starting at 
 The values in a tuple are called **items** (the actual values) or **entries** (the slots the values are stored in).
 The number of entries in a tuple is called its **count**.
 The count of a tuple is fixed and known at compile-time, as is the type of each entry in the tuple.
+The order of entries is significant: looping and iteration are performed in index order.
 Tuples are heterogeneous, meaning they can be declared with different entry types.
 If a tuple is mutable, the entries of the tuple may be reassigned, but only to values of the correct type.
 
@@ -491,13 +492,6 @@ For example, the tuple `[3, 4.0, 'seven']` has an integer in the first position 
 followed by a float at index `1`, followed by a string at index `2`. Its count is 3.
 Entries cannot be added or removed — the count of the tuple cannot change — but entries can be reassigned:
 We could set the last entry to the string `'twelve'`.
-
-“Sparse tuples” have “empty slots” where items should be. Such a tuple can arise from setting values
-at entries ahead of unset entries. Sparse tuples are typically hard to work with because
-they can cause errors during iteration.
-Programmers should take care to avoid them whenever possible.
-The **count** of a tuple refers to the number of its *entries*, not *items*.
-Thus a sparse tuple’s count will be larger than the number of items it contains.
 
 Tuple literals are comma-separated expressions within square brackets.
 Tuple types use the same syntax, but instead of value expressions
@@ -519,7 +513,8 @@ let elements_and_more: [str, str, str, bool, int] = ['earth', 'wind', 'fire']; %
 Note: If a tuple is homogeneous (its items are all of the same type),
 then we can use shorthand notation to annotate it:
 ```
-let elements: str[3] = ['earth', 'wind', 'fire']; % shorthand for `[str, str, str]`
+let elements: str[3] = ['earth', 'wind', 'fire'];
+%             ^ shorthand for `[str, str, str]`
 ```
 
 #### Tuple Access
@@ -560,19 +555,35 @@ where the expression in brackets computes the index.
 elements.[0];       %== 'earth'
 elements.[3 - 2];   %== 'wind'
 elements.[-3 + 2];  %== 'fire'
-elements.[0.5 * 2]; %> TypeError
+elements.[0.5 * 2]; %> TypeError % expected int but found float
 ```
 
-A VoidError is produced when the compiler can determine if the index is out-of-bounds.
+A TypeError is produced when the compiler can determine if the index is out-of-bounds.
 ```
 let i: int = 4;
-elements.[i];   %> VoidError
+elements.[i];   %> TypeError % index `4` does not exist on type `str[3]`
 ```
 If the compiler can’t compute the index, it won’t error at all,
 but this means the program could crash at runtime.
 ```
 let unfixed i: int = 4;
 elements.[i];           % no compile-time error, but value at runtime will be undefined
+```
+
+If a variable is declared as a mutable tuple, its indices may be reassigned, but its type or size cannot change.
+A non-mutable tuple’s items, type, and size are all fixed.
+```
+let mut_tuple: mutable [bool, int, str] = [true, 4, 'hello'];
+set mut_tuple.0 = false;
+set mut_tuple.1 = 2;
+set mut_tuple.2 = 'world';
+mut_tuple; %== [false, 2, 'world'];
+
+let tuple: [bool, int, str] = [true, 4, 'hello'];
+set tuple.0 = false;   %> MutabilityError
+set tuple.1 = 2;       %> MutabilityError
+set tuple.2 = 'world'; %> MutabilityError
+tuple; %== [true, 4, 'hello'];
 ```
 
 #### Optional Items
@@ -612,6 +623,8 @@ Records are fixed-size unordered lists of keyed values. Key–value pairs are ca
 where **keys** are keywords or identifiers, and **values** are expressions.
 The number of properties in a record is called its **count**.
 The count and types of record **entries** (the “slots” where values are stored) are fixed and known at compile-time.
+The order of entries is *not* significant: though records can be iterated over, the order in which this is done is
+implementation-dependent; thus authors should not rely on any particular iteration order.
 Records are heterogeneous, meaning they can be declared with different entry types.
 Record entries cannot be added or deleted, but if the record is mutable, they can be reassigned.
 
@@ -729,6 +742,22 @@ Record keys are known at compile-time,
 so attempting to retrieve an non-existent key results in a compile-time error.
 ```
 elements.pythagoras; %> TypeError
+```
+
+If a variable is declared as a mutable record, its keys may be reassigned, but its type or size cannot change.
+A non-mutable record’s values, type, and size are all fixed.
+```
+let mut_record: mutable [a: bool, b: int, c: str] = [a= true, b= 4, c= 'hello'];
+set mut_record.a = false;
+set mut_record.b = 2;
+set mut_record.c = 'world';
+mut_record; %== [a= false, b= 2, c= 'world'];
+
+let record: [a: bool, b: int, c: str] = [a= true, b= 4, c= 'hello'];
+set record.a = false;   %> MutabilityError
+set record.b = 2;       %> MutabilityError
+set record.c = 'world'; %> MutabilityError
+record; %== [a= true, b= 4, c= 'hello'];
 ```
 
 #### Optional Properties

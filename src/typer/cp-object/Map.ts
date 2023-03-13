@@ -43,6 +43,10 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 		);
 	}
 
+	/**
+	 * @inheritdoc
+	 * Returns a TypeMap whose invariants are the respective unions of the types of this Map’s antecedents and consequents.
+	 */
 	public override toType(): TYPE.TypeMap {
 		return new TYPE.TypeMap(
 			TYPE.Type.unionAll([...this.cases.keys()]  .map<TYPE.Type>((ant) => ant.toType())),

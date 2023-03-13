@@ -1,6 +1,6 @@
 import {
-	Serializable,
 	stringifyAttributes,
+	Serializable,
 } from './package.js';
 
 

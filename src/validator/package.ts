@@ -11,6 +11,7 @@ export {
 	Builder,
 	ErrorCode,
 	LexError01,
+	ParseError01,
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,
@@ -35,8 +36,6 @@ export {
 	stringifyAttributes,
 	CPConfig,
 	CONFIG_DEFAULT,
-	Serializable,
-	serialize,
 } from '../core/index.js';
 export {
 	TS_PARSER,
@@ -44,4 +43,6 @@ export {
 	PUNCTUATORS,
 	Keyword,
 	KEYWORDS,
+	Serializable,
+	to_serializable,
 } from '../parser/index.js';

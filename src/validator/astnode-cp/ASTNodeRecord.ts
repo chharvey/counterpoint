@@ -62,7 +62,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				return false;
 			}
 			try {
-				xjs.Array.forEachAggregated([...assignee_type_record.propertytypes], ([id, thattype]) => {
+				xjs.Array.forEachAggregated([...assignee_type_record.invariants], ([id, thattype]) => {
 					const prop: ASTNodeProperty | undefined = this.children.find((c) => c.key.id === id);
 					if (!thattype.optional && !prop) {
 						throw new TypeError(`Property \`${ id }\` does not exist on type \`${ this.type() }\`.`);
@@ -72,7 +72,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				// TODO: use the caught error as the cause of a new error
 				return false;
 			}
-			xjs.Array.forEachAggregated([...assignee_type_record.propertytypes], ([id, thattype]) => {
+			xjs.Array.forEachAggregated([...assignee_type_record.invariants], ([id, thattype]) => {
 				const prop: ASTNodeProperty | undefined = this.children.find((c) => c.key.id === id);
 				const expr: ASTNodeExpression | undefined = prop?.val;
 				if (expr) {

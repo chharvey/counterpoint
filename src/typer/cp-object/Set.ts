@@ -40,6 +40,10 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 		);
 	}
 
+	/**
+	 * @inheritdoc
+	 * Returns a TypeSet whose invariant is the union of the types of this Set’s elements.
+	 */
 	public override toType(): TYPE.TypeSet {
 		return new TYPE.TypeSet(TYPE.Type.unionAll([...this.elements].map<TYPE.Type>((el) => el.toType())));
 	}
