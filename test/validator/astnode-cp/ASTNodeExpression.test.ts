@@ -382,6 +382,21 @@ describe('ASTNodeExpression', () => {
 
 
 	describe('ASTNodeCollectionLiteral', () => {
+		describe('.constructor', () => {
+			it('sets `.isRef = true` for constant collections.', () => {
+				assert.deepStrictEqual(
+					[
+						AST.ASTNodeTuple.fromSource(`\\[1, 2.0, 'three'];`),
+						AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
+						AST.ASTNodeRecord.fromSource(`\\[a= 1, b= 2.0, c= 'three'];`),
+						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
+					].map((c) => c.isRef),
+					[false, true, false, true],
+				);
+			});
+		});
+
+
 		describe('#varCheck', () => {
 			describe('ASTNodeRecord', () => {
 				it('throws if containing duplicate keys.', () => {

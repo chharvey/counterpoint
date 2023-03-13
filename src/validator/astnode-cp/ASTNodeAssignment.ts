@@ -12,10 +12,8 @@ import {
 } from '../../core/index.js';
 import type {SymbolStructureVar} from '../index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 import {ASTNodeAccess} from './ASTNodeAccess.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
 
@@ -53,20 +51,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			}
 		}
 		const assignee_type: TYPE.Type = this.assignee.type();
-		try {
-			return ASTNodeCP.typeCheckAssignment(
-				this.assigned.type(),
-				assignee_type,
-				this,
-				this.validator,
-			);
-		} catch (err) {
-			if (!(this.assigned instanceof ASTNodeCollectionLiteral && (
-				!('isRef' in this.assigned) || this.assigned.isRef === true // HACK
-			) && this.assigned.assignTo(assignee_type))) {
-				throw err;
-			}
-		}
+		return this.typeCheckAssignment(this.assigned, assignee_type);
 	}
 
 	public override build(builder: Builder): INST.InstructionStatement {

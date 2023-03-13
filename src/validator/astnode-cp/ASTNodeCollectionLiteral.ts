@@ -16,7 +16,7 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
  * - ASTNodeMap
  */
 export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
-	public constructor(
+	protected constructor(
 		start_node:
 			| SyntaxNodeFamily<'tuple_literal',  ['variable']>
 			| SyntaxNodeFamily<'record_literal', ['variable']>
@@ -24,6 +24,8 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 			| SyntaxNodeType<'map_literal'>
 		,
 		public override readonly children: readonly ASTNodeCP[],
+		/** Does this node represent a reference object (versus a value object)? */
+		public readonly isRef: boolean = true,
 	) {
 		super(start_node, {}, children);
 	}
