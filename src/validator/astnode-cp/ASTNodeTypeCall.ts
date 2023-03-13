@@ -51,7 +51,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 			[ValidFunctionName.MAP,  () => {
 				this.countArgs([1n, 3n]);
 				const anttype: TYPE.Type = this.args[0].eval();
-				const contype: TYPE.Type = this.args[1]?.eval() || anttype;
+				const contype: TYPE.Type = this.args[1]?.eval() ?? anttype; // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- `this.args[1]` could be undefined
 				return new TYPE.TypeMap(anttype, contype);
 			}],
 		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();

@@ -30,7 +30,8 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	}
 
 	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeSet#build_do not yet supported.';
+		builder;
+		throw 'ASTNodeSet#build_do not yet supported.';
 	}
 
 	protected override type_do(): TYPE.Type {
