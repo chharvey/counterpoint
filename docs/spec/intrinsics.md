@@ -1,5 +1,5 @@
 # Intrinsics
-This chapter describes the objects built in to the standard “core” Solid library.
+This chapter describes the objects built in to the standard “core” Counterpoint library.
 
 
 
@@ -82,7 +82,7 @@ The values in records are Counterpoint Language Values.
 
 
 
-## `List`
+## List
 `List` objects are variable-size ordered lists of indexed values, with indices starting at *0*.
 The values in lists are Counterpoint Language Values.
 

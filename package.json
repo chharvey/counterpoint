@@ -1,33 +1,33 @@
 {
-  "name": "@chharvey/solid",
+  "name": "@chharvey/counterpoint",
   "version": "0.3.1",
   "description": "A robust programming language.",
-  "homepage": "https://github.com/chharvey/solid#readme",
+  "homepage": "https://github.com/chharvey/counterpoint#readme",
   "bugs": {
-    "url": "https://github.com/chharvey/solid/issues"
+    "url": "https://github.com/chharvey/counterpoint/issues"
   },
   "license": "AGPL-3.0-or-later",
-  "author": "Chris Harvey <chrisharvey2pi@gmail.com> (https://chharvey.github.io/)",
-  "main": "dist/main.js",
+  "author": "Chris Harvey <1362083+chharvey@users.noreply.github.com>",
+  "main": "build/main.js",
   "type": "module",
   "bin": {
-    "solid": "bin/solid.js"
+    "cpc": "bin/cpc.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chharvey/solid.git"
+    "url": "git+https://github.com/chharvey/counterpoint.git"
   },
   "scripts": {
-    "solid": "solid",
-    "solid-h": "solid -h",
-    "solid-v": "solid -v",
-    "solid:c": "solid c ./sample/test-v0.3.solid",
-    "solid:c-o": "solid c ./sample/test-v0.3.solid -o ./sample/testout.wasm",
-    "solid:c-p": "solid c ./sample/test-v0.3.solid -p ./sample/solid-config.json",
-    "solid:d": "solid d ./sample/test-v0.3.solid",
-    "solid:d-o": "solid d ./sample/test-v0.3.solid -o ./sample/testout.wat",
-    "solid:d-p": "solid d ./sample/test-v0.3.solid -p ./sample/solid-config.json",
-    "solid:r": "solid r ./sample/test-v0.3.wasm",
+    "cpc": "cpc",
+    "cpc-h": "cpc -h",
+    "cpc-v": "cpc -v",
+    "cpc:c": "cpc c ./sample/test-v0.3.solid",
+    "cpc:c-o": "cpc c ./sample/test-v0.3.solid -o ./sample/testout.wasm",
+    "cpc:c-p": "cpc c ./sample/test-v0.3.solid -p ./sample/counterpoint-config.json",
+    "cpc:d": "cpc d ./sample/test-v0.3.solid",
+    "cpc:d-o": "cpc d ./sample/test-v0.3.solid -o ./sample/testout.wat",
+    "cpc:d-p": "cpc d ./sample/test-v0.3.solid -p ./sample/counterpoint-config.json",
+    "cpc:r": "cpc r ./sample/test-v0.3.wasm",
     "dist": "tsc",
     "test": "mocha -r ts-node/esm src/index.ts --loader='ts-node/esm' --timeout 10000 './test/**/*.test.ts'",
     "prebuild": "npm run build -w tree-sitter-counterpoint && npm rebuild",

@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
-	SolidConfig,
+	CPConfig,
 	CONFIG_DEFAULT,
 	Dev,
 	PUNCTUATORS,
@@ -132,7 +132,7 @@ describe('Validator', () => {
 
 
 	Dev.supports('literalString-cook') && describe('.cookTokenString', () => {
-		function decodeCooked(source: string, config: SolidConfig): string {
+		function decodeCooked(source: string, config: CPConfig): string {
 			return utf8Decode(Validator.cookTokenString(source, config));
 		}
 		it('produces the cooked string value.', () => {
@@ -167,7 +167,7 @@ describe('Validator', () => {
 			);
 		});
 		context('In-String Comments', () => {
-			function cook(config: SolidConfig): string[] {
+			function cook(config: CPConfig): string[] {
 				return [
 					xjs.String.dedent`'The five boxing wizards % jump quickly.'`,
 

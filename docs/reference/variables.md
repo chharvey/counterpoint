@@ -4,7 +4,7 @@ This chapter describes declaring and accessing local variables and types.
 
 
 ## Variable Declaration
-Values in Solid can be stored in variables and then accessed later.
+Values in Counterpoint can be stored in variables and then accessed later.
 In order to use a variable, it must be **declared** first,
 in what we call a **variable declaration statement**.
 We declare variables with the keyword `let`.
@@ -13,7 +13,7 @@ let my_var: str = 'Hello, world!';
 ```
 When we declare a variable, we must assign it a value, using the **assignment operator** `=`.
 In some languages, declaring a variable and at the same time assigning it a value is called **initialization**.
-In Solid, this is mandatory — It’s not possible to declare a value without initializing it.
+In Counterpoint, this is mandatory — It’s not possible to declare a value without initializing it.
 The assignment operator is an equals sign, but it does not represent equality in the mathematical sense.
 It means we’re setting the value on the right-hand side to the variable on the left.
 In programming terms, we say, “the variable `my_var` is **assigned the value** `'Hello, world!'`”,
@@ -35,7 +35,7 @@ let my_var: str = '¡Hola, mundo!'; %> AssignmentError
 All **basic** variable names *must* start with an uppercase or lowercase letter or an underscore.
 The rest of the basic variable name may include letters, digits, and underscores.
 By convention, variables are named in *snake_case*, but it’s not required.
-Basic variable names cannot be any of the reserved keywords in the Solid language.
+Basic variable names cannot be any of the reserved keywords in Counterpoint.
 Variable names don’t have to be “basic” — we can write variables with
 [Unicode characters](#unicode-identifiers) as well.
 
@@ -50,7 +50,7 @@ my_other_var; %> ReferenceError
 Even if the variable is declared further down in the code, we get the same error.
 This region of code between where a variable is accessed and where it’s declared
 is called a **temporal dead zone**.
-Solid does not hoist variables.
+Counterpoint does not hoist variables.
 ```
 my_other_var;              %> ReferenceError
 %%------------------------
@@ -122,7 +122,7 @@ followed by any number of upper- or lower-case letters, digits, and underscores.
 
 This constraint is quite limited and could be a pain point for non-English speakers.
 Many other languages have characters in their alphabet that are not allowed by this rule.
-Therefore, Solid offers a flexible mechanism for allowing identifiers with
+Therefore, Counterpoint offers a flexible mechanism for allowing identifiers with
 almost any character in the Unicode character set: **Unicode identifiers**.
 
 By wrapping the identifier name with \`back-ticks\`,
@@ -228,7 +228,7 @@ type MyType = int; %> AssignmentError
 
 
 Also like variables, type aliases can create temporal dead zones.
-Solid does not hoist type aliases.
+Counterpoint does not hoist type aliases.
 *(NOTE: This may change in future versions.)*
 ```
 let my_first_var: MyFirstType = 'Hello, world!';      %> ReferenceError [1]

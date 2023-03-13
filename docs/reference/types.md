@@ -1,10 +1,10 @@
 # Types
-This chapter describes types of values in the Solid Language.
+This chapter describes types of values in the Counterpoint Programming Language.
 
-Solid is a strongly-typed language, meaning that types of values are determined at compile-time.
+Counterpoint is a strongly-typed language, meaning that types of values are determined at compile-time.
 A strong type system can help prevent many runtime errors.
 
-Solid Language Types are described in the [formal specification](../spec/data-types.md#solid-language-types).
+Counterpoint Language Types are described in the [formal specification](../spec/data-types.md#counterpoint-language-types).
 This reference takes a more informative approach.
 
 
@@ -224,7 +224,7 @@ Other than for the special cases listed above, a backslash has no effect.
 > 'Any non-special character may be escaped.'
 
 ##### In-String Comments
-String literals may contain Solid comments.
+String literals may contain Counterpoint comments.
 Line comments begin with `%` (**U+0025 PERCENT SIGN**) and continue until (but not including) the next line break, and
 multiline comments begin with `%%` and continue until (and including) the next `%%`.
 Both kinds of comments will continue until their end delimiter unless the end of the string is reached first.

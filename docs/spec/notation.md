@@ -13,23 +13,23 @@ steps of a hypothetical [specification algorithm](#algorithms).
 
 Algorithm variables, values, and identifiers are delimited with \`back-ticks\` (**U+0060**) as illustrated above.
 
-Snippets of program code (be it a Solid program or another kind of program such as a context-free grammar)
+Snippets of program code (be it a Counterpoint program or another kind of program such as a context-free grammar)
 are written in `monospace font`.
-> The Solid code `let x: int = X.value;` is a statement
-that assigns the `value` property of `X` to the newly declared variable `x`.
+> The Counterpoint code `let x: int = X.value;` is a statement
+> that assigns the `value` property of `X` to the newly declared variable `x`.
 >
 > The grammar production `N ::= A B` defines the nonterminal `N` as a concatenation of nonterminals `A` and `B`.
 
 Metavariables are variables used within this specification as placeholder values.
 They are delimited with single-angle quotes (**U+2039**, **U+203A**).
-In the following example, \`‹T›\` and \`‹U›\` are not actual Solid Language Types,
+In the following example, \`‹T›\` and \`‹U›\` are not actual Counterpoint Language Types,
 but placeholders for such types.
-> If \`‹T›\` and \`‹U›\` are Solid Language Types, then \`Or<‹T›, ‹U›>\` is the Solid Language Type
-that contains values of either type \`‹T›\` or type \`‹U›\` (or both).
+> If \`‹T›\` and \`‹U›\` are Counterpoint Language Types, then \`Or<‹T›, ‹U›>\` is the Counterpoint Language Type
+> that contains values of either type \`‹T›\` or type \`‹U›\` (or both).
 
 
-### Solid Specification Values
-[Solid Specification Values](./data-types.md#solid-specification-types) are indicated with an *italic typeface*.
+### Counterpoint Specification Values
+[Counterpoint Specification Values](./data-types.md#counterpoint-specification-types) are indicated with an *italic typeface*.
 For instance, a sequence of real numbers can be written as *[2, 4, 6]*.
 
 #### Sequences
@@ -56,16 +56,16 @@ If the example structure above were assigned to the specification variable \`bac
 then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which is the value `'Bach'`.
 
 
-### Solid Language Values
-[Solid Language Values](./data-types.md#solid-language-types) are displayed with a `monospace typeface`.
+### Counterpoint Language Values
+[Counterpoint Language Values](./data-types.md#counterpoint-language-types) are displayed with a `monospace typeface`.
 Examples include `true`, `42.0`, and `'hello'`.
-There is no notational distinction between Solid Language Values and longer code snippets
+There is no notational distinction between Counterpoint Language Values and longer code snippets
 such as `let n: int = 42;`; however, the semantics will be apparent in context.
 
 
 
 ## Context-Free Grammars
-Context-free grammars define the lexical and syntactic composition of Solid programs.
+Context-free grammars define the lexical and syntactic composition of Counterpoint programs.
 
 A context-free grammar consists of a number of **productions**, each of which
 defines an abstract symbol called a **nonterminal** by
@@ -106,7 +106,7 @@ would be a well-formed instance of the language.
 
 
 ### The Lexical Grammar
-A lexical grammar for the Solid programming language is a formal context-free grammar that has
+A lexical grammar for the Counterpoint Programming Language is a formal context-free grammar that has
 as its terminal symbols the characters of the Unicode character set.
 The lexical grammar is a set of productions that describes
 how sequences of Unicode characters are translated into a sequence of input elements, called **tokens**.
@@ -125,10 +125,10 @@ The screener is also responsible for deciding which tokens get sent to the parse
 
 
 ### The Syntactic Grammar
-The syntactic context-free grammar for the Solid programming language has as its terminal symbols
+The syntactic context-free grammar for the Counterpoint Programming Language has as its terminal symbols
 the tokens defined by the lexical grammar, excluding certain tokens such as comments.
 The syntactic grammar is a set of productions that describes
-how sequences of tokens can form syntactically correct components of Solid programs.
+how sequences of tokens can form syntactically correct components of Counterpoint programs.
 
 A parser is a mechanism that performs syntactic analysis, or “parsing”: It reads a stream of token inputs,
 and arranges them into a **parse tree** according to the rules of the syntactic grammar.
@@ -848,7 +848,8 @@ Notation for the TNSG is almost exactly the same as that of [CFGs](#notation-con
 with exceptions described above.
 
 #### Formal Grammar (TNSG)
-The grammar below (which is a CFG) describes the formal Tree Node Schema Grammar that describes the Solid language.
+The grammar below (which is a CFG) describes the formal Tree Node Schema Grammar
+that describes the Counterpoint Programming Language.
 ```
 TypeUnit ::=
 	| NUMBER
@@ -922,10 +923,10 @@ The first line could be read aloud as,
 
 ### Token Worth
 The token worth grammar is an attribute grammar that determines the semantic value of the various token types.
-It assigns a [Solid Specification Value](./data-types.md#solid-specification-types)
-to a Token produced by the Tokenizer piece of the Solid compiler.
+It assigns a [Counterpoint Specification Value](./data-types.md#counterpoint-specification-types)
+to a Token produced by the Tokenizer piece of the Counterpoint compiler.
 This grammar is described further in detail in the chapter
-[Solid Language: Lexicon](./language-lexicon.md).
+[Counterpoint Programming Language: Lexicon](./language-lexicon.md).
 
 
 ### Decoration
@@ -936,9 +937,9 @@ These semantics are called “static semantics” because they are performed
 after syntactic analysis, but before the program is executed at run-time.
 
 The productions of the decoration grammar are listed in the chapters
-[Solid Language: Expressions](./language-expressions.md),
-[Solid Language: Statements](./language-statements.md), and
-[Solid Language: Goal Symbols](./language-goal.md).
+[Counterpoint Programming Language: Expressions](./language-expressions.md),
+[Counterpoint Programming Language: Statements](./language-statements.md), and
+[Counterpoint Programming Language: Goal Symbols](./language-goal.md).
 
 
 ### Notation: Attribute Grammar
@@ -951,7 +952,7 @@ as an argument and “returning” a value.
 of the specified lexical/syntactic production.)
 The “return type” of the attribute production is indicated after a thin arrow `->`
 following the attribute production name, and the “return value” is
-a [Solid Specification Value](./data-types.md#solid-specification-types) followed by the definition symbol `:=`.
+a [Counterpoint Specification Value](./data-types.md#counterpoint-specification-types) followed by the definition symbol `:=`.
 ```
 ‹AttributeName›(‹CFGProduction›) -> ‹ReturnType›
 	:= ‹ReturnValue›;
@@ -1005,7 +1006,7 @@ The complexity lies within the values the productions return, which are further 
 in the chapter [Data Types and Values](./data-types.md).
 
 #### Formal Grammar (AG)
-The grammar below (which is a CFG) describes the formal AGs that describe the Solid language.
+The grammar below (which is a CFG) describes the formal AGs that describe the Counterpoint Programming Language.
 ```
 Item ::=
 	| STRING
@@ -1424,9 +1425,9 @@ They pass instructions to the code generator,
 which in turn generates compiled code to be executed at runtime.
 
 The runtime instructions of static semantics are listed in the chapters
-[Solid Language: Expressions](./language-expressions.md),
-[Solid Language: Statements](./language-statements.md), and
-[Solid Language: Goal Symbols](./language-goal.md).
+[Counterpoint Programming Language: Expressions](./language-expressions.md),
+[Counterpoint Programming Language: Statements](./language-statements.md), and
+[Counterpoint Programming Language: Goal Symbols](./language-goal.md).
 
 
 ### Notation: Algorithms
@@ -1461,7 +1462,7 @@ None AlgorithmName(RealNumber param) :=
 
 
 ## Syntax Errors (1xxx)
-Syntax Errors arise when a Solid source text does not adhere to the language’s
+Syntax Errors arise when a Counterpoint source text does not adhere to the language’s
 formal lexical or syntactic grammar rules.
 If this is the case, the code is said to be “ill-formed” (“not well-formed”).
 
@@ -1469,7 +1470,7 @@ There are two main types of syntax errors: lexical errors and parse errors.
 
 
 ### Lexical Errors (11xx)
-A lexical error is raised when the Solid source text fails to produce a token per
+A lexical error is raised when the Counterpoint source text fails to produce a token per
 the [lexical grammar](#the-lexical-grammar) rules.
 
 1100. A general lexical error not covered by one of the following cases.
@@ -1481,7 +1482,7 @@ the [lexical grammar](#the-lexical-grammar) rules.
 
 
 ### Parse Errors (12xx)
-A parse error is raised when the Solid source text fails to parse correctly per
+A parse error is raised when the Counterpoint source text fails to parse correctly per
 the [syntactic grammar](#the-syntactic-grammar) rules.
 
 1200. A general parse error not covered by one of the following cases.
@@ -1490,7 +1491,7 @@ the [syntactic grammar](#the-syntactic-grammar) rules.
 
 
 ## Semantic Errors (2xxx)
-Semantic Errors arise when a Solid source text does not adhere to the language’s
+Semantic Errors arise when a Counterpoint source text does not adhere to the language’s
 formal validation rules.
 If this is the case, the code is said to be “invalid” (“not valid”).
 
