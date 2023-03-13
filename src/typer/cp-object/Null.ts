@@ -1,3 +1,4 @@
+import type {TYPE} from './package.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
@@ -17,8 +18,11 @@ import {Primitive} from './Primitive.js';
 export class Null extends Primitive {
 	/** The Counterpoint Language Value `null`. */
 	public static readonly NULL: Null = new Null();
+
 	/** A Unit Type containing only the Counterpoint Language Value `null`. */
-	public static readonly NULLTYPE = Null.NULL.toType();
+	public static get NULLTYPE(): TYPE.TypeUnit<Null> {
+		return Null.NULL.toType();
+	}
 
 
 	private constructor() {

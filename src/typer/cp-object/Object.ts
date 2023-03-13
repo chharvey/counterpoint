@@ -1,4 +1,4 @@
-import type {Type} from './package.js';
+import type {TYPE} from './package.js';
 import {String as CPString} from './index.js';
 
 
@@ -79,6 +79,6 @@ abstract class CPObject {
 	 * The returned type is as reasonably narrow as possible.
 	 * @return a Type that contains this Object
 	 */
-	public abstract toType(): Type;
+	public abstract toType(): TYPE.Type;
 }
 export {CPObject as Object};

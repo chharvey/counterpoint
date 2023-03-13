@@ -7,12 +7,8 @@ import {
 	TypeIntersection,
 	TypeUnion,
 	TypeDifference,
-	TypeUnit,
-	TypeBoolean,
-	TypeInteger,
-	TypeFloat,
-	TypeString,
-	TypeObject,
+	NEVER,
+	UNKNOWN,
 } from './index.js';
 
 
@@ -23,16 +19,16 @@ import {
  * - TypeIntersection
  * - TypeUnion
  * - TypeDifference
+ * - TypeUnit
  * - TypeInterface
  * - TypeNever
  * - TypeVoid
- * - TypeUnit
  * - TypeUnknown
+ * - TypeObject
  * - TypeBoolean
  * - TypeInteger
  * - TypeFloat
  * - TypeString
- * - TypeObject
  * - TypeTuple
  * - TypeRecord
  * - TypeList
@@ -41,18 +37,6 @@ import {
  * - TypeMap
  */
 export abstract class Type {
-	/* eslint-disable @typescript-eslint/brace-style */
-	/** The Bottom Type, containing no values. */                    public static get NEVER():   TypeNever          { return TypeNever.INSTANCE; }
-	/** The Void Type, representing a completion but not a value. */ public static get VOID():    TypeVoid           { return TypeVoid.INSTANCE; }
-	/** The Top Type, containing all values. */                      public static get UNKNOWN(): TypeUnknown        { return TypeUnknown.INSTANCE; }
-	/** The Null Type. */                                            public static get NULL():    TypeUnit<OBJ.Null> { return OBJ.Null.NULLTYPE; }
-	/** The Boolean Type. */                                         public static get BOOL():    TypeBoolean        { return TypeBoolean.INSTANCE; }
-	/** The Integer Type. */                                         public static get INT():     TypeInteger        { return TypeInteger.INSTANCE; }
-	/** The Float Type. */                                           public static get FLOAT():   TypeFloat          { return TypeFloat.INSTANCE; }
-	/** The String Type. */                                          public static get STR():     TypeString         { return TypeString.INSTANCE; }
-	/** The Object Type. */                                          public static get OBJ():     TypeObject         { return TypeObject.INSTANCE; }
-	/* eslint-enable @typescript-eslint/brace-style */
-
 	/**
 	 * Intersect all the given types.
 	 * If an empty array is given, return type `never`.
@@ -60,7 +44,7 @@ export abstract class Type {
 	 * @returns the intersection
 	 */
 	public static intersectAll(types: readonly Type[]): Type {
-		return (types.length) ? types.reduce((a, b) => a.intersect(b)) : Type.NEVER;
+		return (types.length) ? types.reduce((a, b) => a.intersect(b)) : NEVER;
 	}
 
 	/**
@@ -70,7 +54,7 @@ export abstract class Type {
 	 * @returns the union
 	 */
 	public static unionAll(types: readonly Type[]): Type {
-		return (types.length) ? types.reduce((a, b) => a.union(b)) : Type.NEVER;
+		return (types.length) ? types.reduce((a, b) => a.union(b)) : NEVER;
 	}
 
 
@@ -125,7 +109,7 @@ export abstract class Type {
 	public intersect(t: Type): Type {
 		/** 1-5 | `T  & never   == never` */
 		if (t.isBottomType) {
-			return Type.NEVER;
+			return NEVER;
 		}
 		if (this.isBottomType) {
 			return this;
@@ -176,7 +160,7 @@ export abstract class Type {
 			return t;
 		}
 		if (this.isTopType) {
-			return Type.UNKNOWN;
+			return UNKNOWN;
 		}
 		/** 3-4 | `A <: B  <->  A \| B == B` */
 		if (this.isSubtypeOf(t)) {
@@ -212,7 +196,7 @@ export abstract class Type {
 
 		/** 4-2 | `A - B == never  <->  A <: B` */
 		if (this.isSubtypeOf(t)) {
-			return Type.NEVER;
+			return NEVER;
 		}
 
 		if (t instanceof TypeUnion) {
@@ -367,100 +351,5 @@ export class TypeInterface extends Type {
 
 	public override immutableOf(): TypeInterface {
 		return new TypeInterface(this.properties, false);
-	}
-}
-
-
-
-/**
- * Class for constructing the Bottom Type, the type containing no values.
- * @final
- */
-class TypeNever extends Type {
-	public static readonly INSTANCE: TypeNever = new TypeNever();
-
-	public override readonly isBottomType: boolean = true;
-	public override readonly isTopType:    boolean = false;
-
-	private constructor() {
-		super(false);
-	}
-
-	public override toString(): string {
-		return 'never';
-	}
-
-	public override includes(_v: OBJ.Object): boolean {
-		return false;
-	}
-
-	public override equals(t: Type): boolean {
-		return t.isBottomType;
-	}
-}
-
-
-
-/**
- * Class for constructing the `void` type.
- * @final
- */
-class TypeVoid extends Type {
-	public static readonly INSTANCE: TypeVoid = new TypeVoid();
-
-	public override readonly isBottomType: boolean = false;
-	public override readonly isTopType:    boolean = false;
-
-	private constructor() {
-		super(false);
-	}
-
-	public override toString(): string {
-		return 'void';
-	}
-
-	public override includes(_v: OBJ.Object): boolean {
-		return false;
-	}
-
-	protected override intersect_do(_t: Type): Type {
-		return Type.NEVER;
-	}
-
-	protected override isSubtypeOf_do(_t: Type): boolean {
-		return false;
-	}
-
-	public override equals(t: Type): boolean {
-		return t === TypeVoid.INSTANCE || super.equals(t);
-	}
-}
-
-
-
-/**
- * Class for constructing the Top Type, the type containing all values.
- * @final
- */
-class TypeUnknown extends Type {
-	public static readonly INSTANCE: TypeUnknown = new TypeUnknown();
-
-	public override readonly isBottomType: boolean = false;
-	public override readonly isTopType:    boolean = true;
-
-	private constructor() {
-		super(false);
-	}
-
-	public override toString(): string {
-		return 'unknown';
-	}
-
-	public override includes(_v: OBJ.Object): boolean {
-		return true;
-	}
-
-	public override equals(t: Type): boolean {
-		return t.isTopType;
 	}
 }

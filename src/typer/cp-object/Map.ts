@@ -4,8 +4,7 @@ import {
 	throw_expression,
 	AST,
 	languageValuesIdentical,
-	Type,
-	TypeMap,
+	TYPE,
 } from './package.js';
 import type {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
@@ -44,10 +43,10 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 		);
 	}
 
-	public override toType(): TypeMap {
-		return new TypeMap(
-			Type.unionAll([...this.cases.keys()]  .map<Type>((ant) => ant.toType())),
-			Type.unionAll([...this.cases.values()].map<Type>((con) => con.toType())),
+	public override toType(): TYPE.TypeMap {
+		return new TYPE.TypeMap(
+			TYPE.Type.unionAll([...this.cases.keys()]  .map<TYPE.Type>((ant) => ant.toType())),
+			TYPE.Type.unionAll([...this.cases.values()].map<TYPE.Type>((con) => con.toType())),
 		);
 	}
 

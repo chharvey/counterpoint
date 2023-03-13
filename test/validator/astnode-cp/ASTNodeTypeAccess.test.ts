@@ -22,9 +22,9 @@ describe('ASTNodeTypeAccess', () => {
 			typeUnitInt(1n),
 			typeUnitFloat(2.0),
 			typeUnitStr('three'),
-			TYPE.Type.INT,
-			TYPE.Type.FLOAT,
-			TYPE.Type.STR,
+			TYPE.INT,
+			TYPE.FLOAT,
+			TYPE.STR,
 		];
 		let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
 		before(() => {
@@ -88,8 +88,8 @@ describe('ASTNodeTypeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 26).map((c) => evalTypeDecl(c)),
 					[
-						typeUnitStr('three').union(TYPE.Type.VOID),
-						TYPE.Type.STR.union(TYPE.Type.VOID),
+						typeUnitStr('three').union(TYPE.VOID),
+						TYPE.STR.union(TYPE.VOID),
 					],
 				);
 			});
@@ -112,8 +112,8 @@ describe('ASTNodeTypeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(28, 30).map((c) => evalTypeDecl(c)),
 					[
-						typeUnitFloat(2.0).union(TYPE.Type.VOID),
-						TYPE.Type.FLOAT.union(TYPE.Type.VOID),
+						typeUnitFloat(2.0).union(TYPE.VOID),
+						TYPE.FLOAT.union(TYPE.VOID),
 					],
 				);
 			});

@@ -14,4 +14,4 @@ export {
 } from '../package.js';
 export {TypeEntry} from '../utils-public.js';
 export {languageValuesIdentical} from '../utils-private.js';
-export {OBJ} from '../index.js';
+export * as OBJ from '../cp-object/index.js';

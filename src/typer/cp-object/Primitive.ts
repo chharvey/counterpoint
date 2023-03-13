@@ -1,4 +1,4 @@
-import {TypeUnit} from './package.js';
+import {TYPE} from './package.js';
 import {Object as CPObject} from './Object.js';
 
 
@@ -11,7 +11,7 @@ import {Object as CPObject} from './Object.js';
  * - String
  */
 export abstract class Primitive extends CPObject {
-	/** @final */ public override toType(): TypeUnit<this> {
-		return new TypeUnit<this>(this);
+	/** @final */ public override toType(): TYPE.TypeUnit<this> {
+		return new TYPE.TypeUnit<this>(this);
 	}
 }

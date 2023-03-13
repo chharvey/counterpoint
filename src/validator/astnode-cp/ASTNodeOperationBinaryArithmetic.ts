@@ -55,11 +55,11 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		return (bothNumeric(t0, t1))
 			? (int_coercion)
 				? (eitherFloats(t0, t1))
-					? TYPE.Type.FLOAT
-					: TYPE.Type.INT
+					? TYPE.FLOAT
+					: TYPE.INT
 				: (
-					(bothFloats   (t0, t1)) ? TYPE.Type.FLOAT :
-					(neitherFloats(t0, t1)) ? TYPE.Type.INT   :
+					(bothFloats   (t0, t1)) ? TYPE.FLOAT :
+					(neitherFloats(t0, t1)) ? TYPE.INT   :
 					throw_expression(new TypeError01(this))
 				)
 			: throw_expression(new TypeError01(this));

@@ -8,12 +8,12 @@ import {Type} from './Type.js';
  * @final
  */
 export class TypeString extends Type {
-	public static get INSTANCE(): TypeString {
-		return new TypeString();
-	}
+	public static readonly INSTANCE = new TypeString();
+
 
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
+
 	private constructor() {
 		super(false, new Set([new OBJ.String('')]));
 	}

@@ -89,7 +89,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 				} catch (err) {
 					if (err instanceof ErrorCode) {
 						// ignore evaluation errors such as VoidError, NanError, etc.
-						this.typed = TYPE.Type.NEVER;
+						this.typed = TYPE.NEVER;
 					} else {
 						throw err;
 					}
