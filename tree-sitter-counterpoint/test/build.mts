@@ -273,7 +273,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				f.<[: bool]>();
 			`,
 			makeSourceFile(extractType(s(
-				'type_hash_literal',
+				'type_dict_literal',
 				s('keyword_type'),
 			))),
 		],

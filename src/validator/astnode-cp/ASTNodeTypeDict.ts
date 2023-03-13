@@ -17,7 +17,7 @@ export class ASTNodeTypeDict extends ASTNodeType {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'type_hash_literal'>,
+		start_node: SyntaxNodeType<'type_dict_literal'>,
 		private readonly type: ASTNodeType,
 	) {
 		super(start_node, {}, [type]);

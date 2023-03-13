@@ -108,7 +108,7 @@ describe('Decorator', () => {
 
 			['Decorate(TypeDictLiteral ::= "[" ":" Type "]") -> SemanticTypeDict', [AST.ASTNodeTypeDict, `
 				type T = [:int];
-				% (type_hash_literal)
+				% (type_dict_literal)
 			`]],
 
 			['Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMap', [AST.ASTNodeTypeMap, `
