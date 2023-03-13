@@ -89,6 +89,18 @@ describe('ASTNodeCP', () => {
 			});
 
 			context('for property reassignment.', () => {
+				it('allows assignment directly on objects.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						[42].0                               = 42;
+						[i= 42].i                            = 42;
+						List.<int>([42]).0                   = 42;
+						Dict.<int>([i= 42]).i                = 42;
+						Set.<int>([42]).[43]                 = false;
+						Map.<bool, int>([[true, 42]]).[true] = 42;
+					`);
+					goal.varCheck();
+					return goal.typeCheck(); // assert does not throw
+				});
 				it('throws when property assignee type is not supertype.', () => {
 					[
 						`
@@ -124,28 +136,34 @@ describe('ASTNodeCP', () => {
 				it('throws when assignee’s base type is not mutable.', () => {
 					[
 						`
-							let t: [42] = [42];
-							t.0 = 4.2;
+							let t: [int] = [42];
+							t.0 = 43;
 						`,
 						`
-							let r: [i: 42] = [i= 42];
-							r.i = 4.2;
+							let r: [i: int] = [i= 42];
+							r.i = 43;
+						`,
+						`
+							\\[42].0 = 42;
+						`,
+						`
+							\\[i= 42].i = 42;
 						`,
 						`
 							let l: int[] = List.<int>([42]);
-							l.0 = 4.2;
+							l.0 = 43;
 						`,
 						`
 							let d: [:int] = Dict.<int>([i= 42]);
-							d.i = 4.2;
+							d.i = 43;
 						`,
 						`
 							let s: int{} = Set.<int>([42]);
-							s.[42] = 4.2;
+							s.[43] = true;
 						`,
 						`
 							let m: {bool -> int} = Map.<bool, int>([[true, 42]]);
-							m.[true] = 4.2;
+							m.[true] = 43;
 						`,
 					].forEach((src) => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);

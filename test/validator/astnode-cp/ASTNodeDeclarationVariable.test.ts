@@ -68,7 +68,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				let x: float = 42;
 			`, CONFIG_COERCION_OFF).typeCheck(), TypeError03);
 		});
-		context('allows assigning a collection literal to a wider mutable type.', () => {
+		context('assigning a collection literal to a wider mutable type.', () => {
 			function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
 				if (src instanceof Array) {
 					return src
@@ -124,9 +124,27 @@ describe('ASTNodeDeclarationVariable', () => {
 					let r3: mutable [a: int, b: str] = [c= 42, d= '43'];
 				`.split('\n'), TypeError03);
 			});
+			it('vects & structs: disallows assigning to mutable type.', () => {
+				typeCheckGoal(`
+					let v: [   int,    str] = \\[   42,    'hello'];
+					let s: [a: int, b: str] = \\[a= 42, b= 'hello'];
+				`.split('\n'));
+				typeCheckGoal(`
+					let v: obj = \\[   42,    'hello'];
+					let s: obj = \\[a= 42, b= 'hello'];
+				`.split('\n'));
+				typeCheckGoal(`
+					let v: mutable obj = \\[   42,    'hello'];
+					let s: mutable obj = \\[a= 42, b= 'hello'];
+				`.split('\n')); // mutable obj == obj
+				return typeCheckGoal(`
+					let v: mutable [   int,    str] = \\[   42,    'hello'];
+					let s: mutable [a: int, b: str] = \\[a= 42, b= 'hello'];
+				`.split('\n'), TypeError03);
+			});
 			it('should throw when assigning combo type to union.', () => {
 				typeCheckGoal([
-					'let x: [bool, int]       | [int, bool]       = [true, true];',
+					'let x: [   bool,    int] | [   int,    bool] = [   true,    true];',
 					'let x: [a: bool, b: int] | [a: int, b: bool] = [a= true, b= true];',
 				], TypeError03);
 				return typeCheckGoal(`

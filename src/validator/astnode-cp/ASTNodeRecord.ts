@@ -55,7 +55,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		return TYPE.TypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.type(),
-		])), true);
+		])), this.isRef);
 	}
 
 	protected override fold_do(): OBJ.Object | null {

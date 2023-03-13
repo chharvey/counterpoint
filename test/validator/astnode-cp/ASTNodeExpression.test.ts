@@ -381,7 +381,7 @@ describe('ASTNodeExpression', () => {
 
 
 
-	describe('ASTNode{Tuple,Record,Set,Map}', () => {
+	describe('ASTNodeCollectionLiteral', () => {
 		describe('#varCheck', () => {
 			describe('ASTNodeRecord', () => {
 				it('throws if containing duplicate keys.', () => {
@@ -425,11 +425,15 @@ describe('ASTNodeExpression', () => {
 				const collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,
+					AST.ASTNodeTuple,
+					AST.ASTNodeRecord,
 					AST.ASTNodeSet,
 					AST.ASTNodeMap,
 				] = [
 					AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`, config),
 					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`, config),
+					AST.ASTNodeTuple.fromSource(`\\[1, 2.0, 'three'];`, config),
+					AST.ASTNodeRecord.fromSource(`\\[a= 1, b= 2.0, c= 'three'];`, config),
 					AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`, config),
 					AST.ASTNodeMap.fromSource(`
 						{
@@ -447,6 +451,11 @@ describe('ASTNodeExpression', () => {
 							c.key.id,
 							expected[i],
 						])), true),
+						TYPE.TypeTuple.fromTypes(expected, false),
+						TYPE.TypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [
+							c.key.id,
+							expected[i],
+						])), false),
 						new TYPE.TypeSet(TYPE.Type.unionAll(expected), true),
 						new TYPE.TypeMap(
 							map_ant_type,

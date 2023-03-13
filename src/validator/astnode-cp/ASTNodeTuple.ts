@@ -38,7 +38,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	protected override type_do(): TYPE.Type {
-		return TYPE.TypeTuple.fromTypes(this.children.map((c) => c.type()), true);
+		return TYPE.TypeTuple.fromTypes(this.children.map((c) => c.type()), this.isRef);
 	}
 
 	protected override fold_do(): OBJ.Object | null {

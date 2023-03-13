@@ -61,7 +61,9 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 				this.validator,
 			);
 		} catch (err) {
-			if (!(this.assigned instanceof ASTNodeCollectionLiteral && this.assigned.assignTo(assignee_type))) {
+			if (!(this.assigned instanceof ASTNodeCollectionLiteral && (
+				!('isRef' in this.assigned) || this.assigned.isRef === true // HACK
+			) && this.assigned.assignTo(assignee_type))) {
 				throw err;
 			}
 		}
