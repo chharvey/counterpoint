@@ -36,6 +36,7 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 	 * This extraction is needed to prevent infinite recursion when performing Identical on Structs.
 	 * @param value the object to compare
 	 * @returns are the objects equal?
+	 * @final
 	 */
 	protected equalSubsteps(value: CPObject): boolean {
 		return (

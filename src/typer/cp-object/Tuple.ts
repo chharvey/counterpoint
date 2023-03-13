@@ -4,6 +4,10 @@ import {CollectionIndexed} from './CollectionIndexed.js';
 
 
 
+/**
+ * Known subclasses:
+ * - Vect
+ */
 export class Tuple<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 	/**
 	 * @inheritdoc

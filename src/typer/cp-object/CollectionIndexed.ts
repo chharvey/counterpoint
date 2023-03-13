@@ -39,6 +39,7 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 	 * This extraction is needed to prevent infinite recursion when performing Identical on Vects.
 	 * @param value the object to compare
 	 * @returns are the objects equal?
+	 * @final
 	 */
 	protected equalSubsteps(value: CPObject): boolean {
 		return value instanceof CollectionIndexed && this.isEqualTo(value as this, (this_, that_) => (
