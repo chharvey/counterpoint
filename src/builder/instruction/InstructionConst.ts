@@ -1,7 +1,5 @@
-import {
-	throw_expression,
-	OBJ,
-} from './package.js';
+import {throw_expression} from '../../lib/index.js';
+import {OBJ} from '../../typer/index.js';
 import {InstructionExpression} from './InstructionExpression.js';
 
 

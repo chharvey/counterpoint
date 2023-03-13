@@ -1,4 +1,4 @@
-import type {ValidOperatorBinary} from './package.js';
+import type {ValidOperatorBinary} from '../../validator/index.js';
 import {InstructionExpression} from './InstructionExpression.js';
 
 

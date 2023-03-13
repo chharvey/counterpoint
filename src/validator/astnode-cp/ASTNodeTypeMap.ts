@@ -1,10 +1,10 @@
 import * as assert from 'assert';
+import {TYPE} from '../../index.js';
 import {
-	TYPE,
 	CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
 

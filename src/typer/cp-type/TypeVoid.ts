@@ -1,6 +1,6 @@
-import type {OBJ} from './package.js';
-import {Type} from './Type.js';
+import type * as OBJ from '../cp-object/index.js';
 import {NEVER} from './index.js';
+import {Type} from './Type.js';
 
 
 

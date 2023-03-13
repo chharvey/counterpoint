@@ -1,9 +1,9 @@
 import {
-	TYPE,
 	OBJ,
-	CPConfig,
-	Validator,
-} from './package.js';
+	TYPE,
+} from '../../index.js';
+import type {CPConfig} from '../../core/index.js';
+import {Validator} from '../index.js';
 
 
 

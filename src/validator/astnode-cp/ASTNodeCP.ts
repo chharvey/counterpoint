@@ -3,10 +3,10 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	TYPE,
 	TypeError03,
-	to_serializable,
-	Validator,
-	ASTNode,
-} from './package.js';
+} from '../../index.js';
+import {to_serializable} from '../../parser/index.js';
+import type {Validator} from '../index.js';
+import {ASTNode} from '../ASTNode.js';
 
 
 

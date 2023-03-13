@@ -1,18 +1,22 @@
 import * as assert from 'assert';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
-	throw_expression,
+} from '../../index.js';
+import {throw_expression} from '../../lib/index.js';
+import {
 	CPConfig,
 	CONFIG_DEFAULT,
-	Keyword,
-	Validator,
+} from '../../core/index.js';
+import {Keyword} from '../../parser/index.js';
+import {Validator} from '../index.js';
+import {
 	SyntaxNodeType,
 	isSyntaxNodeType,
-} from './package.js';
+} from '../utils-private.js';
 import {valueOfTokenNumber} from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 

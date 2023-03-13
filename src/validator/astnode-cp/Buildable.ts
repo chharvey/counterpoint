@@ -1,7 +1,7 @@
 import type {
 	INST,
 	Builder,
-} from './package.js';
+} from '../../index.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
 
 

@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import {
 	AST,
-	TYPE,
 	OBJ,
+	TYPE,
 	TypeError01,
 	TypeError02,
 	TypeError04,

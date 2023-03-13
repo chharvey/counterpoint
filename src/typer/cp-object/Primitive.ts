@@ -1,4 +1,4 @@
-import {TYPE} from './package.js';
+import {TYPE} from '../index.js';
 import {Object as CPObject} from './Object.js';
 
 

@@ -1,13 +1,15 @@
 import * as assert from 'assert';
 import {
-	CPConfig,
-	CONFIG_DEFAULT,
-	TYPE,
 	OBJ,
+	TYPE,
 	INST,
 	Builder,
 	ErrorCode,
-} from './package.js';
+} from '../../index.js';
+import {
+	CPConfig,
+	CONFIG_DEFAULT,
+} from '../../core/index.js';
 import {
 	ASTNodeStatement,
 	ASTNodeStatementExpression,

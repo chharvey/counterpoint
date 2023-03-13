@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
-import type {CodeUnit} from './package.js';
+import type {CodeUnit} from '../lib/index.js';
 
 
 
