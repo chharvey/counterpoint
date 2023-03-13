@@ -1,5 +1,14 @@
+import * as xjs from 'extrajs';
+import type {Keys} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
 import {String as CPString} from './index.js';
+
+
+
+/* eslint-disable @typescript-eslint/no-use-before-define */
+const eq_memo = new Map<readonly [CPObject, CPObject], boolean>();
+const eq_memo_comparator = (memokey1: Keys<typeof eq_memo>, memokey2: Keys<typeof eq_memo>): boolean => xjs.Set.is<CPObject>(new Set<CPObject>(memokey1), new Set<CPObject>(memokey2)); // cannot test `.identical()` for value objects without resulting in infinite recursion, so we must use the stricter native `===`
+/* eslint-enable @typescript-eslint/no-use-before-define */
 
 
 
@@ -37,7 +46,7 @@ abstract class CPObject {
 	}
 
 	/**
-	 * Helper method for {@link this.identical}. Override as needed.
+	 * Helper method for {@link CPObject#identical}. Override as needed.
 	 * @param _value the object to compare
 	 * @returns are the objects identically the same?
 	 */
@@ -47,7 +56,7 @@ abstract class CPObject {
 
 	/**
 	 * Are the values considered equal?
-	 * If {@link this.identical} returns `true`, this method will return `true`.
+	 * If {@link CPObject#identical} returns `true`, this method will return `true`.
 	 * @param value the object to compare
 	 * @returns are the objects equal?
 	 * @final
@@ -57,12 +66,31 @@ abstract class CPObject {
 	}
 
 	/**
-	 * Helper method for {@link this.equal}. Override as needed.
+	 * Helper method for {@link CPObject#equal}. Override as needed.
 	 * @param _value the object to compare
 	 * @returns are the objects equal?
 	 */
 	protected equal_helper(_value: CPObject): boolean {
 		return false;
+	}
+
+	/**
+	 * Utility method for checking and memoizing equality.
+	 * When the compiler performs `o1 == o2`, it will memoize the result and refer to it later,
+	 * in the case of recursive nesting (say `o1.prop == o2` and `o2.prop == o1`),
+	 * or when evaluating a similar expression (such as `o2 == o1`).
+	 * @param  that       the object to compare to this object
+	 * @param  definition the definition of equality for this type; a function taking 2 objects (`this` and `that`) and returning a boolean
+	 * @return            the result of evaluating the Counterpoint code `this == that`
+	 * @final
+	 */
+	protected isEqualTo(that: this, definition: (this_: this, that_: this) => boolean): boolean {
+		const memokey: readonly [this, this] = [this, that];
+		if (!xjs.Map.has<Keys<typeof eq_memo>, boolean>(eq_memo, memokey, eq_memo_comparator)) {
+			xjs.Map.set<Keys<typeof eq_memo>, boolean>(eq_memo, memokey, false, eq_memo_comparator); // use this assumption in the next step
+			xjs.Map.set<Keys<typeof eq_memo>, boolean>(eq_memo, memokey, definition.call(null, this, that), eq_memo_comparator);
+		}
+		return xjs.Map.get<Keys<typeof eq_memo>, boolean>(eq_memo, memokey, eq_memo_comparator)!;
 	}
 
 	/**

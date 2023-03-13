@@ -1,6 +1,8 @@
+import * as xjs from 'extrajs';
 import {VoidError01} from '../../index.js';
 import {throw_expression} from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
+import {language_values_equal} from '../utils-private.js';
 import type {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import type {Integer} from './Integer.js';
@@ -39,15 +41,9 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 	 * @returns are the objects equal?
 	 */
 	protected equalSubsteps(value: CPObject): boolean {
-		return (
-			value instanceof CollectionIndexed
-			&& this.items.length === value.items.length
-			&& Collection.do_Equal<CollectionIndexed>(this, value, () => (
-				value.items.every((thatitem, i) => (
-					this.items[i].equal(thatitem)
-				))
-			))
-		);
+		return value instanceof CollectionIndexed && this.isEqualTo(value as this, (this_, that_) => (
+			xjs.Array.is<T>(this_.items, that_.items, language_values_equal)
+		));
 	}
 
 	/** @final */
