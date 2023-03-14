@@ -268,7 +268,7 @@ function buildTest(title: string, source: string, expected: string): string {
 			))),
 		],
 
-		TypeHashLiteral: [
+		TypeDictLiteral: [
 			xjs.String.dedent`
 				f.<[: bool]>();
 			`,
@@ -290,7 +290,7 @@ function buildTest(title: string, source: string, expected: string): string {
 		],
 
 		// TypeUnit
-		// see #KEYWORDTYPE,IDENTIFIER,PrimitiveLiteral,Type{Grouped,{Tuple,Record,Hash,Map}Literal}
+		// see #KEYWORDTYPE,IDENTIFIER,PrimitiveLiteral,Type{Grouped,{Tuple,Record,Dict,Map}Literal}
 
 		// PropertyAccessType
 		// see #TypeCompound
@@ -514,7 +514,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				list?.[index];
 				list!.[index];
 				List.();
-				Hash.([]);
+				Dict.([]);
 				Set.<T>();
 			`,
 			makeSourceFile(
