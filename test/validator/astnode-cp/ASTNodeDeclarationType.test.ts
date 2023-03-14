@@ -59,7 +59,7 @@ describe('ASTNodeDeclarationType', () => {
 				type U = T | float;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			const builder: Builder = new Builder(src);
+			const builder = new Builder(src);
 			assert.deepStrictEqual(
 				[
 					goal.children[0].build(builder),

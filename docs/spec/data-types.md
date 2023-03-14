@@ -326,53 +326,54 @@ and the “absorption element” of the [union](#union) operation.
 ### Compound Types
 Compound types are derived from other types.
 
-- [Tuple](#tuple-type)
-- [Record](#record-type)
-- [List](#list-type)
-- [Dict](#dict-type)
-- [Set](#set-type)
-- [Map](#map-type)
+- [Tuple Types](#tuple-types)
+- [Record Types](#record-types)
+- [List Types](#list-types)
+- [Dict Types](#dict-types)
+- [Set Types](#set-types)
+- [Map Types](#map-types)
 
-#### Tuple Type
-A **Tuple Type** contains instances of [`Tuple`](./intrinsics.md#tuple) and is described by
+#### Tuple Types
+A **Tuple** type describes instances of [`Tuple`](./intrinsics.md#tuple) and is parameterized by
 a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items, called invariants.
-The objects that any given Tuple Type contains are `Tuple` objects whose
+The objects that any given Tuple type describes are `Tuple` objects whose
 items’ types match up with the invariants in the sequence in order.
 Tuples have a static size, are ordered, and are 0-origin indexable by Integers.
 
-#### Record Type
-A **Record Type** contains instances of [`Record`](./intrinsics.md#record) and is described by
+#### Record Types
+A **Record** type describes instances of [`Record`](./intrinsics.md#record) and is parameterized by
 a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values, called invariants.
-The objects that any given Record Type contains are `Record` objects whose
+The objects that any given Record type describes are `Record` objects whose
 properties’ types match up with the invariants in the structure by name.
 Records have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
-#### List Type
-A **List Type** contains instances of [`List`](./intrinsics.md#list) and is described by a single type,
+#### List Types
+A **List** type describes instances of [`List`](./intrinsics.md#list) and is parameterized by a single type,
 called an invariant, representing items.
-The objects that any given List Type contains are `List` objects whose
-items are assignable to the invariant describing the List Type.
+The objects that any given List type describes are `List` objects whose
+items are assignable to the invariant of the List type.
 Lists have a dynamic size, are ordered, and are 0-origin indexable by Integers.
 
-#### Dict Type
-A **Dict Type** contains instances of [`Dict`](./intrinsics.md#dict) and is described by a single type,
+#### Dict Types
+A **Dict** type describes instances of [`Dict`](./intrinsics.md#dict) and is parameterized by a single type,
 called an invariant, representing values.
-The objects that any given Dict Type contains are `Dict` objects whose
-values are assignable to the invariant describing the Dict Type.
+The objects that any given Dict type describes are `Dict` objects whose
+values are assignable to the invariant of the Dict type.
 Dicts have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
-#### Set Type
-A **Set Type** contains instances of [`Set`](./intrinsics.md#set) and is described by a single type,
+#### Set Types
+A **Set** type describes instances of [`Set`](./intrinsics.md#set) and is parameterized by a single type,
 called an invariant, representing elements.
-The objects that any given Set Type contains are `Set` objects whose
-elements are assignable to the invariant describing the Set Type.
+The objects that any given Set type describes are `Set` objects whose
+elements are assignable to the invariant of the Set type.
 Sets have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by their elements.
+The value corresponding to a set index is a [Boolean](#boolean) value indicating whether the set contains that element.
 
-#### Map Type
-A **Map Type** contains instances of [`Map`](./intrinsics.md#map) and is described by a pair of two types,
+#### Map Types
+A **Map** type describes instances of [`Map`](./intrinsics.md#map) and is parameterized by a pair of two types,
 called invariants, the first of which represents antecedents and the second of which represents consequents.
-The objects that any given Map Type contains are `Map` objects whose
-antcedents and consequents are respectively assignable to the invariants describing the Map Type.
+The objects that any given Map type describes are `Map` objects whose
+antcedents and consequents are respectively assignable to the invariants of the Map type.
 Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by their antecedents.
 
 <sup>&lowast;</sup>Rather, developers should not depend on any implementation of order.

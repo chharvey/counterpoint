@@ -10,7 +10,7 @@ export class InstructionModule extends Instruction {
 	/**
 	 * @param comps the components of the program
 	 */
-	public constructor (private readonly comps: Array<string | Instruction> = []) {
+	public constructor(private readonly comps: Array<string | Instruction> = []) {
 		super();
 	}
 

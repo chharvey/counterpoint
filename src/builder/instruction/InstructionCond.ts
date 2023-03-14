@@ -11,7 +11,7 @@ export class InstructionCond extends InstructionExpression {
 	 * @param arg1 the consequent
 	 * @param arg2 the alterantive
 	 */
-	public constructor (
+	public constructor(
 		private readonly arg0: InstructionExpression,
 		private readonly arg1: InstructionExpression,
 		private readonly arg2: InstructionExpression,

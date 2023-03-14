@@ -42,59 +42,64 @@ Most instances of `Object` are reference objects, unless otherwise specified.
 
 ## `Null`
 There is only one `Null` object: `null`.
+`null` is a value object.
 
 
 
 ## `Boolean`
 `Boolean` objects are the binary logical values `true` and `false`.
+`Boolean` objects are value objects.
 
 
 
 ## `Integer`
 `Integer` objects are integer numbers with 16-bit encodings.
+`Integer` objects are value objects.
 
 
 
 ## `Float`
 `Float` objects are rational numbers encoded in IEEE 754-2019 format.
+`Float` objects are value objects.
 
 
 
 ## `String`
 `String` objects are textual data encoded as sequences of bytes (in UTF-8 format).
+`String` objects are value objects.
 
 
 
 ## `Tuple`
 `Tuple` objects are fixed-size ordered lists of indexed values, with indices starting at *0*.
-The values of tuples are Counterpoint Language Values.
+The values in tuples are Counterpoint Language Values.
 
 
 
 ## `Record`
 `Record` objects are fixed-size unordered lists of keyed values, with identifier keys.
-The values of records are Counterpoint Language Values.
+The values in records are Counterpoint Language Values.
 
 
 
-## `List`
+## List
 `List` objects are variable-size ordered lists of indexed values, with indices starting at *0*.
-The values of lists are Counterpoint Language Values.
+The values in lists are Counterpoint Language Values.
 
 
 
 ## `Dict`
 `Dict` objects are variable-size unordered lists of keyed values, with identifier keys.
-The values of dicts are Counterpoint Language Values.
+The values in dicts are Counterpoint Language Values.
 
 
 
 ## `Set`
 `Set` objects are variable-size unordered lists of values.
-The values of sets are Counterpoint Language Values.
+The values in sets are Counterpoint Language Values.
 
 
 
 ## `Map`
 `Map` objects are variable-size unordered associations of values.
-The antecedents and consequents of maps are Counterpoint Language Values.
+The values in maps are Counterpoint Language Values.

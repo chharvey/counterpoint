@@ -9,7 +9,8 @@ import {Type} from './Type.js';
  * @final
  */
 export class TypeNever extends Type {
-	public static readonly INSTANCE: TypeNever = new TypeNever();
+	public static readonly INSTANCE = new TypeNever();
+
 
 	public override readonly isBottomType: boolean = true;
 	public override readonly isTopType:    boolean = false;

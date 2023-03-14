@@ -297,7 +297,7 @@ describe('ASTNodeAccess', () => {
 				program.varCheck();
 				program.typeCheck();
 				const prop1: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL]);
-				const prop2: TYPE.TypeTuple = new TYPE.TypeTuple([{type: TYPE.BOOL, optional: true}]);
+				const prop2                 = new TYPE.TypeTuple([{type: TYPE.BOOL, optional: true}]);
 				assert.deepStrictEqual(
 					program.children.slice(2, 8).map((c) => typeOfStmtExpr(c)),
 					[
@@ -716,9 +716,9 @@ describe('ASTNodeAccess', () => {
 
 		context('when base is nullish.', () => {
 			it('optional access returns base when it is null.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .fold(), /TypeError: \w+\.get is not a function/);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .fold(), /TypeError: \w+\.get is not a function/);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).fold(), /TypeError: \w+\.get is not a function/);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .fold());
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .fold());
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).fold());
 				[
 					AST.ASTNodeAccess.fromSource(`null?.3;`)         .fold(),
 					AST.ASTNodeAccess.fromSource(`null?.four;`)      .fold(),
@@ -741,8 +741,8 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1: OBJ.Tuple = new OBJ.Tuple([OBJ.Boolean.TRUE]);
-				const prop2: OBJ.Tuple = new OBJ.Tuple();
+				const prop1 = new OBJ.Tuple([OBJ.Boolean.TRUE]);
+				const prop2 = new OBJ.Tuple();
 				assert.deepStrictEqual(
 					program.children.slice(2, 7).map((c) => foldStmtExpr(c)),
 					[

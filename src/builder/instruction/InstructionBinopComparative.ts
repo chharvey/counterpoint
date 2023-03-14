@@ -13,7 +13,7 @@ export class InstructionBinopComparative extends InstructionBinop {
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
-	public constructor (
+	public constructor(
 		op:   ValidOperatorComparative,
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,

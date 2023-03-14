@@ -1,3 +1,4 @@
+import * as xjs from 'extrajs';
 import {
 	throw_expression,
 	strictEqual,
@@ -20,9 +21,9 @@ type DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, boolean, 
 export class Integer extends CPNumber<Integer> {
 	private static readonly BITCOUNT: number = 16;
 
-	public  static readonly ZERO:  Integer = new Integer(0n);
-	public  static readonly UNIT:  Integer = new Integer(1n);
-	private static readonly RADIX: Integer = new Integer(2n);
+	public  static readonly ZERO  = new Integer(0n);
+	public  static readonly UNIT  = new Integer(1n);
+	private static readonly RADIX = new Integer(2n);
 
 	private static mod(n: bigint, modulus: bigint): bigint {
 		return (n % modulus + modulus) % modulus;
@@ -48,7 +49,9 @@ export class Integer extends CPNumber<Integer> {
 
 	@strictEqual
 	public override identical(value: CPObject): boolean {
-		return value instanceof Integer && this.internal.every((bit, i) => bit === value.internal[i]);
+		return value instanceof Integer && this.isEqualTo(value as this, (this_, that_) => (
+			xjs.Array.is<boolean>(this_.internal, that_.internal)
+		));
 	}
 
 	@CPObject.equalsDeco
@@ -189,7 +192,7 @@ export class Integer extends CPNumber<Integer> {
 			(this   .lt0()) ? this.neg().divide(divisor).neg() :
 			(divisor.eq1()) ? this       :
 			(divisor.eq2()) ? this.bsr() :
-			(() => {
+			((): Integer => {
 				const quotient:  DatatypeMutable = [...new Array(Integer.BITCOUNT).fill(false)] as DatatypeMutable;
 				let   remainder: DatatypeMutable = [...new Array(Integer.BITCOUNT).fill(false)] as DatatypeMutable;
 				for (let i: number = 0; i < Integer.BITCOUNT; i++) {

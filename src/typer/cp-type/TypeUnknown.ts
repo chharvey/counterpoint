@@ -9,7 +9,8 @@ import {Type} from './Type.js';
  * @final
  */
 export class TypeUnknown extends Type {
-	public static readonly INSTANCE: TypeUnknown = new TypeUnknown();
+	public static readonly INSTANCE = new TypeUnknown();
+
 
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = true;
