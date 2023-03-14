@@ -7,7 +7,7 @@ import {InstructionLocal} from './InstructionLocal.js';
  * Set a local variable.
  */
 export class InstructionLocalSet extends InstructionLocal {
-	public constructor (name: bigint | string, op: InstructionExpression) {
+	public constructor(name: bigint | string, op: InstructionExpression) {
 		super(name, op);
 	}
 

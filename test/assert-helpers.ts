@@ -38,7 +38,7 @@ type ExpectCallback<Func extends CallTrackerFunction, Return> = (orig: Func, spy
  * @throw          if `callback` itself throws
  */
 export function assert_wasCalled<Func extends CallTrackerFunction, Return>(orig: Func, times: number, callback: ExpectCallback<Func, Return>): Return {
-	const tracker: assert.CallTracker = new assert.CallTracker();
+	const tracker = new assert.CallTracker();
 	try {
 		return callback.call(null, orig, tracker.calls(orig, times));
 	} finally {
@@ -110,7 +110,7 @@ export function assertAssignable(actual: Error, validation: ValidationObject): v
 		assert.strictEqual(
 			(actual as AggregateError).errors.length,
 			validation.errors.length,
-			'The number of sub-error validations does not equal the number of actual sub-errors.',
+			'Number of actual sub-errors should equal number of validation sub-errors.',
 		);
 		return validation.errors.forEach((subvalidation, i) => {
 			assertAssignable((actual as AggregateError).errors[i], subvalidation);

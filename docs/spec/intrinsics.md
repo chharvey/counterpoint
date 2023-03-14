@@ -82,7 +82,7 @@ The values in records are Counterpoint Language Values.
 
 
 
-## `List`
+## List
 `List` objects are variable-size ordered lists of indexed values, with indices starting at *0*.
 The values in lists are Counterpoint Language Values.
 

@@ -21,7 +21,7 @@ export abstract class InstructionBinop extends InstructionExpression {
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
-	public constructor (
+	public constructor(
 		protected readonly op:   ValidOperatorBinary,
 		protected readonly arg0: InstructionExpression,
 		protected readonly arg1: InstructionExpression,

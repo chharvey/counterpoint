@@ -7,7 +7,7 @@ import {InstructionLocal} from './InstructionLocal.js';
  * Tee a local variable.
  */
 export class InstructionLocalTee extends InstructionLocal {
-	public constructor (name: bigint | string, op: InstructionExpression) {
+	public constructor(name: bigint | string, op: InstructionExpression) {
 		super(name, op);
 	}
 

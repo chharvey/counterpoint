@@ -17,7 +17,8 @@ import {Primitive} from './Primitive.js';
  */
 export class Null extends Primitive {
 	/** The Counterpoint Language Value `null`. */
-	public static readonly NULL: Null = new Null();
+	public static readonly NULL = new Null();
+
 	/** A Unit Type containing only the Counterpoint Language Value `null`. */
 	public static get NULLTYPE(): TYPE.TypeUnit<Null> {
 		return Null.NULL.toType();

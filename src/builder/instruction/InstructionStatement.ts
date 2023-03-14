@@ -13,7 +13,7 @@ export class InstructionStatement extends Instruction {
 	 * @param count the index of the statement within its scope
 	 * @param expr the expression
 	 */
-	public constructor (
+	public constructor(
 		private readonly count: bigint,
 		private readonly expr: InstructionExpression,
 	) {

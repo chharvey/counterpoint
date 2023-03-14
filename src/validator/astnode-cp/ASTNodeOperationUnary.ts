@@ -52,19 +52,21 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 
 	protected override type_do(): TYPE.Type {
 		const t0: TYPE.Type = this.operand.type();
+		/* eslint-disable indent */
 		return (
-			(this.operator === Operator.NOT) ? (() => (
+			(this.operator === Operator.NOT) ? (
 				(t0.isSubtypeOf(TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE)))                         ? OBJ.Boolean.TRUETYPE :
 				(TYPE.VOID.isSubtypeOf(t0) || TYPE.NULL.isSubtypeOf(t0) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t0)) ? TYPE.BOOL            :
 				OBJ.Boolean.FALSETYPE
-			))() :
+			) :
 			(this.operator === Operator.EMP) ? TYPE.BOOL :
-			(this.operator === Operator.NEG, ( // eslint-disable-line @typescript-eslint/no-unnecessary-condition
+			(assert.strictEqual(this.operator, Operator.NEG), (
 				(t0.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)))
 					? t0
 					: throw_expression(new TypeError01(this))
 			))
 		);
+		/* eslint-enable indent */
 	}
 
 	protected override fold_do(): OBJ.Object | null {
@@ -73,10 +75,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			return v0;
 		}
 		return (
-			(this.operator === Operator.NOT) ? OBJ.Boolean.fromBoolean(!v0.isTruthy) :
-			(this.operator === Operator.EMP) ? OBJ.Boolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
-			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as OBJ.Number<any>) : // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-condition --- cyclical types
-			throw_expression(new ReferenceError(`Operator ${ Operator[this.operator] } not found.`))
+			(this.operator === Operator.NOT) ?                OBJ.Boolean.fromBoolean(!v0.isTruthy)               :
+			(this.operator === Operator.EMP) ?                OBJ.Boolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
+			(assert.strictEqual(this.operator, Operator.NEG), this.foldNumeric(v0 as OBJ.Number<any>)) // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
 		);
 	}
 

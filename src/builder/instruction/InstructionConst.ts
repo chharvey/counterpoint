@@ -1,3 +1,4 @@
+import {throw_expression} from '../../lib/index.js';
 import {OBJ} from '../../typer/index.js';
 import {InstructionExpression} from './InstructionExpression.js';
 
@@ -17,19 +18,19 @@ export class InstructionConst extends InstructionExpression {
 		if (!value) {
 			throw new Error('Cannot build an abrupt completion structure.');
 		}
-		const numeric: OBJ.Number =			(value instanceof OBJ.Null)    ? OBJ.Integer.ZERO :
+		const numeric: OBJ.Number = (
+			(value instanceof OBJ.Null)    ? OBJ.Integer.ZERO :
 			(value instanceof OBJ.Boolean) ? (value.isTruthy) ? OBJ.Integer.UNIT : OBJ.Integer.ZERO :
 			(value instanceof OBJ.Number)  ? value :
-			(() => {
-				throw new Error('not yet supported.');
-			})();
+			throw_expression(new Error('not yet supported.'))
+		);
 		return new InstructionConst((to_float) ? numeric.toFloat() : numeric);
 	}
 
 	/**
 	 * @param value the constant to push
 	 */
-	public constructor (private readonly value: OBJ.Number) {
+	public constructor(private readonly value: OBJ.Number) {
 		super();
 	}
 

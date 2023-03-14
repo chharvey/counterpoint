@@ -50,5 +50,6 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 			return this.assignTo_do(assignee);
 		}
 	}
+
 	protected abstract assignTo_do(assignee: TYPE.Type): boolean; // TODO: use decorators
 }

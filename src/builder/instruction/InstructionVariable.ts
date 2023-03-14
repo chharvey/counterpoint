@@ -13,7 +13,7 @@ export abstract class InstructionVariable extends InstructionExpression {
 	 * @param name the variable name (must begin with `'$'`)
 	 * @param op an optional expression to manipulate, or a type to declare
 	 */
-	public constructor (
+	public constructor(
 		protected readonly name: string,
 		protected readonly op: InstructionExpression | boolean = false,
 	) {
