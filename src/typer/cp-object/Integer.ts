@@ -184,7 +184,7 @@ export class Integer extends CPNumber<Integer> {
 			(this   .lt0()) ? this.neg().divide(divisor).neg() :
 			(divisor.eq1()) ? this       :
 			(divisor.eq2()) ? this.bsr() :
-			(() => {
+			((): Integer => {
 				const quotient:  DatatypeMutable = [...new Array(Integer.BITCOUNT).fill(false)] as DatatypeMutable;
 				let   remainder: DatatypeMutable = [...new Array(Integer.BITCOUNT).fill(false)] as DatatypeMutable;
 				for (let i: number = 0; i < Integer.BITCOUNT; i++) {

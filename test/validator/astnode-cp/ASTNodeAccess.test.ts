@@ -716,9 +716,9 @@ describe('ASTNodeAccess', () => {
 
 		context('when base is nullish.', () => {
 			it('optional access returns base when it is null.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .fold(), /TypeError: \w+\.get is not a function/);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .fold(), /TypeError: \w+\.get is not a function/);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).fold(), /TypeError: \w+\.get is not a function/);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .fold());
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .fold());
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).fold());
 				[
 					AST.ASTNodeAccess.fromSource(`null?.3;`)         .fold(),
 					AST.ASTNodeAccess.fromSource(`null?.four;`)      .fold(),

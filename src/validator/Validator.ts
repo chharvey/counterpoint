@@ -262,12 +262,12 @@ export class Validator {
 	 */
 	public static cookTokenTemplate(source: string): CodeUnit[] {
 		const delim_start = (
-			(source.slice(0, 3) === DELIM_TEMPLATE)   ? DELIM_TEMPLATE :
+			(source.slice(0, 3) === DELIM_TEMPLATE)   ? DELIM_TEMPLATE   :
 			(source.slice(0, 2) === DELIM_INTERP_END) ? DELIM_INTERP_END :
 			''
 		);
 		const delim_end = (
-			(source.slice(-3) === DELIM_TEMPLATE)     ? DELIM_TEMPLATE :
+			(source.slice(-3) === DELIM_TEMPLATE)     ? DELIM_TEMPLATE     :
 			(source.slice(-2) === DELIM_INTERP_START) ? DELIM_INTERP_START :
 			''
 		);
