@@ -69,15 +69,14 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			}
 		}
 		if (this.assignee) {
-			const symbol: SymbolStructureVar | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
-			if (symbol) {
-				symbol.type = assignee_type;
-				if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
-					symbol.value = this.assigned.fold();
-				}
+			const value: OBJ.Object | null = this.assigned.fold(); // fold first before checking, to rethrow any errors
+			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
+			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar;
+			symbol.type = assignee_type;
+			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
+				assert.ok(!symbol.unfixed, `${ symbol } should not be unfixed.`);
+				symbol.value = value;
 			}
-		} else {
-			throw new Error('blank not yet supported.');
 		}
 	}
 

@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import {
+	TYPE,
 	INST,
 	Builder,
 	AssignmentError01,
@@ -46,13 +47,11 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	}
 
 	public override typeCheck(): void {
+		const typevalue: TYPE.Type = this.assigned.eval(); // evaluate first before checking, to rethrow any errors
 		if (this.assignee) {
-			const symbol: SymbolStructureType | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureType | null;
-			if (symbol) {
-				symbol.typevalue = this.assigned.eval();
-			}
-		} else {
-			throw new Error('blank not yet supported.');
+			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
+			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureType;
+			symbol.typevalue = typevalue;
 		}
 	}
 

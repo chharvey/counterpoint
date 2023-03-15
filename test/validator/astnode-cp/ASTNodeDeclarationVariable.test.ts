@@ -63,9 +63,11 @@ describe('ASTNodeDeclarationVariable', () => {
 
 	describe('#typeCheck', () => {
 		it('checks the assigned expression’s type against the variable assignee’s type.', () => {
-			AST.ASTNodeDeclarationVariable.fromSource(`
+			const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  int | float =  21  *  2;
-			`).typeCheck();
+			`);
+			var_.varCheck();
+			var_.typeCheck();
 		});
 		it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
@@ -73,9 +75,11 @@ describe('ASTNodeDeclarationVariable', () => {
 			`).typeCheck(), TypeError03);
 		});
 		it('with int coersion on, allows assigning ints to floats.', () => {
-			AST.ASTNodeDeclarationVariable.fromSource(`
+			const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
-			`).typeCheck();
+			`);
+			var_.varCheck();
+			var_.typeCheck();
 		});
 		it('with int coersion off, throws when assigning int to float.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
