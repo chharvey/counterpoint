@@ -80,15 +80,15 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 	}
 
-	public override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		if (this.assignee) {
-			const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
-			const value: OBJ.Object | null = this.assignee.fold();
-			return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
+	public override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal | INST.InstructionStatement {
+		const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
+		const value: OBJ.Object | null = this.assigned.fold();
+		return (this.assignee)
+			? (this.validator.config.compilerOptions.constantFolding && value && !this.unfixed)
 				? new INST.InstructionNone()
-				: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat));
-		} else {
-			throw new Error('blank not yet supported.');
-		}
+				: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat))
+			: (this.validator.config.compilerOptions.constantFolding && value)
+				? new INST.InstructionNone()
+				: new INST.InstructionStatement(builder.stmtCount, this.assigned.build(builder, tofloat));
 	}
 }
