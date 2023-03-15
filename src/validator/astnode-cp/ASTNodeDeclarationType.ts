@@ -36,14 +36,12 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	}
 
 	public override varCheck(): void {
+		this.assigned.varCheck();
 		if (this.assignee) {
 			if (this.validator.hasSymbol(this.assignee.id)) {
 				throw new AssignmentError01(this.assignee);
 			}
-			this.assigned.varCheck();
 			this.validator.addSymbol(new SymbolStructureType(this.assignee));
-		} else {
-			throw new Error('blank not yet supported.');
 		}
 	}
 

@@ -301,10 +301,10 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(2, 8).map((c) => typeOfStmtExpr(c)),
 					[
-						new TYPE.TypeRecord(new Map([[0x101n, {type: prop1, optional: true}]])),
+						new TYPE.TypeRecord(new Map([[0x100n, {type: prop1, optional: true}]])),
 						prop1.union(TYPE.NULL),
 						TYPE.BOOL.union(TYPE.NULL),
-						new TYPE.TypeRecord(new Map([[0x101n, {type: prop2, optional: true}]])),
+						new TYPE.TypeRecord(new Map([[0x100n, {type: prop2, optional: true}]])),
 						prop2.union(TYPE.NULL),
 						TYPE.BOOL.union(TYPE.NULL),
 					],
@@ -746,10 +746,10 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(2, 7).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.Record(new Map([[0x101n, prop1]])),
+						new OBJ.Record(new Map([[0x100n, prop1]])),
 						prop1,
 						OBJ.Boolean.TRUE,
-						new OBJ.Record(new Map([[0x101n, prop2]])),
+						new OBJ.Record(new Map([[0x100n, prop2]])),
 						prop2,
 					],
 				);

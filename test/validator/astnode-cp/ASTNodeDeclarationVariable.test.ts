@@ -39,7 +39,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				let _: float = 4.2;
 			`);
 			assert.ok(!goal.validator.hasSymbol(256n));
-			assert.throws(() => goal.varCheck(), /blank not yet supported\./); // FIXME
+			goal.varCheck();
 			assert.ok(!goal.validator.hasSymbol(256n));
 		});
 		it('throws if the validator already contains a record for the variable.', () => {
@@ -51,6 +51,12 @@ describe('ASTNodeDeclarationVariable', () => {
 				type FOO = float;
 				let FOO: int = 42;
 			`).varCheck(), AssignmentError01);
+		});
+		it('allows duplicate declaration of blank variable.', () => {
+			AST.ASTNodeGoal.fromSource(`
+				let _: int = 42;
+				let _: str = 'the answer';
+			`).varCheck(); // assert does not throw
 		});
 	});
 
