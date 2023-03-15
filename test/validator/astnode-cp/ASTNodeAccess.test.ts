@@ -92,26 +92,26 @@ describe('ASTNodeAccess', () => {
 	`;
 	const KEY_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
-		let         rec_fixed:    [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
-		let unfixed rec_unfixed:  [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
-		let         dict_fixed:   [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, c= 'three']);
-		let unfixed dict_unfixed: [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, c= 'three']);
+		let         rec_fixed:    [a: int, b: float, _: str] = [a= 1, b= 2.0, _= 'three'];
+		let unfixed rec_unfixed:  [a: int, b: float, _: str] = [a= 1, b= 2.0, _= 'three'];
+		let         dict_fixed:   [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, _= 'three']);
+		let unfixed dict_unfixed: [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, _= 'three']);
 
 		%% statements 4 – 10 %%
 		rec_fixed.a;   % type \`1\`       % value \`1\`
 		rec_fixed.b;   % type \`2.0\`     % value \`2.0\`
-		rec_fixed.c;   % type \`'three'\` % value \`'three'\`
+		rec_fixed._;   % type \`'three'\` % value \`'three'\`
 		rec_unfixed.a; % type \`int\`     % non-computable value
 		rec_unfixed.b; % type \`float\`   % non-computable value
-		rec_unfixed.c; % type \`str\`     % non-computable value
+		rec_unfixed._; % type \`str\`     % non-computable value
 
 		%% statements 10 – 16 %%
 		dict_fixed.a;   % type \`1\`                 % value \`1\`
 		dict_fixed.b;   % type \`2.0\`               % value \`2.0\`
-		dict_fixed.c;   % type \`'three'\`           % value \`'three'\`
+		dict_fixed._;   % type \`'three'\`           % value \`'three'\`
 		dict_unfixed.a; % type \`int | float | str\` % non-computable value
 		dict_unfixed.b; % type \`int | float | str\` % non-computable value
-		dict_unfixed.c; % type \`int | float | str\` % non-computable value
+		dict_unfixed._; % type \`int | float | str\` % non-computable value
 
 		%% statements 16 – 24 %%
 		let         reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
@@ -133,8 +133,8 @@ describe('ASTNodeAccess', () => {
 		reco2_u?.b; % type \`str?\`    % non-computable value
 
 		%% statements 29 – 31 %%
-		dict_fixed?.c;   % type \`'three'\`                  % value \`'three'\`
-		dict_unfixed?.c; % type \`int | float | str | null\` % non-computable value
+		dict_fixed?._;   % type \`'three'\`                  % value \`'three'\`
+		dict_unfixed?._; % type \`int | float | str | null\` % non-computable value
 
 		%% statements 31 – 34 %%
 		reco1_f!.b; % type \`'three'\` % value \`'three'\`
@@ -831,6 +831,10 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(26, 29).map((c) => foldStmtExpr(c)),
 					expected_o,
+				);
+				assert.deepStrictEqual(
+					program.children.slice(29, 31).map((c) => foldStmtExpr(c)),
+					expected_o.slice(0, 2),
 				);
 				assert.deepStrictEqual(
 					[

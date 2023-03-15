@@ -90,6 +90,14 @@ describe('Decorator', () => {
 				type T = [a?: int];
 				% (entry_type__named__optional)
 			`]],
+			['Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
+				type T = [_: int];
+				% (entry_type__named)
+			`]],
+			['Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
+				type T = [_?: int];
+				% (entry_type__named__optional)
+			`]],
 
 			['Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType', [AST.ASTNodeType, `
 				type T = (int | float);
@@ -122,6 +130,10 @@ describe('Decorator', () => {
 			`]],
 			['Decorate(PropertyAccessType ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
 				type T = U.p;
+				% (property_access_type)
+			`]],
+			['Decorate(PropertyAccessType ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
+				type T = U._;
 				% (property_access_type)
 			`]],
 
@@ -188,6 +200,10 @@ describe('Decorator', () => {
 				[a= 42];
 				% (property)
 			`]],
+			['Decorate(Property ::= Word "=" Expression) -> SemanticProperty', [AST.ASTNodeProperty, `
+				[_= 42];
+				% (property)
+			`]],
 
 			['Decorate(Case ::= Expression "->" Expression) -> SemanticCase', [AST.ASTNodeCase, `
 				{42 -> 6.9};
@@ -227,6 +243,10 @@ describe('Decorator', () => {
 				v?.p;
 				% (property_access)
 			`]],
+			['Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey', [AST.ASTNodeKey, `
+				v?._;
+				% (property_access)
+			`]],
 			['Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
 				v!.[a + b];
 				% (property_access)
@@ -238,6 +258,10 @@ describe('Decorator', () => {
 			`]],
 			['Decorate(PropertyAssign ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
 				v.p = false;
+				% (property_assign)
+			`]],
+			['Decorate(PropertyAssign ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
+				v._ = false;
 				% (property_assign)
 			`]],
 			['Decorate(PropertyAssign ::= "." "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
@@ -341,6 +365,10 @@ describe('Decorator', () => {
 				type T = U;
 				% (declaration_type)
 			`]],
+			['Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
+				type _ = U;
+				% (declaration_type)
+			`]],
 
 			['Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				let a: T = b;
@@ -348,6 +376,14 @@ describe('Decorator', () => {
 			`]],
 			['Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				let unfixed a: T = b;
+				% (declaration_variable)
+			`]],
+			['Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let _: T = b;
+				% (declaration_variable)
+			`]],
+			['Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let unfixed _: T = b;
 				% (declaration_variable)
 			`]],
 

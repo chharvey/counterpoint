@@ -45,15 +45,15 @@ describe('ASTNodeTypeAccess', () => {
 				type B5 = TupV.-2; % type \`float\`
 				type B6 = TupV.-1; % type \`str\`
 
-				type RecC = [a: 1,   b: 2.0,   c: 'three'];
-				type RecV = [a: int, b: float, c: str];
+				type RecC = [a: 1,   b: 2.0,   _: 'three'];
+				type RecV = [a: int, b: float, _: str];
 
 				type C1 = RecC.a; % type \`1\`
 				type C2 = RecC.b; % type \`2.0\`
-				type C3 = RecC.c; % type \`'three'\`
+				type C3 = RecC._; % type \`'three'\`
 				type C4 = RecV.a; % type \`int\`
 				type C5 = RecV.b; % type \`float\`
-				type C6 = RecV.c; % type \`str\`
+				type C6 = RecV._; % type \`str\`
 
 				type TupoC = [1,   2.0,   ?: 'three'];
 				type TupoV = [int, float, ?: str];

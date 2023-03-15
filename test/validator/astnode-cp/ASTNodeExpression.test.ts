@@ -427,7 +427,7 @@ describe('ASTNodeExpression', () => {
 					AST.ASTNodeMap,
 				] = [
 					AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`, config),
-					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`, config),
+					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, _= 'three'];`, config),
 					AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`, config),
 					AST.ASTNodeMap.fromSource(`
 						{

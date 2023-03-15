@@ -24,15 +24,22 @@ describe('ASTNodeDeclarationVariable', () => {
 	describe('#varCheck', () => {
 		it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown` and a preset null `value` value.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let x: int = 42;
+				let x: int   = 42;
+				let _: float = 4.2;
 			`);
 			assert.ok(!goal.validator.hasSymbol(256n));
+			assert.ok(!goal.validator.hasSymbol(257n));
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(256n));
-			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
-			assert.ok(info instanceof SymbolStructureVar);
-			assert.strictEqual(info.type, TYPE.UNKNOWN);
-			assert.strictEqual(info.value, null);
+			assert.ok(goal.validator.hasSymbol(257n));
+			const info1: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
+			const info2: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
+			assert.ok(info1 instanceof SymbolStructureVar);
+			assert.ok(info2 instanceof SymbolStructureVar);
+			assert.strictEqual(info1.type, TYPE.UNKNOWN);
+			assert.strictEqual(info2.type, TYPE.UNKNOWN);
+			assert.strictEqual(info1.value, null);
+			assert.strictEqual(info2.value, null);
 		});
 		it('throws if the validator already contains a record for the variable.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
