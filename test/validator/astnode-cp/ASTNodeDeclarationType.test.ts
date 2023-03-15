@@ -20,9 +20,9 @@ describe('ASTNodeDeclarationType', () => {
 			assert.ok(!goal.validator.hasSymbol(256n));
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(256n));
-			const info1: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
-			assert.ok(info1 instanceof SymbolStructureType);
-			assert.strictEqual(info1.typevalue, TYPE.UNKNOWN);
+			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
+			assert.ok(info instanceof SymbolStructureType);
+			assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
 		});
 		it('for blank variables, does not add to symbol table.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -30,7 +30,7 @@ describe('ASTNodeDeclarationType', () => {
 			`);
 			assert.ok(!goal.validator.hasSymbol(256n));
 			goal.varCheck();
-			assert.ok(!goal.validator.hasSymbol(256n));
+			return assert.ok(!goal.validator.hasSymbol(256n));
 		});
 		it('throws if the validator already contains a record for the symbol.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`

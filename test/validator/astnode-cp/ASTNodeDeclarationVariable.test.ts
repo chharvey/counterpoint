@@ -30,10 +30,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.ok(!goal.validator.hasSymbol(256n));
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(256n));
-			const info1: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
-			assert.ok(info1 instanceof SymbolStructureVar);
-			assert.strictEqual(info1.type, TYPE.UNKNOWN);
-			assert.strictEqual(info1.value, null);
+			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
+			assert.ok(info instanceof SymbolStructureVar);
+			assert.strictEqual(info.type, TYPE.UNKNOWN);
+			assert.strictEqual(info.value, null);
 		});
 		it('for blank variables, does not add to symbol table.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -41,7 +41,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			`);
 			assert.ok(!goal.validator.hasSymbol(256n));
 			goal.varCheck();
-			assert.ok(!goal.validator.hasSymbol(256n));
+			return assert.ok(!goal.validator.hasSymbol(256n));
 		});
 		it('throws if the validator already contains a record for the variable.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
@@ -68,7 +68,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				let  the_answer:  int | float =  21  *  2;
 			`);
 			var_.varCheck();
-			var_.typeCheck();
+			return var_.typeCheck();
 		});
 		it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
@@ -80,7 +80,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				let x: float = 42;
 			`);
 			var_.varCheck();
-			var_.typeCheck();
+			return var_.typeCheck();
 		});
 		it('with int coersion off, throws when assigning int to float.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`

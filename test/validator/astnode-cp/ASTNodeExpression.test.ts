@@ -390,13 +390,15 @@ describe('ASTNodeExpression', () => {
 
 					[
 						AST.ASTNodeTypeRecord .fromSource(`[a: int, b: float, a: str]`),
+						AST.ASTNodeTypeRecord .fromSource(`[_: int, b: float, _: str]`),
 						AST.ASTNodeRecord     .fromSource(`[a= 1, b= 2.0, a= 'three'];`),
+						AST.ASTNodeRecord     .fromSource(`[_= 1, b= 2.0, _= 'three'];`),
 					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentError02));
 
 					new Map<AST.ASTNodeCP, string[]>([
 						[AST.ASTNodeTypeRecord .fromSource(`[c: int, d: float, c: str, d: bool]`),   ['c', 'd']],
-						[AST.ASTNodeRecord     .fromSource(`[c= 1, d= 2.0, c= 'three', d= false];`), ['c', 'd']],
 						[AST.ASTNodeTypeRecord .fromSource(`[e: int, f: float, e: str, e: bool]`),   ['e', 'e']],
+						[AST.ASTNodeRecord     .fromSource(`[c= 1, d= 2.0, c= 'three', d= false];`), ['c', 'd']],
 						[AST.ASTNodeRecord     .fromSource(`[e= 1, f= 2.0, e= 'three', e= false];`), ['e', 'e']],
 					]).forEach((dupes, node) => assert.throws(() => node.varCheck(), (err) => {
 						assert.ok(err instanceof AggregateError);
