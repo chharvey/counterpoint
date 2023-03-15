@@ -361,29 +361,29 @@ describe('Decorator', () => {
 			`]],
 
 			/* ## Statements */
+			['Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
+				type _ = U;
+				% (declaration_type)
+			`]],
 			['Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
 				type T = U;
 				% (declaration_type)
 			`]],
-			['Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
-				type _ = U;
-				% (declaration_type)
-			`]],
 
+			['Decorate(DeclarationVariable ::= "let" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let _: T = b;
+				% (declaration_variable)
+			`]],
 			['Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				let a: T = b;
 				% (declaration_variable)
 			`]],
+			['Decorate(DeclarationVariable ::= "let" "unfixed" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let unfixed _: T = b;
+				% (declaration_variable)
+			`]],
 			['Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				let unfixed a: T = b;
-				% (declaration_variable)
-			`]],
-			['Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
-				let _: T = b;
-				% (declaration_variable)
-			`]],
-			['Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
-				let unfixed _: T = b;
 				% (declaration_variable)
 			`]],
 

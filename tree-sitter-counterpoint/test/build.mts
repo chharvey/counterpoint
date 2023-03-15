@@ -6,6 +6,8 @@ import * as path from 'path';
 
 
 
+const ERROR = 'ERROR';
+
 function s(name: string, ...operands: readonly string[]): string {
 	return xjs.String.dedent`
 		(${ name }
@@ -97,9 +99,11 @@ function buildTest(title: string, source: string, expected: string): string {
 				my_variable;
 				_;
 			`,
-			makeSourceFile(
-				s('identifier'),
-				s('identifier'),
+			s(
+				'source_file',
+				s('statement_expression', s('identifier')),
+				s(ERROR),
+				s('statement_expression'),
 			),
 		],
 
@@ -268,7 +272,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				'type_record_literal',
 				s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
 				s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
-				s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
+				s('entry_type__named',           s('word'),                  s('keyword_type')),
 			))),
 		],
 
@@ -323,7 +327,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				extractType(s(
 					'type_compound',
 					s('identifier'),
-					s('property_access_type', s('word', s('identifier'))),
+					s('property_access_type', s('word')),
 				)),
 				extractType(s(
 					'type_compound',
@@ -455,7 +459,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				),
 				s(
 					'property',
-					s('word', s('identifier')),
+					s('word'),
 					s('primitive_literal', s('integer')),
 				),
 			)),
@@ -562,7 +566,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('word', s('identifier'))),
+					s('property_access', s('word')),
 				),
 				s(
 					'expression_compound',
@@ -875,7 +879,6 @@ function buildTest(title: string, source: string, expected: string): string {
 				s(
 					'declaration_type',
 					s('identifier'),
-					s('identifier'),
 				),
 			),
 		],
@@ -921,11 +924,9 @@ function buildTest(title: string, source: string, expected: string): string {
 					'declaration_variable',
 					s('identifier'),
 					s('identifier'),
-					s('identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
 					s('identifier'),
 					s('identifier'),
 				),
@@ -983,7 +984,7 @@ function buildTest(title: string, source: string, expected: string): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('word', s('identifier'))),
+						s('property_assign', s('word')),
 					),
 					s('identifier'),
 				),

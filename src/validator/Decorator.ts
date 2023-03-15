@@ -558,14 +558,14 @@ class Decorator {
 			/* ## Statements */
 			declaration_type: (node) => new AST.ASTNodeDeclarationType(
 				node as SyntaxNodeType<'declaration_type'>,
-				new AST.ASTNodeTypeAlias(node.children[1] as SyntaxNodeType<'identifier'>),
+				new AST.ASTNodeTypeAlias(node.children[1] as SyntaxNodeType<'identifier'>), // FIXME: not always an identifier
 				this.decorateTS(node.children[3] as SyntaxNodeSupertype<'type'>),
 			),
 
 			declaration_variable: (node) => new AST.ASTNodeDeclarationVariable(
 				node as SyntaxNodeType<'declaration_variable'>,
 				node.children.length === 8,
-				new AST.ASTNodeVariable(((node.children.length === 7) ? node.children[1] : node.children[2]) as SyntaxNodeType<'identifier'>),
+				new AST.ASTNodeVariable(((node.children.length === 7) ? node.children[1] : node.children[2]) as SyntaxNodeType<'identifier'>), // FIXME: not always an identifier
 				this.decorateTypeNode(((node.children.length === 7) ? node.children[3] : node.children[4]) as SyntaxNodeSupertype<'type'>),
 				this.decorateTS      (((node.children.length === 7) ? node.children[5] : node.children[6]) as SyntaxNodeSupertype<'expression'>),
 			),

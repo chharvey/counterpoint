@@ -69,6 +69,7 @@ KeywordOther :::=
 	// storage
 		| "type"
 		| "let"
+		| "_"
 	// modifier
 		| "unfixed"
 ;
@@ -76,7 +77,11 @@ KeywordOther :::=
 
 
 Identifier
-	:::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - (KeywordType | KeywordValue | KeywordOther);
+	:::= (
+		| [A-Za-z] [A-Za-z0-9_]*
+		| "_"      [A-Za-z0-9_]+
+		| "`" [^`#x03]* "`"
+	) - (KeywordType | KeywordValue | KeywordOther);
 
 
 

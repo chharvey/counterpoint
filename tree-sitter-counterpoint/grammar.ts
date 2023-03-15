@@ -253,7 +253,7 @@ module.exports = grammar({
 		)),
 
 		identifier: _$ => token(choice(
-			/[A-Za-z_][A-Za-z0-9_]*/,
+			/[A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+/,
 			/`[^`]*`/,
 		)),
 
@@ -306,6 +306,7 @@ module.exports = grammar({
 			// storage
 			'type',
 			'let',
+			'_',
 			// modifier
 			'unfixed',
 			$.keyword_type,
@@ -465,8 +466,8 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		declaration_type:     $ => seq('type',                      $.identifier, '=', $._type,                     ';'),
-		declaration_variable: $ => seq('let',  optional('unfixed'), $.identifier, ':', $._type, '=', $._expression, ';'),
+		declaration_type:     $ => seq('type',                      choice('_', $.identifier), '=', $._type,                     ';'),
+		declaration_variable: $ => seq('let',  optional('unfixed'), choice('_', $.identifier), ':', $._type, '=', $._expression, ';'),
 
 		_declaration: $ => choice(
 			$.declaration_type,
