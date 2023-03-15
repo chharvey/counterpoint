@@ -32,19 +32,27 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_variable'>,
 		public  readonly unfixed:  boolean,
-		private readonly assignee: ASTNodeVariable,
+		private readonly assignee: ASTNodeVariable | null,
 		private readonly typenode: ASTNodeType,
 		private readonly assigned: ASTNodeExpression,
 	) {
-		super(start_node, {unfixed}, [assignee, typenode, assigned]);
+		super(
+			start_node,
+			{unfixed},
+			(assignee) ? [assignee, typenode, assigned] : [typenode, assigned],
+		);
 	}
 
 	public override varCheck(): void {
-		if (this.validator.hasSymbol(this.assignee.id)) {
-			throw new AssignmentError01(this.assignee);
+		if (this.assignee) {
+			if (this.validator.hasSymbol(this.assignee.id)) {
+				throw new AssignmentError01(this.assignee);
+			}
+			xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
+			this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
+		} else {
+			throw new Error('blank not yet supported.');
 		}
-		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
-		this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
 	}
 
 	public override typeCheck(): void {
@@ -62,20 +70,28 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 				throw err;
 			}
 		}
-		const symbol: SymbolStructureVar | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
-		if (symbol) {
-			symbol.type = assignee_type;
-			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
-				symbol.value = this.assigned.fold();
+		if (this.assignee) {
+			const symbol: SymbolStructureVar | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
+			if (symbol) {
+				symbol.type = assignee_type;
+				if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
+					symbol.value = this.assigned.fold();
+				}
 			}
+		} else {
+			throw new Error('blank not yet supported.');
 		}
 	}
 
 	public override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
-		const value: OBJ.Object | null = this.assignee.fold();
-		return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
-			? new INST.InstructionNone()
-			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat));
+		if (this.assignee) {
+			const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
+			const value: OBJ.Object | null = this.assignee.fold();
+			return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
+				? new INST.InstructionNone()
+				: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat));
+		} else {
+			throw new Error('blank not yet supported.');
+		}
 	}
 }

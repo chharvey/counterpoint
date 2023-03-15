@@ -16,19 +16,21 @@ describe('ASTNodeDeclarationType', () => {
 		it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
+			`);
+			assert.ok(!goal.validator.hasSymbol(256n));
+			goal.varCheck();
+			assert.ok(goal.validator.hasSymbol(256n));
+			const info1: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
+			assert.ok(info1 instanceof SymbolStructureType);
+			assert.strictEqual(info1.typevalue, TYPE.UNKNOWN);
+		});
+		it('for blank variables, does not add to symbol table.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type _ = str;
 			`);
 			assert.ok(!goal.validator.hasSymbol(256n));
-			assert.ok(!goal.validator.hasSymbol(257n));
-			goal.varCheck();
-			assert.ok(goal.validator.hasSymbol(256n));
-			assert.ok(goal.validator.hasSymbol(257n));
-			const info1: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
-			const info2: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
-			assert.ok(info1 instanceof SymbolStructureType);
-			assert.ok(info2 instanceof SymbolStructureType);
-			assert.strictEqual(info1.typevalue, TYPE.UNKNOWN);
-			assert.strictEqual(info2.typevalue, TYPE.UNKNOWN);
+			assert.throws(() => goal.varCheck(), /blank not yet supported\./); // FIXME
+			assert.ok(!goal.validator.hasSymbol(256n));
 		});
 		it('throws if the validator already contains a record for the symbol.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`

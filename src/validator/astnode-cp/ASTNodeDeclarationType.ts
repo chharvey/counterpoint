@@ -25,24 +25,36 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_type'>,
-		private readonly assignee: ASTNodeTypeAlias,
+		private readonly assignee: ASTNodeTypeAlias | null,
 		public  readonly assigned: ASTNodeType,
 	) {
-		super(start_node, {}, [assignee, assigned]);
+		super(
+			start_node,
+			{},
+			(assignee) ? [assignee, assigned] : [assigned],
+		);
 	}
 
 	public override varCheck(): void {
-		if (this.validator.hasSymbol(this.assignee.id)) {
-			throw new AssignmentError01(this.assignee);
+		if (this.assignee) {
+			if (this.validator.hasSymbol(this.assignee.id)) {
+				throw new AssignmentError01(this.assignee);
+			}
+			this.assigned.varCheck();
+			this.validator.addSymbol(new SymbolStructureType(this.assignee));
+		} else {
+			throw new Error('blank not yet supported.');
 		}
-		this.assigned.varCheck();
-		this.validator.addSymbol(new SymbolStructureType(this.assignee));
 	}
 
 	public override typeCheck(): void {
-		const symbol: SymbolStructureType | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureType | null;
-		if (symbol) {
-			symbol.typevalue = this.assigned.eval();
+		if (this.assignee) {
+			const symbol: SymbolStructureType | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureType | null;
+			if (symbol) {
+				symbol.typevalue = this.assigned.eval();
+			}
+		} else {
+			throw new Error('blank not yet supported.');
 		}
 	}
 

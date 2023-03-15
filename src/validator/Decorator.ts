@@ -558,17 +558,25 @@ class Decorator {
 			/* ## Statements */
 			declaration_type: (node) => new AST.ASTNodeDeclarationType(
 				node as SyntaxNodeType<'declaration_type'>,
-				new AST.ASTNodeTypeAlias(node.children[1] as SyntaxNodeType<'identifier'>), // FIXME: not always an identifier
+				(isSyntaxNodeType(node.children[1], 'identifier')) ? new AST.ASTNodeTypeAlias(node.children[1]) : null,
 				this.decorateTS(node.children[3] as SyntaxNodeSupertype<'type'>),
 			),
 
-			declaration_variable: (node) => new AST.ASTNodeDeclarationVariable(
-				node as SyntaxNodeType<'declaration_variable'>,
-				node.children.length === 8,
-				new AST.ASTNodeVariable(((node.children.length === 7) ? node.children[1] : node.children[2]) as SyntaxNodeType<'identifier'>), // FIXME: not always an identifier
-				this.decorateTypeNode(((node.children.length === 7) ? node.children[3] : node.children[4]) as SyntaxNodeSupertype<'type'>),
-				this.decorateTS      (((node.children.length === 7) ? node.children[5] : node.children[6]) as SyntaxNodeSupertype<'expression'>),
-			),
+			declaration_variable: (node) => (node.children.length === 7)
+				? new AST.ASTNodeDeclarationVariable(
+					node as SyntaxNodeType<'declaration_variable'>,
+					false,
+					(isSyntaxNodeType(node.children[1], 'identifier')) ? new AST.ASTNodeVariable(node.children[1]) : null,
+					this.decorateTypeNode (node.children[3] as SyntaxNodeSupertype<'type'>),
+					this.decorateTS       (node.children[5] as SyntaxNodeSupertype<'expression'>),
+				)
+				: new AST.ASTNodeDeclarationVariable(
+					node as SyntaxNodeType<'declaration_variable'>,
+					(assert.strictEqual(node.children.length, 8), true),
+					(isSyntaxNodeType(node.children[2], 'identifier')) ? new AST.ASTNodeVariable(node.children[2]) : null,
+					this.decorateTypeNode (node.children[4] as SyntaxNodeSupertype<'type'>),
+					this.decorateTS       (node.children[6] as SyntaxNodeSupertype<'expression'>),
+				),
 
 			statement_expression: (node) => new AST.ASTNodeStatementExpression(
 				node as SyntaxNodeType<'statement_expression'>,
