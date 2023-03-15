@@ -81,6 +81,9 @@ function call<RuleName extends string>(family_name: string, ...args: readonly (s
 
 
 /* # LEXER HELPERS */
+const WORD_BASIC   = /[A-Za-z_][A-Za-z0-9_]*/;
+const WORD_UNICODE = /'[^']*'/;
+
 const DIGIT_SEQ_BIN            = /[0-1]+/;
 const DIGIT_SEQ_BIN__SEPARATOR = /([0-1]_?)*[0-1]/;
 const DIGIT_SEQ_QUA            = /[0-3]+/;
@@ -271,8 +274,8 @@ module.exports = grammar({
 		)),
 
 		identifier: _$ => token(choice(
-			/[A-Za-z_][A-Za-z0-9_]*/,
-			/'[^']*'/,
+			WORD_BASIC,
+			WORD_UNICODE,
 		)),
 
 		...parameterize('integer', ({radix, separator}) => (

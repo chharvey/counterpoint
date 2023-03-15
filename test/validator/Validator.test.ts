@@ -254,7 +254,6 @@ describe('Validator', () => {
 					'"""head{{',
 					'}}midl{{',
 					'}}tail"""',
-					'"""0 \' ` \\\' \\` 1"""',
 					'"""0 \\" 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6"""',
 					'"""0 \\u{24} 1 \\u{005f} 2 \\u{} 3"""',
 					xjs.String.dedent`"""012\\
@@ -268,7 +267,6 @@ describe('Validator', () => {
 					'head',
 					'midl',
 					'tail',
-					'0 \' ` \\\' \\` 1',
 					'0 \\" 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6',
 					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3',
 					'012\\\n345\n678',
@@ -280,47 +278,75 @@ describe('Validator', () => {
 
 
 	describe('#cookTokenIdentifier', () => {
-		[
-			`
-				this be a word
-				_words _can _start _with _underscores
-				_and0 _can1 contain2 numb3rs
-				a word _can repeat _with the same id
-			`,
-			`
-				\`this\` \`is\` \`a\` \`unicode word\`
-				\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
-				\`except\` \`back-ticks\` \`.\`
-			`,
-		].forEach((src, i) => {
-			const validator = new Validator();
-			let cooked: bigint[] = [];
-			context([
-				'basic identifiers.',
-				'unicode identifiers.',
-			][i], () => {
-				before(() => {
-					cooked = src.trim().split(/\s+/).map((word) => validator.cookTokenIdentifier(word));
-				});
-				it('assigns ids starting from 256n', () => {
-					assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
-				});
-				it('assigns unique ids 256n or greater.', () => {
-					cooked.forEach((value) => assert.ok(value >= 256n));
+		type Data = {
+			readonly src: string,
+			readonly raw: string[],
+		};
+		new Map<string, [Data, Data]>([
+			['basic identifiers.', [
+				{
+					src: `
+						this be a word
+						_words _can _start _with _underscores_
+						and can1 contain2 numb3rs and under_scores_
+						a word can_ repeat with_ the same id
+					`,
+					raw: ['this', 'be', 'a', 'word', '_words', '_can', '_start', '_with', '_underscores_', 'and', 'can1', 'contain2', 'numb3rs', 'and', 'under_scores_', 'a', 'word', 'can_', 'repeat', 'with_', 'the', 'same', 'id'],
+				},
+				{
+					src: `
+						alpha bravo charlie delta echo
+						echo delta charlie bravo alpha
+					`,
+					raw: ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'echo', 'delta', 'charlie', 'bravo', 'alpha'],
+				},
+			]],
+			['unicode identifiers.', [
+				{
+					src: `
+						'this' 'is' 'a' 'unicode word'
+						'unicode words start and end with' 'apostrophes' 'but cannot contain them'
+						'ány' 'unicödè wörd' 'cán' 'cöntáin' 'ány' 'cháráctèr'
+						'èxcèpt' '‘ápöströphès’' '.'
+					`,
+					raw: ['\'this\'', '\'is\'', '\'a\'', '\'unicode word\'', '\'unicode words start and end with\'', '\'apostrophes\'', '\'but cannot contain them\'', '\'ány\'', '\'unicödè wörd\'', '\'cán\'', '\'cöntáin\'', '\'ány\'', '\'cháráctèr\'', '\'èxcèpt\'', '\'‘ápöströphès’\'', '\'.\''],
+				},
+				{
+					src: `
+						'alpha' 'bravo' 'charlie' 'delta' 'echo'
+						'echo' 'delta' 'charlie' 'bravo' 'alpha'
+					`,
+					raw: ['\'alpha\'', '\'bravo\'', '\'charlie\'', '\'delta\'', '\'echo\'', '\'echo\'', '\'delta\'', '\'charlie\'', '\'bravo\'', '\'alpha\''],
+				},
+			]],
+		]).forEach((datas, cxt) => {
+			context(cxt, () => {
+				datas.forEach((data, i) => {
+					const actual_raw: RegExpMatchArray = data.src.match(/[A-Za-z_][A-Za-z0-9_]*|'[^']*'/g)!;
+					const validator = new Validator();
+					let cooked: bigint[] = [];
+					before(() => {
+						assert.deepStrictEqual(actual_raw, data.raw);
+						cooked = actual_raw.map((word) => validator.cookTokenIdentifier(word));
+					});
+					if (i === 0) {
+						it('assigns ids starting from 256n.', () => {
+							assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
+						});
+						return it('assigns unique ids 256n or greater.', () => {
+							cooked.forEach((value) => assert.ok(value >= 0x100n));
+						});
+					} else {
+						assert.strictEqual(i, 1);
+						return it('assigns the same value to identical identifier names.', () => {
+							assert.deepStrictEqual(
+								cooked.slice(0, 5),
+								cooked.slice(5).reverse(),
+							);
+						});
+					}
 				});
 			});
-		});
-
-		it('assigns the same value to identical identifier names.', () => {
-			const validator = new Validator();
-			const cooked: bigint[] = `
-				alpha bravo charlie delta echo
-				echo delta charlie bravo alpha
-			`.trim().split(/\s+/).map((word) => validator.cookTokenIdentifier(word));
-			return assert.deepStrictEqual(
-				cooked.slice(0, 5),
-				cooked.slice(5).reverse(),
-			);
 		});
 	});
 });

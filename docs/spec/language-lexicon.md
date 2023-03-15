@@ -166,7 +166,7 @@ Identifiers are author-defined and point to values in a program.
 Lexically, identifiers have two forms: basic identifiers and Unicode identifiers.
 Basic identifiers must start with an alphabetic character or an underscore,
 and thereafter may contain more alphanumeric characters or underscores.
-Unicode identifiers are enclosed in back-ticks (`` `…` `` **U+0060 GRAVE ACCENT**),
+Unicode identifiers are enclosed in single quotes (`'…'` **U+0027 APOSTROPHE**),
 and may contain any number of characters from the Unicode character set.
 
 #### TokenWorth (Identifiers)

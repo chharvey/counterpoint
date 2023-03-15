@@ -137,8 +137,8 @@ We can access the variable just like any other, as long as we include the name i
 'español'; %== "Spanish for “Spanish”"
 ```
 
-When an identifier is quoted, it must always be referred to as such,
-even if it doesn’t contain “special characters”. The converse is true as well.
+These identifiers must always be referred to as such,
+even if they don’t contain “special characters”. The converse is true as well.
 ```
 let 'foo': int = 42;
 foo * 2;             %> ReferenceError
@@ -167,8 +167,7 @@ but we can turn it into a Unicode identifier to work around this limitation.
 let 'let': int = 42;
 ```
 
-With Unicode identifiers, we can insert almost any character,
-including spaces and punctuation symbols.
+With Unicode identifiers, we can insert almost any character, including spaces and punctuation symbols.
 ```
 let 'Svaret på den ultimata frågan.': int = 42;
 'Svaret på den ultimata frågan.' / 2;           %== 21
@@ -181,7 +180,7 @@ let '': str = "What’s my name?";
 
 Note that Unicode identifiers *are not strings*; they’re simply names of declared variables.
 Even though Unicode identifiers are not strings, they’re tokenized the same way
-that template literals are, with a few differences.
+that [template literals](./types.md#string-templates) are, with a few differences.
 
 Like template literals,
 
