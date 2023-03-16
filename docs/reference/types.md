@@ -194,7 +194,8 @@ The code `\%` prints a literal percent sign without initiating an [in-string com
 ```
 > "The 10% discount was not enough."
 
-The code `\u{‹cp›}` escapes unicode characters, where ‹cp› is the code point of the character.
+The code `\u{‹codepoint›}` escapes unicode characters,
+where ‹codepoint› is the code point of the character in hexadecimal.
 For example, `\u{24}` escapes the dollar sign symbol, since its code point is **U+0024**.
 ```
 let price: str = "\u{24}3.99";
