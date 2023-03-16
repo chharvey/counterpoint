@@ -9,26 +9,26 @@ In order to use a variable, it must be **declared** first,
 in what we call a **variable declaration statement**.
 We declare variables with the keyword `let`.
 ```
-let my_var: str = 'Hello, world!';
+let my_var: str = "Hello, world!";
 ```
 When we declare a variable, we must assign it a value, using the **assignment operator** `=`.
 In some languages, declaring a variable and at the same time assigning it a value is called **initialization**.
 In Counterpoint, this is mandatory — It’s not possible to declare a value without initializing it.
 The assignment operator is an equals sign, but it does not represent equality in the mathematical sense.
 It means we’re setting the value on the right-hand side to the variable on the left.
-In programming terms, we say, “the variable `my_var` is **assigned the value** `'Hello, world!'`”,
-or, “the value `'Hello, world!'` is **assigned *to* the variable** `my_var`”.
+In programming terms, we say, “the variable `my_var` is **assigned the value** `"Hello, world!"`”,
+or, “the value `"Hello, world!"` is **assigned *to* the variable** `my_var`”.
 
 When we access the variable, we reference the value it’s assigned.
 ```
-my_var; %== 'Hello, world!'
+my_var; %== "Hello, world!"
 ```
 
 Variables can be declared only once within a given scope.
 Attempting to declare a new varible with the same name will result in a semantic error.
 ```
-let my_var: str = 'Hello, world!';
-let my_var: str = '¡Hola, mundo!'; %> AssignmentError
+let my_var: str = "Hello, world!";
+let my_var: str = "¡Hola, mundo!"; %> AssignmentError
 ```
 > AssignmentError: Duplicate declaration: `my_var` is already declared.
 
@@ -59,7 +59,7 @@ my_other_var;              %> ReferenceError
 %%------------------------
 --- TEMPORAL DEAD ZONE ---
 ------------------------%%
-let my_other_var: str = 'Hello, programmer!';
+let my_other_var: str = "Hello, programmer!";
 ```
 > ReferenceError: `my_other_var` is used before it is declared.
 
@@ -68,8 +68,8 @@ let my_other_var: str = 'Hello, programmer!';
 ## Variable Reassignment
 By default, variables are **fixed** in that they cannot be reassigned.
 ```
-let my_var: str = 'Hello, world!';
-my_var = '¡Hola, mundo!';          %> AssignmentError
+let my_var: str = "Hello, world!";
+my_var = "¡Hola, mundo!";          %> AssignmentError
 ```
 > AssignmentError: Reassignment of a fixed variable: `my_var`.
 
@@ -80,12 +80,12 @@ However, changing a variable’s value is useful in some cases, such as in loops
 Therefore, we can declare a variables with the keywords `let unfixed`,
 which allows us to assign it a new value later.
 ```
-let unfixed my_var = 'Hello, world!';
-my_var;                               %== 'Hello, world!'
-my_var = '¡Hola, mundo!';
-my_var;                               %== '¡Hola, mundo!'
+let unfixed my_var = "Hello, world!";
+my_var;                               %== "Hello, world!"
+my_var = "¡Hola, mundo!";
+my_var;                               %== "¡Hola, mundo!"
 ```
-The statement `my_var = '¡Hola, mundo!';` is called a **variable reassignment statement**.
+The statement `my_var = "¡Hola, mundo!";` is called a **variable reassignment statement**.
 An unfixed variable can be reassigned anywhere in the scope in which it’s visible.
 
 
@@ -93,8 +93,8 @@ An unfixed variable can be reassigned anywhere in the scope in which it’s visi
 Variables are pointers, which reference preexisting values.
 When we access a variable, we reference the value that it points to.
 ```
-let my_var: str = 'Hello, world!';
-my_var;                            % references the string `'Hello, world!'`
+let my_var: str = "Hello, world!";
+my_var;                            % references the string `"Hello, world!"`
 ```
 
 When a variable is assigned another variable, it points to the evaluated value of that variable.
@@ -128,33 +128,34 @@ Many other languages have characters in their alphabet that are not allowed by t
 Therefore, Counterpoint offers a flexible mechanism for allowing identifiers with
 almost any character in the Unicode character set: **Unicode identifiers**.
 
-By wrapping the identifier name with \`back-ticks\`,
+By wrapping the identifier name with 'apostrophes' (**U+0027**)
+(also known as “single-quotes”),
 we can include non-ASCII letters.
 ```
-let `español`: str = 'Spanish for “Spanish”';
+let 'español': str = "Spanish for “Spanish”";
 ```
 In the identifier above, notice the letter `ñ`.
-We can access the variable just like any other, as long as we include the name in back-tick delimiters.
+We can access the variable just like any other, as long as we include the name in the delimiters.
 ```
-`español`; %== 'Spanish for “Spanish”'
+'español'; %== "Spanish for “Spanish”"
 ```
 
-When an identifier is written with back-ticks, it must always be referred to as such,
-even if it doesn’t contain “special characters”. The converse is true as well.
+These identifiers must always be referred to as such,
+even if they don’t contain “special characters”. The converse is true as well.
 ```
-let `foo`: int = 42;
+let 'foo': int = 42;
 foo * 2;             %> ReferenceError
 let bar: int = 420;
-`bar` * 2;           %> ReferenceError
+'bar' * 2;           %> ReferenceError
 ```
 > ReferenceError: `foo` is never declared.
 >
-> ReferenceError: `` `bar` `` is never declared.
+> ReferenceError: `'bar'` is never declared.
 
-This means that the identifiers `foo` and `` `foo` `` can refer to different values.
+This means that the identifiers `foo` and `'foo'` can refer to different values.
 ```
 let foo:   int = 42;
-let `foo`: int = 420;
+let 'foo': int = 420;
 ```
 
 We can use Unicode identifiers to name variables with words that appear in the set of reserved keywords.
@@ -166,31 +167,30 @@ let let: int = 42; %> ParseError
 The reserved keyword `let` cannot be used as an identifier name,
 but we can turn it into a Unicode identifier to work around this limitation.
 ```
-let `let`: int = 42;
+let 'let': int = 42;
 ```
 
-With Unicode identifiers, we can insert almost any character,
-including spaces and punctuation symbols.
+With Unicode identifiers, we can insert almost any character, including spaces and punctuation symbols.
 ```
-let `Svaret på den ultimata frågan.`: int = 42;
-`Svaret på den ultimata frågan.` / 2;           %== 21
+let 'Svaret på den ultimata frågan.': int = 42;
+'Svaret på den ultimata frågan.' / 2;           %== 21
 ```
 
-Unicode identifiers may also contain no characters: The token `` `​` `` is a valid identifier.
+Unicode identifiers may also contain no characters: The token `''` is a valid identifier.
 ```
-let ``: str = 'What’s my name?';
+let '': str = "What’s my name?";
 ```
 
 Note that Unicode identifiers *are not strings*; they’re simply names of declared variables.
 Even though Unicode identifiers are not strings, they’re tokenized the same way
-that template literals are, with a few differences.
+that [template literals](./types.md#string-templates) are, with a few differences.
 
 Like template literals,
 
 - Unicode identifiers are not “cooked”, so there are no escape sequences.
-	That is, an identifier named `` `1\u{24}2` `` remains exactly as typed;
-	it does not become `` `1$2` `` and cannot be accessed as such.
-	`` `1\u{24}2` `` and `` `1$2` `` are two different identifiers.
+	That is, an identifier named `'1\u{24}2'` remains exactly as typed;
+	it does not become `'1$2'` and cannot be accessed as such.
+	`'1\u{24}2'` and `'1$2'` are two different identifiers.
 - Line breaks, whitespace, and non-printing characters are allowed in Unicode identifiers,
 	however, keep in mind that this might result in very unreadable code.
 - The character **U+0003 END OF TEXT** is not allowed in Unicode identifiers
@@ -198,10 +198,11 @@ Like template literals,
 
 But unlike template literals,
 
-- Unicode identifiers may contain the character sequences `'''` and `{{` in them,
+- Unicode identifiers may contain the character sequences `"""` and `{{` in them,
 	since they are not delimited by those characters.
-- Unicode identifiers must not contain the character `` ` `` **U+0060 GRAVE ACCENT**,
+- Unicode identifiers must not contain the character `'` **U+0027 APOSTROPHE**,
 	as that would end the token. There is no way to escape this character.
+	See the Unicode specification for similar alternative characters.
 
 
 
@@ -234,8 +235,8 @@ Also like variables, type aliases can create temporal dead zones.
 Counterpoint does not hoist type aliases.
 *(NOTE: This may change in future versions.)*
 ```
-let my_first_var: MyFirstType = 'Hello, world!';      %> ReferenceError [1]
-let my_next_var:  MyNextType  = 'Hello, programmer!'; %> ReferenceError [2]
+let my_first_var: MyFirstType = "Hello, world!";      %> ReferenceError [1]
+let my_next_var:  MyNextType  = "Hello, programmer!"; %> ReferenceError [2]
 %%------------------------
 --- TEMPORAL DEAD ZONE ---
 ------------------------%%
@@ -277,10 +278,10 @@ we can use the blank variable `_` as a placeholder.
 We can even declare it more than once!
 ```
 let _: int = 42;
-let _: str = 'the answer'; % no duplicate declaration error!
+let _: str = "the answer"; % no duplicate declaration error!
 
-let (_, b, c): str[3] = ['a', 'b', 'c'];
-let (_, _, f): str[3] = ['d', 'e', 'f']; % no duplicate declaration error!
+let (_, b, c): str[3] = ["a", "b", "c"];
+let (_, _, f): str[3] = ["d", "e", "f"]; % no duplicate declaration error!
 
 type Binop = (float, float) => float;
 let square: Binop = (_: float, x: float): float => x * x;
@@ -288,7 +289,7 @@ func trinop(_: float, _: float, y: float): float => y + y + y; % no duplicate de
 ```
 
 It’s also possible to assign the blank variable as a type alias, and in an unfixed variable assignment.
-However, this use cases are less practical.
+However, these use cases are less practical.
 ```
 type _ = int | float;
 type _ = [str, bool]; % no duplicate declaration error!

@@ -6,6 +6,10 @@ import {Primitive} from './Primitive.js';
 
 
 
+const DELIM_STRING = '"';
+
+
+
 /**
  * A textual value represented as utf-8 data.
  * @final
@@ -24,7 +28,7 @@ class CPString extends Primitive {
 	}
 
 	public override toString(): string {
-		return `'${ utf8.decode(String.fromCodePoint(...this.codeunits)) }'`;
+		return `${ DELIM_STRING }${ utf8.decode(String.fromCodePoint(...this.codeunits)) }${ DELIM_STRING }`;
 	}
 
 	protected override identical_helper(value: CPObject): boolean {

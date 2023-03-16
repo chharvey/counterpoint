@@ -129,27 +129,26 @@ describe('Validator', () => {
 
 
 	describe('.cookTokenString', () => {
-		/* eslint-disable quotes */
 		function decodeCooked(source: string, config: CPConfig): string {
 			return utf8Decode(Validator.cookTokenString(source, config));
 		}
 		it('produces the cooked string value.', () => {
 			assert.deepStrictEqual([
-				`''`,
-				`'hello'`,
-				`'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6'`,
-				`'0 \\u{24} 1 \\u{005f} 2 \\u{} 3'`,
-				xjs.String.dedent`'012\\
+				'""',
+				'"hello"',
+				'"0 \\" 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6"',
+				'"0 \\u{24} 1 \\u{005f} 2 \\u{} 3"',
+				xjs.String.dedent`"012\\
 				345\\%
-				678'`,
-				`'😀'`,
-				`'\u{10001}'`,
-				`'\\\u{10001}'`,
-				`'\\u{10001}'`,
+				678"`,
+				'"😀"',
+				'"\u{10001}"',
+				'"\\\u{10001}"',
+				'"\\u{10001}"',
 			].map((src) => decodeCooked(src, CONFIG_DEFAULT)), [
 				'',
 				'hello',
-				'0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6',
+				'0 " 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6',
 				'0 $ 1 _ 2 \0 3',
 				'012 345%\n678',
 				'\u{1f600}',
@@ -160,39 +159,39 @@ describe('Validator', () => {
 		});
 		it('may contain an escaped `u` anywhere.', () => {
 			assert.strictEqual(
-				decodeCooked(`'abc\\udef\\u'`, CONFIG_DEFAULT),
+				decodeCooked('"abc\\udef\\u"', CONFIG_DEFAULT),
 				'abcudefu',
 			);
 		});
 		context('In-String Comments', () => {
 			function cook(config: CPConfig): string[] {
 				return [
-					xjs.String.dedent`'The five boxing wizards % jump quickly.'`,
+					xjs.String.dedent`"The five boxing wizards % jump quickly."`,
 
-					xjs.String.dedent`'The five % boxing wizards
-					jump quickly.'`,
+					xjs.String.dedent`"The five % boxing wizards
+					jump quickly."`,
 
-					xjs.String.dedent`'The five boxing wizards %
-					jump quickly.'`,
+					xjs.String.dedent`"The five boxing wizards %
+					jump quickly."`,
 
-					xjs.String.dedent`'The five boxing wizards jump quickly.%
-					'`,
+					xjs.String.dedent`"The five boxing wizards jump quickly.%
+					"`,
 
-					`'The five %% boxing wizards %% jump quickly.'`,
+					'"The five %% boxing wizards %% jump quickly."',
 
-					`'The five boxing wizards %%%% jump quickly.'`,
+					'"The five boxing wizards %%%% jump quickly."',
 
-					xjs.String.dedent`'The five %% boxing
+					xjs.String.dedent`"The five %% boxing
 					wizards %% jump
-					quickly.'`,
+					quickly."`,
 
-					xjs.String.dedent`'The five boxing
+					xjs.String.dedent`"The five boxing
 					wizards %% jump
-					quickly.%%'`,
+					quickly.%%"`,
 
-					xjs.String.dedent`'The five boxing
+					xjs.String.dedent`"The five boxing
 					wizards %% jump
-					quickly.'`,
+					quickly."`,
 				].map((src) => decodeCooked(src, config));
 			}
 			context('with comments enabled.', () => {
@@ -240,30 +239,27 @@ describe('Validator', () => {
 				), RangeError);
 			});
 		});
-		/* eslint-enable quotes */
 	});
 
 
 	describe('.cookTokenTemplate', () => {
-		/* eslint-disable quotes */
 		function decodeCooked(source: string): string {
 			return utf8Decode(Validator.cookTokenTemplate(source));
 		}
 		it('produces the cooked template value.', () => {
 			assert.deepStrictEqual(
 				[
-					`''''''`,
-					`'''hello'''`,
-					`'''head{{`,
-					`}}midl{{`,
-					`}}tail'''`,
-					`'''0 \\\` 1'''`,
-					`'''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7'''`,
-					`'''0 \\u{24} 1 \\u{005f} 2 \\u{} 3'''`,
-					xjs.String.dedent`'''012\\
+					'""""""',
+					'"""hello"""',
+					'"""head{{',
+					'}}midl{{',
+					'}}tail"""',
+					'"""0 \\" 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6"""',
+					'"""0 \\u{24} 1 \\u{005f} 2 \\u{} 3"""',
+					xjs.String.dedent`"""012\\
 					345
-					678'''`,
-					`'''😀 \\😀 \\u{1f600}'''`,
+					678"""`,
+					'"""😀 \\😀 \\u{1f600}"""',
 				].map((src) => decodeCooked(src)),
 				[
 					'',
@@ -271,60 +267,86 @@ describe('Validator', () => {
 					'head',
 					'midl',
 					'tail',
-					'0 \\` 1',
-					'0 \\\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\` 7',
+					'0 \\" 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6',
 					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3',
 					'012\\\n345\n678',
 					'\u{1f600} \\\u{1f600} \\u{1f600}',
 				],
 			);
 		});
-		/* eslint-enable quotes */
 	});
 
 
 	describe('#cookTokenIdentifier', () => {
-		[
-			`
-				this be a word
-				_words _can _start _with _underscores
-				_and0 _can1 contain2 numb3rs
-				a word _can repeat _with the same id
-			`,
-			`
-				\`this\` \`is\` \`a\` \`unicode word\`
-				\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
-				\`except\` \`back-ticks\` \`.\`
-			`,
-		].forEach((src, i) => {
-			const validator = new Validator();
-			let cooked: bigint[] = [];
-			context([
-				'basic identifiers.',
-				'unicode identifiers.',
-			][i], () => {
-				before(() => {
-					cooked = src.trim().split(/\s+/).map((word) => validator.cookTokenIdentifier(word));
-				});
-				it('assigns ids starting from 256n', () => {
-					assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
-				});
-				it('assigns unique ids 256n or greater.', () => {
-					cooked.forEach((value) => assert.ok(value >= 256n));
+		type Data = {
+			readonly src: string,
+			readonly raw: string[],
+		};
+		new Map<string, [Data, Data]>([
+			['basic identifiers.', [
+				{
+					src: `
+						this be a word
+						_words _can _start _with _underscores_
+						and can1 contain2 numb3rs and under_scores_
+						a word can_ repeat with_ the same id
+					`,
+					raw: ['this', 'be', 'a', 'word', '_words', '_can', '_start', '_with', '_underscores_', 'and', 'can1', 'contain2', 'numb3rs', 'and', 'under_scores_', 'a', 'word', 'can_', 'repeat', 'with_', 'the', 'same', 'id'],
+				},
+				{
+					src: `
+						alpha bravo charlie delta echo
+						echo delta charlie bravo alpha
+					`,
+					raw: ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'echo', 'delta', 'charlie', 'bravo', 'alpha'],
+				},
+			]],
+			['unicode identifiers.', [
+				{
+					src: `
+						'this' 'is' 'a' 'unicode word'
+						'unicode words start and end with' 'apostrophes' 'but cannot contain them'
+						'ány' 'unicödè wörd' 'cán' 'cöntáin' 'ány' 'cháráctèr'
+						'èxcèpt' '‘ápöströphès’' '.'
+					`,
+					raw: ['\'this\'', '\'is\'', '\'a\'', '\'unicode word\'', '\'unicode words start and end with\'', '\'apostrophes\'', '\'but cannot contain them\'', '\'ány\'', '\'unicödè wörd\'', '\'cán\'', '\'cöntáin\'', '\'ány\'', '\'cháráctèr\'', '\'èxcèpt\'', '\'‘ápöströphès’\'', '\'.\''],
+				},
+				{
+					src: `
+						'alpha' 'bravo' 'charlie' 'delta' 'echo'
+						'echo' 'delta' 'charlie' 'bravo' 'alpha'
+					`,
+					raw: ['\'alpha\'', '\'bravo\'', '\'charlie\'', '\'delta\'', '\'echo\'', '\'echo\'', '\'delta\'', '\'charlie\'', '\'bravo\'', '\'alpha\''],
+				},
+			]],
+		]).forEach((datas, cxt) => {
+			context(cxt, () => {
+				datas.forEach((data, i) => {
+					const actual_raw: RegExpMatchArray = data.src.match(/[A-Za-z_][A-Za-z0-9_]*|'[^']*'/g)!;
+					const validator = new Validator();
+					let cooked: bigint[] = [];
+					before(() => {
+						assert.deepStrictEqual(actual_raw, data.raw);
+						cooked = actual_raw.map((word) => validator.cookTokenIdentifier(word));
+					});
+					if (i === 0) {
+						it('assigns ids starting from 256n.', () => {
+							assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
+						});
+						return it('assigns unique ids 256n or greater.', () => {
+							cooked.forEach((value) => assert.ok(value >= 0x100n));
+						});
+					} else {
+						assert.strictEqual(i, 1);
+						return it('assigns the same value to identical identifier names.', () => {
+							assert.deepStrictEqual(
+								cooked.slice(0, 5),
+								cooked.slice(5).reverse(),
+							);
+						});
+					}
 				});
 			});
-		});
-
-		it('assigns the same value to identical identifier names.', () => {
-			const validator = new Validator();
-			const cooked: bigint[] = `
-				alpha bravo charlie delta echo
-				echo delta charlie bravo alpha
-			`.trim().split(/\s+/).map((word) => validator.cookTokenIdentifier(word));
-			return assert.deepStrictEqual(
-				cooked.slice(0, 5),
-				cooked.slice(5).reverse(),
-			);
 		});
 	});
 });

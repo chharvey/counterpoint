@@ -81,6 +81,9 @@ function call<RuleName extends string>(family_name: string, ...args: readonly (s
 
 
 /* # LEXER HELPERS */
+const WORD_BASIC   = /[A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+/;
+const WORD_UNICODE = /'[^']*'/;
+
 const DIGIT_SEQ_BIN            = /[0-1]+/;
 const DIGIT_SEQ_BIN__SEPARATOR = /([0-1]_?)*[0-1]/;
 const DIGIT_SEQ_QUA            = /[0-3]+/;
@@ -117,60 +120,74 @@ const SIGNED_DIGIT_SEQ_DEC__SEPARATOR = seq(/[+-]?/, DIGIT_SEQ_DEC__SEPARATOR);
 const EXPONENT_PART            = seq('e', SIGNED_DIGIT_SEQ_DEC);
 const EXPONENT_PART__SEPARATOR = seq('e', SIGNED_DIGIT_SEQ_DEC__SEPARATOR);
 
+const ESCAPER            = '\\';
+const DELIM_STRING       = '"';
+const DELIM_TEMPLATE     = '"""';
+const DELIM_INTERP_START = '{{';
+const DELIM_INTERP_END   = '}}';
+const COMMENTER_LINE     = '%';
+const COMMENTER_MULTI    = '%%';
+
 /* eslint-disable function-call-argument-newline */
 const STRING_ESCAPE = choice(
-	'\'', '\\',
+	DELIM_STRING,
+	ESCAPER,
 	's', 't', 'n', 'r',
 	seq('u{', optional(DIGIT_SEQ_HEX), '}'),
 	'\n',
-	/[^'\\stnru\n]/,
+	/[^"\\stnru\n]/,
 );
 const STRING_ESCAPE__COMMENT = choice(
-	'\'', '\\', '%',
+	DELIM_STRING,
+	ESCAPER,
+	COMMENTER_LINE,
 	's', 't', 'n', 'r',
 	seq('u{', optional(DIGIT_SEQ_HEX), '}'),
 	'\n',
-	/[^'\\%stnru\n]/,
+	/[^"\\%stnru\n]/,
 );
 const STRING_ESCAPE__SEPARATOR = choice(
-	'\'', '\\',
+	DELIM_STRING,
+	ESCAPER,
 	's', 't', 'n', 'r',
 	seq('u{', optional(DIGIT_SEQ_HEX__SEPARATOR), '}'),
 	'\n',
-	/[^'\\stnru\n]/,
+	/[^"\\stnru\n]/,
 );
 const STRING_ESCAPE__COMMENT_SEPARATOR = choice(
-	'\'', '\\', '%',
+	DELIM_STRING,
+	ESCAPER,
+	COMMENTER_LINE,
 	's', 't', 'n', 'r',
 	seq('u{', optional(DIGIT_SEQ_HEX__SEPARATOR), '}'),
 	'\n',
-	/[^'\\%stnru\n]/,
+	/[^"\\%stnru\n]/,
 );
 /* eslint-enable function-call-argument-newline */
 
 const STRING_CHAR = choice(
-	/[^'\\]/,
-	seq('\\', STRING_ESCAPE),
-	/\\u[^'{]/,
+	/[^"\\]/,
+	seq(ESCAPER, STRING_ESCAPE),
+	/\\u[^"{]/,
 );
 const STRING_CHAR__COMMENT = choice(
-	/[^'\\%]/,
-	seq('\\', STRING_ESCAPE__COMMENT),
-	/\\u[^'{]/,
-	/%([^'%\n][^'\n]*)?\n/,
-	/%%(%?[^'%])*%%/,
+	/[^"\\%]/,
+	seq(ESCAPER, STRING_ESCAPE__COMMENT),
+	/\\u[^"{]/,
+	/%([^"%\n][^"\n]*)?\n/,
+	/%%(%?[^"%])*%%/,
 );
 const STRING_CHAR__SEPARATOR = choice(
-	/[^'\\]/,
-	seq('\\', STRING_ESCAPE__SEPARATOR),
-	/\\u[^'{]/,
+	/[^"\\]/,
+	seq(ESCAPER, STRING_ESCAPE__SEPARATOR),
+	/\\u[^"{]/,
 );
 const STRING_CHAR__COMMENT__SEPARATOR = choice(
-	/[^'\\%]/,
-	seq('\\', STRING_ESCAPE__COMMENT_SEPARATOR),
-	/\\u[^'{]/,
-	/%([^'%\n][^'\n]*)?\n/,
-	/%%(%?[^'%])*%%/,
+	/[^"\\%]/,
+	seq(ESCAPER, STRING_ESCAPE__COMMENT_SEPARATOR),
+	/\\u[^"{]/,
+	/%([^"%\n][^"\n]*)?\n/,
+	/%%(%?[^"%])*%%/,
 );
 
 const STRING_CHARS                     = repeat1(STRING_CHAR);
@@ -179,28 +196,32 @@ const STRING_CHARS__SEPARATOR          = repeat1(STRING_CHAR__SEPARATOR);
 const STRING_CHARS__COMMENT__SEPARATOR = repeat1(STRING_CHAR__COMMENT__SEPARATOR);
 
 const STRING_UNFINISHED          = '\\u';
-const STRING_UNFINISHED__COMMENT = choice('\\u', /%([^'%\n][^'\n]*)?/, /%%(%?[^'%])*/);
+const STRING_UNFINISHED__COMMENT = choice(
+	'\\u',
+	/%([^"%\n][^"\n]*)?/,
+	/%%(%?[^"%])*/,
+);
 
 const TEMPLATE_CHARS_NO_END = choice(
-	/[^'{]/,
-	/('\{|''\{)*('|'')[^'{]/,
-	/('\{|''\{)+[^'{]/,
-	/(\{'|\{'')*\{[^'{]/,
-	/(\{'|\{'')+[^'{]/,
+	/[^"{]/,
+	/("\{|""\{)*("|"")[^"{]/,
+	/("\{|""\{)+[^"{]/,
+	/(\{"|\{"")*\{[^"{]/,
+	/(\{"|\{"")+[^"{]/,
 );
 const TEMPLATE_CHARS_END_DELIM = seq(repeat(TEMPLATE_CHARS_NO_END), choice(
-	/[^'{]/,
-	/('\{|''\{)*('|'')[^'{]/,
-	/('\{|''\{)+[^'{]?/,
-	/(\{'|\{'')*\{[^'{]?/,
-	/(\{'|\{'')+[^'{]/,
+	/[^"{]/,
+	/("\{|""\{)*("|"")[^"{]/,
+	/("\{|""\{)+[^"{]?/,
+	/(\{"|\{"")*\{[^"{]?/,
+	/(\{"|\{"")+[^"{]/,
 ));
 const TEMPLATE_CHARS_END_INTERP = seq(repeat(TEMPLATE_CHARS_NO_END), choice(
-	/[^'{]/,
-	/('\{|''\{)*('|'')[^'{]?/,
-	/('\{|''\{)+[^'{]/,
-	/(\{'|\{'')*\{[^'{]/,
-	/(\{'|\{'')+[^'{]?/,
+	/[^"{]/,
+	/("\{|""\{)*("|"")[^"{]?/,
+	/("\{|""\{)+[^"{]/,
+	/(\{"|\{"")*\{[^"{]/,
+	/(\{"|\{"")+[^"{]?/,
 ));
 
 
@@ -253,8 +274,8 @@ module.exports = grammar({
 		)),
 
 		identifier: _$ => token(choice(
-			/[A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+/,
-			/`[^`]*`/,
+			WORD_BASIC,
+			WORD_UNICODE,
 		)),
 
 		...parameterize('integer', ({radix, separator}) => (
@@ -277,20 +298,20 @@ module.exports = grammar({
 
 		...parameterize('string', ({comment, separator}) => (
 			_$ => token(seq(
-				'\'',
+				DELIM_STRING,
 				optional(((!comment)
 					? (!separator) ? STRING_CHARS          : STRING_CHARS__SEPARATOR
 					: (!separator) ? STRING_CHARS__COMMENT : STRING_CHARS__COMMENT__SEPARATOR
 				)),
 				optional((!comment) ? STRING_UNFINISHED : STRING_UNFINISHED__COMMENT),
-				'\'',
+				DELIM_STRING,
 			))
 		), 'comment', 'separator'),
 
-		template_full:   _$ => token(seq('\'\'\'', optional(TEMPLATE_CHARS_END_DELIM),  '\'\'\'')),
-		template_head:   _$ => token(seq('\'\'\'', optional(TEMPLATE_CHARS_END_INTERP), '{{')),
-		template_middle: _$ => token(seq('}}',     optional(TEMPLATE_CHARS_END_INTERP), '{{')),
-		template_tail:   _$ => token(seq('}}',     optional(TEMPLATE_CHARS_END_DELIM),  '\'\'\'')),
+		template_full:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
+		template_head:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
+		template_middle: _$ => token(seq(DELIM_INTERP_END, optional(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
+		template_tail:   _$ => token(seq(DELIM_INTERP_END, optional(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
 
 
 

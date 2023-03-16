@@ -16,16 +16,15 @@ import {
 
 
 describe('ASTNodeType', () => {
-	/* eslint-disable quotes */
 	describe('ASTNodeTypeConstant', () => {
 		describe('#eval', () => {
 			it('computes the value of constant null, boolean, or number types.', () => {
 				assert.deepStrictEqual([
-					`null`,
-					`false`,
-					`true`,
-					`42`,
-					`4.2e+3`,
+					'null',
+					'false',
+					'true',
+					'42',
+					'4.2e+3',
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
 					OBJ.Boolean.FALSETYPE,
@@ -102,7 +101,7 @@ describe('ASTNodeType', () => {
 	describe('ASTNodeTypeTuple', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).eval(),
+				AST.ASTNodeTypeTuple.fromSource('[int, bool, ?:str]').eval(),
 				new TYPE.TypeTuple([
 					{type: TYPE.INT,  optional: false},
 					{type: TYPE.BOOL, optional: false},
@@ -117,7 +116,7 @@ describe('ASTNodeType', () => {
 	describe('ASTNodeTypeRecord', () => {
 		// #varCheck --- see `ASTNodeRecord#varCheck` tests
 		specify('#eval', () => {
-			const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, _: str]`);
+			const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('[x: int, y?: bool, _: str]');
 			assert.deepStrictEqual(
 				node.eval(),
 				new TYPE.TypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
@@ -138,13 +137,13 @@ describe('ASTNodeType', () => {
 		describe('#eval', () => {
 			it('returns a TypeList if there is no count.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeList.fromSource(`(int | bool)[]`).eval(),
+					AST.ASTNodeTypeList.fromSource('(int | bool)[]').eval(),
 					new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL)),
 				);
 			});
 			it('returns a TypeTuple if there is a count.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeList.fromSource(`(int | bool)[3]`).eval(),
+					AST.ASTNodeTypeList.fromSource('(int | bool)[3]').eval(),
 					TYPE.TypeTuple.fromTypes([
 						TYPE.INT.union(TYPE.BOOL),
 						TYPE.INT.union(TYPE.BOOL),
@@ -153,7 +152,7 @@ describe('ASTNodeType', () => {
 				);
 			});
 			it('throws if count is negative.', () => {
-				assert.throws(() => AST.ASTNodeTypeList.fromSource(`(int | bool)[-3]`).eval(), TypeError);
+				assert.throws(() => AST.ASTNodeTypeList.fromSource('(int | bool)[-3]').eval(), TypeError);
 			});
 		});
 	});
@@ -163,15 +162,15 @@ describe('ASTNodeType', () => {
 	describe('ASTNodeType{Dict,Set,Map}', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeDict.fromSource(`[:int | bool]`).eval(),
+				AST.ASTNodeTypeDict.fromSource('[:int | bool]').eval(),
 				new TYPE.TypeDict(TYPE.INT.union(TYPE.BOOL)),
 			);
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeSet.fromSource(`(int | bool){}`).eval(),
+				AST.ASTNodeTypeSet.fromSource('(int | bool){}').eval(),
 				new TYPE.TypeSet(TYPE.INT.union(TYPE.BOOL)),
 			);
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeMap.fromSource(`{int -> bool}`).eval(),
+				AST.ASTNodeTypeMap.fromSource('{int -> bool}').eval(),
 				new TYPE.TypeMap(TYPE.INT, TYPE.BOOL),
 			);
 		});
@@ -182,22 +181,21 @@ describe('ASTNodeType', () => {
 	describe('ASTNodeTypeOperation', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationUnary.fromSource(`int?`).eval(),
+				AST.ASTNodeTypeOperationUnary.fromSource('int?').eval(),
 				TYPE.INT.union(TYPE.NULL),
 			);
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationUnary.fromSource(`mutable int[]`).eval(),
+				AST.ASTNodeTypeOperationUnary.fromSource('mutable int[]').eval(),
 				new TYPE.TypeList(TYPE.INT, true),
 			);
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationBinary.fromSource(`obj & 3`).eval(),
+				AST.ASTNodeTypeOperationBinary.fromSource('obj & 3').eval(),
 				TYPE.OBJ.intersect(typeUnitInt(3n)),
 			);
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationBinary.fromSource(`4.2 | int`).eval(),
+				AST.ASTNodeTypeOperationBinary.fromSource('4.2 | int').eval(),
 				typeUnitFloat(4.2).union(TYPE.INT),
 			);
 		});
 	});
-	/* eslint-enable quotes */
 });

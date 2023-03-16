@@ -56,7 +56,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('allows duplicate declaration of blank variable.', () => {
 			AST.ASTNodeGoal.fromSource(`
 				let _: int = 42;
-				let _: str = 'the answer';
+				let _: str = "the answer";
 			`).varCheck(); // assert does not throw
 		});
 	});
@@ -114,8 +114,8 @@ describe('ASTNodeDeclarationVariable', () => {
 
 					let t1_2: mutable [?: 42 | 4.3] = [42];
 					let t2_2: mutable [?: int]      = [i];
-					let t3_2: mutable [   42 | 4.3] = [42, '43'];
-					let t4_2: mutable [int, ?: str] = [42, '43'];
+					let t3_2: mutable [   42 | 4.3] = [42, "43"];
+					let t4_2: mutable [int, ?: str] = [42, "43"];
 				`);
 				typeCheckGoal(`
 					let t: mutable [int, str] = [42];
@@ -134,13 +134,13 @@ describe('ASTNodeDeclarationVariable', () => {
 
 					let r1_2: mutable [a?: 42 | 4.3]    = [a= 42];
 					let r2_2: mutable [a?: int]         = [a= i];
-					let r3_2: mutable [a:  42 | 4.3]    = [b= '43', a= 42];
-					let r4_2: mutable [a: int, b?: str] = [b= '43', a= 42];
+					let r3_2: mutable [a:  42 | 4.3]    = [b= "43", a= 42];
+					let r4_2: mutable [a: int, b?: str] = [b= "43", a= 42];
 				`);
 				typeCheckGoal(`
 					let r1: mutable [a: int, b: str] = [a= 42];
-					let r2: mutable [a: int, b: str] = [c= 42, b= '43'];
-					let r3: mutable [a: int, b: str] = [c= 42, d= '43'];
+					let r2: mutable [a: int, b: str] = [c= 42, b= "43"];
+					let r3: mutable [a: int, b: str] = [c= 42, d= "43"];
 				`.split('\n'), TypeError03);
 			});
 			it('should throw when assigning combo type to union.', () => {
@@ -161,28 +161,28 @@ describe('ASTNodeDeclarationVariable', () => {
 						hours_worked: float,
 					];
 					let bob: Employee | Volunteer = [
-						name=         'Bob', %: str
+						name=         "Bob", %: str
 						hours_worked= 80.0,  %: float
 					];
 				`, TypeError03);
 			});
 			it('throws when not assigned to correct type.', () => {
 				typeCheckGoal(`
-					let t: mutable [a: int, b: str] = [   42,    '43'];
-					let r: mutable [   int,    str] = [a= 42, b= '43'];
-					let s: mutable {int -> str}     = {   42,    '43'};
-					let s: mutable (int | str){}    = {   42 ->  '43'};
+					let t: mutable [a: int, b: str] = [   42,    "43"];
+					let r: mutable [   int,    str] = [a= 42, b= "43"];
+					let s: mutable {int -> str}     = {   42,    "43"};
+					let s: mutable (int | str){}    = {   42 ->  "43"};
 				`.split('\n'), TypeError03);
 				typeCheckGoal(`
-					let t1: mutable obj                                = [42, '43'];
-					let t2: mutable ([int, str] | [   bool,    float]) = [42, '43'];
-					let t3: mutable ([int, str] | [a: bool, b: float]) = [42, '43'];
-					let t4: mutable ([int, str] | obj)                 = [42, '43'];
+					let t1: mutable obj                                = [42, "43"];
+					let t2: mutable ([int, str] | [   bool,    float]) = [42, "43"];
+					let t3: mutable ([int, str] | [a: bool, b: float]) = [42, "43"];
+					let t4: mutable ([int, str] | obj)                 = [42, "43"];
 
-					let r1: mutable obj                                      = [a= 42, b= '43'];
-					let r2: mutable ([a: int, b: str] | [c: bool, d: float]) = [a= 42, b= '43'];
-					let r3: mutable ([a: int, b: str] | [   bool,    float]) = [a= 42, b= '43'];
-					let r4: mutable ([a: int, b: str] | obj)                 = [a= 42, b= '43'];
+					let r1: mutable obj                                      = [a= 42, b= "43"];
+					let r2: mutable ([a: int, b: str] | [c: bool, d: float]) = [a= 42, b= "43"];
+					let r3: mutable ([a: int, b: str] | [   bool,    float]) = [a= 42, b= "43"];
+					let r4: mutable ([a: int, b: str] | obj)                 = [a= 42, b= "43"];
 
 					let s1: mutable (42 | 4.3){}            = {42};
 					let s2: mutable (int | float){}         = {42};
@@ -205,10 +205,10 @@ describe('ASTNodeDeclarationVariable', () => {
 					let r1: mutable [a: int, b: str]  = [a= 42, b= 43];
 					let r2: mutable [a: int, b?: str] = [a= 42, b= 43];
 
-					let s1: mutable int{} = {'42'};
-					let s2: mutable int{} = {42, '43'};
+					let s1: mutable int{} = {"42"};
+					let s2: mutable int{} = {42, "43"};
 
-					let m1: mutable {int -> str} = {4.2 -> '43'};
+					let m1: mutable {int -> str} = {4.2 -> "43"};
 					let m2: mutable {int -> str} = {42  -> 4.3};
 				`.split('\n'), TypeError03);
 				typeCheckGoal(`
@@ -217,10 +217,10 @@ describe('ASTNodeDeclarationVariable', () => {
 					let s3: mutable (bool | str){}    = {   46,    47};
 
 					let m3_1: mutable {str -> bool} = {1 -> false, 2.0 -> true};
-					let m3_2: mutable {str -> bool} = {'a' -> 3,   'b' -> 4.0};
-					let m3_3: mutable {str -> bool} = {5 -> false, 'b' -> 6.0};
+					let m3_2: mutable {str -> bool} = {"a" -> 3,   "b" -> 4.0};
+					let m3_3: mutable {str -> bool} = {5 -> false, "b" -> 6.0};
 					let m3_4: mutable {str -> bool} = {7 -> 8.0};
-					let m3_5: mutable {str -> bool} = {9 -> 'a', 10.0 -> 'b'};
+					let m3_5: mutable {str -> bool} = {9 -> "a", 10.0 -> "b"};
 				`, (err) => {
 					assert.ok(err instanceof AggregateError);
 					assertAssignable(err, {
@@ -282,14 +282,14 @@ describe('ASTNodeDeclarationVariable', () => {
 										cons:   AggregateError,
 										errors: [
 											{cons: TypeError03, message: 'Expression of type 9 is not assignable to type str.'},
-											{cons: TypeError03, message: 'Expression of type \'a\' is not assignable to type bool.'},
+											{cons: TypeError03, message: 'Expression of type "a" is not assignable to type bool.'},
 										],
 									},
 									{
 										cons:   AggregateError,
 										errors: [
 											{cons: TypeError03, message: 'Expression of type 10.0 is not assignable to type str.'},
-											{cons: TypeError03, message: 'Expression of type \'b\' is not assignable to type bool.'},
+											{cons: TypeError03, message: 'Expression of type "b" is not assignable to type bool.'},
 										],
 									},
 								],
