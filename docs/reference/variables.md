@@ -40,7 +40,7 @@ Variable names don’t have to be “basic” — we can write variables with
 [Unicode characters](#unicode-identifiers) as well.
 
 There exists a uniquely special variable in Counterpoint, `_`,
-which has a reserved meaning, discussed [below](#the-blank-variable).
+which has a reserved meaning, discussed [below](#the-blank-identifier).
 
 
 ### Temporal Dead Zone
@@ -259,8 +259,8 @@ type MyNextType = my_next_var | int;  %> ReferenceError [2]
 
 
 
-## The Blank Variable
-The token `_` (a single underscore) is called the “blank variable”, and it behaves differently from normal variables.
+## The Blank Identifier
+The token `_` (a single underscore) is called the “blank identifier”, and it behaves differently from normal variables.
 It may *only* be assigned, and *never* be referenced. It’s actually a syntax error to treat it as an expression.
 ```
 let _: int = 42;    % ok
@@ -273,7 +273,7 @@ When assigning a function to a function type, a certain number of parameters are
 but we might not always use every parameter in our function body.
 The same goes for destructuring — we might not need all the entries in the object being destructured.
 Instead of declaring a regular variable that ends up never being referenced,
-we can use the blank variable `_` as a placeholder.
+we can use the blank identifier `_` as a placeholder.
 We can even declare it more than once!
 ```
 let _: int = 42;
@@ -287,8 +287,8 @@ let square: Binop = (_: float, x: float): float => x * x;
 func trinop(_: float, _: float, y: float): float => y + y + y; % no duplicate declaration error!
 ```
 
-It’s also possible to assign the blank variable as a type alias, and in an unfixed variable assignment.
-However, this use cases are less practical.
+It’s also possible to assign the blank identifier as a type alias, and in an unfixed variable assignment.
+However, these use cases are less practical.
 ```
 type _ = int | float;
 type _ = [str, bool]; % no duplicate declaration error!
