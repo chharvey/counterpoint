@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	type OBJ,
 	TYPE,
-	type INST,
 	type Builder,
 	TypeError03,
 } from '../../index.js';
@@ -33,15 +33,10 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		super(start_node, {}, [claimed_type, operand]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.FLOAT);
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return this.operand.build(builder, tofloat);
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return this.operand.build(builder);
 	}
 
 	@memoizeMethod

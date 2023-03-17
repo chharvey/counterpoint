@@ -99,7 +99,7 @@ export class TypeTuple extends Type {
 
 	public get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.invariants.length;
-		const i: number = Number(index.toNumeric());
+		const i: number = index.toNumber();
 		return updateAccessedStaticType(
 			(
 				(-n <= i && i < 0) ? this.invariants[i + n] :

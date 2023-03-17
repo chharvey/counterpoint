@@ -66,6 +66,7 @@ abstract class CPNumber<T = unknown> extends Primitive {
 	public abstract eq0(): boolean;
 	/**
 	 * Is the number strictly less than the argument?
+	 * @param y - the argument
 	 * @returns Is the number strictly less than the argument?
 	 */
 	public abstract lt(y: T): boolean;

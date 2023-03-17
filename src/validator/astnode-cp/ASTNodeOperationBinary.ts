@@ -35,10 +35,6 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		super(start_node, operator, [operand0, operand1]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operand0.shouldFloat() || this.operand1.shouldFloat();
-	}
-
 	/**
 	 * @final
 	 */

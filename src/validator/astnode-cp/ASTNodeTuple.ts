@@ -1,9 +1,9 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type INST,
 	type Builder,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
@@ -32,15 +32,10 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		super(start_node, children);
 	}
 
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeTuple#shouldFloat not yet supported.';
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeTuple#build not yet supported.';
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.tuple.make(this.children.map((expr) => expr.build(builder)));
 	}
 
 	@memoizeMethod

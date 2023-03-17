@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {strictEqual} from '../../lib/index.js';
 import {Object as CPObject} from './Object.js';
@@ -27,6 +28,13 @@ export class Float extends CPNumber<Float> {
 	@CPObject.equalsDeco
 	public override equal(value: CPObject): boolean {
 		return value instanceof CPNumber && this.data === value.toFloat().data;
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		if (Object.is(this.data, -0.0)) {
+			return mod.f64.ceil(mod.f64.const(-0.5));
+		}
+		return mod.f64.const(this.data);
 	}
 
 	public override toFloat(): this {

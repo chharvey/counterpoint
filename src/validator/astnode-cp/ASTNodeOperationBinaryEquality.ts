@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	INST,
 	type Builder,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
@@ -20,6 +20,7 @@ import {
 	oneFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -40,18 +41,21 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operator === Operator.EQ && super.shouldFloat();
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, _to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopEquality {
-		const tofloat: boolean = this.validator.config.compilerOptions.intCoercion && this.shouldFloat();
-		return new INST.InstructionBinopEquality(
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		const args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1, () => (
+			this.validator.config.compilerOptions.intCoercion && this.operator === Operator.EQ
+		));
+		const [type0, type1]: binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
+		return (
+			(type0 === binaryen.i32 && type1 === binaryen.i32) ? builder.module.i32.eq(...args) : // `ID` and `EQ` give the same result
+			(type0 === binaryen.i32 && type1 === binaryen.f64) ? builder.module.call('i_f_id', [...args], binaryen.i32) :
+			(type0 === binaryen.f64 && type1 === binaryen.i32) ? builder.module.call('f_i_id', [...args], binaryen.i32) :
+			(type0 === binaryen.f64 && type1 === binaryen.f64,   (this.operator === Operator.ID)
+				? builder.module.call('fid', [...args], binaryen.i32)
+				: builder.module.f64.eq(...args)
+			)
 		);
 	}
 

@@ -1,9 +1,11 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	type TypeEntry,
 	OBJ,
 	TYPE,
-} from '../../src/typer/index.js';
+	Builder,
+} from '../../src/index.js';
 import {
 	typeUnitInt,
 	typeUnitFloat,
@@ -850,6 +852,36 @@ describe('Type', () => {
 					}
 				});
 			});
+		});
+	});
+
+
+	describe('#binType', () => {
+		it('returns a binaryen type for simple types.', () => {
+			const tests = new Map<TYPE.Type, binaryen.Type>([
+				[TYPE.NEVER, binaryen.unreachable],
+				[TYPE.VOID,  binaryen.none],
+				[TYPE.NULL,  binaryen.i32],
+				[TYPE.BOOL,  binaryen.i32],
+				[TYPE.INT,   binaryen.i32],
+				[TYPE.FLOAT, binaryen.f64],
+			]);
+			return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
+		});
+		it('returns `Either<Left, Right>` monads for unions.', () => {
+			const tests = new Map<TYPE.Type, binaryen.Type>([
+				[TYPE.NULL.union(TYPE.BOOL),  Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.BOOL.union(TYPE.INT),   Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.NULL.union(TYPE.INT),   Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.VOID.union(TYPE.NULL),  Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.VOID.union(TYPE.BOOL),  Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.VOID.union(TYPE.INT),   Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.VOID.union(TYPE.FLOAT), Builder.createBinTypeEither(binaryen.f64, binaryen.f64)],
+				[TYPE.NULL.union(TYPE.FLOAT), Builder.createBinTypeEither(binaryen.i32, binaryen.f64)],
+				[TYPE.BOOL.union(TYPE.FLOAT), Builder.createBinTypeEither(binaryen.i32, binaryen.f64)],
+				[TYPE.INT .union(TYPE.FLOAT), Builder.createBinTypeEither(binaryen.i32, binaryen.f64)],
+			]);
+			return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
 		});
 	});
 
