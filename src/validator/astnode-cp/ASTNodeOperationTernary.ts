@@ -1,14 +1,17 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	Builder,
+	type Builder,
 	TypeError01,
 } from '../../index.js';
-import {throw_expression} from '../../lib/index.js';
 import {
-	CPConfig,
+	throw_expression,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeSupertype} from '../utils-private.js';
@@ -35,20 +38,18 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operand1.shouldFloat() || this.operand2.shouldFloat();
-	}
-
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionCond {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionCond(
-			this.operand0.build(builder, false),
-			this.operand1.build(builder, tofloat),
-			this.operand2.build(builder, tofloat),
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.if(
+			this.operand0.build(builder),
+			...ASTNodeOperation.coerceOperands(builder, this.operand1, this.operand2),
 		);
 	}
 
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
 		const t0: TYPE.Type = this.operand0.type();
 		const t1: TYPE.Type = this.operand1.type();
 		const t2: TYPE.Type = this.operand2.type();
@@ -62,7 +63,8 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			: throw_expression(new TypeError01(this));
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;

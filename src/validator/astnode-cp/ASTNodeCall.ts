@@ -1,22 +1,25 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	Builder,
-	TypeError03,
+	type Builder,
+	type TypeError03,
 	TypeError05,
 	TypeError06,
 } from '../../index.js';
-import {throw_expression} from '../../lib/index.js';
 import {
-	CPConfig,
+	throw_expression,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeFamily} from '../utils-private.js';
 import {
-	ArgCount,
+	type ArgCount,
 	ValidFunctionName,
 	invalidFunctionName,
 } from './utils-private.js';
@@ -52,17 +55,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 		], (arg) => arg.varCheck());
 	}
 
-	public override shouldFloat(): boolean {
-		return false;
-	}
-
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): binaryen.ExpressionRef {
 		builder;
-		to_float;
-		throw '`ASTNodeCall#build_do` not yet supported.';
+		throw '`ASTNodeCall#build` not yet supported.';
 	}
 
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
 		if (!(this.base instanceof ASTNodeVariable)) {
 			throw new TypeError05(this.base.type(), this.base);
 		}
@@ -148,7 +150,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const argvalue: OBJ.Object | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
 			? this.exprargs[0].fold()
 			: undefined;

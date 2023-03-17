@@ -1,3 +1,5 @@
+import type binaryen from 'binaryen';
+import {strictEqual} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
@@ -17,7 +19,8 @@ import {Primitive} from './Primitive.js';
  */
 export class Null extends Primitive {
 	/** The Counterpoint Language Value `null`. */
-	public static readonly NULL: Null = new Null();
+	public static readonly NULL = new Null();
+
 	/** A Unit Type containing only the Counterpoint Language Value `null`. */
 	public static get NULLTYPE(): TYPE.TypeUnit<Null> {
 		return Null.NULL.toType();
@@ -36,7 +39,12 @@ export class Null extends Primitive {
 		return false;
 	}
 
-	protected override identical_helper(value: CPObject): boolean {
+	@strictEqual
+	public override identical(value: CPObject): boolean {
 		return value instanceof Null;
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.i32.const(0);
 	}
 }

@@ -9,8 +9,11 @@ import {Type} from './Type.js';
  */
 export class TypeInteger extends Type {
 	public static readonly INSTANCE = new TypeInteger();
+
+
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
+
 	private constructor() {
 		super(false, new Set([OBJ.Integer.ZERO]));
 	}

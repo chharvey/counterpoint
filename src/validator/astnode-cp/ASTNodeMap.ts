@@ -3,12 +3,13 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	Builder,
 } from '../../index.js';
-import type {NonemptyArray} from '../../lib/index.js';
 import {
-	CPConfig,
+	type NonemptyArray,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
@@ -33,12 +34,9 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		super(start_node, children);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeMap#build_do not yet supported.';
-	}
-
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
 		return new TYPE.TypeMap(
 			TYPE.Type.unionAll(this.children.map((c) => c.antecedent.type())),
 			TYPE.Type.unionAll(this.children.map((c) => c.consequent.type())),
@@ -46,7 +44,8 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		);
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const cases: ReadonlyMap<OBJ.Object | null, OBJ.Object | null> = new Map(this.children.map((c) => [
 			c.antecedent.fold(),
 			c.consequent.fold(),
@@ -56,7 +55,8 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 			: new OBJ.Map(cases as ReadonlyMap<OBJ.Object, OBJ.Object>);
 	}
 
-	protected override assignTo_do(assignee: TYPE.Type): boolean {
+	@ASTNodeCollectionLiteral.assignToDeco
+	public override assignTo(assignee: TYPE.Type): boolean {
 		if (TYPE.TypeMap.isUnitType(assignee) || assignee instanceof TYPE.TypeMap) {
 			const assignee_type_map: TYPE.TypeMap = (TYPE.TypeMap.isUnitType(assignee))
 				? assignee.value.toType()

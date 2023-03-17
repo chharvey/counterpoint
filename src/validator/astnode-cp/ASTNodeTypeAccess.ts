@@ -1,15 +1,16 @@
 import * as assert from 'assert';
 import {
-	OBJ,
+	type OBJ,
 	TYPE,
 } from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import {Operator} from '../Operator.js';
-import type {ASTNodeKey} from './ASTNodeKey.js';
+import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndexType} from './ASTNodeIndexType.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -30,7 +31,8 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		super(start_node, {}, [base, accessor]);
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.eval();
 		if (base_type instanceof TYPE.TypeIntersection || base_type instanceof TYPE.TypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();
@@ -41,7 +43,8 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 				? base_type.value.toType()
 				: base_type as TYPE.TypeTuple;
 			return base_type_tuple.get(accessor_type.value, Operator.DOT, this.accessor);
-		} else /* (this.accessor instanceof ASTNodeKey) */ {
+		} else {
+			assert.ok(this.accessor instanceof ASTNodeKey, `Expected ${ this.accessor } to be an \`ASTNodeKey\`.`);
 			const base_type_record: TYPE.TypeRecord = (TYPE.TypeRecord.isUnitType(base_type))
 				? base_type.value.toType()
 				: base_type as TYPE.TypeRecord;

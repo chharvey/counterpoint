@@ -1,3 +1,4 @@
+import {strictEqual} from '../../lib/index.js';
 import type {Object as CPObject} from './Object.js';
 import {Tuple} from './Tuple.js';
 
@@ -8,7 +9,8 @@ export class Vect<T extends CPObject = CPObject> extends Tuple<T> {
 		return `\\${ super.toString() }`;
 	}
 
-	protected override identical_helper(value: CPObject): boolean {
+	@strictEqual
+	public override identical(value: CPObject): boolean {
 		return value instanceof Vect && this.equalSubsteps(value);
 	}
 }

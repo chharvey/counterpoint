@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import Parser, {
 	Query,
-	QueryCapture,
-	SyntaxNode,
+	type QueryCapture,
+	type SyntaxNode,
 } from 'tree-sitter';
 import Counterpoint from 'tree-sitter-counterpoint';
 import {
@@ -14,7 +14,7 @@ import {
 
 describe('Decorator', () => {
 	describe('#decorateTS', () => {
-		const parser: Parser = new Parser();
+		const parser = new Parser();
 		parser.setLanguage(Counterpoint);
 		function captureParseNode(source: string, query: string): SyntaxNode {
 			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(parser.parse(source).rootNode);
@@ -373,7 +373,7 @@ describe('Decorator', () => {
 				a = b;
 				% (statement_assignment)
 			`]],
-		]).forEach(([klass, text], description) => (description.slice(0, 5) === 'skip:' ? specify.skip : specify)(description, () => {
+		]).forEach(([klass, text], description) => (description.slice(0, 5) === 'only:' ? specify.only : description.slice(0, 5) === 'skip:' ? specify.skip : specify)(description, () => {
 			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
 			return assert.ok(
 				DECORATOR.decorateTS(parsenode) instanceof klass,

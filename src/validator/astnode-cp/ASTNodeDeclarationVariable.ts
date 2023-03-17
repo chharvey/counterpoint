@@ -1,14 +1,13 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	OBJ,
-	TYPE,
-	INST,
-	Builder,
+	type TYPE,
+	type Builder,
 	AssignmentError01,
 } from '../../index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {SymbolStructureVar} from '../index.js';
@@ -32,7 +31,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		public  readonly unfixed:  boolean,
 		private readonly assignee: ASTNodeVariable,
 		private readonly typenode: ASTNodeType,
-		private readonly assigned: ASTNodeExpression,
+		public readonly assigned:  ASTNodeExpression,
 	) {
 		super(start_node, {unfixed}, [assignee, typenode, assigned]);
 	}
@@ -58,11 +57,19 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 	}
 
-	public override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
-		const value: OBJ.Object | null = this.assignee.fold();
-		return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
-			? new INST.InstructionNone()
-			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat));
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		if (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold()) {
+			return builder.module.nop();
+		} else {
+			const assignee_type: TYPE.Type = this.typenode.eval();
+			const local = builder.addLocal(this.assignee.id, assignee_type.binType())[0].getLocalInfo(this.assignee.id)!;
+			return builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+				builder.module,
+				assignee_type,
+				this.assigned.type(),
+				this.assigned.build(builder),
+				this.validator.config.compilerOptions.intCoercion,
+			));
+		}
 	}
 }

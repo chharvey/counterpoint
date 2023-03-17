@@ -1,6 +1,10 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
-import type {CodeUnit} from '../../lib/index.js';
+import {
+	type CodeUnit,
+	strictEqual,
+} from '../../lib/index.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
@@ -27,7 +31,8 @@ class CPString extends Primitive {
 		return `'${ utf8.decode(String.fromCodePoint(...this.codeunits)) }'`;
 	}
 
-	protected override identical_helper(value: CPObject): boolean {
+	@strictEqual
+	public override identical(value: CPObject): boolean {
 		return value instanceof CPString && this.isEqualTo(value as this, (this_, that_) => (
 			xjs.Array.is<CodeUnit>(this_.codeunits, that_.codeunits)
 		));
@@ -35,6 +40,11 @@ class CPString extends Primitive {
 
 	public override toCPString(): CPString {
 		return this;
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		mod;
+		throw '`SolidString#build` not yet supported.';
 	}
 
 	/**

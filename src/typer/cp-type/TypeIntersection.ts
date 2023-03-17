@@ -1,4 +1,5 @@
 import * as xjs from 'extrajs';
+import {strictEqual} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
 import {
@@ -41,7 +42,8 @@ export class TypeIntersection extends Type {
 		return this.left.includes(v) && this.right.includes(v);
 	}
 
-	protected override union_do(t: Type): Type {
+	@Type.unionDeco
+	public override union(t: Type): Type {
 		/**
 		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
 		 *     |  (B  & C) \| A == (B \| A)  & (C \| A)
@@ -49,7 +51,9 @@ export class TypeIntersection extends Type {
 		return this.left.union(t).intersect(this.right.union(t));
 	}
 
-	protected override isSubtypeOf_do(t: Type): boolean {
+	@strictEqual
+	@Type.subtypeDeco
+	public override isSubtypeOf(t: Type): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) {
 			return true;
@@ -58,7 +62,7 @@ export class TypeIntersection extends Type {
 		if (t.equals(this.left) || t.equals(this.right)) {
 			return true;
 		}
-		return super.isSubtypeOf_do(t);
+		return super.isSubtypeOf(t);
 	}
 
 	public override mutableOf(): TypeIntersection {

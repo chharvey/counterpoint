@@ -1,9 +1,11 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
-	TypeEntry,
+	type TypeEntry,
 	OBJ,
 	TYPE,
-} from '../../src/typer/index.js';
+	Builder,
+} from '../../src/index.js';
 import {
 	typeUnitInt,
 	typeUnitFloat,
@@ -40,12 +42,12 @@ describe('Type', () => {
 		TYPE.FLOAT,
 		TYPE.STR,
 	];
-	const t0: TYPE.TypeInterface = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
+	const t0 = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 		['foo', TYPE.OBJ],
 		['bar', TYPE.NULL],
 		['diz', TYPE.BOOL],
 	]));
-	const t1: TYPE.TypeInterface = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
+	const t1 = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 		['foo', TYPE.OBJ],
 		['qux', TYPE.INT.union(TYPE.FLOAT)],
 		['diz', TYPE.STR],
@@ -854,6 +856,36 @@ describe('Type', () => {
 	});
 
 
+	describe('#binType', () => {
+		it('returns a binaryen type for simple types.', () => {
+			const tests = new Map<TYPE.Type, binaryen.Type>([
+				[TYPE.NEVER, binaryen.unreachable],
+				[TYPE.VOID,  binaryen.none],
+				[TYPE.NULL,  binaryen.i32],
+				[TYPE.BOOL,  binaryen.i32],
+				[TYPE.INT,   binaryen.i32],
+				[TYPE.FLOAT, binaryen.f64],
+			]);
+			return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
+		});
+		it('returns `Either<Left, Right>` monads for unions.', () => {
+			const tests = new Map<TYPE.Type, binaryen.Type>([
+				[TYPE.NULL.union(TYPE.BOOL),  Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.BOOL.union(TYPE.INT),   Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.NULL.union(TYPE.INT),   Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.VOID.union(TYPE.NULL),  Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.VOID.union(TYPE.BOOL),  Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.VOID.union(TYPE.INT),   Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.VOID.union(TYPE.FLOAT), Builder.createBinTypeEither(binaryen.f64, binaryen.f64)],
+				[TYPE.NULL.union(TYPE.FLOAT), Builder.createBinTypeEither(binaryen.i32, binaryen.f64)],
+				[TYPE.BOOL.union(TYPE.FLOAT), Builder.createBinTypeEither(binaryen.i32, binaryen.f64)],
+				[TYPE.INT .union(TYPE.FLOAT), Builder.createBinTypeEither(binaryen.i32, binaryen.f64)],
+			]);
+			return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
+		});
+	});
+
+
 	describe('TypeIntersection', () => {
 		describe('#combineTuplesOrRecords', () => {
 			context('with tuple operands.', () => {
@@ -993,7 +1025,7 @@ describe('Type', () => {
 					]);
 					const union: TYPE.Type = left.union(right);
 					assert.ok(union instanceof TYPE.TypeUnion);
-					const v: OBJ.Tuple<OBJ.Boolean> = new OBJ.Tuple<OBJ.Boolean>([OBJ.Boolean.TRUE, OBJ.Boolean.TRUE]);
+					const v = new OBJ.Tuple<OBJ.Boolean>([OBJ.Boolean.TRUE, OBJ.Boolean.TRUE]);
 					assert.ok(union.combineTuplesOrRecords().includes(v), `
 						let x: [bool | int, int | bool] = [true, true]; % ok
 					`);
@@ -1054,7 +1086,7 @@ describe('Type', () => {
 					]));
 					const union: TYPE.Type = left.union(right);
 					assert.ok(union instanceof TYPE.TypeUnion);
-					const v: OBJ.Record<OBJ.Boolean> = new OBJ.Record<OBJ.Boolean>(new Map<bigint, OBJ.Boolean>([
+					const v = new OBJ.Record<OBJ.Boolean>(new Map<bigint, OBJ.Boolean>([
 						[0x100n, OBJ.Boolean.TRUE],
 						[0x101n, OBJ.Boolean.TRUE],
 					]));

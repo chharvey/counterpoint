@@ -1,11 +1,11 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
-	INST,
-	Builder,
+	type Builder,
 	AssignmentError01,
 } from '../../index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {SymbolStructureType} from '../index.js';
@@ -46,7 +46,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
-	public override build(_builder: Builder): INST.InstructionNone {
-		return new INST.InstructionNone();
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.nop();
 	}
 }

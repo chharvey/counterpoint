@@ -1,7 +1,5 @@
-import type {
-	INST,
-	Builder,
-} from '../../index.js';
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
 
 
@@ -18,5 +16,5 @@ export interface Buildable extends ASTNodeCP {
 	 * @param builder the builder to direct
 	 * @return the directions to print
 	 */
-	build(builder: Builder): INST.Instruction;
+	build(builder: Builder): binaryen.ExpressionRef | binaryen.Module;
 }

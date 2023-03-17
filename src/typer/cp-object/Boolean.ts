@@ -1,3 +1,5 @@
+import type binaryen from 'binaryen';
+import {strictEqual} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
@@ -12,9 +14,10 @@ import {Primitive} from './Primitive.js';
  */
 class CPBoolean extends Primitive {
 	/** The Counterpoint Language Value `false`. */
-	public static readonly FALSE: CPBoolean = new CPBoolean(false);
+	public static readonly FALSE = new CPBoolean(false);
 	/** The Counterpoint Language Value `true`. */
-	public static readonly TRUE: CPBoolean = new CPBoolean(true);
+	public static readonly TRUE = new CPBoolean(true);
+
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
 	public static get FALSETYPE(): TYPE.TypeUnit<CPBoolean> {
 		return CPBoolean.FALSE.toType();
@@ -50,8 +53,13 @@ class CPBoolean extends Primitive {
 		return this.data;
 	}
 
-	protected override identical_helper(value: CPObject): boolean {
+	@strictEqual
+	public override identical(value: CPObject): boolean {
 		return value instanceof CPBoolean && this.data === value.data;
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.i32.const((this.isTruthy) ? 1 : 0);
 	}
 }
 export {CPBoolean as Boolean};

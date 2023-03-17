@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {Object as CPObject} from './Object.js';
 
 
@@ -10,4 +11,8 @@ import {Object as CPObject} from './Object.js';
  * - Map
  */
 export abstract class Collection extends CPObject {
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		mod;
+		throw new Error('`Collection#build` not yet supported.');
+	}
 }

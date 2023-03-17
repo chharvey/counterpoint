@@ -1,13 +1,14 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
 	AST,
-	SymbolStructure,
+	type SymbolStructure,
 	SymbolStructureType,
 	TYPE,
-	INST,
 	Builder,
 	AssignmentError01,
 } from '../../../src/index.js';
+import {assertEqualBins} from '../../assert-helpers.js';
 
 
 
@@ -53,23 +54,17 @@ describe('ASTNodeDeclarationType', () => {
 
 
 	describe('#build', () => {
-		it('always returns InstructionNone.', () => {
+		it('always returns `(nop)`.', () => {
 			const src: string = `
 				type T = int;
 				type U = T | float;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			const builder: Builder = new Builder(src);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
-					new INST.InstructionNone(),
-					new INST.InstructionNone(),
-				],
-			);
+			const builder = new Builder(src);
+			return xjs.Array.forEachAggregated(goal.children, (stmt) => {
+				assert.ok(stmt instanceof AST.ASTNodeDeclarationType);
+				return assertEqualBins(stmt.build(builder), builder.module.nop());
+			});
 		});
 	});
 });

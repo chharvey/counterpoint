@@ -1,5 +1,9 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Keys} from '../../lib/index.js';
+import {
+	type Keys,
+	strictEqual,
+} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
 import {String as CPString} from './index.js';
 
@@ -20,6 +24,22 @@ const eq_memo_comparator = (memokey1: Keys<typeof eq_memo>, memokey2: Keys<typeo
  */
 abstract class CPObject {
 	/**
+	 * Decorator for {@link CPObject#equal} method and any overrides.
+	 * Performs the Equality algorithm — returns whether two CPObjects (Counterpoint Language Values)
+	 * are equal by some definition.
+	 * @implements MethodDecorator<CPObject, (this: CPObject, value: CPObject) => boolean>
+	 */
+	protected static equalsDeco(
+		method:   (this: CPObject, value: CPObject) => boolean,
+		_context: ClassMethodDecoratorContext<CPObject, typeof method>,
+	): typeof method {
+		return function (value) {
+			return this.identical(value) || method.call(this, value);
+		};
+	}
+
+
+	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
 	 */
@@ -39,18 +59,9 @@ abstract class CPObject {
 	 * Is this value the same exact object as the argument?
 	 * @param value the object to compare
 	 * @returns are the objects identically the same?
-	 * @final
 	 */
-	public identical(value: CPObject): boolean {
-		return this === value || this.identical_helper(value);
-	}
-
-	/**
-	 * Helper method for {@link CPObject#identical}. Override as needed.
-	 * @param _value the object to compare
-	 * @returns are the objects identically the same?
-	 */
-	protected identical_helper(_value: CPObject): boolean {
+	@strictEqual
+	public identical(_value: CPObject): boolean {
 		return false;
 	}
 
@@ -59,18 +70,10 @@ abstract class CPObject {
 	 * If {@link CPObject#identical} returns `true`, this method will return `true`.
 	 * @param value the object to compare
 	 * @returns are the objects equal?
-	 * @final
 	 */
-	public equal(value: CPObject): boolean {
-		return this.identical(value) || this.equal_helper(value);
-	}
-
-	/**
-	 * Helper method for {@link CPObject#equal}. Override as needed.
-	 * @param _value the object to compare
-	 * @returns are the objects equal?
-	 */
-	protected equal_helper(_value: CPObject): boolean {
+	@strictEqual
+	@CPObject.equalsDeco
+	public equal(_value: CPObject): boolean {
 		return false;
 	}
 
@@ -108,5 +111,12 @@ abstract class CPObject {
 	 * @return a Type that contains this Object
 	 */
 	public abstract toType(): TYPE.Type;
+
+	/**
+	 * Create an ExpressionRef that implements this object.
+	 * @param mod the module to build from
+	 * @return the directions to print
+	 */
+	public abstract build(mod: binaryen.Module): binaryen.ExpressionRef;
 }
 export {CPObject as Object};

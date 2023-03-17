@@ -1,13 +1,14 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
-	OBJ,
+	type OBJ,
 	TYPE,
-	INST,
-	Builder,
+	type Builder,
 	TypeError03,
 } from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeFamily} from '../utils-private.js';
@@ -24,7 +25,6 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		return expression;
 	}
 
-	private typed_?: TYPE.Type;
 	public constructor(
 		start_node: SyntaxNodeFamily<'expression_claim', ['variable']>,
 		private readonly claimed_type: ASTNodeType,
@@ -33,24 +33,15 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		super(start_node, {}, [claimed_type, operand]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.FLOAT);
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return this.operand.build(builder);
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return this.operand.build(builder, tofloat);
-	}
-
-	public override type(): TYPE.Type { // WARNING: overriding a final method!
-		// TODO: use JS decorators for memoizing this method
-		if (!this.typed_) {
-			this.typed_ = this.type_do();
-		}
-		return this.typed_;
-	}
-
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	// Explicitly omitting `@ASTNodeExpression.typeDeco` because we don’t want to include folding logic.
+	public override type(): TYPE.Type {
 		const claimed_type:  TYPE.Type = this.claimed_type.eval();
 		const computed_type: TYPE.Type = this.operand.type();
 		const is_intersection_empty:         boolean = claimed_type.intersect(computed_type).isBottomType;
@@ -72,7 +63,8 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		return claimed_type;
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		return this.operand.fold();
 	}
 }

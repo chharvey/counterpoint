@@ -5,14 +5,17 @@ import {
 	TypeError05,
 	TypeError06,
 } from '../../index.js';
-import type {NonemptyArray} from '../../lib/index.js';
 import {
-	CPConfig,
+	type NonemptyArray,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import {
-	ArgCount,
+	type ArgCount,
 	ValidFunctionName,
 	invalidFunctionName,
 } from './utils-private.js';
@@ -42,7 +45,8 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
 			throw new TypeError05(this.base.eval(), this.base);
 		}

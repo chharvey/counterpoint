@@ -1,10 +1,11 @@
 import * as xjs from 'extrajs';
+import {strictEqual} from '../../lib/index.js';
 import {TYPE} from '../index.js';
 import {
 	languageValuesIdentical,
 	language_values_equal,
 } from '../utils-private.js';
-import type {Object as CPObject} from './Object.js';
+import {Object as CPObject} from './Object.js';
 import {Boolean as CPBoolean} from './Boolean.js';
 import {Collection} from './Collection.js';
 
@@ -29,7 +30,9 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 	}
 
 	/** @final */
-	protected override equal_helper(value: CPObject): boolean {
+	@strictEqual
+	@CPObject.equalsDeco
+	public override equal(value: CPObject): boolean {
 		return value instanceof CPSet && this.isEqualTo(value as this, (this_, that_) => (
 			xjs.Set.is<T>(this_.elements, that_.elements, language_values_equal)
 		));
