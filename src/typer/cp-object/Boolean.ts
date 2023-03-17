@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {strictEqual} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
 import type {Object as CPObject} from './Object.js';
@@ -55,6 +56,10 @@ class CPBoolean extends Primitive {
 	@strictEqual
 	public override identical(value: CPObject): boolean {
 		return value instanceof CPBoolean && this.data === value.data;
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.i32.const((this.isTruthy) ? 1 : 0);
 	}
 }
 export {CPBoolean as Boolean};

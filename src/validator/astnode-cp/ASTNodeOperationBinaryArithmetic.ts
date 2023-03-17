@@ -1,9 +1,9 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	INST,
 	type Builder,
 	TypeError01,
 	NanError01,
@@ -29,6 +29,7 @@ import {
 	neitherFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -51,12 +52,26 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopArithmetic {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionBinopArithmetic(
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		const args:    readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1);
+		const bintype: binaryen.Type                                             = this.type().binType();
+		return (
+			(this.operator === Operator.EXP) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
+				[binaryen.i32, builder.module.call('exp', [...args], binaryen.i32)],
+				[binaryen.f64, builder.module.unreachable()], // TODO: support runtime exponentiation for floats
+			]).get(bintype)! :
+			(this.operator === Operator.DIV) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
+				[binaryen.i32, builder.module.i32.div_s (...args)],
+				[binaryen.f64, builder.module.f64.div   (...args)],
+			]).get(bintype)! :
+			builder.module[new Map<binaryen.Type, 'i32' | 'f64'>([
+				[binaryen.i32, 'i32'],
+				[binaryen.f64, 'f64'],
+			]).get(bintype)!][new Map<Operator, 'mul' | 'add' | 'sub'>([
+				[Operator.MUL, 'mul'],
+				[Operator.ADD, 'add'],
+				[Operator.SUB, 'sub'],
+			]).get(this.operator)!](...args)
 		);
 	}
 

@@ -1,9 +1,9 @@
+import type binaryen from 'binaryen';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	OBJ,
 	type TYPE,
-	INST,
 } from '../src/index.js';
 
 
@@ -54,9 +54,16 @@ export function typeUnitStr(x: string): TYPE.TypeUnit<OBJ.String> {
 	return new OBJ.String(x).toType();
 }
 
-export function instructionConstInt(x: bigint): INST.InstructionConst {
-	return new INST.InstructionConst(new OBJ.Integer(x));
+export function buildConstInt(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
+	return (
+		(x === 0n) ? OBJ.Integer.ZERO :
+		(x === 1n) ? OBJ.Integer.UNIT :
+		new OBJ.Integer(x)
+	).build(mod);
 }
-export function instructionConstFloat(x: number): INST.InstructionConst {
-	return new INST.InstructionConst(new OBJ.Float(x));
+export function buildConstFloat(x: number, mod: binaryen.Module): binaryen.ExpressionRef {
+	return new OBJ.Float(x).build(mod);
+}
+export function buildConvert(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
+	return mod.f64.convert_u.i32(buildConstInt(x, mod));
 }

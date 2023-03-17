@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {VoidError01} from '../../index.js';
 import {
@@ -41,10 +42,14 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 		));
 	}
 
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.tuple.make(this.items.map((item) => item.build(mod)));
+	}
+
 	/** @final */
 	public get(index: Integer, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | Null {
 		const n: number = this.items.length;
-		const i: number = Number(index.toNumeric());
+		const i: number = index.toNumber();
 		return (
 			(-n <= i && i < 0) ? this.items[i + n] :
 			(0  <= i && i < n) ? this.items[i] :

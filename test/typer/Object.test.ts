@@ -1,5 +1,11 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {OBJ} from '../../src/index.js';
+import {assertEqualBins} from '../assert-helpers.js';
+import {
+	buildConstInt,
+	buildConstFloat,
+} from '../helpers.js';
 
 
 
@@ -28,6 +34,19 @@ describe('Object', () => {
 					new OBJ.String('fire'),
 					new OBJ.String('wind'),
 				]))));
+			});
+		});
+	});
+
+
+	describe('#build', () => {
+		describe('SolidTuple', () => {
+			it('returns `(tuple.make)`.', () => {
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					new OBJ.Tuple([OBJ.Integer.UNIT, new OBJ.Float(2.0)]).build(mod),
+					mod.tuple.make([buildConstInt(1n, mod), buildConstFloat(2.0, mod)]),
+				);
 			});
 		});
 	});
@@ -96,5 +115,54 @@ describe('Object', () => {
 				);
 			});
 		});
+	});
+});
+
+
+
+describe('Integer', () => {
+	describe('#build', () => {
+		it('ok.', () => {
+			const data: bigint[] = [
+				42n + -420n,
+				...[
+					 126 /  3,
+					-126 /  3,
+					 126 / -3,
+					-126 / -3,
+					 200 /  3,
+					 200 / -3,
+					-200 /  3,
+					-200 / -3,
+				].map((x) => BigInt(Math.trunc(x))),
+				(42n ** 2n * 420n) % (2n ** 16n),
+				(-5n) ** (2n * 3n),
+			];
+			const mod = new binaryen.Module();
+			return assertEqualBins(
+				data.map((x) => new OBJ.Integer(x).build(mod)),
+				data.map((x) => buildConstInt(x, mod)),
+			);
+		});
+	});
+});
+
+
+
+describe('Float64', () => {
+	specify('#build', () => {
+		const data: number[] = [
+			/* eslint-disable array-element-newline */
+			55, -55, 33, -33, 2.007, -2.007,
+			91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+			-0, -0, 6.8, 6.8, 0, -0,
+			3.0 - 2.7,
+			/* eslint-enable array-element-newline */
+		];
+		const mod = new binaryen.Module();
+		return assertEqualBins(
+			data.map((x) => new OBJ.Float(x).build(mod)),
+			data.map((x) => buildConstFloat(x, mod)),
+		);
 	});
 });

@@ -1,10 +1,10 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	type Builder,
+	Builder,
 	TypeError01,
 	NanError01,
 } from '../../index.js';
@@ -36,23 +36,51 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		private readonly operator: ValidOperatorUnary,
-		private readonly operand:  ASTNodeExpression,
+		public  readonly operand:  ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operand.shouldFloat();
+	/**
+	 * Return an instruction performing the operation on the argument.
+	 * @param mod   the binaryen module
+	 * @param type_ the compile-time type of the operand
+	 * @param arg   the operand
+	 * @return      an instruction that performs the operation at runtime
+	 */
+	private operate(mod: binaryen.Module, type_: TYPE.Type, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
+		assert.strictEqual(bintype, type_.binType());
+		if (type_ instanceof TYPE.TypeUnion) {
+			// assert: `arg` is equivalent to a result of `Builder.createBinEither()`
+			return Builder.createBinEither(
+				mod,
+				mod.tuple.extract(arg, 0),
+				this.operate(mod, type_.left,  mod.tuple.extract(arg, 1)),
+				this.operate(mod, type_.right, mod.tuple.extract(arg, 2)),
+			);
+		} else {
+			ASTNodeOperation.expectIntOrFloat(bintype);
+			return (this.operator === Operator.NEG && bintype === binaryen.f64)
+				? mod.f64.neg(arg)
+				: mod.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
+					[binaryen.i32, new Map<Operator, string>([
+						[Operator.NOT, 'inot'],
+						[Operator.EMP, 'iemp'],
+						[Operator.NEG, 'neg'],
+					])],
+					[binaryen.f64, new Map<Operator, string>([
+						[Operator.NOT, 'fnot'],
+						[Operator.EMP, 'femp'],
+					])],
+				]).get(bintype)!.get(this.operator)!, [arg], binaryen.i32);
+		}
 	}
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionUnop {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionUnop(
-			this.operator,
-			this.operand.build(builder, tofloat),
-		);
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return this.operate(builder.module, this.operand.type(), this.operand.build(builder));
 	}
 
 	@memoizeMethod

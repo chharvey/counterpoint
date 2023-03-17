@@ -1,8 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	INST,
 	type Builder,
 	TypeError01,
 } from '../../index.js';
@@ -38,18 +38,12 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operand1.shouldFloat() || this.operand2.shouldFloat();
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionCond {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionCond(
-			this.operand0.build(builder, false),
-			this.operand1.build(builder, tofloat),
-			this.operand2.build(builder, tofloat),
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.if(
+			this.operand0.build(builder),
+			...ASTNodeOperation.coerceOperands(builder, this.operand1, this.operand2),
 		);
 	}
 

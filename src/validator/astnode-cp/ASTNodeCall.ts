@@ -1,9 +1,9 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type INST,
 	type Builder,
 	type TypeError03,
 	TypeError05,
@@ -55,13 +55,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 		], (arg) => arg.varCheck());
 	}
 
-	public override shouldFloat(): boolean {
-		return false;
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
+	public override build(builder: Builder): binaryen.ExpressionRef {
 		builder;
 		throw '`ASTNodeCall#build` not yet supported.';
 	}

@@ -1,7 +1,7 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
-	TYPE,
-	INST,
+	type TYPE,
 	type Builder,
 	AssignmentError10,
 	MutabilityError01,
@@ -31,7 +31,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	public constructor(
 		start_node: SyntaxNodeType<'statement_assignment'>,
 		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		private readonly assigned: ASTNodeExpression,
+		public readonly assigned:  ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
@@ -67,11 +67,18 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		}
 	}
 
-	public override build(builder: Builder): INST.InstructionStatement {
-		const tofloat: boolean = this.assignee.type().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
-		return new INST.InstructionStatement(
-			builder.stmtCount,
-			new INST.InstructionGlobalSet((this.assignee as ASTNodeVariable).id, this.assigned.build(builder, tofloat)),
-		);
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		const id: bigint = (this.assignee as ASTNodeVariable).id;
+		const local = builder.getLocalInfo(id);
+		if (!local) {
+			throw new ReferenceError(`Variable with id ${ id } not found.`);
+		}
+		return builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+			builder.module,
+			this.assignee.type(),
+			this.assigned.type(),
+			this.assigned.build(builder),
+			this.validator.config.compilerOptions.intCoercion,
+		));
 	}
 }

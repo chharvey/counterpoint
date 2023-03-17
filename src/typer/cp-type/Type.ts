@@ -1,13 +1,26 @@
+import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {strictEqual} from '../../lib/index.js';
+import {Builder} from '../../index.js';
+import {
+	throw_expression,
+	memoizeMethod,
+	strictEqual,
+} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import type * as OBJ from '../cp-object/index.js';
+import * as OBJ from '../cp-object/index.js';
 import {
 	TypeIntersection,
 	TypeUnion,
 	TypeDifference,
+	TypeUnit,
 	NEVER,
+	VOID,
 	UNKNOWN,
+	NULL,
+	BOOL,
+	INT,
+	FLOAT,
 } from './index.js';
 
 
@@ -311,6 +324,51 @@ export abstract class Type {
 
 	public immutableOf(): Type {
 		return this;
+	}
+
+	/**
+	 * Return a corresponding Binaryen type.
+	 * @return the best match for a Binaryen type equivalent to this type
+	 * @final
+	 */
+	@memoizeMethod
+	public binType(): binaryen.Type {
+		const is_bin_int: boolean = (
+			   this.equals(NULL)
+			|| this.equals(BOOL) || this.equals(OBJ.Boolean.FALSETYPE) || this.equals(OBJ.Boolean.TRUETYPE)
+			|| this.equals(INT) || (this instanceof TypeUnit && this.value instanceof OBJ.Integer)
+		);
+		const is_bin_float: boolean = this.equals(FLOAT) || (this instanceof TypeUnit && this.value instanceof OBJ.Float);
+		return (
+			(this.isBottomType) ? binaryen.unreachable :
+			(this.equals(VOID)) ? binaryen.none        :
+			(is_bin_int)        ? binaryen.i32         :
+			(is_bin_float)      ? binaryen.f64         :
+			(this instanceof TypeUnion) ? ((left_type: binaryen.Type, right_type: binaryen.Type): binaryen.Type => {
+				assert.notStrictEqual(left_type,  binaryen.unreachable);
+				assert.notStrictEqual(right_type, binaryen.unreachable);
+				if (left_type === binaryen.none) {
+					left_type = right_type;
+				}
+				if (right_type === binaryen.none) {
+					right_type = left_type;
+				}
+				return Builder.createBinTypeEither(left_type, right_type);
+			})(this.left.binType(), this.right.binType()) :
+			throw_expression(new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`))
+		);
+	}
+
+	/**
+	 * @return a default Binaryen value given this type
+	 */
+	public defaultBinValue(mod: binaryen.Module): binaryen.ExpressionRef {
+		return (
+			(this.binType() === binaryen.i32) ? mod.i32.const(0) :
+			(this.binType() === binaryen.f64) ? mod.f64.const(0) :
+			(this instanceof TypeUnion)       ? Builder.createBinEither(mod, false, this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)) :
+			throw_expression(new TypeError(`Could not determine a default value for \`${ this }\`.`))
+		);
 	}
 }
 

@@ -1,8 +1,6 @@
 import * as assert from 'assert';
-import {
-	type Builder,
-	INST,
-} from '../../index.js';
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -27,9 +25,9 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 
-	public override build(builder: Builder): INST.InstructionNone | INST.InstructionStatement {
+	public override build(builder: Builder): binaryen.ExpressionRef {
 		return (this.expr)
-			? new INST.InstructionStatement(builder.stmtCount, this.expr.build(builder))
-			: new INST.InstructionNone();
+			? builder.module.drop(this.expr.build(builder))
+			: builder.module.nop();
 	}
 }
