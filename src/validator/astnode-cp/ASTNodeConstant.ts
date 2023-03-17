@@ -32,7 +32,6 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return expression;
 	}
 
-
 	private static keywordValue(source: string): OBJ.Null | OBJ.Boolean {
 		return (
 			(source === Keyword.NULL)  ? OBJ.Null.NULL     :
@@ -42,7 +41,6 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		);
 	}
 
-	private _value: OBJ.Primitive | null = null;
 
 	public constructor(start_node: (
 		| SyntaxNodeType<'integer'>
@@ -55,8 +53,25 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node);
 	}
 
-	private get value(): OBJ.Primitive {
-		return this._value ??= (
+	public override shouldFloat(): boolean {
+		return this.fold() instanceof OBJ.Float;
+	}
+
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(_builder: Builder, to_float: boolean = false): INST.InstructionConst {
+		return INST.InstructionConst.fromCPValue(this.fold(), to_float);
+	}
+
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
+		return this.fold().toType();
+	}
+
+	@memoizeMethod
+	public override fold(): OBJ.Primitive {
+		return (
 			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new OBJ.String(Validator.cookTokenTemplate(this.start_node.text)) :
 			(isSyntaxNodeType(this.start_node, 'integer'))                            ? valueOfTokenNumber(this.start_node.text, this.validator.config)   :
 			(assert.ok(
@@ -72,26 +87,5 @@ export class ASTNodeConstant extends ASTNodeExpression {
 				), new OBJ.String(Validator.cookTokenString(token.text, this.validator.config)))
 			))(this.start_node.children[0]))
 		);
-	}
-
-	public override shouldFloat(): boolean {
-		return this.value instanceof OBJ.Float;
-	}
-
-	@memoizeMethod
-	@ASTNodeExpression.buildDeco
-	public override build(_builder: Builder, to_float: boolean = false): INST.InstructionConst {
-		return INST.InstructionConst.fromCPValue(this.fold(), to_float);
-	}
-
-	@memoizeMethod
-	@ASTNodeExpression.typeDeco
-	public override type(): TYPE.Type {
-		return this.value.toType();
-	}
-
-	@memoizeMethod
-	public override fold(): OBJ.Object {
-		return this.value;
 	}
 }
