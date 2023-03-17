@@ -268,10 +268,8 @@ module.exports = grammar({
 			_$ => token(seq(
 				(!separator) ? SIGNED_DIGIT_SEQ_DEC : SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
 				'.',
-				seq(
-					         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR,
-					optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
-				),
+				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR,
+				optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
 			))
 		), 'separator'),
 

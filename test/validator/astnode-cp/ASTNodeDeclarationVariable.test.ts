@@ -332,7 +332,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				{id: 0x100n, type: binaryen.f64},
 				{id: 0x101n, type: Builder.createBinTypeEither(binaryen.f64, binaryen.i32)},
 			]);
-			const exprs: binaryen.ExpressionRef[] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder));
+			const exprs: readonly binaryen.ExpressionRef[] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder));
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build(builder)),
 				[
