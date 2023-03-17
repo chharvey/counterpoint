@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import Parser, {
 	Query,
-	QueryCapture,
-	SyntaxNode,
+	type QueryCapture,
+	type SyntaxNode,
 } from 'tree-sitter';
 import Counterpoint from 'tree-sitter-counterpoint';
 import {

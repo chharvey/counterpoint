@@ -4,7 +4,7 @@ import type {
 	Builder,
 } from '../../index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {ASTNodeGoal} from './index.js';

@@ -1,3 +1,4 @@
+import {strictEqual} from '../../lib/index.js';
 import type * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
 
@@ -27,7 +28,9 @@ export class TypeUnit<Value extends OBJ.Object = OBJ.Object> extends Type {
 		return this.value.identical(v);
 	}
 
-	protected override isSubtypeOf_do(t: Type): boolean {
+	@strictEqual
+	@Type.subtypeDeco
+	public override isSubtypeOf(t: Type): boolean {
 		return t.includes(this.value);
 	}
 }

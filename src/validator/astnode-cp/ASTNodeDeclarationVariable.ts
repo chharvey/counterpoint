@@ -1,14 +1,14 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	type OBJ,
 	TYPE,
 	INST,
-	Builder,
+	type Builder,
 	AssignmentError01,
 } from '../../index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {SymbolStructureVar} from '../index.js';

@@ -1,8 +1,8 @@
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 	OBJ,
-	TYPE,
+	type TYPE,
 	INST,
 } from '../src/index.js';
 
@@ -41,6 +41,7 @@ export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
 		intCoercion:     false,
 	},
 };
+
 
 
 export function typeUnitInt(x: bigint): TYPE.TypeUnit<OBJ.Integer> {

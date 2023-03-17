@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import {
 	INST,
-	Builder,
+	type Builder,
 	AssignmentError01,
 } from '../../index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {SymbolStructureType} from '../index.js';

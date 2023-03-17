@@ -4,15 +4,18 @@ import {
 	OBJ,
 	TYPE,
 } from '../../index.js';
-import {throw_expression} from '../../lib/index.js';
 import {
-	CPConfig,
+	throw_expression,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {Keyword} from '../../parser/index.js';
 import {Validator} from '../index.js';
 import {
-	SyntaxNodeType,
+	type SyntaxNodeType,
 	isSyntaxNodeType,
 } from '../utils-private.js';
 import {valueOfTokenNumber} from './utils-private.js';
@@ -43,8 +46,6 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	}
 
 
-	private _type: TYPE.Type | null = null;
-
 	public constructor(start_node: (
 		| SyntaxNodeType<'keyword_type'>
 		| SyntaxNodeType<'integer'>
@@ -53,8 +54,9 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		super(start_node);
 	}
 
-	protected override eval_do(): TYPE.Type {
-		return this._type ??= (
+	@memoizeMethod
+	public override eval(): TYPE.Type {
+		return (
 			(isSyntaxNodeType(this.start_node, 'keyword_type')) ?     ASTNodeTypeConstant.keywordType(this.start_node.text)                    :
 			(isSyntaxNodeType(this.start_node, 'integer'))      ?     valueOfTokenNumber(this.start_node.text, this.validator.config).toType() :
 			(assert.ok(

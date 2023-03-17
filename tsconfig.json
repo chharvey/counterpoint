@@ -13,15 +13,14 @@
 		"module": "node16",
 
 		// Emit
-		"importsNotUsedAsValues": "error",
-		"noEmitOnError":          true,
-		"outDir":                 "./build/",
+		"noEmitOnError": true,
+		"outDir":        "./build/",
 
 		// Interop Constraints
 		"allowSyntheticDefaultImports": true,
 
 		// Language and Environment
-		"target": "es2022",
+		"target":                  "es2022",
 		"useDefineForClassFields": false, // instance fields using `[[define]]` semantics don’t play nicely with constructor parameter fields
 
 		// Completeness

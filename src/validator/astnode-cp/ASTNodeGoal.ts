@@ -6,12 +6,12 @@ import {
 	ParseError01,
 } from '../../index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {
 	TS_PARSER,
-	Serializable,
+	type Serializable,
 	to_serializable,
 } from '../../parser/index.js';
 import {

@@ -26,13 +26,13 @@ export abstract class ASTNodeCP extends ASTNode {
 		node:          ASTNodeCP,
 		validator:     Validator,
 	): void {
-		const is_subtype: boolean = assigned_type.isSubtypeOf(assignee_type);
-		const treatIntAsSubtypeOfFloat: boolean = (
+		const is_subtype:                    boolean = assigned_type.isSubtypeOf(assignee_type);
+		const treat_int_as_subtype_of_float: boolean = (
 			   validator.config.compilerOptions.intCoercion
 			&& assigned_type.isSubtypeOf(TYPE.INT)
 			&& TYPE.FLOAT.isSubtypeOf(assignee_type)
 		);
-		if (!is_subtype && !treatIntAsSubtypeOfFloat) {
+		if (!is_subtype && !treat_int_as_subtype_of_float) {
 			throw new TypeError03(assigned_type, assignee_type, node);
 		}
 	}

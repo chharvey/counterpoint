@@ -2,20 +2,21 @@ import * as assert from 'assert';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	Builder,
+	type INST,
+	type Builder,
 	TypeError01,
 	TypeError02,
 	TypeError04,
 } from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import {
 	Operator,
-	ValidAccessOperator,
+	type ValidAccessOperator,
 } from '../Operator.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
@@ -47,24 +48,28 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionExpression {
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): INST.InstructionExpression {
 		builder;
 		throw 'ASTNodeAccess#build_do not yet supported.';
 	}
 
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.type();
 		if (base_type instanceof TYPE.TypeIntersection || base_type instanceof TYPE.TypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		return (
-			(this.optional && base_type.isSubtypeOf(TYPE.NULL)) ? base_type                                                       :
-			(this.optional && TYPE.NULL.isSubtypeOf(base_type)) ? this.type_do_do(base_type.subtract(TYPE.NULL)).union(TYPE.NULL) :
-			this.type_do_do(base_type)
+			(this.optional && base_type.isSubtypeOf(TYPE.NULL)) ? base_type                                                    :
+			(this.optional && TYPE.NULL.isSubtypeOf(base_type)) ? this.type_do(base_type.subtract(TYPE.NULL)).union(TYPE.NULL) :
+			this.type_do(base_type)
 		);
 	}
 
-	private type_do_do(base_type: TYPE.Type): TYPE.Type {
+	private type_do(base_type: TYPE.Type): TYPE.Type {
 		function updateAccessedDynamicType(type: TYPE.Type, access_kind: ValidAccessOperator): TYPE.Type {
 			return (
 				(access_kind === Operator.CLAIMDOT) ? type.subtract(TYPE.VOID) :
@@ -143,7 +148,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const base_value: OBJ.Object | null = this.base.fold();
 		if (base_value === null) {
 			return null;

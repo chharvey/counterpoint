@@ -2,12 +2,12 @@ import * as assert from 'assert';
 import {
 	TYPE,
 	INST,
-	Builder,
+	type Builder,
 	AssignmentError10,
 	MutabilityError01,
 } from '../../index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SymbolStructureVar} from '../index.js';
