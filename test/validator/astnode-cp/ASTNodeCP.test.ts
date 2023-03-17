@@ -32,7 +32,7 @@ describe('ASTNodeCP', () => {
 			});
 			it('returns InstructionStatement for nonempty statement expression.', () => {
 				const src: string = '42 + 420;';
-				const builder: Builder = new Builder(src);
+				const builder = new Builder(src);
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
 				assert.deepStrictEqual(
 					stmt.build(builder),
@@ -41,7 +41,7 @@ describe('ASTNodeCP', () => {
 			});
 			it('multiple statements.', () => {
 				const src: string = '42; 420;';
-				const generator: Builder = new Builder(src);
+				const generator = new Builder(src);
 				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 					assert.deepStrictEqual(
@@ -164,7 +164,7 @@ describe('ASTNodeCP', () => {
 					y = y * 10;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				const builder: Builder = new Builder(src);
+				const builder = new Builder(src);
 				assert.deepStrictEqual(
 					goal.children[1].build(builder),
 					new INST.InstructionStatement(

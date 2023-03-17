@@ -13,7 +13,7 @@ export class InstructionDeclareGlobal extends Instruction {
 	 * @param mut  is the variable mutable? (may it be reassigned?)
 	 * @param init the initial value of the variable
 	 */
-	public constructor (
+	public constructor(
 		private readonly name: bigint | string,
 		private readonly mut: boolean,
 		private readonly init: InstructionExpression,

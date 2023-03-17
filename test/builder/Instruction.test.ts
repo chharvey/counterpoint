@@ -225,7 +225,7 @@ describe('Instruction', () => {
 
 		describe('InstructionStatement', () => {
 			it('returns a wasm function.', () => {
-				const expr: INST.InstructionBinopArithmetic = new INST.InstructionBinopArithmetic(
+				const expr = new INST.InstructionBinopArithmetic(
 					Operator.MUL,
 					instructionConstInt(21n),
 					instructionConstInt(2n),

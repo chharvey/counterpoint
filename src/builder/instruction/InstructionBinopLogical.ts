@@ -21,7 +21,7 @@ export class InstructionBinopLogical extends InstructionBinop {
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
-	public constructor (
+	public constructor(
 		private readonly count: bigint,
 		op:   ValidOperatorLogical,
 		arg0: InstructionExpression,

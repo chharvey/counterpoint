@@ -10,7 +10,7 @@ export class InstructionDeclareLocal extends Instruction {
 	 * @param name the variable name (must begin with `'$'`)
 	 * @param to_float `true` if declaring a float
 	 */
-	public constructor (
+	public constructor(
 		private readonly name: string,
 		private readonly to_float: boolean,
 	) {

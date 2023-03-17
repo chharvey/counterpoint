@@ -43,7 +43,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	public override eval(): TYPE.Type {
 		return (
 			(this.operator === Operator.ORNULL)  ? this.operand.eval().union(TYPE.NULL) :
-			(this.operator === Operator.MUTABLE) ? this.operand.eval().mutableOf() :
+			(this.operator === Operator.MUTABLE) ? this.operand.eval().mutableOf()      :
 			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
 		);
 	}

@@ -63,7 +63,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		return (
-			(this.optional && base_type.isSubtypeOf(TYPE.NULL)) ? base_type :
+			(this.optional && base_type.isSubtypeOf(TYPE.NULL)) ? base_type                                                    :
 			(this.optional && TYPE.NULL.isSubtypeOf(base_type)) ? this.type_do(base_type.subtract(TYPE.NULL)).union(TYPE.NULL) :
 			this.type_do(base_type)
 		);
@@ -102,14 +102,15 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					: base_type;
 				return base_type_record.get(this.accessor.id, this.kind, this.accessor);
 			} else if (TYPE.TypeDict.isUnitType(base_type) || base_type instanceof TYPE.TypeDict) {
-				const base_type_dict: TYPE.TypeDict = TYPE.TypeDict.isUnitType(base_type)
+				const base_type_dict: TYPE.TypeDict = (TYPE.TypeDict.isUnitType(base_type))
 					? base_type.value.toType()
 					: base_type;
 				return updateAccessedDynamicType(base_type_dict.invariant, this.kind);
 			} else {
 				throw new TypeError04('property', base_type, this.accessor);
 			}
-		} else /* (this.accessor instanceof ASTNodeExpression) */ {
+		} else {
+			assert.ok(this.accessor instanceof ASTNodeExpression, `Expected ${ this.accessor } to be an \`ASTNodeExpression\`.`);
 			const accessor_type: TYPE.Type = this.accessor.type();
 			if (TYPE.TypeTuple.isUnitType(base_type) || base_type instanceof TYPE.TypeTuple) {
 				const base_type_tuple: TYPE.TypeTuple = (TYPE.TypeTuple.isUnitType(base_type))
@@ -160,15 +161,16 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return (base_value as OBJ.CollectionIndexed).get(this.accessor.val.fold() as OBJ.Integer, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (base_value as OBJ.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
-		} else /* (this.accessor instanceof ASTNodeExpression) */ {
+		} else {
+			assert.ok(this.accessor instanceof ASTNodeExpression, `Expected ${ this.accessor } to be an \`ASTNodeExpression\`.`);
 			const accessor_value: OBJ.Object | null = this.accessor.fold();
 			if (accessor_value === null) {
 				return null;
 			}
 			return (
-				(base_value instanceof OBJ.CollectionIndexed) ? (base_value as OBJ.CollectionIndexed).get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
-				(base_value instanceof OBJ.Set)               ? (base_value as OBJ.Set)              .get(accessor_value                                             ) :
-				(base_value instanceof OBJ.Map,                 (base_value as OBJ.Map)              .get(accessor_value,                this.optional, this.accessor))
+				          (base_value instanceof OBJ.CollectionIndexed) ?                                    base_value.get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
+				          (base_value instanceof OBJ.Set)               ?                                    base_value.get(accessor_value                                             ) :
+				(assert.ok(base_value instanceof OBJ.Map, `Expected ${ base_value } to be an \`OBJ.Map\`.`), base_value.get(accessor_value,                this.optional, this.accessor))
 			);
 		}
 	}

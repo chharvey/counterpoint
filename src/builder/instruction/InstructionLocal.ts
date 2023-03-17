@@ -11,7 +11,7 @@ import {InstructionVariable} from './InstructionVariable.js';
  * - InstructionLocalTee
  */
 export abstract class InstructionLocal extends InstructionVariable {
-	public constructor (name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
+	public constructor(name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
 		super((typeof name_or_id === 'bigint') ? `$var${ name_or_id.toString(16) }` : name_or_id, op);
 	}
 }

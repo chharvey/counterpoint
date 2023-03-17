@@ -103,7 +103,7 @@ export class TypeTuple extends Type {
 		return updateAccessedStaticType(
 			(
 				(-n <= i && i < 0) ? this.invariants[i + n] :
-				(0  <= i && i < n) ? this.invariants[i] :
+				(0  <= i && i < n) ? this.invariants[i]     :
 				throw_expression(new TypeError04('index', this, accessor))
 			),
 			access_kind,

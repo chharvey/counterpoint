@@ -1,5 +1,9 @@
+import * as assert from 'assert';
 import type {SyntaxNode} from 'tree-sitter';
-import type {NonemptyArray} from '../lib/index.js';
+import {
+	NonemptyArray,
+	throw_expression,
+} from '../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -142,16 +146,18 @@ class Decorator {
 			keyword_type: (node) => new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'keyword_type'>),
 
 			identifier: (node) => (
-				(isSyntaxNodeSupertype(node.parent!, 'type'))      || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/)                                                            ? new AST.ASTNodeTypeAlias(node as SyntaxNodeType<'identifier'>) :
-				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|declaration_variable|statement_expression|statement_assignment)$/),  new AST.ASTNodeVariable (node as SyntaxNodeType<'identifier'>))
+				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/))                                                                     ? new AST.ASTNodeTypeAlias(node as SyntaxNodeType<'identifier'>) :
+				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|assignee|declaration_variable|statement_expression|statement_assignment)$/)) ? new AST.ASTNodeVariable (node as SyntaxNodeType<'identifier'>) :
+				throw_expression(new TypeError(`Expected ${ node.parent } to be a node that contains an identifier.`))
 			),
 
 			/* # PRODUCTIONS */
 			word: (node) => new AST.ASTNodeKey(node as SyntaxNodeType<'word'>),
 
 			primitive_literal: (node) => (
-				(isSyntaxNodeSupertype(node.parent!, 'type'))      || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/)                                                            ? new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'primitive_literal'>) :
-				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|declaration_variable|statement_expression|statement_assignment)$/),  new AST.ASTNodeConstant    (node as SyntaxNodeType<'primitive_literal'>))
+				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/))                                                                     ? new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'primitive_literal'>) :
+				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|assignee|declaration_variable|statement_expression|statement_assignment)$/)) ? new AST.ASTNodeConstant    (node as SyntaxNodeType<'primitive_literal'>) :
+				throw_expression(new TypeError(`Expected ${ node.parent } to be a node that contains a primitive literal.`))
 			),
 
 			/* ## Types */
@@ -213,7 +219,10 @@ class Decorator {
 					node as SyntaxNodeType<'property_access_type'>,
 					new AST.ASTNodeTypeConstant(node.children[1]),
 				) :
-				(isSyntaxNodeType(node.children[1], 'word'), this.decorateTS(node.children[1] as SyntaxNodeType<'word'>))
+				(assert.ok(
+					isSyntaxNodeType(node.children[1], 'word'),
+					`Expected ${ node.children[1] } to be a \`SyntaxNodeType<'word'>\`.`,
+				), this.decorateTS(node.children[1]))
 			),
 
 			type_compound: (node) => (
@@ -222,10 +231,13 @@ class Decorator {
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 					this.decorateTS(node.children[1]),
 				) :
-				(isSyntaxNodeType(node.children[1], 'generic_call'), new AST.ASTNodeTypeCall(
+				(assert.ok(
+					isSyntaxNodeType(node.children[1], 'generic_call'),
+					`Expected ${ node.children[1] } to be a \`SyntaxNodeType<'generic_call'>\`.`,
+				), new AST.ASTNodeTypeCall(
 					node as SyntaxNodeType<'type_compound'>,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
-					((node.children[1] as SyntaxNodeType<'generic_call'>).children[1] as SyntaxNodeType<'generic_arguments'>).children
+					(node.children[1].children[1] as SyntaxNodeType<'generic_arguments'>).children
 						.filter((c): c is SyntaxNodeSupertype<'type'> => isSyntaxNodeSupertype(c, 'type'))
 						.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeType>,
 				))
@@ -237,7 +249,7 @@ class Decorator {
 					Decorator.TYPEOPERATORS_UNARY.get(node.children[1].text as Punctuator)!,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 				) :
-				(node.children.length > 2, (node.children[1].text === Punctuator.BRAK_OPN)
+				(assert.ok(node.children.length > 2, `Expected ${ node } to have more than 2 children.`), (node.children[1].text === Punctuator.BRAK_OPN)
 					? new AST.ASTNodeTypeList(
 						node as SyntaxNodeType<'type_unary_symbol'>,
 						this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
@@ -335,8 +347,8 @@ class Decorator {
 					node as SyntaxNodeType<'property_access'>,
 					new AST.ASTNodeConstant(node.children[1]),
 				) :
-				(isSyntaxNodeType     (node.children[1], 'word'))      ? this.decorateTS(node.children[1]) :
-				(isSyntaxNodeSupertype(node.children[2], 'expression'),  this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>))
+				          (isSyntaxNodeType     (node.children[1], 'word')) ?                                                                  this.decorateTS(node.children[1]) :
+				(assert.ok(isSyntaxNodeSupertype(node.children[2], 'expression'), `Expected ${ node.children[2] } to be an expression node.`), this.decorateTS(node.children[2]))
 			),
 
 			property_assign: (node) => (
@@ -344,8 +356,8 @@ class Decorator {
 					node as SyntaxNodeType<'property_assign'>,
 					new AST.ASTNodeConstant(node.children[1]),
 				) :
-				(isSyntaxNodeType     (node.children[1], 'word'))      ? this.decorateTS(node.children[1]) :
-				(isSyntaxNodeSupertype(node.children[2], 'expression'),  this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>))
+				          (isSyntaxNodeType     (node.children[1], 'word')) ?                                                                  this.decorateTS(node.children[1]) :
+				(assert.ok(isSyntaxNodeSupertype(node.children[2], 'expression'), `Expected ${ node.children[2] } to be an expression node.`), this.decorateTS(node.children[2]))
 			),
 
 			expression_compound: (node) => (
@@ -354,15 +366,15 @@ class Decorator {
 					Decorator.ACCESSORS.get(node.children[1].children[0].text as Punctuator)!,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 					this.decorateTS(node.children[1]),
-				)
-				: (isSyntaxNodeType(node.children[1], 'function_call'), new AST.ASTNodeCall(
+				) :
+				(assert.ok(isSyntaxNodeType(node.children[1], 'function_call'), `Expected ${ node.children[1] } to be a \`SyntaxNodeType<'function_call'>\`.`), new AST.ASTNodeCall(
 					node as SyntaxNodeType<'expression_compound'>,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
-					(node.children[1] as SyntaxNodeType<'function_call'>).children
+					(node.children[1]).children
 						.find((c): c is SyntaxNodeType<'generic_arguments'> => isSyntaxNodeType(c, 'generic_arguments'))?.children
 						.filter((c): c is SyntaxNodeSupertype<'type'> => isSyntaxNodeSupertype(c, 'type'))
 						.map((c) => this.decorateTS(c)) || [],
-					(node.children[1] as SyntaxNodeType<'function_call'>).children
+					(node.children[1]).children
 						.find((c): c is SyntaxNodeType<'function_arguments'> => isSyntaxNodeType(c, 'function_arguments'))!.children
 						.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
 						.map((c) => this.decorateTS(c)),
@@ -591,4 +603,4 @@ class Decorator {
 
 
 
-export const DECORATOR: Decorator = new Decorator();
+export const DECORATOR = new Decorator();
