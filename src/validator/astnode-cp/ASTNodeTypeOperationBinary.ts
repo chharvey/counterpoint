@@ -1,14 +1,17 @@
 import * as assert from 'assert';
 import type {TYPE} from '../../index.js';
-import {throw_expression} from '../../lib/index.js';
 import {
-	CPConfig,
+	throw_expression,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import {
 	Operator,
-	ValidTypeOperator,
+	type ValidTypeOperator,
 } from '../Operator.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
@@ -34,7 +37,8 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		super(start_node, operator, [operand0, operand1]);
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
 		return (
 			(this.operator === Operator.AND) ? this.operand0.eval().intersect(this.operand1.eval()) :
 			(this.operator === Operator.OR)  ? this.operand0.eval().union    (this.operand1.eval()) :

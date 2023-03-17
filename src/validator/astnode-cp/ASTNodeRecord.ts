@@ -3,13 +3,16 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	Builder,
+	type INST,
+	type Builder,
 	AssignmentError02,
 } from '../../index.js';
-import type {NonemptyArray} from '../../lib/index.js';
 import {
-	CPConfig,
+	type NonemptyArray,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
@@ -35,6 +38,10 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		super(start_node, children);
 	}
 
+	public override shouldFloat(): boolean {
+		throw 'ASTNodeRecord#shouldFloat not yet supported.';
+	}
+
 	public override varCheck(): void {
 		super.varCheck();
 		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
@@ -45,19 +52,24 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		});
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionExpression {
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): INST.InstructionExpression {
 		builder;
-		throw 'ASTNodeRecord#build_do not yet supported.';
+		throw 'ASTNodeRecord#build not yet supported.';
 	}
 
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
 		return TYPE.TypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.type(),
 		])), true);
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const properties: ReadonlyMap<bigint, OBJ.Object | null> = new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.fold(),
@@ -67,7 +79,8 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
 	}
 
-	protected override assignTo_do(assignee: TYPE.Type): boolean {
+	@ASTNodeCollectionLiteral.assignToDeco
+	public override assignTo(assignee: TYPE.Type): boolean {
 		if (TYPE.TypeRecord.isUnitType(assignee) || assignee instanceof TYPE.TypeRecord) {
 			const assignee_type_record: TYPE.TypeRecord = (TYPE.TypeRecord.isUnitType(assignee))
 				? assignee.value.toType()

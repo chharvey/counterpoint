@@ -3,9 +3,12 @@ import {
 	TYPE,
 	TypeError,
 } from '../../index.js';
-import {throw_expression} from '../../lib/index.js';
 import {
-	CPConfig,
+	throw_expression,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
@@ -28,7 +31,8 @@ export class ASTNodeTypeList extends ASTNodeType {
 		super(start_node, {count}, [type]);
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
 		const itemstype: TYPE.Type = this.type.eval();
 		return (this.count === null)
 			? new TYPE.TypeList(itemstype)

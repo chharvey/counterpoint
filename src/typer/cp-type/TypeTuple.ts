@@ -1,7 +1,8 @@
 import {TypeError04} from '../../index.js';
 import {
-	IntRange,
+	type IntRange,
 	throw_expression,
+	strictEqual,
 } from '../../lib/index.js';
 import type {
 	ValidAccessOperator,
@@ -74,7 +75,9 @@ export class TypeTuple extends Type {
 		return v instanceof OBJ.Tuple && v.toType().isSubtypeOf(this);
 	}
 
-	protected override isSubtypeOf_do(t: Type): boolean {
+	@strictEqual
+	@Type.subtypeDeco
+	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeTuple
 			&& this.count[0] >= t.count[0]

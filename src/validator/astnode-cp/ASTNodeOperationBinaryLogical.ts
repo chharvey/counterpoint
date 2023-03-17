@@ -3,16 +3,17 @@ import {
 	OBJ,
 	TYPE,
 	INST,
-	Builder,
+	type Builder,
 } from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeSupertype} from '../utils-private.js';
 import {
 	Operator,
-	ValidOperatorLogical,
+	type ValidOperatorLogical,
 } from '../Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
@@ -35,7 +36,9 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopLogical {
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopLogical {
 		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionBinopLogical(
 			builder.varCount,
@@ -45,7 +48,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		);
 	}
 
-	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
 		const falsytypes: TYPE.Type = TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE);
 		return (this.operator === Operator.AND)
 			? (t0.isSubtypeOf(falsytypes))
@@ -58,7 +61,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					: t0;
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;

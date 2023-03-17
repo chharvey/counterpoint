@@ -1,6 +1,6 @@
 import {
 	Operator,
-	ValidOperatorEquality,
+	type ValidOperatorEquality,
 } from '../../validator/index.js';
 import type {InstructionExpression} from './InstructionExpression.js';
 import {InstructionBinop} from './InstructionBinop.js';

@@ -1,12 +1,13 @@
 import * as assert from 'assert';
 import {
-	OBJ,
+	type OBJ,
 	TYPE,
-	INST,
-	Builder,
+	type INST,
+	type Builder,
 } from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
@@ -40,15 +41,20 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
 
-	protected override build_do(_builder: Builder): INST.InstructionExpression {
-		throw new Error('ASTNodeTemplate#build_do not yet supported.');
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(_builder: Builder): INST.InstructionExpression {
+		throw new Error('ASTNodeTemplate#build not yet supported.');
 	}
 
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
 		return TYPE.STR;
 	}
 
-	protected override fold_do(): OBJ.String | null {
+	@memoizeMethod
+	public override fold(): OBJ.String | null {
 		const values: Array<OBJ.Object | null> = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))
 			? null

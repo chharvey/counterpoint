@@ -1,4 +1,5 @@
 import * as xjs from 'extrajs';
+import {strictEqual} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
@@ -44,8 +45,10 @@ export class TypeDifference extends Type {
 		return this.left.includes(v) && !this.right.includes(v);
 	}
 
-	protected override isSubtypeOf_do(t: Type): boolean {
-		return this.left.isSubtypeOf(t) || super.isSubtypeOf_do(t);
+	@strictEqual
+	@Type.subtypeDeco
+	public override isSubtypeOf(t: Type): boolean {
+		return this.left.isSubtypeOf(t) || super.isSubtypeOf(t);
 	}
 
 	public override mutableOf(): TypeDifference {

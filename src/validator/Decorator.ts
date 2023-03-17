@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	NonemptyArray,
+	type NonemptyArray,
 	throw_expression,
 } from '../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.js';
 import {
@@ -14,20 +14,20 @@ import {
 } from '../parser/index.js';
 import {Validator} from './index.js';
 import {
-	SyntaxNodeType,
+	type SyntaxNodeType,
 	isSyntaxNodeType,
-	SyntaxNodeSupertype,
+	type SyntaxNodeSupertype,
 	isSyntaxNodeSupertype,
 } from './utils-private.js';
 import {
 	Operator,
-	ValidAccessOperator,
-	ValidTypeOperator,
-	ValidOperatorUnary,
-	ValidOperatorArithmetic,
-	ValidOperatorComparative,
-	ValidOperatorEquality,
-	ValidOperatorLogical,
+	type ValidAccessOperator,
+	type ValidTypeOperator,
+	type ValidOperatorUnary,
+	type ValidOperatorArithmetic,
+	type ValidOperatorComparative,
+	type ValidOperatorEquality,
+	type ValidOperatorLogical,
 } from './Operator.js';
 import * as AST from './astnode-cp/index.js';
 
@@ -248,7 +248,7 @@ class Decorator {
 					Decorator.TYPEOPERATORS_UNARY.get(node.children[1].text as Punctuator)!,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 				) :
-				(assert.ok(node.children.length > 2, `Expected ${ node } to have 2 children.`), (node.children[1].text === Punctuator.BRAK_OPN)
+				(assert.ok(node.children.length > 2, `Expected ${ node } to have more than 2 children.`), (node.children[1].text === Punctuator.BRAK_OPN)
 					? new AST.ASTNodeTypeList(
 						node as SyntaxNodeType<'type_unary_symbol'>,
 						this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
@@ -566,8 +566,8 @@ class Decorator {
 				node as SyntaxNodeType<'declaration_variable'>,
 				node.children.length === 8,
 				new AST.ASTNodeVariable(((node.children.length === 7) ? node.children[1] : node.children[2]) as SyntaxNodeType<'identifier'>),
-				this.decorateTypeNode(((node.children.length === 7) ? node.children[3] : node.children[4]) as SyntaxNodeSupertype<'type'>),
-				this.decorateTS      (((node.children.length === 7) ? node.children[5] : node.children[6]) as SyntaxNodeSupertype<'expression'>),
+				this.decorateTypeNode  (((node.children.length === 7) ? node.children[3] : node.children[4]) as SyntaxNodeSupertype<'type'>),
+				this.decorateTS        (((node.children.length === 7) ? node.children[5] : node.children[6]) as SyntaxNodeSupertype<'expression'>),
 			),
 
 			statement_expression: (node) => new AST.ASTNodeStatementExpression(

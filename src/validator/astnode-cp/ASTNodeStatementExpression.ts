@@ -1,10 +1,10 @@
 import * as assert from 'assert';
 import {
-	Builder,
+	type Builder,
 	INST,
 } from '../../index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
