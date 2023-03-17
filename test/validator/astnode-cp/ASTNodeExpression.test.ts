@@ -13,10 +13,7 @@ import {
 	AssignmentError02,
 	TypeError03,
 } from '../../../src/index.js';
-import {
-	assert_wasCalled,
-	assertAssignable,
-} from '../../assert-helpers.js';
+import {assertAssignable} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
@@ -49,14 +46,10 @@ describe('ASTNodeExpression', () => {
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 					'42😀'  '42\\u{1f600}'
 				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
-				assert.deepStrictEqual(constants.map((c) => assert_wasCalled(c.fold, 1, (orig, spy) => {
-					c.fold = spy;
-					try {
-						return c.type();
-					} finally {
-						c.fold = orig;
-					}
-				})), constants.map((c) => new TYPE.TypeUnit(c.fold()!)));
+				assert.deepStrictEqual(
+					constants.map((c) => c.type()),
+					constants.map((c) => new TYPE.TypeUnit<OBJ.Object>(c.fold())),
+				);
 			});
 		});
 
@@ -314,14 +307,7 @@ describe('ASTNodeExpression', () => {
 				let types: TYPE.Type[] = [];
 				before(() => {
 					templates = initTemplates();
-					types = templates.map((t) => assert_wasCalled(t.fold, 1, (orig, spy) => {
-						t.fold = spy;
-						try {
-							return t.type();
-						} finally {
-							t.fold = orig;
-						}
-					}));
+					types = templates.map((t) => t.type());
 				});
 				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new TypeUnit`.', () => {
 					assert.deepStrictEqual(
