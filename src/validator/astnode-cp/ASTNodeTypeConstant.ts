@@ -46,17 +46,12 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	}
 
 
-	// HACK: adding a private instance field to fix an issue where emitted JS is broken.
-	// See https://github.com/microsoft/TypeScript/issues/53204
-	readonly #HACK = 0 as const;
-
 	public constructor(start_node: (
 		| SyntaxNodeType<'keyword_type'>
 		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'primitive_literal'>
 	)) {
 		super(start_node);
-		this.#HACK;
 	}
 
 	@memoizeMethod
