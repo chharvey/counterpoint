@@ -16,7 +16,7 @@ function s(name: string, ...operands: readonly string[]): string {
 
 function extractType(operand: string): string {
 	return s(
-		'expression_compound',
+		'expression_compound__variable',
 		s('identifier'),
 		s(
 			'function_call',
@@ -183,7 +183,7 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			makeSourceFile(
 				s(
-					'string_template',
+					'string_template__variable',
 					s('template_head'),
 					s('identifier'),
 					s('template_middle'),
@@ -191,7 +191,7 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('template_tail'),
 				),
 				s(
-					'string_template',
+					'string_template__variable',
 					s('template_head'),
 					s('identifier'),
 					s('template_middle'),
@@ -201,13 +201,13 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('template_tail'),
 				),
 				s(
-					'string_template',
+					'string_template__variable',
 					s('template_head'),
 					s(
-						'string_template',
+						'string_template__variable',
 						s('template_head'),
 						s(
-							'string_template',
+							'string_template__variable',
 							s('template_full'),
 						),
 						s('template_tail'),
@@ -412,43 +412,101 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				(a);
 			`,
-			makeSourceFile(s('expression_grouped', s('identifier'))),
+			makeSourceFile(s('expression_grouped__variable', s('identifier'))),
 		],
 
 		TupleLiteral: [
 			xjs.String.dedent`
-				[1, 2, 3];
+				\\[1, \\[2], \\[3]];
+				  [1, \\[2],   [3]];
 			`,
-			makeSourceFile(s(
-				'tuple_literal',
-				s('primitive_literal', s('integer')),
-				s('primitive_literal', s('integer')),
-				s('primitive_literal', s('integer')),
-			)),
+			makeSourceFile(
+				s(
+					'tuple_literal',
+					                   s('primitive_literal', s('integer')),
+					s('tuple_literal', s('primitive_literal', s('integer'))),
+					s('tuple_literal', s('primitive_literal', s('integer'))),
+				),
+				s(
+					'tuple_literal__variable',
+					                             s('primitive_literal', s('integer')),
+					s('tuple_literal',           s('primitive_literal', s('integer'))),
+					s('tuple_literal__variable', s('primitive_literal', s('integer'))),
+				),
+			),
 		],
 
 		RecordLiteral: [
 			xjs.String.dedent`
-				[a= 1, b= 2, c= 3];
+				\\[a= 1, b= \\[x= 2], c= \\[y= 3]];
+				  [a= 1, b= \\[x= 2], c=   [y= 3]];
 			`,
-			makeSourceFile(s(
-				'record_literal',
+			makeSourceFile(
 				s(
-					'property',
-					s('word', s('identifier')),
-					s('primitive_literal', s('integer')),
+					'record_literal',
+					s(
+						'property',
+						s('word', s('identifier')),
+						s('primitive_literal', s('integer')),
+					),
+					s(
+						'property',
+						s('word', s('identifier')),
+						s(
+							'record_literal',
+							s(
+								'property',
+								s('word', s('identifier')),
+								s('primitive_literal', s('integer')),
+							),
+						),
+					),
+					s(
+						'property',
+						s('word', s('identifier')),
+						s(
+							'record_literal',
+							s(
+								'property',
+								s('word', s('identifier')),
+								s('primitive_literal', s('integer')),
+							),
+						),
+					),
 				),
 				s(
-					'property',
-					s('word', s('identifier')),
-					s('primitive_literal', s('integer')),
+					'record_literal__variable',
+					s(
+						'property__variable',
+						s('word', s('identifier')),
+						s('primitive_literal', s('integer')),
+					),
+					s(
+						'property__variable',
+						s('word', s('identifier')),
+						s(
+							'record_literal',
+							s(
+								'property',
+								s('word', s('identifier')),
+								s('primitive_literal', s('integer')),
+							),
+						),
+					),
+					s(
+						'property__variable',
+						s('word', s('identifier')),
+						s(
+							'record_literal__variable',
+							s(
+								'property__variable',
+								s('word', s('identifier')),
+								s('primitive_literal', s('integer')),
+							),
+						),
+					),
 				),
-				s(
-					'property',
-					s('word', s('identifier')),
-					s('primitive_literal', s('integer')),
-				),
-			)),
+			),
 		],
 
 		SetLiteral: [
@@ -519,68 +577,68 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			makeSourceFile(
 				s(
-					'expression_compound',
+					'expression_compound__variable',
 					s('identifier'),
-					s('property_access', s('integer')),
+					s('property_access__variable', s('integer')),
 				),
 				s(
-					'expression_compound',
+					'expression_compound__variable',
 					s('identifier'),
-					s('property_access', s('integer')),
+					s('property_access__variable', s('integer')),
 				),
 				s(
-					'expression_compound',
+					'expression_compound__variable',
 					s('identifier'),
-					s('property_access', s('integer')),
+					s('property_access__variable', s('integer')),
 				),
 				s(
-					'expression_compound',
+					'expression_compound__variable',
 					s('identifier'),
-					s('property_access', s('word', s('identifier'))),
+					s('property_access__variable', s('word', s('identifier'))),
 				),
 				s(
-					'expression_compound',
+					'expression_compound__variable',
 					s('identifier'),
-					s('property_access', s('word', s('identifier'))),
+					s('property_access__variable', s('word', s('identifier'))),
 				),
 				s(
-					'expression_compound',
+					'expression_compound__variable',
 					s('identifier'),
-					s('property_access', s('word', s('identifier'))),
+					s('property_access__variable', s('word', s('identifier'))),
 				),
 				s(
-					'expression_compound',
+					'expression_compound__variable',
 					s('identifier'),
-					s('property_access', s('identifier')),
+					s('property_access__variable', s('identifier')),
 				),
 				s(
-					'expression_compound',
+					'expression_compound__variable',
 					s('identifier'),
-					s('property_access', s('identifier')),
+					s('property_access__variable', s('identifier')),
 				),
 				s(
-					'expression_compound',
+					'expression_compound__variable',
 					s('identifier'),
-					s('property_access', s('identifier')),
+					s('property_access__variable', s('identifier')),
 				),
 				s(
-					'expression_compound',
+					'expression_compound__variable',
 					s('identifier'),
 					s('function_call', s('function_arguments')),
 				),
 				s(
-					'expression_compound',
+					'expression_compound__variable',
 					s('identifier'),
 					s(
 						'function_call',
 						s(
 							'function_arguments',
-							s('tuple_literal'),
+							s('tuple_literal__variable'),
 						),
 					),
 				),
 				s(
-					'expression_compound',
+					'expression_compound__variable',
 					s('identifier'),
 					s(
 						'function_call',
@@ -606,19 +664,19 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			makeSourceFile(
 				s(
-					'expression_unary_symbol',
+					'expression_unary_symbol__variable',
 					s('identifier'),
 				),
 				s(
-					'expression_unary_symbol',
+					'expression_unary_symbol__variable',
 					s('identifier'),
 				),
 				s(
-					'expression_unary_symbol',
+					'expression_unary_symbol__variable',
 					s('identifier'),
 				),
 				s(
-					'expression_unary_symbol',
+					'expression_unary_symbol__variable',
 					s('identifier'),
 				),
 			),
@@ -631,15 +689,15 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			makeSourceFile(
 				s(
-					'expression_exponential',
+					'expression_exponential__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_exponential',
+					'expression_exponential__variable',
 					s('identifier'),
 					s(
-						'expression_exponential',
+						'expression_exponential__variable',
 						s('identifier'),
 						s('identifier'),
 					),
@@ -655,19 +713,19 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			makeSourceFile(
 				s(
-					'expression_multiplicative',
+					'expression_multiplicative__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_multiplicative',
+					'expression_multiplicative__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_multiplicative',
+					'expression_multiplicative__variable',
 					s(
-						'expression_multiplicative',
+						'expression_multiplicative__variable',
 						s('identifier'),
 						s('identifier'),
 					),
@@ -683,12 +741,12 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			makeSourceFile(
 				s(
-					'expression_additive',
+					'expression_additive__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_additive',
+					'expression_additive__variable',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -708,42 +766,42 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			makeSourceFile(
 				s(
-					'expression_comparative',
+					'expression_comparative__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative',
+					'expression_comparative__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative',
+					'expression_comparative__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative',
+					'expression_comparative__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative',
+					'expression_comparative__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative',
+					'expression_comparative__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative',
+					'expression_comparative__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative',
+					'expression_comparative__variable',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -759,22 +817,22 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			makeSourceFile(
 				s(
-					'expression_equality',
+					'expression_equality__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_equality',
+					'expression_equality__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_equality',
+					'expression_equality__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_equality',
+					'expression_equality__variable',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -788,12 +846,12 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			makeSourceFile(
 				s(
-					'expression_conjunctive',
+					'expression_conjunctive__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_conjunctive',
+					'expression_conjunctive__variable',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -807,12 +865,12 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			makeSourceFile(
 				s(
-					'expression_disjunctive',
+					'expression_disjunctive__variable',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_disjunctive',
+					'expression_disjunctive__variable',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -824,7 +882,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				if a then b else c;
 			`,
 			makeSourceFile(s(
-				'expression_conditional',
+				'expression_conditional__variable',
 				s('identifier'),
 				s('identifier'),
 				s('identifier'),
@@ -870,10 +928,10 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('identifier'),
 					s('identifier'),
 					s(
-						'expression_additive',
+						'expression_additive__variable',
 						s('identifier'),
 						s(
-							'expression_multiplicative',
+							'expression_multiplicative__variable',
 							s('identifier'),
 							s('identifier'),
 						),

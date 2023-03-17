@@ -1,5 +1,8 @@
 import {TYPE} from '../../index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+import type {
+	SyntaxNodeType,
+	SyntaxNodeFamily,
+} from '../utils-private.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -38,14 +41,16 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	}
 
 
-	public constructor(
+	protected constructor(
 		start_node:
-			| SyntaxNodeType<'tuple_literal'>
-			| SyntaxNodeType<'record_literal'>
+			| SyntaxNodeFamily<'tuple_literal',  ['variable']>
+			| SyntaxNodeFamily<'record_literal', ['variable']>
 			| SyntaxNodeType<'set_literal'>
 			| SyntaxNodeType<'map_literal'>
 		,
 		public override readonly children: readonly ASTNodeCP[],
+		/** Does this node represent a reference object (versus a value object)? */
+		public readonly isRef: boolean = true,
 	) {
 		super(start_node, {}, children);
 	}

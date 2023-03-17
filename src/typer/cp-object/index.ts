@@ -13,6 +13,8 @@ export * from './CollectionKeyed.js';
 
 export * from './Tuple.js';
 export * from './Record.js';
+export * from './Vect.js';
+export * from './Struct.js';
 export * from './List.js';
 export * from './Dict.js';
 export * from './Set.js';

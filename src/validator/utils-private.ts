@@ -1,7 +1,10 @@
 import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
-import type {CodeUnit} from '../lib/index.js';
+import type {
+	NonemptyArray,
+	CodeUnit,
+} from '../lib/index.js';
 
 
 
@@ -40,6 +43,15 @@ export function isSyntaxNodeType<T extends string>(node: SyntaxNode, type_or_reg
 
 
 
+type Join<Strings extends NonemptyArray<string>> =
+	Strings extends [infer S0, ...infer SRest]
+		? `${ S0 extends string ? '' | `__${ S0 }` : '' }${ SRest extends NonemptyArray<string> ? Join<SRest> : '' }`
+		: '';
+export type SyntaxNodeFamily<Name extends string, Suffices extends NonemptyArray<string>> =
+	SyntaxNodeType<`${ Name }${ Join<Suffices> }`>;
+
+
+
 type Category =
 	| 'type'
 	| 'expression'
@@ -66,22 +78,22 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ?
 : C extends 'expression' ?
 	| SyntaxNodeType<'identifier'>
 	| SyntaxNodeType<'primitive_literal'>
-	| SyntaxNodeType<'string_template'>
-	| SyntaxNodeType<'expression_grouped'>
-	| SyntaxNodeType<'tuple_literal'>
-	| SyntaxNodeType<'record_literal'>
+	| SyntaxNodeFamily<'string_template',    ['variable']>
+	| SyntaxNodeFamily<'expression_grouped', ['variable']>
+	| SyntaxNodeFamily<'tuple_literal',      ['variable']>
+	| SyntaxNodeFamily<'record_literal',     ['variable']>
 	| SyntaxNodeType<'set_literal'>
 	| SyntaxNodeType<'map_literal'>
-	| SyntaxNodeType<'expression_compound'>
-	| SyntaxNodeType<'expression_unary_symbol'>
-	| SyntaxNodeType<'expression_exponential'>
-	| SyntaxNodeType<'expression_multiplicative'>
-	| SyntaxNodeType<'expression_additive'>
-	| SyntaxNodeType<'expression_comparative'>
-	| SyntaxNodeType<'expression_equality'>
-	| SyntaxNodeType<'expression_conjunctive'>
-	| SyntaxNodeType<'expression_disjunctive'>
-	| SyntaxNodeType<'expression_conditional'>
+	| SyntaxNodeFamily<'expression_compound',       ['variable']>
+	| SyntaxNodeFamily<'expression_unary_symbol',   ['variable']>
+	| SyntaxNodeFamily<'expression_exponential',    ['variable']>
+	| SyntaxNodeFamily<'expression_multiplicative', ['variable']>
+	| SyntaxNodeFamily<'expression_additive',       ['variable']>
+	| SyntaxNodeFamily<'expression_comparative',    ['variable']>
+	| SyntaxNodeFamily<'expression_equality',       ['variable']>
+	| SyntaxNodeFamily<'expression_conjunctive',    ['variable']>
+	| SyntaxNodeFamily<'expression_disjunctive',    ['variable']>
+	| SyntaxNodeFamily<'expression_conditional',    ['variable']>
 : C extends 'declaration' ?
 	| SyntaxNodeType<'declaration_type'>
 	| SyntaxNodeType<'declaration_variable'>
@@ -96,7 +108,7 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ?
 export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode, category: C): syntaxnode is SyntaxNodeSupertype<C> {
 	return new Map<Category, (node: SyntaxNode) => boolean>([
 		['type',        (node) => isSyntaxNodeType(node, /^keyword_type|identifier|primitive_literal|type_grouped|type_tuple_literal|type_record_literal|type_dict_literal|type_map_literal|type_compound|type_unary_symbol|type_unary_keyword|type_intersection|type_union$/)],
-		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template|expression_grouped|tuple_literal|record_literal|set_literal|map_literal|expression_compound|expression_unary_symbol|expression_exponential|expression_multiplicative|expression_additive|expression_comparative|expression_equality|expression_conjunctive|expression_disjunctive|expression_conditional$/)],
+		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template(__variable)?|expression_grouped(__variable)?|(tuple|record)_literal(__variable)?|(set|map)_literal|expression_(compound|unary_symbol|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional)(__variable)?$/)],
 		['declaration', (node) => isSyntaxNodeType(node, /^declaration_type|declaration_variable$/)],
 		['statement',   (node) => isSyntaxNodeType(node, /^statement_expression|statement_assignment$/) || isSyntaxNodeSupertype(node, 'declaration')],
 	]).get(category)!(syntaxnode);

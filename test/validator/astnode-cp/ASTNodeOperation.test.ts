@@ -597,21 +597,31 @@ describe('ASTNodeOperation', () => {
 					let g: obj = {};
 					let h: obj = {42};
 					let i: obj = {41 -> 42};
+					let j: obj = \\[42];
+					let k: obj = \\[x= 42];
 
 					let bb: obj = [[42]];
 					let cc: obj = [x= [42]];
 					let hh: obj = {[42]};
 					let ii: obj = {[41] -> [42]};
+					let jj: obj = \\[\\[42]];
+					let kk: obj = \\[x= \\[42]];
 
 					a !== [];
 					b !== [42];
+					b !== j;
 					c !== [x= 42];
+					c !== k;
 					d !== List.<int>([]);
 					e !== List.<int>([42]);
 					f !== Dict.<int>([x= 42]);
 					g !== {};
 					h !== {42};
 					i !== {41 -> 42};
+					j === \\[42];
+					j !== b;
+					k === \\[x= 42];
+					k !== c;
 					a === a;
 					b === b;
 					c === c;
@@ -621,20 +631,30 @@ describe('ASTNodeOperation', () => {
 					g === g;
 					h === h;
 					i === i;
+					j === j;
+					k === k;
 					a == [];
 					b == [42];
+					b == j;
 					c == [x= 42];
+					c == k;
 					d == List.<int>([]);
 					e == List.<int>([42]);
 					f == Dict.<int>([x= 42]);
 					g == {};
 					h == {42};
 					i == {41 -> 42};
+					j == \\[42];
+					j == b;
+					k == \\[x= 42];
+					k == c;
 
 					bb !== [[42]];
 					cc !== [x= [42]];
 					hh !== {[42]};
 					ii !== {[41] -> [42]};
+					jj === \\[\\[42]];
+					kk === \\[x= \\[42]];
 					bb === bb;
 					cc === cc;
 					hh === hh;
@@ -643,6 +663,8 @@ describe('ASTNodeOperation', () => {
 					cc == [x= [42]];
 					hh == {[42]};
 					ii == {[41] -> [42]};
+					jj == \\[\\[42]];
+					kk == \\[x= \\[42]];
 
 					b != [42, 43];
 					c != [x= 43];
@@ -652,7 +674,7 @@ describe('ASTNodeOperation', () => {
 				`);
 				goal.varCheck();
 				goal.typeCheck();
-				goal.children.slice(13).forEach((stmt) => {
+				goal.children.slice(17).forEach((stmt) => {
 					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), OBJ.Boolean.TRUE, stmt.source);
 				});
 			});

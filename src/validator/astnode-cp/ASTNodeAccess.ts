@@ -13,7 +13,10 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+import type {
+	SyntaxNodeType,
+	SyntaxNodeFamily,
+} from '../utils-private.js';
 import {
 	Operator,
 	type ValidAccessOperator,
@@ -34,7 +37,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
 	public constructor(
 		start_node:
-			| SyntaxNodeType<'expression_compound'>
+			| SyntaxNodeFamily<'expression_compound', ['variable']>
 			| SyntaxNodeType<'assignee'>
 		,
 		private readonly kind:     ValidAccessOperator,
