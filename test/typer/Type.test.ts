@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	TypeEntry,
+	type TypeEntry,
 	OBJ,
 	TYPE,
 } from '../../src/typer/index.js';

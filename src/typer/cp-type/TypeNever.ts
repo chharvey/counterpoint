@@ -1,3 +1,4 @@
+import {strictEqual} from '../../lib/index.js';
 import type * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
 
@@ -41,6 +42,7 @@ export class TypeNever extends Type {
 		return true;
 	}
 
+	@strictEqual
 	public override equals(t: Type): boolean {
 		return t.isBottomType;
 	}

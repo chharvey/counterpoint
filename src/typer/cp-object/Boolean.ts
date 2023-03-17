@@ -1,3 +1,4 @@
+import {strictEqual} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
@@ -51,7 +52,8 @@ class CPBoolean extends Primitive {
 		return this.data;
 	}
 
-	protected override identical_helper(value: CPObject): boolean {
+	@strictEqual
+	public override identical(value: CPObject): boolean {
 		return value instanceof CPBoolean && this.data === value.data;
 	}
 }

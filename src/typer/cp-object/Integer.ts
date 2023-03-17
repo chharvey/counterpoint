@@ -1,7 +1,10 @@
 import * as xjs from 'extrajs';
-import {throw_expression} from '../../lib/index.js';
+import {
+	throw_expression,
+	strictEqual,
+} from '../../lib/index.js';
 import {Float} from './index.js';
-import type {Object as CPObject} from './Object.js';
+import {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
 
 
@@ -44,13 +47,15 @@ export class Integer extends CPNumber<Integer> {
 		return `${ this.toNumeric() }`;
 	}
 
-	protected override identical_helper(value: CPObject): boolean {
+	@strictEqual
+	public override identical(value: CPObject): boolean {
 		return value instanceof Integer && this.isEqualTo(value as this, (this_, that_) => (
 			xjs.Array.is<boolean>(this_.internal, that_.internal)
 		));
 	}
 
-	protected override equal_helper(value: CPObject): boolean {
+	@CPObject.equalsDeco
+	public override equal(value: CPObject): boolean {
 		return value instanceof Float && this.toFloat().equal(value);
 	}
 

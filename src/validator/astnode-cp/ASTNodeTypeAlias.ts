@@ -5,12 +5,16 @@ import {
 	ReferenceError03,
 } from '../../index.js';
 import {
-	CPConfig,
+	memoizeMethod,
+	memoizeGetter,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {
 	SymbolKind,
-	SymbolStructure,
+	type SymbolStructure,
 	SymbolStructureVar,
 	SymbolStructureType,
 } from '../index.js';
@@ -27,14 +31,13 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 	}
 
 
-	private _id: bigint | null = null; // TODO use memoize decorator
-
 	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
+	@memoizeGetter
 	public get id(): bigint {
-		return this._id ??= this.validator.cookTokenIdentifier(this.start_node.text);
+		return this.validator.cookTokenIdentifier(this.start_node.text);
 	}
 
 	public override varCheck(): void {
@@ -46,7 +49,8 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		}
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {

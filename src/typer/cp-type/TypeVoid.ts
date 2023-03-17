@@ -1,3 +1,4 @@
+import {strictEqual} from '../../lib/index.js';
 import type * as OBJ from '../cp-object/index.js';
 import {NEVER} from './index.js';
 import {Type} from './Type.js';
@@ -27,14 +28,18 @@ export class TypeVoid extends Type {
 		return false;
 	}
 
-	protected override intersect_do(_t: Type): Type {
+	@Type.intersectDeco
+	public override intersect(_t: Type): Type {
 		return NEVER;
 	}
 
-	protected override isSubtypeOf_do(_t: Type): boolean {
+	@strictEqual
+	@Type.subtypeDeco
+	public override isSubtypeOf(_t: Type): boolean {
 		return false;
 	}
 
+	@strictEqual
 	public override equals(t: Type): boolean {
 		return t === TypeVoid.INSTANCE || super.equals(t);
 	}

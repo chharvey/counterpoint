@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	NonemptyArray,
+	type NonemptyArray,
 	throw_expression,
 } from '../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.js';
 import {
@@ -14,20 +14,20 @@ import {
 } from '../parser/index.js';
 import {Validator} from './index.js';
 import {
-	SyntaxNodeType,
+	type SyntaxNodeType,
 	isSyntaxNodeType,
-	SyntaxNodeSupertype,
+	type SyntaxNodeSupertype,
 	isSyntaxNodeSupertype,
 } from './utils-private.js';
 import {
 	Operator,
-	ValidAccessOperator,
-	ValidTypeOperator,
-	ValidOperatorUnary,
-	ValidOperatorArithmetic,
-	ValidOperatorComparative,
-	ValidOperatorEquality,
-	ValidOperatorLogical,
+	type ValidAccessOperator,
+	type ValidTypeOperator,
+	type ValidOperatorUnary,
+	type ValidOperatorArithmetic,
+	type ValidOperatorComparative,
+	type ValidOperatorEquality,
+	type ValidOperatorLogical,
 } from './Operator.js';
 import * as AST from './astnode-cp/index.js';
 

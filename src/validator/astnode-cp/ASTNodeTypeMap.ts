@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 import {TYPE} from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
@@ -24,7 +25,8 @@ export class ASTNodeTypeMap extends ASTNodeType {
 		super(start_node, {}, [antecedenttype, consequenttype]);
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
 		return new TYPE.TypeMap(this.antecedenttype.eval(), this.consequenttype.eval());
 	}
 }

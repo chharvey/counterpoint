@@ -1,3 +1,4 @@
+import {strictEqual} from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
@@ -41,7 +42,9 @@ export class TypeList extends Type {
 		return v instanceof OBJ.List && v.toType().isSubtypeOf(this);
 	}
 
-	protected override isSubtypeOf_do(t: Type): boolean {
+	@strictEqual
+	@Type.subtypeDeco
+	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeList
 			&& ((t.isMutable)

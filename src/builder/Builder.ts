@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import wabt from 'wabt'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.js';
 import {AST} from '../validator/index.js';

@@ -1,7 +1,10 @@
 import {VoidError01} from '../../index.js';
-import {throw_expression} from '../../lib/index.js';
+import {
+	throw_expression,
+	strictEqual,
+} from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
-import type {Object as CPObject} from './Object.js';
+import {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
@@ -27,7 +30,9 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 	}
 
 	/** @final */
-	protected override equal_helper(value: CPObject): boolean {
+	@strictEqual
+	@CPObject.equalsDeco
+	public override equal(value: CPObject): boolean {
 		return (
 			   value instanceof CollectionKeyed
 			&& this.properties.size === value.properties.size

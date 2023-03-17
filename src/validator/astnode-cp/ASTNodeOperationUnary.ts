@@ -4,19 +4,22 @@ import {
 	OBJ,
 	TYPE,
 	INST,
-	Builder,
+	type Builder,
 	TypeError01,
 	NanError01,
 } from '../../index.js';
-import {throw_expression} from '../../lib/index.js';
 import {
-	CPConfig,
+	throw_expression,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeSupertype} from '../utils-private.js';
 import {
 	Operator,
-	ValidOperatorUnary,
+	type ValidOperatorUnary,
 } from '../Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
@@ -42,7 +45,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return this.operand.shouldFloat();
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionUnop {
 		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionUnop(
 			this.operator,
@@ -50,7 +55,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		);
 	}
 
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
 		const t0: TYPE.Type = this.operand.type();
 		/* eslint-disable indent */
 		return (
@@ -69,7 +76,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		/* eslint-enable indent */
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand.fold();
 		if (!v0) {
 			return v0;

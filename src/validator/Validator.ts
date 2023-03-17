@@ -1,16 +1,19 @@
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {LexError01} from '../index.js';
-import type {CodeUnit} from '../lib/index.js';
 import {
-	CPConfig,
+	type CodeUnit,
+	throw_expression,
+} from '../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.js';
 import {
 	Punctuator,
 	PUNCTUATORS,
-	Keyword,
+	type Keyword,
 	KEYWORDS,
-	Serializable,
+	type Serializable,
 } from '../parser/index.js';
 import type {SymbolStructure} from './index.js';
 import {utf8Encode} from './utils-private.js';
@@ -180,11 +183,9 @@ export class Validator {
 	 */
 	public static cookTokenPunctuator(source: Punctuator): bigint {
 		const index: number = PUNCTUATORS.indexOf(source);
-		if (0 <= index && index < PUNCTUATORS.length) {
-			return BigInt(index) + Validator.MIN_VALUE_PUNCTUATOR;
-		} else {
-			throw new RangeError(`Token \`${ source }\` is not a valid punctuator.`);
-		}
+		return (0 <= index && index < PUNCTUATORS.length)
+			? BigInt(index) + Validator.MIN_VALUE_PUNCTUATOR
+			: throw_expression(new RangeError(`Token \`${ source }\` is not a valid punctuator.`));
 	}
 
 	/**
@@ -195,11 +196,9 @@ export class Validator {
 	 */
 	public static cookTokenKeyword(source: Keyword): bigint {
 		const index: number = KEYWORDS.indexOf(source);
-		if (0 <= index && index < KEYWORDS.length) {
-			return BigInt(index) + Validator.MIN_VALUE_KEYWORD;
-		} else {
-			throw new RangeError(`Token \`${ source }\` is not a valid keyword.`);
-		}
+		return (0 <= index && index < KEYWORDS.length)
+			? BigInt(index) + Validator.MIN_VALUE_KEYWORD
+			: throw_expression(new RangeError(`Token \`${ source }\` is not a valid keyword.`));
 	}
 
 	/**
