@@ -9,12 +9,12 @@ import {
 	memoizeGetter,
 } from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {
 	SymbolKind,
-	SymbolStructure,
+	type SymbolStructure,
 	SymbolStructureVar,
 	SymbolStructureType,
 } from '../index.js';

@@ -1,8 +1,8 @@
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 	OBJ,
-	TYPE,
+	type TYPE,
 	INST,
 } from '../src/index.js';
 

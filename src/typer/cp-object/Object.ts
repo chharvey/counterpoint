@@ -26,21 +26,15 @@ abstract class CPObject {
 	 * Decorator for {@link CPObject#equal} method and any overrides.
 	 * Performs the Equality algorithm — returns whether two CPObjects (Counterpoint Language Values)
 	 * are equal by some definition.
-	 * @param   _prototype    the prototype that has the method to be decorated
-	 * @param   _property_key the name of the method to be decorated
-	 * @param   descriptor    the Property Descriptor of the prototype’s method
-	 * @returns               `descriptor`, with a new value that is the decorated method
+	 * @implements MethodDecorator<CPObject, (this: CPObject, value: CPObject) => boolean>
 	 */
 	protected static equalsDeco(
-		_prototype: CPObject,
-		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: CPObject, value: CPObject) => boolean>,
-	): typeof descriptor {
-		const method = descriptor.value!;
-		descriptor.value = function (value) {
+		method:   (this: CPObject, value: CPObject) => boolean,
+		_context: ClassMethodDecoratorContext<CPObject, typeof method>,
+	): typeof method {
+		return function (value) {
 			return this.identical(value) || method.call(this, value);
 		};
-		return descriptor;
 	}
 
 

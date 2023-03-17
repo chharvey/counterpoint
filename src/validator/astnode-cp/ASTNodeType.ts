@@ -1,6 +1,6 @@
 import type {TYPE} from '../../index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {ASTNodeDeclarationType} from './index.js';

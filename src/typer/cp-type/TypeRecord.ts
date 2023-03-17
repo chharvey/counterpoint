@@ -1,6 +1,6 @@
 import {TypeError04} from '../../index.js';
 import {
-	IntRange,
+	type IntRange,
 	throw_expression,
 	strictEqual,
 } from '../../lib/index.js';

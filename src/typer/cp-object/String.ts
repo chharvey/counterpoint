@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import {
-	CodeUnit,
+	type CodeUnit,
 	strictEqual,
 } from '../../lib/index.js';
 import type {Object as CPObject} from './Object.js';

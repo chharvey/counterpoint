@@ -5,13 +5,13 @@ import {
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import {
 	Operator,
-	ValidTypeOperator,
+	type ValidTypeOperator,
 } from '../Operator.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';

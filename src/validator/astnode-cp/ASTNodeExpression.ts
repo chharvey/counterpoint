@@ -3,11 +3,11 @@ import {
 	OBJ,
 	TYPE,
 	INST,
-	Builder,
+	type Builder,
 	ErrorCode,
 } from '../../index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {
@@ -37,18 +37,13 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * Type-checks and re-throws any type errors first,
 	 * then computes assessed value (if applicable), and if successful,
 	 * returns a constant type equal to that assessed value.
-	 * @param   _prototype    the prototype that has the method to be decorated
-	 * @param   _property_key the name of the method to be decorated
-	 * @param   descriptor    the Property Descriptor of the prototype’s method
-	 * @returns               `descriptor`, with a new value that is the decorated method
+	 * @implements MethodDecorator<ASTNodeExpression, (this: ASTNodeExpression) => TYPE.Type>
 	 */
 	protected static typeDeco(
-		_prototype: ASTNodeExpression,
-		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression) => TYPE.Type>,
-	): typeof descriptor {
-		const method = descriptor.value!;
-		descriptor.value = function () {
+		method:   (this: ASTNodeExpression) => TYPE.Type,
+		_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
+	): typeof method {
+		return function () {
 			const type: TYPE.Type = method.call(this); // type-check first, to re-throw any TypeErrors
 			if (this.validator.config.compilerOptions.constantFolding) {
 				let value: OBJ.Object | null = null;
@@ -68,29 +63,22 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 			}
 			return type;
 		};
-		return descriptor;
 	}
 
 	/**
 	 * Decorator for {@link ASTNodeExpression#build} method and any overrides.
 	 * First tries to compute the assessed value, and if successful, builds the assessed value.
 	 * Otherwise builds this node.
-	 * @param   _prototype    the prototype that has the method to be decorated
-	 * @param   _property_key the name of the method to be decorated
-	 * @param   descriptor    the Property Descriptor of the prototype’s method
-	 * @returns               `descriptor`, with a new value that is the decorated method
+	 * @implements MethodDecorator<ASTNodeExpression, (this: ASTNodeExpression, builder: Builder, to_float?: boolean) => INST.InstructionConst | T>
 	 */
 	protected static buildDeco<T extends INST.InstructionExpression>(
-		_prototype: ASTNodeExpression,
-		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression, builder: Builder, to_float?: boolean) => INST.InstructionConst | T>,
-	): typeof descriptor {
-		const method = descriptor.value!;
-		descriptor.value = function (builder, to_float = false) {
+		method:   (this: ASTNodeExpression, builder: Builder, to_float?: boolean) => INST.InstructionConst | T,
+		_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
+	): typeof method {
+		return function (builder, to_float = false) {
 			const value: OBJ.Object | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
 			return (value) ? INST.InstructionConst.fromCPValue(value, to_float) : method.call(this, builder, to_float);
 		};
-		return descriptor;
 	}
 
 	/**

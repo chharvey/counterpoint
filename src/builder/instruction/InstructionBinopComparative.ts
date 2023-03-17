@@ -1,6 +1,6 @@
 import {
 	Operator,
-	ValidOperatorComparative,
+	type ValidOperatorComparative,
 } from '../../validator/index.js';
 import type {InstructionExpression} from './InstructionExpression.js';
 import {InstructionBinop} from './InstructionBinop.js';

@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {
 	Operator,
 	AST,
-	SymbolStructure,
+	type SymbolStructure,
 	SymbolStructureVar,
 	TYPE,
 	INST,

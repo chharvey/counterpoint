@@ -2,21 +2,21 @@ import * as assert from 'assert';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	Builder,
+	type INST,
+	type Builder,
 	TypeError01,
 	TypeError02,
 	TypeError04,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import {
 	Operator,
-	ValidAccessOperator,
+	type ValidAccessOperator,
 } from '../Operator.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';

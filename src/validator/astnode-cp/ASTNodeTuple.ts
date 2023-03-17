@@ -3,12 +3,12 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	Builder,
+	type INST,
+	type Builder,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';

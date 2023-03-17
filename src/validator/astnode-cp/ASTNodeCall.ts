@@ -3,9 +3,9 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	Builder,
-	TypeError03,
+	type INST,
+	type Builder,
+	type TypeError03,
 	TypeError05,
 	TypeError06,
 } from '../../index.js';
@@ -14,12 +14,12 @@ import {
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import {
-	ArgCount,
+	type ArgCount,
 	ValidFunctionName,
 	invalidFunctionName,
 } from './utils-private.js';
