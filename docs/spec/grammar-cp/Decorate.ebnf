@@ -52,20 +52,22 @@ Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyTyp
 
 
 
-Decorate(ItemsType ::= EntryType# ","?) -> Sequence<SemanticItemType>
-	:= ParseList(EntryType, SemanticItemType);
-Decorate(ItemsType ::= EntryType_Optional# ","?) -> Sequence<SemanticItemType>
-	:= ParseList(EntryType_Optional, SemanticItemType);
-Decorate(ItemsType ::= EntryType# "," EntryType_Optional# ","?) -> Sequence<SemanticItemType>
+Decorate(ItemsType ::= EntryType<-Named><-Optional># ","?) -> Sequence<SemanticItemType>
+	:= ParseList(EntryType<-Named><-Optional>, SemanticItemType);
+Decorate(ItemsType ::= EntryType<-Named><+Optional># ","?) -> Sequence<SemanticItemType>
+	:= ParseList(EntryType<-Named><+Optional>, SemanticItemType);
+Decorate(ItemsType ::= EntryType<-Named><-Optional># "," EntryType<-Named><+Optional># ","?) -> Sequence<SemanticItemType>
 	:= [
-		...ParseList(EntryType,          SemanticItemType),
-		...ParseList(EntryType_Optional, SemanticItemType),
+		...ParseList(EntryType<-Named><-Optional>, SemanticItemType),
+		...ParseList(EntryType<-Named><+Optional>, SemanticItemType),
 	];
 
-Decorate(PropertiesType ::= EntryType_Named# ","?) -> Sequence<SemanticPropertyType>
-	:= ParseList(EntryType_Named, SemanticPropertyType);
-Decorate(PropertiesType ::= EntryType_Named_Optional# ","?) -> Sequence<SemanticPropertyType>
-	:= ParseList(EntryType_Named_Optional, SemanticPropertyType);
+
+
+Decorate(PropertiesType ::= EntryType<+Named><-Optional># ","?) -> Sequence<SemanticPropertyType>
+	:= ParseList(EntryType<+Named><-Optional>, SemanticPropertyType);
+Decorate(PropertiesType ::= EntryType<+Named><+Optional># ","?) -> Sequence<SemanticPropertyType>
+	:= ParseList(EntryType<+Named><+Optional>, SemanticPropertyType);
 
 
 
@@ -112,6 +114,10 @@ Decorate(TypeUnit ::= TypeTupleLiteral) -> SemanticTypeTuple
 	:= Decorate(TypeTupleLiteral);
 Decorate(TypeUnit ::= TypeRecordLiteral) -> SemanticTypeRecord
 	:= Decorate(TypeRecordLiteral);
+Decorate(TypeUnit ::= TypeDictLiteral) -> SemanticTypeDict
+	:= Decorate(TypeDictLiteral);
+Decorate(TypeUnit ::= TypeMapLiteral) -> SemanticTypeMap
+	:= Decorate(TypeMapLiteral);
 
 
 
@@ -263,6 +269,8 @@ Decorate(Case ::= Expression<+Variable> "->" Expression<+Variable>) -> SemanticC
 		Decorate(Expression<+Variable>)
 	);
 
+
+
 Decorate(ExpressionGrouped<Variable> ::= "(" Expression<?Variable> ")") -> SemanticExpression
 	:= Decorate(Expression<?Variable>);
 
@@ -303,7 +311,7 @@ Decorate(FunctionArguments ::= "(" ( ","? Expression<+Variable># ","? )? ")") ->
 
 
 
-Decorate(ExpressionUnit<Variable> ::= <Variable+>IDENTIFIER) -> SemanticVariable
+Decorate(ExpressionUnit<+Variable> ::= IDENTIFIER) -> SemanticVariable
 	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(ExpressionUnit<Variable> ::= PrimitiveLiteral) -> SemanticConstant
 	:= Decorate(PrimitiveLiteral);
@@ -315,13 +323,13 @@ Decorate(ExpressionUnit<Variable> ::= TupleLiteral<-Variable>) -> SemanticTuple
 	:= Decorate(TupleLiteral<-Variable>);
 Decorate(ExpressionUnit<Variable> ::= RecordLiteral<-Variable>) -> SemanticRecord
 	:= Decorate(RecordLiteral<-Variable>);
-Decorate(ExpressionUnit<Variable> ::= <Variable+>TupleLiteral<?Variable>) -> SemanticTuple
+Decorate(ExpressionUnit<+Variable> ::= TupleLiteral<?Variable>) -> SemanticTuple
 	:= Decorate(TupleLiteral<?Variable>);
-Decorate(ExpressionUnit<Variable> ::= <Variable+>RecordLiteral<?Variable>) -> SemanticRecord
+Decorate(ExpressionUnit<+Variable> ::= RecordLiteral<?Variable>) -> SemanticRecord
 	:= Decorate(RecordLiteral<?Variable>);
-Decorate(ExpressionUnit<Variable> ::= <Variable+>SetLiteral) -> SemanticSet
+Decorate(ExpressionUnit<+Variable> ::= SetLiteral) -> SemanticSet
 	:= Decorate(SetLiteral);
-Decorate(ExpressionUnit<Variable> ::= <Variable+>MapLiteral) -> SemanticMap
+Decorate(ExpressionUnit<+Variable> ::= MapLiteral) -> SemanticMap
 	:= Decorate(MapLiteral);
 
 
@@ -364,9 +372,9 @@ Decorate(ExpressionCompound<Variable> ::= ExpressionCompound<?Variable> Property
 		Decorate(ExpressionCompound<?Variable>)
 		Decorate(PropertyAccess<?Variable>)
 	);
-Decorate(ExpressionCompound<+Variable> ::= ExpressionCompound<+Variable> FunctionCall) -> SemanticCall
+Decorate(ExpressionCompound<+Variable> ::= ExpressionCompound<?Variable> FunctionCall) -> SemanticCall
 	:= (SemanticCall
-		Decorate(ExpressionCompound<+Variable>)
+		Decorate(ExpressionCompound<?Variable>)
 		...(...Decorate(FunctionCall))
 	);
 

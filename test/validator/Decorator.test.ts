@@ -188,7 +188,7 @@ describe('Decorator', () => {
 				% (property__variable)
 			`]],
 
-			['Decorate(Case ::= Expression "->" Expression) -> SemanticCase', [AST.ASTNodeCase, `
+			['Decorate(Case ::= Expression<+Variable> "->" Expression<+Variable>) -> SemanticCase', [AST.ASTNodeCase, `
 				{42 -> 6.9};
 				% (case)
 			`]],
@@ -198,25 +198,33 @@ describe('Decorator', () => {
 				% (expression_grouped__variable)
 			`]],
 
-			['Decorate(TupleLiteral<-Variable> ::= "\\[" ","? Expression<-Variable># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+			['Decorate(TupleLiteral<-Variable> ::= "\\[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+				\\[];
+				% (tuple_literal)
+			`]],
+			['Decorate(TupleLiteral<+Variable> ::= "[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+				[];
+				% (tuple_literal__variable)
+			`]],
+			['Decorate(TupleLiteral<-Variable> ::= "\\[" ","? Expression<?Variable># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
 				\\[42, 6.9];
 				% (tuple_literal)
 			`]],
-			['Decorate(TupleLiteral<+Variable> ::= "[" ","? Expression<+Variable># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+			['Decorate(TupleLiteral<+Variable> ::= "[" ","? Expression<?Variable># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
 				[42, 6.9];
 				% (tuple_literal__variable)
 			`]],
 
-			['Decorate(RecordLiteral<-Variable> ::= "\\[" ","? Property<-Variable># ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
+			['Decorate(RecordLiteral<-Variable> ::= "\\[" ","? Property<?Variable># ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
 				\\[a= 42, b= 6.9];
 				% (record_literal)
 			`]],
-			['Decorate(RecordLiteral<+Variable> ::= "[" ","? Property<+Variable># ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
+			['Decorate(RecordLiteral<+Variable> ::= "[" ","? Property<?Variable># ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
 				[a= 42, b= 6.9];
 				% (record_literal__variable)
 			`]],
 
-			['Decorate(SetLiteral ::= "{" ","? Expression# ","? "}") -> SemanticSet', [AST.ASTNodeSet, `
+			['Decorate(SetLiteral ::= "{" ","? Expression<+Variable># ","? "}") -> SemanticSet', [AST.ASTNodeSet, `
 				{42, 6.9};
 				% (set_literal)
 			`]],
@@ -247,7 +255,7 @@ describe('Decorator', () => {
 				v.p = false;
 				% (property_assign)
 			`]],
-			['Decorate(PropertyAssign ::= "." "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
+			['Decorate(PropertyAssign ::= "." "[" Expression<+Variable> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
 				v.[a + b] = false;
 				% (property_assign)
 			`]],
@@ -256,7 +264,7 @@ describe('Decorator', () => {
 				v.p;
 				% (expression_compound__variable)
 			`]],
-			['Decorate(ExpressionCompound<Variable> ::= ExpressionCompound<?Variable> FunctionCall) -> SemanticCall', [AST.ASTNodeCall, `
+			['Decorate(ExpressionCompound<+Variable> ::= ExpressionCompound<?Variable> FunctionCall) -> SemanticCall', [AST.ASTNodeCall, `
 				List.<T>();
 				% (expression_compound__variable)
 			`]],
@@ -265,7 +273,7 @@ describe('Decorator', () => {
 				v = 42;
 				% (assignee)
 			`]],
-			['Decorate(Assignee ::= ExpressionCompound PropertyAssign) -> SemanticAccess', [AST.ASTNodeAccess, `
+			['Decorate(Assignee ::= ExpressionCompound<+Variable> PropertyAssign) -> SemanticAccess', [AST.ASTNodeAccess, `
 				v.1 = 42;
 				% (assignee)
 			`]],
