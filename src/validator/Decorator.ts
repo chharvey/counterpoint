@@ -17,6 +17,7 @@ import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
 	type SyntaxNodeFamily,
+	isSyntaxNodeFamily,
 	type SyntaxNodeSupertype,
 	isSyntaxNodeSupertype,
 } from './utils-private.js';
@@ -192,14 +193,14 @@ class Decorator {
 			['type_tuple_literal', (node) => new AST.ASTNodeTypeTuple(
 				node as SyntaxNodeType<'type_tuple_literal'>,
 				node.children
-					.filter((c): c is SyntaxNodeType<'entry_type' | 'entry_type__optional'> => isSyntaxNodeType(c, /^entry_type(__optional)?$/))
+					.filter((c): c is SyntaxNodeFamily<'entry_type', ['optional']> => isSyntaxNodeFamily(c, 'entry_type', ['optional']))
 					.map((c) => this.decorateTS(c)),
 			)],
 
 			['type_record_literal', (node) => new AST.ASTNodeTypeRecord(
 				node as SyntaxNodeType<'type_record_literal'>,
 				node.children
-					.filter((c): c is SyntaxNodeType<'entry_type__named' | 'entry_type__named__optional'> => isSyntaxNodeType(c, /^entry_type__named(__optional)?$/))
+					.filter((c): c is SyntaxNodeFamily<'entry_type__named', ['optional']> => isSyntaxNodeFamily(c, 'entry_type__named', ['optional']))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodePropertyType>,
 			)],
 
@@ -379,11 +380,11 @@ class Decorator {
 			)],
 
 			[/^expression_compound(__variable)?$/, (node) => (
-				(isSyntaxNodeType(node.children[1], /^property_access(__variable)?$/)) ? new AST.ASTNodeAccess(
+				(isSyntaxNodeFamily(node.children[1], 'property_access', ['variable'])) ? new AST.ASTNodeAccess(
 					node as SyntaxNodeFamily<'expression_compound', ['variable']>,
 					Decorator.ACCESSORS.get(node.children[1].children[0].text as Punctuator)!,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
-					this.decorateTS(node.children[1] as SyntaxNodeFamily<'property_access', ['variable']>),
+					this.decorateTS(node.children[1]),
 				)
 				: (assert.ok(isSyntaxNodeType(node.children[1], 'function_call'), `Expected ${ node.children[1] } to be a \`SyntaxNodeType<'function_call'>\`.`), ((
 					n:                      SyntaxNodeType<'expression_compound__variable'>,
