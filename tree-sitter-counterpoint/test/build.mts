@@ -241,31 +241,49 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				f.<(T)>();
 			`,
-			makeSourceFile(extractType(s('type_grouped', s('identifier')))),
+			makeSourceFile(extractType(s('type_grouped__variable', s('identifier')))),
 		],
 
 		TypeTupleLiteral: [
 			xjs.String.dedent`
+				f.<\\[bool, int, ?: str]>();
 				f.<[bool, int, ?: str]>();
 			`,
-			makeSourceFile(extractType(s(
-				'type_tuple_literal',
-				s('entry_type',           s('keyword_type')),
-				s('entry_type',           s('keyword_type')),
-				s('entry_type__optional', s('keyword_type')),
-			))),
+			makeSourceFile(
+				extractType(s(
+					'type_tuple_literal',
+					s('entry_type',           s('keyword_type')),
+					s('entry_type',           s('keyword_type')),
+					s('entry_type__optional', s('keyword_type')),
+				)),
+				extractType(s(
+					'type_tuple_literal__variable',
+					s('entry_type__variable',           s('keyword_type')),
+					s('entry_type__variable',           s('keyword_type')),
+					s('entry_type__optional__variable', s('keyword_type')),
+				)),
+			),
 		],
 
 		TypeRecordLiteral: [
 			xjs.String.dedent`
+				f.<\\[a: bool, b?: int, c: str]>();
 				f.<[a: bool, b?: int, c: str]>();
 			`,
-			makeSourceFile(extractType(s(
-				'type_record_literal',
-				s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
-				s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
-				s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
-			))),
+			makeSourceFile(
+				extractType(s(
+					'type_record_literal',
+					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
+				)),
+				extractType(s(
+					'type_record_literal__variable',
+					s('entry_type__named__variable',           s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named__optional__variable', s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named__variable',           s('word', s('identifier')), s('keyword_type')),
+				)),
+			),
 		],
 
 		TypeDictLiteral: [
@@ -306,17 +324,17 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			makeSourceFile(
 				extractType(s(
-					'type_compound',
+					'type_compound__variable',
 					s('identifier'),
 					s('property_access_type', s('integer')),
 				)),
 				extractType(s(
-					'type_compound',
+					'type_compound__variable',
 					s('identifier'),
 					s('property_access_type', s('word', s('identifier'))),
 				)),
 				extractType(s(
-					'type_compound',
+					'type_compound__variable',
 					s('identifier'),
 					s(
 						'generic_call',
@@ -333,30 +351,36 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				f.<T?>();
 				f.<T!>();
+				f.<bool\\[3]>();
 				f.<T[]>();
 				f.<T[3]>();
 				f.<T{}>();
 			`,
 			makeSourceFile(
 				extractType(s(
-					'type_unary_symbol',
+					'type_unary_symbol__variable',
 					s('identifier'),
 				)),
 				extractType(s(
-					'type_unary_symbol',
+					'type_unary_symbol__variable',
 					s('identifier'),
 				)),
 				extractType(s(
-					'type_unary_symbol',
+					'type_unary_symbol__variable',
+					s('keyword_type'),
+					s('integer'),
+				)),
+				extractType(s(
+					'type_unary_symbol__variable',
 					s('identifier'),
 				)),
 				extractType(s(
-					'type_unary_symbol',
+					'type_unary_symbol__variable',
 					s('identifier'),
 					s('integer'),
 				)),
 				extractType(s(
-					'type_unary_symbol',
+					'type_unary_symbol__variable',
 					s('identifier'),
 				)),
 			),
@@ -367,7 +391,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				f.<mutable T>();
 			`,
 			makeSourceFile(extractType(s(
-				'type_unary_keyword',
+				'type_unary_keyword__variable',
 				s('identifier'),
 			))),
 		],
@@ -377,7 +401,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				f.<T & U>();
 			`,
 			makeSourceFile(extractType(s(
-				'type_intersection',
+				'type_intersection__variable',
 				s('identifier'),
 				s('identifier'),
 			))),
@@ -388,7 +412,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				f.<T | U>();
 			`,
 			makeSourceFile(extractType(s(
-				'type_union',
+				'type_union__variable',
 				s('identifier'),
 				s('identifier'),
 			))),
@@ -904,10 +928,10 @@ function buildTest(title: string, source: string, expected: string): string {
 					'declaration_type',
 					s('identifier'),
 					s(
-						'type_union',
+						'type_union__variable',
 						s('identifier'),
 						s(
-							'type_intersection',
+							'type_intersection__variable',
 							s('identifier'),
 							s('identifier'),
 						),
@@ -941,10 +965,10 @@ function buildTest(title: string, source: string, expected: string): string {
 					'declaration_variable',
 					s('identifier'),
 					s(
-						'type_union',
+						'type_union__variable',
 						s('identifier'),
 						s(
-							'type_intersection',
+							'type_intersection__variable',
 							s('identifier'),
 							s('identifier'),
 						),
