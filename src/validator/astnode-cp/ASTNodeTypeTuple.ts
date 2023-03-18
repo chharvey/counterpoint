@@ -5,7 +5,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import type {ASTNodeItemType} from './ASTNodeItemType.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -19,10 +19,11 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'type_tuple_literal'>,
+		start_node: SyntaxNodeFamily<'type_tuple_literal', ['variable']>,
 		public override readonly children: readonly ASTNodeItemType[],
+		is_ref: boolean,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {is_ref}, children);
 	}
 
 	@memoizeMethod

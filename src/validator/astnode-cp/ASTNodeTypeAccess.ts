@@ -8,7 +8,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import {Operator} from '../Operator.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndexType} from './ASTNodeIndexType.js';
@@ -24,7 +24,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'type_compound'>,
+		start_node: SyntaxNodeFamily<'type_compound', ['variable']>,
 		private readonly base:     ASTNodeType,
 		private readonly accessor: ASTNodeIndexType | ASTNodeKey,
 	) {
