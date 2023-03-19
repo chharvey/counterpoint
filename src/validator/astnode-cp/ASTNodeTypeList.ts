@@ -13,10 +13,11 @@ import {
 } from '../../core/index.js';
 import type {SyntaxNodeFamily} from '../utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
 
 
 
-export class ASTNodeTypeList extends ASTNodeType {
+export class ASTNodeTypeList extends ASTNodeTypeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeList {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeList);
@@ -29,7 +30,7 @@ export class ASTNodeTypeList extends ASTNodeType {
 		is_ref: boolean,
 		private readonly count: bigint | null = null,
 	) {
-		super(start_node, {is_ref, count}, [type]);
+		super(start_node, [type], is_ref, {count});
 	}
 
 	@memoizeMethod

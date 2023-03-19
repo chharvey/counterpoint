@@ -16,10 +16,11 @@ import type {SyntaxNodeFamily} from '../utils-private.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
 import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
 import {ASTNodeType} from './ASTNodeType.js';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
 
 
 
-export class ASTNodeTypeRecord extends ASTNodeType {
+export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeRecord {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeRecord);
@@ -31,7 +32,7 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		public override readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
 		is_ref: boolean,
 	) {
-		super(start_node, {is_ref}, children);
+		super(start_node, children, is_ref);
 	}
 
 	public override varCheck(): void {

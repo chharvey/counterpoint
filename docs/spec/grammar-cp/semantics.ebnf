@@ -47,6 +47,15 @@ SemanticTypeConstant[value: Type]
 SemanticTypeAlias[id: RealNumber]
 	::= ();
 
+SemanticTypeCollectionLiteral =:=
+	| SemanticTypeTuple
+	| SemanticTypeRecord
+	| SemanticTypeDict
+	| SemanticTypeSet
+	| SemanticTypeMap
+	| SemanticTypeList
+;
+
 SemanticTypeTuple  [isRef: Boolean] ::= SemanticItemType*;
 SemanticTypeRecord [isRef: Boolean] ::= SemanticPropertyType+;
 SemanticTypeDict                    ::= SemanticType;

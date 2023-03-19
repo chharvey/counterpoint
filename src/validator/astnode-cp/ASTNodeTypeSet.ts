@@ -7,10 +7,11 @@ import {
 } from '../../core/index.js';
 import type {SyntaxNodeFamily} from '../utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
 
 
 
-export class ASTNodeTypeSet extends ASTNodeType {
+export class ASTNodeTypeSet extends ASTNodeTypeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeSet {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeSet);
@@ -21,7 +22,7 @@ export class ASTNodeTypeSet extends ASTNodeType {
 		start_node: SyntaxNodeFamily<'type_unary_symbol', ['variable']>,
 		private readonly type: ASTNodeType,
 	) {
-		super(start_node, {}, [type]);
+		super(start_node, [type]);
 	}
 
 	@memoizeMethod
