@@ -44,7 +44,9 @@ Type TypeValueOf(SemanticTypeRecord recordtype) :=
 Type TypeValueOf(SemanticTypeList listtype) :=
 	1. *Assert:* `listtype.children.count` is 1.
 	2. *Let* `itemtype` be *UnwrapAffirm:* `TypeValueOf(listtype.children.0)`.
-	3. *If* `listtype.count` is a RealNumber:
+	3. *If* `listtype.isRef` is `false`:
+		1. *Assert:* `listtype.count` is a RealNumber.
+	4. *If* `listtype.count` is a RealNumber:
 		1. *If* `listtype.count` is less than *0*:
 			1. *Throw:* a new TypeError.
 		2. *Let* `data` be a new Sequence.
@@ -56,7 +58,7 @@ Type TypeValueOf(SemanticTypeList listtype) :=
 			] to `data`.
 			2. Increment `i`.
 		5. *Return:* a `Tuple` type whose items are `data`.
-	4. *Return:* a `List` type whose items’ type is `itemtype`.
+	5. *Return:* a `List` type whose items’ type is `itemtype`.
 ;
 
 
@@ -156,8 +158,10 @@ Type TypeValueOf(SemanticTypeOperation[operator: OREXCP] oper) :=
 Type TypeValueOf(SemanticTypeOperation[operator: MUTABLE] oper) :=
 	1. *Assert:* `oper.children.count` is 1.
 	2. *Let* `child` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
-	3. *Let* `returned` be a mutable copy of `child`.
-	4. *Return:* `returned`.
+	3. *If* `child` is a SemanticTypeTuple or a SemanticTypeRecord or a SemanticTypeList:
+		1. *If* `child.isRef` is `false`:
+			1. *Throw:* a new TypeError01.
+	4. *Return:* a mutable copy of `child`.
 ;
 
 Type TypeValueOf(SemanticTypeOperation[operator: AND] oper) :=

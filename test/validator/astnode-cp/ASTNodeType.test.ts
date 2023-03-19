@@ -99,7 +99,7 @@ describe('ASTNodeType', () => {
 
 
 
-	specify('ASTNodeTypeTuple', () => {
+	describe('ASTNodeTypeTuple', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).eval(),
@@ -114,7 +114,7 @@ describe('ASTNodeType', () => {
 
 
 
-	specify('ASTNodeTypeRecord', () => {
+	describe('ASTNodeTypeRecord', () => {
 		specify('#eval', () => {
 			const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, z: str]`);
 			assert.deepStrictEqual(

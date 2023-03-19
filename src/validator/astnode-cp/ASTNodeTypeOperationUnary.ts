@@ -1,5 +1,8 @@
 import * as assert from 'assert';
-import {TYPE} from '../../index.js';
+import {
+	TYPE,
+	TypeError01,
+} from '../../index.js';
 import {
 	throw_expression,
 	memoizeMethod,
@@ -14,6 +17,7 @@ import {
 	type ValidTypeOperator,
 } from '../Operator.js';
 import type {ASTNodeType} from './ASTNodeType.js';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
 import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
 
 
@@ -43,7 +47,10 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	public override eval(): TYPE.Type {
 		return (
 			(this.operator === Operator.ORNULL)  ? this.operand.eval().union(TYPE.NULL) :
-			(this.operator === Operator.MUTABLE) ? this.operand.eval().mutableOf()      :
+			(this.operator === Operator.MUTABLE) ? ((this.operand instanceof ASTNodeTypeCollectionLiteral && !this.operand.isRef)
+				? throw_expression(new TypeError01(this))
+				: this.operand.eval().mutableOf()
+			) :
 			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
 		);
 	}

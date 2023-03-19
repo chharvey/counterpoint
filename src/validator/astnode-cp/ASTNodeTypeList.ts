@@ -36,6 +36,9 @@ export class ASTNodeTypeList extends ASTNodeTypeCollectionLiteral {
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		const itemstype: TYPE.Type = this.type.eval();
+		if (!this.isRef) {
+			assert.notStrictEqual(this.count, null);
+		}
 		return (this.count === null)
 			? new TYPE.TypeList(itemstype)
 			: (this.count >= 0)
