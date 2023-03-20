@@ -7,10 +7,11 @@ import {
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
 
 
 
-export class ASTNodeTypeDict extends ASTNodeType {
+export class ASTNodeTypeDict extends ASTNodeTypeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeDict {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeDict);
@@ -21,7 +22,7 @@ export class ASTNodeTypeDict extends ASTNodeType {
 		start_node: SyntaxNodeType<'type_dict_literal'>,
 		private readonly type: ASTNodeType,
 	) {
-		super(start_node, {}, [type]);
+		super(start_node, [type]);
 	}
 
 	@memoizeMethod

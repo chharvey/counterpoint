@@ -48,6 +48,19 @@ describe('ASTNodeDeclarationVariable', () => {
 
 
 	describe('#typeCheck', () => {
+		function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
+			if (src instanceof Array) {
+				return src
+					.map((s) => s.trim())
+					.filter((s) => !!s)
+					.forEach((s) => typeCheckGoal(s, expect_thrown));
+			}
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+			goal.varCheck();
+			return (expect_thrown)
+				? assert.throws(() => goal.typeCheck(), expect_thrown)
+				: goal.typeCheck();
+		}
 		it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  int | float =  21  *  2;
@@ -68,20 +81,18 @@ describe('ASTNodeDeclarationVariable', () => {
 				let x: float = 42;
 			`, CONFIG_COERCION_OFF).typeCheck(), TypeError03);
 		});
+		context('assigning a collection to a constant collection type.', () => {
+			it('allows assigning a constant collection literal', () => {
+				typeCheckGoal(`
+					let c: int\\[3] = \\[42, 420, 4200];
+					let d: \\[n42: int, n420: int] = \\[
+						n42=  42,
+						n420= 420,
+					];
+				`);
+			});
+		});
 		context('assigning a collection literal to a wider mutable type.', () => {
-			function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
-				if (src instanceof Array) {
-					return src
-						.map((s) => s.trim())
-						.filter((s) => !!s)
-						.forEach((s) => typeCheckGoal(s, expect_thrown));
-				}
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				goal.varCheck();
-				return (expect_thrown)
-					? assert.throws(() => goal.typeCheck(), expect_thrown)
-					: goal.typeCheck();
-			}
 			it('tuples: only allows greater or equal items.', () => {
 				typeCheckGoal(`
 					type T = [int];
