@@ -555,6 +555,9 @@ describe('Type', () => {
 					{type: TYPE.INT, optional: true},
 				])), '[int, ?:int, ?:int, ?:int, ?:int] !<: [int, int, ?:int, ?:int]');
 			});
+			it('Covariance for immutable tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.', () => {
+				assert.ok(TYPE.TypeTuple.fromTypes([TYPE.INT, TYPE.FLOAT]).isSubtypeOf(TYPE.TypeTuple.fromTypes([TYPE.INT.union(TYPE.NULL), TYPE.FLOAT.union(TYPE.NULL)])), '[int, float] <: [int?, float?]');
+			});
 			it('Invariance for mutable tuples: `A == B --> mutable Tuple.<A> <: mutable Tuple.<B>`.', () => {
 				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.INT, TYPE.FLOAT], true).isSubtypeOf(TYPE.TypeTuple.fromTypes([TYPE.INT.union(TYPE.NULL), TYPE.FLOAT.union(TYPE.NULL)], true)), 'mutable [int, float] !<: mutable [int?, float?]');
 			});
@@ -647,6 +650,15 @@ describe('Type', () => {
 					[0x102n, {type: TYPE.BOOL, optional: false}],
 				]))), '[a: str, b?: int, c: bool] !<: [a?: str, b: int, c: bool]');
 			});
+			it('Covariance for immutable records: `A <: B --> Record.<A> <: Record.<B>`.', () => {
+				assert.ok(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+					[0x100n, TYPE.INT],
+					[0x101n, TYPE.FLOAT],
+				])).isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+					[0x100n, TYPE.INT.union(TYPE.NULL)],
+					[0x101n, TYPE.FLOAT.union(TYPE.NULL)],
+				]))), '[a: int, b: float] <: [a: int?, b: float?]');
+			});
 			it('Invariance for mutable records: `A == B --> mutable Record.<A> <: mutable Record.<B>`.', () => {
 				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT],
@@ -696,7 +708,7 @@ describe('Type', () => {
 				assert.ok(new TYPE.TypeSet(TYPE.INT).isSubtypeOf(TYPE.OBJ), 'Set.<int> <: obj');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeSet(TYPE.INT)), 'obj !<: Set.<int>');
 			});
-			it('Covariance or immutable sets: `A <: B --> Set.<A> <: Set.<B>`.', () => {
+			it('Covariance for immutable sets: `A <: B --> Set.<A> <: Set.<B>`.', () => {
 				assert.ok(new TYPE.TypeSet(TYPE.INT).isSubtypeOf(new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT))), 'Set.<int> <: Set.<int | float>');
 				assert.ok(!new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT)).isSubtypeOf(new TYPE.TypeSet(TYPE.INT)), 'Set.<int | float> !<: Set.<int>');
 			});

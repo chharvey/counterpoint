@@ -47,9 +47,10 @@ export class TypeSet extends Type {
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeSet
+			&& (!t.isMutable || this.isMutable)
 			&& ((t.isMutable)
-				? this.isMutable && this.invariant.equals(t.invariant)
-				: this.invariant.isSubtypeOf(t.invariant)
+				? this.invariant.equals(t.invariant)      // Invariance for mutable sets: `A == B --> mutable Set.<A> <: mutable Set.<B>`.
+				: this.invariant.isSubtypeOf(t.invariant) // Covariance for immutable sets: `A <: B --> Set.<A> <: Set.<B>`.
 			)
 		);
 	}
