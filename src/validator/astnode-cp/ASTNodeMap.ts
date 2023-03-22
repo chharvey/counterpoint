@@ -74,6 +74,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 			const assignee_type_map: TYPE.TypeMap = (TYPE.TypeMap.isUnitType(assignee))
 				? assignee.value.toType()
 				: assignee;
+			// better error reporting to check entry-by-entry instead of checking `this.type().invariant_{ant,con}`
 			xjs.Array.forEachAggregated(this.children, (case_) => xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => ASTNodeCP.typeCheckAssignment(
 				expr.type(),
 				[assignee_type_map.invariant_ant, assignee_type_map.invariant_con][i],

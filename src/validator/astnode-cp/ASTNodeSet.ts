@@ -66,6 +66,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 			const assignee_type_set: TYPE.TypeSet = (TYPE.TypeSet.isUnitType(assignee))
 				? assignee.value.toType()
 				: assignee;
+			// better error reporting to check entry-by-entry instead of checking `this.type().invariant`
 			xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssignment(
 				expr.type(),
 				assignee_type_set.invariant,
