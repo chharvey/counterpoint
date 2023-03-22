@@ -49,8 +49,8 @@ export class TypeSet extends Type {
 			t instanceof TypeSet
 			&& (!t.isMutable || this.isMutable)
 			&& ((t.isMutable)
-				? this.invariant.equals(t.invariant)      // Invariance for mutable sets: `A == B --> mutable Set.<A> <: mutable Set.<B>`.
-				: this.invariant.isSubtypeOf(t.invariant) // Covariance for immutable sets: `A <: B --> Set.<A> <: Set.<B>`.
+				? this.invariant.equals(t.invariant) // Invariance for mutable sets: `A == B --> mutable Set.<A> <: mutable Set.<B>`.
+				: this.invariant.equals(t.invariant) // Invariance for immutable sets: `A == B --> Set.<A> <: Set.<B>`.
 			)
 		);
 	}

@@ -457,19 +457,31 @@ describe('Type', () => {
 				});
 			});
 			it('unit Set types should be subtype of a set type instance.', () => {
+				const values = [
+					new OBJ.Integer(42n),
+					new OBJ.Float(4.2),
+					new OBJ.String('hello'),
+				] as const;
 				new Map<OBJ.Object, TYPE.TypeSet>([
-					[new OBJ.Set(),                                                       new TYPE.TypeSet(TYPE.NEVER)],
-					[new OBJ.Set(new Set([new OBJ.Integer(42n)])),                        new TYPE.TypeSet(TYPE.INT)],
-					[new OBJ.Set(new Set([new OBJ.Float(4.2), new OBJ.String('hello')])), new TYPE.TypeSet(TYPE.FLOAT.union(TYPE.STR))],
+					[new OBJ.Set(),                                new TYPE.TypeSet(TYPE.NEVER)],
+					[new OBJ.Set(new Set([values[0]])),            new TYPE.TypeSet(values[0].toType())],
+					[new OBJ.Set(new Set([values[1], values[2]])), new TYPE.TypeSet(values[1].toType().union(values[2].toType()))],
 				]).forEach((settype, value) => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(settype), `let x: ${ settype } = ${ value };`);
 				});
 			});
 			it('unit Map types should be subtype of a map type instance.', () => {
+				const values = [
+					new OBJ.Integer(42n),
+					new OBJ.Float(4.2),
+					new OBJ.String('hello'),
+					new OBJ.Integer(0x100n),
+					new OBJ.Integer(0x101n),
+				] as const;
 				new Map<OBJ.Object, TYPE.TypeMap>([
-					[new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([[new OBJ.Integer(0x100n), new OBJ.Integer(42n)]])),                                                   new TYPE.TypeMap(TYPE.INT, TYPE.INT)],
-					[new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([[new OBJ.Integer(0x100n), new OBJ.Float(4.2)], [new OBJ.Integer(0x101n), new OBJ.String('hello')]])), new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT.union(TYPE.STR))],
-					[new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([[new OBJ.String('hello'), new OBJ.Integer(0x100n)], [new OBJ.Float(4.2), new OBJ.Integer(0x101n)]])), new TYPE.TypeMap(TYPE.FLOAT.union(TYPE.STR), TYPE.INT)],
+					[new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([[values[3], values[0]]])),                         new TYPE.TypeMap(values[3].toType(),                           TYPE.INT)],
+					[new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([[values[3], values[1]], [values[4], values[2]]])), new TYPE.TypeMap(values[3].toType().union(values[4].toType()), TYPE.FLOAT.union(TYPE.STR))],
+					[new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([[values[2], values[3]], [values[1], values[4]]])), new TYPE.TypeMap(values[2].toType().union(values[1].toType()), TYPE.INT)],
 				]).forEach((maptype, value) => {
 					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(maptype), `let x: ${ maptype } = ${ value };`);
 				});
@@ -708,8 +720,8 @@ describe('Type', () => {
 				assert.ok(new TYPE.TypeSet(TYPE.INT).isSubtypeOf(TYPE.OBJ), 'Set.<int> <: obj');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeSet(TYPE.INT)), 'obj !<: Set.<int>');
 			});
-			it('Covariance for immutable sets: `A <: B --> Set.<A> <: Set.<B>`.', () => {
-				assert.ok(new TYPE.TypeSet(TYPE.INT).isSubtypeOf(new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT))), 'Set.<int> <: Set.<int | float>');
+			it('Invariance for immutable sets: `A == B --> Set.<A> <: Set.<B>`.', () => {
+				assert.ok(!new TYPE.TypeSet(TYPE.INT).isSubtypeOf(new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT))), 'Set.<int> !<: Set.<int | float>');
 				assert.ok(!new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT)).isSubtypeOf(new TYPE.TypeSet(TYPE.INT)), 'Set.<int | float> !<: Set.<int>');
 			});
 			it('Invariance for mutable sets: `A == B --> mutable Set.<A> <: mutable Set.<B>`.', () => {
@@ -722,9 +734,12 @@ describe('Type', () => {
 				assert.ok(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL).isSubtypeOf(TYPE.OBJ), 'Map.<int, bool> <: obj');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL)), 'obj !<: Map.<int, bool>');
 			});
-			it('Covariance for immutable maps: `A <: C && B <: D --> Map.<A, B> <: Map.<C, D>`.', () => {
-				assert.ok(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL).isSubtypeOf(new TYPE.TypeMap(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL.union(TYPE.NULL))), 'Map.<int, bool> <: Map.<int | float, bool | null>');
-				assert.ok(!new TYPE.TypeMap(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL.union(TYPE.NULL)).isSubtypeOf(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL)), 'Map.<int | float, bool | null> !<: Map.<int, bool>');
+			it('Invariance for immutable maps’ keys: `A == C && --> Map.<A, B> <: Map.<C, B>`.', () => {
+				assert.ok(!new TYPE.TypeMap(TYPE.INT, TYPE.BOOL).isSubtypeOf(new TYPE.TypeMap(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL)), 'Map.<int, bool> !<: Map.<int | float, bool>');
+			});
+			it('Covariance for immutable maps’ values: `B <: D --> Map.<A, B> <: Map.<A, D>`.', () => {
+				assert.ok( new TYPE.TypeMap(TYPE.INT, TYPE.BOOL)                 .isSubtypeOf(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL.union(TYPE.NULL))), 'Map.<int, bool>         <: Map.<int, bool | null>');
+				assert.ok(!new TYPE.TypeMap(TYPE.INT, TYPE.BOOL.union(TYPE.NULL)).isSubtypeOf(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL)),                  'Map.<int, bool | null> !<: Map.<int, bool>');
 			});
 			it('Invariance for mutable maps: `A == C && B == D --> mutable Map.<A, B> <: mutable Map.<C, D>`.', () => {
 				assert.ok(!new TYPE.TypeMap(TYPE.INT, TYPE.BOOL, true).isSubtypeOf(new TYPE.TypeMap(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL.union(TYPE.NULL), true)), 'mutable Map.<int, bool> !<: mutable Map.<int | float, bool | null>');
