@@ -28,12 +28,7 @@ SemanticCase
 SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
-	| SemanticTypeTuple
-	| SemanticTypeRecord
-	| SemanticTypeList
-	| SemanticTypeDict
-	| SemanticTypeSet
-	| SemanticTypeMap
+	| SemanticTypeCollectionLiteral
 	| SemanticTypeAccess
 	| SemanticTypeCall
 	| SemanticTypeOperation
