@@ -187,6 +187,11 @@ Counterpoint has the following built-in types.
 This list is not exhaustive, as Counterpoint Types may be created in any Counterpoint program.
 
 
+### Value Types and Reference Types
+Value types and reference types correspond to
+[value objects and reference objects](./intrinsics.md#value-objects-and-reference-objects) respectively.
+
+
 ### Simple Types
 Simple types do not comprise other types.
 
@@ -328,6 +333,8 @@ Compound types are derived from other types.
 
 - [Tuple Types](#tuple-types)
 - [Record Types](#record-types)
+- [Vect Types](#vect-types)
+- [Struct Types](#struct-types)
 - [List Types](#list-types)
 - [Dict Types](#dict-types)
 - [Set Types](#set-types)
@@ -346,6 +353,22 @@ a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values,
 The objects that any given Record type describes are `Record` objects whose
 properties’ types match up with the invariants in the structure by name.
 Records have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
+
+#### Vect Types
+A **Vect** type describes instances of [`Vect`](./intrinsics.md#vect) and is parameterized by
+a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items, called invariants.
+The objects that any given Vect type describes are `Vect` objects whose
+items’ types match up with the invariants in the sequence in order.
+Vects have a static size, are ordered, and are 0-origin indexable by Integers.
+The invariants of a Vect type are restricted to value types.
+
+#### Struct Types
+A **Struct** type describes instances of [`Struct`](./intrinsics.md#struct) and is parameterized by
+a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values, called invariants.
+The objects that any given Struct type describes are `Struct` objects whose
+properties’ types match up with the invariants in the structure by name.
+Structs have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
+The invariants of a Struct type are restricted to value types.
 
 #### List Types
 A **List** type describes instances of [`List`](./intrinsics.md#list) and is parameterized by a single type,
@@ -381,6 +404,34 @@ Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by
 
 
 ## Type Operations
+
+
+### IsReference
+A function that determines whether a type is a [reference type or a value type](#value-types-and-reference-types).
+```
+Boolean IsReference(Type t) :=
+	1. *If* `t` is a Counterpoint Specification Type:
+		1. *Return:* `false`.
+	2. *Assert:* `t` is a Counterpoint Language Type.
+	3. *Let* `valuetypes` be a new Sequence [
+		`Never`,
+		`Void`,
+		`Null`,
+		`Number`,
+		`String`,
+	].
+	4. *Set* `valuetypes` to a reduction of `valuetypes` for each `a` and `b` to *UnwrapAffirm:* `Union(a, b)`.
+	5. *If* *UnwrapAffirm:* `Subtype(t, valuetypes)`:
+		1. *Return:* `false`.
+	6. *If* `t` is a Vect type *or* `t` is a Struct type:
+		1. *Return:* `false`.
+	7. *If* `t` is a Union of some types `a` and `b`:
+		1. *If* *UnwrapAffirm:* `IsReference(a)` is `true` *or* *UnwrapAffirm:* `IsReference(b)` is `true`:
+			1. *Return:* `true`.
+		2. *Return:* `false`.
+	8. *Return:* `true`.
+;
+```
 
 
 ### Intersection

@@ -1,23 +1,14 @@
-import {TypeError04} from '../../index.js';
-import {
-	type IntRange,
-	throw_expression,
-	strictEqual,
-} from '../../lib/index.js';
-import type {
-	ValidAccessOperator,
-	AST,
-} from '../../validator/index.js';
+import {strictEqual} from '../../lib/index.js';
 import type {TypeEntry} from '../utils-public.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
-import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
+import {TypeCollectionKeyedStatic} from './TypeCollectionKeyedStatic.js';
 
 
 
-export class TypeRecord extends Type {
+export class TypeRecord extends TypeCollectionKeyedStatic {
 	/**
 	 * Is the argument a unit record type?
 	 * @return whether the argument is a `TypeUnit` and its value is a `Record`
@@ -26,11 +17,8 @@ export class TypeRecord extends Type {
 		return type instanceof TypeUnit && type.value instanceof OBJ.Record;
 	}
 
-
-	public override readonly isBottomType: boolean = false;
-
 	/**
-	 * Construct a new TypeRecord from type properties, assuming each properties is required.
+	 * Construct a new TypeRecord from type properties, assuming each property is required.
 	 * @param propertytypes the types of the record
 	 * @param is_mutable is the record type mutable?
 	 * @return a new record type with the provided properties
@@ -49,26 +37,14 @@ export class TypeRecord extends Type {
 	 * @param is_mutable is this type mutable?
 	 */
 	public constructor(
-		public readonly invariants: ReadonlyMap<bigint, TypeEntry> = new Map(),
-		is_mutable: boolean = false,
+		invariants: ReadonlyMap<bigint, TypeEntry> = new Map(),
+		is_mutable: boolean                        = false,
 	) {
-		super(is_mutable, new Set([new OBJ.Record()]));
-	}
-
-	public override get hasMutable(): boolean {
-		return super.hasMutable || [...this.invariants.values()].some((t) => t.type.hasMutable);
-	}
-
-	/** The possible number of values in this record type. */
-	public get count(): IntRange {
-		return [
-			BigInt([...this.invariants.values()].filter((val) => !val.optional).length),
-			BigInt(this.invariants.size) + 1n,
-		];
+		super(invariants, is_mutable, new Set([new OBJ.Record()]));
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }[${ [...this.invariants].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }[${ super.toString() }]`;
 	}
 
 	public override includes(v: OBJ.Object): boolean {
@@ -101,20 +77,6 @@ export class TypeRecord extends Type {
 
 	public override immutableOf(): TypeRecord {
 		return new TypeRecord(this.invariants, false);
-	}
-
-	public get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): Type {
-		return updateAccessedStaticType(
-			((this.invariants.has(key))
-				? this.invariants.get(key)!
-				: throw_expression(new TypeError04('property', this, accessor))
-			),
-			access_kind,
-		);
-	}
-
-	public valueTypes(): Type {
-		return Type.unionAll([...this.invariants.values()].map((t) => t.type));
 	}
 
 	/**

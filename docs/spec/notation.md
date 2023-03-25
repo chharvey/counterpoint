@@ -1417,6 +1417,37 @@ is shorthand for
 		1. Push `it` to `result2`.
 ```
 
+##### Reductions
+A step that contains «a reduction of ‹s› with ‹accum› for each ‹it› to ‹e› starting with ‹p›» is shorthand for
+a *For* loop that updates a result; where ‹s› is a starting sequence; ‹accum› is an accumulator value; ‹it› is an item in ‹s›;
+‹e› is an expression possibly containing ‹s›, ‹accum›, and ‹it›; and ‹p› is the initial value of ‹accum›.
+The updated result is the result of setting ‹accum› to the evaluation of ‹e›, for each ‹it› in ‹s›.
+
+(In the example below, assume `sequence` is a sequence of Structures with a \`prop\` property.)
+```
+1. *Let* `result` be a reduction of `sequence` with `accum` for each `it` to `[...accum, it.prop]` starting with `[]`.
+```
+is shorthand for
+```
+1. *Let* `result` be `[]`.
+2. *For each* `it` in `sequence`:
+	1. *Set* `result` to `[...result, it.prop]`.
+```
+
+A step that contains «a reduction of ‹s› for each ‹a› and ‹b› to ‹e›» assumes the sequence is nonempty,
+uses ‹a› as the accumulator value, ‹b› as the iterated item in ‹s›, and the item at index 0 in ‹s› as the initial value.
+It skips the first iteration.
+
+(In the example below, assume `sequence` is a sequence of RealNumber values.)
+```
+1. *Let* `result` be a reduction of `sequence` for each `a` and `b` to `a + b`.
+```
+is shorthand for
+```
+1. *Assert*: `sequence` is not empty.
+2. *Let* `result` be a reduction of `sequence[1 ..]` with `accum` for each `it` to `accum + it` starting with `sequence.0`.
+```
+
 
 ### Runtime Instructions
 Algorithms that specify behavior to be performed at runtime are called **runtime instructions**.

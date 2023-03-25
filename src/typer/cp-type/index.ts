@@ -7,6 +7,8 @@ export * from './TypeUnit.js';
 
 export * from './TypeTuple.js';
 export * from './TypeRecord.js';
+export * from './TypeVect.js';
+export * from './TypeStruct.js';
 export * from './TypeList.js';
 export * from './TypeDict.js';
 export * from './TypeSet.js';
