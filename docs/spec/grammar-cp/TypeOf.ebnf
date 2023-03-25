@@ -223,9 +223,12 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						3. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.3)`.
 					3. *Else:*
 						1. *Throw:* a new TypeError06.
-				5. *Let:* `keyvaluetype` be a Tuple type containing the items in [`antecedenttype`, `consequenttype`].
+				5. *Let:* `keyvaluetype` be a Tuple type containing the items in [
+					EntryTypeStructure [type= `antecedenttype`, optional= `false`],
+					EntryTypeStructure [type= `consequenttype`, optional= `false`],
+				].
 				6. *Let*: `paramtype` be a List type whose items’ type is `keyvaluetype`.
-				7. *If*: *UnwrapAffirm:* `Subtype(argtype, paramtype)` is `false`:
+				7. *If*: `argtype` is set *and* *UnwrapAffirm:* `Subtype(argtype, paramtype)` is `false`:
 					1. *If* `argtype` is a Tuple type:
 						1. *Let* `items` be the union of all item types in `argtype`.
 						2. *If* *UnwrapAffirm:* `Subtype(items, keyvaluetype)` is `false`:
