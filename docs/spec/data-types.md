@@ -506,7 +506,7 @@ Boolean Subtype(Type a, Type b) :=
 		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
 			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
 			1. *Return:* `true`.
-	10. *If* `a` is a `Tuple` type *and* `b` is a `Tuple` type:
+	10. *If* `a` is a Tuple type *and* `b` is a Tuple type:
 		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
 		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
@@ -525,7 +525,7 @@ Boolean Subtype(Type a, Type b) :=
 				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
 					1. *Return:* `false`.
 		8. *Return:* `true`.
-	11. *If* `a` is a `Record` type *and* `b` is a `Record` type:
+	11. *If* `a` is a Record type *and* `b` is a Record type:
 		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
 		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
@@ -545,7 +545,7 @@ Boolean Subtype(Type a, Type b) :=
 				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 					1. *Return:* `false`.
 		8. *Return:* `true`.
-	12. *If* `a` is a `List` type *and* `b` is a `List` type:
+	12. *If* `a` is a List type *and* `b` is a List type:
 		1. *Let* `ai` be the union of types in `a`.
 		2. *Let* `bi` be the union of types in `b`.
 		3. *If* `b` is mutable:
@@ -554,7 +554,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
 				1. *Return:* `true`.
-	13. *If* `a` is a `Dict` type *and* `b` is a `Dict` type:
+	13. *If* `a` is a Dict type *and* `b` is a Dict type:
 		1. *Let* `av` be the union of value types in `a`.
 		2. *Let* `bv` be the union of value types in `b`.
 		3. *If* `b` is mutable:
@@ -563,7 +563,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 				1. *Return:* `true`.
-	14. *If* `a` is a `Set` type *and* `b` is a `Set` type:
+	14. *If* `a` is a Set type *and* `b` is a Set type:
 		1. *Let* `ae` be the union of types in `a`.
 		2. *Let* `be` be the union of types in `b`.
 		3. *If* `b` is mutable:
@@ -572,7 +572,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
 				1. *Return:* `true`.
-	15. *If* `a` is a `Map` type *and* `b` is a `Map` type:
+	15. *If* `a` is a Map type *and* `b` is a Map type:
 		1. *Let* `ak` be the union of antecedent types in `a`.
 		2. *Let* `av` be the union of consequent types in `a`.
 		3. *Let* `bk` be the union of antecedent types in `b`.
