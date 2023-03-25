@@ -47,9 +47,10 @@ export class TypeList extends Type {
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeList
+			&& (!t.isMutable || this.isMutable)
 			&& ((t.isMutable)
-				? this.isMutable && this.invariant.equals(t.invariant)
-				: this.invariant.isSubtypeOf(t.invariant)
+				? this.invariant.equals(t.invariant)      // Invariance for mutable lists: `A == B --> mutable List.<A> <: mutable List.<B>`.
+				: this.invariant.isSubtypeOf(t.invariant) // Covariance for immutable lists: `A <: B --> List.<A> <: List.<B>`.
 			)
 		);
 	}

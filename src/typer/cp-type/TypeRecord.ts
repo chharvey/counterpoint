@@ -87,8 +87,8 @@ export class TypeRecord extends Type {
 				return (
 					(thattype.optional || thistype && !thistype.optional)
 					&& (!thistype || ((t.isMutable)
-						? thistype.type.equals(thattype.type)
-						: thistype.type.isSubtypeOf(thattype.type)
+						? thistype.type.equals(thattype.type)      // Invariance for mutable records: `A == B --> mutable Record.<A> <: mutable Record.<B>`.
+						: thistype.type.isSubtypeOf(thattype.type) // Covariance for immutable records: `A <: B --> Record.<A> <: Record.<B>`.
 					))
 				);
 			})

@@ -314,7 +314,7 @@ Attempt to assign a collection literal to a type when type-checking fails.
 This assignment is attempted on an entry-by-entry basis.
 ```
 Boolean AssignTo(SemanticCollectionLiteral expr, Type type) :=
-	1. *If* `expr` is a SemanticTuple *and* `type` is a `Tuple` type:
+	1. *If* `expr` is a SemanticTuple *and* `type` is a Tuple type:
 		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `expr`.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.
 		3. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
@@ -328,7 +328,7 @@ Boolean AssignTo(SemanticCollectionLiteral expr, Type type) :=
 				2. *If* *UnwrapAffirm:* `Subtype(a_type, seq_b[i].type)` is `false`:
 					1. *Return:* `false`.
 		6. *Return:* `true`.
-	2. *If* `expr` is a SemanticRecord *and* `type` is a `Record` type:
+	2. *If* `expr` is a SemanticRecord *and* `type` is a Record type:
 		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `expr`.
 		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `type`.
 		3. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
@@ -343,14 +343,14 @@ Boolean AssignTo(SemanticCollectionLiteral expr, Type type) :=
 				2. *If* *UnwrapAffirm:* `Subtype(a_type, struct_b[k].type)` is `false`:
 					1. *Return:* `false`.
 		6. *Return:* `true`.
-	3. *If* `expr` is a SemanticSet *and* `type` is a `Set` type:
+	3. *If* `expr` is a SemanticSet *and* `type` is a Set type:
 		1. *Let* `b_type` be the invariant over `type`.
 		2. *For each* `a_el` in `expr`:
 			1. *Let* `a_type` be *Unwrap:* `TypeOf(a_el)`.
 			2. *If* *UnwrapAffirm:* `Subtype(a_type, b_type)` is `false`:
 				1. *Return:* `false`.
 		3. *Return:* `true`.
-	4. *If* `expr` is a SemanticMap *and* `type` is a `Map` type:
+	4. *If* `expr` is a SemanticMap *and* `type` is a Map type:
 		1. *Let* `b_ant_type` be the antecedent invariant over `type`.
 		2. *Let* `b_con_type` be the consequent invariant over `type`.
 		3. *For each* `a_case` in `expr`:

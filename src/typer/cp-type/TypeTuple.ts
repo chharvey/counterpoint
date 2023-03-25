@@ -83,8 +83,8 @@ export class TypeTuple extends Type {
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
 			&& t.invariants.every((thattype, i) => !this.invariants[i] || ((t.isMutable)
-				? this.invariants[i].type.equals(thattype.type)
-				: this.invariants[i].type.isSubtypeOf(thattype.type)
+				? this.invariants[i].type.equals(thattype.type)      // Invariance for mutable tuples: `A == B --> mutable Tuple.<A> <: mutable Tuple.<B>`.
+				: this.invariants[i].type.isSubtypeOf(thattype.type) // Covariance for immutable tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 			))
 		);
 	}

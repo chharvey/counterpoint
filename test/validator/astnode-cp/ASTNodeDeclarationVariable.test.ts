@@ -81,6 +81,13 @@ describe('ASTNodeDeclarationVariable', () => {
 				let x: float = 42;
 			`, CONFIG_COERCION_OFF).typeCheck(), TypeError03);
 		});
+		it('immutable sets/maps should not be covariant due to bracket access.', () => {
+			typeCheckGoal([
+				'let s: Set.<int | str>       = Set.<int>([42, 43]);',
+				'let m: Map.<int | str, bool> = Map.<int, bool>([[42, false], [43, true]]);',
+				// otherwise one would access `s.["hello"]` or `m.["hello"]`
+			], TypeError03);
+		});
 		context('assigning a collection to a constant collection type.', () => {
 			it('allows assigning a constant collection literal', () => {
 				typeCheckGoal(`
