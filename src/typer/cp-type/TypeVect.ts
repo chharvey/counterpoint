@@ -5,6 +5,7 @@ import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
 import {TypeUnit} from './TypeUnit.js';
 import {TypeCollectionIndexedStatic} from './TypeCollectionIndexedStatic.js';
+import {TypeTuple} from './TypeTuple.js';
 
 
 
@@ -54,8 +55,9 @@ export class TypeVect extends TypeCollectionIndexedStatic {
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeVect
+			(t instanceof TypeVect || t instanceof TypeTuple)
 			&& this.count[0] >= t.count[0]
+			&& !t.isMutable
 			&& t.invariants.every((thattype, i) => !this.invariants[i] || (
 				this.invariants[i].type.isSubtypeOf(thattype.type) // Covariance for vects: `A <: B --> Vect.<A> <: Vect.<B>`.
 			))
