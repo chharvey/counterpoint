@@ -11,6 +11,7 @@ import {Type} from './Type.js';
  * that contains values assignable to `T` but *not* assignable to `U`.
  */
 export class TypeDifference extends Type {
+	public override readonly isReference: boolean = this.left.isReference;
 	public declare readonly isBottomType: boolean;
 
 	/**

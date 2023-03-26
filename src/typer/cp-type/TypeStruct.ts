@@ -31,6 +31,8 @@ export class TypeStruct extends TypeCollectionKeyedStatic {
 	}
 
 
+	public override readonly isReference: boolean = false;
+
 	/**
 	 * Construct a new TypeStruct object.
 	 * @param invariants a map of this type’s property ids along with their associated types

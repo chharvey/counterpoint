@@ -31,6 +31,8 @@ export class TypeVect extends TypeCollectionIndexedStatic {
 	}
 
 
+	public override readonly isReference: boolean = false;
+
 	/**
 	 * Construct a new TypeVect object.
 	 * @param invariants this type’s item types

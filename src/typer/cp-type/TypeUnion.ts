@@ -15,6 +15,7 @@ import {Type} from './Type.js';
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
 export class TypeUnion extends Type {
+	public override readonly isReference: boolean = this.left.isReference || this.right.isReference;
 	public declare readonly isBottomType: boolean;
 
 	/**
