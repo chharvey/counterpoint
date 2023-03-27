@@ -88,14 +88,14 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			return (
-				(base_type instanceof TYPE.TypeTuple) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>).value, this.kind, this.accessor) :
-				(base_type instanceof TYPE.TypeList)  ? updateAccessedDynamicType(base_type.invariant, this.kind)                                               :
+				(base_type instanceof TYPE.TypeCollectionIndexedStatic) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>).value, this.kind, this.accessor) :
+				(base_type instanceof TYPE.TypeList)                    ? updateAccessedDynamicType(base_type.invariant, this.kind)                                               :
 				throw_expression(new TypeError04('index', base_type, this.accessor))
 			);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (
-				(base_type instanceof TYPE.TypeRecord) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
-				(base_type instanceof TYPE.TypeDict)   ? updateAccessedDynamicType(base_type.invariant, this.kind) :
+				(base_type instanceof TYPE.TypeCollectionKeyedStatic) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
+				(base_type instanceof TYPE.TypeDict)                  ? updateAccessedDynamicType(base_type.invariant, this.kind) :
 				throw_expression(new TypeError04('property', base_type, this.accessor))
 			);
 		} else {
@@ -103,7 +103,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			const accessor_type: TYPE.Type = this.accessor.type();
 			/* eslint-disable indent */
 			return (
-				(base_type instanceof TYPE.TypeTuple) ? (
+				(base_type instanceof TYPE.TypeCollectionIndexedStatic) ? (
 					(accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof OBJ.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
 					(accessor_type.isSubtypeOf(TYPE.INT))
 						? updateAccessedDynamicType(base_type.itemTypes(), this.kind)
