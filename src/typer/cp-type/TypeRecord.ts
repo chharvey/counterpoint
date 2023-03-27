@@ -13,20 +13,10 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
-import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeRecord extends Type {
-	/**
-	 * Is the argument a unit record type?
-	 * @return whether the argument is a `TypeUnit` and its value is a `Record`
-	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Record> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Record;
-	}
-
-
 	public override readonly isBottomType: boolean = false;
 
 	/**
