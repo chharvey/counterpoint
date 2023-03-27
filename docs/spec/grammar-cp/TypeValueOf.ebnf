@@ -177,9 +177,8 @@ Type TypeValueOf(SemanticTypeOperation[operator: OREXCP] oper) :=
 Type TypeValueOf(SemanticTypeOperation[operator: MUTABLE] oper) :=
 	1. *Assert:* `oper.children.count` is 1.
 	2. *Let* `child` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
-	3. *If* `child` is a SemanticTypeTuple or a SemanticTypeRecord or a SemanticTypeList:
-		1. *If* `child.isRef` is `false`:
-			1. *Throw:* a new TypeError01.
+	3. *If* *UnwrapAffirm:* `IsReference(child)` is `false`:
+		1. *Throw:* a new TypeError01.
 	4. *Return:* a mutable copy of `child`.
 ;
 

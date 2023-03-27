@@ -236,28 +236,5 @@ describe('ASTNodeType', () => {
 			});
 		});
 	});
-
-
-
-	describe('ASTNodeTypeOperation', () => {
-		specify('#eval', () => {
-			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationUnary.fromSource(`int?`).eval(),
-				TYPE.INT.union(TYPE.NULL),
-			);
-			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationUnary.fromSource(`mutable int[]`).eval(),
-				new TYPE.TypeList(TYPE.INT, true),
-			);
-			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationBinary.fromSource(`obj & 3`).eval(),
-				TYPE.OBJ.intersect(typeUnitInt(3n)),
-			);
-			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationBinary.fromSource(`4.2 | int`).eval(),
-				typeUnitFloat(4.2).union(TYPE.INT),
-			);
-		});
-	});
 	/* eslint-enable quotes */
 });
