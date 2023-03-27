@@ -3,21 +3,12 @@ import type {TypeEntry} from '../utils-public.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
-import {TypeUnit} from './TypeUnit.js';
 import {TypeCollectionKeyedStatic} from './TypeCollectionKeyedStatic.js';
 import {TypeRecord} from './TypeRecord.js';
 
 
 
 export class TypeStruct extends TypeCollectionKeyedStatic {
-	/**
-	 * Is the argument a unit struct type?
-	 * @return whether the argument is a `TypeUnit` and its value is a `Struct`
-	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Struct> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Struct;
-	}
-
 	/**
 	 * Construct a new TypeStruct from type properties, assuming each property is required.
 	 * @param propertytypes the types of the struct

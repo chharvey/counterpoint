@@ -1,5 +1,5 @@
 import {strictEqual} from '../../lib/index.js';
-import * as OBJ from '../cp-object/index.js';
+import type * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
 
 
@@ -8,13 +8,8 @@ import {Type} from './Type.js';
  * Class for constructing unit types, types that contain exactly one value.
  * @typeparam Value the type of value this unit type holds
  */
-export class TypeUnit<Value extends OBJ.Object = OBJ.Object> extends Type {
-	public override readonly isReference: boolean = !(
-		   this.value instanceof OBJ.Primitive
-		|| this.value instanceof OBJ.Vect
-		|| this.value instanceof OBJ.Struct
-	);
-
+export class TypeUnit<Value extends OBJ.Primitive = OBJ.Primitive> extends Type {
+	public override readonly isReference:  boolean = false;
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
 

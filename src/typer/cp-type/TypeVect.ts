@@ -3,21 +3,12 @@ import type {TypeEntry} from '../utils-public.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
-import {TypeUnit} from './TypeUnit.js';
 import {TypeCollectionIndexedStatic} from './TypeCollectionIndexedStatic.js';
 import {TypeTuple} from './TypeTuple.js';
 
 
 
 export class TypeVect extends TypeCollectionIndexedStatic {
-	/**
-	 * Is the argument a unit vect type?
-	 * @return whether the argument is a `TypeUnit` and its value is a `Vect`
-	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Vect> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Vect;
-	}
-
 	/**
 	 * Construct a new TypeVect from type items, assuming each item is required.
 	 * @param types the types of the vect

@@ -15,8 +15,8 @@ import {Type} from './Type.js';
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
 export class TypeUnion extends Type {
-	public override readonly isReference: boolean = this.left.isReference || this.right.isReference;
-	public declare readonly isBottomType: boolean;
+	public override readonly isReference:  boolean = this.left.isReference || this.right.isReference;
+	public override readonly isBottomType: boolean = this.left.isBottomType && this.right.isBottomType;
 
 	/**
 	 * Construct a new TypeUnion object.
@@ -28,7 +28,6 @@ export class TypeUnion extends Type {
 		public readonly right: Type,
 	) {
 		super(false, xjs.Set.union(left.values, right.values, languageValuesIdentical));
-		this.isBottomType = this.left.isBottomType && this.right.isBottomType;
 	}
 
 	public override get hasMutable(): boolean {

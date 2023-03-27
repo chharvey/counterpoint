@@ -2,20 +2,10 @@ import {strictEqual} from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
-import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeList extends Type {
-	/**
-	 * Is the argument a unit list type?
-	 * @return whether the argument is a `TypeUnit` and its value is a `List`
-	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.List> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.List;
-	}
-
-
 	public override readonly isBottomType: boolean = false;
 
 	/**

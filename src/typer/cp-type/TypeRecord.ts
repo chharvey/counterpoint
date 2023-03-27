@@ -3,20 +3,11 @@ import type {TypeEntry} from '../utils-public.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
-import {TypeUnit} from './TypeUnit.js';
 import {TypeCollectionKeyedStatic} from './TypeCollectionKeyedStatic.js';
 
 
 
 export class TypeRecord extends TypeCollectionKeyedStatic {
-	/**
-	 * Is the argument a unit record type?
-	 * @return whether the argument is a `TypeUnit` and its value is a `Record`
-	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Record> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Record;
-	}
-
 	/**
 	 * Construct a new TypeRecord from type properties, assuming each property is required.
 	 * @param propertytypes the types of the record

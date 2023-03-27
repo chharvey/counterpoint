@@ -12,7 +12,12 @@ import {Type} from './Type.js';
  */
 export class TypeDifference extends Type {
 	public override readonly isReference: boolean = this.left.isReference;
-	public declare readonly isBottomType: boolean;
+	/* We can assert that this is always non-empty because
+	the only cases in which it could be empty are
+	1. if left is empty
+	2. if left is a subtype of right
+	each of which is impossible because the algorithm would have already produced the `never` type. */
+	public override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new TypeDifference object.
@@ -24,14 +29,6 @@ export class TypeDifference extends Type {
 		private readonly right: Type,
 	) {
 		super(false, xjs.Set.difference(left.values, right.values, languageValuesIdentical));
-		/*
-		We can assert that this is always non-empty because
-		the only cases in which it could be empty are
-		1. if left is empty
-		2. if left is a subtype of right
-		each of which is impossible because the algorithm would have already produced the `never` type.
-		*/
-		this.isBottomType = false;
 	}
 
 	public override get hasMutable(): boolean {
