@@ -2,11 +2,9 @@ import * as assert from 'assert';
 import {
 	TYPE,
 	TypeError,
+	TypeErrorUnexpectedRef,
 } from '../../index.js';
-import {
-	throw_expression,
-	memoizeMethod,
-} from '../../lib/index.js';
+import {memoizeMethod} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -38,11 +36,17 @@ export class ASTNodeTypeList extends ASTNodeTypeCollectionLiteral {
 		const itemstype: TYPE.Type = this.type.eval();
 		if (!this.isRef) {
 			assert.notStrictEqual(this.count, null);
+			if (itemstype.isReference) {
+				throw new TypeErrorUnexpectedRef(itemstype, this.type);
+			}
 		}
-		return (this.count === null)
-			? new TYPE.TypeList(itemstype)
-			: (this.count >= 0)
-				? TYPE.TypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype))
-				: throw_expression(new TypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index));
+		if (this.count === null) {
+			return new TYPE.TypeList(itemstype);
+		} else if (this.count >= 0) {
+			const types: readonly TYPE.Type[] = [...new Array(Number(this.count))].map(() => itemstype);
+			return (!this.isRef) ? TYPE.TypeVect.fromTypes(types) : TYPE.TypeTuple.fromTypes(types);
+		} else {
+			throw new TypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index);
+		}
 	}
 }

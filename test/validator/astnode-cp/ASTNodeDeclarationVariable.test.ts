@@ -98,6 +98,15 @@ describe('ASTNodeDeclarationVariable', () => {
 					];
 				`);
 			});
+			it('disallows assigning a variable collection literal', () => {
+				typeCheckGoal([
+					'let g: int\\[3] = [42, 420, 4200];',
+					`let h: \\[n42: int, n420: int] = [
+						n42=  42,
+						n420= 420,
+					];`,
+				], TypeErrorNotAssignable);
+			});
 		});
 		context('assigning a collection literal to a wider mutable type.', () => {
 			it('tuples: only allows greater or equal items.', () => {
