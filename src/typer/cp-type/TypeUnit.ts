@@ -8,7 +8,7 @@ import {Type} from './Type.js';
  * Class for constructing unit types, types that contain exactly one value.
  * @typeparam Value the type of value this unit type holds
  */
-export class TypeUnit<Value extends OBJ.Object = OBJ.Object> extends Type {
+export class TypeUnit<Value extends OBJ.Primitive = OBJ.Primitive> extends Type {
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
 
