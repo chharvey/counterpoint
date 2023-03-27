@@ -104,7 +104,7 @@ Type TypeValueOf(SemanticTypeAccess access) :=
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
 			2. *Return:* *UnwrapAffirm:* `UpdateAccessedStaticType(entry, NORMAL)`.
 		7. *Else:*
-			1. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
+			1. *Throw:* a new TypeError05 "Index {{ i }} does not exist on type {{ base_type }}.".
 	6. *Else:*
 		1. *Assert:* `accessor` is a SemanticKey.
 		2. *Let* `id` be `accessor.id`.
@@ -112,7 +112,7 @@ Type TypeValueOf(SemanticTypeAccess access) :=
 			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
 			2. *Return:* *UnwrapAffirm:* `UpdateAccessedStaticType(entry, NORMAL)`.
 		4. *Else:*
-			1. *Throw:* a new TypeError04 "Property {{ id }} does not exist on type {{ base_type }}.".
+			1. *Throw:* a new TypeError05 "Property {{ id }} does not exist on type {{ base_type }}.".
 ;
 
 

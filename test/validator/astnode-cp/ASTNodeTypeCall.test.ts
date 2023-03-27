@@ -2,8 +2,8 @@ import * as assert from 'assert';
 import {
 	AST,
 	TYPE,
-	TypeError05,
-	TypeError06,
+	TypeErrorNotCallable,
+	TypeErrorArgCount,
 } from '../../../src/index.js';
 
 
@@ -38,7 +38,7 @@ describe('ASTNodeTypeCall', () => {
 				`int.<str>`,
 				`(List | Dict).<bool>`,
 			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeError05);
+				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorNotCallable);
 			});
 		});
 		it('throws if base is not one of the allowed strings.', () => {
@@ -56,7 +56,7 @@ describe('ASTNodeTypeCall', () => {
 				`Set.<str, str, str, str>`,
 				`Map.<int, int, int, int, int>`,
 			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeError06);
+				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorArgCount);
 			});
 		});
 	});

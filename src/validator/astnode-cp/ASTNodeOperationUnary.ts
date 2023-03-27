@@ -5,7 +5,7 @@ import {
 	TYPE,
 	INST,
 	type Builder,
-	TypeError01,
+	TypeErrorInvalidOperation,
 	NanError01,
 } from '../../index.js';
 import {
@@ -70,7 +70,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			(assert.strictEqual(this.operator, Operator.NEG), (
 				(t0.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)))
 					? t0
-					: throw_expression(new TypeError01(this))
+					: throw_expression(new TypeErrorInvalidOperation(this))
 			))
 		);
 		/* eslint-enable indent */

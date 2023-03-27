@@ -1551,10 +1551,10 @@ A type error is raised when the compiler recognizes a type mismatch.
 2300. A general type error not covered by one of the following cases.
 2301. The validator encountered an operation with an invalid operand.
 2302. One type is expected to be a subtype of another, but is not.
-2303. An expression was assigned to a type to which it is not assignable.
-2304. The validator encountered a non-existent index/property/argument access.
-2305. The validator encountered an attempt to call a non-callable object.
-2306. An incorrect number of arguments is passed to a callable object.
+2304. An expression was assigned to a type to which it is not assignable.
+2305. The validator encountered a non-existent index/property/argument access.
+2306. The validator encountered an attempt to call a non-callable object.
+2307. An incorrect number of arguments is passed to a callable object.
 
 
 ### Mutability Errors (24xx)

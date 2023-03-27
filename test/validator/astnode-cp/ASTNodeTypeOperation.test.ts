@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {
 	AST,
-	TypeError01,
+	TypeErrorInvalidOperation,
 } from '../../../src/index.js';
 
 
@@ -14,7 +14,7 @@ describe('ASTNodeOperation', () => {
 					'mutable \\[int, float, str]',
 					'mutable \\[a: int, b: float, c: str]',
 					'mutable int\\[3]',
-				].forEach((src) => assert.throws(() => AST.ASTNodeTypeOperation.fromSource(src).eval(), TypeError01));
+				].forEach((src) => assert.throws(() => AST.ASTNodeTypeOperation.fromSource(src).eval(), TypeErrorInvalidOperation));
 				[
 					'mutable [int, float, str]',
 					'mutable [a: int, b: float, c: str]',

@@ -61,7 +61,7 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 	 *
 	 * @param assigned      the expression assigned
 	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
-	 * @throws {TypeError03} if {@link ASTNodeCP.typeCheckAssignment} throws, and:
+	 * @throws {TypeErrorNotAssignable} if {@link ASTNodeCP.typeCheckAssignment} throws, and:
 	 *                       if the assigned expression is not a collection literal,
 	 *                       is not a reference object,
 	 *                       or is not entry-wise assignable
