@@ -15,6 +15,7 @@ export * from './AssignmentError10.js';
 export * from './TypeError.js';
 export * from './TypeErrorInvalidOperation.js';
 export * from './TypeErrorNotNarrow.js';
+export * from './TypeErrorUnexpectedRef.js';
 export * from './TypeErrorNotAssignable.js';
 export * from './TypeErrorNoEntry.js';
 export * from './TypeErrorNotCallable.js';

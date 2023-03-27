@@ -1551,6 +1551,7 @@ A type error is raised when the compiler recognizes a type mismatch.
 2300. A general type error not covered by one of the following cases.
 2301. The validator encountered an operation with an invalid operand.
 2302. One type is expected to be a subtype of another, but is not.
+2303. A reference type was encountered where a value type was expected.
 2304. An expression was assigned to a type to which it is not assignable.
 2305. The validator encountered a non-existent index/property/argument access.
 2306. The validator encountered an attempt to call a non-callable object.
