@@ -60,7 +60,7 @@ GenericArguments             ::=                            "<"  ","? Type<+Vari
 
 TypeUnit<Variable> ::=
 	| KEYWORD_TYPE
-	| <Variable+>IDENTIFIER
+	| IDENTIFIER
 	| PrimitiveLiteral
 	| TypeGrouped       <?Variable>
 	| TypeTupleLiteral  <-Variable>
@@ -76,8 +76,7 @@ GenericCall        ::= "." GenericArguments;
 
 TypeCompound<Variable> ::=
 	| TypeUnit<?Variable>
-	| TypeCompound<?Variable> PropertyAccessType
-	| <Variable+>(TypeCompound<?Variable> GenericCall)
+	| TypeCompound<?Variable> (PropertyAccessType | GenericCall)
 ;
 
 TypeUnarySymbol<Variable> ::=
@@ -121,7 +120,7 @@ MapLiteral                   ::=                            "{"   ","? Case#    
 FunctionArguments            ::=                            "(" ( ","? Expression <+Variable># ","? )? ")";
 
 ExpressionUnit<Variable> ::=
-	| <Variable+>IDENTIFIER
+	| IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate    <?Variable>
 	| ExpressionGrouped <?Variable>
@@ -139,8 +138,7 @@ FunctionCall             ::=  "."                GenericArguments? FunctionArgum
 
 ExpressionCompound<Variable> ::=
 	| ExpressionUnit<?Variable>
-	| ExpressionCompound<?Variable> PropertyAccess<?Variable>
-	| <Variable+>(ExpressionCompound<?Variable> FunctionCall)
+	| ExpressionCompound<?Variable> (PropertyAccess<?Variable> | FunctionCall)
 ;
 
 Assignee ::=
