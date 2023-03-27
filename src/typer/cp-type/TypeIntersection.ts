@@ -15,7 +15,7 @@ import {Type} from './Type.js';
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
 export class TypeIntersection extends Type {
-	public declare readonly isBottomType: boolean;
+	public override readonly isBottomType: boolean = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
 
 	/**
 	 * Construct a new TypeIntersection object.
@@ -27,7 +27,6 @@ export class TypeIntersection extends Type {
 		public readonly right: Type,
 	) {
 		super(false, xjs.Set.intersection(left.values, right.values, languageValuesIdentical));
-		this.isBottomType = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
 	}
 
 	public override get hasMutable(): boolean {
