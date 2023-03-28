@@ -8,8 +8,7 @@ import {ErrorCode} from './ErrorCode.js';
  * A MutabilityError is thrown when the validator recognizes an attempt to mutate an immutable object.
  */
 export class MutabilityError extends ErrorCode {
-	/** The number series of this class of errors. */
-	public static readonly CODE: number = 2400;
+	static readonly #CODE = 2400;
 
 	protected static get CODES(): ReadonlyMap<ConstructorType<MutabilityError>, number> {
 		return new Map<ConstructorType<MutabilityError>, number>([
@@ -29,7 +28,7 @@ export class MutabilityError extends ErrorCode {
 		super({
 			message,
 			name: MutabilityError.name,
-			code: MutabilityError.CODE + code,
+			code: MutabilityError.#CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});

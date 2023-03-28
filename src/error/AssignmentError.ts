@@ -12,8 +12,7 @@ import {ErrorCode} from './ErrorCode.js';
  * An AssignmentError is thrown when the validator detects an illegal declaration or assignment.
  */
 export class AssignmentError extends ErrorCode {
-	/** The number series of this class of errors. */
-	public static readonly CODE: number = 2200;
+	static readonly #CODE = 2200;
 
 	protected static get CODES(): ReadonlyMap<ConstructorType<AssignmentError>, number> {
 		return new Map<ConstructorType<AssignmentError>, number>([
@@ -35,7 +34,7 @@ export class AssignmentError extends ErrorCode {
 		super({
 			message,
 			name: AssignmentError.name,
-			code: AssignmentError.CODE + code,
+			code: AssignmentError.#CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});

@@ -14,8 +14,7 @@ import {ErrorCode} from './ErrorCode.js';
  * produce a valid token per the rules of the defined lexical grammar.
  */
 export class LexError extends ErrorCode {
-	/** The number series of this class of errors. */
-	public static readonly CODE: number = 1100;
+	static readonly #CODE = 1100;
 
 	protected static get CODES(): ReadonlyMap<ConstructorType<LexError>, number> {
 		return new Map<ConstructorType<LexError>, number>([
@@ -38,7 +37,7 @@ export class LexError extends ErrorCode {
 		super({
 			message,
 			name: LexError.name,
-			code: LexError.CODE + code,
+			code: LexError.#CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});

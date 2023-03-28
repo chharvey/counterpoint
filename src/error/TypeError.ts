@@ -15,8 +15,7 @@ import {ErrorCode} from './ErrorCode.js';
  * A TypeError is thrown when the validator recognizes a type mismatch.
  */
 export class TypeError extends ErrorCode {
-	/** The number series of this class of errors. */
-	public static readonly CODE: number = 2300;
+	static readonly #CODE = 2300;
 
 	protected static get CODES(): ReadonlyMap<ConstructorType<TypeError>, number> {
 		return new Map<ConstructorType<TypeError>, number>([
@@ -41,7 +40,7 @@ export class TypeError extends ErrorCode {
 		super({
 			message,
 			name: TypeError.name,
-			code: TypeError.CODE + code,
+			code: TypeError.#CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});
