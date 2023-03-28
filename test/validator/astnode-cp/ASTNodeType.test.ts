@@ -110,33 +110,25 @@ describe('ASTNodeType', () => {
 
 			it('throws if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type val_type1 = \\[1.0];
-					type ref_type1 =   [1.0];
-					type val_type2 = \\[2.0];
-					type ref_type2 =   [2.0];
 					type val_type3 = \\[3.0];
 					type ref_type3 =   [3.0];
 					type val_type4 = \\[4.0];
 					type ref_type4 =   [4.0];
-					type val_type5 = \\[5.0];
-					type ref_type5 =   [5.0];
-					type val_type6 = \\[6.0];
-					type ref_type6 =   [6.0];
 
-					type A = \\[int, val_type1, str];
-					type B =   [int, ref_type1, str];
-					type C =   [int, val_type2, str];
-					type D = \\[int, ref_type2, str]; %> TypeErrorUnexpectedRef
+					type A = \\[int, \\[1.0],      str];
+					type B =   [int, List.<float>, str];
+					type C =   [int, \\[2.0],      str];
+					type D = \\[int, List.<float>, str]; %> TypeErrorUnexpectedRef
 
 					type E = \\[a: int, b: val_type3, c: str];
 					type F =   [a: int, b: ref_type3, c: str];
 					type G =   [a: int, b: val_type4, c: str];
 					type H = \\[a: int, b: ref_type4, c: str]; %> TypeErrorUnexpectedRef
 
-					type I = val_type5\\[3];
-					type J = ref_type5  [3];
-					type K = val_type6  [3];
-					type L = ref_type6\\[3]; %> TypeErrorUnexpectedRef
+					type I = \\[5.0]    \\[3];
+					type J = Set.<float>  [3];
+					type K = \\[6.0]      [3];
+					type L = Set.<float>\\[3]; %> TypeErrorUnexpectedRef
 				`);
 				goal.varCheck();
 				return assert.throws(() => goal.typeCheck(), (err) => {
@@ -144,9 +136,9 @@ describe('ASTNodeType', () => {
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `[2.0]` but was expecting a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `List.<float>` but was expecting a value type.'},
 							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `[4.0]` but was expecting a value type.'},
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `[6.0]` but was expecting a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `Set.<float>` but was expecting a value type.'},
 						],
 					});
 					return true;

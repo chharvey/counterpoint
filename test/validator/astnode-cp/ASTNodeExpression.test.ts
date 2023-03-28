@@ -471,20 +471,16 @@ describe('ASTNodeExpression', () => {
 					let ref_obj1:   [1.0] =   [1.0];
 					let val_obj2: \\[2.0] = \\[2.0];
 					let ref_obj2:   [2.0] =   [2.0];
-					let val_obj3: \\[3.0] = \\[3.0];
-					let ref_obj3:   [3.0] =   [3.0];
-					let val_obj4: \\[4.0] = \\[4.0];
-					let ref_obj4:   [4.0] =   [4.0];
 
 					\\[1, val_obj1, 'three'];
 					  [1, ref_obj1, 'three'];
 					  [1, val_obj2, 'three'];
 					\\[1, ref_obj2, 'three']; %> TypeErrorUnexpectedRef
 
-					\\[a= 1, b= val_obj3, c= 'three'];
-					  [a= 1, b= ref_obj3, c= 'three'];
-					  [a= 1, b= val_obj4, c= 'three'];
-					\\[a= 1, b= ref_obj4, c= 'three']; %> TypeErrorUnexpectedRef
+					\\[a= 1, b= \\[3.0],             c= 'three'];
+					  [a= 1, b= List.<float>([3.0]), c= 'three'];
+					  [a= 1, b= \\[4.0],             c= 'three'];
+					\\[a= 1, b= List.<float>([4.0]), c= 'three']; %> TypeErrorUnexpectedRef
 				`);
 				goal.varCheck();
 				return assert.throws(() => goal.typeCheck(), (err) => {
@@ -493,7 +489,7 @@ describe('ASTNodeExpression', () => {
 						cons:   AggregateError,
 						errors: [
 							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `[2.0]` but was expecting a value type.'},
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `[4.0]` but was expecting a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `mutable List.<float>` but was expecting a value type.'},
 						],
 					});
 					return true;
