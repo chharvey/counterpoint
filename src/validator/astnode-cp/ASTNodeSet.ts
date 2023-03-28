@@ -3,11 +3,12 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	Builder,
+	type INST,
+	type Builder,
 } from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
@@ -31,33 +32,41 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 		super(start_node, children);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionExpression {
+	public override shouldFloat(): boolean {
+		throw 'ASTNodeSet#shouldFloat not yet supported.';
+	}
+
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): INST.InstructionExpression {
 		builder;
 		throw 'ASTNodeSet#build_do not yet supported.';
 	}
 
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
 		return new TYPE.TypeSet(
 			TYPE.Type.unionAll(this.children.map((c) => c.type())),
 			true,
 		);
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const elements: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
 		return (elements.includes(null))
 			? null
 			: new OBJ.Set(new Set(elements as OBJ.Object[]));
 	}
 
-	protected override assignTo_do(assignee: TYPE.Type): boolean {
-		if (TYPE.TypeSet.isUnitType(assignee) || assignee instanceof TYPE.TypeSet) {
-			const assignee_type_set: TYPE.TypeSet = (TYPE.TypeSet.isUnitType(assignee))
-				? assignee.value.toType()
-				: assignee;
+	@ASTNodeCollectionLiteral.assignToDeco
+	public override assignTo(assignee: TYPE.Type): boolean {
+		if (assignee instanceof TYPE.TypeSet) {
+			// better error reporting to check entry-by-entry instead of checking `this.type().invariant`
 			xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssignment(
 				expr.type(),
-				assignee_type_set.invariant,
+				assignee.invariant,
 				expr,
 				this.validator,
 			));

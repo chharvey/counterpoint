@@ -1,3 +1,4 @@
+import {strictEqual} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
@@ -37,7 +38,8 @@ export class Null extends Primitive {
 		return false;
 	}
 
-	protected override identical_helper(value: CPObject): boolean {
+	@strictEqual
+	public override identical(value: CPObject): boolean {
 		return value instanceof Null;
 	}
 }

@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
 	OBJ,
@@ -12,10 +12,7 @@ import {
 	ReferenceError03,
 	AssignmentError02,
 } from '../../../src/index.js';
-import {
-	assert_wasCalled,
-	assertAssignable,
-} from '../../assert-helpers.js';
+import {assertAssignable} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	typeUnitInt,
@@ -46,14 +43,10 @@ describe('ASTNodeExpression', () => {
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 					"42😀"  "42\\u{1f600}"
 				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
-				assert.deepStrictEqual(constants.map((c) => assert_wasCalled(c.fold, 1, (orig, spy) => {
-					c.fold = spy;
-					try {
-						return c.type();
-					} finally {
-						c.fold = orig;
-					}
-				})), constants.map((c) => new TYPE.TypeUnit(c.fold()!)));
+				assert.deepStrictEqual(
+					constants.map((c) => c.type()),
+					constants.map((c) => new TYPE.TypeUnit(c.fold())),
+				);
 			});
 		});
 
@@ -311,19 +304,12 @@ describe('ASTNodeExpression', () => {
 				let types: TYPE.Type[] = [];
 				before(() => {
 					templates = initTemplates();
-					types = templates.map((t) => assert_wasCalled(t.fold, 1, (orig, spy) => {
-						t.fold = spy;
-						try {
-							return t.type();
-						} finally {
-							t.fold = orig;
-						}
-					}));
+					types = templates.map((t) => t.type());
 				});
 				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new TypeUnit`.', () => {
 					assert.deepStrictEqual(
 						types.slice(0, 2),
-						templates.slice(0, 2).map((t) => new TYPE.TypeUnit(t.fold()!)),
+						templates.slice(0, 2).map((t) => new TYPE.TypeUnit<OBJ.String>(t.fold()!)),
 					);
 				});
 				it('for non-foldable interpolations, returns `String`.', () => {
@@ -409,7 +395,7 @@ describe('ASTNodeExpression', () => {
 				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.Type.unionAll([typeUnitStr('a'), typeUnitInt(42n), typeUnitFloat(3.0)])],
 				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.Type.unionAll([typeUnitStr('a'), TYPE.INT,         TYPE.FLOAT])],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
-				const expected: TYPE.TypeUnit[] = [typeUnitInt(1n), typeUnitFloat(2.0), typeUnitStr('three')];
+				const expected: readonly TYPE.TypeUnit[] = [typeUnitInt(1n), typeUnitFloat(2.0), typeUnitStr('three')];
 				const collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,

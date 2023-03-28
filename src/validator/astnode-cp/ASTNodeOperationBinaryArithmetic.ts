@@ -4,20 +4,23 @@ import {
 	OBJ,
 	TYPE,
 	INST,
-	Builder,
+	type Builder,
 	TypeError01,
 	NanError01,
 	NanError02,
 } from '../../index.js';
-import {throw_expression} from '../../lib/index.js';
 import {
-	CPConfig,
+	throw_expression,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeSupertype} from '../utils-private.js';
 import {
 	Operator,
-	ValidOperatorArithmetic,
+	type ValidOperatorArithmetic,
 } from '../Operator.js';
 import {
 	bothNumeric,
@@ -46,7 +49,9 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopArithmetic {
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopArithmetic {
 		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionBinopArithmetic(
 			this.operator,
@@ -55,7 +60,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		);
 	}
 
-	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		return (bothNumeric(t0, t1))
 			? (int_coercion)
 				? (eitherFloats(t0, t1))
@@ -69,7 +74,8 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			: throw_expression(new TypeError01(this));
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;

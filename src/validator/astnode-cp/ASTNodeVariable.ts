@@ -1,19 +1,23 @@
 import * as assert from 'assert';
 import {
-	OBJ,
+	type OBJ,
 	TYPE,
 	INST,
-	Builder,
+	type Builder,
 	ReferenceError01,
 	ReferenceError03,
 } from '../../index.js';
 import {
-	CPConfig,
+	memoizeMethod,
+	memoizeGetter,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {
 	SymbolKind,
-	SymbolStructure,
+	type SymbolStructure,
 	SymbolStructureVar,
 	SymbolStructureType,
 } from '../index.js';
@@ -30,14 +34,13 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 
 
-	private _id: bigint | null = null; // TODO use memoize decorator
-
 	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
+	@memoizeGetter
 	public get id(): bigint {
-		return this._id ??= this.validator.cookTokenIdentifier(this.start_node.text);
+		return this.validator.cookTokenIdentifier(this.start_node.text);
 	}
 
 	public override shouldFloat(): boolean {
@@ -54,11 +57,15 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		}
 	}
 
-	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(_builder: Builder, to_float: boolean = false): INST.InstructionExpression {
 		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
 	}
 
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar) {
@@ -68,7 +75,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		return TYPE.NEVER;
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
