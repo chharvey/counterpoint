@@ -37,13 +37,13 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * Type-checks and re-throws any type errors first,
 	 * then computes assessed value (if applicable), and if successful,
 	 * returns a constant type equal to that assessed value.
-	 * @implements MethodDecorator<ASTNodeExpression, (this: ASTNodeExpression) => TYPE.Type>
+	 * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['type']>
 	 */
 	protected static typeDeco(
-		method:   (this: ASTNodeExpression) => TYPE.Type,
+		method:   ASTNodeExpression['type'],
 		_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
 	): typeof method {
-		return function () {
+		return function (this: ASTNodeExpression) {
 			const type: TYPE.Type = method.call(this); // type-check first, to re-throw any TypeErrors
 			if (this.validator.config.compilerOptions.constantFolding) {
 				let value: OBJ.Object | null = null;

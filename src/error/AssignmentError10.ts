@@ -10,13 +10,16 @@ import {AssignmentError} from './AssignmentError.js';
  * my_var = 24;          % AssignmentError10: Reassignment of a fixed variable: `my_var`.
  */
 export class AssignmentError10 extends AssignmentError {
-	/** The number series of this class of errors. */
-	public static override readonly CODE = 10;
 	/**
 	 * Construct a new AssignmentError10 object.
 	 * @param variable the undeclared variable
 	 */
 	public constructor(variable: AST.ASTNodeVariable) {
-		super(`Reassignment of a fixed variable: \`${ variable.source }\`.`, AssignmentError10.CODE, variable.line_index, variable.col_index);
+		super(
+			`Reassignment of a fixed variable: \`${ variable.source }\`.`,
+			AssignmentError.CODES.get(AssignmentError10),
+			variable.line_index,
+			variable.col_index,
+		);
 	}
 }

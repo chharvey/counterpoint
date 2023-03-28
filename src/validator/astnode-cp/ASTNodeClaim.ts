@@ -4,7 +4,7 @@ import {
 	type OBJ,
 	TYPE,
 	type Builder,
-	TypeError03,
+	TypeErrorNotAssignable,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
 import {
@@ -58,7 +58,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 				because neither type sufficiently overlaps with the other.
 				If this was intentional, convert the expression to \`obj\` first.`;
 			*/
-			throw new TypeError03(claimed_type, computed_type, this);
+			throw new TypeErrorNotAssignable(claimed_type, computed_type, this);
 		}
 		return claimed_type;
 	}

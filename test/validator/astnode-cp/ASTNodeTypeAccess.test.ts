@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {
 	AST,
 	TYPE,
-	TypeError04,
+	TypeErrorNoEntry,
 } from '../../../src/index.js';
 import {
 	typeUnitInt,
@@ -94,8 +94,8 @@ describe('ASTNodeTypeAccess', () => {
 				);
 			});
 			it('throws when index is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[1, 2.0, "three"].3')  .eval(), TypeError04);
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[1, 2.0, "three"].-4') .eval(), TypeError04);
+				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[1, 2.0, "three"].3')  .eval(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[1, 2.0, "three"].-4') .eval(), TypeErrorNoEntry);
 			});
 		});
 
@@ -116,7 +116,7 @@ describe('ASTNodeTypeAccess', () => {
 				);
 			});
 			it('throws when key is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[a: 1, b: 2.0, c: "three"].d').eval(), TypeError04);
+				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[a: 1, b: 2.0, c: "three"].d').eval(), TypeErrorNoEntry);
 			});
 		});
 	});

@@ -2,7 +2,7 @@ import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	TYPE,
-	TypeError03,
+	TypeErrorNotAssignable,
 } from '../../index.js';
 import {to_serializable} from '../../parser/index.js';
 import type {Validator} from '../index.js';
@@ -32,7 +32,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
 	 * @param node          the node where the assignment took place
 	 * @param validator     a validator for type-checking purposes
-	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
+	 * @throws {TypeErrorNotAssignable} if the assigned expression is not assignable to the assignee
 	 */
 	public static typeCheckAssignment(
 		assigned_type: TYPE.Type,
@@ -49,7 +49,7 @@ export abstract class ASTNodeCP extends ASTNode {
 				&& TYPE.FLOAT.isSubtypeOf(assignee_type)
 			)
 		) {
-			throw new TypeError03(assigned_type, assignee_type, node);
+			throw new TypeErrorNotAssignable(assigned_type, assignee_type, node);
 		}
 	}
 

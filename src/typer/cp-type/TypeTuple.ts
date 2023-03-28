@@ -1,4 +1,4 @@
-import {TypeError04} from '../../index.js';
+import {TypeErrorNoEntry} from '../../index.js';
 import {
 	type IntRange,
 	throw_expression,
@@ -94,7 +94,7 @@ export class TypeTuple extends Type {
 			(
 				(-n <= i && i < 0) ? this.invariants[i + n] :
 				(0  <= i && i < n) ? this.invariants[i]     :
-				throw_expression(new TypeError04('index', this, accessor))
+				throw_expression(new TypeErrorNoEntry('index', this, accessor))
 			),
 			access_kind,
 		);
