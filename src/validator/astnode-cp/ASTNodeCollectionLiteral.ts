@@ -66,7 +66,7 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 		/** Does this node represent a reference object (versus a value object)? */
 		public readonly isRef: boolean = true,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {isRef}, children);
 	}
 
 	@memoizeMethod

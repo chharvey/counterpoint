@@ -40,58 +40,66 @@ PrimitiveLiteral ::=
 
 
 
-EntryType<Named, Optional>
-	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
+EntryType<Named, Optional, Variable>
+	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type<?Variable>;
 
-ItemsType ::=
-	|  EntryType<-Named><-Optional># ","?
-	| (EntryType<-Named><-Optional># ",")? EntryType<-Named><+Optional># ","?
+ItemsType<Variable> ::=
+	|  EntryType<-Named><-Optional><?Variable># ","?
+	| (EntryType<-Named><-Optional><?Variable># ",")? EntryType<-Named><+Optional><?Variable># ","?
 ;
 
-PropertiesType
-	::= EntryType<+Named><-Optional, +Optional># ","?;
+PropertiesType<Variable>
+	::= EntryType<+Named><-Optional, +Optional><?Variable># ","?;
 
-TypeGrouped       ::= "(" Type                 ")";
-TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
-TypeRecordLiteral ::= "["  ","? PropertiesType "]";
-TypeDictLiteral   ::= "[" ":" Type             "]";
-TypeMapLiteral    ::= "{" Type "->" Type       "}";
-GenericArguments  ::= "<"  ","? Type# ","?     ">";
+TypeGrouped       <Variable> ::=                            "(" Type<?Variable>                      ")";
+TypeTupleLiteral  <Variable> ::= <Variable->"\[" <Variable+>"[" (","? ItemsType<?Variable>)?         "]";
+TypeRecordLiteral <Variable> ::= <Variable->"\[" <Variable+>"["  ","? PropertiesType<?Variable>      "]";
+TypeDictLiteral              ::=                            "[" ":" Type<+Variable>                  "]";
+TypeMapLiteral               ::=                            "{" Type<+Variable> "->" Type<+Variable> "}";
+GenericArguments             ::=                            "<"  ","? Type<+Variable># ","?          ">";
 
-TypeUnit ::=
+TypeUnit<Variable> ::=
 	| KEYWORD_TYPE
 	| IDENTIFIER
 	| PrimitiveLiteral
-	| TypeGrouped
-	| TypeTupleLiteral
-	| TypeRecordLiteral
-	| TypeDictLiteral
-	| TypeMapLiteral
+	| TypeGrouped       <?Variable>
+	| TypeTupleLiteral  <-Variable>
+	| TypeRecordLiteral <-Variable>
+	| <Variable+>TypeTupleLiteral  <?Variable>
+	| <Variable+>TypeRecordLiteral <?Variable>
+	| <Variable+>TypeDictLiteral
+	| <Variable+>TypeMapLiteral
 ;
 
 PropertyAccessType ::= "." (INTEGER | Word);
 GenericCall        ::= "." GenericArguments;
 
-TypeCompound ::=
-	| TypeUnit
-	| TypeCompound (PropertyAccessType | GenericCall)
+TypeCompound<Variable> ::=
+	| TypeUnit<?Variable>
+	| TypeCompound<?Variable> (PropertyAccessType | GenericCall)
 ;
 
-TypeUnarySymbol ::=
-	| TypeCompound
-	| TypeUnarySymbol ("?" | "!" | "[" INTEGER? "]" | "{" "}")
+TypeUnarySymbol<Variable> ::=
+	| TypeCompound<?Variable>
+	| TypeUnarySymbol<?Variable> (
+		| "?"
+		| "!"
+		| "\[" INTEGER "]"
+		| <Variable+>("[" INTEGER? "]")
+		| <Variable+>("{" "}")
+	)
 ;
 
-TypeUnaryKeyword ::=
-	| TypeUnarySymbol
-	| "mutable" TypeUnaryKeyword
+TypeUnaryKeyword<Variable> ::=
+	| TypeUnarySymbol<?Variable>
+	| "mutable" TypeUnaryKeyword<?Variable>
 ;
 
-TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;
-TypeUnion        ::= (TypeUnion        "|")? TypeIntersection;
+TypeIntersection <Variable> ::= (TypeIntersection <?Variable> "&")? TypeUnaryKeyword<?Variable>;
+TypeUnion        <Variable> ::= (TypeUnion        <?Variable> "|")? TypeIntersection<?Variable>;
 
-Type ::=
-	| TypeUnion
+Type<Variable> ::=
+	| TypeUnion<?Variable>
 ;
 
 
@@ -112,7 +120,7 @@ MapLiteral                   ::=                            "{"   ","? Case#    
 FunctionArguments            ::=                            "(" ( ","? Expression <+Variable># ","? )? ")";
 
 ExpressionUnit<Variable> ::=
-	| <Variable+>IDENTIFIER
+	| IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate    <?Variable>
 	| ExpressionGrouped <?Variable>
@@ -130,8 +138,7 @@ FunctionCall             ::=  "."                GenericArguments? FunctionArgum
 
 ExpressionCompound<Variable> ::=
 	| ExpressionUnit<?Variable>
-	| ExpressionCompound<?Variable> PropertyAccess<?Variable>
-	| <Variable+>(ExpressionCompound<?Variable> FunctionCall)
+	| ExpressionCompound<?Variable> (PropertyAccess<?Variable> | FunctionCall)
 ;
 
 Assignee ::=
@@ -162,8 +169,8 @@ Expression<Variable> ::=
 
 
 
-DeclarationType     ::= "type"            IDENTIFIER "=" Type                          ";";
-DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression<+Variable> ";";
+DeclarationType     ::= "type"            IDENTIFIER "=" Type<+Variable>                           ";";
+DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type<+Variable> "=" Expression<+Variable> ";";
 
 Declaration ::=
 	| DeclarationType

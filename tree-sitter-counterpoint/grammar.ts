@@ -359,66 +359,74 @@ module.exports = grammar({
 
 
 		/* ## Types */
-		...parameterize('entry_type', ({named, optional}) => (
-			$ => seq(iff(named, seq($.word, iff(!optional, ':'))), iff(optional, '?:'), $._type)
-		), 'named', 'optional'),
+		...parameterize('entry_type', ({named, optional, variable}) => (
+			$ => seq(iff(named, seq($.word, iff(!optional, ':'))), iff(optional, '?:'), $[call('_type', {variable})])
+		), 'named', 'optional', 'variable'),
 
-		_items_type: $ => choice(
-			             seq(repCom1($.entry_type), OPT_COM),
-			seq(optional(seq(repCom1($.entry_type), ','    )), repCom1($.entry_type__optional), OPT_COM),
-		),
+		...parameterize('_items_type', ({variable}) => $ => choice(
+			             seq(repCom1($[call('entry_type', {variable})]), OPT_COM),
+			seq(optional(seq(repCom1($[call('entry_type', {variable})]), ','    )), repCom1($[call('entry_type', 'optional', {variable})]), OPT_COM),
+		), 'variable'),
 
-		_properties_type: $ => seq(repCom1(choice($.entry_type__named, $.entry_type__named__optional)), OPT_COM),
+		...parameterize('_properties_type', ({variable}) => $ => seq(repCom1(choice($[call('entry_type', 'named', {variable})], $[call('entry_type', 'named', 'optional', {variable})])), OPT_COM), 'variable'),
 
-		type_grouped:        $ => seq('(', $._type,                                  ')'),
-		type_tuple_literal:  $ => seq('[', optional(seq(OPT_COM, $._items_type)),    ']'),
-		type_record_literal: $ => seq('[',              OPT_COM, $._properties_type, ']'),
-		type_dict_literal:   $ => seq('[', ':', $._type,                             ']'),
-		type_map_literal:    $ => seq('{', $._type, '->', $._type,                   '}'),
-		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM,       '>'),
+		...parameterize('type_grouped',        ({variable}) => $ => seq(                      '(',                        $[call('_type',            {variable})],   ')'), 'variable'),
+		...parameterize('type_tuple_literal',  ({variable}) => $ => seq(iff(!variable, '\\[', '['), optional(seq(OPT_COM, $[call('_items_type',      {variable})])), ']'), 'variable'),
+		...parameterize('type_record_literal', ({variable}) => $ => seq(iff(!variable, '\\[', '['),              OPT_COM, $[call('_properties_type', {variable})],   ']'), 'variable'),
+		type_dict_literal:                                     $ => seq(                      '[', ':', $._type__variable,                                           ']'),
+		type_map_literal:                                      $ => seq(                      '{', $._type__variable, '->', $._type__variable,                       '}'),
+		generic_arguments:                                     $ => seq(                      '<', OPT_COM, repCom1($._type__variable), OPT_COM,                     '>'),
 
-		_type_unit: $ => choice(
+		...parameterize('_type_unit', ({variable}) => $ => choice(
 			$.keyword_type,
 			$.identifier,
 			$.primitive_literal,
-			$.type_grouped,
+			$[call('type_grouped', {variable})],
 			$.type_tuple_literal,
 			$.type_record_literal,
-			$.type_dict_literal,
-			$.type_map_literal,
-		),
+			...ifSpread(variable, $[call('type_tuple_literal',  {variable})]),
+			...ifSpread(variable, $[call('type_record_literal', {variable})]),
+			...ifSpread(variable, $.type_dict_literal),
+			...ifSpread(variable, $.type_map_literal),
+		), 'variable'),
 
 		property_access_type: $ => seq('.', choice($.integer, $.word)),
 		generic_call:         $ => seq('.', $.generic_arguments),
 
-		_type_compound: $ => choice(
-			$._type_unit,
-			alias($.type_compound_dfn, $.type_compound),
-		),
-		type_compound_dfn: $ => seq($._type_compound, choice($.property_access_type, $.generic_call)),
+		...parameterize('_type_compound', ({variable}) => $ => choice(
+			$[call('_type_unit', {variable})],
+			alias($[call('type_compound_dfn', {variable})], $[call('type_compound', {variable})]),
+		), 'variable'),
+		...parameterize('type_compound_dfn', ({variable}) => $ => seq($[call('_type_compound', {variable})], choice($.property_access_type, $.generic_call)), 'variable'),
 
-		_type_unary_symbol: $ => choice(
-			$._type_compound,
-			alias($.type_unary_symbol_dfn, $.type_unary_symbol),
-		),
-		type_unary_symbol_dfn: $ => seq($._type_unary_symbol, choice('?', '!', seq('[', optional($.integer), ']'), seq('{', '}'))),
+		...parameterize('_type_unary_symbol', ({variable}) => $ => choice(
+			$[call('_type_compound', {variable})],
+			alias($[call('type_unary_symbol_dfn', {variable})], $[call('type_unary_symbol', {variable})]),
+		), 'variable'),
+		...parameterize('type_unary_symbol_dfn', ({variable}) => $ => seq($[call('_type_unary_symbol', {variable})], choice(
+			'?',
+			'!',
+			seq('\\[', $.integer, ']'),
+			...ifSpread(variable, seq('[', optional($.integer), ']')),
+			...ifSpread(variable, seq('{', '}')),
+		)), 'variable'),
 
-		_type_unary_keyword: $ => choice(
-			$._type_unary_symbol,
-			alias($.type_unary_keyword_dfn, $.type_unary_keyword),
-		),
-		type_unary_keyword_dfn: $ => seq('mutable', $._type_unary_keyword),
+		...parameterize('_type_unary_keyword', ({variable}) => $ => choice(
+			$[call('_type_unary_symbol', {variable})],
+			alias($[call('type_unary_keyword_dfn', {variable})], $[call('type_unary_keyword', {variable})]),
+		), 'variable'),
+		...parameterize('type_unary_keyword_dfn', ({variable}) => $ => seq('mutable', $[call('_type_unary_keyword', {variable})]), 'variable'),
 
-		_type_intersection: $ => choice($._type_unary_keyword, alias($.type_intersection_dfn, $.type_intersection)),
-		_type_union:        $ => choice($._type_intersection,  alias($.type_union_dfn,        $.type_union)),
+		...parameterize('_type_intersection', ({variable}) => $ => choice($[call('_type_unary_keyword', {variable})], alias($[call('type_intersection_dfn', {variable})], $[call('type_intersection', {variable})])), 'variable'),
+		...parameterize('_type_union',        ({variable}) => $ => choice($[call('_type_intersection',  {variable})], alias($[call('type_union_dfn',        {variable})], $[call('type_union',        {variable})])), 'variable'),
 
-		type_intersection_dfn: $ => seq($._type_intersection, '&', $._type_unary_keyword),
-		type_union_dfn:        $ => seq($._type_union,        '|', $._type_intersection),
+		...parameterize('type_intersection_dfn', ({variable}) => $ => seq($[call('_type_intersection', {variable})], '&', $[call('_type_unary_keyword', {variable})]), 'variable'),
+		...parameterize('type_union_dfn',        ({variable}) => $ => seq($[call('_type_union',        {variable})], '|', $[call('_type_intersection',  {variable})]), 'variable'),
 
 		/* eslint-disable function-paren-newline */
-		_type: $ => choice(
-			$._type_union,
-		),
+		...parameterize('_type', ({variable}) => $ => choice(
+			$[call('_type_union', {variable})],
+		), 'variable'),
 		/* eslint-enable function-paren-newline */
 
 
@@ -439,7 +447,7 @@ module.exports = grammar({
 		function_arguments:                                   $ => seq(                      '(',  optional(seq(OPT_COM, repCom1($._expression__variable),            OPT_COM)), ')'),
 
 		...parameterize('_expression_unit', ({variable}) => $ => choice(
-			...ifSpread(variable, $.identifier),
+			$.identifier,
 			$.primitive_literal,
 			$[call('string_template',    {variable})],
 			$[call('expression_grouped', {variable})],
@@ -459,10 +467,7 @@ module.exports = grammar({
 			$[call('_expression_unit', {variable})],
 			alias($[call('expression_compound_dfn', {variable})], $[call('expression_compound', {variable})]),
 		), 'variable'),
-		...parameterize('expression_compound_dfn', ({variable}) => $ => choice(
-			seq($[call('_expression_compound', {variable})], $[call('property_access', {variable})]),
-			...ifSpread(variable, seq($[call('_expression_compound', {variable})], $.function_call)),
-		), 'variable'),
+		...parameterize('expression_compound_dfn', ({variable}) => $ => seq($[call('_expression_compound', {variable})], choice($[call('property_access', {variable})], $.function_call)), 'variable'),
 
 		assignee: $ => choice(
 			$.identifier,
@@ -500,8 +505,8 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		declaration_type:     $ => seq('type',                      $.identifier, '=', $._type,                               ';'),
-		declaration_variable: $ => seq('let',  optional('unfixed'), $.identifier, ':', $._type, '=', $._expression__variable, ';'),
+		declaration_type:     $ => seq('type',                      $.identifier, '=', $._type__variable,                               ';'),
+		declaration_variable: $ => seq('let',  optional('unfixed'), $.identifier, ':', $._type__variable, '=', $._expression__variable, ';'),
 
 		_declaration: $ => choice(
 			$.declaration_type,
@@ -534,6 +539,7 @@ module.exports = grammar({
 	word: $ => $.identifier,
 
 	conflicts: $ => [
+		familyNameAll('_type_unit',       ['variable']).map((rule_name) => $[rule_name]),
 		familyNameAll('string_template',  ['variable']).map((rule_name) => $[rule_name]),
 		familyNameAll('_expression_unit', ['variable']).map((rule_name) => $[rule_name]),
 	],

@@ -14,22 +14,14 @@ function s(name: string, ...operands: readonly string[]): string {
 	`;
 }
 
-function extractType(operand: string): string {
+function sourceTypes(...types: readonly string[]): string {
 	return s(
-		'expression_compound__variable',
-		s('identifier'),
-		s(
-			'function_call',
-			s(
-				'generic_arguments',
-				operand,
-			),
-			s('function_arguments'),
-		),
+		'source_file',
+		types.map((typ) => s('declaration_type', s('identifier'), typ)).join(''),
 	);
 }
 
-function makeSourceFile(...expressions: readonly string[]): string {
+function sourceExpressions(...expressions: readonly string[]): string {
 	return s(
 		'source_file',
 		expressions.map((expr) => s('statement_expression', expr)).join(''),
@@ -62,20 +54,20 @@ function buildTest(title: string, source: string, expected: string): string {
 		/* # TERMINALS */
 		KEYWORDTYPE: [
 			xjs.String.dedent`
-				f.<void>();
-				f.<bool>();
-				f.<int>();
-				f.<float>();
-				f.<str>();
-				f.<obj>();
+				type T = void;
+				type T = bool;
+				type T = int;
+				type T = float;
+				type T = str;
+				type T = obj;
 			`,
-			makeSourceFile(
-				extractType(s('keyword_type')),
-				extractType(s('keyword_type')),
-				extractType(s('keyword_type')),
-				extractType(s('keyword_type')),
-				extractType(s('keyword_type')),
-				extractType(s('keyword_type')),
+			sourceTypes(
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
 			),
 		],
 
@@ -85,7 +77,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				false;
 				true;
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s('primitive_literal', s('keyword_value')),
 				s('primitive_literal', s('keyword_value')),
 				s('primitive_literal', s('keyword_value')),
@@ -97,7 +89,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				my_variable;
 				'my variable';
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s('identifier'),
 				s('identifier'),
 			),
@@ -110,7 +102,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				4_2;
 				\\b0100_0101;
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer__radix')),
 				s('primitive_literal', s('integer__separator')),
@@ -131,7 +123,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				4_2.6_9e+1_5;
 				4_2.6_9e-1_5;
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s('primitive_literal', s('float')),
 				s('primitive_literal', s('float')),
 				s('primitive_literal', s('float')),
@@ -164,7 +156,7 @@ function buildTest(title: string, source: string, expected: string): string {
 
 				"hello\\u{00_20}world";
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s('primitive_literal', s('string')),
 				s('primitive_literal', s('string')),
 				s('primitive_literal', s('string')),
@@ -185,7 +177,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				"""hello {{ """to {{ """the
 				the""" }} big""" }} world""";
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s(
 					'string_template__variable',
 					s('template_head'),
@@ -243,54 +235,132 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		TypeGrouped: [
 			xjs.String.dedent`
-				f.<(T)>();
+				type T = (42);
+				type T = (int);
+				type T = (T);
 			`,
-			makeSourceFile(extractType(s('type_grouped', s('identifier')))),
+			sourceTypes(
+				s('type_grouped__variable', s('primitive_literal', s('integer'))),
+				s('type_grouped__variable', s('keyword_type')),
+				s('type_grouped__variable', s('identifier')),
+			),
 		],
 
 		TypeTupleLiteral: [
 			xjs.String.dedent`
-				f.<[bool, int, ?: str]>();
+				type T = \\[bool, int, ?: str];
+				type T = [bool, int, ?: str];
+				type U = \\[
+					V.0,
+					W.<float>,
+				];
 			`,
-			makeSourceFile(extractType(s(
-				'type_tuple_literal',
-				s('entry_type',           s('keyword_type')),
-				s('entry_type',           s('keyword_type')),
-				s('entry_type__optional', s('keyword_type')),
-			))),
+			sourceTypes(
+				s(
+					'type_tuple_literal',
+					s('entry_type',           s('keyword_type')),
+					s('entry_type',           s('keyword_type')),
+					s('entry_type__optional', s('keyword_type')),
+				),
+				s(
+					'type_tuple_literal__variable',
+					s('entry_type__variable',           s('keyword_type')),
+					s('entry_type__variable',           s('keyword_type')),
+					s('entry_type__optional__variable', s('keyword_type')),
+				),
+				s(
+					'type_tuple_literal',
+					s(
+						'entry_type',
+						s(
+							'type_compound',
+							s('identifier'),
+							s('property_access_type', s('integer')),
+						),
+					),
+					s(
+						'entry_type',
+						s(
+							'type_compound',
+							s('identifier'),
+							s(
+								'generic_call',
+								s('generic_arguments', s('keyword_type')),
+							),
+						),
+					),
+				),
+			),
 		],
 
 		TypeRecordLiteral: [
 			xjs.String.dedent`
-				f.<[a: bool, b?: int, c: str]>();
+				type T = \\[a: bool, b?: int, c: str];
+				type T = [a: bool, b?: int, c: str];
+				type U = \\[
+					a: V.0,
+					b: W.<float>,
+				];
 			`,
-			makeSourceFile(extractType(s(
-				'type_record_literal',
-				s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
-				s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
-				s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
-			))),
+			sourceTypes(
+				s(
+					'type_record_literal',
+					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
+				),
+				s(
+					'type_record_literal__variable',
+					s('entry_type__named__variable',           s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named__optional__variable', s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named__variable',           s('word', s('identifier')), s('keyword_type')),
+				),
+				s(
+					'type_record_literal',
+					s(
+						'entry_type__named',
+						s('word', s('identifier')),
+						s(
+							'type_compound',
+							s('identifier'),
+							s('property_access_type', s('integer')),
+						),
+					),
+					s(
+						'entry_type__named',
+						s('word', s('identifier')),
+						s(
+							'type_compound',
+							s('identifier'),
+							s(
+								'generic_call',
+								s('generic_arguments', s('keyword_type')),
+							),
+						),
+					),
+				),
+			),
 		],
 
 		TypeDictLiteral: [
 			xjs.String.dedent`
-				f.<[: bool]>();
+				type T = [: bool];
 			`,
-			makeSourceFile(extractType(s(
+			sourceTypes(s(
 				'type_dict_literal',
 				s('keyword_type'),
-			))),
+			)),
 		],
 
 		TypeMapLiteral: [
 			xjs.String.dedent`
-				f.<{int -> float}>();
+				type T = {int -> float};
 			`,
-			makeSourceFile(extractType(s(
+			sourceTypes(s(
 				'type_map_literal',
 				s('keyword_type'),
 				s('keyword_type'),
-			))),
+			)),
 		],
 
 		// TypeUnit
@@ -304,98 +374,101 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		TypeCompound: [
 			xjs.String.dedent`
-				f.<TupleType.0>();
-				f.<RecordType.prop>();
-				f.<Set.<T>>();
+				type T = TupleType.0;
+				type T = RecordType.prop;
+				type T = Set.<T>;
 			`,
-			makeSourceFile(
-				extractType(s(
-					'type_compound',
+			sourceTypes(
+				s(
+					'type_compound__variable',
 					s('identifier'),
 					s('property_access_type', s('integer')),
-				)),
-				extractType(s(
-					'type_compound',
+				),
+				s(
+					'type_compound__variable',
 					s('identifier'),
 					s('property_access_type', s('word', s('identifier'))),
-				)),
-				extractType(s(
-					'type_compound',
+				),
+				s(
+					'type_compound__variable',
 					s('identifier'),
 					s(
 						'generic_call',
-						s(
-							'generic_arguments',
-							s('identifier'),
-						),
+						s('generic_arguments', s('identifier')),
 					),
-				)),
+				),
 			),
 		],
 
 		TypeUnarySymbol: [
 			xjs.String.dedent`
-				f.<T?>();
-				f.<T!>();
-				f.<T[]>();
-				f.<T[3]>();
-				f.<T{}>();
+				type T = T?;
+				type T = T!;
+				type T = bool\\[3];
+				type T = T[];
+				type T = T[3];
+				type T = T{};
 			`,
-			makeSourceFile(
-				extractType(s(
-					'type_unary_symbol',
+			sourceTypes(
+				s(
+					'type_unary_symbol__variable',
 					s('identifier'),
-				)),
-				extractType(s(
-					'type_unary_symbol',
+				),
+				s(
+					'type_unary_symbol__variable',
 					s('identifier'),
-				)),
-				extractType(s(
-					'type_unary_symbol',
+				),
+				s(
+					'type_unary_symbol__variable',
+					s('keyword_type'),
+					s('integer'),
+				),
+				s(
+					'type_unary_symbol__variable',
 					s('identifier'),
-				)),
-				extractType(s(
-					'type_unary_symbol',
+				),
+				s(
+					'type_unary_symbol__variable',
 					s('identifier'),
 					s('integer'),
-				)),
-				extractType(s(
-					'type_unary_symbol',
+				),
+				s(
+					'type_unary_symbol__variable',
 					s('identifier'),
-				)),
+				),
 			),
 		],
 
 		TypeUnaryKeyword: [
 			xjs.String.dedent`
-				f.<mutable T>();
+				type T = mutable T;
 			`,
-			makeSourceFile(extractType(s(
-				'type_unary_keyword',
+			sourceTypes(s(
+				'type_unary_keyword__variable',
 				s('identifier'),
-			))),
+			)),
 		],
 
 		TypeIntersection: [
 			xjs.String.dedent`
-				f.<T & U>();
+				type T = T & U;
 			`,
-			makeSourceFile(extractType(s(
-				'type_intersection',
+			sourceTypes(s(
+				'type_intersection__variable',
 				s('identifier'),
 				s('identifier'),
-			))),
+			)),
 		],
 
 		TypeUnion: [
 			xjs.String.dedent`
-				f.<T | U>();
+				type T = T | U;
 			`,
-			makeSourceFile(extractType(s(
-				'type_union',
+			sourceTypes(s(
+				'type_union__variable',
 				s('identifier'),
 				s('identifier'),
-			))),
+			)),
 		],
 
 		// Type
@@ -414,9 +487,13 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		ExpressionGrouped: [
 			xjs.String.dedent`
+				(42);
 				(a);
 			`,
-			makeSourceFile(s('expression_grouped__variable', s('identifier'))),
+			sourceExpressions(
+				s('expression_grouped__variable', s('primitive_literal', s('integer'))),
+				s('expression_grouped__variable', s('identifier')),
+			),
 		],
 
 		TupleLiteral: [
@@ -424,7 +501,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				\\[1, \\[2], \\[3]];
 				  [1, \\[2],   [3]];
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s(
 					'tuple_literal',
 					                   s('primitive_literal', s('integer')),
@@ -445,7 +522,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				\\[a= 1, b= \\[x= 2], c= \\[y= 3]];
 				  [a= 1, b= \\[x= 2], c=   [y= 3]];
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s(
 					'record_literal',
 					s(
@@ -517,7 +594,7 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				{1, 2, 3};
 			`,
-			makeSourceFile(s(
+			sourceExpressions(s(
 				'set_literal',
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
@@ -529,7 +606,7 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				{"1" -> 1, "2" -> 2, "3" -> 3};
 			`,
-			makeSourceFile(s(
+			sourceExpressions(s(
 				'map_literal',
 				s(
 					'case',
@@ -579,7 +656,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				Dict.([]);
 				Set.<T>();
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s(
 					'expression_compound__variable',
 					s('identifier'),
@@ -666,7 +743,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				+value;
 				-value;
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s(
 					'expression_unary_symbol__variable',
 					s('identifier'),
@@ -690,7 +767,7 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				<T>value;
 			`,
-			makeSourceFile(s(
+			sourceExpressions(s(
 				'expression_claim__variable',
 				s('identifier'),
 				s('identifier'),
@@ -702,7 +779,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				a ^ b;
 				a ^ b ^ c;
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s(
 					'expression_exponential__variable',
 					s('identifier'),
@@ -726,7 +803,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				a / b;
 				a * b * c;
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s(
 					'expression_multiplicative__variable',
 					s('identifier'),
@@ -754,7 +831,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				a + b;
 				a - b;
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s(
 					'expression_additive__variable',
 					s('identifier'),
@@ -779,7 +856,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				a is b;
 				a isnt b;
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s(
 					'expression_comparative__variable',
 					s('identifier'),
@@ -830,7 +907,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				a == b;
 				a != b;
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s(
 					'expression_equality__variable',
 					s('identifier'),
@@ -859,7 +936,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				a && b;
 				a !& b;
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s(
 					'expression_conjunctive__variable',
 					s('identifier'),
@@ -878,7 +955,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				a || b;
 				a !| b;
 			`,
-			makeSourceFile(
+			sourceExpressions(
 				s(
 					'expression_disjunctive__variable',
 					s('identifier'),
@@ -896,7 +973,7 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				if a then b else c;
 			`,
-			makeSourceFile(s(
+			sourceExpressions(s(
 				'expression_conditional__variable',
 				s('identifier'),
 				s('identifier'),
@@ -920,10 +997,10 @@ function buildTest(title: string, source: string, expected: string): string {
 					'declaration_type',
 					s('identifier'),
 					s(
-						'type_union',
+						'type_union__variable',
 						s('identifier'),
 						s(
-							'type_intersection',
+							'type_intersection__variable',
 							s('identifier'),
 							s('identifier'),
 						),
@@ -964,10 +1041,10 @@ function buildTest(title: string, source: string, expected: string): string {
 					'declaration_variable',
 					s('identifier'),
 					s(
-						'type_union',
+						'type_union__variable',
 						s('identifier'),
 						s(
-							'type_intersection',
+							'type_intersection__variable',
 							s('identifier'),
 							s('identifier'),
 						),

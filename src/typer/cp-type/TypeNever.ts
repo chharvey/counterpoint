@@ -12,6 +12,7 @@ export class TypeNever extends Type {
 	public static readonly INSTANCE = new TypeNever();
 
 
+	public override readonly isReference:  boolean = false;
 	public override readonly isBottomType: boolean = true;
 	public override readonly isTopType:    boolean = false;
 

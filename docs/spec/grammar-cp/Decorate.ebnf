@@ -35,83 +35,103 @@ Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 
 
 
-Decorate(EntryType<-Named><-Optional> ::= Type) -> SemanticItemType
-	:= (SemanticItemType[optional=false] Decorate(Type));
-Decorate(EntryType<-Named><+Optional> ::= "?:" Type) -> SemanticItemType
-	:= (SemanticItemType[optional=true] Decorate(Type));
-Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType
+Decorate(EntryType<-Named><-Optional><?Variable> ::= Type<?Variable>) -> SemanticItemType
+	:= (SemanticItemType[optional=false] Decorate(Type<?Variable>));
+Decorate(EntryType<-Named><+Optional><?Variable> ::= "?:" Type<?Variable>) -> SemanticItemType
+	:= (SemanticItemType[optional=true] Decorate(Type<?Variable>));
+Decorate(EntryType<+Named><-Optional><?Variable> ::= Word ":" Type<?Variable>) -> SemanticPropertyType
 	:= (SemanticPropertyType[optional=false]
 		Decorate(Word)
-		Decorate(Type)
+		Decorate(Type<?Variable>)
 	);
-Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType
+Decorate(EntryType<+Named><+Optional><?Variable> ::= Word "?:" Type<?Variable>) -> SemanticPropertyType
 	:= (SemanticPropertyType[optional=true]
 		Decorate(Word)
-		Decorate(Type)
+		Decorate(Type<?Variable>)
 	);
 
 
 
-Decorate(ItemsType ::= EntryType# ","?) -> Sequence<SemanticItemType>
-	:= ParseList(EntryType, SemanticItemType);
-Decorate(ItemsType ::= EntryType_Optional# ","?) -> Sequence<SemanticItemType>
-	:= ParseList(EntryType_Optional, SemanticItemType);
-Decorate(ItemsType ::= EntryType# "," EntryType_Optional# ","?) -> Sequence<SemanticItemType>
+Decorate(ItemsType ::= EntryType<-Named><-Optional><?Variable># ","?) -> Sequence<SemanticItemType>
+	:= ParseList(EntryType<-Named><-Optional><?Variable>, SemanticItemType);
+Decorate(ItemsType ::= EntryType<-Named><+Optional><?Variable># ","?) -> Sequence<SemanticItemType>
+	:= ParseList(EntryType<-Named><+Optional><?Variable>, SemanticItemType);
+Decorate(ItemsType ::= EntryType<-Named><-Optional><?Variable># "," EntryType<-Named><+Optional><?Variable># ","?) -> Sequence<SemanticItemType>
 	:= [
-		...ParseList(EntryType,          SemanticItemType),
-		...ParseList(EntryType_Optional, SemanticItemType),
+		...ParseList(EntryType<-Named><-Optional><?Variable>, SemanticItemType),
+		...ParseList(EntryType<-Named><+Optional><?Variable>, SemanticItemType),
 	];
 
-Decorate(PropertiesType ::= EntryType_Named# ","?) -> Sequence<SemanticPropertyType>
-	:= ParseList(EntryType_Named, SemanticPropertyType);
-Decorate(PropertiesType ::= EntryType_Named_Optional# ","?) -> Sequence<SemanticPropertyType>
-	:= ParseList(EntryType_Named_Optional, SemanticPropertyType);
+
+
+Decorate(PropertiesType ::= EntryType<+Named><-Optional><?Variable># ","?) -> Sequence<SemanticPropertyType>
+	:= ParseList(EntryType<+Named><-Optional><?Variable>, SemanticPropertyType);
+Decorate(PropertiesType ::= EntryType<+Named><+Optional><?Variable># ","?) -> Sequence<SemanticPropertyType>
+	:= ParseList(EntryType<+Named><+Optional><?Variable>, SemanticPropertyType);
 
 
 
-Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType
-	:= Decorate(Type);
+Decorate(TypeGrouped<?Variable> ::= "(" Type<?Variable> ")") -> SemanticType
+	:= Decorate(Type<?Variable>);
 
-Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple
-	:= (SemanticTypeTuple);
-Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeTuple
-	:= (SemanticTypeTuple
-		...Decorate(ItemsType)
+Decorate(TypeTupleLiteral<-Variable> ::= "\[" "]") -> SemanticTypeTuple
+	:= (SemanticTypeTuple[isRef=false]);
+Decorate(TypeTupleLiteral<+Variable> ::= "[" "]") -> SemanticTypeTuple
+	:= (SemanticTypeTuple[isRef=true]);
+Decorate(TypeTupleLiteral<-Variable> ::= "\[" ","? ItemsType<?Variable> "]") -> SemanticTypeTuple
+	:= (SemanticTypeTuple[isRef=false]
+		...Decorate(ItemsType<?Variable>)
+	);
+Decorate(TypeTupleLiteral<+Variable> ::= "[" ","? ItemsType<?Variable> "]") -> SemanticTypeTuple
+	:= (SemanticTypeTuple[isRef=true]
+		...Decorate(ItemsType<?Variable>)
 	);
 
-Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType "]") -> SemanticTypeRecord
-	:= (SemanticTypeRecord
-		...Decorate(PropertiesType)
+Decorate(TypeRecordLiteral<-Variable> ::= "\[" ","? PropertiesType<?Variable> ","? "]") -> SemanticTypeRecord
+	:= (SemanticTypeRecord[isRef=false]
+		...Decorate(PropertiesType<?Variable>)
+	);
+Decorate(TypeRecordLiteral<+Variable> ::= "[" ","? PropertiesType<?Variable> ","? "]") -> SemanticTypeRecord
+	:= (SemanticTypeRecord[isRef=true]
+		...Decorate(PropertiesType<?Variable>)
 	);
 
-Decorate(TypeDictLiteral ::= "[" ":" Type "]") -> SemanticTypeDict
+Decorate(TypeDictLiteral ::= "[" ":" Type<+Variable> "]") -> SemanticTypeDict
 	:= (SemanticTypeDict
-		Decorate(Type)
+		Decorate(Type<+Variable>)
 	);
 
-Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMap
+Decorate(TypeMapLiteral ::= "{" Type__0<+Variable> "->" Type__1<+Variable> "}") -> SemanticTypeMap
 	:= (SemanticTypeMap
-		Decorate(Type__0)
-		Decorate(Type__1)
+		Decorate(Type__0<+Variable>)
+		Decorate(Type__1<+Variable>)
 	);
 
-Decorate(GenericArguments ::= "<" ","? Type# ","? ">") -> Sequence<SemanticType>
-	:= ParseList(Type, SemanticType);
+Decorate(GenericArguments ::= "<" ","? Type<+Variable># ","? ">") -> Sequence<SemanticType>
+	:= ParseList(Type<+Variable>, SemanticType);
 
 
 
 Decorate(TypeUnit ::= KEYWORD_TYPE) -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=KeywordType(KEYWORD_TYPE)]);
-Decorate(TypeUnit ::= IDENTIFIER) -> SemanticTypeAlias
+Decorate(TypeUnit<+Variable> ::= IDENTIFIER) -> SemanticTypeAlias
 	:= (SemanticTypeAlias[id=TokenWorth(IDENTIFIER)]);
-Decorate(TypeUnit ::= PrimitiveLiteral) -> SemanticTypeConstant
+Decorate(TypeUnit<Variable> ::= PrimitiveLiteral) -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=ToType(Decorate(PrimitiveLiteral).value)]);
-Decorate(TypeUnit ::= TypeGrouped) -> SemanticType
-	:= Decorate(TypeGrouped);
-Decorate(TypeUnit ::= TypeTupleLiteral) -> SemanticTypeTuple
-	:= Decorate(TypeTupleLiteral);
-Decorate(TypeUnit ::= TypeRecordLiteral) -> SemanticTypeRecord
-	:= Decorate(TypeRecordLiteral);
+Decorate(TypeUnit<Variable> ::= TypeGrouped<Variable>) -> SemanticType
+	:= Decorate(TypeGrouped<Variable>);
+Decorate(TypeUnit<Variable> ::= TypeTupleLiteral<-Variable>) -> SemanticTypeTuple
+	:= Decorate(TypeTupleLiteral<-Variable>);
+Decorate(TypeUnit<Variable> ::= TypeRecordLiteral<-Variable>) -> SemanticTypeRecord
+	:= Decorate(TypeRecordLiteral<-Variable>);
+Decorate(TypeUnit<+Variable> ::= TypeTupleLiteral<?Variable>) -> SemanticTypeTuple
+	:= Decorate(TypeTupleLiteral<?Variable>);
+Decorate(TypeUnit<+Variable> ::= TypeRecordLiteral<?Variable>) -> SemanticTypeRecord
+	:= Decorate(TypeRecordLiteral<?Variable>);
+Decorate(TypeUnit<+Variable> ::= TypeDictLiteral) -> SemanticTypeDict
+	:= Decorate(TypeDictLiteral);
+Decorate(TypeUnit<+Variable> ::= TypeMapLiteral) -> SemanticTypeMap
+	:= Decorate(TypeMapLiteral);
 
 
 
@@ -127,77 +147,81 @@ Decorate(GenericCall ::= "." GenericArguments) -> Sequence<SemanticType>
 
 
 
-Decorate(TypeCompound ::= TypeUnit) -> SemanticType
-	:= Decorate(TypeUnit);
-Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess
+Decorate(TypeCompound<Variable> ::= TypeUnit<?Variable>) -> SemanticType
+	:= Decorate(TypeUnit<?Variable>);
+Decorate(TypeCompound<Variable> ::= TypeCompound<?Variable> PropertyAccessType) -> SemanticTypeAccess
 	:= (SemanticTypeAccess
-		Decorate(TypeCompound)
+		Decorate(TypeCompound<?Variable>)
 		Decorate(PropertyAccessType)
 	);
-Decorate(TypeCompound ::= TypeCompound GenericCall) -> SemanticTypeCall
+Decorate(TypeCompound<+Variable> ::= TypeCompound<?Variable> GenericCall) -> SemanticTypeCall
 	:= (SemanticTypeCall
-		Decorate(TypeCompound)
+		Decorate(TypeCompound<?Variable>)
 		...Decorate(GenericCall)
 	);
 
 
 
-Decorate(TypeUnarySymbol ::= TypeCompound) -> SemanticType
-	:= Decorate(TypeCompound);
-Decorate(TypeUnarySymbol ::= TypeUnarySymbol "?") -> SemanticTypeOperation
+Decorate(TypeUnarySymbol<Variable> ::= TypeCompound<?Variable>) -> SemanticType
+	:= Decorate(TypeCompound<?Variable>);
+Decorate(TypeUnarySymbol<Variable> ::= TypeUnarySymbol<?Variable> "?") -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=ORNULL]
-		Decorate(TypeUnarySymbol)
+		Decorate(TypeUnarySymbol<?Variable>)
 	);
-Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation
+Decorate(TypeUnarySymbol<Variable> ::= TypeUnarySymbol<?Variable> "!") -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=OREXCP]
-		Decorate(TypeUnarySymbol)
+		Decorate(TypeUnarySymbol<?Variable>)
 	);
-Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" "]") -> SemanticTypeList
-	:= (SemanticTypeList[count=none]
-		Decorate(TypeUnarySymbol)
+Decorate(TypeUnarySymbol<Variable> ::= TypeUnarySymbol<?Variable> "\[" INTEGER "]") -> SemanticTypeList
+	:= (SemanticTypeList[isRef=false][count=TokenWorth(INTEGER)]
+		Decorate(TypeUnarySymbol<?Variable>)
 	);
-Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" INTEGER "]") -> SemanticTypeList
-	:= (SemanticTypeList[count=TokenWorth(INTEGER)]
-		Decorate(TypeUnarySymbol)
+Decorate(TypeUnarySymbol<+Variable> ::= TypeUnarySymbol<?Variable> "[" "]") -> SemanticTypeList
+	:= (SemanticTypeList[isRef=true][count=none]
+		Decorate(TypeUnarySymbol<?Variable>)
 	);
-Decorate(TypeUnarySymbol ::= TypeUnarySymbol "{" "}") -> SemanticTypeSet
+Decorate(TypeUnarySymbol<+Variable> ::= TypeUnarySymbol<?Variable> "[" INTEGER "]") -> SemanticTypeList
+	:= (SemanticTypeList[isRef=true][count=TokenWorth(INTEGER)]
+		Decorate(TypeUnarySymbol<?Variable>)
+	);
+Decorate(TypeUnarySymbol<+Variable> ::= TypeUnarySymbol<?Variable> "{" "}") -> SemanticTypeSet
 	:= (SemanticTypeSet
-		Decorate(TypeUnarySymbol)
+		Decorate(TypeUnarySymbol<?Variable>)
 	);
 
 
 
-Decorate(TypeUnaryKeyword ::= TypeUnarySymbol) -> SemanticType
-	:= Decorate(TypeUnarySymbol);
-Decorate(TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword) -> SemanticTypeOperation
+Decorate(TypeUnaryKeyword<Variable> ::= TypeUnarySymbol<?Variable>) -> SemanticType
+	:= Decorate(TypeUnarySymbol<?Variable>);
+Decorate(TypeUnaryKeyword<Variable> ::= "mutable" TypeUnaryKeyword<?Variable>) -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=MUTABLE]
-		Decorate(TypeUnaryKeyword)
+		Decorate(TypeUnaryKeyword<?Variable>)
 	);
 
 
 
-Decorate(TypeIntersection ::= TypeUnarySymbol) -> SemanticType
-	:= Decorate(TypeUnarySymbol);
-Decorate(TypeIntersection ::= TypeIntersection "&" TypeUnaryKeyword) -> SemanticTypeOperation
+Decorate(TypeIntersection<Variable> ::= TypeUnarySymbol<?Variable>) -> SemanticType
+	:= Decorate(TypeUnarySymbol<?Variable>);
+Decorate(TypeIntersection<Variable> ::= TypeIntersection<?Variable> "&" TypeUnaryKeyword<?Variable>) -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=AND]
-		Decorate(TypeIntersection)
-		Decorate(TypeUnaryKeyword)
+		Decorate(TypeIntersection<?Variable>)
+		Decorate(TypeUnaryKeyword<?Variable>)
 	);
 
 
 
-Decorate(TypeUnion ::= TypeIntersection) -> SemanticType
-	:= Decorate(TypeIntersection);
-Decorate(TypeUnion ::= TypeUnion "|" TypeIntersection) -> SemanticTypeOperation
+Decorate(TypeUnion<Variable> ::= TypeIntersection<?Variable>) -> SemanticType
+	:= Decorate(TypeIntersection<?Variable>);
+Decorate(TypeUnion<Variable> ::= TypeUnion<?Variable> "|" TypeIntersection<?Variable>) -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=OR]
-		Decorate(TypeUnion)
-		Decorate(TypeIntersection)
+		Decorate(TypeUnion<?Variable>)
+		Decorate(TypeIntersection<?Variable>)
 	);
 
 
 
-Decorate(Type ::= TypeUnion) -> SemanticType
-	:= Decorate(TypeUnion);
+Decorate(Type<Variable> ::= TypeUnion<?Variable>) -> SemanticType
+	:= Decorate(TypeUnion<?Variable>);
 
 
 
@@ -263,6 +287,8 @@ Decorate(Case ::= Expression<+Variable> "->" Expression<+Variable>) -> SemanticC
 		Decorate(Expression<+Variable>)
 	);
 
+
+
 Decorate(ExpressionGrouped<Variable> ::= "(" Expression<?Variable> ")") -> SemanticExpression
 	:= Decorate(Expression<?Variable>);
 
@@ -303,7 +329,7 @@ Decorate(FunctionArguments ::= "(" ( ","? Expression<+Variable># ","? )? ")") ->
 
 
 
-Decorate(ExpressionUnit<Variable> ::= <Variable+>IDENTIFIER) -> SemanticVariable
+Decorate(ExpressionUnit<+Variable> ::= IDENTIFIER) -> SemanticVariable
 	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(ExpressionUnit<Variable> ::= PrimitiveLiteral) -> SemanticConstant
 	:= Decorate(PrimitiveLiteral);
@@ -315,13 +341,13 @@ Decorate(ExpressionUnit<Variable> ::= TupleLiteral<-Variable>) -> SemanticTuple
 	:= Decorate(TupleLiteral<-Variable>);
 Decorate(ExpressionUnit<Variable> ::= RecordLiteral<-Variable>) -> SemanticRecord
 	:= Decorate(RecordLiteral<-Variable>);
-Decorate(ExpressionUnit<Variable> ::= <Variable+>TupleLiteral<?Variable>) -> SemanticTuple
+Decorate(ExpressionUnit<+Variable> ::= TupleLiteral<?Variable>) -> SemanticTuple
 	:= Decorate(TupleLiteral<?Variable>);
-Decorate(ExpressionUnit<Variable> ::= <Variable+>RecordLiteral<?Variable>) -> SemanticRecord
+Decorate(ExpressionUnit<+Variable> ::= RecordLiteral<?Variable>) -> SemanticRecord
 	:= Decorate(RecordLiteral<?Variable>);
-Decorate(ExpressionUnit<Variable> ::= <Variable+>SetLiteral) -> SemanticSet
+Decorate(ExpressionUnit<+Variable> ::= SetLiteral) -> SemanticSet
 	:= Decorate(SetLiteral);
-Decorate(ExpressionUnit<Variable> ::= <Variable+>MapLiteral) -> SemanticMap
+Decorate(ExpressionUnit<+Variable> ::= MapLiteral) -> SemanticMap
 	:= Decorate(MapLiteral);
 
 
@@ -364,9 +390,9 @@ Decorate(ExpressionCompound<Variable> ::= ExpressionCompound<?Variable> Property
 		Decorate(ExpressionCompound<?Variable>)
 		Decorate(PropertyAccess<?Variable>)
 	);
-Decorate(ExpressionCompound<+Variable> ::= ExpressionCompound<+Variable> FunctionCall) -> SemanticCall
+Decorate(ExpressionCompound<+Variable> ::= ExpressionCompound<?Variable> FunctionCall) -> SemanticCall
 	:= (SemanticCall
-		Decorate(ExpressionCompound<+Variable>)
+		Decorate(ExpressionCompound<?Variable>)
 		...(...Decorate(FunctionCall))
 	);
 
@@ -581,24 +607,24 @@ Decorate(Expression<Variable> ::= ExpressionConditional<?Variable>) -> SemanticE
 
 
 
-Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType
+Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type<+Variable> ";") -> SemanticDeclarationType
 	:= (SemanticDeclarationType
 		(SemanticTypeAlias[id=TokenWorth(IDENTIFIER)])
-		Decorate(Type)
+		Decorate(Type<+Variable>)
 	);
 
 
 
-Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression<+Variable> ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type<+Variable> "=" Expression<+Variable> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=false]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
-		Decorate(Type)
+		Decorate(Type<+Variable>)
 		Decorate(Expression<+Variable>)
 	);
-Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression<+Variable> ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type<+Variable> "=" Expression<+Variable> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
-		Decorate(Type)
+		Decorate(Type<+Variable>)
 		Decorate(Expression<+Variable>)
 	);
 

@@ -13,6 +13,7 @@ export class TypeVoid extends Type {
 	public static readonly INSTANCE = new TypeVoid();
 
 
+	public override readonly isReference:  boolean = false;
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
 

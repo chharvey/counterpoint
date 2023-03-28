@@ -11,6 +11,7 @@ import {
 	ReferenceError02,
 	ReferenceError03,
 	AssignmentError02,
+	TypeErrorUnexpectedRef,
 	TypeErrorNotAssignable,
 } from '../../../src/index.js';
 import {
@@ -451,11 +452,11 @@ describe('ASTNodeExpression', () => {
 							c.key.id,
 							expected[i],
 						])), true),
-						TYPE.TypeTuple.fromTypes(expected, false),
-						TYPE.TypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [
+						TYPE.TypeVect.fromTypes(expected),
+						TYPE.TypeStruct.fromTypes(new Map(collections[1].children.map((c, i) => [
 							c.key.id,
 							expected[i],
-						])), false),
+						]))),
 						new TYPE.TypeSet(TYPE.Type.unionAll(expected), true),
 						new TYPE.TypeMap(
 							map_ant_type,
@@ -465,6 +466,36 @@ describe('ASTNodeExpression', () => {
 					],
 				);
 			}));
+			it('throws if value type contains reference type.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let val_obj1: \\[1.0] = \\[1.0];
+					let ref_obj1:   [1.0] =   [1.0];
+					let val_obj2: \\[2.0] = \\[2.0];
+					let ref_obj2:   [2.0] =   [2.0];
+
+					\\[1, val_obj1, "three"];
+					  [1, ref_obj1, "three"];
+					  [1, val_obj2, "three"];
+					\\[1, ref_obj2, "three"]; %> TypeErrorUnexpectedRef
+
+					\\[a= 1, b= \\[3.0],             c= "three"];
+					  [a= 1, b= List.<float>([3.0]), c= "three"];
+					  [a= 1, b= \\[4.0],             c= "three"];
+					\\[a= 1, b= List.<float>([4.0]), c= "three"]; %> TypeErrorUnexpectedRef
+				`);
+				goal.varCheck();
+				return assert.throws(() => goal.typeCheck(), (err) => {
+					assert.ok(err instanceof AggregateError);
+					assertAssignable(err, {
+						cons:   AggregateError,
+						errors: [
+							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `[2.0]` but was expecting a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `mutable List.<float>` but was expecting a value type.'},
+						],
+					});
+					return true;
+				});
+			});
 		});
 
 

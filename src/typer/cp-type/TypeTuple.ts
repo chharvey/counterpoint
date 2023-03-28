@@ -1,24 +1,13 @@
-import {TypeErrorNoEntry} from '../../index.js';
-import {
-	type IntRange,
-	throw_expression,
-	strictEqual,
-} from '../../lib/index.js';
-import type {
-	ValidAccessOperator,
-	AST,
-} from '../../validator/index.js';
+import {strictEqual} from '../../lib/index.js';
 import type {TypeEntry} from '../utils-public.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
-import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
+import {TypeCollectionIndexedStatic} from './TypeCollectionIndexedStatic.js';
 
 
 
-export class TypeTuple extends Type {
-	public override readonly isBottomType: boolean = false;
-
+export class TypeTuple extends TypeCollectionIndexedStatic {
 	/**
 	 * Construct a new TypeTuple from type items, assuming each item is required.
 	 * @param types the types of the tuple
@@ -39,26 +28,14 @@ export class TypeTuple extends Type {
 	 * @param is_mutable is this type mutable?
 	 */
 	public constructor(
-		public readonly invariants: readonly TypeEntry[] = [],
-		is_mutable: boolean = false,
+		invariants: readonly TypeEntry[] = [],
+		is_mutable: boolean              = false,
 	) {
-		super(is_mutable, new Set([new OBJ.Tuple()]));
-	}
-
-	public override get hasMutable(): boolean {
-		return super.hasMutable || this.invariants.some((t) => t.type.hasMutable);
-	}
-
-	/** The possible number of items in this tuple type. */
-	public get count(): IntRange {
-		return [
-			BigInt(this.invariants.filter((it) => !it.optional).length),
-			BigInt(this.invariants.length) + 1n,
-		];
+		super(invariants, is_mutable, new Set([new OBJ.Tuple()]));
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }[${ this.invariants.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }[${ super.toString() }]`;
 	}
 
 	public override includes(v: OBJ.Object): boolean {
@@ -85,23 +62,6 @@ export class TypeTuple extends Type {
 
 	public override immutableOf(): TypeTuple {
 		return new TypeTuple(this.invariants, false);
-	}
-
-	public get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
-		const n: number = this.invariants.length;
-		const i: number = index.toNumber();
-		return updateAccessedStaticType(
-			(
-				(-n <= i && i < 0) ? this.invariants[i + n] :
-				(0  <= i && i < n) ? this.invariants[i]     :
-				throw_expression(new TypeErrorNoEntry('index', this, accessor))
-			),
-			access_kind,
-		);
-	}
-
-	public itemTypes(): Type {
-		return Type.unionAll(this.invariants.map((t) => t.type));
 	}
 
 	/**

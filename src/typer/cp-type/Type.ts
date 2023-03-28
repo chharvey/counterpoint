@@ -36,11 +36,11 @@ import {
  * - TypeNever
  * - TypeVoid
  * - TypeUnknown
- * - TypeObject
  * - TypeBoolean
  * - TypeInteger
  * - TypeFloat
  * - TypeString
+ * - TypeObject
  * - TypeTuple
  * - TypeRecord
  * - TypeList
@@ -186,6 +186,10 @@ export abstract class Type {
 				return t.isSupertypeOf(this);
 			}
 
+			if (this.isReference && !t.isReference) {
+				return false;
+			}
+
 			return method.call(this, t);
 		};
 	}
@@ -211,6 +215,10 @@ export abstract class Type {
 	}
 
 
+	/**
+	 * Whether this type is a reference type or a value type.
+	 */
+	public readonly isReference: boolean = true;
 	/**
 	 * Whether this type has no values assignable to it,
 	 * i.e., it is equal to the type `never`.

@@ -11,6 +11,7 @@ export class TypeString extends Type {
 	public static readonly INSTANCE = new TypeString();
 
 
+	public override readonly isReference:  boolean = false;
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
 

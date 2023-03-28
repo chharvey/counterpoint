@@ -50,6 +50,19 @@ describe('ASTNodeDeclarationVariable', () => {
 
 
 	describe('#typeCheck', () => {
+		function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
+			if (src instanceof Array) {
+				return src
+					.map((s) => s.trim())
+					.filter((s) => !!s)
+					.forEach((s) => typeCheckGoal(s, expect_thrown));
+			}
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+			goal.varCheck();
+			return (expect_thrown)
+				? assert.throws(() => goal.typeCheck(), expect_thrown)
+				: goal.typeCheck();
+		}
 		it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  int | float =  21  *  2;
@@ -71,30 +84,33 @@ describe('ASTNodeDeclarationVariable', () => {
 			`, CONFIG_COERCION_OFF).typeCheck(), TypeErrorNotAssignable);
 		});
 		it('immutable sets/maps should not be covariant due to bracket access.', () => {
-			[
+			typeCheckGoal([
 				'let s: Set.<int | str>       = Set.<int>([42, 43]);',
 				'let m: Map.<int | str, bool> = Map.<int, bool>([[42, false], [43, true]]);',
 				// otherwise one would access `s.["hello"]` or `m.["hello"]`
-			].forEach((src) => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				goal.varCheck();
-				assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+			], TypeErrorNotAssignable);
+		});
+		context('assigning a collection to a constant collection type.', () => {
+			it('allows assigning a constant collection literal', () => {
+				typeCheckGoal(`
+					let c: int\\[3] = \\[42, 420, 4200];
+					let d: \\[n42: int, n420: int] = \\[
+						n42=  42,
+						n420= 420,
+					];
+				`);
+			});
+			it('disallows assigning a variable collection literal', () => {
+				typeCheckGoal([
+					'let g: int\\[3] = [42, 420, 4200];',
+					`let h: \\[n42: int, n420: int] = [
+						n42=  42,
+						n420= 420,
+					];`,
+				], TypeErrorNotAssignable);
 			});
 		});
 		context('assigning a collection literal to a wider mutable type.', () => {
-			function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
-				if (src instanceof Array) {
-					return src
-						.map((s) => s.trim())
-						.filter((s) => !!s)
-						.forEach((s) => typeCheckGoal(s, expect_thrown));
-				}
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				goal.varCheck();
-				return (expect_thrown)
-					? assert.throws(() => goal.typeCheck(), expect_thrown)
-					: goal.typeCheck();
-			}
 			it('tuples: only allows greater or equal items.', () => {
 				typeCheckGoal(`
 					type T = [int];

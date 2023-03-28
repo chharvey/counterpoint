@@ -15,6 +15,7 @@ import {Type} from './Type.js';
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
 export class TypeIntersection extends Type {
+	public override readonly isReference:  boolean = this.left.isReference || this.right.isReference;
 	public override readonly isBottomType: boolean = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
 
 	/**
