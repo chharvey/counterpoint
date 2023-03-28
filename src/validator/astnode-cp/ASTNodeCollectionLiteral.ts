@@ -20,13 +20,13 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	/**
 	 * Decorator for {@link ASTNodeCollectionLiteral#assignTo} method and any overrides.
 	 * Simplifies assignments by handling type operations.
-	 * @implements MethodDecorator<ASTNodeCollectionLiteral, (this: ASTNodeCollectionLiteral, assignee: TYPE.Type, err: TypeErrorNotAssignable) => void>
+	 * @implements MethodDecorator<ASTNodeCollectionLiteral, ASTNodeCollectionLiteral['assignTo']>
 	 */
 	protected static assignToDeco(
-		method:   (this: ASTNodeCollectionLiteral, assignee: TYPE.Type, err: TypeErrorNotAssignable) => void,
+		method:   ASTNodeCollectionLiteral['assignTo'],
 		_context: ClassMethodDecoratorContext<ASTNodeCollectionLiteral, typeof method>,
 	): typeof method {
-		return function (assignee, err) {
+		return function (this: ASTNodeCollectionLiteral, assignee, err) {
 			if (assignee instanceof TYPE.TypeIntersection) {
 				/* A value is assignable to a type intersection if and only if
 				it is assignable to both operands of that intersection. */
