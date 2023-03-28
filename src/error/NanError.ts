@@ -4,12 +4,11 @@ import {ErrorCode} from './ErrorCode.js';
 
 
 class NanError extends ErrorCode {
-	public static override readonly NAME: string = 'NanError';
 	public static readonly CODE: number = 3200;
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name: NanError.NAME,
+			name: NanError.name,
 			code: NanError.CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),

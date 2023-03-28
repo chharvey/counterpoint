@@ -4,12 +4,11 @@ import {ErrorCode} from './ErrorCode.js';
 
 
 class VoidError extends ErrorCode {
-	public static override readonly NAME: string = 'VoidError';
 	public static readonly CODE: number = 3100;
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name: VoidError.NAME,
+			name: VoidError.name,
 			code: VoidError.CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),

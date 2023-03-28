@@ -6,8 +6,6 @@ import {ErrorCode} from './ErrorCode.js';
  * A ReferenceError is thrown when the validator fails to dereference an identifier.
  */
 export class ReferenceError extends ErrorCode {
-	/** The name of this class of errors. */
-	public static override readonly NAME: string = 'ReferenceError';
 	/** The number series of this class of errors. */
 	public static readonly CODE: number = 2100;
 	/**
@@ -20,7 +18,7 @@ export class ReferenceError extends ErrorCode {
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name: ReferenceError.NAME,
+			name: ReferenceError.name,
 			code: ReferenceError.CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),

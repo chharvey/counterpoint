@@ -6,8 +6,6 @@ import {ErrorCode} from './ErrorCode.js';
  * A MutabilityError is thrown when the validator recognizes an attempt to mutate an immutable object.
  */
 export class MutabilityError extends ErrorCode {
-	/** The name of this class of errors. */
-	public static override readonly NAME: string = 'MutabilityError';
 	/** The number series of this class of errors. */
 	public static readonly CODE: number = 2400;
 	/**
@@ -20,7 +18,7 @@ export class MutabilityError extends ErrorCode {
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name: MutabilityError.NAME,
+			name: MutabilityError.name,
 			code: MutabilityError.CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
