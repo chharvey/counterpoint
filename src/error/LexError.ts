@@ -1,3 +1,10 @@
+import {
+	LexError01,
+	LexError03,
+	LexError04,
+	LexError05,
+} from './index.js';
+import type {ConstructorType} from './utils-private.js';
 import {ErrorCode} from './ErrorCode.js';
 
 
@@ -7,10 +14,16 @@ import {ErrorCode} from './ErrorCode.js';
  * produce a valid token per the rules of the defined lexical grammar.
  */
 export class LexError extends ErrorCode {
-	/** The name of this class of errors. */
-	public static override readonly NAME = 'LexError';
-	/** The number series of this class of errors. */
-	public static readonly CODE: number = 1100;
+	static readonly #CODE = 1100;
+
+	protected static get CODES(): ReadonlyMap<ConstructorType<LexError>, number> {
+		return new Map<ConstructorType<LexError>, number>([
+			[LexError01, 1],
+			[LexError03, 3],
+			[LexError04, 4],
+			[LexError05, 5],
+		]);
+	}
 
 
 	/**
@@ -23,8 +36,8 @@ export class LexError extends ErrorCode {
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name: LexError.NAME,
-			code: LexError.CODE + code,
+			name: LexError.name,
+			code: LexError.#CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});

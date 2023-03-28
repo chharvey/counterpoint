@@ -8,14 +8,17 @@ import {TypeError} from './TypeError.js';
  * A general error used for different cases, such as compound types’s components, generic constraints, or throwing non-Exceptions.
  */
 export class TypeErrorNotNarrow extends TypeError {
-	/** The number series of this class of errors. */
-	public static override readonly CODE = 2;
 	/**
 	 * Construct a new TypeErrorNotNarrow object.
 	 * @param subtype   - the expected subtype
 	 * @param supertype - the supertype
 	 */
 	public constructor(subtype: TYPE.Type, supertype: TYPE.Type, line_index: number, col_index: number) {
-		super(`Type ${ subtype } is not a subtype of type ${ supertype }.`, TypeErrorNotNarrow.CODE, line_index, col_index);
+		super(
+			`Type ${ subtype } is not a subtype of type ${ supertype }.`,
+			TypeError.CODES.get(TypeErrorNotNarrow),
+			line_index,
+			col_index,
+		);
 	}
 }

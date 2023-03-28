@@ -13,13 +13,16 @@ import {AssignmentError} from './AssignmentError.js';
  * type MyType = float; % AssignmentError01: Duplicate declaration: `MyType` is already declared.
  */
 export class AssignmentError01 extends AssignmentError {
-	/** The number series of this class of errors. */
-	public static override readonly CODE = 1;
 	/**
 	 * Construct a new AssignmentError01 object.
 	 * @param symbol the duplicate symbol
 	 */
 	public constructor(symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
-		super(`Duplicate declaration: \`${ symbol.source }\` is already declared.`, AssignmentError01.CODE, symbol.line_index, symbol.col_index);
+		super(
+			`Duplicate declaration: \`${ symbol.source }\` is already declared.`,
+			AssignmentError.CODES.get(AssignmentError01),
+			symbol.line_index,
+			symbol.col_index,
+		);
 	}
 }

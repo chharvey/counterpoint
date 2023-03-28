@@ -12,8 +12,6 @@ import {TypeError} from './TypeError.js';
  * ((x: int): int => x + 1)(4.2); % TypeErrorNotAssignable: Expression of type `4.2` is not assignable to type `int`.
  */
 export class TypeErrorNotAssignable extends TypeError {
-	/** The number series of this class of errors. */
-	public static override readonly CODE = 3;
 	/**
 	 * Construct a new TypeErrorNotAssignable object.
 	 * @param assigned_type - the type of the expression
@@ -21,6 +19,11 @@ export class TypeErrorNotAssignable extends TypeError {
 	 * @param assignment    - the node where the assignment took place
 	 */
 	public constructor(assigned_type: TYPE.Type, assignee_type: TYPE.Type, assignment: AST.ASTNodeCP) {
-		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`, TypeErrorNotAssignable.CODE, assignment.line_index, assignment.col_index);
+		super(
+			`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`,
+			TypeError.CODES.get(TypeErrorNotAssignable),
+			assignment.line_index,
+			assignment.col_index,
+		);
 	}
 }

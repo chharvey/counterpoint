@@ -9,13 +9,16 @@ import {TypeError} from './TypeError.js';
  * true + false; % TypeErrorInvalidOperation: Invalid operation.
  */
 export class TypeErrorInvalidOperation extends TypeError {
-	/** The number series of this class of errors. */
-	public static override readonly CODE = 1;
 	/**
 	 * Construct a new TypeErrorInvalidOperation object.
 	 * @param expression - the invalid operation expression
 	 */
 	public constructor(expression: AST.ASTNodeAccess | AST.ASTNodeOperation) {
-		super(`Invalid operation: \`${ expression.source }\` at line ${ expression.line_index + 1 } col ${ expression.col_index + 1 }.`, TypeErrorInvalidOperation.CODE, expression.line_index, expression.col_index);
+		super(
+			`Invalid operation: \`${ expression.source }\` at line ${ expression.line_index + 1 } col ${ expression.col_index + 1 }.`,
+			TypeError.CODES.get(TypeErrorInvalidOperation),
+			expression.line_index,
+			expression.col_index,
+		);
 	}
 }

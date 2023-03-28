@@ -12,8 +12,6 @@ import {TypeError} from './TypeError.js';
  * x.(2, 4);                      % TypeErrorArgCount: Got 2 arguments, but expected 1.
  */
 export class TypeErrorArgCount extends TypeError {
-	/** The number series of this class of errors. */
-	public static override readonly CODE = 6;
 	/**
 	 * Construct a new TypeErrorArgCount object.
 	 * @param actual   - the number of arguments received
@@ -22,6 +20,11 @@ export class TypeErrorArgCount extends TypeError {
 	 * @param call     - the function call
 	 */
 	public constructor(actual: bigint, expected: bigint, generic: boolean, call: AST.ASTNodeTypeCall | AST.ASTNodeCall) {
-		super(`Got \`${ actual }\` ${ (generic) ? 'type ' : '' }arguments, but expected \`${ expected }\`.`, TypeErrorArgCount.CODE, call.line_index, call.col_index);
+		super(
+			`Got \`${ actual }\` ${ (generic) ? 'type ' : '' }arguments, but expected \`${ expected }\`.`,
+			TypeError.CODES.get(TypeErrorArgCount),
+			call.line_index,
+			call.col_index,
+		);
 	}
 }

@@ -13,8 +13,6 @@ import {TypeError} from './TypeError.js';
  * ((x: int): int => x + 1).(y= 42); % TypeErrorNoEntry: Parameter `y` does not exist on type `(x: int) => int`.
  */
 export class TypeErrorNoEntry extends TypeError {
-	/** The number series of this class of errors. */
-	public static override readonly CODE = 4;
 	/**
 	 * Construct a new TypeErrorNoEntry object.
 	 * @param kind     - the kind of access
@@ -22,6 +20,11 @@ export class TypeErrorNoEntry extends TypeError {
 	 * @param accessor - the property access index/key/expression
 	 */
 	public constructor(kind: 'index' | 'property' | 'parameter', accessee: TYPE.Type, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression) {
-		super(`${ kind[0].toUpperCase() }${ kind.slice(1) } \`${ accessor.source }\` does not exist on type \`${ accessee }\`.`, TypeErrorNoEntry.CODE, accessor.line_index, accessor.col_index);
+		super(
+			`${ kind[0].toUpperCase() }${ kind.slice(1) } \`${ accessor.source }\` does not exist on type \`${ accessee }\`.`,
+			TypeError.CODES.get(TypeErrorNoEntry),
+			accessor.line_index,
+			accessor.col_index,
+		);
 	}
 }
