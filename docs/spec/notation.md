@@ -34,9 +34,9 @@ For instance, a sequence of real numbers can be written as *[2, 4, 6]*.
 
 #### Sequences
 Sequences are denoted within square brackets (**U+005B**, **U+005D**), with comma-separated (**U+002C**) entries.
-The notation *[`1685`, `'Bach'`]* represents a sequence containing two items:
+The notation *[`1685`, `"Bach"`]* represents a sequence containing two items:
 the [Integer](./data-types.md#integer) representing the real number *1685*,
-and the [String value](./data-types.md#string) `'Bach'`.
+and the [String value](./data-types.md#string) `"Bach"`.
 
 Fixed entries of a sequence may be accessed using 0-origin dot notation (**U+002E**).
 If the example sequence above were assigned to the specification variable \`bach\`,
@@ -48,17 +48,17 @@ For example, using a variable index \`i\` we may access «the *i*th entry of \`b
 #### Structures
 Structures are denoted with left and right square brackets,
 and name–value pairs are delimited with equals signs (**U+003D**).
-For example, a structure with a \`name\` property of `'Bach'` and a \`yob\` property of `1685`
-would be written as *[name= `'Bach'`, yob= `1685`]*.
+For example, a structure with a \`name\` property of `"Bach"` and a \`yob\` property of `1685`
+would be written as *[name= `"Bach"`, yob= `1685`]*.
 
 Entries of a structure can be accessed using dot notation.
 If the example structure above were assigned to the specification variable \`bach\`,
-then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which is the value `'Bach'`.
+then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which is the value `"Bach"`.
 
 
 ### Counterpoint Language Values
 [Counterpoint Language Values](./data-types.md#counterpoint-language-types) are displayed with a `monospace typeface`.
-Examples include `true`, `42.0`, and `'hello'`.
+Examples include `true`, `42.0`, and `"hello"`.
 There is no notational distinction between Counterpoint Language Values and longer code snippets
 such as `let n: int = 42;`; however, the semantics will be apparent in context.
 
@@ -987,12 +987,12 @@ which can then be referenced in the return value.
 
 AG productions may also invoke each other, and they may do so recursively.
 ```
-TokenWorth(TemplateFull :::= "'''" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
+TokenWorth(TemplateFull :::= #x22 #x22 #x22 TemplateChars__EndDelim #x22 #x22 #x22) -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim)
-TokenWorth(TemplateChars__EndDelim :::= [^'{#x03]) -> Sequence<RealNumber>
-	:= [UTF8Encoding(CodePoint([^'{#x03]))]
-TokenWorth(TemplateChars__EndDelim :::= [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
-	:= [UTF8Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndDelim)]
+TokenWorth(TemplateChars__EndDelim :::= [^"{#x03]) -> Sequence<RealNumber>
+	:= [UTF8Encoding(CodePoint([^"{#x03]))]
+TokenWorth(TemplateChars__EndDelim :::= [^"{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= [UTF8Encoding(CodePoint([^"{#x03])), ...TokenWorth(TemplateChars__EndDelim)]
 TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim__StartDelim)
 TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>
@@ -1215,7 +1215,7 @@ Algorithm steps may contain shorthand notation that desugar to the types of step
 The metavariables ‹x›, ‹y›, ‹A›, ‹B›, and ‹C› represent any snippets of algorithm prose.
 
 ##### Else If
-A step that begins with «*Else If* …:» desugars to an ‘else' step with an ‘if’ substep.
+A step that begins with «*Else If* …:» desugars to an ‘else’ step with an ‘if’ substep.
 ```
 1. *If* ‹x›:
 	1. ‹A›.

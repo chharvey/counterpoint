@@ -166,7 +166,7 @@ Identifiers are author-defined and point to values in a program.
 Lexically, identifiers have two forms: basic identifiers and Unicode identifiers.
 Basic identifiers must start with an alphabetic character or an underscore,
 and thereafter may contain more alphanumeric characters or underscores.
-Unicode identifiers are enclosed in back-ticks (`` `…` `` **U+0060 GRAVE ACCENT**),
+Unicode identifiers are enclosed in single quotes (`'…'` **U+0027 APOSTROPHE**),
 and may contain any number of characters from the Unicode character set.
 
 #### TokenWorth (Identifiers)
@@ -195,7 +195,7 @@ The Token Worth of a String token is a [sequence](./data-types.md#sequence)
 of [UTF-8-encoded](./algorithms.md#utf8encoding) code units computed by the various parts of the token.
 
 There is a many-to-one relationship between tokens and Token Worth quantities.
-For example, both the tokens containing `'ABC'` and `'\u{41}\u{42}\u{43}'`
+For example, both the tokens containing `"ABC"` and `"\u{41}\u{42}\u{43}"`
 have the same Token Worth: the sequence of code units *[65, 66, 67]*.
 
 

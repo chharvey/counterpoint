@@ -6,7 +6,7 @@ import {AssignmentError} from './AssignmentError.js';
 /**
  * An AssignmentError02 is thrown when the validator encounters a duplicate key in a record literal or record type literal.
  * @example
- * [foo= 'a', foo= 'b']; % AssignmentError02: Duplicate record key: `foo` is already set.
+ * [foo= "a", foo= "b"]; % AssignmentError02: Duplicate record key: `foo` is already set.
  * @example
  * type MyType = [bar: int, bar: str]; % AssignmentError02: Duplicate record key: `bar` is already set.
  */

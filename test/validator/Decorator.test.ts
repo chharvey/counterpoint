@@ -51,7 +51,7 @@ describe('Decorator', () => {
 				% (primitive_literal (float))
 			`]],
 			['Decorate(Type > PrimitiveLiteral ::= STRING) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
-				type T = 'hello';
+				type T = "hello";
 				% (primitive_literal (string))
 			`]],
 
@@ -68,7 +68,7 @@ describe('Decorator', () => {
 				% (primitive_literal (float))
 			`]],
 			['Decorate(Expression > PrimitiveLiteral ::= STRING) -> SemanticConstant', [AST.ASTNodeConstant, `
-				'hello';
+				"hello";
 				% (primitive_literal (string))
 			`]],
 
@@ -207,15 +207,15 @@ describe('Decorator', () => {
 
 			/* ## Expressions */
 			['Decorate(StringTemplate<Variable> ::= TEMPLATE_FULL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
-				'''full1''';
+				"""full1""";
 				% (string_template__variable)
 			`]],
 			['Decorate(StringTemplate<Variable> ::= TEMPLATE_HEAD Expression<?Variable>? (TEMPLATE_MIDDLE Expression<?Variable>?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
-				'''hello {{ 'to' }} the {{ 'whole' }} great {{ 'big' }} world''';
+				"""hello {{ "to" }} the {{ "whole" }} great {{ "big" }} world""";
 				% (string_template__variable)
 			`]],
 			['Decorate(StringTemplate<Variable> ::= TEMPLATE_HEAD Expression<?Variable>? (TEMPLATE_MIDDLE Expression<?Variable>?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
-				'''hello {{ '''to {{ '''the {{ 'whole' }} great''' }} big''' }} world''';
+				"""hello {{ """to {{ """the {{ "whole" }} great""" }} big""" }} world""";
 				% (string_template__variable)
 			`]],
 
@@ -266,7 +266,7 @@ describe('Decorator', () => {
 			`]],
 
 			['Decorate(MapLiteral ::= "{" ","? Case# ","? "}") -> SemanticMap', [AST.ASTNodeMap, `
-				{42 -> 6.9, 'hello' -> true};
+				{42 -> 6.9, "hello" -> true};
 				% (map_literal)
 			`]],
 

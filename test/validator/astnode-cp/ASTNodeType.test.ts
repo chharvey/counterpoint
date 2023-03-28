@@ -18,7 +18,6 @@ import {assertAssignable} from '../../assert-helpers.js';
 
 
 describe('ASTNodeType', () => {
-	/* eslint-disable quotes */
 	describe('#eval', () => {
 		describe('ASTNodeTypeCollectionLiteral', () => {
 			describe('ASTNodeTypeTuple', () => {
@@ -66,7 +65,7 @@ describe('ASTNodeType', () => {
 			describe('ASTNodeTypeList', () => {
 				it('returns a TypeList if there is no count.', () => {
 					assert.deepStrictEqual(
-						AST.ASTNodeTypeList.fromSource(`(int | bool)[]`).eval(),
+						AST.ASTNodeTypeList.fromSource('(int | bool)[]').eval(),
 						new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL)),
 					);
 				});
@@ -153,11 +152,11 @@ describe('ASTNodeType', () => {
 		describe('#eval', () => {
 			it('computes the value of constant null, boolean, or number types.', () => {
 				assert.deepStrictEqual([
-					`null`,
-					`false`,
-					`true`,
-					`42`,
-					`4.2e+3`,
+					'null',
+					'false',
+					'true',
+					'42',
+					'4.2e+3',
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
 					OBJ.Boolean.FALSETYPE,
@@ -228,5 +227,4 @@ describe('ASTNodeType', () => {
 			});
 		});
 	});
-	/* eslint-enable quotes */
 });

@@ -5,7 +5,7 @@ import {LexError} from './LexError.js';
 /**
  * A LexError03 is thrown when an integer literal or string literal contains an invalid Unicode escape sequence.
  * @example
- * 'this is invalid: \u{defg}'; % LexError03: Invalid escape sequence...
+ * "this is invalid: \u{defg}"; % LexError03: Invalid escape sequence...
  */
 export class LexError03 extends LexError {
 	/**
