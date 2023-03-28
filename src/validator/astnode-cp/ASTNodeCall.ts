@@ -5,9 +5,9 @@ import {
 	OBJ,
 	TYPE,
 	type Builder,
-	type TypeError03,
-	TypeError05,
-	TypeError06,
+	type TypeErrorNotAssignable,
+	TypeErrorNotCallable,
+	TypeErrorArgCount,
 } from '../../index.js';
 import {
 	throw_expression,
@@ -66,7 +66,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
 		if (!(this.base instanceof ASTNodeVariable)) {
-			throw new TypeError05(this.base.type(), this.base);
+			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
 		return (new Map<ValidFunctionName, () => TYPE.Type>([
 			[ValidFunctionName.LIST, () => {
@@ -78,11 +78,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, returntype, this, this.validator);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (
-							(TYPE.TypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)  ? argtype.itemTypes()                :
-							throw_expression(err as TypeError03)
-						);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this, this.validator);
 					}
 				}
@@ -97,11 +93,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, returntype, this, this.validator);
 					} catch (err) {
-						const argvaluetype: TYPE.Type = (
-							(TYPE.TypeRecord.isUnitType(argtype)) ? argtype.value.toType().valueTypes() :
-							(argtype instanceof TYPE.TypeRecord)  ? argtype.valueTypes()                :
-							throw_expression(err as TypeError03)
-						);
+						const argvaluetype: TYPE.Type = (argtype instanceof TYPE.TypeRecord) ? argtype.valueTypes() : throw_expression(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this, this.validator);
 					}
 				}
@@ -116,11 +108,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(eltype), this, this.validator);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (
-							(TYPE.TypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)  ? argtype.itemTypes()                :
-							throw_expression(err as TypeError03)
-						);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this, this.validator);
 					}
 				}
@@ -137,11 +125,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(entrytype), this, this.validator);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (
-							(TYPE.TypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)  ? argtype.itemTypes()                :
-							throw_expression(err as TypeError03)
-						);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this, this.validator);
 					}
 				}
@@ -187,16 +171,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 			expected_function = [expected_function, expected_function + 1n];
 		}
 		if (actual_generic < expected_generic[0]) {
-			throw new TypeError06(actual_generic, expected_generic[0], true, this);
+			throw new TypeErrorArgCount(actual_generic, expected_generic[0], true, this);
 		}
 		if (expected_generic[1] <= actual_generic) {
-			throw new TypeError06(actual_generic, expected_generic[1] - 1n, true, this);
+			throw new TypeErrorArgCount(actual_generic, expected_generic[1] - 1n, true, this);
 		}
 		if (actual_function < expected_function[0]) {
-			throw new TypeError06(actual_function, expected_function[0], false, this);
+			throw new TypeErrorArgCount(actual_function, expected_function[0], false, this);
 		}
 		if (expected_function[1] <= actual_function) {
-			throw new TypeError06(actual_function, expected_function[1] - 1n, false, this);
+			throw new TypeErrorArgCount(actual_function, expected_function[1] - 1n, false, this);
 		}
 	}
 }

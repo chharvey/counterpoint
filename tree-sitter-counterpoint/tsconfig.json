@@ -11,6 +11,6 @@
 		// Language and Environment
 		"target": "ESnext",
 	},
-	"include": ["**/*"],
-	"files": ["./grammar.ts"],
+	"include": [], // override parent
+	"files":   ["./grammar.ts"],
 }

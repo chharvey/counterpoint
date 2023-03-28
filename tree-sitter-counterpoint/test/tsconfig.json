@@ -1,4 +1,5 @@
 {
 	"extends": "../../tsconfig.json",
-	"files": ["./build.mts"],
+	"include": [], // override parent
+	"files":   ["./build.mts"],
 }

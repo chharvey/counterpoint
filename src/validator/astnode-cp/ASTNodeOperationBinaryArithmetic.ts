@@ -5,7 +5,7 @@ import {
 	OBJ,
 	TYPE,
 	type Builder,
-	TypeError01,
+	TypeErrorInvalidOperation,
 	NanError01,
 	NanError02,
 } from '../../index.js';
@@ -84,9 +84,9 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				: (
 					(bothFloats   (t0, t1)) ? TYPE.FLOAT :
 					(neitherFloats(t0, t1)) ? TYPE.INT   :
-					throw_expression(new TypeError01(this))
+					throw_expression(new TypeErrorInvalidOperation(this))
 				)
-			: throw_expression(new TypeError01(this));
+			: throw_expression(new TypeErrorInvalidOperation(this));
 	}
 
 	@memoizeMethod

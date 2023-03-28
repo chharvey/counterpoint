@@ -4,7 +4,7 @@ import {
 	OBJ,
 	TYPE,
 	type Builder,
-	TypeError01,
+	TypeErrorInvalidOperation,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
 import {
@@ -67,7 +67,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		))) {
 			return TYPE.BOOL;
 		}
-		throw new TypeError01(this);
+		throw new TypeErrorInvalidOperation(this);
 	}
 
 	@memoizeMethod

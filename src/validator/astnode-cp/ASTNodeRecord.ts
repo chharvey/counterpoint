@@ -4,6 +4,8 @@ import {
 	OBJ,
 	TYPE,
 	AssignmentError02,
+	TypeError,
+	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	type NonemptyArray,
@@ -70,26 +72,24 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	@ASTNodeCollectionLiteral.assignToDeco
-	public override assignTo(assignee: TYPE.Type): boolean {
-		if (TYPE.TypeRecord.isUnitType(assignee) || assignee instanceof TYPE.TypeRecord) {
-			const assignee_type_record: TYPE.TypeRecord = (TYPE.TypeRecord.isUnitType(assignee))
-				? assignee.value.toType()
-				: assignee;
-			if (this.children.length < assignee_type_record.count[0]) {
-				return false;
+	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
+		if (assignee instanceof TYPE.TypeRecord) {
+			if (this.children.length < assignee.count[0]) {
+				throw err;
 			}
 			try {
-				xjs.Array.forEachAggregated([...assignee_type_record.invariants], ([id, thattype]) => {
+				xjs.Array.forEachAggregated([...assignee.invariants], ([id, thattype]) => {
 					const prop: ASTNodeProperty | undefined = this.children.find((c) => c.key.id === id);
 					if (!thattype.optional && !prop) {
-						throw new TypeError(`Property \`${ id }\` does not exist on type \`${ this.type() }\`.`);
+						// TODO: use a more specific class of TypeError used when checking subtypes
+						throw new TypeError(`Property \`${ id }\` does not exist on type \`${ this.type() }\`.`, 0, this.line_index, this.col_index);
 					}
 				});
-			} catch (err) {
-				// TODO: use the caught error as the cause of a new error
-				return false;
+			} catch (err2) {
+				err.cause = err2;
+				throw err;
 			}
-			xjs.Array.forEachAggregated([...assignee_type_record.invariants], ([id, thattype]) => {
+			return xjs.Array.forEachAggregated([...assignee.invariants], ([id, thattype]) => {
 				const prop: ASTNodeProperty | undefined = this.children.find((c) => c.key.id === id);
 				const expr: ASTNodeExpression | undefined = prop?.val;
 				if (expr) {
@@ -101,8 +101,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 					);
 				}
 			});
-			return true;
 		}
-		return false;
+		throw err;
 	}
 }

@@ -1,4 +1,4 @@
-import {TypeError04} from '../../index.js';
+import {TypeErrorNoEntry} from '../../index.js';
 import {
 	type IntRange,
 	throw_expression,
@@ -13,20 +13,10 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
-import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeTuple extends Type {
-	/**
-	 * Is the argument a unit tuple type?
-	 * @return whether the argument is a `TypeUnit` and its value is a `Tuple`
-	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Tuple> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Tuple;
-	}
-
-
 	public override readonly isBottomType: boolean = false;
 
 	/**
@@ -83,8 +73,8 @@ export class TypeTuple extends Type {
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
 			&& t.invariants.every((thattype, i) => !this.invariants[i] || ((t.isMutable)
-				? this.invariants[i].type.equals(thattype.type)
-				: this.invariants[i].type.isSubtypeOf(thattype.type)
+				? this.invariants[i].type.equals(thattype.type)      // Invariance for mutable tuples: `A == B --> mutable Tuple.<A> <: mutable Tuple.<B>`.
+				: this.invariants[i].type.isSubtypeOf(thattype.type) // Covariance for immutable tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 			))
 		);
 	}
@@ -104,7 +94,7 @@ export class TypeTuple extends Type {
 			(
 				(-n <= i && i < 0) ? this.invariants[i + n] :
 				(0  <= i && i < n) ? this.invariants[i]     :
-				throw_expression(new TypeError04('index', this, accessor))
+				throw_expression(new TypeErrorNoEntry('index', this, accessor))
 			),
 			access_kind,
 		);

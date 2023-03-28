@@ -27,13 +27,13 @@ abstract class CPObject {
 	 * Decorator for {@link CPObject#equal} method and any overrides.
 	 * Performs the Equality algorithm — returns whether two CPObjects (Counterpoint Language Values)
 	 * are equal by some definition.
-	 * @implements MethodDecorator<CPObject, (this: CPObject, value: CPObject) => boolean>
+	 * @implements MethodDecorator<CPObject, CPObject['equal']>
 	 */
 	protected static equalsDeco(
-		method:   (this: CPObject, value: CPObject) => boolean,
+		method:   CPObject['equal'],
 		_context: ClassMethodDecoratorContext<CPObject, typeof method>,
 	): typeof method {
-		return function (value) {
+		return function (this: CPObject, value) {
 			return this.identical(value) || method.call(this, value);
 		};
 	}

@@ -10,7 +10,6 @@ import {
 } from '../core/index.js';
 import {
 	Punctuator,
-	PUNCTUATORS,
 	type Keyword,
 	KEYWORDS,
 	type Serializable,
@@ -29,8 +28,8 @@ const ESCAPER            = '\\';
 const SEPARATOR          = '_';
 const POINT              = '.';
 const EXPONENT           = 'e';
-const DELIM_STRING       = '\'';
-const DELIM_TEMPLATE     = '\'\'\'';
+const DELIM_STRING       = '"';
+const DELIM_TEMPLATE     = '"""';
 const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
@@ -166,27 +165,11 @@ function tokenWorthString(
  * 	to `(sum (const 2) (const 3))`
  */
 export class Validator {
-	/** The minimum allowed cooked value of a punctuator token. */
-	private static readonly MIN_VALUE_PUNCTUATOR = 0n;
-
 	/** The minimum allowed cooked value of a keyword token. */
 	private static readonly MIN_VALUE_KEYWORD = 0x80n;
 
 	/** The minimum allowed cooked value of an identifier token. */
 	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
-
-	/**
-	 * Give the unique integer identifier of a punctuator token.
-	 * The id is determined by the language specification.
-	 * @param source the token’s text
-	 * @return       the unique id identifying the token
-	 */
-	public static cookTokenPunctuator(source: Punctuator): bigint {
-		const index: number = PUNCTUATORS.indexOf(source);
-		return (0 <= index && index < PUNCTUATORS.length)
-			? BigInt(index) + Validator.MIN_VALUE_PUNCTUATOR
-			: throw_expression(new RangeError(`Token \`${ source }\` is not a valid punctuator.`));
-	}
 
 	/**
 	 * Give the unique integer identifier of a reserved keyword token.

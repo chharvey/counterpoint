@@ -2,7 +2,7 @@ import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	TYPE,
-	TypeError03,
+	TypeErrorNotAssignable,
 } from '../../index.js';
 import {to_serializable} from '../../parser/index.js';
 import type {Validator} from '../index.js';
@@ -32,7 +32,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
 	 * @param node          the node where the assignment took place
 	 * @param validator     a validator for type-checking purposes
-	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
+	 * @throws {TypeErrorNotAssignable} if the assigned expression is not assignable to the assignee
 	 */
 	public static typeCheckAssignment(
 		assigned_type: TYPE.Type,
@@ -40,14 +40,16 @@ export abstract class ASTNodeCP extends ASTNode {
 		node:          ASTNodeCP,
 		validator:     Validator,
 	): void {
-		const is_subtype:                    boolean = assigned_type.isSubtypeOf(assignee_type);
-		const treat_int_as_subtype_of_float: boolean = (
-			   validator.config.compilerOptions.intCoercion
-			&& assigned_type.isSubtypeOf(TYPE.INT)
-			&& TYPE.FLOAT.isSubtypeOf(assignee_type)
-		);
-		if (!is_subtype && !treat_int_as_subtype_of_float) {
-			throw new TypeError03(assigned_type, assignee_type, node);
+		if (
+			   !assigned_type.isSubtypeOf(assignee_type)
+			&& !(
+				   // is int treated as a subtype of float?
+				   validator.config.compilerOptions.intCoercion
+				&& assigned_type.isSubtypeOf(TYPE.INT)
+				&& TYPE.FLOAT.isSubtypeOf(assignee_type)
+			)
+		) {
+			throw new TypeErrorNotAssignable(assigned_type, assignee_type, node);
 		}
 	}
 

@@ -5,7 +5,7 @@ import {
 	OBJ,
 	TYPE,
 	Builder,
-	TypeError01,
+	TypeErrorInvalidOperation,
 	NanError01,
 } from '../../index.js';
 import {
@@ -86,19 +86,19 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
-		const t0: TYPE.Type = this.operand.type();
+		const t: TYPE.Type = this.operand.type();
 		/* eslint-disable indent */
 		return (
 			(this.operator === Operator.NOT) ? (
-				(t0.isSubtypeOf(TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE)))                         ? OBJ.Boolean.TRUETYPE :
-				(TYPE.VOID.isSubtypeOf(t0) || TYPE.NULL.isSubtypeOf(t0) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t0)) ? TYPE.BOOL            :
+				(t.isSubtypeOf(TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE)))                       ? OBJ.Boolean.TRUETYPE :
+				(TYPE.VOID.isSubtypeOf(t) || TYPE.NULL.isSubtypeOf(t) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t)) ? TYPE.BOOL            :
 				OBJ.Boolean.FALSETYPE
 			) :
 			(this.operator === Operator.EMP) ? TYPE.BOOL :
 			(assert.strictEqual(this.operator, Operator.NEG), (
-				(t0.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)))
-					? t0
-					: throw_expression(new TypeError01(this))
+				(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)))
+					? t
+					: throw_expression(new TypeErrorInvalidOperation(this))
 			))
 		);
 		/* eslint-enable indent */
@@ -106,14 +106,14 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 
 	@memoizeMethod
 	public override fold(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand.fold();
-		if (!v0) {
-			return v0;
+		const v: OBJ.Object | null = this.operand.fold();
+		if (!v) {
+			return v;
 		}
 		return (
-			(this.operator === Operator.NOT) ?                OBJ.Boolean.fromBoolean(!v0.isTruthy)               :
-			(this.operator === Operator.EMP) ?                OBJ.Boolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
-			(assert.strictEqual(this.operator, Operator.NEG), this.foldNumeric(v0 as OBJ.Number<any>)) // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
+			(this.operator === Operator.NOT) ?                OBJ.Boolean.fromBoolean(!v.isTruthy)              :
+			(this.operator === Operator.EMP) ?                OBJ.Boolean.fromBoolean(!v.isTruthy || v.isEmpty) :
+			(assert.strictEqual(this.operator, Operator.NEG), this.foldNumeric(v as OBJ.Number<any>)) // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
 		);
 	}
 

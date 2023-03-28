@@ -3,6 +3,7 @@ import binaryen from 'binaryen';
 import {
 	TYPE,
 	Builder,
+	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {throw_expression} from '../../lib/index.js';
 import {
@@ -105,9 +106,9 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 	 * let vec: mutable [int] = \[42]; % <-- assignment should fail
 	 * ```
 	 *
-	 * @param assigned      the expression assigned
-	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
-	 * @throws {TypeError03} if {@link ASTNodeCP.typeCheckAssignment} throws, and:
+	 * @param  assigned      the expression assigned
+	 * @param  assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
+	 * @throws {TypeErrorNotAssignable} if {@link ASTNodeCP.typeCheckAssignment} throws, and:
 	 *                       if the assigned expression is not a collection literal,
 	 *                       is not a reference object,
 	 *                       or is not entry-wise assignable
@@ -124,7 +125,9 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 				this.validator,
 			);
 		} catch (err) {
-			if (!(assigned instanceof ASTNodeCollectionLiteral && assigned.isRef && assigned.assignTo(assignee_type))) {
+			if (assigned instanceof ASTNodeCollectionLiteral && assigned.isRef) {
+				return assigned.assignTo(assignee_type, err as TypeErrorNotAssignable);
+			} else {
 				throw err;
 			}
 		}

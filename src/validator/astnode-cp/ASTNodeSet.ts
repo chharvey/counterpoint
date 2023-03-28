@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
+	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
 import {
@@ -48,19 +49,16 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	}
 
 	@ASTNodeCollectionLiteral.assignToDeco
-	public override assignTo(assignee: TYPE.Type): boolean {
-		if (TYPE.TypeSet.isUnitType(assignee) || assignee instanceof TYPE.TypeSet) {
-			const assignee_type_set: TYPE.TypeSet = (TYPE.TypeSet.isUnitType(assignee))
-				? assignee.value.toType()
-				: assignee;
-			xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssignment(
+	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
+		if (assignee instanceof TYPE.TypeSet) {
+			// better error reporting to check entry-by-entry instead of checking `this.type().invariant`
+			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssignment(
 				expr.type(),
-				assignee_type_set.invariant,
+				assignee.invariant,
 				expr,
 				this.validator,
 			));
-			return true;
 		}
-		return false;
+		throw err;
 	}
 }

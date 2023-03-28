@@ -95,8 +95,12 @@ function buildTest(title: string, source: string, expected: string): string {
 		IDENTIFIER: [
 			xjs.String.dedent`
 				my_variable;
+				'my variable';
 			`,
-			makeSourceFile(s('identifier')),
+			makeSourceFile(
+				s('identifier'),
+				s('identifier'),
+			),
 		],
 
 		INTEGER: [
@@ -143,22 +147,22 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		STRING: [
 			xjs.String.dedent`
-				'hello world';
+				"hello world";
 
-				'hello world %ignore';
+				"hello world %ignore";
 
-				'hello %ignore
-				world';
+				"hello %ignore
+				world";
 
-				'hello world %%ignore
-				ignore';
+				"hello world %%ignore
+				ignore";
 
-				'hello %%ignore
-				ignore%% world';
+				"hello %%ignore
+				ignore%% world";
 
-				'hello\\u{0020}world';
+				"hello\\u{0020}world";
 
-				'hello\\u{00_20}world';
+				"hello\\u{00_20}world";
 			`,
 			makeSourceFile(
 				s('primitive_literal', s('string')),
@@ -173,13 +177,13 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		TEMPLATE: [
 			xjs.String.dedent`
-				'''hello {{ to }} the
-				the {{ big }} world''';
+				"""hello {{ to }} the
+				the {{ big }} world""";
 
-				'''hello {{ to }} the {{ whole }} great {{ big }} world''';
+				"""hello {{ to }} the {{ whole }} great {{ big }} world""";
 
-				'''hello {{ '''to {{ '''the
-				the''' }} big''' }} world''';
+				"""hello {{ """to {{ """the
+				the""" }} big""" }} world""";
 			`,
 			makeSourceFile(
 				s(
@@ -523,7 +527,7 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		MapLiteral: [
 			xjs.String.dedent`
-				{'1' -> 1, '2' -> 2, '3' -> 3};
+				{"1" -> 1, "2" -> 2, "3" -> 3};
 			`,
 			makeSourceFile(s(
 				'map_literal',
@@ -824,7 +828,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				a === b;
 				a !== b;
 				a == b;
-				a !== b;
+				a != b;
 			`,
 			makeSourceFile(
 				s(
@@ -908,6 +912,7 @@ function buildTest(title: string, source: string, expected: string): string {
 		DeclarationType: [
 			xjs.String.dedent`
 				type T = A | B & C;
+				type 'Ü' = T;
 			`,
 			s(
 				'source_file',
@@ -924,6 +929,11 @@ function buildTest(title: string, source: string, expected: string): string {
 						),
 					),
 				),
+				s(
+					'declaration_type',
+					s('identifier'),
+					s('identifier'),
+				),
 			),
 		],
 
@@ -931,6 +941,8 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				let v: T = a + b * c;
 				let unfixed u: A | B & C = v;
+				let 'å': A = a;
+				let unfixed 'é': E = e;
 			`,
 			s(
 				'source_file',
@@ -960,6 +972,18 @@ function buildTest(title: string, source: string, expected: string): string {
 							s('identifier'),
 						),
 					),
+					s('identifier'),
+				),
+				s(
+					'declaration_variable',
+					s('identifier'),
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'declaration_variable',
+					s('identifier'),
+					s('identifier'),
 					s('identifier'),
 				),
 			),

@@ -1,23 +1,22 @@
 import * as assert from 'assert';
-import Parser, {
+import {
 	Query,
 	type QueryCapture,
 	type SyntaxNode,
 } from 'tree-sitter';
 import Counterpoint from 'tree-sitter-counterpoint';
 import {
+	TS_PARSER,
 	AST,
 	DECORATOR,
-} from '../../src/validator/index.js';
+} from '../../src/index.js';
 
 
 
 describe('Decorator', () => {
 	describe('#decorateTS', () => {
-		const parser = new Parser();
-		parser.setLanguage(Counterpoint);
 		function captureParseNode(source: string, query: string): SyntaxNode {
-			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(parser.parse(source).rootNode);
+			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
 			assert.ok(captures.length, 'could not find any captures.');
 			return captures[0].node;
 		}
@@ -52,7 +51,7 @@ describe('Decorator', () => {
 				% (primitive_literal (float))
 			`]],
 			['Decorate(Type > PrimitiveLiteral ::= STRING) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
-				type T = 'hello';
+				type T = "hello";
 				% (primitive_literal (string))
 			`]],
 
@@ -69,7 +68,7 @@ describe('Decorator', () => {
 				% (primitive_literal (float))
 			`]],
 			['Decorate(Expression > PrimitiveLiteral ::= STRING) -> SemanticConstant', [AST.ASTNodeConstant, `
-				'hello';
+				"hello";
 				% (primitive_literal (string))
 			`]],
 
@@ -172,15 +171,15 @@ describe('Decorator', () => {
 
 			/* ## Expressions */
 			['Decorate(StringTemplate<Variable> ::= TEMPLATE_FULL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
-				'''full1''';
+				"""full1""";
 				% (string_template__variable)
 			`]],
 			['Decorate(StringTemplate<Variable> ::= TEMPLATE_HEAD Expression<?Variable>? (TEMPLATE_MIDDLE Expression<?Variable>?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
-				'''hello {{ 'to' }} the {{ 'whole' }} great {{ 'big' }} world''';
+				"""hello {{ "to" }} the {{ "whole" }} great {{ "big" }} world""";
 				% (string_template__variable)
 			`]],
 			['Decorate(StringTemplate<Variable> ::= TEMPLATE_HEAD Expression<?Variable>? (TEMPLATE_MIDDLE Expression<?Variable>?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
-				'''hello {{ '''to {{ '''the {{ 'whole' }} great''' }} big''' }} world''';
+				"""hello {{ """to {{ """the {{ "whole" }} great""" }} big""" }} world""";
 				% (string_template__variable)
 			`]],
 
@@ -223,7 +222,7 @@ describe('Decorator', () => {
 			`]],
 
 			['Decorate(MapLiteral ::= "{" ","? Case# ","? "}") -> SemanticMap', [AST.ASTNodeMap, `
-				{42 -> 6.9, 'hello' -> true};
+				{42 -> 6.9, "hello" -> true};
 				% (map_literal)
 			`]],
 

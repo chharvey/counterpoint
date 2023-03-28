@@ -4,7 +4,7 @@ import {
 	OBJ,
 	TYPE,
 	type Builder,
-	TypeError01,
+	TypeErrorInvalidOperation,
 } from '../../index.js';
 import {
 	throw_expression,
@@ -60,7 +60,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 				(t0.includes(OBJ.Boolean.TRUE))  ? t1           : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
 				(t0.isBottomType,                  TYPE.NEVER)
 			)
-			: throw_expression(new TypeError01(this));
+			: throw_expression(new TypeErrorInvalidOperation(this));
 	}
 
 	@memoizeMethod

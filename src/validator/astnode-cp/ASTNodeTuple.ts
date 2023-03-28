@@ -5,6 +5,7 @@ import {
 	OBJ,
 	TYPE,
 	type Builder,
+	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
 import {
@@ -56,15 +57,12 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	@ASTNodeCollectionLiteral.assignToDeco
-	public override assignTo(assignee: TYPE.Type): boolean {
-		if (TYPE.TypeTuple.isUnitType(assignee) || assignee instanceof TYPE.TypeTuple) {
-			const assignee_type_tuple: TYPE.TypeTuple = (TYPE.TypeTuple.isUnitType(assignee))
-				? assignee.value.toType()
-				: assignee;
-			if (this.children.length < assignee_type_tuple.count[0]) {
-				return false;
+	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
+		if (assignee instanceof TYPE.TypeTuple) {
+			if (this.children.length < assignee.count[0]) {
+				throw err;
 			}
-			xjs.Array.forEachAggregated(assignee_type_tuple.invariants, (thattype, i) => {
+			return xjs.Array.forEachAggregated(assignee.invariants, (thattype, i) => {
 				const expr: ASTNodeExpression | undefined = this.children[i];
 				if (expr) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- bug
 					return ASTNodeCP.typeCheckAssignment(
@@ -75,8 +73,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 					);
 				}
 			});
-			return true;
 		}
-		return false;
+		throw err;
 	}
 }

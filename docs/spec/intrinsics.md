@@ -72,13 +72,13 @@ There is only one `Null` object: `null`.
 
 ## `Tuple`
 `Tuple` objects are fixed-size ordered lists of indexed values, with indices starting at *0*.
-The values in tuples are Counterpoint Language Values.
+The values in Tuples are Counterpoint Language Values.
 
 
 
 ## `Record`
 `Record` objects are fixed-size unordered lists of keyed values, with identifier keys.
-The values in records are Counterpoint Language Values.
+The values in Records are Counterpoint Language Values.
 
 
 
@@ -94,22 +94,22 @@ The values in records are Counterpoint Language Values.
 
 ## `List`
 `List` objects are variable-size ordered lists of indexed values, with indices starting at *0*.
-The values in lists are Counterpoint Language Values.
+The values in Lists are Counterpoint Language Values.
 
 
 
 ## `Dict`
 `Dict` objects are variable-size unordered lists of keyed values, with identifier keys.
-The values in dicts are Counterpoint Language Values.
+The values in Dicts are Counterpoint Language Values.
 
 
 
 ## `Set`
 `Set` objects are variable-size unordered lists of values.
-The values in sets are Counterpoint Language Values.
+The values in Sets are Counterpoint Language Values.
 
 
 
 ## `Map`
 `Map` objects are variable-size unordered associations of values.
-The values in maps are Counterpoint Language Values.
+The values in Maps are Counterpoint Language Values.
