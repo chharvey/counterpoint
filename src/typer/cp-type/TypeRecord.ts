@@ -1,4 +1,4 @@
-import {TypeError04} from '../../index.js';
+import {TypeErrorNoEntry} from '../../index.js';
 import {
 	type IntRange,
 	throw_expression,
@@ -97,7 +97,7 @@ export class TypeRecord extends Type {
 		return updateAccessedStaticType(
 			((this.invariants.has(key))
 				? this.invariants.get(key)!
-				: throw_expression(new TypeError04('property', this, accessor))
+				: throw_expression(new TypeErrorNoEntry('property', this, accessor))
 			),
 			access_kind,
 		);

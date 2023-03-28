@@ -5,22 +5,22 @@ import {TypeError} from './TypeError.js';
 
 
 /**
- * A TypeError05 is thrown when an attempt is made to call an object that is not callable.
+ * A TypeErrorNotCallable is thrown when an attempt is made to call an object that is not callable.
  * @example
  * type U = int;
- * type T = U.<V>;  % TypeError05: Type `U` is not callable.
+ * type T = U.<V>;  % TypeErrorNotCallable: Type `U` is not callable.
  * let x: int = 42;
- * x.(24);          % TypeError05: Type `int` is not callable.
+ * x.(24);          % TypeErrorNotCallable: Type `int` is not callable.
  */
-export class TypeError05 extends TypeError {
+export class TypeErrorNotCallable extends TypeError {
 	/** The number series of this class of errors. */
 	public static override readonly CODE = 5;
 	/**
-	 * Construct a new TypeError05 object.
+	 * Construct a new TypeErrorNotCallable object.
 	 * @param typ  - the type trying to be called
 	 * @param base - the object expression being called
 	 */
 	public constructor(typ: TYPE.Type, base: AST.ASTNodeType | AST.ASTNodeExpression) {
-		super(`Type \`${ typ }\` is not callable.`, TypeError05.CODE, base.line_index, base.col_index);
+		super(`Type \`${ typ }\` is not callable.`, TypeErrorNotCallable.CODE, base.line_index, base.col_index);
 	}
 }

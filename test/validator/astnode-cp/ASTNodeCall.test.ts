@@ -3,12 +3,10 @@ import {
 	AST,
 	OBJ,
 	TYPE,
+	TypeErrorNotAssignable,
+	TypeErrorNotCallable,
+	TypeErrorArgCount,
 } from '../../../src/index.js';
-import {
-	TypeError03,
-	TypeError05,
-	TypeError06,
-} from '../../../src/error/index.js';
 
 
 
@@ -86,7 +84,7 @@ describe('ASTNodeCall', () => {
 				`null.();`,
 				`(42 || 43).<bool>();`,
 			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeError05);
+				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable);
 			});
 		});
 		it('throws if base is not one of the allowed strings.', () => {
@@ -104,7 +102,7 @@ describe('ASTNodeCall', () => {
 				`Set.<int>([], []);`,
 				`Map.<int>([], []);`,
 			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeError06);
+				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount);
 			});
 		});
 		it('throws when providing incorrect type of arguments.', () => {
@@ -114,7 +112,7 @@ describe('ASTNodeCall', () => {
 				`Set.<int>([42, '42']);`,
 				`Map.<int>([42, '42']);`,
 			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeError03);
+				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable);
 			});
 		});
 	});

@@ -8,7 +8,7 @@ import {
 	TYPE,
 	INST,
 	Builder,
-	TypeError01,
+	TypeErrorInvalidOperation,
 	NanError01,
 } from '../../../src/index.js';
 import {assertEqualTypes} from '../../assert-helpers.js';
@@ -323,7 +323,7 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(typeOfOperationFromSource(`7.0 - 3.0;`), TYPE.FLOAT);
 				});
 				it('throws TypeError for invalid type operations.', () => {
-					assert.throws(() => typeOfOperationFromSource(`7.0 + 3;`), TypeError01);
+					assert.throws(() => typeOfOperationFromSource(`7.0 + 3;`), TypeErrorInvalidOperation);
 				});
 			});
 			it('throws for arithmetic operation of non-numbers.', () => {
@@ -335,7 +335,7 @@ describe('ASTNodeOperation', () => {
 					`null ^ false;`,
 					`'hello' + 5;`,
 				].forEach((src) => {
-					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).type(), TypeError01);
+					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).type(), TypeErrorInvalidOperation);
 				});
 			});
 		});
@@ -426,11 +426,11 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(typeOfOperationFromSource(`7.0 >= 3.0;`), TYPE.BOOL);
 				});
 				it('throws TypeError if operands have different types.', () => {
-					assert.throws(() => typeOfOperationFromSource(`7.0 <= 3;`), TypeError01);
+					assert.throws(() => typeOfOperationFromSource(`7.0 <= 3;`), TypeErrorInvalidOperation);
 				});
 			});
 			it('throws for comparative operation of non-numbers.', () => {
-				assert.throws(() => AST.ASTNodeOperationBinaryComparative.fromSource(`7.0 <= null;`).type(), TypeError01);
+				assert.throws(() => AST.ASTNodeOperationBinaryComparative.fromSource(`7.0 <= null;`).type(), TypeErrorInvalidOperation);
 			});
 		});
 
@@ -975,7 +975,7 @@ describe('ASTNodeOperation', () => {
 				});
 			});
 			it('throws when condition is not a subtype of `boolean`.', () => {
-				assert.throws(() => AST.ASTNodeOperationTernary.fromSource(`if 2 then true else false;`).type(), TypeError01);
+				assert.throws(() => AST.ASTNodeOperationTernary.fromSource(`if 2 then true else false;`).type(), TypeErrorInvalidOperation);
 			});
 		});
 

@@ -2,8 +2,8 @@ import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
-	TypeError05,
-	TypeError06,
+	TypeErrorNotCallable,
+	TypeErrorArgCount,
 } from '../../index.js';
 import {
 	type NonemptyArray,
@@ -48,7 +48,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
-			throw new TypeError05(this.base.eval(), this.base);
+			throw new TypeErrorNotCallable(this.base.eval(), this.base);
 		}
 		return (new Map<ValidFunctionName, () => TYPE.Type>([
 			[ValidFunctionName.LIST, () => (this.countArgs(1n), new TYPE.TypeList(this.args[0].eval()))],
@@ -79,10 +79,10 @@ export class ASTNodeTypeCall extends ASTNodeType {
 			expected = [expected, expected + 1n];
 		}
 		if (actual < expected[0]) {
-			throw new TypeError06(actual, expected[0], true, this);
+			throw new TypeErrorArgCount(actual, expected[0], true, this);
 		}
 		if (expected[1] <= actual) {
-			throw new TypeError06(actual, expected[1] - 1n, true, this);
+			throw new TypeErrorArgCount(actual, expected[1] - 1n, true, this);
 		}
 	}
 }
