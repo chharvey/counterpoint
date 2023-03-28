@@ -9,8 +9,8 @@ import {
 	ReferenceError03,
 	AssignmentError01,
 	AssignmentError10,
-	TypeError01,
-	TypeError03,
+	TypeErrorInvalidOperation,
+	TypeErrorNotAssignable,
 	MutabilityError01,
 } from '../../../src/index.js';
 import {assertAssignable} from '../../assert-helpers.js';
@@ -84,7 +84,7 @@ describe('ASTNodeCP', () => {
 						i = 4.3;
 					`);
 					goal.varCheck();
-					assert.throws(() => goal.typeCheck(), TypeError03);
+					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
 			});
 
@@ -130,7 +130,7 @@ describe('ASTNodeCP', () => {
 					].forEach((src) => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 						goal.varCheck();
-						assert.throws(() => goal.typeCheck(), TypeError03);
+						assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 					});
 				});
 				it('throws when assignee’s base type is not mutable.', () => {
@@ -294,19 +294,19 @@ describe('ASTNodeCP', () => {
 							{
 								cons:   AggregateError,
 								errors: [
-									{cons: TypeError01, message: 'Invalid operation: `a * b` at line 6 col 6.'}, // TODO remove line&col numbers from message
-									{cons: TypeError01, message: 'Invalid operation: `c * d` at line 6 col 14.'},
+									{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `a * b` at line 6 col 6.'}, // TODO remove line&col numbers from message
+									{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `c * d` at line 6 col 14.'},
 								],
 							},
 							{
 								cons:   AggregateError,
 								errors: [
-									{cons: TypeError01, message: 'Invalid operation: `e * f` at line 11 col 6.'},
-									{cons: TypeError01, message: 'Invalid operation: `g * h` at line 11 col 14.'},
+									{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `e * f` at line 11 col 6.'},
+									{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `g * h` at line 11 col 14.'},
 								],
 							},
-							{cons: TypeError01, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
-							{cons: TypeError03, message: `Expression of type ${ typeUnitFloat(4.2) } is not assignable to type ${ TYPE.INT }.`},
+							{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
+							{cons: TypeErrorNotAssignable,    message: `Expression of type ${ typeUnitFloat(4.2) } is not assignable to type ${ TYPE.INT }.`},
 						],
 					});
 					return true;

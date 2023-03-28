@@ -5,6 +5,7 @@ import {
 	TYPE,
 	type INST,
 	type Builder,
+	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
 import {
@@ -61,12 +62,12 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	@ASTNodeCollectionLiteral.assignToDeco
-	public override assignTo(assignee: TYPE.Type): boolean {
+	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
 		if (assignee instanceof TYPE.TypeTuple) {
 			if (this.children.length < assignee.count[0]) {
-				return false;
+				throw err;
 			}
-			xjs.Array.forEachAggregated(assignee.invariants, (thattype, i) => {
+			return xjs.Array.forEachAggregated(assignee.invariants, (thattype, i) => {
 				const expr: ASTNodeExpression | undefined = this.children[i];
 				if (expr) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- bug
 					return ASTNodeCP.typeCheckAssignment(
@@ -77,8 +78,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 					);
 				}
 			});
-			return true;
 		}
-		return false;
+		throw err;
 	}
 }

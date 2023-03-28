@@ -4,9 +4,9 @@ import {
 	TYPE,
 	type INST,
 	type Builder,
-	TypeError01,
-	TypeError02,
-	TypeError04,
+	TypeErrorInvalidOperation,
+	TypeErrorNotNarrow,
+	TypeErrorNoEntry,
 } from '../../index.js';
 import {
 	throw_expression,
@@ -84,19 +84,19 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			);
 		}
 		function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: TYPE.Type): never {
-			throw new TypeError02(accessor.type(), supertype, accessor.line_index, accessor.col_index);
+			throw new TypeErrorNotNarrow(accessor.type(), supertype, accessor.line_index, accessor.col_index);
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			return (
 				(base_type instanceof TYPE.TypeTuple) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>).value, this.kind, this.accessor) :
 				(base_type instanceof TYPE.TypeList)  ? updateAccessedDynamicType(base_type.invariant, this.kind)                                               :
-				throw_expression(new TypeError04('index', base_type, this.accessor))
+				throw_expression(new TypeErrorNoEntry('index', base_type, this.accessor))
 			);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (
 				(base_type instanceof TYPE.TypeRecord) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
 				(base_type instanceof TYPE.TypeDict)   ? updateAccessedDynamicType(base_type.invariant, this.kind) :
-				throw_expression(new TypeError04('property', base_type, this.accessor))
+				throw_expression(new TypeErrorNoEntry('property', base_type, this.accessor))
 			);
 		} else {
 			assert.ok(this.accessor instanceof ASTNodeExpression, `Expected ${ this.accessor } to be an \`ASTNodeExpression\`.`);
@@ -124,7 +124,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 						? updateAccessedDynamicType(base_type.invariant_con, this.kind)
 						: throwWrongSubtypeError(this.accessor, base_type.invariant_ant)
 				) :
-				throw_expression(new TypeError01(this))
+				throw_expression(new TypeErrorInvalidOperation(this))
 			);
 			/* eslint-enable indent */
 		}

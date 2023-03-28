@@ -175,55 +175,55 @@ Object! ValueOf(SemanticCall call) :=
 
 Boolean! ValueOf(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `operand` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *If* *UnwrapAffirm:* `ToBoolean(operand)` is `true`:
+	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *If* *UnwrapAffirm:* `ToBoolean(v0)` is `true`:
 		1. *Return:* `false`.
 	4. *Return:* `true`.
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: EMP] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `operand` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *If* *UnwrapAffirm:* `ToBoolean(operand)` is `false`:
+	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *If* *UnwrapAffirm:* `ToBoolean(v0)` is `false`:
 		1. *Return:* `true`.
-	4. *If* `operand` is an instance of `Integer` *and* `operand` is `0`:
+	4. *If* `v0` is an instance of `Integer` *and* `v0` is `0`:
 		1. *Return:* `true`.
-	5. *If* `operand` is an instance of `Float` *and* `operand` is `0.0` or `-0.0`:
+	5. *If* `v0` is an instance of `Float` *and* `v0` is `0.0` or `-0.0`:
 		1. *Return:* `true`.
-	6. *If* `operand` is an instance of `String` *and* `operand` contains 0 codepoints:
+	6. *If* `v0` is an instance of `String` *and* `v0` contains 0 codepoints:
 		1. *Return:* `true`.
-	7. *If* `operand` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `operand.count` is 0:
+	7. *If* `v0` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `v0.count` is 0:
 		1. *Return:* `true`.
 	8. *Return:* `false`.
 ;
 
 Number! ValueOf(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `operand` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *Assert:* `operand` is an instance of `Number`.
-	4. *Let* `negation` be the additive inverse, `-operand`,
-		obtained by negating `operand`.
+	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Assert:* `v0` is an instance of `Number`.
+	4. *Let* `negation` be the additive inverse, `-v0`,
+		obtained by negating `v0`.
 	5. *Return:* `negation`.
 ;
 
 Number! ValueOf(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand0` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *Let* `operand1` be *Unwrap:* `ValueOf(expr.children.1)`.
-	4. *Assert*: `operand0` is an instance of `Number` *and* `operand1` is an instance of `Number`.
-	5. *If* `operand0` is an instance of `Integer` *and* `operand1` is an instance of `Integer`:
-		1. *Return:* `Integer(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, operand0, operand1))`.
-	6. *Return:* `Float(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, Float(operand0), Float(operand1)))`.
+	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
+	4. *Assert*: `v0` is an instance of `Number` *and* `v1` is an instance of `Number`.
+	5. *If* `v0` is an instance of `Integer` *and* `v1` is an instance of `Integer`:
+		1. *Return:* `Integer(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, v0, v1))`.
+	6. *Return:* `Float(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, Float(v0), Float(v1)))`.
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand0` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *Let* `operand1` be *Unwrap:* `ValueOf(expr.children.1)`.
-	4. *Assert*: `operand0` is an instance of `Number` *and* `operand1` is an instance of `Number`.
-	5. *If* `operand0` is an instance of `Integer` *and* `operand1` is an instance of `Integer`:
-		1. *Return:* `PerformBinaryCompare(expr.operator, operand0, operand1)`.
-	6. *Return:* `PerformBinaryCompare(expr.operator, Float(float0), Float(float1))`.
+	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
+	4. *Assert*: `v0` is an instance of `Number` *and* `v1` is an instance of `Number`.
+	5. *If* `v0` is an instance of `Integer` *and* `v1` is an instance of `Integer`:
+		1. *Return:* `PerformBinaryCompare(expr.operator, v0, v1)`.
+	6. *Return:* `PerformBinaryCompare(expr.operator, Float(v0), Float(v1))`.
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: IS] expr) :=
@@ -232,39 +232,39 @@ Boolean! ValueOf(SemanticOperation[operator: IS] expr) :=
 
 Boolean! ValueOf(SemanticOperation[operator: ID] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand0` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *Let* `operand1` be *Unwrap:* `ValueOf(expr.children.1)`.
-	4. *Return:* `Identical(operand0, operand1)`.
+	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
+	4. *Return:* `Identical(v0, v1)`.
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand0` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *Let* `operand1` be *Unwrap:* `ValueOf(expr.children.1)`.
-	4. *Return:* `Equal(operand0, operand1)`.
+	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
+	4. *Return:* `Equal(v0, v1)`.
 ;
 
 Object! ValueOf(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand0` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *If* *UnwrapAffirm:* `ToBoolean(operand0)` is `false`:
-		1. *Return:* `operand0`.
+	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *If* *UnwrapAffirm:* `ToBoolean(v0)` is `false`:
+		1. *Return:* `v0`.
 	4. *Return:* `ValueOf(expr.children.1)`.
 ;
 
 Object! ValueOf(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand0` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *If* *UnwrapAffirm:* `ToBoolean(operand0)` is `true`:
-		1. *Return:* `operand0`.
+	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *If* *UnwrapAffirm:* `ToBoolean(v0)` is `true`:
+		1. *Return:* `v0`.
 	4. *Return:* `ValueOf(expr.children.1)`.
 ;
 
 Object! ValueOf(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
-	2. *Let* `condition` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *Assert:* `condition` is an instance of `Boolean`.
-	4. *If* `condition` is `true`:
+	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Assert:* `v0` is an instance of `Boolean`.
+	4. *If* `v0` is `true`:
 		1. *Return:* `ValueOf(expr.children.1)`.
 	5. *Else:*
 		1. *Return:* `ValueOf(expr.children.2)`.

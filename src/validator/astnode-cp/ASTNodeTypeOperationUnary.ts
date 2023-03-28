@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {
 	TYPE,
-	TypeError01,
+	TypeErrorInvalidOperation,
 } from '../../index.js';
 import {
 	throw_expression,
@@ -48,7 +48,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		return (
 			(this.operator === Operator.ORNULL)  ? this.operand.eval().union(TYPE.NULL) :
 			(this.operator === Operator.MUTABLE) ? ((this.operand instanceof ASTNodeTypeCollectionLiteral && !this.operand.isRef)
-				? throw_expression(new TypeError01(this))
+				? throw_expression(new TypeErrorInvalidOperation(this))
 				: this.operand.eval().mutableOf()
 			) :
 			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
