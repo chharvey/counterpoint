@@ -471,20 +471,20 @@ describe('ASTNodeOperation', () => {
 			context('with folding and int coersion on.', () => {
 				it('for numeric literals.', () => {
 					typeOperations(new Map<string, OBJ.Boolean>([
-						[' 2    ===  3;',   OBJ.Boolean.FALSE],
-						[' 2    !==  3;',   OBJ.Boolean.TRUE],
-						[' 2    ==   3;',   OBJ.Boolean.FALSE],
-						[' 2    !=   3;',   OBJ.Boolean.TRUE],
-						[' 0    === -0;',   OBJ.Boolean.TRUE],
-						[' 0    ==  -0;',   OBJ.Boolean.TRUE],
-						[' 0.0  ===  0;',   OBJ.Boolean.FALSE],
-						[' 0.0  ==   0;',   OBJ.Boolean.TRUE],
-						[' 0.0  === -0;',   OBJ.Boolean.FALSE],
-						[' 0.0  ==  -0;',   OBJ.Boolean.TRUE],
-						['-0.0 ===   0;',   OBJ.Boolean.FALSE],
-						['-0.0 ==    0;',   OBJ.Boolean.TRUE],
-						['-0.0 ===   0.0;', OBJ.Boolean.FALSE],
-						['-0.0 ==    0.0;', OBJ.Boolean.TRUE],
+						[' 2   ===  3;',   OBJ.Boolean.FALSE],
+						[' 2   !==  3;',   OBJ.Boolean.TRUE],
+						[' 2   ==   3;',   OBJ.Boolean.FALSE],
+						[' 2   !=   3;',   OBJ.Boolean.TRUE],
+						[' 0   === -0;',   OBJ.Boolean.TRUE],
+						[' 0   ==  -0;',   OBJ.Boolean.TRUE],
+						[' 0.0 ===  0;',   OBJ.Boolean.FALSE],
+						[' 0.0 ==   0;',   OBJ.Boolean.TRUE],
+						[' 0.0 === -0;',   OBJ.Boolean.FALSE],
+						[' 0.0 ==  -0;',   OBJ.Boolean.TRUE],
+						['-0.0 ===  0;',   OBJ.Boolean.FALSE],
+						['-0.0 ==   0;',   OBJ.Boolean.TRUE],
+						['-0.0 ===  0.0;', OBJ.Boolean.FALSE],
+						['-0.0 ==   0.0;', OBJ.Boolean.TRUE],
 					]));
 				});
 				it('returns the result of `this#fold`, wrapped in a `new TypeUnit`.', () => {
