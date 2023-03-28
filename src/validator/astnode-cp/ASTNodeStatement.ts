@@ -3,6 +3,7 @@ import type {
 	TYPE,
 	INST,
 	Builder,
+	TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	type CPConfig,
@@ -78,7 +79,9 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 				this.validator,
 			);
 		} catch (err) {
-			if (!(assigned instanceof ASTNodeCollectionLiteral && assigned.assignTo(assignee_type))) {
+			if (assigned instanceof ASTNodeCollectionLiteral) {
+				return assigned.assignTo(assignee_type, err as TypeErrorNotAssignable);
+			} else {
 				throw err;
 			}
 		}

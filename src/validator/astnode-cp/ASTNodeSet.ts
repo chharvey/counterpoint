@@ -5,6 +5,7 @@ import {
 	TYPE,
 	type INST,
 	type Builder,
+	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
 import {
@@ -61,17 +62,16 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	}
 
 	@ASTNodeCollectionLiteral.assignToDeco
-	public override assignTo(assignee: TYPE.Type): boolean {
+	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
 		if (assignee instanceof TYPE.TypeSet) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant`
-			xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssignment(
+			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssignment(
 				expr.type(),
 				assignee.invariant,
 				expr,
 				this.validator,
 			));
-			return true;
 		}
-		return false;
+		throw err;
 	}
 }
