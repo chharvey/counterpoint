@@ -38,7 +38,7 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	}
 
 
-	public constructor(
+	protected constructor(
 		start_node:
 			| SyntaxNodeType<'tuple_literal'>
 			| SyntaxNodeType<'record_literal'>
