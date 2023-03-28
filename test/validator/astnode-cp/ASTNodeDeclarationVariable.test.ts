@@ -1,10 +1,10 @@
 import * as assert from 'assert';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 	Operator,
 	AST,
-	SymbolStructure,
+	type SymbolStructure,
 	SymbolStructureVar,
 	TYPE,
 	INST,
@@ -35,7 +35,8 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.strictEqual(info.type, TYPE.UNKNOWN);
 			assert.strictEqual(info.value, null);
 		});
-		it('for blank variables, does not add to symbol table.', () => {
+
+		it('for blank identifiers, does not add to symbol table.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let _: float = 4.2;
 			`);
@@ -43,6 +44,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			return assert.ok(!goal.validator.hasSymbol(256n));
 		});
+
 		it('throws if the validator already contains a record for the variable.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				let i: int = 42;
@@ -53,7 +55,8 @@ describe('ASTNodeDeclarationVariable', () => {
 				let FOO: int = 42;
 			`).varCheck(), AssignmentError01);
 		});
-		it('allows duplicate declaration of blank variable.', () => {
+
+		it('allows duplicate declaration of blank identifier.', () => {
 			AST.ASTNodeGoal.fromSource(`
 				let _: int = 42;
 				let _: str = "the answer";
@@ -70,11 +73,13 @@ describe('ASTNodeDeclarationVariable', () => {
 			var_.varCheck();
 			return var_.typeCheck();
 		});
+
 		it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  null =  21  *  2;
 			`).typeCheck(), TypeError03);
 		});
+
 		it('with int coersion on, allows assigning ints to floats.', () => {
 			const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
@@ -82,10 +87,22 @@ describe('ASTNodeDeclarationVariable', () => {
 			var_.varCheck();
 			return var_.typeCheck();
 		});
+
 		it('with int coersion off, throws when assigning int to float.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
 			`, CONFIG_COERCION_OFF).typeCheck(), TypeError03);
+		});
+		it('immutable sets/maps should not be covariant due to bracket access.', () => {
+			[
+				'let s: Set.<int | str>       = Set.<int>([42, 43]);',
+				'let m: Map.<int | str, bool> = Map.<int, bool>([[42, false], [43, true]]);',
+				// otherwise one would access `s.["hello"]` or `m.["hello"]`
+			].forEach((src) => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				goal.varCheck();
+				assert.throws(() => goal.typeCheck(), TypeError03);
+			});
 		});
 		context('allows assigning a collection literal to a wider mutable type.', () => {
 			function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
@@ -311,7 +328,8 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.typeCheck();
 			return assert.deepStrictEqual(goal.children.map((c) => c.build(builder)), expecteds);
 		}
-		context('for blank variables.', () => {
+
+		context('for blank identifiers.', () => {
 			it('returns InstructionNone with constant folding on and for foldable values.', () => {
 				buildDecls(`
 					let _:         bool = true;
@@ -348,6 +366,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				]);
 			});
 		});
+
 		context('for regular variables.', () => {
 			it('returns InstructionNone with constant folding on and when fixed and with foldable values.', () => {
 				buildDecls(`

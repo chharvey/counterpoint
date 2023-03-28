@@ -3,17 +3,18 @@ import {
 	OBJ,
 	TYPE,
 	INST,
-	Builder,
+	type Builder,
 	TypeError01,
 } from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeSupertype} from '../utils-private.js';
 import {
 	Operator,
-	ValidOperatorComparative,
+	type ValidOperatorComparative,
 } from '../Operator.js';
 import {
 	bothNumeric,
@@ -44,7 +45,9 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopComparative {
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopComparative {
 		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionBinopComparative(
 			this.operator,
@@ -53,7 +56,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		);
 	}
 
-	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		if (bothNumeric(t0, t1) && (int_coercion || (
 			bothFloats(t0, t1) || neitherFloats(t0, t1)
 		))) {
@@ -62,7 +65,8 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		throw new TypeError01(this);
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;

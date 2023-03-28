@@ -2,9 +2,8 @@ import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
-	PUNCTUATORS,
 	KEYWORDS,
 	Validator,
 } from '../../src/index.js';
@@ -22,19 +21,6 @@ describe('Validator', () => {
 	function utf8Decode(codeunits: readonly CodeUnit[]): string {
 		return utf8.decode(String.fromCodePoint(...codeunits));
 	}
-
-
-	describe('.cookTokenPunctuator', () => {
-		it('assigns values 0n–127n to punctuator tokens.', () => {
-			const cooked: bigint[] = PUNCTUATORS.map((p) => Validator.cookTokenPunctuator(p));
-			const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i)).slice(0, PUNCTUATORS.length);
-			assert.deepStrictEqual(cooked, expected);
-			cooked.forEach((value) => {
-				assert.ok(0n <= value, 'cooked value should be >= 0n.');
-				assert.ok(value < 128n, 'cooked value should be < 128n.');
-			});
-		});
-	});
 
 
 	describe('.cookTokenKeyword', () => {

@@ -1,10 +1,10 @@
 import {
 	Operator,
-	ValidAccessOperator,
+	type ValidAccessOperator,
 } from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
 import {
-	Type,
+	type Type,
 	VOID,
 	NULL,
 } from './index.js';

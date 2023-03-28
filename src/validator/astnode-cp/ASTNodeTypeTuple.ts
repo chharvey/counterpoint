@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 import {TYPE} from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
@@ -24,7 +25,8 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 		super(start_node, {}, children);
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
 		return new TYPE.TypeTuple(this.children.map((c) => ({
 			type:     c.val.eval(),
 			optional: c.optional,

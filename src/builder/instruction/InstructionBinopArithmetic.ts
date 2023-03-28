@@ -1,6 +1,6 @@
 import {
 	Operator,
-	ValidOperatorArithmetic,
+	type ValidOperatorArithmetic,
 } from '../../validator/index.js';
 import {InstructionUnreachable} from './InstructionUnreachable.js';
 import type {InstructionExpression} from './InstructionExpression.js';

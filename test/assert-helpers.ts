@@ -21,36 +21,6 @@ export function assert_instanceof(obj: object, cons: Class): void {
 
 
 
-type CallTrackerFunction = NonNullable<Parameters<assert.CallTracker['calls']>[0]>; // (...args: any[]) => any
-/**
- * @param orig the original function; useful for setting & unsetting
- * @param spy  the wrapper function that is actually called during tests
- * @return     any return value
- */
-type ExpectCallback<Func extends CallTrackerFunction, Return> = (orig: Func, spy: Func) => Return;
-/**
- * Assert that, while a callback is performed, the given function is called a specified number of times.
- * @param orig     the function, a copy of which is expected to actually be called
- * @param times    the number of times the function is expected to be called
- * @param callback the routine to perform while testing; {@see ExpectCallback}
- * @return         the return value of `callback`
- * @throw          if `orig` was not called the exact specified number of times
- * @throw          if `callback` itself throws
- */
-export function assert_wasCalled<Func extends CallTrackerFunction, Return>(orig: Func, times: number, callback: ExpectCallback<Func, Return>): Return {
-	const tracker = new assert.CallTracker();
-	try {
-		return callback.call(null, orig, tracker.calls(orig, times));
-	} finally {
-		try {
-			tracker.verify();
-		} catch {
-			throw new AggregateError(tracker.report().map((info) => new assert.AssertionError(info))); // eslint-disable-line no-unsafe-finally --- we want this behavior
-		}
-	}
-}
-
-
 /**
  * Assert equal types. First compares by `assert.deepStrictEqual`,
  * but if that fails, compares by `Type#equals`.

@@ -1,4 +1,5 @@
 import * as xjs from 'extrajs';
+import {strictEqual} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
 import {
@@ -14,7 +15,7 @@ import {Type} from './Type.js';
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
 export class TypeUnion extends Type {
-	public declare readonly isBottomType: boolean;
+	public override readonly isBottomType: boolean = this.left.isBottomType && this.right.isBottomType;
 
 	/**
 	 * Construct a new TypeUnion object.
@@ -26,7 +27,6 @@ export class TypeUnion extends Type {
 		public readonly right: Type,
 	) {
 		super(false, xjs.Set.union(left.values, right.values, languageValuesIdentical));
-		this.isBottomType = this.left.isBottomType && this.right.isBottomType;
 	}
 
 	public override get hasMutable(): boolean {
@@ -41,7 +41,8 @@ export class TypeUnion extends Type {
 		return this.left.includes(v) || this.right.includes(v);
 	}
 
-	protected override intersect_do(t: Type): Type {
+	@Type.intersectDeco
+	public override intersect(t: Type): Type {
 		/**
 		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
 		 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
@@ -49,12 +50,15 @@ export class TypeUnion extends Type {
 		return this.left.intersect(t).union(this.right.intersect(t));
 	}
 
-	protected override subtract_do(t: Type): Type {
+	@Type.subtractDeco
+	public override subtract(t: Type): Type {
 		/** 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
 		return this.left.subtract(t).union(this.right.subtract(t));
 	}
 
-	protected override isSubtypeOf_do(t: Type): boolean {
+	@strictEqual
+	@Type.subtypeDeco
+	public override isSubtypeOf(t: Type): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t);
 	}

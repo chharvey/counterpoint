@@ -3,16 +3,17 @@ import {
 	OBJ,
 	TYPE,
 	INST,
-	Builder,
+	type Builder,
 } from '../../index.js';
+import {memoizeMethod} from '../../lib/index.js';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeSupertype} from '../utils-private.js';
 import {
 	Operator,
-	ValidOperatorEquality,
+	type ValidOperatorEquality,
 } from '../Operator.js';
 import {
 	bothNumeric,
@@ -43,7 +44,9 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return this.operator === Operator.EQ && super.shouldFloat();
 	}
 
-	protected override build_do(builder: Builder, _to_float: boolean = false): INST.InstructionBinopEquality {
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder, _to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopEquality {
 		const tofloat: boolean = this.validator.config.compilerOptions.intCoercion && this.shouldFloat();
 		return new INST.InstructionBinopEquality(
 			this.operator,
@@ -52,7 +55,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		);
 	}
 
-	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		/*
 		 * If `a` and `b` are of disjoint numeric types, then `a === b` will always return `false`.
 		 * If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
@@ -69,7 +72,8 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return TYPE.BOOL;
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;

@@ -1,23 +1,22 @@
 import * as assert from 'assert';
-import Parser, {
+import {
 	Query,
-	QueryCapture,
-	SyntaxNode,
+	type QueryCapture,
+	type SyntaxNode,
 } from 'tree-sitter';
 import Counterpoint from 'tree-sitter-counterpoint';
 import {
+	TS_PARSER,
 	AST,
 	DECORATOR,
-} from '../../src/validator/index.js';
+} from '../../src/index.js';
 
 
 
 describe('Decorator', () => {
 	describe('#decorateTS', () => {
-		const parser = new Parser();
-		parser.setLanguage(Counterpoint);
 		function captureParseNode(source: string, query: string): SyntaxNode {
-			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(parser.parse(source).rootNode);
+			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
 			assert.ok(captures.length, 'could not find any captures.');
 			return captures[0].node;
 		}

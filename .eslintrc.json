@@ -197,10 +197,12 @@
 				"@typescript-eslint/consistent-generic-constructors": "error",
 				"@typescript-eslint/consistent-indexed-object-style": "error",
 				"@typescript-eslint/consistent-type-assertions":      "error",
+				"@typescript-eslint/consistent-type-imports":         "error",
 				"@typescript-eslint/explicit-function-return-type":   ["error", {
 					"allowExpressions":          true,
 					"allowHigherOrderFunctions": false
 				}],
+				"@typescript-eslint/no-import-type-side-effects": "error",
 
 				/* # Best Practices */
 				/* ## Conciseness */
