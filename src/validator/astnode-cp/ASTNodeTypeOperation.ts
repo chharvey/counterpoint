@@ -4,7 +4,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import type {ValidTypeOperator} from '../Operator.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -24,10 +24,10 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 
 	public constructor(
 		start_node:
-			| SyntaxNodeType<'type_unary_symbol'>
-			| SyntaxNodeType<'type_unary_keyword'>
-			| SyntaxNodeType<'type_intersection'>
-			| SyntaxNodeType<'type_union'>
+			| SyntaxNodeFamily<'type_unary_symbol',  ['variable']>
+			| SyntaxNodeFamily<'type_unary_keyword', ['variable']>
+			| SyntaxNodeFamily<'type_intersection',  ['variable']>
+			| SyntaxNodeFamily<'type_union',         ['variable']>
 		,
 		protected readonly operator: ValidTypeOperator,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeType>>,

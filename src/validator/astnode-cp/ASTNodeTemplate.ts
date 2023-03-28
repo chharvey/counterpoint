@@ -10,7 +10,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeConstant} from './ASTNodeConstant.js';
 
@@ -24,7 +24,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'string_template'>,
+		start_node: SyntaxNodeFamily<'string_template', ['variable']>,
 		public override readonly children: // FIXME spread types
 			| readonly [ASTNodeConstant]
 			| readonly [ASTNodeConstant,                                                           ASTNodeConstant]

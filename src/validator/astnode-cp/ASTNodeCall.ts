@@ -17,7 +17,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import {
 	type ArgCount,
 	ValidFunctionName,
@@ -38,7 +38,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'expression_compound'>,
+		start_node: SyntaxNodeFamily<'expression_compound', ['variable']>,
 		private readonly base: ASTNodeExpression,
 		private readonly typeargs: readonly ASTNodeType[],
 		private readonly exprargs: readonly ASTNodeExpression[],

@@ -7,6 +7,7 @@ import {
 	type Builder,
 	AssignmentError02,
 	TypeError,
+	TypeErrorUnexpectedRef,
 	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {
@@ -17,7 +18,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
@@ -34,10 +35,11 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'record_literal'>,
+		start_node: SyntaxNodeFamily<'record_literal', ['variable']>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
+		is_ref: boolean,
 	) {
-		super(start_node, children);
+		super(start_node, children, is_ref);
 	}
 
 	public override shouldFloat(): boolean {
@@ -64,10 +66,14 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
-		return TYPE.TypeRecord.fromTypes(new Map(this.children.map((c) => [
-			c.key.id,
-			c.val.type(),
-		])), true);
+		const props: ReadonlyMap<bigint, TYPE.Type> = new Map<bigint, TYPE.Type>(this.children.map((c) => {
+			const valuetype: TYPE.Type = c.val.type();
+			if (!this.isRef && valuetype.isReference) {
+				throw new TypeErrorUnexpectedRef(valuetype, c);
+			}
+			return [c.key.id, valuetype];
+		}));
+		return (!this.isRef) ? TYPE.TypeStruct.fromTypes(props) : TYPE.TypeRecord.fromTypes(props, this.isRef);
 	}
 
 	@memoizeMethod
@@ -78,7 +84,9 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
-			: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
+			: !this.isRef
+				? new OBJ.Struct(properties as ReadonlyMap<bigint, OBJ.Object>)
+				: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
 	}
 
 	@ASTNodeCollectionLiteral.assignToDeco

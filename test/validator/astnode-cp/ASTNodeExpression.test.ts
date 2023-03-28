@@ -11,6 +11,7 @@ import {
 	ReferenceError02,
 	ReferenceError03,
 	AssignmentError02,
+	TypeErrorUnexpectedRef,
 } from '../../../src/index.js';
 import {assertAssignable} from '../../assert-helpers.js';
 import {
@@ -366,6 +367,21 @@ describe('ASTNodeExpression', () => {
 
 
 	describe('ASTNodeCollectionLiteral', () => {
+		describe('.constructor', () => {
+			it('sets `.isRef = true` for constant collections.', () => {
+				assert.deepStrictEqual(
+					[
+						AST.ASTNodeTuple.fromSource(`\\[1, 2.0, 'three'];`),
+						AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
+						AST.ASTNodeRecord.fromSource(`\\[a= 1, b= 2.0, c= 'three'];`),
+						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
+					].map((c) => c.isRef),
+					[false, true, false, true],
+				);
+			});
+		});
+
+
 		describe('#varCheck', () => {
 			describe('ASTNodeRecord', () => {
 				it('throws if containing duplicate keys.', () => {
@@ -409,11 +425,15 @@ describe('ASTNodeExpression', () => {
 				const collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,
+					AST.ASTNodeTuple,
+					AST.ASTNodeRecord,
 					AST.ASTNodeSet,
 					AST.ASTNodeMap,
 				] = [
 					AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`, config),
 					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`, config),
+					AST.ASTNodeTuple.fromSource(`\\[1, 2.0, 'three'];`, config),
+					AST.ASTNodeRecord.fromSource(`\\[a= 1, b= 2.0, c= 'three'];`, config),
 					AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`, config),
 					AST.ASTNodeMap.fromSource(`
 						{
@@ -431,6 +451,11 @@ describe('ASTNodeExpression', () => {
 							c.key.id,
 							expected[i],
 						])), true),
+						TYPE.TypeVect.fromTypes(expected),
+						TYPE.TypeStruct.fromTypes(new Map(collections[1].children.map((c, i) => [
+							c.key.id,
+							expected[i],
+						]))),
 						new TYPE.TypeSet(TYPE.Type.unionAll(expected), true),
 						new TYPE.TypeMap(
 							map_ant_type,
@@ -440,10 +465,60 @@ describe('ASTNodeExpression', () => {
 					],
 				);
 			}));
+			it('throws if value type contains reference type.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let val_obj1: \\[1.0] = \\[1.0];
+					let ref_obj1:   [1.0] =   [1.0];
+					let val_obj2: \\[2.0] = \\[2.0];
+					let ref_obj2:   [2.0] =   [2.0];
+
+					\\[1, val_obj1, 'three'];
+					  [1, ref_obj1, 'three'];
+					  [1, val_obj2, 'three'];
+					\\[1, ref_obj2, 'three']; %> TypeErrorUnexpectedRef
+
+					\\[a= 1, b= \\[3.0],             c= 'three'];
+					  [a= 1, b= List.<float>([3.0]), c= 'three'];
+					  [a= 1, b= \\[4.0],             c= 'three'];
+					\\[a= 1, b= List.<float>([4.0]), c= 'three']; %> TypeErrorUnexpectedRef
+				`);
+				goal.varCheck();
+				return assert.throws(() => goal.typeCheck(), (err) => {
+					assert.ok(err instanceof AggregateError);
+					assertAssignable(err, {
+						cons:   AggregateError,
+						errors: [
+							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `[2.0]` but was expecting a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `mutable List.<float>` but was expecting a value type.'},
+						],
+					});
+					return true;
+				});
+			});
 		});
 
 
 		describe('#fold', () => {
+			it('returns Vect/Struct for constant collections.', () => {
+				assert.deepStrictEqual(
+					[
+						AST.ASTNodeTuple.fromSource(`\\[1, 2.0, 'three'];`),
+						AST.ASTNodeRecord.fromSource(`\\[a= 1, b= 2.0, c= 'three'];`),
+					].map((c) => c.fold()),
+					[
+						new OBJ.Vect([
+							new OBJ.Integer(1n),
+							new OBJ.Float(2.0),
+							new OBJ.String('three'),
+						]),
+						new OBJ.Struct(new Map<bigint, OBJ.Object>([
+							[0x100n, new OBJ.Integer(1n)],
+							[0x101n, new OBJ.Float(2.0)],
+							[0x102n, new OBJ.String('three')],
+						])),
+					],
+				);
+			});
 			it('returns a constant Tuple/Record/Set/Map for foldable entries.', () => {
 				assert.deepStrictEqual(
 					[

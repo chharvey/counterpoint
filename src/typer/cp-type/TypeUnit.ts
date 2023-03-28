@@ -9,6 +9,7 @@ import {Type} from './Type.js';
  * @typeparam Value the type of value this unit type holds
  */
 export class TypeUnit<Value extends OBJ.Primitive = OBJ.Primitive> extends Type {
+	public override readonly isReference:  boolean = false;
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
 

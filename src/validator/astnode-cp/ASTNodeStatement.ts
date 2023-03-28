@@ -79,7 +79,7 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 				this.validator,
 			);
 		} catch (err) {
-			if (assigned instanceof ASTNodeCollectionLiteral) {
+			if (assigned instanceof ASTNodeCollectionLiteral && assigned.isRef) {
 				return assigned.assignTo(assignee_type, err as TypeErrorNotAssignable);
 			} else {
 				throw err;

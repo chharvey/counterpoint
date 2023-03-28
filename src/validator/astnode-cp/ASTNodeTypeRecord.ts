@@ -1,8 +1,10 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
+	type TypeEntry,
 	TYPE,
 	AssignmentError02,
+	TypeErrorUnexpectedRef,
 } from '../../index.js';
 import {
 	type NonemptyArray,
@@ -12,14 +14,15 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
 import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
 import {ASTNodeType} from './ASTNodeType.js';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
 
 
 
-export class ASTNodeTypeRecord extends ASTNodeType {
+export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeRecord {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert.ok(typ instanceof ASTNodeTypeRecord);
@@ -27,10 +30,11 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'type_record_literal'>,
+		start_node: SyntaxNodeFamily<'type_record_literal', ['variable']>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
+		is_ref: boolean,
 	) {
-		super(start_node, {}, children);
+		super(start_node, children, is_ref);
 	}
 
 	public override varCheck(): void {
@@ -45,12 +49,19 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		return new TYPE.TypeRecord(new Map(this.children.map((c) => [
-			c.key.id,
-			{
-				type:     c.val.eval(),
-				optional: c.optional,
-			},
-		])));
+		const entries: ReadonlyMap<bigint, TypeEntry> = new Map<bigint, TypeEntry>(this.children.map((c) => {
+			const valuetype: TYPE.Type = c.val.eval();
+			if (!this.isRef && valuetype.isReference) {
+				throw new TypeErrorUnexpectedRef(valuetype, c);
+			}
+			return [
+				c.key.id,
+				{
+					type:     valuetype,
+					optional: c.optional,
+				},
+			];
+		}));
+		return (!this.isRef) ? new TYPE.TypeStruct(entries) : new TYPE.TypeRecord(entries);
 	}
 }

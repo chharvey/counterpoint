@@ -3,9 +3,20 @@
 
 
 
+function argsArr(nth: number, params: readonly string[]): readonly string[] {
+	// e.g. `['await', 'static', 'instance', 'method']`
+	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
+		.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
+		.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
+		.map(([param, _to_include]) => param);                   // `['static', 'method']`
+}
 function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
+function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
+	return [...new Array(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
+}
+
 /**
  * Generate a list of productions from a set of parameters.
  * E.g., to generate the following EBNF production:
@@ -36,17 +47,14 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
 	...params: readonly string[]
 ): RuleBuilders<RuleName, BaseGrammarRuleName> {
 	const rules_obj: RuleBuilders<RuleName, BaseGrammarRuleName> = {} as RuleBuilders<RuleName, BaseGrammarRuleName>;
-	new Map<RuleName, RuleBuilder<RuleName>>([...new Array(2 ** params.length)].map((_, nth) => { // e.g. `['await', 'static', 'instance', 'method']`
-		const args_arr: readonly string[] = [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
-			.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
-			.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
-			.map(([param, _to_include]) => param);                   // `['static', 'method']`
+	new Map<RuleName, RuleBuilder<RuleName>>([...new Array(2 ** params.length)].map((_, nth) => {
+		const args_arr: readonly string[] = argsArr(nth, params);
 		const args_obj: Record<string, boolean> = {};
 		args_arr.forEach((arg) => {
 			args_obj[arg] = true;
-		}); // `{static: true, method: true}`
+		});
 		return [
-			familyName(family_name, ...args_arr), // 'family_name__static__method'
+			familyName(family_name, ...args_arr),
 			parameterized_rule.call(null, args_obj),
 		];
 	})).forEach((rule, name) => {
@@ -219,6 +227,9 @@ const OPT_COM = optional(',');
 function iff(condition: boolean, consequent: RuleOrLiteral, alternative: RuleOrLiteral = blank()): RuleOrLiteral {
 	return (condition) ? consequent : alternative;
 }
+function ifSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
+	return (condition) ? [consequent] : [];
+}
 function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
 }
@@ -327,153 +338,164 @@ module.exports = grammar({
 
 
 		/* ## Types */
-		...parameterize('entry_type', ({named, optional}) => (
-			$ => seq(iff(named, seq($.word, iff(!optional, ':'))), iff(optional, '?:'), $._type)
-		), 'named', 'optional'),
+		...parameterize('entry_type', ({named, optional, variable}) => (
+			$ => seq(iff(named, seq($.word, iff(!optional, ':'))), iff(optional, '?:'), $[call('_type', {variable})])
+		), 'named', 'optional', 'variable'),
 
-		_items_type: $ => choice(
-			             seq(repCom1($.entry_type), OPT_COM),
-			seq(optional(seq(repCom1($.entry_type), ','    )), repCom1($.entry_type__optional), OPT_COM),
-		),
+		...parameterize('_items_type', ({variable}) => $ => choice(
+			             seq(repCom1($[call('entry_type', {variable})]), OPT_COM),
+			seq(optional(seq(repCom1($[call('entry_type', {variable})]), ','    )), repCom1($[call('entry_type', 'optional', {variable})]), OPT_COM),
+		), 'variable'),
 
-		_properties_type: $ => seq(repCom1(choice($.entry_type__named, $.entry_type__named__optional)), OPT_COM),
+		...parameterize('_properties_type', ({variable}) => $ => seq(repCom1(choice($[call('entry_type', 'named', {variable})], $[call('entry_type', 'named', 'optional', {variable})])), OPT_COM), 'variable'),
 
-		type_grouped:        $ => seq('(', $._type,                                  ')'),
-		type_tuple_literal:  $ => seq('[', optional(seq(OPT_COM, $._items_type)),    ']'),
-		type_record_literal: $ => seq('[',              OPT_COM, $._properties_type, ']'),
-		type_dict_literal:   $ => seq('[', ':', $._type,                             ']'),
-		type_map_literal:    $ => seq('{', $._type, '->', $._type,                   '}'),
-		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM,       '>'),
+		...parameterize('type_grouped',        ({variable}) => $ => seq(                      '(',                        $[call('_type',            {variable})],   ')'), 'variable'),
+		...parameterize('type_tuple_literal',  ({variable}) => $ => seq(iff(!variable, '\\[', '['), optional(seq(OPT_COM, $[call('_items_type',      {variable})])), ']'), 'variable'),
+		...parameterize('type_record_literal', ({variable}) => $ => seq(iff(!variable, '\\[', '['),              OPT_COM, $[call('_properties_type', {variable})],   ']'), 'variable'),
+		type_dict_literal:                                     $ => seq(                      '[', ':', $._type__variable,                                           ']'),
+		type_map_literal:                                      $ => seq(                      '{', $._type__variable, '->', $._type__variable,                       '}'),
+		generic_arguments:                                     $ => seq(                      '<', OPT_COM, repCom1($._type__variable), OPT_COM,                     '>'),
 
-		_type_unit: $ => choice(
+		...parameterize('_type_unit', ({variable}) => $ => choice(
 			$.keyword_type,
 			$.identifier,
 			$.primitive_literal,
-			$.type_grouped,
+			$[call('type_grouped', {variable})],
 			$.type_tuple_literal,
 			$.type_record_literal,
-			$.type_dict_literal,
-			$.type_map_literal,
-		),
+			...ifSpread(variable, $[call('type_tuple_literal',  {variable})]),
+			...ifSpread(variable, $[call('type_record_literal', {variable})]),
+			...ifSpread(variable, $.type_dict_literal),
+			...ifSpread(variable, $.type_map_literal),
+		), 'variable'),
 
 		property_access_type: $ => seq('.', choice($.integer, $.word)),
 		generic_call:         $ => seq('.', $.generic_arguments),
 
-		_type_compound: $ => choice(
-			$._type_unit,
-			alias($.type_compound_dfn, $.type_compound),
-		),
-		type_compound_dfn: $ => seq($._type_compound, choice($.property_access_type, $.generic_call)),
+		...parameterize('_type_compound', ({variable}) => $ => choice(
+			$[call('_type_unit', {variable})],
+			alias($[call('type_compound_dfn', {variable})], $[call('type_compound', {variable})]),
+		), 'variable'),
+		...parameterize('type_compound_dfn', ({variable}) => $ => seq($[call('_type_compound', {variable})], choice($.property_access_type, $.generic_call)), 'variable'),
 
-		_type_unary_symbol: $ => choice(
-			$._type_compound,
-			alias($.type_unary_symbol_dfn, $.type_unary_symbol),
-		),
-		type_unary_symbol_dfn: $ => seq($._type_unary_symbol, choice('?', '!', seq('[', optional($.integer), ']'), seq('{', '}'))),
+		...parameterize('_type_unary_symbol', ({variable}) => $ => choice(
+			$[call('_type_compound', {variable})],
+			alias($[call('type_unary_symbol_dfn', {variable})], $[call('type_unary_symbol', {variable})]),
+		), 'variable'),
+		...parameterize('type_unary_symbol_dfn', ({variable}) => $ => seq($[call('_type_unary_symbol', {variable})], choice(
+			'?',
+			'!',
+			seq('\\[', $.integer, ']'),
+			...ifSpread(variable, seq('[', optional($.integer), ']')),
+			...ifSpread(variable, seq('{', '}')),
+		)), 'variable'),
 
-		_type_unary_keyword: $ => choice(
-			$._type_unary_symbol,
-			alias($.type_unary_keyword_dfn, $.type_unary_keyword),
-		),
-		type_unary_keyword_dfn: $ => seq('mutable', $._type_unary_keyword),
+		...parameterize('_type_unary_keyword', ({variable}) => $ => choice(
+			$[call('_type_unary_symbol', {variable})],
+			alias($[call('type_unary_keyword_dfn', {variable})], $[call('type_unary_keyword', {variable})]),
+		), 'variable'),
+		...parameterize('type_unary_keyword_dfn', ({variable}) => $ => seq('mutable', $[call('_type_unary_keyword', {variable})]), 'variable'),
 
-		_type_intersection: $ => choice($._type_unary_keyword, alias($.type_intersection_dfn, $.type_intersection)),
-		_type_union:        $ => choice($._type_intersection,  alias($.type_union_dfn,        $.type_union)),
+		...parameterize('_type_intersection', ({variable}) => $ => choice($[call('_type_unary_keyword', {variable})], alias($[call('type_intersection_dfn', {variable})], $[call('type_intersection', {variable})])), 'variable'),
+		...parameterize('_type_union',        ({variable}) => $ => choice($[call('_type_intersection',  {variable})], alias($[call('type_union_dfn',        {variable})], $[call('type_union',        {variable})])), 'variable'),
 
-		type_intersection_dfn: $ => seq($._type_intersection, '&', $._type_unary_keyword),
-		type_union_dfn:        $ => seq($._type_union,        '|', $._type_intersection),
+		...parameterize('type_intersection_dfn', ({variable}) => $ => seq($[call('_type_intersection', {variable})], '&', $[call('_type_unary_keyword', {variable})]), 'variable'),
+		...parameterize('type_union_dfn',        ({variable}) => $ => seq($[call('_type_union',        {variable})], '|', $[call('_type_intersection',  {variable})]), 'variable'),
 
 		/* eslint-disable function-paren-newline */
-		_type: $ => choice(
-			$._type_union,
-		),
+		...parameterize('_type', ({variable}) => $ => choice(
+			$[call('_type_union', {variable})],
+		), 'variable'),
 		/* eslint-enable function-paren-newline */
 
 
 		/* ## Expressions */
-		string_template: $ => choice(
+		...parameterize('string_template', ({variable}) => $ => choice(
 			$.template_full,
-			seq($.template_head, optional($._expression), repeat(seq($.template_middle, optional($._expression))), $.template_tail),
-		),
+			seq($.template_head, optional($[call('_expression', {variable})]), repeat(seq($.template_middle, optional($[call('_expression', {variable})]))), $.template_tail),
+		), 'variable'),
 
-		property: $ => seq($.word,        '=',  $._expression),
-		case:     $ => seq($._expression, '->', $._expression),
+		...parameterize('property', ({variable}) => $ => seq($.word,                  '=',  $[call('_expression', {variable})]), 'variable'),
+		case:                                       $ => seq($._expression__variable, '->', $._expression__variable),
 
-		expression_grouped: $ => seq('(',                               $._expression,             ')'),
-		tuple_literal:      $ => seq('[', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), ']'),
-		record_literal:     $ => seq('[',              OPT_COM, repCom1($.property),    OPT_COM,   ']'),
-		set_literal:        $ => seq('{', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), '}'),
-		map_literal:        $ => seq('{',              OPT_COM, repCom1($.case),        OPT_COM,   '}'),
-		function_arguments: $ => seq('(', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), ')'),
+		...parameterize('expression_grouped', ({variable}) => $ => seq(                      '(',                                $[call('_expression', {variable})],             ')'), 'variable'),
+		...parameterize('tuple_literal',      ({variable}) => $ => seq(iff(!variable, '\\[', '['), optional(seq(OPT_COM, repCom1($[call('_expression', {variable})]), OPT_COM)), ']'), 'variable'),
+		...parameterize('record_literal',     ({variable}) => $ => seq(iff(!variable, '\\[', '['),              OPT_COM, repCom1($[call('property',    {variable})]), OPT_COM,   ']'), 'variable'),
+		set_literal:                                          $ => seq(                      '{',  optional(seq(OPT_COM, repCom1($._expression__variable),            OPT_COM)), '}'),
+		map_literal:                                          $ => seq(                      '{',               OPT_COM, repCom1($.case),                             OPT_COM,   '}'),
+		function_arguments:                                   $ => seq(                      '(',  optional(seq(OPT_COM, repCom1($._expression__variable),            OPT_COM)), ')'),
 
-		_expression_unit: $ => choice(
+		...parameterize('_expression_unit', ({variable}) => $ => choice(
 			$.identifier,
 			$.primitive_literal,
-			$.string_template,
-			$.expression_grouped,
+			$[call('string_template',    {variable})],
+			$[call('expression_grouped', {variable})],
 			$.tuple_literal,
 			$.record_literal,
-			$.set_literal,
-			$.map_literal,
-		),
+			...ifSpread(variable, $[call('tuple_literal',  {variable})]),
+			...ifSpread(variable, $[call('record_literal', {variable})]),
+			...ifSpread(variable, $.set_literal),
+			...ifSpread(variable, $.map_literal),
+		), 'variable'),
 
-		property_access: $ => seq(choice('.', '?.', '!.'), choice($.integer, $.word, seq('[', $._expression, ']'))),
-		property_assign: $ => seq('.',                     choice($.integer, $.word, seq('[', $._expression, ']'))),
-		function_call:   $ => seq('.',                     optional($.generic_arguments), $.function_arguments),
+		...parameterize('property_access', ({variable}) => $ => seq(choice('.', '?.', '!.'), choice($.integer, $.word, seq('[', $[call('_expression', {variable})], ']'))), 'variable'),
+		property_assign:                                   $ => seq('.',                     choice($.integer, $.word, seq('[', $._expression__variable, ']'))),
+		function_call:                                     $ => seq('.',                     optional($.generic_arguments), $.function_arguments),
 
-		_expression_compound: $ => choice(
-			$._expression_unit,
-			alias($.expression_compound_dfn, $.expression_compound),
-		),
-		expression_compound_dfn: $ => seq($._expression_compound, choice($.property_access, $.function_call)),
+		...parameterize('_expression_compound', ({variable}) => $ => choice(
+			$[call('_expression_unit', {variable})],
+			alias($[call('expression_compound_dfn', {variable})], $[call('expression_compound', {variable})]),
+		), 'variable'),
+		...parameterize('expression_compound_dfn', ({variable}) => $ => seq($[call('_expression_compound', {variable})], choice($[call('property_access', {variable})], $.function_call)), 'variable'),
 
 		assignee: $ => choice(
 			$.identifier,
-			seq($._expression_compound, $.property_assign),
+			seq($._expression_compound__variable, $.property_assign),
 		),
 
-		_expression_unary_symbol: $ => choice(
-			$._expression_compound,
-			alias($.expression_unary_symbol_dfn, $.expression_unary_symbol),
-		),
-		expression_unary_symbol_dfn: $ => seq(choice('!', '?', '+', '-'), $._expression_unary_symbol),
+		...parameterize('_expression_unary_symbol', ({variable}) => $ => choice(
+			$[call('_expression_compound', {variable})],
+			alias($[call('expression_unary_symbol_dfn', {variable})], $[call('expression_unary_symbol', {variable})]),
+		), 'variable'),
 
-		_expression_exponential:    $ => choice($._expression_unary_symbol,   alias($.expression_exponential_dfn,    $.expression_exponential)),
-		_expression_multiplicative: $ => choice($._expression_exponential,    alias($.expression_multiplicative_dfn, $.expression_multiplicative)),
-		_expression_additive:       $ => choice($._expression_multiplicative, alias($.expression_additive_dfn,       $.expression_additive)),
-		_expression_comparative:    $ => choice($._expression_additive,       alias($.expression_comparative_dfn,    $.expression_comparative)),
-		_expression_equality:       $ => choice($._expression_comparative,    alias($.expression_equality_dfn,       $.expression_equality)),
-		_expression_conjunctive:    $ => choice($._expression_equality,       alias($.expression_conjunctive_dfn,    $.expression_conjunctive)),
-		_expression_disjunctive:    $ => choice($._expression_conjunctive,    alias($.expression_disjunctive_dfn,    $.expression_disjunctive)),
+		...parameterize('expression_unary_symbol_dfn', ({variable}) => $ => seq(choice('!', '?', '+', '-'), $[call('_expression_unary_symbol', {variable})]), 'variable'),
 
-		expression_exponential_dfn:    $ => seq($._expression_unary_symbol,   '^',                                                    $._expression_exponential),
-		expression_multiplicative_dfn: $ => seq($._expression_multiplicative, choice('*', '/'),                                       $._expression_exponential),
-		expression_additive_dfn:       $ => seq($._expression_additive,       choice('+', '-'),                                       $._expression_multiplicative),
-		expression_comparative_dfn:    $ => seq($._expression_comparative,    choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), $._expression_additive),
-		expression_equality_dfn:       $ => seq($._expression_equality,       choice('===', '!==', '==', '!='),                       $._expression_comparative),
-		expression_conjunctive_dfn:    $ => seq($._expression_conjunctive,    choice('&&', '!&'),                                     $._expression_equality),
-		expression_disjunctive_dfn:    $ => seq($._expression_disjunctive,    choice('||', '!|'),                                     $._expression_conjunctive),
+		...parameterize('_expression_exponential',    ({variable}) => $ => choice($[call('_expression_unary_symbol',   {variable})], alias($[call('expression_exponential_dfn',    {variable})], $[call('expression_exponential',    {variable})])), 'variable'),
+		...parameterize('_expression_multiplicative', ({variable}) => $ => choice($[call('_expression_exponential',    {variable})], alias($[call('expression_multiplicative_dfn', {variable})], $[call('expression_multiplicative', {variable})])), 'variable'),
+		...parameterize('_expression_additive',       ({variable}) => $ => choice($[call('_expression_multiplicative', {variable})], alias($[call('expression_additive_dfn',       {variable})], $[call('expression_additive',       {variable})])), 'variable'),
+		...parameterize('_expression_comparative',    ({variable}) => $ => choice($[call('_expression_additive',       {variable})], alias($[call('expression_comparative_dfn',    {variable})], $[call('expression_comparative',    {variable})])), 'variable'),
+		...parameterize('_expression_equality',       ({variable}) => $ => choice($[call('_expression_comparative',    {variable})], alias($[call('expression_equality_dfn',       {variable})], $[call('expression_equality',       {variable})])), 'variable'),
+		...parameterize('_expression_conjunctive',    ({variable}) => $ => choice($[call('_expression_equality',       {variable})], alias($[call('expression_conjunctive_dfn',    {variable})], $[call('expression_conjunctive',    {variable})])), 'variable'),
+		...parameterize('_expression_disjunctive',    ({variable}) => $ => choice($[call('_expression_conjunctive',    {variable})], alias($[call('expression_disjunctive_dfn',    {variable})], $[call('expression_disjunctive',    {variable})])), 'variable'),
 
-		expression_conditional: $ => seq('if', $._expression, 'then', $._expression, 'else', $._expression),
+		...parameterize('expression_exponential_dfn',    ({variable}) => $ => seq($[call('_expression_unary_symbol',   {variable})], '^',                                                    $[call('_expression_exponential',    {variable})]), 'variable'),
+		...parameterize('expression_multiplicative_dfn', ({variable}) => $ => seq($[call('_expression_multiplicative', {variable})], choice('*', '/'),                                       $[call('_expression_exponential',    {variable})]), 'variable'),
+		...parameterize('expression_additive_dfn',       ({variable}) => $ => seq($[call('_expression_additive',       {variable})], choice('+', '-'),                                       $[call('_expression_multiplicative', {variable})]), 'variable'),
+		...parameterize('expression_comparative_dfn',    ({variable}) => $ => seq($[call('_expression_comparative',    {variable})], choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), $[call('_expression_additive',       {variable})]), 'variable'),
+		...parameterize('expression_equality_dfn',       ({variable}) => $ => seq($[call('_expression_equality',       {variable})], choice('===', '!==', '==', '!='),                       $[call('_expression_comparative',    {variable})]), 'variable'),
+		...parameterize('expression_conjunctive_dfn',    ({variable}) => $ => seq($[call('_expression_conjunctive',    {variable})], choice('&&', '!&'),                                     $[call('_expression_equality',       {variable})]), 'variable'),
+		...parameterize('expression_disjunctive_dfn',    ({variable}) => $ => seq($[call('_expression_disjunctive',    {variable})], choice('||', '!|'),                                     $[call('_expression_conjunctive',    {variable})]), 'variable'),
 
-		_expression: $ => choice(
-			$._expression_disjunctive,
-			$.expression_conditional,
-		),
+		...parameterize('expression_conditional', ({variable}) => $ => seq('if', $[call('_expression', {variable})], 'then', $[call('_expression', {variable})], 'else', $[call('_expression', {variable})]), 'variable'),
+
+		...parameterize('_expression', ({variable}) => $ => choice(
+			$[call('_expression_disjunctive', {variable})],
+			$[call('expression_conditional',  {variable})],
+		), 'variable'),
 
 
 		/* ## Statements */
-		declaration_type:     $ => seq('type',                      $.identifier, '=', $._type,                     ';'),
-		declaration_variable: $ => seq('let',  optional('unfixed'), $.identifier, ':', $._type, '=', $._expression, ';'),
+		declaration_type:     $ => seq('type',                      $.identifier, '=', $._type__variable,                               ';'),
+		declaration_variable: $ => seq('let',  optional('unfixed'), $.identifier, ':', $._type__variable, '=', $._expression__variable, ';'),
 
 		_declaration: $ => choice(
 			$.declaration_type,
 			$.declaration_variable,
 		),
 
-		statement_expression: $ => seq(optional($._expression), ';'),
+		statement_expression: $ => seq(optional($._expression__variable), ';'),
 
-		statement_assignment: $ => seq($.assignee, '=', $._expression, ';'),
+		statement_assignment: $ => seq($.assignee, '=', $._expression__variable, ';'),
 
 		_statement: $ => choice(
 			$._declaration,
@@ -496,11 +518,19 @@ module.exports = grammar({
 	 */
 	word: $ => $.identifier,
 
+	conflicts: $ => [
+		familyNameAll('_type_unit',       ['variable']).map((rule_name) => $[rule_name]),
+		familyNameAll('string_template',  ['variable']).map((rule_name) => $[rule_name]),
+		familyNameAll('_expression_unit', ['variable']).map((rule_name) => $[rule_name]),
+	],
+
 	supertypes: $ => [
 		$._type_unit,
 		$._type,
 		$._expression_unit,
+		$._expression_unit__variable,
 		$._expression,
+		$._expression__variable,
 		$._declaration,
 		$._statement,
 	],

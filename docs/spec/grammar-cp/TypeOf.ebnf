@@ -34,20 +34,38 @@ Type TypeOfUnfolded(StringTemplate template) :=
 
 
 Type! TypeOfUnfolded(SemanticTuple tuple) :=
-	1. *Let* `types` be a mapping of `tuple` for each `it` to *Unwrap:* `TypeOf(it)`.
-	2. *Return:* a new mutable Tuple type containing the items in `types`.
+	1. *Let* `data` be a new Sequence.
+	2. *For each* `item` in `tuple`:
+		1. *Let* `typedatum` be a new EntryTypeStructure [
+			type=     *Unwrap:* `TypeOf(item)`,
+			optional= `false`,
+		].
+		2. *If* `tuple.isRef` is `false` *and* *UnwrapAffirm:* `IsReference(typedatum.type)`:
+			1. *Throw:* a new TypeError03.
+		3. Push `typedatum` to `data`.
+	3. *If* `tuple.isRef` is `false`:
+		1. *Return:* a new Vect type containing the items in `data`.
+	4. *Else:*
+		1. *Return:* a new mutable Tuple type containing the items in `data`.
 ;
 
 
 
 Type! TypeOfUnfolded(SemanticRecord record) :=
-	1. *Let* `types` be a new Structure.
+	1. *Let* `data` be a new Structure.
 	2. *For each* `property` in `record`:
-		1. *Set* `types` to a new Structure [
-			...types,
-			`property.children.0` = *Unwrap:* `TypeOf(property.children.1)`,
+		1. *Assert:* `propertytype.children.count` is 2.
+		2. *Let* `typedatum` be a new EntryTypeStructure [
+			type=     *Unwrap:* `TypeOf(property.children.1)`,
+			optional= `false`,
 		].
-	3. *Return:* a new mutable Record type containing the properties in `types`.
+		3. *If* `record.isRef` is `false` *and* *UnwrapAffirm:* `IsReference(typedatum.type)`:
+			1. *Throw:* a new TypeError03.
+		4. Set the property `propertytype.children.0.id` on `data` to the value `typedatum`.
+	3. *If* `record.isRef` is `false`:
+		1. *Return:* a new Struct type containing the properties in `data`.
+	4. *Else:*
+		1. *Return:* a new mutable Record type containing the properties in `data`.
 ;
 
 
@@ -88,28 +106,28 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 		3. *Assert:* `accessor_type` is a TypeUnit.
 		4. *Let* `i` be `accessor_type.value`.
 		5. *Assert:* `i` is a instance of `Integer`.
-		6. *If* `base_type` is a Tuple type *and* `i` is an index in `base_type`:
+		6. *If* `base_type` is a Tuple or Vect type *and* `i` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
 		7. *Else If* `base_type` is a List type:
 			1. *Let* `type` be the union of all item types in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
 		8. *Else:*
-			1. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
+			1. *Throw:* a new TypeError05 "Index {{ i }} does not exist on type {{ base_type }}.".
 	8. *If* `accessor` is a SemanticKey:
 		1. *Let* `id` be `accessor.id`.
-		2. *If* `base_type` is a Record type *and* `id` is a key in `base_type`:
+		2. *If* `base_type` is a Record or Struct type *and* `id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
 		3. *Else If* `base_type` is a Dict type:
 			1. *Let* `type` be the union of all value types in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
 		4. *Else:*
-			1. *Throw:* a new TypeError04 "Property {{ id }} does not exist on type {{ base_type }}.".
+			1. *Throw:* a new TypeError05 "Property {{ id }} does not exist on type {{ base_type }}.".
 	9: *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
-		3. *If* `base_type` is a Tuple type:
+		3. *If* `base_type` is a Tuple or Vect type:
 			1. *If* `accessor_type` is a TypeUnit:
 				1. *Let* `i` be `accessor_type.value`.
 				2. *If* `i` is a instance of `Integer`:
@@ -117,7 +135,7 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 						1. *Let* `entry` be the item accessed at index `i` in `base_type`.
 						2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
 					2. *Else:*
-						1. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
+						1. *Throw:* a new TypeError05 "Index {{ i }} does not exist on type {{ base_type }}.".
 			2. *Else If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
 				1. *Let* `t` be the union of all item types in `base_type`.
 				2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
@@ -156,7 +174,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 	2. *Let* `base` be `call.children.0`.
 	3. *If* `base` is not a SemanticVariable:
 		1. *Note:* Currently, the only allowed generics are `List.<T>(arg)`, `Dict.<T>(arg)`, `Set.<T>(arg)`, `Map.<K, V>(arg)`.
-		2. *Throw:* a new TypeError05.
+		2. *Throw:* a new TypeError06.
 	4. *If* `base.source` is one of "List", "Dict", or "Set":
 		1. *If* `call.children.count` is 2 or 3:
 			1. *If* `call.children.1` is a SemanticType:
@@ -175,30 +193,30 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								1. *If* `argtype` is a Tuple type:
 									1. *Let* `items` be the union of all item types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
-										1. *Throw:* a new TypeError03.
+										1. *Throw:* a new TypeError04
 								2. *Else*:
-									1. *Throw:* a new TypeError03.
+									1. *Throw:* a new TypeError04.
 						3. *Else If* `base.source` is "Dict":
 							1. *If* *UnwrapAffirm:* `Subtype(argtype, returntype)` is `false`:
 								1. *If* `argtype` is a Record type:
 									1. *Let* `values` be the union of all value types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(values, genericarg)` is `false`:
-										1. *Throw:* a new TypeError03.
+										1. *Throw:* a new TypeError04.
 								2. *Else*:
-									1. *Throw:* a new TypeError03.
+									1. *Throw:* a new TypeError04.
 						4. *Else If* `base.source` is "Set":
 							1. *Let* `listtype` be a List type whose items’ type is `genericarg`.
 							2. *If* *UnwrapAffirm:* `Subtype(argtype, listtype)` is `false`:
 								1. *If* `argtype` is a Tuple type:
 									1. *Let* `items` be the union of all item types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
-										1. *Throw:* a new TypeError03.
+										1. *Throw:* a new TypeError04.
 								2. *Else*:
-									1. *Throw:* a new TypeError03.
+									1. *Throw:* a new TypeError04.
 					2. *Else*:
-						1. *Throw:* a new TypeError06.
+						1. *Throw:* a new TypeError07.
 				6. *Return:* a mutable copy of `returntype`.
-		2. *Throw:* a new TypeError06.
+		2. *Throw:* a new TypeError07.
 	5. *Else If* `base.source` is "Map":
 		1. *If* `call.children.count` is 2 or 3 or 4:
 			1. *If* `call.children.1` is a SemanticType:
@@ -222,7 +240,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						2. *Let* `consequenttype` be *UnwrapAffirm:* `TypeValueOf(call.children.2)`.
 						3. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.3)`.
 					3. *Else:*
-						1. *Throw:* a new TypeError06.
+						1. *Throw:* a new TypeError07.
 				5. *Let:* `keyvaluetype` be a Tuple type containing the items in [
 					EntryTypeStructure [type= `antecedenttype`, optional= `false`],
 					EntryTypeStructure [type= `consequenttype`, optional= `false`],
@@ -232,12 +250,12 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 					1. *If* `argtype` is a Tuple type:
 						1. *Let* `items` be the union of all item types in `argtype`.
 						2. *If* *UnwrapAffirm:* `Subtype(items, keyvaluetype)` is `false`:
-							1. *Throw:* a new TypeError03.
+							1. *Throw:* a new TypeError04.
 					2. *Else*:
-						1. *Throw:* a new TypeError03.
+						1. *Throw:* a new TypeError04.
 				8. *Return:* a mutable Map type whose antecedents’ type is `antecedenttype`
 					and whose consequents’ type is `consequenttype`.
-		2. *Throw:* a new TypeError06.
+		2. *Throw:* a new TypeError07.
 	6. *Throw* a new SyntaxError.
 ;
 

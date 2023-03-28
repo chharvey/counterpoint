@@ -1,5 +1,8 @@
 import * as assert from 'assert';
-import {TYPE} from '../../index.js';
+import {
+	TYPE,
+	TypeErrorInvalidOperation,
+} from '../../index.js';
 import {
 	throw_expression,
 	memoizeMethod,
@@ -8,7 +11,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import {
 	Operator,
 	type ValidTypeOperator,
@@ -27,8 +30,8 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 
 	public constructor(
 		start_node:
-			| SyntaxNodeType<'type_unary_symbol'>
-			| SyntaxNodeType<'type_unary_keyword'>
+			| SyntaxNodeFamily<'type_unary_symbol',  ['variable']>
+			| SyntaxNodeFamily<'type_unary_keyword', ['variable']>
 		,
 		operator: ValidTypeOperator,
 		private readonly operand: ASTNodeType,
@@ -41,9 +44,13 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
+		const t: TYPE.Type = this.operand.eval();
+		if (this.operator === Operator.MUTABLE && !t.isReference) {
+			throw new TypeErrorInvalidOperation(this);
+		}
 		return (
-			(this.operator === Operator.ORNULL)  ? this.operand.eval().union(TYPE.NULL) :
-			(this.operator === Operator.MUTABLE) ? this.operand.eval().mutableOf()      :
+			(this.operator === Operator.ORNULL)  ? t.union(TYPE.NULL) :
+			(this.operator === Operator.MUTABLE) ? t.mutableOf()      :
 			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
 		);
 	}
