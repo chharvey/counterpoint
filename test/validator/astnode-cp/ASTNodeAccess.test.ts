@@ -270,9 +270,9 @@ describe('ASTNodeAccess', () => {
 		];
 		context('when base is nullish.', () => {
 			it('optional access returns type of base when it is a subtype of null.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .type(), TypeErrorNoEntry);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .type(), TypeErrorNoEntry);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).type(), TypeErrorInvalidOperation);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)          .type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)       .type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`) .type(), TypeErrorInvalidOperation);
 				[
 					AST.ASTNodeAccess.fromSource(`null?.3;`)         .type(),
 					AST.ASTNodeAccess.fromSource(`null?.four;`)      .type(),
@@ -386,10 +386,10 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when index is out of bounds for tuples.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`)  .type(), TypeErrorNoEntry);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`) .type(), TypeErrorNoEntry);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .type(), TypeErrorNoEntry);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`)   .type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`)  .type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`)  .type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`) .type(), TypeErrorNoEntry);
 			});
 			it('returns the list item type when index is out of bounds for lists.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -467,8 +467,8 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when key is out of bounds for records.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`) .type(), TypeErrorNoEntry);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`)  .type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`) .type(), TypeErrorNoEntry);
 			});
 			it('returns the dict item type when key is out of bounds for dicts.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -579,10 +579,10 @@ describe('ASTNodeAccess', () => {
 					);
 				});
 				it('throws when accessor expression is correct type but out of bounds for tuples.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`)  .type(), TypeErrorNoEntry);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[-4];`) .type(), TypeErrorNoEntry);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`) .type(), TypeErrorNoEntry);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(), TypeErrorNoEntry);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`)   .type(), TypeErrorNoEntry);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[-4];`)  .type(), TypeErrorNoEntry);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`)  .type(), TypeErrorNoEntry);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`) .type(), TypeErrorNoEntry);
 				});
 				it('returns the list item type when accessor expression is correct type but out of bounds for lists.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -600,9 +600,9 @@ describe('ASTNodeAccess', () => {
 					});
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].['3'];`)                           .type(), TypeErrorNotNarrow);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}.[true];`)                          .type(), TypeErrorNotNarrow);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.['a'];`).type(), TypeErrorNotNarrow);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].['3'];`)                            .type(), TypeErrorNotNarrow);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}.[true];`)                           .type(), TypeErrorNotNarrow);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.['a'];`) .type(), TypeErrorNotNarrow);
 				});
 			});
 			context('with constant folding off.', () => {

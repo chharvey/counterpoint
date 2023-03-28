@@ -56,6 +56,12 @@ describe('ASTNodeOperation', () => {
 					'mutable float',
 					'mutable str',
 				].forEach((src) => assert.throws(() => AST.ASTNodeTypeOperation.fromSource(src).eval(), TypeErrorInvalidOperation));
+				[
+					'mutable [int, float, str]',
+					'mutable [a: int, b: float, c: str]',
+					'mutable int[]',
+					'mutable int[3]',
+				].map((src) => AST.ASTNodeTypeOperation.fromSource(src).eval()); // assert does not throw if `[isRef=false]`
 			});
 		});
 

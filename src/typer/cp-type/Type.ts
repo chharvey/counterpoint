@@ -39,13 +39,13 @@ export abstract class Type {
 	/**
 	 * Decorator for {@link Type#intersect} method and any overrides.
 	 * Contains shortcuts for constructing type intersections.
-	 * @implements MethodDecorator<Type, (this: Type, t: Type) => Type>
+	 * @implements MethodDecorator<Type, Type['intersect']>
 	 */
 	protected static intersectDeco(
-		method:   (this: Type, t: Type) => Type,
+		method:   Type['intersect'],
 		_context: ClassMethodDecoratorContext<Type, typeof method>,
 	): typeof method {
-		return function (t) {
+		return function (this: Type, t) {
 			/** 1-5 | `T  & never   == never` */
 			if (this.isBottomType || t.isBottomType) {
 				return NEVER;
@@ -72,13 +72,13 @@ export abstract class Type {
 	/**
 	 * Decorator for {@link Type#union} method and any overrides.
 	 * Contains shortcuts for constructing type unions.
-	 * @implements MethodDecorator<Type, (this: Type, t: Type) => Type>
+	 * @implements MethodDecorator<Type, Type['union']>
 	 */
 	protected static unionDeco(
-		method:   (this: Type, t: Type) => Type,
+		method:   Type['union'],
 		_context: ClassMethodDecoratorContext<Type, typeof method>,
 	): typeof method {
-		return function (t) {
+		return function (this: Type, t) {
 			/** 1-7 | `T \| never   == T` */
 			if (this.isBottomType) {
 				return t;
@@ -105,13 +105,13 @@ export abstract class Type {
 	/**
 	 * Decorator for {@link Type#subtract} method and any overrides.
 	 * Contains shortcuts for constructing type differences.
-	 * @implements MethodDecorator<Type, (this: Type, t: Type) => Type>
+	 * @implements MethodDecorator<Type, Type['subtract']>
 	 */
 	protected static subtractDeco(
-		method:   (this: Type, t: Type) => Type,
+		method:   Type['subtract'],
 		_context: ClassMethodDecoratorContext<Type, typeof method>,
 	): typeof method {
-		return function (t) {
+		return function (this: Type, t) {
 			/** 4-1 | `A - B == A  <->  A & B == never` */
 			if (this.intersect(t).isBottomType) {
 				return this;
@@ -133,13 +133,13 @@ export abstract class Type {
 	/**
 	 * Decorator for {@link Type#isSubtypeOf} method and any overrides.
 	 * Contains shortcuts for determining subtypes.
-	 * @implements MethodDecorator<Type, (this: Type, t: Type) => boolean>
+	 * @implements MethodDecorator<Type, Type['isSubtypeOf']>
 	 */
 	protected static subtypeDeco(
-		method:   (this: Type, t: Type) => boolean,
+		method:   Type['isSubtypeOf'],
 		_context: ClassMethodDecoratorContext<Type, typeof method>,
 	): typeof method {
-		return function (t) {
+		return function (this: Type, t) {
 			/** 2-7 | `A <: A` */
 			if (this === t) {
 				return true;
