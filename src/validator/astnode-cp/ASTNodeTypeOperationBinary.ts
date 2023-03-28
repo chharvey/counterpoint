@@ -39,9 +39,11 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
+		const t0: TYPE.Type = this.operand0.eval();
+		const t1: TYPE.Type = this.operand1.eval();
 		return (
-			(this.operator === Operator.AND) ? this.operand0.eval().intersect(this.operand1.eval()) :
-			(this.operator === Operator.OR)  ? this.operand0.eval().union    (this.operand1.eval()) :
+			(this.operator === Operator.AND) ? t0.intersect(t1) :
+			(this.operator === Operator.OR)  ? t0.union    (t1) :
 			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
 		);
 	}

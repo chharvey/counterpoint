@@ -13,12 +13,12 @@ export * from './AssignmentError01.js';
 export * from './AssignmentError02.js';
 export * from './AssignmentError10.js';
 export * from './TypeError.js';
-export * from './TypeError01.js';
-export * from './TypeError02.js';
-export * from './TypeError03.js';
-export * from './TypeError04.js';
-export * from './TypeError05.js';
-export * from './TypeError06.js';
+export * from './TypeErrorInvalidOperation.js';
+export * from './TypeErrorNotNarrow.js';
+export * from './TypeErrorNotAssignable.js';
+export * from './TypeErrorNoEntry.js';
+export * from './TypeErrorNotCallable.js';
+export * from './TypeErrorArgCount.js';
 export * from './MutabilityError01.js';
 export {VoidError01} from './VoidError.js';
 export {

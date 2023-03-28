@@ -365,7 +365,7 @@ describe('ASTNodeExpression', () => {
 
 
 
-	describe('ASTNode{Tuple,Record,Set,Map}', () => {
+	describe('ASTNodeCollectionLiteral', () => {
 		describe('#varCheck', () => {
 			describe('ASTNodeRecord', () => {
 				it('throws if containing duplicate keys.', () => {

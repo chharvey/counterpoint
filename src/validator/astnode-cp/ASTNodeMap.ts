@@ -5,6 +5,7 @@ import {
 	TYPE,
 	type INST,
 	type Builder,
+	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	type NonemptyArray,
@@ -69,17 +70,16 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	}
 
 	@ASTNodeCollectionLiteral.assignToDeco
-	public override assignTo(assignee: TYPE.Type): boolean {
+	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
 		if (assignee instanceof TYPE.TypeMap) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant_{ant,con}`
-			xjs.Array.forEachAggregated(this.children, (case_) => xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => ASTNodeCP.typeCheckAssignment(
+			return xjs.Array.forEachAggregated(this.children, (case_) => xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => ASTNodeCP.typeCheckAssignment(
 				expr.type(),
 				[assignee.invariant_ant, assignee.invariant_con][i],
 				expr,
 				this.validator,
 			)));
-			return true;
 		}
-		return false;
+		throw err;
 	}
 }
