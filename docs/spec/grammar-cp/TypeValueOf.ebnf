@@ -166,8 +166,8 @@ Type TypeValueOf(SemanticTypeCall call) :=
 
 Type TypeValueOf(SemanticTypeOperation[operator: ORNULL] oper) :=
 	1. *Assert:* `oper.children.count` is 1.
-	2. *Let* `child` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
-	3. *Return:* `Union(child, Null)`.
+	2. *Let* `t0` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
+	3. *Return:* `Union(t0, Null)`.
 ;
 
 Type TypeValueOf(SemanticTypeOperation[operator: OREXCP] oper) :=
@@ -176,22 +176,22 @@ Type TypeValueOf(SemanticTypeOperation[operator: OREXCP] oper) :=
 
 Type TypeValueOf(SemanticTypeOperation[operator: MUTABLE] oper) :=
 	1. *Assert:* `oper.children.count` is 1.
-	2. *Let* `child` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
-	3. *If* *UnwrapAffirm:* `IsReference(child)` is `false`:
+	2. *Let* `t0` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
+	3. *If* *UnwrapAffirm:* `IsReference(t0)` is `false`:
 		1. *Throw:* a new TypeError01.
-	4. *Return:* a mutable copy of `child`.
+	4. *Return:* a mutable copy of `t0`.
 ;
 
 Type TypeValueOf(SemanticTypeOperation[operator: AND] oper) :=
 	1. *Assert:* `oper.children.count` is 2.
-	2. *Let* `child0` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
-	3. *Let* `child1` be *UnwrapAffirm:* `TypeValueOf(oper.children.1)`.
-	4. *Return:* `Intersection(child0, child1)`.
+	2. *Let* `t0` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
+	3. *Let* `t1` be *UnwrapAffirm:* `TypeValueOf(oper.children.1)`.
+	4. *Return:* `Intersection(t0, t1)`.
 ;
 
 Type TypeValueOf(SemanticTypeOperation[operator: OR] oper) :=
 	1. *Assert:* `oper.children.count` is 2.
-	2. *Let* `child0` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
-	3. *Let* `child1` be *UnwrapAffirm:* `TypeValueOf(oper.children.1)`.
-	4. *Return:* `Union(child0, child1)`.
+	2. *Let* `t0` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
+	3. *Let* `t1` be *UnwrapAffirm:* `TypeValueOf(oper.children.1)`.
+	4. *Return:* `Union(t0, t1)`.
 ;
