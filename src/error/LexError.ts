@@ -1,3 +1,10 @@
+import {
+	LexError01,
+	LexError03,
+	LexError04,
+	LexError05,
+} from './index.js';
+import type {ConstructorType} from './utils-private.js';
 import {ErrorCode} from './ErrorCode.js';
 
 
@@ -9,6 +16,15 @@ import {ErrorCode} from './ErrorCode.js';
 export class LexError extends ErrorCode {
 	/** The number series of this class of errors. */
 	public static readonly CODE: number = 1100;
+
+	protected static get CODES(): ReadonlyMap<ConstructorType<LexError>, number> {
+		return new Map<ConstructorType<LexError>, number>([
+			[LexError01, 1],
+			[LexError03, 3],
+			[LexError04, 4],
+			[LexError05, 5],
+		]);
+	}
 
 
 	/**

@@ -1,3 +1,9 @@
+import {
+	ReferenceError01,
+	ReferenceError02,
+	ReferenceError03,
+} from './index.js';
+import type {ConstructorType} from './utils-private.js';
 import {ErrorCode} from './ErrorCode.js';
 
 
@@ -8,6 +14,16 @@ import {ErrorCode} from './ErrorCode.js';
 export class ReferenceError extends ErrorCode {
 	/** The number series of this class of errors. */
 	public static readonly CODE: number = 2100;
+
+	protected static get CODES(): ReadonlyMap<ConstructorType<ReferenceError>, number> {
+		return new Map<ConstructorType<ReferenceError>, number>([
+			[ReferenceError01, 1],
+			[ReferenceError02, 2],
+			[ReferenceError03, 3],
+		]);
+	}
+
+
 	/**
 	 * Construct a new ReferenceError object.
 	 * @param message a message to the user

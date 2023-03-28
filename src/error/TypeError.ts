@@ -1,3 +1,12 @@
+import {
+	TypeErrorInvalidOperation,
+	TypeErrorNotNarrow,
+	TypeErrorNotAssignable,
+	TypeErrorNoEntry,
+	TypeErrorNotCallable,
+	TypeErrorArgCount,
+} from './index.js';
+import type {ConstructorType} from './utils-private.js';
 import {ErrorCode} from './ErrorCode.js';
 
 
@@ -8,6 +17,19 @@ import {ErrorCode} from './ErrorCode.js';
 export class TypeError extends ErrorCode {
 	/** The number series of this class of errors. */
 	public static readonly CODE: number = 2300;
+
+	protected static get CODES(): ReadonlyMap<ConstructorType<TypeError>, number> {
+		return new Map<ConstructorType<TypeError>, number>([
+			[TypeErrorInvalidOperation, 1],
+			[TypeErrorNotNarrow,        2],
+			[TypeErrorNotAssignable,    3],
+			[TypeErrorNoEntry,          4],
+			[TypeErrorNotCallable,      5],
+			[TypeErrorArgCount,         6],
+		]);
+	}
+
+
 	/**
 	 * Construct a new TypeError object.
 	 * @param message - a message to the user

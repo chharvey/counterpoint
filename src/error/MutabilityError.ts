@@ -1,3 +1,5 @@
+import {MutabilityError01} from './index.js';
+import type {ConstructorType} from './utils-private.js';
 import {ErrorCode} from './ErrorCode.js';
 
 
@@ -8,6 +10,14 @@ import {ErrorCode} from './ErrorCode.js';
 export class MutabilityError extends ErrorCode {
 	/** The number series of this class of errors. */
 	public static readonly CODE: number = 2400;
+
+	protected static get CODES(): ReadonlyMap<ConstructorType<MutabilityError>, number> {
+		return new Map<ConstructorType<MutabilityError>, number>([
+			[MutabilityError01, 1],
+		]);
+	}
+
+
 	/**
 	 * Construct a new MutabilityError object.
 	 * @param message a message to the user

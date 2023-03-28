@@ -11,13 +11,16 @@ import {AssignmentError} from './AssignmentError.js';
  * type MyType = [bar: int, bar: str]; % AssignmentError02: Duplicate record key: `bar` is already set.
  */
 export class AssignmentError02 extends AssignmentError {
-	/** The number series of this class of errors. */
-	public static override readonly CODE = 2;
 	/**
 	 * Construct a new AssignmentError02 object.
 	 * @param key the duplicate key
 	 */
 	public constructor(key: AST.ASTNodeKey) {
-		super(`Duplicate record key: \`${ key.source }\` is already set.`, AssignmentError02.CODE, key.line_index, key.col_index);
+		super(
+			`Duplicate record key: \`${ key.source }\` is already set.`,
+			AssignmentError.CODES.get(AssignmentError02),
+			key.line_index,
+			key.col_index,
+		);
 	}
 }
