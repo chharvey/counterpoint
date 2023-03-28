@@ -4,9 +4,12 @@ import {
 	TYPE,
 	AssignmentError02,
 } from '../../index.js';
-import type {NonemptyArray} from '../../lib/index.js';
 import {
-	CPConfig,
+	type NonemptyArray,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
@@ -40,7 +43,8 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		});
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
 		return new TYPE.TypeRecord(new Map(this.children.map((c) => [
 			c.key.id,
 			{

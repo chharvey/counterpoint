@@ -1,3 +1,4 @@
+import {strictEqual} from '../../lib/index.js';
 import type * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
 
@@ -7,7 +8,7 @@ import {Type} from './Type.js';
  * Class for constructing unit types, types that contain exactly one value.
  * @typeparam Value the type of value this unit type holds
  */
-export class TypeUnit<Value extends OBJ.Object = OBJ.Object> extends Type {
+export class TypeUnit<Value extends OBJ.Primitive = OBJ.Primitive> extends Type {
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
 
@@ -27,7 +28,9 @@ export class TypeUnit<Value extends OBJ.Object = OBJ.Object> extends Type {
 		return this.value.identical(v);
 	}
 
-	protected override isSubtypeOf_do(t: Type): boolean {
+	@strictEqual
+	@Type.subtypeDeco
+	public override isSubtypeOf(t: Type): boolean {
 		return t.includes(this.value);
 	}
 }

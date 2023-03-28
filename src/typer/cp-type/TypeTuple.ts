@@ -1,7 +1,8 @@
 import {TypeError04} from '../../index.js';
 import {
-	IntRange,
+	type IntRange,
 	throw_expression,
+	strictEqual,
 } from '../../lib/index.js';
 import type {
 	ValidAccessOperator,
@@ -12,20 +13,10 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
-import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeTuple extends Type {
-	/**
-	 * Is the argument a unit tuple type?
-	 * @return whether the argument is a `TypeUnit` and its value is a `Tuple`
-	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Tuple> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Tuple;
-	}
-
-
 	public override readonly isBottomType: boolean = false;
 
 	/**
@@ -74,14 +65,16 @@ export class TypeTuple extends Type {
 		return v instanceof OBJ.Tuple && v.toType().isSubtypeOf(this);
 	}
 
-	protected override isSubtypeOf_do(t: Type): boolean {
+	@strictEqual
+	@Type.subtypeDeco
+	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeTuple
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
 			&& t.invariants.every((thattype, i) => !this.invariants[i] || ((t.isMutable)
-				? this.invariants[i].type.equals(thattype.type)
-				: this.invariants[i].type.isSubtypeOf(thattype.type)
+				? this.invariants[i].type.equals(thattype.type)      // Invariance for mutable tuples: `A == B --> mutable Tuple.<A> <: mutable Tuple.<B>`.
+				: this.invariants[i].type.isSubtypeOf(thattype.type) // Covariance for immutable tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 			))
 		);
 	}

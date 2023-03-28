@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {
 	AST,
-	SymbolStructure,
+	type SymbolStructure,
 	SymbolStructureType,
 	TYPE,
 	INST,

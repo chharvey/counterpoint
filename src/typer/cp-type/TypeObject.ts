@@ -9,6 +9,8 @@ import {Type} from './Type.js';
  */
 export class TypeObject extends Type {
 	public static readonly INSTANCE = new TypeObject();
+
+
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
 	private constructor() {

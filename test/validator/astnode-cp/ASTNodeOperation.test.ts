@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 	Operator,
 	AST,
@@ -24,7 +24,7 @@ import {
 
 
 
-function typeOperations(tests: ReadonlyMap<string, OBJ.Object>, config: CPConfig = CONFIG_DEFAULT): void {
+function typeOperations(tests: ReadonlyMap<string, OBJ.Primitive>, config: CPConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type()),
 		[...tests.values()].map((expected) => new TYPE.TypeUnit(expected)),
@@ -101,7 +101,7 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			context('with constant folding on.', () => {
 				it('returns a constant Boolean type for boolean unary operation of anything.', () => {
-					typeOperations(new Map([
+					typeOperations(new Map<string, OBJ.Boolean>([
 						[`!false;`,  OBJ.Boolean.TRUE],
 						[`!true;`,   OBJ.Boolean.FALSE],
 						[`!null;`,   OBJ.Boolean.TRUE],
@@ -406,7 +406,7 @@ describe('ASTNodeOperation', () => {
 	describe('ASTNodeOperationBinaryComparative', () => {
 		describe('#type', () => {
 			it('with folding and int coersion on.', () => {
-				typeOperations(new Map([
+				typeOperations(new Map<string, OBJ.Boolean>([
 					[`2 < 3;`,  OBJ.Boolean.TRUE],
 					[`2 > 3;`,  OBJ.Boolean.FALSE],
 					[`2 <= 3;`, OBJ.Boolean.TRUE],
@@ -471,7 +471,7 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			context('with folding and int coersion on.', () => {
 				it('for numeric literals.', () => {
-					typeOperations(new Map([
+					typeOperations(new Map<string, OBJ.Boolean>([
 						[`2 === 3;`,      OBJ.Boolean.FALSE],
 						[`2 !== 3;`,      OBJ.Boolean.TRUE],
 						[`2 == 3;`,       OBJ.Boolean.FALSE],
@@ -516,9 +516,11 @@ describe('ASTNodeOperation', () => {
 					goal.typeCheck();
 					goal.children.slice(4).forEach((stmt) => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
+						const fold: OBJ.Object | null = expr.fold();
+						assert.ok(fold instanceof OBJ.Boolean, `${ fold } should be a Boolean.`);
 						assert.deepStrictEqual(
 							expr.type(),
-							new TYPE.TypeUnit(expr.fold()!),
+							new TYPE.TypeUnit<OBJ.Boolean>(fold),
 						);
 					});
 				});
@@ -744,7 +746,7 @@ describe('ASTNodeOperation', () => {
 	describe('ASTNodeOperationBinaryLogical', () => {
 		describe('#type', () => {
 			it('with constant folding on.', () => {
-				typeOperations(new Map<string, OBJ.Object>([
+				typeOperations(new Map<string, OBJ.Primitive>([
 					[`null  && false;`, OBJ.Null.NULL],
 					[`false && null;`,  OBJ.Boolean.FALSE],
 					[`true  && null;`,  OBJ.Null.NULL],
@@ -964,7 +966,7 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			context('with constant folding on', () => {
 				it('computes type for for conditionals', () => {
-					typeOperations(new Map<string, OBJ.Object>([
+					typeOperations(new Map<string, OBJ.Primitive>([
 						[`if true then false else 2;`,          OBJ.Boolean.FALSE],
 						[`if false then 3.0 else null;`,        OBJ.Null.NULL],
 						[`if true then 2 else 3.0;`,            new OBJ.Integer(2n)],

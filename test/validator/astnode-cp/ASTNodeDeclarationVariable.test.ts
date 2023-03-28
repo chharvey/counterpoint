@@ -1,10 +1,10 @@
 import * as assert from 'assert';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 	Operator,
 	AST,
-	SymbolStructure,
+	type SymbolStructure,
 	SymbolStructureVar,
 	TYPE,
 	INST,
@@ -93,7 +93,17 @@ describe('ASTNodeDeclarationVariable', () => {
 				let x: float = 42;
 			`, CONFIG_COERCION_OFF).typeCheck(), TypeError03);
 		});
-
+		it('immutable sets/maps should not be covariant due to bracket access.', () => {
+			[
+				'let s: Set.<int | str>       = Set.<int>([42, 43]);',
+				'let m: Map.<int | str, bool> = Map.<int, bool>([[42, false], [43, true]]);',
+				// otherwise one would access `s.["hello"]` or `m.["hello"]`
+			].forEach((src) => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				goal.varCheck();
+				assert.throws(() => goal.typeCheck(), TypeError03);
+			});
+		});
 		context('allows assigning a collection literal to a wider mutable type.', () => {
 			function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
 				if (src instanceof Array) {

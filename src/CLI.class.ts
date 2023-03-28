@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import minimist from 'minimist'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from './core/index.js';
 import {Builder} from './builder/index.js';

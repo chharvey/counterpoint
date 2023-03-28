@@ -1,5 +1,5 @@
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 	Builder,
 } from './index.js';
