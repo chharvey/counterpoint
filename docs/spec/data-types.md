@@ -424,7 +424,7 @@ Boolean IsReference(Type t) :=
 	4. *Set* `valuetypes` to a reduction of `valuetypes` for each `a` and `b` to *UnwrapAffirm:* `Union(a, b)`.
 	5. *If* *UnwrapAffirm:* `Subtype(t, valuetypes)`:
 		1. *Return:* `false`.
-	6. *If* `t` is a Vect type *or* `t` is a Struct type:
+	6. *If* `t` is a Vect or Struct type:
 		1. *Return:* `false`.
 	7. *If* `t` is a Union of some types `a` and `b`:
 		1. *If* *UnwrapAffirm:* `IsReference(a)` is `true` *or* *UnwrapAffirm:* `IsReference(b)` is `true`:
