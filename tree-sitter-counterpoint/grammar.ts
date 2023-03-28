@@ -358,7 +358,7 @@ module.exports = grammar({
 
 		...parameterize('_type_unit', ({variable}) => $ => choice(
 			$.keyword_type,
-			...ifSpread(variable, $.identifier),
+			$.identifier,
 			$.primitive_literal,
 			$[call('type_grouped', {variable})],
 			$.type_tuple_literal,
@@ -376,10 +376,7 @@ module.exports = grammar({
 			$[call('_type_unit', {variable})],
 			alias($[call('type_compound_dfn', {variable})], $[call('type_compound', {variable})]),
 		), 'variable'),
-		...parameterize('type_compound_dfn', ({variable}) => $ => choice(
-			seq($[call('_type_compound', {variable})], $.property_access_type),
-			...ifSpread(variable, seq($[call('_type_compound', {variable})], $.generic_call)),
-		), 'variable'),
+		...parameterize('type_compound_dfn', ({variable}) => $ => seq($[call('_type_compound', {variable})], choice($.property_access_type, $.generic_call)), 'variable'),
 
 		...parameterize('_type_unary_symbol', ({variable}) => $ => choice(
 			$[call('_type_compound', {variable})],
@@ -429,7 +426,7 @@ module.exports = grammar({
 		function_arguments:                                   $ => seq(                      '(',  optional(seq(OPT_COM, repCom1($._expression__variable),            OPT_COM)), ')'),
 
 		...parameterize('_expression_unit', ({variable}) => $ => choice(
-			...ifSpread(variable, $.identifier),
+			$.identifier,
 			$.primitive_literal,
 			$[call('string_template',    {variable})],
 			$[call('expression_grouped', {variable})],
@@ -449,10 +446,7 @@ module.exports = grammar({
 			$[call('_expression_unit', {variable})],
 			alias($[call('expression_compound_dfn', {variable})], $[call('expression_compound', {variable})]),
 		), 'variable'),
-		...parameterize('expression_compound_dfn', ({variable}) => $ => choice(
-			seq($[call('_expression_compound', {variable})], $[call('property_access', {variable})]),
-			...ifSpread(variable, seq($[call('_expression_compound', {variable})], $.function_call)),
-		), 'variable'),
+		...parameterize('expression_compound_dfn', ({variable}) => $ => seq($[call('_expression_compound', {variable})], choice($[call('property_access', {variable})], $.function_call)), 'variable'),
 
 		assignee: $ => choice(
 			$.identifier,

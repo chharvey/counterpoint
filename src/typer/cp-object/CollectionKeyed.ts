@@ -13,6 +13,7 @@ import {Collection} from './Collection.js';
 /**
  * Known subclasses:
  * - Record
+ * - Struct
  * - Dict
  */
 export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Collection {

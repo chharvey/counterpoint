@@ -16,6 +16,7 @@ import {Collection} from './Collection.js';
 /**
  * Known subclasses:
  * - Tuple
+ * - Vect
  * - List
  */
 export abstract class CollectionIndexed<T extends CPObject = CPObject> extends Collection {

@@ -13,7 +13,7 @@ import {TypeError} from './TypeError.js';
  */
 export class TypeErrorNotAssignable extends TypeError {
 	/** The number series of this class of errors. */
-	public static override readonly CODE = 3;
+	public static override readonly CODE = 4;
 	/**
 	 * Construct a new TypeErrorNotAssignable object.
 	 * @param assigned_type - the type of the expression

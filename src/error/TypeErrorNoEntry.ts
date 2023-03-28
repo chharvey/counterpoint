@@ -14,7 +14,7 @@ import {TypeError} from './TypeError.js';
  */
 export class TypeErrorNoEntry extends TypeError {
 	/** The number series of this class of errors. */
-	public static override readonly CODE = 4;
+	public static override readonly CODE = 5;
 	/**
 	 * Construct a new TypeErrorNoEntry object.
 	 * @param kind     - the kind of access

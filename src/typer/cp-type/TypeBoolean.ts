@@ -11,6 +11,7 @@ export class TypeBoolean extends Type {
 	public static readonly INSTANCE = new TypeBoolean();
 
 
+	public override readonly isReference:  boolean = false;
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
 

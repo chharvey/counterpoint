@@ -21,8 +21,13 @@ Type TypeValueOf(SemanticTypeTuple tupletype) :=
 			type=     *UnwrapAffirm:* `TypeValueOf(itemtype.children.0)`,
 			optional= `itemtype.optional`,
 		].
-		3. Push `typedatum` to `data`.
-	3. *Return:* a new Tuple type containing the items in `data`.
+		3. *If* `tupletype.isRef` is `false` *and* *UnwrapAffirm:* `IsReference(typedatum.type)`:
+			1. *Throw:* a new TypeError03.
+		4. Push `typedatum` to `data`.
+	3. *If* `tupletype.isRef` is `false`:
+		1. *Return:* a new Vect type containing the items in `data`.
+	4. *Else:*
+		1. *Return:* a new Tuple type containing the items in `data`.
 ;
 
 
@@ -35,8 +40,13 @@ Type TypeValueOf(SemanticTypeRecord recordtype) :=
 			type=     *UnwrapAffirm:* `TypeValueOf(propertytype.children.1)`,
 			optional= `propertytype.optional`,
 		].
-		3. Set the property `propertytype.children.0.id` on `data` to the value `typedatum`.
-	3. *Return:* a new Record type containing the properties in `data`.
+		3. *If* `recordtype.isRef` is `false` *and* *UnwrapAffirm:* `IsReference(typedatum.type)`:
+			1. *Throw:* a new TypeError03.
+		4. Set the property `propertytype.children.0.id` on `data` to the value `typedatum`.
+	3. *If* `recordtype.isRef` is `false`:
+		1. *Return:* a new Struct type containing the properties in `data`.
+	4. *Else:*
+		1. *Return:* a new Record type containing the properties in `data`.
 ;
 
 
@@ -46,6 +56,8 @@ Type TypeValueOf(SemanticTypeList listtype) :=
 	2. *Let* `itemtype` be *UnwrapAffirm:* `TypeValueOf(listtype.children.0)`.
 	3. *If* `listtype.isRef` is `false`:
 		1. *Assert:* `listtype.count` is a RealNumber.
+		2. *If* *UnwrapAffirm:* `IsReference(itemtype)`:
+			1. *Throw:* a new TypeError03.
 	4. *If* `listtype.count` is a RealNumber:
 		1. *If* `listtype.count` is less than *0*:
 			1. *Throw:* a new TypeError.
@@ -57,8 +69,12 @@ Type TypeValueOf(SemanticTypeList listtype) :=
 				optional= `false`,
 			] to `data`.
 			2. Increment `i`.
-		5. *Return:* a new Tuple type containing the items in `data`.
-	5. *Return:* a new List type whose items’ type is `itemtype`.
+		5. *If* `listtype.isRef` is `false`:
+			1. *Return:* a new Vect type containing the items in `data`.
+		6. *Else:*
+			1. *Return:* a new Tuple type containing the items in `data`.
+	5. *Else:*
+		1. *Return:* a new List type whose items’ type is `itemtype`.
 ;
 
 
@@ -100,16 +116,19 @@ Type TypeValueOf(SemanticTypeAccess access) :=
 		3. *Assert:* `accessor_type` is a TypeUnit.
 		4. *Let* `i` be `accessor_type.value`.
 		5. *Assert:* `i` is a instance of `Integer`.
-		6. *If* `base_type` is a Tuple type *and* `i` is an index in `base_type`:
+		6. *If* `base_type` is a Tuple or Vect type *and* `i` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
 			2. *Return:* *UnwrapAffirm:* `UpdateAccessedStaticType(entry, NORMAL)`.
-		7. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
-	6. *Assert:* `accessor` is a SemanticKey.
-	7. *Let* `id` be `accessor.id`.
-	8. *If* `base_type` is a Record type *and* `id` is a key in `base_type`:
-		1. *Let* `entry` be the item accessed at key `id` in `base_type`.
-		2. *Return:* *UnwrapAffirm:* `UpdateAccessedStaticType(entry, NORMAL)`.
-	9. *Throw:* a new TypeError04 "Property {{ id }} does not exist on type {{ base_type }}.".
+		7. *Else:*
+			1. *Throw:* a new TypeError05 "Index {{ i }} does not exist on type {{ base_type }}.".
+	6. *Else:*
+		1. *Assert:* `accessor` is a SemanticKey.
+		2. *Let* `id` be `accessor.id`.
+		3. *If* `base_type` is a Record or Struct type *and* `id` is a key in `base_type`:
+			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
+			2. *Return:* *UnwrapAffirm:* `UpdateAccessedStaticType(entry, NORMAL)`.
+		4. *Else:*
+			1. *Throw:* a new TypeError05 "Property {{ id }} does not exist on type {{ base_type }}.".
 ;
 
 
@@ -158,9 +177,8 @@ Type TypeValueOf(SemanticTypeOperation[operator: OREXCP] oper) :=
 Type TypeValueOf(SemanticTypeOperation[operator: MUTABLE] oper) :=
 	1. *Assert:* `oper.children.count` is 1.
 	2. *Let* `t0` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
-	3. *If* `t0` is a SemanticTypeTuple or a SemanticTypeRecord or a SemanticTypeList:
-		1. *If* `t0.isRef` is `false`:
-			1. *Throw:* a new TypeError01.
+	3. *If* *UnwrapAffirm:* `IsReference(t0)` is `false`:
+		1. *Throw:* a new TypeError01.
 	4. *Return:* a mutable copy of `t0`.
 ;
 

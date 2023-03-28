@@ -13,7 +13,7 @@ import {TypeError} from './TypeError.js';
  */
 export class TypeErrorArgCount extends TypeError {
 	/** The number series of this class of errors. */
-	public static override readonly CODE = 6;
+	public static override readonly CODE = 7;
 	/**
 	 * Construct a new TypeErrorArgCount object.
 	 * @param actual   - the number of arguments received

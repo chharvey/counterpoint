@@ -14,7 +14,7 @@ import {TypeError} from './TypeError.js';
  */
 export class TypeErrorNotCallable extends TypeError {
 	/** The number series of this class of errors. */
-	public static override readonly CODE = 5;
+	public static override readonly CODE = 6;
 	/**
 	 * Construct a new TypeErrorNotCallable object.
 	 * @param typ  - the type trying to be called

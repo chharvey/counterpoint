@@ -39,11 +39,11 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		}
 		if (this.accessor instanceof ASTNodeIndexType) {
 			const accessor_type = this.accessor.val.eval() as TYPE.TypeUnit<OBJ.Integer>;
-			assert.ok(base_type instanceof TYPE.TypeTuple, `\`${ base_type }\` should be a Tuple type.`);
+			assert.ok(base_type instanceof TYPE.TypeCollectionIndexedStatic, `\`${ base_type }\` should be a Tuple or Vect type.`);
 			return base_type.get(accessor_type.value, Operator.DOT, this.accessor);
 		} else {
 			assert.ok(this.accessor instanceof ASTNodeKey, `Expected ${ this.accessor } to be an \`ASTNodeKey\`.`);
-			assert.ok(base_type instanceof TYPE.TypeRecord, `\`${ base_type }\` should be a Record type.`);
+			assert.ok(base_type instanceof TYPE.TypeCollectionKeyedStatic, `\`${ base_type }\` should be a Record or Struct type.`);
 			return base_type.get(this.accessor.id, Operator.DOT, this.accessor);
 		}
 	}

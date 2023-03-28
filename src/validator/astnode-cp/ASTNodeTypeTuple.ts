@@ -1,5 +1,9 @@
 import * as assert from 'assert';
-import {TYPE} from '../../index.js';
+import {
+	type TypeEntry,
+	TYPE,
+	TypeErrorUnexpectedRef,
+} from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
 import {
 	type CPConfig,
@@ -29,9 +33,16 @@ export class ASTNodeTypeTuple extends ASTNodeTypeCollectionLiteral {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		return new TYPE.TypeTuple(this.children.map((c) => ({
-			type:     c.val.eval(),
-			optional: c.optional,
-		})));
+		const entries: readonly TypeEntry[] = this.children.map((c) => {
+			const itemtype: TYPE.Type = c.val.eval();
+			if (!this.isRef && itemtype.isReference) {
+				throw new TypeErrorUnexpectedRef(itemtype, c);
+			}
+			return {
+				type:     itemtype,
+				optional: c.optional,
+			};
+		});
+		return (!this.isRef) ? new TYPE.TypeVect(entries) : new TYPE.TypeTuple(entries);
 	}
 }

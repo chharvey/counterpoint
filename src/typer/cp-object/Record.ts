@@ -4,10 +4,6 @@ import {CollectionKeyed} from './CollectionKeyed.js';
 
 
 
-/**
- * Known subclasses:
- * - Struct
- */
 export class Record<T extends CPObject = CPObject> extends CollectionKeyed<T> {
 	/**
 	 * @inheritdoc

@@ -5,6 +5,7 @@ import {
 	TYPE,
 	type INST,
 	type Builder,
+	TypeErrorUnexpectedRef,
 	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
@@ -48,7 +49,14 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
-		return TYPE.TypeTuple.fromTypes(this.children.map((c) => c.type()), this.isRef);
+		const items: readonly TYPE.Type[] = this.children.map((c) => {
+			const itemtype: TYPE.Type = c.type();
+			if (!this.isRef && itemtype.isReference) {
+				throw new TypeErrorUnexpectedRef(itemtype, c);
+			}
+			return itemtype;
+		});
+		return (!this.isRef) ? TYPE.TypeVect.fromTypes(items) : TYPE.TypeTuple.fromTypes(items, this.isRef);
 	}
 
 	@memoizeMethod

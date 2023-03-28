@@ -246,6 +246,10 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				type T = \\[bool, int, ?: str];
 				type T = [bool, int, ?: str];
+				type U = \\[
+					V.0,
+					W.<float>,
+				];
 			`,
 			sourceTypes(
 				s(
@@ -260,6 +264,28 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('entry_type__variable',           s('keyword_type')),
 					s('entry_type__optional__variable', s('keyword_type')),
 				),
+				s(
+					'type_tuple_literal',
+					s(
+						'entry_type',
+						s(
+							'type_compound',
+							s('identifier'),
+							s('property_access_type', s('integer')),
+						),
+					),
+					s(
+						'entry_type',
+						s(
+							'type_compound',
+							s('identifier'),
+							s(
+								'generic_call',
+								s('generic_arguments', s('keyword_type')),
+							),
+						),
+					),
+				),
 			),
 		],
 
@@ -267,6 +293,10 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				type T = \\[a: bool, b?: int, c: str];
 				type T = [a: bool, b?: int, c: str];
+				type U = \\[
+					a: V.0,
+					b: W.<float>,
+				];
 			`,
 			sourceTypes(
 				s(
@@ -280,6 +310,30 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('entry_type__named__variable',           s('word', s('identifier')), s('keyword_type')),
 					s('entry_type__named__optional__variable', s('word', s('identifier')), s('keyword_type')),
 					s('entry_type__named__variable',           s('word', s('identifier')), s('keyword_type')),
+				),
+				s(
+					'type_record_literal',
+					s(
+						'entry_type__named',
+						s('word', s('identifier')),
+						s(
+							'type_compound',
+							s('identifier'),
+							s('property_access_type', s('integer')),
+						),
+					),
+					s(
+						'entry_type__named',
+						s('word', s('identifier')),
+						s(
+							'type_compound',
+							s('identifier'),
+							s(
+								'generic_call',
+								s('generic_arguments', s('keyword_type')),
+							),
+						),
+					),
 				),
 			),
 		],
@@ -336,10 +390,7 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('identifier'),
 					s(
 						'generic_call',
-						s(
-							'generic_arguments',
-							s('identifier'),
-						),
+						s('generic_arguments', s('identifier')),
 					),
 				),
 			),
