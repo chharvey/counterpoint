@@ -13,20 +13,10 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
-import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeRecord extends Type {
-	/**
-	 * Is the argument a unit record type?
-	 * @return whether the argument is a `TypeUnit` and its value is a `Record`
-	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Record> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Record;
-	}
-
-
 	public override readonly isBottomType: boolean = false;
 
 	/**
@@ -87,8 +77,8 @@ export class TypeRecord extends Type {
 				return (
 					(thattype.optional || thistype && !thistype.optional)
 					&& (!thistype || ((t.isMutable)
-						? thistype.type.equals(thattype.type)
-						: thistype.type.isSubtypeOf(thattype.type)
+						? thistype.type.equals(thattype.type)      // Invariance for mutable records: `A == B --> mutable Record.<A> <: mutable Record.<B>`.
+						: thistype.type.isSubtypeOf(thattype.type) // Covariance for immutable records: `A <: B --> Record.<A> <: Record.<B>`.
 					))
 				);
 			})

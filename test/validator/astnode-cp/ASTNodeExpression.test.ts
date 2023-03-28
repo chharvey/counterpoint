@@ -30,11 +30,10 @@ import {
 
 
 describe('ASTNodeExpression', () => {
-	/* eslint-disable quotes */
 	describe('ASTNodeConstant', () => {
 		describe('#varCheck', () => {
 			it('never throws.', () => {
-				AST.ASTNodeConstant.fromSource(`42;`).varCheck();
+				AST.ASTNodeConstant.fromSource('42;').varCheck();
 			});
 		});
 
@@ -47,11 +46,11 @@ describe('ASTNodeExpression', () => {
 					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-					'42😀'  '42\\u{1f600}'
+					"42😀"  "42\\u{1f600}"
 				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
 				assert.deepStrictEqual(
 					constants.map((c) => c.type()),
-					constants.map((c) => new TYPE.TypeUnit<OBJ.Primitive>(c.fold())),
+					constants.map((c) => new TYPE.TypeUnit(c.fold())),
 				);
 			});
 		});
@@ -99,7 +98,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('computes string values.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeConstant.fromSource(`'42😀\\u{1f600}';`).type(),
+					AST.ASTNodeConstant.fromSource('"42😀\\u{1f600}";').type(),
 					typeUnitStr('42😀\u{1f600}'),
 				);
 			});
@@ -140,7 +139,7 @@ describe('ASTNodeExpression', () => {
 					let unfixed i: int = 42;
 					i;
 				`).varCheck(); // assert does not throw
-				assert.throws(() => AST.ASTNodeVariable.fromSource(`i;`).varCheck(), ReferenceError01);
+				assert.throws(() => AST.ASTNodeVariable.fromSource('i;').varCheck(), ReferenceError01);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
@@ -159,7 +158,7 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			it('returns Never for undeclared variables.', () => {
-				assert.ok(AST.ASTNodeVariable.fromSource(`x;`).type().isBottomType);
+				assert.ok(AST.ASTNodeVariable.fromSource('x;').type().isBottomType);
 			});
 		});
 
@@ -298,20 +297,20 @@ describe('ASTNodeExpression', () => {
 
 
 	describe('ASTNodeTemplate', () => {
+		function initTemplates(config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeTemplate[] {
+			return [
+				AST.ASTNodeTemplate.fromSource('"""42😀""";', config),
+				AST.ASTNodeTemplate.fromSource('"""the answer is {{ 7 * 3 * 2 }} but what is the question?""";', config),
+				(AST.ASTNodeGoal.fromSource(`
+					let unfixed x: int = 21;
+					"""the answer is {{ x * 2 }} but what is the question?""";
+				`, config)
+					.children[1] as AST.ASTNodeStatementExpression)
+					.expr as AST.ASTNodeTemplate,
+			];
+		}
 		describe('#type', () => {
 			let templates: readonly AST.ASTNodeTemplate[] = [];
-			function initTemplates(config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeTemplate[] {
-				return [
-					AST.ASTNodeTemplate.fromSource(`'''42😀''';`, config),
-					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, config),
-					(AST.ASTNodeGoal.fromSource(`
-						let unfixed x: int = 21;
-						'''the answer is {{ x * 2 }} but what is the question?''';
-					`, config)
-						.children[1] as AST.ASTNodeStatementExpression)
-						.expr as AST.ASTNodeTemplate,
-				];
-			}
 			context('with constant folding on.', () => {
 				let types: TYPE.Type[] = [];
 				before(() => {
@@ -342,16 +341,7 @@ describe('ASTNodeExpression', () => {
 		describe('#fold', () => {
 			let templates: AST.ASTNodeTemplate[] = [];
 			before(() => {
-				templates = [
-					AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
-					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
-					(AST.ASTNodeGoal.fromSource(`
-						let unfixed x: int = 21;
-						'''the answer is {{ x * 2 }} but what is the question?''';
-					`)
-						.children[1] as AST.ASTNodeStatementExpression)
-						.expr as AST.ASTNodeTemplate,
-				];
+				templates = initTemplates();
 			});
 			it('returns a constant String for ASTNodeTemplate with no interpolations.', () => {
 				assert.deepStrictEqual(
@@ -381,20 +371,20 @@ describe('ASTNodeExpression', () => {
 			describe('ASTNodeRecord', () => {
 				it('throws if containing duplicate keys.', () => {
 					[
-						AST.ASTNodeTypeRecord .fromSource(`[a: int, b: float, c: str]`),
-						AST.ASTNodeRecord     .fromSource(`[a= 1, b= 2.0, c= 'three'];`),
+						AST.ASTNodeTypeRecord .fromSource('[a: int, b: float, c: str]'),
+						AST.ASTNodeRecord     .fromSource('[a= 1, b= 2.0, c= "three"];'),
 					].forEach((node) => node.varCheck()); // assert does not throw
 
 					[
-						AST.ASTNodeTypeRecord .fromSource(`[a: int, b: float, a: str]`),
-						AST.ASTNodeRecord     .fromSource(`[a= 1, b= 2.0, a= 'three'];`),
+						AST.ASTNodeTypeRecord .fromSource('[a: int, b: float, a: str]'),
+						AST.ASTNodeRecord     .fromSource('[a= 1, b= 2.0, a= "three"];'),
 					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentError02));
 
 					new Map<AST.ASTNodeCP, string[]>([
-						[AST.ASTNodeTypeRecord .fromSource(`[c: int, d: float, c: str, d: bool]`),   ['c', 'd']],
-						[AST.ASTNodeRecord     .fromSource(`[c= 1, d= 2.0, c= 'three', d= false];`), ['c', 'd']],
-						[AST.ASTNodeTypeRecord .fromSource(`[e: int, f: float, e: str, e: bool]`),   ['e', 'e']],
-						[AST.ASTNodeRecord     .fromSource(`[e= 1, f= 2.0, e= 'three', e= false];`), ['e', 'e']],
+						[AST.ASTNodeTypeRecord .fromSource('[c: int, d: float, c: str, d: bool]'),   ['c', 'd']],
+						[AST.ASTNodeRecord     .fromSource('[c= 1, d= 2.0, c= "three", d= false];'), ['c', 'd']],
+						[AST.ASTNodeTypeRecord .fromSource('[e: int, f: float, e: str, e: bool]'),   ['e', 'e']],
+						[AST.ASTNodeRecord     .fromSource('[e= 1, f= 2.0, e= "three", e= false];'), ['e', 'e']],
 					]).forEach((dupes, node) => assert.throws(() => node.varCheck(), (err) => {
 						assert.ok(err instanceof AggregateError);
 						assertAssignable(err, {
@@ -416,21 +406,21 @@ describe('ASTNodeExpression', () => {
 				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.Type.unionAll([typeUnitStr('a'), typeUnitInt(42n), typeUnitFloat(3.0)])],
 				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.Type.unionAll([typeUnitStr('a'), TYPE.INT,         TYPE.FLOAT])],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
-				const expected: readonly TYPE.TypeUnit<OBJ.Primitive>[] = [typeUnitInt(1n), typeUnitFloat(2.0), typeUnitStr('three')];
+				const expected: readonly TYPE.TypeUnit[] = [typeUnitInt(1n), typeUnitFloat(2.0), typeUnitStr('three')];
 				const collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,
 					AST.ASTNodeSet,
 					AST.ASTNodeMap,
 				] = [
-					AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`, config),
-					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`, config),
-					AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`, config),
+					AST.ASTNodeTuple.fromSource('[1, 2.0, "three"];', config),
+					AST.ASTNodeRecord.fromSource('[a= 1, b= 2.0, c= "three"];', config),
+					AST.ASTNodeSet.fromSource('{1, 2.0, "three"};', config),
 					AST.ASTNodeMap.fromSource(`
 						{
-							'a' || '' -> 1,
+							"a" || "" -> 1,
 							21 + 21   -> 2.0,
-							3 * 1.0   -> 'three',
+							3 * 1.0   -> "three",
 						};
 					`, config),
 				];
@@ -458,14 +448,14 @@ describe('ASTNodeExpression', () => {
 			it('returns a constant Tuple/Record/Set/Map for foldable entries.', () => {
 				assert.deepStrictEqual(
 					[
-						AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
-						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
-						AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`),
+						AST.ASTNodeTuple.fromSource('[1, 2.0, "three"];'),
+						AST.ASTNodeRecord.fromSource('[a= 1, b= 2.0, c= "three"];'),
+						AST.ASTNodeSet.fromSource('{1, 2.0, "three"};'),
 						AST.ASTNodeMap.fromSource(`
 							{
-								'a' || '' -> 1,
+								"a" || "" -> 1,
 								21 + 21   -> 2.0,
-								3 * 1.0   -> 'three',
+								3 * 1.0   -> "three",
 							};
 						`),
 					].map((c) => c.fold()),
@@ -497,14 +487,14 @@ describe('ASTNodeExpression', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let unfixed x: int = 1;
 					let unfixed y: float = 2.0;
-					let unfixed z: str = 'three';
-					[x, 2.0, 'three'];
-					[a= 1, b= y, c= 'three'];
+					let unfixed z: str = "three";
+					[x, 2.0, "three"];
+					[a= 1, b= y, c= "three"];
 					% TODO: a non-foldable set object should be null
 					{
-						'a' || '' -> 1,
+						"a" || "" -> 1,
 						21 + 21   -> y,
-						3 * 1.0   -> 'three',
+						3 * 1.0   -> "three",
 					};
 				`);
 				const tuple:   AST.ASTNodeTuple   = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
@@ -537,38 +527,38 @@ describe('ASTNodeExpression', () => {
 
 	describe('ASTNodeClaim', () => {
 		const samples: string[] = [
-			`null;`,
-			`false;`,
-			`true;`,
-			`0;`,
-			`+0;`,
-			`-0;`,
-			`42;`,
-			`+42;`,
-			`-42;`,
-			`0.0;`,
-			`+0.0;`,
-			`-0.0;`,
-			`-4.2e-2;`,
+			'null;',
+			'false;',
+			'true;',
+			'0;',
+			'+0;',
+			'-0;',
+			'42;',
+			'+42;',
+			'-42;',
+			'0.0;',
+			'+0.0;',
+			'-0.0;',
+			'-4.2e-2;',
 		];
 		describe('#type', () => {
 			it('returns the type value of the claimed type.', () => {
-				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3;`).type().equals(TYPE.INT.union(TYPE.NULL)));
+				assert.ok(AST.ASTNodeClaim.fromSource('<int?>3;').type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
 			it('`never` is assignable to any type (even though intersection is empty).', () => {
-				assert.ok(AST.ASTNodeClaim.fromSource(`<never>n;`).type().isBottomType);
-				assert.ok(AST.ASTNodeClaim.fromSource(`<int>n;`).type().equals(TYPE.INT));
-				assert.throws(() => AST.ASTNodeClaim.fromSource(`<never>3;`).type(), TypeError03);
+				assert.ok(AST.ASTNodeClaim.fromSource('<never>n;').type().isBottomType);
+				assert.ok(AST.ASTNodeClaim.fromSource('<int>n;').type().equals(TYPE.INT));
+				assert.throws(() => AST.ASTNodeClaim.fromSource('<never>3;').type(), TypeError03);
 			});
 			it('throws when the operand type and claimed type do not overlap.', () => {
-				assert.throws(() => AST.ASTNodeClaim.fromSource(`<str>3;`)      .type(), TypeError03);
-				assert.throws(() => AST.ASTNodeClaim.fromSource(`<int>'three';`).type(), TypeError03);
+				assert.throws(() => AST.ASTNodeClaim.fromSource('<str>3;')      .type(), TypeError03);
+				assert.throws(() => AST.ASTNodeClaim.fromSource('<int>"three";').type(), TypeError03);
 			});
 			it('with int coersion off, does not allow converting between int and float.', () => {
-				AST.ASTNodeClaim.fromSource(`<float>3;`).type(); // assert does not throw
-				AST.ASTNodeClaim.fromSource(`<int>3.0;`).type(); // assert does not throw
-				assert.throws(() => AST.ASTNodeClaim.fromSource(`<float>3;`, CONFIG_COERCION_OFF).type(), TypeError03);
-				assert.throws(() => AST.ASTNodeClaim.fromSource(`<int>3.0;`, CONFIG_COERCION_OFF).type(), TypeError03);
+				AST.ASTNodeClaim.fromSource('<float>3;').type(); // assert does not throw
+				AST.ASTNodeClaim.fromSource('<int>3.0;').type(); // assert does not throw
+				assert.throws(() => AST.ASTNodeClaim.fromSource('<float>3;', CONFIG_COERCION_OFF).type(), TypeError03);
+				assert.throws(() => AST.ASTNodeClaim.fromSource('<int>3.0;', CONFIG_COERCION_OFF).type(), TypeError03);
 			});
 		});
 
@@ -599,5 +589,4 @@ describe('ASTNodeExpression', () => {
 			});
 		});
 	});
-	/* eslint-enable quotes */
 });
