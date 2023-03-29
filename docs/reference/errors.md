@@ -50,10 +50,38 @@ A reference error is raised when the compiler fails to dereference an identifier
 ### Assignment Errors (22xx)
 An assignment error is raised when the compiler detects an illegal declaration or assignment.
 
-1. 2200 — A general assignment error not covered by one of the following cases.
-1. 2201 — The validator encountered a duplicate declaration.
-1. 2202 — The validator encountered a duplicate record key.
-1. 2210 — A reassignment of a fixed variable was attempted.
+1.  2200         — A general assignment error not covered by one of the following cases.
+1. [2201](#2201) — The validator encountered a duplicate declaration.
+1. [2202](#2202) — The validator encountered a duplicate record key.
+1. [2210](#2210) — A reassignment of a fixed variable was attempted.
+
+#### 2201
+Cause: A duplicate declaration was encountered.
+```
+let my_var: int = 42;
+let my_var: int = 24; % AssignmentError: Duplicate declaration: `my_var` is already declared.
+
+type MyType = int;
+type MyType = float; % AssignmentError: Duplicate declaration: `MyType` is already declared.
+```
+Solution(s): Remove the duplicate declaration, or change it to a reassignment (if possible).
+
+#### 2202
+Cause: A duplicate key in a record/struct literal or type literal was encountered.
+```
+[foo= "a", foo= "b"]; % AssignmentError: Duplicate record key: `foo` is already set.
+
+type MyType = [bar: int, bar: str]; % AssignmentError: Duplicate record key: `bar` is already set.
+```
+Solution(s): Remove or rename the duplicate key.
+
+#### 2210
+Cause: A fixed variable was reassigned.
+```
+let my_var: int = 42;
+my_var = 24;          % AssignmentError: Reassignment of a fixed variable: `my_var`.
+```
+Solution(s): Remove the reassignment, or make the variable `unfixed`.
 
 
 ### Type Errors (23xx)
