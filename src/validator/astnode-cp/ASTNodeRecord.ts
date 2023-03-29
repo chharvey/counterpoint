@@ -5,7 +5,7 @@ import {
 	TYPE,
 	type INST,
 	type Builder,
-	AssignmentError02,
+	AssignmentErrorDuplicateKey,
 	TypeError,
 	TypeErrorUnexpectedRef,
 	type TypeErrorNotAssignable,
@@ -51,7 +51,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
 		xjs.Array.forEachAggregated(keys.map((key) => key.id), (id, i, ids) => {
 			if (ids.slice(0, i).includes(id)) {
-				throw new AssignmentError02(keys[i]);
+				throw new AssignmentErrorDuplicateKey(keys[i]);
 			}
 		});
 	}

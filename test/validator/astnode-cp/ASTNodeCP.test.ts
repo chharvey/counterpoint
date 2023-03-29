@@ -7,8 +7,8 @@ import {
 	Builder,
 	ReferenceError01,
 	ReferenceError03,
-	AssignmentError01,
-	AssignmentError10,
+	AssignmentErrorDuplicateDeclaration,
+	AssignmentErrorReassignment,
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
 	MutabilityError01,
@@ -65,7 +65,7 @@ describe('ASTNodeCP', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					let i: int = 42;
 					i = 43;
-				`).varCheck(), AssignmentError10);
+				`).varCheck(), AssignmentErrorReassignment);
 			});
 			it('always throws for type alias reassignment.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
@@ -256,11 +256,11 @@ describe('ASTNodeCP', () => {
 									},
 								],
 							},
-							{cons: AssignmentError01, message: 'Duplicate declaration of `x`.'},
-							{cons: AssignmentError10, message: 'Reassignment of fixed variable `x`.'},
-							{cons: AssignmentError01, message: 'Duplicate declaration of `T`.'},
-							{cons: ReferenceError03,  message: '`x` refers to a value, but is used as a type.'},
-							{cons: ReferenceError03,  message: '`T` refers to a type, but is used as a value.'},
+							{cons: AssignmentErrorDuplicateDeclaration, message: 'Duplicate declaration of `x`.'},
+							{cons: AssignmentErrorReassignment,         message: 'Reassignment of fixed variable `x`.'},
+							{cons: AssignmentErrorDuplicateDeclaration, message: 'Duplicate declaration of `T`.'},
+							{cons: ReferenceError03,                    message: '`x` refers to a value, but is used as a type.'},
+							{cons: ReferenceError03,                    message: '`T` refers to a type, but is used as a value.'},
 						],
 					});
 					return true;

@@ -10,7 +10,7 @@ import {
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
-	AssignmentError02,
+	AssignmentErrorDuplicateKey,
 	TypeErrorUnexpectedRef,
 } from '../../../src/index.js';
 import {assertAssignable} from '../../assert-helpers.js';
@@ -383,7 +383,7 @@ describe('ASTNodeExpression', () => {
 					[
 						AST.ASTNodeTypeRecord .fromSource('[a: int, b: float, a: str]'),
 						AST.ASTNodeRecord     .fromSource('[a= 1, b= 2.0, a= "three"];'),
-					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentError02));
+					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentErrorDuplicateKey));
 
 					new Map<AST.ASTNodeCP, string[]>([
 						[AST.ASTNodeTypeRecord .fromSource('[c: int, d: float, c: str, d: bool]'),   ['c', 'd']],
@@ -395,7 +395,7 @@ describe('ASTNodeExpression', () => {
 						assertAssignable(err, {
 							cons:   AggregateError,
 							errors: dupes.map((k) => ({
-								cons:    AssignmentError02,
+								cons:    AssignmentErrorDuplicateKey,
 								message: `Duplicate record key \`${ k }\`.`,
 							})),
 						});

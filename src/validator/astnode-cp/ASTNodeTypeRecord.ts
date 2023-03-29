@@ -3,7 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	type TypeEntry,
 	TYPE,
-	AssignmentError02,
+	AssignmentErrorDuplicateKey,
 	TypeErrorUnexpectedRef,
 } from '../../index.js';
 import {
@@ -42,7 +42,7 @@ export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 		const keys: ASTNodeKey[] = this.children.map((proptype) => proptype.key);
 		xjs.Array.forEachAggregated(keys.map((key) => key.id), (id, i, ids) => {
 			if (ids.slice(0, i).includes(id)) {
-				throw new AssignmentError02(keys[i]);
+				throw new AssignmentErrorDuplicateKey(keys[i]);
 			}
 		});
 	}

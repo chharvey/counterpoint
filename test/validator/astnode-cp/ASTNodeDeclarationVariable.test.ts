@@ -7,7 +7,7 @@ import {
 	TYPE,
 	INST,
 	Builder,
-	AssignmentError01,
+	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotAssignable,
 } from '../../../src/index.js';
 import {assertAssignable} from '../../assert-helpers.js';
@@ -38,11 +38,11 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				let i: int = 42;
 				let i: int = 43;
-			`).varCheck(), AssignmentError01);
+			`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				type FOO = float;
 				let FOO: int = 42;
-			`).varCheck(), AssignmentError01);
+			`).varCheck(), AssignmentErrorDuplicateDeclaration);
 		});
 	});
 
