@@ -10,6 +10,11 @@ import {ErrorCode} from './ErrorCode.js';
 
 /**
  * An AssignmentError is thrown when the validator detects an illegal declaration or assignment.
+ *
+ * Known subclasses:
+ * - AssignmentError01
+ * - AssignmentError02
+ * - AssignmentError03
  */
 export class AssignmentError extends ErrorCode {
 	static readonly #CODE = 2200;

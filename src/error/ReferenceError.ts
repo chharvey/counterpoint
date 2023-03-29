@@ -10,6 +10,11 @@ import {ErrorCode} from './ErrorCode.js';
 
 /**
  * A ReferenceError is thrown when the validator fails to dereference an identifier.
+ *
+ * Known subclasses:
+ * - ReferenceError01
+ * - ReferenceError02
+ * - ReferenceError03
  */
 export class ReferenceError extends ErrorCode {
 	static readonly #CODE = 2100;

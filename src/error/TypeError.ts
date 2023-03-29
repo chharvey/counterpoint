@@ -14,6 +14,15 @@ import {ErrorCode} from './ErrorCode.js';
 
 /**
  * A TypeError is thrown when the validator recognizes a type mismatch.
+ *
+ * Known subclasses:
+ * - TypeErrorInvalidOperation
+ * - TypeErrorNotNarrow
+ * - TypeErrorUnexpectedRef
+ * - TypeErrorNotAssignable
+ * - TypeErrorNoEntry
+ * - TypeErrorNotCallable
+ * - TypeErrorArgCount
  */
 export class TypeError extends ErrorCode {
 	static readonly #CODE = 2300;

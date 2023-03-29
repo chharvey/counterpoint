@@ -6,6 +6,9 @@ import {ErrorCode} from './ErrorCode.js';
 
 /**
  * A MutabilityError is thrown when the validator recognizes an attempt to mutate an immutable object.
+ *
+ * Known subclasses:
+ * - MutabilityError01
  */
 export class MutabilityError extends ErrorCode {
 	static readonly #CODE = 2400;
