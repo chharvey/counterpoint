@@ -6,9 +6,9 @@ import {AssignmentError} from './AssignmentError.js';
 /**
  * An AssignmentError02 is thrown when the validator encounters a duplicate key in a record literal or record type literal.
  * @example
- * [foo= "a", foo= "b"]; % AssignmentError02: Duplicate record key: `foo` is already set.
+ * [foo= "a", foo= "b"]; % AssignmentError02: Duplicate record key `foo`.
  * @example
- * type MyType = [bar: int, bar: str]; % AssignmentError02: Duplicate record key: `bar` is already set.
+ * type MyType = [bar: int, bar: str]; % AssignmentError02: Duplicate record key `bar`.
  */
 export class AssignmentError02 extends AssignmentError {
 	/**
@@ -17,7 +17,7 @@ export class AssignmentError02 extends AssignmentError {
 	 */
 	public constructor(key: AST.ASTNodeKey) {
 		super(
-			`Duplicate record key: \`${ key.source }\` is already set.`,
+			`Duplicate record key \`${ key.source }\`.`,
 			AssignmentError.CODES.get(AssignmentError02),
 			key.line_index,
 			key.col_index,

@@ -59,19 +59,19 @@ An assignment error is raised when the compiler detects an illegal declaration o
 Cause: A duplicate declaration was encountered.
 ```
 let my_var: int = 42;
-let my_var: int = 24; % AssignmentError: Duplicate declaration: `my_var` is already declared.
+let my_var: int = 24; % AssignmentError: Duplicate declaration of `my_var`.
 
 type MyType = int;
-type MyType = float; % AssignmentError: Duplicate declaration: `MyType` is already declared.
+type MyType = float; % AssignmentError: Duplicate declaration of `MyType`.
 ```
 Solution(s): Remove the duplicate declaration, or change it to a reassignment (if possible).
 
 #### 2202
 Cause: A duplicate key in a record/struct literal or type literal was encountered.
 ```
-[foo= "a", foo= "b"]; % AssignmentError: Duplicate record key: `foo` is already set.
+[foo= "a", foo= "b"]; % AssignmentError: Duplicate record key `foo`.
 
-type MyType = [bar: int, bar: str]; % AssignmentError: Duplicate record key: `bar` is already set.
+type MyType = [bar: int, bar: str]; % AssignmentError: Duplicate record key `bar`.
 ```
 Solution(s): Remove or rename the duplicate key.
 
@@ -79,7 +79,7 @@ Solution(s): Remove or rename the duplicate key.
 Cause: A fixed variable was reassigned.
 ```
 let my_var: int = 42;
-my_var = 24;          % AssignmentError: Reassignment of a fixed variable: `my_var`.
+my_var = 24;          % AssignmentError: Reassignment of fixed variable `my_var`.
 ```
 Solution(s): Remove the reassignment, or make the variable `unfixed`.
 

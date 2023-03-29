@@ -256,11 +256,11 @@ describe('ASTNodeCP', () => {
 									},
 								],
 							},
-							{cons: AssignmentError01, message: 'Duplicate declaration: `x` is already declared.'},
-							{cons: AssignmentError10, message: 'Reassignment of a fixed variable: `x`.'},
-							{cons: AssignmentError01, message: 'Duplicate declaration: `T` is already declared.'},
-							{cons: ReferenceError03, message: '`x` refers to a value, but is used as a type.'},
-							{cons: ReferenceError03, message: '`T` refers to a type, but is used as a value.'},
+							{cons: AssignmentError01, message: 'Duplicate declaration of `x`.'},
+							{cons: AssignmentError10, message: 'Reassignment of fixed variable `x`.'},
+							{cons: AssignmentError01, message: 'Duplicate declaration of `T`.'},
+							{cons: ReferenceError03,  message: '`x` refers to a value, but is used as a type.'},
+							{cons: ReferenceError03,  message: '`T` refers to a type, but is used as a value.'},
 						],
 					});
 					return true;

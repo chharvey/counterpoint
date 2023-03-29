@@ -396,7 +396,7 @@ describe('ASTNodeExpression', () => {
 							cons:   AggregateError,
 							errors: dupes.map((k) => ({
 								cons:    AssignmentError02,
-								message: `Duplicate record key: \`${ k }\` is already set.`,
+								message: `Duplicate record key \`${ k }\`.`,
 							})),
 						});
 						return true;
