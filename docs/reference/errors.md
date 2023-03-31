@@ -211,6 +211,17 @@ as a result of some internal process.
 ### Void Errors (31xx)
 A void error is raised when an expression that has no value is used in some way.
 
+1.  3100         — A general mutability error not covered by one of the following cases.
+1. [3101](#3101) — A void expression is used as a value.
+
+#### 3101
+Cause: An expression without a value is used as a value.
+```
+let v: void = returnVoid.(); % VoidError: Value is undefined.
+```
+Solution(s): Void expressions may be evaluated, but do not operate on them,
+assign them to variables/properties/parameters, or return them from non-void functions.
+
 
 ### Nan Errors (32xx)
 A Nan error is raised when a numerical expression does not successfully evaluate.
