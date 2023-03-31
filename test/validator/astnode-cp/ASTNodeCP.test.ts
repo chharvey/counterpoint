@@ -5,8 +5,8 @@ import {
 	TYPE,
 	INST,
 	Builder,
-	ReferenceError01,
-	ReferenceError03,
+	ReferenceErrorUndeclared,
+	ReferenceErrorKind,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorReassignment,
 	TypeErrorInvalidOperation,
@@ -71,7 +71,7 @@ describe('ASTNodeCP', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					type T = 42;
 					T = 43;
-				`).varCheck(), ReferenceError03);
+				`).varCheck(), ReferenceErrorKind);
 			});
 		});
 
@@ -224,15 +224,15 @@ describe('ASTNodeCP', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: ReferenceError01, message: '`a` is never declared.'},
-											{cons: ReferenceError01, message: '`b` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`a` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`b` is never declared.'},
 										],
 									},
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: ReferenceError01, message: '`c` is never declared.'},
-											{cons: ReferenceError01, message: '`d` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`c` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`d` is never declared.'},
 										],
 									},
 								],
@@ -243,15 +243,15 @@ describe('ASTNodeCP', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: ReferenceError01, message: '`V` is never declared.'},
-											{cons: ReferenceError01, message: '`W` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`V` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`W` is never declared.'},
 										],
 									},
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: ReferenceError01, message: '`X` is never declared.'},
-											{cons: ReferenceError01, message: '`Y` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`X` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`Y` is never declared.'},
 										],
 									},
 								],
@@ -259,8 +259,8 @@ describe('ASTNodeCP', () => {
 							{cons: AssignmentErrorDuplicateDeclaration, message: 'Duplicate declaration of `x`.'},
 							{cons: AssignmentErrorReassignment,         message: 'Reassignment of fixed variable `x`.'},
 							{cons: AssignmentErrorDuplicateDeclaration, message: 'Duplicate declaration of `T`.'},
-							{cons: ReferenceError03,                    message: '`x` refers to a value, but is used as a type.'},
-							{cons: ReferenceError03,                    message: '`T` refers to a type, but is used as a value.'},
+							{cons: ReferenceErrorKind,                  message: '`x` refers to a value, but is used as a type.'},
+							{cons: ReferenceErrorKind,                  message: '`T` refers to a type, but is used as a value.'},
 						],
 					});
 					return true;
