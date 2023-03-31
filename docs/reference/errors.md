@@ -164,8 +164,16 @@ Solution(s): Pass in an expected number of arguments.
 ### Mutability Errors (24xx)
 A mutability error is raised when the compiler recognizes an attempt to mutate an immutable object.
 
-1. 2400 — A general mutability error not covered by one of the following cases.
-1. 2401 — An item or property of an immutable object was reassigned.
+1.  2400         — A general mutability error not covered by one of the following cases.
+1. [2401](#2401) — An item or property of an immutable object was reassigned.
+
+#### 2401
+Cause: An immutable object was mutated.
+```
+let x: [a: int] = [a= 42];
+x.a = 43;                  % MutabilityError: Mutation of an object of immutable type `[a: int]`.
+```
+Solution(s): Do not mutate the object’s entries, or else give it a `mutable` type.
 
 
 
