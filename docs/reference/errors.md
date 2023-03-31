@@ -210,3 +210,25 @@ as a result of some internal process.
 
 ### Void Errors (31xx)
 A void error is raised when an expression that has no value is used in some way.
+
+
+### Nan Errors (32xx)
+A Nan error is raised when a numerical expression does not successfully evaluate.
+
+1.  3200         — A general mutability error not covered by one of the following cases.
+1. [3201](#3201) — The value is not a valid number.
+1. [3202](#3202) — Division by zero.
+
+#### 3201
+Cause: The expression could be a numerical value but is not valid in the language.
+```
+-4 ^ -0.5; % NanError: Not a valid number.
+```
+Solution(s): Only use valid mathematical operations.
+
+#### 3202
+Cause: The expression results in a division by zero.
+```
+3 / 0; % NanError: Division by zero.
+```
+Solution(s): Don’t divide by zero.
