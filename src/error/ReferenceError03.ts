@@ -12,8 +12,8 @@ import {ReferenceError} from './ReferenceError.js';
  * let FOO: int = 42;
  * type T = FOO | float; % ReferenceError03: `FOO` refers to a value, but is used as a type.
  * @example
- * type FOO = int;
- * 42 || FOO;      % ReferenceError03: `FOO` refers to a type, but is used as a value.
+ * type BAR = int;
+ * 42 || BAR;      % ReferenceError03: `BAR` refers to a type, but is used as a value.
  */
 export class ReferenceError03 extends ReferenceError {
 	/**

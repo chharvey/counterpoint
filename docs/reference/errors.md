@@ -41,10 +41,36 @@ If this is the case, the code is said to be “invalid” (“not valid”).
 ### Reference Errors (21xx)
 A reference error is raised when the compiler fails to dereference an identifier.
 
-1. 2100 — A general reference error not covered by one of the following cases.
-1. 2101 — The validator encountered a variable that was never declared.
-1. 2102 — The validator encountered a variable that was used before it was declared.
-1. 2103 — The validator encountered a symbol of the wrong kind.
+1.  2100         — A general reference error not covered by one of the following cases.
+1. [2101](#2101) — The validator encountered a variable that was never declared.
+1. [2102](#2102) — The validator encountered a variable that was used before it was declared.
+1. [2103](#2103) — The validator encountered a symbol of the wrong kind.
+
+#### 2101
+Cause: A variable was referenced but was not declared.
+```
+my_var; % ReferenceError: `my_var` is never declared.
+```
+Solution(s): Ensure the variable, type, or parameter is declared before referencing it.
+
+#### 2102
+Cause: A variable was referenced before it was declared.
+```
+my_var;               % ReferenceError: `my_var` is used before it is declared.
+let my_var: int = 42;
+```
+Solution(s): Ensure the variable or type is declared before referencing it.
+
+#### 2103
+Cause: A variable was used as a type, or a type was used as a variable.
+```
+let FOO: int = 42;
+type T = FOO | float; % ReferenceError: `FOO` refers to a value, but is used as a type.
+
+type BAR = int;
+42 || BAR;      % ReferenceError: `BAR` refers to a type, but is used as a value.
+```
+Solution(s): Keep types and variables separate.
 
 
 ### Assignment Errors (22xx)

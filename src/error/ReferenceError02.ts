@@ -6,8 +6,7 @@ import {ReferenceError} from './ReferenceError.js';
 /**
  * A ReferenceError02 is thrown when the validator encounters a not-yet-declared variable.
  * @example
- * my_var; % ReferenceError02: `my_var` is used before it is declared.
- * % (This is called a Temporal Dead Zone.)
+ * my_var;               % ReferenceError02: `my_var` is used before it is declared.
  * let my_var: int = 42;
  */
 export class ReferenceError02 extends ReferenceError {
