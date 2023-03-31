@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import {
 	TYPE,
 	INST,
@@ -6,6 +5,7 @@ import {
 	AssignmentError10,
 	MutabilityError01,
 } from '../../index.js';
+import {assert_instanceof} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -22,7 +22,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 export class ASTNodeAssignment extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAssignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeAssignment);
+		assert_instanceof(statement, ASTNodeAssignment);
 		return statement;
 	}
 

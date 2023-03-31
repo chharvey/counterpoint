@@ -1,23 +1,10 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
+import {
+	type SubclassOf,
+	assert_instanceof,
+} from '../src/lib/index.js';
 import type {TYPE} from '../src/index.js';
-
-
-
-type Class = Function; // eslint-disable-line @typescript-eslint/ban-types --- alias `Function` to mean “any class object”
-
-
-
-/**
- * Assert an object is an instance of a class,
- * using the `instanceof` operator.
- * @param obj  - the object
- * @param cons - the class or constructor function
- * @throws {AssertionError} if false
- */
-export function assert_instanceof(obj: object, cons: Class): void {
-	assert.ok(obj instanceof cons, `${ obj } should be an instance of ${ cons }.`);
-}
 
 
 
@@ -64,7 +51,7 @@ export function assertEqualTypes(param1: TYPE.Type | readonly TYPE.Type[] | Read
 
 
 
-type ValidationObject = {cons: Class} & (
+type ValidationObject = {cons: SubclassOf<Error>} & (
 	| {message: string}
 	| {errors: ValidationObject[]}
 );
@@ -82,8 +69,9 @@ export function assertAssignable(actual: Error, validation: ValidationObject): v
 			validation.errors.length,
 			'Number of actual sub-errors should equal number of validation sub-errors.',
 		);
-		return validation.errors.forEach((subvalidation, i) => {
-			assertAssignable((actual as AggregateError).errors[i], subvalidation);
-		});
+		return xjs.Array.forEachAggregated(
+			validation.errors,
+			(subvalidation, i) => assertAssignable((actual as AggregateError).errors[i], subvalidation),
+		);
 	}
 }

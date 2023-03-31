@@ -1,10 +1,10 @@
-import * as assert from 'assert';
 import {
 	TYPE,
 	ReferenceError01,
 	ReferenceError03,
 } from '../../index.js';
 import {
+	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
 } from '../../lib/index.js';
@@ -26,7 +26,7 @@ import {ASTNodeType} from './ASTNodeType.js';
 export class ASTNodeTypeAlias extends ASTNodeType {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeAlias {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeAlias);
+		assert_instanceof(typ, ASTNodeTypeAlias);
 		return typ;
 	}
 

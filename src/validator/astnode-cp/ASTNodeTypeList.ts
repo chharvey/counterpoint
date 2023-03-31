@@ -4,7 +4,10 @@ import {
 	TypeError,
 	TypeErrorUnexpectedRef,
 } from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -18,7 +21,7 @@ import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
 export class ASTNodeTypeList extends ASTNodeTypeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeList {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeList);
+		assert_instanceof(typ, ASTNodeTypeList);
 		return typ;
 	}
 

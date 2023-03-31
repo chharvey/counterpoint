@@ -13,6 +13,7 @@ import {
 	TypeErrorNotAssignable,
 	MutabilityError01,
 } from '../../../src/index.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
 import {assertAssignable} from '../../assert-helpers.js';
 import {
 	typeUnitFloat,
@@ -28,7 +29,7 @@ describe('ASTNodeCP', () => {
 				const src: string = ';';
 				const instr: INST.InstructionNone | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src)
 					.build(new Builder(src));
-				assert.ok(instr instanceof INST.InstructionNone);
+				assert_instanceof(instr, INST.InstructionNone);
 			});
 			it('returns InstructionStatement for nonempty statement expression.', () => {
 				const src: string = '42 + 420;';
@@ -43,7 +44,7 @@ describe('ASTNodeCP', () => {
 				const src: string = '42; 420;';
 				const generator = new Builder(src);
 				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt, i) => {
-					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+					assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 					assert.deepStrictEqual(
 						stmt.build(generator),
 						new INST.InstructionStatement(BigInt(i), AST.ASTNodeConstant.fromSource(stmt.source).build(generator)),
@@ -214,7 +215,7 @@ describe('ASTNodeCP', () => {
 					let z: x = null;
 					let z: int = T;
 				`).varCheck(), (err) => {
-					assert.ok(err instanceof AggregateError);
+					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
@@ -287,7 +288,7 @@ describe('ASTNodeCP', () => {
 				`);
 				goal.varCheck();
 				assert.throws(() => goal.typeCheck(), (err) => {
-					assert.ok(err instanceof AggregateError);
+					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
@@ -319,7 +320,7 @@ describe('ASTNodeCP', () => {
 			it('returns InstructionNone.', () => {
 				const src: string = '';
 				const instr: INST.InstructionNone | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
-				assert.ok(instr instanceof INST.InstructionNone);
+				assert_instanceof(instr, INST.InstructionNone);
 			});
 		});
 	});
