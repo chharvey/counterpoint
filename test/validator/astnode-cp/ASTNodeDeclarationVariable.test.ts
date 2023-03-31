@@ -10,6 +10,7 @@ import {
 	AssignmentError01,
 	TypeError03,
 } from '../../../src/index.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
 import {assertAssignable} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
@@ -30,7 +31,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(256n));
 			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
-			assert.ok(info instanceof SymbolStructureVar);
+			assert_instanceof(info, SymbolStructureVar);
 			assert.strictEqual(info.type, TYPE.UNKNOWN);
 			assert.strictEqual(info.value, null);
 		});
@@ -214,7 +215,7 @@ describe('ASTNodeDeclarationVariable', () => {
 					let m3_4: mutable {str -> bool} = {7 -> 8.0};
 					let m3_5: mutable {str -> bool} = {9 -> "a", 10.0 -> "b"};
 				`, (err) => {
-					assert.ok(err instanceof AggregateError);
+					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [

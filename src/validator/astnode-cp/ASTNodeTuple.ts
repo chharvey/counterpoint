@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
@@ -6,7 +5,10 @@ import {
 	type INST,
 	type Builder,
 } from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -21,7 +23,7 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTuple {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeTuple);
+		assert_instanceof(expression, ASTNodeTuple);
 		return expression;
 	}
 

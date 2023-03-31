@@ -11,6 +11,7 @@ import {
 	TypeError01,
 	NanError01,
 } from '../../../src/index.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
 import {assertEqualTypes} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
@@ -50,7 +51,7 @@ function typeOfOperationFromSource(src: string): TYPE.Type {
 
 describe('ASTNodeOperation', () => {
 	function typeOfStmtExpr(stmt: AST.ASTNodeStatement): TYPE.Type {
-		assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+		assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 		return stmt.expr!.type();
 	}
 
@@ -516,7 +517,8 @@ describe('ASTNodeOperation', () => {
 					goal.children.slice(4).forEach((stmt) => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
 						const fold: OBJ.Object | null = expr.fold();
-						assert.ok(fold instanceof OBJ.Boolean, `${ fold } should be a Boolean.`);
+						// @ts-expect-error --- `OBJ.Boolean` has a private constructor
+						assert_instanceof(fold, OBJ.Boolean);
 						assert.deepStrictEqual(
 							expr.type(),
 							new TYPE.TypeUnit<OBJ.Boolean>(fold),

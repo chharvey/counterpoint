@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import {
 	type OBJ,
 	TYPE,
@@ -8,6 +7,7 @@ import {
 	ReferenceError03,
 } from '../../index.js';
 import {
+	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
 } from '../../lib/index.js';
@@ -29,7 +29,7 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 export class ASTNodeVariable extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeVariable {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeVariable);
+		assert_instanceof(expression, ASTNodeVariable);
 		return expression;
 	}
 

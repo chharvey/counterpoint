@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
@@ -11,6 +10,7 @@ import {
 } from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -36,7 +36,7 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryArithmetic {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinaryArithmetic);
+		assert_instanceof(expression, ASTNodeOperationBinaryArithmetic);
 		return expression;
 	}
 

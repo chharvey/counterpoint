@@ -1,11 +1,13 @@
-import * as assert from 'assert';
 import {
 	OBJ,
 	TYPE,
 	INST,
 	type Builder,
 } from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -27,7 +29,7 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryEquality {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinaryEquality);
+		assert_instanceof(expression, ASTNodeOperationBinaryEquality);
 		return expression;
 	}
 

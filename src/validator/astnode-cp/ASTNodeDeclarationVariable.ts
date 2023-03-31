@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	type OBJ,
@@ -7,6 +6,7 @@ import {
 	type Builder,
 	AssignmentError01,
 } from '../../index.js';
+import {assert_instanceof} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -25,7 +25,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeDeclarationVariable);
+		assert_instanceof(statement, ASTNodeDeclarationVariable);
 		return statement;
 	}
 

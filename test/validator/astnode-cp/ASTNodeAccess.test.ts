@@ -8,6 +8,7 @@ import {
 	TypeError04,
 	VoidError01,
 } from '../../../src/index.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
 import {
 	CONFIG_FOLDING_OFF,
 	typeUnitInt,
@@ -229,7 +230,7 @@ describe('ASTNodeAccess', () => {
 
 	describe('#type', () => {
 		function typeOfStmtExpr(stmt: AST.ASTNodeStatement): TYPE.Type {
-			assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+			assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 			return stmt.expr!.type();
 		}
 		const COMMON_TYPES = {
@@ -696,7 +697,7 @@ describe('ASTNodeAccess', () => {
 
 	describe('#fold', () => {
 		function foldStmtExpr(stmt: AST.ASTNodeStatement): OBJ.Object | null {
-			assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+			assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 			return stmt.expr!.fold();
 		}
 		const expected: Array<OBJ.Object | null> = [

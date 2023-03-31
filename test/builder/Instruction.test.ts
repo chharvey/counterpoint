@@ -5,6 +5,7 @@ import {
 	AST,
 } from '../../src/validator/index.js';
 import {OBJ} from '../../src/index.js';
+import {assert_instanceof} from '../../src/lib/index.js';
 import {
 	Builder,
 	INST,
@@ -247,9 +248,9 @@ describe('Instruction', () => {
 					'',
 					';',
 				].map((src) => AST.ASTNodeGoal.fromSource(src).build(new Builder(src)));
-				assert.ok(mods[0] instanceof INST.InstructionNone);
+				assert_instanceof(mods[0], INST.InstructionNone);
 				assert.strictEqual(mods[0].toString(), '');
-				assert.ok(mods[1] instanceof INST.InstructionModule);
+				assert_instanceof(mods[1], INST.InstructionModule);
 				assert.deepStrictEqual(mods[1], new INST.InstructionModule([
 					...Builder.IMPORTS,
 					new INST.InstructionNone(),
