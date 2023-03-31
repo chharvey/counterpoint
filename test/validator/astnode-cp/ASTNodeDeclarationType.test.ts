@@ -6,7 +6,7 @@ import {
 	TYPE,
 	INST,
 	Builder,
-	AssignmentError01,
+	AssignmentErrorDuplicateDeclaration,
 } from '../../../src/index.js';
 import {assert_instanceof} from '../../../src/lib/index.js';
 
@@ -29,11 +29,11 @@ describe('ASTNodeDeclarationType', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				type T = int;
 				type T = float;
-			`).varCheck(), AssignmentError01);
+			`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				let FOO: int = 42;
 				type FOO = float;
-			`).varCheck(), AssignmentError01);
+			`).varCheck(), AssignmentErrorDuplicateDeclaration);
 		});
 	});
 

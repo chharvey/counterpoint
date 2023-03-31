@@ -3,6 +3,11 @@ import {ErrorCode} from './ErrorCode.js';
 
 
 
+/**
+ * Known subclasses:
+ * - NanError01
+ * - NanError02
+ */
 class NanError extends ErrorCode {
 	static readonly #CODE = 3200;
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {

@@ -6,6 +6,9 @@ import {ErrorCode} from './ErrorCode.js';
 /**
  * A ParseError is thrown when the parser fails to parse a span of source code
  * per the rules of the defined syntactic grammar.
+ *
+ * Known subclasses:
+ * - ParseError01
  */
 class ParseError extends ErrorCode {
 	/** The number series of this class of errors. */

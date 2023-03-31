@@ -7,10 +7,10 @@ import {
 	TYPE,
 	INST,
 	Builder,
-	ReferenceError01,
-	ReferenceError02,
-	ReferenceError03,
-	AssignmentError02,
+	ReferenceErrorUndeclared,
+	ReferenceErrorDeadZone,
+	ReferenceErrorKind,
+	AssignmentErrorDuplicateKey,
 	TypeErrorUnexpectedRef,
 } from '../../../src/index.js';
 import {assert_instanceof} from '../../../src/lib/index.js';
@@ -147,19 +147,19 @@ describe('ASTNodeExpression', () => {
 					let unfixed i: int = 42;
 					i;
 				`).varCheck(); // assert does not throw
-				assert.throws(() => AST.ASTNodeVariable.fromSource('i;').varCheck(), ReferenceError01);
+				assert.throws(() => AST.ASTNodeVariable.fromSource('i;').varCheck(), ReferenceErrorUndeclared);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					i;
 					let unfixed i: int = 42;
-				`).varCheck(), ReferenceError02);
+				`).varCheck(), ReferenceErrorDeadZone);
 			});
 			it('throws if it was declared as a type alias.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					type FOO = int;
 					42 || FOO;
-				`).varCheck(), ReferenceError03);
+				`).varCheck(), ReferenceErrorKind);
 			});
 		});
 
@@ -384,7 +384,7 @@ describe('ASTNodeExpression', () => {
 					[
 						AST.ASTNodeTypeRecord .fromSource('[a: int, b: float, a: str]'),
 						AST.ASTNodeRecord     .fromSource('[a= 1, b= 2.0, a= "three"];'),
-					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentError02));
+					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentErrorDuplicateKey));
 
 					new Map<AST.ASTNodeCP, string[]>([
 						[AST.ASTNodeTypeRecord .fromSource('[c: int, d: float, c: str, d: bool]'),   ['c', 'd']],
@@ -396,8 +396,8 @@ describe('ASTNodeExpression', () => {
 						assertAssignable(err, {
 							cons:   AggregateError,
 							errors: dupes.map((k) => ({
-								cons:    AssignmentError02,
-								message: `Duplicate record key: \`${ k }\` is already set.`,
+								cons:    AssignmentErrorDuplicateKey,
+								message: `Duplicate record key \`${ k }\`.`,
 							})),
 						});
 						return true;
@@ -479,8 +479,8 @@ describe('ASTNodeExpression', () => {
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `[2.0]` but was expecting a value type.'},
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `mutable List.<float>` but was expecting a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `[2.0]`, but expected a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `mutable List.<float>`, but expected a value type.'},
 						],
 					});
 					return true;

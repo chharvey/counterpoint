@@ -3,4 +3,5 @@
 1. [Types](./types.md)
 1. [Expressions and Operators](./expressions-operators.md)
 1. [Variables](./variables.md)
+1. [Errors](./errors.md)
 1. [Configuration](./configuration.md)

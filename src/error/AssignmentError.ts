@@ -1,7 +1,7 @@
 import {
-	AssignmentError01,
-	AssignmentError02,
-	AssignmentError10,
+	AssignmentErrorDuplicateDeclaration,
+	AssignmentErrorDuplicateKey,
+	AssignmentErrorReassignment,
 } from './index.js';
 import type {ConstructorType} from './utils-private.js';
 import {ErrorCode} from './ErrorCode.js';
@@ -10,15 +10,20 @@ import {ErrorCode} from './ErrorCode.js';
 
 /**
  * An AssignmentError is thrown when the validator detects an illegal declaration or assignment.
+ *
+ * Known subclasses:
+ * - AssignmentErrorDuplicateDeclaration
+ * - AssignmentErrorDuplicateKey
+ * - AssignmentErrorReassignment
  */
 export class AssignmentError extends ErrorCode {
 	static readonly #CODE = 2200;
 
 	protected static get CODES(): ReadonlyMap<ConstructorType<AssignmentError>, number> {
 		return new Map<ConstructorType<AssignmentError>, number>([
-			[AssignmentError01,  1],
-			[AssignmentError02,  2],
-			[AssignmentError10, 10],
+			[AssignmentErrorDuplicateDeclaration,  1],
+			[AssignmentErrorDuplicateKey,          2],
+			[AssignmentErrorReassignment,         10],
 		]);
 	}
 
