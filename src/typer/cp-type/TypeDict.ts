@@ -2,20 +2,10 @@ import {strictEqual} from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
-import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeDict extends Type {
-	/**
-	 * Is the argument a unit dict type?
-	 * @return whether the argument is a `TypeUnit` and its value is a `Dict`
-	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Dict> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Dict;
-	}
-
-
 	public override readonly isBottomType: boolean = false;
 
 	/**
@@ -47,9 +37,10 @@ export class TypeDict extends Type {
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeDict
+			&& (!t.isMutable || this.isMutable)
 			&& ((t.isMutable)
-				? this.isMutable && this.invariant.equals(t.invariant)
-				: this.invariant.isSubtypeOf(t.invariant)
+				? this.invariant.equals(t.invariant)      // Invariance for mutable dicts: `A == B --> mutable Dict.<A> <: mutable Dict.<B>`.
+				: this.invariant.isSubtypeOf(t.invariant) // Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.
 			)
 		);
 	}

@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
@@ -7,6 +6,7 @@ import {
 } from '../../index.js';
 import {
 	type NonemptyArray,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -25,7 +25,7 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeRecord {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeRecord);
+		assert_instanceof(expression, ASTNodeRecord);
 		return expression;
 	}
 
@@ -68,15 +68,12 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 
 	@ASTNodeCollectionLiteral.assignToDeco
 	public override assignTo(assignee: TYPE.Type): boolean {
-		if (TYPE.TypeRecord.isUnitType(assignee) || assignee instanceof TYPE.TypeRecord) {
-			const assignee_type_record: TYPE.TypeRecord = (TYPE.TypeRecord.isUnitType(assignee))
-				? assignee.value.toType()
-				: assignee;
-			if (this.children.length < assignee_type_record.count[0]) {
+		if (assignee instanceof TYPE.TypeRecord) {
+			if (this.children.length < assignee.count[0]) {
 				return false;
 			}
 			try {
-				xjs.Array.forEachAggregated([...assignee_type_record.invariants], ([id, thattype]) => {
+				xjs.Array.forEachAggregated([...assignee.invariants], ([id, thattype]) => {
 					const prop: ASTNodeProperty | undefined = this.children.find((c) => c.key.id === id);
 					if (!thattype.optional && !prop) {
 						throw new TypeError(`Property \`${ id }\` does not exist on type \`${ this.type() }\`.`);
@@ -86,7 +83,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				// TODO: use the caught error as the cause of a new error
 				return false;
 			}
-			xjs.Array.forEachAggregated([...assignee_type_record.invariants], ([id, thattype]) => {
+			xjs.Array.forEachAggregated([...assignee.invariants], ([id, thattype]) => {
 				const prop: ASTNodeProperty | undefined = this.children.find((c) => c.key.id === id);
 				const expr: ASTNodeExpression | undefined = prop?.val;
 				if (expr) {

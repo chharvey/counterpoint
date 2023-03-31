@@ -1,11 +1,13 @@
-import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	type OBJ,
 	TYPE,
 	type Builder,
 } from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -19,7 +21,7 @@ import type {ASTNodeConstant} from './ASTNodeConstant.js';
 export class ASTNodeTemplate extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTemplate {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeTemplate);
+		assert_instanceof(expression, ASTNodeTemplate);
 		return expression;
 	}
 

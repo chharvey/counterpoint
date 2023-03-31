@@ -1,10 +1,10 @@
-import * as assert from 'assert';
 import {
 	TYPE,
 	TypeError,
 } from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -19,7 +19,7 @@ import {ASTNodeType} from './ASTNodeType.js';
 export class ASTNodeTypeList extends ASTNodeType {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeList {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeList);
+		assert_instanceof(typ, ASTNodeTypeList);
 		return typ;
 	}
 

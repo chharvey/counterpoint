@@ -10,6 +10,7 @@ import {
 } from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -29,7 +30,7 @@ import {ASTNodeOperation} from './ASTNodeOperation.js';
 export class ASTNodeOperationUnary extends ASTNodeOperation {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationUnary);
+		assert_instanceof(expression, ASTNodeOperationUnary);
 		return expression;
 	}
 

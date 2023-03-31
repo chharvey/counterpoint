@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
@@ -6,7 +5,10 @@ import {
 	TYPE,
 	type Builder,
 } from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -21,7 +23,7 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTuple {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeTuple);
+		assert_instanceof(expression, ASTNodeTuple);
 		return expression;
 	}
 
@@ -54,14 +56,11 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 
 	@ASTNodeCollectionLiteral.assignToDeco
 	public override assignTo(assignee: TYPE.Type): boolean {
-		if (TYPE.TypeTuple.isUnitType(assignee) || assignee instanceof TYPE.TypeTuple) {
-			const assignee_type_tuple: TYPE.TypeTuple = (TYPE.TypeTuple.isUnitType(assignee))
-				? assignee.value.toType()
-				: assignee;
-			if (this.children.length < assignee_type_tuple.count[0]) {
+		if (assignee instanceof TYPE.TypeTuple) {
+			if (this.children.length < assignee.count[0]) {
 				return false;
 			}
-			xjs.Array.forEachAggregated(assignee_type_tuple.invariants, (thattype, i) => {
+			xjs.Array.forEachAggregated(assignee.invariants, (thattype, i) => {
 				const expr: ASTNodeExpression | undefined = this.children[i];
 				if (expr) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- bug
 					return ASTNodeCP.typeCheckAssignment(

@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import {TypeError04} from '../../index.js';
 import {
 	type IntRange,
@@ -13,20 +14,10 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
-import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeTuple extends Type {
-	/**
-	 * Is the argument a unit tuple type?
-	 * @return whether the argument is a `TypeUnit` and its value is a `Tuple`
-	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Tuple> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Tuple;
-	}
-
-
 	public override readonly isBottomType: boolean = false;
 
 	/**
@@ -82,10 +73,20 @@ export class TypeTuple extends Type {
 			t instanceof TypeTuple
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
-			&& t.invariants.every((thattype, i) => !this.invariants[i] || ((t.isMutable)
-				? this.invariants[i].type.equals(thattype.type)
-				: this.invariants[i].type.isSubtypeOf(thattype.type)
-			))
+			&& t.invariants.every((thattype, i) => {
+				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
+				const thistype: TypeEntry | undefined = this.invariants[i];
+				if (!thattype.optional) {
+					/* NOTE: We can assert `thistype` exists and is not optional because of tuple type item ordering.
+						We cannot do so with record types since properties are not ordered. */
+					assert.strictEqual(thistype?.optional, false, `${ thistype } should exist and not be optional.`);
+				}
+				return !thistype || ((t.isMutable)
+					? thistype.type.equals(thattype.type)      // Invariance for mutable tuples: `A == B --> mutable Tuple.<A> <: mutable Tuple.<B>`.
+					: thistype.type.isSubtypeOf(thattype.type) // Covariance for immutable tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
+				);
+				/* eslint-enable @typescript-eslint/no-unnecessary-condition */
+			})
 		);
 	}
 

@@ -4,6 +4,7 @@ import {
 	TYPE,
 	TypeError04,
 } from '../../../src/index.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
 import {
 	typeUnitInt,
 	typeUnitFloat,
@@ -15,7 +16,7 @@ import {
 describe('ASTNodeTypeAccess', () => {
 	describe('#eval', () => {
 		function evalTypeDecl(decl: AST.ASTNodeStatement): TYPE.Type {
-			assert.ok(decl instanceof AST.ASTNodeDeclarationType);
+			assert_instanceof(decl, AST.ASTNodeDeclarationType);
 			return decl.assigned.eval();
 		}
 		const expected: TYPE.Type[] = [
@@ -29,39 +30,39 @@ describe('ASTNodeTypeAccess', () => {
 		let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
 		before(() => {
 			program = AST.ASTNodeGoal.fromSource(`
-				type TupC = [1,   2.0,   'three'];
+				type TupC = [1,   2.0,   "three"];
 				type TupV = [int, float, str];
 
 				type A1 = TupC.0;  % type \`1\`
 				type A2 = TupC.1;  % type \`2.0\`
-				type A3 = TupC.2;  % type \`'three'\`
+				type A3 = TupC.2;  % type \`"three"\`
 				type A4 = TupV.0;  % type \`int\`
 				type A5 = TupV.1;  % type \`float\`
 				type A6 = TupV.2;  % type \`str\`
 				type B1 = TupC.-3; % type \`1\`
 				type B2 = TupC.-2; % type \`2.0\`
-				type B3 = TupC.-1; % type \`'three'\`
+				type B3 = TupC.-1; % type \`"three"\`
 				type B4 = TupV.-3; % type \`int\`
 				type B5 = TupV.-2; % type \`float\`
 				type B6 = TupV.-1; % type \`str\`
 
-				type RecC = [a: 1,   b: 2.0,   c: 'three'];
+				type RecC = [a: 1,   b: 2.0,   c: "three"];
 				type RecV = [a: int, b: float, c: str];
 
 				type C1 = RecC.a; % type \`1\`
 				type C2 = RecC.b; % type \`2.0\`
-				type C3 = RecC.c; % type \`'three'\`
+				type C3 = RecC.c; % type \`"three"\`
 				type C4 = RecV.a; % type \`int\`
 				type C5 = RecV.b; % type \`float\`
 				type C6 = RecV.c; % type \`str\`
 
-				type TupoC = [1,   2.0,   ?: 'three'];
+				type TupoC = [1,   2.0,   ?: "three"];
 				type TupoV = [int, float, ?: str];
 
-				type D1 = TupoC.2; % type \`'three' | void\`
+				type D1 = TupoC.2; % type \`"three" | void\`
 				type D2 = TupoV.2; % type \`str | void\`
 
-				type RecoC = [a: 1,   b?: 2.0,   c: 'three'];
+				type RecoC = [a: 1,   b?: 2.0,   c: "three"];
 				type RecoV = [a: int, b?: float, c: str];
 
 				type E1 = RecoC.b; % type \`2.0 | void\`
@@ -94,10 +95,8 @@ describe('ASTNodeTypeAccess', () => {
 				);
 			});
 			it('throws when index is out of bounds.', () => {
-				/* eslint-disable quotes */
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].3`) .eval(), TypeError04);
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].-4`).eval(), TypeError04);
-				/* eslint-enable quotes */
+				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[1, 2.0, "three"].3')  .eval(), TypeError04);
+				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[1, 2.0, "three"].-4') .eval(), TypeError04);
 			});
 		});
 
@@ -118,9 +117,7 @@ describe('ASTNodeTypeAccess', () => {
 				);
 			});
 			it('throws when key is out of bounds.', () => {
-				/* eslint-disable quotes */
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[a: 1, b: 2.0, c: 'three'].d`).eval(), TypeError04);
-				/* eslint-enable quotes */
+				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[a: 1, b: 2.0, c: "three"].d').eval(), TypeError04);
 			});
 		});
 	});

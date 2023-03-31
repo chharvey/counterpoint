@@ -2,20 +2,10 @@ import {strictEqual} from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
-import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeSet extends Type {
-	/**
-	 * Is the argument a unit set type?
-	 * @return whether the argument is a `TypeUnit` and its value is a `Set`
-	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Set> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Set;
-	}
-
-
 	public override readonly isBottomType: boolean = false;
 
 	/**
@@ -47,9 +37,10 @@ export class TypeSet extends Type {
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeSet
+			&& (!t.isMutable || this.isMutable)
 			&& ((t.isMutable)
-				? this.isMutable && this.invariant.equals(t.invariant)
-				: this.invariant.isSubtypeOf(t.invariant)
+				? this.invariant.equals(t.invariant) // Invariance for mutable sets: `A == B --> mutable Set.<A> <: mutable Set.<B>`.
+				: this.invariant.equals(t.invariant) // Invariance for immutable sets: `A == B --> Set.<A> <: Set.<B>`.
 			)
 		);
 	}

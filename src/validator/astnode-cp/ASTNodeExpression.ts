@@ -6,6 +6,7 @@ import {
 	type Builder,
 	ErrorCode,
 } from '../../index.js';
+import {assert_instanceof} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -90,7 +91,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 */
 	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeStatementExpression);
+		assert_instanceof(statement, ASTNodeStatementExpression);
 		assert.ok(statement.expr, 'semantic statement should have 1 child');
 		return statement.expr;
 	}

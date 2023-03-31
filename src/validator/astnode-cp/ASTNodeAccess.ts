@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	OBJ,
@@ -8,7 +7,11 @@ import {
 	TypeError02,
 	TypeError04,
 } from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	throw_expression,
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -27,7 +30,7 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 export class ASTNodeAccess extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAccess {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeAccess);
+		assert_instanceof(expression, ASTNodeAccess);
 		return expression;
 	}
 
@@ -77,70 +80,46 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			throw new TypeError02(accessor.type(), supertype, accessor.line_index, accessor.col_index);
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			const accessor_type = this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>;
-			if (TYPE.TypeTuple.isUnitType(base_type) || base_type instanceof TYPE.TypeTuple) {
-				const base_type_tuple: TYPE.TypeTuple = (TYPE.TypeTuple.isUnitType(base_type))
-					? base_type.value.toType()
-					: base_type;
-				return base_type_tuple.get(accessor_type.value, this.kind, this.accessor);
-			} else if (TYPE.TypeList.isUnitType(base_type) || base_type instanceof TYPE.TypeList) {
-				const base_type_list: TYPE.TypeList = (TYPE.TypeList.isUnitType(base_type))
-					? base_type.value.toType()
-					: base_type;
-				return updateAccessedDynamicType(base_type_list.invariant, this.kind);
-			} else {
-				throw new TypeError04('index', base_type, this.accessor);
-			}
+			return (
+				(base_type instanceof TYPE.TypeTuple) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>).value, this.kind, this.accessor) :
+				(base_type instanceof TYPE.TypeList)  ? updateAccessedDynamicType(base_type.invariant, this.kind)                                               :
+				throw_expression(new TypeError04('index', base_type, this.accessor))
+			);
 		} else if (this.accessor instanceof ASTNodeKey) {
-			if (TYPE.TypeRecord.isUnitType(base_type) || base_type instanceof TYPE.TypeRecord) {
-				const base_type_record: TYPE.TypeRecord = (TYPE.TypeRecord.isUnitType(base_type))
-					? base_type.value.toType()
-					: base_type;
-				return base_type_record.get(this.accessor.id, this.kind, this.accessor);
-			} else if (TYPE.TypeDict.isUnitType(base_type) || base_type instanceof TYPE.TypeDict) {
-				const base_type_dict: TYPE.TypeDict = (TYPE.TypeDict.isUnitType(base_type))
-					? base_type.value.toType()
-					: base_type;
-				return updateAccessedDynamicType(base_type_dict.invariant, this.kind);
-			} else {
-				throw new TypeError04('property', base_type, this.accessor);
-			}
+			return (
+				(base_type instanceof TYPE.TypeRecord) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
+				(base_type instanceof TYPE.TypeDict)   ? updateAccessedDynamicType(base_type.invariant, this.kind) :
+				throw_expression(new TypeError04('property', base_type, this.accessor))
+			);
 		} else {
-			assert.ok(this.accessor instanceof ASTNodeExpression, `Expected ${ this.accessor } to be an \`ASTNodeExpression\`.`);
+			assert_instanceof(this.accessor, ASTNodeExpression);
 			const accessor_type: TYPE.Type = this.accessor.type();
-			if (TYPE.TypeTuple.isUnitType(base_type) || base_type instanceof TYPE.TypeTuple) {
-				const base_type_tuple: TYPE.TypeTuple = (TYPE.TypeTuple.isUnitType(base_type))
-					? base_type.value.toType()
-					: base_type;
-				return (accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof OBJ.Integer)
-					? base_type_tuple.get(accessor_type.value, this.kind, this.accessor)
-					: (accessor_type.isSubtypeOf(TYPE.INT))
-						? updateAccessedDynamicType(base_type_tuple.itemTypes(), this.kind)
-						: throwWrongSubtypeError(this.accessor, TYPE.INT);
-			} else if (TYPE.TypeList.isUnitType(base_type) || base_type instanceof TYPE.TypeList) {
-				const base_type_list: TYPE.TypeList = (TYPE.TypeList.isUnitType(base_type))
-					? base_type.value.toType()
-					: base_type;
-				return (accessor_type.isSubtypeOf(TYPE.INT))
-					? updateAccessedDynamicType(base_type_list.invariant, this.kind)
-					: throwWrongSubtypeError(this.accessor, TYPE.INT);
-			} else if (TYPE.TypeSet.isUnitType(base_type) || base_type instanceof TYPE.TypeSet) {
-				const base_type_set: TYPE.TypeSet = (TYPE.TypeSet.isUnitType(base_type))
-					? base_type.value.toType()
-					: base_type;
-				return (accessor_type.isSubtypeOf(base_type_set.invariant))
-					? TYPE.BOOL
-					: throwWrongSubtypeError(this.accessor, base_type_set.invariant);
-			} else if (TYPE.TypeMap.isUnitType(base_type) || base_type instanceof TYPE.TypeMap) {
-				const base_type_map: TYPE.TypeMap = (TYPE.TypeMap.isUnitType(base_type))
-					? base_type.value.toType()
-					: base_type;
-				return (accessor_type.isSubtypeOf(base_type_map.invariant_ant))
-					? updateAccessedDynamicType(base_type_map.invariant_con, this.kind)
-					: throwWrongSubtypeError(this.accessor, base_type_map.invariant_ant);
-			} else {
-				throw new TypeError01(this);
-			}
+			/* eslint-disable indent */
+			return (
+				(base_type instanceof TYPE.TypeTuple) ? (
+					(accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof OBJ.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
+					(accessor_type.isSubtypeOf(TYPE.INT))
+						? updateAccessedDynamicType(base_type.itemTypes(), this.kind)
+						: throwWrongSubtypeError(this.accessor, TYPE.INT)
+				) :
+				(base_type instanceof TYPE.TypeList) ? (
+					(accessor_type.isSubtypeOf(TYPE.INT))
+						? updateAccessedDynamicType(base_type.invariant, this.kind)
+						: throwWrongSubtypeError(this.accessor, TYPE.INT)
+				) :
+				(base_type instanceof TYPE.TypeSet) ? (
+					(accessor_type.isSubtypeOf(base_type.invariant))
+						? TYPE.BOOL
+						: throwWrongSubtypeError(this.accessor, base_type.invariant)
+				) :
+				(base_type instanceof TYPE.TypeMap) ? (
+					(accessor_type.isSubtypeOf(base_type.invariant_ant))
+						? updateAccessedDynamicType(base_type.invariant_con, this.kind)
+						: throwWrongSubtypeError(this.accessor, base_type.invariant_ant)
+				) :
+				throw_expression(new TypeError01(this))
+			);
+			/* eslint-enable indent */
 		}
 	}
 
@@ -158,15 +137,15 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (base_value as OBJ.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else {
-			assert.ok(this.accessor instanceof ASTNodeExpression, `Expected ${ this.accessor } to be an \`ASTNodeExpression\`.`);
+			assert_instanceof(this.accessor, ASTNodeExpression);
 			const accessor_value: OBJ.Object | null = this.accessor.fold();
 			if (accessor_value === null) {
 				return null;
 			}
 			return (
-				          (base_value instanceof OBJ.CollectionIndexed) ?                                    base_value.get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
-				          (base_value instanceof OBJ.Set)               ?                                    base_value.get(accessor_value                                             ) :
-				(assert.ok(base_value instanceof OBJ.Map, `Expected ${ base_value } to be an \`OBJ.Map\`.`), base_value.get(accessor_value,                this.optional, this.accessor))
+				                  (base_value instanceof OBJ.CollectionIndexed) ? base_value.get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
+				                  (base_value instanceof OBJ.Set)               ? base_value.get(accessor_value                                             ) :
+				(assert_instanceof(base_value,           OBJ.Map),                base_value.get(accessor_value,                this.optional, this.accessor))
 			);
 		}
 	}

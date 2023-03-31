@@ -13,20 +13,10 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
-import {TypeUnit} from './TypeUnit.js';
 
 
 
 export class TypeRecord extends Type {
-	/**
-	 * Is the argument a unit record type?
-	 * @return whether the argument is a `TypeUnit` and its value is a `Record`
-	 */
-	public static isUnitType(type: Type): type is TypeUnit<OBJ.Record> {
-		return type instanceof TypeUnit && type.value instanceof OBJ.Record;
-	}
-
-
 	public override readonly isBottomType: boolean = false;
 
 	/**
@@ -83,14 +73,18 @@ export class TypeRecord extends Type {
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
 			&& [...t.invariants].every(([id, thattype]) => {
-				const thistype: TypeEntry | null = this.invariants.get(id) || null;
-				return (
-					(thattype.optional || thistype && !thistype.optional)
-					&& (!thistype || ((t.isMutable)
-						? thistype.type.equals(thattype.type)
-						: thistype.type.isSubtypeOf(thattype.type)
-					))
-				);
+				const thistype: TypeEntry | undefined = this.invariants.get(id);
+				if (!thattype.optional) {
+					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.
+						We can however make the assertion in tuple types because of item ordering. */
+					if (thistype?.optional !== false) {
+						return false;
+					}
+				}
+				return (!thistype || ((t.isMutable)
+					? thistype.type.equals(thattype.type)      // Invariance for mutable records: `A == B --> mutable Record.<A> <: mutable Record.<B>`.
+					: thistype.type.isSubtypeOf(thattype.type) // Covariance for immutable records: `A <: B --> Record.<A> <: Record.<B>`.
+				));
 			})
 		);
 	}

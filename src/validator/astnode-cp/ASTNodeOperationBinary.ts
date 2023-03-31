@@ -1,6 +1,8 @@
-import * as assert from 'assert';
 import type {TYPE} from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -22,7 +24,7 @@ import {ASTNodeOperation} from './ASTNodeOperation.js';
 export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinary);
+		assert_instanceof(expression, ASTNodeOperationBinary);
 		return expression;
 	}
 

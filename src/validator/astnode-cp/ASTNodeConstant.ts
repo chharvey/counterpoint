@@ -8,6 +8,7 @@ import {
 } from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -28,7 +29,7 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 export class ASTNodeConstant extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeConstant {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeConstant);
+		assert_instanceof(expression, ASTNodeConstant);
 		return expression;
 	}
 

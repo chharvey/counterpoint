@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
@@ -6,6 +5,7 @@ import {
 } from '../../index.js';
 import {
 	type NonemptyArray,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -23,7 +23,7 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeMap {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeMap);
+		assert_instanceof(expression, ASTNodeMap);
 		return expression;
 	}
 
@@ -57,13 +57,11 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 
 	@ASTNodeCollectionLiteral.assignToDeco
 	public override assignTo(assignee: TYPE.Type): boolean {
-		if (TYPE.TypeMap.isUnitType(assignee) || assignee instanceof TYPE.TypeMap) {
-			const assignee_type_map: TYPE.TypeMap = (TYPE.TypeMap.isUnitType(assignee))
-				? assignee.value.toType()
-				: assignee;
+		if (assignee instanceof TYPE.TypeMap) {
+			// better error reporting to check entry-by-entry instead of checking `this.type().invariant_{ant,con}`
 			xjs.Array.forEachAggregated(this.children, (case_) => xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => ASTNodeCP.typeCheckAssignment(
 				expr.type(),
-				[assignee_type_map.invariant_ant, assignee_type_map.invariant_con][i],
+				[assignee.invariant_ant, assignee.invariant_con][i],
 				expr,
 				this.validator,
 			)));

@@ -8,6 +8,7 @@ import {
 	TypeError04,
 	VoidError01,
 } from '../../../src/index.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
 import {
 	CONFIG_FOLDING_OFF,
 	typeUnitInt,
@@ -18,18 +19,17 @@ import {
 
 
 describe('ASTNodeAccess', () => {
-	/* eslint-disable quotes */
 	const INDEX_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
-		let         tup_fixed:    [int, float, str]     = [1, 2.0, 'three'];
-		let unfixed tup_unfixed:  [int, float, str]     = [1, 2.0, 'three'];
-		let         list_fixed:   (int | float | str)[] = List.<int | float | str>([1, 2.0, 'three']);
-		let unfixed list_unfixed: (int | float | str)[] = List.<int | float | str>([1, 2.0, 'three']);
+		let         tup_fixed:    [int, float, str]     = [1, 2.0, "three"];
+		let unfixed tup_unfixed:  [int, float, str]     = [1, 2.0, "three"];
+		let         list_fixed:   (int | float | str)[] = List.<int | float | str>([1, 2.0, "three"]);
+		let unfixed list_unfixed: (int | float | str)[] = List.<int | float | str>([1, 2.0, "three"]);
 
 		%% statements 4 – 10 %%
 		tup_fixed.0;   % type \`1\`       % value \`1\`
 		tup_fixed.1;   % type \`2.0\`     % value \`2.0\`
-		tup_fixed.2;   % type \`'three'\` % value \`'three'\`
+		tup_fixed.2;   % type \`"three"\` % value \`"three"\`
 		tup_unfixed.0; % type \`int\`     % non-computable value
 		tup_unfixed.1; % type \`float\`   % non-computable value
 		tup_unfixed.2; % type \`str\`     % non-computable value
@@ -37,7 +37,7 @@ describe('ASTNodeAccess', () => {
 		%% statements 10 – 16 %%
 		list_fixed.0;   % type \`1\`                 % value \`1\`
 		list_fixed.1;   % type \`2.0\`               % value \`2.0\`
-		list_fixed.2;   % type \`'three'\`           % value \`'three'\`
+		list_fixed.2;   % type \`"three"\`           % value \`"three"\`
 		list_unfixed.0; % type \`int | float | str\` % non-computable value
 		list_unfixed.1; % type \`int | float | str\` % non-computable value
 		list_unfixed.2; % type \`int | float | str\` % non-computable value
@@ -45,7 +45,7 @@ describe('ASTNodeAccess', () => {
 		%% statements 16 – 22 %%
 		tup_fixed.-3;   % type \`1\`       % value \`1\`
 		tup_fixed.-2;   % type \`2.0\`     % value \`2.0\`
-		tup_fixed.-1;   % type \`'three'\` % value \`'three'\`
+		tup_fixed.-1;   % type \`"three"\` % value \`"three"\`
 		tup_unfixed.-3; % type \`int\`     % non-computable value
 		tup_unfixed.-2; % type \`float\`   % non-computable value
 		tup_unfixed.-1; % type \`str\`     % non-computable value
@@ -53,17 +53,17 @@ describe('ASTNodeAccess', () => {
 		%% statements 22 – 28 %%
 		list_fixed.-3;   % type \`1\`                 % value \`1\`
 		list_fixed.-2;   % type \`2.0\`               % value \`2.0\`
-		list_fixed.-1;   % type \`'three'\`           % value \`'three'\`
+		list_fixed.-1;   % type \`"three"\`           % value \`"three"\`
 		list_unfixed.-3; % type \`int | float | str\` % non-computable value
 		list_unfixed.-2; % type \`int | float | str\` % non-computable value
 		list_unfixed.-1; % type \`int | float | str\` % non-computable value
 
 		%% statements 28 – 36 %%
-		let         tupo1_f: [int, float, ?: str] = [1, 2.0, 'three'];
+		let         tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];
 		let         tupo2_f: [int, float, ?: str] = [1, 2.0];
 		let         tupo3_f: [int, float]         = [1, 2.0, true];
 		let         tupo4_f: [int, float]         = [1, 2.0];
-		let unfixed tupo1_u: [int, float, ?: str] = [1, 2.0, 'three'];
+		let unfixed tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
 		let unfixed tupo2_u: [int, float, ?: str] = [1, 2.0];
 		let unfixed tupo3_u: [int, float]         = [1, 2.0, true];
 		let unfixed tupo4_u: [int, float]         = [1, 2.0];
@@ -73,16 +73,16 @@ describe('ASTNodeAccess', () => {
 		tupo2_u.2; % type \`str | void\` % non-computable value
 
 		%% statements 38 – 41 %%
-		tupo1_f?.2; % type \`'three'\` % value \`'three'\`
+		tupo1_f?.2; % type \`"three"\` % value \`"three"\`
 		tupo1_u?.2; % type \`str?\`    % non-computable value
 		tupo2_u?.2; % type \`str?\`    % non-computable value
 
 		%% statements 41 – 43 %%
-		list_fixed  ?.2; % type \`'three'\`                  % value \`'three'\`
+		list_fixed  ?.2; % type \`"three"\`                  % value \`"three"\`
 		list_unfixed?.2; % type \`int | float | str | null\` % non-computable value
 
 		%% statements 43 – 46 %%
-		tupo1_f!.2; % type \`'three'\` % value \`'three'\`
+		tupo1_f!.2; % type \`"three"\` % value \`"three"\`
 		tupo1_u!.2; % type \`str\`     % non-computable value
 		tupo2_u!.2; % type \`str\`     % non-computable value
 
@@ -92,15 +92,15 @@ describe('ASTNodeAccess', () => {
 	`;
 	const KEY_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
-		let         rec_fixed:    [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
-		let unfixed rec_unfixed:  [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
-		let         dict_fixed:   [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, c= 'three']);
-		let unfixed dict_unfixed: [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, c= 'three']);
+		let         rec_fixed:    [a: int, b: float, c: str] = [a= 1, b= 2.0, c= "three"];
+		let unfixed rec_unfixed:  [a: int, b: float, c: str] = [a= 1, b= 2.0, c= "three"];
+		let         dict_fixed:   [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
+		let unfixed dict_unfixed: [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
 
 		%% statements 4 – 10 %%
 		rec_fixed.a;   % type \`1\`       % value \`1\`
 		rec_fixed.b;   % type \`2.0\`     % value \`2.0\`
-		rec_fixed.c;   % type \`'three'\` % value \`'three'\`
+		rec_fixed.c;   % type \`"three"\` % value \`"three"\`
 		rec_unfixed.a; % type \`int\`     % non-computable value
 		rec_unfixed.b; % type \`float\`   % non-computable value
 		rec_unfixed.c; % type \`str\`     % non-computable value
@@ -108,17 +108,17 @@ describe('ASTNodeAccess', () => {
 		%% statements 10 – 16 %%
 		dict_fixed.a;   % type \`1\`                 % value \`1\`
 		dict_fixed.b;   % type \`2.0\`               % value \`2.0\`
-		dict_fixed.c;   % type \`'three'\`           % value \`'three'\`
+		dict_fixed.c;   % type \`"three"\`           % value \`"three"\`
 		dict_unfixed.a; % type \`int | float | str\` % non-computable value
 		dict_unfixed.b; % type \`int | float | str\` % non-computable value
 		dict_unfixed.c; % type \`int | float | str\` % non-computable value
 
 		%% statements 16 – 24 %%
-		let         reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
+		let         reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
 		let         reco2_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
 		let         reco3_f: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
 		let         reco4_f: [a: int, c: float]          = [a= 1, c= 2.0];
-		let unfixed reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
+		let unfixed reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
 		let unfixed reco2_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
 		let unfixed reco3_u: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
 		let unfixed reco4_u: [a: int, c: float]          = [a= 1, c= 2.0];
@@ -128,16 +128,16 @@ describe('ASTNodeAccess', () => {
 		reco2_u.b; % type \`str | void\` % non-computable value
 
 		%% statements 26 – 29 %%
-		reco1_f?.b; % type \`'three'\` % value \`'three'\`
+		reco1_f?.b; % type \`"three"\` % value \`"three"\`
 		reco1_u?.b; % type \`str?\`    % non-computable value
 		reco2_u?.b; % type \`str?\`    % non-computable value
 
 		%% statements 29 – 31 %%
-		dict_fixed?.c;   % type \`'three'\`                  % value \`'three'\`
+		dict_fixed?.c;   % type \`"three"\`                  % value \`"three"\`
 		dict_unfixed?.c; % type \`int | float | str | null\` % non-computable value
 
 		%% statements 31 – 34 %%
-		reco1_f!.b; % type \`'three'\` % value \`'three'\`
+		reco1_f!.b; % type \`"three"\` % value \`"three"\`
 		reco1_u!.b; % type \`str\`     % non-computable value
 		reco2_u!.b; % type \`str\`     % non-computable value
 
@@ -147,25 +147,25 @@ describe('ASTNodeAccess', () => {
 	`;
 	const EXPR_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
-		let a: [str] = ['a'];
-		let b: [str] = ['b'];
-		let c: [str] = ['c'];
-		let unfixed three: str = 'three';
+		let a: [str] = ["a"];
+		let b: [str] = ["b"];
+		let c: [str] = ["c"];
+		let unfixed three: str = "three";
 
 		%% statements 4 – 10 %%
-		let         tup_fixed:    [int, float, str]              = [1, 2.0, 'three'];
-		let unfixed tup_unfixed:  [int, float, str]              = [1, 2.0, 'three'];
-		let         list_fixed:   (int | float | str)[]          = List.<int | float | str>([1, 2.0, 'three']);
-		let unfixed list_unfixed: List.<int | float | str>       = List.<int | float | str>([1, 2.0, 'three']);
-		let         set_fixed:    (int | float | str){}          = {1, 2.0, 'three'};
+		let         tup_fixed:    [int, float, str]              = [1, 2.0, "three"];
+		let unfixed tup_unfixed:  [int, float, str]              = [1, 2.0, "three"];
+		let         list_fixed:   (int | float | str)[]          = List.<int | float | str>([1, 2.0, "three"]);
+		let unfixed list_unfixed: List.<int | float | str>       = List.<int | float | str>([1, 2.0, "three"]);
+		let         set_fixed:    (int | float | str){}          = {1, 2.0, "three"};
 		let unfixed set_unfixed:  Set.<int | float | str>        = {1, 2.0, three};
-		let         map_fixed:    {[str] -> int | float | str}   = {a -> 1, b -> 2.0, c -> 'three'};
+		let         map_fixed:    {[str] -> int | float | str}   = {a -> 1, b -> 2.0, c -> "three"};
 		let unfixed map_unfixed:  Map.<[str], int | float | str> = {a -> 1, b -> 2.0, c -> three};
 
 		%% statements 12 – 18 %%
 		tup_fixed  .[0 + 0]; % type \`1\`       % value \`1\`
 		tup_fixed  .[0 + 1]; % type \`2.0\`     % value \`2.0\`
-		tup_fixed  .[0 + 2]; % type \`'three'\` % value \`'three'\`
+		tup_fixed  .[0 + 2]; % type \`"three"\` % value \`"three"\`
 		tup_unfixed.[0 + 0]; % type \`int\`     % non-computable value
 		tup_unfixed.[0 + 1]; % type \`float\`   % non-computable value
 		tup_unfixed.[0 + 2]; % type \`str\`     % non-computable value
@@ -173,7 +173,7 @@ describe('ASTNodeAccess', () => {
 		%% statements 18 – 24 %%
 		list_fixed  .[0 + 0]; % type \`1\`                 % value \`1\`
 		list_fixed  .[0 + 1]; % type \`2.0\`               % value \`2.0\`
-		list_fixed  .[0 + 2]; % type \`'three'\`           % value \`'three'\`
+		list_fixed  .[0 + 2]; % type \`"three"\`           % value \`"three"\`
 		list_unfixed.[0 + 0]; % type \`int | float | str\` % non-computable value
 		list_unfixed.[0 + 1]; % type \`int | float | str\` % non-computable value
 		list_unfixed.[0 + 2]; % type \`int | float | str\` % non-computable value
@@ -181,25 +181,25 @@ describe('ASTNodeAccess', () => {
 		%% statements 24 – 30 %%
 		set_fixed  .[1];       % type \`true\` % value \`true\`
 		set_fixed  .[2.0];     % type \`true\` % value \`true\`
-		set_fixed  .['three']; % type \`true\` % value \`true\`
+		set_fixed  .["three"]; % type \`true\` % value \`true\`
 		set_unfixed.[1];       % type \`bool\` % non-computable value
 		set_unfixed.[2.0];     % type \`bool\` % non-computable value
-		set_unfixed.['three']; % type \`bool\` % non-computable value
+		set_unfixed.["three"]; % type \`bool\` % non-computable value
 
 		%% statements 30 – 36 %%
 		map_fixed  .[a]; % type \`1\`             % value \`1\`
 		map_fixed  .[b]; % type \`2.0\`           % value \`2.0\`
-		map_fixed  .[c]; % type \`'three'\`       % value \`'three'\`
+		map_fixed  .[c]; % type \`"three"\`       % value \`"three"\`
 		map_unfixed.[a]; % type \`1 | 2.0 | str\` % non-computable value
 		map_unfixed.[b]; % type \`1 | 2.0 | str\` % non-computable value
 		map_unfixed.[c]; % type \`1 | 2.0 | str\` % non-computable value
 
 		%% statements 36 – 44 %%
-		let         tupo1_f: [int, float, ?: str] = [1, 2.0, 'three'];
+		let         tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];
 		let         tupo2_f: [int, float, ?: str] = [1, 2.0];
 		let         tupo3_f: [int, float]         = [1, 2.0, true];
 		let         tupo4_f: [int, float]         = [1, 2.0];
-		let unfixed tupo1_u: [int, float, ?: str] = [1, 2.0, 'three'];
+		let unfixed tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
 		let unfixed tupo2_u: [int, float, ?: str] = [1, 2.0];
 		let unfixed tupo3_u: [int, float]         = [1, 2.0, true];
 		let unfixed tupo4_u: [int, float]         = [1, 2.0];
@@ -209,20 +209,20 @@ describe('ASTNodeAccess', () => {
 		tupo2_u.[0 + 2]; % type \`str | void\` % non-computable value
 
 		%% statements 46 – 49 %%
-		tupo1_f?.[0 + 2]; % type \`'three'\` % value \`'three'\`
+		tupo1_f?.[0 + 2]; % type \`"three"\` % value \`"three"\`
 		tupo1_u?.[0 + 2]; % type \`str?\`    % non-computable value
 		tupo2_u?.[0 + 2]; % type \`str?\`    % non-computable value
 
 		%% statements 49 – 55 %%
-		list_fixed  ?.[2];       % type \`'three'\`                  % value \`'three'\`
+		list_fixed  ?.[2];       % type \`"three"\`                  % value \`"three"\`
 		list_unfixed?.[2];       % type \`int | float | str | null\` % non-computable value
-		set_fixed   ?.['three']; % type \`true\`                     % value\`true\`
+		set_fixed   ?.["three"]; % type \`true\`                     % value\`true\`
 		set_unfixed ?.[three];   % type \`bool\`                     % non-computable value
-		map_fixed   ?.[c];       % type \`'three'\`                  % value \`'three'\`
+		map_fixed   ?.[c];       % type \`"three"\`                  % value \`"three"\`
 		map_unfixed ?.[c];       % type \`int | float | str | null\` % non-computable value
 
 		%% statements 55 – 58 %%
-		tupo1_f!.[0 + 2]; % type \`'three'\` % value \`'three'\`
+		tupo1_f!.[0 + 2]; % type \`"three"\` % value \`"three"\`
 		tupo1_u!.[0 + 2]; % type \`str\`     % non-computable value
 		tupo2_u!.[0 + 2]; % type \`str\`     % non-computable value
 	`;
@@ -230,7 +230,7 @@ describe('ASTNodeAccess', () => {
 
 	describe('#type', () => {
 		function typeOfStmtExpr(stmt: AST.ASTNodeStatement): TYPE.Type {
-			assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+			assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 			return stmt.expr!.type();
 		}
 		const COMMON_TYPES = {
@@ -270,13 +270,13 @@ describe('ASTNodeAccess', () => {
 		];
 		context('when base is nullish.', () => {
 			it('optional access returns type of base when it is a subtype of null.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .type(), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .type(), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).type(), TypeError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('null.4;')          .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('null.four;')       .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('null.[[[[[]]]]];') .type(), TypeError01);
 				[
-					AST.ASTNodeAccess.fromSource(`null?.3;`)         .type(),
-					AST.ASTNodeAccess.fromSource(`null?.four;`)      .type(),
-					AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).type(),
+					AST.ASTNodeAccess.fromSource('null?.3;')          .type(),
+					AST.ASTNodeAccess.fromSource('null?.four;')       .type(),
+					AST.ASTNodeAccess.fromSource('null?.[[[[[]]]]];') .type(),
 				].forEach((t) => {
 					assert.ok(t.isSubtypeOf(TYPE.NULL));
 				});
@@ -386,14 +386,14 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when index is out of bounds for tuples.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`)  .type(), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`) .type(), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .type(), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].3;')   .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].-4;')  .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.3;')  .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.-4;') .type(), TypeError04);
 			});
 			it('returns the list item type when index is out of bounds for lists.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
+					let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, "three"]);
 					list.3;
 					list.-4;
 				`);
@@ -467,12 +467,12 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when key is out of bounds for records.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`) .type(), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"].d;')  .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"]?.d;') .type(), TypeError04);
 			});
 			it('returns the dict item type when key is out of bounds for dicts.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed dict: [: int | float | str] = Dict.<int | float| str>([a= 1, b= 2.0, c= 'three']);
+					let unfixed dict: [: int | float | str] = Dict.<int | float| str>([a= 1, b= 2.0, c= "three"]);
 					dict.d;
 				`);
 				goal.varCheck();
@@ -579,14 +579,14 @@ describe('ASTNodeAccess', () => {
 					);
 				});
 				it('throws when accessor expression is correct type but out of bounds for tuples.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`)  .type(), TypeError04);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[-4];`) .type(), TypeError04);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`) .type(), TypeError04);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].[3];')   .type(), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].[-4];')  .type(), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[3];')  .type(), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[-4];') .type(), TypeError04);
 				});
 				it('returns the list item type when accessor expression is correct type but out of bounds for lists.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
+						let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, "three"]);
 						list.[3];
 						list.[-4];
 					`);
@@ -600,9 +600,9 @@ describe('ASTNodeAccess', () => {
 					});
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].['3'];`)                           .type(), TypeError02);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}.[true];`)                          .type(), TypeError02);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.['a'];`).type(), TypeError02);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].["3"];')                            .type(), TypeError02);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('{1, 2.0, "three"}.[true];')                           .type(), TypeError02);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.["a"];') .type(), TypeError02);
 				});
 			});
 			context('with constant folding off.', () => {
@@ -689,7 +689,7 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			it('throws when base object is of incorrect type.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`(4).[2];`).type(), TypeError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('(4).[2];').type(), TypeError01);
 			});
 		});
 	});
@@ -697,7 +697,7 @@ describe('ASTNodeAccess', () => {
 
 	describe('#fold', () => {
 		function foldStmtExpr(stmt: AST.ASTNodeStatement): OBJ.Object | null {
-			assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+			assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 			return stmt.expr!.fold();
 		}
 		const expected: Array<OBJ.Object | null> = [
@@ -716,13 +716,13 @@ describe('ASTNodeAccess', () => {
 
 		context('when base is nullish.', () => {
 			it('optional access returns base when it is null.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .fold());
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .fold());
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).fold());
+				assert.throws(() => AST.ASTNodeAccess.fromSource('null.4;')          .fold());
+				assert.throws(() => AST.ASTNodeAccess.fromSource('null.four;')       .fold());
+				assert.throws(() => AST.ASTNodeAccess.fromSource('null.[[[[[]]]]];') .fold());
 				[
-					AST.ASTNodeAccess.fromSource(`null?.3;`)         .fold(),
-					AST.ASTNodeAccess.fromSource(`null?.four;`)      .fold(),
-					AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).fold(),
+					AST.ASTNodeAccess.fromSource('null?.3;')          .fold(),
+					AST.ASTNodeAccess.fromSource('null?.four;')       .fold(),
+					AST.ASTNodeAccess.fromSource('null?.[[[[[]]]]];') .fold(),
 				].forEach((t) => {
 					assert.strictEqual(t, OBJ.Null.NULL);
 				});
@@ -755,7 +755,7 @@ describe('ASTNodeAccess', () => {
 				);
 				// must bypass type-checker:
 				assert.deepStrictEqual(
-					AST.ASTNodeAccess.fromSource(`[prop= []]?.prop?.0;`).fold(),
+					AST.ASTNodeAccess.fromSource('[prop= []]?.prop?.0;').fold(),
 					OBJ.Null.NULL,
 				);
 			});
@@ -799,13 +799,13 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when index is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`) .fold(), VoidError01);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`).fold(), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].3;')  .fold(), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].-4;') .fold(), VoidError01);
 			});
 			it('returns null when optionally accessing index out of bounds.', () => {
 				[
-					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .fold(),
-					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).fold(),
+					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.3;')  .fold(),
+					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.-4;') .fold(),
 				].forEach((v) => {
 					assert.deepStrictEqual(v, OBJ.Null.NULL);
 				});
@@ -844,11 +844,11 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when key is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`).fold(), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"].d;').fold(), VoidError01);
 			});
 			it('returns null when optionally accessing key out of bounds.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).fold(),
+					AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"]?.d;').fold(),
 					OBJ.Null.NULL,
 				);
 			});
@@ -922,13 +922,13 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when accessor expression is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`)                               .fold(), VoidError01);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.[['a']];`).fold(), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].[3];')                                .fold(), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.[["a"]];') .fold(), VoidError01);
 			});
 			it('returns false when (optionally) accessing element not in set.', () => {
 				[
-					'{1, 2.0, \'three\'} .[3];',
-					'{1, 2.0, \'three\'}?.[3];',
+					'{1, 2.0, "three"} .[3];',
+					'{1, 2.0, "three"}?.[3];',
 				].forEach((src) => assert.deepStrictEqual(
 					AST.ASTNodeAccess.fromSource(src).fold(),
 					OBJ.Boolean.FALSE,
@@ -936,13 +936,12 @@ describe('ASTNodeAccess', () => {
 			});
 			it('returns null when optionally accessing index/antecedent out of bounds.', () => {
 				[
-					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`)                               .fold(),
-					AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}?.[['a']];`).fold(),
+					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[3];')                                .fold(),
+					AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.[["a"]];') .fold(),
 				].forEach((v) => {
 					assert.deepStrictEqual(v, OBJ.Null.NULL);
 				});
 			});
 		});
 	});
-	/* eslint-enable quotes */
 });

@@ -12,6 +12,7 @@ import {
 	TypeError03,
 	MutabilityError01,
 } from '../../../src/index.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
 import {
 	assertAssignable,
 	assertEqualBins,
@@ -46,7 +47,7 @@ describe('ASTNodeCP', () => {
 				const src: string = '42; 420;';
 				const generator = new Builder(src);
 				return AST.ASTNodeGoal.fromSource(src).children.forEach((stmt) => {
-					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+					assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 					return assertEqualBins(
 						stmt.build(generator),
 						generator.module.drop(stmt.expr!.build(generator)),
@@ -230,7 +231,7 @@ describe('ASTNodeCP', () => {
 					let z: x = null;
 					let z: int = T;
 				`).varCheck(), (err) => {
-					assert.ok(err instanceof AggregateError);
+					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
@@ -303,7 +304,7 @@ describe('ASTNodeCP', () => {
 				`);
 				goal.varCheck();
 				assert.throws(() => goal.typeCheck(), (err) => {
-					assert.ok(err instanceof AggregateError);
+					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
