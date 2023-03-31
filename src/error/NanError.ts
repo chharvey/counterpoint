@@ -3,6 +3,11 @@ import {ErrorCode} from './ErrorCode.js';
 
 
 
+/**
+ * Known subclasses:
+ * - NanErrorInvalid
+ * - NanErrorDivZero
+ */
 class NanError extends ErrorCode {
 	static readonly #CODE = 3200;
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {
@@ -15,15 +20,15 @@ class NanError extends ErrorCode {
 		});
 	}
 }
-export class NanError01 extends NanError {
+export class NanErrorInvalid extends NanError {
 	static readonly #CODE = 1;
 	public constructor(node: ASTNode) {
-		super('Not a valid number.', NanError01.#CODE, node.line_index, node.col_index);
+		super('Not a valid number.', NanErrorInvalid.#CODE, node.line_index, node.col_index);
 	}
 }
-export class NanError02 extends NanError {
+export class NanErrorDivZero extends NanError {
 	static readonly #CODE = 2;
 	public constructor(node: ASTNode) {
-		super('Division by zero.', NanError02.#CODE, node.line_index, node.col_index);
+		super('Division by zero.', NanErrorDivZero.#CODE, node.line_index, node.col_index);
 	}
 }

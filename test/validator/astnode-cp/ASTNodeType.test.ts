@@ -5,9 +5,9 @@ import {
 	OBJ,
 	TYPE,
 	TypeError,
-	ReferenceError01,
-	ReferenceError02,
-	ReferenceError03,
+	ReferenceErrorUndeclared,
+	ReferenceErrorDeadZone,
+	ReferenceErrorKind,
 	TypeErrorUnexpectedRef,
 } from '../../../src/index.js';
 import {
@@ -135,9 +135,9 @@ describe('ASTNodeType', () => {
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `List.<float>` but was expecting a value type.'},
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `[4.0]` but was expecting a value type.'},
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `Set.<float>` but was expecting a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `List.<float>`, but expected a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `[4.0]`, but expected a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `Set.<float>`, but expected a value type.'},
 						],
 					});
 					return true;
@@ -192,19 +192,19 @@ describe('ASTNodeType', () => {
 				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					type U = float | T;
-				`).varCheck(), ReferenceError01);
+				`).varCheck(), ReferenceErrorUndeclared);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					T;
 					type T = int;
-				`).varCheck(), ReferenceError02);
+				`).varCheck(), ReferenceErrorDeadZone);
 			});
 			it('throws if was declared as a value variable.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					let FOO: int = 42;
 					type T = FOO | float;
-				`).varCheck(), ReferenceError03);
+				`).varCheck(), ReferenceErrorKind);
 			});
 		});
 

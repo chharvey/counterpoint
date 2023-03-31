@@ -20,7 +20,7 @@ export class TypeErrorNotAssignable extends TypeError {
 	 */
 	public constructor(assigned_type: TYPE.Type, assignee_type: TYPE.Type, assignment: AST.ASTNodeCP) {
 		super(
-			`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`,
+			`Expression of type \`${ assigned_type }\` is not assignable to type \`${ assignee_type }\`.`,
 			TypeError.CODES.get(TypeErrorNotAssignable),
 			assignment.line_index,
 			assignment.col_index,

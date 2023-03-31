@@ -1,7 +1,7 @@
 import {
-	ReferenceError01,
-	ReferenceError02,
-	ReferenceError03,
+	ReferenceErrorUndeclared,
+	ReferenceErrorDeadZone,
+	ReferenceErrorKind,
 } from './index.js';
 import type {ConstructorType} from './utils-private.js';
 import {ErrorCode} from './ErrorCode.js';
@@ -10,15 +10,20 @@ import {ErrorCode} from './ErrorCode.js';
 
 /**
  * A ReferenceError is thrown when the validator fails to dereference an identifier.
+ *
+ * Known subclasses:
+ * - ReferenceErrorUndeclared
+ * - ReferenceErrorDeadZone
+ * - ReferenceErrorKind
  */
 export class ReferenceError extends ErrorCode {
 	static readonly #CODE = 2100;
 
 	protected static get CODES(): ReadonlyMap<ConstructorType<ReferenceError>, number> {
 		return new Map<ConstructorType<ReferenceError>, number>([
-			[ReferenceError01, 1],
-			[ReferenceError02, 2],
-			[ReferenceError03, 3],
+			[ReferenceErrorUndeclared, 1],
+			[ReferenceErrorDeadZone,   2],
+			[ReferenceErrorKind,       3],
 		]);
 	}
 

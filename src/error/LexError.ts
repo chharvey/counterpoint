@@ -12,6 +12,13 @@ import {ErrorCode} from './ErrorCode.js';
 /**
  * A LexError is thrown when a span of source code fails to
  * produce a valid token per the rules of the defined lexical grammar.
+ *
+ * Known subclasses:
+ * - LexError01
+ * - LexError02
+ * - LexError03
+ * - LexError04
+ * - LexError05
  */
 export class LexError extends ErrorCode {
 	static readonly #CODE = 1100;

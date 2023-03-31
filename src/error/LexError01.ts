@@ -5,7 +5,6 @@ import {LexError} from './LexError.js';
 
 /**
  * A LexError01 is thrown when the lexer reaches an unrecognized character.
- * @final
  */
 export class LexError01 extends LexError {
 	/**

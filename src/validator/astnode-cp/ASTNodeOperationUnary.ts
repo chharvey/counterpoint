@@ -6,7 +6,7 @@ import {
 	INST,
 	type Builder,
 	TypeErrorInvalidOperation,
-	NanError01,
+	NanErrorInvalid,
 } from '../../index.js';
 import {
 	throw_expression,
@@ -97,7 +97,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				[Operator.NEG, (z) => z.neg()],
 			]).get(this.operator)!(v0);
 		} catch (err) {
-			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
+			throw (err instanceof xjs.NaNError) ? new NanErrorInvalid(this) : err;
 		}
 	}
 }

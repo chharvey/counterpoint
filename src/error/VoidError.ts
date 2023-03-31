@@ -3,6 +3,10 @@ import {ErrorCode} from './ErrorCode.js';
 
 
 
+/**
+ * Known subclasses:
+ * - VoidError01
+ */
 class VoidError extends ErrorCode {
 	static readonly #CODE = 3100;
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {

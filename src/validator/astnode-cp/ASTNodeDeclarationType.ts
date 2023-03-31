@@ -1,7 +1,7 @@
 import {
 	INST,
 	type Builder,
-	AssignmentError01,
+	AssignmentErrorDuplicateDeclaration,
 } from '../../index.js';
 import {assert_instanceof} from '../../lib/index.js';
 import {
@@ -33,7 +33,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 
 	public override varCheck(): void {
 		if (this.validator.hasSymbol(this.assignee.id)) {
-			throw new AssignmentError01(this.assignee);
+			throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 		}
 		this.assigned.varCheck();
 		this.validator.addSymbol(new SymbolStructureType(this.assignee));
