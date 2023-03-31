@@ -9,7 +9,7 @@ import {
 	INST,
 	Builder,
 	TypeErrorInvalidOperation,
-	NanError01,
+	NanErrorInvalid,
 } from '../../../src/index.js';
 import {assertEqualTypes} from '../../assert-helpers.js';
 import {
@@ -375,7 +375,7 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 			it('throws when performing an operation that does not yield a valid number.', () => {
-				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('-4 ^ -0.5;').fold(), NanError01);
+				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('-4 ^ -0.5;').fold(), NanErrorInvalid);
 			});
 		});
 

@@ -22,7 +22,4 @@ export * from './TypeErrorNotCallable.js';
 export * from './TypeErrorArgCount.js';
 export * from './MutabilityError01.js';
 export {VoidError01} from './VoidError.js';
-export {
-	NanError01,
-	NanError02,
-} from './NanError.js';
+export * from './NanError.js';

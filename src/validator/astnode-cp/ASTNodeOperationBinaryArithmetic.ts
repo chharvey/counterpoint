@@ -6,8 +6,8 @@ import {
 	INST,
 	type Builder,
 	TypeErrorInvalidOperation,
-	NanError01,
-	NanError02,
+	NanErrorInvalid,
+	NanErrorDivZero,
 } from '../../index.js';
 import {
 	throw_expression,
@@ -85,7 +85,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			return v1;
 		}
 		if (this.operator === Operator.DIV && v1 instanceof OBJ.Number && v1.eq0()) {
-			throw new NanError02(this.operand1);
+			throw new NanErrorDivZero(this.operand1);
 		}
 		return (v0 instanceof OBJ.Integer && v1 instanceof OBJ.Integer)
 			? this.foldNumeric(v0, v1)
@@ -105,7 +105,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				// [Operator.SUB, (x, y) => x.minus(y)],
 			]).get(this.operator)!(v0, v1);
 		} catch (err) {
-			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
+			throw (err instanceof xjs.NaNError) ? new NanErrorInvalid(this) : err;
 		}
 	}
 }
