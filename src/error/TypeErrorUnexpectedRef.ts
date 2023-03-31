@@ -7,6 +7,11 @@ import {TypeError} from './TypeError.js';
 /**
  * A TypeErrorUnexpectedRef is thrown when a reference type is encountered where a value type is expected.
  * Value types/objects cannot contain reference types/objects, so this error is thrown in those situations.
+ * @example
+ * type T = [int];
+ * type U = \[str, T];         % TypeErrorUnexpectedRef: Got reference type `[int]`, but expected a value type.
+ * let x: [int] = [42];
+ * let y: obj = \["hello", x]; % TypeErrorUnexpectedRef: Got reference type `[int]`, but expected a value type.
  */
 export class TypeErrorUnexpectedRef extends TypeError {
 	/**

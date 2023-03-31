@@ -87,14 +87,78 @@ Solution(s): Remove the reassignment, or make the variable `unfixed`.
 ### Type Errors (23xx)
 A type error is raised when the compiler recognizes a type mismatch.
 
-1. 2300 — A general type error not covered by one of the following cases.
-1. 2301 — The validator encountered an operation with an invalid operand.
-1. 2302 — One type is expected to be a subtype of another, but is not.
-1. 2303 — A reference type was encountered where a value type was expected.
-1. 2304 — An expression was assigned to a type to which it is not assignable.
-1. 2305 — The validator encountered a non-existent index/property/argument access.
-1. 2306 — The validator encountered an attempt to call a non-callable object.
-1. 2307 — An incorrect number of arguments is passed to a callable object.
+1.  2300         — A general type error not covered by one of the following cases.
+1. [2301](#2301) — The validator encountered an operation with an invalid operand.
+1. [2302](#2302) — One type is expected to be a subtype of another, but is not.
+1. [2303](#2303) — A reference type was encountered where a value type was expected.
+1. [2304](#2304) — An expression was assigned to a type to which it is not assignable.
+1. [2305](#2305) — The validator encountered a non-existent index/property/argument access.
+1. [2306](#2306) — The validator encountered an attempt to call a non-callable object.
+1. [2307](#2307) — An incorrect number of arguments is passed to a callable object.
+
+#### 2301
+Cause: An invalid operation was performed.
+```
+true + false; % TypeError: Invalid operation.
+```
+Solution(s): Only use operations on valid operands.
+
+#### 2302
+Cause: One type is expected to be a subtype of another type, but is not.
+```
+{"a" -> 1, "b" -> 2}.[1]; % TypeError: Type `1` is not a subtype of `"a" | "b"`.
+```
+Solution(s): Ensure the assigned type is a subtype of the assignee.
+
+#### 2303
+Cause: A reference type was used where a value type was expected.
+```
+type T = [int];
+type U = \[str, T]; % TypeError: Got reference type `[int]`, but expected a value type.
+
+let x: [int] = [42];
+let y: obj = \["hello", x]; % TypeError: Got reference type `[int]`, but expected a value type.
+```
+Solution(s): Ensure only value types are used where expected.
+
+#### 2304
+Cause: A variable, property, or parameter was assigned an expression of an incorrect type.
+```
+let x: int = true;              % TypeError: Expression of type `true` is not assignable to type `int`.
+((x: int): int => x + 1).(4.2); % TypeError: Expression of type `4.2` is not assignable to type `int`.
+```
+Solution(s): Ensure the expression has an assignable type.
+
+#### 2305
+Cause: A non-existent index, key, or parameter name was accessed.
+```
+[42, 420].2;                      % TypeError: Index `2` does not exist on type `[42, 420]`.
+[a= 42, b= 420].c;                % TypeError: Property `c` does not exist on type `[a: 42, b: 420]`.
+((x: int): int => x + 1).(y= 42); % TypeError: Parameter `y` does not exist on type `(x: int) => int`.
+```
+Solution(s): Ensure the index/property/parameter access has the correct index or name.
+
+#### 2306
+Cause: A non-callable object was called.
+```
+type U = int;
+type T = U.<V>;  % TypeError: Type `U` is not callable.
+
+let x: int = 42;
+x.(24);          % TypeError: Type `int` is not callable.
+```
+Solution(s): Callable objects are limited to functions, generic type aliases, and generic type functions.
+
+#### 2307
+Cause: A function or generic call was given an incorrect number of arguments.
+```
+type U<V, W> = V | W;
+type T = U.<V>;       % TypeError: Got 1 type arguments, but expected 2.
+
+func x(y: int): int => y + 42;
+x.(2, 4);                      % TypeError: Got 2 arguments, but expected 1.
+```
+Solution(s): Pass in an expected number of arguments.
 
 
 ### Mutability Errors (24xx)
