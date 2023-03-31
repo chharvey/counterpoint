@@ -7,9 +7,9 @@ import {
 	TYPE,
 	INST,
 	Builder,
-	ReferenceError01,
-	ReferenceError02,
-	ReferenceError03,
+	ReferenceErrorUndeclared,
+	ReferenceErrorDeadZone,
+	ReferenceErrorKind,
 	AssignmentErrorDuplicateKey,
 	TypeErrorUnexpectedRef,
 } from '../../../src/index.js';
@@ -146,19 +146,19 @@ describe('ASTNodeExpression', () => {
 					let unfixed i: int = 42;
 					i;
 				`).varCheck(); // assert does not throw
-				assert.throws(() => AST.ASTNodeVariable.fromSource('i;').varCheck(), ReferenceError01);
+				assert.throws(() => AST.ASTNodeVariable.fromSource('i;').varCheck(), ReferenceErrorUndeclared);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					i;
 					let unfixed i: int = 42;
-				`).varCheck(), ReferenceError02);
+				`).varCheck(), ReferenceErrorDeadZone);
 			});
 			it('throws if it was declared as a type alias.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					type FOO = int;
 					42 || FOO;
-				`).varCheck(), ReferenceError03);
+				`).varCheck(), ReferenceErrorKind);
 			});
 		});
 

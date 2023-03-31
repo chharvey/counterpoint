@@ -4,8 +4,8 @@ import {
 	TYPE,
 	INST,
 	type Builder,
-	ReferenceError01,
-	ReferenceError03,
+	ReferenceErrorUndeclared,
+	ReferenceErrorKind,
 } from '../../index.js';
 import {
 	memoizeMethod,
@@ -49,10 +49,10 @@ export class ASTNodeVariable extends ASTNodeExpression {
 
 	public override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
-			throw new ReferenceError01(this);
+			throw new ReferenceErrorUndeclared(this);
 		}
 		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
-			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
+			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
 	}

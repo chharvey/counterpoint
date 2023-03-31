@@ -5,9 +5,9 @@ import {
 	OBJ,
 	TYPE,
 	TypeError,
-	ReferenceError01,
-	ReferenceError02,
-	ReferenceError03,
+	ReferenceErrorUndeclared,
+	ReferenceErrorDeadZone,
+	ReferenceErrorKind,
 	TypeErrorUnexpectedRef,
 } from '../../../src/index.js';
 import {
@@ -192,19 +192,19 @@ describe('ASTNodeType', () => {
 				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					type U = float | T;
-				`).varCheck(), ReferenceError01);
+				`).varCheck(), ReferenceErrorUndeclared);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					T;
 					type T = int;
-				`).varCheck(), ReferenceError02);
+				`).varCheck(), ReferenceErrorDeadZone);
 			});
 			it('throws if was declared as a value variable.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					let FOO: int = 42;
 					type T = FOO | float;
-				`).varCheck(), ReferenceError03);
+				`).varCheck(), ReferenceErrorKind);
 			});
 		});
 
