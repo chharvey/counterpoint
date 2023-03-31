@@ -239,14 +239,17 @@ const OPT_COM = optional(',');
 
 /**
  * Reference a rule based on a condition.
+ *
+ * If needing an alternative, use a simple ternary operator:
+ * ```
+ * (condition) ? consequent : alternative
+ * ```
  * @param condition   the condition to test
  * @param consequent  if condition is true, this will be produced
- * @param alternative if condition is false, this will be
- *                    @default blank()
- * @returns           either `consequent` or `alternative` based on `condition`
+ * @returns           either `consequent` or `blank()` based on `condition`
  */
-function iff(condition: boolean, consequent: RuleOrLiteral, alternative: RuleOrLiteral = blank()): RuleOrLiteral {
-	return (condition) ? consequent : alternative;
+function iff(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral {
+	return (condition) ? consequent : blank();
 }
 function ifSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
 	return (condition) ? [consequent] : [];
@@ -370,12 +373,12 @@ module.exports = grammar({
 
 		...parameterize('_properties_type', ({variable}) => $ => seq(repCom1(choice($[call('entry_type', 'named', {variable})], $[call('entry_type', 'named', 'optional', {variable})])), OPT_COM), 'variable'),
 
-		...parameterize('type_grouped',        ({variable}) => $ => seq(                      '(',                        $[call('_type',            {variable})],   ')'), 'variable'),
-		...parameterize('type_tuple_literal',  ({variable}) => $ => seq(iff(!variable, '\\[', '['), optional(seq(OPT_COM, $[call('_items_type',      {variable})])), ']'), 'variable'),
-		...parameterize('type_record_literal', ({variable}) => $ => seq(iff(!variable, '\\[', '['),              OPT_COM, $[call('_properties_type', {variable})],   ']'), 'variable'),
-		type_dict_literal:                                     $ => seq(                      '[', ':', $._type__variable,                                           ']'),
-		type_map_literal:                                      $ => seq(                      '{', $._type__variable, '->', $._type__variable,                       '}'),
-		generic_arguments:                                     $ => seq(                      '<', OPT_COM, repCom1($._type__variable), OPT_COM,                     '>'),
+		...parameterize('type_grouped',        ({variable}) => $ => seq(                    '(',                       $[call('_type',            {variable})],   ')'), 'variable'),
+		...parameterize('type_tuple_literal',  ({variable}) => $ => seq(!variable ? '\\[' : '[', optional(seq(OPT_COM, $[call('_items_type',      {variable})])), ']'), 'variable'),
+		...parameterize('type_record_literal', ({variable}) => $ => seq(!variable ? '\\[' : '[',              OPT_COM, $[call('_properties_type', {variable})],   ']'), 'variable'),
+		type_dict_literal:                                     $ => seq(                    '[', ':', $._type__variable,                                           ']'),
+		type_map_literal:                                      $ => seq(                    '{', $._type__variable, '->', $._type__variable,                       '}'),
+		generic_arguments:                                     $ => seq(                    '<', OPT_COM, repCom1($._type__variable), OPT_COM,                     '>'),
 
 		...parameterize('_type_unit', ({variable}) => $ => choice(
 			$.keyword_type,
@@ -439,12 +442,12 @@ module.exports = grammar({
 		...parameterize('property', ({variable}) => $ => seq($.word,                  '=',  $[call('_expression', {variable})]), 'variable'),
 		case:                                       $ => seq($._expression__variable, '->', $._expression__variable),
 
-		...parameterize('expression_grouped', ({variable}) => $ => seq(                      '(',                                $[call('_expression', {variable})],             ')'), 'variable'),
-		...parameterize('tuple_literal',      ({variable}) => $ => seq(iff(!variable, '\\[', '['), optional(seq(OPT_COM, repCom1($[call('_expression', {variable})]), OPT_COM)), ']'), 'variable'),
-		...parameterize('record_literal',     ({variable}) => $ => seq(iff(!variable, '\\[', '['),              OPT_COM, repCom1($[call('property',    {variable})]), OPT_COM,   ']'), 'variable'),
-		set_literal:                                          $ => seq(                      '{',  optional(seq(OPT_COM, repCom1($._expression__variable),            OPT_COM)), '}'),
-		map_literal:                                          $ => seq(                      '{',               OPT_COM, repCom1($.case),                             OPT_COM,   '}'),
-		function_arguments:                                   $ => seq(                      '(',  optional(seq(OPT_COM, repCom1($._expression__variable),            OPT_COM)), ')'),
+		...parameterize('expression_grouped', ({variable}) => $ => seq(                    '(',                               $[call('_expression', {variable})],             ')'), 'variable'),
+		...parameterize('tuple_literal',      ({variable}) => $ => seq(!variable ? '\\[' : '[', optional(seq(OPT_COM, repCom1($[call('_expression', {variable})]), OPT_COM)), ']'), 'variable'),
+		...parameterize('record_literal',     ({variable}) => $ => seq(!variable ? '\\[' : '[',              OPT_COM, repCom1($[call('property',    {variable})]), OPT_COM,   ']'), 'variable'),
+		set_literal:                                          $ => seq(                    '{', optional(seq(OPT_COM, repCom1($._expression__variable),            OPT_COM)), '}'),
+		map_literal:                                          $ => seq(                    '{',              OPT_COM, repCom1($.case),                             OPT_COM,   '}'),
+		function_arguments:                                   $ => seq(                    '(', optional(seq(OPT_COM, repCom1($._expression__variable),            OPT_COM)), ')'),
 
 		...parameterize('_expression_unit', ({variable}) => $ => choice(
 			$.identifier,
