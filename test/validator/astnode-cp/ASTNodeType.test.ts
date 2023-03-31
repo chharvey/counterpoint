@@ -135,9 +135,9 @@ describe('ASTNodeType', () => {
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `List.<float>` but was expecting a value type.'},
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `[4.0]` but was expecting a value type.'},
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `Set.<float>` but was expecting a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `List.<float>`, but expected a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `[4.0]`, but expected a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `Set.<float>`, but expected a value type.'},
 						],
 					});
 					return true;

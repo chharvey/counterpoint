@@ -20,7 +20,7 @@ export class TypeErrorUnexpectedRef extends TypeError {
 	 */
 	public constructor(reftype: TYPE.Type, node: AST.ASTNodeItemType | AST.ASTNodePropertyType | AST.ASTNodeType | AST.ASTNodeExpression | AST.ASTNodeProperty) {
 		super(
-			`Encountered reference type \`${ reftype }\` but was expecting a value type.`,
+			`Got reference type \`${ reftype }\`, but expected a value type.`,
 			TypeError.CODES.get(TypeErrorUnexpectedRef),
 			node.line_index,
 			node.col_index,

@@ -478,8 +478,8 @@ describe('ASTNodeExpression', () => {
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `[2.0]` but was expecting a value type.'},
-							{cons: TypeErrorUnexpectedRef, message: 'Encountered reference type `mutable List.<float>` but was expecting a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `[2.0]`, but expected a value type.'},
+							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `mutable List.<float>`, but expected a value type.'},
 						],
 					});
 					return true;
