@@ -120,7 +120,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				return SolidType.FLOAT;
 			}
 			if (int_coercion) {
-				return (eitherFloats(t0, t1)) ? SolidType.FLOAT : SolidType.INT.union(SolidType.FLOAT);
+				return (eitherFloats(t0, t1)) ? SolidType.FLOAT : t0.union(t1);
 			}
 		}
 		throw new TypeError01(this)

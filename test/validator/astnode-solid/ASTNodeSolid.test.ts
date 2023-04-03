@@ -183,6 +183,7 @@ describe('ASTNodeSolid', () => {
 					x = 16;  % Either<float, int>#setRight
 					x = x;   % Either<float, int>#{setLeft,setRight}
 					x = y;   % Either<float, int>#{setLeft,setRight}
+					x = 52 + x;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder = new Builder(src);
@@ -208,6 +209,11 @@ describe('ASTNodeSolid', () => {
 							builder.module.i32.eqz(BinEither.indexOf(builder.module, exprs[3])),
 							new BinEither(builder.module, 1n, [default_.float,                                  BinEither.valueOf(builder.module, exprs[3], 0n)]).make(),
 							new BinEither(builder.module, 0n, [BinEither.valueOf(builder.module, exprs[3], 1n), default_.int]).make(),
+						),
+						builder.module.if(
+							builder.module.i32.eqz(BinEither.indexOf(builder.module, exprs[4])),
+							new BinEither(builder.module, 0n, [BinEither.valueOf(builder.module, exprs[4], 0n), default_.int]).make(),
+							new BinEither(builder.module, 1n, [default_.float,                                  BinEither.valueOf(builder.module, exprs[4], 1n)]).make(),
 						),
 					].map((expected) => builder.module.local.set(0, expected)),
 				);
