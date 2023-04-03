@@ -492,15 +492,15 @@ describe('ASTNodeOperation', () => {
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
-			it.skip('nested unions.', () => {
+			it('multiple unions.', () => {
 				const src = `
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
 					x * y; %% should return \`[
 						2,
 						0,
-						[2, 1, i32.mul(42,  0),    f64.mul(c(42), 4.2)],
-						[2, 1, f64.mul(0.0, c(0)), f64.mul(0.0,   4.2)],
+						i32.mul(42, 0),
+						if 1 then f64.mul(c(42), 4.2) else if 2 then f64.mul(0.0, c(0)) else f64.mul(0.0, 4.2),
 					]\` %%
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
@@ -519,12 +519,30 @@ describe('ASTNodeOperation', () => {
 						BinEither.valueOf(builder.module, arg, 1n),
 					]));
 				});
+				const key = mod.i32.add(
+					mod.i32.mul(mod.i32.const(2), extracts[0][0].index),
+					extracts[0][1].index,
+				);
+				const options = [
+					mod.i32.mul(extracts[0][0].value(0n),                        extracts[0][1].value(0n)),
+					mod.f64.mul(mod.f64.convert_u.i32(extracts[0][0].value(0n)), extracts[0][1].value(1n)),
+					mod.f64.mul(extracts[0][0].value(1n),                        mod.f64.convert_u.i32(extracts[0][1].value(0n))),
+					mod.f64.mul(extracts[0][0].value(1n),                        extracts[0][1].value(1n)),
+				];
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						new BinEither(mod, extracts[0][0].index, [
-							new BinEither(mod, extracts[0][1].index, [mod.i32.mul(extracts[0][0].value(0n),                       extracts[0][1].value(0n)),  mod.f64.mul(mod.f64.convert_u.i32(extracts[0][0].value(0n)), extracts[0][1].value(1n))]).make(),
-							new BinEither(mod, extracts[0][1].index, [mod.f64.mul(extracts[0][0].value(1n), mod.f64.convert_u.i32(extracts[0][1].value(0n))), mod.f64.mul(                      extracts[0][0].value(1n),  extracts[0][1].value(1n))]).make(),
+						new BinEither(mod, mod.i32.eqz(mod.i32.eq(key, mod.i32.const(0))), [
+							options[0],
+							mod.if(
+								mod.i32.eq(key, mod.i32.const(1)),
+								options[1],
+								mod.if(
+									mod.i32.eq(key, mod.i32.const(2)),
+									options[2],
+									options[3],
+								),
+							),
 						]).make(),
 					].map((expected) => builder.module.drop(expected)),
 				);
