@@ -196,17 +196,17 @@ describe('ASTNodeSolid', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						Builder.createBinEither(builder.module, false, exprs[0],       default_.int),
-						Builder.createBinEither(builder.module, true,  default_.float, exprs[1]),
+						Builder.createBinEither(builder.module, 0n, [exprs[0],       default_.int]),
+						Builder.createBinEither(builder.module, 1n, [default_.float, exprs[1]]),
 						builder.module.if(
-							builder.module.i32.eqz(builder.module.tuple.extract(exprs[2], 0)),
-							Builder.createBinEither(builder.module, false, builder.module.tuple.extract(exprs[2], 1), default_.int),
-							Builder.createBinEither(builder.module, true,  default_.float,                            builder.module.tuple.extract(exprs[2], 2)),
+							builder.module.i32.eqz(builder.module.tuple.extract(exprs[2], 1)),
+							Builder.createBinEither(builder.module, 0n, [builder.module.tuple.extract(exprs[2], 2), default_.int]),
+							Builder.createBinEither(builder.module, 1n, [default_.float,                            builder.module.tuple.extract(exprs[2], 3)]),
 						),
 						builder.module.if(
-							builder.module.i32.eqz(builder.module.tuple.extract(exprs[3], 0)),
-							Builder.createBinEither(builder.module, true,  default_.float,                            builder.module.tuple.extract(exprs[3], 1)),
-							Builder.createBinEither(builder.module, false, builder.module.tuple.extract(exprs[3], 2), default_.int),
+							builder.module.i32.eqz(builder.module.tuple.extract(exprs[3], 1)),
+							Builder.createBinEither(builder.module, 1n, [default_.float,                            builder.module.tuple.extract(exprs[3], 2)]),
+							Builder.createBinEither(builder.module, 0n, [builder.module.tuple.extract(exprs[3], 3), default_.int]),
 						),
 					].map((expected) => builder.module.local.set(0, expected)),
 				);

@@ -869,18 +869,18 @@ describe('SolidType', () => {
 			]);
 			return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
 		});
-		it('returns `Either<Left, Right>` monads for unions.', () => {
+		it('returns tuple types for unions.', () => {
 			const tests = new Map<SolidType, binaryen.Type>([
-				[SolidType.NULL.union(SolidType.BOOL),  Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
-				[SolidType.BOOL.union(SolidType.INT),   Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
-				[SolidType.NULL.union(SolidType.INT),   Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
-				[SolidType.VOID.union(SolidType.NULL),  Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
-				[SolidType.VOID.union(SolidType.BOOL),  Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
-				[SolidType.VOID.union(SolidType.INT),   Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
-				[SolidType.VOID.union(SolidType.FLOAT), Builder.createBinTypeEither(binaryen.f64, binaryen.f64)],
-				[SolidType.NULL.union(SolidType.FLOAT), Builder.createBinTypeEither(binaryen.i32, binaryen.f64)],
-				[SolidType.BOOL.union(SolidType.FLOAT), Builder.createBinTypeEither(binaryen.i32, binaryen.f64)],
-				[SolidType.INT .union(SolidType.FLOAT), Builder.createBinTypeEither(binaryen.i32, binaryen.f64)],
+				[SolidType.NULL.union(SolidType.BOOL),  Builder.createBinTypeEither([binaryen.i32, binaryen.i32])],
+				[SolidType.BOOL.union(SolidType.INT),   Builder.createBinTypeEither([binaryen.i32, binaryen.i32])],
+				[SolidType.NULL.union(SolidType.INT),   Builder.createBinTypeEither([binaryen.i32, binaryen.i32])],
+				[SolidType.VOID.union(SolidType.NULL),  Builder.createBinTypeEither([binaryen.i32, binaryen.i32])],
+				[SolidType.VOID.union(SolidType.BOOL),  Builder.createBinTypeEither([binaryen.i32, binaryen.i32])],
+				[SolidType.VOID.union(SolidType.INT),   Builder.createBinTypeEither([binaryen.i32, binaryen.i32])],
+				[SolidType.VOID.union(SolidType.FLOAT), Builder.createBinTypeEither([binaryen.f64, binaryen.f64])],
+				[SolidType.NULL.union(SolidType.FLOAT), Builder.createBinTypeEither([binaryen.i32, binaryen.f64])],
+				[SolidType.BOOL.union(SolidType.FLOAT), Builder.createBinTypeEither([binaryen.i32, binaryen.f64])],
+				[SolidType.INT .union(SolidType.FLOAT), Builder.createBinTypeEither([binaryen.i32, binaryen.f64])],
 			]);
 			return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
 		});

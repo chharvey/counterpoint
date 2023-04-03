@@ -1,6 +1,7 @@
 import binaryen from 'binaryen';
 import * as fs from 'fs'
 import * as path from 'path'
+import type { NonemptyArray } from '../lib/index.js';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -29,34 +30,56 @@ export class Builder {
 	]
 
 	/**
-	 * Create an `Either<L, R>` monad type structure.
-	 * The Either monad has two sides, and a field that indicates the active side.
-	 * @param left  the left  side type
-	 * @param right the right side type
-	 * @return      a Binaryen 3-tuple type of `[is_right: 0 | 1, left, right]`
+	 * Create a structure containing one of many possible types.
+	 * See {@link Builder.createBinEither} for details.
+	 * @param  types        the binaryen types
+	 * @return              a Binaryen n-tuple type of `[i32, i32, ...types]`
+	 * @throws {RangeError} if the given array does not have a length of a power of 2
 	 */
-	public static createBinTypeEither(left: binaryen.Type, right: binaryen.Type): binaryen.Type {
-		return binaryen.createType([binaryen.i32, left, right]);
+	public static createBinTypeEither(types: Readonly<NonemptyArray<binaryen.Type>>): binaryen.Type {
+		if (Math.log2(types.length) % 1 !== 0) {
+			throw new RangeError('The given array does not have a length of a power of 2.');
+		}
+		return binaryen.createType([binaryen.i32, binaryen.i32, ...types]);
+		//                          ^             ^             ^ possible types
+		//                          ^             ^ index of current type
+		//                          ^ length of `types`
 	}
 
 	/**
-	 * Create an instance of the `Either<L, R>` monad.
-	 * @param mod      a module to create the instance in
-	 * @param is_right is the active side the right-hand side?
-	 * @param left     the left  side value
-	 * @param right    the right side value
-	 * @return         a Binaryen 3-tuple value of `[is_right: 0 | 1, left, right]`
+	 * Create a structure containing one of many possible values.
+	 *
+	 * The values are represented as leaves in a binary tree that is “perfect”
+	 * (i.e., all leaves are at the same depth level).
+	 * What this means is that the number of leaves is always a power of 2,
+	 * and each leaf can be accessed by traversing the tree.
+	 *
+	 * For example, a variable could be one of the following values: *1, 2.0, 3.3, 4.4*.
+	 * This data structure would be represented as a Binaryen tuple type with `n+2` entries,
+	 * where `n` is the number of possible values, preceeded by 2 entires:
+	 * the first of which indicates the “length”, or number of leaves, (in this case, 4), and
+	 * the second of which indicates the “selection”, the index of the current actual value at runtime.
+	 * If the current value is, say, *2.0* (with index 1), then this would be represented by the Binaryen tuple
+	 * `[4, 1, 1, 2.0, 3.3, 4.4]`.
+	 *
+	 * @param  mod          a module to create the instance in
+	 * @param  index        the index of the current value at runtime
+	 * @param  values       the possible values
+	 * @return              a Binaryen n-tuple value of `[values.length, index, ...values]`
+	 * @throws {RangeError} if the given array does not have a length of a power of 2
 	 */
 	public static createBinEither(
-		mod:      binaryen.Module,
-		is_right: boolean | binaryen.ExpressionRef,
-		left:     binaryen.ExpressionRef,
-		right:    binaryen.ExpressionRef,
+		mod:    binaryen.Module,
+		index:  bigint | binaryen.ExpressionRef,
+		values: Readonly<NonemptyArray<binaryen.ExpressionRef>>,
 	): binaryen.ExpressionRef {
-		if (typeof is_right === 'boolean') {
-			is_right = mod.i32.const(Number(is_right));
+		if (Math.log2(values.length) % 1 !== 0) {
+			throw new RangeError('The given array does not have a length of a power of 2.');
 		}
-		return mod.tuple.make([is_right, left, right]);
+		if (typeof index === 'bigint') {
+			index = mod.i32.const(Number(index));
+		}
+		return mod.tuple.make([mod.i32.const(values.length), index, ...values]);
 	}
 
 

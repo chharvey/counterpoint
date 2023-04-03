@@ -46,12 +46,10 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		assert.strictEqual(bintype, typ.binType());
 		if (typ instanceof SolidTypeUnion) {
 			// assert: `arg` is equivalent to a result of `Builder.createBinEither()`
-			return Builder.createBinEither(
-				mod,
-				mod.tuple.extract(arg, 0),
-				ASTNodeOperationUnary.operate(mod, op, typ.left,  mod.tuple.extract(arg, 1)),
-				ASTNodeOperationUnary.operate(mod, op, typ.right, mod.tuple.extract(arg, 2)),
-			);
+			return Builder.createBinEither(mod, mod.tuple.extract(arg, 1), [
+				ASTNodeOperationUnary.operate(mod, op, typ.left,  mod.tuple.extract(arg, 2)),
+				ASTNodeOperationUnary.operate(mod, op, typ.right, mod.tuple.extract(arg, 3)),
+			]);
 		} else {
 			ASTNodeOperation.expectIntOrFloat(bintype);
 			return (op === Operator.NEG && bintype === binaryen.f64)

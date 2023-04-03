@@ -52,20 +52,16 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	): binaryen.ExpressionRef {
 		if (types[0] instanceof SolidTypeUnion) {
 			// assert: `args[0]` is equivalent to a result of `Builder.createBinEither()`
-			return Builder.createBinEither(
-				mod,
-				mod.tuple.extract(args[0], 0),
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].left,  types[1]], [mod.tuple.extract(args[0], 1), args[1]]),
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].right, types[1]], [mod.tuple.extract(args[0], 2), args[1]]),
-			);
+			return Builder.createBinEither(mod, mod.tuple.extract(args[0], 1), [
+				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].left,  types[1]], [mod.tuple.extract(args[0], 2), args[1]]),
+				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].right, types[1]], [mod.tuple.extract(args[0], 3), args[1]]),
+			]);
 		} else if (types[1] instanceof SolidTypeUnion) {
 			// assert: `args[1]` is equivalent to a result of `Builder.createBinEither()`
-			return Builder.createBinEither(
-				mod,
-				mod.tuple.extract(args[1], 0),
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].left],  [args[0], mod.tuple.extract(args[1], 1)]),
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].right], [args[0], mod.tuple.extract(args[1], 2)]),
-			);
+			return Builder.createBinEither(mod, mod.tuple.extract(args[1], 1), [
+				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].left],  [args[0], mod.tuple.extract(args[1], 2)]),
+				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].right], [args[0], mod.tuple.extract(args[1], 3)]),
+			]);
 		} else {
 			args = ASTNodeOperation.coerceOperands(mod, ...args);
 			const bintypes: readonly [binaryen.Type, binaryen.Type] = [
