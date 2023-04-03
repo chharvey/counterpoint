@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs'
+import {BinEither} from '../../index.js';
 import {
 	SolidType,
 	SolidTypeUnion,
@@ -51,17 +52,17 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		args:  readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
 	): binaryen.ExpressionRef {
 		if (types[0] instanceof SolidTypeUnion) {
-			// assert: `args[0]` is equivalent to a result of `Builder.createBinEither()`
-			return Builder.createBinEither(mod, mod.tuple.extract(args[0], 1), [
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].left,  types[1]], [mod.tuple.extract(args[0], 2), args[1]]),
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].right, types[1]], [mod.tuple.extract(args[0], 3), args[1]]),
-			]);
+			// assert: `args[0]` is equivalent to a result of `new BinEither().make()`
+			return new BinEither(mod, BinEither.indexOf(mod, args[0]), [
+				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].left,  types[1]], [BinEither.valueOf(mod, args[0], 0n), args[1]]),
+				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].right, types[1]], [BinEither.valueOf(mod, args[0], 1n), args[1]]),
+			]).make();
 		} else if (types[1] instanceof SolidTypeUnion) {
-			// assert: `args[1]` is equivalent to a result of `Builder.createBinEither()`
-			return Builder.createBinEither(mod, mod.tuple.extract(args[1], 1), [
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].left],  [args[0], mod.tuple.extract(args[1], 2)]),
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].right], [args[0], mod.tuple.extract(args[1], 3)]),
-			]);
+			// assert: `args[1]` is equivalent to a result of `new BinEither().make()`
+			return new BinEither(mod, BinEither.indexOf(mod, args[1]), [
+				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].left],  [args[0], BinEither.valueOf(mod, args[1], 0n)]),
+				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].right], [args[0], BinEither.valueOf(mod, args[1], 1n)]),
+			]).make();
 		} else {
 			args = ASTNodeOperation.coerceOperands(mod, ...args);
 			const bintypes: readonly [binaryen.Type, binaryen.Type] = [

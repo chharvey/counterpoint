@@ -14,6 +14,7 @@ import {
 	Float64,
 	SolidString,
 	Builder,
+	BinEither,
 	TypeError01,
 	NanError01,
 	NanError02,
@@ -317,19 +318,22 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = goal.children.slice(2).map((stmt) => {
+				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => {
 					const arg: binaryen.ExpressionRef = ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder);
-					return [0, 1, 2, 3].map((i) => builder.module.tuple.extract(arg, i));
+					return new BinEither(builder.module, BinEither.indexOf(builder.module, arg), [
+						BinEither.valueOf(builder.module, arg, 0n),
+						BinEither.valueOf(builder.module, arg, 1n),
+					]);
 				});
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						Builder.createBinEither(builder.module, extracts[0][1], [callUnaryOp(builder.module, 'inot', extracts[0][2]), callUnaryOp(builder.module, 'fnot', extracts[0][3])]),
-						Builder.createBinEither(builder.module, extracts[1][1], [callUnaryOp(builder.module, 'iemp', extracts[1][2]), callUnaryOp(builder.module, 'femp', extracts[1][3])]),
-						Builder.createBinEither(builder.module, extracts[2][1], [callUnaryOp(builder.module, 'neg',  extracts[2][2]), builder.module.f64.neg(extracts[2][3])]),
-						Builder.createBinEither(builder.module, extracts[3][1], [callUnaryOp(builder.module, 'inot', extracts[3][2]), callUnaryOp(builder.module, 'fnot', extracts[3][3])]),
-						Builder.createBinEither(builder.module, extracts[4][1], [callUnaryOp(builder.module, 'iemp', extracts[4][2]), callUnaryOp(builder.module, 'femp', extracts[4][3])]),
-						Builder.createBinEither(builder.module, extracts[5][1], [callUnaryOp(builder.module, 'neg',  extracts[5][2]), builder.module.f64.neg(extracts[5][3])]),
+						new BinEither(builder.module, extracts[0].index, [callUnaryOp(builder.module, 'inot', extracts[0].value(0n)), callUnaryOp(builder.module, 'fnot', extracts[0].value(1n))]).make(),
+						new BinEither(builder.module, extracts[1].index, [callUnaryOp(builder.module, 'iemp', extracts[1].value(0n)), callUnaryOp(builder.module, 'femp', extracts[1].value(1n))]).make(),
+						new BinEither(builder.module, extracts[2].index, [callUnaryOp(builder.module, 'neg',  extracts[2].value(0n)), builder.module.f64.neg(extracts[2].value(1n))]).make(),
+						new BinEither(builder.module, extracts[3].index, [callUnaryOp(builder.module, 'inot', extracts[3].value(0n)), callUnaryOp(builder.module, 'fnot', extracts[3].value(1n))]).make(),
+						new BinEither(builder.module, extracts[4].index, [callUnaryOp(builder.module, 'iemp', extracts[4].value(0n)), callUnaryOp(builder.module, 'femp', extracts[4].value(1n))]).make(),
+						new BinEither(builder.module, extracts[5].index, [callUnaryOp(builder.module, 'neg',  extracts[5].value(0n)), builder.module.f64.neg(extracts[5].value(1n))]).make(),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
@@ -466,9 +470,12 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = goal.children.slice(2).map((stmt) => {
+				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => {
 					const arg0: binaryen.ExpressionRef = ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder);
-					return [0, 1, 2, 3].map((i) => builder.module.tuple.extract(arg0, i));
+					return new BinEither(builder.module, BinEither.indexOf(builder.module, arg0), [
+						BinEither.valueOf(builder.module, arg0, 0n),
+						BinEither.valueOf(builder.module, arg0, 1n),
+					]);
 				});
 				const const_ = {
 					'2':    buildConstInt   (2n,  mod),
@@ -478,10 +485,10 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						Builder.createBinEither(mod, extracts[0][1], [mod.i32.mul(                      extracts[0][2],  const_['2']),   mod.f64.mul(extracts[0][3], const_['c(2)'])]),
-						Builder.createBinEither(mod, extracts[1][1], [mod.i32.mul(                      extracts[1][2],  const_['2']),   mod.f64.mul(extracts[1][3], const_['c(2)'])]),
-						Builder.createBinEither(mod, extracts[2][1], [mod.f64.mul(mod.f64.convert_u.i32(extracts[2][2]), const_['2.4']), mod.f64.mul(extracts[2][3], const_['2.4'])]),
-						Builder.createBinEither(mod, extracts[3][1], [mod.f64.mul(mod.f64.convert_u.i32(extracts[3][2]), const_['2.4']), mod.f64.mul(extracts[3][3], const_['2.4'])]),
+						new BinEither(mod, extracts[0].index, [mod.i32.mul(                      extracts[0].value(0n),  const_['2']),   mod.f64.mul(extracts[0].value(1n), const_['c(2)'])]).make(),
+						new BinEither(mod, extracts[1].index, [mod.i32.mul(                      extracts[1].value(0n),  const_['2']),   mod.f64.mul(extracts[1].value(1n), const_['c(2)'])]).make(),
+						new BinEither(mod, extracts[2].index, [mod.f64.mul(mod.f64.convert_u.i32(extracts[2].value(0n)), const_['2.4']), mod.f64.mul(extracts[2].value(1n), const_['2.4'])]).make(),
+						new BinEither(mod, extracts[3].index, [mod.f64.mul(mod.f64.convert_u.i32(extracts[3].value(0n)), const_['2.4']), mod.f64.mul(extracts[3].value(1n), const_['2.4'])]).make(),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
@@ -502,20 +509,23 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly (readonly (readonly binaryen.ExpressionRef[])[])[] = goal.children.slice(2).map((stmt) => {
+				const extracts: readonly (readonly BinEither[])[] = goal.children.slice(2).map((stmt) => {
 					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
 					return [
 						binexp.operand0.build(builder),
 						binexp.operand1.build(builder),
-					].map((arg) => [0, 1, 2, 3].map((i) => builder.module.tuple.extract(arg, i)))
+					].map((arg) => new BinEither(builder.module, BinEither.indexOf(builder.module, arg), [
+						BinEither.valueOf(builder.module, arg, 0n),
+						BinEither.valueOf(builder.module, arg, 1n),
+					]));
 				});
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						Builder.createBinEither(mod, extracts[0][0][1], [
-							Builder.createBinEither(mod, extracts[0][1][1], [mod.i32.mul(extracts[0][0][2],                       extracts[0][1][2]),  mod.f64.mul(mod.f64.convert_u.i32(extracts[0][0][2]), extracts[0][1][3])]),
-							Builder.createBinEither(mod, extracts[0][1][1], [mod.f64.mul(extracts[0][0][3], mod.f64.convert_u.i32(extracts[0][1][2])), mod.f64.mul(                      extracts[0][0][3],  extracts[0][1][3])]),
-						]),
+						new BinEither(mod, extracts[0][0].index, [
+							new BinEither(mod, extracts[0][1].index, [mod.i32.mul(extracts[0][0].value(0n),                       extracts[0][1].value(0n)),  mod.f64.mul(mod.f64.convert_u.i32(extracts[0][0].value(0n)), extracts[0][1].value(1n))]).make(),
+							new BinEither(mod, extracts[0][1].index, [mod.f64.mul(extracts[0][0].value(1n), mod.f64.convert_u.i32(extracts[0][1].value(0n))), mod.f64.mul(                      extracts[0][0].value(1n),  extracts[0][1].value(1n))]).make(),
+						]).make(),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});

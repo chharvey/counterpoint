@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
+import {BinEither} from '../../index.js';
 import {
 	SolidType,
 	SolidTypeUnion,
@@ -49,26 +50,26 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 			value = mod.f64.convert_u.i32(value);
 		}
 		return (assigned_type instanceof SolidTypeUnion)
-			// assert: `value` is equivalent to a result of `Builder.createBinEither()`
+			// assert: `value` is equivalent to a result of `new BinEither().make()`
 			? mod.if(
-				mod.i32.eqz(mod.tuple.extract(value, 1)),
-				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.left,  mod.tuple.extract(value, 2), int_coercion),
-				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.right, mod.tuple.extract(value, 3), int_coercion),
+				mod.i32.eqz(BinEither.indexOf(mod, value)),
+				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.left,  BinEither.valueOf(mod, value, 0n), int_coercion),
+				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.right, BinEither.valueOf(mod, value, 1n), int_coercion),
 			)
 			: (assignee_type instanceof SolidTypeUnion)
 				? (
-					(assigned_type.isSubtypeOf(assignee_type.left)) ? Builder.createBinEither(mod, 0n, [
+					(assigned_type.isSubtypeOf(assignee_type.left)) ? new BinEither(mod, 0n, [
 						(assigned_type.binType() === assignee_type.left.binType())
 							? value
 							: ASTNodeStatement.coerceAssignment(mod, assignee_type.left, assigned_type, value, int_coercion),
 						assignee_type.right.defaultBinValue(mod),
-					]) :
-					(assigned_type.isSubtypeOf(assignee_type.right)) ? Builder.createBinEither(mod, 1n, [
+					]).make() :
+					(assigned_type.isSubtypeOf(assignee_type.right)) ? new BinEither(mod, 1n, [
 						assignee_type.left.defaultBinValue(mod),
 						(assigned_type.binType() === assignee_type.right.binType())
 							? value
 							: ASTNodeStatement.coerceAssignment(mod, assignee_type.right, assigned_type, value, int_coercion),
-					]) :
+					]).make() :
 					(() => { throw new TypeError(`Expected \`${ assigned_type }\` to be a subtype of \`${ assignee_type.left }\` or \`${ assignee_type.right }\``); })() // TODO: use throw_expression
 				)
 				: value;

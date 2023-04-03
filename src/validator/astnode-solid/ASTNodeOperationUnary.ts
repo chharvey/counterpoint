@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs'
+import {BinEither} from '../../index.js';
 import {
 	SolidType,
 	SolidTypeUnion,
@@ -45,11 +46,11 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
 		assert.strictEqual(bintype, typ.binType());
 		if (typ instanceof SolidTypeUnion) {
-			// assert: `arg` is equivalent to a result of `Builder.createBinEither()`
-			return Builder.createBinEither(mod, mod.tuple.extract(arg, 1), [
-				ASTNodeOperationUnary.operate(mod, op, typ.left,  mod.tuple.extract(arg, 2)),
-				ASTNodeOperationUnary.operate(mod, op, typ.right, mod.tuple.extract(arg, 3)),
-			]);
+			// assert: `arg` is equivalent to a result of `new BinEither().make()`
+			return new BinEither(mod, BinEither.indexOf(mod, arg), [
+				ASTNodeOperationUnary.operate(mod, op, typ.left,  BinEither.valueOf(mod, arg, 0n)),
+				ASTNodeOperationUnary.operate(mod, op, typ.right, BinEither.valueOf(mod, arg, 1n)),
+			]).make();
 		} else {
 			ASTNodeOperation.expectIntOrFloat(bintype);
 			return (op === Operator.NEG && bintype === binaryen.f64)

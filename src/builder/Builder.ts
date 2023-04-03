@@ -1,7 +1,6 @@
 import binaryen from 'binaryen';
 import * as fs from 'fs'
 import * as path from 'path'
-import type { NonemptyArray } from '../lib/index.js';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -28,59 +27,6 @@ export class Builder {
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/exp.wat'), 'utf8'),
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/fid.wat'), 'utf8'),
 	]
-
-	/**
-	 * Create a structure containing one of many possible types.
-	 * See {@link Builder.createBinEither} for details.
-	 * @param  types        the binaryen types
-	 * @return              a Binaryen n-tuple type of `[i32, i32, ...types]`
-	 * @throws {RangeError} if the given array does not have a length of a power of 2
-	 */
-	public static createBinTypeEither(types: Readonly<NonemptyArray<binaryen.Type>>): binaryen.Type {
-		if (Math.log2(types.length) % 1 !== 0) {
-			throw new RangeError('The given array does not have a length of a power of 2.');
-		}
-		return binaryen.createType([binaryen.i32, binaryen.i32, ...types]);
-		//                          ^             ^             ^ possible types
-		//                          ^             ^ index of current type
-		//                          ^ length of `types`
-	}
-
-	/**
-	 * Create a structure containing one of many possible values.
-	 *
-	 * The values are represented as leaves in a binary tree that is “perfect”
-	 * (i.e., all leaves are at the same depth level).
-	 * What this means is that the number of leaves is always a power of 2,
-	 * and each leaf can be accessed by traversing the tree.
-	 *
-	 * For example, a variable could be one of the following values: *1, 2.0, 3.3, 4.4*.
-	 * This data structure would be represented as a Binaryen tuple type with `n+2` entries,
-	 * where `n` is the number of possible values, preceeded by 2 entires:
-	 * the first of which indicates the “length”, or number of leaves, (in this case, 4), and
-	 * the second of which indicates the “selection”, the index of the current actual value at runtime.
-	 * If the current value is, say, *2.0* (with index 1), then this would be represented by the Binaryen tuple
-	 * `[4, 1, 1, 2.0, 3.3, 4.4]`.
-	 *
-	 * @param  mod          a module to create the instance in
-	 * @param  index        the index of the current value at runtime
-	 * @param  values       the possible values
-	 * @return              a Binaryen n-tuple value of `[values.length, index, ...values]`
-	 * @throws {RangeError} if the given array does not have a length of a power of 2
-	 */
-	public static createBinEither(
-		mod:    binaryen.Module,
-		index:  bigint | binaryen.ExpressionRef,
-		values: Readonly<NonemptyArray<binaryen.ExpressionRef>>,
-	): binaryen.ExpressionRef {
-		if (Math.log2(values.length) % 1 !== 0) {
-			throw new RangeError('The given array does not have a length of a power of 2.');
-		}
-		if (typeof index === 'bigint') {
-			index = mod.i32.const(Number(index));
-		}
-		return mod.tuple.make([mod.i32.const(values.length), index, ...values]);
-	}
 
 
 	/** An AST goal produced by a Decorator. */
@@ -198,6 +144,7 @@ export class Builder {
 	 * @return `this`
 	 */
 	public build(): this {
+		// this.module.setFeatures(binaryen.Features.ReferenceTypes);
 		this.module.setFeatures(binaryen.Features.Multivalue);
 		this.ast_goal.build(this);
 		const validation: number = this.module.validate();

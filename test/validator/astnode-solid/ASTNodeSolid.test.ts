@@ -4,6 +4,7 @@ import {
 	ASTNODE_SOLID as AST,
 	SolidType,
 	Builder,
+	BinEither,
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,
@@ -196,17 +197,17 @@ describe('ASTNodeSolid', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						Builder.createBinEither(builder.module, 0n, [exprs[0],       default_.int]),
-						Builder.createBinEither(builder.module, 1n, [default_.float, exprs[1]]),
+						new BinEither(builder.module, 0n, [exprs[0],       default_.int]).make(),
+						new BinEither(builder.module, 1n, [default_.float, exprs[1]]).make(),
 						builder.module.if(
-							builder.module.i32.eqz(builder.module.tuple.extract(exprs[2], 1)),
-							Builder.createBinEither(builder.module, 0n, [builder.module.tuple.extract(exprs[2], 2), default_.int]),
-							Builder.createBinEither(builder.module, 1n, [default_.float,                            builder.module.tuple.extract(exprs[2], 3)]),
+							builder.module.i32.eqz(BinEither.indexOf(builder.module, exprs[2])),
+							new BinEither(builder.module, 0n, [BinEither.valueOf(builder.module, exprs[2], 0n), default_.int]).make(),
+							new BinEither(builder.module, 1n, [default_.float,                                  BinEither.valueOf(builder.module, exprs[2], 1n)]).make(),
 						),
 						builder.module.if(
-							builder.module.i32.eqz(builder.module.tuple.extract(exprs[3], 1)),
-							Builder.createBinEither(builder.module, 1n, [default_.float,                            builder.module.tuple.extract(exprs[3], 2)]),
-							Builder.createBinEither(builder.module, 0n, [builder.module.tuple.extract(exprs[3], 3), default_.int]),
+							builder.module.i32.eqz(BinEither.indexOf(builder.module, exprs[3])),
+							new BinEither(builder.module, 1n, [default_.float,                                  BinEither.valueOf(builder.module, exprs[3], 0n)]).make(),
+							new BinEither(builder.module, 0n, [BinEither.valueOf(builder.module, exprs[3], 1n), default_.int]).make(),
 						),
 					].map((expected) => builder.module.local.set(0, expected)),
 				);

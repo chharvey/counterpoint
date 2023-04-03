@@ -1,9 +1,7 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
-import {
-	Builder,
-	Set_hasEq,
-} from './package.js';
+import {BinEither} from '../index.js';
+import {Set_hasEq} from './package.js';
 import {
 	SolidTypeIntersection,
 	SolidTypeUnion,
@@ -268,7 +266,7 @@ export abstract class SolidType {
 				if (right_type === binaryen.none) {
 					right_type = left_type;
 				}
-				return Builder.createBinTypeEither([left_type, right_type]);
+				return BinEither.createType([left_type, right_type]);
 			})(this.left.binType(), this.right.binType()) :
 			(() => { throw new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`); })() // TODO use throw_expression
 		);
@@ -281,7 +279,7 @@ export abstract class SolidType {
 		return (
 			(this.binType() === binaryen.i32) ? mod.i32.const(0) :
 			(this.binType() === binaryen.f64) ? mod.f64.const(0) :
-			(this instanceof SolidTypeUnion)  ? Builder.createBinEither(mod, 0n, [this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)]) :
+			(this instanceof SolidTypeUnion)  ? new BinEither(mod, 0n, [this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)]).make() :
 			(() => { throw new TypeError(`Could not determine a default value for \`${ this }\`.`); })() // TODO use throw_expression
 		);
 	};
