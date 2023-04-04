@@ -6,8 +6,9 @@ import {
 	SymbolStructureType,
 	TYPE,
 	Builder,
-	AssignmentError01,
+	AssignmentErrorDuplicateDeclaration,
 } from '../../../src/index.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
 import {assertEqualBins} from '../../assert-helpers.js';
 
 
@@ -22,18 +23,18 @@ describe('ASTNodeDeclarationType', () => {
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(256n));
 			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
-			assert.ok(info instanceof SymbolStructureType);
+			assert_instanceof(info, SymbolStructureType);
 			assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
 		});
 		it('throws if the validator already contains a record for the symbol.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				type T = int;
 				type T = float;
-			`).varCheck(), AssignmentError01);
+			`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				let FOO: int = 42;
 				type FOO = float;
-			`).varCheck(), AssignmentError01);
+			`).varCheck(), AssignmentErrorDuplicateDeclaration);
 		});
 	});
 

@@ -1,9 +1,11 @@
-import * as assert from 'assert';
 import {
 	type OBJ,
 	TYPE,
 } from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -19,7 +21,7 @@ import {ASTNodeType} from './ASTNodeType.js';
 export class ASTNodeTypeAccess extends ASTNodeType {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeAccess {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeAccess);
+		assert_instanceof(typ, ASTNodeTypeAccess);
 		return typ;
 	}
 
@@ -39,11 +41,11 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		}
 		if (this.accessor instanceof ASTNodeIndexType) {
 			const accessor_type = this.accessor.val.eval() as TYPE.TypeUnit<OBJ.Integer>;
-			assert.ok(base_type instanceof TYPE.TypeCollectionIndexedStatic, `\`${ base_type }\` should be a Tuple or Vect type.`);
+			assert_instanceof(base_type, TYPE.TypeCollectionIndexedStatic);
 			return base_type.get(accessor_type.value, Operator.DOT, this.accessor);
 		} else {
-			assert.ok(this.accessor instanceof ASTNodeKey, `Expected ${ this.accessor } to be an \`ASTNodeKey\`.`);
-			assert.ok(base_type instanceof TYPE.TypeCollectionKeyedStatic, `\`${ base_type }\` should be a Record or Struct type.`);
+			assert_instanceof(this.accessor, ASTNodeKey);
+			assert_instanceof(base_type, TYPE.TypeCollectionKeyedStatic);
 			return base_type.get(this.accessor.id, Operator.DOT, this.accessor);
 		}
 	}

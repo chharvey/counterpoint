@@ -50,14 +50,18 @@ export class TypeRecord extends TypeCollectionKeyedStatic {
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
 			&& [...t.invariants].every(([id, thattype]) => {
-				const thistype: TypeEntry | null = this.invariants.get(id) || null;
-				return (
-					(thattype.optional || thistype && !thistype.optional)
-					&& (!thistype || ((t.isMutable)
-						? thistype.type.equals(thattype.type)      // Invariance for mutable records: `A == B --> mutable Record.<A> <: mutable Record.<B>`.
-						: thistype.type.isSubtypeOf(thattype.type) // Covariance for immutable records: `A <: B --> Record.<A> <: Record.<B>`.
-					))
-				);
+				const thistype: TypeEntry | undefined = this.invariants.get(id);
+				if (!thattype.optional) {
+					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.
+						We can however make the assertion in tuple types because of item ordering. */
+					if (thistype?.optional !== false) {
+						return false;
+					}
+				}
+				return (!thistype || ((t.isMutable)
+					? thistype.type.equals(thattype.type)      // Invariance for mutable records: `A == B --> mutable Record.<A> <: mutable Record.<B>`.
+					: thistype.type.isSubtypeOf(thattype.type) // Covariance for immutable records: `A <: B --> Record.<A> <: Record.<B>`.
+				));
 			})
 		);
 	}

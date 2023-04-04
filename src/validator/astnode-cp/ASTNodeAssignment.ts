@@ -1,11 +1,11 @@
-import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	type TYPE,
 	type Builder,
-	AssignmentError10,
+	AssignmentErrorReassignment,
 	MutabilityError01,
 } from '../../index.js';
+import {assert_instanceof} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -22,7 +22,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 export class ASTNodeAssignment extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAssignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeAssignment);
+		assert_instanceof(statement, ASTNodeAssignment);
 		return statement;
 	}
 
@@ -38,7 +38,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		super.varCheck();
 		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
 		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolStructureVar).unfixed) {
-			throw new AssignmentError10(assignee);
+			throw new AssignmentErrorReassignment(assignee);
 		}
 	}
 

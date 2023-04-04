@@ -4,6 +4,7 @@ import {
 	TYPE,
 	TypeErrorNoEntry,
 } from '../../../src/index.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
 import {
 	typeUnitInt,
 	typeUnitFloat,
@@ -15,7 +16,7 @@ import {
 describe('ASTNodeTypeAccess', () => {
 	describe('#eval', () => {
 		function evalTypeDecl(decl: AST.ASTNodeStatement): TYPE.Type {
-			assert.ok(decl instanceof AST.ASTNodeDeclarationType);
+			assert_instanceof(decl, AST.ASTNodeDeclarationType);
 			return decl.assigned.eval();
 		}
 		const expected: TYPE.Type[] = [

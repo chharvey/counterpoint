@@ -8,9 +8,10 @@ import {
 	TYPE,
 	Builder,
 	TypeErrorInvalidOperation,
-	NanError01,
-	NanError02,
+	NanErrorInvalid,
+	NanErrorDivZero,
 } from '../../../src/index.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
 import {
 	assertEqualTypes,
 	assertEqualBins,
@@ -54,7 +55,7 @@ function typeOfOperationFromSource(src: string): TYPE.Type {
 
 describe('ASTNodeOperation', () => {
 	function typeOfStmtExpr(stmt: AST.ASTNodeStatement): TYPE.Type {
-		assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+		assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 		return stmt.expr!.type();
 	}
 
@@ -406,8 +407,8 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 			it('throws when performing an operation that does not yield a valid number.', () => {
-				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('42 / 0;')    .fold(), NanError02);
-				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('-4 ^ -0.5;') .fold(), NanError01);
+				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('42 / 0;')    .fold(), NanErrorDivZero);
+				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('-4 ^ -0.5;') .fold(), NanErrorInvalid);
 			});
 		});
 
@@ -570,7 +571,8 @@ describe('ASTNodeOperation', () => {
 					goal.children.slice(4).forEach((stmt) => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
 						const fold: OBJ.Object | null = expr.fold();
-						assert.ok(fold instanceof OBJ.Boolean, `${ fold } should be a Boolean.`);
+						// @ts-expect-error --- `OBJ.Boolean` has a private constructor
+						assert_instanceof(fold, OBJ.Boolean);
 						assert.deepStrictEqual(
 							expr.type(),
 							new TYPE.TypeUnit<OBJ.Boolean>(fold),

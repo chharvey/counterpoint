@@ -6,10 +6,11 @@ import {
 	TYPE,
 	Builder,
 	TypeErrorInvalidOperation,
-	NanError01,
+	NanErrorInvalid,
 } from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -29,7 +30,7 @@ import {ASTNodeOperation} from './ASTNodeOperation.js';
 export class ASTNodeOperationUnary extends ASTNodeOperation {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationUnary);
+		assert_instanceof(expression, ASTNodeOperationUnary);
 		return expression;
 	}
 
@@ -124,7 +125,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				[Operator.NEG, (z) => z.neg()],
 			]).get(this.operator)!(v0);
 		} catch (err) {
-			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
+			throw (err instanceof xjs.NaNError) ? new NanErrorInvalid(this) : err;
 		}
 	}
 }

@@ -1,6 +1,6 @@
-import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import type {Builder} from '../../index.js';
+import {assert_instanceof} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -14,7 +14,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 export class ASTNodeStatementExpression extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeStatementExpression);
+		assert_instanceof(statement, ASTNodeStatementExpression);
 		return statement;
 	}
 

@@ -1,10 +1,10 @@
-import * as assert from 'assert';
 import {
 	TYPE,
-	ReferenceError01,
-	ReferenceError03,
+	ReferenceErrorUndeclared,
+	ReferenceErrorKind,
 } from '../../index.js';
 import {
+	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
 } from '../../lib/index.js';
@@ -26,7 +26,7 @@ import {ASTNodeType} from './ASTNodeType.js';
 export class ASTNodeTypeAlias extends ASTNodeType {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeAlias {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeAlias);
+		assert_instanceof(typ, ASTNodeTypeAlias);
 		return typ;
 	}
 
@@ -42,10 +42,10 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 
 	public override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
-			throw new ReferenceError01(this);
+			throw new ReferenceErrorUndeclared(this);
 		}
 		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureVar) {
-			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
+			throw new ReferenceErrorKind(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		}
 	}
 

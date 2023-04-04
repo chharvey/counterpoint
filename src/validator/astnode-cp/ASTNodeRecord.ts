@@ -1,15 +1,15 @@
-import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	AssignmentError02,
+	AssignmentErrorDuplicateKey,
 	TypeError,
 	TypeErrorUnexpectedRef,
 	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	type NonemptyArray,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -28,7 +28,7 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeRecord {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeRecord);
+		assert_instanceof(expression, ASTNodeRecord);
 		return expression;
 	}
 
@@ -45,7 +45,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
 		xjs.Array.forEachAggregated(keys.map((key) => key.id), (id, i, ids) => {
 			if (ids.slice(0, i).includes(id)) {
-				throw new AssignmentError02(keys[i]);
+				throw new AssignmentErrorDuplicateKey(keys[i]);
 			}
 		});
 	}

@@ -1,11 +1,11 @@
-import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	type TYPE,
 	type Builder,
-	AssignmentError01,
+	AssignmentErrorDuplicateDeclaration,
 } from '../../index.js';
+import {assert_instanceof} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -22,7 +22,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeDeclarationVariable);
+		assert_instanceof(statement, ASTNodeDeclarationVariable);
 		return statement;
 	}
 
@@ -38,7 +38,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 
 	public override varCheck(): void {
 		if (this.validator.hasSymbol(this.assignee.id)) {
-			throw new AssignmentError01(this.assignee);
+			throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 		}
 		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
 		this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));

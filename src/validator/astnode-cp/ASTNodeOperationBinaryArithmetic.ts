@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
@@ -6,11 +5,12 @@ import {
 	TYPE,
 	type Builder,
 	TypeErrorInvalidOperation,
-	NanError01,
-	NanError02,
+	NanErrorInvalid,
+	NanErrorDivZero,
 } from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -37,7 +37,7 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryArithmetic {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinaryArithmetic);
+		assert_instanceof(expression, ASTNodeOperationBinaryArithmetic);
 		return expression;
 	}
 
@@ -100,7 +100,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			return v1;
 		}
 		if (this.operator === Operator.DIV && v1 instanceof OBJ.Number && v1.eq0()) {
-			throw new NanError02(this.operand1);
+			throw new NanErrorDivZero(this.operand1);
 		}
 		return (v0 instanceof OBJ.Integer && v1 instanceof OBJ.Integer)
 			? this.foldNumeric(v0, v1)
@@ -120,7 +120,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				// [Operator.SUB, (x, y) => x.minus(y)],
 			]).get(this.operator)!(v0, v1);
 		} catch (err) {
-			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
+			throw (err instanceof xjs.NaNError) ? new NanErrorInvalid(this) : err;
 		}
 	}
 }

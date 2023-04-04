@@ -6,6 +6,7 @@ import {
 	TYPE,
 	Builder,
 } from '../../src/index.js';
+import {assert_instanceof} from '../../src/lib/index.js';
 import {
 	typeUnitInt,
 	typeUnitFloat,
@@ -1012,7 +1013,7 @@ describe('Type', () => {
 						TYPE.BOOL,
 					]);
 					const union: TYPE.Type = left.union(right);
-					assert.ok(union instanceof TYPE.TypeUnion);
+					assert_instanceof(union, TYPE.TypeUnion);
 					const v = new OBJ.Tuple<OBJ.Boolean>([OBJ.Boolean.TRUE, OBJ.Boolean.TRUE]);
 					assert.ok(union.combineTuplesOrRecords().includes(v), `
 						let x: [bool | int, int | bool] = [true, true]; % ok
@@ -1073,7 +1074,7 @@ describe('Type', () => {
 						[0x101n, TYPE.BOOL],
 					]));
 					const union: TYPE.Type = left.union(right);
-					assert.ok(union instanceof TYPE.TypeUnion);
+					assert_instanceof(union, TYPE.TypeUnion);
 					const v = new OBJ.Record<OBJ.Boolean>(new Map<bigint, OBJ.Boolean>([
 						[0x100n, OBJ.Boolean.TRUE],
 						[0x101n, OBJ.Boolean.TRUE],

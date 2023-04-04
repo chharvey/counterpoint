@@ -1,14 +1,14 @@
-import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	type OBJ,
 	TYPE,
 	type Builder,
-	ReferenceError01,
-	ReferenceError03,
+	ReferenceErrorUndeclared,
+	ReferenceErrorKind,
 } from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
 } from '../../lib/index.js';
@@ -30,7 +30,7 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 export class ASTNodeVariable extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeVariable {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeVariable);
+		assert_instanceof(expression, ASTNodeVariable);
 		return expression;
 	}
 
@@ -46,10 +46,10 @@ export class ASTNodeVariable extends ASTNodeExpression {
 
 	public override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
-			throw new ReferenceError01(this);
+			throw new ReferenceErrorUndeclared(this);
 		}
 		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
-			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
+			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
 	}

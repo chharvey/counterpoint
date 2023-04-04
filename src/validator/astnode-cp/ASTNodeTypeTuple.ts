@@ -1,10 +1,12 @@
-import * as assert from 'assert';
 import {
 	type TypeEntry,
 	TYPE,
 	TypeErrorUnexpectedRef,
 } from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -19,7 +21,7 @@ import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
 export class ASTNodeTypeTuple extends ASTNodeTypeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeTuple);
+		assert_instanceof(typ, ASTNodeTypeTuple);
 		return typ;
 	}
 

@@ -1,6 +1,8 @@
-import * as assert from 'assert';
 import {TYPE} from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -14,7 +16,7 @@ import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
 export class ASTNodeTypeDict extends ASTNodeTypeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeDict {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeDict);
+		assert_instanceof(typ, ASTNodeTypeDict);
 		return typ;
 	}
 
