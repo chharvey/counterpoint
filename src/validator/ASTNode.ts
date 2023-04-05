@@ -1,7 +1,5 @@
-import {
-	Serializable,
-	stringifyAttributes,
-} from './package.js';
+import {stringifyAttributes} from '../core/index.js';
+import type {Serializable} from '../parser/index.js';
 
 
 
@@ -59,7 +57,7 @@ export class ASTNode implements Serializable {
 
 	/** @implements Serializable */
 	public serialize(): string {
-		const attributes: Map<string, string> = new Map<string, string>([
+		const attributes = new Map<string, string>([
 			['line',   (this.line_index + 1).toString()],
 			['col',    (this.col_index  + 1).toString()],
 			['source', this.source],

@@ -1,13 +1,15 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
 	AST,
-	SymbolStructure,
+	type SymbolStructure,
 	SymbolStructureType,
 	TYPE,
-	INST,
 	Builder,
-	AssignmentError01,
+	AssignmentErrorDuplicateDeclaration,
 } from '../../../src/index.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
+import {assertEqualBins} from '../../assert-helpers.js';
 
 
 
@@ -21,18 +23,18 @@ describe('ASTNodeDeclarationType', () => {
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(256n));
 			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
-			assert.ok(info instanceof SymbolStructureType);
+			assert_instanceof(info, SymbolStructureType);
 			assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
 		});
 		it('throws if the validator already contains a record for the symbol.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 				type T = int;
 				type T = float;
-			}`).varCheck(), AssignmentError01);
+			}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 				let FOO: int = 42;
 				type FOO = float;
-			}`).varCheck(), AssignmentError01);
+			}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 		});
 	});
 
@@ -53,23 +55,17 @@ describe('ASTNodeDeclarationType', () => {
 
 
 	describe('#build', () => {
-		it('always returns InstructionNone.', () => {
+		it('always returns `(nop)`.', () => {
 			const src: string = `{
 				type T = int;
 				type U = T | float;
 			}`;
 			const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
-			const builder: Builder = new Builder(src);
-			assert.deepStrictEqual(
-				[
-					block.children[0].build(builder),
-					block.children[1].build(builder),
-				],
-				[
-					new INST.InstructionNone(),
-					new INST.InstructionNone(),
-				],
-			);
+			const builder = new Builder(src);
+			return xjs.Array.forEachAggregated(block.children, (stmt) => {
+				assert.ok(stmt instanceof AST.ASTNodeDeclarationType);
+				return assertEqualBins(stmt.build(builder), builder.module.nop());
+			});
 		});
 	});
 });

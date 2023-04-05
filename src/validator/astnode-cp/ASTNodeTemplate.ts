@@ -1,13 +1,18 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
+	type OBJ,
 	TYPE,
-	OBJ,
-	INST,
-	Builder,
-	CPConfig,
+	type Builder,
+} from '../../index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeConstant} from './ASTNodeConstant.js';
 
@@ -16,12 +21,12 @@ import type {ASTNodeConstant} from './ASTNodeConstant.js';
 export class ASTNodeTemplate extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTemplate {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeTemplate);
+		assert_instanceof(expression, ASTNodeTemplate);
 		return expression;
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'string_template'>,
+		start_node: SyntaxNodeFamily<'string_template', ['variable']>,
 		public override readonly children: // FIXME spread types
 			| readonly [ASTNodeConstant]
 			| readonly [ASTNodeConstant,                                                           ASTNodeConstant]
@@ -34,19 +39,21 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		super(start_node, {}, children);
 	}
 
-	public override shouldFloat(): boolean {
-		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		builder;
+		throw '`ASTNodeTemplate#build` not yet supported.';
 	}
 
-	protected override build_do(_builder: Builder): INST.InstructionExpression {
-		throw new Error('ASTNodeTemplate#build_do not yet supported.');
-	}
-
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
 		return TYPE.STR;
 	}
 
-	protected override fold_do(): OBJ.String | null {
+	@memoizeMethod
+	public override fold(): OBJ.String | null {
 		const values: Array<OBJ.Object | null> = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))
 			? null

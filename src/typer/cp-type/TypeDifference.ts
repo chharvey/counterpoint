@@ -1,8 +1,7 @@
 import * as xjs from 'extrajs';
-import {
-	languageValuesIdentical,
-	OBJ,
-} from './package.js';
+import {strictEqual} from '../../lib/index.js';
+import {languageValuesIdentical} from '../utils-private.js';
+import type * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
 
 
@@ -12,7 +11,13 @@ import {Type} from './Type.js';
  * that contains values assignable to `T` but *not* assignable to `U`.
  */
 export class TypeDifference extends Type {
-	public declare readonly isBottomType: boolean;
+	public override readonly isReference: boolean = this.left.isReference;
+	/* We can assert that this is always non-empty because
+	the only cases in which it could be empty are
+	1. if left is empty
+	2. if left is a subtype of right
+	each of which is impossible because the algorithm would have already produced the `never` type. */
+	public override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new TypeDifference object.
@@ -24,14 +29,6 @@ export class TypeDifference extends Type {
 		private readonly right: Type,
 	) {
 		super(false, xjs.Set.difference(left.values, right.values, languageValuesIdentical));
-		/*
-		We can assert that this is always non-empty because
-		the only cases in which it could be empty are
-		1. if left is empty
-		2. if left is a subtype of right
-		each of which is impossible because the algorithm would have already produced the `never` type.
-		*/
-		this.isBottomType = false;
 	}
 
 	public override get hasMutable(): boolean {
@@ -46,8 +43,10 @@ export class TypeDifference extends Type {
 		return this.left.includes(v) && !this.right.includes(v);
 	}
 
-	protected override isSubtypeOf_do(t: Type): boolean {
-		return this.left.isSubtypeOf(t) || super.isSubtypeOf_do(t);
+	@strictEqual
+	@Type.subtypeDeco
+	public override isSubtypeOf(t: Type): boolean {
+		return this.left.isSubtypeOf(t) || super.isSubtypeOf(t);
 	}
 
 	public override mutableOf(): TypeDifference {

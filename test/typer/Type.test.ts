@@ -1,9 +1,12 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
-	TypeEntry,
-	TYPE,
+	type TypeEntry,
 	OBJ,
-} from '../../src/typer/index.js';
+	TYPE,
+	Builder,
+} from '../../src/index.js';
+import {assert_instanceof} from '../../src/lib/index.js';
 import {
 	typeUnitInt,
 	typeUnitFloat,
@@ -40,16 +43,21 @@ describe('Type', () => {
 		TYPE.FLOAT,
 		TYPE.STR,
 	];
-	const t0: TYPE.TypeInterface = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
+	const t0 = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 		['foo', TYPE.OBJ],
 		['bar', TYPE.NULL],
 		['diz', TYPE.BOOL],
 	]));
-	const t1: TYPE.TypeInterface = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
+	const t1 = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 		['foo', TYPE.OBJ],
 		['qux', TYPE.INT.union(TYPE.FLOAT)],
 		['diz', TYPE.STR],
 	]));
+
+
+	it('false | true == bool', () => {
+		assert.ok(OBJ.Boolean.FALSETYPE.union(OBJ.Boolean.TRUETYPE).equals(TYPE.BOOL));
+	});
 
 
 	describe('#includes', () => {
@@ -90,7 +98,7 @@ describe('Type', () => {
 	describe('#intersect', () => {
 		it('1-5 | `T  & never   == never`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.intersect(TYPE.NEVER).equals(TYPE.NEVER), `${ t }`);
+				assert.ok(t.intersect(TYPE.NEVER).isBottomType, `${ t }`);
 			});
 		});
 		it('1-6 | `T  & unknown == T`', () => {
@@ -143,7 +151,7 @@ describe('Type', () => {
 		});
 		it('1-8 | `T \| unknown == unknown`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.union(TYPE.UNKNOWN).equals(TYPE.UNKNOWN), `${ t }`);
+				assert.ok(t.union(TYPE.UNKNOWN).isTopType, `${ t }`);
 			});
 		});
 		it('2-2 | `A \| B == B \| A`', () => {
@@ -172,6 +180,11 @@ describe('Type', () => {
 					(null | bool | int | float)
 				`,
 			);
+		});
+		describe('TypeIntersection', () => {
+			it.skip('distributes intersection operands over union: `(B  & C) \| A == (B \| A)  & (C \| A)`.', () => {
+				'TODO';
+			});
 		});
 	});
 
@@ -234,14 +247,14 @@ describe('Type', () => {
 		it('1-3 | `T       <: never  <->  T == never`', () => {
 			builtin_types.forEach((t) => {
 				if (t.isSubtypeOf(TYPE.NEVER)) {
-					assert.ok(t.equals(TYPE.NEVER), `${ t }`);
+					assert.ok(t.isBottomType, `${ t }`);
 				}
 			});
 		});
 		it('1-4 | `unknown <: T      <->  T == unknown`', () => {
 			builtin_types.forEach((t) => {
 				if (TYPE.UNKNOWN.isSubtypeOf(t)) {
-					assert.ok(t.equals(TYPE.UNKNOWN), `${ t }`);
+					assert.ok(t.isTopType, `${ t }`);
 				}
 			});
 		});
@@ -318,6 +331,10 @@ describe('Type', () => {
 				&& !TYPE.NULL.union(TYPE.INT).isSubtypeOf(TYPE.INT),
 				'exists A, C, D s.t. `A <: C | D` but `!(A <: C)` and `!(A <: D)`',
 			);
+			return assert.ok(
+				TYPE.BOOL.union(TYPE.INT).isSubtypeOf(TYPE.NULL.union(TYPE.BOOL).union(TYPE.INT.union(TYPE.FLOAT))),
+				'`U | V <: (T | U) | (V | W)` but `!(U | V <: T | U)` and `!(U | V <: V | W)`',
+			);
 		});
 		it('3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
@@ -359,279 +376,241 @@ describe('Type', () => {
 		});
 
 		describe('TypeUnit', () => {
-			it('constant Boolean types should be subtypes of `bool`.', () => {
+			it('unit Boolean types should be subtypes of `bool`.', () => {
 				assert.ok(OBJ.Boolean.FALSETYPE.isSubtypeOf(TYPE.BOOL), 'Boolean.FALSETYPE');
 				assert.ok(OBJ.Boolean.TRUETYPE .isSubtypeOf(TYPE.BOOL), 'Boolean.TRUETYPE');
 			});
-			it('constant Integer types should be subtypes of `int`.', () => {
+			it('unit Integer types should be subtypes of `int`.', () => {
 				[42n, -42n, 0n, -0n].map((v) => typeUnitInt(v)).forEach((itype) => {
 					assert.ok(itype.isSubtypeOf(TYPE.INT), `${ itype }`);
 				});
 			});
-			it('constant Float types should be subtypes of `float`.', () => {
+			it('unit Float types should be subtypes of `float`.', () => {
 				[4.2, -4.2e-2, 0.0, -0.0].map((v) => typeUnitFloat(v)).forEach((ftype) => {
 					assert.ok(ftype.isSubtypeOf(TYPE.FLOAT), `${ ftype }`);
 				});
 			});
-			it('constant String types should be subtypes of `str`.', () => {
+			it('unit String types should be subtypes of `str`.', () => {
 				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => typeUnitStr(v)).forEach((stype) => {
 					assert.ok(stype.isSubtypeOf(TYPE.STR), `${ stype }`);
 				});
 			});
-			it('constant tuple types should be subtype of a tuple type instance.', () => {
-				new Map<OBJ.Object, TYPE.TypeTuple>([
-					[new OBJ.Tuple(),                                              TYPE.TypeTuple.fromTypes()],
-					[new OBJ.Tuple([new OBJ.Integer(42n)]),                        TYPE.TypeTuple.fromTypes([TYPE.INT])],
-					[new OBJ.Tuple([new OBJ.Float(4.2), new OBJ.String('hello')]), TYPE.TypeTuple.fromTypes([TYPE.FLOAT, TYPE.STR])],
-				]).forEach((tupletype, value) => {
-					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(tupletype), `let x: ${ tupletype } = ${ value };`);
-				});
-			});
-			it('constant record types should be subtype of a record type instance.', () => {
-				new Map<OBJ.Object, TYPE.TypeRecord>([
-					[new OBJ.Record(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Integer(42n)]])),                                  TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]))],
-					[new OBJ.Record(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Float(4.2)], [0x101n, new OBJ.String('hello')]])), TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.FLOAT], [0x101n, TYPE.STR]]))],
-					[new OBJ.Record(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.String('hello')], [0x101n, new OBJ.Float(4.2)]])), TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.STR], [0x101n, TYPE.FLOAT]]))],
-				]).forEach((recordtype, value) => {
-					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(recordtype), `let x: ${ recordtype } = ${ value };`);
-				});
-			});
-			it('unit list types should be subtype of a list type instance.', () => {
-				const input = [
-					null,
-					[new OBJ.Integer(42n)],
-					[new OBJ.Float(4.2), new OBJ.String('hello')],
-				] as const;
-				const output: TYPE.TypeList[] = [
-					TYPE.NEVER,
-					TYPE.INT,
-					TYPE.FLOAT.union(TYPE.STR),
-				].map((t) => new TYPE.TypeList(t));
-				new Map<OBJ.Object, TYPE.TypeList>([
-					[new OBJ.List(),         output[0]],
-					[new OBJ.List(input[1]), output[1]],
-					[new OBJ.List(input[2]), output[2]],
-				]).forEach((listtype, value) => {
-					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(listtype), `let x: ${ listtype } = ${ value };`);
-				});
-			});
-			it('unit dict types should be subtype of a dict type instance.', () => {
-				const input = [
-					new Map<bigint, OBJ.Object>([
-						[0x100n, new OBJ.Integer(42n)],
-					]),
-					new Map<bigint, OBJ.Object>([
-						[0x100n, new OBJ.Float(4.2)],
-						[0x101n, new OBJ.String('hello')],
-					]),
-					new Map<bigint, OBJ.Object>([
-						[0x100n, new OBJ.String('hello')],
-						[0x101n, new OBJ.Float(4.2)],
-					]),
-				] as const;
-				const output: TYPE.TypeDict[] = [
-					TYPE.INT,
-					TYPE.FLOAT.union(TYPE.STR),
-					TYPE.STR.union(TYPE.FLOAT),
-				].map((t) => new TYPE.TypeDict(t));
-				new Map<OBJ.Object, TYPE.TypeDict>([
-					[new OBJ.Dict(input[0]), output[0]],
-					[new OBJ.Dict(input[1]), output[1]],
-					[new OBJ.Dict(input[2]), output[2]],
-				]).forEach((dicttype, value) => {
-					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(dicttype), `let x: ${ dicttype } = ${ value };`);
-				});
-			});
-			it('constant set types should be subtype of a set type instance.', () => {
-				new Map<OBJ.Object, TYPE.TypeSet>([
-					[new OBJ.Set(),                                                       new TYPE.TypeSet(TYPE.NEVER)],
-					[new OBJ.Set(new Set([new OBJ.Integer(42n)])),                        new TYPE.TypeSet(TYPE.INT)],
-					[new OBJ.Set(new Set([new OBJ.Float(4.2), new OBJ.String('hello')])), new TYPE.TypeSet(TYPE.FLOAT.union(TYPE.STR))],
-				]).forEach((settype, value) => {
-					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(settype), `let x: ${ settype } = ${ value };`);
-				});
-			});
-			it('constant map types should be subtype of a map type instance.', () => {
-				new Map<OBJ.Object, TYPE.TypeMap>([
-					[new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([[new OBJ.Integer(0x100n), new OBJ.Integer(42n)]])),                                                   new TYPE.TypeMap(TYPE.INT, TYPE.INT)],
-					[new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([[new OBJ.Integer(0x100n), new OBJ.Float(4.2)], [new OBJ.Integer(0x101n), new OBJ.String('hello')]])), new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT.union(TYPE.STR))],
-					[new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([[new OBJ.String('hello'), new OBJ.Integer(0x100n)], [new OBJ.Float(4.2), new OBJ.Integer(0x101n)]])), new TYPE.TypeMap(TYPE.FLOAT.union(TYPE.STR), TYPE.INT)],
-				]).forEach((maptype, value) => {
-					assert.ok(new TYPE.TypeUnit(value).isSubtypeOf(maptype), `let x: ${ maptype } = ${ value };`);
-				});
-			});
 		});
 
-		describe('TypeTuple', () => {
-			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(TYPE.TypeTuple.fromTypes([
-					TYPE.INT,
-					TYPE.BOOL,
-					TYPE.STR,
-				]).isSubtypeOf(TYPE.OBJ), '[int, bool, str] <: obj;');
-				assert.ok(!TYPE.OBJ.isSubtypeOf(TYPE.TypeTuple.fromTypes([
-					TYPE.INT,
-					TYPE.BOOL,
-					TYPE.STR,
-				])), 'obj !<: [int, bool, str]');
+		describe('Type{Tuple,Vect}', () => {
+			new Map<string, typeof TYPE.TypeTuple | typeof TYPE.TypeVect>([
+				['TypeTuple', TYPE.TypeTuple],
+				['TypeVect', TYPE.TypeVect],
+			]).forEach((cons, description) => {
+				const delim: string = cons === TYPE.TypeVect ? '\\[' : '[';
+				return describe(description, () => {
+					it('is a subtype but not a supertype of `obj`.', () => {
+						assert.ok(cons.fromTypes([
+							TYPE.INT,
+							TYPE.BOOL,
+							TYPE.STR,
+						]).isSubtypeOf(TYPE.OBJ), `${ delim }int, bool, str] <: obj;`);
+						assert.ok(!TYPE.OBJ.isSubtypeOf(cons.fromTypes([
+							TYPE.INT,
+							TYPE.BOOL,
+							TYPE.STR,
+						])), `obj !<: ${ delim }int, bool, str]`);
+					});
+					it('matches per index.', () => {
+						assert.ok(cons.fromTypes([
+							TYPE.INT,
+							TYPE.BOOL,
+							TYPE.STR,
+						]).isSubtypeOf(cons.fromTypes([
+							TYPE.INT.union(TYPE.FLOAT),
+							TYPE.BOOL.union(TYPE.NULL),
+							TYPE.OBJ,
+						])), `${ delim }int, bool, str] <: ${ delim }int | float, bool?, obj];`);
+						assert.ok(!cons.fromTypes([
+							TYPE.INT,
+							TYPE.BOOL,
+							TYPE.STR,
+						]).isSubtypeOf(cons.fromTypes([
+							TYPE.BOOL.union(TYPE.NULL),
+							TYPE.OBJ,
+							TYPE.INT.union(TYPE.FLOAT),
+						])), `${ delim }int, bool, str] !<: ${ delim }bool?, obj, int | float];`);
+					});
+					it('returns false if assigned is smaller than assignee.', () => {
+						assert.ok(!cons.fromTypes([
+							TYPE.INT,
+							TYPE.BOOL,
+						]).isSubtypeOf(cons.fromTypes([
+							TYPE.INT.union(TYPE.FLOAT),
+							TYPE.BOOL.union(TYPE.NULL),
+							TYPE.OBJ,
+						])), `${ delim }int, bool] !<: ${ delim }int | float, bool?, obj];`);
+					});
+					it('skips rest if assigned is larger than assignee.', () => {
+						assert.ok(cons.fromTypes([
+							TYPE.INT,
+							TYPE.BOOL,
+							TYPE.STR,
+						]).isSubtypeOf(cons.fromTypes([
+							TYPE.INT.union(TYPE.FLOAT),
+							TYPE.BOOL.union(TYPE.NULL),
+						])), `${ delim }int, bool, str] <: ${ delim }int | float, bool?];`);
+					});
+					it('with optional entries, checks minimum count only.', () => {
+						assert.ok(new cons([
+							{type: TYPE.INT, optional: false},
+							{type: TYPE.INT, optional: false},
+							{type: TYPE.INT, optional: true},
+							{type: TYPE.INT, optional: true},
+						]).isSubtypeOf(new cons([
+							{type: TYPE.INT, optional: false},
+							{type: TYPE.INT, optional: true},
+							{type: TYPE.INT, optional: true},
+							{type: TYPE.INT, optional: true},
+							{type: TYPE.INT, optional: true},
+						])), `${ delim }int, int, ?:int, ?:int] <: ${ delim }int, ?:int, ?:int, ?:int, ?:int]`);
+						assert.ok(!new cons([
+							{type: TYPE.INT, optional: false},
+							{type: TYPE.INT, optional: true},
+							{type: TYPE.INT, optional: true},
+							{type: TYPE.INT, optional: true},
+							{type: TYPE.INT, optional: true},
+						]).isSubtypeOf(new cons([
+							{type: TYPE.INT, optional: false},
+							{type: TYPE.INT, optional: false},
+							{type: TYPE.INT, optional: true},
+							{type: TYPE.INT, optional: true},
+						])), `${ delim }int, ?:int, ?:int, ?:int, ?:int] !<: ${ delim }int, int, ?:int, ?:int]`);
+					});
+				});
 			});
-			it('matches per index.', () => {
-				assert.ok(TYPE.TypeTuple.fromTypes([
-					TYPE.INT,
-					TYPE.BOOL,
-					TYPE.STR,
-				]).isSubtypeOf(TYPE.TypeTuple.fromTypes([
-					TYPE.INT.union(TYPE.FLOAT),
-					TYPE.BOOL.union(TYPE.NULL),
-					TYPE.OBJ,
-				])), '[int, bool, str] <: [int | float, bool?, obj];');
-				assert.ok(!TYPE.TypeTuple.fromTypes([
-					TYPE.INT,
-					TYPE.BOOL,
-					TYPE.STR,
-				]).isSubtypeOf(TYPE.TypeTuple.fromTypes([
-					TYPE.BOOL.union(TYPE.NULL),
-					TYPE.OBJ,
-					TYPE.INT.union(TYPE.FLOAT),
-				])), '[int, bool, str] !<: [bool!, obj, int | float];');
-			});
-			it('returns false if assigned is smaller than assignee.', () => {
-				assert.ok(!TYPE.TypeTuple.fromTypes([
-					TYPE.INT,
-					TYPE.BOOL,
-				]).isSubtypeOf(TYPE.TypeTuple.fromTypes([
-					TYPE.INT.union(TYPE.FLOAT),
-					TYPE.BOOL.union(TYPE.NULL),
-					TYPE.OBJ,
-				])), '[int, bool] !<: [int | float, bool!, obj];');
-			});
-			it('skips rest if assigned is larger than assignee.', () => {
-				assert.ok(TYPE.TypeTuple.fromTypes([
-					TYPE.INT,
-					TYPE.BOOL,
-					TYPE.STR,
-				]).isSubtypeOf(TYPE.TypeTuple.fromTypes([
-					TYPE.INT.union(TYPE.FLOAT),
-					TYPE.BOOL.union(TYPE.NULL),
-				])), '[int, bool, str] <: [int | float, bool!];');
-			});
-			it('with optional entries, checks minimum count only.', () => {
-				assert.ok(new TYPE.TypeTuple([
-					{type: TYPE.INT, optional: false},
-					{type: TYPE.INT, optional: false},
-					{type: TYPE.INT, optional: true},
-					{type: TYPE.INT, optional: true},
-				]).isSubtypeOf(new TYPE.TypeTuple([
-					{type: TYPE.INT, optional: false},
-					{type: TYPE.INT, optional: true},
-					{type: TYPE.INT, optional: true},
-					{type: TYPE.INT, optional: true},
-					{type: TYPE.INT, optional: true},
-				])), '[int, int, ?:int, ?:int] <: [int, ?:int, ?:int, ?:int, ?:int]');
-				assert.ok(!new TYPE.TypeTuple([
-					{type: TYPE.INT, optional: false},
-					{type: TYPE.INT, optional: true},
-					{type: TYPE.INT, optional: true},
-					{type: TYPE.INT, optional: true},
-					{type: TYPE.INT, optional: true},
-				]).isSubtypeOf(new TYPE.TypeTuple([
-					{type: TYPE.INT, optional: false},
-					{type: TYPE.INT, optional: false},
-					{type: TYPE.INT, optional: true},
-					{type: TYPE.INT, optional: true},
-				])), '[int, ?:int, ?:int, ?:int, ?:int] !<: [int, int, ?:int, ?:int]');
+			it('Covariance for immutable tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.', () => {
+				assert.ok(TYPE.TypeTuple.fromTypes([TYPE.INT, TYPE.FLOAT]).isSubtypeOf(TYPE.TypeTuple.fromTypes([TYPE.INT.union(TYPE.NULL), TYPE.FLOAT.union(TYPE.NULL)])), '[int, float] <: [int?, float?]');
 			});
 			it('Invariance for mutable tuples: `A == B --> mutable Tuple.<A> <: mutable Tuple.<B>`.', () => {
 				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.INT, TYPE.FLOAT], true).isSubtypeOf(TYPE.TypeTuple.fromTypes([TYPE.INT.union(TYPE.NULL), TYPE.FLOAT.union(TYPE.NULL)], true)), 'mutable [int, float] !<: mutable [int?, float?]');
 			});
-			it('is not a subtype of List', () => {
-				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.INT], true).isSubtypeOf(new TYPE.TypeList(TYPE.INT, true)), 'mutable [int] !<: mutable int[]');
+			it('Covariance for vects: `A <: B --> Vect.<A> <: Vect.<B>`.', () => {
+				assert.ok(TYPE.TypeVect.fromTypes([TYPE.INT, TYPE.FLOAT]).isSubtypeOf(TYPE.TypeVect.fromTypes([TYPE.INT.union(TYPE.NULL), TYPE.FLOAT.union(TYPE.NULL)])), '\\[int, float] <: \\[int?, float?]');
+			});
+			it('Tuple is never a subtype of Vect.', () => {
+				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.INT], false) .isSubtypeOf(TYPE.TypeVect.fromTypes([TYPE.INT])),         '[int] !<: int\\[]');
+				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.INT], true)  .isSubtypeOf(TYPE.TypeVect.fromTypes([TYPE.INT])), 'mutable [int] !<: int\\[]');
+			});
+			it('Vect is a subtype of non-mutable Tuple only.', () => {
+				assert.ok( TYPE.TypeVect.fromTypes([TYPE.INT]).isSubtypeOf(TYPE.TypeTuple.fromTypes([TYPE.INT], false)), '\\[int]  <:         [int]');
+				assert.ok(!TYPE.TypeVect.fromTypes([TYPE.INT]).isSubtypeOf(TYPE.TypeTuple.fromTypes([TYPE.INT], true)),  '\\[int] !<: mutable [int]');
+			});
+			it('Tuple is never a subtype of List.', () => {
+				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.INT], false) .isSubtypeOf(new TYPE.TypeList(TYPE.INT, false)),         '[int] !<:         int[]');
+				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.INT], true)  .isSubtypeOf(new TYPE.TypeList(TYPE.INT, false)), 'mutable [int] !<:         int[]');
+				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.INT], true)  .isSubtypeOf(new TYPE.TypeList(TYPE.INT, true)),  'mutable [int] !<: mutable int[]');
+			});
+			it('Vect is never a subtype of List.', () => {
+				assert.ok(!TYPE.TypeVect.fromTypes([TYPE.INT]).isSubtypeOf(new TYPE.TypeList(TYPE.INT, false)), '\\[int] !<: int[]');
 			});
 		});
 
-		describe('TypeRecord', () => {
-			it('is a subtype but not a supertype of `obj`.', () => {
+		describe('Type{Record,Struct}', () => {
+			new Map<string, typeof TYPE.TypeRecord | typeof TYPE.TypeStruct>([
+				['TypeRecord', TYPE.TypeRecord],
+				['TypeStruct', TYPE.TypeStruct],
+			]).forEach((cons, description) => {
+				const delim: string = cons === TYPE.TypeStruct ? '\\[' : '[';
+				return describe(description, () => {
+					it('is a subtype but not a supertype of `obj`.', () => {
+						assert.ok(cons.fromTypes(new Map<bigint, TYPE.Type>([
+							[0x100n, TYPE.INT],
+							[0x101n, TYPE.BOOL],
+							[0x102n, TYPE.STR],
+						])).isSubtypeOf(TYPE.OBJ), `${ delim }x: int, y: bool, z: str] <: obj;`);
+						assert.ok(!TYPE.OBJ.isSubtypeOf(cons.fromTypes(new Map<bigint, TYPE.Type>([
+							[0x100n, TYPE.INT],
+							[0x101n, TYPE.BOOL],
+							[0x102n, TYPE.STR],
+						]))), `obj !<: ${ delim }x: int, y: bool, z: str]`);
+					});
+					it('matches per key.', () => {
+						assert.ok(cons.fromTypes(new Map<bigint, TYPE.Type>([
+							[0x100n, TYPE.INT],
+							[0x101n, TYPE.BOOL],
+							[0x102n, TYPE.STR],
+						])).isSubtypeOf(cons.fromTypes(new Map<bigint, TYPE.Type>([
+							[0x101n, TYPE.BOOL.union(TYPE.NULL)],
+							[0x102n, TYPE.OBJ],
+							[0x100n, TYPE.INT.union(TYPE.FLOAT)],
+						]))), `${ delim }x: int, y: bool, z: str] <: ${ delim }y: bool!, z: obj, x: int | float];`);
+						assert.ok(!cons.fromTypes(new Map<bigint, TYPE.Type>([
+							[0x100n, TYPE.INT],
+							[0x101n, TYPE.BOOL],
+							[0x102n, TYPE.STR],
+						])).isSubtypeOf(cons.fromTypes(new Map<bigint, TYPE.Type>([
+							[0x100n, TYPE.BOOL.union(TYPE.NULL)],
+							[0x101n, TYPE.OBJ],
+							[0x102n, TYPE.INT.union(TYPE.FLOAT)],
+						]))), `${ delim }x: int, y: bool, z: str] !<: ${ delim }x: bool!, y: obj, z: int | float];`);
+					});
+					it('returns false if assigned is smaller than assignee.', () => {
+						assert.ok(!cons.fromTypes(new Map<bigint, TYPE.Type>([
+							[0x100n, TYPE.INT],
+							[0x101n, TYPE.BOOL],
+						])).isSubtypeOf(cons.fromTypes(new Map<bigint, TYPE.Type>([
+							[0x101n, TYPE.BOOL.union(TYPE.NULL)],
+							[0x102n, TYPE.OBJ],
+							[0x100n, TYPE.INT.union(TYPE.FLOAT)],
+						]))), `${ delim }x: int, y: bool] !<: ${ delim }y: bool!, z: obj, x: int | float];`);
+					});
+					it('skips rest if assigned is larger than assignee.', () => {
+						assert.ok(cons.fromTypes(new Map<bigint, TYPE.Type>([
+							[0x100n, TYPE.INT],
+							[0x101n, TYPE.BOOL],
+							[0x102n, TYPE.STR],
+						])).isSubtypeOf(cons.fromTypes(new Map<bigint, TYPE.Type>([
+							[0x101n, TYPE.BOOL.union(TYPE.NULL)],
+							[0x100n, TYPE.INT.union(TYPE.FLOAT)],
+						]))), `${ delim }x: int, y: bool, z: str] <: ${ delim }y: bool!, x: int | float];`);
+					});
+					it('returns false if assignee contains keys that assigned does not.', () => {
+						assert.ok(!cons.fromTypes(new Map<bigint, TYPE.Type>([
+							[0x100n, TYPE.INT],
+							[0x101n, TYPE.BOOL],
+							[0x102n, TYPE.STR],
+						])).isSubtypeOf(cons.fromTypes(new Map<bigint, TYPE.Type>([
+							[0x101n, TYPE.BOOL.union(TYPE.NULL)],
+							[0x102n, TYPE.OBJ],
+							[0x103n, TYPE.INT.union(TYPE.FLOAT)],
+						]))), `${ delim }x: int, y: bool, z: str] !<: ${ delim }y: bool!, z: obj, w: int | float]`);
+					});
+					it('optional entries are not assignable to required entries.', () => {
+						assert.ok(new cons(new Map<bigint, TypeEntry>([
+							[0x100n, {type: TYPE.STR,  optional: false}],
+							[0x101n, {type: TYPE.INT,  optional: true}],
+							[0x102n, {type: TYPE.BOOL, optional: false}],
+						])).isSubtypeOf(new cons(new Map<bigint, TypeEntry>([
+							[0x100n, {type: TYPE.STR,  optional: true}],
+							[0x101n, {type: TYPE.INT,  optional: true}],
+							[0x102n, {type: TYPE.BOOL, optional: false}],
+						]))), `${ delim }a: str, b?: int, c: bool] <: ${ delim }a?: str, b?: int, c: bool]`);
+						assert.ok(!new cons(new Map<bigint, TypeEntry>([
+							[0x100n, {type: TYPE.STR,  optional: false}],
+							[0x101n, {type: TYPE.INT,  optional: true}],
+							[0x102n, {type: TYPE.BOOL, optional: false}],
+						])).isSubtypeOf(new cons(new Map<bigint, TypeEntry>([
+							[0x100n, {type: TYPE.STR,  optional: true}],
+							[0x101n, {type: TYPE.INT,  optional: false}],
+							[0x102n, {type: TYPE.BOOL, optional: false}],
+						]))), `${ delim }a: str, b?: int, c: bool] !<: ${ delim }a?: str, b: int, c: bool]`);
+					});
+				});
+			});
+			it('Covariance for immutable records: `A <: B --> Record.<A> <: Record.<B>`.', () => {
 				assert.ok(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT],
-					[0x101n, TYPE.BOOL],
-					[0x102n, TYPE.STR],
-				])).isSubtypeOf(TYPE.OBJ), '[x: int, y: bool, z: str] <: obj;');
-				assert.ok(!TYPE.OBJ.isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
-					[0x100n, TYPE.INT],
-					[0x101n, TYPE.BOOL],
-					[0x102n, TYPE.STR],
-				]))), 'obj !<: [x: int, y: bool, z: str]');
-			});
-			it('matches per key.', () => {
-				assert.ok(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
-					[0x100n, TYPE.INT],
-					[0x101n, TYPE.BOOL],
-					[0x102n, TYPE.STR],
+					[0x101n, TYPE.FLOAT],
 				])).isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
-					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
-					[0x102n, TYPE.OBJ],
-					[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] <: [y: bool!, z: obj, x: int | float];');
-				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
-					[0x100n, TYPE.INT],
-					[0x101n, TYPE.BOOL],
-					[0x102n, TYPE.STR],
-				])).isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
-					[0x100n, TYPE.BOOL.union(TYPE.NULL)],
-					[0x101n, TYPE.OBJ],
-					[0x102n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] !<: [x: bool!, y: obj, z: int | float];');
-			});
-			it('returns false if assigned is smaller than assignee.', () => {
-				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
-					[0x100n, TYPE.INT],
-					[0x101n, TYPE.BOOL],
-				])).isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
-					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
-					[0x102n, TYPE.OBJ],
-					[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool] !<: [y: bool!, z: obj, x: int | float];');
-			});
-			it('skips rest if assigned is larger than assignee.', () => {
-				assert.ok(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
-					[0x100n, TYPE.INT],
-					[0x101n, TYPE.BOOL],
-					[0x102n, TYPE.STR],
-				])).isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
-					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
-					[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] <: [y: bool!, x: int | float];');
-			});
-			it('returns false if assignee contains keys that assigned does not.', () => {
-				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
-					[0x100n, TYPE.INT],
-					[0x101n, TYPE.BOOL],
-					[0x102n, TYPE.STR],
-				])).isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
-					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
-					[0x102n, TYPE.OBJ],
-					[0x103n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] !<: [y: bool!, z: obj, w: int | float]');
-			});
-			it('optional entries are not assignable to required entries.', () => {
-				assert.ok(new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
-					[0x100n, {type: TYPE.STR,  optional: false}],
-					[0x101n, {type: TYPE.INT,  optional: true}],
-					[0x102n, {type: TYPE.BOOL, optional: false}],
-				])).isSubtypeOf(new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
-					[0x100n, {type: TYPE.STR,  optional: true}],
-					[0x101n, {type: TYPE.INT,  optional: true}],
-					[0x102n, {type: TYPE.BOOL, optional: false}],
-				]))), '[a: str, b?: int, c: bool] <: [a?: str, b?: int, c: bool]');
-				assert.ok(!new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
-					[0x100n, {type: TYPE.STR,  optional: false}],
-					[0x101n, {type: TYPE.INT,  optional: true}],
-					[0x102n, {type: TYPE.BOOL, optional: false}],
-				])).isSubtypeOf(new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
-					[0x100n, {type: TYPE.STR,  optional: true}],
-					[0x101n, {type: TYPE.INT,  optional: false}],
-					[0x102n, {type: TYPE.BOOL, optional: false}],
-				]))), '[a: str, b?: int, c: bool] !<: [a?: str, b: int, c: bool]');
+					[0x100n, TYPE.INT.union(TYPE.NULL)],
+					[0x101n, TYPE.FLOAT.union(TYPE.NULL)],
+				]))), '[a: int, b: float] <: [a: int?, b: float?]');
 			});
 			it('Invariance for mutable records: `A == B --> mutable Record.<A> <: mutable Record.<B>`.', () => {
 				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
@@ -642,10 +621,33 @@ describe('Type', () => {
 					[0x101n, TYPE.FLOAT.union(TYPE.NULL)],
 				]), true)), 'mutable [a: int, b: float] !<: mutable [a: int?, b: float?]');
 			});
-			it('is not a subtype of Dict', () => {
-				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+			it('Covariance for structs: `A <: B --> Struct.<A> <: Struct.<B>`.', () => {
+				assert.ok(TYPE.TypeStruct.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT],
-				]), true).isSubtypeOf(new TYPE.TypeDict(TYPE.INT, true)), 'mutable [a: int] !<: mutable [: int]');
+					[0x101n, TYPE.FLOAT],
+				])).isSubtypeOf(TYPE.TypeStruct.fromTypes(new Map<bigint, TYPE.Type>([
+					[0x100n, TYPE.INT.union(TYPE.NULL)],
+					[0x101n, TYPE.FLOAT.union(TYPE.NULL)],
+				]))), '\\[a: int, b: float] <: \\[a: int?, b: float?]');
+			});
+			it('Record is never a subtype of Struct.', () => {
+				const arg = new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]);
+				assert.ok(!TYPE.TypeRecord.fromTypes(arg, false) .isSubtypeOf(TYPE.TypeStruct.fromTypes(arg)),         '[a: int] !<: \\[a: int]');
+				assert.ok(!TYPE.TypeRecord.fromTypes(arg, true)  .isSubtypeOf(TYPE.TypeStruct.fromTypes(arg)), 'mutable [a: int] !<: \\[a: int]');
+			});
+			it('Struct is a subtype of non-mutable Record only.', () => {
+				const arg = new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]);
+				assert.ok( TYPE.TypeStruct.fromTypes(arg).isSubtypeOf(TYPE.TypeRecord.fromTypes(arg, false)), '\\[a: int]  <:         [a: int]');
+				assert.ok(!TYPE.TypeStruct.fromTypes(arg).isSubtypeOf(TYPE.TypeRecord.fromTypes(arg, true)),  '\\[a: int] !<: mutable [a: int]');
+			});
+			it('Record is never a subtype of Dict.', () => {
+				const arg = new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]);
+				assert.ok(!TYPE.TypeRecord.fromTypes(arg, false).isSubtypeOf(new TYPE.TypeDict(TYPE.INT, false)),         '[a: int] !<:         [: int]');
+				assert.ok(!TYPE.TypeRecord.fromTypes(arg, true) .isSubtypeOf(new TYPE.TypeDict(TYPE.INT, false)), 'mutable [a: int] !<:         [: int]');
+				assert.ok(!TYPE.TypeRecord.fromTypes(arg, true) .isSubtypeOf(new TYPE.TypeDict(TYPE.INT, true)),  'mutable [a: int] !<: mutable [: int]');
+			});
+			it('Struct is never a subtype of Dict.', () => {
+				assert.ok(!TYPE.TypeStruct.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]])).isSubtypeOf(new TYPE.TypeDict(TYPE.INT, false)), '\\[a: int] !<: [: int]');
 			});
 		});
 
@@ -682,8 +684,8 @@ describe('Type', () => {
 				assert.ok(new TYPE.TypeSet(TYPE.INT).isSubtypeOf(TYPE.OBJ), 'Set.<int> <: obj');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeSet(TYPE.INT)), 'obj !<: Set.<int>');
 			});
-			it('Covariance or immutable sets: `A <: B --> Set.<A> <: Set.<B>`.', () => {
-				assert.ok(new TYPE.TypeSet(TYPE.INT).isSubtypeOf(new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT))), 'Set.<int> <: Set.<int | float>');
+			it('Invariance for immutable sets: `A == B --> Set.<A> <: Set.<B>`.', () => {
+				assert.ok(!new TYPE.TypeSet(TYPE.INT).isSubtypeOf(new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT))), 'Set.<int> !<: Set.<int | float>');
 				assert.ok(!new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT)).isSubtypeOf(new TYPE.TypeSet(TYPE.INT)), 'Set.<int | float> !<: Set.<int>');
 			});
 			it('Invariance for mutable sets: `A == B --> mutable Set.<A> <: mutable Set.<B>`.', () => {
@@ -696,9 +698,12 @@ describe('Type', () => {
 				assert.ok(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL).isSubtypeOf(TYPE.OBJ), 'Map.<int, bool> <: obj');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL)), 'obj !<: Map.<int, bool>');
 			});
-			it('Covariance for immutable maps: `A <: C && B <: D --> Map.<A, B> <: Map.<C, D>`.', () => {
-				assert.ok(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL).isSubtypeOf(new TYPE.TypeMap(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL.union(TYPE.NULL))), 'Map.<int, bool> <: Map.<int | float, bool | null>');
-				assert.ok(!new TYPE.TypeMap(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL.union(TYPE.NULL)).isSubtypeOf(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL)), 'Map.<int | float, bool | null> !<: Map.<int, bool>');
+			it('Invariance for immutable maps’ keys: `A == C && --> Map.<A, B> <: Map.<C, B>`.', () => {
+				assert.ok(!new TYPE.TypeMap(TYPE.INT, TYPE.BOOL).isSubtypeOf(new TYPE.TypeMap(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL)), 'Map.<int, bool> !<: Map.<int | float, bool>');
+			});
+			it('Covariance for immutable maps’ values: `B <: D --> Map.<A, B> <: Map.<A, D>`.', () => {
+				assert.ok( new TYPE.TypeMap(TYPE.INT, TYPE.BOOL)                 .isSubtypeOf(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL.union(TYPE.NULL))), 'Map.<int, bool>         <: Map.<int, bool | null>');
+				assert.ok(!new TYPE.TypeMap(TYPE.INT, TYPE.BOOL.union(TYPE.NULL)).isSubtypeOf(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL)),                  'Map.<int, bool | null> !<: Map.<int, bool>');
 			});
 			it('Invariance for mutable maps: `A == C && B == D --> mutable Map.<A, B> <: mutable Map.<C, D>`.', () => {
 				assert.ok(!new TYPE.TypeMap(TYPE.INT, TYPE.BOOL, true).isSubtypeOf(new TYPE.TypeMap(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL.union(TYPE.NULL), true)), 'mutable Map.<int, bool> !<: mutable Map.<int | float, bool | null>');
@@ -836,6 +841,36 @@ describe('Type', () => {
 					}
 				});
 			});
+		});
+	});
+
+
+	describe('#binType', () => {
+		it('returns a binaryen type for simple types.', () => {
+			const tests = new Map<TYPE.Type, binaryen.Type>([
+				[TYPE.NEVER, binaryen.unreachable],
+				[TYPE.VOID,  binaryen.none],
+				[TYPE.NULL,  binaryen.i32],
+				[TYPE.BOOL,  binaryen.i32],
+				[TYPE.INT,   binaryen.i32],
+				[TYPE.FLOAT, binaryen.f64],
+			]);
+			return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
+		});
+		it('returns `Either<Left, Right>` monads for unions.', () => {
+			const tests = new Map<TYPE.Type, binaryen.Type>([
+				[TYPE.NULL.union(TYPE.BOOL),  Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.BOOL.union(TYPE.INT),   Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.NULL.union(TYPE.INT),   Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.VOID.union(TYPE.NULL),  Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.VOID.union(TYPE.BOOL),  Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.VOID.union(TYPE.INT),   Builder.createBinTypeEither(binaryen.i32, binaryen.i32)],
+				[TYPE.VOID.union(TYPE.FLOAT), Builder.createBinTypeEither(binaryen.f64, binaryen.f64)],
+				[TYPE.NULL.union(TYPE.FLOAT), Builder.createBinTypeEither(binaryen.i32, binaryen.f64)],
+				[TYPE.BOOL.union(TYPE.FLOAT), Builder.createBinTypeEither(binaryen.i32, binaryen.f64)],
+				[TYPE.INT .union(TYPE.FLOAT), Builder.createBinTypeEither(binaryen.i32, binaryen.f64)],
+			]);
+			return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
 		});
 	});
 
@@ -978,8 +1013,8 @@ describe('Type', () => {
 						TYPE.BOOL,
 					]);
 					const union: TYPE.Type = left.union(right);
-					assert.ok(union instanceof TYPE.TypeUnion);
-					const v: OBJ.Tuple<OBJ.Boolean> = new OBJ.Tuple<OBJ.Boolean>([OBJ.Boolean.TRUE, OBJ.Boolean.TRUE]);
+					assert_instanceof(union, TYPE.TypeUnion);
+					const v = new OBJ.Tuple<OBJ.Boolean>([OBJ.Boolean.TRUE, OBJ.Boolean.TRUE]);
 					assert.ok(union.combineTuplesOrRecords().includes(v), `
 						let x: [bool | int, int | bool] = [true, true]; % ok
 					`);
@@ -1039,8 +1074,8 @@ describe('Type', () => {
 						[0x101n, TYPE.BOOL],
 					]));
 					const union: TYPE.Type = left.union(right);
-					assert.ok(union instanceof TYPE.TypeUnion);
-					const v: OBJ.Record<OBJ.Boolean> = new OBJ.Record<OBJ.Boolean>(new Map<bigint, OBJ.Boolean>([
+					assert_instanceof(union, TYPE.TypeUnion);
+					const v = new OBJ.Record<OBJ.Boolean>(new Map<bigint, OBJ.Boolean>([
 						[0x100n, OBJ.Boolean.TRUE],
 						[0x101n, OBJ.Boolean.TRUE],
 					]));

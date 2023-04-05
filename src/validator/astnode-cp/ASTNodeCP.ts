@@ -2,15 +2,28 @@ import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	TYPE,
-	TypeError03,
-	serialize,
-	Punctuator,
-	Validator,
-	ASTNode,
-} from './package.js';
+	TypeErrorNotAssignable,
+} from '../../index.js';
+import {to_serializable} from '../../parser/index.js';
+import type {Validator} from '../index.js';
+import {ASTNode} from '../ASTNode.js';
 
 
 
+/**
+ * Known subclasses:
+ * - ASTNodeKey
+ * - ASTNodeIndexType
+ * - ASTNodeItemType
+ * - ASTNodePropertyType
+ * - ASTNodeIndex
+ * - ASTNodeProperty
+ * - ASTNodeCase
+ * - ASTNodeType
+ * - ASTNodeExpression
+ * - ASTNodeStatement
+ * - ASTNodeGoal
+ */
 export abstract class ASTNodeCP extends ASTNode {
 	/**
 	 * Type-check an assignment.
@@ -19,7 +32,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
 	 * @param node          the node where the assignment took place
 	 * @param validator     a validator for type-checking purposes
-	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
+	 * @throws {TypeErrorNotAssignable} if the assigned expression is not assignable to the assignee
 	 */
 	public static typeCheckAssignment(
 		assigned_type: TYPE.Type,
@@ -27,14 +40,16 @@ export abstract class ASTNodeCP extends ASTNode {
 		node:          ASTNodeCP,
 		validator:     Validator,
 	): void {
-		const is_subtype: boolean = assigned_type.isSubtypeOf(assignee_type);
-		const treatIntAsSubtypeOfFloat: boolean = (
-			   validator.config.compilerOptions.intCoercion
-			&& assigned_type.isSubtypeOf(TYPE.INT)
-			&& TYPE.FLOAT.isSubtypeOf(assignee_type)
-		);
-		if (!is_subtype && !treatIntAsSubtypeOfFloat) {
-			throw new TypeError03(assigned_type, assignee_type, node);
+		if (
+			   !assigned_type.isSubtypeOf(assignee_type)
+			&& !(
+				   // is int treated as a subtype of float?
+				   validator.config.compilerOptions.intCoercion
+				&& assigned_type.isSubtypeOf(TYPE.INT)
+				&& TYPE.FLOAT.isSubtypeOf(assignee_type)
+			)
+		) {
+			throw new TypeErrorNotAssignable(assigned_type, assignee_type, node);
 		}
 	}
 
@@ -51,23 +66,7 @@ export abstract class ASTNodeCP extends ASTNode {
 		attributes: Record<string, unknown> = {},
 		public override readonly children: readonly ASTNodeCP[] = [],
 	) {
-		super(((node: SyntaxNode) => { // COMBAK: TypeScript 4.6+ allows non-`this` code before `super()`
-			// @ts-expect-error --- Property `input` does actually exist on type `Tree`
-			const tree_text:    string = node.tree.input;
-			const source:       string = node.text;
-			const source_index: number = node.startIndex;
-			const prev_chars:   readonly string[] = [...tree_text.slice(0, source_index)];
-			return {
-				source,
-				source_index,
-				line_index: prev_chars.filter((c) => c === '\n').length,
-				col_index:  source_index - (prev_chars.lastIndexOf('\n') + 1),
-				tagname:    Object.values(Punctuator).find((punct) => punct === node.type) ? 'PUNCTUATOR' : node.type,
-				serialize() {
-					return serialize(this, this.source);
-				},
-			};
-		})(start_node), attributes, children);
+		super(to_serializable(start_node), attributes, children);
 	}
 
 	public get validator(): Validator {

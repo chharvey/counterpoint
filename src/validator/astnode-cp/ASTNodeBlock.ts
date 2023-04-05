@@ -1,12 +1,12 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
+import type {Builder} from '../../index.js';
+import type {NonemptyArray} from '../../lib/index.js';
 import {
-	NonemptyArray,
-	INST,
-	Builder,
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeGoal} from './index.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
@@ -36,10 +36,21 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	}
 
 	/** @implements Buildable */
-	public build(builder: Builder): INST.InstructionModule {
-		return new INST.InstructionModule([
-			...Builder.IMPORTS,
-			...this.children.map((child) => child.build(builder)),
-		]);
+	public build(builder: Builder): binaryen.ExpressionRef | binaryen.Module {
+		if (!this.children.length) {
+			return builder.module.nop();
+		} else {
+			const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build(builder)); // must build before calling `.getLocals()`
+			const fn_name:    string                   = 'fn0';
+			builder.module.addFunction(
+				fn_name,
+				binaryen.none,
+				binaryen.none,
+				builder.getLocals().map((var_) => var_.type),
+				builder.module.block(null, [...statements]),
+			);
+			builder.module.addFunctionExport(fn_name, fn_name);
+			return builder.module;
+		}
 	}
 }

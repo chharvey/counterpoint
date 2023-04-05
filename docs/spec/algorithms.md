@@ -223,9 +223,13 @@ Boolean Identical(Object a, Object b) :=
 		1. *If* `a` and `b` are exactly the same sequence of code units
 			(same length and same code units at corresponding indices):
 			1. *Return:* `true`.
-	7. *If* `a` and `b` are the same object:
+	7. *If* `a` is an instance of `Vect` *and* `b` is an instance of `Vect`:
+		1. *Perform:* Step 4 listed in `Equal(a, b)`.
+	8. *If* `a` is an instance of `Struct` *and* `b` is an instance of `Struct`:
+		1. *Perform:* Step 5 listed in `Equal(a, b)`.
+	9. *If* `a` and `b` are the same object:
 		1. *Return:* `true`.
-	8. Return `false`.
+	10. Return `false`.
 ```
 
 
@@ -244,7 +248,7 @@ Boolean Equal(Object a, Object b) :=
 			1. *Return:* `true`.
 		2. *If* `a` is `-0.0` *and* `b` is `0.0`:
 			1. *Return:* `true`.
-	4. *If* `a` is an instance of `Tuple` or `List` *and* `b` is an instance of `Tuple` or `List`:
+	4. *If* `a` is an instance of `Tuple` or `Vect` or `List` *and* `b` is an instance of `Tuple` or `Vect` or `List`:
 		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
 		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
 		3. *If* `seq_a.count` is not `seq_b.count`:
@@ -256,7 +260,7 @@ Boolean Equal(Object a, Object b) :=
 			1. *If* *UnwrapAffirm*: `Equal(seq_a[i], seq_b[i])` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
-	5. *If* `a` is an instance of `Record` or `Dict` *and* `b` is an instance of `Record` or `Dict`:
+	5. *If* `a` is an instance of `Record` or `Struct` or `Dict` *and* `b` is an instance of `Record` or `Struct` or `Dict`:
 		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
 		3. *If* `struct_a.count` is not `struct_b.count`:
@@ -305,187 +309,55 @@ Boolean Equal(Object a, Object b) :=
 
 
 
-## Subtype
-Determines whether one type is a subtype of another.
-```
-Boolean Subtype(Type a, Type b) :=
-	1. *If* *UnwrapAffirm:* `Identical(a, b)`:
-		// 2-7 | `A <: A`
-		1. *Return:* `true`.
-	2. *If* *UnwrapAffirm:* `IsEmpty(a)`:
-		// 1-1 | `never <: T`
-		1. *Return:* `true`.
-	3. *If* *UnwrapAffirm:* `IsEmpty(b)`:
-		// 1-3 | `T       <: never  <->  T == never`
-		1. *Return:* `IsEmpty(a)`.
-	4. *If* *UnwrapAffirm:* `IsUniverse(a)`:
-		// 1-4 | `unknown <: T      <->  T == unknown`
-		1. *Return:* `IsUniverse(b)`.
-	5. *If* *UnwrapAffirm:* `IsUniverse(b)`:
-		// 1-2 | `T     <: unknown`
-		1. *Return:* `true`.
-	6. *If* `a` is the intersection of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Equal(x, b)` *or* *UnwrapAffirm:* `Equal(y, b)`:
-			// 3-1 | `A  & B <: A  &&  A  & B <: B`
-			1. *Return:* `true`.
-		2. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
-			// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
-			1. *Return:* `true`.
-	7. *If* `b` is the intersection of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
-			// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
-			1. *Return:* `true`.
-	8. *If* `a` is the union of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
-			// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
-			1. *Return:* `true`.
-	9. *If* `b` is the union of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Equal(a, x)` *or* *UnwrapAffirm:* `Equal(a, y)`:
-			// 3-2 | `A <: A \| B  &&  B <: A \| B`
-			1. *Return:* `true`.
-		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
-			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
-			1. *Return:* `true`.
-	10. *If* `a` is a `Tuple` type *and* `b` is a `Tuple` type:
-		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
-		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
-		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
-		4. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
-		5. *If* `seq_a_req.count` is less than `seq_b_req.count`:
-			1. *Return:* `false`.
-		6. *If* `b` is mutable:
-			1. *If* `a` is not mutable:
-				1. *Return:* `false`.
-		7. *For index* `i` in `seq_b`:
-			1. *If* `seq_b[i].optional` is `false`:
-				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
-			2. *If* `seq_a[i]` is set:
-				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(seq_a[i].type, seq_b[i].type)` is `false`:
-					1. *Return:* `false`.
-				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
-					1. *Return:* `false`.
-		8. *Return:* `true`.
-	11. *If* `a` is a `Record` type *and* `b` is a `Record` type:
-		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
-		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
-		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
-		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
-		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
-			1. *Return:* `false`.
-		6. *If* `b` is mutable:
-			1. *If* `a` is not mutable:
-				1. *Return:* `false`.
-		7. *For key* `k` in `struct_b`:
-			1. *If* `struct_b[k].optional` is `false`:
-				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
-					1. *Return:* `false`.
-			2. *If* `struct_a[k]` is set:
-				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(struct_a[k].type, struct_b[k].type)` is `false`:
-					1. *Return:* `false`.
-				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
-					1. *Return:* `false`.
-		8. *Return:* `true`.
-	12. *If* `a` is a `List` type *and* `b` is a `List` type:
-		1. *Let* `ai` be the union of types in `a`.
-		2. *Let* `bi` be the union of types in `b`.
-		3. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ai, bi)` is `true`:
-				1. *Return:* `true`.
-		4. *Else:*
-			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
-				1. *Return:* `true`.
-	13. *If* `a` is a `Dict` type *and* `b` is a `Dict` type:
-		1. *Let* `av` be the union of value types in `a`.
-		2. *Let* `bv` be the union of value types in `b`.
-		3. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
-				1. *Return:* `true`.
-		4. *Else:*
-			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
-				1. *Return:* `true`.
-	14. *If* `a` is a `Set` type *and* `b` is a `Set` type:
-		1. *Let* `ae` be the union of types in `a`.
-		2. *Let* `be` be the union of types in `b`.
-		3. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ae, be)` is `true`:
-				1. *Return:* `true`.
-		4. *Else:*
-			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
-				1. *Return:* `true`.
-	15. *If* `a` is a `Map` type *and* `b` is a `Map` type:
-		1. *Let* `ak` be the union of antecedent types in `a`.
-		2. *Let* `av` be the union of consequent types in `a`.
-		3. *Let* `bk` be the union of antecedent types in `b`.
-		4. *Let* `bv` be the union of consequent types in `b`.
-		5. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ak, bk)` is `true` *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
-					1. *Return:* `true`.
-		6. *Else:*
-			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
-				1. *Return:* `true`.
-	16. *If* every value that is assignable to `a` is also assignable to `b`:
-		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
-			because an instance of `Integer` is an instance of `Object`.
-		2. *Return:* `true`.
-	17. *Return:* `false`.
-;
-```
-
-
-
 ## AssignTo
 Attempt to assign a collection literal to a type when type-checking fails.
 This assignment is attempted on an entry-by-entry basis.
 ```
-Boolean AssignTo(SemanticCollectionLiteral expr, Type type) :=
-	1. *If* `expr` is a SemanticTuple *and* `type` is a `Tuple` type:
+None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
+	1. *If* `expr` is a SemanticTuple *and* `type` is a Tuple type:
 		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `expr`.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.
 		3. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
 		4. *If* `seq_a.count` is less than `seq_b_req.count`:
-			1. *Return:* `false`.
+			1. *Throw:* a new TypeError03.
 		5. *For index* `i` in `seq_b`:
 			1. *If* `seq_b[i].optional` is `false`:
 				1. *Assert:* `seq_a[i]` is set.
 			2. *If* `seq_a[i]` is set:
 				1. *Let* `a_type` be *Unwrap:* `TypeOf(seq_a[i])`.
 				2. *If* *UnwrapAffirm:* `Subtype(a_type, seq_b[i].type)` is `false`:
-					1. *Return:* `false`.
-		6. *Return:* `true`.
-	2. *If* `expr` is a SemanticRecord *and* `type` is a `Record` type:
+					1. *Throw:* a new TypeError03.
+	2. *If* `expr` is a SemanticRecord *and* `type` is a Record type:
 		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `expr`.
 		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `type`.
 		3. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
 		4. *If* `seq_a.count` is less than `struct_b_req.count`:
-			1. *Return:* `false`.
+			1. *Throw:* a new TypeError03.
 		5. *For key* `k` in `struct_b`:
 			1. *Let* `a_prop` be an item `ai` in `seq_a` such that `ai.0.id` is `k`, if it exists, else the value *none*.
 			2. *If* `struct_b[k].optional` is `false` *and* `a_prop` is *none*:
-				1. *Return:* `false`.
+				1. *Throw:* a new TypeError03.
 			3. *If* `a_prop` is not *none*:
 				1. *Let* `a_type` be *Unwrap:* `TypeOf(a_prop)`.
 				2. *If* *UnwrapAffirm:* `Subtype(a_type, struct_b[k].type)` is `false`:
-					1. *Return:* `false`.
-		6. *Return:* `true`.
-	3. *If* `expr` is a SemanticSet *and* `type` is a `Set` type:
+					1. *Throw:* a new TypeError03.
+	3. *If* `expr` is a SemanticSet *and* `type` is a Set type:
 		1. *Let* `b_type` be the invariant over `type`.
 		2. *For each* `a_el` in `expr`:
 			1. *Let* `a_type` be *Unwrap:* `TypeOf(a_el)`.
 			2. *If* *UnwrapAffirm:* `Subtype(a_type, b_type)` is `false`:
-				1. *Return:* `false`.
-		3. *Return:* `true`.
-	4. *If* `expr` is a SemanticMap *and* `type` is a `Map` type:
+				1. *Throw:* a new TypeError03.
+	4. *If* `expr` is a SemanticMap *and* `type` is a Map type:
 		1. *Let* `b_ant_type` be the antecedent invariant over `type`.
 		2. *Let* `b_con_type` be the consequent invariant over `type`.
 		3. *For each* `a_case` in `expr`:
 			1. *Let* `a_ant_type` be *Unwrap:* `TypeOf(a_case.0)`.
 			2. *Let* `a_con_type` be *Unwrap:* `TypeOf(a_case.1)`.
 			3. *If* *UnwrapAffirm:* `Subtype(a_ant_type, b_ant_type)` is `false`:
-				1. *Return:* `false`.
+				1. *Throw:* a new TypeError03.
 			4. *If* *UnwrapAffirm:* `Subtype(a_con_type, b_con_type)` is `false`:
-				1. *Return:* `false`.
-		4. *Return:* `true`.
-	5. *Return:* `false`.
+				1. *Throw:* a new TypeError03.
+	5. *Throw:* a new TypeError03.
 ;
 ```
 

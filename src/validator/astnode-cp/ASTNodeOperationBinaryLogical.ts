@@ -1,15 +1,22 @@
-import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
-	TYPE,
 	OBJ,
-	INST,
-	Builder,
-	CPConfig,
+	TYPE,
+	type Builder,
+} from '../../index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
+} from '../../core/index.js';
+import type {SyntaxNodeSupertype} from '../utils-private.js';
+import {
 	Operator,
-	ValidOperatorLogical,
-} from './package.js';
+	type ValidOperatorLogical,
+} from '../Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
@@ -18,7 +25,7 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryLogical {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinaryLogical);
+		assert_instanceof(expression, ASTNodeOperationBinaryLogical);
 		return expression;
 	}
 
@@ -31,17 +38,38 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopLogical {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionBinopLogical(
-			builder.varCount,
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
-		);
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		let   [arg0,  arg1]:  binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build(builder));
+		const [type0, type1]: binaryen.Type[]          = [arg0, arg1].map((arg) => binaryen.getExpressionType(arg));
+
+		/** A temporary variable id used for optimizing short-circuited operations. */
+		const temp_id: bigint = builder.varCount;
+		const local           = builder.addLocal(temp_id, type0)[0].getLocalInfo(temp_id)!;
+
+		const condition = builder.module.i32.eqz(builder.module.call(
+			(local.type === binaryen.i32) ? 'inot' : 'fnot',
+			[builder.module.local.tee(local.index, arg0, local.type)],
+			binaryen.i32,
+		));
+		arg0 = builder.module.local.get(local.index, local.type);
+
+		// int-coercion copied from `ASTNodeOperation.coerceOperands`
+		if ([type0, type1].includes(binaryen.f64)) {
+			if (type0 === binaryen.i32) {
+				arg0 = builder.module.f64.convert_u.i32(arg0);
+			}
+			if (type1 === binaryen.i32) {
+				arg1 = builder.module.f64.convert_u.i32(arg1);
+			}
+		}
+
+		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
+		return builder.module.if(condition, if_true, if_false);
 	}
 
-	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
 		const falsytypes: TYPE.Type = TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE);
 		return (this.operator === Operator.AND)
 			? (t0.isSubtypeOf(falsytypes))
@@ -54,7 +82,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					: t0;
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;

@@ -38,7 +38,7 @@ type ErrorCodeConstructorProperties = {
  */
 export class ErrorCode extends Error {
 	/** The name of this class of errors. */
-	public static readonly NAME: string = 'Error';
+	static readonly #NAME = 'Error';
 
 
 	/** The name of this error. */
@@ -75,7 +75,7 @@ export class ErrorCode extends Error {
 		}
 		super(props.message);
 		this.code       = props.code || 0;
-		this.name       = (props.name) ? props.name.concat((this.code) ? `${ this.code }` : '') : ErrorCode.NAME;
+		this.name       = (props.name) ? props.name.concat((this.code) ? `${ this.code }` : '') : ErrorCode.#NAME;
 		this.line_index = (props.line_index !== void 0) ? props.line_index : null;
 		this.col_index  = (props.col_index  !== void 0) ? props.col_index  : null;
 	}

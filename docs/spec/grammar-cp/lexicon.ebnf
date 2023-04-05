@@ -24,7 +24,7 @@ CommentMulti
 Punctuator :::=
 	// grouping
 		| "(" | ")"
-		| "[" | "]"
+		| "[" | "]" | "\["
 		| "{" | "}"
 		| "," | "->"
 	// compound
@@ -76,7 +76,7 @@ KeywordOther :::=
 
 
 Identifier
-	:::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - (KeywordType | KeywordValue | KeywordOther);
+	:::= ([A-Za-z_] [A-Za-z0-9_]* | "'" [^'#x03]* "'") - (KeywordType | KeywordValue | KeywordOther);
 
 
 
@@ -111,41 +111,41 @@ DigitSequenceHTD<Separator> :::= ( DigitSequenceHTD<?Separator> . <Separator+>"_
 
 
 String<Comment, Separator>
-	:::= "'" StringChars<?Comment><?Separator>? StringUnfinished<?Comment>? "'";
+	:::= #x22 StringChars<?Comment><?Separator>? StringUnfinished<?Comment>? #x22;
 
 	StringChars<Comment, Separator>
 		:::= StringChar<?Comment><?Separator> StringChars<?Comment><?Separator>?;
 
 		StringChar<Comment, Separator> :::=
-			| <Comment->[^'\#x03]
-			| <Comment+>[^'\%#x03]
+			| <Comment->[^"\#x03]
+			| <Comment+>[^"\%#x03]
 			| "\"  StringEscape<?Comment><?Separator>
-			| "\u" [^'{#x03]
-			| <Comment+>("%"  ([^'%#x0a#x03] [^'#x0a#x03]*)? #x0a)
-			| <Comment+>("%%" ("%"? [^'%#x03])*              "%%")
+			| "\u" [^"{#x03]
+			| <Comment+>("%"  ([^"%#x0a#x03] [^"#x0a#x03]*)? #x0a)
+			| <Comment+>("%%" ("%"? [^"%#x03])*              "%%")
 		;
 
 			StringEscape<Comment, Separator> :::=
-				| "'" | "\" | <Comment+>"%"
+				| #x22 | "\" | <Comment+>"%"
 				| "s" | "t" | "n" | "r"
 				| "u{" DigitSequenceHex<?Separator>? "}"
 				| #x0a
-				| <Comment->[^'\stnru#x0a#x03]
-				| <Comment+>[^'\%stnru#x0a#x03]
+				| <Comment->[^"\stnru#x0a#x03]
+				| <Comment+>[^"\%stnru#x0a#x03]
 			;
 
 	StringUnfinished<Comment> :::=
 		| "\u"
-		| <Comment+>("%"  ([^'%#x0a#x03] [^'#x0a#x03]*)?)
-		| <Comment+>("%%" ("%"? [^'%#x03])*)
+		| <Comment+>("%"  ([^"%#x0a#x03] [^"#x0a#x03]*)?)
+		| <Comment+>("%%" ("%"? [^"%#x03])*)
 	;
 
 
 
-TemplateFull   :::= "'''" TemplateChars__EndDelim?  "'''";
-TemplateHead   :::= "'''" TemplateChars__EndInterp? "{{" ;
-TemplateMiddle :::= "}}"  TemplateChars__EndInterp? "{{" ;
-TemplateTail   :::= "}}"  TemplateChars__EndDelim?  "'''";
+TemplateFull   :::= #x22 #x22 #x22 TemplateChars__EndDelim?  #x22 #x22 #x22;
+TemplateHead   :::= #x22 #x22 #x22 TemplateChars__EndInterp? "{{" ;
+TemplateMiddle :::= "}}"           TemplateChars__EndInterp? "{{" ;
+TemplateTail   :::= "}}"           TemplateChars__EndDelim?  #x22 #x22 #x22;
 
 	TemplateChars__EndDelim :::=
 		// Step 1
@@ -155,105 +155,105 @@ TemplateTail   :::= "}}"  TemplateChars__EndDelim?  "'''";
 
 		// Step 2
 		// - TemplateChars__EndDelim__Basic
-		// |                              [^'{#x03]
-		// |                              [^'{#x03] TemplateChars__EndDelim
+		// |                                                [^"{#x03]
+		// |                                                [^"{#x03] TemplateChars__EndDelim
 		// - TemplateChars__EndDelim__StartDelim
-		// | ("'{" | "''{")* ("'" | "''") [^'{#x03]
-		// | ("'{" | "''{")* ("'" | "''") [^'{#x03] TemplateChars__EndDelim
-		// | ("'{" | "''{")+
-		// | ("'{" | "''{")+              [^'{#x03]
-		// | ("'{" | "''{")+              [^'{#x03] TemplateChars__EndDelim
+		// | (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]
+		// | (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03] TemplateChars__EndDelim
+		// | (#x22 "{" | #x22 #x22 "{")+
+		// | (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]
+		// | (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03] TemplateChars__EndDelim
 		// - TemplateChars__EndDelim__StartInterp
-		// | ("{'" | "{''")* "{"
-		// | ("{'" | "{''")* "{"          [^'{#x03]
-		// | ("{'" | "{''")* "{"          [^'{#x03] TemplateChars__EndDelim
-		// | ("{'" | "{''")+              [^'{#x03]
-		// | ("{'" | "{''")+              [^'{#x03] TemplateChars__EndDelim
+		// | ("{" #x22 | "{" #x22 #x22)* "{"
+		// | ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]
+		// | ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03] TemplateChars__EndDelim
+		// | ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]
+		// | ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03] TemplateChars__EndDelim
 
 		// Step 3
-		// |                              [^'{#x03]
-		// | ("'{" | "''{")* ("'" | "''") [^'{#x03]
-		// | ("'{" | "''{")+              [^'{#x03]?
-		// | ("{'" | "{''")* "{"          [^'{#x03]?
-		// | ("{'" | "{''")+              [^'{#x03]
+		// |                                                [^"{#x03]
+		// | (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]
+		// | (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]?
+		// | ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]?
+		// | ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]
 		// | (
-		// 	|                              [^'{#x03]
-		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03]
-		// 	| ("'{" | "''{")+              [^'{#x03]
-		// 	| ("{'" | "{''")* "{"          [^'{#x03]
-		// 	| ("{'" | "{''")+              [^'{#x03]
+		// 	|                                                [^"{#x03]
+		// 	| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]
+		// 	| (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]
+		// 	| ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]
+		// 	| ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]
 		// ) TemplateChars__EndDelim
 
 		// Step 4
 		// | (
-		// 	|                              [^'{#x03]
-		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03]
-		// 	| ("'{" | "''{")+              [^'{#x03]
-		// 	| ("{'" | "{''")* "{"          [^'{#x03]
-		// 	| ("{'" | "{''")+              [^'{#x03]
+		// 	|                                                [^"{#x03]
+		// 	| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]
+		// 	| (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]
+		// 	| ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]
+		// 	| ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]
 		// )* (
-		// 	|                              [^'{#x03]
-		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03]
-		// 	| ("'{" | "''{")+              [^'{#x03]?
-		// 	| ("{'" | "{''")* "{"          [^'{#x03]?
-		// 	| ("{'" | "{''")+              [^'{#x03]
+		// 	|                                                [^"{#x03]
+		// 	| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]
+		// 	| (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]?
+		// 	| ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]?
+		// 	| ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]
 		// )
 
 		// Step 5
 		| TemplateChars__NoEnd* (
-			|                              [^'{#x03]
-			| ("'{" | "''{")* ("'" | "''") [^'{#x03]
-			| ("'{" | "''{")+              [^'{#x03]?
-			| ("{'" | "{''")* "{"          [^'{#x03]?
-			| ("{'" | "{''")+              [^'{#x03]
+			|                                                [^"{#x03]
+			| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]
+			| (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]?
+			| ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]?
+			| ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]
 		)
 	;
 
 		// TemplateChars__EndDelim__Basic
-		// 	:::= [^'{#x03] TemplateChars__EndDelim?;
+		// 	:::= [^"{#x03] TemplateChars__EndDelim?;
 
 		// TemplateChars__EndDelim__StartDelim :::=
 		// 	Step 1
-		// 	| ("'"  | "''")   TemplateChars__EndDelim__Basic
-		// 	| ("'{" | "''{") (TemplateChars__EndDelim__Basic | TemplateChars__EndDelim__StartDelim)?
+		// 	| (#x22     | #x22 #x22)      TemplateChars__EndDelim__Basic
+		// 	| (#x22 "{" | #x22 #x22 "{") (TemplateChars__EndDelim__Basic | TemplateChars__EndDelim__StartDelim)?
 		//
 		// 	Step 2
-		// 	| ("'"  | "''")  TemplateChars__EndDelim__Basic
-		// 	| ("'{" | "''{")
-		// 	| ("'{" | "''{") TemplateChars__EndDelim__Basic
-		// 	| ("'{" | "''{") TemplateChars__EndDelim__StartDelim
+		// 	| (#x22     | #x22 #x22)     TemplateChars__EndDelim__Basic
+		// 	| (#x22 "{" | #x22 #x22 "{")
+		// 	| (#x22 "{" | #x22 #x22 "{") TemplateChars__EndDelim__Basic
+		// 	| (#x22 "{" | #x22 #x22 "{") TemplateChars__EndDelim__StartDelim
 		//
 		// 	Step 3
-		// 	| ("'{" | "''{")* ("'"  | "''") TemplateChars__EndDelim__Basic
-		// 	| ("'{" | "''{")+
-		// 	| ("'{" | "''{")+               TemplateChars__EndDelim__Basic
+		// 	| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) TemplateChars__EndDelim__Basic
+		// 	| (#x22 "{" | #x22 #x22 "{")+
+		// 	| (#x22 "{" | #x22 #x22 "{")+                    TemplateChars__EndDelim__Basic
 		//
 		// 	Step 4
-		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03] TemplateChars__EndDelim?
-		// 	| ("'{" | "''{")+
-		// 	| ("'{" | "''{")+              [^'{#x03] TemplateChars__EndDelim?
+		// 	| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03] TemplateChars__EndDelim?
+		// 	| (#x22 "{" | #x22 #x22 "{")+
+		// 	| (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03] TemplateChars__EndDelim?
 		// ;
 
 		// TemplateChars__EndDelim__StartInterp :::=
 		// 	Step 1
-		// 	| "{"             TemplateChars__EndDelim__Basic?
-		// 	| ("{'" | "{''") (TemplateChars__EndDelim__Basic | TemplateChars__EndDelim__StartInterp)
+		// 	| "{"                        TemplateChars__EndDelim__Basic?
+		// 	| ("{" #x22 | "{" #x22 #x22) (TemplateChars__EndDelim__Basic | TemplateChars__EndDelim__StartInterp)
 		//
 		// 	Step 2
 		// 	| "{"
-		// 	| "{"            TemplateChars__EndDelim__Basic
-		// 	| ("{'" | "{''") TemplateChars__EndDelim__Basic
-		// 	| ("{'" | "{''") TemplateChars__EndDelim__StartInterp
+		// 	| "{"                        TemplateChars__EndDelim__Basic
+		// 	| ("{" #x22 | "{" #x22 #x22) TemplateChars__EndDelim__Basic
+		// 	| ("{" #x22 | "{" #x22 #x22) TemplateChars__EndDelim__StartInterp
 		//
 		// 	Step 3
-		// 	| ("{'" | "{''")* "{"
-		// 	| ("{'" | "{''")* "{" TemplateChars__EndDelim__Basic
-		// 	| ("{'" | "{''")+     TemplateChars__EndDelim__Basic
+		// 	| ("{" #x22 | "{" #x22 #x22)* "{"
+		// 	| ("{" #x22 | "{" #x22 #x22)* "{" TemplateChars__EndDelim__Basic
+		// 	| ("{" #x22 | "{" #x22 #x22)+     TemplateChars__EndDelim__Basic
 		//
 		// 	Step 4
-		// 	| ("{'" | "{''")* "{"
-		// 	| ("{'" | "{''")* "{" [^'{#x03] TemplateChars__EndDelim?
-		// 	| ("{'" | "{''")+     [^'{#x03] TemplateChars__EndDelim?
+		// 	| ("{" #x22 | "{" #x22 #x22)* "{"
+		// 	| ("{" #x22 | "{" #x22 #x22)* "{" [^"{#x03] TemplateChars__EndDelim?
+		// 	| ("{" #x22 | "{" #x22 #x22)+     [^"{#x03] TemplateChars__EndDelim?
 		// ;
 
 	TemplateChars__EndInterp :::=
@@ -264,113 +264,113 @@ TemplateTail   :::= "}}"  TemplateChars__EndDelim?  "'''";
 
 		// Step 2
 		// - TemplateChars__EndInterp__Basic
-		// |                              [^'{#x03]
-		// |                              [^'{#x03] TemplateChars__EndInterp
+		// |                                                [^"{#x03]
+		// |                                                [^"{#x03] TemplateChars__EndInterp
 		// - TemplateChars__EndInterp__StartDelim
-		// | ("'{" | "''{")* ("'" | "''")
-		// | ("'{" | "''{")* ("'" | "''") [^'{#x03]
-		// | ("'{" | "''{")* ("'" | "''") [^'{#x03] TemplateChars__EndInterp
-		// | ("'{" | "''{")+              [^'{#x03]
-		// | ("'{" | "''{")+              [^'{#x03] TemplateChars__EndInterp
+		// | (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22)
+		// | (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]
+		// | (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03] TemplateChars__EndInterp
+		// | (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]
+		// | (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03] TemplateChars__EndInterp
 		// - TemplateChars__EndInterp__StartInterp
-		// | ("{'" | "{''")* "{"          [^'{#x03]
-		// | ("{'" | "{''")* "{"          [^'{#x03] TemplateChars__EndInterp
-		// | ("{'" | "{''")+
-		// | ("{'" | "{''")+              [^'{#x03]
-		// | ("{'" | "{''")+              [^'{#x03] TemplateChars__EndInterp
+		// | ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]
+		// | ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03] TemplateChars__EndInterp
+		// | ("{" #x22 | "{" #x22 #x22)+
+		// | ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]
+		// | ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03] TemplateChars__EndInterp
 
 		// Step 3
-		// |                              [^'{#x03]
-		// | ("'{" | "''{")* ("'" | "''") [^'{#x03]?
-		// | ("'{" | "''{")+              [^'{#x03]
-		// | ("{'" | "{''")* "{"          [^'{#x03]
-		// | ("{'" | "{''")+              [^'{#x03]?
+		// |                                                [^"{#x03]
+		// | (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]?
+		// | (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]
+		// | ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]
+		// | ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]?
 		// | (
-		// 	|                              [^'{#x03]
-		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03]
-		// 	| ("'{" | "''{")+              [^'{#x03]
-		// 	| ("{'" | "{''")* "{"          [^'{#x03]
-		// 	| ("{'" | "{''")+              [^'{#x03]
+		// 	|                                                [^"{#x03]
+		// 	| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]
+		// 	| (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]
+		// 	| ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]
+		// 	| ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]
 		// ) TemplateChars__EndInterp
 
 		// Step 4
 		// | (
-		// 	|                              [^'{#x03]
-		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03]
-		// 	| ("'{" | "''{")+              [^'{#x03]
-		// 	| ("{'" | "{''")* "{"          [^'{#x03]
-		// 	| ("{'" | "{''")+              [^'{#x03]
+		// 	|                                                [^"{#x03]
+		// 	| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]
+		// 	| (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]
+		// 	| ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]
+		// 	| ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]
 		// )* (
-		// 	|                              [^'{#x03]
-		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03]?
-		// 	| ("'{" | "''{")+              [^'{#x03]
-		// 	| ("{'" | "{''")* "{"          [^'{#x03]
-		// 	| ("{'" | "{''")+              [^'{#x03]?
+		// 	|                                                [^"{#x03]
+		// 	| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]?
+		// 	| (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]
+		// 	| ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]
+		// 	| ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]?
 		// )
 
 		// Step 5
 		| TemplateChars__NoEnd* (
-			|                              [^'{#x03]
-			| ("'{" | "''{")* ("'" | "''") [^'{#x03]?
-			| ("'{" | "''{")+              [^'{#x03]
-			| ("{'" | "{''")* "{"          [^'{#x03]
-			| ("{'" | "{''")+              [^'{#x03]?
+			|                                                [^"{#x03]
+			| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]?
+			| (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]
+			| ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]
+			| ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]?
 		)
 	;
 
 		// TemplateChars__EndInterp__Basic
-		// 	:::= [^'{#x03] TemplateChars__EndInterp?;
+		// 	:::= [^"{#x03] TemplateChars__EndInterp?;
 
 		// TemplateChars__EndInterp__StartDelim :::=
 		// 	Step 1
-		// 	| ("'"  | "''")   TemplateChars__EndInterp__Basic?
-		// 	| ("'{" | "''{") (TemplateChars__EndInterp__Basic | TemplateChars__EndInterp__StartDelim)
+		// 	| (#x22     | #x22 #x22)     TemplateChars__EndInterp__Basic?
+		// 	| (#x22 "{" | #x22 #x22 "{") (TemplateChars__EndInterp__Basic | TemplateChars__EndInterp__StartDelim)
 		//
 		// 	Step 2
-		// 	| ("'"  | "''")
-		// 	| ("'"  | "''")  TemplateChars__EndInterp__Basic
-		// 	| ("'{" | "''{") TemplateChars__EndInterp__Basic
-		// 	| ("'{" | "''{") TemplateChars__EndInterp__StartDelim
+		// 	| (#x22     | #x22 #x22)
+		// 	| (#x22     | #x22 #x22)     TemplateChars__EndInterp__Basic
+		// 	| (#x22 "{" | #x22 #x22 "{") TemplateChars__EndInterp__Basic
+		// 	| (#x22 "{" | #x22 #x22 "{") TemplateChars__EndInterp__StartDelim
 		//
 		// 	Step 3
-		// 	| ("'{" | "''{")* ("'" | "''")
-		// 	| ("'{" | "''{")* ("'" | "''") TemplateChars__EndInterp__Basic
-		// 	| ("'{" | "''{")+              TemplateChars__EndInterp__Basic
+		// 	| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22)
+		// 	| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) TemplateChars__EndInterp__Basic
+		// 	| (#x22 "{" | #x22 #x22 "{")+                    TemplateChars__EndInterp__Basic
 		//
 		// 	Step 4
-		// 	| ("'{" | "''{")* ("'" | "''")
-		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03] TemplateChars__EndInterp?
-		// 	| ("'{" | "''{")+              [^'{#x03] TemplateChars__EndInterp?
+		// 	| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22)
+		// 	| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03] TemplateChars__EndInterp?
+		// 	| (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03] TemplateChars__EndInterp?
 		// ;
 
 		// TemplateChars__EndInterp__StartInterp :::=
 		// 	Step 1
-		// 	| "{"             TemplateChars__EndInterp__Basic
-		// 	| ("{'" | "{''") (TemplateChars__EndInterp__Basic | TemplateChars__EndInterp__StartInterp)?
+		// 	| "{"                        TemplateChars__EndInterp__Basic
+		// 	| ("{" #x22 | "{" #x22 #x22) (TemplateChars__EndInterp__Basic | TemplateChars__EndInterp__StartInterp)?
 		//
 		// 	Step 2
-		// 	| "{"            TemplateChars__EndInterp__Basic
-		// 	| ("{'" | "{''")
-		// 	| ("{'" | "{''") TemplateChars__EndInterp__Basic
-		// 	| ("{'" | "{''") TemplateChars__EndInterp__StartInterp
+		// 	| "{"                        TemplateChars__EndInterp__Basic
+		// 	| ("{" #x22 | "{" #x22 #x22)
+		// 	| ("{" #x22 | "{" #x22 #x22) TemplateChars__EndInterp__Basic
+		// 	| ("{" #x22 | "{" #x22 #x22) TemplateChars__EndInterp__StartInterp
 		//
 		// 	Step 3
-		// 	| ("{'" | "{''")* "{" TemplateChars__EndInterp__Basic
-		// 	| ("{'" | "{''")+
-		// 	| ("{'" | "{''")+     TemplateChars__EndInterp__Basic
+		// 	| ("{" #x22 | "{" #x22 #x22)* "{" TemplateChars__EndInterp__Basic
+		// 	| ("{" #x22 | "{" #x22 #x22)+
+		// 	| ("{" #x22 | "{" #x22 #x22)+     TemplateChars__EndInterp__Basic
 		//
 		// 	Step 4
-		// 	| ("{'" | "{''")* "{" [^'{#x03] TemplateChars__EndInterp?
-		// 	| ("{'" | "{''")+
-		// 	| ("{'" | "{''")+     [^'{#x03] TemplateChars__EndInterp?
+		// 	| ("{" #x22 | "{" #x22 #x22)* "{" [^"{#x03] TemplateChars__EndInterp?
+		// 	| ("{" #x22 | "{" #x22 #x22)+
+		// 	| ("{" #x22 | "{" #x22 #x22)+     [^"{#x03] TemplateChars__EndInterp?
 		// ;
 
 	TemplateChars__NoEnd :::=
-		|                              [^'{#x03]
-		| ("'{" | "''{")* ("'" | "''") [^'{#x03]
-		| ("'{" | "''{")+              [^'{#x03]
-		| ("{'" | "{''")* "{"          [^'{#x03]
-		| ("{'" | "{''")+              [^'{#x03]
+		|                                                [^"{#x03]
+		| (#x22 "{" | #x22 #x22 "{")* (#x22 | #x22 #x22) [^"{#x03]
+		| (#x22 "{" | #x22 #x22 "{")+                    [^"{#x03]
+		| ("{" #x22 | "{" #x22 #x22)* "{"                [^"{#x03]
+		| ("{" #x22 | "{" #x22 #x22)+                    [^"{#x03]
 	;
 
 

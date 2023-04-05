@@ -1,11 +1,14 @@
-import * as assert from 'assert';
+import type {TYPE} from '../../index.js';
 import {
-	TYPE,
-	CPConfig,
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
-	ValidOperatorBinary,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeSupertype} from '../utils-private.js';
+import type {ValidOperatorBinary} from '../Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 
@@ -21,7 +24,7 @@ import {ASTNodeOperation} from './ASTNodeOperation.js';
 export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinary);
+		assert_instanceof(expression, ASTNodeOperationBinary);
 		return expression;
 	}
 
@@ -34,20 +37,18 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		super(start_node, operator, [operand0, operand1]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operand0.shouldFloat() || this.operand1.shouldFloat();
-	}
-
 	/**
 	 * @final
 	 */
-	protected override type_do(): TYPE.Type {
-		return this.type_do_do(
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
+		return this.type_do(
 			this.operand0.type(),
 			this.operand1.type(),
 			this.validator.config.compilerOptions.intCoercion,
 		);
 	}
 
-	protected abstract type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type;
+	protected abstract type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type;
 }

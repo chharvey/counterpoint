@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-counterpoint",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Tree-sitter parser for the Counterpoint Programming Language.",
   "keywords": [
     "tree-sitter",
@@ -27,7 +27,7 @@
   "scripts": {
     "dist": "tsc",
     "postdist": "tree-sitter generate",
-    "pretest": "ts-node --esm --project ../tsconfig.json ./test/build.mts",
+    "pretest": "ts-node --esm ./test/build.mts",
     "test": "tree-sitter test",
     "build": "npm run dist && npm run test"
   },
@@ -35,8 +35,9 @@
     "nan": "^2.15.0"
   },
   "devDependencies": {
-    "tree-sitter-cli": "^0.20.1",
+    "extrajs": "^0.25.0",
+    "tree-sitter-cli": "0.20.6",
     "ts-node": "^10.4.0",
-    "typescript": "~4.7.0"
+    "typescript": "~5.0.2"
   }
 }

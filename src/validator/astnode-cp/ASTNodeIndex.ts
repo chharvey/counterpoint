@@ -1,4 +1,7 @@
-import type {SyntaxNodeType} from './package.js';
+import type {
+	SyntaxNodeType,
+	SyntaxNodeFamily,
+} from '../utils-private.js';
 import type {ASTNodeConstant} from './index.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 
@@ -7,7 +10,7 @@ import {ASTNodeCP} from './ASTNodeCP.js';
 export class ASTNodeIndex extends ASTNodeCP {
 	public constructor(
 		start_node:
-			| SyntaxNodeType<'property_access'>
+			| SyntaxNodeFamily<'property_access', ['variable']>
 			| SyntaxNodeType<'property_assign'>
 		,
 		public readonly val: ASTNodeConstant,

@@ -1,4 +1,4 @@
-import type {SyntaxNodeType} from './package.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import type {ASTNodeExpression} from './index.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
@@ -7,7 +7,7 @@ import type {ASTNodeKey} from './ASTNodeKey.js';
 
 export class ASTNodeProperty extends ASTNodeCP {
 	public constructor(
-		start_node: SyntaxNodeType<'property'>,
+		start_node: SyntaxNodeFamily<'property', ['variable']>,
 		public readonly key: ASTNodeKey,
 		public readonly val: ASTNodeExpression,
 	) {

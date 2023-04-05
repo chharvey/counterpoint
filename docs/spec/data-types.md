@@ -187,7 +187,13 @@ Counterpoint has the following built-in types.
 This list is not exhaustive, as Counterpoint Types may be created in any Counterpoint program.
 
 
+### Value Types and Reference Types
+Value types and reference types correspond to
+[value objects and reference objects](./intrinsics.md#value-objects-and-reference-objects) respectively.
+
+
 ### Simple Types
+Simple types do not comprise other types.
 
 - [Never](#never)
 - [Void](#void)
@@ -200,7 +206,7 @@ This list is not exhaustive, as Counterpoint Types may be created in any Counter
 - [Unknown](#unknown)
 
 #### Never
-The Never type is the Botton Type and it represents the set of no values.
+The **Never** type is the Botton Type and it represents the set of no values.
 No value is assignable to Never,
 and expressions of type Never are accepted everywhere.
 
@@ -210,7 +216,7 @@ Never is the the “absorption element” of the [intersection](#intersection) o
 and the “identity element” of the [union](#union) operation.
 
 #### Void
-The Void type represents the completion of an evaluation but the absence of a value.
+The **Void** type represents the completion of an evaluation but the absence of a value.
 It is the return type of a function that may have side-effects but that does not return a value.
 It is also partly the type of an optional entry in a collection.
 
@@ -225,24 +231,50 @@ the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T�
 The Void type is also unlike Null in that no Counterpoint Language Value has type Void.
 
 #### Null
-The Null type has exactly one value, called `null`.
+The **Null** type has exactly one value, called `null`.
+It represents an object without any semantics.
 
 #### Boolean
-The Boolean type has two logical values, called `true` and `false`.
+The **Boolean** type has two logical values, called `true` and `false`.
 
 #### Number
-The Number type represents numerical values.
+The **Number** type represents numerical values.
 The Number type is partitioned into two disjoint subtypes: Integer and Float.
 
 ##### Integer
-The Integer type represents [mathematical integers](#real-integer-numbers).
+The **Integer** type represents [mathematical integers](#real-integer-numbers).
 The Counterpoint compiler represents Integers as 16-bit signed two’s complement values.
 
-`0` and `-0` represent the same value, *0*.
-The maximum value of the Integer type is mathematically equal to
-*2<sup>15</sup> &minus; 1 = 32,767 = FFFF<sub>16</sub>*.
-The minimum value is mathematically equal to
-*&minus;2<sup>15</sup> = &minus;32,768 = &minus;10000<sub>16</sub>*.
+The Integers `0` and `-0` represent the same mathematical value, *0*.
+The maximum possible value of an Integer is *32,767* and the minimum value is *&minus;32,768*.
+
+The following table lays out some integers and their encodings.
+
+| Encoding                                       | Value      | Notes
+| ---------------------------------------------- | ---------- | ---
+| `\b0000_0000 \b0000_0000` &emsp; (`\x00 \x00`) | *0* = *&minus;0*
+| `\b0000_0000 \b0000_0001` &emsp; (`\x00 \x01`) | *1*
+| `\b0000_0000 \b0000_0010` &emsp; (`\x00 \x02`) | *2*
+| `\b0000_0000 \b0000_0011` &emsp; (`\x00 \x03`) | *3*
+…
+| `\b0111_1111 \b1111_1100` &emsp; (`\x7f \xfc`) | *32,764* &emsp; (*7FFC<sub>16</sub>*)
+| `\b0111_1111 \b1111_1101` &emsp; (`\x7f \xfd`) | *32,765* &emsp; (*7FFD<sub>16</sub>*)
+| `\b0111_1111 \b1111_1110` &emsp; (`\x7f \xfe`) | *32,766* &emsp; (*7FFE<sub>16</sub>*)
+| `\b0111_1111 \b1111_1111` &emsp; (`\x7f \xff`) | *32,767* &emsp; (*7FFF<sub>16</sub>*)               | maximum value, *2<sup>15</sup> &minus; 1*
+| `\b1000_0000 \b0000_0000` &emsp; (`\x80 \x00`) | *&minus;32,768* &emsp; (*&minus;8000<sub>16</sub>*) | minimum value, *&minus;2<sup>15</sup>*
+| `\b1000_0000 \b0000_0001` &emsp; (`\x80 \x01`) | *&minus;32,767* &emsp; (*&minus;7FFF<sub>16</sub>*)
+| `\b1000_0000 \b0000_0010` &emsp; (`\x80 \x02`) | *&minus;32,766* &emsp; (*&minus;7FFE<sub>16</sub>*)
+| `\b1000_0000 \b0000_0011` &emsp; (`\x80 \x03`) | *&minus;32,765* &emsp; (*&minus;7FFD<sub>16</sub>*)
+…
+| `\b1111_1111 \b1111_1100` &emsp; (`\xff \xfc`) | *&minus;4*
+| `\b1111_1111 \b1111_1101` &emsp; (`\xff \xfd`) | *&minus;3*
+| `\b1111_1111 \b1111_1110` &emsp; (`\xff \xfe`) | *&minus;2*
+| `\b1111_1111 \b1111_1111` &emsp; (`\xff \xff`) | *&minus;1*
+
+Note: To encode a mathematical integer *i* in two’s complement:
+If *i* is within the interval *[0, 2<sup>15</sup> - 1]*, simply return its representation in base 2.
+If *i* is within the interval *[&minus;2<sup>15</sup>, -1]*, return the binary representation of *i + 2<sup>16</sup>*.
+Else, *i* cannot be encoded.
 
 When performing arithmetic operations such as addition, subtraction, and multiplication,
 computed values that are out of range will overflow as if doing modular arithmetic modulus *2<sup>16</sup>*,
@@ -253,23 +285,40 @@ The behavior of performing arithmetic operations that are invalid in the integer
 The result of division is rounded towards zero. Dividing by zero results in an error.
 
 ##### Float
-The Float type represents [mathematical rational numbers](#real-rational-numbers)
+The **Float** type represents [mathematical rational numbers](#real-rational-numbers)
 whose decimals terminate in base 10.
 (That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
 The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
 *IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.
 
 #### String
-The String type represents textual data and is stored as an immutable tuple of [integers](#integer).
+The **String** type represents textual data and is stored as an immutable sequence of bytes.
 Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
 
+Conceptually, strings are treated as immutable lists of [mathematical integers](#real-integer-numbers),
+where each integer represents a Unicode code point.
+A String’s **count** indicates the number of code points in the String, that is,
+the number of characters in its unencoded form.
+This is compared to its **length**, which is the number of bytes it stores
+encoded in memory (see UTF-8 for details).
+String length is limited to a maximum of *65,535* bytes,
+but it is not directly observable within any Counterpoint program.
+
+Though `String` objects are treated conceptually as lists, they are considered
+[primitive objects](./intrinsics.md#primitive-and-composite-objects) and
+[value objects](./intrinsics.md#value-objects-and-reference-objects).
+They are primitives because the “items” of these lists are not directly observable —
+accessing an index of a string yields another string — and
+they are value objects because the string values themselves are copied when assigned
+(though the compiler may make any optimizations necessary).
+
 #### Object
-The Object type is the parent type of all Counterpoint Language Types.
+The **Object** type is the parent type of all Counterpoint Language Types.
 Every Counterpoint Language Value is an Object.
 Some specific built-in subtypes of Object are described in the [Intrinsics](./intrinsics.md) chapter.
 
 #### Unknown
-The Unknown type is the Top Type and it represents the set of all possible values.
+The **Unknown** type is the Top Type and it represents the set of all possible values.
 Any value or expression is assignable to Unknown,
 and expressions of type Unknown are accepted almost nowhere.
 
@@ -280,53 +329,110 @@ and the “absorption element” of the [union](#union) operation.
 
 
 ### Compound Types
+Compound types are derived from other types.
 
-- [Tuple](#tuple-type)
-- [Record](#record-type)
-- [List](#list-type)
-- [Dict](#dict-type)
-- [Set](#set-type)
-- [Map](#map-type)
+- [Tuple Types](#tuple-types)
+- [Record Types](#record-types)
+- [Vect Types](#vect-types)
+- [Struct Types](#struct-types)
+- [List Types](#list-types)
+- [Dict Types](#dict-types)
+- [Set Types](#set-types)
+- [Map Types](#map-types)
 
-#### Tuple Type
-A **Tuple Type** contains [`Tuple` objects](./intrinsics.md#tuple) and is described by
-a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items.
-The objects that any given Tuple Type contains are `Tuple` objects whose items’ types
-match up with the types in the list in order.
+#### Tuple Types
+A **Tuple** type describes instances of [`Tuple`](./intrinsics.md#tuple) and is parameterized by
+a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items, called invariants.
+The objects that any given Tuple type describes are `Tuple` objects whose
+items’ types match up with the invariants in the sequence in order.
+Tuples have a static size, are ordered, and are 0-origin indexable by Integers.
 
-#### Record Type
-A **Record Type** contains [`Record` objects](./intrinsics.md#record) and is described by
-a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values.
-The objects that any given Record Type contains are `Record` objects whose properties’ types
-match up with the types in the list by name.
+#### Record Types
+A **Record** type describes instances of [`Record`](./intrinsics.md#record) and is parameterized by
+a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values, called invariants.
+The objects that any given Record type describes are `Record` objects whose
+properties’ types match up with the invariants in the structure by name.
+Records have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
-#### List Type
-A **List Type** contains [`List` objects](./intrinsics.md#list) and is described by a single type,
-representing items.
-The objects that any given List Type contains are `List` objects whose
-items are assignable to the type describing the List Type.
+#### Vect Types
+A **Vect** type describes instances of [`Vect`](./intrinsics.md#vect) and is parameterized by
+a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items, called invariants.
+The objects that any given Vect type describes are `Vect` objects whose
+items’ types match up with the invariants in the sequence in order.
+Vects have a static size, are ordered, and are 0-origin indexable by Integers.
+The invariants of a Vect type are restricted to value types.
 
-#### Dict Type
-A **Dict Type** contains [`Dict` objects](./intrinsics.md#dict) and is described by a single type,
-representing values.
-The objects that any given Dict Type contains are `Dict` objects whose
-values are assignable to the type describing the Dict Type.
+#### Struct Types
+A **Struct** type describes instances of [`Struct`](./intrinsics.md#struct) and is parameterized by
+a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values, called invariants.
+The objects that any given Struct type describes are `Struct` objects whose
+properties’ types match up with the invariants in the structure by name.
+Structs have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
+The invariants of a Struct type are restricted to value types.
 
-#### Set Type
-A **Set Type** contains [`Set` objects](./intrinsics.md#set) and is described by a single type,
-representing elements.
-The objects that any given Set Type contains are `Set` objects whose
-elements are assignable to the type describing the Set Type.
+#### List Types
+A **List** type describes instances of [`List`](./intrinsics.md#list) and is parameterized by a single type,
+called an invariant, representing items.
+The objects that any given List type describes are `List` objects whose
+items are assignable to the invariant of the List type.
+Lists have a dynamic size, are ordered, and are 0-origin indexable by Integers.
 
-#### Map Type
-A **Map Type** contains [`Map` objects](./intrinsics.md#map) and is described by a pair of two types,
-the first of which represents antecedents and the second of which represents consequents.
-The objects that any given Map Type contains are `Map` objects whose
-antcedents and consequents are respectively assignable to the types describing the Map Type.
+#### Dict Types
+A **Dict** type describes instances of [`Dict`](./intrinsics.md#dict) and is parameterized by a single type,
+called an invariant, representing values.
+The objects that any given Dict type describes are `Dict` objects whose
+values are assignable to the invariant of the Dict type.
+Dicts have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
+
+#### Set Types
+A **Set** type describes instances of [`Set`](./intrinsics.md#set) and is parameterized by a single type,
+called an invariant, representing elements.
+The objects that any given Set type describes are `Set` objects whose
+elements are assignable to the invariant of the Set type.
+Sets have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by their elements.
+The value corresponding to a set index is a [Boolean](#boolean) value indicating whether the set contains that element.
+
+#### Map Types
+A **Map** type describes instances of [`Map`](./intrinsics.md#map) and is parameterized by a pair of two types,
+called invariants, the first of which represents antecedents and the second of which represents consequents.
+The objects that any given Map type describes are `Map` objects whose
+antcedents and consequents are respectively assignable to the invariants of the Map type.
+Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by their antecedents.
+
+<sup>&lowast;</sup>Rather, developers should not depend on any implementation of order.
 
 
 
 ## Type Operations
+
+
+### IsReference
+A function that determines whether a type is a [reference type or a value type](#value-types-and-reference-types).
+```
+Boolean IsReference(Type t) :=
+	1. *If* `t` is a Counterpoint Specification Type:
+		1. *Return:* `false`.
+	2. *Assert:* `t` is a Counterpoint Language Type.
+	3. *Let* `valuetypes` be a new Sequence [
+		`Never`,
+		`Void`,
+		`Null`,
+		`Boolean`,
+		`Number`,
+		`String`,
+	].
+	4. *Set* `valuetypes` to a reduction of `valuetypes` for each `a` and `b` to *UnwrapAffirm:* `Union(a, b)`.
+	5. *If* *UnwrapAffirm:* `Subtype(t, valuetypes)`:
+		1. *Return:* `false`.
+	6. *If* `t` is a Vect or Struct type:
+		1. *Return:* `false`.
+	7. *If* `t` is a Union of some types `a` and `b`:
+		1. *If* *UnwrapAffirm:* `IsReference(a)` is `true` *or* *UnwrapAffirm:* `IsReference(b)` is `true`:
+			1. *Return:* `true`.
+		2. *Return:* `false`.
+	8. *Return:* `true`.
+;
+```
 
 
 ### Intersection
@@ -389,14 +495,155 @@ Type Union(Type a, Type b) :=
 
 
 ### Difference
-A data type specified as \`Diff<‹T›, ‹U›>\`,
+A data type specified as \`Minus<‹T›, ‹U›>\`,
 where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
 is a data type that contains values assignable *only* to type \`‹T›\` and *not* to type \`‹U›\`.
 Such a data type is called the **difference** of \`‹T›\` and \`‹U›\`.
 
 
+### Disjunctive Union
+A data type specified as \`Xor<‹T›, ‹U›>\`,
+where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
+is a data type that contains values assignable *either* to type \`‹T›\` *or* to type \`‹U›\`, but not both.
+It is formed by taking the difference of the union of \`‹T›\` and \`‹U›\` and the intersection of \`‹T›\` and \`‹U›\`;
+that is, by the formula \`Minus< Or<‹T›, ‹U›>, And<‹T›, ‹U›> >\`.
+Such a data type is called the **disjunctive union** of \`‹T›\` and \`‹U›\`.
+
+The **symmetric difference** of \`‹T›\` and \`‹U›\`, is formed by taking
+the union of the difference of \`‹T›\` and \`‹U›\` and the difference of of \`‹U›\` and \`‹T›\`;
+that is, by the formula \`Or< Minus<‹T›, ‹U›>, Minus<‹U›, ‹T›> >\`.
+The symmetric difference is equal to to the disjunctive union.
+
+
+
 ### Subtype
 A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignable to \`‹T›\` is also assignable to \`‹U›\`.
+
+```
+Boolean Subtype(Type a, Type b) :=
+	1. *If* *UnwrapAffirm:* `Identical(a, b)`:
+		// 2-7 | `A <: A`
+		1. *Return:* `true`.
+	2. *If* *UnwrapAffirm:* `IsBottomType(a)`:
+		// 1-1 | `never <: T`
+		1. *Return:* `true`.
+	3. *If* *UnwrapAffirm:* `IsBottomType(b)`:
+		// 1-3 | `T       <: never  <->  T == never`
+		1. *Return:* `IsBottomType(a)`.
+	4. *If* *UnwrapAffirm:* `IsTopType(a)`:
+		// 1-4 | `unknown <: T      <->  T == unknown`
+		1. *Return:* `IsTopType(b)`.
+	5. *If* *UnwrapAffirm:* `IsTopType(b)`:
+		// 1-2 | `T     <: unknown`
+		1. *Return:* `true`.
+	6. *If* `a` is the intersection of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Equal(x, b)` *or* *UnwrapAffirm:* `Equal(y, b)`:
+			// 3-1 | `A  & B <: A  &&  A  & B <: B`
+			1. *Return:* `true`.
+		2. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
+			// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
+			1. *Return:* `true`.
+	7. *If* `b` is the intersection of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+			// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
+			1. *Return:* `true`.
+	8. *If* `a` is the union of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
+			// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
+			1. *Return:* `true`.
+	9. *If* `b` is the union of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Equal(a, x)` *or* *UnwrapAffirm:* `Equal(a, y)`:
+			// 3-2 | `A <: A \| B  &&  B <: A \| B`
+			1. *Return:* `true`.
+		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
+			1. *Return:* `true`.
+	10. *If* *UnwrapAffirm:* `IsReference(a)` is `true` *and* *UnwrapAffirm:* `IsReference(b)` is `false`:
+		1. *Return:* `false`.
+	11. *If* `a` is a Tuple or Vect type *and* `b` is a Tuple or Vect type:
+		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
+		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
+		4. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
+		5. *If* `seq_a_req.count` is less than `seq_b_req.count`:
+			1. *Return:* `false`.
+		6. *If* `b` is mutable:
+			1. *If* `a` is not mutable:
+				1. *Return:* `false`.
+		7. *For index* `i` in `seq_b`:
+			1. *If* `seq_b[i].optional` is `false`:
+				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
+			2. *If* `seq_a[i]` is set:
+				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(seq_a[i].type, seq_b[i].type)` is `false`:
+					1. *Return:* `false`.
+				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
+					1. *Return:* `false`.
+		8. *Return:* `true`.
+	12. *If* `a` is a Record or Struct type *and* `b` is a Record or Struct type:
+		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
+		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
+		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
+			1. *Return:* `false`.
+		6. *If* `b` is mutable:
+			1. *If* `a` is not mutable:
+				1. *Return:* `false`.
+		7. *For key* `k` in `struct_b`:
+			1. *If* `struct_b[k].optional` is `false`:
+				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
+					1. *Return:* `false`.
+			2. *If* `struct_a[k]` is set:
+				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(struct_a[k].type, struct_b[k].type)` is `false`:
+					1. *Return:* `false`.
+				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
+					1. *Return:* `false`.
+		8. *Return:* `true`.
+	13. *If* `a` is a List type *and* `b` is a List type:
+		1. *Let* `ai` be the union of types in `a`.
+		2. *Let* `bi` be the union of types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ai, bi)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
+				1. *Return:* `true`.
+	14. *If* `a` is a Dict type *and* `b` is a Dict type:
+		1. *Let* `av` be the union of value types in `a`.
+		2. *Let* `bv` be the union of value types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+				1. *Return:* `true`.
+	15. *If* `a` is a Set type *and* `b` is a Set type:
+		1. *Let* `ae` be the union of types in `a`.
+		2. *Let* `be` be the union of types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ae, be)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
+				1. *Return:* `true`.
+	16. *If* `a` is a Map type *and* `b` is a Map type:
+		1. *Let* `ak` be the union of antecedent types in `a`.
+		2. *Let* `av` be the union of consequent types in `a`.
+		3. *Let* `bk` be the union of antecedent types in `b`.
+		4. *Let* `bv` be the union of consequent types in `b`.
+		5. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ak, bk)` is `true` *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
+					1. *Return:* `true`.
+		6. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+				1. *Return:* `true`.
+	17. *If* every value that is assignable to `a` is also assignable to `b`:
+		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
+			because an instance of `Integer` is an instance of `Object`.
+		2. *Return:* `true`.
+	18. *Return:* `false`.
+;
+```
 
 
 ### Equality
@@ -416,11 +663,12 @@ For brevity, this section uses the following notational conventions:
 - Metavariables such as \`‹A›\`, \`‹B›\`, \`‹C›\` denote placeholders for Counterpoint Language Types
 	and do not refer to real variables or real types.
 - Angle quotes and back-ticks will be omitted. Instead, a `monospace font face` is used.
-- The [intersection](#intersection) of `A` and `B`, `And<A, B>`,  is written `A & B`.
-- The [union](#union)               of `A` and `B`, `Or<A, B>`,   is written `A | B`. The symbol `|`  is weaker than `&`.
-- The [difference](#difference)     of `A` and `B`, `Diff<A, B>`, is written `A - B`. The symbol `-`  has the same precedence as `|`.
-- If `A` is a [subtype](#subtype) of `B`, we write `A <: B`.                          The symbol `<:` is weaker than `|` and `-`.
-- If `A` is [equal](#equality)    to `B`, we write `A == B`.                          The symbol `==` is weaker than `<:`.
+- The [intersection](#intersection)           of `A` and `B`, `And<A, B>`,   is written `A & B`.
+- The [difference](#difference)               of `A` and `B`, `Minus<A, B>`, is written `A - B`. The symbol `-`  has the same precedence as `&`.
+- The [union](#union)                         of `A` and `B`, `Or<A, B>`,    is written `A | B`. The symbol `|`  is weaker than `&` and `-`.
+- The [disjunctive union](#disjunctive-union) of `A` and `B`, `Xor<A, B>`,   is written `A ^ B`. The symbol `^`  has the same precedence as `|`.
+- If `A` is a [subtype](#subtype) of `B`, we write `A <: B`.                                     The symbol `<:` is weaker than `|` and `^`.
+- If `A` is [equal](#equality)    to `B`, we write `A == B`.                                     The symbol `==` is weaker than `<:`.
 - Where ‹X› and ‹Y› represent statements in prose:
 	- `‹X› &&  ‹Y›` denotes “‹X› and            ‹Y›”. The symbol `&&`  is weaker than `<:`.
 	- `‹X› ||  ‹Y›` denotes “‹X› or             ‹Y›”. The symbol `||`  is weaker than `&&`.

@@ -1,14 +1,21 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	TYPE,
 	OBJ,
-	INST,
-	Builder,
-	CPConfig,
+	TYPE,
+	type Builder,
+	TypeErrorUnexpectedRef,
+	type TypeErrorNotAssignable,
+} from '../../index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
@@ -18,42 +25,54 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTuple {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeTuple);
+		assert_instanceof(expression, ASTNodeTuple);
 		return expression;
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'tuple_literal'>,
+		start_node: SyntaxNodeFamily<'tuple_literal', ['variable']>,
 		public override readonly children: readonly ASTNodeExpression[],
+		is_ref: boolean,
 	) {
-		super(start_node, children);
+		super(start_node, children, is_ref);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeTuple#build_do not yet supported.';
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.tuple.make(this.children.map((expr) => expr.build(builder)));
 	}
 
-	protected override type_do(): TYPE.Type {
-		return TYPE.TypeTuple.fromTypes(this.children.map((c) => c.type()), true);
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
+		const items: readonly TYPE.Type[] = this.children.map((c) => {
+			const itemtype: TYPE.Type = c.type();
+			if (!this.isRef && itemtype.isReference) {
+				throw new TypeErrorUnexpectedRef(itemtype, c);
+			}
+			return itemtype;
+		});
+		return (!this.isRef) ? TYPE.TypeVect.fromTypes(items) : TYPE.TypeTuple.fromTypes(items, this.isRef);
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const items: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
 		return (items.includes(null))
 			? null
-			: new OBJ.Tuple(items as OBJ.Object[]);
+			: !this.isRef
+				? new OBJ.Vect(items as OBJ.Object[])
+				: new OBJ.Tuple(items as OBJ.Object[]);
 	}
 
-	protected override assignTo_do(assignee: TYPE.Type): boolean {
-		if (TYPE.TypeTuple.isUnitType(assignee) || assignee instanceof TYPE.TypeTuple) {
-			const assignee_type_tuple: TYPE.TypeTuple = (TYPE.TypeTuple.isUnitType(assignee))
-				? assignee.value.toType()
-				: assignee;
-			if (this.children.length < assignee_type_tuple.count[0]) {
-				return false;
+	@ASTNodeCollectionLiteral.assignToDeco
+	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
+		if (assignee instanceof TYPE.TypeTuple) {
+			if (this.children.length < assignee.count[0]) {
+				throw err;
 			}
-			xjs.Array.forEachAggregated(assignee_type_tuple.types, (thattype, i) => {
+			return xjs.Array.forEachAggregated(assignee.invariants, (thattype, i) => {
 				const expr: ASTNodeExpression | undefined = this.children[i];
 				if (expr) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- bug
 					return ASTNodeCP.typeCheckAssignment(
@@ -64,8 +83,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 					);
 				}
 			});
-			return true;
 		}
-		return false;
+		throw err;
 	}
 }

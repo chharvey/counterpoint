@@ -9,7 +9,7 @@ Below is an example of
 prose that might appear in this specification; the double-angle quotes refer to wording used in the
 steps of a hypothetical [specification algorithm](#algorithms).
 > In an algorithm, a step that reads «*Let* \`x\` be the value of \`X\`.» means to say
-«If \`X\` is a completion structure, then let \`x\` be \`X.value\`; otherwise let \`x\` be \`X\`.»
+> «If \`X\` is a completion structure, then let \`x\` be \`X.value\`; otherwise let \`x\` be \`X\`.»
 
 Algorithm variables, values, and identifiers are delimited with \`back-ticks\` (**U+0060**) as illustrated above.
 
@@ -34,9 +34,9 @@ For instance, a sequence of real numbers can be written as *[2, 4, 6]*.
 
 #### Sequences
 Sequences are denoted within square brackets (**U+005B**, **U+005D**), with comma-separated (**U+002C**) entries.
-The notation *[`1685`, `'Bach'`]* represents a sequence containing two items:
+The notation *[`1685`, `"Bach"`]* represents a sequence containing two items:
 the [Integer](./data-types.md#integer) representing the real number *1685*,
-and the [String value](./data-types.md#string) `'Bach'`.
+and the [String value](./data-types.md#string) `"Bach"`.
 
 Fixed entries of a sequence may be accessed using 0-origin dot notation (**U+002E**).
 If the example sequence above were assigned to the specification variable \`bach\`,
@@ -48,17 +48,17 @@ For example, using a variable index \`i\` we may access «the *i*th entry of \`b
 #### Structures
 Structures are denoted with left and right square brackets,
 and name–value pairs are delimited with equals signs (**U+003D**).
-For example, a structure with a \`name\` property of `'Bach'` and a \`yob\` property of `1685`
-would be written as *[name= `'Bach'`, yob= `1685`]*.
+For example, a structure with a \`name\` property of `"Bach"` and a \`yob\` property of `1685`
+would be written as *[name= `"Bach"`, yob= `1685`]*.
 
 Entries of a structure can be accessed using dot notation.
 If the example structure above were assigned to the specification variable \`bach\`,
-then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which is the value `'Bach'`.
+then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which is the value `"Bach"`.
 
 
 ### Counterpoint Language Values
 [Counterpoint Language Values](./data-types.md#counterpoint-language-types) are displayed with a `monospace typeface`.
-Examples include `true`, `42.0`, and `'hello'`.
+Examples include `true`, `42.0`, and `"hello"`.
 There is no notational distinction between Counterpoint Language Values and longer code snippets
 such as `let n: int = 42;`; however, the semantics will be apparent in context.
 
@@ -987,12 +987,12 @@ which can then be referenced in the return value.
 
 AG productions may also invoke each other, and they may do so recursively.
 ```
-TokenWorth(TemplateFull :::= "'''" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
+TokenWorth(TemplateFull :::= #x22 #x22 #x22 TemplateChars__EndDelim #x22 #x22 #x22) -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim)
-TokenWorth(TemplateChars__EndDelim :::= [^'{#x03]) -> Sequence<RealNumber>
-	:= [UTF8Encoding(CodePoint([^'{#x03]))]
-TokenWorth(TemplateChars__EndDelim :::= [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
-	:= [UTF8Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndDelim)]
+TokenWorth(TemplateChars__EndDelim :::= [^"{#x03]) -> Sequence<RealNumber>
+	:= [UTF8Encoding(CodePoint([^"{#x03]))]
+TokenWorth(TemplateChars__EndDelim :::= [^"{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= [UTF8Encoding(CodePoint([^"{#x03])), ...TokenWorth(TemplateChars__EndDelim)]
 TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim__StartDelim)
 TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>
@@ -1215,7 +1215,7 @@ Algorithm steps may contain shorthand notation that desugar to the types of step
 The metavariables ‹x›, ‹y›, ‹A›, ‹B›, and ‹C› represent any snippets of algorithm prose.
 
 ##### Else If
-A step that begins with «*Else If* …:» desugars to an ‘else' step with an ‘if’ substep.
+A step that begins with «*Else If* …:» desugars to an ‘else’ step with an ‘if’ substep.
 ```
 1. *If* ‹x›:
 	1. ‹A›.
@@ -1417,6 +1417,37 @@ is shorthand for
 		1. Push `it` to `result2`.
 ```
 
+##### Reductions
+A step that contains «a reduction of ‹s› with ‹accum› for each ‹it› to ‹e› starting with ‹p›» is shorthand for
+a *For* loop that updates a result; where ‹s› is a starting sequence; ‹accum› is an accumulator value; ‹it› is an item in ‹s›;
+‹e› is an expression possibly containing ‹s›, ‹accum›, and ‹it›; and ‹p› is the initial value of ‹accum›.
+The updated result is the result of setting ‹accum› to the evaluation of ‹e›, for each ‹it› in ‹s›.
+
+(In the example below, assume `sequence` is a sequence of Structures with a \`prop\` property.)
+```
+1. *Let* `result` be a reduction of `sequence` with `accum` for each `it` to `[...accum, it.prop]` starting with `[]`.
+```
+is shorthand for
+```
+1. *Let* `result` be `[]`.
+2. *For each* `it` in `sequence`:
+	1. *Set* `result` to `[...result, it.prop]`.
+```
+
+A step that contains «a reduction of ‹s› for each ‹a› and ‹b› to ‹e›» assumes the sequence is nonempty,
+uses ‹a› as the accumulator value, ‹b› as the iterated item in ‹s›, and the item at index 0 in ‹s› as the initial value.
+It skips the first iteration.
+
+(In the example below, assume `sequence` is a sequence of RealNumber values.)
+```
+1. *Let* `result` be a reduction of `sequence` for each `a` and `b` to `a + b`.
+```
+is shorthand for
+```
+1. *Assert*: `sequence` is not empty.
+2. *Let* `result` be a reduction of `sequence[1 ..]` with `accum` for each `it` to `accum + it` starting with `sequence.0`.
+```
+
 
 ### Runtime Instructions
 Algorithms that specify behavior to be performed at runtime are called **runtime instructions**.
@@ -1458,85 +1489,3 @@ None AlgorithmName(RealNumber param) :=
 	3. Step 3.
 		1. Substep 3.1.
 ```
-
-
-
-## Syntax Errors (1xxx)
-Syntax Errors arise when a Counterpoint source text does not adhere to the language’s
-formal lexical or syntactic grammar rules.
-If this is the case, the code is said to be “ill-formed” (“not well-formed”).
-
-There are two main types of syntax errors: lexical errors and parse errors.
-
-
-### Lexical Errors (11xx)
-A lexical error is raised when the Counterpoint source text fails to produce a token per
-the [lexical grammar](#the-lexical-grammar) rules.
-
-1100. A general lexical error not covered by one of the following cases.
-1101. The lexer reached a character that it does not recognize.
-1102. The lexer reached the end of the file before it found the end of the current token.
-1103. The lexer found an escape sequence of an invalid format.
-1104. The lexer found a numeric separator where it is not allowed.
-1105. The lexer found a float literal in an invalid format.
-
-
-### Parse Errors (12xx)
-A parse error is raised when the Counterpoint source text fails to parse correctly per
-the [syntactic grammar](#the-syntactic-grammar) rules.
-
-1200. A general parse error not covered by one of the following cases.
-1201. The parser reached a token that the syntax does not allow.
-
-
-
-## Semantic Errors (2xxx)
-Semantic Errors arise when a Counterpoint source text does not adhere to the language’s
-formal validation rules.
-If this is the case, the code is said to be “invalid” (“not valid”).
-
-
-### Reference Errors (21xx)
-A reference error is raised when the compiler fails to dereference an identifier.
-
-2100. A general reference error not covered by one of the following cases.
-2101. The validator encountered a variable that was never declared.
-2102. The validator encountered a variable that was used before it was declared.
-2103. The validator encountered a symbol of the wrong kind.
-
-
-### Assignment Errors (22xx)
-An assignment error is raised when the compiler detects an illegal declaration or assignment.
-
-2200. A general assignment error not covered by one of the following cases.
-2201. The validator encountered a duplicate declaration.
-2210. A reassignment of a fixed variable was attempted.
-
-
-### Type Errors (23xx)
-A type error is raised when the compiler recognizes a type mismatch.
-
-2300. A general type error not covered by one of the following cases.
-2301. The validator encountered an operation with an invalid operand.
-2302. One type is expected to be a subtype of another, but is not.
-2303. An expression was assigned to a type to which it is not assignable.
-2304. The validator encountered a non-existent index/property/argument access.
-2305. The validator encountered an attempt to call a non-callable object.
-2306. An incorrect number of arguments is passed to a callable object.
-
-
-### Mutability Errors (24xx)
-A mutability error is raised when the compiler recognizes an attempt to mutate an immutable object.
-
-2400. A general mutability error not covered by one of the following cases.
-2401. An item or property of an immutable object was reassigned.
-
-
-
-## Runtime Errors (3xxx)
-Runtime Errors arise when the program compiles successfully but fails to complete execution
-as a result of some internal process.
-
-
-### Void Errors (31xx)
-A void error is raised when an expression that has no value is used in some way.

@@ -1,19 +1,19 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
-	TYPE,
-	INST,
-	Builder,
-	AssignmentError10,
+	type TYPE,
+	type Builder,
+	AssignmentErrorReassignment,
 	MutabilityError01,
-	CPConfig,
+} from '../../index.js';
+import {assert_instanceof} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SymbolStructureVar,
-	SyntaxNodeType,
-} from './package.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+} from '../../core/index.js';
+import type {SymbolStructureVar} from '../index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 import {ASTNodeAccess} from './ASTNodeAccess.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
 
@@ -22,14 +22,14 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 export class ASTNodeAssignment extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAssignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeAssignment);
+		assert_instanceof(statement, ASTNodeAssignment);
 		return statement;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'statement_assignment'>,
 		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		private readonly assigned: ASTNodeExpression,
+		public readonly assigned:  ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
@@ -38,7 +38,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		super.varCheck();
 		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
 		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolStructureVar).unfixed) {
-			throw new AssignmentError10(assignee);
+			throw new AssignmentErrorReassignment(assignee);
 		}
 	}
 
@@ -51,25 +51,21 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			}
 		}
 		const assignee_type: TYPE.Type = this.assignee.type();
-		try {
-			return ASTNodeCP.typeCheckAssignment(
-				this.assigned.type(),
-				assignee_type,
-				this,
-				this.validator,
-			);
-		} catch (err) {
-			if (!(this.assigned instanceof ASTNodeCollectionLiteral && this.assigned.assignTo(assignee_type))) {
-				throw err;
-			}
-		}
+		return this.typeCheckAssignment(this.assigned, assignee_type);
 	}
 
-	public override build(builder: Builder): INST.InstructionStatement {
-		const tofloat: boolean = this.assignee.type().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
-		return new INST.InstructionStatement(
-			builder.stmtCount,
-			new INST.InstructionGlobalSet((this.assignee as ASTNodeVariable).id, this.assigned.build(builder, tofloat)),
-		);
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		const id: bigint = (this.assignee as ASTNodeVariable).id;
+		const local = builder.getLocalInfo(id);
+		if (!local) {
+			throw new ReferenceError(`Variable with id ${ id } not found.`);
+		}
+		return builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+			builder.module,
+			this.assignee.type(),
+			this.assigned.type(),
+			this.assigned.build(builder),
+			this.validator.config.compilerOptions.intCoercion,
+		));
 	}
 }

@@ -1,9 +1,9 @@
 import {
-	TYPE,
 	OBJ,
-	CPConfig,
-	Validator,
-} from './package.js';
+	TYPE,
+} from '../../index.js';
+import type {CPConfig} from '../../core/index.js';
+import {Validator} from '../index.js';
 
 
 
@@ -38,7 +38,7 @@ export function neitherFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return !eitherFloats(t0, t1);
 }
 export function oneFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
-	return !neitherFloats(t0, t1) && !bothFloats(t0, t1);
+	return eitherFloats(t0, t1) && !bothFloats(t0, t1);
 }
 
 

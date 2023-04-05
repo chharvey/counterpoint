@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import minimist from 'minimist'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from './core/index.js';
 import {Builder} from './builder/index.js';
@@ -264,17 +264,18 @@ export class CLI {
 			base: void 0,
 			ext:  this.command === Command.DEV ? '.wat' : '.wasm',
 		});
-		const cg: Builder = new Builder(...await Promise.all([
+		const cg = new Builder(...await Promise.all([
 			fs.promises.readFile(inputfilepath, 'utf8'),
 			this.computeConfig(cwd),
 		]));
+		cg.build();
 		return Promise.all([
 			xjs.String.dedent`
 				Compiling………
 				Source file: ${ inputfilepath }
 				${ (this.command === Command.DEV) ? 'Intermediate text file (for debugging):' : 'Destination binary file:' } ${ outputfilepath }
 			`.trimStart(),
-			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? cg.print() : await cg.compile()),
+			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? cg.print() : cg.compile()),
 		]);
 	}
 

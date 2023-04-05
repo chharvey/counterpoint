@@ -1,4 +1,4 @@
-import type {Serializable} from './package.js';
+import type {Serializable} from '../parser/index.js';
 import {LexError} from './LexError.js';
 
 
@@ -14,13 +14,16 @@ import {LexError} from './LexError.js';
  * 1_000_000_; % LexError04: Numeric separator not allowed...
  */
 export class LexError04 extends LexError {
-	/** The number series of this class of errors. */
-	public static override readonly CODE = 4;
 	/**
 	 * Construct a new LexError04 object.
 	 * @param char - the numeric separator character
 	 */
 	public constructor(char: Serializable) {
-		super(`Numeric separator not allowed: at line ${ char.line_index + 1 } col ${ char.col_index + 1 }.`, LexError04.CODE, char.line_index, char.col_index);
+		super(
+			`Numeric separator not allowed: at line ${ char.line_index + 1 } col ${ char.col_index + 1 }.`,
+			LexError.CODES.get(LexError04),
+			char.line_index,
+			char.col_index,
+		);
 	}
 }

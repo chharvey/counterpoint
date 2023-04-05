@@ -2,6 +2,7 @@ export enum Punctuator {
 	// grouping
 		GRP_OPN = '(',
 		GRP_CLS = ')',
+		CONST    = '\\[',
 		BRAK_OPN = '[',
 		BRAK_CLS = ']',
 		BRAC_OPN = '{',
@@ -47,8 +48,3 @@ export enum Punctuator {
 		OPT     = '?:',
 		ASSIGN  = '=',
 }
-
-
-
-/** An iterable list of unique punctuators. */
-export const PUNCTUATORS: readonly Punctuator[] = [...new Set(Object.values(Punctuator))];

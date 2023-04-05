@@ -1,4 +1,4 @@
-import type {OBJ} from './package.js';
+import type * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
 
 
@@ -8,7 +8,9 @@ import {Type} from './Type.js';
  * @final
  */
 export class TypeObject extends Type {
-	public static readonly INSTANCE: TypeObject = new TypeObject();
+	public static readonly INSTANCE = new TypeObject();
+
+
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
 	private constructor() {

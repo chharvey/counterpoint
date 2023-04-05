@@ -1,4 +1,4 @@
-import {OBJ} from './package.js';
+import * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
 
 
@@ -9,8 +9,12 @@ import {Type} from './Type.js';
  */
 export class TypeString extends Type {
 	public static readonly INSTANCE = new TypeString();
+
+
+	public override readonly isReference:  boolean = false;
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
+
 	private constructor() {
 		super(false, new Set([new OBJ.String('')]));
 	}

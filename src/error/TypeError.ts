@@ -1,15 +1,45 @@
+import {
+	TypeErrorInvalidOperation,
+	TypeErrorNotNarrow,
+	TypeErrorUnexpectedRef,
+	TypeErrorNotAssignable,
+	TypeErrorNoEntry,
+	TypeErrorNotCallable,
+	TypeErrorArgCount,
+} from './index.js';
+import type {ConstructorType} from './utils-private.js';
 import {ErrorCode} from './ErrorCode.js';
 
 
 
 /**
  * A TypeError is thrown when the validator recognizes a type mismatch.
+ *
+ * Known subclasses:
+ * - TypeErrorInvalidOperation
+ * - TypeErrorNotNarrow
+ * - TypeErrorUnexpectedRef
+ * - TypeErrorNotAssignable
+ * - TypeErrorNoEntry
+ * - TypeErrorNotCallable
+ * - TypeErrorArgCount
  */
 export class TypeError extends ErrorCode {
-	/** The name of this class of errors. */
-	public static override readonly NAME: string = 'TypeError';
-	/** The number series of this class of errors. */
-	public static readonly CODE: number = 2300;
+	static readonly #CODE = 2300;
+
+	protected static get CODES(): ReadonlyMap<ConstructorType<TypeError>, number> {
+		return new Map<ConstructorType<TypeError>, number>([
+			[TypeErrorInvalidOperation, 1],
+			[TypeErrorNotNarrow,        2],
+			[TypeErrorUnexpectedRef,    3],
+			[TypeErrorNotAssignable,    4],
+			[TypeErrorNoEntry,          5],
+			[TypeErrorNotCallable,      6],
+			[TypeErrorArgCount,         7],
+		]);
+	}
+
+
 	/**
 	 * Construct a new TypeError object.
 	 * @param message - a message to the user
@@ -20,8 +50,8 @@ export class TypeError extends ErrorCode {
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name: TypeError.NAME,
-			code: TypeError.CODE + code,
+			name: TypeError.name,
+			code: TypeError.#CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});
