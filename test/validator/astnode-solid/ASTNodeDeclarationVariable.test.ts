@@ -314,14 +314,14 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.build(builder);
 			assert.deepStrictEqual(builder.getLocals(), [
 				{id: 0x100n, type: binaryen.f64},
-				{id: 0x101n, type: BinEither.createType([binaryen.f64, binaryen.i32])},
+				{id: 0x101n, type: BinEither.createType(binaryen.f64, binaryen.i32)},
 			]);
 			const exprs: binaryen.ExpressionRef[] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder));
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build(builder)),
 				[
 					builder.module.f64.convert_u.i32(exprs[0]),
-					new BinEither(builder.module, 0n, [exprs[1], buildConstInt(0n, builder.module)]).make(),
+					new BinEither(builder.module, 0n, exprs[1], buildConstInt(0n, builder.module)).make(),
 				].map((expected, i) => builder.module.local.set(i, expected)),
 			);
 		});
