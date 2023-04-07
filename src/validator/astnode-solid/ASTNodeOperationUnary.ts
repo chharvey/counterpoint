@@ -29,49 +29,6 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return expression;
 	}
 
-	/**
-	 * Return an instruction performing an operation on an argument.
-	 * @param mod the binaryen module
-	 * @param op  the unary operator
-	 * @param typ the compile-time type of the operand
-	 * @param arg the operand
-	 * @return    an instruction that performs the operation at runtime
-	 */
-	private static operate(
-		mod: binaryen.Module,
-		op:  ValidOperatorUnary,
-		typ: SolidType,
-		arg: binaryen.ExpressionRef,
-	): binaryen.ExpressionRef {
-		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
-		assert.strictEqual(bintype, typ.binType());
-		if (typ instanceof SolidTypeUnion) {
-			// assert: `arg` is equivalent to a result of `new BinEither().make()`
-			const arg_ = new BinEither(mod, arg);
-			return new BinEither(
-				mod,
-				arg_.side,
-				ASTNodeOperationUnary.operate(mod, op, typ.left,  arg_.left),
-				ASTNodeOperationUnary.operate(mod, op, typ.right, arg_.right),
-			).make();
-		} else {
-			ASTNodeOperation.expectIntOrFloat(bintype);
-			return (op === Operator.NEG && bintype === binaryen.f64)
-				? mod.f64.neg(arg)
-				: mod.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
-					[binaryen.i32, new Map<Operator, string>([
-						[Operator.NOT, 'inot'],
-						[Operator.EMP, 'iemp'],
-						[Operator.NEG, 'neg'],
-					])],
-					[binaryen.f64, new Map<Operator, string>([
-						[Operator.NOT, 'fnot'],
-						[Operator.EMP, 'femp'],
-					])],
-				]).get(bintype)!.get(op)!, [arg], binaryen.i32);
-		}
-	}
-
 
 	constructor(
 		start_node: ParseNode,
@@ -82,7 +39,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		return ASTNodeOperationUnary.operate(builder.module, this.operator, this.operand.type(), this.operand.build(builder));
+		return this.operate(builder.module, this.operand.type(), this.operand.build(builder));
 	}
 
 	protected override type_do(): SolidType {
@@ -119,6 +76,47 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			]).get(this.operator)!(z)
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
+		}
+	}
+
+	/**
+	 * Return an instruction performing an operation on an argument.
+	 * @param mod the binaryen module
+	 * @param typ the compile-time type of the operand
+	 * @param arg the operand
+	 * @return    an instruction that performs the operation at runtime
+	 */
+	private operate(
+		mod: binaryen.Module,
+		typ: SolidType,
+		arg: binaryen.ExpressionRef,
+	): binaryen.ExpressionRef {
+		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
+		assert.strictEqual(bintype, typ.binType());
+		if (typ instanceof SolidTypeUnion) {
+			// assert: `arg` is equivalent to a result of `new BinEither().make()`
+			const arg_ = new BinEither(mod, arg);
+			return new BinEither(
+				mod,
+				arg_.side,
+				this.operate(mod, typ.left,  arg_.left),
+				this.operate(mod, typ.right, arg_.right),
+			).make();
+		} else {
+			ASTNodeOperation.expectIntOrFloat(bintype);
+			return (this.operator === Operator.NEG && bintype === binaryen.f64)
+				? mod.f64.neg(arg)
+				: mod.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
+					[binaryen.i32, new Map<Operator, string>([
+						[Operator.NOT, 'inot'],
+						[Operator.EMP, 'iemp'],
+						[Operator.NEG, 'neg'],
+					])],
+					[binaryen.f64, new Map<Operator, string>([
+						[Operator.NOT, 'fnot'],
+						[Operator.EMP, 'femp'],
+					])],
+				]).get(bintype)!.get(this.operator)!, [arg], binaryen.i32);
 		}
 	}
 }

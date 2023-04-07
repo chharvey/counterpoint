@@ -37,17 +37,81 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		return expression;
 	}
 
+
+	constructor (
+		start_node: ParseNode,
+		override readonly operator: ValidOperatorArithmetic,
+		operand0: ASTNodeExpression,
+		operand1: ASTNodeExpression,
+	) {
+		super(start_node, operator, operand0, operand1);
+	}
+
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
+		return this.operate(
+			builder.module,
+			[this.operand0.type(),         this.operand1.type()],
+			[this.operand0.build(builder), this.operand1.build(builder)],
+		);
+	}
+
+	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
+		if (bothNumeric(t0, t1)) {
+			if (bothInts(t0, t1)) {
+				return SolidType.INT;
+			}
+			if (bothFloats(t0, t1)) {
+				return SolidType.FLOAT;
+			}
+			if (int_coercion) {
+				return (eitherFloats(t0, t1)) ? SolidType.FLOAT : t0.union(t1);
+			}
+		}
+		throw new TypeError01(this)
+	}
+
+	protected override fold_do(): SolidObject | null {
+		const v0: SolidObject | null = this.operand0.fold();
+		if (!v0) {
+			return v0;
+		}
+		const v1: SolidObject | null = this.operand1.fold();
+		if (!v1) {
+			return v1;
+		}
+		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
+			throw new NanError02(this.operand1);
+		}
+		return (v0 instanceof Int16 && v1 instanceof Int16)
+			? this.foldNumeric(v0, v1)
+			: this.foldNumeric(
+				(v0 as SolidNumber).toFloat(),
+				(v1 as SolidNumber).toFloat(),
+			);
+	}
+	private foldNumeric<T extends SolidNumber<T>>(x: T, y: T): T {
+		try {
+			return new Map<Operator, (x: T, y: T) => T>([
+				[Operator.EXP, (x, y) => x.exp(y)],
+				[Operator.MUL, (x, y) => x.times(y)],
+				[Operator.DIV, (x, y) => x.divide(y)],
+				[Operator.ADD, (x, y) => x.plus(y)],
+				// [Operator.SUB, (x, y) => x.minus(y)],
+			]).get(this.operator)!(x, y)
+		} catch (err) {
+			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
+		}
+	}
+
 	/**
 	 * Return an instruction performing an operation on arguments.
 	 * @param mod   the binaryen module
-	 * @param op    the binary operator
 	 * @param types the compile-time types of the operands
 	 * @param args  the operands
 	 * @return      an instruction that performs the operation at runtime
 	 */
-	private static operate(
+	private operate(
 		mod:   binaryen.Module,
-		op:    ValidOperatorArithmetic,
 		types: readonly [SolidType, SolidType],
 		args:  readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
 	): binaryen.ExpressionRef {
@@ -68,10 +132,10 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				bintype1.right,
 			].forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
 
-			const left_left:   binaryen.ExpressionRef = ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].left,  types[1].left],  [arg0.left,  arg1.left]);
-			const left_right:  binaryen.ExpressionRef = ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].left,  types[1].right], [arg0.left,  arg1.right]);
-			const right_left:  binaryen.ExpressionRef = ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].right, types[1].left],  [arg0.right, arg1.left]);
-			const right_right: binaryen.ExpressionRef = ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].right, types[1].right], [arg0.right, arg1.right]);
+			const left_left:   binaryen.ExpressionRef = this.operate(mod, [types[0].left,  types[1].left],  [arg0.left,  arg1.left]);
+			const left_right:  binaryen.ExpressionRef = this.operate(mod, [types[0].left,  types[1].right], [arg0.left,  arg1.right]);
+			const right_left:  binaryen.ExpressionRef = this.operate(mod, [types[0].right, types[1].left],  [arg0.right, arg1.left]);
+			const right_right: binaryen.ExpressionRef = this.operate(mod, [types[0].right, types[1].right], [arg0.right, arg1.right]);
 
 			/** {left_left: 0, left_right: 1, right_left: 2, right_right: 3} */
 			const flattened_key = mod.i32.add(mod.i32.mul(mod.i32.const(2), arg0.side), arg1.side);
@@ -160,8 +224,8 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			return new BinEither(
 				mod,
 				arg0.side,
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].left,  types[1]], [arg0.left,  args[1]]),
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].right, types[1]], [arg0.right, args[1]]),
+				this.operate(mod, [types[0].left,  types[1]], [arg0.left,  args[1]]),
+				this.operate(mod, [types[0].right, types[1]], [arg0.right, args[1]]),
 			).make();
 		} else if (types[1] instanceof SolidTypeUnion) {
 			// assert: `args[1]` is equivalent to a result of `new BinEither().make()`
@@ -169,8 +233,8 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			return new BinEither(
 				mod,
 				arg1.side,
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].left],  [args[0], arg1.left]),
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].right], [args[0], arg1.right]),
+				this.operate(mod, [types[0], types[1].left],  [args[0], arg1.left]),
+				this.operate(mod, [types[0], types[1].right], [args[0], arg1.right]),
 			).make();
 		} else {
 			args = ASTNodeOperation.coerceOperands(mod, ...args);
@@ -181,11 +245,11 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			bintypes.forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
 			const bintype: binaryen.Type = (bintypes.includes(binaryen.f64)) ? binaryen.f64 : binaryen.i32;
 			return (
-				(op === Operator.EXP) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
+				(this.operator === Operator.EXP) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
 					[binaryen.i32, mod.call('exp', [...args], binaryen.i32)],
 					[binaryen.f64, mod.unreachable()], // TODO: support runtime exponentiation for floats
 				]).get(bintype)! :
-				(op === Operator.DIV) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
+				(this.operator === Operator.DIV) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
 					[binaryen.i32, mod.i32.div_s (...args)],
 					[binaryen.f64, mod.f64.div   (...args)],
 				]).get(bintype)! :
@@ -196,75 +260,8 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 					[Operator.MUL, 'mul'],
 					[Operator.ADD, 'add'],
 					[Operator.SUB, 'sub'],
-				]).get(op)!](...args)
+				]).get(this.operator)!](...args)
 			);
-		}
-	}
-
-
-	constructor (
-		start_node: ParseNode,
-		override readonly operator: ValidOperatorArithmetic,
-		operand0: ASTNodeExpression,
-		operand1: ASTNodeExpression,
-	) {
-		super(start_node, operator, operand0, operand1);
-	}
-
-	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		return ASTNodeOperationBinaryArithmetic.operate(
-			builder.module,
-			this.operator,
-			[this.operand0.type(),         this.operand1.type()],
-			[this.operand0.build(builder), this.operand1.build(builder)],
-		);
-	}
-
-	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
-		if (bothNumeric(t0, t1)) {
-			if (bothInts(t0, t1)) {
-				return SolidType.INT;
-			}
-			if (bothFloats(t0, t1)) {
-				return SolidType.FLOAT;
-			}
-			if (int_coercion) {
-				return (eitherFloats(t0, t1)) ? SolidType.FLOAT : t0.union(t1);
-			}
-		}
-		throw new TypeError01(this)
-	}
-
-	protected override fold_do(): SolidObject | null {
-		const v0: SolidObject | null = this.operand0.fold();
-		if (!v0) {
-			return v0;
-		}
-		const v1: SolidObject | null = this.operand1.fold();
-		if (!v1) {
-			return v1;
-		}
-		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
-			throw new NanError02(this.operand1);
-		}
-		return (v0 instanceof Int16 && v1 instanceof Int16)
-			? this.foldNumeric(v0, v1)
-			: this.foldNumeric(
-				(v0 as SolidNumber).toFloat(),
-				(v1 as SolidNumber).toFloat(),
-			);
-	}
-	private foldNumeric<T extends SolidNumber<T>>(x: T, y: T): T {
-		try {
-			return new Map<Operator, (x: T, y: T) => T>([
-				[Operator.EXP, (x, y) => x.exp(y)],
-				[Operator.MUL, (x, y) => x.times(y)],
-				[Operator.DIV, (x, y) => x.divide(y)],
-				[Operator.ADD, (x, y) => x.plus(y)],
-				// [Operator.SUB, (x, y) => x.minus(y)],
-			]).get(this.operator)!(x, y)
-		} catch (err) {
-			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
 		}
 	}
 }
