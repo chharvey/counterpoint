@@ -51,11 +51,11 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		}
 		return (assigned_type instanceof SolidTypeUnion)
 			// assert: `value` is equivalent to a result of `new BinEither().make()`
-			? mod.if(
-				mod.i32.eqz(BinEither.sideOf(mod, value)),
-				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.left,  BinEither.leftOf (mod, value), int_coercion),
-				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.right, BinEither.rightOf(mod, value), int_coercion),
-			)
+			? ((val) => mod.if(
+				mod.i32.eqz(val.side),
+				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.left,  val.left,  int_coercion),
+				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.right, val.right, int_coercion),
+			))(new BinEither(mod, value))
 			: (assignee_type instanceof SolidTypeUnion)
 				? (
 					(assigned_type.isSubtypeOf(assignee_type.left)) ? new BinEither(

@@ -318,15 +318,10 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => {
-					const arg: binaryen.ExpressionRef = ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder);
-					return new BinEither(
-						builder.module,
-						BinEither.sideOf  (builder.module, arg),
-						BinEither.leftOf  (builder.module, arg),
-						BinEither.rightOf (builder.module, arg),
-					);
-				});
+				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => new BinEither(
+					builder.module,
+					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder),
+				));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
@@ -472,15 +467,10 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => {
-					const arg0: binaryen.ExpressionRef = ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder);
-					return new BinEither(
-						builder.module,
-						BinEither.sideOf  (builder.module, arg0),
-						BinEither.leftOf  (builder.module, arg0),
-						BinEither.rightOf (builder.module, arg0),
-					);
-				});
+				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => new BinEither(
+					builder.module,
+					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder),
+				));
 				const const_ = {
 					'2':    buildConstInt   (2n,  mod),
 					'2.4':  buildConstFloat (2.4, mod),
@@ -517,17 +507,9 @@ describe('ASTNodeOperation', () => {
 					return [
 						binexp.operand0.build(builder),
 						binexp.operand1.build(builder),
-					].map((arg) => new BinEither(
-						builder.module,
-						BinEither.sideOf  (builder.module, arg),
-						BinEither.leftOf  (builder.module, arg),
-						BinEither.rightOf (builder.module, arg),
-					));
+					].map((arg) => new BinEither(builder.module, arg));
 				});
-				const key = mod.i32.add(
-					mod.i32.mul(mod.i32.const(2), extracts[0][0].side),
-					extracts[0][1].side,
-				);
+				const key = mod.i32.add(mod.i32.mul(mod.i32.const(2), extracts[0][0].side), extracts[0][1].side);
 				const options = [
 					mod.i32.mul(extracts[0][0].left,                        extracts[0][1].left),
 					mod.f64.mul(mod.f64.convert_u.i32(extracts[0][0].left), extracts[0][1].right),

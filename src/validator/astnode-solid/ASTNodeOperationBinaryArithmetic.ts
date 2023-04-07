@@ -55,10 +55,10 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			// assert: `args[0]` is equivalent to a result of `new BinEither().make()`
 			// assert: `args[1]` is equivalent to a result of `new BinEither().make()`
 
-			const arg0:     {readonly left: binaryen.ExpressionRef, readonly right: binaryen.ExpressionRef} = {left: BinEither.leftOf(mod, args[0]),        right: BinEither.rightOf(mod, args[0])};
-			const arg1:     {readonly left: binaryen.ExpressionRef, readonly right: binaryen.ExpressionRef} = {left: BinEither.leftOf(mod, args[1]),        right: BinEither.rightOf(mod, args[1])};
-			const bintype0: {readonly left: binaryen.Type,          readonly right: binaryen.Type}          = {left: binaryen.getExpressionType(arg0.left), right: binaryen.getExpressionType(arg0.right)};
-			const bintype1: {readonly left: binaryen.Type,          readonly right: binaryen.Type}          = {left: binaryen.getExpressionType(arg1.left), right: binaryen.getExpressionType(arg1.right)};
+			const arg0 = new BinEither(mod, args[0]);
+			const arg1 = new BinEither(mod, args[1]);
+			const bintype0: {readonly left: binaryen.Type, readonly right: binaryen.Type} = {left: binaryen.getExpressionType(arg0.left), right: binaryen.getExpressionType(arg0.right)};
+			const bintype1: {readonly left: binaryen.Type, readonly right: binaryen.Type} = {left: binaryen.getExpressionType(arg1.left), right: binaryen.getExpressionType(arg1.right)};
 
 			/* throw any early errors */
 			[
@@ -74,10 +74,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			const right_right: binaryen.ExpressionRef = ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].right, types[1].right], [arg0.right, arg1.right]);
 
 			/** {left_left: 0, left_right: 1, right_left: 2, right_right: 3} */
-			const flattened_key = mod.i32.add(
-				mod.i32.mul(mod.i32.const(2), BinEither.sideOf(mod, args[0])),
-				BinEither.sideOf(mod, args[1]),
-			);
+			const flattened_key = mod.i32.add(mod.i32.mul(mod.i32.const(2), arg0.side), arg1.side);
 
 			function float_side_value(excluded: binaryen.ExpressionRef): binaryen.ExpressionRef {
 				type Expr3 = [binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef];
@@ -159,19 +156,21 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		}
 		if (types[0] instanceof SolidTypeUnion) {
 			// assert: `args[0]` is equivalent to a result of `new BinEither().make()`
+			const arg0 = new BinEither(mod, args[0]);
 			return new BinEither(
 				mod,
-				BinEither.sideOf(mod, args[0]),
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].left,  types[1]], [BinEither.leftOf  (mod, args[0]), args[1]]),
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].right, types[1]], [BinEither.rightOf (mod, args[0]), args[1]]),
+				arg0.side,
+				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].left,  types[1]], [arg0.left,  args[1]]),
+				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0].right, types[1]], [arg0.right, args[1]]),
 			).make();
 		} else if (types[1] instanceof SolidTypeUnion) {
 			// assert: `args[1]` is equivalent to a result of `new BinEither().make()`
+			const arg1 = new BinEither(mod, args[1]);
 			return new BinEither(
 				mod,
-				BinEither.sideOf(mod, args[1]),
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].left],  [args[0], BinEither.leftOf (mod, args[1])]),
-				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].right], [args[0], BinEither.rightOf(mod, args[1])]),
+				arg1.side,
+				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].left],  [args[0], arg1.left]),
+				ASTNodeOperationBinaryArithmetic.operate(mod, op, [types[0], types[1].right], [args[0], arg1.right]),
 			).make();
 		} else {
 			args = ASTNodeOperation.coerceOperands(mod, ...args);
