@@ -36,7 +36,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		return builder.module.if(
 			this.operand0.build(builder),
-			...ASTNodeOperation.coerceOperands(builder, this.operand1, this.operand2).exprs,
+			...ASTNodeOperation.coerceOperands(builder.module, this.operand1.build(builder), this.operand2.build(builder)),
 		);
 	}
 

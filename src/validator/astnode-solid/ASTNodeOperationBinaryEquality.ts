@@ -37,20 +37,10 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		const {
-			exprs: [arg0,  arg1],
-			types: [type0, type1],
-		} = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1, () => (
-			this.validator.config.compilerOptions.intCoercion && this.operator === Operator.EQ
-		));
-		return (
-			(type0 === binaryen.i32 && type1 === binaryen.i32) ? builder.module.i32.eq(arg0, arg1) : // `ID` and `EQ` give the same result
-			(type0 === binaryen.i32 && type1 === binaryen.f64) ? builder.module.call('i_f_id', [arg0, arg1], binaryen.i32) :
-			(type0 === binaryen.f64 && type1 === binaryen.i32) ? builder.module.call('f_i_id', [arg0, arg1], binaryen.i32) :
-			(type0 === binaryen.f64 && type1 === binaryen.f64,   (this.operator === Operator.ID)
-				? builder.module.call('fid', [arg0, arg1], binaryen.i32)
-				: builder.module.f64.eq(arg0, arg1)
-			)
+		return this.operate(
+			builder.module,
+			[this.operand0.type(),         this.operand1.type()],
+			[this.operand0.build(builder), this.operand1.build(builder)],
 		);
 	}
 
@@ -88,5 +78,24 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			// [Operator.ISNT, (x, y) => !x.identical(y)],
 			// [Operator.NEQ,  (x, y) => !x.equal(y)],
 		]).get(this.operator)!(x, y))
+	}
+
+	protected override operateSimple(
+		mod:  binaryen.Module,
+		args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
+	): binaryen.ExpressionRef {
+		args = ASTNodeOperation.coerceOperands(mod, ...args, () => (
+			this.validator.config.compilerOptions.intCoercion && this.operator === Operator.EQ
+		));
+		const [type0, type1]: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
+		return (
+			(type0 === binaryen.i32 && type1 === binaryen.i32) ? mod.i32.eq(...args) : // `ID` and `EQ` give the same result
+			(type0 === binaryen.i32 && type1 === binaryen.f64) ? mod.call('i_f_id', [...args], binaryen.i32) :
+			(type0 === binaryen.f64 && type1 === binaryen.i32) ? mod.call('f_i_id', [...args], binaryen.i32) :
+			(assert.deepStrictEqual([type0, type1], [binaryen.f64, binaryen.f64]), (this.operator === Operator.ID)
+				? mod.call('fid', [...args], binaryen.i32)
+				: mod.f64.eq(...args)
+			)
+		);
 	}
 }

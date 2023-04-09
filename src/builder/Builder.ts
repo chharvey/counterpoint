@@ -28,34 +28,6 @@ export class Builder {
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/fid.wat'), 'utf8'),
 	]
 
-	/**
-	 * Create an `Either<L, R>` monad type structure.
-	 * The Either monad has two sides, and a field that indicates the active side.
-	 * @param left  the left  side type
-	 * @param right the right side type
-	 * @return      a Binaryen 3-tuple type of `[is_right: 0 | 1, left, right]`
-	 */
-	public static createBinTypeEither(left: binaryen.Type, right: binaryen.Type): binaryen.Type {
-		return binaryen.createType([binaryen.i32, left, right]);
-	}
-
-	/**
-	 * Create an instance of the `Either<L, R>` monad.
-	 * @param mod      a module to create the instance in
-	 * @param is_right is the active side the right-hand side?
-	 * @param left     the left  side value
-	 * @param right    the right side value
-	 * @return         a Binaryen 3-tuple value of `[is_right: 0 | 1, left, right]`
-	 */
-	public static createBinEither(
-		mod:      binaryen.Module,
-		is_right: boolean,
-		left:     binaryen.ExpressionRef,
-		right:    binaryen.ExpressionRef,
-	): binaryen.ExpressionRef {
-		return mod.tuple.make([mod.i32.const(Number(is_right)), left, right]);
-	}
-
 
 	/** An AST goal produced by a Decorator. */
 	private readonly ast_goal: AST.ASTNodeGoal;
@@ -172,6 +144,7 @@ export class Builder {
 	 * @return `this`
 	 */
 	public build(): this {
+		// this.module.setFeatures(binaryen.Features.ReferenceTypes);
 		this.module.setFeatures(binaryen.Features.Multivalue);
 		this.ast_goal.build(this);
 		const validation: number = this.module.validate();
