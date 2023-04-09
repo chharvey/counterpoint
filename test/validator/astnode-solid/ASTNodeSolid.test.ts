@@ -17,11 +17,7 @@ import {
 	assertAssignable,
 	assertEqualBins,
 } from '../../assert-helpers.js';
-import {
-	typeConstFloat,
-	buildConstInt,
-	buildConstFloat,
-} from '../../helpers.js';
+import {typeConstFloat} from '../../helpers.js';
 
 
 
@@ -192,8 +188,8 @@ describe('ASTNodeSolid', () => {
 				goal.typeCheck();
 				goal.build(builder);
 				const default_ = {
-					int:   buildConstInt(0n, builder.module),
-					float: buildConstFloat(0, builder.module),
+					int:   SolidType.INT   .defaultBinValue(builder.module),
+					float: SolidType.FLOAT .defaultBinValue(builder.module),
 				} as const;
 				const exprs:  binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeAssignment).assigned.build(builder));
 				const exprs_: readonly BinEither[]     = exprs.slice(2).map((expr) => new BinEither(builder.module, expr));
