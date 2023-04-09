@@ -91,13 +91,15 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
 	): binaryen.ExpressionRef {
 		args = ASTNodeOperation.coerceOperands(mod, ...args);
+		const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
+		bintypes.forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
 		const opname = new Map<Operator, 'lt' | 'gt' | 'le' | 'ge'>([
 			[Operator.LT, 'lt'],
 			[Operator.GT, 'gt'],
 			[Operator.LE, 'le'],
 			[Operator.GE, 'ge'],
 		]).get(this.operator)!;
-		return ((!args.map((arg) => binaryen.getExpressionType(arg)).includes(binaryen.f64))
+		return ((!bintypes.includes(binaryen.f64))
 			? mod.i32[`${ opname }_s`]
 			: mod.f64[opname])(...args);
 	}

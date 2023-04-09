@@ -92,7 +92,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			(type0 === binaryen.i32 && type1 === binaryen.i32) ? mod.i32.eq(...args) : // `ID` and `EQ` give the same result
 			(type0 === binaryen.i32 && type1 === binaryen.f64) ? mod.call('i_f_id', [...args], binaryen.i32) :
 			(type0 === binaryen.f64 && type1 === binaryen.i32) ? mod.call('f_i_id', [...args], binaryen.i32) :
-			(type0 === binaryen.f64 && type1 === binaryen.f64,   (this.operator === Operator.ID)
+			(assert.deepStrictEqual([type0, type1], [binaryen.f64, binaryen.f64]), (this.operator === Operator.ID)
 				? mod.call('fid', [...args], binaryen.i32)
 				: mod.f64.eq(...args)
 			)
