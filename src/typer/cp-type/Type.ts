@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {Builder} from '../../index.js';
+import {BinEither} from '../../index.js';
 import {
 	throw_expression,
 	memoizeMethod,
@@ -353,7 +353,7 @@ export abstract class Type {
 				if (right_type === binaryen.none) {
 					right_type = left_type;
 				}
-				return Builder.createBinTypeEither(left_type, right_type);
+				return BinEither.createType(left_type, right_type);
 			})(this.left.binType(), this.right.binType()) :
 			throw_expression(new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`))
 		);
@@ -366,7 +366,7 @@ export abstract class Type {
 		return (
 			(this.binType() === binaryen.i32) ? mod.i32.const(0) :
 			(this.binType() === binaryen.f64) ? mod.f64.const(0) :
-			(this instanceof TypeUnion)       ? Builder.createBinEither(mod, false, this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)) :
+			(this instanceof TypeUnion)       ? new BinEither(mod, 0n, this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)).make() :
 			throw_expression(new TypeError(`Could not determine a default value for \`${ this }\`.`))
 		);
 	}

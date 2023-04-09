@@ -4,7 +4,8 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	Builder,
+	type Builder,
+	BinEither,
 	TypeError01,
 	NanError01,
 } from '../../index.js';
@@ -40,42 +41,6 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		public  readonly operand:  ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand]);
-	}
-
-	/**
-	 * Return an instruction performing the operation on the argument.
-	 * @param mod   the binaryen module
-	 * @param type_ the compile-time type of the operand
-	 * @param arg   the operand
-	 * @return      an instruction that performs the operation at runtime
-	 */
-	private operate(mod: binaryen.Module, type_: TYPE.Type, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
-		assert.strictEqual(bintype, type_.binType());
-		if (type_ instanceof TYPE.TypeUnion) {
-			// assert: `arg` is equivalent to a result of `Builder.createBinEither()`
-			return Builder.createBinEither(
-				mod,
-				mod.tuple.extract(arg, 0),
-				this.operate(mod, type_.left,  mod.tuple.extract(arg, 1)),
-				this.operate(mod, type_.right, mod.tuple.extract(arg, 2)),
-			);
-		} else {
-			ASTNodeOperation.expectIntOrFloat(bintype);
-			return (this.operator === Operator.NEG && bintype === binaryen.f64)
-				? mod.f64.neg(arg)
-				: mod.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
-					[binaryen.i32, new Map<Operator, string>([
-						[Operator.NOT, 'inot'],
-						[Operator.EMP, 'iemp'],
-						[Operator.NEG, 'neg'],
-					])],
-					[binaryen.f64, new Map<Operator, string>([
-						[Operator.NOT, 'fnot'],
-						[Operator.EMP, 'femp'],
-					])],
-				]).get(bintype)!.get(this.operator)!, [arg], binaryen.i32);
-		}
 	}
 
 	@memoizeMethod
@@ -126,6 +91,47 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			]).get(this.operator)!(v0);
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
+		}
+	}
+
+	/**
+	 * Return an instruction performing an operation on an argument.
+	 * @param mod the binaryen module
+	 * @param typ the compile-time type of the operand
+	 * @param arg the operand
+	 * @return    an instruction that performs the operation at runtime
+	 */
+	private operate(
+		mod: binaryen.Module,
+		typ: TYPE.Type,
+		arg: binaryen.ExpressionRef,
+	): binaryen.ExpressionRef {
+		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
+		assert.strictEqual(bintype, typ.binType());
+		if (typ instanceof TYPE.TypeUnion) {
+			// assert: `arg` is equivalent to a result of `new BinEither().make()`
+			const arg_ = new BinEither(mod, arg);
+			return new BinEither(
+				mod,
+				arg_.side,
+				this.operate(mod, typ.left,  arg_.left),
+				this.operate(mod, typ.right, arg_.right),
+			).make();
+		} else {
+			ASTNodeOperation.expectIntOrFloat(bintype);
+			return (this.operator === Operator.NEG && bintype === binaryen.f64)
+				? mod.f64.neg(arg)
+				: mod.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
+					[binaryen.i32, new Map<Operator, string>([
+						[Operator.NOT, 'inot'],
+						[Operator.EMP, 'iemp'],
+						[Operator.NEG, 'neg'],
+					])],
+					[binaryen.f64, new Map<Operator, string>([
+						[Operator.NOT, 'fnot'],
+						[Operator.EMP, 'femp'],
+					])],
+				]).get(bintype)!.get(this.operator)!, [arg], binaryen.i32);
 		}
 	}
 }

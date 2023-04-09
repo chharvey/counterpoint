@@ -7,6 +7,7 @@ import {
 	OBJ,
 	TYPE,
 	Builder,
+	BinEither,
 	TypeError01,
 	NanError01,
 	NanError02,
@@ -280,36 +281,173 @@ describe('ASTNodeOperation', () => {
 					['-(4.2);', mod.f64.neg(buildConstFloat(4.2, mod))],
 				]));
 			});
-			it('works with Either<Left, Right>.', () => {
+			it('works with tuples.', () => {
 				const src = `
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
-					!x; % should return \`Either [left,  $inot(42), $fnot(0.0)]\`
-					?x; % should return \`Either [left,  $iemp(42), $femp(0.0)]\`
-					-x; % should return \`Either [left,  $neg(42),  f64.neg(0.0)]\`
-					!y; % should return \`Either [right, $inot(0),  $fnot(4.2)]\`
-					?y; % should return \`Either [right, $iemp(0),  $femp(4.2)]\`
-					-y; % should return \`Either [right, $neg(0),   f64.neg(4.2)]\`
+					!x; % should return \`[0, $inot(42), $fnot(0.0)]\`
+					?x; % should return \`[0, $iemp(42), $femp(0.0)]\`
+					-x; % should return \`[0, $neg(42),  f64.neg(0.0)]\`
+					!y; % should return \`[1, $inot(0),  $fnot(4.2)]\`
+					?y; % should return \`[1, $iemp(0),  $femp(4.2)]\`
+					-y; % should return \`[1, $neg(0),   f64.neg(4.2)]\`
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder = new Builder(src);
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: binaryen.ExpressionRef[][] = goal.children.slice(2).map((stmt) => [0, 1, 2].map((i) => builder.module.tuple.extract(
+				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => new BinEither(
+					builder.module,
 					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder),
-					i,
-				)));
+				));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						Builder.createBinEither(builder.module, extracts[0][0], callUnaryOp(builder.module, 'inot', extracts[0][1]), callUnaryOp(builder.module, 'fnot', extracts[0][2])),
-						Builder.createBinEither(builder.module, extracts[1][0], callUnaryOp(builder.module, 'iemp', extracts[1][1]), callUnaryOp(builder.module, 'femp', extracts[1][2])),
-						Builder.createBinEither(builder.module, extracts[2][0], callUnaryOp(builder.module, 'neg',  extracts[2][1]), builder.module.f64.neg(extracts[2][2])),
-						Builder.createBinEither(builder.module, extracts[3][0], callUnaryOp(builder.module, 'inot', extracts[3][1]), callUnaryOp(builder.module, 'fnot', extracts[3][2])),
-						Builder.createBinEither(builder.module, extracts[4][0], callUnaryOp(builder.module, 'iemp', extracts[4][1]), callUnaryOp(builder.module, 'femp', extracts[4][2])),
-						Builder.createBinEither(builder.module, extracts[5][0], callUnaryOp(builder.module, 'neg',  extracts[5][1]), builder.module.f64.neg(extracts[5][2])),
+						new BinEither(builder.module, extracts[0].side, callUnaryOp(builder.module, 'inot', extracts[0].left), callUnaryOp(builder.module, 'fnot', extracts[0].right)).make(),
+						new BinEither(builder.module, extracts[1].side, callUnaryOp(builder.module, 'iemp', extracts[1].left), callUnaryOp(builder.module, 'femp', extracts[1].right)).make(),
+						new BinEither(builder.module, extracts[2].side, callUnaryOp(builder.module, 'neg',  extracts[2].left), builder.module.f64.neg(extracts[2].right)).make(),
+						new BinEither(builder.module, extracts[3].side, callUnaryOp(builder.module, 'inot', extracts[3].left), callUnaryOp(builder.module, 'fnot', extracts[3].right)).make(),
+						new BinEither(builder.module, extracts[4].side, callUnaryOp(builder.module, 'iemp', extracts[4].left), callUnaryOp(builder.module, 'femp', extracts[4].right)).make(),
+						new BinEither(builder.module, extracts[5].side, callUnaryOp(builder.module, 'neg',  extracts[5].left), builder.module.f64.neg(extracts[5].right)).make(),
 					].map((expected) => builder.module.drop(expected)),
+				);
+			});
+		});
+	});
+
+
+
+	describe('ASTNodeOperationBinary', () => {
+		describe('#build', () => {
+			it('works with tuples.', () => {
+				const src = `
+					let unfixed x: int | float = 42;
+					let unfixed y: int | float = 4.2;
+
+					x * 2;   % should return \`[0, i32.mul(42,    2),   f64.mul(0.0, c(2))]\`
+					y * 2;   % should return \`[1, i32.mul(0,     2),   f64.mul(4.2, c(2))]\`
+					x * 2.4; % should return \`[0, f64.mul(c(42), 2.4), f64.mul(0.0, 2.4)]\`
+					y * 2.4; % should return \`[1, f64.mul(c(0),  2.4), f64.mul(4.2, 2.4)]\`
+
+					x < 2;   % should return \`[0, i32.lt_s(42,    2),   f64.lt(0.0, c(2))]\`
+					y < 2;   % should return \`[1, i32.lt_s(0,     2),   f64.lt(4.2, c(2))]\`
+					x < 2.4; % should return \`[0, f64.lt  (c(42), 2.4), f64.lt(0.0, 2.4)]\`
+					y < 2.4; % should return \`[1, f64.lt  (c(0),  2.4), f64.lt(4.2, 2.4)]\`
+
+					x == 2;   % should return \`[0, i32.eq(42,    2),   f64.eq(0.0, c(2))]\`
+					y == 2;   % should return \`[1, i32.eq(0,     2),   f64.eq(4.2, c(2))]\`
+					x == 2.4; % should return \`[0, f64.eq(c(42), 2.4), f64.eq(0.0, 2.4)]\`
+					y == 2.4; % should return \`[1, f64.eq(c(0),  2.4), f64.eq(4.2, 2.4)]\`
+				`;
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const builder               = new Builder(src);
+				const mod: binaryen.Module  = builder.module;
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build(builder);
+				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => new BinEither(
+					builder.module,
+					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder),
+				));
+				const const_ = {
+					'2':    buildConstInt   (2n,  mod),
+					'2.4':  buildConstFloat (2.4, mod),
+					'c(2)': buildConvert    (2n,  mod),
+				} as const;
+				return assertEqualBins(
+					goal.children.slice(2).map((stmt) => stmt.build(builder)),
+					[
+						new BinEither(mod, extracts[0].side, mod.i32.mul(                      extracts[0].left,  const_['2']),   mod.f64.mul(extracts[0].right, const_['c(2)'])),
+						new BinEither(mod, extracts[1].side, mod.i32.mul(                      extracts[1].left,  const_['2']),   mod.f64.mul(extracts[1].right, const_['c(2)'])),
+						new BinEither(mod, extracts[2].side, mod.f64.mul(mod.f64.convert_u.i32(extracts[2].left), const_['2.4']), mod.f64.mul(extracts[2].right, const_['2.4'])),
+						new BinEither(mod, extracts[3].side, mod.f64.mul(mod.f64.convert_u.i32(extracts[3].left), const_['2.4']), mod.f64.mul(extracts[3].right, const_['2.4'])),
+
+						new BinEither(mod, extracts[4].side, mod.i32.lt_s (                      extracts[4].left,  const_['2']),   mod.f64.lt(extracts[4].right, const_['c(2)'])),
+						new BinEither(mod, extracts[5].side, mod.i32.lt_s (                      extracts[5].left,  const_['2']),   mod.f64.lt(extracts[5].right, const_['c(2)'])),
+						new BinEither(mod, extracts[6].side, mod.f64.lt   (mod.f64.convert_u.i32(extracts[6].left), const_['2.4']), mod.f64.lt(extracts[6].right, const_['2.4'])),
+						new BinEither(mod, extracts[7].side, mod.f64.lt   (mod.f64.convert_u.i32(extracts[7].left), const_['2.4']), mod.f64.lt(extracts[7].right, const_['2.4'])),
+
+						new BinEither(mod, extracts [8].side, mod.i32.eq(                      extracts [8].left,  const_['2']),   mod.f64.eq(extracts [8].right, const_['c(2)'])),
+						new BinEither(mod, extracts [9].side, mod.i32.eq(                      extracts [9].left,  const_['2']),   mod.f64.eq(extracts [9].right, const_['c(2)'])),
+						new BinEither(mod, extracts[10].side, mod.f64.eq(mod.f64.convert_u.i32(extracts[10].left), const_['2.4']), mod.f64.eq(extracts[10].right, const_['2.4'])),
+						new BinEither(mod, extracts[11].side, mod.f64.eq(mod.f64.convert_u.i32(extracts[11].left), const_['2.4']), mod.f64.eq(extracts[11].right, const_['2.4'])),
+					].map((expected) => builder.module.drop(expected.make())),
+				);
+			});
+			it('multiple unions.', () => {
+				const src = `
+					let unfixed x: int | float = 42;
+					let unfixed y: int | float = 4.2;
+
+					x * y; %% should return \`[
+						1,
+						i32.mul(42, 0),
+						if 1 then f64.mul(c(42), 4.2) else if 2 then f64.mul(0.0, c(0)) else f64.mul(0.0, 4.2),
+					]\` %%
+
+					x > y; %% should return \`[
+						1,
+						i32.gt_s(42, 0),
+						if 1 then f64.gt(c(42), 4.2) else if 2 then f64.gt(0.0, c(0)) else f64.gt(0.0, 4.2),
+					]\` %%
+
+					x == y; %% should return \`[
+						1,
+						i32.eq(42, 0),
+						if 1 then f64.eq(c(42), 4.2) else if 2 then f64.eq(0.0, c(0)) else f64.eq(0.0, 4.2),
+					]\` %%
+				`;
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const builder               = new Builder(src);
+				const mod: binaryen.Module  = builder.module;
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build(builder);
+				const extracts: readonly (readonly BinEither[])[] = goal.children.slice(2).map((stmt) => {
+					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
+					return [
+						binexp.operand0.build(builder),
+						binexp.operand1.build(builder),
+					].map((arg) => new BinEither(builder.module, arg));
+				});
+				const keys: readonly binaryen.ExpressionRef[] = extracts.map((extract) => mod.i32.add(mod.i32.mul(mod.i32.const(2), extract[0].side), extract[1].side));
+				const each_options = [
+					[
+						mod.i32.mul(extracts[0][0].left,                        extracts[0][1].left),
+						mod.f64.mul(mod.f64.convert_u.i32(extracts[0][0].left), extracts[0][1].right),
+						mod.f64.mul(extracts[0][0].right,                       mod.f64.convert_u.i32(extracts[0][1].left)),
+						mod.f64.mul(extracts[0][0].right,                       extracts[0][1].right),
+					],
+					[
+						mod.i32.gt_s (extracts[1][0].left,                        extracts[1][1].left),
+						mod.f64.gt   (mod.f64.convert_u.i32(extracts[1][0].left), extracts[1][1].right),
+						mod.f64.gt   (extracts[1][0].right,                       mod.f64.convert_u.i32(extracts[1][1].left)),
+						mod.f64.gt   (extracts[1][0].right,                       extracts[1][1].right),
+					],
+					[
+						mod.i32.eq(extracts[2][0].left,                        extracts[2][1].left),
+						mod.f64.eq(mod.f64.convert_u.i32(extracts[2][0].left), extracts[2][1].right),
+						mod.f64.eq(extracts[2][0].right,                       mod.f64.convert_u.i32(extracts[2][1].left)),
+						mod.f64.eq(extracts[2][0].right,                       extracts[2][1].right),
+					],
+				] as const;
+				return assertEqualBins(
+					goal.children.slice(2).map((stmt) => stmt.build(builder)),
+					each_options.map((options, i) => builder.module.drop(new BinEither(
+						mod,
+						mod.i32.eqz(mod.i32.eq(keys[i], mod.i32.const(0))),
+						options[0],
+						mod.if(
+							mod.i32.eq(keys[i], mod.i32.const(1)),
+							options[1],
+							mod.if(
+								mod.i32.eq(keys[i], mod.i32.const(2)),
+								options[2],
+								options[3],
+							),
+						),
+					).make())),
 				);
 			});
 		});
@@ -413,22 +551,23 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		specify('#build', () => {
-			const mod = new binaryen.Module();
-			buildOperations(new Map<string, binaryen.ExpressionRef>([
-				['42 + 420;', mod.i32.add(buildConstInt (42n, mod), buildConstInt   (420n, mod))],
-				['3 * 2.1;',  mod.f64.mul(buildConvert  (3n,  mod), buildConstFloat (2.1,  mod))],
-			]));
-			return buildOperations(new Map<string, binaryen.ExpressionRef>([
-				[' 126 /  3;', mod.i32.div_s(buildConstInt( 126n, mod), buildConstInt( 3n, mod))],
-				['-126 /  3;', mod.i32.div_s(buildConstInt(-126n, mod), buildConstInt( 3n, mod))],
-				[' 126 / -3;', mod.i32.div_s(buildConstInt( 126n, mod), buildConstInt(-3n, mod))],
-				['-126 / -3;', mod.i32.div_s(buildConstInt(-126n, mod), buildConstInt(-3n, mod))],
-				[' 200 /  3;', mod.i32.div_s(buildConstInt( 200n, mod), buildConstInt( 3n, mod))],
-				[' 200 / -3;', mod.i32.div_s(buildConstInt( 200n, mod), buildConstInt(-3n, mod))],
-				['-200 /  3;', mod.i32.div_s(buildConstInt(-200n, mod), buildConstInt( 3n, mod))],
-				['-200 / -3;', mod.i32.div_s(buildConstInt(-200n, mod), buildConstInt(-3n, mod))],
-			]));
+		describe('#build', () => {
+			it('returns the correct operation.', () => {
+				const mod = new binaryen.Module();
+				return buildOperations(new Map<string, binaryen.ExpressionRef>([
+					['42 + 420;', mod.i32.add(buildConstInt (42n, mod), buildConstInt   (420n, mod))],
+					['3 * 2.1;',  mod.f64.mul(buildConvert  (3n,  mod), buildConstFloat (2.1,  mod))],
+
+					[' 126 /  3;', mod.i32.div_s(buildConstInt( 126n, mod), buildConstInt( 3n, mod))],
+					['-126 /  3;', mod.i32.div_s(buildConstInt(-126n, mod), buildConstInt( 3n, mod))],
+					[' 126 / -3;', mod.i32.div_s(buildConstInt( 126n, mod), buildConstInt(-3n, mod))],
+					['-126 / -3;', mod.i32.div_s(buildConstInt(-126n, mod), buildConstInt(-3n, mod))],
+					[' 200 /  3;', mod.i32.div_s(buildConstInt( 200n, mod), buildConstInt( 3n, mod))],
+					[' 200 / -3;', mod.i32.div_s(buildConstInt( 200n, mod), buildConstInt(-3n, mod))],
+					['-200 /  3;', mod.i32.div_s(buildConstInt(-200n, mod), buildConstInt( 3n, mod))],
+					['-200 / -3;', mod.i32.div_s(buildConstInt(-200n, mod), buildConstInt(-3n, mod))],
+				]));
+			});
 		});
 	});
 
@@ -496,26 +635,28 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		specify('#build', () => {
-			const mod = new binaryen.Module();
-			return buildOperations(new Map<string, binaryen.ExpressionRef>([
-				['3   <  3;',   mod.i32.lt_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
-				['3   >  3;',   mod.i32.gt_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
-				['3   <= 3;',   mod.i32.le_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
-				['3   >= 3;',   mod.i32.ge_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
-				['5   <  9.2;', mod.f64.lt   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
-				['5   >  9.2;', mod.f64.gt   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
-				['5   <= 9.2;', mod.f64.le   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
-				['5   >= 9.2;', mod.f64.ge   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
-				['5.2 <  3;',   mod.f64.lt   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
-				['5.2 >  3;',   mod.f64.gt   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
-				['5.2 <= 3;',   mod.f64.le   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
-				['5.2 >= 3;',   mod.f64.ge   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
-				['5.2 <  9.2;', mod.f64.lt   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
-				['5.2 >  9.2;', mod.f64.gt   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
-				['5.2 <= 9.2;', mod.f64.le   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
-				['5.2 >= 9.2;', mod.f64.ge   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
-			]));
+		describe('#build', () => {
+			it('returns the correct operation.', () => {
+				const mod = new binaryen.Module();
+				return buildOperations(new Map<string, binaryen.ExpressionRef>([
+					['3   <  3;',   mod.i32.lt_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
+					['3   >  3;',   mod.i32.gt_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
+					['3   <= 3;',   mod.i32.le_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
+					['3   >= 3;',   mod.i32.ge_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
+					['5   <  9.2;', mod.f64.lt   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
+					['5   >  9.2;', mod.f64.gt   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
+					['5   <= 9.2;', mod.f64.le   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
+					['5   >= 9.2;', mod.f64.ge   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
+					['5.2 <  3;',   mod.f64.lt   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
+					['5.2 >  3;',   mod.f64.gt   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
+					['5.2 <= 3;',   mod.f64.le   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
+					['5.2 >= 3;',   mod.f64.ge   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
+					['5.2 <  9.2;', mod.f64.lt   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
+					['5.2 >  9.2;', mod.f64.gt   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
+					['5.2 <= 9.2;', mod.f64.le   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
+					['5.2 >= 9.2;', mod.f64.ge   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
+				]));
+			});
 		});
 	});
 
