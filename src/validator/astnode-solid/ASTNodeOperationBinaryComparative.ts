@@ -1,11 +1,11 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	SolidType,
 	SolidObject,
 	SolidBoolean,
 	SolidNumber,
 	Int16,
-	INST,
 	Builder,
 	TypeError01,
 	SolidConfig,
@@ -20,6 +20,7 @@ import {
 	neitherFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -42,9 +43,14 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionBinopComparative {
-		return new INST.InstructionBinopComparative(this.operator, ...this.buildOps(builder));
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
+		return this.operate(
+			builder.module,
+			[this.operand0.type(),         this.operand1.type()],
+			[this.operand0.build(builder), this.operand1.build(builder)],
+		);
 	}
+
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		if (bothNumeric(t0, t1) && (int_coercion || (
 			bothFloats(t0, t1) || neitherFloats(t0, t1)
@@ -78,5 +84,23 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			// [Operator.NLT, (x, y) => !x.lt(y)],
 			// [Operator.NGT, (x, y) => !y.lt(x)],
 		]).get(this.operator)!(x, y))
+	}
+
+	protected override operateSimple(
+		mod:  binaryen.Module,
+		args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
+	): binaryen.ExpressionRef {
+		args = ASTNodeOperation.coerceOperands(mod, ...args);
+		const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
+		bintypes.forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
+		const opname = new Map<Operator, 'lt' | 'gt' | 'le' | 'ge'>([
+			[Operator.LT, 'lt'],
+			[Operator.GT, 'gt'],
+			[Operator.LE, 'le'],
+			[Operator.GE, 'ge'],
+		]).get(this.operator)!;
+		return ((!bintypes.includes(binaryen.f64))
+			? mod.i32[`${ opname }_s`]
+			: mod.f64[opname])(...args);
 	}
 }

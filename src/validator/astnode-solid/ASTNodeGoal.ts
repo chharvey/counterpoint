@@ -47,17 +47,12 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 			const fn_name:    string                   = 'fn0';
 			builder.module.addFunction(
 				fn_name,
-				binaryen.createType([]),
-				binaryen.createType([]),
+				binaryen.none,
+				binaryen.none,
 				builder.getLocals().map((var_) => var_.type),
 				builder.module.block(null, [...statements]),
 			);
 			builder.module.addFunctionExport(fn_name, fn_name);
-
-			const validation = builder.module.validate();
-			if (!validation) {
-				throw new Error('Invalid WebAssembly module.');
-			}
 			return builder.module;
 		}
 	}

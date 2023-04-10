@@ -7,6 +7,7 @@ import {
 	SymbolStructureVar,
 	SolidType,
 	Builder,
+	BinEither,
 	AssignmentError01,
 	TypeError03,
 } from '../../../src/index.js';
@@ -15,7 +16,10 @@ import {
 	assertAssignable,
 	assertEqualBins,
 } from '../../assert-helpers.js';
-import {CONFIG_FOLDING_OFF} from '../../helpers.js';
+import {
+	CONFIG_FOLDING_OFF,
+	buildConstInt,
+} from '../../helpers.js';
 
 
 
@@ -293,10 +297,33 @@ describe('ASTNodeDeclarationVariable', () => {
 				{id: 0x100n, type: binaryen.i32},
 				{id: 0x101n, type: binaryen.i32},
 			]);
-			return forEachAggregated(goal.children, (stmt, i) => assertEqualBins(
+			return assertEqualBins(new Map<binaryen.ExpressionRef, binaryen.ExpressionRef>(goal.children.map((stmt, i) => [
 				stmt.build(builder),
-				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder).buildBin(builder.module)),
-			));
+				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+			])));
+		});
+		it('with constant folding on, coerces as necessary.', () => {
+			const src: string = `
+				let unfixed x: float = 42;   % should coerce into 42.0, assuming int-coercion is on
+				let y: float | int = x * 10; % should *always* transform into tuple type
+			`;
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+			const builder = new Builder(src);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.build(builder);
+			assert.deepStrictEqual(builder.getLocals(), [
+				{id: 0x100n, type: binaryen.f64},
+				{id: 0x101n, type: BinEither.createType(binaryen.f64, binaryen.i32)},
+			]);
+			const exprs: binaryen.ExpressionRef[] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder));
+			return assertEqualBins(
+				goal.children.map((stmt) => stmt.build(builder)),
+				[
+					builder.module.f64.convert_u.i32(exprs[0]),
+					new BinEither(builder.module, 0n, exprs[1], buildConstInt(0n, builder.module)).make(),
+				].map((expected, i) => builder.module.local.set(i, expected)),
+			);
 		});
 		it('with constant folding off, always returns `(local.set)`.', () => {
 			const src: string = `
@@ -312,10 +339,10 @@ describe('ASTNodeDeclarationVariable', () => {
 				{id: 0x100n, type: binaryen.i32},
 				{id: 0x101n, type: binaryen.f64},
 			]);
-			return forEachAggregated(goal.children, (stmt, i) => assertEqualBins(
+			return assertEqualBins(new Map<binaryen.ExpressionRef, binaryen.ExpressionRef>(goal.children.map((stmt, i) => [
 				stmt.build(builder),
-				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder).buildBin(builder.module)),
-			));
+				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+			])));
 		});
 	});
 });

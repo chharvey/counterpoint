@@ -1,10 +1,4 @@
-import {
-	INST,
-} from './package.js';
-import type {
-	SolidNull,
-	SolidNumber,
-} from './index.js';
+import {SolidTypeUnit} from './SolidTypeUnit.js';
 import {SolidObject} from './SolidObject.js';
 
 
@@ -18,10 +12,7 @@ import {SolidObject} from './SolidObject.js';
  * - SolidString
  */
 export abstract class Primitive extends SolidObject {
-	protected abstract get builtValue(): SolidNull | SolidNumber;
-
-	/** @final */
-	public override build(): INST.InstructionConst {
-		return new INST.InstructionConst(this.builtValue);
+	/** @final */ public override toType(): SolidTypeUnit<this> {
+		return new SolidTypeUnit<this>(this);
 	}
 }

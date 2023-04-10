@@ -1,9 +1,12 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
+import {BinEither} from '../../index.js';
 import {
+	SolidType,
+	SolidTypeUnion,
+	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Builder,
 } from './package.js';
 import {ASTNodeGoal} from './index.js';
 import type {Buildable} from './Buildable.js';
@@ -31,6 +34,52 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
 		return goal.children[0];
 	}
+
+	protected static coerceAssignment(
+		mod:           binaryen.Module,
+		assignee_type: SolidType,
+		assigned_type: SolidType,
+		value:         binaryen.ExpressionRef,
+		int_coercion:  boolean = true,
+	): binaryen.ExpressionRef {
+		if (
+			   int_coercion
+			&& assignee_type.binType() === binaryen.f64
+			&& assigned_type.binType() === binaryen.i32
+		) {
+			value = mod.f64.convert_u.i32(value);
+		}
+		return (assigned_type instanceof SolidTypeUnion)
+			// assert: `value` is equivalent to a result of `new BinEither().make()`
+			? ((val) => mod.if(
+				mod.i32.eqz(val.side),
+				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.left,  val.left,  int_coercion),
+				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.right, val.right, int_coercion),
+			))(new BinEither(mod, value))
+			: (assignee_type instanceof SolidTypeUnion)
+				? (
+					(assigned_type.isSubtypeOf(assignee_type.left)) ? new BinEither(
+						mod,
+						0n,
+						(assigned_type.binType() === assignee_type.left.binType())
+							? value
+							: ASTNodeStatement.coerceAssignment(mod, assignee_type.left, assigned_type, value, int_coercion),
+						assignee_type.right.defaultBinValue(mod),
+					).make() :
+					(assigned_type.isSubtypeOf(assignee_type.right)) ? new BinEither(
+						mod,
+						1n,
+						assignee_type.left.defaultBinValue(mod),
+						(assigned_type.binType() === assignee_type.right.binType())
+							? value
+							: ASTNodeStatement.coerceAssignment(mod, assignee_type.right, assigned_type, value, int_coercion),
+					).make() :
+					(() => { throw new TypeError(`Expected \`${ assigned_type }\` to be a subtype of \`${ assignee_type.left }\` or \`${ assignee_type.right }\``); })() // TODO: use throw_expression
+				)
+				: value;
+	}
+
+
 	/** @implements Buildable */
 	abstract build(builder: Builder): binaryen.ExpressionRef;
 }

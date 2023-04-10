@@ -4,6 +4,7 @@ import {
 	ASTNODE_SOLID as AST,
 	SolidType,
 	Builder,
+	BinEither,
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,
@@ -35,7 +36,7 @@ describe('ASTNodeSolid', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
 				return assertEqualBins(
 					stmt.build(builder),
-					builder.module.drop(stmt.expr!.build(builder).buildBin(builder.module)),
+					builder.module.drop(stmt.expr!.build(builder)),
 				);
 			})
 			it('multiple statements.', () => {
@@ -45,7 +46,7 @@ describe('ASTNodeSolid', () => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 					return assertEqualBins(
 						stmt.build(generator),
-						generator.module.drop(stmt.expr!.build(generator).buildBin(generator.module)),
+						generator.module.drop(stmt.expr!.build(generator)),
 					);
 				});
 			});
@@ -167,7 +168,57 @@ describe('ASTNodeSolid', () => {
 				goal.build(builder);
 				return assertEqualBins(
 					goal.children[1].build(builder),
-					builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder).buildBin(builder.module)),
+					builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder)),
+				);
+			});
+			it('coerces as necessary.', () => {
+				const src: string = `
+					let unfixed x: float | int = 4.2;
+					let unfixed y: int | float = 4.2;
+					x = 8.4; % Either<float, int>#setLeft
+					x = 16;  % Either<float, int>#setRight
+					x = x;   % Either<float, int>#{setLeft,setRight}
+					x = y;   % Either<float, int>#{setLeft,setRight}
+					x = 52 + x;
+					x = x + x;
+				`;
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const builder = new Builder(src);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build(builder);
+				const default_ = {
+					int:   SolidType.INT   .defaultBinValue(builder.module),
+					float: SolidType.FLOAT .defaultBinValue(builder.module),
+				} as const;
+				const exprs:  binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeAssignment).assigned.build(builder));
+				const exprs_: readonly BinEither[]     = exprs.slice(2).map((expr) => new BinEither(builder.module, expr));
+				return assertEqualBins(
+					goal.children.slice(2).map((stmt) => stmt.build(builder)),
+					[
+						new BinEither(builder.module, 0n, exprs[0],       default_.int).make(),
+						new BinEither(builder.module, 1n, default_.float, exprs[1]).make(),
+						builder.module.if(
+							builder.module.i32.eqz(exprs_[0].side),
+							new BinEither(builder.module, 0n, exprs_[0].left, default_.int).make(),
+							new BinEither(builder.module, 1n, default_.float, exprs_[0].right).make(),
+						),
+						builder.module.if(
+							builder.module.i32.eqz(exprs_[1].side),
+							new BinEither(builder.module, 1n, default_.float,  exprs_[1].left).make(),
+							new BinEither(builder.module, 0n, exprs_[1].right, default_.int).make(),
+						),
+						builder.module.if(
+							builder.module.i32.eqz(exprs_[2].side),
+							new BinEither(builder.module, 0n, exprs_[2].left, default_.int).make(),
+							new BinEither(builder.module, 1n, default_.float, exprs_[2].right).make(),
+						),
+						builder.module.if(
+							builder.module.i32.eqz(exprs_[3].side),
+							new BinEither(builder.module, 0n, exprs_[3].left, default_.int).make(),
+							new BinEither(builder.module, 1n, default_.float, exprs_[3].right).make(),
+						),
+					].map((expected) => builder.module.local.set(0, expected)),
 				);
 			});
 		});

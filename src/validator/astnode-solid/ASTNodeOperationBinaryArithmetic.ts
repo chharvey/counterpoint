@@ -1,11 +1,11 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs'
 import {
 	SolidType,
 	SolidObject,
 	SolidNumber,
 	Int16,
-	INST,
 	Builder,
 	TypeError01,
 	NanError01,
@@ -19,10 +19,11 @@ import {
 import {
 	bothNumeric,
 	eitherFloats,
+	bothInts,
 	bothFloats,
-	neitherFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -33,6 +34,8 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		assert.ok(expression instanceof ASTNodeOperationBinaryArithmetic);
 		return expression;
 	}
+
+
 	constructor (
 		start_node: ParseNode,
 		override readonly operator: ValidOperatorArithmetic,
@@ -42,19 +45,29 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionBinopArithmetic {
-		return new INST.InstructionBinopArithmetic(this.operator, ...this.buildOps(builder));
+	protected override build_do(builder: Builder): binaryen.ExpressionRef {
+		return this.operate(
+			builder.module,
+			[this.operand0.type(),         this.operand1.type()],
+			[this.operand0.build(builder), this.operand1.build(builder)],
+		);
 	}
+
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		if (bothNumeric(t0, t1)) {
-			if (int_coercion) {
-				return (eitherFloats(t0, t1)) ? SolidType.FLOAT : SolidType.INT;
+			if (bothInts(t0, t1)) {
+				return SolidType.INT;
 			}
-			if (bothFloats   (t0, t1)) { return SolidType.FLOAT; }
-			if (neitherFloats(t0, t1)) { return SolidType.INT; }
+			if (bothFloats(t0, t1)) {
+				return SolidType.FLOAT;
+			}
+			if (int_coercion) {
+				return (eitherFloats(t0, t1)) ? SolidType.FLOAT : t0.union(t1);
+			}
 		}
 		throw new TypeError01(this)
 	}
+
 	protected override fold_do(): SolidObject | null {
 		const v0: SolidObject | null = this.operand0.fold();
 		if (!v0) {
@@ -86,5 +99,33 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
 		}
+	}
+
+	protected override operateSimple(
+		mod:  binaryen.Module,
+		args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
+	): binaryen.ExpressionRef {
+		args = ASTNodeOperation.coerceOperands(mod, ...args);
+		const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
+		bintypes.forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
+		const bintype: binaryen.Type = (bintypes.includes(binaryen.f64)) ? binaryen.f64 : binaryen.i32;
+		return (
+			(this.operator === Operator.EXP) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
+				[binaryen.i32, mod.call('exp', [...args], binaryen.i32)],
+				[binaryen.f64, mod.unreachable()], // TODO: support runtime exponentiation for floats
+			]).get(bintype)! :
+			(this.operator === Operator.DIV) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
+				[binaryen.i32, mod.i32.div_s (...args)],
+				[binaryen.f64, mod.f64.div   (...args)],
+			]).get(bintype)! :
+			mod[new Map<binaryen.Type, 'i32' | 'f64'>([
+				[binaryen.i32, 'i32'],
+				[binaryen.f64, 'f64'],
+			]).get(bintype)!][new Map<Operator, 'mul' | 'add' | 'sub'>([
+				[Operator.MUL, 'mul'],
+				[Operator.ADD, 'add'],
+				[Operator.SUB, 'sub'],
+			]).get(this.operator)!](...args)
+		);
 	}
 }

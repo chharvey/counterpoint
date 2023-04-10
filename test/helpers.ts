@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -6,7 +7,6 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-	INST,
 } from '../src/index.js';
 
 
@@ -19,26 +19,31 @@ export const CONFIG_FOLDING_OFF: SolidConfig = {
 	},
 };
 
-export const INSTRUCTION_CONST_NULL = new INST.InstructionConst(SolidNull.NULL);
-
 
 
 export function typeConstInt(x: bigint): SolidTypeUnit<Int16> {
-	return new SolidTypeUnit<Int16>(new Int16(x));
+	return new Int16(x).toType();
 }
 export function typeConstFloat(x: number): SolidTypeUnit<Float64> {
-	return new SolidTypeUnit<Float64>(new Float64(x));
+	return new Float64(x).toType();
 }
 export function typeConstStr(x: string): SolidTypeUnit<SolidString> {
-	return new SolidTypeUnit<SolidString>(new SolidString(x));
+	return new SolidString(x).toType();
 }
 
-export function instructionConstInt(x: bigint): INST.InstructionConst {
-	return new INST.InstructionConst(new Int16(x));
+export function buildConstNull(mod: binaryen.Module): binaryen.ExpressionRef {
+	return SolidNull.NULL.build(mod);
 }
-export function instructionConstFloat(x: number): INST.InstructionConst {
-	return new INST.InstructionConst(new Float64(x));
+export function buildConstInt(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
+	return (
+		(x === 0n) ? Int16.ZERO :
+		(x === 1n) ? Int16.UNIT :
+		new Int16(x)
+	).build(mod);
 }
-export function instructionConvert(x: bigint): INST.InstructionConvert {
-	return new INST.InstructionConvert(instructionConstInt(x));
+export function buildConstFloat(x: number, mod: binaryen.Module): binaryen.ExpressionRef {
+	return new Float64(x).build(mod);
+}
+export function buildConvert(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
+	return mod.f64.convert_u.i32(buildConstInt(x, mod));
 }

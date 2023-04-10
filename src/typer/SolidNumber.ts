@@ -14,11 +14,6 @@ export abstract class SolidNumber<T = unknown> extends Primitive {
 		return this.eq0();
 	}
 
-	/** @final */
-	protected override get builtValue(): this {
-		return this;
-	}
-
 	/**
 	 * Type-coerce this number into a float.
 	 * @returns the equivalent floating-point value
@@ -68,6 +63,7 @@ export abstract class SolidNumber<T = unknown> extends Primitive {
 	abstract eq0(): boolean;
 	/**
 	 * Is the number strictly less than the argument?
+	 * @param y - the argument
 	 * @returns Is the number strictly less than the argument?
 	 */
 	abstract lt(y: T): boolean;

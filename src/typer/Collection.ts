@@ -1,11 +1,10 @@
+import type binaryen from 'binaryen';
 import {
-	INST,
 	Keys,
 	Map_hasEq,
 	Map_getEq,
 	Map_setEq,
 } from './package.js';
-import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
 
 
@@ -35,9 +34,8 @@ export abstract class Collection extends SolidObject {
 	}
 
 
-	public override build(): INST.InstructionConst {
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		mod;
 		throw new Error('`Collection#build` not yet supported.');
 	}
-
-	abstract toType(): SolidType;
 }

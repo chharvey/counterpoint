@@ -7,7 +7,6 @@ import {
 } from './package.js';
 import {solidObjectsIdentical} from './utils-private.js';
 import {SolidType} from './SolidType.js';
-import {SolidTypeUnit} from './SolidTypeUnit.js';
 import {SolidTypeMap} from './SolidTypeMap.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
@@ -45,8 +44,8 @@ export class SolidMap<K extends SolidObject = SolidObject, V extends SolidObject
 
 	override toType(): SolidTypeMap {
 		return (this.cases.size) ? new SolidTypeMap(
-			SolidType.unionAll([...this.cases.keys  ()].map<SolidType>((ant) => new SolidTypeUnit<K>(ant))),
-			SolidType.unionAll([...this.cases.values()].map<SolidType>((con) => new SolidTypeUnit<V>(con))),
+			SolidType.unionAll([...this.cases.keys   ()].map<SolidType>((ant) => ant.toType())),
+			SolidType.unionAll([...this.cases.values ()].map<SolidType>((con) => con.toType())),
 		) : new SolidTypeMap(SolidType.NEVER, SolidType.NEVER);
 	}
 

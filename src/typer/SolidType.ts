@@ -1,6 +1,7 @@
-import {
-	Set_hasEq,
-} from './package.js';
+import * as assert from 'assert';
+import binaryen from 'binaryen';
+import {BinEither} from '../index.js';
+import {Set_hasEq} from './package.js';
 import {
 	SolidTypeIntersection,
 	SolidTypeUnion,
@@ -13,6 +14,9 @@ import {
 	SolidTypeString,
 	SolidObject,
 	SolidNull,
+	SolidBoolean,
+	Int16,
+	Float64,
 } from './index.js';
 import {solidObjectsIdentical} from './utils-private.js';
 
@@ -80,6 +84,8 @@ export abstract class SolidType {
 	 * Used internally for special cases of computations.
 	 */
 	readonly isTopType: boolean = false;
+
+	#binType: binaryen.Type | null = null; // TODO: use memoize decorator on `.binType()`
 
 	/**
 	 * Construct a new SolidType object.
@@ -232,6 +238,51 @@ export abstract class SolidType {
 	immutableOf(): SolidType {
 		return this;
 	}
+
+	/**
+	 * Return a corresponding Binaryen type.
+	 * @return the best match for a Binaryen type equivalent to this type
+	 * @todo use memoize decorator on this method
+	 * @final
+	 */
+	public binType(): binaryen.Type {
+		const is_bin_int: boolean = (
+			   this.equals(SolidType.BOOL) || this.equals(SolidBoolean.FALSETYPE) || this.equals(SolidBoolean.TRUETYPE)
+			|| this.equals(SolidType.INT) || (this instanceof SolidTypeUnit && this.value instanceof Int16)
+		);
+		const is_bin_float: boolean = this.equals(SolidType.FLOAT) || (this instanceof SolidTypeUnit && this.value instanceof Float64);
+		return this.#binType ??= ( // TODO: use memoize decorator
+			(this.isBottomType)           ? binaryen.unreachable :
+			(this.equals(SolidType.VOID)) ? binaryen.none        :
+			(this.equals(SolidType.NULL)) ? binaryen.funcref     :
+			(is_bin_int)                  ? binaryen.i32         :
+			(is_bin_float)                ? binaryen.f64         :
+			(this instanceof SolidTypeUnion) ? ((left_type: binaryen.Type, right_type: binaryen.Type): binaryen.Type => {
+				assert.notStrictEqual(left_type,  binaryen.unreachable);
+				assert.notStrictEqual(right_type, binaryen.unreachable);
+				if (left_type === binaryen.none) {
+					left_type = right_type;
+				}
+				if (right_type === binaryen.none) {
+					right_type = left_type;
+				}
+				return BinEither.createType(left_type, right_type);
+			})(this.left.binType(), this.right.binType()) :
+			(() => { throw new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`); })() // TODO use throw_expression
+		);
+	}
+
+	/**
+	 * @return a default Binaryen value given this type
+	 */
+	public defaultBinValue(mod: binaryen.Module): binaryen.ExpressionRef {
+		return (
+			(this.binType() === binaryen.i32) ? mod.i32.const(0) :
+			(this.binType() === binaryen.f64) ? mod.f64.const(0) :
+			(this instanceof SolidTypeUnion)  ? new BinEither(mod, 0n, this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)).make() :
+			(() => { throw new TypeError(`Could not determine a default value for \`${ this }\`.`); })() // TODO use throw_expression
+		);
+	};
 }
 
 

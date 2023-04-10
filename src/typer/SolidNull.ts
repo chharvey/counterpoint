@@ -1,4 +1,4 @@
-import {SolidTypeUnit} from './SolidTypeUnit.js';
+import binaryen from 'binaryen';
 import type {SolidObject} from './SolidObject.js';
 import {Primitive} from './Primitive.js';
 
@@ -19,7 +19,7 @@ export class SolidNull extends Primitive {
 	/** The Solid Language Value `null`. */
 	static readonly NULL: SolidNull = new SolidNull();
 	/** A Unit Type containing only the Solid Language Value `null`. */
-	static readonly NULLTYPE = new SolidTypeUnit<SolidNull>(SolidNull.NULL);
+	static readonly NULLTYPE = SolidNull.NULL.toType();
 
 
 	private constructor () {
@@ -32,10 +32,11 @@ export class SolidNull extends Primitive {
 	override get isTruthy(): boolean {
 		return false;
 	}
-	protected override get builtValue(): this {
-		return this;
-	}
 	protected override identical_helper(value: SolidObject): boolean {
 		return value instanceof SolidNull
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		return mod.ref.null(binaryen.funcref);
 	}
 }

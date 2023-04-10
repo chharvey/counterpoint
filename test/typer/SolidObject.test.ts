@@ -1,15 +1,19 @@
 import * as assert from 'assert'
+import binaryen from 'binaryen';
 import {
 	SolidObject,
+	SolidNull,
 	Int16,
 	Float64,
 	SolidString,
+	SolidTuple,
 	SolidSet,
 	SolidMap,
 } from '../../src/index.js';
+import {assertEqualBins} from '../assert-helpers.js';
 import {
-	instructionConstInt,
-	instructionConstFloat,
+	buildConstInt,
+	buildConstFloat,
 } from '../helpers.js';
 
 
@@ -39,6 +43,29 @@ describe('SolidObject', () => {
 					new SolidString('fire'),
 					new SolidString('wind'),
 				]))));
+			});
+		});
+	});
+
+
+	describe('#build', () => {
+		describe('SolidNull', () => {
+			it('returns the null reference.', () => {
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					SolidNull.NULL.build(mod),
+					mod.ref.null(binaryen.funcref),
+				);
+			});
+		});
+
+		describe('SolidTuple', () => {
+			it('returns `(tuple.make)`.', () => {
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					new SolidTuple([Int16.UNIT, new Float64(2.0)]).build(mod),
+					mod.tuple.make([buildConstInt(1n, mod), buildConstFloat(2.0, mod)]),
+				);
 			});
 		});
 	});
@@ -130,9 +157,10 @@ describe('Int16', () => {
 				(42n ** 2n * 420n) % (2n ** 16n),
 				(-5n) ** (2n * 3n),
 			];
-			return assert.deepStrictEqual(
-				data.map((x) => new Int16(x).build()),
-				data.map((x) => instructionConstInt(x)),
+			const mod = new binaryen.Module();
+			return assertEqualBins(
+				data.map((x) => new Int16(x).build(mod)),
+				data.map((x) => buildConstInt(x, mod)),
 			);
 		});
 	});
@@ -148,9 +176,10 @@ describe('Float64', () => {
 			-0, -0, 6.8, 6.8, 0, -0,
 			3.0 - 2.7,
 		];
-		return assert.deepStrictEqual(
-			data.map((x) => new Float64(x).build()),
-			data.map((x) => instructionConstFloat(x)),
+		const mod = new binaryen.Module();
+		return assertEqualBins(
+			data.map((x) => new Float64(x).build(mod)),
+			data.map((x) => buildConstFloat(x, mod)),
 		);
 	});
 });
