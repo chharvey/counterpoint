@@ -44,11 +44,22 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		return this.operate(
-			builder.module,
-			[this.operand0.type(),         this.operand1.type()],
-			[this.operand0.build(builder), this.operand1.build(builder)],
-		);
+		const types  = [this.operand0.type(),         this.operand1.type()]         as const;
+		const builds = [this.operand0.build(builder), this.operand1.build(builder)] as const;
+		return ASTNodeOperationBinary.operate(builder.module, this.operator, types, builds, (args) => {
+			args = ASTNodeOperation.coerceOperands(builder.module, ...args);
+			const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
+			bintypes.forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
+			const opname = new Map<Operator, 'lt' | 'gt' | 'le' | 'ge'>([
+				[Operator.LT, 'lt'],
+				[Operator.GT, 'gt'],
+				[Operator.LE, 'le'],
+				[Operator.GE, 'ge'],
+			]).get(this.operator)!;
+			return ((!bintypes.includes(binaryen.f64))
+				? builder.module.i32[`${ opname }_s`]
+				: builder.module.f64[opname])(...args);
+		});
 	}
 
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
@@ -84,23 +95,5 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			// [Operator.NLT, (x, y) => !x.lt(y)],
 			// [Operator.NGT, (x, y) => !y.lt(x)],
 		]).get(this.operator)!(x, y))
-	}
-
-	protected override operateSimple(
-		mod:  binaryen.Module,
-		args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
-	): binaryen.ExpressionRef {
-		args = ASTNodeOperation.coerceOperands(mod, ...args);
-		const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
-		bintypes.forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
-		const opname = new Map<Operator, 'lt' | 'gt' | 'le' | 'ge'>([
-			[Operator.LT, 'lt'],
-			[Operator.GT, 'gt'],
-			[Operator.LE, 'le'],
-			[Operator.GE, 'ge'],
-		]).get(this.operator)!;
-		return ((!bintypes.includes(binaryen.f64))
-			? mod.i32[`${ opname }_s`]
-			: mod.f64[opname])(...args);
 	}
 }
