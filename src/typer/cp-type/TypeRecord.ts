@@ -53,7 +53,7 @@ export class TypeRecord extends TypeCollectionKeyedStatic {
 				const thistype: TypeEntry | undefined = this.invariants.get(id);
 				if (!thattype.optional) {
 					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.
-						We can however make the assertion in tuple types because of item ordering. */
+						We can however make the assertion in static indexed collection types because of item ordering. */
 					if (thistype?.optional !== false) {
 						return false;
 					}

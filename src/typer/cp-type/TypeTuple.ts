@@ -54,8 +54,8 @@ export class TypeTuple extends TypeCollectionIndexedStatic {
 				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 				const thistype: TypeEntry | undefined = this.invariants[i];
 				if (!thattype.optional) {
-					/* NOTE: We can assert `thistype` exists and is not optional because of tuple type item ordering.
-						We cannot do so with record types since properties are not ordered. */
+					/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
+						We cannot do so with static keyed collection types since properties are not ordered. */
 					assert.strictEqual(thistype?.optional, false, `${ thistype } should exist and not be optional.`);
 				}
 				return !thistype || ((t.isMutable)

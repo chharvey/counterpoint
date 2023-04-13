@@ -52,13 +52,17 @@ export class TypeStruct extends TypeCollectionKeyedStatic {
 			&& this.count[0] >= t.count[0]
 			&& !t.isMutable
 			&& [...t.invariants].every(([id, thattype]) => {
-				const thistype: TypeEntry | null = this.invariants.get(id) || null;
-				return (
-					(thattype.optional || thistype && !thistype.optional)
-					&& (!thistype || (
-						thistype.type.isSubtypeOf(thattype.type) // Covariance for structs: `A <: B --> Struct.<A> <: Struct.<B>`.
-					))
-				);
+				const thistype: TypeEntry | undefined = this.invariants.get(id);
+				if (!thattype.optional) {
+					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.
+						We can however make the assertion in static indexed collection types because of item ordering. */
+					if (thistype?.optional !== false) {
+						return false;
+					}
+				}
+				return (!thistype || (
+					thistype.type.isSubtypeOf(thattype.type) // Covariance for structs: `A <: B --> Struct.<A> <: Struct.<B>`.
+				));
 			})
 		);
 	}
