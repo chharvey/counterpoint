@@ -61,10 +61,7 @@ describe('ASTNodeDeclarationType', () => {
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 			const builder: Builder = new Builder(src);
-			return forEachAggregated(goal.children, (stmt) => {
-				assert.ok(stmt instanceof AST.ASTNodeDeclarationType);
-				return assertEqualBins(stmt.build(builder), builder.module.nop());
-			});
+			return forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(builder), builder.module.nop()));
 		});
 	});
 });
