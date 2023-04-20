@@ -35,7 +35,7 @@ export class TypeRecord extends TypeCollectionKeyedStatic {
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }[${ super.toString() }]`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }${ super.toString() }`;
 	}
 
 	public override includes(v: OBJ.Object): boolean {

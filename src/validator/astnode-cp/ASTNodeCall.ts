@@ -82,7 +82,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, returntype, this, this.validator);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeCollectionIndexedStatic) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this, this.validator);
 					}
 				}
@@ -97,7 +97,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, returntype, this, this.validator);
 					} catch (err) {
-						const argvaluetype: TYPE.Type = (argtype instanceof TYPE.TypeRecord) ? argtype.valueTypes() : throw_expression(err as TypeErrorNotAssignable);
+						const argvaluetype: TYPE.Type = (argtype instanceof TYPE.TypeCollectionKeyedStatic) ? argtype.valueTypes() : throw_expression(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this, this.validator);
 					}
 				}
@@ -112,7 +112,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(eltype), this, this.validator);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeCollectionIndexedStatic) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this, this.validator);
 					}
 				}
@@ -129,7 +129,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(entrytype), this, this.validator);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeCollectionIndexedStatic) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this, this.validator);
 					}
 				}
@@ -147,10 +147,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 			return null;
 		}
 		return new Map<ValidFunctionName, (argument: OBJ.Object | undefined) => OBJ.Object | null>([
-			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new OBJ.List() : new OBJ.List((tuple as OBJ.Tuple).items)],
-			[ValidFunctionName.DICT, (record) => (record === undefined) ? new OBJ.Dict() : new OBJ.Dict((record as OBJ.Record).properties)],
-			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.Set()  : new OBJ.Set(new Set<OBJ.Object>((tuple as OBJ.Tuple).items))],
-			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.Map()  : new OBJ.Map(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.Tuple).items.map((pair) => (pair as OBJ.Tuple).items as [OBJ.Object, OBJ.Object])))],
+			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new OBJ.List() : new OBJ.List((tuple as OBJ.CollectionIndexed).items)],
+			[ValidFunctionName.DICT, (record) => (record === undefined) ? new OBJ.Dict() : new OBJ.Dict((record as OBJ.CollectionKeyed).properties)],
+			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.Set()  : new OBJ.Set(new Set<OBJ.Object>((tuple as OBJ.CollectionIndexed).items))],
+			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.Map()  : new OBJ.Map(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.CollectionIndexed).items.map((pair) => (pair as OBJ.CollectionIndexed).items as [OBJ.Object, OBJ.Object])))],
 		]).get(this.base.source as ValidFunctionName)!(argvalue);
 	}
 

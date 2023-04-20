@@ -51,7 +51,7 @@ export class TypeCollectionKeyedStatic extends Type {
 	}
 
 	public override toString(): string {
-		return [...this.invariants].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ');
+		return `[${ [...this.invariants].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
 	/** @final */

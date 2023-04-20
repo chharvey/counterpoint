@@ -38,7 +38,7 @@ export class TypeVect extends TypeCollectionIndexedStatic {
 	}
 
 	public override toString(): string {
-		return `\\[${ super.toString() }]`;
+		return `\\${ super.toString() }`;
 	}
 
 	public override includes(v: OBJ.Object): boolean {

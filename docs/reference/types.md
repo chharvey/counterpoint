@@ -820,7 +820,7 @@ If a list is mutable, the entries of the list may be reassigned, and items may b
 List types are declared via the generic list type syntax: `List.<T>`
 where `T` indicates the type of items in the list.
 Lists are constructed via the constructor syntax `List.<T>(arg)`,
-where `arg` is a [Tuple](#tuples) object.
+where `arg` is a [Tuple or Vect](#tuples) object.
 ```
 let elements: List.<str> = List.<str>(["earth", "wind", "fire"]);
 ```
@@ -847,7 +847,7 @@ If a dict is mutable, the entries of the dict may be reassigned, and properties 
 Dict types are declared via the generic dict type syntax: `Dict.<T>`
 where `T` indicates the type of values in the dict.
 Dicts are constructed via the constructor syntax `Dict.<T>(arg)`,
-where `arg` is a [Record](#records) object.
+where `arg` is a [Record or Struct](#records) object.
 ```
 let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
 	fontFamily= "sans-serif",
@@ -870,7 +870,7 @@ The values in a set are called **elements**. The number of elements in a set is 
 Set types are declared via the generic set type syntax: `Set.<T>`
 where `T` indicates the type of elements in the set.
 Sets may be constructed via the constructor syntax `Set.<T>(arg)`,
-where `arg` is a [Tuple](#tuples) object of elements.
+where `arg` is a [Tuple or Vect](#tuples) object of elements.
 ```
 let elements: Set.<str> = Set.<str>(["earth", "wind", "fire"]);
 ```
@@ -932,7 +932,7 @@ The number of cases in a map is called its **count**.
 Map types are declared via the **generic map type syntax**: `Map.<K, V>`
 where `K` indicates the type of antecedents and `V` indicates the type of consequents in the map.
 Maps may be constructed via the constructor syntax `Map.<K, V>(arg)`,
-where `arg` is a [Tuple](#tuples) object of key-value pairs (also tuples).
+where `arg` is a [Tuple or Vect](#tuples) object of key-value pairs (also tuples or vects).
 ```
 let bases: Map.<int | str, obj> = Map.<int | str, obj>([
 	[1,     "who"],

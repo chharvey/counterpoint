@@ -51,7 +51,7 @@ export abstract class TypeCollectionIndexedStatic extends Type {
 	}
 
 	public override toString(): string {
-		return this.invariants.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ');
+		return `[${ this.invariants.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
 	/** @final */
