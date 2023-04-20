@@ -28,7 +28,7 @@ export type SubclassOf<Class extends object> = abstract new (...args: any[]) => 
 
 /* The type of keys in a map or record. */
 export type Keys<M> = (
-	M extends Map<infer K, unknown>    ? K :
+	M extends ReadonlyMap<infer K, unknown>    ? K :
 	M extends Record<infer K, unknown> ? K :
 	never
 );

@@ -224,9 +224,31 @@ Boolean Identical(Object a, Object b) :=
 			(same length and same code units at corresponding indices):
 			1. *Return:* `true`.
 	7. *If* `a` is an instance of `Vect` *and* `b` is an instance of `Vect`:
-		1. *Perform:* Step 4 listed in `Equal(a, b)`.
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *If* `seq_a.count` is not `seq_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For index* `i` in `seq_b`:
+			1. *If* *UnwrapAffirm*: `Identical(seq_a[i], seq_b[i])` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
 	8. *If* `a` is an instance of `Struct` *and* `b` is an instance of `Struct`:
-		1. *Perform:* Step 5 listed in `Equal(a, b)`.
+		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
+		3. *If* `struct_a.count` is not `struct_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For key* `k` in `struct_b`:
+			1. *If* `struct_a[k]` is not set:
+				1. *Return:* `false`.
+			2. *If* *UnwrapAffirm*: `Identical(struct_a[k], struct_b[k])` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
 	9. *If* `a` and `b` are the same object:
 		1. *Return:* `true`.
 	10. Return `false`.

@@ -12,7 +12,13 @@ export class Struct<T extends CPObject = CPObject> extends CollectionKeyed<T> {
 
 	@strictEqual
 	public override identical(value: CPObject): boolean {
-		return value instanceof Struct && this.equalSubsteps(value);
+		return (
+			   value instanceof Struct
+			&& this.properties.size === value.properties.size
+			&& this.isIdenticalTo(value as this, (this_, that_) => (
+				[...that_.properties].every(([thatkey, thatvalue]) => !!this_.properties.get(thatkey)?.identical(thatvalue))
+			))
+		);
 	}
 
 	/**

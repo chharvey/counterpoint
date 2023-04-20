@@ -681,6 +681,18 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), OBJ.Boolean.TRUE, stmt.source);
 				});
 			});
+			it('compound value types’ constituents are compared using same operand.', () => {
+				foldOperations(new Map([
+					['\\[   42.0] === \\[   42];',   OBJ.Boolean.FALSE],
+					['\\[   42.0] ==  \\[   42];',   OBJ.Boolean.TRUE],
+					['\\[a= 42.0] === \\[a= 42];',   OBJ.Boolean.FALSE],
+					['\\[a= 42.0] ==  \\[a= 42];',   OBJ.Boolean.TRUE],
+					['\\[    0.0] === \\[   -0.0];', OBJ.Boolean.FALSE],
+					['\\[    0.0] ==  \\[   -0.0];', OBJ.Boolean.TRUE],
+					['\\[a=  0.0] === \\[a= -0.0];', OBJ.Boolean.FALSE],
+					['\\[a=  0.0] ==  \\[a= -0.0];', OBJ.Boolean.TRUE],
+				]));
+			});
 		});
 
 

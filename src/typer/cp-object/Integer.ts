@@ -49,7 +49,7 @@ export class Integer extends CPNumber<Integer> {
 
 	@strictEqual
 	public override identical(value: CPObject): boolean {
-		return value instanceof Integer && this.isEqualTo(value as this, (this_, that_) => (
+		return value instanceof Integer && this.isIdenticalTo(value as this, (this_, that_) => (
 			xjs.Array.is<boolean>(this_.internal, that_.internal)
 		));
 	}
