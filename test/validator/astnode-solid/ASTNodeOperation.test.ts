@@ -1149,24 +1149,22 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 			it('counts internal variables correctly.', () => {
-				const src = '1 && 2 || 3 && 4;';
-				const builder = new Builder(src, CONFIG_FOLDING_OFF);
-				return assertEqualBins(
-					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(builder),
-					create_if(
-						builder.module,
+				const mod = new binaryen.Module();
+				return buildOperations(new Map<string, binaryen.ExpressionRef>([
+					['1 && 2 || 3 && 4;', create_if(
+						mod,
 						[2, create_if(
-							builder.module,
-							[0, buildConstInt(1n, builder.module), binaryen.i32],
-							(getter) => [buildConstInt(2n, builder.module), getter],
+							mod,
+							[0, buildConstInt(1n, mod), binaryen.i32],
+							(getter) => [buildConstInt(2n, mod), getter],
 						), binaryen.i32],
 						(getter) => [getter, create_if(
-							builder.module,
-							[1, buildConstInt(3n, builder.module), binaryen.i32],
-							(getter) => [buildConstInt(4n, builder.module), getter],
+							mod,
+							[1, buildConstInt(3n, mod), binaryen.i32],
+							(getter) => [buildConstInt(4n, mod), getter],
 						)],
-					),
-				);
+					)],
+				]), CONFIG_FOLDING_OFF);
 			});
 		});
 	});
