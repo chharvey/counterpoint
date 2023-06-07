@@ -22,6 +22,7 @@ Word ::=
 	// storage
 		| "type"
 		| "let"
+		| "_"
 	// modifier
 		| "unfixed"
 	| KEYWORD_TYPE
@@ -161,8 +162,8 @@ Expression ::=
 
 
 
-DeclarationType     ::= "type"            IDENTIFIER "=" Type                ";";
-DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
+DeclarationType     ::= "type"            ("_" | IDENTIFIER) "=" Type                ";";
+DeclarationVariable ::= "let"  "unfixed"? ("_" | IDENTIFIER) ":" Type "=" Expression ";";
 
 Declaration ::=
 	| DeclarationType

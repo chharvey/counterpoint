@@ -6,6 +6,8 @@ import * as path from 'path';
 
 
 
+const ERROR = 'ERROR';
+
 function s(name: string, ...operands: readonly string[]): string {
 	return xjs.String.dedent`
 		(${ name }
@@ -96,10 +98,14 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				my_variable;
 				'my variable';
+				_;
 			`,
-			makeSourceFile(
-				s('identifier'),
-				s('identifier'),
+			s(
+				'source_file',
+				s('statement_expression', s('identifier')),
+				s('statement_expression', s('identifier')),
+				s(ERROR),
+				s('statement_expression'),
 			),
 		],
 
@@ -225,10 +231,10 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		/* # PRODUCTIONS */
 		// Word
-		// see #{KEYWORDTYPE,KEYWORDVALUE,IDENTIFIER}
+		// see #{EntryType,PropertyAccessType,Property,PropertyAccess,PropertyAssign}
 
 		// PrimitiveLiteral
-		// see #{KEYWORDVALUE,INTEGER,FLOAT,STRING}
+		// see #{TypeUnit,ExpressionUnit}
 
 
 		/* ## Types */
@@ -262,13 +268,13 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		TypeRecordLiteral: [
 			xjs.String.dedent`
-				f.<[a: bool, b?: int, c: str]>();
+				f.<[a: bool, b?: int, _: str]>();
 			`,
 			makeSourceFile(extractType(s(
 				'type_record_literal',
 				s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
 				s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
-				s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
+				s('entry_type__named',           s('word'),                  s('keyword_type')),
 			))),
 		],
 
@@ -294,7 +300,7 @@ function buildTest(title: string, source: string, expected: string): string {
 		],
 
 		// TypeUnit
-		// see #KEYWORDTYPE,IDENTIFIER,PrimitiveLiteral,Type{Grouped,{Tuple,Record,Dict,Map}Literal}
+		// see #TypeCompound
 
 		// PropertyAccessType
 		// see #TypeCompound
@@ -306,6 +312,7 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				f.<TupleType.0>();
 				f.<RecordType.prop>();
+				f.<RecordType._>();
 				f.<Set.<T>>();
 			`,
 			makeSourceFile(
@@ -318,6 +325,11 @@ function buildTest(title: string, source: string, expected: string): string {
 					'type_compound',
 					s('identifier'),
 					s('property_access_type', s('word', s('identifier'))),
+				)),
+				extractType(s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('word')),
 				)),
 				extractType(s(
 					'type_compound',
@@ -433,7 +445,7 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		RecordLiteral: [
 			xjs.String.dedent`
-				[a= 1, b= 2, c= 3];
+				[a= 1, b= 2, _= 3];
 			`,
 			makeSourceFile(s(
 				'record_literal',
@@ -449,7 +461,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				),
 				s(
 					'property',
-					s('word', s('identifier')),
+					s('word'),
 					s('primitive_literal', s('integer')),
 				),
 			)),
@@ -514,6 +526,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				record.prop;
 				record?.prop;
 				record!.prop;
+				record._;
 				list.[index];
 				list?.[index];
 				list!.[index];
@@ -551,6 +564,11 @@ function buildTest(title: string, source: string, expected: string): string {
 					'expression_compound',
 					s('identifier'),
 					s('property_access', s('word', s('identifier'))),
+				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_access', s('word')),
 				),
 				s(
 					'expression_compound',
@@ -844,6 +862,7 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				type T = A | B & C;
 				type 'Ü' = T;
+				type _ = D;
 			`,
 			s(
 				'source_file',
@@ -865,6 +884,10 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('identifier'),
 					s('identifier'),
 				),
+				s(
+					'declaration_type',
+					s('identifier'),
+				),
 			),
 		],
 
@@ -874,6 +897,8 @@ function buildTest(title: string, source: string, expected: string): string {
 				let unfixed u: A | B & C = v;
 				let 'å': A = a;
 				let unfixed 'é': E = e;
+				let _: T = v;
+				let unfixed _: T = v;
 			`,
 			s(
 				'source_file',
@@ -917,6 +942,16 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('identifier'),
 					s('identifier'),
 				),
+				s(
+					'declaration_variable',
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'declaration_variable',
+					s('identifier'),
+					s('identifier'),
+				),
 			),
 		],
 
@@ -935,6 +970,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				my_var       = a;
 				tuple.1      = b;
 				record.prop  = c;
+				record._     = c;
 				list.[index] = d;
 			`,
 			s(
@@ -962,6 +998,15 @@ function buildTest(title: string, source: string, expected: string): string {
 						'assignee',
 						s('identifier'),
 						s('property_assign', s('word', s('identifier'))),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_assignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word')),
 					),
 					s('identifier'),
 				),

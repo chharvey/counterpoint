@@ -25,6 +25,16 @@ describe('ASTNodeDeclarationType', () => {
 			assert_instanceof(info, SymbolStructureType);
 			assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
 		});
+
+		it('for blank identifiers, does not add to symbol table.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				type _ = str;
+			`);
+			assert.ok(!goal.validator.hasSymbol(256n));
+			goal.varCheck();
+			return assert.ok(!goal.validator.hasSymbol(256n));
+		});
+
 		it('throws if the validator already contains a record for the symbol.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				type T = int;
@@ -34,6 +44,13 @@ describe('ASTNodeDeclarationType', () => {
 				let FOO: int = 42;
 				type FOO = float;
 			`).varCheck(), AssignmentError01);
+		});
+
+		it('allows duplicate declaration of blank identifier.', () => {
+			AST.ASTNodeGoal.fromSource(`
+				type _ = int | float;
+				type _ = [str, bool];
+			`).varCheck(); // assert does not throw
 		});
 	});
 

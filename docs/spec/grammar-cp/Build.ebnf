@@ -26,10 +26,9 @@ Sequence<Instruction> Build(SemanticExpression expr) :=
 
 
 Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
-	1. *Let* `sequence` be an empty sequence of `Instruction`s.
-	2. *If* `stmt.children.count` is greater than 0:
-		1. *Set* `sequence` to *UnwrapAffirm:* `Build(stmt.children.0)`.
-	3. *Return:* `sequence`.
+	1. *If* `stmt.children.count` is greater than 0:
+		1. *Return:* `Build(stmt.children.0)`.
+	2. *Return:* [].
 ;
 
 
@@ -39,17 +38,26 @@ Sequence<Instruction> Build(SemanticDeclarationType decl) :=
 ;
 
 Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
-	1. *Assert:* `decl.children.count` is 3.
-	2. *Let* `folded` be `ValueOf(decl)`.
-	3. *If* `folded` is a normal completion *and* `decl.unfixed` is `false`:
-		1. *Note:* references to the variable will be constant-propegated by its fixed value.
-		2. *Return:* [].
-	4. *Let* `name` be the string-concatenation of "glb" and `decl.children.0.id`.
-	5. *Let* `instrs` be *UnwrapAffirm:* `Build(decl.childen.2)`.
-	6. *Return:* [
-		...instrs,
-		"DECL the global variable `name`.",
-	].
+	1. *If* `decl.children.count` is 2:
+		1. *Let* `value` be `ValueOf(decl.children.1)`.
+		2. *If* `value` is a normal completion:
+			1. *Return:* [].
+		3. *Else:*
+			1. *Return:* `Build(decl.childen.1)`.
+	2. *Else:*
+		1. *Assert:* `decl.children.count` is 3.
+		2. *Let* `value` be `ValueOf(decl.children.2)`.
+		3. *If* `value` is a normal completion *and* `decl.unfixed` is `false`:
+			1. *Note:* references to the variable will be constant-propegated by its fixed value.
+			2. *Return:* [].
+		4. *Else:*
+			1. *Let* `name` be the string-concatenation of "glb" and `decl.children.0.id`.
+			2. *Let* `instrs` be *UnwrapAffirm:* `Build(decl.childen.2)`.
+			3. *Return:* [
+				...instrs,
+				"DECL the global variable `name`.",
+			].
+
 ;
 
 Sequence<Instruction> Build(SemanticAssignment assign) :=

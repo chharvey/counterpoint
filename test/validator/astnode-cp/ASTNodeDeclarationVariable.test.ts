@@ -1,5 +1,7 @@
 import * as assert from 'assert';
 import {
+	type CPConfig,
+	CONFIG_DEFAULT,
 	Operator,
 	AST,
 	type SymbolStructure,
@@ -16,7 +18,6 @@ import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
 	instructionConstInt,
-	instructionConstFloat,
 } from '../../helpers.js';
 
 
@@ -35,6 +36,16 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.strictEqual(info.type, TYPE.UNKNOWN);
 			assert.strictEqual(info.value, null);
 		});
+
+		it('for blank identifiers, does not add to symbol table.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let _: float = 4.2;
+			`);
+			assert.ok(!goal.validator.hasSymbol(256n));
+			goal.varCheck();
+			return assert.ok(!goal.validator.hasSymbol(256n));
+		});
+
 		it('throws if the validator already contains a record for the variable.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				let i: int = 42;
@@ -45,25 +56,39 @@ describe('ASTNodeDeclarationVariable', () => {
 				let FOO: int = 42;
 			`).varCheck(), AssignmentError01);
 		});
+
+		it('allows duplicate declaration of blank identifier.', () => {
+			AST.ASTNodeGoal.fromSource(`
+				let _: int = 42;
+				let _: str = "the answer";
+			`).varCheck(); // assert does not throw
+		});
 	});
 
 
 	describe('#typeCheck', () => {
 		it('checks the assigned expression’s type against the variable assignee’s type.', () => {
-			AST.ASTNodeDeclarationVariable.fromSource(`
+			const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  int | float =  21  *  2;
-			`).typeCheck();
+			`);
+			var_.varCheck();
+			return var_.typeCheck();
 		});
+
 		it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  null =  21  *  2;
 			`).typeCheck(), TypeError03);
 		});
+
 		it('with int coersion on, allows assigning ints to floats.', () => {
-			AST.ASTNodeDeclarationVariable.fromSource(`
+			const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
-			`).typeCheck();
+			`);
+			var_.varCheck();
+			return var_.typeCheck();
 		});
+
 		it('with int coersion off, throws when assigning int to float.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
@@ -297,69 +322,86 @@ describe('ASTNodeDeclarationVariable', () => {
 
 
 	describe('#build', () => {
-		it('with constant folding on, returns InstructionNone for fixed & foldable variables.', () => {
-			const src: string = `
-				let x: int = 42;
-				let y: float = 4.2 * 10;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+		function buildDecls(src: string, expecteds: INST.Instruction[], config: CPConfig = CONFIG_DEFAULT): void {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, config);
+			const builder = new Builder(src);
 			goal.varCheck();
 			goal.typeCheck();
-			const builder = new Builder(src);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
+			return assert.deepStrictEqual(goal.children.map((c) => c.build(builder)), expecteds);
+		}
+
+		context('for blank identifiers.', () => {
+			it('returns InstructionNone with constant folding on and for foldable values.', () => {
+				buildDecls(`
+					let _:         bool = true;
+					let unfixed _: bool = !false;
+				`, [
 					new INST.InstructionNone(),
 					new INST.InstructionNone(),
-				],
-			);
+				]);
+			});
+			it('returns InstructionStatement with constant folding off or for non-foldable values.', () => {
+				buildDecls(`
+					let _:         bool = true;
+					let unfixed _: bool = !false;
+				`, [
+					new INST.InstructionStatement(0n, instructionConstInt(1n)),
+					new INST.InstructionStatement(1n, new INST.InstructionUnop(Operator.NOT, instructionConstInt(0n))),
+				], CONFIG_FOLDING_OFF);
+				return buildDecls(`
+					let unfixed x: int = 42;
+					let _:         int = x + 10;
+					let unfixed _: int = x + 20;
+				`, [
+					new INST.InstructionDeclareGlobal(0x100n, true, instructionConstInt(42n)),
+					new INST.InstructionStatement(0n, new INST.InstructionBinopArithmetic(
+						Operator.ADD,
+						new INST.InstructionGlobalGet(0x100n),
+						instructionConstInt(10n),
+					)),
+					new INST.InstructionStatement(1n, new INST.InstructionBinopArithmetic(
+						Operator.ADD,
+						new INST.InstructionGlobalGet(0x100n),
+						instructionConstInt(20n),
+					)),
+				]);
+			});
 		});
-		it('with constant folding on, returns InstructionDeclareGlobal for unfixed / non-foldable variables.', () => {
-			const src: string = `
-				let unfixed x: int = 42;
-				let y: int = x + 10;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			goal.varCheck();
-			goal.typeCheck();
-			const builder = new Builder(src);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
+
+		context('for regular variables.', () => {
+			it('returns InstructionNone with constant folding on and when fixed and with foldable values.', () => {
+				buildDecls(`
+					let x: int   = 42;
+					let y: float = 4.2 * x;
+				`, [
+					new INST.InstructionNone(),
+					new INST.InstructionNone(),
+				]);
+			});
+			it('returns InstructionDeclareGlobal with constant folding off or when unfixed or with non-foldable values.', () => {
+				buildDecls(`
+					let x: int = 42;
+					let y: int = x + 10;
+				`, [
+					new INST.InstructionDeclareGlobal(0x100n, false, instructionConstInt(42n)),
+					new INST.InstructionDeclareGlobal(0x101n, false, new INST.InstructionBinopArithmetic(
+						Operator.ADD,
+						new INST.InstructionGlobalGet(0x100n),
+						instructionConstInt(10n),
+					)),
+				], CONFIG_FOLDING_OFF);
+				return buildDecls(`
+					let unfixed x: int = 42;
+					let y:         int = x + 10;
+				`, [
 					new INST.InstructionDeclareGlobal(0x100n, true,  instructionConstInt(42n)),
 					new INST.InstructionDeclareGlobal(0x101n, false, new INST.InstructionBinopArithmetic(
 						Operator.ADD,
 						new INST.InstructionGlobalGet(0x100n),
 						instructionConstInt(10n),
 					)),
-				],
-			);
-		});
-		it('with constant folding off, always returns InstructionDeclareGlobal.', () => {
-			const src: string = `
-				let x: int = 42;
-				let unfixed y: float = 4.2;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
-			goal.varCheck();
-			goal.typeCheck();
-			const builder = new Builder(src, CONFIG_FOLDING_OFF);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
-					new INST.InstructionDeclareGlobal(0x100n, false, instructionConstInt(42n)),
-					new INST.InstructionDeclareGlobal(0x101n, true,  instructionConstFloat(4.2)),
-				],
-			);
+				]);
+			});
 		});
 	});
 });
