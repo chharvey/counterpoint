@@ -170,12 +170,10 @@ describe('ASTNodeType', () => {
 					'bool',
 					'int',
 					'float',
-					'Object',
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.BOOL,
 					TYPE.INT,
 					TYPE.FLOAT,
-					TYPE.OBJ,
 				]);
 			});
 		});
@@ -185,6 +183,12 @@ describe('ASTNodeType', () => {
 
 	describe('ASTNodeTypeAlias', () => {
 		describe('#varCheck', () => {
+			it('does not throw when referencing intrinsic identifiers.', () => {
+				AST.ASTNodeGoal.fromSource(`
+					type T = Object;
+					let obj: Object = 42;
+				`).varCheck(); // assert does not throw
+			});
 			it('throws if the validator does not contain a record for the identifier.', () => {
 				AST.ASTNodeGoal.fromSource(`
 					type T = int;
@@ -210,6 +214,13 @@ describe('ASTNodeType', () => {
 
 
 		describe('#eval', () => {
+			it('computes the value of reserved types.', () => {
+				assert.deepStrictEqual([
+					'Object',
+				].map((src) => AST.ASTNodeTypeAlias.fromSource(src).eval()), [
+					TYPE.OBJ,
+				]);
+			});
 			it('computes the value of a type alias.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					type T = int;

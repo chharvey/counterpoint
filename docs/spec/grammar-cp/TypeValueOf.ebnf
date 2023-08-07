@@ -5,10 +5,12 @@ Type TypeValueOf(SemanticTypeConstant const) :=
 
 
 Type TypeValueOf(SemanticTypeAlias var) :=
-	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
+	1. *If* `var.source` is "Object":
+		1. *Return:* `Object`.
+	2. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
 		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
 		2. *Return:* `symbol.typevalue`.
-	2. *Return:* `Never`.
+	3. *Return:* `Never`.
 ;
 
 

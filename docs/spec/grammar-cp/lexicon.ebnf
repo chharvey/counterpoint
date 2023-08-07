@@ -49,7 +49,6 @@ KeywordType :::=
 	| "int"
 	| "float"
 	| "str"
-	| "Object"
 ;
 
 KeywordValue :::=

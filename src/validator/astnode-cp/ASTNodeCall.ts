@@ -21,7 +21,7 @@ import type {SyntaxNodeFamily} from '../utils-private.js';
 import {
 	type ArgCount,
 	ValidFunctionName,
-	invalidFunctionName,
+	invalid_function_name,
 } from './utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeType} from './ASTNodeType.js';
@@ -47,7 +47,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	}
 
 	public override varCheck(): void {
-		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
+		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
 		// (`this.base.source` must be a `ValidFunctionName`)
 		return xjs.Array.forEachAggregated([
 			...this.typeargs,
@@ -135,7 +135,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				}
 				return returntype.mutableOf();
 			}],
-		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
+		]).get(this.base.source as ValidFunctionName) || invalid_function_name(this.base.source))();
 	}
 
 	@memoizeMethod

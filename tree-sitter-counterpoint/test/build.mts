@@ -59,10 +59,8 @@ function buildTest(title: string, source: string, expected: string): string {
 				type T = int;
 				type T = float;
 				type T = str;
-				type T = Object;
 			`,
 			sourceTypes(
-				s('keyword_type'),
 				s('keyword_type'),
 				s('keyword_type'),
 				s('keyword_type'),
@@ -88,8 +86,10 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				my_variable;
 				'my variable';
+				Object;
 			`,
 			sourceExpressions(
+				s('identifier'),
 				s('identifier'),
 				s('identifier'),
 			),
