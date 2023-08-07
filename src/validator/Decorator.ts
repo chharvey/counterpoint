@@ -12,7 +12,10 @@ import {
 	Punctuator,
 	Keyword,
 } from '../parser/index.js';
-import {Validator} from './index.js';
+import {
+	Validator,
+	AST,
+} from './index.js';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
@@ -31,7 +34,6 @@ import {
 	type ValidOperatorEquality,
 	type ValidOperatorLogical,
 } from './Operator.js';
-import * as AST from './astnode-cp/index.js';
 
 
 

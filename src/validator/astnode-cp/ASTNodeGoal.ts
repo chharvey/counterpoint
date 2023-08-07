@@ -14,11 +14,9 @@ import {
 	type Serializable,
 	to_serializable,
 } from '../../parser/index.js';
-import {
-	DECORATOR,
-	Validator,
-} from '../index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {DECORATOR} from '../Decorator.js';
+import {Validator} from '../Validator.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeStatement} from './ASTNodeStatement.js';
