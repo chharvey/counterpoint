@@ -24,13 +24,13 @@ describe('Validator', () => {
 
 
 	describe('.cookTokenKeyword', () => {
-		it('assigns values 128n–255n to reserved keywords.', () => {
+		it('assigns values 0x80n–0x100n to reserved keywords.', () => {
 			const cooked: bigint[] = KEYWORDS.map((k) => Validator.cookTokenKeyword(k));
 			const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
 			assert.deepStrictEqual(cooked, expected);
 			cooked.forEach((value) => {
-				assert.ok(128n <= value, 'cooked value should be >= 128n.');
-				assert.ok(value < 256n, 'cooked value should be < 256n.');
+				assert.ok(0x80n <= value, 'cooked value should be >= 0x80n.');
+				assert.ok(value < 0x100n, 'cooked value should be < 0x100n.');
 			});
 		});
 	});
@@ -316,10 +316,10 @@ describe('Validator', () => {
 						cooked = actual_raw.map((word) => validator.cookTokenIdentifier(word));
 					});
 					if (i === 0) {
-						it('assigns ids starting from 256n.', () => {
+						it('assigns ids starting from 0x100n.', () => {
 							assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
 						});
-						return it('assigns unique ids 256n or greater.', () => {
+						return it('assigns unique ids 0x100n or greater.', () => {
 							cooked.forEach((value) => assert.ok(value >= 0x100n));
 						});
 					} else {

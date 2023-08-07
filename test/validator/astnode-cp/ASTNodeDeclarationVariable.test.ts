@@ -27,10 +27,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let x: int = 42;
 			`);
-			assert.ok(!goal.validator.hasSymbol(256n));
+			assert.ok(!goal.validator.hasSymbol(0x100n));
 			goal.varCheck();
-			assert.ok(goal.validator.hasSymbol(256n));
-			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
+			assert.ok(goal.validator.hasSymbol(0x100n));
+			const info: SymbolStructure | null = goal.validator.getSymbolInfo(0x100n);
 			assert_instanceof(info, SymbolStructureVar);
 			assert.strictEqual(info.type, TYPE.UNKNOWN);
 			assert.strictEqual(info.value, null);
