@@ -59,7 +59,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				type T = int;
 				type T = float;
 				type T = str;
-				type T = obj;
+				type T = Object;
 			`,
 			sourceTypes(
 				s('keyword_type'),

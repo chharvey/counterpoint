@@ -402,17 +402,17 @@ describe('Type', () => {
 			]).forEach((cons, description) => {
 				const delim: string = cons === TYPE.TypeVect ? '\\[' : '[';
 				return describe(description, () => {
-					it('is a subtype but not a supertype of `obj`.', () => {
+					it('is a subtype but not a supertype of `Object`.', () => {
 						assert.ok(cons.fromTypes([
 							TYPE.INT,
 							TYPE.BOOL,
 							TYPE.STR,
-						]).isSubtypeOf(TYPE.OBJ), `${ delim }int, bool, str] <: obj;`);
+						]).isSubtypeOf(TYPE.OBJ), `${ delim }int, bool, str] <: Object;`);
 						assert.ok(!TYPE.OBJ.isSubtypeOf(cons.fromTypes([
 							TYPE.INT,
 							TYPE.BOOL,
 							TYPE.STR,
-						])), `obj !<: ${ delim }int, bool, str]`);
+						])), `Object !<: ${ delim }int, bool, str]`);
 					});
 					it('matches per index.', () => {
 						assert.ok(cons.fromTypes([
@@ -423,7 +423,7 @@ describe('Type', () => {
 							TYPE.INT.union(TYPE.FLOAT),
 							TYPE.BOOL.union(TYPE.NULL),
 							TYPE.OBJ,
-						])), `${ delim }int, bool, str] <: ${ delim }int | float, bool?, obj];`);
+						])), `${ delim }int, bool, str] <: ${ delim }int | float, bool?, Object];`);
 						assert.ok(!cons.fromTypes([
 							TYPE.INT,
 							TYPE.BOOL,
@@ -432,7 +432,7 @@ describe('Type', () => {
 							TYPE.BOOL.union(TYPE.NULL),
 							TYPE.OBJ,
 							TYPE.INT.union(TYPE.FLOAT),
-						])), `${ delim }int, bool, str] !<: ${ delim }bool?, obj, int | float];`);
+						])), `${ delim }int, bool, str] !<: ${ delim }bool?, Object, int | float];`);
 					});
 					it('returns false if assigned is smaller than assignee.', () => {
 						assert.ok(!cons.fromTypes([
@@ -442,7 +442,7 @@ describe('Type', () => {
 							TYPE.INT.union(TYPE.FLOAT),
 							TYPE.BOOL.union(TYPE.NULL),
 							TYPE.OBJ,
-						])), `${ delim }int, bool] !<: ${ delim }int | float, bool?, obj];`);
+						])), `${ delim }int, bool] !<: ${ delim }int | float, bool?, Object];`);
 					});
 					it('skips rest if assigned is larger than assignee.', () => {
 						assert.ok(cons.fromTypes([
@@ -516,17 +516,17 @@ describe('Type', () => {
 			]).forEach((cons, description) => {
 				const delim: string = cons === TYPE.TypeStruct ? '\\[' : '[';
 				return describe(description, () => {
-					it('is a subtype but not a supertype of `obj`.', () => {
+					it('is a subtype but not a supertype of `Object`.', () => {
 						assert.ok(cons.fromTypes(new Map<bigint, TYPE.Type>([
 							[0x100n, TYPE.INT],
 							[0x101n, TYPE.BOOL],
 							[0x102n, TYPE.STR],
-						])).isSubtypeOf(TYPE.OBJ), `${ delim }x: int, y: bool, z: str] <: obj;`);
+						])).isSubtypeOf(TYPE.OBJ), `${ delim }x: int, y: bool, z: str] <: Object;`);
 						assert.ok(!TYPE.OBJ.isSubtypeOf(cons.fromTypes(new Map<bigint, TYPE.Type>([
 							[0x100n, TYPE.INT],
 							[0x101n, TYPE.BOOL],
 							[0x102n, TYPE.STR],
-						]))), `obj !<: ${ delim }x: int, y: bool, z: str]`);
+						]))), `Object !<: ${ delim }x: int, y: bool, z: str]`);
 					});
 					it('matches per key.', () => {
 						assert.ok(cons.fromTypes(new Map<bigint, TYPE.Type>([
@@ -537,7 +537,7 @@ describe('Type', () => {
 							[0x101n, TYPE.BOOL.union(TYPE.NULL)],
 							[0x102n, TYPE.OBJ],
 							[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-						]))), `${ delim }x: int, y: bool, z: str] <: ${ delim }y: bool!, z: obj, x: int | float];`);
+						]))), `${ delim }x: int, y: bool, z: str] <: ${ delim }y: bool!, z: Object, x: int | float];`);
 						assert.ok(!cons.fromTypes(new Map<bigint, TYPE.Type>([
 							[0x100n, TYPE.INT],
 							[0x101n, TYPE.BOOL],
@@ -546,7 +546,7 @@ describe('Type', () => {
 							[0x100n, TYPE.BOOL.union(TYPE.NULL)],
 							[0x101n, TYPE.OBJ],
 							[0x102n, TYPE.INT.union(TYPE.FLOAT)],
-						]))), `${ delim }x: int, y: bool, z: str] !<: ${ delim }x: bool!, y: obj, z: int | float];`);
+						]))), `${ delim }x: int, y: bool, z: str] !<: ${ delim }x: bool!, y: Object, z: int | float];`);
 					});
 					it('returns false if assigned is smaller than assignee.', () => {
 						assert.ok(!cons.fromTypes(new Map<bigint, TYPE.Type>([
@@ -556,7 +556,7 @@ describe('Type', () => {
 							[0x101n, TYPE.BOOL.union(TYPE.NULL)],
 							[0x102n, TYPE.OBJ],
 							[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-						]))), `${ delim }x: int, y: bool] !<: ${ delim }y: bool!, z: obj, x: int | float];`);
+						]))), `${ delim }x: int, y: bool] !<: ${ delim }y: bool!, z: Object, x: int | float];`);
 					});
 					it('skips rest if assigned is larger than assignee.', () => {
 						assert.ok(cons.fromTypes(new Map<bigint, TYPE.Type>([
@@ -577,7 +577,7 @@ describe('Type', () => {
 							[0x101n, TYPE.BOOL.union(TYPE.NULL)],
 							[0x102n, TYPE.OBJ],
 							[0x103n, TYPE.INT.union(TYPE.FLOAT)],
-						]))), `${ delim }x: int, y: bool, z: str] !<: ${ delim }y: bool!, z: obj, w: int | float]`);
+						]))), `${ delim }x: int, y: bool, z: str] !<: ${ delim }y: bool!, z: Object, w: int | float]`);
 					});
 					it('optional entries are not assignable to required entries.', () => {
 						assert.ok(new cons(new Map<bigint, TypeEntry>([
@@ -650,9 +650,9 @@ describe('Type', () => {
 		});
 
 		describe('TypeList', () => {
-			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL)).isSubtypeOf(TYPE.OBJ), 'List.<int | bool> <: obj;');
-				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL))), 'obj !<: List.<int | bool>');
+			it('is a subtype but not a supertype of `Object`.', () => {
+				assert.ok(new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL)).isSubtypeOf(TYPE.OBJ), 'List.<int | bool> <: Object;');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL))), 'Object !<: List.<int | bool>');
 			});
 			it('Covariance for immutable lists: `A <: B --> List.<A> <: List.<B>`.', () => {
 				assert.ok(new TYPE.TypeList(TYPE.INT).isSubtypeOf(new TYPE.TypeList(TYPE.INT.union(TYPE.FLOAT))), 'List.<int> <: List.<int | float>');
@@ -664,9 +664,9 @@ describe('Type', () => {
 		});
 
 		describe('TypeDict', () => {
-			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new TYPE.TypeDict(TYPE.INT.union(TYPE.BOOL)).isSubtypeOf(TYPE.OBJ), 'Dict.<int | bool> <: obj;');
-				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeDict(TYPE.INT.union(TYPE.BOOL))), 'obj !<: Dict.<int | bool>');
+			it('is a subtype but not a supertype of `Object`.', () => {
+				assert.ok(new TYPE.TypeDict(TYPE.INT.union(TYPE.BOOL)).isSubtypeOf(TYPE.OBJ), 'Dict.<int | bool> <: Object;');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeDict(TYPE.INT.union(TYPE.BOOL))), 'Object !<: Dict.<int | bool>');
 			});
 			it('Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.', () => {
 				assert.ok(new TYPE.TypeDict(TYPE.INT).isSubtypeOf(new TYPE.TypeDict(TYPE.INT.union(TYPE.FLOAT))), 'Dict.<int> <: Dict.<int | float>');
@@ -678,9 +678,9 @@ describe('Type', () => {
 		});
 
 		describe('TypeSet', () => {
-			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new TYPE.TypeSet(TYPE.INT).isSubtypeOf(TYPE.OBJ), 'Set.<int> <: obj');
-				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeSet(TYPE.INT)), 'obj !<: Set.<int>');
+			it('is a subtype but not a supertype of `Object`.', () => {
+				assert.ok(new TYPE.TypeSet(TYPE.INT).isSubtypeOf(TYPE.OBJ), 'Set.<int> <: Object');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeSet(TYPE.INT)), 'Object !<: Set.<int>');
 			});
 			it('Invariance for immutable sets: `A == B --> Set.<A> <: Set.<B>`.', () => {
 				assert.ok(!new TYPE.TypeSet(TYPE.INT).isSubtypeOf(new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT))), 'Set.<int> !<: Set.<int | float>');
@@ -692,9 +692,9 @@ describe('Type', () => {
 		});
 
 		describe('TypeMap', () => {
-			it('is a subtype but not a supertype of `obj`.', () => {
-				assert.ok(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL).isSubtypeOf(TYPE.OBJ), 'Map.<int, bool> <: obj');
-				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL)), 'obj !<: Map.<int, bool>');
+			it('is a subtype but not a supertype of `Object`.', () => {
+				assert.ok(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL).isSubtypeOf(TYPE.OBJ), 'Map.<int, bool> <: Object');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL)), 'Object !<: Map.<int, bool>');
 			});
 			it('Invariance for immutable maps’ keys: `A == C && --> Map.<A, B> <: Map.<C, B>`.', () => {
 				assert.ok(!new TYPE.TypeMap(TYPE.INT, TYPE.BOOL).isSubtypeOf(new TYPE.TypeMap(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL)), 'Map.<int, bool> !<: Map.<int | float, bool>');
@@ -859,9 +859,9 @@ describe('Type', () => {
 						TYPE.NULL.intersect(TYPE.INT),
 						TYPE.BOOL,
 					])), `
-						[obj, null, bool] & [obj, int]
+						[Object, null, bool] & [Object, int]
 						==
-						[obj, null & int, bool]
+						[Object, null & int, bool]
 					`);
 				});
 				it('takes the conjunction of optionality.', () => {
@@ -878,9 +878,9 @@ describe('Type', () => {
 						{type: TYPE.NULL.intersect(TYPE.INT),   optional: false},
 						{type: TYPE.BOOL.intersect(TYPE.FLOAT), optional: true},
 					])), `
-						[obj, ?: null, ?: bool] & [obj, int, ?: float]
+						[Object, ?: null, ?: bool] & [Object, int, ?: float]
 						==
-						[obj, null & int, ?: bool & float]
+						[Object, null & int, ?: bool & float]
 					`);
 				});
 			});
@@ -901,9 +901,9 @@ describe('Type', () => {
 						[qux, TYPE.BOOL.intersect(TYPE.STR)],
 						[diz, TYPE.INT],
 					]))), `
-						[foo: obj, bar: null, qux: bool] & [foo: obj, diz: int, qux: str]
+						[foo: Object, bar: null, qux: bool] & [foo: Object, diz: int, qux: str]
 						==
-						[foo: obj, bar: null, qux: bool & str, diz: int]
+						[foo: Object, bar: null, qux: bool & str, diz: int]
 					`);
 				});
 				it('takes the conjunction of optionality.', () => {
@@ -922,9 +922,9 @@ describe('Type', () => {
 						[qux, {type: TYPE.BOOL.intersect(TYPE.STR), optional: false}],
 						[diz, {type: TYPE.INT,                      optional: true}],
 					]))), `
-						[foo: obj, bar?: null, qux?: bool] & [foo: obj, diz?: int, qux: str]
+						[foo: Object, bar?: null, qux?: bool] & [foo: Object, diz?: int, qux: str]
 						==
-						[foo: obj, bar?: null, qux: bool & str, diz?: int]
+						[foo: Object, bar?: null, qux: bool & str, diz?: int]
 					`);
 				});
 			});
@@ -947,9 +947,9 @@ describe('Type', () => {
 						TYPE.OBJ,
 						TYPE.NULL.union(TYPE.INT),
 					])), `
-						[obj, null, bool] | [obj, int]
+						[Object, null, bool] | [Object, int]
 						==
-						[obj, null | int]
+						[Object, null | int]
 					`);
 				});
 				it('takes the disjunction of optionality.', () => {
@@ -966,9 +966,9 @@ describe('Type', () => {
 						{type: TYPE.NULL.union(TYPE.INT),   optional: true},
 						{type: TYPE.BOOL.union(TYPE.FLOAT), optional: true},
 					])), `
-						[obj, ?: null, ?: bool] | [obj, int, ?: float]
+						[Object, ?: null, ?: bool] | [Object, int, ?: float]
 						==
-						[obj, ?: null | int, ?: bool | float]
+						[Object, ?: null | int, ?: bool | float]
 					`);
 				});
 				it('some value assignable to combo type might not be assignable to union.', () => {
@@ -1006,9 +1006,9 @@ describe('Type', () => {
 						[foo, TYPE.OBJ],
 						[qux, TYPE.BOOL.union(TYPE.STR)],
 					]))), `
-						[foo: obj, bar: null, qux: bool] | [foo: obj, diz: int, qux: str]
+						[foo: Object, bar: null, qux: bool] | [foo: Object, diz: int, qux: str]
 						==
-						[foo: obj, qux: bool | str]
+						[foo: Object, qux: bool | str]
 					`);
 				});
 				it('takes the disjunction of optionality.', () => {
@@ -1025,9 +1025,9 @@ describe('Type', () => {
 						[foo, {type: TYPE.OBJ,                  optional: false}],
 						[qux, {type: TYPE.BOOL.union(TYPE.STR), optional: true}],
 					]))), `
-						[foo: obj, bar?: null, qux?: bool] | [foo: obj, diz?: int, qux: str]
+						[foo: Object, bar?: null, qux?: bool] | [foo: Object, diz?: int, qux: str]
 						==
-						[foo: obj, qux?: bool | str]
+						[foo: Object, qux?: bool | str]
 					`);
 				});
 				it('some value assignable to combo type might not be assignable to union.', () => {

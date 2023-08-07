@@ -170,7 +170,7 @@ describe('ASTNodeType', () => {
 					'bool',
 					'int',
 					'float',
-					'obj',
+					'Object',
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.BOOL,
 					TYPE.INT,

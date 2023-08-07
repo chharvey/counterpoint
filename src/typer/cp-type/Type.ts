@@ -296,7 +296,7 @@ export abstract class Type {
 	@strictEqual
 	@Type.subtypeDeco
 	public isSubtypeOf(t: Type): boolean {
-		return !this.isBottomType && !!this.values.size // these checks are needed in cases of `obj` and `void`, which don’t store values
+		return !this.isBottomType && !!this.values.size // these checks are needed in cases of `Object` and `void`, which don’t store values
 			&& [...this.values].every((v) => t.includes(v));
 	}
 

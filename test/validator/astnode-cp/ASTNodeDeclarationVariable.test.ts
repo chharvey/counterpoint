@@ -158,13 +158,13 @@ describe('ASTNodeDeclarationVariable', () => {
 					let s: [a: int, b: str] = \\[a= 42, b= "hello"];
 				`.split('\n'));
 				typeCheckGoal(`
-					let v: obj = \\[   42,    "hello"];
-					let s: obj = \\[a= 42, b= "hello"];
+					let v: Object = \\[   42,    "hello"];
+					let s: Object = \\[a= 42, b= "hello"];
 				`.split('\n'));
 				typeCheckGoal(`
-					let v: mutable obj = \\[   42,    "hello"];
-					let s: mutable obj = \\[a= 42, b= "hello"];
-				`.split('\n')); // mutable obj == obj
+					let v: mutable Object = \\[   42,    "hello"];
+					let s: mutable Object = \\[a= 42, b= "hello"];
+				`.split('\n')); // mutable Object == Object
 				return typeCheckGoal(`
 					let v: mutable [   int,    str] = \\[   42,    "hello"];
 					let s: mutable [a: int, b: str] = \\[a= 42, b= "hello"];
@@ -201,27 +201,27 @@ describe('ASTNodeDeclarationVariable', () => {
 					let s: mutable (int | str){}    = {   42 ->  "43"};
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`
-					let t1: mutable obj                                = [42, "43"];
+					let t1: mutable Object                             = [42, "43"];
 					let t2: mutable ([int, str] | [   bool,    float]) = [42, "43"];
 					let t3: mutable ([int, str] | [a: bool, b: float]) = [42, "43"];
-					let t4: mutable ([int, str] | obj)                 = [42, "43"];
+					let t4: mutable ([int, str] | Object)              = [42, "43"];
 
-					let r1: mutable obj                                      = [a= 42, b= "43"];
+					let r1: mutable Object                                   = [a= 42, b= "43"];
 					let r2: mutable ([a: int, b: str] | [c: bool, d: float]) = [a= 42, b= "43"];
 					let r3: mutable ([a: int, b: str] | [   bool,    float]) = [a= 42, b= "43"];
-					let r4: mutable ([a: int, b: str] | obj)                 = [a= 42, b= "43"];
+					let r4: mutable ([a: int, b: str] | Object)              = [a= 42, b= "43"];
 
 					let s1: mutable (42 | 4.3){}            = {42};
 					let s2: mutable (int | float){}         = {42};
-					let s3: mutable obj                     = {42};
+					let s3: mutable Object                  = {42};
 					let s4: mutable (int{} | {str -> bool}) = {42};
-					let s5: mutable (int{} | obj)           = {42};
+					let s5: mutable (int{} | Object)        = {42};
 
-					let m1: mutable {int -> float}           = {42 -> 4.3};
-					let m2: mutable {int? -> float?}         = {42 -> 4.3};
-					let m3: mutable obj                      = {42 -> 4.3};
-					let m4: mutable ({int -> float} | str{}) = {42 -> 4.3};
-					let m5: mutable ({int -> float} | obj)   = {42 -> 4.3};
+					let m1: mutable {int -> float}            = {42 -> 4.3};
+					let m2: mutable {int? -> float?}          = {42 -> 4.3};
+					let m3: mutable Object                    = {42 -> 4.3};
+					let m4: mutable ({int -> float} | str{})  = {42 -> 4.3};
+					let m5: mutable ({int -> float} | Object) = {42 -> 4.3};
 				`);
 			});
 			it('throws when entries mismatch.', () => {

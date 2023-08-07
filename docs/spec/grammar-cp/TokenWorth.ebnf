@@ -44,7 +44,7 @@ TokenWorth(KeywordType  :::= "bool")    -> RealNumber := \x81;
 TokenWorth(KeywordType  :::= "int")     -> RealNumber := \x82;
 TokenWorth(KeywordType  :::= "float")   -> RealNumber := \x83;
 TokenWorth(KeywordType  :::= "str")     -> RealNumber := \x84;
-TokenWorth(KeywordType  :::= "obj")     -> RealNumber := \x85;
+TokenWorth(KeywordType  :::= "Object")  -> RealNumber := \x85;
 TokenWorth(KeywordValue :::= "null")    -> RealNumber := \x86;
 TokenWorth(KeywordValue :::= "false")   -> RealNumber := \x87;
 TokenWorth(KeywordValue :::= "true")    -> RealNumber := \x88;
