@@ -21,20 +21,18 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * @param assigned_type the type of the expression assigned
 	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
 	 * @param node          the node where the assignment took place
-	 * @param validator     a validator for type-checking purposes
 	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
 	 */
 	public static typeCheckAssignment(
 		assigned_type: TYPE.Type,
 		assignee_type: TYPE.Type,
 		node:          ASTNodeCP,
-		validator:     Validator,
 	): void {
 		if (
 			   !assigned_type.isSubtypeOf(assignee_type)
 			&& !(
 				   // is int treated as a subtype of float?
-				   validator.config.compilerOptions.intCoercion
+				   node.validator.config.compilerOptions.intCoercion
 				&& assigned_type.isSubtypeOf(TYPE.INT)
 				&& TYPE.FLOAT.isSubtypeOf(assignee_type)
 			)
@@ -76,12 +74,7 @@ export abstract class ASTNodeCP extends ASTNode {
 		node:          ASTNodeCP,
 	): void {
 		try {
-			return ASTNodeCP.typeCheckAssignment(
-				assigned.type(),
-				assignee_type,
-				node,
-				node.validator,
-			);
+			return ASTNodeCP.typeCheckAssignment(assigned.type(), assignee_type, node);
 		} catch (err) {
 			if (!(assigned instanceof ASTNodeCollectionLiteral && assigned.assignTo(assignee_type))) {
 				throw err;
