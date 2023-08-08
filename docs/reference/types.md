@@ -502,15 +502,10 @@ The number of entries in a tuple is called its **count**.
 The count of a tuple is fixed and known at compile-time, as is the type of each entry in it.
 The order of entries is significant: looping and iteration are performed in index order.
 Tuples are heterogeneous, meaning they can be declared with different entry types.
-
-There are two kinds of tuples: value tuples and reference tuples. Value tuples are called **vects**.
-Only reference tuples may be mutable, in which case their entries may be reassigned, but only to values of the correct type.
-The entries of reference tuples cannot be added or deleted.
+They are also read-only, which means their entries cannot be added, deleted, or reassigned.
 
 For example, the tuple `[3, 4.0, "seven"]` has an integer in the first position at index `0`,
 followed by a float at index `1`, followed by a string at index `2`. Its count is 3.
-Entries cannot be added or removed — the count of the tuple cannot change — but entries can be reassigned:
-We could set the last entry to the string `"twelve"`.
 
 Tuple literals are comma-separated expressions within square brackets.
 Tuple types use the same syntax, but instead of value expressions
@@ -532,11 +527,15 @@ let elements_and_more: [str, str, str, bool, int] = ["earth", "wind", "fire"]; %
 ```
 The first declaration is allowed because the last two items are simply dropped off.
 
-Vects are assignable to non-`mutable` tuples.
+Becuse tuples are read-only, the `mutable` operator is invalid on tuple types.
 ```
-let elements:          [str, str, str] = \["earth", "wind", "fire"];
-let elements: mutable  [str, str, str] = \["earth", "wind", "fire"]; %> TypeError
-let elements:         \[str, str, str] =  ["earth", "wind", "fire"]; %> TypeError
+let elements: mutable [str, str, str] = ["earth", "wind", "fire"]; %> TypeError
+```
+
+Tuples and vects are assignable to each other, as long as their entries are valid.
+```
+let elements:  [str, str, str] = \["earth", "wind", "fire"];
+let elements: \[str, str, str] =  ["earth", "wind", "fire"];
 ```
 
 Note: If a tuple is homogeneous (its items are all of the same type),
@@ -602,15 +601,8 @@ let unfixed i: int = 4;
 elements.[i];           % no compile-time error, but value at runtime will be undefined
 ```
 
-If a variable is declared as a mutable tuple, its indices may be reassigned, but its type or size cannot change.
-A non-mutable tuple’s items, type, and size are all fixed.
+A tuple’s items, type, and size are all fixed.
 ```
-let mut_tuple: mutable [bool, int, str] = [true, 4, "hello"];
-set mut_tuple.0 = false;
-set mut_tuple.1 = 2;
-set mut_tuple.2 = "world";
-mut_tuple; %== [false, 2, "world"];
-
 let tuple: [bool, int, str] = [true, 4, "hello"];
 set tuple.0 = false;   %> MutabilityError
 set tuple.1 = 2;       %> MutabilityError
@@ -658,12 +650,9 @@ The count and types of record **entries** (the “slots” where values are stor
 The order of entries is *not* significant: though records can be iterated over, the order in which this is done is
 implementation-dependent; thus authors should not rely on any particular iteration order.
 Records are heterogeneous, meaning they can be declared with different entry types.
+They are also read-only, which means their entries cannot be added, deleted, or reassigned.
 
-There are two kinds of records: value records and reference records. Value records are called **structs**.
-Only reference records may be mutable, in which case their entries may be reassigned, but only to values of the correct type.
-The entries of reference records cannot be added or deleted.
-
-For example, given the record
+For example, the record
 ```
 [
 	fontFamily= "sans-serif",
@@ -672,7 +661,7 @@ For example, given the record
 	fontWeight= 400,
 ];
 ```
-we could reassign the `fontWeight` property a value of `700`. Its count is 4.
+has a count of 4.
 
 Keys may be reserved keywords, not just restricted to identifiers.
 This is because the record key will always be lexically bound to the record —
@@ -766,11 +755,15 @@ let elements_and_more: [
 ```
 The first declaration is allowed because the unused properties are simply dropped off.
 
-Structs are assignable to non-`mutable` records.
+Becuse records are read-only, the `mutable` operator is invalid on record types.
 ```
-let elements:          [x: str, y: str, z: str] = \[x= "earth", y= "wind", z= "fire"];
-let elements: mutable  [x: str, y: str, z: str] = \[x= "earth", y= "wind", z= "fire"]; %> TypeError
-let elements:         \[x: str, y: str, z: str] =  [x= "earth", y= "wind", z= "fire"]; %> TypeError
+let elements: mutable [x: str, y: str, z: str] = [x= "earth", y= "wind", z= "fire"]; %> TypeError
+```
+
+Records and structs are assignable to each other, as long as their entries are valid.
+```
+let elements:  [x: str, y: str, z: str] = \[x= "earth", y= "wind", z= "fire"];
+let elements: \[x: str, y: str, z: str] =  [x= "earth", y= "wind", z= "fire"];
 ```
 
 #### Record Access
@@ -796,15 +789,8 @@ so attempting to retrieve an non-existent key results in a compile-time error.
 elements.pythagoras; %> TypeError
 ```
 
-If a variable is declared as a mutable record, its keys may be reassigned, but its type or size cannot change.
-A non-mutable record’s values, type, and size are all fixed.
+A record’s values, type, and size are all fixed.
 ```
-let mut_record: mutable [a: bool, b: int, c: str] = [a= true, b= 4, c= "hello"];
-set mut_record.a = false;
-set mut_record.b = 2;
-set mut_record.c = "world";
-mut_record; %== [a= false, b= 2, c= "world"];
-
 let record: [a: bool, b: int, c: str] = [a= true, b= 4, c= "hello"];
 set record.a = false;   %> MutabilityError
 set record.b = 2;       %> MutabilityError

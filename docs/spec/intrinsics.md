@@ -46,9 +46,19 @@ There is only one `Null` object: `null`.
 `String` objects are textual data encoded as sequences of bytes (in UTF-8 format).
 
 
+### `Tuple`
+`Tuple` objects are fixed-size ordered lists of indexed values, with indices starting at *0*.
+The values in Tuples are Counterpoint Language Values and are restricted to value objects.
+
+
 ### `Vect`
 `Vect` objects are fixed-size ordered lists of indexed values, with indices starting at *0*.
 The values in Vects are Counterpoint Language Values and are restricted to value objects.
+
+
+### `Record`
+`Record` objects are fixed-size unordered lists of keyed values, with identifier keys.
+The values in Records are Counterpoint Language Values and are restricted to value objects.
 
 
 ### `Struct`
@@ -68,16 +78,6 @@ All reference objects belong to the `Object` class.
 
 ### `Object`
 The `Object` class contains every reference object.
-
-
-### `Tuple`
-`Tuple` objects are fixed-size ordered lists of indexed values, with indices starting at *0*.
-The values in Tuples are Counterpoint Language Values.
-
-
-### `Record`
-`Record` objects are fixed-size unordered lists of keyed values, with identifier keys.
-The values in Records are Counterpoint Language Values.
 
 
 ### `List`
