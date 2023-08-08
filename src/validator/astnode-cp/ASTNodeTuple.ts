@@ -80,12 +80,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 			return xjs.Array.forEachAggregated(assignee.invariants, (thattype, i) => {
 				const expr: ASTNodeExpression | undefined = this.children[i];
 				if (expr) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- bug
-					return ASTNodeCP.typeCheckAssignment(
-						expr.type(),
-						thattype.type,
-						expr,
-						this.validator,
-					);
+					return ASTNodeCP.assignExpression(expr, thattype.type, expr);
 				}
 			});
 		}

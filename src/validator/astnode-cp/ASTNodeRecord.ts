@@ -111,12 +111,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				const prop: ASTNodeProperty | undefined = this.children.find((c) => c.key.id === id);
 				const expr: ASTNodeExpression | undefined = prop?.val;
 				if (expr) {
-					return ASTNodeCP.typeCheckAssignment(
-						expr.type(),
-						thattype.type,
-						expr,
-						this.validator,
-					);
+					return ASTNodeCP.assignExpression(expr, thattype.type, expr);
 				}
 			});
 		}
