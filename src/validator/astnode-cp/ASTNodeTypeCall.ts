@@ -17,7 +17,7 @@ import type {SyntaxNodeFamily} from '../utils-private.js';
 import {
 	type ArgCount,
 	ValidFunctionName,
-	invalidFunctionName,
+	invalid_function_name,
 } from './utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
@@ -40,7 +40,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	}
 
 	public override varCheck(): void {
-		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
+		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
 		// (`this.base.source` must be a `ValidFunctionName`)
 		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
@@ -60,7 +60,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 				const contype: TYPE.Type = this.args[1]?.eval() ?? anttype; // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- `this.args[1]` could be undefined
 				return new TYPE.TypeMap(anttype, contype);
 			}],
-		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
+		]).get(this.base.source as ValidFunctionName) || invalid_function_name(this.base.source))();
 	}
 
 	/**

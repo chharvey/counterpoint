@@ -188,8 +188,8 @@ This list is not exhaustive, as Counterpoint Types may be created in any Counter
 
 
 ### Value Types and Reference Types
-Value types and reference types correspond to
-[value objects and reference objects](./intrinsics.md#value-objects-and-reference-objects) respectively.
+Value types and reference types correspond to [value objects](./intrinsics.md#value-objects)
+and [reference objects](./intrinsics.md#reference-objects) respectively.
 
 
 ### Simple Types
@@ -306,15 +306,15 @@ but it is not directly observable within any Counterpoint program.
 
 Though `String` objects are treated conceptually as lists, they are considered
 [primitive objects](./intrinsics.md#primitive-and-composite-objects) and
-[value objects](./intrinsics.md#value-objects-and-reference-objects).
+[value objects](./intrinsics.md#value-objects).
 They are primitives because the “items” of these lists are not directly observable —
 accessing an index of a string yields another string — and
 they are value objects because the string values themselves are copied when assigned
 (though the compiler may make any optimizations necessary).
 
 #### Object
-The **Object** type is the parent type of all Counterpoint Language Types.
-Every Counterpoint Language Value is an Object.
+The **Object** type contains all references to Counterpoint Language Values.
+All reference types and value types are subtypes of **Object**.
 Some specific built-in subtypes of Object are described in the [Intrinsics](./intrinsics.md) chapter.
 
 #### Unknown
@@ -558,20 +558,17 @@ Boolean Subtype(Type a, Type b) :=
 		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
 			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
 			1. *Return:* `true`.
-	10. *If* *UnwrapAffirm:* `IsReference(a)` is `true` *and* *UnwrapAffirm:* `IsReference(b)` is `false`:
-		1. *Return:* `false`.
-	11. *If* `a` is a Tuple or Vect type *and* `b` is a Tuple or Vect type:
-		1. *Assert:* `a` is not a Tuple type *or* `b` is not a Vect type.
-		2. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
-		3. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
-		4. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
-		5. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
-		6. *If* `seq_a_req.count` is less than `seq_b_req.count`:
+	10. *If* `a` is a Tuple or Vect type *and* `b` is a Tuple or Vect type:
+		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
+		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
+		4. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
+		5. *If* `seq_a_req.count` is less than `seq_b_req.count`:
 			1. *Return:* `false`.
-		7. *If* `b` is mutable:
+		6. *If* `b` is mutable:
 			1. *If* `a` is not mutable:
 				1. *Return:* `false`.
-		8. *For index* `i` in `seq_b`:
+		7. *For index* `i` in `seq_b`:
 			1. *If* `seq_b[i].optional` is `false`:
 				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
 			2. *If* `seq_a[i]` is set:
@@ -580,18 +577,17 @@ Boolean Subtype(Type a, Type b) :=
 				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
 					1. *Return:* `false`.
 		9. *Return:* `true`.
-	12. *If* `a` is a Record or Struct type *and* `b` is a Record or Struct type:
-		1. *Assert:* `a` is not a Record type *or* `b` is not a Struct type.
-		2. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
-		3. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
-		4. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
-		5. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
-		6. *If* `struct_a_req.count` is less than `struct_b_req.count`:
+	11. *If* `a` is a Record or Struct type *and* `b` is a Record or Struct type:
+		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
+		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
+		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
 			1. *Return:* `false`.
-		7. *If* `b` is mutable:
+		6. *If* `b` is mutable:
 			1. *If* `a` is not mutable:
 				1. *Return:* `false`.
-		8. *For key* `k` in `struct_b`:
+		9. *For key* `k` in `struct_b`:
 			1. *If* `struct_b[k].optional` is `false`:
 				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
 					1. *Return:* `false`.
@@ -601,7 +597,7 @@ Boolean Subtype(Type a, Type b) :=
 				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 					1. *Return:* `false`.
 		9. *Return:* `true`.
-	13. *If* `a` is a List type *and* `b` is a List type:
+	12. *If* `a` is a List type *and* `b` is a List type:
 		1. *Let* `ai` be the union of types in `a`.
 		2. *Let* `bi` be the union of types in `b`.
 		3. *If* `b` is mutable:
@@ -610,7 +606,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
 				1. *Return:* `true`.
-	14. *If* `a` is a Dict type *and* `b` is a Dict type:
+	13. *If* `a` is a Dict type *and* `b` is a Dict type:
 		1. *Let* `av` be the union of value types in `a`.
 		2. *Let* `bv` be the union of value types in `b`.
 		3. *If* `b` is mutable:
@@ -619,7 +615,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 				1. *Return:* `true`.
-	15. *If* `a` is a Set type *and* `b` is a Set type:
+	14. *If* `a` is a Set type *and* `b` is a Set type:
 		1. *Let* `ae` be the union of types in `a`.
 		2. *Let* `be` be the union of types in `b`.
 		3. *If* `b` is mutable:
@@ -628,7 +624,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
 				1. *Return:* `true`.
-	16. *If* `a` is a Map type *and* `b` is a Map type:
+	15. *If* `a` is a Map type *and* `b` is a Map type:
 		1. *Let* `ak` be the union of antecedent types in `a`.
 		2. *Let* `av` be the union of consequent types in `a`.
 		3. *Let* `bk` be the union of antecedent types in `b`.
@@ -639,11 +635,11 @@ Boolean Subtype(Type a, Type b) :=
 		6. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 				1. *Return:* `true`.
-	17. *If* every value that is assignable to `a` is also assignable to `b`:
+	16. *If* every value that is assignable to `a` is also assignable to `b`:
 		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
 			because an instance of `Integer` is an instance of `Object`.
 		2. *Return:* `true`.
-	18. *Return:* `false`.
+	17. *Return:* `false`.
 ;
 ```
 

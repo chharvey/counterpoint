@@ -143,7 +143,7 @@ type T = [int];
 type U = \[str, T]; % TypeError: Got reference type `[int]`, but expected a value type.
 
 let x: [int] = [42];
-let y: obj = \["hello", x]; % TypeError: Got reference type `[int]`, but expected a value type.
+let y: Object = \["hello", x]; % TypeError: Got reference type `[int]`, but expected a value type.
 ```
 Solution(s): Ensure only value types are used where expected.
 

@@ -14,11 +14,11 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {Keyword} from '../../parser/index.js';
-import {Validator} from '../index.js';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
 } from '../utils-private.js';
+import {Validator} from '../Validator.js';
 import {valueOfTokenNumber} from './utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -41,7 +41,6 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			(source === Keyword.INT)   ? TYPE.INT              :
 			(source === Keyword.FLOAT) ? TYPE.FLOAT            :
 			(source === Keyword.STR)   ? TYPE.STR              :
-			(source === Keyword.OBJ)   ? TYPE.OBJ              :
 			throw_expression(new Error(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`))
 		);
 	}

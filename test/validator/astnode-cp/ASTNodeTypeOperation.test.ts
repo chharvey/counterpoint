@@ -36,7 +36,7 @@ describe('ASTNodeOperation', () => {
 					type E = A | B;
 					type F = C & D;
 
-					type G = mutable obj; % equivalent to \`obj\`
+					type G = mutable Object; % equivalent to \`Object\`
 					type H = \\[int, float] | mutable [int, float];
 				`);
 				goal.varCheck();
@@ -68,7 +68,7 @@ describe('ASTNodeOperation', () => {
 
 		specify('ASTNodeTypeOperationBinary[operator=AND|OR]', () => {
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationBinary.fromSource('obj & 3').eval(),
+				AST.ASTNodeTypeOperationBinary.fromSource('Object & 3').eval(),
 				TYPE.OBJ.intersect(typeUnitInt(3n)),
 			);
 			assert.deepStrictEqual(

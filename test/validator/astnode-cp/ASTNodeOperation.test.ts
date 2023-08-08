@@ -490,10 +490,10 @@ describe('ASTNodeOperation', () => {
 				});
 				it('returns the result of `this#fold`, wrapped in a `new TypeUnit`.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let a: obj = [];
-						let b: obj = [42];
-						let c: obj = [x= 42];
-						let d: obj = {41 -> 42};
+						let a: Object = [];
+						let b: Object = [42];
+						let c: Object = [x= 42];
+						let d: Object = {41 -> 42};
 						a !== [];
 						b !== [42];
 						c !== [x= 42];
@@ -591,24 +591,24 @@ describe('ASTNodeOperation', () => {
 			});
 			it('compound types.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: obj = [];
-					let b: obj = [42];
-					let c: obj = [x= 42];
-					let d: obj = List.<int>([]);
-					let e: obj = List.<int>([42]);
-					let f: obj = Dict.<int>([x= 42]);
-					let g: obj = {};
-					let h: obj = {42};
-					let i: obj = {41 -> 42};
-					let j: obj = \\[42];
-					let k: obj = \\[x= 42];
+					let a: Object = [];
+					let b: Object = [42];
+					let c: Object = [x= 42];
+					let d: Object = List.<int>([]);
+					let e: Object = List.<int>([42]);
+					let f: Object = Dict.<int>([x= 42]);
+					let g: Object = {};
+					let h: Object = {42};
+					let i: Object = {41 -> 42};
+					let j: Object = \\[42];
+					let k: Object = \\[x= 42];
 
-					let bb: obj = [[42]];
-					let cc: obj = [x= [42]];
-					let hh: obj = {[42]};
-					let ii: obj = {[41] -> [42]};
-					let jj: obj = \\[\\[42]];
-					let kk: obj = \\[x= \\[42]];
+					let bb: Object = [[42]];
+					let cc: Object = [x= [42]];
+					let hh: Object = {[42]};
+					let ii: Object = {[41] -> [42]};
+					let jj: Object = \\[\\[42]];
+					let kk: Object = \\[x= \\[42]];
 
 					a !== [];
 					b !== [42];

@@ -9,9 +9,9 @@ import {TypeError} from './TypeError.js';
  * Value types/objects cannot contain reference types/objects, so this error is thrown in those situations.
  * @example
  * type T = [int];
- * type U = \[str, T];         % TypeErrorUnexpectedRef: Got reference type `[int]`, but expected a value type.
+ * type U = \[str, T];            % TypeErrorUnexpectedRef: Got reference type `[int]`, but expected a value type.
  * let x: [int] = [42];
- * let y: obj = \["hello", x]; % TypeErrorUnexpectedRef: Got reference type `[int]`, but expected a value type.
+ * let y: Object = \["hello", x]; % TypeErrorUnexpectedRef: Got reference type `[int]`, but expected a value type.
  */
 export class TypeErrorUnexpectedRef extends TypeError {
 	/**

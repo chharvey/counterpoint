@@ -5,7 +5,6 @@ export enum Keyword {
 		INT   = 'int',
 		FLOAT = 'float',
 		STR   = 'str',
-		OBJ   = 'obj',
 	// value literal
 		NULL  = 'null',
 		FALSE = 'false',

@@ -47,7 +47,7 @@ export class TypeTuple extends TypeCollectionIndexedStatic {
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeTuple
+			t instanceof TypeCollectionIndexedStatic
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
 			&& t.invariants.every((thattype, i) => {

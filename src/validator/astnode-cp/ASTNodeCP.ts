@@ -5,7 +5,7 @@ import {
 	TypeErrorNotAssignable,
 } from '../../index.js';
 import {to_serializable} from '../../parser/index.js';
-import type {Validator} from '../index.js';
+import type {Validator} from '../Validator.js';
 import {ASTNode} from '../ASTNode.js';
 import {
 	type ASTNodeExpression,
