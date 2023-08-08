@@ -26,10 +26,7 @@ Type TypeValueOf(SemanticTypeTuple tupletype) :=
 		3. *If* `tupletype.isRef` is `false` *and* *UnwrapAffirm:* `IsReference(typedatum.type)`:
 			1. *Throw:* a new TypeError03.
 		4. Push `typedatum` to `data`.
-	3. *If* `tupletype.isRef` is `false`:
-		1. *Return:* a new Vect type containing the items in `data`.
-	4. *Else:*
-		1. *Return:* a new Tuple type containing the items in `data`.
+	3. *Return:* a new Tuple type containing the items in `data`.
 ;
 
 
@@ -45,10 +42,7 @@ Type TypeValueOf(SemanticTypeRecord recordtype) :=
 		3. *If* `recordtype.isRef` is `false` *and* *UnwrapAffirm:* `IsReference(typedatum.type)`:
 			1. *Throw:* a new TypeError03.
 		4. Set the property `propertytype.children.0.id` on `data` to the value `typedatum`.
-	3. *If* `recordtype.isRef` is `false`:
-		1. *Return:* a new Struct type containing the properties in `data`.
-	4. *Else:*
-		1. *Return:* a new Record type containing the properties in `data`.
+	3. *Return:* a new Record type containing the properties in `data`.
 ;
 
 
@@ -71,10 +65,7 @@ Type TypeValueOf(SemanticTypeList listtype) :=
 				optional= `false`,
 			] to `data`.
 			2. Increment `i`.
-		5. *If* `listtype.isRef` is `false`:
-			1. *Return:* a new Vect type containing the items in `data`.
-		6. *Else:*
-			1. *Return:* a new Tuple type containing the items in `data`.
+		5. *Return:* a new Tuple type containing the items in `data`.
 	5. *Else:*
 		1. *Return:* a new List type whose items’ type is `itemtype`.
 ;

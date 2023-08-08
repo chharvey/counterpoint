@@ -62,6 +62,6 @@ export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 				},
 			];
 		}));
-		return (!this.isRef) ? new TYPE.TypeStruct(entries) : new TYPE.TypeRecord(entries);
+		return new TYPE.TypeStruct(entries);
 	}
 }

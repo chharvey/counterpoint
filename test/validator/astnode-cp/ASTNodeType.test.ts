@@ -22,7 +22,7 @@ describe('ASTNodeType', () => {
 	describe('#eval', () => {
 		describe('ASTNodeTypeCollectionLiteral', () => {
 			describe('ASTNodeTypeTuple', () => {
-				it('returns a Type{Tuple,Vect}.', () => {
+				it('returns a TypeVect.', () => {
 					const expected = [
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: false},
@@ -34,15 +34,15 @@ describe('ASTNodeType', () => {
 							AST.ASTNodeTypeTuple.fromSource('\\[int, bool, ?:str]').eval(),
 						],
 						[
-							new TYPE.TypeTuple (expected),
-							new TYPE.TypeVect  (expected),
+							new TYPE.TypeVect(expected),
+							new TYPE.TypeVect(expected),
 						],
 					);
 				});
 			});
 
 			describe('ASTNodeTypeRecord', () => {
-				it('returns a Type{Record,Struct}.', () => {
+				it('returns a TypeStruct.', () => {
 					const expected = [
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: true},
@@ -56,7 +56,7 @@ describe('ASTNodeType', () => {
 							str.eval(),
 						],
 						[
-							new TYPE.TypeRecord(new Map<bigint, TypeEntry>(rec.children.map((c, i) => [c.key.id, expected[i]]))),
+							new TYPE.TypeStruct(new Map<bigint, TypeEntry>(rec.children.map((c, i) => [c.key.id, expected[i]]))),
 							new TYPE.TypeStruct(new Map<bigint, TypeEntry>(str.children.map((c, i) => [c.key.id, expected[i]]))),
 						],
 					);
@@ -70,7 +70,7 @@ describe('ASTNodeType', () => {
 						new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL)),
 					);
 				});
-				it('returns a Type{Tuple,Vect} if there is a count.', () => {
+				it('returns a TypeVect if there is a count.', () => {
 					const expected = [
 						TYPE.INT.union(TYPE.BOOL),
 						TYPE.INT.union(TYPE.BOOL),
@@ -82,8 +82,8 @@ describe('ASTNodeType', () => {
 							AST.ASTNodeTypeList.fromSource('(int | bool)\\[3]').eval(),
 						],
 						[
-							TYPE.TypeTuple .fromTypes(expected),
-							TYPE.TypeVect  .fromTypes(expected),
+							TYPE.TypeVect.fromTypes(expected),
+							TYPE.TypeVect.fromTypes(expected),
 						],
 					);
 				});
@@ -111,9 +111,9 @@ describe('ASTNodeType', () => {
 			it('throws if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					type val_type3 = \\[3.0];
-					type ref_type3 =   [3.0];
+					type val_type1 =   [1.0];
 					type val_type4 = \\[4.0];
-					type ref_type4 =   [4.0];
+					type val_type2 =   [2.0];
 
 					type A = \\[int, \\[1.0],      str];
 					type B =   [int, List.<float>, str];
@@ -121,9 +121,9 @@ describe('ASTNodeType', () => {
 					type D = \\[int, List.<float>, str]; %> TypeErrorUnexpectedRef
 
 					type E = \\[a: int, b: val_type3, c: str];
-					type F =   [a: int, b: ref_type3, c: str];
+					type F =   [a: int, b: val_type1, c: str];
 					type G =   [a: int, b: val_type4, c: str];
-					type H = \\[a: int, b: ref_type4, c: str]; %> TypeErrorUnexpectedRef
+					type H = \\[a: int, b: val_type2, c: str];
 
 					type I = \\[5.0]    \\[3];
 					type J = Set.<float>  [3];
@@ -137,7 +137,6 @@ describe('ASTNodeType', () => {
 						cons:   AggregateError,
 						errors: [
 							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `List.<float>`, but expected a value type.'},
-							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `[4.0]`, but expected a value type.'},
 							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `Set.<float>`, but expected a value type.'},
 						],
 					});

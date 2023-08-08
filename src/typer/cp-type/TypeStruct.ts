@@ -31,10 +31,6 @@ export class TypeStruct extends TypeCollectionKeyedStatic {
 		super(invariants, false, new Set([new OBJ.Struct()]));
 	}
 
-	public override get hasMutable(): boolean {
-		return false;
-	}
-
 	public override toString(): string {
 		return `\\${ super.toString() }`;
 	}

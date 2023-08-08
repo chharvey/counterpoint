@@ -32,10 +32,6 @@ export class TypeVect extends TypeCollectionIndexedStatic {
 		super(invariants, false, new Set([new OBJ.Vect()]));
 	}
 
-	public override get hasMutable(): boolean {
-		return false;
-	}
-
 	public override toString(): string {
 		return `\\${ super.toString() }`;
 	}

@@ -47,7 +47,7 @@ export class ASTNodeTypeList extends ASTNodeTypeCollectionLiteral {
 			return new TYPE.TypeList(itemstype);
 		} else if (this.count >= 0) {
 			const types: readonly TYPE.Type[] = [...new Array(Number(this.count))].map(() => itemstype);
-			return (!this.isRef) ? TYPE.TypeVect.fromTypes(types) : TYPE.TypeTuple.fromTypes(types);
+			return TYPE.TypeVect.fromTypes(types);
 		} else {
 			throw new TypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index);
 		}
