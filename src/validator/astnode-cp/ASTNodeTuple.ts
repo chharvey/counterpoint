@@ -58,7 +58,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 			}
 			return itemtype;
 		});
-		return (!this.isRef) ? TYPE.TypeVect.fromTypes(items) : TYPE.TypeTuple.fromTypes(items, this.isRef);
+		return TYPE.TypeVect.fromTypes(items);
 	}
 
 	@memoizeMethod

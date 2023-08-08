@@ -92,8 +92,6 @@ describe('ASTNodeCP', () => {
 			context('for property reassignment.', () => {
 				it('allows assignment directly on objects.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						[42].0                               = 42;
-						[i= 42].i                            = 42;
 						List.<int>([42]).0                   = 42;
 						Dict.<int>([i= 42]).i                = 42;
 						Set.<int>([42]).[43]                 = false;

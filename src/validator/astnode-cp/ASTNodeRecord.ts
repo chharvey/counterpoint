@@ -73,7 +73,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			}
 			return [c.key.id, valuetype];
 		}));
-		return (!this.isRef) ? TYPE.TypeStruct.fromTypes(props) : TYPE.TypeRecord.fromTypes(props, this.isRef);
+		return TYPE.TypeStruct.fromTypes(props);
 	}
 
 	@memoizeMethod
