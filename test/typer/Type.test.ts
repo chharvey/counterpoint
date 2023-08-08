@@ -491,9 +491,9 @@ describe('Type', () => {
 			it('Covariance for vects: `A <: B --> Vect.<A> <: Vect.<B>`.', () => {
 				assert.ok(TYPE.TypeVect.fromTypes([TYPE.INT, TYPE.FLOAT]).isSubtypeOf(TYPE.TypeVect.fromTypes([TYPE.INT.union(TYPE.NULL), TYPE.FLOAT.union(TYPE.NULL)])), '\\[int, float] <: \\[int?, float?]');
 			});
-			it('Tuple is never a subtype of Vect.', () => {
-				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.INT], false) .isSubtypeOf(TYPE.TypeVect.fromTypes([TYPE.INT])),         '[int] !<: int\\[]');
-				assert.ok(!TYPE.TypeTuple.fromTypes([TYPE.INT], true)  .isSubtypeOf(TYPE.TypeVect.fromTypes([TYPE.INT])), 'mutable [int] !<: int\\[]');
+			it('Tuple can be a subtype of Vect.', () => {
+				assert.ok(TYPE.TypeTuple.fromTypes([TYPE.INT], false) .isSubtypeOf(TYPE.TypeVect.fromTypes([TYPE.INT])),         '[int] <: int\\[]');
+				assert.ok(TYPE.TypeTuple.fromTypes([TYPE.INT], true)  .isSubtypeOf(TYPE.TypeVect.fromTypes([TYPE.INT])), 'mutable [int] <: int\\[]');
 			});
 			it('Vect is a subtype of non-mutable Tuple only.', () => {
 				assert.ok( TYPE.TypeVect.fromTypes([TYPE.INT]).isSubtypeOf(TYPE.TypeTuple.fromTypes([TYPE.INT], false)), '\\[int]  <:         [int]');
@@ -628,10 +628,10 @@ describe('Type', () => {
 					[0x101n, TYPE.FLOAT.union(TYPE.NULL)],
 				]))), '\\[a: int, b: float] <: \\[a: int?, b: float?]');
 			});
-			it('Record is never a subtype of Struct.', () => {
+			it('Record can be a subtype of Struct.', () => {
 				const arg = new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]);
-				assert.ok(!TYPE.TypeRecord.fromTypes(arg, false) .isSubtypeOf(TYPE.TypeStruct.fromTypes(arg)),         '[a: int] !<: \\[a: int]');
-				assert.ok(!TYPE.TypeRecord.fromTypes(arg, true)  .isSubtypeOf(TYPE.TypeStruct.fromTypes(arg)), 'mutable [a: int] !<: \\[a: int]');
+				assert.ok(TYPE.TypeRecord.fromTypes(arg, false) .isSubtypeOf(TYPE.TypeStruct.fromTypes(arg)),         '[a: int] <: \\[a: int]');
+				assert.ok(TYPE.TypeRecord.fromTypes(arg, true)  .isSubtypeOf(TYPE.TypeStruct.fromTypes(arg)), 'mutable [a: int] <: \\[a: int]');
 			});
 			it('Struct is a subtype of non-mutable Record only.', () => {
 				const arg = new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]);

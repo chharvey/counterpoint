@@ -4,7 +4,6 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
 import {TypeCollectionKeyedStatic} from './TypeCollectionKeyedStatic.js';
-import {TypeRecord} from './TypeRecord.js';
 
 
 
@@ -48,7 +47,7 @@ export class TypeStruct extends TypeCollectionKeyedStatic {
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			(t instanceof TypeStruct || t instanceof TypeRecord)
+			t instanceof TypeCollectionKeyedStatic
 			&& this.count[0] >= t.count[0]
 			&& !t.isMutable
 			&& [...t.invariants].every(([id, thattype]) => {

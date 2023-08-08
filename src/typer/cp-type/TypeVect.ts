@@ -5,7 +5,6 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {Type} from './Type.js';
 import {TypeCollectionIndexedStatic} from './TypeCollectionIndexedStatic.js';
-import {TypeTuple} from './TypeTuple.js';
 
 
 
@@ -49,7 +48,7 @@ export class TypeVect extends TypeCollectionIndexedStatic {
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			(t instanceof TypeVect || t instanceof TypeTuple)
+			t instanceof TypeCollectionIndexedStatic
 			&& this.count[0] >= t.count[0]
 			&& !t.isMutable
 			&& t.invariants.every((thattype, i) => {

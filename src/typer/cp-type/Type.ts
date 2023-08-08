@@ -173,10 +173,6 @@ export abstract class Type {
 				return t.isSupertypeOf(this);
 			}
 
-			if (this.isReference && !t.isReference) {
-				return false;
-			}
-
 			return method.call(this, t);
 		};
 	}

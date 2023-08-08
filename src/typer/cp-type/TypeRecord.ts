@@ -46,7 +46,7 @@ export class TypeRecord extends TypeCollectionKeyedStatic {
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeRecord
+			t instanceof TypeCollectionKeyedStatic
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)
 			&& [...t.invariants].every(([id, thattype]) => {

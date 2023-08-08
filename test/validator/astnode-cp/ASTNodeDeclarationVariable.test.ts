@@ -130,14 +130,14 @@ describe('ASTNodeDeclarationVariable', () => {
 					];
 				`);
 			});
-			it('disallows assigning a variable collection literal', () => {
+			it('allows assigning a variable collection literal (unboxing at runtime).', () => {
 				typeCheckGoal([
 					'let g: int\\[3] = [42, 420, 4200];',
 					`let h: \\[n42: int, n420: int] = [
 						n42=  42,
 						n420= 420,
 					];`,
-				], TypeErrorNotAssignable);
+				]);
 			});
 		});
 		context('assigning a collection literal to a wider mutable type.', () => {
