@@ -188,8 +188,8 @@ This list is not exhaustive, as Counterpoint Types may be created in any Counter
 
 
 ### Value Types and Reference Types
-Value types and reference types correspond to
-[value objects and reference objects](./intrinsics.md#value-objects-and-reference-objects) respectively.
+Value types and reference types correspond to [value objects](./intrinsics.md#value-objects)
+and [reference objects](./intrinsics.md#reference-objects) respectively.
 
 
 ### Simple Types
@@ -306,15 +306,15 @@ but it is not directly observable within any Counterpoint program.
 
 Though `String` objects are treated conceptually as lists, they are considered
 [primitive objects](./intrinsics.md#primitive-and-composite-objects) and
-[value objects](./intrinsics.md#value-objects-and-reference-objects).
+[value objects](./intrinsics.md#value-objects).
 They are primitives because the “items” of these lists are not directly observable —
 accessing an index of a string yields another string — and
 they are value objects because the string values themselves are copied when assigned
 (though the compiler may make any optimizations necessary).
 
 #### Object
-The **Object** type is the parent type of all Counterpoint Language Types.
-Every Counterpoint Language Value is an Object.
+The **Object** type contains all references to Counterpoint Language Values.
+All reference types and value types are subtypes of **Object**.
 Some specific built-in subtypes of Object are described in the [Intrinsics](./intrinsics.md) chapter.
 
 #### Unknown
