@@ -7,6 +7,10 @@ import {
 import {to_serializable} from '../../parser/index.js';
 import type {Validator} from '../index.js';
 import {ASTNode} from '../ASTNode.js';
+import {
+	type ASTNodeExpression,
+	ASTNodeCollectionLiteral,
+} from './index.js';
 
 
 
@@ -36,6 +40,52 @@ export abstract class ASTNodeCP extends ASTNode {
 			)
 		) {
 			throw new TypeError03(assigned_type, assignee_type, node);
+		}
+	}
+
+	/**
+	 * Type-check an expression to an assignee type.
+	 * Attempts to call {@link ASTNodeCP.typeCheckAssignment} first,
+	 * but if catching an error, attempts to assign entry-by-entry
+	 * if the assigned expression is a variable collection literal.
+	 *
+	 * We want to be able to assign collection literals to wider mutable types
+	 * so that we can mutate them with different values:
+	 * ```
+	 * let my_ints: mutable int{} = {42}; % <-- assignment should not fail
+	 * set my_ints[43] = true;
+	 * ```
+	 * However, we want this to not be the case for constant collections,
+	 * because they aren’t mutable:
+	 * ```
+	 * let vec: mutable [int] = \[42]; % <-- assignment should fail
+	 * ```
+	 *
+	 * @final
+	 * @param  assigned      the expression assigned
+	 * @param  assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
+	 * @param  node          the node where the assignment took place
+	 * @throws {TypeError03} if {@link ASTNodeCP.typeCheckAssignment} throws, and:
+	 *                       if the assigned expression is not a collection literal,
+	 *                       is not a reference object,
+	 *                       or is not entry-wise assignable
+	 */
+	public static assignExpression(
+		assigned:      ASTNodeExpression,
+		assignee_type: TYPE.Type,
+		node:          ASTNodeCP,
+	): void {
+		try {
+			return ASTNodeCP.typeCheckAssignment(
+				assigned.type(),
+				assignee_type,
+				node,
+				node.validator,
+			);
+		} catch (err) {
+			if (!(assigned instanceof ASTNodeCollectionLiteral && assigned.assignTo(assignee_type))) {
+				throw err;
+			}
 		}
 	}
 
