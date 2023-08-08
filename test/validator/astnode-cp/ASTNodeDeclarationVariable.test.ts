@@ -109,6 +109,11 @@ describe('ASTNodeDeclarationVariable', () => {
 					let t2_2: mutable [?: int]      = [i];
 					let t3_2: mutable [   42 | 4.3] = [42, "43"];
 					let t4_2: mutable [int, ?: str] = [42, "43"];
+
+					type U = mutable [int];
+					let inner1: [mutable [42 | 4.3]] = [[4.3]];
+					let inner2: [inner2: mutable T]  = [inner2= [43]];
+					let inner3: [inner3: U]          = [inner3= [43]];
 				`);
 				typeCheckGoal(`
 					let t: mutable [int, str] = [42];
