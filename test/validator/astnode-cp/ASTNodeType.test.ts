@@ -13,6 +13,7 @@ import {
 import {
 	typeUnitInt,
 	typeUnitFloat,
+	typeUnitStr,
 } from '../../helpers.js';
 import {assertAssignable} from '../../assert-helpers.js';
 
@@ -157,23 +158,33 @@ describe('ASTNodeType', () => {
 					'true',
 					'42',
 					'4.2e+3',
+					'"hi"',
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
 					OBJ.Boolean.FALSETYPE,
 					OBJ.Boolean.TRUETYPE,
 					typeUnitInt(42n),
 					typeUnitFloat(4.2e+3),
+					typeUnitStr('hi'),
 				]);
 			});
 			it('computes the value of keyword type.', () => {
 				assert.deepStrictEqual([
+					'never',
+					'void',
 					'bool',
 					'int',
 					'float',
+					'str',
+					'unknown',
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
+					TYPE.NEVER,
+					TYPE.VOID,
 					TYPE.BOOL,
 					TYPE.INT,
 					TYPE.FLOAT,
+					TYPE.STR,
+					TYPE.UNKNOWN,
 				]);
 			});
 		});

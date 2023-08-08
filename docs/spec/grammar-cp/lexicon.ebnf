@@ -44,11 +44,13 @@ Punctuator :::=
 
 
 KeywordType :::=
+	| "never"
 	| "void"
 	| "bool"
 	| "int"
 	| "float"
 	| "str"
+	| "unknown"
 ;
 
 KeywordValue :::=
