@@ -73,12 +73,11 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
 		if (assignee instanceof TYPE.TypeMap) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant_{ant,con}`
-			return xjs.Array.forEachAggregated(this.children, (case_) => xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => ASTNodeCP.typeCheckAssignment(
-				expr.type(),
-				[assignee.invariant_ant, assignee.invariant_con][i],
-				expr,
-				this.validator,
-			)));
+			return xjs.Array.forEachAggregated(this.children, (case_) => (
+				xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => (
+					ASTNodeCP.assignExpression(expr, [assignee.invariant_ant, assignee.invariant_con][i], expr)
+				))
+			));
 		}
 		throw err;
 	}
