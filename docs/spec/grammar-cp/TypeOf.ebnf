@@ -86,7 +86,7 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
-	4. *Let* `base_type` be *Unwrap:* `CombineTuplesOrRecords(TypeOf(base))`.
+	4. *Let* `base_type` be *Unwrap:* `CombineTuplesOrRecords(*Unwrap:* TypeOf(base))`.
 	5. *If* `access.kind` is `OPTIONAL`:
 		1. *If* *UnwrapAffirm:* `Subtype(base_type, Null)`:
 			1. *Return:* `base_type`.

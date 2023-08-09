@@ -444,7 +444,7 @@ Combines an intersection or union of tuples or records for the purposes of type-
 ```
 Type CombineTuplesOrRecords(Type t) :=
 	1. *If* `t` is the intersection of some types `a` and `b`:
-		1. *If* `Subtype(a, Tuple)` *and* `Subtype(b, Tuple)`:
+		1. *If* `a` is a Tuple type *and* `b` is a Tuple type:
 			1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
 			2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
 			3. *Let* `data` be a copy of `seq_a`.
@@ -462,7 +462,7 @@ Type CombineTuplesOrRecords(Type t) :=
 					1. *Set* `data[i]` to `seq_b[i]`.
 			5. *Assert:* In `data`, all optional items follow all required items.
 			6. *Return:* a subtype of `Tuple` whose items are `data`.
-		2. *If* `Subtype(a, Record)` *and* `Subtype(b, Record)`:
+		2. *If* `a` is a Record type *and* `b` is a Record type:
 			1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
 			2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
 			3. *Let* `data` be a copy of `struct_a`.
@@ -480,7 +480,7 @@ Type CombineTuplesOrRecords(Type t) :=
 					1. *Set* `data[k]` to `struct_b[k]`.
 			5. *Return:* a subtype of `Record` whose properties are `data`.
 	2. *If* `t` is the union of some types `a` and `b`:
-		1. *If* `Subtype(a, Tuple)` *and* `Subtype(b, Tuple)`:
+		1. *If* `a` is a Tuple type *and* `b` is a Tuple type:
 			1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
 			2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
 			3. *Let* `data` be a new Sequence.
@@ -496,7 +496,7 @@ Type CombineTuplesOrRecords(Type t) :=
 					].
 			5. *Assert:* In `data`, all optional items follow all required items.
 			6. *Return:* a subtype of `Tuple` whose items are `data`.
-		2. *If* `Subtype(a, Record)` *and* `Subtype(b, Record)`:
+		2. *If* `a` is a Record type *and* `b` is a Record type:
 			1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
 			2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
 			3. *Let* `data` be a new Structure.

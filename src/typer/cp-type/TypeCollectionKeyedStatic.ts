@@ -9,6 +9,7 @@ import type {
 } from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
 import type * as OBJ from '../cp-object/index.js';
+import {TypeStruct} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
 
@@ -68,5 +69,39 @@ export class TypeCollectionKeyedStatic extends Type {
 	/** @final */
 	public valueTypes(): Type {
 		return Type.unionAll([...this.invariants.values()].map((t) => t.type));
+	}
+
+	/**
+	 * When accessing the *intersection* of types `S` and `T`,
+	 * the set of properties available is the *union* of the set of properties on `S` with the set of properties on `T`.
+	 * For any overlapping properties, their type intersection is taken.
+	 */
+	public intersectWithRecord(t: TypeStruct): TypeStruct {
+		const props = new Map<bigint, TypeEntry>([...this.invariants]);
+		[...t.invariants].forEach(([id, typ]) => {
+			props.set(id, this.invariants.has(id) ? {
+				type:     this.invariants.get(id)!.type.intersect(typ.type),
+				optional: this.invariants.get(id)!.optional && typ.optional,
+			} : typ);
+		});
+		return new TypeStruct(props);
+	}
+
+	/**
+	 * When accessing the *union* of types `S` and `T`,
+	 * the set of properties available is the *intersection* of the set of properties on `S` with the set of properties on `T`.
+	 * For any overlapping properties, their type union is taken.
+	 */
+	public unionWithRecord(t: TypeStruct): TypeStruct {
+		const props = new Map<bigint, TypeEntry>();
+		[...t.invariants].forEach(([id, typ]) => {
+			if (this.invariants.has(id)) {
+				props.set(id, {
+					type:     this.invariants.get(id)!.type.union(typ.type),
+					optional: this.invariants.get(id)!.optional || typ.optional,
+				});
+			}
+		});
+		return new TypeStruct(props);
 	}
 }

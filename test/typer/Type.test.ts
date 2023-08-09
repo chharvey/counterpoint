@@ -847,14 +847,14 @@ describe('Type', () => {
 		describe('#combineTuplesOrRecords', () => {
 			context('with tuple operands.', () => {
 				it('takes the union of indices of constituent types.', () => {
-					assert.ok(TYPE.TypeTuple.fromTypes([
+					assert.ok(TYPE.TypeVect.fromTypes([
 						TYPE.OBJ,
 						TYPE.NULL,
 						TYPE.BOOL,
-					]).intersectWithTuple(TYPE.TypeTuple.fromTypes([
+					]).intersectWithTuple(TYPE.TypeVect.fromTypes([
 						TYPE.OBJ,
 						TYPE.INT,
-					])).equals(TYPE.TypeTuple.fromTypes([
+					])).equals(TYPE.TypeVect.fromTypes([
 						TYPE.OBJ,
 						TYPE.NULL.intersect(TYPE.INT),
 						TYPE.BOOL,
@@ -865,15 +865,15 @@ describe('Type', () => {
 					`);
 				});
 				it('takes the conjunction of optionality.', () => {
-					assert.ok(new TYPE.TypeTuple([
+					assert.ok(new TYPE.TypeVect([
 						{type: TYPE.OBJ,  optional: false},
 						{type: TYPE.NULL, optional: true},
 						{type: TYPE.BOOL, optional: true},
-					]).intersectWithTuple(new TYPE.TypeTuple([
+					]).intersectWithTuple(new TYPE.TypeVect([
 						{type: TYPE.OBJ,   optional: false},
 						{type: TYPE.INT,   optional: false},
 						{type: TYPE.FLOAT, optional: true},
-					])).equals(new TYPE.TypeTuple([
+					])).equals(new TYPE.TypeVect([
 						{type: TYPE.OBJ,                        optional: false},
 						{type: TYPE.NULL.intersect(TYPE.INT),   optional: false},
 						{type: TYPE.BOOL.intersect(TYPE.FLOAT), optional: true},
@@ -887,15 +887,15 @@ describe('Type', () => {
 			context('with record operands.', () => {
 				it('takes the union of properties of constituent types.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-					assert.ok(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+					assert.ok(TYPE.TypeStruct.fromTypes(new Map<bigint, TYPE.Type>([
 						[foo, TYPE.OBJ],
 						[bar, TYPE.NULL],
 						[qux, TYPE.BOOL],
-					])).intersectWithRecord(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+					])).intersectWithRecord(TYPE.TypeStruct.fromTypes(new Map<bigint, TYPE.Type>([
 						[foo, TYPE.OBJ],
 						[diz, TYPE.INT],
 						[qux, TYPE.STR],
-					]))).equals(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+					]))).equals(TYPE.TypeStruct.fromTypes(new Map<bigint, TYPE.Type>([
 						[foo, TYPE.OBJ],
 						[bar, TYPE.NULL],
 						[qux, TYPE.BOOL.intersect(TYPE.STR)],
@@ -908,15 +908,15 @@ describe('Type', () => {
 				});
 				it('takes the conjunction of optionality.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-					assert.ok(new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
+					assert.ok(new TYPE.TypeStruct(new Map<bigint, TypeEntry>([
 						[foo, {type: TYPE.OBJ,  optional: false}],
 						[bar, {type: TYPE.NULL, optional: true}],
 						[qux, {type: TYPE.BOOL, optional: true}],
-					])).intersectWithRecord(new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
+					])).intersectWithRecord(new TYPE.TypeStruct(new Map<bigint, TypeEntry>([
 						[foo, {type: TYPE.OBJ, optional: false}],
 						[diz, {type: TYPE.INT, optional: true}],
 						[qux, {type: TYPE.STR, optional: false}],
-					]))).equals(new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
+					]))).equals(new TYPE.TypeStruct(new Map<bigint, TypeEntry>([
 						[foo, {type: TYPE.OBJ,                      optional: false}],
 						[bar, {type: TYPE.NULL,                     optional: true}],
 						[qux, {type: TYPE.BOOL.intersect(TYPE.STR), optional: false}],
@@ -936,14 +936,14 @@ describe('Type', () => {
 		describe('#combineTuplesOrRecords', () => {
 			context('with tuple operands.', () => {
 				it('takes the intersection of indices of constituent types.', () => {
-					assert.ok(TYPE.TypeTuple.fromTypes([
+					assert.ok(TYPE.TypeVect.fromTypes([
 						TYPE.OBJ,
 						TYPE.NULL,
 						TYPE.BOOL,
-					]).unionWithTuple(TYPE.TypeTuple.fromTypes([
+					]).unionWithTuple(TYPE.TypeVect.fromTypes([
 						TYPE.OBJ,
 						TYPE.INT,
-					])).equals(TYPE.TypeTuple.fromTypes([
+					])).equals(TYPE.TypeVect.fromTypes([
 						TYPE.OBJ,
 						TYPE.NULL.union(TYPE.INT),
 					])), `
@@ -953,15 +953,15 @@ describe('Type', () => {
 					`);
 				});
 				it('takes the disjunction of optionality.', () => {
-					assert.ok(new TYPE.TypeTuple([
+					assert.ok(new TYPE.TypeVect([
 						{type: TYPE.OBJ,  optional: false},
 						{type: TYPE.NULL, optional: true},
 						{type: TYPE.BOOL, optional: true},
-					]).unionWithTuple(new TYPE.TypeTuple([
+					]).unionWithTuple(new TYPE.TypeVect([
 						{type: TYPE.OBJ,   optional: false},
 						{type: TYPE.INT,   optional: false},
 						{type: TYPE.FLOAT, optional: true},
-					])).equals(new TYPE.TypeTuple([
+					])).equals(new TYPE.TypeVect([
 						{type: TYPE.OBJ,                    optional: false},
 						{type: TYPE.NULL.union(TYPE.INT),   optional: true},
 						{type: TYPE.BOOL.union(TYPE.FLOAT), optional: true},
@@ -972,17 +972,17 @@ describe('Type', () => {
 					`);
 				});
 				it('some value assignable to combo type might not be assignable to union.', () => {
-					const left: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([
+					const left: TYPE.TypeVect = TYPE.TypeVect.fromTypes([
 						TYPE.BOOL,
 						TYPE.INT,
 					]);
-					const right: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([
+					const right: TYPE.TypeVect = TYPE.TypeVect.fromTypes([
 						TYPE.INT,
 						TYPE.BOOL,
 					]);
 					const union: TYPE.Type = left.union(right);
 					assert_instanceof(union, TYPE.TypeUnion);
-					const v = new OBJ.Tuple<OBJ.Boolean>([OBJ.Boolean.TRUE, OBJ.Boolean.TRUE]);
+					const v = new OBJ.Vect<OBJ.Boolean>([OBJ.Boolean.TRUE, OBJ.Boolean.TRUE]);
 					assert.ok(union.combineTuplesOrRecords().includes(v), `
 						let x: [bool | int, int | bool] = [true, true]; % ok
 					`);
@@ -994,15 +994,15 @@ describe('Type', () => {
 			context('with record operands.', () => {
 				it('takes the intersection of properties of constituent types.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-					assert.ok(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+					assert.ok(TYPE.TypeStruct.fromTypes(new Map<bigint, TYPE.Type>([
 						[foo, TYPE.OBJ],
 						[bar, TYPE.NULL],
 						[qux, TYPE.BOOL],
-					])).unionWithRecord(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+					])).unionWithRecord(TYPE.TypeStruct.fromTypes(new Map<bigint, TYPE.Type>([
 						[foo, TYPE.OBJ],
 						[diz, TYPE.INT],
 						[qux, TYPE.STR],
-					]))).equals(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+					]))).equals(TYPE.TypeStruct.fromTypes(new Map<bigint, TYPE.Type>([
 						[foo, TYPE.OBJ],
 						[qux, TYPE.BOOL.union(TYPE.STR)],
 					]))), `
@@ -1013,15 +1013,15 @@ describe('Type', () => {
 				});
 				it('takes the disjunction of optionality.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-					assert.ok(new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
+					assert.ok(new TYPE.TypeStruct(new Map<bigint, TypeEntry>([
 						[foo, {type: TYPE.OBJ,  optional: false}],
 						[bar, {type: TYPE.NULL, optional: true}],
 						[qux, {type: TYPE.BOOL, optional: true}],
-					])).unionWithRecord(new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
+					])).unionWithRecord(new TYPE.TypeStruct(new Map<bigint, TypeEntry>([
 						[foo, {type: TYPE.OBJ, optional: false}],
 						[diz, {type: TYPE.INT, optional: true}],
 						[qux, {type: TYPE.STR, optional: false}],
-					]))).equals(new TYPE.TypeRecord(new Map<bigint, TypeEntry>([
+					]))).equals(new TYPE.TypeStruct(new Map<bigint, TypeEntry>([
 						[foo, {type: TYPE.OBJ,                  optional: false}],
 						[qux, {type: TYPE.BOOL.union(TYPE.STR), optional: true}],
 					]))), `
@@ -1031,19 +1031,19 @@ describe('Type', () => {
 					`);
 				});
 				it('some value assignable to combo type might not be assignable to union.', () => {
-					const left: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+					const left: TYPE.TypeStruct = TYPE.TypeStruct.fromTypes(new Map<bigint, TYPE.Type>([
 						[0x100n, TYPE.BOOL],
 						[0x101n, TYPE.INT],
 						[0x102n, TYPE.STR],
 					]));
-					const right: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+					const right: TYPE.TypeStruct = TYPE.TypeStruct.fromTypes(new Map<bigint, TYPE.Type>([
 						[0x103n, TYPE.STR],
 						[0x100n, TYPE.INT],
 						[0x101n, TYPE.BOOL],
 					]));
 					const union: TYPE.Type = left.union(right);
 					assert_instanceof(union, TYPE.TypeUnion);
-					const v = new OBJ.Record<OBJ.Boolean>(new Map<bigint, OBJ.Boolean>([
+					const v = new OBJ.Struct<OBJ.Boolean>(new Map<bigint, OBJ.Boolean>([
 						[0x100n, OBJ.Boolean.TRUE],
 						[0x101n, OBJ.Boolean.TRUE],
 					]));

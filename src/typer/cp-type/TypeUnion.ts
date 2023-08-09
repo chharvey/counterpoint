@@ -3,8 +3,8 @@ import {strictEqual} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
 import {
-	TypeTuple,
-	TypeRecord,
+	TypeCollectionIndexedStatic,
+	TypeCollectionKeyedStatic,
 } from './index.js';
 import {Type} from './Type.js';
 
@@ -91,8 +91,8 @@ export class TypeUnion extends Type {
 
 	public combineTuplesOrRecords(): Type {
 		return (
-			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? this.left.unionWithTuple(this.right)  :
-			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? this.left.unionWithRecord(this.right) :
+			(this.left instanceof TypeCollectionIndexedStatic && this.right instanceof TypeCollectionIndexedStatic) ? this.left.unionWithTuple(this.right)  :
+			(this.left instanceof TypeCollectionKeyedStatic   && this.right instanceof TypeCollectionKeyedStatic)   ? this.left.unionWithRecord(this.right) :
 			this
 		);
 	}
