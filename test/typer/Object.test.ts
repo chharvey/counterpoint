@@ -6,61 +6,8 @@ import {OBJ} from '../../src/index.js';
 describe('Object', () => {
 	describe('#identical', () => {
 		describe('Tuple', () => {
-			it('different Tuples are not identical even if they have the same items.', () => {
-				const t = new OBJ.Tuple<OBJ.String>([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
-				]);
-				assert.ok(t.identical(t), 't === t');
-				assert.ok(!t.identical(new OBJ.Tuple<OBJ.String>([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
-				])), 't !== [earth, wind, fire]');
-				assert.ok(!t.identical(new OBJ.Vect<OBJ.String>([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
-				])), 't !== \\[earth, wind, fire]');
-			});
-		});
-
-		describe('Record', () => {
-			it('different Records are not identical even if they have the same properties.', () => {
-				const r = new OBJ.Record<OBJ.String>(new Map<bigint, OBJ.String>([
-					[0x100n, new OBJ.String('earth')],
-					[0x101n, new OBJ.String('wind')],
-					[0x102n, new OBJ.String('fire')],
-				]));
-				assert.ok(r.identical(r), 'r === r');
-				assert.ok(!r.identical(new OBJ.Record<OBJ.String>(new Map<bigint, OBJ.String>([
-					[0x100n, new OBJ.String('earth')],
-					[0x101n, new OBJ.String('wind')],
-					[0x102n, new OBJ.String('fire')],
-				]))), 'r !== [a= earth, b= wind, c= fire]');
-				assert.ok(!r.identical(new OBJ.Struct<OBJ.String>(new Map<bigint, OBJ.String>([
-					[0x100n, new OBJ.String('earth')],
-					[0x101n, new OBJ.String('wind')],
-					[0x102n, new OBJ.String('fire')],
-				]))), 'r !== \\[a= earth, b= wind, c= fire]');
-			});
-		});
-
-		describe('Vect', () => {
-			it('equal Vects are identical.', () => {
-				assert.ok(new OBJ.Vect<OBJ.String>([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
-				]).identical(new OBJ.Vect<OBJ.String>([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
-				])), '\\[earth, wind, fire] === \\[earth, wind, fire]');
-			});
-			it('Vectors are not identical to Tuples even if they have the same items.', () => {
-				assert.ok(!new OBJ.Vect<OBJ.String>([
+			it('Tuples with the same items are identical.', () => {
+				assert.ok(new OBJ.Tuple<OBJ.String>([
 					new OBJ.String('earth'),
 					new OBJ.String('wind'),
 					new OBJ.String('fire'),
@@ -68,24 +15,13 @@ describe('Object', () => {
 					new OBJ.String('earth'),
 					new OBJ.String('wind'),
 					new OBJ.String('fire'),
-				])), '\\[earth, wind, fire] !== [earth, wind, fire]');
+				])), '\\[earth, wind, fire] === \\[earth, wind, fire]');
 			});
 		});
 
-		describe('Struct', () => {
-			it('equal Structs are identical.', () => {
-				assert.ok(new OBJ.Struct<OBJ.String>(new Map<bigint, OBJ.String>([
-					[0x100n, new OBJ.String('earth')],
-					[0x101n, new OBJ.String('wind')],
-					[0x102n, new OBJ.String('fire')],
-				])).identical(new OBJ.Struct<OBJ.String>(new Map<bigint, OBJ.String>([
-					[0x100n, new OBJ.String('earth')],
-					[0x101n, new OBJ.String('wind')],
-					[0x102n, new OBJ.String('fire')],
-				]))), '\\[a= earth, b= wind, c= fire] === \\[a= earth, b= wind, c= fire]');
-			});
-			it('Structs are not identical to Records even if they have the same properties.', () => {
-				assert.ok(!new OBJ.Struct<OBJ.String>(new Map<bigint, OBJ.String>([
+		describe('Record', () => {
+			it('Records with the same itesm are identical.', () => {
+				assert.ok(new OBJ.Record<OBJ.String>(new Map<bigint, OBJ.String>([
 					[0x100n, new OBJ.String('earth')],
 					[0x101n, new OBJ.String('wind')],
 					[0x102n, new OBJ.String('fire')],
@@ -93,7 +29,7 @@ describe('Object', () => {
 					[0x100n, new OBJ.String('earth')],
 					[0x101n, new OBJ.String('wind')],
 					[0x102n, new OBJ.String('fire')],
-				]))), '\\[a= earth, b= wind, c= fire] !== [a= earth, b= wind, c= fire]');
+				]))), '\\[a= earth, b= wind, c= fire] === \\[a= earth, b= wind, c= fire]');
 			});
 		});
 	});
@@ -112,7 +48,7 @@ describe('Object', () => {
 					new OBJ.String('wind'),
 					new OBJ.String('fire'),
 				])), 't == [earth, wind, fire]');
-				assert.ok(t.equal(new OBJ.Vect<OBJ.String>([
+				assert.ok(t.equal(new OBJ.Tuple<OBJ.String>([
 					new OBJ.String('earth'),
 					new OBJ.String('wind'),
 					new OBJ.String('fire'),
@@ -132,7 +68,7 @@ describe('Object', () => {
 					[0x101n, new OBJ.String('wind')],
 					[0x102n, new OBJ.String('fire')],
 				]))), 'r == [a= earth, b= wind, c= fire]');
-				assert.ok(r.equal(new OBJ.Struct<OBJ.String>(new Map<bigint, OBJ.String>([
+				assert.ok(r.equal(new OBJ.Record<OBJ.String>(new Map<bigint, OBJ.String>([
 					[0x100n, new OBJ.String('earth')],
 					[0x101n, new OBJ.String('wind')],
 					[0x102n, new OBJ.String('fire')],

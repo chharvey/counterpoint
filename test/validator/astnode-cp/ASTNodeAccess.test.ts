@@ -741,15 +741,15 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1 = new OBJ.Vect([OBJ.Boolean.TRUE]);
-				const prop2 = new OBJ.Vect();
+				const prop1 = new OBJ.Tuple([OBJ.Boolean.TRUE]);
+				const prop2 = new OBJ.Tuple();
 				assert.deepStrictEqual(
 					program.children.slice(2, 7).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.Struct(new Map([[0x101n, prop1]])),
+						new OBJ.Record(new Map([[0x101n, prop1]])),
 						prop1,
 						OBJ.Boolean.TRUE,
-						new OBJ.Struct(new Map([[0x101n, prop2]])),
+						new OBJ.Record(new Map([[0x101n, prop2]])),
 						prop2,
 					],
 				);

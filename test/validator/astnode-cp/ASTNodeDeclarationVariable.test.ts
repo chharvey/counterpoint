@@ -98,7 +98,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			];
 			assert.deepStrictEqual(
 				[immut.source, immut.value],
-				['immut',      new OBJ.Vect<OBJ.Integer>([
+				['immut',      new OBJ.Tuple<OBJ.Integer>([
 					new OBJ.Integer(  42n),
 					new OBJ.Integer( 420n),
 					new OBJ.Integer(4200n),

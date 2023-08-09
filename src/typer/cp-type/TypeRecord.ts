@@ -38,7 +38,7 @@ export class TypeRecord extends Type {
 	 * @param invariants a map of this type’s property ids along with their associated types
 	 */
 	public constructor(public readonly invariants: ReadonlyMap<bigint, TypeEntry> = new Map()) {
-		super(false, new Set([new OBJ.Record(), new OBJ.Struct()]));
+		super(false, new Set([new OBJ.Record()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -61,7 +61,7 @@ export class TypeRecord extends Type {
 	}
 
 	public override includes(v: OBJ.Object): boolean {
-		return (v instanceof OBJ.Record || v instanceof OBJ.Struct) && v.toType().isSubtypeOf(this);
+		return v instanceof OBJ.Record && v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual

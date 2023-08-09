@@ -23,21 +23,21 @@ String! ValueOf(SemanticTemplate tpl) :=
 
 
 
-Vect! ValueOf(SemanticTuple tuple) :=
+Tuple! ValueOf(SemanticTuple tuple) :=
 	1. *Let* `data` be a mapping of `tuple` for each `it` to *Unwrap:* `ValueOf(it)`.
-	2. *Return:* a new Vect containing the items in `data`.
+	2. *Return:* a new Tuple containing the items in `data`.
 ;
 
 
 
-Struct! ValueOf(SemanticRecord record) :=
+Record! ValueOf(SemanticRecord record) :=
 	1. *Let* `data` be a new Structure.
 	2. *For each* `property` in `record`:
 		1. Set `data` to a new Structure [
 			...data,
 			`property.children.0.id`= *Unwrap:* `ValueOf(property.children.1)`,
 		].
-	3. *Return:* a new Struct containing the properties in `data`.
+	3. *Return:* a new Record containing the properties in `data`.
 ;
 
 

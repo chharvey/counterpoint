@@ -39,7 +39,7 @@ export class TypeTuple extends Type {
 	 * @param invariants this type’s item types
 	 */
 	public constructor(public readonly invariants: readonly TypeEntry[] = []) {
-		super(false, new Set([new OBJ.Tuple(), new OBJ.Vect()]));
+		super(false, new Set([new OBJ.Tuple()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -62,7 +62,7 @@ export class TypeTuple extends Type {
 	}
 
 	public override includes(v: OBJ.Object): boolean {
-		return (v instanceof OBJ.Tuple || v instanceof OBJ.Vect) && v.toType().isSubtypeOf(this);
+		return v instanceof OBJ.Tuple && v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual

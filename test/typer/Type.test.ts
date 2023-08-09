@@ -855,7 +855,7 @@ describe('Type', () => {
 					]);
 					const union: TYPE.Type = left.union(right);
 					assert_instanceof(union, TYPE.TypeUnion);
-					const v = new OBJ.Vect<OBJ.Boolean>([OBJ.Boolean.TRUE, OBJ.Boolean.TRUE]);
+					const v = new OBJ.Tuple<OBJ.Boolean>([OBJ.Boolean.TRUE, OBJ.Boolean.TRUE]);
 					assert.ok(union.combineTuplesOrRecords().includes(v), `
 						let x: [bool | int, int | bool] = [true, true]; % ok
 					`);
@@ -916,7 +916,7 @@ describe('Type', () => {
 					]));
 					const union: TYPE.Type = left.union(right);
 					assert_instanceof(union, TYPE.TypeUnion);
-					const v = new OBJ.Struct<OBJ.Boolean>(new Map<bigint, OBJ.Boolean>([
+					const v = new OBJ.Record<OBJ.Boolean>(new Map<bigint, OBJ.Boolean>([
 						[0x100n, OBJ.Boolean.TRUE],
 						[0x101n, OBJ.Boolean.TRUE],
 					]));
