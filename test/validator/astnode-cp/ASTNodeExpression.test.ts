@@ -485,8 +485,20 @@ describe('ASTNodeExpression', () => {
 					[
 						AST.ASTNodeTuple  .fromSource('\\[   1,    2.0,    "three"];'),
 						AST.ASTNodeRecord .fromSource('\\[a= 1, b= 2.0, c= "three"];'),
+						AST.ASTNodeTuple  .fromSource('  [   1,    2.0,    "three"];'),
+						AST.ASTNodeRecord .fromSource('  [a= 1, b= 2.0, c= "three"];'),
 					].map((c) => c.fold()),
 					[
+						new OBJ.Vect([
+							new OBJ.Integer(1n),
+							new OBJ.Float(2.0),
+							new OBJ.String('three'),
+						]),
+						new OBJ.Struct(new Map<bigint, OBJ.Object>([
+							[0x100n, new OBJ.Integer(1n)],
+							[0x101n, new OBJ.Float(2.0)],
+							[0x102n, new OBJ.String('three')],
+						])),
 						new OBJ.Vect([
 							new OBJ.Integer(1n),
 							new OBJ.Float(2.0),
@@ -500,11 +512,9 @@ describe('ASTNodeExpression', () => {
 					],
 				);
 			});
-			it('returns a constant Tuple/Record/Set/Map for foldable entries.', () => {
+			it('returns a constant Set/Map for foldable entries.', () => {
 				assert.deepStrictEqual(
 					[
-						AST.ASTNodeTuple.fromSource('[1, 2.0, "three"];'),
-						AST.ASTNodeRecord.fromSource('[a= 1, b= 2.0, c= "three"];'),
 						AST.ASTNodeSet.fromSource('{1, 2.0, "three"};'),
 						AST.ASTNodeMap.fromSource(`
 							{
@@ -515,16 +525,6 @@ describe('ASTNodeExpression', () => {
 						`),
 					].map((c) => c.fold()),
 					[
-						new OBJ.Tuple([
-							new OBJ.Integer(1n),
-							new OBJ.Float(2.0),
-							new OBJ.String('three'),
-						]),
-						new OBJ.Record(new Map<bigint, OBJ.Object>([
-							[0x100n, new OBJ.Integer(1n)],
-							[0x101n, new OBJ.Float(2.0)],
-							[0x102n, new OBJ.String('three')],
-						])),
 						new OBJ.Set(new Set([
 							new OBJ.Integer(1n),
 							new OBJ.Float(2.0),

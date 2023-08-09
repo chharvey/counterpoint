@@ -610,11 +610,11 @@ describe('ASTNodeOperation', () => {
 					let jj: Object = \\[\\[42]];
 					let kk: Object = \\[x= \\[42]];
 
-					a !== [];
-					b !== [42];
-					b !== j;
-					c !== [x= 42];
-					c !== k;
+					a === [];
+					b === [42];
+					b === j;
+					c === [x= 42];
+					c === k;
 					d !== List.<int>([]);
 					e !== List.<int>([42]);
 					f !== Dict.<int>([x= 42]);
@@ -622,9 +622,9 @@ describe('ASTNodeOperation', () => {
 					h !== {42};
 					i !== {41 -> 42};
 					j === \\[42];
-					j !== b;
+					j === b;
 					k === \\[x= 42];
-					k !== c;
+					k === c;
 					a === a;
 					b === b;
 					c === c;
@@ -652,8 +652,8 @@ describe('ASTNodeOperation', () => {
 					k == \\[x= 42];
 					k == c;
 
-					bb !== [[42]];
-					cc !== [x= [42]];
+					bb === [[42]];
+					cc === [x= [42]];
 					hh !== {[42]};
 					ii !== {[41] -> [42]};
 					jj === \\[\\[42]];

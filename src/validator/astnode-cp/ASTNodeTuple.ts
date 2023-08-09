@@ -66,9 +66,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		const items: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
 		return (items.includes(null))
 			? null
-			: !this.isRef
-				? new OBJ.Vect(items as OBJ.Object[])
-				: new OBJ.Tuple(items as OBJ.Object[]);
+			: new OBJ.Vect(items as OBJ.Object[]);
 	}
 
 	@ASTNodeCollectionLiteral.assignToDeco

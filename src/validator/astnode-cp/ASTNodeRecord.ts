@@ -84,9 +84,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
-			: !this.isRef
-				? new OBJ.Struct(properties as ReadonlyMap<bigint, OBJ.Object>)
-				: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
+			: new OBJ.Struct(properties as ReadonlyMap<bigint, OBJ.Object>);
 	}
 
 	@ASTNodeCollectionLiteral.assignToDeco
