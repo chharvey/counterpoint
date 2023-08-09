@@ -21,9 +21,9 @@ export class Vect<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 
 	/**
 	 * @inheritdoc
-	 * Returns a TypeVect whose entries are the types of this Vect’s items.
+	 * Returns a TypeTuple whose entries are the types of this Vect’s items.
 	 */
-	public override toType(): TYPE.TypeVect {
-		return TYPE.TypeVect.fromTypes(this.items.map((it) => it.toType()));
+	public override toType(): TYPE.TypeTuple {
+		return TYPE.TypeTuple.fromTypes(this.items.map((it) => it.toType()));
 	}
 }

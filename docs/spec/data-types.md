@@ -426,7 +426,7 @@ Boolean IsReference(Type t) :=
 	4. *Set* `valuetypes` to a reduction of `valuetypes` for each `a` and `b` to *UnwrapAffirm:* `Union(a, b)`.
 	5. *If* *UnwrapAffirm:* `Subtype(t, valuetypes)`:
 		1. *Return:* `false`.
-	6. *If* `t` is a Vect or Struct type:
+	6. *If* `t` is a Tuple or Record type:
 		1. *Return:* `false`.
 	7. *If* `t` is a Union of some types `a` and `b`:
 		1. *If* *UnwrapAffirm:* `IsReference(a)` is `true` *or* *UnwrapAffirm:* `IsReference(b)` is `true`:
@@ -560,7 +560,7 @@ Boolean Subtype(Type a, Type b) :=
 		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
 			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
 			1. *Return:* `true`.
-	10. *If* `a` is a Tuple or Vect type *and* `b` is a Tuple or Vect type:
+	10. *If* `a` is a Tuple type *and* `b` is a Tuple type:
 		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
 		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
@@ -579,7 +579,7 @@ Boolean Subtype(Type a, Type b) :=
 				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
 					1. *Return:* `false`.
 		9. *Return:* `true`.
-	11. *If* `a` is a Record or Struct type *and* `b` is a Record or Struct type:
+	11. *If* `a` is a Record type *and* `b` is a Record type:
 		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
 		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.

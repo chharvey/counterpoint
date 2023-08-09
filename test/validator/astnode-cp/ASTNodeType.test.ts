@@ -22,7 +22,7 @@ describe('ASTNodeType', () => {
 	describe('#eval', () => {
 		describe('ASTNodeTypeCollectionLiteral', () => {
 			describe('ASTNodeTypeTuple', () => {
-				it('returns a TypeVect.', () => {
+				it('returns a TypeTuple.', () => {
 					const expected = [
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: false},
@@ -34,15 +34,15 @@ describe('ASTNodeType', () => {
 							AST.ASTNodeTypeTuple.fromSource('\\[int, bool, ?:str]').eval(),
 						],
 						[
-							new TYPE.TypeVect(expected),
-							new TYPE.TypeVect(expected),
+							new TYPE.TypeTuple(expected),
+							new TYPE.TypeTuple(expected),
 						],
 					);
 				});
 			});
 
 			describe('ASTNodeTypeRecord', () => {
-				it('returns a TypeStruct.', () => {
+				it('returns a TypeRecord.', () => {
 					const expected = [
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: true},
@@ -56,8 +56,8 @@ describe('ASTNodeType', () => {
 							str.eval(),
 						],
 						[
-							new TYPE.TypeStruct(new Map<bigint, TypeEntry>(rec.children.map((c, i) => [c.key.id, expected[i]]))),
-							new TYPE.TypeStruct(new Map<bigint, TypeEntry>(str.children.map((c, i) => [c.key.id, expected[i]]))),
+							new TYPE.TypeRecord(new Map<bigint, TypeEntry>(rec.children.map((c, i) => [c.key.id, expected[i]]))),
+							new TYPE.TypeRecord(new Map<bigint, TypeEntry>(str.children.map((c, i) => [c.key.id, expected[i]]))),
 						],
 					);
 				});
@@ -70,7 +70,7 @@ describe('ASTNodeType', () => {
 						new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL)),
 					);
 				});
-				it('returns a TypeVect if there is a count.', () => {
+				it('returns a TypeTuple if there is a count.', () => {
 					const expected = [
 						TYPE.INT.union(TYPE.BOOL),
 						TYPE.INT.union(TYPE.BOOL),
@@ -82,8 +82,8 @@ describe('ASTNodeType', () => {
 							AST.ASTNodeTypeList.fromSource('(int | bool)\\[3]').eval(),
 						],
 						[
-							TYPE.TypeVect.fromTypes(expected),
-							TYPE.TypeVect.fromTypes(expected),
+							TYPE.TypeTuple.fromTypes(expected),
+							TYPE.TypeTuple.fromTypes(expected),
 						],
 					);
 				});

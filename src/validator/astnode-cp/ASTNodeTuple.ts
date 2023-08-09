@@ -58,7 +58,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 			}
 			return itemtype;
 		});
-		return TYPE.TypeVect.fromTypes(items);
+		return TYPE.TypeTuple.fromTypes(items);
 	}
 
 	@memoizeMethod
@@ -73,7 +73,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 
 	@ASTNodeCollectionLiteral.assignToDeco
 	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
-		if (assignee instanceof TYPE.TypeVect) {
+		if (assignee instanceof TYPE.TypeTuple) {
 			if (this.children.length < assignee.count[0]) {
 				throw err;
 			}

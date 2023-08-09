@@ -45,6 +45,6 @@ export class ASTNodeTypeTuple extends ASTNodeTypeCollectionLiteral {
 				optional: c.optional,
 			};
 		});
-		return new TYPE.TypeVect(entries);
+		return new TYPE.TypeTuple(entries);
 	}
 }

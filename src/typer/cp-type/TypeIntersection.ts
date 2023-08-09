@@ -3,8 +3,8 @@ import {strictEqual} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
 import {
-	TypeCollectionIndexedStatic,
-	TypeCollectionKeyedStatic,
+	TypeTuple,
+	TypeRecord,
 } from './index.js';
 import {Type} from './Type.js';
 
@@ -80,8 +80,8 @@ export class TypeIntersection extends Type {
 
 	public combineTuplesOrRecords(): Type {
 		return (
-			(this.left instanceof TypeCollectionIndexedStatic && this.right instanceof TypeCollectionIndexedStatic) ? this.left.intersectWithTuple(this.right)  :
-			(this.left instanceof TypeCollectionKeyedStatic   && this.right instanceof TypeCollectionKeyedStatic)   ? this.left.intersectWithRecord(this.right) :
+			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? this.left.intersectWithTuple(this.right)  :
+			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? this.left.intersectWithRecord(this.right) :
 			this
 		);
 	}

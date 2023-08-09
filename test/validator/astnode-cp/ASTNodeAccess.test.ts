@@ -296,15 +296,15 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1: TYPE.TypeVect = TYPE.TypeVect.fromTypes([TYPE.BOOL]);
-				const prop2                = new TYPE.TypeVect([{type: TYPE.BOOL, optional: true}]);
+				const prop1: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL]);
+				const prop2                 = new TYPE.TypeTuple([{type: TYPE.BOOL, optional: true}]);
 				assert.deepStrictEqual(
 					program.children.slice(2, 8).map((c) => typeOfStmtExpr(c)),
 					[
-						new TYPE.TypeStruct(new Map([[0x101n, {type: prop1, optional: true}]])),
+						new TYPE.TypeRecord(new Map([[0x101n, {type: prop1, optional: true}]])),
 						prop1.union(TYPE.NULL),
 						TYPE.BOOL.union(TYPE.NULL),
-						new TYPE.TypeStruct(new Map([[0x101n, {type: prop2, optional: true}]])),
+						new TYPE.TypeRecord(new Map([[0x101n, {type: prop2, optional: true}]])),
 						prop2.union(TYPE.NULL),
 						TYPE.BOOL.union(TYPE.NULL),
 					],

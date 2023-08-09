@@ -82,7 +82,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, returntype, this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeCollectionIndexedStatic) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this);
 					}
 				}
@@ -97,7 +97,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, returntype, this);
 					} catch (err) {
-						const argvaluetype: TYPE.Type = (argtype instanceof TYPE.TypeCollectionKeyedStatic) ? argtype.valueTypes() : throw_expression(err as TypeErrorNotAssignable);
+						const argvaluetype: TYPE.Type = (argtype instanceof TYPE.TypeRecord) ? argtype.valueTypes() : throw_expression(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this);
 					}
 				}
@@ -112,7 +112,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(eltype), this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeCollectionIndexedStatic) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this);
 					}
 				}
@@ -123,13 +123,13 @@ export class ASTNodeCall extends ASTNodeExpression {
 				const anttype:    TYPE.Type = this.typeargs[0].eval();
 				const contype:    TYPE.Type = this.typeargs[1]?.eval() ?? anttype;
 				const returntype: TYPE.Type = new TYPE.TypeMap(anttype, contype);
-				const entrytype:  TYPE.Type = TYPE.TypeVect.fromTypes([anttype, contype]);
+				const entrytype:  TYPE.Type = TYPE.TypeTuple.fromTypes([anttype, contype]);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(entrytype), this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeCollectionIndexedStatic) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this);
 					}
 				}

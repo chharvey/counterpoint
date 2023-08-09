@@ -23,9 +23,9 @@ export class Struct<T extends CPObject = CPObject> extends CollectionKeyed<T> {
 
 	/**
 	 * @inheritdoc
-	 * Returns a TypeStruct whose entries are the types of this Struct’s values.
+	 * Returns a TypeRecord whose entries are the types of this Struct’s values.
 	 */
-	public override toType(): TYPE.TypeStruct {
-		return TYPE.TypeStruct.fromTypes(new Map([...this.properties].map(([key, val]) => [key, val.toType()])));
+	public override toType(): TYPE.TypeRecord {
+		return TYPE.TypeRecord.fromTypes(new Map([...this.properties].map(([key, val]) => [key, val.toType()])));
 	}
 }
