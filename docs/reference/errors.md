@@ -116,7 +116,6 @@ A type error is raised when the compiler recognizes a type mismatch.
 1.  2300         — A general type error not covered by one of the following cases.
 1. [2301](#2301) — The validator encountered an operation with an invalid operand.
 1. [2302](#2302) — One type is expected to be a subtype of another, but is not.
-1. [2303](#2303) — A reference type was encountered where a value type was expected.
 1. [2304](#2304) — An expression was assigned to a type to which it is not assignable.
 1. [2305](#2305) — The validator encountered a non-existent index/property/argument access.
 1. [2306](#2306) — The validator encountered an attempt to call a non-callable object.
@@ -135,17 +134,6 @@ Cause: One type is expected to be a subtype of another type, but is not.
 {"a" -> 1, "b" -> 2}.[1]; % TypeError: Type `1` is not a subtype of `"a" | "b"`.
 ```
 Solution(s): Ensure the assigned type is a subtype of the assignee.
-
-#### 2303: TypeErrorUnexpectedRef
-Cause: A reference type was used where a value type was expected.
-```
-type T = [int];
-type U = \[str, T]; % TypeError: Got reference type `[int]`, but expected a value type.
-
-let x: [int] = [42];
-let y: Object = \["hello", x]; % TypeError: Got reference type `[int]`, but expected a value type.
-```
-Solution(s): Ensure only value types are used where expected.
 
 #### 2304: TypeErrorNotAssignable
 Cause: A variable, property, or parameter was assigned an expression of an incorrect type.

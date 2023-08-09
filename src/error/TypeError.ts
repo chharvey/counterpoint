@@ -1,7 +1,6 @@
 import {
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
-	TypeErrorUnexpectedRef,
 	TypeErrorNotAssignable,
 	TypeErrorNoEntry,
 	TypeErrorNotCallable,
@@ -18,7 +17,6 @@ import {ErrorCode} from './ErrorCode.js';
  * Known subclasses:
  * - TypeErrorInvalidOperation
  * - TypeErrorNotNarrow
- * - TypeErrorUnexpectedRef
  * - TypeErrorNotAssignable
  * - TypeErrorNoEntry
  * - TypeErrorNotCallable
@@ -31,7 +29,6 @@ export class TypeError extends ErrorCode {
 		return new Map<ConstructorType<TypeError>, number>([
 			[TypeErrorInvalidOperation, 1],
 			[TypeErrorNotNarrow,        2],
-			[TypeErrorUnexpectedRef,    3],
 			[TypeErrorNotAssignable,    4],
 			[TypeErrorNoEntry,          5],
 			[TypeErrorNotCallable,      6],
