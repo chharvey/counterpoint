@@ -91,7 +91,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 
 	@ASTNodeCollectionLiteral.assignToDeco
 	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
-		if (assignee instanceof TYPE.TypeRecord) {
+		if (assignee instanceof TYPE.TypeStruct) {
 			if (this.children.length < assignee.count[0]) {
 				throw err;
 			}
