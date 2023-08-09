@@ -8,14 +8,12 @@ import {
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
-	TypeErrorUnexpectedRef,
 } from '../../../src/index.js';
 import {
 	typeUnitInt,
 	typeUnitFloat,
 	typeUnitStr,
 } from '../../helpers.js';
-import {assertAssignable} from '../../assert-helpers.js';
 
 
 describe('ASTNodeType', () => {
@@ -108,40 +106,17 @@ describe('ASTNodeType', () => {
 				);
 			});
 
-			it('throws if value type contains reference type.', () => {
+			it('does not throw if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type val_type3 = \\[3.0];
-					type val_type1 =   [1.0];
-					type val_type4 = \\[4.0];
-					type val_type2 =   [2.0];
-
-					type A = \\[int, \\[1.0],      str];
-					type B =   [int, List.<float>, str];
-					type C =   [int, \\[2.0],      str];
-					type D = \\[int, List.<float>, str]; %> TypeErrorUnexpectedRef
-
-					type E = \\[a: int, b: val_type3, c: str];
-					type F =   [a: int, b: val_type1, c: str];
-					type G =   [a: int, b: val_type4, c: str];
-					type H = \\[a: int, b: val_type2, c: str];
-
-					type I = \\[5.0]    \\[3];
-					type J = Set.<float>  [3];
-					type K = \\[6.0]      [3];
-					type L = Set.<float>\\[3]; %> TypeErrorUnexpectedRef
+					type A =   [int, List.<float>, str];
+					type B = \\[int, List.<float>, str];
+					type C =   [a: int, b: List.<float>, c: str];
+					type D = \\[a: int, b: List.<float>, c: str];
+					type E = Set.<float>  [3];
+					type F = Set.<float>\\[3];
 				`);
 				goal.varCheck();
-				return assert.throws(() => goal.typeCheck(), (err) => {
-					assert.ok(err instanceof AggregateError);
-					assertAssignable(err, {
-						cons:   AggregateError,
-						errors: [
-							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `List.<float>`, but expected a value type.'},
-							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `Set.<float>`, but expected a value type.'},
-						],
-					});
-					return true;
-				});
+				goal.typeCheck(); // assert does not throw
 			});
 		});
 	});

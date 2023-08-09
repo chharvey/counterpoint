@@ -1,7 +1,6 @@
 import {
 	type TypeEntry,
 	TYPE,
-	TypeErrorUnexpectedRef,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -37,9 +36,6 @@ export class ASTNodeTypeTuple extends ASTNodeTypeCollectionLiteral {
 	public override eval(): TYPE.Type {
 		const entries: readonly TypeEntry[] = this.children.map((c) => {
 			const itemtype: TYPE.Type = c.val.eval();
-			if (!this.isRef && itemtype.isReference) {
-				throw new TypeErrorUnexpectedRef(itemtype, c);
-			}
 			return {
 				type:     itemtype,
 				optional: c.optional,

@@ -1,8 +1,6 @@
-import * as assert from 'assert';
 import {
 	TYPE,
 	TypeError,
-	TypeErrorUnexpectedRef,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -37,12 +35,6 @@ export class ASTNodeTypeList extends ASTNodeTypeCollectionLiteral {
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		const itemstype: TYPE.Type = this.type.eval();
-		if (!this.isRef) {
-			assert.notStrictEqual(this.count, null);
-			if (itemstype.isReference) {
-				throw new TypeErrorUnexpectedRef(itemstype, this.type);
-			}
-		}
 		if (this.count === null) {
 			return new TYPE.TypeList(itemstype);
 		} else if (this.count >= 0) {

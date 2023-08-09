@@ -3,7 +3,6 @@ import {
 	type TypeEntry,
 	TYPE,
 	AssignmentErrorDuplicateKey,
-	TypeErrorUnexpectedRef,
 } from '../../index.js';
 import {
 	type NonemptyArray,
@@ -51,9 +50,6 @@ export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 	public override eval(): TYPE.Type {
 		const entries: ReadonlyMap<bigint, TypeEntry> = new Map<bigint, TypeEntry>(this.children.map((c) => {
 			const valuetype: TYPE.Type = c.val.eval();
-			if (!this.isRef && valuetype.isReference) {
-				throw new TypeErrorUnexpectedRef(valuetype, c);
-			}
 			return [
 				c.key.id,
 				{
