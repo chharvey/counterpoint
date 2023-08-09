@@ -235,7 +235,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						3. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.3)`.
 					3. *Else:*
 						1. *Throw:* a new TypeError07.
-				5. *Let:* `keyvaluetype` be a Tuple type containing the items in [
+				5. *Let:* `keyvaluetype` be a Tuple type containing the items in the Sequence [
 					EntryTypeStructure [type= `antecedenttype`, optional= `false`],
 					EntryTypeStructure [type= `consequenttype`, optional= `false`],
 				].

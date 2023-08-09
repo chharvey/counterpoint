@@ -123,7 +123,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				const anttype:    TYPE.Type = this.typeargs[0].eval();
 				const contype:    TYPE.Type = this.typeargs[1]?.eval() ?? anttype;
 				const returntype: TYPE.Type = new TYPE.TypeMap(anttype, contype);
-				const entrytype:  TYPE.Type = TYPE.TypeTuple.fromTypes([anttype, contype]);
+				const entrytype:  TYPE.Type = TYPE.TypeVect.fromTypes([anttype, contype]);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
