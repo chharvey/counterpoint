@@ -6,7 +6,6 @@ import {
 	type Builder,
 	AssignmentErrorDuplicateKey,
 	TypeError,
-	TypeErrorUnexpectedRef,
 	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {
@@ -68,9 +67,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	public override type(): TYPE.Type {
 		const props: ReadonlyMap<bigint, TYPE.Type> = new Map<bigint, TYPE.Type>(this.children.map((c) => {
 			const valuetype: TYPE.Type = c.val.type();
-			if (!this.isRef && valuetype.isReference) {
-				throw new TypeErrorUnexpectedRef(valuetype, c);
-			}
 			return [c.key.id, valuetype];
 		}));
 		return TYPE.TypeRecord.fromTypes(props);

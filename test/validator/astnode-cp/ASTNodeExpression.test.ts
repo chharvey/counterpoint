@@ -11,7 +11,6 @@ import {
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateKey,
-	TypeErrorUnexpectedRef,
 } from '../../../src/index.js';
 import {assert_instanceof} from '../../../src/lib/index.js';
 import {assertAssignable} from '../../assert-helpers.js';
@@ -456,25 +455,15 @@ describe('ASTNodeExpression', () => {
 					],
 				);
 			}));
-			it('throws if value type contains reference type.', () => {
+			it('does not throw if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let val_obj1: \\[1.0] = \\[1.0];
-					let ref_obj1:   [1.0] =   [1.0];
-					let val_obj2: \\[2.0] = \\[2.0];
-					let ref_obj2:   [2.0] =   [2.0];
-
-					\\[1, val_obj1, "three"];
-					  [1, ref_obj1, "three"];
-					  [1, val_obj2, "three"];
-					\\[1, ref_obj2, "three"];
-
-					\\[a= 1, b= \\[3.0],             c= "three"];
-					  [a= 1, b= List.<float>([3.0]), c= "three"];
-					  [a= 1, b= \\[4.0],             c= "three"];
-					\\[a= 1, b= List.<float>([4.0]), c= "three"]; %> TypeErrorUnexpectedRef
+					  [   1,    List.<float>([2.2]),    "three"];
+					\\[   1,    List.<float>([2.2]),    "three"];
+					  [a= 1, b= List.<float>([2.2]), c= "three"];
+					\\[a= 1, b= List.<float>([2.2]), c= "three"];
 				`);
 				goal.varCheck();
-				return assert.throws(() => goal.typeCheck(), TypeErrorUnexpectedRef);
+				goal.typeCheck(); // assert does not throw
 			});
 		});
 

@@ -4,7 +4,6 @@ import {
 	TYPE,
 	type INST,
 	type Builder,
-	TypeErrorUnexpectedRef,
 	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {
@@ -53,9 +52,6 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	public override type(): TYPE.Type {
 		const items: readonly TYPE.Type[] = this.children.map((c) => {
 			const itemtype: TYPE.Type = c.type();
-			if (!this.isRef && itemtype.isReference) {
-				throw new TypeErrorUnexpectedRef(itemtype, c);
-			}
 			return itemtype;
 		});
 		return TYPE.TypeTuple.fromTypes(items);
