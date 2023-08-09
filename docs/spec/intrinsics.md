@@ -51,19 +51,9 @@ There is only one `Null` object: `null`.
 The values in Tuples are Counterpoint Language Values and are restricted to value objects.
 
 
-### `Vect`
-`Vect` objects are fixed-size ordered lists of indexed values, with indices starting at *0*.
-The values in Vects are Counterpoint Language Values and are restricted to value objects.
-
-
 ### `Record`
 `Record` objects are fixed-size unordered lists of keyed values, with identifier keys.
 The values in Records are Counterpoint Language Values and are restricted to value objects.
-
-
-### `Struct`
-`Struct` objects are fixed-size unordered lists of keyed values, with identifier keys.
-The values in Structs are Counterpoint Language Values and are restricted to value objects.
 
 
 

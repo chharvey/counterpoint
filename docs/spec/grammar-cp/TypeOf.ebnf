@@ -100,7 +100,7 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 		3. *Assert:* `accessor_type` is a TypeUnit.
 		4. *Let* `i` be `accessor_type.value`.
 		5. *Assert:* `i` is a instance of `Integer`.
-		6. *If* `base_type` is a Tuple or Vect type *and* `i` is an index in `base_type`:
+		6. *If* `base_type` is a Tuple type *and* `i` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
 		7. *Else If* `base_type` is a List type:
@@ -110,7 +110,7 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 			1. *Throw:* a new TypeError05 "Index {{ i }} does not exist on type {{ base_type }}.".
 	8. *If* `accessor` is a SemanticKey:
 		1. *Let* `id` be `accessor.id`.
-		2. *If* `base_type` is a Record or Struct type *and* `id` is a key in `base_type`:
+		2. *If* `base_type` is a Record type *and* `id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
 		3. *Else If* `base_type` is a Dict type:
@@ -121,7 +121,7 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 	9: *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
-		3. *If* `base_type` is a Tuple or Vect type:
+		3. *If* `base_type` is a Tuple type:
 			1. *If* `accessor_type` is a TypeUnit:
 				1. *Let* `i` be `accessor_type.value`.
 				2. *If* `i` is a instance of `Integer`:
@@ -184,7 +184,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						1. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.2)`.
 						2. *If* `base.source` is "List":
 							1. *If* *UnwrapAffirm:* `Subtype(argtype, returntype)` is `false`:
-								1. *If* `argtype` is a Tuple or Vect type:
+								1. *If* `argtype` is a Tuple type:
 									1. *Let* `items` be the union of all item types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
 										1. *Throw:* a new TypeError04
@@ -192,7 +192,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 									1. *Throw:* a new TypeError04.
 						3. *Else If* `base.source` is "Dict":
 							1. *If* *UnwrapAffirm:* `Subtype(argtype, returntype)` is `false`:
-								1. *If* `argtype` is a Record or Struct type:
+								1. *If* `argtype` is a Record type:
 									1. *Let* `values` be the union of all value types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(values, genericarg)` is `false`:
 										1. *Throw:* a new TypeError04.
@@ -201,7 +201,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						4. *Else If* `base.source` is "Set":
 							1. *Let* `listtype` be a List type whose items’ type is `genericarg`.
 							2. *If* *UnwrapAffirm:* `Subtype(argtype, listtype)` is `false`:
-								1. *If* `argtype` is a Tuple or Vect type:
+								1. *If* `argtype` is a Tuple type:
 									1. *Let* `items` be the union of all item types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
 										1. *Throw:* a new TypeError04.
@@ -235,15 +235,15 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						3. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.3)`.
 					3. *Else:*
 						1. *Throw:* a new TypeError07.
-				5. *Let:* `keyvaluetype` be a Tuple type containing the items in the Sequence [
+				5. *Let:* `entrytype` be a Tuple type containing the items in the Sequence [
 					EntryTypeStructure [type= `antecedenttype`, optional= `false`],
 					EntryTypeStructure [type= `consequenttype`, optional= `false`],
 				].
-				6. *Let*: `paramtype` be a List type whose items’ type is `keyvaluetype`.
+				6. *Let*: `paramtype` be a List type whose items’ type is `entrytype`.
 				7. *If*: `argtype` is set *and* *UnwrapAffirm:* `Subtype(argtype, paramtype)` is `false`:
-					1. *If* `argtype` is a Tuple or Vect type:
+					1. *If* `argtype` is a Tuple type:
 						1. *Let* `items` be the union of all item types in `argtype`.
-						2. *If* *UnwrapAffirm:* `Subtype(items, keyvaluetype)` is `false`:
+						2. *If* *UnwrapAffirm:* `Subtype(items, entrytype)` is `false`:
 							1. *Throw:* a new TypeError04.
 					2. *Else*:
 						1. *Throw:* a new TypeError04.

@@ -76,7 +76,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.LIST, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const itemtype:   TYPE.Type = this.typeargs[0].eval();
-				const returntype: TYPE.Type = new TYPE.TypeList(itemtype);
+				const returntype            = new TYPE.TypeList(itemtype);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
@@ -91,7 +91,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.DICT, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const valuetype:  TYPE.Type = this.typeargs[0].eval();
-				const returntype: TYPE.Type = new TYPE.TypeDict(valuetype);
+				const returntype            = new TYPE.TypeDict(valuetype);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
@@ -106,7 +106,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.SET, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const eltype:     TYPE.Type = this.typeargs[0].eval();
-				const returntype: TYPE.Type = new TYPE.TypeSet(eltype);
+				const returntype            = new TYPE.TypeSet(eltype);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
@@ -120,10 +120,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 			}],
 			[ValidFunctionName.MAP, () => {
 				this.countArgs([1n, 3n], [0n, 2n]);
-				const anttype:    TYPE.Type = this.typeargs[0].eval();
-				const contype:    TYPE.Type = this.typeargs[1]?.eval() ?? anttype;
-				const returntype: TYPE.Type = new TYPE.TypeMap(anttype, contype);
-				const entrytype:  TYPE.Type = TYPE.TypeTuple.fromTypes([anttype, contype]);
+				const anttype:    TYPE.Type      = this.typeargs[0].eval();
+				const contype:    TYPE.Type      = this.typeargs[1]?.eval() ?? anttype;
+				const returntype                 = new TYPE.TypeMap(anttype, contype);
+				const entrytype:  TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([anttype, contype]);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {

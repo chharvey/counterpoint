@@ -333,8 +333,6 @@ Compound types are derived from other types.
 
 - [Tuple Types](#tuple-types)
 - [Record Types](#record-types)
-- [Vect Types](#vect-types)
-- [Struct Types](#struct-types)
 - [List Types](#list-types)
 - [Dict Types](#dict-types)
 - [Set Types](#set-types)
@@ -346,7 +344,6 @@ a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items, call
 The objects that any given Tuple type describes are `Tuple` objects whose
 items’ types match up with the invariants in the sequence in order.
 Tuples have a static size, are ordered, and are 0-origin indexable by Integers.
-The invariants of a Tuple type are restricted to value types.
 
 #### Record Types
 A **Record** type describes instances of [`Record`](./intrinsics.md#record) and is parameterized by
@@ -354,23 +351,6 @@ a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values,
 The objects that any given Record type describes are `Record` objects whose
 properties’ types match up with the invariants in the structure by name.
 Records have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
-The invariants of a Record type are restricted to value types.
-
-#### Vect Types
-A **Vect** type describes instances of [`Vect`](./intrinsics.md#vect) and is parameterized by
-a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items, called invariants.
-The objects that any given Vect type describes are `Vect` objects whose
-items’ types match up with the invariants in the sequence in order.
-Vects have a static size, are ordered, and are 0-origin indexable by Integers.
-The invariants of a Vect type are restricted to value types.
-
-#### Struct Types
-A **Struct** type describes instances of [`Struct`](./intrinsics.md#struct) and is parameterized by
-a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values, called invariants.
-The objects that any given Struct type describes are `Struct` objects whose
-properties’ types match up with the invariants in the structure by name.
-Structs have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
-The invariants of a Struct type are restricted to value types.
 
 #### List Types
 A **List** type describes instances of [`List`](./intrinsics.md#list) and is parameterized by a single type,

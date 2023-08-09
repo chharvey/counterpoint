@@ -800,7 +800,7 @@ The **Set** operator `T{}` is shorthand for `Set.<T>`.
 `mutable` <Type>
 ```
 The `mutable` type operator allows properties in a complex type to be reassigned.
-It allows us to modify lists, dicts, sets, and maps by adding, removing, and changing entries.
+It allows us to modify composite objects by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
 let elements: mutable str{} = {"water", "earth", "fire", "wind"};
