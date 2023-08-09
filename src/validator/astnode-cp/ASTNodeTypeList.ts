@@ -26,10 +26,9 @@ export class ASTNodeTypeList extends ASTNodeTypeCollectionLiteral {
 	public constructor(
 		start_node: SyntaxNodeFamily<'type_unary_symbol', ['variable']>,
 		private readonly type:  ASTNodeType,
-		is_ref: boolean,
 		private readonly count: bigint | null = null,
 	) {
-		super(start_node, [type], is_ref, {count});
+		super(start_node, [type], {count});
 	}
 
 	@memoizeMethod

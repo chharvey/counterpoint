@@ -25,9 +25,8 @@ export abstract class ASTNodeTypeCollectionLiteral extends ASTNodeType {
 		,
 		public override readonly children: readonly ASTNodeCP[],
 		/** Does this node represent a reference type (versus a value type)? */
-		public readonly isRef: boolean = true,
 		attributes: Record<string, unknown> = {},
 	) {
-		super(start_node, {...attributes, isRef}, children);
+		super(start_node, {...attributes}, children);
 	}
 }

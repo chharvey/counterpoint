@@ -27,9 +27,8 @@ export class ASTNodeTypeTuple extends ASTNodeTypeCollectionLiteral {
 	public constructor(
 		start_node: SyntaxNodeFamily<'type_tuple_literal', ['variable']>,
 		public override readonly children: readonly ASTNodeItemType[],
-		is_ref: boolean,
 	) {
-		super(start_node, children, is_ref);
+		super(start_node, children);
 	}
 
 	@memoizeMethod

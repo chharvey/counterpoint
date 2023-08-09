@@ -75,24 +75,24 @@ Decorate(TypeGrouped<?Variable> ::= "(" Type<?Variable> ")") -> SemanticType
 	:= Decorate(Type<?Variable>);
 
 Decorate(TypeTupleLiteral<-Variable> ::= "\[" "]") -> SemanticTypeTuple
-	:= (SemanticTypeTuple[isRef=false]);
+	:= (SemanticTypeTuple);
 Decorate(TypeTupleLiteral<+Variable> ::= "[" "]") -> SemanticTypeTuple
-	:= (SemanticTypeTuple[isRef=true]);
+	:= (SemanticTypeTuple);
 Decorate(TypeTupleLiteral<-Variable> ::= "\[" ","? ItemsType<?Variable> "]") -> SemanticTypeTuple
-	:= (SemanticTypeTuple[isRef=false]
+	:= (SemanticTypeTuple
 		...Decorate(ItemsType<?Variable>)
 	);
 Decorate(TypeTupleLiteral<+Variable> ::= "[" ","? ItemsType<?Variable> "]") -> SemanticTypeTuple
-	:= (SemanticTypeTuple[isRef=true]
+	:= (SemanticTypeTuple
 		...Decorate(ItemsType<?Variable>)
 	);
 
 Decorate(TypeRecordLiteral<-Variable> ::= "\[" ","? PropertiesType<?Variable> ","? "]") -> SemanticTypeRecord
-	:= (SemanticTypeRecord[isRef=false]
+	:= (SemanticTypeRecord
 		...Decorate(PropertiesType<?Variable>)
 	);
 Decorate(TypeRecordLiteral<+Variable> ::= "[" ","? PropertiesType<?Variable> ","? "]") -> SemanticTypeRecord
-	:= (SemanticTypeRecord[isRef=true]
+	:= (SemanticTypeRecord
 		...Decorate(PropertiesType<?Variable>)
 	);
 
@@ -173,15 +173,15 @@ Decorate(TypeUnarySymbol<Variable> ::= TypeUnarySymbol<?Variable> "!") -> Semant
 		Decorate(TypeUnarySymbol<?Variable>)
 	);
 Decorate(TypeUnarySymbol<Variable> ::= TypeUnarySymbol<?Variable> "\[" INTEGER "]") -> SemanticTypeList
-	:= (SemanticTypeList[isRef=false][count=TokenWorth(INTEGER)]
+	:= (SemanticTypeList[count=TokenWorth(INTEGER)]
 		Decorate(TypeUnarySymbol<?Variable>)
 	);
 Decorate(TypeUnarySymbol<+Variable> ::= TypeUnarySymbol<?Variable> "[" "]") -> SemanticTypeList
-	:= (SemanticTypeList[isRef=true][count=none]
+	:= (SemanticTypeList[count=none]
 		Decorate(TypeUnarySymbol<?Variable>)
 	);
 Decorate(TypeUnarySymbol<+Variable> ::= TypeUnarySymbol<?Variable> "[" INTEGER "]") -> SemanticTypeList
-	:= (SemanticTypeList[isRef=true][count=TokenWorth(INTEGER)]
+	:= (SemanticTypeList[count=TokenWorth(INTEGER)]
 		Decorate(TypeUnarySymbol<?Variable>)
 	);
 Decorate(TypeUnarySymbol<+Variable> ::= TypeUnarySymbol<?Variable> "{" "}") -> SemanticTypeSet

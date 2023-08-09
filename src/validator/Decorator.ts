@@ -197,7 +197,6 @@ class Decorator {
 				node.children
 					.filter((c): c is SyntaxNodeFamily<'entry_type', ['optional', 'variable']> => isSyntaxNodeFamily(c, 'entry_type', ['optional', 'variable']))
 					.map((c) => this.decorateTS(c)),
-				false,
 			)],
 
 			['type_tuple_literal__variable', (node) => new AST.ASTNodeTypeTuple(
@@ -205,7 +204,6 @@ class Decorator {
 				node.children
 					.filter((c): c is SyntaxNodeFamily<'entry_type', ['optional', 'variable']> => isSyntaxNodeFamily(c, 'entry_type', ['optional', 'variable']))
 					.map((c) => this.decorateTS(c)),
-				true,
 			)],
 
 			['type_record_literal', (node) => new AST.ASTNodeTypeRecord(
@@ -213,7 +211,6 @@ class Decorator {
 				node.children
 					.filter((c): c is SyntaxNodeFamily<'entry_type__named', ['optional', 'variable']> => isSyntaxNodeFamily(c, 'entry_type__named', ['optional', 'variable']))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodePropertyType>,
-				false,
 			)],
 
 			['type_record_literal__variable', (node) => new AST.ASTNodeTypeRecord(
@@ -221,7 +218,6 @@ class Decorator {
 				node.children
 					.filter((c): c is SyntaxNodeFamily<'entry_type__named', ['optional', 'variable']> => isSyntaxNodeFamily(c, 'entry_type__named', ['optional', 'variable']))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodePropertyType>,
-				true,
 			)],
 
 			['type_dict_literal', (node) => new AST.ASTNodeTypeDict(
@@ -279,7 +275,6 @@ class Decorator {
 							return new AST.ASTNodeTypeList(
 								node as SyntaxNodeType<'type_unary_symbol__variable'>,
 								basetype,
-								true,
 								null,
 							);
 						} else {
@@ -303,7 +298,6 @@ class Decorator {
 							return new AST.ASTNodeTypeList(
 								node as SyntaxNodeType<'type_unary_symbol'>,
 								basetype,
-								false,
 								count,
 							);
 						} else {
@@ -311,7 +305,6 @@ class Decorator {
 							return new AST.ASTNodeTypeList(
 								node as SyntaxNodeType<'type_unary_symbol__variable'>,
 								basetype,
-								true,
 								count,
 							);
 						}
