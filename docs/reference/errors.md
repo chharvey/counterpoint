@@ -46,14 +46,14 @@ A reference error is raised when the compiler fails to dereference an identifier
 1. [2102](#2102) — The validator encountered a variable that was used before it was declared.
 1. [2103](#2103) — The validator encountered a symbol of the wrong kind.
 
-#### 2101
+#### 2101: ReferenceErrorUndeclared
 Cause: A variable was referenced but was not declared.
 ```
 my_var; % ReferenceError: `my_var` is never declared.
 ```
 Solution(s): Ensure the variable, type, or parameter is declared before referencing it.
 
-#### 2102
+#### 2102: ReferenceErrorDeadZone
 Cause: A variable was referenced before it was declared.
 ```
 my_var;               % ReferenceError: `my_var` is used before it is declared.
@@ -61,7 +61,7 @@ let my_var: int = 42;
 ```
 Solution(s): Ensure the variable or type is declared before referencing it.
 
-#### 2103
+#### 2103: ReferenceErrorKind
 Cause: A variable was used as a type, or a type was used as a variable.
 ```
 let FOO: int = 42;
@@ -81,7 +81,7 @@ An assignment error is raised when the compiler detects an illegal declaration o
 1. [2202](#2202) — The validator encountered a duplicate record key.
 1. [2210](#2210) — A reassignment of a fixed variable was attempted.
 
-#### 2201
+#### 2201: AssignmentErrorDuplicateDeclaration
 Cause: A duplicate declaration was encountered.
 ```
 let my_var: int = 42;
@@ -92,7 +92,7 @@ type MyType = float; % AssignmentError: Duplicate declaration of `MyType`.
 ```
 Solution(s): Remove the duplicate declaration, or change it to a reassignment (if possible).
 
-#### 2202
+#### 2202: AssignmentErrorDuplicateKey
 Cause: A duplicate key in a record/struct literal or type literal was encountered.
 ```
 [foo= "a", foo= "b"]; % AssignmentError: Duplicate record key `foo`.
@@ -101,7 +101,7 @@ type MyType = [bar: int, bar: str]; % AssignmentError: Duplicate record key `bar
 ```
 Solution(s): Remove or rename the duplicate key.
 
-#### 2210
+#### 2210: AssignmentErrorReassignment
 Cause: A fixed variable was reassigned.
 ```
 let my_var: int = 42;
@@ -122,21 +122,21 @@ A type error is raised when the compiler recognizes a type mismatch.
 1. [2306](#2306) — The validator encountered an attempt to call a non-callable object.
 1. [2307](#2307) — An incorrect number of arguments is passed to a callable object.
 
-#### 2301
+#### 2301: TypeErrorInvalidOperation
 Cause: An invalid operation was performed.
 ```
 true + false; % TypeError: Invalid operation.
 ```
 Solution(s): Only use operations on valid operands.
 
-#### 2302
+#### 2302: TypeErrorNotNarrow
 Cause: One type is expected to be a subtype of another type, but is not.
 ```
 {"a" -> 1, "b" -> 2}.[1]; % TypeError: Type `1` is not a subtype of `"a" | "b"`.
 ```
 Solution(s): Ensure the assigned type is a subtype of the assignee.
 
-#### 2303
+#### 2303: TypeErrorUnexpectedRef
 Cause: A reference type was used where a value type was expected.
 ```
 type T = [int];
@@ -147,7 +147,7 @@ let y: Object = \["hello", x]; % TypeError: Got reference type `[int]`, but expe
 ```
 Solution(s): Ensure only value types are used where expected.
 
-#### 2304
+#### 2304: TypeErrorNotAssignable
 Cause: A variable, property, or parameter was assigned an expression of an incorrect type.
 ```
 let x: int = true;              % TypeError: Expression of type `true` is not assignable to type `int`.
@@ -155,7 +155,7 @@ let x: int = true;              % TypeError: Expression of type `true` is not as
 ```
 Solution(s): Ensure the expression has an assignable type.
 
-#### 2305
+#### 2305: TypeErrorNoEntry
 Cause: A non-existent index, key, or parameter name was accessed.
 ```
 [42, 420].2;                      % TypeError: Index `2` does not exist on type `[42, 420]`.
@@ -164,7 +164,7 @@ Cause: A non-existent index, key, or parameter name was accessed.
 ```
 Solution(s): Ensure the index/property/parameter access has the correct index or name.
 
-#### 2306
+#### 2306: TypeErrorNotCallable
 Cause: A non-callable object was called.
 ```
 type U = int;
@@ -175,7 +175,7 @@ x.(24);          % TypeError: Type `int` is not callable.
 ```
 Solution(s): Callable objects are limited to functions, generic type aliases, and generic type functions.
 
-#### 2307
+#### 2307: TypeErrorArgCount
 Cause: A function or generic call was given an incorrect number of arguments.
 ```
 type U<V, W> = V | W;
@@ -193,7 +193,7 @@ A mutability error is raised when the compiler recognizes an attempt to mutate a
 1.  2400         — A general mutability error not covered by one of the following cases.
 1. [2401](#2401) — An item or property of an immutable object was reassigned.
 
-#### 2401
+#### 2401: MutabilityError01
 Cause: An immutable object was mutated.
 ```
 let x: [a: int] = [a= 42];
@@ -214,7 +214,7 @@ A void error is raised when an expression that has no value is used in some way.
 1.  3100         — A general mutability error not covered by one of the following cases.
 1. [3101](#3101) — A void expression is used as a value.
 
-#### 3101
+#### 3101: VoidError01
 Cause: An expression without a value is used as a value.
 ```
 let v: void = returnVoid.(); % VoidError: Value is undefined.
@@ -230,14 +230,14 @@ A Nan error is raised when a numerical expression does not successfully evaluate
 1. [3201](#3201) — The value is not a valid number.
 1. [3202](#3202) — Division by zero.
 
-#### 3201
+#### 3201: NanErrorInvalid
 Cause: The expression could be a numerical value but is not valid in the language.
 ```
 -4 ^ -0.5; % NanError: Not a valid number.
 ```
 Solution(s): Only use valid mathematical operations.
 
-#### 3202
+#### 3202: NanErrorDivZero
 Cause: The expression results in a division by zero.
 ```
 3 / 0; % NanError: Division by zero.

@@ -68,11 +68,11 @@ None! TypeCheckAssignment(SemanticExpression assigned, Type assignee_type) :=
 	1. *Let* `assigned_type` be *Unwrap:* `TypeOf(assigned)`.
 	2. *If* *UnwrapAffirm:* `Subtype(assigned_type, assignee_type)` is `false`:
 		1. *If* `assigned` is not a SemanticCollectionLiteral:
-			1. *Throw:* a new TypeError04.
+			1. *Throw:* a new TypeErrorNotAssignable.
 		2. *Else:*
 			1. *If* `assigned` is a SemanticTuple *and* `assigned.isRef` is `false`:
-				1. *Throw:* a new TypeError04.
+				1. *Throw:* a new TypeErrorNotAssignable.
 			2. *If* `assigned` is a SemanticRecord *and* `assigned.isRef` is `false`:
-				1. *Throw:* a new TypeError04.
+				1. *Throw:* a new TypeErrorNotAssignable.
 			3. *Return:* `AssignTo(assigned, assignee_type)`.
 ;
