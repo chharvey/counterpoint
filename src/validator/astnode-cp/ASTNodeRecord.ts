@@ -5,8 +5,6 @@ import {
 	type INST,
 	type Builder,
 	AssignmentErrorDuplicateKey,
-	TypeError,
-	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	type NonemptyArray,
@@ -18,7 +16,6 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeFamily} from '../utils-private.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -81,34 +78,5 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
 			: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
-	}
-
-	@ASTNodeCollectionLiteral.assignToDeco
-	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
-		if (assignee instanceof TYPE.TypeRecord) {
-			if (this.children.length < assignee.count[0]) {
-				throw err;
-			}
-			try {
-				xjs.Array.forEachAggregated([...assignee.invariants], ([id, thattype]) => {
-					const prop: ASTNodeProperty | undefined = this.children.find((c) => c.key.id === id);
-					if (!thattype.optional && !prop) {
-						// TODO: use a more specific class of TypeError used when checking subtypes
-						throw new TypeError(`Property \`${ id }\` does not exist on type \`${ this.type() }\`.`, 0, this.line_index, this.col_index);
-					}
-				});
-			} catch (err2) {
-				err.cause = err2;
-				throw err;
-			}
-			return xjs.Array.forEachAggregated([...assignee.invariants], ([id, thattype]) => {
-				const prop: ASTNodeProperty | undefined = this.children.find((c) => c.key.id === id);
-				const expr: ASTNodeExpression | undefined = prop?.val;
-				if (expr) {
-					return ASTNodeCP.assignExpression(expr, thattype.type, expr);
-				}
-			});
-		}
-		throw err;
 	}
 }

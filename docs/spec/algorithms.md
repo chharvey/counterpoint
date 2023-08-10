@@ -332,44 +332,17 @@ Boolean Equal(Object a, Object b) :=
 
 
 ## AssignTo
-Attempt to assign a collection literal to a type when type-checking fails.
+Attempt to assign a mutable collection literal to a mutable type when type-checking fails.
 This assignment is attempted on an entry-by-entry basis.
 ```
-None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
-	1. *If* `expr` is a SemanticTuple *and* `type` is a Tuple type:
-		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `expr`.
-		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.
-		3. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
-		4. *If* `seq_a.count` is less than `seq_b_req.count`:
-			1. *Throw:* a new TypeErrorNotAssignable.
-		5. *For index* `i` in `seq_b`:
-			1. *If* `seq_b[i].optional` is `false`:
-				1. *Assert:* `seq_a[i]` is set.
-			2. *If* `seq_a[i]` is set:
-				1. *Let* `a_type` be *Unwrap:* `TypeOf(seq_a[i])`.
-				2. *If* *UnwrapAffirm:* `Subtype(a_type, seq_b[i].type)` is `false`:
-					1. *Throw:* a new TypeErrorNotAssignable.
-	2. *If* `expr` is a SemanticRecord *and* `type` is a Record type:
-		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `expr`.
-		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `type`.
-		3. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
-		4. *If* `seq_a.count` is less than `struct_b_req.count`:
-			1. *Throw:* a new TypeErrorNotAssignable.
-		5. *For key* `k` in `struct_b`:
-			1. *Let* `a_prop` be an item `ai` in `seq_a` such that `ai.0.id` is `k`, if it exists, else the value *none*.
-			2. *If* `struct_b[k].optional` is `false` *and* `a_prop` is *none*:
-				1. *Throw:* a new TypeErrorNotAssignable.
-			3. *If* `a_prop` is not *none*:
-				1. *Let* `a_type` be *Unwrap:* `TypeOf(a_prop)`.
-				2. *If* *UnwrapAffirm:* `Subtype(a_type, struct_b[k].type)` is `false`:
-					1. *Throw:* a new TypeErrorNotAssignable.
-	3. *If* `expr` is a SemanticSet *and* `type` is a Set type:
+None! AssignTo(Or<SemanticSet, SemanticMap> expr, Type type) :=
+	1. *If* `expr` is a SemanticSet *and* `type` is a Set type:
 		1. *Let* `b_type` be the invariant over `type`.
 		2. *For each* `a_el` in `expr`:
 			1. *Let* `a_type` be *Unwrap:* `TypeOf(a_el)`.
 			2. *If* *UnwrapAffirm:* `Subtype(a_type, b_type)` is `false`:
 				1. *Throw:* a new TypeErrorNotAssignable.
-	4. *If* `expr` is a SemanticMap *and* `type` is a Map type:
+	2. *If* `expr` is a SemanticMap *and* `type` is a Map type:
 		1. *Let* `b_ant_type` be the antecedent invariant over `type`.
 		2. *Let* `b_con_type` be the consequent invariant over `type`.
 		3. *For each* `a_case` in `expr`:
@@ -379,7 +352,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 				1. *Throw:* a new TypeErrorNotAssignable.
 			4. *If* *UnwrapAffirm:* `Subtype(a_con_type, b_con_type)` is `false`:
 				1. *Throw:* a new TypeErrorNotAssignable.
-	5. *Throw:* a new TypeErrorNotAssignable.
+	3. *Throw:* a new TypeErrorNotAssignable.
 ;
 ```
 

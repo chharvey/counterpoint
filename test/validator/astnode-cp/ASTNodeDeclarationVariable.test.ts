@@ -155,6 +155,34 @@ describe('ASTNodeDeclarationVariable', () => {
 			});
 		});
 		context('assigning a collection literal to a wider mutable type.', () => {
+			it('disallows assigning Tuples/Records to Lists/Dicts', () => {
+				typeCheckGoal(`
+					let t1_1: List.<42 | 4.3> = [42];
+					let t2_1: List.<int>      = [42];
+
+					let t1_2: mutable List.<42 | 4.3> = [43];
+					let t2_2: mutable List.<int>      = [43];
+
+					let r1_1: Dict.<42 | 4.3> = [a= 42];
+					let r2_1: Dict.<int>      = [a= 42];
+
+					let r1_2: mutable Dict.<42 | 4.3> = [a= 43];
+					let r2_2: mutable Dict.<int>      = [a= 43];
+
+					let t3_1: [               List.<float>] = [       [4.3]];
+					let t3_2: [       mutable List.<float>] = [       [4.3]];
+					let r3_1: [inner:         List.<float>] = [inner= [4.3]];
+					let r3_2: [inner: mutable List.<float>] = [inner= [4.3]];
+				`.split('\n'), TypeErrorNotAssignable);
+			});
+			it('allows assigning Sets and Maps.', () => {
+				typeCheckGoal(`
+					let s: mutable (int | str){} = {42,   "43"};
+					let m: mutable {int -> str}  = {42 -> "43"};
+					s.["44"] = true;
+					m.[44]   = "45";
+				`);
+			});
 			it('should throw when assigning combo type to union.', () => {
 				typeCheckGoal([
 					'let x: [   bool,    int] | [   int,    bool] = [   true,    true];',

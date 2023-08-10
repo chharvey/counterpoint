@@ -1,10 +1,8 @@
-import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
 	type INST,
 	type Builder,
-	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -15,7 +13,6 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeFamily} from '../utils-private.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
@@ -63,21 +60,5 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		return (items.includes(null))
 			? null
 			: new OBJ.Tuple(items as OBJ.Object[]);
-	}
-
-	@ASTNodeCollectionLiteral.assignToDeco
-	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
-		if (assignee instanceof TYPE.TypeTuple) {
-			if (this.children.length < assignee.count[0]) {
-				throw err;
-			}
-			return xjs.Array.forEachAggregated(assignee.invariants, (thattype, i) => {
-				const expr: ASTNodeExpression | undefined = this.children[i];
-				if (expr) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- bug
-					return ASTNodeCP.assignExpression(expr, thattype.type, expr);
-				}
-			});
-		}
-		throw err;
 	}
 }
