@@ -93,7 +93,7 @@ type MyType = float; % AssignmentError: Duplicate declaration of `MyType`.
 Solution(s): Remove the duplicate declaration, or change it to a reassignment (if possible).
 
 #### 2202: AssignmentErrorDuplicateKey
-Cause: A duplicate key in a record/struct literal or type literal was encountered.
+Cause: A duplicate key in a record literal or type literal was encountered.
 ```
 [foo= "a", foo= "b"]; % AssignmentError: Duplicate record key `foo`.
 

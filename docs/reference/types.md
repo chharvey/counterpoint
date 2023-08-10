@@ -920,7 +920,7 @@ The number of cases in a map is called its **count**.
 Map types are declared via the **generic map type syntax**: `Map.<K, V>`
 where `K` indicates the type of antecedents and `V` indicates the type of consequents in the map.
 Maps may be constructed via the constructor syntax `Map.<K, V>(arg)`,
-where `arg` is a [Tuple](#tuples) object of key-value pairs (also tuples or vects).
+where `arg` is a [Tuple](#tuples) object of key-value pairs (also Tuples).
 ```
 let bases: Map.<int | str, obj> = Map.<int | str, obj>([
 	[1,     "who"],
