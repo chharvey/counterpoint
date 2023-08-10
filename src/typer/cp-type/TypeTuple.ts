@@ -71,7 +71,6 @@ export class TypeTuple extends Type {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeTuple
 			&& this.count[0] >= t.count[0]
-			&& !t.isMutable
 			&& t.invariants.every((thattype, i) => {
 				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 				const thistype: TypeEntry | undefined = this.invariants[i];

@@ -70,7 +70,6 @@ export class TypeRecord extends Type {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeRecord
 			&& this.count[0] >= t.count[0]
-			&& !t.isMutable
 			&& [...t.invariants].every(([id, thattype]) => {
 				const thistype: TypeEntry | undefined = this.invariants.get(id);
 				if (!thattype.optional) {

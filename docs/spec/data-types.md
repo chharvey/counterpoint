@@ -547,18 +547,13 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
 		5. *If* `seq_a_req.count` is less than `seq_b_req.count`:
 			1. *Return:* `false`.
-		6. *If* `b` is mutable:
-			1. *If* `a` is not mutable:
-				1. *Return:* `false`.
-		7. *For index* `i` in `seq_b`:
+		6. *For index* `i` in `seq_b`:
 			1. *If* `seq_b[i].optional` is `false`:
 				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
 			2. *If* `seq_a[i]` is set:
-				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(seq_a[i].type, seq_b[i].type)` is `false`:
+				1. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
 					1. *Return:* `false`.
-				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
-					1. *Return:* `false`.
-		9. *Return:* `true`.
+		7. *Return:* `true`.
 	11. *If* `a` is a Record type *and* `b` is a Record type:
 		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
@@ -566,19 +561,14 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
 		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
 			1. *Return:* `false`.
-		6. *If* `b` is mutable:
-			1. *If* `a` is not mutable:
-				1. *Return:* `false`.
-		9. *For key* `k` in `struct_b`:
+		6. *For key* `k` in `struct_b`:
 			1. *If* `struct_b[k].optional` is `false`:
 				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
 					1. *Return:* `false`.
 			2. *If* `struct_a[k]` is set:
-				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(struct_a[k].type, struct_b[k].type)` is `false`:
+				1. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 					1. *Return:* `false`.
-				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
-					1. *Return:* `false`.
-		9. *Return:* `true`.
+		7. *Return:* `true`.
 	12. *If* `a` is a List type *and* `b` is a List type:
 		1. *Let* `ai` be the union of types in `a`.
 		2. *Let* `bi` be the union of types in `b`.
