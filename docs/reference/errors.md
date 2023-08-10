@@ -41,10 +41,10 @@ If this is the case, the code is said to be “invalid” (“not valid”).
 ### Reference Errors (21xx)
 A reference error is raised when the compiler fails to dereference an identifier.
 
-1.  2100         — A general reference error not covered by one of the following cases.
-1. [2101](#2101) — The validator encountered a variable that was never declared.
-1. [2102](#2102) — The validator encountered a variable that was used before it was declared.
-1. [2103](#2103) — The validator encountered a symbol of the wrong kind.
+1.  2100                                  — A general reference error not covered by one of the following cases.
+1. [2101](#2101-referenceerrorundeclared) — The validator encountered a variable that was never declared.
+1. [2102](#2102-referenceerrordeadzone)   — The validator encountered a variable that was used before it was declared.
+1. [2103](#2103-referenceerrorkind)       — The validator encountered a symbol of the wrong kind.
 
 #### 2101: ReferenceErrorUndeclared
 Cause: A variable was referenced but was not declared.
@@ -76,10 +76,10 @@ Solution(s): Keep types and variables separate.
 ### Assignment Errors (22xx)
 An assignment error is raised when the compiler detects an illegal declaration or assignment.
 
-1.  2200         — A general assignment error not covered by one of the following cases.
-1. [2201](#2201) — The validator encountered a duplicate declaration.
-1. [2202](#2202) — The validator encountered a duplicate record key.
-1. [2210](#2210) — A reassignment of a fixed variable was attempted.
+1.  2200                                             — A general assignment error not covered by one of the following cases.
+1. [2201](#2201-assignmenterrorduplicatedeclaration) — The validator encountered a duplicate declaration.
+1. [2202](#2202-assignmenterrorduplicatekey)         — The validator encountered a duplicate record key.
+1. [2210](#2210-assignmenterrorreassignment)         — A reassignment of a fixed variable was attempted.
 
 #### 2201: AssignmentErrorDuplicateDeclaration
 Cause: A duplicate declaration was encountered.
@@ -113,13 +113,13 @@ Solution(s): Remove the reassignment, or make the variable `unfixed`.
 ### Type Errors (23xx)
 A type error is raised when the compiler recognizes a type mismatch.
 
-1.  2300         — A general type error not covered by one of the following cases.
-1. [2301](#2301) — The validator encountered an operation with an invalid operand.
-1. [2302](#2302) — One type is expected to be a subtype of another, but is not.
-1. [2303](#2303) — An expression was assigned to a type to which it is not assignable.
-1. [2304](#2304) — The validator encountered a non-existent index/property/argument access.
-1. [2305](#2305) — The validator encountered an attempt to call a non-callable object.
-1. [2306](#2306) — An incorrect number of arguments is passed to a callable object.
+1.  2300                                   — A general type error not covered by one of the following cases.
+1. [2301](#2301-typeerrorinvalidoperation) — The validator encountered an operation with an invalid operand.
+1. [2302](#2302-typeerrornotnarrow)        — One type is expected to be a subtype of another, but is not.
+1. [2303](#2303-typeerrornotassignable)    — An expression was assigned to a type to which it is not assignable.
+1. [2304](#2304-typeerrornoentry)          — The validator encountered a non-existent index/property/argument access.
+1. [2305](#2305-typeerrornotcallable)      — The validator encountered an attempt to call a non-callable object.
+1. [2306](#2306-typeerrorargcount)         — An incorrect number of arguments is passed to a callable object.
 
 #### 2301: TypeErrorInvalidOperation
 Cause: An invalid operation was performed.
@@ -178,8 +178,8 @@ Solution(s): Pass in an expected number of arguments.
 ### Mutability Errors (24xx)
 A mutability error is raised when the compiler recognizes an attempt to mutate an immutable object.
 
-1.  2400         — A general mutability error not covered by one of the following cases.
-1. [2401](#2401) — An item or property of an immutable object was reassigned.
+1.  2400                           — A general mutability error not covered by one of the following cases.
+1. [2401](#2401-mutabilityerror01) — An item or property of an immutable object was reassigned.
 
 #### 2401: MutabilityError01
 Cause: An immutable object was mutated.
@@ -199,8 +199,8 @@ as a result of some internal process.
 ### Void Errors (31xx)
 A void error is raised when an expression that has no value is used in some way.
 
-1.  3100         — A general mutability error not covered by one of the following cases.
-1. [3101](#3101) — A void expression is used as a value.
+1.  3100                     — A general mutability error not covered by one of the following cases.
+1. [3101](#3101-voiderror01) — A void expression is used as a value.
 
 #### 3101: VoidError01
 Cause: An expression without a value is used as a value.
@@ -214,9 +214,9 @@ assign them to variables/properties/parameters, or return them from non-void fun
 ### Nan Errors (32xx)
 A Nan error is raised when a numerical expression does not successfully evaluate.
 
-1.  3200         — A general mutability error not covered by one of the following cases.
-1. [3201](#3201) — The value is not a valid number.
-1. [3202](#3202) — Division by zero.
+1.  3200                         — A general mutability error not covered by one of the following cases.
+1. [3201](#3201-nanerrorinvalid) — The value is not a valid number.
+1. [3202](#3202-nanerrordivzero) — Division by zero.
 
 #### 3201: NanErrorInvalid
 Cause: The expression could be a numerical value but is not valid in the language.
