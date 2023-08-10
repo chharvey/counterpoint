@@ -293,24 +293,24 @@ Decorate(ExpressionGrouped<Variable> ::= "(" Expression<?Variable> ")") -> Seman
 	:= Decorate(Expression<?Variable>);
 
 Decorate(TupleLiteral<-Variable> ::= "\[" "]") -> SemanticTuple
-	:= (SemanticTuple[isRef=false]);
+	:= (SemanticTuple);
 Decorate(TupleLiteral<+Variable> ::= "[" "]") -> SemanticTuple
-	:= (SemanticTuple[isRef=true]);
+	:= (SemanticTuple);
 Decorate(TupleLiteral<-Variable> ::= "\[" ","? Expression<?Variable># ","? "]") -> SemanticTuple
-	:= (SemanticTuple[isRef=false]
+	:= (SemanticTuple
 		...ParseList(Expression<?Variable>, SemanticExpression)
 	);
 Decorate(TupleLiteral<+Variable> ::= "[" ","? Expression<?Variable># ","? "]") -> SemanticTuple
-	:= (SemanticTuple[isRef=true]
+	:= (SemanticTuple
 		...ParseList(Expression<?Variable>, SemanticExpression)
 	);
 
 Decorate(RecordLiteral<-Variable> ::= "\[" ","? Property<?Variable># ","? "]") -> SemanticRecord
-	:= (SemanticRecord[isRef=false]
+	:= (SemanticRecord
 		...ParseList(Property<?Variable>, SemanticProperty)
 	);
 Decorate(RecordLiteral<+Variable> ::= "[" ","? Property<?Variable># ","? "]") -> SemanticRecord
-	:= (SemanticRecord[isRef=true]
+	:= (SemanticRecord
 		...ParseList(Property<?Variable>, SemanticProperty)
 	);
 

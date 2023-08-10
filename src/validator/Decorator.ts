@@ -360,7 +360,6 @@ class Decorator {
 				node.children
 					.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
 					.map((c) => this.decorateTS(c)),
-				false,
 			)],
 
 			['tuple_literal__variable', (node) => new AST.ASTNodeTuple(
@@ -368,7 +367,6 @@ class Decorator {
 				node.children
 					.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
 					.map((c) => this.decorateTS(c)),
-				true,
 			)],
 
 			['record_literal', (node) => new AST.ASTNodeRecord(
@@ -376,7 +374,6 @@ class Decorator {
 				node.children
 					.filter((c): c is SyntaxNodeType<'property'> => isSyntaxNodeType(c, 'property'))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeProperty>,
-				false,
 			)],
 
 			['record_literal__variable', (node) => new AST.ASTNodeRecord(
@@ -384,7 +381,6 @@ class Decorator {
 				node.children
 					.filter((c): c is SyntaxNodeType<'property__variable'> => isSyntaxNodeType(c, 'property__variable'))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeProperty>,
-				true,
 			)],
 
 			['set_literal', (node) => new AST.ASTNodeSet(

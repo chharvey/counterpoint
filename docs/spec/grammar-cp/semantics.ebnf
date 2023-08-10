@@ -103,10 +103,10 @@ SemanticCollectionLiteral =:=
 	| SemanticMap
 ;
 
-SemanticTuple  [isRef: Boolean] ::= SemanticExpression*;
-SemanticRecord [isRef: Boolean] ::= SemanticProperty+;
-SemanticSet                     ::= SemanticExpression*;
-SemanticMap                     ::= SemanticCase+;
+SemanticTuple  ::= SemanticExpression*;
+SemanticRecord ::= SemanticProperty+;
+SemanticSet    ::= SemanticExpression*;
+SemanticMap    ::= SemanticCase+;
 
 SemanticAccess[kind: NORMAL | OPTIONAL | CLAIM]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);

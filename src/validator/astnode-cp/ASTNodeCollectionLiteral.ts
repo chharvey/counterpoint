@@ -23,9 +23,8 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 		,
 		public override readonly children: readonly ASTNodeCP[],
 		/** Does this node represent a reference object (versus a value object)? */
-		public readonly isRef: boolean = true,
 	) {
-		super(start_node, {isRef}, children);
+		super(start_node, {}, children);
 	}
 
 	public override shouldFloat(): boolean {

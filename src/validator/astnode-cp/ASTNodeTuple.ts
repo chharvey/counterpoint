@@ -28,9 +28,8 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	public constructor(
 		start_node: SyntaxNodeFamily<'tuple_literal', ['variable']>,
 		public override readonly children: readonly ASTNodeExpression[],
-		is_ref: boolean,
 	) {
-		super(start_node, children, is_ref);
+		super(start_node, children);
 	}
 
 	public override shouldFloat(): boolean {
