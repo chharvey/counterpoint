@@ -51,24 +51,22 @@ ItemsType<Variable> ::=
 PropertiesType<Variable>
 	::= EntryType<+Named><-Optional, +Optional><?Variable># ","?;
 
-TypeGrouped       <Variable> ::=                            "(" Type<?Variable>                      ")";
-TypeTupleLiteral  <Variable> ::= <Variable->"\[" <Variable+>"[" (","? ItemsType<?Variable>)?         "]";
-TypeRecordLiteral <Variable> ::= <Variable->"\[" <Variable+>"["  ","? PropertiesType<?Variable>      "]";
-TypeDictLiteral              ::=                            "[" ":" Type<+Variable>                  "]";
-TypeMapLiteral               ::=                            "{" Type<+Variable> "->" Type<+Variable> "}";
-GenericArguments             ::=                            "<"  ","? Type<+Variable># ","?          ">";
+TypeGrouped       <Variable> ::= "(" Type<?Variable>                      ")";
+TypeTupleLiteral  <Variable> ::= "[" (","? ItemsType<?Variable>)?         "]";
+TypeRecordLiteral <Variable> ::= "["  ","? PropertiesType<?Variable>      "]";
+TypeDictLiteral              ::= "[" ":" Type<+Variable>                  "]";
+TypeMapLiteral               ::= "{" Type<+Variable> "->" Type<+Variable> "}";
+GenericArguments             ::= "<"  ","? Type<+Variable># ","?          ">";
 
 TypeUnit<Variable> ::=
 	| KEYWORD_TYPE
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| TypeGrouped       <?Variable>
-	| TypeTupleLiteral  <-Variable>
-	| TypeRecordLiteral <-Variable>
-	| <Variable+>TypeTupleLiteral  <?Variable>
-	| <Variable+>TypeRecordLiteral <?Variable>
-	| <Variable+>TypeDictLiteral
-	| <Variable+>TypeMapLiteral
+	| TypeTupleLiteral  <?Variable>
+	| TypeRecordLiteral <?Variable>
+	| TypeDictLiteral
+	| TypeMapLiteral
 ;
 
 PropertyAccessType ::= "." (INTEGER | Word);
@@ -84,9 +82,8 @@ TypeUnarySymbol<Variable> ::=
 	| TypeUnarySymbol<?Variable> (
 		| "?"
 		| "!"
-		| "\[" INTEGER "]"
-		| <Variable+>("[" INTEGER? "]")
-		| <Variable+>("{" "}")
+		| "[" INTEGER? "]"
+		| "{" "}"
 	)
 ;
 
@@ -112,24 +109,22 @@ StringTemplate<Variable> ::=
 Property <Variable> ::= Word                  "="  Expression<?Variable>;
 Case                ::= Expression<+Variable> "->" Expression<+Variable>;
 
-ExpressionGrouped <Variable> ::=                            "("        Expression <?Variable>          ")";
-TupleLiteral      <Variable> ::= <Variable->"\[" <Variable+>"[" ( ","? Expression <?Variable># ","? )? "]";
-RecordLiteral     <Variable> ::= <Variable->"\[" <Variable+>"["   ","? Property   <?Variable># ","?    "]";
-SetLiteral                   ::=                            "{" ( ","? Expression <+Variable># ","? )? "}";
-MapLiteral                   ::=                            "{"   ","? Case#                   ","?    "}";
-FunctionArguments            ::=                            "(" ( ","? Expression <+Variable># ","? )? ")";
+ExpressionGrouped <Variable> ::= "("        Expression <?Variable>          ")";
+TupleLiteral      <Variable> ::= "[" ( ","? Expression <?Variable># ","? )? "]";
+RecordLiteral     <Variable> ::= "["   ","? Property   <?Variable># ","?    "]";
+SetLiteral                   ::= "{" ( ","? Expression <+Variable># ","? )? "}";
+MapLiteral                   ::= "{"   ","? Case#                   ","?    "}";
+FunctionArguments            ::= "(" ( ","? Expression <+Variable># ","? )? ")";
 
 ExpressionUnit<Variable> ::=
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate    <?Variable>
 	| ExpressionGrouped <?Variable>
-	| TupleLiteral      <-Variable>
-	| RecordLiteral     <-Variable>
-	| <Variable+>TupleLiteral  <?Variable>
-	| <Variable+>RecordLiteral <?Variable>
-	| <Variable+>SetLiteral
-	| <Variable+>MapLiteral
+	| TupleLiteral      <?Variable>
+	| RecordLiteral     <?Variable>
+	| SetLiteral
+	| MapLiteral
 ;
 
 PropertyAccess<Variable> ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression<?Variable> "]");

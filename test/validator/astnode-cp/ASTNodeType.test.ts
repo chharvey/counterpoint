@@ -27,14 +27,8 @@ describe('ASTNodeType', () => {
 						{type: TYPE.STR,  optional: true},
 					] as const;
 					return assert.deepStrictEqual(
-						[
-							AST.ASTNodeTypeTuple.fromSource('  [int, bool, ?:str]').eval(),
-							AST.ASTNodeTypeTuple.fromSource('\\[int, bool, ?:str]').eval(),
-						],
-						[
-							new TYPE.TypeTuple(expected),
-							new TYPE.TypeTuple(expected),
-						],
+						AST.ASTNodeTypeTuple.fromSource('[int, bool, ?:str]').eval(),
+						new TYPE.TypeTuple(expected),
 					);
 				});
 			});
@@ -47,16 +41,9 @@ describe('ASTNodeType', () => {
 						{type: TYPE.STR,  optional: false},
 					] as const;
 					const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('  [x: int, y?: bool, z: str]');
-					const str: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('\\[x: int, y?: bool, z: str]');
 					return assert.deepStrictEqual(
-						[
-							rec.eval(),
-							str.eval(),
-						],
-						[
-							new TYPE.TypeRecord(new Map<bigint, TypeEntry>(rec.children.map((c, i) => [c.key.id, expected[i]]))),
-							new TYPE.TypeRecord(new Map<bigint, TypeEntry>(str.children.map((c, i) => [c.key.id, expected[i]]))),
-						],
+						rec.eval(),
+						new TYPE.TypeRecord(new Map<bigint, TypeEntry>(rec.children.map((c, i) => [c.key.id, expected[i]]))),
 					);
 				});
 			});
@@ -75,19 +62,12 @@ describe('ASTNodeType', () => {
 						TYPE.INT.union(TYPE.BOOL),
 					] as const;
 					return assert.deepStrictEqual(
-						[
-							AST.ASTNodeTypeList.fromSource('(int | bool)  [3]').eval(),
-							AST.ASTNodeTypeList.fromSource('(int | bool)\\[3]').eval(),
-						],
-						[
-							TYPE.TypeTuple.fromTypes(expected),
-							TYPE.TypeTuple.fromTypes(expected),
-						],
+						AST.ASTNodeTypeList.fromSource('(int | bool)[3]').eval(),
+						TYPE.TypeTuple.fromTypes(expected),
 					);
 				});
 				it('throws if count is negative.', () => {
 					       assert.throws(() => AST.ASTNodeTypeList.fromSource('(int | bool)  [-3]').eval(), TypeError);
-					return assert.throws(() => AST.ASTNodeTypeList.fromSource('(int | bool)\\[-3]').eval(), TypeError);
 				});
 			});
 
@@ -109,11 +89,8 @@ describe('ASTNodeType', () => {
 			it('does not throw if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					type A =   [int, List.<float>, str];
-					type B = \\[int, List.<float>, str];
 					type C =   [a: int, b: List.<float>, c: str];
-					type D = \\[a: int, b: List.<float>, c: str];
 					type E = Set.<float>  [3];
-					type F = Set.<float>\\[3];
 				`);
 				goal.varCheck();
 				goal.typeCheck(); // assert does not throw

@@ -15,7 +15,7 @@ describe('Object', () => {
 					new OBJ.String('earth'),
 					new OBJ.String('wind'),
 					new OBJ.String('fire'),
-				])), '\\[earth, wind, fire] === \\[earth, wind, fire]');
+				])), '["earth", "wind", "fire"] === ["earth", "wind", "fire"]');
 			});
 		});
 
@@ -29,7 +29,7 @@ describe('Object', () => {
 					[0x100n, new OBJ.String('earth')],
 					[0x101n, new OBJ.String('wind')],
 					[0x102n, new OBJ.String('fire')],
-				]))), '\\[a= earth, b= wind, c= fire] === \\[a= earth, b= wind, c= fire]');
+				]))), '[a= "earth", b= "wind", c= "fire"] === [a= "earth", b= "wind", c= "fire"]');
 			});
 		});
 	});
@@ -47,12 +47,7 @@ describe('Object', () => {
 					new OBJ.String('earth'),
 					new OBJ.String('wind'),
 					new OBJ.String('fire'),
-				])), 't == [earth, wind, fire]');
-				assert.ok(t.equal(new OBJ.Tuple<OBJ.String>([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
-				])), 't == \\[earth, wind, fire]');
+				])), 't == ["earth", "wind", "fire"]');
 			});
 		});
 
@@ -67,12 +62,7 @@ describe('Object', () => {
 					[0x100n, new OBJ.String('earth')],
 					[0x101n, new OBJ.String('wind')],
 					[0x102n, new OBJ.String('fire')],
-				]))), 'r == [a= earth, b= wind, c= fire]');
-				assert.ok(r.equal(new OBJ.Record<OBJ.String>(new Map<bigint, OBJ.String>([
-					[0x100n, new OBJ.String('earth')],
-					[0x101n, new OBJ.String('wind')],
-					[0x102n, new OBJ.String('fire')],
-				]))), 'r == \\[a= earth, b= wind, c= fire]');
+				]))), 'r == [a= "earth", b= "wind", c= "fire"]');
 			});
 		});
 

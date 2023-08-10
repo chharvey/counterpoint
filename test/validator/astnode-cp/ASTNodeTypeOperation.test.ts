@@ -42,11 +42,8 @@ describe('ASTNodeTypeOperation', () => {
 
 			it('throws if operating on any value type.', () => {
 				[
-					'mutable \\[int, float, str]',
 					'mutable [int, float, str]',
-					'mutable \\[a: int, b: float, c: str]',
 					'mutable [a: int, b: float, c: str]',
-					'mutable int\\[3]',
 					'mutable int[3]',
 					'mutable never',
 					'mutable void',

@@ -123,21 +123,21 @@ describe('ASTNodeDeclarationVariable', () => {
 		context('assigning a collection to a constant collection type.', () => {
 			it('allows assigning a constant collection literal', () => {
 				typeCheckGoal(`
-					let c: int\\[3] = \\[42, 420, 4200];
-					let d: \\[n42: int, n420: int] = \\[
+					let c: int[3] = [42, 420, 4200];
+					let d: [n42: int, n420: int] = [
 						n42=  42,
 						n420= 420,
 					];
 				`);
 				typeCheckGoal(`
-					let v: [   int,    str] = \\[   42,    "hello"];
-					let s: [a: int, b: str] = \\[a= 42, b= "hello"];
+					let v: [   int,    str] = [   42,    "hello"];
+					let s: [a: int, b: str] = [a= 42, b= "hello"];
 				`.split('\n'));
 			});
 			it('allows assigning a variable collection literal (unboxing at runtime).', () => {
 				typeCheckGoal([
-					'let g: int\\[3] = [42, 420, 4200];',
-					`let h: \\[n42: int, n420: int] = [
+					'let g: int[3] = [42, 420, 4200];',
+					`let h: [n42: int, n420: int] = [
 						n42=  42,
 						n420= 420,
 					];`,
@@ -145,12 +145,12 @@ describe('ASTNodeDeclarationVariable', () => {
 			});
 			it('allows assigning to super reference type (autoboxing at runtime).', () => {
 				typeCheckGoal(`
-					let v: Object = \\[   42,    "hello"];
-					let s: Object = \\[a= 42, b= "hello"];
+					let v: Object = [   42,    "hello"];
+					let s: Object = [a= 42, b= "hello"];
 				`.split('\n'));
 				typeCheckGoal(`
-					let v: mutable Object = \\[   42,    "hello"];
-					let s: mutable Object = \\[a= 42, b= "hello"];
+					let v: mutable Object = [   42,    "hello"];
+					let s: mutable Object = [a= 42, b= "hello"];
 				`.split('\n')); // mutable Object == Object
 			});
 		});

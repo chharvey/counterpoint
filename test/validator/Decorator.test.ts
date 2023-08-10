@@ -73,35 +73,19 @@ describe('Decorator', () => {
 			`]],
 
 			/* ## Types */
-			['Decorate(EntryType<-Named><-Optional><-Variable> ::= Type<?Variable>) -> SemanticItemType', [AST.ASTNodeItemType, `
-				type T = \\[int];
-				% (entry_type)
-			`]],
-			['Decorate(EntryType<-Named><-Optional><+Variable> ::= Type<?Variable>) -> SemanticItemType', [AST.ASTNodeItemType, `
+			['Decorate(EntryType<-Named><-Optional><?Variable> ::= Type<?Variable>) -> SemanticItemType', [AST.ASTNodeItemType, `
 				type T = [int];
 				% (entry_type__variable)
 			`]],
-			['Decorate(EntryType<-Named><+Optional><-Variable> ::= "?:" Type<?Variable>) -> SemanticItemType', [AST.ASTNodeItemType, `
-				type T = \\[?: int];
-				% (entry_type__optional)
-			`]],
-			['Decorate(EntryType<-Named><+Optional><+Variable> ::= "?:" Type<?Variable>) -> SemanticItemType', [AST.ASTNodeItemType, `
+			['Decorate(EntryType<-Named><+Optional><?Variable> ::= "?:" Type<?Variable>) -> SemanticItemType', [AST.ASTNodeItemType, `
 				type T = [?: int];
 				% (entry_type__optional__variable)
 			`]],
-			['Decorate(EntryType<+Named><-Optional><-Variable> ::= Word ":" Type<?Variable>) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
-				type T = \\[a: int];
-				% (entry_type__named)
-			`]],
-			['Decorate(EntryType<+Named><-Optional><+Variable> ::= Word ":" Type<?Variable>) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
+			['Decorate(EntryType<+Named><-Optional><?Variable> ::= Word ":" Type<?Variable>) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
 				type T = [a: int];
 				% (entry_type__named__variable)
 			`]],
-			['Decorate(EntryType<+Named><+Optional><-Variable> ::= Word "?:" Type<?Variable>) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
-				type T = \\[a?: int];
-				% (entry_type__named__optional)
-			`]],
-			['Decorate(EntryType<+Named><+Optional><+Variable> ::= Word "?:" Type<?Variable>) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
+			['Decorate(EntryType<+Named><+Optional><?Variable> ::= Word "?:" Type<?Variable>) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
 				type T = [a?: int];
 				% (entry_type__named__optional__variable)
 			`]],
@@ -111,28 +95,16 @@ describe('Decorator', () => {
 				% (type_grouped__variable)
 			`]],
 
-			['Decorate(TypeTupleLiteral<-Variable> ::= "\\[" "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
-				type T = \\[];
-				% (type_tuple_literal)
-			`]],
-			['Decorate(TypeTupleLiteral<+Variable> ::= "[" "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
+			['Decorate(TypeTupleLiteral<?Variable> ::= "[" "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
 				type T = [];
 				% (type_tuple_literal__variable)
 			`]],
-			['Decorate(TypeTupleLiteral<-Variable> ::= "\\[" ","? ItemsType<?Variable> "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
-				type T = \\[int, ?: float];
-				% (type_tuple_literal)
-			`]],
-			['Decorate(TypeTupleLiteral<+Variable> ::= "[" ","? ItemsType<?Variable> "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
+			['Decorate(TypeTupleLiteral<?Variable> ::= "[" ","? ItemsType<?Variable> "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
 				type T = [int, ?: float];
 				% (type_tuple_literal__variable)
 			`]],
 
-			['Decorate(TypeRecordLiteral<-Variable> ::= "\\[" ","? PropertiesType<?Variable> ","? "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
-				type T = \\[a?: int, b: float];
-				% (type_record_literal)
-			`]],
-			['Decorate(TypeRecordLiteral<+Variable> ::= "[" ","? PropertiesType<?Variable> ","? "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
+			['Decorate(TypeRecordLiteral<?Variable> ::= "[" ","? PropertiesType<?Variable> ","? "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
 				type T = [a?: int, b: float];
 				% (type_record_literal__variable)
 			`]],
@@ -165,27 +137,23 @@ describe('Decorator', () => {
 				% (type_compound__variable)
 			`]],
 
-			['Decorate(TypeUnarySymbol<Variable> ::= TypeUnarySymbol<?Variable> "?") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+			['Decorate(TypeUnarySymbol<?Variable> ::= TypeUnarySymbol<?Variable> "?") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				type T = U?;
 				% (type_unary_symbol__variable)
 			`]],
-			['skip: Decorate(TypeUnarySymbol<Variable> ::= TypeUnarySymbol<?Variable> "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+			['skip: Decorate(TypeUnarySymbol<?Variable> ::= TypeUnarySymbol<?Variable> "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				type T = U!;
 				% (type_unary_symbol__variable)
 			`]],
-			['Decorate(TypeUnarySymbol<Variable> ::= TypeUnarySymbol<?Variable> "\\[" INTEGER "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
-				type T = int\\[3];
-				% (type_unary_symbol__variable)
-			`]],
-			['Decorate(TypeUnarySymbol<+Variable> ::= TypeUnarySymbol<?Variable> "[" "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
+			['Decorate(TypeUnarySymbol<?Variable> ::= TypeUnarySymbol<?Variable> "[" "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
 				type T = U[];
 				% (type_unary_symbol__variable)
 			`]],
-			['Decorate(TypeUnarySymbol<+Variable> ::= TypeUnarySymbol<?Variable> "[" INTEGER "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
+			['Decorate(TypeUnarySymbol<?Variable> ::= TypeUnarySymbol<?Variable> "[" INTEGER "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
 				type T = U[3];
 				% (type_unary_symbol__variable)
 			`]],
-			['Decorate(TypeUnarySymbol<+Variable> ::= TypeUnarySymbol<?Variable> "{" "}") -> SemanticTypeSet', [AST.ASTNodeTypeSet, `
+			['Decorate(TypeUnarySymbol<?Variable> ::= TypeUnarySymbol<?Variable> "{" "}") -> SemanticTypeSet', [AST.ASTNodeTypeSet, `
 				type T = U{};
 				% (type_unary_symbol__variable)
 			`]],
@@ -234,28 +202,16 @@ describe('Decorator', () => {
 				% (expression_grouped__variable)
 			`]],
 
-			['Decorate(TupleLiteral<-Variable> ::= "\\[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
-				\\[];
-				% (tuple_literal)
-			`]],
-			['Decorate(TupleLiteral<+Variable> ::= "[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+			['Decorate(TupleLiteral<?Variable> ::= "[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
 				[];
 				% (tuple_literal__variable)
 			`]],
-			['Decorate(TupleLiteral<-Variable> ::= "\\[" ","? Expression<?Variable># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
-				\\[42, 6.9];
-				% (tuple_literal)
-			`]],
-			['Decorate(TupleLiteral<+Variable> ::= "[" ","? Expression<?Variable># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+			['Decorate(TupleLiteral<?Variable> ::= "[" ","? Expression<?Variable># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
 				[42, 6.9];
 				% (tuple_literal__variable)
 			`]],
 
-			['Decorate(RecordLiteral<-Variable> ::= "\\[" ","? Property<?Variable># ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
-				\\[a= 42, b= 6.9];
-				% (record_literal)
-			`]],
-			['Decorate(RecordLiteral<+Variable> ::= "[" ","? Property<?Variable># ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
+			['Decorate(RecordLiteral<?Variable> ::= "[" ","? Property<?Variable># ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
 				[a= 42, b= 6.9];
 				% (record_literal__variable)
 			`]],

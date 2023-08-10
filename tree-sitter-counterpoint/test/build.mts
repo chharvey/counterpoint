@@ -252,20 +252,13 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		TypeTupleLiteral: [
 			xjs.String.dedent`
-				type T = \\[bool, int, ?: str];
 				type T = [bool, int, ?: str];
-				type U = \\[
+				type U = [
 					V.0,
 					W.<float>,
 				];
 			`,
 			sourceTypes(
-				s(
-					'type_tuple_literal',
-					s('entry_type',           s('keyword_type')),
-					s('entry_type',           s('keyword_type')),
-					s('entry_type__optional', s('keyword_type')),
-				),
 				s(
 					'type_tuple_literal__variable',
 					s('entry_type__variable',           s('keyword_type')),
@@ -273,19 +266,19 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('entry_type__optional__variable', s('keyword_type')),
 				),
 				s(
-					'type_tuple_literal',
+					'type_tuple_literal__variable',
 					s(
-						'entry_type',
+						'entry_type__variable',
 						s(
-							'type_compound',
+							'type_compound__variable',
 							s('identifier'),
 							s('property_access_type', s('integer')),
 						),
 					),
 					s(
-						'entry_type',
+						'entry_type__variable',
 						s(
-							'type_compound',
+							'type_compound__variable',
 							s('identifier'),
 							s(
 								'generic_call',
@@ -299,20 +292,13 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		TypeRecordLiteral: [
 			xjs.String.dedent`
-				type T = \\[a: bool, b?: int, c: str];
 				type T = [a: bool, b?: int, c: str];
-				type U = \\[
+				type U = [
 					a: V.0,
 					b: W.<float>,
 				];
 			`,
 			sourceTypes(
-				s(
-					'type_record_literal',
-					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
-					s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
-					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
-				),
 				s(
 					'type_record_literal__variable',
 					s('entry_type__named__variable',           s('word', s('identifier')), s('keyword_type')),
@@ -320,21 +306,21 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('entry_type__named__variable',           s('word', s('identifier')), s('keyword_type')),
 				),
 				s(
-					'type_record_literal',
+					'type_record_literal__variable',
 					s(
-						'entry_type__named',
+						'entry_type__named__variable',
 						s('word', s('identifier')),
 						s(
-							'type_compound',
+							'type_compound__variable',
 							s('identifier'),
 							s('property_access_type', s('integer')),
 						),
 					),
 					s(
-						'entry_type__named',
+						'entry_type__named__variable',
 						s('word', s('identifier')),
 						s(
-							'type_compound',
+							'type_compound__variable',
 							s('identifier'),
 							s(
 								'generic_call',
@@ -408,7 +394,6 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				type T = T?;
 				type T = T!;
-				type T = bool\\[3];
 				type T = T[];
 				type T = T[3];
 				type T = T{};
@@ -421,11 +406,6 @@ function buildTest(title: string, source: string, expected: string): string {
 				s(
 					'type_unary_symbol__variable',
 					s('identifier'),
-				),
-				s(
-					'type_unary_symbol__variable',
-					s('keyword_type'),
-					s('integer'),
 				),
 				s(
 					'type_unary_symbol__variable',
@@ -502,96 +482,62 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		TupleLiteral: [
 			xjs.String.dedent`
-				\\[1, \\[2], \\[3]];
-				  [1, \\[2],   [3]];
+				[1, [2], [[3]]];
 			`,
-			sourceExpressions(
-				s(
-					'tuple_literal',
-					                   s('primitive_literal', s('integer')),
-					s('tuple_literal', s('primitive_literal', s('integer'))),
-					s('tuple_literal', s('primitive_literal', s('integer'))),
-				),
+			sourceExpressions(s(
+				'tuple_literal__variable',
+				                             s('primitive_literal', s('integer')),
+				s('tuple_literal__variable', s('primitive_literal', s('integer'))),
 				s(
 					'tuple_literal__variable',
-					                             s('primitive_literal', s('integer')),
-					s('tuple_literal',           s('primitive_literal', s('integer'))),
 					s('tuple_literal__variable', s('primitive_literal', s('integer'))),
 				),
-			),
+			)),
 		],
 
 		RecordLiteral: [
 			xjs.String.dedent`
-				\\[a= 1, b= \\[x= 2], c= \\[y= 3]];
-				  [a= 1, b= \\[x= 2], c=   [y= 3]];
+				[a= 1, b= [x= 2], c= [y= [k= 3]]];
 			`,
-			sourceExpressions(
+			sourceExpressions(s(
+				'record_literal__variable',
 				s(
-					'record_literal',
+					'property__variable',
+					s('word', s('identifier')),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'property__variable',
+					s('word', s('identifier')),
 					s(
-						'property',
-						s('word', s('identifier')),
-						s('primitive_literal', s('integer')),
-					),
-					s(
-						'property',
-						s('word', s('identifier')),
+						'record_literal__variable',
 						s(
-							'record_literal',
-							s(
-								'property',
-								s('word', s('identifier')),
-								s('primitive_literal', s('integer')),
-							),
-						),
-					),
-					s(
-						'property',
-						s('word', s('identifier')),
-						s(
-							'record_literal',
-							s(
-								'property',
-								s('word', s('identifier')),
-								s('primitive_literal', s('integer')),
-							),
+							'property__variable',
+							s('word', s('identifier')),
+							s('primitive_literal', s('integer')),
 						),
 					),
 				),
 				s(
-					'record_literal__variable',
+					'property__variable',
+					s('word', s('identifier')),
 					s(
-						'property__variable',
-						s('word', s('identifier')),
-						s('primitive_literal', s('integer')),
-					),
-					s(
-						'property__variable',
-						s('word', s('identifier')),
+						'record_literal__variable',
 						s(
-							'record_literal',
+							'property__variable',
+							s('word', s('identifier')),
 							s(
-								'property',
-								s('word', s('identifier')),
-								s('primitive_literal', s('integer')),
-							),
-						),
-					),
-					s(
-						'property__variable',
-						s('word', s('identifier')),
-						s(
-							'record_literal__variable',
-							s(
-								'property__variable',
-								s('word', s('identifier')),
-								s('primitive_literal', s('integer')),
+								'record_literal__variable',
+								s(
+									'property__variable',
+									s('word', s('identifier')),
+									s('primitive_literal', s('integer')),
+								),
 							),
 						),
 					),
 				),
-			),
+			)),
 		],
 
 		SetLiteral: [

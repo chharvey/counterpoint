@@ -192,29 +192,15 @@ class Decorator {
 
 			[/^type_grouped(__variable)?$/, (node) => this.decorateTS(node.children[1] as SyntaxNodeSupertype<'type'>)],
 
-			['type_tuple_literal', (node) => new AST.ASTNodeTypeTuple(
-				node as SyntaxNodeType<'type_tuple_literal'>,
+			[/^type_tuple_literal(__variable)?$/, (node) => new AST.ASTNodeTypeTuple(
+				node as SyntaxNodeFamily<'type_tuple_literal', ['variable']>,
 				node.children
 					.filter((c): c is SyntaxNodeFamily<'entry_type', ['optional', 'variable']> => isSyntaxNodeFamily(c, 'entry_type', ['optional', 'variable']))
 					.map((c) => this.decorateTS(c)),
 			)],
 
-			['type_tuple_literal__variable', (node) => new AST.ASTNodeTypeTuple(
-				node as SyntaxNodeType<'type_tuple_literal__variable'>,
-				node.children
-					.filter((c): c is SyntaxNodeFamily<'entry_type', ['optional', 'variable']> => isSyntaxNodeFamily(c, 'entry_type', ['optional', 'variable']))
-					.map((c) => this.decorateTS(c)),
-			)],
-
-			['type_record_literal', (node) => new AST.ASTNodeTypeRecord(
-				node as SyntaxNodeType<'type_record_literal'>,
-				node.children
-					.filter((c): c is SyntaxNodeFamily<'entry_type__named', ['optional', 'variable']> => isSyntaxNodeFamily(c, 'entry_type__named', ['optional', 'variable']))
-					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodePropertyType>,
-			)],
-
-			['type_record_literal__variable', (node) => new AST.ASTNodeTypeRecord(
-				node as SyntaxNodeType<'type_record_literal__variable'>,
+			[/^type_record_literal(__variable)?$/, (node) => new AST.ASTNodeTypeRecord(
+				node as SyntaxNodeFamily<'type_record_literal', ['variable']>,
 				node.children
 					.filter((c): c is SyntaxNodeFamily<'entry_type__named', ['optional', 'variable']> => isSyntaxNodeFamily(c, 'entry_type__named', ['optional', 'variable']))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodePropertyType>,
@@ -273,19 +259,20 @@ class Decorator {
 					if (node.children.length === 3) { // we have either `T[]` or `T{}`
 						if (punc === Punctuator.BRAK_OPN) {
 							return new AST.ASTNodeTypeList(
-								node as SyntaxNodeType<'type_unary_symbol__variable'>,
+								node as SyntaxNodeFamily<'type_unary_symbol', ['variable']>,
 								basetype,
 								null,
 							);
 						} else {
 							assert.strictEqual(punc, Punctuator.BRAC_OPN);
 							return new AST.ASTNodeTypeSet(
-								node as SyntaxNodeType<'type_unary_symbol__variable'>,
+								node as SyntaxNodeFamily<'type_unary_symbol', ['variable']>,
 								basetype,
 							);
 						}
-					} else { // we have either `T\[n]` or `T[n]`
+					} else { // we have `T[n]`
 						assert.strictEqual(node.children.length, 4);
+						assert.strictEqual(punc, Punctuator.BRAK_OPN);
 						const count: bigint = BigInt(Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
 							...CONFIG_DEFAULT,
 							languageFeatures: {
@@ -294,20 +281,11 @@ class Decorator {
 								numericSeparators: true,
 							},
 						})[0]);
-						if (punc === Punctuator.CONST) {
-							return new AST.ASTNodeTypeList(
-								node as SyntaxNodeType<'type_unary_symbol'>,
-								basetype,
-								count,
-							);
-						} else {
-							assert.strictEqual(punc, Punctuator.BRAK_OPN);
-							return new AST.ASTNodeTypeList(
-								node as SyntaxNodeType<'type_unary_symbol__variable'>,
-								basetype,
-								count,
-							);
-						}
+						return new AST.ASTNodeTypeList(
+							node as SyntaxNodeFamily<'type_unary_symbol', ['variable']>,
+							basetype,
+							count,
+						);
 					}
 				}
 			}],
@@ -355,15 +333,8 @@ class Decorator {
 
 			[/^expression_grouped(__variable)?$/, (node) => this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>)],
 
-			['tuple_literal', (node) => new AST.ASTNodeTuple(
-				node as SyntaxNodeType<'tuple_literal'>,
-				node.children
-					.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
-					.map((c) => this.decorateTS(c)),
-			)],
-
-			['tuple_literal__variable', (node) => new AST.ASTNodeTuple(
-				node as SyntaxNodeType<'tuple_literal__variable'>,
+			[/^tuple_literal(__variable)?$/, (node) => new AST.ASTNodeTuple(
+				node as SyntaxNodeFamily<'tuple_literal', ['variable']>,
 				node.children
 					.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
 					.map((c) => this.decorateTS(c)),

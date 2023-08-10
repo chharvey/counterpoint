@@ -400,15 +400,11 @@ describe('ASTNodeExpression', () => {
 				const collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,
-					AST.ASTNodeTuple,
-					AST.ASTNodeRecord,
 					AST.ASTNodeSet,
 					AST.ASTNodeMap,
 				] = [
 					AST.ASTNodeTuple  .fromSource('  [   1,    2.0,    "three"];', config),
 					AST.ASTNodeRecord .fromSource('  [a= 1, b= 2.0, c= "three"];', config),
-					AST.ASTNodeTuple  .fromSource('\\[   1,    2.0,    "three"];', config),
-					AST.ASTNodeRecord .fromSource('\\[a= 1, b= 2.0, c= "three"];', config),
 					AST.ASTNodeSet    .fromSource('  {   1,    2.0,    "three"};', config),
 					AST.ASTNodeMap.fromSource(`
 						{
@@ -426,11 +422,6 @@ describe('ASTNodeExpression', () => {
 							c.key.id,
 							expected[i],
 						]))),
-						TYPE.TypeTuple.fromTypes(expected),
-						TYPE.TypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [
-							c.key.id,
-							expected[i],
-						]))),
 						new TYPE.TypeSet(TYPE.Type.unionAll(expected), true),
 						new TYPE.TypeMap(
 							map_ant_type,
@@ -443,9 +434,7 @@ describe('ASTNodeExpression', () => {
 			it('does not throw if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					  [   1,    List.<float>([2.2]),    "three"];
-					\\[   1,    List.<float>([2.2]),    "three"];
 					  [a= 1, b= List.<float>([2.2]), c= "three"];
-					\\[a= 1, b= List.<float>([2.2]), c= "three"];
 				`);
 				goal.varCheck();
 				goal.typeCheck(); // assert does not throw
@@ -457,22 +446,10 @@ describe('ASTNodeExpression', () => {
 			it('returns Tuple/Record for constant collections.', () => {
 				assert.deepStrictEqual(
 					[
-						AST.ASTNodeTuple  .fromSource('\\[   1,    2.0,    "three"];'),
-						AST.ASTNodeRecord .fromSource('\\[a= 1, b= 2.0, c= "three"];'),
 						AST.ASTNodeTuple  .fromSource('  [   1,    2.0,    "three"];'),
 						AST.ASTNodeRecord .fromSource('  [a= 1, b= 2.0, c= "three"];'),
 					].map((c) => c.fold()),
 					[
-						new OBJ.Tuple([
-							new OBJ.Integer(1n),
-							new OBJ.Float(2.0),
-							new OBJ.String('three'),
-						]),
-						new OBJ.Record(new Map<bigint, OBJ.Object>([
-							[0x100n, new OBJ.Integer(1n)],
-							[0x101n, new OBJ.Float(2.0)],
-							[0x102n, new OBJ.String('three')],
-						])),
 						new OBJ.Tuple([
 							new OBJ.Integer(1n),
 							new OBJ.Float(2.0),

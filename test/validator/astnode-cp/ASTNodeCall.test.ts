@@ -13,20 +13,11 @@ import {
 describe('ASTNodeCall', () => {
 	const evaluate = [
 		'List.<int>([1, 2, 3]);',
-		'List.<int>(\\[1, 2, 3]);',
 		'Dict.<int>([a= 1, b= 2, c= 3]);',
-		'Dict.<int>(\\[a= 1, b= 2, c= 3]);',
 		'Set.<int>([1, 2, 3]);',
-		'Set.<int>(\\[1, 2, 3]);',
 		`Map.<int, float>([
 			  [1, 0.1],
 			  [2, 0.2],
-			\\[3, 0.4],
-		]);`,
-		`Map.<int, float>(\\[
-			\\[1, 0.1],
-			\\[2, 0.2],
-			\\[3, 0.4],
 		]);`,
 	] as const;
 	const list_args = [
@@ -44,11 +35,8 @@ describe('ASTNodeCall', () => {
 		'Set.<int>();',
 		'Map.<int, float>();',
 		'List.<int>([]);',
-		'List.<int>(\\[]);',
 		'Set.<int>([]);',
-		'Set.<int>(\\[]);',
 		'Map.<int, float>([]);',
-		'Map.<int, float>(\\[]);',
 	] as const;
 
 
@@ -58,12 +46,8 @@ describe('ASTNodeCall', () => {
 				evaluate.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new TYPE.TypeList(TYPE.INT, true),
-					new TYPE.TypeList(TYPE.INT, true),
-					new TYPE.TypeDict(TYPE.INT, true),
 					new TYPE.TypeDict(TYPE.INT, true),
 					new TYPE.TypeSet(TYPE.INT, true),
-					new TYPE.TypeSet(TYPE.INT, true),
-					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
 					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
 				],
 			);
@@ -87,10 +71,7 @@ describe('ASTNodeCall', () => {
 					new TYPE.TypeSet(TYPE.INT, true),
 					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
 					new TYPE.TypeList(TYPE.INT, true),
-					new TYPE.TypeList(TYPE.INT, true),
 					new TYPE.TypeSet(TYPE.INT, true),
-					new TYPE.TypeSet(TYPE.INT, true),
-					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
 					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
 				],
 			);
@@ -150,16 +131,6 @@ describe('ASTNodeCall', () => {
 						new OBJ.Integer(2n),
 						new OBJ.Integer(3n),
 					]),
-					new OBJ.List<OBJ.Integer>([
-						new OBJ.Integer(1n),
-						new OBJ.Integer(2n),
-						new OBJ.Integer(3n),
-					]),
-					new OBJ.Dict<OBJ.Integer>(new Map<bigint, OBJ.Integer>([
-						[0x100n, new OBJ.Integer(1n)],
-						[0x101n, new OBJ.Integer(2n)],
-						[0x102n, new OBJ.Integer(3n)],
-					])),
 					new OBJ.Dict<OBJ.Integer>(new Map<bigint, OBJ.Integer>([
 						[0x100n, new OBJ.Integer(1n)],
 						[0x101n, new OBJ.Integer(2n)],
@@ -170,20 +141,9 @@ describe('ASTNodeCall', () => {
 						new OBJ.Integer(2n),
 						new OBJ.Integer(3n),
 					])),
-					new OBJ.Set<OBJ.Integer>(new Set<OBJ.Integer>([
-						new OBJ.Integer(1n),
-						new OBJ.Integer(2n),
-						new OBJ.Integer(3n),
-					])),
 					new OBJ.Map<OBJ.Integer, OBJ.Float>(new Map<OBJ.Integer, OBJ.Float>([
 						[new OBJ.Integer(1n), new OBJ.Float(0.1)],
 						[new OBJ.Integer(2n), new OBJ.Float(0.2)],
-						[new OBJ.Integer(3n), new OBJ.Float(0.4)],
-					])),
-					new OBJ.Map<OBJ.Integer, OBJ.Float>(new Map<OBJ.Integer, OBJ.Float>([
-						[new OBJ.Integer(1n), new OBJ.Float(0.1)],
-						[new OBJ.Integer(2n), new OBJ.Float(0.2)],
-						[new OBJ.Integer(3n), new OBJ.Float(0.4)],
 					])),
 				],
 			);
@@ -219,10 +179,7 @@ describe('ASTNodeCall', () => {
 					new OBJ.Set<never>(),
 					new OBJ.Map<never, never>(),
 					new OBJ.List<never>(),
-					new OBJ.List<never>(),
 					new OBJ.Set<never>(),
-					new OBJ.Set<never>(),
-					new OBJ.Map<never, never>(),
 					new OBJ.Map<never, never>(),
 				],
 			);
