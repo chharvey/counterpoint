@@ -11,7 +11,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeFamily} from '../utils-private.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -26,7 +26,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'expression_claim', ['variable']>,
+		start_node: SyntaxNodeType<'expression_claim'>,
 		private readonly claimed_type: ASTNodeType,
 		private readonly operand: ASTNodeExpression,
 	) {

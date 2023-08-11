@@ -17,7 +17,6 @@ import {Collection} from './Collection.js';
 /**
  * Known subclasses:
  * - Tuple
- * - Vect
  * - List
  */
 export abstract class CollectionIndexed<T extends CPObject = CPObject> extends Collection {
@@ -38,17 +37,6 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 	@strictEqual
 	@CPObject.equalsDeco
 	public override equal(value: CPObject): boolean {
-		return this.equalSubsteps(value);
-	}
-
-	/**
-	 * Substeps extracted from Equal algorithm for indexed collections.
-	 * This extraction is needed to prevent infinite recursion when performing Identical on Vects.
-	 * @param value the object to compare
-	 * @returns are the objects equal?
-	 * @final
-	 */
-	protected equalSubsteps(value: CPObject): boolean {
 		return value instanceof CollectionIndexed && this.isEqualTo(value as this, (this_, that_) => (
 			xjs.Array.is<T>(this_.items, that_.items, language_values_equal)
 		));

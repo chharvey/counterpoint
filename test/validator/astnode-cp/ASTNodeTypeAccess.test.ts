@@ -77,8 +77,8 @@ describe('ASTNodeTypeAccess', () => {
 				type E2 = RecoV.b; % type \`float | void\`
 
 				%% statements 30 – 32 %%
-				type VecC = \\[1,   2.0,   "three"];
-				type VecV = \\[int, float, str];
+				type VecC = [1,   2.0,   "three"];
+				type VecV = [int, float, str];
 
 				%% statements 32 – 44 %%
 				type F1 = VecC.0;  % type \`1\`
@@ -141,8 +141,8 @@ describe('ASTNodeTypeAccess', () => {
 				);
 			});
 			it('throws when index is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('  [1, 2.0, "three"].3')  .eval(), TypeErrorNoEntry);
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('\\[1, 2.0, "three"].-4') .eval(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[1, 2.0, "three"].3')  .eval(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[1, 2.0, "three"].-4') .eval(), TypeErrorNoEntry);
 			});
 		});
 
@@ -168,7 +168,6 @@ describe('ASTNodeTypeAccess', () => {
 			});
 			it('throws when key is out of bounds.', () => {
 				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('  [a: 1, b: 2.0, c: "three"].d') .eval(), TypeErrorNoEntry);
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('\\[a: 1, b: 2.0, c: "three"].d') .eval(), TypeErrorNoEntry);
 			});
 		});
 	});

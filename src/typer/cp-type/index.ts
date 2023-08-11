@@ -5,13 +5,9 @@ export * from './TypeUnion.js';
 export * from './TypeDifference.js';
 export * from './TypeUnit.js';
 
-export * from './TypeCollectionIndexedStatic.js';
-export * from './TypeCollectionKeyedStatic.js';
 
 export * from './TypeTuple.js';
 export * from './TypeRecord.js';
-export * from './TypeVect.js';
-export * from './TypeStruct.js';
 export * from './TypeList.js';
 export * from './TypeDict.js';
 export * from './TypeSet.js';

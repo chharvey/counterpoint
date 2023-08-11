@@ -12,6 +12,7 @@ import {
 } from '../../core/index.js';
 import type {SymbolStructureVar} from '../index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';
 import {ASTNodeAccess} from './ASTNodeAccess.js';
@@ -51,7 +52,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			}
 		}
 		const assignee_type: TYPE.Type = this.assignee.type();
-		return this.typeCheckAssignment(this.assigned, assignee_type);
+		ASTNodeCP.assignExpression(this.assigned, assignee_type, this);
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {

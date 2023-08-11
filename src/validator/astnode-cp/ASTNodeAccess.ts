@@ -16,10 +16,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {
-	SyntaxNodeType,
-	SyntaxNodeFamily,
-} from '../utils-private.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {
 	Operator,
 	type ValidAccessOperator,
@@ -40,7 +37,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
 	public constructor(
 		start_node:
-			| SyntaxNodeFamily<'expression_compound', ['variable']>
+			| SyntaxNodeType<'expression_compound'>
 			| SyntaxNodeType<'assignee'>
 		,
 		private readonly kind:     ValidAccessOperator,
@@ -84,14 +81,14 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			return (
-				(base_type instanceof TYPE.TypeCollectionIndexedStatic) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>).value, this.kind, this.accessor) :
-				(base_type instanceof TYPE.TypeList)                    ? updateAccessedDynamicType(base_type.invariant, this.kind)                                               :
+				(base_type instanceof TYPE.TypeTuple) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>).value, this.kind, this.accessor) :
+				(base_type instanceof TYPE.TypeList)  ? updateAccessedDynamicType(base_type.invariant, this.kind)                                               :
 				throw_expression(new TypeErrorNoEntry('index', base_type, this.accessor))
 			);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (
-				(base_type instanceof TYPE.TypeCollectionKeyedStatic) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
-				(base_type instanceof TYPE.TypeDict)                  ? updateAccessedDynamicType(base_type.invariant, this.kind) :
+				(base_type instanceof TYPE.TypeRecord) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
+				(base_type instanceof TYPE.TypeDict)   ? updateAccessedDynamicType(base_type.invariant, this.kind) :
 				throw_expression(new TypeErrorNoEntry('property', base_type, this.accessor))
 			);
 		} else {
@@ -99,7 +96,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			const accessor_type: TYPE.Type = this.accessor.type();
 			/* eslint-disable indent */
 			return (
-				(base_type instanceof TYPE.TypeCollectionIndexedStatic) ? (
+				(base_type instanceof TYPE.TypeTuple) ? (
 					(accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof OBJ.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
 					(accessor_type.isSubtypeOf(TYPE.INT))
 						? updateAccessedDynamicType(base_type.itemTypes(), this.kind)

@@ -19,10 +19,10 @@ describe('ASTNodeDeclarationType', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 				type T = int;
 			}`);
-			assert.ok(!goal.validator.hasSymbol(256n));
+			assert.ok(!goal.validator.hasSymbol(0x100n));
 			goal.varCheck();
-			assert.ok(goal.validator.hasSymbol(256n));
-			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
+			assert.ok(goal.validator.hasSymbol(0x100n));
+			const info: SymbolStructure | null = goal.validator.getSymbolInfo(0x100n);
 			assert_instanceof(info, SymbolStructureType);
 			assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
 		});
@@ -47,7 +47,7 @@ describe('ASTNodeDeclarationType', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			assert.deepStrictEqual(
-				(goal.validator.getSymbolInfo(256n) as SymbolStructureType).typevalue,
+				(goal.validator.getSymbolInfo(0x100n) as SymbolStructureType).typevalue,
 				TYPE.INT,
 			);
 		});

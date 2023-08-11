@@ -97,108 +97,66 @@ describe('Decorator', () => {
 			`]],
 
 			/* ## Types */
-			['Decorate(EntryType<-Named><-Optional><-Variable> ::= Type<?Variable>) -> SemanticItemType', [AST.ASTNodeItemType, `
-				{
-					type T = \\[int];
-				}
-				% (entry_type)
-			`]],
-			['Decorate(EntryType<-Named><-Optional><+Variable> ::= Type<?Variable>) -> SemanticItemType', [AST.ASTNodeItemType, `
+			['Decorate(EntryType<-Named><-Optional> ::= Type) -> SemanticItemType', [AST.ASTNodeItemType, `
 				{
 					type T = [int];
 				}
-				% (entry_type__variable)
+				% (entry_type)
 			`]],
-			['Decorate(EntryType<-Named><+Optional><-Variable> ::= "?:" Type<?Variable>) -> SemanticItemType', [AST.ASTNodeItemType, `
-				{
-					type T = \\[?: int];
-				}
-				% (entry_type__optional)
-			`]],
-			['Decorate(EntryType<-Named><+Optional><+Variable> ::= "?:" Type<?Variable>) -> SemanticItemType', [AST.ASTNodeItemType, `
+			['Decorate(EntryType<-Named><+Optional> ::= "?:" Type) -> SemanticItemType', [AST.ASTNodeItemType, `
 				{
 					type T = [?: int];
 				}
-				% (entry_type__optional__variable)
+				% (entry_type__optional)
 			`]],
-			['Decorate(EntryType<+Named><-Optional><-Variable> ::= Word ":" Type<?Variable>) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
-				{
-					type T = \\[a: int];
-				}
-				% (entry_type__named)
-			`]],
-			['Decorate(EntryType<+Named><-Optional><+Variable> ::= Word ":" Type<?Variable>) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
+			['Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
 				{
 					type T = [a: int];
 				}
-				% (entry_type__named__variable)
+				% (entry_type__named)
 			`]],
-			['Decorate(EntryType<+Named><+Optional><-Variable> ::= Word "?:" Type<?Variable>) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
-				{
-					type T = \\[a?: int];
-				}
-				% (entry_type__named__optional)
-			`]],
-			['Decorate(EntryType<+Named><+Optional><+Variable> ::= Word "?:" Type<?Variable>) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
+			['Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
 				{
 					type T = [a?: int];
 				}
-				% (entry_type__named__optional__variable)
+				% (entry_type__named__optional)
 			`]],
 
-			['Decorate(TypeGrouped<?Variable> ::= "(" Type<?Variable> ")") -> SemanticType', [AST.ASTNodeType, `
+			['Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType', [AST.ASTNodeType, `
 				{
 					type T = (3 | float);
 				}
-				% (type_grouped__variable)
+				% (type_grouped)
 			`]],
 
-			['Decorate(TypeTupleLiteral<-Variable> ::= "\\[" "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
-				{
-					type T = \\[];
-				}
-				% (type_tuple_literal)
-			`]],
-			['Decorate(TypeTupleLiteral<+Variable> ::= "[" "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
+			['Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
 				{
 					type T = [];
 				}
-				% (type_tuple_literal__variable)
-			`]],
-			['Decorate(TypeTupleLiteral<-Variable> ::= "\\[" ","? ItemsType<?Variable> "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
-				{
-					type T = \\[int, ?: float];
-				}
 				% (type_tuple_literal)
 			`]],
-			['Decorate(TypeTupleLiteral<+Variable> ::= "[" ","? ItemsType<?Variable> "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
+			['Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
 				{
 					type T = [int, ?: float];
 				}
-				% (type_tuple_literal__variable)
+				% (type_tuple_literal)
 			`]],
 
-			['Decorate(TypeRecordLiteral<-Variable> ::= "\\[" ","? PropertiesType<?Variable> ","? "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
-				{
-					type T = \\[a?: int, b: float];
-				}
-				% (type_record_literal)
-			`]],
-			['Decorate(TypeRecordLiteral<+Variable> ::= "[" ","? PropertiesType<?Variable> ","? "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
+			['Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType ","? "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
 				{
 					type T = [a?: int, b: float];
 				}
-				% (type_record_literal__variable)
+				% (type_record_literal)
 			`]],
 
-			['Decorate(TypeDictLiteral ::= "[" ":" Type<+Variable> "]") -> SemanticTypeDict', [AST.ASTNodeTypeDict, `
+			['Decorate(TypeDictLiteral ::= "[" ":" Type "]") -> SemanticTypeDict', [AST.ASTNodeTypeDict, `
 				{
 					type T = [:int];
 				}
 				% (type_dict_literal)
 			`]],
 
-			['Decorate(TypeMapLiteral ::= "{" Type__0<+Variable> "->" Type__1<+Variable> "}") -> SemanticTypeMap', [AST.ASTNodeTypeMap, `
+			['Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMap', [AST.ASTNodeTypeMap, `
 				{
 					type T = {int -> float};
 				}
@@ -218,157 +176,133 @@ describe('Decorator', () => {
 				% (property_access_type)
 			`]],
 
-			['Decorate(TypeCompound<Variable> ::= TypeCompound<?Variable> PropertyAccessType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
+			['Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
 				{
 					type T = U.p;
 				}
-				% (type_compound__variable)
+				% (type_compound)
 			`]],
-			['Decorate(TypeCompound<+Variable> ::= TypeCompound<?Variable> GenericCall) -> SemanticTypeCall', [AST.ASTNodeTypeCall, `
+			['Decorate(TypeCompound ::= TypeCompound GenericCall) -> SemanticTypeCall', [AST.ASTNodeTypeCall, `
 				{
 					type T = List.<U>;
 				}
-				% (type_compound__variable)
+				% (type_compound)
 			`]],
 
-			['Decorate(TypeUnarySymbol<Variable> ::= TypeUnarySymbol<?Variable> "?") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "?") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				{
 					type T = U?;
 				}
-				% (type_unary_symbol__variable)
+				% (type_unary_symbol)
 			`]],
-			['skip: Decorate(TypeUnarySymbol<Variable> ::= TypeUnarySymbol<?Variable> "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+			['skip: Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				{
 					type T = U!;
 				}
-				% (type_unary_symbol__variable)
+				% (type_unary_symbol)
 			`]],
-			['Decorate(TypeUnarySymbol<Variable> ::= TypeUnarySymbol<?Variable> "\\[" INTEGER "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
-				{
-					type T = int\\[3];
-				}
-				% (type_unary_symbol__variable)
-			`]],
-			['Decorate(TypeUnarySymbol<+Variable> ::= TypeUnarySymbol<?Variable> "[" "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
+			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
 				{
 					type T = U[];
 				}
-				% (type_unary_symbol__variable)
+				% (type_unary_symbol)
 			`]],
-			['Decorate(TypeUnarySymbol<+Variable> ::= TypeUnarySymbol<?Variable> "[" INTEGER "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
+			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" INTEGER "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
 				{
 					type T = U[3];
 				}
-				% (type_unary_symbol__variable)
+				% (type_unary_symbol)
 			`]],
-			['Decorate(TypeUnarySymbol<+Variable> ::= TypeUnarySymbol<?Variable> "{" "}") -> SemanticTypeSet', [AST.ASTNodeTypeSet, `
+			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "{" "}") -> SemanticTypeSet', [AST.ASTNodeTypeSet, `
 				{
 					type T = U{};
 				}
-				% (type_unary_symbol__variable)
+				% (type_unary_symbol)
 			`]],
 
-			['Decorate(TypeUnaryKeyword<Variable> ::= "mutable" TypeUnaryKeyword<?Variable>) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+			['Decorate(TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				{
 					type T = mutable U;
 				}
-				% (type_unary_keyword__variable)
+				% (type_unary_keyword)
 			`]],
 
-			['Decorate(TypeIntersection<Variable> ::= TypeIntersection<?Variable> "&" TypeUnaryKeyword<?Variable>) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+			['Decorate(TypeIntersection ::= TypeIntersection "&" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				{
 					type T = U & V;
 				}
-				% (type_intersection__variable)
+				% (type_intersection)
 			`]],
 
-			['Decorate(TypeUnion<Variable> ::= TypeUnion<?Variable> "|" TypeIntersection<?Variable>) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+			['Decorate(TypeUnion ::= TypeUnion "|" TypeIntersection) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				{
 					type T = U | V;
 				}
-				% (type_union__variable)
+				% (type_union)
 			`]],
 
 			/* ## Expressions */
-			['Decorate(StringTemplate<Variable> ::= TEMPLATE_FULL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
+			['Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
 				{
 					"""full1""";
 				}
-				% (string_template__variable)
+				% (string_template)
 			`]],
-			['Decorate(StringTemplate<Variable> ::= TEMPLATE_HEAD Expression<?Variable>? (TEMPLATE_MIDDLE Expression<?Variable>?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
+			['Decorate(StringTemplate ::= TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
 				{
 					"""hello {{ "to" }} the {{ "whole" }} great {{ "big" }} world""";
 				}
-				% (string_template__variable)
+				% (string_template)
 			`]],
-			['Decorate(StringTemplate<Variable> ::= TEMPLATE_HEAD Expression<?Variable>? (TEMPLATE_MIDDLE Expression<?Variable>?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
+			['Decorate(StringTemplate ::= TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
 				{
 					"""hello {{ """to {{ """the {{ "whole" }} great""" }} big""" }} world""";
 				}
-				% (string_template__variable)
+				% (string_template)
 			`]],
 
-			['Decorate(Property<Variable> ::= Word "=" Expression<?Variable>) -> SemanticProperty', [AST.ASTNodeProperty, `
+			['Decorate(Property ::= Word "=" Expression) -> SemanticProperty', [AST.ASTNodeProperty, `
 				{
 					[a= 42];
 				}
-				% (property__variable)
+				% (property)
 			`]],
 
-			['Decorate(Case ::= Expression<+Variable> "->" Expression<+Variable>) -> SemanticCase', [AST.ASTNodeCase, `
+			['Decorate(Case ::= Expression "->" Expression) -> SemanticCase', [AST.ASTNodeCase, `
 				{
 					{42 -> 6.9};
 				}
 				% (case)
 			`]],
 
-			['Decorate(ExpressionGrouped<Variable> ::= "(" Expression<?Variable> ")") -> SemanticExpression', [AST.ASTNodeExpression, `
+			['Decorate(ExpressionGrouped ::= "(" Expression ")") -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
 					(42 || 6.9);
 				}
-				% (expression_grouped__variable)
+				% (expression_grouped)
 			`]],
 
-			['Decorate(TupleLiteral<-Variable> ::= "\\[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
-				{
-					\\[];
-				}
-				% (tuple_literal)
-			`]],
-			['Decorate(TupleLiteral<+Variable> ::= "[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+			['Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
 				{
 					[];
 				}
-				% (tuple_literal__variable)
-			`]],
-			['Decorate(TupleLiteral<-Variable> ::= "\\[" ","? Expression<?Variable># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
-				{
-					\\[42, 6.9];
-				}
 				% (tuple_literal)
 			`]],
-			['Decorate(TupleLiteral<+Variable> ::= "[" ","? Expression<?Variable># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+			['Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
 				{
 					[42, 6.9];
 				}
-				% (tuple_literal__variable)
+				% (tuple_literal)
 			`]],
 
-			['Decorate(RecordLiteral<-Variable> ::= "\\[" ","? Property<?Variable># ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
-				{
-					\\[a= 42, b= 6.9];
-				}
-				% (record_literal)
-			`]],
-			['Decorate(RecordLiteral<+Variable> ::= "[" ","? Property<?Variable># ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
+			['Decorate(RecordLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
 				{
 					[a= 42, b= 6.9];
 				}
-				% (record_literal__variable)
+				% (record_literal)
 			`]],
 
-			['Decorate(SetLiteral ::= "{" ","? Expression<+Variable># ","? "}") -> SemanticSet', [AST.ASTNodeSet, `
+			['Decorate(SetLiteral ::= "{" ","? Expression# ","? "}") -> SemanticSet', [AST.ASTNodeSet, `
 				{
 					{42, 6.9};
 				}
@@ -382,23 +316,23 @@ describe('Decorator', () => {
 				% (map_literal)
 			`]],
 
-			['Decorate(PropertyAccess<Variable> ::= ("." | "?." | "!.") INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
+			['Decorate(PropertyAccess ::= ("." | "?." | "!.") INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
 				{
 					v.1;
 				}
-				% (property_access__variable)
+				% (property_access)
 			`]],
-			['Decorate(PropertyAccess<Variable> ::= ("." | "?." | "!.") Word) -> SemanticKey', [AST.ASTNodeKey, `
+			['Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey', [AST.ASTNodeKey, `
 				{
 					v?.p;
 				}
-				% (property_access__variable)
+				% (property_access)
 			`]],
-			['Decorate(PropertyAccess<Variable> ::= ("." | "?." | "!.") "[" Expression<?Variable> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
+			['Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
 					v!.[a + b];
 				}
-				% (property_access__variable)
+				% (property_access)
 			`]],
 
 			['Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
@@ -413,24 +347,24 @@ describe('Decorator', () => {
 				}
 				% (property_assign)
 			`]],
-			['Decorate(PropertyAssign ::= "." "[" Expression<+Variable> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
+			['Decorate(PropertyAssign ::= "." "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
 					v.[a + b] = false;
 				}
 				% (property_assign)
 			`]],
 
-			['Decorate(ExpressionCompound<Variable> ::= ExpressionCompound<?Variable> PropertyAccess<?Variable>) -> SemanticAccess', [AST.ASTNodeAccess, `
+			['Decorate(ExpressionCompound ::= ExpressionCompound PropertyAccess) -> SemanticAccess', [AST.ASTNodeAccess, `
 				{
 					v.p;
 				}
-				% (expression_compound__variable)
+				% (expression_compound)
 			`]],
-			['Decorate(ExpressionCompound<+Variable> ::= ExpressionCompound<?Variable> FunctionCall) -> SemanticCall', [AST.ASTNodeCall, `
+			['Decorate(ExpressionCompound ::= ExpressionCompound FunctionCall) -> SemanticCall', [AST.ASTNodeCall, `
 				{
 					List.<T>();
 				}
-				% (expression_compound__variable)
+				% (expression_compound)
 			`]],
 
 			['Decorate(Assignee ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
@@ -439,154 +373,154 @@ describe('Decorator', () => {
 				}
 				% (assignee)
 			`]],
-			['Decorate(Assignee ::= ExpressionCompound<+Variable> PropertyAssign) -> SemanticAccess', [AST.ASTNodeAccess, `
+			['Decorate(Assignee ::= ExpressionCompound PropertyAssign) -> SemanticAccess', [AST.ASTNodeAccess, `
 				{
 					v.1 = 42;
 				}
 				% (assignee)
 			`]],
 
-			['Decorate(ExpressionUnarySymbol<Variable> ::= "!" ExpressionUnarySymbol<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					!v;
 				}
-				% (expression_unary_symbol__variable)
+				% (expression_unary_symbol)
 			`]],
-			['Decorate(ExpressionUnarySymbol<Variable> ::= "?" ExpressionUnarySymbol<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionUnarySymbol ::= "?" ExpressionUnarySymbol) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					?v;
 				}
-				% (expression_unary_symbol__variable)
+				% (expression_unary_symbol)
 			`]],
-			['Decorate(ExpressionUnarySymbol<Variable> ::= "+" ExpressionUnarySymbol<?Variable>) -> SemanticExpression', [AST.ASTNodeExpression, `
+			['Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
 					+v;
 				}
-				% (expression_unary_symbol__variable)
+				% (expression_unary_symbol)
 			`]],
-			['Decorate(ExpressionUnarySymbol<Variable> ::= "-" ExpressionUnarySymbol<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					-v;
 				}
-				% (expression_unary_symbol__variable)
+				% (expression_unary_symbol)
 			`]],
 
-			['Decorate(ExpressionClaim<Variable> ::= "<" Type ">" ExpressionClaim<?Variable>) -> SemanticOperation', [AST.ASTNodeClaim, `
+			['Decorate(ExpressionClaim ::= "<" Type ">" ExpressionClaim) -> SemanticOperation', [AST.ASTNodeClaim, `
 				{
 					<T>a;
 				}
-				% (expression_claim__variable)
+				% (expression_claim)
 			`]],
 
-			['Decorate(ExpressionExponential<Variable> ::= ExpressionClaim<?Variable> "^" ExpressionExponential<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionExponential ::= ExpressionClaim "^" ExpressionExponential) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a ^ b;
 				}
-				% (expression_exponential__variable)
+				% (expression_exponential)
 			`]],
 
-			['Decorate(ExpressionMultiplicative<Variable> ::= ExpressionMultiplicative<?Variable> "*" ExpressionExponential<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a * b;
 				}
-				% (expression_multiplicative__variable)
+				% (expression_multiplicative)
 			`]],
-			['Decorate(ExpressionMultiplicative<Variable> ::= ExpressionMultiplicative<?Variable> "/" ExpressionExponential<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a / b;
 				}
-				% (expression_multiplicative__variable)
+				% (expression_multiplicative)
 			`]],
 
-			['Decorate(ExpressionAdditive<Variable> ::= ExpressionAdditive<?Variable> "+" ExpressionMultiplicative<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a + b;
 				}
-				% (expression_additive__variable)
+				% (expression_additive)
 			`]],
-			['Decorate(ExpressionAdditive<Variable> ::= ExpressionAdditive<?Variable> "-" ExpressionMultiplicative<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a - b;
 				}
-				% (expression_additive__variable)
+				% (expression_additive)
 			`]],
 
-			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ (['is', 'isnt'].includes(op) ? 'skip: ' : '') }Decorate(ExpressionComparative<Variable> ::= ExpressionComparative<?Variable> "${ op }" ExpressionAdditive<?Variable>) -> SemanticOperation`, [AST.ASTNodeOperation, `
+			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ (['is', 'isnt'].includes(op) ? 'skip: ' : '') }Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				{
 					a ${ op } b;
 				}
-				% (expression_comparative__variable)
+				% (expression_comparative)
 			`]] as [string, [NewableFunction, string]]),
 
-			...['===', '!==', '==', '!='].map((op) => [`Decorate(ExpressionEquality<Variable> ::= ExpressionEquality<?Variable> "${ op }" ExpressionComparative<?Variable>) -> SemanticOperation`, [AST.ASTNodeOperation, `
+			...['===', '!==', '==', '!='].map((op) => [`Decorate(ExpressionEquality ::= ExpressionEquality "${ op }" ExpressionComparative) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				{
 					a ${ op } b;
 				}
-				% (expression_equality__variable)
+				% (expression_equality)
 			`]] as [string, [NewableFunction, string]]),
 
-			['Decorate(ExpressionConjunctive<Variable> ::= ExpressionConjunctive<?Variable> "&&" ExpressionEquality<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionConjunctive ::= ExpressionConjunctive "&&" ExpressionEquality) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a && b;
 				}
-				% (expression_conjunctive__variable)
+				% (expression_conjunctive)
 			`]],
-			['Decorate(ExpressionConjunctive<Variable> ::= ExpressionConjunctive<?Variable> "!&" ExpressionEquality<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionConjunctive ::= ExpressionConjunctive "!&" ExpressionEquality) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a !& b;
 				}
-				% (expression_conjunctive__variable)
+				% (expression_conjunctive)
 			`]],
 
-			['Decorate(ExpressionDisjunctive<Variable> ::= ExpressionDisjunctive<?Variable> "||" ExpressionConjunctive<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "||" ExpressionConjunctive) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a || b;
 				}
-				% (expression_disjunctive__variable)
+				% (expression_disjunctive)
 			`]],
-			['Decorate(ExpressionDisjunctive<Variable> ::= ExpressionDisjunctive<?Variable> "!|" ExpressionConjunctive<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "!|" ExpressionConjunctive) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a !| b;
 				}
-				% (expression_disjunctive__variable)
+				% (expression_disjunctive)
 			`]],
 
-			['Decorate(ExpressionConditional<Variable> ::= "if" Expression<?Variable> "then" Expression<?Variable> "else" Expression<?Variable>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionConditional ::= "if" Expression "then" Expression "else" Expression) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					if a then b else c;
 				}
-				% (expression_conditional__variable)
+				% (expression_conditional)
 			`]],
 
 			/* ## Statements */
-			['Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type<+Variable> ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
+			['Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
 				{
 					type T = U;
 				}
 				% (declaration_type)
 			`]],
 
-			['Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type<+Variable> "=" Expression<+Variable> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
 					let a: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type<+Variable> "=" Expression<+Variable> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
 					let unfixed a: T = b;
 				}
 				% (declaration_variable)
 			`]],
 
-			['Decorate(StatementExpression ::= Expression<+Variable> ";") -> SemanticStatementExpression', [AST.ASTNodeStatementExpression, `
+			['Decorate(StatementExpression ::= Expression ";") -> SemanticStatementExpression', [AST.ASTNodeStatementExpression, `
 				{
 					a;
 				}
 				% (statement_expression)
 			`]],
 
-			['Decorate(StatementAssignment ::= Assignee "=" Expression<+Variable> ";") -> SemanticAssignment', [AST.ASTNodeAssignment, `
+			['Decorate(StatementAssignment ::= Assignee "=" Expression ";") -> SemanticAssignment', [AST.ASTNodeAssignment, `
 				{
 					a = b;
 				}
@@ -609,22 +543,22 @@ describe('Decorator', () => {
 				`\`${ parsenode.text }\` not an instance of ${ klass.name }.`,
 			);
 		}));
-		describe('Decorate(TypeUnarySymbol<Variable> ::= TypeUnarySymbol<?Variable> "!") -> SemanticTypeOperation', () => {
+		describe('Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', () => {
 			it('type operator `!` is not yet supported.', () => {
 				assert.throws(() => DECORATOR.decorateTS(captureParseNode(`
 					{
 						type T = U!;
 					}
-				`, '(type_unary_symbol__variable)')), /not yet supported/);
+				`, '(type_unary_symbol)')), /not yet supported/);
 			});
 		});
-		['is', 'isnt'].forEach((op) => describe(`Decorate(ExpressionComparative<Variable> ::= ExpressionComparative<?Variable> "${ op }" ExpressionAdditive<?Variable>) -> SemanticOperation`, () => {
+		['is', 'isnt'].forEach((op) => describe(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
 			it(`operator \`${ op }\` is not yet supported.`, () => {
 				assert.throws(() => DECORATOR.decorateTS(captureParseNode(`
 					{
 						a ${ op } b;
 					}
-				`, '(expression_comparative__variable)')), /not yet supported/);
+				`, '(expression_comparative)')), /not yet supported/);
 			});
 		}));
 	});

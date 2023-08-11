@@ -923,7 +923,7 @@ describe('ASTNodeAccess', () => {
 			});
 			it('throws when accessor expression is out of bounds.', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].[3]')                                .fold(), VoidError01);
-				assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.[["a"]]') .fold(), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.[["d"]]') .fold(), VoidError01);
 			});
 			it('returns false when (optionally) accessing element not in set.', () => {
 				[
@@ -937,7 +937,7 @@ describe('ASTNodeAccess', () => {
 			it('returns null when optionally accessing index/antecedent out of bounds.', () => {
 				[
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[3]')                                .fold(),
-					AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.[["a"]]') .fold(),
+					AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.[["d"]]') .fold(),
 				].forEach((v) => {
 					assert.deepStrictEqual(v, OBJ.Null.NULL);
 				});

@@ -11,6 +11,10 @@ export type ArgCount = bigint | readonly [bigint, bigint];
 
 
 
+export enum ValidIntrinsicName {
+	OBJECT = 'Object',
+}
+
 export enum ValidFunctionName {
 	LIST = 'List',
 	DICT = 'Dict',
@@ -18,7 +22,11 @@ export enum ValidFunctionName {
 	MAP  = 'Map',
 }
 
-export function invalidFunctionName(source: string): never {
+export function is_valid_intrinsic_name(source: string): source is ValidIntrinsicName {
+	return Object.values<string>(ValidIntrinsicName).includes(source);
+}
+
+export function invalid_function_name(source: string): never {
 	throw new SyntaxError(`Unexpected token: ${ source }; expected \`${ Object.values(ValidFunctionName).join(' | ') }\`.`);
 }
 

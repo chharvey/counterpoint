@@ -17,11 +17,11 @@ import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
+import {ASTNodeCollectionLiteralMutable} from './ASTNodeCollectionLiteralMutable.js';
 
 
 
-export class ASTNodeMap extends ASTNodeCollectionLiteral {
+export class ASTNodeMap extends ASTNodeCollectionLiteralMutable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeMap {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeMap);
@@ -56,16 +56,15 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 			: new OBJ.Map(cases as ReadonlyMap<OBJ.Object, OBJ.Object>);
 	}
 
-	@ASTNodeCollectionLiteral.assignToDeco
+	@ASTNodeCollectionLiteralMutable.assignToDeco
 	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
 		if (assignee instanceof TYPE.TypeMap) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant_{ant,con}`
-			return xjs.Array.forEachAggregated(this.children, (case_) => xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => ASTNodeCP.typeCheckAssignment(
-				expr.type(),
-				[assignee.invariant_ant, assignee.invariant_con][i],
-				expr,
-				this.validator,
-			)));
+			return xjs.Array.forEachAggregated(this.children, (case_) => (
+				xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => (
+					ASTNodeCP.assignExpression(expr, [assignee.invariant_ant, assignee.invariant_con][i], expr)
+				))
+			));
 		}
 		throw err;
 	}

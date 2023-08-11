@@ -19,6 +19,10 @@ import {
 	SymbolStructureType,
 } from '../index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {
+	ValidIntrinsicName,
+	is_valid_intrinsic_name,
+} from './utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
 
@@ -41,6 +45,10 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 	}
 
 	public override varCheck(): void {
+		// NOTE: ignore var-checking `this` for now if source is an intrinsic identifier, as semantics is determined by syntax.
+		if (is_valid_intrinsic_name(this.source)) {
+			return;
+		}
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
@@ -51,6 +59,11 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
+		if (is_valid_intrinsic_name(this.source)) {
+			return new Map<ValidIntrinsicName, TYPE.Type>([
+				[ValidIntrinsicName.OBJECT, TYPE.OBJ],
+			]).get(this.source)!;
+		}
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {

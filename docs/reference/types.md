@@ -9,6 +9,19 @@ This reference takes a more informative approach.
 
 
 
+## Value Types and Reference Types
+Value types describe objects that have no identity and are identifiable only by their value;
+they are identical when they have the “same value”.
+When a value object is assigned to a variable or parameter, a copy of its value is assigned.
+All value types are immutable.
+
+Reference types describe objects that have an identity and are identifiable by reference;
+they are identical when they have the same reference.
+When a reference object is assigned to a variable or parameter, a new reference to the object is assigned,
+and any change to the object is observable in every reference.
+
+
+
 ## Simple Types
 Simple types are individual basic types. They cannot be broken up into smaller types.
 
@@ -482,17 +495,15 @@ Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit T
 
 ### Tuples
 Tuples are fixed-size ordered lists of indexed values, with indices starting at `0`.
-The values in a tuple are called **items** (the actual values) or **entries** (the slots the values are stored in).
+The values in a tuple are called **items** (the actual values) or **entries** (the “slots” where values are stored).
 The number of entries in a tuple is called its **count**.
-The count of a tuple is fixed and known at compile-time, as is the type of each entry in the tuple.
+The count of a tuple is fixed and known at compile-time, as is the type of each entry in it.
 The order of entries is significant: looping and iteration are performed in index order.
 Tuples are heterogeneous, meaning they can be declared with different entry types.
-If a tuple is mutable, the entries of the tuple may be reassigned, but only to values of the correct type.
+They are also read-only, which means their entries cannot be added, deleted, or reassigned.
 
 For example, the tuple `[3, 4.0, "seven"]` has an integer in the first position at index `0`,
 followed by a float at index `1`, followed by a string at index `2`. Its count is 3.
-Entries cannot be added or removed — the count of the tuple cannot change — but entries can be reassigned:
-We could set the last entry to the string `"twelve"`.
 
 Tuple literals are comma-separated expressions within square brackets.
 Tuple types use the same syntax, but instead of value expressions
@@ -500,15 +511,18 @@ they contain type expressions (a.k.a. types).
 ```
 let elements: [str, str, str] = ["earth", "wind", "fire"];
 ```
-Larger tuples are always assignable to smaller tuples, as long as the types match.
+
+Larger tuples are always assignable to smaller tuples,
+but assigning a smaller tuple to a larger tuple results in a TypeError.
 ```
 let elements: [str, str, str] = ["earth", "wind", "fire", true, 42];
-```
-The above declaration is allowed because the last two items are simply dropped off.
-
-However, assigning a smaller tuple to a larger tuple results in a TypeError.
-```
 let elements_and_more: [str, str, str, bool, int] = ["earth", "wind", "fire"]; %> TypeError
+```
+The first declaration is allowed because the last two items are simply dropped off.
+
+Because tuples are read-only, the `mutable` operator is invalid on tuple types.
+```
+let elements: mutable [str, str, str] = ["earth", "wind", "fire"]; %> TypeError
 ```
 
 Note: If a tuple is homogeneous (its items are all of the same type),
@@ -571,15 +585,8 @@ let unfixed i: int = 4;
 elements.[i];           % no compile-time error, but value at runtime will be undefined
 ```
 
-If a variable is declared as a mutable tuple, its indices may be reassigned, but its type or size cannot change.
-A non-mutable tuple’s items, type, and size are all fixed.
+A tuple’s items, type, and size are all fixed.
 ```
-let mut_tuple: mutable [bool, int, str] = [true, 4, "hello"];
-set mut_tuple.0 = false;
-set mut_tuple.1 = 2;
-set mut_tuple.2 = "world";
-mut_tuple; %== [false, 2, "world"];
-
 let tuple: [bool, int, str] = [true, 4, "hello"];
 set tuple.0 = false;   %> MutabilityError
 set tuple.1 = 2;       %> MutabilityError
@@ -627,9 +634,9 @@ The count and types of record **entries** (the “slots” where values are stor
 The order of entries is *not* significant: though records can be iterated over, the order in which this is done is
 implementation-dependent; thus authors should not rely on any particular iteration order.
 Records are heterogeneous, meaning they can be declared with different entry types.
-Record entries cannot be added or deleted, but if the record is mutable, they can be reassigned.
+They are also read-only, which means their entries cannot be added, deleted, or reassigned.
 
-For example, given the record
+For example, the record
 ```
 [
 	fontFamily= "sans-serif",
@@ -638,7 +645,7 @@ For example, given the record
 	fontWeight= 400,
 ];
 ```
-we could reassign the `fontWeight` property a value of `700`. Its count is 4.
+has a count of 4.
 
 Keys may be reserved keywords, not just restricted to identifiers.
 This is because the record key will always be lexically bound to the record —
@@ -686,22 +693,8 @@ However, *code evaluation* is always left-to-right and top-to-bottom, which mean
 cause any side-effects, those side-effects will be observed in the order the entries are written.
 (This is significant if any values are function calls for example.)
 
-Record keys point to unique values. Latter properties take precedence.
-```
-let elements: [
-	socrates:  str,
-	plato:     str,
-	aristotle: str,
-] = [
-	socrates=  "earth",
-	plato=     "wind",
-	aristotle= "fire",
-	plato=     "water",
-];
-```
-The value of the `plato` key will be `"water"`.
-
-Larger records are always assignable to smaller records, as long as the types match.
+Larger records are always assignable to smaller records,
+but assigning a smaller record to a larger record results in a TypeError.
 ```
 let elements: [
 	socrates:  str,
@@ -714,11 +707,7 @@ let elements: [
 	pythagoras= 42,
 	aristotle=  "fire",
 ];
-```
-The above declaration is allowed because the unused properties are simply dropped off.
 
-However, assigning a smaller record to a larger record results in a TypeError.
-```
 let elements_and_more: [
 	socrates:   str,
 	plato:      str,
@@ -730,6 +719,12 @@ let elements_and_more: [
 	plato=     "wind",
 	aristotle= "fire",
 ]; %> TypeError
+```
+The first declaration is allowed because the unused properties are simply dropped off.
+
+Because records are read-only, the `mutable` operator is invalid on record types.
+```
+let elements: mutable [x: str, y: str, z: str] = [x= "earth", y= "wind", z= "fire"]; %> TypeError
 ```
 
 #### Record Access
@@ -755,15 +750,8 @@ so attempting to retrieve an non-existent key results in a compile-time error.
 elements.pythagoras; %> TypeError
 ```
 
-If a variable is declared as a mutable record, its keys may be reassigned, but its type or size cannot change.
-A non-mutable record’s values, type, and size are all fixed.
+A record’s properties, type, and size are all fixed.
 ```
-let mut_record: mutable [a: bool, b: int, c: str] = [a= true, b= 4, c= "hello"];
-set mut_record.a = false;
-set mut_record.b = 2;
-set mut_record.c = "world";
-mut_record; %== [a= false, b= 2, c= "world"];
-
 let record: [a: bool, b: int, c: str] = [a= true, b= 4, c= "hello"];
 set record.a = false;   %> MutabilityError
 set record.b = 2;       %> MutabilityError
@@ -932,7 +920,7 @@ The number of cases in a map is called its **count**.
 Map types are declared via the **generic map type syntax**: `Map.<K, V>`
 where `K` indicates the type of antecedents and `V` indicates the type of consequents in the map.
 Maps may be constructed via the constructor syntax `Map.<K, V>(arg)`,
-where `arg` is a [Tuple](#tuples) object of key-value pairs (also tuples).
+where `arg` is a [Tuple](#tuples) object of key-value pairs (also Tuples).
 ```
 let bases: Map.<int | str, obj> = Map.<int | str, obj>([
 	[1,     "who"],

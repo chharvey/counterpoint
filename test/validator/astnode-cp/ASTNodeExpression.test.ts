@@ -11,7 +11,6 @@ import {
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateKey,
-	TypeErrorUnexpectedRef,
 	TypeErrorNotAssignable,
 } from '../../../src/index.js';
 import {assert_instanceof} from '../../../src/lib/index.js';
@@ -369,21 +368,6 @@ describe('ASTNodeExpression', () => {
 
 
 	describe('ASTNodeCollectionLiteral', () => {
-		describe('.constructor', () => {
-			it('sets `.isRef = true` for constant collections.', () => {
-				assert.deepStrictEqual(
-					[
-						AST.ASTNodeTuple  .fromSource('\\[   1,    2.0,    "three"]'),
-						AST.ASTNodeTuple  .fromSource('  [   1,    2.0,    "three"]'),
-						AST.ASTNodeRecord .fromSource('\\[a= 1, b= 2.0, c= "three"]'),
-						AST.ASTNodeRecord .fromSource('  [a= 1, b= 2.0, c= "three"]'),
-					].map((c) => c.isRef),
-					[false, true, false, true],
-				);
-			});
-		});
-
-
 		describe('#varCheck', () => {
 			describe('ASTNodeRecord', () => {
 				it('throws if containing duplicate keys.', () => {
@@ -427,15 +411,11 @@ describe('ASTNodeExpression', () => {
 				const collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,
-					AST.ASTNodeTuple,
-					AST.ASTNodeRecord,
 					AST.ASTNodeSet,
 					AST.ASTNodeMap,
 				] = [
 					AST.ASTNodeTuple  .fromSource('  [   1,    2.0,    "three"]', config),
 					AST.ASTNodeRecord .fromSource('  [a= 1, b= 2.0, c= "three"]', config),
-					AST.ASTNodeTuple  .fromSource('\\[   1,    2.0,    "three"]', config),
-					AST.ASTNodeRecord .fromSource('\\[a= 1, b= 2.0, c= "three"]', config),
 					AST.ASTNodeSet    .fromSource('  {   1,    2.0,    "three"}', config),
 					AST.ASTNodeMap.fromSource(`
 						{
@@ -448,13 +428,8 @@ describe('ASTNodeExpression', () => {
 				assert.deepStrictEqual(
 					collections.map((node) => node.type()),
 					[
-						TYPE.TypeTuple.fromTypes(expected, true),
+						TYPE.TypeTuple.fromTypes(expected),
 						TYPE.TypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [
-							c.key.id,
-							expected[i],
-						])), true),
-						TYPE.TypeVect.fromTypes(expected),
-						TYPE.TypeStruct.fromTypes(new Map(collections[1].children.map((c, i) => [
 							c.key.id,
 							expected[i],
 						]))),
@@ -467,73 +442,23 @@ describe('ASTNodeExpression', () => {
 					],
 				);
 			}));
-			it('throws if value type contains reference type.', () => {
+			it('does not throw if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
-					let val_obj1: \\[1.0] = \\[1.0];
-					let ref_obj1:   [1.0] =   [1.0];
-					let val_obj2: \\[2.0] = \\[2.0];
-					let ref_obj2:   [2.0] =   [2.0];
-
-					\\[1, val_obj1, "three"];
-					  [1, ref_obj1, "three"];
-					  [1, val_obj2, "three"];
-					\\[1, ref_obj2, "three"]; %> TypeErrorUnexpectedRef
-
-					\\[a= 1, b= \\[3.0],             c= "three"];
-					  [a= 1, b= List.<float>([3.0]), c= "three"];
-					  [a= 1, b= \\[4.0],             c= "three"];
-					\\[a= 1, b= List.<float>([4.0]), c= "three"]; %> TypeErrorUnexpectedRef
+					  [   1,    List.<float>([2.2]),    "three"];
+					  [a= 1, b= List.<float>([2.2]), c= "three"];
 				}`);
 				goal.varCheck();
-				return assert.throws(() => goal.typeCheck(), (err) => {
-					assert.ok(err instanceof AggregateError);
-					assertAssignable(err, {
-						cons:   AggregateError,
-						errors: [
-							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `[2.0]`, but expected a value type.'},
-							{cons: TypeErrorUnexpectedRef, message: 'Got reference type `mutable List.<float>`, but expected a value type.'},
-						],
-					});
-					return true;
-				});
+				goal.typeCheck(); // assert does not throw
 			});
 		});
 
 
 		describe('#fold', () => {
-			it('returns Vect/Struct for constant collections.', () => {
+			it('returns Tuple/Record for constant collections.', () => {
 				assert.deepStrictEqual(
 					[
-						AST.ASTNodeTuple  .fromSource('\\[   1,    2.0,    "three"]'),
-						AST.ASTNodeRecord .fromSource('\\[a= 1, b= 2.0, c= "three"]'),
-					].map((c) => c.fold()),
-					[
-						new OBJ.Vect([
-							new OBJ.Integer(1n),
-							new OBJ.Float(2.0),
-							new OBJ.String('three'),
-						]),
-						new OBJ.Struct(new Map<bigint, OBJ.Object>([
-							[0x100n, new OBJ.Integer(1n)],
-							[0x101n, new OBJ.Float(2.0)],
-							[0x102n, new OBJ.String('three')],
-						])),
-					],
-				);
-			});
-			it('returns a constant Tuple/Record/Set/Map for foldable entries.', () => {
-				assert.deepStrictEqual(
-					[
-						AST.ASTNodeTuple  .fromSource('[   1,    2.0,    "three"]'),
-						AST.ASTNodeRecord .fromSource('[a= 1, b= 2.0, c= "three"]'),
-						AST.ASTNodeSet    .fromSource('{   1,    2.0,    "three"}'),
-						AST.ASTNodeMap.fromSource(`
-							{
-								"a" || "" -> 1,
-								21 + 21   -> 2.0,
-								3 * 1.0   -> "three",
-							}
-						`),
+						AST.ASTNodeTuple  .fromSource('  [   1,    2.0,    "three"]'),
+						AST.ASTNodeRecord .fromSource('  [a= 1, b= 2.0, c= "three"]'),
 					].map((c) => c.fold()),
 					[
 						new OBJ.Tuple([
@@ -546,6 +471,22 @@ describe('ASTNodeExpression', () => {
 							[0x101n, new OBJ.Float(2.0)],
 							[0x102n, new OBJ.String('three')],
 						])),
+					],
+				);
+			});
+			it('returns a constant Set/Map for foldable entries.', () => {
+				assert.deepStrictEqual(
+					[
+						AST.ASTNodeSet.fromSource('{1, 2.0, "three"}'),
+						AST.ASTNodeMap.fromSource(`
+							{
+								"a" || "" -> 1,
+								21 + 21   -> 2.0,
+								3 * 1.0   -> "three",
+							}
+						`),
+					].map((c) => c.fold()),
+					[
 						new OBJ.Set(new Set([
 							new OBJ.Integer(1n),
 							new OBJ.Float(2.0),
@@ -658,7 +599,7 @@ describe('ASTNodeExpression', () => {
 		describe('#build', () => {
 			it('returns the build of the operand.', () => {
 				samples.forEach((expr) => {
-					const src: string = `<obj>${ expr }`;
+					const src: string = `<unknown>${ expr }`;
 					assertEqualBins(
 						AST.ASTNodeClaim      .fromSource(src)  .build(new Builder(`{ ${ src }; }`)),
 						AST.ASTNodeExpression .fromSource(expr) .build(new Builder(`{ ${ expr }; }`)),

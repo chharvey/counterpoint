@@ -5,6 +5,7 @@ import {
 	AST,
 	type SymbolStructure,
 	SymbolStructureVar,
+	OBJ,
 	TYPE,
 	Builder,
 	AssignmentErrorDuplicateDeclaration,
@@ -29,10 +30,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 				let x: int = 42;
 			}`);
-			assert.ok(!goal.validator.hasSymbol(256n));
+			assert.ok(!goal.validator.hasSymbol(0x100n));
 			goal.varCheck();
-			assert.ok(goal.validator.hasSymbol(256n));
-			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
+			assert.ok(goal.validator.hasSymbol(0x100n));
+			const info: SymbolStructure | null = goal.validator.getSymbolInfo(0x100n);
 			assert_instanceof(info, SymbolStructureVar);
 			assert.strictEqual(info.type, TYPE.UNKNOWN);
 			assert.strictEqual(info.value, null);
@@ -84,6 +85,36 @@ describe('ASTNodeDeclarationVariable', () => {
 				let x: float = 42;
 			`, CONFIG_COERCION_OFF).typeCheck(), TypeErrorNotAssignable);
 		});
+		it('does not set `SymbolStructureVar#value` when assignee type has mutable.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				let immut:  int[3]             = [42, 420, 4200];
+				let mut:    mutable int[]      = List.<int>([42, 420, 4200]);
+				let mutmut: (mutable int[])[3] = [List.<int>([42]), List.<int>([420]), List.<int>([4200])];
+			}`);
+			goal.varCheck();
+			goal.typeCheck();
+			const [immut, mut, mutmut] = [
+				goal.validator.getSymbolInfo(0x100n) as SymbolStructureVar,
+				goal.validator.getSymbolInfo(0x101n) as SymbolStructureVar,
+				goal.validator.getSymbolInfo(0x102n) as SymbolStructureVar,
+			];
+			assert.deepStrictEqual(
+				[immut.source, immut.value],
+				['immut',      new OBJ.Tuple<OBJ.Integer>([
+					new OBJ.Integer(  42n),
+					new OBJ.Integer( 420n),
+					new OBJ.Integer(4200n),
+				])],
+			);
+			assert.deepStrictEqual(
+				[mut.source, mut.value],
+				['mut',      null],
+			);
+			return assert.deepStrictEqual(
+				[mutmut.source, mutmut.value],
+				['mutmut',      null],
+			);
+		});
 		it('immutable sets/maps should not be covariant due to bracket access.', () => {
 			typeCheckGoal([
 				'let s: Set.<int | str>       = Set.<int>([42, 43]);',
@@ -94,83 +125,65 @@ describe('ASTNodeDeclarationVariable', () => {
 		context('assigning a collection to a constant collection type.', () => {
 			it('allows assigning a constant collection literal', () => {
 				typeCheckGoal(`{
-					let c: int\\[3] = \\[42, 420, 4200];
-					let d: \\[n42: int, n420: int] = \\[
+					let c: int[3] = [42, 420, 4200];
+					let d: [n42: int, n420: int] = [
 						n42=  42,
 						n420= 420,
 					];
 				}`);
+				typeCheckGoal(`
+					let v: [   int,    str] = [   42,    "hello"];
+					let s: [a: int, b: str] = [a= 42, b= "hello"];
+				`.split('\n'));
 			});
-			it('disallows assigning a variable collection literal', () => {
+			it('allows assigning a variable collection literal (unboxing at runtime).', () => {
 				typeCheckGoal([
-					'let g: int\\[3] = [42, 420, 4200];',
-					`let h: \\[n42: int, n420: int] = [
+					'let g: int[3] = [42, 420, 4200];',
+					`let h: [n42: int, n420: int] = [
 						n42=  42,
 						n420= 420,
 					];`,
-				], TypeErrorNotAssignable);
+				]);
+			});
+			it('allows assigning to super reference type (autoboxing at runtime).', () => {
+				typeCheckGoal(`
+					let v: Object = [   42,    "hello"];
+					let s: Object = [a= 42, b= "hello"];
+				`.split('\n'));
+				typeCheckGoal(`
+					let v: mutable Object = [   42,    "hello"];
+					let s: mutable Object = [a= 42, b= "hello"];
+				`.split('\n')); // mutable Object == Object
 			});
 		});
 		context('assigning a collection literal to a wider mutable type.', () => {
-			it('tuples: only allows greater or equal items.', () => {
-				typeCheckGoal(`{
-					type T = [int];
-					let unfixed i: int = 42;
-					let v: T = [42];
-
-					let t1_1: mutable [42 | 4.3] = [42];
-					let t2_1: mutable [int]      = [42];
-					let t3_1: mutable [int]      = [i];
-					let t4_1: mutable [T?]       = [v];
-
-					let t1_2: mutable [?: 42 | 4.3] = [42];
-					let t2_2: mutable [?: int]      = [i];
-					let t3_2: mutable [   42 | 4.3] = [42, "43"];
-					let t4_2: mutable [int, ?: str] = [42, "43"];
-				}`);
-				typeCheckGoal(`{
-					let t: mutable [int, str] = [42];
-				}`, TypeErrorNotAssignable);
-			});
-			it('records: only allows matching or more properties.', () => {
-				typeCheckGoal(`{
-					type T = [int];
-					let unfixed i: int = 42;
-					let v: T = [42];
-
-					let r1_1: mutable [a: 42 | 4.3] = [a= 42];
-					let r2_1: mutable [a: int]      = [a= 42];
-					let r3_1: mutable [a: int]      = [a= i];
-					let r4_1: mutable [a: T?]       = [a= v];
-
-					let r1_2: mutable [a?: 42 | 4.3]    = [a= 42];
-					let r2_2: mutable [a?: int]         = [a= i];
-					let r3_2: mutable [a:  42 | 4.3]    = [b= "43", a= 42];
-					let r4_2: mutable [a: int, b?: str] = [b= "43", a= 42];
-				}`);
+			it('disallows assigning Tuples/Records to Lists/Dicts', () => {
 				typeCheckGoal(`
-					let r1: mutable [a: int, b: str] = [a= 42];
-					let r2: mutable [a: int, b: str] = [c= 42, b= "43"];
-					let r3: mutable [a: int, b: str] = [c= 42, d= "43"];
+					let t1_1: List.<42 | 4.3> = [42];
+					let t2_1: List.<int>      = [42];
+
+					let t1_2: mutable List.<42 | 4.3> = [43];
+					let t2_2: mutable List.<int>      = [43];
+
+					let r1_1: Dict.<42 | 4.3> = [a= 42];
+					let r2_1: Dict.<int>      = [a= 42];
+
+					let r1_2: mutable Dict.<42 | 4.3> = [a= 43];
+					let r2_2: mutable Dict.<int>      = [a= 43];
+
+					let t3_1: [               List.<float>] = [       [4.3]];
+					let t3_2: [       mutable List.<float>] = [       [4.3]];
+					let r3_1: [inner:         List.<float>] = [inner= [4.3]];
+					let r3_2: [inner: mutable List.<float>] = [inner= [4.3]];
 				`.split('\n'), TypeErrorNotAssignable);
 			});
-			it('vects & structs: disallows assigning to mutable type.', () => {
-				typeCheckGoal(`
-					let v: [   int,    str] = \\[   42,    "hello"];
-					let s: [a: int, b: str] = \\[a= 42, b= "hello"];
-				`.split('\n'));
-				typeCheckGoal(`
-					let v: obj = \\[   42,    "hello"];
-					let s: obj = \\[a= 42, b= "hello"];
-				`.split('\n'));
-				typeCheckGoal(`
-					let v: mutable obj = \\[   42,    "hello"];
-					let s: mutable obj = \\[a= 42, b= "hello"];
-				`.split('\n')); // mutable obj == obj
-				return typeCheckGoal(`
-					let v: mutable [   int,    str] = \\[   42,    "hello"];
-					let s: mutable [a: int, b: str] = \\[a= 42, b= "hello"];
-				`.split('\n'), TypeErrorNotAssignable);
+			it('allows assigning Sets and Maps.', () => {
+				typeCheckGoal(`{
+					let s: mutable (int | str){} = {42,   "43"};
+					let m: mutable {int -> str}  = {42 -> "43"};
+					s.["44"] = true;
+					m.[44]   = "45";
+				}`);
 			});
 			it('should throw when assigning combo type to union.', () => {
 				typeCheckGoal([
@@ -197,43 +210,31 @@ describe('ASTNodeDeclarationVariable', () => {
 			});
 			it('throws when not assigned to correct type.', () => {
 				typeCheckGoal(`
-					let t: mutable [a: int, b: str] = [   42,    "43"];
-					let r: mutable [   int,    str] = [a= 42, b= "43"];
 					let s: mutable {int -> str}     = {   42,    "43"};
 					let s: mutable (int | str){}    = {   42 ->  "43"};
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`{
-					let t1: mutable obj                                = [42, "43"];
-					let t2: mutable ([int, str] | [   bool,    float]) = [42, "43"];
-					let t3: mutable ([int, str] | [a: bool, b: float]) = [42, "43"];
-					let t4: mutable ([int, str] | obj)                 = [42, "43"];
+					let t1: mutable Object                             = [42, "43"];
+					let t4: mutable ([int, str] | Object)              = [42, "43"];
 
-					let r1: mutable obj                                      = [a= 42, b= "43"];
-					let r2: mutable ([a: int, b: str] | [c: bool, d: float]) = [a= 42, b= "43"];
-					let r3: mutable ([a: int, b: str] | [   bool,    float]) = [a= 42, b= "43"];
-					let r4: mutable ([a: int, b: str] | obj)                 = [a= 42, b= "43"];
+					let r1: mutable Object                                   = [a= 42, b= "43"];
+					let r4: mutable ([a: int, b: str] | Object)              = [a= 42, b= "43"];
 
 					let s1: mutable (42 | 4.3){}            = {42};
 					let s2: mutable (int | float){}         = {42};
-					let s3: mutable obj                     = {42};
+					let s3: mutable Object                  = {42};
 					let s4: mutable (int{} | {str -> bool}) = {42};
-					let s5: mutable (int{} | obj)           = {42};
+					let s5: mutable (int{} | Object)        = {42};
 
-					let m1: mutable {int -> float}           = {42 -> 4.3};
-					let m2: mutable {int? -> float?}         = {42 -> 4.3};
-					let m3: mutable obj                      = {42 -> 4.3};
-					let m4: mutable ({int -> float} | str{}) = {42 -> 4.3};
-					let m5: mutable ({int -> float} | obj)   = {42 -> 4.3};
+					let m1: mutable {int -> float}            = {42 -> 4.3};
+					let m2: mutable {int? -> float?}          = {42 -> 4.3};
+					let m3: mutable Object                    = {42 -> 4.3};
+					let m4: mutable ({int -> float} | str{})  = {42 -> 4.3};
+					let m5: mutable ({int -> float} | Object) = {42 -> 4.3};
 				}`);
 			});
 			it('throws when entries mismatch.', () => {
 				typeCheckGoal(`
-					let t1: mutable [int, str]    = [42, 43];
-					let t2: mutable [int, ?: str] = [42, 43];
-
-					let r1: mutable [a: int, b: str]  = [a= 42, b= 43];
-					let r2: mutable [a: int, b?: str] = [a= 42, b= 43];
-
 					let s1: mutable int{} = {"42"};
 					let s2: mutable int{} = {42, "43"};
 
@@ -241,8 +242,6 @@ describe('ASTNodeDeclarationVariable', () => {
 					let m2: mutable {int -> str} = {42  -> 4.3};
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`{
-					let t3: mutable [   bool,    str] = [   42,    43];
-					let r3: mutable [a: bool, b: str] = [a= 44, b= 45];
 					let s3: mutable (bool | str){}    = {   46,    47};
 
 					let m3_1: mutable {str -> bool} = {1 -> false, 2.0 -> true};
@@ -255,20 +254,6 @@ describe('ASTNodeDeclarationVariable', () => {
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
-							{
-								cons:   AggregateError,
-								errors: [
-									{cons: TypeErrorNotAssignable, message: 'Expression of type `42` is not assignable to type `bool`.'},
-									{cons: TypeErrorNotAssignable, message: 'Expression of type `43` is not assignable to type `str`.'},
-								],
-							},
-							{
-								cons:   AggregateError,
-								errors: [
-									{cons: TypeErrorNotAssignable, message: 'Expression of type `44` is not assignable to type `bool`.'},
-									{cons: TypeErrorNotAssignable, message: 'Expression of type `45` is not assignable to type `str`.'},
-								],
-							},
 							{
 								cons:   AggregateError,
 								errors: [

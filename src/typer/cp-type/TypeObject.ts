@@ -4,7 +4,7 @@ import {Type} from './Type.js';
 
 
 /**
- * Class for constructing the `obj` type.
+ * Class for constructing the `Object` type.
  * @final
  */
 export class TypeObject extends Type {
@@ -18,7 +18,7 @@ export class TypeObject extends Type {
 	}
 
 	public override toString(): string {
-		return 'obj';
+		return 'Object';
 	}
 
 	public override includes(_v: OBJ.Object): boolean {

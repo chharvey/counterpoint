@@ -11,19 +11,40 @@ import {
 
 
 describe('ASTNodeCall', () => {
+	const evaluate = [
+		'List.<int>([1, 2, 3])',
+		'Dict.<int>([a= 1, b= 2, c= 3])',
+		'Set.<int>([1, 2, 3])',
+		`Map.<int, float>([
+			[1, 0.1],
+			[2, 0.2],
+			[3, 0.4],
+		])`,
+	] as const;
+	const list_args = [
+		'List.<int>(List.<int>([1, 2, 3]))',
+		'Set.<int>(List.<int>([1, 2, 3]))',
+		`Map.<int, float>(List.<[int, float]>([
+			[1, 0.1],
+			[2, 0.2],
+			[3, 0.4],
+		]))`,
+	] as const;
+	const zero_empty = [
+		'List.<int>()',
+		'Dict.<int>()',
+		'Set.<int>()',
+		'Map.<int, float>()',
+		'List.<int>([])',
+		'Set.<int>([])',
+		'Map.<int, float>([])',
+	] as const;
+
+
 	describe('#type', () => {
 		it('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
-				[
-					'List.<int>([1, 2, 3])',
-					'Dict.<int>([a= 1, b= 2, c= 3])',
-					'Set.<int>([1, 2, 3])',
-					`Map.<int, float>([
-						[1, 0.1],
-						[2, 0.2],
-						[3, 0.3],
-					])`,
-				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
+				evaluate.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new TYPE.TypeList(TYPE.INT, true),
 					new TYPE.TypeDict(TYPE.INT, true),
@@ -34,15 +55,7 @@ describe('ASTNodeCall', () => {
 		});
 		it('List, Set, and Map take List-type arguments.', () => {
 			assert.deepStrictEqual(
-				[
-					'List.<int>(List.<int>([1, 2, 3]))',
-					'Set.<int>(List.<int>([1, 2, 3]))',
-					`Map.<int, float>(List.<[int, float]>([
-						[1, 0.1],
-						[2, 0.2],
-						[3, 0.3],
-					]))`,
-				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
+				list_args.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new TYPE.TypeList(TYPE.INT, true),
 					new TYPE.TypeSet(TYPE.INT, true),
@@ -52,15 +65,7 @@ describe('ASTNodeCall', () => {
 		});
 		it('zero/empty functional arguments.', () => {
 			assert.deepStrictEqual(
-				[
-					'List.<int>()',
-					'Dict.<int>()',
-					'Set.<int>()',
-					'Map.<int, float>()',
-					'List.<int>([])',
-					'Set.<int>([])',
-					'Map.<int, float>([])',
-				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
+				zero_empty.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new TYPE.TypeList(TYPE.INT, true),
 					new TYPE.TypeDict(TYPE.INT, true),
@@ -120,16 +125,7 @@ describe('ASTNodeCall', () => {
 	describe('#fold', () => {
 		it('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
-				[
-					'List.<int>([1, 2, 3])',
-					'Dict.<int>([a= 1, b= 2, c= 3])',
-					'Set.<int>([1, 2, 3])',
-					`Map.<int, float>([
-						[1, 0.1],
-						[2, 0.2],
-						[3, 0.4],
-					])`,
-				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
+				evaluate.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
 					new OBJ.List<OBJ.Integer>([
 						new OBJ.Integer(1n),
@@ -156,15 +152,7 @@ describe('ASTNodeCall', () => {
 		});
 		it('List, Set, and Map take List-value arguments.', () => {
 			assert.deepStrictEqual(
-				[
-					'List.<int>(List.<int>([1, 2, 3]))',
-					'Set.<int>(List.<int>([1, 2, 3]))',
-					`Map.<int, float>(List.<[int, float]>([
-						[1, 0.1],
-						[2, 0.2],
-						[3, 0.4],
-					]))`,
-				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
+				list_args.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
 					new OBJ.List<OBJ.Integer>([
 						new OBJ.Integer(1n),
@@ -186,15 +174,7 @@ describe('ASTNodeCall', () => {
 		});
 		it('zero/empty functional arguments.', () => {
 			assert.deepStrictEqual(
-				[
-					'List.<int>()',
-					'Dict.<int>()',
-					'Set.<int>()',
-					'Map.<int, float>()',
-					'List.<int>([])',
-					'Set.<int>([])',
-					'Map.<int, float>([])',
-				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
+				zero_empty.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
 					new OBJ.List<never>(),
 					new OBJ.Dict<never>(),

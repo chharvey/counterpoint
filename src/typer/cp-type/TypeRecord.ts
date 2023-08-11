@@ -1,41 +1,63 @@
-import {strictEqual} from '../../lib/index.js';
+import {TypeErrorNoEntry} from '../../index.js';
+import {
+	type IntRange,
+	throw_expression,
+	strictEqual,
+} from '../../lib/index.js';
+import type {
+	ValidAccessOperator,
+	AST,
+} from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
+import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
-import {TypeCollectionKeyedStatic} from './TypeCollectionKeyedStatic.js';
 
 
 
-export class TypeRecord extends TypeCollectionKeyedStatic {
+export class TypeRecord extends Type {
 	/**
 	 * Construct a new TypeRecord from type properties, assuming each property is required.
 	 * @param propertytypes the types of the record
-	 * @param is_mutable is the record type mutable?
 	 * @return a new record type with the provided properties
 	 */
-	public static fromTypes(propertytypes: ReadonlyMap<bigint, Type> = new Map(), is_mutable: boolean = false): TypeRecord {
+	public static fromTypes(propertytypes: ReadonlyMap<bigint, Type> = new Map()): TypeRecord {
 		return new TypeRecord(new Map<bigint, TypeEntry>([...propertytypes].map(([id, t]) => [id, {
 			type:     t,
 			optional: false,
-		}])), is_mutable);
+		}])));
 	}
 
+
+	public override readonly isReference:  boolean = false;
+	public override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new TypeRecord object.
 	 * @param invariants a map of this type’s property ids along with their associated types
-	 * @param is_mutable is this type mutable?
 	 */
-	public constructor(
-		invariants: ReadonlyMap<bigint, TypeEntry> = new Map(),
-		is_mutable: boolean                        = false,
-	) {
-		super(invariants, is_mutable, new Set([new OBJ.Record()]));
+	public constructor(public readonly invariants: ReadonlyMap<bigint, TypeEntry> = new Map()) {
+		super(false, new Set([new OBJ.Record()]));
+	}
+
+	public override get hasMutable(): boolean {
+		return super.hasMutable || [...this.invariants.values()].some((t) => t.type.hasMutable);
+	}
+
+	/**
+	 * The possible number of items in this record type.
+	 * @final
+	 */
+	public get count(): IntRange {
+		return [
+			BigInt([...this.invariants.values()].filter((val) => !val.optional).length),
+			BigInt(this.invariants.size) + 1n,
+		];
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }[${ super.toString() }]`;
+		return `[${ [...this.invariants].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
 	public override includes(v: OBJ.Object): boolean {
@@ -48,7 +70,6 @@ export class TypeRecord extends TypeCollectionKeyedStatic {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeRecord
 			&& this.count[0] >= t.count[0]
-			&& (!t.isMutable || this.isMutable)
 			&& [...t.invariants].every(([id, thattype]) => {
 				const thistype: TypeEntry | undefined = this.invariants.get(id);
 				if (!thattype.optional) {
@@ -58,24 +79,30 @@ export class TypeRecord extends TypeCollectionKeyedStatic {
 						return false;
 					}
 				}
-				return (!thistype || ((t.isMutable)
-					? thistype.type.equals(thattype.type)      // Invariance for mutable records: `A == B --> mutable Record.<A> <: mutable Record.<B>`.
-					: thistype.type.isSubtypeOf(thattype.type) // Covariance for immutable records: `A <: B --> Record.<A> <: Record.<B>`.
-				));
+				return !thistype || thistype.type.isSubtypeOf(thattype.type); // Covariance for records: `A <: B --> Record.<A> <: Record.<B>`.
 			})
 		);
 	}
 
-	public override mutableOf(): TypeRecord {
-		return new TypeRecord(this.invariants, true);
+	/** @final */
+	public get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): Type {
+		return updateAccessedStaticType(
+			((this.invariants.has(key))
+				? this.invariants.get(key)!
+				: throw_expression(new TypeErrorNoEntry('property', this, accessor))
+			),
+			access_kind,
+		);
 	}
 
-	public override immutableOf(): TypeRecord {
-		return new TypeRecord(this.invariants, false);
+	/** @final */
+	public valueTypes(): Type {
+		return Type.unionAll([...this.invariants.values()].map((t) => t.type));
 	}
 
 	/**
-	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `S` with the set of properties on `T`.
+	 * When accessing the *intersection* of types `S` and `T`,
+	 * the set of properties available is the *union* of the set of properties on `S` with the set of properties on `T`.
 	 * For any overlapping properties, their type intersection is taken.
 	 */
 	public intersectWithRecord(t: TypeRecord): TypeRecord {
@@ -90,7 +117,8 @@ export class TypeRecord extends TypeCollectionKeyedStatic {
 	}
 
 	/**
-	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `S` with the set of properties on `T`.
+	 * When accessing the *union* of types `S` and `T`,
+	 * the set of properties available is the *intersection* of the set of properties on `S` with the set of properties on `T`.
 	 * For any overlapping properties, their type union is taken.
 	 */
 	public unionWithRecord(t: TypeRecord): TypeRecord {
