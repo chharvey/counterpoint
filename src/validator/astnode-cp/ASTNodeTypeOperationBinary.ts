@@ -8,7 +8,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeFamily} from '../utils-private.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {
 	Operator,
 	type ValidTypeOperator,
@@ -27,8 +27,8 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 
 	public constructor(
 		start_node:
-			| SyntaxNodeFamily<'type_intersection', ['variable']>
-			| SyntaxNodeFamily<'type_union',        ['variable']>
+			| SyntaxNodeType<'type_intersection'>
+			| SyntaxNodeType<'type_union'>
 		,
 		operator: ValidTypeOperator,
 		private readonly operand0: ASTNodeType,

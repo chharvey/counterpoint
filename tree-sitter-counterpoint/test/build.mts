@@ -183,7 +183,7 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceExpressions(
 				s(
-					'string_template__variable',
+					'string_template',
 					s('template_head'),
 					s('identifier'),
 					s('template_middle'),
@@ -191,7 +191,7 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('template_tail'),
 				),
 				s(
-					'string_template__variable',
+					'string_template',
 					s('template_head'),
 					s('identifier'),
 					s('template_middle'),
@@ -201,13 +201,13 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('template_tail'),
 				),
 				s(
-					'string_template__variable',
+					'string_template',
 					s('template_head'),
 					s(
-						'string_template__variable',
+						'string_template',
 						s('template_head'),
 						s(
-							'string_template__variable',
+							'string_template',
 							s('template_full'),
 						),
 						s('template_tail'),
@@ -244,9 +244,9 @@ function buildTest(title: string, source: string, expected: string): string {
 				type T = (T);
 			`,
 			sourceTypes(
-				s('type_grouped__variable', s('primitive_literal', s('integer'))),
-				s('type_grouped__variable', s('keyword_type')),
-				s('type_grouped__variable', s('identifier')),
+				s('type_grouped', s('primitive_literal', s('integer'))),
+				s('type_grouped', s('keyword_type')),
+				s('type_grouped', s('identifier')),
 			),
 		],
 
@@ -260,25 +260,25 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceTypes(
 				s(
-					'type_tuple_literal__variable',
-					s('entry_type__variable',           s('keyword_type')),
-					s('entry_type__variable',           s('keyword_type')),
-					s('entry_type__optional__variable', s('keyword_type')),
+					'type_tuple_literal',
+					s('entry_type',           s('keyword_type')),
+					s('entry_type',           s('keyword_type')),
+					s('entry_type__optional', s('keyword_type')),
 				),
 				s(
-					'type_tuple_literal__variable',
+					'type_tuple_literal',
 					s(
-						'entry_type__variable',
+						'entry_type',
 						s(
-							'type_compound__variable',
+							'type_compound',
 							s('identifier'),
 							s('property_access_type', s('integer')),
 						),
 					),
 					s(
-						'entry_type__variable',
+						'entry_type',
 						s(
-							'type_compound__variable',
+							'type_compound',
 							s('identifier'),
 							s(
 								'generic_call',
@@ -300,27 +300,27 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceTypes(
 				s(
-					'type_record_literal__variable',
-					s('entry_type__named__variable',           s('word', s('identifier')), s('keyword_type')),
-					s('entry_type__named__optional__variable', s('word', s('identifier')), s('keyword_type')),
-					s('entry_type__named__variable',           s('word', s('identifier')), s('keyword_type')),
+					'type_record_literal',
+					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
 				),
 				s(
-					'type_record_literal__variable',
+					'type_record_literal',
 					s(
-						'entry_type__named__variable',
+						'entry_type__named',
 						s('word', s('identifier')),
 						s(
-							'type_compound__variable',
+							'type_compound',
 							s('identifier'),
 							s('property_access_type', s('integer')),
 						),
 					),
 					s(
-						'entry_type__named__variable',
+						'entry_type__named',
 						s('word', s('identifier')),
 						s(
-							'type_compound__variable',
+							'type_compound',
 							s('identifier'),
 							s(
 								'generic_call',
@@ -370,17 +370,17 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceTypes(
 				s(
-					'type_compound__variable',
+					'type_compound',
 					s('identifier'),
 					s('property_access_type', s('integer')),
 				),
 				s(
-					'type_compound__variable',
+					'type_compound',
 					s('identifier'),
 					s('property_access_type', s('word', s('identifier'))),
 				),
 				s(
-					'type_compound__variable',
+					'type_compound',
 					s('identifier'),
 					s(
 						'generic_call',
@@ -400,24 +400,24 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceTypes(
 				s(
-					'type_unary_symbol__variable',
+					'type_unary_symbol',
 					s('identifier'),
 				),
 				s(
-					'type_unary_symbol__variable',
+					'type_unary_symbol',
 					s('identifier'),
 				),
 				s(
-					'type_unary_symbol__variable',
+					'type_unary_symbol',
 					s('identifier'),
 				),
 				s(
-					'type_unary_symbol__variable',
+					'type_unary_symbol',
 					s('identifier'),
 					s('integer'),
 				),
 				s(
-					'type_unary_symbol__variable',
+					'type_unary_symbol',
 					s('identifier'),
 				),
 			),
@@ -428,7 +428,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				type T = mutable T;
 			`,
 			sourceTypes(s(
-				'type_unary_keyword__variable',
+				'type_unary_keyword',
 				s('identifier'),
 			)),
 		],
@@ -438,7 +438,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				type T = T & U;
 			`,
 			sourceTypes(s(
-				'type_intersection__variable',
+				'type_intersection',
 				s('identifier'),
 				s('identifier'),
 			)),
@@ -449,7 +449,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				type T = T | U;
 			`,
 			sourceTypes(s(
-				'type_union__variable',
+				'type_union',
 				s('identifier'),
 				s('identifier'),
 			)),
@@ -475,8 +475,8 @@ function buildTest(title: string, source: string, expected: string): string {
 				(a);
 			`,
 			sourceExpressions(
-				s('expression_grouped__variable', s('primitive_literal', s('integer'))),
-				s('expression_grouped__variable', s('identifier')),
+				s('expression_grouped', s('primitive_literal', s('integer'))),
+				s('expression_grouped', s('identifier')),
 			),
 		],
 
@@ -485,13 +485,10 @@ function buildTest(title: string, source: string, expected: string): string {
 				[1, [2], [[3]]];
 			`,
 			sourceExpressions(s(
-				'tuple_literal__variable',
-				                             s('primitive_literal', s('integer')),
-				s('tuple_literal__variable', s('primitive_literal', s('integer'))),
-				s(
-					'tuple_literal__variable',
-					s('tuple_literal__variable', s('primitive_literal', s('integer'))),
-				),
+				'tuple_literal',
+				                                      s('primitive_literal', s('integer')),
+				                   s('tuple_literal', s('primitive_literal', s('integer'))),
+				s('tuple_literal', s('tuple_literal', s('primitive_literal', s('integer')))),
 			)),
 		],
 
@@ -500,36 +497,36 @@ function buildTest(title: string, source: string, expected: string): string {
 				[a= 1, b= [x= 2], c= [y= [k= 3]]];
 			`,
 			sourceExpressions(s(
-				'record_literal__variable',
+				'record_literal',
 				s(
-					'property__variable',
+					'property',
 					s('word', s('identifier')),
 					s('primitive_literal', s('integer')),
 				),
 				s(
-					'property__variable',
+					'property',
 					s('word', s('identifier')),
 					s(
-						'record_literal__variable',
+						'record_literal',
 						s(
-							'property__variable',
+							'property',
 							s('word', s('identifier')),
 							s('primitive_literal', s('integer')),
 						),
 					),
 				),
 				s(
-					'property__variable',
+					'property',
 					s('word', s('identifier')),
 					s(
-						'record_literal__variable',
+						'record_literal',
 						s(
-							'property__variable',
+							'property',
 							s('word', s('identifier')),
 							s(
-								'record_literal__variable',
+								'record_literal',
 								s(
-									'property__variable',
+									'property',
 									s('word', s('identifier')),
 									s('primitive_literal', s('integer')),
 								),
@@ -608,68 +605,68 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceExpressions(
 				s(
-					'expression_compound__variable',
+					'expression_compound',
 					s('identifier'),
-					s('property_access__variable', s('integer')),
+					s('property_access', s('integer')),
 				),
 				s(
-					'expression_compound__variable',
+					'expression_compound',
 					s('identifier'),
-					s('property_access__variable', s('integer')),
+					s('property_access', s('integer')),
 				),
 				s(
-					'expression_compound__variable',
+					'expression_compound',
 					s('identifier'),
-					s('property_access__variable', s('integer')),
+					s('property_access', s('integer')),
 				),
 				s(
-					'expression_compound__variable',
+					'expression_compound',
 					s('identifier'),
-					s('property_access__variable', s('word', s('identifier'))),
+					s('property_access', s('word', s('identifier'))),
 				),
 				s(
-					'expression_compound__variable',
+					'expression_compound',
 					s('identifier'),
-					s('property_access__variable', s('word', s('identifier'))),
+					s('property_access', s('word', s('identifier'))),
 				),
 				s(
-					'expression_compound__variable',
+					'expression_compound',
 					s('identifier'),
-					s('property_access__variable', s('word', s('identifier'))),
+					s('property_access', s('word', s('identifier'))),
 				),
 				s(
-					'expression_compound__variable',
+					'expression_compound',
 					s('identifier'),
-					s('property_access__variable', s('identifier')),
+					s('property_access', s('identifier')),
 				),
 				s(
-					'expression_compound__variable',
+					'expression_compound',
 					s('identifier'),
-					s('property_access__variable', s('identifier')),
+					s('property_access', s('identifier')),
 				),
 				s(
-					'expression_compound__variable',
+					'expression_compound',
 					s('identifier'),
-					s('property_access__variable', s('identifier')),
+					s('property_access', s('identifier')),
 				),
 				s(
-					'expression_compound__variable',
+					'expression_compound',
 					s('identifier'),
 					s('function_call', s('function_arguments')),
 				),
 				s(
-					'expression_compound__variable',
+					'expression_compound',
 					s('identifier'),
 					s(
 						'function_call',
 						s(
 							'function_arguments',
-							s('tuple_literal__variable'),
+							s('tuple_literal'),
 						),
 					),
 				),
 				s(
-					'expression_compound__variable',
+					'expression_compound',
 					s('identifier'),
 					s(
 						'function_call',
@@ -695,19 +692,19 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceExpressions(
 				s(
-					'expression_unary_symbol__variable',
+					'expression_unary_symbol',
 					s('identifier'),
 				),
 				s(
-					'expression_unary_symbol__variable',
+					'expression_unary_symbol',
 					s('identifier'),
 				),
 				s(
-					'expression_unary_symbol__variable',
+					'expression_unary_symbol',
 					s('identifier'),
 				),
 				s(
-					'expression_unary_symbol__variable',
+					'expression_unary_symbol',
 					s('identifier'),
 				),
 			),
@@ -720,15 +717,15 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceExpressions(
 				s(
-					'expression_exponential__variable',
+					'expression_exponential',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_exponential__variable',
+					'expression_exponential',
 					s('identifier'),
 					s(
-						'expression_exponential__variable',
+						'expression_exponential',
 						s('identifier'),
 						s('identifier'),
 					),
@@ -744,19 +741,19 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceExpressions(
 				s(
-					'expression_multiplicative__variable',
+					'expression_multiplicative',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_multiplicative__variable',
+					'expression_multiplicative',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_multiplicative__variable',
+					'expression_multiplicative',
 					s(
-						'expression_multiplicative__variable',
+						'expression_multiplicative',
 						s('identifier'),
 						s('identifier'),
 					),
@@ -772,12 +769,12 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceExpressions(
 				s(
-					'expression_additive__variable',
+					'expression_additive',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_additive__variable',
+					'expression_additive',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -797,42 +794,42 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceExpressions(
 				s(
-					'expression_comparative__variable',
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative__variable',
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative__variable',
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative__variable',
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative__variable',
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative__variable',
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative__variable',
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_comparative__variable',
+					'expression_comparative',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -848,22 +845,22 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceExpressions(
 				s(
-					'expression_equality__variable',
+					'expression_equality',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_equality__variable',
+					'expression_equality',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_equality__variable',
+					'expression_equality',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_equality__variable',
+					'expression_equality',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -877,12 +874,12 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceExpressions(
 				s(
-					'expression_conjunctive__variable',
+					'expression_conjunctive',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_conjunctive__variable',
+					'expression_conjunctive',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -896,12 +893,12 @@ function buildTest(title: string, source: string, expected: string): string {
 			`,
 			sourceExpressions(
 				s(
-					'expression_disjunctive__variable',
+					'expression_disjunctive',
 					s('identifier'),
 					s('identifier'),
 				),
 				s(
-					'expression_disjunctive__variable',
+					'expression_disjunctive',
 					s('identifier'),
 					s('identifier'),
 				),
@@ -913,7 +910,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				if a then b else c;
 			`,
 			sourceExpressions(s(
-				'expression_conditional__variable',
+				'expression_conditional',
 				s('identifier'),
 				s('identifier'),
 				s('identifier'),
@@ -936,10 +933,10 @@ function buildTest(title: string, source: string, expected: string): string {
 					'declaration_type',
 					s('identifier'),
 					s(
-						'type_union__variable',
+						'type_union',
 						s('identifier'),
 						s(
-							'type_intersection__variable',
+							'type_intersection',
 							s('identifier'),
 							s('identifier'),
 						),
@@ -967,10 +964,10 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('identifier'),
 					s('identifier'),
 					s(
-						'expression_additive__variable',
+						'expression_additive',
 						s('identifier'),
 						s(
-							'expression_multiplicative__variable',
+							'expression_multiplicative',
 							s('identifier'),
 							s('identifier'),
 						),
@@ -980,10 +977,10 @@ function buildTest(title: string, source: string, expected: string): string {
 					'declaration_variable',
 					s('identifier'),
 					s(
-						'type_union__variable',
+						'type_union',
 						s('identifier'),
 						s(
-							'type_intersection__variable',
+							'type_intersection',
 							s('identifier'),
 							s('identifier'),
 						),

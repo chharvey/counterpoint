@@ -10,7 +10,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeFamily} from '../utils-private.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeItemType} from './ASTNodeItemType.js';
 import {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
@@ -25,7 +25,7 @@ export class ASTNodeTypeTuple extends ASTNodeTypeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'type_tuple_literal', ['variable']>,
+		start_node: SyntaxNodeType<'type_tuple_literal'>,
 		public override readonly children: readonly ASTNodeItemType[],
 	) {
 		super(start_node, children);

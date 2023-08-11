@@ -1,7 +1,4 @@
-import type {
-	SyntaxNodeType,
-	SyntaxNodeFamily,
-} from '../utils-private.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -16,8 +13,8 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	protected constructor(
 		start_node:
-			| SyntaxNodeFamily<'tuple_literal',  ['variable']>
-			| SyntaxNodeFamily<'record_literal', ['variable']>
+			| SyntaxNodeType<'tuple_literal'>
+			| SyntaxNodeType<'record_literal'>
 			| SyntaxNodeType<'set_literal'>
 			| SyntaxNodeType<'map_literal'>
 		,

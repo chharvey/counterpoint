@@ -7,7 +7,7 @@ import type {ASTNodeKey} from './ASTNodeKey.js';
 
 export class ASTNodePropertyType extends ASTNodeCP {
 	public constructor(
-		start_node: SyntaxNodeFamily<'entry_type__named', ['optional', 'variable']>,
+		start_node: SyntaxNodeFamily<'entry_type__named', ['optional']>,
 		public readonly optional: boolean,
 		public readonly key:      ASTNodeKey,
 		public readonly val:      ASTNodeType,

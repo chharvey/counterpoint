@@ -15,7 +15,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeFamily} from '../utils-private.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -31,7 +31,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'record_literal', ['variable']>,
+		start_node: SyntaxNodeType<'record_literal'>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, children);
