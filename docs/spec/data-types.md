@@ -333,8 +333,6 @@ Compound types are derived from other types.
 
 - [Tuple Types](#tuple-types)
 - [Record Types](#record-types)
-- [Vect Types](#vect-types)
-- [Struct Types](#struct-types)
 - [List Types](#list-types)
 - [Dict Types](#dict-types)
 - [Set Types](#set-types)
@@ -353,22 +351,6 @@ a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values,
 The objects that any given Record type describes are `Record` objects whose
 properties’ types match up with the invariants in the structure by name.
 Records have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
-
-#### Vect Types
-A **Vect** type describes instances of [`Vect`](./intrinsics.md#vect) and is parameterized by
-a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items, called invariants.
-The objects that any given Vect type describes are `Vect` objects whose
-items’ types match up with the invariants in the sequence in order.
-Vects have a static size, are ordered, and are 0-origin indexable by Integers.
-The invariants of a Vect type are restricted to value types.
-
-#### Struct Types
-A **Struct** type describes instances of [`Struct`](./intrinsics.md#struct) and is parameterized by
-a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values, called invariants.
-The objects that any given Struct type describes are `Struct` objects whose
-properties’ types match up with the invariants in the structure by name.
-Structs have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
-The invariants of a Struct type are restricted to value types.
 
 #### List Types
 A **List** type describes instances of [`List`](./intrinsics.md#list) and is parameterized by a single type,
@@ -424,7 +406,7 @@ Boolean IsReference(Type t) :=
 	4. *Set* `valuetypes` to a reduction of `valuetypes` for each `a` and `b` to *UnwrapAffirm:* `Union(a, b)`.
 	5. *If* *UnwrapAffirm:* `Subtype(t, valuetypes)`:
 		1. *Return:* `false`.
-	6. *If* `t` is a Vect or Struct type:
+	6. *If* `t` is a Tuple or Record type:
 		1. *Return:* `false`.
 	7. *If* `t` is a Union of some types `a` and `b`:
 		1. *If* *UnwrapAffirm:* `IsReference(a)` is `true` *or* *UnwrapAffirm:* `IsReference(b)` is `true`:
@@ -558,45 +540,35 @@ Boolean Subtype(Type a, Type b) :=
 		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
 			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
 			1. *Return:* `true`.
-	10. *If* `a` is a Tuple or Vect type *and* `b` is a Tuple or Vect type:
+	10. *If* `a` is a Tuple type *and* `b` is a Tuple type:
 		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
 		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
 		4. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
 		5. *If* `seq_a_req.count` is less than `seq_b_req.count`:
 			1. *Return:* `false`.
-		6. *If* `b` is mutable:
-			1. *If* `a` is not mutable:
-				1. *Return:* `false`.
-		7. *For index* `i` in `seq_b`:
+		6. *For index* `i` in `seq_b`:
 			1. *If* `seq_b[i].optional` is `false`:
 				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
 			2. *If* `seq_a[i]` is set:
-				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(seq_a[i].type, seq_b[i].type)` is `false`:
+				1. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
 					1. *Return:* `false`.
-				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
-					1. *Return:* `false`.
-		9. *Return:* `true`.
-	11. *If* `a` is a Record or Struct type *and* `b` is a Record or Struct type:
+		7. *Return:* `true`.
+	11. *If* `a` is a Record type *and* `b` is a Record type:
 		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
 		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
 		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
 		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
 			1. *Return:* `false`.
-		6. *If* `b` is mutable:
-			1. *If* `a` is not mutable:
-				1. *Return:* `false`.
-		9. *For key* `k` in `struct_b`:
+		6. *For key* `k` in `struct_b`:
 			1. *If* `struct_b[k].optional` is `false`:
 				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
 					1. *Return:* `false`.
 			2. *If* `struct_a[k]` is set:
-				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(struct_a[k].type, struct_b[k].type)` is `false`:
+				1. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 					1. *Return:* `false`.
-				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
-					1. *Return:* `false`.
-		9. *Return:* `true`.
+		7. *Return:* `true`.
 	12. *If* `a` is a List type *and* `b` is a List type:
 		1. *Let* `ai` be the union of types in `a`.
 		2. *Let* `bi` be the union of types in `b`.

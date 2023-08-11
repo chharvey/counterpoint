@@ -24,7 +24,7 @@ CommentMulti
 Punctuator :::=
 	// grouping
 		| "(" | ")"
-		| "[" | "]" | "\["
+		| "[" | "]"
 		| "{" | "}"
 		| "," | "->"
 	// compound

@@ -600,31 +600,21 @@ describe('ASTNodeOperation', () => {
 					let g: Object = {};
 					let h: Object = {42};
 					let i: Object = {41 -> 42};
-					let j: Object = \\[42];
-					let k: Object = \\[x= 42];
 
 					let bb: Object = [[42]];
 					let cc: Object = [x= [42]];
 					let hh: Object = {[42]};
 					let ii: Object = {[41] -> [42]};
-					let jj: Object = \\[\\[42]];
-					let kk: Object = \\[x= \\[42]];
 
-					a !== [];
-					b !== [42];
-					b !== j;
-					c !== [x= 42];
-					c !== k;
+					a === [];
+					b === [42];
+					c === [x= 42];
 					d !== List.<int>([]);
 					e !== List.<int>([42]);
 					f !== Dict.<int>([x= 42]);
 					g !== {};
 					h !== {42};
 					i !== {41 -> 42};
-					j === \\[42];
-					j !== b;
-					k === \\[x= 42];
-					k !== c;
 					a === a;
 					b === b;
 					c === c;
@@ -634,30 +624,20 @@ describe('ASTNodeOperation', () => {
 					g === g;
 					h === h;
 					i === i;
-					j === j;
-					k === k;
 					a == [];
 					b == [42];
-					b == j;
 					c == [x= 42];
-					c == k;
 					d == List.<int>([]);
 					e == List.<int>([42]);
 					f == Dict.<int>([x= 42]);
 					g == {};
 					h == {42};
 					i == {41 -> 42};
-					j == \\[42];
-					j == b;
-					k == \\[x= 42];
-					k == c;
 
-					bb !== [[42]];
-					cc !== [x= [42]];
+					bb === [[42]];
+					cc === [x= [42]];
 					hh !== {[42]};
 					ii !== {[41] -> [42]};
-					jj === \\[\\[42]];
-					kk === \\[x= \\[42]];
 					bb === bb;
 					cc === cc;
 					hh === hh;
@@ -666,8 +646,6 @@ describe('ASTNodeOperation', () => {
 					cc == [x= [42]];
 					hh == {[42]};
 					ii == {[41] -> [42]};
-					jj == \\[\\[42]];
-					kk == \\[x= \\[42]];
 
 					b != [42, 43];
 					c != [x= 43];
@@ -677,20 +655,20 @@ describe('ASTNodeOperation', () => {
 				`);
 				goal.varCheck();
 				goal.typeCheck();
-				goal.children.slice(17).forEach((stmt) => {
+				goal.children.slice(13).forEach((stmt) => {
 					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), OBJ.Boolean.TRUE, stmt.source);
 				});
 			});
 			it('compound value types’ constituents are compared using same operand.', () => {
 				foldOperations(new Map([
-					['\\[   42.0] === \\[   42];',   OBJ.Boolean.FALSE],
-					['\\[   42.0] ==  \\[   42];',   OBJ.Boolean.TRUE],
-					['\\[a= 42.0] === \\[a= 42];',   OBJ.Boolean.FALSE],
-					['\\[a= 42.0] ==  \\[a= 42];',   OBJ.Boolean.TRUE],
-					['\\[    0.0] === \\[   -0.0];', OBJ.Boolean.FALSE],
-					['\\[    0.0] ==  \\[   -0.0];', OBJ.Boolean.TRUE],
-					['\\[a=  0.0] === \\[a= -0.0];', OBJ.Boolean.FALSE],
-					['\\[a=  0.0] ==  \\[a= -0.0];', OBJ.Boolean.TRUE],
+					['[   42.0] === [   42];',   OBJ.Boolean.FALSE],
+					['[   42.0] ==  [   42];',   OBJ.Boolean.TRUE],
+					['[a= 42.0] === [a= 42];',   OBJ.Boolean.FALSE],
+					['[a= 42.0] ==  [a= 42];',   OBJ.Boolean.TRUE],
+					['[    0.0] === [   -0.0];', OBJ.Boolean.FALSE],
+					['[    0.0] ==  [   -0.0];', OBJ.Boolean.TRUE],
+					['[a=  0.0] === [a= -0.0];', OBJ.Boolean.FALSE],
+					['[a=  0.0] ==  [a= -0.0];', OBJ.Boolean.TRUE],
 				]));
 			});
 		});

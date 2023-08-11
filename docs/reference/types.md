@@ -483,45 +483,33 @@ let GREETING: """Hello World!""" = "Hello World!"; %> ParseError
 ## Compound Types
 Compound types are composed of other types.
 
-Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax           | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
------------------- | -------- | ------------  | ------------------- | ------------------------------ | -------------------------------------------- | -------------------------------------- | --------------------
-[Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `[str, str, str]` / `str[3]`   | *(none)*                                     | `["x", "y", "z"]`                      | `[]`
-[Vect](#tuples)    | Fixed    | integers      | *(none)*            | `\[str, str, str]` / `str\[3]` | *(none)*                                     | `\["x", "y", "z"]`                     | `\[]`
-[Record](#records) | Fixed    | words         | *(none)*            | `[a: str, b: str, c: str]`     | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
-[Struct](#records) | Fixed    | words         | *(none)*            | `\[a: str, b: str, c: str]`    | *(none)*                                     | `\[a= "x", b= "y", c= "z"]`            | *(none)*
-[List](#lists)     | Variable | integers      | `List.<str>`        | `str[]`                        | `List.(["x", "y", "z"])`                     | *(none)*                               | *(none)*
-[Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                       | `Dict.([a= "x", b= "y", c= "z"])`            | *(none)*                               | *(none)*
-[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                        | `Set.(["x", "y", "z"])`                      | `{"x", "y", "z"}`                      | `{}`
-[Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`                 | `Map.([["u", "x"], ["v", "y"], ["w", "z"]])` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
+Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax         | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
+------------------ | -------- | ------------  | ------------------- | ---------------------------- | -------------------------------------------- | -------------------------------------- | --------------------
+[Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `[str, str, str]` / `str[3]` | *(none)*                                     | `["x", "y", "z"]`                      | `[]`
+[Record](#records) | Fixed    | words         | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
+[List](#lists)     | Variable | integers      | `List.<str>`        | `str[]`                      | `List.(["x", "y", "z"])`                     | *(none)*                               | *(none)*
+[Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                     | `Dict.([a= "x", b= "y", c= "z"])`            | *(none)*                               | *(none)*
+[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                      | `Set.(["x", "y", "z"])`                      | `{"x", "y", "z"}`                      | `{}`
+[Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`               | `Map.([["u", "x"], ["v", "y"], ["w", "z"]])` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
 
 
 ### Tuples
-Tuples and Vects are fixed-size ordered lists of indexed values, with indices starting at `0`.
+Tuples are fixed-size ordered lists of indexed values, with indices starting at `0`.
 The values in a tuple are called **items** (the actual values) or **entries** (the “slots” where values are stored).
 The number of entries in a tuple is called its **count**.
 The count of a tuple is fixed and known at compile-time, as is the type of each entry in it.
 The order of entries is significant: looping and iteration are performed in index order.
 Tuples are heterogeneous, meaning they can be declared with different entry types.
-
-There are two kinds of tuples: value tuples and reference tuples. Value tuples are called **vects**.
-Only reference tuples may be mutable, in which case their entries may be reassigned, but only to values of the correct type.
-The entries of reference tuples cannot be added or deleted.
+They are also read-only, which means their entries cannot be added, deleted, or reassigned.
 
 For example, the tuple `[3, 4.0, "seven"]` has an integer in the first position at index `0`,
 followed by a float at index `1`, followed by a string at index `2`. Its count is 3.
-Entries cannot be added or removed — the count of the tuple cannot change — but entries can be reassigned:
-We could set the last entry to the string `"twelve"`.
 
 Tuple literals are comma-separated expressions within square brackets.
 Tuple types use the same syntax, but instead of value expressions
 they contain type expressions (a.k.a. types).
 ```
 let elements: [str, str, str] = ["earth", "wind", "fire"];
-```
-Vect literals are like tuple literals but prepended with a single backslash.
-As value types, vects can only contain other value types (including primitives).
-```
-let elements: \[str, str, str] = \["earth", "wind", "fire"];
 ```
 
 Larger tuples are always assignable to smaller tuples,
@@ -532,11 +520,9 @@ let elements_and_more: [str, str, str, bool, int] = ["earth", "wind", "fire"]; %
 ```
 The first declaration is allowed because the last two items are simply dropped off.
 
-Vects are assignable to non-`mutable` tuples.
+Because tuples are read-only, the `mutable` operator is invalid on tuple types.
 ```
-let elements:          [str, str, str] = \["earth", "wind", "fire"];
-let elements: mutable  [str, str, str] = \["earth", "wind", "fire"]; %> TypeError
-let elements:         \[str, str, str] =  ["earth", "wind", "fire"]; %> TypeError
+let elements: mutable [str, str, str] = ["earth", "wind", "fire"]; %> TypeError
 ```
 
 Note: If a tuple is homogeneous (its items are all of the same type),
@@ -544,9 +530,6 @@ then we can use shorthand notation to annotate it:
 ```
 let elements: str[3] = ["earth", "wind", "fire"];
 %             ^ shorthand for `[str, str, str]`
-
-let elements: str\[3] = \["earth", "wind", "fire"];
-%             ^ shorthand for `\[str, str, str]`
 ```
 
 #### Tuple Access
@@ -602,15 +585,8 @@ let unfixed i: int = 4;
 elements.[i];           % no compile-time error, but value at runtime will be undefined
 ```
 
-If a variable is declared as a mutable tuple, its indices may be reassigned, but its type or size cannot change.
-A non-mutable tuple’s items, type, and size are all fixed.
+A tuple’s items, type, and size are all fixed.
 ```
-let mut_tuple: mutable [bool, int, str] = [true, 4, "hello"];
-set mut_tuple.0 = false;
-set mut_tuple.1 = 2;
-set mut_tuple.2 = "world";
-mut_tuple; %== [false, 2, "world"];
-
 let tuple: [bool, int, str] = [true, 4, "hello"];
 set tuple.0 = false;   %> MutabilityError
 set tuple.1 = 2;       %> MutabilityError
@@ -651,19 +627,16 @@ The expression `x!.2` behaves just like `x.2`, except that it bypasses the compi
 
 
 ### Records
-Records and Structs are fixed-size unordered lists of keyed values. Key–value pairs are called **properties**,
+Records are fixed-size unordered lists of keyed values. Key–value pairs are called **properties**,
 where **keys** are keywords or identifiers, and **values** are expressions.
 The number of properties in a record is called its **count**.
 The count and types of record **entries** (the “slots” where values are stored) are fixed and known at compile-time.
 The order of entries is *not* significant: though records can be iterated over, the order in which this is done is
 implementation-dependent; thus authors should not rely on any particular iteration order.
 Records are heterogeneous, meaning they can be declared with different entry types.
+They are also read-only, which means their entries cannot be added, deleted, or reassigned.
 
-There are two kinds of records: value records and reference records. Value records are called **structs**.
-Only reference records may be mutable, in which case their entries may be reassigned, but only to values of the correct type.
-The entries of reference records cannot be added or deleted.
-
-For example, given the record
+For example, the record
 ```
 [
 	fontFamily= "sans-serif",
@@ -672,7 +645,7 @@ For example, given the record
 	fontWeight= 400,
 ];
 ```
-we could reassign the `fontWeight` property a value of `700`. Its count is 4.
+has a count of 4.
 
 Keys may be reserved keywords, not just restricted to identifiers.
 This is because the record key will always be lexically bound to the record —
@@ -720,23 +693,6 @@ However, *code evaluation* is always left-to-right and top-to-bottom, which mean
 cause any side-effects, those side-effects will be observed in the order the entries are written.
 (This is significant if any values are function calls for example.)
 
-Struct literals are like record literals but prepended with a single backslash.
-As value types, structs can only contain other value types (including primitives).
-```
-type StyleMap = \[
-	fontWeight: int,
-	fontStyle:  "normal" | "italic" | "oblique",
-	fontSize:   float,
-	fontFamily: str,
-];
-let my_styles: StyleMap = \[
-	fontFamily= "sans-serif",
-	fontSize=   1.25;
-	fontStyle=  "oblique",
-	fontWeight= 400,
-];
-```
-
 Larger records are always assignable to smaller records,
 but assigning a smaller record to a larger record results in a TypeError.
 ```
@@ -766,11 +722,9 @@ let elements_and_more: [
 ```
 The first declaration is allowed because the unused properties are simply dropped off.
 
-Structs are assignable to non-`mutable` records.
+Because records are read-only, the `mutable` operator is invalid on record types.
 ```
-let elements:          [x: str, y: str, z: str] = \[x= "earth", y= "wind", z= "fire"];
-let elements: mutable  [x: str, y: str, z: str] = \[x= "earth", y= "wind", z= "fire"]; %> TypeError
-let elements:         \[x: str, y: str, z: str] =  [x= "earth", y= "wind", z= "fire"]; %> TypeError
+let elements: mutable [x: str, y: str, z: str] = [x= "earth", y= "wind", z= "fire"]; %> TypeError
 ```
 
 #### Record Access
@@ -796,15 +750,8 @@ so attempting to retrieve an non-existent key results in a compile-time error.
 elements.pythagoras; %> TypeError
 ```
 
-If a variable is declared as a mutable record, its keys may be reassigned, but its type or size cannot change.
-A non-mutable record’s values, type, and size are all fixed.
+A record’s properties, type, and size are all fixed.
 ```
-let mut_record: mutable [a: bool, b: int, c: str] = [a= true, b= 4, c= "hello"];
-set mut_record.a = false;
-set mut_record.b = 2;
-set mut_record.c = "world";
-mut_record; %== [a= false, b= 2, c= "world"];
-
 let record: [a: bool, b: int, c: str] = [a= true, b= 4, c= "hello"];
 set record.a = false;   %> MutabilityError
 set record.b = 2;       %> MutabilityError
@@ -861,7 +808,7 @@ If a list is mutable, the entries of the list may be reassigned, and items may b
 List types are declared via the generic list type syntax: `List.<T>`
 where `T` indicates the type of items in the list.
 Lists are constructed via the constructor syntax `List.<T>(arg)`,
-where `arg` is a [Tuple or Vect](#tuples) object.
+where `arg` is a [Tuple](#tuples) object.
 ```
 let elements: List.<str> = List.<str>(["earth", "wind", "fire"]);
 ```
@@ -875,7 +822,7 @@ For example, the expression `elements.[0]` is of type `str | bool | int`,
 and if the list were mutable, we could reassign that entry to an integer or boolean.
 
 #### List Access
-List access is the same as [Tuple/Vect Access](#tuple-access).
+List access is the same as [Tuple Access](#tuple-access).
 
 
 ### Dicts
@@ -888,7 +835,7 @@ If a dict is mutable, the entries of the dict may be reassigned, and properties 
 Dict types are declared via the generic dict type syntax: `Dict.<T>`
 where `T` indicates the type of values in the dict.
 Dicts are constructed via the constructor syntax `Dict.<T>(arg)`,
-where `arg` is a [Record or Struct](#records) object.
+where `arg` is a [Record](#records) object.
 ```
 let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
 	fontFamily= "sans-serif",
@@ -901,7 +848,7 @@ A shorthand for the generic syntax `Dict.<T>` is `[:T]`.
 As shown above, we can mix value types, but the dict type must be homogeneous.
 
 #### Dict Access
-Dict access is the same as [Record/Struct Access](#record-access).
+Dict access is the same as [Record Access](#record-access).
 
 
 ### Sets
@@ -911,7 +858,7 @@ The values in a set are called **elements**. The number of elements in a set is 
 Set types are declared via the generic set type syntax: `Set.<T>`
 where `T` indicates the type of elements in the set.
 Sets may be constructed via the constructor syntax `Set.<T>(arg)`,
-where `arg` is a [Tuple or Vect](#tuples) object of elements.
+where `arg` is a [Tuple](#tuples) object of elements.
 ```
 let elements: Set.<str> = Set.<str>(["earth", "wind", "fire"]);
 ```
@@ -973,7 +920,7 @@ The number of cases in a map is called its **count**.
 Map types are declared via the **generic map type syntax**: `Map.<K, V>`
 where `K` indicates the type of antecedents and `V` indicates the type of consequents in the map.
 Maps may be constructed via the constructor syntax `Map.<K, V>(arg)`,
-where `arg` is a [Tuple or Vect](#tuples) object of key-value pairs (also tuples or vects).
+where `arg` is a [Tuple](#tuples) object of key-value pairs (also Tuples).
 ```
 let bases: Map.<int | str, obj> = Map.<int | str, obj>([
 	[1,     "who"],

@@ -76,35 +76,35 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ?
 	| SyntaxNodeType<'keyword_type'>
 	| SyntaxNodeType<'identifier'>
 	| SyntaxNodeType<'primitive_literal'>
-	| SyntaxNodeFamily<'type_grouped',        ['variable']>
-	| SyntaxNodeFamily<'type_tuple_literal',  ['variable']>
-	| SyntaxNodeFamily<'type_record_literal', ['variable']>
+	| SyntaxNodeType<'type_grouped'>
+	| SyntaxNodeType<'type_tuple_literal'>
+	| SyntaxNodeType<'type_record_literal'>
 	| SyntaxNodeType<'type_dict_literal'>
 	| SyntaxNodeType<'type_map_literal'>
-	| SyntaxNodeFamily<'type_compound',      ['variable']>
-	| SyntaxNodeFamily<'type_unary_symbol',  ['variable']>
-	| SyntaxNodeFamily<'type_unary_keyword', ['variable']>
-	| SyntaxNodeFamily<'type_intersection',  ['variable']>
-	| SyntaxNodeFamily<'type_union',         ['variable']>
+	| SyntaxNodeType<'type_compound'>
+	| SyntaxNodeType<'type_unary_symbol'>
+	| SyntaxNodeType<'type_unary_keyword'>
+	| SyntaxNodeType<'type_intersection'>
+	| SyntaxNodeType<'type_union'>
 : C extends 'expression' ?
 	| SyntaxNodeType<'identifier'>
 	| SyntaxNodeType<'primitive_literal'>
-	| SyntaxNodeFamily<'string_template',    ['variable']>
-	| SyntaxNodeFamily<'expression_grouped', ['variable']>
-	| SyntaxNodeFamily<'tuple_literal',      ['variable']>
-	| SyntaxNodeFamily<'record_literal',     ['variable']>
+	| SyntaxNodeType<'string_template'>
+	| SyntaxNodeType<'expression_grouped'>
+	| SyntaxNodeType<'tuple_literal'>
+	| SyntaxNodeType<'record_literal'>
 	| SyntaxNodeType<'set_literal'>
 	| SyntaxNodeType<'map_literal'>
-	| SyntaxNodeFamily<'expression_compound',       ['variable']>
-	| SyntaxNodeFamily<'expression_unary_symbol',   ['variable']>
-	| SyntaxNodeFamily<'expression_exponential',    ['variable']>
-	| SyntaxNodeFamily<'expression_multiplicative', ['variable']>
-	| SyntaxNodeFamily<'expression_additive',       ['variable']>
-	| SyntaxNodeFamily<'expression_comparative',    ['variable']>
-	| SyntaxNodeFamily<'expression_equality',       ['variable']>
-	| SyntaxNodeFamily<'expression_conjunctive',    ['variable']>
-	| SyntaxNodeFamily<'expression_disjunctive',    ['variable']>
-	| SyntaxNodeFamily<'expression_conditional',    ['variable']>
+	| SyntaxNodeType<'expression_compound'>
+	| SyntaxNodeType<'expression_unary_symbol'>
+	| SyntaxNodeType<'expression_exponential'>
+	| SyntaxNodeType<'expression_multiplicative'>
+	| SyntaxNodeType<'expression_additive'>
+	| SyntaxNodeType<'expression_comparative'>
+	| SyntaxNodeType<'expression_equality'>
+	| SyntaxNodeType<'expression_conjunctive'>
+	| SyntaxNodeType<'expression_disjunctive'>
+	| SyntaxNodeType<'expression_conditional'>
 : C extends 'declaration' ?
 	| SyntaxNodeType<'declaration_type'>
 	| SyntaxNodeType<'declaration_variable'>
@@ -118,8 +118,8 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ?
 
 export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode, category: C): syntaxnode is SyntaxNodeSupertype<C> {
 	return new Map<Category, (node: SyntaxNode) => boolean>([
-		['type',        (node) => isSyntaxNodeType(node, /^keyword_type|identifier|primitive_literal|type_grouped(__variable)?|type_tuple_literal(__variable)?|type_record_literal(__variable)?|type_dict_literal|type_map_literal|type_compound(__variable)?|type_unary_symbol(__variable)?|type_unary_keyword(__variable)?|type_intersection(__variable)?|type_union(__variable)?$/)],
-		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template(__variable)?|expression_grouped(__variable)?|(tuple|record)_literal(__variable)?|(set|map)_literal|expression_(compound|unary_symbol|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional)(__variable)?$/)],
+		['type',        (node) => isSyntaxNodeType(node, /^keyword_type|identifier|primitive_literal|type_grouped|type_(tuple|record|dict|map)_literal|type_(compound|unary_symbol|unary_keyword|intersection|union)$/)],
+		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template|expression_grouped|(tuple|record|set|map)_literal|expression_(compound|unary_symbol|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional)$/)],
 		['declaration', (node) => isSyntaxNodeType(node, /^declaration_type|declaration_variable$/)],
 		['statement',   (node) => isSyntaxNodeType(node, /^statement_expression|statement_assignment$/) || isSyntaxNodeSupertype(node, 'declaration')],
 	]).get(category)!(syntaxnode);

@@ -11,7 +11,7 @@ import {
 
 
 
-describe('ASTNodeOperation', () => {
+describe('ASTNodeTypeOperation', () => {
 	describe('#eval', () => {
 		specify('ASTNodeTypeOperationUnary[operator=ORNULL]', () => {
 			assert.deepStrictEqual(
@@ -28,16 +28,13 @@ describe('ASTNodeOperation', () => {
 					new TYPE.TypeList(TYPE.INT, true),
 				);
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type A = mutable [int, float, str];
-					type B = mutable [a: int, b: float, c: str];
-					type C = mutable int[];
-					type D = mutable int[3];
+					type A = mutable int[];
+					type B = int[3];
 
-					type E = A | B;
-					type F = C & D;
+					type C = mutable (A & B);
+					type D = mutable (A | B);
 
-					type G = mutable Object; % equivalent to \`Object\`
-					type H = \\[int, float] | mutable [int, float];
+					type E = mutable Object; % equivalent to \`Object\`
 				`);
 				goal.varCheck();
 				return goal.typeCheck(); // assert does not throw
@@ -45,9 +42,9 @@ describe('ASTNodeOperation', () => {
 
 			it('throws if operating on any value type.', () => {
 				[
-					'mutable \\[int, float, str]',
-					'mutable \\[a: int, b: float, c: str]',
-					'mutable int\\[3]',
+					'mutable [int, float, str]',
+					'mutable [a: int, b: float, c: str]',
+					'mutable int[3]',
 					'mutable never',
 					'mutable void',
 					'mutable null',
@@ -57,10 +54,8 @@ describe('ASTNodeOperation', () => {
 					'mutable str',
 				].forEach((src) => assert.throws(() => AST.ASTNodeTypeOperation.fromSource(src).eval(), TypeErrorInvalidOperation));
 				[
-					'mutable [int, float, str]',
-					'mutable [a: int, b: float, c: str]',
-					'mutable int[]',
-					'mutable int[3]',
+					'mutable unknown',
+					'mutable Object',
 				].map((src) => AST.ASTNodeTypeOperation.fromSource(src).eval()); // assert does not throw if `[isRef=false]`
 			});
 		});

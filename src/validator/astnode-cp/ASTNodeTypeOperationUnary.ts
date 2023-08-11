@@ -11,7 +11,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeFamily} from '../utils-private.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {
 	Operator,
 	type ValidTypeOperator,
@@ -30,8 +30,8 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 
 	public constructor(
 		start_node:
-			| SyntaxNodeFamily<'type_unary_symbol',  ['variable']>
-			| SyntaxNodeFamily<'type_unary_keyword', ['variable']>
+			| SyntaxNodeType<'type_unary_symbol'>
+			| SyntaxNodeType<'type_unary_keyword'>
 		,
 		operator: ValidTypeOperator,
 		private readonly operand: ASTNodeType,

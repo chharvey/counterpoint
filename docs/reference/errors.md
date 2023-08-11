@@ -93,7 +93,7 @@ type MyType = float; % AssignmentError: Duplicate declaration of `MyType`.
 Solution(s): Remove the duplicate declaration, or change it to a reassignment (if possible).
 
 #### 2202: AssignmentErrorDuplicateKey
-Cause: A duplicate key in a record/struct literal or type literal was encountered.
+Cause: A duplicate key in a record literal or type literal was encountered.
 ```
 [foo= "a", foo= "b"]; % AssignmentError: Duplicate record key `foo`.
 
@@ -116,11 +116,10 @@ A type error is raised when the compiler recognizes a type mismatch.
 1.  2300                                   — A general type error not covered by one of the following cases.
 1. [2301](#2301-typeerrorinvalidoperation) — The validator encountered an operation with an invalid operand.
 1. [2302](#2302-typeerrornotnarrow)        — One type is expected to be a subtype of another, but is not.
-1. [2303](#2303-typeerrorunexpectedref)    — A reference type was encountered where a value type was expected.
-1. [2304](#2304-typeerrornotassignable)    — An expression was assigned to a type to which it is not assignable.
-1. [2305](#2305-typeerrornoentry)          — The validator encountered a non-existent index/property/argument access.
-1. [2306](#2306-typeerrornotcallable)      — The validator encountered an attempt to call a non-callable object.
-1. [2307](#2307-typeerrorargcount)         — An incorrect number of arguments is passed to a callable object.
+1. [2303](#2303-typeerrornotassignable)    — An expression was assigned to a type to which it is not assignable.
+1. [2304](#2304-typeerrornoentry)          — The validator encountered a non-existent index/property/argument access.
+1. [2305](#2305-typeerrornotcallable)      — The validator encountered an attempt to call a non-callable object.
+1. [2306](#2306-typeerrorargcount)         — An incorrect number of arguments is passed to a callable object.
 
 #### 2301: TypeErrorInvalidOperation
 Cause: An invalid operation was performed.
@@ -136,18 +135,7 @@ Cause: One type is expected to be a subtype of another type, but is not.
 ```
 Solution(s): Ensure the assigned type is a subtype of the assignee.
 
-#### 2303: TypeErrorUnexpectedRef
-Cause: A reference type was used where a value type was expected.
-```
-type T = [int];
-type U = \[str, T]; % TypeError: Got reference type `[int]`, but expected a value type.
-
-let x: [int] = [42];
-let y: Object = \["hello", x]; % TypeError: Got reference type `[int]`, but expected a value type.
-```
-Solution(s): Ensure only value types are used where expected.
-
-#### 2304: TypeErrorNotAssignable
+#### 2303: TypeErrorNotAssignable
 Cause: A variable, property, or parameter was assigned an expression of an incorrect type.
 ```
 let x: int = true;              % TypeError: Expression of type `true` is not assignable to type `int`.
@@ -155,7 +143,7 @@ let x: int = true;              % TypeError: Expression of type `true` is not as
 ```
 Solution(s): Ensure the expression has an assignable type.
 
-#### 2305: TypeErrorNoEntry
+#### 2304: TypeErrorNoEntry
 Cause: A non-existent index, key, or parameter name was accessed.
 ```
 [42, 420].2;                      % TypeError: Index `2` does not exist on type `[42, 420]`.
@@ -164,7 +152,7 @@ Cause: A non-existent index, key, or parameter name was accessed.
 ```
 Solution(s): Ensure the index/property/parameter access has the correct index or name.
 
-#### 2306: TypeErrorNotCallable
+#### 2305: TypeErrorNotCallable
 Cause: A non-callable object was called.
 ```
 type U = int;
@@ -175,7 +163,7 @@ x.(24);          % TypeError: Type `int` is not callable.
 ```
 Solution(s): Callable objects are limited to functions, generic type aliases, and generic type functions.
 
-#### 2307: TypeErrorArgCount
+#### 2306: TypeErrorArgCount
 Cause: A function or generic call was given an incorrect number of arguments.
 ```
 type U<V, W> = V | W;

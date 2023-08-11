@@ -1,7 +1,6 @@
 import {
 	type TypeEntry,
 	TYPE,
-	TypeErrorUnexpectedRef,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -11,7 +10,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeFamily} from '../utils-private.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeItemType} from './ASTNodeItemType.js';
 import {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
@@ -26,25 +25,21 @@ export class ASTNodeTypeTuple extends ASTNodeTypeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'type_tuple_literal', ['variable']>,
+		start_node: SyntaxNodeType<'type_tuple_literal'>,
 		public override readonly children: readonly ASTNodeItemType[],
-		is_ref: boolean,
 	) {
-		super(start_node, children, is_ref);
+		super(start_node, children);
 	}
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		const entries: readonly TypeEntry[] = this.children.map((c) => {
 			const itemtype: TYPE.Type = c.val.eval();
-			if (!this.isRef && itemtype.isReference) {
-				throw new TypeErrorUnexpectedRef(itemtype, c);
-			}
 			return {
 				type:     itemtype,
 				optional: c.optional,
 			};
 		});
-		return (!this.isRef) ? new TYPE.TypeVect(entries) : new TYPE.TypeTuple(entries);
+		return new TYPE.TypeTuple(entries);
 	}
 }

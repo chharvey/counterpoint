@@ -40,139 +40,134 @@ PrimitiveLiteral ::=
 
 
 
-EntryType<Named, Optional, Variable>
-	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type<?Variable>;
+EntryType<Named, Optional>
+	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
 
-ItemsType<Variable> ::=
-	|  EntryType<-Named><-Optional><?Variable># ","?
-	| (EntryType<-Named><-Optional><?Variable># ",")? EntryType<-Named><+Optional><?Variable># ","?
+ItemsType ::=
+	|  EntryType<-Named><-Optional># ","?
+	| (EntryType<-Named><-Optional># ",")? EntryType<-Named><+Optional># ","?
 ;
 
-PropertiesType<Variable>
-	::= EntryType<+Named><-Optional, +Optional><?Variable># ","?;
+PropertiesType
+	::= EntryType<+Named><-Optional, +Optional># ","?;
 
-TypeGrouped       <Variable> ::=                            "(" Type<?Variable>                      ")";
-TypeTupleLiteral  <Variable> ::= <Variable->"\[" <Variable+>"[" (","? ItemsType<?Variable>)?         "]";
-TypeRecordLiteral <Variable> ::= <Variable->"\[" <Variable+>"["  ","? PropertiesType<?Variable>      "]";
-TypeDictLiteral              ::=                            "[" ":" Type<+Variable>                  "]";
-TypeMapLiteral               ::=                            "{" Type<+Variable> "->" Type<+Variable> "}";
-GenericArguments             ::=                            "<"  ","? Type<+Variable># ","?          ">";
+TypeGrouped       ::= "(" Type                 ")";
+TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
+TypeRecordLiteral ::= "["  ","? PropertiesType "]";
+TypeDictLiteral   ::= "[" ":" Type             "]";
+TypeMapLiteral    ::= "{" Type "->" Type       "}";
+GenericArguments  ::= "<"  ","? Type# ","?     ">";
 
-TypeUnit<Variable> ::=
+TypeUnit ::=
 	| KEYWORD_TYPE
 	| IDENTIFIER
 	| PrimitiveLiteral
-	| TypeGrouped       <?Variable>
-	| TypeTupleLiteral  <-Variable>
-	| TypeRecordLiteral <-Variable>
-	| <Variable+>TypeTupleLiteral  <?Variable>
-	| <Variable+>TypeRecordLiteral <?Variable>
-	| <Variable+>TypeDictLiteral
-	| <Variable+>TypeMapLiteral
+	| TypeGrouped
+	| TypeTupleLiteral
+	| TypeRecordLiteral
+	| TypeDictLiteral
+	| TypeMapLiteral
 ;
 
 PropertyAccessType ::= "." (INTEGER | Word);
 GenericCall        ::= "." GenericArguments;
 
-TypeCompound<Variable> ::=
-	| TypeUnit<?Variable>
-	| TypeCompound<?Variable> (PropertyAccessType | GenericCall)
+TypeCompound ::=
+	| TypeUnit
+	| TypeCompound (PropertyAccessType | GenericCall)
 ;
 
-TypeUnarySymbol<Variable> ::=
-	| TypeCompound<?Variable>
-	| TypeUnarySymbol<?Variable> (
+TypeUnarySymbol ::=
+	| TypeCompound
+	| TypeUnarySymbol (
 		| "?"
 		| "!"
-		| "\[" INTEGER "]"
-		| <Variable+>("[" INTEGER? "]")
-		| <Variable+>("{" "}")
+		| "[" INTEGER? "]"
+		| "{" "}"
 	)
 ;
 
-TypeUnaryKeyword<Variable> ::=
-	| TypeUnarySymbol<?Variable>
-	| "mutable" TypeUnaryKeyword<?Variable>
+TypeUnaryKeyword ::=
+	| TypeUnarySymbol
+	| "mutable" TypeUnaryKeyword
 ;
 
-TypeIntersection <Variable> ::= (TypeIntersection <?Variable> "&")? TypeUnaryKeyword<?Variable>;
-TypeUnion        <Variable> ::= (TypeUnion        <?Variable> "|")? TypeIntersection<?Variable>;
+TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;
+TypeUnion        ::= (TypeUnion        "|")? TypeIntersection;
 
-Type<Variable> ::=
-	| TypeUnion<?Variable>
+Type ::=
+	| TypeUnion
 ;
 
 
 
-StringTemplate<Variable> ::=
+StringTemplate ::=
 	| TEMPLATE_FULL
-	| TEMPLATE_HEAD Expression<?Variable>? (TEMPLATE_MIDDLE Expression<?Variable>?)* TEMPLATE_TAIL
+	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
 ;
 
-Property <Variable> ::= Word                  "="  Expression<?Variable>;
-Case                ::= Expression<+Variable> "->" Expression<+Variable>;
+Property ::= Word       "="  Expression;
+Case     ::= Expression "->" Expression;
 
-ExpressionGrouped <Variable> ::=                            "("        Expression <?Variable>          ")";
-TupleLiteral      <Variable> ::= <Variable->"\[" <Variable+>"[" ( ","? Expression <?Variable># ","? )? "]";
-RecordLiteral     <Variable> ::= <Variable->"\[" <Variable+>"["   ","? Property   <?Variable># ","?    "]";
-SetLiteral                   ::=                            "{" ( ","? Expression <+Variable># ","? )? "}";
-MapLiteral                   ::=                            "{"   ","? Case#                   ","?    "}";
-FunctionArguments            ::=                            "(" ( ","? Expression <+Variable># ","? )? ")";
+ExpressionGrouped ::= "("        Expression          ")";
+TupleLiteral      ::= "[" ( ","? Expression# ","? )? "]";
+RecordLiteral     ::= "["   ","? Property#   ","?    "]";
+SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
+MapLiteral        ::= "{"   ","? Case #      ","?    "}";
+FunctionArguments ::= "(" ( ","? Expression# ","? )? ")";
 
-ExpressionUnit<Variable> ::=
+ExpressionUnit ::=
 	| IDENTIFIER
 	| PrimitiveLiteral
-	| StringTemplate    <?Variable>
-	| ExpressionGrouped <?Variable>
-	| TupleLiteral      <-Variable>
-	| RecordLiteral     <-Variable>
-	| <Variable+>TupleLiteral  <?Variable>
-	| <Variable+>RecordLiteral <?Variable>
-	| <Variable+>SetLiteral
-	| <Variable+>MapLiteral
+	| StringTemplate
+	| ExpressionGrouped
+	| TupleLiteral
+	| RecordLiteral
+	| SetLiteral
+	| MapLiteral
 ;
 
-PropertyAccess<Variable> ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression<?Variable> "]");
-PropertyAssign           ::=  "."                (INTEGER | Word | "[" Expression<+Variable> "]");
-FunctionCall             ::=  "."                GenericArguments? FunctionArguments;
+PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");
+PropertyAssign ::=  "."                (INTEGER | Word | "[" Expression "]");
+FunctionCall   ::=  "."                GenericArguments? FunctionArguments;
 
-ExpressionCompound<Variable> ::=
-	| ExpressionUnit<?Variable>
-	| ExpressionCompound<?Variable> (PropertyAccess<?Variable> | FunctionCall)
+ExpressionCompound ::=
+	| ExpressionUnit
+	| ExpressionCompound (PropertyAccess | FunctionCall)
 ;
 
 Assignee ::=
 	| IDENTIFIER
-	| ExpressionCompound<+Variable> PropertyAssign
+	| ExpressionCompound PropertyAssign
 ;
 
-ExpressionUnarySymbol<Variable> ::=
-	| ExpressionCompound<?Variable>
-	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol<?Variable>
+ExpressionUnarySymbol ::=
+	| ExpressionCompound
+	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol
 ;
 
-ExpressionExponential<Variable>
-	::= ExpressionUnarySymbol<?Variable> ("^" ExpressionExponential<?Variable>)?;
+ExpressionExponential
+	::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
 
-ExpressionMultiplicative <Variable> ::= (ExpressionMultiplicative <?Variable> ("*" | "/" ))?                                            ExpressionExponential    <?Variable>;
-ExpressionAdditive       <Variable> ::= (ExpressionAdditive       <?Variable> ("+" | "-" ))?                                            ExpressionMultiplicative <?Variable>;
-ExpressionComparative    <Variable> ::= (ExpressionComparative    <?Variable> ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "isnt"))? ExpressionAdditive       <?Variable>;
-ExpressionEquality       <Variable> ::= (ExpressionEquality       <?Variable> ("===" | "!==" | "==" | "!="))?                           ExpressionComparative    <?Variable>;
-ExpressionConjunctive    <Variable> ::= (ExpressionConjunctive    <?Variable> ("&&" | "!&"))?                                           ExpressionEquality       <?Variable>;
-ExpressionDisjunctive    <Variable> ::= (ExpressionDisjunctive    <?Variable> ("||" | "!|"))?                                           ExpressionConjunctive    <?Variable>;
+ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                                            ExpressionExponential;
+ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                                            ExpressionMultiplicative;
+ExpressionComparative    ::= (ExpressionComparative    ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "isnt"))? ExpressionAdditive;
+ExpressionEquality       ::= (ExpressionEquality       ("===" | "!==" | "==" | "!="))?                           ExpressionComparative;
+ExpressionConjunctive    ::= (ExpressionConjunctive    ("&&" | "!&"))?                                           ExpressionEquality;
+ExpressionDisjunctive    ::= (ExpressionDisjunctive    ("||" | "!|"))?                                           ExpressionConjunctive;
 
-ExpressionConditional<Variable>
-	::= "if" Expression<?Variable> "then" Expression<?Variable> "else" Expression<?Variable>;
+ExpressionConditional
+	::= "if" Expression "then" Expression "else" Expression;
 
-Expression<Variable> ::=
-	| ExpressionDisjunctive<?Variable>
-	| ExpressionConditional<?Variable>
+Expression ::=
+	| ExpressionDisjunctive
+	| ExpressionConditional
 ;
 
 
 
-DeclarationType     ::= "type"            IDENTIFIER "=" Type<+Variable>                           ";";
-DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type<+Variable> "=" Expression<+Variable> ";";
+DeclarationType     ::= "type"            IDENTIFIER "=" Type                ";";
+DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
 
 Declaration ::=
 	| DeclarationType
@@ -182,10 +177,10 @@ Declaration ::=
 
 
 StatementExpression
-	::= Expression<+Variable>? ";";
+	::= Expression? ";";
 
 StatementAssignment
-	::= Assignee "=" Expression<+Variable> ";";
+	::= Assignee "=" Expression ";";
 
 Statement ::=
 	| Declaration

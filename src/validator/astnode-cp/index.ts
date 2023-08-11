@@ -26,6 +26,7 @@ export * from './ASTNodeConstant.js';
 export * from './ASTNodeVariable.js';
 export * from './ASTNodeTemplate.js';
 export * from './ASTNodeCollectionLiteral.js';
+export * from './ASTNodeCollectionLiteralMutable.js';
 export * from './ASTNodeTuple.js';
 export * from './ASTNodeRecord.js';
 export * from './ASTNodeSet.js';

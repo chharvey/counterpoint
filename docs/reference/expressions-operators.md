@@ -800,16 +800,16 @@ The **Set** operator `T{}` is shorthand for `Set.<T>`.
 `mutable` <Type>
 ```
 The `mutable` type operator allows properties in a complex type to be reassigned.
-It allows us to reassign tuple indices and record keys, as well as modify sets and maps
-by adding, removing, and changing entries.
+It allows us to modify composite objects by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
-let elements: mutable str[4] = ["water", "earth", "fire", "wind"];
-elements.3 = "air";
-elements; %== ["water", "earth", "fire", "air"]
+let elements: mutable str{} = {"water", "earth", "fire", "wind"};
+elements.["wind"] = false;
+elements.["air"]  = true;
+elements; %== {"water", "earth", "fire", "air"}
 ```
-If `elements` were just of type `str[4]` (without `mutable`),
-then attempting to modify it would result in a Mutability Error.
+If `elements` were just of type `str{}` (without `mutable`),
+then attempting to modify it would result in a [Mutability Error](./errors.md#mutability-errors-24xx).
 
 
 ### Intersection
