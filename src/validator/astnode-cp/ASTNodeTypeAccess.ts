@@ -10,7 +10,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
-import type {SyntaxNodeFamily} from '../utils-private.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {Operator} from '../Operator.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndexType} from './ASTNodeIndexType.js';
@@ -26,7 +26,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'type_compound', ['variable']>,
+		start_node: SyntaxNodeType<'type_compound'>,
 		private readonly base:     ASTNodeType,
 		private readonly accessor: ASTNodeIndexType | ASTNodeKey,
 	) {
@@ -41,11 +41,11 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		}
 		if (this.accessor instanceof ASTNodeIndexType) {
 			const accessor_type = this.accessor.val.eval() as TYPE.TypeUnit<OBJ.Integer>;
-			assert_instanceof(base_type, TYPE.TypeCollectionIndexedStatic);
+			assert_instanceof(base_type, TYPE.TypeTuple);
 			return base_type.get(accessor_type.value, Operator.DOT, this.accessor);
 		} else {
 			assert_instanceof(this.accessor, ASTNodeKey);
-			assert_instanceof(base_type, TYPE.TypeCollectionKeyedStatic);
+			assert_instanceof(base_type, TYPE.TypeRecord);
 			return base_type.get(this.accessor.id, Operator.DOT, this.accessor);
 		}
 	}

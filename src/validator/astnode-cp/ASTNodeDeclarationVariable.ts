@@ -12,6 +12,7 @@ import {
 } from '../../core/index.js';
 import {SymbolStructureVar} from '../index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeVariable} from './ASTNodeVariable.js';
@@ -47,7 +48,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public override typeCheck(): void {
 		this.assigned.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode.eval();
-		this.typeCheckAssignment(this.assigned, assignee_type);
+		ASTNodeCP.assignExpression(this.assigned, assignee_type, this);
 		const symbol: SymbolStructureVar | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
 		if (symbol) {
 			symbol.type = assignee_type;

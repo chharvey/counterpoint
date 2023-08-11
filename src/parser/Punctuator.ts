@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 export enum Punctuator {
 	// grouping
 		GRP_OPN = '(',
 		GRP_CLS = ')',
-		CONST    = '\\[',
 		BRAK_OPN = '[',
 		BRAK_CLS = ']',
 		BRAC_OPN = '{',

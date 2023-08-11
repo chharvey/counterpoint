@@ -591,11 +591,13 @@ These operators compare two values.
 Any type of operands are valid. The result is a boolean value.
 Integer bases as well as integers and floats can be mixed.
 
-The **identity** operator `===` determines whether two operands are the exactly same object.
-It produces `true` if and only if both operands are references to (point to) the same object in memory.
-Primitive values such as `null`, boolean values, number values, and string values
-only exist once, so any two of “the same” values will be identical.
-For other types, identity and equality might not necessarily be the same:
+The **identity** operator `===` determines whether two operands are exactly “the same”.
+This means different things for value types and reference types.
+For primitive types, which are value types, the operator produces `true` when the two operands
+have the same bitwise encoding. Non-primitive value types are compared by their constituent parts.
+
+For reference types, this operator produces `true` when both operands point to the same object in memory.
+For these types, identity and equality might not necessarily be the same:
 objects that are considered equal might not be identical.
 
 Per the [IEEE-754-2019] specification, the floating-point values `0.0` and `-0.0` do not have
@@ -854,16 +856,16 @@ The **Set** operator `T{}` is shorthand for `Set.<T>`.
 `mutable` <Type>
 ```
 The `mutable` type operator allows properties in a complex type to be reassigned.
-It allows us to reassign tuple indices and record keys, as well as modify sets and maps
-by adding, removing, and changing entries.
+It allows us to modify composite objects by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
-let elements: mutable str[4] = ["water", "earth", "fire", "wind"];
-elements.3 = "air";
-elements; %== ["water", "earth", "fire", "air"]
+let elements: mutable str{} = {"water", "earth", "fire", "wind"};
+elements.["wind"] = false;
+elements.["air"]  = true;
+elements; %== {"water", "earth", "fire", "air"}
 ```
-If `elements` were just of type `str[4]` (without `mutable`),
-then attempting to modify it would result in a Mutability Error.
+If `elements` were just of type `str{}` (without `mutable`),
+then attempting to modify it would result in a [Mutability Error](./errors.md#mutability-errors-24xx).
 
 
 ### Intersection

@@ -1,10 +1,10 @@
 import {memoizeGetter} from '../../lib/index.js';
 import type {Keyword} from '../../parser/index.js';
-import {Validator} from '../index.js';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
 } from '../utils-private.js';
+import {Validator} from '../Validator.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 
 

@@ -6,7 +6,7 @@ import {ASTNodeCP} from './ASTNodeCP.js';
 
 export class ASTNodeItemType extends ASTNodeCP {
 	public constructor(
-		start_node: SyntaxNodeFamily<'entry_type', ['optional', 'variable']>,
+		start_node: SyntaxNodeFamily<'entry_type', ['optional']>,
 		public readonly optional: boolean,
 		public readonly val:      ASTNodeType,
 	) {

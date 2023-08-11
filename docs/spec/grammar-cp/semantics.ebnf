@@ -51,12 +51,12 @@ SemanticTypeCollectionLiteral =:=
 	| SemanticTypeList
 ;
 
-SemanticTypeTuple  [isRef: Boolean] ::= SemanticItemType*;
-SemanticTypeRecord [isRef: Boolean] ::= SemanticPropertyType+;
-SemanticTypeDict                    ::= SemanticType;
-SemanticTypeSet                     ::= SemanticType;
-SemanticTypeMap                     ::= SemanticType SemanticType;
-SemanticTypeList[isRef: Boolean][count: RealNumber | None]
+SemanticTypeTuple  ::= SemanticItemType*;
+SemanticTypeRecord ::= SemanticPropertyType+;
+SemanticTypeDict   ::= SemanticType;
+SemanticTypeSet    ::= SemanticType;
+SemanticTypeMap    ::= SemanticType SemanticType;
+SemanticTypeList[count: RealNumber | None]
 	::= SemanticType; // Note: a SemanticTypeList with a `count` represents a Tuple Type; otherwise it represents a List Type.
 
 SemanticTypeAccess
@@ -104,10 +104,10 @@ SemanticCollectionLiteral =:=
 	| SemanticMap
 ;
 
-SemanticTuple  [isRef: Boolean] ::= SemanticExpression*;
-SemanticRecord [isRef: Boolean] ::= SemanticProperty+;
-SemanticSet                     ::= SemanticExpression*;
-SemanticMap                     ::= SemanticCase+;
+SemanticTuple  ::= SemanticExpression*;
+SemanticRecord ::= SemanticProperty+;
+SemanticSet    ::= SemanticExpression*;
+SemanticMap    ::= SemanticCase+;
 
 SemanticAccess[kind: NORMAL | OPTIONAL | CLAIM]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);

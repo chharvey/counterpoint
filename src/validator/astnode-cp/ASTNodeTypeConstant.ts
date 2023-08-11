@@ -14,11 +14,11 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import {Keyword} from '../../parser/index.js';
-import {Validator} from '../index.js';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
 } from '../utils-private.js';
+import {Validator} from '../Validator.js';
 import {valueOfTokenNumber} from './utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -33,15 +33,16 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 
 	private static keywordType(source: string): TYPE.Type {
 		return (
-			(source === Keyword.VOID)  ? TYPE.VOID             :
-			(source === Keyword.NULL)  ? TYPE.NULL             :
-			(source === Keyword.BOOL)  ? TYPE.BOOL             :
-			(source === Keyword.FALSE) ? OBJ.Boolean.FALSETYPE :
-			(source === Keyword.TRUE)  ? OBJ.Boolean.TRUETYPE  :
-			(source === Keyword.INT)   ? TYPE.INT              :
-			(source === Keyword.FLOAT) ? TYPE.FLOAT            :
-			(source === Keyword.STR)   ? TYPE.STR              :
-			(source === Keyword.OBJ)   ? TYPE.OBJ              :
+			(source === Keyword.NEVER)   ? TYPE.NEVER            :
+			(source === Keyword.VOID)    ? TYPE.VOID             :
+			(source === Keyword.NULL)    ? TYPE.NULL             :
+			(source === Keyword.BOOL)    ? TYPE.BOOL             :
+			(source === Keyword.FALSE)   ? OBJ.Boolean.FALSETYPE :
+			(source === Keyword.TRUE)    ? OBJ.Boolean.TRUETYPE  :
+			(source === Keyword.INT)     ? TYPE.INT              :
+			(source === Keyword.FLOAT)   ? TYPE.FLOAT            :
+			(source === Keyword.STR)     ? TYPE.STR              :
+			(source === Keyword.UNKNOWN) ? TYPE.UNKNOWN          :
 			throw_expression(new Error(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`))
 		);
 	}

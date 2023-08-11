@@ -95,8 +95,6 @@ describe('ASTNodeCP', () => {
 			context('for property reassignment.', () => {
 				it('allows assignment directly on objects.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						[42].0                               = 42;
-						[i= 42].i                            = 42;
 						List.<int>([42]).0                   = 42;
 						Dict.<int>([i= 42]).i                = 42;
 						Set.<int>([42]).[43]                 = false;
@@ -107,14 +105,6 @@ describe('ASTNodeCP', () => {
 				});
 				it('throws when property assignee type is not supertype.', () => {
 					[
-						`
-							let t: mutable [42] = [42];
-							t.0 = 4.2;
-						`,
-						`
-							let r: mutable [i: 42] = [i= 42];
-							r.i = 4.2;
-						`,
 						`
 							let l: mutable int[] = List.<int>([42]);
 							l.0 = 4.2;
@@ -146,12 +136,6 @@ describe('ASTNodeCP', () => {
 						`
 							let r: [i: int] = [i= 42];
 							r.i = 43;
-						`,
-						`
-							\\[42].0 = 42;
-						`,
-						`
-							\\[i= 42].i = 42;
 						`,
 						`
 							let l: int[] = List.<int>([42]);

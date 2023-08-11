@@ -37,7 +37,7 @@ class CPString extends Primitive {
 
 	@strictEqual
 	public override identical(value: CPObject): boolean {
-		return value instanceof CPString && this.isEqualTo(value as this, (this_, that_) => (
+		return value instanceof CPString && this.isIdenticalTo(value as this, (this_, that_) => (
 			xjs.Array.is<CodeUnit>(this_.codeunits, that_.codeunits)
 		));
 	}
