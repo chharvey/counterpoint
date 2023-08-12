@@ -45,6 +45,37 @@ export class TypeUnion extends Type {
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
 		/**
+		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
+		 */
+		if (t instanceof TypeUnion) {
+			switch (true) {
+				/*
+				 *     |  (A \| B)  & (A \| C) == A \| (B  & C)
+				 */
+				case this.left.equals(t.left): {
+					return this.left.union(this.right.intersect(t.right));
+				}
+				/*
+				 *     |  (A \| B)  & (C \| A) == A \| (B  & C)
+				 */
+				case this.left.equals(t.right): {
+					return this.left.union(this.right.intersect(t.left));
+				}
+				/*
+				 *     |  (B \| A)  & (A \| C) == A \| (B  & C)
+				 */
+				case this.right.equals(t.left): {
+					return (this.right.union(this.left.intersect(t.right)));
+				}
+				/*
+				 *     |  (B \| A)  & (C \| A) == A \| (B  & C)
+				 */
+				case this.right.equals(t.right): {
+					return (this.right.union(this.left.intersect(t.left)));
+				}
+			}
+		}
+		/**
 		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
 		 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
 		 */

@@ -132,10 +132,26 @@ describe('Type', () => {
 			);
 		});
 		describe('TypeUnion', () => {
-			it('distributes union operands over intersection: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
+			it('distributes intersection operands over union: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
 				const expr = TYPE.NULL.union(TYPE.INT).intersect(TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE));
 				assert.ok(expr.equals(TYPE.NULL), '(null | int) & (void | null | false) == null');
 				assert.deepStrictEqual(expr, TYPE.NULL);
+			});
+			it('un-distributes union operands over intersection: `(B \| A)  & (C \| A) == A \| (B  & C)`.', () => {
+				[
+					[
+						TYPE.INT,
+						TYPE.FLOAT,
+					],
+					[
+						TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]])),
+						TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]])),
+					],
+				].forEach(([a, b]) => {
+					const left:  TYPE.Type = a.union(TYPE.NULL).intersect(b.union(TYPE.NULL));
+					const right: TYPE.Type = a.intersect(b).union(TYPE.NULL);
+					return assert.ok(left.equals(right), `${ a }? & ${ b }? == (${ a } & ${ b })?`);
+				});
 			});
 		});
 	});
@@ -178,11 +194,6 @@ describe('Type', () => {
 					(null | bool | int | float)
 				`,
 			);
-		});
-		describe('TypeIntersection', () => {
-			it.skip('distributes intersection operands over union: `(B  & C) \| A == (B \| A)  & (C \| A)`.', () => {
-				'TODO';
-			});
 		});
 	});
 
