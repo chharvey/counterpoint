@@ -218,17 +218,17 @@ Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
 
 ### Property Access
 ```
-<obj> `.` int-literal
-<obj> `.` word
-<obj> `.` `[` <obj> `]`
+<Tuple  | List> `.` int-literal
+<Record | Dict> `.` word
+<Object>        `.` `[` <Object> `]`
 
-<obj> `?.` int-literal
-<obj> `?.` word
-<obj> `?.` `[` <obj> `]`
+<Tuple  | List> `?.` int-literal
+<Record | Dict> `?.` word
+<Object>        `?.` `[` <Object> `]`
 
-<obj> `!.` int-literal
-<obj> `!.` word
-<obj> `!.` `[` <obj> `]`
+<Tuple  | List> `!.` int-literal
+<Record | Dict> `!.` word
+<Object>        `!.` `[` <Object> `]`
 ```
 The **property accesss** syntax is a unary operator on an object.
 The object it operates on is called the **binding object** and
@@ -499,8 +499,8 @@ The parser receives these tokens and produces the correct expression.
 <int | float> `!<` <int | float>
 <int | float> `!>` <int | float>
 
-<obj> `is`   <obj>
-<obj> `isnt` <obj>
+<Object> `is`   <Object>
+<Object> `isnt` <Object>
 ```
 The numerical comparative operators,
 

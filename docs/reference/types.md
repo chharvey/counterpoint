@@ -403,9 +403,9 @@ I {{ "\u{2764}" }} Unicode!
 > "
 
 
-### `obj`
-Type `obj` is the type of all values, that is, every value is assignable to `obj`.
-Expressions of type `void` cannot hold values, so they are not assignable to `obj`.
+### `Object`
+Type `Object` is the type of all values, that is, every value is assignable to `Object`.
+Expressions of type `void` cannot hold values, so they are not assignable to `Object`.
 
 
 ### `unknown`
@@ -894,7 +894,7 @@ Elements of a set can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the element to get.
 The value is `true` if the element is in the set, and `false` if not.
 ```
-let bases: obj{} = {
+let bases: Object{} = {
 	"who",
 	["what"],
 	{ "i" -> {"don’t" -> "know"} },
@@ -922,7 +922,7 @@ where `K` indicates the type of antecedents and `V` indicates the type of conseq
 Maps may be constructed via the constructor syntax `Map.<K, V>(arg)`,
 where `arg` is a [Tuple](#tuples) object of key-value pairs (also Tuples).
 ```
-let bases: Map.<int | str, obj> = Map.<int | str, obj>([
+let bases: Map.<int | str, Object> = Map.<int | str, Object>([
 	[1,     "who"],
 	["2nd", ["what"]],
 	[1 + 2, { "i" -> {"don’t" -> "know"} }],
@@ -935,7 +935,7 @@ but this isn’t a requirement.
 A shorthand for the generic syntax `Map.<K, V>` is `{K -> V}`,
 and the map literal shorthand syntax is a sequence of comma-separated `key -> value` pairs within curly braces.
 ```
-let bases: {int | str -> obj} = {
+let bases: {int | str -> Object} = {
 	1     -> "who",
 	"2nd" -> ["what"],
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
@@ -949,7 +949,7 @@ Like records, the order of entries in a map is not necessarily significant.
 Antecedents have unique consequents in that latter declarations take precedence.
 In the case of maps, antecedents that are identical are considered “the same object”.
 ```
-let bases: {int | str -> obj} = {
+let bases: {int | str -> Object} = {
 	1     -> "who",
 	"2nd" -> ["what"],
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
@@ -962,7 +962,7 @@ Maps may have several antecedents that are un-identical but “equal”.
 ```
 let x: [int] = [3];
 let y: [int] = [3];
-let bases: {float | [int] -> obj} = {
+let bases: {float | [int] -> Object} = {
 	0.0  -> "who",
 	-0.0 -> ["what"],
 	x    -> { "i" -> {"don’t" -> "know"} },
@@ -979,7 +979,7 @@ Even though `0.0 == -0.0` and `x == y`, this map has four entries.
 Consequents of a map can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the antecedent to get.
 ```
-let bases: {int | str -> obj} = {
+let bases: {int | str -> Object} = {
 	1     -> "who",
 	"2nd" -> ["what"],
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
