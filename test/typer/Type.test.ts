@@ -137,7 +137,7 @@ describe('Type', () => {
 				assert.ok(expr.equals(TYPE.NULL), '(null | int) & (void | null | false) == null');
 				assert.deepStrictEqual(expr, TYPE.NULL);
 			});
-			it('un-distributes union operands over intersection: `(B \| A)  & (C \| A) == A \| (B  & C)`.', () => {
+			it('un-distributes common union operands over intersection: `(B \| A)  & (C \| A) == A \| (B  & C)`.', () => {
 				[
 					[
 						TYPE.INT,
