@@ -72,6 +72,19 @@ export class TypeUnion extends Type {
 		return this.left.intersect(t).union(this.right.intersect(t));
 	}
 
+	@Type.unionDeco
+	public override union(t: Type): Type {
+		/**
+		 *     |  `A <: C --> (A \| B) \| C == B \| C`
+		 *     |  `B <: C --> (A \| B) \| C == A \| C`
+		 */
+		return (
+			this.left .isSubtypeOf(t) ? this.right.union(t) :
+			this.right.isSubtypeOf(t) ? this.left .union(t) :
+			new TypeUnion(this, t)
+		);
+	}
+
 	@Type.subtractDeco
 	public override subtract(t: Type): Type {
 		/** 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */

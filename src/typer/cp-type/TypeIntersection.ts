@@ -42,6 +42,19 @@ export class TypeIntersection extends Type {
 		return this.left.includes(v) && this.right.includes(v);
 	}
 
+	@Type.intersectDeco
+	public override intersect(t: Type): Type {
+		/**
+		 *     |  `C <: A --> (A  & B)  & C == B  & C`
+		 *     |  `C <: B --> (A  & B)  & C == A  & C`
+		 */
+		return (
+			t.isSubtypeOf(this.left)  ? this.right.intersect(t) :
+			t.isSubtypeOf(this.right) ? this.left .intersect(t) :
+			new TypeIntersection(this, t)
+		);
+	}
+
 	@strictEqual
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {

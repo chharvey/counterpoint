@@ -74,20 +74,20 @@ describe('Type', () => {
 				u1,
 				u2,
 				u1.intersect(u2),
-			].map((typ) => [...typ.values]), [
+			].map((typ) => typ.values), [
 				[4.2, 4.3, 4.4],
 				[4.3, 4.4, 4.5],
 				[4.3, 4.4],
-			].map((set) => set.map((n) => new OBJ.Float(n))), '(4.2 | 4.3 | 4.4) & (4.3 | 4.4 | 4.5) == (4.3 | 4.4)');
+			].map((ns) => new Set<OBJ.Float>(ns.map((n) => new OBJ.Float(n)))), '(4.2 | 4.3 | 4.4) & (4.3 | 4.4 | 4.5) == (4.3 | 4.4)');
 			assert.deepStrictEqual([
 				u3,
 				u4,
 				u3.union(u4),
-			].map((t) => [...t.values]), [
+			].map((typ) => typ.values), [
 				[42n, 43n, 44n],
 				[43n, 44n, 45n],
 				[42n, 43n, 44n, 45n],
-			].map((set) => set.map((n) => new OBJ.Integer(n))), '(42 | 43 | 44) | (43 | 44 | 45) == (42 | 43 | 44 | 45)');
+			].map((ns) => new Set<OBJ.Integer>(ns.map((n) => new OBJ.Integer(n)))), '(42 | 43 | 44) | (43 | 44 | 45) == (42 | 43 | 44 | 45)');
 		});
 	});
 
@@ -130,6 +130,28 @@ describe('Type', () => {
 					(bool | int)
 				`,
 			);
+		});
+		describe('TypeIntersection', () => {
+			it('optimizes nested intersections: `C <: A --> (A  & B)  & C == B  & C`', () => {
+				const a: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL, TYPE.INT]);
+				const b: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.TRUETYPE]);
+				const c: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.FALSETYPE, typeUnitInt(42n)]);
+				const actual:   TYPE.Type = a.intersect(b).intersect(c);
+				const expected: TYPE.Type = b.intersect(c);
+				assert.ok(actual.equals(expected), '([bool, int] & [true]) & [false, 42] == [true] & [false, 42]');
+				assert.deepStrictEqual(actual, expected);
+			});
+			it('doesn’t stack overflow.', () => {
+				const a_int:   TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));   // [a: int]
+				const a_float: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.FLOAT]])); // [a: float]
+				const b_int:   TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.INT]]));   // [b: int]
+				const b_float: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]])); // [b: float]
+				const left:  TYPE.Type = a_int  .intersect(b_float);
+				const right: TYPE.Type = a_float.intersect(b_int);
+				assert_instanceof(left,  TYPE.TypeIntersection);
+				assert_instanceof(right, TYPE.TypeIntersection);
+				left.intersect(right); // assert does not throw
+			});
 		});
 		describe('TypeUnion', () => {
 			it('distributes intersection operands over union: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
@@ -194,6 +216,28 @@ describe('Type', () => {
 					(null | bool | int | float)
 				`,
 			);
+		});
+		describe('TypeUnion', () => {
+			it('optimizes nested unions: `A <: C --> (A \| B) \| C == B \| C`', () => {
+				const a: TYPE.Type = typeUnitFloat(4.2);
+				const b: TYPE.Type = typeUnitInt(42n);
+				const c: TYPE.Type = TYPE.FLOAT;
+				const actual:   TYPE.Type = a.union(b).union(c);
+				const expected: TYPE.Type = b.union(c);
+				assert.ok(actual.equals(expected), '(4.2 | 42) | float == 42 | float');
+				assert.deepStrictEqual(actual, expected);
+			});
+			it('doesn’t stack overflow.', () => {
+				const a_int:   TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));   // [a: int]
+				const a_float: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.FLOAT]])); // [a: float]
+				const b_int:   TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.INT]]));   // [b: int]
+				const b_float: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]])); // [b: float]
+				const left:  TYPE.Type = a_int  .union(b_float);
+				const right: TYPE.Type = a_float.union(b_int);
+				assert_instanceof(left,  TYPE.TypeUnion);
+				assert_instanceof(right, TYPE.TypeUnion);
+				left.union(right); // assert does not throw
+			});
 		});
 	});
 
