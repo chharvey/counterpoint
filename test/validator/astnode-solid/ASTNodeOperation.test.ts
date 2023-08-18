@@ -306,15 +306,19 @@ describe('ASTNodeOperation', () => {
 				const src = `
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
-					!x; % should return \`[0, $inot(42), $fnot(0.0)]\`
-					?x; % should return \`[0, $iemp(42), $femp(0.0)]\`
-					-x; % should return \`[0, $neg(42),  f64.neg(0.0)]\`
-					!y; % should return \`[1, $inot(0),  $fnot(4.2)]\`
-					?y; % should return \`[1, $iemp(0),  $femp(4.2)]\`
-					-y; % should return \`[1, $neg(0),   f64.neg(4.2)]\`
+
+					!x; % should return \`if i32.eqz(0) then $inot(42) else $fnot(0.0)\`
+					!y; % should return \`if i32.eqz(1) then $inot(0)  else $fnot(4.2)\`
+
+					?x; % should return \`if i32.eqz(0) then $iemp(42) else $femp(0.0)\`
+					?y; % should return \`if i32.eqz(1) then $iemp(0)  else $femp(4.2)\`
+
+					-x; % should return \`[0, $neg(42), f64.neg(0.0)]\`
+					-y; % should return \`[1, $neg(0),  f64.neg(4.2)]\`
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				const builder = new Builder(src);
+				const builder               = new Builder(src);
+				const mod: binaryen.Module  = builder.module;
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
@@ -325,12 +329,12 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						new BinEither(builder.module, extracts[0].side, callUnaryOp(builder.module, 'inot', extracts[0].left), callUnaryOp(builder.module, 'fnot', extracts[0].right)).make(),
-						new BinEither(builder.module, extracts[1].side, callUnaryOp(builder.module, 'iemp', extracts[1].left), callUnaryOp(builder.module, 'femp', extracts[1].right)).make(),
-						new BinEither(builder.module, extracts[2].side, callUnaryOp(builder.module, 'neg',  extracts[2].left), builder.module.f64.neg(extracts[2].right)).make(),
-						new BinEither(builder.module, extracts[3].side, callUnaryOp(builder.module, 'inot', extracts[3].left), callUnaryOp(builder.module, 'fnot', extracts[3].right)).make(),
-						new BinEither(builder.module, extracts[4].side, callUnaryOp(builder.module, 'iemp', extracts[4].left), callUnaryOp(builder.module, 'femp', extracts[4].right)).make(),
-						new BinEither(builder.module, extracts[5].side, callUnaryOp(builder.module, 'neg',  extracts[5].left), builder.module.f64.neg(extracts[5].right)).make(),
+						mod.if       (     mod.i32.eqz(extracts[0].side), callUnaryOp(mod, 'inot', extracts[0].left), callUnaryOp(mod, 'fnot', extracts[0].right)),
+						mod.if       (     mod.i32.eqz(extracts[1].side), callUnaryOp(mod, 'inot', extracts[1].left), callUnaryOp(mod, 'fnot', extracts[1].right)),
+						mod.if       (     mod.i32.eqz(extracts[2].side), callUnaryOp(mod, 'iemp', extracts[2].left), callUnaryOp(mod, 'femp', extracts[2].right)),
+						mod.if       (     mod.i32.eqz(extracts[3].side), callUnaryOp(mod, 'iemp', extracts[3].left), callUnaryOp(mod, 'femp', extracts[3].right)),
+						new BinEither(mod,             extracts[4].side,  callUnaryOp(mod, 'neg',  extracts[4].left), mod.f64.neg(             extracts[4].right)).make(),
+						new BinEither(mod,             extracts[5].side,  callUnaryOp(mod, 'neg',  extracts[5].left), mod.f64.neg(             extracts[5].right)).make(),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
