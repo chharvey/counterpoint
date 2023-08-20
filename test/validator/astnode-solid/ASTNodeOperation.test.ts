@@ -350,20 +350,20 @@ describe('ASTNodeOperation', () => {
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
 
-					x * 2;   % should return \`[0, i32.mul(42,    2),   f64.mul(0.0, c(2))]\`
-					y * 2;   % should return \`[1, i32.mul(0,     2),   f64.mul(4.2, c(2))]\`
-					x * 2.4; % should return \`[0, f64.mul(c(42), 2.4), f64.mul(0.0, 2.4)]\`
-					y * 2.4; % should return \`[1, f64.mul(c(0),  2.4), f64.mul(4.2, 2.4)]\`
+					x * 2;   % should return \`[0, i32.mul(42, 2), f64.mul(0.0, c(2))]\`
+					y * 2;   % should return \`[1, i32.mul(0,  2), f64.mul(4.2, c(2))]\`
+					x * 2.4; % should return \`if i32.eqz(0) then f64.mul(c(42), 2.4) else f64.mul(0.0, 2.4)\`
+					y * 2.4; % should return \`if i32.eqz(1) then f64.mul(c(0),  2.4) else f64.mul(4.2, 2.4)\`
 
-					x < 2;   % should return \`[0, i32.lt_s(42,    2),   f64.lt(0.0, c(2))]\`
-					y < 2;   % should return \`[1, i32.lt_s(0,     2),   f64.lt(4.2, c(2))]\`
-					x < 2.4; % should return \`[0, f64.lt  (c(42), 2.4), f64.lt(0.0, 2.4)]\`
-					y < 2.4; % should return \`[1, f64.lt  (c(0),  2.4), f64.lt(4.2, 2.4)]\`
+					x < 2;   % should return \`if i32.eqz(0) then i32.lt_s(42, 2)    else f64.lt(0.0, c(2))\`
+					y < 2;   % should return \`if i32.eqz(1) then i32.lt_s(0,  2)    else f64.lt(4.2, c(2))\`
+					x < 2.4; % should return \`if i32.eqz(0) then f64.lt(c(42), 2.4) else f64.lt(0.0, 2.4)\`
+					y < 2.4; % should return \`if i32.eqz(1) then f64.lt(c(0),  2.4) else f64.lt(4.2, 2.4)\`
 
-					x == 2;   % should return \`[0, i32.eq(42,    2),   f64.eq(0.0, c(2))]\`
-					y == 2;   % should return \`[1, i32.eq(0,     2),   f64.eq(4.2, c(2))]\`
-					x == 2.4; % should return \`[0, f64.eq(c(42), 2.4), f64.eq(0.0, 2.4)]\`
-					y == 2.4; % should return \`[1, f64.eq(c(0),  2.4), f64.eq(4.2, 2.4)]\`
+					x == 2;   % should return \`if i32.eqz(0) then i32.eq(42, 2)      else f64.eq(0.0, c(2))]\`
+					y == 2;   % should return \`if i32.eqz(1) then i32.eq(0,  2)      else f64.eq(4.2, c(2))]\`
+					x == 2.4; % should return \`if i32.eqz(0) then f64.eq(c(42), 2.4) else f64.eq(0.0, 2.4)]\`
+					y == 2.4; % should return \`if i32.eqz(1) then f64.eq(c(0),  2.4) else f64.eq(4.2, 2.4)]\`
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -383,21 +383,21 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						new BinEither(mod, extracts[0].side, mod.i32.mul(                      extracts[0].left,  const_['2']),   mod.f64.mul(extracts[0].right, const_['c(2)'])),
-						new BinEither(mod, extracts[1].side, mod.i32.mul(                      extracts[1].left,  const_['2']),   mod.f64.mul(extracts[1].right, const_['c(2)'])),
-						new BinEither(mod, extracts[2].side, mod.f64.mul(mod.f64.convert_u.i32(extracts[2].left), const_['2.4']), mod.f64.mul(extracts[2].right, const_['2.4'])),
-						new BinEither(mod, extracts[3].side, mod.f64.mul(mod.f64.convert_u.i32(extracts[3].left), const_['2.4']), mod.f64.mul(extracts[3].right, const_['2.4'])),
+						new BinEither(mod,             extracts[0].side,  mod.i32.mul(                      extracts[0].left,  const_['2']),   mod.f64.mul(extracts[0].right, const_['c(2)'])).make(),
+						new BinEither(mod,             extracts[1].side,  mod.i32.mul(                      extracts[1].left,  const_['2']),   mod.f64.mul(extracts[1].right, const_['c(2)'])).make(),
+						mod.if       (     mod.i32.eqz(extracts[2].side), mod.f64.mul(mod.f64.convert_u.i32(extracts[2].left), const_['2.4']), mod.f64.mul(extracts[2].right, const_['2.4'])),
+						mod.if       (     mod.i32.eqz(extracts[3].side), mod.f64.mul(mod.f64.convert_u.i32(extracts[3].left), const_['2.4']), mod.f64.mul(extracts[3].right, const_['2.4'])),
 
-						new BinEither(mod, extracts[4].side, mod.i32.lt_s (                      extracts[4].left,  const_['2']),   mod.f64.lt(extracts[4].right, const_['c(2)'])),
-						new BinEither(mod, extracts[5].side, mod.i32.lt_s (                      extracts[5].left,  const_['2']),   mod.f64.lt(extracts[5].right, const_['c(2)'])),
-						new BinEither(mod, extracts[6].side, mod.f64.lt   (mod.f64.convert_u.i32(extracts[6].left), const_['2.4']), mod.f64.lt(extracts[6].right, const_['2.4'])),
-						new BinEither(mod, extracts[7].side, mod.f64.lt   (mod.f64.convert_u.i32(extracts[7].left), const_['2.4']), mod.f64.lt(extracts[7].right, const_['2.4'])),
+						mod.if(mod.i32.eqz(extracts[4].side), mod.i32.lt_s (                      extracts[4].left,  const_['2']),   mod.f64.lt(extracts[4].right, const_['c(2)'])),
+						mod.if(mod.i32.eqz(extracts[5].side), mod.i32.lt_s (                      extracts[5].left,  const_['2']),   mod.f64.lt(extracts[5].right, const_['c(2)'])),
+						mod.if(mod.i32.eqz(extracts[6].side), mod.f64.lt   (mod.f64.convert_u.i32(extracts[6].left), const_['2.4']), mod.f64.lt(extracts[6].right, const_['2.4'])),
+						mod.if(mod.i32.eqz(extracts[7].side), mod.f64.lt   (mod.f64.convert_u.i32(extracts[7].left), const_['2.4']), mod.f64.lt(extracts[7].right, const_['2.4'])),
 
-						new BinEither(mod, extracts[ 8].side, mod.i32.eq(                      extracts[ 8].left,  const_['2']),   mod.f64.eq(extracts[ 8].right, const_['c(2)'])),
-						new BinEither(mod, extracts[ 9].side, mod.i32.eq(                      extracts[ 9].left,  const_['2']),   mod.f64.eq(extracts[ 9].right, const_['c(2)'])),
-						new BinEither(mod, extracts[10].side, mod.f64.eq(mod.f64.convert_u.i32(extracts[10].left), const_['2.4']), mod.f64.eq(extracts[10].right, const_['2.4'])),
-						new BinEither(mod, extracts[11].side, mod.f64.eq(mod.f64.convert_u.i32(extracts[11].left), const_['2.4']), mod.f64.eq(extracts[11].right, const_['2.4'])),
-					].map((expected) => builder.module.drop(expected.make())),
+						mod.if(mod.i32.eqz(extracts[ 8].side), mod.i32.eq(                      extracts[ 8].left,  const_['2']),   mod.f64.eq(extracts[ 8].right, const_['c(2)'])),
+						mod.if(mod.i32.eqz(extracts[ 9].side), mod.i32.eq(                      extracts[ 9].left,  const_['2']),   mod.f64.eq(extracts[ 9].right, const_['c(2)'])),
+						mod.if(mod.i32.eqz(extracts[10].side), mod.f64.eq(mod.f64.convert_u.i32(extracts[10].left), const_['2.4']), mod.f64.eq(extracts[10].right, const_['2.4'])),
+						mod.if(mod.i32.eqz(extracts[11].side), mod.f64.eq(mod.f64.convert_u.i32(extracts[11].left), const_['2.4']), mod.f64.eq(extracts[11].right, const_['2.4'])),
+					].map((expected) => builder.module.drop(expected)),
 				);
 			});
 			it('multiple unions.', () => {

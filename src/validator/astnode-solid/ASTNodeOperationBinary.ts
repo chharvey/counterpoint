@@ -126,24 +126,25 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 
 			return new BinEither(mod, index, ...values).make();
 		}
-		if (types[0] instanceof SolidTypeUnion) {
-			// assert: `args[0]` is equivalent to a result of `new BinEither().make()`
-			const arg0 = new BinEither(mod, args[0]);
-			return new BinEither(
-				mod,
-				arg0.side,
-				ASTNodeOperationBinary.operate(mod, op, [types[0].left,  types[1]], [arg0.left,  args[1]], simple),
-				ASTNodeOperationBinary.operate(mod, op, [types[0].right, types[1]], [arg0.right, args[1]], simple),
-			).make();
-		} else if (types[1] instanceof SolidTypeUnion) {
-			// assert: `args[1]` is equivalent to a result of `new BinEither().make()`
-			const arg1 = new BinEither(mod, args[1]);
-			return new BinEither(
-				mod,
-				arg1.side,
-				ASTNodeOperationBinary.operate(mod, op, [types[0], types[1].left],  [args[0], arg1.left],  simple),
-				ASTNodeOperationBinary.operate(mod, op, [types[0], types[1].right], [args[0], arg1.right], simple),
-			).make();
+		if (types[0] instanceof SolidTypeUnion || types[1] instanceof SolidTypeUnion) {
+			let arg:   BinEither;
+			let left:  binaryen.ExpressionRef;
+			let right: binaryen.ExpressionRef;
+			if (types[0] instanceof SolidTypeUnion) {
+				// assert: `args[0]` is equivalent to a result of `new BinEither().make()`
+				arg   = new BinEither(mod, args[0]);
+				left  = ASTNodeOperationBinary.operate(mod, op, [types[0].left,  types[1]], [arg.left,  args[1]], simple);
+				right = ASTNodeOperationBinary.operate(mod, op, [types[0].right, types[1]], [arg.right, args[1]], simple);
+			} else {
+				assert.ok(types[1] instanceof SolidTypeUnion);
+				// assert: `args[1]` is equivalent to a result of `new BinEither().make()`
+				arg   = new BinEither(mod, args[1]);
+				left  = ASTNodeOperationBinary.operate(mod, op, [types[0], types[1].left],  [args[0], arg.left],  simple);
+				right = ASTNodeOperationBinary.operate(mod, op, [types[0], types[1].right], [args[0], arg.right], simple);
+			}
+			return (binaryen.getExpressionType(left) === binaryen.getExpressionType(right))
+				? mod.if       (     mod.i32.eqz(arg.side), left, right)
+				: new BinEither(mod,             arg.side,  left, right).make();
 		} else {
 			return simple.call(null, args);
 		}
