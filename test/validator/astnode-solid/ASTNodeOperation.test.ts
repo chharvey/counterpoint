@@ -338,6 +338,42 @@ describe('ASTNodeOperation', () => {
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
+			it('multiple operations.', () => {
+				const src = `
+					let unfixed x: int | float = 42;
+					let unfixed y: int | float = 4.2;
+
+					!!x; % should return \`$inot(if i32.eqz(0) then $inot(42) else $fnot(0.0))\`
+					??y; % should return \`$iemp(if i32.eqz(1) then $iemp(0)  else $femp(4.2))\`
+
+					!-x; % should return \`if i32.eqz(extract 0 [0, $neg(42), f64.neg(0.0)]) then $inot(extract 1 [0, $neg(42), f64.neg(0.0)]) else $fnot(extract 2 [0, $neg(42), f64.neg(0.0)])\`
+					?-y; % should return \`if i32.eqz(extract 0 [1, $neg(0),  f64.neg(4.2)]) then $iemp(extract 1 [1, $neg(0),  f64.neg(4.2)]) else $femp(extract 2 [1, $neg(0),  f64.neg(4.2)])\`
+				`;
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const builder               = new Builder(src);
+				const mod: binaryen.Module  = builder.module;
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build(builder);
+				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => new BinEither(
+					builder.module,
+					(((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build(builder),
+				));
+				const eithers = {
+					x: new BinEither(mod, extracts[2].side, callUnaryOp(mod, 'neg', extracts[2].left), mod.f64.neg(extracts[2].right)).make(),
+					y: new BinEither(mod, extracts[3].side, callUnaryOp(mod, 'neg', extracts[3].left), mod.f64.neg(extracts[3].right)).make(),
+				} as const;
+				return assertEqualBins(
+					goal.children.slice(2).map((stmt) => stmt.build(builder)),
+					[
+						callUnaryOp(mod, 'inot', mod.if(mod.i32.eqz(extracts[0].side), callUnaryOp(mod, 'inot', extracts[0].left), callUnaryOp(mod, 'fnot', extracts[0].right))),
+						callUnaryOp(mod, 'iemp', mod.if(mod.i32.eqz(extracts[1].side), callUnaryOp(mod, 'iemp', extracts[1].left), callUnaryOp(mod, 'femp', extracts[1].right))),
+
+						mod.if(mod.i32.eqz(mod.tuple.extract(eithers.x, 0)), callUnaryOp(mod, 'inot', mod.tuple.extract(eithers.x, 1)), callUnaryOp(mod, 'fnot', mod.tuple.extract(eithers.x, 2))),
+						mod.if(mod.i32.eqz(mod.tuple.extract(eithers.y, 0)), callUnaryOp(mod, 'iemp', mod.tuple.extract(eithers.y, 1)), callUnaryOp(mod, 'femp', mod.tuple.extract(eithers.y, 2))),
+					].map((expected) => builder.module.drop(expected)),
+				);
+			});
 		});
 	});
 
@@ -473,6 +509,42 @@ describe('ASTNodeOperation', () => {
 							),
 						),
 					).make())),
+				);
+			});
+			it('multiple operations.', () => {
+				const src = `
+					let unfixed x: int | float = 42;
+					let unfixed y: int | float = 4.2;
+
+					x + 2 + 3; % should return \`[extract 0 [0, i32.add(42, 2), f64.add(0.0, c(2))], i32.add(extract 1 [0, i32.add(42, 2), f64.add(0.0, c(2))], 3), f64.add(extract 2 [0, i32.add(42, 2), f64.add(0.0, c(2))], c(3))]\`
+					2 + y + 3; % should return \`[extract 0 [1, i32.add(2,  0), f64.add(c(2), 4.2)], i32.add(extract 1 [1, i32.add(2,  0), f64.add(c(2), 4.2)], 3), f64.add(extract 2 [1, i32.add(2,  0), f64.add(c(2), 4.2)], c(3))]\`
+				`;
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const builder               = new Builder(src);
+				const mod: binaryen.Module  = builder.module;
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build(builder);
+				const extracts: readonly BinEither[] = [
+					(((goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(builder),
+					(((goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(builder),
+				].map((arg) => new BinEither(builder.module, arg));
+				const const_ = {
+					'2':    buildConstInt (2n, mod),
+					'3':    buildConstInt (3n, mod),
+					'c(2)': buildConvert  (2n, mod),
+					'c(3)': buildConvert  (3n, mod),
+				} as const;
+				const eithers = {
+					x: new BinEither(mod, extracts[0].side, mod.i32.add(extracts[0].left, const_['2']),      mod.f64.add(extracts[0].right, const_['c(2)'])).make(),
+					y: new BinEither(mod, extracts[1].side, mod.i32.add(const_['2'],      extracts[1].left), mod.f64.add(const_['c(2)'],    extracts[1].right)).make(),
+				} as const;
+				return assertEqualBins(
+					goal.children.slice(2).map((stmt) => stmt.build(builder)),
+					[
+						new BinEither(mod, mod.tuple.extract(eithers.x, 0), mod.i32.add(mod.tuple.extract(eithers.x, 1), const_['3']), mod.f64.add(mod.tuple.extract(eithers.x, 2), const_['c(3)'])),
+						new BinEither(mod, mod.tuple.extract(eithers.y, 0), mod.i32.add(mod.tuple.extract(eithers.y, 1), const_['3']), mod.f64.add(mod.tuple.extract(eithers.y, 2), const_['c(3)'])),
+					].map((expected) => builder.module.drop(expected.make())),
 				);
 			});
 		});
