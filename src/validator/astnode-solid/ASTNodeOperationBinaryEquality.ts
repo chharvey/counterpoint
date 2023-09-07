@@ -73,6 +73,9 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return this.foldEquality(v0, v1);
 	}
 	private foldEquality(x: SolidObject, y: SolidObject): SolidBoolean {
+		if (bothNumeric(x, y) && oneFloats(x, y) && !this.validator.config.compilerOptions.intCoercion) {
+			return SolidBoolean.FALSE;
+		}
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: SolidObject, y: SolidObject) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],
 			[Operator.EQ, (x, y) => x.equal(y)],

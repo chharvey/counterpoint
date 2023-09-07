@@ -23,6 +23,7 @@ import {
 } from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
+	CONFIG_COERCION_OFF,
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
@@ -46,9 +47,9 @@ function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: SolidCo
 		[...tests.values()].map((expected) => new SolidTypeUnit(expected)),
 	);
 }
-function foldOperations(tests: Map<string, SolidObject>): void {
+function foldOperations(tests: Map<string, SolidObject>, config: SolidConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
-		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).fold()),
+		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).fold()),
 		[...tests.values()],
 	);
 }
@@ -554,6 +555,16 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 === 7.0;`, CONFIG_FOLDING_OFF).type(), SolidBoolean.FALSETYPE);
 				});
 			});
+			context('with folding on but int coersion off.', () => {
+				it('returns `false` if operands are of different numeric types.', () => {
+					typeOperations(new Map([
+						['7   === 7.0;', SolidBoolean.FALSE],
+						['7   ==  7.0;', SolidBoolean.FALSE],
+						['7.0 === 7;',   SolidBoolean.FALSE],
+						['7.0 ==  7;',   SolidBoolean.FALSE],
+					]), CONFIG_COERCION_OFF);
+				});
+			});
 			context('with folding and int coersion off.', () => {
 				it('returns `false` if operands are of different numeric types.', () => {
 					assert.deepStrictEqual(typeOfOperationFromSource(`7 == 7.0;`), SolidBoolean.FALSETYPE);
@@ -610,6 +621,14 @@ describe('ASTNodeOperation', () => {
 					[`'hello\\u{20}world' !== 'hello20world';`, SolidBoolean.TRUE],
 					[`'hello\\u{20}world' !=  'hello20world';`, SolidBoolean.TRUE],
 				]));
+			});
+			it('with int coercion off, does not coerce ints into floats.', () => {
+				foldOperations(new Map<string, SolidObject>([
+					['7   === 7.0;', SolidBoolean.FALSE],
+					['7   ==  7.0;', SolidBoolean.FALSE],
+					['7.0 === 7;',   SolidBoolean.FALSE],
+					['7.0 ==  7;',   SolidBoolean.FALSE],
+				]), CONFIG_COERCION_OFF);
 			});
 			it('compound types.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
