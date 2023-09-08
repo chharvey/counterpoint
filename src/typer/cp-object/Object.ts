@@ -89,7 +89,7 @@ abstract class CPObject {
 	protected isEqualTo(that: this, definition: (this_: this, that_: this) => boolean): boolean {
 		const memokey: readonly [this, this] = [this, that];
 		if (!xjs.Map.has<Keys<typeof eq_memo>, boolean>(eq_memo, memokey, eq_memo_comparator)) {
-			xjs.Map.set<Keys<typeof eq_memo>, boolean>(eq_memo, memokey, false, eq_memo_comparator); // use this assumption in the next step
+			xjs.Map.set<Keys<typeof eq_memo>, boolean>(eq_memo, memokey, true, eq_memo_comparator); // use this assumption in the next step
 			xjs.Map.set<Keys<typeof eq_memo>, boolean>(eq_memo, memokey, definition.call(null, this, that), eq_memo_comparator);
 		}
 		return xjs.Map.get<Keys<typeof eq_memo>, boolean>(eq_memo, memokey, eq_memo_comparator)!;
