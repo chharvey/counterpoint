@@ -96,7 +96,7 @@ abstract class CPObject {
 			new Set<CPObject>(memokey2),
 		);
 		if (!xjs.Map.has<K, boolean>(memo, memo_key, memo_comparator)) {
-			xjs.Map.set<K, boolean>(memo, memo_key, false,                             memo_comparator); // use this assumption in the next step
+			xjs.Map.set<K, boolean>(memo, memo_key, true,                              memo_comparator); // use this assumption in the next step
 			xjs.Map.set<K, boolean>(memo, memo_key, definition.call(null, this, that), memo_comparator);
 		}
 		return xjs.Map.get<K, boolean>(memo, memo_key, memo_comparator)!;

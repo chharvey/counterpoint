@@ -538,10 +538,9 @@ Integer bases as well as integers and floats can be mixed.
 The **identity** operator `===` determines whether two operands are exactly “the same”.
 This means different things for value types and reference types.
 For primitive types, which are value types, the operator produces `true` when the two operands
-have the same bitwise encoding. Non-primitive value types are compared by their constituent parts.
-
+are indistinguishable at run-time. Non-primitive value types are compared by their constituent parts.
 For reference types, this operator produces `true` when both operands point to the same object in memory.
-For these types, identity and equality might not necessarily be the same:
+For some types, identity and equality might not necessarily return the same result:
 objects that are considered equal might not be identical.
 
 Per the [IEEE-754-2019] specification, the floating-point values `0.0` and `-0.0` do not have
@@ -565,6 +564,23 @@ All four of these operators are **commutative**, meaning the order of operands d
 ‹a› !=  ‹b›; % same as `‹b› !=  ‹a›`
 ```
 Remember: Expressions are always evaluated from left to right, so side-effects could still be observed.
+
+#### Equality by Composition
+The equality operator `==` compares compound objects by their entries.
+Two compound objects are equal if they contain equal values.
+For tuples and lists, entries are compared index by index; for records and dicts, key by key;
+and for maps, antecedent–consequent pairs are compared recursively (as they may be objects themselves).
+Sets are equal if they contain each others’ elements.
+
+Counterpoint takes an “innocent until proven guilty” approach:
+values that are indistinguishable are considered equal until determined otherwise.
+For example, if two reference objects contain properties that point to each other,
+the compiler will assume they’re equal until it can find a property that mismatches.
+If it can’t, it’ll just return true instead of diving down an infinitely long rabbit hole.
+
+Of course, the identity operator (`===`) *always* compares reference objects by reference,
+but compound value objects are still compared compositionally, and the same principle applies —
+assume equal until determined otherwise.
 
 
 ### Conjunctive

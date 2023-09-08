@@ -65,7 +65,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	// explicitly leaving off `@ASTNodeExpression.typeDeco` for performance
 	public override type(): TYPE.Type {
 		return this.fold().toType();
 	}
