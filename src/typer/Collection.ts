@@ -26,7 +26,7 @@ export abstract class Collection extends SolidObject {
 	protected static do_Equal<T extends Collection>(o1: T, o2: T, definition: () => boolean): boolean {
 		const memokey: Keys<typeof Collection.EQ_MEMO> = [o1, o2];
 		if (!Map_hasEq(Collection.EQ_MEMO, memokey, Collection.EQ_MEMO_COMPARATOR)) {
-			Map_setEq(Collection.EQ_MEMO, memokey, false, Collection.EQ_MEMO_COMPARATOR); // use this assumption in the next step
+			Map_setEq(Collection.EQ_MEMO, memokey, true, Collection.EQ_MEMO_COMPARATOR); // use this assumption in the next step
 			Map_setEq(Collection.EQ_MEMO, memokey, definition.call(null), Collection.EQ_MEMO_COMPARATOR);
 		}
 		return Map_getEq(Collection.EQ_MEMO, memokey, Collection.EQ_MEMO_COMPARATOR)!;
