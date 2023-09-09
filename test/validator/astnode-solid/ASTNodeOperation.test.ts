@@ -4,7 +4,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-	Operator,
 	ASTNODE_SOLID as AST,
 	SolidType,
 	SolidTypeUnit,
@@ -1165,40 +1164,38 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
+			function inot(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
+				return mod.call('inot', [arg], binaryen.i32);
+			}
+
+			function fnot(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
+				return mod.call('fnot', [arg], binaryen.i32);
+			}
+
 			/**
 			 * A helper for creating a conditional expression.
-			 * Given a value to tee and a callback to perform giving the branches,
-			 * return an `(if)` whose condition is the double-negated teed variable
-			 * and whose branches are given by the callback.
-			 * @param mod      the module to perform the conditional
-			 * @param tee      parameters for teeing the value:
-			 *                 [
-			 *                 	the local index to tee the value,
-			 *                 	the value,
-			 *                 	the value’s type,
-			 *                 ]
-			 * @param branches the callback to perform; given a getter, returns two branches: [if_true, if_false]
-			 * @return         the new `(if)` expression
+			 * Given a value to tee and callbacks to perform giving the condition and branches,
+			 * return an `(if)` whose condition and branches are given by the callback.
+			 * @param mod       the module to perform the conditional
+			 * @param tee       parameters for teeing the value:
+			 *                  [
+			 *                  	the local index to tee the value,
+			 *                  	the value,
+			 *                  	the value’s type,
+			 *                  ]
+			 * @param conditoin the callback to perform; given a teeer, returns a condition
+			 * @param branches  the callback to perform; given a getter, returns two branches: [if_true, if_false]
+			 * @return          the new `(if)` expression
 			 */
 			function create_if(
 				mod:                binaryen.Module,
-				[index, arg, type]: [index: number, arg: binaryen.ExpressionRef, type: binaryen.Type],
+				[index, arg, type]: [number, binaryen.ExpressionRef, binaryen.Type],
+				condition:          (local_tee: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 				branches:           (local_get: binaryen.ExpressionRef) => [binaryen.ExpressionRef, binaryen.ExpressionRef],
 			): binaryen.ExpressionRef {
-				const local_get: binaryen.ExpressionRef = mod.local.get(index, type);
 				return mod.if(
-					AST.ASTNodeOperationUnary.operate(
-						mod,
-						Operator.NOT,
-						null,
-						AST.ASTNodeOperationUnary.operate(
-							mod,
-							Operator.NOT,
-							null,
-							mod.local.tee(index, arg, type),
-						),
-					),
-					...branches.call(null, local_get),
+					condition.call(null, mod.local.tee(index, arg, type)),
+					...branches.call(null, mod.local.get(index, type)),
 				);
 			}
 
@@ -1208,11 +1205,13 @@ describe('ASTNodeOperation', () => {
 					['42 && 420;', create_if(
 						mod,
 						[0, buildConstInt(42n, mod), binaryen.i32],
+						(teeer) => inot(mod, inot(mod, teeer)),
 						(getter) => [buildConstInt(420n, mod), getter],
 					)],
 					['4.2 || -420;', create_if(
 						mod,
 						[0, buildConstFloat(4.2, mod), binaryen.f64],
+						(teeer) => inot(mod, fnot(mod, teeer)),
 						(getter) => [
 							new BinEither(mod, 0n, getter, buildConstInt(-420n, mod)).make(),
 							new BinEither(mod, 1n, getter, buildConstInt(-420n, mod)).make(),
@@ -1221,6 +1220,7 @@ describe('ASTNodeOperation', () => {
 					['null && 201.0e-1;', create_if(
 						mod,
 						[0, buildConstInt(0n, mod), binaryen.i32],
+						(teeer) => inot(mod, inot(mod, teeer)),
 						(getter) => [
 							new BinEither(mod, 1n, getter, buildConstFloat(20.1, mod)).make(),
 							new BinEither(mod, 0n, getter, buildConstFloat(20.1, mod)).make(),
@@ -1229,6 +1229,7 @@ describe('ASTNodeOperation', () => {
 					['true && 201.0e-1;', create_if(
 						mod,
 						[0, buildConstInt(1n, mod), binaryen.i32],
+						(teeer) => inot(mod, inot(mod, teeer)),
 						(getter) => [
 							new BinEither(mod, 1n, getter, buildConstFloat(20.1, mod)).make(),
 							new BinEither(mod, 0n, getter, buildConstFloat(20.1, mod)).make(),
@@ -1237,6 +1238,7 @@ describe('ASTNodeOperation', () => {
 					['false || null;', create_if(
 						mod,
 						[0, buildConstInt(0n, mod), binaryen.i32],
+						(teeer) => inot(mod, inot(mod, teeer)),
 						(getter) => [getter, buildConstInt(0n, mod)],
 					)],
 				]));
@@ -1250,11 +1252,14 @@ describe('ASTNodeOperation', () => {
 						[2, create_if(
 							mod,
 							[0, buildConstInt(1n, mod), binaryen.i32],
+							(teeer) => inot(mod, inot(mod, teeer)),
 							(getter) => [buildConstInt(2n, mod), getter],
 						), binaryen.i32],
+						(teeer) => inot(mod, inot(mod, teeer)),
 						(getter) => [getter, create_if(
 							mod,
 							[1, buildConstInt(3n, mod), binaryen.i32],
+							(teeer) => inot(mod, inot(mod, teeer)),
 							(getter) => [buildConstInt(4n, mod), getter],
 						)],
 					)],
@@ -1263,16 +1268,26 @@ describe('ASTNodeOperation', () => {
 						[2, create_if(
 							mod,
 							[0, buildConstInt(1n, mod), binaryen.i32],
+							(teeer) => inot(mod, inot(mod, teeer)),
 							(getter) => [
 								new BinEither(mod, 1n, getter, buildConstFloat(2.0, mod)).make(),
 								new BinEither(mod, 0n, getter, buildConstFloat(2.0, mod)).make(),
 							],
 						), BinEither.createType(binaryen.i32, binaryen.f64)],
+						(teeer) => {
+							const arg0 = new BinEither(mod, teeer);
+							return inot(mod, mod.if(
+								mod.i32.eqz(arg0.side),
+								inot(mod, arg0.left),
+								fnot(mod, arg0.right),
+							));
+						},
 						(getter) => [
 							getter,
 							create_if(
 								mod,
 								[1, buildConstInt(3n, mod), binaryen.i32],
+								(teeer) => inot(mod, inot(mod, teeer)),
 								(getter) => [
 									new BinEither(mod, 1n, getter, buildConstFloat(4.0, mod)).make(),
 									new BinEither(mod, 0n, getter, buildConstFloat(4.0, mod)).make(),
@@ -1291,16 +1306,26 @@ describe('ASTNodeOperation', () => {
 						[2, create_if(
 							mod,
 							[0, buildConstInt(1n, mod), binaryen.i32],
+							(teeer) => inot(mod, inot(mod, teeer)),
 							(getter) => [
 								new BinEither(mod, 1n, getter, buildConstFloat(2.0, mod)).make(),
 								new BinEither(mod, 0n, getter, buildConstFloat(2.0, mod)).make(),
 							],
 						), BinEither.createType(binaryen.i32, binaryen.f64)],
+						(teeer) => {
+							const arg0 = new BinEither(mod, teeer);
+							return inot(mod, mod.if(
+								mod.i32.eqz(arg0.side),
+								inot(mod, arg0.left),
+								fnot(mod, arg0.right),
+							));
+						},
 						(getter) => [
 							getter,
 							create_if(
 								mod,
 								[1, buildConstFloat(3.0, mod), binaryen.f64],
+								(teeer) => inot(mod, fnot(mod, teeer)),
 								(getter) => [
 									new BinEither(mod, 1n, getter, buildConstInt(4n, mod)).make(),
 									new BinEither(mod, 0n, getter, buildConstInt(4n, mod)).make(),
