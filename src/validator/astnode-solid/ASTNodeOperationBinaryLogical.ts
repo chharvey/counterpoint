@@ -44,11 +44,9 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		const condition = ASTNodeOperationUnary.operate(
 			builder.module,
 			Operator.NOT,
-			null,
 			ASTNodeOperationUnary.operate(
 				builder.module,
 				Operator.NOT,
-				null,
 				builder.module.local.tee(local.index, arg0, local.type),
 			),
 		);

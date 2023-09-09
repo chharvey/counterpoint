@@ -4,7 +4,6 @@ import * as xjs from 'extrajs'
 import {BinEither} from '../../index.js';
 import {
 	SolidType,
-	SolidTypeUnion,
 	SolidObject,
 	SolidBoolean,
 	SolidNumber,
@@ -33,34 +32,29 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	 * Return an instruction performing an operation on an argument.
 	 * @param mod the binaryen module
 	 * @param op  the operator
-	 * @param typ the compile-time type of the operand
 	 * @param arg the operand
 	 * @return    an instruction that performs the operation at runtime
 	 */
 	public static operate(
 		mod: binaryen.Module,
 		op:  ValidOperatorUnary,
-		typ: SolidType | null,
 		arg: binaryen.ExpressionRef,
 	): binaryen.ExpressionRef {
 		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
-		typ && assert.strictEqual(bintype, typ.binType());
-		const bintypes: readonly binaryen.Type[] = binaryen.expandType(bintype);
-		if (typ instanceof SolidTypeUnion || bintypes.length > 1) {
+		const bintype_expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
+		if (bintype_expanded.length > 1) {
 			// assert: `arg` is equivalent to a result of `new BinEither().make()`
-
-			assert.strictEqual(bintypes.length, 3);
-			assert.strictEqual(bintypes[0], binaryen.i32);
-
+			ASTNodeOperation.expectEitherTuple(bintype);
 			const arg_ = new BinEither(mod, arg);
-			const bintype_: {readonly left: binaryen.Type, readonly right: binaryen.Type} = {left: binaryen.getExpressionType(arg_.left), right: binaryen.getExpressionType(arg_.right)};
 
 			/* throw any early errors */
-			[bintype_.left, bintype_.right].forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
-			assert.deepStrictEqual([bintype_.left, bintype_.right], bintypes.slice(1));
+			[
+				binaryen.getExpressionType(arg_.left),
+				binaryen.getExpressionType(arg_.right),
+			].forEach((bt, i) => assert.strictEqual(bt, bintype_expanded[i + 1]));
 
-			const left:  binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, typ instanceof SolidTypeUnion ? typ.left  : null, arg_.left);
-			const right: binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, typ instanceof SolidTypeUnion ? typ.right : null, arg_.right);
+			const left:  binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, arg_.left);
+			const right: binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, arg_.right);
 
 			return (op === Operator.NEG)
 				? new BinEither(mod,             arg_.side,  left, right).make()
@@ -93,7 +87,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		return ASTNodeOperationUnary.operate(builder.module, this.operator, this.operand.type(), this.operand.build(builder));
+		return ASTNodeOperationUnary.operate(builder.module, this.operator, this.operand.build(builder));
 	}
 
 	protected override type_do(): SolidType {

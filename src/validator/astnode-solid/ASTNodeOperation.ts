@@ -48,6 +48,13 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 		}
 	}
 
+	public static expectEitherTuple(bintype: binaryen.Type): void {
+		const bintype_expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
+		assert.strictEqual(bintype_expanded.length, 3);
+		assert.strictEqual(bintype_expanded[0], binaryen.i32);
+		return bintype_expanded.slice(1).forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
+	}
+
 	/**
 	 * Coerce either operand from an i32 into an f64 if necessary and possible.
 	 * @param mod       the binaryen module
