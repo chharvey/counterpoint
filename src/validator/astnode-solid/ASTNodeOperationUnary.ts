@@ -37,25 +37,30 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	 * @param arg the operand
 	 * @return    an instruction that performs the operation at runtime
 	 */
-	private static operate(
+	public static operate(
 		mod: binaryen.Module,
 		op:  ValidOperatorUnary,
-		typ: SolidType,
+		typ: SolidType | null,
 		arg: binaryen.ExpressionRef,
 	): binaryen.ExpressionRef {
 		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
-		assert.strictEqual(bintype, typ.binType());
-		if (typ instanceof SolidTypeUnion) {
+		typ && assert.strictEqual(bintype, typ.binType());
+		const bintypes: readonly binaryen.Type[] = binaryen.expandType(bintype);
+		if (typ instanceof SolidTypeUnion || bintypes.length > 1) {
 			// assert: `arg` is equivalent to a result of `new BinEither().make()`
+
+			assert.strictEqual(bintypes.length, 3);
+			assert.strictEqual(bintypes[0], binaryen.i32);
 
 			const arg_ = new BinEither(mod, arg);
 			const bintype_: {readonly left: binaryen.Type, readonly right: binaryen.Type} = {left: binaryen.getExpressionType(arg_.left), right: binaryen.getExpressionType(arg_.right)};
 
 			/* throw any early errors */
 			[bintype_.left, bintype_.right].forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
+			assert.deepStrictEqual([bintype_.left, bintype_.right], bintypes.slice(1));
 
-			const left:   binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, typ.left,  arg_.left);
-			const right:  binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, typ.right, arg_.right);
+			const left:  binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, typ instanceof SolidTypeUnion ? typ.left  : null, arg_.left);
+			const right: binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, typ instanceof SolidTypeUnion ? typ.right : null, arg_.right);
 
 			return (op === Operator.NEG)
 				? new BinEither(mod,             arg_.side,  left, right).make()

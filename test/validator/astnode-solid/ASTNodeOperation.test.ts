@@ -4,6 +4,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
+	Operator,
 	ASTNODE_SOLID as AST,
 	SolidType,
 	SolidTypeUnit,
@@ -1186,14 +1187,21 @@ describe('ASTNodeOperation', () => {
 			): binaryen.ExpressionRef {
 				const local_get: binaryen.ExpressionRef = mod.local.get(index, type);
 				return mod.if(
-					mod.i32.eqz(mod.call(
-						(type === binaryen.i32) ? 'inot' : 'fnot',
-						[mod.local.tee(index, arg, type)],
-						binaryen.i32,
-					)),
+					AST.ASTNodeOperationUnary.operate(
+						mod,
+						Operator.NOT,
+						null,
+						AST.ASTNodeOperationUnary.operate(
+							mod,
+							Operator.NOT,
+							null,
+							mod.local.tee(index, arg, type),
+						),
+					),
 					...branches.call(null, local_get),
 				);
 			}
+
 			it('returns a special case of `(if)`.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
@@ -1205,17 +1213,26 @@ describe('ASTNodeOperation', () => {
 					['4.2 || -420;', create_if(
 						mod,
 						[0, buildConstFloat(4.2, mod), binaryen.f64],
-						(getter) => [getter, buildConvert(-420n, mod)],
+						(getter) => [
+							new BinEither(mod, 0n, getter, buildConstInt(-420n, mod)).make(),
+							new BinEither(mod, 1n, getter, buildConstInt(-420n, mod)).make(),
+						],
 					)],
 					['null && 201.0e-1;', create_if(
 						mod,
 						[0, buildConstInt(0n, mod), binaryen.i32],
-						(getter) => [buildConstFloat(20.1, mod), mod.f64.convert_u.i32(getter)],
+						(getter) => [
+							new BinEither(mod, 1n, getter, buildConstFloat(20.1, mod)).make(),
+							new BinEither(mod, 0n, getter, buildConstFloat(20.1, mod)).make(),
+						],
 					)],
 					['true && 201.0e-1;', create_if(
 						mod,
 						[0, buildConstInt(1n, mod), binaryen.i32],
-						(getter) => [buildConstFloat(20.1, mod), mod.f64.convert_u.i32(getter)],
+						(getter) => [
+							new BinEither(mod, 1n, getter, buildConstFloat(20.1, mod)).make(),
+							new BinEither(mod, 0n, getter, buildConstFloat(20.1, mod)).make(),
+						],
 					)],
 					['false || null;', create_if(
 						mod,
@@ -1224,6 +1241,7 @@ describe('ASTNodeOperation', () => {
 					)],
 				]));
 			});
+
 			it('counts internal variables correctly.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
@@ -1240,7 +1258,57 @@ describe('ASTNodeOperation', () => {
 							(getter) => [buildConstInt(4n, mod), getter],
 						)],
 					)],
-				]), CONFIG_FOLDING_OFF);
+					['1 && 2.0 || 3 && 4.0;', create_if(
+						mod,
+						[2, create_if(
+							mod,
+							[0, buildConstInt(1n, mod), binaryen.i32],
+							(getter) => [
+								new BinEither(mod, 1n, getter, buildConstFloat(2.0, mod)).make(),
+								new BinEither(mod, 0n, getter, buildConstFloat(2.0, mod)).make(),
+							],
+						), BinEither.createType(binaryen.i32, binaryen.f64)],
+						(getter) => [
+							getter,
+							create_if(
+								mod,
+								[1, buildConstInt(3n, mod), binaryen.i32],
+								(getter) => [
+									new BinEither(mod, 1n, getter, buildConstFloat(4.0, mod)).make(),
+									new BinEither(mod, 0n, getter, buildConstFloat(4.0, mod)).make(),
+								],
+							),
+						],
+					)],
+				]));
+			});
+
+			it.skip('nested unions.', () => {
+				const mod = new binaryen.Module();
+				return buildOperations(new Map<string, binaryen.ExpressionRef>([
+					['1 && 2.0 || 3.0 && 4;', create_if(
+						mod,
+						[2, create_if(
+							mod,
+							[0, buildConstInt(1n, mod), binaryen.i32],
+							(getter) => [
+								new BinEither(mod, 1n, getter, buildConstFloat(2.0, mod)).make(),
+								new BinEither(mod, 0n, getter, buildConstFloat(2.0, mod)).make(),
+							],
+						), BinEither.createType(binaryen.i32, binaryen.f64)],
+						(getter) => [
+							getter,
+							create_if(
+								mod,
+								[1, buildConstFloat(3.0, mod), binaryen.f64],
+								(getter) => [
+									new BinEither(mod, 1n, getter, buildConstInt(4n, mod)).make(),
+									new BinEither(mod, 0n, getter, buildConstInt(4n, mod)).make(),
+								],
+							),
+						],
+					)],
+				]));
 			});
 		});
 	});
