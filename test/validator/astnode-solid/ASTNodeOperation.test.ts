@@ -1260,7 +1260,7 @@ describe('ASTNodeOperation', () => {
 							mod,
 							[1, buildConstInt(3n, mod), binaryen.i32],
 							(teeer) => inot(mod, inot(mod, teeer)),
-							(getter) => [buildConstInt(4n, mod), getter],
+							(getter_) => [buildConstInt(4n, mod), getter_],
 						)],
 					)],
 					['1 && 2.0 || 3 && 4.0;', create_if(
@@ -1288,9 +1288,9 @@ describe('ASTNodeOperation', () => {
 								mod,
 								[1, buildConstInt(3n, mod), binaryen.i32],
 								(teeer) => inot(mod, inot(mod, teeer)),
-								(getter) => [
-									new BinEither(mod, 1n, getter, buildConstFloat(4.0, mod)).make(),
-									new BinEither(mod, 0n, getter, buildConstFloat(4.0, mod)).make(),
+								(getter_) => [
+									new BinEither(mod, 1n, getter_, buildConstFloat(4.0, mod)).make(),
+									new BinEither(mod, 0n, getter_, buildConstFloat(4.0, mod)).make(),
 								],
 							),
 						],
@@ -1326,9 +1326,9 @@ describe('ASTNodeOperation', () => {
 								mod,
 								[1, buildConstFloat(3.0, mod), binaryen.f64],
 								(teeer) => inot(mod, fnot(mod, teeer)),
-								(getter) => [
-									new BinEither(mod, 1n, getter, buildConstInt(4n, mod)).make(),
-									new BinEither(mod, 0n, getter, buildConstInt(4n, mod)).make(),
+								(getter_) => [
+									new BinEither(mod, 1n, getter_, buildConstInt(4n, mod)).make(),
+									new BinEither(mod, 0n, getter_, buildConstInt(4n, mod)).make(),
 								],
 							),
 						],
