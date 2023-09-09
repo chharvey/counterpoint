@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
+import {BinEither} from '../../index.js';
 import {
 	SolidType,
 	SolidObject,
@@ -12,6 +13,7 @@ import {
 	ValidOperatorLogical,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeOperationUnary} from './ASTNodeOperationUnary.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -39,21 +41,24 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		const temp_id: bigint = builder.varCount;
 		const local           = builder.addLocal(temp_id, type0)[0].getLocalInfo(temp_id)!;
 
-		const condition = builder.module.i32.eqz(builder.module.call(
-			(local.type === binaryen.i32) ? 'inot' : 'fnot',
-			[builder.module.local.tee(local.index, arg0, local.type)],
-			binaryen.i32,
-		));
+		const condition = ASTNodeOperationUnary.operate(
+			builder.module,
+			Operator.NOT,
+			null,
+			ASTNodeOperationUnary.operate(
+				builder.module,
+				Operator.NOT,
+				null,
+				builder.module.local.tee(local.index, arg0, local.type),
+			),
+		);
 		arg0 = builder.module.local.get(local.index, local.type);
 
-		// int-coercion copied from `ASTNodeOperation.coerceOperands`
-		if ([type0, type1].includes(binaryen.f64)) {
-			if (type0 === binaryen.i32) {
-				arg0 = builder.module.f64.convert_u.i32(arg0);
-			}
-			if (type1 === binaryen.i32) {
-				arg1 = builder.module.f64.convert_u.i32(arg1);
-			}
+		if (type0 !== type1) {
+			[arg0, arg1] = [
+				new BinEither(builder.module, 0n, arg0, arg1).make(),
+				new BinEither(builder.module, 1n, arg0, arg1).make(),
+			];
 		}
 
 		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];

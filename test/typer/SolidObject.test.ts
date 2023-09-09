@@ -48,6 +48,54 @@ describe('SolidObject', () => {
 
 
 	describe('#build', () => {
+		describe('Int16', () => {
+			it('generates `(i32.const)`.', () => {
+				const data: bigint[] = [
+					42n + -420n,
+					...[
+						 126 /  3,
+						-126 /  3,
+						 126 / -3,
+						-126 / -3,
+						 200 /  3,
+						 200 / -3,
+						-200 /  3,
+						-200 / -3,
+					].map((x) => BigInt(Math.trunc(x))),
+					(42n ** 2n * 420n) % (2n ** 16n),
+					(-5n) ** (2n * 3n),
+				];
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					data.map((x) => new Int16(x).build(mod)),
+					data.map((x) => mod.i32.const(Number(x))),
+				);
+			});
+		});
+
+		describe('Float64', () => {
+			it('generates `(f64.const)`.', () => {
+				const data: number[] = [
+					55, -55, 33, -33, 2.007, -2.007,
+					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+					6.8, 6.8,
+					3.0 - 2.7,
+				];
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					data.map((x) => new Float64(x).build(mod)),
+					data.map((x) => mod.f64.const(x)),
+				);
+			});
+			it('builds `0.0` and `-0.0` differently.', () => {
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					[0.0, -0.0].map((x) => new Float64(x).build(mod)),
+					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))],
+				);
+			});
+		});
+
 		describe('SolidTuple', () => {
 			it('returns `(tuple.make)`.', () => {
 				const mod = new binaryen.Module();
@@ -123,52 +171,5 @@ describe('SolidObject', () => {
 				);
 			});
 		});
-	});
-});
-
-
-
-describe('Int16', () => {
-	describe('#build', () => {
-		it('ok.', () => {
-			const data: bigint[] = [
-				42n + -420n,
-				...[
-					 126 /  3,
-					-126 /  3,
-					 126 / -3,
-					-126 / -3,
-					 200 /  3,
-					 200 / -3,
-					-200 /  3,
-					-200 / -3,
-				].map((x) => BigInt(Math.trunc(x))),
-				(42n ** 2n * 420n) % (2n ** 16n),
-				(-5n) ** (2n * 3n),
-			];
-			const mod = new binaryen.Module();
-			return assertEqualBins(
-				data.map((x) => new Int16(x).build(mod)),
-				data.map((x) => buildConstInt(x, mod)),
-			);
-		});
-	});
-});
-
-
-
-describe('Float64', () => {
-	specify('#build', () => {
-		const data: number[] = [
-			55, -55, 33, -33, 2.007, -2.007,
-			91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
-			-0, -0, 6.8, 6.8, 0, -0,
-			3.0 - 2.7,
-		];
-		const mod = new binaryen.Module();
-		return assertEqualBins(
-			data.map((x) => new Float64(x).build(mod)),
-			data.map((x) => buildConstFloat(x, mod)),
-		);
 	});
 });

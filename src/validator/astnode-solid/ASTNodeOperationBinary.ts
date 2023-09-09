@@ -28,61 +28,22 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		return expression;
 	}
 
-	private static floatSideValue(
-		mod:      binaryen.Module,
-		options:  readonly [binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef],
-		key:      number,
-		excluded: binaryen.ExpressionRef,
-	): binaryen.ExpressionRef {
-		type Expr3 = [binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef];
-		const filtered: Readonly<Expr3> = [
-			...options.slice(0, options.indexOf(excluded)),
-			...options.slice(options.indexOf(excluded) + 1),
-		] as Expr3; // `Array#splice` is stupid
-		return mod.if(
-			mod.i32.eq(key, mod.i32.const(options.indexOf(filtered[0]))),
-			filtered[0],
-			mod.if(
-				mod.i32.eq(key, mod.i32.const(options.indexOf(filtered[1]))),
-				filtered[1],
-				(mod.i32.eq(key, mod.i32.const(options.indexOf(filtered[2]))), filtered[2]),
-			),
-		);
-	}
-
-
-	constructor(
-		start_node: ParseNode,
-		readonly operator: ValidOperatorBinary,
-		readonly operand0: ASTNodeExpression,
-		readonly operand1: ASTNodeExpression,
-	) {
-		super(start_node, operator, [operand0, operand1]);
-	}
-	/**
-	 * @final
-	 */
-	protected override type_do(): SolidType {
-		return this.type_do_do(
-			this.operand0.type(),
-			this.operand1.type(),
-			this.validator.config.compilerOptions.intCoercion,
-		)
-	}
-	protected abstract type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType;
-
 	/**
 	 * Return an instruction performing an operation on arguments.
-	 * @param mod   the binaryen module
-	 * @param types the compile-time types of the operands
-	 * @param args  the operands
-	 * @return      an instruction that performs the operation at runtime
+	 * @param mod    the binaryen module
+	 * @param op     the operator
+	 * @param types  the compile-time types of the operands
+	 * @param args   the operands
+	 * @param simple a lambda performing the operation after handling unions; takes `args` as an argument
+	 * @return       an instruction that performs the operation at runtime
 	 * @final
 	 */
-	protected operate(
-		mod:   binaryen.Module,
-		types: readonly [SolidType, SolidType],
-		args:  readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
+	protected static operate(
+		mod:    binaryen.Module,
+		op:     ValidOperatorBinary,
+		types:  readonly [SolidType, SolidType],
+		args:   readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
+		simple: (args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef]) => binaryen.ExpressionRef,
 	): binaryen.ExpressionRef {
 		if (types[0] instanceof SolidTypeUnion && types[1] instanceof SolidTypeUnion) {
 			// assert: `args[0]` is equivalent to a result of `new BinEither().make()`
@@ -101,10 +62,10 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 				bintype1.right,
 			].forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
 
-			const left_left:   binaryen.ExpressionRef = this.operate(mod, [types[0].left,  types[1].left],  [arg0.left,  arg1.left]);
-			const left_right:  binaryen.ExpressionRef = this.operate(mod, [types[0].left,  types[1].right], [arg0.left,  arg1.right]);
-			const right_left:  binaryen.ExpressionRef = this.operate(mod, [types[0].right, types[1].left],  [arg0.right, arg1.left]);
-			const right_right: binaryen.ExpressionRef = this.operate(mod, [types[0].right, types[1].right], [arg0.right, arg1.right]);
+			const left_left:   binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [types[0].left,  types[1].left],  [arg0.left,  arg1.left],  simple);
+			const left_right:  binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [types[0].left,  types[1].right], [arg0.left,  arg1.right], simple);
+			const right_left:  binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [types[0].right, types[1].left],  [arg0.right, arg1.left],  simple);
+			const right_right: binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [types[0].right, types[1].right], [arg0.right, arg1.right], simple);
 
 			/** {left_left: 0, left_right: 1, right_left: 2, right_right: 3} */
 			const key: binaryen.ExpressionRef = mod.i32.add(mod.i32.mul(mod.i32.const(2), arg0.side), arg1.side);
@@ -165,35 +126,70 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 
 			return new BinEither(mod, index, ...values).make();
 		}
-		if (types[0] instanceof SolidTypeUnion) {
-			// assert: `args[0]` is equivalent to a result of `new BinEither().make()`
-			const arg0 = new BinEither(mod, args[0]);
-			return new BinEither(
-				mod,
-				arg0.side,
-				this.operate(mod, [types[0].left,  types[1]], [arg0.left,  args[1]]),
-				this.operate(mod, [types[0].right, types[1]], [arg0.right, args[1]]),
-			).make();
-		} else if (types[1] instanceof SolidTypeUnion) {
-			// assert: `args[1]` is equivalent to a result of `new BinEither().make()`
-			const arg1 = new BinEither(mod, args[1]);
-			return new BinEither(
-				mod,
-				arg1.side,
-				this.operate(mod, [types[0], types[1].left],  [args[0], arg1.left]),
-				this.operate(mod, [types[0], types[1].right], [args[0], arg1.right]),
-			).make();
+		if (types[0] instanceof SolidTypeUnion || types[1] instanceof SolidTypeUnion) {
+			let arg:   BinEither;
+			let left:  binaryen.ExpressionRef;
+			let right: binaryen.ExpressionRef;
+			if (types[0] instanceof SolidTypeUnion) {
+				// assert: `args[0]` is equivalent to a result of `new BinEither().make()`
+				arg   = new BinEither(mod, args[0]);
+				left  = ASTNodeOperationBinary.operate(mod, op, [types[0].left,  types[1]], [arg.left,  args[1]], simple);
+				right = ASTNodeOperationBinary.operate(mod, op, [types[0].right, types[1]], [arg.right, args[1]], simple);
+			} else {
+				assert.ok(types[1] instanceof SolidTypeUnion);
+				// assert: `args[1]` is equivalent to a result of `new BinEither().make()`
+				arg   = new BinEither(mod, args[1]);
+				left  = ASTNodeOperationBinary.operate(mod, op, [types[0], types[1].left],  [args[0], arg.left],  simple);
+				right = ASTNodeOperationBinary.operate(mod, op, [types[0], types[1].right], [args[0], arg.right], simple);
+			}
+			return (binaryen.getExpressionType(left) === binaryen.getExpressionType(right))
+				? mod.if       (     mod.i32.eqz(arg.side), left, right)
+				: new BinEither(mod,             arg.side,  left, right).make();
 		} else {
-			return this.operateSimple(mod, args);
+			return simple.call(null, args);
 		}
 	}
 
-	protected operateSimple(
-		mod:  binaryen.Module,
-		args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
+	private static floatSideValue(
+		mod:      binaryen.Module,
+		options:  readonly [binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef],
+		key:      number,
+		excluded: binaryen.ExpressionRef,
 	): binaryen.ExpressionRef {
-		mod;
-		args;
-		throw new Error(`Method \`${ this.constructor.name }#operateSimple\` not implemented.`);
+		type Expr3 = [binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef];
+		const filtered: Readonly<Expr3> = [
+			...options.slice(0, options.indexOf(excluded)),
+			...options.slice(options.indexOf(excluded) + 1),
+		] as Expr3; // `Array#splice` is stupid
+		return mod.if(
+			mod.i32.eq(key, mod.i32.const(options.indexOf(filtered[0]))),
+			filtered[0],
+			mod.if(
+				mod.i32.eq(key, mod.i32.const(options.indexOf(filtered[1]))),
+				filtered[1],
+				(mod.i32.eq(key, mod.i32.const(options.indexOf(filtered[2]))), filtered[2]),
+			),
+		);
 	}
+
+
+	constructor(
+		start_node: ParseNode,
+		readonly operator: ValidOperatorBinary,
+		readonly operand0: ASTNodeExpression,
+		readonly operand1: ASTNodeExpression,
+	) {
+		super(start_node, operator, [operand0, operand1]);
+	}
+	/**
+	 * @final
+	 */
+	protected override type_do(): SolidType {
+		return this.type_do_do(
+			this.operand0.type(),
+			this.operand1.type(),
+			this.validator.config.compilerOptions.intCoercion,
+		)
+	}
+	protected abstract type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType;
 }
