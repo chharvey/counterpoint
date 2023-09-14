@@ -15,7 +15,6 @@ import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 import {ASTNodeAccess} from './ASTNodeAccess.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
 
@@ -53,18 +52,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			}
 		}
 		const assignee_type: TYPE.Type = this.assignee.type();
-		try {
-			return ASTNodeCP.typeCheckAssignment(
-				this.assigned.type(),
-				assignee_type,
-				this,
-				this.validator,
-			);
-		} catch (err) {
-			if (!(this.assigned instanceof ASTNodeCollectionLiteral && this.assigned.assignTo(assignee_type))) {
-				throw err;
-			}
-		}
+		ASTNodeCP.assignExpression(this.assigned, assignee_type, this);
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {

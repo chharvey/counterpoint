@@ -5,6 +5,7 @@ import {
 	AST,
 	type SymbolStructure,
 	SymbolStructureVar,
+	OBJ,
 	TYPE,
 	Builder,
 	BinEither,
@@ -72,6 +73,36 @@ describe('ASTNodeDeclarationVariable', () => {
 				let x: float = 42;
 			`, CONFIG_COERCION_OFF).typeCheck(), TypeError03);
 		});
+		it('does not set `SymbolStructureVar#value` when assignee type has mutable.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let immut:  int[3]             = [42, 420, 4200];
+				let mut:    mutable int[3]     = [42, 420, 4200];
+				let mutmut: (mutable [int])[3] = [[42], [420], [4200]];
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			const [immut, mut, mutmut] = [
+				goal.validator.getSymbolInfo(0x100n) as SymbolStructureVar,
+				goal.validator.getSymbolInfo(0x101n) as SymbolStructureVar,
+				goal.validator.getSymbolInfo(0x102n) as SymbolStructureVar,
+			];
+			assert.deepStrictEqual(
+				[immut.source, immut.value],
+				['immut',      new OBJ.Tuple<OBJ.Integer>([
+					new OBJ.Integer(  42n),
+					new OBJ.Integer( 420n),
+					new OBJ.Integer(4200n),
+				])],
+			);
+			assert.deepStrictEqual(
+				[mut.source, mut.value],
+				['mut',      null],
+			);
+			return assert.deepStrictEqual(
+				[mutmut.source, mutmut.value],
+				['mutmut',      null],
+			);
+		});
 		it('immutable sets/maps should not be covariant due to bracket access.', () => {
 			[
 				'let s: Set.<int | str>       = Set.<int>([42, 43]);',
@@ -112,6 +143,11 @@ describe('ASTNodeDeclarationVariable', () => {
 					let t2_2: mutable [?: int]      = [i];
 					let t3_2: mutable [   42 | 4.3] = [42, "43"];
 					let t4_2: mutable [int, ?: str] = [42, "43"];
+
+					type U = mutable [int];
+					let inner1: [mutable [42 | 4.3]] = [[4.3]];
+					let inner2: [inner2: mutable T]  = [inner2= [43]];
+					let inner3: [inner3: U]          = [inner3= [43]];
 				`);
 				typeCheckGoal(`
 					let t: mutable [int, str] = [42];
