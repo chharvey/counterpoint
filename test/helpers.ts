@@ -3,7 +3,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	OBJ,
-	type TYPE,
+	TYPE,
 } from '../src/index.js';
 
 
@@ -53,6 +53,20 @@ export function typeUnitFloat(x: number): TYPE.TypeUnit<OBJ.Float> {
 export function typeUnitStr(x: string): TYPE.TypeUnit<OBJ.String> {
 	return new OBJ.String(x).toType();
 }
+
+
+
+export function default_bin_values(mod: binaryen.Module): {
+	readonly int:   binaryen.ExpressionRef,
+	readonly float: binaryen.ExpressionRef,
+} {
+	return {
+		int:   TYPE.INT   .defaultBinValue(mod),
+		float: TYPE.FLOAT .defaultBinValue(mod),
+	} as const;
+}
+
+
 
 export function buildConstInt(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
 	return (

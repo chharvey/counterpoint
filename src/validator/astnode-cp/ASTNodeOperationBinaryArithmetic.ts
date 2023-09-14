@@ -53,11 +53,32 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return this.operate(
-			builder.module,
-			[this.operand0.type(),         this.operand1.type()],
-			[this.operand0.build(builder), this.operand1.build(builder)],
-		);
+		const types  = [this.operand0.type(),         this.operand1.type()]         as const;
+		const builds = [this.operand0.build(builder), this.operand1.build(builder)] as const;
+		return ASTNodeOperationBinary.operate(builder.module, this.operator, types, builds, (args) => {
+			args = ASTNodeOperation.coerceOperands(builder.module, ...args);
+			const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
+			bintypes.forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
+			const bintype: binaryen.Type = (bintypes.includes(binaryen.f64)) ? binaryen.f64 : binaryen.i32;
+			return (
+				(this.operator === Operator.EXP) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
+					[binaryen.i32, builder.module.call('exp', [...args], binaryen.i32)],
+					[binaryen.f64, builder.module.unreachable()], // TODO: support runtime exponentiation for floats
+				]).get(bintype)! :
+				(this.operator === Operator.DIV) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
+					[binaryen.i32, builder.module.i32.div_s (...args)],
+					[binaryen.f64, builder.module.f64.div   (...args)],
+				]).get(bintype)! :
+				builder.module[new Map<binaryen.Type, 'i32' | 'f64'>([
+					[binaryen.i32, 'i32'],
+					[binaryen.f64, 'f64'],
+				]).get(bintype)!][new Map<Operator, 'mul' | 'add' | 'sub'>([
+					[Operator.MUL, 'mul'],
+					[Operator.ADD, 'add'],
+					[Operator.SUB, 'sub'],
+				]).get(this.operator)!](...args)
+			);
+		});
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
@@ -104,33 +125,5 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
 		}
-	}
-
-	protected override operateSimple(
-		mod:  binaryen.Module,
-		args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
-	): binaryen.ExpressionRef {
-		args = ASTNodeOperation.coerceOperands(mod, ...args);
-		const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
-		bintypes.forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
-		const bintype: binaryen.Type = (bintypes.includes(binaryen.f64)) ? binaryen.f64 : binaryen.i32;
-		return (
-			(this.operator === Operator.EXP) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
-				[binaryen.i32, mod.call('exp', [...args], binaryen.i32)],
-				[binaryen.f64, mod.unreachable()], // TODO: support runtime exponentiation for floats
-			]).get(bintype)! :
-			(this.operator === Operator.DIV) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
-				[binaryen.i32, mod.i32.div_s (...args)],
-				[binaryen.f64, mod.f64.div   (...args)],
-			]).get(bintype)! :
-			mod[new Map<binaryen.Type, 'i32' | 'f64'>([
-				[binaryen.i32, 'i32'],
-				[binaryen.f64, 'f64'],
-			]).get(bintype)!][new Map<Operator, 'mul' | 'add' | 'sub'>([
-				[Operator.MUL, 'mul'],
-				[Operator.ADD, 'add'],
-				[Operator.SUB, 'sub'],
-			]).get(this.operator)!](...args)
-		);
 	}
 }
