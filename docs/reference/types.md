@@ -960,8 +960,8 @@ The consequent corresponding to the antecedent `3` will be `` [i= [`don’t`= "k
 
 Maps may have several antecedents that are un-identical but “equal”.
 ```
-let x: [int] = [3];
-let y: [int] = [3];
+let x: int{} = {3};
+let y: int{} = {3};
 let bases: {float | [int] -> Object} = {
 	0.0  -> "who",
 	-0.0 -> ["what"],
@@ -972,7 +972,7 @@ let bases: {float | [int] -> Object} = {
 In this example, the antecedents `0.0` and `-0.0` are not identical
 (even if they are equal by the floating-point definition of equality).
 Thus we are able to retrieve the different consequents at each of those antecedents.
-Similarly, `x` and `y` are not identical, but they are equal by tuple composition.
+Similarly, `x` and `y` are not identical, but they are equal by Set composition.
 Even though `0.0 == -0.0` and `x == y`, this map has four entries.
 
 #### Map Access
