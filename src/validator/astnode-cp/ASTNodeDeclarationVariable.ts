@@ -31,8 +31,8 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		start_node: SyntaxNodeType<'declaration_variable'>,
 		public  readonly unfixed:  boolean,
 		private readonly assignee: ASTNodeVariable,
-		private readonly typenode: ASTNodeType,
-		public readonly assigned:  ASTNodeExpression,
+		public  readonly typenode: ASTNodeType,
+		public  readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {unfixed}, [assignee, typenode, assigned]);
 	}
