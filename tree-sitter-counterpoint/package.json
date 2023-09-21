@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-counterpoint",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Tree-sitter parser for the Counterpoint Programming Language.",
   "keywords": [
     "tree-sitter",

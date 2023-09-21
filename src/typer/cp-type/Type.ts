@@ -265,7 +265,7 @@ export abstract class Type {
 	@Type.intersectDeco
 	public intersect(t: Type): Type {
 		/** 2-1 | `A  & B == B  & A` */
-		if (t instanceof TypeUnion) {
+		if (t instanceof TypeIntersection || t instanceof TypeUnion) {
 			return t.intersect(this);
 		}
 
@@ -280,10 +280,9 @@ export abstract class Type {
 	@Type.unionDeco
 	public union(t: Type): Type {
 		/** 2-2 | `A \| B == B \| A` */
-		if (t instanceof TypeIntersection) {
+		if (t instanceof TypeUnion) {
 			return t.union(this);
 		}
-
 		return new TypeUnion(this, t);
 	}
 

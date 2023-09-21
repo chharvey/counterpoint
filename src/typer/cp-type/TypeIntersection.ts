@@ -42,13 +42,17 @@ export class TypeIntersection extends Type {
 		return this.left.includes(v) && this.right.includes(v);
 	}
 
-	@Type.unionDeco
-	public override union(t: Type): Type {
+	@Type.intersectDeco
+	public override intersect(t: Type): Type {
 		/**
-		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
-		 *     |  (B  & C) \| A == (B \| A)  & (C \| A)
+		 *     |  `C <: A --> (A  & B)  & C == B  & C`
+		 *     |  `C <: B --> (A  & B)  & C == A  & C`
 		 */
-		return this.left.union(t).intersect(this.right.union(t));
+		return (
+			t.isSubtypeOf(this.left)  ? this.right.intersect(t) :
+			t.isSubtypeOf(this.right) ? this.left .intersect(t) :
+			new TypeIntersection(this, t)
+		);
 	}
 
 	@strictEqual
