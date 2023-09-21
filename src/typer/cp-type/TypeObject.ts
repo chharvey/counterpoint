@@ -1,14 +1,16 @@
-import type {OBJ} from './package.js';
+import type * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
 
 
 
 /**
- * Class for constructing the `obj` type.
+ * Class for constructing the `Object` type.
  * @final
  */
 export class TypeObject extends Type {
-	public static readonly INSTANCE: TypeObject = new TypeObject();
+	public static readonly INSTANCE = new TypeObject();
+
+
 	public override readonly isBottomType: boolean = false;
 	public override readonly isTopType:    boolean = false;
 	private constructor() {
@@ -16,7 +18,7 @@ export class TypeObject extends Type {
 	}
 
 	public override toString(): string {
-		return 'obj';
+		return 'Object';
 	}
 
 	public override includes(_v: OBJ.Object): boolean {

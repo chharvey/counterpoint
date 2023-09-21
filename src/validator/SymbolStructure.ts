@@ -1,7 +1,7 @@
 import {
+	type OBJ,
 	TYPE,
-	OBJ,
-} from './package.js';
+} from '../index.js';
 import type * as AST from './astnode-cp/index.js';
 
 

@@ -1,13 +1,21 @@
-import * as assert from 'assert';
 import {
 	TYPE,
+	TypeErrorInvalidOperation,
+} from '../../index.js';
+import {
 	throw_expression,
-	CPConfig,
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
+import {
 	Operator,
-	ValidTypeOperator,
-} from './package.js';
+	type ValidTypeOperator,
+} from '../Operator.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
 
@@ -16,7 +24,7 @@ import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
 export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperationUnary {
 		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeOperationUnary);
+		assert_instanceof(typ, ASTNodeTypeOperationUnary);
 		return typ;
 	}
 
@@ -34,10 +42,15 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		}
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
+		const t: TYPE.Type = this.operand.eval();
+		if (this.operator === Operator.MUTABLE && !t.isReference) {
+			throw new TypeErrorInvalidOperation(this);
+		}
 		return (
-			(this.operator === Operator.ORNULL)  ? this.operand.eval().union(TYPE.NULL) :
-			(this.operator === Operator.MUTABLE) ? this.operand.eval().mutableOf() :
+			(this.operator === Operator.ORNULL)  ? t.union(TYPE.NULL) :
+			(this.operator === Operator.MUTABLE) ? t.mutableOf()      :
 			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
 		);
 	}

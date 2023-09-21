@@ -39,26 +39,27 @@ TokenWorth(Punctuator :::= "=")   -> RealNumber := \x25;
 
 
 
-TokenWorth(KeywordType  :::= "void")    -> RealNumber := \x80;
-TokenWorth(KeywordType  :::= "bool")    -> RealNumber := \x81;
-TokenWorth(KeywordType  :::= "int")     -> RealNumber := \x82;
-TokenWorth(KeywordType  :::= "float")   -> RealNumber := \x83;
-TokenWorth(KeywordType  :::= "str")     -> RealNumber := \x84;
-TokenWorth(KeywordType  :::= "obj")     -> RealNumber := \x85;
-TokenWorth(KeywordValue :::= "null")    -> RealNumber := \x86;
-TokenWorth(KeywordValue :::= "false")   -> RealNumber := \x87;
-TokenWorth(KeywordValue :::= "true")    -> RealNumber := \x88;
-TokenWorth(KeywordOther :::= "mutable") -> RealNumber := \x89;
-TokenWorth(KeywordOther :::= "is")      -> RealNumber := \x8a;
-TokenWorth(KeywordOther :::= "isnt")    -> RealNumber := \x8b;
-TokenWorth(KeywordOther :::= "if")      -> RealNumber := \x8c;
-TokenWorth(KeywordOther :::= "then")    -> RealNumber := \x8d;
-TokenWorth(KeywordOther :::= "else")    -> RealNumber := \x8e;
-TokenWorth(KeywordOther :::= "type")    -> RealNumber := \x8f;
-TokenWorth(KeywordOther :::= "let")     -> RealNumber := \x90;
-TokenWorth(KeywordOther :::= "claim")   -> RealNumber := \x91;
-TokenWorth(KeywordOther :::= "set")     -> RealNumber := \x92;
-TokenWorth(KeywordOther :::= "unfixed") -> RealNumber := \x93;
+TokenWorth(KeywordType  :::= "never")   -> RealNumber := \x80;
+TokenWorth(KeywordType  :::= "void")    -> RealNumber := \x81;
+TokenWorth(KeywordType  :::= "bool")    -> RealNumber := \x82;
+TokenWorth(KeywordType  :::= "int")     -> RealNumber := \x83;
+TokenWorth(KeywordType  :::= "float")   -> RealNumber := \x84;
+TokenWorth(KeywordType  :::= "str")     -> RealNumber := \x85;
+TokenWorth(KeywordType  :::= "unknown") -> RealNumber := \x86;
+TokenWorth(KeywordValue :::= "null")    -> RealNumber := \x87;
+TokenWorth(KeywordValue :::= "false")   -> RealNumber := \x88;
+TokenWorth(KeywordValue :::= "true")    -> RealNumber := \x89;
+TokenWorth(KeywordOther :::= "mutable") -> RealNumber := \x8a;
+TokenWorth(KeywordOther :::= "is")      -> RealNumber := \x8b;
+TokenWorth(KeywordOther :::= "isnt")    -> RealNumber := \x8c;
+TokenWorth(KeywordOther :::= "if")      -> RealNumber := \x8d;
+TokenWorth(KeywordOther :::= "then")    -> RealNumber := \x8e;
+TokenWorth(KeywordOther :::= "else")    -> RealNumber := \x8f;
+TokenWorth(KeywordOther :::= "type")    -> RealNumber := \x90;
+TokenWorth(KeywordOther :::= "let")     -> RealNumber := \x91;
+TokenWorth(KeywordOther :::= "claim")   -> RealNumber := \x92;
+TokenWorth(KeywordOther :::= "set")     -> RealNumber := \x93;
+TokenWorth(KeywordOther :::= "unfixed") -> RealNumber := \x94;
 
 
 
@@ -173,13 +174,13 @@ TokenWorth([0-9a-z] :::= "z") -> RealNumber  :=  \x023;
 
 
 
-TokenWorth(String<Comment, Separator> :::= "'" "'") -> Sequence<RealNumber>
+TokenWorth(String<Comment, Separator> :::= #x22 #x22) -> Sequence<RealNumber>
 	:= [];
-TokenWorth(String<Comment, Separator> :::= "'" StringChars<?Comment><?Separator> "'") -> Sequence<RealNumber>
+TokenWorth(String<Comment, Separator> :::= #x22 StringChars<?Comment><?Separator> #x22) -> Sequence<RealNumber>
 	:= TokenWorth(StringChars<?Comment><?Separator>);
-TokenWorth(String<Comment, Separator> :::= "'" StringUnfinished<?Comment> "'") -> Sequence<RealNumber>
+TokenWorth(String<Comment, Separator> :::= #x22 StringUnfinished<?Comment> #x22) -> Sequence<RealNumber>
 	:= TokenWorth(StringUnfinished<?Comment>);
-TokenWorth(String<Comment, Separator> :::= "'" StringChars<?Comment><?Separator> StringUnfinished<?Comment> "'") -> Sequence<RealNumber>
+TokenWorth(String<Comment, Separator> :::= #x22 StringChars<?Comment><?Separator> StringUnfinished<?Comment> #x22) -> Sequence<RealNumber>
 	:= [...TokenWorth(StringChars<?Comment><?Separator>), ...TokenWorth(StringUnfinished<?Comment>)];
 
 	TokenWorth(StringChars<Comment, Separator> :::= StringChar<?Comment><?Separator>) -> Sequence<RealNumber>
@@ -187,21 +188,21 @@ TokenWorth(String<Comment, Separator> :::= "'" StringChars<?Comment><?Separator>
 	TokenWorth(StringChars<Comment, Separator> :::= StringChar<?Comment><?Separator> StringChars<?Comment><?Separator>) -> Sequence<RealNumber>
 		:= [...TokenWorth(StringChar<?Comment><?Separator>), ...TokenWorth(StringChars<?Comment><?Separator>)];
 
-		TokenWorth(StringChar<Comment, Separator> :::= <Comment->[^'\#x03]) -> Sequence<RealNumber>
-			:= UTF8Encoding(CodePoint([^'\#x03]));
-		TokenWorth(StringChar<Comment, Separator> :::= <Comment+>[^'\%#x03]) -> Sequence<RealNumber>
-			:= UTF8Encoding(CodePoint([^'\%#x03]));
+		TokenWorth(StringChar<Comment, Separator> :::= <Comment->[^"\#x03]) -> Sequence<RealNumber>
+			:= UTF8Encoding(CodePoint([^"\#x03]));
+		TokenWorth(StringChar<Comment, Separator> :::= <Comment+>[^"\%#x03]) -> Sequence<RealNumber>
+			:= UTF8Encoding(CodePoint([^"\%#x03]));
 		TokenWorth(StringChar<Comment, Separator> :::= "\" StringEscape<?Comment><?Separator>) -> Sequence<RealNumber>
 			:= TokenWorth(StringEscape<?Comment><?Separator>);
-		TokenWorth(StringChar<Comment, Separator> :::= "\u" [^'{#x03]) -> Sequence<RealNumber>
-			:= [...UTF8Encoding(\x75), ...UTF8Encoding(CodePoint([^'{#x03]))];
-		TokenWorth(StringChar<Comment, Separator> :::= <Comment+>("%" ([^'%#x0a#x03] [^'#x0a#x03]*)? #x0a)) -> Sequence<RealNumber>
+		TokenWorth(StringChar<Comment, Separator> :::= "\u" [^"{#x03]) -> Sequence<RealNumber>
+			:= [...UTF8Encoding(\x75), ...UTF8Encoding(CodePoint([^"{#x03]))];
+		TokenWorth(StringChar<Comment, Separator> :::= <Comment+>("%" ([^"%#x0a#x03] [^"#x0a#x03]*)? #x0a)) -> Sequence<RealNumber>
 			:= UTF8Encoding(\x0a);
-		TokenWorth(StringChar<Comment, Separator> :::= <Comment+>("%%" ("%"? [^'%#x03])* "%%")) -> Sequence<RealNumber>
+		TokenWorth(StringChar<Comment, Separator> :::= <Comment+>("%%" ("%"? [^"%#x03])* "%%")) -> Sequence<RealNumber>
 			:= [];
 
-			TokenWorth(StringEscape<Comment, Separator> :::= "'") -> Sequence<RealNumber>
-				:= UTF8Encoding(\x27); // U+0027 APOSTROPHE
+			TokenWorth(StringEscape<Comment, Separator> :::= #x22) -> Sequence<RealNumber>
+				:= UTF8Encoding(\x22); // U+0022 QUOTATION MARK
 			TokenWorth(StringEscape<Comment, Separator> :::= "\") -> Sequence<RealNumber>
 				:= UTF8Encoding(\x5c); // U+005C REVERSE SOLIDUS
 			TokenWorth(StringEscape<Comment, Separator> :::= <Comment+>"%") -> Sequence<RealNumber>
@@ -220,28 +221,28 @@ TokenWorth(String<Comment, Separator> :::= "'" StringChars<?Comment><?Separator>
 				:= UTF8Encoding(TokenWorth(DigitSequenceHex<?Separator>));
 			TokenWorth(StringEscape<Comment, Separator> :::= #x0A) -> Sequence<RealNumber>
 				:= UTF8Encoding(\x20); // U+0020 SPACE
-			TokenWorth(StringEscape<Comment, Separator> :::= <Comment->[^'\stnru#x0a#x03]) -> Sequence<RealNumber>
-				:= UTF8Encoding(CodePoint([^'\stnru#x0a#x03]));
-			TokenWorth(StringEscape<Comment, Separator> :::= <Comment+>[^'\%stnru#x0a#x03]) -> Sequence<RealNumber>
-				:= UTF8Encoding(CodePoint([^'\%stnru#x0a#x03]));
+			TokenWorth(StringEscape<Comment, Separator> :::= <Comment->[^"\stnru#x0a#x03]) -> Sequence<RealNumber>
+				:= UTF8Encoding(CodePoint([^"\stnru#x0a#x03]));
+			TokenWorth(StringEscape<Comment, Separator> :::= <Comment+>[^"\%stnru#x0a#x03]) -> Sequence<RealNumber>
+				:= UTF8Encoding(CodePoint([^"\%stnru#x0a#x03]));
 
 	TokenWorth(StringUnfinished<Comment> :::= "\u") -> Sequence<RealNumber>
 		:= UTF8Encoding(\x75); // U+0075 LATIN SMALL LETTER U
-	TokenWorth(StringUnfinished<Comment> :::= <Comment+>("%" ([^'%#x0a#x03] [^'#x0a#x03]*)?)) -> Sequence<RealNumber>
+	TokenWorth(StringUnfinished<Comment> :::= <Comment+>("%" ([^"%#x0a#x03] [^"#x0a#x03]*)?)) -> Sequence<RealNumber>
 		:= [];
-	TokenWorth(StringUnfinished<Comment> :::= <Comment+>("%%" ("%"? [^'%#x03])*)) -> Sequence<RealNumber>
+	TokenWorth(StringUnfinished<Comment> :::= <Comment+>("%%" ("%"? [^"%#x03])*)) -> Sequence<RealNumber>
 		:= [];
 
 
 
-TokenWorth(TemplateFull :::= "'''" "'''") -> Sequence<RealNumber>
+TokenWorth(TemplateFull :::= #x22 #x22 #x22 #x22 #x22 #x22) -> Sequence<RealNumber>
 	:= [];
-TokenWorth(TemplateFull :::= "'''" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
+TokenWorth(TemplateFull :::= #x22 #x22 #x22 TemplateChars__EndDelim #x22 #x22 #x22) -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim);
 
-TokenWorth(TemplateHead :::= "'''" "{{") -> Sequence<RealNumber>
+TokenWorth(TemplateHead :::= #x22 #x22 #x22 "{{") -> Sequence<RealNumber>
 	:= [];
-TokenWorth(TemplateHead :::= "'''" TemplateChars__EndInterp "{{") -> Sequence<RealNumber>
+TokenWorth(TemplateHead :::= #x22 #x22 #x22 TemplateChars__EndInterp "{{") -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndInterp);
 
 TokenWorth(TemplateMiddle :::= "}}" "{{") -> Sequence<RealNumber>
@@ -249,9 +250,9 @@ TokenWorth(TemplateMiddle :::= "}}" "{{") -> Sequence<RealNumber>
 TokenWorth(TemplateMiddle :::= "}}" TemplateChars__EndInterp "{{") -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndInterp);
 
-TokenWorth(TemplateTail :::= "}}" "'''") -> Sequence<RealNumber>
+TokenWorth(TemplateTail :::= "}}" #x22 #x22 #x22) -> Sequence<RealNumber>
 	:= [];
-TokenWorth(TemplateTail :::= "}}" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
+TokenWorth(TemplateTail :::= "}}" TemplateChars__EndDelim #x22 #x22 #x22) -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim);
 
 	TokenWorth(TemplateChars__EndDelim) -> Sequence<RealNumber>

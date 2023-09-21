@@ -1,17 +1,21 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	AST,
 	TYPE,
-	INST,
 	Builder,
-	ReferenceError01,
-	ReferenceError03,
-	AssignmentError01,
-	AssignmentError10,
-	TypeError01,
-	TypeError03,
+	ReferenceErrorUndeclared,
+	ReferenceErrorKind,
+	AssignmentErrorDuplicateDeclaration,
+	AssignmentErrorReassignment,
+	TypeErrorInvalidOperation,
+	TypeErrorNotAssignable,
 } from '../../../src/index.js';
-import {assertAssignable} from '../../assert-helpers.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
+import {
+	assertAssignable,
+	assertEqualBins,
+} from '../../assert-helpers.js';
 import {typeUnitFloat} from '../../helpers.js';
 
 
@@ -19,29 +23,29 @@ import {typeUnitFloat} from '../../helpers.js';
 describe('ASTNodeCP', () => {
 	describe('ASTNodeStatementExpression', () => {
 		describe('#build', () => {
-			it('returns InstructionNone for empty statement expression.', () => {
+			it('returns `(nop)` for empty statement expression.', () => {
 				const src: string = ';';
-				const instr: INST.InstructionNone | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src).build(new Builder(`{ ${ src } }`));
-				assert.ok(instr instanceof INST.InstructionNone);
+				const builder = new Builder(`{ ${ src } }`);
+				const instr: binaryen.ExpressionRef = AST.ASTNodeStatementExpression.fromSource(src).build(builder);
+				return assertEqualBins(instr, builder.module.nop());
 			});
-			it('returns InstructionStatement for nonempty statement expression.', () => {
+			it('returns `(drop)` for nonempty statement expression.', () => {
 				const src: string = '42 + 420';
-				const builder: Builder = new Builder(`{ ${ src }; }`);
+				const builder = new Builder(`{ ${ src }; }`);
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(`${ src };`);
-				assert.deepStrictEqual(
+				return assertEqualBins(
 					stmt.build(builder),
-					new INST.InstructionStatement(0n, AST.ASTNodeOperationBinaryArithmetic.fromSource(src).build(builder)),
+					builder.module.drop(stmt.expr!.build(builder)),
 				);
 			});
 			it('multiple statements.', () => {
 				const src: string = '{ 42; 420; }';
-				const generator: Builder = new Builder(src);
-				AST.ASTNodeBlock.fromSource(src).children.forEach((stmt, i) => {
-					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
-					const expr: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(stmt.source.slice(0, -1)); // slice off the semicolon
-					assert.deepStrictEqual(
+				const generator = new Builder(src);
+				return AST.ASTNodeBlock.fromSource(src).children.forEach((stmt) => {
+					assert_instanceof(stmt, AST.ASTNodeStatementExpression);
+					return assertEqualBins(
 						stmt.build(generator),
-						new INST.InstructionStatement(BigInt(i), expr.build(generator)),
+						generator.module.drop(stmt.expr!.build(generator)),
 					);
 				});
 			});
@@ -64,7 +68,7 @@ describe('ASTNodeCP', () => {
 					let z: x = null;
 					let z: int = T;
 				}`).varCheck(), (err) => {
-					assert.ok(err instanceof AggregateError);
+					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
@@ -74,15 +78,15 @@ describe('ASTNodeCP', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: ReferenceError01, message: '`a` is never declared.'},
-											{cons: ReferenceError01, message: '`b` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`a` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`b` is never declared.'},
 										],
 									},
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: ReferenceError01, message: '`c` is never declared.'},
-											{cons: ReferenceError01, message: '`d` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`c` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`d` is never declared.'},
 										],
 									},
 								],
@@ -93,24 +97,24 @@ describe('ASTNodeCP', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: ReferenceError01, message: '`V` is never declared.'},
-											{cons: ReferenceError01, message: '`W` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`V` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`W` is never declared.'},
 										],
 									},
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: ReferenceError01, message: '`X` is never declared.'},
-											{cons: ReferenceError01, message: '`Y` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`X` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`Y` is never declared.'},
 										],
 									},
 								],
 							},
-							{cons: AssignmentError01, message: 'Duplicate declaration: `x` is already declared.'},
-							{cons: AssignmentError10, message: 'Reassignment of a fixed variable: `x`.'},
-							{cons: AssignmentError01, message: 'Duplicate declaration: `T` is already declared.'},
-							{cons: ReferenceError03, message: '`x` refers to a value, but is used as a type.'},
-							{cons: ReferenceError03, message: '`T` refers to a type, but is used as a value.'},
+							{cons: AssignmentErrorDuplicateDeclaration, message: 'Duplicate declaration of `x`.'},
+							{cons: AssignmentErrorReassignment,         message: 'Reassignment of fixed variable `x`.'},
+							{cons: AssignmentErrorDuplicateDeclaration, message: 'Duplicate declaration of `T`.'},
+							{cons: ReferenceErrorKind,                  message: '`x` refers to a value, but is used as a type.'},
+							{cons: ReferenceErrorKind,                  message: '`T` refers to a type, but is used as a value.'},
 						],
 					});
 					return true;
@@ -137,26 +141,26 @@ describe('ASTNodeCP', () => {
 				}`);
 				goal.varCheck();
 				assert.throws(() => goal.typeCheck(), (err) => {
-					assert.ok(err instanceof AggregateError);
+					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
 							{
 								cons:   AggregateError,
 								errors: [
-									{cons: TypeError01, message: 'Invalid operation: `a * b` at line 6 col 6.'}, // TODO remove line&col numbers from message
-									{cons: TypeError01, message: 'Invalid operation: `c * d` at line 6 col 14.'},
+									{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `a * b` at line 6 col 6.'}, // TODO remove line&col numbers from message
+									{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `c * d` at line 6 col 14.'},
 								],
 							},
 							{
 								cons:   AggregateError,
 								errors: [
-									{cons: TypeError01, message: 'Invalid operation: `e * f` at line 11 col 6.'},
-									{cons: TypeError01, message: 'Invalid operation: `g * h` at line 11 col 14.'},
+									{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `e * f` at line 11 col 6.'},
+									{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `g * h` at line 11 col 14.'},
 								],
 							},
-							{cons: TypeError01, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
-							{cons: TypeError03, message: `Expression of type ${ typeUnitFloat(4.2) } is not assignable to type ${ TYPE.INT }.`},
+							{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
+							{cons: TypeErrorNotAssignable,    message: `Expression of type \`${ typeUnitFloat(4.2) }\` is not assignable to type \`${ TYPE.INT }\`.`},
 						],
 					});
 					return true;
@@ -166,10 +170,17 @@ describe('ASTNodeCP', () => {
 
 
 		describe('#build', () => {
-			it('returns InstructionNone.', () => {
+			it('returns `(nop)` for empty program.', () => {
 				const src: string = '';
-				const instr: INST.InstructionNone | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
-				assert.ok(instr instanceof INST.InstructionNone);
+				const builder = new Builder(src);
+				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
+				return assertEqualBins(instr, builder.module.nop());
+			});
+			it('returns binaryen.Module for non-empty program.', () => {
+				const src: string = '{;}';
+				const builder = new Builder(src);
+				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
+				assert.strictEqual(instr, builder.module);
 			});
 		});
 	});

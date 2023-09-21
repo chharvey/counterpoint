@@ -1,54 +1,12 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
+import {
+	type SubclassOf,
+	assert_instanceof,
+} from '../src/lib/index.js';
 import type {TYPE} from '../src/index.js';
 
-
-
-type Class = Function; // eslint-disable-line @typescript-eslint/ban-types --- alias `Function` to mean “any class object”
-
-
-
-/**
- * Assert an object is an instance of a class,
- * using the `instanceof` operator.
- * @param obj  - the object
- * @param cons - the class or constructor function
- * @throws {AssertionError} if false
- */
-export function assert_instanceof(obj: object, cons: Class): void {
-	assert.ok(obj instanceof cons, `${ obj } should be an instance of ${ cons }.`);
-}
-
-
-
-type CallTrackerFunction = NonNullable<Parameters<assert.CallTracker['calls']>[0]>; // (...args: any[]) => any
-/**
- * @param orig the original function; useful for setting & unsetting
- * @param spy  the wrapper function that is actually called during tests
- * @return     any return value
- */
-type ExpectCallback<Func extends CallTrackerFunction, Return> = (orig: Func, spy: Func) => Return;
-/**
- * Assert that, while a callback is performed, the given function is called a specified number of times.
- * @param orig     the function, a copy of which is expected to actually be called
- * @param times    the number of times the function is expected to be called
- * @param callback the routine to perform while testing; {@see ExpectCallback}
- * @return         the return value of `callback`
- * @throw          if `orig` was not called the exact specified number of times
- * @throw          if `callback` itself throws
- */
-export function assert_wasCalled<Func extends CallTrackerFunction, Return>(orig: Func, times: number, callback: ExpectCallback<Func, Return>): Return {
-	const tracker: assert.CallTracker = new assert.CallTracker();
-	try {
-		return callback.call(null, orig, tracker.calls(orig, times));
-	} finally {
-		try {
-			tracker.verify();
-		} catch {
-			throw new AggregateError(tracker.report().map((info) => new assert.AssertionError(info))); // eslint-disable-line no-unsafe-finally --- we want this behavior
-		}
-	}
-}
 
 
 /**
@@ -77,7 +35,7 @@ export function assertEqualTypes(types: ReadonlyMap<TYPE.Type, TYPE.Type>): void
 export function assertEqualTypes(param1: TYPE.Type | readonly TYPE.Type[] | ReadonlyMap<TYPE.Type, TYPE.Type>, param2?: TYPE.Type | readonly TYPE.Type[]): void {
 	if (param1 instanceof Map) {
 		return assertEqualTypes([...param1.keys()], [...param1.values()]);
-	} else if (param1 instanceof Array) {
+	} else if (Array.isArray(param1)) {
 		try {
 			return assert.deepStrictEqual(param1, param2);
 		} catch {
@@ -94,7 +52,30 @@ export function assertEqualTypes(param1: TYPE.Type | readonly TYPE.Type[] | Read
 
 
 
-type ValidationObject = {cons: Class} & (
+export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref, expected: Ref): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: readonly Ref[], expected: readonly Ref[]): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(bins: ReadonlyMap<Ref, Ref>): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref | readonly Ref[] | ReadonlyMap<Ref, Ref>, expected?: Ref | readonly Ref[]): void {
+	if (actual instanceof Map) {
+		return assertEqualBins([...actual.keys()], [...actual.values()]);
+	} if (Array.isArray(actual)) {
+		try {
+			return assert.deepStrictEqual(actual, expected);
+		} catch {
+			return xjs.Array.forEachAggregated(actual, (act, i) => assertEqualBins(act, (expected as Ref[])[i]));
+		}
+	} else {
+		try {
+			return assert.deepStrictEqual(actual, expected);
+		} catch {
+			return assert.strictEqual(binaryen.emitText(actual as Ref), binaryen.emitText(expected as Ref));
+		}
+	}
+}
+
+
+
+type ValidationObject = {cons: SubclassOf<Error>} & (
 	| {message: string}
 	| {errors: ValidationObject[]}
 );
@@ -110,10 +91,11 @@ export function assertAssignable(actual: Error, validation: ValidationObject): v
 		assert.strictEqual(
 			(actual as AggregateError).errors.length,
 			validation.errors.length,
-			'The number of sub-error validations does not equal the number of actual sub-errors.',
+			'Number of actual sub-errors should equal number of validation sub-errors.',
 		);
-		return validation.errors.forEach((subvalidation, i) => {
-			assertAssignable((actual as AggregateError).errors[i], subvalidation);
-		});
+		return xjs.Array.forEachAggregated(
+			validation.errors,
+			(subvalidation, i) => assertAssignable((actual as AggregateError).errors[i], subvalidation),
+		);
 	}
 }

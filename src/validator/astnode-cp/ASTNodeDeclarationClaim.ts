@@ -1,14 +1,16 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	TYPE,
-	INST,
-	Builder,
-	TypeError03,
-	CPConfig,
+	type Builder,
+	TypeErrorNotAssignable,
+} from '../../index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SymbolStructureVar,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SymbolStructureVar} from '../index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';
 import {ASTNodeAccess} from './ASTNodeAccess.js';
@@ -48,7 +50,7 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 				because neither type sufficiently overlaps with the other. If this was intentional,
 				convert the expression to \`obj\` first.`;
 			*/
-			throw new TypeError03(claimed_type, computed_type, this);
+			throw new TypeErrorNotAssignable(claimed_type, computed_type, this);
 		}
 		if (this.assignee instanceof ASTNodeVariable) {
 			const symbol: SymbolStructureVar | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
@@ -62,7 +64,7 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 		}
 	}
 
-	public override build(_builder: Builder): INST.InstructionNone {
-		return new INST.InstructionNone();
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.nop();
 	}
 }

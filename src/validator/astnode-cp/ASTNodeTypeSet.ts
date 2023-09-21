@@ -1,18 +1,22 @@
-import * as assert from 'assert';
+import {TYPE} from '../../index.js';
 import {
-	TYPE,
-	CPConfig,
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
 
 
 
-export class ASTNodeTypeSet extends ASTNodeType {
+export class ASTNodeTypeSet extends ASTNodeTypeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeSet {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeSet);
+		assert_instanceof(typ, ASTNodeTypeSet);
 		return typ;
 	}
 
@@ -20,10 +24,11 @@ export class ASTNodeTypeSet extends ASTNodeType {
 		start_node: SyntaxNodeType<'type_unary_symbol'>,
 		private readonly type: ASTNodeType,
 	) {
-		super(start_node, {}, [type]);
+		super(start_node, [type]);
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
 		return new TYPE.TypeSet(this.type.eval());
 	}
 }

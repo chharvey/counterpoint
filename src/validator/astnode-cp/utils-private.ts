@@ -1,15 +1,19 @@
 import {
-	TYPE,
 	OBJ,
-	CPConfig,
-	Validator,
-} from './package.js';
+	TYPE,
+} from '../../index.js';
+import type {CPConfig} from '../../core/index.js';
+import {Validator} from '../index.js';
 
 
 
 export type ArgCount = bigint | readonly [bigint, bigint];
 
 
+
+export enum ValidIntrinsicName {
+	OBJECT = 'Object',
+}
 
 export enum ValidFunctionName {
 	LIST = 'List',
@@ -18,7 +22,11 @@ export enum ValidFunctionName {
 	MAP  = 'Map',
 }
 
-export function invalidFunctionName(source: string): never {
+export function is_valid_intrinsic_name(source: string): source is ValidIntrinsicName {
+	return Object.values<string>(ValidIntrinsicName).includes(source);
+}
+
+export function invalid_function_name(source: string): never {
 	throw new SyntaxError(`Unexpected token: ${ source }; expected \`${ Object.values(ValidFunctionName).join(' | ') }\`.`);
 }
 
@@ -38,7 +46,7 @@ export function neitherFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return !eitherFloats(t0, t1);
 }
 export function oneFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
-	return !neitherFloats(t0, t1) && !bothFloats(t0, t1);
+	return eitherFloats(t0, t1) && !bothFloats(t0, t1);
 }
 
 

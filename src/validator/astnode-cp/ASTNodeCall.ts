@@ -1,22 +1,27 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	TYPE,
 	OBJ,
-	INST,
-	Builder,
-	TypeError03,
-	TypeError05,
-	TypeError06,
-	throw_expression,
-	CPConfig,
-	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+	TYPE,
+	type Builder,
+	type TypeErrorNotAssignable,
+	TypeErrorNotCallable,
+	TypeErrorArgCount,
+} from '../../index.js';
 import {
-	ArgCount,
+	throw_expression,
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
+	CONFIG_DEFAULT,
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
+import {
+	type ArgCount,
 	ValidFunctionName,
-	invalidFunctionName,
+	invalid_function_name,
 } from './utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeType} from './ASTNodeType.js';
@@ -28,7 +33,7 @@ import {ASTNodeVariable} from './ASTNodeVariable.js';
 export class ASTNodeCall extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeCall {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeCall);
+		assert_instanceof(expression, ASTNodeCall);
 		return expression;
 	}
 
@@ -42,7 +47,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	}
 
 	public override varCheck(): void {
-		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
+		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
 		// (`this.base.source` must be a `ValidFunctionName`)
 		return xjs.Array.forEachAggregated([
 			...this.typeargs,
@@ -50,36 +55,31 @@ export class ASTNodeCall extends ASTNodeExpression {
 		], (arg) => arg.varCheck());
 	}
 
-	public override shouldFloat(): boolean {
-		return false;
-	}
-
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): binaryen.ExpressionRef {
 		builder;
-		to_float;
-		throw '`ASTNodeCall#build_do` not yet supported.';
+		throw '`ASTNodeCall#build` not yet supported.';
 	}
 
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
 		if (!(this.base instanceof ASTNodeVariable)) {
-			throw new TypeError05(this.base.type(), this.base);
+			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
 		return (new Map<ValidFunctionName, () => TYPE.Type>([
 			[ValidFunctionName.LIST, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const itemtype:   TYPE.Type = this.typeargs[0].eval();
-				const returntype: TYPE.Type = new TYPE.TypeList(itemtype);
+				const returntype            = new TYPE.TypeList(itemtype);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(argtype, returntype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argtype, returntype, this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (
-							(TYPE.TypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)  ? argtype.itemTypes()                :
-							throw_expression(err as TypeError03)
-						);
-						ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this, this.validator);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
+						ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this);
 					}
 				}
 				return returntype.mutableOf();
@@ -87,18 +87,14 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.DICT, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const valuetype:  TYPE.Type = this.typeargs[0].eval();
-				const returntype: TYPE.Type = new TYPE.TypeDict(valuetype);
+				const returntype            = new TYPE.TypeDict(valuetype);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(argtype, returntype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argtype, returntype, this);
 					} catch (err) {
-						const argvaluetype: TYPE.Type = (
-							(TYPE.TypeRecord.isUnitType(argtype)) ? argtype.value.toType().valueTypes() :
-							(argtype instanceof TYPE.TypeRecord)  ? argtype.valueTypes()                :
-							throw_expression(err as TypeError03)
-						);
-						ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this, this.validator);
+						const argvaluetype: TYPE.Type = (argtype instanceof TYPE.TypeRecord) ? argtype.valueTypes() : throw_expression(err as TypeErrorNotAssignable);
+						ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this);
 					}
 				}
 				return returntype.mutableOf();
@@ -106,47 +102,40 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.SET, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const eltype:     TYPE.Type = this.typeargs[0].eval();
-				const returntype: TYPE.Type = new TYPE.TypeSet(eltype);
+				const returntype            = new TYPE.TypeSet(eltype);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(eltype), this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(eltype), this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (
-							(TYPE.TypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)  ? argtype.itemTypes()                :
-							throw_expression(err as TypeError03)
-						);
-						ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this, this.validator);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
+						ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this);
 					}
 				}
 				return returntype.mutableOf();
 			}],
 			[ValidFunctionName.MAP, () => {
 				this.countArgs([1n, 3n], [0n, 2n]);
-				const anttype:    TYPE.Type = this.typeargs[0].eval();
-				const contype:    TYPE.Type = this.typeargs[1]?.eval() ?? anttype;
-				const returntype: TYPE.Type = new TYPE.TypeMap(anttype, contype);
-				const entrytype:  TYPE.Type = TYPE.TypeTuple.fromTypes([anttype, contype]);
+				const anttype:    TYPE.Type      = this.typeargs[0].eval();
+				const contype:    TYPE.Type      = this.typeargs[1]?.eval() ?? anttype;
+				const returntype                 = new TYPE.TypeMap(anttype, contype);
+				const entrytype:  TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([anttype, contype]);
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(entrytype), this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(entrytype), this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (
-							(TYPE.TypeTuple.isUnitType(argtype)) ? argtype.value.toType().itemTypes() :
-							(argtype instanceof TYPE.TypeTuple)  ? argtype.itemTypes()                :
-							throw_expression(err as TypeError03)
-						);
-						ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this, this.validator);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
+						ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this);
 					}
 				}
 				return returntype.mutableOf();
 			}],
-		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
+		]).get(this.base.source as ValidFunctionName) || invalid_function_name(this.base.source))();
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const argvalue: OBJ.Object | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
 			? this.exprargs[0].fold()
 			: undefined;
@@ -154,10 +143,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 			return null;
 		}
 		return new Map<ValidFunctionName, (argument: OBJ.Object | undefined) => OBJ.Object | null>([
-			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new OBJ.List() : new OBJ.List((tuple as OBJ.Tuple).items)],
-			[ValidFunctionName.DICT, (record) => (record === undefined) ? new OBJ.Dict() : new OBJ.Dict((record as OBJ.Record).properties)],
-			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.Set()  : new OBJ.Set(new Set<OBJ.Object>((tuple as OBJ.Tuple).items))],
-			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.Map()  : new OBJ.Map(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.Tuple).items.map((pair) => (pair as OBJ.Tuple).items as [OBJ.Object, OBJ.Object])))],
+			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new OBJ.List() : new OBJ.List((tuple as OBJ.CollectionIndexed).items)],
+			[ValidFunctionName.DICT, (record) => (record === undefined) ? new OBJ.Dict() : new OBJ.Dict((record as OBJ.CollectionKeyed).properties)],
+			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.Set()  : new OBJ.Set(new Set<OBJ.Object>((tuple as OBJ.CollectionIndexed).items))],
+			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.Map()  : new OBJ.Map(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.CollectionIndexed).items.map((pair) => (pair as OBJ.CollectionIndexed).items as [OBJ.Object, OBJ.Object])))],
 		]).get(this.base.source as ValidFunctionName)!(argvalue);
 	}
 
@@ -182,16 +171,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 			expected_function = [expected_function, expected_function + 1n];
 		}
 		if (actual_generic < expected_generic[0]) {
-			throw new TypeError06(actual_generic, expected_generic[0], true, this);
+			throw new TypeErrorArgCount(actual_generic, expected_generic[0], true, this);
 		}
 		if (expected_generic[1] <= actual_generic) {
-			throw new TypeError06(actual_generic, expected_generic[1] - 1n, true, this);
+			throw new TypeErrorArgCount(actual_generic, expected_generic[1] - 1n, true, this);
 		}
 		if (actual_function < expected_function[0]) {
-			throw new TypeError06(actual_function, expected_function[0], false, this);
+			throw new TypeErrorArgCount(actual_function, expected_function[0], false, this);
 		}
 		if (expected_function[1] <= actual_function) {
-			throw new TypeError06(actual_function, expected_function[1] - 1n, false, this);
+			throw new TypeErrorArgCount(actual_function, expected_function[1] - 1n, false, this);
 		}
 	}
 }

@@ -1,8 +1,8 @@
+import type {TYPE} from '../../index.js';
 import {
-	TYPE,
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
-} from './package.js';
+} from '../../core/index.js';
 import {ASTNodeDeclarationType} from './index.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 
@@ -36,7 +36,6 @@ export abstract class ASTNodeType extends ASTNodeCP {
 		return statement.assigned;
 	}
 
-	private assessed?: TYPE.Type;
 	/**
 	 * @final
 	 */
@@ -47,11 +46,6 @@ export abstract class ASTNodeType extends ASTNodeCP {
 	/**
 	 * Assess the type-value of this node at compile-time.
 	 * @returns the computed type-value of this node
-	 * @final
 	 */
-	public eval(): TYPE.Type {
-		return this.assessed ||= this.eval_do();
-	}
-
-	protected abstract eval_do(): TYPE.Type;
+	public abstract eval(): TYPE.Type;
 }

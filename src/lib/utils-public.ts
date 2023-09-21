@@ -1,3 +1,7 @@
+import * as assert from 'assert';
+
+
+
 /** A non-empty array. */
 export type NonemptyArray<T> = [T, ...T[]];
 
@@ -11,14 +15,20 @@ export type NonemptyArray<T> = [T, ...T[]];
 export type IntRange = [bigint, bigint];
 
 /**
- * A code unit is a number within [0, 0xff] that represents
+ * A code unit is an integer within the closed interval [0, 0xff] that represents
  * a byte of an encoded Unicode code point.
  */
 export type CodeUnit = number;
 
+
+
+export type SubclassOf<Class extends object> = abstract new (...args: any[]) => Class; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+
+
 /* The type of keys in a map or record. */
 export type Keys<M> = (
-	M extends Map<infer K, unknown>    ? K :
+	M extends ReadonlyMap<infer K, unknown>    ? K :
 	M extends Record<infer K, unknown> ? K :
 	never
 );
@@ -38,4 +48,17 @@ export type Values<M> = (
  */
 export function throw_expression(expression: Error): never {
 	throw expression;
+}
+
+
+
+/**
+ * Assert an object is an instance of a class,
+ * using the `instanceof` operator.
+ * @param obj  - the object
+ * @param cons - the class or constructor function
+ * @throws {AssertionError} if false
+ */
+export function assert_instanceof<Class extends object>(obj: unknown, cons: SubclassOf<Class>): asserts obj is Class {
+	return assert.ok(obj instanceof cons, `${ obj } should be an instance of ${ cons.name || cons }.`);
 }

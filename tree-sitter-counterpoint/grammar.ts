@@ -3,9 +3,20 @@
 
 
 
+function argsArr(nth: number, params: readonly string[]): readonly string[] {
+	// e.g. `['await', 'static', 'instance', 'method']`
+	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
+		.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
+		.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
+		.map(([param, _to_include]) => param);                   // `['static', 'method']`
+}
 function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
+function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
+	return [...new Array(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
+}
+
 /**
  * Generate a list of productions from a set of parameters.
  * E.g., to generate the following EBNF production:
@@ -36,17 +47,14 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
 	...params: readonly string[]
 ): RuleBuilders<RuleName, BaseGrammarRuleName> {
 	const rules_obj: RuleBuilders<RuleName, BaseGrammarRuleName> = {} as RuleBuilders<RuleName, BaseGrammarRuleName>;
-	new Map<RuleName, RuleBuilder<RuleName>>([...new Array(2 ** params.length)].map((_, nth) => { // e.g. `['await', 'static', 'instance', 'method']`
-		const args_arr: readonly string[] = [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
-			.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
-			.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
-			.map(([param, _to_include]) => param);                   // `['static', 'method']`
+	new Map<RuleName, RuleBuilder<RuleName>>([...new Array(2 ** params.length)].map((_, nth) => {
+		const args_arr: readonly string[] = argsArr(nth, params);
 		const args_obj: Record<string, boolean> = {};
 		args_arr.forEach((arg) => {
 			args_obj[arg] = true;
-		}); // `{static: true, method: true}`
+		});
 		return [
-			familyName(family_name, ...args_arr), // 'family_name__static__method'
+			familyName(family_name, ...args_arr),
 			parameterized_rule.call(null, args_obj),
 		];
 	})).forEach((rule, name) => {
@@ -81,6 +89,9 @@ function call<RuleName extends string>(family_name: string, ...args: readonly (s
 
 
 /* # LEXER HELPERS */
+const WORD_BASIC   = /[A-Za-z_][A-Za-z0-9_]*/;
+const WORD_UNICODE = /'[^']*'/;
+
 const DIGIT_SEQ_BIN            = /[0-1]+/;
 const DIGIT_SEQ_BIN__SEPARATOR = /([0-1]_?)*[0-1]/;
 const DIGIT_SEQ_QUA            = /[0-3]+/;
@@ -117,60 +128,74 @@ const SIGNED_DIGIT_SEQ_DEC__SEPARATOR = seq(/[+-]?/, DIGIT_SEQ_DEC__SEPARATOR);
 const EXPONENT_PART            = seq('e', SIGNED_DIGIT_SEQ_DEC);
 const EXPONENT_PART__SEPARATOR = seq('e', SIGNED_DIGIT_SEQ_DEC__SEPARATOR);
 
+const ESCAPER            = '\\';
+const DELIM_STRING       = '"';
+const DELIM_TEMPLATE     = '"""';
+const DELIM_INTERP_START = '{{';
+const DELIM_INTERP_END   = '}}';
+const COMMENTER_LINE     = '%';
+const COMMENTER_MULTI    = '%%';
+
 /* eslint-disable function-call-argument-newline */
 const STRING_ESCAPE = choice(
-	'\'', '\\',
+	DELIM_STRING,
+	ESCAPER,
 	's', 't', 'n', 'r',
 	seq('u{', optional(DIGIT_SEQ_HEX), '}'),
 	'\n',
-	/[^'\\stnru\n]/,
+	/[^"\\stnru\n]/,
 );
 const STRING_ESCAPE__COMMENT = choice(
-	'\'', '\\', '%',
+	DELIM_STRING,
+	ESCAPER,
+	COMMENTER_LINE,
 	's', 't', 'n', 'r',
 	seq('u{', optional(DIGIT_SEQ_HEX), '}'),
 	'\n',
-	/[^'\\%stnru\n]/,
+	/[^"\\%stnru\n]/,
 );
 const STRING_ESCAPE__SEPARATOR = choice(
-	'\'', '\\',
+	DELIM_STRING,
+	ESCAPER,
 	's', 't', 'n', 'r',
 	seq('u{', optional(DIGIT_SEQ_HEX__SEPARATOR), '}'),
 	'\n',
-	/[^'\\stnru\n]/,
+	/[^"\\stnru\n]/,
 );
 const STRING_ESCAPE__COMMENT_SEPARATOR = choice(
-	'\'', '\\', '%',
+	DELIM_STRING,
+	ESCAPER,
+	COMMENTER_LINE,
 	's', 't', 'n', 'r',
 	seq('u{', optional(DIGIT_SEQ_HEX__SEPARATOR), '}'),
 	'\n',
-	/[^'\\%stnru\n]/,
+	/[^"\\%stnru\n]/,
 );
 /* eslint-enable function-call-argument-newline */
 
 const STRING_CHAR = choice(
-	/[^'\\]/,
-	seq('\\', STRING_ESCAPE),
-	/\\u[^'{]/,
+	/[^"\\]/,
+	seq(ESCAPER, STRING_ESCAPE),
+	/\\u[^"{]/,
 );
 const STRING_CHAR__COMMENT = choice(
-	/[^'\\%]/,
-	seq('\\', STRING_ESCAPE__COMMENT),
-	/\\u[^'{]/,
-	/%([^'%\n][^'\n]*)?\n/,
-	/%%(%?[^'%])*%%/,
+	/[^"\\%]/,
+	seq(ESCAPER, STRING_ESCAPE__COMMENT),
+	/\\u[^"{]/,
+	/%([^"%\n][^"\n]*)?\n/,
+	/%%(%?[^"%])*%%/,
 );
 const STRING_CHAR__SEPARATOR = choice(
-	/[^'\\]/,
-	seq('\\', STRING_ESCAPE__SEPARATOR),
-	/\\u[^'{]/,
+	/[^"\\]/,
+	seq(ESCAPER, STRING_ESCAPE__SEPARATOR),
+	/\\u[^"{]/,
 );
 const STRING_CHAR__COMMENT__SEPARATOR = choice(
-	/[^'\\%]/,
-	seq('\\', STRING_ESCAPE__COMMENT_SEPARATOR),
-	/\\u[^'{]/,
-	/%([^'%\n][^'\n]*)?\n/,
-	/%%(%?[^'%])*%%/,
+	/[^"\\%]/,
+	seq(ESCAPER, STRING_ESCAPE__COMMENT_SEPARATOR),
+	/\\u[^"{]/,
+	/%([^"%\n][^"\n]*)?\n/,
+	/%%(%?[^"%])*%%/,
 );
 
 const STRING_CHARS                     = repeat1(STRING_CHAR);
@@ -179,28 +204,32 @@ const STRING_CHARS__SEPARATOR          = repeat1(STRING_CHAR__SEPARATOR);
 const STRING_CHARS__COMMENT__SEPARATOR = repeat1(STRING_CHAR__COMMENT__SEPARATOR);
 
 const STRING_UNFINISHED          = '\\u';
-const STRING_UNFINISHED__COMMENT = choice('\\u', /%([^'%\n][^'\n]*)?/, /%%(%?[^'%])*/);
+const STRING_UNFINISHED__COMMENT = choice(
+	'\\u',
+	/%([^"%\n][^"\n]*)?/,
+	/%%(%?[^"%])*/,
+);
 
 const TEMPLATE_CHARS_NO_END = choice(
-	/[^'{]/,
-	/('\{|''\{)*('|'')[^'{]/,
-	/('\{|''\{)+[^'{]/,
-	/(\{'|\{'')*\{[^'{]/,
-	/(\{'|\{'')+[^'{]/,
+	/[^"{]/,
+	/("\{|""\{)*("|"")[^"{]/,
+	/("\{|""\{)+[^"{]/,
+	/(\{"|\{"")*\{[^"{]/,
+	/(\{"|\{"")+[^"{]/,
 );
 const TEMPLATE_CHARS_END_DELIM = seq(repeat(TEMPLATE_CHARS_NO_END), choice(
-	/[^'{]/,
-	/('\{|''\{)*('|'')[^'{]/,
-	/('\{|''\{)+[^'{]?/,
-	/(\{'|\{'')*\{[^'{]?/,
-	/(\{'|\{'')+[^'{]/,
+	/[^"{]/,
+	/("\{|""\{)*("|"")[^"{]/,
+	/("\{|""\{)+[^"{]?/,
+	/(\{"|\{"")*\{[^"{]?/,
+	/(\{"|\{"")+[^"{]/,
 ));
 const TEMPLATE_CHARS_END_INTERP = seq(repeat(TEMPLATE_CHARS_NO_END), choice(
-	/[^'{]/,
-	/('\{|''\{)*('|'')[^'{]?/,
-	/('\{|''\{)+[^'{]/,
-	/(\{'|\{'')*\{[^'{]/,
-	/(\{'|\{'')+[^'{]?/,
+	/[^"{]/,
+	/("\{|""\{)*("|"")[^"{]?/,
+	/("\{|""\{)+[^"{]/,
+	/(\{"|\{"")*\{[^"{]/,
+	/(\{"|\{"")+[^"{]?/,
 ));
 
 
@@ -210,14 +239,20 @@ const OPT_COM = optional(',');
 
 /**
  * Reference a rule based on a condition.
+ *
+ * If needing an alternative, use a simple ternary operator:
+ * ```
+ * (condition) ? consequent : alternative
+ * ```
  * @param condition   the condition to test
  * @param consequent  if condition is true, this will be produced
- * @param alternative if condition is false, this will be
- *                    @default blank()
- * @returns           either `consequent` or `alternative` based on `condition`
+ * @returns           either `consequent` or `blank()` based on `condition`
  */
-function iff(condition: boolean, consequent: RuleOrLiteral, alternative: RuleOrLiteral = blank()): RuleOrLiteral {
-	return (condition) ? consequent : alternative;
+function iff(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral {
+	return (condition) ? consequent : blank();
+}
+function ifSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
+	return (condition) ? [consequent] : [];
 }
 function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
@@ -239,12 +274,13 @@ module.exports = grammar({
 
 		/* # LEXICON */
 		keyword_type: _$ => token(choice(
+			'never',
 			'void',
 			'bool',
 			'int',
 			'float',
 			'str',
-			'obj',
+			'unknown',
 		)),
 		keyword_value: _$ => token(choice(
 			'null',
@@ -253,8 +289,8 @@ module.exports = grammar({
 		)),
 
 		identifier: _$ => token(choice(
-			/[A-Za-z_][A-Za-z0-9_]*/,
-			/`[^`]*`/,
+			WORD_BASIC,
+			WORD_UNICODE,
 		)),
 
 		...parameterize('integer', ({radix, separator}) => (
@@ -268,29 +304,27 @@ module.exports = grammar({
 			_$ => token(seq(
 				(!separator) ? SIGNED_DIGIT_SEQ_DEC : SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
 				'.',
-				seq(
-					         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR,
-					optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
-				),
+				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR,
+				optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
 			))
 		), 'separator'),
 
 		...parameterize('string', ({comment, separator}) => (
 			_$ => token(seq(
-				'\'',
+				DELIM_STRING,
 				optional(((!comment)
 					? (!separator) ? STRING_CHARS          : STRING_CHARS__SEPARATOR
 					: (!separator) ? STRING_CHARS__COMMENT : STRING_CHARS__COMMENT__SEPARATOR
 				)),
 				optional((!comment) ? STRING_UNFINISHED : STRING_UNFINISHED__COMMENT),
-				'\'',
+				DELIM_STRING,
 			))
 		), 'comment', 'separator'),
 
-		template_full:   _$ => token(seq('\'\'\'', optional(TEMPLATE_CHARS_END_DELIM),  '\'\'\'')),
-		template_head:   _$ => token(seq('\'\'\'', optional(TEMPLATE_CHARS_END_INTERP), '{{')),
-		template_middle: _$ => token(seq('}}',     optional(TEMPLATE_CHARS_END_INTERP), '{{')),
-		template_tail:   _$ => token(seq('}}',     optional(TEMPLATE_CHARS_END_DELIM),  '\'\'\'')),
+		template_full:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
+		template_head:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
+		template_middle: _$ => token(seq(DELIM_INTERP_END, optional(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
+		template_tail:   _$ => token(seq(DELIM_INTERP_END, optional(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
 
 
 
@@ -337,12 +371,12 @@ module.exports = grammar({
 
 		_items_type: $ => choice(
 			             seq(repCom1($.entry_type), OPT_COM),
-			seq(optional(seq(repCom1($.entry_type), ','    )), repCom1($.entry_type__optional), OPT_COM),
+			seq(optional(seq(repCom1($.entry_type), ','    )), repCom1($[call('entry_type', 'optional')]), OPT_COM),
 		),
 
-		_properties_type: $ => seq(repCom1(choice($.entry_type__named, $.entry_type__named__optional)), OPT_COM),
+		_properties_type: $ => seq(repCom1(choice($[call('entry_type', 'named')], $[call('entry_type', 'named', 'optional')])), OPT_COM),
 
-		type_grouped:        $ => seq('(', $._type,                                  ')'),
+		type_grouped:        $ => seq('(',                       $._type,            ')'),
 		type_tuple_literal:  $ => seq('[', optional(seq(OPT_COM, $._items_type)),    ']'),
 		type_record_literal: $ => seq('[',              OPT_COM, $._properties_type, ']'),
 		type_dict_literal:   $ => seq('[', ':', $._type,                             ']'),
@@ -373,7 +407,12 @@ module.exports = grammar({
 			$._type_compound,
 			alias($.type_unary_symbol_dfn, $.type_unary_symbol),
 		),
-		type_unary_symbol_dfn: $ => seq($._type_unary_symbol, choice('?', '!', seq('[', optional($.integer), ']'), seq('{', '}'))),
+		type_unary_symbol_dfn: $ => seq($._type_unary_symbol, choice(
+			'?',
+			'!',
+			seq('[', optional($.integer), ']'),
+			seq('{', '}'),
+		)),
 
 		_type_unary_keyword: $ => choice(
 			$._type_unary_symbol,
@@ -502,6 +541,12 @@ module.exports = grammar({
 	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers#keyword-extraction
 	 */
 	word: $ => $.identifier,
+
+	conflicts: $ => [
+		familyNameAll('integer', ['radix', 'separator']),
+		familyNameAll('float',   ['separator']),
+		familyNameAll('string',  ['comment', 'separator']),
+	].map((familyname) => familyname.map((rulename) => $[rulename])),
 
 	supertypes: $ => [
 		$._type_unit,

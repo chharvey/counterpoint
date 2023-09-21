@@ -1,25 +1,30 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
-	Operator,
 	AST,
-	SymbolStructure,
+	type SymbolStructure,
 	SymbolStructureType,
 	SymbolStructureVar,
+	OBJ,
 	TYPE,
-	INST,
 	Builder,
-	ReferenceError03,
-	AssignmentError01,
-	AssignmentError10,
-	TypeError03,
+	ReferenceErrorKind,
+	AssignmentErrorDuplicateDeclaration,
+	AssignmentErrorReassignment,
+	TypeErrorNotAssignable,
 	MutabilityError01,
 } from '../../../src/index.js';
-import {assertAssignable} from '../../assert-helpers.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
+import {
+	assertEqualBins,
+	assertAssignable,
+} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
-	instructionConstInt,
-	instructionConstFloat,
+	buildConstInt,
+	buildConstFloat,
 } from '../../helpers.js';
 
 
@@ -31,22 +36,22 @@ describe('ASTNodeDeclaration', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					type T = int;
 				}`);
-				assert.ok(!goal.validator.hasSymbol(256n));
+				assert.ok(!goal.validator.hasSymbol(0x100n));
 				goal.varCheck();
-				assert.ok(goal.validator.hasSymbol(256n));
-				const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
-				assert.ok(info instanceof SymbolStructureType);
+				assert.ok(goal.validator.hasSymbol(0x100n));
+				const info: SymbolStructure | null = goal.validator.getSymbolInfo(0x100n);
+				assert_instanceof(info, SymbolStructureType);
 				assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
 			});
 			it('throws if the validator already contains a record for the symbol.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type T = int;
 					type T = float;
-				}`).varCheck(), AssignmentError01);
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let FOO: int = 42;
 					type FOO = float;
-				}`).varCheck(), AssignmentError01);
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
 		});
 
@@ -59,7 +64,7 @@ describe('ASTNodeDeclaration', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				assert.deepStrictEqual(
-					(goal.validator.getSymbolInfo(256n) as SymbolStructureType).typevalue,
+					(goal.validator.getSymbolInfo(0x100n) as SymbolStructureType).typevalue,
 					TYPE.INT,
 				);
 			});
@@ -67,23 +72,17 @@ describe('ASTNodeDeclaration', () => {
 
 
 		describe('#build', () => {
-			it('always returns InstructionNone.', () => {
+			it('always returns `(nop)`.', () => {
 				const src: string = `{
 					type T = int;
 					type U = T | float;
 				}`;
 				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
-				const builder: Builder = new Builder(src);
-				assert.deepStrictEqual(
-					[
-						block.children[0].build(builder),
-						block.children[1].build(builder),
-					],
-					[
-						new INST.InstructionNone(),
-						new INST.InstructionNone(),
-					],
-				);
+				const builder = new Builder(src);
+				return xjs.Array.forEachAggregated(block.children, (stmt) => {
+					assert.ok(stmt instanceof AST.ASTNodeDeclarationType);
+					return assertEqualBins(stmt.build(builder), builder.module.nop());
+				});
 			});
 		});
 	});
@@ -96,11 +95,11 @@ describe('ASTNodeDeclaration', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let x: int = 42;
 				}`);
-				assert.ok(!goal.validator.hasSymbol(256n));
+				assert.ok(!goal.validator.hasSymbol(0x100n));
 				goal.varCheck();
-				assert.ok(goal.validator.hasSymbol(256n));
-				const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
-				assert.ok(info instanceof SymbolStructureVar);
+				assert.ok(goal.validator.hasSymbol(0x100n));
+				const info: SymbolStructure | null = goal.validator.getSymbolInfo(0x100n);
+				assert_instanceof(info, SymbolStructureVar);
 				assert.strictEqual(info.type, TYPE.UNKNOWN);
 				assert.strictEqual(info.value, null);
 			});
@@ -108,16 +107,29 @@ describe('ASTNodeDeclaration', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let i: int = 42;
 					let i: int = 43;
-				}`).varCheck(), AssignmentError01);
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type FOO = float;
 					let FOO: int = 42;
-				}`).varCheck(), AssignmentError01);
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
 		});
 
 
 		describe('#typeCheck', () => {
+			function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
+				if (src instanceof Array) {
+					return src
+						.map((s) => s.trim())
+						.filter((s) => !!s)
+						.forEach((s) => typeCheckGoal(`{${ s }}`, expect_thrown));
+				}
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				goal.varCheck();
+				return (expect_thrown)
+					? assert.throws(() => goal.typeCheck(), expect_thrown)
+					: goal.typeCheck();
+			}
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				AST.ASTNodeDeclarationVariable.fromSource(`
 					let  the_answer:  int | float =  21  *  2;
@@ -126,7 +138,7 @@ describe('ASTNodeDeclaration', () => {
 			it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 				assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 					let  the_answer:  null =  21  *  2;
-				`).typeCheck(), TypeError03);
+				`).typeCheck(), TypeErrorNotAssignable);
 			});
 			it('with int coersion on, allows assigning ints to floats.', () => {
 				AST.ASTNodeDeclarationVariable.fromSource(`
@@ -136,171 +148,210 @@ describe('ASTNodeDeclaration', () => {
 			it('with int coersion off, throws when assigning int to float.', () => {
 				assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 					let x: float = 42;
-				`, CONFIG_COERCION_OFF).typeCheck(), TypeError03);
+				`, CONFIG_COERCION_OFF).typeCheck(), TypeErrorNotAssignable);
 			});
-			context('allows assigning a collection literal to a wider mutable type.', () => {
-				function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
-					if (src instanceof Array) {
-						return src
-							.map((s) => s.trim())
-							.filter((s) => !!s)
-							.forEach((s) => typeCheckGoal(`{${ s }}`, expect_thrown));
-					}
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-					goal.varCheck();
-					return (expect_thrown)
-						? assert.throws(() => goal.typeCheck(), expect_thrown)
-						: goal.typeCheck();
-				}
-				it('tuples: only allows greater or equal items.', () => {
+			it('does not set `SymbolStructureVar#value` when assignee type has mutable.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+					let immut:  int[3]             = [42, 420, 4200];
+					let mut:    mutable int[]      = List.<int>([42, 420, 4200]);
+					let mutmut: (mutable int[])[3] = [List.<int>([42]), List.<int>([420]), List.<int>([4200])];
+				}`);
+				goal.varCheck();
+				goal.typeCheck();
+				const [immut, mut, mutmut] = [
+					goal.validator.getSymbolInfo(0x100n) as SymbolStructureVar,
+					goal.validator.getSymbolInfo(0x101n) as SymbolStructureVar,
+					goal.validator.getSymbolInfo(0x102n) as SymbolStructureVar,
+				];
+				assert.deepStrictEqual(
+					[immut.source, immut.value],
+					['immut',      new OBJ.Tuple<OBJ.Integer>([
+						new OBJ.Integer(  42n),
+						new OBJ.Integer( 420n),
+						new OBJ.Integer(4200n),
+					])],
+				);
+				assert.deepStrictEqual(
+					[mut.source, mut.value],
+					['mut',      null],
+				);
+				return assert.deepStrictEqual(
+					[mutmut.source, mutmut.value],
+					['mutmut',      null],
+				);
+			});
+			it('immutable sets/maps should not be covariant due to bracket access.', () => {
+				typeCheckGoal([
+					'let s: Set.<int | str>       = Set.<int>([42, 43]);',
+					'let m: Map.<int | str, bool> = Map.<int, bool>([[42, false], [43, true]]);',
+					// otherwise one would access `s.["hello"]` or `m.["hello"]`
+				], TypeErrorNotAssignable);
+			});
+			context('assigning a collection to a constant collection type.', () => {
+				it('allows assigning a constant collection literal', () => {
 					typeCheckGoal(`{
-						type T = [int];
-						let unfixed i: int = 42;
-						let v: T = [42];
-
-						let t1_1: mutable [42 | 4.3] = [42];
-						let t2_1: mutable [int]      = [42];
-						let t3_1: mutable [int]      = [i];
-						let t4_1: mutable [T?]       = [v];
-
-						let t1_2: mutable [?: 42 | 4.3] = [42];
-						let t2_2: mutable [?: int]      = [i];
-						let t3_2: mutable [   42 | 4.3] = [42, '43'];
-						let t4_2: mutable [int, ?: str] = [42, '43'];
-					}`);
-					typeCheckGoal(`{
-						let t: mutable [int, str] = [42];
-					}`, TypeError03);
-				});
-				it('records: only allows matching or more properties.', () => {
-					typeCheckGoal(`{
-						type T = [int];
-						let unfixed i: int = 42;
-						let v: T = [42];
-
-						let r1_1: mutable [a: 42 | 4.3] = [a= 42];
-						let r2_1: mutable [a: int]      = [a= 42];
-						let r3_1: mutable [a: int]      = [a= i];
-						let r4_1: mutable [a: T?]       = [a= v];
-
-						let r1_2: mutable [a?: 42 | 4.3]    = [a= 42];
-						let r2_2: mutable [a?: int]         = [a= i];
-						let r3_2: mutable [a:  42 | 4.3]    = [b= '43', a= 42];
-						let r4_2: mutable [a: int, b?: str] = [b= '43', a= 42];
+						let c: int[3] = [42, 420, 4200];
+						let d: [n42: int, n420: int] = [
+							n42=  42,
+							n420= 420,
+						];
 					}`);
 					typeCheckGoal(`
-						let r1: mutable [a: int, b: str] = [a= 42];
-						let r2: mutable [a: int, b: str] = [c= 42, b= '43'];
-						let r3: mutable [a: int, b: str] = [c= 42, d= '43'];
-					`.split('\n'), TypeError03);
+						let v: [   int,    str] = [   42,    "hello"];
+						let s: [a: int, b: str] = [a= 42, b= "hello"];
+					`.split('\n'));
+				});
+				it('allows assigning a variable collection literal (unboxing at runtime).', () => {
+					typeCheckGoal([
+						'let g: int[3] = [42, 420, 4200];',
+						`let h: [n42: int, n420: int] = [
+							n42=  42,
+							n420= 420,
+						];`,
+					]);
+				});
+				it('allows assigning to super reference type (autoboxing at runtime).', () => {
+					typeCheckGoal(`
+						let v: Object = [   42,    "hello"];
+						let s: Object = [a= 42, b= "hello"];
+					`.split('\n'));
+					typeCheckGoal(`
+						let v: mutable Object = [   42,    "hello"];
+						let s: mutable Object = [a= 42, b= "hello"];
+					`.split('\n')); // mutable Object == Object
+				});
+			});
+			context('assigning a collection literal to a wider mutable type.', () => {
+				it('disallows assigning Tuples/Records to Lists/Dicts', () => {
+					typeCheckGoal(`
+						let t1_1: List.<42 | 4.3> = [42];
+						let t2_1: List.<int>      = [42];
+
+						let t1_2: mutable List.<42 | 4.3> = [43];
+						let t2_2: mutable List.<int>      = [43];
+
+						let r1_1: Dict.<42 | 4.3> = [a= 42];
+						let r2_1: Dict.<int>      = [a= 42];
+
+						let r1_2: mutable Dict.<42 | 4.3> = [a= 43];
+						let r2_2: mutable Dict.<int>      = [a= 43];
+
+						let t3_1: [               List.<float>] = [       [4.3]];
+						let t3_2: [       mutable List.<float>] = [       [4.3]];
+						let r3_1: [inner:         List.<float>] = [inner= [4.3]];
+						let r3_2: [inner: mutable List.<float>] = [inner= [4.3]];
+					`.split('\n'), TypeErrorNotAssignable);
+				});
+				it('allows assigning Sets and Maps.', () => {
+					typeCheckGoal(`{
+						let s: mutable (int | str){} = {42,   "43"};
+						let m: mutable {int -> str}  = {42 -> "43"};
+						set s.["44"] = true;
+						set m.[44]   = "45";
+					}`);
+				});
+				it('should throw when assigning combo type to union.', () => {
+					typeCheckGoal([
+						'let x: [   bool,    int] | [   int,    bool] = [   true,    true];',
+						'let x: [a: bool, b: int] | [a: int, b: bool] = [a= true, b= true];',
+					], TypeErrorNotAssignable);
+					return typeCheckGoal(`{
+						type Employee = [
+							name:         str,
+							id:           int,
+							job_title:    str,
+							hours_worked: float,
+						];
+						type Volunteer = [
+							name:         str,
+							agency:       str,
+							hours_worked: float,
+						];
+						let bob: Employee | Volunteer = [
+							name=         "Bob", %: str
+							hours_worked= 80.0,  %: float
+						];
+					}`, TypeErrorNotAssignable);
 				});
 				it('throws when not assigned to correct type.', () => {
 					typeCheckGoal(`
-						let t: mutable [a: int, b: str] = [   42,    '43'];
-						let r: mutable [   int,    str] = [a= 42, b= '43'];
-						let s: mutable {int -> str}     = {   42,    '43'};
-						let s: mutable (int | str){}    = {   42 ->  '43'};
-					`.split('\n'), TypeError03);
+						let s: mutable {int -> str}     = {   42,    "43"};
+						let s: mutable (int | str){}    = {   42 ->  "43"};
+					`.split('\n'), TypeErrorNotAssignable);
 					typeCheckGoal(`{
-						let t1: mutable obj                                = [42, '43'];
-						let t2: mutable ([int, str] | [   bool,    float]) = [42, '43'];
-						let t3: mutable ([int, str] | [a: bool, b: float]) = [42, '43'];
-						let t4: mutable ([int, str] | obj)                 = [42, '43'];
+						let t1: mutable Object                             = [42, "43"];
+						let t4: mutable ([int, str] | Object)              = [42, "43"];
 
-						let r1: mutable obj                                      = [a= 42, b= '43'];
-						let r2: mutable ([a: int, b: str] | [c: bool, d: float]) = [a= 42, b= '43'];
-						let r3: mutable ([a: int, b: str] | [   bool,    float]) = [a= 42, b= '43'];
-						let r4: mutable ([a: int, b: str] | obj)                 = [a= 42, b= '43'];
+						let r1: mutable Object                                   = [a= 42, b= "43"];
+						let r4: mutable ([a: int, b: str] | Object)              = [a= 42, b= "43"];
 
 						let s1: mutable (42 | 4.3){}            = {42};
 						let s2: mutable (int | float){}         = {42};
-						let s3: mutable obj                     = {42};
+						let s3: mutable Object                  = {42};
 						let s4: mutable (int{} | {str -> bool}) = {42};
-						let s5: mutable (int{} | obj)           = {42};
+						let s5: mutable (int{} | Object)        = {42};
 
-						let m1: mutable {int -> float}           = {42 -> 4.3};
-						let m2: mutable {int? -> float?}         = {42 -> 4.3};
-						let m3: mutable obj                      = {42 -> 4.3};
-						let m4: mutable ({int -> float} | str{}) = {42 -> 4.3};
-						let m5: mutable ({int -> float} | obj)   = {42 -> 4.3};
+						let m1: mutable {int -> float}            = {42 -> 4.3};
+						let m2: mutable {int? -> float?}          = {42 -> 4.3};
+						let m3: mutable Object                    = {42 -> 4.3};
+						let m4: mutable ({int -> float} | str{})  = {42 -> 4.3};
+						let m5: mutable ({int -> float} | Object) = {42 -> 4.3};
 					}`);
 				});
 				it('throws when entries mismatch.', () => {
 					typeCheckGoal(`
-						let t1: mutable [int, str]    = [42, 43];
-						let t2: mutable [int, ?: str] = [42, 43];
+						let s1: mutable int{} = {"42"};
+						let s2: mutable int{} = {42, "43"};
 
-						let r1: mutable [a: int, b: str]  = [a= 42, b= 43];
-						let r2: mutable [a: int, b?: str] = [a= 42, b= 43];
-
-						let s1: mutable int{} = {'42'};
-						let s2: mutable int{} = {42, '43'};
-
-						let m1: mutable {int -> str} = {4.2 -> '43'};
+						let m1: mutable {int -> str} = {4.2 -> "43"};
 						let m2: mutable {int -> str} = {42  -> 4.3};
-					`.split('\n'), TypeError03);
+					`.split('\n'), TypeErrorNotAssignable);
 					typeCheckGoal(`{
-						let t3: mutable [   bool,    str] = [   42,    43];
-						let r3: mutable [a: bool, b: str] = [a= 44, b= 45];
 						let s3: mutable (bool | str){}    = {   46,    47};
 
 						let m3_1: mutable {str -> bool} = {1 -> false, 2.0 -> true};
-						let m3_2: mutable {str -> bool} = {'a' -> 3,   'b' -> 4.0};
-						let m3_3: mutable {str -> bool} = {5 -> false, 'b' -> 6.0};
+						let m3_2: mutable {str -> bool} = {"a" -> 3,   "b" -> 4.0};
+						let m3_3: mutable {str -> bool} = {5 -> false, "b" -> 6.0};
 						let m3_4: mutable {str -> bool} = {7 -> 8.0};
-						let m3_5: mutable {str -> bool} = {9 -> 'a', 10.0 -> 'b'};
+						let m3_5: mutable {str -> bool} = {9 -> "a", 10.0 -> "b"};
 					}`, (err) => {
-						assert.ok(err instanceof AggregateError);
+						assert_instanceof(err, AggregateError);
 						assertAssignable(err, {
 							cons:   AggregateError,
 							errors: [
 								{
 									cons:   AggregateError,
 									errors: [
-										{cons: TypeError03, message: 'Expression of type 42 is not assignable to type bool.'},
-										{cons: TypeError03, message: 'Expression of type 43 is not assignable to type str.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression of type `46` is not assignable to type `bool | str`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression of type `47` is not assignable to type `bool | str`.'},
 									],
 								},
 								{
 									cons:   AggregateError,
 									errors: [
-										{cons: TypeError03, message: 'Expression of type 44 is not assignable to type bool.'},
-										{cons: TypeError03, message: 'Expression of type 45 is not assignable to type str.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression of type `1` is not assignable to type `str`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression of type `2.0` is not assignable to type `str`.'},
 									],
 								},
 								{
 									cons:   AggregateError,
 									errors: [
-										{cons: TypeError03, message: 'Expression of type 46 is not assignable to type bool | str.'},
-										{cons: TypeError03, message: 'Expression of type 47 is not assignable to type bool | str.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression of type `3` is not assignable to type `bool`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression of type `4.0` is not assignable to type `bool`.'},
 									],
 								},
 								{
 									cons:   AggregateError,
 									errors: [
-										{cons: TypeError03, message: 'Expression of type 1 is not assignable to type str.'},
-										{cons: TypeError03, message: 'Expression of type 2.0 is not assignable to type str.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression of type `5` is not assignable to type `str`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression of type `6.0` is not assignable to type `bool`.'},
 									],
 								},
 								{
 									cons:   AggregateError,
 									errors: [
-										{cons: TypeError03, message: 'Expression of type 3 is not assignable to type bool.'},
-										{cons: TypeError03, message: 'Expression of type 4.0 is not assignable to type bool.'},
-									],
-								},
-								{
-									cons:   AggregateError,
-									errors: [
-										{cons: TypeError03, message: 'Expression of type 5 is not assignable to type str.'},
-										{cons: TypeError03, message: 'Expression of type 6.0 is not assignable to type bool.'},
-									],
-								},
-								{
-									cons:   AggregateError,
-									errors: [
-										{cons: TypeError03, message: 'Expression of type 7 is not assignable to type str.'},
-										{cons: TypeError03, message: 'Expression of type 8.0 is not assignable to type bool.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression of type `7` is not assignable to type `str`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression of type `8.0` is not assignable to type `bool`.'},
 									],
 								},
 								{
@@ -309,15 +360,15 @@ describe('ASTNodeDeclaration', () => {
 										{
 											cons:   AggregateError,
 											errors: [
-												{cons: TypeError03, message: 'Expression of type 9 is not assignable to type str.'},
-												{cons: TypeError03, message: 'Expression of type \'a\' is not assignable to type bool.'},
+												{cons: TypeErrorNotAssignable, message: 'Expression of type `9` is not assignable to type `str`.'},
+												{cons: TypeErrorNotAssignable, message: 'Expression of type `"a"` is not assignable to type `bool`.'},
 											],
 										},
 										{
 											cons:   AggregateError,
 											errors: [
-												{cons: TypeError03, message: 'Expression of type 10.0 is not assignable to type str.'},
-												{cons: TypeError03, message: 'Expression of type \'b\' is not assignable to type bool.'},
+												{cons: TypeErrorNotAssignable, message: 'Expression of type `10.0` is not assignable to type `str`.'},
+												{cons: TypeErrorNotAssignable, message: 'Expression of type `"b"` is not assignable to type `bool`.'},
 											],
 										},
 									],
@@ -332,69 +383,78 @@ describe('ASTNodeDeclaration', () => {
 
 
 		describe('#build', () => {
-			it('with constant folding on, returns InstructionNone for fixed & foldable variables.', () => {
+			it('with constant folding on, returns `(nop)` for fixed & foldable variables.', () => {
 				const src: string = `{
 					let x: int = 42;
-					let y: float = 4.2 * 10;
+					let y: float = 4.2 * x;
 				}`;
 				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
+				const builder = new Builder(src);
 				block.varCheck();
 				block.typeCheck();
-				const builder: Builder = new Builder(src);
-				assert.deepStrictEqual(
-					[
-						block.children[0].build(builder),
-						block.children[1].build(builder),
-					],
-					[
-						new INST.InstructionNone(),
-						new INST.InstructionNone(),
-					],
-				);
+				block.build(builder);
+				return xjs.Array.forEachAggregated(block.children, (stmt) => assertEqualBins(stmt.build(builder), builder.module.nop()));
 			});
-			it('with constant folding on, returns InstructionDeclareGlobal for unfixed / non-foldable variables.', () => {
+			it('with constant folding on, returns `(local.set)` for unfixed / non-foldable variables.', () => {
 				const src: string = `{
 					let unfixed x: int = 42;
 					let y: int = x + 10;
 				}`;
 				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
+				const builder = new Builder(src);
 				block.varCheck();
 				block.typeCheck();
-				const builder: Builder = new Builder(src);
-				assert.deepStrictEqual(
+				block.build(builder);
+				assert.deepStrictEqual(builder.getLocals(), [
+					{id: 0x100n, type: binaryen.i32},
+					{id: 0x101n, type: binaryen.i32},
+				]);
+				return assertEqualBins(new Map<binaryen.ExpressionRef, binaryen.ExpressionRef>(block.children.map((stmt, i) => [
+					stmt.build(builder),
+					builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+				])));
+			});
+			it('with constant folding on, coerces as necessary.', () => {
+				const src: string = `{
+					let unfixed x: float = 42;   % should coerce into 42.0, assuming int-coercion is on
+					let y: float | int = x * 10; % should *always* transform into Either<float, int>
+				}`;
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
+				const builder = new Builder(src);
+				block.varCheck();
+				block.typeCheck();
+				block.build(builder);
+				assert.deepStrictEqual(builder.getLocals(), [
+					{id: 0x100n, type: binaryen.f64},
+					{id: 0x101n, type: Builder.createBinTypeEither(binaryen.f64, binaryen.i32)},
+				]);
+				const exprs: readonly binaryen.ExpressionRef[] = block.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder));
+				return assertEqualBins(
+					block.children.map((stmt) => stmt.build(builder)),
 					[
-						block.children[0].build(builder),
-						block.children[1].build(builder),
-					],
-					[
-						new INST.InstructionDeclareGlobal(0x100n, true,  instructionConstInt(42n)),
-						new INST.InstructionDeclareGlobal(0x101n, false, new INST.InstructionBinopArithmetic(
-							Operator.ADD,
-							new INST.InstructionGlobalGet(0x100n),
-							instructionConstInt(10n),
-						)),
-					],
+						builder.module.f64.convert_u.i32(exprs[0]),
+						Builder.createBinEither(builder.module, false, exprs[1], buildConstInt(0n, builder.module)),
+					].map((expected, i) => builder.module.local.set(i, expected)),
 				);
 			});
-			it('with constant folding off, always returns InstructionDeclareGlobal.', () => {
+			it('with constant folding off, always returns `(local.set)`.', () => {
 				const src: string = `{
 					let x: int = 42;
 					let unfixed y: float = 4.2;
 				}`;
 				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src, CONFIG_FOLDING_OFF);
+				const builder = new Builder(src, CONFIG_FOLDING_OFF);
 				block.varCheck();
 				block.typeCheck();
-				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
-				assert.deepStrictEqual(
-					[
-						block.children[0].build(builder),
-						block.children[1].build(builder),
-					],
-					[
-						new INST.InstructionDeclareGlobal(0x100n, false, instructionConstInt(42n)),
-						new INST.InstructionDeclareGlobal(0x101n, true,  instructionConstFloat(4.2)),
-					],
-				);
+				block.build(builder);
+				assert.deepStrictEqual(builder.getLocals(), [
+					{id: 0x100n, type: binaryen.i32},
+					{id: 0x101n, type: binaryen.f64},
+				]);
+				return assertEqualBins(new Map<binaryen.ExpressionRef, binaryen.ExpressionRef>(block.children.map((stmt, i) => [
+					stmt.build(builder),
+					builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+				])));
 			});
 		});
 	});
@@ -408,7 +468,7 @@ describe('ASTNodeDeclaration', () => {
 					claim x: str;
 				}`);
 				block.varCheck();
-				assert.throws(() => block.typeCheck(), TypeError03);
+				assert.throws(() => block.typeCheck(), TypeErrorNotAssignable);
 			});
 			it('with int coersion off, does not allow converting between int and float.', () => {
 				[
@@ -426,7 +486,7 @@ describe('ASTNodeDeclaration', () => {
 					block_ok.typeCheck(); // assert does not throw
 					const block_err: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src, CONFIG_COERCION_OFF);
 					block_err.varCheck();
-					assert.throws(() => block_err.typeCheck(), TypeError03);
+					assert.throws(() => block_err.typeCheck(), TypeErrorNotAssignable);
 				});
 			});
 			it('disallows reassigning incorrect type, but only after claim.', () => {
@@ -447,19 +507,20 @@ describe('ASTNodeDeclaration', () => {
 					}
 				`);
 				block_err.varCheck();
-				assert.throws(() => block_err.typeCheck(), TypeError03);
+				assert.throws(() => block_err.typeCheck(), TypeErrorNotAssignable);
 			});
 		});
 
 
 		describe('#build', () => {
-			it('always returns InstructionNone.', () => {
+			it('always returns `(nop)`.', () => {
 				const src: string = `{
 					claim x: T;
 				}`;
-				assert.deepStrictEqual(
-					AST.ASTNodeBlock.fromSource(src).children[0].build(new Builder('')),
-					new INST.InstructionNone(),
+				const builder = new Builder('');
+				assertEqualBins(
+					AST.ASTNodeBlock.fromSource(src).children[0].build(builder),
+					builder.module.nop(),
 				);
 			});
 		});
@@ -477,13 +538,13 @@ describe('ASTNodeDeclaration', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let i: int = 42;
 					set i = 43;
-				}`).varCheck(), AssignmentError10);
+				}`).varCheck(), AssignmentErrorReassignment);
 			});
 			it('always throws for type alias reassignment.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type T = 42;
 					set T = 43;
-				}`).varCheck(), ReferenceError03);
+				}`).varCheck(), ReferenceErrorKind);
 			});
 		});
 
@@ -496,21 +557,23 @@ describe('ASTNodeDeclaration', () => {
 						set i = 4.3;
 					}`);
 					goal.varCheck();
-					assert.throws(() => goal.typeCheck(), TypeError03);
+					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
 			});
 
 			context('for property reassignment.', () => {
+				it('allows assignment directly on objects.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						set List.<int>([42]).0                   = 42;
+						set Dict.<int>([i= 42]).i                = 42;
+						set Set.<int>([42]).[43]                 = false;
+						set Map.<bool, int>([[true, 42]]).[true] = 42;
+					}`);
+					goal.varCheck();
+					return goal.typeCheck(); // assert does not throw
+				});
 				it('throws when property assignee type is not supertype.', () => {
 					[
-						`{
-							let t: mutable [42] = [42];
-							set t.0 = 4.2;
-						}`,
-						`{
-							let r: mutable [i: 42] = [i= 42];
-							set r.i = 4.2;
-						}`,
 						`{
 							let l: mutable int[] = List.<int>([42]);
 							set l.0 = 4.2;
@@ -530,18 +593,18 @@ describe('ASTNodeDeclaration', () => {
 					].forEach((src) => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 						goal.varCheck();
-						assert.throws(() => goal.typeCheck(), TypeError03);
+						assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 					});
 				});
 				it('throws when assignee’s base type is not mutable.', () => {
 					[
 						`{
-							let t: [42] = [42];
-							set t.0 = 4.2;
+							let t: [int] = [42];
+							set t.0 = 43;
 						}`,
 						`{
-							let r: [i: 42] = [i= 42];
-							set r.i = 4.2;
+							let r: [i: int] = [i= 42];
+							set r.i = 43;
 						}`,
 						`{
 							let l: int[] = List.<int>([42]);
@@ -570,23 +633,54 @@ describe('ASTNodeDeclaration', () => {
 
 
 		describe('#build', () => {
-			it('always returns InstructionStatement containing InstructionGlobalSet.', () => {
+			it('always returns `(local.set)`.', () => {
 				const src: string = `{
 					let unfixed y: float = 4.2;
 					set y = y * 10;
 				}`;
 				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
-				const builder: Builder = new Builder(src);
-				assert.deepStrictEqual(
+				const builder = new Builder(src);
+				block.build(builder);
+				return assertEqualBins(
 					block.children[1].build(builder),
-					new INST.InstructionStatement(
-						0n,
-						new INST.InstructionGlobalSet(0x100n, new INST.InstructionBinopArithmetic(
-							Operator.MUL,
-							new INST.InstructionGlobalGet(0x100n, true),
-							instructionConstFloat(10.0),
-						)),
-					),
+					builder.module.local.set(0, (block.children[1] as AST.ASTNodeDeclarationReassignment).assigned.build(builder)),
+				);
+			});
+			it('coerces as necessary.', () => {
+				const src: string = `{
+					let unfixed x: float | int = 4.2;
+					let unfixed y: int | float = 4.2;
+					set x = 8.4; % Either<float, int>#setLeft
+					set x = 16;  % Either<float, int>#setRight
+					set x = x;   % Either<float, int>#{setLeft,setRight}
+					set x = y;   % Either<float, int>#{setLeft,setRight}
+				}`;
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
+				const builder = new Builder(src);
+				block.varCheck();
+				block.typeCheck();
+				block.build(builder);
+				const default_ = {
+					int:   buildConstInt(0n, builder.module),
+					float: buildConstFloat(0, builder.module),
+				} as const;
+				const exprs: binaryen.ExpressionRef[] = block.children.slice(2).map((stmt) => (stmt as AST.ASTNodeDeclarationReassignment).assigned.build(builder));
+				return assertEqualBins(
+					block.children.slice(2).map((stmt) => stmt.build(builder)),
+					[
+						Builder.createBinEither(builder.module, false, exprs[0],       default_.int),
+						Builder.createBinEither(builder.module, true,  default_.float, exprs[1]),
+						builder.module.if(
+							builder.module.i32.eqz(builder.module.tuple.extract(exprs[2], 0)),
+							Builder.createBinEither(builder.module, false, builder.module.tuple.extract(exprs[2], 1), default_.int),
+							Builder.createBinEither(builder.module, true,  default_.float,                            builder.module.tuple.extract(exprs[2], 2)),
+						),
+						builder.module.if(
+							builder.module.i32.eqz(builder.module.tuple.extract(exprs[3], 0)),
+							Builder.createBinEither(builder.module, true,  default_.float,                            builder.module.tuple.extract(exprs[3], 1)),
+							Builder.createBinEither(builder.module, false, builder.module.tuple.extract(exprs[3], 2), default_.int),
+						),
+					].map((expected) => builder.module.local.set(0, expected)),
 				);
 			});
 		});

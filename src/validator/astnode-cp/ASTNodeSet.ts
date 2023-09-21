@@ -1,24 +1,28 @@
-import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
-	TYPE,
 	OBJ,
-	INST,
-	Builder,
-	CPConfig,
+	TYPE,
+	type TypeErrorNotAssignable,
+} from '../../index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
+import {ASTNodeCollectionLiteralMutable} from './ASTNodeCollectionLiteralMutable.js';
 
 
 
-export class ASTNodeSet extends ASTNodeCollectionLiteral {
+export class ASTNodeSet extends ASTNodeCollectionLiteralMutable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeSet {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeSet);
+		assert_instanceof(expression, ASTNodeSet);
 		return expression;
 	}
 
@@ -29,38 +33,29 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 		super(start_node, children);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeSet#build_do not yet supported.';
-	}
-
-	protected override type_do(): TYPE.Type {
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	public override type(): TYPE.Type {
 		return new TYPE.TypeSet(
 			TYPE.Type.unionAll(this.children.map((c) => c.type())),
 			true,
 		);
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const elements: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
 		return (elements.includes(null))
 			? null
 			: new OBJ.Set(new Set(elements as OBJ.Object[]));
 	}
 
-	protected override assignTo_do(assignee: TYPE.Type): boolean {
-		if (TYPE.TypeSet.isUnitType(assignee) || assignee instanceof TYPE.TypeSet) {
-			const assignee_type_set: TYPE.TypeSet = (TYPE.TypeSet.isUnitType(assignee))
-				? assignee.value.toType()
-				: assignee;
-			xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssignment(
-				expr.type(),
-				assignee_type_set.types,
-				expr,
-				this.validator,
-			));
-			return true;
+	@ASTNodeCollectionLiteralMutable.assignToDeco
+	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
+		if (assignee instanceof TYPE.TypeSet) {
+			// better error reporting to check entry-by-entry instead of checking `this.type().invariant`
+			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.assignExpression(expr, assignee.invariant, expr));
 		}
-		return false;
+		throw err;
 	}
 }

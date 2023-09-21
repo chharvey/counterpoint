@@ -1,5 +1,7 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Object as CPObject} from './Object.js';
+import {strictEqual} from '../../lib/index.js';
+import {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
 
 
@@ -18,12 +20,21 @@ export class Float extends CPNumber<Float> {
 		return `${ this.data }${ (this.data % 1 === 0) ? '.0' : '' }`;
 	}
 
-	protected override identical_helper(value: CPObject): boolean {
+	@strictEqual
+	public override identical(value: CPObject): boolean {
 		return value instanceof Float && Object.is(this.data, value.data);
 	}
 
-	protected override equal_helper(value: CPObject): boolean {
+	@CPObject.equalsDeco
+	public override equal(value: CPObject): boolean {
 		return value instanceof CPNumber && this.data === value.toFloat().data;
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		if (Object.is(this.data, -0.0)) {
+			return mod.f64.ceil(mod.f64.const(-0.5));
+		}
+		return mod.f64.const(this.data);
 	}
 
 	public override toFloat(): this {

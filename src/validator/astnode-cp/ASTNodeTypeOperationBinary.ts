@@ -1,13 +1,18 @@
-import * as assert from 'assert';
+import type {TYPE} from '../../index.js';
 import {
-	TYPE,
 	throw_expression,
-	CPConfig,
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
+import {
 	Operator,
-	ValidTypeOperator,
-} from './package.js';
+	type ValidTypeOperator,
+} from '../Operator.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
 
@@ -16,7 +21,7 @@ import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
 export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperationBinary {
 		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeOperationBinary);
+		assert_instanceof(typ, ASTNodeTypeOperationBinary);
 		return typ;
 	}
 
@@ -32,10 +37,13 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		super(start_node, operator, [operand0, operand1]);
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
+		const t0: TYPE.Type = this.operand0.eval();
+		const t1: TYPE.Type = this.operand1.eval();
 		return (
-			(this.operator === Operator.AND) ? this.operand0.eval().intersect(this.operand1.eval()) :
-			(this.operator === Operator.OR)  ? this.operand0.eval().union    (this.operand1.eval()) :
+			(this.operator === Operator.AND) ? t0.intersect(t1) :
+			(this.operator === Operator.OR)  ? t0.union    (t1) :
 			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
 		);
 	}

@@ -1,37 +1,46 @@
-import * as assert from 'assert';
 import {
 	TYPE,
 	TypeError,
-	throw_expression,
-	CPConfig,
+} from '../../index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
 
 
 
-export class ASTNodeTypeList extends ASTNodeType {
+export class ASTNodeTypeList extends ASTNodeTypeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeList {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeList);
+		assert_instanceof(typ, ASTNodeTypeList);
 		return typ;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_unary_symbol'>,
 		private readonly type:  ASTNodeType,
-		private readonly count: bigint | null,
+		private readonly count: bigint | null = null,
 	) {
-		super(start_node, {count}, [type]);
+		super(start_node, [type], {count});
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
 		const itemstype: TYPE.Type = this.type.eval();
-		return (this.count === null)
-			? new TYPE.TypeList(itemstype)
-			: (this.count >= 0)
-				? TYPE.TypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype))
-				: throw_expression(new TypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index));
+		if (this.count === null) {
+			return new TYPE.TypeList(itemstype);
+		} else if (this.count >= 0) {
+			const types: readonly TYPE.Type[] = [...new Array(Number(this.count))].map(() => itemstype);
+			return TYPE.TypeTuple.fromTypes(types);
+		} else {
+			throw new TypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index);
+		}
 	}
 }

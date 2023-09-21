@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 export enum Punctuator {
 	// grouping
 		GRP_OPN = '(',
@@ -47,8 +48,3 @@ export enum Punctuator {
 		OPT     = '?:',
 		ASSIGN  = '=',
 }
-
-
-
-/** An iterable list of unique punctuators. */
-export const PUNCTUATORS: readonly Punctuator[] = [...new Set(Object.values(Punctuator))];

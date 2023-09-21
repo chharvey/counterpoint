@@ -1,18 +1,23 @@
-import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
-	TypeError05,
-	TypeError06,
-	NonemptyArray,
-	CPConfig,
-	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+	TypeErrorNotCallable,
+	TypeErrorArgCount,
+} from '../../index.js';
 import {
-	ArgCount,
+	type NonemptyArray,
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
+	CONFIG_DEFAULT,
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
+import {
+	type ArgCount,
 	ValidFunctionName,
-	invalidFunctionName,
+	invalid_function_name,
 } from './utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
@@ -22,7 +27,7 @@ import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 export class ASTNodeTypeCall extends ASTNodeType {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeCall {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeCall);
+		assert_instanceof(typ, ASTNodeTypeCall);
 		return typ;
 	}
 
@@ -35,14 +40,15 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	}
 
 	public override varCheck(): void {
-		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
+		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
 		// (`this.base.source` must be a `ValidFunctionName`)
 		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
-			throw new TypeError05(this.base.eval(), this.base);
+			throw new TypeErrorNotCallable(this.base.eval(), this.base);
 		}
 		return (new Map<ValidFunctionName, () => TYPE.Type>([
 			[ValidFunctionName.LIST, () => (this.countArgs(1n), new TYPE.TypeList(this.args[0].eval()))],
@@ -54,7 +60,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 				const contype: TYPE.Type = this.args[1]?.eval() ?? anttype; // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- `this.args[1]` could be undefined
 				return new TYPE.TypeMap(anttype, contype);
 			}],
-		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
+		]).get(this.base.source as ValidFunctionName) || invalid_function_name(this.base.source))();
 	}
 
 	/**
@@ -73,10 +79,10 @@ export class ASTNodeTypeCall extends ASTNodeType {
 			expected = [expected, expected + 1n];
 		}
 		if (actual < expected[0]) {
-			throw new TypeError06(actual, expected[0], true, this);
+			throw new TypeErrorArgCount(actual, expected[0], true, this);
 		}
 		if (expected[1] <= actual) {
-			throw new TypeError06(actual, expected[1] - 1n, true, this);
+			throw new TypeErrorArgCount(actual, expected[1] - 1n, true, this);
 		}
 	}
 }

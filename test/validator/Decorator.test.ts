@@ -1,23 +1,22 @@
 import * as assert from 'assert';
-import Parser, {
+import {
 	Query,
-	QueryCapture,
-	SyntaxNode,
+	type QueryCapture,
+	type SyntaxNode,
 } from 'tree-sitter';
 import Counterpoint from 'tree-sitter-counterpoint';
 import {
+	TS_PARSER,
 	AST,
 	DECORATOR,
-} from '../../src/validator/index.js';
+} from '../../src/index.js';
 
 
 
 describe('Decorator', () => {
 	describe('#decorateTS', () => {
-		const parser: Parser = new Parser();
-		parser.setLanguage(Counterpoint);
 		function captureParseNode(source: string, query: string): SyntaxNode {
-			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(parser.parse(source).rootNode);
+			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
 			assert.ok(captures.length, 'could not find any captures.');
 			return captures[0].node;
 		}
@@ -67,7 +66,7 @@ describe('Decorator', () => {
 			`]],
 			['Decorate(Type > PrimitiveLiteral ::= STRING) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
 				{
-					type T = 'hello';
+					type T = "hello";
 				}
 				% (primitive_literal (string))
 			`]],
@@ -92,7 +91,7 @@ describe('Decorator', () => {
 			`]],
 			['Decorate(Expression > PrimitiveLiteral ::= STRING) -> SemanticConstant', [AST.ASTNodeConstant, `
 				{
-					'hello';
+					"hello";
 				}
 				% (primitive_literal (string))
 			`]],
@@ -125,11 +124,17 @@ describe('Decorator', () => {
 
 			['Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType', [AST.ASTNodeType, `
 				{
-					type T = (int | float);
+					type T = (3 | float);
 				}
 				% (type_grouped)
 			`]],
 
+			['Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
+				{
+					type T = [];
+				}
+				% (type_tuple_literal)
+			`]],
 			['Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
 				{
 					type T = [int, ?: float];
@@ -137,7 +142,7 @@ describe('Decorator', () => {
 				% (type_tuple_literal)
 			`]],
 
-			['Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
+			['Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType ","? "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
 				{
 					type T = [a?: int, b: float];
 				}
@@ -239,19 +244,19 @@ describe('Decorator', () => {
 			/* ## Expressions */
 			['Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
 				{
-					'''full1''';
+					"""full1""";
 				}
 				% (string_template)
 			`]],
 			['Decorate(StringTemplate ::= TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
 				{
-					'''hello {{ 'to' }} the {{ 'whole' }} great {{ 'big' }} world''';
+					"""hello {{ "to" }} the {{ "whole" }} great {{ "big" }} world""";
 				}
 				% (string_template)
 			`]],
 			['Decorate(StringTemplate ::= TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
 				{
-					'''hello {{ '''to {{ '''the {{ 'whole' }} great''' }} big''' }} world''';
+					"""hello {{ """to {{ """the {{ "whole" }} great""" }} big""" }} world""";
 				}
 				% (string_template)
 			`]],
@@ -277,6 +282,12 @@ describe('Decorator', () => {
 				% (expression_grouped)
 			`]],
 
+			['Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+				{
+					[];
+				}
+				% (tuple_literal)
+			`]],
 			['Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
 				{
 					[42, 6.9];
@@ -300,7 +311,7 @@ describe('Decorator', () => {
 
 			['Decorate(MapLiteral ::= "{" ","? Case# ","? "}") -> SemanticMap', [AST.ASTNodeMap, `
 				{
-					{42 -> 6.9, 'hello' -> true};
+					{42 -> 6.9, "hello" -> true};
 				}
 				% (map_literal)
 			`]],
@@ -533,7 +544,7 @@ describe('Decorator', () => {
 				}
 				% (block)
 			`]],
-		]).forEach(([klass, text], description) => (description.slice(0, 5) === 'skip:' ? specify.skip : specify)(description, () => {
+		]).forEach(([klass, text], description) => (description.slice(0, 5) === 'only:' ? specify.only : description.slice(0, 5) === 'skip:' ? specify.skip : specify)(description, () => {
 			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
 			return assert.ok(
 				DECORATOR.decorateTS(parsenode) instanceof klass,

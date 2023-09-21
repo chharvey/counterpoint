@@ -1,20 +1,30 @@
-import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
+	type TypeEntry,
 	TYPE,
-	NonemptyArray,
-	CPConfig,
+	AssignmentErrorDuplicateKey,
+} from '../../index.js';
+import {
+	type NonemptyArray,
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
+import type {ASTNodeKey} from './ASTNodeKey.js';
 import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
 import {ASTNodeType} from './ASTNodeType.js';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
 
 
 
-export class ASTNodeTypeRecord extends ASTNodeType {
+export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeRecord {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeRecord);
+		assert_instanceof(typ, ASTNodeTypeRecord);
 		return typ;
 	}
 
@@ -22,16 +32,31 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		start_node: SyntaxNodeType<'type_record_literal'>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
 	) {
-		super(start_node, {}, children);
+		super(start_node, children);
 	}
 
-	protected override eval_do(): TYPE.Type {
-		return new TYPE.TypeRecord(new Map(this.children.map((c) => [
-			c.key.id,
-			{
-				type:     c.val.eval(),
-				optional: c.optional,
-			},
-		])));
+	public override varCheck(): void {
+		super.varCheck();
+		const keys: ASTNodeKey[] = this.children.map((proptype) => proptype.key);
+		xjs.Array.forEachAggregated(keys.map((key) => key.id), (id, i, ids) => {
+			if (ids.slice(0, i).includes(id)) {
+				throw new AssignmentErrorDuplicateKey(keys[i]);
+			}
+		});
+	}
+
+	@memoizeMethod
+	public override eval(): TYPE.Type {
+		const entries: ReadonlyMap<bigint, TypeEntry> = new Map<bigint, TypeEntry>(this.children.map((c) => {
+			const valuetype: TYPE.Type = c.val.eval();
+			return [
+				c.key.id,
+				{
+					type:     valuetype,
+					optional: c.optional,
+				},
+			];
+		}));
+		return new TYPE.TypeRecord(entries);
 	}
 }

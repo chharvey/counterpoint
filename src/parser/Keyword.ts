@@ -1,11 +1,12 @@
 export enum Keyword {
 	// type literal
-		VOID  = 'void',
-		BOOL  = 'bool',
-		INT   = 'int',
-		FLOAT = 'float',
-		STR   = 'str',
-		OBJ   = 'obj',
+		NEVER   = 'never',
+		VOID    = 'void',
+		BOOL    = 'bool',
+		INT     = 'int',
+		FLOAT   = 'float',
+		STR     = 'str',
+		UNKNOWN = 'unknown',
 	// value literal
 		NULL  = 'null',
 		FALSE = 'false',

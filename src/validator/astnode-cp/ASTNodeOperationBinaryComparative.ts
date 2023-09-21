@@ -1,22 +1,30 @@
-import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
-	TYPE,
 	OBJ,
-	INST,
-	Builder,
-	TypeError01,
-	CPConfig,
+	TYPE,
+	type Builder,
+	TypeErrorInvalidOperation,
+} from '../../index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
+} from '../../core/index.js';
+import type {SyntaxNodeSupertype} from '../utils-private.js';
+import {
 	Operator,
-	ValidOperatorComparative,
-} from './package.js';
+	type ValidOperatorComparative,
+} from '../Operator.js';
 import {
 	bothNumeric,
 	bothFloats,
 	neitherFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -24,7 +32,7 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryComparative {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinaryComparative);
+		assert_instanceof(expression, ASTNodeOperationBinaryComparative);
 		return expression;
 	}
 
@@ -40,25 +48,32 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopComparative {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionBinopComparative(
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
-		);
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		const args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1);
+		const opname = new Map<Operator, 'lt' | 'gt' | 'le' | 'ge'>([
+			[Operator.LT, 'lt'],
+			[Operator.GT, 'gt'],
+			[Operator.LE, 'le'],
+			[Operator.GE, 'ge'],
+		]).get(this.operator)!;
+		return ((!args.map((arg) => binaryen.getExpressionType(arg)).includes(binaryen.f64))
+			? builder.module.i32[`${ opname }_s`]
+			: builder.module.f64[opname])(...args);
 	}
 
-	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		if (bothNumeric(t0, t1) && (int_coercion || (
 			bothFloats(t0, t1) || neitherFloats(t0, t1)
 		))) {
 			return TYPE.BOOL;
 		}
-		throw new TypeError01(this);
+		throw new TypeErrorInvalidOperation(this);
 	}
 
-	protected override fold_do(): OBJ.Object | null {
+	@memoizeMethod
+	public override fold(): OBJ.Object | null {
 		const v0: OBJ.Object | null = this.operand0.fold();
 		if (!v0) {
 			return v0;

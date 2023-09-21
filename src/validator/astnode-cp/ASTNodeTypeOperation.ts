@@ -1,11 +1,13 @@
-import * as assert from 'assert';
 import {
-	NonemptyArray,
-	CPConfig,
+	type NonemptyArray,
+	assert_instanceof,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-	ValidTypeOperator,
-} from './package.js';
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
+import type {ValidTypeOperator} from '../Operator.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
 
@@ -18,7 +20,7 @@ import {ASTNodeType} from './ASTNodeType.js';
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperation {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeOperation);
+		assert_instanceof(typ, ASTNodeTypeOperation);
 		return typ;
 	}
 

@@ -1,15 +1,19 @@
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
+import {LexError01} from '../index.js';
 import {
-	LexError01,
-	CodeUnit,
-	CPConfig,
+	type CodeUnit,
+	throw_expression,
+} from '../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	Serializable,
+} from '../core/index.js';
+import {
 	Punctuator,
-	PUNCTUATORS,
-	Keyword,
+	type Keyword,
 	KEYWORDS,
-} from './package.js';
+	type Serializable,
+} from '../parser/index.js';
 import type {SymbolStructure} from './index.js';
 import {utf8Encode} from './utils-private.js';
 
@@ -24,8 +28,8 @@ const ESCAPER            = '\\';
 const SEPARATOR          = '_';
 const POINT              = '.';
 const EXPONENT           = 'e';
-const DELIM_STRING       = '\'';
-const DELIM_TEMPLATE     = '\'\'\'';
+const DELIM_STRING       = '"';
+const DELIM_TEMPLATE     = '"""';
 const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
@@ -161,29 +165,11 @@ function tokenWorthString(
  * 	to `(sum (const 2) (const 3))`
  */
 export class Validator {
-	/** The minimum allowed cooked value of a punctuator token. */
-	private static readonly MIN_VALUE_PUNCTUATOR = 0n;
-
 	/** The minimum allowed cooked value of a keyword token. */
 	private static readonly MIN_VALUE_KEYWORD = 0x80n;
 
 	/** The minimum allowed cooked value of an identifier token. */
 	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
-
-	/**
-	 * Give the unique integer identifier of a punctuator token.
-	 * The id is determined by the language specification.
-	 * @param source the token’s text
-	 * @return       the unique id identifying the token
-	 */
-	public static cookTokenPunctuator(source: Punctuator): bigint {
-		const index: number = PUNCTUATORS.indexOf(source);
-		if (0 <= index && index < PUNCTUATORS.length) {
-			return BigInt(index) + Validator.MIN_VALUE_PUNCTUATOR;
-		} else {
-			throw new RangeError(`Token \`${ source }\` is not a valid punctuator.`);
-		}
-	}
 
 	/**
 	 * Give the unique integer identifier of a reserved keyword token.
@@ -193,11 +179,9 @@ export class Validator {
 	 */
 	public static cookTokenKeyword(source: Keyword): bigint {
 		const index: number = KEYWORDS.indexOf(source);
-		if (0 <= index && index < KEYWORDS.length) {
-			return BigInt(index) + Validator.MIN_VALUE_KEYWORD;
-		} else {
-			throw new RangeError(`Token \`${ source }\` is not a valid keyword.`);
-		}
+		return (0 <= index && index < KEYWORDS.length)
+			? BigInt(index) + Validator.MIN_VALUE_KEYWORD
+			: throw_expression(new RangeError(`Token \`${ source }\` is not a valid keyword.`));
 	}
 
 	/**
@@ -260,12 +244,12 @@ export class Validator {
 	 */
 	public static cookTokenTemplate(source: string): CodeUnit[] {
 		const delim_start = (
-			(source.slice(0, 3) === DELIM_TEMPLATE)   ? DELIM_TEMPLATE :
+			(source.slice(0, 3) === DELIM_TEMPLATE)   ? DELIM_TEMPLATE   :
 			(source.slice(0, 2) === DELIM_INTERP_END) ? DELIM_INTERP_END :
 			''
 		);
 		const delim_end = (
-			(source.slice(-3) === DELIM_TEMPLATE)     ? DELIM_TEMPLATE :
+			(source.slice(-3) === DELIM_TEMPLATE)     ? DELIM_TEMPLATE     :
 			(source.slice(-2) === DELIM_INTERP_START) ? DELIM_INTERP_START :
 			''
 		);
@@ -325,6 +309,14 @@ export class Validator {
 	 */
 	public getSymbolInfo(id: bigint): SymbolStructure | null {
 		return this.symbol_table.get(id) || null;
+	}
+
+	/**
+	 * Return a copy of this Validator’s symbols.
+	 * @return the symbols in a new map
+	 */
+	public getSymbols(): Map<bigint, SymbolStructure> {
+		return new Map([...this.symbol_table]);
 	}
 
 	/**

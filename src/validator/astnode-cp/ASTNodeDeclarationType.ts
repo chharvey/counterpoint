@@ -1,13 +1,15 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
-	INST,
-	Builder,
-	AssignmentError01,
-	CPConfig,
+	type Builder,
+	AssignmentErrorDuplicateDeclaration,
+} from '../../index.js';
+import {assert_instanceof} from '../../lib/index.js';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SymbolStructureType,
-	SyntaxNodeType,
-} from './package.js';
+} from '../../core/index.js';
+import {SymbolStructureType} from '../index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
@@ -17,7 +19,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 export class ASTNodeDeclarationType extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationType {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeDeclarationType);
+		assert_instanceof(statement, ASTNodeDeclarationType);
 		return statement;
 	}
 
@@ -31,7 +33,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 
 	public override varCheck(): void {
 		if (this.validator.hasSymbol(this.assignee.id)) {
-			throw new AssignmentError01(this.assignee);
+			throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 		}
 		this.assigned.varCheck();
 		this.validator.addSymbol(new SymbolStructureType(this.assignee));
@@ -44,7 +46,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
-	public override build(_builder: Builder): INST.InstructionNone {
-		return new INST.InstructionNone();
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.nop();
 	}
 }

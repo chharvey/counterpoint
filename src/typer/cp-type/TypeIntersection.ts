@@ -1,13 +1,12 @@
 import * as xjs from 'extrajs';
-import {
-	languageValuesIdentical,
-	OBJ,
-} from './package.js';
-import {Type} from './Type.js';
+import {strictEqual} from '../../lib/index.js';
+import {languageValuesIdentical} from '../utils-private.js';
+import type * as OBJ from '../cp-object/index.js';
 import {
 	TypeTuple,
 	TypeRecord,
 } from './index.js';
+import {Type} from './Type.js';
 
 
 
@@ -16,7 +15,8 @@ import {
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
 export class TypeIntersection extends Type {
-	public declare readonly isBottomType: boolean;
+	public override readonly isReference:  boolean = this.left.isReference || this.right.isReference;
+	public override readonly isBottomType: boolean = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
 
 	/**
 	 * Construct a new TypeIntersection object.
@@ -28,7 +28,6 @@ export class TypeIntersection extends Type {
 		public readonly right: Type,
 	) {
 		super(false, xjs.Set.intersection(left.values, right.values, languageValuesIdentical));
-		this.isBottomType = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
 	}
 
 	public override get hasMutable(): boolean {
@@ -43,7 +42,18 @@ export class TypeIntersection extends Type {
 		return this.left.includes(v) && this.right.includes(v);
 	}
 
-	protected override isSubtypeOf_do(t: Type): boolean {
+	@Type.unionDeco
+	public override union(t: Type): Type {
+		/**
+		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
+		 *     |  (B  & C) \| A == (B \| A)  & (C \| A)
+		 */
+		return this.left.union(t).intersect(this.right.union(t));
+	}
+
+	@strictEqual
+	@Type.subtypeDeco
+	public override isSubtypeOf(t: Type): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) {
 			return true;
@@ -52,7 +62,7 @@ export class TypeIntersection extends Type {
 		if (t.equals(this.left) || t.equals(this.right)) {
 			return true;
 		}
-		return super.isSubtypeOf_do(t);
+		return super.isSubtypeOf(t);
 	}
 
 	public override mutableOf(): TypeIntersection {

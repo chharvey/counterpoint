@@ -79,7 +79,12 @@ TypeCompound ::=
 
 TypeUnarySymbol ::=
 	| TypeCompound
-	| TypeUnarySymbol ("?" | "!" | "[" INTEGER? "]" | "{" "}")
+	| TypeUnarySymbol (
+		| "?"
+		| "!"
+		| "[" INTEGER? "]"
+		| "{" "}"
+	)
 ;
 
 TypeUnaryKeyword ::=
@@ -108,7 +113,7 @@ ExpressionGrouped ::= "("        Expression          ")";
 TupleLiteral      ::= "[" ( ","? Expression# ","? )? "]";
 RecordLiteral     ::= "["   ","? Property#   ","?    "]";
 SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
-MapLiteral        ::= "{"   ","? Case#       ","?    "}";
+MapLiteral        ::= "{"   ","? Case #      ","?    "}";
 FunctionArguments ::= "(" ( ","? Expression# ","? )? ")";
 
 ExpressionUnit ::=
