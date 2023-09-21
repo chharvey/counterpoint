@@ -218,17 +218,17 @@ Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
 
 ### Property Access
 ```
-<obj> `.` int-literal
-<obj> `.` word
-<obj> `.` `[` <obj> `]`
+<Tuple  | List> `.` int-literal
+<Record | Dict> `.` word
+<Object>        `.` `[` <Object> `]`
 
-<obj> `?.` int-literal
-<obj> `?.` word
-<obj> `?.` `[` <obj> `]`
+<Tuple  | List> `?.` int-literal
+<Record | Dict> `?.` word
+<Object>        `?.` `[` <Object> `]`
 
-<obj> `!.` int-literal
-<obj> `!.` word
-<obj> `!.` `[` <obj> `]`
+<Tuple  | List> `!.` int-literal
+<Record | Dict> `!.` word
+<Object>        `!.` `[` <Object> `]`
 ```
 The **property accesss** syntax is a unary operator on an object.
 The object it operates on is called the **binding object** and
@@ -274,6 +274,29 @@ This is equivalent to `(x?.y)?.z`, and if `x?.y` (or `x.y` for that matter) is `
 then the whole expression also results in `null`.
 However, `x?.y.z` (which can be thought of as `(x?.y).z`) is not the same,
 and will result in a runtime error if `x?.y` is `null`.
+
+**Type-Checking Note:**
+
+For static types (e.g., tuples and records),
+if the property is required, both regular and optional access operators do not modify the property’s declared type.
+If the property is optional,
+the regular access operator unions the property type with `void` and
+the optional access operator unions the property type with `null`.
+```
+let record: [required: bool, optional?: int] = my_record;
+record.required;  %: bool
+record?.required; %: bool
+record.optional;  %: int | void
+record?.optional; %: int | null
+```
+For dynamic types (e.g., lists and dicts),
+the regular access operator treats all properties as required (does not modify the declared type), but
+the optional access operator treats all properties as optional (unions the property type with `null`).
+```
+let dict: [: float] = my_dict;
+dict.prop;  %: float
+dict?.prop; %: float | null
+```
 
 #### Claim Access
 The **claim access** syntax is just like regular property access, except that
@@ -499,8 +522,8 @@ The parser receives these tokens and produces the correct expression.
 <int | float> `!<` <int | float>
 <int | float> `!>` <int | float>
 
-<obj> `is`   <obj>
-<obj> `isnt` <obj>
+<Object> `is`   <Object>
+<Object> `isnt` <Object>
 ```
 The numerical comparative operators,
 

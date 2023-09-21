@@ -197,18 +197,38 @@ describe('ASTNodeExpression', () => {
 					null,
 				);
 			});
+			it('returns null for a fixed variable of mutable type.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let fixed_mutable: mutable int{} = {1, 2, 3};
+					fixed_mutable;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				assert.ok((goal.children[0] as AST.ASTNodeDeclarationVariable).typenode.eval().hasMutable);
+				assert.deepStrictEqual(
+					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
+					null,
+				);
+			});
 			it('returns null for an uncomputable fixed variable.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let unfixed x: int = 21 * 2;
 					let y: int = x / 2;
 					y;
+					let z: mutable int{} = {11, 22, 33};
+					let w: bool = z.[22];
+					w;
 				`);
 				goal.varCheck();
 				goal.typeCheck();
 				assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
+				assert.ok(!(goal.children[4] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.children[2] as AST.ASTNodeStatementExpression).expr!.fold(),
-					null,
+					[
+						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.fold(),
+						(goal.children[5] as AST.ASTNodeStatementExpression).expr!.fold(),
+					],
+					[null, null],
 				);
 			});
 		});
