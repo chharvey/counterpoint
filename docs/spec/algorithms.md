@@ -228,7 +228,7 @@ Boolean Identical(Object a, Object b) :=
 		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
 		3. *If* `seq_a.count` is not `seq_b.count`:
 			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `false`, and use this assumption when performing the following step.
+		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `true`, and use this assumption when performing the following step.
 			1. *Note:* This assumption prevents an infinite loop,
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For index* `i` in `seq_b`:
@@ -240,7 +240,7 @@ Boolean Identical(Object a, Object b) :=
 		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
 		3. *If* `struct_a.count` is not `struct_b.count`:
 			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `false`, and use this assumption when performing the following step.
+		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `true`, and use this assumption when performing the following step.
 			1. *Note:* This assumption prevents an infinite loop,
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For key* `k` in `struct_b`:
@@ -275,7 +275,7 @@ Boolean Equal(Object a, Object b) :=
 		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
 		3. *If* `seq_a.count` is not `seq_b.count`:
 			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following step.
 			1. *Note:* This assumption prevents an infinite loop,
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For index* `i` in `seq_b`:
@@ -287,7 +287,7 @@ Boolean Equal(Object a, Object b) :=
 		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
 		3. *If* `struct_a.count` is not `struct_b.count`:
 			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following step.
 			1. *Note:* This assumption prevents an infinite loop,
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For key* `k` in `struct_b`:
@@ -301,7 +301,7 @@ Boolean Equal(Object a, Object b) :=
 		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
 		3. *If* `seq_a.count` is not `seq_b.count`:
 			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following step.
 			1. *Note:* This assumption prevents an infinite loop,
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For each* `it_b` in `seq_b`:
@@ -316,7 +316,7 @@ Boolean Equal(Object a, Object b) :=
 			whose items are exactly the antecedents and consequents in `b`.
 		3. *If* `data_a.count` is not `data_b.count`:
 			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following step.
 			1. *Note:* This assumption prevents an infinite loop,
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For each* `it_b` in `data_b`:
