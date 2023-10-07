@@ -337,19 +337,19 @@ describe('Decorator', () => {
 
 			['Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
 				{
-					v.1 = false;
+					set v.1 = false;
 				}
 				% (property_assign)
 			`]],
 			['Decorate(PropertyAssign ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
 				{
-					v.p = false;
+					set v.p = false;
 				}
 				% (property_assign)
 			`]],
 			['Decorate(PropertyAssign ::= "." "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
-					v.[a + b] = false;
+					set v.[a + b] = false;
 				}
 				% (property_assign)
 			`]],
@@ -369,13 +369,13 @@ describe('Decorator', () => {
 
 			['Decorate(Assignee ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
 				{
-					v = 42;
+					set v = 42;
 				}
 				% (assignee)
 			`]],
 			['Decorate(Assignee ::= ExpressionCompound PropertyAssign) -> SemanticAccess', [AST.ASTNodeAccess, `
 				{
-					v.1 = 42;
+					set v.1 = 42;
 				}
 				% (assignee)
 			`]],
@@ -513,6 +513,20 @@ describe('Decorator', () => {
 				% (declaration_variable)
 			`]],
 
+			['Decorate(DeclarationClaim ::= "claim" Assignee ":" Type ";") -> DeclarationClaim', [AST.ASTNodeDeclarationClaim, `
+				{
+					claim a: T;
+				}
+				% (declaration_claim)
+			`]],
+
+			['Decorate(DeclarationReassignment ::= "set" Assignee "=" Expression ";") -> DeclarationReassignment', [AST.ASTNodeDeclarationReassignment, `
+				{
+					set a = b;
+				}
+				% (declaration_reassignment)
+			`]],
+
 			['Decorate(StatementExpression ::= Expression ";") -> SemanticStatementExpression', [AST.ASTNodeStatementExpression, `
 				{
 					a;
@@ -520,19 +534,13 @@ describe('Decorator', () => {
 				% (statement_expression)
 			`]],
 
-			['Decorate(StatementAssignment ::= Assignee "=" Expression ";") -> SemanticAssignment', [AST.ASTNodeAssignment, `
-				{
-					a = b;
-				}
-				% (statement_assignment)
-			`]],
-
 			['Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock', [AST.ASTNodeBlock, `
 				{
 					type T = U;
 					let a: T = b;
+					claim a: U;
+					set a = b;
 					a;
-					a = b;
 				}
 				% (block)
 			`]],

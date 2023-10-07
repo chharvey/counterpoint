@@ -340,6 +340,8 @@ module.exports = grammar({
 			// storage
 			'type',
 			'let',
+			'claim',
+			'set',
 			// modifier
 			'unfixed',
 			$.keyword_type,
@@ -504,25 +506,26 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		declaration_type:     $ => seq('type',                      $.identifier, '=', $._type,                     ';'),
-		declaration_variable: $ => seq('let',  optional('unfixed'), $.identifier, ':', $._type, '=', $._expression, ';'),
-
-		_declaration: $ => choice(
-			$.declaration_type,
-			$.declaration_variable,
-		),
-
 		statement_expression: $ => seq(optional($._expression), ';'),
-
-		statement_assignment: $ => seq($.assignee, '=', $._expression, ';'),
 
 		_statement: $ => choice(
 			$._declaration,
 			$.statement_expression,
-			$.statement_assignment,
 		),
 
 		block: $ => seq('{', repeat1($._statement), '}'),
+
+		declaration_type:         $ => seq('type',                       $.identifier, '=', $._type,                     ';'),
+		declaration_variable:     $ => seq('let',   optional('unfixed'), $.identifier, ':', $._type, '=', $._expression, ';'),
+		declaration_claim:        $ => seq('claim',                      $.assignee,   ':', $._type,                     ';'),
+		declaration_reassignment: $ => seq('set',                        $.assignee,                 '=', $._expression, ';'),
+
+		_declaration: $ => choice(
+			$.declaration_type,
+			$.declaration_variable,
+			$.declaration_claim,
+			$.declaration_reassignment,
+		),
 	},
 
 	extras: _$ => [

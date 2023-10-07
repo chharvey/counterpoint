@@ -5,6 +5,7 @@ None! VarCheck(Or<
 	SemanticCase,
 	SemanticType,
 	SemanticExpression,
+	SemanticDeclarationClaim,
 	SemanticStatementExpression,
 	SemanticGoal,
 > list) :=

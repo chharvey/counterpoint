@@ -164,32 +164,32 @@ Expression ::=
 
 
 
-DeclarationType     ::= "type"            IDENTIFIER "=" Type                ";";
-DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
-
-Declaration ::=
-	| DeclarationType
-	| DeclarationVariable
-;
-
-
-
 StatementExpression
 	::= Expression? ";";
 
-StatementAssignment
-	::= Assignee "=" Expression ";";
-
 Statement ::=
-	| Declaration
 	| StatementExpression
-	| StatementAssignment
+	| Declaration
 ;
 
 
 
 Block
 	::= "{" Statement+ "}";
+
+
+
+DeclarationType         ::= "type"             IDENTIFIER "=" Type                ";";
+DeclarationVariable     ::= "let"   "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
+DeclarationClaim        ::= "claim"            Assignee   ":" Type                ";";
+DeclarationReassignment ::= "set"              Assignee            "=" Expression ";";
+
+Declaration ::=
+	| DeclarationType
+	| DeclarationVariable
+	| DeclarationClaim
+	| DeclarationReassignment
+;
 
 
 

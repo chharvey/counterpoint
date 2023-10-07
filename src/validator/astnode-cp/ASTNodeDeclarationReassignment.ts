@@ -20,15 +20,15 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 
 
 
-export class ASTNodeAssignment extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAssignment {
+export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationReassignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeAssignment);
+		assert_instanceof(statement, ASTNodeDeclarationReassignment);
 		return statement;
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'statement_assignment'>,
+		start_node: SyntaxNodeType<'declaration_reassignment'>,
 		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		public readonly assigned:  ASTNodeExpression,
 	) {

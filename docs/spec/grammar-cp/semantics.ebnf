@@ -134,23 +134,9 @@ SemanticOperation[operator: COND]
 
 
 SemanticStatement =:=
-	| SemanticDeclaration
 	| SemanticStatementExpression
-	| SemanticAssignment
+	| SemanticDeclaration
 ;
-
-
-
-SemanticDeclaration =:=
-	| SemanticDeclarationType
-	| SemanticDeclarationVariable
-;
-
-SemanticDeclarationType
-	::= SemanticTypeAlias SemanticType;
-
-SemanticDeclarationVariable[unfixed: Boolean]
-	::= SemanticVariable SemanticType SemanticExpression;
 
 
 
@@ -159,13 +145,29 @@ SemanticStatementExpression
 
 
 
-SemanticAssignment
-	::= (SemanticVariable | SemanticAccess) SemanticExpression;
-
-
-
 SemanticBlock
 	::= SemanticStatement+;
+
+
+
+SemanticDeclaration =:=
+	| SemanticDeclarationType
+	| SemanticDeclarationVariable
+	| SemanticDeclarationClaim
+	| SemanticDeclarationReassignment
+;
+
+SemanticDeclarationType
+	::= SemanticTypeAlias SemanticType;
+
+SemanticDeclarationVariable[unfixed: Boolean]
+	::= SemanticVariable SemanticType SemanticExpression;
+
+SemanticDeclarationClaim
+	::= (SemanticVariable | SemanticAccess) SemanticType;
+
+SemanticDeclarationReassignment
+	::= (SemanticVariable | SemanticAccess) SemanticExpression;
 
 
 

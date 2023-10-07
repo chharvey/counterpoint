@@ -857,7 +857,7 @@ type T = int?; % equivalent to `type T = int | null;`
 This operator is useful for describing values that might be null.
 ```
 let unfixed hello: str? = null;
-hello = "world";
+set hello = "world";
 ```
 
 
@@ -970,7 +970,7 @@ The **union** operator creates a type that is either one operand, or the other, 
 ```
 type T = bool | int;
 let unfixed v: T = false;
-v = 42;
+set v = 42;
 ```
 
 When accessing a *union* of record types, we can only access the *intersection* of the properties of each type.

@@ -57,7 +57,9 @@ TokenWorth(KeywordOther :::= "then")    -> RealNumber := \x8e;
 TokenWorth(KeywordOther :::= "else")    -> RealNumber := \x8f;
 TokenWorth(KeywordOther :::= "type")    -> RealNumber := \x90;
 TokenWorth(KeywordOther :::= "let")     -> RealNumber := \x91;
-TokenWorth(KeywordOther :::= "unfixed") -> RealNumber := \x92;
+TokenWorth(KeywordOther :::= "claim")   -> RealNumber := \x92;
+TokenWorth(KeywordOther :::= "set")     -> RealNumber := \x93;
+TokenWorth(KeywordOther :::= "unfixed") -> RealNumber := \x94;
 
 
 

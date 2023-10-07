@@ -225,6 +225,19 @@ describe('ASTNodeExpression', () => {
 					[null, null],
 				);
 			});
+			it('with constant folding off, returns null even for a fixed variable.', () => {
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+					let x: int = 21 * 2;
+					x;
+				}`, CONFIG_FOLDING_OFF);
+				block.varCheck();
+				block.typeCheck();
+				assert.ok(!(block.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
+				assert.deepStrictEqual(
+					(block.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
+					null,
+				);
+			});
 		});
 
 
