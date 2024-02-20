@@ -70,7 +70,7 @@ KeywordOther :::=
 		| "type"
 		| "let"
 	// modifier
-		| "unfixed"
+		| "var"
 ;
 
 
