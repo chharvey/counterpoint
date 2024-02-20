@@ -134,9 +134,9 @@ describe('ASTNodeOperation', () => {
 				describe('[operator=NOT]', () => {
 					it('returns type `true` for a subtype of `void | null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let unfixed a: null = null;
-							let unfixed b: null | false = null;
-							let unfixed c: null | void = null;
+							let var a: null = null;
+							let var b: null | false = null;
+							let var c: null | void = null;
 							!a;
 							!b;
 							!c;
@@ -149,11 +149,11 @@ describe('ASTNodeOperation', () => {
 					});
 					it('returns type `bool` for a supertype of `void` or a supertype of `null` or a supertype of `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let unfixed a: null | int = null;
-							let unfixed b: null | int = 42;
-							let unfixed c: bool = false;
-							let unfixed d: bool | float = 4.2;
-							let unfixed e: str | void = "hello";
+							let var a: null | int = null;
+							let var b: null | int = 42;
+							let var c: bool = false;
+							let var d: bool | float = 4.2;
+							let var e: str | void = "hello";
 							!a;
 							!b;
 							!c;
@@ -168,8 +168,8 @@ describe('ASTNodeOperation', () => {
 					});
 					it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let unfixed a: int = 42;
-							let unfixed b: float = 4.2;
+							let var a: int = 42;
+							let var b: float = 4.2;
 							!a;
 							!b;
 						`, CONFIG_FOLDING_OFF);
@@ -795,9 +795,9 @@ describe('ASTNodeOperation', () => {
 				describe('[operator=AND]', () => {
 					it('returns `left` if it’s a subtype of `void | null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let unfixed a: null = null;
-							let unfixed b: null | false = null;
-							let unfixed c: null | void = null;
+							let var a: null = null;
+							let var b: null | false = null;
+							let var c: null | void = null;
 							a && 42;
 							b && 42;
 							c && 42;
@@ -813,11 +813,11 @@ describe('ASTNodeOperation', () => {
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
 						const hello: TYPE.TypeUnit<OBJ.String> = typeUnitStr('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let unfixed a: null | int = null;
-							let unfixed b: null | int = 42;
-							let unfixed c: bool = false;
-							let unfixed d: bool | float = 4.2;
-							let unfixed e: str | void = "hello";
+							let var a: null | int = null;
+							let var b: null | int = 42;
+							let var c: bool = false;
+							let var d: bool | float = 4.2;
+							let var e: str | void = "hello";
 							a && "hello";
 							b && "hello";
 							c && "hello";
@@ -836,8 +836,8 @@ describe('ASTNodeOperation', () => {
 					});
 					it('returns `right` if left does not contain `void` nor `null` nor `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let unfixed a: int = 42;
-							let unfixed b: float = 4.2;
+							let var a: int = 42;
+							let var b: float = 4.2;
 							a && true;
 							b && null;
 						`, CONFIG_FOLDING_OFF);
@@ -852,9 +852,9 @@ describe('ASTNodeOperation', () => {
 				describe('[operator=OR]', () => {
 					it('returns `right` if it’s a subtype of `void | null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let unfixed a: null = null;
-							let unfixed b: null | false = null;
-							let unfixed c: null | void = null;
+							let var a: null = null;
+							let var b: null | false = null;
+							let var c: null | void = null;
 							a || false;
 							b || 42;
 							c || 4.2;
@@ -870,11 +870,11 @@ describe('ASTNodeOperation', () => {
 					it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
 						const hello: TYPE.TypeUnit<OBJ.String> = typeUnitStr('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let unfixed a: null | int = null;
-							let unfixed b: null | int = 42;
-							let unfixed c: bool = false;
-							let unfixed d: bool | float = 4.2;
-							let unfixed e: str | void = "hello";
+							let var a: null | int = null;
+							let var b: null | int = 42;
+							let var c: bool = false;
+							let var d: bool | float = 4.2;
+							let var e: str | void = "hello";
 							a || "hello";
 							b || "hello";
 							c || "hello";
@@ -893,8 +893,8 @@ describe('ASTNodeOperation', () => {
 					});
 					it('returns `left` if it does not contain `void` nor `null` nor `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let unfixed a: int = 42;
-							let unfixed b: float = 4.2;
+							let var a: int = 42;
+							let var b: float = 4.2;
 							a || true;
 							b || null;
 						`, CONFIG_FOLDING_OFF);

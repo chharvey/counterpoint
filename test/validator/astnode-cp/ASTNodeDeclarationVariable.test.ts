@@ -338,7 +338,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		});
 		it('with constant folding on, returns InstructionDeclareGlobal for unfixed / non-foldable variables.', () => {
 			const src: string = `
-				let unfixed x: int = 42;
+				let var x: int = 42;
 				let y: int = x + 10;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
@@ -363,7 +363,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('with constant folding off, always returns InstructionDeclareGlobal.', () => {
 			const src: string = `
 				let x: int = 42;
-				let unfixed y: float = 4.2;
+				let var y: float = 4.2;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
 			goal.varCheck();

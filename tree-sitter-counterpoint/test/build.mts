@@ -953,9 +953,9 @@ function buildTest(title: string, source: string, expected: string): string {
 		DeclarationVariable: [
 			xjs.String.dedent`
 				let v: T = a + b * c;
-				let unfixed u: A | B & C = v;
+				let var u: A | B & C = v;
 				let 'å': A = a;
-				let unfixed 'é': E = e;
+				let var 'é': E = e;
 			`,
 			s(
 				'source_file',

@@ -307,7 +307,7 @@ Claim access has the same runtime behavior of regular property access.
 Its purpose is to tell the type-checker,
 “I know what I’m doing; This property exists and its type is not type `void`.”
 ```
-let unfixed item: [str, ?: int] = ["apples", 42];
+let item: [str, ?: int] = ["apples", 42];
 let quantity: int = item!.1;
 ```
 The expression `item!.1` has type `int`, despite being an optional entry.
@@ -315,7 +315,7 @@ It will produce the value `42` at runtime.
 Note that bypassing the compiler’s type-checking process should be done carefully.
 If not used correctly, it could lead to runtime errors.
 ```
-let unfixed item: [str, ?: int] = ["apples"];
+let item: [str, ?: int] = ["apples"];
 let quantity: int = item!.1; % runtime error!
 ```
 An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
@@ -800,7 +800,7 @@ type T = int?; % equivalent to `type T = int | null;`
 ```
 This operator is useful for describing values that might be null.
 ```
-let unfixed hello: str? = null;
+let var hello: str? = null;
 hello = "world";
 ```
 
@@ -913,7 +913,7 @@ This holds for tuple types as well, accounting for indices rather than keys.
 The **union** operator creates a type that is either one operand, or the other, or some combination of both.
 ```
 type T = bool | int;
-let unfixed v: T = false;
+let var v: T = false;
 v = 42;
 ```
 

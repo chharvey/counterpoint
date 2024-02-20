@@ -22,7 +22,7 @@ export enum Keyword {
 		TYPE = 'type',
 		LET  = 'let',
 	// modifier
-		UNFIXED = 'unfixed',
+		UNFIXED = 'var',
 }
 
 
