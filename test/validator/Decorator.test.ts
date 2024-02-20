@@ -353,8 +353,8 @@ describe('Decorator', () => {
 				let a: T = b;
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
-				let unfixed a: T = b;
+			['Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let var a: T = b;
 				% (declaration_variable)
 			`]],
 

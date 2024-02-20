@@ -10,7 +10,7 @@ _KEYWORD_OTHER =:=
 		| "type"
 		| "let"
 	// modifier
-		| "unfixed"
+		| "var"
 ;
 
 Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey
@@ -579,7 +579,7 @@ Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -
 		Decorate(Type)
 		Decorate(Expression)
 	);
-Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)

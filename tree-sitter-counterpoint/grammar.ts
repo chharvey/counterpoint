@@ -341,7 +341,7 @@ module.exports = grammar({
 			'type',
 			'let',
 			// modifier
-			'unfixed',
+			'var',
 			$.keyword_type,
 			$.keyword_value,
 			$.identifier,
@@ -505,8 +505,8 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		declaration_type:     $ => seq('type',                      $.identifier, '=', $._type,                     ';'),
-		declaration_variable: $ => seq('let',  optional('unfixed'), $.identifier, ':', $._type, '=', $._expression, ';'),
+		declaration_type:     $ => seq('type',                  $.identifier, '=', $._type,                     ';'),
+		declaration_variable: $ => seq('let',  optional('var'), $.identifier, ':', $._type, '=', $._expression, ';'),
 
 		_declaration: $ => choice(
 			$.declaration_type,

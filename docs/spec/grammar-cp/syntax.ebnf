@@ -23,7 +23,7 @@ Word ::=
 		| "type"
 		| "let"
 	// modifier
-		| "unfixed"
+		| "var"
 	| KEYWORD_TYPE
 	| KEYWORD_VALUE
 	| IDENTIFIER
@@ -166,8 +166,8 @@ Expression ::=
 
 
 
-DeclarationType     ::= "type"            IDENTIFIER "=" Type                ";";
-DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
+DeclarationType     ::= "type"        IDENTIFIER "=" Type                ";";
+DeclarationVariable ::= "let"  "var"? IDENTIFIER ":" Type "=" Expression ";";
 
 Declaration ::=
 	| DeclarationType
