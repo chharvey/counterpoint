@@ -187,7 +187,7 @@ Cause: An immutable object was mutated.
 let x: [a: int] = [a= 42];
 x.a = 43;                  % MutabilityError: Mutation of an object of immutable type `[a: int]`.
 ```
-Solution(s): Do not mutate the object’s entries, or else give it a `mutable` type.
+Solution(s): Do not mutate the object’s entries, or else give it a `mut` type.
 
 
 

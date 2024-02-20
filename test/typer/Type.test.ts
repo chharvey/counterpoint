@@ -644,8 +644,8 @@ describe('Type', () => {
 				assert.ok(new TYPE.TypeList(TYPE.INT).isSubtypeOf(new TYPE.TypeList(TYPE.INT.union(TYPE.FLOAT))), 'List.<int> <: List.<int | float>');
 				assert.ok(!new TYPE.TypeList(TYPE.INT.union(TYPE.FLOAT)).isSubtypeOf(new TYPE.TypeList(TYPE.INT)), 'List.<int | float> !<: List.<int>');
 			});
-			it('Invariance for mutable lists: `A == B --> mutable List.<A> <: mutable List.<B>`.', () => {
-				assert.ok(!new TYPE.TypeList(TYPE.INT, true).isSubtypeOf(new TYPE.TypeList(TYPE.INT.union(TYPE.FLOAT), true)), 'mutable List.<int> !<: mutable List.<int | float>');
+			it('Invariance for mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.', () => {
+				assert.ok(!new TYPE.TypeList(TYPE.INT, true).isSubtypeOf(new TYPE.TypeList(TYPE.INT.union(TYPE.FLOAT), true)), 'mut List.<int> !<: mut List.<int | float>');
 			});
 		});
 
@@ -658,8 +658,8 @@ describe('Type', () => {
 				assert.ok(new TYPE.TypeDict(TYPE.INT).isSubtypeOf(new TYPE.TypeDict(TYPE.INT.union(TYPE.FLOAT))), 'Dict.<int> <: Dict.<int | float>');
 				assert.ok(!new TYPE.TypeDict(TYPE.INT.union(TYPE.FLOAT)).isSubtypeOf(new TYPE.TypeDict(TYPE.INT)), 'Dict.<int | float> !<: Dict.<int>');
 			});
-			it('Invariance for mutable dicts: `A == B --> mutable Dict.<A> <: mutable Dict.<B>`.', () => {
-				assert.ok(!new TYPE.TypeDict(TYPE.INT, true).isSubtypeOf(new TYPE.TypeDict(TYPE.INT.union(TYPE.FLOAT), true)), 'mutable Dict.<int> !<: mutable Dict.<int | float>');
+			it('Invariance for mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.', () => {
+				assert.ok(!new TYPE.TypeDict(TYPE.INT, true).isSubtypeOf(new TYPE.TypeDict(TYPE.INT.union(TYPE.FLOAT), true)), 'mut Dict.<int> !<: mut Dict.<int | float>');
 			});
 		});
 
@@ -672,8 +672,8 @@ describe('Type', () => {
 				assert.ok(!new TYPE.TypeSet(TYPE.INT).isSubtypeOf(new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT))), 'Set.<int> !<: Set.<int | float>');
 				assert.ok(!new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT)).isSubtypeOf(new TYPE.TypeSet(TYPE.INT)), 'Set.<int | float> !<: Set.<int>');
 			});
-			it('Invariance for mutable sets: `A == B --> mutable Set.<A> <: mutable Set.<B>`.', () => {
-				assert.ok(!new TYPE.TypeSet(TYPE.INT, true).isSubtypeOf(new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT), true)), 'mutable Set.<int> !<: mutable Set.<int | float>');
+			it('Invariance for mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.', () => {
+				assert.ok(!new TYPE.TypeSet(TYPE.INT, true).isSubtypeOf(new TYPE.TypeSet(TYPE.INT.union(TYPE.FLOAT), true)), 'mut Set.<int> !<: mut Set.<int | float>');
 			});
 		});
 
@@ -689,8 +689,8 @@ describe('Type', () => {
 				assert.ok( new TYPE.TypeMap(TYPE.INT, TYPE.BOOL)                 .isSubtypeOf(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL.union(TYPE.NULL))), 'Map.<int, bool>         <: Map.<int, bool | null>');
 				assert.ok(!new TYPE.TypeMap(TYPE.INT, TYPE.BOOL.union(TYPE.NULL)).isSubtypeOf(new TYPE.TypeMap(TYPE.INT, TYPE.BOOL)),                  'Map.<int, bool | null> !<: Map.<int, bool>');
 			});
-			it('Invariance for mutable maps: `A == C && B == D --> mutable Map.<A, B> <: mutable Map.<C, D>`.', () => {
-				assert.ok(!new TYPE.TypeMap(TYPE.INT, TYPE.BOOL, true).isSubtypeOf(new TYPE.TypeMap(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL.union(TYPE.NULL), true)), 'mutable Map.<int, bool> !<: mutable Map.<int | float, bool | null>');
+			it('Invariance for mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.', () => {
+				assert.ok(!new TYPE.TypeMap(TYPE.INT, TYPE.BOOL, true).isSubtypeOf(new TYPE.TypeMap(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL.union(TYPE.NULL), true)), 'mut Map.<int, bool> !<: mut Map.<int | float, bool | null>');
 			});
 		});
 
@@ -722,17 +722,17 @@ describe('Type', () => {
 				...builtin_types,
 				...examples,
 			].forEach((t) => {
-				assert.ok(t.mutableOf().isSubtypeOf(t), `mutable ${ t } <: ${ t }`);
+				assert.ok(t.mutableOf().isSubtypeOf(t), `mut ${ t } <: ${ t }`);
 			});
 		});
 		it('non-constant mutable types are not equal to their immutable counterparts.', () => {
 			examples.forEach((t) => {
-				assert.ok(!t.mutableOf().equals(t), `mutable ${ t } != ${ t }`);
+				assert.ok(!t.mutableOf().equals(t), `mut ${ t } != ${ t }`);
 			});
 		});
 		it('non-constant immutable types are not subtypes of their mutable counterparts.', () => {
 			examples.forEach((t) => {
-				assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mutable ${ t }`);
+				assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mut ${ t }`);
 			});
 		});
 		context('disributes over binary operations.', () => {
@@ -740,7 +740,7 @@ describe('Type', () => {
 				...builtin_types,
 				...examples,
 			];
-			specify('mutable (A - B) == mutable A - mutable B', () => {
+			specify('mut (A - B) == mut A - mut B', () => {
 				predicate2(types, (a, b) => {
 					const difference: TYPE.Type = a.subtract(b).mutableOf();
 					assert.ok(difference.equals(a.mutableOf().subtract(b.mutableOf())), `${ a }, ${ b }`);
@@ -749,7 +749,7 @@ describe('Type', () => {
 					}
 				});
 			});
-			specify('mutable (A & B) == mutable A & mutable B', () => {
+			specify('mut (A & B) == mut A & mut B', () => {
 				predicate2(types, (a, b) => {
 					const intersection: TYPE.Type = a.intersect(b).mutableOf();
 					assert.ok(intersection.equals(a.mutableOf().intersect(b.mutableOf())), `${ a }, ${ b }`);
@@ -758,7 +758,7 @@ describe('Type', () => {
 					}
 				});
 			});
-			specify('mutable (A | B) == mutable A | mutable B', () => {
+			specify('mut (A | B) == mut A | mut B', () => {
 				predicate2(types, (a, b) => {
 					const union: TYPE.Type = a.union(b).mutableOf();
 					assert.ok(union.equals(a.mutableOf().union(b.mutableOf())), `${ a }, ${ b }`);

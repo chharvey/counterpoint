@@ -50,14 +50,14 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * We want to be able to assign mutable collection literals to wider mutable types
 	 * so that we can mutate them with different values:
 	 * ```
-	 * let my_ints: mutable int{} = {42}; % <-- assignment should not fail
+	 * let my_ints: mut int{} = {42}; % <-- assignment should not fail
 	 * set my_ints[43] = true;
 	 * ```
 	 *
 	 * Normally, mutable Set types are invariant — that is, if `A` is a subtype of `B`,
-	 * then `mutable Set.<A>` would be unassignable to `mutable Set.<B>`.
-	 * However, when a Set *literal* such as `{a1, a2}` is assigned to a wider mutable type `mutable B{}`,
-	 * it’s too conservative to infer too narrow a type `mutable A{}`,
+	 * then `mut Set.<A>` would be unassignable to `mut Set.<B>`.
+	 * However, when a Set *literal* such as `{a1, a2}` is assigned to a wider mutable type `mut B{}`,
+	 * it’s too conservative to infer too narrow a type `mut A{}`,
 	 * since we can predict it will be mutated later with elements of type `B`.
 	 * Therefore we want to allow the assignment, bypassing invariance.
 	 *

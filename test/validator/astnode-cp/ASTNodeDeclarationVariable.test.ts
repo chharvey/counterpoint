@@ -85,9 +85,9 @@ describe('ASTNodeDeclarationVariable', () => {
 		});
 		it('does not set `SymbolStructureVar#value` when assignee type has mutable.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let immut:  int[3]             = [42, 420, 4200];
-				let mut:    mutable int[]      = List.<int>([42, 420, 4200]);
-				let mutmut: (mutable int[])[3] = [List.<int>([42]), List.<int>([420]), List.<int>([4200])];
+				let immut:  int[3]         = [42, 420, 4200];
+				let mut:    mut int[]      = List.<int>([42, 420, 4200]);
+				let mutmut: (mut int[])[3] = [List.<int>([42]), List.<int>([420]), List.<int>([4200])];
 			`);
 			goal.varCheck();
 			goal.typeCheck();
@@ -149,9 +149,9 @@ describe('ASTNodeDeclarationVariable', () => {
 					let s: Object = [a= 42, b= "hello"];
 				`.split('\n'));
 				typeCheckGoal(`
-					let v: mutable Object = [   42,    "hello"];
-					let s: mutable Object = [a= 42, b= "hello"];
-				`.split('\n')); // mutable Object == Object
+					let v: mut Object = [   42,    "hello"];
+					let s: mut Object = [a= 42, b= "hello"];
+				`.split('\n')); // mut Object == Object
 			});
 		});
 		context('assigning a collection literal to a wider mutable type.', () => {
@@ -160,25 +160,25 @@ describe('ASTNodeDeclarationVariable', () => {
 					let t1_1: List.<42 | 4.3> = [42];
 					let t2_1: List.<int>      = [42];
 
-					let t1_2: mutable List.<42 | 4.3> = [43];
-					let t2_2: mutable List.<int>      = [43];
+					let t1_2: mut List.<42 | 4.3> = [43];
+					let t2_2: mut List.<int>      = [43];
 
 					let r1_1: Dict.<42 | 4.3> = [a= 42];
 					let r2_1: Dict.<int>      = [a= 42];
 
-					let r1_2: mutable Dict.<42 | 4.3> = [a= 43];
-					let r2_2: mutable Dict.<int>      = [a= 43];
+					let r1_2: mut Dict.<42 | 4.3> = [a= 43];
+					let r2_2: mut Dict.<int>      = [a= 43];
 
-					let t3_1: [               List.<float>] = [       [4.3]];
-					let t3_2: [       mutable List.<float>] = [       [4.3]];
-					let r3_1: [inner:         List.<float>] = [inner= [4.3]];
-					let r3_2: [inner: mutable List.<float>] = [inner= [4.3]];
+					let t3_1: [           List.<float>] = [       [4.3]];
+					let t3_2: [       mut List.<float>] = [       [4.3]];
+					let r3_1: [inner:     List.<float>] = [inner= [4.3]];
+					let r3_2: [inner: mut List.<float>] = [inner= [4.3]];
 				`.split('\n'), TypeErrorNotAssignable);
 			});
 			it('allows assigning Sets and Maps.', () => {
 				typeCheckGoal(`
-					let s: mutable (int | str){} = {42,   "43"};
-					let m: mutable {int -> str}  = {42 -> "43"};
+					let s: mut (int | str){} = {42,   "43"};
+					let m: mut {int -> str}  = {42 -> "43"};
 					s.["44"] = true;
 					m.[44]   = "45";
 				`);
@@ -208,45 +208,45 @@ describe('ASTNodeDeclarationVariable', () => {
 			});
 			it('throws when not assigned to correct type.', () => {
 				typeCheckGoal(`
-					let s: mutable {int -> str}     = {   42,    "43"};
-					let s: mutable (int | str){}    = {   42 ->  "43"};
+					let s: mut {int -> str}  = {42,   "43"};
+					let s: mut (int | str){} = {42 -> "43"};
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`
-					let t1: mutable Object                             = [42, "43"];
-					let t4: mutable ([int, str] | Object)              = [42, "43"];
+					let t1: mut Object                = [42, "43"];
+					let t4: mut ([int, str] | Object) = [42, "43"];
 
-					let r1: mutable Object                                   = [a= 42, b= "43"];
-					let r4: mutable ([a: int, b: str] | Object)              = [a= 42, b= "43"];
+					let r1: mut Object                      = [a= 42, b= "43"];
+					let r4: mut ([a: int, b: str] | Object) = [a= 42, b= "43"];
 
-					let s1: mutable (42 | 4.3){}            = {42};
-					let s2: mutable (int | float){}         = {42};
-					let s3: mutable Object                  = {42};
-					let s4: mutable (int{} | {str -> bool}) = {42};
-					let s5: mutable (int{} | Object)        = {42};
+					let s1: mut (42 | 4.3){}            = {42};
+					let s2: mut (int | float){}         = {42};
+					let s3: mut Object                  = {42};
+					let s4: mut (int{} | {str -> bool}) = {42};
+					let s5: mut (int{} | Object)        = {42};
 
-					let m1: mutable {int -> float}            = {42 -> 4.3};
-					let m2: mutable {int? -> float?}          = {42 -> 4.3};
-					let m3: mutable Object                    = {42 -> 4.3};
-					let m4: mutable ({int -> float} | str{})  = {42 -> 4.3};
-					let m5: mutable ({int -> float} | Object) = {42 -> 4.3};
+					let m1: mut {int -> float}            = {42 -> 4.3};
+					let m2: mut {int? -> float?}          = {42 -> 4.3};
+					let m3: mut Object                    = {42 -> 4.3};
+					let m4: mut ({int -> float} | str{})  = {42 -> 4.3};
+					let m5: mut ({int -> float} | Object) = {42 -> 4.3};
 				`);
 			});
 			it('throws when entries mismatch.', () => {
 				typeCheckGoal(`
-					let s1: mutable int{} = {"42"};
-					let s2: mutable int{} = {42, "43"};
+					let s1: mut int{} = {"42"};
+					let s2: mut int{} = {42, "43"};
 
-					let m1: mutable {int -> str} = {4.2 -> "43"};
-					let m2: mutable {int -> str} = {42  -> 4.3};
+					let m1: mut {int -> str} = {4.2 -> "43"};
+					let m2: mut {int -> str} = {42  -> 4.3};
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`
-					let s3: mutable (bool | str){}    = {   46,    47};
+					let s3: mut (bool | str){} = {46, 47};
 
-					let m3_1: mutable {str -> bool} = {1 -> false, 2.0 -> true};
-					let m3_2: mutable {str -> bool} = {"a" -> 3,   "b" -> 4.0};
-					let m3_3: mutable {str -> bool} = {5 -> false, "b" -> 6.0};
-					let m3_4: mutable {str -> bool} = {7 -> 8.0};
-					let m3_5: mutable {str -> bool} = {9 -> "a", 10.0 -> "b"};
+					let m3_1: mut {str -> bool} = {1 -> false, 2.0 -> true};
+					let m3_2: mut {str -> bool} = {"a" -> 3,   "b" -> 4.0};
+					let m3_3: mut {str -> bool} = {5 -> false, "b" -> 6.0};
+					let m3_4: mut {str -> bool} = {7 -> 8.0};
+					let m3_5: mut {str -> bool} = {9 -> "a", 10.0 -> "b"};
 				`, (err) => {
 					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {

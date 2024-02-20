@@ -49,7 +49,7 @@ TokenWorth(KeywordType  :::= "unknown") -> RealNumber := \x86;
 TokenWorth(KeywordValue :::= "null")    -> RealNumber := \x87;
 TokenWorth(KeywordValue :::= "false")   -> RealNumber := \x88;
 TokenWorth(KeywordValue :::= "true")    -> RealNumber := \x89;
-TokenWorth(KeywordOther :::= "mutable") -> RealNumber := \x8a;
+TokenWorth(KeywordOther :::= "mut")     -> RealNumber := \x8a;
 TokenWorth(KeywordOther :::= "is")      -> RealNumber := \x8b;
 TokenWorth(KeywordOther :::= "isnt")    -> RealNumber := \x8c;
 TokenWorth(KeywordOther :::= "if")      -> RealNumber := \x8d;

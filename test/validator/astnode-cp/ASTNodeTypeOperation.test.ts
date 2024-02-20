@@ -24,17 +24,17 @@ describe('ASTNodeTypeOperation', () => {
 		describe('ASTNodeTypeOperationUnary[operator=MUTABLE]', () => {
 			it('does not throw if operating on a reference type.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeOperationUnary.fromSource('mutable int[]').eval(),
+					AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
 					new TYPE.TypeList(TYPE.INT, true),
 				);
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type A = mutable int[];
+					type A = mut int[];
 					type B = int[3];
 
-					type C = mutable (A & B);
-					type D = mutable (A | B);
+					type C = mut (A & B);
+					type D = mut (A | B);
 
-					type E = mutable Object; % equivalent to \`Object\`
+					type E = mut Object; % equivalent to \`Object\`
 				`);
 				goal.varCheck();
 				return goal.typeCheck(); // assert does not throw
@@ -42,20 +42,20 @@ describe('ASTNodeTypeOperation', () => {
 
 			it('throws if operating on any value type.', () => {
 				[
-					'mutable [int, float, str]',
-					'mutable [a: int, b: float, c: str]',
-					'mutable int[3]',
-					'mutable never',
-					'mutable void',
-					'mutable null',
-					'mutable bool',
-					'mutable int',
-					'mutable float',
-					'mutable str',
+					'mut [int, float, str]',
+					'mut [a: int, b: float, c: str]',
+					'mut int[3]',
+					'mut never',
+					'mut void',
+					'mut null',
+					'mut bool',
+					'mut int',
+					'mut float',
+					'mut str',
 				].forEach((src) => assert.throws(() => AST.ASTNodeTypeOperation.fromSource(src).eval(), TypeErrorInvalidOperation));
 				[
-					'mutable unknown',
-					'mutable Object',
+					'mut unknown',
+					'mut Object',
 				].map((src) => AST.ASTNodeTypeOperation.fromSource(src).eval()); // assert does not throw if `[isRef=false]`
 			});
 		});
