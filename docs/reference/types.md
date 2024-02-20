@@ -883,7 +883,7 @@ and the set literal shorthand syntax is a sequence of comma-separated expression
 let elements: str{} = {"earth", "wind", "fire"};
 ```
 
-The size of sets is not known at compile-time, and could change during run-time, if the set is mutable.
+The size of sets is not known at compile-time, and could change during run-time.
 For example, a program could add an element to the above set after it’s been declared, changing its count.
 The order of elements in a set is not necessarily significant.
 
@@ -954,7 +954,7 @@ let bases: {int | str -> obj} = {
 };
 ```
 
-The size of maps is not known at compile-time, and could change during run-time, if the map is mutable.
+The size of maps is not known at compile-time, and could change during run-time.
 For example, a program could add a case to the above map after it’s been declared, changing its count.
 Like records, the order of entries in a map is not necessarily significant.
 

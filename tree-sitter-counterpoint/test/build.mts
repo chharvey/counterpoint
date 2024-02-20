@@ -368,7 +368,7 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		TypeUnaryKeyword: [
 			xjs.String.dedent`
-				f.<mutable T>();
+				f.<mut T>();
 			`,
 			makeSourceFile(extractType(s(
 				'type_unary_keyword',

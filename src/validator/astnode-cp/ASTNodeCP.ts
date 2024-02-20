@@ -65,13 +65,13 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * We want to be able to assign collection literals to wider mutable types
 	 * so that we can mutate them with different values:
 	 * ```
-	 * let my_ints: mutable int{} = {42}; % <-- assignment should not fail
+	 * let my_ints: mut int{} = {42}; % <-- assignment should not fail
 	 * set my_ints[43] = true;
 	 * ```
 	 * However, we want this to not be the case for constant collections,
 	 * because they aren’t mutable:
 	 * ```
-	 * let vec: mutable [int] = \[42]; % <-- assignment should fail
+	 * let vec: mut [int] = \[42]; % <-- assignment should fail
 	 * ```
 	 *
 	 * @final
