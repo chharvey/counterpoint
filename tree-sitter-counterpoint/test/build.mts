@@ -425,7 +425,7 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		TypeUnaryKeyword: [
 			xjs.String.dedent`
-				type T = mutable T;
+				type T = mut T;
 			`,
 			sourceTypes(s(
 				'type_unary_keyword',

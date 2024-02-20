@@ -103,19 +103,19 @@ describe('ASTNodeCP', () => {
 				it('throws when property assignee type is not supertype.', () => {
 					[
 						`
-							let l: mutable int[] = List.<int>([42]);
+							let l: mut int[] = List.<int>([42]);
 							l.0 = 4.2;
 						`,
 						`
-							let d: mutable [:int] = Dict.<int>([i= 42]);
+							let d: mut [:int] = Dict.<int>([i= 42]);
 							d.i = 4.2;
 						`,
 						`
-							let s: mutable int{} = Set.<int>([42]);
+							let s: mut int{} = Set.<int>([42]);
 							s.[42] = 4.2;
 						`,
 						`
-							let m: mutable {bool -> int} = Map.<bool, int>([[true, 42]]);
+							let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
 							m.[true] = 4.2;
 						`,
 					].forEach((src) => {

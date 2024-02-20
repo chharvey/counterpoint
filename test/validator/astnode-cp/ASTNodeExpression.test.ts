@@ -199,7 +199,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for a fixed variable of mutable type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let fixed_mutable: mutable int{} = {1, 2, 3};
+					let fixed_mutable: mut int{} = {1, 2, 3};
 					fixed_mutable;
 				`);
 				goal.varCheck();
@@ -215,7 +215,7 @@ describe('ASTNodeExpression', () => {
 					let unfixed x: int = 21 * 2;
 					let y: int = x / 2;
 					y;
-					let z: mutable int{} = {11, 22, 33};
+					let z: mut int{} = {11, 22, 33};
 					let w: bool = z.[22];
 					w;
 				`);

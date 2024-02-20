@@ -520,9 +520,9 @@ let elements_and_more: [str, str, str, bool, int] = ["earth", "wind", "fire"]; %
 ```
 The first declaration is allowed because the last two items are simply dropped off.
 
-Because tuples are read-only, the `mutable` operator is invalid on tuple types.
+Because tuples are read-only, the `mut` operator is invalid on tuple types.
 ```
-let elements: mutable [str, str, str] = ["earth", "wind", "fire"]; %> TypeError
+let elements: mut [str, str, str] = ["earth", "wind", "fire"]; %> TypeError
 ```
 
 Note: If a tuple is homogeneous (its items are all of the same type),
@@ -722,9 +722,9 @@ let elements_and_more: [
 ```
 The first declaration is allowed because the unused properties are simply dropped off.
 
-Because records are read-only, the `mutable` operator is invalid on record types.
+Because records are read-only, the `mut` operator is invalid on record types.
 ```
-let elements: mutable [x: str, y: str, z: str] = [x= "earth", y= "wind", z= "fire"]; %> TypeError
+let elements: mut [x: str, y: str, z: str] = [x= "earth", y= "wind", z= "fire"]; %> TypeError
 ```
 
 #### Record Access
@@ -871,7 +871,7 @@ and the set literal shorthand syntax is a sequence of comma-separated expression
 let elements: str{} = {"earth", "wind", "fire"};
 ```
 
-The size of sets is not known at compile-time, and could change during run-time, if the set is mutable.
+The size of sets is not known at compile-time, and could change during run-time.
 For example, a program could add an element to the above set after it’s been declared, changing its count.
 The order of elements in a set is not necessarily significant.
 
@@ -942,7 +942,7 @@ let bases: {int | str -> Object} = {
 };
 ```
 
-The size of maps is not known at compile-time, and could change during run-time, if the map is mutable.
+The size of maps is not known at compile-time, and could change during run-time.
 For example, a program could add a case to the above map after it’s been declared, changing its count.
 Like records, the order of entries in a map is not necessarily significant.
 

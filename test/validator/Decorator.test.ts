@@ -22,8 +22,8 @@ describe('Decorator', () => {
 		}
 		new Map<string, [NewableFunction, string]>([
 			['Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey', [AST.ASTNodeKey, `
-				[mutable= 42];
-				% (word "mutable")
+				[mut= 42];
+				% (word "mut")
 			`]],
 			['Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey', [AST.ASTNodeKey, `
 				[void= 42];
@@ -158,8 +158,8 @@ describe('Decorator', () => {
 				% (type_unary_symbol)
 			`]],
 
-			['Decorate(TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
-				type T = mutable U;
+			['Decorate(TypeUnaryKeyword ::= "mut" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+				type T = mut U;
 				% (type_unary_keyword)
 			`]],
 

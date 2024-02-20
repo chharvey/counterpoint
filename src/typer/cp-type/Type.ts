@@ -217,7 +217,7 @@ export abstract class Type {
 
 	/**
 	 * Construct a new Type object.
-	 * @param isMutable Whether this type is `mutable`. Mutable objects may change fields/entries and call mutating methods.
+	 * @param isMutable Whether this type is mutable. Mutable objects may change fields/entries and call mutating methods.
 	 * @param values    An enumerated set of values that are assignable to this type.
 	 */
 	public constructor(

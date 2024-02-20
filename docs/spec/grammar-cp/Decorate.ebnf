@@ -1,6 +1,6 @@
 _KEYWORD_OTHER =:=
 	// operator
-		| "mutable"
+		| "mut"
 		| "is"
 		| "isnt"
 		| "if"
@@ -175,7 +175,7 @@ Decorate(TypeUnarySymbol ::= TypeUnarySymbol "{" "}") -> SemanticTypeSet
 
 Decorate(TypeUnaryKeyword ::= TypeUnarySymbol) -> SemanticType
 	:= Decorate(TypeUnarySymbol);
-Decorate(TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword) -> SemanticTypeOperation
+Decorate(TypeUnaryKeyword ::= "mut" TypeUnaryKeyword) -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=MUTABLE]
 		Decorate(TypeUnaryKeyword)
 	);
