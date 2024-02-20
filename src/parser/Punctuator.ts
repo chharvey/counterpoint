@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values --- some punctuators are “homonyms”: same symbol, different meaning */
 export enum Punctuator {
 	// grouping
 		GRP_OPN = '(',
