@@ -83,14 +83,16 @@ TokenWorth(IntegerDigitsRadix<Separator> :::= "\b"  DigitSequenceBin<?Separator>
 	:= TokenWorth(DigitSequenceBin<?Separator>);
 TokenWorth(IntegerDigitsRadix<Separator> :::= "\q"  DigitSequenceQua<?Separator>) -> RealNumber
 	:= TokenWorth(DigitSequenceQua<?Separator>);
+TokenWorth(IntegerDigitsRadix<Separator> :::= "\s"  DigitSequenceSex<?Separator>) -> RealNumber
+	:= TokenWorth(DigitSequenceSex<?Separator>);
 TokenWorth(IntegerDigitsRadix<Separator> :::= "\o"  DigitSequenceOct<?Separator>) -> RealNumber
 	:= TokenWorth(DigitSequenceOct<?Separator>);
 TokenWorth(IntegerDigitsRadix<Separator> :::= "\d"? DigitSequenceDec<?Separator>) -> RealNumber
 	:= TokenWorth(DigitSequenceDec<?Separator>);
 TokenWorth(IntegerDigitsRadix<Separator> :::= "\x"  DigitSequenceHex<?Separator>) -> RealNumber
 	:= TokenWorth(DigitSequenceHex<?Separator>);
-TokenWorth(IntegerDigitsRadix<Separator> :::= "\z"  DigitSequenceHTD<?Separator>) -> RealNumber
-	:= TokenWorth(DigitSequenceHTD<?Separator>);
+TokenWorth(IntegerDigitsRadix<Separator> :::= "\z"  DigitSequenceNif<?Separator>) -> RealNumber
+	:= TokenWorth(DigitSequenceNif<?Separator>);
 
 TokenWorth(Float<Separator> :::= SignedDigitSequenceDec<?Separator> ".") -> RealNumber
 	:= TokenWorth(SignedDigitSequenceDec<?Separator>);
@@ -117,6 +119,10 @@ TokenWorth(DigitSequenceQua<Separator> :::= DigitSequenceQua<?Separator> . <Sepa
 	:= 4 * TokenWorth(DigitSequenceQua<?Separator>) + TokenWorth([0-3]);
 TokenWorth(DigitSequenceOct<Separator> :::= [0-7]) -> RealNumber
 	:= TokenWorth([0-7]);
+TokenWorth(DigitSequenceSex<Separator> :::= [0-5]) -> RealNumber
+	:= TokenWorth([0-5]);
+TokenWorth(DigitSequenceSex<Separator> :::= DigitSequenceSex<?Separator> . <Separator+>"_"? [0-5]) -> RealNumber
+	:= 6 * TokenWorth(DigitSequenceSex<?Separator>) + TokenWorth([0-5]);
 TokenWorth(DigitSequenceOct<Separator> :::= DigitSequenceOct<?Separator> . <Separator+>"_"? [0-7]) -> RealNumber
 	:= 8 * TokenWorth(DigitSequenceOct<?Separator>) + TokenWorth([0-7]);
 TokenWorth(DigitSequenceDec<Separator> :::= [0-9]) -> RealNumber
@@ -127,17 +133,17 @@ TokenWorth(DigitSequenceHex<Separator> :::= [0-9a-f]) -> RealNumber
 	:= TokenWorth([0-9a-f]);
 TokenWorth(DigitSequenceHex<Separator> :::= DigitSequenceHex<?Separator> . <Separator+>"_"? [0-9a-f]) -> RealNumber
 	:= 16 * TokenWorth(DigitSequenceHex<?Separator>) + TokenWorth([0-9a-f]);
-TokenWorth(DigitSequenceHTD<Separator> :::= [0-9a-z]) -> RealNumber
+TokenWorth(DigitSequenceNif<Separator> :::= [0-9a-z]) -> RealNumber
 	:= TokenWorth([0-9a-z]);
-TokenWorth(DigitSequenceHTD<Separator> :::= DigitSequenceHTD<?Separator> . <Separator+>"_"? [0-9a-z]) -> RealNumber
-	:= 36 * TokenWorth(DigitSequenceHTD<?Separator>) + TokenWorth([0-9a-z]);
+TokenWorth(DigitSequenceNif<Separator> :::= DigitSequenceNif<?Separator> . <Separator+>"_"? [0-9a-z]) -> RealNumber
+	:= 36 * TokenWorth(DigitSequenceNif<?Separator>) + TokenWorth([0-9a-z]);
 
-TokenWorth([0-9a-z] :::= "0") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "0") -> RealNumber  :=  TokenWorth([0-9] :::= "0") -> RealNumber  :=  TokenWorth([0-7] :::= "0") -> RealNumber  :=  TokenWorth([0-3] :::= "0") -> RealNumber  :=  TokenWorth([0-1] :::= "0") -> RealNumber  :=  \x00;
-TokenWorth([0-9a-z] :::= "1") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "1") -> RealNumber  :=  TokenWorth([0-9] :::= "1") -> RealNumber  :=  TokenWorth([0-7] :::= "1") -> RealNumber  :=  TokenWorth([0-3] :::= "1") -> RealNumber  :=  TokenWorth([0-1] :::= "1") -> RealNumber  :=  \x01;
-TokenWorth([0-9a-z] :::= "2") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "2") -> RealNumber  :=  TokenWorth([0-9] :::= "2") -> RealNumber  :=  TokenWorth([0-7] :::= "2") -> RealNumber  :=  TokenWorth([0-3] :::= "2") -> RealNumber  :=  \x02;
-TokenWorth([0-9a-z] :::= "3") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "3") -> RealNumber  :=  TokenWorth([0-9] :::= "3") -> RealNumber  :=  TokenWorth([0-7] :::= "3") -> RealNumber  :=  TokenWorth([0-3] :::= "3") -> RealNumber  :=  \x03;
-TokenWorth([0-9a-z] :::= "4") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "4") -> RealNumber  :=  TokenWorth([0-9] :::= "4") -> RealNumber  :=  TokenWorth([0-7] :::= "4") -> RealNumber  :=  \x04;
-TokenWorth([0-9a-z] :::= "5") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "5") -> RealNumber  :=  TokenWorth([0-9] :::= "5") -> RealNumber  :=  TokenWorth([0-7] :::= "5") -> RealNumber  :=  \x05;
+TokenWorth([0-9a-z] :::= "0") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "0") -> RealNumber  :=  TokenWorth([0-9] :::= "0") -> RealNumber  :=  TokenWorth([0-7] :::= "0") -> RealNumber  :=  TokenWorth([0-5] :::= "0") -> RealNumber  :=  TokenWorth([0-3] :::= "0") -> RealNumber  :=  TokenWorth([0-1] :::= "0") -> RealNumber  :=  \x00;
+TokenWorth([0-9a-z] :::= "1") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "1") -> RealNumber  :=  TokenWorth([0-9] :::= "1") -> RealNumber  :=  TokenWorth([0-7] :::= "1") -> RealNumber  :=  TokenWorth([0-5] :::= "1") -> RealNumber  :=  TokenWorth([0-3] :::= "1") -> RealNumber  :=  TokenWorth([0-1] :::= "1") -> RealNumber  :=  \x01;
+TokenWorth([0-9a-z] :::= "2") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "2") -> RealNumber  :=  TokenWorth([0-9] :::= "2") -> RealNumber  :=  TokenWorth([0-7] :::= "2") -> RealNumber  :=  TokenWorth([0-5] :::= "2") -> RealNumber  :=  TokenWorth([0-3] :::= "2") -> RealNumber  :=  \x02;
+TokenWorth([0-9a-z] :::= "3") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "3") -> RealNumber  :=  TokenWorth([0-9] :::= "3") -> RealNumber  :=  TokenWorth([0-7] :::= "3") -> RealNumber  :=  TokenWorth([0-5] :::= "3") -> RealNumber  :=  TokenWorth([0-3] :::= "3") -> RealNumber  :=  \x03;
+TokenWorth([0-9a-z] :::= "4") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "4") -> RealNumber  :=  TokenWorth([0-9] :::= "4") -> RealNumber  :=  TokenWorth([0-7] :::= "4") -> RealNumber  :=  TokenWorth([0-5] :::= "4") -> RealNumber  :=  \x04;
+TokenWorth([0-9a-z] :::= "5") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "5") -> RealNumber  :=  TokenWorth([0-9] :::= "5") -> RealNumber  :=  TokenWorth([0-7] :::= "5") -> RealNumber  :=  TokenWorth([0-5] :::= "5") -> RealNumber  :=  \x05;
 TokenWorth([0-9a-z] :::= "6") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "6") -> RealNumber  :=  TokenWorth([0-9] :::= "6") -> RealNumber  :=  TokenWorth([0-7] :::= "6") -> RealNumber  :=  \x06;
 TokenWorth([0-9a-z] :::= "7") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "7") -> RealNumber  :=  TokenWorth([0-9] :::= "7") -> RealNumber  :=  TokenWorth([0-7] :::= "7") -> RealNumber  :=  \x07;
 TokenWorth([0-9a-z] :::= "8") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "8") -> RealNumber  :=  TokenWorth([0-9] :::= "8") -> RealNumber  :=  \x08;
