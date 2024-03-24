@@ -96,8 +96,8 @@ const DIGIT_SEQ_DEC            = /[0-9]+/;
 const DIGIT_SEQ_DEC__SEPARATOR = /([0-9]_?)*[0-9]/;
 const DIGIT_SEQ_HEX            = /[0-9a-f]+/;
 const DIGIT_SEQ_HEX__SEPARATOR = /([0-9a-f]_?)*[0-9a-f]/;
-const DIGIT_SEQ_HTD            = /[0-9a-z]+/;
-const DIGIT_SEQ_HTD__SEPARATOR = /([0-9a-z]_?)*[0-9a-z]/;
+const DIGIT_SEQ_NIF            = /[0-9a-z]+/;
+const DIGIT_SEQ_NIF__SEPARATOR = /([0-9a-z]_?)*[0-9a-z]/;
 
 const INTEGER_DIGITS_RADIX = choice(
 	seq('\\b',           DIGIT_SEQ_BIN),
@@ -106,7 +106,7 @@ const INTEGER_DIGITS_RADIX = choice(
 	seq('\\o',           DIGIT_SEQ_OCT),
 	seq(optional('\\d'), DIGIT_SEQ_DEC),
 	seq('\\x',           DIGIT_SEQ_HEX),
-	seq('\\z',           DIGIT_SEQ_HTD),
+	seq('\\z',           DIGIT_SEQ_NIF),
 );
 const INTEGER_DIGITS_RADIX__SEPARATOR = choice(
 	seq('\\b',           DIGIT_SEQ_BIN__SEPARATOR),
@@ -115,7 +115,7 @@ const INTEGER_DIGITS_RADIX__SEPARATOR = choice(
 	seq('\\o',           DIGIT_SEQ_OCT__SEPARATOR),
 	seq(optional('\\d'), DIGIT_SEQ_DEC__SEPARATOR),
 	seq('\\x',           DIGIT_SEQ_HEX__SEPARATOR),
-	seq('\\z',           DIGIT_SEQ_HTD__SEPARATOR),
+	seq('\\z',           DIGIT_SEQ_NIF__SEPARATOR),
 );
 
 const SIGNED_DIGIT_SEQ_DEC            = seq(/[+-]?/, DIGIT_SEQ_DEC);

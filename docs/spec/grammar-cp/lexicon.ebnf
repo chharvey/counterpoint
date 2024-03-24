@@ -90,7 +90,7 @@ IntegerDigitsRadix<Separator> :::=
 	| "\o"  DigitSequenceOct<?Separator>
 	| "\d"? DigitSequenceDec<?Separator>
 	| "\x"  DigitSequenceHex<?Separator>
-	| "\z"  DigitSequenceHTD<?Separator>
+	| "\z"  DigitSequenceNif<?Separator>
 ;
 
 Float<Separator>
@@ -108,7 +108,7 @@ DigitSequenceSex<Separator> :::= ( DigitSequenceSex<?Separator> . <Separator+>"_
 DigitSequenceOct<Separator> :::= ( DigitSequenceOct<?Separator> . <Separator+>"_"? )? [0-7];
 DigitSequenceDec<Separator> :::= ( DigitSequenceDec<?Separator> . <Separator+>"_"? )? [0-9];
 DigitSequenceHex<Separator> :::= ( DigitSequenceHex<?Separator> . <Separator+>"_"? )? [0-9a-f];
-DigitSequenceHTD<Separator> :::= ( DigitSequenceHTD<?Separator> . <Separator+>"_"? )? [0-9a-z];
+DigitSequenceNif<Separator> :::= ( DigitSequenceNif<?Separator> . <Separator+>"_"? )? [0-9a-z];
 
 
 
