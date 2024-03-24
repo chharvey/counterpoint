@@ -52,23 +52,25 @@ Integers are written as a series of digits, such as `0123`,
 optionally preceded by a negative sign (`-0123`).
 `0` and `-0` are identical.
 
-Integers may be written in five other bases in addition to the default base 10:
-bases 2, 4, 8, 16, and 36.
+Integers may be written in six other bases in addition to the default base 10:
+bases 2, 4, 6, 8, 16, and 36.
 
-Raw Input  | Base | Mathematical Value (in decimal)
----------  | ---- | -------------------------------
-`42`       | 10   | 42
-`\d42`     | 10   | 42
-`\b101010` |  2   | 42
-`\q222`    |  4   | 42
-`\o52`     |  8   | 42
-`\x2a`     | 16   | 42
-`\z16`     | 36   | 42
+Source     | Radix | Mathematical Value (in decimal)
+------     | ----- | -------------------------------
+`42`       | 10    | 42
+`\d42`     | 10    | 42
+`\b101010` |  2    | 42
+`\q222`    |  4    | 42
+`\s110`    |  6    | 42
+`\o52`     |  8    | 42
+`\x2a`     | 16    | 42
+`\z16`     | 36    | 42
 
 The underscore may be used as a numeric separator symbol, to visually group digits.
 ```
 \b1_0011_1000_1000;
 \q103_2020;
+\s3_50_52;
 \o11_610;
 \d5_000;
 \x13_88;
