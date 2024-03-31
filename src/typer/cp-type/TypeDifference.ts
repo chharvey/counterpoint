@@ -25,8 +25,8 @@ export class TypeDifference extends Type {
 	 * @param right the second type
 	 */
 	 public constructor(
-		private readonly left:  Type,
-		private readonly right: Type,
+		public readonly left:  Type,
+		public readonly right: Type,
 	) {
 		super(false, xjs.Set.difference(left.values, right.values, languageValuesIdentical));
 	}
@@ -55,10 +55,5 @@ export class TypeDifference extends Type {
 
 	public override immutableOf(): TypeDifference {
 		return new TypeDifference(this.left.immutableOf(), this.right.immutableOf());
-	}
-
-	public isSupertypeOf(t: Type): boolean {
-		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
-		return t.isSubtypeOf(this.left) && t.intersect(this.right).isBottomType;
 	}
 }

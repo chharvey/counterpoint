@@ -155,21 +155,4 @@ export class TypeUnion extends Type implements Combinable {
 			this
 		);
 	}
-
-	public subtractedFrom(t: Type): Type {
-		/** 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
-		return t.subtract(this.left).intersect(t.subtract(this.right));
-	}
-
-	public isNecessarilySupertypeOf(t: Type): boolean {
-		/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
-		if (t.isSubtypeOf(this.left) || t.isSubtypeOf(this.right)) {
-			return true;
-		}
-		/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
-		if (t.equals(this.left) || t.equals(this.right)) {
-			return true;
-		}
-		return false;
-	}
 }

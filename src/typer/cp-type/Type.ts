@@ -122,8 +122,9 @@ export abstract class Type {
 				return NEVER;
 			}
 
+			/** 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
 			if (t instanceof TypeUnion) {
-				return t.subtractedFrom(this);
+				return this.subtract(t.left).intersect(this.subtract(t.right));
 			}
 
 			return method.call(this, t);
@@ -161,16 +162,23 @@ export abstract class Type {
 				return true;
 			}
 
+			/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 			if (t instanceof TypeIntersection) {
-				return t.isSupertypeOf(this);
+				return this.isSubtypeOf(t.left) && this.isSubtypeOf(t.right);
 			}
 			if (t instanceof TypeUnion) {
-				if (t.isNecessarilySupertypeOf(this)) {
+				/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
+				if (this.isSubtypeOf(t.left) || this.isSubtypeOf(t.right)) {
+					return true;
+				}
+				/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
+				if (this.equals(t.left) || this.equals(t.right)) {
 					return true;
 				}
 			}
+			/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
 			if (t instanceof TypeDifference) {
-				return t.isSupertypeOf(this);
+				return this.isSubtypeOf(t.left) && this.intersect(t.right).isBottomType;
 			}
 
 			return method.call(this, t);

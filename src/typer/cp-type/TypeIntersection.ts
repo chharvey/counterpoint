@@ -122,9 +122,4 @@ export class TypeIntersection extends Type implements Combinable {
 			this
 		);
 	}
-
-	public isSupertypeOf(t: Type): boolean {
-		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
-		return t.isSubtypeOf(this.left) && t.isSubtypeOf(this.right);
-	}
 }
