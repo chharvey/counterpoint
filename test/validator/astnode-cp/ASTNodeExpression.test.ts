@@ -480,7 +480,7 @@ describe('ASTNodeExpression', () => {
 					let unfixed z: str = "three";
 					[x, 2.0, "three"];
 					[a= 1, b= y, c= "three"];
-					% TODO: a non-foldable set object should be null
+					{1, 2.0, z};
 					{
 						"a" || "" -> 1,
 						21 + 21   -> y,
@@ -489,14 +489,16 @@ describe('ASTNodeExpression', () => {
 				`);
 				const tuple:   AST.ASTNodeTuple   = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
 				const record:  AST.ASTNodeRecord  = (goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
-				const map:     AST.ASTNodeMap     = (goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;
+				const set:     AST.ASTNodeSet     = (goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeSet;
+				const map:     AST.ASTNodeMap     = (goal.children[6] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;
 				assert.deepStrictEqual(
 					[
 						tuple,
 						record,
+						set,
 						map,
 					].map((c) => c.fold()),
-					[null, null, null],
+					[null, null, null, null],
 				);
 			});
 		});
