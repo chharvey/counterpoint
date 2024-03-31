@@ -1,5 +1,6 @@
 import * as xjs from 'extrajs';
 import {strictEqual} from '../../lib/index.js';
+import type {TypeEntry} from '../utils-public.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
 import {
@@ -18,6 +19,43 @@ import {
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
 export class TypeUnion extends Type implements Combinable {
+	/**
+	 * When accessing the *union* of tuple types `S` and `T`,
+	 * the set of items available is the *intersection* of the set of items on `S` with the set of items on `T`.
+	 * For any overlapping items, their type union is taken, as well as the disjunction of their optionality.
+	 */
+	private static unionTuples(s: TypeTuple, t: TypeTuple): TypeTuple {
+		const items: TypeEntry[] = [];
+		t.invariants.forEach((typ, i) => {
+			if (s.invariants[i]) {
+				items[i] = {
+					type:     s.invariants[i].type.union(typ.type),
+					optional: s.invariants[i].optional || typ.optional,
+				};
+			}
+		});
+		return new TypeTuple(items);
+	}
+
+	/**
+	 * When accessing the *union* of record types `S` and `T`,
+	 * the set of properties available is the *intersection* of the set of properties on `S` with the set of properties on `T`.
+	 * For any overlapping properties, their type union is taken, as well as the disjunction of their optionality.
+	 */
+	private static unionRecords(s: TypeRecord, t: TypeRecord): TypeRecord {
+		const props = new Map<bigint, TypeEntry>();
+		[...t.invariants].forEach(([id, typ]) => {
+			if (s.invariants.has(id)) {
+				props.set(id, {
+					type:     s.invariants.get(id)!.type.union(typ.type),
+					optional: s.invariants.get(id)!.optional || typ.optional,
+				});
+			}
+		});
+		return new TypeRecord(props);
+	}
+
+
 	public override readonly isReference:  boolean = this.left.isReference || this.right.isReference;
 	public override readonly isBottomType: boolean = this.left.isBottomType && this.right.isBottomType;
 
@@ -112,8 +150,8 @@ export class TypeUnion extends Type implements Combinable {
 	/** @implements Combinable */
 	public combineTuplesOrRecords(): Type {
 		return (
-			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? this.left.unionWithTuple(this.right)  :
-			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? this.left.unionWithRecord(this.right) :
+			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? TypeUnion.unionTuples (this.left, this.right)  :
+			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? TypeUnion.unionRecords(this.left, this.right) :
 			this
 		);
 	}

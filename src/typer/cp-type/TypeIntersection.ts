@@ -1,5 +1,6 @@
 import * as xjs from 'extrajs';
 import {strictEqual} from '../../lib/index.js';
+import type {TypeEntry} from '../utils-public.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
 import {
@@ -18,6 +19,39 @@ import {
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
 export class TypeIntersection extends Type implements Combinable {
+	/**
+	 * When accessing the *intersection* of tuple types `S` and `T`,
+	 * the set of items available is the *union* of the set of items on `S` with the set of items on `T`.
+	 * For any overlapping items, their type intersection is taken, as well as the conjunction of their optionality.
+	 */
+	private static intersectTuples(s: TypeTuple, t: TypeTuple): TypeTuple {
+		const items: TypeEntry[] = [...s.invariants];
+		t.invariants.forEach((typ, i) => {
+			items[i] = s.invariants[i] ? {
+				type:     s.invariants[i].type.intersect(typ.type),
+				optional: s.invariants[i].optional && typ.optional,
+			} : typ;
+		});
+		return new TypeTuple(items);
+	}
+
+	/**
+	 * When accessing the *intersection* of record types `S` and `T`,
+	 * the set of properties available is the *union* of the set of properties on `S` with the set of properties on `T`.
+	 * For any overlapping properties, their type intersection is taken, as well as the conjunction of their optionality.
+	 */
+	private static intersectRecords(s: TypeRecord, t: TypeRecord): TypeRecord {
+		const props = new Map<bigint, TypeEntry>([...s.invariants]);
+		[...t.invariants].forEach(([id, typ]) => {
+			props.set(id, s.invariants.has(id) ? {
+				type:     s.invariants.get(id)!.type.intersect(typ.type),
+				optional: s.invariants.get(id)!.optional && typ.optional,
+			} : typ);
+		});
+		return new TypeRecord(props);
+	}
+
+
 	public override readonly isReference:  boolean = this.left.isReference || this.right.isReference;
 	public override readonly isBottomType: boolean = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
 
@@ -83,8 +117,8 @@ export class TypeIntersection extends Type implements Combinable {
 	/** @implements Combinable */
 	public combineTuplesOrRecords(): Type {
 		return (
-			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? this.left.intersectWithTuple(this.right)  :
-			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? this.left.intersectWithRecord(this.right) :
+			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? TypeIntersection.intersectTuples (this.left, this.right) :
+			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? TypeIntersection.intersectRecords(this.left, this.right) :
 			this
 		);
 	}
