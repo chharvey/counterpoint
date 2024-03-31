@@ -155,9 +155,13 @@ describe('Type', () => {
 		});
 		describe('TypeUnion', () => {
 			it('distributes intersection operands over union: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
-				const expr = TYPE.NULL.union(TYPE.INT).intersect(TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE));
-				assert.ok(expr.equals(TYPE.NULL), '(null | int) & (void | null | false) == null');
-				assert.deepStrictEqual(expr, TYPE.NULL);
+				const a: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL, TYPE.INT]);
+				const b: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.TRUETYPE]);
+				const c: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.FALSETYPE, typeUnitInt(42n)]);
+				assert.ok(
+					b.union(c).intersect(a).equals(b.intersect(a).union(c.intersect(a))),
+					'([true] | [false, 42]) & [bool, int] == [true] & [bool, int] | [false, 42] & [bool, int]',
+				);
 			});
 			it('un-distributes common union operands over intersection: `(B \| A)  & (C \| A) == A \| (B  & C)`.', () => {
 				[

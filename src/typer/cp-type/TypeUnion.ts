@@ -98,11 +98,11 @@ export class TypeUnion extends Type implements Combinable {
 				}
 				/**     |  `(B \| A)  & (A \| C) == A \| (B  & C)` */
 				case this.right.equals(t.left): {
-					return (this.right.union(this.left.intersect(t.right)));
+					return this.right.union(this.left.intersect(t.right));
 				}
 				/**     |  `(B \| A)  & (C \| A) == A \| (B  & C)` */
 				case this.right.equals(t.right): {
-					return (this.right.union(this.left.intersect(t.left)));
+					return this.right.union(this.left.intersect(t.left));
 				}
 			}
 		}
