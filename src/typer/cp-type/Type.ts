@@ -407,3 +407,9 @@ export class TypeInterface extends Type {
 		return new TypeInterface(this.properties, false);
 	}
 }
+
+
+
+export interface Combinable extends Type {
+	combineTuplesOrRecords(): Type;
+}

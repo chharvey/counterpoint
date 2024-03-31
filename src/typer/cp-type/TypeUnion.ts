@@ -6,7 +6,10 @@ import {
 	TypeTuple,
 	TypeRecord,
 } from './index.js';
-import {Type} from './Type.js';
+import {
+	Type,
+	type Combinable,
+} from './Type.js';
 
 
 
@@ -14,7 +17,7 @@ import {Type} from './Type.js';
  * A type union of two types `T` and `U` is the type
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
-export class TypeUnion extends Type {
+export class TypeUnion extends Type implements Combinable {
 	public override readonly isReference:  boolean = this.left.isReference || this.right.isReference;
 	public override readonly isBottomType: boolean = this.left.isBottomType && this.right.isBottomType;
 
@@ -106,6 +109,15 @@ export class TypeUnion extends Type {
 		return new TypeUnion(this.left.immutableOf(), this.right.immutableOf());
 	}
 
+	/** @implements Combinable */
+	public combineTuplesOrRecords(): Type {
+		return (
+			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? this.left.unionWithTuple(this.right)  :
+			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? this.left.unionWithRecord(this.right) :
+			this
+		);
+	}
+
 	public subtractedFrom(t: Type): Type {
 		/** 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
 		return t.subtract(this.left).intersect(t.subtract(this.right));
@@ -121,13 +133,5 @@ export class TypeUnion extends Type {
 			return true;
 		}
 		return false;
-	}
-
-	public combineTuplesOrRecords(): Type {
-		return (
-			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? this.left.unionWithTuple(this.right)  :
-			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? this.left.unionWithRecord(this.right) :
-			this
-		);
 	}
 }

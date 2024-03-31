@@ -1,5 +1,6 @@
 import {
 	type OBJ,
+	isCombinable,
 	TYPE,
 } from '../../index.js';
 import {
@@ -36,7 +37,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.eval();
-		if (base_type instanceof TYPE.TypeIntersection || base_type instanceof TYPE.TypeUnion) {
+		if (isCombinable(base_type)) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		if (this.accessor instanceof ASTNodeIndexType) {

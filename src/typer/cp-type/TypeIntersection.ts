@@ -6,7 +6,10 @@ import {
 	TypeTuple,
 	TypeRecord,
 } from './index.js';
-import {Type} from './Type.js';
+import {
+	Type,
+	type Combinable,
+} from './Type.js';
 
 
 
@@ -14,7 +17,7 @@ import {Type} from './Type.js';
  * A type intersection of two types `T` and `U` is the type
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
-export class TypeIntersection extends Type {
+export class TypeIntersection extends Type implements Combinable {
 	public override readonly isReference:  boolean = this.left.isReference || this.right.isReference;
 	public override readonly isBottomType: boolean = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
 
@@ -77,16 +80,17 @@ export class TypeIntersection extends Type {
 		return new TypeIntersection(this.left.immutableOf(), this.right.immutableOf());
 	}
 
-	public isSupertypeOf(t: Type): boolean {
-		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
-		return t.isSubtypeOf(this.left) && t.isSubtypeOf(this.right);
-	}
-
+	/** @implements Combinable */
 	public combineTuplesOrRecords(): Type {
 		return (
 			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? this.left.intersectWithTuple(this.right)  :
 			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? this.left.intersectWithRecord(this.right) :
 			this
 		);
+	}
+
+	public isSupertypeOf(t: Type): boolean {
+		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
+		return t.isSubtypeOf(this.left) && t.isSubtypeOf(this.right);
 	}
 }
