@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {strictEqual} from '../../lib/index.js';
 import type {TypeEntry} from '../utils-public.js';
@@ -57,8 +58,6 @@ export class TypeUnion extends Type implements Combinable {
 
 
 	public readonly operands: readonly [Type, Type, ...readonly Type[]];
-	private readonly left:    Type;
-	private readonly right:   Type;
 
 	/**
 	 * Construct a new TypeUnion object.
@@ -78,7 +77,6 @@ export class TypeUnion extends Type implements Combinable {
 			),
 		);
 		this.operands = [operand0, operand1, ...operands];
-		[this.left, this.right] = this.operands;
 	}
 
 	/*
@@ -96,42 +94,46 @@ export class TypeUnion extends Type implements Combinable {
 	 */
 
 	public override get isReference(): boolean {
-		return this.left.isReference || this.right.isReference;
+		return this.operands.some((s) => s.isReference);
 	}
 
 	public override get hasMutable(): boolean {
-		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
+		return super.hasMutable || this.operands.some((s) => s.hasMutable);
 	}
 
 	@Type.toStringDeco
 	public override toString(): string {
-		return `${ this.left } | ${ this.right }`;
+		return this.operands.join(' | ');
 	}
 
 	public override includes(v: OBJ.Object): boolean {
-		return this.left.includes(v) || this.right.includes(v);
+		return this.operands.some((s) => s.includes(v));
 	}
 
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
 		/** 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)` */
 		if (t instanceof TypeUnion) {
+			const this_left:  Type = this.operands[0];
+			const this_right: Type = this.operands[1];
+			const that_left:  Type = t.operands[0];
+			const that_right: Type = t.operands[1];
 			switch (true) {
 				/**     |  `(A \| B)  & (A \| C) == A \| (B  & C)` */
-				case this.left.equals(t.left): {
-					return this.left.union(this.right.intersect(t.right));
+				case this_left.equals(that_left): {
+					return this_left.union(this_right.intersect(that_right));
 				}
 				/**     |  `(A \| B)  & (C \| A) == A \| (B  & C)` */
-				case this.left.equals(t.right): {
-					return this.left.union(this.right.intersect(t.left));
+				case this_left.equals(that_right): {
+					return this_left.union(this_right.intersect(that_left));
 				}
 				/**     |  `(B \| A)  & (A \| C) == A \| (B  & C)` */
-				case this.right.equals(t.left): {
-					return this.right.union(this.left.intersect(t.right));
+				case this_right.equals(that_left): {
+					return this_right.union(this_left.intersect(that_right));
 				}
 				/**     |  `(B \| A)  & (C \| A) == A \| (B  & C)` */
-				case this.right.equals(t.right): {
-					return this.right.union(this.left.intersect(t.left));
+				case this_right.equals(that_right): {
+					return this_right.union(this_left.intersect(that_left));
 				}
 			}
 		}
@@ -139,7 +141,7 @@ export class TypeUnion extends Type implements Combinable {
 		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
 		 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
 		 */
-		return this.left.intersect(t).union(this.right.intersect(t));
+		return Type.unionAll(this.operands.map((s) => s.intersect(t)));
 	}
 
 	@Type.unionDeco
@@ -148,11 +150,21 @@ export class TypeUnion extends Type implements Combinable {
 		 *     |  `A <: C --> (A \| B) \| C == B \| C`
 		 *     |  `B <: C --> (A \| B) \| C == A \| C`
 		 */
-		return (
-			this.left .isSubtypeOf(t) ? this.right.union(t) :
-			this.right.isSubtypeOf(t) ? this.left .union(t) :
-			new TypeUnion(this, t)
-		);
+		const filtered_operands = this.operands.filter((s) => !s.isSubtypeOf(t));
+		if (filtered_operands.length < this.operands.length) {
+			if (filtered_operands.length >= 2) {
+				return new TypeUnion(filtered_operands[0], filtered_operands[1], ...filtered_operands.slice(2)).union(t);
+			} else if (filtered_operands.length) {
+				return filtered_operands[0].union(t);
+			} else {
+				/* 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
+				assert.ok(this.isSubtypeOf(t), `Expected ${ this } to be a subtype of ${ t }.`);
+				/* 3-4 | `A <: B  <->  A \| B == B` */
+				return t;
+			}
+		} else {
+			return new TypeUnion(this, t);
+		}
 	}
 
 	@Type.subtractDeco
@@ -165,22 +177,22 @@ export class TypeUnion extends Type implements Combinable {
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
-		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t);
+		return this.operands.every((s) => s.isSubtypeOf(t));
 	}
 
 	public override mutableOf(): TypeUnion {
-		return new TypeUnion(this.left.mutableOf(), this.right.mutableOf());
+		return new TypeUnion(...this.operands.map((s) => s.mutableOf()) as [Type, Type, ...Type[]]);
 	}
 
 	public override immutableOf(): TypeUnion {
-		return new TypeUnion(this.left.immutableOf(), this.right.immutableOf());
+		return new TypeUnion(...this.operands.map((s) => s.immutableOf()) as [Type, Type, ...Type[]]);
 	}
 
 	/** @implements Combinable */
 	public combineTuplesOrRecords(): Type {
 		return (
-			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? TypeUnion.unionTuples (this.left, this.right)  :
-			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? TypeUnion.unionRecords(this.left, this.right) :
+			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as readonly [TypeTuple,  TypeTuple,  ...readonly TypeTuple[]]) .reduce((a, b) => TypeUnion.unionTuples (a, b)) :
+			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as readonly [TypeRecord, TypeRecord, ...readonly TypeRecord[]]).reduce((a, b) => TypeUnion.unionRecords(a, b)) :
 			this
 		);
 	}

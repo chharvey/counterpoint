@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {strictEqual} from '../../lib/index.js';
 import type {TypeEntry} from '../utils-public.js';
@@ -53,8 +54,6 @@ export class TypeIntersection extends Type implements Combinable {
 
 
 	public readonly operands: readonly [Type, Type, ...readonly Type[]];
-	private readonly left:    Type;
-	private readonly right:   Type;
 
 	/**
 	 * Construct a new TypeIntersection object.
@@ -74,12 +73,11 @@ export class TypeIntersection extends Type implements Combinable {
 			),
 		);
 		this.operands = [operand0, operand1, ...operands];
-		[this.left, this.right] = this.operands;
 	}
 
 	public override get isBottomType(): boolean {
 		/* This could be bottom if the operands are disjoint. */
-		return this.left.isBottomType || this.right.isBottomType || this.values.size === 0;
+		return this.operands.some((s) => s.isBottomType) || this.values.size === 0;
 	}
 
 	/*
@@ -90,20 +88,20 @@ export class TypeIntersection extends Type implements Combinable {
 	 */
 
 	public override get isReference(): boolean {
-		return this.left.isReference || this.right.isReference;
+		return this.operands.some((s) => s.isReference);
 	}
 
 	public override get hasMutable(): boolean {
-		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
+		return super.hasMutable || this.operands.some((s) => s.hasMutable);
 	}
 
 	@Type.toStringDeco
 	public override toString(): string {
-		return `${ this.left } & ${ this.right }`;
+		return this.operands.join(' & ');
 	}
 
 	public override includes(v: OBJ.Object): boolean {
-		return this.left.includes(v) && this.right.includes(v);
+		return this.operands.every((s) => s.includes(v));
 	}
 
 	@Type.intersectDeco
@@ -112,40 +110,50 @@ export class TypeIntersection extends Type implements Combinable {
 		 *     |  `C <: A --> (A  & B)  & C == B  & C`
 		 *     |  `C <: B --> (A  & B)  & C == A  & C`
 		 */
-		return (
-			t.isSubtypeOf(this.left)  ? this.right.intersect(t) :
-			t.isSubtypeOf(this.right) ? this.left .intersect(t) :
-			new TypeIntersection(this, t)
-		);
+		const filtered_operands = this.operands.filter((s) => !t.isSubtypeOf(s));
+		if (filtered_operands.length < this.operands.length) {
+			if (filtered_operands.length >= 2) {
+				return new TypeIntersection(filtered_operands[0], filtered_operands[1], ...filtered_operands.slice(2)).intersect(t);
+			} else if (filtered_operands.length) {
+				return filtered_operands[0].intersect(t);
+			} else {
+				/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
+				assert.ok(t.isSubtypeOf(this), `Expected ${ t } to be a subtype of ${ this }.`);
+				/* 3-3 | `A <: B  <->  A  & B == A` */
+				return t;
+			}
+		} else {
+			return new TypeIntersection(this, t);
+		}
 	}
 
 	@strictEqual
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
-		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) {
+		if (this.operands.some((s) => s.isSubtypeOf(t))) {
 			return true;
 		}
 		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */
-		if (t.equals(this.left) || t.equals(this.right)) {
+		if (this.operands.some((s) => s.equals(t))) {
 			return true;
 		}
 		return super.isSubtypeOf(t);
 	}
 
 	public override mutableOf(): TypeIntersection {
-		return new TypeIntersection(this.left.mutableOf(), this.right.mutableOf());
+		return new TypeIntersection(...this.operands.map((s) => s.mutableOf()) as [Type, Type, ...Type[]]);
 	}
 
 	public override immutableOf(): TypeIntersection {
-		return new TypeIntersection(this.left.immutableOf(), this.right.immutableOf());
+		return new TypeIntersection(...this.operands.map((s) => s.immutableOf()) as [Type, Type, ...Type[]]);
 	}
 
 	/** @implements Combinable */
 	public combineTuplesOrRecords(): Type {
 		return (
-			(this.left instanceof TypeTuple  && this.right instanceof TypeTuple)  ? TypeIntersection.intersectTuples (this.left, this.right) :
-			(this.left instanceof TypeRecord && this.right instanceof TypeRecord) ? TypeIntersection.intersectRecords(this.left, this.right) :
+			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as readonly [TypeTuple,  TypeTuple,  ...readonly TypeTuple[]]) .reduce((a, b) => TypeIntersection.intersectTuples (a, b)) :
+			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as readonly [TypeRecord, TypeRecord, ...readonly TypeRecord[]]).reduce((a, b) => TypeIntersection.intersectRecords(a, b)) :
 			this
 		);
 	}
