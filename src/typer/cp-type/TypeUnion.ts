@@ -56,16 +56,29 @@ export class TypeUnion extends Type implements Combinable {
 	}
 
 
+	public readonly operands: readonly [Type, Type, ...readonly Type[]];
+	public readonly left:     Type;
+	public readonly right:    Type;
+
 	/**
 	 * Construct a new TypeUnion object.
-	 * @param left the first type
-	 * @param right the second type
+	 * @param operand0 the first type
+	 * @param operand1 the second type
 	 */
 	public constructor(
-		public readonly left:  Type,
-		public readonly right: Type,
+		operand0:    Type,
+		operand1:    Type,
+		...operands: readonly Type[]
 	) {
-		super(false, xjs.Set.union(left.values, right.values, languageValuesIdentical));
+		super(
+			false,
+			operands.reduce(
+				(accum, next) => xjs.Set.union(accum, next.values, languageValuesIdentical),
+				xjs.Set.union(operand0.values, operand1.values, languageValuesIdentical),
+			),
+		);
+		this.operands = [operand0, operand1, ...operands];
+		[this.left, this.right] = this.operands;
 	}
 
 	/*
