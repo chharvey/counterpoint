@@ -15,6 +15,10 @@ import {
 
 
 
+const language_types_equal = (a: Type, b: Type): boolean => a.equals(b);
+
+
+
 /**
  * A type union of two types `T` and `U` is the type
  * that contains values both assignable to `T` *and* assignable to `U`.
@@ -76,7 +80,11 @@ export class TypeUnion extends Type implements Combinable {
 				xjs.Set.union(operand0.values, operand1.values, languageValuesIdentical),
 			),
 		);
-		this.operands = [operand0, operand1, ...operands];
+		this.operands = [
+			...(operand0 instanceof TypeUnion ? operand0.operands : [operand0] as const),
+			...(operand1 instanceof TypeUnion ? operand1.operands : [operand1] as const),
+			...operands,
+		];
 	}
 
 	/*
@@ -112,29 +120,16 @@ export class TypeUnion extends Type implements Combinable {
 
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
-		/** 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)` */
 		if (t instanceof TypeUnion) {
-			const this_left:  Type = this.operands[0];
-			const this_right: Type = this.operands[1];
-			const that_left:  Type = t.operands[0];
-			const that_right: Type = t.operands[1];
-			switch (true) {
-				/**     |  `(A \| B)  & (A \| C) == A \| (B  & C)` */
-				case this_left.equals(that_left): {
-					return this_left.union(this_right.intersect(that_right));
-				}
-				/**     |  `(A \| B)  & (C \| A) == A \| (B  & C)` */
-				case this_left.equals(that_right): {
-					return this_left.union(this_right.intersect(that_left));
-				}
-				/**     |  `(B \| A)  & (A \| C) == A \| (B  & C)` */
-				case this_right.equals(that_left): {
-					return this_right.union(this_left.intersect(that_right));
-				}
-				/**     |  `(B \| A)  & (C \| A) == A \| (B  & C)` */
-				case this_right.equals(that_right): {
-					return this_right.union(this_left.intersect(that_left));
-				}
+			/** 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)` */
+			// `(A1 | A2 | B1 | B2) & (A1 | A2 | C1 | C2) == (A1 | A2) | ((B1 | B2) & (C1 | C2))`
+			const these_operands:  ReadonlySet<Type> = new Set(this.operands);
+			const those_operands:  ReadonlySet<Type> = new Set(t.operands);
+			const common_operands: Type              = Type.unionAll([...xjs.Set.intersection(these_operands, those_operands, language_types_equal)]);
+			if (!common_operands.isBottomType) {
+				const these_not_those: Type = Type.unionAll([...xjs.Set.difference(these_operands, those_operands, language_types_equal)]);
+				const those_not_these: Type = Type.unionAll([...xjs.Set.difference(those_operands, these_operands, language_types_equal)]);
+				return common_operands.union(these_not_those.intersect(those_not_these));
 			}
 		}
 		/**

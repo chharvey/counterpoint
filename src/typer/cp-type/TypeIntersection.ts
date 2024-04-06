@@ -72,7 +72,11 @@ export class TypeIntersection extends Type implements Combinable {
 				xjs.Set.intersection(operand0.values, operand1.values, languageValuesIdentical),
 			),
 		);
-		this.operands = [operand0, operand1, ...operands];
+		this.operands = [
+			...(operand0 instanceof TypeIntersection ? operand0.operands : [operand0] as const),
+			...(operand1 instanceof TypeIntersection ? operand1.operands : [operand1] as const),
+			...operands,
+		];
 	}
 
 	public override get isBottomType(): boolean {
