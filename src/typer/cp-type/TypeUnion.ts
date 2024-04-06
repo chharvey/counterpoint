@@ -57,8 +57,8 @@ export class TypeUnion extends Type implements Combinable {
 
 
 	public readonly operands: readonly [Type, Type, ...readonly Type[]];
-	public readonly left:     Type;
-	public readonly right:    Type;
+	private readonly left:    Type;
+	private readonly right:   Type;
 
 	/**
 	 * Construct a new TypeUnion object.
@@ -158,7 +158,7 @@ export class TypeUnion extends Type implements Combinable {
 	@Type.subtractDeco
 	public override subtract(t: Type): Type {
 		/** 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
-		return this.left.subtract(t).union(this.right.subtract(t));
+		return Type.unionAll(this.operands.map((s) => s.subtract(t)));
 	}
 
 	@strictEqual

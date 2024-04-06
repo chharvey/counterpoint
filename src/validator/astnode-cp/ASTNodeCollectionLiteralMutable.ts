@@ -25,19 +25,21 @@ export abstract class ASTNodeCollectionLiteralMutable extends ASTNodeCollectionL
 		return function (this: ASTNodeCollectionLiteralMutable, assignee, err) {
 			if (assignee instanceof TYPE.TypeIntersection) {
 				/* A value is assignable to a type intersection if and only if
-				it is assignable to both operands of that intersection. */
-				return xjs.Array.forEachAggregated<() => void>([
-					() => this.assignTo(assignee.left,  err),
-					() => this.assignTo(assignee.right, err),
-				], (callback) => callback.call(null));
+				it is assignable to all operands of that intersection. */
+				return xjs.Array.forEachAggregated(assignee.operands, (s) => this.assignTo(s, err));
 			} else if (assignee instanceof TYPE.TypeUnion) {
 				/* A value is assignable to a type union if and only if
-				it is assignable to either operand of that union. */
-				try {
-					return this.assignTo(assignee.left, err);
-				} catch {
-					return this.assignTo(assignee.right, err);
+				it is assignable to any operand of that union. */
+				let thrown: TypeErrorNotAssignable | null = null;
+				for (const s of assignee.operands) {
+					try {
+						return this.assignTo(s, err);
+					} catch (e) {
+						thrown ??= e as TypeErrorNotAssignable;
+						continue;
+					}
 				}
+				throw thrown;
 			} else {
 				return method.call(this, assignee, err);
 			}

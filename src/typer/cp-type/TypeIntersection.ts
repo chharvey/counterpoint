@@ -53,8 +53,8 @@ export class TypeIntersection extends Type implements Combinable {
 
 
 	public readonly operands: readonly [Type, Type, ...readonly Type[]];
-	public readonly left:     Type;
-	public readonly right:    Type;
+	private readonly left:    Type;
+	private readonly right:   Type;
 
 	/**
 	 * Construct a new TypeIntersection object.
