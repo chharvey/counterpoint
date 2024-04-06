@@ -46,18 +46,18 @@ export abstract class Type {
 		_context: ClassMethodDecoratorContext<Type, typeof method>,
 	): typeof method {
 		return function (this: Type, t) {
-			/** 1-5 | `T  & never   == never` */
+			/* 1-5 | `T  & never   == never` */
 			if (this.isBottomType || t.isBottomType) {
 				return NEVER;
 			}
-			/** 1-6 | `T  & unknown == T` */
+			/* 1-6 | `T  & unknown == T` */
 			if (this.isTopType) {
 				return t;
 			}
 			if (t.isTopType) {
 				return this;
 			}
-			/** 3-3 | `A <: B  <->  A  & B == A` */
+			/* 3-3 | `A <: B  <->  A  & B == A` */
 			if (this.isSubtypeOf(t)) {
 				return this;
 			}
@@ -79,18 +79,18 @@ export abstract class Type {
 		_context: ClassMethodDecoratorContext<Type, typeof method>,
 	): typeof method {
 		return function (this: Type, t) {
-			/** 1-7 | `T \| never   == T` */
+			/* 1-7 | `T \| never   == T` */
 			if (this.isBottomType) {
 				return t;
 			}
 			if (t.isBottomType) {
 				return this;
 			}
-			/** 1-8 | `T \| unknown == unknown` */
+			/* 1-8 | `T \| unknown == unknown` */
 			if (this.isTopType || t.isTopType) {
 				return UNKNOWN;
 			}
-			/** 3-4 | `A <: B  <->  A \| B == B` */
+			/* 3-4 | `A <: B  <->  A \| B == B` */
 			if (this.isSubtypeOf(t)) {
 				return t;
 			}
@@ -112,17 +112,17 @@ export abstract class Type {
 		_context: ClassMethodDecoratorContext<Type, typeof method>,
 	): typeof method {
 		return function (this: Type, t) {
-			/** 4-1 | `A - B == A  <->  A & B == never` */
+			/* 4-1 | `A - B == A  <->  A & B == never` */
 			if (this.intersect(t).isBottomType) {
 				return this;
 			}
 
-			/** 4-2 | `A - B == never  <->  A <: B` */
+			/* 4-2 | `A - B == never  <->  A <: B` */
 			if (this.isSubtypeOf(t)) {
 				return NEVER;
 			}
 
-			/** 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
+			/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
 			if (t instanceof TypeUnion) {
 				return this.subtract(t.left).intersect(this.subtract(t.right));
 			}
@@ -141,42 +141,42 @@ export abstract class Type {
 		_context: ClassMethodDecoratorContext<Type, typeof method>,
 	): typeof method {
 		return function (this: Type, t) {
-			/** 2-7 | `A <: A` */
+			/* 2-7 | `A <: A` */
 			if (this === t) {
 				return true;
 			}
-			/** 1-1 | `never <: T` */
+			/* 1-1 | `never <: T` */
 			if (this.isBottomType) {
 				return true;
 			}
-			/** 1-3 | `T       <: never  <->  T == never` */
+			/* 1-3 | `T       <: never  <->  T == never` */
 			if (t.isBottomType) {
 				return this.isBottomType;
 			}
-			/** 1-4 | `unknown <: T      <->  T == unknown` */
+			/* 1-4 | `unknown <: T      <->  T == unknown` */
 			if (this.isTopType) {
 				return t.isTopType;
 			}
-			/** 1-2 | `T     <: unknown` */
+			/* 1-2 | `T     <: unknown` */
 			if (t.isTopType) {
 				return true;
 			}
 
-			/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
+			/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 			if (t instanceof TypeIntersection) {
 				return this.isSubtypeOf(t.left) && this.isSubtypeOf(t.right);
 			}
 			if (t instanceof TypeUnion) {
-				/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
+				/* 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
 				if (this.isSubtypeOf(t.left) || this.isSubtypeOf(t.right)) {
 					return true;
 				}
-				/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
+				/* 3-2 | `A <: A \| B  &&  B <: A \| B` */
 				if (this.equals(t.left) || this.equals(t.right)) {
 					return true;
 				}
 			}
-			/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
+			/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
 			if (t instanceof TypeDifference) {
 				return this.isSubtypeOf(t.left) && this.intersect(t.right).isBottomType;
 			}
@@ -259,7 +259,7 @@ export abstract class Type {
 	 */
 	@Type.intersectDeco
 	public intersect(t: Type): Type {
-		/** 2-1 | `A  & B == B  & A` */
+		/* 2-1 | `A  & B == B  & A` */
 		if (t instanceof TypeIntersection || t instanceof TypeUnion) {
 			return t.intersect(this);
 		}
@@ -274,7 +274,7 @@ export abstract class Type {
 	 */
 	@Type.unionDeco
 	public union(t: Type): Type {
-		/** 2-2 | `A \| B == B \| A` */
+		/* 2-2 | `A \| B == B \| A` */
 		if (t instanceof TypeUnion) {
 			return t.union(this);
 		}

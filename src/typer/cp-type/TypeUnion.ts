@@ -85,28 +85,28 @@ export class TypeUnion extends Type implements Combinable {
 
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
-		/** 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)` */
+		/* 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)` */
 		if (t instanceof TypeUnion) {
 			switch (true) {
-				/**     |  `(A \| B)  & (A \| C) == A \| (B  & C)` */
+				/*     |  `(A \| B)  & (A \| C) == A \| (B  & C)` */
 				case this.left.equals(t.left): {
 					return this.left.union(this.right.intersect(t.right));
 				}
-				/**     |  `(A \| B)  & (C \| A) == A \| (B  & C)` */
+				/*     |  `(A \| B)  & (C \| A) == A \| (B  & C)` */
 				case this.left.equals(t.right): {
 					return this.left.union(this.right.intersect(t.left));
 				}
-				/**     |  `(B \| A)  & (A \| C) == A \| (B  & C)` */
+				/*     |  `(B \| A)  & (A \| C) == A \| (B  & C)` */
 				case this.right.equals(t.left): {
 					return this.right.union(this.left.intersect(t.right));
 				}
-				/**     |  `(B \| A)  & (C \| A) == A \| (B  & C)` */
+				/*     |  `(B \| A)  & (C \| A) == A \| (B  & C)` */
 				case this.right.equals(t.right): {
 					return this.right.union(this.left.intersect(t.left));
 				}
 			}
 		}
-		/**
+		/*
 		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
 		 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
 		 */
@@ -115,7 +115,7 @@ export class TypeUnion extends Type implements Combinable {
 
 	@Type.unionDeco
 	public override union(t: Type): Type {
-		/**
+		/*
 		 *     |  `A <: C --> (A \| B) \| C == B \| C`
 		 *     |  `B <: C --> (A \| B) \| C == A \| C`
 		 */
@@ -128,14 +128,14 @@ export class TypeUnion extends Type implements Combinable {
 
 	@Type.subtractDeco
 	public override subtract(t: Type): Type {
-		/** 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
+		/* 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
 		return this.left.subtract(t).union(this.right.subtract(t));
 	}
 
 	@strictEqual
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
-		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
+		/* 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t);
 	}
 

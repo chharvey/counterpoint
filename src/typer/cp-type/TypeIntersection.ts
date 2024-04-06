@@ -81,7 +81,7 @@ export class TypeIntersection extends Type implements Combinable {
 
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
-		/**
+		/*
 		 *     |  `C <: A --> (A  & B)  & C == B  & C`
 		 *     |  `C <: B --> (A  & B)  & C == A  & C`
 		 */
@@ -95,11 +95,11 @@ export class TypeIntersection extends Type implements Combinable {
 	@strictEqual
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
-		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
+		/* 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) {
 			return true;
 		}
-		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */
+		/* 3-1 | `A  & B <: A  &&  A  & B <: B` */
 		if (t.equals(this.left) || t.equals(this.right)) {
 			return true;
 		}
