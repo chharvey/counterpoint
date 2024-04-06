@@ -58,6 +58,16 @@ describe('Type', () => {
 	});
 
 
+	describe('#toString', () => {
+		it('displays `never` for the bottom type.', () => {
+			const bool_and_str: TYPE.Type = TYPE.BOOL.intersect(TYPE.STR);
+			assert.notDeepStrictEqual(bool_and_str, TYPE.NEVER);
+			assert.ok(bool_and_str.isBottomType);
+			return assert.strictEqual(bool_and_str.toString(), TYPE.NEVER.toString());
+		});
+	});
+
+
 	describe('#includes', () => {
 		it('uses `Object#identical` to compare values.', () => {
 			function unionOfInts(ns: readonly bigint[]): TYPE.Type {

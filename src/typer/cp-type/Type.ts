@@ -37,6 +37,24 @@ import {
  */
 export abstract class Type {
 	/**
+	 * Decorator for some overrides of {@link Type#toString}.
+	 * Contains some special cases of string representations.
+	 * @implements MethodDecorator<Type, Type['toString']>
+	 */
+	protected static toStringDeco(
+		method: Type['toString'],
+		_context: ClassMethodDecoratorContext<Type, typeof method>,
+	): typeof method {
+		return function (this: Type) {
+			return (
+				this.isBottomType ? NEVER  .toString() :
+				this.isTopType    ? UNKNOWN.toString() :
+				method.call(this)
+			);
+		};
+	}
+
+	/**
 	 * Decorator for {@link Type#intersect} method and any overrides.
 	 * Contains shortcuts for constructing type intersections.
 	 * @implements MethodDecorator<Type, Type['intersect']>

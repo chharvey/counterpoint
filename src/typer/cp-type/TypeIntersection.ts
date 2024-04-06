@@ -71,6 +71,7 @@ export class TypeIntersection extends Type implements Combinable {
 		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
 	}
 
+	@Type.toStringDeco
 	public override toString(): string {
 		return `${ this.left } & ${ this.right }`;
 	}
