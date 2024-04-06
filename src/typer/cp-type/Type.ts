@@ -225,23 +225,6 @@ export abstract class Type {
 
 
 	/**
-	 * Whether this type is a reference type or a value type.
-	 */
-	public readonly isReference: boolean = true;
-	/**
-	 * Whether this type has no values assignable to it,
-	 * i.e., it is equal to the type `never`.
-	 * Used internally for special cases of computations.
-	 */
-	public readonly isBottomType: boolean = this.values.size === 0;
-	/**
-	 * Whether this type has all values assignable to it,
-	 * i.e., it is equal to the type `unknown`.
-	 * Used internally for special cases of computations.
-	 */
-	public readonly isTopType: boolean = false;
-
-	/**
 	 * Construct a new Type object.
 	 * @param isMutable Whether this type is `mutable`. Mutable objects may change fields/entries and call mutating methods.
 	 * @param values    An enumerated set of values that are assignable to this type.
@@ -250,6 +233,34 @@ export abstract class Type {
 		public readonly isMutable: boolean,
 		public readonly values:    ReadonlySet<OBJ.Object> = new Set(),
 	) {
+	}
+
+	/**
+	 * Return whether this type has no values assignable to it,
+	 * i.e., it is equal to the type `never`.
+	 * Used internally for special cases of computations.
+	 * @return `true if this type is the bottom type
+	 */
+	public get isBottomType(): boolean {
+		return false;
+	}
+
+	/**
+	 * Return whether this type has all values assignable to it,
+	 * i.e., it is equal to the type `unknown`.
+	 * Used internally for special cases of computations.
+	 * @return `true if this type is the top type
+	 */
+	public get isTopType(): boolean {
+		return false;
+	}
+
+	/**
+	 * Return whether this type is a reference type or a value type.
+	 * @return `true` if this type is a reference type
+	 */
+	public get isReference(): boolean {
+		return true;
 	}
 
 	/**
@@ -349,9 +360,6 @@ export abstract class Type {
  * An Interface Type is a set of properties that a value must have.
  */
 export class TypeInterface extends Type {
-	public override readonly isBottomType: boolean = [...this.properties.values()].some((value) => value.isBottomType);
-	public override readonly isTopType:    boolean = this.properties.size === 0;
-
 	/**
 	 * Construct a new TypeInterface object.
 	 * @param properties a map of this type’s members’ names along with their associated types
@@ -362,6 +370,14 @@ export class TypeInterface extends Type {
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable);
+	}
+
+	public override get isBottomType(): boolean {
+		return [...this.properties.values()].some((value) => value.isBottomType);
+	}
+
+	public override get isTopType(): boolean {
+		return this.properties.size === 0;
 	}
 
 	public override get hasMutable(): boolean {

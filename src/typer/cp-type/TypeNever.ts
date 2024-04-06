@@ -1,6 +1,7 @@
 import {strictEqual} from '../../lib/index.js';
 import type * as OBJ from '../cp-object/index.js';
-import {Type} from './Type.js';
+import type {Type} from './Type.js';
+import {ValueType} from './ValueType.js';
 
 
 
@@ -8,16 +9,16 @@ import {Type} from './Type.js';
  * Class for constructing the Bottom Type, the type containing no values.
  * @final
  */
-export class TypeNever extends Type {
+export class TypeNever extends ValueType {
 	public static readonly INSTANCE = new TypeNever();
 
 
-	public override readonly isReference:  boolean = false;
-	public override readonly isBottomType: boolean = true;
-	public override readonly isTopType:    boolean = false;
-
 	private constructor() {
 		super(false);
+	}
+
+	public override get isBottomType(): boolean {
+		return true;
 	}
 
 	public override toString(): string {

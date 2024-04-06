@@ -1,5 +1,5 @@
 import * as OBJ from '../cp-object/index.js';
-import {Type} from './Type.js';
+import {ValueType} from './ValueType.js';
 
 
 
@@ -7,13 +7,9 @@ import {Type} from './Type.js';
  * Class for constructing the `bool` type.
  * @final
  */
-export class TypeBoolean extends Type {
+export class TypeBoolean extends ValueType {
 	public static readonly INSTANCE = new TypeBoolean();
 
-
-	public override readonly isReference:  boolean = false;
-	public override readonly isBottomType: boolean = false;
-	public override readonly isTopType:    boolean = false;
 
 	private constructor() {
 		super(false, new Set([OBJ.Boolean.FALSE, OBJ.Boolean.TRUE]));

@@ -52,9 +52,6 @@ export class TypeIntersection extends Type implements Combinable {
 	}
 
 
-	public override readonly isReference:  boolean = this.left.isReference || this.right.isReference;
-	public override readonly isBottomType: boolean = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
-
 	/**
 	 * Construct a new TypeIntersection object.
 	 * @param left the first type
@@ -65,6 +62,22 @@ export class TypeIntersection extends Type implements Combinable {
 		public readonly right: Type,
 	) {
 		super(false, xjs.Set.intersection(left.values, right.values, languageValuesIdentical));
+	}
+
+	public override get isBottomType(): boolean {
+		/* This could be bottom if the operands are disjoint. */
+		return this.left.isBottomType || this.right.isBottomType || this.values.size === 0;
+	}
+
+	/*
+	 * We can assert that this is never top because
+	 * the only case in which it could be top is
+	 * if both the left and the right are top,
+	 * which is impossible because the algorithm would have already produced the `unknown` type.
+	 */
+
+	public override get isReference(): boolean {
+		return this.left.isReference || this.right.isReference;
 	}
 
 	public override get hasMutable(): boolean {

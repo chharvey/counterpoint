@@ -12,11 +12,12 @@ export class TypeUnknown extends Type {
 	public static readonly INSTANCE = new TypeUnknown();
 
 
-	public override readonly isBottomType: boolean = false;
-	public override readonly isTopType:    boolean = true;
-
 	private constructor() {
 		super(false);
+	}
+
+	public override get isTopType(): boolean {
+		return true;
 	}
 
 	public override toString(): string {
