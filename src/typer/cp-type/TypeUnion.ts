@@ -148,8 +148,8 @@ export class TypeUnion extends Combinable {
 	@Type.unionDeco
 	public override union(t: Type): Type {
 		/**
-		 *     |  `A <: C --> (A \| B) \| C == B \| C`
-		 *     |  `B <: C --> (A \| B) \| C == A \| C`
+		 * 3-a | `A <: C --> (A \| B) \| C == B \| C`
+		 *     | `B <: C --> (A \| B) \| C == A \| C`
 		 */
 		const filtered_operands = this.operands.filter((s) => !s.isSubtypeOf(t));
 		if (filtered_operands.length < this.operands.length) {

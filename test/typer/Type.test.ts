@@ -129,6 +129,15 @@ describe('Type', () => {
 				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${ a }, ${ b }, ${ c }`);
 			});
 		});
+		it('3-9 | `C <: A --> (A  & B)  & C == B  & C`', () => {
+			const a: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL, TYPE.INT]);
+			const b: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.TRUETYPE]);
+			const c: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.FALSETYPE, typeUnitInt(42n)]);
+			const actual:   TYPE.Type = a.intersect(b).intersect(c);
+			const expected: TYPE.Type = b.intersect(c);
+			assert.ok(actual.equals(expected), '([bool, int] & [true]) & [false, 42] == [true] & [false, 42]');
+			assert.deepStrictEqual(actual, expected);
+		});
 		it('extracts constituents of discriminated unions.', () => {
 			assert.ok(
 				TYPE.NULL.union(TYPE.BOOL).union(TYPE.INT)
@@ -142,14 +151,11 @@ describe('Type', () => {
 			);
 		});
 		describe('TypeIntersection', () => {
-			it('optimizes nested intersections: `C <: A --> (A  & B)  & C == B  & C`', () => {
+			it('optimizes nested intersections: `(A & B) & A === A & B`', () => {
 				const a: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL, TYPE.INT]);
 				const b: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.TRUETYPE]);
-				const c: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.FALSETYPE, typeUnitInt(42n)]);
-				const actual:   TYPE.Type = a.intersect(b).intersect(c);
-				const expected: TYPE.Type = b.intersect(c);
-				assert.ok(actual.equals(expected), '([bool, int] & [true]) & [false, 42] == [true] & [false, 42]');
-				assert.deepStrictEqual(actual, expected);
+				const expected: TYPE.Type = a.intersect(b);
+				assert.strictEqual(expected.intersect(a), expected);
 			});
 			it('doesn’t stack overflow.', () => {
 				const a_int:   TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));   // [a: int]
@@ -219,6 +225,15 @@ describe('Type', () => {
 				assert.ok(a.union(b.intersect(c)).equals(a.union(b).intersect(a.union(c))), `${ a }, ${ b }, ${ c }`);
 			});
 		});
+		it('3-a | `A <: C --> (A \| B) \| C == B \| C`', () => {
+			const a: TYPE.Type = typeUnitFloat(4.2);
+			const b: TYPE.Type = typeUnitInt(42n);
+			const c: TYPE.Type = TYPE.FLOAT;
+			const actual:   TYPE.Type = a.union(b).union(c);
+			const expected: TYPE.Type = b.union(c);
+			assert.ok(actual.equals(expected), '(4.2 | 42) | float == 42 | float');
+			assert.deepStrictEqual(actual, expected);
+		});
 		it('extracts constituents of discriminated unions.', () => {
 			assert.ok(
 				TYPE.NULL.union(TYPE.BOOL).union(TYPE.INT)
@@ -232,14 +247,11 @@ describe('Type', () => {
 			);
 		});
 		describe('TypeUnion', () => {
-			it('optimizes nested unions: `A <: C --> (A \| B) \| C == B \| C`', () => {
+			it('optimizes nested unions: `(A | B) | A === A | B`', () => {
 				const a: TYPE.Type = typeUnitFloat(4.2);
 				const b: TYPE.Type = typeUnitInt(42n);
-				const c: TYPE.Type = TYPE.FLOAT;
-				const actual:   TYPE.Type = a.union(b).union(c);
-				const expected: TYPE.Type = b.union(c);
-				assert.ok(actual.equals(expected), '(4.2 | 42) | float == 42 | float');
-				assert.deepStrictEqual(actual, expected);
+				const expected: TYPE.Type = a.union(b);
+				assert.strictEqual(expected.union(a), expected);
 			});
 			it('doesn’t stack overflow.', () => {
 				const a_int:   TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));   // [a: int]

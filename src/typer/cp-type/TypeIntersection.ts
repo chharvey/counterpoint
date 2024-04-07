@@ -117,8 +117,8 @@ export class TypeIntersection extends Combinable {
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
 		/**
-		 *     |  `C <: A --> (A  & B)  & C == B  & C`
-		 *     |  `C <: B --> (A  & B)  & C == A  & C`
+		 * 3-9 | `C <: A --> (A  & B)  & C == B  & C`
+		 *     | `C <: B --> (A  & B)  & C == A  & C`
 		 */
 		const filtered_operands = this.operands.filter((s) => !t.isSubtypeOf(s));
 		if (filtered_operands.length < this.operands.length) {
