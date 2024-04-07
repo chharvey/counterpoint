@@ -66,6 +66,19 @@ describe('Type', () => {
 			assert.ok(bool_and_str.isBottomType);
 			return assert.strictEqual(bool_and_str.toString(), TYPE.NEVER.toString());
 		});
+
+		it('properly prioritizes operators.', () => {
+			const a: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL]);
+			const b: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.INT]);
+			const c: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.STR]);
+			const tests = new Map<TYPE.Type, string>([
+				[a.intersect(b).union(c), '[bool] & [int] | [str]'],
+				[a.intersect(b.union(c)), '([int] | [str]) & [bool]'],
+				[a.union(b).intersect(c), '([bool] | [int]) & [str]'],
+				[a.union(b.intersect(c)), '[int] & [str] | [bool]'],
+			]);
+			return assert.deepStrictEqual([...tests.keys()].map((k) => k.toString()), [...tests.values()]);
+		});
 	});
 
 

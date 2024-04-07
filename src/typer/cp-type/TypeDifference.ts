@@ -3,6 +3,7 @@ import {strictEqual} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
+import {TypeUnion} from './TypeUnion.js';
 
 
 
@@ -48,7 +49,7 @@ export class TypeDifference extends Type {
 
 	@Type.toStringDeco
 	public override toString(): string {
-		return `${ this.left } - ${ this.right }`;
+		return [this.left, this.right].map((s) => s instanceof TypeUnion ? `(${ s })` : s).join(' - ');
 	}
 
 	public override includes(v: OBJ.Object): boolean {

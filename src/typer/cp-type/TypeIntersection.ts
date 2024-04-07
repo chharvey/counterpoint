@@ -115,7 +115,7 @@ export class TypeIntersection extends Combinable {
 
 	@Type.toStringDeco
 	public override toString(): string {
-		return this.operands.join(' & ');
+		return this.operands.map((s) => s instanceof TypeUnion ? `(${ s })` : s).join(' & ');
 	}
 
 	public override includes(v: OBJ.Object): boolean {
