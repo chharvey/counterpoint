@@ -6,8 +6,6 @@ import {Type} from './Type.js';
 
 
 export class TypeList extends Type {
-	public override readonly isBottomType: boolean = false;
-
 	/**
 	 * Construct a new TypeList object.
 	 * @param invariant a union of types in this list type

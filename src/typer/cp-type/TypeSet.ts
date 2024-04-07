@@ -6,8 +6,6 @@ import {Type} from './Type.js';
 
 
 export class TypeSet extends Type {
-	public override readonly isBottomType: boolean = false;
-
 	/**
 	 * Construct a new TypeSet object.
 	 * @param invariant a union of types in this set type

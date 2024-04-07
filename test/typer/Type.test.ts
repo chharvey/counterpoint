@@ -14,6 +14,7 @@ import {
 
 
 describe('Type', () => {
+	/* eslint-disable no-useless-escape --- escapes are copied from markdown file; easier for search-and-replace */
 	function predicate2<T>(array: readonly T[], p: (a: T, b: T) => void): void {
 		array.forEach((a) => {
 			array.forEach((b) => {
@@ -58,13 +59,23 @@ describe('Type', () => {
 	});
 
 
+	describe('#toString', () => {
+		it('displays `never` for the bottom type.', () => {
+			const bool_and_str: TYPE.Type = TYPE.BOOL.intersect(TYPE.STR);
+			assert.notDeepStrictEqual(bool_and_str, TYPE.NEVER);
+			assert.ok(bool_and_str.isBottomType);
+			return assert.strictEqual(bool_and_str.toString(), TYPE.NEVER.toString());
+		});
+	});
+
+
 	describe('#includes', () => {
 		it('uses `Object#identical` to compare values.', () => {
 			function unionOfInts(ns: readonly bigint[]): TYPE.Type {
-				return TYPE.Type.unionAll(ns.map((v) => typeUnitInt(v)));
+				return TYPE.TypeUnion.all(ns.map((v) => typeUnitInt(v)));
 			}
 			function unionOfFloats(ns: readonly number[]): TYPE.Type {
-				return TYPE.Type.unionAll(ns.map((v) => typeUnitFloat(v)));
+				return TYPE.TypeUnion.all(ns.map((v) => typeUnitFloat(v)));
 			}
 			const u1: TYPE.Type = unionOfFloats([4.2, 4.3, 4.4]);
 			const u2: TYPE.Type = unionOfFloats([4.3, 4.4, 4.5]);
@@ -92,7 +103,6 @@ describe('Type', () => {
 	});
 
 
-	/* eslint-disable no-useless-escape --- escapes are copied from markdown file; easier for search-and-replace */
 	describe('#intersect', () => {
 		it('1-5 | `T  & never   == never`', () => {
 			builtin_types.forEach((t) => {
@@ -119,27 +129,21 @@ describe('Type', () => {
 				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${ a }, ${ b }, ${ c }`);
 			});
 		});
-		it('extracts constituents of discriminated unions.', () => {
-			assert.ok(
-				TYPE.NULL.union(TYPE.BOOL).union(TYPE.INT)
-					.intersect(TYPE.BOOL.union(TYPE.INT).union(TYPE.FLOAT))
-					.equals(TYPE.BOOL.union(TYPE.INT)),
-				`
-					(null | bool | int) & (bool | int | float)
-					==
-					(bool | int)
-				`,
-			);
+		it('3-9 | `C <: A --> (A  & B)  & C == B  & C`', () => {
+			const a: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL, TYPE.INT]);
+			const b: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.TRUETYPE]);
+			const c: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.FALSETYPE, typeUnitInt(42n)]);
+			const actual:   TYPE.Type = a.intersect(b).intersect(c);
+			const expected: TYPE.Type = b.intersect(c);
+			assert.ok(actual.equals(expected), '([bool, int] & [true]) & [false, 42] == [true] & [false, 42]');
+			assert.deepStrictEqual(actual, expected);
 		});
 		describe('TypeIntersection', () => {
-			it('optimizes nested intersections: `C <: A --> (A  & B)  & C == B  & C`', () => {
+			it('optimizes nested intersections: `(A & B) & A === A & B`', () => {
 				const a: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL, TYPE.INT]);
 				const b: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.TRUETYPE]);
-				const c: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.FALSETYPE, typeUnitInt(42n)]);
-				const actual:   TYPE.Type = a.intersect(b).intersect(c);
-				const expected: TYPE.Type = b.intersect(c);
-				assert.ok(actual.equals(expected), '([bool, int] & [true]) & [false, 42] == [true] & [false, 42]');
-				assert.deepStrictEqual(actual, expected);
+				const expected: TYPE.Type = a.intersect(b);
+				assert.strictEqual(expected.intersect(a), expected);
 			});
 			it('doesn’t stack overflow.', () => {
 				const a_int:   TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));   // [a: int]
@@ -154,16 +158,7 @@ describe('Type', () => {
 			});
 		});
 		describe('TypeUnion', () => {
-			it('distributes intersection operands over union: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
-				const a: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL, TYPE.INT]);
-				const b: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.TRUETYPE]);
-				const c: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([OBJ.Boolean.FALSETYPE, typeUnitInt(42n)]);
-				assert.ok(
-					b.union(c).intersect(a).equals(b.intersect(a).union(c.intersect(a))),
-					'([true] | [false, 42]) & [bool, int] == [true] & [bool, int] | [false, 42] & [bool, int]',
-				);
-			});
-			it('un-distributes common union operands over intersection: `(B \| A)  & (C \| A) == A \| (B  & C)`.', () => {
+			it('factors out common union operands from intersection: `(A \| B)  & (A \| C) == A \| (B  & C)`.', () => {
 				[
 					[
 						TYPE.INT,
@@ -174,9 +169,10 @@ describe('Type', () => {
 						TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]])),
 					],
 				].forEach(([a, b]) => {
-					const left:  TYPE.Type = a.union(TYPE.NULL).intersect(b.union(TYPE.NULL));
-					const right: TYPE.Type = a.intersect(b).union(TYPE.NULL);
-					return assert.ok(left.equals(right), `${ a }? & ${ b }? == (${ a } & ${ b })?`);
+					const actual:   TYPE.Type = a.union(TYPE.NULL).intersect(b.union(TYPE.NULL));
+					const expected: TYPE.Type = TYPE.NULL.union(a.intersect(b));
+					assert.ok(actual.equals(expected), `${ a }? & ${ b }? == (${ a } & ${ b })?`);
+					return assert.deepStrictEqual(actual, expected);
 				});
 			});
 		});
@@ -209,27 +205,21 @@ describe('Type', () => {
 				assert.ok(a.union(b.intersect(c)).equals(a.union(b).intersect(a.union(c))), `${ a }, ${ b }, ${ c }`);
 			});
 		});
-		it('extracts constituents of discriminated unions.', () => {
-			assert.ok(
-				TYPE.NULL.union(TYPE.BOOL).union(TYPE.INT)
-					.union(TYPE.BOOL.union(TYPE.INT).union(TYPE.FLOAT))
-					.equals(TYPE.NULL.union(TYPE.BOOL).union(TYPE.INT).union(TYPE.FLOAT)),
-				`
-					(null | bool | int) | (bool | int | float)
-					==
-					(null | bool | int | float)
-				`,
-			);
+		it('3-a | `A <: C --> (A \| B) \| C == B \| C`', () => {
+			const a: TYPE.Type = typeUnitFloat(4.2);
+			const b: TYPE.Type = typeUnitInt(42n);
+			const c: TYPE.Type = TYPE.FLOAT;
+			const actual:   TYPE.Type = a.union(b).union(c);
+			const expected: TYPE.Type = b.union(c);
+			assert.ok(actual.equals(expected), '(4.2 | 42) | float == 42 | float');
+			assert.deepStrictEqual(actual, expected);
 		});
 		describe('TypeUnion', () => {
-			it('optimizes nested unions: `A <: C --> (A \| B) \| C == B \| C`', () => {
+			it('optimizes nested unions: `(A | B) | A === A | B`', () => {
 				const a: TYPE.Type = typeUnitFloat(4.2);
 				const b: TYPE.Type = typeUnitInt(42n);
-				const c: TYPE.Type = TYPE.FLOAT;
-				const actual:   TYPE.Type = a.union(b).union(c);
-				const expected: TYPE.Type = b.union(c);
-				assert.ok(actual.equals(expected), '(4.2 | 42) | float == 42 | float');
-				assert.deepStrictEqual(actual, expected);
+				const expected: TYPE.Type = a.union(b);
+				assert.strictEqual(expected.union(a), expected);
 			});
 			it('doesn’t stack overflow.', () => {
 				const a_int:   TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));   // [a: int]
@@ -241,6 +231,17 @@ describe('Type', () => {
 				assert_instanceof(left,  TYPE.TypeUnion);
 				assert_instanceof(right, TYPE.TypeUnion);
 				left.union(right); // assert does not throw
+			});
+		});
+		describe('TypeIntersection', () => {
+			it('factors out common intersection operands from union: `(A  & B) \| (A  & C) == A  & (B \| C)`.', () => {
+				const a: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
+				const b: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));
+				const c: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x102n, TYPE.STR]]));
+				const actual:   TYPE.Type = a.intersect(b).union(a.intersect(c));
+				const expected: TYPE.Type = a.intersect(b.union(c));
+				assert.ok(actual.equals(expected), `(${ a } & ${ c }) | (${ b } & ${ c }) == (${ a } | ${ b }) & ${ c }`);
+				assert.deepStrictEqual(actual, expected);
 			});
 		});
 	});
@@ -711,7 +712,6 @@ describe('Type', () => {
 			});
 		});
 	});
-	/* eslint-enable no-useless-escape */
 
 
 	describe('#mutableOf', () => {
@@ -930,6 +930,20 @@ describe('Type', () => {
 				});
 			});
 		});
+
+		describe('#tryAsUnion', () => {
+			it('distributes intersection operands over union: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
+				const a: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
+				const b: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));
+				const c: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x102n, TYPE.STR]]));
+				const intersection: TYPE.Type = b.union(c).intersect(a);
+				const expected:     TYPE.Type = b.intersect(a).union(c.intersect(a));
+				assert_instanceof(intersection, TYPE.TypeIntersection);
+				const as_union: TYPE.Type = intersection.tryAsUnion();
+				assert.ok(as_union.equals(expected), `(${ b } | ${ c }) & ${ a } == ${ b } & ${ a } | ${ c } & ${ a }`);
+				return assert.deepStrictEqual(as_union, expected);
+			});
+		});
 	});
 
 
@@ -1080,5 +1094,20 @@ describe('Type', () => {
 				});
 			});
 		});
+
+		describe('#tryAsIntersection', () => {
+			it('distributes union operands over intersection: `(B  & C) \| A == (B \| A)  & (C \| A)`.', () => {
+				const a: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
+				const b: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));
+				const c: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x102n, TYPE.STR]]));
+				const union:    TYPE.Type = b.intersect(c).union(a);
+				const expected: TYPE.Type = b.union(a).intersect(c.union(a));
+				assert_instanceof(union, TYPE.TypeUnion);
+				const as_intersection = union.tryAsIntersection();
+				assert.ok(as_intersection.equals(expected), `${ b } & ${ c } | ${ a } == (${ b } | ${ a }) & (${ c } | ${ a })`);
+				return assert.deepStrictEqual(as_intersection, expected);
+			});
+		});
 	});
+	/* eslint-enable no-useless-escape */
 });

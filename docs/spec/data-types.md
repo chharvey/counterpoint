@@ -684,6 +684,8 @@ For brevity, this section uses the following notational conventions:
 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` | Subtype is Left-Factorable      under Disjunction (but *not* Left-Distributive      over Union)
 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` | Subtype is Right-Antifactorable under Conjunction, and       Right-Antidistributive over Union
 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` | Subtype is Right-Antifactorable under Disjunction (but *not* Right-Antidistributive over Intersection)
+3-9 | `C <: A --> (A  & B)  & C == B  & C` | Intersecting with a subtype   narrows the intersection.
+3-a | `A <: C --> (A \| B) \| C == B \| C` | Unioning     with a supertype widens  the union.
 
 
 ### Difference Properties

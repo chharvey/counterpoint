@@ -6,8 +6,6 @@ import {Type} from './Type.js';
 
 
 export class TypeDict extends Type {
-	public override readonly isBottomType: boolean = false;
-
 	/**
 	 * Construct a new TypeDict object.
 	 * @param invariant a union of types in this dict type

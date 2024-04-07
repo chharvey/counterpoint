@@ -14,10 +14,12 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
+import {TypeUnion} from './TypeUnion.js';
+import {ValueType} from './ValueType.js';
 
 
 
-export class TypeTuple extends Type {
+export class TypeTuple extends ValueType {
 	/**
 	 * Construct a new TypeTuple from type items, assuming each item is required.
 	 * @param types the types of the tuple
@@ -30,9 +32,6 @@ export class TypeTuple extends Type {
 		})));
 	}
 
-
-	public override readonly isReference: boolean = false;
-	public override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new TypeTuple object.
@@ -101,6 +100,6 @@ export class TypeTuple extends Type {
 
 	/** @final */
 	public itemTypes(): Type {
-		return Type.unionAll(this.invariants.map((t) => t.type));
+		return TypeUnion.all(this.invariants.map((t) => t.type));
 	}
 }

@@ -15,6 +15,7 @@ import {
 /**
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
+ * - Combinable
  * - TypeIntersection
  * - TypeUnion
  * - TypeDifference
@@ -36,6 +37,24 @@ import {
  * - TypeMap
  */
 export abstract class Type {
+	/**
+	 * Decorator for some overrides of {@link Type#toString}.
+	 * Contains some special cases of string representations.
+	 * @implements MethodDecorator<Type, Type['toString']>
+	 */
+	protected static toStringDeco(
+		method: Type['toString'],
+		_context: ClassMethodDecoratorContext<Type, typeof method>,
+	): typeof method {
+		return function (this: Type) {
+			return (
+				this.isBottomType ? NEVER  .toString() :
+				this.isTopType    ? UNKNOWN.toString() :
+				method.call(this)
+			);
+		};
+	}
+
 	/**
 	 * Decorator for {@link Type#intersect} method and any overrides.
 	 * Contains shortcuts for constructing type intersections.
@@ -124,7 +143,7 @@ export abstract class Type {
 
 			/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
 			if (t instanceof TypeUnion) {
-				return this.subtract(t.left).intersect(this.subtract(t.right));
+				return TypeIntersection.all(t.operands.map((s) => this.subtract(s)));
 			}
 
 			return method.call(this, t);
@@ -164,15 +183,15 @@ export abstract class Type {
 
 			/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 			if (t instanceof TypeIntersection) {
-				return this.isSubtypeOf(t.left) && this.isSubtypeOf(t.right);
+				return t.operands.every((s) => this.isSubtypeOf(s));
 			}
 			if (t instanceof TypeUnion) {
 				/* 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
-				if (this.isSubtypeOf(t.left) || this.isSubtypeOf(t.right)) {
+				if (t.operands.some((s) => this.isSubtypeOf(s))) {
 					return true;
 				}
 				/* 3-2 | `A <: A \| B  &&  B <: A \| B` */
-				if (this.equals(t.left) || this.equals(t.right)) {
+				if (t.operands.some((s) => this.equals(s))) {
 					return true;
 				}
 			}
@@ -185,43 +204,6 @@ export abstract class Type {
 		};
 	}
 
-	/**
-	 * Intersect all the given types.
-	 * If an empty array is given, return type `never`.
-	 * @param types the types to intersect
-	 * @returns the intersection
-	 */
-	public static intersectAll(types: readonly Type[]): Type {
-		return (types.length) ? types.reduce((a, b) => a.intersect(b)) : NEVER;
-	}
-
-	/**
-	 * Unions all the given types.
-	 * If an empty array is given, return type `never`.
-	 * @param types the types to union
-	 * @returns the union
-	 */
-	public static unionAll(types: readonly Type[]): Type {
-		return (types.length) ? types.reduce((a, b) => a.union(b)) : NEVER;
-	}
-
-
-	/**
-	 * Whether this type is a reference type or a value type.
-	 */
-	public readonly isReference: boolean = true;
-	/**
-	 * Whether this type has no values assignable to it,
-	 * i.e., it is equal to the type `never`.
-	 * Used internally for special cases of computations.
-	 */
-	public readonly isBottomType: boolean = this.values.size === 0;
-	/**
-	 * Whether this type has all values assignable to it,
-	 * i.e., it is equal to the type `unknown`.
-	 * Used internally for special cases of computations.
-	 */
-	public readonly isTopType: boolean = false;
 
 	/**
 	 * Construct a new Type object.
@@ -232,6 +214,34 @@ export abstract class Type {
 		public readonly isMutable: boolean,
 		public readonly values:    ReadonlySet<OBJ.Object> = new Set(),
 	) {
+	}
+
+	/**
+	 * Return whether this type has no values assignable to it,
+	 * i.e., it is equal to the type `never`.
+	 * Used internally for special cases of computations.
+	 * @return `true if this type is the bottom type
+	 */
+	public get isBottomType(): boolean {
+		return false;
+	}
+
+	/**
+	 * Return whether this type has all values assignable to it,
+	 * i.e., it is equal to the type `unknown`.
+	 * Used internally for special cases of computations.
+	 * @return `true if this type is the top type
+	 */
+	public get isTopType(): boolean {
+		return false;
+	}
+
+	/**
+	 * Return whether this type is a reference type or a value type.
+	 * @return `true` if this type is a reference type
+	 */
+	public get isReference(): boolean {
+		return true;
 	}
 
 	/**
@@ -275,7 +285,7 @@ export abstract class Type {
 	@Type.unionDeco
 	public union(t: Type): Type {
 		/* 2-2 | `A \| B == B \| A` */
-		if (t instanceof TypeUnion) {
+		if (t instanceof TypeIntersection || t instanceof TypeUnion) {
 			return t.union(this);
 		}
 		return new TypeUnion(this, t);
@@ -331,9 +341,6 @@ export abstract class Type {
  * An Interface Type is a set of properties that a value must have.
  */
 export class TypeInterface extends Type {
-	public override readonly isBottomType: boolean = [...this.properties.values()].some((value) => value.isBottomType);
-	public override readonly isTopType:    boolean = this.properties.size === 0;
-
 	/**
 	 * Construct a new TypeInterface object.
 	 * @param properties a map of this type’s members’ names along with their associated types
@@ -344,6 +351,14 @@ export class TypeInterface extends Type {
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable);
+	}
+
+	public override get isBottomType(): boolean {
+		return [...this.properties.values()].some((value) => value.isBottomType);
+	}
+
+	public override get isTopType(): boolean {
+		return this.properties.size === 0;
 	}
 
 	public override get hasMutable(): boolean {
@@ -414,10 +429,4 @@ export class TypeInterface extends Type {
 	public override immutableOf(): TypeInterface {
 		return new TypeInterface(this.properties, false);
 	}
-}
-
-
-
-export interface Combinable extends Type {
-	combineTuplesOrRecords(): Type;
 }

@@ -13,10 +13,12 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
+import {TypeUnion} from './TypeUnion.js';
+import {ValueType} from './ValueType.js';
 
 
 
-export class TypeRecord extends Type {
+export class TypeRecord extends ValueType {
 	/**
 	 * Construct a new TypeRecord from type properties, assuming each property is required.
 	 * @param propertytypes the types of the record
@@ -29,9 +31,6 @@ export class TypeRecord extends Type {
 		}])));
 	}
 
-
-	public override readonly isReference:  boolean = false;
-	public override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new TypeRecord object.
@@ -97,6 +96,6 @@ export class TypeRecord extends Type {
 
 	/** @final */
 	public valueTypes(): Type {
-		return Type.unionAll([...this.invariants.values()].map((t) => t.type));
+		return TypeUnion.all([...this.invariants.values()].map((t) => t.type));
 	}
 }

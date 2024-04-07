@@ -11,14 +11,6 @@ import {Type} from './Type.js';
  * that contains values assignable to `T` but *not* assignable to `U`.
  */
 export class TypeDifference extends Type {
-	public override readonly isReference: boolean = this.left.isReference;
-	/* We can assert that this is always non-empty because
-	the only cases in which it could be empty are
-	1. if left is empty
-	2. if left is a subtype of right
-	each of which is impossible because the algorithm would have already produced the `never` type. */
-	public override readonly isBottomType: boolean = false;
-
 	/**
 	 * Construct a new TypeDifference object.
 	 * @param left the first type
@@ -31,10 +23,30 @@ export class TypeDifference extends Type {
 		super(false, xjs.Set.difference(left.values, right.values, languageValuesIdentical));
 	}
 
+	/*
+	 * We can assert that this is never bottom because
+	 * the only cases in which it could be bottom are
+	 * 1. if left is bottom
+	 * 2. if left is a subtype of right
+	 * each of which is impossible because the algorithm would have already produced the `never` type.
+	 */
+
+	/*
+	 * We can assert that this is never top because
+	 * the only case in which it could be top is
+	 * if the left is top and the right is bottom,
+	 * which is impossible because the algorithm would have already produced the `unknown` type.
+	 */
+
+	public override get isReference(): boolean {
+		return this.left.isReference;
+	}
+
 	public override get hasMutable(): boolean {
 		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
 	}
 
+	@Type.toStringDeco
 	public override toString(): string {
 		return `${ this.left } - ${ this.right }`;
 	}

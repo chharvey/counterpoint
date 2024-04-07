@@ -1,5 +1,5 @@
 import * as OBJ from '../cp-object/index.js';
-import {Type} from './Type.js';
+import {ValueType} from './ValueType.js';
 
 
 
@@ -7,13 +7,9 @@ import {Type} from './Type.js';
  * Class for constructing the `str` type.
  * @final
  */
-export class TypeString extends Type {
+export class TypeString extends ValueType {
 	public static readonly INSTANCE = new TypeString();
 
-
-	public override readonly isReference:  boolean = false;
-	public override readonly isBottomType: boolean = false;
-	public override readonly isTopType:    boolean = false;
 
 	private constructor() {
 		super(false, new Set([new OBJ.String('')]));

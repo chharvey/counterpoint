@@ -8,6 +8,46 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 /**
+ * Executes a callback on each item of an array until that callback returns.
+ * If the callback throws, the error is saved, and execution proceeds to the next iteration.
+ * If any iteration returns, this method returns and the errors are discarded.
+ * If all iterations throw, the errors are collected into a single AggregateError, which is then thrown.
+ *
+ * The “dual” of {@link Array#forEach} — this method returns as soon as a callback call is successful; otherwise throws.
+ *
+ * Similar to {@link Promise.any}, but synchronous.
+ *
+ * @typeparam T                the type of items in the array
+ * @param     array            the array of items
+ * @param     callback         the function to call on each item
+ * @throws    {AggregateError} if two or more iterations throws an error
+ * @throws    {Error}          if one iteration throws an error
+ */
+function forEither<T>(array: readonly T[], callback: (item: T, i: number, src: readonly T[]) => void): void {
+	const thrown: Error[] = [];
+	try {
+		array.forEach((it, i, src) => {
+			try {
+				callback.call(null, it, i, src);
+			} catch (e) {
+				thrown.push(e as Error);
+				return;
+			}
+			throw 'success';
+		});
+	} catch {
+		return;
+	}
+	throw (
+		thrown.length >= 2 ? new AggregateError(thrown) :
+		thrown.length      ? thrown[0] :
+		new Error('An unexpected error occurred.')
+	);
+}
+
+
+
+/**
  * Known subclasses:
  * - ASTNodeSet
  * - ASTNodeMap
@@ -25,19 +65,12 @@ export abstract class ASTNodeCollectionLiteralMutable extends ASTNodeCollectionL
 		return function (this: ASTNodeCollectionLiteralMutable, assignee, err) {
 			if (assignee instanceof TYPE.TypeIntersection) {
 				/* A value is assignable to a type intersection if and only if
-				it is assignable to both operands of that intersection. */
-				return xjs.Array.forEachAggregated<() => void>([
-					() => this.assignTo(assignee.left,  err),
-					() => this.assignTo(assignee.right, err),
-				], (callback) => callback.call(null));
+				it is assignable to all operands of that intersection. */
+				return xjs.Array.forEachAggregated(assignee.operands, (s) => this.assignTo(s, err));
 			} else if (assignee instanceof TYPE.TypeUnion) {
 				/* A value is assignable to a type union if and only if
-				it is assignable to either operand of that union. */
-				try {
-					return this.assignTo(assignee.left, err);
-				} catch {
-					return this.assignTo(assignee.right, err);
-				}
+				it is assignable to any operand of that union. */
+				return forEither(assignee.operands, (s) => this.assignTo(s, err));
 			} else {
 				return method.call(this, assignee, err);
 			}

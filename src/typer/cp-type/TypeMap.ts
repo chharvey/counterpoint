@@ -6,8 +6,6 @@ import {Type} from './Type.js';
 
 
 export class TypeMap extends Type {
-	public override readonly isBottomType: boolean = false;
-
 	/**
 	 * Construct a new TypeMap object.
 	 * @param invariant_ant a union of antecedent types in this map type
