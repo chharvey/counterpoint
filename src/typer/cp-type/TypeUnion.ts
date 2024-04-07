@@ -9,10 +9,8 @@ import {
 	TypeRecord,
 	NEVER,
 } from './index.js';
-import {
-	Type,
-	type Combinable,
-} from './Type.js';
+import {Type} from './Type.js';
+import {Combinable} from './Combinable.js';
 
 
 
@@ -24,7 +22,7 @@ const language_types_equal = (a: Type, b: Type): boolean => a.equals(b);
  * A type union of two types `T` and `U` is the type
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
-export class TypeUnion extends Type implements Combinable {
+export class TypeUnion extends Combinable {
 	/**
 	 * Unions all the given types.
 	 * If an empty array is given, return type `never`.
@@ -72,8 +70,6 @@ export class TypeUnion extends Type implements Combinable {
 	}
 
 
-	public readonly operands: readonly [Type, Type, ...readonly Type[]];
-
 	/**
 	 * Construct a new TypeUnion object.
 	 * @param operand0 the first type
@@ -85,17 +81,16 @@ export class TypeUnion extends Type implements Combinable {
 		...operands: readonly Type[]
 	) {
 		super(
-			false,
 			operands.reduce(
 				(accum, next) => xjs.Set.union(accum, next.values, languageValuesIdentical),
 				xjs.Set.union(operand0.values, operand1.values, languageValuesIdentical),
 			),
+			[
+				...(operand0 instanceof TypeUnion ? operand0.operands : [operand0] as const),
+				...(operand1 instanceof TypeUnion ? operand1.operands : [operand1] as const),
+				...operands,
+			],
 		);
-		this.operands = [
-			...(operand0 instanceof TypeUnion ? operand0.operands : [operand0] as const),
-			...(operand1 instanceof TypeUnion ? operand1.operands : [operand1] as const),
-			...operands,
-		];
 	}
 
 	/*
@@ -194,8 +189,7 @@ export class TypeUnion extends Type implements Combinable {
 		return new TypeUnion(...this.operands.map((s) => s.immutableOf()) as [Type, Type, ...Type[]]);
 	}
 
-	/** @implements Combinable */
-	public combineTuplesOrRecords(): Type {
+	public override combineTuplesOrRecords(): Type {
 		return (
 			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as readonly [TypeTuple,  TypeTuple,  ...readonly TypeTuple[]]) .reduce((a, b) => TypeUnion.unionTuples (a, b)) :
 			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as readonly [TypeRecord, TypeRecord, ...readonly TypeRecord[]]).reduce((a, b) => TypeUnion.unionRecords(a, b)) :

@@ -15,6 +15,7 @@ import {
 /**
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
+ * - Combinable
  * - TypeIntersection
  * - TypeUnion
  * - TypeDifference
@@ -428,10 +429,4 @@ export class TypeInterface extends Type {
 	public override immutableOf(): TypeInterface {
 		return new TypeInterface(this.properties, false);
 	}
-}
-
-
-
-export interface Combinable extends Type {
-	combineTuplesOrRecords(): Type;
 }

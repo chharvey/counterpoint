@@ -1,6 +1,5 @@
 import {
 	OBJ,
-	isCombinable,
 	TYPE,
 	type INST,
 	type Builder,
@@ -63,7 +62,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.type();
-		if (isCombinable(base_type)) {
+		if (base_type instanceof TYPE.Combinable) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		return (

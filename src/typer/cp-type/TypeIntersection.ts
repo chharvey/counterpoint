@@ -9,10 +9,8 @@ import {
 	TypeRecord,
 	NEVER,
 } from './index.js';
-import {
-	Type,
-	type Combinable,
-} from './Type.js';
+import {Type} from './Type.js';
+import {Combinable} from './Combinable.js';
 
 
 
@@ -20,7 +18,7 @@ import {
  * A type intersection of two types `T` and `U` is the type
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
-export class TypeIntersection extends Type implements Combinable {
+export class TypeIntersection extends Combinable {
 	/**
 	 * Intersect all the given types.
 	 * If an empty array is given, return type `never`.
@@ -64,8 +62,6 @@ export class TypeIntersection extends Type implements Combinable {
 	}
 
 
-	public readonly operands: readonly [Type, Type, ...readonly Type[]];
-
 	/**
 	 * Construct a new TypeIntersection object.
 	 * @param operand0 the first type
@@ -77,17 +73,16 @@ export class TypeIntersection extends Type implements Combinable {
 		...operands: readonly Type[]
 	) {
 		super(
-			false,
 			operands.reduce(
 				(accum, next) => xjs.Set.intersection(accum, next.values, languageValuesIdentical),
 				xjs.Set.intersection(operand0.values, operand1.values, languageValuesIdentical),
 			),
+			[
+				...(operand0 instanceof TypeIntersection ? operand0.operands : [operand0] as const),
+				...(operand1 instanceof TypeIntersection ? operand1.operands : [operand1] as const),
+				...operands,
+			],
 		);
-		this.operands = [
-			...(operand0 instanceof TypeIntersection ? operand0.operands : [operand0] as const),
-			...(operand1 instanceof TypeIntersection ? operand1.operands : [operand1] as const),
-			...operands,
-		];
 	}
 
 	public override get isBottomType(): boolean {
@@ -164,8 +159,7 @@ export class TypeIntersection extends Type implements Combinable {
 		return new TypeIntersection(...this.operands.map((s) => s.immutableOf()) as [Type, Type, ...Type[]]);
 	}
 
-	/** @implements Combinable */
-	public combineTuplesOrRecords(): Type {
+	public override combineTuplesOrRecords(): Type {
 		return (
 			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as readonly [TypeTuple,  TypeTuple,  ...readonly TypeTuple[]]) .reduce((a, b) => TypeIntersection.intersectTuples (a, b)) :
 			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as readonly [TypeRecord, TypeRecord, ...readonly TypeRecord[]]).reduce((a, b) => TypeIntersection.intersectRecords(a, b)) :
