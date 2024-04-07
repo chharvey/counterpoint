@@ -7,6 +7,7 @@ import type * as OBJ from '../cp-object/index.js';
 import {
 	TypeTuple,
 	TypeRecord,
+	NEVER,
 } from './index.js';
 import {
 	Type,
@@ -24,6 +25,16 @@ const language_types_equal = (a: Type, b: Type): boolean => a.equals(b);
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
 export class TypeUnion extends Type implements Combinable {
+	/**
+	 * Unions all the given types.
+	 * If an empty array is given, return type `never`.
+	 * @param types the types to union
+	 * @returns the union
+	 */
+	public static all(types: readonly Type[]): Type {
+		return (types.length) ? types.reduce((a, b) => a.union(b)) : NEVER;
+	}
+
 	/**
 	 * When accessing the *union* of tuple types `S` and `T`,
 	 * the set of items available is the *intersection* of the set of items on `S` with the set of items on `T`.
@@ -125,10 +136,10 @@ export class TypeUnion extends Type implements Combinable {
 			// `(A1 | A2 | B1 | B2) & (A1 | A2 | C1 | C2) == (A1 | A2) | ((B1 | B2) & (C1 | C2))`
 			const these_operands:  ReadonlySet<Type> = new Set(this.operands);
 			const those_operands:  ReadonlySet<Type> = new Set(t.operands);
-			const common_operands: Type              = Type.unionAll([...xjs.Set.intersection(these_operands, those_operands, language_types_equal)]);
+			const common_operands: Type              = TypeUnion.all([...xjs.Set.intersection(these_operands, those_operands, language_types_equal)]);
 			if (!common_operands.isBottomType) {
-				const these_not_those: Type = Type.unionAll([...xjs.Set.difference(these_operands, those_operands, language_types_equal)]);
-				const those_not_these: Type = Type.unionAll([...xjs.Set.difference(those_operands, these_operands, language_types_equal)]);
+				const these_not_those: Type = TypeUnion.all([...xjs.Set.difference(these_operands, those_operands, language_types_equal)]);
+				const those_not_these: Type = TypeUnion.all([...xjs.Set.difference(those_operands, these_operands, language_types_equal)]);
 				return common_operands.union(these_not_those.intersect(those_not_these));
 			}
 		}
@@ -136,7 +147,7 @@ export class TypeUnion extends Type implements Combinable {
 		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
 		 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
 		 */
-		return Type.unionAll(this.operands.map((s) => s.intersect(t)));
+		return TypeUnion.all(this.operands.map((s) => s.intersect(t)));
 	}
 
 	@Type.unionDeco
@@ -165,7 +176,7 @@ export class TypeUnion extends Type implements Combinable {
 	@Type.subtractDeco
 	public override subtract(t: Type): Type {
 		/** 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
-		return Type.unionAll(this.operands.map((s) => s.subtract(t)));
+		return TypeUnion.all(this.operands.map((s) => s.subtract(t)));
 	}
 
 	@strictEqual

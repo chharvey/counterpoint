@@ -142,7 +142,7 @@ export abstract class Type {
 
 			/** 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
 			if (t instanceof TypeUnion) {
-				return Type.intersectAll(t.operands.map((s) => this.subtract(s)));
+				return TypeIntersection.all(t.operands.map((s) => this.subtract(s)));
 			}
 
 			return method.call(this, t);
@@ -201,26 +201,6 @@ export abstract class Type {
 
 			return method.call(this, t);
 		};
-	}
-
-	/**
-	 * Intersect all the given types.
-	 * If an empty array is given, return type `never`.
-	 * @param types the types to intersect
-	 * @returns the intersection
-	 */
-	public static intersectAll(types: readonly Type[]): Type {
-		return (types.length) ? types.reduce((a, b) => a.intersect(b)) : NEVER;
-	}
-
-	/**
-	 * Unions all the given types.
-	 * If an empty array is given, return type `never`.
-	 * @param types the types to union
-	 * @returns the union
-	 */
-	public static unionAll(types: readonly Type[]): Type {
-		return (types.length) ? types.reduce((a, b) => a.union(b)) : NEVER;
 	}
 
 

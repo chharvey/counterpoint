@@ -53,8 +53,8 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 	 */
 	public override toType(): TYPE.TypeMap {
 		return new TYPE.TypeMap(
-			TYPE.Type.unionAll([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
-			TYPE.Type.unionAll([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
+			TYPE.TypeUnion.all([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
+			TYPE.TypeUnion.all([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
 		);
 	}
 

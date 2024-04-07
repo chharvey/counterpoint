@@ -7,6 +7,7 @@ import type * as OBJ from '../cp-object/index.js';
 import {
 	TypeTuple,
 	TypeRecord,
+	NEVER,
 } from './index.js';
 import {
 	Type,
@@ -20,6 +21,16 @@ import {
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
 export class TypeIntersection extends Type implements Combinable {
+	/**
+	 * Intersect all the given types.
+	 * If an empty array is given, return type `never`.
+	 * @param types the types to intersect
+	 * @returns the intersection
+	 */
+	public static all(types: readonly Type[]): Type {
+		return (types.length) ? types.reduce((a, b) => a.intersect(b)) : NEVER;
+	}
+
 	/**
 	 * When accessing the *intersection* of tuple types `S` and `T`,
 	 * the set of items available is the *union* of the set of items on `S` with the set of items on `T`.

@@ -13,6 +13,7 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
+import {TypeUnion} from './TypeUnion.js';
 import {ValueType} from './ValueType.js';
 
 
@@ -95,6 +96,6 @@ export class TypeRecord extends ValueType {
 
 	/** @final */
 	public valueTypes(): Type {
-		return Type.unionAll([...this.invariants.values()].map((t) => t.type));
+		return TypeUnion.all([...this.invariants.values()].map((t) => t.type));
 	}
 }

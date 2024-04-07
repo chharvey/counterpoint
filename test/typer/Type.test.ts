@@ -71,10 +71,10 @@ describe('Type', () => {
 	describe('#includes', () => {
 		it('uses `Object#identical` to compare values.', () => {
 			function unionOfInts(ns: readonly bigint[]): TYPE.Type {
-				return TYPE.Type.unionAll(ns.map((v) => typeUnitInt(v)));
+				return TYPE.TypeUnion.all(ns.map((v) => typeUnitInt(v)));
 			}
 			function unionOfFloats(ns: readonly number[]): TYPE.Type {
-				return TYPE.Type.unionAll(ns.map((v) => typeUnitFloat(v)));
+				return TYPE.TypeUnion.all(ns.map((v) => typeUnitFloat(v)));
 			}
 			const u1: TYPE.Type = unionOfFloats([4.2, 4.3, 4.4]);
 			const u2: TYPE.Type = unionOfFloats([4.3, 4.4, 4.5]);

@@ -14,6 +14,7 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
+import {TypeUnion} from './TypeUnion.js';
 import {ValueType} from './ValueType.js';
 
 
@@ -99,6 +100,6 @@ export class TypeTuple extends ValueType {
 
 	/** @final */
 	public itemTypes(): Type {
-		return Type.unionAll(this.invariants.map((t) => t.type));
+		return TypeUnion.all(this.invariants.map((t) => t.type));
 	}
 }
