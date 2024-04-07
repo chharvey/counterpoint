@@ -826,7 +826,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
+						return assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL.union(hello),
 							TYPE.NULL.union(hello),
 							OBJ.Boolean.FALSETYPE.union(hello),
