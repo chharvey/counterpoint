@@ -131,7 +131,10 @@ export class TypeUnion extends Combinable {
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
 		if (t instanceof TypeUnion) {
-			/** 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)` */
+			/*
+			 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
+			 *     | `(A \| B)  & (A \| C) == A \| (B  & C)`
+			 */
 			// `(A1 | A2 | B1 | B2) & (A1 | A2 | C1 | C2) == (A1 | A2) | ((B1 | B2) & (C1 | C2))`
 			const these_operands:  ReadonlySet<Type> = new Set(this.operands);
 			const those_operands:  ReadonlySet<Type> = new Set(t.operands);

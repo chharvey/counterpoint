@@ -10,6 +10,7 @@ import {
 	TypeRecord,
 	NEVER,
 } from './index.js';
+import {language_types_equal} from './utils-private.js';
 import {Type} from './Type.js';
 import {Combinable} from './Combinable.js';
 
@@ -142,6 +143,26 @@ export class TypeIntersection extends Combinable {
 		} else {
 			return new TypeIntersection(this, t);
 		}
+	}
+
+	@Type.unionDeco
+	public override union(t: Type): Type {
+		if (t instanceof TypeIntersection) {
+			/*
+			 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
+			 *     | `(A  & B) \| (A  & C) == A  & (B \| C)`
+			 */
+			// `(A1 & A2 & B1 & B2) | (A1 & A2 & C1 & C2) == (A1 & A2) & ((B1 & B2) | (C1 & C2))`
+			const these_operands:  ReadonlySet<Type> = new Set(this.operands);
+			const those_operands:  ReadonlySet<Type> = new Set(t.operands);
+			const common_operands: Type              = TypeUnion.all(...xjs.Set.intersection(these_operands, those_operands, language_types_equal));
+			if (!common_operands.isBottomType) {
+				const these_not_those: Type = TypeUnion.all(...xjs.Set.difference(these_operands, those_operands, language_types_equal));
+				const those_not_these: Type = TypeUnion.all(...xjs.Set.difference(those_operands, these_operands, language_types_equal));
+				return common_operands.intersect(these_not_those.union(those_not_these));
+			}
+		}
+		return new TypeUnion(this, t);
 	}
 
 	@strictEqual

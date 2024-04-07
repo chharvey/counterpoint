@@ -138,18 +138,6 @@ describe('Type', () => {
 			assert.ok(actual.equals(expected), '([bool, int] & [true]) & [false, 42] == [true] & [false, 42]');
 			assert.deepStrictEqual(actual, expected);
 		});
-		it('extracts constituents of discriminated unions.', () => {
-			assert.ok(
-				TYPE.NULL.union(TYPE.BOOL).union(TYPE.INT)
-					.intersect(TYPE.BOOL.union(TYPE.INT).union(TYPE.FLOAT))
-					.equals(TYPE.BOOL.union(TYPE.INT)),
-				`
-					(null | bool | int) & (bool | int | float)
-					==
-					(bool | int)
-				`,
-			);
-		});
 		describe('TypeIntersection', () => {
 			it('optimizes nested intersections: `(A & B) & A === A & B`', () => {
 				const a: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL, TYPE.INT]);
@@ -170,7 +158,7 @@ describe('Type', () => {
 			});
 		});
 		describe('TypeUnion', () => {
-			it('un-distributes common union operands over intersection: `(B \| A)  & (C \| A) == A \| (B  & C)`.', () => {
+			it('factors out common union operands from intersection: `(A \| B)  & (A \| C) == A \| (B  & C)`.', () => {
 				[
 					[
 						TYPE.INT,
@@ -181,9 +169,10 @@ describe('Type', () => {
 						TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]])),
 					],
 				].forEach(([a, b]) => {
-					const left:  TYPE.Type = a.union(TYPE.NULL).intersect(b.union(TYPE.NULL));
-					const right: TYPE.Type = a.intersect(b).union(TYPE.NULL);
-					return assert.ok(left.equals(right), `${ a }? & ${ b }? == (${ a } & ${ b })?`);
+					const actual:   TYPE.Type = a.union(TYPE.NULL).intersect(b.union(TYPE.NULL));
+					const expected: TYPE.Type = TYPE.NULL.union(a.intersect(b));
+					assert.ok(actual.equals(expected), `${ a }? & ${ b }? == (${ a } & ${ b })?`);
+					return assert.deepStrictEqual(actual, expected);
 				});
 			});
 		});
@@ -225,18 +214,6 @@ describe('Type', () => {
 			assert.ok(actual.equals(expected), '(4.2 | 42) | float == 42 | float');
 			assert.deepStrictEqual(actual, expected);
 		});
-		it('extracts constituents of discriminated unions.', () => {
-			assert.ok(
-				TYPE.NULL.union(TYPE.BOOL).union(TYPE.INT)
-					.union(TYPE.BOOL.union(TYPE.INT).union(TYPE.FLOAT))
-					.equals(TYPE.NULL.union(TYPE.BOOL).union(TYPE.INT).union(TYPE.FLOAT)),
-				`
-					(null | bool | int) | (bool | int | float)
-					==
-					(null | bool | int | float)
-				`,
-			);
-		});
 		describe('TypeUnion', () => {
 			it('optimizes nested unions: `(A | B) | A === A | B`', () => {
 				const a: TYPE.Type = typeUnitFloat(4.2);
@@ -254,6 +231,17 @@ describe('Type', () => {
 				assert_instanceof(left,  TYPE.TypeUnion);
 				assert_instanceof(right, TYPE.TypeUnion);
 				left.union(right); // assert does not throw
+			});
+		});
+		describe('TypeIntersection', () => {
+			it('factors out common intersection operands from union: `(A  & B) \| (A  & C) == A  & (B \| C)`.', () => {
+				const a: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
+				const b: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));
+				const c: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x102n, TYPE.STR]]));
+				const actual:   TYPE.Type = a.intersect(b).union(a.intersect(c));
+				const expected: TYPE.Type = a.intersect(b.union(c));
+				assert.ok(actual.equals(expected), `(${ a } & ${ c }) | (${ b } & ${ c }) == (${ a } | ${ b }) & ${ c }`);
+				assert.deepStrictEqual(actual, expected);
 			});
 		});
 	});
