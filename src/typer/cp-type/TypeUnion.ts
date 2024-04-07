@@ -10,6 +10,7 @@ import {
 	NEVER,
 } from './index.js';
 import {Type} from './Type.js';
+import {TypeIntersection} from './TypeIntersection.js';
 import {Combinable} from './Combinable.js';
 
 
@@ -138,11 +139,7 @@ export class TypeUnion extends Combinable {
 				return common_operands.union(these_not_those.intersect(those_not_these));
 			}
 		}
-		/**
-		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
-		 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
-		 */
-		return TypeUnion.all(this.operands.map((s) => s.intersect(t)));
+		return new TypeIntersection(this, t);
 	}
 
 	@Type.unionDeco
@@ -195,5 +192,21 @@ export class TypeUnion extends Combinable {
 			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as readonly [TypeRecord, TypeRecord, ...readonly TypeRecord[]]).reduce((a, b) => TypeUnion.unionRecords(a, b)) :
 			this
 		);
+	}
+
+	public tryAsIntersection(): Type {
+		/*
+		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
+		 *     | `(B  & C) \| A == (B \| A)  & (C \| A)`
+		 */
+		const intersection: TypeIntersection | null = this.operands.find((s): s is TypeIntersection => s instanceof TypeIntersection) ?? null;
+		if (intersection) {
+			const not_intersection: Type[] = this.operands.filter((s) => s !== intersection);
+			const right: Type = not_intersection.length >= 2
+				? new TypeUnion(not_intersection[0], not_intersection[1], ...not_intersection.slice(2))
+				: (assert.strictEqual(not_intersection.length, 1), not_intersection[0]);
+			return TypeIntersection.all(intersection.operands.map((s) => s.union(right)));
+		}
+		return this;
 	}
 }

@@ -5,6 +5,7 @@ import type {TypeEntry} from '../utils-public.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
 import {
+	TypeUnion,
 	TypeTuple,
 	TypeRecord,
 	NEVER,
@@ -165,5 +166,21 @@ export class TypeIntersection extends Combinable {
 			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as readonly [TypeRecord, TypeRecord, ...readonly TypeRecord[]]).reduce((a, b) => TypeIntersection.intersectRecords(a, b)) :
 			this
 		);
+	}
+
+	public tryAsUnion(): Type {
+		/*
+		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
+		 *     | `(B \| C)  & A == (B  & A) \| (C  & A)`
+		 */
+		const union: TypeUnion | null = this.operands.find((s): s is TypeUnion => s instanceof TypeUnion) ?? null;
+		if (union) {
+			const not_union: Type[] = this.operands.filter((s) => s !== union);
+			const right: Type = not_union.length >= 2
+				? new TypeUnion(not_union[0], not_union[1], ...not_union.slice(2))
+				: (assert.strictEqual(not_union.length, 1), not_union[0]);
+			return TypeUnion.all(union.operands.map((s) => s.intersect(right)));
+		}
+		return this;
 	}
 }
