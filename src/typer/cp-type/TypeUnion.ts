@@ -9,12 +9,9 @@ import {
 	TypeRecord,
 	NEVER,
 } from './index.js';
+import {language_types_equal} from './utils-private.js';
 import {Type} from './Type.js';
 import {Combinable} from './Combinable.js';
-
-
-
-const language_types_equal = (a: Type, b: Type): boolean => a.equals(b);
 
 
 
