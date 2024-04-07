@@ -413,8 +413,8 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			([
-				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.TypeUnion.all([typeUnitStr('a'), typeUnitInt(42n), typeUnitFloat(3.0)])],
-				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.TypeUnion.all([typeUnitStr('a'), TYPE.INT,         TYPE.FLOAT])],
+				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.TypeUnion.all(typeUnitStr('a'), typeUnitInt(42n), typeUnitFloat(3.0))],
+				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.TypeUnion.all(typeUnitStr('a'), TYPE.INT,         TYPE.FLOAT)],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
 				const expected: readonly TYPE.TypeUnit[] = [typeUnitInt(1n), typeUnitFloat(2.0), typeUnitStr('three')];
 				const collections: readonly [

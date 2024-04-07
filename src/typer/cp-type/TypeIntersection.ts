@@ -26,8 +26,14 @@ export class TypeIntersection extends Combinable {
 	 * @param types the types to intersect
 	 * @returns the intersection
 	 */
-	public static all(types: readonly Type[]): Type {
-		return (types.length) ? types.reduce((a, b) => a.intersect(b)) : NEVER;
+	public static all(types: readonly Type[]): Type;
+	public static all(...types: readonly Type[]): Type;
+	public static all(arg0?: readonly Type[] | Type, ...args: readonly Type[]): Type {
+		return arg0 instanceof Array
+			? TypeIntersection.all(...arg0)
+			: arg0
+				? [arg0, ...args].reduce((a, b) => a.intersect(b))
+				: NEVER;
 	}
 
 	/**

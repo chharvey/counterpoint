@@ -9,13 +9,10 @@ import {
 	TypeRecord,
 	NEVER,
 } from './index.js';
+import {language_types_equal} from './utils-private.js';
 import {Type} from './Type.js';
 import {TypeIntersection} from './TypeIntersection.js';
 import {Combinable} from './Combinable.js';
-
-
-
-const language_types_equal = (a: Type, b: Type): boolean => a.equals(b);
 
 
 
@@ -30,8 +27,14 @@ export class TypeUnion extends Combinable {
 	 * @param types the types to union
 	 * @returns the union
 	 */
-	public static all(types: readonly Type[]): Type {
-		return (types.length) ? types.reduce((a, b) => a.union(b)) : NEVER;
+	public static all(types: readonly Type[]): Type;
+	public static all(...types: readonly Type[]): Type;
+	public static all(arg0?: readonly Type[] | Type, ...args: readonly Type[]): Type {
+		return arg0 instanceof Array
+			? TypeUnion.all(...arg0)
+			: arg0
+				? [arg0, ...args].reduce((a, b) => a.union(b))
+				: NEVER;
 	}
 
 	/**
@@ -132,10 +135,10 @@ export class TypeUnion extends Combinable {
 			// `(A1 | A2 | B1 | B2) & (A1 | A2 | C1 | C2) == (A1 | A2) | ((B1 | B2) & (C1 | C2))`
 			const these_operands:  ReadonlySet<Type> = new Set(this.operands);
 			const those_operands:  ReadonlySet<Type> = new Set(t.operands);
-			const common_operands: Type              = TypeUnion.all([...xjs.Set.intersection(these_operands, those_operands, language_types_equal)]);
+			const common_operands: Type              = TypeUnion.all(...xjs.Set.intersection(these_operands, those_operands, language_types_equal));
 			if (!common_operands.isBottomType) {
-				const these_not_those: Type = TypeUnion.all([...xjs.Set.difference(these_operands, those_operands, language_types_equal)]);
-				const those_not_these: Type = TypeUnion.all([...xjs.Set.difference(those_operands, these_operands, language_types_equal)]);
+				const these_not_those: Type = TypeUnion.all(...xjs.Set.difference(these_operands, those_operands, language_types_equal));
+				const those_not_these: Type = TypeUnion.all(...xjs.Set.difference(those_operands, these_operands, language_types_equal));
 				return common_operands.union(these_not_those.intersect(those_not_these));
 			}
 		}
