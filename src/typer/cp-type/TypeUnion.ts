@@ -128,6 +128,7 @@ export class TypeUnion extends Combinable {
 		return this.operands.some((s) => s.includes(v));
 	}
 
+	@Type.operatorDeco
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
 		/*
@@ -149,6 +150,7 @@ export class TypeUnion extends Combinable {
 		return new TypeIntersection(this, t);
 	}
 
+	@Type.operatorDeco
 	@Type.unionDeco
 	public override union(t: Type): Type {
 		/*

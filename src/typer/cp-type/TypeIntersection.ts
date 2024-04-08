@@ -122,6 +122,7 @@ export class TypeIntersection extends Combinable {
 		return this.operands.every((s) => s.includes(v));
 	}
 
+	@Type.operatorDeco
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
 		/*
@@ -145,6 +146,7 @@ export class TypeIntersection extends Combinable {
 		}
 	}
 
+	@Type.operatorDeco
 	@Type.unionDeco
 	public override union(t: Type): Type {
 		/*

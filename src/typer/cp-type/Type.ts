@@ -8,7 +8,14 @@ import {
 	TypeUnion,
 	TypeDifference,
 	NEVER,
+	VOID,
 	UNKNOWN,
+	NULL,
+	BOOL,
+	INT,
+	FLOAT,
+	STR,
+	OBJ as TYPE_OBJ,
 } from './index.js';
 
 
@@ -50,6 +57,33 @@ export abstract class Type {
 				this.isBottomType ? NEVER  .toString() :
 				this.isTopType    ? UNKNOWN.toString() :
 				method.call(this)
+			);
+		};
+	}
+
+	/**
+	 * Decorator for any type binary operation.
+	 * Simplifies return values to values that already exist, if possible.
+	 * @implements MethodDecorator<Type, (t: Type) => Type>
+	 */
+	protected static operatorDeco(
+		method:   (t: Type) => Type,
+		_context: ClassMethodDecoratorContext<Type, typeof method>,
+	): typeof method {
+		return function (this: Type, t) {
+			const returned: Type = method.call(this, t);
+			return (
+				returned.isBottomType ? NEVER :
+				returned.isTopType    ? UNKNOWN :
+				[
+					VOID,
+					NULL,
+					BOOL,
+					INT,
+					FLOAT,
+					STR,
+					TYPE_OBJ,
+				].find((c) => returned.equals(c)) ?? returned
 			);
 		};
 	}
@@ -280,6 +314,7 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type intersection
 	 */
+	@Type.operatorDeco
 	@Type.intersectDeco
 	public intersect(t: Type): Type {
 		/* 2-1 | `A  & B == B  & A` */
@@ -295,6 +330,7 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type union
 	 */
+	@Type.operatorDeco
 	@Type.unionDeco
 	public union(t: Type): Type {
 		/* 2-2 | `A \| B == B \| A` */
@@ -386,6 +422,7 @@ export class TypeInterface extends Type {
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
+	@Type.operatorDeco
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
 		if (t instanceof TypeInterface) {
@@ -403,6 +440,7 @@ export class TypeInterface extends Type {
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
 	 */
+	@Type.operatorDeco
 	@Type.unionDeco
 	public override union(t: Type): Type {
 		if (t instanceof TypeInterface) {

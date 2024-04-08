@@ -57,16 +57,14 @@ describe('Type', () => {
 	it('false | true == bool', () => {
 		assert.ok(OBJ.Boolean.FALSETYPE.union(OBJ.Boolean.TRUETYPE).equals(TYPE.BOOL));
 	});
+	it('a type operation equaling to a built-in type returns that type by reference.', () => {
+		assert.strictEqual(TYPE.BOOL.intersect(TYPE.STR),                     TYPE.NEVER);
+		assert.strictEqual(TYPE.BOOL.union(TYPE.OBJ),                         TYPE.OBJ);
+		assert.strictEqual(OBJ.Boolean.FALSETYPE.union(OBJ.Boolean.TRUETYPE), TYPE.BOOL);
+	});
 
 
 	describe('#toString', () => {
-		it('displays `never` for the bottom type.', () => {
-			const bool_and_str: TYPE.Type = TYPE.BOOL.intersect(TYPE.STR);
-			assert.notDeepStrictEqual(bool_and_str, TYPE.NEVER);
-			assert.ok(bool_and_str.isBottomType);
-			return assert.strictEqual(bool_and_str.toString(), TYPE.NEVER.toString());
-		});
-
 		it('properly prioritizes operators.', () => {
 			const a: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL]);
 			const b: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.INT]);
