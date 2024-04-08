@@ -3,6 +3,10 @@ import {Type} from './Type.js';
 
 
 
+export type ReadonlyArrayOfAtLeast2<T> = readonly [T, T, ...readonly T[]];
+
+
+
 /**
  * Known subclasses:
  * - TypeIntersection
@@ -15,7 +19,7 @@ export abstract class Combinable extends Type {
 	 */
 	public constructor(
 		values: ReadonlySet<OBJ.Object>,
-		public readonly operands: readonly [Type, Type, ...readonly Type[]],
+		public readonly operands: ReadonlyArrayOfAtLeast2<Type>,
 	) {
 		super(false, values);
 	}

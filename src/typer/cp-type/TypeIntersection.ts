@@ -12,7 +12,10 @@ import {
 } from './index.js';
 import {language_types_equal} from './utils-private.js';
 import {Type} from './Type.js';
-import {Combinable} from './Combinable.js';
+import {
+	type ReadonlyArrayOfAtLeast2,
+	Combinable,
+} from './Combinable.js';
 
 
 
@@ -192,8 +195,8 @@ export class TypeIntersection extends Combinable {
 
 	public override combineTuplesOrRecords(): Type {
 		return (
-			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as readonly [TypeTuple,  TypeTuple,  ...readonly TypeTuple[]]) .reduce((a, b) => TypeIntersection.intersectTuples (a, b)) :
-			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as readonly [TypeRecord, TypeRecord, ...readonly TypeRecord[]]).reduce((a, b) => TypeIntersection.intersectRecords(a, b)) :
+			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as ReadonlyArrayOfAtLeast2<TypeTuple>) .reduce((a, b) => TypeIntersection.intersectTuples (a, b)) :
+			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as ReadonlyArrayOfAtLeast2<TypeRecord>).reduce((a, b) => TypeIntersection.intersectRecords(a, b)) :
 			this
 		);
 	}
