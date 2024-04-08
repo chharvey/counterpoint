@@ -74,12 +74,6 @@ describe('Type', () => {
 				[a.intersect(b.union(c)), '[bool] & ([int] | [str])'],
 				[a.union(b).intersect(c), '([bool] | [int]) & [str]'],
 				[a.union(b.intersect(c)), '[bool] | [int] & [str]'],
-
-				// switches operands when calling same operator
-				[a.intersect(b).intersect(c), '[bool] & [int] & [str]'],
-				[a.intersect(b.intersect(c)), '[int] & [str] & [bool]'],
-				[a.union(b).union(c), '[bool] | [int] | [str]'],
-				[a.union(b.union(c)), '[int] | [str] | [bool]'],
 			]);
 			return assert.deepStrictEqual([...tests.keys()].map((k) => k.toString()), [...tests.values()]);
 		});
@@ -162,6 +156,16 @@ describe('Type', () => {
 				const expected: TYPE.Type = a.intersect(b);
 				assert.strictEqual(expected.intersect(a), expected);
 			});
+			it('switches operands when calling same operator.', () => {
+				const a: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL]);
+				const b: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.INT]);
+				const c: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.STR]);
+				assert.deepStrictEqual(
+					[a.intersect(b).intersect(c),                  a.intersect(b.intersect(c))],
+					[new TYPE.TypeIntersection(a.intersect(b), c), new TYPE.TypeIntersection(b.intersect(c), a)],
+				);
+				return assert.notDeepStrictEqual(a.intersect(b.intersect(c)), new TYPE.TypeIntersection(a.intersect(b), c));
+			});
 			it('doesn’t stack overflow.', () => {
 				const a_int:   TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));   // [a: int]
 				const a_float: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.FLOAT]])); // [a: float]
@@ -218,6 +222,16 @@ describe('Type', () => {
 				const b: TYPE.Type = typeUnitInt(42n);
 				const expected: TYPE.Type = a.union(b);
 				assert.strictEqual(expected.union(a), expected);
+			});
+			it('switches operands when calling same operator.', () => {
+				const a: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL]);
+				const b: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.INT]);
+				const c: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.STR]);
+				assert.deepStrictEqual(
+					[a.union(b).union(c),               a.union(b.union(c))],
+					[new TYPE.TypeUnion(a.union(b), c), new TYPE.TypeUnion(b.union(c), a)],
+				);
+				return assert.notDeepStrictEqual(a.union(b.union(c)), new TYPE.TypeUnion(a.union(b), c));
 			});
 			it('doesn’t stack overflow.', () => {
 				const a_int:   TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));   // [a: int]
