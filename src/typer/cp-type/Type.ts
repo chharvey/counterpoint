@@ -3,6 +3,7 @@ import {strictEqual} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
 import {
+	Combinable,
 	TypeIntersection,
 	TypeUnion,
 	TypeDifference,
@@ -16,8 +17,6 @@ import {
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
  * - Combinable
- * - TypeIntersection
- * - TypeUnion
  * - TypeDifference
  * - TypeUnit
  * - TypeInterface
@@ -181,11 +180,25 @@ export abstract class Type {
 				return true;
 			}
 
-			/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 			if (t instanceof TypeIntersection) {
+				/*
+				 * 3-1 | `A  & B <: A  &&  A  & B <: B`
+				 *     | `A  & B  & C <: A  & B`
+				 */
+				if (this instanceof TypeIntersection && t.operands.every((s) => this.operands.some((r) => r.equals(s)))) {
+					return true;
+				}
+				/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 				return t.operands.every((s) => this.isSubtypeOf(s));
 			}
 			if (t instanceof TypeUnion) {
+				/*
+				 * 3-2 | `A <: A \| B  &&  B <: A \| B`
+				 *     | `A \| B <: A \| B \| C`
+				 */
+				if (this instanceof TypeUnion && this.operands.every((s) => t.operands.some((r) => r.equals(s)))) {
+					return true;
+				}
 				/* 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
 				if (t.operands.some((s) => this.isSubtypeOf(s))) {
 					return true;
@@ -270,7 +283,7 @@ export abstract class Type {
 	@Type.intersectDeco
 	public intersect(t: Type): Type {
 		/* 2-1 | `A  & B == B  & A` */
-		if (t instanceof TypeIntersection || t instanceof TypeUnion) {
+		if (t instanceof Combinable) {
 			return t.intersect(this);
 		}
 
@@ -285,7 +298,7 @@ export abstract class Type {
 	@Type.unionDeco
 	public union(t: Type): Type {
 		/* 2-2 | `A \| B == B \| A` */
-		if (t instanceof TypeIntersection || t instanceof TypeUnion) {
+		if (t instanceof Combinable) {
 			return t.union(this);
 		}
 		return new TypeUnion(this, t);

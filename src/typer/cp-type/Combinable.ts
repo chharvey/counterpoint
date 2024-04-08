@@ -3,6 +3,11 @@ import {Type} from './Type.js';
 
 
 
+/**
+ * Known subclasses:
+ * - TypeIntersection
+ * - TypeUnion
+ */
 export abstract class Combinable extends Type {
 	/**
 	 * Construct a new Combinable object.
