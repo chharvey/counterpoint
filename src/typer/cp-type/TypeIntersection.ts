@@ -145,30 +145,8 @@ export class TypeIntersection extends Combinable {
 				return t;
 			}
 		} else {
-			return new TypeIntersection(this, t);
+			return new TypeIntersection(this, t).normalize();
 		}
-	}
-
-	@Type.operatorDeco
-	@Type.unionDeco
-	public override union(t: Type): Type {
-		/*
-		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
-		 *     | `(A  & B) \| (A  & C) == A  & (B \| C)`
-		 */
-		// `(A1 & A2 & B1 & B2) | (A1 & A2 & C1 & C2) == (A1 & A2) & ((B1 & B2) | (C1 & C2))`
-		if (t instanceof TypeIntersection) {
-			const these_operands:  ReadonlySet<Type> = new Set(this.operands);
-			const those_operands:  ReadonlySet<Type> = new Set(t.operands);
-			const common_operands: Type              = TypeUnion.all(...xjs.Set.intersection(these_operands, those_operands, language_types_equal));
-			if (!common_operands.isBottomType) {
-				const these_not_those: Type = TypeUnion.all(...xjs.Set.difference(these_operands, those_operands, language_types_equal));
-				const those_not_these: Type = TypeUnion.all(...xjs.Set.difference(those_operands, these_operands, language_types_equal));
-				return common_operands.intersect(these_not_those.union(those_not_these));
-			}
-		}
-
-		return new TypeUnion(this, t);
 	}
 
 	@strictEqual
@@ -191,6 +169,25 @@ export class TypeIntersection extends Combinable {
 
 	public override immutableOf(): TypeIntersection {
 		return new TypeIntersection(...this.operands.map((s) => s.immutableOf()) as [Type, Type, ...Type[]]);
+	}
+
+	public override normalize(): Type {
+		/*
+		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
+		 *     | `(A \| B)  & (A \| C) == A \| (B  & C)`
+		 */
+		// (A1 | A2 | B1 | B2 | E | F) & (A1 | A2 | C1 | C2 | F | G) & (A1 | A2 | D1 | D2 | E | G)
+		// == (A1 | A2) | ((B1 | B2 | E | F) & (C1 | C2 | F | G) & (D1 | D2 | E | G))
+		if (this.operands.every((s) => s instanceof TypeUnion)) {
+			const unions: readonly ReadonlySet<Type>[] = (this.operands as ReadonlyArrayOfAtLeast2<TypeUnion>).map((s) => new Set<Type>(s.operands));
+			const common: ReadonlySet<Type>            = unions.reduce((a, b) => xjs.Set.intersection(a, b, language_types_equal));
+
+			if (common.size) {
+				const differing: readonly ReadonlySet<Type>[] = unions.map((union) => xjs.Set.difference(union, common, language_types_equal));
+				return TypeUnion.all(...common, TypeIntersection.all(differing.map((types) => TypeUnion.all(...types))));
+			}
+		}
+		return this;
 	}
 
 	public override denormalize(): Type {

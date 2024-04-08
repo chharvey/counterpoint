@@ -71,9 +71,15 @@ describe('Type', () => {
 			const c: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.STR]);
 			const tests = new Map<TYPE.Type, string>([
 				[a.intersect(b).union(c), '[bool] & [int] | [str]'],
-				[a.intersect(b.union(c)), '([int] | [str]) & [bool]'],
+				[a.intersect(b.union(c)), '[bool] & ([int] | [str])'],
 				[a.union(b).intersect(c), '([bool] | [int]) & [str]'],
-				[a.union(b.intersect(c)), '[int] & [str] | [bool]'],
+				[a.union(b.intersect(c)), '[bool] | [int] & [str]'],
+
+				// switches operands when calling same operator
+				[a.intersect(b).intersect(c), '[bool] & [int] & [str]'],
+				[a.intersect(b.intersect(c)), '[int] & [str] & [bool]'],
+				[a.union(b).union(c), '[bool] | [int] | [str]'],
+				[a.union(b.union(c)), '[int] | [str] | [bool]'],
 			]);
 			return assert.deepStrictEqual([...tests.keys()].map((k) => k.toString()), [...tests.values()]);
 		});
@@ -168,25 +174,6 @@ describe('Type', () => {
 				left.intersect(right); // assert does not throw
 			});
 		});
-		describe('TypeUnion', () => {
-			it('factors out common union operands from intersection: `(A \| B)  & (A \| C) == A \| (B  & C)`.', () => {
-				[
-					[
-						TYPE.INT,
-						TYPE.FLOAT,
-					],
-					[
-						TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]])),
-						TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]])),
-					],
-				].forEach(([a, b]) => {
-					const actual:   TYPE.Type = a.union(TYPE.NULL).intersect(b.union(TYPE.NULL));
-					const expected: TYPE.Type = TYPE.NULL.union(a.intersect(b));
-					assert.ok(actual.equals(expected), `${ a }? & ${ b }? == (${ a } & ${ b })?`);
-					return assert.deepStrictEqual(actual, expected);
-				});
-			});
-		});
 	});
 
 
@@ -242,17 +229,6 @@ describe('Type', () => {
 				assert_instanceof(left,  TYPE.TypeUnion);
 				assert_instanceof(right, TYPE.TypeUnion);
 				left.union(right); // assert does not throw
-			});
-		});
-		describe('TypeIntersection', () => {
-			it('factors out common intersection operands from union: `(A  & B) \| (A  & C) == A  & (B \| C)`.', () => {
-				const a: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
-				const b: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));
-				const c: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x102n, TYPE.STR]]));
-				const actual:   TYPE.Type = a.intersect(b).union(a.intersect(c));
-				const expected: TYPE.Type = a.intersect(b.union(c));
-				assert.ok(actual.equals(expected), `(${ a } & ${ c }) | (${ b } & ${ c }) == (${ a } | ${ b }) & ${ c }`);
-				assert.deepStrictEqual(actual, expected);
 			});
 		});
 	});
@@ -788,6 +764,31 @@ describe('Type', () => {
 
 
 	describe('Combinable', () => {
+		describe('#normalize', () => {
+			const a: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
+			const b: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));
+			const c: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x102n, TYPE.STR]]));
+
+			describe('TypeIntersection', () => {
+				it('factors out common union operands from intersection: `(A \| B)  & (A \| C) == A \| (B  & C)`.', () => {
+					const actual:   TYPE.Type = a.union(b).intersect(a.union(c));
+					const expected: TYPE.Type = a.union(b.intersect(c));
+					assert.ok(actual.equals(expected), `(${ a } | ${ b }) & (${ a } | ${ c }) == ${ a } | ${ b } & ${ c }`);
+					return assert.deepStrictEqual(actual, expected, `${ actual } == ${ expected }`);
+				});
+			});
+
+			describe('TypeUnion', () => {
+				it('factors out common intersection operands from union: `(A  & B) \| (A  & C) == A  & (B \| C)`.', () => {
+					const actual:   TYPE.Type = a.intersect(b).union(a.intersect(c));
+					const expected: TYPE.Type = a.intersect(b.union(c));
+					assert.ok(actual.equals(expected), `${ a } & ${ b } | ${ a } & ${ c } == ${ a } & (${ b } | ${ c })`);
+					return assert.deepStrictEqual(actual, expected);
+				});
+			});
+		});
+
+
 		describe('#denormalize', () => {
 			const a: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
 			const b: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));

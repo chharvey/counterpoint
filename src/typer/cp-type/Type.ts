@@ -3,7 +3,6 @@ import {strictEqual} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
 import {
-	Combinable,
 	TypeIntersection,
 	TypeUnion,
 	TypeDifference,
@@ -318,11 +317,10 @@ export abstract class Type {
 	@Type.intersectDeco
 	public intersect(t: Type): Type {
 		/* 2-1 | `A  & B == B  & A` */
-		if (t instanceof Combinable) {
+		if (t instanceof TypeIntersection) {
 			return t.intersect(this);
 		}
-
-		return new TypeIntersection(this, t);
+		return new TypeIntersection(this, t).normalize();
 	}
 
 	/**
@@ -334,10 +332,10 @@ export abstract class Type {
 	@Type.unionDeco
 	public union(t: Type): Type {
 		/* 2-2 | `A \| B == B \| A` */
-		if (t instanceof Combinable) {
+		if (t instanceof TypeUnion) {
 			return t.union(this);
 		}
-		return new TypeUnion(this, t);
+		return new TypeUnion(this, t).normalize();
 	}
 
 	/**

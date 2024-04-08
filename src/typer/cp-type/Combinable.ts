@@ -25,6 +25,8 @@ export abstract class Combinable extends Type {
 	}
 
 
+	public abstract normalize(): Type;
+
 	public abstract denormalize(): Type;
 
 	public abstract combineTuplesOrRecords(): Type;
