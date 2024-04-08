@@ -147,12 +147,12 @@ export class TypeIntersection extends Combinable {
 
 	@Type.unionDeco
 	public override union(t: Type): Type {
+		/*
+		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
+		 *     | `(A  & B) \| (A  & C) == A  & (B \| C)`
+		 */
+		// `(A1 & A2 & B1 & B2) | (A1 & A2 & C1 & C2) == (A1 & A2) & ((B1 & B2) | (C1 & C2))`
 		if (t instanceof TypeIntersection) {
-			/*
-			 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
-			 *     | `(A  & B) \| (A  & C) == A  & (B \| C)`
-			 */
-			// `(A1 & A2 & B1 & B2) | (A1 & A2 & C1 & C2) == (A1 & A2) & ((B1 & B2) | (C1 & C2))`
 			const these_operands:  ReadonlySet<Type> = new Set(this.operands);
 			const those_operands:  ReadonlySet<Type> = new Set(t.operands);
 			const common_operands: Type              = TypeUnion.all(...xjs.Set.intersection(these_operands, those_operands, language_types_equal));
@@ -162,6 +162,7 @@ export class TypeIntersection extends Combinable {
 				return common_operands.intersect(these_not_those.union(those_not_these));
 			}
 		}
+
 		return new TypeUnion(this, t);
 	}
 
@@ -206,8 +207,9 @@ export class TypeIntersection extends Combinable {
 			const right: Type = not_union.length >= 2
 				? new TypeUnion(not_union[0], not_union[1], ...not_union.slice(2))
 				: (assert.strictEqual(not_union.length, 1), not_union[0]);
-			return TypeUnion.all(union.operands.map((s) => s.intersect(right)));
+			return new TypeUnion(...union.operands.map((s) => s.intersect(right)) as readonly Type[] as typeof union.operands);
 		}
+
 		return this;
 	}
 }

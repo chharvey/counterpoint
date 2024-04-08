@@ -949,10 +949,12 @@ describe('Type', () => {
 				const a: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
 				const b: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));
 				const c: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x102n, TYPE.STR]]));
+
 				const intersection: TYPE.Type = b.union(c).intersect(a);
-				const expected:     TYPE.Type = b.intersect(a).union(c.intersect(a));
 				assert_instanceof(intersection, TYPE.TypeIntersection);
+
 				const as_union: TYPE.Type = intersection.tryAsUnion();
+				const expected            = new TYPE.TypeUnion(b.intersect(a), c.intersect(a));
 				assert.ok(as_union.equals(expected), `(${ b } | ${ c }) & ${ a } == ${ b } & ${ a } | ${ c } & ${ a }`);
 				return assert.deepStrictEqual(as_union, expected);
 			});
@@ -1113,10 +1115,12 @@ describe('Type', () => {
 				const a: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
 				const b: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));
 				const c: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([[0x102n, TYPE.STR]]));
-				const union:    TYPE.Type = b.intersect(c).union(a);
-				const expected: TYPE.Type = b.union(a).intersect(c.union(a));
+
+				const union: TYPE.Type = b.intersect(c).union(a);
 				assert_instanceof(union, TYPE.TypeUnion);
-				const as_intersection = union.tryAsIntersection();
+
+				const as_intersection: TYPE.Type = union.tryAsIntersection();
+				const expected                   = new TYPE.TypeIntersection(b.union(a), c.union(a));
 				assert.ok(as_intersection.equals(expected), `${ b } & ${ c } | ${ a } == (${ b } | ${ a }) & (${ c } | ${ a })`);
 				return assert.deepStrictEqual(as_intersection, expected);
 			});
