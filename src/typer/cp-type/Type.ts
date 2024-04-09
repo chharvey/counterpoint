@@ -213,6 +213,34 @@ export abstract class Type {
 				return true;
 			}
 
+			/*
+			 * Denormalize intersection/union types.
+			 *
+			 * An assignee of intersection type `A & (B | C)` will attempt to convert to `(A & B) | (A & C)`
+			 * when being assigned a value.
+			 * A type union in this case is more performant, as only one constituent of the union is sufficient —
+			 * the value only need be assignable to `A & B` or `A & C`, which allows for short-circuiting.
+			 *
+			 * Likewise, when a value is of union type `A | (B & C)`, it will attempt to convert to `(A | B) & (A | C)`
+			 * when being assigned to a target.
+			 * In this scenario, a type intersection can allow for short-circuiting —
+			 * only one of the constituents `A | B` or `A | C` need be assignable.
+			 *
+			 * Inspiration: https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/#optimizations-by-comparing-non-normalized-intersections
+			 */
+			if (t instanceof TypeIntersection) {
+				const maybe_union: Type = t.denormalize();
+				if (maybe_union instanceof TypeUnion && this.isSubtypeOf(maybe_union)) {
+					return true;
+				}
+			}
+			if (this instanceof TypeUnion) {
+				const maybe_intersection: Type = this.denormalize();
+				if (maybe_intersection instanceof TypeIntersection && maybe_intersection.isSubtypeOf(t)) {
+					return true;
+				}
+			}
+
 			if (t instanceof TypeIntersection) {
 				/*
 				 * 3-1 | `A  & B <: A  &&  A  & B <: B`
