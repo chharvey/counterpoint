@@ -1,9 +1,6 @@
-import * as xjs from 'extrajs';
-import {
-	type Keys,
-	strictEqual,
-} from '../../lib/index.js';
+import {strictEqual} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
+import {memoBinop} from '../utils-private.js';
 import {String as CPString} from './index.js';
 
 
@@ -75,42 +72,14 @@ abstract class CPObject {
 	}
 
 	/**
-	 * Utility method for checking and memoizing a boolean binary operation.
-	 * When the compiler performs `o1 ‹op› o2` (where ‹op› is some binary operation that returns a boolean result),
-	 * it will memoize the result and refer to it later,
-	 * in the case of recursive nesting (say `o1.prop ‹op› o2` and `o2.prop ‹op› o1`),
-	 * or when evaluating a similar expression (such as `o2 ‹op› o1`).
-	 * @param  that       the object to compare to this object
-	 * @param  memo       the memoizer, using `[this, that]` as keys and the result of the operation as values
-	 * @param  definition the definition of equality for this type; a function taking 2 objects (`this` and `that`) and returning a boolean
-	 * @return            the result of evaluating the Counterpoint code `this ‹op› that`
-	 */
-	private memoBinop(that: this, memo: Map<readonly [CPObject, CPObject], boolean>, definition: (this_: this, that_: this) => boolean): boolean {
-		type K = Keys<typeof memo>;
-		const memo_key: readonly [this, this] = [this, that];
-		const memo_comparator = (
-			memokey1: K,
-			memokey2: K,
-		): boolean => xjs.Set.is<CPObject>( // cannot test `.identical()` for value objects without resulting in infinite recursion, so we must use the stricter native `===`
-			new Set<CPObject>(memokey1),
-			new Set<CPObject>(memokey2),
-		);
-		if (!xjs.Map.has<K, boolean>(memo, memo_key, memo_comparator)) {
-			xjs.Map.set<K, boolean>(memo, memo_key, true,                              memo_comparator); // use this assumption in the next step
-			xjs.Map.set<K, boolean>(memo, memo_key, definition.call(null, this, that), memo_comparator);
-		}
-		return xjs.Map.get<K, boolean>(memo, memo_key, memo_comparator)!;
-	}
-
-	/**
 	 * Utility method for checking and memoizing identity.
 	 * @param  that       the object to compare to this object
 	 * @param  definition the definition of identity for this type; a function taking 2 objects (`this` and `that`) and returning a boolean
 	 * @return            the result of evaluating the Counterpoint code `this === that`
 	 * @final
 	 */
-	protected isIdenticalTo(that: this, definition: (this_: this, that_: this) => boolean): boolean {
-		return this.memoBinop(that, CPObject.ID_MEMO, definition);
+	protected isIdenticalTo<T extends CPObject>(this: T, that: T, definition: (this_: T, that_: T) => boolean): boolean {
+		return memoBinop(this, that, CPObject.ID_MEMO, definition);
 	}
 
 	/**
@@ -120,8 +89,8 @@ abstract class CPObject {
 	 * @return            the result of evaluating the Counterpoint code `this == that`
 	 * @final
 	 */
-	protected isEqualTo(that: this, definition: (this_: this, that_: this) => boolean): boolean {
-		return this.memoBinop(that, CPObject.EQ_MEMO, definition);
+	protected isEqualTo<T extends CPObject>(this: T, that: T, definition: (this_: T, that_: T) => boolean): boolean {
+		return memoBinop(this, that, CPObject.EQ_MEMO, definition);
 	}
 
 	/**

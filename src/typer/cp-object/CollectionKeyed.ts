@@ -36,7 +36,7 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 		return (
 			   value instanceof CollectionKeyed
 			&& this.properties.size === value.properties.size
-			&& this.isEqualTo(value as this, (this_, that_) => (
+			&& this.isEqualTo(value, (this_, that_) => (
 				[...that_.properties].every(([thatkey, thatvalue]) => !!this_.properties.get(thatkey)?.equal(thatvalue))
 			))
 		);

@@ -11,7 +11,7 @@ export class Record<T extends CPObject = CPObject> extends CollectionKeyed<T> {
 		return (
 			   value instanceof Record
 			&& this.properties.size === value.properties.size
-			&& this.isIdenticalTo(value as this, (this_, that_) => (
+			&& this.isIdenticalTo(value, (this_, that_) => (
 				[...that_.properties].every(([thatkey, thatvalue]) => !!this_.properties.get(thatkey)?.identical(thatvalue))
 			))
 		);

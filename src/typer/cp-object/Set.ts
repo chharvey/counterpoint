@@ -33,7 +33,7 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 	@strictEqual
 	@CPObject.equalsDeco
 	public override equal(value: CPObject): boolean {
-		return value instanceof CPSet && this.isEqualTo(value as this, (this_, that_) => (
+		return value instanceof CPSet && this.isEqualTo(value, (this_, that_) => (
 			xjs.Set.is<T>(this_.elements, that_.elements, language_values_equal)
 		));
 	}
