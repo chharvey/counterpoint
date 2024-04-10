@@ -7,7 +7,14 @@ import {
 	TypeUnion,
 	TypeDifference,
 	NEVER,
+	VOID,
 	UNKNOWN,
+	NULL,
+	BOOL,
+	INT,
+	FLOAT,
+	STR,
+	OBJ as TYPE_OBJ,
 } from './index.js';
 
 
@@ -16,8 +23,6 @@ import {
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
  * - Combinable
- * - TypeIntersection
- * - TypeUnion
  * - TypeDifference
  * - TypeUnit
  * - TypeInterface
@@ -51,6 +56,33 @@ export abstract class Type {
 				this.isBottomType ? NEVER  .toString() :
 				this.isTopType    ? UNKNOWN.toString() :
 				method.call(this)
+			);
+		};
+	}
+
+	/**
+	 * Decorator for any type binary operation.
+	 * Simplifies return values to values that already exist, if possible.
+	 * @implements MethodDecorator<Type, (t: Type) => Type>
+	 */
+	protected static operatorDeco(
+		method:   (t: Type) => Type,
+		_context: ClassMethodDecoratorContext<Type, typeof method>,
+	): typeof method {
+		return function (this: Type, t) {
+			const returned: Type = method.call(this, t);
+			return (
+				returned.isBottomType ? NEVER :
+				returned.isTopType    ? UNKNOWN :
+				[
+					VOID,
+					NULL,
+					BOOL,
+					INT,
+					FLOAT,
+					STR,
+					TYPE_OBJ,
+				].find((c) => returned.equals(c)) ?? returned
 			);
 		};
 	}
@@ -181,11 +213,53 @@ export abstract class Type {
 				return true;
 			}
 
-			/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
+			/*
+			 * Denormalize intersection/union types.
+			 *
+			 * An assignee of intersection type `A & (B | C)` will attempt to convert to `(A & B) | (A & C)`
+			 * when being assigned a value.
+			 * A type union in this case is more performant, as only one constituent of the union is sufficient —
+			 * the value only need be assignable to `A & B` or `A & C`, which allows for short-circuiting.
+			 *
+			 * Likewise, when a value is of union type `A | (B & C)`, it will attempt to convert to `(A | B) & (A | C)`
+			 * when being assigned to a target.
+			 * In this scenario, a type intersection can allow for short-circuiting —
+			 * only one of the constituents `A | B` or `A | C` need be assignable.
+			 *
+			 * Inspiration: https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/#optimizations-by-comparing-non-normalized-intersections
+			 */
 			if (t instanceof TypeIntersection) {
+				const maybe_union: Type = t.denormalize();
+				if (maybe_union instanceof TypeUnion && this.isSubtypeOf(maybe_union)) {
+					return true;
+				}
+			}
+			if (this instanceof TypeUnion) {
+				const maybe_intersection: Type = this.denormalize();
+				if (maybe_intersection instanceof TypeIntersection && maybe_intersection.isSubtypeOf(t)) {
+					return true;
+				}
+			}
+
+			if (t instanceof TypeIntersection) {
+				/*
+				 * 3-1 | `A  & B <: A  &&  A  & B <: B`
+				 *     | `A  & B  & C <: A  & B`
+				 */
+				if (this instanceof TypeIntersection && t.operands.every((s) => this.operands.some((r) => r.equals(s)))) {
+					return true;
+				}
+				/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 				return t.operands.every((s) => this.isSubtypeOf(s));
 			}
 			if (t instanceof TypeUnion) {
+				/*
+				 * 3-2 | `A <: A \| B  &&  B <: A \| B`
+				 *     | `A \| B <: A \| B \| C`
+				 */
+				if (this instanceof TypeUnion && this.operands.every((s) => t.operands.some((r) => r.equals(s)))) {
+					return true;
+				}
 				/* 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
 				if (t.operands.some((s) => this.isSubtypeOf(s))) {
 					return true;
@@ -267,14 +341,14 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type intersection
 	 */
+	@Type.operatorDeco
 	@Type.intersectDeco
 	public intersect(t: Type): Type {
 		/* 2-1 | `A  & B == B  & A` */
-		if (t instanceof TypeIntersection || t instanceof TypeUnion) {
+		if (t instanceof TypeIntersection) {
 			return t.intersect(this);
 		}
-
-		return new TypeIntersection(this, t);
+		return new TypeIntersection(this, t).normalize();
 	}
 
 	/**
@@ -282,13 +356,14 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type union
 	 */
+	@Type.operatorDeco
 	@Type.unionDeco
 	public union(t: Type): Type {
 		/* 2-2 | `A \| B == B \| A` */
-		if (t instanceof TypeIntersection || t instanceof TypeUnion) {
+		if (t instanceof TypeUnion) {
 			return t.union(this);
 		}
-		return new TypeUnion(this, t);
+		return new TypeUnion(this, t).normalize();
 	}
 
 	/**
@@ -373,6 +448,7 @@ export class TypeInterface extends Type {
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
+	@Type.operatorDeco
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
 		if (t instanceof TypeInterface) {
@@ -390,6 +466,7 @@ export class TypeInterface extends Type {
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
 	 */
+	@Type.operatorDeco
 	@Type.unionDeco
 	public override union(t: Type): Type {
 		if (t instanceof TypeInterface) {

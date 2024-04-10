@@ -12,7 +12,10 @@ import {
 import {language_types_equal} from './utils-private.js';
 import {Type} from './Type.js';
 import {TypeIntersection} from './TypeIntersection.js';
-import {Combinable} from './Combinable.js';
+import {
+	type ReadonlyArrayOfAtLeast2,
+	Combinable,
+} from './Combinable.js';
 
 
 
@@ -128,26 +131,7 @@ export class TypeUnion extends Combinable {
 		return this.operands.some((s) => s.includes(v));
 	}
 
-	@Type.intersectDeco
-	public override intersect(t: Type): Type {
-		if (t instanceof TypeUnion) {
-			/*
-			 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
-			 *     | `(A \| B)  & (A \| C) == A \| (B  & C)`
-			 */
-			// `(A1 | A2 | B1 | B2) & (A1 | A2 | C1 | C2) == (A1 | A2) | ((B1 | B2) & (C1 | C2))`
-			const these_operands:  ReadonlySet<Type> = new Set(this.operands);
-			const those_operands:  ReadonlySet<Type> = new Set(t.operands);
-			const common_operands: Type              = TypeUnion.all(...xjs.Set.intersection(these_operands, those_operands, language_types_equal));
-			if (!common_operands.isBottomType) {
-				const these_not_those: Type = TypeUnion.all(...xjs.Set.difference(these_operands, those_operands, language_types_equal));
-				const those_not_these: Type = TypeUnion.all(...xjs.Set.difference(those_operands, these_operands, language_types_equal));
-				return common_operands.union(these_not_those.intersect(those_not_these));
-			}
-		}
-		return new TypeIntersection(this, t);
-	}
-
+	@Type.operatorDeco
 	@Type.unionDeco
 	public override union(t: Type): Type {
 		/*
@@ -167,7 +151,7 @@ export class TypeUnion extends Combinable {
 				return t;
 			}
 		} else {
-			return new TypeUnion(this, t);
+			return new TypeUnion(this, t).normalize();
 		}
 	}
 
@@ -192,27 +176,47 @@ export class TypeUnion extends Combinable {
 		return new TypeUnion(...this.operands.map((s) => s.immutableOf()) as [Type, Type, ...Type[]]);
 	}
 
-	public override combineTuplesOrRecords(): Type {
-		return (
-			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as readonly [TypeTuple,  TypeTuple,  ...readonly TypeTuple[]]) .reduce((a, b) => TypeUnion.unionTuples (a, b)) :
-			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as readonly [TypeRecord, TypeRecord, ...readonly TypeRecord[]]).reduce((a, b) => TypeUnion.unionRecords(a, b)) :
-			this
-		);
+	public override normalize(): Type {
+		/*
+		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
+		 *     | `(A  & B) \| (A  & C) == A  & (B \| C)`
+		 */
+		// (A1 & A2 & B1 & B2 & E & F) | (A1 & A2 & C1 & C2 & F & G) | (A1 & A2 & D1 & D2 & E & G)
+		// == (A1 & A2) & ((B1 & B2 & E & F) | (C1 & C2 & F & G) | (D1 & D2 & E & G))
+		if (this.operands.every((s) => s instanceof TypeIntersection)) {
+			const intersections: readonly ReadonlySet<Type>[] = (this.operands as ReadonlyArrayOfAtLeast2<TypeIntersection>).map((s) => new Set<Type>(s.operands));
+			const common:        ReadonlySet<Type>            = intersections.reduce((a, b) => xjs.Set.intersection(a, b, language_types_equal));
+
+			if (common.size) {
+				const differing: readonly ReadonlySet<Type>[] = intersections.map((intersection) => xjs.Set.difference(intersection, common, language_types_equal));
+				return TypeIntersection.all(...common, TypeUnion.all(differing.map((types) => TypeIntersection.all(...types))));
+			}
+		}
+		return this;
 	}
 
-	public tryAsIntersection(): Type {
+	public override denormalize(): Type {
 		/*
 		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
 		 *     | `(B  & C) \| A == (B \| A)  & (C \| A)`
 		 */
 		const intersection: TypeIntersection | null = this.operands.find((s): s is TypeIntersection => s instanceof TypeIntersection) ?? null;
 		if (intersection) {
-			const not_intersection: Type[] = this.operands.filter((s) => s !== intersection);
+			const not_intersection: readonly Type[] = this.operands.filter((s) => s !== intersection);
 			const right: Type = not_intersection.length >= 2
 				? new TypeUnion(not_intersection[0], not_intersection[1], ...not_intersection.slice(2))
 				: (assert.strictEqual(not_intersection.length, 1), not_intersection[0]);
-			return TypeIntersection.all(intersection.operands.map((s) => s.union(right)));
+			return new TypeIntersection(...intersection.operands.map((s) => s.union(right)) as readonly Type[] as typeof intersection.operands);
+		} else {
+			return this;
 		}
-		return this;
+	}
+
+	public override combineTuplesOrRecords(): Type {
+		return (
+			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as ReadonlyArrayOfAtLeast2<TypeTuple>) .reduce((a, b) => TypeUnion.unionTuples (a, b)) :
+			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as ReadonlyArrayOfAtLeast2<TypeRecord>).reduce((a, b) => TypeUnion.unionRecords(a, b)) :
+			this
+		);
 	}
 }

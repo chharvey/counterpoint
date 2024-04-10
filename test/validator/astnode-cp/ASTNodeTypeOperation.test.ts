@@ -30,8 +30,9 @@ describe('ASTNodeTypeOperation', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					type A = mutable int[];
 					type B = int[3];
+					type F = Object[];
 
-					type C = mutable (A & B);
+					type C = mutable (A & F);
 					type D = mutable (A | B);
 
 					type E = mutable Object; % equivalent to \`Object\`
