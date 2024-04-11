@@ -1,19 +1,18 @@
 import {strictEqual} from '../../lib/index.js';
 import {TYPE} from '../index.js';
-import type {Object as CPObject} from './Object.js';
+import {Object as CPObject} from './Object.js';
 import {CollectionKeyed} from './CollectionKeyed.js';
 
 
 
 export class Record<T extends CPObject = CPObject> extends CollectionKeyed<T> {
 	@strictEqual
+	@CPObject.memoizeIdentical
 	public override identical(value: CPObject): boolean {
 		return (
 			   value instanceof Record
 			&& this.properties.size === value.properties.size
-			&& this.isIdenticalTo(value, (this_, that_) => (
-				[...that_.properties].every(([thatkey, thatvalue]) => !!this_.properties.get(thatkey)?.identical(thatvalue))
-			))
+			&& [...(value as Record).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.identical(thatvalue))
 		);
 	}
 

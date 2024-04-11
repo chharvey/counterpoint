@@ -48,10 +48,9 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	@strictEqual
+	@CPObject.memoizeIdentical
 	public override identical(value: CPObject): boolean {
-		return value instanceof Integer && this.isIdenticalTo(value, (this_, that_) => (
-			xjs.Array.is<boolean>(this_.internal, that_.internal)
-		));
+		return value instanceof Integer && xjs.Array.is<boolean>(this.internal, value.internal);
 	}
 
 	@CPObject.equalsDeco

@@ -18,6 +18,19 @@ abstract class CPObject {
 	private static readonly EQ_MEMO = new Map<readonly [CPObject, CPObject], boolean>();
 
 	/**
+	 * Decorator for {@link CPObject#identical} for memoizing results.
+	 * @implements MethodDecorator<CPObject, CPObject['identical']>
+	 */
+	protected static memoizeIdentical(
+		method:   CPObject['identical'],
+		_context: ClassMethodDecoratorContext<CPObject, typeof method>,
+	): typeof method {
+		return function (this: CPObject, value) {
+			return memoBinop(this, value, CPObject.ID_MEMO, () => method.call(this, value));
+		};
+	}
+
+	/**
 	 * Decorator for {@link CPObject#equal} method and any overrides.
 	 * Performs the Equality algorithm — returns whether two CPObjects (Counterpoint Language Values)
 	 * are equal by some definition.
@@ -69,17 +82,6 @@ abstract class CPObject {
 	@CPObject.equalsDeco
 	public equal(_value: CPObject): boolean {
 		return false;
-	}
-
-	/**
-	 * Utility method for checking and memoizing identity.
-	 * @param  that       the object to compare to this object
-	 * @param  definition the definition of identity for this type; a function taking 2 objects (`this` and `that`) and returning a boolean
-	 * @return            the result of evaluating the Counterpoint code `this === that`
-	 * @final
-	 */
-	protected isIdenticalTo<T extends CPObject>(this: T, that: T, definition: (this_: T, that_: T) => boolean): boolean {
-		return memoBinop(this, that, CPObject.ID_MEMO, definition);
 	}
 
 	/**

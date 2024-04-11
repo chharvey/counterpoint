@@ -4,7 +4,7 @@ import {
 	type CodeUnit,
 	strictEqual,
 } from '../../lib/index.js';
-import type {Object as CPObject} from './Object.js';
+import {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -35,10 +35,9 @@ class CPString extends Primitive {
 	}
 
 	@strictEqual
+	@CPObject.memoizeIdentical
 	public override identical(value: CPObject): boolean {
-		return value instanceof CPString && this.isIdenticalTo(value, (this_, that_) => (
-			xjs.Array.is<CodeUnit>(this_.codeunits, that_.codeunits)
-		));
+		return value instanceof CPString && xjs.Array.is<CodeUnit>(this.codeunits, value.codeunits);
 	}
 
 	public override toCPString(): CPString {
