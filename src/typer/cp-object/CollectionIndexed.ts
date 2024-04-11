@@ -35,10 +35,9 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
+	@CPObject.memoizeEqual
 	public override equal(value: CPObject): boolean {
-		return value instanceof CollectionIndexed && this.isEqualTo(value, (this_, that_) => (
-			xjs.Array.is<T>(this_.items, that_.items, language_values_equal)
-		));
+		return value instanceof CollectionIndexed && xjs.Array.is<CPObject>(this.items, (value as CollectionIndexed).items, language_values_equal);
 	}
 
 	/** @final */

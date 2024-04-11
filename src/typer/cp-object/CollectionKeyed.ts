@@ -32,13 +32,12 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
+	@CPObject.memoizeEqual
 	public override equal(value: CPObject): boolean {
 		return (
 			   value instanceof CollectionKeyed
 			&& this.properties.size === value.properties.size
-			&& this.isEqualTo(value, (this_, that_) => (
-				[...that_.properties].every(([thatkey, thatvalue]) => !!this_.properties.get(thatkey)?.equal(thatvalue))
-			))
+			&& [...(value as CollectionKeyed).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue))
 		);
 	}
 
