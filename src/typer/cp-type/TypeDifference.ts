@@ -57,6 +57,7 @@ export class TypeDifference extends Type {
 	}
 
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf(t);

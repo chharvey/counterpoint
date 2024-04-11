@@ -125,6 +125,7 @@ export class TypeIntersection extends Combinable {
 		return this.operands.every((s) => s.includes(v));
 	}
 
+	@Type.memoizeIntersection
 	@Type.operatorDeco
 	@Type.intersectDeco
 	public override intersect(t: Type): Type {
@@ -150,6 +151,7 @@ export class TypeIntersection extends Combinable {
 	}
 
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */

@@ -26,12 +26,14 @@ export class TypeVoid extends ValueType {
 		return false;
 	}
 
+	@Type.memoizeIntersection
 	@Type.intersectDeco
 	public override intersect(_t: Type): Type {
 		return NEVER;
 	}
 
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;

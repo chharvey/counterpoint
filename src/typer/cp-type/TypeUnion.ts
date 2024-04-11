@@ -131,6 +131,7 @@ export class TypeUnion extends Combinable {
 		return this.operands.some((s) => s.includes(v));
 	}
 
+	@Type.memoizeUnion
 	@Type.operatorDeco
 	@Type.unionDeco
 	public override union(t: Type): Type {
@@ -155,6 +156,7 @@ export class TypeUnion extends Combinable {
 		}
 	}
 
+	@Type.operatorDeco
 	@Type.subtractDeco
 	public override subtract(t: Type): Type {
 		/* 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
@@ -162,6 +164,7 @@ export class TypeUnion extends Combinable {
 	}
 
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
