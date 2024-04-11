@@ -5,7 +5,6 @@ import {
 	TYPE,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -43,7 +42,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			(source === Keyword.FLOAT)   ? TYPE.FLOAT            :
 			(source === Keyword.STR)     ? TYPE.STR              :
 			(source === Keyword.UNKNOWN) ? TYPE.UNKNOWN          :
-			throw_expression(new Error(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`))
+			assert.fail(new Error(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`))
 		);
 	}
 

@@ -1,9 +1,9 @@
+import * as assert from 'assert';
 import {
 	TYPE,
 	TypeErrorInvalidOperation,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -51,7 +51,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		return (
 			(this.operator === Operator.ORNULL)  ? t.union(TYPE.NULL) :
 			(this.operator === Operator.MUTABLE) ? t.mutableOf()      :
-			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
+			assert.fail(new Error(`Operator ${ Operator[this.operator] } not found.`))
 		);
 	}
 }

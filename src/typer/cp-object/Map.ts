@@ -1,9 +1,7 @@
+import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {VoidError01} from '../../index.js';
-import {
-	throw_expression,
-	strictEqual,
-} from '../../lib/index.js';
+import {strictEqual} from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {TYPE} from '../index.js';
 import {
@@ -63,7 +61,7 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 			? xjs.Map.get(this.cases, ant, languageValuesIdentical)!
 			: (access_optional)
 				? Null.NULL
-				: throw_expression(new VoidError01(accessor));
+				: assert.fail(new VoidError01(accessor));
 	}
 }
 export {CPMap as Map};

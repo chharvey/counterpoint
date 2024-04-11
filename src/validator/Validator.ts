@@ -1,9 +1,7 @@
+import * as assert from 'assert';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {LexError01} from '../index.js';
-import {
-	type CodeUnit,
-	throw_expression,
-} from '../lib/index.js';
+import type {CodeUnit} from '../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -181,7 +179,7 @@ export class Validator {
 		const index: number = KEYWORDS.indexOf(source);
 		return (0 <= index && index < KEYWORDS.length)
 			? BigInt(index) + Validator.MIN_VALUE_KEYWORD
-			: throw_expression(new RangeError(`Token \`${ source }\` is not a valid keyword.`));
+			: assert.fail(new RangeError(`Token \`${ source }\` is not a valid keyword.`));
 	}
 
 	/**

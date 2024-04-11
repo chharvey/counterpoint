@@ -1,7 +1,7 @@
+import * as assert from 'assert';
 import {TypeErrorNoEntry} from '../../index.js';
 import {
 	type IntRange,
-	throw_expression,
 	strictEqual,
 } from '../../lib/index.js';
 import type {
@@ -89,7 +89,7 @@ export class TypeRecord extends Type {
 		return updateAccessedStaticType(
 			((this.invariants.has(key))
 				? this.invariants.get(key)!
-				: throw_expression(new TypeErrorNoEntry('property', this, accessor))
+				: assert.fail(new TypeErrorNoEntry('property', this, accessor))
 			),
 			access_kind,
 		);

@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import {
 	OBJ,
 	TYPE,
@@ -6,7 +7,6 @@ import {
 	TypeErrorInvalidOperation,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -66,7 +66,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 				(t0.includes(OBJ.Boolean.TRUE))  ? t1           : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
 				(t0.isBottomType,                  TYPE.NEVER)
 			)
-			: throw_expression(new TypeErrorInvalidOperation(this));
+			: assert.fail(new TypeErrorInvalidOperation(this));
 	}
 
 	@memoizeMethod

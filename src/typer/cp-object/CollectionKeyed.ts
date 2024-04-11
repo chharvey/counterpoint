@@ -1,8 +1,6 @@
+import * as assert from 'assert';
 import {VoidError01} from '../../index.js';
-import {
-	throw_expression,
-	strictEqual,
-} from '../../lib/index.js';
+import {strictEqual} from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
@@ -48,6 +46,6 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 			? this.properties.get(key)!
 			: (access_optional)
 				? Null.NULL
-				: throw_expression(new VoidError01(accessor));
+				: assert.fail(new VoidError01(accessor));
 	}
 }

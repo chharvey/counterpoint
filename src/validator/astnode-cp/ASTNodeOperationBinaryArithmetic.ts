@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
@@ -9,7 +10,6 @@ import {
 	NanErrorDivZero,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -69,9 +69,9 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				: (
 					(bothFloats   (t0, t1)) ? TYPE.FLOAT :
 					(neitherFloats(t0, t1)) ? TYPE.INT   :
-					throw_expression(new TypeErrorInvalidOperation(this))
+					assert.fail(new TypeErrorInvalidOperation(this))
 				)
-			: throw_expression(new TypeErrorInvalidOperation(this));
+			: assert.fail(new TypeErrorInvalidOperation(this));
 	}
 
 	@memoizeMethod
