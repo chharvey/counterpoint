@@ -1,5 +1,8 @@
 import * as xjs from 'extrajs';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	instanceOf,
+} from '../../lib/index.js';
 import {TYPE} from '../index.js';
 import {
 	languageValuesIdentical,
@@ -32,9 +35,10 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
+	@instanceOf(CPSet)
 	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
-		return value instanceof CPSet && xjs.Set.is<CPObject>(this.elements, (value as CPSet).elements, language_values_equal);
+		return xjs.Set.is<CPObject>(this.elements, (value as CPSet).elements, language_values_equal);
 	}
 
 	/**

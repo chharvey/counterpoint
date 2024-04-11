@@ -3,6 +3,7 @@ import {VoidError01} from '../../index.js';
 import {
 	throw_expression,
 	strictEqual,
+	instanceOf,
 } from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {TYPE} from '../index.js';
@@ -37,11 +38,11 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
+	@instanceOf(CPMap)
 	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return (
-			   value instanceof CPMap
-			&& this.cases.size === value.cases.size
+			   this.cases.size === (value as CPMap).cases.size
 			&& [...(value as CPMap).cases].every(([thatant, thatcon]) => !!xjs.Map.get<CPObject, CPObject>(this.cases, thatant, language_values_equal)?.equal(thatcon))
 		);
 	}

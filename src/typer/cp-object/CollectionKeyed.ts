@@ -2,6 +2,7 @@ import {VoidError01} from '../../index.js';
 import {
 	throw_expression,
 	strictEqual,
+	instanceOf,
 } from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {Object as CPObject} from './Object.js';
@@ -32,11 +33,11 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
+	@instanceOf(CollectionKeyed)
 	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return (
-			   value instanceof CollectionKeyed
-			&& this.properties.size === value.properties.size
+			   this.properties.size === (value as CollectionKeyed).properties.size
 			&& [...(value as CollectionKeyed).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue))
 		);
 	}
