@@ -51,7 +51,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		return (
 			(this.operator === Operator.ORNULL)  ? t.union(TYPE.NULL) :
 			(this.operator === Operator.MUTABLE) ? t.mutableOf()      :
-			assert.fail(new Error(`Operator ${ Operator[this.operator] } not found.`))
+			assert.fail(`ASTNodeTypeOperationUnary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
 		);
 	}
 }

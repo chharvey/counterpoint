@@ -37,7 +37,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 			(source === Keyword.NULL)  ? OBJ.Null.NULL     :
 			(source === Keyword.FALSE) ? OBJ.Boolean.FALSE :
 			(source === Keyword.TRUE)  ? OBJ.Boolean.TRUE  :
-			assert.fail(new Error(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`))
+			assert.fail(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`)
 		);
 	}
 

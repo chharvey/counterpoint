@@ -148,7 +148,7 @@ class Decorator {
 			['identifier', (node) => (
 				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/))                                                                     ? new AST.ASTNodeTypeAlias(node as SyntaxNodeType<'identifier'>) :
 				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|assignee|declaration_variable|statement_expression|statement_assignment)$/)) ? new AST.ASTNodeVariable (node as SyntaxNodeType<'identifier'>) :
-				assert.fail(new TypeError(`Expected ${ node.parent } to be a node that contains an identifier.`))
+				assert.fail(`Expected ${ node.parent } to be a node that contains an identifier.`)
 			)],
 
 			/* # PRODUCTIONS */
@@ -157,7 +157,7 @@ class Decorator {
 			['primitive_literal', (node) => (
 				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/))                                                                     ? new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'primitive_literal'>) :
 				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|assignee|declaration_variable|statement_expression|statement_assignment)$/)) ? new AST.ASTNodeConstant    (node as SyntaxNodeType<'primitive_literal'>) :
-				assert.fail(new TypeError(`Expected ${ node.parent } to be a node that contains a primitive literal.`))
+				assert.fail(`Expected ${ node.parent } to be a node that contains a primitive literal.`)
 			)],
 
 			/* ## Types */

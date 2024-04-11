@@ -44,7 +44,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		return (
 			(this.operator === Operator.AND) ? t0.intersect(t1) :
 			(this.operator === Operator.OR)  ? t0.union    (t1) :
-			assert.fail(new Error(`Operator ${ Operator[this.operator] } not found.`))
+			assert.fail(`ASTNodeTypeOperationBinary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
 		);
 	}
 }

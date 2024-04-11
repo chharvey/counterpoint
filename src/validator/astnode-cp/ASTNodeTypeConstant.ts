@@ -42,7 +42,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			(source === Keyword.FLOAT)   ? TYPE.FLOAT            :
 			(source === Keyword.STR)     ? TYPE.STR              :
 			(source === Keyword.UNKNOWN) ? TYPE.UNKNOWN          :
-			assert.fail(new Error(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`))
+			assert.fail(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`)
 		);
 	}
 
