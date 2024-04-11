@@ -35,7 +35,7 @@ class CPString extends Primitive {
 	}
 
 	@strictEqual
-	@CPObject.memoizeIdentical
+	@CPObject.memoizeSameness
 	public override identical(value: CPObject): boolean {
 		return value instanceof CPString && xjs.Array.is<CodeUnit>(this.codeunits, value.codeunits);
 	}

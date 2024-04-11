@@ -32,7 +32,7 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
-	@CPObject.memoizeEqual
+	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return (
 			   value instanceof CollectionKeyed

@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import {strictEqual} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
 import {memoBinop} from '../utils-private.js';
@@ -18,28 +19,21 @@ abstract class CPObject {
 	private static readonly EQ_MEMO = new Map<readonly [CPObject, CPObject], boolean>();
 
 	/**
-	 * Decorator for {@link CPObject#identical} for memoizing results.
-	 * @implements MethodDecorator<CPObject, CPObject['identical']>
+	 * Decorator for {@link CPObject#identical} or {@link CPObject#equal} for memoizing results.
+	 * It may only be applied to one of those methods.
+	 * @implements MethodDecorator<CPObject, CPObject['identical' | 'equal']>
 	 */
-	protected static memoizeIdentical(
-		method:   CPObject['identical'],
-		_context: ClassMethodDecoratorContext<CPObject, typeof method>,
+	protected static memoizeSameness(
+		method:  CPObject['identical' | 'equal'],
+		context: ClassMethodDecoratorContext<CPObject, typeof method>,
 	): typeof method {
+		const memo: Map<readonly [CPObject, CPObject], boolean> = (
+			context.name === 'identical' ? CPObject.ID_MEMO :
+			context.name === 'equal'     ? CPObject.EQ_MEMO :
+			assert.fail(`CPObject.memoizeSameness did not expect the name \`${ context.name.toString() }\`.`)
+		);
 		return function (this: CPObject, value) {
-			return memoBinop(this, value, CPObject.ID_MEMO, () => method.call(this, value));
-		};
-	}
-
-	/**
-	 * Decorator for {@link CPObject#equal} for memoizing results.
-	 * @implements MethodDecorator<CPObject, CPObject['equal']>
-	 */
-	protected static memoizeEqual(
-		method:   CPObject['equal'],
-		_context: ClassMethodDecoratorContext<CPObject, typeof method>,
-	): typeof method {
-		return function (this: CPObject, value) {
-			return memoBinop(this, value, CPObject.EQ_MEMO, () => method.call(this, value));
+			return memoBinop(this, value, memo, () => method.call(this, value));
 		};
 	}
 

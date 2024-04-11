@@ -48,7 +48,7 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	@strictEqual
-	@CPObject.memoizeIdentical
+	@CPObject.memoizeSameness
 	public override identical(value: CPObject): boolean {
 		return value instanceof Integer && xjs.Array.is<boolean>(this.internal, value.internal);
 	}

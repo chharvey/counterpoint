@@ -9,7 +9,7 @@ import {CollectionIndexed} from './CollectionIndexed.js';
 
 export class Tuple<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 	@strictEqual
-	@CPObject.memoizeIdentical
+	@CPObject.memoizeSameness
 	public override identical(value: CPObject): boolean {
 		return value instanceof Tuple && xjs.Array.is<CPObject>(this.items, (value as Tuple).items, languageValuesIdentical);
 	}

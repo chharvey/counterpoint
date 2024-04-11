@@ -37,7 +37,7 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
-	@CPObject.memoizeEqual
+	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return (
 			   value instanceof CPMap
