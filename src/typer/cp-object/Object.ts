@@ -1,7 +1,10 @@
 import * as assert from 'assert';
-import {strictEqual} from '../../lib/index.js';
+import * as xjs from 'extrajs';
+import {
+	type Keys,
+	strictEqual,
+} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
-import {memoBinop} from '../utils-private.js';
 import {String as CPString} from './index.js';
 
 
@@ -32,8 +35,16 @@ abstract class CPObject {
 			context.name === 'equal'     ? CPObject.EQ_MEMO :
 			assert.fail(`CPObject.memoizeSameness did not expect the name \`${ context.name.toString() }\`.`)
 		);
+		type K = Keys<typeof memo>;
+		const memo_comparator = (key0: K, key1: K): boolean => xjs.Set.is<CPObject>(new Set<CPObject>(key0), new Set<CPObject>(key1));
+
 		return function (this: CPObject, value) {
-			return memoBinop(this, value, memo, () => method.call(this, value));
+			const memo_key: K = [this, value];
+			if (!xjs.Map.has(memo, memo_key, memo_comparator)) {
+				xjs.Map.set(memo, memo_key, true,                     memo_comparator); // use this assumption in the next step
+				xjs.Map.set(memo, memo_key, method.call(this, value), memo_comparator);
+			}
+			return xjs.Map.get(memo, memo_key, memo_comparator)!;
 		};
 	}
 
