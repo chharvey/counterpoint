@@ -42,6 +42,83 @@ import {
  * - TypeMap
  */
 export abstract class Type {
+	/** Memoizer for storing intersections of `Type`s. */
+	private static readonly AND_MEMO = new WeakMap<Type, WeakMap<Type, Type>>();
+	/** Memoizer for storing unions of `Type`s. */
+	private static readonly OR_MEMO  = new WeakMap<Type, WeakMap<Type, Type>>();
+	/** Memoizer for comparing `Type`s by subset. */
+	private static readonly SUB_MEMO = new WeakMap<Type, WeakMap<Type, boolean>>();
+
+	/**
+	 * Decorator for {@link Type#intersect} for memoizing results.
+	 * @implements MethodDecorator<Type, Type['intersect']>
+	 */
+	protected static memoizeIntersection(
+		method:   Type['intersect'],
+		_context: ClassMethodDecoratorContext<Type, typeof method>,
+	): typeof method {
+		return function (this: Type, t) {
+			if (Type.AND_MEMO.has(this)) {
+				const map: WeakMap<Type, Type> = Type.AND_MEMO.get(this)!;
+				map.has(t) || map.set(t, method.call(this, t));
+				return map.get(t)!;
+			} else if (Type.AND_MEMO.has(t)) {
+				const map: WeakMap<Type, Type> = Type.AND_MEMO.get(t)!;
+				map.has(this) || map.set(this, method.call(this, t));
+				return map.get(this)!;
+			} else {
+				const map = new WeakMap<Type, Type>();
+				Type.AND_MEMO.set(this, map);
+				const result: Type = method.call(this, t);
+				map.set(t, result);
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Decorator for {@link Type#union} for memoizing results.
+	 * @implements MethodDecorator<Type, Type['union']>
+	 */
+	protected static memoizeUnion(
+		method:   Type['union'],
+		_context: ClassMethodDecoratorContext<Type, typeof method>,
+	): typeof method {
+		return function (this: Type, t) {
+			if (Type.OR_MEMO.has(this)) {
+				const map: WeakMap<Type, Type> = Type.OR_MEMO.get(this)!;
+				map.has(t) || map.set(t, method.call(this, t));
+				return map.get(t)!;
+			} else if (Type.OR_MEMO.has(t)) {
+				const map: WeakMap<Type, Type> = Type.OR_MEMO.get(t)!;
+				map.has(this) || map.set(this, method.call(this, t));
+				return map.get(this)!;
+			} else {
+				const map = new WeakMap<Type, Type>();
+				Type.OR_MEMO.set(this, map);
+				const result: Type = method.call(this, t);
+				map.set(t, result);
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Decorator for {@link Type#isSubtypeOf} for memoizing results.
+	 * @implements MethodDecorator<Type, Type['isSubtypeOf']>
+	 */
+	protected static memoizeSubtype(
+		method:   Type['isSubtypeOf'],
+		_context: ClassMethodDecoratorContext<Type, typeof method>,
+	): typeof method {
+		return function (this: Type, t) {
+			Type.SUB_MEMO.has(this) || Type.SUB_MEMO.set(this, new WeakMap([[t, method.call(this, t)]]));
+			const map: WeakMap<Type, boolean> = Type.SUB_MEMO.get(this)!;
+			map.has(t) || map.set(t, method.call(this, t));
+			return map.get(t)!;
+		};
+	}
+
 	/**
 	 * Decorator for some overrides of {@link Type#toString}.
 	 * Contains some special cases of string representations.
@@ -341,6 +418,7 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type intersection
 	 */
+	@Type.memoizeIntersection
 	@Type.operatorDeco
 	@Type.intersectDeco
 	public intersect(t: Type): Type {
@@ -356,6 +434,7 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type union
 	 */
+	@Type.memoizeUnion
 	@Type.operatorDeco
 	@Type.unionDeco
 	public union(t: Type): Type {
@@ -371,6 +450,7 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type difference
 	 */
+	@Type.operatorDeco
 	@Type.subtractDeco
 	public subtract(t: Type): Type {
 		return new TypeDifference(this, t);
@@ -382,6 +462,7 @@ export abstract class Type {
 	 * @returns Is this type a subtype of the argument?
 	 */
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public isSubtypeOf(t: Type): boolean {
 		return !this.isBottomType && !!this.values.size // these checks are needed in cases of `Object` and `void`, which don’t store values
@@ -466,6 +547,7 @@ export class TypeInterface extends Type {
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
 	 */
+	@Type.memoizeUnion
 	@Type.operatorDeco
 	@Type.unionDeco
 	public override union(t: Type): Type {
@@ -488,6 +570,7 @@ export class TypeInterface extends Type {
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
 	 */
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		if (t instanceof TypeInterface) {

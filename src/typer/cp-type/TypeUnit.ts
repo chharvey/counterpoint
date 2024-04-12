@@ -27,6 +27,7 @@ export class TypeUnit<Value extends OBJ.Primitive = OBJ.Primitive> extends Value
 	}
 
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.includes(this.value);

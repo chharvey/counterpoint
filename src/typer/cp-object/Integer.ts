@@ -2,6 +2,7 @@ import * as xjs from 'extrajs';
 import {
 	throw_expression,
 	strictEqual,
+	instanceOf,
 } from '../../lib/index.js';
 import {Float} from './index.js';
 import {Object as CPObject} from './Object.js';
@@ -48,10 +49,10 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	@strictEqual
+	@instanceOf(Integer)
+	@CPObject.memoizeSameness
 	public override identical(value: CPObject): boolean {
-		return value instanceof Integer && this.isIdenticalTo(value as this, (this_, that_) => (
-			xjs.Array.is<boolean>(this_.internal, that_.internal)
-		));
+		return xjs.Array.is<boolean>(this.internal, (value as Integer).internal);
 	}
 
 	@CPObject.equalsDeco
