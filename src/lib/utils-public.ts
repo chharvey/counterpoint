@@ -40,16 +40,6 @@ export type Values<M> = (
 	never
 );
 
-/**
- * Throw the given expression.
- * @see https://github.com/tc39/proposal-throw-expressions
- * @param expression the expression to throw
- * @throw            always
- */
-export function throw_expression(expression: Error): never {
-	throw expression;
-}
-
 
 
 /**

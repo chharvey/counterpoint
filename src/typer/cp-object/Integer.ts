@@ -1,8 +1,6 @@
+import * as assert from 'assert';
 import * as xjs from 'extrajs';
-import {
-	throw_expression,
-	strictEqual,
-} from '../../lib/index.js';
+import {strictEqual} from '../../lib/index.js';
 import {Float} from './index.js';
 import {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
@@ -186,7 +184,7 @@ export class Integer extends CPNumber<Integer> {
 	 */
 	public override divide(divisor: Integer): Integer {
 		return (
-			(divisor.eq0()) ? throw_expression(new RangeError('Division by zero.')) :
+			(divisor.eq0()) ? assert.fail(new RangeError('Division by zero.')) :
 			(this   .eq0()) ? Integer.ZERO                     :
 			(divisor.lt0()) ? this.divide(divisor.neg()).neg() :
 			(this   .lt0()) ? this.neg().divide(divisor).neg() :

@@ -1,6 +1,6 @@
+import * as assert from 'assert';
 import type {TYPE} from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -44,7 +44,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		return (
 			(this.operator === Operator.AND) ? t0.intersect(t1) :
 			(this.operator === Operator.OR)  ? t0.union    (t1) :
-			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
+			assert.fail(`ASTNodeTypeOperationBinary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
 		);
 	}
 }

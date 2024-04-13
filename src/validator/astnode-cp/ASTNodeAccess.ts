@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import {
 	OBJ,
 	TYPE,
@@ -8,7 +9,6 @@ import {
 	TypeErrorNoEntry,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -87,13 +87,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return (
 				(base_type instanceof TYPE.TypeTuple) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>).value, this.kind, this.accessor) :
 				(base_type instanceof TYPE.TypeList)  ? updateAccessedDynamicType(base_type.invariant, this.kind)                                               :
-				throw_expression(new TypeErrorNoEntry('index', base_type, this.accessor))
+				assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor))
 			);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (
 				(base_type instanceof TYPE.TypeRecord) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
 				(base_type instanceof TYPE.TypeDict)   ? updateAccessedDynamicType(base_type.invariant, this.kind) :
-				throw_expression(new TypeErrorNoEntry('property', base_type, this.accessor))
+				assert.fail(new TypeErrorNoEntry('property', base_type, this.accessor))
 			);
 		} else {
 			assert_instanceof(this.accessor, ASTNodeExpression);
@@ -121,7 +121,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 						? updateAccessedDynamicType(base_type.invariant_con, this.kind)
 						: throwWrongSubtypeError(this.accessor, base_type.invariant_ant)
 				) :
-				throw_expression(new TypeErrorInvalidOperation(this))
+				assert.fail(new TypeErrorInvalidOperation(this))
 			);
 			/* eslint-enable indent */
 		}

@@ -9,7 +9,6 @@ import {
 	NanErrorInvalid,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -71,7 +70,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			(assert.strictEqual(this.operator, Operator.NEG), (
 				(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)))
 					? t
-					: throw_expression(new TypeErrorInvalidOperation(this))
+					: assert.fail(new TypeErrorInvalidOperation(this))
 			))
 		);
 		/* eslint-enable indent */

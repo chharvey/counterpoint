@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import {TypeErrorNoEntry} from '../../index.js';
 import {
 	type IntRange,
-	throw_expression,
 	strictEqual,
 } from '../../lib/index.js';
 import type {
@@ -93,7 +92,7 @@ export class TypeTuple extends Type {
 			(
 				(-n <= i && i < 0) ? this.invariants[i + n] :
 				(0  <= i && i < n) ? this.invariants[i]     :
-				throw_expression(new TypeErrorNoEntry('index', this, accessor))
+				assert.fail(new TypeErrorNoEntry('index', this, accessor))
 			),
 			access_kind,
 		);
