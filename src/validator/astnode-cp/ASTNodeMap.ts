@@ -52,8 +52,8 @@ export class ASTNodeMap extends ASTNodeCollectionLiteralMutable {
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
 		return new TYPE.TypeMap(
-			TYPE.Type.unionAll(this.children.map((c) => c.antecedent.type())),
-			TYPE.Type.unionAll(this.children.map((c) => c.consequent.type())),
+			TYPE.TypeUnion.all(this.children.map((c) => c.antecedent.type())),
+			TYPE.TypeUnion.all(this.children.map((c) => c.consequent.type())),
 			true,
 		);
 	}

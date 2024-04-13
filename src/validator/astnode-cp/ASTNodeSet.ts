@@ -50,7 +50,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteralMutable {
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
 		return new TYPE.TypeSet(
-			TYPE.Type.unionAll(this.children.map((c) => c.type())),
+			TYPE.TypeUnion.all(this.children.map((c) => c.type())),
 			true,
 		);
 	}

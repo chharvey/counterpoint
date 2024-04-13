@@ -1,7 +1,10 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {VoidError01} from '../../index.js';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	instanceOf,
+} from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {TYPE} from '../index.js';
 import {
@@ -35,13 +38,12 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
+	@instanceOf(CPMap)
+	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return (
-			   value instanceof CPMap
-			&& this.cases.size === value.cases.size
-			&& this.isEqualTo(value as this, (this_, that_) => (
-				[...that_.cases].every(([thatant, thatcon]) => !!xjs.Map.get<K, V>(this_.cases, thatant, language_values_equal)?.equal(thatcon))
-			))
+			   this.cases.size === (value as CPMap).cases.size
+			&& [...(value as CPMap).cases].every(([thatant, thatcon]) => !!xjs.Map.get<CPObject, CPObject>(this.cases, thatant, language_values_equal)?.equal(thatcon))
 		);
 	}
 
@@ -51,8 +53,8 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 	 */
 	public override toType(): TYPE.TypeMap {
 		return new TYPE.TypeMap(
-			TYPE.Type.unionAll([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
-			TYPE.Type.unionAll([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
+			TYPE.TypeUnion.all([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
+			TYPE.TypeUnion.all([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
 		);
 	}
 

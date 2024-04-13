@@ -1,5 +1,6 @@
 export * from './Type.js';
 
+export * from './Combinable.js';
 export * from './TypeIntersection.js';
 export * from './TypeUnion.js';
 export * from './TypeDifference.js';

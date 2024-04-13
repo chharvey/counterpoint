@@ -3,6 +3,7 @@ import {strictEqual} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
+import {TypeUnion} from './TypeUnion.js';
 
 
 
@@ -11,32 +12,44 @@ import {Type} from './Type.js';
  * that contains values assignable to `T` but *not* assignable to `U`.
  */
 export class TypeDifference extends Type {
-	public override readonly isReference: boolean = this.left.isReference;
-	/* We can assert that this is always non-empty because
-	the only cases in which it could be empty are
-	1. if left is empty
-	2. if left is a subtype of right
-	each of which is impossible because the algorithm would have already produced the `never` type. */
-	public override readonly isBottomType: boolean = false;
-
 	/**
 	 * Construct a new TypeDifference object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
 	 public constructor(
-		private readonly left:  Type,
-		private readonly right: Type,
+		public readonly left:  Type,
+		public readonly right: Type,
 	) {
 		super(false, xjs.Set.difference(left.values, right.values, languageValuesIdentical));
+	}
+
+	/*
+	 * We can assert that this is never bottom because
+	 * the only cases in which it could be bottom are
+	 * 1. if left is bottom
+	 * 2. if left is a subtype of right
+	 * each of which is impossible because the algorithm would have already produced the `never` type.
+	 */
+
+	/*
+	 * We can assert that this is never top because
+	 * the only case in which it could be top is
+	 * if the left is top and the right is bottom,
+	 * which is impossible because the algorithm would have already produced the `unknown` type.
+	 */
+
+	public override get isReference(): boolean {
+		return this.left.isReference;
 	}
 
 	public override get hasMutable(): boolean {
 		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
 	}
 
+	@Type.toStringDeco
 	public override toString(): string {
-		return `${ this.left } - ${ this.right }`;
+		return [this.left, this.right].map((s) => s instanceof TypeUnion ? `(${ s })` : s).join(' - ');
 	}
 
 	public override includes(v: OBJ.Object): boolean {
@@ -44,6 +57,7 @@ export class TypeDifference extends Type {
 	}
 
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf(t);
@@ -55,10 +69,5 @@ export class TypeDifference extends Type {
 
 	public override immutableOf(): TypeDifference {
 		return new TypeDifference(this.left.immutableOf(), this.right.immutableOf());
-	}
-
-	public isSupertypeOf(t: Type): boolean {
-		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
-		return t.isSubtypeOf(this.left) && t.intersect(this.right).isBottomType;
 	}
 }

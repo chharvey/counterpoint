@@ -1,6 +1,9 @@
 import * as assert from 'assert';
 import {VoidError01} from '../../index.js';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	instanceOf,
+} from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
@@ -30,13 +33,12 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
+	@instanceOf(CollectionKeyed)
+	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return (
-			   value instanceof CollectionKeyed
-			&& this.properties.size === value.properties.size
-			&& this.isEqualTo(value as this, (this_, that_) => (
-				[...that_.properties].every(([thatkey, thatvalue]) => !!this_.properties.get(thatkey)?.equal(thatvalue))
-			))
+			   this.properties.size === (value as CollectionKeyed).properties.size
+			&& [...(value as CollectionKeyed).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue))
 		);
 	}
 

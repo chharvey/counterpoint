@@ -12,11 +12,12 @@ export class TypeUnknown extends Type {
 	public static readonly INSTANCE = new TypeUnknown();
 
 
-	public override readonly isBottomType: boolean = false;
-	public override readonly isTopType:    boolean = true;
-
 	private constructor() {
 		super(false);
+	}
+
+	public override get isTopType(): boolean {
+		return true;
 	}
 
 	public override toString(): string {
@@ -28,17 +29,17 @@ export class TypeUnknown extends Type {
 	}
 
 	public override intersect(t: Type): Type {
-		/** 1-6 | `T  & unknown == T` */
+		/* 1-6 | `T  & unknown == T` */
 		return t;
 	}
 
 	public override union(_: Type): Type {
-		/** 1-8 | `T \| unknown == unknown` */
+		/* 1-8 | `T \| unknown == unknown` */
 		return this;
 	}
 
 	public override isSubtypeOf(t: Type): boolean {
-		/** 1-4 | `unknown <: T      <->  T == unknown` */
+		/* 1-4 | `unknown <: T      <->  T == unknown` */
 		return t.isTopType;
 	}
 

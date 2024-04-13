@@ -1,4 +1,4 @@
-import type * as OBJ from '../cp-object/index.js';
+import * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
 
 
@@ -11,10 +11,21 @@ export class TypeObject extends Type {
 	public static readonly INSTANCE = new TypeObject();
 
 
-	public override readonly isBottomType: boolean = false;
-	public override readonly isTopType:    boolean = false;
 	private constructor() {
-		super(false);
+		super(false, new Set([
+			OBJ.Null.NULL,
+			OBJ.Boolean.FALSE,
+			OBJ.Boolean.TRUE,
+			OBJ.Integer.ZERO,
+			new OBJ.Float(0.0),
+			new OBJ.String(''),
+			new OBJ.Tuple(),
+			new OBJ.Record(),
+			new OBJ.List(),
+			new OBJ.Dict(),
+			new OBJ.Set(),
+			new OBJ.Map(),
+		]));
 	}
 
 	public override toString(): string {

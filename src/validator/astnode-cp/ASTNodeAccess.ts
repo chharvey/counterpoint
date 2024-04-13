@@ -62,7 +62,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.type();
-		if (base_type instanceof TYPE.TypeIntersection || base_type instanceof TYPE.TypeUnion) {
+		if (base_type instanceof TYPE.Combinable) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		return (
