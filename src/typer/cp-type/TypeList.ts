@@ -7,8 +7,6 @@ import {Type} from './Type.js';
 
 
 export class TypeList extends Type {
-	public override readonly isBottomType: boolean = false;
-
 	/**
 	 * Construct a new TypeList object.
 	 * @param invariant a union of types in this list type
@@ -34,6 +32,7 @@ export class TypeList extends Type {
 	}
 
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (

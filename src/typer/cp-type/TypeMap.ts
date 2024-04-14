@@ -7,8 +7,6 @@ import {Type} from './Type.js';
 
 
 export class TypeMap extends Type {
-	public override readonly isBottomType: boolean = false;
-
 	/**
 	 * Construct a new TypeMap object.
 	 * @param invariant_ant a union of antecedent types in this map type
@@ -36,6 +34,7 @@ export class TypeMap extends Type {
 	}
 
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (

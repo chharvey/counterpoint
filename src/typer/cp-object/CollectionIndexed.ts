@@ -1,8 +1,9 @@
+import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {VoidError01} from '../../index.js';
 import {
-	throw_expression,
 	strictEqual,
+	instanceOf,
 } from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {language_values_equal} from '../utils-private.js';
@@ -35,10 +36,10 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
+	@instanceOf(CollectionIndexed)
+	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
-		return value instanceof CollectionIndexed && this.isEqualTo(value as this, (this_, that_) => (
-			xjs.Array.is<T>(this_.items, that_.items, language_values_equal)
-		));
+		return xjs.Array.is<CPObject>(this.items, (value as CollectionIndexed).items, language_values_equal);
 	}
 
 	/** @final */
@@ -49,7 +50,7 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 			(-n <= i && i < 0) ? this.items[i + n] :
 			(0  <= i && i < n) ? this.items[i] :
 			(access_optional) ? Null.NULL :
-			throw_expression(new VoidError01(accessor))
+			assert.fail(new VoidError01(accessor))
 		);
 	}
 }

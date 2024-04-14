@@ -1,7 +1,7 @@
+import * as assert from 'assert';
 import {TypeErrorNoEntry} from '../../index.js';
 import {
 	type IntRange,
-	throw_expression,
 	strictEqual,
 } from '../../lib/index.js';
 import type {
@@ -13,10 +13,12 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
+import {TypeUnion} from './TypeUnion.js';
+import {ValueType} from './ValueType.js';
 
 
 
-export class TypeRecord extends Type {
+export class TypeRecord extends ValueType {
 	/**
 	 * Construct a new TypeRecord from type properties, assuming each property is required.
 	 * @param propertytypes the types of the record
@@ -29,9 +31,6 @@ export class TypeRecord extends Type {
 		}])));
 	}
 
-
-	public override readonly isReference:  boolean = false;
-	public override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new TypeRecord object.
@@ -65,6 +64,7 @@ export class TypeRecord extends Type {
 	}
 
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
@@ -89,7 +89,7 @@ export class TypeRecord extends Type {
 		return updateAccessedStaticType(
 			((this.invariants.has(key))
 				? this.invariants.get(key)!
-				: throw_expression(new TypeErrorNoEntry('property', this, accessor))
+				: assert.fail(new TypeErrorNoEntry('property', this, accessor))
 			),
 			access_kind,
 		);
@@ -97,40 +97,6 @@ export class TypeRecord extends Type {
 
 	/** @final */
 	public valueTypes(): Type {
-		return Type.unionAll([...this.invariants.values()].map((t) => t.type));
-	}
-
-	/**
-	 * When accessing the *intersection* of types `S` and `T`,
-	 * the set of properties available is the *union* of the set of properties on `S` with the set of properties on `T`.
-	 * For any overlapping properties, their type intersection is taken.
-	 */
-	public intersectWithRecord(t: TypeRecord): TypeRecord {
-		const props = new Map<bigint, TypeEntry>([...this.invariants]);
-		[...t.invariants].forEach(([id, typ]) => {
-			props.set(id, this.invariants.has(id) ? {
-				type:     this.invariants.get(id)!.type.intersect(typ.type),
-				optional: this.invariants.get(id)!.optional && typ.optional,
-			} : typ);
-		});
-		return new TypeRecord(props);
-	}
-
-	/**
-	 * When accessing the *union* of types `S` and `T`,
-	 * the set of properties available is the *intersection* of the set of properties on `S` with the set of properties on `T`.
-	 * For any overlapping properties, their type union is taken.
-	 */
-	public unionWithRecord(t: TypeRecord): TypeRecord {
-		const props = new Map<bigint, TypeEntry>();
-		[...t.invariants].forEach(([id, typ]) => {
-			if (this.invariants.has(id)) {
-				props.set(id, {
-					type:     this.invariants.get(id)!.type.union(typ.type),
-					optional: this.invariants.get(id)!.optional || typ.optional,
-				});
-			}
-		});
-		return new TypeRecord(props);
+		return TypeUnion.all([...this.invariants.values()].map((t) => t.type));
 	}
 }

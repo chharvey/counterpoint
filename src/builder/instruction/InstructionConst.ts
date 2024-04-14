@@ -1,4 +1,4 @@
-import {throw_expression} from '../../lib/index.js';
+import * as assert from 'assert';
 import {OBJ} from '../../typer/index.js';
 import {InstructionExpression} from './InstructionExpression.js';
 
@@ -22,7 +22,7 @@ export class InstructionConst extends InstructionExpression {
 			(value instanceof OBJ.Null)    ? OBJ.Integer.ZERO :
 			(value instanceof OBJ.Boolean) ? (value.isTruthy) ? OBJ.Integer.UNIT : OBJ.Integer.ZERO :
 			(value instanceof OBJ.Number)  ? value :
-			throw_expression(new Error('not yet supported.'))
+			assert.fail(new Error('not yet supported.'))
 		);
 		return new InstructionConst((to_float) ? numeric.toFloat() : numeric);
 	}

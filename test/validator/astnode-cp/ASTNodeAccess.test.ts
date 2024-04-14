@@ -234,21 +234,21 @@ describe('ASTNodeAccess', () => {
 			return stmt.expr!.type();
 		}
 		const COMMON_TYPES = {
-			int_float: TYPE.Type.unionAll([
+			int_float: TYPE.TypeUnion.all(
 				TYPE.INT,
 				TYPE.FLOAT,
-			]),
-			int_float_str: TYPE.Type.unionAll([
+			),
+			int_float_str: TYPE.TypeUnion.all(
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
-			]),
-			int_float_str_null: TYPE.Type.unionAll([
+			),
+			int_float_str_null: TYPE.TypeUnion.all(
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
 				TYPE.NULL,
-			]),
+			),
 		};
 		const expected: TYPE.Type[] = [
 			typeUnitInt(1n),

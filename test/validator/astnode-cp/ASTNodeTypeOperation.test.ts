@@ -30,8 +30,9 @@ describe('ASTNodeTypeOperation', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					type A = mut int[];
 					type B = int[3];
+					type F = Object[];
 
-					type C = mut (A & B);
+					type C = mut (A & F);
 					type D = mut (A | B);
 
 					type E = mut Object; % equivalent to \`Object\`

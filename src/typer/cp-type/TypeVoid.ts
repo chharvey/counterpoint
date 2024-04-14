@@ -2,6 +2,7 @@ import {strictEqual} from '../../lib/index.js';
 import type * as OBJ from '../cp-object/index.js';
 import {NEVER} from './index.js';
 import {Type} from './Type.js';
+import {ValueType} from './ValueType.js';
 
 
 
@@ -9,13 +10,9 @@ import {Type} from './Type.js';
  * Class for constructing the `void` type.
  * @final
  */
-export class TypeVoid extends Type {
+export class TypeVoid extends ValueType {
 	public static readonly INSTANCE = new TypeVoid();
 
-
-	public override readonly isReference:  boolean = false;
-	public override readonly isBottomType: boolean = false;
-	public override readonly isTopType:    boolean = false;
 
 	private constructor() {
 		super(false);
@@ -29,12 +26,14 @@ export class TypeVoid extends Type {
 		return false;
 	}
 
+	@Type.memoizeIntersection
 	@Type.intersectDeco
 	public override intersect(_t: Type): Type {
 		return NEVER;
 	}
 
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;

@@ -1,8 +1,5 @@
-import * as xjs from 'extrajs';
-import {
-	type Keys,
-	strictEqual,
-} from '../../lib/index.js';
+import * as assert from 'assert';
+import {strictEqual} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
 import {String as CPString} from './index.js';
 
@@ -16,9 +13,49 @@ import {String as CPString} from './index.js';
  */
 abstract class CPObject {
 	/** Memoizer for comparing `CPObject`s by identity (`===`). */
-	private static readonly ID_MEMO = new Map<readonly [CPObject, CPObject], boolean>();
+	private static readonly ID_MEMO = new WeakMap<CPObject, WeakMap<CPObject, boolean>>();
 	/** Memoizer for comparing `CPObject`s by equality (`==`). */
-	private static readonly EQ_MEMO = new Map<readonly [CPObject, CPObject], boolean>();
+	private static readonly EQ_MEMO = new WeakMap<CPObject, WeakMap<CPObject, boolean>>();
+
+	/**
+	 * Decorator for {@link CPObject#identical} or {@link CPObject#equal} for memoizing results.
+	 * It may only be applied to one of those methods.
+	 * @implements MethodDecorator<CPObject, CPObject['identical' | 'equal']>
+	 */
+	protected static memoizeSameness(
+		method:  CPObject['identical' | 'equal'],
+		context: ClassMethodDecoratorContext<CPObject, typeof method>,
+	): typeof method {
+		const memo: WeakMap<CPObject, WeakMap<CPObject, boolean>> = (
+			context.name === 'identical' ? CPObject.ID_MEMO :
+			context.name === 'equal'     ? CPObject.EQ_MEMO :
+			assert.fail(`CPObject.memoizeSameness did not expect the name \`${ context.name.toString() }\`.`)
+		);
+		return function (this: CPObject, value) {
+			if (memo.has(this)) {
+				const map: WeakMap<CPObject, boolean> = memo.get(this)!;
+				if (!map.has(value)) {
+					map.set(value, true); // use this assumption in the next step
+					map.set(value, method.call(this, value));
+				}
+				return map.get(value)!;
+			} else if (memo.has(value)) {
+				const map: WeakMap<CPObject, boolean> = memo.get(value)!;
+				if (!map.has(this)) {
+					map.set(this, true); // use this assumption in the next step
+					map.set(this, method.call(this, value));
+				}
+				return map.get(this)!;
+			} else {
+				const map = new WeakMap<CPObject, boolean>();
+				memo.set(this, map);
+				map.set(value, true); // use this assumption in the next step
+				const result: boolean = method.call(this, value);
+				map.set(value, result);
+				return result;
+			}
+		};
+	}
 
 	/**
 	 * Decorator for {@link CPObject#equal} method and any overrides.
@@ -72,56 +109,6 @@ abstract class CPObject {
 	@CPObject.equalsDeco
 	public equal(_value: CPObject): boolean {
 		return false;
-	}
-
-	/**
-	 * Utility method for checking and memoizing a boolean binary operation.
-	 * When the compiler performs `o1 ‹op› o2` (where ‹op› is some binary operation that returns a boolean result),
-	 * it will memoize the result and refer to it later,
-	 * in the case of recursive nesting (say `o1.prop ‹op› o2` and `o2.prop ‹op› o1`),
-	 * or when evaluating a similar expression (such as `o2 ‹op› o1`).
-	 * @param  that       the object to compare to this object
-	 * @param  memo       the memoizer, using `[this, that]` as keys and the result of the operation as values
-	 * @param  definition the definition of equality for this type; a function taking 2 objects (`this` and `that`) and returning a boolean
-	 * @return            the result of evaluating the Counterpoint code `this ‹op› that`
-	 */
-	private memoBinop(that: this, memo: Map<readonly [CPObject, CPObject], boolean>, definition: (this_: this, that_: this) => boolean): boolean {
-		type K = Keys<typeof memo>;
-		const memo_key: readonly [this, this] = [this, that];
-		const memo_comparator = (
-			memokey1: K,
-			memokey2: K,
-		): boolean => xjs.Set.is<CPObject>( // cannot test `.identical()` for value objects without resulting in infinite recursion, so we must use the stricter native `===`
-			new Set<CPObject>(memokey1),
-			new Set<CPObject>(memokey2),
-		);
-		if (!xjs.Map.has<K, boolean>(memo, memo_key, memo_comparator)) {
-			xjs.Map.set<K, boolean>(memo, memo_key, true,                              memo_comparator); // use this assumption in the next step
-			xjs.Map.set<K, boolean>(memo, memo_key, definition.call(null, this, that), memo_comparator);
-		}
-		return xjs.Map.get<K, boolean>(memo, memo_key, memo_comparator)!;
-	}
-
-	/**
-	 * Utility method for checking and memoizing identity.
-	 * @param  that       the object to compare to this object
-	 * @param  definition the definition of identity for this type; a function taking 2 objects (`this` and `that`) and returning a boolean
-	 * @return            the result of evaluating the Counterpoint code `this === that`
-	 * @final
-	 */
-	protected isIdenticalTo(that: this, definition: (this_: this, that_: this) => boolean): boolean {
-		return this.memoBinop(that, CPObject.ID_MEMO, definition);
-	}
-
-	/**
-	 * Utility method for checking and memoizing equality.
-	 * @param  that       the object to compare to this object
-	 * @param  definition the definition of equality for this type; a function taking 2 objects (`this` and `that`) and returning a boolean
-	 * @return            the result of evaluating the Counterpoint code `this == that`
-	 * @final
-	 */
-	protected isEqualTo(that: this, definition: (this_: this, that_: this) => boolean): boolean {
-		return this.memoBinop(that, CPObject.EQ_MEMO, definition);
 	}
 
 	/**

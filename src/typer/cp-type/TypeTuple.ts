@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import {TypeErrorNoEntry} from '../../index.js';
 import {
 	type IntRange,
-	throw_expression,
 	strictEqual,
 } from '../../lib/index.js';
 import type {
@@ -14,10 +13,12 @@ import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {Type} from './Type.js';
+import {TypeUnion} from './TypeUnion.js';
+import {ValueType} from './ValueType.js';
 
 
 
-export class TypeTuple extends Type {
+export class TypeTuple extends ValueType {
 	/**
 	 * Construct a new TypeTuple from type items, assuming each item is required.
 	 * @param types the types of the tuple
@@ -30,9 +31,6 @@ export class TypeTuple extends Type {
 		})));
 	}
 
-
-	public override readonly isReference: boolean = false;
-	public override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new TypeTuple object.
@@ -66,6 +64,7 @@ export class TypeTuple extends Type {
 	}
 
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
@@ -93,7 +92,7 @@ export class TypeTuple extends Type {
 			(
 				(-n <= i && i < 0) ? this.invariants[i + n] :
 				(0  <= i && i < n) ? this.invariants[i]     :
-				throw_expression(new TypeErrorNoEntry('index', this, accessor))
+				assert.fail(new TypeErrorNoEntry('index', this, accessor))
 			),
 			access_kind,
 		);
@@ -101,40 +100,6 @@ export class TypeTuple extends Type {
 
 	/** @final */
 	public itemTypes(): Type {
-		return Type.unionAll(this.invariants.map((t) => t.type));
-	}
-
-	/**
-	 * When accessing the *intersection* of types `S` and `T`,
-	 * the set of items available is the *union* of the set of items on `S` with the set of items on `T`.
-	 * For any overlapping items, their type intersection is taken.
-	 */
-	public intersectWithTuple(t: TypeTuple): TypeTuple {
-		const items: TypeEntry[] = [...this.invariants];
-		t.invariants.forEach((typ, i) => {
-			items[i] = this.invariants[i] ? {
-				type:     this.invariants[i].type.intersect(typ.type),
-				optional: this.invariants[i].optional && typ.optional,
-			} : typ;
-		});
-		return new TypeTuple(items);
-	}
-
-	/**
-	 * When accessing the *union* of types `S` and `T`,
-	 * the set of items available is the *intersection* of the set of items on `S` with the set of items on `T`.
-	 * For any overlapping items, their type union is taken.
-	 */
-	public unionWithTuple(t: TypeTuple): TypeTuple {
-		const items: TypeEntry[] = [];
-		t.invariants.forEach((typ, i) => {
-			if (this.invariants[i]) {
-				items[i] = {
-					type:     this.invariants[i].type.union(typ.type),
-					optional: this.invariants[i].optional || typ.optional,
-				};
-			}
-		});
-		return new TypeTuple(items);
+		return TypeUnion.all(this.invariants.map((t) => t.type));
 	}
 }

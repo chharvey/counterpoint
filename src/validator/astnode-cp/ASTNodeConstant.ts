@@ -7,7 +7,6 @@ import {
 	type Builder,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -38,7 +37,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 			(source === Keyword.NULL)  ? OBJ.Null.NULL     :
 			(source === Keyword.FALSE) ? OBJ.Boolean.FALSE :
 			(source === Keyword.TRUE)  ? OBJ.Boolean.TRUE  :
-			throw_expression(new Error(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`))
+			assert.fail(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`)
 		);
 	}
 
