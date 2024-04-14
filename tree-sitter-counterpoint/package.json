@@ -20,6 +20,7 @@
     "src"
   ],
   "main": "bindings/node",
+  "types": "bindings/node",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chharvey/counterpoint.git"
@@ -29,15 +30,33 @@
     "postdist": "tree-sitter generate",
     "pretest": "ts-node --esm ./test/build.mts",
     "test": "tree-sitter test",
-    "build": "npm run dist && npm run test"
+    "build": "npm run dist && npm run test",
+    "install": "node-gyp-build",
+    "prebuildify": "prebuildify --napi --strip"
   },
   "dependencies": {
-    "nan": "^2.15.0"
+    "node-addon-api": "^7.1.0",
+    "node-gyp-build": "^4.8.0"
+  },
+  "peerDependencies": {
+    "tree-sitter": "^0.21.0"
+  },
+  "peerDependenciesMeta": {
+    "tree_sitter": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "extrajs": "^0.25.0",
     "tree-sitter-cli": "~0.22.4",
     "ts-node": "^10.4.0",
-    "typescript": "~5.0.2"
-  }
+    "typescript": "~5.0.2",
+    "prebuildify": "^6.0.0"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.counterpoint",
+      "injection-regex": "^counterpoint$"
+    }
+  ]
 }
