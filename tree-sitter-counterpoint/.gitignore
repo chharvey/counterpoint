@@ -36,3 +36,10 @@ dist/
 *.wasm
 *.obj
 *.o
+
+
+# Generated build files
+/grammar.js
+/src/grammar.json
+/src/node-types.json
+/test/corpus/index.txt
