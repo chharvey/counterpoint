@@ -376,8 +376,18 @@ Decorate(Assignee ::= ExpressionCompound PropertyAssign) -> SemanticAccess
 
 
 
-Decorate(ExpressionUnarySymbol ::= ExpressionCompound) -> SemanticExpression
+Decorate(ExpressionClaim ::= ExpressionCompound) -> SemanticExpression
 	:= Decorate(ExpressionCompound);
+Decorate(ExpressionClaim ::= "<" Type ">" ExpressionClaim) -> SemanticClaim
+	:= (SemanticClaim
+		Decorate(Type)
+		Decorate(ExpressionClaim)
+	);
+
+
+
+Decorate(ExpressionUnarySymbol ::= ExpressionClaim) -> SemanticExpression
+	:= Decorate(ExpressionClaim);
 Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation
 	:= (SemanticOperation[operator=NOT]
 		Decorate(ExpressionUnarySymbol)
@@ -395,21 +405,11 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 
 
 
-Decorate(ExpressionClaim ::= ExpressionUnarySymbol) -> SemanticExpression
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol);
-Decorate(ExpressionClaim ::= "<" Type ">" ExpressionClaim) -> SemanticClaim
-	:= (SemanticClaim
-		Decorate(Type)
-		Decorate(ExpressionClaim)
-	);
-
-
-
-Decorate(ExpressionExponential ::= ExpressionClaim) -> SemanticExpression
-	:= Decorate(ExpressionClaim);
-Decorate(ExpressionExponential ::= ExpressionClaim "^" ExpressionExponential) -> SemanticOperation
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticOperation
 	:= (SemanticOperation[operator=EXP]
-		Decorate(ExpressionClaim)
+		Decorate(ExpressionUnarySymbol)
 		Decorate(ExpressionExponential)
 	);
 

@@ -683,6 +683,17 @@ function buildTest(title: string, source: string, expected: string): string {
 		// Assignee
 		// see #StatementAssignment
 
+		ExpressionClaim: [
+			xjs.String.dedent`
+				<T>value;
+			`,
+			sourceExpressions(s(
+				'expression_claim',
+				s('identifier'),
+				s('identifier'),
+			)),
+		],
+
 		ExpressionUnarySymbol: [
 			xjs.String.dedent`
 				!value;
@@ -708,17 +719,6 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('identifier'),
 				),
 			),
-		],
-
-		ExpressionClaim: [
-			xjs.String.dedent`
-				<T>value;
-			`,
-			sourceExpressions(s(
-				'expression_claim',
-				s('identifier'),
-				s('identifier'),
-			)),
 		],
 
 		ExpressionExponential: [
