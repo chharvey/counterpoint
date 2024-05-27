@@ -25,7 +25,6 @@ import {
 	SolidDict,
 	SolidSet,
 	SolidMap,
-	BinEither,
 } from '../../src/index.js';
 import {
 	typeConstInt,
@@ -869,20 +868,19 @@ describe('SolidType', () => {
 			]);
 			return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
 		});
-		it('returns tuple types for unions.', () => {
-			const tests = new Map<SolidType, binaryen.Type>([
-				[SolidType.NULL.union(SolidType.BOOL),  BinEither.createType(binaryen.funcref, binaryen.i32)],
-				[SolidType.BOOL.union(SolidType.INT),   BinEither.createType(binaryen.i32,     binaryen.i32)],
-				[SolidType.NULL.union(SolidType.INT),   BinEither.createType(binaryen.funcref, binaryen.i32)],
-				[SolidType.VOID.union(SolidType.NULL),  BinEither.createType(binaryen.i32,     binaryen.funcref)],
-				[SolidType.VOID.union(SolidType.BOOL),  BinEither.createType(binaryen.i32,     binaryen.i32)],
-				[SolidType.VOID.union(SolidType.INT),   BinEither.createType(binaryen.i32,     binaryen.i32)],
-				[SolidType.VOID.union(SolidType.FLOAT), BinEither.createType(binaryen.f64,     binaryen.f64)],
-				[SolidType.NULL.union(SolidType.FLOAT), BinEither.createType(binaryen.funcref, binaryen.f64)],
-				[SolidType.BOOL.union(SolidType.FLOAT), BinEither.createType(binaryen.i32,     binaryen.f64)],
-				[SolidType.INT .union(SolidType.FLOAT), BinEither.createType(binaryen.i32,     binaryen.f64)],
-			]);
-			return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
+		it('returns v128 type for unions.', () => {
+			[
+				SolidType.VOID.union(SolidType.NULL),
+				SolidType.VOID.union(SolidType.BOOL),
+				SolidType.VOID.union(SolidType.INT),
+				SolidType.VOID.union(SolidType.FLOAT),
+				SolidType.NULL.union(SolidType.BOOL),
+				SolidType.NULL.union(SolidType.INT),
+				SolidType.NULL.union(SolidType.FLOAT),
+				SolidType.BOOL.union(SolidType.INT),
+				SolidType.BOOL.union(SolidType.FLOAT),
+				SolidType.INT.union(SolidType.FLOAT),
+			].forEach((typ) => assert.strictEqual(typ.binType(), binaryen.v128));
 		});
 	});
 

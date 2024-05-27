@@ -31,6 +31,8 @@ export function typeConstStr(x: string): SolidTypeUnit<SolidString> {
 	return new SolidString(x).toType();
 }
 
+
+
 export function buildConstNull(mod: binaryen.Module): binaryen.ExpressionRef {
 	return SolidNull.NULL.build(mod);
 }

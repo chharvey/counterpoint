@@ -1,5 +1,6 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
+import {BinVect} from '../../index.js';
 import {
 	SolidType,
 	SolidTypeUnit,
@@ -34,10 +35,14 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.if(
-			this.operand0.build(builder),
-			...ASTNodeOperation.coerceOperands(builder.module, this.operand1.build(builder), this.operand2.build(builder)),
-		);
+		let   [arg1,  arg2]:  binaryen.ExpressionRef[] = [this.operand1, this.operand2].map((expr) => expr.build(builder));
+		const [type1, type2]: binaryen.Type[]          = [arg1, arg2].map((arg) => binaryen.getExpressionType(arg));
+
+		if (type1 !== type2) {
+			[arg1, arg2] = [arg1, arg2].map((arg) => new BinVect(builder.module, arg).vect);
+		}
+
+		return builder.module.if(this.operand0.build(builder), arg1, arg2);
 	}
 
 	protected override type_do(): SolidType {

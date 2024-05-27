@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
-import {BinEither} from '../../index.js';
+import {BinVect} from '../../index.js';
 import {
 	SolidType,
 	SolidTypeUnion,
@@ -49,34 +49,9 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		) {
 			value = mod.f64.convert_u.i32(value);
 		}
-		return (assigned_type instanceof SolidTypeUnion)
-			// assert: `value` is equivalent to a result of `new BinEither().make()`
-			? ((val) => mod.if(
-				mod.i32.eqz(val.side),
-				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.left,  val.left,  int_coercion),
-				ASTNodeStatement.coerceAssignment(mod, assignee_type, assigned_type.right, val.right, int_coercion),
-			))(new BinEither(mod, value))
-			: (assignee_type instanceof SolidTypeUnion)
-				? (
-					(assigned_type.isSubtypeOf(assignee_type.left)) ? new BinEither(
-						mod,
-						0n,
-						(assigned_type.binType() === assignee_type.left.binType())
-							? value
-							: ASTNodeStatement.coerceAssignment(mod, assignee_type.left, assigned_type, value, int_coercion),
-						assignee_type.right.defaultBinValue(mod),
-					).make() :
-					(assigned_type.isSubtypeOf(assignee_type.right)) ? new BinEither(
-						mod,
-						1n,
-						assignee_type.left.defaultBinValue(mod),
-						(assigned_type.binType() === assignee_type.right.binType())
-							? value
-							: ASTNodeStatement.coerceAssignment(mod, assignee_type.right, assigned_type, value, int_coercion),
-					).make() :
-					(() => { throw new TypeError(`Expected \`${ assigned_type }\` to be a subtype of \`${ assignee_type.left }\` or \`${ assignee_type.right }\``); })() // TODO: use throw_expression
-				)
-				: value;
+		return (assignee_type instanceof SolidTypeUnion && !(assigned_type instanceof SolidTypeUnion))
+			? (assert.strictEqual(assignee_type.binType(), binaryen.v128), new BinVect(mod, value).vect)
+			: value;
 	}
 
 
