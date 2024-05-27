@@ -47,12 +47,12 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			let op_int:   binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.intValue);
 			let op_float: binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.floatValue);
 
-			// `mod.if` branches must be the same type
 			if (op === Operator.NEG) {
 				op_int   = new BinVect(mod, op_int).vect;
 				op_float = new BinVect(mod, op_float).vect;
 			}
 
+			assert.strictEqual(binaryen.getExpressionType(op_int), binaryen.getExpressionType(op_float));
 			return mod.if(vect.isInt, op_int, op_float);
 		} else {
 			ASTNodeOperation.expectIntOrFloat(bintype);

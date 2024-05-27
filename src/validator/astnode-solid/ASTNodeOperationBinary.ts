@@ -1,9 +1,6 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
-import {
-	BinEither,
-	BinVect,
-} from '../../index.js';
+import {BinVect} from '../../index.js';
 import {
 	SolidType,
 	SolidConfig,
@@ -46,141 +43,59 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		simple: (args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef]) => binaryen.ExpressionRef,
 	): binaryen.ExpressionRef {
 		const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
-		if (bintypes.includes(binaryen.v128)) {
-			const new_args: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [...args];
-			if (bintypes[0] === binaryen.v128) {
-				const vect = new BinVect(mod, {int_float: args[0]});
-				new_args[0] = new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make();
-			}
-			if (bintypes[1] === binaryen.v128) {
-				const vect = new BinVect(mod, {int_float: args[1]});
-				new_args[1] = new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make();
-			}
-			return ASTNodeOperationBinary.operate(mod, op, new_args, simple);
+		if (bintypes[0] === binaryen.v128 && bintypes[1] === binaryen.v128) {
+			const arg0 = new BinVect(mod, {int_float: args[0]});
+			const arg1 = new BinVect(mod, {int_float: args[1]});
+
+			const ops = {
+				int: {
+					int:   ASTNodeOperationBinary.operate(mod, op, [arg0.intValue, arg1.intValue],   simple),
+					float: ASTNodeOperationBinary.operate(mod, op, [arg0.intValue, arg1.floatValue], simple),
+				},
+				float: {
+					int:   ASTNodeOperationBinary.operate(mod, op, [arg0.floatValue, arg1.intValue],   simple),
+					float: ASTNodeOperationBinary.operate(mod, op, [arg0.floatValue, arg1.floatValue], simple),
+				},
+			} as const;
+
+			return mod.if(
+				arg0.isInt,
+				mod.if(arg1.isInt, new BinVect(mod, ops.int.int).vect,   new BinVect(mod, ops.int.float).vect),
+				mod.if(arg1.isInt, new BinVect(mod, ops.float.int).vect, new BinVect(mod, ops.float.float).vect),
+			);
 		}
-		const bintypes_expanded: readonly (readonly binaryen.Type[])[] = bintypes.map((bt) => binaryen.expandType(bt));
-		if (bintypes_expanded[0].length > 1 && bintypes_expanded[1].length > 1) {
-			// assert: `args[0]` is equivalent to a result of `new BinEither().make()`
-			// assert: `args[1]` is equivalent to a result of `new BinEither().make()`
-			bintypes.forEach((bt) => ASTNodeOperation.expectEitherTuple(bt));
-			const arg0 = new BinEither(mod, args[0]);
-			const arg1 = new BinEither(mod, args[1]);
-			const bintype0: {readonly left: binaryen.Type, readonly right: binaryen.Type} = {left: binaryen.getExpressionType(arg0.left), right: binaryen.getExpressionType(arg0.right)};
-			const bintype1: {readonly left: binaryen.Type, readonly right: binaryen.Type} = {left: binaryen.getExpressionType(arg1.left), right: binaryen.getExpressionType(arg1.right)};
+		if (bintypes[0] === binaryen.v128) {
+			ASTNodeOperation.expectIntOrFloat(bintypes[1]);
 
-			/* throw any early errors */
-			[
-				[bintype0.left, bintype0.right],
-				[bintype1.left, bintype1.right],
-			].forEach((bintype_n, i) => assert.deepStrictEqual(bintype_n, bintypes_expanded[i].slice(1)));
+			const arg0 = new BinVect(mod, {int_float: args[0]});
 
-			const left_left:   binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [arg0.left,  arg1.left],  simple);
-			const left_right:  binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [arg0.left,  arg1.right], simple);
-			const right_left:  binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [arg0.right, arg1.left],  simple);
-			const right_right: binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [arg0.right, arg1.right], simple);
+			let op_int:   binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [arg0.intValue,   args[1]], simple);
+			let op_float: binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [arg0.floatValue, args[1]], simple);
 
-			/** {left_left: 0, left_right: 1, right_left: 2, right_right: 3} */
-			const key: binaryen.ExpressionRef = mod.i32.add(mod.i32.mul(mod.i32.const(2), arg0.side), arg1.side);
-			const options                     = [left_left, left_right, right_left, right_right] as const;
-
-			/* first figure out the int and float values */
-			let index_both_ints: 0 | 1 | 2 | 3;
-			let value_int:       binaryen.ExpressionRef;
-			let value_float:     binaryen.ExpressionRef;
-			if (bintype0.left === binaryen.i32) {
-				assert.strictEqual(bintype0.right, binaryen.f64);
-				if (bintype1.left === binaryen.i32) {
-					assert.strictEqual(bintype1.right, binaryen.f64);
-					// (int | float) + (int | float)
-					[index_both_ints, [value_int, value_float]] = [0, [left_left, ASTNodeOperationBinary.floatSideValue(mod, options, key, left_left)]];
-				} else {
-					assert.deepStrictEqual(
-						bintype1,
-						{left: binaryen.f64, right: binaryen.i32},
-					);
-					// (int | float) + (float | int)
-					[index_both_ints, [value_int, value_float]] = [1, [left_right, ASTNodeOperationBinary.floatSideValue(mod, options, key, left_right)]];
-				}
-			} else {
-				assert.deepStrictEqual(
-					bintype0,
-					{left: binaryen.f64, right: binaryen.i32},
-				);
-				if (bintype1.left === binaryen.i32) {
-					assert.strictEqual(bintype1.right, binaryen.f64);
-					// (float | int) + (int | float)
-					[index_both_ints, [value_int, value_float]] = [2, [right_left, ASTNodeOperationBinary.floatSideValue(mod, options, key, right_left)]];
-				} else {
-					assert.deepStrictEqual(
-						bintype1,
-						{left: binaryen.f64, right: binaryen.i32},
-					);
-					// (float | int) + (float | int)
-					[index_both_ints, [value_int, value_float]] = [3, [right_right, ASTNodeOperationBinary.floatSideValue(mod, options, key, right_right)]];
-				}
+			if (binaryen.getExpressionType(op_int) !== binaryen.getExpressionType(op_float)) {
+				op_int   = new BinVect(mod, op_int).vect;
+				op_float = new BinVect(mod, op_float).vect;
 			}
 
-			/* now set the correct sides */
-			let index:  binaryen.ExpressionRef;
-			let values: [binaryen.ExpressionRef, binaryen.ExpressionRef];
-			if (bintype1.left === binaryen.i32) {
-				// Number + (int | float)
-				index = mod.i32.eqz(mod.i32.eq(key, mod.i32.const(index_both_ints)));
-				values = [value_int, value_float];
-			} else {
-				// Number + (float | int)
-				index = mod.i32.eq(key, mod.i32.const(index_both_ints));
-				values = [value_float, value_int];
-			}
-
-			return new BinEither(mod, index, ...values).make();
+			return mod.if(arg0.isInt, op_int, op_float);
 		}
-		if (bintypes_expanded[0].length > 1 || bintypes_expanded[1].length > 1) {
-			let arg:   BinEither;
-			let left:  binaryen.ExpressionRef;
-			let right: binaryen.ExpressionRef;
-			if (bintypes_expanded[0].length > 1) {
-				// assert: `args[0]` is equivalent to a result of `new BinEither().make()`
-				ASTNodeOperation.expectEitherTuple(bintypes[0]);
-				arg   = new BinEither(mod, args[0]);
-				left  = ASTNodeOperationBinary.operate(mod, op, [arg.left,  args[1]], simple);
-				right = ASTNodeOperationBinary.operate(mod, op, [arg.right, args[1]], simple);
-			} else {
-				assert.ok(bintypes_expanded[1].length > 1);
-				// assert: `args[1]` is equivalent to a result of `new BinEither().make()`
-				ASTNodeOperation.expectEitherTuple(bintypes[1]);
-				arg   = new BinEither(mod, args[1]);
-				left  = ASTNodeOperationBinary.operate(mod, op, [args[0], arg.left],  simple);
-				right = ASTNodeOperationBinary.operate(mod, op, [args[0], arg.right], simple);
+		if (bintypes[1] === binaryen.v128) {
+			ASTNodeOperation.expectIntOrFloat(bintypes[0]);
+
+			const arg1 = new BinVect(mod, {int_float: args[1]});
+
+			let op_int:   binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [args[0], arg1.intValue],   simple);
+			let op_float: binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [args[0], arg1.floatValue], simple);
+
+			if (binaryen.getExpressionType(op_int) !== binaryen.getExpressionType(op_float)) {
+				op_int   = new BinVect(mod, op_int).vect;
+				op_float = new BinVect(mod, op_float).vect;
 			}
-			return (binaryen.getExpressionType(left) === binaryen.getExpressionType(right))
-				? mod.if       (     mod.i32.eqz(arg.side), left, right)
-				: new BinEither(mod,             arg.side,  left, right).make();
+
+			return mod.if(arg1.isInt, op_int, op_float);
 		} else {
 			return simple.call(null, args);
 		}
-	}
-
-	private static floatSideValue(
-		mod:      binaryen.Module,
-		options:  readonly [binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef],
-		key:      number,
-		excluded: binaryen.ExpressionRef,
-	): binaryen.ExpressionRef {
-		type Expr3 = [binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef];
-		const filtered: Readonly<Expr3> = [
-			...options.slice(0, options.indexOf(excluded)),
-			...options.slice(options.indexOf(excluded) + 1),
-		] as Expr3; // `Array#splice` is stupid
-		return mod.if(
-			mod.i32.eq(key, mod.i32.const(options.indexOf(filtered[0]))),
-			filtered[0],
-			mod.if(
-				mod.i32.eq(key, mod.i32.const(options.indexOf(filtered[1]))),
-				filtered[1],
-				(mod.i32.eq(key, mod.i32.const(options.indexOf(filtered[2]))), filtered[2]),
-			),
-		);
 	}
 
 

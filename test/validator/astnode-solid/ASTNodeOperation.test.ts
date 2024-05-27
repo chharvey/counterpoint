@@ -367,11 +367,11 @@ describe('ASTNodeOperation', () => {
 					!!x; % should return \`$inot(if i32.eqz(0) then $inot(42) else $fnot(0.0))\`
 					??y; % should return \`$iemp(if i32.eqz(1) then $iemp(0)  else $femp(4.2))\`
 
-					!-x; % should return \`if i32.eqz(0) then $inot(intValue(-x)) else $fnot(floatValue(-x))\`
-					?-y; % should return \`if i32.eqz(1) then $iemp(intValue(-y)) else $femp(floatValue(-y))\`
+					!-x; % should return \`if isInt('-x'= if i32.eqz(0) then [0, 0, 0, $neg(42)] else [0, 3, f64.neg(!)])   then $inot(intValue('-x')) else $fnot(floatValue('-x'))\`
+					?-y; % should return \`if isInt('-y'= if i32.eqz(1) then [0, 0, 0, $neg(!)]  else [0, 3, f64.neg(4.2)]) then $iemp(intValue('-y')) else $femp(floatValue('-y'))\`
 
-					--x; % should return \`if i32.eqz(0) then [0, 0, 0, $neg(intValue(-x))] else [0, 3, f64.neg(floatValue(-x))]\`
-					--y; % should return \`if i32.eqz(1) then [0, 0, 0, $neg(intValue(-y))] else [0, 3, f64.neg(floatValue(-y))]\`
+					--x; % should return \`if isInt('-x'= if i32.eqz(0) then [0, 0, 0, $neg(42)] else [0, 3, f64.neg(!)])   then [0, 0, 0, $neg(intValue('-x'))] else [0, 3, f64.neg(floatValue('-x'))]\`
+					--y; % should return \`if isInt('-y'= if i32.eqz(1) then [0, 0, 0, $neg(!)]  else [0, 3, f64.neg(4.2)]) then [0, 0, 0, $neg(intValue('-y'))] else [0, 3, f64.neg(floatValue('-y'))]\`
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -415,20 +415,20 @@ describe('ASTNodeOperation', () => {
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
 
-					x * 2;   % should return \`[0, i32.mul(42, 2), f64.mul(0.0, c(2))]\`
-					y * 2;   % should return \`[1, i32.mul(0,  2), f64.mul(4.2, c(2))]\`
-					x * 2.4; % should return \`if i32.eqz(0) then f64.mul(c(42), 2.4) else f64.mul(0.0, 2.4)\`
-					y * 2.4; % should return \`if i32.eqz(1) then f64.mul(c(0),  2.4) else f64.mul(4.2, 2.4)\`
+					x * 2;   % should return \`if i32.eqz(0) then [0, 0, 0, i32.mul(42, 2)] else [0, 3, f64.mul(!, c(2))]\`
+					y * 2;   % should return \`if i32.eqz(1) then [0, 0, 0, i32.mul(!,  2)] else [0, 3, f64.mul(4.2, c(2))]\`
+					x * 2.4; % should return \`if i32.eqz(0) then f64.mul(c(42), 2.4)       else f64.mul(!, 2.4)\`
+					y * 2.4; % should return \`if i32.eqz(1) then f64.mul(c(!),  2.4)       else f64.mul(4.2, 2.4)\`
 
-					x < 2;   % should return \`if i32.eqz(0) then i32.lt_s(42, 2)    else f64.lt(0.0, c(2))\`
-					y < 2;   % should return \`if i32.eqz(1) then i32.lt_s(0,  2)    else f64.lt(4.2, c(2))\`
-					x < 2.4; % should return \`if i32.eqz(0) then f64.lt(c(42), 2.4) else f64.lt(0.0, 2.4)\`
-					y < 2.4; % should return \`if i32.eqz(1) then f64.lt(c(0),  2.4) else f64.lt(4.2, 2.4)\`
+					x < 2;   % should return \`if i32.eqz(0) then i32.lt_s(42, 2)    else f64.lt(!, c(2))\`
+					y < 2;   % should return \`if i32.eqz(1) then i32.lt_s(!,  2)    else f64.lt(4.2, c(2))\`
+					x < 2.4; % should return \`if i32.eqz(0) then f64.lt(c(42), 2.4) else f64.lt(!, 2.4)\`
+					y < 2.4; % should return \`if i32.eqz(1) then f64.lt(c(!),  2.4) else f64.lt(4.2, 2.4)\`
 
-					x == 2;   % should return \`if i32.eqz(0) then i32.eq(42, 2)      else f64.eq(0.0, c(2))]\`
-					y == 2;   % should return \`if i32.eqz(1) then i32.eq(0,  2)      else f64.eq(4.2, c(2))]\`
-					x == 2.4; % should return \`if i32.eqz(0) then f64.eq(c(42), 2.4) else f64.eq(0.0, 2.4)]\`
-					y == 2.4; % should return \`if i32.eqz(1) then f64.eq(c(0),  2.4) else f64.eq(4.2, 2.4)]\`
+					x == 2;   % should return \`if i32.eqz(0) then i32.eq(42, 2)      else f64.eq(!, c(2))]\`
+					y == 2;   % should return \`if i32.eqz(1) then i32.eq(!,  2)      else f64.eq(4.2, c(2))]\`
+					x == 2.4; % should return \`if i32.eqz(0) then f64.eq(c(42), 2.4) else f64.eq(!, 2.4)]\`
+					y == 2.4; % should return \`if i32.eqz(1) then f64.eq(c(!),  2.4) else f64.eq(4.2, 2.4)]\`
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -436,10 +436,9 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => {
-					const vect = new BinVect(mod, {int_float: ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)});
-					return new BinEither(mod, new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make());
-				});
+				const extracts: readonly BinVect[] = goal.children.slice(2).map((stmt) => (
+					new BinVect(mod, {int_float: ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)})
+				));
 				const const_ = {
 					'2':    buildConstInt   (2n,  mod),
 					'2.4':  buildConstFloat (2.4, mod),
@@ -448,20 +447,20 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						new BinEither(mod,             extracts[0].side,  mod.i32.mul(                      extracts[0].left,  const_['2']),   mod.f64.mul(extracts[0].right, const_['c(2)'])).make(),
-						new BinEither(mod,             extracts[1].side,  mod.i32.mul(                      extracts[1].left,  const_['2']),   mod.f64.mul(extracts[1].right, const_['c(2)'])).make(),
-						mod.if       (     mod.i32.eqz(extracts[2].side), mod.f64.mul(mod.f64.convert_u.i32(extracts[2].left), const_['2.4']), mod.f64.mul(extracts[2].right, const_['2.4'])),
-						mod.if       (     mod.i32.eqz(extracts[3].side), mod.f64.mul(mod.f64.convert_u.i32(extracts[3].left), const_['2.4']), mod.f64.mul(extracts[3].right, const_['2.4'])),
+						mod.if(extracts[0].isInt, new BinVect(mod, mod.i32.mul(                      extracts[0].intValue,  const_['2'])).vect, new BinVect(mod, mod.f64.mul(extracts[0].floatValue, const_['c(2)'])).vect),
+						mod.if(extracts[1].isInt, new BinVect(mod, mod.i32.mul(                      extracts[1].intValue,  const_['2'])).vect, new BinVect(mod, mod.f64.mul(extracts[1].floatValue, const_['c(2)'])).vect),
+						mod.if(extracts[2].isInt,                  mod.f64.mul(mod.f64.convert_u.i32(extracts[2].intValue), const_['2.4']),                      mod.f64.mul(extracts[2].floatValue, const_['2.4'])),
+						mod.if(extracts[3].isInt,                  mod.f64.mul(mod.f64.convert_u.i32(extracts[3].intValue), const_['2.4']),                      mod.f64.mul(extracts[3].floatValue, const_['2.4'])),
 
-						mod.if(mod.i32.eqz(extracts[4].side), mod.i32.lt_s (                      extracts[4].left,  const_['2']),   mod.f64.lt(extracts[4].right, const_['c(2)'])),
-						mod.if(mod.i32.eqz(extracts[5].side), mod.i32.lt_s (                      extracts[5].left,  const_['2']),   mod.f64.lt(extracts[5].right, const_['c(2)'])),
-						mod.if(mod.i32.eqz(extracts[6].side), mod.f64.lt   (mod.f64.convert_u.i32(extracts[6].left), const_['2.4']), mod.f64.lt(extracts[6].right, const_['2.4'])),
-						mod.if(mod.i32.eqz(extracts[7].side), mod.f64.lt   (mod.f64.convert_u.i32(extracts[7].left), const_['2.4']), mod.f64.lt(extracts[7].right, const_['2.4'])),
+						mod.if(extracts[4].isInt, mod.i32.lt_s (                      extracts[4].intValue,  const_['2']),   mod.f64.lt(extracts[4].floatValue, const_['c(2)'])),
+						mod.if(extracts[5].isInt, mod.i32.lt_s (                      extracts[5].intValue,  const_['2']),   mod.f64.lt(extracts[5].floatValue, const_['c(2)'])),
+						mod.if(extracts[6].isInt, mod.f64.lt   (mod.f64.convert_u.i32(extracts[6].intValue), const_['2.4']), mod.f64.lt(extracts[6].floatValue, const_['2.4'])),
+						mod.if(extracts[7].isInt, mod.f64.lt   (mod.f64.convert_u.i32(extracts[7].intValue), const_['2.4']), mod.f64.lt(extracts[7].floatValue, const_['2.4'])),
 
-						mod.if(mod.i32.eqz(extracts[ 8].side), mod.i32.eq(                      extracts[ 8].left,  const_['2']),   mod.f64.eq(extracts[ 8].right, const_['c(2)'])),
-						mod.if(mod.i32.eqz(extracts[ 9].side), mod.i32.eq(                      extracts[ 9].left,  const_['2']),   mod.f64.eq(extracts[ 9].right, const_['c(2)'])),
-						mod.if(mod.i32.eqz(extracts[10].side), mod.f64.eq(mod.f64.convert_u.i32(extracts[10].left), const_['2.4']), mod.f64.eq(extracts[10].right, const_['2.4'])),
-						mod.if(mod.i32.eqz(extracts[11].side), mod.f64.eq(mod.f64.convert_u.i32(extracts[11].left), const_['2.4']), mod.f64.eq(extracts[11].right, const_['2.4'])),
+						mod.if(extracts[ 8].isInt, mod.i32.eq(                      extracts[ 8].intValue,  const_['2']),   mod.f64.eq(extracts[ 8].floatValue, const_['c(2)'])),
+						mod.if(extracts[ 9].isInt, mod.i32.eq(                      extracts[ 9].intValue,  const_['2']),   mod.f64.eq(extracts[ 9].floatValue, const_['c(2)'])),
+						mod.if(extracts[10].isInt, mod.f64.eq(mod.f64.convert_u.i32(extracts[10].intValue), const_['2.4']), mod.f64.eq(extracts[10].floatValue, const_['2.4'])),
+						mod.if(extracts[11].isInt, mod.f64.eq(mod.f64.convert_u.i32(extracts[11].intValue), const_['2.4']), mod.f64.eq(extracts[11].floatValue, const_['2.4'])),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
@@ -470,23 +469,20 @@ describe('ASTNodeOperation', () => {
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
 
-					x * y; %% should return \`[
-						1,
-						i32.mul(42, 0),
-						if 1 then f64.mul(c(42), 4.2) else if 2 then f64.mul(0.0, c(0)) else f64.mul(0.0, 4.2),
-					]\` %%
+					x * y; %% should return \`if i32.eqz(0)
+						then (if i32.eqz(1) then [0, 0, 0, i32.mul(42, !)] else [0, 3, f64.mul(c(42), 4.2)])
+						else (if i32.eqz(1) then [0, 3, f64.mul(!, c(!))]  else [0, 3, f64.mul(!, 4.2)])
+					\` %%
 
-					x > y; %% should return \`[
-						1,
-						i32.gt_s(42, 0),
-						if 1 then f64.gt(c(42), 4.2) else if 2 then f64.gt(0.0, c(0)) else f64.gt(0.0, 4.2),
-					]\` %%
+					x > y; %% should return \`if i32.eqz(0)
+						then (if i32.eqz(1) then [0, 0, 0, i32.gt_s(42, !)] else [0, 3, f64.gt(c(42), 4.2)])
+						else (if i32.eqz(1) then [0, 3, f64.gt(!, c(!))]    else [0, 3, f64.gt(!, 4.2)])
+					\` %%
 
-					x == y; %% should return \`[
-						1,
-						i32.eq(42, 0),
-						if 1 then f64.eq(c(42), 4.2) else if 2 then f64.eq(0.0, c(0)) else f64.eq(0.0, 4.2),
-					]\` %%
+					x == y; %% should return \`if i32.eqz(0)
+						then (if i32.eqz(1) then [0, 0, 0, i32.eq(42, !)] else [0, 3, f64.eq(c(42), 4.2)])
+						else (if i32.eqz(1) then [0, 3, f64.eq(!, c(!))]  else [0, 3, f64.eq(!, 4.2)])
+					\` %%
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -494,53 +490,40 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly (readonly BinEither[])[] = goal.children.slice(2).map((stmt) => {
+				const extracts: readonly (readonly BinVect[])[] = goal.children.slice(2).map((stmt) => {
 					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
 					return [
 						binexp.operand0.build(builder),
 						binexp.operand1.build(builder),
-					].map((arg) => {
-						const vect = new BinVect(mod, {int_float: arg});
-						return new BinEither(mod, new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make());
-					});
+					].map((arg) => new BinVect(mod, {int_float: arg}));
 				});
-				const keys: readonly binaryen.ExpressionRef[] = extracts.map((extract) => mod.i32.add(mod.i32.mul(mod.i32.const(2), extract[0].side), extract[1].side));
-				const each_options = [
+				const each_options: readonly (readonly binaryen.ExpressionRef[])[] = ([
 					[
-						mod.i32.mul(extracts[0][0].left,                        extracts[0][1].left),
-						mod.f64.mul(mod.f64.convert_u.i32(extracts[0][0].left), extracts[0][1].right),
-						mod.f64.mul(extracts[0][0].right,                       mod.f64.convert_u.i32(extracts[0][1].left)),
-						mod.f64.mul(extracts[0][0].right,                       extracts[0][1].right),
+						mod.i32.mul(extracts[0][0].intValue,                        extracts[0][1].intValue),
+						mod.f64.mul(mod.f64.convert_u.i32(extracts[0][0].intValue), extracts[0][1].floatValue),
+						mod.f64.mul(extracts[0][0].floatValue,                      mod.f64.convert_u.i32(extracts[0][1].intValue)),
+						mod.f64.mul(extracts[0][0].floatValue,                      extracts[0][1].floatValue),
 					],
 					[
-						mod.i32.gt_s (extracts[1][0].left,                        extracts[1][1].left),
-						mod.f64.gt   (mod.f64.convert_u.i32(extracts[1][0].left), extracts[1][1].right),
-						mod.f64.gt   (extracts[1][0].right,                       mod.f64.convert_u.i32(extracts[1][1].left)),
-						mod.f64.gt   (extracts[1][0].right,                       extracts[1][1].right),
+						mod.i32.gt_s (extracts[1][0].intValue,                        extracts[1][1].intValue),
+						mod.f64.gt   (mod.f64.convert_u.i32(extracts[1][0].intValue), extracts[1][1].floatValue),
+						mod.f64.gt   (extracts[1][0].floatValue,                      mod.f64.convert_u.i32(extracts[1][1].intValue)),
+						mod.f64.gt   (extracts[1][0].floatValue,                      extracts[1][1].floatValue),
 					],
 					[
-						mod.i32.eq(extracts[2][0].left,                        extracts[2][1].left),
-						mod.f64.eq(mod.f64.convert_u.i32(extracts[2][0].left), extracts[2][1].right),
-						mod.f64.eq(extracts[2][0].right,                       mod.f64.convert_u.i32(extracts[2][1].left)),
-						mod.f64.eq(extracts[2][0].right,                       extracts[2][1].right),
+						mod.i32.eq(extracts[2][0].intValue,                        extracts[2][1].intValue),
+						mod.f64.eq(mod.f64.convert_u.i32(extracts[2][0].intValue), extracts[2][1].floatValue),
+						mod.f64.eq(extracts[2][0].floatValue,                      mod.f64.convert_u.i32(extracts[2][1].intValue)),
+						mod.f64.eq(extracts[2][0].floatValue,                      extracts[2][1].floatValue),
 					],
-				] as const;
+				] as const).map((options) => options.map((option) => new BinVect(mod, option).vect));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
-					each_options.map((options, i) => builder.module.drop(new BinEither(
-						mod,
-						mod.i32.eqz(mod.i32.eq(keys[i], mod.i32.const(0))),
-						options[0],
-						mod.if(
-							mod.i32.eq(keys[i], mod.i32.const(1)),
-							options[1],
-							mod.if(
-								mod.i32.eq(keys[i], mod.i32.const(2)),
-								options[2],
-								options[3],
-							),
-						),
-					).make())),
+					each_options.map((options, i) => builder.module.drop(mod.if(
+						extracts[i][0].isInt,
+						mod.if(extracts[i][1].isInt, options[0b00], options[0b01]),
+						mod.if(extracts[i][1].isInt, options[0b10], options[0b11]),
+					))),
 				);
 			});
 			it('multiple operations.', () => {
@@ -548,8 +531,15 @@ describe('ASTNodeOperation', () => {
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
 
-					x + 2 + 3; % should return \`[extract 0 [0, i32.add(42, 2), f64.add(0.0, c(2))], i32.add(extract 1 [0, i32.add(42, 2), f64.add(0.0, c(2))], 3), f64.add(extract 2 [0, i32.add(42, 2), f64.add(0.0, c(2))], c(3))]\`
-					2 + y + 3; % should return \`[extract 0 [1, i32.add(2,  0), f64.add(c(2), 4.2)], i32.add(extract 1 [1, i32.add(2,  0), f64.add(c(2), 4.2)], 3), f64.add(extract 2 [1, i32.add(2,  0), f64.add(c(2), 4.2)], c(3))]\`
+					x + 2 + 3; %% should return \`if isInt('x + 2'= if i32.eqz(0) then [0, 0, 0, i32.add(42, 2)] else [0, 3, f64.add(!, c(2))])
+						then [0, 0, 0, i32.add(intValue('x + 2'), 3)]
+						else [0, 3, f64.add(floatValue('x + 2'), c(3))]
+					\` %%
+
+					2 + y + 3; %% should return \`if isInt('2 + y'= if i32.eqz(1) then [0, 0, 0, i32.add(2, !)] else [0, 3, f64.add(c(2), 4.2)])
+						then [0, 0, 0, i32.add(intValue('2 + y'), 3)]
+						else [0, 3, f64.add(floatValue('2 + y'), c(3))]
+					\` %%
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -557,29 +547,25 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinEither[] = [
+				const extracts: readonly BinVect[] = [
 					(((goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(builder),
 					(((goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(builder),
-				].map((arg) => {
-					const vect = new BinVect(mod, {int_float: arg});
-					return new BinEither(mod, new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make());
-				});
+				].map((arg) => new BinVect(mod, {int_float: arg}));
 				const const_ = {
 					'2':    buildConstInt (2n, mod),
-					'3':    buildConstInt (3n, mod),
 					'c(2)': buildConvert  (2n, mod),
-					'c(3)': buildConvert  (3n, mod),
 				} as const;
-				const eithers = {
-					x: new BinEither(mod, extracts[0].side, mod.i32.add(extracts[0].left, const_['2']),      mod.f64.add(extracts[0].right, const_['c(2)'])).make(),
-					y: new BinEither(mod, extracts[1].side, mod.i32.add(const_['2'],      extracts[1].left), mod.f64.add(const_['c(2)'],    extracts[1].right)).make(),
-				} as const;
+				const inners: readonly BinVect[] = [
+					mod.if(extracts[0].isInt, new BinVect(mod, mod.i32.add(extracts[0].intValue, const_['2'])).vect,          new BinVect(mod, mod.f64.add(extracts[0].floatValue, const_['c(2)'])).vect),
+					mod.if(extracts[1].isInt, new BinVect(mod, mod.i32.add(const_['2'],          extracts[1].intValue)).vect, new BinVect(mod, mod.f64.add(const_['c(2)'],         extracts[1].floatValue)).vect),
+				].map((if_) => new BinVect(mod, {int_float: if_}));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
-					[
-						new BinEither(mod, mod.tuple.extract(eithers.x, 0), mod.i32.add(mod.tuple.extract(eithers.x, 1), const_['3']), mod.f64.add(mod.tuple.extract(eithers.x, 2), const_['c(3)'])),
-						new BinEither(mod, mod.tuple.extract(eithers.y, 0), mod.i32.add(mod.tuple.extract(eithers.y, 1), const_['3']), mod.f64.add(mod.tuple.extract(eithers.y, 2), const_['c(3)'])),
-					].map((expected) => builder.module.drop(expected.make())),
+					inners.map((inner) => builder.module.drop(mod.if(
+						inner.isInt,
+						new BinVect(mod, mod.i32.add(inner.intValue,   buildConstInt(3n, mod))).vect,
+						new BinVect(mod, mod.f64.add(inner.floatValue, buildConvert(3n, mod))).vect,
+					))),
 				);
 			});
 		});
