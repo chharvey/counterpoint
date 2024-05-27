@@ -356,12 +356,12 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						mod.if(extracts[0].isInt,                  inot(mod, extracts[0].intValue),                        fnot(mod, extracts[0].floatValue)),
-						mod.if(extracts[1].isInt,                  inot(mod, extracts[1].intValue),                        fnot(mod, extracts[1].floatValue)),
-						mod.if(extracts[2].isInt,                  iemp(mod, extracts[2].intValue),                        femp(mod, extracts[2].floatValue)),
-						mod.if(extracts[3].isInt,                  iemp(mod, extracts[3].intValue),                        femp(mod, extracts[3].floatValue)),
-						mod.if(extracts[4].isInt, new BinVect(mod, ineg(mod, extracts[4].intValue)).vect, new BinVect(mod, fneg(mod, extracts[4].floatValue)).vect),
-						mod.if(extracts[5].isInt, new BinVect(mod, ineg(mod, extracts[5].intValue)).vect, new BinVect(mod, fneg(mod, extracts[5].floatValue)).vect),
+						mod.if(extracts[0].isInt,                       inot(mod, extracts[0].intValue), fnot(mod, extracts[0].floatValue)),
+						mod.if(extracts[1].isInt,                       inot(mod, extracts[1].intValue), fnot(mod, extracts[1].floatValue)),
+						mod.if(extracts[2].isInt,                       iemp(mod, extracts[2].intValue), femp(mod, extracts[2].floatValue)),
+						mod.if(extracts[3].isInt,                       iemp(mod, extracts[3].intValue), femp(mod, extracts[3].floatValue)),
+						mod.if(extracts[4].isInt, ...make_branches(mod, ineg(mod, extracts[4].intValue), fneg(mod, extracts[4].floatValue))),
+						mod.if(extracts[5].isInt, ...make_branches(mod, ineg(mod, extracts[5].intValue), fneg(mod, extracts[5].floatValue))),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
@@ -391,8 +391,11 @@ describe('ASTNodeOperation', () => {
 				const negated: readonly BinVect[] = extracts.slice(2).map((vect) => new BinVect(mod, {
 					int_float: mod.if(
 						vect.isInt,
-						new BinVect(mod, ineg(mod, vect.intValue)).vect,
-						new BinVect(mod, fneg(mod, vect.floatValue)).vect,
+						...make_branches(
+							mod,
+							ineg(mod, vect.intValue),
+							fneg(mod, vect.floatValue),
+						),
 					),
 				}));
 				assertEqualBins(
@@ -410,8 +413,8 @@ describe('ASTNodeOperation', () => {
 						mod.if(negated[0].isInt, inot(mod, negated[0].intValue), fnot(mod, negated[0].floatValue)),
 						mod.if(negated[1].isInt, iemp(mod, negated[1].intValue), femp(mod, negated[1].floatValue)),
 
-						mod.if(negated[2].isInt, new BinVect(mod, ineg(mod, negated[2].intValue)).vect, new BinVect(mod, fneg(mod, negated[2].floatValue)).vect),
-						mod.if(negated[3].isInt, new BinVect(mod, ineg(mod, negated[3].intValue)).vect, new BinVect(mod, fneg(mod, negated[3].floatValue)).vect),
+						mod.if(negated[2].isInt, ...make_branches(mod, ineg(mod, negated[2].intValue), fneg(mod, negated[2].floatValue))),
+						mod.if(negated[3].isInt, ...make_branches(mod, ineg(mod, negated[3].intValue), fneg(mod, negated[3].floatValue))),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
@@ -459,10 +462,10 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						mod.if(extracts[0].isInt, new BinVect(mod, mod.i32.mul(                      extracts[0].intValue,  const_['2'])).vect, new BinVect(mod, mod.f64.mul(extracts[0].floatValue, const_['c(2)'])).vect),
-						mod.if(extracts[1].isInt, new BinVect(mod, mod.i32.mul(                      extracts[1].intValue,  const_['2'])).vect, new BinVect(mod, mod.f64.mul(extracts[1].floatValue, const_['c(2)'])).vect),
-						mod.if(extracts[2].isInt,                  mod.f64.mul(mod.f64.convert_u.i32(extracts[2].intValue), const_['2.4']),                      mod.f64.mul(extracts[2].floatValue, const_['2.4'])),
-						mod.if(extracts[3].isInt,                  mod.f64.mul(mod.f64.convert_u.i32(extracts[3].intValue), const_['2.4']),                      mod.f64.mul(extracts[3].floatValue, const_['2.4'])),
+						mod.if(extracts[0].isInt, ...make_branches(mod, mod.i32.mul(                      extracts[0].intValue,  const_['2']),   mod.f64.mul(extracts[0].floatValue, const_['c(2)']))),
+						mod.if(extracts[1].isInt, ...make_branches(mod, mod.i32.mul(                      extracts[1].intValue,  const_['2']),   mod.f64.mul(extracts[1].floatValue, const_['c(2)']))),
+						mod.if(extracts[2].isInt,                       mod.f64.mul(mod.f64.convert_u.i32(extracts[2].intValue), const_['2.4']), mod.f64.mul(extracts[2].floatValue, const_['2.4'])),
+						mod.if(extracts[3].isInt,                       mod.f64.mul(mod.f64.convert_u.i32(extracts[3].intValue), const_['2.4']), mod.f64.mul(extracts[3].floatValue, const_['2.4'])),
 
 						mod.if(extracts[4].isInt, mod.i32.lt_s (                      extracts[4].intValue,  const_['2']),   mod.f64.lt(extracts[4].floatValue, const_['c(2)'])),
 						mod.if(extracts[5].isInt, mod.i32.lt_s (                      extracts[5].intValue,  const_['2']),   mod.f64.lt(extracts[5].floatValue, const_['c(2)'])),
@@ -568,8 +571,8 @@ describe('ASTNodeOperation', () => {
 					'c(2)': buildConvert  (2n, mod),
 				} as const;
 				const inners: readonly BinVect[] = [
-					mod.if(extracts[0].isInt, new BinVect(mod, mod.i32.add(extracts[0].intValue, const_['2'])).vect,          new BinVect(mod, mod.f64.add(extracts[0].floatValue, const_['c(2)'])).vect),
-					mod.if(extracts[1].isInt, new BinVect(mod, mod.i32.add(const_['2'],          extracts[1].intValue)).vect, new BinVect(mod, mod.f64.add(const_['c(2)'],         extracts[1].floatValue)).vect),
+					mod.if(extracts[0].isInt, ...make_branches(mod, mod.i32.add(extracts[0].intValue, const_['2']),          mod.f64.add(extracts[0].floatValue, const_['c(2)']))),
+					mod.if(extracts[1].isInt, ...make_branches(mod, mod.i32.add(const_['2'],          extracts[1].intValue), mod.f64.add(const_['c(2)'],         extracts[1].floatValue))),
 				].map((if_) => new BinVect(mod, {int_float: if_}));
 				assertEqualBins(
 					goal.children.slice(2).map((stmt) => (
@@ -581,8 +584,11 @@ describe('ASTNodeOperation', () => {
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					inners.map((inner) => builder.module.drop(mod.if(
 						inner.isInt,
-						new BinVect(mod, mod.i32.add(inner.intValue,   buildConstInt(3n, mod))).vect,
-						new BinVect(mod, mod.f64.add(inner.floatValue, buildConvert(3n, mod))).vect,
+						...make_branches(
+							mod,
+							mod.i32.add(inner.intValue,   buildConstInt(3n, mod)),
+							mod.f64.add(inner.floatValue, buildConvert(3n, mod)),
+						),
 					))),
 				);
 			});
