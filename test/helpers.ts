@@ -2,7 +2,6 @@ import type binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	SolidType,
 	SolidTypeUnit,
 	Int16,
 	Float64,
@@ -29,15 +28,6 @@ export function typeConstFloat(x: number): SolidTypeUnit<Float64> {
 }
 export function typeConstStr(x: string): SolidTypeUnit<SolidString> {
 	return new SolidString(x).toType();
-}
-
-
-
-export function default_bin_values(mod: binaryen.Module) {
-	return {
-		int:   SolidType.INT   .defaultBinValue(mod),
-		float: SolidType.FLOAT .defaultBinValue(mod),
-	} as const;
 }
 
 

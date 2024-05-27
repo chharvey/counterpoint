@@ -526,6 +526,15 @@ describe('ASTNodeExpression', () => {
 					builder.module.tuple.make([buildConstInt(1n, builder.module), buildConstFloat(2.0, builder.module)]),
 				);
 			});
+			it.skip('foldable.', () => {
+				AST.ASTNodeTuple.fromSource('[1, 2.0, null];').build(new Builder(''));
+			});
+			it.skip('non-foldable.', () => {
+				AST.ASTNodeGoal.fromSource(`
+					let unfixed x: null = null;
+					[1, 2.0, x];
+				`).build(new Builder(''));
+			});
 		});
 	});
 });

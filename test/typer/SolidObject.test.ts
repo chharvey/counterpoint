@@ -96,6 +96,16 @@ describe('SolidObject', () => {
 			});
 		});
 
+		describe.skip('SolidString', () => {
+			specify('#build', () => {
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					new SolidString('hello world').build(mod),
+					buildConstInt(0n, mod),
+				);
+			});
+		});
+
 		describe('SolidTuple', () => {
 			it('returns `(tuple.make)`.', () => {
 				const mod = new binaryen.Module();
