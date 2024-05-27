@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs'
-import {BinEither} from '../../index.js';
+import {BinVect} from '../../index.js';
 import {
 	SolidType,
 	SolidObject,
@@ -41,24 +41,18 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		arg: binaryen.ExpressionRef,
 	): binaryen.ExpressionRef {
 		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
-		const bintype_expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
-		if (bintype_expanded.length > 1) {
-			// assert: `arg` is equivalent to a result of `new BinEither().make()`
-			ASTNodeOperation.expectEitherTuple(bintype);
-			const arg_ = new BinEither(mod, arg);
+		if (bintype === binaryen.v128) {
+			const vect = new BinVect(mod, {int_float: arg});
 
-			/* throw any early errors */
-			[
-				binaryen.getExpressionType(arg_.left),
-				binaryen.getExpressionType(arg_.right),
-			].forEach((bt, i) => assert.strictEqual(bt, bintype_expanded[i + 1]));
+			let op_int:   binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.intValue);
+			let op_float: binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.floatValue);
 
-			const left:  binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, arg_.left);
-			const right: binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, arg_.right);
+			if (op === Operator.NEG) {
+				[op_int, op_float] = [op_int, op_float].map((op) => new BinVect(mod, op).vect);
+			}
 
-			return (op === Operator.NEG)
-				? new BinEither(mod,             arg_.side,  left, right).make()
-				: mod.if       (     mod.i32.eqz(arg_.side), left, right);
+			assert.strictEqual(binaryen.getExpressionType(op_int), binaryen.getExpressionType(op_float));
+			return mod.if(vect.isInt, op_int, op_float);
 		} else {
 			ASTNodeOperation.expectIntOrFloat(bintype);
 			return (op === Operator.NEG && bintype === binaryen.f64)
