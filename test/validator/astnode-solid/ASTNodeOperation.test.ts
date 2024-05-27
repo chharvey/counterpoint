@@ -389,6 +389,12 @@ describe('ASTNodeOperation', () => {
 						new BinVect(mod, fneg(mod, vect.floatValue)).vect,
 					),
 				}));
+				assertEqualBins(
+					goal.children.slice(4).map((stmt) => (
+						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder)
+					)),
+					negated.map((vect) => vect.vect),
+				);
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
@@ -559,6 +565,12 @@ describe('ASTNodeOperation', () => {
 					mod.if(extracts[0].isInt, new BinVect(mod, mod.i32.add(extracts[0].intValue, const_['2'])).vect,          new BinVect(mod, mod.f64.add(extracts[0].floatValue, const_['c(2)'])).vect),
 					mod.if(extracts[1].isInt, new BinVect(mod, mod.i32.add(const_['2'],          extracts[1].intValue)).vect, new BinVect(mod, mod.f64.add(const_['c(2)'],         extracts[1].floatValue)).vect),
 				].map((if_) => new BinVect(mod, {int_float: if_}));
+				assertEqualBins(
+					goal.children.slice(2).map((stmt) => (
+						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)
+					)),
+					inners.map((vect) => vect.vect),
+				);
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					inners.map((inner) => builder.module.drop(mod.if(
