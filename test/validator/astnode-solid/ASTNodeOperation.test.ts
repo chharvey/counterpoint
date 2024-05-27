@@ -74,6 +74,30 @@ describe('ASTNodeOperation', () => {
 		return stmt.expr!.type();
 	}
 
+	function inot(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return mod.call('inot', [arg], binaryen.i32);
+	}
+
+	function fnot(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return mod.call('fnot', [arg], binaryen.i32);
+	}
+
+	function iemp(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return mod.call('iemp', [arg], binaryen.i32);
+	}
+
+	function femp(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return mod.call('femp', [arg], binaryen.i32);
+	}
+
+	function ineg(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return mod.call('neg', [arg], binaryen.i32);
+	}
+
+	function fneg(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return mod.f64.neg(arg);
+	}
+
 
 
 	describe('#type', () => {
@@ -283,24 +307,21 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			function callUnaryOp(mod: binaryen.Module, name: string, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
-				return mod.call(name, [arg], binaryen.i32);
-			}
 			it('returns the correct operation.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					[`!null;`,  callUnaryOp(mod, 'inot', buildConstInt   (0n,  mod))],
-					[`!false;`, callUnaryOp(mod, 'inot', buildConstInt   (0n,  mod))],
-					[`!true;`,  callUnaryOp(mod, 'inot', buildConstInt   (1n,  mod))],
-					[`!42;`,    callUnaryOp(mod, 'inot', buildConstInt   (42n, mod))],
-					[`!4.2;`,   callUnaryOp(mod, 'fnot', buildConstFloat (4.2, mod))],
-					[`?null;`,  callUnaryOp(mod, 'iemp', buildConstInt   (0n,  mod))],
-					[`?false;`, callUnaryOp(mod, 'iemp', buildConstInt   (0n,  mod))],
-					[`?true;`,  callUnaryOp(mod, 'iemp', buildConstInt   (1n,  mod))],
-					[`?42;`,    callUnaryOp(mod, 'iemp', buildConstInt   (42n, mod))],
-					[`?4.2;`,   callUnaryOp(mod, 'femp', buildConstFloat (4.2, mod))],
-					[`-(4);`,   callUnaryOp(mod, 'neg',  buildConstInt   (4n,  mod))],
-					[`-(4.2);`, mod.f64.neg(buildConstFloat(4.2, mod))],
+					[`!null;`,  inot(mod, buildConstInt   (0n,  mod))],
+					[`!false;`, inot(mod, buildConstInt   (0n,  mod))],
+					[`!true;`,  inot(mod, buildConstInt   (1n,  mod))],
+					[`!42;`,    inot(mod, buildConstInt   (42n, mod))],
+					[`!4.2;`,   fnot(mod, buildConstFloat (4.2, mod))],
+					[`?null;`,  iemp(mod, buildConstInt   (0n,  mod))],
+					[`?false;`, iemp(mod, buildConstInt   (0n,  mod))],
+					[`?true;`,  iemp(mod, buildConstInt   (1n,  mod))],
+					[`?42;`,    iemp(mod, buildConstInt   (42n, mod))],
+					[`?4.2;`,   femp(mod, buildConstFloat (4.2, mod))],
+					[`-(4);`,   ineg(mod, buildConstInt   (4n,  mod))],
+					[`-(4.2);`, fneg(mod, buildConstFloat (4.2, mod))],
 				]));
 			});
 			it('works with vects.', () => {
@@ -308,14 +329,14 @@ describe('ASTNodeOperation', () => {
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
 
-					!x; % should return \`if i32.eqz(0) then $inot(42) else $fnot(0.0)\`
-					!y; % should return \`if i32.eqz(1) then $inot(0)  else $fnot(4.2)\`
+					!x; % should return \`if i32.eqz(0) then $inot(42) else $fnot(!)\`
+					!y; % should return \`if i32.eqz(1) then $inot(!)  else $fnot(4.2)\`
 
-					?x; % should return \`if i32.eqz(0) then $iemp(42) else $femp(0.0)\`
-					?y; % should return \`if i32.eqz(1) then $iemp(0)  else $femp(4.2)\`
+					?x; % should return \`if i32.eqz(0) then $iemp(42) else $femp(!)\`
+					?y; % should return \`if i32.eqz(1) then $iemp(!)  else $femp(4.2)\`
 
-					-x; % should return \`[0, $neg(42), f64.neg(0.0)]\`
-					-y; % should return \`[1, $neg(0),  f64.neg(4.2)]\`
+					-x; % should return \`if i32.eqz(0) then [0, 0, 0, $neg(42)] else [0, 3, f64.neg(!)]\`
+					-y; % should return \`if i32.eqz(1) then [0, 0, 0, $neg(!)]  else [0, 3, f64.neg(4.2)]\`
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -323,19 +344,18 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => {
-					const vect = new BinVect(mod, {int_float: ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder)});
-					return new BinEither(mod, new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make());
-				});
+				const extracts: readonly BinVect[] = goal.children.slice(2).map((stmt) => (
+					new BinVect(mod, {int_float: ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder)})
+				));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						mod.if       (     mod.i32.eqz(extracts[0].side), callUnaryOp(mod, 'inot', extracts[0].left), callUnaryOp(mod, 'fnot', extracts[0].right)),
-						mod.if       (     mod.i32.eqz(extracts[1].side), callUnaryOp(mod, 'inot', extracts[1].left), callUnaryOp(mod, 'fnot', extracts[1].right)),
-						mod.if       (     mod.i32.eqz(extracts[2].side), callUnaryOp(mod, 'iemp', extracts[2].left), callUnaryOp(mod, 'femp', extracts[2].right)),
-						mod.if       (     mod.i32.eqz(extracts[3].side), callUnaryOp(mod, 'iemp', extracts[3].left), callUnaryOp(mod, 'femp', extracts[3].right)),
-						new BinEither(mod,             extracts[4].side,  callUnaryOp(mod, 'neg',  extracts[4].left), mod.f64.neg(             extracts[4].right)).make(),
-						new BinEither(mod,             extracts[5].side,  callUnaryOp(mod, 'neg',  extracts[5].left), mod.f64.neg(             extracts[5].right)).make(),
+						mod.if(extracts[0].isInt,                  inot(mod, extracts[0].intValue),                        fnot(mod, extracts[0].floatValue)),
+						mod.if(extracts[1].isInt,                  inot(mod, extracts[1].intValue),                        fnot(mod, extracts[1].floatValue)),
+						mod.if(extracts[2].isInt,                  iemp(mod, extracts[2].intValue),                        femp(mod, extracts[2].floatValue)),
+						mod.if(extracts[3].isInt,                  iemp(mod, extracts[3].intValue),                        femp(mod, extracts[3].floatValue)),
+						mod.if(extracts[4].isInt, new BinVect(mod, ineg(mod, extracts[4].intValue)).vect, new BinVect(mod, fneg(mod, extracts[4].floatValue)).vect),
+						mod.if(extracts[5].isInt, new BinVect(mod, ineg(mod, extracts[5].intValue)).vect, new BinVect(mod, fneg(mod, extracts[5].floatValue)).vect),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
@@ -347,8 +367,11 @@ describe('ASTNodeOperation', () => {
 					!!x; % should return \`$inot(if i32.eqz(0) then $inot(42) else $fnot(0.0))\`
 					??y; % should return \`$iemp(if i32.eqz(1) then $iemp(0)  else $femp(4.2))\`
 
-					!-x; % should return \`if i32.eqz(extract 0 [0, $neg(42), f64.neg(0.0)]) then $inot(extract 1 [0, $neg(42), f64.neg(0.0)]) else $fnot(extract 2 [0, $neg(42), f64.neg(0.0)])\`
-					?-y; % should return \`if i32.eqz(extract 0 [1, $neg(0),  f64.neg(4.2)]) then $iemp(extract 1 [1, $neg(0),  f64.neg(4.2)]) else $femp(extract 2 [1, $neg(0),  f64.neg(4.2)])\`
+					!-x; % should return \`if i32.eqz(0) then $inot(intValue(-x)) else $fnot(floatValue(-x))\`
+					?-y; % should return \`if i32.eqz(1) then $iemp(intValue(-y)) else $femp(floatValue(-y))\`
+
+					--x; % should return \`if i32.eqz(0) then [0, 0, 0, $neg(intValue(-x))] else [0, 3, f64.neg(floatValue(-x))]\`
+					--y; % should return \`if i32.eqz(1) then [0, 0, 0, $neg(intValue(-y))] else [0, 3, f64.neg(floatValue(-y))]\`
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -356,22 +379,27 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => {
-					const vect = new BinVect(mod, {int_float: (((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build(builder)});
-					return new BinEither(mod, new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make());
-				});
-				const eithers = {
-					x: new BinEither(mod, extracts[2].side, callUnaryOp(mod, 'neg', extracts[2].left), mod.f64.neg(extracts[2].right)).make(),
-					y: new BinEither(mod, extracts[3].side, callUnaryOp(mod, 'neg', extracts[3].left), mod.f64.neg(extracts[3].right)).make(),
-				} as const;
+				const extracts: readonly BinVect[] = goal.children.slice(2).map((stmt) => (
+					new BinVect(mod, {int_float: (((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build(builder)})
+				));
+				const negated: readonly BinVect[] = extracts.slice(2).map((vect) => new BinVect(mod, {
+					int_float: mod.if(
+						vect.isInt,
+						new BinVect(mod, ineg(mod, vect.intValue)).vect,
+						new BinVect(mod, fneg(mod, vect.floatValue)).vect,
+					),
+				}));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						callUnaryOp(mod, 'inot', mod.if(mod.i32.eqz(extracts[0].side), callUnaryOp(mod, 'inot', extracts[0].left), callUnaryOp(mod, 'fnot', extracts[0].right))),
-						callUnaryOp(mod, 'iemp', mod.if(mod.i32.eqz(extracts[1].side), callUnaryOp(mod, 'iemp', extracts[1].left), callUnaryOp(mod, 'femp', extracts[1].right))),
+						inot(mod, mod.if(extracts[0].isInt, inot(mod, extracts[0].intValue), fnot(mod, extracts[0].floatValue))),
+						iemp(mod, mod.if(extracts[1].isInt, iemp(mod, extracts[1].intValue), femp(mod, extracts[1].floatValue))),
 
-						mod.if(mod.i32.eqz(mod.tuple.extract(eithers.x, 0)), callUnaryOp(mod, 'inot', mod.tuple.extract(eithers.x, 1)), callUnaryOp(mod, 'fnot', mod.tuple.extract(eithers.x, 2))),
-						mod.if(mod.i32.eqz(mod.tuple.extract(eithers.y, 0)), callUnaryOp(mod, 'iemp', mod.tuple.extract(eithers.y, 1)), callUnaryOp(mod, 'femp', mod.tuple.extract(eithers.y, 2))),
+						mod.if(negated[0].isInt, inot(mod, negated[0].intValue), fnot(mod, negated[0].floatValue)),
+						mod.if(negated[1].isInt, iemp(mod, negated[1].intValue), femp(mod, negated[1].floatValue)),
+
+						mod.if(negated[2].isInt, new BinVect(mod, ineg(mod, negated[2].intValue)).vect, new BinVect(mod, fneg(mod, negated[2].floatValue)).vect),
+						mod.if(negated[3].isInt, new BinVect(mod, ineg(mod, negated[3].intValue)).vect, new BinVect(mod, fneg(mod, negated[3].floatValue)).vect),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
@@ -1177,14 +1205,6 @@ describe('ASTNodeOperation', () => {
 					new BinEither(mod, side,       left, right).make(),
 					new BinEither(mod, -side + 1n, left, right).make(),
 				];
-			}
-
-			function inot(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
-				return mod.call('inot', [arg], binaryen.i32);
-			}
-
-			function fnot(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
-				return mod.call('fnot', [arg], binaryen.i32);
 			}
 
 			/**

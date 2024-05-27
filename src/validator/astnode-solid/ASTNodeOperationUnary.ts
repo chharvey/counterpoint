@@ -46,10 +46,20 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
 		if (bintype === binaryen.v128) {
 			const vect = new BinVect(mod, {int_float: arg});
-			return ASTNodeOperationUnary.operate(mod, op, new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make());
+
+			let op_int:   binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.intValue);
+			let op_float: binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.floatValue);
+
+			// `mod.if` branches must be the same type
+			if (op === Operator.NEG) {
+				op_int   = new BinVect(mod, op_int).vect;
+				op_float = new BinVect(mod, op_float).vect;
+			}
+
+			return mod.if(vect.isInt, op_int, op_float);
 		}
 		const bintype_expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
-		if (bintype_expanded.length > 1) {
+		if (bintype_expanded.length > 1) { // FIXME: only used in OperationBinaryLogical
 			// assert: `arg` is equivalent to a result of `new BinEither().make()`
 			ASTNodeOperation.expectEitherTuple(bintype);
 			const arg_ = new BinEither(mod, arg);
