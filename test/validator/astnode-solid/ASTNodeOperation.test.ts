@@ -15,6 +15,7 @@ import {
 	SolidString,
 	Builder,
 	BinEither,
+	BinVect,
 	TypeError01,
 	NanError01,
 	NanError02,
@@ -302,7 +303,7 @@ describe('ASTNodeOperation', () => {
 					[`-(4.2);`, mod.f64.neg(buildConstFloat(4.2, mod))],
 				]));
 			});
-			it('works with tuples.', () => {
+			it('works with vects.', () => {
 				const src = `
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
@@ -322,10 +323,10 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => new BinEither(
-					builder.module,
-					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder),
-				));
+				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => {
+					const vect = new BinVect(mod, {int_float: ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder)});
+					return new BinEither(mod, new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make());
+				});
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
@@ -355,10 +356,10 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => new BinEither(
-					builder.module,
-					(((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build(builder),
-				));
+				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => {
+					const vect = new BinVect(mod, {int_float: (((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build(builder)});
+					return new BinEither(mod, new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make());
+				});
 				const eithers = {
 					x: new BinEither(mod, extracts[2].side, callUnaryOp(mod, 'neg', extracts[2].left), mod.f64.neg(extracts[2].right)).make(),
 					y: new BinEither(mod, extracts[3].side, callUnaryOp(mod, 'neg', extracts[3].left), mod.f64.neg(extracts[3].right)).make(),
@@ -381,7 +382,7 @@ describe('ASTNodeOperation', () => {
 
 	describe('ASTNodeOperationBinary', () => {
 		describe('#build', () => {
-			it('works with tuples.', () => {
+			it('works with vects.', () => {
 				const src = `
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
@@ -407,10 +408,10 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => new BinEither(
-					builder.module,
-					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder),
-				));
+				const extracts: readonly BinEither[] = goal.children.slice(2).map((stmt) => {
+					const vect = new BinVect(mod, {int_float: ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)});
+					return new BinEither(mod, new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make());
+				});
 				const const_ = {
 					'2':    buildConstInt   (2n,  mod),
 					'2.4':  buildConstFloat (2.4, mod),
@@ -470,7 +471,10 @@ describe('ASTNodeOperation', () => {
 					return [
 						binexp.operand0.build(builder),
 						binexp.operand1.build(builder),
-					].map((arg) => new BinEither(builder.module, arg));
+					].map((arg) => {
+						const vect = new BinVect(mod, {int_float: arg});
+						return new BinEither(mod, new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make());
+					});
 				});
 				const keys: readonly binaryen.ExpressionRef[] = extracts.map((extract) => mod.i32.add(mod.i32.mul(mod.i32.const(2), extract[0].side), extract[1].side));
 				const each_options = [
@@ -528,7 +532,10 @@ describe('ASTNodeOperation', () => {
 				const extracts: readonly BinEither[] = [
 					(((goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(builder),
 					(((goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(builder),
-				].map((arg) => new BinEither(builder.module, arg));
+				].map((arg) => {
+					const vect = new BinVect(mod, {int_float: arg});
+					return new BinEither(mod, new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make());
+				});
 				const const_ = {
 					'2':    buildConstInt (2n, mod),
 					'3':    buildConstInt (3n, mod),

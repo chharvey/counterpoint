@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
-import {BinEither} from '../index.js';
+import {BinVect} from '../index.js';
+import {ASTNODE_SOLID as AST} from '../validator/index.js';
 import {Set_hasEq} from './package.js';
 import {
 	SolidTypeIntersection,
@@ -266,7 +267,17 @@ export abstract class SolidType {
 				if (right_type === binaryen.none) {
 					right_type = left_type;
 				}
-				return BinEither.createType(left_type, right_type);
+				try {
+					AST.ASTNodeOperation.expectIntOrFloat(left_type);
+					AST.ASTNodeOperation.expectIntOrFloat(right_type);
+					return binaryen.v128;
+				} catch (err) {
+					throw new TypeError(
+						`Currently only \`int | float\` or \`float | int\` unions are supported; got \`${ this }\`.`,
+						// @ts-expect-error --- TODO: update tsconfig target to es2022
+						{cause: err as Error},
+					);
+				}
 			})(this.left.binType(), this.right.binType()) :
 			(() => { throw new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`); })() // TODO use throw_expression
 		);
@@ -277,9 +288,9 @@ export abstract class SolidType {
 	 */
 	public defaultBinValue(mod: binaryen.Module): binaryen.ExpressionRef {
 		return (
-			(this.binType() === binaryen.i32) ? mod.i32.const(0) :
-			(this.binType() === binaryen.f64) ? mod.f64.const(0) :
-			(this instanceof SolidTypeUnion)  ? new BinEither(mod, 0n, this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)).make() :
+			(this.binType() === binaryen.i32)  ? mod.i32.const(0) :
+			(this.binType() === binaryen.f64)  ? mod.f64.const(0) :
+			(this.binType() === binaryen.v128) ? new BinVect(mod).vect :
 			(() => { throw new TypeError(`Could not determine a default value for \`${ this }\`.`); })() // TODO use throw_expression
 		);
 	};

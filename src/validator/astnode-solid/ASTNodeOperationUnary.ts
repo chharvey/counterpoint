@@ -1,7 +1,10 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs'
-import {BinEither} from '../../index.js';
+import {
+	BinEither,
+	BinVect,
+} from '../../index.js';
 import {
 	SolidType,
 	SolidObject,
@@ -41,6 +44,10 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		arg: binaryen.ExpressionRef,
 	): binaryen.ExpressionRef {
 		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
+		if (bintype === binaryen.v128) {
+			const vect = new BinVect(mod, {int_float: arg});
+			return ASTNodeOperationUnary.operate(mod, op, new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make());
+		}
 		const bintype_expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
 		if (bintype_expanded.length > 1) {
 			// assert: `arg` is equivalent to a result of `new BinEither().make()`

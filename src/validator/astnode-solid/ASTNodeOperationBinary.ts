@@ -1,6 +1,9 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
-import {BinEither} from '../../index.js';
+import {
+	BinEither,
+	BinVect,
+} from '../../index.js';
 import {
 	SolidType,
 	SolidConfig,
@@ -43,6 +46,18 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		simple: (args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef]) => binaryen.ExpressionRef,
 	): binaryen.ExpressionRef {
 		const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
+		if (bintypes.includes(binaryen.v128)) {
+			const new_args: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [...args];
+			if (bintypes[0] === binaryen.v128) {
+				const vect = new BinVect(mod, {int_float: args[0]});
+				new_args[0] = new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make();
+			}
+			if (bintypes[1] === binaryen.v128) {
+				const vect = new BinVect(mod, {int_float: args[1]});
+				new_args[1] = new BinEither(mod, vect.isInt, vect.intValue, vect.floatValue).make();
+			}
+			return ASTNodeOperationBinary.operate(mod, op, new_args, simple);
+		}
 		const bintypes_expanded: readonly (readonly binaryen.Type[])[] = bintypes.map((bt) => binaryen.expandType(bt));
 		if (bintypes_expanded[0].length > 1 && bintypes_expanded[1].length > 1) {
 			// assert: `args[0]` is equivalent to a result of `new BinEither().make()`
