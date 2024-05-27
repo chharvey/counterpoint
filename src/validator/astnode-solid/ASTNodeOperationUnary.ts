@@ -1,10 +1,7 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs'
-import {
-	BinEither,
-	BinVect,
-} from '../../index.js';
+import {BinVect} from '../../index.js';
 import {
 	SolidType,
 	SolidObject,
@@ -57,25 +54,6 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			}
 
 			return mod.if(vect.isInt, op_int, op_float);
-		}
-		const bintype_expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
-		if (bintype_expanded.length > 1) { // FIXME: only used in OperationBinaryLogical
-			// assert: `arg` is equivalent to a result of `new BinEither().make()`
-			ASTNodeOperation.expectEitherTuple(bintype);
-			const arg_ = new BinEither(mod, arg);
-
-			/* throw any early errors */
-			[
-				binaryen.getExpressionType(arg_.left),
-				binaryen.getExpressionType(arg_.right),
-			].forEach((bt, i) => assert.strictEqual(bt, bintype_expanded[i + 1]));
-
-			const left:  binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, arg_.left);
-			const right: binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, arg_.right);
-
-			return (op === Operator.NEG)
-				? new BinEither(mod,             arg_.side,  left, right).make()
-				: mod.if       (     mod.i32.eqz(arg_.side), left, right);
 		} else {
 			ASTNodeOperation.expectIntOrFloat(bintype);
 			return (op === Operator.NEG && bintype === binaryen.f64)

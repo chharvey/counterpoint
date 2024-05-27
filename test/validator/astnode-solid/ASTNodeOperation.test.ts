@@ -1199,11 +1199,10 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			function make_branches(mod: binaryen.Module, left: binaryen.ExpressionRef, right: binaryen.ExpressionRef, switch_: boolean = false): [binaryen.ExpressionRef, binaryen.ExpressionRef] {
-				const side = BigInt(switch_);
+			function make_branches(mod: binaryen.Module, left: binaryen.ExpressionRef, right: binaryen.ExpressionRef): [binaryen.ExpressionRef, binaryen.ExpressionRef] {
 				return [
-					new BinEither(mod, side,       left, right).make(),
-					new BinEither(mod, -side + 1n, left, right).make(),
+					new BinVect(mod, left).vect,
+					new BinVect(mod, right).vect,
 				];
 			}
 
@@ -1253,13 +1252,13 @@ describe('ASTNodeOperation', () => {
 						mod,
 						[0, buildConstInt(0n, mod), binaryen.i32],
 						(teeer) => inot(mod, inot(mod, teeer)),
-						(getter) => make_branches(mod, getter, buildConstFloat(20.1, mod), true),
+						(getter) => make_branches(mod, buildConstFloat(20.1, mod), getter),
 					)],
 					['true && 201.0e-1;', create_if(
 						mod,
 						[0, buildConstInt(1n, mod), binaryen.i32],
 						(teeer) => inot(mod, inot(mod, teeer)),
-						(getter) => make_branches(mod, getter, buildConstFloat(20.1, mod), true),
+						(getter) => make_branches(mod, buildConstFloat(20.1, mod), getter),
 					)],
 					['false || null;', create_if(
 						mod,
@@ -1295,14 +1294,14 @@ describe('ASTNodeOperation', () => {
 							mod,
 							[0, buildConstInt(1n, mod), binaryen.i32],
 							(teeer) => inot(mod, inot(mod, teeer)),
-							(getter) => make_branches(mod, getter, buildConstFloat(2.0, mod), true),
-						), BinEither.createType(binaryen.i32, binaryen.f64)],
+							(getter) => make_branches(mod, buildConstFloat(2.0, mod), getter),
+						), binaryen.v128],
 						(teeer) => {
-							const arg0 = new BinEither(mod, teeer);
+							const arg0 = new BinVect(mod, {int_float: teeer});
 							return inot(mod, mod.if(
-								mod.i32.eqz(arg0.side),
-								inot(mod, arg0.left),
-								fnot(mod, arg0.right),
+								arg0.isInt,
+								inot(mod, arg0.intValue),
+								fnot(mod, arg0.floatValue),
 							));
 						},
 						(getter) => [
@@ -1311,14 +1310,14 @@ describe('ASTNodeOperation', () => {
 								mod,
 								[1, buildConstInt(3n, mod), binaryen.i32],
 								(teeer) => inot(mod, inot(mod, teeer)),
-								(getter_) => make_branches(mod, getter_, buildConstFloat(4.0, mod), true),
+								(getter_) => make_branches(mod, buildConstFloat(4.0, mod), getter_),
 							),
 						],
 					)],
 				]));
 			});
 
-			it.skip('nested unions.', () => {
+			it('nested unions.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
 					['1 && 2.0 || 3.0 && 4;', create_if(
@@ -1327,14 +1326,14 @@ describe('ASTNodeOperation', () => {
 							mod,
 							[0, buildConstInt(1n, mod), binaryen.i32],
 							(teeer) => inot(mod, inot(mod, teeer)),
-							(getter) => make_branches(mod, getter, buildConstFloat(2.0, mod), true),
-						), BinEither.createType(binaryen.i32, binaryen.f64)],
+							(getter) => make_branches(mod, buildConstFloat(2.0, mod), getter),
+						), binaryen.v128],
 						(teeer) => {
-							const arg0 = new BinEither(mod, teeer);
+							const arg0 = new BinVect(mod, {int_float: teeer});
 							return inot(mod, mod.if(
-								mod.i32.eqz(arg0.side),
-								inot(mod, arg0.left),
-								fnot(mod, arg0.right),
+								arg0.isInt,
+								inot(mod, arg0.intValue),
+								fnot(mod, arg0.floatValue),
 							));
 						},
 						(getter) => [
@@ -1343,7 +1342,7 @@ describe('ASTNodeOperation', () => {
 								mod,
 								[1, buildConstFloat(3.0, mod), binaryen.f64],
 								(teeer) => inot(mod, fnot(mod, teeer)),
-								(getter_) => make_branches(mod, getter_, buildConstInt(4n, mod), true),
+								(getter_) => make_branches(mod, buildConstInt(4n, mod), getter_),
 							),
 						],
 					)],

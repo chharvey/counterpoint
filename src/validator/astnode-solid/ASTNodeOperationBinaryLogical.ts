@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
-import {BinEither} from '../../index.js';
+import {BinVect} from '../../index.js';
 import {
 	SolidType,
 	SolidObject,
@@ -53,10 +53,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		arg0 = builder.module.local.get(local.index, local.type);
 
 		if (type0 !== type1) {
-			[arg0, arg1] = [
-				new BinEither(builder.module, 0n, arg0, arg1).make(),
-				new BinEither(builder.module, 1n, arg0, arg1).make(),
-			];
+			arg0 = new BinVect(builder.module, arg0).vect;
+			arg1 = new BinVect(builder.module, arg1).vect;
 		}
 
 		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
