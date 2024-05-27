@@ -48,8 +48,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			let op_float: binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.floatValue);
 
 			if (op === Operator.NEG) {
-				op_int   = new BinVect(mod, op_int).vect;
-				op_float = new BinVect(mod, op_float).vect;
+				[op_int, op_float] = [op_int, op_float].map((op) => new BinVect(mod, op).vect);
 			}
 
 			assert.strictEqual(binaryen.getExpressionType(op_int), binaryen.getExpressionType(op_float));

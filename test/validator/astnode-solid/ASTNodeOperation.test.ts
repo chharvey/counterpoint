@@ -14,7 +14,6 @@ import {
 	Float64,
 	SolidString,
 	Builder,
-	BinEither,
 	BinVect,
 	TypeError01,
 	NanError01,
@@ -72,6 +71,13 @@ describe('ASTNodeOperation', () => {
 	function typeOfStmtExpr(stmt: AST.ASTNodeStatement): SolidType {
 		assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 		return stmt.expr!.type();
+	}
+
+	function make_branches(mod: binaryen.Module, left: binaryen.ExpressionRef, right: binaryen.ExpressionRef): [binaryen.ExpressionRef, binaryen.ExpressionRef] {
+		return [
+			new BinVect(mod, left).vect,
+			new BinVect(mod, right).vect,
+		];
 	}
 
 	function inot(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
@@ -1197,13 +1203,6 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			function make_branches(mod: binaryen.Module, left: binaryen.ExpressionRef, right: binaryen.ExpressionRef): [binaryen.ExpressionRef, binaryen.ExpressionRef] {
-				return [
-					new BinVect(mod, left).vect,
-					new BinVect(mod, right).vect,
-				];
-			}
-
 			/**
 			 * A helper for creating a conditional expression.
 			 * Given a value to tee and callbacks to perform giving the condition and branches,
@@ -1380,12 +1379,6 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			function make_branches(mod: binaryen.Module, left: binaryen.ExpressionRef, right: binaryen.ExpressionRef): [binaryen.ExpressionRef, binaryen.ExpressionRef] {
-				return [
-					new BinEither(mod, 0n, left, right).make(),
-					new BinEither(mod, 1n, left, right).make(),
-				];
-			}
 			it('returns `(mod.if)`.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([

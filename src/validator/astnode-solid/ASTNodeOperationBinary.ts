@@ -73,8 +73,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 			let op_float: binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [arg0.floatValue, args[1]], simple);
 
 			if (binaryen.getExpressionType(op_int) !== binaryen.getExpressionType(op_float)) {
-				op_int   = new BinVect(mod, op_int).vect;
-				op_float = new BinVect(mod, op_float).vect;
+				[op_int, op_float] = [op_int, op_float].map((op) => new BinVect(mod, op).vect);
 			}
 
 			return mod.if(arg0.isInt, op_int, op_float);
@@ -88,8 +87,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 			let op_float: binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [args[0], arg1.floatValue], simple);
 
 			if (binaryen.getExpressionType(op_int) !== binaryen.getExpressionType(op_float)) {
-				op_int   = new BinVect(mod, op_int).vect;
-				op_float = new BinVect(mod, op_float).vect;
+				[op_int, op_float] = [op_int, op_float].map((op) => new BinVect(mod, op).vect);
 			}
 
 			return mod.if(arg1.isInt, op_int, op_float);
