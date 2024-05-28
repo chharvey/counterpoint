@@ -133,6 +133,7 @@ export class BinVect {
 			 * If the arg represents an `int`, set Lane 3 to `\x0014` and set Lane 4–5 (joined) to its `i32` value;
 			 * else, if the arg represents a `float`, set Lane 3 to `\x0028` and set Lanes 4–7 (joined) to its `f64` value.
 			 */
+			// TODO: use `ASTNodeOperation.expectIntOrFloat()`
 			switch (binaryen.getExpressionType(arg)) {
 				case binaryen.i32: {
 					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0014));
@@ -145,7 +146,7 @@ export class BinVect {
 					break;
 				}
 				default: {
-					assert.fail('Expected either i32 or f64.');
+					assert.fail(new TypeError('Expected either i32 or f64.'));
 				}
 			}
 		} else if (typeof arg[0] === 'bigint') {

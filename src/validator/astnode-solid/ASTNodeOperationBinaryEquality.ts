@@ -43,6 +43,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 				this.validator.config.compilerOptions.intCoercion && this.operator === Operator.EQ
 			));
 			const [type0, type1]: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
+			[type0, type1].forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
 			return (
 				(type0 === binaryen.i32 && type1 === binaryen.i32) ? builder.module.i32.eq(...args) : // `ID` and `EQ` give the same result
 				(type0 === binaryen.i32 && type1 === binaryen.f64) ? builder.module.call('i_f_id', [...args], binaryen.i32) :
