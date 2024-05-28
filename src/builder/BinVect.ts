@@ -6,7 +6,7 @@ import binaryen from 'binaryen';
 /**
  * A Binaryen vector (`v128`) representing one of the following:
  * - one of three primitive special constants, the Counterpoint values `null`, `false`, or `true`, as a value on the stack
- * - a numeric value of the Counterpoint union type `int | float`, as a value on the stack
+ * - a numeric value of Counterpoint type `int` or `float`, as a value on the stack
  * - an address of a Counterpoint reference type, as a pointer to an object in the heap
  *
  * # Layout
@@ -35,29 +35,29 @@ import binaryen from 'binaryen';
  *
  * # Value Types
  * ## Special Constants
- * When Lane 3 is `\x0000`–`\x0003`, it represents a special constant (or lack thereof).
- * The represented constant is indicated by Lane 3’s value, as described above.
+ * When the Header is `\x0000`–`\x0003`, it represents a special constant (or lack thereof).
+ * The represented constant is indicated by the Header’s value, as described above.
  * For no value (header `\x0000`), behavior is undefined.
  * Lanes 4–7 are ignored.
  *
  * ## Integer Values
- * When Lane 3 is `\x0014`, it represents an `i32` value.
+ * When the Header is `\x0014`, it represents an `i32` value.
  * Lanes 4–5 together form an `i32` representing a Counterpoint `int` value.
  * Lanes 6–7 are ignored.
- * Lane 3 values of `\x0012` and `\x0018` are not yet supported but reserved for future use.
+ * Header values of `\x0012` and `\x0018` are not yet supported but reserved for future use.
  *
  * ## Float Values
- * When Lane 3 is `\x0028`, it represents an `f64` value.
+ * When the Header is `\x0028`, it represents an `f64` value.
  * Lanes 4–7 together form an `f64` representing a Counterpoint `float` value.
- * Lane 3 values of `\x0022` and `\x0024` are not yet supported but reserved for future use.
+ * Header values of `\x0022` and `\x0024` are not yet supported but reserved for future use.
  *
  * ## Address Values
- * When Lane 3 is `\x0032`, it represents an address with 1 component,
+ * When the Header is `\x0032`, it represents an address with 1 component,
  * comprising 16 bits, held by Lane 4.
  * Lanes 5–7 are ignored.
  * The single 16-bit component is an index on Page 0 of memory.
  *
- * When Lane 3 is `\x0034`, it represents an address with 2 components,
+ * When the Header is `\x0034`, it represents an address with 2 components,
  * comprising 16 bits each, held by Lanes 4 and 5 respectively.
  * Lanes 6–7 are ignored.
  * The two 16-bit components are indices of memory in little-endian format:
@@ -85,8 +85,8 @@ export class BinVect {
 	/** Internal implementation of the v128. */
 	readonly #internal: binaryen.ExpressionRef = this.mod.v128.const(new Uint8Array(16));
 
-	/** Lane 3’s value. */
-	readonly #lane3: binaryen.ExpressionRef = this.mod.i16x8.extract_lane_s(this.#internal, 3);
+	/** The Header Lane’s value, indicating the type of data stored. */
+	readonly #type: binaryen.ExpressionRef = this.mod.i16x8.extract_lane_s(this.#internal, 3);
 
 	/**
 	 * Construct a new BinVect object given a value.
@@ -178,41 +178,41 @@ export class BinVect {
 		return this.#internal;
 	}
 
-	/** Whether Lane 3 is within a given range (inclusive). */
-	#checkLane3Range(min: bigint, max: bigint): binaryen.ExpressionRef {
+	/** Whether the Header Lane is within a given range (inclusive). */
+	#checkTypeRange(min: bigint, max: bigint): binaryen.ExpressionRef {
 		const lower: binaryen.ExpressionRef = this.mod.i32.const(Number(min));
 		const upper: binaryen.ExpressionRef = this.mod.i32.const(Number(max));
-		return this.mod.i32.and(this.mod.i32.le_s(lower, this.#lane3), this.mod.i32.le_s(this.#lane3, upper));
+		return this.mod.i32.and(this.mod.i32.le_s(lower, this.#type), this.mod.i32.le_s(this.#type, upper));
 	}
 
 	/** Whether the value does not exist. */
 	public get isVoid(): binaryen.ExpressionRef {
-		return this.mod.i32.eqz(this.#lane3);
+		return this.mod.i32.eqz(this.#type);
 	}
 
 	/** Whether the value is intended to be interpreted as a special value: null, true, or false. */
 	public isSpecial(value?: null | boolean): binaryen.ExpressionRef {
 		return (
-			value === null  ? this.mod.i32.eq(this.#lane3, this.mod.i32.const(0x0001)) :
-			value === false ? this.mod.i32.eq(this.#lane3, this.mod.i32.const(0x0002)) :
-			value === true  ? this.mod.i32.eq(this.#lane3, this.mod.i32.const(0x0003)) :
-			(assert.strictEqual(value, undefined), this.#checkLane3Range(0x0001n, 0x000fn))
+			value === null  ? this.mod.i32.eq(this.#type, this.mod.i32.const(0x0001)) :
+			value === false ? this.mod.i32.eq(this.#type, this.mod.i32.const(0x0002)) :
+			value === true  ? this.mod.i32.eq(this.#type, this.mod.i32.const(0x0003)) :
+			(assert.strictEqual(value, undefined), this.#checkTypeRange(0x0001n, 0x000fn))
 		);
 	}
 
 	/** Whether the value is intended to be interpreted as an int. */
 	public get isInt(): binaryen.ExpressionRef {
-		return this.#checkLane3Range(0x0010n, 0x001fn);
+		return this.#checkTypeRange(0x0010n, 0x001fn);
 	}
 
 	/** Whether the value is intended to be interpreted as a float. */
 	public get isFloat(): binaryen.ExpressionRef {
-		return this.#checkLane3Range(0x0020n, 0x002fn);
+		return this.#checkTypeRange(0x0020n, 0x002fn);
 	}
 
 	/** Whether the value is intended to be interpreted as an address. */
 	public get isAddr(): binaryen.ExpressionRef {
-		return this.#checkLane3Range(0x0030n, 0x003fn);
+		return this.#checkTypeRange(0x0030n, 0x003fn);
 	}
 
 	/** The value as interpreted as an int. */
