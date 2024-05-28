@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {BinEither} from '../../index.js';
+import {BinVect} from '../../index.js';
+import {AST} from '../../validator/index.js';
 import {
 	throw_expression,
 	memoizeMethod,
@@ -353,7 +354,16 @@ export abstract class Type {
 				if (right_type === binaryen.none) {
 					right_type = left_type;
 				}
-				return BinEither.createType(left_type, right_type);
+				try {
+					AST.ASTNodeOperation.expectIntOrFloat(left_type);
+					AST.ASTNodeOperation.expectIntOrFloat(right_type);
+					return binaryen.v128;
+				} catch (err) {
+					throw new TypeError(
+						`Currently only \`int | float\` or \`float | int\` unions are supported; got \`${ this }\`.`,
+						{cause: err as Error},
+					);
+				}
 			})(this.left.binType(), this.right.binType()) :
 			throw_expression(new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`))
 		);
@@ -364,9 +374,9 @@ export abstract class Type {
 	 */
 	public defaultBinValue(mod: binaryen.Module): binaryen.ExpressionRef {
 		return (
-			(this.binType() === binaryen.i32) ? mod.i32.const(0) :
-			(this.binType() === binaryen.f64) ? mod.f64.const(0) :
-			(this instanceof TypeUnion)       ? new BinEither(mod, 0n, this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)).make() :
+			(this.binType() === binaryen.i32)  ? mod.i32.const(0) :
+			(this.binType() === binaryen.f64)  ? mod.f64.const(0) :
+			(this.binType() === binaryen.v128) ? new BinVect(mod).vect :
 			throw_expression(new TypeError(`Could not determine a default value for \`${ this }\`.`))
 		);
 	}

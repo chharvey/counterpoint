@@ -51,9 +51,8 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		const types  = [this.operand0.type(),         this.operand1.type()]         as const;
 		const builds = [this.operand0.build(builder), this.operand1.build(builder)] as const;
-		return ASTNodeOperationBinary.operate(builder.module, this.operator, types, builds, (args) => {
+		return ASTNodeOperationBinary.operate(builder.module, this.operator, builds, (args) => {
 			args = ASTNodeOperation.coerceOperands(builder.module, ...args);
 			const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
 			bintypes.forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));

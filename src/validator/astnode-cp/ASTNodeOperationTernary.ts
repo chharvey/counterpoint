@@ -4,7 +4,7 @@ import {
 	TYPE,
 	type Builder,
 	TypeError01,
-	BinEither,
+	BinVect,
 } from '../../index.js';
 import {
 	throw_expression,
@@ -44,12 +44,11 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	public override build(builder: Builder): binaryen.ExpressionRef {
 		let   [arg1,  arg2]:  binaryen.ExpressionRef[] = [this.operand1, this.operand2].map((expr) => expr.build(builder));
 		const [type1, type2]: binaryen.Type[]          = [arg1, arg2].map((arg) => binaryen.getExpressionType(arg));
+
 		if (type1 !== type2) {
-			[arg1, arg2] = [
-				new BinEither(builder.module, 0n, arg1, arg2).make(),
-				new BinEither(builder.module, 1n, arg1, arg2).make(),
-			];
+			[arg1, arg2] = [arg1, arg2].map((arg) => new BinVect(builder.module, arg).vect);
 		}
+
 		return builder.module.if(this.operand0.build(builder), arg1, arg2);
 	}
 

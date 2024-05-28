@@ -4,7 +4,7 @@ import {
 	AST,
 	TYPE,
 	Builder,
-	BinEither,
+	BinVect,
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,
@@ -18,10 +18,7 @@ import {
 	assertAssignable,
 	assertEqualBins,
 } from '../../assert-helpers.js';
-import {
-	typeUnitFloat,
-	default_bin_values,
-} from '../../helpers.js';
+import {typeUnitFloat} from '../../helpers.js';
 
 
 
@@ -179,10 +176,10 @@ describe('ASTNodeCP', () => {
 				const src: string = `
 					let unfixed x: float | int = 4.2;
 					let unfixed y: int | float = 4.2;
-					x = 8.4; % Either<float, int>#setLeft
-					x = 16;  % Either<float, int>#setRight
-					x = x;   % Either<float, int>#{setLeft,setRight}
-					x = y;   % Either<float, int>#{setLeft,setRight}
+					x = 8.4;
+					x = 16;
+					x = x;
+					x = y;
 					x = 52 + x;
 					x = x + x;
 				`;
@@ -191,34 +188,12 @@ describe('ASTNodeCP', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const default_ = default_bin_values(builder.module);
-				const exprs:  binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeAssignment).assigned.build(builder));
-				const exprs_: readonly BinEither[]     = exprs.slice(2).map((expr) => new BinEither(builder.module, expr));
+				const exprs: binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeAssignment).assigned.build(builder));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						new BinEither(builder.module, 0n, exprs[0],       default_.int).make(),
-						new BinEither(builder.module, 1n, default_.float, exprs[1]).make(),
-						builder.module.if(
-							builder.module.i32.eqz(exprs_[0].side),
-							new BinEither(builder.module, 0n, exprs_[0].left, default_.int).make(),
-							new BinEither(builder.module, 1n, default_.float, exprs_[0].right).make(),
-						),
-						builder.module.if(
-							builder.module.i32.eqz(exprs_[1].side),
-							new BinEither(builder.module, 1n, default_.float,  exprs_[1].left).make(),
-							new BinEither(builder.module, 0n, exprs_[1].right, default_.int).make(),
-						),
-						builder.module.if(
-							builder.module.i32.eqz(exprs_[2].side),
-							new BinEither(builder.module, 0n, exprs_[2].left, default_.int).make(),
-							new BinEither(builder.module, 1n, default_.float, exprs_[2].right).make(),
-						),
-						builder.module.if(
-							builder.module.i32.eqz(exprs_[3].side),
-							new BinEither(builder.module, 0n, exprs_[3].left, default_.int).make(),
-							new BinEither(builder.module, 1n, default_.float, exprs_[3].right).make(),
-						),
+						...exprs.slice(0, 2).map((exp) => new BinVect(builder.module, exp).vect),
+						...exprs.slice(2),
 					].map((expected) => builder.module.local.set(0, expected)),
 				);
 			});
