@@ -861,7 +861,7 @@ describe('SolidType', () => {
 			const tests = new Map<SolidType, binaryen.Type>([
 				[SolidType.NEVER, binaryen.unreachable],
 				[SolidType.VOID,  binaryen.none],
-				[SolidType.NULL,  binaryen.i32],
+				[SolidType.NULL,  binaryen.funcref],
 				[SolidType.BOOL,  binaryen.i32],
 				[SolidType.INT,   binaryen.i32],
 				[SolidType.FLOAT, binaryen.f64],

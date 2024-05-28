@@ -144,7 +144,7 @@ export class Builder {
 	 * @return `this`
 	 */
 	public build(): this {
-		// this.module.setFeatures(binaryen.Features.ReferenceTypes);
+		this.module.setFeatures(binaryen.Features.ReferenceTypes);
 		this.module.setFeatures(binaryen.Features.Multivalue);
 		this.ast_goal.build(this);
 		const validation: number = this.module.validate();

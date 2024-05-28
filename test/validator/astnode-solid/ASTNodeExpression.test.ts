@@ -35,6 +35,7 @@ import {
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
+	buildConstNull,
 	buildConstInt,
 	buildConstFloat,
 } from '../../helpers.js';
@@ -123,19 +124,19 @@ describe('ASTNodeExpression', () => {
 		specify('#build', () => {
 			const mod = new binaryen.Module();
 			const tests = new Map<string, binaryen.ExpressionRef>([
-				['null;',    mod.i32.const(0)],
-				['false;',   mod.i32.const(0)],
-				['true;',    mod.i32.const(1)],
-				['0;',       mod.i32.const(0)],
-				['+0;',      mod.i32.const(0)],
-				['-0;',      mod.i32.const(0)],
-				['42;',      mod.i32.const(42)],
-				['+42;',     mod.i32.const(42)],
-				['-42;',     mod.i32.const(-42)],
-				['0.0;',     mod.f64.const(0)],
-				['+0.0;',    mod.f64.const(0)],
-				['-0.0;',    mod.f64.ceil(mod.f64.const(-0.5))],
-				['-4.2e-2;', mod.f64.const(-0.042)],
+				['null;',    buildConstNull  (        mod)],
+				['false;',   buildConstInt   (0n,     mod)],
+				['true;',    buildConstInt   (1n,     mod)],
+				['0;',       buildConstInt   (0n,     mod)],
+				['+0;',      buildConstInt   (0n,     mod)],
+				['-0;',      buildConstInt   (0n,     mod)],
+				['42;',      buildConstInt   (42n,    mod)],
+				['+42;',     buildConstInt   (42n,    mod)],
+				['-42;',     buildConstInt   (-42n,   mod)],
+				['0.0;',     buildConstFloat (0,      mod)],
+				['+0.0;',    buildConstFloat (0,      mod)],
+				['-0.0;',    buildConstFloat (-0,     mod)],
+				['-4.2e-2;', buildConstFloat (-0.042, mod)],
 			]);
 			return assertEqualBins(
 				[...tests.keys()].map((src) => AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))),

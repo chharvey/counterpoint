@@ -2,6 +2,7 @@ import * as assert from 'assert'
 import binaryen from 'binaryen';
 import {
 	SolidObject,
+	SolidNull,
 	Int16,
 	Float64,
 	SolidString,
@@ -48,6 +49,16 @@ describe('SolidObject', () => {
 
 
 	describe('#build', () => {
+		describe('SolidNull', () => {
+			it('returns the null reference.', () => {
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					SolidNull.NULL.build(mod),
+					mod.ref.null(binaryen.funcref),
+				);
+			});
+		});
+
 		describe('Int16', () => {
 			it('generates `(i32.const)`.', () => {
 				const data: bigint[] = [
