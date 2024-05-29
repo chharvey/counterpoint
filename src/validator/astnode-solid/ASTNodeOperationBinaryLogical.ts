@@ -53,8 +53,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		arg0 = builder.module.local.get(local.index, local.type);
 
 		if (type0 !== type1) {
-			arg0 = new BinVect(builder.module, arg0).vect;
-			arg1 = new BinVect(builder.module, arg1).vect;
+			[arg0, arg1] = [arg0, arg1].map((arg) => new BinVect(builder.module, arg).vect);
 		}
 
 		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
