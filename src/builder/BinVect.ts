@@ -83,32 +83,30 @@ import binaryen from 'binaryen';
  */
 export class BinVect {
 	/** Internal implementation of the v128. */
-	readonly #internal: binaryen.ExpressionRef = this.mod.v128.const(new Uint8Array(16));
+	readonly #internal: binaryen.ExpressionRef;
 
 	/** The Header Lane’s value, indicating the type of data stored. */
-	readonly #type: binaryen.ExpressionRef = this.mod.i16x8.extract_lane_s(this.#internal, 3);
+	readonly #type!: binaryen.ExpressionRef;
 
 	/**
 	 * Construct a new BinVect object given a value.
 	 * @param  mod a module to create the instance in
 	 * @param  arg one of the following:
 	 *             - the native value `null`, `false`, or `true` (corresponding to its representation)
-	 *             - a hard-coded value tagged with `'int'` or `'float'`
-	 *             - a Binaryen `v128` value tagged with `'int_float'`,
-	 *             - a Binaryen `i32` or `f64` value to make into a `v128`,
+	 *             - a Binaryen `i32`, `f64`, or `v128` value to use in a `v128`
 	 *             - a one- or two-length address
 	 */
 	public constructor(
 		private readonly mod: binaryen.Module,
 		arg: (
 			| null | boolean
-			| {int: bigint} | {float: number}
-			| {int_float: number}
 			| binaryen.ExpressionRef
-			| [bigint]         | [binaryen.ExpressionRef]
-			| [bigint, bigint] | [binaryen.ExpressionRef, binaryen.ExpressionRef]
-		) = {int: 0n},
+			| readonly [bigint]         | readonly [binaryen.ExpressionRef]
+			| readonly [bigint, bigint] | readonly [binaryen.ExpressionRef, binaryen.ExpressionRef]
+		) = null,
 	) {
+		this.#internal = this.mod.v128.const(new Uint8Array(16));
+
 		if (arg === null) {
 			// the arg represents the Counterpoint `null` value
 			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0001));
@@ -118,22 +116,13 @@ export class BinVect {
 		} else if (arg === true) {
 			// the arg represents the Counterpoint `true` value
 			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0003));
-		} else if (typeof arg === 'object' && 'int' in arg) {
-			// the arg represents a hard-coded int
-			return new BinVect(mod, {float: Number(arg.int)}); // HACK: `this()`
-		} else if (typeof arg === 'object' && 'float' in arg) {
-			// the arg represents a hard-coded float
-			return new BinVect(mod, mod.i32.const(arg.float)); // HACK: `this()`
-		} else if (typeof arg === 'object' && 'int_float' in arg) {
-			// the arg represents a hard-coded v128
-			this.#internal = arg.int_float;
 		} else if (typeof arg === 'number') {
 			// the arg represents a dynamic Binaryen expression
 			/*
 			 * If the arg represents an `int`, set Lane 3 to `\x0014` and set Lane 4–5 (joined) to its `i32` value;
-			 * else, if the arg represents a `float`, set Lane 3 to `\x0028` and set Lanes 4–7 (joined) to its `f64` value.
+			 * else, if the arg represents a `float`, set Lane 3 to `\x0028` and set Lanes 4–7 (joined) to its `f64` value;
+			 * else, if the arg is any other `v128`, set all lanes to those lanes.
 			 */
-			// TODO: use `ASTNodeOperation.expectIntOrFloat()`
 			switch (binaryen.getExpressionType(arg)) {
 				case binaryen.i32: {
 					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0014));
@@ -145,32 +134,44 @@ export class BinVect {
 					this.#internal = this.mod.f64x2.replace_lane(this.#internal, 1, arg);
 					break;
 				}
+				case binaryen.v128: {
+					this.#internal = arg;
+					break;
+				}
 				default: {
-					assert.fail(new TypeError('Expected either i32 or f64.'));
+					throw new TypeError('Expected either i32, f64, or v128.');
 				}
 			}
 		} else if (typeof arg[0] === 'bigint') {
 			// the arg represents a hard-coded 1- or 2-length address
-			arg.forEach((bi) => assert.ok(0 <= bi && bi < 2n ** 16n, `Expected ${ bi } to be between 0 and ${ 2 ** 16 - 1 }`));
+			arg.forEach((bi) => assert.ok(0 <= bi && bi < 2n ** 16n, new RangeError(`Expected ${ bi } to be between 0 and ${ 2 ** 16 - 1 }`)));
 			return new BinVect(mod, arg.map((bi) => mod.i32.const(Number(bi))) as (
 				[binaryen.ExpressionRef] | [binaryen.ExpressionRef, binaryen.ExpressionRef]
 			)); // HACK: `this()`
 		} else {
 			// the arg represents a dynamic 1- or 2-length address
+			(arg as readonly [binaryen.ExpressionRef] | readonly [binaryen.ExpressionRef, binaryen.ExpressionRef]).forEach((comp) => assert.strictEqual(
+				binaryen.getExpressionType(comp),
+				binaryen.i32,
+				new TypeError('Expected each address component to be an `i32`.'),
+			));
 			/*
 			 * If the arg represents a 1-length address, set Lane 3 to `\x0032`,
 			 * and set Lane 4 to the respective `i16` value;
 			 * else, if the arg represents a 2-length address, Lane 3 to `\x0034`,
 			 * and set Lanes 4–5 to the respective `i16` values.
 			 */
-			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 4, arg[0]);
 			if (arg.length === 1) {
 				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0032));
+				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 4, arg[0]);
 			} else if (arg.length === 2) {
 				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0034));
+				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 4, arg[0]);
 				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 5, arg[1] as binaryen.ExpressionRef);
 			}
 		}
+
+		this.#type = this.mod.i16x8.extract_lane_s(this.#internal, 3);
 	}
 
 	/** The `v128` implementation. */

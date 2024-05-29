@@ -44,8 +44,8 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	): binaryen.ExpressionRef {
 		const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
 		if (bintypes[0] === binaryen.v128 && bintypes[1] === binaryen.v128) {
-			const arg0 = new BinVect(mod, {int_float: args[0]});
-			const arg1 = new BinVect(mod, {int_float: args[1]});
+			const arg0 = new BinVect(mod, args[0]);
+			const arg1 = new BinVect(mod, args[1]);
 
 			const ops = {
 				int: {
@@ -67,7 +67,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		if (bintypes[0] === binaryen.v128) {
 			ASTNodeOperation.expectIntOrFloat(bintypes[1]);
 
-			const arg0 = new BinVect(mod, {int_float: args[0]});
+			const arg0 = new BinVect(mod, args[0]);
 
 			let op_int:   binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [arg0.intValue,   args[1]], simple);
 			let op_float: binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [arg0.floatValue, args[1]], simple);
@@ -81,7 +81,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		if (bintypes[1] === binaryen.v128) {
 			ASTNodeOperation.expectIntOrFloat(bintypes[0]);
 
-			const arg1 = new BinVect(mod, {int_float: args[1]});
+			const arg1 = new BinVect(mod, args[1]);
 
 			let op_int:   binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [args[0], arg1.intValue],   simple);
 			let op_float: binaryen.ExpressionRef = ASTNodeOperationBinary.operate(mod, op, [args[0], arg1.floatValue], simple);

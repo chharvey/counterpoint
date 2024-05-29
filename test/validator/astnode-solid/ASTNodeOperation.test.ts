@@ -357,7 +357,7 @@ describe('ASTNodeOperation', () => {
 				goal.typeCheck();
 				goal.build(builder);
 				const extracts: readonly BinVect[] = goal.children.slice(2).map((stmt) => (
-					new BinVect(mod, {int_float: ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder)})
+					new BinVect(mod, ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder))
 				));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
@@ -392,18 +392,16 @@ describe('ASTNodeOperation', () => {
 				goal.typeCheck();
 				goal.build(builder);
 				const extracts: readonly BinVect[] = goal.children.slice(2).map((stmt) => (
-					new BinVect(mod, {int_float: (((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build(builder)})
+					new BinVect(mod, (((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build(builder))
 				));
-				const negated: readonly BinVect[] = extracts.slice(2).map((vect) => new BinVect(mod, {
-					int_float: mod.if(
-						vect.isInt,
-						...make_branches(
-							mod,
-							ineg(mod, vect.intValue),
-							fneg(mod, vect.floatValue),
-						),
+				const negated: readonly BinVect[] = extracts.slice(2).map((vect) => new BinVect(mod, mod.if(
+					vect.isInt,
+					...make_branches(
+						mod,
+						ineg(mod, vect.intValue),
+						fneg(mod, vect.floatValue),
 					),
-				}));
+				)));
 				assertEqualBins(
 					goal.children.slice(4).map((stmt) => (
 						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder)
@@ -458,7 +456,7 @@ describe('ASTNodeOperation', () => {
 				goal.typeCheck();
 				goal.build(builder);
 				const extracts: readonly BinVect[] = goal.children.slice(2).map((stmt) => (
-					new BinVect(mod, {int_float: ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)})
+					new BinVect(mod, ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder))
 				));
 				const const_ = {
 					'2':    buildConstInt   (2n,  mod),
@@ -516,7 +514,7 @@ describe('ASTNodeOperation', () => {
 					return [
 						binexp.operand0.build(builder),
 						binexp.operand1.build(builder),
-					].map((arg) => new BinVect(mod, {int_float: arg}));
+					].map((arg) => new BinVect(mod, arg));
 				});
 				const each_options: readonly (readonly binaryen.ExpressionRef[])[] = ([
 					[
@@ -571,7 +569,7 @@ describe('ASTNodeOperation', () => {
 				const extracts: readonly BinVect[] = [
 					(((goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(builder),
 					(((goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(builder),
-				].map((arg) => new BinVect(mod, {int_float: arg}));
+				].map((arg) => new BinVect(mod, arg));
 				const const_ = {
 					'2':    buildConstInt (2n, mod),
 					'c(2)': buildConvert  (2n, mod),
@@ -579,7 +577,7 @@ describe('ASTNodeOperation', () => {
 				const inners: readonly BinVect[] = [
 					mod.if(extracts[0].isInt, ...make_branches(mod, mod.i32.add(extracts[0].intValue, const_['2']),          mod.f64.add(extracts[0].floatValue, const_['c(2)']))),
 					mod.if(extracts[1].isInt, ...make_branches(mod, mod.i32.add(const_['2'],          extracts[1].intValue), mod.f64.add(const_['c(2)'],         extracts[1].floatValue))),
-				].map((if_) => new BinVect(mod, {int_float: if_}));
+				].map((if_) => new BinVect(mod, if_));
 				assertEqualBins(
 					goal.children.slice(2).map((stmt) => (
 						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)
@@ -1317,7 +1315,7 @@ describe('ASTNodeOperation', () => {
 							(getter) => make_branches(mod, buildConstFloat(2.0, mod), getter),
 						), binaryen.v128],
 						(teeer) => {
-							const arg0 = new BinVect(mod, {int_float: teeer});
+							const arg0 = new BinVect(mod, teeer);
 							return inot(mod, mod.if(
 								arg0.isInt,
 								inot(mod, arg0.intValue),
@@ -1349,7 +1347,7 @@ describe('ASTNodeOperation', () => {
 							(getter) => make_branches(mod, buildConstFloat(2.0, mod), getter),
 						), binaryen.v128],
 						(teeer) => {
-							const arg0 = new BinVect(mod, {int_float: teeer});
+							const arg0 = new BinVect(mod, teeer);
 							return inot(mod, mod.if(
 								arg0.isInt,
 								inot(mod, arg0.intValue),

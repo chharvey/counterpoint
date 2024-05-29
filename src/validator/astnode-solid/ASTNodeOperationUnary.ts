@@ -42,7 +42,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	): binaryen.ExpressionRef {
 		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
 		if (bintype === binaryen.v128) {
-			const vect = new BinVect(mod, {int_float: arg});
+			const vect = new BinVect(mod, arg);
 
 			let op_int:   binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.intValue);
 			let op_float: binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.floatValue);
