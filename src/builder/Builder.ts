@@ -6,6 +6,7 @@ import {
 	CONFIG_DEFAULT,
 	AST,
 } from './package.js';
+import {BinVect} from './BinVect.js';
 
 
 
@@ -139,13 +140,43 @@ export class Builder {
 		return this;
 	}
 
+	#setupFunctions(): void {
+		this.module.addFunction('vnot', binaryen.v128, binaryen.i32, [], this.module.block(null, [
+			this.module.i32.const(0),
+		], binaryen.i32));
+		this.module.addFunction('vemp', binaryen.v128, binaryen.i32, [], this.module.block(null, [
+			((mod: binaryen.Module) => {
+				const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
+				return mod.if(
+					vect.isInt,
+					mod.call('iemp', [vect.intValue],   binaryen.i32),
+					mod.call('femp', [vect.floatValue], binaryen.i32),
+				);
+			})(this.module),
+		], binaryen.i32));
+		this.module.addFunction('vneg', binaryen.v128, binaryen.v128, [], this.module.block(null, [
+			((mod: binaryen.Module) => {
+				const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
+				return mod.if(
+					vect.isInt,
+					new BinVect(mod, mod.call('neg', [vect.intValue], binaryen.i32)).vect,
+					new BinVect(mod, mod.f64.neg(vect.floatValue)).vect,
+				);
+			})(this.module),
+		], binaryen.v128));
+	}
+
 	/**
 	 * Prepare this builder.
 	 * @return `this`
 	 */
 	public build(): this {
-		this.module.setFeatures(binaryen.Features.ReferenceTypes);
-		this.module.setFeatures(binaryen.Features.Multivalue);
+		this.module.setFeatures( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
+			  binaryen.Features.ReferenceTypes
+			| binaryen.Features.SIMD128
+			| binaryen.Features.Multivalue
+		);
+		this.#setupFunctions();
 		this.ast_goal.build(this);
 		const validation: number = this.module.validate();
 		if (!validation) {

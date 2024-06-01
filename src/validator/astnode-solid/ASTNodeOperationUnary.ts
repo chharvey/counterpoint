@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs'
-import {BinVect} from '../../index.js';
 import {
 	SolidType,
 	SolidObject,
@@ -42,17 +41,12 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	): binaryen.ExpressionRef {
 		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
 		if (bintype === binaryen.v128) {
-			const vect = new BinVect(mod, arg);
-
-			let op_int:   binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.intValue);
-			let op_float: binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.floatValue);
-
-			if (op === Operator.NEG) {
-				[op_int, op_float] = [op_int, op_float].map((op) => new BinVect(mod, op).vect);
-			}
-
-			assert.strictEqual(binaryen.getExpressionType(op_int), binaryen.getExpressionType(op_float));
-			return mod.if(vect.isInt, op_int, op_float);
+			const [name, result] = new Map<Operator, [string, binaryen.Type]>([
+				[Operator.NOT, ['vnot', binaryen.i32]],
+				[Operator.EMP, ['vemp', binaryen.i32]],
+				[Operator.NEG, ['vneg', binaryen.v128]],
+			]).get(op)!;
+			return mod.call(name, [arg], result);
 		} else {
 			ASTNodeOperation.expectIntOrFloat(bintype);
 			return (op === Operator.NEG && bintype === binaryen.f64)
