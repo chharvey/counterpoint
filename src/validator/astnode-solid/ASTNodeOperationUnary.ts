@@ -27,44 +27,6 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return expression;
 	}
 
-	/**
-	 * Return an instruction performing an operation on an argument.
-	 * @param mod the binaryen module
-	 * @param op  the operator
-	 * @param arg the operand
-	 * @return    an instruction that performs the operation at runtime
-	 */
-	public static operate(
-		mod: binaryen.Module,
-		op:  ValidOperatorUnary,
-		arg: binaryen.ExpressionRef,
-	): binaryen.ExpressionRef {
-		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
-		if (bintype === binaryen.v128) {
-			const [name, result] = new Map<Operator, [string, binaryen.Type]>([
-				[Operator.NOT, ['vnot', binaryen.i32]],
-				[Operator.EMP, ['vemp', binaryen.i32]],
-				[Operator.NEG, ['vneg', binaryen.v128]],
-			]).get(op)!;
-			return mod.call(name, [arg], result);
-		} else {
-			ASTNodeOperation.expectIntOrFloat(bintype);
-			return (op === Operator.NEG && bintype === binaryen.f64)
-				? mod.f64.neg(arg)
-				: mod.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
-					[binaryen.i32, new Map<Operator, string>([
-						[Operator.NOT, 'inot'],
-						[Operator.EMP, 'iemp'],
-						[Operator.NEG, 'neg'],
-					])],
-					[binaryen.f64, new Map<Operator, string>([
-						[Operator.NOT, 'fnot'],
-						[Operator.EMP, 'femp'],
-					])],
-				]).get(bintype)!.get(op)!, [arg], binaryen.i32);
-		}
-	}
-
 
 	constructor(
 		start_node: ParseNode,
@@ -75,7 +37,31 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		return ASTNodeOperationUnary.operate(builder.module, this.operator, this.operand.build(builder));
+		const build = this.operand.build(builder);
+		const bintype: binaryen.Type = binaryen.getExpressionType(build);
+		if (bintype === binaryen.v128) {
+			const [name, result] = new Map<Operator, [string, binaryen.Type]>([
+				[Operator.NOT, ['vnot', binaryen.i32]],
+				[Operator.EMP, ['vemp', binaryen.i32]],
+				[Operator.NEG, ['vneg', binaryen.v128]],
+			]).get(this.operator)!;
+			return builder.module.call(name, [build], result);
+		} else {
+			ASTNodeOperation.expectIntOrFloat(bintype);
+			return (this.operator === Operator.NEG && bintype === binaryen.f64)
+				? builder.module.f64.neg(build)
+				: builder.module.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
+					[binaryen.i32, new Map<Operator, string>([
+						[Operator.NOT, 'inot'],
+						[Operator.EMP, 'iemp'],
+						[Operator.NEG, 'neg'],
+					])],
+					[binaryen.f64, new Map<Operator, string>([
+						[Operator.NOT, 'fnot'],
+						[Operator.EMP, 'femp'],
+					])],
+				]).get(bintype)!.get(this.operator)!, [build], binaryen.i32);
+		}
 	}
 
 	protected override type_do(): SolidType {
