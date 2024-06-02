@@ -125,6 +125,14 @@ describe('ASTNodeOperation', () => {
 		return mod.call('vadd', [arg0, arg1], binaryen.v128);
 	}
 
+	function vlt(mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return mod.call('vlt', [arg0, arg1], binaryen.i32);
+	}
+
+	function vgt(mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return mod.call('vgt', [arg0, arg1], binaryen.i32);
+	}
+
 
 
 	describe('#type', () => {
@@ -449,10 +457,10 @@ describe('ASTNodeOperation', () => {
 					x * 2.4;
 					y * 2.4;
 
-					x < 2;   % should return \`if i32.eqz(0) then i32.lt_s(42, 2)    else f64.lt(!, c(2))\`
-					y < 2;   % should return \`if i32.eqz(1) then i32.lt_s(!,  2)    else f64.lt(4.2, c(2))\`
-					x < 2.4; % should return \`if i32.eqz(0) then f64.lt(c(42), 2.4) else f64.lt(!, 2.4)\`
-					y < 2.4; % should return \`if i32.eqz(1) then f64.lt(c(!),  2.4) else f64.lt(4.2, 2.4)\`
+					x < 2;
+					y < 2;
+					x < 2.4;
+					y < 2.4;
 
 					x == 2;   % should return \`if i32.eqz(0) then i32.eq(42, 2)      else f64.eq(!, c(2))]\`
 					y == 2;   % should return \`if i32.eqz(1) then i32.eq(!,  2)      else f64.eq(4.2, c(2))]\`
@@ -481,10 +489,10 @@ describe('ASTNodeOperation', () => {
 						vmul(mod, extracts[2].vect, new BinVect(mod, const_['2.4']).vect),
 						vmul(mod, extracts[3].vect, new BinVect(mod, const_['2.4']).vect),
 
-						mod.if(extracts[4].isInt, mod.i32.lt_s (                      extracts[4].intValue,  const_['2']),   mod.f64.lt(extracts[4].floatValue, const_['c(2)'])),
-						mod.if(extracts[5].isInt, mod.i32.lt_s (                      extracts[5].intValue,  const_['2']),   mod.f64.lt(extracts[5].floatValue, const_['c(2)'])),
-						mod.if(extracts[6].isInt, mod.f64.lt   (mod.f64.convert_u.i32(extracts[6].intValue), const_['2.4']), mod.f64.lt(extracts[6].floatValue, const_['2.4'])),
-						mod.if(extracts[7].isInt, mod.f64.lt   (mod.f64.convert_u.i32(extracts[7].intValue), const_['2.4']), mod.f64.lt(extracts[7].floatValue, const_['2.4'])),
+						vlt(mod, extracts[4].vect, new BinVect(mod, const_['2']).vect),
+						vlt(mod, extracts[5].vect, new BinVect(mod, const_['2']).vect),
+						vlt(mod, extracts[6].vect, new BinVect(mod, const_['2.4']).vect),
+						vlt(mod, extracts[7].vect, new BinVect(mod, const_['2.4']).vect),
 
 						mod.if(extracts[ 8].isInt, mod.i32.eq(                      extracts[ 8].intValue,  const_['2']),   mod.f64.eq(extracts[ 8].floatValue, const_['c(2)'])),
 						mod.if(extracts[ 9].isInt, mod.i32.eq(                      extracts[ 9].intValue,  const_['2']),   mod.f64.eq(extracts[ 9].floatValue, const_['c(2)'])),
@@ -500,10 +508,7 @@ describe('ASTNodeOperation', () => {
 
 					x * y;
 
-					x > y; %% should return \`if i32.eqz(0)
-						then (if i32.eqz(1) then [0, 0, 0, i32.gt_s(42, !)] else [0, 3, f64.gt(c(42), 4.2)])
-						else (if i32.eqz(1) then [0, 3, f64.gt(!, c(!))]    else [0, 3, f64.gt(!, 4.2)])
-					\` %%
+					x > y;
 
 					x == y; %% should return \`if i32.eqz(0)
 						then (if i32.eqz(1) then [0, 0, 0, i32.eq(42, !)] else [0, 3, f64.eq(c(42), 4.2)])
@@ -525,12 +530,6 @@ describe('ASTNodeOperation', () => {
 				});
 				const each_options: readonly (readonly binaryen.ExpressionRef[])[] = ([
 					[
-						mod.i32.gt_s (extracts[1][0].intValue,                        extracts[1][1].intValue),
-						mod.f64.gt   (mod.f64.convert_u.i32(extracts[1][0].intValue), extracts[1][1].floatValue),
-						mod.f64.gt   (extracts[1][0].floatValue,                      mod.f64.convert_u.i32(extracts[1][1].intValue)),
-						mod.f64.gt   (extracts[1][0].floatValue,                      extracts[1][1].floatValue),
-					],
-					[
 						mod.i32.eq(extracts[2][0].intValue,                        extracts[2][1].intValue),
 						mod.f64.eq(mod.f64.convert_u.i32(extracts[2][0].intValue), extracts[2][1].floatValue),
 						mod.f64.eq(extracts[2][0].floatValue,                      mod.f64.convert_u.i32(extracts[2][1].intValue)),
@@ -541,10 +540,11 @@ describe('ASTNodeOperation', () => {
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
 						vmul(mod, extracts[0][0].vect, extracts[0][1].vect),
+						vgt (mod, extracts[1][0].vect, extracts[1][1].vect),
 						...each_options.map((options, i) => mod.if(
 							extracts[i][0].isInt,
-							mod.if(extracts[i + 1][1].isInt, options[0b00], options[0b01]),
-							mod.if(extracts[i + 1][1].isInt, options[0b10], options[0b11]),
+							mod.if(extracts[i + 2][1].isInt, options[0b00], options[0b01]),
+							mod.if(extracts[i + 2][1].isInt, options[0b10], options[0b11]),
 						)),
 					].map((expected) => builder.module.drop(expected)),
 				);

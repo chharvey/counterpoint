@@ -228,6 +228,70 @@ export class Builder {
 				);
 			})(this.module),
 		], binaryen.v128));
+		this.module.addFunction('vlt', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.i32, [], this.module.block(null, [
+			((mod: binaryen.Module) => {
+				const vects: readonly BinVect[] = [0, 1].map((i) => new BinVect(mod, mod.local.get(i, binaryen.v128)));
+				const opts: readonly binaryen.ExpressionRef[] = [
+					mod.i32.lt_s(                      vects[0].intValue,                         vects[1].intValue),
+					mod.f64.lt  (mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
+					mod.f64.lt  (                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
+					mod.f64.lt  (                      vects[0].floatValue,                       vects[1].floatValue),
+				];
+				return mod.if(
+					vects[0].isInt,
+					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
+					mod.if(vects[1].isInt, opts[0b10], opts[0b11]),
+				);
+			})(this.module),
+		], binaryen.i32));
+		this.module.addFunction('vgt', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.i32, [], this.module.block(null, [
+			((mod: binaryen.Module) => {
+				const vects: readonly BinVect[] = [0, 1].map((i) => new BinVect(mod, mod.local.get(i, binaryen.v128)));
+				const opts: readonly binaryen.ExpressionRef[] = [
+					mod.i32.gt_s(                      vects[0].intValue,                         vects[1].intValue),
+					mod.f64.gt  (mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
+					mod.f64.gt  (                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
+					mod.f64.gt  (                      vects[0].floatValue,                       vects[1].floatValue),
+				];
+				return mod.if(
+					vects[0].isInt,
+					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
+					mod.if(vects[1].isInt, opts[0b10], opts[0b11]),
+				);
+			})(this.module),
+		], binaryen.i32));
+		this.module.addFunction('vle', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.i32, [], this.module.block(null, [
+			((mod: binaryen.Module) => {
+				const vects: readonly BinVect[] = [0, 1].map((i) => new BinVect(mod, mod.local.get(i, binaryen.v128)));
+				const opts: readonly binaryen.ExpressionRef[] = [
+					mod.i32.le_s(                      vects[0].intValue,                         vects[1].intValue),
+					mod.f64.le  (mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
+					mod.f64.le  (                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
+					mod.f64.le  (                      vects[0].floatValue,                       vects[1].floatValue),
+				];
+				return mod.if(
+					vects[0].isInt,
+					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
+					mod.if(vects[1].isInt, opts[0b10], opts[0b11]),
+				);
+			})(this.module),
+		], binaryen.i32));
+		this.module.addFunction('vge', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.i32, [], this.module.block(null, [
+			((mod: binaryen.Module) => {
+				const vects: readonly BinVect[] = [0, 1].map((i) => new BinVect(mod, mod.local.get(i, binaryen.v128)));
+				const opts: readonly binaryen.ExpressionRef[] = [
+					mod.i32.ge_s(                      vects[0].intValue,                         vects[1].intValue),
+					mod.f64.ge  (mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
+					mod.f64.ge  (                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
+					mod.f64.ge  (                      vects[0].floatValue,                       vects[1].floatValue),
+				];
+				return mod.if(
+					vects[0].isInt,
+					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
+					mod.if(vects[1].isInt, opts[0b10], opts[0b11]),
+				);
+			})(this.module),
+		], binaryen.i32));
 	}
 
 	/**
