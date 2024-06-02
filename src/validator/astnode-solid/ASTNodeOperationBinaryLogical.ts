@@ -13,7 +13,6 @@ import {
 	ValidOperatorLogical,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperationUnary} from './ASTNodeOperationUnary.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -41,15 +40,12 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		const temp_id: bigint = builder.varCount;
 		const local           = builder.addLocal(temp_id, type0)[0].getLocalInfo(temp_id)!;
 
-		const condition = ASTNodeOperationUnary.operate(
-			builder.module,
-			Operator.NOT,
-			ASTNodeOperationUnary.operate(
-				builder.module,
-				Operator.NOT,
-				builder.module.local.tee(local.index, arg0, local.type),
-			),
-		);
+		const condition: binaryen.ExpressionRef = builder.module.i32.eqz(builder.module.call((
+			type0 === binaryen.i32  ? 'inot' :
+			type0 === binaryen.f64  ? 'fnot' :
+			type0 === binaryen.v128 ? 'vnot' :
+			''
+		), [builder.module.local.tee(local.index, arg0, local.type)], binaryen.i32));
 		arg0 = builder.module.local.get(local.index, local.type);
 
 		if (type0 !== type1) {

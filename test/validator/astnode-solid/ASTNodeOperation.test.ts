@@ -1227,19 +1227,19 @@ describe('ASTNodeOperation', () => {
 					['42 && 420;', create_if(
 						mod,
 						[0, buildConstInt(42n, mod), binaryen.i32],
-						(teeer) => inot(mod, inot(mod, teeer)),
+						(teeer) => mod.i32.eqz(inot(mod, teeer)),
 						(getter) => [buildConstInt(420n, mod), getter],
 					)],
 					['4.2 || -420;', create_if(
 						mod,
 						[0, buildConstFloat(4.2, mod), binaryen.f64],
-						(teeer) => inot(mod, fnot(mod, teeer)),
+						(teeer) => mod.i32.eqz(fnot(mod, teeer)),
 						(getter) => make_branches(mod, getter, buildConstInt(-420n, mod)),
 					)],
 					['true && 201.0e-1;', create_if(
 						mod,
 						[0, buildConstInt(1n, mod), binaryen.i32],
-						(teeer) => inot(mod, inot(mod, teeer)),
+						(teeer) => mod.i32.eqz(inot(mod, teeer)),
 						(getter) => make_branches(mod, buildConstFloat(20.1, mod), getter),
 					)],
 				]));
@@ -1251,13 +1251,13 @@ describe('ASTNodeOperation', () => {
 					['null && 201.0e-1;', create_if(
 						mod,
 						[0, buildConstNull(mod), binaryen.funcref],
-						(teeer) => inot(mod, inot(mod, teeer)),
+						(teeer) => mod.i32.eqz(inot(mod, teeer)),
 						(getter) => make_branches(mod, buildConstFloat(20.1, mod), getter),
 					)],
 					['false || null;', create_if(
 						mod,
 						[0, buildConstInt(0n, mod), binaryen.i32],
-						(teeer) => inot(mod, inot(mod, teeer)),
+						(teeer) => mod.i32.eqz(inot(mod, teeer)),
 						(getter) => [getter, buildConstNull(mod)],
 					)],
 				])), TypeError);
@@ -1271,14 +1271,14 @@ describe('ASTNodeOperation', () => {
 						[2, create_if(
 							mod,
 							[0, buildConstInt(1n, mod), binaryen.i32],
-							(teeer) => inot(mod, inot(mod, teeer)),
+							(teeer) => mod.i32.eqz(inot(mod, teeer)),
 							(getter) => [buildConstInt(2n, mod), getter],
 						), binaryen.i32],
-						(teeer) => inot(mod, inot(mod, teeer)),
+						(teeer) => mod.i32.eqz(inot(mod, teeer)),
 						(getter) => [getter, create_if(
 							mod,
 							[1, buildConstInt(3n, mod), binaryen.i32],
-							(teeer) => inot(mod, inot(mod, teeer)),
+							(teeer) => mod.i32.eqz(inot(mod, teeer)),
 							(getter_) => [buildConstInt(4n, mod), getter_],
 						)],
 					)],
@@ -1287,16 +1287,16 @@ describe('ASTNodeOperation', () => {
 						[2, create_if(
 							mod,
 							[0, buildConstInt(1n, mod), binaryen.i32],
-							(teeer) => inot(mod, inot(mod, teeer)),
+							(teeer) => mod.i32.eqz(inot(mod, teeer)),
 							(getter) => make_branches(mod, buildConstFloat(2.0, mod), getter),
 						), binaryen.v128],
-						(teeer) => inot(mod, vnot(mod, teeer)),
+						(teeer) => mod.i32.eqz(vnot(mod, teeer)),
 						(getter) => [
 							getter,
 							create_if(
 								mod,
 								[1, buildConstInt(3n, mod), binaryen.i32],
-								(teeer) => inot(mod, inot(mod, teeer)),
+								(teeer) => mod.i32.eqz(inot(mod, teeer)),
 								(getter_) => make_branches(mod, buildConstFloat(4.0, mod), getter_),
 							),
 						],
@@ -1312,16 +1312,16 @@ describe('ASTNodeOperation', () => {
 						[2, create_if(
 							mod,
 							[0, buildConstInt(1n, mod), binaryen.i32],
-							(teeer) => inot(mod, inot(mod, teeer)),
+							(teeer) => mod.i32.eqz(inot(mod, teeer)),
 							(getter) => make_branches(mod, buildConstFloat(2.0, mod), getter),
 						), binaryen.v128],
-						(teeer) => inot(mod, vnot(mod, teeer)),
+						(teeer) => mod.i32.eqz(vnot(mod, teeer)),
 						(getter) => [
 							getter,
 							create_if(
 								mod,
 								[1, buildConstFloat(3.0, mod), binaryen.f64],
-								(teeer) => inot(mod, fnot(mod, teeer)),
+								(teeer) => mod.i32.eqz(fnot(mod, teeer)),
 								(getter_) => make_branches(mod, buildConstInt(4n, mod), getter_),
 							),
 						],
