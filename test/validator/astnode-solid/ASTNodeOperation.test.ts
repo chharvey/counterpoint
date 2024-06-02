@@ -117,6 +117,14 @@ describe('ASTNodeOperation', () => {
 		return mod.call('vneg', [arg], binaryen.v128);
 	}
 
+	function vmul(mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return mod.call('vmul', [arg0, arg1], binaryen.v128);
+	}
+
+	function vadd(mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return mod.call('vadd', [arg0, arg1], binaryen.v128);
+	}
+
 
 
 	describe('#type', () => {
@@ -436,10 +444,10 @@ describe('ASTNodeOperation', () => {
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
 
-					x * 2;   % should return \`if i32.eqz(0) then [0, 0, 0, i32.mul(42, 2)] else [0, 3, f64.mul(!, c(2))]\`
-					y * 2;   % should return \`if i32.eqz(1) then [0, 0, 0, i32.mul(!,  2)] else [0, 3, f64.mul(4.2, c(2))]\`
-					x * 2.4; % should return \`if i32.eqz(0) then f64.mul(c(42), 2.4)       else f64.mul(!, 2.4)\`
-					y * 2.4; % should return \`if i32.eqz(1) then f64.mul(c(!),  2.4)       else f64.mul(4.2, 2.4)\`
+					x * 2;
+					y * 2;
+					x * 2.4;
+					y * 2.4;
 
 					x < 2;   % should return \`if i32.eqz(0) then i32.lt_s(42, 2)    else f64.lt(!, c(2))\`
 					y < 2;   % should return \`if i32.eqz(1) then i32.lt_s(!,  2)    else f64.lt(4.2, c(2))\`
@@ -468,10 +476,10 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						mod.if(extracts[0].isInt, ...make_branches(mod, mod.i32.mul(                      extracts[0].intValue,  const_['2']),   mod.f64.mul(extracts[0].floatValue, const_['c(2)']))),
-						mod.if(extracts[1].isInt, ...make_branches(mod, mod.i32.mul(                      extracts[1].intValue,  const_['2']),   mod.f64.mul(extracts[1].floatValue, const_['c(2)']))),
-						mod.if(extracts[2].isInt,                       mod.f64.mul(mod.f64.convert_u.i32(extracts[2].intValue), const_['2.4']), mod.f64.mul(extracts[2].floatValue, const_['2.4'])),
-						mod.if(extracts[3].isInt,                       mod.f64.mul(mod.f64.convert_u.i32(extracts[3].intValue), const_['2.4']), mod.f64.mul(extracts[3].floatValue, const_['2.4'])),
+						vmul(mod, extracts[0].vect, new BinVect(mod, const_['2']).vect),
+						vmul(mod, extracts[1].vect, new BinVect(mod, const_['2']).vect),
+						vmul(mod, extracts[2].vect, new BinVect(mod, const_['2.4']).vect),
+						vmul(mod, extracts[3].vect, new BinVect(mod, const_['2.4']).vect),
 
 						mod.if(extracts[4].isInt, mod.i32.lt_s (                      extracts[4].intValue,  const_['2']),   mod.f64.lt(extracts[4].floatValue, const_['c(2)'])),
 						mod.if(extracts[5].isInt, mod.i32.lt_s (                      extracts[5].intValue,  const_['2']),   mod.f64.lt(extracts[5].floatValue, const_['c(2)'])),
@@ -490,10 +498,7 @@ describe('ASTNodeOperation', () => {
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
 
-					x * y; %% should return \`if i32.eqz(0)
-						then (if i32.eqz(1) then [0, 0, 0, i32.mul(42, !)] else [0, 3, f64.mul(c(42), 4.2)])
-						else (if i32.eqz(1) then [0, 3, f64.mul(!, c(!))]  else [0, 3, f64.mul(!, 4.2)])
-					\` %%
+					x * y;
 
 					x > y; %% should return \`if i32.eqz(0)
 						then (if i32.eqz(1) then [0, 0, 0, i32.gt_s(42, !)] else [0, 3, f64.gt(c(42), 4.2)])
@@ -520,12 +525,6 @@ describe('ASTNodeOperation', () => {
 				});
 				const each_options: readonly (readonly binaryen.ExpressionRef[])[] = ([
 					[
-						mod.i32.mul(extracts[0][0].intValue,                        extracts[0][1].intValue),
-						mod.f64.mul(mod.f64.convert_u.i32(extracts[0][0].intValue), extracts[0][1].floatValue),
-						mod.f64.mul(extracts[0][0].floatValue,                      mod.f64.convert_u.i32(extracts[0][1].intValue)),
-						mod.f64.mul(extracts[0][0].floatValue,                      extracts[0][1].floatValue),
-					],
-					[
 						mod.i32.gt_s (extracts[1][0].intValue,                        extracts[1][1].intValue),
 						mod.f64.gt   (mod.f64.convert_u.i32(extracts[1][0].intValue), extracts[1][1].floatValue),
 						mod.f64.gt   (extracts[1][0].floatValue,                      mod.f64.convert_u.i32(extracts[1][1].intValue)),
@@ -540,27 +539,22 @@ describe('ASTNodeOperation', () => {
 				] as const).map((options) => options.map((option) => new BinVect(mod, option).vect));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
-					each_options.map((options, i) => builder.module.drop(mod.if(
-						extracts[i][0].isInt,
-						mod.if(extracts[i][1].isInt, options[0b00], options[0b01]),
-						mod.if(extracts[i][1].isInt, options[0b10], options[0b11]),
-					))),
+					[
+						vmul(mod, extracts[0][0].vect, extracts[0][1].vect),
+						...each_options.map((options, i) => mod.if(
+							extracts[i][0].isInt,
+							mod.if(extracts[i + 1][1].isInt, options[0b00], options[0b01]),
+							mod.if(extracts[i + 1][1].isInt, options[0b10], options[0b11]),
+						)),
+					].map((expected) => builder.module.drop(expected)),
 				);
 			});
 			it('multiple operations.', () => {
 				const src = `
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
-
-					x + 2 + 3; %% should return \`if isInt('x + 2'= if i32.eqz(0) then [0, 0, 0, i32.add(42, 2)] else [0, 3, f64.add(!, c(2))])
-						then [0, 0, 0, i32.add(intValue('x + 2'), 3)]
-						else [0, 3, f64.add(floatValue('x + 2'), c(3))]
-					\` %%
-
-					2 + y + 3; %% should return \`if isInt('2 + y'= if i32.eqz(1) then [0, 0, 0, i32.add(2, !)] else [0, 3, f64.add(c(2), 4.2)])
-						then [0, 0, 0, i32.add(intValue('2 + y'), 3)]
-						else [0, 3, f64.add(floatValue('2 + y'), c(3))]
-					\` %%
+					x + 2 + 3;
+					2 + y + 3;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -568,34 +562,23 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinVect[] = [
+				const extracts: readonly binaryen.ExpressionRef[] = [
 					(((goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(builder),
 					(((goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(builder),
-				].map((arg) => new BinVect(mod, arg));
-				const const_ = {
-					'2':    buildConstInt (2n, mod),
-					'c(2)': buildConvert  (2n, mod),
-				} as const;
-				const inners: readonly BinVect[] = [
-					mod.if(extracts[0].isInt, ...make_branches(mod, mod.i32.add(extracts[0].intValue, const_['2']),          mod.f64.add(extracts[0].floatValue, const_['c(2)']))),
-					mod.if(extracts[1].isInt, ...make_branches(mod, mod.i32.add(const_['2'],          extracts[1].intValue), mod.f64.add(const_['c(2)'],         extracts[1].floatValue))),
-				].map((if_) => new BinVect(mod, if_));
+				];
+				const inners: readonly binaryen.ExpressionRef[] = [
+					vadd(mod, extracts[0],                                   new BinVect(mod, buildConstInt(2n, mod)).vect),
+					vadd(mod, new BinVect(mod, buildConstInt(2n, mod)).vect, extracts[1]),
+				];
 				assertEqualBins(
 					goal.children.slice(2).map((stmt) => (
 						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)
 					)),
-					inners.map((vect) => vect.vect),
+					inners,
 				);
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
-					inners.map((inner) => builder.module.drop(mod.if(
-						inner.isInt,
-						...make_branches(
-							mod,
-							mod.i32.add(inner.intValue,   buildConstInt(3n, mod)),
-							mod.f64.add(inner.floatValue, buildConvert(3n, mod)),
-						),
-					))),
+					inners.map((inner) => builder.module.drop(vadd(mod, inner, new BinVect(mod, buildConstInt(3n, mod)).vect))),
 				);
 			});
 		});
@@ -714,6 +697,11 @@ describe('ASTNodeOperation', () => {
 					[' 200 / -3;', mod.i32.div_s(buildConstInt( 200n, mod), buildConstInt(-3n, mod))],
 					['-200 /  3;', mod.i32.div_s(buildConstInt(-200n, mod), buildConstInt( 3n, mod))],
 					['-200 / -3;', mod.i32.div_s(buildConstInt(-200n, mod), buildConstInt(-3n, mod))],
+
+					['42  - 420;',  mod.i32.add(buildConstInt  (42n, mod), ineg(mod, buildConstInt  (420n, mod)))],
+					['4.2 - 42.0;', mod.f64.add(buildConstFloat(4.2, mod), fneg(mod, buildConstFloat(42.0, mod)))],
+
+					['4.2 - 42;', mod.f64.add(buildConstFloat(4.2, mod), mod.f64.convert_u.i32(ineg(mod, buildConstInt(42n, mod))))],
 				]));
 			});
 		});
