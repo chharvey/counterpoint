@@ -133,6 +133,10 @@ describe('ASTNodeOperation', () => {
 		return mod.call('vgt', [arg0, arg1], binaryen.i32);
 	}
 
+	function veq(mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return mod.call('veq', [arg0, arg1], binaryen.i32);
+	}
+
 
 
 	describe('#type', () => {
@@ -462,10 +466,10 @@ describe('ASTNodeOperation', () => {
 					x < 2.4;
 					y < 2.4;
 
-					x == 2;   % should return \`if i32.eqz(0) then i32.eq(42, 2)      else f64.eq(!, c(2))]\`
-					y == 2;   % should return \`if i32.eqz(1) then i32.eq(!,  2)      else f64.eq(4.2, c(2))]\`
-					x == 2.4; % should return \`if i32.eqz(0) then f64.eq(c(42), 2.4) else f64.eq(!, 2.4)]\`
-					y == 2.4; % should return \`if i32.eqz(1) then f64.eq(c(!),  2.4) else f64.eq(4.2, 2.4)]\`
+					x == 2;
+					y == 2;
+					x == 2.4;
+					y == 2.4;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -494,10 +498,10 @@ describe('ASTNodeOperation', () => {
 						vlt(mod, extracts[6].vect, new BinVect(mod, const_['2.4']).vect),
 						vlt(mod, extracts[7].vect, new BinVect(mod, const_['2.4']).vect),
 
-						mod.if(extracts[ 8].isInt, mod.i32.eq(                      extracts[ 8].intValue,  const_['2']),   mod.f64.eq(extracts[ 8].floatValue, const_['c(2)'])),
-						mod.if(extracts[ 9].isInt, mod.i32.eq(                      extracts[ 9].intValue,  const_['2']),   mod.f64.eq(extracts[ 9].floatValue, const_['c(2)'])),
-						mod.if(extracts[10].isInt, mod.f64.eq(mod.f64.convert_u.i32(extracts[10].intValue), const_['2.4']), mod.f64.eq(extracts[10].floatValue, const_['2.4'])),
-						mod.if(extracts[11].isInt, mod.f64.eq(mod.f64.convert_u.i32(extracts[11].intValue), const_['2.4']), mod.f64.eq(extracts[11].floatValue, const_['2.4'])),
+						veq(mod, extracts[ 8].vect, new BinVect(mod, const_['2']).vect),
+						veq(mod, extracts[ 9].vect, new BinVect(mod, const_['2']).vect),
+						veq(mod, extracts[10].vect, new BinVect(mod, const_['2.4']).vect),
+						veq(mod, extracts[11].vect, new BinVect(mod, const_['2.4']).vect),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
@@ -505,15 +509,9 @@ describe('ASTNodeOperation', () => {
 				const src = `
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
-
 					x * y;
-
 					x > y;
-
-					x == y; %% should return \`if i32.eqz(0)
-						then (if i32.eqz(1) then [0, 0, 0, i32.eq(42, !)] else [0, 3, f64.eq(c(42), 4.2)])
-						else (if i32.eqz(1) then [0, 3, f64.eq(!, c(!))]  else [0, 3, f64.eq(!, 4.2)])
-					\` %%
+					x == y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -528,24 +526,12 @@ describe('ASTNodeOperation', () => {
 						binexp.operand1.build(builder),
 					].map((arg) => new BinVect(mod, arg));
 				});
-				const each_options: readonly (readonly binaryen.ExpressionRef[])[] = ([
-					[
-						mod.i32.eq(extracts[2][0].intValue,                        extracts[2][1].intValue),
-						mod.f64.eq(mod.f64.convert_u.i32(extracts[2][0].intValue), extracts[2][1].floatValue),
-						mod.f64.eq(extracts[2][0].floatValue,                      mod.f64.convert_u.i32(extracts[2][1].intValue)),
-						mod.f64.eq(extracts[2][0].floatValue,                      extracts[2][1].floatValue),
-					],
-				] as const).map((options) => options.map((option) => new BinVect(mod, option).vect));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
 						vmul(mod, extracts[0][0].vect, extracts[0][1].vect),
 						vgt (mod, extracts[1][0].vect, extracts[1][1].vect),
-						...each_options.map((options, i) => mod.if(
-							extracts[i][0].isInt,
-							mod.if(extracts[i + 2][1].isInt, options[0b00], options[0b01]),
-							mod.if(extracts[i + 2][1].isInt, options[0b10], options[0b11]),
-						)),
+						veq (mod, extracts[2][0].vect, extracts[2][1].vect),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});

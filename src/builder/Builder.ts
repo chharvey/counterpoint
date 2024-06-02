@@ -292,6 +292,55 @@ export class Builder {
 				);
 			})(this.module),
 		], binaryen.i32));
+		this.module.addFunction('vid', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.i32, [], this.module.block(null, [
+			((mod: binaryen.Module) => {
+				const vects: readonly BinVect[] = [0, 1].map((i) => new BinVect(mod, mod.local.get(i, binaryen.v128)));
+				const opts: readonly binaryen.ExpressionRef[] = [
+					mod.i32.eq(vects[0].intValue, vects[1].intValue), // `i32.eq` for ints gives the same result as `ID` operator
+					this.module.i32.const(0),
+					this.module.i32.const(0),
+					mod.call('fid', [vects[0].floatValue, vects[1].floatValue], binaryen.i32),
+				];
+				return mod.if(
+					vects[0].isInt,
+					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
+					mod.if(vects[1].isInt, opts[0b10], opts[0b11]),
+				);
+			})(this.module),
+		], binaryen.i32));
+		this.module.addFunction('veq', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.i32, [], this.module.block(null, [
+			((mod: binaryen.Module) => {
+				const vects: readonly BinVect[] = [0, 1].map((i) => new BinVect(mod, mod.local.get(i, binaryen.v128)));
+				const opts: readonly binaryen.ExpressionRef[] = [
+					mod.i32.eq(                      vects[0].intValue,                         vects[1].intValue),
+					mod.f64.eq(mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
+					mod.f64.eq(                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
+					mod.f64.eq(                      vects[0].floatValue,                       vects[1].floatValue),
+				];
+				return mod.if(
+					vects[0].isInt,
+					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
+					mod.if(vects[1].isInt, opts[0b10], opts[0b11]),
+				);
+			})(this.module),
+		], binaryen.i32));
+		// equality, but with int coercion turned off (equating ints with floats always returns false)
+		this.module.addFunction('veqq', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.i32, [], this.module.block(null, [
+			((mod: binaryen.Module) => {
+				const vects: readonly BinVect[] = [0, 1].map((i) => new BinVect(mod, mod.local.get(i, binaryen.v128)));
+				const opts: readonly binaryen.ExpressionRef[] = [
+					mod.i32.eq(vects[0].intValue, vects[1].intValue),
+					this.module.i32.const(0),
+					this.module.i32.const(0),
+					mod.f64.eq(vects[0].floatValue, vects[1].floatValue),
+				];
+				return mod.if(
+					vects[0].isInt,
+					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
+					mod.if(vects[1].isInt, opts[0b10], opts[0b11]),
+				);
+			})(this.module),
+		], binaryen.i32));
 	}
 
 	/**

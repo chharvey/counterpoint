@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
+import {BinVect} from '../../index.js';
 import {
 	SolidType,
 	SolidObject,
@@ -38,8 +39,14 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		const builds = [this.operand0.build(builder), this.operand1.build(builder)] as const;
-		return ASTNodeOperationBinary.operate(builder.module, this.operator, builds, (args) => {
-			args = ASTNodeOperation.coerceOperands(builder.module, ...args, () => (
+		const bintypes: readonly binaryen.Type[] = builds.map((arg) => binaryen.getExpressionType(arg));
+		if (bintypes.includes(binaryen.v128)) {
+			return builder.module.call(new Map<Operator, string>([
+				[Operator.ID, 'vid'],
+				[Operator.EQ, this.validator.config.compilerOptions.intCoercion ? 'veq' : 'veqq'],
+			]).get(this.operator)!, builds.map((arg) => new BinVect(builder.module, arg).vect), binaryen.i32);
+		} else {
+			const args = ASTNodeOperation.coerceOperands(builder.module, ...builds, () => (
 				this.validator.config.compilerOptions.intCoercion && this.operator === Operator.EQ
 			));
 			const [type0, type1]: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
@@ -53,7 +60,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 					: builder.module.f64.eq(...args)
 				)
 			);
-		});
+		}
 	}
 
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
