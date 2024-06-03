@@ -32,6 +32,7 @@ import {
 } from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
+	buildConstBool,
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
@@ -125,8 +126,8 @@ describe('ASTNodeExpression', () => {
 			const mod = new binaryen.Module();
 			const tests = new Map<string, binaryen.ExpressionRef>([
 				['null;',    buildConstNull  (        mod)],
-				['false;',   buildConstInt   (0n,     mod)],
-				['true;',    buildConstInt   (1n,     mod)],
+				['false;',   buildConstBool  (false,  mod)],
+				['true;',    buildConstBool  (true,   mod)],
 				['0;',       buildConstInt   (0n,     mod)],
 				['+0;',      buildConstInt   (0n,     mod)],
 				['-0;',      buildConstInt   (0n,     mod)],

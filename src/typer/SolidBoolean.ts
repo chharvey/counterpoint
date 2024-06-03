@@ -48,6 +48,6 @@ export class SolidBoolean extends Primitive {
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		return new BinVect(mod, mod.i32.const((this.isTruthy) ? 1 : 0)).vect;
+		return new BinVect(mod, this.isTruthy).vect;
 	}
 }

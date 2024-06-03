@@ -4,6 +4,7 @@ import {
 	CONFIG_DEFAULT,
 	SolidTypeUnit,
 	SolidNull,
+	SolidBoolean,
 	Int16,
 	Float64,
 	SolidString,
@@ -36,6 +37,11 @@ export function typeConstStr(x: string): SolidTypeUnit<SolidString> {
 export function buildConstNull(mod: binaryen.Module): binaryen.ExpressionRef {
 	return SolidNull.NULL.build(mod);
 }
+
+export function buildConstBool(b: boolean, mod: binaryen.Module): binaryen.ExpressionRef {
+	return b ? SolidBoolean.TRUE.build(mod) : SolidBoolean.FALSE.build(mod);
+}
+
 export function buildConstInt(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
 	return (
 		(x === 0n) ? Int16.ZERO :

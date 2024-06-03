@@ -3,6 +3,7 @@ import binaryen from 'binaryen';
 import {
 	SolidObject,
 	SolidNull,
+	SolidBoolean,
 	Int16,
 	Float64,
 	SolidString,
@@ -58,6 +59,14 @@ describe('SolidObject', () => {
 					mod.ref.null(binaryen.funcref),
 				);
 			});
+		});
+
+		specify('SolidBool', () => {
+			const mod = new binaryen.Module();
+			return assertEqualBins(
+				[SolidBoolean.FALSE.build(mod), SolidBoolean.TRUE.build(mod)],
+				[new BinVect(mod, false).vect,  new BinVect(mod, true).vect],
+			);
 		});
 
 		describe('Int16', () => {
