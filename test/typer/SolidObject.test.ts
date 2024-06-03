@@ -9,6 +9,7 @@ import {
 	SolidTuple,
 	SolidSet,
 	SolidMap,
+	BinVect,
 } from '../../src/index.js';
 import {assertEqualBins} from '../assert-helpers.js';
 import {
@@ -79,7 +80,7 @@ describe('SolidObject', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					data.map((x) => new Int16(x).build(mod)),
-					data.map((x) => mod.i32.const(Number(x))),
+					data.map((x) => new BinVect(mod, mod.i32.const(Number(x))).vect),
 				);
 			});
 		});
@@ -95,14 +96,14 @@ describe('SolidObject', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					data.map((x) => new Float64(x).build(mod)),
-					data.map((x) => mod.f64.const(x)),
+					data.map((x) => new BinVect(mod, mod.f64.const(x)).vect),
 				);
 			});
 			it('builds `0.0` and `-0.0` differently.', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					[0.0, -0.0].map((x) => new Float64(x).build(mod)),
-					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))],
+					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => new BinVect(mod, c).vect),
 				);
 			});
 		});

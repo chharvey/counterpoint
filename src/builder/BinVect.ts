@@ -139,7 +139,7 @@ export class BinVect {
 					break;
 				}
 				default: {
-					throw new TypeError('Expected either i32, f64, or v128.');
+					throw new TypeError('Expected either `i32`, `f64`, or `v128`.');
 				}
 			}
 		} else if (typeof arg[0] === 'bigint') {

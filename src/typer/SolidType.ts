@@ -15,9 +15,6 @@ import {
 	SolidTypeString,
 	SolidObject,
 	SolidNull,
-	SolidBoolean,
-	Int16,
-	Float64,
 } from './index.js';
 import {solidObjectsIdentical} from './utils-private.js';
 
@@ -247,17 +244,13 @@ export abstract class SolidType {
 	 * @final
 	 */
 	public binType(): binaryen.Type {
-		const is_bin_int: boolean = (
-			   this.equals(SolidType.BOOL) || this.equals(SolidBoolean.FALSETYPE) || this.equals(SolidBoolean.TRUETYPE)
-			|| this.equals(SolidType.INT) || (this instanceof SolidTypeUnit && this.value instanceof Int16)
-		);
-		const is_bin_float: boolean = this.equals(SolidType.FLOAT) || (this instanceof SolidTypeUnit && this.value instanceof Float64);
 		return this.#binType ??= ( // TODO: use memoize decorator
 			(this.isBottomType)           ? binaryen.unreachable :
 			(this.equals(SolidType.VOID)) ? binaryen.none        :
 			(this.equals(SolidType.NULL)) ? binaryen.funcref     :
-			(is_bin_int)                  ? binaryen.i32         :
-			(is_bin_float)                ? binaryen.f64         :
+			(this.isSubtypeOf(SolidType.BOOL))  ? binaryen.v128 :
+			(this.isSubtypeOf(SolidType.INT))   ? binaryen.v128 :
+			(this.isSubtypeOf(SolidType.FLOAT)) ? binaryen.v128 :
 			(this instanceof SolidTypeUnion) ? ((left_type: binaryen.Type, right_type: binaryen.Type): binaryen.Type => {
 				assert.notStrictEqual(left_type,  binaryen.unreachable);
 				assert.notStrictEqual(right_type, binaryen.unreachable);
@@ -266,6 +259,9 @@ export abstract class SolidType {
 				}
 				if (right_type === binaryen.none) {
 					right_type = left_type;
+				}
+				if (left_type === binaryen.v128 && right_type === binaryen.v128) {
+					return binaryen.v128;
 				}
 				try {
 					AST.ASTNodeOperation.expectIntOrFloat(left_type);

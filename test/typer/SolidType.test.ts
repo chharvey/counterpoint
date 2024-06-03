@@ -862,9 +862,9 @@ describe('SolidType', () => {
 				[SolidType.NEVER, binaryen.unreachable],
 				[SolidType.VOID,  binaryen.none],
 				[SolidType.NULL,  binaryen.funcref],
-				[SolidType.BOOL,  binaryen.i32],
-				[SolidType.INT,   binaryen.i32],
-				[SolidType.FLOAT, binaryen.f64],
+				[SolidType.BOOL,  binaryen.v128],
+				[SolidType.INT,   binaryen.v128],
+				[SolidType.FLOAT, binaryen.v128],
 			]);
 			return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
 		});
