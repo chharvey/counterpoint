@@ -247,7 +247,7 @@ export abstract class SolidType {
 		return this.#binType ??= ( // TODO: use memoize decorator
 			(this.isBottomType)           ? binaryen.unreachable :
 			(this.equals(SolidType.VOID)) ? binaryen.none        :
-			(this.equals(SolidType.NULL)) ? binaryen.funcref     :
+			(this.equals(SolidType.NULL))       ? binaryen.v128 :
 			(this.isSubtypeOf(SolidType.BOOL))  ? binaryen.v128 :
 			(this.isSubtypeOf(SolidType.INT))   ? binaryen.v128 :
 			(this.isSubtypeOf(SolidType.FLOAT)) ? binaryen.v128 :

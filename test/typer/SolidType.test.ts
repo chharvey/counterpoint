@@ -861,7 +861,7 @@ describe('SolidType', () => {
 			const tests = new Map<SolidType, binaryen.Type>([
 				[SolidType.NEVER, binaryen.unreachable],
 				[SolidType.VOID,  binaryen.none],
-				[SolidType.NULL,  binaryen.funcref],
+				[SolidType.NULL,  binaryen.v128],
 				[SolidType.BOOL,  binaryen.v128],
 				[SolidType.INT,   binaryen.v128],
 				[SolidType.FLOAT, binaryen.v128],
@@ -870,21 +870,17 @@ describe('SolidType', () => {
 		});
 		it('returns v128 type for unions.', () => {
 			[
+				SolidType.VOID.union(SolidType.NULL),
 				SolidType.VOID.union(SolidType.BOOL),
 				SolidType.VOID.union(SolidType.INT),
 				SolidType.VOID.union(SolidType.FLOAT),
+				SolidType.NULL.union(SolidType.BOOL),
+				SolidType.NULL.union(SolidType.INT),
+				SolidType.NULL.union(SolidType.FLOAT),
 				SolidType.BOOL.union(SolidType.INT),
 				SolidType.BOOL.union(SolidType.FLOAT),
 				SolidType.INT.union(SolidType.FLOAT),
 			].forEach((typ) => assert.strictEqual(typ.binType(), binaryen.v128));
-		});
-		it('unions with `null` not yet supported.', () => {
-			[
-				SolidType.VOID.union(SolidType.NULL),
-				SolidType.NULL.union(SolidType.BOOL),
-				SolidType.NULL.union(SolidType.INT),
-				SolidType.NULL.union(SolidType.FLOAT),
-			].forEach((typ) => assert.throws(() => typ.binType(), TypeError));
 		});
 	});
 

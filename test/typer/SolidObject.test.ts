@@ -52,11 +52,11 @@ describe('SolidObject', () => {
 
 	describe('#build', () => {
 		describe('SolidNull', () => {
-			it('returns the null reference.', () => {
+			it('returns a v128 with `null` as an argument.', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					SolidNull.NULL.build(mod),
-					mod.ref.null(binaryen.funcref),
+					new BinVect(mod, null).vect,
 				);
 			});
 		});
