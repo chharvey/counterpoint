@@ -14,6 +14,7 @@ import {
 	Float64,
 	SolidString,
 	Builder,
+	BinVect,
 	TypeError01,
 	NanError01,
 	NanError02,
@@ -76,7 +77,7 @@ describe('ASTNodeOperation', () => {
 	const CALL = {
 		inot: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('inot', [arg], binaryen.i32),
 		fnot: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fnot', [arg], binaryen.i32),
-		vnot: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], binaryen.i32),
+		vnot: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], binaryen.v128),
 		iemp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('iemp', [arg], binaryen.i32),
 		femp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('femp', [arg], binaryen.i32),
 		vemp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], binaryen.i32),
@@ -392,7 +393,7 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						CALL.inot(mod, CALL.vnot(mod, extracts[0])),
+						CALL.vnot(mod, CALL.vnot(mod, extracts[0])),
 						CALL.iemp(mod, CALL.vemp(mod, extracts[1])),
 						CALL.vnot(mod, CALL.vneg(mod, extracts[2])),
 						CALL.vemp(mod, CALL.vneg(mod, extracts[3])),
@@ -1159,18 +1160,20 @@ describe('ASTNodeOperation', () => {
 			 *                  	the value,
 			 *                  	the value’s type,
 			 *                  ]
-			 * @param conditoin the callback to perform; given a teeer, returns a condition
 			 * @param branches  the callback to perform; given a getter, returns two branches: [if_true, if_false]
 			 * @return          the new `(if)` expression
 			 */
 			function create_if(
 				mod:                binaryen.Module,
 				[index, arg, type]: [number, binaryen.ExpressionRef, binaryen.Type],
-				condition:          (local_tee: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 				branches:           (local_get: binaryen.ExpressionRef) => [binaryen.ExpressionRef, binaryen.ExpressionRef],
 			): binaryen.ExpressionRef {
 				return mod.if(
-					condition.call(null, mod.local.tee(index, arg, type)),
+					new BinVect(mod, mod.call(
+						'vnot',
+						[mod.local.tee(index, arg, type)],
+						binaryen.v128,
+					)).isSpecial(false),
 					...branches.call(null, mod.local.get(index, type)),
 				);
 			}
@@ -1181,31 +1184,26 @@ describe('ASTNodeOperation', () => {
 					['42 && 420;', create_if(
 						mod,
 						[0, buildConstInt(42n, mod), binaryen.v128],
-						(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 						(getter) => [buildConstInt(420n, mod), getter],
 					)],
 					['4.2 || -420;', create_if(
 						mod,
 						[0, buildConstFloat(4.2, mod), binaryen.v128],
-						(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 						(getter) => [getter, buildConstInt(-420n, mod)],
 					)],
 					['null && 201.0e-1;', create_if(
 						mod,
 						[0, buildConstNull(mod), binaryen.v128],
-						(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 						(getter) => [buildConstFloat(20.1, mod), getter],
 					)],
 					['false || null;', create_if(
 						mod,
 						[0, buildConstBool(false, mod), binaryen.v128],
-						(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 						(getter) => [getter, buildConstNull(mod)],
 					)],
 					['true && 201.0e-1;', create_if(
 						mod,
 						[0, buildConstBool(true, mod), binaryen.v128],
-						(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 						(getter) => [buildConstFloat(20.1, mod), getter],
 					)],
 				]));
@@ -1219,14 +1217,11 @@ describe('ASTNodeOperation', () => {
 						[2, create_if(
 							mod,
 							[0, buildConstInt(1n, mod), binaryen.v128],
-							(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 							(getter) => [buildConstInt(2n, mod), getter],
 						), binaryen.v128],
-						(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 						(getter) => [getter, create_if(
 							mod,
 							[1, buildConstInt(3n, mod), binaryen.v128],
-							(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 							(getter_) => [buildConstInt(4n, mod), getter_],
 						)],
 					)],
@@ -1235,16 +1230,13 @@ describe('ASTNodeOperation', () => {
 						[2, create_if(
 							mod,
 							[0, buildConstInt(1n, mod), binaryen.v128],
-							(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 							(getter) => [buildConstFloat(2.0, mod), getter],
 						), binaryen.v128],
-						(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 						(getter) => [
 							getter,
 							create_if(
 								mod,
 								[1, buildConstInt(3n, mod), binaryen.v128],
-								(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 								(getter_) => [buildConstFloat(4.0, mod), getter_],
 							),
 						],
@@ -1260,16 +1252,13 @@ describe('ASTNodeOperation', () => {
 						[2, create_if(
 							mod,
 							[0, buildConstInt(1n, mod), binaryen.v128],
-							(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 							(getter) => [buildConstFloat(2.0, mod), getter],
 						), binaryen.v128],
-						(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 						(getter) => [
 							getter,
 							create_if(
 								mod,
 								[1, buildConstFloat(3.0, mod), binaryen.v128],
-								(teeer) => mod.i32.eqz(CALL.vnot(mod, teeer)),
 								(getter_) => [buildConstInt(4n, mod), getter_],
 							),
 						],
