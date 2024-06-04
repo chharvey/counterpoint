@@ -156,15 +156,26 @@ export class Builder {
 
 	#setupFunctions(): void {
 		this.module.addFunction('vnot', binaryen.v128, binaryen.i32, [], this.module.block(null, [
-			this.module.i32.const(0),
+			((mod: binaryen.Module) => {
+				const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
+				return mod.if(
+					mod.i32.or(vect.isSpecial(null), vect.isSpecial(false)),
+					this.module.i32.const(1),
+					this.module.i32.const(0),
+				);
+			})(this.module),
 		], binaryen.i32));
 		this.module.addFunction('vemp', binaryen.v128, binaryen.i32, [], this.module.block(null, [
 			((mod: binaryen.Module) => {
 				const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
 				return mod.if(
-					vect.isInt,
-					mod.call('iemp', [vect.intValue],   binaryen.i32),
-					mod.call('femp', [vect.floatValue], binaryen.i32),
+					vect.isSpecial(),
+					mod.call('vnot', [vect.vect], binaryen.i32),
+					mod.if(
+						vect.isInt,
+						mod.call('iemp', [vect.intValue],   binaryen.i32),
+						mod.call('femp', [vect.floatValue], binaryen.i32),
+					),
 				);
 			})(this.module),
 		], binaryen.i32));
@@ -226,25 +237,62 @@ export class Builder {
 			mod.f64.ge  (                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
 			mod.f64.ge  (                      vects[0].floatValue,                       vects[1].floatValue),
 		]);
-		this.#binOpFunction('vid', binaryen.i32, (mod, vects) => [
-			mod.i32.eq(vects[0].intValue, vects[1].intValue), // `i32.eq` for ints gives the same result as `ID` operator
-			this.module.i32.const(0),
-			this.module.i32.const(0),
-			mod.call('fid', [vects[0].floatValue, vects[1].floatValue], binaryen.i32),
-		]);
-		this.#binOpFunction('veq', binaryen.i32, (mod, vects) => [
-			mod.i32.eq(                      vects[0].intValue,                         vects[1].intValue),
-			mod.f64.eq(mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
-			mod.f64.eq(                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
-			mod.f64.eq(                      vects[0].floatValue,                       vects[1].floatValue),
-		]);
+		this.module.addFunction('vid', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.i32, [], this.module.block(null, [((mod: binaryen.Module) => {
+			const vects = [0, 1].map((i) => new BinVect(this.module, this.module.local.get(i, binaryen.v128))) as readonly BinVect[] as readonly [BinVect, BinVect];
+			return mod.if(
+				mod.i32.and(vects[0].isSpecial(), vects[1].isSpecial()),
+				mod.i32.eq(
+					mod.i16x8.extract_lane_s(vects[0].vect, 3), // TODO: hide thie implementation detail
+					mod.i16x8.extract_lane_s(vects[1].vect, 3), // TODO: hide thie implementation detail
+				),
+				mod.if(
+					mod.i32.and(vects[0].isInt, vects[1].isInt),
+					mod.i32.eq(vects[0].intValue, vects[1].intValue), // `i32.eq` for ints gives the same result as `ID` operator
+					mod.if(
+						mod.i32.and(vects[0].isFloat, vects[1].isFloat),
+						mod.call('fid', [vects[0].floatValue, vects[1].floatValue], binaryen.i32),
+						this.module.i32.const(0),
+					),
+				),
+			);
+		})(this.module)], binaryen.i32));
+		this.module.addFunction('veq', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.i32, [], this.module.block(null, [((mod: binaryen.Module) => {
+			const vects = [0, 1].map((i) => new BinVect(this.module, this.module.local.get(i, binaryen.v128))) as readonly BinVect[] as readonly [BinVect, BinVect];
+			const opts = [
+				mod.i32.eq(                      vects[0].intValue,                         vects[1].intValue),
+				mod.f64.eq(mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
+				mod.f64.eq(                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
+				mod.f64.eq(                      vects[0].floatValue,                       vects[1].floatValue),
+			] as const;
+			return mod.if(
+				mod.i32.or(vects[0].isSpecial(), vects[1].isSpecial()),
+				mod.call('vid', vects.map((v) => v.vect), binaryen.i32),
+				mod.if(
+					vects[0].isInt,
+					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
+					mod.if(vects[1].isInt, opts[0b10], opts[0b11]),
+				),
+			);
+		})(this.module)], binaryen.i32));
 		// equality, but with int coercion turned off (equating ints with floats always returns false)
-		this.#binOpFunction('veqq', binaryen.i32, (mod, vects) => [
-			mod.i32.eq(vects[0].intValue, vects[1].intValue),
-			this.module.i32.const(0),
-			this.module.i32.const(0),
-			mod.f64.eq(vects[0].floatValue, vects[1].floatValue),
-		]);
+		this.module.addFunction('veqq', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.i32, [], this.module.block(null, [((mod: binaryen.Module) => {
+			const vects = [0, 1].map((i) => new BinVect(this.module, this.module.local.get(i, binaryen.v128))) as readonly BinVect[] as readonly [BinVect, BinVect];
+			const opts = [
+				mod.i32.eq(vects[0].intValue, vects[1].intValue),
+				this.module.i32.const(0),
+				this.module.i32.const(0),
+				mod.f64.eq(vects[0].floatValue, vects[1].floatValue),
+			] as const;
+			return mod.if(
+				mod.i32.or(vects[0].isSpecial(), vects[1].isSpecial()),
+				mod.call('vid', vects.map((v) => v.vect), binaryen.i32),
+				mod.if(
+					vects[0].isInt,
+					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
+					mod.if(vects[1].isInt, opts[0b10], opts[0b11]),
+				),
+			);
+		})(this.module)], binaryen.i32));
 	}
 
 	/**
