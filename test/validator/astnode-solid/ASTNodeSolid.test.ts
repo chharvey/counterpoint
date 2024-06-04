@@ -165,6 +165,8 @@ describe('ASTNodeSolid', () => {
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder: Builder = new Builder(src);
+				goal.varCheck();
+				goal.typeCheck();
 				goal.build(builder);
 				return assertEqualBins(
 					goal.children[1].build(builder),

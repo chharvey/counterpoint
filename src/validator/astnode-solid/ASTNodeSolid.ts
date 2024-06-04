@@ -41,7 +41,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 		validator:     Validator,
 	): void {
 		const is_subtype: boolean = assigned_type.isSubtypeOf(assignee_type);
-		const treatIntAsSubtypeOfFloat: boolean = (
+		const treatIntAsSubtypeOfFloat: boolean = ( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
 			   validator.config.compilerOptions.intCoercion
 			&& assigned_type.isSubtypeOf(SolidType.INT)
 			&& SolidType.FLOAT.isSubtypeOf(assignee_type)

@@ -1,9 +1,8 @@
 import * as assert from 'assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {BinVect} from '../../index.js';
 import {
 	SolidType,
-	SolidTypeUnion,
 	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -42,16 +41,15 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		value:         binaryen.ExpressionRef,
 		int_coercion:  boolean = true,
 	): binaryen.ExpressionRef {
-		if (
+		if ( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
 			   int_coercion
-			&& assignee_type.binType() === binaryen.f64
-			&& assigned_type.binType() === binaryen.i32
+			&& assigned_type.isSubtypeOf(SolidType.INT)
+			&& SolidType.FLOAT.isSubtypeOf(assignee_type)
+			&& !SolidType.INT.isSubtypeOf(assignee_type)
 		) {
-			value = mod.f64.convert_u.i32(value);
+			return new BinVect(mod, mod.f64.convert_u.i32(value)).vect;
 		}
-		return (assignee_type instanceof SolidTypeUnion && !(assigned_type instanceof SolidTypeUnion))
-			? (assert.strictEqual(assignee_type.binType(), binaryen.v128), new BinVect(mod, value).vect)
-			: value;
+		return value;
 	}
 
 
