@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs'
-import {BinVect} from '../../index.js';
 import {
 	SolidType,
 	SolidObject,
@@ -55,7 +54,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.MUL, 'vmul'],
 				[Operator.DIV, 'vdiv'],
 				[Operator.ADD, 'vadd'],
-			]).get(this.operator)!, builds.map((arg) => new BinVect(builder.module, arg).vect), binaryen.v128);
+			]).get(this.operator)!, [...builds], binaryen.v128);
 		} else {
 			const args = ASTNodeOperation.coerceOperands(builder.module, ...builds);
 			const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));

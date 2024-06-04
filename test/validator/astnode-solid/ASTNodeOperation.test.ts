@@ -14,7 +14,6 @@ import {
 	Float64,
 	SolidString,
 	Builder,
-	BinVect,
 	TypeError01,
 	NanError01,
 	NanError02,
@@ -440,9 +439,9 @@ describe('ASTNodeOperation', () => {
 					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)
 				));
 				const const_ = {
-					'2':    new BinVect(mod, buildConstInt   (2n,  mod)).vect,
-					'2.4':  new BinVect(mod, buildConstFloat (2.4, mod)).vect,
-					'c(2)': new BinVect(mod, buildConvert    (2n,  mod)).vect,
+					'2':    buildConstInt   (2n,  mod),
+					'2.4':  buildConstFloat (2.4, mod),
+					'c(2)': buildConvert    (2n,  mod),
 				} as const;
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
@@ -512,8 +511,8 @@ describe('ASTNodeOperation', () => {
 					(((goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(builder),
 				];
 				const const_ = {
-					'2': new BinVect(mod, buildConstInt(2n, mod)).vect,
-					'3': new BinVect(mod, buildConstInt(3n, mod)).vect,
+					'2': buildConstInt(2n, mod),
+					'3': buildConstInt(3n, mod),
 				} as const;
 				const inners: readonly binaryen.ExpressionRef[] = [
 					CALL.vadd(mod, extracts[0], const_['2']),

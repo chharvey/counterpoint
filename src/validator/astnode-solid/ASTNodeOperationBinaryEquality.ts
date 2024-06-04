@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
-import {BinVect} from '../../index.js';
 import {
 	SolidType,
 	SolidObject,
@@ -44,7 +43,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			return builder.module.call(new Map<Operator, string>([
 				[Operator.ID, 'vid'],
 				[Operator.EQ, this.validator.config.compilerOptions.intCoercion ? 'veq' : 'veqq'],
-			]).get(this.operator)!, builds.map((arg) => new BinVect(builder.module, arg).vect), binaryen.i32);
+			]).get(this.operator)!, [...builds], binaryen.i32);
 		} else {
 			const args = ASTNodeOperation.coerceOperands(builder.module, ...builds, () => (
 				this.validator.config.compilerOptions.intCoercion && this.operator === Operator.EQ

@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
-import {BinVect} from '../../index.js';
 import {
 	SolidType,
 	SolidObject,
@@ -48,9 +47,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		), [builder.module.local.tee(local.index, arg0, local.type)], binaryen.i32));
 		arg0 = builder.module.local.get(local.index, local.type);
 
-		if (type0 !== type1) {
-			[arg0, arg1] = [arg0, arg1].map((arg) => new BinVect(builder.module, arg).vect);
-		}
+		assert.deepStrictEqual([type0, type1], [binaryen.v128, binaryen.v128]);
 
 		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
 		return builder.module.if(condition, if_true, if_false);
