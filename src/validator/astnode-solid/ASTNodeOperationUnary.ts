@@ -47,20 +47,12 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			]).get(this.operator)!;
 			return builder.module.call(name, [build], result);
 		} else {
-			ASTNodeOperation.expectIntOrFloat(bintype);
-			return (this.operator === Operator.NEG && bintype === binaryen.f64)
-				? builder.module.f64.neg(build)
-				: builder.module.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
-					[binaryen.i32, new Map<Operator, string>([
-						[Operator.NOT, 'inot'],
-						[Operator.EMP, 'iemp'],
-						[Operator.NEG, 'neg'],
-					])],
-					[binaryen.f64, new Map<Operator, string>([
-						[Operator.NOT, 'fnot'],
-						[Operator.EMP, 'femp'],
-					])],
-				]).get(bintype)!.get(this.operator)!, [build], binaryen.i32);
+			assert.strictEqual(bintype, binaryen.i32);
+			return builder.module.call(new Map<Operator, string>([
+				[Operator.NOT, 'inot'],
+				[Operator.EMP, 'iemp'],
+				[Operator.NEG, 'neg'],
+			]).get(this.operator)!, [build], binaryen.i32);
 		}
 	}
 

@@ -20,7 +20,6 @@ import {
 	neitherFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -44,29 +43,12 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		const builds = [this.operand0.build(builder), this.operand1.build(builder)] as const;
-		const bintypes: readonly binaryen.Type[] = builds.map((arg) => binaryen.getExpressionType(arg));
-		if (bintypes.includes(binaryen.v128)) {
-			return builder.module.call(new Map<Operator, string>([
-				[Operator.LT, 'vlt'],
-				[Operator.GT, 'vgt'],
-				[Operator.LE, 'vle'],
-				[Operator.GE, 'vge'],
-			]).get(this.operator)!, [...builds], binaryen.i32);
-		} else {
-			const args = ASTNodeOperation.coerceOperands(builder.module, ...builds);
-			const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
-			bintypes.forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
-			const opname = new Map<Operator, 'lt' | 'gt' | 'le' | 'ge'>([
-				[Operator.LT, 'lt'],
-				[Operator.GT, 'gt'],
-				[Operator.LE, 'le'],
-				[Operator.GE, 'ge'],
-			]).get(this.operator)!;
-			return ((!bintypes.includes(binaryen.f64))
-				? builder.module.i32[`${ opname }_s`]
-				: builder.module.f64[opname])(...args);
-		}
+		return builder.module.call(new Map<Operator, string>([
+			[Operator.LT, 'vlt'],
+			[Operator.GT, 'vgt'],
+			[Operator.LE, 'vle'],
+			[Operator.GE, 'vge'],
+		]).get(this.operator)!, [this.operand0.build(builder), this.operand1.build(builder)], binaryen.i32);
 	}
 
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {

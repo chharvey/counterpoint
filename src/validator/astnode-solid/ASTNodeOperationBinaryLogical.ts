@@ -39,12 +39,11 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		const temp_id: bigint = builder.varCount;
 		const local           = builder.addLocal(temp_id, type0)[0].getLocalInfo(temp_id)!;
 
-		const condition: binaryen.ExpressionRef = builder.module.i32.eqz(builder.module.call((
-			type0 === binaryen.i32  ? 'inot' :
-			type0 === binaryen.f64  ? 'fnot' :
-			type0 === binaryen.v128 ? 'vnot' :
-			''
-		), [builder.module.local.tee(local.index, arg0, local.type)], binaryen.i32));
+		const condition: binaryen.ExpressionRef = builder.module.i32.eqz(builder.module.call(
+			'vnot',
+			[builder.module.local.tee(local.index, arg0, local.type)],
+			binaryen.i32,
+		));
 		arg0 = builder.module.local.get(local.index, local.type);
 
 		assert.deepStrictEqual([type0, type1], [binaryen.v128, binaryen.v128]);

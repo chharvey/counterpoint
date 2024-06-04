@@ -31,7 +31,6 @@ import {
 	buildConstBool,
 	buildConstInt,
 	buildConstFloat,
-	buildConvert,
 } from '../../helpers.js';
 
 
@@ -441,7 +440,6 @@ describe('ASTNodeOperation', () => {
 				const const_ = {
 					'2':    buildConstInt   (2n,  mod),
 					'2.4':  buildConstFloat (2.4, mod),
-					'c(2)': buildConvert    (2n,  mod),
 				} as const;
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),

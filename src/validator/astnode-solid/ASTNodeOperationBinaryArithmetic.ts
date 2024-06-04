@@ -23,7 +23,6 @@ import {
 	bothFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -46,39 +45,12 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		const builds = [this.operand0.build(builder), this.operand1.build(builder)] as const;
-		const bintypes: readonly binaryen.Type[] = builds.map((arg) => binaryen.getExpressionType(arg));
-		if (bintypes.includes(binaryen.v128)) {
-			return builder.module.call(new Map<Operator, string>([
-				[Operator.EXP, 'vexp'],
-				[Operator.MUL, 'vmul'],
-				[Operator.DIV, 'vdiv'],
-				[Operator.ADD, 'vadd'],
-			]).get(this.operator)!, [...builds], binaryen.v128);
-		} else {
-			const args = ASTNodeOperation.coerceOperands(builder.module, ...builds);
-			const bintypes: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
-			bintypes.forEach((bt) => ASTNodeOperation.expectIntOrFloat(bt));
-			const bintype: binaryen.Type = (bintypes.includes(binaryen.f64)) ? binaryen.f64 : binaryen.i32;
-			return (
-				(this.operator === Operator.EXP) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
-					[binaryen.i32, builder.module.call('exp', [...args], binaryen.i32)],
-					[binaryen.f64, builder.module.unreachable()], // TODO: support runtime exponentiation for floats
-				]).get(bintype)! :
-				(this.operator === Operator.DIV) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
-					[binaryen.i32, builder.module.i32.div_s (...args)],
-					[binaryen.f64, builder.module.f64.div   (...args)],
-				]).get(bintype)! :
-				builder.module[new Map<binaryen.Type, 'i32' | 'f64'>([
-					[binaryen.i32, 'i32'],
-					[binaryen.f64, 'f64'],
-				]).get(bintype)!][new Map<Operator, 'mul' | 'add' | 'sub'>([
-					[Operator.MUL, 'mul'],
-					[Operator.ADD, 'add'],
-					[Operator.SUB, 'sub'],
-				]).get(this.operator)!](...args)
-			);
-		}
+		return builder.module.call(new Map<Operator, string>([
+			[Operator.EXP, 'vexp'],
+			[Operator.MUL, 'vmul'],
+			[Operator.DIV, 'vdiv'],
+			[Operator.ADD, 'vadd'],
+		]).get(this.operator)!, [this.operand0.build(builder), this.operand1.build(builder)], binaryen.v128);
 	}
 
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
