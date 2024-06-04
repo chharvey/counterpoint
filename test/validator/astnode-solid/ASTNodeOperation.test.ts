@@ -80,7 +80,7 @@ describe('ASTNodeOperation', () => {
 		vnot: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], binaryen.v128),
 		iemp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('iemp', [arg], binaryen.i32),
 		femp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('femp', [arg], binaryen.i32),
-		vemp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], binaryen.i32),
+		vemp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], binaryen.v128),
 		ineg: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('neg',  [arg], binaryen.i32),
 		vneg: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], binaryen.v128),
 
@@ -394,7 +394,7 @@ describe('ASTNodeOperation', () => {
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
 						CALL.vnot(mod, CALL.vnot(mod, extracts[0])),
-						CALL.iemp(mod, CALL.vemp(mod, extracts[1])),
+						CALL.vemp(mod, CALL.vemp(mod, extracts[1])),
 						CALL.vnot(mod, CALL.vneg(mod, extracts[2])),
 						CALL.vemp(mod, CALL.vneg(mod, extracts[3])),
 						CALL.vneg(mod, CALL.vneg(mod, extracts[4])),

@@ -165,20 +165,20 @@ export class Builder {
 				);
 			})(this.module),
 		], binaryen.v128));
-		this.module.addFunction('vemp', binaryen.v128, binaryen.i32, [], this.module.block(null, [
+		this.module.addFunction('vemp', binaryen.v128, binaryen.v128, [], this.module.block(null, [
 			((mod: binaryen.Module) => {
 				const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
 				return mod.if(
 					vect.isSpecial(),
-					new BinVect(mod, mod.call('vnot', [vect.vect], binaryen.v128)).isSpecial(true),
+					mod.call('vnot', [vect.vect], binaryen.v128),
 					mod.if(
 						vect.isInt,
-						mod.call('iemp', [vect.intValue],   binaryen.i32),
-						mod.call('femp', [vect.floatValue], binaryen.i32),
+						mod.if(mod.call('iemp', [vect.intValue],   binaryen.i32), new BinVect(mod, true).vect, new BinVect(mod, false).vect),
+						mod.if(mod.call('femp', [vect.floatValue], binaryen.i32), new BinVect(mod, true).vect, new BinVect(mod, false).vect),
 					),
 				);
 			})(this.module),
-		], binaryen.i32));
+		], binaryen.v128));
 		this.module.addFunction('vneg', binaryen.v128, binaryen.v128, [], this.module.block(null, [
 			((mod: binaryen.Module) => {
 				const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));

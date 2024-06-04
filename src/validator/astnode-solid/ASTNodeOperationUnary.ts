@@ -42,7 +42,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		if (bintype === binaryen.v128) {
 			const [name, result] = new Map<Operator, [string, binaryen.Type]>([
 				[Operator.NOT, ['vnot', binaryen.v128]],
-				[Operator.EMP, ['vemp', binaryen.i32]],
+				[Operator.EMP, ['vemp', binaryen.v128]],
 				[Operator.NEG, ['vneg', binaryen.v128]],
 			]).get(this.operator)!;
 			return builder.module.call(name, [build], result);
