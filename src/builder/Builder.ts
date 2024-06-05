@@ -151,37 +151,31 @@ export class Builder {
 	}
 
 	#setupFunctions(): void {
-		this.module.addFunction('vnot', binaryen.v128, binaryen.v128, [], this.module.block(null, [
-			((mod: binaryen.Module) => {
-				const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
-				return BinVect.asBool(mod, mod.i32.or(vect.isSpecial(null), vect.isSpecial(false)));
-			})(this.module),
-		], binaryen.v128));
-		this.module.addFunction('vemp', binaryen.v128, binaryen.v128, [], this.module.block(null, [
-			((mod: binaryen.Module) => {
-				const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
-				return mod.if(
-					vect.isSpecial(),
-					mod.call('vnot', [vect.vect], binaryen.v128),
-					mod.if(
-						vect.isInt,
-						BinVect.asBool(mod, mod.i32.eqz(vect.intValue)),
-						BinVect.asBool(mod, mod.f64.eq(vect.floatValue, mod.f64.const(0.0))), // also takes care of -0.0
-					),
-				);
-			})(this.module),
-		], binaryen.v128));
-		this.module.addFunction('vneg', binaryen.v128, binaryen.v128, [], this.module.block(null, [
-			((mod: binaryen.Module) => {
-				const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
-				return mod.if(
+		this.module.addFunction('vnot', binaryen.v128, binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => {
+			const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
+			return BinVect.asBool(mod, mod.i32.or(vect.isSpecial(null), vect.isSpecial(false)));
+		})(this.module)], binaryen.v128));
+		this.module.addFunction('vemp', binaryen.v128, binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => {
+			const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
+			return mod.if(
+				vect.isSpecial(),
+				mod.call('vnot', [vect.vect], binaryen.v128),
+				mod.if(
 					vect.isInt,
-					// `-n` in two’s complement is `(n xor -1) + 1`
-					new BinVect(mod, mod.i32.add(mod.i32.xor(vect.intValue, mod.i32.const(-1)), mod.i32.const(1))).vect,
-					new BinVect(mod, mod.f64.neg(vect.floatValue)).vect,
-				);
-			})(this.module),
-		], binaryen.v128));
+					BinVect.asBool(mod, mod.i32.eqz(vect.intValue)),
+					BinVect.asBool(mod, mod.f64.eq(vect.floatValue, mod.f64.const(0.0))), // also takes care of -0.0
+				),
+			);
+		})(this.module)], binaryen.v128));
+		this.module.addFunction('vneg', binaryen.v128, binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => {
+			const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
+			return mod.if(
+				vect.isInt,
+				// `-n` in two’s complement is `(n xor -1) + 1`
+				new BinVect(mod, mod.i32.add(mod.i32.xor(vect.intValue, mod.i32.const(-1)), mod.i32.const(1))).vect,
+				new BinVect(mod, mod.f64.neg(vect.floatValue)).vect,
+			);
+		})(this.module)], binaryen.v128));
 		this.#binOpFunction('vexp', (mod, vects) => [
 			new BinVect(mod, mod.call('exp', [vects[0].intValue, vects[1].intValue], binaryen.i32)).vect,
 			mod.unreachable(),
