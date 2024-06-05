@@ -37,23 +37,11 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		const build = this.operand.build(builder);
-		const bintype: binaryen.Type = binaryen.getExpressionType(build);
-		if (bintype === binaryen.v128) {
-			const [name, result] = new Map<Operator, [string, binaryen.Type]>([
-				[Operator.NOT, ['vnot', binaryen.v128]],
-				[Operator.EMP, ['vemp', binaryen.v128]],
-				[Operator.NEG, ['vneg', binaryen.v128]],
-			]).get(this.operator)!;
-			return builder.module.call(name, [build], result);
-		} else {
-			assert.strictEqual(bintype, binaryen.i32);
-			return builder.module.call(new Map<Operator, string>([
-				[Operator.NOT, 'inot'],
-				[Operator.EMP, 'iemp'],
-				[Operator.NEG, 'neg'],
-			]).get(this.operator)!, [build], binaryen.i32);
-		}
+		return builder.module.call(new Map<Operator, string>([
+			[Operator.NOT, 'vnot'],
+			[Operator.EMP, 'vemp'],
+			[Operator.NEG, 'vneg'],
+		]).get(this.operator)!, [this.operand.build(builder)], binaryen.v128);
 	}
 
 	protected override type_do(): SolidType {

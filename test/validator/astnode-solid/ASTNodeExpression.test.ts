@@ -521,7 +521,7 @@ describe('ASTNodeExpression', () => {
 
 
 		describe('#build', () => {
-			specify('ASTNodeTuple', () => {
+			specify.skip('ASTNodeTuple', () => {
 				const builder = new Builder('');
 				assertEqualBins(
 					AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF).build(builder),

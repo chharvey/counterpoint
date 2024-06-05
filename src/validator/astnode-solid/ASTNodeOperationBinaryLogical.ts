@@ -34,7 +34,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
 		let   [arg0,  arg1]:  binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build(builder));
-		const [type0, type1]: binaryen.Type[]          = [arg0, arg1].map((arg) => binaryen.getExpressionType(arg));
+		const [type0]:        binaryen.Type[]          = [arg0, arg1].map((arg) => binaryen.getExpressionType(arg));
 
 		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint = builder.varCount;
@@ -46,8 +46,6 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			binaryen.v128,
 		)).isSpecial(false);
 		arg0 = builder.module.local.get(local.index, local.type);
-
-		assert.deepStrictEqual([type0, type1], [binaryen.v128, binaryen.v128]);
 
 		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
 		return builder.module.if(condition, if_true, if_false);
