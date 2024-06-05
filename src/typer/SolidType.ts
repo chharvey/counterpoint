@@ -1,7 +1,3 @@
-import * as assert from 'assert';
-import binaryen from 'binaryen';
-import {BinVect} from '../index.js';
-import {ASTNODE_SOLID as AST} from '../validator/index.js';
 import {Set_hasEq} from './package.js';
 import {
 	SolidTypeIntersection,
@@ -15,9 +11,6 @@ import {
 	SolidTypeString,
 	SolidObject,
 	SolidNull,
-	SolidBoolean,
-	Int16,
-	Float64,
 } from './index.js';
 import {solidObjectsIdentical} from './utils-private.js';
 
@@ -86,7 +79,6 @@ export abstract class SolidType {
 	 */
 	readonly isTopType: boolean = false;
 
-	#binType: binaryen.Type | null = null; // TODO: use memoize decorator on `.binType()`
 
 	/**
 	 * Construct a new SolidType object.
@@ -239,61 +231,6 @@ export abstract class SolidType {
 	immutableOf(): SolidType {
 		return this;
 	}
-
-	/**
-	 * Return a corresponding Binaryen type.
-	 * @return the best match for a Binaryen type equivalent to this type
-	 * @todo use memoize decorator on this method
-	 * @final
-	 */
-	public binType(): binaryen.Type {
-		const is_bin_int: boolean = (
-			   this.equals(SolidType.NULL)
-			|| this.equals(SolidType.BOOL) || this.equals(SolidBoolean.FALSETYPE) || this.equals(SolidBoolean.TRUETYPE)
-			|| this.equals(SolidType.INT) || (this instanceof SolidTypeUnit && this.value instanceof Int16)
-		);
-		const is_bin_float: boolean = this.equals(SolidType.FLOAT) || (this instanceof SolidTypeUnit && this.value instanceof Float64);
-		return this.#binType ??= ( // TODO: use memoize decorator
-			(this.isBottomType)           ? binaryen.unreachable :
-			(this.equals(SolidType.VOID)) ? binaryen.none        :
-			(is_bin_int)                  ? binaryen.i32         :
-			(is_bin_float)                ? binaryen.f64         :
-			(this instanceof SolidTypeUnion) ? ((left_type: binaryen.Type, right_type: binaryen.Type): binaryen.Type => {
-				assert.notStrictEqual(left_type,  binaryen.unreachable);
-				assert.notStrictEqual(right_type, binaryen.unreachable);
-				if (left_type === binaryen.none) {
-					left_type = right_type;
-				}
-				if (right_type === binaryen.none) {
-					right_type = left_type;
-				}
-				try {
-					AST.ASTNodeOperation.expectIntOrFloat(left_type);
-					AST.ASTNodeOperation.expectIntOrFloat(right_type);
-					return binaryen.v128;
-				} catch (err) {
-					throw new TypeError(
-						`Currently only \`int | float\` or \`float | int\` unions are supported; got \`${ this }\`.`,
-						// @ts-expect-error --- TODO: update tsconfig target to es2022
-						{cause: err as Error},
-					);
-				}
-			})(this.left.binType(), this.right.binType()) :
-			(() => { throw new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`); })() // TODO use throw_expression
-		);
-	}
-
-	/**
-	 * @return a default Binaryen value given this type
-	 */
-	public defaultBinValue(mod: binaryen.Module): binaryen.ExpressionRef {
-		return (
-			(this.binType() === binaryen.i32)  ? mod.i32.const(0) :
-			(this.binType() === binaryen.f64)  ? mod.f64.const(0) :
-			(this.binType() === binaryen.v128) ? new BinVect(mod).vect :
-			(() => { throw new TypeError(`Could not determine a default value for \`${ this }\`.`); })() // TODO use throw_expression
-		);
-	};
 }
 
 

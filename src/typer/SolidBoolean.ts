@@ -1,4 +1,5 @@
 import type binaryen from 'binaryen';
+import {BinVect} from '../index.js';
 import type {SolidObject} from './SolidObject.js';
 import {Primitive} from './Primitive.js';
 
@@ -47,6 +48,6 @@ export class SolidBoolean extends Primitive {
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		return mod.i32.const((this.isTruthy) ? 1 : 0);
+		return new BinVect(mod, this.isTruthy).vect;
 	}
 }

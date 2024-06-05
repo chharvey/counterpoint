@@ -7,7 +7,6 @@ import {
 	SymbolStructureVar,
 	SolidType,
 	Builder,
-	BinVect,
 	AssignmentError01,
 	TypeError03,
 } from '../../../src/index.js';
@@ -291,36 +290,13 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.typeCheck();
 			goal.build(builder);
 			assert.deepStrictEqual(builder.getLocals(), [
-				{id: 0x100n, type: binaryen.i32},
-				{id: 0x101n, type: binaryen.i32},
+				{id: 0x100n, type: binaryen.v128},
+				{id: 0x101n, type: binaryen.v128},
 			]);
 			return assertEqualBins(new Map<binaryen.ExpressionRef, binaryen.ExpressionRef>(goal.children.map((stmt, i) => [
 				stmt.build(builder),
 				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
 			])));
-		});
-		it('with constant folding on, coerces as necessary.', () => {
-			const src: string = `
-				let unfixed x: float = 42;   % should coerce into 42.0, assuming int-coercion is on
-				let y: float | int = x * 10; % should *always* transform into v128
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			const builder = new Builder(src);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.build(builder);
-			assert.deepStrictEqual(builder.getLocals(), [
-				{id: 0x100n, type: binaryen.f64},
-				{id: 0x101n, type: binaryen.v128},
-			]);
-			const exprs: binaryen.ExpressionRef[] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder));
-			return assertEqualBins(
-				goal.children.map((stmt) => stmt.build(builder)),
-				[
-					builder.module.f64.convert_u.i32(exprs[0]),
-					new BinVect(builder.module, exprs[1]).vect,
-				].map((expected, i) => builder.module.local.set(i, expected)),
-			);
 		});
 		it('with constant folding off, always returns `(local.set)`.', () => {
 			const src: string = `
@@ -333,8 +309,8 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.typeCheck();
 			goal.build(builder);
 			assert.deepStrictEqual(builder.getLocals(), [
-				{id: 0x100n, type: binaryen.i32},
-				{id: 0x101n, type: binaryen.f64},
+				{id: 0x100n, type: binaryen.v128},
+				{id: 0x101n, type: binaryen.v128},
 			]);
 			return assertEqualBins(new Map<binaryen.ExpressionRef, binaryen.ExpressionRef>(goal.children.map((stmt, i) => [
 				stmt.build(builder),

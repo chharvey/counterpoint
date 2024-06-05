@@ -50,7 +50,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 				binaryen.none,
 				binaryen.none,
 				builder.getLocals().map((var_) => var_.type),
-				builder.module.block(null, [...statements]),
+				builder.module.block(null, statements),
 			);
 			builder.module.addFunctionExport(fn_name, fn_name);
 			return builder.module;

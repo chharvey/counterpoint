@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -64,6 +64,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 			const value: SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
 			this.#built = (value) ? value.build(builder.module) : this.build_do(builder);
 		}
+		assert.strictEqual(binaryen.getExpressionType(this.#built), binaryen.v128);
 		return this.#built;
 	}
 

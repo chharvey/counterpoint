@@ -16,7 +16,6 @@ import {
 	oneFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -37,22 +36,10 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		const builds = [this.operand0.build(builder), this.operand1.build(builder)] as const;
-		return ASTNodeOperationBinary.operate(builder.module, this.operator, builds, (args) => {
-			args = ASTNodeOperation.coerceOperands(builder.module, ...args, () => (
-				this.validator.config.compilerOptions.intCoercion && this.operator === Operator.EQ
-			));
-			const [type0, type1]: readonly binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
-			return (
-				(type0 === binaryen.i32 && type1 === binaryen.i32) ? builder.module.i32.eq(...args) : // `ID` and `EQ` give the same result
-				(type0 === binaryen.i32 && type1 === binaryen.f64) ? builder.module.call('i_f_id', [...args], binaryen.i32) :
-				(type0 === binaryen.f64 && type1 === binaryen.i32) ? builder.module.call('f_i_id', [...args], binaryen.i32) :
-				(assert.deepStrictEqual([type0, type1], [binaryen.f64, binaryen.f64]), (this.operator === Operator.ID)
-					? builder.module.call('fid', [...args], binaryen.i32)
-					: builder.module.f64.eq(...args)
-				)
-			);
-		});
+		return builder.module.call(new Map<Operator, string>([
+			[Operator.ID, 'vid'],
+			[Operator.EQ, this.validator.config.compilerOptions.intCoercion ? 'veq' : 'veqq'],
+		]).get(this.operator)!, [this.operand0.build(builder), this.operand1.build(builder)], binaryen.v128);
 	}
 
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {

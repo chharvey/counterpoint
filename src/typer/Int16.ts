@@ -1,4 +1,5 @@
 import type binaryen from 'binaryen';
+import {BinVect} from '../index.js';
 import {Float64} from './index.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNumber} from './SolidNumber.js';
@@ -49,7 +50,7 @@ export class Int16 extends SolidNumber<Int16> {
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		return mod.i32.const(this.toNumber());
+		return new BinVect(mod, mod.i32.const(this.toNumber())).vect;
 	}
 
 	public override toFloat(): Float64 {

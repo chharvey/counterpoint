@@ -1,8 +1,11 @@
+import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SolidTypeUnit,
+	SolidNull,
+	SolidBoolean,
 	Int16,
 	Float64,
 	SolidString,
@@ -32,16 +35,15 @@ export function typeConstStr(x: string): SolidTypeUnit<SolidString> {
 
 
 
-export function buildConstInt(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
+export function buildConst(mod: binaryen.Module, value: null | boolean | bigint | number = null): binaryen.ExpressionRef {
 	return (
-		(x === 0n) ? Int16.ZERO :
-		(x === 1n) ? Int16.UNIT :
-		new Int16(x)
+		value === null            ? SolidNull.NULL :
+		value === false           ? SolidBoolean.FALSE :
+		value === true            ? SolidBoolean.TRUE :
+		value === 0n              ? Int16.ZERO :
+		value === 1n              ? Int16.UNIT :
+		typeof value === 'bigint' ? new Int16(value) :
+		typeof value === 'number' ? new Float64(value) :
+		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
 	).build(mod);
-}
-export function buildConstFloat(x: number, mod: binaryen.Module): binaryen.ExpressionRef {
-	return new Float64(x).build(mod);
-}
-export function buildConvert(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
-	return mod.f64.convert_u.i32(buildConstInt(x, mod));
 }

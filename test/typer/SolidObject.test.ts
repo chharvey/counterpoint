@@ -2,18 +2,18 @@ import * as assert from 'assert'
 import binaryen from 'binaryen';
 import {
 	SolidObject,
+	SolidNull,
+	SolidBoolean,
 	Int16,
 	Float64,
 	SolidString,
 	SolidTuple,
 	SolidSet,
 	SolidMap,
+	BinVect,
 } from '../../src/index.js';
 import {assertEqualBins} from '../assert-helpers.js';
-import {
-	buildConstInt,
-	buildConstFloat,
-} from '../helpers.js';
+import {buildConst} from '../helpers.js';
 
 
 
@@ -48,6 +48,24 @@ describe('SolidObject', () => {
 
 
 	describe('#build', () => {
+		describe('SolidNull', () => {
+			it('returns a v128 with `null` as an argument.', () => {
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					SolidNull.NULL.build(mod),
+					new BinVect(mod, null).vect,
+				);
+			});
+		});
+
+		specify('SolidBool', () => {
+			const mod = new binaryen.Module();
+			return assertEqualBins(
+				[SolidBoolean.FALSE.build(mod), SolidBoolean.TRUE.build(mod)],
+				[new BinVect(mod, false).vect,  new BinVect(mod, true).vect],
+			);
+		});
+
 		describe('Int16', () => {
 			it('generates `(i32.const)`.', () => {
 				const data: bigint[] = [
@@ -68,7 +86,7 @@ describe('SolidObject', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					data.map((x) => new Int16(x).build(mod)),
-					data.map((x) => mod.i32.const(Number(x))),
+					data.map((x) => new BinVect(mod, mod.i32.const(Number(x))).vect),
 				);
 			});
 		});
@@ -84,14 +102,14 @@ describe('SolidObject', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					data.map((x) => new Float64(x).build(mod)),
-					data.map((x) => mod.f64.const(x)),
+					data.map((x) => new BinVect(mod, mod.f64.const(x)).vect),
 				);
 			});
 			it('builds `0.0` and `-0.0` differently.', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					[0.0, -0.0].map((x) => new Float64(x).build(mod)),
-					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))],
+					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => new BinVect(mod, c).vect),
 				);
 			});
 		});
@@ -101,7 +119,7 @@ describe('SolidObject', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					new SolidString('hello world').build(mod),
-					buildConstInt(0n, mod),
+					buildConst(mod, 0n),
 				);
 			});
 		});
@@ -111,7 +129,7 @@ describe('SolidObject', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					new SolidTuple([Int16.UNIT, new Float64(2.0)]).build(mod),
-					mod.tuple.make([buildConstInt(1n, mod), buildConstFloat(2.0, mod)]),
+					mod.tuple.make([buildConst(mod, 1n), buildConst(mod, 2.0)]),
 				);
 			});
 		});

@@ -13,7 +13,6 @@ import {
 	ValidOperatorLogical,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperationUnary} from './ASTNodeOperationUnary.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -34,28 +33,18 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		let   [arg0,  arg1]:  binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build(builder));
-		const [type0, type1]: binaryen.Type[]          = [arg0, arg1].map((arg) => binaryen.getExpressionType(arg));
+		let [arg0, arg1]: binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build(builder));
 
 		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint = builder.varCount;
-		const local           = builder.addLocal(temp_id, type0)[0].getLocalInfo(temp_id)!;
+		const local           = builder.addLocal(temp_id, binaryen.getExpressionType(arg0))[0].getLocalInfo(temp_id)!;
 
-		const condition = ASTNodeOperationUnary.operate(
-			builder.module,
-			Operator.NOT,
-			ASTNodeOperationUnary.operate(
-				builder.module,
-				Operator.NOT,
-				builder.module.local.tee(local.index, arg0, local.type),
-			),
-		);
+		const condition: binaryen.ExpressionRef = new BinVect(builder.module, builder.module.call(
+			'vnot',
+			[builder.module.local.tee(local.index, arg0, local.type)],
+			binaryen.v128,
+		)).isSpecial(false);
 		arg0 = builder.module.local.get(local.index, local.type);
-
-		if (type0 !== type1) {
-			arg0 = new BinVect(builder.module, arg0).vect;
-			arg1 = new BinVect(builder.module, arg1).vect;
-		}
 
 		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
 		return builder.module.if(condition, if_true, if_false);
