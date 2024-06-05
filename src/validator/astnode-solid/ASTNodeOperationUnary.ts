@@ -6,7 +6,6 @@ import {
 	SolidObject,
 	SolidBoolean,
 	SolidNumber,
-	Builder,
 	TypeError01,
 	NanError01,
 	SolidConfig,
@@ -36,8 +35,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		super(start_node, operator, [operand]);
 	}
 
-	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.call(new Map<Operator, string>([
+	protected override build_do(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.NOT, 'vnot'],
 			[Operator.EMP, 'vemp'],
 			[Operator.NEG, 'vneg'],

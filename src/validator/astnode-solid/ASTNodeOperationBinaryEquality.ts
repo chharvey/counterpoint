@@ -4,7 +4,6 @@ import {
 	SolidType,
 	SolidObject,
 	SolidBoolean,
-	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
@@ -35,8 +34,8 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.call(new Map<Operator, string>([
+	protected override build_do(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.ID, 'vid'],
 			[Operator.EQ, this.validator.config.compilerOptions.intCoercion ? 'veq' : 'veqq'],
 		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);

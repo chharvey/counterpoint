@@ -6,7 +6,6 @@ import {
 	SolidType,
 	SolidObject,
 	Primitive,
-	Builder,
 	ErrorCode,
 } from './package.js';
 import {
@@ -62,13 +61,13 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	public build(): binaryen.ExpressionRef {
 		if (!this.#built) {
 			const value: SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			this.#built = (value) ? value.build(this.builder.module) : this.build_do(this.builder);
+			this.#built = (value) ? value.build(this.builder.module) : this.build_do();
 		}
 		assert.strictEqual(binaryen.getExpressionType(this.#built), binaryen.v128);
 		return this.#built;
 	}
 
-	protected abstract build_do(builder: Builder): binaryen.ExpressionRef;
+	protected abstract build_do(): binaryen.ExpressionRef;
 
 	/**
 	 * The Type of this expression.

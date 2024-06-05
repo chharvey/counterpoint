@@ -4,7 +4,6 @@ import {
 	SolidType,
 	SolidObject,
 	SolidString,
-	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
@@ -34,8 +33,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		super(start_node, {}, children)
 	}
 
-	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		builder;
+	protected override build_do(): binaryen.ExpressionRef {
 		throw '`ASTNodeTemplate#build_do` not yet supported.';
 	}
 	protected override type_do(): SolidType {

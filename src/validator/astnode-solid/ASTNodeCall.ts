@@ -15,7 +15,6 @@ import {
 	SolidDict,
 	SolidSet,
 	SolidMap,
-	Builder,
 	TypeError05,
 	TypeError06,
 	forEachAggregated,
@@ -57,8 +56,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		], (arg) => arg.varCheck());
 	}
 
-	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		builder;
+	protected override build_do(): binaryen.ExpressionRef {
 		throw '`ASTNodeCall#build_do` not yet supported.'
 	}
 	protected override type_do(): SolidType {

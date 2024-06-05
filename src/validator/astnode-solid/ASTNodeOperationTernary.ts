@@ -5,7 +5,6 @@ import {
 	SolidTypeUnit,
 	SolidObject,
 	SolidBoolean,
-	Builder,
 	TypeError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -33,8 +32,8 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
 
-	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.if(
+	protected override build_do(): binaryen.ExpressionRef {
+		return this.builder.module.if(
 			this.operand0.build(),
 			this.operand1.build(),
 			this.operand2.build(),

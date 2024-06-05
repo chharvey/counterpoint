@@ -24,7 +24,6 @@ import {
 	CollectionKeyed,
 	SolidSet,
 	SolidMap,
-	Builder,
 	Operator,
 	ValidAccessOperator,
 } from './package.js';
@@ -50,8 +49,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		super(start_node, {kind}, [base, accessor]);
 	}
 
-	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		builder;
+	protected override build_do(): binaryen.ExpressionRef {
 		throw '`ASTNodeAccess#build_do` not yet supported.';
 	}
 	protected override type_do(): SolidType {

@@ -3,7 +3,6 @@ import {
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
-	Builder,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -17,8 +16,7 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
  * - ASTNodeMap
  */
 export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
-	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		builder;
+	protected override build_do(): binaryen.ExpressionRef {
 		throw '`ASTNodeCollectionLiteral#build_do` not yet supported.';
 	}
 

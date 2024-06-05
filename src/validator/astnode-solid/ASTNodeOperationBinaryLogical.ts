@@ -5,7 +5,6 @@ import {
 	SolidType,
 	SolidObject,
 	SolidBoolean,
-	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
@@ -32,22 +31,22 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	protected override build_do(builder: Builder): binaryen.ExpressionRef {
+	protected override build_do(): binaryen.ExpressionRef {
 		let [arg0, arg1]: binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build());
 
 		/** A temporary variable id used for optimizing short-circuited operations. */
-		const temp_id: bigint = builder.varCount;
-		const local           = builder.addLocal(temp_id, binaryen.getExpressionType(arg0))[0].getLocalInfo(temp_id)!;
+		const temp_id: bigint = this.builder.varCount;
+		const local           = this.builder.addLocal(temp_id, binaryen.getExpressionType(arg0))[0].getLocalInfo(temp_id)!;
 
-		const condition: binaryen.ExpressionRef = new BinVect(builder.module, builder.module.call(
+		const condition: binaryen.ExpressionRef = new BinVect(this.builder.module, this.builder.module.call(
 			'vnot',
-			[builder.module.local.tee(local.index, arg0, local.type)],
+			[this.builder.module.local.tee(local.index, arg0, local.type)],
 			binaryen.v128,
 		)).isSpecial(false);
-		arg0 = builder.module.local.get(local.index, local.type);
+		arg0 = this.builder.module.local.get(local.index, local.type);
 
 		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
-		return builder.module.if(condition, if_true, if_false);
+		return this.builder.module.if(condition, if_true, if_false);
 	}
 
 	protected override type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {

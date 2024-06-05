@@ -6,7 +6,6 @@ import {
 	SolidBoolean,
 	SolidNumber,
 	Int16,
-	Builder,
 	TypeError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -42,8 +41,8 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 	}
 
-	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.call(new Map<Operator, string>([
+	protected override build_do(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.LT, 'vlt'],
 			[Operator.GT, 'vgt'],
 			[Operator.LE, 'vle'],

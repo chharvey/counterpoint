@@ -14,7 +14,6 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-	Builder,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -44,8 +43,8 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		this.value = value
 	}
 
-	protected override build_do(builder: Builder): binaryen.ExpressionRef {
-		return this.value.build(builder.module);
+	protected override build_do(): binaryen.ExpressionRef {
+		return this.value.build(this.builder.module);
 	}
 
 	protected override type_do(): SolidType {
