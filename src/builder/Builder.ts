@@ -22,9 +22,6 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
  */
 export class Builder {
 	private static readonly IMPORTS: readonly string[] = [
-		fs.readFileSync(path.join(DIRNAME, '../../src/builder/not.wat'), 'utf8'),
-		fs.readFileSync(path.join(DIRNAME, '../../src/builder/emp.wat'), 'utf8'),
-		fs.readFileSync(path.join(DIRNAME, '../../src/builder/neg.wat'), 'utf8'),
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/exp.wat'), 'utf8'),
 		fs.readFileSync(path.join(DIRNAME, '../../src/builder/fid.wat'), 'utf8'),
 	]
@@ -168,8 +165,8 @@ export class Builder {
 					mod.call('vnot', [vect.vect], binaryen.v128),
 					mod.if(
 						vect.isInt,
-						BinVect.asBool(mod, mod.call('iemp', [vect.intValue],   binaryen.i32)),
-						BinVect.asBool(mod, mod.call('femp', [vect.floatValue], binaryen.i32)),
+						BinVect.asBool(mod, mod.i32.eqz(vect.intValue)),
+						BinVect.asBool(mod, mod.f64.eq(vect.floatValue, mod.f64.const(0.0))), // also takes care of -0.0
 					),
 				);
 			})(this.module),
@@ -179,7 +176,8 @@ export class Builder {
 				const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
 				return mod.if(
 					vect.isInt,
-					new BinVect(mod, mod.call('neg', [vect.intValue], binaryen.i32)).vect,
+					// `-n` in two’s complement is `(n xor -1) + 1`
+					new BinVect(mod, mod.i32.add(mod.i32.xor(vect.intValue, mod.i32.const(-1)), mod.i32.const(1))).vect,
 					new BinVect(mod, mod.f64.neg(vect.floatValue)).vect,
 				);
 			})(this.module),
