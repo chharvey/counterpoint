@@ -4,7 +4,6 @@ import {
 	SymbolStructure,
 	SymbolStructureType,
 	SolidType,
-	Builder,
 	AssignmentError01,
 } from '../../../src/index.js';
 import {forEachAggregated} from '../../../src/lib/index.js';
@@ -55,13 +54,11 @@ describe('ASTNodeDeclarationType', () => {
 
 	describe('#build', () => {
 		it('always returns `(nop)`.', () => {
-			const src: string = `
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
 				type U = T | float;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			const builder: Builder = new Builder(src);
-			return forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), builder.module.nop()));
+			`);
+			return forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), goal.builder.module.nop()));
 		});
 	});
 });

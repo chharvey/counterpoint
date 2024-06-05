@@ -21,7 +21,6 @@ import {
 	SolidRecord,
 	SolidSet,
 	SolidMap,
-	Builder,
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
@@ -222,14 +221,12 @@ describe('ASTNodeExpression', () => {
 
 		describe('#build', () => {
 			it('with constant folding on, returns `({i32,f64}.const)` for fixed & foldable variables.', () => {
-				const src: string = `
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let x: int = 42;
 					let y: float = 4.2 * 10;
 					x;
 					y;
-				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				const builder: Builder = new Builder(src);
+				`);
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build();
@@ -239,19 +236,18 @@ describe('ASTNodeExpression', () => {
 						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(),
 					],
 					[
-						buildConst(builder.module, 42n),
-						buildConst(builder.module, 42.0),
+						buildConst(goal.builder.module, 42n),
+						buildConst(goal.builder.module, 42.0),
 					],
 				);
 			});
 			it('with constant folding on, returns `(local.get)` for unfixed / non-foldable variables.', () => {
-				const src: string = `
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let unfixed x: int = 42;
 					let y: int = x + 10;
 					x;
 					y;
-				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				`);
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build();
@@ -274,13 +270,12 @@ describe('ASTNodeExpression', () => {
 				);
 			});
 			it('with constant folding off, always returns `(local.get)`.', () => {
-				const src: string = `
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let x: int = 42;
 					let unfixed y: float = 4.2;
 					x;
 					y;
-				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+				`, CONFIG_FOLDING_OFF);
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build();
@@ -517,10 +512,10 @@ describe('ASTNodeExpression', () => {
 
 		describe('#build', () => {
 			specify.skip('ASTNodeTuple', () => {
-				const builder = new Builder('');
+				const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF);
 				assertEqualBins(
-					AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF).build(),
-					builder.module.tuple.make([buildConst(builder.module, 1n), buildConst(builder.module, 2.0)]),
+					tuple.build(),
+					tuple.builder.module.tuple.make([buildConst(tuple.builder.module, 1n), buildConst(tuple.builder.module, 2.0)]),
 				);
 			});
 			it.skip('foldable.', () => {

@@ -6,7 +6,6 @@ import {
 	SymbolStructure,
 	SymbolStructureVar,
 	SolidType,
-	Builder,
 	AssignmentError01,
 	TypeError03,
 } from '../../../src/index.js';
@@ -268,23 +267,20 @@ describe('ASTNodeDeclarationVariable', () => {
 
 	describe('#build', () => {
 		it('with constant folding on, returns `(nop)` for fixed & foldable variables.', () => {
-			const src: string = `
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let x: int = 42;
 				let y: float = 4.2 * x;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			const builder: Builder = new Builder(src);
+			`);
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build();
-			return forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), builder.module.nop()));
+			return forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), goal.builder.module.nop()));
 		});
 		it('with constant folding on, returns `(local.set)` for unfixed / non-foldable variables.', () => {
-			const src: string = `
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let unfixed x: int = 42;
 				let y: int = x + 10;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+			`);
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build();
@@ -298,11 +294,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			])));
 		});
 		it('with constant folding off, always returns `(local.set)`.', () => {
-			const src: string = `
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let x: int = 42;
 				let unfixed y: float = 4.2;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+			`, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build();
