@@ -122,7 +122,7 @@ describe('SolidObject', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					new SolidString('hello world').build(mod),
-					buildConstInt(0n, mod),
+					buildConstInt(mod, 0n),
 				);
 			});
 		});
@@ -132,7 +132,7 @@ describe('SolidObject', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					new SolidTuple([Int16.UNIT, new Float64(2.0)]).build(mod),
-					mod.tuple.make([buildConstInt(1n, mod), buildConstFloat(2.0, mod)]),
+					mod.tuple.make([buildConstInt(mod, 1n), buildConstFloat(mod, 2.0)]),
 				);
 			});
 		});

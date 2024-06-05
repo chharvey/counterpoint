@@ -38,17 +38,17 @@ export function buildConstNull(mod: binaryen.Module): binaryen.ExpressionRef {
 	return SolidNull.NULL.build(mod);
 }
 
-export function buildConstBool(b: boolean, mod: binaryen.Module): binaryen.ExpressionRef {
+export function buildConstBool(mod: binaryen.Module, b: boolean): binaryen.ExpressionRef {
 	return b ? SolidBoolean.TRUE.build(mod) : SolidBoolean.FALSE.build(mod);
 }
 
-export function buildConstInt(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
+export function buildConstInt(mod: binaryen.Module, x: bigint): binaryen.ExpressionRef {
 	return (
 		(x === 0n) ? Int16.ZERO :
 		(x === 1n) ? Int16.UNIT :
 		new Int16(x)
 	).build(mod);
 }
-export function buildConstFloat(x: number, mod: binaryen.Module): binaryen.ExpressionRef {
+export function buildConstFloat(mod: binaryen.Module, x: number): binaryen.ExpressionRef {
 	return new Float64(x).build(mod);
 }

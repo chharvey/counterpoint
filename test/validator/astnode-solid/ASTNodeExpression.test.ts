@@ -125,19 +125,19 @@ describe('ASTNodeExpression', () => {
 		specify('#build', () => {
 			const mod = new binaryen.Module();
 			const tests = new Map<string, binaryen.ExpressionRef>([
-				['null;',    buildConstNull  (        mod)],
-				['false;',   buildConstBool  (false,  mod)],
-				['true;',    buildConstBool  (true,   mod)],
-				['0;',       buildConstInt   (0n,     mod)],
-				['+0;',      buildConstInt   (0n,     mod)],
-				['-0;',      buildConstInt   (0n,     mod)],
-				['42;',      buildConstInt   (42n,    mod)],
-				['+42;',     buildConstInt   (42n,    mod)],
-				['-42;',     buildConstInt   (-42n,   mod)],
-				['0.0;',     buildConstFloat (0,      mod)],
-				['+0.0;',    buildConstFloat (0,      mod)],
-				['-0.0;',    buildConstFloat (-0,     mod)],
-				['-4.2e-2;', buildConstFloat (-0.042, mod)],
+				['null;',    buildConstNull  (mod)],
+				['false;',   buildConstBool  (mod, false)],
+				['true;',    buildConstBool  (mod, true)],
+				['0;',       buildConstInt   (mod, 0n)],
+				['+0;',      buildConstInt   (mod, 0n)],
+				['-0;',      buildConstInt   (mod, 0n)],
+				['42;',      buildConstInt   (mod, 42n)],
+				['+42;',     buildConstInt   (mod, 42n)],
+				['-42;',     buildConstInt   (mod, -42n)],
+				['0.0;',     buildConstFloat (mod, 0)],
+				['+0.0;',    buildConstFloat (mod, 0)],
+				['-0.0;',    buildConstFloat (mod, -0)],
+				['-4.2e-2;', buildConstFloat (mod, -0.042)],
 			]);
 			return assertEqualBins(
 				[...tests.keys()].map((src) => AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))),
@@ -242,8 +242,8 @@ describe('ASTNodeExpression', () => {
 						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
 					],
 					[
-						buildConstInt   (42n,  builder.module),
-						buildConstFloat (42.0, builder.module),
+						buildConstInt   (builder.module, 42n),
+						buildConstFloat (builder.module, 42.0),
 					],
 				);
 			});
@@ -525,7 +525,7 @@ describe('ASTNodeExpression', () => {
 				const builder = new Builder('');
 				assertEqualBins(
 					AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF).build(builder),
-					builder.module.tuple.make([buildConstInt(1n, builder.module), buildConstFloat(2.0, builder.module)]),
+					builder.module.tuple.make([buildConstInt(builder.module, 1n), buildConstFloat(builder.module, 2.0)]),
 				);
 			});
 			it.skip('foldable.', () => {
