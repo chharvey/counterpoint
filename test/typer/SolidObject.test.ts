@@ -13,10 +13,7 @@ import {
 	BinVect,
 } from '../../src/index.js';
 import {assertEqualBins} from '../assert-helpers.js';
-import {
-	buildConstInt,
-	buildConstFloat,
-} from '../helpers.js';
+import {buildConst} from '../helpers.js';
 
 
 
@@ -122,7 +119,7 @@ describe('SolidObject', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					new SolidString('hello world').build(mod),
-					buildConstInt(mod, 0n),
+					buildConst(mod, 0n),
 				);
 			});
 		});
@@ -132,7 +129,7 @@ describe('SolidObject', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					new SolidTuple([Int16.UNIT, new Float64(2.0)]).build(mod),
-					mod.tuple.make([buildConstInt(mod, 1n), buildConstFloat(mod, 2.0)]),
+					mod.tuple.make([buildConst(mod, 1n), buildConst(mod, 2.0)]),
 				);
 			});
 		});
