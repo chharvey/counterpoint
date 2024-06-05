@@ -1,3 +1,4 @@
+import type {Builder} from '../../index.js';
 import {
 	SolidType,
 	TypeError03,
@@ -69,6 +70,10 @@ export abstract class ASTNodeSolid extends ASTNode {
 
 	get validator(): Validator {
 		return (this.parent as ASTNodeSolid).validator;
+	}
+
+	get builder(): Builder {
+		return (this.parent as ASTNodeSolid).builder;
 	}
 
 	/**

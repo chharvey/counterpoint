@@ -29,6 +29,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 
 
 	readonly #validator: Validator;
+	readonly #builder:   Builder;
 
 
 	constructor(
@@ -38,10 +39,15 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	) {
 		super(start_node, {}, children)
 		this.#validator = new Validator(config);
+		this.#builder   = new Builder(this.source, config);
 	}
 
 	override get validator(): Validator {
 		return this.#validator;
+	}
+
+	override get builder(): Builder {
+		return this.#builder;
 	}
 
 	/** @implements Buildable */
