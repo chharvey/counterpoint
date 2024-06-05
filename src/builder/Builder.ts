@@ -237,25 +237,33 @@ export class Builder {
 			mod.f64.ge  (                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
 			mod.f64.ge  (                      vects[0].floatValue,                       vects[1].floatValue),
 		]);
-		this.module.addFunction('vid', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.i32, [], this.module.block(null, [((mod: binaryen.Module) => {
+		this.module.addFunction('vid', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => {
 			const vects = [0, 1].map((i) => new BinVect(this.module, this.module.local.get(i, binaryen.v128))) as readonly BinVect[] as readonly [BinVect, BinVect];
 			return mod.if(
 				mod.i32.and(vects[0].isSpecial(), vects[1].isSpecial()),
-				mod.i32.eq(
+				mod.if(mod.i32.eq(
 					mod.i16x8.extract_lane_s(vects[0].vect, 3), // TODO: hide thie implementation detail
 					mod.i16x8.extract_lane_s(vects[1].vect, 3), // TODO: hide thie implementation detail
-				),
+				), new BinVect(mod, true).vect, new BinVect(mod, false).vect),
 				mod.if(
 					mod.i32.and(vects[0].isInt, vects[1].isInt),
-					mod.i32.eq(vects[0].intValue, vects[1].intValue), // `i32.eq` for ints gives the same result as `ID` operator
+					mod.if(
+						mod.i32.eq(vects[0].intValue, vects[1].intValue), // `i32.eq` for ints gives the same result as `ID` operator
+						new BinVect(mod, true).vect,
+						new BinVect(mod, false).vect,
+					),
 					mod.if(
 						mod.i32.and(vects[0].isFloat, vects[1].isFloat),
-						mod.call('fid', [vects[0].floatValue, vects[1].floatValue], binaryen.i32),
-						this.module.i32.const(0),
+						mod.if(
+							mod.call('fid', [vects[0].floatValue, vects[1].floatValue], binaryen.i32),
+							new BinVect(mod, true).vect,
+							new BinVect(mod, false).vect,
+						),
+						new BinVect(mod, false).vect,
 					),
 				),
 			);
-		})(this.module)], binaryen.i32));
+		})(this.module)], binaryen.v128));
 		this.module.addFunction('veq', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.i32, [], this.module.block(null, [((mod: binaryen.Module) => {
 			const vects = [0, 1].map((i) => new BinVect(this.module, this.module.local.get(i, binaryen.v128))) as readonly BinVect[] as readonly [BinVect, BinVect];
 			const opts = [
@@ -266,7 +274,7 @@ export class Builder {
 			] as const;
 			return mod.if(
 				mod.i32.or(vects[0].isSpecial(), vects[1].isSpecial()),
-				mod.call('vid', vects.map((v) => v.vect), binaryen.i32),
+				new BinVect(mod, mod.call('vid', vects.map((v) => v.vect), binaryen.v128)).isSpecial(true),
 				mod.if(
 					vects[0].isInt,
 					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
@@ -285,7 +293,7 @@ export class Builder {
 			] as const;
 			return mod.if(
 				mod.i32.or(vects[0].isSpecial(), vects[1].isSpecial()),
-				mod.call('vid', vects.map((v) => v.vect), binaryen.i32),
+				new BinVect(mod, mod.call('vid', vects.map((v) => v.vect), binaryen.v128)).isSpecial(true),
 				mod.if(
 					vects[0].isInt,
 					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
