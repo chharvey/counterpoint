@@ -39,7 +39,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return builder.module.call(new Map<Operator, string>([
 			[Operator.ID, 'vid'],
 			[Operator.EQ, this.validator.config.compilerOptions.intCoercion ? 'veq' : 'veqq'],
-		]).get(this.operator)!, [this.operand0.build(builder), this.operand1.build(builder)], this.operator === Operator.ID ? binaryen.v128 : binaryen.i32);
+		]).get(this.operator)!, [this.operand0.build(builder), this.operand1.build(builder)], binaryen.v128);
 	}
 
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
