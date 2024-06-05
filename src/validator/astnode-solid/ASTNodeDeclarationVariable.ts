@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	SolidType,
 	Builder,
@@ -69,7 +69,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			return builder.module.nop();
 		} else {
 			const assignee_type: SolidType = this.typenode.eval();
-			const local = builder.addLocal(this.assignee.id, assignee_type.binType())[0].getLocalInfo(this.assignee.id)!;
+			const local = builder.addLocal(this.assignee.id, binaryen.v128)[0].getLocalInfo(this.assignee.id)!;
 			return builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
 				builder.module,
 				assignee_type,

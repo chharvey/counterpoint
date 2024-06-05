@@ -1,5 +1,3 @@
-import * as assert from 'assert';
-import binaryen from 'binaryen';
 import {Set_hasEq} from './package.js';
 import {
 	SolidTypeIntersection,
@@ -81,7 +79,6 @@ export abstract class SolidType {
 	 */
 	readonly isTopType: boolean = false;
 
-	#binType: binaryen.Type | null = null; // TODO: use memoize decorator on `.binType()`
 
 	/**
 	 * Construct a new SolidType object.
@@ -233,35 +230,6 @@ export abstract class SolidType {
 	}
 	immutableOf(): SolidType {
 		return this;
-	}
-
-	/**
-	 * Return a corresponding Binaryen type.
-	 * @return the best match for a Binaryen type equivalent to this type
-	 * @todo use memoize decorator on this method
-	 * @final
-	 */
-	public binType(): binaryen.Type {
-		return this.#binType ??= ( // TODO: use memoize decorator
-			(this.isBottomType)           ? binaryen.unreachable :
-			(this.equals(SolidType.VOID)) ? binaryen.none        :
-			(this.equals(SolidType.NULL))       ? binaryen.v128 :
-			(this.isSubtypeOf(SolidType.BOOL))  ? binaryen.v128 :
-			(this.isSubtypeOf(SolidType.INT))   ? binaryen.v128 :
-			(this.isSubtypeOf(SolidType.FLOAT)) ? binaryen.v128 :
-			(this instanceof SolidTypeUnion) ? ((left_type: binaryen.Type, right_type: binaryen.Type): binaryen.Type => {
-				assert.notStrictEqual(left_type,  binaryen.unreachable);
-				assert.notStrictEqual(right_type, binaryen.unreachable);
-				if (left_type === binaryen.none) {
-					left_type = right_type;
-				}
-				if (right_type === binaryen.none) {
-					right_type = left_type;
-				}
-				return binaryen.v128;
-			})(this.left.binType(), this.right.binType()) :
-			(() => { throw new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`); })() // TODO use throw_expression
-		);
 	}
 }
 
