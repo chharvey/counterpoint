@@ -1,11 +1,29 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import {BinVect} from '../../src/index.js';
+import {forEachAggregated} from '../../src/lib/index.js'
 import {assertEqualBins as assert_equal_bins} from '../assert-helpers.js';
 
 
 describe('BinVect', () => {
 	const MOD = new binaryen.Module();
+
+
+	describe('.asBool', () => {
+		it('returns a mod.if containing two v128 branches storing boolean values.', () => {
+			forEachAggregated([
+				MOD.i32.const(0),
+				MOD.i32.const(1),
+			], (expr) => assert_equal_bins(
+				BinVect.asBool(MOD, expr),
+				MOD.if(
+					expr,
+					new BinVect(MOD, true).vect,
+					new BinVect(MOD, false).vect,
+				),
+			));
+		});
+	});
 
 
 	describe('.constructor', () => {

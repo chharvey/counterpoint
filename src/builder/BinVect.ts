@@ -82,6 +82,24 @@ import binaryen from 'binaryen';
  * ```
  */
 export class BinVect {
+	/**
+	 * Re-interprets an `i32` as a `v128` storing a boolean value.
+	 *
+	 * Returns a Binaryen `if` expression with the given condition and
+	 * branches containing `v128`s having Lane 3 of `\x0003` and `\x0002` respectively.
+	 * @param mod       a module to create the instance in
+	 * @param condition an `i32` that serves as the condition for the `if` expression
+	 * @return          the `if` expression
+	 */
+	public static asBool(mod: binaryen.Module, condition: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return mod.if(
+			condition,
+			new BinVect(mod, true).vect,
+			new BinVect(mod, false).vect,
+		);
+	}
+
+
 	/** Internal implementation of the v128. */
 	readonly #internal: binaryen.ExpressionRef;
 
