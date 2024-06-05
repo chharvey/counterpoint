@@ -26,7 +26,7 @@ describe('ASTNodeSolid', () => {
 			it('returns `(nop)` for empty statement expression.', () => {
 				const src: string = `;`;
 				const builder = new Builder(src);
-				const instr: binaryen.ExpressionRef = AST.ASTNodeStatementExpression.fromSource(src).build(builder);
+				const instr: binaryen.ExpressionRef = AST.ASTNodeStatementExpression.fromSource(src).build();
 				return assertEqualBins(instr, builder.module.nop());
 			})
 			it('returns `(drop)` for nonempty statement expression.', () => {
@@ -34,8 +34,8 @@ describe('ASTNodeSolid', () => {
 				const builder: Builder = new Builder(src);
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
 				return assertEqualBins(
-					stmt.build(builder),
-					builder.module.drop(stmt.expr!.build(builder)),
+					stmt.build(),
+					builder.module.drop(stmt.expr!.build()),
 				);
 			})
 			it('multiple statements.', () => {
@@ -44,8 +44,8 @@ describe('ASTNodeSolid', () => {
 				return AST.ASTNodeGoal.fromSource(src).children.forEach((stmt) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 					return assertEqualBins(
-						stmt.build(generator),
-						generator.module.drop(stmt.expr!.build(generator)),
+						stmt.build(),
+						generator.module.drop(stmt.expr!.build()),
 					);
 				});
 			});
@@ -166,10 +166,10 @@ describe('ASTNodeSolid', () => {
 				const builder: Builder = new Builder(src);
 				goal.varCheck();
 				goal.typeCheck();
-				goal.build(builder);
+				goal.build();
 				return assertEqualBins(
-					goal.children[1].build(builder),
-					builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder)),
+					goal.children[1].build(),
+					builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build()),
 				);
 			});
 			it('coerces as necessary.', () => {
@@ -187,10 +187,10 @@ describe('ASTNodeSolid', () => {
 				const builder = new Builder(src);
 				goal.varCheck();
 				goal.typeCheck();
-				goal.build(builder);
+				goal.build();
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build(builder)),
-					goal.children.slice(2).map((stmt) => builder.module.local.set(0, (stmt as AST.ASTNodeAssignment).assigned.build(builder)))
+					goal.children.slice(2).map((stmt) => stmt.build()),
+					goal.children.slice(2).map((stmt) => builder.module.local.set(0, (stmt as AST.ASTNodeAssignment).assigned.build()))
 				);
 			});
 		});
@@ -317,14 +317,14 @@ describe('ASTNodeSolid', () => {
 			it('returns `(nop)` for empty program.', () => {
 				const src: string = ``;
 				const builder = new Builder(src);
-				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
+				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build();
 				return assertEqualBins(instr, builder.module.nop());
 			});
 			it('returns binaryen.Module for non-empty program.', () => {
 				const src: string = `42;`;
-				const builder = new Builder(src);
-				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
-				assert.strictEqual(instr, builder.module);
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const instr: binaryen.ExpressionRef | binaryen.Module = goal.build();
+				assert.strictEqual(instr, goal.builder.module);
 			});
 		});
 	});

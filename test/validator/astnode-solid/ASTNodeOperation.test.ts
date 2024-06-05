@@ -55,7 +55,7 @@ function foldOperations(tests: Map<string, SolidObject>): void {
 }
 function buildOperations(tests: ReadonlyMap<string, binaryen.ExpressionRef>, config: SolidConfig = CONFIG_FOLDING_OFF): void {
 	return assertEqualBins(
-		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).build(new Builder(src, config))),
+		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).build()),
 		[...tests.values()],
 	);
 }
@@ -337,12 +337,12 @@ describe('ASTNodeOperation', () => {
 				const mod: binaryen.Module  = builder.module;
 				goal.varCheck();
 				goal.typeCheck();
-				goal.build(builder);
+				goal.build();
 				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
-					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder)
+					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build()
 				));
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build(builder)),
+					goal.children.slice(2).map((stmt) => stmt.build()),
 					[
 						CALL.vnot(mod, extracts[0]),
 						CALL.vnot(mod, extracts[1]),
@@ -372,18 +372,18 @@ describe('ASTNodeOperation', () => {
 				const mod: binaryen.Module  = builder.module;
 				goal.varCheck();
 				goal.typeCheck();
-				goal.build(builder);
+				goal.build();
 				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
-					(((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build(builder)
+					(((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build()
 				));
 				assertEqualBins(
 					goal.children.slice(4).map((stmt) => (
-						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder)
+						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build()
 					)),
 					extracts.slice(2).map((extract) => CALL.vneg(mod, extract)),
 				);
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build(builder)),
+					goal.children.slice(2).map((stmt) => stmt.build()),
 					[
 						CALL.vnot(mod, CALL.vnot(mod, extracts[0])),
 						CALL.vemp(mod, CALL.vemp(mod, extracts[1])),
@@ -426,16 +426,16 @@ describe('ASTNodeOperation', () => {
 				const mod: binaryen.Module  = builder.module;
 				goal.varCheck();
 				goal.typeCheck();
-				goal.build(builder);
+				goal.build();
 				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
-					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)
+					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build()
 				));
 				const const_ = {
 					'2':   buildConst(mod, 2n),
 					'2.4': buildConst(mod, 2.4),
 				} as const;
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build(builder)),
+					goal.children.slice(2).map((stmt) => stmt.build()),
 					[
 						CALL.vmul(mod, extracts[0], const_['2']),
 						CALL.vmul(mod, extracts[1], const_['2']),
@@ -467,16 +467,16 @@ describe('ASTNodeOperation', () => {
 				const mod: binaryen.Module  = builder.module;
 				goal.varCheck();
 				goal.typeCheck();
-				goal.build(builder);
+				goal.build();
 				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = goal.children.slice(2).map((stmt) => { //
 					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
 					return [
-						binexp.operand0.build(builder),
-						binexp.operand1.build(builder),
+						binexp.operand0.build(),
+						binexp.operand1.build(),
 					];
 				});
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build(builder)),
+					goal.children.slice(2).map((stmt) => stmt.build()),
 					[
 						CALL.vmul(mod, extracts[0][0], extracts[0][1]),
 						CALL.vgt (mod, extracts[1][0], extracts[1][1]),
@@ -496,10 +496,10 @@ describe('ASTNodeOperation', () => {
 				const mod: binaryen.Module  = builder.module;
 				goal.varCheck();
 				goal.typeCheck();
-				goal.build(builder);
+				goal.build();
 				const extracts: readonly binaryen.ExpressionRef[] = [
-					(((goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(builder),
-					(((goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(builder),
+					(((goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(),
+					(((goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(),
 				];
 				const const_ = {
 					'2': buildConst(mod, 2n),
@@ -511,12 +511,12 @@ describe('ASTNodeOperation', () => {
 				];
 				assertEqualBins(
 					goal.children.slice(2).map((stmt) => (
-						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)
+						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build()
 					)),
 					inners,
 				);
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build(builder)),
+					goal.children.slice(2).map((stmt) => stmt.build()),
 					inners.map((inner) => builder.module.drop(CALL.vadd(mod, inner, const_['3']))),
 				);
 			});

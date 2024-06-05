@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
-	Builder,
 	AssignmentError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -40,7 +39,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 			symbol.typevalue = this.assigned.eval();
 		}
 	}
-	override build(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.nop();
+	override build(): binaryen.ExpressionRef {
+		return this.builder.module.nop();
 	}
 }

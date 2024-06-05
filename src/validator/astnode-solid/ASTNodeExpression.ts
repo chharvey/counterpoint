@@ -59,10 +59,10 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * @implements Buildable
 	 * @final
 	 */
-	public build(builder: Builder): binaryen.ExpressionRef {
+	public build(): binaryen.ExpressionRef {
 		if (!this.#built) {
 			const value: SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			this.#built = (value) ? value.build(builder.module) : this.build_do(builder);
+			this.#built = (value) ? value.build(this.builder.module) : this.build_do(this.builder);
 		}
 		assert.strictEqual(binaryen.getExpressionType(this.#built), binaryen.v128);
 		return this.#built;

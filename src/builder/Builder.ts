@@ -28,7 +28,7 @@ export class Builder {
 
 
 	/** An AST goal produced by a Decorator. */
-	private readonly ast_goal: AST.ASTNodeGoal;
+	private readonly ast_goal?: AST.ASTNodeGoal;
 	/**
 	 * A counter for internal variables.
 	 * Used for optimizing short-circuited expressions.
@@ -51,9 +51,9 @@ export class Builder {
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (source: string, config: SolidConfig = CONFIG_DEFAULT) {
-		this.ast_goal  = AST.ASTNodeGoal.fromSource(source, config);
-		this.ast_goal.varCheck (); // assert does not throw
-		this.ast_goal.typeCheck(); // assert does not throw
+		source; config;
+		this.ast_goal?.varCheck (); // assert does not throw
+		this.ast_goal?.typeCheck(); // assert does not throw
 	}
 
 	/**
@@ -293,7 +293,7 @@ export class Builder {
 			| binaryen.Features.Multivalue
 		);
 		this.#setupFunctions();
-		this.ast_goal.build(this);
+		this.ast_goal?.build();
 		const validation: number = this.module.validate();
 		if (!validation) {
 			throw new Error('Invalid WebAssembly module.');

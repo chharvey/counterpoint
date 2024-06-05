@@ -276,8 +276,8 @@ describe('ASTNodeDeclarationVariable', () => {
 			const builder: Builder = new Builder(src);
 			goal.varCheck();
 			goal.typeCheck();
-			goal.build(builder);
-			return forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(builder), builder.module.nop()));
+			goal.build();
+			return forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), builder.module.nop()));
 		});
 		it('with constant folding on, returns `(local.set)` for unfixed / non-foldable variables.', () => {
 			const src: string = `
@@ -285,17 +285,16 @@ describe('ASTNodeDeclarationVariable', () => {
 				let y: int = x + 10;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			const builder: Builder = new Builder(src);
 			goal.varCheck();
 			goal.typeCheck();
-			goal.build(builder);
-			assert.deepStrictEqual(builder.getLocals(), [
+			goal.build();
+			assert.deepStrictEqual(goal.builder.getLocals(), [
 				{id: 0x100n, type: binaryen.v128},
 				{id: 0x101n, type: binaryen.v128},
 			]);
 			return assertEqualBins(new Map<binaryen.ExpressionRef, binaryen.ExpressionRef>(goal.children.map((stmt, i) => [
-				stmt.build(builder),
-				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+				stmt.build(),
+				goal.builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build()),
 			])));
 		});
 		it('with constant folding off, always returns `(local.set)`.', () => {
@@ -304,17 +303,16 @@ describe('ASTNodeDeclarationVariable', () => {
 				let unfixed y: float = 4.2;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
-			const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();
-			goal.build(builder);
-			assert.deepStrictEqual(builder.getLocals(), [
+			goal.build();
+			assert.deepStrictEqual(goal.builder.getLocals(), [
 				{id: 0x100n, type: binaryen.v128},
 				{id: 0x101n, type: binaryen.v128},
 			]);
 			return assertEqualBins(new Map<binaryen.ExpressionRef, binaryen.ExpressionRef>(goal.children.map((stmt, i) => [
-				stmt.build(builder),
-				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+				stmt.build(),
+				goal.builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build()),
 			])));
 		});
 	});

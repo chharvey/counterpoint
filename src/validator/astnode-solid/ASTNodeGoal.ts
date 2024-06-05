@@ -51,21 +51,21 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	}
 
 	/** @implements Buildable */
-	public build(builder: Builder): binaryen.ExpressionRef | binaryen.Module {
+	public build(): binaryen.ExpressionRef | binaryen.Module {
 		if (!this.children.length) {
-			return builder.module.nop();
+			return this.builder.module.nop();
 		} else {
-			const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build(builder)); // must build before calling `.getLocals()`
+			const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build()); // must build before calling `.getLocals()`
 			const fn_name:    string                   = 'fn0';
-			builder.module.addFunction(
+			this.builder.module.addFunction(
 				fn_name,
 				binaryen.none,
 				binaryen.none,
-				builder.getLocals().map((var_) => var_.type),
-				builder.module.block(null, statements),
+				this.builder.getLocals().map((var_) => var_.type),
+				this.builder.module.block(null, statements),
 			);
-			builder.module.addFunctionExport(fn_name, fn_name);
-			return builder.module;
+			this.builder.module.addFunctionExport(fn_name, fn_name);
+			return this.builder.module;
 		}
 	}
 }

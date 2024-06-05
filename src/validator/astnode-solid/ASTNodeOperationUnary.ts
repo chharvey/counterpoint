@@ -41,7 +41,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			[Operator.NOT, 'vnot'],
 			[Operator.EMP, 'vemp'],
 			[Operator.NEG, 'vneg'],
-		]).get(this.operator)!, [this.operand.build(builder)], binaryen.v128);
+		]).get(this.operator)!, [this.operand.build()], binaryen.v128);
 	}
 
 	protected override type_do(): SolidType {

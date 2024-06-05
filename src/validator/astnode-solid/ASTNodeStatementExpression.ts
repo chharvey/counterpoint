@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
-	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
@@ -23,9 +22,9 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	) {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
-	override build(builder: Builder): binaryen.ExpressionRef {
+	override build(): binaryen.ExpressionRef {
 		return (this.expr)
-			? builder.module.drop(this.expr.build(builder))
-			: builder.module.nop();
+			? this.builder.module.drop(this.expr.build())
+			: this.builder.module.nop();
 	}
 }

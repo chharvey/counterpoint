@@ -3,7 +3,6 @@ import type binaryen from 'binaryen';
 import {BinVect} from '../../index.js';
 import {
 	SolidType,
-	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
 } from './package.js';
@@ -54,5 +53,5 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 
 
 	/** @implements Buildable */
-	abstract build(builder: Builder): binaryen.ExpressionRef;
+	abstract build(): binaryen.ExpressionRef;
 }
