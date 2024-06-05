@@ -754,7 +754,7 @@ describe('ASTNodeAccess', () => {
 					],
 				);
 				// must bypass type-checker:
-				assert.deepStrictEqual(
+				assert.strictEqual(
 					AST.ASTNodeAccess.fromSource('[prop= []]?.prop?.0;').fold(),
 					OBJ.Null.NULL,
 				);
@@ -807,7 +807,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.3;')  .fold(),
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.-4;') .fold(),
 				].forEach((v) => {
-					assert.deepStrictEqual(v, OBJ.Null.NULL);
+					assert.strictEqual(v, OBJ.Null.NULL);
 				});
 			});
 		});
@@ -847,7 +847,7 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"].d;').fold(), VoidError01);
 			});
 			it('returns null when optionally accessing key out of bounds.', () => {
-				assert.deepStrictEqual(
+				assert.strictEqual(
 					AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"]?.d;').fold(),
 					OBJ.Null.NULL,
 				);
@@ -939,7 +939,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[3];')                                .fold(),
 					AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.[["a"]];') .fold(),
 				].forEach((v) => {
-					assert.deepStrictEqual(v, OBJ.Null.NULL);
+					assert.strictEqual(v, OBJ.Null.NULL);
 				});
 			});
 		});

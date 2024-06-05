@@ -44,7 +44,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	): void {
 		if (
 			   !assigned_type.isSubtypeOf(assignee_type)
-			&& !(
+			&& !( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
 				   // is int treated as a subtype of float?
 				   node.validator.config.compilerOptions.intCoercion
 				&& assigned_type.isSubtypeOf(TYPE.INT)

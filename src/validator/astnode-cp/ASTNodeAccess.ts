@@ -129,7 +129,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (base_value === null) {
 			return null;
 		}
-		if (this.optional && base_value.equal(OBJ.Null.NULL)) {
+		if (this.optional && base_value.identical(OBJ.Null.NULL)) {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {

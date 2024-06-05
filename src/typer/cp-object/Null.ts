@@ -1,4 +1,5 @@
 import type binaryen from 'binaryen';
+import {BinVect} from '../../index.js';
 import {strictEqual} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
 import type {Object as CPObject} from './Object.js';
@@ -45,6 +46,6 @@ export class Null extends Primitive {
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		return mod.i32.const(0);
+		return new BinVect(mod, null).vect;
 	}
 }

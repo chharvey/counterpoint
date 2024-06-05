@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
-import {OBJ} from '../../src/index.js';
-import {assertEqualBins} from '../assert-helpers.js';
 import {
-	buildConstInt,
-	buildConstFloat,
-} from '../helpers.js';
+	OBJ,
+	BinVect,
+} from '../../src/index.js';
+import {assertEqualBins} from '../assert-helpers.js';
+import {buildConst} from '../helpers.js';
 
 
 
@@ -40,6 +40,24 @@ describe('Object', () => {
 
 
 	describe('#build', () => {
+		describe('Null', () => {
+			it('returns a v128 with `null` as an argument.', () => {
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					OBJ.Null.NULL.build(mod),
+					new BinVect(mod, null).vect,
+				);
+			});
+		});
+
+		specify('Boolean', () => {
+			const mod = new binaryen.Module();
+			return assertEqualBins(
+				[OBJ.Boolean.FALSE.build(mod), OBJ.Boolean.TRUE.build(mod)],
+				[new BinVect(mod, false).vect, new BinVect(mod, true).vect],
+			);
+		});
+
 		describe('Integer', () => {
 			it('generates `(i32.const)`.', () => {
 				const data: bigint[] = [
@@ -60,7 +78,7 @@ describe('Object', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					data.map((x) => new OBJ.Integer(x).build(mod)),
-					data.map((x) => mod.i32.const(Number(x))),
+					data.map((x) => new BinVect(mod, mod.i32.const(Number(x))).vect),
 				);
 			});
 		});
@@ -78,14 +96,14 @@ describe('Object', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					data.map((x) => new OBJ.Float(x).build(mod)),
-					data.map((x) => mod.f64.const(x)),
+					data.map((x) => new BinVect(mod, mod.f64.const(x)).vect),
 				);
 			});
 			it('builds `0.0` and `-0.0` differently.', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					[0.0, -0.0].map((x) => new OBJ.Float(x).build(mod)),
-					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))],
+					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => new BinVect(mod, c).vect),
 				);
 			});
 		});
@@ -95,7 +113,7 @@ describe('Object', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					new OBJ.String('hello world').build(mod),
-					buildConstInt(0n, mod),
+					buildConst(mod, 0n),
 				);
 			});
 		});
@@ -105,7 +123,7 @@ describe('Object', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					new OBJ.Tuple([OBJ.Integer.UNIT, new OBJ.Float(2.0)]).build(mod),
-					mod.tuple.make([buildConstInt(1n, mod), buildConstFloat(2.0, mod)]),
+					mod.tuple.make([buildConst(mod, 1n), buildConst(mod, 2.0)]),
 				);
 			});
 		});

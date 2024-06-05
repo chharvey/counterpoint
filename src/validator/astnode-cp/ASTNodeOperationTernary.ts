@@ -1,10 +1,9 @@
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
 	type Builder,
 	TypeError01,
-	BinVect,
 } from '../../index.js';
 import {
 	throw_expression,
@@ -42,14 +41,11 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		let   [arg1,  arg2]:  binaryen.ExpressionRef[] = [this.operand1, this.operand2].map((expr) => expr.build(builder));
-		const [type1, type2]: binaryen.Type[]          = [arg1, arg2].map((arg) => binaryen.getExpressionType(arg));
-
-		if (type1 !== type2) {
-			[arg1, arg2] = [arg1, arg2].map((arg) => new BinVect(builder.module, arg).vect);
-		}
-
-		return builder.module.if(this.operand0.build(builder), arg1, arg2);
+		return builder.module.if(
+			this.operand0.build(builder),
+			this.operand1.build(builder),
+			this.operand2.build(builder),
+		);
 	}
 
 	@memoizeMethod

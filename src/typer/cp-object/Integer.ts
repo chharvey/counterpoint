@@ -1,4 +1,5 @@
 import type binaryen from 'binaryen';
+import {BinVect} from '../../index.js';
 import {
 	throw_expression,
 	strictEqual,
@@ -55,7 +56,7 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		return mod.i32.const(this.toNumber());
+		return new BinVect(mod, mod.i32.const(this.toNumber())).vect;
 	}
 
 	public override toFloat(): Float {

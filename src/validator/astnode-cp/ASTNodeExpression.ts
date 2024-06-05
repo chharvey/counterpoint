@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
@@ -77,8 +77,10 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
 	): typeof method {
 		return function (builder) {
-			const value: OBJ.Object | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			return (value) ? value.build(builder.module) : method.call(this, builder);
+			const value: OBJ.Object | null      = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
+			const built: binaryen.ExpressionRef = value?.build(builder.module) ?? method.call(this, builder);
+			assert.strictEqual(binaryen.getExpressionType(built), binaryen.v128);
+			return built;
 		};
 	}
 

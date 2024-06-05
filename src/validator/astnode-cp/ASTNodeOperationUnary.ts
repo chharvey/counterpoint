@@ -35,49 +35,6 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return expression;
 	}
 
-	/**
-	 * Return an instruction performing an operation on an argument.
-	 * @param mod the binaryen module
-	 * @param op  the operator
-	 * @param arg the operand
-	 * @return    an instruction that performs the operation at runtime
-	 */
-	public static operate(
-		mod: binaryen.Module,
-		op:  ValidOperatorUnary,
-		arg: binaryen.ExpressionRef,
-	): binaryen.ExpressionRef {
-		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
-		if (bintype === binaryen.v128) {
-			const vect = new BinVect(mod, {int_float: arg});
-
-			let op_int:   binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.intValue);
-			let op_float: binaryen.ExpressionRef = ASTNodeOperationUnary.operate(mod, op, vect.floatValue);
-
-			if (op === Operator.NEG) {
-				[op_int, op_float] = [op_int, op_float].map((op_) => new BinVect(mod, op_).vect);
-			}
-
-			assert.strictEqual(binaryen.getExpressionType(op_int), binaryen.getExpressionType(op_float));
-			return mod.if(vect.isInt, op_int, op_float);
-		} else {
-			ASTNodeOperation.expectIntOrFloat(bintype);
-			return (op === Operator.NEG && bintype === binaryen.f64)
-				? mod.f64.neg(arg)
-				: mod.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
-					[binaryen.i32, new Map<Operator, string>([
-						[Operator.NOT, 'inot'],
-						[Operator.EMP, 'iemp'],
-						[Operator.NEG, 'neg'],
-					])],
-					[binaryen.f64, new Map<Operator, string>([
-						[Operator.NOT, 'fnot'],
-						[Operator.EMP, 'femp'],
-					])],
-				]).get(bintype)!.get(op)!, [arg], binaryen.i32);
-		}
-	}
-
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
@@ -90,7 +47,11 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return ASTNodeOperationUnary.operate(builder.module, this.operator, this.operand.build(builder));
+		return builder.module.call(new Map<Operator, string>([
+			[Operator.NOT, 'vnot'],
+			[Operator.EMP, 'vemp'],
+			[Operator.NEG, 'vneg'],
+		]).get(this.operator)!, [this.operand.build(builder)], binaryen.v128);
 	}
 
 	@memoizeMethod

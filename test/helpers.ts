@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	type CPConfig,
@@ -56,16 +57,15 @@ export function typeUnitStr(x: string): TYPE.TypeUnit<OBJ.String> {
 
 
 
-export function buildConstInt(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
+export function buildConst(mod: binaryen.Module, value: null | boolean | bigint | number = null): binaryen.ExpressionRef {
 	return (
-		(x === 0n) ? OBJ.Integer.ZERO :
-		(x === 1n) ? OBJ.Integer.UNIT :
-		new OBJ.Integer(x)
+		value === null            ? OBJ.Null.NULL :
+		value === false           ? OBJ.Boolean.FALSE :
+		value === true            ? OBJ.Boolean.TRUE :
+		value === 0n              ? OBJ.Integer.ZERO :
+		value === 1n              ? OBJ.Integer.UNIT :
+		typeof value === 'bigint' ? new OBJ.Integer(value) :
+		typeof value === 'number' ? new OBJ.Float(value) :
+		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
 	).build(mod);
-}
-export function buildConstFloat(x: number, mod: binaryen.Module): binaryen.ExpressionRef {
-	return new OBJ.Float(x).build(mod);
-}
-export function buildConvert(x: bigint, mod: binaryen.Module): binaryen.ExpressionRef {
-	return mod.f64.convert_u.i32(buildConstInt(x, mod));
 }

@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import binaryen from 'binaryen';
 import {
 	type TypeEntry,
 	OBJ,
@@ -785,35 +784,6 @@ describe('Type', () => {
 					}
 				});
 			});
-		});
-	});
-
-
-	describe('#binType', () => {
-		it('returns a binaryen type for simple types.', () => {
-			const tests = new Map<TYPE.Type, binaryen.Type>([
-				[TYPE.NEVER, binaryen.unreachable],
-				[TYPE.VOID,  binaryen.none],
-				[TYPE.NULL,  binaryen.i32],
-				[TYPE.BOOL,  binaryen.i32],
-				[TYPE.INT,   binaryen.i32],
-				[TYPE.FLOAT, binaryen.f64],
-			]);
-			return assert.deepStrictEqual([...tests.keys()].map((t) => t.binType()), [...tests.values()]);
-		});
-		it('returns v128 type for unions.', () => {
-			[
-				TYPE.VOID.union(TYPE.NULL),
-				TYPE.VOID.union(TYPE.BOOL),
-				TYPE.VOID.union(TYPE.INT),
-				TYPE.VOID.union(TYPE.FLOAT),
-				TYPE.NULL.union(TYPE.BOOL),
-				TYPE.NULL.union(TYPE.INT),
-				TYPE.NULL.union(TYPE.FLOAT),
-				TYPE.BOOL.union(TYPE.INT),
-				TYPE.BOOL.union(TYPE.FLOAT),
-				TYPE.INT.union(TYPE.FLOAT),
-			].forEach((typ) => assert.strictEqual(typ.binType(), binaryen.v128));
 		});
 	});
 

@@ -4,7 +4,6 @@ import {
 	AST,
 	TYPE,
 	Builder,
-	BinVect,
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,
@@ -166,6 +165,8 @@ describe('ASTNodeCP', () => {
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder = new Builder(src);
+				goal.varCheck();
+				goal.typeCheck();
 				goal.build(builder);
 				return assertEqualBins(
 					goal.children[1].build(builder),
@@ -188,13 +189,9 @@ describe('ASTNodeCP', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const exprs: binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeAssignment).assigned.build(builder));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
-					[
-						...exprs.slice(0, 2).map((exp) => new BinVect(builder.module, exp).vect),
-						...exprs.slice(2),
-					].map((expected) => builder.module.local.set(0, expected)),
+					goal.children.slice(2).map((stmt) => builder.module.local.set(0, (stmt as AST.ASTNodeAssignment).assigned.build(builder))),
 				);
 			});
 		});

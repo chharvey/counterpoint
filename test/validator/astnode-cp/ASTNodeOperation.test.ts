@@ -24,9 +24,7 @@ import {
 	typeUnitInt,
 	typeUnitFloat,
 	typeUnitStr,
-	buildConstInt,
-	buildConstFloat,
-	buildConvert,
+	buildConst,
 } from '../../helpers.js';
 
 
@@ -61,36 +59,24 @@ describe('ASTNodeOperation', () => {
 		return stmt.expr!.type();
 	}
 
-	function make_branches(mod: binaryen.Module, left: binaryen.ExpressionRef, right: binaryen.ExpressionRef): [binaryen.ExpressionRef, binaryen.ExpressionRef] {
-		return [
-			new BinVect(mod, left).vect,
-			new BinVect(mod, right).vect,
-		];
-	}
+	const CALL = {
+		vnot: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], binaryen.v128),
+		vemp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], binaryen.v128),
+		vneg: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], binaryen.v128),
 
-	function inot(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return mod.call('inot', [arg], binaryen.i32);
-	}
+		vexp: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vexp', [arg0, arg1], binaryen.v128),
+		vmul: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vmul', [arg0, arg1], binaryen.v128),
+		vdiv: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vdiv', [arg0, arg1], binaryen.v128),
+		vadd: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vadd', [arg0, arg1], binaryen.v128),
+		vlt:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',  [arg0, arg1], binaryen.v128),
+		vgt:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',  [arg0, arg1], binaryen.v128),
+		vle:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle',  [arg0, arg1], binaryen.v128),
+		vge:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge',  [arg0, arg1], binaryen.v128),
+		vid:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',  [arg0, arg1], binaryen.v128),
+		veq:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',  [arg0, arg1], binaryen.v128),
+		veqq: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veqq', [arg0, arg1], binaryen.v128),
+	} as const;
 
-	function fnot(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return mod.call('fnot', [arg], binaryen.i32);
-	}
-
-	function iemp(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return mod.call('iemp', [arg], binaryen.i32);
-	}
-
-	function femp(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return mod.call('femp', [arg], binaryen.i32);
-	}
-
-	function ineg(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return mod.call('neg', [arg], binaryen.i32);
-	}
-
-	function fneg(mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return mod.f64.neg(arg);
-	}
 
 
 
@@ -111,13 +97,15 @@ describe('ASTNodeOperation', () => {
 		it('compound expression.', () => {
 			const mod = new binaryen.Module();
 			return buildOperations(new Map([
-				['42 ^ 2 * 420;', mod.i32.mul(
-					mod.call('exp', [buildConstInt(42n, mod), buildConstInt(2n, mod)], binaryen.i32),
-					buildConstInt(420n, mod),
+				['42 ^ 2 * 420;', CALL.vmul(
+					mod,
+					CALL.vexp(mod, buildConst(mod, 42n), buildConst(mod, 2n)),
+					buildConst(mod, 420n),
 				)],
-				['2 * 3.0 + 5;', mod.f64.add(
-					mod.f64.mul(buildConvert(2n, mod), buildConstFloat(3.0, mod)),
-					buildConvert(5n, mod),
+				['2 * 3.0 + 5;', CALL.vadd(
+					mod,
+					CALL.vmul(mod, buildConst(mod, 2n), buildConst(mod, 3.0)),
+					buildConst(mod, 5n),
 				)],
 			]));
 		});
@@ -296,18 +284,18 @@ describe('ASTNodeOperation', () => {
 			it('returns the correct operation.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['!null;',  inot(mod, buildConstInt   (0n,  mod))],
-					['!false;', inot(mod, buildConstInt   (0n,  mod))],
-					['!true;',  inot(mod, buildConstInt   (1n,  mod))],
-					['!42;',    inot(mod, buildConstInt   (42n, mod))],
-					['!4.2;',   fnot(mod, buildConstFloat (4.2, mod))],
-					['?null;',  iemp(mod, buildConstInt   (0n,  mod))],
-					['?false;', iemp(mod, buildConstInt   (0n,  mod))],
-					['?true;',  iemp(mod, buildConstInt   (1n,  mod))],
-					['?42;',    iemp(mod, buildConstInt   (42n, mod))],
-					['?4.2;',   femp(mod, buildConstFloat (4.2, mod))],
-					['-(4);',   ineg(mod, buildConstInt   (4n,  mod))],
-					['-(4.2);', fneg(mod, buildConstFloat (4.2, mod))],
+					['!null;',  CALL.vnot(mod, buildConst(mod))],
+					['!false;', CALL.vnot(mod, buildConst(mod, false))],
+					['!true;',  CALL.vnot(mod, buildConst(mod, true))],
+					['!42;',    CALL.vnot(mod, buildConst(mod, 42n))],
+					['!4.2;',   CALL.vnot(mod, buildConst(mod, 4.2))],
+					['?null;',  CALL.vemp(mod, buildConst(mod))],
+					['?false;', CALL.vemp(mod, buildConst(mod, false))],
+					['?true;',  CALL.vemp(mod, buildConst(mod, true))],
+					['?42;',    CALL.vemp(mod, buildConst(mod, 42n))],
+					['?4.2;',   CALL.vemp(mod, buildConst(mod, 4.2))],
+					['-(4);',   CALL.vneg(mod, buildConst(mod, 4n))],
+					['-(4.2);', CALL.vneg(mod, buildConst(mod, 4.2))],
 				]));
 			});
 			it('works with vects.', () => {
@@ -315,14 +303,14 @@ describe('ASTNodeOperation', () => {
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
 
-					!x; % should return \`if i32.eqz(0) then $inot(42) else $fnot(!)\`
-					!y; % should return \`if i32.eqz(1) then $inot(!)  else $fnot(4.2)\`
+					!x;
+					!y;
 
-					?x; % should return \`if i32.eqz(0) then $iemp(42) else $femp(!)\`
-					?y; % should return \`if i32.eqz(1) then $iemp(!)  else $femp(4.2)\`
+					?x;
+					?y;
 
-					-x; % should return \`if i32.eqz(0) then [0, 0, 0, $neg(42)] else [0, 3, f64.neg(!)]\`
-					-y; % should return \`if i32.eqz(1) then [0, 0, 0, $neg(!)]  else [0, 3, f64.neg(4.2)]\`
+					-x;
+					-y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -330,18 +318,18 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinVect[] = goal.children.slice(2).map((stmt) => (
-					new BinVect(mod, {int_float: ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder)})
+				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
+					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder)
 				));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						mod.if(extracts[0].isInt,                       inot(mod, extracts[0].intValue), fnot(mod, extracts[0].floatValue)),
-						mod.if(extracts[1].isInt,                       inot(mod, extracts[1].intValue), fnot(mod, extracts[1].floatValue)),
-						mod.if(extracts[2].isInt,                       iemp(mod, extracts[2].intValue), femp(mod, extracts[2].floatValue)),
-						mod.if(extracts[3].isInt,                       iemp(mod, extracts[3].intValue), femp(mod, extracts[3].floatValue)),
-						mod.if(extracts[4].isInt, ...make_branches(mod, ineg(mod, extracts[4].intValue), fneg(mod, extracts[4].floatValue))),
-						mod.if(extracts[5].isInt, ...make_branches(mod, ineg(mod, extracts[5].intValue), fneg(mod, extracts[5].floatValue))),
+						CALL.vnot(mod, extracts[0]),
+						CALL.vnot(mod, extracts[1]),
+						CALL.vemp(mod, extracts[2]),
+						CALL.vemp(mod, extracts[3]),
+						CALL.vneg(mod, extracts[4]),
+						CALL.vneg(mod, extracts[5]),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
@@ -350,14 +338,14 @@ describe('ASTNodeOperation', () => {
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
 
-					!!x; % should return \`$inot(if i32.eqz(0) then $inot(42) else $fnot(0.0))\`
-					??y; % should return \`$iemp(if i32.eqz(1) then $iemp(0)  else $femp(4.2))\`
+					!!x;
+					??y;
 
-					!-x; % should return \`if isInt('-x'= if i32.eqz(0) then [0, 0, 0, $neg(42)] else [0, 3, f64.neg(!)])   then $inot(intValue('-x')) else $fnot(floatValue('-x'))\`
-					?-y; % should return \`if isInt('-y'= if i32.eqz(1) then [0, 0, 0, $neg(!)]  else [0, 3, f64.neg(4.2)]) then $iemp(intValue('-y')) else $femp(floatValue('-y'))\`
+					!-x;
+					?-y;
 
-					--x; % should return \`if isInt('-x'= if i32.eqz(0) then [0, 0, 0, $neg(42)] else [0, 3, f64.neg(!)])   then [0, 0, 0, $neg(intValue('-x'))] else [0, 3, f64.neg(floatValue('-x'))]\`
-					--y; % should return \`if isInt('-y'= if i32.eqz(1) then [0, 0, 0, $neg(!)]  else [0, 3, f64.neg(4.2)]) then [0, 0, 0, $neg(intValue('-y'))] else [0, 3, f64.neg(floatValue('-y'))]\`
+					--x;
+					--y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -365,36 +353,24 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinVect[] = goal.children.slice(2).map((stmt) => (
-					new BinVect(mod, {int_float: (((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build(builder)})
+				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
+					(((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build(builder)
 				));
-				const negated: readonly BinVect[] = extracts.slice(2).map((vect) => new BinVect(mod, {
-					int_float: mod.if(
-						vect.isInt,
-						...make_branches(
-							mod,
-							ineg(mod, vect.intValue),
-							fneg(mod, vect.floatValue),
-						),
-					),
-				}));
 				assertEqualBins(
 					goal.children.slice(4).map((stmt) => (
 						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build(builder)
 					)),
-					negated.map((vect) => vect.vect),
+					extracts.slice(2).map((extract) => CALL.vneg(mod, extract)),
 				);
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						inot(mod, mod.if(extracts[0].isInt, inot(mod, extracts[0].intValue), fnot(mod, extracts[0].floatValue))),
-						iemp(mod, mod.if(extracts[1].isInt, iemp(mod, extracts[1].intValue), femp(mod, extracts[1].floatValue))),
-
-						mod.if(negated[0].isInt, inot(mod, negated[0].intValue), fnot(mod, negated[0].floatValue)),
-						mod.if(negated[1].isInt, iemp(mod, negated[1].intValue), femp(mod, negated[1].floatValue)),
-
-						mod.if(negated[2].isInt, ...make_branches(mod, ineg(mod, negated[2].intValue), fneg(mod, negated[2].floatValue))),
-						mod.if(negated[3].isInt, ...make_branches(mod, ineg(mod, negated[3].intValue), fneg(mod, negated[3].floatValue))),
+						CALL.vnot(mod, CALL.vnot(mod, extracts[0])),
+						CALL.vemp(mod, CALL.vemp(mod, extracts[1])),
+						CALL.vnot(mod, CALL.vneg(mod, extracts[2])),
+						CALL.vemp(mod, CALL.vneg(mod, extracts[3])),
+						CALL.vneg(mod, CALL.vneg(mod, extracts[4])),
+						CALL.vneg(mod, CALL.vneg(mod, extracts[5])),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
@@ -410,20 +386,20 @@ describe('ASTNodeOperation', () => {
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
 
-					x * 2;   % should return \`if i32.eqz(0) then [0, 0, 0, i32.mul(42, 2)] else [0, 3, f64.mul(!, c(2))]\`
-					y * 2;   % should return \`if i32.eqz(1) then [0, 0, 0, i32.mul(!,  2)] else [0, 3, f64.mul(4.2, c(2))]\`
-					x * 2.4; % should return \`if i32.eqz(0) then f64.mul(c(42), 2.4)       else f64.mul(!, 2.4)\`
-					y * 2.4; % should return \`if i32.eqz(1) then f64.mul(c(!),  2.4)       else f64.mul(4.2, 2.4)\`
+					x * 2;
+					y * 2;
+					x * 2.4;
+					y * 2.4;
 
-					x < 2;   % should return \`if i32.eqz(0) then i32.lt_s(42, 2)    else f64.lt(!, c(2))\`
-					y < 2;   % should return \`if i32.eqz(1) then i32.lt_s(!,  2)    else f64.lt(4.2, c(2))\`
-					x < 2.4; % should return \`if i32.eqz(0) then f64.lt(c(42), 2.4) else f64.lt(!, 2.4)\`
-					y < 2.4; % should return \`if i32.eqz(1) then f64.lt(c(!),  2.4) else f64.lt(4.2, 2.4)\`
+					x < 2;
+					y < 2;
+					x < 2.4;
+					y < 2.4;
 
-					x == 2;   % should return \`if i32.eqz(0) then i32.eq(42, 2)      else f64.eq(!, c(2))]\`
-					y == 2;   % should return \`if i32.eqz(1) then i32.eq(!,  2)      else f64.eq(4.2, c(2))]\`
-					x == 2.4; % should return \`if i32.eqz(0) then f64.eq(c(42), 2.4) else f64.eq(!, 2.4)]\`
-					y == 2.4; % should return \`if i32.eqz(1) then f64.eq(c(!),  2.4) else f64.eq(4.2, 2.4)]\`
+					x == 2;
+					y == 2;
+					x == 2.4;
+					y == 2.4;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -431,31 +407,32 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinVect[] = goal.children.slice(2).map((stmt) => (
-					new BinVect(mod, {int_float: ((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)})
+				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
+					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)
 				));
+				/* eslint-disable quote-props */
 				const const_ = {
-					'2':    buildConstInt   (2n,  mod),
-					'2.4':  buildConstFloat (2.4, mod),
-					'c(2)': buildConvert    (2n,  mod),
+					'2':   buildConst(mod, 2n),
+					'2.4': buildConst(mod, 2.4),
 				} as const;
+				/* eslint-enable quote-props */
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
 					[
-						mod.if(extracts[0].isInt, ...make_branches(mod, mod.i32.mul(                      extracts[0].intValue,  const_['2']),   mod.f64.mul(extracts[0].floatValue, const_['c(2)']))),
-						mod.if(extracts[1].isInt, ...make_branches(mod, mod.i32.mul(                      extracts[1].intValue,  const_['2']),   mod.f64.mul(extracts[1].floatValue, const_['c(2)']))),
-						mod.if(extracts[2].isInt,                       mod.f64.mul(mod.f64.convert_u.i32(extracts[2].intValue), const_['2.4']), mod.f64.mul(extracts[2].floatValue, const_['2.4'])),
-						mod.if(extracts[3].isInt,                       mod.f64.mul(mod.f64.convert_u.i32(extracts[3].intValue), const_['2.4']), mod.f64.mul(extracts[3].floatValue, const_['2.4'])),
+						CALL.vmul(mod, extracts[0], const_['2']),
+						CALL.vmul(mod, extracts[1], const_['2']),
+						CALL.vmul(mod, extracts[2], const_['2.4']),
+						CALL.vmul(mod, extracts[3], const_['2.4']),
 
-						mod.if(extracts[4].isInt, mod.i32.lt_s (                      extracts[4].intValue,  const_['2']),   mod.f64.lt(extracts[4].floatValue, const_['c(2)'])),
-						mod.if(extracts[5].isInt, mod.i32.lt_s (                      extracts[5].intValue,  const_['2']),   mod.f64.lt(extracts[5].floatValue, const_['c(2)'])),
-						mod.if(extracts[6].isInt, mod.f64.lt   (mod.f64.convert_u.i32(extracts[6].intValue), const_['2.4']), mod.f64.lt(extracts[6].floatValue, const_['2.4'])),
-						mod.if(extracts[7].isInt, mod.f64.lt   (mod.f64.convert_u.i32(extracts[7].intValue), const_['2.4']), mod.f64.lt(extracts[7].floatValue, const_['2.4'])),
+						CALL.vlt(mod, extracts[4], const_['2']),
+						CALL.vlt(mod, extracts[5], const_['2']),
+						CALL.vlt(mod, extracts[6], const_['2.4']),
+						CALL.vlt(mod, extracts[7], const_['2.4']),
 
-						mod.if(extracts[ 8].isInt, mod.i32.eq(                      extracts[ 8].intValue,  const_['2']),   mod.f64.eq(extracts[ 8].floatValue, const_['c(2)'])),
-						mod.if(extracts[ 9].isInt, mod.i32.eq(                      extracts[ 9].intValue,  const_['2']),   mod.f64.eq(extracts[ 9].floatValue, const_['c(2)'])),
-						mod.if(extracts[10].isInt, mod.f64.eq(mod.f64.convert_u.i32(extracts[10].intValue), const_['2.4']), mod.f64.eq(extracts[10].floatValue, const_['2.4'])),
-						mod.if(extracts[11].isInt, mod.f64.eq(mod.f64.convert_u.i32(extracts[11].intValue), const_['2.4']), mod.f64.eq(extracts[11].floatValue, const_['2.4'])),
+						CALL.veq(mod, extracts[ 8], const_['2']),
+						CALL.veq(mod, extracts[ 9], const_['2']),
+						CALL.veq(mod, extracts[10], const_['2.4']),
+						CALL.veq(mod, extracts[11], const_['2.4']),
 					].map((expected) => builder.module.drop(expected)),
 				);
 			});
@@ -463,21 +440,9 @@ describe('ASTNodeOperation', () => {
 				const src = `
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
-
-					x * y; %% should return \`if i32.eqz(0)
-						then (if i32.eqz(1) then [0, 0, 0, i32.mul(42, !)] else [0, 3, f64.mul(c(42), 4.2)])
-						else (if i32.eqz(1) then [0, 3, f64.mul(!, c(!))]  else [0, 3, f64.mul(!, 4.2)])
-					\` %%
-
-					x > y; %% should return \`if i32.eqz(0)
-						then (if i32.eqz(1) then [0, 0, 0, i32.gt_s(42, !)] else [0, 3, f64.gt(c(42), 4.2)])
-						else (if i32.eqz(1) then [0, 3, f64.gt(!, c(!))]    else [0, 3, f64.gt(!, 4.2)])
-					\` %%
-
-					x == y; %% should return \`if i32.eqz(0)
-						then (if i32.eqz(1) then [0, 0, 0, i32.eq(42, !)] else [0, 3, f64.eq(c(42), 4.2)])
-						else (if i32.eqz(1) then [0, 3, f64.eq(!, c(!))]  else [0, 3, f64.eq(!, 4.2)])
-					\` %%
+					x * y;
+					x > y;
+					x == y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -485,56 +450,28 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly (readonly BinVect[])[] = goal.children.slice(2).map((stmt) => {
+				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = goal.children.slice(2).map((stmt) => { //
 					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
 					return [
 						binexp.operand0.build(builder),
 						binexp.operand1.build(builder),
-					].map((arg) => new BinVect(mod, {int_float: arg}));
+					];
 				});
-				const each_options: readonly (readonly binaryen.ExpressionRef[])[] = ([
-					[
-						mod.i32.mul(extracts[0][0].intValue,                        extracts[0][1].intValue),
-						mod.f64.mul(mod.f64.convert_u.i32(extracts[0][0].intValue), extracts[0][1].floatValue),
-						mod.f64.mul(extracts[0][0].floatValue,                      mod.f64.convert_u.i32(extracts[0][1].intValue)),
-						mod.f64.mul(extracts[0][0].floatValue,                      extracts[0][1].floatValue),
-					],
-					[
-						mod.i32.gt_s (extracts[1][0].intValue,                        extracts[1][1].intValue),
-						mod.f64.gt   (mod.f64.convert_u.i32(extracts[1][0].intValue), extracts[1][1].floatValue),
-						mod.f64.gt   (extracts[1][0].floatValue,                      mod.f64.convert_u.i32(extracts[1][1].intValue)),
-						mod.f64.gt   (extracts[1][0].floatValue,                      extracts[1][1].floatValue),
-					],
-					[
-						mod.i32.eq(extracts[2][0].intValue,                        extracts[2][1].intValue),
-						mod.f64.eq(mod.f64.convert_u.i32(extracts[2][0].intValue), extracts[2][1].floatValue),
-						mod.f64.eq(extracts[2][0].floatValue,                      mod.f64.convert_u.i32(extracts[2][1].intValue)),
-						mod.f64.eq(extracts[2][0].floatValue,                      extracts[2][1].floatValue),
-					],
-				] as const).map((options) => options.map((option) => new BinVect(mod, option).vect));
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
-					each_options.map((options, i) => builder.module.drop(mod.if(
-						extracts[i][0].isInt,
-						mod.if(extracts[i][1].isInt, options[0b00], options[0b01]),
-						mod.if(extracts[i][1].isInt, options[0b10], options[0b11]),
-					))),
+					[
+						CALL.vmul(mod, extracts[0][0], extracts[0][1]),
+						CALL.vgt (mod, extracts[1][0], extracts[1][1]),
+						CALL.veq (mod, extracts[2][0], extracts[2][1]),
+					].map((expected) => builder.module.drop(expected)),
 				);
 			});
 			it('multiple operations.', () => {
 				const src = `
 					let unfixed x: int | float = 42;
 					let unfixed y: int | float = 4.2;
-
-					x + 2 + 3; %% should return \`if isInt('x + 2'= if i32.eqz(0) then [0, 0, 0, i32.add(42, 2)] else [0, 3, f64.add(!, c(2))])
-						then [0, 0, 0, i32.add(intValue('x + 2'), 3)]
-						else [0, 3, f64.add(floatValue('x + 2'), c(3))]
-					\` %%
-
-					2 + y + 3; %% should return \`if isInt('2 + y'= if i32.eqz(1) then [0, 0, 0, i32.add(2, !)] else [0, 3, f64.add(c(2), 4.2)])
-						then [0, 0, 0, i32.add(intValue('2 + y'), 3)]
-						else [0, 3, f64.add(floatValue('2 + y'), c(3))]
-					\` %%
+					x + 2 + 3;
+					2 + y + 3;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder               = new Builder(src);
@@ -542,34 +479,29 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build(builder);
-				const extracts: readonly BinVect[] = [
+				const extracts: readonly binaryen.ExpressionRef[] = [
 					(((goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(builder),
 					(((goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(builder),
-				].map((arg) => new BinVect(mod, {int_float: arg}));
+				];
+				/* eslint-disable quote-props */
 				const const_ = {
-					'2':    buildConstInt (2n, mod),
-					'c(2)': buildConvert  (2n, mod),
+					'2': buildConst(mod, 2n),
+					'3': buildConst(mod, 3n),
 				} as const;
-				const inners: readonly BinVect[] = [
-					mod.if(extracts[0].isInt, ...make_branches(mod, mod.i32.add(extracts[0].intValue, const_['2']),          mod.f64.add(extracts[0].floatValue, const_['c(2)']))),
-					mod.if(extracts[1].isInt, ...make_branches(mod, mod.i32.add(const_['2'],          extracts[1].intValue), mod.f64.add(const_['c(2)'],         extracts[1].floatValue))),
-				].map((if_) => new BinVect(mod, {int_float: if_}));
+				/* eslint-enable quote-props */
+				const inners: readonly binaryen.ExpressionRef[] = [
+					CALL.vadd(mod, extracts[0], const_['2']),
+					CALL.vadd(mod, const_['2'], extracts[1]),
+				];
 				assertEqualBins(
 					goal.children.slice(2).map((stmt) => (
 						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build(builder)
 					)),
-					inners.map((vect) => vect.vect),
+					inners,
 				);
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build(builder)),
-					inners.map((inner) => builder.module.drop(mod.if(
-						inner.isInt,
-						...make_branches(
-							mod,
-							mod.i32.add(inner.intValue,   buildConstInt(3n, mod)),
-							mod.f64.add(inner.floatValue, buildConvert(3n, mod)),
-						),
-					))),
+					inners.map((inner) => builder.module.drop(CALL.vadd(mod, inner, const_['3']))),
 				);
 			});
 		});
@@ -677,17 +609,21 @@ describe('ASTNodeOperation', () => {
 			it('returns the correct operation.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['42 + 420;', mod.i32.add(buildConstInt (42n, mod), buildConstInt   (420n, mod))],
-					['3 * 2.1;',  mod.f64.mul(buildConvert  (3n,  mod), buildConstFloat (2.1,  mod))],
+					['42 + 420;', CALL.vadd(mod, buildConst(mod, 42n), buildConst(mod, 420n))],
+					['3 * 2.1;',  CALL.vmul(mod, buildConst(mod, 3n),  buildConst(mod, 2.1))],
 
-					[' 126 /  3;', mod.i32.div_s(buildConstInt( 126n, mod), buildConstInt( 3n, mod))],
-					['-126 /  3;', mod.i32.div_s(buildConstInt(-126n, mod), buildConstInt( 3n, mod))],
-					[' 126 / -3;', mod.i32.div_s(buildConstInt( 126n, mod), buildConstInt(-3n, mod))],
-					['-126 / -3;', mod.i32.div_s(buildConstInt(-126n, mod), buildConstInt(-3n, mod))],
-					[' 200 /  3;', mod.i32.div_s(buildConstInt( 200n, mod), buildConstInt( 3n, mod))],
-					[' 200 / -3;', mod.i32.div_s(buildConstInt( 200n, mod), buildConstInt(-3n, mod))],
-					['-200 /  3;', mod.i32.div_s(buildConstInt(-200n, mod), buildConstInt( 3n, mod))],
-					['-200 / -3;', mod.i32.div_s(buildConstInt(-200n, mod), buildConstInt(-3n, mod))],
+					[' 126 /  3;', CALL.vdiv(mod, buildConst(mod,  126n), buildConst(mod,  3n))],
+					['-126 /  3;', CALL.vdiv(mod, buildConst(mod, -126n), buildConst(mod,  3n))],
+					[' 126 / -3;', CALL.vdiv(mod, buildConst(mod,  126n), buildConst(mod, -3n))],
+					['-126 / -3;', CALL.vdiv(mod, buildConst(mod, -126n), buildConst(mod, -3n))],
+					[' 200 /  3;', CALL.vdiv(mod, buildConst(mod,  200n), buildConst(mod,  3n))],
+					[' 200 / -3;', CALL.vdiv(mod, buildConst(mod,  200n), buildConst(mod, -3n))],
+					['-200 /  3;', CALL.vdiv(mod, buildConst(mod, -200n), buildConst(mod,  3n))],
+					['-200 / -3;', CALL.vdiv(mod, buildConst(mod, -200n), buildConst(mod, -3n))],
+
+					['42  - 420;',  CALL.vadd(mod, buildConst(mod, 42n), CALL.vneg(mod, buildConst(mod, 420n)))],
+					['4.2 - 42.0;', CALL.vadd(mod, buildConst(mod, 4.2), CALL.vneg(mod, buildConst(mod, 42.0)))],
+					['4.2 - 42;',   CALL.vadd(mod, buildConst(mod, 4.2), CALL.vneg(mod, buildConst(mod, 42n)))],
 				]));
 			});
 		});
@@ -761,22 +697,22 @@ describe('ASTNodeOperation', () => {
 			it('returns the correct operation.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['3   <  3;',   mod.i32.lt_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
-					['3   >  3;',   mod.i32.gt_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
-					['3   <= 3;',   mod.i32.le_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
-					['3   >= 3;',   mod.i32.ge_s (buildConstInt   (3n,  mod), buildConstInt   (3n,  mod))],
-					['5   <  9.2;', mod.f64.lt   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
-					['5   >  9.2;', mod.f64.gt   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
-					['5   <= 9.2;', mod.f64.le   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
-					['5   >= 9.2;', mod.f64.ge   (buildConvert    (5n,  mod), buildConstFloat (9.2, mod))],
-					['5.2 <  3;',   mod.f64.lt   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
-					['5.2 >  3;',   mod.f64.gt   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
-					['5.2 <= 3;',   mod.f64.le   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
-					['5.2 >= 3;',   mod.f64.ge   (buildConstFloat (5.2, mod), buildConvert    (3n,  mod))],
-					['5.2 <  9.2;', mod.f64.lt   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
-					['5.2 >  9.2;', mod.f64.gt   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
-					['5.2 <= 9.2;', mod.f64.le   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
-					['5.2 >= 9.2;', mod.f64.ge   (buildConstFloat (5.2, mod), buildConstFloat (9.2, mod))],
+					['3   <  3;',   CALL.vlt(mod, buildConst(mod, 3n),  buildConst(mod, 3n))],
+					['3   >  3;',   CALL.vgt(mod, buildConst(mod, 3n),  buildConst(mod, 3n))],
+					['3   <= 3;',   CALL.vle(mod, buildConst(mod, 3n),  buildConst(mod, 3n))],
+					['3   >= 3;',   CALL.vge(mod, buildConst(mod, 3n),  buildConst(mod, 3n))],
+					['5   <  9.2;', CALL.vlt(mod, buildConst(mod, 5n),  buildConst(mod, 9.2))],
+					['5   >  9.2;', CALL.vgt(mod, buildConst(mod, 5n),  buildConst(mod, 9.2))],
+					['5   <= 9.2;', CALL.vle(mod, buildConst(mod, 5n),  buildConst(mod, 9.2))],
+					['5   >= 9.2;', CALL.vge(mod, buildConst(mod, 5n),  buildConst(mod, 9.2))],
+					['5.2 <  3;',   CALL.vlt(mod, buildConst(mod, 5.2), buildConst(mod, 3n))],
+					['5.2 >  3;',   CALL.vgt(mod, buildConst(mod, 5.2), buildConst(mod, 3n))],
+					['5.2 <= 3;',   CALL.vle(mod, buildConst(mod, 5.2), buildConst(mod, 3n))],
+					['5.2 >= 3;',   CALL.vge(mod, buildConst(mod, 5.2), buildConst(mod, 3n))],
+					['5.2 <  9.2;', CALL.vlt(mod, buildConst(mod, 5.2), buildConst(mod, 9.2))],
+					['5.2 >  9.2;', CALL.vgt(mod, buildConst(mod, 5.2), buildConst(mod, 9.2))],
+					['5.2 <= 9.2;', CALL.vle(mod, buildConst(mod, 5.2), buildConst(mod, 9.2))],
+					['5.2 >= 9.2;', CALL.vge(mod, buildConst(mod, 5.2), buildConst(mod, 9.2))],
 				]));
 			});
 		});
@@ -1001,54 +937,54 @@ describe('ASTNodeOperation', () => {
 			it('with int coercion on, coerces ints into floats when needed.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['42 === 420;', mod.i32.eq (           buildConstInt (42n, mod), buildConstInt   (420n, mod))],
-					['42 ==  420;', mod.i32.eq (           buildConstInt (42n, mod), buildConstInt   (420n, mod))],
-					['42 === 4.2;', mod.call   ('i_f_id', [buildConstInt (42n, mod), buildConstFloat (4.2,  mod)], binaryen.i32)],
-					['42 ==  4.2;', mod.f64.eq (           buildConvert  (42n, mod), buildConstFloat (4.2,  mod))],
+					['42 === 420;', CALL.vid(mod, buildConst(mod, 42n), buildConst(mod, 420n))],
+					['42 ==  420;', CALL.veq(mod, buildConst(mod, 42n), buildConst(mod, 420n))],
+					['42 === 4.2;', CALL.vid(mod, buildConst(mod, 42n), buildConst(mod, 4.2))],
+					['42 ==  4.2;', CALL.veq(mod, buildConst(mod, 42n), buildConst(mod, 4.2))],
 
-					['4.2 === 42;',   mod.call   ('f_i_id', [buildConstFloat(4.2, mod), buildConstInt   (42n,  mod)], binaryen.i32)],
-					['4.2 ==  42;',   mod.f64.eq (           buildConstFloat(4.2, mod), buildConvert    (42n,  mod))],
-					['4.2 === 42.0;', mod.call   ('fid',    [buildConstFloat(4.2, mod), buildConstFloat (42.0, mod)], binaryen.i32)],
-					['4.2 ==  42.0;', mod.f64.eq (           buildConstFloat(4.2, mod), buildConstFloat (42.0, mod))],
+					['4.2 === 42;',   CALL.vid(mod, buildConst(mod, 4.2), buildConst(mod, 42n))],
+					['4.2 ==  42;',   CALL.veq(mod, buildConst(mod, 4.2), buildConst(mod, 42n))],
+					['4.2 === 42.0;', CALL.vid(mod, buildConst(mod, 4.2), buildConst(mod, 42.0))],
+					['4.2 ==  42.0;', CALL.veq(mod, buildConst(mod, 4.2), buildConst(mod, 42.0))],
 
-					['null === 0;',   mod.i32.eq (           buildConstInt (0n, mod), buildConstInt   (0n,  mod))],
-					['null ==  0;',   mod.i32.eq (           buildConstInt (0n, mod), buildConstInt   (0n,  mod))],
-					['null === 0.0;', mod.call   ('i_f_id', [buildConstInt (0n, mod), buildConstFloat (0.0, mod)], binaryen.i32)],
-					['null ==  0.0;', mod.f64.eq (           buildConvert  (0n, mod), buildConstFloat (0.0, mod))],
+					['null === 0;',   CALL.vid(mod, buildConst(mod), buildConst(mod, 0n))],
+					['null ==  0;',   CALL.veq(mod, buildConst(mod), buildConst(mod, 0n))],
+					['null === 0.0;', CALL.vid(mod, buildConst(mod), buildConst(mod, 0.0))],
+					['null ==  0.0;', CALL.veq(mod, buildConst(mod), buildConst(mod, 0.0))],
 
-					['false === 0;',   mod.i32.eq (           buildConstInt (0n, mod), buildConstInt  (0n,  mod))],
-					['false ==  0;',   mod.i32.eq (           buildConstInt (0n, mod), buildConstInt  (0n,  mod))],
-					['false === 0.0;', mod.call   ('i_f_id', [buildConstInt (0n, mod), buildConstFloat(0.0, mod)], binaryen.i32)],
-					['false ==  0.0;', mod.f64.eq (           buildConvert  (0n, mod), buildConstFloat(0.0, mod))],
+					['null === false;', CALL.vid(mod, buildConst(mod), buildConst(mod, false))],
+					['null ==  false;', CALL.veq(mod, buildConst(mod), buildConst(mod, false))],
+					['null === true;',  CALL.vid(mod, buildConst(mod), buildConst(mod, true))],
+					['null ==  true;',  CALL.veq(mod, buildConst(mod), buildConst(mod, true))],
 
-					['true === 1;',   mod.i32.eq (           buildConstInt (1n, mod), buildConstInt   (1n,  mod))],
-					['true ==  1;',   mod.i32.eq (           buildConstInt (1n, mod), buildConstInt   (1n,  mod))],
-					['true === 1.0;', mod.call   ('i_f_id', [buildConstInt (1n, mod), buildConstFloat (1.0, mod)], binaryen.i32)],
-					['true ==  1.0;', mod.f64.eq (           buildConvert  (1n, mod), buildConstFloat (1.0, mod))],
+					['false === 0;',   CALL.vid(mod, buildConst(mod, false), buildConst(mod, 0n))],
+					['false ==  0;',   CALL.veq(mod, buildConst(mod, false), buildConst(mod, 0n))],
+					['false === 0.0;', CALL.vid(mod, buildConst(mod, false), buildConst(mod, 0.0))],
+					['false ==  0.0;', CALL.veq(mod, buildConst(mod, false), buildConst(mod, 0.0))],
 
-					['null === false;', mod.i32.eq(buildConstInt(0n, mod), buildConstInt(0n, mod))],
-					['null ==  false;', mod.i32.eq(buildConstInt(0n, mod), buildConstInt(0n, mod))],
-					['null === true;',  mod.i32.eq(buildConstInt(0n, mod), buildConstInt(1n, mod))],
-					['null ==  true;',  mod.i32.eq(buildConstInt(0n, mod), buildConstInt(1n, mod))],
+					['true === 1;',   CALL.vid(mod, buildConst(mod, true), buildConst(mod, 1n))],
+					['true ==  1;',   CALL.veq(mod, buildConst(mod, true), buildConst(mod, 1n))],
+					['true === 1.0;', CALL.vid(mod, buildConst(mod, true), buildConst(mod, 1.0))],
+					['true ==  1.0;', CALL.veq(mod, buildConst(mod, true), buildConst(mod, 1.0))],
 				]));
 			});
 			it('with int coercion off, does not coerce ints into floats.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['42 === 4.2;', mod.call('i_f_id', [buildConstInt(42n, mod), buildConstFloat(4.2, mod)], binaryen.i32)],
-					['42 ==  4.2;', mod.call('i_f_id', [buildConstInt(42n, mod), buildConstFloat(4.2, mod)], binaryen.i32)],
+					['42 === 4.2;', CALL.vid (mod, buildConst(mod, 42n), buildConst(mod, 4.2))],
+					['42 ==  4.2;', CALL.veqq(mod, buildConst(mod, 42n), buildConst(mod, 4.2))],
 
-					['4.2 === 42;',   mod.call('f_i_id', [buildConstFloat(4.2, mod), buildConstInt(42n, mod)], binaryen.i32)],
-					['4.2 ==  42;',   mod.call('f_i_id', [buildConstFloat(4.2, mod), buildConstInt(42n, mod)], binaryen.i32)],
+					['4.2 === 42;', CALL.vid (mod, buildConst(mod, 4.2), buildConst(mod, 42n))],
+					['4.2 ==  42;', CALL.veqq(mod, buildConst(mod, 4.2), buildConst(mod, 42n))],
 
-					['null === 0.0;', mod.call('i_f_id', [buildConstInt(0n, mod), buildConstFloat(0.0, mod)], binaryen.i32)],
-					['null ==  0.0;', mod.call('i_f_id', [buildConstInt(0n, mod), buildConstFloat(0.0, mod)], binaryen.i32)],
+					['null === 0.0;', CALL.vid  (mod, buildConst(mod), buildConst(mod, 0.0))],
+					['null ==  0.0;', CALL.veqq (mod, buildConst(mod), buildConst(mod, 0.0))],
 
-					['false === 0.0;', mod.call('i_f_id', [buildConstInt(0n, mod), buildConstFloat(0.0, mod)], binaryen.i32)],
-					['false ==  0.0;', mod.call('i_f_id', [buildConstInt(0n, mod), buildConstFloat(0.0, mod)], binaryen.i32)],
+					['false === 0.0;', CALL.vid (mod, buildConst(mod, false), buildConst(mod, 0.0))],
+					['false ==  0.0;', CALL.veqq(mod, buildConst(mod, false), buildConst(mod, 0.0))],
 
-					['true === 1.0;', mod.call('i_f_id', [buildConstInt(1n, mod), buildConstFloat(1.0, mod)], binaryen.i32)],
-					['true ==  1.0;', mod.call('i_f_id', [buildConstInt(1n, mod), buildConstFloat(1.0, mod)], binaryen.i32)],
+					['true === 1.0;', CALL.vid (mod, buildConst(mod, true), buildConst(mod, 1.0))],
+					['true ==  1.0;', CALL.veqq(mod, buildConst(mod, true), buildConst(mod, 1.0))],
 				]), CONFIG_FOLDING_COERCION_OFF);
 			});
 		});
@@ -1219,18 +1155,20 @@ describe('ASTNodeOperation', () => {
 			 *                  	the value,
 			 *                  	the value’s type,
 			 *                  ]
-			 * @param conditoin the callback to perform; given a teeer, returns a condition
 			 * @param branches  the callback to perform; given a getter, returns two branches: [if_true, if_false]
 			 * @return          the new `(if)` expression
 			 */
 			function create_if(
 				mod:                binaryen.Module,
 				[index, arg, type]: [number, binaryen.ExpressionRef, binaryen.Type],
-				condition:          (local_tee: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 				branches:           (local_get: binaryen.ExpressionRef) => [binaryen.ExpressionRef, binaryen.ExpressionRef],
 			): binaryen.ExpressionRef {
 				return mod.if(
-					condition.call(null, mod.local.tee(index, arg, type)),
+					new BinVect(mod, mod.call(
+						'vnot',
+						[mod.local.tee(index, arg, type)],
+						binaryen.v128,
+					)).isSpecial(false),
 					...branches.call(null, mod.local.get(index, type)),
 				);
 			}
@@ -1240,33 +1178,28 @@ describe('ASTNodeOperation', () => {
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
 					['42 && 420;', create_if(
 						mod,
-						[0, buildConstInt(42n, mod), binaryen.i32],
-						(teeer) => inot(mod, inot(mod, teeer)),
-						(getter) => [buildConstInt(420n, mod), getter],
+						[0, buildConst(mod, 42n), binaryen.v128],
+						(getter) => [buildConst(mod, 420n), getter],
 					)],
 					['4.2 || -420;', create_if(
 						mod,
-						[0, buildConstFloat(4.2, mod), binaryen.f64],
-						(teeer) => inot(mod, fnot(mod, teeer)),
-						(getter) => make_branches(mod, getter, buildConstInt(-420n, mod)),
+						[0, buildConst(mod, 4.2), binaryen.v128],
+						(getter) => [getter, buildConst(mod, -420n)],
 					)],
 					['null && 201.0e-1;', create_if(
 						mod,
-						[0, buildConstInt(0n, mod), binaryen.i32],
-						(teeer) => inot(mod, inot(mod, teeer)),
-						(getter) => make_branches(mod, buildConstFloat(20.1, mod), getter),
-					)],
-					['true && 201.0e-1;', create_if(
-						mod,
-						[0, buildConstInt(1n, mod), binaryen.i32],
-						(teeer) => inot(mod, inot(mod, teeer)),
-						(getter) => make_branches(mod, buildConstFloat(20.1, mod), getter),
+						[0, buildConst(mod), binaryen.v128],
+						(getter) => [buildConst(mod, 20.1), getter],
 					)],
 					['false || null;', create_if(
 						mod,
-						[0, buildConstInt(0n, mod), binaryen.i32],
-						(teeer) => inot(mod, inot(mod, teeer)),
-						(getter) => [getter, buildConstInt(0n, mod)],
+						[0, buildConst(mod, false), binaryen.v128],
+						(getter) => [getter, buildConst(mod)],
+					)],
+					['true && 201.0e-1;', create_if(
+						mod,
+						[0, buildConst(mod, true), binaryen.v128],
+						(getter) => [buildConst(mod, 20.1), getter],
 					)],
 				]));
 			});
@@ -1278,41 +1211,28 @@ describe('ASTNodeOperation', () => {
 						mod,
 						[2, create_if(
 							mod,
-							[0, buildConstInt(1n, mod), binaryen.i32],
-							(teeer) => inot(mod, inot(mod, teeer)),
-							(getter) => [buildConstInt(2n, mod), getter],
-						), binaryen.i32],
-						(teeer) => inot(mod, inot(mod, teeer)),
+							[0, buildConst(mod, 1n), binaryen.v128],
+							(getter) => [buildConst(mod, 2n), getter],
+						), binaryen.v128],
 						(getter) => [getter, create_if(
 							mod,
-							[1, buildConstInt(3n, mod), binaryen.i32],
-							(teeer) => inot(mod, inot(mod, teeer)),
-							(getter_) => [buildConstInt(4n, mod), getter_],
+							[1, buildConst(mod, 3n), binaryen.v128],
+							(getter_) => [buildConst(mod, 4n), getter_],
 						)],
 					)],
 					['1 && 2.0 || 3 && 4.0;', create_if(
 						mod,
 						[2, create_if(
 							mod,
-							[0, buildConstInt(1n, mod), binaryen.i32],
-							(teeer) => inot(mod, inot(mod, teeer)),
-							(getter) => make_branches(mod, buildConstFloat(2.0, mod), getter),
+							[0, buildConst(mod, 1n), binaryen.v128],
+							(getter) => [buildConst(mod, 2.0), getter],
 						), binaryen.v128],
-						(teeer) => {
-							const arg0 = new BinVect(mod, {int_float: teeer});
-							return inot(mod, mod.if(
-								arg0.isInt,
-								inot(mod, arg0.intValue),
-								fnot(mod, arg0.floatValue),
-							));
-						},
 						(getter) => [
 							getter,
 							create_if(
 								mod,
-								[1, buildConstInt(3n, mod), binaryen.i32],
-								(teeer) => inot(mod, inot(mod, teeer)),
-								(getter_) => make_branches(mod, buildConstFloat(4.0, mod), getter_),
+								[1, buildConst(mod, 3n), binaryen.v128],
+								(getter_) => [buildConst(mod, 4.0), getter_],
 							),
 						],
 					)],
@@ -1326,25 +1246,15 @@ describe('ASTNodeOperation', () => {
 						mod,
 						[2, create_if(
 							mod,
-							[0, buildConstInt(1n, mod), binaryen.i32],
-							(teeer) => inot(mod, inot(mod, teeer)),
-							(getter) => make_branches(mod, buildConstFloat(2.0, mod), getter),
+							[0, buildConst(mod, 1n), binaryen.v128],
+							(getter) => [buildConst(mod, 2.0), getter],
 						), binaryen.v128],
-						(teeer) => {
-							const arg0 = new BinVect(mod, {int_float: teeer});
-							return inot(mod, mod.if(
-								arg0.isInt,
-								inot(mod, arg0.intValue),
-								fnot(mod, arg0.floatValue),
-							));
-						},
 						(getter) => [
 							getter,
 							create_if(
 								mod,
-								[1, buildConstFloat(3.0, mod), binaryen.f64],
-								(teeer) => inot(mod, fnot(mod, teeer)),
-								(getter_) => make_branches(mod, buildConstInt(4n, mod), getter_),
+								[1, buildConst(mod, 3.0), binaryen.v128],
+								(getter_) => [buildConst(mod, 4n), getter_],
 							),
 						],
 					)],
@@ -1387,9 +1297,9 @@ describe('ASTNodeOperation', () => {
 			it('returns `(mod.if)`.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['if true  then false else 2;',    mod.if(buildConstInt(1n, mod), buildConstInt(0n, mod), buildConstInt(2n, mod))],
-					['if false then 3.0   else null;', mod.if(buildConstInt(0n, mod), ...make_branches(mod, buildConstFloat(3.0, mod), buildConstInt(0n, mod)))],
-					['if true  then 2     else 3.0;',  mod.if(buildConstInt(1n, mod), ...make_branches(mod, buildConstInt(2n, mod),    buildConstFloat(3.0, mod)))],
+					['if true  then false else 2;',    mod.if(buildConst(mod, true),  buildConst(mod, false), buildConst(mod, 2n))],
+					['if true  then 2     else 3.0;',  mod.if(buildConst(mod, true),  buildConst(mod, 2n),    buildConst(mod, 3.0))],
+					['if false then 3.0   else null;', mod.if(buildConst(mod, false), buildConst(mod, 3.0),   buildConst(mod))],
 				]));
 			});
 		});
