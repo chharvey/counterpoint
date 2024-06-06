@@ -39,7 +39,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	) {
 		super(start_node, {}, children)
 		this.#validator = new Validator(config);
-		this.#builder   = new Builder(this.source, config);
+		this.#builder   = new Builder();
 	}
 
 	override get validator(): Validator {
@@ -52,6 +52,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 
 	/** @implements Buildable */
 	public build(): binaryen.ExpressionRef | binaryen.Module {
+		const validate_module: () => void = this.builder.setupModule();
 		if (!this.children.length) {
 			return this.builder.module.nop();
 		} else {
@@ -65,6 +66,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 				this.builder.module.block(null, statements),
 			);
 			this.builder.module.addFunctionExport(fn_name, fn_name);
+			validate_module();
 			return this.builder.module;
 		}
 	}

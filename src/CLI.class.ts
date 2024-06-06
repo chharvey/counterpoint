@@ -6,9 +6,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 } from './core/index.js';
-import {
-	Builder,
-} from './builder/index.js';
+import {Program} from './Program.js';
 
 
 
@@ -255,11 +253,10 @@ export class CLI {
 			base: void 0,
 			ext: this.command === Command.DEV ? '.wat' : '.wasm',
 		})
-		const cg: Builder = new Builder(...await Promise.all([
+		const program = new Program(...await Promise.all([
 			fs.promises.readFile(inputfilepath, 'utf8'),
 			this.computeConfig(cwd),
-		]))
-		cg.build();
+		]));
 		return Promise.all([
 			xjs.String.dedent`
 				Compiling………
@@ -269,7 +266,7 @@ export class CLI {
 					: `Destination binary file:`
 				} ${ outputfilepath }
 			`.trimStart(),
-			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? cg.print() : cg.compile()),
+			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? program.print() : program.compile()),
 		])
 	}
 
