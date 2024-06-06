@@ -1,10 +1,9 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	OBJ,
 	type TYPE,
-	INST,
-	type Builder,
 } from '../../index.js';
 import {
 	throw_expression,
@@ -54,14 +53,10 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.fold() instanceof OBJ.Float;
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(_builder: Builder, to_float: boolean = false): INST.InstructionConst {
-		return INST.InstructionConst.fromCPValue(this.fold(), to_float);
+	public override build(): binaryen.ExpressionRef {
+		return this.fold().build(this.builder.module);
 	}
 
 	@memoizeMethod

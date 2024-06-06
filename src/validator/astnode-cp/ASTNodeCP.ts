@@ -2,6 +2,7 @@ import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	TYPE,
+	type Builder,
 	TypeError03,
 } from '../../index.js';
 import {to_serializable} from '../../parser/index.js';
@@ -14,6 +15,20 @@ import {
 
 
 
+/**
+ * Known subclasses:
+ * - ASTNodeKey
+ * - ASTNodeIndexType
+ * - ASTNodeItemType
+ * - ASTNodePropertyType
+ * - ASTNodeIndex
+ * - ASTNodeProperty
+ * - ASTNodeCase
+ * - ASTNodeType
+ * - ASTNodeExpression
+ * - ASTNodeStatement
+ * - ASTNodeGoal
+ */
 export abstract class ASTNodeCP extends ASTNode {
 	/**
 	 * Type-check an assignment.
@@ -30,7 +45,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	): void {
 		if (
 			   !assigned_type.isSubtypeOf(assignee_type)
-			&& !(
+			&& !( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
 				   // is int treated as a subtype of float?
 				   node.validator.config.compilerOptions.intCoercion
 				&& assigned_type.isSubtypeOf(TYPE.INT)
@@ -100,6 +115,10 @@ export abstract class ASTNodeCP extends ASTNode {
 
 	public get validator(): Validator {
 		return (this.parent as ASTNodeCP).validator;
+	}
+
+	public get builder(): Builder {
+		return (this.parent as ASTNodeCP).builder;
 	}
 
 	/**
