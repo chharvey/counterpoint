@@ -203,20 +203,20 @@ export class CLI {
 	 * @return the computed configuration object
 	 */
 	private async computeConfig(cwd: string): Promise<SolidConfig> {
-		const config: PartialSolidConfig | Promise<PartialSolidConfig> = this.argv.project ?
-			fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8').then((text) => JSON.parse(text))
-		: {}
+		const config: PartialSolidConfig = this.argv.project
+			? JSON.parse(await fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8'))
+			: {};
 
 		const returned: Mutable<SolidConfig> = {
 			...CONFIG_DEFAULT,
-			...await config,
+			...config,
 			languageFeatures: {
 				...CONFIG_DEFAULT.languageFeatures,
-				...(await config).languageFeatures,
+				...config.languageFeatures,
 			},
 			compilerOptions: {
 				...CONFIG_DEFAULT.compilerOptions,
-				...(await config).compilerOptions,
+				...config.compilerOptions,
 			},
 		}
 
