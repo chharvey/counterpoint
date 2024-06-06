@@ -1,10 +1,10 @@
 import * as assert from 'assert';
-import {assert_instanceof} from '../../src/lib/index.js';
 import {
 	type TypeEntry,
 	OBJ,
 	TYPE,
-} from '../../src/typer/index.js';
+} from '../../src/index.js';
+import {assert_instanceof} from '../../src/lib/index.js';
 import {
 	typeUnitInt,
 	typeUnitFloat,

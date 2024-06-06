@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import * as assert from 'assert';
 import {strictEqual} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
@@ -126,5 +127,12 @@ abstract class CPObject {
 	 * @return a Type that contains this Object
 	 */
 	public abstract toType(): TYPE.Type;
+
+	/**
+	 * Create an ExpressionRef that implements this object.
+	 * @param mod the module to build from
+	 * @return the directions to print
+	 */
+	public abstract build(mod: binaryen.Module): binaryen.ExpressionRef;
 }
 export {CPObject as Object};

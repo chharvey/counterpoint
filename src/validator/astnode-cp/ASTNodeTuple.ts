@@ -1,8 +1,7 @@
+import type binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	type INST,
-	type Builder,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -32,15 +31,10 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		super(start_node, children);
 	}
 
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeTuple#shouldFloat not yet supported.';
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeTuple#build not yet supported.';
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.tuple.make(this.children.map((expr) => expr.build()));
 	}
 
 	@memoizeMethod

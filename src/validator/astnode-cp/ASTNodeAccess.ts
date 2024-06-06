@@ -1,9 +1,8 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	type INST,
-	type Builder,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
@@ -47,15 +46,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		super(start_node, {kind}, [base, accessor]);
 	}
 
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeAccess#shouldFloat not yet supported.';
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeAccess#build_do not yet supported.';
+	public override build(): binaryen.ExpressionRef {
+		throw '`ASTNodeAccess#build_do` not yet supported.';
 	}
 
 	@memoizeMethod
@@ -133,7 +127,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (base_value === null) {
 			return null;
 		}
-		if (this.optional && base_value.equal(OBJ.Null.NULL)) {
+		if (this.optional && base_value.identical(OBJ.Null.NULL)) {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {

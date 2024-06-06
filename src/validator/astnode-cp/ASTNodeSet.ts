@@ -2,8 +2,6 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type INST,
-	type Builder,
 	type TypeErrorNotAssignable,
 } from '../../index.js';
 import {
@@ -33,17 +31,6 @@ export class ASTNodeSet extends ASTNodeCollectionLiteralMutable {
 		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
-	}
-
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeSet#shouldFloat not yet supported.';
-	}
-
-	@memoizeMethod
-	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeSet#build_do not yet supported.';
 	}
 
 	@memoizeMethod

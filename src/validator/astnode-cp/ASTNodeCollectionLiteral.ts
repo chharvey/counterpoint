@@ -1,3 +1,5 @@
+import type binaryen from 'binaryen';
+import {memoizeMethod} from '../../lib/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -24,7 +26,9 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 		super(start_node, {}, children);
 	}
 
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeCollectionLiteral#shouldFloat not yet supported.';
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(): binaryen.ExpressionRef {
+		throw '`ASTNodeCollectionLiteral#build_do` not yet supported.';
 	}
 }
