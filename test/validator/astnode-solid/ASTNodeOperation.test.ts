@@ -1275,7 +1275,7 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			it('returns `(mod.if)`.', () => {
+			it('returns `(if)`.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
 					['if true  then false else 2;',    mod.if(buildConst(mod, true),  buildConst(mod, false), buildConst(mod, 2n))],

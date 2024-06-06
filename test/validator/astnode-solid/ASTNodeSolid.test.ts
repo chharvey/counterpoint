@@ -10,6 +10,7 @@ import {
 	TypeError03,
 	MutabilityError01,
 } from '../../../src/index.js';
+import {forEachAggregated} from '../../../src/lib/index.js'
 import {
 	assertAssignable,
 	assertEqualBins,
@@ -303,13 +304,18 @@ describe('ASTNodeSolid', () => {
 
 
 		describe('#build', () => {
-			it('returns `(nop)` for empty program.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource('');
-				return assertEqualBins(goal.build(), goal.builder.module.nop());
-			});
-			it('returns binaryen.Module for non-empty program.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource('42;');
-				assert.strictEqual(goal.build(), goal.builder.module);
+			it('always returns `(nop)`.', () => {
+				forEachAggregated([
+					'',
+					'42;',
+					`
+						let x: int = 42;
+						x;
+					`,
+				], (src) => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+					return assertEqualBins(goal.build(), goal.builder.module.nop());
+				});
 			});
 		});
 	});

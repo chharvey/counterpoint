@@ -51,11 +51,9 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	}
 
 	/** @implements Buildable */
-	public build(): binaryen.ExpressionRef | binaryen.Module {
+	public build(): binaryen.ExpressionRef {
 		const validate_module: () => void = this.builder.setupModule();
-		if (!this.children.length) {
-			return this.builder.module.nop();
-		} else {
+		if (this.children.length) {
 			const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build()); // must build before calling `.getLocals()`
 			const fn_name:    string                   = 'fn0';
 			this.builder.module.addFunction(
@@ -66,8 +64,8 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 				this.builder.module.block(null, statements),
 			);
 			this.builder.module.addFunctionExport(fn_name, fn_name);
-			validate_module();
-			return this.builder.module;
 		}
+		validate_module();
+		return this.builder.module.nop();
 	}
 }

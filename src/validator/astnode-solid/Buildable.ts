@@ -14,5 +14,5 @@ export interface Buildable extends ASTNodeSolid {
 	 * Give directions to the runtime code builder.
 	 * @return the directions to print
 	 */
-	build(): binaryen.ExpressionRef | binaryen.Module;
+	build(): binaryen.ExpressionRef;
 }

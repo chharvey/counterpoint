@@ -10,7 +10,7 @@ describe('BinVect', () => {
 
 
 	describe('.asBool', () => {
-		it('returns a mod.if containing two v128 branches storing boolean values.', () => {
+		it('returns `(if)` containing two v128 branches storing boolean values.', () => {
 			forEachAggregated([
 				MOD.i32.const(0),
 				MOD.i32.const(1),
