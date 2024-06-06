@@ -2,7 +2,6 @@ import type binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	type Builder,
 	TypeError01,
 	TypeError02,
 	TypeError04,
@@ -49,8 +48,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		builder;
+	public override build(): binaryen.ExpressionRef {
 		throw '`ASTNodeAccess#build_do` not yet supported.';
 	}
 

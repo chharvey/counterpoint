@@ -3,7 +3,6 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type Builder,
 	type TypeError03,
 	TypeError05,
 	TypeError06,
@@ -57,8 +56,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		builder;
+	public override build(): binaryen.ExpressionRef {
 		throw '`ASTNodeCall#build` not yet supported.';
 	}
 

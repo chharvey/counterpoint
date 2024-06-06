@@ -3,7 +3,6 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type Builder,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -36,8 +35,8 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.tuple.make(this.children.map((expr) => expr.build(builder)));
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.tuple.make(this.children.map((expr) => expr.build()));
 	}
 
 	@memoizeMethod

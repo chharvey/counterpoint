@@ -4,7 +4,6 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	OBJ,
 	type TYPE,
-	type Builder,
 } from '../../index.js';
 import {
 	throw_expression,
@@ -56,8 +55,8 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return this.fold().build(builder.module);
+	public override build(): binaryen.ExpressionRef {
+		return this.fold().build(this.builder.module);
 	}
 
 	@memoizeMethod

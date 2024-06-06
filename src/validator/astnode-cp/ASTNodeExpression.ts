@@ -3,7 +3,6 @@ import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	type Builder,
 	ErrorCode,
 } from '../../index.js';
 import {assert_instanceof} from '../../lib/index.js';
@@ -70,15 +69,15 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * Decorator for {@link ASTNodeExpression#build} method and any overrides.
 	 * First tries to compute the assessed value, and if successful, builds the assessed value.
 	 * Otherwise builds this node.
-	 * @implements MethodDecorator<ASTNodeExpression, (this: ASTNodeExpression, builder: Builder) => binaryen.ExpressionRef>
+	 * @implements MethodDecorator<ASTNodeExpression, (this: ASTNodeExpression) => binaryen.ExpressionRef>
 	 */
 	protected static buildDeco(
-		method:   (this: ASTNodeExpression, builder: Builder) => binaryen.ExpressionRef,
+		method:   (this: ASTNodeExpression) => binaryen.ExpressionRef,
 		_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
 	): typeof method {
-		return function (builder) {
+		return function () {
 			const value: OBJ.Object | null      = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
-			const built: binaryen.ExpressionRef = value?.build(builder.module) ?? method.call(this, builder);
+			const built: binaryen.ExpressionRef = value?.build(this.builder.module) ?? method.call(this);
 			assert.strictEqual(binaryen.getExpressionType(built), binaryen.v128);
 			return built;
 		};
@@ -110,7 +109,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @inheritdoc
 	 * @implements Buildable
 	 */
-	public abstract build(builder: Builder): binaryen.ExpressionRef;
+	public abstract build(): binaryen.ExpressionRef;
 
 	/**
 	 * The Type of this expression.

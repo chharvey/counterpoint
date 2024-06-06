@@ -1,7 +1,7 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import {BinVect} from '../../src/index.js';
-import {forEachAggregated} from '../../src/lib/index.js'
 import {assertEqualBins as assert_equal_bins} from '../assert-helpers.js';
 
 
@@ -10,8 +10,8 @@ describe('BinVect', () => {
 
 
 	describe('.asBool', () => {
-		it('returns a mod.if containing two v128 branches storing boolean values.', () => {
-			forEachAggregated([
+		it('returns `(if)` containing two v128 branches storing boolean values.', () => {
+			xjs.Array.forEachAggregated([
 				MOD.i32.const(0),
 				MOD.i32.const(1),
 			], (expr) => assert_equal_bins(

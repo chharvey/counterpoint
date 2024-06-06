@@ -1,9 +1,7 @@
-import * as assert from 'assert';
 import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	type Builder,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -45,11 +43,11 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.call(new Map<Operator, string>([
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.ID, 'vid'],
 			[Operator.EQ, this.validator.config.compilerOptions.intCoercion ? 'veq' : 'veqq'],
-		]).get(this.operator)!, [this.operand0.build(builder), this.operand1.build(builder)], binaryen.v128);
+		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {

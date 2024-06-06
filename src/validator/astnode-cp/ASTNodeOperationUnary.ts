@@ -4,8 +4,6 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type Builder,
-	BinVect,
 	TypeError01,
 	NanError01,
 } from '../../index.js';
@@ -46,12 +44,12 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.call(new Map<Operator, string>([
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.NOT, 'vnot'],
 			[Operator.EMP, 'vemp'],
 			[Operator.NEG, 'vneg'],
-		]).get(this.operator)!, [this.operand.build(builder)], binaryen.v128);
+		]).get(this.operator)!, [this.operand.build()], binaryen.v128);
 	}
 
 	@memoizeMethod

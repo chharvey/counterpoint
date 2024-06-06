@@ -1,11 +1,6 @@
 import binaryen from 'binaryen';
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-	type CPConfig,
-	CONFIG_DEFAULT,
-} from '../core/index.js';
-import {AST} from '../validator/index.js';
 import {BinVect} from './BinVect.js';
 
 
@@ -27,8 +22,6 @@ export class Builder {
 	];
 
 
-	/** An AST goal produced by a Decorator. */
-	private readonly ast_goal: AST.ASTNodeGoal;
 	/**
 	 * A counter for internal variables.
 	 * Used for optimizing short-circuited expressions.
@@ -44,17 +37,6 @@ export class Builder {
 		)
 	`);
 
-
-	/**
-	 * Construct a new Builder object.
-	 * @param source - the source text
-	 * @param config - The configuration settings for an instance program.
-	 */
-	public constructor(source: string, config: CPConfig = CONFIG_DEFAULT) {
-		this.ast_goal  = AST.ASTNodeGoal.fromSource(source, config);
-		this.ast_goal.varCheck();  // assert does not throw
-		this.ast_goal.typeCheck(); // assert does not throw
-	}
 
 	/**
 	 * Return this Builder’s short-circuit variable count, and then increment it.
@@ -283,37 +265,20 @@ export class Builder {
 	}
 
 	/**
-	 * Prepare this builder.
-	 * @return `this`
+	 * Prepare this builder’s module and return an action to validate it.
+	 * @return a callback that validates the module, to be performed after any further modifications to the module are made
 	 */
-	public build(): this {
+	public setupModule(): () => void {
 		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
 			  binaryen.Features.ReferenceTypes
 			| binaryen.Features.SIMD128
 			| binaryen.Features.Multivalue
 		));
 		this.#setupFunctions();
-		this.ast_goal.build(this);
-		const validation: number = this.module.validate();
-		if (!validation) {
-			throw new Error('Invalid WebAssembly module.');
-		}
-		return this;
-	}
-
-	/**
-	 * Return the instructions to print to file.
-	 * @return a readable text output in WAT format, to be compiled into WASM
-	 */
-	public print(): string {
-		return this.module.emitText();
-	}
-
-	/**
-	 * Return a binary format of the program.
-	 * @return a binary output in WASM format, which can be executed
-	 */
-	public compile(): Uint8Array {
-		return this.module.emitBinary();
+		return () => {
+			if (!this.module.validate()) {
+				throw new Error('Invalid WebAssembly module.');
+			}
+		};
 	}
 }

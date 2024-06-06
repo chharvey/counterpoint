@@ -3,7 +3,6 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type Builder,
 	TypeError01,
 	NanError01,
 	NanError02,
@@ -51,13 +50,13 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.call(new Map<Operator, string>([
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.EXP, 'vexp'],
 			[Operator.MUL, 'vmul'],
 			[Operator.DIV, 'vdiv'],
 			[Operator.ADD, 'vadd'],
-		]).get(this.operator)!, [this.operand0.build(builder), this.operand1.build(builder)], binaryen.v128);
+		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {

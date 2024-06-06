@@ -1,5 +1,4 @@
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.js';
 import {assert_instanceof} from '../../lib/index.js';
 import {
 	type CPConfig,
@@ -25,9 +24,9 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 
-	public override build(builder: Builder): binaryen.ExpressionRef {
+	public override build(): binaryen.ExpressionRef {
 		return (this.expr)
-			? builder.module.drop(this.expr.build(builder))
-			: builder.module.nop();
+			? this.builder.module.drop(this.expr.build())
+			: this.builder.module.nop();
 	}
 }

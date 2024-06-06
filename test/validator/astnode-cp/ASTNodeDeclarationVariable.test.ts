@@ -7,7 +7,6 @@ import {
 	SymbolStructureVar,
 	OBJ,
 	TYPE,
-	Builder,
 	AssignmentError01,
 	TypeError03,
 } from '../../../src/index.js';
@@ -335,53 +334,47 @@ describe('ASTNodeDeclarationVariable', () => {
 
 	describe('#build', () => {
 		it('with constant folding on, returns `(nop)` for fixed & foldable variables.', () => {
-			const src: string = `
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let x: int = 42;
 				let y: float = 4.2 * x;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			const builder = new Builder(src);
+			`);
 			goal.varCheck();
 			goal.typeCheck();
-			goal.build(builder);
-			return xjs.Array.forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(builder), builder.module.nop()));
+			goal.build();
+			return xjs.Array.forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), goal.builder.module.nop()));
 		});
 		it('with constant folding on, returns `(local.set)` for unfixed / non-foldable variables.', () => {
-			const src: string = `
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let unfixed x: int = 42;
 				let y: int = x + 10;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			const builder = new Builder(src);
+			`);
 			goal.varCheck();
 			goal.typeCheck();
-			goal.build(builder);
-			assert.deepStrictEqual(builder.getLocals(), [
+			goal.build();
+			assert.deepStrictEqual(goal.builder.getLocals(), [
 				{id: 0x100n, type: binaryen.v128},
 				{id: 0x101n, type: binaryen.v128},
 			]);
 			return assertEqualBins(new Map<binaryen.ExpressionRef, binaryen.ExpressionRef>(goal.children.map((stmt, i) => [
-				stmt.build(builder),
-				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+				stmt.build(),
+				goal.builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build()),
 			])));
 		});
 		it('with constant folding off, always returns `(local.set)`.', () => {
-			const src: string = `
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let x: int = 42;
 				let unfixed y: float = 4.2;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
-			const builder = new Builder(src, CONFIG_FOLDING_OFF);
+			`, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();
-			goal.build(builder);
-			assert.deepStrictEqual(builder.getLocals(), [
+			goal.build();
+			assert.deepStrictEqual(goal.builder.getLocals(), [
 				{id: 0x100n, type: binaryen.v128},
 				{id: 0x101n, type: binaryen.v128},
 			]);
 			return assertEqualBins(new Map<binaryen.ExpressionRef, binaryen.ExpressionRef>(goal.children.map((stmt, i) => [
-				stmt.build(builder),
-				builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build(builder)),
+				stmt.build(),
+				goal.builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build()),
 			])));
 		});
 	});

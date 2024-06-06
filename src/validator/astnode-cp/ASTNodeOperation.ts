@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import {
 	type NonemptyArray,
 	assert_instanceof,

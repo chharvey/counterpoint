@@ -2,7 +2,6 @@ import type binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	type Builder,
 	TypeError01,
 } from '../../index.js';
 import {
@@ -40,11 +39,11 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.if(
-			this.operand0.build(builder),
-			this.operand1.build(builder),
-			this.operand2.build(builder),
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.if(
+			this.operand0.build(),
+			this.operand1.build(),
+			this.operand2.build(),
 		);
 	}
 

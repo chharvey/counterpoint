@@ -1,8 +1,5 @@
 import type binaryen from 'binaryen';
-import {
-	type Builder,
-	AssignmentError01,
-} from '../../index.js';
+import {AssignmentError01} from '../../index.js';
 import {assert_instanceof} from '../../lib/index.js';
 import {
 	type CPConfig,
@@ -46,7 +43,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.nop();
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.nop();
 	}
 }

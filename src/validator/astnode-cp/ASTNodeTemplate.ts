@@ -2,7 +2,6 @@ import type binaryen from 'binaryen';
 import {
 	type OBJ,
 	TYPE,
-	type Builder,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -41,8 +40,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		builder;
+	public override build(): binaryen.ExpressionRef {
 		throw '`ASTNodeTemplate#build` not yet supported.';
 	}
 

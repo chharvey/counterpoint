@@ -2,6 +2,7 @@ import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	TYPE,
+	type Builder,
 	TypeError03,
 } from '../../index.js';
 import {to_serializable} from '../../parser/index.js';
@@ -114,6 +115,10 @@ export abstract class ASTNodeCP extends ASTNode {
 
 	public get validator(): Validator {
 		return (this.parent as ASTNodeCP).validator;
+	}
+
+	public get builder(): Builder {
+		return (this.parent as ASTNodeCP).builder;
 	}
 
 	/**
