@@ -1,0 +1,36 @@
+Filebound
+	:::= #x02 | #x03;
+
+Whitespace
+	:::= (#x20 | #x09 | #x0a)+;
+
+Comment
+	:::= "//" [^#x0a#x03]* #x0a;
+
+Punctuator :::=
+	// grouping
+		| "(" | ")"
+		| "<" | ">"
+	// delimiters
+		| "," | ";"
+		| ":::=" | "::="
+	// unary
+		| "+" | "-" | "*" | "#" | "?"
+	// binary
+		| "." | "&" | "|"
+;
+
+Identifier
+	:::= [A-Z] [A-Za-z0-9_]*;
+
+CharCode
+	:::= "#x" [0-9a-f]+;
+
+String
+	:::= #x22 [^"#x03]* #x22; // U+0022 QUOTATION MARK
+
+Char
+	:::= [#x20-#x5c#x5e-#7e]; // excluding U+005D RIGHT SQUARE BRAKET
+
+CharClass
+	:::= "[" "^"? (Char | CharCode | Char "-" Char | CharCode "-" CharCode)+ "]";

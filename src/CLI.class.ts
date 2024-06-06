@@ -1,15 +1,12 @@
+import * as xjs from 'extrajs';
 import * as fs from 'fs'
 import * as path from 'path'
-
-import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
-
+import minimist from 'minimist'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from './core/';
-import {
-	Builder,
-} from './builder/';
+} from './core/index.js';
+import {Program} from './Program.js';
 
 
 
@@ -43,7 +40,7 @@ type CustomArgsType = {
 	/** Display configuration options. */
 	config: boolean;
 
-	// Language Feature Toggles
+	// Language Features
 	comments          : null | boolean,
 	integerRadices    : null | boolean,
 	numericSeparators : null | boolean,
@@ -61,7 +58,7 @@ type CustomArgsType = {
  */
 export class CLI {
 	/** Text to print on --help. */
-	static readonly HELPTEXT: string = `
+	static readonly HELPTEXT: string = xjs.String.dedent`
 		Usage: solid <command> <filepath> [<options>]
 
 		Parse, analyze, and compile a Solid source code file.
@@ -98,14 +95,14 @@ export class CLI {
 		                               with the extension changed to \`.wasm\` (compile) or \`.wat\` (dev).
 		-p, --project=file             Specify a configuration file.
 		--config                       Print all possible configuration options.
-	`.trim().replace(/\n\t\t/g, '\n')
+	`.trimStart();
 
 	/** Text to print on --config. */
-	static readonly CONFIGTEXT: string = `
-		The following options set individual language feature toggles and compiler options.
+	static readonly CONFIGTEXT: string = xjs.String.dedent`
+		The following options set individual language features and compiler options.
 		These options will override those in the configuration file provided by \`--project\`.
 
-		Language Feature Toggles:
+		Language Features:
 		--[no-]comments                (on by default)
 		--[no-]integerRadices
 		--[no-]numericSeparators
@@ -113,7 +110,7 @@ export class CLI {
 		Compiler Options:
 		--[no-]constantFolding         (on by default)
 		--[no-]intCoercion             (on by default)
-	`.trim().replace(/\n\t\t/g, '\n')
+	`.trimStart();
 
 	/** Options argument to `minimist` function. */
 	private static readonly MINIMIST_OPTS: minimist.Opts = {
@@ -122,7 +119,7 @@ export class CLI {
 			'help',
 			'version',
 			'config',
-			// Language Feature Toggles
+			// Language Features
 			'comments',
 			'integerRadices',
 			'numericSeparators',
@@ -146,7 +143,7 @@ export class CLI {
 			help    : false,
 			version : false,
 			config  : false,
-			// Language Feature Toggles
+			// Language Features
 			comments          : null,
 			integerRadices    : null,
 			numericSeparators : null,
@@ -156,10 +153,10 @@ export class CLI {
 		},
 		unknown(arg) {
 			if (arg[0] === '-') { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
-				throw new Error(`
+				throw new Error(xjs.String.dedent`
 					Unknown CLI option: ${ arg }
 					${ CLI.HELPTEXT }
-				`)
+				`.trimStart());
 			}
 			return true
 		},
@@ -206,20 +203,20 @@ export class CLI {
 	 * @return the computed configuration object
 	 */
 	private async computeConfig(cwd: string): Promise<SolidConfig> {
-		const config: PartialSolidConfig | Promise<PartialSolidConfig> = this.argv.project ?
-			fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8').then((text) => JSON.parse(text))
-		: {}
+		const config: PartialSolidConfig = this.argv.project
+			? JSON.parse(await fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8'))
+			: {};
 
 		const returned: Mutable<SolidConfig> = {
 			...CONFIG_DEFAULT,
-			...await config,
+			...config,
 			languageFeatures: {
 				...CONFIG_DEFAULT.languageFeatures,
-				...(await config).languageFeatures,
+				...config.languageFeatures,
 			},
 			compilerOptions: {
 				...CONFIG_DEFAULT.compilerOptions,
-				...(await config).compilerOptions,
+				...config.compilerOptions,
 			},
 		}
 
@@ -256,20 +253,20 @@ export class CLI {
 			base: void 0,
 			ext: this.command === Command.DEV ? '.wat' : '.wasm',
 		})
-		const cg: Builder = new Builder(...await Promise.all([
+		const program = new Program(...await Promise.all([
 			fs.promises.readFile(inputfilepath, 'utf8'),
 			this.computeConfig(cwd),
-		]))
+		]));
 		return Promise.all([
-			`
+			xjs.String.dedent`
 				Compiling………
 				Source file: ${ inputfilepath }
 				${this.command === Command.DEV
 					? `Intermediate text file (for debugging):`
 					: `Destination binary file:`
 				} ${ outputfilepath }
-			`.trim().replace(/\n\t\t\t\t/g, '\n'),
-			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? cg.print() : await cg.compile()),
+			`.trimStart(),
+			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? program.print() : program.compile()),
 		])
 	}
 
@@ -281,10 +278,10 @@ export class CLI {
 		const inputfilepath: string = this.inputPath(cwd)
 		const bytes: Promise<Buffer> = fs.promises.readFile(inputfilepath)
 		return [
-			`
+			xjs.String.dedent`
 				Executing………
 				Binary path: ${ inputfilepath }
-			`.trim().replace(/\n\t\t\t\t/g, '\n'),
+			`.trimStart(),
 			...(Object.values((await WebAssembly.instantiate(await bytes)).instance.exports) as Function[]).map((func) => func()),
 		]
 	}

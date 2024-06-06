@@ -30,7 +30,7 @@ the `--comments` option would override your config file and turn comments back o
 
 
 ### `languageFeatures`
-Language features are toggleable aspects of the Solid Programming Language.
+Language features are aspects of the Solid Programming Language that may be enabled and disabled at will.
 
 #### `comments`
 ```

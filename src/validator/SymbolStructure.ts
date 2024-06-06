@@ -1,14 +1,17 @@
-import {SolidLanguageType} from './SolidLanguageType';
-import type {SolidObject} from './SolidObject';
+import {
+	SolidType,
+	SolidObject,
+} from './package.js';
+import type * as AST from './astnode-solid/index.js';
 
 
 
 /** Kinds of symbols. */
 export enum SymbolKind {
 	/** A value variable (a variable holding a Solid Language Value). */
-	VALUE,
+	VALUE = 'value',
 	/** A type variable / type alias. */
-	TYPE,
+	TYPE  = 'type',
 }
 
 
@@ -25,76 +28,32 @@ export abstract class SymbolStructure {
 		readonly source: string,
 	) {
 	}
-	/**
-	 * Perform type and constant-folding assessments during semantic analysis.
-	 */
-	abstract assess(): void;
 }
 
 
 
 export class SymbolStructureType extends SymbolStructure {
-	private was_evaluated: boolean = false;
 	/** The assessed value of the symbol. */
-	private _value: SolidLanguageType = SolidLanguageType.UNKNOWN;
+	typevalue: SolidType = SolidType.UNKNOWN;
 	constructor (
-		id:     bigint,
-		line:   number,
-		col:    number,
-		source: string,
-		/** A lambda returning the assessed value of the symbol. */
-		private readonly value_setter: () => SolidLanguageType,
+		node: AST.ASTNodeTypeAlias,
 	) {
-		super(id, line, col, source);
-	}
-	get value(): SolidLanguageType {
-		return this._value;
-	}
-	/** @implements SymbolStructure */
-	assess(): void {
-		if (!this.was_evaluated) {
-			this.was_evaluated = true;
-			this._value = this.value_setter();
-		};
+		super(node.id, node.line_index, node.col_index, node.source);
 	}
 }
 
 
 
 export class SymbolStructureVar extends SymbolStructure {
-	private was_evaluated:  boolean = false;
 	/** The variable’s Type. */
-	private _type: SolidLanguageType = SolidLanguageType.UNKNOWN;
+	type: SolidType = SolidType.UNKNOWN;
 	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
-	private _value: SolidObject | null = null;
+	value: SolidObject | null = null;
 	constructor (
-		id:     bigint,
-		line:   number,
-		col:    number,
-		source: string,
+		node: AST.ASTNodeVariable,
 		/** May the symbol be reassigned? */
 		readonly unfixed: boolean,
-		/** A lambda returning the variable’s Type. */
-		private type_setter: () => SolidLanguageType,
-		/** A lambda returning the assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
-		private value_setter: (() => SolidObject | null) | null,
 	) {
-		super(id, line, col, source);
-	}
-	get type(): SolidLanguageType {
-		return this._type;
-	}
-	get value(): SolidObject | null {
-		return this._value;
-	}
-	/** @implements SymbolStructure */
-	assess(): void {
-		if (!this.was_evaluated) {
-			this.was_evaluated = true;
-			this._type = this.type_setter();
-			if (!this.unfixed && !!this.value_setter) {
-				this._value = this.value_setter();
-			};
-		};
+		super(node.id, node.line_index, node.col_index, node.source);
 	}
 }

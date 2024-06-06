@@ -1,0 +1,69 @@
+None! TypeCheck(Or<
+	SemanticKey,
+	SemanticPropertyType
+	SemanticProperty,
+	SemanticCase,
+	SemanticStatementExpression,
+	SemanticGoal,
+> list) :=
+	1. *For each* `it` in `list.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+;
+
+
+
+None TypeCheck(SemanticType type) :=
+	1. *Return*.
+;
+
+
+
+None! TypeCheck(SemanticExpression expr) :=
+	1. *Perform:* *Unwrap:* `TypeOf(expr)`.
+		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
+;
+
+
+
+None TypeCheck(SemanticDeclarationType decl) :=
+	1. *Assert:* `decl.children.count` is 2.
+	2. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
+		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
+		2. *Set* `symbol.typevalue` to *UnwrapAffirm:* `TypeValueOf(decl.children.1)`.
+;
+
+
+
+None! TypeCheck(SemanticDeclarationVariable decl) :=
+	1. *Assert:* `decl.children.count` is 3.
+	2. *Perform:* *UnwrapAffirm:* `TypeCheck(decl.children.2)`.
+	3. *Let* `assignee_type` be *UnwrapAffirm:* `TypeValueOf(decl.children.1)`.
+	4. *Let* `assigned_type` be *Unwrap:* `TypeOf(decl.children.2)`.
+	5. *If* *UnwrapAffirm:* `Subtype(assigned_type, assignee_type)` is `false`:
+		1. *If* `decl.children.2` is not a SemanticCollectionLiteral *or* *UnwrapAffirm:* `AssignTo(decl.children.2, assignee_type)` is `false`:
+			1. *Throw:* a new TypeError03.
+	6. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
+		1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
+		2. *Set* `symbol.type` to *UnwrapAffirm:* `TypeValueOf(decl.children.1)`.
+		3. *If* `decl.unfixed` is `false`:
+			1. *Assert:* `symbol.unfixed` is `false`.
+			2. *Set* `symbol.value` to *Unwrap:* `ValueOf(decl.children.2)`.
+;
+
+
+
+None! TypeCheck(SemanticAssignment assignment) :=
+	1. *Assert:* `assignment.children.count` is 2.
+	2. *Let* `assignee` be `assignment.children.0`.
+	3. *Perform:* *UnwrapAffirm:* `TypeCheck(assignee)`.
+	4. *Perform:* *UnwrapAffirm:* `TypeCheck(assignment.children.1)`.
+	5. *If* `assignee` is a SemanticAccess:
+		1. *Let* `base_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
+		2. *If* `base_type` is not mutable:
+			1. *Throw:* a new MutabilityError01.
+	6. *Let* `assignee_type` be *Unwrap:* `TypeOf(assignee)`.
+	7. *Let* `assigned_type` be *Unwrap:* `TypeOf(assignment.children.1)`.
+	8. *If* *UnwrapAffirm:* `Subtype(assigned_type, assignee_type)` is `false`:
+		1. *If* `assignment.children.1` is not a SemanticCollectionLiteral *or* *UnwrapAffirm:* `AssignTo(assignment.children.1, assignee_type)` is `false`:
+			1. *Throw:* a new TypeError03.
+;
