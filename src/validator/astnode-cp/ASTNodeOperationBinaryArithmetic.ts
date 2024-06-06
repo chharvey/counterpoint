@@ -1,10 +1,9 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	type Builder,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
@@ -25,8 +24,8 @@ import {
 import {
 	bothNumeric,
 	eitherFloats,
+	bothInts,
 	bothFloats,
-	neitherFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
@@ -51,26 +50,23 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopArithmetic {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionBinopArithmetic(
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
-		);
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.EXP, 'vexp'],
+			[Operator.MUL, 'vmul'],
+			[Operator.DIV, 'vdiv'],
+			[Operator.ADD, 'vadd'],
+		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		return (bothNumeric(t0, t1))
-			? (int_coercion)
-				? (eitherFloats(t0, t1))
-					? TYPE.FLOAT
-					: TYPE.INT
-				: (
-					(bothFloats   (t0, t1)) ? TYPE.FLOAT :
-					(neitherFloats(t0, t1)) ? TYPE.INT   :
-					assert.fail(new TypeErrorInvalidOperation(this))
-				)
+			? (
+				(bothInts(t0, t1))   ? TYPE.INT                                           :
+				(bothFloats(t0, t1)) ? TYPE.FLOAT                                         :
+				(int_coercion)       ? (eitherFloats(t0, t1)) ? TYPE.FLOAT : t0.union(t1) :
+				assert.fail(new TypeErrorInvalidOperation(this))
+			)
 			: assert.fail(new TypeErrorInvalidOperation(this));
 	}
 

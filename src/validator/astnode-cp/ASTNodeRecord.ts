@@ -2,8 +2,6 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type INST,
-	type Builder,
 	AssignmentErrorDuplicateKey,
 } from '../../index.js';
 import {
@@ -37,10 +35,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		super(start_node, children);
 	}
 
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeRecord#shouldFloat not yet supported.';
-	}
-
 	public override varCheck(): void {
 		super.varCheck();
 		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
@@ -49,13 +43,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				throw new AssignmentErrorDuplicateKey(keys[i]);
 			}
 		});
-	}
-
-	@memoizeMethod
-	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeRecord#build not yet supported.';
 	}
 
 	@memoizeMethod

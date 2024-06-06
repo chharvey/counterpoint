@@ -1,8 +1,7 @@
+import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	type Builder,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -42,19 +41,13 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operator === Operator.EQ && super.shouldFloat();
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, _to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopEquality {
-		const tofloat: boolean = this.validator.config.compilerOptions.intCoercion && this.shouldFloat();
-		return new INST.InstructionBinopEquality(
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
-		);
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.ID, 'vid'],
+			[Operator.EQ, this.validator.config.compilerOptions.intCoercion ? 'veq' : 'veqq'],
+		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {

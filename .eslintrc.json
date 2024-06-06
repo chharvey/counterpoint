@@ -70,7 +70,7 @@
 		"arrow-body-style":                               "error",
 		"brace-style":                                    "off",
 		"@typescript-eslint/brace-style":                 "error",
-		"computed-property-spacing":                      "error",
+		"computed-property-spacing":                      "warn",
 		"curly":                                          "error",
 		"function-call-argument-newline":                 ["error", "consistent"],
 		"function-paren-newline":                         "error",

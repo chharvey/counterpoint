@@ -1,9 +1,10 @@
+import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	OBJ,
 	type TYPE,
-	INST,
 } from '../src/index.js';
 
 
@@ -54,9 +55,17 @@ export function typeUnitStr(x: string): TYPE.TypeUnit<OBJ.String> {
 	return new OBJ.String(x).toType();
 }
 
-export function instructionConstInt(x: bigint): INST.InstructionConst {
-	return new INST.InstructionConst(new OBJ.Integer(x));
-}
-export function instructionConstFloat(x: number): INST.InstructionConst {
-	return new INST.InstructionConst(new OBJ.Float(x));
+
+
+export function buildConst(mod: binaryen.Module, value: null | boolean | bigint | number = null): binaryen.ExpressionRef {
+	return (
+		value === null            ? OBJ.Null.NULL :
+		value === false           ? OBJ.Boolean.FALSE :
+		value === true            ? OBJ.Boolean.TRUE :
+		value === 0n              ? OBJ.Integer.ZERO :
+		value === 1n              ? OBJ.Integer.UNIT :
+		typeof value === 'bigint' ? new OBJ.Integer(value) :
+		typeof value === 'number' ? new OBJ.Float(value) :
+		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+	).build(mod);
 }

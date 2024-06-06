@@ -1,5 +1,7 @@
-import type {NonemptyArray} from '../../lib/index.js';
-import {assert_instanceof} from '../../lib/index.js';
+import {
+	type NonemptyArray,
+	assert_instanceof,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -22,6 +24,7 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 		assert_instanceof(expression, ASTNodeOperation);
 		return expression;
 	}
+
 
 	public override readonly tagname: string = 'Operation'; // TODO remove after refactoring tests using `#serialize`
 	public constructor(

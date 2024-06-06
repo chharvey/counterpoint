@@ -1,8 +1,7 @@
 import * as assert from 'assert';
-import type {
-	INST,
-	Builder,
-} from '../../index.js';
+import type binaryen from 'binaryen';
+import {BinVect} from '../../index.js';
+import {TYPE} from '../../index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -34,7 +33,25 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 		return goal.children[0];
 	}
 
+	protected static coerceAssignment(
+		mod:           binaryen.Module,
+		assignee_type: TYPE.Type,
+		assigned_type: TYPE.Type,
+		value:         binaryen.ExpressionRef,
+		int_coercion:  boolean = true,
+	): binaryen.ExpressionRef {
+		if ( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
+			   int_coercion
+			&& assigned_type.isSubtypeOf(TYPE.INT)
+			&& TYPE.FLOAT.isSubtypeOf(assignee_type)
+			&& !TYPE.INT.isSubtypeOf(assignee_type)
+		) {
+			return new BinVect(mod, mod.f64.convert_u.i32(value)).vect;
+		}
+		return value;
+	}
+
 
 	/** @implements Buildable */
-	public abstract build(builder: Builder): INST.Instruction;
+	public abstract build(): binaryen.ExpressionRef;
 }
