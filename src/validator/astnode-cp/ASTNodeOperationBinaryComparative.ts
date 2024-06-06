@@ -2,7 +2,6 @@ import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	type Builder,
 	TypeErrorInvalidOperation,
 } from '../../index.js';
 import {
@@ -24,7 +23,6 @@ import {
 	neitherFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -50,17 +48,13 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		const args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1);
-		const opname = new Map<Operator, 'lt' | 'gt' | 'le' | 'ge'>([
-			[Operator.LT, 'lt'],
-			[Operator.GT, 'gt'],
-			[Operator.LE, 'le'],
-			[Operator.GE, 'ge'],
-		]).get(this.operator)!;
-		return ((!args.map((arg) => binaryen.getExpressionType(arg)).includes(binaryen.f64))
-			? builder.module.i32[`${ opname }_s`]
-			: builder.module.f64[opname])(...args);
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.LT, 'vlt'],
+			[Operator.GT, 'vgt'],
+			[Operator.LE, 'vle'],
+			[Operator.GE, 'vge'],
+		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {

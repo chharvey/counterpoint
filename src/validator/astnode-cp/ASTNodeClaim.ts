@@ -3,7 +3,6 @@ import type binaryen from 'binaryen';
 import {
 	type OBJ,
 	TYPE,
-	type Builder,
 	TypeErrorNotAssignable,
 } from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
@@ -35,8 +34,8 @@ export class ASTNodeClaim extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return this.operand.build(builder);
+	public override build(): binaryen.ExpressionRef {
+		return this.operand.build();
 	}
 
 	@memoizeMethod

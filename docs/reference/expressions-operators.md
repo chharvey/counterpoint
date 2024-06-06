@@ -314,7 +314,7 @@ Claim access has the same runtime behavior of regular property access.
 Its purpose is to tell the type-checker,
 “I know what I’m doing; This property exists and its type is not type `void`.”
 ```
-let unfixed item: [str, ?: int] = ["apples", 42];
+let item: [str, ?: int] = ["apples", 42];
 let quantity: int = item!.1;
 ```
 The expression `item!.1` has type `int`, despite being an optional entry.
@@ -322,7 +322,7 @@ It will produce the value `42` at runtime.
 Note that bypassing the compiler’s type-checking process should be done carefully.
 If not used correctly, it could lead to runtime errors.
 ```
-let unfixed item: [str, ?: int] = ["apples"];
+let item: [str, ?: int] = ["apples"];
 let quantity: int = item!.1; % runtime error!
 ```
 An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
@@ -802,7 +802,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td>Mutable</td>
 			<td>unary prefix</td>
 			<td>right-to-left</td>
-			<td><code>mutable …</code></td>
+			<td><code>mut …</code></td>
 		</tr>
 		<tr>
 			<th>5</th>
@@ -856,7 +856,7 @@ type T = int?; % equivalent to `type T = int | null;`
 ```
 This operator is useful for describing values that might be null.
 ```
-let unfixed hello: str? = null;
+let var hello: str? = null;
 hello = "world";
 ```
 
@@ -892,18 +892,18 @@ The **Set** operator `T{}` is shorthand for `Set.<T>`.
 
 ### Mutable
 ```
-`mutable` <Type>
+`mut` <Type>
 ```
-The `mutable` type operator allows properties in a complex type to be reassigned.
+The `mut` type operator allows properties in a complex type to be reassigned.
 It allows us to modify composite objects by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
-let elements: mutable str{} = {"water", "earth", "fire", "wind"};
+let elements: mut str{} = {"water", "earth", "fire", "wind"};
 elements.["wind"] = false;
 elements.["air"]  = true;
 elements; %== {"water", "earth", "fire", "air"}
 ```
-If `elements` were just of type `str{}` (without `mutable`),
+If `elements` were just of type `str{}` (without `mut`),
 then attempting to modify it would result in a [Mutability Error](./errors.md#mutability-errors-24xx).
 
 
@@ -969,7 +969,7 @@ This holds for tuple types as well, accounting for indices rather than keys.
 The **union** operator creates a type that is either one operand, or the other, or some combination of both.
 ```
 type T = bool | int;
-let unfixed v: T = false;
+let var v: T = false;
 v = 42;
 ```
 

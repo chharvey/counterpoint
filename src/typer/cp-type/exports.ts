@@ -3,11 +3,11 @@ import type {TypeUnit} from './TypeUnit.js';
 import {TypeNever} from './TypeNever.js';
 import {TypeVoid} from './TypeVoid.js';
 import {TypeUnknown} from './TypeUnknown.js';
-import {TypeObject} from './TypeObject.js';
 import {TypeBoolean} from './TypeBoolean.js';
 import {TypeInteger} from './TypeInteger.js';
 import {TypeFloat} from './TypeFloat.js';
 import {TypeString} from './TypeString.js';
+import {TypeObject} from './TypeObject.js';
 
 
 

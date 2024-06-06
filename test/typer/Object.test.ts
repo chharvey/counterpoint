@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
-import {OBJ} from '../../src/index.js';
-import {assertEqualBins} from '../assert-helpers.js';
 import {
-	buildConstInt,
-	buildConstFloat,
-} from '../helpers.js';
+	OBJ,
+	BinVect,
+} from '../../src/index.js';
+import {assertEqualBins} from '../assert-helpers.js';
+import {buildConst} from '../helpers.js';
 
 
 
@@ -101,12 +101,90 @@ describe('Object', () => {
 
 
 	describe('#build', () => {
+		describe('Null', () => {
+			it('returns a v128 with `null` as an argument.', () => {
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					OBJ.Null.NULL.build(mod),
+					new BinVect(mod, null).vect,
+				);
+			});
+		});
+
+		specify('Boolean', () => {
+			const mod = new binaryen.Module();
+			return assertEqualBins(
+				[OBJ.Boolean.FALSE.build(mod), OBJ.Boolean.TRUE.build(mod)],
+				[new BinVect(mod, false).vect, new BinVect(mod, true).vect],
+			);
+		});
+
+		describe('Integer', () => {
+			it('generates `(i32.const)`.', () => {
+				const data: bigint[] = [
+					42n + -420n,
+					...[
+						 126 /  3,
+						-126 /  3,
+						 126 / -3,
+						-126 / -3,
+						 200 /  3,
+						 200 / -3,
+						-200 /  3,
+						-200 / -3,
+					].map((x) => BigInt(Math.trunc(x))),
+					(42n ** 2n * 420n) % (2n ** 16n),
+					(-5n) ** (2n * 3n),
+				];
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					data.map((x) => new OBJ.Integer(x).build(mod)),
+					data.map((x) => new BinVect(mod, mod.i32.const(Number(x))).vect),
+				);
+			});
+		});
+
+		describe('Float', () => {
+			it('generates `(f64.const)`.', () => {
+				/* eslint-disable array-element-newline */
+				const data: number[] = [
+					55, -55, 33, -33, 2.007, -2.007,
+					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+					6.8, 6.8,
+					3.0 - 2.7,
+				];
+				/* eslint-enable array-element-newline */
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					data.map((x) => new OBJ.Float(x).build(mod)),
+					data.map((x) => new BinVect(mod, mod.f64.const(x)).vect),
+				);
+			});
+			it('builds `0.0` and `-0.0` differently.', () => {
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					[0.0, -0.0].map((x) => new OBJ.Float(x).build(mod)),
+					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => new BinVect(mod, c).vect),
+				);
+			});
+		});
+
+		describe.skip('String', () => {
+			specify('#build', () => {
+				const mod = new binaryen.Module();
+				return assertEqualBins(
+					new OBJ.String('hello world').build(mod),
+					buildConst(mod, 0n),
+				);
+			});
+		});
+
 		describe('SolidTuple', () => {
 			it('returns `(tuple.make)`.', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					new OBJ.Tuple([OBJ.Integer.UNIT, new OBJ.Float(2.0)]).build(mod),
-					mod.tuple.make([buildConstInt(1n, mod), buildConstFloat(2.0, mod)]),
+					mod.tuple.make([buildConst(mod, 1n), buildConst(mod, 2.0)]),
 				);
 			});
 		});
@@ -176,54 +254,5 @@ describe('Object', () => {
 				);
 			});
 		});
-	});
-});
-
-
-
-describe('Integer', () => {
-	describe('#build', () => {
-		it('ok.', () => {
-			const data: bigint[] = [
-				42n + -420n,
-				...[
-					 126 /  3,
-					-126 /  3,
-					 126 / -3,
-					-126 / -3,
-					 200 /  3,
-					 200 / -3,
-					-200 /  3,
-					-200 / -3,
-				].map((x) => BigInt(Math.trunc(x))),
-				(42n ** 2n * 420n) % (2n ** 16n),
-				(-5n) ** (2n * 3n),
-			];
-			const mod = new binaryen.Module();
-			return assertEqualBins(
-				data.map((x) => new OBJ.Integer(x).build(mod)),
-				data.map((x) => buildConstInt(x, mod)),
-			);
-		});
-	});
-});
-
-
-
-describe('Float64', () => {
-	specify('#build', () => {
-		const data: number[] = [
-			/* eslint-disable array-element-newline */
-			55, -55, 33, -33, 2.007, -2.007,
-			91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
-			-0, -0, 6.8, 6.8, 0, -0,
-			3.0 - 2.7,
-			/* eslint-enable array-element-newline */
-		];
-		const mod = new binaryen.Module();
-		return assertEqualBins(
-			data.map((x) => new OBJ.Float(x).build(mod)),
-			data.map((x) => buildConstFloat(x, mod)),
-		);
 	});
 });

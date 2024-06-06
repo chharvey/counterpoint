@@ -4,8 +4,9 @@ import utf8 from 'utf8';
 import {
 	type CodeUnit,
 	strictEqual,
+	instanceOf,
 } from '../../lib/index.js';
-import type {Object as CPObject} from './Object.js';
+import {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -36,10 +37,10 @@ class CPString extends Primitive {
 	}
 
 	@strictEqual
+	@instanceOf(CPString)
+	@CPObject.memoizeSameness
 	public override identical(value: CPObject): boolean {
-		return value instanceof CPString && this.isIdenticalTo(value as this, (this_, that_) => (
-			xjs.Array.is<CodeUnit>(this_.codeunits, that_.codeunits)
-		));
+		return xjs.Array.is<CodeUnit>(this.codeunits, (value as CPString).codeunits);
 	}
 
 	public override toCPString(): CPString {

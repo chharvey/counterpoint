@@ -331,7 +331,7 @@ module.exports = grammar({
 		/* # SYNTAX */
 		word: $ => choice(
 			// operator
-			'mutable',
+			'mut',
 			'is',
 			'isnt',
 			'if',
@@ -341,7 +341,7 @@ module.exports = grammar({
 			'type',
 			'let',
 			// modifier
-			'unfixed',
+			'var',
 			$.keyword_type,
 			$.keyword_value,
 			$.identifier,
@@ -416,7 +416,7 @@ module.exports = grammar({
 			$._type_unary_symbol,
 			alias($.type_unary_keyword_dfn, $.type_unary_keyword),
 		),
-		type_unary_keyword_dfn: $ => seq('mutable', $._type_unary_keyword),
+		type_unary_keyword_dfn: $ => seq('mut', $._type_unary_keyword),
 
 		_type_intersection: $ => choice($._type_unary_keyword, alias($.type_intersection_dfn, $.type_intersection)),
 		_type_union:        $ => choice($._type_intersection,  alias($.type_union_dfn,        $.type_union)),
@@ -504,8 +504,8 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		declaration_type:     $ => seq('type',                      $.identifier, '=', $._type,                     ';'),
-		declaration_variable: $ => seq('let',  optional('unfixed'), $.identifier, ':', $._type, '=', $._expression, ';'),
+		declaration_type:     $ => seq('type',                  $.identifier, '=', $._type,                     ';'),
+		declaration_variable: $ => seq('let',  optional('var'), $.identifier, ':', $._type, '=', $._expression, ';'),
 
 		_declaration: $ => choice(
 			$.declaration_type,

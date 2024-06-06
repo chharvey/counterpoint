@@ -1,15 +1,14 @@
+import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type Builder,
 	type TypeErrorNotAssignable,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -57,8 +56,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		builder;
+	public override build(): binaryen.ExpressionRef {
 		throw '`ASTNodeCall#build` not yet supported.';
 	}
 
@@ -78,7 +76,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, returntype, this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : assert.fail(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this);
 					}
 				}
@@ -93,7 +91,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, returntype, this);
 					} catch (err) {
-						const argvaluetype: TYPE.Type = (argtype instanceof TYPE.TypeRecord) ? argtype.valueTypes() : throw_expression(err as TypeErrorNotAssignable);
+						const argvaluetype: TYPE.Type = (argtype instanceof TYPE.TypeRecord) ? argtype.valueTypes() : assert.fail(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this);
 					}
 				}
@@ -108,7 +106,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(eltype), this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : assert.fail(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this);
 					}
 				}
@@ -125,7 +123,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(entrytype), this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeErrorNotAssignable);
+						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : assert.fail(err as TypeErrorNotAssignable);
 						ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this);
 					}
 				}

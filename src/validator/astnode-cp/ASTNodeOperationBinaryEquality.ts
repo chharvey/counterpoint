@@ -2,7 +2,6 @@ import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	type Builder,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -22,7 +21,6 @@ import {
 	oneFloats,
 } from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -45,20 +43,11 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		const args: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1, () => (
-			this.validator.config.compilerOptions.intCoercion && this.operator === Operator.EQ
-		));
-		const [type0, type1]: binaryen.Type[] = args.map((arg) => binaryen.getExpressionType(arg));
-		return (
-			(type0 === binaryen.i32 && type1 === binaryen.i32) ? builder.module.i32.eq(...args) : // `ID` and `EQ` give the same result
-			(type0 === binaryen.i32 && type1 === binaryen.f64) ? builder.module.call('i_f_id', [...args], binaryen.i32) :
-			(type0 === binaryen.f64 && type1 === binaryen.i32) ? builder.module.call('f_i_id', [...args], binaryen.i32) :
-			(type0 === binaryen.f64 && type1 === binaryen.f64,   (this.operator === Operator.ID)
-				? builder.module.call('fid', [...args], binaryen.i32)
-				: builder.module.f64.eq(...args)
-			)
-		);
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.ID, 'vid'],
+			[Operator.EQ, this.validator.config.compilerOptions.intCoercion ? 'veq' : 'veqq'],
+		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {

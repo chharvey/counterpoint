@@ -1,5 +1,8 @@
 import * as xjs from 'extrajs';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	instanceOf,
+} from '../../lib/index.js';
 import {TYPE} from '../index.js';
 import {
 	languageValuesIdentical,
@@ -32,10 +35,10 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
+	@instanceOf(CPSet)
+	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
-		return value instanceof CPSet && this.isEqualTo(value as this, (this_, that_) => (
-			xjs.Set.is<T>(this_.elements, that_.elements, language_values_equal)
-		));
+		return xjs.Set.is<CPObject>(this.elements, (value as CPSet).elements, language_values_equal);
 	}
 
 	/**
@@ -43,7 +46,7 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 	 * Returns a TypeSet whose invariant is the union of the types of this Set’s elements.
 	 */
 	public override toType(): TYPE.TypeSet {
-		return new TYPE.TypeSet(TYPE.Type.unionAll([...this.elements].map<TYPE.Type>((el) => el.toType())));
+		return new TYPE.TypeSet(TYPE.TypeUnion.all([...this.elements].map<TYPE.Type>((el) => el.toType())));
 	}
 
 	public get(el: T): CPBoolean {

@@ -1,7 +1,6 @@
 import type binaryen from 'binaryen';
 import {
 	type TYPE,
-	type Builder,
 	AssignmentErrorReassignment,
 	MutabilityError01,
 } from '../../index.js';
@@ -55,17 +54,17 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		ASTNodeCP.assignExpression(this.assigned, assignee_type, this);
 	}
 
-	public override build(builder: Builder): binaryen.ExpressionRef {
+	public override build(): binaryen.ExpressionRef {
 		const id: bigint = (this.assignee as ASTNodeVariable).id;
-		const local = builder.getLocalInfo(id);
+		const local = this.builder.getLocalInfo(id);
 		if (!local) {
 			throw new ReferenceError(`Variable with id ${ id } not found.`);
 		}
-		return builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
-			builder.module,
+		return this.builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+			this.builder.module,
 			this.assignee.type(),
 			this.assigned.type(),
-			this.assigned.build(builder),
+			this.assigned.build(),
 			this.validator.config.compilerOptions.intCoercion,
 		));
 	}

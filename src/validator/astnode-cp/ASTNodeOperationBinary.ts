@@ -28,6 +28,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		return expression;
 	}
 
+
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		protected readonly operator: ValidOperatorBinary,

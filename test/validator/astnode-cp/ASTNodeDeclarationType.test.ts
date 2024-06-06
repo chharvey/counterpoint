@@ -5,7 +5,6 @@ import {
 	type SymbolStructure,
 	SymbolStructureType,
 	TYPE,
-	Builder,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../../src/index.js';
 import {assert_instanceof} from '../../../src/lib/index.js';
@@ -56,16 +55,11 @@ describe('ASTNodeDeclarationType', () => {
 
 	describe('#build', () => {
 		it('always returns `(nop)`.', () => {
-			const src: string = `
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
 				type U = T | float;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			const builder = new Builder(src);
-			return xjs.Array.forEachAggregated(goal.children, (stmt) => {
-				assert.ok(stmt instanceof AST.ASTNodeDeclarationType);
-				return assertEqualBins(stmt.build(builder), builder.module.nop());
-			});
+			`);
+			return xjs.Array.forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), goal.builder.module.nop()));
 		});
 	});
 });

@@ -1,13 +1,12 @@
+import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	type OBJ,
 	TYPE,
-	type Builder,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
@@ -56,11 +55,11 @@ export class ASTNodeVariable extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		const local = builder.getLocalInfo(this.id);
+	public override build(): binaryen.ExpressionRef {
+		const local = this.builder.getLocalInfo(this.id);
 		return (local)
-			? builder.module.local.get(local.index, local.type)
-			: throw_expression(new ReferenceError(`Variable with id ${ this.id } not found.`));
+			? this.builder.module.local.get(local.index, local.type)
+			: assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 
 	@memoizeMethod

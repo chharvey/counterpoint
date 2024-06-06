@@ -100,6 +100,12 @@ Sequence<Instruction> BuildExpression(SemanticTemplate tpl) :=
 
 
 
+Sequence<Instruction> BuildExpression(SemanticTuple tuple) :=
+	// TO BE DETERMINED
+;
+
+
+
 Sequence<Instruction> BuildExpression(SemanticClaim claim) :=
 	1. *Assert:* `claim.children.count` is 2.
 	2. *Return:* `Build(claim.children.1)`.

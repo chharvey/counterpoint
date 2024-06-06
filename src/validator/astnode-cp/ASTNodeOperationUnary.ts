@@ -4,12 +4,10 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	Builder,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -34,6 +32,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return expression;
 	}
 
+
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		private readonly operator: ValidOperatorUnary,
@@ -42,46 +41,14 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		super(start_node, operator, [operand]);
 	}
 
-	/**
-	 * Return an instruction performing the operation on the argument.
-	 * @param mod   the binaryen module
-	 * @param type_ the compile-time type of the operand
-	 * @param arg   the operand
-	 * @return      an instruction that performs the operation at runtime
-	 */
-	private operate(mod: binaryen.Module, type_: TYPE.Type, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
-		assert.strictEqual(bintype, type_.binType());
-		if (type_ instanceof TYPE.TypeUnion) {
-			// assert: `arg` is equivalent to a result of `Builder.createBinEither()`
-			return Builder.createBinEither(
-				mod,
-				mod.tuple.extract(arg, 0),
-				this.operate(mod, type_.left,  mod.tuple.extract(arg, 1)),
-				this.operate(mod, type_.right, mod.tuple.extract(arg, 2)),
-			);
-		} else {
-			ASTNodeOperation.expectIntOrFloat(bintype);
-			return (this.operator === Operator.NEG && bintype === binaryen.f64)
-				? mod.f64.neg(arg)
-				: mod.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
-					[binaryen.i32, new Map<Operator, string>([
-						[Operator.NOT, 'inot'],
-						[Operator.EMP, 'iemp'],
-						[Operator.NEG, 'neg'],
-					])],
-					[binaryen.f64, new Map<Operator, string>([
-						[Operator.NOT, 'fnot'],
-						[Operator.EMP, 'femp'],
-					])],
-				]).get(bintype)!.get(this.operator)!, [arg], binaryen.i32);
-		}
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return this.operate(builder.module, this.operand.type(), this.operand.build(builder));
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.NOT, 'vnot'],
+			[Operator.EMP, 'vemp'],
+			[Operator.NEG, 'vneg'],
+		]).get(this.operator)!, [this.operand.build()], binaryen.v128);
 	}
 
 	@memoizeMethod
@@ -99,7 +66,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			(assert.strictEqual(this.operator, Operator.NEG), (
 				(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)))
 					? t
-					: throw_expression(new TypeErrorInvalidOperation(this))
+					: assert.fail(new TypeErrorInvalidOperation(this))
 			))
 		);
 		/* eslint-enable indent */

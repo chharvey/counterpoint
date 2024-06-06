@@ -1,8 +1,7 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	type TYPE,
-	type Builder,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.js';
 import {assert_instanceof} from '../../lib/index.js';
@@ -31,8 +30,8 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		start_node: SyntaxNodeType<'declaration_variable'>,
 		public  readonly unfixed:  boolean,
 		private readonly assignee: ASTNodeVariable,
-		public  readonly typenode: ASTNodeType,
-		public  readonly assigned: ASTNodeExpression,
+		public readonly typenode: ASTNodeType,
+		public readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {unfixed}, [assignee, typenode, assigned]);
 	}
@@ -58,17 +57,17 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 	}
 
-	public override build(builder: Builder): binaryen.ExpressionRef {
+	public override build(): binaryen.ExpressionRef {
 		if (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold()) {
-			return builder.module.nop();
+			return this.builder.module.nop();
 		} else {
 			const assignee_type: TYPE.Type = this.typenode.eval();
-			const local = builder.addLocal(this.assignee.id, assignee_type.binType())[0].getLocalInfo(this.assignee.id)!;
-			return builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
-				builder.module,
+			const local = this.builder.addLocal(this.assignee.id, binaryen.v128)[0].getLocalInfo(this.assignee.id)!;
+			return this.builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+				this.builder.module,
 				assignee_type,
 				this.assigned.type(),
-				this.assigned.build(builder),
+				this.assigned.build(),
 				this.validator.config.compilerOptions.intCoercion,
 			));
 		}

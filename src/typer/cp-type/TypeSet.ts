@@ -1,13 +1,12 @@
 import {strictEqual} from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
+import {MUT_OPERATOR} from './utils-private.js';
 import {Type} from './Type.js';
 
 
 
 export class TypeSet extends Type {
-	public override readonly isBottomType: boolean = false;
-
 	/**
 	 * Construct a new TypeSet object.
 	 * @param invariant a union of types in this set type
@@ -25,7 +24,7 @@ export class TypeSet extends Type {
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }Set.<${ this.invariant }>`;
+		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Set.<${ this.invariant }>`;
 	}
 
 	public override includes(v: OBJ.Object): boolean {
@@ -33,13 +32,14 @@ export class TypeSet extends Type {
 	}
 
 	@strictEqual
+	@Type.memoizeSubtype
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeSet
 			&& (!t.isMutable || this.isMutable)
 			&& ((t.isMutable)
-				? this.invariant.equals(t.invariant) // Invariance for mutable sets: `A == B --> mutable Set.<A> <: mutable Set.<B>`.
+				? this.invariant.equals(t.invariant) // Invariance for mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.
 				: this.invariant.equals(t.invariant) // Invariance for immutable sets: `A == B --> Set.<A> <: Set.<B>`.
 			)
 		);

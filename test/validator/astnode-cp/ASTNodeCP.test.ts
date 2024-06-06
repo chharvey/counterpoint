@@ -1,9 +1,8 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	AST,
 	TYPE,
-	Builder,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateDeclaration,
@@ -17,11 +16,7 @@ import {
 	assertAssignable,
 	assertEqualBins,
 } from '../../assert-helpers.js';
-import {
-	typeUnitFloat,
-	buildConstInt,
-	buildConstFloat,
-} from '../../helpers.js';
+import {typeUnitFloat} from '../../helpers.js';
 
 
 
@@ -29,28 +24,23 @@ describe('ASTNodeCP', () => {
 	describe('ASTNodeStatementExpression', () => {
 		describe('#build', () => {
 			it('returns `(nop)` for empty statement expression.', () => {
-				const src: string = ';';
-				const builder = new Builder(src);
-				const instr: binaryen.ExpressionRef = AST.ASTNodeStatementExpression.fromSource(src).build(builder);
-				return assertEqualBins(instr, builder.module.nop());
+				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(';');
+				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
 			});
 			it('returns `(drop)` for nonempty statement expression.', () => {
-				const src: string = '42 + 420;';
-				const builder = new Builder(src);
-				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
+				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource('42 + 420;');
 				return assertEqualBins(
-					stmt.build(builder),
-					builder.module.drop(stmt.expr!.build(builder)),
+					stmt.build(),
+					stmt.builder.module.drop(stmt.expr!.build()),
 				);
 			});
 			it('multiple statements.', () => {
-				const src: string = '42; 420;';
-				const generator = new Builder(src);
-				return AST.ASTNodeGoal.fromSource(src).children.forEach((stmt) => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource('42; 420;');
+				return goal.children.forEach((stmt) => {
 					assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 					return assertEqualBins(
-						stmt.build(generator),
-						generator.module.drop(stmt.expr!.build(generator)),
+						stmt.build(),
+						goal.builder.module.drop(stmt.expr!.build()),
 					);
 				});
 			});
@@ -63,7 +53,7 @@ describe('ASTNodeCP', () => {
 		describe('#varCheck', () => {
 			it('throws if the variable is not unfixed.', () => {
 				AST.ASTNodeGoal.fromSource(`
-					let unfixed i: int = 42;
+					let var i: int = 42;
 					i = 43;
 				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
@@ -84,7 +74,7 @@ describe('ASTNodeCP', () => {
 			context('for variable reassignment.', () => {
 				it('throws when variable assignee type is not supertype.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let unfixed i: int = 42;
+						let var i: int = 42;
 						i = 4.3;
 					`);
 					goal.varCheck();
@@ -106,19 +96,19 @@ describe('ASTNodeCP', () => {
 				it('throws when property assignee type is not supertype.', () => {
 					[
 						`
-							let l: mutable int[] = List.<int>([42]);
+							let l: mut int[] = List.<int>([42]);
 							l.0 = 4.2;
 						`,
 						`
-							let d: mutable [:int] = Dict.<int>([i= 42]);
+							let d: mut [:int] = Dict.<int>([i= 42]);
 							d.i = 4.2;
 						`,
 						`
-							let s: mutable int{} = Set.<int>([42]);
+							let s: mut int{} = Set.<int>([42]);
 							s.[42] = 4.2;
 						`,
 						`
-							let m: mutable {bool -> int} = Map.<bool, int>([[true, 42]]);
+							let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
 							m.[true] = 4.2;
 						`,
 					].forEach((src) => {
@@ -165,53 +155,35 @@ describe('ASTNodeCP', () => {
 
 		describe('#build', () => {
 			it('always returns `(local.set)`.', () => {
-				const src: string = `
-					let unfixed y: float = 4.2;
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let var y: float = 4.2;
 					y = y * 10;
-				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				const builder = new Builder(src);
-				goal.build(builder);
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build();
 				return assertEqualBins(
-					goal.children[1].build(builder),
-					builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build(builder)),
+					goal.children[1].build(),
+					goal.builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build()),
 				);
 			});
 			it('coerces as necessary.', () => {
-				const src: string = `
-					let unfixed x: float | int = 4.2;
-					let unfixed y: int | float = 4.2;
-					x = 8.4; % Either<float, int>#setLeft
-					x = 16;  % Either<float, int>#setRight
-					x = x;   % Either<float, int>#{setLeft,setRight}
-					x = y;   % Either<float, int>#{setLeft,setRight}
-				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				const builder = new Builder(src);
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let var x: float | int = 4.2;
+					let var y: int | float = 4.2;
+					x = 8.4;
+					x = 16;
+					x = x;
+					x = y;
+					x = 52 + x;
+					x = x + x;
+				`);
 				goal.varCheck();
 				goal.typeCheck();
-				goal.build(builder);
-				const default_ = {
-					int:   buildConstInt(0n, builder.module),
-					float: buildConstFloat(0, builder.module),
-				} as const;
-				const exprs: binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeAssignment).assigned.build(builder));
+				goal.build();
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build(builder)),
-					[
-						Builder.createBinEither(builder.module, false, exprs[0],       default_.int),
-						Builder.createBinEither(builder.module, true,  default_.float, exprs[1]),
-						builder.module.if(
-							builder.module.i32.eqz(builder.module.tuple.extract(exprs[2], 0)),
-							Builder.createBinEither(builder.module, false, builder.module.tuple.extract(exprs[2], 1), default_.int),
-							Builder.createBinEither(builder.module, true,  default_.float,                            builder.module.tuple.extract(exprs[2], 2)),
-						),
-						builder.module.if(
-							builder.module.i32.eqz(builder.module.tuple.extract(exprs[3], 0)),
-							Builder.createBinEither(builder.module, true,  default_.float,                            builder.module.tuple.extract(exprs[3], 1)),
-							Builder.createBinEither(builder.module, false, builder.module.tuple.extract(exprs[3], 2), default_.int),
-						),
-					].map((expected) => builder.module.local.set(0, expected)),
+					goal.children.slice(2).map((stmt) => stmt.build()),
+					goal.children.slice(2).map((stmt) => goal.builder.module.local.set(0, (stmt as AST.ASTNodeAssignment).assigned.build())),
 				);
 			});
 		});
@@ -335,17 +307,18 @@ describe('ASTNodeCP', () => {
 
 
 		describe('#build', () => {
-			it('returns `(nop)` for empty program.', () => {
-				const src: string = '';
-				const builder = new Builder(src);
-				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
-				return assertEqualBins(instr, builder.module.nop());
-			});
-			it('returns binaryen.Module for non-empty program.', () => {
-				const src: string = '42;';
-				const builder = new Builder(src);
-				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
-				assert.strictEqual(instr, builder.module);
+			it('always returns `(nop)`.', () => {
+				xjs.Array.forEachAggregated([
+					'',
+					'42;',
+					`
+						let x: int = 42;
+						x;
+					`,
+				], (src) => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+					return assertEqualBins(goal.build(), goal.builder.module.nop());
+				});
 			});
 		});
 	});

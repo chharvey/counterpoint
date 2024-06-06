@@ -74,13 +74,13 @@ In some programming disciplines this pattern is generally encouraged, because
 variables holding different values at different points in runtime could lead to unpredictability.
 However, changing a variable’s value is useful in some cases, such as in loops or for storing state.
 
-Therefore, we can declare a variables with the keywords `let unfixed`,
+Therefore, we can declare unfixed variables with the keywords `let var`,
 which allows us to assign it a new value later.
 ```
-let unfixed my_var = "Hello, world!";
-my_var;                               %== "Hello, world!"
+let var my_var = "Hello, world!";
+my_var;                           %== "Hello, world!"
 my_var = "¡Hola, mundo!";
-my_var;                               %== "¡Hola, mundo!"
+my_var;                           %== "¡Hola, mundo!"
 ```
 The statement `my_var = "¡Hola, mundo!";` is called a **variable reassignment statement**.
 An unfixed variable can be reassigned anywhere in the scope in which it’s visible.
@@ -104,13 +104,13 @@ b;               % also `42`
 If that first variable is ever reassigned, the second variable will keep its pointer
 to the original value, until it itself is reassigned.
 ```
-let unfixed a: int = 42;
-let unfixed b: int = a;
-a;                       %== 42
-b;                       % also `42`
+let var a: int = 42;
+let var b: int = a;
+a;                   %== 42
+b;                   % also `42`
 a = 420;
-a;                       % now `420`
-b;                       % still `42`
+a;                   % now `420`
+b;                   % still `42`
 ```
 
 

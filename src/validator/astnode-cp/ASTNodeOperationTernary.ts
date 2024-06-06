@@ -1,12 +1,11 @@
+import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	type Builder,
 	TypeErrorInvalidOperation,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -40,10 +39,11 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return builder.module.if(
-			this.operand0.build(builder),
-			...ASTNodeOperation.coerceOperands(builder, this.operand1, this.operand2),
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.if(
+			this.operand0.build(),
+			this.operand1.build(),
+			this.operand2.build(),
 		);
 	}
 
@@ -60,7 +60,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 				(t0.includes(OBJ.Boolean.TRUE))  ? t1           : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
 				(t0.isBottomType,                  TYPE.NEVER)
 			)
-			: throw_expression(new TypeErrorInvalidOperation(this));
+			: assert.fail(new TypeErrorInvalidOperation(this));
 	}
 
 	@memoizeMethod

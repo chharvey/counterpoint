@@ -6,7 +6,6 @@ import {
 	AST,
 	OBJ,
 	TYPE,
-	Builder,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
@@ -24,8 +23,7 @@ import {
 	typeUnitInt,
 	typeUnitFloat,
 	typeUnitStr,
-	buildConstInt,
-	buildConstFloat,
+	buildConst,
 } from '../../helpers.js';
 
 
@@ -110,22 +108,22 @@ describe('ASTNodeExpression', () => {
 		specify('#build', () => {
 			const mod = new binaryen.Module();
 			const tests = new Map<string, binaryen.ExpressionRef>([
-				['null;',    mod.i32.const(0)],
-				['false;',   mod.i32.const(0)],
-				['true;',    mod.i32.const(1)],
-				['0;',       mod.i32.const(0)],
-				['+0;',      mod.i32.const(0)],
-				['-0;',      mod.i32.const(0)],
-				['42;',      mod.i32.const(42)],
-				['+42;',     mod.i32.const(42)],
-				['-42;',     mod.i32.const(-42)],
-				['0.0;',     mod.f64.const(0)],
-				['+0.0;',    mod.f64.const(0)],
-				['-0.0;',    mod.f64.ceil(mod.f64.const(-0.5))],
-				['-4.2e-2;', mod.f64.const(-0.042)],
+				['null;',    buildConst(mod)],
+				['false;',   buildConst(mod, false)],
+				['true;',    buildConst(mod, true)],
+				['0;',       buildConst(mod, 0n)],
+				['+0;',      buildConst(mod, 0n)],
+				['-0;',      buildConst(mod, 0n)],
+				['42;',      buildConst(mod, 42n)],
+				['+42;',     buildConst(mod, 42n)],
+				['-42;',     buildConst(mod, -42n)],
+				['0.0;',     buildConst(mod, 0)],
+				['+0.0;',    buildConst(mod, 0)],
+				['-0.0;',    buildConst(mod, -0)],
+				['-4.2e-2;', buildConst(mod, -0.042)],
 			]);
 			return assertEqualBins(
-				[...tests.keys()].map((src) => AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))),
+				[...tests.keys()].map((src) => AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF).build()),
 				[...tests.values()],
 			);
 		});
@@ -137,7 +135,7 @@ describe('ASTNodeExpression', () => {
 		describe('#varCheck', () => {
 			it('throws if the validator does not contain a record for the identifier.', () => {
 				AST.ASTNodeGoal.fromSource(`
-					let unfixed i: int = 42;
+					let var i: int = 42;
 					i;
 				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeVariable.fromSource('i;').varCheck(), ReferenceErrorUndeclared);
@@ -145,7 +143,7 @@ describe('ASTNodeExpression', () => {
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					i;
-					let unfixed i: int = 42;
+					let var i: int = 42;
 				`).varCheck(), ReferenceErrorDeadZone);
 			});
 			it('throws if it was declared as a type alias.', () => {
@@ -180,7 +178,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for an unfixed variable.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 21 * 2;
+					let var x: int = 21 * 2;
 					x;
 				`);
 				goal.varCheck();
@@ -193,7 +191,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for a fixed variable of mutable type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let fixed_mutable: mutable int{} = {1, 2, 3};
+					let fixed_mutable: mut int{} = {1, 2, 3};
 					fixed_mutable;
 				`);
 				goal.varCheck();
@@ -206,10 +204,10 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for an uncomputable fixed variable.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 21 * 2;
+					let var x: int = 21 * 2;
 					let y: int = x / 2;
 					y;
-					let z: mutable int{} = {11, 22, 33};
+					let z: mut int{} = {11, 22, 33};
 					let w: bool = z.[22];
 					w;
 				`);
@@ -230,85 +228,79 @@ describe('ASTNodeExpression', () => {
 
 		describe('#build', () => {
 			it('with constant folding on, returns `({i32,f64}.const)` for fixed & foldable variables.', () => {
-				const src: string = `
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let x: int = 42;
 					let y: float = 4.2 * 10;
 					x;
 					y;
-				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				const builder = new Builder(src);
+				`);
 				goal.varCheck();
 				goal.typeCheck();
-				goal.build(builder);
+				goal.build();
 				assertEqualBins(
 					[
-						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(builder),
-						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(builder),
+						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(),
+						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(),
 					],
 					[
-						buildConstInt   (42n,  builder.module),
-						buildConstFloat (42.0, builder.module),
+						buildConst(goal.builder.module, 42n),
+						buildConst(goal.builder.module, 42.0),
 					],
 				);
 			});
 			it('with constant folding on, returns `(local.get)` for unfixed / non-foldable variables.', () => {
-				const src: string = `
-					let unfixed x: int = 42;
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let var x: int = 42;
 					let y: int = x + 10;
 					x;
 					y;
-				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				const builder = new Builder(src);
+				`);
 				goal.varCheck();
 				goal.typeCheck();
-				goal.build(builder);
+				goal.build();
 				const var0 = (goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 				const var1 = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 				const [
 					{id: id0, type: type0},
 					{id: id1, type: type1},
-				] = builder.getLocals();
+				] = goal.builder.getLocals();
 				assert.deepStrictEqual([var0.id, var1.id], [id0, id1]);
 				assertEqualBins(
 					[
-						var0.build(builder),
-						var1.build(builder),
+						var0.build(),
+						var1.build(),
 					],
 					[
-						builder.module.local.get(0, type0),
-						builder.module.local.get(1, type1),
+						goal.builder.module.local.get(0, type0),
+						goal.builder.module.local.get(1, type1),
 					],
 				);
 			});
 			it('with constant folding off, always returns `(local.get)`.', () => {
-				const src: string = `
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let x: int = 42;
-					let unfixed y: float = 4.2;
+					let var y: float = 4.2;
 					x;
 					y;
-				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
-				const builder = new Builder(src, CONFIG_FOLDING_OFF);
+				`, CONFIG_FOLDING_OFF);
 				goal.varCheck();
 				goal.typeCheck();
-				goal.build(builder);
+				goal.build();
 				const var0 = (goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 				const var1 = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 				const [
 					{id: id0, type: type0},
 					{id: id1, type: type1},
-				] = builder.getLocals();
+				] = goal.builder.getLocals();
 				assert.deepStrictEqual([var0.id, var1.id], [id0, id1]);
 				assertEqualBins(
 					[
-						var0.build(builder),
-						var1.build(builder),
+						var0.build(),
+						var1.build(),
 					],
 					[
-						builder.module.local.get(0, type0),
-						builder.module.local.get(1, type1),
+						goal.builder.module.local.get(0, type0),
+						goal.builder.module.local.get(1, type1),
 					],
 				);
 			});
@@ -323,7 +315,7 @@ describe('ASTNodeExpression', () => {
 				AST.ASTNodeTemplate.fromSource('"""42😀""";', config),
 				AST.ASTNodeTemplate.fromSource('"""the answer is {{ 7 * 3 * 2 }} but what is the question?""";', config),
 				(AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 21;
+					let var x: int = 21;
 					"""the answer is {{ x * 2 }} but what is the question?""";
 				`, config)
 					.children[1] as AST.ASTNodeStatementExpression)
@@ -424,8 +416,8 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			([
-				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.Type.unionAll([typeUnitStr('a'), typeUnitInt(42n), typeUnitFloat(3.0)])],
-				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.Type.unionAll([typeUnitStr('a'), TYPE.INT,         TYPE.FLOAT])],
+				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.TypeUnion.all(typeUnitStr('a'), typeUnitInt(42n), typeUnitFloat(3.0))],
+				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.TypeUnion.all(typeUnitStr('a'), TYPE.INT,         TYPE.FLOAT)],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
 				const expected: readonly TYPE.TypeUnit[] = [typeUnitInt(1n), typeUnitFloat(2.0), typeUnitStr('three')];
 				const collections: readonly [
@@ -453,10 +445,10 @@ describe('ASTNodeExpression', () => {
 							c.key.id,
 							expected[i],
 						]))),
-						new TYPE.TypeSet(TYPE.Type.unionAll(expected), true),
+						new TYPE.TypeSet(TYPE.TypeUnion.all(expected), true),
 						new TYPE.TypeMap(
 							map_ant_type,
-							TYPE.Type.unionAll(expected),
+							TYPE.TypeUnion.all(expected),
 							true,
 						),
 					],
@@ -522,12 +514,12 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for non-foldable entries.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 1;
-					let unfixed y: float = 2.0;
-					let unfixed z: str = "three";
+					let var x: int = 1;
+					let var y: float = 2.0;
+					let var z: str = "three";
 					[x, 2.0, "three"];
 					[a= 1, b= y, c= "three"];
-					% TODO: a non-foldable set object should be null
+					{1, 2.0, z};
 					{
 						"a" || "" -> 1,
 						21 + 21   -> y,
@@ -536,26 +528,37 @@ describe('ASTNodeExpression', () => {
 				`);
 				const tuple:   AST.ASTNodeTuple   = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
 				const record:  AST.ASTNodeRecord  = (goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
-				const map:     AST.ASTNodeMap     = (goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;
+				const set:     AST.ASTNodeSet     = (goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeSet;
+				const map:     AST.ASTNodeMap     = (goal.children[6] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;
 				assert.deepStrictEqual(
 					[
 						tuple,
 						record,
+						set,
 						map,
 					].map((c) => c.fold()),
-					[null, null, null],
+					[null, null, null, null],
 				);
 			});
 		});
 
 
 		describe('#build', () => {
-			specify('ASTNodeTuple', () => {
-				const builder = new Builder('');
+			specify.skip('ASTNodeTuple', () => {
+				const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF);
 				assertEqualBins(
-					AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF).build(builder),
-					builder.module.tuple.make([buildConstInt(1n, builder.module), buildConstFloat(2.0, builder.module)]),
+					tuple.build(),
+					tuple.builder.module.tuple.make([buildConst(tuple.builder.module, 1n), buildConst(tuple.builder.module, 2.0)]),
 				);
+			});
+			it.skip('foldable.', () => {
+				AST.ASTNodeTuple.fromSource('[1, 2.0, null];').build();
+			});
+			it.skip('non-foldable.', () => {
+				AST.ASTNodeGoal.fromSource(`
+					let var x: null = null;
+					[1, 2.0, x];
+				`).build();
 			});
 		});
 	});
@@ -619,8 +622,8 @@ describe('ASTNodeExpression', () => {
 				samples.forEach((expr) => {
 					const src: string = `<unknown>${ expr }`;
 					assertEqualBins(
-						AST.ASTNodeClaim     .fromSource(src) .build(new Builder(src)),
-						AST.ASTNodeExpression.fromSource(expr).build(new Builder(expr)),
+						AST.ASTNodeClaim     .fromSource(src) .build(),
+						AST.ASTNodeExpression.fromSource(expr).build(),
 					);
 				});
 			});

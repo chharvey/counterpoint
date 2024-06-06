@@ -12,7 +12,7 @@ export enum Keyword {
 		FALSE = 'false',
 		TRUE  = 'true',
 	// operator
-		MUTABLE = 'mutable',
+		MUTABLE = 'mut',
 		IS      = 'is',
 		ISNT    = 'isnt',
 		IF      = 'if',
@@ -22,7 +22,7 @@ export enum Keyword {
 		TYPE = 'type',
 		LET  = 'let',
 	// modifier
-		UNFIXED = 'unfixed',
+		UNFIXED = 'var',
 }
 
 

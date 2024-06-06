@@ -1,7 +1,9 @@
+import * as assert from 'assert';
 import type binaryen from 'binaryen';
+import {BinVect} from '../../index.js';
 import {
-	throw_expression,
 	strictEqual,
+	instanceOf,
 } from '../../lib/index.js';
 import {Float} from './index.js';
 import {Object as CPObject} from './Object.js';
@@ -45,6 +47,8 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	@strictEqual
+	@instanceOf(Integer)
+	@CPObject.memoizeSameness
 	public override identical(value: CPObject): boolean {
 		return value instanceof Integer && this.data === value.data;
 	}
@@ -55,7 +59,7 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		return mod.i32.const(this.toNumber());
+		return new BinVect(mod, mod.i32.const(this.toNumber())).vect;
 	}
 
 	public override toFloat(): Float {
@@ -160,7 +164,7 @@ export class Integer extends CPNumber<Integer> {
 	 */
 	public override divide(divisor: Integer): Integer {
 		return (divisor.eq0())
-			? throw_expression(new RangeError('Division by zero.'))
+			? assert.fail(new RangeError('Division by zero.'))
 			: new Integer(BigInt(Math.trunc(this.data / divisor.data)));
 	}
 
