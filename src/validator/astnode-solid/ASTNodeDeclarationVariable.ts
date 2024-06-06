@@ -1,9 +1,7 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	SolidType,
-	SolidObject,
-	INST,
-	Builder,
 	AssignmentError01,
 	forEachAggregated,
 	SolidConfig,
@@ -65,12 +63,19 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			}
 		}
 	}
-	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.typenode.eval().isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat();
-		const value: SolidObject | null = this.assignee.fold();
-		return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
-			? new INST.InstructionNone()
-			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat))
-		;
+	public override build(): binaryen.ExpressionRef {
+		if (this.validator.config.compilerOptions.constantFolding && !this.unfixed && this.assignee.fold()) {
+			return this.builder.module.nop();
+		} else {
+			const assignee_type: SolidType = this.typenode.eval();
+			const local = this.builder.addLocal(this.assignee.id, binaryen.v128)[0].getLocalInfo(this.assignee.id)!;
+			return this.builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+				this.builder.module,
+				assignee_type,
+				this.assigned.type(),
+				this.assigned.build(),
+				this.validator.config.compilerOptions.intCoercion,
+			));
+		}
 	}
 }

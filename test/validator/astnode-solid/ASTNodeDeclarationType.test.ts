@@ -4,10 +4,10 @@ import {
 	SymbolStructure,
 	SymbolStructureType,
 	SolidType,
-	INST,
-	Builder,
 	AssignmentError01,
 } from '../../../src/index.js';
+import {forEachAggregated} from '../../../src/lib/index.js';
+import {assertEqualBins} from '../../assert-helpers.js';
 
 
 
@@ -53,23 +53,12 @@ describe('ASTNodeDeclarationType', () => {
 
 
 	describe('#build', () => {
-		it('always returns InstructionNone.', () => {
-			const src: string = `
+		it('always returns `(nop)`.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
 				type U = T | float;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			const builder: Builder = new Builder(src);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
-					new INST.InstructionNone(),
-					new INST.InstructionNone(),
-				],
-			);
+			`);
+			return forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), goal.builder.module.nop()));
 		});
 	});
 });

@@ -1,5 +1,5 @@
+import binaryen from 'binaryen';
 import {
-	INST,
 	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -26,25 +26,46 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeGoal {
 		return DECORATOR.decorate(((config === CONFIG_DEFAULT) ? PARSER : new ParserSolid(config)).parse(src), config);
 	}
-	private readonly _validator: Validator;
+
+
+	readonly #validator: Validator;
+	readonly #builder:   Builder;
+
+
 	constructor(
 		start_node: ParseNode,
 		override readonly children: readonly ASTNodeStatement[],
 		config: SolidConfig,
 	) {
 		super(start_node, {}, children)
-		this._validator = new Validator(config);
+		this.#validator = new Validator(config);
+		this.#builder   = new Builder();
 	}
+
 	override get validator(): Validator {
-		return this._validator;
+		return this.#validator;
 	}
+
+	override get builder(): Builder {
+		return this.#builder;
+	}
+
 	/** @implements Buildable */
-	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
-		return (!this.children.length)
-			? new INST.InstructionNone()
-			: new INST.InstructionModule([
-				...Builder.IMPORTS,
-				...(this.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
-			])
+	public build(): binaryen.ExpressionRef {
+		const validate_module: () => void = this.builder.setupModule();
+		if (this.children.length) {
+			const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build()); // must build before calling `.getLocals()`
+			const fn_name:    string                   = 'fn0';
+			this.builder.module.addFunction(
+				fn_name,
+				binaryen.none,
+				binaryen.none,
+				this.builder.getLocals().map((var_) => var_.type),
+				this.builder.module.block(null, statements),
+			);
+			this.builder.module.addFunctionExport(fn_name, fn_name);
+		}
+		validate_module();
+		return this.builder.module.nop();
 	}
 }

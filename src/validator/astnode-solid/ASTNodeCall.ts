@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidType,
 	SolidTypeTuple,
@@ -14,8 +15,6 @@ import {
 	SolidDict,
 	SolidSet,
 	SolidMap,
-	INST,
-	Builder,
 	TypeError05,
 	TypeError06,
 	forEachAggregated,
@@ -56,11 +55,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 			...this.exprargs,
 		], (arg) => arg.varCheck());
 	}
-	override shouldFloat(): boolean {
-		return false;
-	}
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
-		throw builder && to_float && '`ASTNodeCall#build_do` not yet supported.'
+
+	protected override build_do(): binaryen.ExpressionRef {
+		throw '`ASTNodeCall#build_do` not yet supported.'
 	}
 	protected override type_do(): SolidType {
 		if (!(this.base instanceof ASTNodeVariable)) {

@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	ReferenceError01,
 	ReferenceError03,
@@ -7,8 +8,6 @@ import {
 	TOKEN,
 	SolidType,
 	SolidObject,
-	INST,
-	Builder,
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
@@ -29,9 +28,6 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		super(start_node, {id: start_node.cook()})
 		this.id = start_node.cook()!;
 	}
-	override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(SolidType.FLOAT);
-	}
 	override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
@@ -41,9 +37,14 @@ export class ASTNodeVariable extends ASTNodeExpression {
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		};
 	}
-	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
-		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
+
+	protected override build_do(): binaryen.ExpressionRef {
+		const local = this.builder.getLocalInfo(this.id);
+		return (local)
+			? this.builder.module.local.get(local.index, local.type)
+			: (() => { throw new ReferenceError(`Variable with id ${ this.id } not found.`) })(); // TODO use throw_expression
 	}
+
 	protected override type_do(): SolidType {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;

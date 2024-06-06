@@ -1,12 +1,11 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs'
 import {
 	SolidType,
 	SolidObject,
 	SolidBoolean,
 	SolidNumber,
-	INST,
-	Builder,
 	TypeError01,
 	NanError01,
 	SolidConfig,
@@ -26,6 +25,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		assert.ok(expression instanceof ASTNodeOperationUnary);
 		return expression;
 	}
+
+
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorUnary,
@@ -33,16 +34,15 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand]);
 	}
-	override shouldFloat(): boolean {
-		return this.operand.shouldFloat();
+
+	protected override build_do(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.NOT, 'vnot'],
+			[Operator.EMP, 'vemp'],
+			[Operator.NEG, 'vneg'],
+		]).get(this.operator)!, [this.operand.build()], binaryen.v128);
 	}
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionUnop(
-			this.operator,
-			this.operand.build(builder, tofloat),
-		)
-	}
+
 	protected override type_do(): SolidType {
 		const t0: SolidType = this.operand.type();
 		return (

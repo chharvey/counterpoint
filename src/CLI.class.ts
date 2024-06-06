@@ -6,9 +6,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 } from './core/index.js';
-import {
-	Builder,
-} from './builder/index.js';
+import {Program} from './Program.js';
 
 
 
@@ -205,20 +203,20 @@ export class CLI {
 	 * @return the computed configuration object
 	 */
 	private async computeConfig(cwd: string): Promise<SolidConfig> {
-		const config: PartialSolidConfig | Promise<PartialSolidConfig> = this.argv.project ?
-			fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8').then((text) => JSON.parse(text))
-		: {}
+		const config: PartialSolidConfig = this.argv.project
+			? JSON.parse(await fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8'))
+			: {};
 
 		const returned: Mutable<SolidConfig> = {
 			...CONFIG_DEFAULT,
-			...await config,
+			...config,
 			languageFeatures: {
 				...CONFIG_DEFAULT.languageFeatures,
-				...(await config).languageFeatures,
+				...config.languageFeatures,
 			},
 			compilerOptions: {
 				...CONFIG_DEFAULT.compilerOptions,
-				...(await config).compilerOptions,
+				...config.compilerOptions,
 			},
 		}
 
@@ -255,10 +253,10 @@ export class CLI {
 			base: void 0,
 			ext: this.command === Command.DEV ? '.wat' : '.wasm',
 		})
-		const cg: Builder = new Builder(...await Promise.all([
+		const program = new Program(...await Promise.all([
 			fs.promises.readFile(inputfilepath, 'utf8'),
 			this.computeConfig(cwd),
-		]))
+		]));
 		return Promise.all([
 			xjs.String.dedent`
 				Compiling………
@@ -268,7 +266,7 @@ export class CLI {
 					: `Destination binary file:`
 				} ${ outputfilepath }
 			`.trimStart(),
-			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? cg.print() : await cg.compile()),
+			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? program.print() : program.compile()),
 		])
 	}
 

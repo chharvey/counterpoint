@@ -1,3 +1,4 @@
+import type {Builder} from '../../index.js';
 import {
 	SolidType,
 	TypeError03,
@@ -10,6 +11,20 @@ import {
 
 
 
+/**
+ * Known subclasses:
+ * - ASTNodeKey
+ * - ASTNodeIndexType
+ * - ASTNodeItemType
+ * - ASTNodePropertyType
+ * - ASTNodeIndex
+ * - ASTNodeProperty
+ * - ASTNodeCase
+ * - ASTNodeType
+ * - ASTNodeExpression
+ * - ASTNodeStatement
+ * - ASTNodeGoal
+ */
 export abstract class ASTNodeSolid extends ASTNode {
 	/**
 	 * Type-check an assignment.
@@ -27,7 +42,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 		validator:     Validator,
 	): void {
 		const is_subtype: boolean = assigned_type.isSubtypeOf(assignee_type);
-		const treatIntAsSubtypeOfFloat: boolean = (
+		const treatIntAsSubtypeOfFloat: boolean = ( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
 			   validator.config.compilerOptions.intCoercion
 			&& assigned_type.isSubtypeOf(SolidType.INT)
 			&& SolidType.FLOAT.isSubtypeOf(assignee_type)
@@ -55,6 +70,10 @@ export abstract class ASTNodeSolid extends ASTNode {
 
 	get validator(): Validator {
 		return (this.parent as ASTNodeSolid).validator;
+	}
+
+	get builder(): Builder {
+		return (this.parent as ASTNodeSolid).builder;
 	}
 
 	/**

@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	TypeError01,
 	TypeError02,
@@ -23,8 +24,6 @@ import {
 	CollectionKeyed,
 	SolidSet,
 	SolidMap,
-	INST,
-	Builder,
 	Operator,
 	ValidAccessOperator,
 } from './package.js';
@@ -49,11 +48,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	) {
 		super(start_node, {kind}, [base, accessor]);
 	}
-	override shouldFloat(): boolean {
-		throw 'ASTNodeAccess#shouldFloat not yet supported.';
-	}
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeAccess#build_do not yet supported.';
+
+	protected override build_do(): binaryen.ExpressionRef {
+		throw '`ASTNodeAccess#build_do` not yet supported.';
 	}
 	protected override type_do(): SolidType {
 		let base_type: SolidType = this.base.type();
@@ -149,7 +146,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (base_value === null) {
 			return null;
 		}
-		if (this.optional && base_value.equal(SolidNull.NULL)) {
+		if (this.optional && base_value.identical(SolidNull.NULL)) {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {

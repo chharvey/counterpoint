@@ -9,8 +9,6 @@ import {
 	SolidTypeRecord,
 	SolidObject,
 	SolidRecord,
-	INST,
-	Builder,
 } from './package.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
@@ -30,9 +28,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, {}, children);
-	}
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	protected override type_do(): SolidType {
 		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [

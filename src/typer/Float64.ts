@@ -1,4 +1,6 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs'
+import {BinVect} from '../index.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNumber} from './SolidNumber.js';
 
@@ -22,6 +24,14 @@ export class Float64 extends SolidNumber<Float64> {
 	}
 	protected override equal_helper(value: SolidObject): boolean {
 		return value instanceof SolidNumber && this.data === value.toFloat().data;
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		return new BinVect(mod, (
+			Object.is(this.data, -0.0)
+				? mod.f64.ceil(mod.f64.const(-0.5))
+				: mod.f64.const(this.data)
+		)).vect;
 	}
 
 	override toFloat(): this {

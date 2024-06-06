@@ -1,11 +1,14 @@
+import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SolidTypeUnit,
+	SolidNull,
+	SolidBoolean,
 	Int16,
 	Float64,
 	SolidString,
-	INST,
 } from '../src/index.js';
 
 
@@ -38,9 +41,17 @@ export function typeConstStr(x: string): SolidTypeUnit<SolidString> {
 	return new SolidString(x).toType();
 }
 
-export function instructionConstInt(x: bigint): INST.InstructionConst {
-	return new INST.InstructionConst(new Int16(x));
-}
-export function instructionConstFloat(x: number): INST.InstructionConst {
-	return new INST.InstructionConst(new Float64(x));
+
+
+export function buildConst(mod: binaryen.Module, value: null | boolean | bigint | number = null): binaryen.ExpressionRef {
+	return (
+		value === null            ? SolidNull.NULL :
+		value === false           ? SolidBoolean.FALSE :
+		value === true            ? SolidBoolean.TRUE :
+		value === 0n              ? Int16.ZERO :
+		value === 1n              ? Int16.UNIT :
+		typeof value === 'bigint' ? new Int16(value) :
+		typeof value === 'number' ? new Float64(value) :
+		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+	).build(mod);
 }

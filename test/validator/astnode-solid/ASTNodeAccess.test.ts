@@ -762,7 +762,7 @@ describe('ASTNodeAccess', () => {
 					],
 				);
 				// must bypass type-checker:
-				assert.deepStrictEqual(
+				assert.strictEqual(
 					AST.ASTNodeAccess.fromSource(`[prop= []]?.prop?.0;`).fold(),
 					SolidNull.NULL,
 				);
@@ -815,7 +815,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .fold(),
 					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).fold(),
 				].forEach((v) => {
-					assert.deepStrictEqual(v, SolidNull.NULL);
+					assert.strictEqual(v, SolidNull.NULL);
 				});
 			});
 		});
@@ -858,7 +858,7 @@ describe('ASTNodeAccess', () => {
 				[
 					AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).fold(),
 				].forEach((v) => {
-					assert.deepStrictEqual(v, SolidNull.NULL);
+					assert.strictEqual(v, SolidNull.NULL);
 				});
 			});
 		});
@@ -948,7 +948,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`)                               .fold(),
 					AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}?.[['a']];`).fold(),
 				].forEach((v) => {
-					assert.deepStrictEqual(v, SolidNull.NULL);
+					assert.strictEqual(v, SolidNull.NULL);
 				});
 			});
 		});

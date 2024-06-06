@@ -9,8 +9,6 @@ import {
 	SolidTypeMap,
 	SolidObject,
 	SolidMap,
-	INST,
-	Builder,
 } from './package.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
@@ -30,9 +28,6 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, {}, children);
-	}
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeMap#build_do not yet supported.';
 	}
 	protected override type_do(): SolidType {
 		return new SolidTypeMap(

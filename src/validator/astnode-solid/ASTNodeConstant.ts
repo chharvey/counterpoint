@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -13,8 +14,6 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-	INST,
-	Builder,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -43,12 +42,11 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node, {value})
 		this.value = value
 	}
-	override shouldFloat(): boolean {
-		return this.value instanceof Float64
+
+	protected override build_do(): binaryen.ExpressionRef {
+		return this.value.build(this.builder.module);
 	}
-	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionConst {
-		return INST.InstructionConst.fromCPValue(this.fold(), to_float);
-	}
+
 	protected override type_do(): SolidType {
 		return this.value.toType();
 	}

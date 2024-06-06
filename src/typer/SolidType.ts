@@ -1,6 +1,4 @@
-import {
-	Set_hasEq,
-} from './package.js';
+import {Set_hasEq} from './package.js';
 import {
 	SolidTypeIntersection,
 	SolidTypeUnion,
@@ -80,6 +78,7 @@ export abstract class SolidType {
 	 * Used internally for special cases of computations.
 	 */
 	readonly isTopType: boolean = false;
+
 
 	/**
 	 * Construct a new SolidType object.

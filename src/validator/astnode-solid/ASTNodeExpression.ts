@@ -1,12 +1,11 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SolidType,
 	SolidObject,
 	Primitive,
-	INST,
-	Builder,
 	ErrorCode,
 } from './package.js';
 import {
@@ -45,12 +44,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	}
 	private typed?: SolidType;
 	private assessed?: SolidObject | null;
-	private built?: INST.InstructionExpression;
-	/**
-	 * Determine whether this expression should build to a float-type instruction.
-	 * @return Should the built instruction be type-coerced into a floating-point number?
-	 */
-	abstract shouldFloat(): boolean;
+	#built?: binaryen.ExpressionRef;
+
 	/**
 	 * @final
 	 */
@@ -60,18 +55,20 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	}
 	/**
 	 * @inheritdoc
-	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
 	 * @implements Buildable
 	 * @final
 	 */
-	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
-		if (!this.built) {
+	public build(): binaryen.ExpressionRef {
+		if (!this.#built) {
 			const value: SolidObject | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			this.built = (!!value) ? INST.InstructionConst.fromCPValue(value, to_float) : this.build_do(builder, to_float);
+			this.#built = (value) ? value.build(this.builder.module) : this.build_do();
 		}
-		return this.built;
+		assert.strictEqual(binaryen.getExpressionType(this.#built), binaryen.v128);
+		return this.#built;
 	}
-	protected abstract build_do(builder: Builder, to_float?: boolean): INST.InstructionExpression;
+
+	protected abstract build_do(): binaryen.ExpressionRef;
+
 	/**
 	 * The Type of this expression.
 	 * @return the compile-time type of this node

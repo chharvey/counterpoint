@@ -1,5 +1,6 @@
-import type {SolidType} from './SolidType.js';
+import type binaryen from 'binaryen';
 import {SolidString} from './index.js';
+import type {SolidType} from './SolidType.js';
 
 
 
@@ -75,4 +76,11 @@ export abstract class SolidObject {
 	 * @return a Type that contains this Object
 	 */
 	public abstract toType(): SolidType;
+
+	/**
+	 * Create an ExpressionRef that implements this object.
+	 * @param mod the module to build from
+	 * @return the directions to print
+	 */
+	public abstract build(mod: binaryen.Module): binaryen.ExpressionRef;
 }

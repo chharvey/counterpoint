@@ -1,10 +1,9 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	SolidType,
 	SolidObject,
 	SolidBoolean,
-	INST,
-	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
@@ -34,17 +33,14 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	) {
 		super(start_node, operator, operand0, operand1);
 	}
-	override shouldFloat(): boolean {
-		return this.operator === Operator.EQ && super.shouldFloat();
+
+	protected override build_do(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.ID, 'vid'],
+			[Operator.EQ, this.validator.config.compilerOptions.intCoercion ? 'veq' : 'veqq'],
+		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
 	}
-	protected override build_do(builder: Builder, _to_float: boolean = false): INST.InstructionBinopEquality {
-		const tofloat: boolean = this.validator.config.compilerOptions.intCoercion && this.shouldFloat();
-		return new INST.InstructionBinopEquality(
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
-		)
-	}
+
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		/*
 		 * If `a` and `b` are of disjoint numeric types, then `a === b` will always return `false`.

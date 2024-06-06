@@ -63,6 +63,15 @@ export class Validator {
 	getSymbolInfo(id: bigint): SymbolStructure | null {
 		return this.symbol_table.get(id) || null;
 	}
+
+	/**
+	 * Return a copy of this Validator’s symbols.
+	 * @return the symbols in a new map
+	 */
+	public getSymbols(): Map<bigint, SymbolStructure> {
+		return new Map([...this.symbol_table]);
+	}
+
 	/**
 	 * Remove all symbols from this Validator’s symbol table.
 	 * @returns this

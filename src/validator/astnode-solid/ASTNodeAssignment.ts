@@ -1,8 +1,7 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	SolidType,
-	INST,
-	Builder,
 	AssignmentError10,
 	MutabilityError01,
 	SolidConfig,
@@ -61,11 +60,18 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			}
 		}
 	}
-	override build(builder: Builder): INST.InstructionStatement {
-		const tofloat: boolean = this.assignee.type().isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat();
-		return new INST.InstructionStatement(
-			builder.stmtCount,
-			new INST.InstructionGlobalSet((this.assignee as ASTNodeVariable).id, this.assigned.build(builder, tofloat)),
-		);
+	public override build(): binaryen.ExpressionRef {
+		const id: bigint = (this.assignee as ASTNodeVariable).id;
+		const local = this.builder.getLocalInfo(id);
+		if (!local) {
+			throw new ReferenceError(`Variable with id ${ id } not found.`);
+		}
+		return this.builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+			this.builder.module,
+			this.assignee.type(),
+			this.assigned.type(),
+			this.assigned.build(),
+			this.validator.config.compilerOptions.intCoercion,
+		));
 	}
 }

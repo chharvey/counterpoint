@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import {
 	Keys,
 	Map_hasEq,
@@ -30,5 +31,11 @@ export abstract class Collection extends SolidObject {
 			Map_setEq(Collection.EQ_MEMO, memokey, definition.call(null), Collection.EQ_MEMO_COMPARATOR);
 		}
 		return Map_getEq(Collection.EQ_MEMO, memokey, Collection.EQ_MEMO_COMPARATOR)!;
+	}
+
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		mod;
+		throw new Error('`Collection#build` not yet supported.');
 	}
 }

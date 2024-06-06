@@ -24,7 +24,7 @@ import {
 	SolidDict,
 	SolidSet,
 	SolidMap,
-} from '../../src/typer/index.js';
+} from '../../src/index.js';
 import {
 	typeConstInt,
 	typeConstFloat,
