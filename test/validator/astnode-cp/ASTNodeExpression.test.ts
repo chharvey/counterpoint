@@ -192,6 +192,9 @@ describe('ASTNodeExpression', () => {
 					let var x: int = 21 * 2;
 					let y: int = x / 2;
 					y;
+					let z: mut int{} = {11, 22, 33};
+					let w: bool = z.[22];
+					w;
 				`);
 				goal.varCheck();
 				goal.typeCheck();

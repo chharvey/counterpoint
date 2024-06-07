@@ -1,6 +1,7 @@
 import {strictEqual} from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
+import {MUT_OPERATOR} from './utils-private.js';
 import {Type} from './Type.js';
 
 
@@ -27,7 +28,7 @@ export class TypeMap extends Type {
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }Map.<${ this.invariant_ant }, ${ this.invariant_con }>`;
+		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Map.<${ this.invariant_ant }, ${ this.invariant_con }>`;
 	}
 
 	public override includes(v: OBJ.Object): boolean {
@@ -41,7 +42,7 @@ export class TypeMap extends Type {
 			t instanceof TypeMap
 			&& (!t.isMutable || this.isMutable)
 			&& ((t.isMutable)
-				? this.invariant_ant.equals(t.invariant_ant) && this.invariant_con.equals(t.invariant_con)      // Invariance for mutable maps: `A == C && B == D --> mutable Map.<A, B> <: mutable Map.<C, D>`.
+				? this.invariant_ant.equals(t.invariant_ant) && this.invariant_con.equals(t.invariant_con)      // Invariance for mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.
 				: this.invariant_ant.equals(t.invariant_ant) && this.invariant_con.isSubtypeOf(t.invariant_con) // Invariance for immutable maps’ keys: `A == C && --> Map.<A, B> <: Map.<C, B>`. // Covariance for immutable maps’ values: `B <: D --> Map.<A, B> <: Map.<A, D>`.
 			)
 		);

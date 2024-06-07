@@ -13,7 +13,7 @@
 
 Word ::=
 	// operator
-		| "mutable"
+		| "mut"
 		| "is"
 		| "isnt"
 		| "if"
@@ -84,7 +84,7 @@ TypeUnarySymbol ::=
 
 TypeUnaryKeyword ::=
 	| TypeUnarySymbol
-	| "mutable" TypeUnaryKeyword
+	| "mut" TypeUnaryKeyword
 ;
 
 TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;

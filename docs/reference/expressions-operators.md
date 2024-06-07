@@ -723,7 +723,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td>Mutable</td>
 			<td>unary prefix</td>
 			<td>right-to-left</td>
-			<td><code>mutable …</code></td>
+			<td><code>mut …</code></td>
 		</tr>
 		<tr>
 			<th>5</th>
@@ -813,18 +813,18 @@ The **Set** operator `T{}` is shorthand for `Set.<T>`.
 
 ### Mutable
 ```
-`mutable` <Type>
+`mut` <Type>
 ```
-The `mutable` type operator allows properties in a complex type to be reassigned.
+The `mut` type operator allows properties in a complex type to be reassigned.
 It allows us to reassign tuple indices and record keys, as well as modify sets and maps
 by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
-let elements: mutable str[4] = ["water", "earth", "fire", "wind"];
+let elements: mut str[4] = ["water", "earth", "fire", "wind"];
 elements.3 = "air";
 elements; %== ["water", "earth", "fire", "air"]
 ```
-If `elements` were just of type `str[4]` (without `mutable`),
+If `elements` were just of type `str[4]` (without `mut`),
 then attempting to modify it would result in a Mutability Error.
 
 
