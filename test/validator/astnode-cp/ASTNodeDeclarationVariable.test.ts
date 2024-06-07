@@ -128,7 +128,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			it('tuples: only allows greater or equal items.', () => {
 				typeCheckGoal(`
 					type T = [int];
-					let unfixed i: int = 42;
+					let var i: int = 42;
 					let v: T = [42];
 
 					let t1_1: mutable [42 | 4.3] = [42];
@@ -153,7 +153,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			it('records: only allows matching or more properties.', () => {
 				typeCheckGoal(`
 					type T = [int];
-					let unfixed i: int = 42;
+					let var i: int = 42;
 					let v: T = [42];
 
 					let r1_1: mutable [a: 42 | 4.3] = [a= 42];
@@ -345,7 +345,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		});
 		it('with constant folding on, returns `(local.set)` for unfixed / non-foldable variables.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let unfixed x: int = 42;
+				let var x: int = 42;
 				let y: int = x + 10;
 			`);
 			goal.varCheck();
@@ -363,7 +363,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('with constant folding off, always returns `(local.set)`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let x: int = 42;
-				let unfixed y: float = 4.2;
+				let var y: float = 4.2;
 			`, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();

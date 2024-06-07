@@ -133,7 +133,7 @@ describe('ASTNodeExpression', () => {
 		describe('#varCheck', () => {
 			it('throws if the validator does not contain a record for the identifier.', () => {
 				AST.ASTNodeGoal.fromSource(`
-					let unfixed i: int = 42;
+					let var i: int = 42;
 					i;
 				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeVariable.fromSource('i;').varCheck(), ReferenceError01);
@@ -141,7 +141,7 @@ describe('ASTNodeExpression', () => {
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					i;
-					let unfixed i: int = 42;
+					let var i: int = 42;
 				`).varCheck(), ReferenceError02);
 			});
 			it('throws if it was declared as a type alias.', () => {
@@ -176,7 +176,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for an unfixed variable.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 21 * 2;
+					let var x: int = 21 * 2;
 					x;
 				`);
 				goal.varCheck();
@@ -189,7 +189,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for an uncomputable fixed variable.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 21 * 2;
+					let var x: int = 21 * 2;
 					let y: int = x / 2;
 					y;
 				`);
@@ -228,7 +228,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('with constant folding on, returns `(local.get)` for unfixed / non-foldable variables.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 42;
+					let var x: int = 42;
 					let y: int = x + 10;
 					x;
 					y;
@@ -257,7 +257,7 @@ describe('ASTNodeExpression', () => {
 			it('with constant folding off, always returns `(local.get)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let x: int = 42;
-					let unfixed y: float = 4.2;
+					let var y: float = 4.2;
 					x;
 					y;
 				`, CONFIG_FOLDING_OFF);
@@ -293,7 +293,7 @@ describe('ASTNodeExpression', () => {
 				AST.ASTNodeTemplate.fromSource('"""42😀""";', config),
 				AST.ASTNodeTemplate.fromSource('"""the answer is {{ 7 * 3 * 2 }} but what is the question?""";', config),
 				(AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 21;
+					let var x: int = 21;
 					"""the answer is {{ x * 2 }} but what is the question?""";
 				`, config)
 					.children[1] as AST.ASTNodeStatementExpression)
@@ -476,9 +476,9 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for non-foldable entries.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 1;
-					let unfixed y: float = 2.0;
-					let unfixed z: str = "three";
+					let var x: int = 1;
+					let var y: float = 2.0;
+					let var z: str = "three";
 					[x, 2.0, "three"];
 					[a= 1, b= y, c= "three"];
 					{1, 2.0, z};

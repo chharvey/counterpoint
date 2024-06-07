@@ -53,7 +53,7 @@ describe('ASTNodeCP', () => {
 		describe('#varCheck', () => {
 			it('throws if the variable is not unfixed.', () => {
 				AST.ASTNodeGoal.fromSource(`
-					let unfixed i: int = 42;
+					let var i: int = 42;
 					i = 43;
 				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
@@ -74,7 +74,7 @@ describe('ASTNodeCP', () => {
 			context('for variable reassignment.', () => {
 				it('throws when variable assignee type is not supertype.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let unfixed i: int = 42;
+						let var i: int = 42;
 						i = 4.3;
 					`);
 					goal.varCheck();
@@ -154,7 +154,7 @@ describe('ASTNodeCP', () => {
 		describe('#build', () => {
 			it('always returns `(local.set)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed y: float = 4.2;
+					let var y: float = 4.2;
 					y = y * 10;
 				`);
 				goal.varCheck();
@@ -167,8 +167,8 @@ describe('ASTNodeCP', () => {
 			});
 			it('coerces as necessary.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: float | int = 4.2;
-					let unfixed y: int | float = 4.2;
+					let var x: float | int = 4.2;
+					let var y: int | float = 4.2;
 					x = 8.4;
 					x = 16;
 					x = x;
