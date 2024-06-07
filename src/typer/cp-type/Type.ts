@@ -203,7 +203,7 @@ export abstract class Type {
 	 * i.e., it is equal to the type `never`.
 	 * Used internally for special cases of computations.
 	 */
-	public readonly isBottomType: boolean = this.values.size === 0;
+	public readonly isBottomType: boolean;
 	/**
 	 * Whether this type has all values assignable to it,
 	 * i.e., it is equal to the type `unknown`.
@@ -220,6 +220,7 @@ export abstract class Type {
 		public readonly isMutable: boolean,
 		public readonly values:    ReadonlySet<OBJ.Object> = new Set(),
 	) {
+		this.isBottomType = this.values.size === 0;
 	}
 
 	/**
@@ -320,8 +321,8 @@ export abstract class Type {
  * An Interface Type is a set of properties that a value must have.
  */
 export class TypeInterface extends Type {
-	public override readonly isBottomType: boolean = [...this.properties.values()].some((value) => value.isBottomType);
-	public override readonly isTopType:    boolean = this.properties.size === 0;
+	public override readonly isBottomType: boolean;
+	public override readonly isTopType:    boolean;
 
 	/**
 	 * Construct a new TypeInterface object.
@@ -333,6 +334,8 @@ export class TypeInterface extends Type {
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable);
+		this.isBottomType = [...this.properties.values()].some((value) => value.isBottomType);
+		this.isTopType    = this.properties.size === 0;
 	}
 
 	public override get hasMutable(): boolean {
