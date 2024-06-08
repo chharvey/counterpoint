@@ -1,8 +1,5 @@
-import * as assert from 'assert';
-import {
-	type Builder,
-	INST,
-} from '../../index.js';
+import type binaryen from 'binaryen';
+import {assert_instanceof} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -16,7 +13,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 export class ASTNodeStatementExpression extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeStatementExpression);
+		assert_instanceof(statement, ASTNodeStatementExpression);
 		return statement;
 	}
 
@@ -27,9 +24,9 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 
-	public override build(builder: Builder): INST.InstructionNone | INST.InstructionStatement {
+	public override build(): binaryen.ExpressionRef {
 		return (this.expr)
-			? new INST.InstructionStatement(builder.stmtCount, this.expr.build(builder))
-			: new INST.InstructionNone();
+			? this.builder.module.drop(this.expr.build())
+			: this.builder.module.nop();
 	}
 }

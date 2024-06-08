@@ -1,11 +1,11 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	type Builder,
 	ErrorCode,
 } from '../../index.js';
+import {assert_instanceof} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -69,15 +69,17 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * Decorator for {@link ASTNodeExpression#build} method and any overrides.
 	 * First tries to compute the assessed value, and if successful, builds the assessed value.
 	 * Otherwise builds this node.
-	 * @implements MethodDecorator<ASTNodeExpression, (this: ASTNodeExpression, builder: Builder, to_float?: boolean) => INST.InstructionConst | T>
+	 * @implements MethodDecorator<ASTNodeExpression, (this: ASTNodeExpression) => binaryen.ExpressionRef>
 	 */
-	protected static buildDeco<T extends INST.InstructionExpression>(
-		method:   (this: ASTNodeExpression, builder: Builder, to_float?: boolean) => INST.InstructionConst | T,
+	protected static buildDeco(
+		method:   (this: ASTNodeExpression) => binaryen.ExpressionRef,
 		_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
 	): typeof method {
-		return function (builder, to_float = false) {
-			const value: OBJ.Object | null = (this.validator.config.compilerOptions.constantFolding) ? this.fold() : null;
-			return (value) ? INST.InstructionConst.fromCPValue(value, to_float) : method.call(this, builder, to_float);
+		return function () {
+			const value: OBJ.Object | null      = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
+			const built: binaryen.ExpressionRef = value?.build(this.builder.module) ?? method.call(this);
+			assert.strictEqual(binaryen.getExpressionType(built), binaryen.v128);
+			return built;
 		};
 	}
 
@@ -90,16 +92,11 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 */
 	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeStatementExpression);
+		assert_instanceof(statement, ASTNodeStatementExpression);
 		assert.ok(statement.expr, 'semantic statement should have 1 child');
 		return statement.expr;
 	}
 
-	/**
-	 * Determine whether this expression should build to a float-type instruction.
-	 * @return Should the built instruction be type-coerced into a floating-point number?
-	 */
-	public abstract shouldFloat(): boolean;
 	/**
 	 * @final
 	 */
@@ -110,10 +107,9 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 
 	/**
 	 * @inheritdoc
-	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
 	 * @implements Buildable
 	 */
-	public abstract build(builder: Builder, to_float?: boolean): INST.InstructionExpression;
+	public abstract build(): binaryen.ExpressionRef;
 
 	/**
 	 * The Type of this expression.

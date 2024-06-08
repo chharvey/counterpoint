@@ -6,6 +6,7 @@ import {
 } from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -26,7 +27,7 @@ import {ASTNodeType} from './ASTNodeType.js';
 export class ASTNodeTypeConstant extends ASTNodeType {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeConstant {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeConstant);
+		assert_instanceof(typ, ASTNodeTypeConstant);
 		return typ;
 	}
 

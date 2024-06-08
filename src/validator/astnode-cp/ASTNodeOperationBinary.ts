@@ -1,6 +1,8 @@
-import * as assert from 'assert';
 import type {TYPE} from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -22,9 +24,10 @@ import {ASTNodeOperation} from './ASTNodeOperation.js';
 export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinary);
+		assert_instanceof(expression, ASTNodeOperationBinary);
 		return expression;
 	}
+
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
@@ -33,10 +36,6 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		public    readonly operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand0, operand1]);
-	}
-
-	public override shouldFloat(): boolean {
-		return this.operand0.shouldFloat() || this.operand1.shouldFloat();
 	}
 
 	/**

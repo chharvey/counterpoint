@@ -1,16 +1,15 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type INST,
-	type Builder,
 	type TypeError03,
 	TypeError05,
 	TypeError06,
 } from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -33,7 +32,7 @@ import {ASTNodeVariable} from './ASTNodeVariable.js';
 export class ASTNodeCall extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeCall {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeCall);
+		assert_instanceof(expression, ASTNodeCall);
 		return expression;
 	}
 
@@ -55,14 +54,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 		], (arg) => arg.varCheck());
 	}
 
-	public override shouldFloat(): boolean {
-		return false;
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
+	public override build(): binaryen.ExpressionRef {
 		throw '`ASTNodeCall#build` not yet supported.';
 	}
 
@@ -80,10 +74,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(argtype, returntype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argtype, returntype, this);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeError03);
-						ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this);
 					}
 				}
 				return returntype.mutableOf();
@@ -95,10 +89,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(argtype, returntype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argtype, returntype, this);
 					} catch (err) {
 						const argvaluetype: TYPE.Type = (argtype instanceof TYPE.TypeRecord) ? argtype.valueTypes() : throw_expression(err as TypeError03);
-						ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this);
 					}
 				}
 				return returntype.mutableOf();
@@ -110,10 +104,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(eltype), this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(eltype), this);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeError03);
-						ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this);
 					}
 				}
 				return returntype.mutableOf();
@@ -127,10 +121,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const argtype: TYPE.Type = this.exprargs[0].type();
 					try {
-						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(entrytype), this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(entrytype), this);
 					} catch (err) {
 						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : throw_expression(err as TypeError03);
-						ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this, this.validator);
+						ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this);
 					}
 				}
 				return returntype.mutableOf();

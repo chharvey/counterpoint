@@ -1,14 +1,12 @@
-import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type INST,
-	type Builder,
 	AssignmentError02,
 } from '../../index.js';
 import {
 	type NonemptyArray,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -27,7 +25,7 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeRecord {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeRecord);
+		assert_instanceof(expression, ASTNodeRecord);
 		return expression;
 	}
 
@@ -38,10 +36,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		super(start_node, children);
 	}
 
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeRecord#shouldFloat not yet supported.';
-	}
-
 	public override varCheck(): void {
 		super.varCheck();
 		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
@@ -50,13 +44,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				throw new AssignmentError02(keys[i]);
 			}
 		});
-	}
-
-	@memoizeMethod
-	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeRecord#build not yet supported.';
 	}
 
 	@memoizeMethod
@@ -100,12 +87,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				const prop: ASTNodeProperty | undefined = this.children.find((c) => c.key.id === id);
 				const expr: ASTNodeExpression | undefined = prop?.val;
 				if (expr) {
-					return ASTNodeCP.typeCheckAssignment(
-						expr.type(),
-						thattype.type,
-						expr,
-						this.validator,
-					);
+					return ASTNodeCP.assignExpression(expr, thattype.type, expr);
 				}
 			});
 			return true;

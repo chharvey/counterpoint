@@ -1,7 +1,7 @@
-import * as assert from 'assert';
 import {TYPE} from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -21,7 +21,7 @@ import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
 export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperationUnary {
 		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeOperationUnary);
+		assert_instanceof(typ, ASTNodeTypeOperationUnary);
 		return typ;
 	}
 

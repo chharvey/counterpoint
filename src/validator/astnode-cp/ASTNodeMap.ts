@@ -1,13 +1,11 @@
-import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type INST,
-	type Builder,
 } from '../../index.js';
 import {
 	type NonemptyArray,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -25,7 +23,7 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeMap {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeMap);
+		assert_instanceof(expression, ASTNodeMap);
 		return expression;
 	}
 
@@ -34,17 +32,6 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		public override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, children);
-	}
-
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeMap#shouldFloat not yet supported.';
-	}
-
-	@memoizeMethod
-	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeMap#build not yet supported.';
 	}
 
 	@memoizeMethod
@@ -72,12 +59,11 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	public override assignTo(assignee: TYPE.Type): boolean {
 		if (assignee instanceof TYPE.TypeMap) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant_{ant,con}`
-			xjs.Array.forEachAggregated(this.children, (case_) => xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => ASTNodeCP.typeCheckAssignment(
-				expr.type(),
-				[assignee.invariant_ant, assignee.invariant_con][i],
-				expr,
-				this.validator,
-			)));
+			xjs.Array.forEachAggregated(this.children, (case_) => (
+				xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => (
+					ASTNodeCP.assignExpression(expr, [assignee.invariant_ant, assignee.invariant_con][i], expr)
+				))
+			));
 			return true;
 		}
 		return false;

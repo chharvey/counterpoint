@@ -1,11 +1,13 @@
-import * as assert from 'assert';
+import binaryen from 'binaryen';
+import {BinVect} from '../../index.js';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	type Builder,
 } from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -23,7 +25,7 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryLogical {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinaryLogical);
+		assert_instanceof(expression, ASTNodeOperationBinaryLogical);
 		return expression;
 	}
 
@@ -38,14 +40,23 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopLogical {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionBinopLogical(
-			builder.varCount,
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
-		);
+	public override build(): binaryen.ExpressionRef {
+		// eslint-disable-next-line prefer-const --- one of them is reassigned
+		let [arg0, arg1]: binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build());
+
+		/** A temporary variable id used for optimizing short-circuited operations. */
+		const temp_id: bigint = this.builder.varCount;
+		const local           = this.builder.addLocal(temp_id, binaryen.getExpressionType(arg0))[0].getLocalInfo(temp_id)!;
+
+		const condition: binaryen.ExpressionRef = new BinVect(this.builder.module, this.builder.module.call(
+			'vnot',
+			[this.builder.module.local.tee(local.index, arg0, local.type)],
+			binaryen.v128,
+		)).isSpecial(false);
+		arg0 = this.builder.module.local.get(local.index, local.type);
+
+		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
+		return this.builder.module.if(condition, if_true, if_false);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {

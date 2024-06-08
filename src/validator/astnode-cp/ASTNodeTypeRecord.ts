@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
@@ -6,6 +5,7 @@ import {
 } from '../../index.js';
 import {
 	type NonemptyArray,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -22,7 +22,7 @@ import {ASTNodeType} from './ASTNodeType.js';
 export class ASTNodeTypeRecord extends ASTNodeType {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeRecord {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeRecord);
+		assert_instanceof(typ, ASTNodeTypeRecord);
 		return typ;
 	}
 

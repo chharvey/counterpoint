@@ -411,14 +411,14 @@ although that term can be ambiguous in the context of generics, where types may 
 
 A unit type must be a single primitive literal, i.e., an Integer, Float, or String (and of course `null`),
 and any value assignable to it must compute to that value. Variables with a unit type may still be reassignable,
-but they can only be reassigned to the same value, so having an `unfixed` variable with a unit type is kind of pointless.
+but they can only be reassigned to the same value, so having an unfixed variable with a unit type is kind of pointless.
 Variables with unit types are conventionally written in MACRO_CASE.
 ```
-let unfixed TAU: true = true;
+let var TAU: true = true;
 TAU = true;
 TAU = false; %> TypeError
 
-let unfixed CAR_WHEELS: 4 = 4;
+let var CAR_WHEELS: 4 = 4;
 let CAT_FEET: \b100 = \o4;
 CAR_WHEELS = CAT_FEET;
 ```
@@ -453,8 +453,8 @@ Notice that even though the variables `hello` and `world` are *not* declared wit
 the compiler is still able to compute their values, thus the assignment to `GREETING` is valid.
 However, if they were unfixed, that wouldn’t be possible.
 ```
-let unfixed hello: str = "Hello";
-let unfixed world: str = "World";
+let var hello: str = "Hello";
+let var world: str = "World";
 let GREETING: "Hello World!" = """{{ hello }} {{ world }}!"""; %> TypeError
 ```
 This is because the type of the template can only be inferred as `str`,
@@ -567,8 +567,8 @@ elements.[i];   %> TypeError % index `4` does not exist on type `str[3]`
 If the compiler can’t compute the index, it won’t error at all,
 but this means the program could crash at runtime.
 ```
-let unfixed i: int = 4;
-elements.[i];           % no compile-time error, but value at runtime will be undefined
+let var i: int = 4;
+elements.[i];       % no compile-time error, but value at runtime will be undefined
 ```
 
 If a variable is declared as a mutable tuple, its indices may be reassigned, but its type or size cannot change.
@@ -590,7 +590,7 @@ tuple; %== [true, 4, "hello"];
 #### Optional Items
 Tuple types may have optional items, indicating that a tuple of that type might or might not have that item.
 ```
-let unfixed x: [str, int, ?: bool] = ["hello", 42];
+let var x: [str, int, ?: bool] = ["hello", 42];
 x = ["hello", 42, true];
 ```
 The symbol `?:` in the type signature indicates that the item is optional.
@@ -774,7 +774,7 @@ record; %== [a= true, b= 4, c= "hello"];
 #### Optional Properties
 Record types may have optional properties, indicating that a record of that type might or might not have that property.
 ```
-let unfixed y: [firstname: str, middlename?: str, lastname: str] = [
+let var y: [firstname: str, middlename?: str, lastname: str] = [
 	firstname= "Martha",
 	lastname=  "Dandridge",
 ];
@@ -883,7 +883,7 @@ and the set literal shorthand syntax is a sequence of comma-separated expression
 let elements: str{} = {"earth", "wind", "fire"};
 ```
 
-The size of sets is not known at compile-time, and could change during run-time, if the set is mutable.
+The size of sets is not known at compile-time, and could change during run-time.
 For example, a program could add an element to the above set after it’s been declared, changing its count.
 The order of elements in a set is not necessarily significant.
 
@@ -954,7 +954,7 @@ let bases: {int | str -> obj} = {
 };
 ```
 
-The size of maps is not known at compile-time, and could change during run-time, if the map is mutable.
+The size of maps is not known at compile-time, and could change during run-time.
 For example, a program could add a case to the above map after it’s been declared, changing its count.
 Like records, the order of entries in a map is not necessarily significant.
 
@@ -1009,8 +1009,8 @@ bases.[a];          %> VoidError
 If the compiler can’t compute the antecedent, it won’t error at all,
 but this means the program could crash at runtime.
 ```
-let unfixed a: str = "3rd";
-bases.[a];                  % no compile-time error, but value at runtime will be undefined
+let var a: str = "3rd";
+bases.[a];              % no compile-time error, but value at runtime will be undefined
 ```
 We can avoid the potential crash using the
 [optional access operator](./expressions-operators.md#optional-access).

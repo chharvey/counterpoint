@@ -1,13 +1,14 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
 	AST,
 	type SymbolStructure,
 	SymbolStructureType,
 	TYPE,
-	INST,
-	Builder,
 	AssignmentError01,
 } from '../../../src/index.js';
+import {assert_instanceof} from '../../../src/lib/index.js';
+import {assertEqualBins} from '../../assert-helpers.js';
 
 
 
@@ -21,7 +22,7 @@ describe('ASTNodeDeclarationType', () => {
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(256n));
 			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
-			assert.ok(info instanceof SymbolStructureType);
+			assert_instanceof(info, SymbolStructureType);
 			assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
 		});
 
@@ -70,23 +71,12 @@ describe('ASTNodeDeclarationType', () => {
 
 
 	describe('#build', () => {
-		it('always returns InstructionNone.', () => {
-			const src: string = `
+		it('always returns `(nop)`.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
 				type U = T | float;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			const builder = new Builder(src);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
-					new INST.InstructionNone(),
-					new INST.InstructionNone(),
-				],
-			);
+			`);
+			return xjs.Array.forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), goal.builder.module.nop()));
 		});
 	});
 });

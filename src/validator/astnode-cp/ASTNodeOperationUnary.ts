@@ -1,15 +1,15 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	type Builder,
 	TypeError01,
 	NanError01,
 } from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -29,30 +29,27 @@ import {ASTNodeOperation} from './ASTNodeOperation.js';
 export class ASTNodeOperationUnary extends ASTNodeOperation {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationUnary);
+		assert_instanceof(expression, ASTNodeOperationUnary);
 		return expression;
 	}
+
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		private readonly operator: ValidOperatorUnary,
-		private readonly operand:  ASTNodeExpression,
+		public  readonly operand:  ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operand.shouldFloat();
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionUnop {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionUnop(
-			this.operator,
-			this.operand.build(builder, tofloat),
-		);
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.NOT, 'vnot'],
+			[Operator.EMP, 'vemp'],
+			[Operator.NEG, 'vneg'],
+		]).get(this.operator)!, [this.operand.build()], binaryen.v128);
 	}
 
 	@memoizeMethod

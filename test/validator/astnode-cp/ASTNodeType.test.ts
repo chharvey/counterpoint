@@ -185,7 +185,7 @@ describe('ASTNodeType', () => {
 				TYPE.INT.union(TYPE.NULL),
 			);
 			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationUnary.fromSource('mutable int[]').eval(),
+				AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
 				new TYPE.TypeList(TYPE.INT, true),
 			);
 			assert.deepStrictEqual(

@@ -1,13 +1,13 @@
 import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	OBJ,
 	type TYPE,
-	INST,
-	type Builder,
 } from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -28,7 +28,7 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 export class ASTNodeConstant extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeConstant {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeConstant);
+		assert_instanceof(expression, ASTNodeConstant);
 		return expression;
 	}
 
@@ -53,18 +53,14 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.fold() instanceof OBJ.Float;
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(_builder: Builder, to_float: boolean = false): INST.InstructionConst {
-		return INST.InstructionConst.fromCPValue(this.fold(), to_float);
+	public override build(): binaryen.ExpressionRef {
+		return this.fold().build(this.builder.module);
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	// explicitly leaving off `@ASTNodeExpression.typeDeco` for performance
 	public override type(): TYPE.Type {
 		return this.fold().toType();
 	}

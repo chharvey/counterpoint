@@ -60,7 +60,7 @@ KeywordValue :::=
 
 KeywordOther :::=
 	// operator
-		| "mutable"
+		| "mut"
 		| "is"
 		| "isnt"
 		| "if"
@@ -71,7 +71,7 @@ KeywordOther :::=
 		| "let"
 		| "_"
 	// modifier
-		| "unfixed"
+		| "var"
 ;
 
 

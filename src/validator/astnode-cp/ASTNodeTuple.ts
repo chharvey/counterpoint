@@ -1,12 +1,13 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type INST,
-	type Builder,
 } from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -21,7 +22,7 @@ import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTuple {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeTuple);
+		assert_instanceof(expression, ASTNodeTuple);
 		return expression;
 	}
 
@@ -32,15 +33,10 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		super(start_node, children);
 	}
 
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeTuple#shouldFloat not yet supported.';
-	}
-
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeTuple#build not yet supported.';
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.tuple.make(this.children.map((expr) => expr.build()));
 	}
 
 	@memoizeMethod
@@ -66,12 +62,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 			xjs.Array.forEachAggregated(assignee.invariants, (thattype, i) => {
 				const expr: ASTNodeExpression | undefined = this.children[i];
 				if (expr) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- bug
-					return ASTNodeCP.typeCheckAssignment(
-						expr.type(),
-						thattype.type,
-						expr,
-						this.validator,
-					);
+					return ASTNodeCP.assignExpression(expr, thattype.type, expr);
 				}
 			});
 			return true;

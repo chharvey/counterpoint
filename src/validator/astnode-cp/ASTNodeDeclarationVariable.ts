@@ -1,12 +1,12 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	type OBJ,
-	TYPE,
-	INST,
-	type Builder,
+	type TYPE,
 	AssignmentError01,
 } from '../../index.js';
+import {assert_instanceof} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -17,7 +17,6 @@ import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeVariable} from './ASTNodeVariable.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
 
 
@@ -25,7 +24,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeDeclarationVariable);
+		assert_instanceof(statement, ASTNodeDeclarationVariable);
 		return statement;
 	}
 
@@ -34,7 +33,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		public  readonly unfixed:  boolean,
 		private readonly assignee: ASTNodeVariable | null,
 		private readonly typenode: ASTNodeType,
-		private readonly assigned: ASTNodeExpression,
+		public readonly assigned:  ASTNodeExpression,
 	) {
 		super(
 			start_node,
@@ -56,18 +55,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public override typeCheck(): void {
 		this.assigned.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode.eval();
-		try {
-			ASTNodeCP.typeCheckAssignment(
-				this.assigned.type(),
-				assignee_type,
-				this,
-				this.validator,
-			);
-		} catch (err) {
-			if (!(this.assigned instanceof ASTNodeCollectionLiteral && this.assigned.assignTo(assignee_type))) {
-				throw err;
-			}
-		}
+		ASTNodeCP.assignExpression(this.assigned, assignee_type, this);
 		if (this.assignee) {
 			const value: OBJ.Object | null = this.assigned.fold(); // fold first before checking, to rethrow any errors
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
@@ -80,15 +68,26 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 	}
 
-	public override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal | INST.InstructionStatement {
-		const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
-		const value: OBJ.Object | null = this.assigned.fold();
-		return (this.assignee)
-			? (this.validator.config.compilerOptions.constantFolding && value && !this.unfixed)
-				? new INST.InstructionNone()
-				: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat))
-			: (this.validator.config.compilerOptions.constantFolding && value)
-				? new INST.InstructionNone()
-				: new INST.InstructionStatement(builder.stmtCount, this.assigned.build(builder, tofloat));
+	public override build(): binaryen.ExpressionRef {
+		if (
+			   this.validator.config.compilerOptions.constantFolding && this.assigned.fold()
+			&& (!this.unfixed || !this.assignee)
+		) {
+			return this.builder.module.nop();
+		}
+		const value: binaryen.ExpressionRef = this.assigned.build();
+		if (this.assignee) {
+			const assignee_type: TYPE.Type = this.typenode.eval(); // eval first before adding, to rethrow any errors
+			const local = this.builder.addLocal(this.assignee.id, binaryen.v128)[0].getLocalInfo(this.assignee.id)!;
+			return this.builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+				this.builder.module,
+				assignee_type,
+				this.assigned.type(),
+				value,
+				this.validator.config.compilerOptions.intCoercion,
+			));
+		} else {
+			return this.builder.module.drop(value);
+		}
 	}
 }

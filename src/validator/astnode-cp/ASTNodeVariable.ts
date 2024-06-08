@@ -1,13 +1,13 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	type OBJ,
 	TYPE,
-	INST,
-	type Builder,
 	ReferenceError01,
 	ReferenceError03,
 } from '../../index.js';
 import {
+	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
 } from '../../lib/index.js';
@@ -29,7 +29,7 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 export class ASTNodeVariable extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeVariable {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeVariable);
+		assert_instanceof(expression, ASTNodeVariable);
 		return expression;
 	}
 
@@ -41,10 +41,6 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	@memoizeGetter
 	public get id(): bigint {
 		return this.validator.cookTokenIdentifier(this.start_node.text);
-	}
-
-	public override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.FLOAT);
 	}
 
 	public override varCheck(): void {
@@ -59,8 +55,11 @@ export class ASTNodeVariable extends ASTNodeExpression {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(_builder: Builder, to_float: boolean = false): INST.InstructionExpression {
-		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
+	public override build(): binaryen.ExpressionRef {
+		const local = this.builder.getLocalInfo(this.id);
+		return (local)
+			? this.builder.module.local.get(local.index, local.type)
+			: throw_expression(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 
 	@memoizeMethod

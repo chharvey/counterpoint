@@ -1,6 +1,7 @@
 import {strictEqual} from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
+import {MUT_OPERATOR} from './utils-private.js';
 import {Type} from './Type.js';
 
 
@@ -25,7 +26,7 @@ export class TypeDict extends Type {
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? 'mutable ' : '' }Dict.<${ this.invariant }>`;
+		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Dict.<${ this.invariant }>`;
 	}
 
 	public override includes(v: OBJ.Object): boolean {
@@ -39,7 +40,7 @@ export class TypeDict extends Type {
 			t instanceof TypeDict
 			&& (!t.isMutable || this.isMutable)
 			&& ((t.isMutable)
-				? this.invariant.equals(t.invariant)      // Invariance for mutable dicts: `A == B --> mutable Dict.<A> <: mutable Dict.<B>`.
+				? this.invariant.equals(t.invariant)      // Invariance for mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.
 				: this.invariant.isSubtypeOf(t.invariant) // Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.
 			)
 		);

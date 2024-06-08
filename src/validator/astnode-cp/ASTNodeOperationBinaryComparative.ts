@@ -1,12 +1,13 @@
-import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	INST,
-	type Builder,
 	TypeError01,
 } from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -29,7 +30,7 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryComparative {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinaryComparative);
+		assert_instanceof(expression, ASTNodeOperationBinaryComparative);
 		return expression;
 	}
 
@@ -47,13 +48,13 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder, to_float: boolean = false): INST.InstructionConst | INST.InstructionBinopComparative {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionBinopComparative(
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
-		);
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.LT, 'vlt'],
+			[Operator.GT, 'vgt'],
+			[Operator.LE, 'vle'],
+			[Operator.GE, 'vge'],
+		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {

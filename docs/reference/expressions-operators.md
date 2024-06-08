@@ -284,7 +284,7 @@ Claim access has the same runtime behavior of regular property access.
 Its purpose is to tell the type-checker,
 “I know what I’m doing; This property exists and its type is not type `void`.”
 ```
-let unfixed item: [str, ?: int] = ["apples", 42];
+let item: [str, ?: int] = ["apples", 42];
 let quantity: int = item!.1;
 ```
 The expression `item!.1` has type `int`, despite being an optional entry.
@@ -292,7 +292,7 @@ It will produce the value `42` at runtime.
 Note that bypassing the compiler’s type-checking process should be done carefully.
 If not used correctly, it could lead to runtime errors.
 ```
-let unfixed item: [str, ?: int] = ["apples"];
+let item: [str, ?: int] = ["apples"];
 let quantity: int = item!.1; % runtime error!
 ```
 An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
@@ -536,9 +536,10 @@ Any type of operands are valid. The result is a boolean value.
 Integer bases as well as integers and floats can be mixed.
 
 The **identity** operator `===` determines whether two operands are the exactly same object.
-It produces `true` if and only if both operands are references to (point to) the same object in memory.
+It produces `true` if both operands are references to (point to) the same object in memory,
+or if they are indistinguishable at run-time.
 Primitive values such as `null`, boolean values, number values, and string values
-only exist once, so any two of “the same” values will be identical.
+are compared by value, so any two of “the same” values will be identical.
 For other types, identity and equality might not necessarily be the same:
 objects that are considered equal might not be identical.
 
@@ -563,6 +564,23 @@ All four of these operators are **commutative**, meaning the order of operands d
 ‹a› !=  ‹b›; % same as `‹b› !=  ‹a›`
 ```
 Remember: Expressions are always evaluated from left to right, so side-effects could still be observed.
+
+#### Equality by Composition
+The equality operator `==` compares compound objects by their entries.
+Two compound objects are equal if they contain equal values.
+For tuples and lists, entries are compared index by index; for records and dicts, key by key;
+and for maps, antecedent–consequent pairs are compared recursively (as they may be objects themselves).
+Sets are equal if they contain each others’ elements.
+
+Counterpoint takes an “innocent until proven guilty” approach:
+values that are indistinguishable are considered equal until determined otherwise.
+For example, if two reference objects contain properties that point to each other,
+the compiler will assume they’re equal until it can find a property that mismatches.
+If it can’t, it’ll just return true instead of diving down an infinitely long rabbit hole.
+
+Of course, the identity operator (`===`) *always* compares reference objects by reference,
+but compound value objects are still compared compositionally, and the same principle applies —
+assume equal until determined otherwise.
 
 
 ### Conjunctive
@@ -705,7 +723,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td>Mutable</td>
 			<td>unary prefix</td>
 			<td>right-to-left</td>
-			<td><code>mutable …</code></td>
+			<td><code>mut …</code></td>
 		</tr>
 		<tr>
 			<th>5</th>
@@ -759,7 +777,7 @@ type T = int?; % equivalent to `type T = int | null;`
 ```
 This operator is useful for describing values that might be null.
 ```
-let unfixed hello: str? = null;
+let var hello: str? = null;
 hello = "world";
 ```
 
@@ -795,18 +813,18 @@ The **Set** operator `T{}` is shorthand for `Set.<T>`.
 
 ### Mutable
 ```
-`mutable` <Type>
+`mut` <Type>
 ```
-The `mutable` type operator allows properties in a complex type to be reassigned.
+The `mut` type operator allows properties in a complex type to be reassigned.
 It allows us to reassign tuple indices and record keys, as well as modify sets and maps
 by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
-let elements: mutable str[4] = ["water", "earth", "fire", "wind"];
+let elements: mut str[4] = ["water", "earth", "fire", "wind"];
 elements.3 = "air";
 elements; %== ["water", "earth", "fire", "air"]
 ```
-If `elements` were just of type `str[4]` (without `mutable`),
+If `elements` were just of type `str[4]` (without `mut`),
 then attempting to modify it would result in a Mutability Error.
 
 
@@ -872,7 +890,7 @@ This holds for tuple types as well, accounting for indices rather than keys.
 The **union** operator creates a type that is either one operand, or the other, or some combination of both.
 ```
 type T = bool | int;
-let unfixed v: T = false;
+let var v: T = false;
 v = 42;
 ```
 

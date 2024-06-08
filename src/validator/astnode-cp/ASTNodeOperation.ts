@@ -1,5 +1,7 @@
-import * as assert from 'assert';
-import type {NonemptyArray} from '../../lib/index.js';
+import {
+	type NonemptyArray,
+	assert_instanceof,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -19,9 +21,10 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 export abstract class ASTNodeOperation extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperation {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperation);
+		assert_instanceof(expression, ASTNodeOperation);
 		return expression;
 	}
+
 
 	public override readonly tagname: string = 'Operation'; // TODO remove after refactoring tests using `#serialize`
 	public constructor(

@@ -1,15 +1,14 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	type INST,
-	type Builder,
 	TypeError01,
 	TypeError02,
 	TypeError04,
 } from '../../index.js';
 import {
 	throw_expression,
+	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
 import {
@@ -30,11 +29,11 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 export class ASTNodeAccess extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAccess {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeAccess);
+		assert_instanceof(expression, ASTNodeAccess);
 		return expression;
 	}
 
-	private readonly optional: boolean = this.kind === Operator.OPTDOT;
+	private readonly optional: boolean;
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
@@ -45,17 +44,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		private readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
-	}
-
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeAccess#shouldFloat not yet supported.';
+		this.optional = this.kind === Operator.OPTDOT;
 	}
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeAccess#build_do not yet supported.';
+	public override build(): binaryen.ExpressionRef {
+		throw '`ASTNodeAccess#build_do` not yet supported.';
 	}
 
 	@memoizeMethod
@@ -96,7 +91,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				throw_expression(new TypeError04('property', base_type, this.accessor))
 			);
 		} else {
-			assert.ok(this.accessor instanceof ASTNodeExpression, `Expected ${ this.accessor } to be an \`ASTNodeExpression\`.`);
+			assert_instanceof(this.accessor, ASTNodeExpression);
 			const accessor_type: TYPE.Type = this.accessor.type();
 			/* eslint-disable indent */
 			return (
@@ -133,7 +128,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (base_value === null) {
 			return null;
 		}
-		if (this.optional && base_value.equal(OBJ.Null.NULL)) {
+		if (this.optional && base_value.identical(OBJ.Null.NULL)) {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
@@ -141,15 +136,15 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (base_value as OBJ.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else {
-			assert.ok(this.accessor instanceof ASTNodeExpression, `Expected ${ this.accessor } to be an \`ASTNodeExpression\`.`);
+			assert_instanceof(this.accessor, ASTNodeExpression);
 			const accessor_value: OBJ.Object | null = this.accessor.fold();
 			if (accessor_value === null) {
 				return null;
 			}
 			return (
-				          (base_value instanceof OBJ.CollectionIndexed) ?                                    base_value.get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
-				          (base_value instanceof OBJ.Set)               ?                                    base_value.get(accessor_value                                             ) :
-				(assert.ok(base_value instanceof OBJ.Map, `Expected ${ base_value } to be an \`OBJ.Map\`.`), base_value.get(accessor_value,                this.optional, this.accessor))
+				                  (base_value instanceof OBJ.CollectionIndexed) ? base_value.get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
+				                  (base_value instanceof OBJ.Set)               ? base_value.get(accessor_value                                             ) :
+				(assert_instanceof(base_value,           OBJ.Map),                base_value.get(accessor_value,                this.optional, this.accessor))
 			);
 		}
 	}

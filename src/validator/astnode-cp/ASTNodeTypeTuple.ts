@@ -1,6 +1,8 @@
-import * as assert from 'assert';
 import {TYPE} from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -14,7 +16,7 @@ import {ASTNodeType} from './ASTNodeType.js';
 export class ASTNodeTypeTuple extends ASTNodeType {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeTuple);
+		assert_instanceof(typ, ASTNodeTypeTuple);
 		return typ;
 	}
 

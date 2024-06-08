@@ -13,7 +13,7 @@
 
 Word ::=
 	// operator
-		| "mutable"
+		| "mut"
 		| "is"
 		| "isnt"
 		| "if"
@@ -24,7 +24,7 @@ Word ::=
 		| "let"
 		| "_"
 	// modifier
-		| "unfixed"
+		| "var"
 	| KEYWORD_TYPE
 	| KEYWORD_VALUE
 	| IDENTIFIER
@@ -85,7 +85,7 @@ TypeUnarySymbol ::=
 
 TypeUnaryKeyword ::=
 	| TypeUnarySymbol
-	| "mutable" TypeUnaryKeyword
+	| "mut" TypeUnaryKeyword
 ;
 
 TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;
@@ -162,8 +162,8 @@ Expression ::=
 
 
 
-DeclarationType     ::= "type"            ("_" | IDENTIFIER) "=" Type                ";";
-DeclarationVariable ::= "let"  "unfixed"? ("_" | IDENTIFIER) ":" Type "=" Expression ";";
+DeclarationType     ::= "type"        ("_" | IDENTIFIER) "=" Type                ";";
+DeclarationVariable ::= "let"  "var"? ("_" | IDENTIFIER) ":" Type "=" Expression ";";
 
 Declaration ::=
 	| DeclarationType
