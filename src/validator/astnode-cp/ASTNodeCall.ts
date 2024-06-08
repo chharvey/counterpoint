@@ -134,10 +134,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 
 	@memoizeMethod
 	public override fold(): OBJ.Object | null {
-		const argvalue: OBJ.Object | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
-			? this.exprargs[0].fold()
-			: undefined;
-		if (argvalue === null) {
+		const args: readonly (OBJ.Object | null)[] = this.exprargs.map((c) => c.fold()); // TODO: `#fold` should not return native `null` if it cannot assess
+		if (args.includes(null)) {
 			return null;
 		}
 		return new Map<ValidFunctionName, (argument: OBJ.Object | undefined) => OBJ.Object | null>([
@@ -145,7 +143,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.DICT, (record) => (record === undefined) ? new OBJ.Dict() : new OBJ.Dict((record as OBJ.CollectionKeyed).properties)],
 			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.Set()  : new OBJ.Set(new Set<OBJ.Object>((tuple as OBJ.CollectionIndexed).items))],
 			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.Map()  : new OBJ.Map(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.CollectionIndexed).items.map((pair) => (pair as OBJ.CollectionIndexed).items as [OBJ.Object, OBJ.Object])))],
-		]).get(this.base.source as ValidFunctionName)!(argvalue);
+		]).get(this.base.source as ValidFunctionName)!(args[0] ?? undefined);
 	}
 
 	/**

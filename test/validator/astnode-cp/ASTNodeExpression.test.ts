@@ -514,28 +514,24 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for non-foldable entries.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int = 1;
+					let var x: int   = 1;
 					let var y: float = 2.0;
-					let var z: str = "three";
+					let var z: str   = "three";
 					[x, 2.0, "three"];
 					[a= 1, b= y, c= "three"];
 					{1, 2.0, z};
 					{
 						"a" || "" -> 1,
-						21 + 21   -> y,
-						3 * 1.0   -> "three",
+						21 + 21   -> 2.0,
+						3 * 1.0   -> z,
 					};
 				`);
-				const tuple:   AST.ASTNodeTuple   = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
-				const record:  AST.ASTNodeRecord  = (goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
-				const set:     AST.ASTNodeSet     = (goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeSet;
-				const map:     AST.ASTNodeMap     = (goal.children[6] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;
 				assert.deepStrictEqual(
 					[
-						tuple,
-						record,
-						set,
-						map,
+						(goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple,
+						(goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord,
+						(goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeSet,
+						(goal.children[6] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap,
 					].map((c) => c.fold()),
 					[null, null, null, null],
 				);
