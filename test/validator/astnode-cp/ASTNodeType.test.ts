@@ -200,4 +200,107 @@ describe('ASTNodeType', () => {
 			});
 		});
 	});
+
+
+
+	describe('ASTNodeTypeTuple', () => {
+		specify('#eval', () => {
+			assert.deepStrictEqual(
+				AST.ASTNodeTypeTuple.fromSource('[int, bool, ?:str]').eval(),
+				new TYPE.TypeTuple([
+					{type: TYPE.INT,  optional: false},
+					{type: TYPE.BOOL, optional: false},
+					{type: TYPE.STR,  optional: true},
+				]),
+			);
+		});
+	});
+
+
+
+	describe('ASTNodeTypeRecord', () => {
+		// #varCheck --- see `ASTNodeRecord#varCheck` tests
+		specify('#eval', () => {
+			const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('[x: int, y?: bool, _: str]');
+			assert.deepStrictEqual(
+				node.eval(),
+				new TYPE.TypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
+					c.key.id,
+					[
+						{type: TYPE.INT,  optional: false},
+						{type: TYPE.BOOL, optional: true},
+						{type: TYPE.STR,  optional: false},
+					][i],
+				]))),
+			);
+		});
+	});
+
+
+
+	describe('ASTNodeTypeList', () => {
+		describe('#eval', () => {
+			it('returns a TypeList if there is no count.', () => {
+				assert.deepStrictEqual(
+					AST.ASTNodeTypeList.fromSource('(int | bool)[]').eval(),
+					new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL)),
+				);
+			});
+			it('returns a TypeTuple if there is a count.', () => {
+				assert.deepStrictEqual(
+					AST.ASTNodeTypeList.fromSource('(int | bool)[3]').eval(),
+					TYPE.TypeTuple.fromTypes([
+						TYPE.INT.union(TYPE.BOOL),
+						TYPE.INT.union(TYPE.BOOL),
+						TYPE.INT.union(TYPE.BOOL),
+					]),
+				);
+			});
+			it('throws if count is negative.', () => {
+				assert.throws(() => AST.ASTNodeTypeList.fromSource('(int | bool)[-3]').eval(), TypeError);
+			});
+		});
+	});
+
+
+
+	describe('ASTNodeType{Dict,Set,Map}', () => {
+		specify('#eval', () => {
+			assert.deepStrictEqual(
+				AST.ASTNodeTypeDict.fromSource('[:int | bool]').eval(),
+				new TYPE.TypeDict(TYPE.INT.union(TYPE.BOOL)),
+			);
+			assert.deepStrictEqual(
+				AST.ASTNodeTypeSet.fromSource('(int | bool){}').eval(),
+				new TYPE.TypeSet(TYPE.INT.union(TYPE.BOOL)),
+			);
+			assert.deepStrictEqual(
+				AST.ASTNodeTypeMap.fromSource('{int -> bool}').eval(),
+				new TYPE.TypeMap(TYPE.INT, TYPE.BOOL),
+			);
+		});
+	});
+
+
+
+	describe('ASTNodeTypeOperation', () => {
+		specify('#eval', () => {
+			assert.deepStrictEqual(
+				AST.ASTNodeTypeOperationUnary.fromSource('int?').eval(),
+				TYPE.INT.union(TYPE.NULL),
+			);
+			assert.deepStrictEqual(
+				AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
+				new TYPE.TypeList(TYPE.INT, true),
+			);
+			assert.deepStrictEqual(
+				AST.ASTNodeTypeOperationBinary.fromSource('Object & 3').eval(),
+				TYPE.OBJ.intersect(typeUnitInt(3n)),
+			);
+			assert.deepStrictEqual(
+				AST.ASTNodeTypeOperationBinary.fromSource('4.2 | int').eval(),
+				typeUnitFloat(4.2).union(TYPE.INT),
+			);
+		});
+	});
 });

@@ -22,6 +22,7 @@ Word ::=
 	// storage
 		| "type"
 		| "let"
+		| "_"
 	// modifier
 		| "var"
 	| KEYWORD_TYPE
@@ -166,8 +167,8 @@ Expression ::=
 
 
 
-DeclarationType     ::= "type"        IDENTIFIER "=" Type                ";";
-DeclarationVariable ::= "let"  "var"? IDENTIFIER ":" Type "=" Expression ";";
+DeclarationType     ::= "type" ("_" |        IDENTIFIER) "=" Type                ";";
+DeclarationVariable ::= "let"  ("_" | "var"? IDENTIFIER) ":" Type "=" Expression ";";
 
 Declaration ::=
 	| DeclarationType

@@ -143,10 +143,10 @@ SemanticDeclaration =:=
 ;
 
 SemanticDeclarationType
-	::= SemanticTypeAlias SemanticType;
+	::= SemanticTypeAlias? SemanticType;
 
 SemanticDeclarationVariable[unfixed: Boolean]
-	::= SemanticVariable SemanticType SemanticExpression;
+	::= SemanticVariable? SemanticType SemanticExpression;
 
 
 

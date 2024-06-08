@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
-import * as xjs from 'extrajs';
 import {
 	AST,
 	type SymbolStructure,
@@ -36,6 +35,16 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.strictEqual(info.type, TYPE.UNKNOWN);
 			assert.strictEqual(info.value, null);
 		});
+
+		it('for blank identifiers, does not add to symbol table.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let _: float = 4.2;
+			`);
+			assert.ok(!goal.validator.hasSymbol(256n));
+			goal.varCheck();
+			return assert.ok(!goal.validator.hasSymbol(256n));
+		});
+
 		it('throws if the validator already contains a record for the variable.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				let i: int = 42;
@@ -45,6 +54,13 @@ describe('ASTNodeDeclarationVariable', () => {
 				type FOO = float;
 				let FOO: int = 42;
 			`).varCheck(), AssignmentErrorDuplicateDeclaration);
+		});
+
+		it('allows duplicate declaration of blank identifier.', () => {
+			AST.ASTNodeGoal.fromSource(`
+				let _: int = 42;
+				let _: str = "the answer";
+			`).varCheck(); // assert does not throw
 		});
 	});
 
@@ -64,20 +80,27 @@ describe('ASTNodeDeclarationVariable', () => {
 				: goal.typeCheck();
 		}
 		it('checks the assigned expression’s type against the variable assignee’s type.', () => {
-			AST.ASTNodeDeclarationVariable.fromSource(`
+			const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  int | float =  21  *  2;
-			`).typeCheck();
+			`);
+			var_.varCheck();
+			return var_.typeCheck();
 		});
+
 		it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  null =  21  *  2;
 			`).typeCheck(), TypeErrorNotAssignable);
 		});
+
 		it('with int coersion on, allows assigning ints to floats.', () => {
-			AST.ASTNodeDeclarationVariable.fromSource(`
+			const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
-			`).typeCheck();
+			`);
+			var_.varCheck();
+			return var_.typeCheck();
 		});
+
 		it('with int coersion off, throws when assigning int to float.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
@@ -316,37 +339,43 @@ describe('ASTNodeDeclarationVariable', () => {
 
 
 	describe('#build', () => {
-		it('with constant folding on, returns `(nop)` for fixed & foldable variables.', () => {
+		it('with constant folding on.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let x: int = 42;
-				let y: float = 4.2 * x;
-			`);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.build();
-			return xjs.Array.forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), goal.builder.module.nop()));
-		});
-		it('with constant folding on, returns `(local.set)` for unfixed / non-foldable variables.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let var x: int = 42;
-				let y: int = x + 10;
+				let a: int   = 42;      % fixed, foldable: \`(nop)\`
+				let b: float = 4.2 * a; % fixed, foldable: \`(nop)\`
+				let _: bool  = true;    % blank, foldable: \`(nop)\`
+
+				let var c: int = 42;     % unfixed, foldable: \`(local.set)\`
+				let d:     int = c + 10; % fixed, unfoldable: \`(local.set)\`
+				let _:     int = c + 10; % blank, unfoldable: \`(drop)\`
 			`);
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build();
 			assert.deepStrictEqual(goal.builder.getLocals(), [
-				{id: 0x100n, type: binaryen.v128},
-				{id: 0x101n, type: binaryen.v128},
+				{id: 0x102n, type: binaryen.v128},
+				{id: 0x103n, type: binaryen.v128},
 			]);
-			return assertEqualBins(new Map<binaryen.ExpressionRef, binaryen.ExpressionRef>(goal.children.map((stmt, i) => [
-				stmt.build(),
-				goal.builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build()),
-			])));
+			return assertEqualBins(
+				goal.children.map((stmt) => stmt.build()),
+				[
+					goal.builder.module.nop(),
+					goal.builder.module.nop(),
+					goal.builder.module.nop(),
+
+					goal.builder.module.local.set(0, (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.local.set(1, (goal.children[4] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.drop(        (goal.children[5] as AST.ASTNodeDeclarationVariable).assigned.build()),
+				],
+			);
 		});
-		it('with constant folding off, always returns `(local.set)`.', () => {
+
+		it('with constant folding off, never returns `(nop)`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let x: int = 42;
-				let var y: float = 4.2;
+				let a:     int   = 42;   % fixed, foldable:   \`(local.set)\` instead of \`(nop)\`
+				let _:     bool  = true; % blank, foldable:   \`(drop)\`      instead of \`(nop)\`
+				let var b: float = 4.2;  % unfixed, foldable: \`(local.set)\` (same behavior)
+				let _:     bool  = !b;   % blank, unfoldable: \`(drop)\`      (same behavior)
 			`, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();
@@ -355,10 +384,15 @@ describe('ASTNodeDeclarationVariable', () => {
 				{id: 0x100n, type: binaryen.v128},
 				{id: 0x101n, type: binaryen.v128},
 			]);
-			return assertEqualBins(new Map<binaryen.ExpressionRef, binaryen.ExpressionRef>(goal.children.map((stmt, i) => [
-				stmt.build(),
-				goal.builder.module.local.set(i, (stmt as AST.ASTNodeDeclarationVariable).assigned.build()),
-			])));
+			return assertEqualBins(
+				goal.children.map((stmt) => stmt.build()),
+				[
+					goal.builder.module.local.set(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.drop(        (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.local.set(1, (goal.children[2] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.drop(        (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned.build()),
+				],
+			);
 		});
 	});
 });
