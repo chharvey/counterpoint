@@ -33,7 +33,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		return expression;
 	}
 
-	private readonly optional: boolean = this.kind === Operator.OPTDOT;
+	private readonly optional: boolean;
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
@@ -44,6 +44,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		private readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
+		this.optional = this.kind === Operator.OPTDOT;
 	}
 
 	@memoizeMethod

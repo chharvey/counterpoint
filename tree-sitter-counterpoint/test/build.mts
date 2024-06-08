@@ -221,10 +221,10 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		/* # PRODUCTIONS */
 		// Word
-		// see #{KEYWORDTYPE,KEYWORDVALUE,IDENTIFIER}
+		// see #{EntryType,PropertyAccessType,Property,PropertyAccess,PropertyAssign}
 
 		// PrimitiveLiteral
-		// see #{KEYWORDVALUE,INTEGER,FLOAT,STRING}
+		// see #{TypeUnit,ExpressionUnit}
 
 
 		/* ## Types */
@@ -292,7 +292,7 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		TypeRecordLiteral: [
 			xjs.String.dedent`
-				type T = [a: bool, b?: int, c: str];
+				type T = [a: bool, b?: int, _: str];
 				type U = [
 					a: V.0,
 					b: W.<float>,
@@ -303,7 +303,7 @@ function buildTest(title: string, source: string, expected: string): string {
 					'type_record_literal',
 					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
 					s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
-					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
+					s('entry_type__named',           s('word'),                  s('keyword_type')),
 				),
 				s(
 					'type_record_literal',
@@ -354,7 +354,7 @@ function buildTest(title: string, source: string, expected: string): string {
 		],
 
 		// TypeUnit
-		// see #KEYWORDTYPE,IDENTIFIER,PrimitiveLiteral,Type{Grouped,{Tuple,Record,Dict,Map}Literal}
+		// see #TypeCompound
 
 		// PropertyAccessType
 		// see #TypeCompound
@@ -366,6 +366,7 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				type T = TupleType.0;
 				type T = RecordType.prop;
+				type T = RecordType._;
 				type T = Set.<T>;
 			`,
 			sourceTypes(
@@ -378,6 +379,11 @@ function buildTest(title: string, source: string, expected: string): string {
 					'type_compound',
 					s('identifier'),
 					s('property_access_type', s('word', s('identifier'))),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('word')),
 				),
 				s(
 					'type_compound',
@@ -494,7 +500,7 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		RecordLiteral: [
 			xjs.String.dedent`
-				[a= 1, b= [x= 2], c= [y= [k= 3]]];
+				[a= 1, b= [x= 2], _= [y= [k= 3]]];
 			`,
 			sourceExpressions(s(
 				'record_literal',
@@ -517,7 +523,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				),
 				s(
 					'property',
-					s('word', s('identifier')),
+					s('word'),
 					s(
 						'record_literal',
 						s(
@@ -596,6 +602,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				record.prop;
 				record?.prop;
 				record!.prop;
+				record._;
 				list.[index];
 				list?.[index];
 				list!.[index];
@@ -633,6 +640,11 @@ function buildTest(title: string, source: string, expected: string): string {
 					'expression_compound',
 					s('identifier'),
 					s('property_access', s('word', s('identifier'))),
+				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_access', s('word')),
 				),
 				s(
 					'expression_compound',
@@ -937,6 +949,7 @@ function buildTest(title: string, source: string, expected: string): string {
 			xjs.String.dedent`
 				type T = A | B & C;
 				type 'Ü' = T;
+				type _ = D;
 			`,
 			s(
 				'source_file',
@@ -958,6 +971,10 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('identifier'),
 					s('identifier'),
 				),
+				s(
+					'declaration_type',
+					s('identifier'),
+				),
 			),
 		],
 
@@ -967,6 +984,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				let var u: A | B & C = v;
 				let 'å': A = a;
 				let var 'é': E = e;
+				let _: T = v;
 			`,
 			s(
 				'source_file',
@@ -1010,6 +1028,11 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('identifier'),
 					s('identifier'),
 				),
+				s(
+					'declaration_variable',
+					s('identifier'),
+					s('identifier'),
+				),
 			),
 		],
 
@@ -1028,6 +1051,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				my_var       = a;
 				tuple.1      = b;
 				record.prop  = c;
+				record._     = c;
 				list.[index] = d;
 			`,
 			s(
@@ -1055,6 +1079,15 @@ function buildTest(title: string, source: string, expected: string): string {
 						'assignee',
 						s('identifier'),
 						s('property_assign', s('word', s('identifier'))),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_assignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word')),
 					),
 					s('identifier'),
 				),
