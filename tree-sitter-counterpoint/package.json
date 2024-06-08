@@ -28,7 +28,7 @@
   "scripts": {
     "dist": "tsc",
     "postdist": "tree-sitter generate",
-    "pretest": "ts-node --esm ./test/build.mts",
+    "pretest": "tsx ./test/build.mts",
     "test": "tree-sitter test",
     "build": "npm run dist && npm run test && npm run prebuildify",
     "install": "node-gyp-build",
@@ -48,10 +48,10 @@
   },
   "devDependencies": {
     "extrajs": "^0.25.0",
+    "prebuildify": "^6.0.0",
     "tree-sitter-cli": "~0.22.4",
-    "ts-node": "^10.4.0",
-    "typescript": "~5.0.2",
-    "prebuildify": "^6.0.0"
+    "tsx": "^4.14.1",
+    "typescript": "~5.0.2"
   },
   "tree-sitter": [
     {
