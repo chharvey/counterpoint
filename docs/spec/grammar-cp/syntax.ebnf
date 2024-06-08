@@ -162,8 +162,8 @@ Expression ::=
 
 
 
-DeclarationType     ::= "type"        ("_" | IDENTIFIER) "=" Type                ";";
-DeclarationVariable ::= "let"  "var"? ("_" | IDENTIFIER) ":" Type "=" Expression ";";
+DeclarationType     ::= "type" ("_" |        IDENTIFIER) "=" Type                ";";
+DeclarationVariable ::= "let"  ("_" | "var"? IDENTIFIER) ":" Type "=" Expression ";";
 
 Declaration ::=
 	| DeclarationType

@@ -358,15 +358,13 @@ describe('ASTNodeDeclarationVariable', () => {
 	describe('#build', () => {
 		it('with constant folding on.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let a:     int   = 42;      % fixed, foldable: \`(nop)\`
-				let b:     float = 4.2 * a; % fixed, foldable: \`(nop)\`
-				let _:     bool  = true;    % blank, foldable: \`(nop)\`
-				let var _: bool  = !false;  % blank, foldable: \`(nop)\`
+				let a: int   = 42;      % fixed, foldable: \`(nop)\`
+				let b: float = 4.2 * a; % fixed, foldable: \`(nop)\`
+				let _: bool  = true;    % blank, foldable: \`(nop)\`
 
 				let var c: int = 42;     % unfixed, foldable: \`(local.set)\`
 				let d:     int = c + 10; % fixed, unfoldable: \`(local.set)\`
 				let _:     int = c + 10; % blank, unfoldable: \`(drop)\`
-				let var _: int = d + 20; % blank, unfoldable: \`(drop)\`
 			`);
 			goal.varCheck();
 			goal.typeCheck();
@@ -381,23 +379,20 @@ describe('ASTNodeDeclarationVariable', () => {
 					goal.builder.module.nop(),
 					goal.builder.module.nop(),
 					goal.builder.module.nop(),
-					goal.builder.module.nop(),
 
-					goal.builder.module.local.set(0, (goal.children[4] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.local.set(1, (goal.children[5] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.drop(        (goal.children[6] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.drop(        (goal.children[7] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.local.set(0, (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.local.set(1, (goal.children[4] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.drop(        (goal.children[5] as AST.ASTNodeDeclarationVariable).assigned.build()),
 				],
 			);
 		});
 
 		it('with constant folding off, never returns `(nop)`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let a: int  = 42;   % fixed, foldable: \`(local.set)\` instead of \`(nop)\`
-				let _: bool = true; % blank, foldable: \`(drop)\`      instead of \`(nop)\`
-
+				let a:     int   = 42;   % fixed, foldable:   \`(local.set)\` instead of \`(nop)\`
+				let _:     bool  = true; % blank, foldable:   \`(drop)\`      instead of \`(nop)\`
 				let var b: float = 4.2;  % unfixed, foldable: \`(local.set)\` (same behavior)
-				let var _: bool  = !b;   % blank, unfoldable: \`(drop)\`      (same behavior)
+				let _:     bool  = !b;   % blank, unfoldable: \`(drop)\`      (same behavior)
 			`, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();

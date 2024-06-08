@@ -898,7 +898,6 @@ function buildTest(title: string, source: string, expected: string): string {
 				let 'å': A = a;
 				let var 'é': E = e;
 				let _: T = v;
-				let var _: T = v;
 			`,
 			s(
 				'source_file',
@@ -939,11 +938,6 @@ function buildTest(title: string, source: string, expected: string): string {
 				s(
 					'declaration_variable',
 					s('identifier'),
-					s('identifier'),
-					s('identifier'),
-				),
-				s(
-					'declaration_variable',
 					s('identifier'),
 					s('identifier'),
 				),
