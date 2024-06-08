@@ -19,7 +19,7 @@ import {utf8Encode} from './utils-private.js';
 
 
 
-type RadixType = 2n | 4n | 8n | 10n | 16n | 36n;
+type RadixType = 2n | 4n | 6n | 8n | 10n | 16n | 36n;
 
 
 
@@ -198,6 +198,7 @@ export class Validator {
 		const radix:      RadixType = (has_radix) ? new Map<string, RadixType>([
 			['b',  2n],
 			['q',  4n],
+			['s',  6n],
 			['o',  8n],
 			['d', 10n],
 			['x', 16n],
