@@ -27,22 +27,25 @@ describe('ASTNodeCP', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(';');
 				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
 			});
-			it('returns `(drop)` for nonempty statement expression.', () => {
+			it('returns `(nop)` for nonempty foldable statement expression.', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource('42 + 420;');
+				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
+			});
+			it('returns `(drop)` for nonempty non-foldable statement expression.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let var x: int = 42;
+					x * 10;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build();
+				const stmt: AST.ASTNodeStatement = goal.children[1];
+				assert_instanceof(stmt, AST.ASTNodeStatementExpression);
+				assert.ok(stmt.expr);
 				return assertEqualBins(
 					stmt.build(),
-					stmt.builder.module.drop(stmt.expr!.build()),
+					goal.builder.module.drop(stmt.expr.build()),
 				);
-			});
-			it('multiple statements.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource('42; 420;');
-				return goal.children.forEach((stmt) => {
-					assert_instanceof(stmt, AST.ASTNodeStatementExpression);
-					return assertEqualBins(
-						stmt.build(),
-						goal.builder.module.drop(stmt.expr!.build()),
-					);
-				});
 			});
 		});
 	});
