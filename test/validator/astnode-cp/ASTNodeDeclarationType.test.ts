@@ -1,14 +1,14 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
 	AST,
 	type SymbolStructure,
 	SymbolStructureType,
 	TYPE,
-	INST,
-	Builder,
 	AssignmentError01,
 } from '../../../src/index.js';
 import {assert_instanceof} from '../../../src/lib/index.js';
+import {assertEqualBins} from '../../assert-helpers.js';
 
 
 
@@ -25,6 +25,16 @@ describe('ASTNodeDeclarationType', () => {
 			assert_instanceof(info, SymbolStructureType);
 			assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
 		});
+
+		it('for blank identifiers, does not add to symbol table.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				type _ = str;
+			`);
+			assert.ok(!goal.validator.hasSymbol(256n));
+			goal.varCheck();
+			return assert.ok(!goal.validator.hasSymbol(256n));
+		});
+
 		it('throws if the validator already contains a record for the symbol.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				type T = int;
@@ -34,6 +44,13 @@ describe('ASTNodeDeclarationType', () => {
 				let FOO: int = 42;
 				type FOO = float;
 			`).varCheck(), AssignmentError01);
+		});
+
+		it('allows duplicate declaration of blank identifier.', () => {
+			AST.ASTNodeGoal.fromSource(`
+				type _ = int | float;
+				type _ = [str, bool];
+			`).varCheck(); // assert does not throw
 		});
 	});
 
@@ -54,23 +71,12 @@ describe('ASTNodeDeclarationType', () => {
 
 
 	describe('#build', () => {
-		it('always returns InstructionNone.', () => {
-			const src: string = `
+		it('always returns `(nop)`.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
 				type U = T | float;
-			`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			const builder = new Builder(src);
-			assert.deepStrictEqual(
-				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
-				],
-				[
-					new INST.InstructionNone(),
-					new INST.InstructionNone(),
-				],
-			);
+			`);
+			return xjs.Array.forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), goal.builder.module.nop()));
 		});
 	});
 });

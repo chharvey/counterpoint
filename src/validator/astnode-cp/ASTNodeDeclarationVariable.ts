@@ -1,9 +1,9 @@
+import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	type OBJ,
-	TYPE,
-	INST,
-	type Builder,
+	type TYPE,
 	AssignmentError01,
 } from '../../index.js';
 import {assert_instanceof} from '../../lib/index.js';
@@ -31,39 +31,63 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_variable'>,
 		public  readonly unfixed:  boolean,
-		private readonly assignee: ASTNodeVariable,
+		private readonly assignee: ASTNodeVariable | null,
 		private readonly typenode: ASTNodeType,
-		private readonly assigned: ASTNodeExpression,
+		public readonly assigned:  ASTNodeExpression,
 	) {
-		super(start_node, {unfixed}, [assignee, typenode, assigned]);
+		super(
+			start_node,
+			{unfixed},
+			(assignee) ? [assignee, typenode, assigned] : [typenode, assigned],
+		);
 	}
 
 	public override varCheck(): void {
-		if (this.validator.hasSymbol(this.assignee.id)) {
-			throw new AssignmentError01(this.assignee);
-		}
 		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
-		this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
+		if (this.assignee) {
+			if (this.validator.hasSymbol(this.assignee.id)) {
+				throw new AssignmentError01(this.assignee);
+			}
+			this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
+		}
 	}
 
 	public override typeCheck(): void {
 		this.assigned.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode.eval();
 		ASTNodeCP.assignExpression(this.assigned, assignee_type, this);
-		const symbol: SymbolStructureVar | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
-		if (symbol) {
+		if (this.assignee) {
+			const value: OBJ.Object | null = this.assigned.fold(); // fold first before checking, to rethrow any errors
+			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
+			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar;
 			symbol.type = assignee_type;
 			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
-				symbol.value = this.assigned.fold();
+				assert.ok(!symbol.unfixed, `${ symbol } should not be unfixed.`);
+				symbol.value = value;
 			}
 		}
 	}
 
-	public override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
-		const value: OBJ.Object | null = this.assignee.fold();
-		return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
-			? new INST.InstructionNone()
-			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat));
+	public override build(): binaryen.ExpressionRef {
+		if (
+			   this.validator.config.compilerOptions.constantFolding && this.assigned.fold()
+			&& (!this.unfixed || !this.assignee)
+		) {
+			return this.builder.module.nop();
+		}
+		const value: binaryen.ExpressionRef = this.assigned.build();
+		if (this.assignee) {
+			const assignee_type: TYPE.Type = this.typenode.eval(); // eval first before adding, to rethrow any errors
+			const local = this.builder.addLocal(this.assignee.id, binaryen.v128)[0].getLocalInfo(this.assignee.id)!;
+			return this.builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+				this.builder.module,
+				assignee_type,
+				this.assigned.type(),
+				value,
+				this.validator.config.compilerOptions.intCoercion,
+			));
+		} else {
+			return this.builder.module.drop(value);
+		}
 	}
 }

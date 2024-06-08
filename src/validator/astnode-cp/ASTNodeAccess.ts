@@ -1,8 +1,7 @@
+import type binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
-	type INST,
-	type Builder,
 	TypeError01,
 	TypeError02,
 	TypeError04,
@@ -34,7 +33,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		return expression;
 	}
 
-	private readonly optional: boolean = this.kind === Operator.OPTDOT;
+	private readonly optional: boolean;
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
@@ -45,17 +44,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		private readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
-	}
-
-	public override shouldFloat(): boolean {
-		throw 'ASTNodeAccess#shouldFloat not yet supported.';
+		this.optional = this.kind === Operator.OPTDOT;
 	}
 
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeAccess#build_do not yet supported.';
+	public override build(): binaryen.ExpressionRef {
+		throw '`ASTNodeAccess#build_do` not yet supported.';
 	}
 
 	@memoizeMethod
@@ -133,7 +128,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (base_value === null) {
 			return null;
 		}
-		if (this.optional && base_value.equal(OBJ.Null.NULL)) {
+		if (this.optional && base_value.identical(OBJ.Null.NULL)) {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {

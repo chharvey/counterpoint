@@ -28,6 +28,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		return expression;
 	}
 
+
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		protected readonly operator: ValidOperatorBinary,
@@ -35,10 +36,6 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		public    readonly operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand0, operand1]);
-	}
-
-	public override shouldFloat(): boolean {
-		return this.operand0.shouldFloat() || this.operand1.shouldFloat();
 	}
 
 	/**

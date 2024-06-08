@@ -48,7 +48,7 @@ TokenWorth(KeywordType  :::= "obj")     -> RealNumber := \x85;
 TokenWorth(KeywordValue :::= "null")    -> RealNumber := \x86;
 TokenWorth(KeywordValue :::= "false")   -> RealNumber := \x87;
 TokenWorth(KeywordValue :::= "true")    -> RealNumber := \x88;
-TokenWorth(KeywordOther :::= "mutable") -> RealNumber := \x89;
+TokenWorth(KeywordOther :::= "mut")     -> RealNumber := \x89;
 TokenWorth(KeywordOther :::= "is")      -> RealNumber := \x8a;
 TokenWorth(KeywordOther :::= "isnt")    -> RealNumber := \x8b;
 TokenWorth(KeywordOther :::= "if")      -> RealNumber := \x8c;
@@ -56,7 +56,8 @@ TokenWorth(KeywordOther :::= "then")    -> RealNumber := \x8d;
 TokenWorth(KeywordOther :::= "else")    -> RealNumber := \x8e;
 TokenWorth(KeywordOther :::= "type")    -> RealNumber := \x8f;
 TokenWorth(KeywordOther :::= "let")     -> RealNumber := \x90;
-TokenWorth(KeywordOther :::= "unfixed") -> RealNumber := \x91;
+TokenWorth(KeywordOther :::= "_")       -> RealNumber := \x91;
+TokenWorth(KeywordOther :::= "var")     -> RealNumber := \x92;
 
 
 

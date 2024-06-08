@@ -2,6 +2,7 @@ import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	TYPE,
+	type Builder,
 	TypeError03,
 } from '../../index.js';
 import {to_serializable} from '../../parser/index.js';
@@ -14,6 +15,20 @@ import {
 
 
 
+/**
+ * Known subclasses:
+ * - ASTNodeKey
+ * - ASTNodeIndexType
+ * - ASTNodeItemType
+ * - ASTNodePropertyType
+ * - ASTNodeIndex
+ * - ASTNodeProperty
+ * - ASTNodeCase
+ * - ASTNodeType
+ * - ASTNodeExpression
+ * - ASTNodeStatement
+ * - ASTNodeGoal
+ */
 export abstract class ASTNodeCP extends ASTNode {
 	/**
 	 * Type-check an assignment.
@@ -30,7 +45,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	): void {
 		if (
 			   !assigned_type.isSubtypeOf(assignee_type)
-			&& !(
+			&& !( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
 				   // is int treated as a subtype of float?
 				   node.validator.config.compilerOptions.intCoercion
 				&& assigned_type.isSubtypeOf(TYPE.INT)
@@ -50,13 +65,13 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * We want to be able to assign collection literals to wider mutable types
 	 * so that we can mutate them with different values:
 	 * ```
-	 * let my_ints: mutable int{} = {42}; % <-- assignment should not fail
+	 * let my_ints: mut int{} = {42}; % <-- assignment should not fail
 	 * set my_ints[43] = true;
 	 * ```
 	 * However, we want this to not be the case for constant collections,
 	 * because they aren’t mutable:
 	 * ```
-	 * let vec: mutable [int] = \[42]; % <-- assignment should fail
+	 * let vec: mut [int] = \[42]; % <-- assignment should fail
 	 * ```
 	 *
 	 * @final
@@ -100,6 +115,10 @@ export abstract class ASTNodeCP extends ASTNode {
 
 	public get validator(): Validator {
 		return (this.parent as ASTNodeCP).validator;
+	}
+
+	public get builder(): Builder {
+		return (this.parent as ASTNodeCP).builder;
 	}
 
 	/**
