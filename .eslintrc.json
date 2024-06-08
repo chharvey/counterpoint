@@ -206,8 +206,10 @@
 
 				/* # Best Practices */
 				/* ## Conciseness */
-				"@typescript-eslint/no-unnecessary-condition":      "error",
-				"@typescript-eslint/no-unnecessary-type-arguments": "error",
+				"@typescript-eslint/no-unnecessary-condition":          "error",
+				"@typescript-eslint/no-unnecessary-type-arguments":     "error",
+				"@typescript-eslint/no-unnecessary-type-assertion":     "error",
+				"@typescript-eslint/non-nullable-type-assertion-style": "error",
 
 				/* ## Function Design */
 				"no-return-await":                 "off",
@@ -216,8 +218,6 @@
 				/* ## Strictness */
 				"@typescript-eslint/explicit-member-accessibility":           "error",
 				"@typescript-eslint/no-non-null-asserted-nullish-coalescing": "error",
-				"@typescript-eslint/no-unnecessary-type-assertion":           "error",
-				"@typescript-eslint/non-nullable-type-assertion-style":       "error",
 				"@typescript-eslint/prefer-readonly":                         "error"
 			}
 		}

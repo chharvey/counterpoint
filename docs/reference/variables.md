@@ -34,10 +34,13 @@ let my_var: str = "¡Hola, mundo!"; %> AssignmentError
 
 All **basic** variable names *must* start with an uppercase or lowercase letter or an underscore.
 The rest of the basic variable name may include letters, digits, and underscores.
-By convention, variables are named in *snake_case*, but it’s not required.
+By convention, unbound variables are named in *snake_case*.
 Basic variable names cannot be any of the reserved keywords in Counterpoint.
 Variable names don’t have to be “basic” — we can write variables with
 [Unicode characters](#unicode-identifiers) as well.
+
+There exists a uniquely special variable in Counterpoint, `_`,
+which has a reserved meaning, discussed [below](#the-blank-identifier).
 
 
 ### Temporal Dead Zone
@@ -254,3 +257,42 @@ type MyNextType = my_next_var | int;  %> ReferenceError [2]
 ```
 > 1. ReferenceError: `MyFirstType` refers to a type, but is used as a value.
 > 2. ReferenceError: `my_next_var` refers to a value, but is used as a type.
+
+
+
+## The Blank Identifier
+The token `_` (a single underscore) is called the “blank identifier”, and it behaves differently from normal variables.
+It may *only* be assigned, and *never* be referenced. It’s actually a syntax error to treat it as an expression.
+```
+let _: int = 42;    % ok
+let x: int = _ + 1; %> ParseError
+```
+
+The purpose of a non-referenceable variable is to satisfy the type-checker when assigning
+function types and destructured variables.
+When assigning a function to a function type, a certain number of parameters are expected,
+but we might not always use every parameter in our function body.
+The same goes for destructuring — we might not need all the entries in the object being destructured.
+Instead of declaring a regular variable that ends up never being referenced,
+we can use the blank identifier `_` as a placeholder.
+We can even declare it more than once!
+```
+let _: int = 42;
+let _: str = "the answer"; % no duplicate declaration error!
+
+let (_, b, c): str[3] = ["a", "b", "c"];
+let (_, _, f): str[3] = ["d", "e", "f"]; % no duplicate declaration error!
+
+type Binop = (float, float) => float;
+let square: Binop = (_: float, x: float): float => x * x;
+func trinop(_: float, _: float, y: float): float => y + y + y; % no duplicate declaration error!
+```
+
+It’s also possible to assign the blank identifier as a type alias, and in an unfixed variable assignment.
+However, these use cases are less practical.
+```
+type _ = int | float;
+type _ = [str, bool]; % no duplicate declaration error!
+
+let unfixed _: float = 4.2;
+```

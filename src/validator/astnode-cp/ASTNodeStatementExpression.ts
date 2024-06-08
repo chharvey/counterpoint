@@ -25,8 +25,8 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	}
 
 	public override build(): binaryen.ExpressionRef {
-		return (this.expr)
-			? this.builder.module.drop(this.expr.build())
-			: this.builder.module.nop();
+		return !this.expr || (this.validator.config.compilerOptions.constantFolding && this.expr.fold())
+			? this.builder.module.nop()
+			: this.builder.module.drop(this.expr.build());
 	}
 }
