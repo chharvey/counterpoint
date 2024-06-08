@@ -1,3 +1,4 @@
+import {Keyword} from '../../parser/index.js';
 import {
 	Operator,
 	type ValidAccessOperator,
@@ -26,3 +27,5 @@ export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidAcc
 			? entry.type.union((access_kind === Operator.OPTDOT) ? NULL : VOID)
 			: entry.type;
 }
+
+export const MUT_OPERATOR = `${ Keyword.MUTABLE } `;

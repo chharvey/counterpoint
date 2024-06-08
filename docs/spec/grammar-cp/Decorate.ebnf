@@ -1,6 +1,6 @@
 _KEYWORD_OTHER =:=
 	// operator
-		| "mutable"
+		| "mut"
 		| "is"
 		| "isnt"
 		| "if"
@@ -9,8 +9,9 @@ _KEYWORD_OTHER =:=
 	// storage
 		| "type"
 		| "let"
+		| "_"
 	// modifier
-		| "unfixed"
+		| "var"
 ;
 
 Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey
@@ -175,7 +176,7 @@ Decorate(TypeUnarySymbol ::= TypeUnarySymbol "{" "}") -> SemanticTypeSet
 
 Decorate(TypeUnaryKeyword ::= TypeUnarySymbol) -> SemanticType
 	:= Decorate(TypeUnarySymbol);
-Decorate(TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword) -> SemanticTypeOperation
+Decorate(TypeUnaryKeyword ::= "mut" TypeUnaryKeyword) -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=MUTABLE]
 		Decorate(TypeUnaryKeyword)
 	);
@@ -565,6 +566,10 @@ Decorate(Expression ::= ExpressionConditional) -> SemanticExpression
 
 
 
+Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType
+	:= (SemanticDeclarationType
+		Decorate(Type)
+	);
 Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType
 	:= (SemanticDeclarationType
 		(SemanticTypeAlias[id=TokenWorth(IDENTIFIER)])
@@ -573,13 +578,18 @@ Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarat
 
 
 
+Decorate(DeclarationVariable ::= "let" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=false]
+		Decorate(Type)
+		Decorate(Expression)
+	);
 Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=false]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression)
 	);
-Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)

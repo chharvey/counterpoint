@@ -22,8 +22,8 @@ describe('Decorator', () => {
 		}
 		new Map<string, [NewableFunction, string]>([
 			['Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey', [AST.ASTNodeKey, `
-				[mutable= 42];
-				% (word "mutable")
+				[mut= 42];
+				% (word "mut")
 			`]],
 			['Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey', [AST.ASTNodeKey, `
 				[void= 42];
@@ -89,6 +89,14 @@ describe('Decorator', () => {
 				type T = [a?: int];
 				% (entry_type__named__optional)
 			`]],
+			['Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
+				type T = [_: int];
+				% (entry_type__named)
+			`]],
+			['Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
+				type T = [_?: int];
+				% (entry_type__named__optional)
+			`]],
 
 			['Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType', [AST.ASTNodeType, `
 				type T = (3 | float);
@@ -127,6 +135,10 @@ describe('Decorator', () => {
 				type T = U.p;
 				% (property_access_type)
 			`]],
+			['Decorate(PropertyAccessType ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
+				type T = U._;
+				% (property_access_type)
+			`]],
 
 			['Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
 				type T = U.p;
@@ -158,8 +170,8 @@ describe('Decorator', () => {
 				% (type_unary_symbol)
 			`]],
 
-			['Decorate(TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
-				type T = mutable U;
+			['Decorate(TypeUnaryKeyword ::= "mut" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+				type T = mut U;
 				% (type_unary_keyword)
 			`]],
 
@@ -189,6 +201,10 @@ describe('Decorator', () => {
 
 			['Decorate(Property ::= Word "=" Expression) -> SemanticProperty', [AST.ASTNodeProperty, `
 				[a= 42];
+				% (property)
+			`]],
+			['Decorate(Property ::= Word "=" Expression) -> SemanticProperty', [AST.ASTNodeProperty, `
+				[_= 42];
 				% (property)
 			`]],
 
@@ -234,6 +250,10 @@ describe('Decorator', () => {
 				v?.p;
 				% (property_access)
 			`]],
+			['Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey', [AST.ASTNodeKey, `
+				v?._;
+				% (property_access)
+			`]],
 			['Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
 				v!.[a + b];
 				% (property_access)
@@ -245,6 +265,10 @@ describe('Decorator', () => {
 			`]],
 			['Decorate(PropertyAssign ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
 				v.p = false;
+				% (property_assign)
+			`]],
+			['Decorate(PropertyAssign ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
+				v._ = false;
 				% (property_assign)
 			`]],
 			['Decorate(PropertyAssign ::= "." "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
@@ -344,17 +368,25 @@ describe('Decorator', () => {
 			`]],
 
 			/* ## Statements */
+			['Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
+				type _ = U;
+				% (declaration_type)
+			`]],
 			['Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
 				type T = U;
 				% (declaration_type)
 			`]],
 
+			['Decorate(DeclarationVariable ::= "let" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let _: T = b;
+				% (declaration_variable)
+			`]],
 			['Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				let a: T = b;
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
-				let unfixed a: T = b;
+			['Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let var a: T = b;
 				% (declaration_variable)
 			`]],
 

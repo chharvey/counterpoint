@@ -27,22 +27,25 @@ describe('ASTNodeCP', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(';');
 				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
 			});
-			it('returns `(drop)` for nonempty statement expression.', () => {
+			it('returns `(nop)` for nonempty foldable statement expression.', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource('42 + 420;');
+				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
+			});
+			it('returns `(drop)` for nonempty non-foldable statement expression.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let var x: int = 42;
+					x * 10;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build();
+				const stmt: AST.ASTNodeStatement = goal.children[1];
+				assert_instanceof(stmt, AST.ASTNodeStatementExpression);
+				assert.ok(stmt.expr);
 				return assertEqualBins(
 					stmt.build(),
-					stmt.builder.module.drop(stmt.expr!.build()),
+					goal.builder.module.drop(stmt.expr.build()),
 				);
-			});
-			it('multiple statements.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource('42; 420;');
-				return goal.children.forEach((stmt) => {
-					assert_instanceof(stmt, AST.ASTNodeStatementExpression);
-					return assertEqualBins(
-						stmt.build(),
-						goal.builder.module.drop(stmt.expr!.build()),
-					);
-				});
 			});
 		});
 	});
@@ -53,7 +56,7 @@ describe('ASTNodeCP', () => {
 		describe('#varCheck', () => {
 			it('throws if the variable is not unfixed.', () => {
 				AST.ASTNodeGoal.fromSource(`
-					let unfixed i: int = 42;
+					let var i: int = 42;
 					i = 43;
 				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
@@ -74,7 +77,7 @@ describe('ASTNodeCP', () => {
 			context('for variable reassignment.', () => {
 				it('throws when variable assignee type is not supertype.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let unfixed i: int = 42;
+						let var i: int = 42;
 						i = 4.3;
 					`);
 					goal.varCheck();
@@ -96,19 +99,19 @@ describe('ASTNodeCP', () => {
 				it('throws when property assignee type is not supertype.', () => {
 					[
 						`
-							let l: mutable int[] = List.<int>([42]);
+							let l: mut int[] = List.<int>([42]);
 							l.0 = 4.2;
 						`,
 						`
-							let d: mutable [:int] = Dict.<int>([i= 42]);
+							let d: mut [:int] = Dict.<int>([i= 42]);
 							d.i = 4.2;
 						`,
 						`
-							let s: mutable int{} = Set.<int>([42]);
+							let s: mut int{} = Set.<int>([42]);
 							s.[42] = 4.2;
 						`,
 						`
-							let m: mutable {bool -> int} = Map.<bool, int>([[true, 42]]);
+							let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
 							m.[true] = 4.2;
 						`,
 					].forEach((src) => {
@@ -156,7 +159,7 @@ describe('ASTNodeCP', () => {
 		describe('#build', () => {
 			it('always returns `(local.set)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed y: float = 4.2;
+					let var y: float = 4.2;
 					y = y * 10;
 				`);
 				goal.varCheck();
@@ -169,8 +172,8 @@ describe('ASTNodeCP', () => {
 			});
 			it('coerces as necessary.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: float | int = 4.2;
-					let unfixed y: int | float = 4.2;
+					let var x: float | int = 4.2;
+					let var y: int | float = 4.2;
 					x = 8.4;
 					x = 16;
 					x = x;
@@ -317,6 +320,8 @@ describe('ASTNodeCP', () => {
 					`,
 				], (src) => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+					goal.varCheck();
+					goal.typeCheck();
 					return assertEqualBins(goal.build(), goal.builder.module.nop());
 				});
 			});

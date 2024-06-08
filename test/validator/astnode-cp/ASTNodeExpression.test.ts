@@ -133,7 +133,7 @@ describe('ASTNodeExpression', () => {
 		describe('#varCheck', () => {
 			it('throws if the validator does not contain a record for the identifier.', () => {
 				AST.ASTNodeGoal.fromSource(`
-					let unfixed i: int = 42;
+					let var i: int = 42;
 					i;
 				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeVariable.fromSource('i;').varCheck(), ReferenceErrorUndeclared);
@@ -141,7 +141,7 @@ describe('ASTNodeExpression', () => {
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					i;
-					let unfixed i: int = 42;
+					let var i: int = 42;
 				`).varCheck(), ReferenceErrorDeadZone);
 			});
 			it('throws if it was declared as a type alias.', () => {
@@ -176,7 +176,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for an unfixed variable.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 21 * 2;
+					let var x: int = 21 * 2;
 					x;
 				`);
 				goal.varCheck();
@@ -189,7 +189,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for a fixed variable of mutable type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let fixed_mutable: mutable int{} = {1, 2, 3};
+					let fixed_mutable: mut int{} = {1, 2, 3};
 					fixed_mutable;
 				`);
 				goal.varCheck();
@@ -202,10 +202,10 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for an uncomputable fixed variable.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 21 * 2;
+					let var x: int = 21 * 2;
 					let y: int = x / 2;
 					y;
-					let z: mutable int{} = {11, 22, 33};
+					let z: mut int{} = {11, 22, 33};
 					let w: bool = z.[22];
 					w;
 				`);
@@ -248,7 +248,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('with constant folding on, returns `(local.get)` for unfixed / non-foldable variables.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 42;
+					let var x: int = 42;
 					let y: int = x + 10;
 					x;
 					y;
@@ -277,7 +277,7 @@ describe('ASTNodeExpression', () => {
 			it('with constant folding off, always returns `(local.get)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let x: int = 42;
-					let unfixed y: float = 4.2;
+					let var y: float = 4.2;
 					x;
 					y;
 				`, CONFIG_FOLDING_OFF);
@@ -313,7 +313,7 @@ describe('ASTNodeExpression', () => {
 				AST.ASTNodeTemplate.fromSource('"""42😀""";', config),
 				AST.ASTNodeTemplate.fromSource('"""the answer is {{ 7 * 3 * 2 }} but what is the question?""";', config),
 				(AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 21;
+					let var x: int = 21;
 					"""the answer is {{ x * 2 }} but what is the question?""";
 				`, config)
 					.children[1] as AST.ASTNodeStatementExpression)
@@ -388,13 +388,15 @@ describe('ASTNodeExpression', () => {
 
 					[
 						AST.ASTNodeTypeRecord .fromSource('[a: int, b: float, a: str]'),
+						AST.ASTNodeTypeRecord .fromSource('[_: int, b: float, _: str]'),
 						AST.ASTNodeRecord     .fromSource('[a= 1, b= 2.0, a= "three"];'),
+						AST.ASTNodeRecord     .fromSource('[_= 1, b= 2.0, _= "three"];'),
 					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentErrorDuplicateKey));
 
 					new Map<AST.ASTNodeCP, string[]>([
 						[AST.ASTNodeTypeRecord .fromSource('[c: int, d: float, c: str, d: bool]'),   ['c', 'd']],
-						[AST.ASTNodeRecord     .fromSource('[c= 1, d= 2.0, c= "three", d= false];'), ['c', 'd']],
 						[AST.ASTNodeTypeRecord .fromSource('[e: int, f: float, e: str, e: bool]'),   ['e', 'e']],
+						[AST.ASTNodeRecord     .fromSource('[c= 1, d= 2.0, c= "three", d= false];'), ['c', 'd']],
 						[AST.ASTNodeRecord     .fromSource('[e= 1, f= 2.0, e= "three", e= false];'), ['e', 'e']],
 					]).forEach((dupes, node) => assert.throws(() => node.varCheck(), (err) => {
 						assert_instanceof(err, AggregateError);
@@ -424,9 +426,9 @@ describe('ASTNodeExpression', () => {
 					AST.ASTNodeSet,
 					AST.ASTNodeMap,
 				] = [
-					AST.ASTNodeTuple  .fromSource('  [   1,    2.0,    "three"];', config),
-					AST.ASTNodeRecord .fromSource('  [a= 1, b= 2.0, c= "three"];', config),
-					AST.ASTNodeSet    .fromSource('  {   1,    2.0,    "three"};', config),
+					AST.ASTNodeTuple  .fromSource('[   1,    2.0,    "three"];', config),
+					AST.ASTNodeRecord .fromSource('[a= 1, b= 2.0, _= "three"];', config),
+					AST.ASTNodeSet    .fromSource('{   1,    2.0,    "three"};', config),
 					AST.ASTNodeMap.fromSource(`
 						{
 							"a" || "" -> 1,
@@ -512,9 +514,9 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for non-foldable entries.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let unfixed x: int = 1;
-					let unfixed y: float = 2.0;
-					let unfixed z: str = "three";
+					let var x: int = 1;
+					let var y: float = 2.0;
+					let var z: str = "three";
 					[x, 2.0, "three"];
 					[a= 1, b= y, c= "three"];
 					{1, 2.0, z};

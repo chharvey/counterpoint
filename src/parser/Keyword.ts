@@ -12,17 +12,18 @@ export enum Keyword {
 		FALSE = 'false',
 		TRUE  = 'true',
 	// operator
-		MUTABLE = 'mutable',
+		MUTABLE = 'mut',
 		IS      = 'is',
 		ISNT    = 'isnt',
 		IF      = 'if',
 		THEN    = 'then',
 		ELSE    = 'else',
 	// storage
-		TYPE = 'type',
-		LET  = 'let',
+		TYPE  = 'type',
+		LET   = 'let',
+		BLANK = '_',
 	// modifier
-		UNFIXED = 'unfixed',
+		UNFIXED = 'var',
 }
 
 

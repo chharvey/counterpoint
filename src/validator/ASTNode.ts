@@ -23,13 +23,13 @@ export class ASTNode implements Serializable {
 	/** @implements Serializable */
 	public readonly tagname: string = this.constructor.name.slice('ASTNode'.length);
 	/** @implements Serializable */
-	public readonly source: string = this.start.source;
+	public readonly source: string;
 	/** @implements Serializable */
-	public readonly source_index: number = this.start.source_index;
+	public readonly source_index: number;
 	/** @implements Serializable */
-	public readonly line_index: number = this.start.line_index;
+	public readonly line_index: number;
 	/** @implements Serializable */
-	public readonly col_index: number = this.start.col_index;
+	public readonly col_index: number;
 
 	#parent: ASTNode | null = null;
 
@@ -45,6 +45,10 @@ export class ASTNode implements Serializable {
 		private readonly attributes: Record<string, unknown> = {},
 		public readonly children: readonly ASTNode[] = [],
 	) {
+		this.source       = this.start.source;
+		this.source_index = this.start.source_index;
+		this.line_index   = this.start.line_index;
+		this.col_index    = this.start.col_index;
 		children.forEach((c) => {
 			c.#parent = this;
 		});
