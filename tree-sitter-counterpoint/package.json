@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-counterpoint",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Tree-sitter parser for the Counterpoint Programming Language.",
   "keywords": [
     "tree-sitter",
@@ -20,6 +20,7 @@
     "src"
   ],
   "main": "bindings/node",
+  "types": "bindings/node",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chharvey/counterpoint.git"
@@ -27,17 +28,35 @@
   "scripts": {
     "dist": "tsc",
     "postdist": "tree-sitter generate",
-    "pretest": "ts-node --esm ./test/build.mts",
+    "pretest": "tsx ./test/build.mts",
     "test": "tree-sitter test",
-    "build": "npm run dist && npm run test"
+    "build": "npm run dist && npm run test && npm run prebuildify",
+    "install": "node-gyp-build",
+    "prebuildify": "prebuildify --napi --strip"
   },
   "dependencies": {
-    "nan": "^2.15.0"
+    "node-addon-api": "^7.1.0",
+    "node-gyp-build": "^4.8.0"
+  },
+  "peerDependencies": {
+    "tree-sitter": "^0.21.0"
+  },
+  "peerDependenciesMeta": {
+    "tree_sitter": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "extrajs": "^0.25.0",
-    "tree-sitter-cli": "0.20.6",
-    "ts-node": "^10.4.0",
+    "prebuildify": "^6.0.0",
+    "tree-sitter-cli": "~0.22.4",
+    "tsx": "^4.14.1",
     "typescript": "~5.0.2"
-  }
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.counterpoint",
+      "injection-regex": "^counterpoint$"
+    }
+  ]
 }
