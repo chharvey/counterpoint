@@ -1,9 +1,6 @@
 import * as assert from 'assert';
 import {TypeErrorNoEntry} from '../../index.js';
-import {
-	type IntRange,
-	strictEqual,
-} from '../../lib/index.js';
+import {strictEqual} from '../../lib/index.js';
 import type {
 	ValidAccessOperator,
 	AST,
@@ -31,6 +28,11 @@ export class TypeTuple extends ValueType {
 		})));
 	}
 
+	/** Returns the minimum possible number of items in the given tuple type. */
+	static #minCount(t: TypeTuple): bigint {
+		return BigInt(t.invariants.filter((it) => !it.optional).length);
+	}
+
 
 	/**
 	 * Construct a new TypeTuple object.
@@ -42,17 +44,6 @@ export class TypeTuple extends ValueType {
 
 	public override get hasMutable(): boolean {
 		return super.hasMutable || this.invariants.some((t) => t.type.hasMutable);
-	}
-
-	/**
-	 * The possible number of items in this tuple type.
-	 * @final
-	 */
-	public get count(): IntRange {
-		return [
-			BigInt(this.invariants.filter((it) => !it.optional).length),
-			BigInt(this.invariants.length) + 1n,
-		];
 	}
 
 	public override toString(): string {
@@ -69,7 +60,7 @@ export class TypeTuple extends ValueType {
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeTuple
-			&& this.count[0] >= t.count[0]
+			&& TypeTuple.#minCount(this) >= TypeTuple.#minCount(t)
 			&& t.invariants.every((thattype, i) => {
 				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 				const thistype: TypeEntry | undefined = this.invariants[i];

@@ -1,9 +1,6 @@
 import * as assert from 'assert';
 import {TypeErrorNoEntry} from '../../index.js';
-import {
-	type IntRange,
-	strictEqual,
-} from '../../lib/index.js';
+import {strictEqual} from '../../lib/index.js';
 import type {
 	ValidAccessOperator,
 	AST,
@@ -31,6 +28,11 @@ export class TypeRecord extends ValueType {
 		}])));
 	}
 
+	/** Returns the minimum possible number of properties in the given record type. */
+	static #minCount(t: TypeRecord): bigint {
+		return BigInt([...t.invariants.values()].filter((val) => !val.optional).length);
+	}
+
 
 	/**
 	 * Construct a new TypeRecord object.
@@ -42,17 +44,6 @@ export class TypeRecord extends ValueType {
 
 	public override get hasMutable(): boolean {
 		return super.hasMutable || [...this.invariants.values()].some((t) => t.type.hasMutable);
-	}
-
-	/**
-	 * The possible number of items in this record type.
-	 * @final
-	 */
-	public get count(): IntRange {
-		return [
-			BigInt([...this.invariants.values()].filter((val) => !val.optional).length),
-			BigInt(this.invariants.size) + 1n,
-		];
 	}
 
 	public override toString(): string {
@@ -69,7 +60,7 @@ export class TypeRecord extends ValueType {
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
 			t instanceof TypeRecord
-			&& this.count[0] >= t.count[0]
+			&& TypeRecord.#minCount(this) >= TypeRecord.#minCount(t)
 			&& [...t.invariants].every(([id, thattype]) => {
 				const thistype: TypeEntry | undefined = this.invariants.get(id);
 				if (!thattype.optional) {
