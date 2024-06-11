@@ -270,14 +270,15 @@ class Decorator {
 					} else { // we have `T[n]`
 						assert.strictEqual(node.children.length, 4);
 						assert.strictEqual(punc, Punctuator.BRAK_OPN);
-						const count: bigint = BigInt(Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
+						const count: bigint | number = Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
 							...CONFIG_DEFAULT,
 							languageFeatures: {
 								...CONFIG_DEFAULT.languageFeatures,
 								integerRadices:    true,
 								numericSeparators: true,
 							},
-						})[0]);
+						});
+						assert.ok(typeof count === 'bigint'); // better type guard than `assert.strictEqual`
 						return new AST.ASTNodeTypeList(
 							node as SyntaxNodeType<'type_unary_symbol'>,
 							basetype,

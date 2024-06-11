@@ -39,7 +39,7 @@ function tokenWorthInt(
 	text: string,
 	radix: RadixType = RADIX_DEFAULT,
 	allow_separators: CPConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
-): number {
+): bigint {
 	if (text.length === 0) {
 		throw new Error('Cannot compute mathematical value of empty string.');
 	}
@@ -51,9 +51,9 @@ function tokenWorthInt(
 		if (Number.isNaN(digitvalue)) {
 			throw new Error(`Invalid number format: \`${ text }\``);
 		}
-		return digitvalue;
+		return BigInt(digitvalue);
 	}
-	return Number(radix)
+	return radix
 		* tokenWorthInt(text.slice(0, -1),     radix, allow_separators)
 		+ tokenWorthInt(text[text.length - 1], radix, allow_separators);
 }
@@ -70,8 +70,8 @@ function tokenWorthFloat(
 	const wholepart:  string = text.slice(0, pointindex);
 	const fracpart:   string = (expindex < 0) ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex);
 	const exppart:    string = (expindex < 0) ? '0'                        : text.slice(expindex   + 1);
-	const wholevalue: number = tokenWorthInt(wholepart, RADIX_DEFAULT, allow_separators);
-	const fracvalue:  number = tokenWorthInt(fracpart,  RADIX_DEFAULT, allow_separators) * base ** -fracpart.length;
+	const wholevalue: number = Number(tokenWorthInt(wholepart, RADIX_DEFAULT, allow_separators));
+	const fracvalue:  number = Number(tokenWorthInt(fracpart,  RADIX_DEFAULT, allow_separators)) * base ** -fracpart.length;
 	const expvalue:   number = parseFloat(( // HACK: `` parseFloat(`1e${ ... }`) `` is more accurate than `base ** tokenWorthInt(...)`
 		(exppart[0] === Punctuator.AFF) ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
 		(exppart[0] === Punctuator.NEG) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
@@ -115,7 +115,7 @@ function tokenWorthString(
 			/* an escape sequence */
 			const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !;
 			return [
-				...utf8Encode(tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
+				...utf8Encode(Number(tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators))),
 				...tokenWorthString(text.slice(sequence[0].length), allow_comments, allow_separators),
 			];
 		} else if (text[1] === '\n') {
@@ -184,12 +184,13 @@ export class Validator {
 
 	/**
 	 * Give the numeric value of a number token.
+	 * If the returned value is a native `bigint`, it represents a Counterpoint Integer language value;
+	 * if the returned value is a native `number`, it represents a Counterpoint Float language value.
 	 * @param source the token’s text
 	 * @param config configuration settings
-	 * @return       the numeric value, cooked, along with whether the cooked value is a float
+	 * @return       the numeric value, cooked
 	 */
-	public static cookTokenNumber(source: string, config: CPConfig): [number, boolean] {
-		const is_float:   boolean   = source.indexOf(POINT) > 0;
+	public static cookTokenNumber(source: string, config: CPConfig): bigint | number {
 		const has_unary:  boolean   = ([Punctuator.AFF, Punctuator.NEG] as string[]).includes(source[0]);
 		const multiplier: number    = (has_unary && source[0] === Punctuator.NEG) ? -1 : 1;
 		const has_radix:  boolean   = (has_unary) ? source[1] === ESCAPER : source[0] === ESCAPER;
@@ -213,13 +214,9 @@ export class Validator {
 		if (has_unary) source = source.slice(1); // cut off unary, if any
 		if (has_radix) source = source.slice(2); // cut off radix, if any
 		/* eslint-enable curly */
-		return [
-			multiplier * ((is_float)
-				? tokenWorthFloat(source,        config.languageFeatures.numericSeparators)
-				: tokenWorthInt  (source, radix, config.languageFeatures.numericSeparators)
-			),
-			is_float,
-		];
+		return source.indexOf(POINT) > 0
+			?        multiplier  * tokenWorthFloat (source,        config.languageFeatures.numericSeparators)
+			: BigInt(multiplier) * tokenWorthInt   (source, radix, config.languageFeatures.numericSeparators);
 	}
 
 	/**
