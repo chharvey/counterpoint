@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
@@ -34,7 +34,13 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.tuple.make(this.children.map((expr) => expr.build()));
+		return this.builder.module.tuple.make(this.children.flatMap<binaryen.ExpressionRef>((child) => {
+			const child_type:  TYPE.Type              = child.type();
+			const child_build: binaryen.ExpressionRef = child.build();
+			return child_type instanceof TYPE.TypeTuple
+				? binaryen.expandType(binaryen.getExpressionType(child_build)).map((_, i) => this.builder.module.tuple.extract(child_build, i))
+				: child_build;
+		}));
 	}
 
 	@memoizeMethod
