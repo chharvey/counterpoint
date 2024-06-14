@@ -4,7 +4,7 @@ SemanticKey[id: RealNumber]
 
 
 SemanticIndexType[index: RealNumber]
-	::= SemanticTypeConstant;
+	::= ();
 
 SemanticItemType[optional: Boolean]
 	::= SemanticType;
@@ -15,7 +15,7 @@ SemanticPropertyType[optional: Boolean]
 
 
 SemanticIndex[index: RealNumber]
-	::= SemanticConstant;
+	::= ();
 
 SemanticProperty
 	::= SemanticKey SemanticExpression;

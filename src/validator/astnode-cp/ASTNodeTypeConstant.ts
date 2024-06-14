@@ -49,7 +49,6 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 
 	public constructor(start_node: (
 		| SyntaxNodeType<'keyword_type'>
-		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'primitive_literal'>
 	)) {
 		super(start_node);
@@ -58,8 +57,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		return (
-			(isSyntaxNodeType(this.start_node, 'keyword_type')) ?     ASTNodeTypeConstant.keywordType(this.start_node.text)                    :
-			(isSyntaxNodeType(this.start_node, 'integer'))      ?     valueOfTokenNumber(this.start_node.text, this.validator.config).toType() :
+			(isSyntaxNodeType(this.start_node, 'keyword_type')) ? ASTNodeTypeConstant.keywordType(this.start_node.text) :
 			(assert.ok(
 				isSyntaxNodeType(this.start_node, 'primitive_literal'),
 				`Expected ${ this.start_node } to be a primitive.`,

@@ -215,10 +215,7 @@ class Decorator {
 			)],
 
 			['property_access_type', (node) => (
-				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndexType(
-					node as SyntaxNodeType<'property_access_type'>,
-					new AST.ASTNodeTypeConstant(node.children[1]),
-				) :
+				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndexType(node as SyntaxNodeType<'property_access_type'>) :
 				(assert.ok(
 					isSyntaxNodeType(node.children[1], 'word'),
 					`Expected ${ node.children[1] } to be a \`SyntaxNodeType<'word'>\`.`,
@@ -360,20 +357,14 @@ class Decorator {
 			)],
 
 			['property_access', (node) => (
-				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(
-					node as SyntaxNodeType<'property_access'>,
-					new AST.ASTNodeConstant(node.children[1]),
-				) :
-				          (isSyntaxNodeType     (node.children[1], 'word')) ?                                                                  this.decorateTS(node.children[1]) :
+				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(node as SyntaxNodeType<'property_access'>) :
+				(isSyntaxNodeType(node.children[1], 'word'))    ? this.decorateTS(node.children[1]) :
 				(assert.ok(isSyntaxNodeSupertype(node.children[2], 'expression'), `Expected ${ node.children[2] } to be an expression node.`), this.decorateTS(node.children[2]))
 			)],
 
 			['property_assign', (node) => (
-				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(
-					node as SyntaxNodeType<'property_assign'>,
-					new AST.ASTNodeConstant(node.children[1]),
-				) :
-				          (isSyntaxNodeType     (node.children[1], 'word')) ?                                                                  this.decorateTS(node.children[1]) :
+				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(node as SyntaxNodeType<'property_assign'>) :
+				(isSyntaxNodeType(node.children[1], 'word'))    ? this.decorateTS(node.children[1]) :
 				(assert.ok(isSyntaxNodeSupertype(node.children[2], 'expression'), `Expected ${ node.children[2] } to be an expression node.`), this.decorateTS(node.children[2]))
 			)],
 
