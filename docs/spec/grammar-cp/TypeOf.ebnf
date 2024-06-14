@@ -91,18 +91,14 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 			2. *Set* `base_type` to `Difference(base_type, Null)`.
 	6. *Let* `returned` be *none*.
 	7. *If* `accessor` is a SemanticIndex:
-		1. *Assert:* `accessor.children.count` is 1.
-		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor.children.0)`.
-		3. *Assert:* `accessor_type` is a TypeUnit.
-		4. *Let* `i` be `accessor_type.value`.
-		5. *Assert:* `i` is a instance of `Integer`.
-		6. *If* `base_type` is a Tuple type *and* `i` is an index in `base_type`:
+		1. *Let* `i` be a new Integer object representing `accessor.index`.
+		2. *If* `base_type` is a Tuple type *and* `i` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
-		7. *Else If* `base_type` is a List type:
+		3. *Else If* `base_type` is a List type:
 			1. *Let* `type` be the union of all item types in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
-		8. *Else:*
+		4. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
 	8. *If* `accessor` is a SemanticKey:
 		1. *Let* `id` be `accessor.id`.

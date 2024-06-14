@@ -80,8 +80,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			return (
-				(base_type instanceof TYPE.TypeTuple) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>).value, this.kind, this.accessor) :
-				(base_type instanceof TYPE.TypeList)  ? updateAccessedDynamicType(base_type.invariant, this.kind)                                               :
+				(base_type instanceof TYPE.TypeTuple) ? base_type.get(new OBJ.Integer(this.accessor.index), this.kind, this.accessor) :
+				(base_type instanceof TYPE.TypeList)  ? updateAccessedDynamicType(base_type.invariant, this.kind) :
 				assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor))
 			);
 		} else if (this.accessor instanceof ASTNodeKey) {
@@ -132,7 +132,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as OBJ.CollectionIndexed).get(this.accessor.val.fold() as OBJ.Integer, this.optional, this.accessor);
+			return (base_value as OBJ.CollectionIndexed).get(new OBJ.Integer(this.accessor.index), this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (base_value as OBJ.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else {

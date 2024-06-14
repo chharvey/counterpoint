@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {
 	AST,
-	OBJ,
 	TYPE,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
@@ -29,12 +28,10 @@ describe('ASTNodeCP', () => {
 					const type_accessor: AST.ASTNodeIndexType | AST.ASTNodeKey = AST.ASTNodeTypeAccess.fromSource(`MyTuple.${ index }`).accessor;
 					assert_instanceof(type_accessor, AST.ASTNodeIndexType);
 					assert.strictEqual(type_accessor.index, index);
-					assert.deepStrictEqual(new OBJ.Integer(type_accessor.index).toType(), type_accessor.val.eval());
 
 					const expr_accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = AST.ASTNodeAccess.fromSource(`my_tuple.${ index };`).accessor;
 					assert_instanceof(expr_accessor, AST.ASTNodeIndex);
 					assert.strictEqual(expr_accessor.index, index);
-					assert.deepStrictEqual(new OBJ.Integer(expr_accessor.index), expr_accessor.val.fold());
 				});
 			});
 		});
