@@ -3,7 +3,7 @@ SemanticKey[id: RealNumber]
 
 
 
-SemanticIndexType
+SemanticIndexType[index: RealNumber]
 	::= SemanticTypeConstant;
 
 SemanticItemType[optional: Boolean]
@@ -14,7 +14,7 @@ SemanticPropertyType[optional: Boolean]
 
 
 
-SemanticIndex
+SemanticIndex[index: RealNumber]
 	::= SemanticConstant;
 
 SemanticProperty

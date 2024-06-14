@@ -24,6 +24,6 @@ export class ASTNodeKey extends ASTNodeCP {
 
 	public override varCheck(): void {
 		super.varCheck();
-		this.id; // initialize `this.id`
+		this.id; // `this.id` must be initialized during `varCheck` because it modifies the validator’s state
 	}
 }

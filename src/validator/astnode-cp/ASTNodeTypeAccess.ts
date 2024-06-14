@@ -28,7 +28,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
 		private readonly base:     ASTNodeType,
-		private readonly accessor: ASTNodeIndexType | ASTNodeKey,
+		public  readonly accessor: ASTNodeIndexType | ASTNodeKey,
 	) {
 		super(start_node, {}, [base, accessor]);
 	}

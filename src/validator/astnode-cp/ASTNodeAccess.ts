@@ -41,7 +41,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		,
 		private readonly kind:     ValidAccessOperator,
 		public  readonly base:     ASTNodeExpression,
-		private readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
+		public  readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
 		this.optional = this.kind === Operator.OPTDOT;
