@@ -21,12 +21,12 @@ import {typeUnitFloat} from '../../helpers.js';
 
 
 describe('ASTNodeCP', () => {
-	describe('ASTNodeIndex{,Type}', () => {
+	describe('ASTNodeIndex', () => {
 		describe('#index', () => {
 			it('returns the cooked value of the integer token.', () => {
 				[0n, 1n, 2n, 4n, 8n, 16n].forEach((index) => {
-					const type_accessor: AST.ASTNodeIndexType | AST.ASTNodeKey = AST.ASTNodeTypeAccess.fromSource(`MyTuple.${ index }`).accessor;
-					assert_instanceof(type_accessor, AST.ASTNodeIndexType);
+					const type_accessor: AST.ASTNodeIndex | AST.ASTNodeKey = AST.ASTNodeTypeAccess.fromSource(`MyTuple.${ index }`).accessor;
+					assert_instanceof(type_accessor, AST.ASTNodeIndex);
 					assert.strictEqual(type_accessor.index, index);
 
 					const expr_accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = AST.ASTNodeAccess.fromSource(`my_tuple.${ index };`).accessor;

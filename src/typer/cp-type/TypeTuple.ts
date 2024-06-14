@@ -85,7 +85,7 @@ export class TypeTuple extends ValueType {
 	}
 
 	/** @final */
-	public get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
+	public get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.invariants.length;
 		const i: number = index.toNumber();
 		return updateAccessedStaticType(

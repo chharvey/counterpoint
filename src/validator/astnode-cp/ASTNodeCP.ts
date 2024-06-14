@@ -17,11 +17,10 @@ import {
 
 /**
  * Known subclasses:
+ * - ASTNodeIndex
  * - ASTNodeKey
- * - ASTNodeIndexType
  * - ASTNodeItemType
  * - ASTNodePropertyType
- * - ASTNodeIndex
  * - ASTNodeProperty
  * - ASTNodeCase
  * - ASTNodeType

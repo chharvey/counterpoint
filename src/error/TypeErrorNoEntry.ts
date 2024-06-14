@@ -19,7 +19,7 @@ export class TypeErrorNoEntry extends TypeError {
 	 * @param accessee - the type of expression to which property access is performed
 	 * @param accessor - the property access index/key/expression
 	 */
-	public constructor(kind: 'index' | 'property' | 'parameter', accessee: TYPE.Type, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression) {
+	public constructor(kind: 'index' | 'property' | 'parameter', accessee: TYPE.Type, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression) {
 		super(
 			`${ kind[0].toUpperCase() }${ kind.slice(1) } \`${ accessor.source }\` does not exist on type \`${ accessee }\`.`,
 			TypeError.CODES.get(TypeErrorNoEntry),

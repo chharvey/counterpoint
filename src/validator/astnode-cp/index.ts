@@ -1,10 +1,9 @@
 export * from './ASTNodeCP.js';
 
+export * from './ASTNodeIndex.js';
 export * from './ASTNodeKey.js';
-export * from './ASTNodeIndexType.js';
 export * from './ASTNodeItemType.js';
 export * from './ASTNodePropertyType.js';
-export * from './ASTNodeIndex.js';
 export * from './ASTNodeProperty.js';
 export * from './ASTNodeCase.js';
 export * from './ASTNodeType.js';

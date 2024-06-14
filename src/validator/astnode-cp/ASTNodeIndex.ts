@@ -11,6 +11,7 @@ import {ASTNodeCP} from './ASTNodeCP.js';
 
 export class ASTNodeIndex extends ASTNodeCP {
 	public constructor(start_node: (
+		| SyntaxNodeType<'property_access_type'>
 		| SyntaxNodeType<'property_access'>
 		| SyntaxNodeType<'property_assign'>
 	)) {

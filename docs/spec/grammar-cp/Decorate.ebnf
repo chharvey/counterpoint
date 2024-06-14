@@ -122,8 +122,8 @@ Decorate(TypeUnit ::= TypeMapLiteral) -> SemanticTypeMap
 
 
 
-Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndexType
-	:= (SemanticIndexType[index=TokenWorth(INTEGER)]);
+Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
 Decorate(PropertyAccessType ::= "." Word) -> SemanticKey
 	:= Decorate(Word);
 

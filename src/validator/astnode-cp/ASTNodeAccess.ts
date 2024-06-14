@@ -20,8 +20,8 @@ import {
 	Operator,
 	type ValidAccessOperator,
 } from '../Operator.js';
-import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
+import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 

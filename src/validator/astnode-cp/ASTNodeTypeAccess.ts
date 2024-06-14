@@ -12,8 +12,8 @@ import {
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import {Operator} from '../Operator.js';
+import {ASTNodeIndex} from './ASTNodeIndex.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
-import {ASTNodeIndexType} from './ASTNodeIndexType.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
 
@@ -28,7 +28,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
 		private readonly base:     ASTNodeType,
-		public  readonly accessor: ASTNodeIndexType | ASTNodeKey,
+		public  readonly accessor: ASTNodeIndex | ASTNodeKey,
 	) {
 		super(start_node, {}, [base, accessor]);
 	}
@@ -39,7 +39,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		if (base_type instanceof TYPE.Combinable) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
-		if (this.accessor instanceof ASTNodeIndexType) {
+		if (this.accessor instanceof ASTNodeIndex) {
 			assert_instanceof(base_type, TYPE.TypeTuple);
 			return base_type.get(new OBJ.Integer(this.accessor.index).toType().value, Operator.DOT, this.accessor);
 		} else {

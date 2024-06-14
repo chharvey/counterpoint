@@ -95,7 +95,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_record_literal'>):               AST.ASTNodeTypeRecord;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_dict_literal'>):                 AST.ASTNodeTypeDict;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_map_literal'>):                  AST.ASTNodeTypeMap;
-	public decorateTS(syntaxnode: SyntaxNodeType<'property_access_type'>):              AST.ASTNodeIndexType | AST.ASTNodeKey;
+	public decorateTS(syntaxnode: SyntaxNodeType<'property_access_type'>):              AST.ASTNodeIndex | AST.ASTNodeKey;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_compound'>):                     AST.ASTNodeTypeAccess | AST.ASTNodeTypeCall;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_unary_symbol'>):                 AST.ASTNodeTypeOperationUnary | AST.ASTNodeTypeList | AST.ASTNodeTypeSet;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_unary_keyword'>):                AST.ASTNodeTypeOperationUnary;
@@ -215,7 +215,7 @@ class Decorator {
 			)],
 
 			['property_access_type', (node) => (
-				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndexType(node as SyntaxNodeType<'property_access_type'>) :
+				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(node as SyntaxNodeType<'property_access_type'>) :
 				(assert.ok(
 					isSyntaxNodeType(node.children[1], 'word'),
 					`Expected ${ node.children[1] } to be a \`SyntaxNodeType<'word'>\`.`,
