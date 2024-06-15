@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import binaryen from 'binaryen';
 import {
 	OBJ,
@@ -37,9 +38,26 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		return this.builder.module.tuple.make(this.children.flatMap<binaryen.ExpressionRef>((child) => {
 			const child_type:  TYPE.Type              = child.type();
 			const child_build: binaryen.ExpressionRef = child.build();
-			return child_type instanceof TYPE.TypeTuple
-				? binaryen.expandType(binaryen.getExpressionType(child_build)).map((_, i) => this.builder.module.tuple.extract(child_build, i))
-				: child_build;
+			if (child_type instanceof TYPE.TypeTuple) {
+				if (!child_type.invariants.length) {
+					return [];
+				} else if (child_type.invariants.length === 1) {
+					return this.builder.module.tuple.extract(child_build, 0);
+				} else {
+					const bintype:  binaryen.Type            = binaryen.getExpressionType(child_build);
+					const expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
+					const temp_id:  bigint                   = this.builder.varCount;
+					const local                              = this.builder.addLocal(temp_id, bintype)[0].getLocalInfo(temp_id)!;
+					assert.ok(child_type.invariants.length > 1, '`TypeTuple#invariants` should have a non-negative length.');
+					assert.ok(expanded             .length > 1, 'Binaryen type array should have > 1 length.');
+					return [
+						                                   this.builder.module.tuple.extract(this.builder.module.local.tee(local.index, child_build, local.type), 0),
+						...expanded.slice(1).map((_, i) => this.builder.module.tuple.extract(this.builder.module.local.get(local.index,              local.type), i + 1)),
+					];
+				}
+			} else {
+				return child_build;
+			}
 		}));
 	}
 
