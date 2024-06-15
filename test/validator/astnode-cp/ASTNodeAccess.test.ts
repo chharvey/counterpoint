@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import {
 	AST,
 	OBJ,
@@ -9,11 +10,13 @@ import {
 	VoidError01,
 } from '../../../src/index.js';
 import {assert_instanceof} from '../../../src/lib/index.js';
+import {assertEqualBins} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	typeUnitInt,
 	typeUnitFloat,
 	typeUnitStr,
+	buildConst,
 } from '../../helpers.js';
 
 
@@ -946,6 +949,86 @@ describe('ASTNodeAccess', () => {
 					assert.strictEqual(v, OBJ.Null.NULL);
 				});
 			});
+		});
+	});
+
+	specify('#build', () => {
+		const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
+		const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
+		const bintype6: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128]);
+		const BASE_SRC: string        = '[[1.1, [2.2, 3.3]], [4.4, [5.5, 6.6]]]';
+		function make_tuple(mod: binaryen.Module): binaryen.ExpressionRef {
+			const inner01: binaryen.ExpressionRef = mod.tuple.make([
+				buildConst(mod, 2.2),
+				buildConst(mod, 3.3),
+			]);
+			const inner11: binaryen.ExpressionRef = mod.tuple.make([
+				buildConst(mod, 5.5),
+				buildConst(mod, 6.6),
+			]);
+			const inner0: binaryen.ExpressionRef = mod.tuple.make([
+				buildConst(mod, 1.1),
+				mod.tuple.extract(mod.local.tee(0, inner01, bintype2), 0),
+				mod.tuple.extract(mod.local.get(0, bintype2), 1),
+			]);
+			const inner1: binaryen.ExpressionRef = mod.tuple.make([
+				buildConst(mod, 4.4),
+				mod.tuple.extract(mod.local.tee(2, inner11, bintype2), 0),
+				mod.tuple.extract(mod.local.get(2, bintype2), 1),
+			]);
+			return mod.tuple.make([
+				mod.tuple.extract(mod.local.tee(1, inner0, bintype3), 0),
+				mod.tuple.extract(mod.local.get(1, bintype3), 1),
+				mod.tuple.extract(mod.local.get(1, bintype3), 2),
+				mod.tuple.extract(mod.local.tee(3, inner1, bintype3), 0),
+				mod.tuple.extract(mod.local.get(3, bintype3), 1),
+				mod.tuple.extract(mod.local.get(3, bintype3), 2),
+			]);
+		}
+		function make_tuple_0(mod: binaryen.Module): binaryen.ExpressionRef {
+			return mod.tuple.make([
+				mod.tuple.extract(mod.local.tee(4, make_tuple(mod), bintype6), 0),
+				mod.tuple.extract(mod.local.get(4, bintype6), 1),
+				mod.tuple.extract(mod.local.get(4, bintype6), 2),
+			]);
+		}
+		function make_tuple_1(mod: binaryen.Module): binaryen.ExpressionRef {
+			return mod.tuple.make([
+				mod.tuple.extract(mod.local.tee(4, make_tuple(mod), bintype6), 3),
+				mod.tuple.extract(mod.local.get(4, bintype6), 4),
+				mod.tuple.extract(mod.local.get(4, bintype6), 5),
+			]);
+		}
+		function make_tuple_0_1(mod: binaryen.Module): binaryen.ExpressionRef {
+			return mod.tuple.make([
+				mod.tuple.extract(mod.local.tee(5, make_tuple_0(mod), bintype3), 1),
+				mod.tuple.extract(mod.local.get(5, bintype6), 2),
+			]);
+		}
+		function make_tuple_1_1(mod: binaryen.Module): binaryen.ExpressionRef {
+			return mod.tuple.make([
+				mod.tuple.extract(mod.local.tee(5, make_tuple_1(mod), bintype3), 1),
+				mod.tuple.extract(mod.local.get(5, bintype6), 2),
+			]);
+		}
+
+		new Map<string, (mod: binaryen.Module) => binaryen.ExpressionRef>([
+			['.0',     (mod) => make_tuple_0(mod)],
+			['.1',     (mod) => make_tuple_1(mod)],
+			['.0.0',   (mod) => mod.tuple.extract(make_tuple_0(mod), 0)],
+			['.0.1',   (mod) => make_tuple_0_1(mod)],
+			['.1.0',   (mod) => mod.tuple.extract(make_tuple_1(mod), 0)],
+			['.1.1',   (mod) => make_tuple_1_1(mod)],
+			['.0.1.0', (mod) => mod.tuple.extract(make_tuple_0_1(mod), 0)],
+			['.0.1.1', (mod) => mod.tuple.extract(make_tuple_0_1(mod), 1)],
+			['.1.1.0', (mod) => mod.tuple.extract(make_tuple_1_1(mod), 0)],
+			['.1.1.1', (mod) => mod.tuple.extract(make_tuple_1_1(mod), 1)],
+		]).forEach((expected_fn, access_src) => {
+			const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`${ BASE_SRC }${ access_src };`, CONFIG_FOLDING_OFF);
+			return assertEqualBins(
+				access.build(),
+				expected_fn.call(null, access.builder.module),
+			);
 		});
 	});
 });

@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
@@ -50,7 +50,39 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw '`ASTNodeAccess#build_do` not yet supported.';
+		let base_type: TYPE.Type = this.base.type();
+		if (base_type instanceof TYPE.Combinable) {
+			base_type = base_type.combineTuplesOrRecords();
+		}
+		const base_build: binaryen.ExpressionRef = this.base.build();
+		if (this.accessor instanceof ASTNodeIndex) {
+			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeTuple);`
+			if (base_type instanceof TYPE.TypeTuple) {
+				const flattened_indices: number | number[] = base_type.getFlattenedIndices((this.accessor.val.fold() as OBJ.Integer).toNumber()); // TODO: use `Number(this.accessor.index)`
+				if (typeof flattened_indices === 'number') {
+					return this.builder.module.tuple.extract(base_build, flattened_indices);
+				} else {
+					const bintype:  binaryen.Type = binaryen.getExpressionType(base_build);
+					const temp_id:  bigint        = this.builder.varCount;
+					const local                   = this.builder.addLocal(temp_id, bintype)[0].getLocalInfo(temp_id)!;
+					return this.builder.module.tuple.make([
+						                                         this.builder.module.tuple.extract(this.builder.module.local.tee(local.index, base_build, local.type), flattened_indices[0]),
+						...flattened_indices.slice(1).map((n) => this.builder.module.tuple.extract(this.builder.module.local.get(local.index,             local.type), n)),
+					]);
+				}
+			}
+			throw '`ASTNodeAccess#build` of a list is not yet supported.';
+		} else if (this.accessor instanceof ASTNodeKey) {
+			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeRecord);`
+			if (base_type instanceof TYPE.TypeRecord) {
+				throw '`ASTNodeAccess#build` of a record is not yet supported.';
+			}
+			throw '`ASTNodeAccess#build` of a dict is not yet supported.';
+		} else {
+			assert_instanceof(this.accessor, ASTNodeExpression);
+			this.accessor.build();
+			throw '`ASTNodeAccess#build` of a list/dict/set/map is not yet supported.';
+		}
 	}
 
 	@memoizeMethod
