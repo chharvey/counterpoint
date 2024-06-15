@@ -1139,4 +1139,44 @@ describe('Type', () => {
 		});
 	});
 	/* eslint-enable no-useless-escape */
+
+
+	describe('TypeTuple', () => {
+		specify('#getFlattenedIndices', () => {
+			const tuple1 = TYPE.TypeTuple.fromTypes([
+				typeUnitStr('a'),
+				TYPE.TypeTuple.fromTypes([typeUnitStr('b')]),
+				TYPE.TypeTuple.fromTypes([
+					typeUnitStr('c'),
+					TYPE.TypeTuple.fromTypes([typeUnitStr('d')]),
+				]),
+			]);
+			assert.deepStrictEqual(
+				[0, 1, 2].map((i) => tuple1.getFlattenedIndices(i)),
+				[0, [1], [2, 3]],
+				'[A, [B], [C, [D]]] => [0, [1], [2, 3]]',
+			);
+			const tuple2 = TYPE.TypeTuple.fromTypes([
+				typeUnitStr('a'),
+				TYPE.TypeTuple.fromTypes([
+					typeUnitStr('b'),
+					typeUnitStr('bb'),
+				]),
+				TYPE.TypeTuple.fromTypes([
+					typeUnitStr('c'),
+					TYPE.TypeTuple.fromTypes([
+						typeUnitStr('d'),
+						typeUnitStr('dd'),
+					]),
+					typeUnitStr('cc'),
+				]),
+				typeUnitStr('aa'),
+			]);
+			assert.deepStrictEqual(
+				[0, 1, 2, 3].map((i) => tuple2.getFlattenedIndices(i)),
+				[0, [1, 2], [3, 4, 5, 6], 7],
+				'[A, [B, Bb], [C, [D, Dd], Cc], Aa] => [0, [1, 2], [3, 4, 5, 6], 7]',
+			);
+		});
+	});
 });

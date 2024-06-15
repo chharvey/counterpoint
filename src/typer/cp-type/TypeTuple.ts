@@ -15,6 +15,11 @@ import {ValueType} from './ValueType.js';
 
 
 
+type IndexTree = readonly (number | IndexTree)[];
+type MutableIndexTree = Array<number | MutableIndexTree>;
+
+
+
 export class TypeTuple extends ValueType {
 	/**
 	 * Construct a new TypeTuple from type items, assuming each item is required.
@@ -34,12 +39,18 @@ export class TypeTuple extends ValueType {
 	}
 
 
+	readonly #indexTree: IndexTree;
+
 	/**
 	 * Construct a new TypeTuple object.
 	 * @param invariants this type’s item types
 	 */
 	public constructor(public readonly invariants: readonly TypeEntry[] = []) {
 		super(false, new Set([new OBJ.Tuple()]));
+
+		const tree: MutableIndexTree = [];
+		this.#populateIndexTree(tree);
+		this.#indexTree = tree;
 	}
 
 	public override get hasMutable(): boolean {
@@ -71,6 +82,34 @@ export class TypeTuple extends ValueType {
 				return thistype?.type.isSubtypeOf(thattype.type) ?? true; // Covariance for tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 			})
 		);
+	}
+
+	#populateIndexTree(index_tree: MutableIndexTree, start: number = 0): number {
+		this.invariants.forEach((child) => {
+			if (child.type instanceof TypeTuple) {
+				const tree: typeof index_tree = [];
+				index_tree.push(tree);
+				start = child.type.#populateIndexTree(tree, start);
+			} else {
+				index_tree.push(start);
+				start += 1;
+			}
+		});
+		return start;
+	}
+
+	/**
+	 * Return an index or list of indices corresponding to the tree structure of this type.
+	 * @example
+	 * [A, [B], [C, [D]]]                 => [0, 1, [2, 3]]
+	 * [A, [B, Bb], [C, [D, Dd], Cc], Aa] => [0, [1, 2], [3, 4, 5, 6], 7]
+	 */
+	public getFlattenedIndices(index: number): number | number[] {
+		const item: number | IndexTree = this.#indexTree[index];
+		return typeof item === 'number'
+			? item
+			// @ts-expect-error --- guaranteed to be finitely recursive
+			: item.flat(Infinity);
 	}
 
 	/** @final */
