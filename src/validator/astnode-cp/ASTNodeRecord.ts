@@ -48,11 +48,10 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
-		const props: ReadonlyMap<bigint, TYPE.Type> = new Map<bigint, TYPE.Type>(this.children.map((c) => {
-			const valuetype: TYPE.Type = c.val.type();
-			return [c.key.id, valuetype];
-		}));
-		return TYPE.TypeRecord.fromTypes(props);
+		return TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>(this.children.map((c) => [
+			c.key.id,
+			c.val.type(),
+		])));
 	}
 
 	@memoizeMethod

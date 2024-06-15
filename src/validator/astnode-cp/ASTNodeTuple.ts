@@ -40,11 +40,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
-		const items: readonly TYPE.Type[] = this.children.map((c) => {
-			const itemtype: TYPE.Type = c.type();
-			return itemtype;
-		});
-		return TYPE.TypeTuple.fromTypes(items);
+		return TYPE.TypeTuple.fromTypes(this.children.map((c) => c.type()));
 	}
 
 	@memoizeMethod

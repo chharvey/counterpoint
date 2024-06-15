@@ -70,7 +70,7 @@ export class TypeRecord extends ValueType {
 						return false;
 					}
 				}
-				return !thistype || thistype.type.isSubtypeOf(thattype.type); // Covariance for records: `A <: B --> Record.<A> <: Record.<B>`.
+				return thistype?.type.isSubtypeOf(thattype.type) ?? true; // Covariance for records: `A <: B --> Record.<A> <: Record.<B>`.
 			})
 		);
 	}

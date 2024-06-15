@@ -20,7 +20,7 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 			| SyntaxNodeType<'set_literal'>
 			| SyntaxNodeType<'map_literal'>
 		,
-		public override readonly children: readonly ASTNodeCP[],
+		children: readonly ASTNodeCP[],
 		/** Does this node represent a reference object (versus a value object)? */
 	) {
 		super(start_node, {}, children);
