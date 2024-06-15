@@ -24,14 +24,15 @@ import binaryen from 'binaryen';
  * `\x0001`            | The vector represents the `null`  primitive constant.
  * `\x0002`            | The vector represents the `false` primitive constant.
  * `\x0003`            | The vector represents the `true`  primitive constant.
- * `\x0012` (reserved) | The vector holds an `i16` value
- * `\x0014`            | The vector holds an `i32` value
- * `\x0018` (reserved) | The vector holds an `i64` value
- * `\x0022` (reserved) | The vector holds an `f16` value
- * `\x0024` (reserved) | The vector holds an `f32` value
- * `\x0028`            | The vector holds an `f64` value
- * `\x0032`            | The vector holds an address with 1 component
- * `\x0034`            | The vector holds an address with 2 components
+ * `\x0012` (reserved) | The vector holds an `i16` value.
+ * `\x0014`            | The vector holds an `i32` value.
+ * `\x0018` (reserved) | The vector holds an `i64` value.
+ * `\x0022` (reserved) | The vector holds an `f16` value.
+ * `\x0024` (reserved) | The vector holds an `f32` value.
+ * `\x0028`            | The vector holds an `f64` value.
+ * `\x0032`            | The vector holds an address with 1 component.
+ * `\x0034`            | The vector holds an address with 2 components.
+ * `\x0062`            | The vector represents an empty Tuple object.
  *
  * # Value Types
  * ## Special Constants
@@ -63,6 +64,10 @@ import binaryen from 'binaryen';
  * The two 16-bit components are indices of memory in little-endian format:
  * the first is the index on some Page, and the second is that Page’s index (defaulting to 0).
  *
+ * ## The Empty Tuple Value
+ * The Header value `\x0062` represents an empty Counterpoint Tuple object.
+ * (Due to limitations of the runtime system, empty tuples cannot be compiled in the same manner as nonempty tuples.)
+ *
  * The following diagram may prove useful:
  * ```
  *                      Lane 0 Lane 1 Lane 2 Lane 3 | Lane 4 Lane 5 Lane 6 Lane 7
@@ -79,6 +84,7 @@ import binaryen from 'binaryen';
  * f64:                 \x0000 \x0000 \x0000 \x0028 | \x???? \x???? \x???? \x????
  * 1-component address: \x0000 \x0000 \x0000 \x0032 | \x???? \x0000 \x0000 \x0000
  * 2-component address: \x0000 \x0000 \x0000 \x0034 | \x???? \x???? \x0000 \x0000
+ * empty tuple:         \x0000 \x0000 \x0000 \x0062 | \x0000 \x0000 \x0000 \x0000
  * ```
  */
 export class BinVect {
@@ -113,6 +119,7 @@ export class BinVect {
 	 *             - the native value `null`, `false`, or `true` (corresponding to its representation)
 	 *             - a Binaryen `i32`, `f64`, or `v128` value to use in a `v128`
 	 *             - a one- or two-length address
+	 *             - the native string value `'tuple'`, indicating empty Counterpoint Tuple object
 	 */
 	public constructor(
 		private readonly mod: binaryen.Module,
@@ -121,6 +128,7 @@ export class BinVect {
 			| binaryen.ExpressionRef
 			| readonly [bigint]         | readonly [binaryen.ExpressionRef]
 			| readonly [bigint, bigint] | readonly [binaryen.ExpressionRef, binaryen.ExpressionRef]
+			| 'tuple'
 		) = null,
 	) {
 		this.#internal = this.mod.v128.const(new Uint8Array(16)); // HACK: TypeScript bug where native-private fields are not emitted in constructor when `useDefineForClassFields` compiler option is off
@@ -134,6 +142,9 @@ export class BinVect {
 		} else if (arg === true) {
 			// the arg represents the Counterpoint `true` value
 			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0003));
+		} else if (arg === 'tuple') {
+			// the arg represents the an empty Counterpoint Tuple object
+			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0062));
 		} else if (typeof arg === 'number') {
 			// the arg represents a dynamic Binaryen expression
 			/*
@@ -233,6 +244,11 @@ export class BinVect {
 	/** Whether the value is intended to be interpreted as an address. */
 	public get isAddr(): binaryen.ExpressionRef {
 		return this.#checkTypeRange(0x0030n, 0x003fn);
+	}
+
+	/** Whether the value is intended to be interpreted as a Tuple object. */
+	public get isTuple(): binaryen.ExpressionRef {
+		return this.#checkTypeRange(0x0060n, 0x006fn);
 	}
 
 	/** The value as interpreted as an int. */

@@ -6,6 +6,7 @@ import {
 	AST,
 	OBJ,
 	TYPE,
+	BinVect,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
@@ -541,6 +542,9 @@ describe('ASTNodeExpression', () => {
 
 		describe('#build', () => {
 			describe('ASTNodeTuple', () => {
+				const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
+				const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
+
 				it('returns (tuple.make).', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF);
 					const mod:   binaryen.Module  = tuple.builder.module;
@@ -549,12 +553,12 @@ describe('ASTNodeExpression', () => {
 						mod.tuple.make([buildConst(mod, 1n), buildConst(mod, 2.0)]),
 					);
 				});
-				it('empty tuple returns empty (tuple.make).', () => {
+				it('empty tuple returns unique BinVect representation.', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[];', CONFIG_FOLDING_OFF);
 					const mod:   binaryen.Module  = tuple.builder.module;
 					return assertEqualBins(
 						tuple.build(),
-						mod.tuple.make([]),
+						new BinVect(mod, 'tuple').vect,
 					);
 				});
 				it('tuple of length 1 returns a (tuple.make) with 1 item.', () => {
@@ -565,12 +569,12 @@ describe('ASTNodeExpression', () => {
 						mod.tuple.make([buildConst(mod, 3.4)]),
 					);
 				});
-				it('boxed empty tuple returns empty (tuple.make).', () => {
+				it('boxed empty tuple returns (tuple.make) containing a BinVect.', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[[]];', CONFIG_FOLDING_OFF);
 					const mod:   binaryen.Module  = tuple.builder.module;
 					return assertEqualBins(
 						tuple.build(),
-						mod.tuple.make([]),
+						mod.tuple.make([new BinVect(mod, 'tuple').vect]),
 					);
 				});
 				it('boxed tuple with 1 item.', () => {
@@ -589,13 +593,12 @@ describe('ASTNodeExpression', () => {
 						buildConst(mod, 2.0),
 						buildConst(mod, true),
 					]);
-					const bintype: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
 					return assertEqualBins(
 						tuple.build(),
 						mod.tuple.make([
-							mod.tuple.extract(mod.local.tee(0, inner, bintype), 0),
-							mod.tuple.extract(mod.local.get(0, bintype), 1),
-							mod.tuple.extract(mod.local.get(0, bintype), 2),
+							mod.tuple.extract(mod.local.tee(0, inner, bintype3), 0),
+							mod.tuple.extract(mod.local.get(0, bintype3), 1),
+							mod.tuple.extract(mod.local.get(0, bintype3), 2),
 						]),
 					);
 				});
@@ -606,7 +609,6 @@ describe('ASTNodeExpression', () => {
 						buildConst(mod, 3n),
 						mod.tuple.extract(mod.tuple.make([buildConst(mod, 4.0)]), 0),
 					]);
-					const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
 					return assertEqualBins(
 						tuple.build(),
 						mod.tuple.make([
@@ -618,7 +620,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('multiple entries.', () => {
-					const tuple:   AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[[1, [2.0, 3]], [4.0, [5, 6.0]]];', CONFIG_FOLDING_OFF);
+					const tuple:   AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[[1, [2.0, 3]], [4.0, [5, 6.0]], [7, []]];', CONFIG_FOLDING_OFF);
 					const mod:     binaryen.Module        = tuple.builder.module;
 					const inner01: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(mod, 2.0),
@@ -628,27 +630,31 @@ describe('ASTNodeExpression', () => {
 						buildConst(mod, 5n),
 						buildConst(mod, 6.0),
 					]);
-					const bintypeX1: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
 					const inner0: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(mod, 1n),
-						mod.tuple.extract(mod.local.tee(0, inner01, bintypeX1), 0),
-						mod.tuple.extract(mod.local.get(0, bintypeX1), 1),
+						mod.tuple.extract(mod.local.tee(0, inner01, bintype2), 0),
+						mod.tuple.extract(mod.local.get(0, bintype2), 1),
 					]);
 					const inner1: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(mod, 4.0),
-						mod.tuple.extract(mod.local.tee(2, inner11, bintypeX1), 0),
-						mod.tuple.extract(mod.local.get(2, bintypeX1), 1),
+						mod.tuple.extract(mod.local.tee(2, inner11, bintype2), 0),
+						mod.tuple.extract(mod.local.get(2, bintype2), 1),
 					]);
-					const bintypeX: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
+					const inner2: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(mod, 7n),
+						new BinVect(mod, 'tuple').vect,
+					]);
 					return assertEqualBins(
 						tuple.build(),
 						mod.tuple.make([
-							mod.tuple.extract(mod.local.tee(1, inner0, bintypeX), 0),
-							mod.tuple.extract(mod.local.get(1, bintypeX), 1),
-							mod.tuple.extract(mod.local.get(1, bintypeX), 2),
-							mod.tuple.extract(mod.local.tee(3, inner1, bintypeX), 0),
-							mod.tuple.extract(mod.local.get(3, bintypeX), 1),
-							mod.tuple.extract(mod.local.get(3, bintypeX), 2),
+							mod.tuple.extract(mod.local.tee(1, inner0, bintype3), 0),
+							mod.tuple.extract(mod.local.get(1, bintype3), 1),
+							mod.tuple.extract(mod.local.get(1, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(3, inner1, bintype3), 0),
+							mod.tuple.extract(mod.local.get(3, bintype3), 1),
+							mod.tuple.extract(mod.local.get(3, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(4, inner2, bintype2), 0),
+							mod.tuple.extract(mod.local.get(4, bintype2), 1),
 						]),
 					);
 				});

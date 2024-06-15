@@ -3,6 +3,7 @@ import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
+	BinVect,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -35,12 +36,15 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	public override build(): binaryen.ExpressionRef {
+		if (!this.children.length) {
+			return new BinVect(this.builder.module, 'tuple').vect;
+		}
 		return this.builder.module.tuple.make(this.children.flatMap<binaryen.ExpressionRef>((child) => {
 			const child_type:  TYPE.Type              = child.type();
 			const child_build: binaryen.ExpressionRef = child.build();
 			if (child_type instanceof TYPE.TypeTuple) {
 				if (!child_type.invariants.length) {
-					return [];
+					return child_build;
 				} else if (child_type.invariants.length === 1) {
 					return this.builder.module.tuple.extract(child_build, 0);
 				} else {
