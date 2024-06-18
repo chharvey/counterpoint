@@ -1,6 +1,7 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
+import type {Builder} from '../../index.js';
 import {
 	type CodeUnit,
 	strictEqual,
@@ -47,8 +48,7 @@ class CPString extends Primitive {
 		return this;
 	}
 
-	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		mod;
+	public override build(_: Builder): binaryen.ExpressionRef {
 		throw '`SolidString#build` not yet supported.';
 	}
 

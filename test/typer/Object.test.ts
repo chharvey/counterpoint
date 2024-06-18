@@ -1,7 +1,8 @@
 import * as assert from 'assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {
 	OBJ,
+	Builder,
 	BinVect,
 } from '../../src/index.js';
 import {assertEqualBins} from '../assert-helpers.js';
@@ -103,19 +104,19 @@ describe('Object', () => {
 	describe('#build', () => {
 		describe('Null', () => {
 			it('returns a v128 with `null` as an argument.', () => {
-				const mod = new binaryen.Module();
+				const builder = new Builder();
 				return assertEqualBins(
-					OBJ.Null.NULL.build(mod),
-					new BinVect(mod, null).vect,
+					OBJ.Null.NULL.build(builder),
+					new BinVect(builder.module, null).vect,
 				);
 			});
 		});
 
 		specify('Boolean', () => {
-			const mod = new binaryen.Module();
+			const builder = new Builder();
 			return assertEqualBins(
-				[OBJ.Boolean.FALSE.build(mod), OBJ.Boolean.TRUE.build(mod)],
-				[new BinVect(mod, false).vect, new BinVect(mod, true).vect],
+				[OBJ.Boolean.FALSE.build(builder), OBJ.Boolean.TRUE.build(builder)],
+				[new BinVect(builder.module, false).vect, new BinVect(builder.module, true).vect],
 			);
 		});
 
@@ -136,10 +137,10 @@ describe('Object', () => {
 					(42n ** 2n * 420n) % (2n ** 16n),
 					(-5n) ** (2n * 3n),
 				];
-				const mod = new binaryen.Module();
+				const builder = new Builder();
 				return assertEqualBins(
-					data.map((x) => new OBJ.Integer(x).build(mod)),
-					data.map((x) => new BinVect(mod, mod.i32.const(Number(x))).vect),
+					data.map((x) => new OBJ.Integer(x).build(builder)),
+					data.map((x) => new BinVect(builder.module, builder.module.i32.const(Number(x))).vect),
 				);
 			});
 		});
@@ -154,16 +155,17 @@ describe('Object', () => {
 					3.0 - 2.7,
 				];
 				/* eslint-enable array-element-newline */
-				const mod = new binaryen.Module();
+				const builder = new Builder();
 				return assertEqualBins(
-					data.map((x) => new OBJ.Float(x).build(mod)),
-					data.map((x) => new BinVect(mod, mod.f64.const(x)).vect),
+					data.map((x) => new OBJ.Float(x).build(builder)),
+					data.map((x) => new BinVect(builder.module, builder.module.f64.const(x)).vect),
 				);
 			});
 			it('builds `0.0` and `-0.0` differently.', () => {
-				const mod = new binaryen.Module();
+				const builder = new Builder();
+				const mod: binaryen.Module = builder.module;
 				return assertEqualBins(
-					[0.0, -0.0].map((x) => new OBJ.Float(x).build(mod)),
+					[0.0, -0.0].map((x) => new OBJ.Float(x).build(builder)),
 					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => new BinVect(mod, c).vect),
 				);
 			});
@@ -171,19 +173,20 @@ describe('Object', () => {
 
 		describe.skip('String', () => {
 			specify('#build', () => {
-				const mod = new binaryen.Module();
+				const builder = new Builder();
 				return assertEqualBins(
-					new OBJ.String('hello world').build(mod),
-					buildConst(mod, 0n),
+					new OBJ.String('hello world').build(builder),
+					buildConst(builder.module, 0n),
 				);
 			});
 		});
 
 		describe('SolidTuple', () => {
 			it('returns `(tuple.make)`.', () => {
-				const mod = new binaryen.Module();
+				const builder = new Builder();
+				const mod: binaryen.Module = builder.module;
 				return assertEqualBins(
-					new OBJ.Tuple([OBJ.Integer.UNIT, new OBJ.Float(2.0)]).build(mod),
+					new OBJ.Tuple([OBJ.Integer.UNIT, new OBJ.Float(2.0)]).build(builder),
 					mod.tuple.make([buildConst(mod, 1n), buildConst(mod, 2.0)]),
 				);
 			});

@@ -1,7 +1,10 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {VoidError01} from '../../index.js';
+import {
+	type Builder,
+	VoidError01,
+} from '../../index.js';
 import {
 	strictEqual,
 	instanceOf,
@@ -43,8 +46,8 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 		return xjs.Array.is<CPObject>(this.items, (value as CollectionIndexed).items, language_values_equal);
 	}
 
-	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		return mod.tuple.make(this.items.map((item) => item.build(mod)));
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return builder.module.tuple.make(this.items.map((item) => item.build(builder)));
 	}
 
 	/** @final */

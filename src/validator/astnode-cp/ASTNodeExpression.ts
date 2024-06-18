@@ -77,7 +77,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	): typeof method {
 		return function () {
 			const value: OBJ.Object | null      = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
-			const built: binaryen.ExpressionRef = value?.build(this.builder.module) ?? method.call(this);
+			const built: binaryen.ExpressionRef = value?.build(this.builder) ?? method.call(this);
 			return built;
 		};
 	}

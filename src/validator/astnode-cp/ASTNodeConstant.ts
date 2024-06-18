@@ -53,9 +53,9 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	// explicitly leaving off `@ASTNodeExpression.buildDeco` for performance
 	public override build(): binaryen.ExpressionRef {
-		return this.fold().build(this.builder.module);
+		return this.fold().build(this.builder);
 	}
 
 	@memoizeMethod
