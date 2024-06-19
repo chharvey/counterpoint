@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	AST,
 	OBJ,
@@ -1013,7 +1014,7 @@ describe('ASTNodeAccess', () => {
 			]);
 		}
 
-		new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+		xjs.Array.forEachAggregated([...new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 			['.0',     (builder) => make_tuple_0(builder)],
 			['.1',     (builder) => make_tuple_1(builder)],
 			['.0.0',   (builder) => builder.module.tuple.extract(make_tuple_0(builder), 0)],
@@ -1024,7 +1025,7 @@ describe('ASTNodeAccess', () => {
 			['.0.1.1', (builder) => builder.module.tuple.extract(make_tuple_0_1(builder), 1)],
 			['.1.1.0', (builder) => builder.module.tuple.extract(make_tuple_1_1(builder), 0)],
 			['.1.1.1', (builder) => builder.module.tuple.extract(make_tuple_1_1(builder), 1)],
-		]).forEach((expected_fn, access_src) => {
+		])], ([access_src, expected_fn]) => { // TODO: upgrade 'extrajs' to v0.26 and use `xjs.Map.forEachAggregated`
 			const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`${ BASE_SRC }${ access_src };`, CONFIG_FOLDING_OFF);
 			return assertEqualBins(
 				access.build(),

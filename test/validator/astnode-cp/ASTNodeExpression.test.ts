@@ -1,12 +1,13 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
 	OBJ,
 	TYPE,
-	Builder,
+	type Builder,
 	BinVect,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
@@ -106,26 +107,27 @@ describe('ASTNodeExpression', () => {
 
 
 		specify('#build', () => {
-			const bldr  = new Builder();
-			const tests = new Map<string, binaryen.ExpressionRef>([
-				['null;',    buildConst(bldr)],
-				['false;',   buildConst(bldr, false)],
-				['true;',    buildConst(bldr, true)],
-				['0;',       buildConst(bldr, 0n)],
-				['+0;',      buildConst(bldr, 0n)],
-				['-0;',      buildConst(bldr, 0n)],
-				['42;',      buildConst(bldr, 42n)],
-				['+42;',     buildConst(bldr, 42n)],
-				['-42;',     buildConst(bldr, -42n)],
-				['0.0;',     buildConst(bldr, 0)],
-				['+0.0;',    buildConst(bldr, 0)],
-				['-0.0;',    buildConst(bldr, -0)],
-				['-4.2e-2;', buildConst(bldr, -0.042)],
-			]);
-			return assertEqualBins(
-				[...tests.keys()].map((src) => AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF).build()),
-				[...tests.values()],
-			);
+			xjs.Array.forEachAggregated([...new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+				['null;',    (builder) => buildConst(builder)],
+				['false;',   (builder) => buildConst(builder, false)],
+				['true;',    (builder) => buildConst(builder, true)],
+				['0;',       (builder) => buildConst(builder, 0n)],
+				['+0;',      (builder) => buildConst(builder, 0n)],
+				['-0;',      (builder) => buildConst(builder, 0n)],
+				['42;',      (builder) => buildConst(builder, 42n)],
+				['+42;',     (builder) => buildConst(builder, 42n)],
+				['-42;',     (builder) => buildConst(builder, -42n)],
+				['0.0;',     (builder) => buildConst(builder, 0)],
+				['+0.0;',    (builder) => buildConst(builder, 0)],
+				['-0.0;',    (builder) => buildConst(builder, -0)],
+				['-4.2e-2;', (builder) => buildConst(builder, -0.042)],
+			])], ([src, expected_fn]) => { // TODO: upgrade 'extrajs' to v0.26 and use `xjs.Map.forEachAggregated`
+				const constant: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF);
+				return assertEqualBins(
+					constant.build(),
+					expected_fn.call(null, constant.builder),
+				);
+			});
 		});
 	});
 

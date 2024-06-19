@@ -1,12 +1,13 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
 	OBJ,
 	TYPE,
-	Builder,
+	type Builder,
 	BinVect,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
@@ -41,11 +42,14 @@ function foldOperations(tests: Map<string, OBJ.Object>, config: CPConfig = CONFI
 		[...tests.values()],
 	);
 }
-function buildOperations(tests: ReadonlyMap<string, binaryen.ExpressionRef>, config: CPConfig = CONFIG_FOLDING_OFF): void {
-	return assertEqualBins(
-		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).build()),
-		[...tests.values()],
-	);
+function buildOperations(tests: ReadonlyMap<string, (builder: Builder) => binaryen.ExpressionRef>, config: CPConfig = CONFIG_FOLDING_OFF): void {
+	return xjs.Array.forEachAggregated([...tests], ([src, expected_fn]) => { // TODO: upgrade 'extrajs' to v0.26 and use `xjs.Map.forEachAggregated`
+		const operation: AST.ASTNodeOperation = AST.ASTNodeOperation.fromSource(src, config);
+		return assertEqualBins(
+			operation.build(),
+			expected_fn.call(null, operation.builder),
+		);
+	});
 }
 function typeOfOperationFromSource(src: string): TYPE.Type {
 	return AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_COERCION_OFF).type();
@@ -95,18 +99,16 @@ describe('ASTNodeOperation', () => {
 
 	describe('#build', () => {
 		it('compound expression.', () => {
-			const bldr = new Builder();
-			const mod = new binaryen.Module();
-			return buildOperations(new Map([
-				['42 ^ 2 * 420;', CALL.vmul(
-					mod,
-					CALL.vexp(mod, buildConst(bldr, 42n), buildConst(bldr, 2n)),
-					buildConst(bldr, 420n),
+			buildOperations(new Map([
+				['42 ^ 2 * 420;', (builder) => CALL.vmul(
+					builder.module,
+					CALL.vexp(builder.module, buildConst(builder, 42n), buildConst(builder, 2n)),
+					buildConst(builder, 420n),
 				)],
-				['2 * 3.0 + 5;', CALL.vadd(
-					mod,
-					CALL.vmul(mod, buildConst(bldr, 2n), buildConst(bldr, 3.0)),
-					buildConst(bldr, 5n),
+				['2 * 3.0 + 5;', (builder) => CALL.vadd(
+					builder.module,
+					CALL.vmul(builder.module, buildConst(builder, 2n), buildConst(builder, 3.0)),
+					buildConst(builder, 5n),
 				)],
 			]));
 		});
@@ -283,21 +285,19 @@ describe('ASTNodeOperation', () => {
 
 		describe('#build', () => {
 			it('returns the correct operation.', () => {
-				const bldr = new Builder();
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['!null;',  CALL.vnot(mod, buildConst(bldr))],
-					['!false;', CALL.vnot(mod, buildConst(bldr, false))],
-					['!true;',  CALL.vnot(mod, buildConst(bldr, true))],
-					['!42;',    CALL.vnot(mod, buildConst(bldr, 42n))],
-					['!4.2;',   CALL.vnot(mod, buildConst(bldr, 4.2))],
-					['?null;',  CALL.vemp(mod, buildConst(bldr))],
-					['?false;', CALL.vemp(mod, buildConst(bldr, false))],
-					['?true;',  CALL.vemp(mod, buildConst(bldr, true))],
-					['?42;',    CALL.vemp(mod, buildConst(bldr, 42n))],
-					['?4.2;',   CALL.vemp(mod, buildConst(bldr, 4.2))],
-					['-(4);',   CALL.vneg(mod, buildConst(bldr, 4n))],
-					['-(4.2);', CALL.vneg(mod, buildConst(bldr, 4.2))],
+				buildOperations(new Map([
+					['!null;',  (builder) => CALL.vnot(builder.module, buildConst(builder))],
+					['!false;', (builder) => CALL.vnot(builder.module, buildConst(builder, false))],
+					['!true;',  (builder) => CALL.vnot(builder.module, buildConst(builder, true))],
+					['!42;',    (builder) => CALL.vnot(builder.module, buildConst(builder, 42n))],
+					['!4.2;',   (builder) => CALL.vnot(builder.module, buildConst(builder, 4.2))],
+					['?null;',  (builder) => CALL.vemp(builder.module, buildConst(builder))],
+					['?false;', (builder) => CALL.vemp(builder.module, buildConst(builder, false))],
+					['?true;',  (builder) => CALL.vemp(builder.module, buildConst(builder, true))],
+					['?42;',    (builder) => CALL.vemp(builder.module, buildConst(builder, 42n))],
+					['?4.2;',   (builder) => CALL.vemp(builder.module, buildConst(builder, 4.2))],
+					['-(4);',   (builder) => CALL.vneg(builder.module, buildConst(builder, 4n))],
+					['-(4.2);', (builder) => CALL.vneg(builder.module, buildConst(builder, 4.2))],
 				]));
 			});
 			it('works with vects.', () => {
@@ -594,24 +594,22 @@ describe('ASTNodeOperation', () => {
 
 		describe('#build', () => {
 			it('returns the correct operation.', () => {
-				const bldr = new Builder();
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['42 + 420;', CALL.vadd(mod, buildConst(bldr, 42n), buildConst(bldr, 420n))],
-					['3 * 2.1;',  CALL.vmul(mod, buildConst(bldr, 3n),  buildConst(bldr, 2.1))],
+				buildOperations(new Map([
+					['42 + 420;', (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+					['3 * 2.1;',  (builder) => CALL.vmul(builder.module, buildConst(builder, 3n),  buildConst(builder, 2.1))],
 
-					[' 126 /  3;', CALL.vdiv(mod, buildConst(bldr,  126n), buildConst(bldr,  3n))],
-					['-126 /  3;', CALL.vdiv(mod, buildConst(bldr, -126n), buildConst(bldr,  3n))],
-					[' 126 / -3;', CALL.vdiv(mod, buildConst(bldr,  126n), buildConst(bldr, -3n))],
-					['-126 / -3;', CALL.vdiv(mod, buildConst(bldr, -126n), buildConst(bldr, -3n))],
-					[' 200 /  3;', CALL.vdiv(mod, buildConst(bldr,  200n), buildConst(bldr,  3n))],
-					[' 200 / -3;', CALL.vdiv(mod, buildConst(bldr,  200n), buildConst(bldr, -3n))],
-					['-200 /  3;', CALL.vdiv(mod, buildConst(bldr, -200n), buildConst(bldr,  3n))],
-					['-200 / -3;', CALL.vdiv(mod, buildConst(bldr, -200n), buildConst(bldr, -3n))],
+					[' 126 /  3;', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder,  3n))],
+					['-126 /  3;', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder,  3n))],
+					[' 126 / -3;', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder, -3n))],
+					['-126 / -3;', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder, -3n))],
+					[' 200 /  3;', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder,  3n))],
+					[' 200 / -3;', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder, -3n))],
+					['-200 /  3;', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder,  3n))],
+					['-200 / -3;', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder, -3n))],
 
-					['42  - 420;',  CALL.vadd(mod, buildConst(bldr, 42n), CALL.vneg(mod, buildConst(bldr, 420n)))],
-					['4.2 - 42.0;', CALL.vadd(mod, buildConst(bldr, 4.2), CALL.vneg(mod, buildConst(bldr, 42.0)))],
-					['4.2 - 42;',   CALL.vadd(mod, buildConst(bldr, 4.2), CALL.vneg(mod, buildConst(bldr, 42n)))],
+					['42  - 420;',  (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), CALL.vneg(builder.module, buildConst(builder, 420n)))],
+					['4.2 - 42.0;', (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42.0)))],
+					['4.2 - 42;',   (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42n)))],
 				]));
 			});
 		});
@@ -683,25 +681,23 @@ describe('ASTNodeOperation', () => {
 
 		describe('#build', () => {
 			it('returns the correct operation.', () => {
-				const bldr = new Builder();
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['3   <  3;',   CALL.vlt(mod, buildConst(bldr, 3n),  buildConst(bldr, 3n))],
-					['3   >  3;',   CALL.vgt(mod, buildConst(bldr, 3n),  buildConst(bldr, 3n))],
-					['3   <= 3;',   CALL.vle(mod, buildConst(bldr, 3n),  buildConst(bldr, 3n))],
-					['3   >= 3;',   CALL.vge(mod, buildConst(bldr, 3n),  buildConst(bldr, 3n))],
-					['5   <  9.2;', CALL.vlt(mod, buildConst(bldr, 5n),  buildConst(bldr, 9.2))],
-					['5   >  9.2;', CALL.vgt(mod, buildConst(bldr, 5n),  buildConst(bldr, 9.2))],
-					['5   <= 9.2;', CALL.vle(mod, buildConst(bldr, 5n),  buildConst(bldr, 9.2))],
-					['5   >= 9.2;', CALL.vge(mod, buildConst(bldr, 5n),  buildConst(bldr, 9.2))],
-					['5.2 <  3;',   CALL.vlt(mod, buildConst(bldr, 5.2), buildConst(bldr, 3n))],
-					['5.2 >  3;',   CALL.vgt(mod, buildConst(bldr, 5.2), buildConst(bldr, 3n))],
-					['5.2 <= 3;',   CALL.vle(mod, buildConst(bldr, 5.2), buildConst(bldr, 3n))],
-					['5.2 >= 3;',   CALL.vge(mod, buildConst(bldr, 5.2), buildConst(bldr, 3n))],
-					['5.2 <  9.2;', CALL.vlt(mod, buildConst(bldr, 5.2), buildConst(bldr, 9.2))],
-					['5.2 >  9.2;', CALL.vgt(mod, buildConst(bldr, 5.2), buildConst(bldr, 9.2))],
-					['5.2 <= 9.2;', CALL.vle(mod, buildConst(bldr, 5.2), buildConst(bldr, 9.2))],
-					['5.2 >= 9.2;', CALL.vge(mod, buildConst(bldr, 5.2), buildConst(bldr, 9.2))],
+				buildOperations(new Map([
+					['3   <  3;',   (builder) => CALL.vlt(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
+					['3   >  3;',   (builder) => CALL.vgt(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
+					['3   <= 3;',   (builder) => CALL.vle(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
+					['3   >= 3;',   (builder) => CALL.vge(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
+					['5   <  9.2;', (builder) => CALL.vlt(builder.module, buildConst(builder, 5n),  buildConst(builder, 9.2))],
+					['5   >  9.2;', (builder) => CALL.vgt(builder.module, buildConst(builder, 5n),  buildConst(builder, 9.2))],
+					['5   <= 9.2;', (builder) => CALL.vle(builder.module, buildConst(builder, 5n),  buildConst(builder, 9.2))],
+					['5   >= 9.2;', (builder) => CALL.vge(builder.module, buildConst(builder, 5n),  buildConst(builder, 9.2))],
+					['5.2 <  3;',   (builder) => CALL.vlt(builder.module, buildConst(builder, 5.2), buildConst(builder, 3n))],
+					['5.2 >  3;',   (builder) => CALL.vgt(builder.module, buildConst(builder, 5.2), buildConst(builder, 3n))],
+					['5.2 <= 3;',   (builder) => CALL.vle(builder.module, buildConst(builder, 5.2), buildConst(builder, 3n))],
+					['5.2 >= 3;',   (builder) => CALL.vge(builder.module, buildConst(builder, 5.2), buildConst(builder, 3n))],
+					['5.2 <  9.2;', (builder) => CALL.vlt(builder.module, buildConst(builder, 5.2), buildConst(builder, 9.2))],
+					['5.2 >  9.2;', (builder) => CALL.vgt(builder.module, buildConst(builder, 5.2), buildConst(builder, 9.2))],
+					['5.2 <= 9.2;', (builder) => CALL.vle(builder.module, buildConst(builder, 5.2), buildConst(builder, 9.2))],
+					['5.2 >= 9.2;', (builder) => CALL.vge(builder.module, buildConst(builder, 5.2), buildConst(builder, 9.2))],
 				]));
 			});
 		});
@@ -936,58 +932,54 @@ describe('ASTNodeOperation', () => {
 
 		describe('#build', () => {
 			it('with int coercion on, coerces ints into floats when needed.', () => {
-				const bldr = new Builder();
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['42 === 420;', CALL.vid(mod, buildConst(bldr, 42n), buildConst(bldr, 420n))],
-					['42 ==  420;', CALL.veq(mod, buildConst(bldr, 42n), buildConst(bldr, 420n))],
-					['42 === 4.2;', CALL.vid(mod, buildConst(bldr, 42n), buildConst(bldr, 4.2))],
-					['42 ==  4.2;', CALL.veq(mod, buildConst(bldr, 42n), buildConst(bldr, 4.2))],
+				buildOperations(new Map([
+					['42 === 420;', (builder) => CALL.vid(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+					['42 ==  420;', (builder) => CALL.veq(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+					['42 === 4.2;', (builder) => CALL.vid(builder.module, buildConst(builder, 42n), buildConst(builder, 4.2))],
+					['42 ==  4.2;', (builder) => CALL.veq(builder.module, buildConst(builder, 42n), buildConst(builder, 4.2))],
 
-					['4.2 === 42;',   CALL.vid(mod, buildConst(bldr, 4.2), buildConst(bldr, 42n))],
-					['4.2 ==  42;',   CALL.veq(mod, buildConst(bldr, 4.2), buildConst(bldr, 42n))],
-					['4.2 === 42.0;', CALL.vid(mod, buildConst(bldr, 4.2), buildConst(bldr, 42.0))],
-					['4.2 ==  42.0;', CALL.veq(mod, buildConst(bldr, 4.2), buildConst(bldr, 42.0))],
+					['4.2 === 42;',   (builder) => CALL.vid(builder.module, buildConst(builder, 4.2), buildConst(builder, 42n))],
+					['4.2 ==  42;',   (builder) => CALL.veq(builder.module, buildConst(builder, 4.2), buildConst(builder, 42n))],
+					['4.2 === 42.0;', (builder) => CALL.vid(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
+					['4.2 ==  42.0;', (builder) => CALL.veq(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
 
-					['null === 0;',   CALL.vid(mod, buildConst(bldr), buildConst(bldr, 0n))],
-					['null ==  0;',   CALL.veq(mod, buildConst(bldr), buildConst(bldr, 0n))],
-					['null === 0.0;', CALL.vid(mod, buildConst(bldr), buildConst(bldr, 0.0))],
-					['null ==  0.0;', CALL.veq(mod, buildConst(bldr), buildConst(bldr, 0.0))],
+					['null === 0;',   (builder) => CALL.vid(builder.module, buildConst(builder), buildConst(builder, 0n))],
+					['null ==  0;',   (builder) => CALL.veq(builder.module, buildConst(builder), buildConst(builder, 0n))],
+					['null === 0.0;', (builder) => CALL.vid(builder.module, buildConst(builder), buildConst(builder, 0.0))],
+					['null ==  0.0;', (builder) => CALL.veq(builder.module, buildConst(builder), buildConst(builder, 0.0))],
 
-					['null === false;', CALL.vid(mod, buildConst(bldr), buildConst(bldr, false))],
-					['null ==  false;', CALL.veq(mod, buildConst(bldr), buildConst(bldr, false))],
-					['null === true;',  CALL.vid(mod, buildConst(bldr), buildConst(bldr, true))],
-					['null ==  true;',  CALL.veq(mod, buildConst(bldr), buildConst(bldr, true))],
+					['null === false;', (builder) => CALL.vid(builder.module, buildConst(builder), buildConst(builder, false))],
+					['null ==  false;', (builder) => CALL.veq(builder.module, buildConst(builder), buildConst(builder, false))],
+					['null === true;',  (builder) => CALL.vid(builder.module, buildConst(builder), buildConst(builder, true))],
+					['null ==  true;',  (builder) => CALL.veq(builder.module, buildConst(builder), buildConst(builder, true))],
 
-					['false === 0;',   CALL.vid(mod, buildConst(bldr, false), buildConst(bldr, 0n))],
-					['false ==  0;',   CALL.veq(mod, buildConst(bldr, false), buildConst(bldr, 0n))],
-					['false === 0.0;', CALL.vid(mod, buildConst(bldr, false), buildConst(bldr, 0.0))],
-					['false ==  0.0;', CALL.veq(mod, buildConst(bldr, false), buildConst(bldr, 0.0))],
+					['false === 0;',   (builder) => CALL.vid(builder.module, buildConst(builder, false), buildConst(builder, 0n))],
+					['false ==  0;',   (builder) => CALL.veq(builder.module, buildConst(builder, false), buildConst(builder, 0n))],
+					['false === 0.0;', (builder) => CALL.vid(builder.module, buildConst(builder, false), buildConst(builder, 0.0))],
+					['false ==  0.0;', (builder) => CALL.veq(builder.module, buildConst(builder, false), buildConst(builder, 0.0))],
 
-					['true === 1;',   CALL.vid(mod, buildConst(bldr, true), buildConst(bldr, 1n))],
-					['true ==  1;',   CALL.veq(mod, buildConst(bldr, true), buildConst(bldr, 1n))],
-					['true === 1.0;', CALL.vid(mod, buildConst(bldr, true), buildConst(bldr, 1.0))],
-					['true ==  1.0;', CALL.veq(mod, buildConst(bldr, true), buildConst(bldr, 1.0))],
+					['true === 1;',   (builder) => CALL.vid(builder.module, buildConst(builder, true), buildConst(builder, 1n))],
+					['true ==  1;',   (builder) => CALL.veq(builder.module, buildConst(builder, true), buildConst(builder, 1n))],
+					['true === 1.0;', (builder) => CALL.vid(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
+					['true ==  1.0;', (builder) => CALL.veq(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
 				]));
 			});
 			it('with int coercion off, does not coerce ints into floats.', () => {
-				const bldr = new Builder();
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['42 === 4.2;', CALL.vid (mod, buildConst(bldr, 42n), buildConst(bldr, 4.2))],
-					['42 ==  4.2;', CALL.veqq(mod, buildConst(bldr, 42n), buildConst(bldr, 4.2))],
+				buildOperations(new Map([
+					['42 === 4.2;', (builder) => CALL.vid (builder.module, buildConst(builder, 42n), buildConst(builder, 4.2))],
+					['42 ==  4.2;', (builder) => CALL.veqq(builder.module, buildConst(builder, 42n), buildConst(builder, 4.2))],
 
-					['4.2 === 42;', CALL.vid (mod, buildConst(bldr, 4.2), buildConst(bldr, 42n))],
-					['4.2 ==  42;', CALL.veqq(mod, buildConst(bldr, 4.2), buildConst(bldr, 42n))],
+					['4.2 === 42;', (builder) => CALL.vid (builder.module, buildConst(builder, 4.2), buildConst(builder, 42n))],
+					['4.2 ==  42;', (builder) => CALL.veqq(builder.module, buildConst(builder, 4.2), buildConst(builder, 42n))],
 
-					['null === 0.0;', CALL.vid  (mod, buildConst(bldr), buildConst(bldr, 0.0))],
-					['null ==  0.0;', CALL.veqq (mod, buildConst(bldr), buildConst(bldr, 0.0))],
+					['null === 0.0;', (builder) => CALL.vid  (builder.module, buildConst(builder), buildConst(builder, 0.0))],
+					['null ==  0.0;', (builder) => CALL.veqq (builder.module, buildConst(builder), buildConst(builder, 0.0))],
 
-					['false === 0.0;', CALL.vid (mod, buildConst(bldr, false), buildConst(bldr, 0.0))],
-					['false ==  0.0;', CALL.veqq(mod, buildConst(bldr, false), buildConst(bldr, 0.0))],
+					['false === 0.0;', (builder) => CALL.vid (builder.module, buildConst(builder, false), buildConst(builder, 0.0))],
+					['false ==  0.0;', (builder) => CALL.veqq(builder.module, buildConst(builder, false), buildConst(builder, 0.0))],
 
-					['true === 1.0;', CALL.vid (mod, buildConst(bldr, true), buildConst(bldr, 1.0))],
-					['true ==  1.0;', CALL.veqq(mod, buildConst(bldr, true), buildConst(bldr, 1.0))],
+					['true === 1.0;', (builder) => CALL.vid (builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
+					['true ==  1.0;', (builder) => CALL.veqq(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
 				]), CONFIG_FOLDING_COERCION_OFF);
 			});
 		});
@@ -1177,67 +1169,63 @@ describe('ASTNodeOperation', () => {
 			}
 
 			it('returns a special case of `(if)`.', () => {
-				const bldr = new Builder();
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['42 && 420;', create_if(
-						mod,
-						[0, buildConst(bldr, 42n), binaryen.v128],
-						(getter) => [buildConst(bldr, 420n), getter],
+				buildOperations(new Map([
+					['42 && 420;', (builder) => create_if(
+						builder.module,
+						[0, buildConst(builder, 42n), binaryen.v128],
+						(getter) => [buildConst(builder, 420n), getter],
 					)],
-					['4.2 || -420;', create_if(
-						mod,
-						[0, buildConst(bldr, 4.2), binaryen.v128],
-						(getter) => [getter, buildConst(bldr, -420n)],
+					['4.2 || -420;', (builder) => create_if(
+						builder.module,
+						[0, buildConst(builder, 4.2), binaryen.v128],
+						(getter) => [getter, buildConst(builder, -420n)],
 					)],
-					['null && 201.0e-1;', create_if(
-						mod,
-						[0, buildConst(bldr), binaryen.v128],
-						(getter) => [buildConst(bldr, 20.1), getter],
+					['null && 201.0e-1;', (builder) => create_if(
+						builder.module,
+						[0, buildConst(builder), binaryen.v128],
+						(getter) => [buildConst(builder, 20.1), getter],
 					)],
-					['false || null;', create_if(
-						mod,
-						[0, buildConst(bldr, false), binaryen.v128],
-						(getter) => [getter, buildConst(bldr)],
+					['false || null;', (builder) => create_if(
+						builder.module,
+						[0, buildConst(builder, false), binaryen.v128],
+						(getter) => [getter, buildConst(builder)],
 					)],
-					['true && 201.0e-1;', create_if(
-						mod,
-						[0, buildConst(bldr, true), binaryen.v128],
-						(getter) => [buildConst(bldr, 20.1), getter],
+					['true && 201.0e-1;', (builder) => create_if(
+						builder.module,
+						[0, buildConst(builder, true), binaryen.v128],
+						(getter) => [buildConst(builder, 20.1), getter],
 					)],
 				]));
 			});
 
 			it('counts internal variables correctly.', () => {
-				const bldr = new Builder();
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['1 && 2 || 3 && 4;', create_if(
-						mod,
+				buildOperations(new Map([
+					['1 && 2 || 3 && 4;', (builder) => create_if(
+						builder.module,
 						[2, create_if(
-							mod,
-							[0, buildConst(bldr, 1n), binaryen.v128],
-							(getter) => [buildConst(bldr, 2n), getter],
+							builder.module,
+							[0, buildConst(builder, 1n), binaryen.v128],
+							(getter) => [buildConst(builder, 2n), getter],
 						), binaryen.v128],
 						(getter) => [getter, create_if(
-							mod,
-							[1, buildConst(bldr, 3n), binaryen.v128],
-							(getter_) => [buildConst(bldr, 4n), getter_],
+							builder.module,
+							[1, buildConst(builder, 3n), binaryen.v128],
+							(getter_) => [buildConst(builder, 4n), getter_],
 						)],
 					)],
-					['1 && 2.0 || 3 && 4.0;', create_if(
-						mod,
+					['1 && 2.0 || 3 && 4.0;', (builder) => create_if(
+						builder.module,
 						[2, create_if(
-							mod,
-							[0, buildConst(bldr, 1n), binaryen.v128],
-							(getter) => [buildConst(bldr, 2.0), getter],
+							builder.module,
+							[0, buildConst(builder, 1n), binaryen.v128],
+							(getter) => [buildConst(builder, 2.0), getter],
 						), binaryen.v128],
 						(getter) => [
 							getter,
 							create_if(
-								mod,
-								[1, buildConst(bldr, 3n), binaryen.v128],
-								(getter_) => [buildConst(bldr, 4.0), getter_],
+								builder.module,
+								[1, buildConst(builder, 3n), binaryen.v128],
+								(getter_) => [buildConst(builder, 4.0), getter_],
 							),
 						],
 					)],
@@ -1245,22 +1233,20 @@ describe('ASTNodeOperation', () => {
 			});
 
 			it('nested unions.', () => {
-				const bldr = new Builder();
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['1 && 2.0 || 3.0 && 4;', create_if(
-						mod,
+				buildOperations(new Map([
+					['1 && 2.0 || 3.0 && 4;', (builder) => create_if(
+						builder.module,
 						[2, create_if(
-							mod,
-							[0, buildConst(bldr, 1n), binaryen.v128],
-							(getter) => [buildConst(bldr, 2.0), getter],
+							builder.module,
+							[0, buildConst(builder, 1n), binaryen.v128],
+							(getter) => [buildConst(builder, 2.0), getter],
 						), binaryen.v128],
 						(getter) => [
 							getter,
 							create_if(
-								mod,
-								[1, buildConst(bldr, 3.0), binaryen.v128],
-								(getter_) => [buildConst(bldr, 4n), getter_],
+								builder.module,
+								[1, buildConst(builder, 3.0), binaryen.v128],
+								(getter_) => [buildConst(builder, 4n), getter_],
 							),
 						],
 					)],
@@ -1301,12 +1287,10 @@ describe('ASTNodeOperation', () => {
 
 		describe('#build', () => {
 			it('returns `(if)`.', () => {
-				const bldr = new Builder();
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['if true  then false else 2;',    mod.if(buildConst(bldr, true),  buildConst(bldr, false), buildConst(bldr, 2n))],
-					['if true  then 2     else 3.0;',  mod.if(buildConst(bldr, true),  buildConst(bldr, 2n),    buildConst(bldr, 3.0))],
-					['if false then 3.0   else null;', mod.if(buildConst(bldr, false), buildConst(bldr, 3.0),   buildConst(bldr))],
+				buildOperations(new Map([
+					['if true  then false else 2;',    (builder) => builder.module.if(buildConst(builder, true),  buildConst(builder, false), buildConst(builder, 2n))],
+					['if true  then 2     else 3.0;',  (builder) => builder.module.if(buildConst(builder, true),  buildConst(builder, 2n),    buildConst(builder, 3.0))],
+					['if false then 3.0   else null;', (builder) => builder.module.if(buildConst(builder, false), buildConst(builder, 3.0),   buildConst(builder))],
 				]));
 			});
 		});
