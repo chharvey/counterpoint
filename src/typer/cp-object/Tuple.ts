@@ -1,4 +1,9 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
+import {
+	build_tuple_like,
+	type Builder,
+} from '../../index.js';
 import {
 	strictEqual,
 	instanceOf,
@@ -24,5 +29,14 @@ export class Tuple<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 	 */
 	public override toType(): TYPE.TypeTuple {
 		return TYPE.TypeTuple.fromTypes(this.items.map((it) => it.toType()));
+	}
+
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return build_tuple_like<T>(
+			this.items,
+			builder,
+			(value) => value.build(builder),
+			(value) => value instanceof Tuple ? value.items.length : null,
+		);
 	}
 }
