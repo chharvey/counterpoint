@@ -6,6 +6,7 @@ import {
 	AST,
 	OBJ,
 	TYPE,
+	Builder,
 	BinVect,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
@@ -105,21 +106,21 @@ describe('ASTNodeExpression', () => {
 
 
 		specify('#build', () => {
-			const mod = new binaryen.Module();
+			const bldr  = new Builder();
 			const tests = new Map<string, binaryen.ExpressionRef>([
-				['null;',    buildConst(mod)],
-				['false;',   buildConst(mod, false)],
-				['true;',    buildConst(mod, true)],
-				['0;',       buildConst(mod, 0n)],
-				['+0;',      buildConst(mod, 0n)],
-				['-0;',      buildConst(mod, 0n)],
-				['42;',      buildConst(mod, 42n)],
-				['+42;',     buildConst(mod, 42n)],
-				['-42;',     buildConst(mod, -42n)],
-				['0.0;',     buildConst(mod, 0)],
-				['+0.0;',    buildConst(mod, 0)],
-				['-0.0;',    buildConst(mod, -0)],
-				['-4.2e-2;', buildConst(mod, -0.042)],
+				['null;',    buildConst(bldr)],
+				['false;',   buildConst(bldr, false)],
+				['true;',    buildConst(bldr, true)],
+				['0;',       buildConst(bldr, 0n)],
+				['+0;',      buildConst(bldr, 0n)],
+				['-0;',      buildConst(bldr, 0n)],
+				['42;',      buildConst(bldr, 42n)],
+				['+42;',     buildConst(bldr, 42n)],
+				['-42;',     buildConst(bldr, -42n)],
+				['0.0;',     buildConst(bldr, 0)],
+				['+0.0;',    buildConst(bldr, 0)],
+				['-0.0;',    buildConst(bldr, -0)],
+				['-4.2e-2;', buildConst(bldr, -0.042)],
 			]);
 			return assertEqualBins(
 				[...tests.keys()].map((src) => AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF).build()),
@@ -242,8 +243,8 @@ describe('ASTNodeExpression', () => {
 						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(),
 					],
 					[
-						buildConst(goal.builder.module, 42n),
-						buildConst(goal.builder.module, 42.0),
+						buildConst(goal.builder, 42n),
+						buildConst(goal.builder, 42.0),
 					],
 				);
 			});
@@ -547,34 +548,30 @@ describe('ASTNodeExpression', () => {
 
 				it('returns (tuple.make).', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF);
-					const mod:   binaryen.Module  = tuple.builder.module;
 					return assertEqualBins(
 						tuple.build(),
-						mod.tuple.make([buildConst(mod, 1n), buildConst(mod, 2.0)]),
+						tuple.builder.module.tuple.make([buildConst(tuple.builder, 1n), buildConst(tuple.builder, 2.0)]),
 					);
 				});
 				it('empty tuple returns unique BinVect representation.', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[];', CONFIG_FOLDING_OFF);
-					const mod:   binaryen.Module  = tuple.builder.module;
 					return assertEqualBins(
 						tuple.build(),
-						new BinVect(mod, 'tuple').vect,
+						new BinVect(tuple.builder.module, 'tuple').vect,
 					);
 				});
 				it('tuple of length 1 returns a (tuple.make) with 1 item.', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[3.4];', CONFIG_FOLDING_OFF);
-					const mod:   binaryen.Module  = tuple.builder.module;
 					return assertEqualBins(
 						tuple.build(),
-						mod.tuple.make([buildConst(mod, 3.4)]),
+						tuple.builder.module.tuple.make([buildConst(tuple.builder, 3.4)]),
 					);
 				});
 				it('boxed empty tuple returns (tuple.make) containing a BinVect.', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[[]];', CONFIG_FOLDING_OFF);
-					const mod:   binaryen.Module  = tuple.builder.module;
 					return assertEqualBins(
 						tuple.build(),
-						mod.tuple.make([new BinVect(mod, 'tuple').vect]),
+						tuple.builder.module.tuple.make([new BinVect(tuple.builder.module, 'tuple').vect]),
 					);
 				});
 				it('boxed tuple with 1 item.', () => {
@@ -582,16 +579,17 @@ describe('ASTNodeExpression', () => {
 					const mod:   binaryen.Module  = tuple.builder.module;
 					return assertEqualBins(
 						tuple.build(),
-						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(mod, 3.4)]), 0)]),
+						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(tuple.builder, 3.4)]), 0)]),
 					);
 				});
 				it('boxed tuple with many items.', () => {
 					const tuple: AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[[1, 2.0, true]];', CONFIG_FOLDING_OFF);
-					const mod:   binaryen.Module        = tuple.builder.module;
+					const bldr:  Builder                = tuple.builder;
+					const mod:   binaryen.Module        = bldr.module;
 					const inner: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(mod, 1n),
-						buildConst(mod, 2.0),
-						buildConst(mod, true),
+						buildConst(bldr, 1n),
+						buildConst(bldr, 2.0),
+						buildConst(bldr, true),
 					]);
 					return assertEqualBins(
 						tuple.build(),
@@ -604,16 +602,17 @@ describe('ASTNodeExpression', () => {
 				});
 				it('nested tuples.', () => {
 					const tuple:  AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[1, [2.0], [3, [4.0]]];', CONFIG_FOLDING_OFF);
-					const mod:    binaryen.Module        = tuple.builder.module;
+					const bldr:   Builder                = tuple.builder;
+					const mod:    binaryen.Module        = bldr.module;
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(mod, 3n),
-						mod.tuple.extract(mod.tuple.make([buildConst(mod, 4.0)]), 0),
+						buildConst(bldr, 3n),
+						mod.tuple.extract(mod.tuple.make([buildConst(bldr, 4.0)]), 0),
 					]);
 					return assertEqualBins(
 						tuple.build(),
 						mod.tuple.make([
-							buildConst(mod, 1n),
-							mod.tuple.extract(mod.tuple.make([buildConst(mod, 2.0)]), 0),
+							buildConst(bldr, 1n),
+							mod.tuple.extract(mod.tuple.make([buildConst(bldr, 2.0)]), 0),
 							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(0, bintype2), 1),
 						]),
@@ -621,27 +620,28 @@ describe('ASTNodeExpression', () => {
 				});
 				it('multiple entries.', () => {
 					const tuple:   AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[[1, [2.0, 3]], [4.0, [5, 6.0]], [7, []]];', CONFIG_FOLDING_OFF);
-					const mod:     binaryen.Module        = tuple.builder.module;
+					const bldr:    Builder                = tuple.builder;
+					const mod:     binaryen.Module        = bldr.module;
 					const inner01: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(mod, 2.0),
-						buildConst(mod, 3n),
+						buildConst(bldr, 2.0),
+						buildConst(bldr, 3n),
 					]);
 					const inner11: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(mod, 5n),
-						buildConst(mod, 6.0),
+						buildConst(bldr, 5n),
+						buildConst(bldr, 6.0),
 					]);
 					const inner0: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(mod, 1n),
+						buildConst(bldr, 1n),
 						mod.tuple.extract(mod.local.tee(0, inner01, bintype2), 0),
 						mod.tuple.extract(mod.local.get(0, bintype2), 1),
 					]);
 					const inner1: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(mod, 4.0),
+						buildConst(bldr, 4.0),
 						mod.tuple.extract(mod.local.tee(2, inner11, bintype2), 0),
 						mod.tuple.extract(mod.local.get(2, bintype2), 1),
 					]);
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(mod, 7n),
+						buildConst(bldr, 7n),
 						new BinVect(mod, 'tuple').vect,
 					]);
 					return assertEqualBins(

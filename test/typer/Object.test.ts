@@ -176,7 +176,7 @@ describe('Object', () => {
 				const builder = new Builder();
 				return assertEqualBins(
 					new OBJ.String('hello world').build(builder),
-					buildConst(builder.module, 0n),
+					buildConst(builder, 0n),
 				);
 			});
 		});
@@ -184,10 +184,9 @@ describe('Object', () => {
 		describe('SolidTuple', () => {
 			it('returns `(tuple.make)`.', () => {
 				const builder = new Builder();
-				const mod: binaryen.Module = builder.module;
 				return assertEqualBins(
 					new OBJ.Tuple([OBJ.Integer.UNIT, new OBJ.Float(2.0)]).build(builder),
-					mod.tuple.make([buildConst(mod, 1n), buildConst(mod, 2.0)]),
+					builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
 				);
 			});
 		});

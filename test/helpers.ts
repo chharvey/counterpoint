@@ -5,7 +5,7 @@ import {
 	CONFIG_DEFAULT,
 	OBJ,
 	type TYPE,
-	Builder,
+	type Builder,
 } from '../src/index.js';
 
 
@@ -58,7 +58,7 @@ export function typeUnitStr(x: string): TYPE.TypeUnit<OBJ.String> {
 
 
 
-export function buildConst(_: binaryen.Module, value: null | boolean | bigint | number = null): binaryen.ExpressionRef {
+export function buildConst(builder: Builder, value: null | boolean | bigint | number = null): binaryen.ExpressionRef {
 	return (
 		value === null            ? OBJ.Null.NULL :
 		value === false           ? OBJ.Boolean.FALSE :
@@ -68,5 +68,5 @@ export function buildConst(_: binaryen.Module, value: null | boolean | bigint | 
 		typeof value === 'bigint' ? new OBJ.Integer(value) :
 		typeof value === 'number' ? new OBJ.Float(value) :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
-	).build(new Builder());
+	).build(builder);
 }
