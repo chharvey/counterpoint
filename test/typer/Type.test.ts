@@ -58,6 +58,101 @@ describe('Type', () => {
 	});
 
 
+	describe('#isDefinitelyFalsy', () => {
+		const FALSE = OBJ.Boolean.FALSETYPE;
+		it('only a combination of `never`, `void`, `null`, and `false` are definitely falsy.', () => {
+			[
+				TYPE.NEVER,
+				TYPE.Type.unionAll([                      FALSE]),
+				TYPE.Type.unionAll([           TYPE.NULL       ]),
+				TYPE.Type.unionAll([           TYPE.NULL, FALSE]),
+				TYPE.Type.unionAll([TYPE.VOID                  ]),
+				TYPE.Type.unionAll([TYPE.VOID,            FALSE]),
+				TYPE.Type.unionAll([TYPE.VOID, TYPE.NULL       ]),
+				TYPE.Type.unionAll([TYPE.VOID, TYPE.NULL, FALSE]),
+			].forEach((t) => assert.ok(t.isDefinitelyFalsy(), `Expected \`${ t }\` to be definitely falsy.`));
+		});
+		it('any other types are not definitely falsy.', () => {
+			[
+				TYPE.UNKNOWN,
+				TYPE.OBJ,
+				OBJ.Boolean.TRUETYPE,
+				TYPE.BOOL,
+				TYPE.INT,
+				TYPE.FLOAT,
+				TYPE.STR,
+				TYPE.VOID.union(TYPE.INT),
+				TYPE.NULL.union(TYPE.FLOAT),
+				FALSE.union(TYPE.STR),
+			].forEach((t) => assert.ok(!t.isDefinitelyFalsy(), `Expected \`${ t }\` to not be definitely falsy.`));
+		});
+	});
+
+
+	describe('#isDefinitelyTruthy', () => {
+		const FALSE = OBJ.Boolean.FALSETYPE;
+		it('all definitely falsy types are not definitely truthy.', () => {
+			[
+				TYPE.NEVER,
+				TYPE.Type.unionAll([                      FALSE]),
+				TYPE.Type.unionAll([           TYPE.NULL       ]),
+				TYPE.Type.unionAll([           TYPE.NULL, FALSE]),
+				TYPE.Type.unionAll([TYPE.VOID                  ]),
+				TYPE.Type.unionAll([TYPE.VOID,            FALSE]),
+				TYPE.Type.unionAll([TYPE.VOID, TYPE.NULL       ]),
+				TYPE.Type.unionAll([TYPE.VOID, TYPE.NULL, FALSE]),
+			].forEach((t) => assert.ok(!t.isDefinitelyTruthy(), `Expected \`${ t }\` to not be definitely truthy.`));
+		});
+		it('unions of falsy types are not definitely truthy.', () => {
+			[
+				TYPE.UNKNOWN,
+				TYPE.OBJ,
+				TYPE.BOOL,
+				TYPE.VOID.union(TYPE.INT),
+				TYPE.NULL.union(TYPE.FLOAT),
+				FALSE.union(TYPE.STR),
+			].forEach((t) => assert.ok(!t.isDefinitelyTruthy(), `Expected \`${ t }\` to not be definitely truthy.`));
+		});
+		it('“valuable” primitive types are definitely truthy.', () => {
+			[
+				OBJ.Boolean.TRUETYPE,
+				TYPE.INT,
+				TYPE.FLOAT,
+				TYPE.STR,
+			].forEach((t) => assert.ok(t.isDefinitelyTruthy(), `Expected \`${ t }\` to be definitely truthy.`));
+		});
+	});
+
+
+	specify('#falsySide', () => {
+		const FALSE = OBJ.Boolean.FALSETYPE;
+		return new Map<TYPE.Type, TYPE.Type>([
+			[TYPE.NEVER,   TYPE.NEVER],
+			[TYPE.UNKNOWN, TYPE.VOID.union(TYPE.NULL).union(FALSE)],
+			[TYPE.VOID,    TYPE.VOID],
+			[TYPE.OBJ,     TYPE.NULL.union(FALSE)],
+			[TYPE.NULL,    TYPE.NULL],
+			[TYPE.BOOL,    FALSE],
+			[TYPE.INT,     TYPE.NEVER],
+			[TYPE.FLOAT,   TYPE.NEVER],
+			[TYPE.STR,     TYPE.NEVER],
+		]).forEach((right, left) => assert.ok(left.falsySide().equals(right), `${ left.falsySide() } == ${ right }`));
+	});
+
+
+	specify('#truthySide', () => {
+		new Map<TYPE.Type, TYPE.Type>([
+			[TYPE.NEVER,   TYPE.NEVER],
+			[TYPE.VOID,    TYPE.NEVER],
+			[TYPE.NULL,    TYPE.NEVER],
+			[TYPE.BOOL,    OBJ.Boolean.TRUETYPE],
+			[TYPE.INT,     TYPE.INT],
+			[TYPE.FLOAT,   TYPE.FLOAT],
+			[TYPE.STR,     TYPE.STR],
+		]).forEach((right, left) => assert.ok(left.truthySide().equals(right), `${ left.truthySide() } == ${ right }`));
+	});
+
+
 	describe('#includes', () => {
 		it('uses `Object#identical` to compare values.', () => {
 			function unionOfInts(ns: readonly bigint[]): TYPE.Type {

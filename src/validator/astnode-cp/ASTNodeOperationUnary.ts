@@ -59,9 +59,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		/* eslint-disable indent */
 		return (
 			(this.operator === Operator.NOT) ? (
-				(t0.isSubtypeOf(TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE)))                         ? OBJ.Boolean.TRUETYPE :
-				(TYPE.VOID.isSubtypeOf(t0) || TYPE.NULL.isSubtypeOf(t0) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t0)) ? TYPE.BOOL            :
-				OBJ.Boolean.FALSETYPE
+				t0.isDefinitelyFalsy()  ? OBJ.Boolean.TRUETYPE :
+				t0.isDefinitelyTruthy() ? OBJ.Boolean.FALSETYPE :
+				TYPE.BOOL
 			) :
 			(this.operator === Operator.EMP) ? TYPE.BOOL :
 			(assert.strictEqual(this.operator, Operator.NEG), (

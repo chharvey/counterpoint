@@ -1,6 +1,6 @@
 import binaryen from 'binaryen';
 import {BinVect} from '../../index.js';
-import {
+import type {
 	OBJ,
 	TYPE,
 } from '../../index.js';
@@ -60,16 +60,15 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
-		const falsytypes: TYPE.Type = TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE);
 		return (this.operator === Operator.AND)
-			? (t0.isSubtypeOf(falsytypes))
+			? t0.isDefinitelyFalsy()
 				? t0
-				: t0.intersect(falsytypes).union(t1)
-			: (t0.isSubtypeOf(falsytypes))
+				: t0.falsySide().union(t1) // also the case for if `t0.isDefinitelyTruthy()`
+			: t0.isDefinitelyFalsy()
 				? t1
-				: (TYPE.VOID.isSubtypeOf(t0) || TYPE.NULL.isSubtypeOf(t0) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t0))
-					? t0.subtract(falsytypes).union(t1)
-					: t0;
+				: t0.isDefinitelyTruthy()
+					? t0
+					: t0.truthySide().union(t1);
 	}
 
 	@memoizeMethod
