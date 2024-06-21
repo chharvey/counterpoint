@@ -3,6 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
+	BinVect,
 	TypeError01,
 } from '../../index.js';
 import {
@@ -41,7 +42,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	@ASTNodeExpression.buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return this.builder.module.if(
-			this.operand0.build(),
+			new BinVect(this.builder.module, this.operand0.build()).isSpecial(true),
 			this.operand1.build(),
 			this.operand2.build(),
 		);

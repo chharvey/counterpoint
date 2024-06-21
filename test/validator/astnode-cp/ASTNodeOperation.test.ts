@@ -1281,9 +1281,9 @@ describe('ASTNodeOperation', () => {
 			it('returns `(if)`.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['if true  then false else 2;',    mod.if(buildConst(mod, true),  buildConst(mod, false), buildConst(mod, 2n))],
-					['if true  then 2     else 3.0;',  mod.if(buildConst(mod, true),  buildConst(mod, 2n),    buildConst(mod, 3.0))],
-					['if false then 3.0   else null;', mod.if(buildConst(mod, false), buildConst(mod, 3.0),   buildConst(mod))],
+					['if true  then false else 2;',    mod.if(new BinVect(mod, buildConst(mod, true)).isSpecial(true),  buildConst(mod, false), buildConst(mod, 2n))],
+					['if true  then 2     else 3.0;',  mod.if(new BinVect(mod, buildConst(mod, true)).isSpecial(true),  buildConst(mod, 2n),    buildConst(mod, 3.0))],
+					['if false then 3.0   else null;', mod.if(new BinVect(mod, buildConst(mod, false)).isSpecial(true), buildConst(mod, 3.0),   buildConst(mod))],
 				]));
 			});
 		});
