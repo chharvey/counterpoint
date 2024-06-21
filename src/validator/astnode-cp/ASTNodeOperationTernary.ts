@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
@@ -31,9 +31,9 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		operator: Operator.COND,
-		private readonly operand0: ASTNodeExpression,
-		private readonly operand1: ASTNodeExpression,
-		private readonly operand2: ASTNodeExpression,
+		public readonly operand0: ASTNodeExpression,
+		public readonly operand1: ASTNodeExpression,
+		public readonly operand2: ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
@@ -41,11 +41,22 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.if(
-			new BinVect(this.builder.module, this.operand0.build()).isSpecial(true),
-			this.operand1.build(),
-			this.operand2.build(),
-		);
+		const t0:                 TYPE.Type                = this.operand0.type();
+		const [arg0, arg1, arg2]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
+
+		if (t0.isDefinitelyFalsy()) {
+			return this.builder.module.block(null, [
+				this.builder.module.drop(arg0),
+				arg2,
+			], binaryen.v128);
+		} else if (t0.isDefinitelyTruthy()) {
+			return this.builder.module.block(null, [
+				this.builder.module.drop(arg0),
+				arg1,
+			], binaryen.v128);
+		}
+
+		return this.builder.module.if(new BinVect(this.builder.module, arg0).isSpecial(true), arg1, arg2);
 	}
 
 	@memoizeMethod

@@ -1,8 +1,8 @@
 import binaryen from 'binaryen';
-import {BinVect} from '../../index.js';
-import type {
-	OBJ,
-	TYPE,
+import {
+	type OBJ,
+	type TYPE,
+	BinVect,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -43,6 +43,17 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	public override build(): binaryen.ExpressionRef {
 		// eslint-disable-next-line prefer-const --- one of them is reassigned
 		let [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
+
+		const t0:     TYPE.Type              = this.operand0.type();
+		const block1: binaryen.ExpressionRef = this.builder.module.block(null, [
+			this.builder.module.drop(arg0),
+			arg1,
+		], binaryen.v128);
+		if (t0.isDefinitelyFalsy()) {
+			return this.operator === Operator.AND ? arg0 : block1;
+		} else if (t0.isDefinitelyTruthy()) {
+			return this.operator === Operator.AND ? block1 : arg0;
+		}
 
 		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint = this.builder.varCount;

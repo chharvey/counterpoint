@@ -2,6 +2,7 @@ import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
+	BinVect,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -44,10 +45,18 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	public override build(): binaryen.ExpressionRef {
+		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
+		if (this.type().equals(OBJ.Boolean.FALSETYPE)) {
+			return this.builder.module.block(null, [
+				this.builder.module.drop(arg0),
+				this.builder.module.drop(arg1),
+				new BinVect(this.builder.module, false).vect,
+			], binaryen.v128);
+		}
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.ID, 'vid'],
 			[Operator.EQ, this.validator.config.compilerOptions.intCoercion ? 'veq' : 'veqq'],
-		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
+		]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
