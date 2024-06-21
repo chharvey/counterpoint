@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
@@ -8,7 +9,6 @@ import {
 	NanError02,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -60,14 +60,13 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
-		return (bothNumeric(t0, t1))
-			? (
-				(bothInts(t0, t1))   ? TYPE.INT                                           :
-				(bothFloats(t0, t1)) ? TYPE.FLOAT                                         :
-				(int_coercion)       ? (eitherFloats(t0, t1)) ? TYPE.FLOAT : t0.union(t1) :
-				throw_expression(new TypeError01(this))
-			)
-			: throw_expression(new TypeError01(this));
+		assert.ok(bothNumeric(t0, t1), new TypeError01(this));
+		return (
+			bothInts(t0, t1)   ? TYPE.INT :
+			bothFloats(t0, t1) ? TYPE.FLOAT :
+			int_coercion       ? eitherFloats(t0, t1) ? TYPE.FLOAT : t0.union(t1) :
+			assert.fail(new TypeError01(this))
+		);
 	}
 
 	@memoizeMethod

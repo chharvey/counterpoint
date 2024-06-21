@@ -8,7 +8,6 @@ import {
 	NanError01,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -56,21 +55,22 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
 		const t0: TYPE.Type = this.operand.type();
-		/* eslint-disable indent */
-		return (
-			(this.operator === Operator.NOT) ? (
-				t0.isDefinitelyFalsy()  ? OBJ.Boolean.TRUETYPE :
-				t0.isDefinitelyTruthy() ? OBJ.Boolean.FALSETYPE :
-				TYPE.BOOL
-			) :
-			(this.operator === Operator.EMP) ? TYPE.BOOL :
-			(assert.strictEqual(this.operator, Operator.NEG), (
-				(t0.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)))
-					? t0
-					: throw_expression(new TypeError01(this))
-			))
-		);
-		/* eslint-enable indent */
+		switch (this.operator) {
+			case Operator.NOT: {
+				return (
+					t0.isDefinitelyFalsy()  ? OBJ.Boolean.TRUETYPE :
+					t0.isDefinitelyTruthy() ? OBJ.Boolean.FALSETYPE :
+					TYPE.BOOL
+				);
+			}
+			case Operator.EMP: {
+				return TYPE.BOOL;
+			}
+			case Operator.NEG: {
+				assert.ok(t0.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeError01(this));
+				return t0;
+			}
+		}
 	}
 
 	@memoizeMethod

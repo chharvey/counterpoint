@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	OBJ,
@@ -5,7 +6,6 @@ import {
 	TypeError01,
 } from '../../index.js';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.js';
@@ -53,14 +53,13 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		const t0: TYPE.Type = this.operand0.type();
 		const t1: TYPE.Type = this.operand1.type();
 		const t2: TYPE.Type = this.operand2.type();
-		return (t0.isSubtypeOf(TYPE.BOOL))
-			? (
-				(t0.equals(TYPE.BOOL))           ? t1.union(t2) :
-				(t0.includes(OBJ.Boolean.FALSE)) ? t2           : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
-				(t0.includes(OBJ.Boolean.TRUE))  ? t1           : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
-				(t0.isBottomType,                  TYPE.NEVER)
-			)
-			: throw_expression(new TypeError01(this));
+		assert.ok(t0.isSubtypeOf(TYPE.BOOL), new TypeError01(this));
+		return (
+			t0.isBottomType                  ? TYPE.NEVER :
+			t0.equals(OBJ.Boolean.FALSETYPE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
+			t0.equals(OBJ.Boolean.TRUETYPE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
+			t1.union(t2)
+		);
 	}
 
 	@memoizeMethod

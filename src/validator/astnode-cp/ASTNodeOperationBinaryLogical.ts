@@ -60,15 +60,20 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
-		return (this.operator === Operator.AND)
-			? t0.isDefinitelyFalsy()
-				? t0
-				: t0.falsySide().union(t1) // also the case for if `t0.isDefinitelyTruthy()`
-			: t0.isDefinitelyFalsy()
-				? t1
-				: t0.isDefinitelyTruthy()
+		switch (this.operator) {
+			case Operator.AND: {
+				return t0.isDefinitelyFalsy()
 					? t0
-					: t0.truthySide().union(t1);
+					: t0.falsySide().union(t1); // also the case for if `t0.isDefinitelyTruthy()`
+			}
+			case Operator.OR: {
+				return t0.isDefinitelyFalsy()
+					? t1
+					: t0.isDefinitelyTruthy()
+						? t0
+						: t0.truthySide().union(t1);
+			}
+		}
 	}
 
 	@memoizeMethod
