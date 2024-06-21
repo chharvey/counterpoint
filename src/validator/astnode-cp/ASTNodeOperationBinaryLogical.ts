@@ -42,7 +42,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	@ASTNodeExpression.buildDeco
 	public override build(): binaryen.ExpressionRef {
 		// eslint-disable-next-line prefer-const --- one of them is reassigned
-		let [arg0, arg1]: binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build());
+		let [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
 
 		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint = this.builder.varCount;

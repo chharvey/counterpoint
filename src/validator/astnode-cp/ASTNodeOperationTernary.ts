@@ -50,9 +50,8 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
-		const t0: TYPE.Type = this.operand0.type();
-		const t1: TYPE.Type = this.operand1.type();
-		const t2: TYPE.Type = this.operand2.type();
+		// compute types early to rethrow any errors
+		const [t0, t1, t2]: TYPE.Type[] = this.children.map((operand) => operand.type());
 		assert.ok(t0.isSubtypeOf(TYPE.BOOL), new TypeError01(this));
 		return (
 			t0.isBottomType                  ? TYPE.NEVER :
