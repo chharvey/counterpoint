@@ -77,14 +77,14 @@ describe('ASTNodeOperation', () => {
 	} as const;
 
 	/**
-	 * Return a `(drop arg0)` expression followed by a second expression.
-	 * If `arg1` is provided as an ExpressionRef, it is the second expression;
+	 * Return a block containing `(drop)` expressions for each of `args`, followed by a second expression.
+	 * If `final` is provided as an ExpressionRef, it is the second expression;
 	 * otherwise, a BinVect of boolean value is the second expression.
 	 */
-	function drop_then(mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef | boolean): binaryen.ExpressionRef {
+	function drop_then(mod: binaryen.Module, args: readonly binaryen.ExpressionRef[], final: binaryen.ExpressionRef | boolean): binaryen.ExpressionRef {
 		return mod.block(null, [
-			mod.drop(arg0),
-			typeof arg1 === 'number' ? arg1 : new BinVect(mod, arg1).vect,
+			...args.map((arg) => mod.drop(arg)),
+			typeof final === 'number' ? final : new BinVect(mod, final).vect,
 		], binaryen.v128);
 	}
 
@@ -295,11 +295,11 @@ describe('ASTNodeOperation', () => {
 			it('optimizes logical NOT operator by evaluating operand type.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['!null;',  drop_then(mod, buildConst(mod),        true)],
-					['!false;', drop_then(mod, buildConst(mod, false), true)],
-					['!true;',  drop_then(mod, buildConst(mod, true),  false)],
-					['!42;',    drop_then(mod, buildConst(mod, 42n),   false)],
-					['!4.2;',   drop_then(mod, buildConst(mod, 4.2),   false)],
+					['!null;',  drop_then(mod, [buildConst(mod)],        true)],
+					['!false;', drop_then(mod, [buildConst(mod, false)], true)],
+					['!true;',  drop_then(mod, [buildConst(mod, true)],  false)],
+					['!42;',    drop_then(mod, [buildConst(mod, 42n)],   false)],
+					['!4.2;',   drop_then(mod, [buildConst(mod, 4.2)],   false)],
 				]));
 			});
 			it('returns the correct operation.', () => {
@@ -337,8 +337,8 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build()),
 					[
-						drop_then(goal.builder.module, extracts[0], false),
-						drop_then(goal.builder.module, extracts[1], false),
+						drop_then(goal.builder.module, [extracts[0]], false),
+						drop_then(goal.builder.module, [extracts[1]], false),
 						CALL.vemp(goal.builder.module, extracts[2]),
 						CALL.vemp(goal.builder.module, extracts[3]),
 						CALL.vneg(goal.builder.module, extracts[4]),
@@ -375,9 +375,9 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build()),
 					[
-						drop_then(goal.builder.module, drop_then(goal.builder.module, extracts[0], false), true),
+						drop_then(goal.builder.module, [drop_then(goal.builder.module, [extracts[0]], false)], true),
 						CALL.vemp(goal.builder.module, CALL.vemp(goal.builder.module, extracts[1])),
-						drop_then(goal.builder.module, CALL.vneg(goal.builder.module, extracts[2]), false),
+						drop_then(goal.builder.module, [CALL.vneg(goal.builder.module, extracts[2])], false),
 						CALL.vemp(goal.builder.module, CALL.vneg(goal.builder.module, extracts[3])),
 						CALL.vneg(goal.builder.module, CALL.vneg(goal.builder.module, extracts[4])),
 						CALL.vneg(goal.builder.module, CALL.vneg(goal.builder.module, extracts[5])),
@@ -1212,37 +1212,37 @@ describe('ASTNodeOperation', () => {
 			it('optimizes by evaluating left operand type.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['42 && 420;',        drop_then(mod, buildConst(mod, 42n), buildConst(mod, 420n))],
+					['42 && 420;',        drop_then(mod, [buildConst(mod, 42n)], buildConst(mod, 420n))],
 					['4.2 || -420;',      buildConst(mod, 4.2)],
 					['null && 201.0e-1;', buildConst(mod)],
-					['false || null;',    drop_then(mod, buildConst(mod, false), buildConst(mod))],
-					['true && 201.0e-1;', drop_then(mod, buildConst(mod, true), buildConst(mod, 20.1))],
+					['false || null;',    drop_then(mod, [buildConst(mod, false)], buildConst(mod))],
+					['true && 201.0e-1;', drop_then(mod, [buildConst(mod, true)], buildConst(mod, 20.1))],
 
 					['1 && 2 || 3 && 4;', drop_then(
 						mod,
-						buildConst(mod, 1n),
+						[buildConst(mod, 1n)],
 						buildConst(mod, 2n),
 					)],
 					['null && 2 || 3 && null;', drop_then(
 						mod,
-						buildConst(mod),
+						[buildConst(mod)],
 						drop_then(
 							mod,
-							buildConst(mod, 3n),
+							[buildConst(mod, 3n)],
 							buildConst(mod),
 						),
 					)],
 					['(1 || 2) && (3 || 4);', drop_then(
 						mod,
-						buildConst(mod, 1n),
+						[buildConst(mod, 1n)],
 						buildConst(mod, 3n),
 					)],
 					['(1 || null) && (null || 4);', drop_then(
 						mod,
-						buildConst(mod, 1n),
+						[buildConst(mod, 1n)],
 						drop_then(
 							mod,
-							buildConst(mod),
+							[buildConst(mod)],
 							buildConst(mod, 4n),
 						),
 					)],
@@ -1396,9 +1396,9 @@ describe('ASTNodeOperation', () => {
 			it('optimizes by evaluating condition operand type.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['if true  then false else 2;',    drop_then(mod, buildConst(mod, true),  buildConst(mod, false))],
-					['if true  then 2     else 3.0;',  drop_then(mod, buildConst(mod, true),  buildConst(mod, 2n))],
-					['if false then 3.0   else null;', drop_then(mod, buildConst(mod, false), buildConst(mod))],
+					['if true  then false else 2;',    drop_then(mod, [buildConst(mod, true)],  buildConst(mod, false))],
+					['if true  then 2     else 3.0;',  drop_then(mod, [buildConst(mod, true)],  buildConst(mod, 2n))],
+					['if false then 3.0   else null;', drop_then(mod, [buildConst(mod, false)], buildConst(mod))],
 				]));
 			});
 			it('returns `(if)`.', () => {
