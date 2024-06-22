@@ -1093,4 +1093,23 @@ describe('Type', () => {
 			});
 		});
 	});
+
+
+	describe('TypeUnit', () => {
+		describe('#primitiveType', () => {
+			it('returns the narrowest primitive type containing the unit.', () => {
+				new Map<TYPE.TypeUnit, TYPE.Type>([
+					[TYPE.NULL,                            TYPE.NULL],
+					[OBJ.Boolean.FALSETYPE,                TYPE.BOOL],
+					[OBJ.Boolean.TRUETYPE,                 TYPE.BOOL],
+					[new TYPE.TypeUnit(OBJ.Null.NULL),     TYPE.NULL],
+					[new TYPE.TypeUnit(OBJ.Boolean.FALSE), TYPE.BOOL],
+					[new TYPE.TypeUnit(OBJ.Boolean.TRUE),  TYPE.BOOL],
+					[typeUnit(42n),                        TYPE.INT],
+					[typeUnit(6.28),                       TYPE.FLOAT],
+					[typeUnit('hello'),                    TYPE.STR],
+				]).forEach((expected, actual) => assert.strictEqual(actual.primitiveType(), expected));
+			});
+		});
+	});
 });

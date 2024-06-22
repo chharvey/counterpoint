@@ -1,5 +1,13 @@
+import * as assert from 'assert';
 import {strictEqual} from '../../lib/index.js';
-import type * as OBJ from '../cp-object/index.js';
+import * as OBJ from '../cp-object/index.js';
+import {
+	NULL,
+	BOOL,
+	INT,
+	FLOAT,
+	STR,
+} from './index.js';
 import {Type} from './Type.js';
 
 
@@ -32,5 +40,20 @@ export class TypeUnit<Value extends OBJ.Primitive = OBJ.Primitive> extends Type 
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.includes(this.value);
+	}
+
+	/**
+	 * Return the narrowest primitive type containing this type unit.
+	 * @return a Counterpoint type `null`, `bool`, `int`, `float`, or `str`
+	 */
+	public primitiveType(): Type {
+		return (
+			this.value instanceof OBJ.Null    ? NULL :
+			this.value instanceof OBJ.Boolean ? BOOL :
+			this.value instanceof OBJ.Integer ? INT :
+			this.value instanceof OBJ.Float   ? FLOAT :
+			this.value instanceof OBJ.String  ? STR :
+			assert.fail(`Expected ${ this.value } to be a primitive value.`)
+		);
 	}
 }
