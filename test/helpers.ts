@@ -45,14 +45,18 @@ export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
 
 
 
-export function typeUnitInt(x: bigint): TYPE.TypeUnit<OBJ.Integer> {
-	return new OBJ.Integer(x).toType();
-}
-export function typeUnitFloat(x: number): TYPE.TypeUnit<OBJ.Float> {
-	return new OBJ.Float(x).toType();
-}
-export function typeUnitStr(x: string): TYPE.TypeUnit<OBJ.String> {
-	return new OBJ.String(x).toType();
+export function typeUnit(value: bigint): TYPE.TypeUnit<OBJ.Integer>;
+export function typeUnit(value: number): TYPE.TypeUnit<OBJ.Float>;
+export function typeUnit(value: string): TYPE.TypeUnit<OBJ.String>;
+export function typeUnit(value: bigint | number | string): TYPE.TypeUnit<OBJ.Integer | OBJ.Float | OBJ.String> {
+	return (
+		value === 0n              ? OBJ.Integer.ZERO :
+		value === 1n              ? OBJ.Integer.UNIT :
+		typeof value === 'bigint' ? new OBJ.Integer(value) :
+		typeof value === 'number' ? new OBJ.Float(value) :
+		typeof value === 'string' ? new OBJ.String(value) :
+		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+	).toType();
 }
 
 

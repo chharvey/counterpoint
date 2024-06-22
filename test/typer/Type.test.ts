@@ -5,11 +5,7 @@ import {
 	TYPE,
 } from '../../src/index.js';
 import {assert_instanceof} from '../../src/lib/index.js';
-import {
-	typeUnitInt,
-	typeUnitFloat,
-	typeUnitStr,
-} from '../helpers.js';
+import {typeUnit} from '../helpers.js';
 
 
 
@@ -156,10 +152,10 @@ describe('Type', () => {
 	describe('#includes', () => {
 		it('uses `Object#identical` to compare values.', () => {
 			function unionOfInts(ns: readonly bigint[]): TYPE.Type {
-				return TYPE.Type.unionAll(ns.map((v) => typeUnitInt(v)));
+				return TYPE.Type.unionAll(ns.map((v) => typeUnit(v)));
 			}
 			function unionOfFloats(ns: readonly number[]): TYPE.Type {
-				return TYPE.Type.unionAll(ns.map((v) => typeUnitFloat(v)));
+				return TYPE.Type.unionAll(ns.map((v) => typeUnit(v)));
 			}
 			const u1: TYPE.Type = unionOfFloats([4.2, 4.3, 4.4]);
 			const u2: TYPE.Type = unionOfFloats([4.3, 4.4, 4.5]);
@@ -474,17 +470,17 @@ describe('Type', () => {
 				assert.ok(OBJ.Boolean.TRUETYPE .isSubtypeOf(TYPE.BOOL), 'Boolean.TRUETYPE');
 			});
 			it('unit Integer types should be subtypes of `int`.', () => {
-				[42n, -42n, 0n, -0n].map((v) => typeUnitInt(v)).forEach((itype) => {
+				[42n, -42n, 0n, -0n].map((v) => typeUnit(v)).forEach((itype) => {
 					assert.ok(itype.isSubtypeOf(TYPE.INT), `${ itype }`);
 				});
 			});
 			it('unit Float types should be subtypes of `float`.', () => {
-				[4.2, -4.2e-2, 0.0, -0.0].map((v) => typeUnitFloat(v)).forEach((ftype) => {
+				[4.2, -4.2e-2, 0.0, -0.0].map((v) => typeUnit(v)).forEach((ftype) => {
 					assert.ok(ftype.isSubtypeOf(TYPE.FLOAT), `${ ftype }`);
 				});
 			});
 			it('unit String types should be subtypes of `str`.', () => {
-				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => typeUnitStr(v)).forEach((stype) => {
+				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => typeUnit(v)).forEach((stype) => {
 					assert.ok(stype.isSubtypeOf(TYPE.STR), `${ stype }`);
 				});
 			});

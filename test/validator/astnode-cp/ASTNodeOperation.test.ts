@@ -20,9 +20,7 @@ import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
 	CONFIG_FOLDING_COERCION_OFF,
-	typeUnitInt,
-	typeUnitFloat,
-	typeUnitStr,
+	typeUnit,
 	buildConst,
 } from '../../helpers.js';
 
@@ -514,11 +512,11 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			context('with constant folding and int coersion on.', () => {
 				it('returns a constant Integer type for any operation of integers.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3 * 2;').type(), typeUnitInt(7n * 3n * 2n));
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3 * 2;').type(), typeUnit(7n * 3n * 2n));
 				});
 				it('returns a constant Float type for any operation of mix of integers and floats.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('3.0 * 2.7;')   .type(), typeUnitFloat(3.0 * 2.7));
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3.0 * 2;') .type(), typeUnitFloat(7 * 3.0 * 2));
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('3.0 * 2.7;')   .type(), typeUnit(3.0 * 2.7));
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3.0 * 2;') .type(), typeUnit(7 * 3.0 * 2));
 				});
 			});
 			context('with folding off but int coersion on.', () => {
@@ -527,7 +525,7 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(node.type(), TYPE.INT);
 					assert.deepStrictEqual(
 						[node.operand0.type(), node.operand1.type()],
-						[TYPE.INT,             typeUnitInt(2n)],
+						[TYPE.INT,             typeUnit(2n)],
 					);
 				});
 				it('returns Float for float arithmetic.', () => {
@@ -535,7 +533,7 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(node.type(), TYPE.FLOAT);
 					assert.deepStrictEqual(
 						[node.operand0.type(), node.operand1.type()],
-						[typeUnitInt(7n),      TYPE.FLOAT],
+						[typeUnit(7n),         TYPE.FLOAT],
 					);
 				});
 			});
@@ -1064,7 +1062,7 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: TYPE.TypeUnit<OBJ.String> = typeUnitStr('hello');
+						const hello: TYPE.TypeUnit<OBJ.String> = typeUnit('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null | int = null;
 							let var b: null | int = 42;
@@ -1084,7 +1082,7 @@ describe('ASTNodeOperation', () => {
 							TYPE.NULL.union(hello),
 							OBJ.Boolean.FALSETYPE.union(hello),
 							OBJ.Boolean.FALSETYPE.union(hello),
-							TYPE.VOID.union(typeUnitInt(42n)),
+							TYPE.VOID.union(typeUnit(42n)),
 						]);
 					});
 					it('returns `right` if left does not contain `void` nor `null` nor `false`.', () => {
@@ -1116,12 +1114,12 @@ describe('ASTNodeOperation', () => {
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 							OBJ.Boolean.FALSETYPE,
-							typeUnitInt(42n),
-							typeUnitFloat(4.2),
+							typeUnit(42n),
+							typeUnit(4.2),
 						]);
 					});
 					it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: TYPE.TypeUnit<OBJ.String> = typeUnitStr('hello');
+						const hello: TYPE.TypeUnit<OBJ.String> = typeUnit('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null | int = null;
 							let var b: null | int = 42;
@@ -1141,7 +1139,7 @@ describe('ASTNodeOperation', () => {
 							TYPE.INT.union(hello),
 							OBJ.Boolean.TRUETYPE.union(hello),
 							OBJ.Boolean.TRUETYPE.union(TYPE.FLOAT).union(hello),
-							TYPE.STR.union(typeUnitInt(42n)),
+							TYPE.STR.union(typeUnit(42n)),
 						]);
 					});
 					it('returns `left` if it does not contain `void` nor `null` nor `false`.', () => {

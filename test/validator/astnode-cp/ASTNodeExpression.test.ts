@@ -18,9 +18,7 @@ import {
 } from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
-	typeUnitInt,
-	typeUnitFloat,
-	typeUnitStr,
+	typeUnit,
 	buildConst,
 } from '../../helpers.js';
 
@@ -96,7 +94,7 @@ describe('ASTNodeExpression', () => {
 			it('computes string values.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeConstant.fromSource('"42😀\\u{1f600}";').type(),
-					typeUnitStr('42😀\u{1f600}'),
+					typeUnit('42😀\u{1f600}'),
 				);
 			});
 			/* eslint-enable array-element-newline */
@@ -399,10 +397,10 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			([
-				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.Type.unionAll([typeUnitStr('a'), typeUnitInt(42n), typeUnitFloat(3.0)])],
-				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.Type.unionAll([typeUnitStr('a'), TYPE.INT,         TYPE.FLOAT])],
+				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.Type.unionAll([typeUnit('a'), typeUnit(42n), typeUnit(3.0)])],
+				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.Type.unionAll([typeUnit('a'), TYPE.INT,      TYPE.FLOAT])],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
-				const expected: readonly TYPE.TypeUnit[] = [typeUnitInt(1n), typeUnitFloat(2.0), typeUnitStr('three')];
+				const expected: readonly TYPE.TypeUnit[] = [typeUnit(1n), typeUnit(2.0), typeUnit('three')];
 				const collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,
