@@ -55,7 +55,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		}
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.ID, 'vid'],
-			[Operator.EQ, this.validator.config.compilerOptions.intCoercion ? 'veq' : 'veqq'],
+			[Operator.EQ, 'veq'],
 		]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 	}
 

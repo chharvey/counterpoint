@@ -71,7 +71,6 @@ describe('ASTNodeOperation', () => {
 		vge:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge',  [arg0, arg1], binaryen.v128),
 		vid:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',  [arg0, arg1], binaryen.v128),
 		veq:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',  [arg0, arg1], binaryen.v128),
-		veqq: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veqq', [arg0, arg1], binaryen.v128),
 	} as const;
 
 	/**
@@ -1013,10 +1012,10 @@ describe('ASTNodeOperation', () => {
 							['true == 1.0;', drop_then_false(buildConst(mod, true), buildConst(mod, 1.0))],
 						]), CONFIG_FOLDING_COERCION_OFF);
 					});
-					it('calls `veqq` when operands are same numeric type.', () => {
+					it('calls `veq` when operands are same numeric type.', () => {
 						buildOperations(new Map<string, binaryen.ExpressionRef>([
-							['42  == 420;',  CALL.veqq(mod, buildConst(mod, 42n), buildConst(mod, 420n))],
-							['4.2 == 42.0;', CALL.veqq(mod, buildConst(mod, 4.2), buildConst(mod, 42.0))],
+							['42  == 420;',  CALL.veq(mod, buildConst(mod, 42n), buildConst(mod, 420n))],
+							['4.2 == 42.0;', CALL.veq(mod, buildConst(mod, 4.2), buildConst(mod, 42.0))],
 						]), CONFIG_FOLDING_COERCION_OFF);
 					});
 				});
