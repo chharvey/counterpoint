@@ -9,10 +9,7 @@ import {
 	ReferenceError02,
 	ReferenceError03,
 } from '../../../src/index.js';
-import {
-	typeUnitInt,
-	typeUnitFloat,
-} from '../../helpers.js';
+import {typeUnit} from '../../helpers.js';
 
 
 describe('ASTNodeType', () => {
@@ -29,8 +26,8 @@ describe('ASTNodeType', () => {
 					TYPE.NULL,
 					OBJ.Boolean.FALSETYPE,
 					OBJ.Boolean.TRUETYPE,
-					typeUnitInt(42n),
-					typeUnitFloat(4.2e+3),
+					typeUnit(42n),
+					typeUnit(4.2e+3),
 				]);
 			});
 			it('computes the value of keyword type.', () => {
@@ -190,11 +187,11 @@ describe('ASTNodeType', () => {
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource('obj & 3').eval(),
-				TYPE.OBJ.intersect(typeUnitInt(3n)),
+				TYPE.OBJ.intersect(typeUnit(3n)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource('4.2 | int').eval(),
-				typeUnitFloat(4.2).union(TYPE.INT),
+				typeUnit(4.2).union(TYPE.INT),
 			);
 		});
 	});
