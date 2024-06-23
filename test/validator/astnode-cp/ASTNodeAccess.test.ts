@@ -958,7 +958,7 @@ describe('ASTNodeAccess', () => {
 		const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
 		const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
 		const bintype6: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128]);
-		const BASE_SRC: string        = '[[1.1, [2.2, 3.3]], [4.4, [5.5, 6.6]]]';
+		const BASE_SRC: string        = '[[1.1, [2.2, 3.3]], [[4.4], [5.5, 6.6]]]';
 		function make_tuple(builder: Builder): binaryen.ExpressionRef {
 			const inner01: binaryen.ExpressionRef = builder.module.tuple.make([
 				buildConst(builder, 2.2),
@@ -974,7 +974,7 @@ describe('ASTNodeAccess', () => {
 				builder.module.tuple.extract(builder.module.local.get(0, bintype2), 1),
 			]);
 			const inner1: binaryen.ExpressionRef = builder.module.tuple.make([
-				buildConst(builder, 4.4),
+				builder.module.tuple.extract(builder.module.tuple.make([buildConst(builder, 4.4)]), 0),
 				builder.module.tuple.extract(builder.module.local.tee(2, inner11, bintype2), 0),
 				builder.module.tuple.extract(builder.module.local.get(2, bintype2), 1),
 			]);
@@ -1007,6 +1007,11 @@ describe('ASTNodeAccess', () => {
 				builder.module.tuple.extract(builder.module.local.get(5, bintype6), 2),
 			]);
 		}
+		function make_tuple_1_0(builder: Builder): binaryen.ExpressionRef {
+			return builder.module.tuple.make([
+				builder.module.tuple.extract(make_tuple_1(builder), 0),
+			]);
+		}
 		function make_tuple_1_1(builder: Builder): binaryen.ExpressionRef {
 			return builder.module.tuple.make([
 				builder.module.tuple.extract(builder.module.local.tee(5, make_tuple_1(builder), bintype3), 1),
@@ -1019,10 +1024,11 @@ describe('ASTNodeAccess', () => {
 			['.1',     (builder) => make_tuple_1(builder)],
 			['.0.0',   (builder) => builder.module.tuple.extract(make_tuple_0(builder), 0)],
 			['.0.1',   (builder) => make_tuple_0_1(builder)],
-			['.1.0',   (builder) => builder.module.tuple.extract(make_tuple_1(builder), 0)],
+			['.1.0',   (builder) => make_tuple_1_0(builder)],
 			['.1.1',   (builder) => make_tuple_1_1(builder)],
 			['.0.1.0', (builder) => builder.module.tuple.extract(make_tuple_0_1(builder), 0)],
 			['.0.1.1', (builder) => builder.module.tuple.extract(make_tuple_0_1(builder), 1)],
+			['.1.0.0', (builder) => builder.module.tuple.extract(make_tuple_1_0(builder), 0)],
 			['.1.1.0', (builder) => builder.module.tuple.extract(make_tuple_1_1(builder), 0)],
 			['.1.1.1', (builder) => builder.module.tuple.extract(make_tuple_1_1(builder), 1)],
 		])], ([access_src, expected_fn]) => { // TODO: upgrade 'extrajs' to v0.26 and use `xjs.Map.forEachAggregated`

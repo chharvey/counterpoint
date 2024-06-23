@@ -59,8 +59,18 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeTuple);`
 			if (base_type instanceof TYPE.TypeTuple) {
 				const flattened_indices: number | number[] = base_type.getFlattenedIndices((this.accessor.val.fold() as OBJ.Integer).toNumber()); // TODO: use `Number(this.accessor.index)`
+
+				/*
+				 * If the index is a single number, return an extract of the build at that index.
+				 * If the index array has length 1, return a singleton tuple containing that extract.
+				 * If the index array length is > 1, return a tuple of extracts whose first entry is a `tee` and the rest are `get`s.
+				 */
 				if (typeof flattened_indices === 'number') {
 					return this.builder.module.tuple.extract(base_build, flattened_indices);
+				} else if (flattened_indices.length === 1) {
+					return this.builder.module.tuple.make([
+						this.builder.module.tuple.extract(base_build, flattened_indices[0]),
+					]);
 				} else {
 					const bintype:  binaryen.Type = binaryen.getExpressionType(base_build);
 					const temp_id:  bigint        = this.builder.varCount;

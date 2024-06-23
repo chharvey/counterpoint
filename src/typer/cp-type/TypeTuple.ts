@@ -101,7 +101,7 @@ export class TypeTuple extends ValueType {
 	/**
 	 * Return an index or list of indices corresponding to the tree structure of this type.
 	 * @example
-	 * [A, [B], [C, [D]]]                 => [0, 1, [2, 3]]
+	 * [A, [B], [C, [D]]]                 => [0, [1], [2, 3]]
 	 * [A, [B, Bb], [C, [D, Dd], Cc], Aa] => [0, [1, 2], [3, 4, 5, 6], 7]
 	 */
 	public getFlattenedIndices(index: number): number | number[] {
