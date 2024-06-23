@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import {strictEqual} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import type * as OBJ from '../cp-object/index.js';
+import * as OBJ from '../cp-object/index.js';
 import {
 	TypeIntersection,
 	TypeUnion,
@@ -355,6 +355,10 @@ export abstract class Type {
 		};
 	}
 
+	static get #falsyTypes(): readonly Type[] {
+		return [VOID, NULL, OBJ.Boolean.FALSETYPE];
+	}
+
 
 	/**
 	 * Construct a new Type object.
@@ -401,6 +405,42 @@ export abstract class Type {
 	 */
 	public get hasMutable(): boolean {
 		return this.isMutable;
+	}
+
+	/**
+	 * Is this type definitely a ”falsy” type?
+	 * @return  whether this is a subtype of `void | null | false`
+	 * @final
+	 */
+	public isDefinitelyFalsy(): boolean {
+		return this.isSubtypeOf(TypeUnion.all(Type.#falsyTypes));
+	}
+
+	/**
+	 * Is this type definitely a “truthy” type?
+	 * @return  `false` if this is the Bottom Type or is a supertype of any of `void` or `null` or `false`; otherwise `true`
+	 * @final
+	 */
+	public isDefinitelyTruthy(): boolean {
+		return !this.isBottomType && Type.#falsyTypes.every((t) => !t.isSubtypeOf(this));
+	}
+
+	/**
+	 * Returns the “falsy side” of this type.
+	 * @return this type’s intersection with all falsy types
+	 * @final
+	 */
+	public falsySide(): Type {
+		return this.intersect(TypeUnion.all(Type.#falsyTypes));
+	}
+
+	/**
+	 * Returns the “truthy side” of this type.
+	 * @return this type, minus all falsy types
+	 * @final
+	 */
+	public truthySide(): Type {
+		return this.subtract(TypeUnion.all(Type.#falsyTypes));
 	}
 
 	/**

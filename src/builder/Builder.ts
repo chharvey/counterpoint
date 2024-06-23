@@ -243,25 +243,6 @@ export class Builder {
 				),
 			);
 		})(this.module)], binaryen.v128));
-		// equality, but with int coercion turned off (equating ints with floats always returns false)
-		this.module.addFunction('veqq', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => {
-			const vects = [0, 1].map((i) => new BinVect(this.module, this.module.local.get(i, binaryen.v128))) as readonly BinVect[] as readonly [BinVect, BinVect];
-			const opts = [
-				mod.i32.eq(vects[0].intValue, vects[1].intValue),
-				this.module.i32.const(0),
-				this.module.i32.const(0),
-				mod.f64.eq(vects[0].floatValue, vects[1].floatValue),
-			].map((opt) => BinVect.asBool(mod, opt));
-			return mod.if(
-				mod.i32.or(vects[0].isSpecial(), vects[1].isSpecial()),
-				mod.call('vid', vects.map((v) => v.vect), binaryen.v128),
-				mod.if(
-					vects[0].isInt,
-					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
-					mod.if(vects[1].isInt, opts[0b10], opts[0b11]),
-				),
-			);
-		})(this.module)], binaryen.v128));
 	}
 
 	/**
