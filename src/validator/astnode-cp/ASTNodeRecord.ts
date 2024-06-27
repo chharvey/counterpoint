@@ -1,7 +1,9 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
+	build_record_like,
 	AssignmentErrorDuplicateKey,
 } from '../../index.js';
 import {
@@ -43,6 +45,17 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				throw new AssignmentErrorDuplicateKey(keys[i]);
 			}
 		});
+	}
+
+	@memoizeMethod
+	@ASTNodeExpression.buildDeco
+	public override build(): binaryen.ExpressionRef {
+		return build_record_like<ASTNodeExpression>(
+			new Map<bigint, ASTNodeExpression>(this.children.map((child) => [child.key.id, child.val])),
+			this.builder,
+			(expr) => expr.type(),
+			(expr) => expr.build(),
+		);
 	}
 
 	@memoizeMethod

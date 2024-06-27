@@ -184,6 +184,8 @@ describe('Object', () => {
 		describe('Collection', () => {
 			const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
 			const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
+			const bintype4: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128]);
+			const bintype8: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128]);
 
 			describe('Tuple', () => {
 				let builder: Builder = new Builder();
@@ -327,6 +329,204 @@ describe('Object', () => {
 							mod.tuple.extract(mod.local.get(4, bintype2), 1),
 						]),
 						// '[[1, [2.0, 3]], [4.0, [5, 6.0]], [7, []]]',
+					);
+				});
+			});
+
+			describe('Record', () => {
+				let builder: Builder = new Builder();
+				beforeEach(() => {
+					builder = new Builder();
+				});
+				it('returns a `(block)` with `(set)`s followed by a `(tuple.make)`.', () => {
+					const mod: binaryen.Module = builder.module;
+					return assertEqualBins(
+						new OBJ.Record(new Map<bigint, OBJ.Object>([
+							[0x100n, OBJ.Integer.UNIT],
+							[0x101n, new OBJ.Float(2.0)],
+						])).build(builder),
+						mod.block(null, [
+							mod.local.set(0, buildConst(builder, 1n)),
+							mod.local.set(1, buildConst(builder, 2.0)),
+							mod.tuple.make([
+								mod.local.get(0, binaryen.v128),
+								mod.local.get(1, binaryen.v128),
+							]),
+						], bintype2),
+						// '[a= 1, b= 2.0]',
+					);
+				});
+				it('record of size 1 returns a `(tuple.make)` with 1 item, without `(set)` & `(get)`.', () => {
+					assertEqualBins(
+						new OBJ.Record(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Float(3.4)]])).build(builder),
+						builder.module.tuple.make([buildConst(builder, 3.4)]),
+						// '[a= 3.4]',
+					);
+				});
+				it('boxed record with 1 prop.', () => {
+					const mod: binaryen.Module = builder.module;
+					return assertEqualBins(
+						new OBJ.Record(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Record(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Float(3.4)]]))]])).build(builder),
+						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(builder, 3.4)]), 0)]),
+						// '[a= [a= 3.4]]',
+					);
+				});
+				it('boxed record with many props.', () => {
+					const mod:   binaryen.Module        = builder.module;
+					const inner: binaryen.ExpressionRef = mod.block(null, [
+						mod.local.set(0, buildConst(builder, 1n)),
+						mod.local.set(1, buildConst(builder, 2.0)),
+						mod.local.set(2, buildConst(builder, true)),
+						mod.tuple.make([
+							mod.local.get(0, binaryen.v128),
+							mod.local.get(1, binaryen.v128),
+							mod.local.get(2, binaryen.v128),
+						]),
+					], bintype3);
+					return assertEqualBins(
+						new OBJ.Record(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Record(new Map<bigint, OBJ.Object>([
+							[0x100n, OBJ.Integer.UNIT],
+							[0x101n, new OBJ.Float(2.0)],
+							[0x102n, OBJ.Boolean.TRUE],
+						]))]])).build(builder),
+						mod.tuple.make([
+							mod.tuple.extract(mod.local.tee(3, inner, bintype3), 0),
+							mod.tuple.extract(mod.local.get(3, bintype3), 1),
+							mod.tuple.extract(mod.local.get(3, bintype3), 2),
+						]),
+						// '[a= [a= 1, b= 2.0, c= true]]',
+					);
+				});
+				it('nested records.', () => {
+					const mod:    binaryen.Module        = builder.module;
+					const inner2: binaryen.ExpressionRef = mod.block(null, [
+						mod.local.set(0, buildConst(builder, 3n)),
+						mod.local.set(1, mod.tuple.extract(mod.tuple.make([buildConst(builder, 4.0)]), 0)),
+						mod.tuple.make([
+							mod.local.get(0, binaryen.v128),
+							mod.local.get(1, binaryen.v128),
+						]),
+					], bintype2);
+					return assertEqualBins(
+						new OBJ.Record(new Map<bigint, OBJ.Object>([
+							[0x100n, OBJ.Integer.UNIT],
+							[0x101n, new OBJ.Record(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Float(2.0)]]))],
+							[0x102n, new OBJ.Record(new Map<bigint, OBJ.Object>([
+								[0x100n, new OBJ.Integer(3n)],
+								[0x101n, new OBJ.Record(new Map<bigint, OBJ.Object>([[0x100n, new OBJ.Float(4.0)]]))],
+							]))],
+						])).build(builder),
+						mod.block(null, [
+							mod.local.set(3, buildConst(builder, 1n)),
+							mod.local.set(4, mod.tuple.extract(mod.tuple.make([buildConst(builder, 2.0)]), 0)),
+							mod.local.set(5, mod.tuple.extract(mod.local.tee(2, inner2, bintype2), 0)),
+							mod.local.set(6, mod.tuple.extract(mod.local.get(2, bintype2), 1)),
+							mod.tuple.make([
+								mod.local.get(3, binaryen.v128),
+								mod.local.get(4, binaryen.v128),
+								mod.local.get(5, binaryen.v128),
+								mod.local.get(6, binaryen.v128),
+							]),
+						], bintype4),
+						/* `[
+							a= 1,
+							b= [a= 2.0],
+							c= [a= 3, b= [a= 4.0]],
+						]`, */
+					);
+				});
+				it('multiple entries.', () => {
+					const mod:     binaryen.Module        = builder.module;
+					const inner01: binaryen.ExpressionRef = mod.block(null, [
+						mod.local.set(0, buildConst(builder, 2.0)),
+						mod.local.set(1, buildConst(builder, 3n)),
+						mod.tuple.make([
+							mod.local.get(0, binaryen.v128),
+							mod.local.get(1, binaryen.v128),
+						]),
+					], bintype2);
+					const inner11: binaryen.ExpressionRef = mod.block(null, [
+						mod.local.set(7, buildConst(builder, 5n)),
+						mod.local.set(8, buildConst(builder, 6.0)),
+						mod.tuple.make([
+							mod.local.get(7, binaryen.v128),
+							mod.local.get(8, binaryen.v128),
+						]),
+					], bintype2);
+					const inner0: binaryen.ExpressionRef = mod.block(null, [
+						mod.local.set(3, buildConst(builder, 1n)),
+						mod.local.set(4, mod.tuple.extract(mod.local.tee(2, inner01, bintype2), 0)),
+						mod.local.set(5, mod.tuple.extract(mod.local.get(2, bintype2), 1)),
+						mod.tuple.make([
+							mod.local.get(3, binaryen.v128),
+							mod.local.get(4, binaryen.v128),
+							mod.local.get(5, binaryen.v128),
+						]),
+					], bintype3);
+					const inner1: binaryen.ExpressionRef = mod.block(null, [
+						mod.local.set(10, buildConst(builder, 4.0)),
+						mod.local.set(11, mod.tuple.extract(mod.local.tee(9, inner11, bintype2), 0)),
+						mod.local.set(12, mod.tuple.extract(mod.local.get(9, bintype2), 1)),
+						mod.tuple.make([
+							mod.local.get(10, binaryen.v128),
+							mod.local.get(11, binaryen.v128),
+							mod.local.get(12, binaryen.v128),
+						]),
+					], bintype3);
+					const inner2: binaryen.ExpressionRef = mod.block(null, [
+						mod.local.set(14, buildConst(builder, 7n)),
+						mod.local.set(15, new BinVect(mod, true).vect),
+						mod.tuple.make([
+							mod.local.get(15, binaryen.v128),
+							mod.local.get(14, binaryen.v128),
+						]),
+					], bintype2);
+					return assertEqualBins(
+						new OBJ.Record(new Map<bigint, OBJ.Object>([
+							[0x100n, new OBJ.Record(new Map<bigint, OBJ.Object>([
+								[0x100n, OBJ.Integer.UNIT],
+								[0x101n, new OBJ.Record(new Map<bigint, OBJ.Object>([
+									[0x100n, new OBJ.Float(2.0)],
+									[0x101n, new OBJ.Integer(3n)],
+								]))],
+							]))],
+							[0x101n, new OBJ.Record(new Map<bigint, OBJ.Object>([
+								[0x100n, new OBJ.Float(4.0)],
+								[0x101n, new OBJ.Record(new Map<bigint, OBJ.Object>([
+									[0x100n, new OBJ.Integer(5n)],
+									[0x101n, new OBJ.Float(6.0)],
+								]))],
+							]))],
+							[0x102n, new OBJ.Record(new Map<bigint, OBJ.Object>([
+								[0x101n, new OBJ.Integer(7n)],
+								[0x100n, OBJ.Boolean.TRUE],
+							]))],
+						])).build(builder),
+						mod.block(null, [
+							mod.local.set(17, mod.tuple.extract(mod.local.tee( 6, inner0, bintype3), 0)),
+							mod.local.set(18, mod.tuple.extract(mod.local.get( 6, bintype3), 1)),
+							mod.local.set(19, mod.tuple.extract(mod.local.get( 6, bintype3), 2)),
+							mod.local.set(20, mod.tuple.extract(mod.local.tee(13, inner1, bintype3), 0)),
+							mod.local.set(21, mod.tuple.extract(mod.local.get(13, bintype3), 1)),
+							mod.local.set(22, mod.tuple.extract(mod.local.get(13, bintype3), 2)),
+							mod.local.set(23, mod.tuple.extract(mod.local.tee(16, inner2, bintype2), 0)),
+							mod.local.set(24, mod.tuple.extract(mod.local.get(16, bintype2), 1)),
+							mod.tuple.make([
+								mod.local.get(17, binaryen.v128),
+								mod.local.get(18, binaryen.v128),
+								mod.local.get(19, binaryen.v128),
+								mod.local.get(20, binaryen.v128),
+								mod.local.get(21, binaryen.v128),
+								mod.local.get(22, binaryen.v128),
+								mod.local.get(23, binaryen.v128),
+								mod.local.get(24, binaryen.v128),
+							]),
+						], bintype8),
+						/* `[
+							a= [a= 1,   b= [a= 2.0, b= 3]],
+							b= [a= 4.0, b= [a= 5, b= 6.0]],
+							c= [b= 7,   a= true],
+						]`, */
 					);
 				});
 			});
