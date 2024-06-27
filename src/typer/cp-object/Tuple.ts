@@ -35,8 +35,8 @@ export class Tuple<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 		return build_tuple_like<T>(
 			this.items,
 			builder,
+			(value) => value.toType(),
 			(value) => value.build(builder),
-			(value) => value instanceof Tuple ? value.items.length : null,
 		);
 	}
 }

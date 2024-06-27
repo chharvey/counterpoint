@@ -38,11 +38,8 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		return build_tuple_like<ASTNodeExpression>(
 			this.children,
 			this.builder,
+			(expr) => expr.type(),
 			(expr) => expr.build(),
-			(expr) => {
-				const expr_type: TYPE.Type = expr.type();
-				return expr_type instanceof TYPE.TypeTuple ? expr_type.invariants.length : null;
-			},
 		);
 	}
 

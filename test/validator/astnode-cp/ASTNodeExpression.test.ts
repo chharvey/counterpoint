@@ -547,8 +547,7 @@ describe('ASTNodeExpression', () => {
 			describe('ASTNodeTuple', () => {
 				const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
 				const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
-
-				it('returns (tuple.make).', () => {
+				it('returns `(tuple.make)`.', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
@@ -562,14 +561,14 @@ describe('ASTNodeExpression', () => {
 						new BinVect(tuple.builder.module, 'tuple').vect,
 					);
 				});
-				it('tuple of length 1 returns a (tuple.make) with 1 item.', () => {
+				it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[3.4];', CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
 						tuple.builder.module.tuple.make([buildConst(tuple.builder, 3.4)]),
 					);
 				});
-				it('boxed empty tuple returns (tuple.make) containing a BinVect.', () => {
+				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[[]];', CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),

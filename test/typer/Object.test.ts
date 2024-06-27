@@ -190,7 +190,7 @@ describe('Object', () => {
 				builder = new Builder();
 			});
 
-			it('returns (tuple.make).', () => {
+			it('returns `(tuple.make)`.', () => {
 				assertEqualBins(
 					new OBJ.Tuple([OBJ.Integer.UNIT, new OBJ.Float(2.0)]).build(builder),
 					builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
@@ -204,14 +204,14 @@ describe('Object', () => {
 					// '[]',
 				);
 			});
-			it('tuple of length 1 returns a (tuple.make) with 1 item.', () => {
+			it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
 				assertEqualBins(
 					new OBJ.Tuple([new OBJ.Float(3.4)]).build(builder),
 					builder.module.tuple.make([buildConst(builder, 3.4)]),
 					// '[3.4]',
 				);
 			});
-			it('boxed empty tuple returns (tuple.make) containing a BinVect.', () => {
+			it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
 				assertEqualBins(
 					new OBJ.Tuple([new OBJ.Tuple()]).build(builder),
 					builder.module.tuple.make([new BinVect(builder.module, 'tuple').vect]),
