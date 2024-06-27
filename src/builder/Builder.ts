@@ -10,6 +10,11 @@ type Local = {
 	readonly type: binaryen.Type,
 };
 
+export type LocalInfo = {
+	readonly index: number,
+	readonly type:  binaryen.Type,
+};
+
 const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 
 /**
@@ -92,7 +97,7 @@ export class Builder {
 	 * @param id the local whose index to get
 	 * @return the index or `null`
 	 */
-	public getLocalInfo(id: bigint): {index: number, type: binaryen.Type} | null {
+	public getLocalInfo(id: bigint): LocalInfo | null {
 		const found = this.locals.find((var_) => var_.id === id);
 		return (found)
 			? {

@@ -3,6 +3,7 @@ import {BinVect} from '../../index.js';
 import {
 	OBJ,
 	TYPE,
+	type LocalInfo,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -45,8 +46,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		let [arg0, arg1]: binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build());
 
 		/** A temporary variable id used for optimizing short-circuited operations. */
-		const temp_id: bigint = this.builder.varCount;
-		const local           = this.builder.addLocal(temp_id, binaryen.getExpressionType(arg0))[0].getLocalInfo(temp_id)!;
+		const temp_id: bigint    = this.builder.varCount;
+		const local:   LocalInfo = this.builder.addLocal(temp_id, binaryen.getExpressionType(arg0))[0].getLocalInfo(temp_id)!;
 
 		const condition: binaryen.ExpressionRef = new BinVect(this.builder.module, this.builder.module.call(
 			'vnot',

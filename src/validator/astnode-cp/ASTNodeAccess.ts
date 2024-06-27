@@ -3,6 +3,7 @@ import binaryen from 'binaryen';
 import {
 	OBJ,
 	TYPE,
+	type LocalInfo,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
@@ -74,7 +75,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				} else {
 					const bintype:  binaryen.Type = binaryen.getExpressionType(base_build);
 					const temp_id:  bigint        = this.builder.varCount;
-					const local                   = this.builder.addLocal(temp_id, bintype)[0].getLocalInfo(temp_id)!;
+					const local:    LocalInfo     = this.builder.addLocal(temp_id, bintype)[0].getLocalInfo(temp_id)!;
 					return this.builder.module.tuple.make([
 						                                         this.builder.module.tuple.extract(this.builder.module.local.tee(local.index, base_build, local.type), flattened_indices[0]),
 						...flattened_indices.slice(1).map((n) => this.builder.module.tuple.extract(this.builder.module.local.get(local.index,             local.type), n)),

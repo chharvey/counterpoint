@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import {
+	type LocalInfo,
 	type Builder,
 	BinVect,
 } from './index.js';
@@ -45,8 +46,8 @@ export function build_tuple_like<T>(
 			const expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
 			assert.ok(expanded.length > 1, 'Tuple should be nonempty.');
 
-			const temp_id: bigint = builder.varCount;
-			const local           = builder.addLocal(temp_id, bintype)[0].getLocalInfo(temp_id)!;
+			const temp_id: bigint    = builder.varCount;
+			const local:   LocalInfo = builder.addLocal(temp_id, bintype)[0].getLocalInfo(temp_id)!;
 			return [
 				                                   builder.module.tuple.extract(builder.module.local.tee(local.index, item_build, local.type), 0),
 				...expanded.slice(1).map((_, i) => builder.module.tuple.extract(builder.module.local.get(local.index,             local.type), i + 1)),
