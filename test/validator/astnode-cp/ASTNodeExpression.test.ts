@@ -544,9 +544,10 @@ describe('ASTNodeExpression', () => {
 
 
 		describe('#build', () => {
+			const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
+			const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
+
 			describe('ASTNodeTuple', () => {
-				const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
-				const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
 				it('returns `(tuple.make)`.', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF);
 					return assertEqualBins(

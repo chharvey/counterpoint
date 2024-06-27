@@ -181,153 +181,154 @@ describe('Object', () => {
 			});
 		});
 
-		describe('Tuple', () => {
-			let builder:    Builder       = new Builder();
+		describe('Collection', () => {
 			const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
 			const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
 
-			beforeEach(() => {
-				builder = new Builder();
-			});
-
-			it('returns `(tuple.make)`.', () => {
-				assertEqualBins(
-					new OBJ.Tuple([OBJ.Integer.UNIT, new OBJ.Float(2.0)]).build(builder),
-					builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
-					// '[1, 2.0]',
-				);
-			});
-			it('empty tuple returns unique BinVect representation.', () => {
-				assertEqualBins(
-					new OBJ.Tuple().build(builder),
-					new BinVect(builder.module, 'tuple').vect,
-					// '[]',
-				);
-			});
-			it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
-				assertEqualBins(
-					new OBJ.Tuple([new OBJ.Float(3.4)]).build(builder),
-					builder.module.tuple.make([buildConst(builder, 3.4)]),
-					// '[3.4]',
-				);
-			});
-			it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
-				assertEqualBins(
-					new OBJ.Tuple([new OBJ.Tuple()]).build(builder),
-					builder.module.tuple.make([new BinVect(builder.module, 'tuple').vect]),
-					// '[[]]',
-				);
-			});
-			it('boxed tuple with 1 item.', () => {
-				const mod: binaryen.Module = builder.module;
-				return assertEqualBins(
-					new OBJ.Tuple([new OBJ.Tuple([new OBJ.Float(3.4)])]).build(builder),
-					mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(builder, 3.4)]), 0)]),
-					// '[[3.4]]',
-				);
-			});
-			it('boxed tuple with many items.', () => {
-				const mod:   binaryen.Module        = builder.module;
-				const inner: binaryen.ExpressionRef = mod.tuple.make([
-					buildConst(builder, 1n),
-					buildConst(builder, 2.0),
-					buildConst(builder, true),
-				]);
-				return assertEqualBins(
-					new OBJ.Tuple([new OBJ.Tuple([
-						OBJ.Integer.UNIT,
-						new OBJ.Float(2.0),
-						OBJ.Boolean.TRUE,
-					])]).build(builder),
-					mod.tuple.make([
-						mod.tuple.extract(mod.local.tee(0, inner, bintype3), 0),
-						mod.tuple.extract(mod.local.get(0, bintype3), 1),
-						mod.tuple.extract(mod.local.get(0, bintype3), 2),
-					]),
-					// '[[1, 2.0, true]]',
-				);
-			});
-			it('nested tuples.', () => {
-				const mod:    binaryen.Module        = builder.module;
-				const inner2: binaryen.ExpressionRef = mod.tuple.make([
-					buildConst(builder, 3n),
-					mod.tuple.extract(mod.tuple.make([buildConst(builder, 4.0)]), 0),
-				]);
-				return assertEqualBins(
-					new OBJ.Tuple([
-						OBJ.Integer.UNIT,
-						new OBJ.Tuple([new OBJ.Float(2.0)]),
-						new OBJ.Tuple([
-							new OBJ.Integer(3n),
-							new OBJ.Tuple([new OBJ.Float(4.0)]),
-						]),
-					]).build(builder),
-					mod.tuple.make([
+			describe('Tuple', () => {
+				let builder: Builder = new Builder();
+				beforeEach(() => {
+					builder = new Builder();
+				});
+				it('returns `(tuple.make)`.', () => {
+					assertEqualBins(
+						new OBJ.Tuple([OBJ.Integer.UNIT, new OBJ.Float(2.0)]).build(builder),
+						builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
+						// '[1, 2.0]',
+					);
+				});
+				it('empty tuple returns unique BinVect representation.', () => {
+					assertEqualBins(
+						new OBJ.Tuple().build(builder),
+						new BinVect(builder.module, 'tuple').vect,
+						// '[]',
+					);
+				});
+				it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
+					assertEqualBins(
+						new OBJ.Tuple([new OBJ.Float(3.4)]).build(builder),
+						builder.module.tuple.make([buildConst(builder, 3.4)]),
+						// '[3.4]',
+					);
+				});
+				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
+					assertEqualBins(
+						new OBJ.Tuple([new OBJ.Tuple()]).build(builder),
+						builder.module.tuple.make([new BinVect(builder.module, 'tuple').vect]),
+						// '[[]]',
+					);
+				});
+				it('boxed tuple with 1 item.', () => {
+					const mod: binaryen.Module = builder.module;
+					return assertEqualBins(
+						new OBJ.Tuple([new OBJ.Tuple([new OBJ.Float(3.4)])]).build(builder),
+						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(builder, 3.4)]), 0)]),
+						// '[[3.4]]',
+					);
+				});
+				it('boxed tuple with many items.', () => {
+					const mod:   binaryen.Module        = builder.module;
+					const inner: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(builder, 1n),
-						mod.tuple.extract(mod.tuple.make([buildConst(builder, 2.0)]), 0),
-						mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
-						mod.tuple.extract(mod.local.get(0, bintype2), 1),
-					]),
-					// '[1, [2.0], [3, [4.0]]]',
-				);
-			});
-			it('multiple entries.', () => {
-				const mod:     binaryen.Module        = builder.module;
-				const inner01: binaryen.ExpressionRef = mod.tuple.make([
-					buildConst(builder, 2.0),
-					buildConst(builder, 3n),
-				]);
-				const inner11: binaryen.ExpressionRef = mod.tuple.make([
-					buildConst(builder, 5n),
-					buildConst(builder, 6.0),
-				]);
-				const inner0: binaryen.ExpressionRef = mod.tuple.make([
-					buildConst(builder, 1n),
-					mod.tuple.extract(mod.local.tee(0, inner01, bintype2), 0),
-					mod.tuple.extract(mod.local.get(0, bintype2), 1),
-				]);
-				const inner1: binaryen.ExpressionRef = mod.tuple.make([
-					buildConst(builder, 4.0),
-					mod.tuple.extract(mod.local.tee(2, inner11, bintype2), 0),
-					mod.tuple.extract(mod.local.get(2, bintype2), 1),
-				]);
-				const inner2: binaryen.ExpressionRef = mod.tuple.make([
-					buildConst(builder, 7n),
-					new BinVect(mod, 'tuple').vect,
-				]);
-				return assertEqualBins(
-					new OBJ.Tuple([
+						buildConst(builder, 2.0),
+						buildConst(builder, true),
+					]);
+					return assertEqualBins(
+						new OBJ.Tuple([new OBJ.Tuple([
+							OBJ.Integer.UNIT,
+							new OBJ.Float(2.0),
+							OBJ.Boolean.TRUE,
+						])]).build(builder),
+						mod.tuple.make([
+							mod.tuple.extract(mod.local.tee(0, inner, bintype3), 0),
+							mod.tuple.extract(mod.local.get(0, bintype3), 1),
+							mod.tuple.extract(mod.local.get(0, bintype3), 2),
+						]),
+						// '[[1, 2.0, true]]',
+					);
+				});
+				it('nested tuples.', () => {
+					const mod:    binaryen.Module        = builder.module;
+					const inner2: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(builder, 3n),
+						mod.tuple.extract(mod.tuple.make([buildConst(builder, 4.0)]), 0),
+					]);
+					return assertEqualBins(
 						new OBJ.Tuple([
 							OBJ.Integer.UNIT,
+							new OBJ.Tuple([new OBJ.Float(2.0)]),
 							new OBJ.Tuple([
-								new OBJ.Float(2.0),
 								new OBJ.Integer(3n),
+								new OBJ.Tuple([new OBJ.Float(4.0)]),
 							]),
+						]).build(builder),
+						mod.tuple.make([
+							buildConst(builder, 1n),
+							mod.tuple.extract(mod.tuple.make([buildConst(builder, 2.0)]), 0),
+							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
+							mod.tuple.extract(mod.local.get(0, bintype2), 1),
 						]),
+						// '[1, [2.0], [3, [4.0]]]',
+					);
+				});
+				it('multiple entries.', () => {
+					const mod:     binaryen.Module        = builder.module;
+					const inner01: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(builder, 2.0),
+						buildConst(builder, 3n),
+					]);
+					const inner11: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(builder, 5n),
+						buildConst(builder, 6.0),
+					]);
+					const inner0: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(builder, 1n),
+						mod.tuple.extract(mod.local.tee(0, inner01, bintype2), 0),
+						mod.tuple.extract(mod.local.get(0, bintype2), 1),
+					]);
+					const inner1: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(builder, 4.0),
+						mod.tuple.extract(mod.local.tee(2, inner11, bintype2), 0),
+						mod.tuple.extract(mod.local.get(2, bintype2), 1),
+					]);
+					const inner2: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(builder, 7n),
+						new BinVect(mod, 'tuple').vect,
+					]);
+					return assertEqualBins(
 						new OBJ.Tuple([
-							new OBJ.Float(4.0),
 							new OBJ.Tuple([
-								new OBJ.Integer(5n),
-								new OBJ.Float(6.0),
+								OBJ.Integer.UNIT,
+								new OBJ.Tuple([
+									new OBJ.Float(2.0),
+									new OBJ.Integer(3n),
+								]),
 							]),
+							new OBJ.Tuple([
+								new OBJ.Float(4.0),
+								new OBJ.Tuple([
+									new OBJ.Integer(5n),
+									new OBJ.Float(6.0),
+								]),
+							]),
+							new OBJ.Tuple([
+								new OBJ.Integer(7n),
+								new OBJ.Tuple(),
+							]),
+						]).build(builder),
+						mod.tuple.make([
+							mod.tuple.extract(mod.local.tee(1, inner0, bintype3), 0),
+							mod.tuple.extract(mod.local.get(1, bintype3), 1),
+							mod.tuple.extract(mod.local.get(1, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(3, inner1, bintype3), 0),
+							mod.tuple.extract(mod.local.get(3, bintype3), 1),
+							mod.tuple.extract(mod.local.get(3, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(4, inner2, bintype2), 0),
+							mod.tuple.extract(mod.local.get(4, bintype2), 1),
 						]),
-						new OBJ.Tuple([
-							new OBJ.Integer(7n),
-							new OBJ.Tuple(),
-						]),
-					]).build(builder),
-					mod.tuple.make([
-						mod.tuple.extract(mod.local.tee(1, inner0, bintype3), 0),
-						mod.tuple.extract(mod.local.get(1, bintype3), 1),
-						mod.tuple.extract(mod.local.get(1, bintype3), 2),
-						mod.tuple.extract(mod.local.tee(3, inner1, bintype3), 0),
-						mod.tuple.extract(mod.local.get(3, bintype3), 1),
-						mod.tuple.extract(mod.local.get(3, bintype3), 2),
-						mod.tuple.extract(mod.local.tee(4, inner2, bintype2), 0),
-						mod.tuple.extract(mod.local.get(4, bintype2), 1),
-					]),
-					// '[[1, [2.0, 3]], [4.0, [5, 6.0]], [7, []]]',
-				);
+						// '[[1, [2.0, 3]], [4.0, [5, 6.0]], [7, []]]',
+					);
+				});
 			});
 		});
 	});
