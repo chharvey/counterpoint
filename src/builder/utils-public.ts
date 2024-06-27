@@ -103,26 +103,34 @@ export function build_record_like<T>(
 		}
 	});
 
+	const in_order: binaryen.ExpressionRef = builder.module.tuple.make(builds.map(({expr}) => expr));
+
 	if (properties.size === 1) {
-		return builder.module.tuple.make((builds.map(({expr}) => expr)));
-	} else {
-		const locals: Array<{
-			readonly id:        bigint,
-			readonly localSet: binaryen.ExpressionRef,
-			readonly localGet: binaryen.ExpressionRef,
-		}> = builds.map(({id, expr}) => {
-			const expr_bintype: binaryen.Type = binaryen.getExpressionType(expr);
-			const set_temp_id:  bigint        = builder.varCount;
-			const set_local:    LocalInfo     = builder.addLocal(set_temp_id, expr_bintype)[0].getLocalInfo(set_temp_id)!;
-			return {
-				id,
-				localSet: builder.module.local.set(set_local.index, expr),
-				localGet: builder.module.local.get(set_local.index, set_local.type),
-			};
-		});
-		const sets: readonly binaryen.ExpressionRef[] = locals.map(({localSet}) => localSet);
-		locals.sort((a, b) => Number(a.id - b.id));
-		const make: binaryen.ExpressionRef = builder.module.tuple.make((locals.map(({localGet}) => localGet)));
-		return builder.module.block(null, [...sets, make], binaryen.getExpressionType(make));
+		return in_order;
 	}
+	try {
+		builds.forEach(({id}, i) => assert.ok(id <= (builds[i + 1]?.id ?? Infinity), 'Record key is in order.'));
+		return in_order;
+	} catch {
+		// continue
+	}
+
+	const locals: Array<{
+		readonly id:        bigint,
+		readonly localSet: binaryen.ExpressionRef,
+		readonly localGet: binaryen.ExpressionRef,
+	}> = builds.map(({id, expr}) => {
+		const expr_bintype: binaryen.Type = binaryen.getExpressionType(expr);
+		const set_temp_id:  bigint        = builder.varCount;
+		const set_local:    LocalInfo     = builder.addLocal(set_temp_id, expr_bintype)[0].getLocalInfo(set_temp_id)!;
+		return {
+			id,
+			localSet: builder.module.local.set(set_local.index, expr),
+			localGet: builder.module.local.get(set_local.index, set_local.type),
+		};
+	});
+	const sets: readonly binaryen.ExpressionRef[] = locals.map(({localSet}) => localSet);
+	locals.sort((a, b) => Number(a.id - b.id));
+	const make: binaryen.ExpressionRef = builder.module.tuple.make(locals.map(({localGet}) => localGet));
+	return builder.module.block(null, [...sets, make], binaryen.getExpressionType(make));
 }

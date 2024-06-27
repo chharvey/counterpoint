@@ -546,8 +546,6 @@ describe('ASTNodeExpression', () => {
 		describe('#build', () => {
 			const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
 			const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
-			const bintype4: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128]);
-			const bintype8: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128]);
 
 			describe('ASTNodeTuple', () => {
 				it('returns `(tuple.make)`.', () => {
@@ -665,23 +663,15 @@ describe('ASTNodeExpression', () => {
 			});
 
 			describe('ASTNodeRecord', () => {
-				it('returns a `(block)` with `(set)`s followed by a `(tuple.make)`.', () => {
+				it('returns `(tuple.make)`.', () => {
 					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource('[a= 1, b= 2.0];', CONFIG_FOLDING_OFF);
 					const bldr:   Builder           = record.builder;
-					const mod:    binaryen.Module   = bldr.module;
 					return assertEqualBins(
 						record.build(),
-						mod.block(null, [
-							mod.local.set(0, buildConst(bldr, 1n)),
-							mod.local.set(1, buildConst(bldr, 2.0)),
-							mod.tuple.make([
-								mod.local.get(0, binaryen.v128),
-								mod.local.get(1, binaryen.v128),
-							]),
-						], bintype2),
+						bldr.module.tuple.make([buildConst(bldr, 1n), buildConst(bldr, 2.0)]),
 					);
 				});
-				it('properties are evaluated in source order, but record is built in key order.', () => {
+				it('returns a `(block)` with `(set)`s followed by a `(tuple.make)` with `(get)`s if source order differs from key order.', () => {
 					const goal = AST.ASTNodeGoal.fromSource(`
 						[a= 1, b= 2.0];
 						[b= 2.0, a= 1];
@@ -694,26 +684,22 @@ describe('ASTNodeExpression', () => {
 					return assertEqualBins(
 						goal.children.map((stmt) => stmt.build()),
 						[
+							mod.tuple.make([
+								buildConst(bldr, 1n),
+								buildConst(bldr, 2.0),
+							]),
 							mod.block(null, [
-								mod.local.set(0, buildConst(bldr, 1n)),
-								mod.local.set(1, buildConst(bldr, 2.0)),
+								mod.local.set(0, buildConst(bldr, 2.0)),
+								mod.local.set(1, buildConst(bldr, 1n)),
 								mod.tuple.make([
-									mod.local.get(0, binaryen.v128),
 									mod.local.get(1, binaryen.v128),
-								]),
-							], bintype2),
-							mod.block(null, [
-								mod.local.set(2, buildConst(bldr, 2.0)),
-								mod.local.set(3, buildConst(bldr, 1n)),
-								mod.tuple.make([
-									mod.local.get(3, binaryen.v128),
-									mod.local.get(2, binaryen.v128),
+									mod.local.get(0, binaryen.v128),
 								]),
 							], bintype2),
 						].map((expected) => mod.drop(expected)),
 					);
 				});
-				it('record of size 1 returns a `(tuple.make)` with 1 item, without `(set)` & `(get)`.', () => {
+				it('record of size 1 returns a `(tuple.make)` with 1 item.', () => {
 					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource('[a= 3.4];', CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						record.build(),
@@ -732,22 +718,17 @@ describe('ASTNodeExpression', () => {
 					const record: AST.ASTNodeRecord      = AST.ASTNodeRecord.fromSource('[a= [a= 1, b= 2.0, c= true]];', CONFIG_FOLDING_OFF);
 					const bldr:   Builder                = record.builder;
 					const mod:    binaryen.Module        = bldr.module;
-					const inner:  binaryen.ExpressionRef = mod.block(null, [
-						mod.local.set(0, buildConst(bldr, 1n)),
-						mod.local.set(1, buildConst(bldr, 2.0)),
-						mod.local.set(2, buildConst(bldr, true)),
-						mod.tuple.make([
-							mod.local.get(0, binaryen.v128),
-							mod.local.get(1, binaryen.v128),
-							mod.local.get(2, binaryen.v128),
-						]),
-					], bintype3);
+					const inner:  binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 1n),
+						buildConst(bldr, 2.0),
+						buildConst(bldr, true),
+					]);
 					return assertEqualBins(
 						record.build(),
 						mod.tuple.make([
-							mod.tuple.extract(mod.local.tee(3, inner, bintype3), 0),
-							mod.tuple.extract(mod.local.get(3, bintype3), 1),
-							mod.tuple.extract(mod.local.get(3, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(0, inner, bintype3), 0),
+							mod.tuple.extract(mod.local.get(0, bintype3), 1),
+							mod.tuple.extract(mod.local.get(0, bintype3), 2),
 						]),
 					);
 				});
@@ -759,28 +740,18 @@ describe('ASTNodeExpression', () => {
 					];`, CONFIG_FOLDING_OFF);
 					const bldr:   Builder                = record.builder;
 					const mod:    binaryen.Module        = bldr.module;
-					const inner2: binaryen.ExpressionRef = mod.block(null, [
-						mod.local.set(0, buildConst(bldr, 3n)),
-						mod.local.set(1, mod.tuple.extract(mod.tuple.make([buildConst(bldr, 4.0)]), 0)),
-						mod.tuple.make([
-							mod.local.get(0, binaryen.v128),
-							mod.local.get(1, binaryen.v128),
-						]),
-					], bintype2);
+					const inner2: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 3n),
+						mod.tuple.extract(mod.tuple.make([buildConst(bldr, 4.0)]), 0),
+					]);
 					return assertEqualBins(
 						record.build(),
-						mod.block(null, [
-							mod.local.set(3, buildConst(bldr, 1n)),
-							mod.local.set(4, mod.tuple.extract(mod.tuple.make([buildConst(bldr, 2.0)]), 0)),
-							mod.local.set(5, mod.tuple.extract(mod.local.tee(2, inner2, bintype2), 0)),
-							mod.local.set(6, mod.tuple.extract(mod.local.get(2, bintype2), 1)),
-							mod.tuple.make([
-								mod.local.get(3, binaryen.v128),
-								mod.local.get(4, binaryen.v128),
-								mod.local.get(5, binaryen.v128),
-								mod.local.get(6, binaryen.v128),
-							]),
-						], bintype4),
+						mod.tuple.make([
+							buildConst(bldr, 1n),
+							mod.tuple.extract(mod.tuple.make([buildConst(bldr, 2.0)]), 0),
+							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
+							mod.tuple.extract(mod.local.get(0, bintype2), 1),
+						]),
 					);
 				});
 				it('multiple entries.', () => {
@@ -791,72 +762,44 @@ describe('ASTNodeExpression', () => {
 					];`, CONFIG_FOLDING_OFF);
 					const bldr:    Builder                = record.builder;
 					const mod:     binaryen.Module        = bldr.module;
-					const inner01: binaryen.ExpressionRef = mod.block(null, [
-						mod.local.set(0, buildConst(bldr, 2.0)),
-						mod.local.set(1, buildConst(bldr, 3n)),
-						mod.tuple.make([
-							mod.local.get(0, binaryen.v128),
-							mod.local.get(1, binaryen.v128),
-						]),
-					], bintype2);
-					const inner11: binaryen.ExpressionRef = mod.block(null, [
-						mod.local.set(7, buildConst(bldr, 5n)),
-						mod.local.set(8, buildConst(bldr, 6.0)),
-						mod.tuple.make([
-							mod.local.get(7, binaryen.v128),
-							mod.local.get(8, binaryen.v128),
-						]),
-					], bintype2);
-					const inner0: binaryen.ExpressionRef = mod.block(null, [
-						mod.local.set(3, buildConst(bldr, 1n)),
-						mod.local.set(4, mod.tuple.extract(mod.local.tee(2, inner01, bintype2), 0)),
-						mod.local.set(5, mod.tuple.extract(mod.local.get(2, bintype2), 1)),
-						mod.tuple.make([
-							mod.local.get(3, binaryen.v128),
-							mod.local.get(4, binaryen.v128),
-							mod.local.get(5, binaryen.v128),
-						]),
-					], bintype3);
-					const inner1: binaryen.ExpressionRef = mod.block(null, [
-						mod.local.set(10, buildConst(bldr, 4.0)),
-						mod.local.set(11, mod.tuple.extract(mod.local.tee(9, inner11, bintype2), 0)),
-						mod.local.set(12, mod.tuple.extract(mod.local.get(9, bintype2), 1)),
-						mod.tuple.make([
-							mod.local.get(10, binaryen.v128),
-							mod.local.get(11, binaryen.v128),
-							mod.local.get(12, binaryen.v128),
-						]),
-					], bintype3);
+					const inner01: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 2.0),
+						buildConst(bldr, 3n),
+					]);
+					const inner11: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 5n),
+						buildConst(bldr, 6.0),
+					]);
+					const inner0: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 1n),
+						mod.tuple.extract(mod.local.tee(0, inner01, bintype2), 0),
+						mod.tuple.extract(mod.local.get(0, bintype2), 1),
+					]);
+					const inner1: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 4.0),
+						mod.tuple.extract(mod.local.tee(2, inner11, bintype2), 0),
+						mod.tuple.extract(mod.local.get(2, bintype2), 1),
+					]);
 					const inner2: binaryen.ExpressionRef = mod.block(null, [
-						mod.local.set(14, buildConst(bldr, 7n)),
-						mod.local.set(15, new BinVect(mod, true).vect),
+						mod.local.set(4, buildConst(bldr, 7n)),
+						mod.local.set(5, new BinVect(mod, true).vect),
 						mod.tuple.make([
-							mod.local.get(15, binaryen.v128),
-							mod.local.get(14, binaryen.v128),
+							mod.local.get(5, binaryen.v128),
+							mod.local.get(4, binaryen.v128),
 						]),
 					], bintype2);
 					return assertEqualBins(
 						record.build(),
-						mod.block(null, [
-							mod.local.set(17, mod.tuple.extract(mod.local.tee( 6, inner0, bintype3), 0)),
-							mod.local.set(18, mod.tuple.extract(mod.local.get( 6, bintype3), 1)),
-							mod.local.set(19, mod.tuple.extract(mod.local.get( 6, bintype3), 2)),
-							mod.local.set(20, mod.tuple.extract(mod.local.tee(13, inner1, bintype3), 0)),
-							mod.local.set(21, mod.tuple.extract(mod.local.get(13, bintype3), 1)),
-							mod.local.set(22, mod.tuple.extract(mod.local.get(13, bintype3), 2)),
-							mod.local.set(23, mod.tuple.extract(mod.local.tee(16, inner2, bintype2), 0)),
-							mod.local.set(24, mod.tuple.extract(mod.local.get(16, bintype2), 1)),
-							mod.tuple.make([
-								mod.local.get(17, binaryen.v128),
-								mod.local.get(18, binaryen.v128),
-								mod.local.get(19, binaryen.v128),
-								mod.local.get(20, binaryen.v128),
-								mod.local.get(21, binaryen.v128),
-								mod.local.get(22, binaryen.v128),
-								mod.local.get(23, binaryen.v128),
-								mod.local.get(24, binaryen.v128),
-							]),
-						], bintype8),
+						mod.tuple.make([
+							mod.tuple.extract(mod.local.tee(1, inner0, bintype3), 0),
+							mod.tuple.extract(mod.local.get(1, bintype3), 1),
+							mod.tuple.extract(mod.local.get(1, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(3, inner1, bintype3), 0),
+							mod.tuple.extract(mod.local.get(3, bintype3), 1),
+							mod.tuple.extract(mod.local.get(3, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(6, inner2, bintype2), 0),
+							mod.tuple.extract(mod.local.get(6, bintype2), 1),
+						]),
 					);
 				});
 			});
