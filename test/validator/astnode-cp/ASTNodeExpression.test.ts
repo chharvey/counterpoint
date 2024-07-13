@@ -18,9 +18,7 @@ import {
 } from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
-	typeUnitInt,
-	typeUnitFloat,
-	typeUnitStr,
+	typeUnit,
 	buildConst,
 } from '../../helpers.js';
 
@@ -96,7 +94,7 @@ describe('ASTNodeExpression', () => {
 			it('computes string values.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeConstant.fromSource('"42😀\\u{1f600}";').type(),
-					typeUnitStr('42😀\u{1f600}'),
+					typeUnit('42😀\u{1f600}'),
 				);
 			});
 			/* eslint-enable array-element-newline */
@@ -416,10 +414,10 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			([
-				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.TypeUnion.all(typeUnitStr('a'), typeUnitInt(42n), typeUnitFloat(3.0))],
-				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.TypeUnion.all(typeUnitStr('a'), TYPE.INT,         TYPE.FLOAT)],
+				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.TypeUnion.all([typeUnit('a'), typeUnit(42n), typeUnit(3.0)])],
+				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.TypeUnion.all([typeUnit('a'), TYPE.INT,      TYPE.FLOAT])],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
-				const expected: readonly TYPE.TypeUnit[] = [typeUnitInt(1n), typeUnitFloat(2.0), typeUnitStr('three')];
+				const expected: readonly TYPE.TypeUnit[] = [typeUnit(1n), typeUnit(2.0), typeUnit('three')];
 				const collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,
@@ -514,28 +512,24 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for non-foldable entries.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int = 1;
+					let var x: int   = 1;
 					let var y: float = 2.0;
-					let var z: str = "three";
+					let var z: str   = "three";
 					[x, 2.0, "three"];
 					[a= 1, b= y, c= "three"];
 					{1, 2.0, z};
 					{
 						"a" || "" -> 1,
-						21 + 21   -> y,
-						3 * 1.0   -> "three",
+						21 + 21   -> 2.0,
+						3 * 1.0   -> z,
 					};
 				`);
-				const tuple:   AST.ASTNodeTuple   = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
-				const record:  AST.ASTNodeRecord  = (goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
-				const set:     AST.ASTNodeSet     = (goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeSet;
-				const map:     AST.ASTNodeMap     = (goal.children[6] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;
 				assert.deepStrictEqual(
 					[
-						tuple,
-						record,
-						set,
-						map,
+						(goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple,
+						(goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord,
+						(goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeSet,
+						(goal.children[6] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap,
 					].map((c) => c.fold()),
 					[null, null, null, null],
 				);

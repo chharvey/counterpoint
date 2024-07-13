@@ -5,11 +5,7 @@ import {
 	TypeErrorNoEntry,
 } from '../../../src/index.js';
 import {assert_instanceof} from '../../../src/lib/index.js';
-import {
-	typeUnitInt,
-	typeUnitFloat,
-	typeUnitStr,
-} from '../../helpers.js';
+import {typeUnit} from '../../helpers.js';
 
 
 
@@ -20,9 +16,9 @@ describe('ASTNodeTypeAccess', () => {
 			return decl.assigned.eval();
 		}
 		const expected: TYPE.Type[] = [
-			typeUnitInt(1n),
-			typeUnitFloat(2.0),
-			typeUnitStr('three'),
+			typeUnit(1n),
+			typeUnit(2.0),
+			typeUnit('three'),
 			TYPE.INT,
 			TYPE.FLOAT,
 			TYPE.STR,
@@ -135,7 +131,7 @@ describe('ASTNodeTypeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 26).map((c) => evalTypeDecl(c)),
 					[
-						typeUnitStr('three').union(TYPE.VOID),
+						typeUnit('three').union(TYPE.VOID),
 						TYPE.STR.union(TYPE.VOID),
 					],
 				);
@@ -161,7 +157,7 @@ describe('ASTNodeTypeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(28, 30).map((c) => evalTypeDecl(c)),
 					[
-						typeUnitFloat(2.0).union(TYPE.VOID),
+						typeUnit(2.0).union(TYPE.VOID),
 						TYPE.FLOAT.union(TYPE.VOID),
 					],
 				);

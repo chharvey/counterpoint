@@ -138,7 +138,6 @@ const DELIM_TEMPLATE     = '"""';
 const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
-const COMMENTER_MULTI    = '%%';
 
 /* eslint-disable function-call-argument-newline */
 const STRING_ESCAPE = choice(
@@ -255,12 +254,14 @@ const OPT_COM = optional(',');
 function iff(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral {
 	return (condition) ? consequent : blank();
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ifSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
 	return (condition) ? [consequent] : [];
 }
 function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function repCom(production: RuleOrLiteral): ChoiceRule {
 	return optional(repCom1(production));
 }
