@@ -417,6 +417,14 @@ Boolean IsReference(Type t) :=
 ```
 
 
+### IsBottomType
+A type \`‹T›\` is the **bottom type**, named Never, iff \`‹T›\` contains no values.
+
+
+### IsTopType
+A type \`‹T›\` is the **top type**, named Unknown, iff \`‹T›\` contains all possible values.
+
+
 ### Intersection
 A data type specified as \`And<‹T›, ‹U›>\`,
 where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
@@ -426,21 +434,19 @@ Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
 ```
 Type Intersect(Type a, Type b) :=
 	// 1-5 | `T  & never   == never`
-	1. *If* *UnwrapAffirm:* `Identical(b, Never)`:
+	1. *If* *UnwrapAffirm:* `IsBottomType(a)` *or* *UnwrapAffirm:* `IsBottomType(b)`:
 		1. *Return:* `Never`.
-	2. *If* *UnwrapAffirm:* `Identical(a, Never)`:
-		1. *Return:* `a`.
 	// 1-6 | `T  & unknown == T`
-	3. *If* *UnwrapAffirm:* `Identical(b, Unknown)`:
-		1. *Return:* `a`.
-	4. *If* *UnwrapAffirm:* `Identical(a, Unknown)`:
+	2. *If* *UnwrapAffirm:* `IsTopType(a)`:
 		1. *Return:* `b`.
+	3. *If* *UnwrapAffirm:* `IsTopType(b)`:
+		1. *Return:* `a`.
 	// 3-3 | `A <: B  <->  A  & B == A`
-	5. *If* *UnwrapAffirm:* `Subtype(a, b)`:
+	4. *If* *UnwrapAffirm:* `Subtype(a, b)`:
 		1. *Return:* `a`.
-	6. *If* *UnwrapAffirm:* `Subtype(b, a)`:
+	5. *If* *UnwrapAffirm:* `Subtype(b, a)`:
 		1. *Return:* `b`.
-	7. *Return:* a new type with values given by the the intersection of values in `a` and `b`.
+	6. *Return:* a new type with values given by the the intersection of values in `a` and `b`.
 ;
 ```
 
@@ -457,21 +463,19 @@ For example, the type \`Or<Integer, Null>\` contains values of either \`Integer\
 ```
 Type Union(Type a, Type b) :=
 	// 1-7 | `T \| never   == T`
-	1. *If* *UnwrapAffirm:* `Identical(b, Never)`:
+	1. *If* *UnwrapAffirm:* `IsBottomType(a)`:
+		1. *Return:* `b`.
+	2. *If* *UnwrapAffirm:* `IsBottomType(b)`:
 		1. *Return:* `a`.
-	2. *If* *UnwrapAffirm:* `Identical(a, Never)`:
-		1. *Return:* `b`.
 	// 1-8 | `T \| unknown == unknown`
-	3. *If* *UnwrapAffirm:* `Identical(b, Unknown)`:
-		1. *Return:* `b`.
-	4. *If* *UnwrapAffirm:* `Identical(a, Unknown)`:
+	3. *If* *UnwrapAffirm:* `IsTopType(a)` *or* *UnwrapAffirm:* `IsTopType(b)`:
 		1. *Return:* `Unknown`.
 	// 3-4 | `A <: B  <->  A \| B == B`
-	5. *If* *UnwrapAffirm:* `Subtype(a, b)`:
+	4. *If* *UnwrapAffirm:* `Subtype(a, b)`:
 		1. *Return:* `b`.
-	6. *If* *UnwrapAffirm:* `Subtype(b, a)`:
+	5. *If* *UnwrapAffirm:* `Subtype(b, a)`:
 		1. *Return:* `a`.
-	7. *Return:* a new type with values given by the the union of values in `a` and `b`.
+	6. *Return:* a new type with values given by the the union of values in `a` and `b`.
 ;
 ```
 
@@ -503,44 +507,41 @@ A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignab
 
 ```
 Boolean Subtype(Type a, Type b) :=
-	1. *If* *UnwrapAffirm:* `Identical(a, b)`:
-		// 2-7 | `A <: A`
+	// 1-1 | `never <: T`
+	1. *If* *UnwrapAffirm:* `IsBottomType(a)`:
 		1. *Return:* `true`.
-	2. *If* *UnwrapAffirm:* `IsBottomType(a)`:
-		// 1-1 | `never <: T`
-		1. *Return:* `true`.
-	3. *If* *UnwrapAffirm:* `IsBottomType(b)`:
-		// 1-3 | `T       <: never  <->  T == never`
+	// 1-3 | `T       <: never  <->  T == never`
+	2. *If* *UnwrapAffirm:* `IsBottomType(b)`:
 		1. *Return:* `IsBottomType(a)`.
-	4. *If* *UnwrapAffirm:* `IsTopType(a)`:
-		// 1-4 | `unknown <: T      <->  T == unknown`
+	// 1-4 | `unknown <: T      <->  T == unknown`
+	3. *If* *UnwrapAffirm:* `IsTopType(a)`:
 		1. *Return:* `IsTopType(b)`.
-	5. *If* *UnwrapAffirm:* `IsTopType(b)`:
-		// 1-2 | `T     <: unknown`
+	// 1-2 | `T     <: unknown`
+	4. *If* *UnwrapAffirm:* `IsTopType(b)`:
 		1. *Return:* `true`.
-	6. *If* `a` is the intersection of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Equal(x, b)` *or* *UnwrapAffirm:* `Equal(y, b)`:
-			// 3-1 | `A  & B <: A  &&  A  & B <: B`
-			1. *Return:* `true`.
-		2. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
-			// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
-			1. *Return:* `true`.
-	7. *If* `b` is the intersection of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
-			// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
-			1. *Return:* `true`.
-	8. *If* `a` is the union of some types `x` and `y`:
+	5. *If* `a` is the intersection of some types `x` and `y`:
+		// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
 		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
-			// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
 			1. *Return:* `true`.
-	9. *If* `b` is the union of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Equal(a, x)` *or* *UnwrapAffirm:* `Equal(a, y)`:
-			// 3-2 | `A <: A \| B  &&  B <: A \| B`
+		// 3-1 | `A  & B <: A  &&  A  & B <: B`
+		2. *If* *UnwrapAffirm:* `Equal(x, b)` *or* *UnwrapAffirm:* `Equal(y, b)`:
 			1. *Return:* `true`.
-		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
-			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
+	6. *If* `b` is the intersection of some types `x` and `y`:
+		// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
+		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *and* *UnwrapAffirm:* `Subtype(a, y)`:
 			1. *Return:* `true`.
-	10. *If* `a` is a Tuple type *and* `b` is a Tuple type:
+	7. *If* `a` is the union of some types `x` and `y`:
+		// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
+		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *and* *UnwrapAffirm:* `Subtype(y, b)`:
+			1. *Return:* `true`.
+	8. *If* `b` is the union of some types `x` and `y`:
+		// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
+		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+			1. *Return:* `true`.
+		// 3-2 | `A <: A \| B  &&  B <: A \| B`
+		2. *If* *UnwrapAffirm:* `Equal(a, x)` *or* *UnwrapAffirm:* `Equal(a, y)`:
+			1. *Return:* `true`.
+	9. *If* `a` is a Tuple type *and* `b` is a Tuple type:
 		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
 		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
@@ -554,7 +555,7 @@ Boolean Subtype(Type a, Type b) :=
 				1. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
 					1. *Return:* `false`.
 		7. *Return:* `true`.
-	11. *If* `a` is a Record type *and* `b` is a Record type:
+	10. *If* `a` is a Record type *and* `b` is a Record type:
 		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
 		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
@@ -569,7 +570,7 @@ Boolean Subtype(Type a, Type b) :=
 				1. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 					1. *Return:* `false`.
 		7. *Return:* `true`.
-	12. *If* `a` is a List type *and* `b` is a List type:
+	11. *If* `a` is a List type *and* `b` is a List type:
 		1. *Let* `ai` be the union of types in `a`.
 		2. *Let* `bi` be the union of types in `b`.
 		3. *If* `b` is mutable:
@@ -578,7 +579,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
 				1. *Return:* `true`.
-	13. *If* `a` is a Dict type *and* `b` is a Dict type:
+	12. *If* `a` is a Dict type *and* `b` is a Dict type:
 		1. *Let* `av` be the union of value types in `a`.
 		2. *Let* `bv` be the union of value types in `b`.
 		3. *If* `b` is mutable:
@@ -587,7 +588,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 				1. *Return:* `true`.
-	14. *If* `a` is a Set type *and* `b` is a Set type:
+	13. *If* `a` is a Set type *and* `b` is a Set type:
 		1. *Let* `ae` be the union of types in `a`.
 		2. *Let* `be` be the union of types in `b`.
 		3. *If* `b` is mutable:
@@ -596,7 +597,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
 				1. *Return:* `true`.
-	15. *If* `a` is a Map type *and* `b` is a Map type:
+	14. *If* `a` is a Map type *and* `b` is a Map type:
 		1. *Let* `ak` be the union of antecedent types in `a`.
 		2. *Let* `av` be the union of consequent types in `a`.
 		3. *Let* `bk` be the union of antecedent types in `b`.
@@ -607,17 +608,26 @@ Boolean Subtype(Type a, Type b) :=
 		6. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 				1. *Return:* `true`.
-	16. *If* every value that is assignable to `a` is also assignable to `b`:
+	15. *If* every value that is assignable to `a` is also assignable to `b`:
 		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
 			because an instance of `Integer` is an instance of `Object`.
 		2. *Return:* `true`.
-	17. *Return:* `false`.
+	16. *Return:* `false`.
 ;
 ```
 
 
 ### Equality
 A type \`‹T›\` is **equal** to type \`‹U›\` iff \`‹T›\` is a subtype of \`‹U›\` and \`‹U›\` is a subtype of \`‹T›\`.
+
+```
+Boolean Equal(Type a, Type b) :=
+	1. *If* *UnwrapAffirm:* `Subtype(a, b)` *and* *UnwrapAffirm:* `Subtype(b, a)`:
+		1. *Return:* `true`.
+	2. *Else:*
+		1. *Return:* `false`.
+;
+```
 
 
 ### Disjoint
