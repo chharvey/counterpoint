@@ -54,6 +54,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 		], (arg) => arg.varCheck());
 	}
 
+	public override typeCheck(): void {
+		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
+		// (`this.base.source` must be a `ValidFunctionName`)
+		xjs.Array.forEachAggregated([
+			...this.typeargs,
+			...this.exprargs,
+		], (arg) => arg.typeCheck());
+		this.type(); // assert does not throw
+	}
+
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	public override build(): binaryen.ExpressionRef {

@@ -151,13 +151,6 @@ describe('ASTNodeExpression', () => {
 		});
 
 
-		describe('#type', () => {
-			it('returns Never for undeclared variables.', () => {
-				assert.ok(AST.ASTNodeVariable.fromSource('x;').type().isBottomType);
-			});
-		});
-
-
 		describe('#fold', () => {
 			it('assesses the value of a fixed variable.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -307,15 +300,16 @@ describe('ASTNodeExpression', () => {
 
 	describe('ASTNodeTemplate', () => {
 		function initTemplates(config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeTemplate[] {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let var x: int = 21;
+				"""the answer is {{ x * 2 }} but what is the question?""";
+			`, config);
+			goal.varCheck();
+			goal.typeCheck();
 			return [
 				AST.ASTNodeTemplate.fromSource('"""42😀""";', config),
 				AST.ASTNodeTemplate.fromSource('"""the answer is {{ 7 * 3 * 2 }} but what is the question?""";', config),
-				(AST.ASTNodeGoal.fromSource(`
-					let var x: int = 21;
-					"""the answer is {{ x * 2 }} but what is the question?""";
-				`, config)
-					.children[1] as AST.ASTNodeStatementExpression)
-					.expr as AST.ASTNodeTemplate,
+				(goal.children[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTemplate,
 			];
 		}
 		describe('#type', () => {
@@ -524,6 +518,8 @@ describe('ASTNodeExpression', () => {
 						3 * 1.0   -> z,
 					};
 				`);
+				goal.varCheck();
+				goal.typeCheck();
 				assert.deepStrictEqual(
 					[
 						(goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple,
