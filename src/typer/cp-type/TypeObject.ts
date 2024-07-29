@@ -1,3 +1,4 @@
+import {strictEqual} from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
 
@@ -34,5 +35,12 @@ export class TypeObject extends Type {
 
 	public override includes(_v: OBJ.Object): boolean {
 		return true;
+	}
+
+	@strictEqual
+	@Type.memoizeSubtype
+	@Type.subtypeDeco
+	public override isSubtypeOf(_t: Type): boolean {
+		return false;
 	}
 }
