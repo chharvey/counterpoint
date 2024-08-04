@@ -69,6 +69,7 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
  * @param args        argument names or objects of inherited argument values from the containing production
  * @returns           a property name of the `$` object
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function call<RuleName extends string>(family_name: string, ...args: readonly (string | Readonly<Record<string, boolean>>)[]): RuleName {
 	return familyName(family_name, ...args.flatMap((arg) => ((typeof arg === 'string')
 		? [arg]
@@ -130,7 +131,6 @@ const DELIM_TEMPLATE     = '"""';
 const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
-const COMMENTER_MULTI    = '%%';
 
 /* eslint-disable function-call-argument-newline */
 const STRING_ESCAPE = choice(
@@ -247,6 +247,7 @@ function iff(condition: boolean, consequent: RuleOrLiteral, alternative: RuleOrL
 function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function repCom(production: RuleOrLiteral): ChoiceRule {
 	return optional(repCom1(production));
 }

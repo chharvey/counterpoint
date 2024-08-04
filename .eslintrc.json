@@ -9,9 +9,9 @@
 	"reportUnusedDisableDirectives": true,
 	"root":                          true,
 	"extends":                       [
-		"eslint:recommended",                           // https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
-		"plugin:@typescript-eslint/eslint-recommended", // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/configs/eslint-recommended.ts
-		"plugin:@typescript-eslint/recommended"         // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/configs/recommended.ts
+		"eslint:recommended",                           // https://github.com/eslint/eslint/blob/v8.34.0/conf/eslint-recommended.js
+		"plugin:@typescript-eslint/eslint-recommended", // https://github.com/typescript-eslint/typescript-eslint/blob/v7.12.0/packages/eslint-plugin/src/configs/eslint-recommended-raw.ts
+		"plugin:@typescript-eslint/recommended"         // https://github.com/typescript-eslint/typescript-eslint/blob/v7.12.0/packages/eslint-plugin/src/configs/recommended.ts
 	],
 	"rules": {
 		/* # Overrides of Recommended Rules */
@@ -20,7 +20,13 @@
 			"skipComments": true   // allow in comments
 		}],
 		"no-mixed-spaces-and-tabs":          ["error", "smart-tabs"], // allow smart-tabs
-		"@typescript-eslint/no-unused-vars": "off",                   // ts(6196) & tsconfig(noUnusedLocals, noUnusedParameters)
+		"@typescript-eslint/no-unused-vars": ["error", { // override default opts
+			"argsIgnorePattern":              "^_",
+			"caughtErrors":                   "all",
+			"destructuredArrayIgnorePattern": "^_",
+			"ignoreRestSiblings":             true
+			// "reportUsedIgnorePattern":        true // not until eslint v9.5.0
+		}],
 
 		/* # File Conventions (should be consistent with `/.editorconfig` file) */
 		"eol-last":           "error",

@@ -79,7 +79,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 						throw new TypeError(`Property \`${ id }\` does not exist on type \`${ this.type() }\`.`);
 					}
 				});
-			} catch (err) {
+			} catch {
 				// TODO: use the caught error as the cause of a new error
 				return false;
 			}
