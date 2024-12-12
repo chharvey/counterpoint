@@ -14,6 +14,139 @@ import {
 
 
 
+// HACK: cannot access static method of Type within itself as a decorator
+function intersectDeco(
+	method:   (this: Type, t: Type) => Type,
+	_context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	return function (t) {
+		/** 1-5 | `T  & never   == never` */
+		if (this.isBottomType || t.isBottomType) {
+			return NEVER;
+		}
+		/** 1-6 | `T  & unknown == T` */
+		if (this.isTopType) {
+			return t;
+		}
+		if (t.isTopType) {
+			return this;
+		}
+		/** 3-3 | `A <: B  <->  A  & B == A` */
+		if (this.isSubtypeOf(t)) {
+			return this;
+		}
+		if (t.isSubtypeOf(this)) {
+			return t;
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
+// HACK: cannot access static method of Type within itself as a decorator
+function unionDeco(
+	method:   (this: Type, t: Type) => Type,
+	_context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	return function (t) {
+		/** 1-7 | `T \| never   == T` */
+		if (this.isBottomType) {
+			return t;
+		}
+		if (t.isBottomType) {
+			return this;
+		}
+		/** 1-8 | `T \| unknown == unknown` */
+		if (this.isTopType || t.isTopType) {
+			return UNKNOWN;
+		}
+		/** 3-4 | `A <: B  <->  A \| B == B` */
+		if (this.isSubtypeOf(t)) {
+			return t;
+		}
+		if (t.isSubtypeOf(this)) {
+			return this;
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
+// HACK: cannot access static method of Type within itself as a decorator
+function subtractDeco(
+	method:   (this: Type, t: Type) => Type,
+	_context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	return function (t) {
+		/** 4-1 | `A - B == A  <->  A & B == never` */
+		if (this.intersect(t).isBottomType) {
+			return this;
+		}
+
+		/** 4-2 | `A - B == never  <->  A <: B` */
+		if (this.isSubtypeOf(t)) {
+			return NEVER;
+		}
+
+		if (t instanceof TypeUnion) {
+			return t.subtractedFrom(this);
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
+// HACK: cannot access static method of Type within itself as a decorator
+function subtypeDeco(
+	method:   (this: Type, t: Type) => boolean,
+	_context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	return function (t) {
+		/** 2-7 | `A <: A` */
+		if (this === t) {
+			return true;
+		}
+		/** 1-1 | `never <: T` */
+		if (this.isBottomType) {
+			return true;
+		}
+		/** 1-3 | `T       <: never  <->  T == never` */
+		if (t.isBottomType) {
+			return this.isBottomType;
+		}
+		/** 1-4 | `unknown <: T      <->  T == unknown` */
+		if (this.isTopType) {
+			return t.isTopType;
+		}
+		/** 1-2 | `T     <: unknown` */
+		if (t.isTopType) {
+			return true;
+		}
+
+		if (t instanceof TypeIntersection) {
+			return t.isSupertypeOf(this);
+		}
+		if (t instanceof TypeUnion) {
+			if (t.isNecessarilySupertypeOf(this)) {
+				return true;
+			}
+		}
+		if (t instanceof TypeDifference) {
+			return t.isSupertypeOf(this);
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
 /**
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
@@ -47,141 +180,28 @@ export abstract class Type {
 	 * Contains shortcuts for constructing type intersections.
 	 * @implements MethodDecorator<Type, (this: Type, t: Type) => Type>
 	 */
-	protected static intersectDeco(
-		method:   (this: Type, t: Type) => Type,
-		_context: ClassMethodDecoratorContext<Type, typeof method>,
-	): typeof method {
-		return function (t) {
-			/** 1-5 | `T  & never   == never` */
-			if (this.isBottomType || t.isBottomType) {
-				return NEVER;
-			}
-			/** 1-6 | `T  & unknown == T` */
-			if (this.isTopType) {
-				return t;
-			}
-			if (t.isTopType) {
-				return this;
-			}
-			/** 3-3 | `A <: B  <->  A  & B == A` */
-			if (this.isSubtypeOf(t)) {
-				return this;
-			}
-			if (t.isSubtypeOf(this)) {
-				return t;
-			}
-
-			return method.call(this, t);
-		};
-	}
+	protected static intersectDeco = intersectDeco;
 
 	/**
 	 * Decorator for {@link Type#union} method and any overrides.
 	 * Contains shortcuts for constructing type unions.
 	 * @implements MethodDecorator<Type, (this: Type, t: Type) => Type>
 	 */
-	protected static unionDeco(
-		method:   (this: Type, t: Type) => Type,
-		_context: ClassMethodDecoratorContext<Type, typeof method>,
-	): typeof method {
-		return function (t) {
-			/** 1-7 | `T \| never   == T` */
-			if (this.isBottomType) {
-				return t;
-			}
-			if (t.isBottomType) {
-				return this;
-			}
-			/** 1-8 | `T \| unknown == unknown` */
-			if (this.isTopType || t.isTopType) {
-				return UNKNOWN;
-			}
-			/** 3-4 | `A <: B  <->  A \| B == B` */
-			if (this.isSubtypeOf(t)) {
-				return t;
-			}
-			if (t.isSubtypeOf(this)) {
-				return this;
-			}
-
-			return method.call(this, t);
-		};
-	}
+	protected static unionDeco = unionDeco;
 
 	/**
 	 * Decorator for {@link Type#subtract} method and any overrides.
 	 * Contains shortcuts for constructing type differences.
 	 * @implements MethodDecorator<Type, (this: Type, t: Type) => Type>
 	 */
-	protected static subtractDeco(
-		method:   (this: Type, t: Type) => Type,
-		_context: ClassMethodDecoratorContext<Type, typeof method>,
-	): typeof method {
-		return function (t) {
-			/** 4-1 | `A - B == A  <->  A & B == never` */
-			if (this.intersect(t).isBottomType) {
-				return this;
-			}
-
-			/** 4-2 | `A - B == never  <->  A <: B` */
-			if (this.isSubtypeOf(t)) {
-				return NEVER;
-			}
-
-			if (t instanceof TypeUnion) {
-				return t.subtractedFrom(this);
-			}
-
-			return method.call(this, t);
-		};
-	}
+	protected static subtractDeco = subtractDeco;
 
 	/**
 	 * Decorator for {@link Type#isSubtypeOf} method and any overrides.
 	 * Contains shortcuts for determining subtypes.
 	 * @implements MethodDecorator<Type, (this: Type, t: Type) => boolean>
 	 */
-	protected static subtypeDeco(
-		method:   (this: Type, t: Type) => boolean,
-		_context: ClassMethodDecoratorContext<Type, typeof method>,
-	): typeof method {
-		return function (t) {
-			/** 2-7 | `A <: A` */
-			if (this === t) {
-				return true;
-			}
-			/** 1-1 | `never <: T` */
-			if (this.isBottomType) {
-				return true;
-			}
-			/** 1-3 | `T       <: never  <->  T == never` */
-			if (t.isBottomType) {
-				return this.isBottomType;
-			}
-			/** 1-4 | `unknown <: T      <->  T == unknown` */
-			if (this.isTopType) {
-				return t.isTopType;
-			}
-			/** 1-2 | `T     <: unknown` */
-			if (t.isTopType) {
-				return true;
-			}
-
-			if (t instanceof TypeIntersection) {
-				return t.isSupertypeOf(this);
-			}
-			if (t instanceof TypeUnion) {
-				if (t.isNecessarilySupertypeOf(this)) {
-					return true;
-				}
-			}
-			if (t instanceof TypeDifference) {
-				return t.isSupertypeOf(this);
-			}
-
-			return method.call(this, t);
-		};
-	}
+	protected static subtypeDeco = subtypeDeco;
 
 	/**
 	 * Intersect all the given types.
@@ -288,7 +308,7 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type intersection
 	 */
-	@Type.intersectDeco
+	@intersectDeco
 	public intersect(t: Type): Type {
 		/** 2-1 | `A  & B == B  & A` */
 		if (t instanceof TypeUnion) {
@@ -303,7 +323,7 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type union
 	 */
-	@Type.unionDeco
+	@unionDeco
 	public union(t: Type): Type {
 		/** 2-2 | `A \| B == B \| A` */
 		if (t instanceof TypeIntersection) {
@@ -318,7 +338,7 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type difference
 	 */
-	@Type.subtractDeco
+	@subtractDeco
 	public subtract(t: Type): Type {
 		return new TypeDifference(this, t);
 	}
@@ -329,7 +349,7 @@ export abstract class Type {
 	 * @returns Is this type a subtype of the argument?
 	 */
 	@strictEqual
-	@Type.subtypeDeco
+	@subtypeDeco
 	public isSubtypeOf(t: Type): boolean {
 		return !this.isBottomType && !!this.values.size && // these checks are needed in cases of `obj` and `void`, which don’t store values
 			[...this.values].every((v) => t.includes(v));
