@@ -48,7 +48,7 @@ class CPString extends Primitive {
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
 		mod;
-		throw '`SolidString#build` not yet supported.';
+		throw '`CPString#build` not yet supported.';
 	}
 
 	/**

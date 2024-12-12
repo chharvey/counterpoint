@@ -118,7 +118,7 @@ describe('Object', () => {
 			});
 		});
 
-		describe('SolidTuple', () => {
+		describe('Tuple', () => {
 			it('returns `(tuple.make)`.', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
