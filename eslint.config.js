@@ -1,21 +1,7 @@
-import js from '@eslint/js';
-import {FlatCompat} from '@eslint/eslintrc';
+import eslint from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
-import tseslintPlugin from '@typescript-eslint/eslint-plugin';
-import tseslintParser from '@typescript-eslint/parser';
 import globals from 'globals';
-import path from 'node:path';
-import {fileURLToPath} from 'node:url';
-
-
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-	baseDirectory:     __dirname,
-	recommendedConfig: js.configs.recommended,
-	allConfig:         js.configs.all,
-});
+import tseslint from 'typescript-eslint';
 
 
 
@@ -28,22 +14,20 @@ export default [
 			'tree-sitter-counterpoint/grammar.js',
 		],
 	},
-	...compat.extends(
-		'eslint:recommended',                           // https://github.com/eslint/eslint/blob/v8.34.0/conf/eslint-recommended.js
-		'plugin:@typescript-eslint/eslint-recommended', // https://github.com/typescript-eslint/typescript-eslint/blob/v7.12.0/packages/eslint-plugin/src/configs/eslint-recommended-raw.ts
-		'plugin:@typescript-eslint/recommended',        // https://github.com/typescript-eslint/typescript-eslint/blob/v7.12.0/packages/eslint-plugin/src/configs/recommended.ts
-	),
+	eslint.configs.recommended,      // https://github.com/eslint/eslint/blob/v9.16.0/packages/js/src/configs/eslint-recommended.js
+	...tseslint.configs.recommended, // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/recommended.ts
+	...tseslint.configs.stylistic,   // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/stylistic.ts
 	{
 		name:            'all',
 		files:           ['**/*.{cjs,cts,js,mjs,mts,ts}'],
 		languageOptions: {
 			globals: {...globals.node},
-			parser:  tseslintParser,
+			parser:  tseslint.parser,
 		},
 		linterOptions: {reportUnusedDisableDirectives: 'warn'},
 		plugins:       {
 			'@stylistic':         stylistic,
-			'@typescript-eslint': tseslintPlugin,
+			'@typescript-eslint': tseslint.plugin,
 		},
 
 		rules: {
@@ -183,12 +167,16 @@ export default [
 			'prefer-arrow-callback':                     ['error', {allowUnboundThis: false}],
 		},
 	},
+	...tseslint.configs.stylisticTypeCheckedOnly.map((conf) => ({ // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/stylistic-type-checked-only.ts
+		...conf,
+		files: ['**/*.{cts,mts,ts}'],
+	})),
 	{
 		name:            'typescript-only', // separate from 'all' due to needing access to tsconfig files
 		files:           ['**/*.{cts,mts,ts}'],
 		languageOptions: {
 			globals:       {...globals.node},
-			parser:        tseslintParser,
+			parser:        tseslint.parser,
 			parserOptions: {
 				project: [
 					'./tsconfig.json',
@@ -199,7 +187,7 @@ export default [
 			},
 		},
 		linterOptions: {reportUnusedDisableDirectives: 'warn'},
-		plugins:       {'@typescript-eslint': tseslintPlugin},
+		plugins:       {'@typescript-eslint': tseslint.plugin},
 
 		rules: {
 			/* # Overrides of Recommended Rules */
