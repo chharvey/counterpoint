@@ -9,7 +9,7 @@ export class TypeError extends ErrorCode {
 	/** The name of this class of errors. */
 	public static override readonly NAME: string = 'TypeError';
 	/** The number series of this class of errors. */
-	public static readonly CODE: number = 2300;
+	public static readonly CODE:          number = 2300;
 	/**
 	 * Construct a new TypeError object.
 	 * @param message - a message to the user

@@ -215,7 +215,7 @@ export abstract class Type {
 	 * i.e., it is equal to the type `unknown`.
 	 * Used internally for special cases of computations.
 	 */
-	public readonly isTopType: boolean = false;
+	public readonly isTopType:    boolean = false;
 
 	/**
 	 * Construct a new Type object.
@@ -331,8 +331,8 @@ export abstract class Type {
 	@strictEqual
 	@Type.subtypeDeco
 	public isSubtypeOf(t: Type): boolean {
-		return !this.isBottomType && !!this.values.size // these checks are needed in cases of `obj` and `void`, which don’t store values
-			&& [...this.values].every((v) => t.includes(v));
+		return !this.isBottomType && !!this.values.size && // these checks are needed in cases of `obj` and `void`, which don’t store values
+			[...this.values].every((v) => t.includes(v));
 	}
 
 	/**

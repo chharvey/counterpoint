@@ -129,7 +129,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				}
 				return returntype.mutableOf();
 			}],
-		]).get(this.base.source as ValidFunctionName) || invalidFunctionName(this.base.source))();
+		]).get(this.base.source as ValidFunctionName) ?? invalidFunctionName(this.base.source))();
 	}
 
 	@memoizeMethod

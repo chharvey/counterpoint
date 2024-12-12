@@ -63,12 +63,12 @@ describe('Object', () => {
 				const data: bigint[] = [
 					42n + -420n,
 					...[
-						 126 /  3,
+						+126 /  3,
 						-126 /  3,
-						 126 / -3,
+						+126 / -3,
 						-126 / -3,
-						 200 /  3,
-						 200 / -3,
+						+200 /  3,
+						+200 / -3,
 						-200 /  3,
 						-200 / -3,
 					].map((x) => BigInt(Math.trunc(x))),
@@ -85,14 +85,14 @@ describe('Object', () => {
 
 		describe('Float', () => {
 			it('generates `(f64.const)`.', () => {
-				/* eslint-disable array-element-newline */
+				/* eslint-disable @stylistic/array-element-newline */
 				const data: number[] = [
 					55, -55, 33, -33, 2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					6.8, 6.8,
 					3.0 - 2.7,
 				];
-				/* eslint-enable array-element-newline */
+				/* eslint-enable @stylistic/array-element-newline */
 				const mod = new binaryen.Module();
 				return assertEqualBins(
 					data.map((x) => new OBJ.Float(x).build(mod)),

@@ -47,7 +47,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		}
-		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
+		if (this.validator.getSymbolInfo(this.id) instanceof SymbolStructureType) {
 			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}

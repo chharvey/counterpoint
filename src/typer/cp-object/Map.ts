@@ -39,9 +39,9 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 	@CPObject.equalsDeco
 	public override equal(value: CPObject): boolean {
 		return (
-			   value instanceof CPMap
-			&& this.cases.size === value.cases.size
-			&& this.isEqualTo(value as this, (this_, that_) => (
+			value instanceof CPMap &&
+			this.cases.size === value.cases.size &&
+			this.isEqualTo(value as this, (this_, that_) => (
 				[...that_.cases].every(([thatant, thatcon]) => !!xjs.Map.get<K, V>(this_.cases, thatant, language_values_equal)?.equal(thatcon))
 			))
 		);

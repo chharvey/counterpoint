@@ -94,8 +94,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			return v0;
 		}
 		if (
-			   this.operator === Operator.AND && !v0.isTruthy
-			|| this.operator === Operator.OR  &&  v0.isTruthy
+			this.operator === Operator.AND && !v0.isTruthy ||
+			this.operator === Operator.OR  &&  v0.isTruthy
 		) {
 			return v0;
 		}

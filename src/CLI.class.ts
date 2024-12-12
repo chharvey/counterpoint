@@ -30,20 +30,20 @@ export enum Command {
 type CustomArgsType = {
 	// CLI Options
 	/** Display help text. */
-	help: boolean,
+	help:     boolean,
 	/** Display version number. */
-	version: boolean,
+	version:  boolean,
 	/** Specify output filepath. */
-	out?: string,
+	out?:     string,
 	/** Specify configuration filepath. */
 	project?: string,
 	/** Display configuration options. */
-	config: boolean,
+	config:   boolean,
 	// abbrevs
-	h: boolean,
-	v: boolean,
-	o: string,
-	p: string,
+	h:        boolean,
+	v:        boolean,
+	o:        string,
+	p:        string,
 
 	// Language Features
 	comments:          null | boolean,
@@ -159,7 +159,7 @@ export class CLI {
 			intCoercion:     null,
 		},
 		unknown(arg) {
-			if (arg[0] === '-') { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
+			if (arg.startsWith('-')) { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
 				throw new Error(xjs.String.dedent`
 					Unknown CLI option: ${ arg }
 					${ CLI.HELPTEXT }
@@ -190,7 +190,7 @@ export class CLI {
 				['d',       Command.DEV],
 				['run',     Command.RUN],
 				['r',       Command.RUN],
-			]).get(this.argv._[0]) || Command.HELP
+			]).get(this.argv._[0]) ?? Command.HELP
 		);
 		if (this.argv.out === '' || this.argv.project === '') {
 			throw new Error(`

@@ -9,7 +9,7 @@ export class MutabilityError extends ErrorCode {
 	/** The name of this class of errors. */
 	public static override readonly NAME: string = 'MutabilityError';
 	/** The number series of this class of errors. */
-	public static readonly CODE: number = 2400;
+	public static readonly CODE:          number = 2400;
 	/**
 	 * Construct a new MutabilityError object.
 	 * @param message a message to the user

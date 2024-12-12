@@ -70,8 +70,8 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 
 	public override build(): binaryen.ExpressionRef {
 		if (
-			   this.validator.config.compilerOptions.constantFolding && this.assigned.fold()
-			&& (!this.unfixed || !this.assignee)
+			this.validator.config.compilerOptions.constantFolding && this.assigned.fold() &&
+			(!this.unfixed || !this.assignee)
 		) {
 			return this.builder.module.nop();
 		}

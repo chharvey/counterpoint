@@ -5,7 +5,7 @@ import {ErrorCode} from './ErrorCode.js';
 
 class VoidError extends ErrorCode {
 	public static override readonly NAME: string = 'VoidError';
-	public static readonly CODE: number = 3100;
+	public static readonly CODE:          number = 3100;
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,

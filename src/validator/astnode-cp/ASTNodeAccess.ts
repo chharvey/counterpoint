@@ -93,7 +93,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		} else {
 			assert_instanceof(this.accessor, ASTNodeExpression);
 			const accessor_type: TYPE.Type = this.accessor.type();
-			/* eslint-disable indent */
+			/* eslint-disable @stylistic/indent */
 			return (
 				(base_type instanceof TYPE.TypeTuple) ? (
 					(accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof OBJ.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
@@ -118,7 +118,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				) :
 				throw_expression(new TypeError01(this))
 			);
-			/* eslint-enable indent */
+			/* eslint-enable @stylistic/indent */
 		}
 	}
 
@@ -142,9 +142,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				return null;
 			}
 			return (
-				                  (base_value instanceof OBJ.CollectionIndexed) ? base_value.get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
-				                  (base_value instanceof OBJ.Set)               ? base_value.get(accessor_value                                             ) :
-				(assert_instanceof(base_value,           OBJ.Map),                base_value.get(accessor_value,                this.optional, this.accessor))
+				base_value instanceof OBJ.CollectionIndexed ? base_value.get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
+				base_value instanceof OBJ.Set               ? base_value.get(accessor_value                                             ) :
+				(assert_instanceof(base_value, OBJ.Map),      base_value.get(accessor_value,                this.optional, this.accessor))
 			);
 		}
 	}

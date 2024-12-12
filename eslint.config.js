@@ -37,7 +37,7 @@ export default [
 				skipComments: true,  // allow in comments
 			}],
 			'@typescript-eslint/no-unused-expressions': 'off', // getter access and logical operations may have side-effects
-			'@typescript-eslint/no-unused-vars': ['error', { // override default opts
+			'@typescript-eslint/no-unused-vars':        ['error', { // override default opts
 				argsIgnorePattern:              '^_',
 				caughtErrors:                   'all',
 				destructuredArrayIgnorePattern: '^_',
@@ -52,12 +52,12 @@ export default [
 
 			/* # Layout & Formatting */
 			/* ## Indentation, Spacing, and Alignment */
-			'@stylistic/arrow-spacing':                        'error',
-			'@stylistic/comma-spacing':                        'error',
-			'@stylistic/dot-location':                         ['error', 'property'],
-			'@stylistic/func-call-spacing': 'warn',
-			'@stylistic/generator-star-spacing':               ['error', 'both'],
-			'@stylistic/indent':                               ['error', 'tab', {
+			'@stylistic/arrow-spacing':          'error',
+			'@stylistic/comma-spacing':          'error',
+			'@stylistic/dot-location':           ['error', 'property'],
+			'@stylistic/func-call-spacing':      'warn',
+			'@stylistic/generator-star-spacing': ['error', 'both'],
+			'@stylistic/indent':                 ['error', 'tab', {
 				SwitchCase:             1,
 				flatTernaryExpressions: true,
 			}],
@@ -67,54 +67,54 @@ export default [
 			}],
 			'@stylistic/keyword-spacing':             'error',
 			'@stylistic/no-mixed-spaces-and-tabs':    ['error', 'smart-tabs'],
-			'@stylistic/rest-spread-spacing':                            'error',
-			'@stylistic/semi-spacing':                                   'error',
+			'@stylistic/rest-spread-spacing':         'error',
+			'@stylistic/semi-spacing':                'error',
 			'@stylistic/space-before-blocks':         'error',
 			'@stylistic/space-before-function-paren': ['warn', {
 				anonymous:  'always',
 				asyncArrow: 'always',
 				named:      'never',
 			}],
-			'@stylistic/space-infix-ops': 'error',
-			'@stylistic/space-unary-ops':                    'error',
-			'@stylistic/switch-colon-spacing':               'error',
-			'@stylistic/template-curly-spacing':             ['error', 'always'],
-			'@stylistic/template-tag-spacing':               'error',
-			'@stylistic/yield-star-spacing':                 ['error', 'both'],
+			'@stylistic/space-infix-ops':        'error',
+			'@stylistic/space-unary-ops':        'error',
+			'@stylistic/switch-colon-spacing':   'error',
+			'@stylistic/template-curly-spacing': ['error', 'always'],
+			'@stylistic/template-tag-spacing':   'error',
+			'@stylistic/yield-star-spacing':     ['error', 'both'],
 
 			/* ## Grouping Structure Style */
-			'@stylistic/array-bracket-newline':                          ['error', 'consistent'],
-			'@stylistic/array-bracket-spacing':                          'warn',
-			'@stylistic/array-element-newline':                          ['error', 'consistent'],
-			'arrow-body-style':                               'error',
-			'@stylistic/brace-style':                 'error',
-			'@stylistic/computed-property-spacing':                      'warn',
-			'curly':                                          'error',
-			'@stylistic/function-call-argument-newline':                 ['error', 'consistent'],
-			'@stylistic/function-paren-newline':                         'error',
-			'func-style':                                     ['error', 'declaration', {allowArrowFunctions: true}],
-			'@stylistic/lines-between-class-members': ['error', 'always', {exceptAfterSingleLine: true}],
+			'@stylistic/array-bracket-newline':          ['error', 'consistent'],
+			'@stylistic/array-bracket-spacing':          'warn',
+			'@stylistic/array-element-newline':          ['error', 'consistent'],
+			'arrow-body-style':                          'error',
+			'@stylistic/brace-style':                    'error',
+			'@stylistic/computed-property-spacing':      'warn',
+			'curly':                                     'error',
+			'@stylistic/function-call-argument-newline': ['error', 'consistent'],
+			'@stylistic/function-paren-newline':         'error',
+			'func-style':                                ['error', 'declaration', {allowArrowFunctions: true}],
+			'@stylistic/lines-between-class-members':    ['error', 'always', {exceptAfterSingleLine: true}],
 			'no-useless-computed-key':                   'error',
-			'@stylistic/object-curly-newline':                           ['error', {
+			'@stylistic/object-curly-newline':           ['error', {
 				ObjectExpression:  {multiline: true},
 				ObjectPattern:     {multiline: true},
 				ImportDeclaration: {multiline: true, minProperties: 2},
 				ExportDeclaration: {multiline: true, minProperties: 2},
 			}],
-			'@stylistic/object-curly-spacing': 'warn',
-			'@stylistic/object-property-newline':                 ['error', {allowAllPropertiesOnSameLine: true}],
-			'object-shorthand':                        ['error', 'properties', {avoidQuotes: true}],
-			'@stylistic/padded-blocks':                           ['error', 'never'],
-			'@stylistic/quote-props':                             ['error', 'consistent-as-needed'],
-			'@stylistic/space-in-parens':                         'warn',
+			'@stylistic/object-curly-spacing':    'warn',
+			'@stylistic/object-property-newline': ['error', {allowAllPropertiesOnSameLine: true}],
+			'object-shorthand':                   ['error', 'properties', {avoidQuotes: true}],
+			'@stylistic/padded-blocks':           ['error', 'never'],
+			'@stylistic/quote-props':             ['error', 'consistent-as-needed'],
+			'@stylistic/space-in-parens':         'warn',
 
 			/* ## Operator Style */
-			'@stylistic/arrow-parens':                    'error',
-			'@stylistic/comma-dangle': ['error', 'always-multiline'],
-			'@stylistic/comma-style':                     'error',
-			'dot-notation':                    'error',
-			'@stylistic/implicit-arrow-linebreak':        'error',
-			'@stylistic/new-parens':                      'error',
+			'@stylistic/arrow-parens':             'error',
+			'@stylistic/comma-dangle':             ['error', 'always-multiline'],
+			'@stylistic/comma-style':              'error',
+			'dot-notation':                        'error',
+			'@stylistic/implicit-arrow-linebreak': 'error',
+			'@stylistic/new-parens':               'error',
 			'@stylistic/operator-linebreak':       ['error', 'none', {
 				overrides: {
 					'+':  'after',
@@ -128,10 +128,10 @@ export default [
 					':':  'ignore',
 				},
 			}],
-			'@stylistic/quotes':                  ['error', 'single'],
-			'@stylistic/semi': 'error',
-			'@stylistic/semi-style':              'error',
-			'@stylistic/wrap-iife':               ['error', 'inside', {functionPrototypeMethods: true}],
+			'@stylistic/quotes':     ['error', 'single'],
+			'@stylistic/semi':       'error',
+			'@stylistic/semi-style': 'error',
+			'@stylistic/wrap-iife':  ['error', 'inside', {functionPrototypeMethods: true}],
 
 			/* # Best Practices */
 			/* ## Preferred Operators */
@@ -188,11 +188,11 @@ export default [
 				default:  'array-simple',
 				readonly: 'array',
 			}],
-			'@typescript-eslint/consistent-type-definitions': 'off',                     // both object types and interfaces can be useful
-			'@typescript-eslint/no-explicit-any':       ['error', {fixToUnknown: true}], // quickfix `any` to `unknown`
-			'@typescript-eslint/no-inferrable-types':   'off',                           // don’t rely on TypeScript inference
-			'@typescript-eslint/no-non-null-assertion': 'off',                           // non-null assertions can be useful
-			'@typescript-eslint/prefer-regexp-exec':    'off',                           // `String#match` is more ergonomic
+			'@typescript-eslint/consistent-type-definitions': 'off',                           // both object types and interfaces can be useful
+			'@typescript-eslint/no-explicit-any':             ['error', {fixToUnknown: true}], // quickfix `any` to `unknown`
+			'@typescript-eslint/no-inferrable-types':         'off',                           // don’t rely on TypeScript inference
+			'@typescript-eslint/no-non-null-assertion':       'off',                           // non-null assertions can be useful
+			'@typescript-eslint/prefer-regexp-exec':          'off',                           // `String#match` is more ergonomic
 
 			/* # Layout & Formatting */
 			/* ## Indentation, Spacing, and Alignment */
@@ -200,7 +200,7 @@ export default [
 
 			/* ## Grouping Structure Style */
 			'@typescript-eslint/adjacent-overload-signatures': 'error',
-			'@stylistic/member-delimiter-style':       ['error', {
+			'@stylistic/member-delimiter-style':               ['error', {
 				overrides: {
 					typeLiteral: {
 						multiline:  {delimiter: 'comma'},
@@ -210,8 +210,8 @@ export default [
 			}],
 
 			/* ## Type Annotations */
-			'@typescript-eslint/consistent-type-imports':         'error',
-			'@typescript-eslint/explicit-function-return-type':   ['error', {
+			'@typescript-eslint/consistent-type-imports':       'error',
+			'@typescript-eslint/explicit-function-return-type': ['error', {
 				allowExpressions:          true,
 				allowHigherOrderFunctions: false,
 			}],
