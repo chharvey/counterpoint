@@ -28,6 +28,7 @@
     "cpc:d-o": "cpc d ./sample/test-v0.4.solid -o ./sample/testout.wat",
     "cpc:d-p": "cpc d ./sample/test-v0.4.solid -p ./sample/counterpoint-config.json",
     "cpc:r": "cpc r ./sample/test-v0.4.wasm",
+    "npmplease": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ package-lock.json && npm install",
     "predist": "eslint .",
     "dist": "tsc",
     "test": "mocha -r ts-node/esm src/index.ts --loader='ts-node/esm' --timeout 10000 './test/**/*.test.ts'",
@@ -40,7 +41,7 @@
     "extrajs": "^0.25.0",
     "fast-deep-equal": "^3.1.3",
     "minimist": "^1.2.6",
-    "tree-sitter": "~0.21.1",
+    "tree-sitter": "~0.22.1",
     "utf8": "^3.0.0"
   },
   "devDependencies": {
@@ -58,7 +59,7 @@
     "typescript-eslint": "^8.18.0"
   },
   "engines": {
-    "node": "^20.16"
+    "node": "^22.12"
   },
   "private": true,
   "workspaces": [
