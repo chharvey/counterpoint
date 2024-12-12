@@ -1,7 +1,10 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {BinVect} from '../../index.js';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	instanceOf,
+} from '../../lib/index.js';
 import {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
 
@@ -22,13 +25,19 @@ export class Float extends CPNumber<Float> {
 	}
 
 	@strictEqual
+	// @ts-expect-error FIXME:
+	@instanceOf(Float)
+	// @CPObject.memoizeSameness // memoizing takes longer than a simple comparison
 	public override identical(value: CPObject): boolean {
-		return value instanceof Float && Object.is(this.data, value.data);
+		return Object.is(this.data, (value as Float).data);
 	}
 
+	@strictEqual
 	@CPObject.equalsDeco
+	@instanceOf(CPNumber)
+	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
-		return value instanceof CPNumber && this.data === value.toFloat().data;
+		return this.data === (value as CPNumber).toFloat().data;
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {

@@ -49,14 +49,17 @@ export class Integer extends CPNumber<Integer> {
 	@strictEqual
 	// @ts-expect-error FIXME:
 	@instanceOf(Integer)
-	@CPObject.memoizeSameness
+	// @CPObject.memoizeSameness // memoizing takes longer than a simple comparison
 	public override identical(value: CPObject): boolean {
-		return value instanceof Integer && this.data === value.data;
+		return this.data === (value as Integer).data;
 	}
 
+	@strictEqual
 	@CPObject.equalsDeco
+	@instanceOf(Float)
+	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
-		return value instanceof Float && this.toFloat().equal(value);
+		return this.toFloat().equal(value);
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {

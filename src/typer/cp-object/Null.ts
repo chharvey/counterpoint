@@ -1,6 +1,9 @@
 import type binaryen from 'binaryen';
 import {BinVect} from '../../index.js';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	instanceOf,
+} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
@@ -41,8 +44,11 @@ export class Null extends Primitive {
 	}
 
 	@strictEqual
-	public override identical(value: CPObject): boolean {
-		return value instanceof Null;
+	// @ts-expect-error FIXME:
+	@instanceOf(Null)
+	// @CPObject.memoizeSameness // memoizing takes longer than returning a constant
+	public override identical(_value: CPObject): boolean {
+		return true;
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
