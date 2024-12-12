@@ -36,13 +36,13 @@ export default [
 				skipStrings:  false, // disallow in strings
 				skipComments: true,  // allow in comments
 			}],
-			'@stylistic/no-mixed-spaces-and-tabs':          ['error', 'smart-tabs'], // allow smart-tabs
+			'@typescript-eslint/no-unused-expressions': 'off', // getter access and logical operations may have side-effects
 			'@typescript-eslint/no-unused-vars': ['error', { // override default opts
 				argsIgnorePattern:              '^_',
 				caughtErrors:                   'all',
 				destructuredArrayIgnorePattern: '^_',
 				ignoreRestSiblings:             true,
-				// reportUsedIgnorePattern:        true, // not until eslint v9.5.0
+				reportUsedIgnorePattern:        true,
 			}],
 
 			/* # File Conventions (should be consistent with `/.editorconfig` file) */
@@ -62,10 +62,11 @@ export default [
 				flatTernaryExpressions: true,
 			}],
 			'@stylistic/key-spacing': ['error', {
-				align: 'value',
-				mode:  'minimum',
+				align:      {on:   'value'},
+				singleLine: {mode: 'minimum'},
 			}],
 			'@stylistic/keyword-spacing':             'error',
+			'@stylistic/no-mixed-spaces-and-tabs':    ['error', 'smart-tabs'],
 			'@stylistic/rest-spread-spacing':                            'error',
 			'@stylistic/semi-spacing':                                   'error',
 			'@stylistic/space-before-blocks':         'error',
@@ -93,7 +94,7 @@ export default [
 			'@stylistic/function-paren-newline':                         'error',
 			'func-style':                                     ['error', 'declaration', {allowArrowFunctions: true}],
 			'@stylistic/lines-between-class-members': ['error', 'always', {exceptAfterSingleLine: true}],
-			'no-useless-computed-key':                        ['error', {enforceForClassMembers: true}],
+			'no-useless-computed-key':                   'error',
 			'@stylistic/object-curly-newline':                           ['error', {
 				ObjectExpression:  {multiline: true},
 				ObjectPattern:     {multiline: true},
@@ -114,25 +115,17 @@ export default [
 			'dot-notation':                    'error',
 			'@stylistic/implicit-arrow-linebreak':        'error',
 			'@stylistic/new-parens':                      'error',
-			'@stylistic/operator-linebreak':              ['error', 'before', {
+			'@stylistic/operator-linebreak':       ['error', 'none', {
 				overrides: {
-					'=':    'none',
-					'*=':   'none',
-					'/=':   'none',
-					'%=':   'none',
-					'+=':   'none',
-					'-=':   'none',
-					'<<=':  'none',
-					'>>=':  'none',
-					'>>>=': 'none',
-					'&=':   'none',
-					'^=':   'none',
-					'|=':   'none',
-					'**=':  'none',
-					'&&=':  'none',
-					'||=':  'none',
-					'??=':  'none',
-					':':    'ignore',
+					'+':  'after',
+					'*':  'after',
+					'&':  'after',
+					'|':  'after',
+					'&&': 'after',
+					'||': 'after',
+					'??': 'after',
+					'?':  'before',
+					':':  'ignore',
 				},
 			}],
 			'@stylistic/quotes':                  ['error', 'single'],
@@ -191,9 +184,15 @@ export default [
 
 		rules: {
 			/* # Overrides of Recommended Rules */
-			'@typescript-eslint/no-explicit-any':       ['error', {fixToUnknown: true}], // report as errors & quickfix `any` to `unknown`
+			'@typescript-eslint/array-type': ['error', { // override default opts
+				default:  'array-simple',
+				readonly: 'array',
+			}],
+			'@typescript-eslint/consistent-type-definitions': 'off',                     // both object types and interfaces can be useful
+			'@typescript-eslint/no-explicit-any':       ['error', {fixToUnknown: true}], // quickfix `any` to `unknown`
 			'@typescript-eslint/no-inferrable-types':   'off',                           // don’t rely on TypeScript inference
 			'@typescript-eslint/no-non-null-assertion': 'off',                           // non-null assertions can be useful
+			'@typescript-eslint/prefer-regexp-exec':    'off',                           // `String#match` is more ergonomic
 
 			/* # Layout & Formatting */
 			/* ## Indentation, Spacing, and Alignment */
@@ -210,18 +209,7 @@ export default [
 				},
 			}],
 
-			/* ## Operator Style */
-			'dot-notation':                    'off',
-			'@typescript-eslint/dot-notation': 'error', // needed here instead of in config 'all' due to `languageOptions.parserOptions.project`
-
 			/* ## Type Annotations */
-			'@typescript-eslint/array-type': ['error', {
-				default:  'array-simple',
-				readonly: 'array',
-			}],
-			'@typescript-eslint/consistent-generic-constructors': 'error',
-			'@typescript-eslint/consistent-indexed-object-style': 'error',
-			'@typescript-eslint/consistent-type-assertions':      'error',
 			'@typescript-eslint/consistent-type-imports':         'error',
 			'@typescript-eslint/explicit-function-return-type':   ['error', {
 				allowExpressions:          true,
