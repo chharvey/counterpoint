@@ -10,12 +10,13 @@ import {CollectionKeyed} from './CollectionKeyed.js';
 
 export class Record<T extends CPObject = CPObject> extends CollectionKeyed<T> {
 	@strictEqual
+	// @ts-expect-error FIXME:
 	@instanceOf(Record)
 	@CPObject.memoizeSameness
 	public override identical(value: CPObject): boolean {
 		return (
-			   this.properties.size === (value as Record).properties.size
-			&& [...(value as Record).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.identical(thatvalue))
+			this.properties.size === (value as Record).properties.size &&
+			[...(value as Record).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.identical(thatvalue))
 		);
 	}
 

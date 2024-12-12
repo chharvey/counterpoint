@@ -12,6 +12,7 @@ import {CollectionIndexed} from './CollectionIndexed.js';
 
 export class Tuple<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 	@strictEqual
+	// @ts-expect-error FIXME:
 	@instanceOf(Tuple)
 	@CPObject.memoizeSameness
 	public override identical(value: CPObject): boolean {

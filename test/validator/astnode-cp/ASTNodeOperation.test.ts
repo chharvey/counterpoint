@@ -414,12 +414,12 @@ describe('ASTNodeOperation', () => {
 				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
 					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build()
 				));
-				/* eslint-disable quote-props */
+				/* eslint-disable @stylistic/quote-props */
 				const const_ = {
 					'2':   buildConst(goal.builder.module, 2n),
 					'2.4': buildConst(goal.builder.module, 2.4),
 				} as const;
-				/* eslint-enable quote-props */
+				/* eslint-enable @stylistic/quote-props */
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build()),
 					[
@@ -481,12 +481,12 @@ describe('ASTNodeOperation', () => {
 					(((goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(),
 					(((goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(),
 				];
-				/* eslint-disable quote-props */
+				/* eslint-disable @stylistic/quote-props */
 				const const_ = {
 					'2': buildConst(goal.builder.module, 2n),
 					'3': buildConst(goal.builder.module, 3n),
 				} as const;
-				/* eslint-enable quote-props */
+				/* eslint-enable @stylistic/quote-props */
 				const inners: readonly binaryen.ExpressionRef[] = [
 					CALL.vadd(goal.builder.module, extracts[0], const_['2']),
 					CALL.vadd(goal.builder.module, const_['2'], extracts[1]),

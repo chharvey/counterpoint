@@ -44,12 +44,12 @@ export abstract class ASTNodeCP extends ASTNode {
 		node:          ASTNodeCP,
 	): void {
 		if (
-			   !assigned_type.isSubtypeOf(assignee_type)
-			&& !( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
-				   // is int treated as a subtype of float?
-				   node.validator.config.compilerOptions.intCoercion
-				&& assigned_type.isSubtypeOf(TYPE.INT)
-				&& TYPE.FLOAT.isSubtypeOf(assignee_type)
+			!assigned_type.isSubtypeOf(assignee_type) &&
+			!( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
+				// is int treated as a subtype of float?
+				node.validator.config.compilerOptions.intCoercion &&
+				assigned_type.isSubtypeOf(TYPE.INT) &&
+				TYPE.FLOAT.isSubtypeOf(assignee_type)
 			)
 		) {
 			throw new TypeErrorNotAssignable(assigned_type, assignee_type, node);

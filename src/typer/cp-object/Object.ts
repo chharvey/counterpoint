@@ -6,6 +6,18 @@ import {String as CPString} from './index.js';
 
 
 
+// HACK: cannot access static method of CPObject within itself as a decorator
+function equalsDeco(
+	method:   CPObject['equal'],
+	_context: ClassMethodDecoratorContext<CPObject, typeof method>,
+): typeof method {
+	return function (this: CPObject, value) {
+		return this.identical(value) || method.call(this, value);
+	};
+}
+
+
+
 /**
  * Parent class for all Counterpoint Language Values.
  * Known subclasses:
@@ -64,20 +76,14 @@ abstract class CPObject {
 	 * are equal by some definition.
 	 * @implements MethodDecorator<CPObject, CPObject['equal']>
 	 */
-	protected static equalsDeco(
-		method:   CPObject['equal'],
-		_context: ClassMethodDecoratorContext<CPObject, typeof method>,
-	): typeof method {
-		return function (this: CPObject, value) {
-			return this.identical(value) || method.call(this, value);
-		};
-	}
+	protected static equalsDeco = equalsDeco;
 
 
 	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
 	 */
+	// eslint-disable-next-line @typescript-eslint/class-literal-property-style --- overridden in subclasses by getters
 	public get isTruthy(): boolean {
 		return true;
 	}
@@ -107,7 +113,7 @@ abstract class CPObject {
 	 * @returns are the objects equal?
 	 */
 	@strictEqual
-	@CPObject.equalsDeco
+	@equalsDeco
 	public equal(_value: CPObject): boolean {
 		return false;
 	}

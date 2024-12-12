@@ -162,10 +162,7 @@ export function strictEqual<Proto extends object, Params extends unknown[]>(
  * @typeparam Proto       the type of the prototype
  * @typeparam Params      the method’s parameter types
  */
-export function instanceOf(cons: NewableFunction): <Proto extends object, Params extends unknown[]>(
-	method:   (this: Proto, that: Proto, ...args: Params) => boolean,
-	_context: ClassMethodDecoratorContext<Proto, typeof method>,
-) => typeof method {
+export function instanceOf<Proto extends object, Params extends unknown[]>(cons: NewableFunction): MethodDecorator<Proto, (this: Proto, that: Proto, ...args: Params) => boolean> {
 	return (method) => function (that, ...args) {
 		return that instanceof cons && method.call(this, that, ...args);
 	};

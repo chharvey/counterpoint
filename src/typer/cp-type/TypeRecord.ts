@@ -68,9 +68,9 @@ export class TypeRecord extends ValueType {
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeRecord
-			&& this.count[0] >= t.count[0]
-			&& [...t.invariants].every(([id, thattype]) => {
+			t instanceof TypeRecord &&
+			this.count[0] >= t.count[0] &&
+			[...t.invariants].every(([id, thattype]) => {
 				const thistype: TypeEntry | undefined = this.invariants.get(id);
 				if (!thattype.optional) {
 					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.

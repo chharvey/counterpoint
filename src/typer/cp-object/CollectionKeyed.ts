@@ -33,12 +33,13 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
+	// @ts-expect-error FIXME:
 	@instanceOf(CollectionKeyed)
 	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return (
-			   this.properties.size === (value as CollectionKeyed).properties.size
-			&& [...(value as CollectionKeyed).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue))
+			this.properties.size === (value as CollectionKeyed).properties.size &&
+			[...(value as CollectionKeyed).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue))
 		);
 	}
 

@@ -24,7 +24,7 @@ export class Dev {
 	 * and those features should become fully enabled.
 	 * Released features may have an optional language feature option defined in {@link CPConfig}.
 	 */
-	private static readonly TOGGLES: {[K in DevToggleKey]: DevToggleVal} = {
+	private static readonly TOGGLES: Record<DevToggleKey, DevToggleVal> = {
 		'stringConstant-build': [false],
 		'stringTemplate-build': [false],
 	};
@@ -36,7 +36,7 @@ export class Dev {
 	 */
 	public static supports(feature: DevToggleKey): boolean {
 		const toggle: DevToggleVal = Dev.TOGGLES[feature];
-		return toggle[0] && Dev.supportsAll(...toggle[1] || []);
+		return toggle[0] && Dev.supportsAll(...toggle[1] ?? []);
 	}
 
 	/**

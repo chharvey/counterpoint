@@ -17,7 +17,7 @@ export class TypeDifference extends Type {
 	 * @param left the first type
 	 * @param right the second type
 	 */
-	 public constructor(
+	public constructor(
 		public readonly left:  Type,
 		public readonly right: Type,
 	) {

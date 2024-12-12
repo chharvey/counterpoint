@@ -37,6 +37,7 @@ class CPString extends Primitive {
 	}
 
 	@strictEqual
+	// @ts-expect-error FIXME:
 	@instanceOf(CPString)
 	@CPObject.memoizeSameness
 	public override identical(value: CPObject): boolean {
@@ -49,7 +50,7 @@ class CPString extends Primitive {
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
 		mod;
-		throw '`SolidString#build` not yet supported.';
+		throw '`CPString#build` not yet supported.';
 	}
 
 	/**

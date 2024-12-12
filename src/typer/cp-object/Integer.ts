@@ -47,6 +47,7 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	@strictEqual
+	// @ts-expect-error FIXME:
 	@instanceOf(Integer)
 	@CPObject.memoizeSameness
 	public override identical(value: CPObject): boolean {

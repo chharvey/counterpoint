@@ -63,7 +63,7 @@ describe('ASTNodeType', () => {
 					);
 				});
 				it('throws if count is negative.', () => {
-					       assert.throws(() => AST.ASTNodeTypeList.fromSource('(int | bool)  [-3]').eval(), TypeError);
+					assert.throws(() => AST.ASTNodeTypeList.fromSource('(int | bool)[-3]').eval(), TypeError);
 				});
 			});
 

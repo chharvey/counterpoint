@@ -35,6 +35,7 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
+	// @ts-expect-error FIXME:
 	@instanceOf(CPSet)
 	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {

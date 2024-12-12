@@ -1,29 +1,33 @@
 export enum Keyword {
 	// type literal
-		NEVER   = 'never',
-		VOID    = 'void',
-		BOOL    = 'bool',
-		INT     = 'int',
-		FLOAT   = 'float',
-		STR     = 'str',
-		UNKNOWN = 'unknown',
+	NEVER   = 'never',
+	VOID    = 'void',
+	BOOL    = 'bool',
+	INT     = 'int',
+	FLOAT   = 'float',
+	STR     = 'str',
+	UNKNOWN = 'unknown',
+
 	// value literal
-		NULL  = 'null',
-		FALSE = 'false',
-		TRUE  = 'true',
+	NULL  = 'null',
+	FALSE = 'false',
+	TRUE  = 'true',
+
 	// operator
-		MUTABLE = 'mut',
-		IS      = 'is',
-		ISNT    = 'isnt',
-		IF      = 'if',
-		THEN    = 'then',
-		ELSE    = 'else',
+	MUTABLE = 'mut',
+	IS      = 'is',
+	ISNT    = 'isnt',
+	IF      = 'if',
+	THEN    = 'then',
+	ELSE    = 'else',
+
 	// storage
-		TYPE  = 'type',
-		LET   = 'let',
-		BLANK = '_',
+	TYPE  = 'type',
+	LET   = 'let',
+	BLANK = '_',
+
 	// modifier
-		UNFIXED = 'var',
+	UNFIXED = 'var',
 }
 
 
