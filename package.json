@@ -1,57 +1,68 @@
 {
-  "name": "@chharvey/solid",
-  "version": "0.4.0",
+  "name": "@chharvey/counterpoint",
+  "version": "0.4.1",
   "description": "A robust programming language.",
-  "homepage": "https://github.com/chharvey/solid#readme",
+  "homepage": "https://github.com/chharvey/counterpoint#readme",
   "bugs": {
-    "url": "https://github.com/chharvey/solid/issues"
+    "url": "https://github.com/chharvey/counterpoint/issues"
   },
   "license": "AGPL-3.0-or-later",
-  "author": "Chris Harvey <chrisharvey2pi@gmail.com> (https://chharvey.github.io/)",
-  "main": "dist/main.js",
+  "author": "Chris Harvey <1362083+chharvey@users.noreply.github.com>",
+  "main": "build/main.js",
   "type": "module",
   "bin": {
-    "solid": "bin/solid.js"
+    "cpc": "bin/cpc.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chharvey/solid.git"
+    "url": "git+https://github.com/chharvey/counterpoint.git"
   },
   "scripts": {
-    "solid": "solid",
-    "solid-h": "solid -h",
-    "solid-v": "solid -v",
-    "solid:c": "solid c ./sample/test-v0.4.solid",
-    "solid:c-o": "solid c ./sample/test-v0.4.solid -o ./sample/testout.wasm",
-    "solid:c-p": "solid c ./sample/test-v0.4.solid -p ./sample/solid-config.json",
-    "solid:d": "solid d ./sample/test-v0.4.solid",
-    "solid:d-o": "solid d ./sample/test-v0.4.solid -o ./sample/testout.wat",
-    "solid:d-p": "solid d ./sample/test-v0.4.solid -p ./sample/solid-config.json",
-    "solid:r": "solid r ./sample/test-v0.4.wasm",
+    "cpc": "cpc",
+    "cpc-h": "cpc -h",
+    "cpc-v": "cpc -v",
+    "cpc:c": "cpc c ./sample/test-v0.4.cp",
+    "cpc:c-o": "cpc c ./sample/test-v0.4.cp -o ./sample/testout.wasm",
+    "cpc:c-p": "cpc c ./sample/test-v0.4.cp -p ./sample/counterpoint-config.json",
+    "cpc:d": "cpc d ./sample/test-v0.4.cp",
+    "cpc:d-o": "cpc d ./sample/test-v0.4.cp -o ./sample/testout.wat",
+    "cpc:d-p": "cpc d ./sample/test-v0.4.cp -p ./sample/counterpoint-config.json",
+    "cpc:r": "cpc r ./sample/test-v0.4.wasm",
+    "npmplease": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ package-lock.json && npm install",
+    "predist": "eslint .",
     "dist": "tsc",
-    "postdist": "node ./tasks/build-parser.js",
     "test": "mocha -r ts-node/esm src/index.ts --loader='ts-node/esm' --timeout 10000 './test/**/*.test.ts'",
+    "prebuild": "npm run build -w tree-sitter-counterpoint && npm rebuild",
     "build": "rm -rf ./build/ && npm run dist && npm run test"
   },
   "dependencies": {
     "@chharvey/requirejson": "^2.0.0",
     "binaryen": "^116.0.0",
-    "extrajs": "^0.24.0",
+    "extrajs": "^0.25.0",
     "fast-deep-equal": "^3.1.3",
-    "minimist": "^1.2.5",
+    "minimist": "^1.2.6",
+    "tree-sitter": "~0.22.1",
     "utf8": "^3.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.8.0",
+    "@stylistic/eslint-plugin": "^2.6.2",
     "@types/minimist": "^1.2.0",
-    "@types/mocha": "^9.0.0",
-    "@types/node": "^16.0.0",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^20.0.0",
     "@types/utf8": "^3.0.0",
-    "mocha": "^9.0.0",
+    "eslint": "^9.16.0",
+    "globals": "^15.9.0",
+    "mocha": "^10.0.0",
     "ts-node": "^10.0.0",
-    "typescript": "~4.6.0"
+    "typescript": "~5.7.0",
+    "typescript-eslint": "^8.18.0"
   },
   "engines": {
-    "node": ">=16 < 17"
+    "node": "^22.12"
   },
-  "private": true
+  "private": true,
+  "workspaces": [
+    "tree-sitter-counterpoint"
+  ]
 }

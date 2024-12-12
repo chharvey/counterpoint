@@ -123,7 +123,7 @@ export class BinVect {
 			| readonly [bigint, bigint] | readonly [binaryen.ExpressionRef, binaryen.ExpressionRef]
 		) = null,
 	) {
-		this.#internal = this.mod.v128.const(new Uint8Array(16));
+		this.#internal = this.mod.v128.const(new Uint8Array(16)); // HACK: TypeScript bug where native-private fields are not emitted in constructor when `useDefineForClassFields` compiler option is off
 
 		if (arg === null) {
 			// the arg represents the Counterpoint `null` value
@@ -182,7 +182,8 @@ export class BinVect {
 			if (arg.length === 1) {
 				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0032));
 				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 4, arg[0]);
-			} else if (arg.length === 2) {
+			} else {
+				assert.strictEqual(arg.length, 2);
 				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0034));
 				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 4, arg[0]);
 				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 5, arg[1] as binaryen.ExpressionRef);

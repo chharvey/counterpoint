@@ -1,4 +1,4 @@
-# Solid Language Reference
+# Counterpoint Programming Language Reference
 
 1. [Types](./types.md)
 1. [Expressions and Operators](./expressions-operators.md)

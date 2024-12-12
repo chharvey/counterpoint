@@ -61,6 +61,9 @@ typings/
 .next
 
 
+# Editor Settings
+.vscode/
+
 # Sample test files
 sample/
 

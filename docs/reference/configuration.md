@@ -1,5 +1,5 @@
-# Solid Configuration
-This chapter describes the ways in which Solid developers can configure their programs and compilers.
+# Counterpoint Configuration
+This chapter describes the ways in which Counterpoint developers can configure their programs and compilers.
 
 
 
@@ -7,20 +7,20 @@ This chapter describes the ways in which Solid developers can configure their pr
 A configuration file is the best way to manage configuration of your compiler instance.
 It’s best to check-in your configuration file into source control.
 Your configuration file must be a JSON file, and
-it should be at the top level of your codebase, named `solid-config.json`.
+it should be at the top level of your codebase, named `counterpoint-config.json`.
 *Note: The filename doesn’t matter for now, but in the future this could be a convention. Check back here for updates.*
 Your JSON file should be a single object, with two optional properties: `languageFeatures` and `compilerOptions`.
-[Solid API coming soon]
+[Counterpoint API coming soon]
 
-- Without a config file, the Solid compiler will use the configuration default values, listed in the next section.
-- To use a config file during compilation, you must specify it on the command line. Run `npx solid --help` for details.
-- Even with a config file, you may override it with per-option CLI arguments. Run `npx solid --config` for details.
+- Without a config file, the Counterpoint compiler will use the configuration default values, listed in the next section.
+- To use a config file during compilation, you must specify it on the command line. Run `npx cpc --help` for details.
+- Even with a config file, you may override it with per-option CLI arguments. Run `npx cpc --config` for details.
 
 For example, the default value of [`comments`](#comments) is `true`.
-If in your `solid-config.json` you have `{"languageFeatures": {"comments": false}}`,
+If in your `counterpoint-config.json` you have `{"languageFeatures": {"comments": false}}`,
 that would override the default. However, if you run
 ```shell
-$ npx solid c ./my-program.solid -p=./solid-config.json --comments
+$ npx cpc c ./my-program.cp -p=./counterpoint-config.json --comments
 ```
 the `--comments` option would override your config file and turn comments back on again.
 
@@ -30,7 +30,7 @@ the `--comments` option would override your config file and turn comments back o
 
 
 ### `languageFeatures`
-Language features are aspects of the Solid Programming Language that may be enabled and disabled at will.
+Language features are aspects of the Counterpoint Programming Language that may be enabled and disabled at will.
 
 #### `comments`
 ```

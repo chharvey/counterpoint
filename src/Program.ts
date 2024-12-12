@@ -1,8 +1,8 @@
 import {
-	SolidConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
 } from './core/index.js';
-import { ASTNODE_SOLID as AST } from './validator/index.js';
+import {AST} from './validator/index.js';
 
 
 
@@ -18,7 +18,7 @@ export class Program {
 	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor(source: string, config: SolidConfig = CONFIG_DEFAULT) {
+	public constructor(source: string, config: CPConfig = CONFIG_DEFAULT) {
 		this.#astGoal = AST.ASTNodeGoal.fromSource(source, config);
 	}
 
@@ -36,7 +36,7 @@ export class Program {
 	 * Return the instructions to print to file.
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
-	print(): string {
+	public print(): string {
 		this.#prebuild();
 		return this.#astGoal.builder.module.emitText();
 	}
@@ -45,7 +45,7 @@ export class Program {
 	 * Return a binary format of the program.
 	 * @return a binary output in WASM format, which can be executed
 	 */
-	compile(): Uint8Array {
+	public compile(): Uint8Array {
 		this.#prebuild();
 		return this.#astGoal.builder.module.emitBinary();
 	}

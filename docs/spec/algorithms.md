@@ -191,7 +191,7 @@ Performs the type-checking piece during semantic analysis.
 
 
 ## ToBoolean
-Returns an associated [boolean value](./data-types#boolean), `true` or `false`, with a Solid Language Value.
+Returns an associated [boolean value](./data-types#boolean), `true` or `false`, with a Counterpoint Language Value.
 ```
 Boolean ToBoolean(Object value) :=
 	1. *If* `value` is an instance of `Null`:
@@ -301,134 +301,6 @@ Boolean Equal(Object a, Object b) :=
 				1. *Return:* `false`.
 		6. *Return:* `true`.
 	8. Return `false`.
-```
-
-
-
-## Subtype
-Determines whether one type is a subtype of another.
-```
-Boolean Subtype(Type a, Type b) :=
-	1. *If* *UnwrapAffirm:* `Identical(a, b)`:
-		// 2-7 | `A <: A`
-		1. *Return:* `true`.
-	2. *If* *UnwrapAffirm:* `IsEmpty(a)`:
-		// 1-1 | `never <: T`
-		1. *Return:* `true`.
-	3. *If* *UnwrapAffirm:* `IsEmpty(b)`:
-		// 1-3 | `T       <: never  <->  T == never`
-		1. *Return:* `IsEmpty(a)`.
-	4. *If* *UnwrapAffirm:* `IsUniverse(a)`:
-		// 1-4 | `unknown <: T      <->  T == unknown`
-		1. *Return:* `IsUniverse(b)`.
-	5. *If* *UnwrapAffirm:* `IsUniverse(b)`:
-		// 1-2 | `T     <: unknown`
-		1. *Return:* `true`.
-	6. *If* `a` is the intersection of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Equal(x, b)` *or* *UnwrapAffirm:* `Equal(y, b)`:
-			// 3-1 | `A  & B <: A  &&  A  & B <: B`
-			1. *Return:* `true`.
-		2. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
-			// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
-			1. *Return:* `true`.
-	7. *If* `b` is the intersection of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
-			// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
-			1. *Return:* `true`.
-	8. *If* `a` is the union of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
-			// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
-			1. *Return:* `true`.
-	9. *If* `b` is the union of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Equal(a, x)` *or* *UnwrapAffirm:* `Equal(a, y)`:
-			// 3-2 | `A <: A \| B  &&  B <: A \| B`
-			1. *Return:* `true`.
-		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
-			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
-			1. *Return:* `true`.
-	10. *If* `a` is a `Tuple` type *and* `b` is a `Tuple` type:
-		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
-		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
-		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
-		4. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
-		5. *If* `seq_a_req.count` is less than `seq_b_req.count`:
-			1. *Return:* `false`.
-		6. *If* `b` is mutable:
-			1. *If* `a` is not mutable:
-				1. *Return:* `false`.
-		7. *For index* `i` in `seq_b`:
-			1. *If* `seq_b[i].optional` is `false`:
-				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
-			2. *If* `seq_a[i]` is set:
-				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(seq_a[i].type, seq_b[i].type)` is `false`:
-					1. *Return:* `false`.
-				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
-					1. *Return:* `false`.
-		8. *Return:* `true`.
-	11. *If* `a` is a `Record` type *and* `b` is a `Record` type:
-		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
-		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
-		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
-		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
-		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
-			1. *Return:* `false`.
-		6. *If* `b` is mutable:
-			1. *If* `a` is not mutable:
-				1. *Return:* `false`.
-		7. *For key* `k` in `struct_b`:
-			1. *If* `struct_b[k].optional` is `false`:
-				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
-					1. *Return:* `false`.
-			2. *If* `struct_a[k]` is set:
-				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(struct_a[k].type, struct_b[k].type)` is `false`:
-					1. *Return:* `false`.
-				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
-					1. *Return:* `false`.
-		8. *Return:* `true`.
-	12. *If* `a` is a `List` type *and* `b` is a `List` type:
-		1. *Let* `ai` be the union of types in `a`.
-		2. *Let* `bi` be the union of types in `b`.
-		3. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ai, bi)` is `true`:
-				1. *Return:* `true`.
-		4. *Else:*
-			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
-				1. *Return:* `true`.
-	13. *If* `a` is a `Dict` type *and* `b` is a `Dict` type:
-		1. *Let* `av` be the union of value types in `a`.
-		2. *Let* `bv` be the union of value types in `b`.
-		3. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
-				1. *Return:* `true`.
-		4. *Else:*
-			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
-				1. *Return:* `true`.
-	14. *If* `a` is a `Set` type *and* `b` is a `Set` type:
-		1. *Let* `ae` be the union of types in `a`.
-		2. *Let* `be` be the union of types in `b`.
-		3. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ae, be)` is `true`:
-				1. *Return:* `true`.
-		4. *Else:*
-			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
-				1. *Return:* `true`.
-	15. *If* `a` is a `Map` type *and* `b` is a `Map` type:
-		1. *Let* `ak` be the union of antecedent types in `a`.
-		2. *Let* `av` be the union of consequent types in `a`.
-		3. *Let* `bk` be the union of antecedent types in `b`.
-		4. *Let* `bv` be the union of consequent types in `b`.
-		5. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ak, bk)` is `true` *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
-					1. *Return:* `true`.
-		6. *Else:*
-			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
-				1. *Return:* `true`.
-	16. *If* every value that is assignable to `a` is also assignable to `b`:
-		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
-			because an instance of `Integer` is an instance of `Object`.
-		2. *Return:* `true`.
-	17. *Return:* `false`.
-;
 ```
 
 
@@ -628,12 +500,12 @@ Modifies the type of an accessed bound property of a tuple or record.
 If the bound property is required: Under claim access, subtracts Void; else returns unmodified type.
 If the bound property is optional: Under claim access, subtracts Void; under optional access, unions with Null; else unions with Void.
 ```
-Type UpdateAccessedStaticType(EntryTypeStructure entry, SemanticAccess access) :=
+Type UpdateAccessedStaticType(EntryTypeStructure entry, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
 	1. *Let* `type` be `entry.type`.
-	2. *If* `access.kind` is `CLAIM`:
+	2. *If* `accesskind` is `CLAIM`:
 		1. *Return:* `Difference(type, Void)`.
 	3. *If* `entry.optional` is `true`:
-		1. *If* `access.kind` is `OPTIONAL`:
+		1. *If* `accesskind` is `OPTIONAL`:
 			1. *Return:* `Union(type, Null)`.
 		2. *Return:* `Union(type, Void)`.
 	4. *Return:* `type`.
@@ -646,10 +518,10 @@ Type UpdateAccessedStaticType(EntryTypeStructure entry, SemanticAccess access) :
 Modifies the type of an accessed bound property of a dynamic data type.
 Under claim access, subtracts Void; under optional access, unions with Null; else returns unmodified type.
 ```
-Type UpdateAccessedDynamicType(Type type, SemanticAccess access) :=
-	1. *If* `access.kind` is `CLAIM`:
+Type UpdateAccessedDynamicType(Type type, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
+	1. *If* `accesskind` is `CLAIM`:
 		1. *Return:* `Difference(type, Void)`.
-	2. *Else If* `access.kind` is `OPTIONAL`:
+	2. *Else If* `accesskind` is `OPTIONAL`:
 		1. *Return:* `Union(type, Null)`.
 	3. *Else:*
 		1. *Return:* `type`.

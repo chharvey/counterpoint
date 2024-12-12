@@ -1,0 +1,37 @@
+import {TYPE} from '../../index.js';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.js';
+import {
+	type CPConfig,
+	CONFIG_DEFAULT,
+} from '../../core/index.js';
+import type {SyntaxNodeType} from '../utils-private.js';
+import type {ASTNodeItemType} from './ASTNodeItemType.js';
+import {ASTNodeType} from './ASTNodeType.js';
+
+
+
+export class ASTNodeTypeTuple extends ASTNodeType {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert_instanceof(typ, ASTNodeTypeTuple);
+		return typ;
+	}
+
+	public constructor(
+		start_node: SyntaxNodeType<'type_tuple_literal'>,
+		public override readonly children: readonly ASTNodeItemType[],
+	) {
+		super(start_node, {}, children);
+	}
+
+	@memoizeMethod
+	public override eval(): TYPE.Type {
+		return new TYPE.TypeTuple(this.children.map((c) => ({
+			type:     c.val.eval(),
+			optional: c.optional,
+		})));
+	}
+}

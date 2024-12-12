@@ -4,14 +4,14 @@ This chapter defines the types of data used by grammars and algorithms throughou
 Grammars and algorithms manipulate values, each of which has an associated type.
 Types can be thought of as sets of values.
 Types are further subclassified into
-[Solid Specification Types](#solid-specification-types) and
-[Solid Language Types](#solid-language-types).
+[Counterpoint Specification Types](#counterpoint-specification-types) and
+[Counterpoint Language Types](#counterpoint-language-types).
 
 
 
-## Solid Specification Types
-Solid Specification Types are only used internally within this specification to define and convey abstract concepts.
-They are not directly observable from Solid code.
+## Counterpoint Specification Types
+Counterpoint Specification Types are only used internally within this specification to define and convey abstract concepts.
+They are not directly observable from Counterpoint code.
 
 
 ### None
@@ -24,7 +24,7 @@ with no \`value\` property.
 ### Enumerated Words
 Some sections in this specification may define a set of enumerated words used for a specific purpose.
 The enumerated words along with any associated meanings are defined together within the relevant section.
-These words are considered Solid Specification Values, but with no defined type;
+These words are considered Counterpoint Specification Values, but with no defined type;
 for intents and purposes they can be thought of as strings.
 Where a type description is required (such as in the input of an algorithm), the type «Text» may be used.
 
@@ -42,13 +42,13 @@ Real numbers are subclassified into the following kinds. The kinds are not neces
 
 #### Real Integer Numbers
 Real integer numbers are the whole numbers *1, 2, 3, …*, their negatives, and *0*.
-The term “real integer number” is used to distinguish from [Solid Language Type Integers](#integer).
+The term “real integer number” is used to distinguish from [Counterpoint Language Type Integers](#integer).
 The real integer numbers refer to the well-understood set of integers in mathematics.
 There is no least or greatest real integer number.
 
 #### Real Rational Numbers
 Real rational numbers are ratios of integers.
-The term “real rational number” is used to distinguish from [Solid Language Type Floats](#float).
+The term “real rational number” is used to distinguish from [Counterpoint Language Type Floats](#float).
 The real rational numbers refer to the well-understood set of rationals in mathematics.
 
 Real rational numbers may be represented as fractions (*a/b* means the integer *a* divided by the integer *b*),
@@ -100,12 +100,12 @@ A **CompletionStructure** is a specific subtype of [Structure](#structure) with
 a mandatory property \`type\` and an optional property \`value\`.
 The value of the \`type\` property must be one of the [enumerated](#enumerated-values) specification values
 *normal*, *break*, *continue*, *return*, or *throw*, which are described below.
-The value of the \`value\` property must be a [Solid Language Value](#solid-language-types).
+The value of the \`value\` property must be a [Counterpoint Language Value](#Counterpoint-language-types).
 
 Property  | Description
 --------- | -----------
 \`type\`  | the kind of completion structure
-\`value\` | the Solid Language Value carried with the structure
+\`value\` | the Counterpoint Language Value carried with the structure
 
 Completion structures are the default values returned by all specification algorithms,
 unless explicitly stated otherwise.
@@ -130,33 +130,33 @@ It contains the type value and whether the entry is optional.
 
 Property     | Description
 ------------ | -----------
-\`type\`     | the Solid Language Type
+\`type\`     | the Counterpoint Language Type
 \`optional\` | a Boolean, whether the entry is optional
 
 
 #### SymbolStructure
-A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Solid source code.
-Symbols are identifiers that refer to Solid Language Values or Solid Language Types.
+A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Counterpoint source code.
+Symbols are identifiers that refer to Counterpoint Language Values or Counterpoint Language Types.
 
 Symbol structures’ properties are described in the tables below.
 
 ##### SymbolStructureType
-A **SymbolStructureType** represents a type alias referencing a Solid Language Type.
+A **SymbolStructureType** represents a type alias referencing a Counterpoint Language Type.
 
 Property      | Description
 ------------- | -----------
 \`id\`        | the unique identifier of the declared symbol
-\`typevalue\` | the assessed type (a Solid Language Type) of this symbol
+\`typevalue\` | the assessed type (a Counterpoint Language Type) of this symbol
 
 ##### SymbolStructureVar
-A **SymbolStructureVar** represents a variable referencing a Solid Language Value.
+A **SymbolStructureVar** represents a variable referencing a Counterpoint Language Value.
 
 Property    | Description
 ----------- | -----------
 \`id\`      | the unique identifier of the declared symbol
 \`unfixed\` | a Boolean, whether the variable may be reassigned
-\`type\`    | the Solid Language Type of the variable
-\`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Solid Language Value) of this symbol; otherwise: *none*
+\`type\`    | the Counterpoint Language Type of the variable
+\`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
 
 
 ### Nodes
@@ -179,12 +179,12 @@ such as `SemanticOperation ::= SemanticExpression+;`.
 
 
 
-## Solid Language Types
-Solid Language Types characterize Solid Language Values, which are
-values directly manipulated by a Solid program.
+## Counterpoint Language Types
+Counterpoint Language Types characterize Counterpoint Language Values, which are
+values directly manipulated by a Counterpoint program.
 
-Solid has the following built-in types.
-This list is not exhaustive, as Solid Types may be created in any Solid program.
+Counterpoint has the following built-in types.
+This list is not exhaustive, as Counterpoint Types may be created in any Counterpoint program.
 
 
 ### Simple Types
@@ -223,7 +223,7 @@ In general, given a type \`‹T›\`,
 the [intersection](#intersection) \`And<‹T›, Void>\` is not necessarily the same as Void, and
 the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T›\`.
 
-The Void type is also unlike Null in that no Solid Language Value has type Void.
+The Void type is also unlike Null in that no Counterpoint Language Value has type Void.
 
 #### Null
 The **Null** type has exactly one value, called `null`.
@@ -238,7 +238,7 @@ The Number type is partitioned into two disjoint subtypes: Integer and Float.
 
 ##### Integer
 The **Integer** type represents [mathematical integers](#real-integer-numbers).
-The Solid compiler represents Integers as 16-bit signed two’s complement values.
+The Counterpoint compiler represents Integers as 16-bit signed two’s complement values.
 
 The Integers `0` and `-0` represent the same mathematical value, *0*.
 The maximum possible value of an Integer is *32,767* and the minimum value is *&minus;32,768*.
@@ -308,8 +308,8 @@ they are value objects because the string values themselves are copied when assi
 (though the compiler may make any optimizations necessary).
 
 #### Object
-The **Object** type is the parent type of all Solid Language Types.
-Every Solid Language Value is an Object.
+The **Object** type is the parent type of all Counterpoint Language Types.
+Every Counterpoint Language Value is an Object.
 Some specific built-in subtypes of Object are described in the [Intrinsics](./intrinsics.md) chapter.
 
 #### Unknown
@@ -467,6 +467,130 @@ The symmetric difference is equal to to the disjunctive union.
 ### Subtype
 A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignable to \`‹T›\` is also assignable to \`‹U›\`.
 
+```
+Boolean Subtype(Type a, Type b) :=
+	1. *If* *UnwrapAffirm:* `Identical(a, b)`:
+		// 2-7 | `A <: A`
+		1. *Return:* `true`.
+	2. *If* *UnwrapAffirm:* `IsBottomType(a)`:
+		// 1-1 | `never <: T`
+		1. *Return:* `true`.
+	3. *If* *UnwrapAffirm:* `IsBottomType(b)`:
+		// 1-3 | `T       <: never  <->  T == never`
+		1. *Return:* `IsBottomType(a)`.
+	4. *If* *UnwrapAffirm:* `IsTopType(a)`:
+		// 1-4 | `unknown <: T      <->  T == unknown`
+		1. *Return:* `IsTopType(b)`.
+	5. *If* *UnwrapAffirm:* `IsTopType(b)`:
+		// 1-2 | `T     <: unknown`
+		1. *Return:* `true`.
+	6. *If* `a` is the intersection of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Equal(x, b)` *or* *UnwrapAffirm:* `Equal(y, b)`:
+			// 3-1 | `A  & B <: A  &&  A  & B <: B`
+			1. *Return:* `true`.
+		2. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
+			// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
+			1. *Return:* `true`.
+	7. *If* `b` is the intersection of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+			// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
+			1. *Return:* `true`.
+	8. *If* `a` is the union of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
+			// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
+			1. *Return:* `true`.
+	9. *If* `b` is the union of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Equal(a, x)` *or* *UnwrapAffirm:* `Equal(a, y)`:
+			// 3-2 | `A <: A \| B  &&  B <: A \| B`
+			1. *Return:* `true`.
+		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
+			1. *Return:* `true`.
+	10. *If* `a` is a `Tuple` type *and* `b` is a `Tuple` type:
+		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
+		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
+		4. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
+		5. *If* `seq_a_req.count` is less than `seq_b_req.count`:
+			1. *Return:* `false`.
+		6. *If* `b` is mutable:
+			1. *If* `a` is not mutable:
+				1. *Return:* `false`.
+		7. *For index* `i` in `seq_b`:
+			1. *If* `seq_b[i].optional` is `false`:
+				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
+			2. *If* `seq_a[i]` is set:
+				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(seq_a[i].type, seq_b[i].type)` is `false`:
+					1. *Return:* `false`.
+				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
+					1. *Return:* `false`.
+		8. *Return:* `true`.
+	11. *If* `a` is a `Record` type *and* `b` is a `Record` type:
+		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
+		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
+		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
+			1. *Return:* `false`.
+		6. *If* `b` is mutable:
+			1. *If* `a` is not mutable:
+				1. *Return:* `false`.
+		7. *For key* `k` in `struct_b`:
+			1. *If* `struct_b[k].optional` is `false`:
+				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
+					1. *Return:* `false`.
+			2. *If* `struct_a[k]` is set:
+				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(struct_a[k].type, struct_b[k].type)` is `false`:
+					1. *Return:* `false`.
+				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
+					1. *Return:* `false`.
+		8. *Return:* `true`.
+	12. *If* `a` is a `List` type *and* `b` is a `List` type:
+		1. *Let* `ai` be the union of types in `a`.
+		2. *Let* `bi` be the union of types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ai, bi)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
+				1. *Return:* `true`.
+	13. *If* `a` is a `Dict` type *and* `b` is a `Dict` type:
+		1. *Let* `av` be the union of value types in `a`.
+		2. *Let* `bv` be the union of value types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+				1. *Return:* `true`.
+	14. *If* `a` is a `Set` type *and* `b` is a `Set` type:
+		1. *Let* `ae` be the union of types in `a`.
+		2. *Let* `be` be the union of types in `b`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ae, be)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
+				1. *Return:* `true`.
+	15. *If* `a` is a `Map` type *and* `b` is a `Map` type:
+		1. *Let* `ak` be the union of antecedent types in `a`.
+		2. *Let* `av` be the union of consequent types in `a`.
+		3. *Let* `bk` be the union of antecedent types in `b`.
+		4. *Let* `bv` be the union of consequent types in `b`.
+		5. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ak, bk)` is `true` *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
+					1. *Return:* `true`.
+		6. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+				1. *Return:* `true`.
+	16. *If* every value that is assignable to `a` is also assignable to `b`:
+		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
+			because an instance of `Integer` is an instance of `Object`.
+		2. *Return:* `true`.
+	17. *Return:* `false`.
+;
+```
+
 
 ### Equality
 A type \`‹T›\` is **equal** to type \`‹U›\` iff \`‹T›\` is a subtype of \`‹U›\` and \`‹U›\` is a subtype of \`‹T›\`.
@@ -482,7 +606,7 @@ That is, their intersection is empty, or equal to the [Bottom Type](#never).
 The following tables describe laws that hold true for all types in general.
 
 For brevity, this section uses the following notational conventions:
-- Metavariables such as \`‹A›\`, \`‹B›\`, \`‹C›\` denote placeholders for Solid Language Types
+- Metavariables such as \`‹A›\`, \`‹B›\`, \`‹C›\` denote placeholders for Counterpoint Language Types
 	and do not refer to real variables or real types.
 - Angle quotes and back-ticks will be omitted. Instead, a `monospace font face` is used.
 - The [intersection](#intersection)           of `A` and `B`, `And<A, B>`,   is written `A & B`.

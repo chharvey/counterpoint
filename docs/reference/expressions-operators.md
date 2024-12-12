@@ -284,7 +284,7 @@ Claim access has the same runtime behavior of regular property access.
 Its purpose is to tell the type-checker,
 “I know what I’m doing; This property exists and its type is not type `void`.”
 ```
-let unfixed item: [str, ?: int] = ['apples', 42];
+let item: [str, ?: int] = ["apples", 42];
 let quantity: int = item!.1;
 ```
 The expression `item!.1` has type `int`, despite being an optional entry.
@@ -292,7 +292,7 @@ It will produce the value `42` at runtime.
 Note that bypassing the compiler’s type-checking process should be done carefully.
 If not used correctly, it could lead to runtime errors.
 ```
-let unfixed item: [str, ?: int] = ['apples'];
+let item: [str, ?: int] = ["apples"];
 let quantity: int = item!.1; % runtime error!
 ```
 An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
@@ -321,7 +321,7 @@ or if it’s an empty string or empty collection (such as an array or set).
 | `false`        | `false`        | `true`          |
 |                | `0`            | all integers    |
 |                | `0.0`, `-0.0`  | all floats      |
-|                | `''`           | all strings     |
+|                | `""`           | all strings     |
 |                | `[]`, `{}`     | all collections |
 |                |                | any other value |
 
@@ -387,7 +387,7 @@ where *a<sup>b<sup>c</sup></sup>* is interpreted as *a<sup>(b<sup>c</sup>)</sup>
 
 #### Exponentiation: Order of Operations
 In mathematics, exponents are applied before negation (which is multiplication).
-However, in Solid, [mathematical negation](#mathematical-affirmation-mathematical-negation)
+However, in Counterpoint, [mathematical negation](#mathematical-affirmation-mathematical-negation)
 is a unary operator, which is stronger than any binary operator.
 **Mathematical negation is not considered multiplication**,
 even if it indeed produces the same mathematical result of multiplying by -1.
@@ -396,8 +396,8 @@ Therefore, we can end up with confusing syntax such as this:
 -3 ^ 2
 ```
 While *mathematically*, *&minus;3<sup>2</sup>* is equivalent to *&minus;1&middot;3<sup>2</sup>*,
-producing *&minus;9*, the Solid expression `-3 ^ 2`, is *not equivalent*.
-Mathematical negation is stronger than exponentiation, so Solid will compute `-3`
+producing *&minus;9*, the Counterpoint expression `-3 ^ 2`, is *not equivalent*.
+Mathematical negation is stronger than exponentiation, so Counterpoint will compute `-3`
 first as a unary operation (or, in this case, as a single token),
 and then raise that value to the power of `2`, producing `9`.
 Writing such an ambiguous syntax could cause developers to scratch their heads
@@ -696,10 +696,10 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… . …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">3</th>
+			<th rowspan="5">3</th>
 			<td>Nullish</td>
-			<td rowspan="2">unary postfix</td>
-			<td rowspan="2">left-to-right</td>
+			<td rowspan="5">unary postfix</td>
+			<td rowspan="5">left-to-right</td>
 			<td><code>… ?</code></td>
 		</tr>
 		<tr>
@@ -707,14 +707,33 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !</code></td>
 		</tr>
 		<tr>
+			<td>List</td>
+			<td><code>… []</code></td>
+		</tr>
+		<tr>
+			<td>Tuple</td>
+			<td><code>… […]</code></td>
+		</tr>
+		<tr>
+			<td>Set</td>
+			<td><code>… {}</code></td>
+		</tr>
+		<tr>
 			<th>4</th>
+			<td>Mutable</td>
+			<td>unary prefix</td>
+			<td>right-to-left</td>
+			<td><code>mut …</code></td>
+		</tr>
+		<tr>
+			<th>5</th>
 			<td>Intersection</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
 			<td><code>… & …</code></td>
 		</tr>
 		<tr>
-			<th>5</th>
+			<th>6</th>
 			<td>Union</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
@@ -756,6 +775,11 @@ The **nullish** operator creates a [union](#union) of the operand and the `null`
 ```
 type T = int?; % equivalent to `type T = int | null;`
 ```
+This operator is useful for describing values that might be null.
+```
+let var hello: str? = null;
+hello = "world";
+```
 
 
 ### TBA
@@ -763,6 +787,45 @@ type T = int?; % equivalent to `type T = int | null;`
 <Type> `!`
 ```
 To be announced.
+
+
+### List
+```
+<Type> `[]`
+```
+The **List** operator `T[]` is shorthand for `List.<T>`.
+
+
+### Tuple
+```
+<Type> `[` <Integer> `]`
+```
+The **Tuple** operator `T[‹n›]` (where `‹n›` is 0 or greater) is shorthand for a tuple type with repeated entries of `T`.
+E.g., `int[3]` is shorthand for `[int, int, int]`.
+
+
+### Set
+```
+<Type> `{}`
+```
+The **Set** operator `T{}` is shorthand for `Set.<T>`.
+
+
+### Mutable
+```
+`mut` <Type>
+```
+The `mut` type operator allows properties in a complex type to be reassigned.
+It allows us to reassign tuple indices and record keys, as well as modify sets and maps
+by adding, removing, and changing entries.
+It will also allow us to reassign fields and call mutating methods on class instances.
+```
+let elements: mut str[4] = ["water", "earth", "fire", "wind"];
+elements.3 = "air";
+elements; %== ["water", "earth", "fire", "air"]
+```
+If `elements` were just of type `str[4]` (without `mut`),
+then attempting to modify it would result in a Mutability Error.
 
 
 ### Intersection
@@ -827,7 +890,7 @@ This holds for tuple types as well, accounting for indices rather than keys.
 The **union** operator creates a type that is either one operand, or the other, or some combination of both.
 ```
 type T = bool | int;
-let unfixed v: T = false;
+let var v: T = false;
 v = 42;
 ```
 

@@ -1,19 +1,24 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
-	SolidConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SolidTypeUnit,
-	SolidNull,
-	SolidBoolean,
-	Int16,
-	Float64,
-	SolidString,
+	OBJ,
+	type TYPE,
 } from '../src/index.js';
 
 
 
-export const CONFIG_FOLDING_OFF: SolidConfig = {
+export const CONFIG_RADICES_SEPARATORS_ON: CPConfig = {
+	...CONFIG_DEFAULT,
+	languageFeatures: {
+		...CONFIG_DEFAULT.languageFeatures,
+		integerRadices:    true,
+		numericSeparators: true,
+	},
+};
+
+export const CONFIG_FOLDING_OFF: CPConfig = {
 	...CONFIG_DEFAULT,
 	compilerOptions: {
 		...CONFIG_DEFAULT.compilerOptions,
@@ -21,7 +26,7 @@ export const CONFIG_FOLDING_OFF: SolidConfig = {
 	},
 };
 
-export const CONFIG_COERCION_OFF: SolidConfig = {
+export const CONFIG_COERCION_OFF: CPConfig = {
 	...CONFIG_DEFAULT,
 	compilerOptions: {
 		...CONFIG_DEFAULT.compilerOptions,
@@ -29,29 +34,42 @@ export const CONFIG_COERCION_OFF: SolidConfig = {
 	},
 };
 
+export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
+	...CONFIG_DEFAULT,
+	compilerOptions: {
+		...CONFIG_DEFAULT.compilerOptions,
+		constantFolding: false,
+		intCoercion:     false,
+	},
+};
 
 
-export function typeConstInt(x: bigint): SolidTypeUnit<Int16> {
-	return new Int16(x).toType();
-}
-export function typeConstFloat(x: number): SolidTypeUnit<Float64> {
-	return new Float64(x).toType();
-}
-export function typeConstStr(x: string): SolidTypeUnit<SolidString> {
-	return new SolidString(x).toType();
+
+export function typeUnit(value: bigint): TYPE.TypeUnit<OBJ.Integer>;
+export function typeUnit(value: number): TYPE.TypeUnit<OBJ.Float>;
+export function typeUnit(value: string): TYPE.TypeUnit<OBJ.String>;
+export function typeUnit(value: bigint | number | string): TYPE.TypeUnit<OBJ.Integer | OBJ.Float | OBJ.String> {
+	return (
+		value === 0n              ? OBJ.Integer.ZERO :
+		value === 1n              ? OBJ.Integer.UNIT :
+		typeof value === 'bigint' ? new OBJ.Integer(value) :
+		typeof value === 'number' ? new OBJ.Float(value) :
+		typeof value === 'string' ? new OBJ.String(value) :
+		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+	).toType();
 }
 
 
 
 export function buildConst(mod: binaryen.Module, value: null | boolean | bigint | number = null): binaryen.ExpressionRef {
 	return (
-		value === null            ? SolidNull.NULL :
-		value === false           ? SolidBoolean.FALSE :
-		value === true            ? SolidBoolean.TRUE :
-		value === 0n              ? Int16.ZERO :
-		value === 1n              ? Int16.UNIT :
-		typeof value === 'bigint' ? new Int16(value) :
-		typeof value === 'number' ? new Float64(value) :
+		value === null            ? OBJ.Null.NULL :
+		value === false           ? OBJ.Boolean.FALSE :
+		value === true            ? OBJ.Boolean.TRUE :
+		value === 0n              ? OBJ.Integer.ZERO :
+		value === 1n              ? OBJ.Integer.UNIT :
+		typeof value === 'bigint' ? new OBJ.Integer(value) :
+		typeof value === 'number' ? new OBJ.Float(value) :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
 	).build(mod);
 }
