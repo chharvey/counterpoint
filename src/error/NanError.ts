@@ -5,7 +5,7 @@ import {ErrorCode} from './ErrorCode.js';
 
 class NanError extends ErrorCode {
 	public static override readonly NAME: string = 'NanError';
-	public static readonly CODE: number = 3200;
+	public static readonly CODE:          number = 3200;
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,

@@ -36,7 +36,7 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
 	...params: readonly string[]
 ): RuleBuilders<RuleName, BaseGrammarRuleName> {
 	const rules_obj: RuleBuilders<RuleName, BaseGrammarRuleName> = {} as RuleBuilders<RuleName, BaseGrammarRuleName>;
-	new Map<RuleName, RuleBuilder<RuleName>>([...new Array(2 ** params.length)].map((_, nth) => { // e.g. `['await', 'static', 'instance', 'method']`
+	new Map<RuleName, RuleBuilder<RuleName>>([...new Array<undefined>(2 ** params.length)].map((_, nth) => { // e.g. `['await', 'static', 'instance', 'method']`
 		const args_arr: readonly string[] = [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
 			.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
 			.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
@@ -69,6 +69,7 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
  * @param args        argument names or objects of inherited argument values from the containing production
  * @returns           a property name of the `$` object
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function call<RuleName extends string>(family_name: string, ...args: readonly (string | Readonly<Record<string, boolean>>)[]): RuleName {
 	return familyName(family_name, ...args.flatMap((arg) => ((typeof arg === 'string')
 		? [arg]
@@ -130,9 +131,8 @@ const DELIM_TEMPLATE     = '"""';
 const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
-const COMMENTER_MULTI    = '%%';
 
-/* eslint-disable function-call-argument-newline */
+/* eslint-disable @stylistic/function-call-argument-newline */
 const STRING_ESCAPE = choice(
 	DELIM_STRING,
 	ESCAPER,
@@ -167,7 +167,7 @@ const STRING_ESCAPE__COMMENT_SEPARATOR = choice(
 	'\n',
 	/[^"\\%stnru\n]/,
 );
-/* eslint-enable function-call-argument-newline */
+/* eslint-enable @stylistic/function-call-argument-newline */
 
 const STRING_CHAR = choice(
 	/[^"\\]/,
@@ -247,14 +247,15 @@ function iff(condition: boolean, consequent: RuleOrLiteral, alternative: RuleOrL
 function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function repCom(production: RuleOrLiteral): ChoiceRule {
 	return optional(repCom1(production));
 }
 
 
 
+/* eslint-disable @stylistic/arrow-parens */
 module.exports = grammar({
-	/* eslint-disable arrow-parens */
 	name: 'counterpoint',
 
 	rules: {
@@ -293,7 +294,7 @@ module.exports = grammar({
 			_$ => token(seq(
 				(!separator) ? SIGNED_DIGIT_SEQ_DEC : SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
 				'.',
-				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR,
+				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR, // eslint-disable-line @stylistic/indent
 				optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
 			))
 		), 'separator'),
@@ -358,7 +359,7 @@ module.exports = grammar({
 		), 'named', 'optional'),
 
 		_items_type: $ => choice(
-			             seq(repCom1($.entry_type), OPT_COM),
+			             seq(repCom1($.entry_type), OPT_COM), // eslint-disable-line @stylistic/indent
 			seq(optional(seq(repCom1($.entry_type), ','    )), repCom1($.entry_type__optional), OPT_COM),
 		),
 
@@ -409,11 +410,11 @@ module.exports = grammar({
 		type_intersection_dfn: $ => seq($._type_intersection, '&', $._type_unary_keyword),
 		type_union_dfn:        $ => seq($._type_union,        '|', $._type_intersection),
 
-		/* eslint-disable function-paren-newline */
+		/* eslint-disable @stylistic/function-paren-newline */
 		_type: $ => choice(
 			$._type_union,
 		),
-		/* eslint-enable function-paren-newline */
+		/* eslint-enable @stylistic/function-paren-newline */
 
 
 		/* ## Expressions */
@@ -530,5 +531,5 @@ module.exports = grammar({
 		$._declaration,
 		$._statement,
 	],
-	/* eslint-enable arrow-parens */
 });
+/* eslint-enable @stylistic/arrow-parens */

@@ -9,7 +9,7 @@ export class ReferenceError extends ErrorCode {
 	/** The name of this class of errors. */
 	public static override readonly NAME: string = 'ReferenceError';
 	/** The number series of this class of errors. */
-	public static readonly CODE: number = 2100;
+	public static readonly CODE:          number = 2100;
 	/**
 	 * Construct a new ReferenceError object.
 	 * @param message a message to the user

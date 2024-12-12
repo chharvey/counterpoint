@@ -37,9 +37,9 @@ export class TypeDict extends Type {
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeDict
-			&& (!t.isMutable || this.isMutable)
-			&& ((t.isMutable)
+			t instanceof TypeDict &&
+			(!t.isMutable || this.isMutable) &&
+			(t.isMutable
 				? this.invariant.equals(t.invariant)      // Invariance for mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.
 				: this.invariant.isSubtypeOf(t.invariant) // Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.
 			)

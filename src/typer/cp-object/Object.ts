@@ -43,6 +43,7 @@ abstract class CPObject {
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
 	 */
+	// eslint-disable-next-line @typescript-eslint/class-literal-property-style --- overridden in subclasses by getters
 	public get isTruthy(): boolean {
 		return true;
 	}

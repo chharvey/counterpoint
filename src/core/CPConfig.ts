@@ -19,13 +19,13 @@ export type CPConfig = {
 		 * @version v0.2.0
 		 * @default true
 		 */
-		readonly comments: boolean,
+		readonly comments:          boolean,
 		/**
 		 * Integer literals with a specified radix or “base.”
 		 * @version v0.2.0
 		 * @default false
 		 */
-		readonly integerRadices: boolean,
+		readonly integerRadices:    boolean,
 		/**
 		 * Separators in numeric tokens.
 		 * @version v0.2.0
@@ -48,7 +48,7 @@ export type CPConfig = {
 		 * @version v0.2.0
 		 * @default true
 		 */
-		readonly intCoercion: boolean,
+		readonly intCoercion:     boolean,
 	},
 };
 

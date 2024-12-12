@@ -9,7 +9,7 @@ export class AssignmentError extends ErrorCode {
 	/** The name of this class of errors. */
 	public static override readonly NAME: string = 'AssignmentError';
 	/** The number series of this class of errors. */
-	public static readonly CODE: number = 2200;
+	public static readonly CODE:          number = 2200;
 	/**
 	 * Construct a new AssignmentError object.
 	 * @param message a message to the user

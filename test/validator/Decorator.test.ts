@@ -391,7 +391,7 @@ describe('Decorator', () => {
 				a = b;
 				% (statement_assignment)
 			`]],
-		]).forEach(([klass, text], description) => (description.slice(0, 5) === 'only:' ? specify.only : description.slice(0, 5) === 'skip:' ? specify.skip : specify)(description, () => {
+		]).forEach(([klass, text], description) => (description.startsWith('only:') ? specify.only : description.startsWith('skip:') ? specify.skip : specify)(description, () => {
 			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
 			return assert.ok(
 				DECORATOR.decorateTS(parsenode) instanceof klass,

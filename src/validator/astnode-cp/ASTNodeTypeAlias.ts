@@ -44,7 +44,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		}
-		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureVar) {
+		if (this.validator.getSymbolInfo(this.id) instanceof SymbolStructureVar) {
 			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		}
 	}

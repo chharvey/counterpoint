@@ -10,15 +10,13 @@ type Local = {
 	readonly type: binaryen.Type,
 };
 
-const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
-
 /**
  * The Builder generates assembly code.
  */
 export class Builder {
 	private static readonly IMPORTS: readonly string[] = [
-		fs.readFileSync(path.join(DIRNAME, '../../src/builder/exp.wat'), 'utf8'),
-		fs.readFileSync(path.join(DIRNAME, '../../src/builder/fid.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/exp.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
 	];
 
 
@@ -27,7 +25,7 @@ export class Builder {
 	 * Used for optimizing short-circuited expressions.
 	 * Starts at a low negative number so as not to conflict with ‘real’ varible ids.
 	 */
-	private _varCount: bigint = -0x40n;
+	private _varCount:       bigint = -0x40n;
 	/** A setlist containing ids of local variables. */
 	private readonly locals: Local[] = [];
 	/** The Binaryen module to build upon building. */
@@ -251,9 +249,9 @@ export class Builder {
 	 */
 	public setupModule(): () => void {
 		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
-			  binaryen.Features.ReferenceTypes
-			| binaryen.Features.SIMD128
-			| binaryen.Features.Multivalue
+			binaryen.Features.ReferenceTypes |
+			binaryen.Features.SIMD128 |
+			binaryen.Features.Multivalue
 		));
 		this.#setupFunctions();
 		return () => {

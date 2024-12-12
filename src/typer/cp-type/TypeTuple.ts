@@ -70,10 +70,10 @@ export class TypeTuple extends Type {
 	@Type.subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeTuple
-			&& this.count[0] >= t.count[0]
-			&& (!t.isMutable || this.isMutable)
-			&& t.invariants.every((thattype, i) => {
+			t instanceof TypeTuple &&
+			this.count[0] >= t.count[0] &&
+			(!t.isMutable || this.isMutable) &&
+			t.invariants.every((thattype, i) => {
 				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 				const thistype: TypeEntry | undefined = this.invariants[i];
 				if (!thattype.optional) {
