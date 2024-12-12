@@ -147,7 +147,7 @@ export default [
 			'no-shadow':                               'off',
 			'@typescript-eslint/no-shadow':            'error',
 			'no-use-before-define':                    'off',
-			'@typescript-eslint/no-use-before-define': ['error', {ignoreTypeReferences: false}],
+			'@typescript-eslint/no-use-before-define': 'error',
 			'one-var':                                 ['error', 'never'],
 
 			/* ## Function Design */

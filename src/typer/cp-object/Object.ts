@@ -16,6 +16,18 @@ const eq_memo_comparator = (memokey1: Keys<typeof eq_memo>, memokey2: Keys<typeo
 
 
 
+// HACK: cannot access static method of CPObject within itself as a decorator
+function equalsDeco(
+	method:   (this: CPObject, value: CPObject) => boolean,
+	_context: ClassMethodDecoratorContext<CPObject, typeof method>,
+): typeof method {
+	return function (value) {
+		return this.identical(value) || method.call(this, value);
+	};
+}
+
+
+
 /**
  * Parent class for all Counterpoint Language Values.
  * Known subclasses:
@@ -29,14 +41,7 @@ abstract class CPObject {
 	 * are equal by some definition.
 	 * @implements MethodDecorator<CPObject, (this: CPObject, value: CPObject) => boolean>
 	 */
-	protected static equalsDeco(
-		method:   (this: CPObject, value: CPObject) => boolean,
-		_context: ClassMethodDecoratorContext<CPObject, typeof method>,
-	): typeof method {
-		return function (value) {
-			return this.identical(value) || method.call(this, value);
-		};
-	}
+	protected static equalsDeco = equalsDeco;
 
 
 	/**
@@ -73,7 +78,7 @@ abstract class CPObject {
 	 * @returns are the objects equal?
 	 */
 	@strictEqual
-	@CPObject.equalsDeco
+	@equalsDeco
 	public equal(_value: CPObject): boolean {
 		return false;
 	}
