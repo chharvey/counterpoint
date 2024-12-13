@@ -1,6 +1,9 @@
 import type binaryen from 'binaryen';
 import {BinVect} from '../../index.js';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	instanceOf,
+} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
@@ -55,8 +58,10 @@ class CPBoolean extends Primitive {
 	}
 
 	@strictEqual
+	@instanceOf(() => CPBoolean)
+	// @memoizeSameness // memoizing takes longer than a simple comparison
 	public override identical(value: CPObject): boolean {
-		return value instanceof CPBoolean && this.data === value.data;
+		return this.data === (value as CPBoolean).data;
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {

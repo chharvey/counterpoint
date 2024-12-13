@@ -363,7 +363,7 @@ class Decorator {
 					node as SyntaxNodeType<'property_access'>,
 					new AST.ASTNodeConstant(node.children[1]),
 				) :
-				          (isSyntaxNodeType     (node.children[1], 'word')) ?                                                                  this.decorateTS(node.children[1]) :
+				          (isSyntaxNodeType     (node.children[1], 'word')) ?                                                                  this.decorateTS(node.children[1]) : // eslint-disable-line @stylistic/indent
 				(assert.ok(isSyntaxNodeSupertype(node.children[2], 'expression'), `Expected ${ node.children[2] } to be an expression node.`), this.decorateTS(node.children[2]))
 			)],
 
@@ -372,7 +372,7 @@ class Decorator {
 					node as SyntaxNodeType<'property_assign'>,
 					new AST.ASTNodeConstant(node.children[1]),
 				) :
-				          (isSyntaxNodeType     (node.children[1], 'word')) ?                                                                  this.decorateTS(node.children[1]) :
+				          (isSyntaxNodeType     (node.children[1], 'word')) ?                                                                  this.decorateTS(node.children[1]) : // eslint-disable-line @stylistic/indent
 				(assert.ok(isSyntaxNodeSupertype(node.children[2], 'expression'), `Expected ${ node.children[2] } to be an expression node.`), this.decorateTS(node.children[2]))
 			)],
 
@@ -392,7 +392,7 @@ class Decorator {
 					function_call_children
 						.find((c): c is SyntaxNodeType<'generic_arguments'> => isSyntaxNodeType(c, 'generic_arguments'))?.children
 						.filter((c): c is SyntaxNodeSupertype<'type'> => isSyntaxNodeSupertype(c, 'type'))
-						.map((c) => this.decorateTS(c)) || [],
+						.map((c) => this.decorateTS(c)) ?? [],
 					function_call_children
 						.find((c): c is SyntaxNodeType<'function_arguments'> => isSyntaxNodeType(c, 'function_arguments'))!.children
 						.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
@@ -653,9 +653,9 @@ class Decorator {
 			)],
 		]);
 		return (
-			   decorators.get(syntaxnode.type)
-			?? [...decorators].find(([key]) => key instanceof RegExp && isSyntaxNodeType(syntaxnode, key))?.[1]
-			?? ((node) => {
+			decorators.get(syntaxnode.type) ??
+			[...decorators].find(([key]) => key instanceof RegExp && isSyntaxNodeType(syntaxnode, key))?.[1] ??
+			((node) => {
 				throw new TypeError(`Could not find type of parse node \`${ node.type }\`.`);
 			})
 		)(syntaxnode);

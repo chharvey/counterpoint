@@ -10,7 +10,16 @@ import {
 	NEVER,
 } from './index.js';
 import {language_types_equal} from './utils-private.js';
-import {Type} from './Type.js';
+import {
+	memoizeUnion,
+	memoizeSubtype,
+	toStringDeco,
+	operatorDeco,
+	unionDeco,
+	subtractDeco,
+	subtypeDeco,
+} from './decorators.js';
+import type {Type} from './Type.js';
 import {TypeIntersection} from './TypeIntersection.js';
 import {
 	type ReadonlyArrayOfAtLeast2,
@@ -122,7 +131,7 @@ export class TypeUnion extends Combinable {
 		return super.hasMutable || this.operands.some((s) => s.hasMutable);
 	}
 
-	@Type.toStringDeco
+	@toStringDeco
 	public override toString(): string {
 		return this.operands.join(' | ');
 	}
@@ -131,9 +140,9 @@ export class TypeUnion extends Combinable {
 		return this.operands.some((s) => s.includes(v));
 	}
 
-	@Type.memoizeUnion
-	@Type.operatorDeco
-	@Type.unionDeco
+	@memoizeUnion
+	@operatorDeco
+	@unionDeco
 	public override union(t: Type): Type {
 		/*
 		 * 3-a | `A <: C --> (A \| B) \| C == B \| C`
@@ -156,16 +165,16 @@ export class TypeUnion extends Combinable {
 		}
 	}
 
-	@Type.operatorDeco
-	@Type.subtractDeco
+	@operatorDeco
+	@subtractDeco
 	public override subtract(t: Type): Type {
 		/* 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
 		return TypeUnion.all(this.operands.map((s) => s.subtract(t)));
 	}
 
 	@strictEqual
-	@Type.memoizeSubtype
-	@Type.subtypeDeco
+	@memoizeSubtype
+	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.operands.every((s) => s.isSubtypeOf(t));

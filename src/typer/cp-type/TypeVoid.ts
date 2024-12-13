@@ -1,7 +1,13 @@
 import {strictEqual} from '../../lib/index.js';
 import type * as OBJ from '../cp-object/index.js';
 import {NEVER} from './index.js';
-import {Type} from './Type.js';
+import {
+	memoizeIntersection,
+	memoizeSubtype,
+	intersectDeco,
+	subtypeDeco,
+} from './decorators.js';
+import type {Type} from './Type.js';
 import {ValueType} from './ValueType.js';
 
 
@@ -26,15 +32,16 @@ export class TypeVoid extends ValueType {
 		return false;
 	}
 
-	@Type.memoizeIntersection
-	@Type.intersectDeco
+	@memoizeIntersection
+	// @operatorDeco // slower than returning a constant
+	@intersectDeco
 	public override intersect(_t: Type): Type {
 		return NEVER;
 	}
 
 	@strictEqual
-	@Type.memoizeSubtype
-	@Type.subtypeDeco
+	@memoizeSubtype
+	@subtypeDeco
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;
 	}

@@ -1,6 +1,10 @@
 import {strictEqual} from '../../lib/index.js';
 import type * as OBJ from '../cp-object/index.js';
-import {Type} from './Type.js';
+import {
+	memoizeSubtype,
+	subtypeDeco,
+} from './decorators.js';
+import type {Type} from './Type.js';
 import {ValueType} from './ValueType.js';
 
 
@@ -27,8 +31,8 @@ export class TypeUnit<Value extends OBJ.Primitive = OBJ.Primitive> extends Value
 	}
 
 	@strictEqual
-	@Type.memoizeSubtype
-	@Type.subtypeDeco
+	@memoizeSubtype
+	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.includes(this.value);
 	}

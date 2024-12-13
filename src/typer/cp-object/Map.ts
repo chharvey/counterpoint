@@ -11,7 +11,11 @@ import {
 	languageValuesIdentical,
 	language_values_equal,
 } from '../utils-private.js';
-import {Object as CPObject} from './Object.js';
+import {
+	equalsDeco,
+	memoizeSameness,
+} from './decorators.js';
+import type {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
@@ -37,13 +41,13 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 
 	/** @final */
 	@strictEqual
-	@CPObject.equalsDeco
-	@instanceOf(CPMap)
-	@CPObject.memoizeSameness
+	@equalsDeco
+	@instanceOf(() => CPMap)
+	@memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return (
-			   this.cases.size === (value as CPMap).cases.size
-			&& [...(value as CPMap).cases].every(([thatant, thatcon]) => !!xjs.Map.get<CPObject, CPObject>(this.cases, thatant, language_values_equal)?.equal(thatcon))
+			this.cases.size === (value as CPMap).cases.size &&
+			[...(value as CPMap).cases].every(([thatant, thatcon]) => !!xjs.Map.get<CPObject, CPObject>(this.cases, thatant, language_values_equal)?.equal(thatcon))
 		);
 	}
 
