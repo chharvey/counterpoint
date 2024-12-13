@@ -5,7 +5,11 @@ import {
 	instanceOf,
 } from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
-import {Object as CPObject} from './Object.js';
+import {
+	equalsDeco,
+	memoizeSameness,
+} from './decorators.js';
+import type {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
@@ -32,13 +36,13 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 
 	/** @final */
 	@strictEqual
-	@CPObject.equalsDeco
-	@instanceOf(CollectionKeyed)
-	@CPObject.memoizeSameness
+	@equalsDeco
+	@instanceOf(() => CollectionKeyed)
+	@memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return (
-			   this.properties.size === (value as CollectionKeyed).properties.size
-			&& [...(value as CollectionKeyed).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue))
+			this.properties.size === (value as CollectionKeyed).properties.size &&
+			[...(value as CollectionKeyed).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue))
 		);
 	}
 

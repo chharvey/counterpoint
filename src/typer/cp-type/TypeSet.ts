@@ -2,6 +2,10 @@ import {strictEqual} from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {MUT_OPERATOR} from './utils-private.js';
+import {
+	memoizeSubtype,
+	subtypeDeco,
+} from './decorators.js';
 import {Type} from './Type.js';
 
 
@@ -32,13 +36,13 @@ export class TypeSet extends Type {
 	}
 
 	@strictEqual
-	@Type.memoizeSubtype
-	@Type.subtypeDeco
+	@memoizeSubtype
+	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeSet
-			&& (!t.isMutable || this.isMutable)
-			&& ((t.isMutable)
+			t instanceof TypeSet &&
+			(!t.isMutable || this.isMutable) &&
+			(t.isMutable
 				? this.invariant.equals(t.invariant) // Invariance for mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.
 				: this.invariant.equals(t.invariant) // Invariance for immutable sets: `A == B --> Set.<A> <: Set.<B>`.
 			)

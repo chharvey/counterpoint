@@ -476,9 +476,9 @@ describe('Type', () => {
 				}
 			});
 			assert.ok(
-				   TYPE.NULL.union(TYPE.INT).isSubtypeOf(TYPE.NULL.union(TYPE.INT))
-				&& !TYPE.NULL.union(TYPE.INT).isSubtypeOf(TYPE.NULL)
-				&& !TYPE.NULL.union(TYPE.INT).isSubtypeOf(TYPE.INT),
+				TYPE.NULL.union(TYPE.INT).isSubtypeOf(TYPE.NULL.union(TYPE.INT)) &&
+				!TYPE.NULL.union(TYPE.INT).isSubtypeOf(TYPE.NULL) &&
+				!TYPE.NULL.union(TYPE.INT).isSubtypeOf(TYPE.INT),
 				'exists A, C, D s.t. `A <: C | D` but `!(A <: C)` and `!(A <: D)`',
 			);
 			return assert.ok(
@@ -503,9 +503,9 @@ describe('Type', () => {
 				}
 			});
 			assert.ok(
-				   TYPE.NULL.intersect(TYPE.INT).isSubtypeOf(TYPE.NULL.intersect(TYPE.INT))
-				&& !TYPE.NULL.isSubtypeOf(TYPE.NULL.intersect(TYPE.INT))
-				&& !TYPE.INT.isSubtypeOf(TYPE.NULL.intersect(TYPE.INT)),
+				TYPE.NULL.intersect(TYPE.INT).isSubtypeOf(TYPE.NULL.intersect(TYPE.INT)) &&
+				!TYPE.NULL.isSubtypeOf(TYPE.NULL.intersect(TYPE.INT)) &&
+				!TYPE.INT.isSubtypeOf(TYPE.NULL.intersect(TYPE.INT)),
 				'exists A, B, C s.t. `A & B <: C` but `!(A <: C)` and `!(B <: C)`',
 			);
 		});

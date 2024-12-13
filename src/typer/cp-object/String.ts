@@ -6,7 +6,8 @@ import {
 	strictEqual,
 	instanceOf,
 } from '../../lib/index.js';
-import {Object as CPObject} from './Object.js';
+import {memoizeSameness} from './decorators.js';
+import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -37,8 +38,8 @@ class CPString extends Primitive {
 	}
 
 	@strictEqual
-	@instanceOf(CPString)
-	@CPObject.memoizeSameness
+	@instanceOf(() => CPString)
+	@memoizeSameness
 	public override identical(value: CPObject): boolean {
 		return xjs.Array.is<CodeUnit>(this.codeunits, (value as CPString).codeunits);
 	}
@@ -49,7 +50,7 @@ class CPString extends Primitive {
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
 		mod;
-		throw '`SolidString#build` not yet supported.';
+		throw '`CPString#build` not yet supported.';
 	}
 
 	/**

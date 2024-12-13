@@ -1,6 +1,10 @@
 import {strictEqual} from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
+import {
+	memoizeSubtype,
+	subtypeDeco,
+} from './decorators.js';
 import {MUT_OPERATOR} from './utils-private.js';
 import {Type} from './Type.js';
 
@@ -32,13 +36,13 @@ export class TypeList extends Type {
 	}
 
 	@strictEqual
-	@Type.memoizeSubtype
-	@Type.subtypeDeco
+	@memoizeSubtype
+	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeList
-			&& (!t.isMutable || this.isMutable)
-			&& ((t.isMutable)
+			t instanceof TypeList &&
+			(!t.isMutable || this.isMutable) &&
+			(t.isMutable
 				? this.invariant.equals(t.invariant)      // Invariance for mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.
 				: this.invariant.isSubtypeOf(t.invariant) // Covariance for immutable lists: `A <: B --> List.<A> <: List.<B>`.
 			)
