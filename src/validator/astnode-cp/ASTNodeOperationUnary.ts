@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
+	BinVect,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 } from '../../index.js';
@@ -44,32 +45,48 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	public override build(): binaryen.ExpressionRef {
+		const arg0: binaryen.ExpressionRef = this.operand.build();
+		if (this.operator === Operator.NOT) {
+			const t0: TYPE.Type = this.operand.type();
+			if (t0.isDefinitelyFalsy()) {
+				return this.builder.module.block(null, [
+					this.builder.module.drop(arg0),
+					new BinVect(this.builder.module, true).vect,
+				], binaryen.v128);
+			} else if (t0.isDefinitelyTruthy()) {
+				return this.builder.module.block(null, [
+					this.builder.module.drop(arg0),
+					new BinVect(this.builder.module, false).vect,
+				], binaryen.v128);
+			}
+		}
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.NOT, 'vnot'],
 			[Operator.EMP, 'vemp'],
 			[Operator.NEG, 'vneg'],
-		]).get(this.operator)!, [this.operand.build()], binaryen.v128);
+		]).get(this.operator)!, [arg0], binaryen.v128);
 	}
 
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	public override type(): TYPE.Type {
 		const t: TYPE.Type = this.operand.type();
-		/* eslint-disable indent */
-		return (
-			(this.operator === Operator.NOT) ? (
-				(t.isSubtypeOf(TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE)))                       ? OBJ.Boolean.TRUETYPE :
-				(TYPE.VOID.isSubtypeOf(t) || TYPE.NULL.isSubtypeOf(t) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t)) ? TYPE.BOOL            :
-				OBJ.Boolean.FALSETYPE
-			) :
-			(this.operator === Operator.EMP) ? TYPE.BOOL :
-			(assert.strictEqual(this.operator, Operator.NEG), (
-				(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)))
-					? t
-					: assert.fail(new TypeErrorInvalidOperation(this))
-			))
-		);
-		/* eslint-enable indent */
+		switch (this.operator) {
+			case Operator.NOT: {
+				return (
+					t.isDefinitelyFalsy()  ? OBJ.Boolean.TRUETYPE :
+					t.isDefinitelyTruthy() ? OBJ.Boolean.FALSETYPE :
+					TYPE.BOOL
+				);
+			}
+			case Operator.EMP: {
+				return TYPE.BOOL;
+			}
+			case Operator.NEG: {
+				assert.ok(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeErrorInvalidOperation(this));
+				return t;
+			}
+		}
 	}
 
 	@memoizeMethod

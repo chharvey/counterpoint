@@ -2,6 +2,11 @@ import * as xjs from 'extrajs';
 import {strictEqual} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
+import {
+	memoizeSubtype,
+	toStringDeco,
+	subtypeDeco,
+} from './decorators.js';
 import {Type} from './Type.js';
 import {TypeUnion} from './TypeUnion.js';
 
@@ -17,7 +22,7 @@ export class TypeDifference extends Type {
 	 * @param left the first type
 	 * @param right the second type
 	 */
-	 public constructor(
+	public constructor(
 		public readonly left:  Type,
 		public readonly right: Type,
 	) {
@@ -47,7 +52,7 @@ export class TypeDifference extends Type {
 		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
 	}
 
-	@Type.toStringDeco
+	@toStringDeco
 	public override toString(): string {
 		return [this.left, this.right].map((s) => s instanceof TypeUnion ? `(${ s })` : s).join(' - ');
 	}
@@ -57,8 +62,8 @@ export class TypeDifference extends Type {
 	}
 
 	@strictEqual
-	@Type.memoizeSubtype
-	@Type.subtypeDeco
+	@memoizeSubtype
+	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf(t);
 	}

@@ -11,7 +11,15 @@ import {
 	NEVER,
 } from './index.js';
 import {language_types_equal} from './utils-private.js';
-import {Type} from './Type.js';
+import {
+	memoizeIntersection,
+	memoizeSubtype,
+	toStringDeco,
+	operatorDeco,
+	intersectDeco,
+	subtypeDeco,
+} from './decorators.js';
+import type {Type} from './Type.js';
 import {
 	type ReadonlyArrayOfAtLeast2,
 	Combinable,
@@ -116,7 +124,7 @@ export class TypeIntersection extends Combinable {
 		return super.hasMutable || this.operands.some((s) => s.hasMutable);
 	}
 
-	@Type.toStringDeco
+	@toStringDeco
 	public override toString(): string {
 		return this.operands.map((s) => s instanceof TypeUnion ? `(${ s })` : s).join(' & ');
 	}
@@ -125,9 +133,9 @@ export class TypeIntersection extends Combinable {
 		return this.operands.every((s) => s.includes(v));
 	}
 
-	@Type.memoizeIntersection
-	@Type.operatorDeco
-	@Type.intersectDeco
+	@memoizeIntersection
+	@operatorDeco
+	@intersectDeco
 	public override intersect(t: Type): Type {
 		/*
 		 * 3-9 | `C <: A --> (A  & B)  & C == B  & C`
@@ -151,8 +159,8 @@ export class TypeIntersection extends Combinable {
 	}
 
 	@strictEqual
-	@Type.memoizeSubtype
-	@Type.subtypeDeco
+	@memoizeSubtype
+	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.operands.some((s) => s.isSubtypeOf(t))) {

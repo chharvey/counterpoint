@@ -72,7 +72,7 @@ type Category =
 
 
 
-export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ?
+export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 	| SyntaxNodeType<'keyword_type'>
 	| SyntaxNodeType<'identifier'>
 	| SyntaxNodeType<'primitive_literal'>
@@ -86,7 +86,7 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ?
 	| SyntaxNodeType<'type_unary_keyword'>
 	| SyntaxNodeType<'type_intersection'>
 	| SyntaxNodeType<'type_union'>
-: C extends 'expression' ?
+) : C extends 'expression' ? (
 	| SyntaxNodeType<'identifier'>
 	| SyntaxNodeType<'primitive_literal'>
 	| SyntaxNodeType<'string_template'>
@@ -106,14 +106,14 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ?
 	| SyntaxNodeType<'expression_conjunctive'>
 	| SyntaxNodeType<'expression_disjunctive'>
 	| SyntaxNodeType<'expression_conditional'>
-: C extends 'declaration' ?
+) : C extends 'declaration' ? (
 	| SyntaxNodeType<'declaration_type'>
 	| SyntaxNodeType<'declaration_variable'>
-: C extends 'statement' ?
+) : C extends 'statement' ? (
 	| SyntaxNodeSupertype<'declaration'>
 	| SyntaxNodeType<'statement_expression'>
 	| SyntaxNodeType<'statement_assignment'>
-: never;
+) : never;
 
 
 

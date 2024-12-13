@@ -43,7 +43,7 @@ function tokenWorthInt(
 	if (text.length === 0) {
 		throw new Error('Cannot compute mathematical value of empty string.');
 	}
-	if (allow_separators && text[text.length - 1] === SEPARATOR) {
+	if (allow_separators && text.endsWith(SEPARATOR)) {
 		text = text.slice(0, -1);
 	}
 	if (text.length === 1) {
@@ -53,9 +53,9 @@ function tokenWorthInt(
 		}
 		return digitvalue;
 	}
-	return Number(radix)
-		* tokenWorthInt(text.slice(0, -1),     radix, allow_separators)
-		+ tokenWorthInt(text[text.length - 1], radix, allow_separators);
+	const tens: number = tokenWorthInt(text.slice(0, -1),     radix, allow_separators);
+	const ones: number = tokenWorthInt(text[text.length - 1], radix, allow_separators);
+	return Number(radix) * tens + ones;
 }
 
 
@@ -73,9 +73,9 @@ function tokenWorthFloat(
 	const wholevalue: number = tokenWorthInt(wholepart, RADIX_DEFAULT, allow_separators);
 	const fracvalue:  number = tokenWorthInt(fracpart,  RADIX_DEFAULT, allow_separators) * base ** -fracpart.length;
 	const expvalue:   number = parseFloat(( // HACK: `` parseFloat(`1e${ ... }`) `` is more accurate than `base ** tokenWorthInt(...)`
-		(exppart[0] === Punctuator.AFF) ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
-		(exppart[0] === Punctuator.NEG) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
-		                                  `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT, allow_separators) }`
+		exppart.startsWith(Punctuator.AFF) ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
+		exppart.startsWith(Punctuator.NEG) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
+		                                     `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT, allow_separators) }` // eslint-disable-line @stylistic/indent
 	));
 	return (wholevalue + fracvalue) * expvalue;
 }
@@ -90,13 +90,13 @@ function tokenWorthString(
 	if (text.length === 0) {
 		return [];
 	}
-	if (text[0] === ESCAPER) {
+	if (text.startsWith(ESCAPER)) {
 		/* possible escape or line continuation */
 		if ([
 			DELIM_STRING,
 			ESCAPER,
 			COMMENTER_LINE,
-			's', 't', 'n', 'r', // eslint-disable-line array-element-newline
+			's', 't', 'n', 'r', // eslint-disable-line @stylistic/array-element-newline
 		].includes(text[1])) {
 			/* an escaped character literal */
 			return [
@@ -135,11 +135,11 @@ function tokenWorthString(
 		/* an in-string multiline comment */
 		const match: string = text.match(/%%(?:%?[^'%])*(?:%%)?/)![0];
 		return tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
-	} else if (allow_comments && text[0] === COMMENTER_LINE) {
+	} else if (allow_comments && text.startsWith(COMMENTER_LINE)) {
 		/* an in-string line comment */
 		const match: string = text.match(/%[^'\n]*\n?/)![0];
 		const rest: CodeUnit[] = tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
-		return (match[match.length - 1] === '\n') // COMBAK `match.lastItem`
+		return match.endsWith('\n')
 			? [...utf8Encode(0x0a), ...rest]
 			: rest;
 	} else {
@@ -191,8 +191,8 @@ export class Validator {
 	public static cookTokenNumber(source: string, config: CPConfig): [number, boolean] {
 		const is_float:   boolean   = source.indexOf(POINT) > 0;
 		const has_unary:  boolean   = ([Punctuator.AFF, Punctuator.NEG] as string[]).includes(source[0]);
-		const multiplier: number    = (has_unary && source[0] === Punctuator.NEG) ? -1 : 1;
-		const has_radix:  boolean   = (has_unary) ? source[1] === ESCAPER : source[0] === ESCAPER;
+		const multiplier: number    = (has_unary && source.startsWith(Punctuator.NEG)) ? -1 : 1;
+		const has_radix:  boolean   = (has_unary) ? source[1] === ESCAPER : source.startsWith(ESCAPER);
 		const radix:      RadixType = (has_radix) ? new Map<string, RadixType>([
 			['b',  2n],
 			['q',  4n],
@@ -243,13 +243,13 @@ export class Validator {
 	 */
 	public static cookTokenTemplate(source: string): CodeUnit[] {
 		const delim_start = (
-			(source.slice(0, 3) === DELIM_TEMPLATE)   ? DELIM_TEMPLATE   :
-			(source.slice(0, 2) === DELIM_INTERP_END) ? DELIM_INTERP_END :
+			source.startsWith(DELIM_TEMPLATE)   ? DELIM_TEMPLATE   :
+			source.startsWith(DELIM_INTERP_END) ? DELIM_INTERP_END :
 			''
 		);
 		const delim_end = (
-			(source.slice(-3) === DELIM_TEMPLATE)     ? DELIM_TEMPLATE     :
-			(source.slice(-2) === DELIM_INTERP_START) ? DELIM_INTERP_START :
+			source.endsWith(DELIM_TEMPLATE)     ? DELIM_TEMPLATE     :
+			source.endsWith(DELIM_INTERP_START) ? DELIM_INTERP_START :
 			''
 		);
 		return [...utf8.encode(source.slice(delim_start.length, -delim_end.length))].map((ch) => ch.codePointAt(0)!);
@@ -307,7 +307,7 @@ export class Validator {
 	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
 	 */
 	public getSymbolInfo(id: bigint): SymbolStructure | null {
-		return this.symbol_table.get(id) || null;
+		return this.symbol_table.get(id) ?? null;
 	}
 
 	/**

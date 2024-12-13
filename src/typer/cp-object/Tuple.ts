@@ -5,15 +5,16 @@ import {
 } from '../../lib/index.js';
 import {TYPE} from '../index.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import {Object as CPObject} from './Object.js';
+import {memoizeSameness} from './decorators.js';
+import type {Object as CPObject} from './Object.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
 
 
 
 export class Tuple<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 	@strictEqual
-	@instanceOf(Tuple)
-	@CPObject.memoizeSameness
+	@instanceOf(() => Tuple)
+	@memoizeSameness
 	public override identical(value: CPObject): boolean {
 		return xjs.Array.is<CPObject>(this.items, (value as Tuple).items, languageValuesIdentical);
 	}

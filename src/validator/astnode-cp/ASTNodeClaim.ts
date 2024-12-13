@@ -46,10 +46,10 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		const is_intersection_empty:         boolean = claimed_type.intersect(computed_type).isBottomType;
 		const is_computed_empty:             boolean = computed_type.isBottomType;
 		const treat_int_as_subtype_of_float: boolean = this.validator.config.compilerOptions.intCoercion && (
-			   computed_type.isSubtypeOf(TYPE.INT) && TYPE.FLOAT.isSubtypeOf(claimed_type)
-			|| claimed_type .isSubtypeOf(TYPE.INT) && TYPE.FLOAT.isSubtypeOf(computed_type)
-			|| TYPE.INT.isSubtypeOf(computed_type) && claimed_type .isSubtypeOf(TYPE.FLOAT)
-			|| TYPE.INT.isSubtypeOf(claimed_type)  && computed_type.isSubtypeOf(TYPE.FLOAT)
+			computed_type.isSubtypeOf(TYPE.INT) && TYPE.FLOAT.isSubtypeOf(claimed_type)  ||
+			claimed_type .isSubtypeOf(TYPE.INT) && TYPE.FLOAT.isSubtypeOf(computed_type) ||
+			TYPE.INT.isSubtypeOf(computed_type) && claimed_type .isSubtypeOf(TYPE.FLOAT) ||
+			TYPE.INT.isSubtypeOf(claimed_type)  && computed_type.isSubtypeOf(TYPE.FLOAT)
 		);
 		if (is_intersection_empty && !is_computed_empty && !treat_int_as_subtype_of_float) {
 			/*
