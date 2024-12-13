@@ -5,7 +5,11 @@ import {
 	strictEqual,
 	instanceOf,
 } from '../../lib/index.js';
-import {Object as CPObject} from './Object.js';
+import {
+	equalsDeco,
+	memoizeSameness,
+} from './decorators.js';
+import type {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
 
 
@@ -26,15 +30,15 @@ export class Float extends CPNumber<Float> {
 
 	@strictEqual
 	@instanceOf(() => Float)
-	// @CPObject.memoizeSameness // memoizing takes longer than a simple comparison
+	// @memoizeSameness // memoizing takes longer than a simple comparison
 	public override identical(value: CPObject): boolean {
 		return Object.is(this.data, (value as Float).data);
 	}
 
 	@strictEqual
-	@CPObject.equalsDeco
+	@equalsDeco
 	@instanceOf(() => CPNumber)
-	@CPObject.memoizeSameness
+	@memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return this.data === (value as CPNumber).toFloat().data;
 	}

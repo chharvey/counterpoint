@@ -6,7 +6,11 @@ import {
 	instanceOf,
 } from '../../lib/index.js';
 import {Float} from './index.js';
-import {Object as CPObject} from './Object.js';
+import {
+	equalsDeco,
+	memoizeSameness,
+} from './decorators.js';
+import type {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
 
 
@@ -48,15 +52,15 @@ export class Integer extends CPNumber<Integer> {
 
 	@strictEqual
 	@instanceOf(() => Integer)
-	// @CPObject.memoizeSameness // memoizing takes longer than a simple comparison
+	// @memoizeSameness // memoizing takes longer than a simple comparison
 	public override identical(value: CPObject): boolean {
 		return this.data === (value as Integer).data;
 	}
 
 	@strictEqual
-	@CPObject.equalsDeco
+	@equalsDeco
 	@instanceOf(() => Float)
-	@CPObject.memoizeSameness
+	@memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return this.toFloat().equal(value);
 	}
