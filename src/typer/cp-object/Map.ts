@@ -38,8 +38,7 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
-	// @ts-expect-error FIXME:
-	@instanceOf(CPMap)
+	@instanceOf(() => CPMap)
 	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return (

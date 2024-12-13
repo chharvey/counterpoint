@@ -44,8 +44,7 @@ export class Null extends Primitive {
 	}
 
 	@strictEqual
-	// @ts-expect-error FIXME:
-	@instanceOf(Null)
+	@instanceOf(() => Null)
 	// @CPObject.memoizeSameness // memoizing takes longer than returning a constant
 	public override identical(_value: CPObject): boolean {
 		return true;

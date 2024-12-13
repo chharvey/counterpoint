@@ -37,8 +37,7 @@ class CPString extends Primitive {
 	}
 
 	@strictEqual
-	// @ts-expect-error FIXME:
-	@instanceOf(CPString)
+	@instanceOf(() => CPString)
 	@CPObject.memoizeSameness
 	public override identical(value: CPObject): boolean {
 		return xjs.Array.is<CodeUnit>(this.codeunits, (value as CPString).codeunits);

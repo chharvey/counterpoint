@@ -47,8 +47,7 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	@strictEqual
-	// @ts-expect-error FIXME:
-	@instanceOf(Integer)
+	@instanceOf(() => Integer)
 	// @CPObject.memoizeSameness // memoizing takes longer than a simple comparison
 	public override identical(value: CPObject): boolean {
 		return this.data === (value as Integer).data;
@@ -56,7 +55,7 @@ export class Integer extends CPNumber<Integer> {
 
 	@strictEqual
 	@CPObject.equalsDeco
-	@instanceOf(Float)
+	@instanceOf(() => Float)
 	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return this.toFloat().equal(value);

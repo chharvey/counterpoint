@@ -35,8 +35,7 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
-	// @ts-expect-error FIXME:
-	@instanceOf(CPSet)
+	@instanceOf(() => CPSet)
 	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return xjs.Set.is<CPObject>(this.elements, (value as CPSet).elements, language_values_equal);

@@ -157,13 +157,15 @@ export function strictEqual<Proto extends object, Params extends unknown[]>(
 /**
  * Factory for decorators performing `instanceof`, and then conjuncting (`&&`) that result
  * with the results of performing the method.
- * @param cons a class/constructor to check instance of; offers potential to fail early
+ * @param cons a function returning a class/constructor to check instance of; offers potential to fail early
  * @returns MethodDecorator<Proto, (this: Proto, that: Proto, ...args: Params) => boolean>
  * @typeparam Proto       the type of the prototype
  * @typeparam Params      the method’s parameter types
  */
-export function instanceOf<Proto extends object, Params extends unknown[]>(cons: NewableFunction): MethodDecorator<Proto, (this: Proto, that: Proto, ...args: Params) => boolean> {
+export function instanceOf<Proto extends object, Params extends unknown[]>(cons: () => NewableFunction): MethodDecorator<Proto, (this: Proto, that: Proto, ...args: Params) => boolean> {
+	let klass: NewableFunction | null = null;
 	return (method) => function (that, ...args) {
-		return that instanceof cons && method.call(this, that, ...args);
+		klass ??= cons.call(null);
+		return that instanceof klass && method.call(this, that, ...args);
 	};
 }

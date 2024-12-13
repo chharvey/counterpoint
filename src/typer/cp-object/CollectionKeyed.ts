@@ -33,8 +33,7 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 	/** @final */
 	@strictEqual
 	@CPObject.equalsDeco
-	// @ts-expect-error FIXME:
-	@instanceOf(CollectionKeyed)
+	@instanceOf(() => CollectionKeyed)
 	@CPObject.memoizeSameness
 	public override equal(value: CPObject): boolean {
 		return (
