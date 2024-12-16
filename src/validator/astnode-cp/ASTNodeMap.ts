@@ -14,6 +14,10 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {
+	typeDeco,
+	assignToDeco,
+} from './decorators.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -36,7 +40,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteralMutable {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		return new TYPE.TypeMap(
 			TYPE.TypeUnion.all(this.children.map((c) => c.antecedent.type())),
@@ -56,7 +60,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteralMutable {
 			: new OBJ.Map(cases as ReadonlyMap<OBJ.Object, OBJ.Object>);
 	}
 
-	@ASTNodeCollectionLiteralMutable.assignToDeco
+	@assignToDeco
 	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
 		if (assignee instanceof TYPE.TypeMap) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant_{ant,con}`

@@ -17,6 +17,7 @@ import {
 	Operator,
 	type ValidOperatorLogical,
 } from '../Operator.js';
+import {buildDeco} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
@@ -39,7 +40,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		// eslint-disable-next-line prefer-const --- one of them is reassigned
 		let [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());

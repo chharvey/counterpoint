@@ -22,6 +22,7 @@ import {
 	bothFloats,
 	neitherFloats,
 } from './utils-private.js';
+import {buildDeco} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
@@ -47,7 +48,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.LT, 'vlt'],

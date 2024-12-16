@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import type {Object as CPObject} from './index.ts';
+import type {Object as CPObject} from './index.js';
 
 
 
