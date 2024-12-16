@@ -92,7 +92,7 @@ export function memoizeSubtype(
 	_context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
 	return function (this: Type, t) {
-		SUB_MEMO.has(this) || SUB_MEMO.set(this, new WeakMap([[t, method.call(this, t)]]));
+		SUB_MEMO.has(this) || SUB_MEMO.set(this, new WeakMap<Type, boolean>([[t, method.call(this, t)]]));
 		const map: WeakMap<Type, boolean> = SUB_MEMO.get(this)!;
 		map.has(t) || map.set(t, method.call(this, t));
 		return map.get(t)!;
