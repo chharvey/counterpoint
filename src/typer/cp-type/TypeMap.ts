@@ -42,7 +42,7 @@ export class TypeMap extends Type {
 	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeMap &&
+			t instanceof TypeMap && // TODO: use `@instanceOf(() => TypeMap)`
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
 				? this.invariant_ant.equals(t.invariant_ant) && this.invariant_con.equals(t.invariant_con)      // Invariance for mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.

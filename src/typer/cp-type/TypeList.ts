@@ -40,7 +40,7 @@ export class TypeList extends Type {
 	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeList &&
+			t instanceof TypeList && // TODO: use `@instanceOf(() => TypeList)`
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
 				? this.invariant.equals(t.invariant)      // Invariance for mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.

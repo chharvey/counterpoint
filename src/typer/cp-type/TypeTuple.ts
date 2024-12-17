@@ -3,6 +3,7 @@ import {TypeErrorNoEntry} from '../../index.js';
 import {
 	type IntRange,
 	strictEqual,
+	instanceOf,
 	memoizeBinOp,
 } from '../../lib/index.js';
 import type {
@@ -61,8 +62,9 @@ export class TypeTuple extends ValueType {
 		return `[${ this.invariants.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
+	@instanceOf(() => OBJ.Tuple)
 	public override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Tuple && v.toType().isSubtypeOf(this);
+		return v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual
@@ -70,7 +72,7 @@ export class TypeTuple extends ValueType {
 	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeTuple &&
+			t instanceof TypeTuple && // TODO: use `@instanceOf(() => TypeTuple)`
 			this.count[0] >= t.count[0] &&
 			t.invariants.every((thattype, i) => {
 				/* eslint-disable @typescript-eslint/no-unnecessary-condition */

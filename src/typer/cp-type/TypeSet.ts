@@ -40,7 +40,7 @@ export class TypeSet extends Type {
 	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeSet &&
+			t instanceof TypeSet && // TODO: use `@instanceOf(() => TypeSet)`
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
 				? this.invariant.equals(t.invariant) // Invariance for mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.
