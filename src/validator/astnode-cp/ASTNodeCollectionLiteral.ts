@@ -1,6 +1,7 @@
 import type binaryen from 'binaryen';
 import {memoizeMethod} from '../../lib/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {buildDeco} from './decorators.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
@@ -27,7 +28,7 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		throw '`ASTNodeCollectionLiteral#build_do` not yet supported.';
 	}

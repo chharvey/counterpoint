@@ -16,91 +16,6 @@ import {
 
 
 
-/** Memoizer for storing intersections of `Type`s. */
-const AND_MEMO = new WeakMap<Type, WeakMap<Type, Type>>();
-/** Memoizer for storing unions of `Type`s. */
-const OR_MEMO  = new WeakMap<Type, WeakMap<Type, Type>>();
-/** Memoizer for comparing `Type`s by subset. */
-const SUB_MEMO = new WeakMap<Type, WeakMap<Type, boolean>>();
-
-
-
-/**
- * Decorator for {@link Type#intersect} for memoizing results.
- * @implements MethodDecorator<Type, Type['intersect']>
- */
-export function memoizeIntersection(
-	method:   Type['intersect'],
-	_context: ClassMethodDecoratorContext<Type, typeof method>,
-): typeof method {
-	return function (this: Type, t) {
-		if (AND_MEMO.has(this)) {
-			const map: WeakMap<Type, Type> = AND_MEMO.get(this)!;
-			map.has(t) || map.set(t, method.call(this, t));
-			return map.get(t)!;
-		} else if (AND_MEMO.has(t)) {
-			const map: WeakMap<Type, Type> = AND_MEMO.get(t)!;
-			map.has(this) || map.set(this, method.call(this, t));
-			return map.get(this)!;
-		} else {
-			const map = new WeakMap<Type, Type>();
-			AND_MEMO.set(this, map);
-			const result: Type = method.call(this, t);
-			map.set(t, result);
-			return result;
-		}
-	};
-}
-
-
-
-/**
- * Decorator for {@link Type#union} for memoizing results.
- * @implements MethodDecorator<Type, Type['union']>
- */
-export function memoizeUnion(
-	method:   Type['union'],
-	_context: ClassMethodDecoratorContext<Type, typeof method>,
-): typeof method {
-	return function (this: Type, t) {
-		if (OR_MEMO.has(this)) {
-			const map: WeakMap<Type, Type> = OR_MEMO.get(this)!;
-			map.has(t) || map.set(t, method.call(this, t));
-			return map.get(t)!;
-		} else if (OR_MEMO.has(t)) {
-			const map: WeakMap<Type, Type> = OR_MEMO.get(t)!;
-			map.has(this) || map.set(this, method.call(this, t));
-			return map.get(this)!;
-		} else {
-			const map = new WeakMap<Type, Type>();
-			OR_MEMO.set(this, map);
-			const result: Type = method.call(this, t);
-			map.set(t, result);
-			return result;
-		}
-	};
-}
-
-
-
-/**
- * Decorator for {@link Type#isSubtypeOf} for memoizing results.
- * @implements MethodDecorator<Type, Type['isSubtypeOf']>
- */
-export function memoizeSubtype(
-	method:   Type['isSubtypeOf'],
-	_context: ClassMethodDecoratorContext<Type, typeof method>,
-): typeof method {
-	return function (this: Type, t) {
-		SUB_MEMO.has(this) || SUB_MEMO.set(this, new WeakMap([[t, method.call(this, t)]]));
-		const map: WeakMap<Type, boolean> = SUB_MEMO.get(this)!;
-		map.has(t) || map.set(t, method.call(this, t));
-		return map.get(t)!;
-	};
-}
-
-
-
 /**
  * Decorator for some overrides of {@link Type#toString}.
  * Contains some special cases of string representations.
@@ -344,5 +259,21 @@ export function subtypeDeco(
 		}
 
 		return method.call(this, t);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#isSubtypeOf} method and any overrides for reference types.
+ * Short-circuits when the argument is equal (via type equality) to the Counterpoint `Object` type.
+ * @implements MethodDecorator<Type, Type['isSubtypeOf']>
+ */
+export function referenceSubtypeDeco(
+	method:   Type['isSubtypeOf'],
+	_context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	return function (this: Type, t) {
+		return t.equals(TYPE_OBJ) || method.call(this, t);
 	};
 }

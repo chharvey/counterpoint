@@ -5,13 +5,11 @@ import {VoidError01} from '../../index.js';
 import {
 	strictEqual,
 	instanceOf,
+	memoizeBinOp,
 } from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {language_values_equal} from '../utils-private.js';
-import {
-	equalsDeco,
-	memoizeSameness,
-} from './decorators.js';
+import {equalsDeco} from './decorators.js';
 import type {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import type {Integer} from './Integer.js';
@@ -42,7 +40,7 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 	@strictEqual
 	@equalsDeco
 	@instanceOf(() => CollectionIndexed)
-	@memoizeSameness
+	@memoizeBinOp(true, true)
 	public override equal(value: CPObject): boolean {
 		return xjs.Array.is<CPObject>(this.items, (value as CollectionIndexed).items, language_values_equal);
 	}

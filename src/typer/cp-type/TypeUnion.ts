@@ -1,6 +1,9 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	memoizeBinOp,
+} from '../../lib/index.js';
 import type {TypeEntry} from '../utils-public.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
@@ -11,8 +14,6 @@ import {
 } from './index.js';
 import {language_types_equal} from './utils-private.js';
 import {
-	memoizeUnion,
-	memoizeSubtype,
 	toStringDeco,
 	operatorDeco,
 	unionDeco,
@@ -140,7 +141,7 @@ export class TypeUnion extends Combinable {
 		return this.operands.some((s) => s.includes(v));
 	}
 
-	@memoizeUnion
+	@memoizeBinOp(true)
 	@operatorDeco
 	@unionDeco
 	public override union(t: Type): Type {
@@ -173,7 +174,7 @@ export class TypeUnion extends Combinable {
 	}
 
 	@strictEqual
-	@memoizeSubtype
+	@memoizeBinOp()
 	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */

@@ -20,6 +20,10 @@ import {
 	Operator,
 	type ValidAccessOperator,
 } from '../Operator.js';
+import {
+	buildDeco,
+	typeDeco,
+} from './decorators.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -48,13 +52,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		throw '`ASTNodeAccess#build_do` not yet supported.';
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.type();
 		if (base_type instanceof TYPE.Combinable) {

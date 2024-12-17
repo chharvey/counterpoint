@@ -13,6 +13,10 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {
+	typeDeco,
+	assignToDeco,
+} from './decorators.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteralMutable} from './ASTNodeCollectionLiteralMutable.js';
@@ -34,7 +38,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteralMutable {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		return new TYPE.TypeSet(
 			TYPE.TypeUnion.all(this.children.map((c) => c.type())),
@@ -50,7 +54,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteralMutable {
 			: new OBJ.Set(new Set(elements as OBJ.Object[]));
 	}
 
-	@ASTNodeCollectionLiteralMutable.assignToDeco
+	@assignToDeco
 	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
 		if (assignee instanceof TYPE.TypeSet) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant`
