@@ -1,4 +1,7 @@
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	memoizeBinOp,
+} from '../../lib/index.js';
 import type * as OBJ from '../cp-object/index.js';
 import {Type} from './Type.js';
 
@@ -44,6 +47,7 @@ export class TypeUnknown extends Type {
 	}
 
 	@strictEqual
+	@memoizeBinOp(true)
 	public override equals(t: Type): boolean {
 		return t.isTopType;
 	}

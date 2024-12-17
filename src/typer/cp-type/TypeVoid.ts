@@ -48,6 +48,7 @@ export class TypeVoid extends ValueType {
 	}
 
 	@strictEqual
+	@memoizeBinOp(true)
 	public override equals(t: Type): boolean {
 		return t === TypeVoid.INSTANCE || super.equals(t);
 	}

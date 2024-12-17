@@ -1,4 +1,7 @@
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	memoizeBinOp,
+} from '../../lib/index.js';
 import type * as OBJ from '../cp-object/index.js';
 import type {Type} from './Type.js';
 import {ValueType} from './ValueType.js';
@@ -45,6 +48,7 @@ export class TypeNever extends ValueType {
 	}
 
 	@strictEqual
+	@memoizeBinOp(true)
 	public override equals(t: Type): boolean {
 		return t.isBottomType;
 	}

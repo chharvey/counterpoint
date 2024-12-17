@@ -212,6 +212,7 @@ export abstract class Type {
 	 * @returns Is this type equal to the argument?
 	 */
 	@strictEqual
+	@memoizeBinOp(true)
 	public equals(t: Type): boolean {
 		return this.isMutable === t.isMutable && this.isSubtypeOf(t) && t.isSubtypeOf(this);
 	}
