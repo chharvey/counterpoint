@@ -14,6 +14,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {typeDeco} from './decorators.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -46,7 +47,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		const props: ReadonlyMap<bigint, TYPE.Type> = new Map<bigint, TYPE.Type>(this.children.map((c) => {
 			const valuetype: TYPE.Type = c.val.type();

@@ -16,6 +16,10 @@ import {
 } from '../../core/index.js';
 import type {SyntaxNodeSupertype} from '../utils-private.js';
 import type {Operator} from '../Operator.js';
+import {
+	buildDeco,
+	typeDeco,
+} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 
@@ -39,7 +43,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const t0:                 TYPE.Type                = this.operand0.type();
 		const [arg0, arg1, arg2]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
@@ -60,7 +64,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		// compute types early to rethrow any errors
 		const [t0, t1, t2]: TYPE.Type[] = this.children.map((operand) => operand.type());

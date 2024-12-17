@@ -12,6 +12,10 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {
+	buildDeco,
+	typeDeco,
+} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeConstant} from './ASTNodeConstant.js';
 
@@ -39,13 +43,13 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		throw '`ASTNodeTemplate#build` not yet supported.';
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		return TYPE.STR;
 	}

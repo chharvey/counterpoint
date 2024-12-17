@@ -3,6 +3,8 @@ import {TypeErrorNoEntry} from '../../index.js';
 import {
 	type IntRange,
 	strictEqual,
+	instanceOf,
+	memoizeBinOp,
 } from '../../lib/index.js';
 import type {
 	ValidAccessOperator,
@@ -10,11 +12,10 @@ import type {
 } from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
 import * as OBJ from '../cp-object/index.js';
-import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {
-	memoizeSubtype,
 	subtypeDeco,
+	referenceSubtypeDeco,
 } from './decorators.js';
 import type {Type} from './Type.js';
 import {TypeUnion} from './TypeUnion.js';
@@ -63,18 +64,20 @@ export class TypeRecord extends ValueType {
 		return `[${ [...this.invariants].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
+	@instanceOf(() => OBJ.Record)
 	public override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Record && v.toType().isSubtypeOf(this);
+		return v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual
-	@memoizeSubtype
+	@memoizeBinOp()
 	@subtypeDeco
+	@referenceSubtypeDeco
+	@instanceOf(() => TypeRecord)
 	public override isSubtypeOf(t: Type): boolean {
-		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeRecord &&
-			this.count[0] >= t.count[0] &&
-			[...t.invariants].every(([id, thattype]) => {
+		return (
+			this.count[0] >= (t as TypeRecord).count[0] &&
+			[...(t as TypeRecord).invariants].every(([id, thattype]) => {
 				const thistype: TypeEntry | undefined = this.invariants.get(id);
 				if (!thattype.optional) {
 					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.

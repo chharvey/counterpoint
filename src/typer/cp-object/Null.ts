@@ -45,7 +45,7 @@ export class Null extends Primitive {
 
 	@strictEqual
 	@instanceOf(() => Null)
-	// @memoizeSameness // memoizing takes longer than returning a constant
+	// @memoizeBinOp(true, true) // memoizing takes longer than returning a constant
 	public override identical(_value: CPObject): boolean {
 		return true;
 	}

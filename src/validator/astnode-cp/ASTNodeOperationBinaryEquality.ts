@@ -21,6 +21,7 @@ import {
 	bothNumeric,
 	oneFloats,
 } from './utils-private.js';
+import {buildDeco} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
@@ -43,7 +44,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
 		if (this.type().equals(OBJ.Boolean.FALSETYPE)) {

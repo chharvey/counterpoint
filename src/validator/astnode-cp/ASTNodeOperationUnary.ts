@@ -21,6 +21,10 @@ import {
 	Operator,
 	type ValidOperatorUnary,
 } from '../Operator.js';
+import {
+	buildDeco,
+	typeDeco,
+} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 
@@ -43,7 +47,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const arg0: binaryen.ExpressionRef = this.operand.build();
 		if (this.operator === Operator.NOT) {
@@ -68,7 +72,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		const t: TYPE.Type = this.operand.type();
 		switch (this.operator) {

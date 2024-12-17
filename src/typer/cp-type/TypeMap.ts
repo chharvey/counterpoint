@@ -1,10 +1,13 @@
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
+} from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
-import {OBJ as TYPE_OBJ} from './index.js';
 import {MUT_OPERATOR} from './utils-private.js';
 import {
-	memoizeSubtype,
 	subtypeDeco,
+	referenceSubtypeDeco,
 } from './decorators.js';
 import {Type} from './Type.js';
 
@@ -38,15 +41,16 @@ export class TypeMap extends Type {
 	}
 
 	@strictEqual
-	@memoizeSubtype
+	@memoizeBinOp()
 	@subtypeDeco
+	@referenceSubtypeDeco
+	@instanceOf(() => TypeMap)
 	public override isSubtypeOf(t: Type): boolean {
-		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeMap &&
+		return (
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
-				? this.invariant_ant.equals(t.invariant_ant) && this.invariant_con.equals(t.invariant_con)      // Invariance for mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.
-				: this.invariant_ant.equals(t.invariant_ant) && this.invariant_con.isSubtypeOf(t.invariant_con) // Invariance for immutable maps’ keys: `A == C && --> Map.<A, B> <: Map.<C, B>`. // Covariance for immutable maps’ values: `B <: D --> Map.<A, B> <: Map.<A, D>`.
+				? this.invariant_ant.equals((t as TypeMap).invariant_ant) && this.invariant_con.equals((t as TypeMap).invariant_con)      // Invariance for mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.
+				: this.invariant_ant.equals((t as TypeMap).invariant_ant) && this.invariant_con.isSubtypeOf((t as TypeMap).invariant_con) // Invariance for immutable maps’ keys: `A == C && --> Map.<A, B> <: Map.<C, B>`. // Covariance for immutable maps’ values: `B <: D --> Map.<A, B> <: Map.<A, D>`.
 			)
 		);
 	}

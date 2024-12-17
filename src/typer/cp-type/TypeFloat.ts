@@ -1,3 +1,4 @@
+import {instanceOf} from '../../lib/decorators.js';
 import * as OBJ from '../cp-object/index.js';
 import {ValueType} from './ValueType.js';
 
@@ -19,7 +20,8 @@ export class TypeFloat extends ValueType {
 		return 'float';
 	}
 
-	public override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Float;
+	@instanceOf(() => OBJ.Float)
+	public override includes(_: OBJ.Object): boolean {
+		return true;
 	}
 }

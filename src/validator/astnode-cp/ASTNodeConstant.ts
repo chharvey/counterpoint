@@ -20,6 +20,7 @@ import {
 } from '../utils-private.js';
 import {Validator} from '../Validator.js';
 import {valueOfTokenNumber} from './utils-private.js';
+import {buildDeco} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
@@ -53,13 +54,13 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return this.fold().build(this.builder.module);
 	}
 
 	@memoizeMethod
-	// explicitly leaving off `@ASTNodeExpression.typeDeco` for performance
+	// @typeDeco // explicitly leaving off for performance
 	public override type(): TYPE.Type {
 		return this.fold().toType();
 	}

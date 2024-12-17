@@ -22,6 +22,10 @@ import {
 	SymbolStructureType,
 } from '../index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {
+	buildDeco,
+	typeDeco,
+} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
@@ -54,7 +58,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const local = this.builder.getLocalInfo(this.id);
 		return (local)
@@ -63,7 +67,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		if (this.validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;

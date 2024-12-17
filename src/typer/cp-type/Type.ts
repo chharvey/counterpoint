@@ -1,5 +1,8 @@
 import * as xjs from 'extrajs';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	memoizeBinOp,
+} from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import * as OBJ from '../cp-object/index.js';
 import {
@@ -10,9 +13,6 @@ import {
 	NULL,
 } from './index.js';
 import {
-	memoizeIntersection,
-	memoizeUnion,
-	memoizeSubtype,
 	operatorDeco,
 	intersectDeco,
 	unionDeco,
@@ -152,7 +152,7 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type intersection
 	 */
-	@memoizeIntersection
+	@memoizeBinOp(true)
 	@operatorDeco
 	@intersectDeco
 	public intersect(t: Type): Type {
@@ -168,7 +168,7 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type union
 	 */
-	@memoizeUnion
+	@memoizeBinOp(true)
 	@operatorDeco
 	@unionDeco
 	public union(t: Type): Type {
@@ -196,7 +196,7 @@ export abstract class Type {
 	 * @returns Is this type a subtype of the argument?
 	 */
 	@strictEqual
-	@memoizeSubtype
+	@memoizeBinOp()
 	@subtypeDeco
 	public isSubtypeOf(t: Type): boolean {
 		return !this.isBottomType && !!this.values.size && // these checks are needed in cases of `Object` and `void`, which don’t store values
@@ -212,6 +212,7 @@ export abstract class Type {
 	 * @returns Is this type equal to the argument?
 	 */
 	@strictEqual
+	@memoizeBinOp(true)
 	public equals(t: Type): boolean {
 		return this.isMutable === t.isMutable && this.isSubtypeOf(t) && t.isSubtypeOf(this);
 	}
@@ -263,6 +264,7 @@ export class TypeInterface extends Type {
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
+	@memoizeBinOp(true)
 	@operatorDeco
 	@intersectDeco
 	public override intersect(t: Type): Type {
@@ -281,7 +283,7 @@ export class TypeInterface extends Type {
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
 	 */
-	@memoizeUnion
+	@memoizeBinOp(true)
 	@operatorDeco
 	@unionDeco
 	public override union(t: Type): Type {
@@ -304,7 +306,7 @@ export class TypeInterface extends Type {
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
 	 */
 	@strictEqual
-	@memoizeSubtype
+	@memoizeBinOp()
 	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		if (t instanceof TypeInterface) {

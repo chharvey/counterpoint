@@ -59,7 +59,7 @@ class CPBoolean extends Primitive {
 
 	@strictEqual
 	@instanceOf(() => CPBoolean)
-	// @memoizeSameness // memoizing takes longer than a simple comparison
+	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
 	public override identical(value: CPObject): boolean {
 		return this.data === (value as CPBoolean).data;
 	}

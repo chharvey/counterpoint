@@ -2,16 +2,14 @@ import * as xjs from 'extrajs';
 import {
 	strictEqual,
 	instanceOf,
+	memoizeBinOp,
 } from '../../lib/index.js';
 import {TYPE} from '../index.js';
 import {
 	languageValuesIdentical,
 	language_values_equal,
 } from '../utils-private.js';
-import {
-	equalsDeco,
-	memoizeSameness,
-} from './decorators.js';
+import {equalsDeco} from './decorators.js';
 import type {Object as CPObject} from './Object.js';
 import {Boolean as CPBoolean} from './Boolean.js';
 import {Collection} from './Collection.js';
@@ -40,7 +38,7 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 	@strictEqual
 	@equalsDeco
 	@instanceOf(() => CPSet)
-	@memoizeSameness
+	@memoizeBinOp(true, true)
 	public override equal(value: CPObject): boolean {
 		return xjs.Set.is<CPObject>(this.elements, (value as CPSet).elements, language_values_equal);
 	}
