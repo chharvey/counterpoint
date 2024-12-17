@@ -32,21 +32,6 @@ export class TypeNever extends ValueType {
 		return false;
 	}
 
-	public override intersect(_: Type): Type {
-		/* 1-5 | `T  & never   == never` */
-		return this;
-	}
-
-	public override union(t: Type): Type {
-		/* 1-7 | `T \| never   == T` */
-		return t;
-	}
-
-	public override isSubtypeOf(_: Type): boolean {
-		/* 1-1 | `never <: T` */
-		return true;
-	}
-
 	@strictEqual
 	@memoizeBinOp(true)
 	public override equals(t: Type): boolean {
