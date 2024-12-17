@@ -261,3 +261,19 @@ export function subtypeDeco(
 		return method.call(this, t);
 	};
 }
+
+
+
+/**
+ * Decorator for {@link Type#isSubtypeOf} method and any overrides for reference types.
+ * Short-circuits when the argument is equal (via type equality) to the Counterpoint `Object` type.
+ * @implements MethodDecorator<Type, Type['isSubtypeOf']>
+ */
+export function referenceSubtypeDeco(
+	method:   Type['isSubtypeOf'],
+	_context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	return function (this: Type, t) {
+		return t.equals(TYPE_OBJ) || method.call(this, t);
+	};
+}

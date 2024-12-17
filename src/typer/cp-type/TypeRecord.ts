@@ -12,9 +12,11 @@ import type {
 } from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
 import * as OBJ from '../cp-object/index.js';
-import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
-import {subtypeDeco} from './decorators.js';
+import {
+	subtypeDeco,
+	referenceSubtypeDeco,
+} from './decorators.js';
 import type {Type} from './Type.js';
 import {TypeUnion} from './TypeUnion.js';
 import {ValueType} from './ValueType.js';
@@ -70,8 +72,9 @@ export class TypeRecord extends ValueType {
 	@strictEqual
 	@memoizeBinOp()
 	@subtypeDeco
+	@referenceSubtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
-		return t.equals(TYPE_OBJ) || (
+		return (
 			t instanceof TypeRecord && // TODO: use `@instanceOf(() => TypeRecord)`
 			this.count[0] >= t.count[0] &&
 			[...t.invariants].every(([id, thattype]) => {

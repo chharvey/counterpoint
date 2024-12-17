@@ -3,9 +3,11 @@ import {
 	memoizeBinOp,
 } from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
-import {OBJ as TYPE_OBJ} from './index.js';
 import {MUT_OPERATOR} from './utils-private.js';
-import {subtypeDeco} from './decorators.js';
+import {
+	subtypeDeco,
+	referenceSubtypeDeco,
+} from './decorators.js';
 import {Type} from './Type.js';
 
 
@@ -40,8 +42,9 @@ export class TypeMap extends Type {
 	@strictEqual
 	@memoizeBinOp()
 	@subtypeDeco
+	@referenceSubtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
-		return t.equals(TYPE_OBJ) || (
+		return (
 			t instanceof TypeMap && // TODO: use `@instanceOf(() => TypeMap)`
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
