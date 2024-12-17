@@ -1,9 +1,10 @@
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	memoizeBinOp,
+} from '../../lib/index.js';
 import type * as OBJ from '../cp-object/index.js';
 import {NEVER} from './index.js';
 import {
-	memoizeIntersection,
-	memoizeSubtype,
 	intersectDeco,
 	subtypeDeco,
 } from './decorators.js';
@@ -32,7 +33,7 @@ export class TypeVoid extends ValueType {
 		return false;
 	}
 
-	@memoizeIntersection
+	@memoizeBinOp(true)
 	// @operatorDeco // slower than returning a constant
 	@intersectDeco
 	public override intersect(_t: Type): Type {
@@ -40,7 +41,7 @@ export class TypeVoid extends ValueType {
 	}
 
 	@strictEqual
-	@memoizeSubtype
+	@memoizeBinOp()
 	@subtypeDeco
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;

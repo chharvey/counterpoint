@@ -1,9 +1,9 @@
 import {
 	strictEqual,
 	instanceOf,
+	memoizeBinOp,
 } from '../../lib/index.js';
 import {TYPE} from '../index.js';
-import {memoizeSameness} from './decorators.js';
 import type {Object as CPObject} from './Object.js';
 import {CollectionKeyed} from './CollectionKeyed.js';
 
@@ -12,7 +12,7 @@ import {CollectionKeyed} from './CollectionKeyed.js';
 export class Record<T extends CPObject = CPObject> extends CollectionKeyed<T> {
 	@strictEqual
 	@instanceOf(() => Record)
-	@memoizeSameness
+	@memoizeBinOp(true, true)
 	public override identical(value: CPObject): boolean {
 		return (
 			this.properties.size === (value as Record).properties.size &&

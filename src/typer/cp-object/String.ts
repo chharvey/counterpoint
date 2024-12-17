@@ -5,8 +5,8 @@ import {
 	type CodeUnit,
 	strictEqual,
 	instanceOf,
+	memoizeBinOp,
 } from '../../lib/index.js';
-import {memoizeSameness} from './decorators.js';
 import type {Object as CPObject} from './Object.js';
 import {Primitive} from './Primitive.js';
 
@@ -39,7 +39,7 @@ class CPString extends Primitive {
 
 	@strictEqual
 	@instanceOf(() => CPString)
-	@memoizeSameness
+	@memoizeBinOp(true, true)
 	public override identical(value: CPObject): boolean {
 		return xjs.Array.is<CodeUnit>(this.codeunits, (value as CPString).codeunits);
 	}

@@ -4,12 +4,10 @@ import {BinVect} from '../../index.js';
 import {
 	strictEqual,
 	instanceOf,
+	memoizeBinOp,
 } from '../../lib/index.js';
 import {Float} from './index.js';
-import {
-	equalsDeco,
-	memoizeSameness,
-} from './decorators.js';
+import {equalsDeco} from './decorators.js';
 import type {Object as CPObject} from './Object.js';
 import {Number as CPNumber} from './Number.js';
 
@@ -52,7 +50,7 @@ export class Integer extends CPNumber<Integer> {
 
 	@strictEqual
 	@instanceOf(() => Integer)
-	// @memoizeSameness // memoizing takes longer than a simple comparison
+	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
 	public override identical(value: CPObject): boolean {
 		return this.data === (value as Integer).data;
 	}
@@ -60,7 +58,7 @@ export class Integer extends CPNumber<Integer> {
 	@strictEqual
 	@equalsDeco
 	@instanceOf(() => Float)
-	@memoizeSameness
+	@memoizeBinOp(true, true)
 	public override equal(value: CPObject): boolean {
 		return this.toFloat().equal(value);
 	}

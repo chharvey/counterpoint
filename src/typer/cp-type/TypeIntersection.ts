@@ -1,6 +1,9 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	memoizeBinOp,
+} from '../../lib/index.js';
 import type {TypeEntry} from '../utils-public.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as OBJ from '../cp-object/index.js';
@@ -12,8 +15,6 @@ import {
 } from './index.js';
 import {language_types_equal} from './utils-private.js';
 import {
-	memoizeIntersection,
-	memoizeSubtype,
 	toStringDeco,
 	operatorDeco,
 	intersectDeco,
@@ -133,7 +134,7 @@ export class TypeIntersection extends Combinable {
 		return this.operands.every((s) => s.includes(v));
 	}
 
-	@memoizeIntersection
+	@memoizeBinOp(true)
 	@operatorDeco
 	@intersectDeco
 	public override intersect(t: Type): Type {
@@ -159,7 +160,7 @@ export class TypeIntersection extends Combinable {
 	}
 
 	@strictEqual
-	@memoizeSubtype
+	@memoizeBinOp()
 	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */

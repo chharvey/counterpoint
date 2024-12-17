@@ -3,6 +3,7 @@ import {TypeErrorNoEntry} from '../../index.js';
 import {
 	type IntRange,
 	strictEqual,
+	memoizeBinOp,
 } from '../../lib/index.js';
 import type {
 	ValidAccessOperator,
@@ -12,10 +13,7 @@ import type {TypeEntry} from '../utils-public.js';
 import * as OBJ from '../cp-object/index.js';
 import {OBJ as TYPE_OBJ} from './index.js';
 import {updateAccessedStaticType} from './utils-private.js';
-import {
-	memoizeSubtype,
-	subtypeDeco,
-} from './decorators.js';
+import {subtypeDeco} from './decorators.js';
 import type {Type} from './Type.js';
 import {TypeUnion} from './TypeUnion.js';
 import {ValueType} from './ValueType.js';
@@ -68,7 +66,7 @@ export class TypeRecord extends ValueType {
 	}
 
 	@strictEqual
-	@memoizeSubtype
+	@memoizeBinOp()
 	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		return t.equals(TYPE_OBJ) || (

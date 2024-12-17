@@ -4,6 +4,7 @@ import {VoidError01} from '../../index.js';
 import {
 	strictEqual,
 	instanceOf,
+	memoizeBinOp,
 } from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {TYPE} from '../index.js';
@@ -11,10 +12,7 @@ import {
 	languageValuesIdentical,
 	language_values_equal,
 } from '../utils-private.js';
-import {
-	equalsDeco,
-	memoizeSameness,
-} from './decorators.js';
+import {equalsDeco} from './decorators.js';
 import type {Object as CPObject} from './Object.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
@@ -43,7 +41,7 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 	@strictEqual
 	@equalsDeco
 	@instanceOf(() => CPMap)
-	@memoizeSameness
+	@memoizeBinOp(true, true)
 	public override equal(value: CPObject): boolean {
 		return (
 			this.cases.size === (value as CPMap).cases.size &&
