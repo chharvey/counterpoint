@@ -73,11 +73,11 @@ export class TypeTuple extends ValueType {
 	@memoizeBinOp()
 	@subtypeDeco
 	@referenceSubtypeDeco
+	@instanceOf(() => TypeTuple)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
-			t instanceof TypeTuple && // TODO: use `@instanceOf(() => TypeTuple)`
-			this.count[0] >= t.count[0] &&
-			t.invariants.every((thattype, i) => {
+			this.count[0] >= (t as TypeTuple).count[0] &&
+			(t as TypeTuple).invariants.every((thattype, i) => {
 				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 				const thistype: TypeEntry | undefined = this.invariants[i];
 				if (!thattype.optional) {

@@ -1,5 +1,6 @@
 import {
 	strictEqual,
+	instanceOf,
 	memoizeBinOp,
 } from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
@@ -41,13 +42,13 @@ export class TypeSet extends Type {
 	@memoizeBinOp()
 	@subtypeDeco
 	@referenceSubtypeDeco
+	@instanceOf(() => TypeSet)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
-			t instanceof TypeSet && // TODO: use `@instanceOf(() => TypeSet)`
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
-				? this.invariant.equals(t.invariant) // Invariance for mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.
-				: this.invariant.equals(t.invariant) // Invariance for immutable sets: `A == B --> Set.<A> <: Set.<B>`.
+				? this.invariant.equals((t as TypeSet).invariant) // Invariance for mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.
+				: this.invariant.equals((t as TypeSet).invariant) // Invariance for immutable sets: `A == B --> Set.<A> <: Set.<B>`.
 			)
 		);
 	}

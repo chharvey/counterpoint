@@ -73,11 +73,11 @@ export class TypeRecord extends ValueType {
 	@memoizeBinOp()
 	@subtypeDeco
 	@referenceSubtypeDeco
+	@instanceOf(() => TypeRecord)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
-			t instanceof TypeRecord && // TODO: use `@instanceOf(() => TypeRecord)`
-			this.count[0] >= t.count[0] &&
-			[...t.invariants].every(([id, thattype]) => {
+			this.count[0] >= (t as TypeRecord).count[0] &&
+			[...(t as TypeRecord).invariants].every(([id, thattype]) => {
 				const thistype: TypeEntry | undefined = this.invariants.get(id);
 				if (!thattype.optional) {
 					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.

@@ -1,5 +1,6 @@
 import {
 	strictEqual,
+	instanceOf,
 	memoizeBinOp,
 } from '../../lib/index.js';
 import * as OBJ from '../cp-object/index.js';
@@ -41,13 +42,13 @@ export class TypeList extends Type {
 	@memoizeBinOp()
 	@subtypeDeco
 	@referenceSubtypeDeco
+	@instanceOf(() => TypeList)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
-			t instanceof TypeList && // TODO: use `@instanceOf(() => TypeList)`
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
-				? this.invariant.equals(t.invariant)      // Invariance for mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.
-				: this.invariant.isSubtypeOf(t.invariant) // Covariance for immutable lists: `A <: B --> List.<A> <: List.<B>`.
+				? this.invariant.equals((t as TypeList).invariant)      // Invariance for mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.
+				: this.invariant.isSubtypeOf((t as TypeList).invariant) // Covariance for immutable lists: `A <: B --> List.<A> <: List.<B>`.
 			)
 		);
 	}
