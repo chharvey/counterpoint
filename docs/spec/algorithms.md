@@ -339,19 +339,15 @@ None! AssignTo(Or<SemanticSet, SemanticMap> expr, Type type) :=
 	1. *If* `expr` is a SemanticSet *and* `type` is a Set type:
 		1. *Let* `b_type` be the invariant over `type`.
 		2. *For each* `a_el` in `expr.children`:
-			1. *Let* `a_type` be *Unwrap:* `TypeOf(a_el)`.
-			2. *If* *UnwrapAffirm:* `Subtype(a_type, b_type)` is `false`:
-				1. *Throw:* a new TypeErrorNotAssignable.
+			1. *Perform:* `TypeCheckAssignment(a_el, b_type)`.
+		3. *Return.*
 	2. *If* `expr` is a SemanticMap *and* `type` is a Map type:
 		1. *Let* `b_ant_type` be the antecedent invariant over `type`.
 		2. *Let* `b_con_type` be the consequent invariant over `type`.
 		3. *For each* `a_case` in `expr.children`:
-			1. *Let* `a_ant_type` be *Unwrap:* `TypeOf(a_case.0)`.
-			2. *Let* `a_con_type` be *Unwrap:* `TypeOf(a_case.1)`.
-			3. *If* *UnwrapAffirm:* `Subtype(a_ant_type, b_ant_type)` is `false`:
-				1. *Throw:* a new TypeErrorNotAssignable.
-			4. *If* *UnwrapAffirm:* `Subtype(a_con_type, b_con_type)` is `false`:
-				1. *Throw:* a new TypeErrorNotAssignable.
+			1. *Perform:* `TypeCheckAssignment(a_case.0, b_ant_type)`.
+			2. *Perform:* `TypeCheckAssignment(a_case.1, b_con_type)`.
+		4. *Return.*
 	3. *Throw:* a new TypeErrorNotAssignable.
 ;
 ```
