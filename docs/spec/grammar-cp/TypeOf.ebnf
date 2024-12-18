@@ -49,12 +49,12 @@ Type! TypeOfUnfolded(SemanticTuple tuple) :=
 Type! TypeOfUnfolded(SemanticRecord record) :=
 	1. *Let* `data` be a new Structure.
 	2. *For each* `property` in `record`:
-		1. *Assert:* `propertytype.children.count` is 2.
+		1. *Assert:* `property.children.count` is 2.
 		2. *Let* `typedatum` be a new EntryTypeStructure [
 			type=     *Unwrap:* `TypeOf(property.children.1)`,
 			optional= `false`,
 		].
-		3. Set the property `propertytype.children.0.id` on `data` to the value `typedatum`.
+		3. Set the property `property.children.0.id` on `data` to the value `typedatum`.
 	3. *Return:* a new Record type containing the properties in `data`.
 ;
 

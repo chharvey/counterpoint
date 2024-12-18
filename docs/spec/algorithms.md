@@ -107,7 +107,7 @@ Decodes a sequence of code units into a sequence of code points using the UTF-8 
 RealNumber Multiply(Sequence<RealNumber> ns) :=
 	1. *If* `ns.count` is 0:
 		1. *Return:* 0.
-	2. Return *UnwrapAffirm:* `Multiply(ns[0, -1])` * \x40 + `ns.lastItem`.
+	2. *Return:* *UnwrapAffirm:* `Multiply(ns[0, -1])` * \x40 + `ns.lastItem`.
 ;
 None! Continue(Sequence<RealNumber> units) :=
 	1. *For index* `i` in `units`:
@@ -251,7 +251,7 @@ Boolean Identical(Object a, Object b) :=
 		6. *Return:* `true`.
 	9. *If* `a` and `b` are the same object:
 		1. *Return:* `true`.
-	10. Return `false`.
+	10. *Return:* `false`.
 ```
 
 
@@ -306,7 +306,7 @@ Boolean Equal(Object a, Object b) :=
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For each* `it_b` in `seq_b`:
 			1. Find an item `it_a` in `seq_a` such that *UnwrapAffirm:* `Equal(it_a, it_b)` is `true`.
-			2. *If* `it_a` does not exist:
+			2. *If* `it_a` is not set:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
 	7. *If* `a` is an instance of `Map` *and* `b` is an instance of `Map`:
@@ -321,12 +321,12 @@ Boolean Equal(Object a, Object b) :=
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For each* `it_b` in `data_b`:
 			1. Find an item `it_a` in `data_a` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
-			2. *If* `it_a` does not exist:
+			2. *If* `it_a` is not set:
 				1. *Return:* `false`.
 			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
-	8. Return `false`.
+	8. *Return:* `false`.
 ```
 
 
@@ -338,14 +338,14 @@ This assignment is attempted on an entry-by-entry basis.
 None! AssignTo(Or<SemanticSet, SemanticMap> expr, Type type) :=
 	1. *If* `expr` is a SemanticSet *and* `type` is a Set type:
 		1. *Let* `b_type` be the invariant over `type`.
-		2. *For each* `a_el` in `expr`:
+		2. *For each* `a_el` in `expr.children`:
 			1. *Let* `a_type` be *Unwrap:* `TypeOf(a_el)`.
 			2. *If* *UnwrapAffirm:* `Subtype(a_type, b_type)` is `false`:
 				1. *Throw:* a new TypeErrorNotAssignable.
 	2. *If* `expr` is a SemanticMap *and* `type` is a Map type:
 		1. *Let* `b_ant_type` be the antecedent invariant over `type`.
 		2. *Let* `b_con_type` be the consequent invariant over `type`.
-		3. *For each* `a_case` in `expr`:
+		3. *For each* `a_case` in `expr.children`:
 			1. *Let* `a_ant_type` be *Unwrap:* `TypeOf(a_case.0)`.
 			2. *Let* `a_con_type` be *Unwrap:* `TypeOf(a_case.1)`.
 			3. *If* *UnwrapAffirm:* `Subtype(a_ant_type, b_ant_type)` is `false`:

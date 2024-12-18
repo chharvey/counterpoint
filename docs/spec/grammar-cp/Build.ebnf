@@ -27,7 +27,7 @@ Sequence<Instruction> Build(SemanticExpression expr) :=
 	1. *Let* `folded` be `ValueOf(expr)`.
 	2. *If* `folded` is an abrupt completion:
 		1. *Return:* `BuildExpression(expr)`.
-	3. *Assert:* `folded.value` exists.
+	3. *Assert:* `folded.value` is set.
 	4. *Return:* `Build(folded.value)`.
 ;
 
