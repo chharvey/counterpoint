@@ -525,6 +525,15 @@ describe('Type', () => {
 			});
 		});
 
+		it('a subtype of a union need not be a subtype of any of that union’s constituents.', () => {
+			const left:  TYPE.Type = typeUnit(1n).union(typeUnit(2n));
+			const right: TYPE.Type = typeUnit(3n);
+			const sub:   TYPE.Type = typeUnit(2n).union(typeUnit(3n));
+			assert.ok(sub.isSubtypeOf(left.union(right)), '2 | 3  <:  (1 | 2) | 3');
+			assert.ok(!sub.isSubtypeOf(left),             '2 | 3  !<:  1 | 2');
+			assert.ok(!sub.isSubtypeOf(right),            '2 | 3  !<:  3');
+		});
+
 		describe('TypeUnit', () => {
 			it('unit Boolean types should be subtypes of `bool`.', () => {
 				assert.ok(OBJ.Boolean.FALSETYPE.isSubtypeOf(TYPE.BOOL), 'Boolean.FALSETYPE');

@@ -4,7 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type TypeErrorNotAssignable,
+	TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -66,7 +66,8 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
+	public override assignTo(assignee: TYPE.Type): void {
+		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
 		if (assignee instanceof TYPE.TypeTuple) {
 			if (this.children.length < assignee.count[0]) {
 				throw err;

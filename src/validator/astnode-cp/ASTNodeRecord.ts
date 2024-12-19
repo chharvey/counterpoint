@@ -3,7 +3,7 @@ import {
 	OBJ,
 	TYPE,
 	AssignmentErrorDuplicateKey,
-	type TypeErrorNotAssignable,
+	TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	type NonemptyArray,
@@ -74,7 +74,8 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
+	public override assignTo(assignee: TYPE.Type): void {
+		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
 		if (assignee instanceof TYPE.TypeRecord) {
 			if (this.children.length < assignee.count[0]) {
 				throw err;

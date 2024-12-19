@@ -94,7 +94,7 @@ export abstract class ASTNodeCP extends ASTNode {
 			return ASTNodeCP.typeCheckAssignment(assigned.type(), assignee_type, node);
 		} catch (err) {
 			if (assigned instanceof ASTNodeCollectionLiteral) {
-				return assigned.assignTo(assignee_type, err as TypeErrorNotAssignable);
+				return assigned.assignTo(assignee_type);
 			} else {
 				throw err;
 			}

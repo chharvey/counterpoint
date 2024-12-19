@@ -2,7 +2,7 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type TypeErrorNotAssignable,
+	TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	type NonemptyArray,
@@ -61,7 +61,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteralMutable {
 	}
 
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
+	public override assignTo(assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.TypeMap) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant_{ant,con}`
 			return xjs.Array.forEachAggregated(this.children, (case_) => (
@@ -70,6 +70,6 @@ export class ASTNodeMap extends ASTNodeCollectionLiteralMutable {
 				))
 			));
 		}
-		throw err;
+		throw new TypeErrorNotAssignable(this.type(), assignee, this);
 	}
 }

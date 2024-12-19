@@ -117,17 +117,17 @@ export function assignToDeco(
 	method:   ASTNodeCollectionLiteral['assignTo'],
 	_context: ClassMethodDecoratorContext<ASTNodeCollectionLiteral, typeof method>,
 ): typeof method {
-	return function (this: ASTNodeCollectionLiteral, assignee, err) {
+	return function (this: ASTNodeCollectionLiteral, assignee) {
 		if (assignee instanceof TYPE.TypeIntersection) {
 			/* A value is assignable to a type intersection if and only if
 			it is assignable to all operands of that intersection. */
-			return xjs.Array.forEachAggregated(assignee.operands, (s) => this.assignTo(s, err));
+			return xjs.Array.forEachAggregated(assignee.operands, (s) => this.assignTo(s));
 		} else if (assignee instanceof TYPE.TypeUnion) {
 			/* A value is assignable to a type union if and only if
 			it is assignable to any operand of that union. */
-			return forEither(assignee.operands, (s) => this.assignTo(s, err));
+			return forEither(assignee.operands, (s) => this.assignTo(s));
 		} else {
-			return method.call(this, assignee, err);
+			return method.call(this, assignee);
 		}
 	};
 }
