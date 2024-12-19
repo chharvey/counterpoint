@@ -335,20 +335,50 @@ Boolean Equal(Object a, Object b) :=
 Attempt to assign a mutable collection literal to a mutable type when type-checking fails.
 This assignment is attempted on an entry-by-entry basis.
 ```
-None! AssignTo(Or<SemanticSet, SemanticMap> expr, Type type) :=
-	1. *If* `expr` is a SemanticSet *and* `type` is a Set type:
+None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
+	1. *If* `expr` is a SemanticTuple *and* `type` is a Tuple type:
+		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
+		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.
+		3. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
+		4. *If* `expr.children.count` is less than `seq_b_req.count`:
+			1. *Throw:* a new TypeErrorNotAssignable.
+		5. *For index* `i` in `seq_b`:
+			1. *If* `seq_b[i].optional` is `false`:
+				1. *Assert:* `expr.children[i]` is set.
+		6. *For index* `i` in `expr.children`:
+			1. Let `ib` be `seq_b[i]`.
+			2. *If:* `ib` is set:
+				1. *Perform:* `TypeCheckAssignment(expr.children[i], ib.type)`.
+		7. *Return.*
+	2. *If* `expr` is a SemanticRecord *and* `type` is a Record type:
+		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
+		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `type`.
+		3. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
+		4. *If* `expr.children.count` is less than `struct_b_req.count`:
+			1. *Throw:* a new TypeErrorNotAssignable.
+		5. *For key* `k` in `struct_b`:
+			1. *If* `struct_b[k].optional` is `false`:
+				1. Find a SemanticProperty `property` in `expr.children` such that `property.children.0.id` is `k`.
+				2. *If* `property` is not set:
+					1. *Throw:* a new TypeErrorNotAssignable.
+		6. *For each* `property` in `expr.children`:
+			1. Let `vb` be `struct_b[property.children.0.id]`.
+			2. *If:* `vb` is set:
+				1. *Perform:* `TypeCheckAssignment(property.children.1, vb.type)`.
+		7. *Return.*
+	3. *If* `expr` is a SemanticSet *and* `type` is a Set type:
 		1. *Let* `b_type` be the invariant over `type`.
 		2. *For each* `a_el` in `expr.children`:
 			1. *Perform:* `TypeCheckAssignment(a_el, b_type)`.
 		3. *Return.*
-	2. *If* `expr` is a SemanticMap *and* `type` is a Map type:
+	4. *If* `expr` is a SemanticMap *and* `type` is a Map type:
 		1. *Let* `b_ant_type` be the antecedent invariant over `type`.
 		2. *Let* `b_con_type` be the consequent invariant over `type`.
 		3. *For each* `a_case` in `expr.children`:
 			1. *Perform:* `TypeCheckAssignment(a_case.0, b_ant_type)`.
 			2. *Perform:* `TypeCheckAssignment(a_case.1, b_con_type)`.
 		4. *Return.*
-	3. *Throw:* a new TypeErrorNotAssignable.
+	5. *Throw:* a new TypeErrorNotAssignable.
 ;
 ```
 

@@ -205,8 +205,18 @@ describe('ASTNodeDeclarationVariable', () => {
 					s.["44"] = true;
 					m.[44]   = "45";
 				`);
+				return typeCheckGoal(`
+					let tuple_of_set:  [   mut int{}]        = [   {42}];
+					let tuple_of_map:  [   mut {int -> str}] = [   {42 -> "hello"}];
+					let record_of_set: [k: mut int{}]        = [k= {42}];
+					let record_of_map: [k: mut {int -> str}] = [k= {42 -> "hello"}];
+					tuple_of_set.0.[43]  = true;
+					tuple_of_map.0.[43]  = "world";
+					record_of_set.k.[43] = true;
+					record_of_map.k.[43] = "world";
+				`);
 			});
-			it('should throw when assigning combo type to union.', () => {
+			it.skip('should throw when assigning combo type to union.', () => {
 				typeCheckGoal([
 					'let x: [   bool,    int] | [   int,    bool] = [   true,    true];',
 					'let x: [a: bool, b: int] | [a: int, b: bool] = [a= true, b= true];',

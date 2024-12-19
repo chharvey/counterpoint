@@ -8,7 +8,7 @@ import {
 } from '../../index.js';
 import type {
 	ASTNodeExpression,
-	ASTNodeCollectionLiteralMutable,
+	ASTNodeCollectionLiteral,
 } from './index.js';
 
 
@@ -109,15 +109,15 @@ export function typeDeco(
 
 
 /**
- * Decorator for {@link ASTNodeCollectionLiteralMutable#assignTo} method and any overrides.
+ * Decorator for {@link ASTNodeCollectionLiteral#assignTo} method and any overrides.
  * Simplifies assignments by handling type operations.
- * @implements MethodDecorator<ASTNodeCollectionLiteralMutable, ASTNodeCollectionLiteralMutable['assignTo']>
+ * @implements MethodDecorator<ASTNodeCollectionLiteral, ASTNodeCollectionLiteral['assignTo']>
  */
 export function assignToDeco(
-	method:   ASTNodeCollectionLiteralMutable['assignTo'],
-	_context: ClassMethodDecoratorContext<ASTNodeCollectionLiteralMutable, typeof method>,
+	method:   ASTNodeCollectionLiteral['assignTo'],
+	_context: ClassMethodDecoratorContext<ASTNodeCollectionLiteral, typeof method>,
 ): typeof method {
-	return function (this: ASTNodeCollectionLiteralMutable, assignee, err) {
+	return function (this: ASTNodeCollectionLiteral, assignee, err) {
 		if (assignee instanceof TYPE.TypeIntersection) {
 			/* A value is assignable to a type intersection if and only if
 			it is assignable to all operands of that intersection. */

@@ -1,4 +1,8 @@
 import type binaryen from 'binaryen';
+import type {
+	TYPE,
+	TypeErrorNotAssignable,
+} from '../../index.js';
 import {memoizeMethod} from '../../lib/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import {buildDeco} from './decorators.js';
@@ -32,4 +36,14 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	public override build(): binaryen.ExpressionRef {
 		throw '`ASTNodeCollectionLiteral#build_do` not yet supported.';
 	}
+
+	/**
+	 * Determine whether this node may be assigned to the given type.
+	 * Note that it’s not sufficient to check whether this node’s `.type()` is a subtype of the assignee:
+	 * When we assign collection literals, we want to check entry by entry if typechecking fails.
+	 * @param  assignee                 the type to assign to
+	 * @param  err                      the original error, to be thrown if any further assignment fails
+	 * @throws {TypeErrorNotAssignable} if this node is not assignable to the assignee
+	 */
+	public abstract assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void;
 }
