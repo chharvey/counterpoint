@@ -21,11 +21,11 @@ import {
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteralMutable} from './ASTNodeCollectionLiteralMutable.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 
-export class ASTNodeMap extends ASTNodeCollectionLiteralMutable {
+export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeMap {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeMap);

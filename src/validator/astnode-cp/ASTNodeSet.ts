@@ -19,11 +19,11 @@ import {
 } from './decorators.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteralMutable} from './ASTNodeCollectionLiteralMutable.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 
-export class ASTNodeSet extends ASTNodeCollectionLiteralMutable {
+export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeSet {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeSet);

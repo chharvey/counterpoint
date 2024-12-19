@@ -27,19 +27,11 @@ import {
  * Known subclasses:
  * - Combinable
  * - TypeDifference
- * - TypeUnit
+ * - ValueType
  * - TypeInterface
- * - TypeNever
- * - TypeVoid
  * - TypeUnknown
  * - TypeObject
- * - TypeBoolean
- * - TypeInteger
- * - TypeFloat
- * - TypeString
  * - TypeObject
- * - TypeTuple
- * - TypeRecord
  * - TypeList
  * - TypeDict
  * - TypeSet
