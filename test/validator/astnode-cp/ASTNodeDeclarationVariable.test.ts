@@ -143,39 +143,26 @@ describe('ASTNodeDeclarationVariable', () => {
 				// otherwise one would access `s.["hello"]` or `m.["hello"]`
 			], TypeErrorNotAssignable);
 		});
-		context('assigning a collection to a constant collection type.', () => {
-			it('allows assigning a constant collection literal', () => {
-				typeCheckGoal(`
-					let c: int[3] = [42, 420, 4200];
-					let d: [n42: int, n420: int] = [
-						n42=  42,
-						n420= 420,
-					];
-				`);
-				typeCheckGoal(`
-					let v: [   int,    str] = [   42,    "hello"];
-					let s: [a: int, b: str] = [a= 42, b= "hello"];
-				`.split('\n'));
-			});
-			it('allows assigning a variable collection literal (unboxing at runtime).', () => {
-				typeCheckGoal([
-					'let g: int[3] = [42, 420, 4200];',
-					`let h: [n42: int, n420: int] = [
-						n42=  42,
-						n420= 420,
-					];`,
-				]);
-			});
-			it('allows assigning to super reference type (autoboxing at runtime).', () => {
-				typeCheckGoal(`
-					let v: unknown = [   42,    "hello"];
-					let s: unknown = [a= 42, b= "hello"];
-				`.split('\n'));
-				typeCheckGoal(`
-					let v: mut unknown = [   42,    "hello"];
-					let s: mut unknown = [a= 42, b= "hello"];
-				`.split('\n')); // mut unknown == unknown
-			});
+		it('assigning collection literals.', () => {
+			typeCheckGoal(`
+				let c: int[3] = [42, 420, 4200];
+				let d: [n42: int, n420: int] = [
+					n42=  42,
+					n420= 420,
+				];
+				let v: [   int,    str] = [   42,    "hello"];
+				let s: [a: int, b: str] = [a= 42, b= "hello"];
+			`);
+		});
+		it('allows assigning a collection literal to super reference type (autoboxing at runtime).', () => {
+			typeCheckGoal(`
+				let v: unknown = [   42,    "hello"];
+				let s: unknown = [a= 42, b= "hello"];
+			`);
+			typeCheckGoal(`
+				let v: mut unknown = [   42,    "hello"];
+				let s: mut unknown = [a= 42, b= "hello"];
+			`); // mut unknown == unknown
 		});
 		context('assigning a collection literal to a wider mutable type.', () => {
 			it('disallows assigning Tuples/Records to Lists/Dicts', () => {
