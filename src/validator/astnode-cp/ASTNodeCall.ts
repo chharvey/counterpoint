@@ -30,6 +30,8 @@ import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';
+import {ASTNodeTuple} from './ASTNodeTuple.js';
+import {ASTNodeRecord} from './ASTNodeRecord.js';
 
 
 
@@ -80,8 +82,12 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, returntype, this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : assert.fail(err as TypeErrorNotAssignable);
-						ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this);
+						if (this.exprargs[0] instanceof ASTNodeTuple) {
+							xjs.Array.forEachAggregated(this.exprargs[0].children, (item) => ASTNodeCP.assignExpression(item, itemtype, item));
+						} else {
+							const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : assert.fail(err as TypeErrorNotAssignable);
+							ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this);
+						}
 					}
 				}
 				return returntype.mutableOf();
@@ -95,8 +101,12 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, returntype, this);
 					} catch (err) {
-						const argvaluetype: TYPE.Type = (argtype instanceof TYPE.TypeRecord) ? argtype.valueTypes() : assert.fail(err as TypeErrorNotAssignable);
-						ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this);
+						if (this.exprargs[0] instanceof ASTNodeRecord) {
+							xjs.Array.forEachAggregated(this.exprargs[0].children, (prop) => ASTNodeCP.assignExpression(prop.val, valuetype, prop.val));
+						} else {
+							const argvaluetype: TYPE.Type = (argtype instanceof TYPE.TypeRecord) ? argtype.valueTypes() : assert.fail(err as TypeErrorNotAssignable);
+							ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this);
+						}
 					}
 				}
 				return returntype.mutableOf();
@@ -110,8 +120,12 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(eltype), this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : assert.fail(err as TypeErrorNotAssignable);
-						ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this);
+						if (this.exprargs[0] instanceof ASTNodeTuple) {
+							xjs.Array.forEachAggregated(this.exprargs[0].children, (item) => ASTNodeCP.assignExpression(item, eltype, item));
+						} else {
+							const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : assert.fail(err as TypeErrorNotAssignable);
+							ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this);
+						}
 					}
 				}
 				return returntype.mutableOf();
@@ -127,8 +141,12 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(entrytype), this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : assert.fail(err as TypeErrorNotAssignable);
-						ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this);
+						if (this.exprargs[0] instanceof ASTNodeTuple) {
+							xjs.Array.forEachAggregated(this.exprargs[0].children, (item) => ASTNodeCP.assignExpression(item, entrytype, item));
+						} else {
+							const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : assert.fail(err as TypeErrorNotAssignable);
+							ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this);
+						}
 					}
 				}
 				return returntype.mutableOf();
