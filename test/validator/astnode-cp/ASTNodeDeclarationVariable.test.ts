@@ -168,13 +168,13 @@ describe('ASTNodeDeclarationVariable', () => {
 			});
 			it('allows assigning to super reference type (autoboxing at runtime).', () => {
 				typeCheckGoal(`
-					let v: Object = [   42,    "hello"];
-					let s: Object = [a= 42, b= "hello"];
+					let v: unknown = [   42,    "hello"];
+					let s: unknown = [a= 42, b= "hello"];
 				`.split('\n'));
 				typeCheckGoal(`
-					let v: mut Object = [   42,    "hello"];
-					let s: mut Object = [a= 42, b= "hello"];
-				`.split('\n')); // mut Object == Object
+					let v: mut unknown = [   42,    "hello"];
+					let s: mut unknown = [a= 42, b= "hello"];
+				`.split('\n')); // mut unknown == unknown
 			});
 		});
 		context('assigning a collection literal to a wider mutable type.', () => {
@@ -265,10 +265,10 @@ describe('ASTNodeDeclarationVariable', () => {
 					let s: mut (int | str){} = {42 -> "43"};
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`
-					let t1: mut Object                = [42, "43"];
+					let t1: mut unknown               = [42, "43"];
 					let t4: mut ([int, str] | Object) = [42, "43"];
 
-					let r1: mut Object                      = [a= 42, b= "43"];
+					let r1: mut unknown                     = [a= 42, b= "43"];
 					let r4: mut ([a: int, b: str] | Object) = [a= 42, b= "43"];
 
 					let s1: mut (42 | 4.3){}            = {42};
