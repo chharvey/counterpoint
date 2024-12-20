@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
@@ -30,6 +29,8 @@ import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';
+import {ASTNodeTuple} from './ASTNodeTuple.js';
+import {ASTNodeRecord} from './ASTNodeRecord.js';
 
 
 
@@ -81,51 +82,117 @@ export class ASTNodeCall extends ASTNodeExpression {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
 		return (new Map<ValidFunctionName, () => TYPE.Type>([
+			/*
+			 * API:
+			 * ```cp
+			 * declare class List<T> {
+			 * 	new ();
+			 * 	new (tup0:  []);
+			 * 	new (tup1:  [T]);
+			 * 	new (tup2:  [T, T]);
+			 * 	new (tup:   unknown); % any tuple type with items of type T
+			 * 	new (list:  List.<T>);
+			 * }
+			 * ```
+			 */
 			[ValidFunctionName.LIST, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const itemtype:   TYPE.Type = this.typeargs[0].eval();
 				const returntype            = new TYPE.TypeList(itemtype);
 				if (this.exprargs.length) {
-					const argtype: TYPE.Type = this.exprargs[0].type();
+					const arg:     ASTNodeExpression = this.exprargs[0];
+					const argtype: TYPE.Type         = arg.type();
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, returntype, this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : assert.fail(err as TypeErrorNotAssignable);
-						ASTNodeCP.typeCheckAssignment(argitemtype, itemtype, this);
+						if (arg instanceof ASTNodeTuple) {
+							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.assignExpression(item, itemtype, item));
+						} else {
+							assert_instanceof(argtype, TYPE.TypeTuple, err as TypeErrorNotAssignable);
+							ASTNodeCP.typeCheckAssignment(argtype.itemTypes(), itemtype, this);
+						}
 					}
 				}
 				return returntype.mutableOf();
 			}],
+			/*
+			 * API:
+			 * ```cp
+			 * declare class Dict<T> {
+			 * 	new ();
+			 * 	new (recA:  [a: T]);
+			 * 	new (recAB: [a: T, b: T]);
+			 * 	new (rec:   unknown); % any record type with values of type T
+			 * 	new (dict:  Dict.<T>);
+			 * }
+			 * ```
+			 */
 			[ValidFunctionName.DICT, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const valuetype:  TYPE.Type = this.typeargs[0].eval();
 				const returntype            = new TYPE.TypeDict(valuetype);
 				if (this.exprargs.length) {
-					const argtype: TYPE.Type = this.exprargs[0].type();
+					const arg:     ASTNodeExpression = this.exprargs[0];
+					const argtype: TYPE.Type         = arg.type();
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, returntype, this);
 					} catch (err) {
-						const argvaluetype: TYPE.Type = (argtype instanceof TYPE.TypeRecord) ? argtype.valueTypes() : assert.fail(err as TypeErrorNotAssignable);
-						ASTNodeCP.typeCheckAssignment(argvaluetype, valuetype, this);
+						if (arg instanceof ASTNodeRecord) {
+							xjs.Array.forEachAggregated(arg.children, (prop) => ASTNodeCP.assignExpression(prop.val, valuetype, prop.val));
+						} else {
+							assert_instanceof(argtype, TYPE.TypeRecord, err as TypeErrorNotAssignable);
+							ASTNodeCP.typeCheckAssignment(argtype.valueTypes(), valuetype, this);
+						}
 					}
 				}
 				return returntype.mutableOf();
 			}],
+			/*
+			 * API:
+			 * ```cp
+			 * declare class Set<T> {
+			 * 	new ();
+			 * 	new (tup0:  []);
+			 * 	new (tup1:  [T]);
+			 * 	new (tup2:  [T, T]);
+			 * 	new (tup:   unknown); % any tuple type with items of type T
+			 * 	new (list:  List.<T>);
+			 * }
+			 * ```
+			 */
 			[ValidFunctionName.SET, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const eltype:     TYPE.Type = this.typeargs[0].eval();
 				const returntype            = new TYPE.TypeSet(eltype);
 				if (this.exprargs.length) {
-					const argtype: TYPE.Type = this.exprargs[0].type();
+					const arg:     ASTNodeExpression = this.exprargs[0];
+					const argtype: TYPE.Type         = arg.type();
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(eltype), this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : assert.fail(err as TypeErrorNotAssignable);
-						ASTNodeCP.typeCheckAssignment(argitemtype, eltype, this);
+						if (arg instanceof ASTNodeTuple) {
+							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.assignExpression(item, eltype, item));
+						} else {
+							assert_instanceof(argtype, TYPE.TypeTuple, err as TypeErrorNotAssignable);
+							ASTNodeCP.typeCheckAssignment(argtype.itemTypes(), eltype, this);
+						}
 					}
 				}
 				return returntype.mutableOf();
 			}],
+			/*
+			 * API:
+			 * ```cp
+			 * declare class Map<K, V> {
+			 * 	new ();
+			 * 	new (tup0:  []);
+			 * 	new (tup1:  [[K, V]]);
+			 * 	new (tup2:  [[K, V], [K, V]]);
+			 * 	new (tup:   unknown); % any tuple type with items of type [K, V]
+			 * 	new (list:  List.<[K, V]>);
+			 * }
+			 * ```
+			 */
 			[ValidFunctionName.MAP, () => {
 				this.countArgs([1n, 3n], [0n, 2n]);
 				const anttype:    TYPE.Type      = this.typeargs[0].eval();
@@ -133,12 +200,17 @@ export class ASTNodeCall extends ASTNodeExpression {
 				const returntype                 = new TYPE.TypeMap(anttype, contype);
 				const entrytype:  TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([anttype, contype]);
 				if (this.exprargs.length) {
-					const argtype: TYPE.Type = this.exprargs[0].type();
+					const arg:     ASTNodeExpression = this.exprargs[0];
+					const argtype: TYPE.Type         = arg.type();
 					try {
 						ASTNodeCP.typeCheckAssignment(argtype, new TYPE.TypeList(entrytype), this);
 					} catch (err) {
-						const argitemtype: TYPE.Type = (argtype instanceof TYPE.TypeTuple) ? argtype.itemTypes() : assert.fail(err as TypeErrorNotAssignable);
-						ASTNodeCP.typeCheckAssignment(argitemtype, entrytype, this);
+						if (arg instanceof ASTNodeTuple) {
+							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.assignExpression(item, entrytype, item));
+						} else {
+							assert_instanceof(argtype, TYPE.TypeTuple, err as TypeErrorNotAssignable);
+							ASTNodeCP.typeCheckAssignment(argtype.itemTypes(), entrytype, this);
+						}
 					}
 				}
 				return returntype.mutableOf();

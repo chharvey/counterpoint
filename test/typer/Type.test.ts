@@ -50,9 +50,6 @@ describe('Type', () => {
 	]));
 
 
-	it('false | true == bool', () => {
-		assert.ok(OBJ.Boolean.FALSETYPE.union(OBJ.Boolean.TRUETYPE).equals(TYPE.BOOL));
-	});
 	it('a type operation equaling to a built-in type returns that type by reference.', () => {
 		assert.strictEqual(TYPE.BOOL.intersect(TYPE.STR),                     TYPE.NEVER);
 		assert.strictEqual(TYPE.BOOL.union(TYPE.OBJ),                         TYPE.OBJ);
@@ -525,6 +522,15 @@ describe('Type', () => {
 			});
 		});
 
+		it('a subtype of a union need not be a subtype of any of that union’s constituents.', () => {
+			const left:  TYPE.Type = typeUnit(1n).union(typeUnit(2n));
+			const right: TYPE.Type = typeUnit(3n);
+			const sub:   TYPE.Type = typeUnit(2n).union(typeUnit(3n));
+			assert.ok(sub.isSubtypeOf(left.union(right)), '2 | 3  <:  (1 | 2) | 3');
+			assert.ok(!sub.isSubtypeOf(left),             '2 | 3  !<:  1 | 2');
+			assert.ok(!sub.isSubtypeOf(right),            '2 | 3  !<:  3');
+		});
+
 		describe('TypeUnit', () => {
 			it('unit Boolean types should be subtypes of `bool`.', () => {
 				assert.ok(OBJ.Boolean.FALSETYPE.isSubtypeOf(TYPE.BOOL), 'Boolean.FALSETYPE');
@@ -802,6 +808,20 @@ describe('Type', () => {
 					['qux', TYPE.INT.union(TYPE.FLOAT)],
 				])).isSubtypeOf(t0));
 			});
+		});
+	});
+
+
+	describe('#equals', () => {
+		it('bool == false | true', () => {
+			assert.ok(TYPE.BOOL.equals(OBJ.Boolean.FALSETYPE.union(OBJ.Boolean.TRUETYPE)));
+		});
+		it.skip('built-in types do not equal unit types of their canonical values.', () => {
+			assert.ok(!TYPE.BOOL  .equals(OBJ.Boolean.FALSETYPE), 'bool  != false');
+			assert.ok(!TYPE.BOOL  .equals(OBJ.Boolean.TRUETYPE),  'bool  != true');
+			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),          'int   != 0');
+			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)),         'float != 0.0');
+			assert.ok(!TYPE.STR   .equals(typeUnit('')),          'str   != ""');
 		});
 	});
 

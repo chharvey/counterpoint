@@ -3,6 +3,7 @@ import {
 	OBJ,
 	TYPE,
 	AssignmentErrorDuplicateKey,
+	TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	type NonemptyArray,
@@ -13,8 +14,13 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
+import type {TypeEntry} from '../../typer/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
-import {typeDeco} from './decorators.js';
+import {
+	typeDeco,
+	assignToDeco,
+} from './decorators.js';
+import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -65,5 +71,29 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
 			: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
+	}
+
+	@assignToDeco
+	public override assignTo(assignee: TYPE.Type): void {
+		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
+		if (assignee instanceof TYPE.TypeRecord) {
+			if (this.children.length < assignee.count[0]) {
+				throw err;
+			}
+			assignee.invariants.forEach((entry, key) => { // using `.forEach` to short-circuit
+				/* NOTE: We *cannot* assert the property exists since properties are not ordered.
+					We can however make the assertion in tuples because of item ordering. */
+				if (!entry.optional && !this.children.find((prop) => prop.key.id === key)) {
+					throw err;
+				}
+			});
+			return xjs.Array.forEachAggregated(this.children, (prop) => {
+				const thattype: TypeEntry | undefined = assignee.invariants.get(prop.key.id);
+				if (thattype) {
+					return ASTNodeCP.assignExpression(prop.val, thattype.type, prop);
+				}
+			});
+		}
+		throw err;
 	}
 }

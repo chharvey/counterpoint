@@ -110,8 +110,8 @@ Object! ValueOf(SemanticAccess access) :=
 				1. *Return:* `false`.
 		6. *Else:*
 			1. *Assert*: `base_value` is an instance of `Map`.
-			2. Find an antecedent `k` in `base_value` such that `Identical(k, accessor_value)`.
-			3. *If* `k` exists:
+			2. Find an antecedent `k` in `base_value` such that *UnwrapAffirm:* `Identical(k, accessor_value)`.
+			3. *If* `k` is set:
 				1. *Return:* the consequent accessed at antecedent `k` in `base_value`.
 			4. *If*: `access.kind` is `OPTIONAL`:
 				1. *Return:* `null`.

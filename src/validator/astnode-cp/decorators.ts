@@ -8,7 +8,7 @@ import {
 } from '../../index.js';
 import type {
 	ASTNodeExpression,
-	ASTNodeCollectionLiteralMutable,
+	ASTNodeCollectionLiteral,
 } from './index.js';
 
 
@@ -109,25 +109,25 @@ export function typeDeco(
 
 
 /**
- * Decorator for {@link ASTNodeCollectionLiteralMutable#assignTo} method and any overrides.
+ * Decorator for {@link ASTNodeCollectionLiteral#assignTo} method and any overrides.
  * Simplifies assignments by handling type operations.
- * @implements MethodDecorator<ASTNodeCollectionLiteralMutable, ASTNodeCollectionLiteralMutable['assignTo']>
+ * @implements MethodDecorator<ASTNodeCollectionLiteral, ASTNodeCollectionLiteral['assignTo']>
  */
 export function assignToDeco(
-	method:   ASTNodeCollectionLiteralMutable['assignTo'],
-	_context: ClassMethodDecoratorContext<ASTNodeCollectionLiteralMutable, typeof method>,
+	method:   ASTNodeCollectionLiteral['assignTo'],
+	_context: ClassMethodDecoratorContext<ASTNodeCollectionLiteral, typeof method>,
 ): typeof method {
-	return function (this: ASTNodeCollectionLiteralMutable, assignee, err) {
+	return function (this: ASTNodeCollectionLiteral, assignee) {
 		if (assignee instanceof TYPE.TypeIntersection) {
 			/* A value is assignable to a type intersection if and only if
 			it is assignable to all operands of that intersection. */
-			return xjs.Array.forEachAggregated(assignee.operands, (s) => this.assignTo(s, err));
+			return xjs.Array.forEachAggregated(assignee.operands, (s) => this.assignTo(s));
 		} else if (assignee instanceof TYPE.TypeUnion) {
 			/* A value is assignable to a type union if and only if
 			it is assignable to any operand of that union. */
-			return forEither(assignee.operands, (s) => this.assignTo(s, err));
+			return forEither(assignee.operands, (s) => this.assignTo(s));
 		} else {
-			return method.call(this, assignee, err);
+			return method.call(this, assignee);
 		}
 	};
 }

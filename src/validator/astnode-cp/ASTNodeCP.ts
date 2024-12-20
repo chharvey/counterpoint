@@ -10,7 +10,7 @@ import type {Validator} from '../Validator.js';
 import {ASTNode} from '../ASTNode.js';
 import {
 	type ASTNodeExpression,
-	ASTNodeCollectionLiteralMutable,
+	ASTNodeCollectionLiteral,
 } from './index.js';
 
 
@@ -93,8 +93,8 @@ export abstract class ASTNodeCP extends ASTNode {
 		try {
 			return ASTNodeCP.typeCheckAssignment(assigned.type(), assignee_type, node);
 		} catch (err) {
-			if (assigned instanceof ASTNodeCollectionLiteralMutable) {
-				return assigned.assignTo(assignee_type, err as TypeErrorNotAssignable);
+			if (assigned instanceof ASTNodeCollectionLiteral) {
+				return assigned.assignTo(assignee_type);
 			} else {
 				throw err;
 			}
