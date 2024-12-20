@@ -50,9 +50,6 @@ describe('Type', () => {
 	]));
 
 
-	it('false | true == bool', () => {
-		assert.ok(OBJ.Boolean.FALSETYPE.union(OBJ.Boolean.TRUETYPE).equals(TYPE.BOOL));
-	});
 	it('a type operation equaling to a built-in type returns that type by reference.', () => {
 		assert.strictEqual(TYPE.BOOL.intersect(TYPE.STR),                     TYPE.NEVER);
 		assert.strictEqual(TYPE.BOOL.union(TYPE.OBJ),                         TYPE.OBJ);
@@ -811,6 +808,20 @@ describe('Type', () => {
 					['qux', TYPE.INT.union(TYPE.FLOAT)],
 				])).isSubtypeOf(t0));
 			});
+		});
+	});
+
+
+	describe('#equals', () => {
+		it('bool == false | true', () => {
+			assert.ok(TYPE.BOOL.equals(OBJ.Boolean.FALSETYPE.union(OBJ.Boolean.TRUETYPE)));
+		});
+		it.skip('built-in types do not equal unit types of their canonical values.', () => {
+			assert.ok(!TYPE.BOOL  .equals(OBJ.Boolean.FALSETYPE), 'bool  != false');
+			assert.ok(!TYPE.BOOL  .equals(OBJ.Boolean.TRUETYPE),  'bool  != true');
+			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),          'int   != 0');
+			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)),         'float != 0.0');
+			assert.ok(!TYPE.STR   .equals(typeUnit('')),          'str   != ""');
 		});
 	});
 
