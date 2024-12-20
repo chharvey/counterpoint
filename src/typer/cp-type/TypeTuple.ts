@@ -13,10 +13,7 @@ import type {
 import type {TypeEntry} from '../utils-public.js';
 import * as OBJ from '../cp-object/index.js';
 import {updateAccessedStaticType} from './utils-private.js';
-import {
-	subtypeDeco,
-	referenceSubtypeDeco,
-} from './decorators.js';
+import {subtypeDeco} from './decorators.js';
 import type {Type} from './Type.js';
 import {TypeUnion} from './TypeUnion.js';
 import {ValueType} from './ValueType.js';
@@ -72,7 +69,6 @@ export class TypeTuple extends ValueType {
 	@strictEqual
 	@memoizeBinOp()
 	@subtypeDeco
-	@referenceSubtypeDeco
 	@instanceOf(() => TypeTuple)
 	public override isSubtypeOf(t: Type): boolean {
 		return (

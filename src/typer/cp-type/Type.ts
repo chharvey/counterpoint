@@ -190,7 +190,7 @@ export abstract class Type {
 	@memoizeBinOp()
 	@subtypeDeco
 	public isSubtypeOf(t: Type): boolean {
-		return !this.isBottomType && !!this.values.size && // these checks are needed in cases of `Object` and `void`, which don’t store values
+		return !this.isBottomType && !!this.values.size && // these checks are needed in cases of `void`, which doesn’t store values
 			[...this.values].every((v) => t.includes(v));
 	}
 

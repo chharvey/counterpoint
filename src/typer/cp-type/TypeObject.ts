@@ -18,14 +18,6 @@ export class TypeObject extends Type {
 
 	private constructor() {
 		super(false, new Set([
-			OBJ.Null.NULL,
-			OBJ.Boolean.FALSE,
-			OBJ.Boolean.TRUE,
-			OBJ.Integer.ZERO,
-			new OBJ.Float(0.0),
-			new OBJ.String(''),
-			new OBJ.Tuple(),
-			new OBJ.Record(),
 			new OBJ.List(),
 			new OBJ.Dict(),
 			new OBJ.Set(),
@@ -37,8 +29,13 @@ export class TypeObject extends Type {
 		return 'Object';
 	}
 
-	public override includes(_v: OBJ.Object): boolean {
-		return true;
+	public override includes(v: OBJ.Object): boolean {
+		return (
+			v instanceof OBJ.List ||
+			v instanceof OBJ.Dict ||
+			v instanceof OBJ.Set  ||
+			v instanceof OBJ.Map
+		);
 	}
 
 	@strictEqual

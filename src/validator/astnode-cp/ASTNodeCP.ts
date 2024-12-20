@@ -45,6 +45,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	): void {
 		if (
 			!assigned_type.isSubtypeOf(assignee_type) &&
+			!assignee_type.equals(TYPE.OBJ) && // runtime autoboxing allows assigning value types to `Object`
 			!( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
 				// is int treated as a subtype of float?
 				node.validator.config.compilerOptions.intCoercion &&

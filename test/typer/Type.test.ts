@@ -38,21 +38,11 @@ describe('Type', () => {
 		TYPE.FLOAT,
 		TYPE.STR,
 	];
-	const t0 = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
-		['foo', TYPE.OBJ],
-		['bar', TYPE.NULL],
-		['diz', TYPE.BOOL],
-	]));
-	const t1 = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
-		['foo', TYPE.OBJ],
-		['qux', TYPE.INT.union(TYPE.FLOAT)],
-		['diz', TYPE.STR],
-	]));
 
 
 	it('a type operation equaling to a built-in type returns that type by reference.', () => {
 		assert.strictEqual(TYPE.BOOL.intersect(TYPE.STR),                     TYPE.NEVER);
-		assert.strictEqual(TYPE.BOOL.union(TYPE.OBJ),                         TYPE.OBJ);
+		assert.strictEqual(TYPE.BOOL.union(TYPE.UNKNOWN),                     TYPE.UNKNOWN);
 		assert.strictEqual(OBJ.Boolean.FALSETYPE.union(OBJ.Boolean.TRUETYPE), TYPE.BOOL);
 	});
 
@@ -121,7 +111,6 @@ describe('Type', () => {
 		it('unions of falsy types are not definitely truthy.', () => {
 			[
 				TYPE.UNKNOWN,
-				TYPE.OBJ,
 				TYPE.BOOL,
 				TYPE.VOID.union(TYPE.INT),
 				TYPE.NULL.union(TYPE.FLOAT),
@@ -136,6 +125,21 @@ describe('Type', () => {
 				TYPE.STR,
 			].forEach((t) => assert.ok(t.isDefinitelyTruthy(), `Expected \`${ t }\` to be definitely truthy.`));
 		});
+		it('compound value types are definitely truthy.', () => {
+			[
+				TYPE.TypeTuple.fromTypes(),
+				TYPE.TypeRecord.fromTypes(new Map([[0x100n, TYPE.INT]])),
+			].forEach((t) => assert.ok(t.isDefinitelyTruthy(), `Expected \`${ t }\` to be definitely truthy.`));
+		});
+		it('reference types are definitely truthy.', () => {
+			[
+				TYPE.OBJ,
+				new TYPE.TypeList(TYPE.INT),
+				new TYPE.TypeDict(TYPE.INT),
+				new TYPE.TypeSet(TYPE.INT),
+				new TYPE.TypeMap(TYPE.INT, TYPE.INT),
+			].forEach((t) => assert.ok(t.isDefinitelyTruthy(), `Expected \`${ t }\` to be definitely truthy.`));
+		});
 	});
 
 
@@ -145,7 +149,7 @@ describe('Type', () => {
 			[TYPE.NEVER,   TYPE.NEVER],
 			[TYPE.UNKNOWN, TYPE.VOID.union(TYPE.NULL).union(FALSE)],
 			[TYPE.VOID,    TYPE.VOID],
-			[TYPE.OBJ,     TYPE.NULL.union(FALSE)],
+			[TYPE.OBJ,     TYPE.NEVER],
 			[TYPE.NULL,    TYPE.NULL],
 			[TYPE.BOOL,    FALSE],
 			[TYPE.INT,     TYPE.NEVER],
@@ -554,12 +558,12 @@ describe('Type', () => {
 		});
 
 		describe('TypeTuple', () => {
-			it('is a subtype but not a supertype of `Object`.', () => {
-				assert.ok(TYPE.TypeTuple.fromTypes([
+			it('is neither a subtype nor a supertype of `Object`.', () => {
+				assert.ok(!TYPE.TypeTuple.fromTypes([
 					TYPE.INT,
 					TYPE.BOOL,
 					TYPE.STR,
-				]).isSubtypeOf(TYPE.OBJ), '[int, bool, str] <: Object;');
+				]).isSubtypeOf(TYPE.OBJ), '[int, bool, str] !<: Object;');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(TYPE.TypeTuple.fromTypes([
 					TYPE.INT,
 					TYPE.BOOL,
@@ -574,8 +578,8 @@ describe('Type', () => {
 				]).isSubtypeOf(TYPE.TypeTuple.fromTypes([
 					TYPE.INT.union(TYPE.FLOAT),
 					TYPE.BOOL.union(TYPE.NULL),
-					TYPE.OBJ,
-				])), '[int, bool, str] <: [int | float, bool?, Object];');
+					TYPE.UNKNOWN,
+				])), '[int, bool, str] <: [int | float, bool?, unknown];');
 				assert.ok(!TYPE.TypeTuple.fromTypes([
 					TYPE.INT,
 					TYPE.BOOL,
@@ -641,12 +645,12 @@ describe('Type', () => {
 		});
 
 		describe('TypeRecord', () => {
-			it('is a subtype but not a supertype of `Object`.', () => {
-				assert.ok(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+			it('is neither a subtype nor a supertype of `Object`.', () => {
+				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT],
 					[0x101n, TYPE.BOOL],
 					[0x102n, TYPE.STR],
-				])).isSubtypeOf(TYPE.OBJ), '[x: int, y: bool, z: str] <: Object;');
+				])).isSubtypeOf(TYPE.OBJ), '[x: int, y: bool, z: str] !<: Object;');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT],
 					[0x101n, TYPE.BOOL],
@@ -660,9 +664,9 @@ describe('Type', () => {
 					[0x102n, TYPE.STR],
 				])).isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
-					[0x102n, TYPE.OBJ],
+					[0x102n, TYPE.UNKNOWN],
 					[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] <: [y: bool!, z: Object, x: int | float];');
+				]))), '[x: int, y: bool, z: str] <: [y: bool!, z: unknown, x: int | float];');
 				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT],
 					[0x101n, TYPE.BOOL],
@@ -799,12 +803,22 @@ describe('Type', () => {
 
 		describe('TypeInterface', () => {
 			it('returns `true` if the subtype contains at least the properties of the supertype.', () => {
+				const t0 = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
+					['foo', TYPE.OBJ],
+					['bar', TYPE.NULL],
+					['diz', TYPE.BOOL],
+				]));
+				const t1 = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
+					['foo', TYPE.OBJ],
+					['qux', TYPE.INT.union(TYPE.FLOAT)],
+					['diz', TYPE.STR],
+				]));
 				assert.ok(!t0.isSubtypeOf(t1));
 				assert.ok(!t1.isSubtypeOf(t0));
 				assert.ok(new TYPE.TypeInterface(new Map<string, TYPE.Type>([
-					['foo', TYPE.STR],
+					['foo', TYPE.OBJ],
 					['bar', TYPE.NULL],
-					['diz', TYPE.BOOL],
+					['diz', OBJ.Boolean.TRUETYPE],
 					['qux', TYPE.INT.union(TYPE.FLOAT)],
 				])).isSubtypeOf(t0));
 			});
