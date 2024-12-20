@@ -2,7 +2,7 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type TypeErrorNotAssignable,
+	TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	type NonemptyArray,
@@ -21,11 +21,11 @@ import {
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteralMutable} from './ASTNodeCollectionLiteralMutable.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 
-export class ASTNodeMap extends ASTNodeCollectionLiteralMutable {
+export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeMap {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeMap);
@@ -61,7 +61,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteralMutable {
 	}
 
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
+	public override assignTo(assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.TypeMap) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant_{ant,con}`
 			return xjs.Array.forEachAggregated(this.children, (case_) => (
@@ -70,6 +70,6 @@ export class ASTNodeMap extends ASTNodeCollectionLiteralMutable {
 				))
 			));
 		}
-		throw err;
+		throw new TypeErrorNotAssignable(this.type(), assignee, this);
 	}
 }

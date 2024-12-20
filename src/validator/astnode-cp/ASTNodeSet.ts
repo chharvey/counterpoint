@@ -2,7 +2,7 @@ import * as xjs from 'extrajs';
 import {
 	OBJ,
 	TYPE,
-	type TypeErrorNotAssignable,
+	TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -19,11 +19,11 @@ import {
 } from './decorators.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteralMutable} from './ASTNodeCollectionLiteralMutable.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 
-export class ASTNodeSet extends ASTNodeCollectionLiteralMutable {
+export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeSet {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeSet);
@@ -55,11 +55,11 @@ export class ASTNodeSet extends ASTNodeCollectionLiteralMutable {
 	}
 
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
+	public override assignTo(assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.TypeSet) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant`
 			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.assignExpression(expr, assignee.invariant, expr));
 		}
-		throw err;
+		throw new TypeErrorNotAssignable(this.type(), assignee, this);
 	}
 }

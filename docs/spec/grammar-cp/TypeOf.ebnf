@@ -49,12 +49,12 @@ Type! TypeOfUnfolded(SemanticTuple tuple) :=
 Type! TypeOfUnfolded(SemanticRecord record) :=
 	1. *Let* `data` be a new Structure.
 	2. *For each* `property` in `record`:
-		1. *Assert:* `propertytype.children.count` is 2.
+		1. *Assert:* `property.children.count` is 2.
 		2. *Let* `typedatum` be a new EntryTypeStructure [
 			type=     *Unwrap:* `TypeOf(property.children.1)`,
 			optional= `false`,
 		].
-		3. Set the property `propertytype.children.0.id` on `data` to the value `typedatum`.
+		3. Set the property `property.children.0.id` on `data` to the value `typedatum`.
 	3. *Return:* a new Record type containing the properties in `data`.
 ;
 
@@ -177,31 +177,42 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 					1. *Let* `returntype` be a Set type whose elements’ type is `genericarg`.
 				5. *If* `call.children.count` is 3:
 					1. *If* `call.children.2` is a SemanticExpression:
-						1. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.2)`.
-						2. *If* `base.source` is "List":
+						1. *Let* `arg` be `call.children.2`.
+						2. *Let* `argtype` be *Unwrap:* `TypeOf(arg)`.
+						3. *If* `base.source` is "List":
 							1. *If* *UnwrapAffirm:* `Subtype(argtype, returntype)` is `false`:
-								1. *If* `argtype` is a Tuple type:
+								1. *If* `arg` is a SemanticTuple:
+									1. *For each* `item` in `arg`:
+										1. *Perform:* *Unwrap:* `TypeCheckAssignment(item, genericarg)`.
+								2. *Else If* `argtype` is a Tuple type:
 									1. *Let* `items` be the union of all item types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
 										1. *Throw:* a new TypeErrorNotAssignable.
-								2. *Else*:
+								3. *Else*:
 									1. *Throw:* a new TypeErrorNotAssignable.
-						3. *Else If* `base.source` is "Dict":
+						4. *Else If* `base.source` is "Dict":
 							1. *If* *UnwrapAffirm:* `Subtype(argtype, returntype)` is `false`:
-								1. *If* `argtype` is a Record type:
+								1. *If* `arg` is a SemanticRecord:
+									1. *For each* `prop` in `arg`:
+										1. *Assert:* `prop.children.count` is 2.
+										2. *Perform:* *Unwrap:* `TypeCheckAssignment(prop.children.1, genericarg)`.
+								2. *Else If* `argtype` is a Record type:
 									1. *Let* `values` be the union of all value types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(values, genericarg)` is `false`:
 										1. *Throw:* a new TypeErrorNotAssignable.
-								2. *Else*:
+								3. *Else*:
 									1. *Throw:* a new TypeErrorNotAssignable.
-						4. *Else If* `base.source` is "Set":
+						5. *Else If* `base.source` is "Set":
 							1. *Let* `listtype` be a List type whose items’ type is `genericarg`.
 							2. *If* *UnwrapAffirm:* `Subtype(argtype, listtype)` is `false`:
-								1. *If* `argtype` is a Tuple type:
+								1. *If* `arg` is a SemanticTuple:
+									1. *For each* `item` in `arg`:
+										1. *Perform:* *Unwrap:* `TypeCheckAssignment(item, genericarg)`.
+								2. *Else If* `argtype` is a Tuple type:
 									1. *Let* `items` be the union of all item types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
 										1. *Throw:* a new TypeErrorNotAssignable.
-								2. *Else*:
+								3. *Else*:
 									1. *Throw:* a new TypeErrorNotAssignable.
 					2. *Else*:
 						1. *Throw:* a new TypeErrorArgCount.
@@ -222,13 +233,15 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						1. *Assert:* `call.children.2` is a SemanticExpression.
 						2. *Note:* The call looks like "Map.<K>(arg)".
 						3. *Let* `consequenttype` be `antecedenttype`.
-						4. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.2)`.
+						4. *Let* `arg` be `call.children.2`.
+						5. *Let* `argtype` be *Unwrap:* `TypeOf(arg)`.
 				4. *Else:*
 					1. *Assert:* `call.children.count` is 4.
 					2. *If* `call.children.2` is a SemanticType *and* `call.children.3` is a SemanticExpression:
 						1. *Note:* The call looks like "Map.<K, V>(arg)".
 						2. *Let* `consequenttype` be *UnwrapAffirm:* `TypeValueOf(call.children.2)`.
-						3. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.3)`.
+						3. *Let* `arg` be `call.children.3`.
+						4. *Let* `argtype` be *Unwrap:* `TypeOf(arg)`.
 					3. *Else:*
 						1. *Throw:* a new TypeErrorArgCount.
 				5. *Let:* `entrytype` be a Tuple type containing the items in the Sequence [
@@ -237,11 +250,14 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 				].
 				6. *Let*: `paramtype` be a List type whose items’ type is `entrytype`.
 				7. *If*: `argtype` is set *and* *UnwrapAffirm:* `Subtype(argtype, paramtype)` is `false`:
-					1. *If* `argtype` is a Tuple type:
+					1. *If* `arg` is a SemanticTuple:
+						1. *For each* `item` in `arg`:
+							1. *Perform:* *Unwrap:* `TypeCheckAssignment(item, entrytype)`.
+					2. *Else If* `argtype` is a Tuple type:
 						1. *Let* `items` be the union of all item types in `argtype`.
 						2. *If* *UnwrapAffirm:* `Subtype(items, entrytype)` is `false`:
 							1. *Throw:* a new TypeErrorNotAssignable.
-					2. *Else*:
+					3. *Else*:
 						1. *Throw:* a new TypeErrorNotAssignable.
 				8. *Return:* a mutable Map type whose antecedents’ type is `antecedenttype`
 					and whose consequents’ type is `consequenttype`.

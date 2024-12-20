@@ -551,7 +551,7 @@ Boolean Subtype(Type a, Type b) :=
 			1. *If* `seq_b[i].optional` is `false`:
 				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
 			2. *If* `seq_a[i]` is set:
-				1. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
+				1. *If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
 					1. *Return:* `false`.
 		7. *Return:* `true`.
 	11. *If* `a` is a Record type *and* `b` is a Record type:
@@ -566,7 +566,7 @@ Boolean Subtype(Type a, Type b) :=
 				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
 					1. *Return:* `false`.
 			2. *If* `struct_a[k]` is set:
-				1. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
+				1. *If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 					1. *Return:* `false`.
 		7. *Return:* `true`.
 	12. *If* `a` is a List type *and* `b` is a List type:
