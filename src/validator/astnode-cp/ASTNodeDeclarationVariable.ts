@@ -55,7 +55,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public override typeCheck(): void {
 		this.assigned.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode.eval();
-		ASTNodeCP.assignExpression(this.assigned, assignee_type, this);
+		ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
 		if (this.assignee) {
 			const value: OBJ.Object | null = this.assigned.fold(); // fold first before checking, to rethrow any errors
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);

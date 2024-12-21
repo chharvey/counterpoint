@@ -81,7 +81,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 				const thattype: TypeEntry | undefined = assignee.invariants[i];
 				if (thattype) {
-					return ASTNodeCP.assignExpression(expr, thattype.type, expr);
+					return ASTNodeCP.typeCheckAssign(expr, thattype.type, expr);
 				}
 				/* eslint-enable @typescript-eslint/no-unnecessary-condition */
 			});

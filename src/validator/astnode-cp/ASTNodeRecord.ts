@@ -90,7 +90,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			return xjs.Array.forEachAggregated(this.children, (prop) => {
 				const thattype: TypeEntry | undefined = assignee.invariants.get(prop.key.id);
 				if (thattype) {
-					return ASTNodeCP.assignExpression(prop.val, thattype.type, prop);
+					return ASTNodeCP.typeCheckAssign(prop.val, thattype.type, prop);
 				}
 			});
 		}

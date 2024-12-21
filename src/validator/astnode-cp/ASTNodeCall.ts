@@ -91,16 +91,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
-						ASTNodeCP.assignExpression(arg, returntype, this);
+						ASTNodeCP.typeCheckAssign(arg, returntype, this);
 					} catch (err) {
 						if (arg instanceof ASTNodeTuple) {
-							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.assignExpression(item, itemtype, item));
+							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, itemtype, item));
 						} else {
 							const argtype: TYPE.Type = arg.type();
 							if (!(argtype instanceof TYPE.TypeTuple)) {
 								throw err;
 							}
-							ASTNodeCP.typeCheckAssignment(argtype.itemTypes(), itemtype, this);
+							ASTNodeCP.checkSubtype(argtype.itemTypes(), itemtype, this);
 						}
 					}
 				}
@@ -125,16 +125,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
-						ASTNodeCP.assignExpression(arg, returntype, this);
+						ASTNodeCP.typeCheckAssign(arg, returntype, this);
 					} catch (err) {
 						if (arg instanceof ASTNodeRecord) {
-							xjs.Array.forEachAggregated(arg.children, (prop) => ASTNodeCP.assignExpression(prop.val, valuetype, prop.val));
+							xjs.Array.forEachAggregated(arg.children, (prop) => ASTNodeCP.typeCheckAssign(prop.val, valuetype, prop.val));
 						} else {
 							const argtype: TYPE.Type = arg.type();
 							if (!(argtype instanceof TYPE.TypeRecord)) {
 								throw err;
 							}
-							ASTNodeCP.typeCheckAssignment(argtype.valueTypes(), valuetype, this);
+							ASTNodeCP.checkSubtype(argtype.valueTypes(), valuetype, this);
 						}
 					}
 				}
@@ -160,16 +160,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
-						ASTNodeCP.assignExpression(arg, new TYPE.TypeList(eltype), this);
+						ASTNodeCP.typeCheckAssign(arg, new TYPE.TypeList(eltype), this);
 					} catch (err) {
 						if (arg instanceof ASTNodeTuple) {
-							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.assignExpression(item, eltype, item));
+							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, eltype, item));
 						} else {
 							const argtype: TYPE.Type = arg.type();
 							if (!(argtype instanceof TYPE.TypeTuple)) {
 								throw err;
 							}
-							ASTNodeCP.typeCheckAssignment(argtype.itemTypes(), eltype, this);
+							ASTNodeCP.checkSubtype(argtype.itemTypes(), eltype, this);
 						}
 					}
 				}
@@ -197,16 +197,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
-						ASTNodeCP.assignExpression(arg, new TYPE.TypeList(entrytype), this);
+						ASTNodeCP.typeCheckAssign(arg, new TYPE.TypeList(entrytype), this);
 					} catch (err) {
 						if (arg instanceof ASTNodeTuple) {
-							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.assignExpression(item, entrytype, item));
+							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, entrytype, item));
 						} else {
 							const argtype: TYPE.Type = arg.type();
 							if (!(argtype instanceof TYPE.TypeTuple)) {
 								throw err;
 							}
-							ASTNodeCP.typeCheckAssignment(argtype.itemTypes(), entrytype, this);
+							ASTNodeCP.checkSubtype(argtype.itemTypes(), entrytype, this);
 						}
 					}
 				}
