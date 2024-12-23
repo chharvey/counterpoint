@@ -58,7 +58,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	public override assignTo(assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.TypeSet) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant`
-			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.assignExpression(expr, assignee.invariant, expr));
+			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssign(expr, assignee.invariant, expr));
 		}
 		throw new TypeErrorNotAssignable(this.type(), assignee, this);
 	}

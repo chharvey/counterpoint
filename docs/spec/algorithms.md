@@ -348,7 +348,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 		6. *For index* `i` in `expr.children`:
 			1. Let `ib` be `seq_b[i]`.
 			2. *If:* `ib` is set:
-				1. *Perform:* `TypeCheckAssignment(expr.children[i], ib.type)`.
+				1. *Perform:* `TypeCheckAssign(expr.children[i], ib.type)`.
 		7. *Return.*
 	2. *If* `expr` is a SemanticRecord *and* `type` is a Record type:
 		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
@@ -364,19 +364,19 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 		6. *For each* `property` in `expr.children`:
 			1. Let `vb` be `struct_b[property.children.0.id]`.
 			2. *If:* `vb` is set:
-				1. *Perform:* `TypeCheckAssignment(property.children.1, vb.type)`.
+				1. *Perform:* `TypeCheckAssign(property.children.1, vb.type)`.
 		7. *Return.*
 	3. *If* `expr` is a SemanticSet *and* `type` is a Set type:
 		1. *Let* `b_type` be the invariant over `type`.
 		2. *For each* `a_el` in `expr.children`:
-			1. *Perform:* `TypeCheckAssignment(a_el, b_type)`.
+			1. *Perform:* `TypeCheckAssign(a_el, b_type)`.
 		3. *Return.*
 	4. *If* `expr` is a SemanticMap *and* `type` is a Map type:
 		1. *Let* `b_ant_type` be the antecedent invariant over `type`.
 		2. *Let* `b_con_type` be the consequent invariant over `type`.
 		3. *For each* `a_case` in `expr.children`:
-			1. *Perform:* `TypeCheckAssignment(a_case.0, b_ant_type)`.
-			2. *Perform:* `TypeCheckAssignment(a_case.1, b_con_type)`.
+			1. *Perform:* `TypeCheckAssign(a_case.0, b_ant_type)`.
+			2. *Perform:* `TypeCheckAssign(a_case.1, b_con_type)`.
 		4. *Return.*
 	5. *Throw:* a new TypeErrorNotAssignable.
 ;

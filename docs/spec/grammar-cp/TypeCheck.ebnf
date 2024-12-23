@@ -51,7 +51,7 @@ None! TypeCheck(SemanticDeclarationVariable decl) :=
 	4. *Perform:* *UnwrapAffirm:* `TypeCheck(assigned)`.
 	5. *Let* `assignee_type` be *UnwrapAffirm:* `TypeValueOf(typenode)`.
 	6. *Let* `assigned_type` be *Unwrap:* `TypeOf(assigned)`.
-	7. *Perform:* *Unwrap:* `TypeCheckAssignment(assigned_type, assignee_type)`.
+	7. *Perform:* *Unwrap:* `TypeCheckAssign(assigned_type, assignee_type)`.
 	8. *If* `assignee` is set:
 		1. *Let* `value` be *Unwrap:* `ValueOf(assigned)`.
 		2. *Assert:* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `assignee.id`:
@@ -74,12 +74,12 @@ None! TypeCheck(SemanticAssignment assignment) :=
 		2. *If* `base_type` is not mutable:
 			1. *Throw:* a new MutabilityError01.
 	6. *Let* `assignee_type` be *Unwrap:* `TypeOf(assignee)`.
-	7. *Return:* `TypeCheckAssignment(assignment.children.1, assignee_type)`.
+	7. *Return:* `TypeCheckAssign(assignment.children.1, assignee_type)`.
 ;
 
 
 
-None! TypeCheckAssignment(SemanticExpression assigned, Type assignee_type) :=
+None! TypeCheckAssign(SemanticExpression assigned, Type assignee_type) :=
 	1. *Let* `assigned_type` be *Unwrap:* `TypeOf(assigned)`.
 	2. *If* *UnwrapAffirm:* `Subtype(assigned_type, assignee_type)` is `false`:
 		1. *If* `assigned` is a SemanticCollectionLiteral:
