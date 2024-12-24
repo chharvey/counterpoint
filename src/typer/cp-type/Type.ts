@@ -4,7 +4,7 @@ import {
 	memoizeBinOp,
 } from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import * as VALUE from '../cp-object/index.js';
+import * as VALUE from '../cp-value/index.js';
 import {
 	TypeIntersection,
 	TypeUnion,

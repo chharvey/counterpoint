@@ -3,7 +3,7 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import * as VALUE from '../cp-object/index.js';
+import * as VALUE from '../cp-value/index.js';
 import {MUT_OPERATOR} from './utils-private.js';
 import {
 	subtypeDeco,

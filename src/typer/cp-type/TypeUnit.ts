@@ -2,7 +2,7 @@ import {
 	strictEqual,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import type * as VALUE from '../cp-object/index.js';
+import type * as VALUE from '../cp-value/index.js';
 import {subtypeDeco} from './decorators.js';
 import type {Type} from './Type.js';
 import {ValueType} from './ValueType.js';

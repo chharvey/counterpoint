@@ -11,7 +11,7 @@ import type {
 	AST,
 } from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
-import * as VALUE from '../cp-object/index.js';
+import * as VALUE from '../cp-value/index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {subtypeDeco} from './decorators.js';
 import type {Type} from './Type.js';

@@ -1,4 +1,4 @@
-import type * as VALUE from '../cp-object/index.js';
+import type * as VALUE from '../cp-value/index.js';
 import {Type} from './Type.js';
 
 

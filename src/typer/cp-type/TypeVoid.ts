@@ -2,7 +2,7 @@ import {
 	strictEqual,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import type * as VALUE from '../cp-object/index.js';
+import type * as VALUE from '../cp-value/index.js';
 import {NEVER} from './index.js';
 import {
 	intersectDeco,

@@ -1,5 +1,5 @@
 import {instanceOf} from '../../lib/decorators.js';
-import * as VALUE from '../cp-object/index.js';
+import * as VALUE from '../cp-value/index.js';
 import {ValueType} from './ValueType.js';
 
 
