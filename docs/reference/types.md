@@ -4,7 +4,7 @@ This chapter describes types of values in the Counterpoint Programming Language.
 Counterpoint is a strongly-typed language, meaning that types of values are determined at compile-time.
 A strong type system can help prevent many runtime errors.
 
-Counterpoint Language Types are described in the [formal specification](../spec/data-types.md#counterpoint-language-types).
+Counterpoint Language Types are described in the [formal specification](../spec/types-values.md#counterpoint-language-types).
 This reference takes a more informative approach.
 
 

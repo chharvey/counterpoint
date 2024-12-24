@@ -29,14 +29,14 @@ but placeholders for such types.
 
 
 ### Counterpoint Specification Values
-[Counterpoint Specification Values](./data-types.md#counterpoint-specification-types) are indicated with an *italic typeface*.
+[Counterpoint Specification Values](./types-values.md#counterpoint-specification-types) are indicated with an *italic typeface*.
 For instance, a sequence of real numbers can be written as *[2, 4, 6]*.
 
 #### Sequences
 Sequences are denoted within square brackets (**U+005B**, **U+005D**), with comma-separated (**U+002C**) entries.
 The notation *[`1685`, `"Bach"`]* represents a sequence containing two items:
-the [Integer](./data-types.md#integer) representing the real number *1685*,
-and the [String value](./data-types.md#string) `"Bach"`.
+the [Integer](./types-values.md#integer) representing the real number *1685*,
+and the [String value](./types-values.md#string) `"Bach"`.
 
 Fixed entries of a sequence may be accessed using 0-origin dot notation (**U+002E**).
 If the example sequence above were assigned to the specification variable \`bach\`,
@@ -57,7 +57,7 @@ then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which
 
 
 ### Counterpoint Language Values
-[Counterpoint Language Values](./data-types.md#counterpoint-language-types) are displayed with a `monospace typeface`.
+[Counterpoint Language Values](./types-values.md#counterpoint-language-types) are displayed with a `monospace typeface`.
 Examples include `true`, `42.0`, and `"hello"`.
 There is no notational distinction between Counterpoint Language Values and longer code snippets
 such as `let n: int = 42;`; however, the semantics will be apparent in context.
@@ -896,7 +896,7 @@ In an attribute grammar, attributes are defined on nodes of a parse tree via the
 of a context-free grammar.
 In this specification, attributes are “synthesized” and thus propagate in a bottom-up manner:
 given a parse node, computing an attribute of that node might require looking at its children.
-Attributes are always [normal completion structures](/.data-types.md#completionstructure).
+Attributes are always [normal completion structures](/.types-values.md#completionstructure).
 For notational convenience, only the value of the completion structure is written.
 
 
@@ -913,7 +913,7 @@ Quantity([0-9] :::= "9") -> Integer := 9;
 ```
 This example illustrates a hypothetical attribute grammar that defines an attribute
 called `Quantity` on an `INT` token.
-The attributes themselves are [completion structures](./data-types.md#completionstructure)
+The attributes themselves are [completion structures](./types-values.md#completionstructure)
 whose \`type\` properties are *normal* and whose \`value\` properties are of type `Integer`.
 Each rule defines the attribute on the token matching a different pattern defined by a CFG,
 and then denotes that the returned object will be an integer.
@@ -923,7 +923,7 @@ The first line could be read aloud as,
 
 ### Token Worth
 The token worth grammar is an attribute grammar that determines the semantic value of the various token types.
-It assigns a [Counterpoint Specification Value](./data-types.md#counterpoint-specification-types)
+It assigns a [Counterpoint Specification Value](./types-values.md#counterpoint-specification-types)
 to a Token produced by the Tokenizer piece of the Counterpoint compiler.
 This grammar is described further in detail in the chapter
 [Counterpoint Programming Language: Lexicon](./language-lexicon.md).
@@ -952,7 +952,7 @@ as an argument and “returning” a value.
 of the specified lexical/syntactic production.)
 The “return type” of the attribute production is indicated after a thin arrow `->`
 following the attribute production name, and the “return value” is
-a [Counterpoint Specification Value](./data-types.md#counterpoint-specification-types) followed by the definition symbol `:=`.
+a [Counterpoint Specification Value](./types-values.md#counterpoint-specification-types) followed by the definition symbol `:=`.
 ```
 ‹AttributeName›(‹CFGProduction›) -> ‹ReturnType›
 	:= ‹ReturnValue›;
@@ -1003,7 +1003,7 @@ The TokenWorth attribute is computed by invoking itself on children elements.
 Other than its functional behavior, the attribute grammar is much simpler
 than its context-free counterpart. There are no operations or expansions.
 The complexity lies within the values the productions return, which are further described
-in the [Types and Values](./data-types.md) chapter.
+in the [Types and Values](./types-values.md) chapter.
 
 #### Formal Grammar (AG)
 The grammar below (which is a CFG) describes the formal AGs that describe the Counterpoint Programming Language.
@@ -1046,7 +1046,7 @@ An algorithm consists of a name, an output type, zero or more parameters, and a 
 The steps are formatted as an ordered list;
 the list is *ordered* in that the outcome could change if the steps were not performed in the order given.
 
-An algorithm must always output a [CompletionStructure](/.data-types.md#completionstructure) object,
+An algorithm must always output a [CompletionStructure](/.types-values.md#completionstructure) object,
 which is returned by the algorithm to its invoker.
 The completion structure might or might not have a \`value\`.
 
@@ -1054,7 +1054,7 @@ The output type of an algorithm is the type of the \`value\` (if it exists) of
 a returned normal completion structure, and it is specified before
 the name of the algorithm in its header.
 If an algorithm outputs a normal completion structure without a \`value\`,
-the output type is specified as [None](./data-types.md#none).
+the output type is specified as [None](./types-values.md#none).
 
 If an algorithm outputs an *abrupt* completion structure, its \`value\`, if it exists,
 though it is still included in the returned structure, is *not* indicated in the output type,

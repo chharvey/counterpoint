@@ -5,7 +5,7 @@ This chapter describes the objects built in to the standard “core” Counterpo
 
 ## Primitive and Composite Values
 Primitive values are unbreakable and are instances of `Null`, `Boolean`, `Integer`, `Float`, or `String`.
-These types are discussed in the [Types and Values](./data-types.md#simple-types) chapter.
+These types are discussed in the [Types and Values](./types-values.md#simple-types) chapter.
 
 Composite values are not primitive values and are composed of other values (of any kind).
 They include instances of `Tuple`, `Record`, `List`, `Dict`, `Set`, `Map`,
