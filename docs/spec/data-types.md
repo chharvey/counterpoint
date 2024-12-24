@@ -1,4 +1,4 @@
-# Data Types and Values
+# Types and Values
 This chapter defines the types of data used by grammars and algorithms throughout this specification.
 
 Grammars and algorithms manipulate values, each of which has an associated type.
@@ -188,7 +188,7 @@ This list is not exhaustive, as Counterpoint Types may be created in any Counter
 
 
 ### Value Types and Reference Types
-Value types and reference types correspond to [value objects](./intrinsics.md#value-objects)
+Value types and reference types correspond to [data values](./intrinsics.md#data-values)
 and [reference objects](./intrinsics.md#reference-objects) respectively.
 
 
@@ -319,18 +319,18 @@ String length is limited to a maximum of *65,535* bytes,
 but it is not directly observable within any Counterpoint program.
 
 Though `String` objects are treated conceptually as lists, they are considered
-[primitive objects](./intrinsics.md#primitive-and-composite-objects) and
-[value objects](./intrinsics.md#value-objects).
-They are primitives because the “items” of these lists are not directly observable —
-accessing an index of a string yields another string — and
-they are value objects because the string values themselves are copied when assigned
+[primitive values](./intrinsics.md#primitive-and-composite-values),
+because the “items” of these lists are not directly observable —
+accessing an index of a string yields another string.
+As primitive values, they are also [data values](./intrinsics.md#data-values) —
+because the string values themselves are copied when assigned
 (though the compiler may make any optimizations necessary).
 
 #### Object
 The **Object** type contains all references to Counterpoint Language Values.
-All reference types and value types are subtypes of **Object**,
-and are instances of [`Object`](./intrinsics.md#object).
-Some specific built-in subtypes of Object are described in the [Intrinsics](./intrinsics.md) chapter.
+All reference types are subtypes of **Object**,
+and all reference objects are instances of [`Object`](./intrinsics.md#object).
+Some specific built-in subtypes of **Object** are described in the [Intrinsics](./intrinsics.md) chapter.
 
 
 ### Compound Types

@@ -1,7 +1,7 @@
 # Counterpoint Programming Language Specification
 
 1. [Introduction](./introduction.md)
-1. [Data Types and Values](./data-types.md)
+1. [Types and Values](./data-types.md)
 1. [Notation](./notation.md)
 1. [Abstract Algorithms](./algorithms.md)
 1. [Counterpoint Programming Language: Lexicon](./language-lexicon.md)

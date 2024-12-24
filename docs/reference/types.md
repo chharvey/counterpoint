@@ -10,15 +10,17 @@ This reference takes a more informative approach.
 
 
 ## Value Types and Reference Types
-Value types describe objects that have no identity and are identifiable only by their value;
+Value types describe data that have no identity and are identifiable only by their value;
 they are identical when they have the “same value”.
-When a value object is assigned to a variable or parameter, a copy of its value is assigned.
-All value types are immutable.
+When a data value is assigned to a variable or parameter, a copy of it is assigned;
+all value types are immutable.
+An instance of a value type is called a “data value”.
 
 Reference types describe objects that have an identity and are identifiable by reference;
 they are identical when they have the same reference.
 When a reference object is assigned to a variable or parameter, a new reference to the object is assigned,
 and any change to the object is observable in every reference.
+An instance of a reference type is called a “reference object” or simply an “object”.
 
 
 

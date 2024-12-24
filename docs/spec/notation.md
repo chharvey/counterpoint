@@ -1003,7 +1003,7 @@ The TokenWorth attribute is computed by invoking itself on children elements.
 Other than its functional behavior, the attribute grammar is much simpler
 than its context-free counterpart. There are no operations or expansions.
 The complexity lies within the values the productions return, which are further described
-in the chapter [Data Types and Values](./data-types.md).
+in the [Types and Values](./data-types.md) chapter.
 
 #### Formal Grammar (AG)
 The grammar below (which is a CFG) describes the formal AGs that describe the Counterpoint Programming Language.
