@@ -1,4 +1,4 @@
-import * as OBJ from '../cp-object/index.js';
+import * as VALUE from '../cp-object/index.js';
 import {ValueType} from './ValueType.js';
 
 
@@ -12,14 +12,14 @@ export class TypeString extends ValueType {
 
 
 	private constructor() {
-		super(false, new Set([new OBJ.String('')]));
+		super(false, new Set([new VALUE.String('')]));
 	}
 
 	public override toString(): string {
 		return 'str';
 	}
 
-	public override includes(v: OBJ.Value): boolean {
-		return v instanceof OBJ.String;
+	public override includes(v: VALUE.Value): boolean {
+		return v instanceof VALUE.String;
 	}
 }

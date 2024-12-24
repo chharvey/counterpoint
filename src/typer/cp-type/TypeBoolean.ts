@@ -1,5 +1,5 @@
 import {instanceOf} from '../../lib/decorators.js';
-import * as OBJ from '../cp-object/index.js';
+import * as VALUE from '../cp-object/index.js';
 import {ValueType} from './ValueType.js';
 
 
@@ -13,15 +13,15 @@ export class TypeBoolean extends ValueType {
 
 
 	private constructor() {
-		super(false, new Set([OBJ.Boolean.FALSE, OBJ.Boolean.TRUE]));
+		super(false, new Set([VALUE.Boolean.FALSE, VALUE.Boolean.TRUE]));
 	}
 
 	public override toString(): string {
 		return 'bool';
 	}
 
-	@instanceOf(() => OBJ.Boolean)
-	public override includes(_: OBJ.Value): boolean {
+	@instanceOf(() => VALUE.Boolean)
+	public override includes(_: VALUE.Value): boolean {
 		return true;
 	}
 }

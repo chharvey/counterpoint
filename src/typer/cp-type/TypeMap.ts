@@ -3,7 +3,7 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import * as OBJ from '../cp-object/index.js';
+import * as VALUE from '../cp-object/index.js';
 import {MUT_OPERATOR} from './utils-private.js';
 import {
 	subtypeDeco,
@@ -29,7 +29,7 @@ export class TypeMap extends Type {
 		public readonly invariant_con: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.Map()]));
+		super(is_mutable, new Set([new VALUE.Map()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -40,8 +40,8 @@ export class TypeMap extends Type {
 		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Map.<${ this.invariant_ant }, ${ this.invariant_con }>`;
 	}
 
-	public override includes(v: OBJ.Value): boolean {
-		return v instanceof OBJ.Map && v.toType().isSubtypeOf(this);
+	public override includes(v: VALUE.Value): boolean {
+		return v instanceof VALUE.Map && v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual

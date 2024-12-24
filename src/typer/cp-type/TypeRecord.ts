@@ -11,7 +11,7 @@ import type {
 	AST,
 } from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
-import * as OBJ from '../cp-object/index.js';
+import * as VALUE from '../cp-object/index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {subtypeDeco} from './decorators.js';
 import type {Type} from './Type.js';
@@ -43,7 +43,7 @@ export class TypeRecord extends ValueType {
 	 * @param invariants a map of this type’s property ids along with their associated types
 	 */
 	public constructor(public readonly invariants: ReadonlyMap<bigint, TypeEntry> = new Map()) {
-		super(false, new Set([new OBJ.Record()]));
+		super(false, new Set([new VALUE.Record()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -65,8 +65,8 @@ export class TypeRecord extends ValueType {
 		return `[${ [...this.invariants].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
-	@instanceOf(() => OBJ.Record)
-	public override includes(v: OBJ.Value): boolean {
+	@instanceOf(() => VALUE.Record)
+	public override includes(v: VALUE.Value): boolean {
 		return v.toType().isSubtypeOf(this);
 	}
 

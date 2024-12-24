@@ -2,7 +2,7 @@ import {
 	strictEqual,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import * as OBJ from '../cp-object/index.js';
+import * as VALUE from '../cp-object/index.js';
 import {subtypeDeco} from './decorators.js';
 import {Type} from './Type.js';
 
@@ -18,10 +18,10 @@ export class TypeObject extends Type {
 
 	private constructor() {
 		super(false, new Set([
-			new OBJ.List(),
-			new OBJ.Dict(),
-			new OBJ.Set(),
-			new OBJ.Map(),
+			new VALUE.List(),
+			new VALUE.Dict(),
+			new VALUE.Set(),
+			new VALUE.Map(),
 		]));
 	}
 
@@ -29,12 +29,12 @@ export class TypeObject extends Type {
 		return 'Object';
 	}
 
-	public override includes(v: OBJ.Value): boolean {
+	public override includes(v: VALUE.Value): boolean {
 		return (
-			v instanceof OBJ.List ||
-			v instanceof OBJ.Dict ||
-			v instanceof OBJ.Set  ||
-			v instanceof OBJ.Map
+			v instanceof VALUE.List ||
+			v instanceof VALUE.Dict ||
+			v instanceof VALUE.Set  ||
+			v instanceof VALUE.Map
 		);
 	}
 

@@ -6,7 +6,7 @@ import {
 } from '../../lib/index.js';
 import type {TypeEntry} from '../utils-public.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import type * as OBJ from '../cp-object/index.js';
+import type * as VALUE from '../cp-object/index.js';
 import {
 	TypeUnion,
 	TypeTuple,
@@ -131,7 +131,7 @@ export class TypeIntersection extends Combinable {
 		return this.operands.map((s) => s instanceof TypeUnion ? `(${ s })` : s).join(' & ');
 	}
 
-	public override includes(v: OBJ.Value): boolean {
+	public override includes(v: VALUE.Value): boolean {
 		return this.operands.every((s) => s.includes(v));
 	}
 

@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
@@ -84,7 +84,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			return (
-				(base_type instanceof TYPE.TypeTuple) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>).value, this.kind, this.accessor) :
+				(base_type instanceof TYPE.TypeTuple) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<VALUE.Integer>).value, this.kind, this.accessor) :
 				(base_type instanceof TYPE.TypeList)  ? updateAccessedDynamicType(base_type.invariant, this.kind)                                               :
 				assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor))
 			);
@@ -100,7 +100,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			/* eslint-disable @stylistic/indent */
 			return (
 				(base_type instanceof TYPE.TypeTuple) ? (
-					(accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof OBJ.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
+					(accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof VALUE.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
 					(accessor_type.isSubtypeOf(TYPE.INT))
 						? updateAccessedDynamicType(base_type.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, TYPE.INT)
@@ -127,28 +127,28 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Value | null {
-		const base_value: OBJ.Value | null = this.base.fold();
+	public override fold(): VALUE.Value | null {
+		const base_value: VALUE.Value | null = this.base.fold();
 		if (base_value === null) {
 			return null;
 		}
-		if (this.optional && base_value.identical(OBJ.Null.NULL)) {
+		if (this.optional && base_value.identical(VALUE.Null.NULL)) {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as OBJ.CollectionIndexed).get(this.accessor.val.fold() as OBJ.Integer, this.optional, this.accessor);
+			return (base_value as VALUE.CollectionIndexed).get(this.accessor.val.fold() as VALUE.Integer, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
-			return (base_value as OBJ.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
+			return (base_value as VALUE.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else {
 			assert_instanceof(this.accessor, ASTNodeExpression);
-			const accessor_value: OBJ.Value | null = this.accessor.fold();
+			const accessor_value: VALUE.Value | null = this.accessor.fold();
 			if (accessor_value === null) {
 				return null;
 			}
 			return (
-				base_value instanceof OBJ.CollectionIndexed ? base_value.get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
-				base_value instanceof OBJ.Set               ? base_value.get(accessor_value                                             ) :
-				(assert_instanceof(base_value, OBJ.Map),      base_value.get(accessor_value,                this.optional, this.accessor))
+				base_value instanceof VALUE.CollectionIndexed ? base_value.get(accessor_value as VALUE.Integer, this.optional, this.accessor) :
+				base_value instanceof VALUE.Set               ? base_value.get(accessor_value                                               ) :
+				(assert_instanceof(base_value, VALUE.Map),      base_value.get(accessor_value,                  this.optional, this.accessor))
 			);
 		}
 	}

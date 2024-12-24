@@ -2,7 +2,7 @@ import {
 	strictEqual,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import type * as OBJ from '../cp-object/index.js';
+import type * as VALUE from '../cp-object/index.js';
 import {Type} from './Type.js';
 
 
@@ -27,7 +27,7 @@ export class TypeUnknown extends Type {
 		return 'unknown';
 	}
 
-	public override includes(_v: OBJ.Value): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return true;
 	}
 

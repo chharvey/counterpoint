@@ -1,6 +1,6 @@
 import binaryen from 'binaryen';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
 } from '../../index.js';
@@ -68,25 +68,25 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Value | null {
-		const v0: OBJ.Value | null = this.operand0.fold();
+	public override fold(): VALUE.Value | null {
+		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: OBJ.Value | null = this.operand1.fold();
+		const v1: VALUE.Value | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}
-		return (v0 instanceof OBJ.Integer && v1 instanceof OBJ.Integer)
+		return (v0 instanceof VALUE.Integer && v1 instanceof VALUE.Integer)
 			? this.foldComparative(v0, v1)
 			: this.foldComparative(
-				(v0 as OBJ.Number).toFloat(),
-				(v1 as OBJ.Number).toFloat(),
+				(v0 as VALUE.Number).toFloat(),
+				(v1 as VALUE.Number).toFloat(),
 			);
 	}
 
-	private foldComparative<T extends OBJ.Number<T>>(v0: T, v1: T): OBJ.Boolean {
-		return OBJ.Boolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
+	private foldComparative<T extends VALUE.Number<T>>(v0: T, v1: T): VALUE.Boolean {
+		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
 			[Operator.LT, (x, y) => x.lt(y)],
 			[Operator.GT, (x, y) => y.lt(x)],
 			[Operator.LE, (x, y) => x.equal(y) || x.lt(y)],

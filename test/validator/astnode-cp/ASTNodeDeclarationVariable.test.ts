@@ -4,7 +4,7 @@ import {
 	AST,
 	type SymbolStructure,
 	SymbolStructureVar,
-	OBJ,
+	VALUE,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotAssignable,
@@ -121,10 +121,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			];
 			assert.deepStrictEqual(
 				[immut.source, immut.value],
-				['immut',      new OBJ.Tuple<OBJ.Integer>([
-					new OBJ.Integer(  42n),
-					new OBJ.Integer( 420n),
-					new OBJ.Integer(4200n),
+				['immut',      new VALUE.Tuple<VALUE.Integer>([
+					new VALUE.Integer(  42n),
+					new VALUE.Integer( 420n),
+					new VALUE.Integer(4200n),
 				])],
 			);
 			assert.deepStrictEqual(

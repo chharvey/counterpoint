@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	BinVect,
 	TypeErrorInvalidOperation,
@@ -70,20 +70,20 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		const [t0, t1, t2]: TYPE.Type[] = this.children.map((operand) => operand.type());
 		assert.ok(t0.isSubtypeOf(TYPE.BOOL), new TypeErrorInvalidOperation(this));
 		return (
-			t0.isBottomType                  ? TYPE.NEVER :
-			t0.equals(OBJ.Boolean.FALSETYPE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
-			t0.equals(OBJ.Boolean.TRUETYPE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
+			t0.isBottomType                    ? TYPE.NEVER :
+			t0.equals(VALUE.Boolean.FALSETYPE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
+			t0.equals(VALUE.Boolean.TRUETYPE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
 			t1.union(t2)
 		);
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Value | null {
-		const v0: OBJ.Value | null = this.operand0.fold();
+	public override fold(): VALUE.Value | null {
+		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		return (v0 === OBJ.Boolean.TRUE)
+		return (v0 === VALUE.Boolean.TRUE)
 			? this.operand1.fold()
 			: this.operand2.fold();
 	}

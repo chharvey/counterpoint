@@ -4,7 +4,7 @@ import {
 	memoizeBinOp,
 } from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import type * as OBJ from '../cp-object/index.js';
+import type * as VALUE from '../cp-object/index.js';
 import {
 	toStringDeco,
 	subtypeDeco,
@@ -60,7 +60,7 @@ export class TypeDifference extends Type {
 		return [this.left, this.right].map((s) => s instanceof TypeUnion ? `(${ s })` : s).join(' - ');
 	}
 
-	public override includes(v: OBJ.Value): boolean {
+	public override includes(v: VALUE.Value): boolean {
 		return this.left.includes(v) && !this.right.includes(v);
 	}
 

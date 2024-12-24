@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	ErrorCode,
 } from '../../index.js';
@@ -64,8 +64,8 @@ export function buildDeco(
 	_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
 ): typeof method {
 	return function (this: ASTNodeExpression) {
-		const value: OBJ.Value | null       = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
-		const built: binaryen.ExpressionRef = value?.build(this.builder.module) ?? method.call(this);
+		const value: VALUE.Value | null       = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
+		const built: binaryen.ExpressionRef   = value?.build(this.builder.module) ?? method.call(this);
 		assert.strictEqual(binaryen.getExpressionType(built), binaryen.v128);
 		return built;
 	};
@@ -87,7 +87,7 @@ export function typeDeco(
 	return function (this: ASTNodeExpression) {
 		const type: TYPE.Type = method.call(this); // type-check first, to re-throw any TypeErrors
 		if (this.validator.config.compilerOptions.constantFolding) {
-			let value: OBJ.Value | null = null;
+			let value: VALUE.Value | null = null;
 			try {
 				value = this.fold();
 			} catch (err) {
@@ -98,7 +98,7 @@ export function typeDeco(
 					throw err;
 				}
 			}
-			if (!!value && value instanceof OBJ.Primitive) {
+			if (!!value && value instanceof VALUE.Primitive) {
 				return value.toType();
 			}
 		}

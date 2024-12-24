@@ -4,7 +4,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
-	OBJ,
+	VALUE,
 	TYPE,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
@@ -59,9 +59,9 @@ describe('ASTNodeExpression', () => {
 					'false;',
 					'true;',
 				].map((src) => AST.ASTNodeConstant.fromSource(src).fold()), [
-					OBJ.Null.NULL,
-					OBJ.Boolean.FALSE,
-					OBJ.Boolean.TRUE,
+					VALUE.Null.NULL,
+					VALUE.Boolean.FALSE,
+					VALUE.Boolean.TRUE,
 				]);
 			});
 			it('computes int values.', () => {
@@ -78,7 +78,7 @@ describe('ASTNodeExpression', () => {
 				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`, integer_radices_on).fold()), [
 					55, -55, 33, -33, 0, 0,
 					parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
-				].map((v) => new OBJ.Integer(BigInt(v))));
+				].map((v) => new VALUE.Integer(BigInt(v))));
 			});
 			it('computes float values.', () => {
 				assert.deepStrictEqual(`
@@ -89,7 +89,7 @@ describe('ASTNodeExpression', () => {
 					2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					-0, 6.8, 6.8, 0, -0,
-				].map((v) => new OBJ.Float(v)));
+				].map((v) => new VALUE.Float(v)));
 			});
 			it('computes string values.', () => {
 				assert.deepStrictEqual(
@@ -162,7 +162,7 @@ describe('ASTNodeExpression', () => {
 				assert.ok(!(goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
-					new OBJ.Integer(42n),
+					new VALUE.Integer(42n),
 				);
 			});
 			it('returns null for an unfixed variable.', () => {
@@ -323,7 +323,7 @@ describe('ASTNodeExpression', () => {
 				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new TypeUnit`.', () => {
 					assert.deepStrictEqual(
 						types.slice(0, 2),
-						templates.slice(0, 2).map((t) => new TYPE.TypeUnit<OBJ.String>(t.fold()!)),
+						templates.slice(0, 2).map((t) => new TYPE.TypeUnit<VALUE.String>(t.fold()!)),
 					);
 				});
 				it('for non-foldable interpolations, returns `String`.', () => {
@@ -349,13 +349,13 @@ describe('ASTNodeExpression', () => {
 			it('returns a constant String for ASTNodeTemplate with no interpolations.', () => {
 				assert.deepStrictEqual(
 					templates[0].fold(),
-					new OBJ.String('42😀'),
+					new VALUE.String('42😀'),
 				);
 			});
 			it('returns a constant String for ASTNodeTemplate with foldable interpolations.', () => {
 				assert.deepStrictEqual(
 					templates[1].fold(),
-					new OBJ.String('the answer is 42 but what is the question?'),
+					new VALUE.String('the answer is 42 but what is the question?'),
 				);
 			});
 			it('returns null for ASTNodeTemplate with dynamic interpolations.', () => {
@@ -465,15 +465,15 @@ describe('ASTNodeExpression', () => {
 						AST.ASTNodeRecord .fromSource('  [a= 1, b= 2.0, c= "three"];'),
 					].map((c) => c.fold()),
 					[
-						new OBJ.Tuple([
-							new OBJ.Integer(1n),
-							new OBJ.Float(2.0),
-							new OBJ.String('three'),
+						new VALUE.Tuple([
+							new VALUE.Integer(1n),
+							new VALUE.Float(2.0),
+							new VALUE.String('three'),
 						]),
-						new OBJ.Record(new Map<bigint, OBJ.Value>([
-							[0x100n, new OBJ.Integer(1n)],
-							[0x101n, new OBJ.Float(2.0)],
-							[0x102n, new OBJ.String('three')],
+						new VALUE.Record(new Map<bigint, VALUE.Value>([
+							[0x100n, new VALUE.Integer(1n)],
+							[0x101n, new VALUE.Float(2.0)],
+							[0x102n, new VALUE.String('three')],
 						])),
 					],
 				);
@@ -491,15 +491,15 @@ describe('ASTNodeExpression', () => {
 						`),
 					].map((c) => c.fold()),
 					[
-						new OBJ.Set(new Set([
-							new OBJ.Integer(1n),
-							new OBJ.Float(2.0),
-							new OBJ.String('three'),
+						new VALUE.Set(new Set([
+							new VALUE.Integer(1n),
+							new VALUE.Float(2.0),
+							new VALUE.String('three'),
 						])),
-						new OBJ.Map(new Map<OBJ.Value, OBJ.Value>([
-							[new OBJ.String('a'),  new OBJ.Integer(1n)],
-							[new OBJ.Integer(42n), new OBJ.Float(2.0)],
-							[new OBJ.Float(3.0),   new OBJ.String('three')],
+						new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
+							[new VALUE.String('a'),  new VALUE.Integer(1n)],
+							[new VALUE.Integer(42n), new VALUE.Float(2.0)],
+							[new VALUE.Float(3.0),   new VALUE.String('three')],
 						])),
 					],
 				);

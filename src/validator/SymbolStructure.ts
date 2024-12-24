@@ -1,5 +1,5 @@
 import {
-	type OBJ,
+	type VALUE,
 	TYPE,
 } from '../index.js';
 import type * as AST from './astnode-cp/index.js';
@@ -46,7 +46,7 @@ export class SymbolStructureVar extends SymbolStructure {
 	/** The variable’s Type. */
 	public type:  TYPE.Type = TYPE.UNKNOWN;
 	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
-	public value: OBJ.Value | null = null;
+	public value: VALUE.Value | null = null;
 	public constructor(
 		node: AST.ASTNodeVariable,
 		/** May the symbol be reassigned? */

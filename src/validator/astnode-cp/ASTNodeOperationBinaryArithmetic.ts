@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
@@ -71,27 +71,27 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Value | null {
-		const v0: OBJ.Value | null = this.operand0.fold();
+	public override fold(): VALUE.Value | null {
+		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: OBJ.Value | null = this.operand1.fold();
+		const v1: VALUE.Value | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}
-		if (this.operator === Operator.DIV && v1 instanceof OBJ.Number && v1.eq0()) {
+		if (this.operator === Operator.DIV && v1 instanceof VALUE.Number && v1.eq0()) {
 			throw new NanErrorDivZero(this.operand1);
 		}
-		return (v0 instanceof OBJ.Integer && v1 instanceof OBJ.Integer)
+		return (v0 instanceof VALUE.Integer && v1 instanceof VALUE.Integer)
 			? this.foldNumeric(v0, v1)
 			: this.foldNumeric(
-				(v0 as OBJ.Number).toFloat(),
-				(v1 as OBJ.Number).toFloat(),
+				(v0 as VALUE.Number).toFloat(),
+				(v1 as VALUE.Number).toFloat(),
 			);
 	}
 
-	private foldNumeric<T extends OBJ.Number<T>>(v0: T, v1: T): T {
+	private foldNumeric<T extends VALUE.Number<T>>(v0: T, v1: T): T {
 		try {
 			return new Map<Operator, (x: T, y: T) => T>([
 				[Operator.EXP, (x, y) => x.exp(y)],

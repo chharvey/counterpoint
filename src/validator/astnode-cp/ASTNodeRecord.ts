@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
@@ -63,14 +63,14 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Value | null {
-		const properties: ReadonlyMap<bigint, OBJ.Value | null> = new Map(this.children.map((c) => [
+	public override fold(): VALUE.Value | null {
+		const properties: ReadonlyMap<bigint, VALUE.Value | null> = new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.fold(),
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
-			: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Value>);
+			: new VALUE.Record(properties as ReadonlyMap<bigint, VALUE.Value>);
 	}
 
 	@assignToDeco

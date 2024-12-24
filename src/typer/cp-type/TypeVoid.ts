@@ -2,7 +2,7 @@ import {
 	strictEqual,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import type * as OBJ from '../cp-object/index.js';
+import type * as VALUE from '../cp-object/index.js';
 import {NEVER} from './index.js';
 import {
 	intersectDeco,
@@ -29,7 +29,7 @@ export class TypeVoid extends ValueType {
 		return 'void';
 	}
 
-	public override includes(_v: OBJ.Value): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return false;
 	}
 

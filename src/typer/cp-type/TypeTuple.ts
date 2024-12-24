@@ -11,7 +11,7 @@ import type {
 	AST,
 } from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
-import * as OBJ from '../cp-object/index.js';
+import * as VALUE from '../cp-object/index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {subtypeDeco} from './decorators.js';
 import type {Type} from './Type.js';
@@ -43,7 +43,7 @@ export class TypeTuple extends ValueType {
 	 * @param invariants this type’s item types
 	 */
 	public constructor(public readonly invariants: readonly TypeEntry[] = []) {
-		super(false, new Set([new OBJ.Tuple()]));
+		super(false, new Set([new VALUE.Tuple()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -65,8 +65,8 @@ export class TypeTuple extends ValueType {
 		return `[${ this.invariants.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
-	@instanceOf(() => OBJ.Tuple)
-	public override includes(v: OBJ.Value): boolean {
+	@instanceOf(() => VALUE.Tuple)
+	public override includes(v: VALUE.Value): boolean {
 		return v.toType().isSubtypeOf(this);
 	}
 
@@ -92,7 +92,7 @@ export class TypeTuple extends ValueType {
 	}
 
 	/** @final */
-	public get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
+	public get(index: VALUE.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.invariants.length;
 		const i: number = index.toNumber();
 		return updateAccessedStaticType(
