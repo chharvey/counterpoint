@@ -7,7 +7,7 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import type {Object as CPObject} from './Value.js';
+import type {Value} from './Value.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -40,7 +40,7 @@ class CPString extends Primitive {
 	@strictEqual
 	@instanceOf(() => CPString)
 	@memoizeBinOp(true, true)
-	public override identical(value: CPObject): boolean {
+	public override identical(value: Value): boolean {
 		return xjs.Array.is<CodeUnit>(this.codeunits, (value as CPString).codeunits);
 	}
 

@@ -5,7 +5,7 @@ import {
 	instanceOf,
 } from '../../lib/index.js';
 import type {TYPE} from '../index.js';
-import type {Object as CPObject} from './Value.js';
+import type {Value} from './Value.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -46,7 +46,7 @@ export class Null extends Primitive {
 	@strictEqual
 	@instanceOf(() => Null)
 	// @memoizeBinOp(true, true) // memoizing takes longer than returning a constant
-	public override identical(_value: CPObject): boolean {
+	public override identical(_value: Value): boolean {
 		return true;
 	}
 

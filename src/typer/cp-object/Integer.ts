@@ -8,7 +8,7 @@ import {
 } from '../../lib/index.js';
 import {Float} from './index.js';
 import {equalsDeco} from './decorators.js';
-import type {Object as CPObject} from './Value.js';
+import type {Value} from './Value.js';
 import {Number as CPNumber} from './Number.js';
 
 
@@ -51,7 +51,7 @@ export class Integer extends CPNumber<Integer> {
 	@strictEqual
 	@instanceOf(() => Integer)
 	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
-	public override identical(value: CPObject): boolean {
+	public override identical(value: Value): boolean {
 		return this.data === (value as Integer).data;
 	}
 
@@ -59,7 +59,7 @@ export class Integer extends CPNumber<Integer> {
 	@equalsDeco
 	@instanceOf(() => Float)
 	@memoizeBinOp(true, true)
-	public override equal(value: CPObject): boolean {
+	public override equal(value: Value): boolean {
 		return this.toFloat().equal(value);
 	}
 

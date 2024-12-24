@@ -1,18 +1,18 @@
-import type {Object as CPObject} from './index.js';
+import type {Value} from './index.js';
 
 
 
 /**
- * Decorator for {@link CPObject#equal} method and any overrides.
- * Performs the Equality algorithm — returns whether two CPObjects (Counterpoint Language Values)
+ * Decorator for {@link Value#equal} method and any overrides.
+ * Performs the Equality algorithm — returns whether two Values (Counterpoint Language Values)
  * are equal by some definition.
- * @implements MethodDecorator<CPObject, CPObject['equal']>
+ * @implements MethodDecorator<Value, Value['equal']>
  */
 export function equalsDeco(
-	method:   CPObject['equal'],
-	_context: ClassMethodDecoratorContext<CPObject, typeof method>,
+	method:   Value['equal'],
+	_context: ClassMethodDecoratorContext<Value, typeof method>,
 ): typeof method {
-	return function (this: CPObject, value) {
+	return function (this: Value, value) {
 		return this.identical(value) || method.call(this, value);
 	};
 }

@@ -13,7 +13,7 @@ import {
 	language_values_equal,
 } from '../utils-private.js';
 import {equalsDeco} from './decorators.js';
-import type {Object as CPObject} from './Value.js';
+import type {Value} from './Value.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
@@ -23,7 +23,7 @@ import {Collection} from './Collection.js';
  * A dynamic unordered association of value–value pairs.
  * @final
  */
-class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extends Collection {
+class CPMap<K extends Value = Value, V extends Value = Value> extends Collection {
 	public constructor(private readonly cases: ReadonlyMap<K, V> = new Map()) {
 		super();
 		const uniques = new Map<K, V>();
@@ -46,10 +46,10 @@ class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extend
 	@equalsDeco
 	@instanceOf(() => CPMap)
 	@memoizeBinOp(true, true)
-	public override equal(value: CPObject): boolean {
+	public override equal(value: Value): boolean {
 		return (
 			this.cases.size === (value as CPMap).cases.size &&
-			[...(value as CPMap).cases].every(([thatant, thatcon]) => !!xjs.Map.get<CPObject, CPObject>(this.cases, thatant, language_values_equal)?.equal(thatcon))
+			[...(value as CPMap).cases].every(([thatant, thatcon]) => !!xjs.Map.get<Value, Value>(this.cases, thatant, language_values_equal)?.equal(thatcon))
 		);
 	}
 

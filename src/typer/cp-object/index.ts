@@ -1,4 +1,5 @@
 export * from './Value.js';
+export {Value as Object} from './Value.js';
 
 export * from './Primitive.js';
 export * from './Null.js';

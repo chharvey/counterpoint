@@ -1,5 +1,5 @@
 import {TYPE} from '../index.js';
-import type {Object as CPObject} from './Value.js';
+import type {Value} from './Value.js';
 import {CollectionKeyed} from './CollectionKeyed.js';
 
 
@@ -8,7 +8,7 @@ import {CollectionKeyed} from './CollectionKeyed.js';
  * A dynamic structure of key–value pairs.
  * @final
  */
-export class Dict<T extends CPObject = CPObject> extends CollectionKeyed<T> {
+export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
 	public override toString(): string {
 		return `Dict.(${ super.toString() })`;
 	}
