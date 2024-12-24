@@ -228,12 +228,12 @@ describe('Object', () => {
 		describe('.constructor', () => {
 			it('overwrites identical antecedents.', () => {
 				assert.deepStrictEqual(
-					new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([
+					new OBJ.Map(new Map<OBJ.Value, OBJ.Value>([
 						[new OBJ.String('a'),  OBJ.Integer.UNIT],
 						[OBJ.Integer.ZERO,     new OBJ.Float(2.0)],
 						[new OBJ.Integer(-0n), new OBJ.String('three')],
 					])),
-					new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([
+					new OBJ.Map(new Map<OBJ.Value, OBJ.Value>([
 						[new OBJ.String('a'), OBJ.Integer.UNIT],
 						[OBJ.Integer.ZERO,    new OBJ.String('three')],
 					])),
@@ -241,12 +241,12 @@ describe('Object', () => {
 			});
 			it('does not overwrite non-identical (even if equal) antecedents.', () => {
 				assert.deepStrictEqual(
-					new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([
+					new OBJ.Map(new Map<OBJ.Value, OBJ.Value>([
 						[new OBJ.String('a'), OBJ.Integer.UNIT],
 						[new OBJ.Float(0.0),  new OBJ.Float(2.0)],
 						[new OBJ.Float(-0.0), new OBJ.String('three')],
 					])),
-					new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([
+					new OBJ.Map(new Map<OBJ.Value, OBJ.Value>([
 						[new OBJ.String('a'), new OBJ.Integer(1n)],
 						[new OBJ.Float(0.0),  new OBJ.Float(2.0)],
 						[new OBJ.Float(-0.0), new OBJ.String('three')],

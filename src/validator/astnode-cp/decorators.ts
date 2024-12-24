@@ -64,7 +64,7 @@ export function buildDeco(
 	_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
 ): typeof method {
 	return function (this: ASTNodeExpression) {
-		const value: OBJ.Object | null      = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
+		const value: OBJ.Value | null       = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
 		const built: binaryen.ExpressionRef = value?.build(this.builder.module) ?? method.call(this);
 		assert.strictEqual(binaryen.getExpressionType(built), binaryen.v128);
 		return built;
@@ -87,7 +87,7 @@ export function typeDeco(
 	return function (this: ASTNodeExpression) {
 		const type: TYPE.Type = method.call(this); // type-check first, to re-throw any TypeErrors
 		if (this.validator.config.compilerOptions.constantFolding) {
-			let value: OBJ.Object | null = null;
+			let value: OBJ.Value | null = null;
 			try {
 				value = this.fold();
 			} catch (err) {

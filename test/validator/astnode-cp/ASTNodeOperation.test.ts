@@ -32,7 +32,7 @@ function typeOperations(tests: ReadonlyMap<string, OBJ.Primitive>, config: CPCon
 		[...tests.values()].map((expected) => new TYPE.TypeUnit(expected)),
 	);
 }
-function foldOperations(tests: Map<string, OBJ.Object>, config: CPConfig = CONFIG_DEFAULT): void {
+function foldOperations(tests: Map<string, OBJ.Value>, config: CPConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).fold()),
 		[...tests.values()],
@@ -591,7 +591,7 @@ describe('ASTNodeOperation', () => {
 				]);
 			});
 			it('computes the value of a float operation of constants.', () => {
-				foldOperations(new Map<string, OBJ.Object>([
+				foldOperations(new Map<string, OBJ.Value>([
 					['3.0e1 - 201.0e-1;', new OBJ.Float(30 - 20.1)],
 					['3 * 2.1;',          new OBJ.Float(3 * 2.1)],
 				]));
@@ -767,7 +767,7 @@ describe('ASTNodeOperation', () => {
 					goal.typeCheck();
 					goal.children.slice(4).forEach((stmt) => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
-						const fold: OBJ.Object | null = expr.fold();
+						const fold: OBJ.Value | null = expr.fold();
 						// @ts-expect-error --- `OBJ.Boolean` has a private constructor
 						assert_instanceof(fold, OBJ.Boolean);
 						assert.deepStrictEqual(
@@ -851,7 +851,7 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 			it('with int coercion off, does not coerce ints into floats.', () => {
-				foldOperations(new Map<string, OBJ.Object>([
+				foldOperations(new Map<string, OBJ.Value>([
 					['7   === 7.0;', OBJ.Boolean.FALSE],
 					['7   ==  7.0;', OBJ.Boolean.FALSE],
 					['7.0 === 7;',   OBJ.Boolean.FALSE],
@@ -1173,7 +1173,7 @@ describe('ASTNodeOperation', () => {
 
 
 		specify('#fold', () => {
-			foldOperations(new Map<string, OBJ.Object>([
+			foldOperations(new Map<string, OBJ.Value>([
 				['null && 5;',     OBJ.Null.NULL],
 				['null || 5;',     new OBJ.Integer(5n)],
 				['5 && null;',     OBJ.Null.NULL],
@@ -1392,7 +1392,7 @@ describe('ASTNodeOperation', () => {
 
 
 		specify('#fold', () => {
-			foldOperations(new Map<string, OBJ.Object>([
+			foldOperations(new Map<string, OBJ.Value>([
 				['if true then false else 2;',          OBJ.Boolean.FALSE],
 				['if false then 3.0 else null;',        OBJ.Null.NULL],
 				['if true then 2 else 3.0;',            new OBJ.Integer(2n)],

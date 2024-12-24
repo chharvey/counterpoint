@@ -50,14 +50,14 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const cases: ReadonlyMap<OBJ.Object | null, OBJ.Object | null> = new Map(this.children.map((c) => [
+	public override fold(): OBJ.Value | null {
+		const cases: ReadonlyMap<OBJ.Value | null, OBJ.Value | null> = new Map(this.children.map((c) => [
 			c.antecedent.fold(),
 			c.consequent.fold(),
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null
-			: new OBJ.Map(cases as ReadonlyMap<OBJ.Object, OBJ.Object>);
+			: new OBJ.Map(cases as ReadonlyMap<OBJ.Value, OBJ.Value>);
 	}
 
 	@assignToDeco

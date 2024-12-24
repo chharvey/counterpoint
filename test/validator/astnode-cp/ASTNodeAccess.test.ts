@@ -694,11 +694,11 @@ describe('ASTNodeAccess', () => {
 
 
 	describe('#fold', () => {
-		function foldStmtExpr(stmt: AST.ASTNodeStatement): OBJ.Object | null {
+		function foldStmtExpr(stmt: AST.ASTNodeStatement): OBJ.Value | null {
 			assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 			return stmt.expr!.fold();
 		}
-		const expected: Array<OBJ.Object | null> = [
+		const expected: Array<OBJ.Value | null> = [
 			new OBJ.Integer(1n),
 			new OBJ.Float(2.0),
 			new OBJ.String('three'),
@@ -706,7 +706,7 @@ describe('ASTNodeAccess', () => {
 			null,
 			null,
 		];
-		const expected_o: Array<OBJ.Object | null> = [
+		const expected_o: Array<OBJ.Value | null> = [
 			new OBJ.String('three'),
 			null,
 			null,

@@ -78,23 +78,23 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand0.fold();
+	public override fold(): OBJ.Value | null {
+		const v0: OBJ.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: OBJ.Object | null = this.operand1.fold();
+		const v1: OBJ.Value | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}
 		return this.foldEquality(v0, v1);
 	}
 
-	private foldEquality(v0: OBJ.Object, v1: OBJ.Object): OBJ.Boolean {
+	private foldEquality(v0: OBJ.Value, v1: OBJ.Value): OBJ.Boolean {
 		if (bothNumeric(v0, v1) && oneFloats(v0, v1) && !this.validator.config.compilerOptions.intCoercion) {
 			return OBJ.Boolean.FALSE;
 		}
-		return OBJ.Boolean.fromBoolean(new Map<Operator, (x: OBJ.Object, y: OBJ.Object) => boolean>([
+		return OBJ.Boolean.fromBoolean(new Map<Operator, (x: OBJ.Value, y: OBJ.Value) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],
 			[Operator.EQ, (x, y) => x.equal(y)],
 			// [Operator.ISNT, (x, y) => !x.identical(y)],

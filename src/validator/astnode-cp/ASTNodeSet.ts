@@ -47,11 +47,11 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const elements: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
+	public override fold(): OBJ.Value | null {
+		const elements: readonly (OBJ.Value | null)[] = this.children.map((c) => c.fold());
 		return (elements.includes(null))
 			? null
-			: new OBJ.Set(new Set(elements as OBJ.Object[]));
+			: new OBJ.Set(new Set(elements as OBJ.Value[]));
 	}
 
 	@assignToDeco

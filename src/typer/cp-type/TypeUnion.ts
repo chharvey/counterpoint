@@ -138,7 +138,7 @@ export class TypeUnion extends Combinable {
 		return this.operands.join(' | ');
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Value): boolean {
 		return this.operands.some((s) => s.includes(v));
 	}
 

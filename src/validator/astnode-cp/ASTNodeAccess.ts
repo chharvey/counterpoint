@@ -127,8 +127,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const base_value: OBJ.Object | null = this.base.fold();
+	public override fold(): OBJ.Value | null {
+		const base_value: OBJ.Value | null = this.base.fold();
 		if (base_value === null) {
 			return null;
 		}
@@ -141,7 +141,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return (base_value as OBJ.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else {
 			assert_instanceof(this.accessor, ASTNodeExpression);
-			const accessor_value: OBJ.Object | null = this.accessor.fold();
+			const accessor_value: OBJ.Value | null = this.accessor.fold();
 			if (accessor_value === null) {
 				return null;
 			}

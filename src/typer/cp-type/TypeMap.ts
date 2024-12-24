@@ -40,7 +40,7 @@ export class TypeMap extends Type {
 		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Map.<${ this.invariant_ant }, ${ this.invariant_con }>`;
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Value): boolean {
 		return v instanceof OBJ.Map && v.toType().isSubtypeOf(this);
 	}
 

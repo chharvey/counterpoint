@@ -21,7 +21,7 @@ export class TypeInteger extends ValueType {
 	}
 
 	@instanceOf(() => OBJ.Integer)
-	public override includes(_: OBJ.Object): boolean {
+	public override includes(_: OBJ.Value): boolean {
 		return true;
 	}
 }

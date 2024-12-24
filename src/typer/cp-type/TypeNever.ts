@@ -28,7 +28,7 @@ export class TypeNever extends ValueType {
 		return 'never';
 	}
 
-	public override includes(_v: OBJ.Object): boolean {
+	public override includes(_v: OBJ.Value): boolean {
 		return false;
 	}
 

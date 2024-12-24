@@ -38,7 +38,7 @@ export class TypeList extends Type {
 		return `${ (this.isMutable) ? MUT_OPERATOR : '' }List.<${ this.invariant }>`;
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Value): boolean {
 		return v instanceof OBJ.List && v.toType().isSubtypeOf(this);
 	}
 

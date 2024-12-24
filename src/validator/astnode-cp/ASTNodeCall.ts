@@ -226,16 +226,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const args: readonly (OBJ.Object | null)[] = this.exprargs.map((c) => c.fold()); // TODO: `#fold` should not return native `null` if it cannot assess
+	public override fold(): OBJ.Value | null {
+		const args: readonly (OBJ.Value | null)[] = this.exprargs.map((c) => c.fold()); // TODO: `#fold` should not return native `null` if it cannot assess
 		if (args.includes(null)) {
 			return null;
 		}
-		return new Map<ValidFunctionName, (argument: OBJ.Object | undefined) => OBJ.Object | null>([
+		return new Map<ValidFunctionName, (argument: OBJ.Value | undefined) => OBJ.Value | null>([
 			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new OBJ.List() : new OBJ.List((tuple as OBJ.CollectionIndexed).items)],
 			[ValidFunctionName.DICT, (record) => (record === undefined) ? new OBJ.Dict() : new OBJ.Dict((record as OBJ.CollectionKeyed).properties)],
-			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.Set()  : new OBJ.Set(new Set<OBJ.Object>((tuple as OBJ.CollectionIndexed).items))],
-			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.Map()  : new OBJ.Map(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.CollectionIndexed).items.map((pair) => (pair as OBJ.CollectionIndexed).items as [OBJ.Object, OBJ.Object])))],
+			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.Set()  : new OBJ.Set(new Set<OBJ.Value>((tuple as OBJ.CollectionIndexed).items))],
+			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.Map()  : new OBJ.Map(new Map<OBJ.Value, OBJ.Value>((tuple as OBJ.CollectionIndexed).items.map((pair) => (pair as OBJ.CollectionIndexed).items as [OBJ.Value, OBJ.Value])))],
 		]).get(this.base.source as ValidFunctionName)!(args[0] ?? undefined);
 	}
 

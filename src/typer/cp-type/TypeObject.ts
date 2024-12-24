@@ -29,7 +29,7 @@ export class TypeObject extends Type {
 		return 'Object';
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Value): boolean {
 		return (
 			v instanceof OBJ.List ||
 			v instanceof OBJ.Dict ||

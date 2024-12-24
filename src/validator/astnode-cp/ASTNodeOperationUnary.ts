@@ -94,8 +94,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v: OBJ.Object | null = this.operand.fold();
+	public override fold(): OBJ.Value | null {
+		const v: OBJ.Value | null = this.operand.fold();
 		if (!v) {
 			return v;
 		}

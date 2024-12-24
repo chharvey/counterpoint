@@ -70,5 +70,5 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * If {@link CPConfig|constant folding} is off, this should not be called.
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 */
-	public abstract fold(): OBJ.Object | null;
+	public abstract fold(): OBJ.Value | null;
 }

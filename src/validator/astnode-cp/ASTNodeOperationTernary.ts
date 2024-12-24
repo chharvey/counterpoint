@@ -78,8 +78,8 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand0.fold();
+	public override fold(): OBJ.Value | null {
+		const v0: OBJ.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}

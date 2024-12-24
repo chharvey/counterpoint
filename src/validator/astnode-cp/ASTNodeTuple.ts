@@ -58,11 +58,11 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const items: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
+	public override fold(): OBJ.Value | null {
+		const items: readonly (OBJ.Value | null)[] = this.children.map((c) => c.fold());
 		return (items.includes(null))
 			? null
-			: new OBJ.Tuple(items as OBJ.Object[]);
+			: new OBJ.Tuple(items as OBJ.Value[]);
 	}
 
 	@assignToDeco

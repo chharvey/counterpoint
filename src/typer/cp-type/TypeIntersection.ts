@@ -131,7 +131,7 @@ export class TypeIntersection extends Combinable {
 		return this.operands.map((s) => s instanceof TypeUnion ? `(${ s })` : s).join(' & ');
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Value): boolean {
 		return this.operands.every((s) => s.includes(v));
 	}
 

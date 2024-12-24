@@ -63,14 +63,14 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const properties: ReadonlyMap<bigint, OBJ.Object | null> = new Map(this.children.map((c) => [
+	public override fold(): OBJ.Value | null {
+		const properties: ReadonlyMap<bigint, OBJ.Value | null> = new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.fold(),
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
-			: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
+			: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Value>);
 	}
 
 	@assignToDeco

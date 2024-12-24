@@ -60,7 +60,7 @@ export class TypeDifference extends Type {
 		return [this.left, this.right].map((s) => s instanceof TypeUnion ? `(${ s })` : s).join(' - ');
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Value): boolean {
 		return this.left.includes(v) && !this.right.includes(v);
 	}
 

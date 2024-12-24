@@ -49,7 +49,7 @@ export abstract class Type {
 	 */
 	public constructor(
 		public readonly isMutable: boolean,
-		public readonly values:    ReadonlySet<OBJ.Object> = new Set(),
+		public readonly values:    ReadonlySet<OBJ.Value> = new Set(),
 	) {
 	}
 
@@ -134,7 +134,7 @@ export abstract class Type {
 	 * @param v the value to check
 	 * @returns Is `v` assignable to this type?
 	 */
-	public includes(v: OBJ.Object): boolean {
+	public includes(v: OBJ.Value): boolean {
 		return xjs.Set.has(this.values, v, languageValuesIdentical);
 	}
 
@@ -247,7 +247,7 @@ export class TypeInterface extends Type {
 		return super.hasMutable || [...this.properties.values()].some((t) => t.hasMutable);
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Value): boolean {
 		return [...this.properties.keys()].every((key) => key in v);
 	}
 

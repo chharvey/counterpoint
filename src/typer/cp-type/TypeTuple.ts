@@ -66,7 +66,7 @@ export class TypeTuple extends ValueType {
 	}
 
 	@instanceOf(() => OBJ.Tuple)
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Value): boolean {
 		return v.toType().isSubtypeOf(this);
 	}
 

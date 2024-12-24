@@ -21,7 +21,7 @@ export class TypeFloat extends ValueType {
 	}
 
 	@instanceOf(() => OBJ.Float)
-	public override includes(_: OBJ.Object): boolean {
+	public override includes(_: OBJ.Value): boolean {
 		return true;
 	}
 }

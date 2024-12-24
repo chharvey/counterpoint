@@ -66,7 +66,7 @@ export class TypeRecord extends ValueType {
 	}
 
 	@instanceOf(() => OBJ.Record)
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Value): boolean {
 		return v.toType().isSubtypeOf(this);
 	}
 

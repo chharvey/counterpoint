@@ -56,10 +56,10 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 
 	@memoizeMethod
 	public override fold(): OBJ.String | null {
-		const values: readonly (OBJ.Object | null)[] = [...this.children].map((expr) => expr.fold());
+		const values: readonly (OBJ.Value | null)[] = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))
 			? null
-			: (values as readonly OBJ.Object[])
+			: (values as readonly OBJ.Value[])
 				.map((value) => value.toCPString())
 				.reduce((a, b) => a.concatenate(b));
 	}

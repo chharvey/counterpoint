@@ -27,7 +27,7 @@ export class TypeUnit<Value extends OBJ.Primitive = OBJ.Primitive> extends Value
 		return this.value.toString();
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Value): boolean {
 		return this.value.identical(v);
 	}
 

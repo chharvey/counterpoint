@@ -18,7 +18,7 @@ export abstract class Combinable extends Type {
 	 * @param values the values assignable to this type
 	 */
 	public constructor(
-		values: ReadonlySet<OBJ.Object>,
+		values: ReadonlySet<OBJ.Value>,
 		public readonly operands: ReadonlyArrayOfAtLeast2<Type>,
 	) {
 		super(false, values);

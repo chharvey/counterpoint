@@ -27,7 +27,7 @@ export class TypeUnknown extends Type {
 		return 'unknown';
 	}
 
-	public override includes(_v: OBJ.Object): boolean {
+	public override includes(_v: OBJ.Value): boolean {
 		return true;
 	}
 

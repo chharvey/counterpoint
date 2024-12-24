@@ -76,7 +76,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
+	public override fold(): OBJ.Value | null {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
 		const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 		assert_instanceof(symbol, SymbolStructureVar);

@@ -38,7 +38,7 @@ export class TypeSet extends Type {
 		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Set.<${ this.invariant }>`;
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: OBJ.Value): boolean {
 		return v instanceof OBJ.Set && v.toType().isSubtypeOf(this);
 	}
 

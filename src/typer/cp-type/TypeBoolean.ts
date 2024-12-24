@@ -21,7 +21,7 @@ export class TypeBoolean extends ValueType {
 	}
 
 	@instanceOf(() => OBJ.Boolean)
-	public override includes(_: OBJ.Object): boolean {
+	public override includes(_: OBJ.Value): boolean {
 		return true;
 	}
 }
