@@ -4,7 +4,8 @@ import {
 } from '../../lib/index.js';
 import * as VALUE from '../cp-value/index.js';
 import {subtypeDeco} from './decorators.js';
-import {Type} from './Type.js';
+import type {Type} from './Type.js';
+import {ReferenceType} from './ReferenceType.js';
 
 
 
@@ -12,7 +13,7 @@ import {Type} from './Type.js';
  * Class for constructing the `Object` type.
  * @final
  */
-export class TypeObject extends Type {
+export class TypeObject extends ReferenceType {
 	public static readonly INSTANCE = new TypeObject();
 
 

@@ -29,12 +29,7 @@ import {
  * - TypeDifference
  * - ValueType
  * - TypeInterface
- * - TypeUnknown
- * - TypeObject
- * - TypeList
- * - TypeDict
- * - TypeSet
- * - TypeMap
+ * - ReferenceType
  */
 export abstract class Type {
 	static get #falsyTypes(): readonly Type[] {
@@ -79,10 +74,7 @@ export abstract class Type {
 	 * Return whether this type is a reference type or a value type.
 	 * @return `true` if this type is a reference type
 	 */
-	// eslint-disable-next-line @typescript-eslint/class-literal-property-style --- overridden in subclasses by getters
-	public get isReference(): boolean {
-		return true;
-	}
+	public abstract get isReference(): boolean;
 
 	/**
 	 * Return whether this type is mutable or has a mutable operand or component.
@@ -241,6 +233,10 @@ export class TypeInterface extends Type {
 
 	public override get isTopType(): boolean {
 		return this.properties.size === 0;
+	}
+
+	public override get isReference(): boolean {
+		return true;
 	}
 
 	public override get hasMutable(): boolean {

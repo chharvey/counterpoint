@@ -9,7 +9,8 @@ import {
 	subtypeDeco,
 	referenceSubtypeDeco,
 } from './decorators.js';
-import {Type} from './Type.js';
+import type {Type} from './Type.js';
+import {ReferenceType} from './ReferenceType.js';
 
 
 
@@ -17,7 +18,7 @@ import {Type} from './Type.js';
  * Class for constructing a `Set` type.
  * @final
  */
-export class TypeSet extends Type {
+export class TypeSet extends ReferenceType {
 	/**
 	 * Construct a new TypeSet object.
 	 * @param invariant a union of types in this set type

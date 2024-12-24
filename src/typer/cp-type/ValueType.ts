@@ -3,7 +3,7 @@ import {Type} from './Type.js';
 
 
 /**
- * Parent class for value types (types of objects that are passed by value).
+ * Parent class for value types (types of data that are passed by value).
  * Known subclasses:
  * - TypeNever
  * - TypeVoid

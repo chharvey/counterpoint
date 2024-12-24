@@ -3,7 +3,8 @@ import {
 	memoizeBinOp,
 } from '../../lib/index.js';
 import type * as VALUE from '../cp-value/index.js';
-import {Type} from './Type.js';
+import type {Type} from './Type.js';
+import {ReferenceType} from './ReferenceType.js';
 
 
 
@@ -11,7 +12,7 @@ import {Type} from './Type.js';
  * Class for constructing the Top Type, the type containing all values.
  * @final
  */
-export class TypeUnknown extends Type {
+export class TypeUnknown extends ReferenceType {
 	public static readonly INSTANCE = new TypeUnknown();
 
 

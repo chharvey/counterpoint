@@ -9,7 +9,8 @@ import {
 	subtypeDeco,
 	referenceSubtypeDeco,
 } from './decorators.js';
-import {Type} from './Type.js';
+import type {Type} from './Type.js';
+import {ReferenceType} from './ReferenceType.js';
 
 
 
@@ -17,7 +18,7 @@ import {Type} from './Type.js';
  * Class for constructing a `Dict` type.
  * @final
  */
-export class TypeDict extends Type {
+export class TypeDict extends ReferenceType {
 	/**
 	 * Construct a new TypeDict object.
 	 * @param invariant a union of types in this dict type

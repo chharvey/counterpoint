@@ -9,7 +9,8 @@ import {
 	subtypeDeco,
 	referenceSubtypeDeco,
 } from './decorators.js';
-import {Type} from './Type.js';
+import type {Type} from './Type.js';
+import {ReferenceType} from './ReferenceType.js';
 
 
 
@@ -17,7 +18,7 @@ import {Type} from './Type.js';
  * Class for constructing a `Map` type.
  * @final
  */
-export class TypeMap extends Type {
+export class TypeMap extends ReferenceType {
 	/**
 	 * Construct a new TypeMap object.
 	 * @param invariant_ant a union of antecedent types in this map type

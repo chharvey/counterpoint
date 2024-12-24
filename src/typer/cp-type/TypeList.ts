@@ -9,7 +9,8 @@ import {
 	referenceSubtypeDeco,
 } from './decorators.js';
 import {MUT_OPERATOR} from './utils-private.js';
-import {Type} from './Type.js';
+import type {Type} from './Type.js';
+import {ReferenceType} from './ReferenceType.js';
 
 
 
@@ -17,7 +18,7 @@ import {Type} from './Type.js';
  * Class for constructing a `List` type.
  * @final
  */
-export class TypeList extends Type {
+export class TypeList extends ReferenceType {
 	/**
 	 * Construct a new TypeList object.
 	 * @param invariant a union of types in this list type
