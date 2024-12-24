@@ -231,15 +231,18 @@ the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T�
 The Void type is also unlike Null in that no Counterpoint Language Value has type Void.
 
 #### Null
-The **Null** type has exactly one value, called `null`.
+The **Null** type has exactly one value, called `null`,
+the only instance of [`Null`](./intrinsics.md#null).
 It represents an object without any semantics.
 
 #### Boolean
-The **Boolean** type has two logical values, called `true` and `false`.
+The **Boolean** type has two logical values, called `true` and `false`,
+the only instances of [`Boolean`](./intrinsics.md#boolean).
 
 #### Number
 The **Number** type represents numerical values.
-The Number type is partitioned into two disjoint subtypes: Integer and Float.
+The Number type is partitioned into two disjoint subtypes: Integer and Float,
+instances of [`Integer`](./intrinsics.md#integer) and [`Float`](./intrinsics.md#float), respectively.
 
 ##### Integer
 The **Integer** type represents [mathematical integers](#real-integer-numbers).
@@ -294,6 +297,7 @@ The Float type contains “floating-point numbers”, which are 64-bit format va
 #### String
 The **String** type represents textual data and is stored as an immutable sequence of bytes.
 Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
+They are instances of [`String`](./intrinsics.md#string).
 
 Conceptually, strings are treated as immutable lists of [mathematical integers](#real-integer-numbers),
 where each integer represents a Unicode code point.
@@ -314,7 +318,8 @@ they are value objects because the string values themselves are copied when assi
 
 #### Object
 The **Object** type contains all references to Counterpoint Language Values.
-All reference types and value types are subtypes of **Object**.
+All reference types and value types are subtypes of **Object**,
+and are instances of [`Object`](./intrinsics.md#object).
 Some specific built-in subtypes of Object are described in the [Intrinsics](./intrinsics.md) chapter.
 
 #### Unknown
