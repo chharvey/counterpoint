@@ -197,13 +197,13 @@ Simple types do not comprise other types.
 
 - [Never](#never)
 - [Void](#void)
+- [Unknown](#unknown)
 - [Null](#null)
 - [Boolean](#boolean)
 - [Integer](#integer)
 - [Float](#float)
 - [String](#string)
 - [Object](#object)
-- [Unknown](#unknown)
 
 #### Never
 The **Never** type is the Botton Type and it represents the set of no values.
@@ -229,6 +229,16 @@ the [intersection](#intersection) \`And<‹T›, Void>\` is not necessarily the 
 the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T›\`.
 
 The Void type is also unlike Null in that no Counterpoint Language Value has type Void.
+
+#### Unknown
+The **Unknown** type is the Top Type and it represents the set of all possible values.
+Any value or expression is assignable to Unknown,
+and expressions of type Unknown are accepted almost nowhere.
+
+Unknown is a supertype of every type,
+and no type (except Unknown itself) is a supertype of Unknown.
+Unknown is the the “identity element” of the [intersection](#intersection) operation
+and the “absorption element” of the [union](#union) operation.
 
 #### Null
 The **Null** type has exactly one value, called `null`,
@@ -321,16 +331,6 @@ The **Object** type contains all references to Counterpoint Language Values.
 All reference types and value types are subtypes of **Object**,
 and are instances of [`Object`](./intrinsics.md#object).
 Some specific built-in subtypes of Object are described in the [Intrinsics](./intrinsics.md) chapter.
-
-#### Unknown
-The **Unknown** type is the Top Type and it represents the set of all possible values.
-Any value or expression is assignable to Unknown,
-and expressions of type Unknown are accepted almost nowhere.
-
-Unknown is a supertype of every type,
-and no type (except Unknown itself) is a supertype of Unknown.
-Unknown is the the “identity element” of the [intersection](#intersection) operation
-and the “absorption element” of the [union](#union) operation.
 
 
 ### Compound Types

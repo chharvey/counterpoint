@@ -29,14 +29,14 @@ describe('Type', () => {
 	}
 	const builtin_types: readonly TYPE.Type[] = [
 		TYPE.NEVER,
-		TYPE.UNKNOWN,
 		TYPE.VOID,
-		TYPE.OBJ,
+		TYPE.UNKNOWN,
 		TYPE.NULL,
 		TYPE.BOOL,
 		TYPE.INT,
 		TYPE.FLOAT,
 		TYPE.STR,
+		TYPE.OBJ,
 	];
 
 
@@ -80,7 +80,6 @@ describe('Type', () => {
 		it('any other types are not definitely falsy.', () => {
 			[
 				TYPE.UNKNOWN,
-				TYPE.OBJ,
 				OBJ.Boolean.TRUETYPE,
 				TYPE.BOOL,
 				TYPE.INT,
@@ -89,6 +88,7 @@ describe('Type', () => {
 				TYPE.VOID.union(TYPE.INT),
 				TYPE.NULL.union(TYPE.FLOAT),
 				FALSE.union(TYPE.STR),
+				TYPE.OBJ,
 			].forEach((t) => assert.ok(!t.isDefinitelyFalsy(), `Expected \`${ t }\` to not be definitely falsy.`));
 		});
 	});

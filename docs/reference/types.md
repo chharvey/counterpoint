@@ -47,6 +47,13 @@ There are no values assignble to `void`, but some expressions may have type `voi
 for example, property access and function calls.
 
 
+### `unknown`
+Type  `unknown` is at the top of the type hierarchy —
+it contains every value and expression, and is a supertype of every other type.
+
+Type `unknown` is used to describe a value or expression about which nothing is known.
+Therefore, the compiler will not assume it has any properties or is valid in some operations.
+
 ### `null`
 Type `null` has exactly one value, also called `null`.
 The meaning of the `null` value is not specified, but it’s most commonly used as a placeholder
@@ -409,13 +416,6 @@ I {{ "\u{2764}" }} Unicode!
 Type `Object` is the type of all values, that is, every value is assignable to `Object`.
 Expressions of type `void` cannot hold values, so they are not assignable to `Object`.
 
-
-### `unknown`
-Type  `unknown` is at the top of the type hierarchy —
-it contains every value and expression, and is a supertype of every other type.
-
-Type `unknown` is used to describe a value or expression about which nothing is known.
-Therefore, the compiler will not assume it has any properties or is valid in some operations.
 
 
 ### Unit Types
