@@ -558,17 +558,23 @@ describe('Type', () => {
 		});
 
 		describe('TypeTuple', () => {
+			it('is a subtype but not a supertype of `unknown`.', () => {
+				const tuple: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([
+					TYPE.INT,
+					TYPE.BOOL,
+					TYPE.STR,
+				]);
+				assert.ok(tuple.isSubtypeOf(TYPE.UNKNOWN), '[int, bool, str] <: unknown;');
+				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(tuple), 'unknown !<: [int, bool, str]');
+			});
 			it('is neither a subtype nor a supertype of `Object`.', () => {
-				assert.ok(!TYPE.TypeTuple.fromTypes([
+				const tuple: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([
 					TYPE.INT,
 					TYPE.BOOL,
 					TYPE.STR,
-				]).isSubtypeOf(TYPE.OBJ), '[int, bool, str] !<: Object;');
-				assert.ok(!TYPE.OBJ.isSubtypeOf(TYPE.TypeTuple.fromTypes([
-					TYPE.INT,
-					TYPE.BOOL,
-					TYPE.STR,
-				])), 'Object !<: [int, bool, str]');
+				]);
+				assert.ok(!tuple.isSubtypeOf(TYPE.OBJ), '[int, bool, str] !<: Object;');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(tuple), 'Object !<: [int, bool, str]');
 			});
 			it('matches per index.', () => {
 				assert.ok(TYPE.TypeTuple.fromTypes([
@@ -645,17 +651,23 @@ describe('Type', () => {
 		});
 
 		describe('TypeRecord', () => {
+			it('is a subtype but not a supertype of `unknown`.', () => {
+				const record: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+					[0x100n, TYPE.INT],
+					[0x101n, TYPE.BOOL],
+					[0x102n, TYPE.STR],
+				]));
+				assert.ok(record.isSubtypeOf(TYPE.UNKNOWN), '[x: int, y: bool, z: str] <: unknown;');
+				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(record), 'unknown !<: [x: int, y: bool, z: str]');
+			});
 			it('is neither a subtype nor a supertype of `Object`.', () => {
-				assert.ok(!TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
+				const record: TYPE.TypeRecord = TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT],
 					[0x101n, TYPE.BOOL],
 					[0x102n, TYPE.STR],
-				])).isSubtypeOf(TYPE.OBJ), '[x: int, y: bool, z: str] !<: Object;');
-				assert.ok(!TYPE.OBJ.isSubtypeOf(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
-					[0x100n, TYPE.INT],
-					[0x101n, TYPE.BOOL],
-					[0x102n, TYPE.STR],
-				]))), 'Object !<: [x: int, y: bool, z: str]');
+				]));
+				assert.ok(!record.isSubtypeOf(TYPE.OBJ), '[x: int, y: bool, z: str] !<: Object;');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(record), 'Object !<: [x: int, y: bool, z: str]');
 			});
 			it('matches per key.', () => {
 				assert.ok(TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>([
