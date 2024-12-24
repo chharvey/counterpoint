@@ -31,6 +31,7 @@ import {
 /**
  * A type intersection of two types `T` and `U` is the type
  * that contains values either assignable to `T` *or* assignable to `U`.
+ * @final
  */
 export class TypeIntersection extends Combinable {
 	/**

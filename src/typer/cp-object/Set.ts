@@ -16,6 +16,10 @@ import {Collection} from './Collection.js';
 
 
 
+/**
+ * A dynamic unordered sequence of values.
+ * @final
+ */
 class CPSet<T extends CPObject = CPObject> extends Collection {
 	public constructor(private readonly elements: ReadonlySet<T> = new Set()) {
 		super();

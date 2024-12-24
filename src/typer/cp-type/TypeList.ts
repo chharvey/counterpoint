@@ -13,6 +13,10 @@ import {Type} from './Type.js';
 
 
 
+/**
+ * Class for constructing a `List` type.
+ * @final
+ */
 export class TypeList extends Type {
 	/**
 	 * Construct a new TypeList object.

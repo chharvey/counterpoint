@@ -20,6 +20,10 @@ import {ValueType} from './ValueType.js';
 
 
 
+/**
+ * Class for constructing tuple literal types.
+ * @final
+ */
 export class TypeTuple extends ValueType {
 	/**
 	 * Construct a new TypeTuple from type items, assuming each item is required.

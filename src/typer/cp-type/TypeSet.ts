@@ -13,6 +13,10 @@ import {Type} from './Type.js';
 
 
 
+/**
+ * Class for constructing a `Set` type.
+ * @final
+ */
 export class TypeSet extends Type {
 	/**
 	 * Construct a new TypeSet object.

@@ -13,6 +13,10 @@ import {Type} from './Type.js';
 
 
 
+/**
+ * Class for constructing a `Map` type.
+ * @final
+ */
 export class TypeMap extends Type {
 	/**
 	 * Construct a new TypeMap object.

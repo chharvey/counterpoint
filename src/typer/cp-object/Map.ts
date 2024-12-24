@@ -19,6 +19,10 @@ import {Collection} from './Collection.js';
 
 
 
+/**
+ * A dynamic unordered association of value–value pairs.
+ * @final
+ */
 class CPMap<K extends CPObject = CPObject, V extends CPObject = CPObject> extends Collection {
 	public constructor(private readonly cases: ReadonlyMap<K, V> = new Map()) {
 		super();

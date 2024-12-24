@@ -20,6 +20,10 @@ import {ValueType} from './ValueType.js';
 
 
 
+/**
+ * Class for constructing record literal types.
+ * @final
+ */
 export class TypeRecord extends ValueType {
 	/**
 	 * Construct a new TypeRecord from type properties, assuming each property is required.

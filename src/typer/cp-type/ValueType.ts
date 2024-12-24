@@ -16,6 +16,7 @@ import {Type} from './Type.js';
  * - TypeRecord
  */
 export abstract class ValueType extends Type {
+	/** @final */
 	public override get isReference(): boolean {
 		return false;
 	}

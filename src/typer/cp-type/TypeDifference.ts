@@ -17,6 +17,7 @@ import {TypeUnion} from './TypeUnion.js';
 /**
  * A type difference of two types `T` and `U` is the type
  * that contains values assignable to `T` but *not* assignable to `U`.
+ * @final
  */
 export class TypeDifference extends Type {
 	/**

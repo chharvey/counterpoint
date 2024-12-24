@@ -11,6 +11,10 @@ import {CollectionIndexed} from './CollectionIndexed.js';
 
 
 
+/**
+ * A static ordered sequence of values.
+ * @final
+ */
 export class Tuple<T extends CPObject = CPObject> extends CollectionIndexed<T> {
 	@strictEqual
 	@instanceOf(() => Tuple)

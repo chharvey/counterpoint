@@ -9,6 +9,10 @@ import {CollectionKeyed} from './CollectionKeyed.js';
 
 
 
+/**
+ * A static structure of key–value pairs.
+ * @final
+ */
 export class Record<T extends CPObject = CPObject> extends CollectionKeyed<T> {
 	@strictEqual
 	@instanceOf(() => Record)

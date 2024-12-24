@@ -13,6 +13,10 @@ import {Type} from './Type.js';
 
 
 
+/**
+ * Class for constructing a `Dict` type.
+ * @final
+ */
 export class TypeDict extends Type {
 	/**
 	 * Construct a new TypeDict object.

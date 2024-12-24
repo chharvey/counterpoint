@@ -13,7 +13,6 @@ import {Primitive} from './Primitive.js';
 /**
  * The Counterpoint Language Type `Boolean` has two values: `true` and `false`.
  * These values are constant and the only two instances of this class.
- *
  * @final
  */
 class CPBoolean extends Primitive {

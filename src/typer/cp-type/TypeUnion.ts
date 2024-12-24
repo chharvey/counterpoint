@@ -32,6 +32,7 @@ import {
 /**
  * A type union of two types `T` and `U` is the type
  * that contains values both assignable to `T` *and* assignable to `U`.
+ * @final
  */
 export class TypeUnion extends Combinable {
 	/**
