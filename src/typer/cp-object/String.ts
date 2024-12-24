@@ -7,7 +7,7 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import type {Object as CPObject} from './Object.js';
+import type {Object as CPObject} from './Value.js';
 import {Primitive} from './Primitive.js';
 
 

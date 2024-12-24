@@ -1,5 +1,5 @@
 import {TYPE} from '../index.js';
-import type {Object as CPObject} from './Object.js';
+import type {Object as CPObject} from './Value.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
 
 

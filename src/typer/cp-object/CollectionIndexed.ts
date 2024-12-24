@@ -10,7 +10,7 @@ import {
 import type {AST} from '../../validator/index.js';
 import {language_values_equal} from '../utils-private.js';
 import {equalsDeco} from './decorators.js';
-import type {Object as CPObject} from './Object.js';
+import type {Object as CPObject} from './Value.js';
 import {Null} from './Null.js';
 import type {Integer} from './Integer.js';
 import {Collection} from './Collection.js';

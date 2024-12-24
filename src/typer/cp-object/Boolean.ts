@@ -5,7 +5,7 @@ import {
 	instanceOf,
 } from '../../lib/index.js';
 import type {TYPE} from '../index.js';
-import type {Object as CPObject} from './Object.js';
+import type {Object as CPObject} from './Value.js';
 import {Primitive} from './Primitive.js';
 
 

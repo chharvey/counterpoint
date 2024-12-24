@@ -6,7 +6,7 @@ import {
 } from '../../lib/index.js';
 import {TYPE} from '../index.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import type {Object as CPObject} from './Object.js';
+import type {Object as CPObject} from './Value.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
 
 

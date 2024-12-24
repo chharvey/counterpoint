@@ -10,7 +10,7 @@ import {
 	language_values_equal,
 } from '../utils-private.js';
 import {equalsDeco} from './decorators.js';
-import type {Object as CPObject} from './Object.js';
+import type {Object as CPObject} from './Value.js';
 import {Boolean as CPBoolean} from './Boolean.js';
 import {Collection} from './Collection.js';
 

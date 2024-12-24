@@ -8,7 +8,7 @@ import {
 } from '../../lib/index.js';
 import {Float} from './index.js';
 import {equalsDeco} from './decorators.js';
-import type {Object as CPObject} from './Object.js';
+import type {Object as CPObject} from './Value.js';
 import {Number as CPNumber} from './Number.js';
 
 

@@ -7,7 +7,7 @@ import {
 } from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {equalsDeco} from './decorators.js';
-import type {Object as CPObject} from './Object.js';
+import type {Object as CPObject} from './Value.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 

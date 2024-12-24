@@ -1,5 +1,5 @@
 import type binaryen from 'binaryen';
-import {Object as CPObject} from './Object.js';
+import {Object as CPObject} from './Value.js';
 
 
 

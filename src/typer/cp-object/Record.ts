@@ -4,7 +4,7 @@ import {
 	memoizeBinOp,
 } from '../../lib/index.js';
 import {TYPE} from '../index.js';
-import type {Object as CPObject} from './Object.js';
+import type {Object as CPObject} from './Value.js';
 import {CollectionKeyed} from './CollectionKeyed.js';
 
 
