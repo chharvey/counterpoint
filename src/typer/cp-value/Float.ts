@@ -4,8 +4,12 @@ import {
 	type Builder,
 	BinVect,
 } from '../../index.js';
-import {strictEqual} from '../../lib/index.js';
-import {Object as CPObject} from './Object.js';
+import {
+	strictEqual,
+	instanceOf,
+} from '../../lib/index.js';
+import {equalsDeco} from './decorators.js';
+import type {Value} from './Value.js';
 import {Number as CPNumber} from './Number.js';
 
 
@@ -25,13 +29,18 @@ export class Float extends CPNumber<Float> {
 	}
 
 	@strictEqual
-	public override identical(value: CPObject): boolean {
-		return value instanceof Float && Object.is(this.data, value.data);
+	@instanceOf(() => Float)
+	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
+	public override identical(value: Value): boolean {
+		return Object.is(this.data, (value as Float).data);
 	}
 
-	@CPObject.equalsDeco
-	public override equal(value: CPObject): boolean {
-		return value instanceof CPNumber && this.data === value.toFloat().data;
+	@strictEqual
+	@equalsDeco
+	@instanceOf(() => CPNumber)
+	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
+	public override equal(value: Value): boolean {
+		return this.data === (value as CPNumber).toFloat().data;
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {

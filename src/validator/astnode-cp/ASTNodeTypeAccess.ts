@@ -1,5 +1,5 @@
 import {
-	type OBJ,
+	type VALUE,
 	TYPE,
 } from '../../index.js';
 import {
@@ -40,7 +40,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		if (this.accessor instanceof ASTNodeIndexType) {
-			const accessor_type = this.accessor.val.eval() as TYPE.TypeUnit<OBJ.Integer>;
+			const accessor_type = this.accessor.val.eval() as TYPE.TypeUnit<VALUE.Integer>;
 			assert_instanceof(base_type, TYPE.TypeTuple);
 			return base_type.get(accessor_type.value, Operator.DOT, this.accessor);
 		} else {

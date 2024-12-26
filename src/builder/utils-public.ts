@@ -49,7 +49,7 @@ export function build_tuple_like<T>(
 			const temp_id: bigint    = builder.varCount;
 			const local:   LocalInfo = builder.addLocal(temp_id, bintype)[0].getLocalInfo(temp_id)!;
 			return [
-				                                   builder.module.tuple.extract(builder.module.local.tee(local.index, item_build, local.type), 0),
+				                                   builder.module.tuple.extract(builder.module.local.tee(local.index, item_build, local.type), 0), // eslint-disable-line @stylistic/indent
 				...expanded.slice(1).map((_, i) => builder.module.tuple.extract(builder.module.local.get(local.index,             local.type), i + 1)),
 			];
 		}

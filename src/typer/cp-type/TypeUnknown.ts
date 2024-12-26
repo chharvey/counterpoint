@@ -1,6 +1,10 @@
-import {strictEqual} from '../../lib/index.js';
-import type * as OBJ from '../cp-object/index.js';
-import {Type} from './Type.js';
+import {
+	strictEqual,
+	memoizeBinOp,
+} from '../../lib/index.js';
+import type * as VALUE from '../cp-value/index.js';
+import type {Type} from './Type.js';
+import {ReferenceType} from './ReferenceType.js';
 
 
 
@@ -8,7 +12,7 @@ import {Type} from './Type.js';
  * Class for constructing the Top Type, the type containing all values.
  * @final
  */
-export class TypeUnknown extends Type {
+export class TypeUnknown extends ReferenceType {
 	public static readonly INSTANCE = new TypeUnknown();
 
 
@@ -24,26 +28,12 @@ export class TypeUnknown extends Type {
 		return 'unknown';
 	}
 
-	public override includes(_v: OBJ.Object): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return true;
 	}
 
-	public override intersect(t: Type): Type {
-		/* 1-6 | `T  & unknown == T` */
-		return t;
-	}
-
-	public override union(_: Type): Type {
-		/* 1-8 | `T \| unknown == unknown` */
-		return this;
-	}
-
-	public override isSubtypeOf(t: Type): boolean {
-		/* 1-4 | `unknown <: T      <->  T == unknown` */
-		return t.isTopType;
-	}
-
 	@strictEqual
+	@memoizeBinOp(true)
 	public override equals(t: Type): boolean {
 		return t.isTopType;
 	}

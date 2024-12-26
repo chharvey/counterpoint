@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	OBJ,
+	VALUE,
 	type TYPE,
 } from '../../index.js';
 import {
@@ -31,11 +31,11 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return expression;
 	}
 
-	private static keywordValue(source: string): OBJ.Null | OBJ.Boolean {
+	private static keywordValue(source: string): VALUE.Null | VALUE.Boolean {
 		return (
-			(source === Keyword.NULL)  ? OBJ.Null.NULL     :
-			(source === Keyword.FALSE) ? OBJ.Boolean.FALSE :
-			(source === Keyword.TRUE)  ? OBJ.Boolean.TRUE  :
+			(source === Keyword.NULL)  ? VALUE.Null.NULL     :
+			(source === Keyword.FALSE) ? VALUE.Boolean.FALSE :
+			(source === Keyword.TRUE)  ? VALUE.Boolean.TRUE  :
 			assert.fail(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`)
 		);
 	}
@@ -53,21 +53,21 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	// explicitly leaving off `@ASTNodeExpression.buildDeco` for performance
+	// @buildDeco // explicitly leaving off for performance
 	public override build(): binaryen.ExpressionRef {
 		return this.fold().build(this.builder);
 	}
 
 	@memoizeMethod
-	// explicitly leaving off `@ASTNodeExpression.typeDeco` for performance
+	// @typeDeco // explicitly leaving off for performance
 	public override type(): TYPE.Type {
 		return this.fold().toType();
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Primitive {
+	public override fold(): VALUE.Primitive {
 		return (
-			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new OBJ.String(Validator.cookTokenTemplate(this.start_node.text)) :
+			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new VALUE.String(Validator.cookTokenTemplate(this.start_node.text)) :
 			(isSyntaxNodeType(this.start_node, 'integer'))                            ? valueOfTokenNumber(this.start_node.text, this.validator.config)   :
 			(assert.ok(
 				isSyntaxNodeType(this.start_node, 'primitive_literal'),
@@ -79,7 +79,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 				(assert.ok(
 					isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),
 					`Expected ${ token } to be a string.`,
-				), new OBJ.String(Validator.cookTokenString(token.text, this.validator.config)))
+				), new VALUE.String(Validator.cookTokenString(token.text, this.validator.config)))
 			))(this.start_node.children[0]))
 		);
 	}

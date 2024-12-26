@@ -1,4 +1,4 @@
-import * as VALUE from '../cp-object/index.js';
+import * as VALUE from '../cp-value/index.js';
 import type {TypeUnit} from './TypeUnit.js';
 import {TypeNever} from './TypeNever.js';
 import {TypeVoid} from './TypeVoid.js';

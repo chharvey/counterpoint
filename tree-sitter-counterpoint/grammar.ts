@@ -138,9 +138,8 @@ const DELIM_TEMPLATE     = '"""';
 const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
-const COMMENTER_MULTI    = '%%';
 
-/* eslint-disable function-call-argument-newline */
+/* eslint-disable @stylistic/function-call-argument-newline */
 const STRING_ESCAPE = choice(
 	DELIM_STRING,
 	ESCAPER,
@@ -175,7 +174,7 @@ const STRING_ESCAPE__COMMENT_SEPARATOR = choice(
 	'\n',
 	/[^"\\%stnru\n]/,
 );
-/* eslint-enable function-call-argument-newline */
+/* eslint-enable @stylistic/function-call-argument-newline */
 
 const STRING_CHAR = choice(
 	/[^"\\]/,
@@ -255,20 +254,22 @@ const OPT_COM = optional(',');
 function iff(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral {
 	return (condition) ? consequent : blank();
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ifSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
 	return (condition) ? [consequent] : [];
 }
 function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function repCom(production: RuleOrLiteral): ChoiceRule {
 	return optional(repCom1(production));
 }
 
 
 
+/* eslint-disable @stylistic/arrow-parens */
 module.exports = grammar({
-	/* eslint-disable arrow-parens */
 	name: 'counterpoint',
 
 	rules: {
@@ -308,7 +309,7 @@ module.exports = grammar({
 			_$ => token(seq(
 				(!separator) ? SIGNED_DIGIT_SEQ_DEC : SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
 				'.',
-				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR,
+				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR, // eslint-disable-line @stylistic/indent
 				optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
 			))
 		), 'separator'),
@@ -373,7 +374,7 @@ module.exports = grammar({
 		), 'named', 'optional'),
 
 		_items_type: $ => choice(
-			             seq(repCom1($.entry_type), OPT_COM),
+			             seq(repCom1($.entry_type), OPT_COM), // eslint-disable-line @stylistic/indent
 			seq(optional(seq(repCom1($.entry_type), ','    )), repCom1($[call('entry_type', 'optional')]), OPT_COM),
 		),
 
@@ -429,11 +430,11 @@ module.exports = grammar({
 		type_intersection_dfn: $ => seq($._type_intersection, '&', $._type_unary_keyword),
 		type_union_dfn:        $ => seq($._type_union,        '|', $._type_intersection),
 
-		/* eslint-disable function-paren-newline */
+		/* eslint-disable @stylistic/function-paren-newline */
 		_type: $ => choice(
 			$._type_union,
 		),
-		/* eslint-enable function-paren-newline */
+		/* eslint-enable @stylistic/function-paren-newline */
 
 
 		/* ## Expressions */
@@ -557,5 +558,5 @@ module.exports = grammar({
 		$._declaration,
 		$._statement,
 	],
-	/* eslint-enable arrow-parens */
 });
+/* eslint-enable @stylistic/arrow-parens */

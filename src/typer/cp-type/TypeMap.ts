@@ -1,12 +1,24 @@
-import {strictEqual} from '../../lib/index.js';
-import * as OBJ from '../cp-object/index.js';
-import {OBJ as TYPE_OBJ} from './index.js';
+import {
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
+} from '../../lib/index.js';
+import * as VALUE from '../cp-value/index.js';
 import {MUT_OPERATOR} from './utils-private.js';
-import {Type} from './Type.js';
+import {
+	subtypeDeco,
+	referenceSubtypeDeco,
+} from './decorators.js';
+import type {Type} from './Type.js';
+import {ReferenceType} from './ReferenceType.js';
 
 
 
-export class TypeMap extends Type {
+/**
+ * Class for constructing a `Map` type.
+ * @final
+ */
+export class TypeMap extends ReferenceType {
 	/**
 	 * Construct a new TypeMap object.
 	 * @param invariant_ant a union of antecedent types in this map type
@@ -18,7 +30,7 @@ export class TypeMap extends Type {
 		public readonly invariant_con: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.Map()]));
+		super(is_mutable, new Set([new VALUE.Map()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -29,20 +41,21 @@ export class TypeMap extends Type {
 		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Map.<${ this.invariant_ant }, ${ this.invariant_con }>`;
 	}
 
-	public override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Map && v.toType().isSubtypeOf(this);
+	public override includes(v: VALUE.Value): boolean {
+		return v instanceof VALUE.Map && v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual
-	@Type.memoizeSubtype
-	@Type.subtypeDeco
+	@memoizeBinOp()
+	@subtypeDeco
+	@referenceSubtypeDeco
+	@instanceOf(() => TypeMap)
 	public override isSubtypeOf(t: Type): boolean {
-		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeMap
-			&& (!t.isMutable || this.isMutable)
-			&& ((t.isMutable)
-				? this.invariant_ant.equals(t.invariant_ant) && this.invariant_con.equals(t.invariant_con)      // Invariance for mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.
-				: this.invariant_ant.equals(t.invariant_ant) && this.invariant_con.isSubtypeOf(t.invariant_con) // Invariance for immutable maps’ keys: `A == C && --> Map.<A, B> <: Map.<C, B>`. // Covariance for immutable maps’ values: `B <: D --> Map.<A, B> <: Map.<A, D>`.
+		return (
+			(!t.isMutable || this.isMutable) &&
+			(t.isMutable
+				? this.invariant_ant.equals((t as TypeMap).invariant_ant) && this.invariant_con.equals((t as TypeMap).invariant_con)      // Invariance for mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.
+				: this.invariant_ant.equals((t as TypeMap).invariant_ant) && this.invariant_con.isSubtypeOf((t as TypeMap).invariant_con) // Invariance for immutable maps’ keys: `A == C && --> Map.<A, B> <: Map.<C, B>`. // Covariance for immutable maps’ values: `B <: D --> Map.<A, B> <: Map.<A, D>`.
 			)
 		);
 	}

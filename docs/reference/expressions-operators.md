@@ -602,7 +602,7 @@ the compiler will assume they’re equal until it can find a property that misma
 If it can’t, it’ll just return true instead of diving down an infinitely long rabbit hole.
 
 Of course, the identity operator (`===`) *always* compares reference objects by reference,
-but compound value objects are still compared compositionally, and the same principle applies —
+but compound data values are still compared compositionally, and the same principle applies —
 assume equal until determined otherwise.
 
 

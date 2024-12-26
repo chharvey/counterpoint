@@ -6,8 +6,9 @@ import {
 	type CodeUnit,
 	strictEqual,
 	instanceOf,
+	memoizeBinOp,
 } from '../../lib/index.js';
-import {Object as CPObject} from './Object.js';
+import type {Value} from './Value.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -38,9 +39,9 @@ class CPString extends Primitive {
 	}
 
 	@strictEqual
-	@instanceOf(CPString)
-	@CPObject.memoizeSameness
-	public override identical(value: CPObject): boolean {
+	@instanceOf(() => CPString)
+	@memoizeBinOp(true, true)
+	public override identical(value: Value): boolean {
 		return xjs.Array.is<CodeUnit>(this.codeunits, (value as CPString).codeunits);
 	}
 
@@ -49,7 +50,7 @@ class CPString extends Primitive {
 	}
 
 	public override build(_: Builder): binaryen.ExpressionRef {
-		throw '`SolidString#build` not yet supported.';
+		throw '`CPString#build` not yet supported.';
 	}
 
 	/**

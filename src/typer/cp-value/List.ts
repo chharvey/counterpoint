@@ -1,10 +1,14 @@
 import {TYPE} from '../index.js';
-import type {Object as CPObject} from './Object.js';
+import type {Value} from './Value.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
 
 
 
-export class List<T extends CPObject = CPObject> extends CollectionIndexed<T> {
+/**
+ * A dynamic ordered sequence of values.
+ * @final
+ */
+export class List<T extends Value = Value> extends CollectionIndexed<T> {
 	public override toString(): string {
 		return `List.(${ super.toString() })`;
 	}

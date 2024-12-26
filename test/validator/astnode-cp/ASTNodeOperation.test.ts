@@ -5,7 +5,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
-	OBJ,
+	VALUE,
 	TYPE,
 	type Builder,
 	BinVect,
@@ -22,21 +22,19 @@ import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
 	CONFIG_FOLDING_COERCION_OFF,
-	typeUnitInt,
-	typeUnitFloat,
-	typeUnitStr,
+	typeUnit,
 	buildConst,
 } from '../../helpers.js';
 
 
 
-function typeOperations(tests: ReadonlyMap<string, OBJ.Primitive>, config: CPConfig = CONFIG_DEFAULT): void {
+function typeOperations(tests: ReadonlyMap<string, VALUE.Primitive>, config: CPConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type()),
 		[...tests.values()].map((expected) => new TYPE.TypeUnit(expected)),
 	);
 }
-function foldOperations(tests: Map<string, OBJ.Object>, config: CPConfig = CONFIG_DEFAULT): void {
+function foldOperations(tests: Map<string, VALUE.Value>, config: CPConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).fold()),
 		[...tests.values()],
@@ -78,8 +76,19 @@ describe('ASTNodeOperation', () => {
 		vge:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge',  [arg0, arg1], binaryen.v128),
 		vid:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',  [arg0, arg1], binaryen.v128),
 		veq:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',  [arg0, arg1], binaryen.v128),
-		veqq: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veqq', [arg0, arg1], binaryen.v128),
 	} as const;
+
+	/**
+	 * Return a block containing `(drop)` expressions for each of `args`, followed by a second expression.
+	 * If `final` is provided as an ExpressionRef, it is the second expression;
+	 * otherwise, a BinVect of boolean value is the second expression.
+	 */
+	function drop_then(mod: binaryen.Module, args: readonly binaryen.ExpressionRef[], final: binaryen.ExpressionRef | boolean): binaryen.ExpressionRef {
+		return mod.block(null, [
+			...args.map((arg) => mod.drop(arg)),
+			typeof final === 'number' ? final : new BinVect(mod, final).vect,
+		], binaryen.v128);
+	}
 
 
 
@@ -120,30 +129,30 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			context('with constant folding on.', () => {
 				it('returns a constant Boolean type for boolean unary operation of anything.', () => {
-					typeOperations(new Map<string, OBJ.Boolean>([
-						['!false;',  OBJ.Boolean.TRUE],
-						['!true;',   OBJ.Boolean.FALSE],
-						['!null;',   OBJ.Boolean.TRUE],
-						['!42;',     OBJ.Boolean.FALSE],
-						['!4.2e+1;', OBJ.Boolean.FALSE],
-						['?false;',  OBJ.Boolean.TRUE],
-						['?true;',   OBJ.Boolean.FALSE],
-						['?null;',   OBJ.Boolean.TRUE],
-						['?42;',     OBJ.Boolean.FALSE],
-						['?4.2e+1;', OBJ.Boolean.FALSE],
+					typeOperations(new Map<string, VALUE.Boolean>([
+						['!false;',  VALUE.Boolean.TRUE],
+						['!true;',   VALUE.Boolean.FALSE],
+						['!null;',   VALUE.Boolean.TRUE],
+						['!42;',     VALUE.Boolean.FALSE],
+						['!4.2e+1;', VALUE.Boolean.FALSE],
+						['?false;',  VALUE.Boolean.TRUE],
+						['?true;',   VALUE.Boolean.FALSE],
+						['?null;',   VALUE.Boolean.TRUE],
+						['?42;',     VALUE.Boolean.FALSE],
+						['?4.2e+1;', VALUE.Boolean.FALSE],
 
-						['![];',         OBJ.Boolean.FALSE],
-						['![42];',       OBJ.Boolean.FALSE],
-						['![a= 42];',    OBJ.Boolean.FALSE],
-						['!{};',         OBJ.Boolean.FALSE],
-						['!{42};',       OBJ.Boolean.FALSE],
-						['!{41 -> 42};', OBJ.Boolean.FALSE],
-						['?[];',         OBJ.Boolean.TRUE],
-						['?[42];',       OBJ.Boolean.FALSE],
-						['?[a= 42];',    OBJ.Boolean.FALSE],
-						['?{};',         OBJ.Boolean.TRUE],
-						['?{42};',       OBJ.Boolean.FALSE],
-						['?{41 -> 42};', OBJ.Boolean.FALSE],
+						['![];',         VALUE.Boolean.FALSE],
+						['![42];',       VALUE.Boolean.FALSE],
+						['![a= 42];',    VALUE.Boolean.FALSE],
+						['!{};',         VALUE.Boolean.FALSE],
+						['!{42};',       VALUE.Boolean.FALSE],
+						['!{41 -> 42};', VALUE.Boolean.FALSE],
+						['?[];',         VALUE.Boolean.TRUE],
+						['?[42];',       VALUE.Boolean.FALSE],
+						['?[a= 42];',    VALUE.Boolean.FALSE],
+						['?{};',         VALUE.Boolean.TRUE],
+						['?{42};',       VALUE.Boolean.FALSE],
+						['?{41 -> 42};', VALUE.Boolean.FALSE],
 					]));
 				});
 			});
@@ -162,7 +171,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(3).forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), OBJ.Boolean.TRUETYPE);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), VALUE.Boolean.TRUETYPE);
 						});
 					});
 					it('returns type `bool` for a supertype of `void` or a supertype of `null` or a supertype of `false`.', () => {
@@ -194,7 +203,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(2).forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), OBJ.Boolean.FALSETYPE);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), VALUE.Boolean.FALSETYPE);
 						});
 					});
 					it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
@@ -207,7 +216,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), OBJ.Boolean.FALSETYPE);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), VALUE.Boolean.FALSETYPE);
 						});
 					});
 				});
@@ -236,61 +245,65 @@ describe('ASTNodeOperation', () => {
 		describe('#fold', () => {
 			specify('[operator=NOT]', () => {
 				foldOperations(new Map([
-					['!false;',               OBJ.Boolean.TRUE],
-					['!true;',                OBJ.Boolean.FALSE],
-					['!null;',                OBJ.Boolean.TRUE],
-					['!0;',                   OBJ.Boolean.FALSE],
-					['!42;',                  OBJ.Boolean.FALSE],
-					['!0.0;',                 OBJ.Boolean.FALSE],
-					['!-0.0;',                OBJ.Boolean.FALSE],
-					['!4.2e+1;',              OBJ.Boolean.FALSE],
-					['!"";',                  OBJ.Boolean.FALSE],
-					['!"hello";',             OBJ.Boolean.FALSE],
-					['![];',                  OBJ.Boolean.FALSE],
-					['![42];',                OBJ.Boolean.FALSE],
-					['![a= 42];',             OBJ.Boolean.FALSE],
-					['!List.<int>([]);',      OBJ.Boolean.FALSE],
-					['!List.<int>([42]);',    OBJ.Boolean.FALSE],
-					['!Dict.<int>([a= 42]);', OBJ.Boolean.FALSE],
-					['!{};',                  OBJ.Boolean.FALSE],
-					['!{42};',                OBJ.Boolean.FALSE],
-					['!{41 -> 42};',          OBJ.Boolean.FALSE],
+					['!false;',               VALUE.Boolean.TRUE],
+					['!true;',                VALUE.Boolean.FALSE],
+					['!null;',                VALUE.Boolean.TRUE],
+					['!0;',                   VALUE.Boolean.FALSE],
+					['!42;',                  VALUE.Boolean.FALSE],
+					['!0.0;',                 VALUE.Boolean.FALSE],
+					['!-0.0;',                VALUE.Boolean.FALSE],
+					['!4.2e+1;',              VALUE.Boolean.FALSE],
+					['!"";',                  VALUE.Boolean.FALSE],
+					['!"hello";',             VALUE.Boolean.FALSE],
+					['![];',                  VALUE.Boolean.FALSE],
+					['![42];',                VALUE.Boolean.FALSE],
+					['![a= 42];',             VALUE.Boolean.FALSE],
+					['!List.<int>([]);',      VALUE.Boolean.FALSE],
+					['!List.<int>([42]);',    VALUE.Boolean.FALSE],
+					['!Dict.<int>([a= 42]);', VALUE.Boolean.FALSE],
+					['!{};',                  VALUE.Boolean.FALSE],
+					['!{42};',                VALUE.Boolean.FALSE],
+					['!{41 -> 42};',          VALUE.Boolean.FALSE],
 				]));
 			});
 			specify('[operator=EMP]', () => {
 				foldOperations(new Map([
-					['?false;',               OBJ.Boolean.TRUE],
-					['?true;',                OBJ.Boolean.FALSE],
-					['?null;',                OBJ.Boolean.TRUE],
-					['?0;',                   OBJ.Boolean.TRUE],
-					['?42;',                  OBJ.Boolean.FALSE],
-					['?0.0;',                 OBJ.Boolean.TRUE],
-					['?-0.0;',                OBJ.Boolean.TRUE],
-					['?4.2e+1;',              OBJ.Boolean.FALSE],
-					['?"";',                  OBJ.Boolean.TRUE],
-					['?"hello";',             OBJ.Boolean.FALSE],
-					['?[];',                  OBJ.Boolean.TRUE],
-					['?[42];',                OBJ.Boolean.FALSE],
-					['?[a= 42];',             OBJ.Boolean.FALSE],
-					['?List.<int>([]);',      OBJ.Boolean.TRUE],
-					['?List.<int>([42]);',    OBJ.Boolean.FALSE],
-					['?Dict.<int>([a= 42]);', OBJ.Boolean.FALSE],
-					['?{};',                  OBJ.Boolean.TRUE],
-					['?{42};',                OBJ.Boolean.FALSE],
-					['?{41 -> 42};',          OBJ.Boolean.FALSE],
+					['?false;',               VALUE.Boolean.TRUE],
+					['?true;',                VALUE.Boolean.FALSE],
+					['?null;',                VALUE.Boolean.TRUE],
+					['?0;',                   VALUE.Boolean.TRUE],
+					['?42;',                  VALUE.Boolean.FALSE],
+					['?0.0;',                 VALUE.Boolean.TRUE],
+					['?-0.0;',                VALUE.Boolean.TRUE],
+					['?4.2e+1;',              VALUE.Boolean.FALSE],
+					['?"";',                  VALUE.Boolean.TRUE],
+					['?"hello";',             VALUE.Boolean.FALSE],
+					['?[];',                  VALUE.Boolean.TRUE],
+					['?[42];',                VALUE.Boolean.FALSE],
+					['?[a= 42];',             VALUE.Boolean.FALSE],
+					['?List.<int>([]);',      VALUE.Boolean.TRUE],
+					['?List.<int>([42]);',    VALUE.Boolean.FALSE],
+					['?Dict.<int>([a= 42]);', VALUE.Boolean.FALSE],
+					['?{};',                  VALUE.Boolean.TRUE],
+					['?{42};',                VALUE.Boolean.FALSE],
+					['?{41 -> 42};',          VALUE.Boolean.FALSE],
 				]));
 			});
 		});
 
 
 		describe('#build', () => {
+			it('optimizes logical NOT operator by evaluating operand type.', () => {
+				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['!null;',  (builder) => drop_then(builder.module, [buildConst(builder)],        true)],
+					['!false;', (builder) => drop_then(builder.module, [buildConst(builder, false)], true)],
+					['!true;',  (builder) => drop_then(builder.module, [buildConst(builder, true)],  false)],
+					['!42;',    (builder) => drop_then(builder.module, [buildConst(builder, 42n)],   false)],
+					['!4.2;',   (builder) => drop_then(builder.module, [buildConst(builder, 4.2)],   false)],
+				]));
+			});
 			it('returns the correct operation.', () => {
-				buildOperations(new Map([
-					['!null;',  (builder) => CALL.vnot(builder.module, buildConst(builder))],
-					['!false;', (builder) => CALL.vnot(builder.module, buildConst(builder, false))],
-					['!true;',  (builder) => CALL.vnot(builder.module, buildConst(builder, true))],
-					['!42;',    (builder) => CALL.vnot(builder.module, buildConst(builder, 42n))],
-					['!4.2;',   (builder) => CALL.vnot(builder.module, buildConst(builder, 4.2))],
+				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 					['?null;',  (builder) => CALL.vemp(builder.module, buildConst(builder))],
 					['?false;', (builder) => CALL.vemp(builder.module, buildConst(builder, false))],
 					['?true;',  (builder) => CALL.vemp(builder.module, buildConst(builder, true))],
@@ -323,8 +336,8 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build()),
 					[
-						CALL.vnot(goal.builder.module, extracts[0]),
-						CALL.vnot(goal.builder.module, extracts[1]),
+						drop_then(goal.builder.module, [extracts[0]], false),
+						drop_then(goal.builder.module, [extracts[1]], false),
 						CALL.vemp(goal.builder.module, extracts[2]),
 						CALL.vemp(goal.builder.module, extracts[3]),
 						CALL.vneg(goal.builder.module, extracts[4]),
@@ -361,9 +374,9 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build()),
 					[
-						CALL.vnot(goal.builder.module, CALL.vnot(goal.builder.module, extracts[0])),
+						drop_then(goal.builder.module, [drop_then(goal.builder.module, [extracts[0]], false)], true),
 						CALL.vemp(goal.builder.module, CALL.vemp(goal.builder.module, extracts[1])),
-						CALL.vnot(goal.builder.module, CALL.vneg(goal.builder.module, extracts[2])),
+						drop_then(goal.builder.module, [CALL.vneg(goal.builder.module, extracts[2])], false),
 						CALL.vemp(goal.builder.module, CALL.vneg(goal.builder.module, extracts[3])),
 						CALL.vneg(goal.builder.module, CALL.vneg(goal.builder.module, extracts[4])),
 						CALL.vneg(goal.builder.module, CALL.vneg(goal.builder.module, extracts[5])),
@@ -403,12 +416,12 @@ describe('ASTNodeOperation', () => {
 				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
 					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build()
 				));
-				/* eslint-disable quote-props */
+				/* eslint-disable @stylistic/quote-props */
 				const const_ = {
 					'2':   buildConst(goal.builder, 2n),
 					'2.4': buildConst(goal.builder, 2.4),
 				} as const;
-				/* eslint-enable quote-props */
+				/* eslint-enable @stylistic/quote-props */
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build()),
 					[
@@ -440,7 +453,7 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build();
-				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = goal.children.slice(2).map((stmt) => { //
+				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = goal.children.slice(2).map((stmt) => {
 					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
 					return [
 						binexp.operand0.build(),
@@ -470,12 +483,12 @@ describe('ASTNodeOperation', () => {
 					(((goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(),
 					(((goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(),
 				];
-				/* eslint-disable quote-props */
+				/* eslint-disable @stylistic/quote-props */
 				const const_ = {
 					'2': buildConst(goal.builder, 2n),
 					'3': buildConst(goal.builder, 3n),
 				} as const;
-				/* eslint-enable quote-props */
+				/* eslint-enable @stylistic/quote-props */
 				const inners: readonly binaryen.ExpressionRef[] = [
 					CALL.vadd(goal.builder.module, extracts[0], const_['2']),
 					CALL.vadd(goal.builder.module, const_['2'], extracts[1]),
@@ -500,11 +513,11 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			context('with constant folding and int coersion on.', () => {
 				it('returns a constant Integer type for any operation of integers.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3 * 2;').type(), typeUnitInt(7n * 3n * 2n));
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3 * 2;').type(), typeUnit(7n * 3n * 2n));
 				});
 				it('returns a constant Float type for any operation of mix of integers and floats.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('3.0 * 2.7;')   .type(), typeUnitFloat(3.0 * 2.7));
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3.0 * 2;') .type(), typeUnitFloat(7 * 3.0 * 2));
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('3.0 * 2.7;')   .type(), typeUnit(3.0 * 2.7));
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3.0 * 2;') .type(), typeUnit(7 * 3.0 * 2));
 				});
 			});
 			context('with folding off but int coersion on.', () => {
@@ -513,7 +526,7 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(node.type(), TYPE.INT);
 					assert.deepStrictEqual(
 						[node.operand0.type(), node.operand1.type()],
-						[TYPE.INT,             typeUnitInt(2n)],
+						[TYPE.INT,             typeUnit(2n)],
 					);
 				});
 				it('returns Float for float arithmetic.', () => {
@@ -521,7 +534,7 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(node.type(), TYPE.FLOAT);
 					assert.deepStrictEqual(
 						[node.operand0.type(), node.operand1.type()],
-						[typeUnitInt(7n),      TYPE.FLOAT],
+						[typeUnit(7n),         TYPE.FLOAT],
 					);
 				});
 			});
@@ -554,20 +567,20 @@ describe('ASTNodeOperation', () => {
 		describe('#fold', () => {
 			it('computes the value of an integer operation of constants.', () => {
 				foldOperations(new Map([
-					['42 + 420;',           new OBJ.Integer(42n + 420n)],
-					['42 - 420;',           new OBJ.Integer(42n + -420n)],
-					[' 126 /  3;',          new OBJ.Integer(BigInt(Math.trunc( 126 /  3)))],
-					['-126 /  3;',          new OBJ.Integer(BigInt(Math.trunc(-126 /  3)))],
-					[' 126 / -3;',          new OBJ.Integer(BigInt(Math.trunc( 126 / -3)))],
-					['-126 / -3;',          new OBJ.Integer(BigInt(Math.trunc(-126 / -3)))],
-					[' 200 /  3;',          new OBJ.Integer(BigInt(Math.trunc( 200 /  3)))],
-					[' 200 / -3;',          new OBJ.Integer(BigInt(Math.trunc( 200 / -3)))],
-					['-200 /  3;',          new OBJ.Integer(BigInt(Math.trunc(-200 /  3)))],
-					['-200 / -3;',          new OBJ.Integer(BigInt(Math.trunc(-200 / -3)))],
-					['42 ^ 2 * 420;',       new OBJ.Integer((42n ** 2n * 420n) % (2n ** 16n))],
-					['2 ^ 15 + 2 ^ 14;',    new OBJ.Integer(-(2n ** 14n))],
-					['-(2 ^ 14) - 2 ^ 15;', new OBJ.Integer(2n ** 14n)],
-					['-(5) ^ +(2 * 3);',    new OBJ.Integer((-5n) ** (2n * 3n))],
+					['42 + 420;',           new VALUE.Integer(42n + 420n)],
+					['42 - 420;',           new VALUE.Integer(42n + -420n)],
+					[' 126 /  3;',          new VALUE.Integer(BigInt(Math.trunc( 126 /  3)))],
+					['-126 /  3;',          new VALUE.Integer(BigInt(Math.trunc(-126 /  3)))],
+					[' 126 / -3;',          new VALUE.Integer(BigInt(Math.trunc( 126 / -3)))],
+					['-126 / -3;',          new VALUE.Integer(BigInt(Math.trunc(-126 / -3)))],
+					[' 200 /  3;',          new VALUE.Integer(BigInt(Math.trunc( 200 /  3)))],
+					[' 200 / -3;',          new VALUE.Integer(BigInt(Math.trunc( 200 / -3)))],
+					['-200 /  3;',          new VALUE.Integer(BigInt(Math.trunc(-200 /  3)))],
+					['-200 / -3;',          new VALUE.Integer(BigInt(Math.trunc(-200 / -3)))],
+					['42 ^ 2 * 420;',       new VALUE.Integer((42n ** 2n * 420n) % (2n ** 16n))],
+					['2 ^ 15 + 2 ^ 14;',    new VALUE.Integer(-(2n ** 14n))],
+					['-(2 ^ 14) - 2 ^ 15;', new VALUE.Integer(2n ** 14n)],
+					['-(5) ^ +(2 * 3);',    new VALUE.Integer((-5n) ** (2n * 3n))],
 				]));
 			});
 			it('overflows integers properly.', () => {
@@ -575,14 +588,14 @@ describe('ASTNodeOperation', () => {
 					'2 ^ 15 + 2 ^ 14;',
 					'-(2 ^ 14) - 2 ^ 15;',
 				].map((src) => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).fold()), [
-					new OBJ.Integer(-(2n ** 14n)),
-					new OBJ.Integer(2n ** 14n),
+					new VALUE.Integer(-(2n ** 14n)),
+					new VALUE.Integer(2n ** 14n),
 				]);
 			});
 			it('computes the value of a float operation of constants.', () => {
-				foldOperations(new Map<string, OBJ.Object>([
-					['3.0e1 - 201.0e-1;', new OBJ.Float(30 - 20.1)],
-					['3 * 2.1;',          new OBJ.Float(3 * 2.1)],
+				foldOperations(new Map<string, VALUE.Value>([
+					['3.0e1 - 201.0e-1;', new VALUE.Float(30 - 20.1)],
+					['3 * 2.1;',          new VALUE.Float(3 * 2.1)],
 				]));
 			});
 			it('throws when performing an operation that does not yield a valid number.', () => {
@@ -620,13 +633,13 @@ describe('ASTNodeOperation', () => {
 	describe('ASTNodeOperationBinaryComparative', () => {
 		describe('#type', () => {
 			it('with folding and int coersion on.', () => {
-				typeOperations(new Map<string, OBJ.Boolean>([
-					['2 <  3;', OBJ.Boolean.TRUE],
-					['2 >  3;', OBJ.Boolean.FALSE],
-					['2 <= 3;', OBJ.Boolean.TRUE],
-					['2 >= 3;', OBJ.Boolean.FALSE],
-					['2 !< 3;', OBJ.Boolean.FALSE],
-					['2 !> 3;', OBJ.Boolean.TRUE],
+				typeOperations(new Map<string, VALUE.Boolean>([
+					['2 <  3;', VALUE.Boolean.TRUE],
+					['2 >  3;', VALUE.Boolean.FALSE],
+					['2 <= 3;', VALUE.Boolean.TRUE],
+					['2 >= 3;', VALUE.Boolean.FALSE],
+					['2 !< 3;', VALUE.Boolean.FALSE],
+					['2 !> 3;', VALUE.Boolean.TRUE],
 				]));
 			});
 			context('with folding off but int coersion on.', () => {
@@ -651,30 +664,30 @@ describe('ASTNodeOperation', () => {
 
 		specify('#fold', () => {
 			foldOperations(new Map([
-				['3   <  3;',   OBJ.Boolean.FALSE],
-				['3   >  3;',   OBJ.Boolean.FALSE],
-				['3   <= 3;',   OBJ.Boolean.TRUE],
-				['3   >= 3;',   OBJ.Boolean.TRUE],
-				['5.2 <  7.0;', OBJ.Boolean.TRUE],
-				['5.2 >  7.0;', OBJ.Boolean.FALSE],
-				['5.2 <= 7.0;', OBJ.Boolean.TRUE],
-				['5.2 >= 7.0;', OBJ.Boolean.FALSE],
-				['5.2 <  9;',   OBJ.Boolean.TRUE],
-				['5.2 >  9;',   OBJ.Boolean.FALSE],
-				['5.2 <= 9;',   OBJ.Boolean.TRUE],
-				['5.2 >= 9;',   OBJ.Boolean.FALSE],
-				['5   <  9.2;', OBJ.Boolean.TRUE],
-				['5   >  9.2;', OBJ.Boolean.FALSE],
-				['5   <= 9.2;', OBJ.Boolean.TRUE],
-				['5   >= 9.2;', OBJ.Boolean.FALSE],
-				['3.0 <  3;',   OBJ.Boolean.FALSE],
-				['3.0 >  3;',   OBJ.Boolean.FALSE],
-				['3.0 <= 3;',   OBJ.Boolean.TRUE],
-				['3.0 >= 3;',   OBJ.Boolean.TRUE],
-				['3   <  3.0;', OBJ.Boolean.FALSE],
-				['3   >  3.0;', OBJ.Boolean.FALSE],
-				['3   <= 3.0;', OBJ.Boolean.TRUE],
-				['3   >= 3.0;', OBJ.Boolean.TRUE],
+				['3   <  3;',   VALUE.Boolean.FALSE],
+				['3   >  3;',   VALUE.Boolean.FALSE],
+				['3   <= 3;',   VALUE.Boolean.TRUE],
+				['3   >= 3;',   VALUE.Boolean.TRUE],
+				['5.2 <  7.0;', VALUE.Boolean.TRUE],
+				['5.2 >  7.0;', VALUE.Boolean.FALSE],
+				['5.2 <= 7.0;', VALUE.Boolean.TRUE],
+				['5.2 >= 7.0;', VALUE.Boolean.FALSE],
+				['5.2 <  9;',   VALUE.Boolean.TRUE],
+				['5.2 >  9;',   VALUE.Boolean.FALSE],
+				['5.2 <= 9;',   VALUE.Boolean.TRUE],
+				['5.2 >= 9;',   VALUE.Boolean.FALSE],
+				['5   <  9.2;', VALUE.Boolean.TRUE],
+				['5   >  9.2;', VALUE.Boolean.FALSE],
+				['5   <= 9.2;', VALUE.Boolean.TRUE],
+				['5   >= 9.2;', VALUE.Boolean.FALSE],
+				['3.0 <  3;',   VALUE.Boolean.FALSE],
+				['3.0 >  3;',   VALUE.Boolean.FALSE],
+				['3.0 <= 3;',   VALUE.Boolean.TRUE],
+				['3.0 >= 3;',   VALUE.Boolean.TRUE],
+				['3   <  3.0;', VALUE.Boolean.FALSE],
+				['3   >  3.0;', VALUE.Boolean.FALSE],
+				['3   <= 3.0;', VALUE.Boolean.TRUE],
+				['3   >= 3.0;', VALUE.Boolean.TRUE],
 			]));
 		});
 
@@ -709,29 +722,29 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			context('with folding and int coersion on.', () => {
 				it('for numeric literals.', () => {
-					typeOperations(new Map<string, OBJ.Boolean>([
-						[' 2   ===  3;',   OBJ.Boolean.FALSE],
-						[' 2   !==  3;',   OBJ.Boolean.TRUE],
-						[' 2   ==   3;',   OBJ.Boolean.FALSE],
-						[' 2   !=   3;',   OBJ.Boolean.TRUE],
-						[' 0   === -0;',   OBJ.Boolean.TRUE],
-						[' 0   ==  -0;',   OBJ.Boolean.TRUE],
-						[' 0.0 ===  0;',   OBJ.Boolean.FALSE],
-						[' 0.0 ==   0;',   OBJ.Boolean.TRUE],
-						[' 0.0 === -0;',   OBJ.Boolean.FALSE],
-						[' 0.0 ==  -0;',   OBJ.Boolean.TRUE],
-						['-0.0 ===  0;',   OBJ.Boolean.FALSE],
-						['-0.0 ==   0;',   OBJ.Boolean.TRUE],
-						['-0.0 ===  0.0;', OBJ.Boolean.FALSE],
-						['-0.0 ==   0.0;', OBJ.Boolean.TRUE],
+					typeOperations(new Map<string, VALUE.Boolean>([
+						[' 2   ===  3;',   VALUE.Boolean.FALSE],
+						[' 2   !==  3;',   VALUE.Boolean.TRUE],
+						[' 2   ==   3;',   VALUE.Boolean.FALSE],
+						[' 2   !=   3;',   VALUE.Boolean.TRUE],
+						[' 0   === -0;',   VALUE.Boolean.TRUE],
+						[' 0   ==  -0;',   VALUE.Boolean.TRUE],
+						[' 0.0 ===  0;',   VALUE.Boolean.FALSE],
+						[' 0.0 ==   0;',   VALUE.Boolean.TRUE],
+						[' 0.0 === -0;',   VALUE.Boolean.FALSE],
+						[' 0.0 ==  -0;',   VALUE.Boolean.TRUE],
+						['-0.0 ===  0;',   VALUE.Boolean.FALSE],
+						['-0.0 ==   0;',   VALUE.Boolean.TRUE],
+						['-0.0 ===  0.0;', VALUE.Boolean.FALSE],
+						['-0.0 ==   0.0;', VALUE.Boolean.TRUE],
 					]));
 				});
 				it('returns the result of `this#fold`, wrapped in a `new TypeUnit`.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let a: Object = [];
-						let b: Object = [42];
-						let c: Object = [x= 42];
-						let d: Object = {41 -> 42};
+						let a: unknown = [];
+						let b: unknown = [42];
+						let c: unknown = [x= 42];
+						let d: Object  = {41 -> 42};
 						a !== [];
 						b !== [42];
 						c !== [x= 42];
@@ -754,12 +767,12 @@ describe('ASTNodeOperation', () => {
 					goal.typeCheck();
 					goal.children.slice(4).forEach((stmt) => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
-						const fold: OBJ.Object | null = expr.fold();
-						// @ts-expect-error --- `OBJ.Boolean` has a private constructor
-						assert_instanceof(fold, OBJ.Boolean);
+						const fold: VALUE.Value | null = expr.fold();
+						// @ts-expect-error --- `VALUE.Boolean` has a private constructor
+						assert_instanceof(fold, VALUE.Boolean);
 						assert.deepStrictEqual(
 							expr.type(),
-							new TYPE.TypeUnit<OBJ.Boolean>(fold),
+							new TYPE.TypeUnit<VALUE.Boolean>(fold),
 						);
 					});
 				});
@@ -769,25 +782,25 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('7 == 7.0;', CONFIG_FOLDING_OFF).type(), TYPE.BOOL);
 				});
 				it('returns `false` if operands are of different numeric types.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('7 === 7.0;', CONFIG_FOLDING_OFF).type(), OBJ.Boolean.FALSETYPE);
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('7 === 7.0;', CONFIG_FOLDING_OFF).type(), VALUE.Boolean.FALSETYPE);
 				});
 			});
 			context('with folding on but int coersion off.', () => {
 				it('returns `false` if operands are of different numeric types.', () => {
 					typeOperations(new Map([
-						['7   === 7.0;', OBJ.Boolean.FALSE],
-						['7   ==  7.0;', OBJ.Boolean.FALSE],
-						['7.0 === 7;',   OBJ.Boolean.FALSE],
-						['7.0 ==  7;',   OBJ.Boolean.FALSE],
+						['7   === 7.0;', VALUE.Boolean.FALSE],
+						['7   ==  7.0;', VALUE.Boolean.FALSE],
+						['7.0 === 7;',   VALUE.Boolean.FALSE],
+						['7.0 ==  7;',   VALUE.Boolean.FALSE],
 					]), CONFIG_COERCION_OFF);
 				});
 			});
 			context('with folding and int coersion off.', () => {
 				it('returns `false` if operands are of different numeric types.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource('7 == 7.0;'), OBJ.Boolean.FALSETYPE);
+					assert.deepStrictEqual(typeOfOperationFromSource('7 == 7.0;'), VALUE.Boolean.FALSETYPE);
 				});
 				it('returns `false` if operands are of disjoint types in general.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource('7 == null;'), OBJ.Boolean.FALSETYPE);
+					assert.deepStrictEqual(typeOfOperationFromSource('7 == null;'), VALUE.Boolean.FALSETYPE);
 				});
 			});
 		});
@@ -796,71 +809,71 @@ describe('ASTNodeOperation', () => {
 		describe('#fold', () => {
 			it('simple types.', () => {
 				foldOperations(new Map([
-					['null === null;',                          OBJ.Boolean.TRUE],
-					['null ==  null;',                          OBJ.Boolean.TRUE],
-					['null === 5;',                             OBJ.Boolean.FALSE],
-					['null ==  5;',                             OBJ.Boolean.FALSE],
-					['true === 1;',                             OBJ.Boolean.FALSE],
-					['true ==  1;',                             OBJ.Boolean.FALSE],
-					['true === 1.0;',                           OBJ.Boolean.FALSE],
-					['true ==  1.0;',                           OBJ.Boolean.FALSE],
-					['true === 5.1;',                           OBJ.Boolean.FALSE],
-					['true ==  5.1;',                           OBJ.Boolean.FALSE],
-					['true === true;',                          OBJ.Boolean.TRUE],
-					['true ==  true;',                          OBJ.Boolean.TRUE],
-					['3.0 === 3;',                              OBJ.Boolean.FALSE],
-					['3.0 ==  3;',                              OBJ.Boolean.TRUE],
-					['3 === 3.0;',                              OBJ.Boolean.FALSE],
-					['3 ==  3.0;',                              OBJ.Boolean.TRUE],
-					['0.0 === 0.0;',                            OBJ.Boolean.TRUE],
-					['0.0 ==  0.0;',                            OBJ.Boolean.TRUE],
-					['0.0 === -0.0;',                           OBJ.Boolean.FALSE],
-					['0.0 ==  -0.0;',                           OBJ.Boolean.TRUE],
-					['0 === -0;',                               OBJ.Boolean.TRUE],
-					['0 ==  -0;',                               OBJ.Boolean.TRUE],
-					['0.0 === 0;',                              OBJ.Boolean.FALSE],
-					['0.0 ==  0;',                              OBJ.Boolean.TRUE],
-					['0.0 === -0;',                             OBJ.Boolean.FALSE],
-					['0.0 ==  -0;',                             OBJ.Boolean.TRUE],
-					['-0.0 === 0;',                             OBJ.Boolean.FALSE],
-					['-0.0 ==  0;',                             OBJ.Boolean.TRUE],
-					['-0.0 === 0.0;',                           OBJ.Boolean.FALSE],
-					['-0.0 ==  0.0;',                           OBJ.Boolean.TRUE],
-					['"" == "";',                               OBJ.Boolean.TRUE],
-					['"a" === "a";',                            OBJ.Boolean.TRUE],
-					['"a" ==  "a";',                            OBJ.Boolean.TRUE],
-					['"hello\\u{20}world" === "hello world";',  OBJ.Boolean.TRUE],
-					['"hello\\u{20}world" ==  "hello world";',  OBJ.Boolean.TRUE],
-					['"a" !== "b";',                            OBJ.Boolean.TRUE],
-					['"a" !=  "b";',                            OBJ.Boolean.TRUE],
-					['"hello\\u{20}world" !== "hello20world";', OBJ.Boolean.TRUE],
-					['"hello\\u{20}world" !=  "hello20world";', OBJ.Boolean.TRUE],
+					['null === null;',                          VALUE.Boolean.TRUE],
+					['null ==  null;',                          VALUE.Boolean.TRUE],
+					['null === 5;',                             VALUE.Boolean.FALSE],
+					['null ==  5;',                             VALUE.Boolean.FALSE],
+					['true === 1;',                             VALUE.Boolean.FALSE],
+					['true ==  1;',                             VALUE.Boolean.FALSE],
+					['true === 1.0;',                           VALUE.Boolean.FALSE],
+					['true ==  1.0;',                           VALUE.Boolean.FALSE],
+					['true === 5.1;',                           VALUE.Boolean.FALSE],
+					['true ==  5.1;',                           VALUE.Boolean.FALSE],
+					['true === true;',                          VALUE.Boolean.TRUE],
+					['true ==  true;',                          VALUE.Boolean.TRUE],
+					['3.0 === 3;',                              VALUE.Boolean.FALSE],
+					['3.0 ==  3;',                              VALUE.Boolean.TRUE],
+					['3 === 3.0;',                              VALUE.Boolean.FALSE],
+					['3 ==  3.0;',                              VALUE.Boolean.TRUE],
+					['0.0 === 0.0;',                            VALUE.Boolean.TRUE],
+					['0.0 ==  0.0;',                            VALUE.Boolean.TRUE],
+					['0.0 === -0.0;',                           VALUE.Boolean.FALSE],
+					['0.0 ==  -0.0;',                           VALUE.Boolean.TRUE],
+					['0 === -0;',                               VALUE.Boolean.TRUE],
+					['0 ==  -0;',                               VALUE.Boolean.TRUE],
+					['0.0 === 0;',                              VALUE.Boolean.FALSE],
+					['0.0 ==  0;',                              VALUE.Boolean.TRUE],
+					['0.0 === -0;',                             VALUE.Boolean.FALSE],
+					['0.0 ==  -0;',                             VALUE.Boolean.TRUE],
+					['-0.0 === 0;',                             VALUE.Boolean.FALSE],
+					['-0.0 ==  0;',                             VALUE.Boolean.TRUE],
+					['-0.0 === 0.0;',                           VALUE.Boolean.FALSE],
+					['-0.0 ==  0.0;',                           VALUE.Boolean.TRUE],
+					['"" == "";',                               VALUE.Boolean.TRUE],
+					['"a" === "a";',                            VALUE.Boolean.TRUE],
+					['"a" ==  "a";',                            VALUE.Boolean.TRUE],
+					['"hello\\u{20}world" === "hello world";',  VALUE.Boolean.TRUE],
+					['"hello\\u{20}world" ==  "hello world";',  VALUE.Boolean.TRUE],
+					['"a" !== "b";',                            VALUE.Boolean.TRUE],
+					['"a" !=  "b";',                            VALUE.Boolean.TRUE],
+					['"hello\\u{20}world" !== "hello20world";', VALUE.Boolean.TRUE],
+					['"hello\\u{20}world" !=  "hello20world";', VALUE.Boolean.TRUE],
 				]));
 			});
 			it('with int coercion off, does not coerce ints into floats.', () => {
-				foldOperations(new Map<string, OBJ.Object>([
-					['7   === 7.0;', OBJ.Boolean.FALSE],
-					['7   ==  7.0;', OBJ.Boolean.FALSE],
-					['7.0 === 7;',   OBJ.Boolean.FALSE],
-					['7.0 ==  7;',   OBJ.Boolean.FALSE],
+				foldOperations(new Map<string, VALUE.Value>([
+					['7   === 7.0;', VALUE.Boolean.FALSE],
+					['7   ==  7.0;', VALUE.Boolean.FALSE],
+					['7.0 === 7;',   VALUE.Boolean.FALSE],
+					['7.0 ==  7;',   VALUE.Boolean.FALSE],
 				]), CONFIG_COERCION_OFF);
 			});
 			it('compound types.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: Object = [];
-					let b: Object = [42];
-					let c: Object = [x= 42];
-					let d: Object = List.<int>([]);
-					let e: Object = List.<int>([42]);
-					let f: Object = Dict.<int>([x= 42]);
-					let g: Object = {};
-					let h: Object = {42};
-					let i: Object = {41 -> 42};
+					let a: unknown = [];
+					let b: unknown = [42];
+					let c: unknown = [x= 42];
+					let d: Object  = List.<int>([]);
+					let e: Object  = List.<int>([42]);
+					let f: Object  = Dict.<int>([x= 42]);
+					let g: Object  = {};
+					let h: Object  = {42};
+					let i: Object  = {41 -> 42};
 
-					let bb: Object = [[42]];
-					let cc: Object = [x= [42]];
-					let hh: Object = {[42]};
-					let ii: Object = {[41] -> [42]};
+					let bb: unknown = [[42]];
+					let cc: unknown = [x= [42]];
+					let hh: Object  = {[42]};
+					let ii: Object  = {[41] -> [42]};
 
 					a === [];
 					b === [42];
@@ -912,75 +925,112 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.children.slice(13).forEach((stmt) => {
-					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), OBJ.Boolean.TRUE, stmt.source);
+					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), VALUE.Boolean.TRUE, stmt.source);
 				});
 			});
 			it('compound value types’ constituents are compared using same operand.', () => {
 				foldOperations(new Map([
-					['[   42.0] === [   42];',   OBJ.Boolean.FALSE],
-					['[   42.0] ==  [   42];',   OBJ.Boolean.TRUE],
-					['[a= 42.0] === [a= 42];',   OBJ.Boolean.FALSE],
-					['[a= 42.0] ==  [a= 42];',   OBJ.Boolean.TRUE],
-					['[    0.0] === [   -0.0];', OBJ.Boolean.FALSE],
-					['[    0.0] ==  [   -0.0];', OBJ.Boolean.TRUE],
-					['[a=  0.0] === [a= -0.0];', OBJ.Boolean.FALSE],
-					['[a=  0.0] ==  [a= -0.0];', OBJ.Boolean.TRUE],
+					['[   42.0] === [   42];',   VALUE.Boolean.FALSE],
+					['[   42.0] ==  [   42];',   VALUE.Boolean.TRUE],
+					['[a= 42.0] === [a= 42];',   VALUE.Boolean.FALSE],
+					['[a= 42.0] ==  [a= 42];',   VALUE.Boolean.TRUE],
+					['[    0.0] === [   -0.0];', VALUE.Boolean.FALSE],
+					['[    0.0] ==  [   -0.0];', VALUE.Boolean.TRUE],
+					['[a=  0.0] === [a= -0.0];', VALUE.Boolean.FALSE],
+					['[a=  0.0] ==  [a= -0.0];', VALUE.Boolean.TRUE],
 				]));
 			});
 		});
 
 
 		describe('#build', () => {
-			it('with int coercion on, coerces ints into floats when needed.', () => {
-				buildOperations(new Map([
-					['42 === 420;', (builder) => CALL.vid(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
-					['42 ==  420;', (builder) => CALL.veq(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
-					['42 === 4.2;', (builder) => CALL.vid(builder.module, buildConst(builder, 42n), buildConst(builder, 4.2))],
-					['42 ==  4.2;', (builder) => CALL.veq(builder.module, buildConst(builder, 42n), buildConst(builder, 4.2))],
+			const mod = new binaryen.Module();
+			function drop_then_false(expr1: binaryen.ExpressionRef, expr2: binaryen.ExpressionRef): binaryen.ExpressionRef {
+				return drop_then(mod, [expr1, expr2], false);
+			}
 
-					['4.2 === 42;',   (builder) => CALL.vid(builder.module, buildConst(builder, 4.2), buildConst(builder, 42n))],
-					['4.2 ==  42;',   (builder) => CALL.veq(builder.module, buildConst(builder, 4.2), buildConst(builder, 42n))],
-					['4.2 === 42.0;', (builder) => CALL.vid(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
-					['4.2 ==  42.0;', (builder) => CALL.veq(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
+			context('identity (`===`).', () => {
+				it('optimizes by evaluating operand types.', () => {
+					buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+						['42  === 4.2;', (builder) => drop_then_false(buildConst(builder, 42n), buildConst(builder, 4.2))],
+						['4.2 === 42;',  (builder) => drop_then_false(buildConst(builder, 4.2), buildConst(builder, 42n))],
 
-					['null === 0;',   (builder) => CALL.vid(builder.module, buildConst(builder), buildConst(builder, 0n))],
-					['null ==  0;',   (builder) => CALL.veq(builder.module, buildConst(builder), buildConst(builder, 0n))],
-					['null === 0.0;', (builder) => CALL.vid(builder.module, buildConst(builder), buildConst(builder, 0.0))],
-					['null ==  0.0;', (builder) => CALL.veq(builder.module, buildConst(builder), buildConst(builder, 0.0))],
+						['null === 0;',   (builder) => drop_then_false(buildConst(builder), buildConst(builder, 0n))],
+						['null === 0.0;', (builder) => drop_then_false(buildConst(builder), buildConst(builder, 0.0))],
 
-					['null === false;', (builder) => CALL.vid(builder.module, buildConst(builder), buildConst(builder, false))],
-					['null ==  false;', (builder) => CALL.veq(builder.module, buildConst(builder), buildConst(builder, false))],
-					['null === true;',  (builder) => CALL.vid(builder.module, buildConst(builder), buildConst(builder, true))],
-					['null ==  true;',  (builder) => CALL.veq(builder.module, buildConst(builder), buildConst(builder, true))],
+						['null  === false;', (builder) => drop_then_false(buildConst(builder), buildConst(builder, false))],
+						['null  === true;',  (builder) => drop_then_false(buildConst(builder), buildConst(builder, true))],
+						['false === true;',  (builder) => drop_then_false(buildConst(builder, false), buildConst(builder, true))],
 
-					['false === 0;',   (builder) => CALL.vid(builder.module, buildConst(builder, false), buildConst(builder, 0n))],
-					['false ==  0;',   (builder) => CALL.veq(builder.module, buildConst(builder, false), buildConst(builder, 0n))],
-					['false === 0.0;', (builder) => CALL.vid(builder.module, buildConst(builder, false), buildConst(builder, 0.0))],
-					['false ==  0.0;', (builder) => CALL.veq(builder.module, buildConst(builder, false), buildConst(builder, 0.0))],
+						['false === 0;',   (builder) => drop_then_false(buildConst(builder, false), buildConst(builder, 0n))],
+						['false === 0.0;', (builder) => drop_then_false(buildConst(builder, false), buildConst(builder, 0.0))],
 
-					['true === 1;',   (builder) => CALL.vid(builder.module, buildConst(builder, true), buildConst(builder, 1n))],
-					['true ==  1;',   (builder) => CALL.veq(builder.module, buildConst(builder, true), buildConst(builder, 1n))],
-					['true === 1.0;', (builder) => CALL.vid(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
-					['true ==  1.0;', (builder) => CALL.veq(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
-				]));
+						['true === 1;',   (builder) => drop_then_false(buildConst(builder, true), buildConst(builder, 1n))],
+						['true === 1.0;', (builder) => drop_then_false(buildConst(builder, true), buildConst(builder, 1.0))],
+					]));
+				});
+				it('calls `vid` when operands are same numeric type.', () => {
+					buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+						['42  === 420;',  (builder) => CALL.vid(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+						['4.2 === 42.0;', (builder) => CALL.vid(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
+					]));
+				});
 			});
-			it('with int coercion off, does not coerce ints into floats.', () => {
-				buildOperations(new Map([
-					['42 === 4.2;', (builder) => CALL.vid (builder.module, buildConst(builder, 42n), buildConst(builder, 4.2))],
-					['42 ==  4.2;', (builder) => CALL.veqq(builder.module, buildConst(builder, 42n), buildConst(builder, 4.2))],
 
-					['4.2 === 42;', (builder) => CALL.vid (builder.module, buildConst(builder, 4.2), buildConst(builder, 42n))],
-					['4.2 ==  42;', (builder) => CALL.veqq(builder.module, buildConst(builder, 4.2), buildConst(builder, 42n))],
+			context('equality (`==`).', () => {
+				context('with int coercion on.', () => {
+					it('optimizes by evaluating operand types, ignoring numeric types.', () => {
+						buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+							['null == 0;',   (builder) => drop_then_false(buildConst(builder), buildConst(builder, 0n))],
+							['null == 0.0;', (builder) => drop_then_false(buildConst(builder), buildConst(builder, 0.0))],
 
-					['null === 0.0;', (builder) => CALL.vid  (builder.module, buildConst(builder), buildConst(builder, 0.0))],
-					['null ==  0.0;', (builder) => CALL.veqq (builder.module, buildConst(builder), buildConst(builder, 0.0))],
+							['null  == false;', (builder) => drop_then_false(buildConst(builder), buildConst(builder, false))],
+							['null  == true;',  (builder) => drop_then_false(buildConst(builder), buildConst(builder, true))],
+							['false == true;',  (builder) => drop_then_false(buildConst(builder, false), buildConst(builder, true))],
 
-					['false === 0.0;', (builder) => CALL.vid (builder.module, buildConst(builder, false), buildConst(builder, 0.0))],
-					['false ==  0.0;', (builder) => CALL.veqq(builder.module, buildConst(builder, false), buildConst(builder, 0.0))],
+							['false == 0;',   (builder) => drop_then_false(buildConst(builder, false), buildConst(builder, 0n))],
+							['false == 0.0;', (builder) => drop_then_false(buildConst(builder, false), buildConst(builder, 0.0))],
 
-					['true === 1.0;', (builder) => CALL.vid (builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
-					['true ==  1.0;', (builder) => CALL.veqq(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
-				]), CONFIG_FOLDING_COERCION_OFF);
+							['true == 1;',   (builder) => drop_then_false(buildConst(builder, true), buildConst(builder, 1n))],
+							['true == 1.0;', (builder) => drop_then_false(buildConst(builder, true), buildConst(builder, 1.0))],
+						]));
+					});
+					it('calls `veq` when operands are same numeric type or when int coercion is allowed.', () => {
+						buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+							['42  == 420;',  (builder) => CALL.veq(mod, buildConst(builder, 42n), buildConst(builder, 420n))],
+							['42  == 4.2;',  (builder) => CALL.veq(mod, buildConst(builder, 42n), buildConst(builder, 4.2))],
+							['4.2 == 42;',   (builder) => CALL.veq(mod, buildConst(builder, 4.2), buildConst(builder, 42n))],
+							['4.2 == 42.0;', (builder) => CALL.veq(mod, buildConst(builder, 4.2), buildConst(builder, 42.0))],
+						]));
+					});
+				});
+				context('with int coercion off.', () => {
+					it('optimizes by evaluating operand types, without coercion.', () => {
+						buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+							['42  == 4.2;',  (builder) => drop_then_false(buildConst(builder, 42n), buildConst(builder, 4.2))],
+							['4.2 == 42;',   (builder) => drop_then_false(buildConst(builder, 4.2), buildConst(builder, 42n))],
+
+							['null == 0;',   (builder) => drop_then_false(buildConst(builder), buildConst(builder, 0n))],
+							['null == 0.0;', (builder) => drop_then_false(buildConst(builder), buildConst(builder, 0.0))],
+
+							['null  == false;', (builder) => drop_then_false(buildConst(builder), buildConst(builder, false))],
+							['null  == true;',  (builder) => drop_then_false(buildConst(builder), buildConst(builder, true))],
+							['false == true;',  (builder) => drop_then_false(buildConst(builder, false), buildConst(builder, true))],
+
+							['false == 0;',   (builder) => drop_then_false(buildConst(builder, false), buildConst(builder, 0n))],
+							['false == 0.0;', (builder) => drop_then_false(buildConst(builder, false), buildConst(builder, 0.0))],
+
+							['true == 1;',   (builder) => drop_then_false(buildConst(builder, true), buildConst(builder, 1n))],
+							['true == 1.0;', (builder) => drop_then_false(buildConst(builder, true), buildConst(builder, 1.0))],
+						]), CONFIG_FOLDING_COERCION_OFF);
+					});
+					it('calls `veq` when operands are same numeric type.', () => {
+						buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+							['42  == 420;',  (builder) => CALL.veq(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+							['4.2 == 42.0;', (builder) => CALL.veq(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
+						]), CONFIG_FOLDING_COERCION_OFF);
+					});
+				});
 			});
 		});
 	});
@@ -990,17 +1040,17 @@ describe('ASTNodeOperation', () => {
 	describe('ASTNodeOperationBinaryLogical', () => {
 		describe('#type', () => {
 			it('with constant folding on.', () => {
-				typeOperations(new Map<string, OBJ.Primitive>([
-					['null  && false;', OBJ.Null.NULL],
-					['false && null;',  OBJ.Boolean.FALSE],
-					['true  && null;',  OBJ.Null.NULL],
-					['false && 42;',    OBJ.Boolean.FALSE],
-					['4.2   && true;',  OBJ.Boolean.TRUE],
-					['null  || false;', OBJ.Boolean.FALSE],
-					['false || null;',  OBJ.Null.NULL],
-					['true  || null;',  OBJ.Boolean.TRUE],
-					['false || 42;',    new OBJ.Integer(42n)],
-					['4.2   || true;',  new OBJ.Float(4.2)],
+				typeOperations(new Map<string, VALUE.Primitive>([
+					['null  && false;', VALUE.Null.NULL],
+					['false && null;',  VALUE.Boolean.FALSE],
+					['true  && null;',  VALUE.Null.NULL],
+					['false && 42;',    VALUE.Boolean.FALSE],
+					['4.2   && true;',  VALUE.Boolean.TRUE],
+					['null  || false;', VALUE.Boolean.FALSE],
+					['false || null;',  VALUE.Null.NULL],
+					['true  || null;',  VALUE.Boolean.TRUE],
+					['false || 42;',    new VALUE.Integer(42n)],
+					['4.2   || true;',  new VALUE.Float(4.2)],
 				]));
 			});
 			context('with constant folding off.', () => {
@@ -1018,12 +1068,12 @@ describe('ASTNodeOperation', () => {
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL,
-							TYPE.NULL.union(OBJ.Boolean.FALSETYPE),
+							TYPE.NULL.union(VALUE.Boolean.FALSETYPE),
 							TYPE.NULL.union(TYPE.VOID),
 						]);
 					});
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: TYPE.TypeUnit<OBJ.String> = typeUnitStr('hello');
+						const hello: TYPE.TypeUnit<VALUE.String> = typeUnit('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null | int = null;
 							let var b: null | int = 42;
@@ -1041,9 +1091,9 @@ describe('ASTNodeOperation', () => {
 						return assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL.union(hello),
 							TYPE.NULL.union(hello),
-							OBJ.Boolean.FALSETYPE.union(hello),
-							OBJ.Boolean.FALSETYPE.union(hello),
-							TYPE.VOID.union(typeUnitInt(42n)),
+							VALUE.Boolean.FALSETYPE.union(hello),
+							VALUE.Boolean.FALSETYPE.union(hello),
+							TYPE.VOID.union(typeUnit(42n)),
 						]);
 					});
 					it('returns `right` if left does not contain `void` nor `null` nor `false`.', () => {
@@ -1056,7 +1106,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
-							OBJ.Boolean.TRUETYPE,
+							VALUE.Boolean.TRUETYPE,
 							TYPE.NULL,
 						]);
 					});
@@ -1074,13 +1124,13 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
-							OBJ.Boolean.FALSETYPE,
-							typeUnitInt(42n),
-							typeUnitFloat(4.2),
+							VALUE.Boolean.FALSETYPE,
+							typeUnit(42n),
+							typeUnit(4.2),
 						]);
 					});
 					it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: TYPE.TypeUnit<OBJ.String> = typeUnitStr('hello');
+						const hello: TYPE.TypeUnit<VALUE.String> = typeUnit('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null | int = null;
 							let var b: null | int = 42;
@@ -1098,9 +1148,9 @@ describe('ASTNodeOperation', () => {
 						assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.INT.union(hello),
 							TYPE.INT.union(hello),
-							OBJ.Boolean.TRUETYPE.union(hello),
-							OBJ.Boolean.TRUETYPE.union(TYPE.FLOAT).union(hello),
-							TYPE.STR.union(typeUnitInt(42n)),
+							VALUE.Boolean.TRUETYPE.union(hello),
+							VALUE.Boolean.TRUETYPE.union(TYPE.FLOAT).union(hello),
+							TYPE.STR.union(typeUnit(42n)),
 						]);
 					});
 					it('returns `left` if it does not contain `void` nor `null` nor `false`.', () => {
@@ -1123,17 +1173,17 @@ describe('ASTNodeOperation', () => {
 
 
 		specify('#fold', () => {
-			foldOperations(new Map<string, OBJ.Object>([
-				['null && 5;',     OBJ.Null.NULL],
-				['null || 5;',     new OBJ.Integer(5n)],
-				['5 && null;',     OBJ.Null.NULL],
-				['5 || null;',     new OBJ.Integer(5n)],
-				['5.1 && true;',   OBJ.Boolean.TRUE],
-				['5.1 || true;',   new OBJ.Float(5.1)],
-				['3.1 && 5;',      new OBJ.Integer(5n)],
-				['3.1 || 5;',      new OBJ.Float(3.1)],
-				['false && null;', OBJ.Boolean.FALSE],
-				['false || null;', OBJ.Null.NULL],
+			foldOperations(new Map<string, VALUE.Value>([
+				['null && 5;',     VALUE.Null.NULL],
+				['null || 5;',     new VALUE.Integer(5n)],
+				['5 && null;',     VALUE.Null.NULL],
+				['5 || null;',     new VALUE.Integer(5n)],
+				['5.1 && true;',   VALUE.Boolean.TRUE],
+				['5.1 || true;',   new VALUE.Float(5.1)],
+				['3.1 && 5;',      new VALUE.Integer(5n)],
+				['3.1 || 5;',      new VALUE.Float(3.1)],
+				['false && null;', VALUE.Boolean.FALSE],
+				['false || null;', VALUE.Null.NULL],
 			]));
 		});
 
@@ -1168,89 +1218,154 @@ describe('ASTNodeOperation', () => {
 				);
 			}
 
-			it('returns a special case of `(if)`.', () => {
-				buildOperations(new Map([
-					['42 && 420;', (builder) => create_if(
+			it('optimizes by evaluating left operand type.', () => {
+				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['42 && 420;',        (builder) => drop_then(builder.module, [buildConst(builder, 42n)], buildConst(builder, 420n))],
+					['4.2 || -420;',      (builder) => buildConst(builder, 4.2)],
+					['null && 201.0e-1;', (builder) => buildConst(builder)],
+					['false || null;',    (builder) => drop_then(builder.module, [buildConst(builder, false)], buildConst(builder))],
+					['true && 201.0e-1;', (builder) => drop_then(builder.module, [buildConst(builder, true)], buildConst(builder, 20.1))],
+
+					['1 && 2 || 3 && 4;', (builder) => drop_then(
 						builder.module,
-						[0, buildConst(builder, 42n), binaryen.v128],
-						(getter) => [buildConst(builder, 420n), getter],
+						[buildConst(builder, 1n)],
+						buildConst(builder, 2n),
 					)],
-					['4.2 || -420;', (builder) => create_if(
+					['null && 2 || 3 && null;', (builder) => drop_then(
 						builder.module,
-						[0, buildConst(builder, 4.2), binaryen.v128],
-						(getter) => [getter, buildConst(builder, -420n)],
+						[buildConst(builder)],
+						drop_then(
+							builder.module,
+							[buildConst(builder, 3n)],
+							buildConst(builder),
+						),
 					)],
-					['null && 201.0e-1;', (builder) => create_if(
+					['(1 || 2) && (3 || 4);', (builder) => drop_then(
 						builder.module,
-						[0, buildConst(builder), binaryen.v128],
-						(getter) => [buildConst(builder, 20.1), getter],
+						[buildConst(builder, 1n)],
+						buildConst(builder, 3n),
 					)],
-					['false || null;', (builder) => create_if(
+					['(1 || null) && (null || 4);', (builder) => drop_then(
 						builder.module,
-						[0, buildConst(builder, false), binaryen.v128],
-						(getter) => [getter, buildConst(builder)],
-					)],
-					['true && 201.0e-1;', (builder) => create_if(
-						builder.module,
-						[0, buildConst(builder, true), binaryen.v128],
-						(getter) => [buildConst(builder, 20.1), getter],
+						[buildConst(builder, 1n)],
+						drop_then(
+							builder.module,
+							[buildConst(builder)],
+							buildConst(builder, 4n),
+						),
 					)],
 				]));
+			});
+
+			it('returns a special case of `(if)`.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let a: unknown = 42;
+					let b: unknown = 4.2;
+					let c: unknown = null;
+					let d: unknown = false;
+					let e: unknown = true;
+
+					a && 420;
+					b || -420;
+					c && 201.0e-1;
+					d || null;
+					e && 201.0e-1;
+				`, CONFIG_FOLDING_OFF);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build();
+				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = goal.children.slice(5).map((stmt) => {
+					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
+					return [
+						binexp.operand0.build(),
+						binexp.operand1.build(),
+					];
+				});
+				return assertEqualBins(
+					goal.children.slice(5).map((stmt) => stmt.build()),
+					[
+						create_if(
+							goal.builder.module,
+							[5, extracts[0][0], binaryen.v128],
+							(getter) => [extracts[0][1], getter],
+						),
+						create_if(
+							goal.builder.module,
+							[6, extracts[1][0], binaryen.v128],
+							(getter) => [getter, extracts[1][1]],
+						),
+						create_if(
+							goal.builder.module,
+							[7, extracts[2][0], binaryen.v128],
+							(getter) => [extracts[2][1], getter],
+						),
+						create_if(
+							goal.builder.module,
+							[8, extracts[3][0], binaryen.v128],
+							(getter) => [getter, extracts[3][1]],
+						),
+						create_if(
+							goal.builder.module,
+							[9, extracts[4][0], binaryen.v128],
+							(getter) => [extracts[4][1], getter],
+						),
+					].map((expected) => goal.builder.module.drop(expected)),
+				);
 			});
 
 			it('counts internal variables correctly.', () => {
-				buildOperations(new Map([
-					['1 && 2 || 3 && 4;', (builder) => create_if(
-						builder.module,
-						[2, create_if(
-							builder.module,
-							[0, buildConst(builder, 1n), binaryen.v128],
-							(getter) => [buildConst(builder, 2n), getter],
-						), binaryen.v128],
-						(getter) => [getter, create_if(
-							builder.module,
-							[1, buildConst(builder, 3n), binaryen.v128],
-							(getter_) => [buildConst(builder, 4n), getter_],
-						)],
-					)],
-					['1 && 2.0 || 3 && 4.0;', (builder) => create_if(
-						builder.module,
-						[2, create_if(
-							builder.module,
-							[0, buildConst(builder, 1n), binaryen.v128],
-							(getter) => [buildConst(builder, 2.0), getter],
-						), binaryen.v128],
-						(getter) => [
-							getter,
-							create_if(
-								builder.module,
-								[1, buildConst(builder, 3n), binaryen.v128],
-								(getter_) => [buildConst(builder, 4.0), getter_],
-							),
-						],
-					)],
-				]));
-			});
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let a: unknown = 1;
+					let b: unknown = 2;
+					let c: unknown = 3;
+					let d: unknown = 4;
 
-			it('nested unions.', () => {
-				buildOperations(new Map([
-					['1 && 2.0 || 3.0 && 4;', (builder) => create_if(
-						builder.module,
-						[2, create_if(
-							builder.module,
-							[0, buildConst(builder, 1n), binaryen.v128],
-							(getter) => [buildConst(builder, 2.0), getter],
-						), binaryen.v128],
-						(getter) => [
-							getter,
-							create_if(
-								builder.module,
-								[1, buildConst(builder, 3.0), binaryen.v128],
-								(getter_) => [buildConst(builder, 4n), getter_],
-							),
-						],
-					)],
-				]));
+					a && b || c && d;
+					(a || b) && (c || d);
+				`, CONFIG_FOLDING_OFF);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build();
+				const extracts: readonly (readonly (readonly binaryen.ExpressionRef[])[])[] = goal.children.slice(4).map((stmt) => {
+					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
+					const outer0 = binexp.operand0 as AST.ASTNodeOperationBinary;
+					const outer1 = binexp.operand1 as AST.ASTNodeOperationBinary;
+					return [
+						[outer0.operand0.build(), outer0.operand1.build()],
+						[outer1.operand0.build(), outer1.operand1.build()],
+					];
+				});
+				return assertEqualBins(
+					goal.children.slice(4).map((stmt) => stmt.build()),
+					[
+						create_if(
+							goal.builder.module,
+							[6, create_if(
+								goal.builder.module,
+								[4, extracts[0][0][0], binaryen.v128],
+								(getter) => [extracts[0][0][1], getter],
+							), binaryen.v128],
+							(getter) => [getter, create_if(
+								goal.builder.module,
+								[5, extracts[0][1][0], binaryen.v128],
+								(getter_) => [extracts[0][1][1], getter_],
+							)],
+						),
+						create_if(
+							goal.builder.module,
+							[9, create_if(
+								goal.builder.module,
+								[7, extracts[1][0][0], binaryen.v128],
+								(getter) => [getter, extracts[1][0][1]],
+							), binaryen.v128],
+							(getter) => [create_if(
+								goal.builder.module,
+								[8, extracts[1][1][0], binaryen.v128],
+								(getter_) => [getter_, extracts[1][1][1]],
+							), getter],
+						),
+					].map((expected) => goal.builder.module.drop(expected)),
+				);
 			});
 		});
 	});
@@ -1259,13 +1374,13 @@ describe('ASTNodeOperation', () => {
 
 	describe('ASTNodeOperationTernary', () => {
 		describe('#type', () => {
-			context('with constant folding on', () => {
-				it('computes type for for conditionals', () => {
-					typeOperations(new Map<string, OBJ.Primitive>([
-						['if true then false else 2;',          OBJ.Boolean.FALSE],
-						['if false then 3.0 else null;',        OBJ.Null.NULL],
-						['if true then 2 else 3.0;',            new OBJ.Integer(2n)],
-						['if false then 2 + 3.0 else 1.0 * 2;', new OBJ.Float(2.0)],
+			context('with constant folding on.', () => {
+				it('computes type for for conditionals.', () => {
+					typeOperations(new Map<string, VALUE.Primitive>([
+						['if true then false else 2;',          VALUE.Boolean.FALSE],
+						['if false then 3.0 else null;',        VALUE.Null.NULL],
+						['if true then 2 else 3.0;',            new VALUE.Integer(2n)],
+						['if false then 2 + 3.0 else 1.0 * 2;', new VALUE.Float(2.0)],
 					]));
 				});
 			});
@@ -1276,22 +1391,49 @@ describe('ASTNodeOperation', () => {
 
 
 		specify('#fold', () => {
-			foldOperations(new Map<string, OBJ.Object>([
-				['if true then false else 2;',          OBJ.Boolean.FALSE],
-				['if false then 3.0 else null;',        OBJ.Null.NULL],
-				['if true then 2 else 3.0;',            new OBJ.Integer(2n)],
-				['if false then 2 + 3.0 else 1.0 * 2;', new OBJ.Float(2.0)],
+			foldOperations(new Map<string, VALUE.Value>([
+				['if true then false else 2;',          VALUE.Boolean.FALSE],
+				['if false then 3.0 else null;',        VALUE.Null.NULL],
+				['if true then 2 else 3.0;',            new VALUE.Integer(2n)],
+				['if false then 2 + 3.0 else 1.0 * 2;', new VALUE.Float(2.0)],
 			]));
 		});
 
 
 		describe('#build', () => {
-			it('returns `(if)`.', () => {
-				buildOperations(new Map([
-					['if true  then false else 2;',    (builder) => builder.module.if(buildConst(builder, true),  buildConst(builder, false), buildConst(builder, 2n))],
-					['if true  then 2     else 3.0;',  (builder) => builder.module.if(buildConst(builder, true),  buildConst(builder, 2n),    buildConst(builder, 3.0))],
-					['if false then 3.0   else null;', (builder) => builder.module.if(buildConst(builder, false), buildConst(builder, 3.0),   buildConst(builder))],
+			it('optimizes by evaluating condition operand type.', () => {
+				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['if true  then false else 2;',    (builder) => drop_then(builder.module, [buildConst(builder, true)],  buildConst(builder, false))],
+					['if true  then 2     else 3.0;',  (builder) => drop_then(builder.module, [buildConst(builder, true)],  buildConst(builder, 2n))],
+					['if false then 3.0   else null;', (builder) => drop_then(builder.module, [buildConst(builder, false)], buildConst(builder))],
 				]));
+			});
+			it('returns `(if)`.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let a: bool = true;
+					let b: bool = false;
+
+					if a then 1 else 2;
+					if b then 3 else 4;
+				`, CONFIG_FOLDING_OFF);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build();
+				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = goal.children.slice(2).map((stmt) => {
+					const terexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationTernary;
+					return [
+						terexp.operand0.build(),
+						terexp.operand1.build(),
+						terexp.operand2.build(),
+					];
+				});
+				return assertEqualBins(
+					goal.children.slice(2).map((stmt) => stmt.build()),
+					[
+						goal.builder.module.if(new BinVect(goal.builder.module, extracts[0][0]).isSpecial(true), extracts[0][1], extracts[0][2]),
+						goal.builder.module.if(new BinVect(goal.builder.module, extracts[1][0]).isSpecial(true), extracts[1][1], extracts[1][2]),
+					].map((expected) => goal.builder.module.drop(expected)),
+				);
 			});
 		});
 	});

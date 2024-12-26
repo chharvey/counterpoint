@@ -41,10 +41,10 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 		int_coercion:  boolean = true,
 	): binaryen.ExpressionRef {
 		if ( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
-			   int_coercion
-			&& assigned_type.isSubtypeOf(TYPE.INT)
-			&& TYPE.FLOAT.isSubtypeOf(assignee_type)
-			&& !TYPE.INT.isSubtypeOf(assignee_type)
+			int_coercion &&
+			assigned_type.isSubtypeOf(TYPE.INT) &&
+			TYPE.FLOAT.isSubtypeOf(assignee_type) &&
+			!TYPE.INT.isSubtypeOf(assignee_type)
 		) {
 			return new BinVect(mod, mod.f64.convert_u.i32(value)).vect;
 		}

@@ -3,9 +3,12 @@ import {
 	type Builder,
 	BinVect,
 } from '../../index.js';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	instanceOf,
+} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
-import type {Object as CPObject} from './Object.js';
+import type {Value} from './Value.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -13,7 +16,6 @@ import {Primitive} from './Primitive.js';
 /**
  * The Counterpoint Language Type `Boolean` has two values: `true` and `false`.
  * These values are constant and the only two instances of this class.
- *
  * @final
  */
 class CPBoolean extends Primitive {
@@ -58,8 +60,10 @@ class CPBoolean extends Primitive {
 	}
 
 	@strictEqual
-	public override identical(value: CPObject): boolean {
-		return value instanceof CPBoolean && this.data === value.data;
+	@instanceOf(() => CPBoolean)
+	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
+	public override identical(value: Value): boolean {
+		return this.data === (value as CPBoolean).data;
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {

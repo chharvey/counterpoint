@@ -1,5 +1,8 @@
-import {strictEqual} from '../../lib/index.js';
-import type * as OBJ from '../cp-object/index.js';
+import {
+	strictEqual,
+	memoizeBinOp,
+} from '../../lib/index.js';
+import type * as VALUE from '../cp-value/index.js';
 import type {Type} from './Type.js';
 import {ValueType} from './ValueType.js';
 
@@ -25,26 +28,12 @@ export class TypeNever extends ValueType {
 		return 'never';
 	}
 
-	public override includes(_v: OBJ.Object): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return false;
 	}
 
-	public override intersect(_: Type): Type {
-		/* 1-5 | `T  & never   == never` */
-		return this;
-	}
-
-	public override union(t: Type): Type {
-		/* 1-7 | `T \| never   == T` */
-		return t;
-	}
-
-	public override isSubtypeOf(_: Type): boolean {
-		/* 1-1 | `never <: T` */
-		return true;
-	}
-
 	@strictEqual
+	@memoizeBinOp(true)
 	public override equals(t: Type): boolean {
 		return t.isBottomType;
 	}

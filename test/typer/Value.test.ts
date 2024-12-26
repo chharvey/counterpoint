@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import {
-	OBJ,
+	VALUE,
 	Builder,
 	BinVect,
 } from '../../src/index.js';
@@ -10,32 +10,32 @@ import {buildConst} from '../helpers.js';
 
 
 
-describe('Object', () => {
+describe('Value', () => {
 	describe('#identical', () => {
 		describe('Tuple', () => {
 			it('Tuples with the same items are identical.', () => {
-				assert.ok(new OBJ.Tuple<OBJ.String>([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
-				]).identical(new OBJ.Tuple<OBJ.String>([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
+				assert.ok(new VALUE.Tuple<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				]).identical(new VALUE.Tuple<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
 				])), '["earth", "wind", "fire"] === ["earth", "wind", "fire"]');
 			});
 		});
 
 		describe('Record', () => {
 			it('Records with the same itesm are identical.', () => {
-				assert.ok(new OBJ.Record<OBJ.String>(new Map<bigint, OBJ.String>([
-					[0x100n, new OBJ.String('earth')],
-					[0x101n, new OBJ.String('wind')],
-					[0x102n, new OBJ.String('fire')],
-				])).identical(new OBJ.Record<OBJ.String>(new Map<bigint, OBJ.String>([
-					[0x100n, new OBJ.String('earth')],
-					[0x101n, new OBJ.String('wind')],
-					[0x102n, new OBJ.String('fire')],
+				assert.ok(new VALUE.Record<VALUE.String>(new Map<bigint, VALUE.String>([
+					[0x100n, new VALUE.String('earth')],
+					[0x101n, new VALUE.String('wind')],
+					[0x102n, new VALUE.String('fire')],
+				])).identical(new VALUE.Record<VALUE.String>(new Map<bigint, VALUE.String>([
+					[0x100n, new VALUE.String('earth')],
+					[0x101n, new VALUE.String('wind')],
+					[0x102n, new VALUE.String('fire')],
 				]))), '[a= "earth", b= "wind", c= "fire"] === [a= "earth", b= "wind", c= "fire"]');
 			});
 		});
@@ -45,56 +45,56 @@ describe('Object', () => {
 	describe('#equal', () => {
 		describe('Tuple', () => {
 			it('Tuples are equal if they have the same items.', () => {
-				const t = new OBJ.Tuple<OBJ.String>([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
+				const t = new VALUE.Tuple<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
 				]);
-				assert.ok(t.equal(new OBJ.Tuple<OBJ.String>([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
+				assert.ok(t.equal(new VALUE.Tuple<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
 				])), 't == ["earth", "wind", "fire"]');
 			});
 		});
 
 		describe('Record', () => {
 			it('Records are equal if they have the same properties.', () => {
-				const r = new OBJ.Record<OBJ.String>(new Map<bigint, OBJ.String>([
-					[0x100n, new OBJ.String('earth')],
-					[0x101n, new OBJ.String('wind')],
-					[0x102n, new OBJ.String('fire')],
+				const r = new VALUE.Record<VALUE.String>(new Map<bigint, VALUE.String>([
+					[0x100n, new VALUE.String('earth')],
+					[0x101n, new VALUE.String('wind')],
+					[0x102n, new VALUE.String('fire')],
 				]));
-				assert.ok(r.equal(new OBJ.Record<OBJ.String>(new Map<bigint, OBJ.String>([
-					[0x100n, new OBJ.String('earth')],
-					[0x101n, new OBJ.String('wind')],
-					[0x102n, new OBJ.String('fire')],
+				assert.ok(r.equal(new VALUE.Record<VALUE.String>(new Map<bigint, VALUE.String>([
+					[0x100n, new VALUE.String('earth')],
+					[0x101n, new VALUE.String('wind')],
+					[0x102n, new VALUE.String('fire')],
 				]))), 'r == [a= "earth", b= "wind", c= "fire"]');
 			});
 		});
 
 		describe('Set', () => {
 			it('return false if sets have different counts.', () => {
-				assert.ok(!new OBJ.Set<OBJ.String>(new Set([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
-				])).equal(new OBJ.Set<OBJ.String>(new Set([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
-					new OBJ.String('water'),
+				assert.ok(!new VALUE.Set<VALUE.String>(new Set([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])).equal(new VALUE.Set<VALUE.String>(new Set([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+					new VALUE.String('water'),
 				]))));
 			});
 			it('returns true if sets contain equal elements.', () => {
-				assert.ok(new OBJ.Set<OBJ.String>(new Set([
-					new OBJ.String('earth'),
-					new OBJ.String('wind'),
-					new OBJ.String('fire'),
-				])).equal(new OBJ.Set<OBJ.String>(new Set([
-					new OBJ.String('earth'),
-					new OBJ.String('fire'),
-					new OBJ.String('wind'),
+				assert.ok(new VALUE.Set<VALUE.String>(new Set([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])).equal(new VALUE.Set<VALUE.String>(new Set([
+					new VALUE.String('earth'),
+					new VALUE.String('fire'),
+					new VALUE.String('wind'),
 				]))));
 			});
 		});
@@ -106,7 +106,7 @@ describe('Object', () => {
 			it('returns a v128 with `null` as an argument.', () => {
 				const builder = new Builder();
 				return assertEqualBins(
-					OBJ.Null.NULL.build(builder),
+					VALUE.Null.NULL.build(builder),
 					new BinVect(builder.module, null).vect,
 				);
 			});
@@ -115,7 +115,7 @@ describe('Object', () => {
 		specify('Boolean', () => {
 			const builder = new Builder();
 			return assertEqualBins(
-				[OBJ.Boolean.FALSE.build(builder), OBJ.Boolean.TRUE.build(builder)],
+				[VALUE.Boolean.FALSE.build(builder), VALUE.Boolean.TRUE.build(builder)],
 				[new BinVect(builder.module, false).vect, new BinVect(builder.module, true).vect],
 			);
 		});
@@ -125,12 +125,12 @@ describe('Object', () => {
 				const data: bigint[] = [
 					42n + -420n,
 					...[
-						 126 /  3,
+						+126 /  3,
 						-126 /  3,
-						 126 / -3,
+						+126 / -3,
 						-126 / -3,
-						 200 /  3,
-						 200 / -3,
+						+200 /  3,
+						+200 / -3,
 						-200 /  3,
 						-200 / -3,
 					].map((x) => BigInt(Math.trunc(x))),
@@ -139,7 +139,7 @@ describe('Object', () => {
 				];
 				const builder = new Builder();
 				return assertEqualBins(
-					data.map((x) => new OBJ.Integer(x).build(builder)),
+					data.map((x) => new VALUE.Integer(x).build(builder)),
 					data.map((x) => new BinVect(builder.module, builder.module.i32.const(Number(x))).vect),
 				);
 			});
@@ -147,17 +147,17 @@ describe('Object', () => {
 
 		describe('Float', () => {
 			it('generates `(f64.const)`.', () => {
-				/* eslint-disable array-element-newline */
+				/* eslint-disable @stylistic/array-element-newline */
 				const data: number[] = [
 					55, -55, 33, -33, 2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					6.8, 6.8,
 					3.0 - 2.7,
 				];
-				/* eslint-enable array-element-newline */
+				/* eslint-enable @stylistic/array-element-newline */
 				const builder = new Builder();
 				return assertEqualBins(
-					data.map((x) => new OBJ.Float(x).build(builder)),
+					data.map((x) => new VALUE.Float(x).build(builder)),
 					data.map((x) => new BinVect(builder.module, builder.module.f64.const(x)).vect),
 				);
 			});
@@ -165,7 +165,7 @@ describe('Object', () => {
 				const builder = new Builder();
 				const mod: binaryen.Module = builder.module;
 				return assertEqualBins(
-					[0.0, -0.0].map((x) => new OBJ.Float(x).build(builder)),
+					[0.0, -0.0].map((x) => new VALUE.Float(x).build(builder)),
 					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => new BinVect(mod, c).vect),
 				);
 			});
@@ -175,7 +175,7 @@ describe('Object', () => {
 			specify('#build', () => {
 				const builder = new Builder();
 				return assertEqualBins(
-					new OBJ.String('hello world').build(builder),
+					new VALUE.String('hello world').build(builder),
 					buildConst(builder, 0n),
 				);
 			});
@@ -192,28 +192,28 @@ describe('Object', () => {
 				});
 				it('returns `(tuple.make)`.', () => {
 					assertEqualBins(
-						new OBJ.Tuple([OBJ.Integer.UNIT, new OBJ.Float(2.0)]).build(builder),
+						new VALUE.Tuple([VALUE.Integer.UNIT, new VALUE.Float(2.0)]).build(builder),
 						builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
 						// '[1, 2.0]',
 					);
 				});
 				it('empty tuple returns unique BinVect representation.', () => {
 					assertEqualBins(
-						new OBJ.Tuple().build(builder),
+						new VALUE.Tuple().build(builder),
 						new BinVect(builder.module, 'tuple').vect,
 						// '[]',
 					);
 				});
 				it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
 					assertEqualBins(
-						new OBJ.Tuple([new OBJ.Float(3.4)]).build(builder),
+						new VALUE.Tuple([new VALUE.Float(3.4)]).build(builder),
 						builder.module.tuple.make([buildConst(builder, 3.4)]),
 						// '[3.4]',
 					);
 				});
 				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
 					assertEqualBins(
-						new OBJ.Tuple([new OBJ.Tuple()]).build(builder),
+						new VALUE.Tuple([new VALUE.Tuple()]).build(builder),
 						builder.module.tuple.make([new BinVect(builder.module, 'tuple').vect]),
 						// '[[]]',
 					);
@@ -221,7 +221,7 @@ describe('Object', () => {
 				it('boxed tuple with 1 item.', () => {
 					const mod: binaryen.Module = builder.module;
 					return assertEqualBins(
-						new OBJ.Tuple([new OBJ.Tuple([new OBJ.Float(3.4)])]).build(builder),
+						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Float(3.4)])]).build(builder),
 						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(builder, 3.4)]), 0)]),
 						// '[[3.4]]',
 					);
@@ -234,10 +234,10 @@ describe('Object', () => {
 						buildConst(builder, true),
 					]);
 					return assertEqualBins(
-						new OBJ.Tuple([new OBJ.Tuple([
-							OBJ.Integer.UNIT,
-							new OBJ.Float(2.0),
-							OBJ.Boolean.TRUE,
+						new VALUE.Tuple([new VALUE.Tuple([
+							VALUE.Integer.UNIT,
+							new VALUE.Float(2.0),
+							VALUE.Boolean.TRUE,
 						])]).build(builder),
 						mod.tuple.make([
 							mod.tuple.extract(mod.local.tee(0, inner, bintype3), 0),
@@ -254,12 +254,12 @@ describe('Object', () => {
 						mod.tuple.extract(mod.tuple.make([buildConst(builder, 4.0)]), 0),
 					]);
 					return assertEqualBins(
-						new OBJ.Tuple([
-							OBJ.Integer.UNIT,
-							new OBJ.Tuple([new OBJ.Float(2.0)]),
-							new OBJ.Tuple([
-								new OBJ.Integer(3n),
-								new OBJ.Tuple([new OBJ.Float(4.0)]),
+						new VALUE.Tuple([
+							VALUE.Integer.UNIT,
+							new VALUE.Tuple([new VALUE.Float(2.0)]),
+							new VALUE.Tuple([
+								new VALUE.Integer(3n),
+								new VALUE.Tuple([new VALUE.Float(4.0)]),
 							]),
 						]).build(builder),
 						mod.tuple.make([
@@ -296,24 +296,24 @@ describe('Object', () => {
 						new BinVect(mod, 'tuple').vect,
 					]);
 					return assertEqualBins(
-						new OBJ.Tuple([
-							new OBJ.Tuple([
-								OBJ.Integer.UNIT,
-								new OBJ.Tuple([
-									new OBJ.Float(2.0),
-									new OBJ.Integer(3n),
+						new VALUE.Tuple([
+							new VALUE.Tuple([
+								VALUE.Integer.UNIT,
+								new VALUE.Tuple([
+									new VALUE.Float(2.0),
+									new VALUE.Integer(3n),
 								]),
 							]),
-							new OBJ.Tuple([
-								new OBJ.Float(4.0),
-								new OBJ.Tuple([
-									new OBJ.Integer(5n),
-									new OBJ.Float(6.0),
+							new VALUE.Tuple([
+								new VALUE.Float(4.0),
+								new VALUE.Tuple([
+									new VALUE.Integer(5n),
+									new VALUE.Float(6.0),
 								]),
 							]),
-							new OBJ.Tuple([
-								new OBJ.Integer(7n),
-								new OBJ.Tuple(),
+							new VALUE.Tuple([
+								new VALUE.Integer(7n),
+								new VALUE.Tuple(),
 							]),
 						]).build(builder),
 						mod.tuple.make([
@@ -338,28 +338,28 @@ describe('Object', () => {
 		describe('.constructor', () => {
 			it('overwrites identical elements.', () => {
 				assert.deepStrictEqual(
-					new OBJ.Set(new Set([
-						new OBJ.String('a'),
-						OBJ.Integer.ZERO,
-						new OBJ.Integer(-0n),
+					new VALUE.Set(new Set([
+						new VALUE.String('a'),
+						VALUE.Integer.ZERO,
+						new VALUE.Integer(-0n),
 					])),
-					new OBJ.Set(new Set([
-						new OBJ.String('a'),
-						OBJ.Integer.ZERO,
+					new VALUE.Set(new Set([
+						new VALUE.String('a'),
+						VALUE.Integer.ZERO,
 					])),
 				);
 			});
 			it('does not overwrite non-identical (even if equal) elements.', () => {
 				assert.deepStrictEqual(
-					new OBJ.Set(new Set([
-						new OBJ.String('a'),
-						new OBJ.Float(0.0),
-						new OBJ.Float(-0.0),
+					new VALUE.Set(new Set([
+						new VALUE.String('a'),
+						new VALUE.Float(0.0),
+						new VALUE.Float(-0.0),
 					])),
-					new OBJ.Set(new Set([
-						new OBJ.String('a'),
-						new OBJ.Float(0.0),
-						new OBJ.Float(-0.0),
+					new VALUE.Set(new Set([
+						new VALUE.String('a'),
+						new VALUE.Float(0.0),
+						new VALUE.Float(-0.0),
 					])),
 				);
 			});
@@ -371,28 +371,28 @@ describe('Object', () => {
 		describe('.constructor', () => {
 			it('overwrites identical antecedents.', () => {
 				assert.deepStrictEqual(
-					new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([
-						[new OBJ.String('a'),  OBJ.Integer.UNIT],
-						[OBJ.Integer.ZERO,     new OBJ.Float(2.0)],
-						[new OBJ.Integer(-0n), new OBJ.String('three')],
+					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
+						[new VALUE.String('a'),  VALUE.Integer.UNIT],
+						[VALUE.Integer.ZERO,     new VALUE.Float(2.0)],
+						[new VALUE.Integer(-0n), new VALUE.String('three')],
 					])),
-					new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([
-						[new OBJ.String('a'), OBJ.Integer.UNIT],
-						[OBJ.Integer.ZERO,    new OBJ.String('three')],
+					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
+						[new VALUE.String('a'), VALUE.Integer.UNIT],
+						[VALUE.Integer.ZERO,    new VALUE.String('three')],
 					])),
 				);
 			});
 			it('does not overwrite non-identical (even if equal) antecedents.', () => {
 				assert.deepStrictEqual(
-					new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([
-						[new OBJ.String('a'), OBJ.Integer.UNIT],
-						[new OBJ.Float(0.0),  new OBJ.Float(2.0)],
-						[new OBJ.Float(-0.0), new OBJ.String('three')],
+					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
+						[new VALUE.String('a'), VALUE.Integer.UNIT],
+						[new VALUE.Float(0.0),  new VALUE.Float(2.0)],
+						[new VALUE.Float(-0.0), new VALUE.String('three')],
 					])),
-					new OBJ.Map(new Map<OBJ.Object, OBJ.Object>([
-						[new OBJ.String('a'), new OBJ.Integer(1n)],
-						[new OBJ.Float(0.0),  new OBJ.Float(2.0)],
-						[new OBJ.Float(-0.0), new OBJ.String('three')],
+					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
+						[new VALUE.String('a'), new VALUE.Integer(1n)],
+						[new VALUE.Float(0.0),  new VALUE.Float(2.0)],
+						[new VALUE.Float(-0.0), new VALUE.String('three')],
 					])),
 				);
 			});

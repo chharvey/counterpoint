@@ -1,16 +1,26 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	memoizeBinOp,
+} from '../../lib/index.js';
 import type {TypeEntry} from '../utils-public.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import type * as OBJ from '../cp-object/index.js';
+import type * as VALUE from '../cp-value/index.js';
 import {
 	TypeTuple,
 	TypeRecord,
 	NEVER,
 } from './index.js';
 import {language_types_equal} from './utils-private.js';
-import {Type} from './Type.js';
+import {
+	toStringDeco,
+	operatorDeco,
+	unionDeco,
+	subtractDeco,
+	subtypeDeco,
+} from './decorators.js';
+import type {Type} from './Type.js';
 import {TypeIntersection} from './TypeIntersection.js';
 import {
 	type ReadonlyArrayOfAtLeast2,
@@ -22,6 +32,7 @@ import {
 /**
  * A type union of two types `T` and `U` is the type
  * that contains values both assignable to `T` *and* assignable to `U`.
+ * @final
  */
 export class TypeUnion extends Combinable {
 	/**
@@ -122,18 +133,18 @@ export class TypeUnion extends Combinable {
 		return super.hasMutable || this.operands.some((s) => s.hasMutable);
 	}
 
-	@Type.toStringDeco
+	@toStringDeco
 	public override toString(): string {
 		return this.operands.join(' | ');
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: VALUE.Value): boolean {
 		return this.operands.some((s) => s.includes(v));
 	}
 
-	@Type.memoizeUnion
-	@Type.operatorDeco
-	@Type.unionDeco
+	@memoizeBinOp(true)
+	@operatorDeco
+	@unionDeco
 	public override union(t: Type): Type {
 		/*
 		 * 3-a | `A <: C --> (A \| B) \| C == B \| C`
@@ -156,16 +167,16 @@ export class TypeUnion extends Combinable {
 		}
 	}
 
-	@Type.operatorDeco
-	@Type.subtractDeco
+	@operatorDeco
+	@subtractDeco
 	public override subtract(t: Type): Type {
 		/* 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
 		return TypeUnion.all(this.operands.map((s) => s.subtract(t)));
 	}
 
 	@strictEqual
-	@Type.memoizeSubtype
-	@Type.subtypeDeco
+	@memoizeBinOp()
+	@subtypeDeco
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.operands.every((s) => s.isSubtypeOf(t));

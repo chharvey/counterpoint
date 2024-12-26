@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	type LocalInfo,
 	TypeErrorInvalidOperation,
@@ -21,6 +21,10 @@ import {
 	Operator,
 	type ValidAccessOperator,
 } from '../Operator.js';
+import {
+	buildDeco,
+	typeDeco,
+} from './decorators.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -49,7 +53,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		let base_type: TYPE.Type = this.base.type();
 		if (base_type instanceof TYPE.Combinable) {
@@ -59,7 +63,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (this.accessor instanceof ASTNodeIndex) {
 			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeTuple);`
 			if (base_type instanceof TYPE.TypeTuple) {
-				const flattened_indices: number | number[] = base_type.getFlattenedIndices((this.accessor.val.fold() as OBJ.Integer).toNumber()); // TODO: use `Number(this.accessor.index)`
+				const flattened_indices: number | number[] = base_type.getFlattenedIndices((this.accessor.val.fold() as VALUE.Integer).toNumber()); // TODO: v0.4.3: use `Number(this.accessor.index)`
 
 				/*
 				 * If the index is a single number, return an extract of the build at that index.
@@ -77,7 +81,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					const temp_id:  bigint        = this.builder.varCount;
 					const local:    LocalInfo     = this.builder.addLocal(temp_id, bintype)[0].getLocalInfo(temp_id)!;
 					return this.builder.module.tuple.make([
-						                                         this.builder.module.tuple.extract(this.builder.module.local.tee(local.index, base_build, local.type), flattened_indices[0]),
+						                                         this.builder.module.tuple.extract(this.builder.module.local.tee(local.index, base_build, local.type), flattened_indices[0]), // eslint-disable-line @stylistic/indent
 						...flattened_indices.slice(1).map((n) => this.builder.module.tuple.extract(this.builder.module.local.get(local.index,             local.type), n)),
 					]);
 				}
@@ -97,7 +101,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.type();
 		if (base_type instanceof TYPE.Combinable) {
@@ -123,7 +127,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			return (
-				(base_type instanceof TYPE.TypeTuple) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>).value, this.kind, this.accessor) :
+				(base_type instanceof TYPE.TypeTuple) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<VALUE.Integer>).value, this.kind, this.accessor) :
 				(base_type instanceof TYPE.TypeList)  ? updateAccessedDynamicType(base_type.invariant, this.kind)                                               :
 				assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor))
 			);
@@ -136,10 +140,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		} else {
 			assert_instanceof(this.accessor, ASTNodeExpression);
 			const accessor_type: TYPE.Type = this.accessor.type();
-			/* eslint-disable indent */
+			/* eslint-disable @stylistic/indent */
 			return (
 				(base_type instanceof TYPE.TypeTuple) ? (
-					(accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof OBJ.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
+					(accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof VALUE.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
 					(accessor_type.isSubtypeOf(TYPE.INT))
 						? updateAccessedDynamicType(base_type.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, TYPE.INT)
@@ -161,33 +165,33 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				) :
 				assert.fail(new TypeErrorInvalidOperation(this))
 			);
-			/* eslint-enable indent */
+			/* eslint-enable @stylistic/indent */
 		}
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const base_value: OBJ.Object | null = this.base.fold();
+	public override fold(): VALUE.Value | null {
+		const base_value: VALUE.Value | null = this.base.fold();
 		if (base_value === null) {
 			return null;
 		}
-		if (this.optional && base_value.identical(OBJ.Null.NULL)) {
+		if (this.optional && base_value.identical(VALUE.Null.NULL)) {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as OBJ.CollectionIndexed).get(this.accessor.val.fold() as OBJ.Integer, this.optional, this.accessor);
+			return (base_value as VALUE.CollectionIndexed).get(this.accessor.val.fold() as VALUE.Integer, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
-			return (base_value as OBJ.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
+			return (base_value as VALUE.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else {
 			assert_instanceof(this.accessor, ASTNodeExpression);
-			const accessor_value: OBJ.Object | null = this.accessor.fold();
+			const accessor_value: VALUE.Value | null = this.accessor.fold();
 			if (accessor_value === null) {
 				return null;
 			}
 			return (
-				                  (base_value instanceof OBJ.CollectionIndexed) ? base_value.get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
-				                  (base_value instanceof OBJ.Set)               ? base_value.get(accessor_value                                             ) :
-				(assert_instanceof(base_value,           OBJ.Map),                base_value.get(accessor_value,                this.optional, this.accessor))
+				base_value instanceof VALUE.CollectionIndexed ? base_value.get(accessor_value as VALUE.Integer, this.optional, this.accessor) :
+				base_value instanceof VALUE.Set               ? base_value.get(accessor_value                                               ) :
+				(assert_instanceof(base_value, VALUE.Map),      base_value.get(accessor_value,                  this.optional, this.accessor))
 			);
 		}
 	}

@@ -1,5 +1,11 @@
-import * as OBJ from '../cp-object/index.js';
-import {Type} from './Type.js';
+import {
+	strictEqual,
+	memoizeBinOp,
+} from '../../lib/index.js';
+import * as VALUE from '../cp-value/index.js';
+import {subtypeDeco} from './decorators.js';
+import type {Type} from './Type.js';
+import {ReferenceType} from './ReferenceType.js';
 
 
 
@@ -7,24 +13,16 @@ import {Type} from './Type.js';
  * Class for constructing the `Object` type.
  * @final
  */
-export class TypeObject extends Type {
+export class TypeObject extends ReferenceType {
 	public static readonly INSTANCE = new TypeObject();
 
 
 	private constructor() {
 		super(false, new Set([
-			OBJ.Null.NULL,
-			OBJ.Boolean.FALSE,
-			OBJ.Boolean.TRUE,
-			OBJ.Integer.ZERO,
-			new OBJ.Float(0.0),
-			new OBJ.String(''),
-			new OBJ.Tuple(),
-			new OBJ.Record(),
-			new OBJ.List(),
-			new OBJ.Dict(),
-			new OBJ.Set(),
-			new OBJ.Map(),
+			new VALUE.List(),
+			new VALUE.Dict(),
+			new VALUE.Set(),
+			new VALUE.Map(),
 		]));
 	}
 
@@ -32,7 +30,19 @@ export class TypeObject extends Type {
 		return 'Object';
 	}
 
-	public override includes(_v: OBJ.Object): boolean {
-		return true;
+	public override includes(v: VALUE.Value): boolean {
+		return (
+			v instanceof VALUE.List ||
+			v instanceof VALUE.Dict ||
+			v instanceof VALUE.Set  ||
+			v instanceof VALUE.Map
+		);
+	}
+
+	@strictEqual
+	@memoizeBinOp()
+	@subtypeDeco
+	public override isSubtypeOf(_t: Type): boolean {
+		return false;
 	}
 }

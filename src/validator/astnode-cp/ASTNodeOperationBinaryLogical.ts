@@ -1,9 +1,9 @@
 import binaryen from 'binaryen';
-import {BinVect} from '../../index.js';
 import {
-	OBJ,
-	TYPE,
+	type VALUE,
+	type TYPE,
 	type LocalInfo,
+	BinVect,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -18,6 +18,7 @@ import {
 	Operator,
 	type ValidOperatorLogical,
 } from '../Operator.js';
+import {buildDeco} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
@@ -40,10 +41,21 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		// eslint-disable-next-line prefer-const --- one of them is reassigned
-		let [arg0, arg1]: binaryen.ExpressionRef[] = [this.operand0, this.operand1].map((expr) => expr.build());
+		let [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
+
+		const t0:     TYPE.Type              = this.operand0.type();
+		const block1: binaryen.ExpressionRef = this.builder.module.block(null, [
+			this.builder.module.drop(arg0),
+			arg1,
+		], binaryen.v128);
+		if (t0.isDefinitelyFalsy()) {
+			return this.operator === Operator.AND ? arg0 : block1;
+		} else if (t0.isDefinitelyTruthy()) {
+			return this.operator === Operator.AND ? block1 : arg0;
+		}
 
 		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint    = this.builder.varCount;
@@ -61,27 +73,31 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
-		const falsytypes: TYPE.Type = TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE);
-		return (this.operator === Operator.AND)
-			? (t0.isSubtypeOf(falsytypes))
-				? t0
-				: t0.intersect(falsytypes).union(t1)
-			: (t0.isSubtypeOf(falsytypes))
-				? t1
-				: (TYPE.VOID.isSubtypeOf(t0) || TYPE.NULL.isSubtypeOf(t0) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t0))
-					? t0.subtract(falsytypes).union(t1)
-					: t0;
+		switch (this.operator) {
+			case Operator.AND: {
+				return t0.isDefinitelyFalsy()
+					? t0
+					: t0.falsySide().union(t1); // also the case for if `t0.isDefinitelyTruthy()`
+			}
+			case Operator.OR: {
+				return t0.isDefinitelyFalsy()
+					? t1
+					: t0.isDefinitelyTruthy()
+						? t0
+						: t0.truthySide().union(t1);
+			}
+		}
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand0.fold();
+	public override fold(): VALUE.Value | null {
+		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
 		if (
-			   this.operator === Operator.AND && !v0.isTruthy
-			|| this.operator === Operator.OR  &&  v0.isTruthy
+			this.operator === Operator.AND && !v0.isTruthy ||
+			this.operator === Operator.OR  &&  v0.isTruthy
 		) {
 			return v0;
 		}

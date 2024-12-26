@@ -1,4 +1,4 @@
-# Data Types and Values
+# Types and Values
 This chapter defines the types of data used by grammars and algorithms throughout this specification.
 
 Grammars and algorithms manipulate values, each of which has an associated type.
@@ -188,7 +188,7 @@ This list is not exhaustive, as Counterpoint Types may be created in any Counter
 
 
 ### Value Types and Reference Types
-Value types and reference types correspond to [value objects](./intrinsics.md#value-objects)
+Value types and reference types correspond to [data values](./intrinsics.md#data-values)
 and [reference objects](./intrinsics.md#reference-objects) respectively.
 
 
@@ -197,13 +197,13 @@ Simple types do not comprise other types.
 
 - [Never](#never)
 - [Void](#void)
+- [Unknown](#unknown)
 - [Null](#null)
 - [Boolean](#boolean)
 - [Integer](#integer)
 - [Float](#float)
 - [String](#string)
 - [Object](#object)
-- [Unknown](#unknown)
 
 #### Never
 The **Never** type is the Botton Type and it represents the set of no values.
@@ -230,16 +230,29 @@ the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T�
 
 The Void type is also unlike Null in that no Counterpoint Language Value has type Void.
 
+#### Unknown
+The **Unknown** type is the Top Type and it represents the set of all possible values.
+Any value or expression is assignable to Unknown,
+and expressions of type Unknown are accepted almost nowhere.
+
+Unknown is a supertype of every type,
+and no type (except Unknown itself) is a supertype of Unknown.
+Unknown is the the “identity element” of the [intersection](#intersection) operation
+and the “absorption element” of the [union](#union) operation.
+
 #### Null
-The **Null** type has exactly one value, called `null`.
+The **Null** type has exactly one value, called `null`,
+the only instance of [`Null`](./intrinsics.md#null).
 It represents an object without any semantics.
 
 #### Boolean
-The **Boolean** type has two logical values, called `true` and `false`.
+The **Boolean** type has two logical values, called `true` and `false`,
+the only instances of [`Boolean`](./intrinsics.md#boolean).
 
 #### Number
 The **Number** type represents numerical values.
-The Number type is partitioned into two disjoint subtypes: Integer and Float.
+The Number type is partitioned into two disjoint subtypes: Integer and Float,
+instances of [`Integer`](./intrinsics.md#integer) and [`Float`](./intrinsics.md#float), respectively.
 
 ##### Integer
 The **Integer** type represents [mathematical integers](#real-integer-numbers).
@@ -294,6 +307,7 @@ The Float type contains “floating-point numbers”, which are 64-bit format va
 #### String
 The **String** type represents textual data and is stored as an immutable sequence of bytes.
 Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
+They are instances of [`String`](./intrinsics.md#string).
 
 Conceptually, strings are treated as immutable lists of [mathematical integers](#real-integer-numbers),
 where each integer represents a Unicode code point.
@@ -305,27 +319,18 @@ String length is limited to a maximum of *65,535* bytes,
 but it is not directly observable within any Counterpoint program.
 
 Though `String` objects are treated conceptually as lists, they are considered
-[primitive objects](./intrinsics.md#primitive-and-composite-objects) and
-[value objects](./intrinsics.md#value-objects).
-They are primitives because the “items” of these lists are not directly observable —
-accessing an index of a string yields another string — and
-they are value objects because the string values themselves are copied when assigned
+[primitive values](./intrinsics.md#primitive-and-composite-values),
+because the “items” of these lists are not directly observable —
+accessing an index of a string yields another string.
+As primitive values, they are also [data values](./intrinsics.md#data-values) —
+because the string values themselves are copied when assigned
 (though the compiler may make any optimizations necessary).
 
 #### Object
 The **Object** type contains all references to Counterpoint Language Values.
-All reference types and value types are subtypes of **Object**.
-Some specific built-in subtypes of Object are described in the [Intrinsics](./intrinsics.md) chapter.
-
-#### Unknown
-The **Unknown** type is the Top Type and it represents the set of all possible values.
-Any value or expression is assignable to Unknown,
-and expressions of type Unknown are accepted almost nowhere.
-
-Unknown is a supertype of every type,
-and no type (except Unknown itself) is a supertype of Unknown.
-Unknown is the the “identity element” of the [intersection](#intersection) operation
-and the “absorption element” of the [union](#union) operation.
+All reference types are subtypes of **Object**,
+and all reference objects are instances of [`Object`](./intrinsics.md#object).
+Some specific built-in subtypes of **Object** are described in the [Intrinsics](./intrinsics.md) chapter.
 
 
 ### Compound Types
@@ -417,6 +422,14 @@ Boolean IsReference(Type t) :=
 ```
 
 
+### IsBottomType
+A type \`‹T›\` is the **bottom type**, named Never, iff \`‹T›\` contains no values.
+
+
+### IsTopType
+A type \`‹T›\` is the **top type**, named Unknown, iff \`‹T›\` contains all possible values.
+
+
 ### Intersection
 A data type specified as \`And<‹T›, ‹U›>\`,
 where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
@@ -426,21 +439,19 @@ Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
 ```
 Type Intersect(Type a, Type b) :=
 	// 1-5 | `T  & never   == never`
-	1. *If* *UnwrapAffirm:* `Identical(b, Never)`:
+	1. *If* *UnwrapAffirm:* `IsBottomType(a)` *or* *UnwrapAffirm:* `IsBottomType(b)`:
 		1. *Return:* `Never`.
-	2. *If* *UnwrapAffirm:* `Identical(a, Never)`:
-		1. *Return:* `a`.
 	// 1-6 | `T  & unknown == T`
-	3. *If* *UnwrapAffirm:* `Identical(b, Unknown)`:
-		1. *Return:* `a`.
-	4. *If* *UnwrapAffirm:* `Identical(a, Unknown)`:
+	2. *If* *UnwrapAffirm:* `IsTopType(a)`:
 		1. *Return:* `b`.
+	3. *If* *UnwrapAffirm:* `IsTopType(b)`:
+		1. *Return:* `a`.
 	// 3-3 | `A <: B  <->  A  & B == A`
-	5. *If* *UnwrapAffirm:* `Subtype(a, b)`:
+	4. *If* *UnwrapAffirm:* `Subtype(a, b)`:
 		1. *Return:* `a`.
-	6. *If* *UnwrapAffirm:* `Subtype(b, a)`:
+	5. *If* *UnwrapAffirm:* `Subtype(b, a)`:
 		1. *Return:* `b`.
-	7. *Return:* a new type with values given by the the intersection of values in `a` and `b`.
+	6. *Return:* a new type with values given by the the intersection of values in `a` and `b`.
 ;
 ```
 
@@ -457,21 +468,19 @@ For example, the type \`Or<Integer, Null>\` contains values of either \`Integer\
 ```
 Type Union(Type a, Type b) :=
 	// 1-7 | `T \| never   == T`
-	1. *If* *UnwrapAffirm:* `Identical(b, Never)`:
+	1. *If* *UnwrapAffirm:* `IsBottomType(a)`:
+		1. *Return:* `b`.
+	2. *If* *UnwrapAffirm:* `IsBottomType(b)`:
 		1. *Return:* `a`.
-	2. *If* *UnwrapAffirm:* `Identical(a, Never)`:
-		1. *Return:* `b`.
 	// 1-8 | `T \| unknown == unknown`
-	3. *If* *UnwrapAffirm:* `Identical(b, Unknown)`:
-		1. *Return:* `b`.
-	4. *If* *UnwrapAffirm:* `Identical(a, Unknown)`:
+	3. *If* *UnwrapAffirm:* `IsTopType(a)` *or* *UnwrapAffirm:* `IsTopType(b)`:
 		1. *Return:* `Unknown`.
 	// 3-4 | `A <: B  <->  A \| B == B`
-	5. *If* *UnwrapAffirm:* `Subtype(a, b)`:
+	4. *If* *UnwrapAffirm:* `Subtype(a, b)`:
 		1. *Return:* `b`.
-	6. *If* *UnwrapAffirm:* `Subtype(b, a)`:
+	5. *If* *UnwrapAffirm:* `Subtype(b, a)`:
 		1. *Return:* `a`.
-	7. *Return:* a new type with values given by the the union of values in `a` and `b`.
+	6. *Return:* a new type with values given by the the union of values in `a` and `b`.
 ;
 ```
 
@@ -503,44 +512,41 @@ A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignab
 
 ```
 Boolean Subtype(Type a, Type b) :=
-	1. *If* *UnwrapAffirm:* `Identical(a, b)`:
-		// 2-7 | `A <: A`
+	// 1-1 | `never <: T`
+	1. *If* *UnwrapAffirm:* `IsBottomType(a)`:
 		1. *Return:* `true`.
-	2. *If* *UnwrapAffirm:* `IsBottomType(a)`:
-		// 1-1 | `never <: T`
-		1. *Return:* `true`.
-	3. *If* *UnwrapAffirm:* `IsBottomType(b)`:
-		// 1-3 | `T       <: never  <->  T == never`
+	// 1-3 | `T       <: never  <->  T == never`
+	2. *If* *UnwrapAffirm:* `IsBottomType(b)`:
 		1. *Return:* `IsBottomType(a)`.
-	4. *If* *UnwrapAffirm:* `IsTopType(a)`:
-		// 1-4 | `unknown <: T      <->  T == unknown`
+	// 1-4 | `unknown <: T      <->  T == unknown`
+	3. *If* *UnwrapAffirm:* `IsTopType(a)`:
 		1. *Return:* `IsTopType(b)`.
-	5. *If* *UnwrapAffirm:* `IsTopType(b)`:
-		// 1-2 | `T     <: unknown`
+	// 1-2 | `T     <: unknown`
+	4. *If* *UnwrapAffirm:* `IsTopType(b)`:
 		1. *Return:* `true`.
-	6. *If* `a` is the intersection of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Equal(x, b)` *or* *UnwrapAffirm:* `Equal(y, b)`:
-			// 3-1 | `A  & B <: A  &&  A  & B <: B`
-			1. *Return:* `true`.
-		2. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
-			// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
-			1. *Return:* `true`.
-	7. *If* `b` is the intersection of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
-			// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
-			1. *Return:* `true`.
-	8. *If* `a` is the union of some types `x` and `y`:
+	5. *If* `a` is the intersection of some types `x` and `y`:
+		// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
 		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
-			// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
 			1. *Return:* `true`.
-	9. *If* `b` is the union of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Equal(a, x)` *or* *UnwrapAffirm:* `Equal(a, y)`:
-			// 3-2 | `A <: A \| B  &&  B <: A \| B`
+		// 3-1 | `A  & B <: A  &&  A  & B <: B`
+		2. *If* *UnwrapAffirm:* `Equal(x, b)` *or* *UnwrapAffirm:* `Equal(y, b)`:
 			1. *Return:* `true`.
-		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
-			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
+	6. *If* `b` is the intersection of some types `x` and `y`:
+		// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
+		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *and* *UnwrapAffirm:* `Subtype(a, y)`:
 			1. *Return:* `true`.
-	10. *If* `a` is a Tuple type *and* `b` is a Tuple type:
+	7. *If* `a` is the union of some types `x` and `y`:
+		// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
+		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *and* *UnwrapAffirm:* `Subtype(y, b)`:
+			1. *Return:* `true`.
+	8. *If* `b` is the union of some types `x` and `y`:
+		// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
+		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+			1. *Return:* `true`.
+		// 3-2 | `A <: A \| B  &&  B <: A \| B`
+		2. *If* *UnwrapAffirm:* `Equal(a, x)` *or* *UnwrapAffirm:* `Equal(a, y)`:
+			1. *Return:* `true`.
+	9. *If* `a` is a Tuple type *and* `b` is a Tuple type:
 		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
 		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
@@ -551,10 +557,10 @@ Boolean Subtype(Type a, Type b) :=
 			1. *If* `seq_b[i].optional` is `false`:
 				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
 			2. *If* `seq_a[i]` is set:
-				1. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
+				1. *If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
 					1. *Return:* `false`.
 		7. *Return:* `true`.
-	11. *If* `a` is a Record type *and* `b` is a Record type:
+	10. *If* `a` is a Record type *and* `b` is a Record type:
 		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
 		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
@@ -566,10 +572,10 @@ Boolean Subtype(Type a, Type b) :=
 				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
 					1. *Return:* `false`.
 			2. *If* `struct_a[k]` is set:
-				1. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
+				1. *If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 					1. *Return:* `false`.
 		7. *Return:* `true`.
-	12. *If* `a` is a List type *and* `b` is a List type:
+	11. *If* `a` is a List type *and* `b` is a List type:
 		1. *Let* `ai` be the union of types in `a`.
 		2. *Let* `bi` be the union of types in `b`.
 		3. *If* `b` is mutable:
@@ -578,7 +584,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
 				1. *Return:* `true`.
-	13. *If* `a` is a Dict type *and* `b` is a Dict type:
+	12. *If* `a` is a Dict type *and* `b` is a Dict type:
 		1. *Let* `av` be the union of value types in `a`.
 		2. *Let* `bv` be the union of value types in `b`.
 		3. *If* `b` is mutable:
@@ -587,7 +593,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 				1. *Return:* `true`.
-	14. *If* `a` is a Set type *and* `b` is a Set type:
+	13. *If* `a` is a Set type *and* `b` is a Set type:
 		1. *Let* `ae` be the union of types in `a`.
 		2. *Let* `be` be the union of types in `b`.
 		3. *If* `b` is mutable:
@@ -596,7 +602,7 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
 				1. *Return:* `true`.
-	15. *If* `a` is a Map type *and* `b` is a Map type:
+	14. *If* `a` is a Map type *and* `b` is a Map type:
 		1. *Let* `ak` be the union of antecedent types in `a`.
 		2. *Let* `av` be the union of consequent types in `a`.
 		3. *Let* `bk` be the union of antecedent types in `b`.
@@ -607,17 +613,26 @@ Boolean Subtype(Type a, Type b) :=
 		6. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 				1. *Return:* `true`.
-	16. *If* every value that is assignable to `a` is also assignable to `b`:
+	15. *If* every value that is assignable to `a` is also assignable to `b`:
 		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
 			because an instance of `Integer` is an instance of `Object`.
 		2. *Return:* `true`.
-	17. *Return:* `false`.
+	16. *Return:* `false`.
 ;
 ```
 
 
 ### Equality
 A type \`‹T›\` is **equal** to type \`‹U›\` iff \`‹T›\` is a subtype of \`‹U›\` and \`‹U›\` is a subtype of \`‹T›\`.
+
+```
+Boolean Equal(Type a, Type b) :=
+	1. *If* *UnwrapAffirm:* `Subtype(a, b)` *and* *UnwrapAffirm:* `Subtype(b, a)`:
+		1. *Return:* `true`.
+	2. *Else:*
+		1. *Return:* `false`.
+;
+```
 
 
 ### Disjoint

@@ -1,5 +1,5 @@
 import {TYPE} from '../index.js';
-import {Object as CPObject} from './Object.js';
+import {Value} from './Value.js';
 
 
 
@@ -10,7 +10,7 @@ import {Object as CPObject} from './Object.js';
  * - Number
  * - String
  */
-export abstract class Primitive extends CPObject {
+export abstract class Primitive extends Value {
 	/** @final */ public override toType(): TYPE.TypeUnit<this> {
 		return new TYPE.TypeUnit<this>(this);
 	}

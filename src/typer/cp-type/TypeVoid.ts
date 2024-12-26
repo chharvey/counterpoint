@@ -1,7 +1,14 @@
-import {strictEqual} from '../../lib/index.js';
-import type * as OBJ from '../cp-object/index.js';
+import {
+	strictEqual,
+	memoizeBinOp,
+} from '../../lib/index.js';
+import type * as VALUE from '../cp-value/index.js';
 import {NEVER} from './index.js';
-import {Type} from './Type.js';
+import {
+	intersectDeco,
+	subtypeDeco,
+} from './decorators.js';
+import type {Type} from './Type.js';
 import {ValueType} from './ValueType.js';
 
 
@@ -22,24 +29,26 @@ export class TypeVoid extends ValueType {
 		return 'void';
 	}
 
-	public override includes(_v: OBJ.Object): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return false;
 	}
 
-	@Type.memoizeIntersection
-	@Type.intersectDeco
+	@memoizeBinOp(true)
+	// @operatorDeco // slower than returning a constant
+	@intersectDeco
 	public override intersect(_t: Type): Type {
 		return NEVER;
 	}
 
 	@strictEqual
-	@Type.memoizeSubtype
-	@Type.subtypeDeco
+	@memoizeBinOp()
+	@subtypeDeco
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;
 	}
 
 	@strictEqual
+	@memoizeBinOp(true)
 	public override equals(t: Type): boolean {
 		return t === TypeVoid.INSTANCE || super.equals(t);
 	}

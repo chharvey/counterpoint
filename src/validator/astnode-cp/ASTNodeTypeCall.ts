@@ -60,7 +60,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 				const contype: TYPE.Type = this.args[1]?.eval() ?? anttype; // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- `this.args[1]` could be undefined
 				return new TYPE.TypeMap(anttype, contype);
 			}],
-		]).get(this.base.source as ValidFunctionName) || invalid_function_name(this.base.source))();
+		]).get(this.base.source as ValidFunctionName) ?? invalid_function_name(this.base.source))();
 	}
 
 	/**

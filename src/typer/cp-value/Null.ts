@@ -3,9 +3,12 @@ import {
 	type Builder,
 	BinVect,
 } from '../../index.js';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	instanceOf,
+} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
-import type {Object as CPObject} from './Object.js';
+import type {Value} from './Value.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -44,8 +47,10 @@ export class Null extends Primitive {
 	}
 
 	@strictEqual
-	public override identical(value: CPObject): boolean {
-		return value instanceof Null;
+	@instanceOf(() => Null)
+	// @memoizeBinOp(true, true) // memoizing takes longer than returning a constant
+	public override identical(_value: Value): boolean {
+		return true;
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {

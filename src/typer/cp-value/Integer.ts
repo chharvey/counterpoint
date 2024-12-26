@@ -7,9 +7,11 @@ import {
 import {
 	strictEqual,
 	instanceOf,
+	memoizeBinOp,
 } from '../../lib/index.js';
 import {Float} from './index.js';
-import {Object as CPObject} from './Object.js';
+import {equalsDeco} from './decorators.js';
+import type {Value} from './Value.js';
 import {Number as CPNumber} from './Number.js';
 
 
@@ -50,15 +52,18 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	@strictEqual
-	@instanceOf(Integer)
-	@CPObject.memoizeSameness
-	public override identical(value: CPObject): boolean {
-		return value instanceof Integer && this.data === value.data;
+	@instanceOf(() => Integer)
+	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
+	public override identical(value: Value): boolean {
+		return this.data === (value as Integer).data;
 	}
 
-	@CPObject.equalsDeco
-	public override equal(value: CPObject): boolean {
-		return value instanceof Float && this.toFloat().equal(value);
+	@strictEqual
+	@equalsDeco
+	@instanceOf(() => Float)
+	@memoizeBinOp(true, true)
+	public override equal(value: Value): boolean {
+		return this.toFloat().equal(value);
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {

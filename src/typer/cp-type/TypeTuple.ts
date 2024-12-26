@@ -1,15 +1,19 @@
 import * as assert from 'assert';
 import {TypeErrorNoEntry} from '../../index.js';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
+} from '../../lib/index.js';
 import type {
 	ValidAccessOperator,
 	AST,
 } from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
-import * as OBJ from '../cp-object/index.js';
-import {OBJ as TYPE_OBJ} from './index.js';
+import * as VALUE from '../cp-value/index.js';
 import {updateAccessedStaticType} from './utils-private.js';
-import {Type} from './Type.js';
+import {subtypeDeco} from './decorators.js';
+import type {Type} from './Type.js';
 import {TypeUnion} from './TypeUnion.js';
 import {ValueType} from './ValueType.js';
 
@@ -20,6 +24,10 @@ type MutableIndexTree = Array<number | MutableIndexTree>;
 
 
 
+/**
+ * Class for constructing tuple literal types.
+ * @final
+ */
 export class TypeTuple extends ValueType {
 	/**
 	 * Construct a new TypeTuple from type items, assuming each item is required.
@@ -34,7 +42,7 @@ export class TypeTuple extends ValueType {
 	}
 
 	/** Returns the minimum possible number of items in the given tuple type. */
-	static #minCount(t: TypeTuple): bigint {
+	public static minCount(t: TypeTuple): bigint { // TODO: make this an instance method
 		return BigInt(t.invariants.filter((it) => !it.optional).length);
 	}
 
@@ -46,7 +54,7 @@ export class TypeTuple extends ValueType {
 	 * @param invariants this type’s item types
 	 */
 	public constructor(public readonly invariants: readonly TypeEntry[] = []) {
-		super(false, new Set([new OBJ.Tuple()]));
+		super(false, new Set([new VALUE.Tuple()]));
 
 		const tree: MutableIndexTree = [];
 		this.#populateIndexTree(tree);
@@ -61,19 +69,21 @@ export class TypeTuple extends ValueType {
 		return `[${ this.invariants.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
-	public override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Tuple && v.toType().isSubtypeOf(this);
+	@instanceOf(() => VALUE.Tuple)
+	public override includes(v: VALUE.Value): boolean {
+		return v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual
-	@Type.memoizeSubtype
-	@Type.subtypeDeco
+	@memoizeBinOp()
+	@subtypeDeco
+	@instanceOf(() => TypeTuple)
 	public override isSubtypeOf(t: Type): boolean {
-		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeTuple
-			&& TypeTuple.#minCount(this) >= TypeTuple.#minCount(t)
-			&& t.invariants.every((thattype, i) => {
-				const thistype: TypeEntry | undefined = this.invariants.at(i);
+		return (
+			TypeTuple.minCount(this) >= TypeTuple.minCount(t as TypeTuple) &&
+			(t as TypeTuple).invariants.every((thattype, i) => {
+				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
+				const thistype: TypeEntry | undefined = this.invariants[i];
 				if (!thattype.optional) {
 					/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
 						We cannot do so with record types since properties are not ordered. */
@@ -113,7 +123,7 @@ export class TypeTuple extends ValueType {
 	}
 
 	/** @final */
-	public get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
+	public get(index: VALUE.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.invariants.length;
 		const i: number = index.toNumber();
 		return updateAccessedStaticType(

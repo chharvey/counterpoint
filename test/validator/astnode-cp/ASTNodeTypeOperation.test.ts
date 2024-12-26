@@ -4,10 +4,7 @@ import {
 	TYPE,
 	TypeErrorInvalidOperation,
 } from '../../../src/index.js';
-import {
-	typeUnitInt,
-	typeUnitFloat,
-} from '../../helpers.js';
+import {typeUnit} from '../../helpers.js';
 
 
 
@@ -28,7 +25,7 @@ describe('ASTNodeTypeOperation', () => {
 					new TYPE.TypeList(TYPE.INT, true),
 				);
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type A = mut int[];
+					type A = mut int[][];
 					type B = int[3];
 					type F = Object[];
 
@@ -65,11 +62,11 @@ describe('ASTNodeTypeOperation', () => {
 		specify('ASTNodeTypeOperationBinary[operator=AND|OR]', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource('Object & 3').eval(),
-				TYPE.OBJ.intersect(typeUnitInt(3n)),
+				TYPE.OBJ.intersect(typeUnit(3n)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource('4.2 | int').eval(),
-				typeUnitFloat(4.2).union(TYPE.INT),
+				typeUnit(4.2).union(TYPE.INT),
 			);
 		});
 	});

@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
-	type OBJ,
-	TYPE,
+	type VALUE,
+	type TYPE,
 	type LocalInfo,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
@@ -23,6 +23,10 @@ import {
 	SymbolStructureType,
 } from '../index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {
+	buildDeco,
+	typeDeco,
+} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
@@ -48,14 +52,14 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
+		if (this.validator.getSymbolInfo(this.id) instanceof SymbolStructureType) {
 			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const local: LocalInfo | null = this.builder.getLocalInfo(this.id);
 		return local
@@ -64,24 +68,21 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
-		if (this.validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-			if (symbol instanceof SymbolStructureVar) {
-				return symbol.type;
-			}
-		}
-		return TYPE.NEVER;
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolStructureVar);
+		return symbol.type;
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		if (this.validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
-				return symbol.value;
-			}
+	public override fold(): VALUE.Value | null {
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolStructureVar);
+		if (!symbol.unfixed) {
+			return symbol.value;
 		}
 		return null;
 	}

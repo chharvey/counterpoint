@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {
 	AST,
-	OBJ,
+	VALUE,
 	TYPE,
 	TypeErrorNotAssignable,
 	TypeErrorNotCallable,
@@ -76,6 +76,15 @@ describe('ASTNodeCall', () => {
 				],
 			);
 		});
+		it('bypasses invariance for generic arguments.', () => {
+			[
+				'List.<mut int{}>([   {42}]);',
+				'Dict.<mut int{}>([a= {42}]);',
+				'Set .<mut int{}>([   {42}]);',
+				'Map.<float, mut int{}>([[4.2, {42}]]);',
+				'Map.<mut int{}, float>([[{42}, 4.2]]);',
+			].map((src) => AST.ASTNodeCall.fromSource(src).type());
+		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeCall.fromSource('Map.<int>();').type(),
@@ -113,7 +122,7 @@ describe('ASTNodeCall', () => {
 				'List.<int>(42);',
 				'Dict.<int>([4.2]);',
 				'Set.<int>([42, "42"]);',
-				'Map.<int>([42, "42"]);',
+				'Map.<int>([[42, "42"]]);',
 			].forEach((src) => {
 				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable);
 			});
@@ -126,24 +135,24 @@ describe('ASTNodeCall', () => {
 			assert.deepStrictEqual(
 				evaluate.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new OBJ.List<OBJ.Integer>([
-						new OBJ.Integer(1n),
-						new OBJ.Integer(2n),
-						new OBJ.Integer(3n),
+					new VALUE.List<VALUE.Integer>([
+						new VALUE.Integer(1n),
+						new VALUE.Integer(2n),
+						new VALUE.Integer(3n),
 					]),
-					new OBJ.Dict<OBJ.Integer>(new Map<bigint, OBJ.Integer>([
-						[0x100n, new OBJ.Integer(1n)],
-						[0x101n, new OBJ.Integer(2n)],
-						[0x102n, new OBJ.Integer(3n)],
+					new VALUE.Dict<VALUE.Integer>(new Map<bigint, VALUE.Integer>([
+						[0x100n, new VALUE.Integer(1n)],
+						[0x101n, new VALUE.Integer(2n)],
+						[0x102n, new VALUE.Integer(3n)],
 					])),
-					new OBJ.Set<OBJ.Integer>(new Set<OBJ.Integer>([
-						new OBJ.Integer(1n),
-						new OBJ.Integer(2n),
-						new OBJ.Integer(3n),
+					new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>([
+						new VALUE.Integer(1n),
+						new VALUE.Integer(2n),
+						new VALUE.Integer(3n),
 					])),
-					new OBJ.Map<OBJ.Integer, OBJ.Float>(new Map<OBJ.Integer, OBJ.Float>([
-						[new OBJ.Integer(1n), new OBJ.Float(0.1)],
-						[new OBJ.Integer(2n), new OBJ.Float(0.2)],
+					new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
+						[new VALUE.Integer(1n), new VALUE.Float(0.1)],
+						[new VALUE.Integer(2n), new VALUE.Float(0.2)],
 					])),
 				],
 			);
@@ -152,20 +161,20 @@ describe('ASTNodeCall', () => {
 			assert.deepStrictEqual(
 				list_args.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new OBJ.List<OBJ.Integer>([
-						new OBJ.Integer(1n),
-						new OBJ.Integer(2n),
-						new OBJ.Integer(3n),
+					new VALUE.List<VALUE.Integer>([
+						new VALUE.Integer(1n),
+						new VALUE.Integer(2n),
+						new VALUE.Integer(3n),
 					]),
-					new OBJ.Set<OBJ.Integer>(new Set<OBJ.Integer>([
-						new OBJ.Integer(1n),
-						new OBJ.Integer(2n),
-						new OBJ.Integer(3n),
+					new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>([
+						new VALUE.Integer(1n),
+						new VALUE.Integer(2n),
+						new VALUE.Integer(3n),
 					])),
-					new OBJ.Map<OBJ.Integer, OBJ.Float>(new Map<OBJ.Integer, OBJ.Float>([
-						[new OBJ.Integer(1n), new OBJ.Float(0.1)],
-						[new OBJ.Integer(2n), new OBJ.Float(0.2)],
-						[new OBJ.Integer(3n), new OBJ.Float(0.4)],
+					new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
+						[new VALUE.Integer(1n), new VALUE.Float(0.1)],
+						[new VALUE.Integer(2n), new VALUE.Float(0.2)],
+						[new VALUE.Integer(3n), new VALUE.Float(0.4)],
 					])),
 				],
 			);
@@ -174,13 +183,13 @@ describe('ASTNodeCall', () => {
 			assert.deepStrictEqual(
 				zero_empty.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new OBJ.List<never>(),
-					new OBJ.Dict<never>(),
-					new OBJ.Set<never>(),
-					new OBJ.Map<never, never>(),
-					new OBJ.List<never>(),
-					new OBJ.Set<never>(),
-					new OBJ.Map<never, never>(),
+					new VALUE.List<never>(),
+					new VALUE.Dict<never>(),
+					new VALUE.Set<never>(),
+					new VALUE.Map<never, never>(),
+					new VALUE.List<never>(),
+					new VALUE.Set<never>(),
+					new VALUE.Map<never, never>(),
 				],
 			);
 		});

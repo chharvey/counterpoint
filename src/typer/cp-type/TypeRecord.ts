@@ -1,20 +1,28 @@
 import * as assert from 'assert';
 import {TypeErrorNoEntry} from '../../index.js';
-import {strictEqual} from '../../lib/index.js';
+import {
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
+} from '../../lib/index.js';
 import type {
 	ValidAccessOperator,
 	AST,
 } from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
-import * as OBJ from '../cp-object/index.js';
-import {OBJ as TYPE_OBJ} from './index.js';
+import * as VALUE from '../cp-value/index.js';
 import {updateAccessedStaticType} from './utils-private.js';
-import {Type} from './Type.js';
+import {subtypeDeco} from './decorators.js';
+import type {Type} from './Type.js';
 import {TypeUnion} from './TypeUnion.js';
 import {ValueType} from './ValueType.js';
 
 
 
+/**
+ * Class for constructing record literal types.
+ * @final
+ */
 export class TypeRecord extends ValueType {
 	/**
 	 * Construct a new TypeRecord from type properties, assuming each property is required.
@@ -29,7 +37,7 @@ export class TypeRecord extends ValueType {
 	}
 
 	/** Returns the minimum possible number of properties in the given record type. */
-	static #minCount(t: TypeRecord): bigint {
+	public static minCount(t: TypeRecord): bigint { // TODO: make this an instance method
 		return BigInt([...t.invariants.values()].filter((val) => !val.optional).length);
 	}
 
@@ -39,7 +47,7 @@ export class TypeRecord extends ValueType {
 	 * @param invariants a map of this type’s property ids along with their associated types
 	 */
 	public constructor(public readonly invariants: ReadonlyMap<bigint, TypeEntry> = new Map()) {
-		super(false, new Set([new OBJ.Record()]));
+		super(false, new Set([new VALUE.Record()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -50,18 +58,19 @@ export class TypeRecord extends ValueType {
 		return `[${ [...this.invariants].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
-	public override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Record && v.toType().isSubtypeOf(this);
+	@instanceOf(() => VALUE.Record)
+	public override includes(v: VALUE.Value): boolean {
+		return v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual
-	@Type.memoizeSubtype
-	@Type.subtypeDeco
+	@memoizeBinOp()
+	@subtypeDeco
+	@instanceOf(() => TypeRecord)
 	public override isSubtypeOf(t: Type): boolean {
-		return t.equals(TYPE_OBJ) || (
-			t instanceof TypeRecord
-			&& TypeRecord.#minCount(this) >= TypeRecord.#minCount(t)
-			&& [...t.invariants].every(([id, thattype]) => {
+		return (
+			TypeRecord.minCount(this) >= TypeRecord.minCount(t as TypeRecord) &&
+			[...(t as TypeRecord).invariants].every(([id, thattype]) => {
 				const thistype: TypeEntry | undefined = this.invariants.get(id);
 				if (!thattype.optional) {
 					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.

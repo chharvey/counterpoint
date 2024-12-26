@@ -2,18 +2,14 @@ import * as assert from 'assert';
 import {
 	AST,
 	type TypeEntry,
-	OBJ,
+	VALUE,
 	TYPE,
 	TypeError,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
 } from '../../../src/index.js';
-import {
-	typeUnitInt,
-	typeUnitFloat,
-	typeUnitStr,
-} from '../../helpers.js';
+import {typeUnit} from '../../helpers.js';
 
 
 describe('ASTNodeType', () => {
@@ -67,7 +63,7 @@ describe('ASTNodeType', () => {
 					);
 				});
 				it('throws if count is negative.', () => {
-					       assert.throws(() => AST.ASTNodeTypeList.fromSource('(int | bool)  [-3]').eval(), TypeError);
+					assert.throws(() => AST.ASTNodeTypeList.fromSource('(int | bool)[-3]').eval(), TypeError);
 				});
 			});
 
@@ -112,11 +108,11 @@ describe('ASTNodeType', () => {
 					'"hi"',
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
-					OBJ.Boolean.FALSETYPE,
-					OBJ.Boolean.TRUETYPE,
-					typeUnitInt(42n),
-					typeUnitFloat(4.2e+3),
-					typeUnitStr('hi'),
+					VALUE.Boolean.FALSETYPE,
+					VALUE.Boolean.TRUETYPE,
+					typeUnit(42n),
+					typeUnit(4.2e+3),
+					typeUnit('hi'),
 				]);
 			});
 			it('computes the value of keyword type.', () => {
@@ -295,11 +291,11 @@ describe('ASTNodeType', () => {
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource('Object & 3').eval(),
-				TYPE.OBJ.intersect(typeUnitInt(3n)),
+				TYPE.OBJ.intersect(typeUnit(3n)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource('4.2 | int').eval(),
-				typeUnitFloat(4.2).union(TYPE.INT),
+				typeUnit(4.2).union(TYPE.INT),
 			);
 		});
 	});
