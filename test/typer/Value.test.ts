@@ -9,7 +9,7 @@ import {buildConst} from '../helpers.js';
 
 
 
-describe('Object', () => {
+describe('Value', () => {
 	describe('#identical', () => {
 		describe('Tuple', () => {
 			it('Tuples with the same items are identical.', () => {
