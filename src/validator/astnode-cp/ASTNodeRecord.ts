@@ -90,7 +90,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	public override assignTo(assignee: TYPE.Type): void {
 		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
 		if (assignee instanceof TYPE.TypeRecord) {
-			if (this.children.length < TYPE.TypeRecord.minCount(assignee)) {
+			if (this.children.length < assignee.minCount) {
 				throw err;
 			}
 			assignee.invariants.forEach((entry, key) => { // using `.forEach` to short-circuit
