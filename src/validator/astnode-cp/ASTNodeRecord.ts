@@ -1,7 +1,9 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	build_record_like,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
 } from '../../index.js';
@@ -17,6 +19,7 @@ import {
 import type {TypeEntry} from '../../typer/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import {
+	buildDeco,
 	typeDeco,
 	assignToDeco,
 } from './decorators.js';
@@ -50,6 +53,17 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				throw new AssignmentErrorDuplicateKey(keys[i]);
 			}
 		});
+	}
+
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		return build_record_like<ASTNodeExpression>(
+			new Map<bigint, ASTNodeExpression>(this.children.map((child) => [child.key.id, child.val])),
+			this.builder,
+			(expr) => expr.type(),
+			(expr) => expr.build(),
+		);
 	}
 
 	@memoizeMethod

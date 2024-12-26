@@ -330,6 +330,153 @@ describe('Value', () => {
 					);
 				});
 			});
+
+			describe('Record', () => {
+				let builder: Builder = new Builder();
+				beforeEach(() => {
+					builder = new Builder();
+				});
+				it('returns `(tuple.make)`.', () => {
+					assertEqualBins(
+						new VALUE.Record(new Map<bigint, VALUE.Value>([
+							[0x100n, VALUE.Integer.UNIT],
+							[0x101n, new VALUE.Float(2.0)],
+						])).build(builder),
+						builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
+						// '[a= 1, b= 2.0]',
+					);
+				});
+				it('record of size 1 returns a `(tuple.make)` with 1 item.', () => {
+					assertEqualBins(
+						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]])).build(builder),
+						builder.module.tuple.make([buildConst(builder, 3.4)]),
+						// '[a= 3.4]',
+					);
+				});
+				it('boxed record with 1 prop.', () => {
+					const mod: binaryen.Module = builder.module;
+					return assertEqualBins(
+						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]]))]])).build(builder),
+						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(builder, 3.4)]), 0)]),
+						// '[a= [a= 3.4]]',
+					);
+				});
+				it('boxed record with many props.', () => {
+					const mod:   binaryen.Module        = builder.module;
+					const inner: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(builder, 1n),
+						buildConst(builder, 2.0),
+						buildConst(builder, true),
+					]);
+					return assertEqualBins(
+						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([
+							[0x100n, VALUE.Integer.UNIT],
+							[0x101n, new VALUE.Float(2.0)],
+							[0x102n, VALUE.Boolean.TRUE],
+						]))]])).build(builder),
+						mod.tuple.make([
+							mod.tuple.extract(mod.local.tee(0, inner, bintype3), 0),
+							mod.tuple.extract(mod.local.get(0, bintype3), 1),
+							mod.tuple.extract(mod.local.get(0, bintype3), 2),
+						]),
+						// '[a= [a= 1, b= 2.0, c= true]]',
+					);
+				});
+				it('nested records.', () => {
+					const mod:    binaryen.Module        = builder.module;
+					const inner2: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(builder, 3n),
+						mod.tuple.extract(mod.tuple.make([buildConst(builder, 4.0)]), 0),
+					]);
+					return assertEqualBins(
+						new VALUE.Record(new Map<bigint, VALUE.Value>([
+							[0x100n, VALUE.Integer.UNIT],
+							[0x101n, new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(2.0)]]))],
+							[0x102n, new VALUE.Record(new Map<bigint, VALUE.Value>([
+								[0x100n, new VALUE.Integer(3n)],
+								[0x101n, new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(4.0)]]))],
+							]))],
+						])).build(builder),
+						mod.tuple.make([
+							buildConst(builder, 1n),
+							mod.tuple.extract(mod.tuple.make([buildConst(builder, 2.0)]), 0),
+							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
+							mod.tuple.extract(mod.local.get(0, bintype2), 1),
+						]),
+						/* `[
+							a= 1,
+							b= [a= 2.0],
+							c= [a= 3, b= [a= 4.0]],
+						]`, */
+					);
+				});
+				it('multiple entries.', () => {
+					const mod:     binaryen.Module        = builder.module;
+					const inner01: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(builder, 2.0),
+						buildConst(builder, 3n),
+					]);
+					const inner11: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(builder, 5n),
+						buildConst(builder, 6.0),
+					]);
+					const inner0: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(builder, 1n),
+						mod.tuple.extract(mod.local.tee(0, inner01, bintype2), 0),
+						mod.tuple.extract(mod.local.get(0, bintype2), 1),
+					]);
+					const inner1: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(builder, 4.0),
+						mod.tuple.extract(mod.local.tee(2, inner11, bintype2), 0),
+						mod.tuple.extract(mod.local.get(2, bintype2), 1),
+					]);
+					const inner2: binaryen.ExpressionRef = mod.block(null, [
+						mod.local.set(4, buildConst(builder, 7n)),
+						mod.local.set(5, new BinVect(mod, true).vect),
+						mod.tuple.make([
+							mod.local.get(5, binaryen.v128),
+							mod.local.get(4, binaryen.v128),
+						]),
+					], bintype2);
+					return assertEqualBins(
+						new VALUE.Record(new Map<bigint, VALUE.Value>([
+							[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([
+								[0x100n, VALUE.Integer.UNIT],
+								[0x101n, new VALUE.Record(new Map<bigint, VALUE.Value>([
+									[0x100n, new VALUE.Float(2.0)],
+									[0x101n, new VALUE.Integer(3n)],
+								]))],
+							]))],
+							[0x101n, new VALUE.Record(new Map<bigint, VALUE.Value>([
+								[0x100n, new VALUE.Float(4.0)],
+								[0x101n, new VALUE.Record(new Map<bigint, VALUE.Value>([
+									[0x100n, new VALUE.Integer(5n)],
+									[0x101n, new VALUE.Float(6.0)],
+								]))],
+							]))],
+							[0x102n, new VALUE.Record(new Map<bigint, VALUE.Value>([
+								[0x101n, new VALUE.Integer(7n)],
+								[0x100n, VALUE.Boolean.TRUE],
+							]))],
+						])).build(builder),
+						mod.tuple.make([
+							mod.tuple.extract(mod.local.tee(1, inner0, bintype3), 0),
+							mod.tuple.extract(mod.local.get(1, bintype3), 1),
+							mod.tuple.extract(mod.local.get(1, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(3, inner1, bintype3), 0),
+							mod.tuple.extract(mod.local.get(3, bintype3), 1),
+							mod.tuple.extract(mod.local.get(3, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(6, inner2, bintype2), 0),
+							mod.tuple.extract(mod.local.get(6, bintype2), 1),
+						]),
+						/* `[
+							a= [a= 1,   b= [a= 2.0, b= 3]],
+							b= [a= 4.0, b= [a= 5, b= 6.0]],
+							c= [b= 7,   a= true],
+						]`, */
+					);
+				});
+			});
 		});
 	});
 

@@ -1,3 +1,8 @@
+import type binaryen from 'binaryen';
+import {
+	build_record_like,
+	type Builder,
+} from '../../index.js';
 import {
 	strictEqual,
 	instanceOf,
@@ -30,5 +35,14 @@ export class Record<T extends Value = Value> extends CollectionKeyed<T> {
 	 */
 	public override toType(): TYPE.TypeRecord {
 		return TYPE.TypeRecord.fromTypes(new Map([...this.properties].map(([key, val]) => [key, val.toType()])));
+	}
+
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return build_record_like<T>(
+			this.properties,
+			builder,
+			(value) => value.toType(),
+			(value) => value.build(builder),
+		);
 	}
 }
