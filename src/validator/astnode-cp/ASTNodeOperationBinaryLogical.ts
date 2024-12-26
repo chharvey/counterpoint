@@ -1,6 +1,6 @@
 import binaryen from 'binaryen';
 import {
-	type OBJ,
+	type VALUE,
 	type TYPE,
 	BinVect,
 } from '../../index.js';
@@ -89,8 +89,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand0.fold();
+	public override fold(): VALUE.Value | null {
+		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}

@@ -11,18 +11,19 @@ import type {
 	AST,
 } from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
-import * as OBJ from '../cp-object/index.js';
+import * as VALUE from '../cp-value/index.js';
 import {updateAccessedStaticType} from './utils-private.js';
-import {
-	subtypeDeco,
-	referenceSubtypeDeco,
-} from './decorators.js';
+import {subtypeDeco} from './decorators.js';
 import type {Type} from './Type.js';
 import {TypeUnion} from './TypeUnion.js';
 import {ValueType} from './ValueType.js';
 
 
 
+/**
+ * Class for constructing tuple literal types.
+ * @final
+ */
 export class TypeTuple extends ValueType {
 	/**
 	 * Construct a new TypeTuple from type items, assuming each item is required.
@@ -42,7 +43,7 @@ export class TypeTuple extends ValueType {
 	 * @param invariants this type’s item types
 	 */
 	public constructor(public readonly invariants: readonly TypeEntry[] = []) {
-		super(false, new Set([new OBJ.Tuple()]));
+		super(false, new Set([new VALUE.Tuple()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -64,15 +65,14 @@ export class TypeTuple extends ValueType {
 		return `[${ this.invariants.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
-	@instanceOf(() => OBJ.Tuple)
-	public override includes(v: OBJ.Object): boolean {
+	@instanceOf(() => VALUE.Tuple)
+	public override includes(v: VALUE.Value): boolean {
 		return v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual
 	@memoizeBinOp()
 	@subtypeDeco
-	@referenceSubtypeDeco
 	@instanceOf(() => TypeTuple)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
@@ -92,7 +92,7 @@ export class TypeTuple extends ValueType {
 	}
 
 	/** @final */
-	public get(index: OBJ.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
+	public get(index: VALUE.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.invariants.length;
 		const i: number = index.toNumber();
 		return updateAccessedStaticType(

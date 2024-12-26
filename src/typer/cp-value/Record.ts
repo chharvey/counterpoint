@@ -4,16 +4,20 @@ import {
 	memoizeBinOp,
 } from '../../lib/index.js';
 import {TYPE} from '../index.js';
-import type {Object as CPObject} from './Object.js';
+import type {Value} from './Value.js';
 import {CollectionKeyed} from './CollectionKeyed.js';
 
 
 
-export class Record<T extends CPObject = CPObject> extends CollectionKeyed<T> {
+/**
+ * A static structure of key–value pairs.
+ * @final
+ */
+export class Record<T extends Value = Value> extends CollectionKeyed<T> {
 	@strictEqual
 	@instanceOf(() => Record)
 	@memoizeBinOp(true, true)
-	public override identical(value: CPObject): boolean {
+	public override identical(value: Value): boolean {
 		return (
 			this.properties.size === (value as Record).properties.size &&
 			[...(value as Record).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.identical(thatvalue))

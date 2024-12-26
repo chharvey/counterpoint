@@ -3,27 +3,29 @@ This chapter describes the objects built in to the standard “core” Counterpo
 
 
 
-## Primitive and Composite Objects
-Primitive objects are unbreakable and are instances of `Null`, `Boolean`, `Integer`, `Float`, or `String`.
-These types are discussed in the [Data Types](./data-types.md#simple-types) chapter.
+## Primitive and Composite Values
+Primitive values are unbreakable and are instances of `Null`, `Boolean`, `Integer`, `Float`, or `String`.
+These types are discussed in the [Types and Values](./types-values.md#simple-types) chapter.
 
-Composite objects are not primitive objects and are composed of other objects (of any kind).
+Composite values are not primitive values and are composed of other values (of any kind).
+They include instances of `Tuple`, `Record`, `List`, `Dict`, `Set`, `Map`,
+most instances of `Object`, and potentially instances of any programmer-defined classes.
 
-Countable objects are composite objects that allow iteration over their component parts.
-They have a **count**, static or dynamic, which is the number of objects they contain.
-The maximum count of any countable object is the maximum Integer value, *32,767*.
+Countable values are composite values that allow iteration over their component parts.
+They have a **count**, static or dynamic, which is the number of values they contain.
+The maximum count of any countable value is the maximum Integer value, *32,767*.
 This is likely to change in future versions of Counterpoint:
 if unsigned integers are supported, the maximum count would be increased to *65,535*.
 
 
 
-## Value Objects
-Value objects are described completely by their value and have no identity;
+## Data Values
+Data values are described completely by their value and have no identity;
 they are [identical](./algorithms.md#identical) if and only if they have the “same value”.
-Primitive objects are value objects because two primitive objects that have the same value are one in the same.
-When a value object is assigned to a variable or parameter, a copy of its value is assigned.
-All value objects are immutable.
-Value objects do not have a common ancestor.
+All primitive values are data values because two primitive values that have the same value are one in the same.
+When a data value is assigned to a variable or parameter, a copy of its value is assigned.
+All data values are immutable.
+Data values do not all have a common ancestor.
 
 
 ### `Null`
@@ -48,12 +50,10 @@ There is only one `Null` object: `null`.
 
 ### `Tuple`
 `Tuple` objects are fixed-size ordered lists of indexed values, with indices starting at *0*.
-The values in Tuples are Counterpoint Language Values and are restricted to value objects.
 
 
 ### `Record`
 `Record` objects are fixed-size unordered lists of keyed values, with identifier keys.
-The values in Records are Counterpoint Language Values and are restricted to value objects.
 
 
 

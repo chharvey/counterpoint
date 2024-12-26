@@ -11,7 +11,7 @@ import {
 	INT,
 	FLOAT,
 	STR,
-	OBJ as TYPE_OBJ,
+	OBJ,
 } from './index.js';
 
 
@@ -57,7 +57,7 @@ export function operatorDeco(
 				INT,
 				FLOAT,
 				STR,
-				TYPE_OBJ,
+				OBJ,
 			].find((c) => returned.equals(c)) ?? returned
 		);
 	};
@@ -258,6 +258,14 @@ export function subtypeDeco(
 			return this.isSubtypeOf(t.left) && this.intersect(t.right).isBottomType;
 		}
 
+		/**
+		 * Reference types can only be assignable to reference types, and
+		 * value types can only be assignable to value types.
+		 */
+		if (this.isReference !== t.isReference) {
+			return false;
+		}
+
 		return method.call(this, t);
 	};
 }
@@ -274,6 +282,6 @@ export function referenceSubtypeDeco(
 	_context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
 	return function (this: Type, t) {
-		return t.equals(TYPE_OBJ) || method.call(this, t);
+		return t.equals(OBJ) || method.call(this, t);
 	};
 }

@@ -6,7 +6,7 @@ import {
 } from '../../lib/index.js';
 import type {TypeEntry} from '../utils-public.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import type * as OBJ from '../cp-object/index.js';
+import type * as VALUE from '../cp-value/index.js';
 import {
 	TypeTuple,
 	TypeRecord,
@@ -32,6 +32,7 @@ import {
 /**
  * A type union of two types `T` and `U` is the type
  * that contains values both assignable to `T` *and* assignable to `U`.
+ * @final
  */
 export class TypeUnion extends Combinable {
 	/**
@@ -137,7 +138,7 @@ export class TypeUnion extends Combinable {
 		return this.operands.join(' | ');
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: VALUE.Value): boolean {
 		return this.operands.some((s) => s.includes(v));
 	}
 

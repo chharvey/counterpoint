@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	TypeErrorNotAssignable,
 } from '../../index.js';
@@ -58,11 +58,11 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const items: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
+	public override fold(): VALUE.Value | null {
+		const items: readonly (VALUE.Value | null)[] = this.children.map((c) => c.fold());
 		return (items.includes(null))
 			? null
-			: new OBJ.Tuple(items as OBJ.Object[]);
+			: new VALUE.Tuple(items as VALUE.Value[]);
 	}
 
 	@assignToDeco

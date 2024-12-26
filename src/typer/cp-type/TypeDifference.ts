@@ -4,7 +4,7 @@ import {
 	memoizeBinOp,
 } from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import type * as OBJ from '../cp-object/index.js';
+import type * as VALUE from '../cp-value/index.js';
 import {
 	toStringDeco,
 	subtypeDeco,
@@ -17,6 +17,7 @@ import {TypeUnion} from './TypeUnion.js';
 /**
  * A type difference of two types `T` and `U` is the type
  * that contains values assignable to `T` but *not* assignable to `U`.
+ * @final
  */
 export class TypeDifference extends Type {
 	/**
@@ -59,7 +60,7 @@ export class TypeDifference extends Type {
 		return [this.left, this.right].map((s) => s instanceof TypeUnion ? `(${ s })` : s).join(' - ');
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: VALUE.Value): boolean {
 		return this.left.includes(v) && !this.right.includes(v);
 	}
 

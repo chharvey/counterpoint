@@ -1,6 +1,6 @@
 import type binaryen from 'binaryen';
 import {
-	type OBJ,
+	type VALUE,
 	TYPE,
 } from '../../index.js';
 import {
@@ -55,11 +55,11 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.String | null {
-		const values: readonly (OBJ.Object | null)[] = [...this.children].map((expr) => expr.fold());
+	public override fold(): VALUE.String | null {
+		const values: readonly (VALUE.Value | null)[] = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))
 			? null
-			: (values as readonly OBJ.Object[])
+			: (values as readonly VALUE.Value[])
 				.map((value) => value.toCPString())
 				.reduce((a, b) => a.concatenate(b));
 	}

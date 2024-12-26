@@ -2,7 +2,7 @@ import {
 	strictEqual,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import type * as OBJ from '../cp-object/index.js';
+import type * as VALUE from '../cp-value/index.js';
 import type {Type} from './Type.js';
 import {ValueType} from './ValueType.js';
 
@@ -28,7 +28,7 @@ export class TypeNever extends ValueType {
 		return 'never';
 	}
 
-	public override includes(_v: OBJ.Object): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return false;
 	}
 

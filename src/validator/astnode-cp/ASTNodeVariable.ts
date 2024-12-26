@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
-	type OBJ,
-	TYPE,
+	type VALUE,
+	type TYPE,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../index.js';
@@ -69,22 +69,19 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
-		if (this.validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-			if (symbol instanceof SymbolStructureVar) {
-				return symbol.type;
-			}
-		}
-		return TYPE.NEVER;
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolStructureVar);
+		return symbol.type;
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		if (this.validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
-				return symbol.value;
-			}
+	public override fold(): VALUE.Value | null {
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolStructureVar);
+		if (!symbol.unfixed) {
+			return symbol.value;
 		}
 		return null;
 	}

@@ -1,4 +1,4 @@
-export * from './Object.js';
+export * from './Value.js';
 
 export * from './Primitive.js';
 export * from './Null.js';

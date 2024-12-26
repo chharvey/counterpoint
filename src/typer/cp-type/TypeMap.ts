@@ -3,17 +3,22 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import * as OBJ from '../cp-object/index.js';
+import * as VALUE from '../cp-value/index.js';
 import {MUT_OPERATOR} from './utils-private.js';
 import {
 	subtypeDeco,
 	referenceSubtypeDeco,
 } from './decorators.js';
-import {Type} from './Type.js';
+import type {Type} from './Type.js';
+import {ReferenceType} from './ReferenceType.js';
 
 
 
-export class TypeMap extends Type {
+/**
+ * Class for constructing a `Map` type.
+ * @final
+ */
+export class TypeMap extends ReferenceType {
 	/**
 	 * Construct a new TypeMap object.
 	 * @param invariant_ant a union of antecedent types in this map type
@@ -25,7 +30,7 @@ export class TypeMap extends Type {
 		public readonly invariant_con: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.Map()]));
+		super(is_mutable, new Set([new VALUE.Map()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -36,8 +41,8 @@ export class TypeMap extends Type {
 		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Map.<${ this.invariant_ant }, ${ this.invariant_con }>`;
 	}
 
-	public override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Map && v.toType().isSubtypeOf(this);
+	public override includes(v: VALUE.Value): boolean {
+		return v instanceof VALUE.Map && v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual

@@ -3,17 +3,22 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import * as OBJ from '../cp-object/index.js';
+import * as VALUE from '../cp-value/index.js';
 import {MUT_OPERATOR} from './utils-private.js';
 import {
 	subtypeDeco,
 	referenceSubtypeDeco,
 } from './decorators.js';
-import {Type} from './Type.js';
+import type {Type} from './Type.js';
+import {ReferenceType} from './ReferenceType.js';
 
 
 
-export class TypeSet extends Type {
+/**
+ * Class for constructing a `Set` type.
+ * @final
+ */
+export class TypeSet extends ReferenceType {
 	/**
 	 * Construct a new TypeSet object.
 	 * @param invariant a union of types in this set type
@@ -23,7 +28,7 @@ export class TypeSet extends Type {
 		public readonly invariant: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.Set()]));
+		super(is_mutable, new Set([new VALUE.Set()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -34,8 +39,8 @@ export class TypeSet extends Type {
 		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Set.<${ this.invariant }>`;
 	}
 
-	public override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.Set && v.toType().isSubtypeOf(this);
+	public override includes(v: VALUE.Value): boolean {
+		return v instanceof VALUE.Set && v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual

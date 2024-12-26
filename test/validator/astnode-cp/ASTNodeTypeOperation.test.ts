@@ -25,7 +25,7 @@ describe('ASTNodeTypeOperation', () => {
 					new TYPE.TypeList(TYPE.INT, true),
 				);
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type A = mut int[];
+					type A = mut int[][];
 					type B = int[3];
 					type F = Object[];
 

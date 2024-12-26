@@ -4,7 +4,7 @@ import {
 	memoizeBinOp,
 } from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import * as OBJ from '../cp-object/index.js';
+import * as VALUE from '../cp-value/index.js';
 import {
 	TypeIntersection,
 	TypeUnion,
@@ -29,17 +29,11 @@ import {
  * - TypeDifference
  * - ValueType
  * - TypeInterface
- * - TypeUnknown
- * - TypeObject
- * - TypeObject
- * - TypeList
- * - TypeDict
- * - TypeSet
- * - TypeMap
+ * - ReferenceType
  */
 export abstract class Type {
 	static get #falsyTypes(): readonly Type[] {
-		return [VOID, NULL, OBJ.Boolean.FALSETYPE];
+		return [VOID, NULL, VALUE.Boolean.FALSETYPE];
 	}
 
 
@@ -50,7 +44,7 @@ export abstract class Type {
 	 */
 	public constructor(
 		public readonly isMutable: boolean,
-		public readonly values:    ReadonlySet<OBJ.Object> = new Set(),
+		public readonly values:    ReadonlySet<VALUE.Value> = new Set(),
 	) {
 	}
 
@@ -80,10 +74,7 @@ export abstract class Type {
 	 * Return whether this type is a reference type or a value type.
 	 * @return `true` if this type is a reference type
 	 */
-	// eslint-disable-next-line @typescript-eslint/class-literal-property-style --- overridden in subclasses by getters
-	public get isReference(): boolean {
-		return true;
-	}
+	public abstract get isReference(): boolean;
 
 	/**
 	 * Return whether this type is mutable or has a mutable operand or component.
@@ -135,7 +126,7 @@ export abstract class Type {
 	 * @param v the value to check
 	 * @returns Is `v` assignable to this type?
 	 */
-	public includes(v: OBJ.Object): boolean {
+	public includes(v: VALUE.Value): boolean {
 		return xjs.Set.has(this.values, v, languageValuesIdentical);
 	}
 
@@ -191,7 +182,7 @@ export abstract class Type {
 	@memoizeBinOp()
 	@subtypeDeco
 	public isSubtypeOf(t: Type): boolean {
-		return !this.isBottomType && !!this.values.size && // these checks are needed in cases of `Object` and `void`, which don’t store values
+		return !this.isBottomType && !!this.values.size && // these checks are needed in cases of `void`, which doesn’t store values
 			[...this.values].every((v) => t.includes(v));
 	}
 
@@ -244,11 +235,15 @@ export class TypeInterface extends Type {
 		return this.properties.size === 0;
 	}
 
+	public override get isReference(): boolean {
+		return true;
+	}
+
 	public override get hasMutable(): boolean {
 		return super.hasMutable || [...this.properties.values()].some((t) => t.hasMutable);
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override includes(v: VALUE.Value): boolean {
 		return [...this.properties.keys()].every((key) => key in v);
 	}
 

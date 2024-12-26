@@ -5,7 +5,7 @@ import {
 	instanceOf,
 } from '../../lib/index.js';
 import type {TYPE} from '../index.js';
-import type {Object as CPObject} from './Object.js';
+import type {Value} from './Value.js';
 import {Primitive} from './Primitive.js';
 
 
@@ -13,7 +13,6 @@ import {Primitive} from './Primitive.js';
 /**
  * The Counterpoint Language Type `Boolean` has two values: `true` and `false`.
  * These values are constant and the only two instances of this class.
- *
  * @final
  */
 class CPBoolean extends Primitive {
@@ -60,7 +59,7 @@ class CPBoolean extends Primitive {
 	@strictEqual
 	@instanceOf(() => CPBoolean)
 	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
-	public override identical(value: CPObject): boolean {
+	public override identical(value: Value): boolean {
 		return this.data === (value as CPBoolean).data;
 	}
 

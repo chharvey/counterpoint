@@ -10,7 +10,7 @@ import {
 import type {AST} from '../../validator/index.js';
 import {language_values_equal} from '../utils-private.js';
 import {equalsDeco} from './decorators.js';
-import type {Object as CPObject} from './Object.js';
+import type {Value} from './Value.js';
 import {Null} from './Null.js';
 import type {Integer} from './Integer.js';
 import {Collection} from './Collection.js';
@@ -22,7 +22,7 @@ import {Collection} from './Collection.js';
  * - Tuple
  * - List
  */
-export abstract class CollectionIndexed<T extends CPObject = CPObject> extends Collection {
+export abstract class CollectionIndexed<T extends Value = Value> extends Collection {
 	public constructor(public readonly items: readonly T[] = []) {
 		super();
 	}
@@ -41,8 +41,8 @@ export abstract class CollectionIndexed<T extends CPObject = CPObject> extends C
 	@equalsDeco
 	@instanceOf(() => CollectionIndexed)
 	@memoizeBinOp(true, true)
-	public override equal(value: CPObject): boolean {
-		return xjs.Array.is<CPObject>(this.items, (value as CollectionIndexed).items, language_values_equal);
+	public override equal(value: Value): boolean {
+		return xjs.Array.is<Value>(this.items, (value as CollectionIndexed).items, language_values_equal);
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {

@@ -19,10 +19,9 @@ Type TypeOfUnfolded(SemanticConstant const) :=
 
 
 Type TypeOfUnfolded(SemanticVariable var) :=
-	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
-		1. *If* `symbol` is an instance of `SymbolStructureVar`:
-			1. *Return:* `symbol.type`.
-	2. *Return:* `Never`.
+	1. *Assert:* The validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`.
+	2. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
+	3. *Return:* `symbol.type`.
 ;
 
 

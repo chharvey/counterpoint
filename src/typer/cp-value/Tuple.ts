@@ -6,17 +6,21 @@ import {
 } from '../../lib/index.js';
 import {TYPE} from '../index.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import type {Object as CPObject} from './Object.js';
+import type {Value} from './Value.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
 
 
 
-export class Tuple<T extends CPObject = CPObject> extends CollectionIndexed<T> {
+/**
+ * A static ordered sequence of values.
+ * @final
+ */
+export class Tuple<T extends Value = Value> extends CollectionIndexed<T> {
 	@strictEqual
 	@instanceOf(() => Tuple)
 	@memoizeBinOp(true, true)
-	public override identical(value: CPObject): boolean {
-		return xjs.Array.is<CPObject>(this.items, (value as Tuple).items, languageValuesIdentical);
+	public override identical(value: Value): boolean {
+		return xjs.Array.is<Value>(this.items, (value as Tuple).items, languageValuesIdentical);
 	}
 
 	/**

@@ -3,17 +3,22 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../../lib/index.js';
-import * as OBJ from '../cp-object/index.js';
+import * as VALUE from '../cp-value/index.js';
 import {
 	subtypeDeco,
 	referenceSubtypeDeco,
 } from './decorators.js';
 import {MUT_OPERATOR} from './utils-private.js';
-import {Type} from './Type.js';
+import type {Type} from './Type.js';
+import {ReferenceType} from './ReferenceType.js';
 
 
 
-export class TypeList extends Type {
+/**
+ * Class for constructing a `List` type.
+ * @final
+ */
+export class TypeList extends ReferenceType {
 	/**
 	 * Construct a new TypeList object.
 	 * @param invariant a union of types in this list type
@@ -23,7 +28,7 @@ export class TypeList extends Type {
 		public readonly invariant: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new OBJ.List()]));
+		super(is_mutable, new Set([new VALUE.List()]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -34,8 +39,8 @@ export class TypeList extends Type {
 		return `${ (this.isMutable) ? MUT_OPERATOR : '' }List.<${ this.invariant }>`;
 	}
 
-	public override includes(v: OBJ.Object): boolean {
-		return v instanceof OBJ.List && v.toType().isSubtypeOf(this);
+	public override includes(v: VALUE.Value): boolean {
+		return v instanceof VALUE.List && v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual

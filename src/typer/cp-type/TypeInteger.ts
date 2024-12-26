@@ -1,5 +1,5 @@
 import {instanceOf} from '../../lib/decorators.js';
-import * as OBJ from '../cp-object/index.js';
+import * as VALUE from '../cp-value/index.js';
 import {ValueType} from './ValueType.js';
 
 
@@ -13,15 +13,15 @@ export class TypeInteger extends ValueType {
 
 
 	private constructor() {
-		super(false, new Set([OBJ.Integer.ZERO]));
+		super(false, new Set([VALUE.Integer.ZERO]));
 	}
 
 	public override toString(): string {
 		return 'int';
 	}
 
-	@instanceOf(() => OBJ.Integer)
-	public override includes(_: OBJ.Object): boolean {
+	@instanceOf(() => VALUE.Integer)
+	public override includes(_: VALUE.Value): boolean {
 		return true;
 	}
 }

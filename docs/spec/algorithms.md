@@ -4,7 +4,7 @@ This chapter lists and defines common abstract algorithms used throughout this s
 
 
 ## DigitCount
-The **DigitCount** attribute grammar gives the [number](./data-types.md#real-integer-numbers) of
+The **DigitCount** attribute grammar gives the [number](./types-values.md#real-integer-numbers) of
 numeric (non-separator) digits in a digit sequence.
 ```
 DigitCount(DigitSequenceDec :::= [0-9]) -> RealNumber
@@ -191,7 +191,7 @@ Performs the type-checking piece during semantic analysis.
 
 
 ## ToBoolean
-Returns an associated [boolean value](./data-types#boolean), `true` or `false`, with a Counterpoint Language Value.
+Returns an associated [boolean value](./types-values#boolean), `true` or `false`, with a Counterpoint Language Value.
 ```
 Boolean ToBoolean(Object value) :=
 	1. *If* `value` is an instance of `Null`:

@@ -1,7 +1,7 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
@@ -56,6 +56,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 			...this.typeargs,
 			...this.exprargs,
 		], (arg) => arg.varCheck());
+	}
+
+	public override typeCheck(): void {
+		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
+		// (`this.base.source` must be a `ValidFunctionName`)
+		xjs.Array.forEachAggregated([
+			...this.typeargs,
+			...this.exprargs,
+		], (arg) => arg.typeCheck());
+		this.type(); // assert does not throw
 	}
 
 	@memoizeMethod
@@ -216,16 +226,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const args: readonly (OBJ.Object | null)[] = this.exprargs.map((c) => c.fold()); // TODO: `#fold` should not return native `null` if it cannot assess
+	public override fold(): VALUE.Value | null {
+		const args: readonly (VALUE.Value | null)[] = this.exprargs.map((c) => c.fold()); // TODO: `#fold` should not return native `null` if it cannot assess
 		if (args.includes(null)) {
 			return null;
 		}
-		return new Map<ValidFunctionName, (argument: OBJ.Object | undefined) => OBJ.Object | null>([
-			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new OBJ.List() : new OBJ.List((tuple as OBJ.CollectionIndexed).items)],
-			[ValidFunctionName.DICT, (record) => (record === undefined) ? new OBJ.Dict() : new OBJ.Dict((record as OBJ.CollectionKeyed).properties)],
-			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new OBJ.Set()  : new OBJ.Set(new Set<OBJ.Object>((tuple as OBJ.CollectionIndexed).items))],
-			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new OBJ.Map()  : new OBJ.Map(new Map<OBJ.Object, OBJ.Object>((tuple as OBJ.CollectionIndexed).items.map((pair) => (pair as OBJ.CollectionIndexed).items as [OBJ.Object, OBJ.Object])))],
+		return new Map<ValidFunctionName, (argument: VALUE.Value | undefined) => VALUE.Value | null>([
+			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new VALUE.List() : new VALUE.List((tuple as VALUE.CollectionIndexed).items)],
+			[ValidFunctionName.DICT, (record) => (record === undefined) ? new VALUE.Dict() : new VALUE.Dict((record as VALUE.CollectionKeyed).properties)],
+			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new VALUE.Set()  : new VALUE.Set(new Set<VALUE.Value>((tuple as VALUE.CollectionIndexed).items))],
+			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new VALUE.Map()  : new VALUE.Map(new Map<VALUE.Value, VALUE.Value>((tuple as VALUE.CollectionIndexed).items.map((pair) => (pair as VALUE.CollectionIndexed).items as [VALUE.Value, VALUE.Value])))],
 		]).get(this.base.source as ValidFunctionName)!(args[0] ?? undefined);
 	}
 

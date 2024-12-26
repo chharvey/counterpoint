@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	TypeErrorNotAssignable,
 } from '../../index.js';
@@ -47,11 +47,11 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const elements: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
+	public override fold(): VALUE.Value | null {
+		const elements: readonly (VALUE.Value | null)[] = this.children.map((c) => c.fold());
 		return (elements.includes(null))
 			? null
-			: new OBJ.Set(new Set(elements as OBJ.Object[]));
+			: new VALUE.Set(new Set(elements as VALUE.Value[]));
 	}
 
 	@assignToDeco

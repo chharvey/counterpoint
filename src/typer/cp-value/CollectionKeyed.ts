@@ -7,7 +7,7 @@ import {
 } from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {equalsDeco} from './decorators.js';
-import type {Object as CPObject} from './Object.js';
+import type {Value} from './Value.js';
 import {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
@@ -18,7 +18,7 @@ import {Collection} from './Collection.js';
  * - Record
  * - Dict
  */
-export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Collection {
+export abstract class CollectionKeyed<T extends Value = Value> extends Collection {
 	public constructor(public readonly properties: ReadonlyMap<bigint, T> = new Map()) {
 		super();
 	}
@@ -37,7 +37,7 @@ export abstract class CollectionKeyed<T extends CPObject = CPObject> extends Col
 	@equalsDeco
 	@instanceOf(() => CollectionKeyed)
 	@memoizeBinOp(true, true)
-	public override equal(value: CPObject): boolean {
+	public override equal(value: Value): boolean {
 		return (
 			this.properties.size === (value as CollectionKeyed).properties.size &&
 			[...(value as CollectionKeyed).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue))

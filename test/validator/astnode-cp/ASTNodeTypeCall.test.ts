@@ -35,7 +35,7 @@ describe('ASTNodeTypeCall', () => {
 		it('throws if base is not an ASTNodeTypeAlias.', () => {
 			[
 				'int.<str>',
-				'(List | Dict).<bool>',
+				'(int | float).<bool>',
 			].forEach((src) => {
 				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorNotCallable);
 			});

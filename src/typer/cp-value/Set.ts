@@ -10,13 +10,17 @@ import {
 	language_values_equal,
 } from '../utils-private.js';
 import {equalsDeco} from './decorators.js';
-import type {Object as CPObject} from './Object.js';
+import type {Value} from './Value.js';
 import {Boolean as CPBoolean} from './Boolean.js';
 import {Collection} from './Collection.js';
 
 
 
-class CPSet<T extends CPObject = CPObject> extends Collection {
+/**
+ * A dynamic unordered sequence of values.
+ * @final
+ */
+class CPSet<T extends Value = Value> extends Collection {
 	public constructor(private readonly elements: ReadonlySet<T> = new Set()) {
 		super();
 		const uniques = new Set<T>();
@@ -39,8 +43,8 @@ class CPSet<T extends CPObject = CPObject> extends Collection {
 	@equalsDeco
 	@instanceOf(() => CPSet)
 	@memoizeBinOp(true, true)
-	public override equal(value: CPObject): boolean {
-		return xjs.Set.is<CPObject>(this.elements, (value as CPSet).elements, language_values_equal);
+	public override equal(value: Value): boolean {
+		return xjs.Set.is<Value>(this.elements, (value as CPSet).elements, language_values_equal);
 	}
 
 	/**

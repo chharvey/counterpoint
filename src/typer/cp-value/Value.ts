@@ -12,7 +12,7 @@ import {equalsDeco} from './decorators.js';
  * - Primitive
  * - Collection
  */
-abstract class CPObject {
+export abstract class Value {
 	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
@@ -36,19 +36,19 @@ abstract class CPObject {
 	 * @returns are the objects identically the same?
 	 */
 	@strictEqual
-	public identical(_value: CPObject): boolean {
+	public identical(_value: Value): boolean {
 		return false;
 	}
 
 	/**
 	 * Are the values considered equal?
-	 * If {@link CPObject#identical} returns `true`, this method will return `true`.
+	 * If {@link Value#identical} returns `true`, this method will return `true`.
 	 * @param value the object to compare
 	 * @returns are the objects equal?
 	 */
 	@strictEqual
 	@equalsDeco
-	public equal(_value: CPObject): boolean {
+	public equal(_value: Value): boolean {
 		return false;
 	}
 
@@ -75,4 +75,3 @@ abstract class CPObject {
 	 */
 	public abstract build(mod: binaryen.Module): binaryen.ExpressionRef;
 }
-export {CPObject as Object};
