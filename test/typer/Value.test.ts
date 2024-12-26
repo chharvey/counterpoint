@@ -194,28 +194,28 @@ describe('Value', () => {
 					assertEqualBins(
 						new VALUE.Tuple([VALUE.Integer.UNIT, new VALUE.Float(2.0)]).build(builder),
 						builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
-						// '[1, 2.0]',
+						'[1, 2.0]',
 					);
 				});
 				it('empty tuple returns unique BinVect representation.', () => {
 					assertEqualBins(
 						new VALUE.Tuple().build(builder),
 						new BinVect(builder.module, 'tuple').vect,
-						// '[]',
+						'[]',
 					);
 				});
 				it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Float(3.4)]).build(builder),
 						builder.module.tuple.make([buildConst(builder, 3.4)]),
-						// '[3.4]',
+						'[3.4]',
 					);
 				});
 				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple()]).build(builder),
 						builder.module.tuple.make([new BinVect(builder.module, 'tuple').vect]),
-						// '[[]]',
+						'[[]]',
 					);
 				});
 				it('boxed tuple with 1 item.', () => {
@@ -223,7 +223,7 @@ describe('Value', () => {
 					return assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Float(3.4)])]).build(builder),
 						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(builder, 3.4)]), 0)]),
-						// '[[3.4]]',
+						'[[3.4]]',
 					);
 				});
 				it('boxed tuple with many items.', () => {
@@ -244,7 +244,7 @@ describe('Value', () => {
 							mod.tuple.extract(mod.local.get(0, bintype3), 1),
 							mod.tuple.extract(mod.local.get(0, bintype3), 2),
 						]),
-						// '[[1, 2.0, true]]',
+						'[[1, 2.0, true]]',
 					);
 				});
 				it('nested tuples.', () => {
@@ -268,7 +268,7 @@ describe('Value', () => {
 							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(0, bintype2), 1),
 						]),
-						// '[1, [2.0], [3, [4.0]]]',
+						'[1, [2.0], [3, [4.0]]]',
 					);
 				});
 				it('multiple entries.', () => {
@@ -326,7 +326,7 @@ describe('Value', () => {
 							mod.tuple.extract(mod.local.tee(4, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(4, bintype2), 1),
 						]),
-						// '[[1, [2.0, 3]], [4.0, [5, 6.0]], [7, []]]',
+						'[[1, [2.0, 3]], [4.0, [5, 6.0]], [7, []]]',
 					);
 				});
 			});
@@ -343,14 +343,14 @@ describe('Value', () => {
 							[0x101n, new VALUE.Float(2.0)],
 						])).build(builder),
 						builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
-						// '[a= 1, b= 2.0]',
+						'[a= 1, b= 2.0]',
 					);
 				});
 				it('record of size 1 returns a `(tuple.make)` with 1 item.', () => {
 					assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]])).build(builder),
 						builder.module.tuple.make([buildConst(builder, 3.4)]),
-						// '[a= 3.4]',
+						'[a= 3.4]',
 					);
 				});
 				it('boxed record with 1 prop.', () => {
@@ -358,7 +358,7 @@ describe('Value', () => {
 					return assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]]))]])).build(builder),
 						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(builder, 3.4)]), 0)]),
-						// '[a= [a= 3.4]]',
+						'[a= [a= 3.4]]',
 					);
 				});
 				it('boxed record with many props.', () => {
@@ -379,7 +379,7 @@ describe('Value', () => {
 							mod.tuple.extract(mod.local.get(0, bintype3), 1),
 							mod.tuple.extract(mod.local.get(0, bintype3), 2),
 						]),
-						// '[a= [a= 1, b= 2.0, c= true]]',
+						'[a= [a= 1, b= 2.0, c= true]]',
 					);
 				});
 				it('nested records.', () => {
@@ -403,11 +403,11 @@ describe('Value', () => {
 							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(0, bintype2), 1),
 						]),
-						/* `[
+						`[
 							a= 1,
 							b= [a= 2.0],
 							c= [a= 3, b= [a= 4.0]],
-						]`, */
+						]`,
 					);
 				});
 				it('multiple entries.', () => {
@@ -469,11 +469,11 @@ describe('Value', () => {
 							mod.tuple.extract(mod.local.tee(6, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(6, bintype2), 1),
 						]),
-						/* `[
+						`[
 							a= [a= 1,   b= [a= 2.0, b= 3]],
 							b= [a= 4.0, b= [a= 5, b= 6.0]],
 							c= [b= 7,   a= true],
-						]`, */
+						]`,
 					);
 				});
 			});
