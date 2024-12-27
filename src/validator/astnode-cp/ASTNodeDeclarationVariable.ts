@@ -79,7 +79,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		const value: binaryen.ExpressionRef = this.assigned.build();
 		if (this.assignee) {
 			const assignee_type: TYPE.Type = this.typenode.eval(); // eval first before adding, to rethrow any errors
-			const local:         LocalInfo = this.builder.addLocal(this.assignee.id, binaryen.v128)[0].getLocalInfo(this.assignee.id)!;
+			const local:         LocalInfo = this.builder.addLocal(this.assignee.id, binaryen.getExpressionType(value))[0].getLocalInfo(this.assignee.id)!;
 			return this.builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
 				this.builder.module,
 				assignee_type,
