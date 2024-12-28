@@ -1,7 +1,7 @@
 import type binaryen from 'binaryen';
 import {strictEqual} from '../../lib/index.js';
 import type {TYPE} from '../index.js';
-import {String as CPString} from './index.js';
+import {String as ValueString} from './index.js';
 import {equalsDeco} from './decorators.js';
 
 
@@ -57,8 +57,8 @@ export abstract class Value {
 	 * (Not a native String — see {@link #toString}.)
 	 * @returns a string representation of this Object
 	 */
-	public toCPString(): CPString {
-		return new CPString(this.toString());
+	public toCPString(): ValueString {
+		return new ValueString(this.toString());
 	}
 
 	/**

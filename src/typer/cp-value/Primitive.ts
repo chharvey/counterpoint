@@ -6,9 +6,9 @@ import {Value} from './Value.js';
 /**
  * Known subclasses:
  * - Null
- * - Boolean
- * - Number
- * - String
+ * - ValueBoolean
+ * - ValueNumber
+ * - ValueString
  */
 export abstract class Primitive extends Value {
 	/** @final */ public override toType(): TYPE.TypeUnit<this> {

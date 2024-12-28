@@ -11,7 +11,7 @@ import {
 } from '../utils-private.js';
 import {equalsDeco} from './decorators.js';
 import type {Value} from './Value.js';
-import {Boolean as CPBoolean} from './Boolean.js';
+import {Boolean as ValueBoolean} from './Boolean.js';
 import {Collection} from './Collection.js';
 
 
@@ -20,7 +20,7 @@ import {Collection} from './Collection.js';
  * A dynamic unordered sequence of values.
  * @final
  */
-class CPSet<T extends Value = Value> extends Collection {
+class ValueSet<T extends Value = Value> extends Collection {
 	public constructor(private readonly elements: ReadonlySet<T> = new Set()) {
 		super();
 		const uniques = new Set<T>();
@@ -41,24 +41,24 @@ class CPSet<T extends Value = Value> extends Collection {
 	/** @final */
 	@strictEqual
 	@equalsDeco
-	@instanceOf(() => CPSet)
+	@instanceOf(() => ValueSet)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
-		return xjs.Set.is<Value>(this.elements, (value as CPSet).elements, language_values_equal);
+		return xjs.Set.is<Value>(this.elements, (value as ValueSet).elements, language_values_equal);
 	}
 
 	/**
 	 * @inheritdoc
-	 * Returns a TypeSet whose invariant is the union of the types of this Set’s elements.
+	 * Returns a TypeSet whose invariant is the union of the types of this ValueSet’s elements.
 	 */
 	public override toType(): TYPE.TypeSet {
 		return new TYPE.TypeSet(TYPE.TypeUnion.all([...this.elements].map<TYPE.Type>((el) => el.toType())));
 	}
 
-	public get(el: T): CPBoolean {
+	public get(el: T): ValueBoolean {
 		return (xjs.Set.has(this.elements, el, languageValuesIdentical))
-			? CPBoolean.TRUE
-			: CPBoolean.FALSE;
+			? ValueBoolean.TRUE
+			: ValueBoolean.FALSE;
 	}
 }
-export {CPSet as Set};
+export {ValueSet as Set};

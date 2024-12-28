@@ -13,22 +13,23 @@ import {CollectionKeyed} from './CollectionKeyed.js';
  * A static structure of key–value pairs.
  * @final
  */
-export class Record<T extends Value = Value> extends CollectionKeyed<T> {
+class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	@strictEqual
-	@instanceOf(() => Record)
+	@instanceOf(() => ValueRecord)
 	@memoizeBinOp(true, true)
 	public override identical(value: Value): boolean {
 		return (
-			this.properties.size === (value as Record).properties.size &&
-			[...(value as Record).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.identical(thatvalue))
+			this.properties.size === (value as ValueRecord).properties.size &&
+			[...(value as ValueRecord).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.identical(thatvalue))
 		);
 	}
 
 	/**
 	 * @inheritdoc
-	 * Returns a TypeRecord whose entries are the types of this Record’s values.
+	 * Returns a TypeRecord whose entries are the types of this ValueRecord’s values.
 	 */
 	public override toType(): TYPE.TypeRecord {
 		return TYPE.TypeRecord.fromTypes(new Map([...this.properties].map(([key, val]) => [key, val.toType()])));
 	}
 }
+export {ValueRecord as Record};
