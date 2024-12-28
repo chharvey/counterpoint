@@ -9,10 +9,7 @@ import {ValueType} from './ValueType.js';
  * @final
  */
 export class TypeBoolean extends ValueType {
-	public static readonly INSTANCE = new TypeBoolean();
-
-
-	private constructor() {
+	public constructor() {
 		super(false, new Set([VALUE.Boolean.FALSE, VALUE.Boolean.TRUE]));
 	}
 

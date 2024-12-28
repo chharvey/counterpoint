@@ -13,10 +13,7 @@ import {ValueType} from './ValueType.js';
  * @final
  */
 export class TypeNever extends ValueType {
-	public static readonly INSTANCE = new TypeNever();
-
-
-	private constructor() {
+	public constructor() {
 		super(false);
 	}
 

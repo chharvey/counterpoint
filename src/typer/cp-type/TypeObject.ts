@@ -14,10 +14,7 @@ import {ReferenceType} from './ReferenceType.js';
  * @final
  */
 export class TypeObject extends ReferenceType {
-	public static readonly INSTANCE = new TypeObject();
-
-
-	private constructor() {
+	public constructor() {
 		super(false, new Set([
 			new VALUE.List(),
 			new VALUE.Dict(),

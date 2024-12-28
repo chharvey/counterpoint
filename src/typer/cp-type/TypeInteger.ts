@@ -9,10 +9,7 @@ import {ValueType} from './ValueType.js';
  * @final
  */
 export class TypeInteger extends ValueType {
-	public static readonly INSTANCE = new TypeInteger();
-
-
-	private constructor() {
+	public constructor() {
 		super(false, new Set([VALUE.Integer.ZERO]));
 	}
 

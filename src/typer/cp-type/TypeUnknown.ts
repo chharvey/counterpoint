@@ -13,10 +13,7 @@ import {ReferenceType} from './ReferenceType.js';
  * @final
  */
 export class TypeUnknown extends ReferenceType {
-	public static readonly INSTANCE = new TypeUnknown();
-
-
-	private constructor() {
+	public constructor() {
 		super(false);
 	}
 

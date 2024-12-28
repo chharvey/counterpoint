@@ -9,10 +9,7 @@ import {ValueType} from './ValueType.js';
  * @final
  */
 export class TypeFloat extends ValueType {
-	public static readonly INSTANCE = new TypeFloat();
-
-
-	private constructor() {
+	public constructor() {
 		super(false, new Set([new VALUE.Float(0.0)]));
 	}
 

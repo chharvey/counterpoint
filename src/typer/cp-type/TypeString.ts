@@ -8,10 +8,7 @@ import {ValueType} from './ValueType.js';
  * @final
  */
 export class TypeString extends ValueType {
-	public static readonly INSTANCE = new TypeString();
-
-
-	private constructor() {
+	public constructor() {
 		super(false, new Set([new VALUE.String('')]));
 	}
 
