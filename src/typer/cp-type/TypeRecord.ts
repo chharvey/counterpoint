@@ -36,11 +36,6 @@ export class TypeRecord extends ValueType {
 		}])));
 	}
 
-	/** Returns the minimum possible number of properties in the given record type. */
-	public static minCount(t: TypeRecord): bigint { // TODO: make this an instance method
-		return BigInt([...t.invariants.values()].filter((val) => !val.optional).length);
-	}
-
 
 	/**
 	 * Construct a new TypeRecord object.
@@ -52,6 +47,11 @@ export class TypeRecord extends ValueType {
 
 	public override get hasMutable(): boolean {
 		return super.hasMutable || [...this.invariants.values()].some((t) => t.type.hasMutable);
+	}
+
+	/** The minimum possible number of properties in this record type. */
+	public get minCount(): bigint {
+		return BigInt([...this.invariants.values()].filter((val) => !val.optional).length);
 	}
 
 	public override toString(): string {
@@ -69,7 +69,7 @@ export class TypeRecord extends ValueType {
 	@instanceOf(() => TypeRecord)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
-			TypeRecord.minCount(this) >= TypeRecord.minCount(t as TypeRecord) &&
+			this.minCount >= (t as TypeRecord).minCount &&
 			[...(t as TypeRecord).invariants].every(([id, thattype]) => {
 				const thistype: TypeEntry | undefined = this.invariants.get(id);
 				if (!thattype.optional) {

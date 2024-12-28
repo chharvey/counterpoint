@@ -411,5 +411,30 @@ describe('ASTNodeDeclarationVariable', () => {
 				],
 			);
 		});
+
+		it('tuples and records.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let tup: [   int,    float,    [   null,    bool]] = [   42,    4.2,    [   null,    true]];
+				let rec: [a: int, b: float, c: [d: null, e: bool]] = [a= 42, b= 4.2, c= [d= null, e= true]];
+			`, CONFIG_FOLDING_OFF);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.build();
+			const [tup, rec] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
+			const [tup_build, rec_build] = [tup.build(), rec.build()];
+			assert.deepStrictEqual(goal.builder.getLocals(), [
+				{id: -0x40n,  type: binaryen.getExpressionType(tup.children[2].build())},
+				{id:  0x100n, type: binaryen.getExpressionType(tup_build)},
+				{id: -0x3fn,  type: binaryen.getExpressionType(rec.children[2].val.build())},
+				{id:  0x106n, type: binaryen.getExpressionType(rec_build)},
+			]);
+			return assertEqualBins(
+				goal.children.map((stmt) => stmt.build()),
+				[
+					goal.builder.module.local.set(1, tup_build),
+					goal.builder.module.local.set(3, rec_build),
+				],
+			);
+		});
 	});
 });

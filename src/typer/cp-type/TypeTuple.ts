@@ -41,11 +41,6 @@ export class TypeTuple extends ValueType {
 		})));
 	}
 
-	/** Returns the minimum possible number of items in the given tuple type. */
-	public static minCount(t: TypeTuple): bigint { // TODO: make this an instance method
-		return BigInt(t.invariants.filter((it) => !it.optional).length);
-	}
-
 
 	readonly #indexTree: IndexTree;
 
@@ -65,6 +60,11 @@ export class TypeTuple extends ValueType {
 		return super.hasMutable || this.invariants.some((t) => t.type.hasMutable);
 	}
 
+	/** The minimum possible number of items in this tuple type. */
+	public get minCount(): bigint {
+		return BigInt(this.invariants.filter((it) => !it.optional).length);
+	}
+
 	public override toString(): string {
 		return `[${ this.invariants.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
@@ -80,7 +80,7 @@ export class TypeTuple extends ValueType {
 	@instanceOf(() => TypeTuple)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
-			TypeTuple.minCount(this) >= TypeTuple.minCount(t as TypeTuple) &&
+			this.minCount >= (t as TypeTuple).minCount &&
 			(t as TypeTuple).invariants.every((thattype, i) => {
 				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 				const thistype: TypeEntry | undefined = this.invariants[i];

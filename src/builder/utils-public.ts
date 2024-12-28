@@ -47,7 +47,7 @@ export function build_tuple_like<T>(
 			assert.ok(expanded.length > 1, 'Tuple should be nonempty.');
 
 			const temp_id: bigint    = builder.varCount;
-			const local:   LocalInfo = builder.addLocal(temp_id, bintype)[0].getLocalInfo(temp_id)!;
+			const local:   LocalInfo = builder.teeLocal(temp_id, bintype);
 			return [
 				                                   builder.module.tuple.extract(builder.module.local.tee(local.index, item_build, local.type), 0), // eslint-disable-line @stylistic/indent
 				...expanded.slice(1).map((_, i) => builder.module.tuple.extract(builder.module.local.get(local.index,             local.type), i + 1)),
@@ -75,36 +75,35 @@ export function build_record_like<T>(
 	assert.ok(properties.size, 'Record should be nonempty.');
 
 	const builds: readonly {readonly id: bigint, readonly expr: binaryen.ExpressionRef}[] = [...properties].flatMap(([id, value]) => {
+		const value_type:  TYPE.Type              = type_fn.call(null, value);
 		const value_build: binaryen.ExpressionRef = build_fn.call(null, value);
-		const item_type:   TYPE.Type              = type_fn.call(null, value);
 
 		/*
 		 * If value is not a record, return original value build.
 		 * If value is record of size 1, return a single extract.
 		 * If value size is > 1, return an array of extracts whose first entry is a `tee` and the rest are `get`s.
 		 */
-		if (!(item_type instanceof TYPE.TypeRecord)) {
+		if (!(value_type instanceof TYPE.TypeRecord)) {
 			return {id, expr: value_build};
-		} else if (item_type.invariants.size === 1) {
+		} else if (value_type.invariants.size === 1) {
 			return {id, expr: builder.module.tuple.extract(value_build, 0)};
 		} else {
-			assert.ok(item_type.invariants.size > 1, 'Record should be nonempty.');
+			assert.ok(value_type.invariants.size > 1, 'Record should be nonempty.');
 
 			const bintype:  binaryen.Type            = binaryen.getExpressionType(value_build);
 			const expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
 			assert.ok(expanded.length > 1, 'Record should be nonempty.');
 
 			const temp_id: bigint    = builder.varCount;
-			const local:   LocalInfo = builder.addLocal(temp_id, bintype)[0].getLocalInfo(temp_id)!;
+			const local:   LocalInfo = builder.teeLocal(temp_id, bintype);
 			return [
 				                                    {id, expr: builder.module.tuple.extract(builder.module.local.tee(local.index, value_build, local.type), 0)}, // eslint-disable-line @stylistic/indent
-				...expanded.slice(1).map((_, i) => ({id, expr: builder.module.tuple.extract(builder.module.local.get(local.index, local.type),              i + 1)})),
+				...expanded.slice(1).map((_, i) => ({id, expr: builder.module.tuple.extract(builder.module.local.get(local.index,              local.type), i + 1)})),
 			];
 		}
 	});
 
 	const in_order: binaryen.ExpressionRef = builder.module.tuple.make(builds.map(({expr}) => expr));
-
 	if (properties.size === 1) {
 		return in_order;
 	}
@@ -120,9 +119,8 @@ export function build_record_like<T>(
 		readonly localSet: binaryen.ExpressionRef,
 		readonly localGet: binaryen.ExpressionRef,
 	}> = builds.map(({id, expr}) => {
-		const expr_bintype: binaryen.Type = binaryen.getExpressionType(expr);
-		const set_temp_id:  bigint        = builder.varCount;
-		const set_local:    LocalInfo     = builder.addLocal(set_temp_id, expr_bintype)[0].getLocalInfo(set_temp_id)!;
+		const set_temp_id: bigint    = builder.varCount;
+		const set_local:   LocalInfo = builder.teeLocal(set_temp_id, binaryen.getExpressionType(expr));
 		return {
 			id,
 			localSet: builder.module.local.set(set_local.index, expr),

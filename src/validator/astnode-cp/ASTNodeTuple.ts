@@ -71,7 +71,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	public override assignTo(assignee: TYPE.Type): void {
 		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
 		if (assignee instanceof TYPE.TypeTuple) {
-			if (this.children.length < TYPE.TypeTuple.minCount(assignee)) {
+			if (this.children.length < assignee.minCount) {
 				throw err;
 			}
 			assignee.invariants.forEach((entry, i) => { // using `.forEach` to short-circuit
