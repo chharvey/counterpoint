@@ -31,12 +31,18 @@ export function build_tuple_like<T>(
 		const item_build: binaryen.ExpressionRef = build_fn.call(null, item);
 
 		/*
-		 * If item is not a tuple or is an empty tuple, return original item build.
+		 * If item is neither a tuple nor a record or is an empty tuple, return original item build.
+		 * FIXME: If item is a record, throw an error.
 		 * If item is tuple of length 1, return a single extract.
 		 * If item length is > 1, return an array of extracts whose first entry is a `tee` and the rest are `get`s.
 		 */
-		if (!(item_type instanceof TYPE.TypeTuple) || item_type.invariants.length === 0) {
+		if (
+			!(item_type instanceof TYPE.TypeTuple) && !(item_type instanceof TYPE.TypeRecord) ||
+			item_type instanceof TYPE.TypeTuple && item_type.invariants.length === 0
+		) {
 			return item_build;
+		} else if (item_type instanceof TYPE.TypeRecord) {
+			throw new Error('Records within tuples not yet supported.');
 		} else if (item_type.invariants.length === 1) {
 			return builder.module.tuple.extract(item_build, 0);
 		} else {
@@ -79,12 +85,18 @@ export function build_record_like<T>(
 		const value_build: binaryen.ExpressionRef = build_fn.call(null, value);
 
 		/*
-		 * If value is not a record, return original value build.
+		 * If value is neither a tuple nor a record or is an empty tuple, return original value build.
+		 * FIXME: If value is a nonempty tuple, throw an error.
 		 * If value is record of size 1, return a single extract.
 		 * If value size is > 1, return an array of extracts whose first entry is a `tee` and the rest are `get`s.
 		 */
-		if (!(value_type instanceof TYPE.TypeRecord)) {
+		if (
+			!(value_type instanceof TYPE.TypeTuple) && !(value_type instanceof TYPE.TypeRecord) ||
+			value_type instanceof TYPE.TypeTuple && value_type.invariants.length === 0
+		) {
 			return {id, expr: value_build};
+		} else if (value_type instanceof TYPE.TypeTuple) {
+			throw new Error('Tuples within records not yet supported.');
 		} else if (value_type.invariants.size === 1) {
 			return {id, expr: builder.module.tuple.extract(value_build, 0)};
 		} else {
