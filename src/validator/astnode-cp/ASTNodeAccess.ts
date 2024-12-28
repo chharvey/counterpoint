@@ -77,9 +77,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 						this.builder.module.tuple.extract(base_build, flattened_indices[0]),
 					]);
 				} else {
-					const bintype:  binaryen.Type = binaryen.getExpressionType(base_build);
-					const temp_id:  bigint        = this.builder.varCount;
-					const local:    LocalInfo     = this.builder.addLocal(temp_id, bintype)[0].getLocalInfo(temp_id)!;
+					const temp_id: bigint    = this.builder.varCount;
+					const local:   LocalInfo = this.builder.teeLocal(temp_id, binaryen.getExpressionType(base_build));
 					return this.builder.module.tuple.make([
 						                                         this.builder.module.tuple.extract(this.builder.module.local.tee(local.index, base_build, local.type), flattened_indices[0]), // eslint-disable-line @stylistic/indent
 						...flattened_indices.slice(1).map((n) => this.builder.module.tuple.extract(this.builder.module.local.get(local.index,             local.type), n)),

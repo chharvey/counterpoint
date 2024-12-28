@@ -58,7 +58,7 @@ export class Builder {
 	 */
 	public addLocal(id: bigint, type: binaryen.Type): [this, boolean] {
 		let did: boolean = false;
-		if (!this.locals.find((var_) => var_.id === id)) {
+		if (!this.hasLocal(id)) {
 			this.locals.push({id, type});
 			did = true;
 		}
@@ -91,9 +91,9 @@ export class Builder {
 	}
 
 	/**
-	 * Get the index of the given local in this Builder’s list, if it’s been added; else, return `null`.
-	 * @param id the local whose index to get
-	 * @return the index or `null`
+	 * Get information (index and type) of the given local in this Builder’s list, if it’s been added; else, return `null`.
+	 * @param  id the local whose data to get
+	 * @return    the data or `null`
 	 */
 	public getLocalInfo(id: bigint): LocalInfo | null {
 		const found = this.locals.find((var_) => var_.id === id);
@@ -103,6 +103,16 @@ export class Builder {
 				type:  found.type,
 			}
 			: null;
+	}
+
+	/**
+	 * Add a local variable and return its information (index and type).
+	 * If the variable has already been addded, this Builder’s state is not changed.
+	 * @param  id the id of the variable to add
+	 * @return    the data of the local variable
+	 */
+	public teeLocal(id: bigint, type: binaryen.Type): LocalInfo {
+		return this.addLocal(id, type)[0].getLocalInfo(id)!;
 	}
 
 	/**

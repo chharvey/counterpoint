@@ -57,9 +57,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			return this.operator === Operator.AND ? block1 : arg0;
 		}
 
-		/** A temporary variable id used for optimizing short-circuited operations. */
 		const temp_id: bigint    = this.builder.varCount;
-		const local:   LocalInfo = this.builder.addLocal(temp_id, binaryen.getExpressionType(arg0))[0].getLocalInfo(temp_id)!;
+		const local:   LocalInfo = this.builder.teeLocal(temp_id, binaryen.getExpressionType(arg0));
 
 		const condition: binaryen.ExpressionRef = new BinVect(this.builder.module, this.builder.module.call(
 			'vnot',
