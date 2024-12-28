@@ -21,7 +21,7 @@ import {
 	subtypeDeco,
 } from './decorators.js';
 import type {Type} from './Type.js';
-import {TypeIntersection} from './TypeIntersection.js';
+import {TypeIntersection} from './Intersection.js';
 import {
 	type ReadonlyArrayOfAtLeast2,
 	Combinable,

@@ -10,7 +10,7 @@ import {
 	subtypeDeco,
 } from './decorators.js';
 import {Type} from './Type.js';
-import {TypeUnion} from './TypeUnion.js';
+import {TypeUnion} from './Union.js';
 
 
 

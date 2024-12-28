@@ -15,7 +15,7 @@ import * as VALUE from '../cp-value/index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {subtypeDeco} from './decorators.js';
 import type {Type} from './Type.js';
-import {TypeUnion} from './TypeUnion.js';
+import {TypeUnion} from './Union.js';
 import {ValueType} from './ValueType.js';
 
 

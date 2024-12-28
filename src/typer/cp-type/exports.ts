@@ -1,13 +1,13 @@
 import * as VALUE from '../cp-value/index.js';
-import type {TypeUnit} from './TypeUnit.js';
-import {TypeNever} from './TypeNever.js';
-import {TypeVoid} from './TypeVoid.js';
-import {TypeUnknown} from './TypeUnknown.js';
-import {TypeBoolean} from './TypeBoolean.js';
-import {TypeInteger} from './TypeInteger.js';
-import {TypeFloat} from './TypeFloat.js';
-import {TypeString} from './TypeString.js';
-import {TypeObject} from './TypeObject.js';
+import type {TypeUnit} from './Unit.js';
+import {TypeNever} from './Never.js';
+import {TypeVoid} from './Void.js';
+import {TypeUnknown} from './Unknown.js';
+import {TypeBoolean} from './Boolean.js';
+import {TypeInteger} from './Integer.js';
+import {TypeFloat} from './Float.js';
+import {TypeString} from './String.js';
+import {TypeObject} from './Object.js';
 
 
 
