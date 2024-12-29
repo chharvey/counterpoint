@@ -12,9 +12,10 @@ import {
 	languageValuesIdentical,
 	language_values_equal,
 } from '../utils-private.js';
+import {NULL} from './index.js';
 import {equalsDeco} from './decorators.js';
 import type {Value} from './Value.js';
-import {Null} from './Null.js';
+import type {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
 
@@ -68,7 +69,7 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		return (xjs.Map.has(this.cases, ant, languageValuesIdentical))
 			? xjs.Map.get(this.cases, ant, languageValuesIdentical)!
 			: (access_optional)
-				? Null.NULL
+				? NULL
 				: assert.fail(new VoidError01(accessor));
 	}
 }

@@ -92,7 +92,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 
 	private foldEquality(v0: VALUE.Value, v1: VALUE.Value): VALUE.Boolean {
 		if (bothNumeric(v0, v1) && oneFloats(v0, v1) && !this.validator.config.compilerOptions.intCoercion) {
-			return VALUE.Boolean.FALSE;
+			return VALUE.FALSE;
 		}
 		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: VALUE.Value, y: VALUE.Value) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],

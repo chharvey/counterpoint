@@ -83,7 +83,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		if (!v0) {
 			return v0;
 		}
-		return (v0 === VALUE.Boolean.TRUE)
+		return (v0 === VALUE.TRUE)
 			? this.operand1.fold()
 			: this.operand2.fold();
 	}

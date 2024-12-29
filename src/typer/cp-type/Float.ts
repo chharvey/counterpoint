@@ -10,7 +10,7 @@ import {ValueType} from './ValueType.js';
  */
 export class Float extends ValueType {
 	public constructor() {
-		super(false, new Set([new VALUE.Float(0.0)]));
+		super(false, new Set([VALUE.FLOAT_0]));
 	}
 
 	public override toString(): string {

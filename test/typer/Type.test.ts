@@ -1026,7 +1026,7 @@ describe('Type', () => {
 						const combined: TYPE.Type = intersection.combineTuplesOrRecords();
 						assert.deepStrictEqual(combined, TYPE.Tuple.fromTypes([VALUE.Boolean.TRUETYPE, TYPE.INT]));
 
-						const v = new VALUE.Tuple<VALUE.Boolean | VALUE.Integer>([VALUE.Boolean.TRUE, VALUE.Integer.UNIT]);
+						const v = new VALUE.Tuple<VALUE.Boolean | VALUE.Integer>([VALUE.TRUE, VALUE.INT_1]);
 
 						assert.ok(combined.includes(v), `
 							let x: [true, int] = [true, 1]; % ok
@@ -1107,7 +1107,7 @@ describe('Type', () => {
 						])));
 
 						const v = new VALUE.Record<VALUE.Boolean | VALUE.Integer | VALUE.String>(new Map<bigint, VALUE.Boolean | VALUE.Integer | VALUE.String>([
-							[0x100n, VALUE.Boolean.FALSE],
+							[0x100n, VALUE.FALSE],
 							[0x101n, new VALUE.Integer(42n)],
 							[0x102n, new VALUE.String('hello')],
 							[0x103n, new VALUE.String('world')],
@@ -1181,7 +1181,7 @@ describe('Type', () => {
 						const combined: TYPE.Type = union.combineTuplesOrRecords();
 						assert.deepStrictEqual(combined, TYPE.Tuple.fromTypes([TYPE.BOOL.union(TYPE.INT), TYPE.INT.union(TYPE.BOOL)]));
 
-						const v = new VALUE.Tuple<VALUE.Boolean>([VALUE.Boolean.TRUE, VALUE.Boolean.TRUE]);
+						const v = new VALUE.Tuple<VALUE.Boolean>([VALUE.TRUE, VALUE.TRUE]);
 
 						assert.ok(combined.includes(v), `
 							let x: [bool | int, int | bool] = [true, true]; % ok
@@ -1256,8 +1256,8 @@ describe('Type', () => {
 						])));
 
 						const v = new VALUE.Record<VALUE.Boolean>(new Map<bigint, VALUE.Boolean>([
-							[0x100n, VALUE.Boolean.TRUE],
-							[0x101n, VALUE.Boolean.TRUE],
+							[0x100n, VALUE.TRUE],
+							[0x101n, VALUE.TRUE],
 						]));
 
 						assert.ok(combined.includes(v), `

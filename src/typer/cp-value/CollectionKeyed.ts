@@ -6,9 +6,10 @@ import {
 	memoizeBinOp,
 } from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
+import {NULL} from './index.js';
 import {equalsDeco} from './decorators.js';
 import type {Value} from './Value.js';
-import {Null} from './Null.js';
+import type {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
 
@@ -49,7 +50,7 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 		return (this.properties.has(key))
 			? this.properties.get(key)!
 			: (access_optional)
-				? Null.NULL
+				? NULL
 				: assert.fail(new VoidError01(accessor));
 	}
 }

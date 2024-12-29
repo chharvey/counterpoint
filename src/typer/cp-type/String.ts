@@ -9,7 +9,7 @@ import {ValueType} from './ValueType.js';
  */
 class TypeString extends ValueType {
 	public constructor() {
-		super(false, new Set([new VALUE.String('')]));
+		super(false, new Set([VALUE.STR_EMPTY]));
 	}
 
 	public override toString(): string {

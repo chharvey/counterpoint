@@ -9,9 +9,10 @@ import {
 } from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {language_values_equal} from '../utils-private.js';
+import {NULL} from './index.js';
 import {equalsDeco} from './decorators.js';
 import type {Value} from './Value.js';
-import {Null} from './Null.js';
+import type {Null} from './Null.js';
 import type {Integer} from './Integer.js';
 import {Collection} from './Collection.js';
 
@@ -56,7 +57,7 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 		return (
 			(-n <= i && i < 0) ? this.items[i + n] :
 			(0  <= i && i < n) ? this.items[i] :
-			(access_optional) ? Null.NULL :
+			(access_optional)  ? NULL :
 			assert.fail(new VoidError01(accessor))
 		);
 	}

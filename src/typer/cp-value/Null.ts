@@ -5,6 +5,7 @@ import {
 	instanceOf,
 } from '../../lib/index.js';
 import type {TYPE} from '../index.js';
+import {NULL} from './index.js';
 import type {Value} from './Value.js';
 import {Primitive} from './Primitive.js';
 
@@ -22,16 +23,13 @@ import {Primitive} from './Primitive.js';
  * @final
  */
 export class Null extends Primitive {
-	/** The Counterpoint Language Value `null`. */
-	public static readonly NULL = new Null();
-
 	/** A Unit Type containing only the Counterpoint Language Value `null`. */
 	public static get NULLTYPE(): TYPE.Unit<Null> {
-		return Null.NULL.toType();
+		return NULL.toType();
 	}
 
 
-	private constructor() {
+	public constructor() {
 		super();
 	}
 
