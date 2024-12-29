@@ -20,8 +20,10 @@ import {
 } from '../utils-private.js';
 import {Validator} from '../Validator.js';
 import {valueOfTokenNumber} from './utils-private.js';
-import {buildDeco} from './decorators.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {
+	buildDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
 
 
 

@@ -1,10 +1,12 @@
 import {
 	strictEqual,
 	memoizeBinOp,
-} from '../../lib/index.js';
+} from '../utils-private.js';
 import type * as VALUE from '../cp-value/index.js';
-import {subtypeDeco} from './decorators.js';
-import type {Type} from './Type.js';
+import {
+	subtypeDeco,
+	type Type,
+} from './Type.js';
 import {ValueType} from './ValueType.js';
 
 

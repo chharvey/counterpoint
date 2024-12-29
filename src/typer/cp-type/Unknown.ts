@@ -1,7 +1,7 @@
 import {
 	strictEqual,
 	memoizeBinOp,
-} from '../../lib/index.js';
+} from '../utils-private.js';
 import * as VALUE from '../cp-value/index.js';
 import type {Type} from './Type.js';
 import {ReferenceType} from './ReferenceType.js';

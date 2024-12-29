@@ -1,20 +1,20 @@
 import * as xjs from 'extrajs';
-import {
-	strictEqual,
-	instanceOf,
-	memoizeBinOp,
-} from '../../lib/index.js';
 import {TYPE} from '../index.js';
 import {
 	languageValuesIdentical,
 	language_values_equal,
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
 } from '../utils-private.js';
 import {
 	FALSE,
 	TRUE,
 } from './index.js';
-import {equalsDeco} from './decorators.js';
-import type {Value} from './Value.js';
+import {
+	equalsDeco,
+	type Value,
+} from './Value.js';
 import type {Boolean as ValueBoolean} from './Boolean.js';
 import {Collection} from './Collection.js';
 

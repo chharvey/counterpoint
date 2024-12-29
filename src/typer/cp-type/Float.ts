@@ -1,4 +1,4 @@
-import {instanceOf} from '../../lib/decorators.js';
+import {instanceOf} from '../utils-private.js';
 import * as VALUE from '../cp-value/index.js';
 import {ValueType} from './ValueType.js';
 

@@ -19,8 +19,8 @@ import type {Operator} from '../Operator.js';
 import {
 	buildDeco,
 	typeDeco,
-} from './decorators.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 
 

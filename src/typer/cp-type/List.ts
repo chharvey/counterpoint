@@ -2,15 +2,17 @@ import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
+} from '../utils-private.js';
 import * as VALUE from '../cp-value/index.js';
+import {MUT_OPERATOR} from './utils-private.js';
 import {
 	subtypeDeco,
+	type Type,
+} from './Type.js';
+import {
 	referenceSubtypeDeco,
-} from './decorators.js';
-import {MUT_OPERATOR} from './utils-private.js';
-import type {Type} from './Type.js';
-import {ReferenceType} from './ReferenceType.js';
+	ReferenceType,
+} from './ReferenceType.js';
 
 
 

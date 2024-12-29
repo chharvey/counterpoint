@@ -20,13 +20,13 @@ import {
 	Operator,
 	type ValidAccessOperator,
 } from '../Operator.js';
+import {ASTNodeKey} from './ASTNodeKey.js';
+import {ASTNodeIndex} from './ASTNodeIndex.js';
 import {
 	buildDeco,
 	typeDeco,
-} from './decorators.js';
-import {ASTNodeKey} from './ASTNodeKey.js';
-import {ASTNodeIndex} from './ASTNodeIndex.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
 
 
 

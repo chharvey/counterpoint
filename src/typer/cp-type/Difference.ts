@@ -1,15 +1,15 @@
 import * as xjs from 'extrajs';
 import {
+	languageValuesIdentical,
 	strictEqual,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import {languageValuesIdentical} from '../utils-private.js';
+} from '../utils-private.js';
 import type * as VALUE from '../cp-value/index.js';
 import {
 	toStringDeco,
 	subtypeDeco,
-} from './decorators.js';
-import {Type} from './Type.js';
+	Type,
+} from './Type.js';
 import {Union} from './Union.js';
 
 

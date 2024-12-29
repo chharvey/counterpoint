@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
+import type {TypeEntry} from '../utils-public.js';
 import {
+	languageValuesIdentical,
 	strictEqual,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import type {TypeEntry} from '../utils-public.js';
-import {languageValuesIdentical} from '../utils-private.js';
+} from '../utils-private.js';
 import type * as VALUE from '../cp-value/index.js';
 import {
 	Tuple as TypeTuple,
@@ -19,8 +19,8 @@ import {
 	unionDeco,
 	subtractDeco,
 	subtypeDeco,
-} from './decorators.js';
-import type {Type} from './Type.js';
+	type Type,
+} from './Type.js';
 import {Intersection} from './Intersection.js';
 import {
 	type ReadonlyArrayOfAtLeast2,

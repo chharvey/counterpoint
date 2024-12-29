@@ -9,8 +9,10 @@ import {
 } from '../../core/index.js';
 import type {SyntaxNodeSupertype} from '../utils-private.js';
 import type {ValidOperatorBinary} from '../Operator.js';
-import {typeDeco} from './decorators.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {
+	ASTNodeExpression,
+	typeDeco,
+} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 
 

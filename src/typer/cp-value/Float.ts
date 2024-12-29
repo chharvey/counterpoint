@@ -4,9 +4,11 @@ import {BinVect} from '../../index.js';
 import {
 	strictEqual,
 	instanceOf,
-} from '../../lib/index.js';
-import {equalsDeco} from './decorators.js';
-import type {Value} from './Value.js';
+} from '../utils-private.js';
+import {
+	equalsDeco,
+	type Value,
+} from './Value.js';
 import {Number as ValueNumber} from './Number.js';
 
 

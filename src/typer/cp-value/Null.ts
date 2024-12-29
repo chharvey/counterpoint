@@ -3,7 +3,7 @@ import {BinVect} from '../../index.js';
 import {
 	strictEqual,
 	instanceOf,
-} from '../../lib/index.js';
+} from '../utils-private.js';
 import type {Value} from './Value.js';
 import {Primitive} from './Primitive.js';
 

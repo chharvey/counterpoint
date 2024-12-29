@@ -1,8 +1,24 @@
 import type binaryen from 'binaryen';
-import {strictEqual} from '../../lib/index.js';
+import {strictEqual} from '../utils-private.js';
 import type {TYPE} from '../index.js';
 import {String as ValueString} from './index.js';
-import {equalsDeco} from './decorators.js';
+
+
+
+/**
+ * Decorator for {@link Value#equal} method and any overrides.
+ * Performs the Equality algorithm — returns whether two Values (Counterpoint Language Values)
+ * are equal by some definition.
+ * @implements MethodDecorator<Value, Value['equal']>
+ */
+export function equalsDeco(
+	method:   Value['equal'],
+	_context: ClassMethodDecoratorContext<Value, typeof method>,
+): typeof method {
+	return function (this: Value, value) {
+		return this.identical(value) || method.call(this, value);
+	};
+}
 
 
 

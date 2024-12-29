@@ -1,14 +1,16 @@
 import * as assert from 'assert';
 import {VoidError01} from '../../index.js';
+import type {AST} from '../../validator/index.js';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import type {AST} from '../../validator/index.js';
+} from '../utils-private.js';
 import {NULL} from './index.js';
-import {equalsDeco} from './decorators.js';
-import type {Value} from './Value.js';
+import {
+	equalsDeco,
+	type Value,
+} from './Value.js';
 import type {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
