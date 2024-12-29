@@ -37,9 +37,8 @@ describe('Type', () => {
 		TYPE.FLOAT,
 		TYPE.STR,
 		TYPE.OBJ,
-		// FIXME: fix broken tests!
-		// TYPE.FALSE,
-		// TYPE.TRUE,
+		TYPE.FALSE,
+		TYPE.TRUE,
 	];
 
 

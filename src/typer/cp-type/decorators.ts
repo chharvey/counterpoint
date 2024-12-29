@@ -262,14 +262,6 @@ export function subtypeDeco(
 			return this.isSubtypeOf(t.left) && this.intersect(t.right).isBottomType;
 		}
 
-		/**
-		 * Reference types can only be assignable to reference types, and
-		 * value types can only be assignable to value types.
-		 */
-		if (this.isReference !== t.isReference) {
-			return false;
-		}
-
 		return method.call(this, t);
 	};
 }
