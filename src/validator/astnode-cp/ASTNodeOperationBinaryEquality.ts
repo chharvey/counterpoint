@@ -47,7 +47,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-		if (this.type().equals(VALUE.Boolean.FALSETYPE)) {
+		if (this.type().equals(TYPE.FALSE)) {
 			return this.builder.module.block(null, [
 				this.builder.module.drop(arg0),
 				this.builder.module.drop(arg1),
@@ -67,12 +67,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		 */
 		if (bothNumeric(t0, t1)) {
 			if (oneFloats(t0, t1) && (this.operator === Operator.ID || !int_coercion)) {
-				return VALUE.Boolean.FALSETYPE;
+				return TYPE.FALSE;
 			}
 			return TYPE.BOOL;
 		}
 		if (t0.intersect(t1).isBottomType) {
-			return VALUE.Boolean.FALSETYPE;
+			return TYPE.FALSE;
 		}
 		return TYPE.BOOL;
 	}

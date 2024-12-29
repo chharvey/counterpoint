@@ -41,9 +41,9 @@ describe('Type', () => {
 
 
 	it('a type operation equaling to a built-in type returns that type by reference.', () => {
-		assert.strictEqual(TYPE.BOOL.intersect(TYPE.STR),                         TYPE.NEVER);
-		assert.strictEqual(TYPE.BOOL.union(TYPE.UNKNOWN),                         TYPE.UNKNOWN);
-		assert.strictEqual(VALUE.Boolean.FALSETYPE.union(VALUE.Boolean.TRUETYPE), TYPE.BOOL);
+		assert.strictEqual(TYPE.BOOL.intersect(TYPE.STR), TYPE.NEVER);
+		assert.strictEqual(TYPE.BOOL.union(TYPE.UNKNOWN), TYPE.UNKNOWN);
+		assert.strictEqual(TYPE.FALSE.union(TYPE.TRUE),   TYPE.BOOL);
 	});
 
 
@@ -64,7 +64,7 @@ describe('Type', () => {
 
 
 	describe('#isDefinitelyFalsy', () => {
-		const FALSE = VALUE.Boolean.FALSETYPE;
+		const FALSE = TYPE.FALSE;
 		it('only a combination of `never`, `void`, `null`, and `false` are definitely falsy.', () => {
 			[
 				TYPE.NEVER,
@@ -80,7 +80,7 @@ describe('Type', () => {
 		it('any other types are not definitely falsy.', () => {
 			[
 				TYPE.UNKNOWN,
-				VALUE.Boolean.TRUETYPE,
+				TYPE.TRUE,
 				TYPE.BOOL,
 				TYPE.INT,
 				TYPE.FLOAT,
@@ -95,7 +95,7 @@ describe('Type', () => {
 
 
 	describe('#isDefinitelyTruthy', () => {
-		const FALSE = VALUE.Boolean.FALSETYPE;
+		const FALSE = TYPE.FALSE;
 		it('all definitely falsy types are not definitely truthy.', () => {
 			[
 				TYPE.NEVER,
@@ -119,7 +119,7 @@ describe('Type', () => {
 		});
 		it('“valuable” primitive types are definitely truthy.', () => {
 			[
-				VALUE.Boolean.TRUETYPE,
+				TYPE.TRUE,
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
@@ -144,7 +144,7 @@ describe('Type', () => {
 
 
 	specify('#falsySide', () => {
-		const FALSE = VALUE.Boolean.FALSETYPE;
+		const FALSE = TYPE.FALSE;
 		return new Map<TYPE.Type, TYPE.Type>([
 			[TYPE.NEVER,   TYPE.NEVER],
 			[TYPE.UNKNOWN, TYPE.VOID.union(TYPE.NULL).union(FALSE)],
@@ -164,7 +164,7 @@ describe('Type', () => {
 			[TYPE.NEVER,   TYPE.NEVER],
 			[TYPE.VOID,    TYPE.NEVER],
 			[TYPE.NULL,    TYPE.NEVER],
-			[TYPE.BOOL,    VALUE.Boolean.TRUETYPE],
+			[TYPE.BOOL,    TYPE.TRUE],
 			[TYPE.INT,     TYPE.INT],
 			[TYPE.FLOAT,   TYPE.FLOAT],
 			[TYPE.STR,     TYPE.STR],
@@ -234,8 +234,8 @@ describe('Type', () => {
 		});
 		it('3-9 | `C <: A --> (A  & B)  & C == B  & C`', () => {
 			const a: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL, TYPE.INT]);
-			const b: TYPE.Tuple = TYPE.Tuple.fromTypes([VALUE.Boolean.TRUETYPE]);
-			const c: TYPE.Tuple = TYPE.Tuple.fromTypes([VALUE.Boolean.FALSETYPE, typeUnit(42n)]);
+			const b: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.TRUE]);
+			const c: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.FALSE, typeUnit(42n)]);
 			const actual:   TYPE.Type = a.intersect(b).intersect(c);
 			const expected: TYPE.Type = b.intersect(c);
 			assert.ok(actual.equals(expected), '([bool, int] & [true]) & [false, 42] == [true] & [false, 42]');
@@ -244,7 +244,7 @@ describe('Type', () => {
 		describe('Intersection', () => {
 			it('optimizes nested intersections: `(A & B) & A === A & B`', () => {
 				const a: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL, TYPE.INT]);
-				const b: TYPE.Tuple = TYPE.Tuple.fromTypes([VALUE.Boolean.TRUETYPE]);
+				const b: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.TRUE]);
 				const expected: TYPE.Type = a.intersect(b);
 				assert.strictEqual(expected.intersect(a), expected);
 			});
@@ -537,8 +537,8 @@ describe('Type', () => {
 
 		describe('Unit', () => {
 			it('unit Boolean types should be subtypes of `bool`.', () => {
-				assert.ok(VALUE.Boolean.FALSETYPE.isSubtypeOf(TYPE.BOOL), 'Boolean.FALSETYPE');
-				assert.ok(VALUE.Boolean.TRUETYPE .isSubtypeOf(TYPE.BOOL), 'Boolean.TRUETYPE');
+				assert.ok(TYPE.FALSE.isSubtypeOf(TYPE.BOOL), 'TYPE.FALSE');
+				assert.ok(TYPE.TRUE .isSubtypeOf(TYPE.BOOL), 'TYPE.TRUE');
 			});
 			it('unit Integer types should be subtypes of `int`.', () => {
 				[42n, -42n, 0n, -0n].map((v) => typeUnit(v)).forEach((itype) => {
@@ -830,7 +830,7 @@ describe('Type', () => {
 				assert.ok(new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 					['foo', TYPE.OBJ],
 					['bar', TYPE.NULL],
-					['diz', VALUE.Boolean.TRUETYPE],
+					['diz', TYPE.TRUE],
 					['qux', TYPE.INT.union(TYPE.FLOAT)],
 				])).isSubtypeOf(t0));
 			});
@@ -840,14 +840,14 @@ describe('Type', () => {
 
 	describe('#equals', () => {
 		it('bool == false | true', () => {
-			assert.ok(TYPE.BOOL.equals(VALUE.Boolean.FALSETYPE.union(VALUE.Boolean.TRUETYPE)));
+			assert.ok(TYPE.BOOL.equals(TYPE.FALSE.union(TYPE.TRUE)));
 		});
 		it.skip('built-in types do not equal unit types of their canonical values.', () => {
-			assert.ok(!TYPE.BOOL  .equals(VALUE.Boolean.FALSETYPE), 'bool  != false');
-			assert.ok(!TYPE.BOOL  .equals(VALUE.Boolean.TRUETYPE),  'bool  != true');
-			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),            'int   != 0');
-			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)),           'float != 0.0');
-			assert.ok(!TYPE.STR   .equals(typeUnit('')),            'str   != ""');
+			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),    'bool  != false');
+			assert.ok(!TYPE.BOOL  .equals(TYPE.TRUE),     'bool  != true');
+			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),  'int   != 0');
+			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)), 'float != 0.0');
+			assert.ok(!TYPE.STR   .equals(typeUnit('')),  'str   != ""');
 		});
 	});
 
@@ -1017,14 +1017,14 @@ describe('Type', () => {
 							TYPE.INT,
 						]);
 						const right: TYPE.Tuple = TYPE.Tuple.fromTypes([
-							VALUE.Boolean.TRUETYPE,
+							TYPE.TRUE,
 						]);
 
 						const intersection: TYPE.Type = left.intersect(right);
 						assert_instanceof(intersection, TYPE.Intersection);
 
 						const combined: TYPE.Type = intersection.combineTuplesOrRecords();
-						assert.deepStrictEqual(combined, TYPE.Tuple.fromTypes([VALUE.Boolean.TRUETYPE, TYPE.INT]));
+						assert.deepStrictEqual(combined, TYPE.Tuple.fromTypes([TYPE.TRUE, TYPE.INT]));
 
 						const v = new VALUE.Tuple<VALUE.Boolean | VALUE.Integer>([VALUE.TRUE, VALUE.INT_1]);
 
@@ -1091,7 +1091,7 @@ describe('Type', () => {
 						]));
 						const right: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
 							[0x103n, TYPE.STR],
-							[0x100n, VALUE.Boolean.FALSETYPE],
+							[0x100n, TYPE.FALSE],
 							[0x101n, TYPE.INT],
 						]));
 
@@ -1100,7 +1100,7 @@ describe('Type', () => {
 
 						const combined: TYPE.Type = intersection.combineTuplesOrRecords();
 						assert.deepStrictEqual(combined, TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[0x100n, VALUE.Boolean.FALSETYPE],
+							[0x100n, TYPE.FALSE],
 							[0x101n, typeUnit(42n)],
 							[0x102n, TYPE.STR],
 							[0x103n, TYPE.STR],

@@ -4,13 +4,14 @@ import {
 	memoizeBinOp,
 } from '../../lib/index.js';
 import {languageValuesIdentical} from '../utils-private.js';
-import * as VALUE from '../cp-value/index.js';
+import type * as VALUE from '../cp-value/index.js';
 import {
 	Intersection,
 	Union,
 	Difference,
 	VOID,
 	NULL,
+	FALSE,
 } from './index.js';
 import {
 	operatorDeco,
@@ -33,7 +34,7 @@ import {
  */
 export abstract class Type {
 	static get #falsyTypes(): readonly Type[] {
-		return [VOID, NULL, VALUE.Boolean.FALSETYPE];
+		return [VOID, NULL, FALSE];
 	}
 
 

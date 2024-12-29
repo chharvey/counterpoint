@@ -167,7 +167,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(3).forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), VALUE.Boolean.TRUETYPE);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.TRUE);
 						});
 					});
 					it('returns type `bool` for a supertype of `void` or a supertype of `null` or a supertype of `false`.', () => {
@@ -199,7 +199,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(2).forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), VALUE.Boolean.FALSETYPE);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.FALSE);
 						});
 					});
 					it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
@@ -212,7 +212,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), VALUE.Boolean.FALSETYPE);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.FALSE);
 						});
 					});
 				});
@@ -781,7 +781,7 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('7 == 7.0;', CONFIG_FOLDING_OFF).type(), TYPE.BOOL);
 				});
 				it('returns `false` if operands are of different numeric types.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('7 === 7.0;', CONFIG_FOLDING_OFF).type(), VALUE.Boolean.FALSETYPE);
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('7 === 7.0;', CONFIG_FOLDING_OFF).type(), TYPE.FALSE);
 				});
 			});
 			context('with folding on but int coersion off.', () => {
@@ -796,10 +796,10 @@ describe('ASTNodeOperation', () => {
 			});
 			context('with folding and int coersion off.', () => {
 				it('returns `false` if operands are of different numeric types.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource('7 == 7.0;'), VALUE.Boolean.FALSETYPE);
+					assert.deepStrictEqual(typeOfOperationFromSource('7 == 7.0;'), TYPE.FALSE);
 				});
 				it('returns `false` if operands are of disjoint types in general.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource('7 == null;'), VALUE.Boolean.FALSETYPE);
+					assert.deepStrictEqual(typeOfOperationFromSource('7 == null;'), TYPE.FALSE);
 				});
 			});
 		});
@@ -1067,7 +1067,7 @@ describe('ASTNodeOperation', () => {
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL,
-							TYPE.NULL.union(VALUE.Boolean.FALSETYPE),
+							TYPE.NULL.union(TYPE.FALSE),
 							TYPE.NULL.union(TYPE.VOID),
 						]);
 					});
@@ -1090,8 +1090,8 @@ describe('ASTNodeOperation', () => {
 						return assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL.union(hello),
 							TYPE.NULL.union(hello),
-							VALUE.Boolean.FALSETYPE.union(hello),
-							VALUE.Boolean.FALSETYPE.union(hello),
+							TYPE.FALSE.union(hello),
+							TYPE.FALSE.union(hello),
 							TYPE.VOID.union(typeUnit(42n)),
 						]);
 					});
@@ -1105,7 +1105,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
-							VALUE.Boolean.TRUETYPE,
+							TYPE.TRUE,
 							TYPE.NULL,
 						]);
 					});
@@ -1123,7 +1123,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
-							VALUE.Boolean.FALSETYPE,
+							TYPE.FALSE,
 							typeUnit(42n),
 							typeUnit(4.2),
 						]);
@@ -1147,8 +1147,8 @@ describe('ASTNodeOperation', () => {
 						assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.INT.union(hello),
 							TYPE.INT.union(hello),
-							VALUE.Boolean.TRUETYPE.union(hello),
-							VALUE.Boolean.TRUETYPE.union(TYPE.FLOAT).union(hello),
+							TYPE.TRUE.union(hello),
+							TYPE.TRUE.union(TYPE.FLOAT).union(hello),
 							TYPE.STR.union(typeUnit(42n)),
 						]);
 					});

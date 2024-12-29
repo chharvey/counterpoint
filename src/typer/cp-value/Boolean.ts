@@ -4,7 +4,6 @@ import {
 	strictEqual,
 	instanceOf,
 } from '../../lib/index.js';
-import type {TYPE} from '../index.js';
 import {
 	FALSE,
 	TRUE,
@@ -20,16 +19,6 @@ import {Primitive} from './Primitive.js';
  * @final
  */
 class ValueBoolean extends Primitive {
-	/** A Unit Type containing only the Counterpoint Language Value `false`. */
-	public static get FALSETYPE(): TYPE.Unit<ValueBoolean> {
-		return FALSE.toType();
-	}
-
-	/** A Unit Type containing only the Counterpoint Language Value `true`. */
-	public static get TRUETYPE(): TYPE.Unit<ValueBoolean> {
-		return TRUE.toType();
-	}
-
 	/**
 	 * Return the Counterpoint Language Value `true` or `false` based on the argument.
 	 * @param b a native boolean value

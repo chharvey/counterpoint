@@ -511,7 +511,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(24, 27).forEach((c) => (
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
-							VALUE.Boolean.TRUETYPE,
+							TYPE.TRUE,
 						)
 					));
 					return program.children.slice(27, 30).forEach((c) => (
@@ -565,7 +565,7 @@ describe('ASTNodeAccess', () => {
 					assert.deepStrictEqual(
 						program.children.slice(51, 53).map((c) => typeOfStmtExpr(c)),
 						[
-							VALUE.Boolean.TRUETYPE,
+							TYPE.TRUE,
 							TYPE.BOOL,
 						],
 					);

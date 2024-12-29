@@ -78,8 +78,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		switch (this.operator) {
 			case Operator.NOT: {
 				return (
-					t.isDefinitelyFalsy()  ? VALUE.Boolean.TRUETYPE :
-					t.isDefinitelyTruthy() ? VALUE.Boolean.FALSETYPE :
+					t.isDefinitelyFalsy()  ? TYPE.TRUE :
+					t.isDefinitelyTruthy() ? TYPE.FALSE :
 					TYPE.BOOL
 				);
 			}
