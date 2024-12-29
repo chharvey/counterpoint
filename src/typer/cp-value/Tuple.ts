@@ -25,10 +25,10 @@ class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 
 	/**
 	 * @inheritdoc
-	 * Returns a TypeTuple whose entries are the types of this ValueTuple’s items.
+	 * Returns a TYPE.Tuple whose entries are the types of this ValueTuple’s items.
 	 */
-	public override toType(): TYPE.TypeTuple {
-		return TYPE.TypeTuple.fromTypes(this.items.map((it) => it.toType()));
+	public override toType(): TYPE.Tuple {
+		return TYPE.Tuple.fromTypes(this.items.map((it) => it.toType()));
 	}
 }
 export {ValueTuple as Tuple};

@@ -12,7 +12,7 @@ import {ReferenceType} from './ReferenceType.js';
  * Class for constructing the Top Type, the type containing all values.
  * @final
  */
-export class TypeUnknown extends ReferenceType {
+export class Unknown extends ReferenceType {
 	public constructor() {
 		super(false);
 	}

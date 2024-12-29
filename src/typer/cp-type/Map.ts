@@ -18,7 +18,7 @@ import {ReferenceType} from './ReferenceType.js';
  * Class for constructing a `Map` type.
  * @final
  */
-export class TypeMap extends ReferenceType {
+class TypeMap extends ReferenceType {
 	/**
 	 * Construct a new TypeMap object.
 	 * @param invariant_ant a union of antecedent types in this map type
@@ -68,3 +68,4 @@ export class TypeMap extends ReferenceType {
 		return new TypeMap(this.invariant_ant, this.invariant_con, false);
 	}
 }
+export {TypeMap as Map};

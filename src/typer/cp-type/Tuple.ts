@@ -15,7 +15,7 @@ import * as VALUE from '../cp-value/index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {subtypeDeco} from './decorators.js';
 import type {Type} from './Type.js';
-import {TypeUnion} from './Union.js';
+import {Union} from './Union.js';
 import {ValueType} from './ValueType.js';
 
 
@@ -24,7 +24,7 @@ import {ValueType} from './ValueType.js';
  * Class for constructing tuple literal types.
  * @final
  */
-export class TypeTuple extends ValueType {
+class TypeTuple extends ValueType {
 	/**
 	 * Construct a new TypeTuple from type items, assuming each item is required.
 	 * @param types the types of the tuple
@@ -107,6 +107,7 @@ export class TypeTuple extends ValueType {
 
 	/** @final */
 	public itemTypes(): Type {
-		return TypeUnion.all(this.invariants.map((t) => t.type));
+		return Union.all(this.invariants.map((t) => t.type));
 	}
 }
+export {TypeTuple as Tuple};

@@ -45,10 +45,10 @@ describe('ASTNodeCall', () => {
 			assert.deepStrictEqual(
 				evaluate.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new TYPE.TypeList(TYPE.INT, true),
-					new TYPE.TypeDict(TYPE.INT, true),
-					new TYPE.TypeSet(TYPE.INT, true),
-					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
+					new TYPE.List(TYPE.INT, true),
+					new TYPE.Dict(TYPE.INT, true),
+					new TYPE.Set(TYPE.INT, true),
+					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
 				],
 			);
 		});
@@ -56,9 +56,9 @@ describe('ASTNodeCall', () => {
 			assert.deepStrictEqual(
 				list_args.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new TYPE.TypeList(TYPE.INT, true),
-					new TYPE.TypeSet(TYPE.INT, true),
-					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
+					new TYPE.List(TYPE.INT, true),
+					new TYPE.Set(TYPE.INT, true),
+					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
 				],
 			);
 		});
@@ -66,13 +66,13 @@ describe('ASTNodeCall', () => {
 			assert.deepStrictEqual(
 				zero_empty.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new TYPE.TypeList(TYPE.INT, true),
-					new TYPE.TypeDict(TYPE.INT, true),
-					new TYPE.TypeSet(TYPE.INT, true),
-					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
-					new TYPE.TypeList(TYPE.INT, true),
-					new TYPE.TypeSet(TYPE.INT, true),
-					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
+					new TYPE.List(TYPE.INT, true),
+					new TYPE.Dict(TYPE.INT, true),
+					new TYPE.Set(TYPE.INT, true),
+					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
+					new TYPE.List(TYPE.INT, true),
+					new TYPE.Set(TYPE.INT, true),
+					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
 				],
 			);
 		});
@@ -88,7 +88,7 @@ describe('ASTNodeCall', () => {
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeCall.fromSource('Map.<int>();').type(),
-				new TYPE.TypeMap(TYPE.INT, TYPE.INT, true),
+				new TYPE.Map(TYPE.INT, TYPE.INT, true),
 			);
 		});
 		it('throws if base is not an ASTNodeVariable.', () => {

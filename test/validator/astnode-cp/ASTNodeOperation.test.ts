@@ -29,7 +29,7 @@ import {
 function typeOperations(tests: ReadonlyMap<string, VALUE.Primitive>, config: CPConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type()),
-		[...tests.values()].map((expected) => new TYPE.TypeUnit(expected)),
+		[...tests.values()].map((expected) => new TYPE.Unit(expected)),
 	);
 }
 function foldOperations(tests: Map<string, VALUE.Value>, config: CPConfig = CONFIG_DEFAULT): void {
@@ -739,7 +739,7 @@ describe('ASTNodeOperation', () => {
 						['-0.0 ==   0.0;', VALUE.Boolean.TRUE],
 					]));
 				});
-				it('returns the result of `this#fold`, wrapped in a `new TypeUnit`.', () => {
+				it('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let a: unknown = [];
 						let b: unknown = [42];
@@ -772,7 +772,7 @@ describe('ASTNodeOperation', () => {
 						assert_instanceof(fold, VALUE.Boolean);
 						assert.deepStrictEqual(
 							expr.type(),
-							new TYPE.TypeUnit<VALUE.Boolean>(fold),
+							new TYPE.Unit<VALUE.Boolean>(fold),
 						);
 					});
 				});
@@ -1073,7 +1073,7 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: TYPE.TypeUnit<VALUE.String> = typeUnit('hello');
+						const hello: TYPE.Unit<VALUE.String> = typeUnit('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null | int = null;
 							let var b: null | int = 42;
@@ -1130,7 +1130,7 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: TYPE.TypeUnit<VALUE.String> = typeUnit('hello');
+						const hello: TYPE.Unit<VALUE.String> = typeUnit('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null | int = null;
 							let var b: null | int = 42;

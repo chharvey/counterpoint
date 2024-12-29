@@ -14,9 +14,9 @@ import {ValueType} from './ValueType.js';
  * @typeparam Value the type of value this unit type holds
  * @final
  */
-export class TypeUnit<Value extends VALUE.Primitive = VALUE.Primitive> extends ValueType {
+export class Unit<Value extends VALUE.Primitive = VALUE.Primitive> extends ValueType {
 	/**
-	 * Construct a new TypeUnit object.
+	 * Construct a new Unit object.
 	 * @param value the Counterpoint Language Value contained in this Type
 	 */
 	public constructor(public readonly value: Value) {

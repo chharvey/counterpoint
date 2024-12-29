@@ -16,7 +16,7 @@ describe('ASTNodeType', () => {
 	describe('#eval', () => {
 		describe('ASTNodeTypeCollectionLiteral', () => {
 			describe('ASTNodeTypeTuple', () => {
-				it('returns a TypeTuple.', () => {
+				it('returns a TYPE.Tuple.', () => {
 					const expected = [
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: false},
@@ -24,13 +24,13 @@ describe('ASTNodeType', () => {
 					] as const;
 					return assert.deepStrictEqual(
 						AST.ASTNodeTypeTuple.fromSource('[int, bool, ?:str]').eval(),
-						new TYPE.TypeTuple(expected),
+						new TYPE.Tuple(expected),
 					);
 				});
 			});
 
 			describe('ASTNodeTypeRecord', () => {
-				it('returns a TypeRecord.', () => {
+				it('returns a TYPE.Record.', () => {
 					const expected = [
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: true},
@@ -39,19 +39,19 @@ describe('ASTNodeType', () => {
 					const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('  [x: int, y?: bool, z: str]');
 					return assert.deepStrictEqual(
 						rec.eval(),
-						new TYPE.TypeRecord(new Map<bigint, TypeEntry>(rec.children.map((c, i) => [c.key.id, expected[i]]))),
+						new TYPE.Record(new Map<bigint, TypeEntry>(rec.children.map((c, i) => [c.key.id, expected[i]]))),
 					);
 				});
 			});
 
 			describe('ASTNodeTypeList', () => {
-				it('returns a TypeList if there is no count.', () => {
+				it('returns a TYPE.List if there is no count.', () => {
 					assert.deepStrictEqual(
 						AST.ASTNodeTypeList.fromSource('(int | bool)[]').eval(),
-						new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL)),
+						new TYPE.List(TYPE.INT.union(TYPE.BOOL)),
 					);
 				});
-				it('returns a TypeTuple if there is a count.', () => {
+				it('returns a TYPE.Tuple if there is a count.', () => {
 					const expected = [
 						TYPE.INT.union(TYPE.BOOL),
 						TYPE.INT.union(TYPE.BOOL),
@@ -59,7 +59,7 @@ describe('ASTNodeType', () => {
 					] as const;
 					return assert.deepStrictEqual(
 						AST.ASTNodeTypeList.fromSource('(int | bool)[3]').eval(),
-						TYPE.TypeTuple.fromTypes(expected),
+						TYPE.Tuple.fromTypes(expected),
 					);
 				});
 				it('throws if count is negative.', () => {
@@ -75,9 +75,9 @@ describe('ASTNodeType', () => {
 						AST.ASTNodeTypeMap  .fromSource('{int -> bool}')  .eval(),
 					],
 					[
-						new TYPE.TypeDict(TYPE.INT.union(TYPE.BOOL)),
-						new TYPE.TypeSet(TYPE.INT.union(TYPE.BOOL)),
-						new TYPE.TypeMap(TYPE.INT, TYPE.BOOL),
+						new TYPE.Dict(TYPE.INT.union(TYPE.BOOL)),
+						new TYPE.Set(TYPE.INT.union(TYPE.BOOL)),
+						new TYPE.Map(TYPE.INT, TYPE.BOOL),
 					],
 				);
 			});
@@ -203,7 +203,7 @@ describe('ASTNodeType', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeTuple.fromSource('[int, bool, ?:str]').eval(),
-				new TYPE.TypeTuple([
+				new TYPE.Tuple([
 					{type: TYPE.INT,  optional: false},
 					{type: TYPE.BOOL, optional: false},
 					{type: TYPE.STR,  optional: true},
@@ -220,7 +220,7 @@ describe('ASTNodeType', () => {
 			const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('[x: int, y?: bool, _: str]');
 			assert.deepStrictEqual(
 				node.eval(),
-				new TYPE.TypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
+				new TYPE.Record(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
 					c.key.id,
 					[
 						{type: TYPE.INT,  optional: false},
@@ -236,16 +236,16 @@ describe('ASTNodeType', () => {
 
 	describe('ASTNodeTypeList', () => {
 		describe('#eval', () => {
-			it('returns a TypeList if there is no count.', () => {
+			it('returns a TYPE.List if there is no count.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeList.fromSource('(int | bool)[]').eval(),
-					new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL)),
+					new TYPE.List(TYPE.INT.union(TYPE.BOOL)),
 				);
 			});
-			it('returns a TypeTuple if there is a count.', () => {
+			it('returns a TYPE.Tuple if there is a count.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeList.fromSource('(int | bool)[3]').eval(),
-					TYPE.TypeTuple.fromTypes([
+					TYPE.Tuple.fromTypes([
 						TYPE.INT.union(TYPE.BOOL),
 						TYPE.INT.union(TYPE.BOOL),
 						TYPE.INT.union(TYPE.BOOL),
@@ -264,15 +264,15 @@ describe('ASTNodeType', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeDict.fromSource('[:int | bool]').eval(),
-				new TYPE.TypeDict(TYPE.INT.union(TYPE.BOOL)),
+				new TYPE.Dict(TYPE.INT.union(TYPE.BOOL)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeSet.fromSource('(int | bool){}').eval(),
-				new TYPE.TypeSet(TYPE.INT.union(TYPE.BOOL)),
+				new TYPE.Set(TYPE.INT.union(TYPE.BOOL)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeMap.fromSource('{int -> bool}').eval(),
-				new TYPE.TypeMap(TYPE.INT, TYPE.BOOL),
+				new TYPE.Map(TYPE.INT, TYPE.BOOL),
 			);
 		});
 	});
@@ -287,7 +287,7 @@ describe('ASTNodeType', () => {
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
-				new TYPE.TypeList(TYPE.INT, true),
+				new TYPE.List(TYPE.INT, true),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource('Object & 3').eval(),

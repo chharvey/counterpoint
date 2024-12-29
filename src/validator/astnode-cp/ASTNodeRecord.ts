@@ -59,7 +59,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			const valuetype: TYPE.Type = c.val.type();
 			return [c.key.id, valuetype];
 		}));
-		return TYPE.TypeRecord.fromTypes(props);
+		return TYPE.Record.fromTypes(props);
 	}
 
 	@memoizeMethod
@@ -76,7 +76,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	@assignToDeco
 	public override assignTo(assignee: TYPE.Type): void {
 		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
-		if (assignee instanceof TYPE.TypeRecord) {
+		if (assignee instanceof TYPE.Record) {
 			if (this.children.length < assignee.count[0]) {
 				throw err;
 			}

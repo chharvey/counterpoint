@@ -55,12 +55,12 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 
 	/**
 	 * @inheritdoc
-	 * Returns a TypeMap whose invariants are the respective unions of the types of this ValueMap’s antecedents and consequents.
+	 * Returns a TYPE.Map whose invariants are the respective unions of the types of this ValueMap’s antecedents and consequents.
 	 */
-	public override toType(): TYPE.TypeMap {
-		return new TYPE.TypeMap(
-			TYPE.TypeUnion.all([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
-			TYPE.TypeUnion.all([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
+	public override toType(): TYPE.Map {
+		return new TYPE.Map(
+			TYPE.Union.all([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
+			TYPE.Union.all([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
 		);
 	}
 

@@ -11,7 +11,7 @@ import {Value} from './Value.js';
  * - ValueString
  */
 export abstract class Primitive extends Value {
-	/** @final */ public override toType(): TYPE.TypeUnit<this> {
-		return new TYPE.TypeUnit<this>(this);
+	/** @final */ public override toType(): TYPE.Unit<this> {
+		return new TYPE.Unit<this>(this);
 	}
 }

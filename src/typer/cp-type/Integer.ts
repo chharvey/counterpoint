@@ -8,7 +8,7 @@ import {ValueType} from './ValueType.js';
  * Class for constructing the `int` type.
  * @final
  */
-export class TypeInteger extends ValueType {
+export class Integer extends ValueType {
 	public constructor() {
 		super(false, new Set([VALUE.Integer.ZERO]));
 	}

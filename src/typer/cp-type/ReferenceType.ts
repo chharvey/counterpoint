@@ -5,10 +5,10 @@ import {Type} from './Type.js';
 /**
  * Parent class for reference types (types of objects that are passed by reference).
  * Known subclasses:
- * - TypeUnknown
+ * - Unknown
  * - TypeObject
- * - TypeList
- * - TypeDict
+ * - List
+ * - Dict
  * - TypeSet
  * - TypeMap
  */

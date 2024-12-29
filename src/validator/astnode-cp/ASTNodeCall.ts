@@ -97,7 +97,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.LIST, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const itemtype:   TYPE.Type = this.typeargs[0].eval();
-				const returntype            = new TYPE.TypeList(itemtype);
+				const returntype            = new TYPE.List(itemtype);
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
@@ -107,7 +107,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, itemtype, item));
 						} else {
 							const argtype: TYPE.Type = arg.type();
-							if (!(argtype instanceof TYPE.TypeTuple)) {
+							if (!(argtype instanceof TYPE.Tuple)) {
 								throw err;
 							}
 							ASTNodeCP.checkSubtype(argtype.itemTypes(), itemtype, this);
@@ -131,7 +131,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.DICT, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const valuetype:  TYPE.Type = this.typeargs[0].eval();
-				const returntype            = new TYPE.TypeDict(valuetype);
+				const returntype            = new TYPE.Dict(valuetype);
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
@@ -141,7 +141,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 							xjs.Array.forEachAggregated(arg.children, (prop) => ASTNodeCP.typeCheckAssign(prop.val, valuetype, prop.val));
 						} else {
 							const argtype: TYPE.Type = arg.type();
-							if (!(argtype instanceof TYPE.TypeRecord)) {
+							if (!(argtype instanceof TYPE.Record)) {
 								throw err;
 							}
 							ASTNodeCP.checkSubtype(argtype.valueTypes(), valuetype, this);
@@ -166,17 +166,17 @@ export class ASTNodeCall extends ASTNodeExpression {
 			[ValidFunctionName.SET, () => {
 				this.countArgs(1n, [0n, 2n]);
 				const eltype:     TYPE.Type = this.typeargs[0].eval();
-				const returntype            = new TYPE.TypeSet(eltype);
+				const returntype            = new TYPE.Set(eltype);
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
-						ASTNodeCP.typeCheckAssign(arg, new TYPE.TypeList(eltype), this);
+						ASTNodeCP.typeCheckAssign(arg, new TYPE.List(eltype), this);
 					} catch (err) {
 						if (arg instanceof ASTNodeTuple) {
 							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, eltype, item));
 						} else {
 							const argtype: TYPE.Type = arg.type();
-							if (!(argtype instanceof TYPE.TypeTuple)) {
+							if (!(argtype instanceof TYPE.Tuple)) {
 								throw err;
 							}
 							ASTNodeCP.checkSubtype(argtype.itemTypes(), eltype, this);
@@ -200,20 +200,20 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 */
 			[ValidFunctionName.MAP, () => {
 				this.countArgs([1n, 3n], [0n, 2n]);
-				const anttype:    TYPE.Type      = this.typeargs[0].eval();
-				const contype:    TYPE.Type      = this.typeargs[1]?.eval() ?? anttype;
-				const returntype                 = new TYPE.TypeMap(anttype, contype);
-				const entrytype:  TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([anttype, contype]);
+				const anttype:    TYPE.Type  = this.typeargs[0].eval();
+				const contype:    TYPE.Type  = this.typeargs[1]?.eval() ?? anttype;
+				const returntype             = new TYPE.Map(anttype, contype);
+				const entrytype:  TYPE.Tuple = TYPE.Tuple.fromTypes([anttype, contype]);
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
-						ASTNodeCP.typeCheckAssign(arg, new TYPE.TypeList(entrytype), this);
+						ASTNodeCP.typeCheckAssign(arg, new TYPE.List(entrytype), this);
 					} catch (err) {
 						if (arg instanceof ASTNodeTuple) {
 							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, entrytype, item));
 						} else {
 							const argtype: TYPE.Type = arg.type();
-							if (!(argtype instanceof TYPE.TypeTuple)) {
+							if (!(argtype instanceof TYPE.Tuple)) {
 								throw err;
 							}
 							ASTNodeCP.checkSubtype(argtype.itemTypes(), entrytype, this);

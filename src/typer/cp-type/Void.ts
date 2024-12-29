@@ -20,7 +20,7 @@ import {ValueType} from './ValueType.js';
  * Class for constructing the `void` type.
  * @final
  */
-export class TypeVoid extends ValueType {
+export class Void extends ValueType {
 	public constructor() {
 		super(false);
 	}

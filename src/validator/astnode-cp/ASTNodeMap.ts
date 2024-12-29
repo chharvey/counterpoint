@@ -42,9 +42,9 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
-		return new TYPE.TypeMap(
-			TYPE.TypeUnion.all(this.children.map((c) => c.antecedent.type())),
-			TYPE.TypeUnion.all(this.children.map((c) => c.consequent.type())),
+		return new TYPE.Map(
+			TYPE.Union.all(this.children.map((c) => c.antecedent.type())),
+			TYPE.Union.all(this.children.map((c) => c.consequent.type())),
 			true,
 		);
 	}
@@ -62,7 +62,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 
 	@assignToDeco
 	public override assignTo(assignee: TYPE.Type): void {
-		if (assignee instanceof TYPE.TypeMap) {
+		if (assignee instanceof TYPE.Map) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant_{ant,con}`
 			return xjs.Array.forEachAggregated(this.children, (case_) => (
 				xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => (

@@ -40,8 +40,8 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
-		return new TYPE.TypeSet(
-			TYPE.TypeUnion.all(this.children.map((c) => c.type())),
+		return new TYPE.Set(
+			TYPE.Union.all(this.children.map((c) => c.type())),
 			true,
 		);
 	}
@@ -56,7 +56,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 
 	@assignToDeco
 	public override assignTo(assignee: TYPE.Type): void {
-		if (assignee instanceof TYPE.TypeSet) {
+		if (assignee instanceof TYPE.Set) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant`
 			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssign(expr, assignee.invariant, expr));
 		}

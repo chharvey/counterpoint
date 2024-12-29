@@ -30,6 +30,6 @@ export class ASTNodeTypeMap extends ASTNodeTypeCollectionLiteral {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		return new TYPE.TypeMap(this.antecedenttype.eval(), this.consequenttype.eval());
+		return new TYPE.Map(this.antecedenttype.eval(), this.consequenttype.eval());
 	}
 }

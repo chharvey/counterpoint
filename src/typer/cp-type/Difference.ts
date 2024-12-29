@@ -10,7 +10,7 @@ import {
 	subtypeDeco,
 } from './decorators.js';
 import {Type} from './Type.js';
-import {TypeUnion} from './Union.js';
+import {Union} from './Union.js';
 
 
 
@@ -19,9 +19,9 @@ import {TypeUnion} from './Union.js';
  * that contains values assignable to `T` but *not* assignable to `U`.
  * @final
  */
-export class TypeDifference extends Type {
+export class Difference extends Type {
 	/**
-	 * Construct a new TypeDifference object.
+	 * Construct a new Difference object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
@@ -57,7 +57,7 @@ export class TypeDifference extends Type {
 
 	@toStringDeco
 	public override toString(): string {
-		return [this.left, this.right].map((s) => s instanceof TypeUnion ? `(${ s })` : s).join(' - ');
+		return [this.left, this.right].map((s) => s instanceof Union ? `(${ s })` : s).join(' - ');
 	}
 
 	public override includes(v: VALUE.Value): boolean {
@@ -71,11 +71,11 @@ export class TypeDifference extends Type {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf(t);
 	}
 
-	public override mutableOf(): TypeDifference {
-		return new TypeDifference(this.left.mutableOf(), this.right.mutableOf());
+	public override mutableOf(): Difference {
+		return new Difference(this.left.mutableOf(), this.right.mutableOf());
 	}
 
-	public override immutableOf(): TypeDifference {
-		return new TypeDifference(this.left.immutableOf(), this.right.immutableOf());
+	public override immutableOf(): Difference {
+		return new Difference(this.left.immutableOf(), this.right.immutableOf());
 	}
 }

@@ -7,7 +7,7 @@ import {ValueType} from './ValueType.js';
  * Class for constructing the `str` type.
  * @final
  */
-export class TypeString extends ValueType {
+class TypeString extends ValueType {
 	public constructor() {
 		super(false, new Set([new VALUE.String('')]));
 	}
@@ -20,3 +20,4 @@ export class TypeString extends ValueType {
 		return v instanceof VALUE.String;
 	}
 }
+export {TypeString as String};

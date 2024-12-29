@@ -18,9 +18,9 @@ import {ReferenceType} from './ReferenceType.js';
  * Class for constructing a `Dict` type.
  * @final
  */
-export class TypeDict extends ReferenceType {
+export class Dict extends ReferenceType {
 	/**
-	 * Construct a new TypeDict object.
+	 * Construct a new Dict object.
 	 * @param invariant a union of types in this dict type
 	 * @param is_mutable is this type mutable?
 	 */
@@ -47,22 +47,22 @@ export class TypeDict extends ReferenceType {
 	@memoizeBinOp()
 	@subtypeDeco
 	@referenceSubtypeDeco
-	@instanceOf(() => TypeDict)
+	@instanceOf(() => Dict)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
-				? this.invariant.equals((t as TypeDict).invariant)      // Invariance for mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.
-				: this.invariant.isSubtypeOf((t as TypeDict).invariant) // Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.
+				? this.invariant.equals((t as Dict).invariant)      // Invariance for mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.
+				: this.invariant.isSubtypeOf((t as Dict).invariant) // Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.
 			)
 		);
 	}
 
-	public override mutableOf(): TypeDict {
-		return new TypeDict(this.invariant, true);
+	public override mutableOf(): Dict {
+		return new Dict(this.invariant, true);
 	}
 
-	public override immutableOf(): TypeDict {
-		return new TypeDict(this.invariant, false);
+	public override immutableOf(): Dict {
+		return new Dict(this.invariant, false);
 	}
 }

@@ -92,9 +92,9 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 	7. *If* `accessor` is a SemanticIndex:
 		1. *Assert:* `accessor.children.count` is 1.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor.children.0)`.
-		3. *Assert:* `accessor_type` is a TypeUnit.
+		3. *Assert:* `accessor_type` is an instance of `Unit`.
 		4. *Let* `i` be `accessor_type.value`.
-		5. *Assert:* `i` is a instance of `Integer`.
+		5. *Assert:* `i` is an instance of `Integer`.
 		6. *If* `base_type` is a Tuple type *and* `i` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
@@ -117,9 +117,9 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
 		3. *If* `base_type` is a Tuple type:
-			1. *If* `accessor_type` is a TypeUnit:
+			1. *If* `accessor_type` is an instance of `Unit`:
 				1. *Let* `i` be `accessor_type.value`.
-				2. *If* `i` is a instance of `Integer`:
+				2. *If* `i` is an instance of `Integer`:
 					1. *If* `i` is an index in `base_type`:
 						1. *Let* `entry` be the item accessed at index `i` in `base_type`.
 						2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.

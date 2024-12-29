@@ -19,17 +19,17 @@ describe('ASTNodeTypeCall', () => {
 					'Map.<int, float>',
 				].map((src) => AST.ASTNodeTypeCall.fromSource(src).eval()),
 				[
-					new TYPE.TypeList(TYPE.NULL),
-					new TYPE.TypeDict(TYPE.BOOL),
-					new TYPE.TypeSet(TYPE.STR),
-					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT),
+					new TYPE.List(TYPE.NULL),
+					new TYPE.Dict(TYPE.BOOL),
+					new TYPE.Set(TYPE.STR),
+					new TYPE.Map(TYPE.INT, TYPE.FLOAT),
 				],
 			);
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeCall.fromSource('Map.<int>').eval(),
-				new TYPE.TypeMap(TYPE.INT, TYPE.INT),
+				new TYPE.Map(TYPE.INT, TYPE.INT),
 			);
 		});
 		it('throws if base is not an ASTNodeTypeAlias.', () => {

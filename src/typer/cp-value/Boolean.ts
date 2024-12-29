@@ -22,12 +22,12 @@ class ValueBoolean extends Primitive {
 	public static readonly TRUE = new ValueBoolean(true);
 
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
-	public static get FALSETYPE(): TYPE.TypeUnit<ValueBoolean> {
+	public static get FALSETYPE(): TYPE.Unit<ValueBoolean> {
 		return ValueBoolean.FALSE.toType();
 	}
 
 	/** A Unit Type containing only the Counterpoint Language Value `true`. */
-	public static get TRUETYPE(): TYPE.TypeUnit<ValueBoolean> {
+	public static get TRUETYPE(): TYPE.Unit<ValueBoolean> {
 		return ValueBoolean.TRUE.toType();
 	}
 
