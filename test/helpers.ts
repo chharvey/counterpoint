@@ -52,6 +52,9 @@ export function typeUnit(value: bigint | number | string): TYPE.Unit<VALUE.Integ
 	return (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
+		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
+		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
+		value === ''              ? VALUE.STR_EMPTY :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? new VALUE.String(value) :
@@ -68,6 +71,8 @@ export function buildConst(mod: binaryen.Module, value: null | boolean | bigint 
 		value === true            ? VALUE.TRUE :
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
+		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
+		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))

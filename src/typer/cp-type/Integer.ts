@@ -10,7 +10,7 @@ import {ValueType} from './ValueType.js';
  */
 export class Integer extends ValueType {
 	public constructor() {
-		super(false, new Set([VALUE.INT_0]));
+		super(false, new Set([VALUE.INT_0, VALUE.INT_1]));
 	}
 
 	public override toString(): string {

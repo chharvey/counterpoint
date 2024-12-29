@@ -12,6 +12,8 @@ import {
 	FLOAT,
 	STR,
 	OBJ,
+	FALSE,
+	TRUE,
 } from './index.js';
 
 
@@ -58,6 +60,8 @@ export function operatorDeco(
 				FLOAT,
 				STR,
 				OBJ,
+				FALSE,
+				TRUE,
 			].find((c) => returned.equals(c)) ?? returned
 		);
 	};
