@@ -915,11 +915,11 @@ describe('Type', () => {
 
 
 	describe('Combinable', () => {
-		describe('#normalize', () => {
-			const a: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
-			const b: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));
-			const c: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x102n, TYPE.STR]]));
+		const a: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
+		const b: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));
+		const c: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x102n, TYPE.STR]]));
 
+		describe('#normalize', () => {
 			describe('Intersection', () => {
 				it('factors out common union operands from intersection: `(A \| B)  & (A \| C) == A \| (B  & C)`.', () => {
 					const actual:   TYPE.Type = a.union(b).intersect(a.union(c));
@@ -941,10 +941,6 @@ describe('Type', () => {
 
 
 		describe('#denormalize', () => {
-			const a: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
-			const b: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));
-			const c: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x102n, TYPE.STR]]));
-
 			describe('Intersection', () => {
 				it('distributes intersection operands over union: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
 					const intersection: TYPE.Type = b.union(c).intersect(a);
