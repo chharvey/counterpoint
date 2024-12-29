@@ -1,4 +1,3 @@
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -63,9 +62,7 @@ export function buildDeco(
 	_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
 ): typeof method {
 	return function (this: ASTNodeExpression) {
-		const value: VALUE.Value | null       = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
-		const built: binaryen.ExpressionRef   = value?.build(this.builder) ?? method.call(this);
-		return built;
+		return (this.validator.config.compilerOptions.constantFolding ? this.fold() : null)?.build(this.builder) ?? method.call(this);
 	};
 }
 

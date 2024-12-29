@@ -77,10 +77,9 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 		const value: binaryen.ExpressionRef = this.assigned.build();
 		if (this.assignee) {
-			const assignee_type: TYPE.Type = this.typenode.eval(); // eval first before adding, to rethrow any errors
 			return this.builder.teeLocal(this.assignee.id, value).set(ASTNodeStatement.coerceAssignment(
 				this.builder.module,
-				assignee_type,
+				this.typenode.eval(),
 				this.assigned.type(),
 				value,
 				this.validator.config.compilerOptions.intCoercion,

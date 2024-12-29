@@ -51,8 +51,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 				throw new MutabilityError01(base_type, this);
 			}
 		}
-		const assignee_type: TYPE.Type = this.assignee.type();
-		ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
+		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.type(), this);
 	}
 
 	public override build(): binaryen.ExpressionRef {
