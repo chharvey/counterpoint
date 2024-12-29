@@ -1,6 +1,6 @@
 import binaryen from 'binaryen';
 import {
-	type OBJ,
+	type VALUE,
 	type TYPE,
 	BinVect,
 } from '../../index.js';
@@ -17,6 +17,7 @@ import {
 	Operator,
 	type ValidOperatorLogical,
 } from '../Operator.js';
+import {buildDeco} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
@@ -39,7 +40,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		// eslint-disable-next-line prefer-const --- one of them is reassigned
 		let [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
@@ -88,8 +89,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand0.fold();
+	public override fold(): VALUE.Value | null {
+		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}

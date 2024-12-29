@@ -57,6 +57,6 @@ export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 				},
 			];
 		}));
-		return new TYPE.TypeRecord(entries);
+		return new TYPE.Record(entries);
 	}
 }

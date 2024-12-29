@@ -4,7 +4,7 @@ import {
 	AST,
 	type SymbolStructure,
 	SymbolStructureVar,
-	OBJ,
+	VALUE,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotAssignable,
@@ -121,10 +121,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			];
 			assert.deepStrictEqual(
 				[immut.source, immut.value],
-				['immut',      new OBJ.Tuple<OBJ.Integer>([
-					new OBJ.Integer(  42n),
-					new OBJ.Integer( 420n),
-					new OBJ.Integer(4200n),
+				['immut',      new VALUE.Tuple<VALUE.Integer>([
+					new VALUE.Integer(  42n),
+					new VALUE.Integer( 420n),
+					new VALUE.Integer(4200n),
 				])],
 			);
 			assert.deepStrictEqual(
@@ -143,39 +143,26 @@ describe('ASTNodeDeclarationVariable', () => {
 				// otherwise one would access `s.["hello"]` or `m.["hello"]`
 			], TypeErrorNotAssignable);
 		});
-		context('assigning a collection to a constant collection type.', () => {
-			it('allows assigning a constant collection literal', () => {
-				typeCheckGoal(`
-					let c: int[3] = [42, 420, 4200];
-					let d: [n42: int, n420: int] = [
-						n42=  42,
-						n420= 420,
-					];
-				`);
-				typeCheckGoal(`
-					let v: [   int,    str] = [   42,    "hello"];
-					let s: [a: int, b: str] = [a= 42, b= "hello"];
-				`.split('\n'));
-			});
-			it('allows assigning a variable collection literal (unboxing at runtime).', () => {
-				typeCheckGoal([
-					'let g: int[3] = [42, 420, 4200];',
-					`let h: [n42: int, n420: int] = [
-						n42=  42,
-						n420= 420,
-					];`,
-				]);
-			});
-			it('allows assigning to super reference type (autoboxing at runtime).', () => {
-				typeCheckGoal(`
-					let v: Object = [   42,    "hello"];
-					let s: Object = [a= 42, b= "hello"];
-				`.split('\n'));
-				typeCheckGoal(`
-					let v: mut Object = [   42,    "hello"];
-					let s: mut Object = [a= 42, b= "hello"];
-				`.split('\n')); // mut Object == Object
-			});
+		it('assigning collection literals.', () => {
+			typeCheckGoal(`
+				let c: int[3] = [42, 420, 4200];
+				let d: [n42: int, n420: int] = [
+					n42=  42,
+					n420= 420,
+				];
+				let v: [   int,    str] = [   42,    "hello"];
+				let s: [a: int, b: str] = [a= 42, b= "hello"];
+			`);
+		});
+		it('allows assigning a collection literal to super reference type (autoboxing at runtime).', () => {
+			typeCheckGoal(`
+				let v: unknown = [   42,    "hello"];
+				let s: unknown = [a= 42, b= "hello"];
+			`);
+			typeCheckGoal(`
+				let v: mut unknown = [   42,    "hello"];
+				let s: mut unknown = [a= 42, b= "hello"];
+			`); // mut unknown == unknown
 		});
 		context('assigning a collection literal to a wider mutable type.', () => {
 			it('disallows assigning Tuples/Records to Lists/Dicts', () => {
@@ -205,12 +192,32 @@ describe('ASTNodeDeclarationVariable', () => {
 					s.["44"] = true;
 					m.[44]   = "45";
 				`);
+				return typeCheckGoal(`
+					let tuple_of_set:  [   mut int{}]        = [   {42}];
+					let tuple_of_map:  [   mut {int -> str}] = [   {42 -> "hello"}];
+					let record_of_set: [k: mut int{}]        = [k= {42}];
+					let record_of_map: [k: mut {int -> str}] = [k= {42 -> "hello"}];
+					tuple_of_set.0.[43]  = true;
+					tuple_of_map.0.[43]  = "world";
+					record_of_set.k.[43] = true;
+					record_of_map.k.[43] = "world";
+				`);
 			});
 			it('should throw when assigning combo type to union.', () => {
-				typeCheckGoal([
-					'let x: [   bool,    int] | [   int,    bool] = [   true,    true];',
-					'let x: [a: bool, b: int] | [a: int, b: bool] = [a= true, b= true];',
-				], TypeErrorNotAssignable);
+				typeCheckGoal(`
+					let x: [   bool,    int] | [   int,    bool] = [   true,    false];
+					let x: [a: bool, b: int] | [a: int, b: bool] = [a= true, b= false];
+				`.split('\n'), (err) => {
+					assert_instanceof(err, AggregateError);
+					assertAssignable(err, {
+						cons:   AggregateError,
+						errors: [
+							{cons: TypeErrorNotAssignable, message: 'Expression of type `false` is not assignable to type `int`.'},
+							{cons: TypeErrorNotAssignable, message: 'Expression of type `true` is not assignable to type `int`.'},
+						],
+					});
+					return true;
+				});
 				return typeCheckGoal(`
 					type Employee = [
 						name:         str,
@@ -227,7 +234,17 @@ describe('ASTNodeDeclarationVariable', () => {
 						name=         "Bob", %: str
 						hours_worked= 80.0,  %: float
 					];
-				`, TypeErrorNotAssignable);
+				`, (err) => {
+					assert_instanceof(err, AggregateError);
+					assertAssignable(err, {
+						cons:   AggregateError,
+						errors: [
+							{cons: TypeErrorNotAssignable, message: 'Expression of type `[256: "Bob", 259: 80.0]` is not assignable to type `[256: str, 257: int, 258: str, 259: float]`.'},
+							{cons: TypeErrorNotAssignable, message: 'Expression of type `[256: "Bob", 259: 80.0]` is not assignable to type `[256: str, 261: str, 259: float]`.'},
+						],
+					});
+					return true;
+				});
 			});
 			it('throws when not assigned to correct type.', () => {
 				typeCheckGoal(`
@@ -235,10 +252,10 @@ describe('ASTNodeDeclarationVariable', () => {
 					let s: mut (int | str){} = {42 -> "43"};
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`
-					let t1: mut Object                = [42, "43"];
+					let t1: mut unknown               = [42, "43"];
 					let t4: mut ([int, str] | Object) = [42, "43"];
 
-					let r1: mut Object                      = [a= 42, b= "43"];
+					let r1: mut unknown                     = [a= 42, b= "43"];
 					let r4: mut ([a: int, b: str] | Object) = [a= 42, b= "43"];
 
 					let s1: mut (42 | 4.3){}            = {42};

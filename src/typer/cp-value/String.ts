@@ -1,0 +1,68 @@
+import type binaryen from 'binaryen';
+import * as xjs from 'extrajs';
+import utf8 from 'utf8';
+import {
+	type CodeUnit,
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
+} from '../../lib/index.js';
+import type {Value} from './Value.js';
+import {Primitive} from './Primitive.js';
+
+
+
+const DELIM_STRING = '"';
+
+
+
+/**
+ * A textual value represented as utf-8 data.
+ * @final
+ */
+class ValueString extends Primitive {
+	private readonly codeunits: readonly CodeUnit[];
+	public constructor(data: string | readonly CodeUnit[] = []) {
+		super();
+		this.codeunits = (typeof data === 'string')
+			? [...utf8.encode(data)].map((ch) => ch.codePointAt(0)!)
+			: data;
+	}
+
+	public override get isEmpty(): boolean {
+		return this.codeunits.length === 0;
+	}
+
+	public override toString(): string {
+		return `${ DELIM_STRING }${ utf8.decode(String.fromCodePoint(...this.codeunits)) }${ DELIM_STRING }`;
+	}
+
+	@strictEqual
+	@instanceOf(() => ValueString)
+	@memoizeBinOp(true, true)
+	public override identical(value: Value): boolean {
+		return xjs.Array.is<CodeUnit>(this.codeunits, (value as ValueString).codeunits);
+	}
+
+	public override toCPString(): ValueString {
+		return this;
+	}
+
+	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+		mod;
+		throw '`ValueString#build` not yet supported.';
+	}
+
+	/**
+	 * Concatenate this String with the argument.
+	 * @param str the String to append to this String
+	 * @returns   a new String whose code units are this string’s concatenated with the argument’s
+	 */
+	public concatenate(str: ValueString): ValueString {
+		return new ValueString([
+			...this.codeunits,
+			...str.codeunits,
+		]);
+	}
+}
+export {ValueString as String};

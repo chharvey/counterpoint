@@ -1,0 +1,64 @@
+import * as xjs from 'extrajs';
+import {
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
+} from '../../lib/index.js';
+import {TYPE} from '../index.js';
+import {
+	languageValuesIdentical,
+	language_values_equal,
+} from '../utils-private.js';
+import {equalsDeco} from './decorators.js';
+import type {Value} from './Value.js';
+import {Boolean as ValueBoolean} from './Boolean.js';
+import {Collection} from './Collection.js';
+
+
+
+/**
+ * A dynamic unordered sequence of values.
+ * @final
+ */
+class ValueSet<T extends Value = Value> extends Collection {
+	public constructor(private readonly elements: ReadonlySet<T> = new Set()) {
+		super();
+		const uniques = new Set<T>();
+		[...elements].forEach((el) => {
+			xjs.Set.add(uniques, el, languageValuesIdentical);
+		});
+		this.elements = uniques;
+	}
+
+	public override toString(): string {
+		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
+	}
+
+	public override get isEmpty(): boolean {
+		return this.elements.size === 0;
+	}
+
+	/** @final */
+	@strictEqual
+	@equalsDeco
+	@instanceOf(() => ValueSet)
+	@memoizeBinOp(true, true)
+	public override equal(value: Value): boolean {
+		return xjs.Set.is<Value>(this.elements, (value as ValueSet).elements, language_values_equal);
+	}
+
+	/**
+	 * @inheritdoc
+	 * Returns a TYPE.Set whose invariant is the union of the types of this ValueSet’s elements.
+	 */
+	public override toType(): TYPE.Set {
+		return new TYPE.Set(TYPE.Union.all([...this.elements].map<TYPE.Type>((el) => el.toType())));
+	}
+
+	public get(el: T): ValueBoolean {
+		return (xjs.Set.has(this.elements, el, languageValuesIdentical))
+			? ValueBoolean.TRUE
+			: ValueBoolean.FALSE;
+	}
+}
+export {ValueSet as Set};

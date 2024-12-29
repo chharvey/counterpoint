@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	type OBJ,
+	type VALUE,
 	type TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.js';
@@ -55,9 +55,9 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public override typeCheck(): void {
 		this.assigned.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode.eval();
-		ASTNodeCP.assignExpression(this.assigned, assignee_type, this);
+		ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
 		if (this.assignee) {
-			const value: OBJ.Object | null = this.assigned.fold(); // fold first before checking, to rethrow any errors
+			const value: VALUE.Value | null = this.assigned.fold(); // fold first before checking, to rethrow any errors
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
 			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar;
 			symbol.type = assignee_type;

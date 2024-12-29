@@ -4,21 +4,23 @@ This chapter describes types of values in the Counterpoint Programming Language.
 Counterpoint is a strongly-typed language, meaning that types of values are determined at compile-time.
 A strong type system can help prevent many runtime errors.
 
-Counterpoint Language Types are described in the [formal specification](../spec/data-types.md#counterpoint-language-types).
+Counterpoint Language Types are described in the [formal specification](../spec/types-values.md#counterpoint-language-types).
 This reference takes a more informative approach.
 
 
 
 ## Value Types and Reference Types
-Value types describe objects that have no identity and are identifiable only by their value;
+Value types describe data that have no identity and are identifiable only by their value;
 they are identical when they have the “same value”.
-When a value object is assigned to a variable or parameter, a copy of its value is assigned.
-All value types are immutable.
+When a data value is assigned to a variable or parameter, a copy of it is assigned;
+all value types are immutable.
+An instance of a value type is called a “data value”.
 
 Reference types describe objects that have an identity and are identifiable by reference;
 they are identical when they have the same reference.
 When a reference object is assigned to a variable or parameter, a new reference to the object is assigned,
 and any change to the object is observable in every reference.
+An instance of a reference type is called a “reference object” or simply an “object”.
 
 
 
@@ -46,6 +48,13 @@ such as a record’s optional property.
 There are no values assignble to `void`, but some expressions may have type `void`,
 for example, property access and function calls.
 
+
+### `unknown`
+Type  `unknown` is at the top of the type hierarchy —
+it contains every value and expression, and is a supertype of every other type.
+
+Type `unknown` is used to describe a value or expression about which nothing is known.
+Therefore, the compiler will not assume it has any properties or is valid in some operations.
 
 ### `null`
 Type `null` has exactly one value, also called `null`.
@@ -409,13 +418,6 @@ I {{ "\u{2764}" }} Unicode!
 Type `Object` is the type of all values, that is, every value is assignable to `Object`.
 Expressions of type `void` cannot hold values, so they are not assignable to `Object`.
 
-
-### `unknown`
-Type  `unknown` is at the top of the type hierarchy —
-it contains every value and expression, and is a supertype of every other type.
-
-Type `unknown` is used to describe a value or expression about which nothing is known.
-Therefore, the compiler will not assume it has any properties or is valid in some operations.
 
 
 ### Unit Types
