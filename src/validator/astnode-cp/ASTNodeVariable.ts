@@ -3,7 +3,6 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	type TYPE,
-	type LocalInfo,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../index.js';
@@ -61,10 +60,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		const local: LocalInfo | null = this.builder.getLocalInfo(this.id);
-		return local
-			? this.builder.module.local.get(local.index, local.type)
-			: assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
+		return this.builder.getLocal(this.id)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 
 	@memoizeMethod

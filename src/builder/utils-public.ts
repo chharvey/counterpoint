@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import binaryen from 'binaryen';
 import {TYPE} from '../typer/index.js';
 import {
-	type LocalInfo,
+	type Local,
 	type Builder,
 	BinVect,
 } from './index.js';
@@ -52,10 +52,10 @@ export function build_tuple_like<T>(
 			const expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
 			assert.ok(expanded.length > 1, 'Tuple should be nonempty.');
 
-			const local: LocalInfo = builder.teeLocal(builder.varCount, bintype);
+			const local: Local = builder.teeLocal(builder.varCount, item_build);
 			return [
-				                                   builder.module.tuple.extract(builder.module.local.tee(local.index, item_build, local.type), 0), // eslint-disable-line @stylistic/indent
-				...expanded.slice(1).map((_, i) => builder.module.tuple.extract(builder.module.local.get(local.index,             local.type), i + 1)),
+				                                   builder.module.tuple.extract(local.tee(), 0), // eslint-disable-line @stylistic/indent
+				...expanded.slice(1).map((_, i) => builder.module.tuple.extract(local.get(), i + 1)),
 			];
 		}
 	}));
@@ -105,10 +105,10 @@ export function build_record_like<T>(
 			const expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
 			assert.ok(expanded.length > 1, 'Record should be nonempty.');
 
-			const local: LocalInfo = builder.teeLocal(builder.varCount, bintype);
+			const local: Local = builder.teeLocal(builder.varCount, value_build);
 			return [
-				                                    {id, expr: builder.module.tuple.extract(builder.module.local.tee(local.index, value_build, local.type), 0)}, // eslint-disable-line @stylistic/indent
-				...expanded.slice(1).map((_, i) => ({id, expr: builder.module.tuple.extract(builder.module.local.get(local.index,              local.type), i + 1)})),
+				                                    {id, expr: builder.module.tuple.extract(local.tee(), 0)}, // eslint-disable-line @stylistic/indent
+				...expanded.slice(1).map((_, i) => ({id, expr: builder.module.tuple.extract(local.get(), i + 1)})),
 			];
 		}
 	});
@@ -129,11 +129,11 @@ export function build_record_like<T>(
 		readonly localSet: binaryen.ExpressionRef,
 		readonly localGet: binaryen.ExpressionRef,
 	}> = builds.map(({id, expr}) => {
-		const set_local: LocalInfo = builder.teeLocal(builder.varCount, binaryen.getExpressionType(expr));
+		const set_local: Local = builder.teeLocal(builder.varCount, expr);
 		return {
 			id,
-			localSet: builder.module.local.set(set_local.index, expr),
-			localGet: builder.module.local.get(set_local.index, set_local.type),
+			localSet: set_local.set(),
+			localGet: set_local.get(),
 		};
 	});
 	const sets: readonly binaryen.ExpressionRef[] = locals.map(({localSet}) => localSet);

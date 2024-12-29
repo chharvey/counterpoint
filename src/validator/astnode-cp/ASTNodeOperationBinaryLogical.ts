@@ -2,7 +2,7 @@ import binaryen from 'binaryen';
 import {
 	type VALUE,
 	type TYPE,
-	type LocalInfo,
+	type Local,
 	BinVect,
 } from '../../index.js';
 import {
@@ -57,14 +57,14 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			return this.operator === Operator.AND ? block1 : arg0;
 		}
 
-		const local: LocalInfo = this.builder.teeLocal(this.builder.varCount, binaryen.getExpressionType(arg0));
+		const local: Local = this.builder.teeLocal(this.builder.varCount, arg0);
 
 		const condition: binaryen.ExpressionRef = new BinVect(this.builder.module, this.builder.module.call(
 			'vnot',
-			[this.builder.module.local.tee(local.index, arg0, local.type)],
+			[local.tee()],
 			binaryen.v128,
 		)).isSpecial(false);
-		arg0 = this.builder.module.local.get(local.index, local.type);
+		arg0 = local.get();
 
 		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
 		return this.builder.module.if(condition, if_true, if_false);

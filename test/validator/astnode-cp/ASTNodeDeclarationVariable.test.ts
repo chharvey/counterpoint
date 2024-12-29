@@ -369,7 +369,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build();
-			assert.deepStrictEqual(goal.builder.getLocals(), [
+			assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
 				{id: 0x102n, type: binaryen.v128},
 				{id: 0x103n, type: binaryen.v128},
 			]);
@@ -397,7 +397,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build();
-			assert.deepStrictEqual(goal.builder.getLocals(), [
+			assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
 				{id: 0x100n, type: binaryen.v128},
 				{id: 0x101n, type: binaryen.v128},
 			]);
@@ -423,13 +423,13 @@ describe('ASTNodeDeclarationVariable', () => {
 			const [tup, rec] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 			const [tup_2, rec_c]         = [tup.children[2],   rec.children[2].val]   as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 			const [tup_2_1, rec_c_e]     = [tup_2.children[1], rec_c.children[1].val] as [AST.ASTNodeTuple, AST.ASTNodeRecord];
-			assert.deepStrictEqual(goal.builder.getLocals(), [
-				{id: -0x40n,  type: binaryen.getExpressionType(tup_2_1.build())},
-				{id: -0x3fn,  type: binaryen.getExpressionType(tup_2.build())},
-				{id:  0x100n, type: binaryen.getExpressionType(tup.build())},
-				{id: -0x3en,  type: binaryen.getExpressionType(rec_c_e.build())},
-				{id: -0x3dn,  type: binaryen.getExpressionType(rec_c.build())},
-				{id:  0x108n, type: binaryen.getExpressionType(rec.build())},
+			assert.deepStrictEqual(goal.builder.getLocals().map(({id, value}) => ({id, value})), [
+				{id: -0x40n,  value: tup_2_1.build()},
+				{id: -0x3fn,  value: tup_2.build()},
+				{id:  0x100n, value: tup.build()},
+				{id: -0x3en,  value: rec_c_e.build()},
+				{id: -0x3dn,  value: rec_c.build()},
+				{id:  0x108n, value: rec.build()},
 			]);
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build()),

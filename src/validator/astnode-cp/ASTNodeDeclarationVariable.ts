@@ -1,10 +1,9 @@
 import * as assert from 'assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	type VALUE,
 	type TYPE,
-	type LocalInfo,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.js';
 import {assert_instanceof} from '../../lib/index.js';
@@ -79,8 +78,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		const value: binaryen.ExpressionRef = this.assigned.build();
 		if (this.assignee) {
 			const assignee_type: TYPE.Type = this.typenode.eval(); // eval first before adding, to rethrow any errors
-			const local:         LocalInfo = this.builder.teeLocal(this.assignee.id, binaryen.getExpressionType(value));
-			return this.builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+			return this.builder.teeLocal(this.assignee.id, value).set(ASTNodeStatement.coerceAssignment(
 				this.builder.module,
 				assignee_type,
 				this.assigned.type(),

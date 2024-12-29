@@ -1,19 +1,14 @@
 import binaryen from 'binaryen';
 import * as fs from 'fs';
 import * as path from 'path';
+import {Local} from './Local.js';
 import {BinVect} from './BinVect.js';
 
 
 
-type Local = {
-	readonly id:   bigint,
-	readonly type: binaryen.Type,
-};
+export type {Local};
 
-export type LocalInfo = {
-	readonly index: number,
-	readonly type:  binaryen.Type,
-};
+
 
 /**
  * The Builder generates assembly code.
@@ -53,13 +48,14 @@ export class Builder {
 	 * Add a local variable.
 	 * If the variable has already been added, do nothing.
 	 * If the variable is added, return the new index.
-	 * @param id the id of the variable to add
-	 * @return : [`this`, Was the operation performed?]
+	 * @param id    the id of the variable to add
+	 * @param value the binaryen value of the variable to add
+	 * @return      : [`this`, Was the operation performed?]
 	 */
-	public addLocal(id: bigint, type: binaryen.Type): [this, boolean] {
+	public addLocal(id: bigint, value: binaryen.ExpressionRef): [this, boolean] {
 		let did: boolean = false;
 		if (!this.hasLocal(id)) {
-			this.locals.push({id, type});
+			this.locals.push(new Local(this, id, value));
 			did = true;
 		}
 		return [this, did];
@@ -91,28 +87,22 @@ export class Builder {
 	}
 
 	/**
-	 * Get information (index and type) of the given local in this Builder’s list, if it’s been added; else, return `null`.
+	 * Get the local with the given id in this Builder’s list, if it’s been added; else, return `null`.
 	 * @param  id the local whose data to get
 	 * @return    the data or `null`
 	 */
-	public getLocalInfo(id: bigint): LocalInfo | null {
-		const found = this.locals.find((var_) => var_.id === id);
-		return (found)
-			? {
-				index: this.locals.indexOf(found),
-				type:  found.type,
-			}
-			: null;
+	public getLocal(id: bigint): Local | null {
+		return this.locals.find((var_) => var_.id === id) ?? null;
 	}
 
 	/**
-	 * Add a local variable and return its information (index and type).
+	 * Add a local variable and return it.
 	 * If the variable has already been addded, this Builder’s state is not changed.
 	 * @param  id the id of the variable to add
-	 * @return    the data of the local variable
+	 * @return    the local variable added (or retreived)
 	 */
-	public teeLocal(id: bigint, type: binaryen.Type): LocalInfo {
-		return this.addLocal(id, type)[0].getLocalInfo(id)!;
+	public teeLocal(id: bigint, value: binaryen.ExpressionRef): Local {
+		return this.addLocal(id, value)[0].getLocal(id)!;
 	}
 
 	/**

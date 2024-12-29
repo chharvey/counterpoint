@@ -1,9 +1,9 @@
 import * as assert from 'assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
-	type LocalInfo,
+	type Local,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
@@ -77,10 +77,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 						this.builder.module.tuple.extract(base_build, flattened_indices[0]),
 					]);
 				} else {
-					const local: LocalInfo = this.builder.teeLocal(this.builder.varCount, binaryen.getExpressionType(base_build));
+					const local: Local = this.builder.teeLocal(this.builder.varCount, base_build);
 					return this.builder.module.tuple.make([
-						                                         this.builder.module.tuple.extract(this.builder.module.local.tee(local.index, base_build, local.type), flattened_indices[0]), // eslint-disable-line @stylistic/indent
-						...flattened_indices.slice(1).map((n) => this.builder.module.tuple.extract(this.builder.module.local.get(local.index,             local.type), n)),
+						                                         this.builder.module.tuple.extract(local.tee(), flattened_indices[0]), // eslint-disable-line @stylistic/indent
+						...flattened_indices.slice(1).map((n) => this.builder.module.tuple.extract(local.get(), n)),
 					]);
 				}
 			}
