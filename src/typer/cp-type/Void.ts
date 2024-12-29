@@ -3,7 +3,10 @@ import {
 	memoizeBinOp,
 } from '../../lib/index.js';
 import type * as VALUE from '../cp-value/index.js';
-import {NEVER} from './index.js';
+import {
+	NEVER,
+	VOID,
+} from './index.js';
 import {
 	intersectDeco,
 	subtypeDeco,
@@ -17,11 +20,8 @@ import {ValueType} from './ValueType.js';
  * Class for constructing the `void` type.
  * @final
  */
-export class TypeVoid extends ValueType {
-	public static readonly INSTANCE = new TypeVoid();
-
-
-	private constructor() {
+export class Void extends ValueType {
+	public constructor() {
 		super(false);
 	}
 
@@ -50,6 +50,6 @@ export class TypeVoid extends ValueType {
 	@strictEqual
 	@memoizeBinOp(true)
 	public override equals(t: Type): boolean {
-		return t === TypeVoid.INSTANCE || super.equals(t);
+		return t === VOID || super.equals(t);
 	}
 }

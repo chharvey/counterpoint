@@ -6,9 +6,9 @@ import {
 import {languageValuesIdentical} from '../utils-private.js';
 import * as VALUE from '../cp-value/index.js';
 import {
-	TypeIntersection,
-	TypeUnion,
-	TypeDifference,
+	Intersection,
+	Union,
+	Difference,
 	VOID,
 	NULL,
 } from './index.js';
@@ -26,7 +26,7 @@ import {
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
  * - Combinable
- * - TypeDifference
+ * - Difference
  * - ValueType
  * - TypeInterface
  * - ReferenceType
@@ -90,7 +90,7 @@ export abstract class Type {
 	 * @final
 	 */
 	public isDefinitelyFalsy(): boolean {
-		return this.isSubtypeOf(TypeUnion.all(Type.#falsyTypes));
+		return this.isSubtypeOf(Union.all(Type.#falsyTypes));
 	}
 
 	/**
@@ -108,7 +108,7 @@ export abstract class Type {
 	 * @final
 	 */
 	public falsySide(): Type {
-		return this.intersect(TypeUnion.all(Type.#falsyTypes));
+		return this.intersect(Union.all(Type.#falsyTypes));
 	}
 
 	/**
@@ -117,7 +117,7 @@ export abstract class Type {
 	 * @final
 	 */
 	public truthySide(): Type {
-		return this.subtract(TypeUnion.all(Type.#falsyTypes));
+		return this.subtract(Union.all(Type.#falsyTypes));
 	}
 
 	/**
@@ -140,10 +140,10 @@ export abstract class Type {
 	@intersectDeco
 	public intersect(t: Type): Type {
 		/* 2-1 | `A  & B == B  & A` */
-		if (t instanceof TypeIntersection) {
+		if (t instanceof Intersection) {
 			return t.intersect(this);
 		}
-		return new TypeIntersection(this, t).normalize();
+		return new Intersection(this, t).normalize();
 	}
 
 	/**
@@ -156,10 +156,10 @@ export abstract class Type {
 	@unionDeco
 	public union(t: Type): Type {
 		/* 2-2 | `A \| B == B \| A` */
-		if (t instanceof TypeUnion) {
+		if (t instanceof Union) {
 			return t.union(this);
 		}
-		return new TypeUnion(this, t).normalize();
+		return new Union(this, t).normalize();
 	}
 
 	/**
@@ -170,7 +170,7 @@ export abstract class Type {
 	@operatorDeco
 	@subtractDeco
 	public subtract(t: Type): Type {
-		return new TypeDifference(this, t);
+		return new Difference(this, t);
 	}
 
 	/**
@@ -213,6 +213,7 @@ export abstract class Type {
 
 /**
  * An Interface Type is a set of properties that a value must have.
+ * @deprecated
  */
 export class TypeInterface extends Type {
 	/**

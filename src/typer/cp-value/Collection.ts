@@ -7,8 +7,8 @@ import {Value} from './Value.js';
  * Known subclasses:
  * - CollectionIndexed
  * - CollectionKeyed
- * - Set
- * - Map
+ * - ValueSet
+ * - ValueMap
  */
 export abstract class Collection extends Value {
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {

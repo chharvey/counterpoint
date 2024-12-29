@@ -15,7 +15,7 @@ import {Collection} from './Collection.js';
 
 /**
  * Known subclasses:
- * - Record
+ * - ValueRecord
  * - Dict
  */
 export abstract class CollectionKeyed<T extends Value = Value> extends Collection {

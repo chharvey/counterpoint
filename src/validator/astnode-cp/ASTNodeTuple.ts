@@ -54,7 +54,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 			const itemtype: TYPE.Type = c.type();
 			return itemtype;
 		});
-		return TYPE.TypeTuple.fromTypes(items);
+		return TYPE.Tuple.fromTypes(items);
 	}
 
 	@memoizeMethod
@@ -68,7 +68,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	@assignToDeco
 	public override assignTo(assignee: TYPE.Type): void {
 		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
-		if (assignee instanceof TYPE.TypeTuple) {
+		if (assignee instanceof TYPE.Tuple) {
 			if (this.children.length < assignee.count[0]) {
 				throw err;
 			}

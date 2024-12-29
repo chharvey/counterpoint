@@ -13,12 +13,7 @@ import {ASTNodeCP} from './ASTNodeCP.js';
  * Known subclasses:
  * - ASTNodeTypeConstant
  * - ASTNodeTypeAlias
- * - ASTNodeTypeTuple
- * - ASTNodeTypeRecord
- * - ASTNodeTypeList
- * - ASTNodeTypeDict
- * - ASTNodeTypeSet
- * - ASTNodeTypeMap
+ * - ASTNodeTypeCollectionLiteral
  * - ASTNodeTypeAccess
  * - ASTNodeTypeCall
  * - ASTNodeTypeOperation

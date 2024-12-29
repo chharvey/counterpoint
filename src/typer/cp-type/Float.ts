@@ -8,11 +8,8 @@ import {ValueType} from './ValueType.js';
  * Class for constructing the `float` type.
  * @final
  */
-export class TypeFloat extends ValueType {
-	public static readonly INSTANCE = new TypeFloat();
-
-
-	private constructor() {
+export class Float extends ValueType {
+	public constructor() {
 		super(false, new Set([new VALUE.Float(0.0)]));
 	}
 

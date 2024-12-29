@@ -8,9 +8,9 @@ import type {TypeEntry} from '../utils-public.js';
 import {languageValuesIdentical} from '../utils-private.js';
 import type * as VALUE from '../cp-value/index.js';
 import {
-	TypeUnion,
-	TypeTuple,
-	TypeRecord,
+	Union,
+	Tuple as TypeTuple,
+	Record as TypeRecord,
 	NEVER,
 } from './index.js';
 import {language_types_equal} from './utils-private.js';
@@ -30,10 +30,10 @@ import {
 
 /**
  * A type intersection of two types `T` and `U` is the type
- * that contains values either assignable to `T` *or* assignable to `U`.
+ * that contains values both assignable to `T` *and* assignable to `U`.
  * @final
  */
-export class TypeIntersection extends Combinable {
+export class Intersection extends Combinable {
 	/**
 	 * Intersect all the given types.
 	 * If an empty array is given, return type `never`.
@@ -44,7 +44,7 @@ export class TypeIntersection extends Combinable {
 	public static all(...types: readonly Type[]): Type;
 	public static all(arg0?: readonly Type[] | Type, ...args: readonly Type[]): Type {
 		return arg0 instanceof Array
-			? TypeIntersection.all(...arg0)
+			? Intersection.all(...arg0)
 			: arg0
 				? [arg0, ...args].reduce((a, b) => a.intersect(b))
 				: NEVER;
@@ -84,7 +84,7 @@ export class TypeIntersection extends Combinable {
 
 
 	/**
-	 * Construct a new TypeIntersection object.
+	 * Construct a new Intersection object.
 	 * @param operand0 the first type
 	 * @param operand1 the second type
 	 */
@@ -99,8 +99,8 @@ export class TypeIntersection extends Combinable {
 				xjs.Set.intersection(operand0.values, operand1.values, languageValuesIdentical),
 			),
 			[
-				...(operand0 instanceof TypeIntersection ? operand0.operands : [operand0] as const),
-				...(operand1 instanceof TypeIntersection ? operand1.operands : [operand1] as const),
+				...(operand0 instanceof Intersection ? operand0.operands : [operand0] as const),
+				...(operand1 instanceof Intersection ? operand1.operands : [operand1] as const),
 				...operands,
 			],
 		);
@@ -128,7 +128,7 @@ export class TypeIntersection extends Combinable {
 
 	@toStringDeco
 	public override toString(): string {
-		return this.operands.map((s) => s instanceof TypeUnion ? `(${ s })` : s).join(' & ');
+		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).join(' & ');
 	}
 
 	public override includes(v: VALUE.Value): boolean {
@@ -146,7 +146,7 @@ export class TypeIntersection extends Combinable {
 		const filtered_operands = this.operands.filter((s) => !t.isSubtypeOf(s));
 		if (filtered_operands.length < this.operands.length) {
 			if (filtered_operands.length >= 2) {
-				return new TypeIntersection(filtered_operands[0], filtered_operands[1], ...filtered_operands.slice(2)).intersect(t);
+				return new Intersection(filtered_operands[0], filtered_operands[1], ...filtered_operands.slice(2)).intersect(t);
 			} else if (filtered_operands.length) {
 				return filtered_operands[0].intersect(t);
 			} else {
@@ -156,7 +156,7 @@ export class TypeIntersection extends Combinable {
 				return t;
 			}
 		} else {
-			return new TypeIntersection(this, t).normalize();
+			return new Intersection(this, t).normalize();
 		}
 	}
 
@@ -175,12 +175,12 @@ export class TypeIntersection extends Combinable {
 		return super.isSubtypeOf(t);
 	}
 
-	public override mutableOf(): TypeIntersection {
-		return new TypeIntersection(...this.operands.map((s) => s.mutableOf()) as [Type, Type, ...Type[]]);
+	public override mutableOf(): Intersection {
+		return new Intersection(...this.operands.map((s) => s.mutableOf()) as [Type, Type, ...Type[]]);
 	}
 
-	public override immutableOf(): TypeIntersection {
-		return new TypeIntersection(...this.operands.map((s) => s.immutableOf()) as [Type, Type, ...Type[]]);
+	public override immutableOf(): Intersection {
+		return new Intersection(...this.operands.map((s) => s.immutableOf()) as [Type, Type, ...Type[]]);
 	}
 
 	public override normalize(): Type {
@@ -190,13 +190,13 @@ export class TypeIntersection extends Combinable {
 		 */
 		// (A1 | A2 | B1 | B2 | E | F) & (A1 | A2 | C1 | C2 | F | G) & (A1 | A2 | D1 | D2 | E | G)
 		// == (A1 | A2) | ((B1 | B2 | E | F) & (C1 | C2 | F | G) & (D1 | D2 | E | G))
-		if (this.operands.every((s) => s instanceof TypeUnion)) {
-			const unions: readonly ReadonlySet<Type>[] = (this.operands as ReadonlyArrayOfAtLeast2<TypeUnion>).map((s) => new Set<Type>(s.operands));
+		if (this.operands.every((s) => s instanceof Union)) {
+			const unions: readonly ReadonlySet<Type>[] = (this.operands as ReadonlyArrayOfAtLeast2<Union>).map((s) => new Set<Type>(s.operands));
 			const common: ReadonlySet<Type>            = unions.reduce((a, b) => xjs.Set.intersection(a, b, language_types_equal));
 
 			if (common.size) {
 				const differing: readonly ReadonlySet<Type>[] = unions.map((union) => xjs.Set.difference(union, common, language_types_equal));
-				return TypeUnion.all(...common, TypeIntersection.all(differing.map((types) => TypeUnion.all(...types))));
+				return Union.all(...common, Intersection.all(differing.map((types) => Union.all(...types))));
 			}
 		}
 		return this;
@@ -207,13 +207,13 @@ export class TypeIntersection extends Combinable {
 		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
 		 *     | `(B \| C)  & A == (B  & A) \| (C  & A)`
 		 */
-		const union: TypeUnion | null = this.operands.find((s): s is TypeUnion => s instanceof TypeUnion) ?? null;
+		const union: Union | null = this.operands.find((s): s is Union => s instanceof Union) ?? null;
 		if (union) {
 			const not_union: readonly Type[] = this.operands.filter((s) => s !== union);
 			const right: Type = not_union.length >= 2
-				? new TypeUnion(not_union[0], not_union[1], ...not_union.slice(2))
+				? new Union(not_union[0], not_union[1], ...not_union.slice(2))
 				: (assert.strictEqual(not_union.length, 1), not_union[0]);
-			return new TypeUnion(...union.operands.map((s) => s.intersect(right)) as readonly Type[] as typeof union.operands);
+			return new Union(...union.operands.map((s) => s.intersect(right)) as readonly Type[] as typeof union.operands);
 		} else {
 			return this;
 		}
@@ -221,8 +221,8 @@ export class TypeIntersection extends Combinable {
 
 	public override combineTuplesOrRecords(): Type {
 		return (
-			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as ReadonlyArrayOfAtLeast2<TypeTuple>) .reduce((a, b) => TypeIntersection.intersectTuples (a, b)) :
-			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as ReadonlyArrayOfAtLeast2<TypeRecord>).reduce((a, b) => TypeIntersection.intersectRecords(a, b)) :
+			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as ReadonlyArrayOfAtLeast2<TypeTuple>) .reduce((a, b) => Intersection.intersectTuples (a, b)) :
+			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as ReadonlyArrayOfAtLeast2<TypeRecord>).reduce((a, b) => Intersection.intersectRecords(a, b)) :
 			this
 		);
 	}

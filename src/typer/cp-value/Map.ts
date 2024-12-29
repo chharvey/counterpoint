@@ -23,7 +23,7 @@ import {Collection} from './Collection.js';
  * A dynamic unordered association of value–value pairs.
  * @final
  */
-class CPMap<K extends Value = Value, V extends Value = Value> extends Collection {
+class ValueMap<K extends Value = Value, V extends Value = Value> extends Collection {
 	public constructor(private readonly cases: ReadonlyMap<K, V> = new Map()) {
 		super();
 		const uniques = new Map<K, V>();
@@ -44,23 +44,23 @@ class CPMap<K extends Value = Value, V extends Value = Value> extends Collection
 	/** @final */
 	@strictEqual
 	@equalsDeco
-	@instanceOf(() => CPMap)
+	@instanceOf(() => ValueMap)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
 		return (
-			this.cases.size === (value as CPMap).cases.size &&
-			[...(value as CPMap).cases].every(([thatant, thatcon]) => !!xjs.Map.get<Value, Value>(this.cases, thatant, language_values_equal)?.equal(thatcon))
+			this.cases.size === (value as ValueMap).cases.size &&
+			[...(value as ValueMap).cases].every(([thatant, thatcon]) => !!xjs.Map.get<Value, Value>(this.cases, thatant, language_values_equal)?.equal(thatcon))
 		);
 	}
 
 	/**
 	 * @inheritdoc
-	 * Returns a TypeMap whose invariants are the respective unions of the types of this Map’s antecedents and consequents.
+	 * Returns a TYPE.Map whose invariants are the respective unions of the types of this ValueMap’s antecedents and consequents.
 	 */
-	public override toType(): TYPE.TypeMap {
-		return new TYPE.TypeMap(
-			TYPE.TypeUnion.all([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
-			TYPE.TypeUnion.all([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
+	public override toType(): TYPE.Map {
+		return new TYPE.Map(
+			TYPE.Union.all([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
+			TYPE.Union.all([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
 		);
 	}
 
@@ -72,4 +72,4 @@ class CPMap<K extends Value = Value, V extends Value = Value> extends Collection
 				: assert.fail(new VoidError01(accessor));
 	}
 }
-export {CPMap as Map};
+export {ValueMap as Map};

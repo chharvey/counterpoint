@@ -1,8 +1,8 @@
 import {
 	type Type,
-	TypeIntersection,
-	TypeUnion,
-	TypeDifference,
+	Intersection,
+	Union,
+	Difference,
 	NEVER,
 	VOID,
 	UNKNOWN,
@@ -156,8 +156,8 @@ export function subtractDeco(
 		}
 
 		/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
-		if (t instanceof TypeUnion) {
-			return TypeIntersection.all(t.operands.map((s) => this.subtract(s)));
+		if (t instanceof Union) {
+			return Intersection.all(t.operands.map((s) => this.subtract(s)));
 		}
 
 		return method.call(this, t);
@@ -212,36 +212,36 @@ export function subtypeDeco(
 		 *
 		 * Inspiration: https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/#optimizations-by-comparing-non-normalized-intersections
 		 */
-		if (t instanceof TypeIntersection) {
+		if (t instanceof Intersection) {
 			const maybe_union: Type = t.denormalize();
-			if (maybe_union instanceof TypeUnion && this.isSubtypeOf(maybe_union)) {
+			if (maybe_union instanceof Union && this.isSubtypeOf(maybe_union)) {
 				return true;
 			}
 		}
-		if (this instanceof TypeUnion) {
+		if (this instanceof Union) {
 			const maybe_intersection: Type = this.denormalize();
-			if (maybe_intersection instanceof TypeIntersection && maybe_intersection.isSubtypeOf(t)) {
+			if (maybe_intersection instanceof Intersection && maybe_intersection.isSubtypeOf(t)) {
 				return true;
 			}
 		}
 
-		if (t instanceof TypeIntersection) {
+		if (t instanceof Intersection) {
 			/*
 			 * 3-1 | `A  & B <: A  &&  A  & B <: B`
 			 *     | `A  & B  & C <: A  & B`
 			 */
-			if (this instanceof TypeIntersection && t.operands.every((s) => this.operands.some((r) => r.equals(s)))) {
+			if (this instanceof Intersection && t.operands.every((s) => this.operands.some((r) => r.equals(s)))) {
 				return true;
 			}
 			/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 			return t.operands.every((s) => this.isSubtypeOf(s));
 		}
-		if (t instanceof TypeUnion) {
+		if (t instanceof Union) {
 			/*
 			 * 3-2 | `A <: A \| B  &&  B <: A \| B`
 			 *     | `A \| B <: A \| B \| C`
 			 */
-			if (this instanceof TypeUnion && this.operands.every((s) => t.operands.some((r) => r.equals(s)))) {
+			if (this instanceof Union && this.operands.every((s) => t.operands.some((r) => r.equals(s)))) {
 				return true;
 			}
 			/* 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
@@ -254,7 +254,7 @@ export function subtypeDeco(
 			}
 		}
 		/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
-		if (t instanceof TypeDifference) {
+		if (t instanceof Difference) {
 			return this.isSubtypeOf(t.left) && this.intersect(t.right).isBottomType;
 		}
 
