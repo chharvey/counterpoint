@@ -66,11 +66,11 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 	}
 
 	public get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | Null {
-		return (xjs.Map.has(this.cases, ant, languageValuesIdentical))
-			? xjs.Map.get(this.cases, ant, languageValuesIdentical)!
-			: (access_optional)
-				? NULL
-				: assert.fail(new VoidError01(accessor));
+		return (
+			xjs.Map.has(this.cases, ant, languageValuesIdentical) ? xjs.Map.get(this.cases, ant, languageValuesIdentical)! :
+			access_optional                                       ? NULL :
+			assert.fail(new VoidError01(accessor))
+		);
 	}
 }
 export {ValueMap as Map};

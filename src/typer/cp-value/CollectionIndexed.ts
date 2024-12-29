@@ -55,9 +55,9 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 		const n: number = this.items.length;
 		const i: number = index.toNumber();
 		return (
-			(-n <= i && i < 0) ? this.items[i + n] :
-			(0  <= i && i < n) ? this.items[i] :
-			(access_optional)  ? NULL :
+			-n <= i && i < 0 ? this.items[i + n] :
+			0  <= i && i < n ? this.items[i] :
+			access_optional  ? NULL :
 			assert.fail(new VoidError01(accessor))
 		);
 	}

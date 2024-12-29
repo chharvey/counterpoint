@@ -60,9 +60,7 @@ class ValueSet<T extends Value = Value> extends Collection {
 	}
 
 	public get(el: T): ValueBoolean {
-		return (xjs.Set.has(this.elements, el, languageValuesIdentical))
-			? TRUE
-			: FALSE;
+		return xjs.Set.has(this.elements, el, languageValuesIdentical) ? TRUE : FALSE;
 	}
 }
 export {ValueSet as Set};
