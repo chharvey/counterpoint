@@ -51,6 +51,6 @@ export type Values<M> = (
  * @param cons - the class or constructor function
  * @throws {AssertionError} if false
  */
-export function assert_instanceof<Class extends object>(obj: unknown, cons: SubclassOf<Class>): asserts obj is Class {
-	return assert.ok(obj instanceof cons, `${ obj } should be an instance of ${ cons.name || cons }.`);
+export function assert_instanceof<Class extends object>(obj: unknown, cons: SubclassOf<Class>, err?: Parameters<typeof assert.ok>[1]): asserts obj is Class {
+	return assert.ok(obj instanceof cons, err || `${ obj } should be an instance of ${ cons.name || cons }.`); // eslint-disable-line @typescript-eslint/prefer-nullish-coalescing --- `err` could be the empty string
 }

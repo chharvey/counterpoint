@@ -1,8 +1,8 @@
 import {
 	type Type,
-	TypeIntersection,
-	TypeUnion,
-	TypeDifference,
+	Intersection,
+	Union,
+	Difference,
 	NEVER,
 	VOID,
 	UNKNOWN,
@@ -11,93 +11,8 @@ import {
 	INT,
 	FLOAT,
 	STR,
-	OBJ as TYPE_OBJ,
+	OBJ,
 } from './index.js';
-
-
-
-/** Memoizer for storing intersections of `Type`s. */
-const AND_MEMO = new WeakMap<Type, WeakMap<Type, Type>>();
-/** Memoizer for storing unions of `Type`s. */
-const OR_MEMO  = new WeakMap<Type, WeakMap<Type, Type>>();
-/** Memoizer for comparing `Type`s by subset. */
-const SUB_MEMO = new WeakMap<Type, WeakMap<Type, boolean>>();
-
-
-
-/**
- * Decorator for {@link Type#intersect} for memoizing results.
- * @implements MethodDecorator<Type, Type['intersect']>
- */
-export function memoizeIntersection(
-	method:   Type['intersect'],
-	_context: ClassMethodDecoratorContext<Type, typeof method>,
-): typeof method {
-	return function (this: Type, t) {
-		if (AND_MEMO.has(this)) {
-			const map: WeakMap<Type, Type> = AND_MEMO.get(this)!;
-			map.has(t) || map.set(t, method.call(this, t));
-			return map.get(t)!;
-		} else if (AND_MEMO.has(t)) {
-			const map: WeakMap<Type, Type> = AND_MEMO.get(t)!;
-			map.has(this) || map.set(this, method.call(this, t));
-			return map.get(this)!;
-		} else {
-			const map = new WeakMap<Type, Type>();
-			AND_MEMO.set(this, map);
-			const result: Type = method.call(this, t);
-			map.set(t, result);
-			return result;
-		}
-	};
-}
-
-
-
-/**
- * Decorator for {@link Type#union} for memoizing results.
- * @implements MethodDecorator<Type, Type['union']>
- */
-export function memoizeUnion(
-	method:   Type['union'],
-	_context: ClassMethodDecoratorContext<Type, typeof method>,
-): typeof method {
-	return function (this: Type, t) {
-		if (OR_MEMO.has(this)) {
-			const map: WeakMap<Type, Type> = OR_MEMO.get(this)!;
-			map.has(t) || map.set(t, method.call(this, t));
-			return map.get(t)!;
-		} else if (OR_MEMO.has(t)) {
-			const map: WeakMap<Type, Type> = OR_MEMO.get(t)!;
-			map.has(this) || map.set(this, method.call(this, t));
-			return map.get(this)!;
-		} else {
-			const map = new WeakMap<Type, Type>();
-			OR_MEMO.set(this, map);
-			const result: Type = method.call(this, t);
-			map.set(t, result);
-			return result;
-		}
-	};
-}
-
-
-
-/**
- * Decorator for {@link Type#isSubtypeOf} for memoizing results.
- * @implements MethodDecorator<Type, Type['isSubtypeOf']>
- */
-export function memoizeSubtype(
-	method:   Type['isSubtypeOf'],
-	_context: ClassMethodDecoratorContext<Type, typeof method>,
-): typeof method {
-	return function (this: Type, t) {
-		SUB_MEMO.has(this) || SUB_MEMO.set(this, new WeakMap([[t, method.call(this, t)]]));
-		const map: WeakMap<Type, boolean> = SUB_MEMO.get(this)!;
-		map.has(t) || map.set(t, method.call(this, t));
-		return map.get(t)!;
-	};
-}
 
 
 
@@ -142,7 +57,7 @@ export function operatorDeco(
 				INT,
 				FLOAT,
 				STR,
-				TYPE_OBJ,
+				OBJ,
 			].find((c) => returned.equals(c)) ?? returned
 		);
 	};
@@ -241,8 +156,8 @@ export function subtractDeco(
 		}
 
 		/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
-		if (t instanceof TypeUnion) {
-			return TypeIntersection.all(t.operands.map((s) => this.subtract(s)));
+		if (t instanceof Union) {
+			return Intersection.all(t.operands.map((s) => this.subtract(s)));
 		}
 
 		return method.call(this, t);
@@ -297,36 +212,36 @@ export function subtypeDeco(
 		 *
 		 * Inspiration: https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/#optimizations-by-comparing-non-normalized-intersections
 		 */
-		if (t instanceof TypeIntersection) {
+		if (t instanceof Intersection) {
 			const maybe_union: Type = t.denormalize();
-			if (maybe_union instanceof TypeUnion && this.isSubtypeOf(maybe_union)) {
+			if (maybe_union instanceof Union && this.isSubtypeOf(maybe_union)) {
 				return true;
 			}
 		}
-		if (this instanceof TypeUnion) {
+		if (this instanceof Union) {
 			const maybe_intersection: Type = this.denormalize();
-			if (maybe_intersection instanceof TypeIntersection && maybe_intersection.isSubtypeOf(t)) {
+			if (maybe_intersection instanceof Intersection && maybe_intersection.isSubtypeOf(t)) {
 				return true;
 			}
 		}
 
-		if (t instanceof TypeIntersection) {
+		if (t instanceof Intersection) {
 			/*
 			 * 3-1 | `A  & B <: A  &&  A  & B <: B`
 			 *     | `A  & B  & C <: A  & B`
 			 */
-			if (this instanceof TypeIntersection && t.operands.every((s) => this.operands.some((r) => r.equals(s)))) {
+			if (this instanceof Intersection && t.operands.every((s) => this.operands.some((r) => r.equals(s)))) {
 				return true;
 			}
 			/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 			return t.operands.every((s) => this.isSubtypeOf(s));
 		}
-		if (t instanceof TypeUnion) {
+		if (t instanceof Union) {
 			/*
 			 * 3-2 | `A <: A \| B  &&  B <: A \| B`
 			 *     | `A \| B <: A \| B \| C`
 			 */
-			if (this instanceof TypeUnion && this.operands.every((s) => t.operands.some((r) => r.equals(s)))) {
+			if (this instanceof Union && this.operands.every((s) => t.operands.some((r) => r.equals(s)))) {
 				return true;
 			}
 			/* 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
@@ -339,10 +254,34 @@ export function subtypeDeco(
 			}
 		}
 		/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
-		if (t instanceof TypeDifference) {
+		if (t instanceof Difference) {
 			return this.isSubtypeOf(t.left) && this.intersect(t.right).isBottomType;
 		}
 
+		/**
+		 * Reference types can only be assignable to reference types, and
+		 * value types can only be assignable to value types.
+		 */
+		if (this.isReference !== t.isReference) {
+			return false;
+		}
+
 		return method.call(this, t);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#isSubtypeOf} method and any overrides for reference types.
+ * Short-circuits when the argument is equal (via type equality) to the Counterpoint `Object` type.
+ * @implements MethodDecorator<Type, Type['isSubtypeOf']>
+ */
+export function referenceSubtypeDeco(
+	method:   Type['isSubtypeOf'],
+	_context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	return function (this: Type, t) {
+		return t.equals(OBJ) || method.call(this, t);
 	};
 }

@@ -1,6 +1,6 @@
 import binaryen from 'binaryen';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	BinVect,
 } from '../../index.js';
@@ -21,6 +21,7 @@ import {
 	bothNumeric,
 	oneFloats,
 } from './utils-private.js';
+import {buildDeco} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
@@ -43,10 +44,10 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-		if (this.type().equals(OBJ.Boolean.FALSETYPE)) {
+		if (this.type().equals(VALUE.Boolean.FALSETYPE)) {
 			return this.builder.module.block(null, [
 				this.builder.module.drop(arg0),
 				this.builder.module.drop(arg1),
@@ -66,34 +67,34 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		 */
 		if (bothNumeric(t0, t1)) {
 			if (oneFloats(t0, t1) && (this.operator === Operator.ID || !int_coercion)) {
-				return OBJ.Boolean.FALSETYPE;
+				return VALUE.Boolean.FALSETYPE;
 			}
 			return TYPE.BOOL;
 		}
 		if (t0.intersect(t1).isBottomType) {
-			return OBJ.Boolean.FALSETYPE;
+			return VALUE.Boolean.FALSETYPE;
 		}
 		return TYPE.BOOL;
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand0.fold();
+	public override fold(): VALUE.Value | null {
+		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: OBJ.Object | null = this.operand1.fold();
+		const v1: VALUE.Value | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}
 		return this.foldEquality(v0, v1);
 	}
 
-	private foldEquality(v0: OBJ.Object, v1: OBJ.Object): OBJ.Boolean {
+	private foldEquality(v0: VALUE.Value, v1: VALUE.Value): VALUE.Boolean {
 		if (bothNumeric(v0, v1) && oneFloats(v0, v1) && !this.validator.config.compilerOptions.intCoercion) {
-			return OBJ.Boolean.FALSE;
+			return VALUE.Boolean.FALSE;
 		}
-		return OBJ.Boolean.fromBoolean(new Map<Operator, (x: OBJ.Object, y: OBJ.Object) => boolean>([
+		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: VALUE.Value, y: VALUE.Value) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],
 			[Operator.EQ, (x, y) => x.equal(y)],
 			// [Operator.ISNT, (x, y) => !x.identical(y)],

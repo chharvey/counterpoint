@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {
 	AST,
 	type TypeEntry,
-	OBJ,
+	VALUE,
 	TYPE,
 	TypeError,
 	ReferenceErrorUndeclared,
@@ -15,43 +15,37 @@ import {typeUnit} from '../../helpers.js';
 describe('ASTNodeType', () => {
 	describe('#eval', () => {
 		describe('ASTNodeTypeCollectionLiteral', () => {
-			describe('ASTNodeTypeTuple', () => {
-				it('returns a TypeTuple.', () => {
-					const expected = [
+			specify('ASTNodeTypeTuple', () => {
+				assert.deepStrictEqual(
+					AST.ASTNodeTypeTuple.fromSource('[int, bool, ?:str]').eval(),
+					new TYPE.Tuple([
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: false},
 						{type: TYPE.STR,  optional: true},
-					] as const;
-					return assert.deepStrictEqual(
-						AST.ASTNodeTypeTuple.fromSource('[int, bool, ?:str]').eval(),
-						new TYPE.TypeTuple(expected),
-					);
-				});
+					]),
+				);
 			});
 
-			describe('ASTNodeTypeRecord', () => {
-				it('returns a TypeRecord.', () => {
-					const expected = [
+			specify('ASTNodeTypeRecord', () => {
+				const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('[x: int, y?: bool, _: str]');
+				return assert.deepStrictEqual(
+					rec.eval(),
+					new TYPE.Record(new Map<bigint, TypeEntry>(rec.children.map((c, i) => [c.key.id, [
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: true},
 						{type: TYPE.STR,  optional: false},
-					] as const;
-					const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('  [x: int, y?: bool, z: str]');
-					return assert.deepStrictEqual(
-						rec.eval(),
-						new TYPE.TypeRecord(new Map<bigint, TypeEntry>(rec.children.map((c, i) => [c.key.id, expected[i]]))),
-					);
-				});
+					][i]]))),
+				);
 			});
 
 			describe('ASTNodeTypeList', () => {
-				it('returns a TypeList if there is no count.', () => {
+				it('returns a TYPE.List if there is no count.', () => {
 					assert.deepStrictEqual(
 						AST.ASTNodeTypeList.fromSource('(int | bool)[]').eval(),
-						new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL)),
+						new TYPE.List(TYPE.INT.union(TYPE.BOOL)),
 					);
 				});
-				it('returns a TypeTuple if there is a count.', () => {
+				it('returns a TYPE.Tuple if there is a count.', () => {
 					const expected = [
 						TYPE.INT.union(TYPE.BOOL),
 						TYPE.INT.union(TYPE.BOOL),
@@ -59,7 +53,7 @@ describe('ASTNodeType', () => {
 					] as const;
 					return assert.deepStrictEqual(
 						AST.ASTNodeTypeList.fromSource('(int | bool)[3]').eval(),
-						TYPE.TypeTuple.fromTypes(expected),
+						TYPE.Tuple.fromTypes(expected),
 					);
 				});
 				it('throws if count is negative.', () => {
@@ -75,9 +69,9 @@ describe('ASTNodeType', () => {
 						AST.ASTNodeTypeMap  .fromSource('{int -> bool}')  .eval(),
 					],
 					[
-						new TYPE.TypeDict(TYPE.INT.union(TYPE.BOOL)),
-						new TYPE.TypeSet(TYPE.INT.union(TYPE.BOOL)),
-						new TYPE.TypeMap(TYPE.INT, TYPE.BOOL),
+						new TYPE.Dict(TYPE.INT.union(TYPE.BOOL)),
+						new TYPE.Set(TYPE.INT.union(TYPE.BOOL)),
+						new TYPE.Map(TYPE.INT, TYPE.BOOL),
 					],
 				);
 			});
@@ -108,8 +102,8 @@ describe('ASTNodeType', () => {
 					'"hi"',
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
-					OBJ.Boolean.FALSETYPE,
-					OBJ.Boolean.TRUETYPE,
+					VALUE.Boolean.FALSETYPE,
+					VALUE.Boolean.TRUETYPE,
 					typeUnit(42n),
 					typeUnit(4.2e+3),
 					typeUnit('hi'),
@@ -199,86 +193,6 @@ describe('ASTNodeType', () => {
 
 
 
-	describe('ASTNodeTypeTuple', () => {
-		specify('#eval', () => {
-			assert.deepStrictEqual(
-				AST.ASTNodeTypeTuple.fromSource('[int, bool, ?:str]').eval(),
-				new TYPE.TypeTuple([
-					{type: TYPE.INT,  optional: false},
-					{type: TYPE.BOOL, optional: false},
-					{type: TYPE.STR,  optional: true},
-				]),
-			);
-		});
-	});
-
-
-
-	describe('ASTNodeTypeRecord', () => {
-		// #varCheck --- see `ASTNodeRecord#varCheck` tests
-		specify('#eval', () => {
-			const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('[x: int, y?: bool, _: str]');
-			assert.deepStrictEqual(
-				node.eval(),
-				new TYPE.TypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
-					c.key.id,
-					[
-						{type: TYPE.INT,  optional: false},
-						{type: TYPE.BOOL, optional: true},
-						{type: TYPE.STR,  optional: false},
-					][i],
-				]))),
-			);
-		});
-	});
-
-
-
-	describe('ASTNodeTypeList', () => {
-		describe('#eval', () => {
-			it('returns a TypeList if there is no count.', () => {
-				assert.deepStrictEqual(
-					AST.ASTNodeTypeList.fromSource('(int | bool)[]').eval(),
-					new TYPE.TypeList(TYPE.INT.union(TYPE.BOOL)),
-				);
-			});
-			it('returns a TypeTuple if there is a count.', () => {
-				assert.deepStrictEqual(
-					AST.ASTNodeTypeList.fromSource('(int | bool)[3]').eval(),
-					TYPE.TypeTuple.fromTypes([
-						TYPE.INT.union(TYPE.BOOL),
-						TYPE.INT.union(TYPE.BOOL),
-						TYPE.INT.union(TYPE.BOOL),
-					]),
-				);
-			});
-			it('throws if count is negative.', () => {
-				assert.throws(() => AST.ASTNodeTypeList.fromSource('(int | bool)[-3]').eval(), TypeError);
-			});
-		});
-	});
-
-
-
-	describe('ASTNodeType{Dict,Set,Map}', () => {
-		specify('#eval', () => {
-			assert.deepStrictEqual(
-				AST.ASTNodeTypeDict.fromSource('[:int | bool]').eval(),
-				new TYPE.TypeDict(TYPE.INT.union(TYPE.BOOL)),
-			);
-			assert.deepStrictEqual(
-				AST.ASTNodeTypeSet.fromSource('(int | bool){}').eval(),
-				new TYPE.TypeSet(TYPE.INT.union(TYPE.BOOL)),
-			);
-			assert.deepStrictEqual(
-				AST.ASTNodeTypeMap.fromSource('{int -> bool}').eval(),
-				new TYPE.TypeMap(TYPE.INT, TYPE.BOOL),
-			);
-		});
-	});
-
-
-
 	describe('ASTNodeTypeOperation', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
@@ -287,7 +201,7 @@ describe('ASTNodeType', () => {
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
-				new TYPE.TypeList(TYPE.INT, true),
+				new TYPE.List(TYPE.INT, true),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource('Object & 3').eval(),

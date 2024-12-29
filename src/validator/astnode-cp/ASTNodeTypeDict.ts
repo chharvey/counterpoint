@@ -29,6 +29,6 @@ export class ASTNodeTypeDict extends ASTNodeTypeCollectionLiteral {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		return new TYPE.TypeDict(this.type.eval());
+		return new TYPE.Dict(this.type.eval());
 	}
 }

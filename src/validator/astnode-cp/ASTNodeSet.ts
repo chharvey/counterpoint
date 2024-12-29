@@ -1,8 +1,8 @@
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
-	type TypeErrorNotAssignable,
+	TypeErrorNotAssignable,
 } from '../../index.js';
 import {
 	assert_instanceof,
@@ -13,13 +13,17 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {
+	typeDeco,
+	assignToDeco,
+} from './decorators.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteralMutable} from './ASTNodeCollectionLiteralMutable.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 
-export class ASTNodeSet extends ASTNodeCollectionLiteralMutable {
+export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeSet {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeSet);
@@ -34,28 +38,28 @@ export class ASTNodeSet extends ASTNodeCollectionLiteralMutable {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
-		return new TYPE.TypeSet(
-			TYPE.TypeUnion.all(this.children.map((c) => c.type())),
+		return new TYPE.Set(
+			TYPE.Union.all(this.children.map((c) => c.type())),
 			true,
 		);
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const elements: readonly (OBJ.Object | null)[] = this.children.map((c) => c.fold());
+	public override fold(): VALUE.Value | null {
+		const elements: readonly (VALUE.Value | null)[] = this.children.map((c) => c.fold());
 		return (elements.includes(null))
 			? null
-			: new OBJ.Set(new Set(elements as OBJ.Object[]));
+			: new VALUE.Set(new Set(elements as VALUE.Value[]));
 	}
 
-	@ASTNodeCollectionLiteralMutable.assignToDeco
-	public override assignTo(assignee: TYPE.Type, err: TypeErrorNotAssignable): void {
-		if (assignee instanceof TYPE.TypeSet) {
+	@assignToDeco
+	public override assignTo(assignee: TYPE.Type): void {
+		if (assignee instanceof TYPE.Set) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().invariant`
-			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.assignExpression(expr, assignee.invariant, expr));
+			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssign(expr, assignee.invariant, expr));
 		}
-		throw err;
+		throw new TypeErrorNotAssignable(this.type(), assignee, this);
 	}
 }

@@ -10,7 +10,7 @@ import type {Validator} from '../Validator.js';
 import {ASTNode} from '../ASTNode.js';
 import {
 	type ASTNodeExpression,
-	ASTNodeCollectionLiteralMutable,
+	ASTNodeCollectionLiteral,
 } from './index.js';
 
 
@@ -38,7 +38,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * @param node          the node where the assignment took place
 	 * @throws {TypeErrorNotAssignable} if the assigned expression is not assignable to the assignee
 	 */
-	public static typeCheckAssignment(
+	public static checkSubtype(
 		assigned_type: TYPE.Type,
 		assignee_type: TYPE.Type,
 		node:          ASTNodeCP,
@@ -54,11 +54,15 @@ export abstract class ASTNodeCP extends ASTNode {
 		) {
 			throw new TypeErrorNotAssignable(assigned_type, assignee_type, node);
 		}
+		if (!assigned_type.isReference && assignee_type.equals(TYPE.UNKNOWN)) {
+			// @ts-expect-error --- will use this in type claim operators
+			return 'autoboxed';
+		}
 	}
 
 	/**
 	 * Type-check an expression to an assignee type.
-	 * Attempts to call {@link ASTNodeCP.typeCheckAssignment} first,
+	 * Attempts to call {@link ASTNodeCP.checkSubtype} first,
 	 * but if catching an error, attempts to assign entry-by-entry
 	 * if the assigned expression is a variable collection literal.
 	 *
@@ -80,21 +84,21 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * @param  assigned      the expression assigned
 	 * @param  assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
 	 * @param  node          the node where the assignment took place
-	 * @throws {TypeErrorNotAssignable} if {@link ASTNodeCP.typeCheckAssignment} throws, and:
+	 * @throws {TypeErrorNotAssignable} if {@link ASTNodeCP.checkSubtype} throws, and:
 	 *                       if the assigned expression is not a collection literal,
 	 *                       is not a reference object,
 	 *                       or is not entry-wise assignable
 	 */
-	public static assignExpression(
+	public static typeCheckAssign(
 		assigned:      ASTNodeExpression,
 		assignee_type: TYPE.Type,
 		node:          ASTNodeCP,
 	): void {
 		try {
-			return ASTNodeCP.typeCheckAssignment(assigned.type(), assignee_type, node);
+			return ASTNodeCP.checkSubtype(assigned.type(), assignee_type, node);
 		} catch (err) {
-			if (assigned instanceof ASTNodeCollectionLiteralMutable) {
-				return assigned.assignTo(assignee_type, err as TypeErrorNotAssignable);
+			if (assigned instanceof ASTNodeCollectionLiteral) {
+				return assigned.assignTo(assignee_type);
 			} else {
 				throw err;
 			}

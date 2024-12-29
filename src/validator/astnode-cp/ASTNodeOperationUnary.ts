@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	BinVect,
 	TypeErrorInvalidOperation,
@@ -21,6 +21,10 @@ import {
 	Operator,
 	type ValidOperatorUnary,
 } from '../Operator.js';
+import {
+	buildDeco,
+	typeDeco,
+} from './decorators.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 
@@ -43,7 +47,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const arg0: binaryen.ExpressionRef = this.operand.build();
 		if (this.operator === Operator.NOT) {
@@ -68,14 +72,14 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		const t: TYPE.Type = this.operand.type();
 		switch (this.operator) {
 			case Operator.NOT: {
 				return (
-					t.isDefinitelyFalsy()  ? OBJ.Boolean.TRUETYPE :
-					t.isDefinitelyTruthy() ? OBJ.Boolean.FALSETYPE :
+					t.isDefinitelyFalsy()  ? VALUE.Boolean.TRUETYPE :
+					t.isDefinitelyTruthy() ? VALUE.Boolean.FALSETYPE :
 					TYPE.BOOL
 				);
 			}
@@ -90,19 +94,19 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v: OBJ.Object | null = this.operand.fold();
+	public override fold(): VALUE.Value | null {
+		const v: VALUE.Value | null = this.operand.fold();
 		if (!v) {
 			return v;
 		}
 		return (
-			(this.operator === Operator.NOT) ?                OBJ.Boolean.fromBoolean(!v.isTruthy)              :
-			(this.operator === Operator.EMP) ?                OBJ.Boolean.fromBoolean(!v.isTruthy || v.isEmpty) :
-			(assert.strictEqual(this.operator, Operator.NEG), this.foldNumeric(v as OBJ.Number<any>)) // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
+			(this.operator === Operator.NOT) ?                VALUE.Boolean.fromBoolean(!v.isTruthy)              :
+			(this.operator === Operator.EMP) ?                VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty) :
+			(assert.strictEqual(this.operator, Operator.NEG), this.foldNumeric(v as VALUE.Number<any>)) // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
 		);
 	}
 
-	private foldNumeric<T extends OBJ.Number<T>>(v0: T): T {
+	private foldNumeric<T extends VALUE.Number<T>>(v0: T): T {
 		try {
 			return new Map<Operator, (z: T) => T>([
 				[Operator.AFF, (z) => z],
