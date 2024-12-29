@@ -12,7 +12,7 @@ import {
 } from './index.js';
 import {equalsDeco} from './decorators.js';
 import type {Value} from './Value.js';
-import {Number as CPNumber} from './Number.js';
+import {Number as ValueNumber} from './Number.js';
 
 
 
@@ -24,7 +24,7 @@ const BITS_PER_BYTE = 8;
  * A 16-bit signed integer in two’s complement.
  * @final
  */
-export class Integer extends CPNumber<Integer> {
+export class Integer extends ValueNumber<Integer> {
 	/**
 	 * Internal implementation of this Int16.
 	 * A 16-bit integer stored in a Int16Array.

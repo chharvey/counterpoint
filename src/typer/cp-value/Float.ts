@@ -7,7 +7,7 @@ import {
 } from '../../lib/index.js';
 import {equalsDeco} from './decorators.js';
 import type {Value} from './Value.js';
-import {Number as CPNumber} from './Number.js';
+import {Number as ValueNumber} from './Number.js';
 
 
 
@@ -15,7 +15,7 @@ import {Number as CPNumber} from './Number.js';
  * A 64-bit floating-point number.
  * @final
  */
-export class Float extends CPNumber<Float> {
+export class Float extends ValueNumber<Float> {
 	public constructor(private readonly data: number = 0) {
 		super();
 		xjs.Number.assertType(this.data, xjs.NumericType.FINITE);
@@ -34,10 +34,10 @@ export class Float extends CPNumber<Float> {
 
 	@strictEqual
 	@equalsDeco
-	@instanceOf(() => CPNumber)
+	@instanceOf(() => ValueNumber)
 	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
 	public override equal(value: Value): boolean {
-		return this.data === (value as CPNumber).toFloat().data;
+		return this.data === (value as ValueNumber).toFloat().data;
 	}
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
