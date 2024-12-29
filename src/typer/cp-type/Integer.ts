@@ -8,11 +8,8 @@ import {ValueType} from './ValueType.js';
  * Class for constructing the `int` type.
  * @final
  */
-export class TypeInteger extends ValueType {
-	public static readonly INSTANCE = new TypeInteger();
-
-
-	private constructor() {
+export class Integer extends ValueType {
+	public constructor() {
 		super(false, new Set([VALUE.Integer.ZERO]));
 	}
 

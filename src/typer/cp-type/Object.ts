@@ -13,11 +13,8 @@ import {ReferenceType} from './ReferenceType.js';
  * Class for constructing the `Object` type.
  * @final
  */
-export class TypeObject extends ReferenceType {
-	public static readonly INSTANCE = new TypeObject();
-
-
-	private constructor() {
+class TypeObject extends ReferenceType {
+	public constructor() {
 		super(false, new Set([
 			new VALUE.List(),
 			new VALUE.Dict(),
@@ -46,3 +43,4 @@ export class TypeObject extends ReferenceType {
 		return false;
 	}
 }
+export {TypeObject as Object};

@@ -22,7 +22,7 @@ describe('ASTNodeTypeOperation', () => {
 			it('does not throw if operating on a reference type.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
-					new TYPE.TypeList(TYPE.INT, true),
+					new TYPE.List(TYPE.INT, true),
 				);
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					type A = mut int[][];

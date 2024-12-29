@@ -18,7 +18,7 @@ import {ReferenceType} from './ReferenceType.js';
  * Class for constructing a `Set` type.
  * @final
  */
-export class TypeSet extends ReferenceType {
+class TypeSet extends ReferenceType {
 	/**
 	 * Construct a new TypeSet object.
 	 * @param invariant a union of types in this set type
@@ -66,3 +66,4 @@ export class TypeSet extends ReferenceType {
 		return new TypeSet(this.invariant, false);
 	}
 }
+export {TypeSet as Set};

@@ -9,8 +9,8 @@ export type ReadonlyArrayOfAtLeast2<T> = readonly [T, T, ...readonly T[]];
 
 /**
  * Known subclasses:
- * - TypeIntersection
- * - TypeUnion
+ * - Intersection
+ * - Union
  */
 export abstract class Combinable extends Type {
 	/**

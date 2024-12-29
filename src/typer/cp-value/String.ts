@@ -21,7 +21,7 @@ const DELIM_STRING = '"';
  * A textual value represented as utf-8 data.
  * @final
  */
-class CPString extends Primitive {
+class ValueString extends Primitive {
 	private readonly codeunits: readonly CodeUnit[];
 	public constructor(data: string | readonly CodeUnit[] = []) {
 		super();
@@ -39,18 +39,18 @@ class CPString extends Primitive {
 	}
 
 	@strictEqual
-	@instanceOf(() => CPString)
+	@instanceOf(() => ValueString)
 	@memoizeBinOp(true, true)
 	public override identical(value: Value): boolean {
-		return xjs.Array.is<CodeUnit>(this.codeunits, (value as CPString).codeunits);
+		return xjs.Array.is<CodeUnit>(this.codeunits, (value as ValueString).codeunits);
 	}
 
-	public override toCPString(): CPString {
+	public override toCPString(): ValueString {
 		return this;
 	}
 
 	public override build(_: Builder): binaryen.ExpressionRef {
-		throw '`CPString#build` not yet supported.';
+		throw '`ValueString#build` not yet supported.';
 	}
 
 	/**
@@ -58,11 +58,11 @@ class CPString extends Primitive {
 	 * @param str the String to append to this String
 	 * @returns   a new String whose code units are this string’s concatenated with the argument’s
 	 */
-	public concatenate(str: CPString): CPString {
-		return new CPString([
+	public concatenate(str: ValueString): ValueString {
+		return new ValueString([
 			...this.codeunits,
 			...str.codeunits,
 		]);
 	}
 }
-export {CPString as String};
+export {ValueString as String};

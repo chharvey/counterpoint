@@ -18,9 +18,9 @@ import {ReferenceType} from './ReferenceType.js';
  * Class for constructing a `List` type.
  * @final
  */
-export class TypeList extends ReferenceType {
+export class List extends ReferenceType {
 	/**
-	 * Construct a new TypeList object.
+	 * Construct a new List object.
 	 * @param invariant a union of types in this list type
 	 * @param is_mutable is this type mutable?
 	 */
@@ -47,22 +47,22 @@ export class TypeList extends ReferenceType {
 	@memoizeBinOp()
 	@subtypeDeco
 	@referenceSubtypeDeco
-	@instanceOf(() => TypeList)
+	@instanceOf(() => List)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
-				? this.invariant.equals((t as TypeList).invariant)      // Invariance for mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.
-				: this.invariant.isSubtypeOf((t as TypeList).invariant) // Covariance for immutable lists: `A <: B --> List.<A> <: List.<B>`.
+				? this.invariant.equals((t as List).invariant)      // Invariance for mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.
+				: this.invariant.isSubtypeOf((t as List).invariant) // Covariance for immutable lists: `A <: B --> List.<A> <: List.<B>`.
 			)
 		);
 	}
 
-	public override mutableOf(): TypeList {
-		return new TypeList(this.invariant, true);
+	public override mutableOf(): List {
+		return new List(this.invariant, true);
 	}
 
-	public override immutableOf(): TypeList {
-		return new TypeList(this.invariant, false);
+	public override immutableOf(): List {
+		return new List(this.invariant, false);
 	}
 }

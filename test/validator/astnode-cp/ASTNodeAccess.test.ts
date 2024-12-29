@@ -237,16 +237,16 @@ describe('ASTNodeAccess', () => {
 			return stmt.expr!.type();
 		}
 		const COMMON_TYPES = {
-			int_float: TYPE.TypeUnion.all(
+			int_float: TYPE.Union.all(
 				TYPE.INT,
 				TYPE.FLOAT,
 			),
-			int_float_str: TYPE.TypeUnion.all(
+			int_float_str: TYPE.Union.all(
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
 			),
-			int_float_str_null: TYPE.TypeUnion.all(
+			int_float_str_null: TYPE.Union.all(
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
@@ -299,15 +299,15 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL]);
-				const prop2                 = new TYPE.TypeTuple([{type: TYPE.BOOL, optional: true}]);
+				const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);
+				const prop2             = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]);
 				assert.deepStrictEqual(
 					program.children.slice(2, 8).map((c) => typeOfStmtExpr(c)),
 					[
-						new TYPE.TypeRecord(new Map([[0x100n, {type: prop1, optional: true}]])),
+						new TYPE.Record(new Map([[0x100n, {type: prop1, optional: true}]])),
 						prop1.union(TYPE.NULL),
 						TYPE.BOOL.union(TYPE.NULL),
-						new TYPE.TypeRecord(new Map([[0x100n, {type: prop2, optional: true}]])),
+						new TYPE.Record(new Map([[0x100n, {type: prop2, optional: true}]])),
 						prop2.union(TYPE.NULL),
 						TYPE.BOOL.union(TYPE.NULL),
 					],

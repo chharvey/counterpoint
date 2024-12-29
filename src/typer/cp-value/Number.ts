@@ -9,7 +9,7 @@ import type {Float} from './index.js';
  * - Integer
  * - Float
  */
-abstract class CPNumber<T = unknown> extends Primitive {
+abstract class ValueNumber<T = unknown> extends Primitive {
 	/**
 	 * @final
 	 */
@@ -71,4 +71,4 @@ abstract class CPNumber<T = unknown> extends Primitive {
 	 */
 	public abstract lt(y: T): boolean;
 }
-export {CPNumber as Number};
+export {ValueNumber as Number};

@@ -5,13 +5,13 @@ import {Type} from './Type.js';
 /**
  * Parent class for value types (types of data that are passed by value).
  * Known subclasses:
- * - TypeNever
- * - TypeVoid
+ * - Never
+ * - Void
  * - TypeBoolean
- * - TypeInteger
- * - TypeFloat
+ * - Integer
+ * - Float
  * - TypeString
- * - TypeUnit
+ * - Unit
  * - TypeTuple
  * - TypeRecord
  */

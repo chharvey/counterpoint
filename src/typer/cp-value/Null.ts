@@ -29,7 +29,7 @@ export class Null extends Primitive {
 	public static readonly NULL = new Null();
 
 	/** A Unit Type containing only the Counterpoint Language Value `null`. */
-	public static get NULLTYPE(): TYPE.TypeUnit<Null> {
+	public static get NULLTYPE(): TYPE.Unit<Null> {
 		return Null.NULL.toType();
 	}
 

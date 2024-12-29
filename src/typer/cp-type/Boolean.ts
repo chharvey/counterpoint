@@ -8,11 +8,8 @@ import {ValueType} from './ValueType.js';
  * Class for constructing the `bool` type.
  * @final
  */
-export class TypeBoolean extends ValueType {
-	public static readonly INSTANCE = new TypeBoolean();
-
-
-	private constructor() {
+class TypeBoolean extends ValueType {
+	public constructor() {
 		super(false, new Set([VALUE.Boolean.FALSE, VALUE.Boolean.TRUE]));
 	}
 
@@ -25,3 +22,4 @@ export class TypeBoolean extends ValueType {
 		return true;
 	}
 }
+export {TypeBoolean as Boolean};

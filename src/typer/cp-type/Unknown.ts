@@ -12,11 +12,8 @@ import {ReferenceType} from './ReferenceType.js';
  * Class for constructing the Top Type, the type containing all values.
  * @final
  */
-export class TypeUnknown extends ReferenceType {
-	public static readonly INSTANCE = new TypeUnknown();
-
-
-	private constructor() {
+export class Unknown extends ReferenceType {
+	public constructor() {
 		super(false);
 	}
 

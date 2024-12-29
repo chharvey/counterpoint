@@ -18,7 +18,7 @@ import {Collection} from './Collection.js';
 
 /**
  * Known subclasses:
- * - Tuple
+ * - ValueTuple
  * - List
  */
 export abstract class CollectionIndexed<T extends Value = Value> extends Collection {

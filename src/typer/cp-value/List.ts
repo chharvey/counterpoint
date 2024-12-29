@@ -15,9 +15,9 @@ export class List<T extends Value = Value> extends CollectionIndexed<T> {
 
 	/**
 	 * @inheritdoc
-	 * Returns a TypeList whose invariant is the union of the types of this List’s items.
+	 * Returns a TYPE.List whose invariant is the union of the types of this List’s items.
 	 */
-	public override toType(): TYPE.TypeList {
-		return new TYPE.TypeList(TYPE.TypeUnion.all(this.items.map<TYPE.Type>((it) => it.toType())));
+	public override toType(): TYPE.List {
+		return new TYPE.List(TYPE.Union.all(this.items.map<TYPE.Type>((it) => it.toType())));
 	}
 }

@@ -18,33 +18,33 @@ import {Primitive} from './Primitive.js';
  * These values are constant and the only two instances of this class.
  * @final
  */
-class CPBoolean extends Primitive {
+class ValueBoolean extends Primitive {
 	/** The Counterpoint Language Value `false`. */
-	public static readonly FALSE = new CPBoolean(false);
+	public static readonly FALSE = new ValueBoolean(false);
 	/** The Counterpoint Language Value `true`. */
-	public static readonly TRUE = new CPBoolean(true);
+	public static readonly TRUE = new ValueBoolean(true);
 
 	/** A Unit Type containing only the Counterpoint Language Value `false`. */
-	public static get FALSETYPE(): TYPE.TypeUnit<CPBoolean> {
-		return CPBoolean.FALSE.toType();
+	public static get FALSETYPE(): TYPE.Unit<ValueBoolean> {
+		return ValueBoolean.FALSE.toType();
 	}
 
 	/** A Unit Type containing only the Counterpoint Language Value `true`. */
-	public static get TRUETYPE(): TYPE.TypeUnit<CPBoolean> {
-		return CPBoolean.TRUE.toType();
+	public static get TRUETYPE(): TYPE.Unit<ValueBoolean> {
+		return ValueBoolean.TRUE.toType();
 	}
 
 	/**
 	 * Return the Counterpoint Language Value `true` or `false` based on the argument.
 	 * @param b a native boolean value
-	 * @returns the argument converted into a CPBoolean
+	 * @returns the argument converted into a ValueBoolean
 	 */
-	public static fromBoolean(b: boolean): CPBoolean {
-		return (b) ? CPBoolean.TRUE : CPBoolean.FALSE;
+	public static fromBoolean(b: boolean): ValueBoolean {
+		return (b) ? ValueBoolean.TRUE : ValueBoolean.FALSE;
 	}
 
 	/**
-	 * Construct a new CPBoolean object.
+	 * Construct a new ValueBoolean object.
 	 * @param data The native boolean value of this object.
 	 */
 	private constructor(private readonly data: boolean) {
@@ -60,14 +60,14 @@ class CPBoolean extends Primitive {
 	}
 
 	@strictEqual
-	@instanceOf(() => CPBoolean)
+	@instanceOf(() => ValueBoolean)
 	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
 	public override identical(value: Value): boolean {
-		return this.data === (value as CPBoolean).data;
+		return this.data === (value as ValueBoolean).data;
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {
 		return new BinVect(builder.module, this.isTruthy).vect;
 	}
 }
-export {CPBoolean as Boolean};
+export {ValueBoolean as Boolean};

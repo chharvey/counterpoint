@@ -62,7 +62,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		const base_build: binaryen.ExpressionRef = this.base.build();
 		if (this.accessor instanceof ASTNodeIndex) {
 			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeTuple);`
-			if (base_type instanceof TYPE.TypeTuple) {
+			if (base_type instanceof TYPE.Tuple) {
 				const flattened_indices: number | number[] = base_type.getFlattenedIndices((this.accessor.val.fold() as VALUE.Integer).toNumber()); // TODO: v0.4.3: use `Number(this.accessor.index)`
 
 				/*
@@ -87,7 +87,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			throw '`ASTNodeAccess#build` of a list is not yet supported.';
 		} else if (this.accessor instanceof ASTNodeKey) {
 			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeRecord);`
-			if (base_type instanceof TYPE.TypeRecord) {
+			if (base_type instanceof TYPE.Record) {
 				throw '`ASTNodeAccess#build` of a record is not yet supported.';
 			}
 			throw '`ASTNodeAccess#build` of a dict is not yet supported.';
@@ -125,14 +125,14 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			return (
-				(base_type instanceof TYPE.TypeTuple) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<VALUE.Integer>).value, this.kind, this.accessor) :
-				(base_type instanceof TYPE.TypeList)  ? updateAccessedDynamicType(base_type.invariant, this.kind)                                               :
+				(base_type instanceof TYPE.Tuple) ? base_type.get((this.accessor.val.type() as TYPE.Unit<VALUE.Integer>).value, this.kind, this.accessor) :
+				(base_type instanceof TYPE.List)  ? updateAccessedDynamicType(base_type.invariant, this.kind) :
 				assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor))
 			);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (
-				(base_type instanceof TYPE.TypeRecord) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
-				(base_type instanceof TYPE.TypeDict)   ? updateAccessedDynamicType(base_type.invariant, this.kind) :
+				(base_type instanceof TYPE.Record) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
+				(base_type instanceof TYPE.Dict)   ? updateAccessedDynamicType(base_type.invariant, this.kind) :
 				assert.fail(new TypeErrorNoEntry('property', base_type, this.accessor))
 			);
 		} else {
@@ -140,23 +140,23 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			const accessor_type: TYPE.Type = this.accessor.type();
 			/* eslint-disable @stylistic/indent */
 			return (
-				(base_type instanceof TYPE.TypeTuple) ? (
-					(accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof VALUE.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
+				(base_type instanceof TYPE.Tuple) ? (
+					(accessor_type instanceof TYPE.Unit && accessor_type.value instanceof VALUE.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
 					(accessor_type.isSubtypeOf(TYPE.INT))
 						? updateAccessedDynamicType(base_type.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, TYPE.INT)
 				) :
-				(base_type instanceof TYPE.TypeList) ? (
+				(base_type instanceof TYPE.List) ? (
 					(accessor_type.isSubtypeOf(TYPE.INT))
 						? updateAccessedDynamicType(base_type.invariant, this.kind)
 						: throwWrongSubtypeError(this.accessor, TYPE.INT)
 				) :
-				(base_type instanceof TYPE.TypeSet) ? (
+				(base_type instanceof TYPE.Set) ? (
 					(accessor_type.isSubtypeOf(base_type.invariant))
 						? TYPE.BOOL
 						: throwWrongSubtypeError(this.accessor, base_type.invariant)
 				) :
-				(base_type instanceof TYPE.TypeMap) ? (
+				(base_type instanceof TYPE.Map) ? (
 					(accessor_type.isSubtypeOf(base_type.invariant_ant))
 						? updateAccessedDynamicType(base_type.invariant_con, this.kind)
 						: throwWrongSubtypeError(this.accessor, base_type.invariant_ant)

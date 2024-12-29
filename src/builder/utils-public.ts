@@ -37,11 +37,11 @@ export function build_tuple_like<T>(
 		 * If item length is > 1, return an array of extracts whose first entry is a `tee` and the rest are `get`s.
 		 */
 		if (
-			!(item_type instanceof TYPE.TypeTuple) && !(item_type instanceof TYPE.TypeRecord) ||
-			item_type instanceof TYPE.TypeTuple && item_type.invariants.length === 0
+			!(item_type instanceof TYPE.Tuple) && !(item_type instanceof TYPE.Record) ||
+			item_type instanceof TYPE.Tuple && item_type.invariants.length === 0
 		) {
 			return item_build;
-		} else if (item_type instanceof TYPE.TypeRecord) {
+		} else if (item_type instanceof TYPE.Record) {
 			throw new Error('Records within tuples not yet supported.');
 		} else if (item_type.invariants.length === 1) {
 			return builder.module.tuple.extract(item_build, 0);
@@ -90,11 +90,11 @@ export function build_record_like<T>(
 		 * If value size is > 1, return an array of extracts whose first entry is a `tee` and the rest are `get`s.
 		 */
 		if (
-			!(value_type instanceof TYPE.TypeTuple) && !(value_type instanceof TYPE.TypeRecord) ||
-			value_type instanceof TYPE.TypeTuple && value_type.invariants.length === 0
+			!(value_type instanceof TYPE.Tuple) && !(value_type instanceof TYPE.Record) ||
+			value_type instanceof TYPE.Tuple && value_type.invariants.length === 0
 		) {
 			return {id, expr: value_build};
-		} else if (value_type instanceof TYPE.TypeTuple) {
+		} else if (value_type instanceof TYPE.Tuple) {
 			throw new Error('Tuples within records not yet supported.');
 		} else if (value_type.invariants.size === 1) {
 			return {id, expr: builder.module.tuple.extract(value_build, 0)};

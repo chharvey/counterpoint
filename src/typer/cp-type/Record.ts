@@ -14,7 +14,7 @@ import * as VALUE from '../cp-value/index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {subtypeDeco} from './decorators.js';
 import type {Type} from './Type.js';
-import {TypeUnion} from './TypeUnion.js';
+import {Union} from './Union.js';
 import {ValueType} from './ValueType.js';
 
 
@@ -23,7 +23,7 @@ import {ValueType} from './ValueType.js';
  * Class for constructing record literal types.
  * @final
  */
-export class TypeRecord extends ValueType {
+class TypeRecord extends ValueType {
 	/**
 	 * Construct a new TypeRecord from type properties, assuming each property is required.
 	 * @param propertytypes the types of the record
@@ -97,6 +97,7 @@ export class TypeRecord extends ValueType {
 
 	/** @final */
 	public valueTypes(): Type {
-		return TypeUnion.all([...this.invariants.values()].map((t) => t.type));
+		return Union.all([...this.invariants.values()].map((t) => t.type));
 	}
 }
+export {TypeRecord as Record};

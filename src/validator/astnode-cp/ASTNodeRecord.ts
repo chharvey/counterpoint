@@ -69,7 +69,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
-		return TYPE.TypeRecord.fromTypes(new Map<bigint, TYPE.Type>(this.children.map((c) => [
+		return TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>(this.children.map((c) => [
 			c.key.id,
 			c.val.type(),
 		])));
@@ -89,7 +89,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	@assignToDeco
 	public override assignTo(assignee: TYPE.Type): void {
 		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
-		if (assignee instanceof TYPE.TypeRecord) {
+		if (assignee instanceof TYPE.Record) {
 			if (this.children.length < assignee.minCount) {
 				throw err;
 			}

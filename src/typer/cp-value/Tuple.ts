@@ -20,20 +20,20 @@ import {CollectionIndexed} from './CollectionIndexed.js';
  * A static ordered sequence of values.
  * @final
  */
-export class Tuple<T extends Value = Value> extends CollectionIndexed<T> {
+class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	@strictEqual
-	@instanceOf(() => Tuple)
+	@instanceOf(() => ValueTuple)
 	@memoizeBinOp(true, true)
 	public override identical(value: Value): boolean {
-		return xjs.Array.is<Value>(this.items, (value as Tuple).items, languageValuesIdentical);
+		return xjs.Array.is<Value>(this.items, (value as ValueTuple).items, languageValuesIdentical);
 	}
 
 	/**
 	 * @inheritdoc
-	 * Returns a TypeTuple whose entries are the types of this Tuple’s items.
+	 * Returns a TYPE.Tuple whose entries are the types of this ValueTuple’s items.
 	 */
-	public override toType(): TYPE.TypeTuple {
-		return TYPE.TypeTuple.fromTypes(this.items.map((it) => it.toType()));
+	public override toType(): TYPE.Tuple {
+		return TYPE.Tuple.fromTypes(this.items.map((it) => it.toType()));
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {
@@ -45,3 +45,4 @@ export class Tuple<T extends Value = Value> extends CollectionIndexed<T> {
 		);
 	}
 }
+export {ValueTuple as Tuple};
