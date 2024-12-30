@@ -6,11 +6,13 @@ import {
 } from '../utils-private.js';
 import type * as VALUE from '../cp-value/index.js';
 import {
-	botOrTopString,
 	subtypeRules,
 	type Type,
 } from './Type.js';
-import {TypeOperation} from './TypeOperation.js';
+import {
+	botOrTopString,
+	TypeOperation,
+} from './TypeOperation.js';
 import {Union} from './Union.js';
 
 

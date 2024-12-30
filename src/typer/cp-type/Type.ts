@@ -26,27 +26,6 @@ import {
 
 
 /**
- * Decorator for some overrides of {@link Type#toString}.
- * Contains some special cases of string representations.
- * @implements MethodDecorator<Type, Type['toString']>
- */
-export function botOrTopString(
-	method:  Type['toString'],
-	context: ClassMethodDecoratorContext<Type, typeof method>,
-): typeof method {
-	assert_context_name(context, 'toString');
-	return function (this: Type) {
-		return (
-			this.isBottomType ? NEVER  .toString() :
-			this.isTopType    ? UNKNOWN.toString() :
-			method.call(this)
-		);
-	};
-}
-
-
-
-/**
  * Decorator for any type binary operation.
  * Simplifies return values to values that already exist, if possible.
  * @implements MethodDecorator<Type, (t: Type) => Type>

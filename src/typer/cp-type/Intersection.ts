@@ -18,12 +18,12 @@ import {
 	language_types_equal,
 } from './utils-private.js';
 import {
-	botOrTopString,
 	typeConstant,
 	intersectionRules,
 	subtypeRules,
 	type Type,
 } from './Type.js';
+import {botOrTopString} from './TypeOperation.js';
 import {Combinable} from './Combinable.js';
 
 
