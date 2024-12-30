@@ -57,8 +57,8 @@ export class Integer extends ValueNumber<Integer> {
 	}
 
 	@strictEqual
+	@instanceOf(() => ValueNumber)
 	@identical
-	@instanceOf(() => Float)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
 		return this.toFloat().equal(value);

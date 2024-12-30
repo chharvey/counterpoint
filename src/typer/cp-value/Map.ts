@@ -44,8 +44,8 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 
 	/** @final */
 	@strictEqual
-	@identical
 	@instanceOf(() => ValueMap)
+	@identical
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
 		return (

@@ -37,8 +37,8 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 
 	/** @final */
 	@strictEqual
-	@identical
 	@instanceOf(() => CollectionKeyed)
+	@identical
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
 		return (
