@@ -6,8 +6,8 @@ import {
 } from '../utils-private.js';
 import type * as VALUE from '../cp-value/index.js';
 import {
-	toStringDeco,
-	subtypeDeco,
+	botOrTopString,
+	subtypeRules,
 	Type,
 } from './Type.js';
 import {Union} from './Union.js';
@@ -55,7 +55,7 @@ export class Difference extends Type {
 		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
 	}
 
-	@toStringDeco
+	@botOrTopString
 	public override toString(): string {
 		return [this.left, this.right].map((s) => s instanceof Union ? `(${ s })` : s).join(' - ');
 	}
@@ -66,7 +66,7 @@ export class Difference extends Type {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public override isSubtypeOf(t: Type): boolean {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf(t);
 	}

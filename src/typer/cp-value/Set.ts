@@ -12,7 +12,7 @@ import {
 	TRUE,
 } from './index.js';
 import {
-	equalsDeco,
+	identical,
 	type Value,
 } from './Value.js';
 import type {Boolean as ValueBoolean} from './Boolean.js';
@@ -44,7 +44,7 @@ class ValueSet<T extends Value = Value> extends Collection {
 
 	/** @final */
 	@strictEqual
-	@equalsDeco
+	@identical
 	@instanceOf(() => ValueSet)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {

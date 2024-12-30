@@ -6,11 +6,11 @@ import {
 import * as VALUE from '../cp-value/index.js';
 import {MUT_OPERATOR} from './utils-private.js';
 import {
-	subtypeDeco,
+	subtypeRules,
 	type Type,
 } from './Type.js';
 import {
-	referenceSubtypeDeco,
+	isObjectType,
 	ReferenceType,
 } from './ReferenceType.js';
 
@@ -47,8 +47,8 @@ export class List extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
-	@referenceSubtypeDeco
+	@subtypeRules
+	@isObjectType
 	@instanceOf(() => List)
 	public override isSubtypeOf(t: Type): boolean {
 		return (

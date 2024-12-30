@@ -12,7 +12,7 @@ import {
 } from '../utils-private.js';
 import {NULL} from './index.js';
 import {
-	equalsDeco,
+	identical,
 	type Value,
 } from './Value.js';
 import type {Null} from './Null.js';
@@ -44,7 +44,7 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 
 	/** @final */
 	@strictEqual
-	@equalsDeco
+	@identical
 	@instanceOf(() => ValueMap)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {

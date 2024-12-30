@@ -29,7 +29,7 @@ import {
  * Contains some special cases of string representations.
  * @implements MethodDecorator<Type, Type['toString']>
  */
-export function toStringDeco(
+export function botOrTopString(
 	method: Type['toString'],
 	_context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
@@ -49,7 +49,7 @@ export function toStringDeco(
  * Simplifies return values to values that already exist, if possible.
  * @implements MethodDecorator<Type, (t: Type) => Type>
  */
-export function operatorDeco(
+export function typeConstant(
 	method:   (t: Type) => Type,
 	_context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
@@ -80,7 +80,7 @@ export function operatorDeco(
  * Contains shortcuts for constructing type intersections.
  * @implements MethodDecorator<Type, Type['intersect']>
  */
-export function intersectDeco(
+export function intersectionRules(
 	method:   Type['intersect'],
 	_context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
@@ -115,7 +115,7 @@ export function intersectDeco(
  * Contains shortcuts for constructing type unions.
  * @implements MethodDecorator<Type, Type['union']>
  */
-export function unionDeco(
+export function unionRules(
 	method:   Type['union'],
 	_context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
@@ -150,7 +150,7 @@ export function unionDeco(
  * Contains shortcuts for constructing type differences.
  * @implements MethodDecorator<Type, Type['subtract']>
  */
-export function subtractDeco(
+export function differenceRules(
 	method:   Type['subtract'],
 	_context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
@@ -181,7 +181,7 @@ export function subtractDeco(
  * Contains shortcuts for determining subtypes.
  * @implements MethodDecorator<Type, Type['isSubtypeOf']>
  */
-export function subtypeDeco(
+export function subtypeRules(
 	method:   Type['isSubtypeOf'],
 	_context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
@@ -388,8 +388,8 @@ export abstract class Type {
 	 * @returns the type intersection
 	 */
 	@memoizeBinOp(true)
-	@operatorDeco
-	@intersectDeco
+	@typeConstant
+	@intersectionRules
 	public intersect(t: Type): Type {
 		/* 2-1 | `A  & B == B  & A` */
 		if (t instanceof Intersection) {
@@ -404,8 +404,8 @@ export abstract class Type {
 	 * @returns the type union
 	 */
 	@memoizeBinOp(true)
-	@operatorDeco
-	@unionDeco
+	@typeConstant
+	@unionRules
 	public union(t: Type): Type {
 		/* 2-2 | `A \| B == B \| A` */
 		if (t instanceof Union) {
@@ -419,8 +419,8 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type difference
 	 */
-	@operatorDeco
-	@subtractDeco
+	@typeConstant
+	@differenceRules
 	public subtract(t: Type): Type {
 		return new Difference(this, t);
 	}
@@ -432,7 +432,7 @@ export abstract class Type {
 	 */
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public isSubtypeOf(t: Type): boolean {
 		return !this.isBottomType && !!this.values.size && // these checks are needed in cases of `void`, which doesn’t store values
 			[...this.values].every((v) => t.includes(v));
@@ -505,8 +505,8 @@ export class TypeInterface extends Type {
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
 	@memoizeBinOp(true)
-	@operatorDeco
-	@intersectDeco
+	@typeConstant
+	@intersectionRules
 	public override intersect(t: Type): Type {
 		if (t instanceof TypeInterface) {
 			const props = new Map<string, Type>([...this.properties]);
@@ -524,8 +524,8 @@ export class TypeInterface extends Type {
 	 * If any properties disagree on type, their type union is taken.
 	 */
 	@memoizeBinOp(true)
-	@operatorDeco
-	@unionDeco
+	@typeConstant
+	@unionRules
 	public override union(t: Type): Type {
 		if (t instanceof TypeInterface) {
 			const props = new Map<string, Type>();
@@ -547,7 +547,7 @@ export class TypeInterface extends Type {
 	 */
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public override isSubtypeOf(t: Type): boolean {
 		if (t instanceof TypeInterface) {
 			return [...t.properties].every(([name, type_]) => (

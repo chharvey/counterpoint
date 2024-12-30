@@ -11,7 +11,7 @@ import {
 	INT_0,
 } from './index.js';
 import {
-	equalsDeco,
+	identical,
 	type Value,
 } from './Value.js';
 import {Number as ValueNumber} from './Number.js';
@@ -57,7 +57,7 @@ export class Integer extends ValueNumber<Integer> {
 	}
 
 	@strictEqual
-	@equalsDeco
+	@identical
 	@instanceOf(() => Float)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {

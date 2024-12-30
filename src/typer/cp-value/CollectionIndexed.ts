@@ -11,7 +11,7 @@ import {
 } from '../utils-private.js';
 import {NULL} from './index.js';
 import {
-	equalsDeco,
+	identical,
 	type Value,
 } from './Value.js';
 import type {Null} from './Null.js';
@@ -41,7 +41,7 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 
 	/** @final */
 	@strictEqual
-	@equalsDeco
+	@identical
 	@instanceOf(() => CollectionIndexed)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {

@@ -7,11 +7,10 @@ import {String as ValueString} from './index.js';
 
 /**
  * Decorator for {@link Value#equal} method and any overrides.
- * Performs the Equality algorithm — returns whether two Values (Counterpoint Language Values)
- * are equal by some definition.
+ * Checks identicality before performing the Equality algorithm.
  * @implements MethodDecorator<Value, Value['equal']>
  */
-export function equalsDeco(
+export function identical(
 	method:   Value['equal'],
 	_context: ClassMethodDecoratorContext<Value, typeof method>,
 ): typeof method {
@@ -63,7 +62,7 @@ export abstract class Value {
 	 * @returns are the objects equal?
 	 */
 	@strictEqual
-	@equalsDeco
+	@identical
 	public equal(_value: Value): boolean {
 		return false;
 	}

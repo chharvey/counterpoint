@@ -14,7 +14,7 @@ import {
 import * as VALUE from '../cp-value/index.js';
 import {updateAccessedStaticType} from './utils-private.js';
 import {
-	subtypeDeco,
+	subtypeRules,
 	type Type,
 } from './Type.js';
 import {Union} from './Union.js';
@@ -74,7 +74,7 @@ class TypeTuple extends ValueType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	@instanceOf(() => TypeTuple)
 	public override isSubtypeOf(t: Type): boolean {
 		return (

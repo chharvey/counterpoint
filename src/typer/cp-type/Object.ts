@@ -4,7 +4,7 @@ import {
 } from '../utils-private.js';
 import * as VALUE from '../cp-value/index.js';
 import {
-	subtypeDeco,
+	subtypeRules,
 	type Type,
 } from './Type.js';
 import {ReferenceType} from './ReferenceType.js';
@@ -40,7 +40,7 @@ class TypeObject extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;
 	}

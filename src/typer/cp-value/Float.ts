@@ -6,7 +6,7 @@ import {
 	instanceOf,
 } from '../utils-private.js';
 import {
-	equalsDeco,
+	identical,
 	type Value,
 } from './Value.js';
 import {Number as ValueNumber} from './Number.js';
@@ -35,7 +35,7 @@ export class Float extends ValueNumber<Float> {
 	}
 
 	@strictEqual
-	@equalsDeco
+	@identical
 	@instanceOf(() => ValueNumber)
 	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
 	public override equal(value: Value): boolean {

@@ -8,8 +8,8 @@ import {
 	VOID,
 } from './index.js';
 import {
-	intersectDeco,
-	subtypeDeco,
+	intersectionRules,
+	subtypeRules,
 	type Type,
 } from './Type.js';
 import {ValueType} from './ValueType.js';
@@ -34,15 +34,15 @@ export class Void extends ValueType {
 	}
 
 	@memoizeBinOp(true)
-	// @operatorDeco // slower than returning a constant
-	@intersectDeco
+	// @typeConstant // slower than returning a constant
+	@intersectionRules
 	public override intersect(_t: Type): Type {
 		return NEVER;
 	}
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;
 	}
