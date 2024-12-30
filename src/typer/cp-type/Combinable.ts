@@ -1,9 +1,6 @@
 import type * as VALUE from '../cp-value/index.js';
+import type {ReadonlyArrayOfAtLeast2} from './utils-private.js';
 import {Type} from './Type.js';
-
-
-
-export type ReadonlyArrayOfAtLeast2<T> = readonly [T, T, ...readonly T[]];
 
 
 

@@ -13,7 +13,10 @@ import {
 	Record as TypeRecord,
 	NEVER,
 } from './index.js';
-import {language_types_equal} from './utils-private.js';
+import {
+	type ReadonlyArrayOfAtLeast2,
+	language_types_equal,
+} from './utils-private.js';
 import {
 	botOrTopString,
 	typeConstant,
@@ -21,10 +24,7 @@ import {
 	subtypeRules,
 	type Type,
 } from './Type.js';
-import {
-	type ReadonlyArrayOfAtLeast2,
-	Combinable,
-} from './Combinable.js';
+import {Combinable} from './Combinable.js';
 
 
 
