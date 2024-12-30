@@ -21,11 +21,6 @@ import {ValueType} from './ValueType.js';
 
 
 
-type IndexTree = readonly (number | IndexTree)[];
-type MutableIndexTree = Array<number | MutableIndexTree>;
-
-
-
 /**
  * Class for constructing tuple literal types.
  * @final
@@ -44,7 +39,13 @@ class TypeTuple extends ValueType {
 	}
 
 
-	readonly #indexTree: IndexTree;
+	/**
+	 * An index or list of indices corresponding to the tree structure of this type.
+	 * @example
+	 * [A, [B], [C, [D]]]                 => [0, [1], [2, 3]]
+	 * [A, [B, Bb], [C, [D, Dd], Cc], Aa] => [0, [1, 2], [3, 4, 5, 6], 7]
+	 */
+	public readonly builtIndices: readonly (number | readonly number[])[];
 
 	/**
 	 * Construct a new TypeTuple object.
@@ -53,9 +54,21 @@ class TypeTuple extends ValueType {
 	public constructor(public readonly invariants: readonly TypeEntry[] = []) {
 		super(false, new Set([new VALUE.Tuple()]));
 
-		const tree: MutableIndexTree = [];
-		this.#populateIndexTree(tree);
-		this.#indexTree = tree;
+		let counter: number = 0;
+		function walk(entries: readonly TypeEntry[]): typeof indices {
+			const indices: Array<number | readonly number[]> = [];
+			entries.forEach((entry) => {
+				if (entry.type instanceof TypeTuple) {
+					indices.push(walk(entry.type.invariants).flat()); // only need to flatten once, due to recursion
+				} else {
+					indices.push(counter);
+					counter += 1;
+				}
+			});
+			return indices;
+		}
+
+		this.builtIndices = walk(this.invariants);
 	}
 
 	public override get hasMutable(): boolean {
@@ -94,34 +107,6 @@ class TypeTuple extends ValueType {
 				return thistype?.type.isSubtypeOf(thattype.type) ?? true; // Covariance for tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 			})
 		);
-	}
-
-	#populateIndexTree(index_tree: MutableIndexTree, start: number = 0): number {
-		this.invariants.forEach((child) => {
-			if (child.type instanceof TypeTuple) {
-				const tree: typeof index_tree = [];
-				index_tree.push(tree);
-				start = child.type.#populateIndexTree(tree, start);
-			} else {
-				index_tree.push(start);
-				start += 1;
-			}
-		});
-		return start;
-	}
-
-	/**
-	 * Return an index or list of indices corresponding to the tree structure of this type.
-	 * @example
-	 * [A, [B], [C, [D]]]                 => [0, [1], [2, 3]]
-	 * [A, [B, Bb], [C, [D, Dd], Cc], Aa] => [0, [1, 2], [3, 4, 5, 6], 7]
-	 */
-	public getFlattenedIndices(index: number): number | number[] {
-		const item: number | IndexTree = this.#indexTree[index];
-		return typeof item === 'number'
-			? item
-			// @ts-expect-error --- guaranteed to be finitely recursive
-			: item.flat(Infinity);
 	}
 
 	/** @final */

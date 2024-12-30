@@ -1276,8 +1276,8 @@ describe('Type', () => {
 	/* eslint-enable no-useless-escape */
 
 
-	describe('TypeTuple', () => {
-		specify('#getFlattenedIndices', () => {
+	describe('Tuple', () => {
+		specify('#builtIndices', () => {
 			const tuple1: TYPE.Tuple = TYPE.Tuple.fromTypes([
 				typeUnit('a'),
 				TYPE.Tuple.fromTypes([typeUnit('b')]),
@@ -1287,7 +1287,7 @@ describe('Type', () => {
 				]),
 			]);
 			assert.deepStrictEqual(
-				[0, 1, 2].map((i) => tuple1.getFlattenedIndices(i)),
+				tuple1.builtIndices,
 				[0, [1], [2, 3]],
 				'[A, [B], [C, [D]]] => [0, [1], [2, 3]]',
 			);
@@ -1308,7 +1308,7 @@ describe('Type', () => {
 				typeUnit('aa'),
 			]);
 			assert.deepStrictEqual(
-				[0, 1, 2, 3].map((i) => tuple2.getFlattenedIndices(i)),
+				tuple2.builtIndices,
 				[0, [1, 2], [3, 4, 5, 6], 7],
 				'[A, [B, Bb], [C, [D, Dd], Cc], Aa] => [0, [1, 2], [3, 4, 5, 6], 7]',
 			);
