@@ -283,8 +283,7 @@ export function subtypeRules(
 /**
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
- * - Combinable
- * - Difference
+ * - TypeOperation
  * - ValueType
  * - TypeInterface
  * - ReferenceType

@@ -8,8 +8,9 @@ import type * as VALUE from '../cp-value/index.js';
 import {
 	botOrTopString,
 	subtypeRules,
-	Type,
+	type Type,
 } from './Type.js';
+import {TypeOperation} from './TypeOperation.js';
 import {Union} from './Union.js';
 
 
@@ -19,7 +20,7 @@ import {Union} from './Union.js';
  * that contains values assignable to `T` but *not* assignable to `U`.
  * @final
  */
-export class Difference extends Type {
+export class Difference extends TypeOperation {
 	/**
 	 * Construct a new Difference object.
 	 * @param left the first type
@@ -29,7 +30,7 @@ export class Difference extends Type {
 		public readonly left:  Type,
 		public readonly right: Type,
 	) {
-		super(false, xjs.Set.difference(left.values, right.values, languageValuesIdentical));
+		super(xjs.Set.difference(left.values, right.values, languageValuesIdentical), [left, right]);
 	}
 
 	/*
@@ -57,7 +58,7 @@ export class Difference extends Type {
 
 	@botOrTopString
 	public override toString(): string {
-		return [this.left, this.right].map((s) => s instanceof Union ? `(${ s })` : s).join(' - ');
+		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).join(' - ');
 	}
 
 	public override includes(v: VALUE.Value): boolean {
