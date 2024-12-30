@@ -18,16 +18,18 @@ import {
 } from '../../core/index.js';
 import type {TypeEntry} from '../../typer/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
-import {
-	buildDeco,
-	typeDeco,
-	assignToDeco,
-} from './decorators.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
+import {
+	ASTNodeExpression,
+	buildDeco,
+	typeDeco,
+} from './ASTNodeExpression.js';
+import {
+	assignToDeco,
+	ASTNodeCollectionLiteral,
+} from './ASTNodeCollectionLiteral.js';
 
 
 

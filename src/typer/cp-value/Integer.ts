@@ -8,11 +8,16 @@ import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import {Float} from './index.js';
-import {equalsDeco} from './decorators.js';
-import type {Value} from './Value.js';
-import {Number as CPNumber} from './Number.js';
+} from '../utils-private.js';
+import {
+	Float,
+	INT_0,
+} from './index.js';
+import {
+	identical,
+	type Value,
+} from './Value.js';
+import {Number as ValueNumber} from './Number.js';
 
 
 
@@ -24,11 +29,7 @@ const BITS_PER_BYTE = 8;
  * A 16-bit signed integer in two’s complement.
  * @final
  */
-export class Integer extends CPNumber<Integer> {
-	public static readonly ZERO = new Integer(0n);
-	public static readonly UNIT = new Integer(1n);
-
-
+export class Integer extends ValueNumber<Integer> {
 	/**
 	 * Internal implementation of this Int16.
 	 * A 16-bit integer stored in a Int16Array.
@@ -59,8 +60,8 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	@strictEqual
-	@equalsDeco
-	@instanceOf(() => Float)
+	@instanceOf(() => ValueNumber)
+	@identical
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
 		return this.toFloat().equal(value);
@@ -215,7 +216,7 @@ export class Integer extends CPNumber<Integer> {
 	}
 
 	public override eq0(): boolean {
-		return this.equal(Integer.ZERO);
+		return this.equal(INT_0);
 	}
 
 	public override lt(y: Integer): boolean {

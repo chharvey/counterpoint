@@ -2,15 +2,17 @@ import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
+} from '../utils-private.js';
 import * as VALUE from '../cp-value/index.js';
-import {
-	subtypeDeco,
-	referenceSubtypeDeco,
-} from './decorators.js';
 import {MUT_OPERATOR} from './utils-private.js';
-import type {Type} from './Type.js';
-import {ReferenceType} from './ReferenceType.js';
+import {
+	subtypeRules,
+	type Type,
+} from './Type.js';
+import {
+	isObjectType,
+	ReferenceType,
+} from './ReferenceType.js';
 
 
 
@@ -45,8 +47,8 @@ export class List extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
-	@referenceSubtypeDeco
+	@subtypeRules
+	@isObjectType
 	@instanceOf(() => List)
 	public override isSubtypeOf(t: Type): boolean {
 		return (

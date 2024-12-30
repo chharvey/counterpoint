@@ -1,9 +1,26 @@
 import type binaryen from 'binaryen';
 import type {Builder} from '../../index.js';
-import {strictEqual} from '../../lib/index.js';
+import {assert_context_name} from '../../lib/index.js';
+import {strictEqual} from '../utils-private.js';
 import type {TYPE} from '../index.js';
 import {String as ValueString} from './index.js';
-import {equalsDeco} from './decorators.js';
+
+
+
+/**
+ * Decorator for {@link Value#equal} method and any overrides.
+ * Checks identicality before performing the Equality algorithm.
+ * @implements MethodDecorator<Value, Value['equal']>
+ */
+export function identical(
+	method:  Value['equal'],
+	context: ClassMethodDecoratorContext<Value, typeof method>,
+): typeof method {
+	assert_context_name(context, 'equal');
+	return function (this: Value, value) {
+		return this.identical(value) || method.call(this, value);
+	};
+}
 
 
 
@@ -48,7 +65,7 @@ export abstract class Value {
 	 * @returns are the objects equal?
 	 */
 	@strictEqual
-	@equalsDeco
+	@identical
 	public equal(_value: Value): boolean {
 		return false;
 	}

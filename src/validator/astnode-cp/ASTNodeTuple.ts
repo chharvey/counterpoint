@@ -17,14 +17,16 @@ import {
 } from '../../core/index.js';
 import type {TypeEntry} from '../../typer/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {ASTNodeCP} from './ASTNodeCP.js';
 import {
 	buildDeco,
 	typeDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
+import {
 	assignToDeco,
-} from './decorators.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
+	ASTNodeCollectionLiteral,
+} from './ASTNodeCollectionLiteral.js';
 
 
 

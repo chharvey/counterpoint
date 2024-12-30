@@ -2,12 +2,12 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import type {Builder} from '../../index.js';
+import type {CodeUnit} from '../../lib/index.js';
 import {
-	type CodeUnit,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
+} from '../utils-private.js';
 import type {Value} from './Value.js';
 import {Primitive} from './Primitive.js';
 

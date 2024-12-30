@@ -45,3 +45,9 @@ export type Values<M> = (
 export function assert_instanceof<Class extends object>(obj: unknown, cons: SubclassOf<Class>, err?: Parameters<typeof assert.ok>[1]): asserts obj is Class {
 	return assert.ok(obj instanceof cons, err || `${ obj } should be an instance of ${ cons.name || cons }.`); // eslint-disable-line @typescript-eslint/prefer-nullish-coalescing --- `err` could be the empty string
 }
+
+
+
+export function assert_context_name(context: ClassMethodDecoratorContext, name: string): void {
+	return assert.strictEqual(context.name, name, `This decorator may only be used on methods named \`${ name }\`.`);
+}

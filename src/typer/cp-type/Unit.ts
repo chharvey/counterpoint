@@ -1,10 +1,12 @@
 import {
 	strictEqual,
 	memoizeBinOp,
-} from '../../lib/index.js';
+} from '../utils-private.js';
 import type * as VALUE from '../cp-value/index.js';
-import {subtypeDeco} from './decorators.js';
-import type {Type} from './Type.js';
+import {
+	subtypeRules,
+	type Type,
+} from './Type.js';
 import {ValueType} from './ValueType.js';
 
 
@@ -33,7 +35,7 @@ export class Unit<Value extends VALUE.Primitive = VALUE.Primitive> extends Value
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public override isSubtypeOf(t: Type): boolean {
 		return t.includes(this.value);
 	}

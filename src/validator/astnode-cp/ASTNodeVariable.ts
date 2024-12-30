@@ -25,8 +25,8 @@ import type {SyntaxNodeType} from '../utils-private.js';
 import {
 	buildDeco,
 	typeDeco,
-} from './decorators.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
 
 
 

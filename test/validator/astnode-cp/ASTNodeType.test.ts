@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import {
 	AST,
 	type TypeEntry,
-	VALUE,
 	TYPE,
 	TypeError,
 	ReferenceErrorUndeclared,
@@ -102,8 +101,8 @@ describe('ASTNodeType', () => {
 					'"hi"',
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
-					VALUE.Boolean.FALSETYPE,
-					VALUE.Boolean.TRUETYPE,
+					TYPE.FALSE,
+					TYPE.TRUE,
 					typeUnit(42n),
 					typeUnit(4.2e+3),
 					typeUnit('hi'),

@@ -106,7 +106,7 @@ describe('Value', () => {
 			it('returns a v128 with `null` as an argument.', () => {
 				const builder = new Builder();
 				return assertEqualBins(
-					VALUE.Null.NULL.build(builder),
+					VALUE.NULL.build(builder),
 					new BinVect(builder.module, null).vect,
 				);
 			});
@@ -115,7 +115,7 @@ describe('Value', () => {
 		specify('Boolean', () => {
 			const builder = new Builder();
 			return assertEqualBins(
-				[VALUE.Boolean.FALSE.build(builder), VALUE.Boolean.TRUE.build(builder)],
+				[VALUE.FALSE.build(builder),              VALUE.TRUE.build(builder)],
 				[new BinVect(builder.module, false).vect, new BinVect(builder.module, true).vect],
 			);
 		});
@@ -192,7 +192,7 @@ describe('Value', () => {
 				});
 				it('returns `(tuple.make)`.', () => {
 					assertEqualBins(
-						new VALUE.Tuple([VALUE.Integer.UNIT, new VALUE.Float(2.0)]).build(builder),
+						new VALUE.Tuple([VALUE.INT_1, new VALUE.Float(2.0)]).build(builder),
 						builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
 						'[1, 2.0]',
 					);
@@ -235,9 +235,9 @@ describe('Value', () => {
 					]);
 					return assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple([
-							VALUE.Integer.UNIT,
+							VALUE.INT_1,
 							new VALUE.Float(2.0),
-							VALUE.Boolean.TRUE,
+							VALUE.TRUE,
 						])]).build(builder),
 						mod.tuple.make([
 							mod.tuple.extract(mod.local.tee(0, inner, bintype3), 0),
@@ -255,7 +255,7 @@ describe('Value', () => {
 					]);
 					return assertEqualBins(
 						new VALUE.Tuple([
-							VALUE.Integer.UNIT,
+							VALUE.INT_1,
 							new VALUE.Tuple([new VALUE.Float(2.0)]),
 							new VALUE.Tuple([
 								new VALUE.Integer(3n),
@@ -298,7 +298,7 @@ describe('Value', () => {
 					return assertEqualBins(
 						new VALUE.Tuple([
 							new VALUE.Tuple([
-								VALUE.Integer.UNIT,
+								VALUE.INT_1,
 								new VALUE.Tuple([
 									new VALUE.Float(2.0),
 									new VALUE.Integer(3n),
@@ -339,7 +339,7 @@ describe('Value', () => {
 				it('returns `(tuple.make)`.', () => {
 					assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([
-							[0x100n, VALUE.Integer.UNIT],
+							[0x100n, VALUE.INT_1],
 							[0x101n, new VALUE.Float(2.0)],
 						])).build(builder),
 						builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
@@ -370,9 +370,9 @@ describe('Value', () => {
 					]);
 					return assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([
-							[0x100n, VALUE.Integer.UNIT],
+							[0x100n, VALUE.INT_1],
 							[0x101n, new VALUE.Float(2.0)],
-							[0x102n, VALUE.Boolean.TRUE],
+							[0x102n, VALUE.TRUE],
 						]))]])).build(builder),
 						mod.tuple.make([
 							mod.tuple.extract(mod.local.tee(0, inner, bintype3), 0),
@@ -390,7 +390,7 @@ describe('Value', () => {
 					]);
 					return assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([
-							[0x100n, VALUE.Integer.UNIT],
+							[0x100n, VALUE.INT_1],
 							[0x101n, new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(2.0)]]))],
 							[0x102n, new VALUE.Record(new Map<bigint, VALUE.Value>([
 								[0x100n, new VALUE.Integer(3n)],
@@ -441,7 +441,7 @@ describe('Value', () => {
 					return assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([
 							[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([
-								[0x100n, VALUE.Integer.UNIT],
+								[0x100n, VALUE.INT_1],
 								[0x101n, new VALUE.Record(new Map<bigint, VALUE.Value>([
 									[0x100n, new VALUE.Float(2.0)],
 									[0x101n, new VALUE.Integer(3n)],
@@ -456,7 +456,7 @@ describe('Value', () => {
 							]))],
 							[0x102n, new VALUE.Record(new Map<bigint, VALUE.Value>([
 								[0x101n, new VALUE.Integer(7n)],
-								[0x100n, VALUE.Boolean.TRUE],
+								[0x100n, VALUE.TRUE],
 							]))],
 						])).build(builder),
 						mod.tuple.make([
@@ -487,12 +487,12 @@ describe('Value', () => {
 				assert.deepStrictEqual(
 					new VALUE.Set(new Set([
 						new VALUE.String('a'),
-						VALUE.Integer.ZERO,
+						VALUE.INT_0,
 						new VALUE.Integer(-0n),
 					])),
 					new VALUE.Set(new Set([
 						new VALUE.String('a'),
-						VALUE.Integer.ZERO,
+						VALUE.INT_0,
 					])),
 				);
 			});
@@ -519,20 +519,20 @@ describe('Value', () => {
 			it('overwrites identical antecedents.', () => {
 				assert.deepStrictEqual(
 					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
-						[new VALUE.String('a'),  VALUE.Integer.UNIT],
-						[VALUE.Integer.ZERO,     new VALUE.Float(2.0)],
+						[new VALUE.String('a'),  VALUE.INT_1],
+						[VALUE.INT_0,            new VALUE.Float(2.0)],
 						[new VALUE.Integer(-0n), new VALUE.String('three')],
 					])),
 					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
-						[new VALUE.String('a'), VALUE.Integer.UNIT],
-						[VALUE.Integer.ZERO,    new VALUE.String('three')],
+						[new VALUE.String('a'), VALUE.INT_1],
+						[VALUE.INT_0,           new VALUE.String('three')],
 					])),
 				);
 			});
 			it('does not overwrite non-identical (even if equal) antecedents.', () => {
 				assert.deepStrictEqual(
 					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
-						[new VALUE.String('a'), VALUE.Integer.UNIT],
+						[new VALUE.String('a'), VALUE.INT_1],
 						[new VALUE.Float(0.0),  new VALUE.Float(2.0)],
 						[new VALUE.Float(-0.0), new VALUE.String('three')],
 					])),

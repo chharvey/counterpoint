@@ -1,16 +1,16 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
+import {TYPE} from '../index.js';
 import {
 	build_tuple_like,
 	type Builder,
 } from '../../index.js';
 import {
+	languageValuesIdentical,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import {TYPE} from '../index.js';
-import {languageValuesIdentical} from '../utils-private.js';
+} from '../utils-private.js';
 import type {Value} from './Value.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
 

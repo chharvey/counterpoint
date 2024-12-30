@@ -1,39 +1,275 @@
 import * as xjs from 'extrajs';
+import {assert_context_name} from '../../lib/index.js';
 import {
+	languageValuesIdentical,
 	strictEqual,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import {languageValuesIdentical} from '../utils-private.js';
-import * as VALUE from '../cp-value/index.js';
+} from '../utils-private.js';
+import type * as VALUE from '../cp-value/index.js';
 import {
 	Intersection,
 	Union,
 	Difference,
+	NEVER,
 	VOID,
+	UNKNOWN,
 	NULL,
+	BOOL,
+	INT,
+	FLOAT,
+	STR,
+	OBJ,
+	FALSE,
+	TRUE,
 } from './index.js';
-import {
-	operatorDeco,
-	intersectDeco,
-	unionDeco,
-	subtractDeco,
-	subtypeDeco,
-} from './decorators.js';
+
+
+
+/**
+ * Decorator for any type binary operation.
+ * Simplifies return values to values that already exist, if possible.
+ * @implements MethodDecorator<Type, (t: Type) => Type>
+ */
+export function typeConstant(
+	method:   (t: Type) => Type,
+	_context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	return function (this: Type, t) {
+		const returned: Type = method.call(this, t);
+		return (
+			returned.isBottomType ? NEVER :
+			returned.isTopType    ? UNKNOWN :
+			[
+				VOID,
+				NULL,
+				BOOL,
+				INT,
+				FLOAT,
+				STR,
+				OBJ,
+				FALSE,
+				TRUE,
+			].find((c) => returned.equals(c)) ?? returned
+		);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#intersect} method and any overrides.
+ * Contains shortcuts for constructing type intersections.
+ * @implements MethodDecorator<Type, Type['intersect']>
+ */
+export function intersectionRules(
+	method:  Type['intersect'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'intersect');
+	return function (this: Type, t) {
+		/* 1-5 | `T  & never   == never` */
+		if (this.isBottomType || t.isBottomType) {
+			return NEVER;
+		}
+		/* 1-6 | `T  & unknown == T` */
+		if (this.isTopType) {
+			return t;
+		}
+		if (t.isTopType) {
+			return this;
+		}
+		/* 3-3 | `A <: B  <->  A  & B == A` */
+		if (this.isSubtypeOf(t)) {
+			return this;
+		}
+		if (t.isSubtypeOf(this)) {
+			return t;
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#union} method and any overrides.
+ * Contains shortcuts for constructing type unions.
+ * @implements MethodDecorator<Type, Type['union']>
+ */
+export function unionRules(
+	method:  Type['union'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'union');
+	return function (this: Type, t) {
+		/* 1-7 | `T \| never   == T` */
+		if (this.isBottomType) {
+			return t;
+		}
+		if (t.isBottomType) {
+			return this;
+		}
+		/* 1-8 | `T \| unknown == unknown` */
+		if (this.isTopType || t.isTopType) {
+			return UNKNOWN;
+		}
+		/* 3-4 | `A <: B  <->  A \| B == B` */
+		if (this.isSubtypeOf(t)) {
+			return t;
+		}
+		if (t.isSubtypeOf(this)) {
+			return this;
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#subtract} method and any overrides.
+ * Contains shortcuts for constructing type differences.
+ * @implements MethodDecorator<Type, Type['subtract']>
+ */
+export function differenceRules(
+	method:  Type['subtract'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'subtract');
+	return function (this: Type, t) {
+		/* 4-1 | `A - B == A  <->  A & B == never` */
+		if (this.intersect(t).isBottomType) {
+			return this;
+		}
+
+		/* 4-2 | `A - B == never  <->  A <: B` */
+		if (this.isSubtypeOf(t)) {
+			return NEVER;
+		}
+
+		/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
+		if (t instanceof Union) {
+			return Intersection.all(t.operands.map((s) => this.subtract(s)));
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#isSubtypeOf} method and any overrides.
+ * Contains shortcuts for determining subtypes.
+ * @implements MethodDecorator<Type, Type['isSubtypeOf']>
+ */
+export function subtypeRules(
+	method:  Type['isSubtypeOf'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'isSubtypeOf');
+	return function (this: Type, t) {
+		/* 2-7 | `A <: A` */
+		if (this === t) {
+			return true;
+		}
+		/* 1-1 | `never <: T` */
+		if (this.isBottomType) {
+			return true;
+		}
+		/* 1-3 | `T       <: never  <->  T == never` */
+		if (t.isBottomType) {
+			return this.isBottomType;
+		}
+		/* 1-4 | `unknown <: T      <->  T == unknown` */
+		if (this.isTopType) {
+			return t.isTopType;
+		}
+		/* 1-2 | `T     <: unknown` */
+		if (t.isTopType) {
+			return true;
+		}
+
+		/*
+		 * Denormalize intersection/union types.
+		 *
+		 * An assignee of intersection type `A & (B | C)` will attempt to convert to `(A & B) | (A & C)`
+		 * when being assigned a value.
+		 * A type union in this case is more performant, as only one constituent of the union is sufficient —
+		 * the value only need be assignable to `A & B` or `A & C`, which allows for short-circuiting.
+		 *
+		 * Likewise, when a value is of union type `A | (B & C)`, it will attempt to convert to `(A | B) & (A | C)`
+		 * when being assigned to a target.
+		 * In this scenario, a type intersection can allow for short-circuiting —
+		 * only one of the constituents `A | B` or `A | C` need be assignable.
+		 *
+		 * Inspiration: https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/#optimizations-by-comparing-non-normalized-intersections
+		 */
+		if (t instanceof Intersection) {
+			const maybe_union: Type = t.denormalize();
+			if (maybe_union instanceof Union && this.isSubtypeOf(maybe_union)) {
+				return true;
+			}
+		}
+		if (this instanceof Union) {
+			const maybe_intersection: Type = this.denormalize();
+			if (maybe_intersection instanceof Intersection && maybe_intersection.isSubtypeOf(t)) {
+				return true;
+			}
+		}
+
+		if (t instanceof Intersection) {
+			/*
+			 * 3-1 | `A  & B <: A  &&  A  & B <: B`
+			 *     | `A  & B  & C <: A  & B`
+			 */
+			if (this instanceof Intersection && t.operands.every((s) => this.operands.some((r) => r.equals(s)))) {
+				return true;
+			}
+			/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
+			return t.operands.every((s) => this.isSubtypeOf(s));
+		}
+		if (t instanceof Union) {
+			/*
+			 * 3-2 | `A <: A \| B  &&  B <: A \| B`
+			 *     | `A \| B <: A \| B \| C`
+			 */
+			if (this instanceof Union && this.operands.every((s) => t.operands.some((r) => r.equals(s)))) {
+				return true;
+			}
+			/* 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
+			if (t.operands.some((s) => this.isSubtypeOf(s))) {
+				return true;
+			}
+			/* 3-2 | `A <: A \| B  &&  B <: A \| B` */
+			if (t.operands.some((s) => this.equals(s))) {
+				return true;
+			}
+		}
+		/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
+		if (t instanceof Difference) {
+			return this.isSubtypeOf(t.left) && this.intersect(t.right).isBottomType;
+		}
+
+		return method.call(this, t);
+	};
+}
 
 
 
 /**
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
- * - Combinable
- * - Difference
+ * - TypeOperation
  * - ValueType
  * - TypeInterface
  * - ReferenceType
  */
 export abstract class Type {
 	static get #falsyTypes(): readonly Type[] {
-		return [VOID, NULL, VALUE.Boolean.FALSETYPE];
+		return [VOID, NULL, FALSE];
 	}
 
 
@@ -136,8 +372,8 @@ export abstract class Type {
 	 * @returns the type intersection
 	 */
 	@memoizeBinOp(true)
-	@operatorDeco
-	@intersectDeco
+	@typeConstant
+	@intersectionRules
 	public intersect(t: Type): Type {
 		/* 2-1 | `A  & B == B  & A` */
 		if (t instanceof Intersection) {
@@ -152,8 +388,8 @@ export abstract class Type {
 	 * @returns the type union
 	 */
 	@memoizeBinOp(true)
-	@operatorDeco
-	@unionDeco
+	@typeConstant
+	@unionRules
 	public union(t: Type): Type {
 		/* 2-2 | `A \| B == B \| A` */
 		if (t instanceof Union) {
@@ -167,8 +403,8 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type difference
 	 */
-	@operatorDeco
-	@subtractDeco
+	@typeConstant
+	@differenceRules
 	public subtract(t: Type): Type {
 		return new Difference(this, t);
 	}
@@ -180,7 +416,7 @@ export abstract class Type {
 	 */
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public isSubtypeOf(t: Type): boolean {
 		return !this.isBottomType && !!this.values.size && // these checks are needed in cases of `void`, which doesn’t store values
 			[...this.values].every((v) => t.includes(v));
@@ -253,8 +489,8 @@ export class TypeInterface extends Type {
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
 	@memoizeBinOp(true)
-	@operatorDeco
-	@intersectDeco
+	@typeConstant
+	@intersectionRules
 	public override intersect(t: Type): Type {
 		if (t instanceof TypeInterface) {
 			const props = new Map<string, Type>([...this.properties]);
@@ -272,8 +508,8 @@ export class TypeInterface extends Type {
 	 * If any properties disagree on type, their type union is taken.
 	 */
 	@memoizeBinOp(true)
-	@operatorDeco
-	@unionDeco
+	@typeConstant
+	@unionRules
 	public override union(t: Type): Type {
 		if (t instanceof TypeInterface) {
 			const props = new Map<string, Type>();
@@ -295,7 +531,7 @@ export class TypeInterface extends Type {
 	 */
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public override isSubtypeOf(t: Type): boolean {
 		if (t instanceof TypeInterface) {
 			return [...t.properties].every(([name, type_]) => (

@@ -14,14 +14,16 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
-import {
-	typeDeco,
-	assignToDeco,
-} from './decorators.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
+import {
+	ASTNodeExpression,
+	typeDeco,
+} from './ASTNodeExpression.js';
+import {
+	assignToDeco,
+	ASTNodeCollectionLiteral,
+} from './ASTNodeCollectionLiteral.js';
 
 
 

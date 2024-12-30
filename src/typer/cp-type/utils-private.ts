@@ -12,6 +12,10 @@ import {
 
 
 
+export type ReadonlyArrayOfAtLeast2<T> = readonly [T, T, ...readonly T[]];
+
+
+
 /**
  * Comparator function for checking “sameness” of `Type` set elements.
  * Types should be “the same” iff they are equal per the Counterpoint specification.

@@ -17,3 +17,5 @@ export * from './List.js';
 export * from './Dict.js';
 export * from './Set.js';
 export * from './Map.js';
+
+export * from './exports.js';
