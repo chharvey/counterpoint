@@ -1,20 +1,21 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
 import {VoidError01} from '../../index.js';
-import {
-	strictEqual,
-	instanceOf,
-	memoizeBinOp,
-} from '../../lib/index.js';
 import type {AST} from '../../validator/index.js';
 import {TYPE} from '../index.js';
 import {
 	languageValuesIdentical,
 	language_values_equal,
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
 } from '../utils-private.js';
-import {equalsDeco} from './decorators.js';
-import type {Value} from './Value.js';
-import {Null} from './Null.js';
+import {NULL} from './index.js';
+import {
+	identical,
+	type Value,
+} from './Value.js';
+import type {Null} from './Null.js';
 import {Collection} from './Collection.js';
 
 
@@ -43,8 +44,8 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 
 	/** @final */
 	@strictEqual
-	@equalsDeco
 	@instanceOf(() => ValueMap)
+	@identical
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
 		return (
@@ -65,11 +66,11 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 	}
 
 	public get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | Null {
-		return (xjs.Map.has(this.cases, ant, languageValuesIdentical))
-			? xjs.Map.get(this.cases, ant, languageValuesIdentical)!
-			: (access_optional)
-				? Null.NULL
-				: assert.fail(new VoidError01(accessor));
+		return (
+			xjs.Map.has(this.cases, ant, languageValuesIdentical) ? xjs.Map.get(this.cases, ant, languageValuesIdentical)! :
+			access_optional                                       ? NULL :
+			assert.fail(new VoidError01(accessor))
+		);
 	}
 }
 export {ValueMap as Map};

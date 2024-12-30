@@ -1,10 +1,12 @@
 import {
 	strictEqual,
 	memoizeBinOp,
-} from '../../lib/index.js';
+} from '../utils-private.js';
 import * as VALUE from '../cp-value/index.js';
-import {subtypeDeco} from './decorators.js';
-import type {Type} from './Type.js';
+import {
+	subtypeRules,
+	type Type,
+} from './Type.js';
 import {ReferenceType} from './ReferenceType.js';
 
 
@@ -38,7 +40,7 @@ class TypeObject extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;
 	}

@@ -511,7 +511,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(24, 27).forEach((c) => (
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
-							VALUE.Boolean.TRUETYPE,
+							TYPE.TRUE,
 						)
 					));
 					return program.children.slice(27, 30).forEach((c) => (
@@ -565,7 +565,7 @@ describe('ASTNodeAccess', () => {
 					assert.deepStrictEqual(
 						program.children.slice(51, 53).map((c) => typeOfStmtExpr(c)),
 						[
-							VALUE.Boolean.TRUETYPE,
+							TYPE.TRUE,
 							TYPE.BOOL,
 						],
 					);
@@ -722,7 +722,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource('null?.four;')       .fold(),
 					AST.ASTNodeAccess.fromSource('null?.[[[[[]]]]];') .fold(),
 				].forEach((t) => {
-					assert.strictEqual(t, VALUE.Null.NULL);
+					assert.strictEqual(t, VALUE.NULL);
 				});
 			});
 			it('chained optional access.', () => {
@@ -739,14 +739,14 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1 = new VALUE.Tuple([VALUE.Boolean.TRUE]);
+				const prop1 = new VALUE.Tuple([VALUE.TRUE]);
 				const prop2 = new VALUE.Tuple();
 				assert.deepStrictEqual(
 					program.children.slice(2, 7).map((c) => foldStmtExpr(c)),
 					[
 						new VALUE.Record(new Map([[0x100n, prop1]])),
 						prop1,
-						VALUE.Boolean.TRUE,
+						VALUE.TRUE,
 						new VALUE.Record(new Map([[0x100n, prop2]])),
 						prop2,
 					],
@@ -754,7 +754,7 @@ describe('ASTNodeAccess', () => {
 				// must bypass type-checker:
 				assert.strictEqual(
 					AST.ASTNodeAccess.fromSource('[prop= []]?.prop?.0;').fold(),
-					VALUE.Null.NULL,
+					VALUE.NULL,
 				);
 			});
 		});
@@ -805,7 +805,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.3;')  .fold(),
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.-4;') .fold(),
 				].forEach((v) => {
-					assert.strictEqual(v, VALUE.Null.NULL);
+					assert.strictEqual(v, VALUE.NULL);
 				});
 			});
 		});
@@ -851,7 +851,7 @@ describe('ASTNodeAccess', () => {
 			it('returns null when optionally accessing key out of bounds.', () => {
 				assert.strictEqual(
 					AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"]?.d;').fold(),
-					VALUE.Null.NULL,
+					VALUE.NULL,
 				);
 			});
 		});
@@ -894,9 +894,9 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 30).map((c) => foldStmtExpr(c)),
 					[
-						VALUE.Boolean.TRUE,
-						VALUE.Boolean.TRUE,
-						VALUE.Boolean.TRUE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.TRUE,
 						null,
 						null,
 						null,
@@ -905,7 +905,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(51, 53).map((c) => foldStmtExpr(c)),
 					[
-						VALUE.Boolean.TRUE,
+						VALUE.TRUE,
 						null,
 					],
 				);
@@ -933,7 +933,7 @@ describe('ASTNodeAccess', () => {
 					'{1, 2.0, "three"}?.[3];',
 				].forEach((src) => assert.deepStrictEqual(
 					AST.ASTNodeAccess.fromSource(src).fold(),
-					VALUE.Boolean.FALSE,
+					VALUE.FALSE,
 				));
 			});
 			it('returns null when optionally accessing index/antecedent out of bounds.', () => {
@@ -941,7 +941,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[3];')                                .fold(),
 					AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.[["d"]];') .fold(),
 				].forEach((v) => {
-					assert.strictEqual(v, VALUE.Null.NULL);
+					assert.strictEqual(v, VALUE.NULL);
 				});
 			});
 		});

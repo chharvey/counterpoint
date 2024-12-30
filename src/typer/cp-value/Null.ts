@@ -3,8 +3,7 @@ import {BinVect} from '../../index.js';
 import {
 	strictEqual,
 	instanceOf,
-} from '../../lib/index.js';
-import type {TYPE} from '../index.js';
+} from '../utils-private.js';
 import type {Value} from './Value.js';
 import {Primitive} from './Primitive.js';
 
@@ -22,16 +21,7 @@ import {Primitive} from './Primitive.js';
  * @final
  */
 export class Null extends Primitive {
-	/** The Counterpoint Language Value `null`. */
-	public static readonly NULL = new Null();
-
-	/** A Unit Type containing only the Counterpoint Language Value `null`. */
-	public static get NULLTYPE(): TYPE.Unit<Null> {
-		return Null.NULL.toType();
-	}
-
-
-	private constructor() {
+	public constructor() {
 		super();
 	}
 

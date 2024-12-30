@@ -1,9 +1,9 @@
+import {TYPE} from '../index.js';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import {TYPE} from '../index.js';
+} from '../utils-private.js';
 import type {Value} from './Value.js';
 import {CollectionKeyed} from './CollectionKeyed.js';
 

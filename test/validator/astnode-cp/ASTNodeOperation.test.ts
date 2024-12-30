@@ -126,29 +126,29 @@ describe('ASTNodeOperation', () => {
 			context('with constant folding on.', () => {
 				it('returns a constant Boolean type for boolean unary operation of anything.', () => {
 					typeOperations(new Map<string, VALUE.Boolean>([
-						['!false;',  VALUE.Boolean.TRUE],
-						['!true;',   VALUE.Boolean.FALSE],
-						['!null;',   VALUE.Boolean.TRUE],
-						['!42;',     VALUE.Boolean.FALSE],
-						['!4.2e+1;', VALUE.Boolean.FALSE],
-						['?false;',  VALUE.Boolean.TRUE],
-						['?true;',   VALUE.Boolean.FALSE],
-						['?null;',   VALUE.Boolean.TRUE],
-						['?42;',     VALUE.Boolean.FALSE],
-						['?4.2e+1;', VALUE.Boolean.FALSE],
+						['!false;',  VALUE.TRUE],
+						['!true;',   VALUE.FALSE],
+						['!null;',   VALUE.TRUE],
+						['!42;',     VALUE.FALSE],
+						['!4.2e+1;', VALUE.FALSE],
+						['?false;',  VALUE.TRUE],
+						['?true;',   VALUE.FALSE],
+						['?null;',   VALUE.TRUE],
+						['?42;',     VALUE.FALSE],
+						['?4.2e+1;', VALUE.FALSE],
 
-						['![];',         VALUE.Boolean.FALSE],
-						['![42];',       VALUE.Boolean.FALSE],
-						['![a= 42];',    VALUE.Boolean.FALSE],
-						['!{};',         VALUE.Boolean.FALSE],
-						['!{42};',       VALUE.Boolean.FALSE],
-						['!{41 -> 42};', VALUE.Boolean.FALSE],
-						['?[];',         VALUE.Boolean.TRUE],
-						['?[42];',       VALUE.Boolean.FALSE],
-						['?[a= 42];',    VALUE.Boolean.FALSE],
-						['?{};',         VALUE.Boolean.TRUE],
-						['?{42};',       VALUE.Boolean.FALSE],
-						['?{41 -> 42};', VALUE.Boolean.FALSE],
+						['![];',         VALUE.FALSE],
+						['![42];',       VALUE.FALSE],
+						['![a= 42];',    VALUE.FALSE],
+						['!{};',         VALUE.FALSE],
+						['!{42};',       VALUE.FALSE],
+						['!{41 -> 42};', VALUE.FALSE],
+						['?[];',         VALUE.TRUE],
+						['?[42];',       VALUE.FALSE],
+						['?[a= 42];',    VALUE.FALSE],
+						['?{};',         VALUE.TRUE],
+						['?{42};',       VALUE.FALSE],
+						['?{41 -> 42};', VALUE.FALSE],
 					]));
 				});
 			});
@@ -167,7 +167,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(3).forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), VALUE.Boolean.TRUETYPE);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.TRUE);
 						});
 					});
 					it('returns type `bool` for a supertype of `void` or a supertype of `null` or a supertype of `false`.', () => {
@@ -199,7 +199,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(2).forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), VALUE.Boolean.FALSETYPE);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.FALSE);
 						});
 					});
 					it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
@@ -212,7 +212,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), VALUE.Boolean.FALSETYPE);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.FALSE);
 						});
 					});
 				});
@@ -241,48 +241,48 @@ describe('ASTNodeOperation', () => {
 		describe('#fold', () => {
 			specify('[operator=NOT]', () => {
 				foldOperations(new Map([
-					['!false;',               VALUE.Boolean.TRUE],
-					['!true;',                VALUE.Boolean.FALSE],
-					['!null;',                VALUE.Boolean.TRUE],
-					['!0;',                   VALUE.Boolean.FALSE],
-					['!42;',                  VALUE.Boolean.FALSE],
-					['!0.0;',                 VALUE.Boolean.FALSE],
-					['!-0.0;',                VALUE.Boolean.FALSE],
-					['!4.2e+1;',              VALUE.Boolean.FALSE],
-					['!"";',                  VALUE.Boolean.FALSE],
-					['!"hello";',             VALUE.Boolean.FALSE],
-					['![];',                  VALUE.Boolean.FALSE],
-					['![42];',                VALUE.Boolean.FALSE],
-					['![a= 42];',             VALUE.Boolean.FALSE],
-					['!List.<int>([]);',      VALUE.Boolean.FALSE],
-					['!List.<int>([42]);',    VALUE.Boolean.FALSE],
-					['!Dict.<int>([a= 42]);', VALUE.Boolean.FALSE],
-					['!{};',                  VALUE.Boolean.FALSE],
-					['!{42};',                VALUE.Boolean.FALSE],
-					['!{41 -> 42};',          VALUE.Boolean.FALSE],
+					['!false;',               VALUE.TRUE],
+					['!true;',                VALUE.FALSE],
+					['!null;',                VALUE.TRUE],
+					['!0;',                   VALUE.FALSE],
+					['!42;',                  VALUE.FALSE],
+					['!0.0;',                 VALUE.FALSE],
+					['!-0.0;',                VALUE.FALSE],
+					['!4.2e+1;',              VALUE.FALSE],
+					['!"";',                  VALUE.FALSE],
+					['!"hello";',             VALUE.FALSE],
+					['![];',                  VALUE.FALSE],
+					['![42];',                VALUE.FALSE],
+					['![a= 42];',             VALUE.FALSE],
+					['!List.<int>([]);',      VALUE.FALSE],
+					['!List.<int>([42]);',    VALUE.FALSE],
+					['!Dict.<int>([a= 42]);', VALUE.FALSE],
+					['!{};',                  VALUE.FALSE],
+					['!{42};',                VALUE.FALSE],
+					['!{41 -> 42};',          VALUE.FALSE],
 				]));
 			});
 			specify('[operator=EMP]', () => {
 				foldOperations(new Map([
-					['?false;',               VALUE.Boolean.TRUE],
-					['?true;',                VALUE.Boolean.FALSE],
-					['?null;',                VALUE.Boolean.TRUE],
-					['?0;',                   VALUE.Boolean.TRUE],
-					['?42;',                  VALUE.Boolean.FALSE],
-					['?0.0;',                 VALUE.Boolean.TRUE],
-					['?-0.0;',                VALUE.Boolean.TRUE],
-					['?4.2e+1;',              VALUE.Boolean.FALSE],
-					['?"";',                  VALUE.Boolean.TRUE],
-					['?"hello";',             VALUE.Boolean.FALSE],
-					['?[];',                  VALUE.Boolean.TRUE],
-					['?[42];',                VALUE.Boolean.FALSE],
-					['?[a= 42];',             VALUE.Boolean.FALSE],
-					['?List.<int>([]);',      VALUE.Boolean.TRUE],
-					['?List.<int>([42]);',    VALUE.Boolean.FALSE],
-					['?Dict.<int>([a= 42]);', VALUE.Boolean.FALSE],
-					['?{};',                  VALUE.Boolean.TRUE],
-					['?{42};',                VALUE.Boolean.FALSE],
-					['?{41 -> 42};',          VALUE.Boolean.FALSE],
+					['?false;',               VALUE.TRUE],
+					['?true;',                VALUE.FALSE],
+					['?null;',                VALUE.TRUE],
+					['?0;',                   VALUE.TRUE],
+					['?42;',                  VALUE.FALSE],
+					['?0.0;',                 VALUE.TRUE],
+					['?-0.0;',                VALUE.TRUE],
+					['?4.2e+1;',              VALUE.FALSE],
+					['?"";',                  VALUE.TRUE],
+					['?"hello";',             VALUE.FALSE],
+					['?[];',                  VALUE.TRUE],
+					['?[42];',                VALUE.FALSE],
+					['?[a= 42];',             VALUE.FALSE],
+					['?List.<int>([]);',      VALUE.TRUE],
+					['?List.<int>([42]);',    VALUE.FALSE],
+					['?Dict.<int>([a= 42]);', VALUE.FALSE],
+					['?{};',                  VALUE.TRUE],
+					['?{42};',                VALUE.FALSE],
+					['?{41 -> 42};',          VALUE.FALSE],
 				]));
 			});
 		});
@@ -633,12 +633,12 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			it('with folding and int coersion on.', () => {
 				typeOperations(new Map<string, VALUE.Boolean>([
-					['2 <  3;', VALUE.Boolean.TRUE],
-					['2 >  3;', VALUE.Boolean.FALSE],
-					['2 <= 3;', VALUE.Boolean.TRUE],
-					['2 >= 3;', VALUE.Boolean.FALSE],
-					['2 !< 3;', VALUE.Boolean.FALSE],
-					['2 !> 3;', VALUE.Boolean.TRUE],
+					['2 <  3;', VALUE.TRUE],
+					['2 >  3;', VALUE.FALSE],
+					['2 <= 3;', VALUE.TRUE],
+					['2 >= 3;', VALUE.FALSE],
+					['2 !< 3;', VALUE.FALSE],
+					['2 !> 3;', VALUE.TRUE],
 				]));
 			});
 			context('with folding off but int coersion on.', () => {
@@ -663,30 +663,30 @@ describe('ASTNodeOperation', () => {
 
 		specify('#fold', () => {
 			foldOperations(new Map([
-				['3   <  3;',   VALUE.Boolean.FALSE],
-				['3   >  3;',   VALUE.Boolean.FALSE],
-				['3   <= 3;',   VALUE.Boolean.TRUE],
-				['3   >= 3;',   VALUE.Boolean.TRUE],
-				['5.2 <  7.0;', VALUE.Boolean.TRUE],
-				['5.2 >  7.0;', VALUE.Boolean.FALSE],
-				['5.2 <= 7.0;', VALUE.Boolean.TRUE],
-				['5.2 >= 7.0;', VALUE.Boolean.FALSE],
-				['5.2 <  9;',   VALUE.Boolean.TRUE],
-				['5.2 >  9;',   VALUE.Boolean.FALSE],
-				['5.2 <= 9;',   VALUE.Boolean.TRUE],
-				['5.2 >= 9;',   VALUE.Boolean.FALSE],
-				['5   <  9.2;', VALUE.Boolean.TRUE],
-				['5   >  9.2;', VALUE.Boolean.FALSE],
-				['5   <= 9.2;', VALUE.Boolean.TRUE],
-				['5   >= 9.2;', VALUE.Boolean.FALSE],
-				['3.0 <  3;',   VALUE.Boolean.FALSE],
-				['3.0 >  3;',   VALUE.Boolean.FALSE],
-				['3.0 <= 3;',   VALUE.Boolean.TRUE],
-				['3.0 >= 3;',   VALUE.Boolean.TRUE],
-				['3   <  3.0;', VALUE.Boolean.FALSE],
-				['3   >  3.0;', VALUE.Boolean.FALSE],
-				['3   <= 3.0;', VALUE.Boolean.TRUE],
-				['3   >= 3.0;', VALUE.Boolean.TRUE],
+				['3   <  3;',   VALUE.FALSE],
+				['3   >  3;',   VALUE.FALSE],
+				['3   <= 3;',   VALUE.TRUE],
+				['3   >= 3;',   VALUE.TRUE],
+				['5.2 <  7.0;', VALUE.TRUE],
+				['5.2 >  7.0;', VALUE.FALSE],
+				['5.2 <= 7.0;', VALUE.TRUE],
+				['5.2 >= 7.0;', VALUE.FALSE],
+				['5.2 <  9;',   VALUE.TRUE],
+				['5.2 >  9;',   VALUE.FALSE],
+				['5.2 <= 9;',   VALUE.TRUE],
+				['5.2 >= 9;',   VALUE.FALSE],
+				['5   <  9.2;', VALUE.TRUE],
+				['5   >  9.2;', VALUE.FALSE],
+				['5   <= 9.2;', VALUE.TRUE],
+				['5   >= 9.2;', VALUE.FALSE],
+				['3.0 <  3;',   VALUE.FALSE],
+				['3.0 >  3;',   VALUE.FALSE],
+				['3.0 <= 3;',   VALUE.TRUE],
+				['3.0 >= 3;',   VALUE.TRUE],
+				['3   <  3.0;', VALUE.FALSE],
+				['3   >  3.0;', VALUE.FALSE],
+				['3   <= 3.0;', VALUE.TRUE],
+				['3   >= 3.0;', VALUE.TRUE],
 			]));
 		});
 
@@ -723,20 +723,20 @@ describe('ASTNodeOperation', () => {
 			context('with folding and int coersion on.', () => {
 				it('for numeric literals.', () => {
 					typeOperations(new Map<string, VALUE.Boolean>([
-						[' 2   ===  3;',   VALUE.Boolean.FALSE],
-						[' 2   !==  3;',   VALUE.Boolean.TRUE],
-						[' 2   ==   3;',   VALUE.Boolean.FALSE],
-						[' 2   !=   3;',   VALUE.Boolean.TRUE],
-						[' 0   === -0;',   VALUE.Boolean.TRUE],
-						[' 0   ==  -0;',   VALUE.Boolean.TRUE],
-						[' 0.0 ===  0;',   VALUE.Boolean.FALSE],
-						[' 0.0 ==   0;',   VALUE.Boolean.TRUE],
-						[' 0.0 === -0;',   VALUE.Boolean.FALSE],
-						[' 0.0 ==  -0;',   VALUE.Boolean.TRUE],
-						['-0.0 ===  0;',   VALUE.Boolean.FALSE],
-						['-0.0 ==   0;',   VALUE.Boolean.TRUE],
-						['-0.0 ===  0.0;', VALUE.Boolean.FALSE],
-						['-0.0 ==   0.0;', VALUE.Boolean.TRUE],
+						[' 2   ===  3;',   VALUE.FALSE],
+						[' 2   !==  3;',   VALUE.TRUE],
+						[' 2   ==   3;',   VALUE.FALSE],
+						[' 2   !=   3;',   VALUE.TRUE],
+						[' 0   === -0;',   VALUE.TRUE],
+						[' 0   ==  -0;',   VALUE.TRUE],
+						[' 0.0 ===  0;',   VALUE.FALSE],
+						[' 0.0 ==   0;',   VALUE.TRUE],
+						[' 0.0 === -0;',   VALUE.FALSE],
+						[' 0.0 ==  -0;',   VALUE.TRUE],
+						['-0.0 ===  0;',   VALUE.FALSE],
+						['-0.0 ==   0;',   VALUE.TRUE],
+						['-0.0 ===  0.0;', VALUE.FALSE],
+						['-0.0 ==   0.0;', VALUE.TRUE],
 					]));
 				});
 				it('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
@@ -768,7 +768,6 @@ describe('ASTNodeOperation', () => {
 					goal.children.slice(4).forEach((stmt) => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
 						const fold: VALUE.Value | null = expr.fold();
-						// @ts-expect-error --- `VALUE.Boolean` has a private constructor
 						assert_instanceof(fold, VALUE.Boolean);
 						assert.deepStrictEqual(
 							expr.type(),
@@ -782,25 +781,25 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('7 == 7.0;', CONFIG_FOLDING_OFF).type(), TYPE.BOOL);
 				});
 				it('returns `false` if operands are of different numeric types.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('7 === 7.0;', CONFIG_FOLDING_OFF).type(), VALUE.Boolean.FALSETYPE);
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('7 === 7.0;', CONFIG_FOLDING_OFF).type(), TYPE.FALSE);
 				});
 			});
 			context('with folding on but int coersion off.', () => {
 				it('returns `false` if operands are of different numeric types.', () => {
 					typeOperations(new Map([
-						['7   === 7.0;', VALUE.Boolean.FALSE],
-						['7   ==  7.0;', VALUE.Boolean.FALSE],
-						['7.0 === 7;',   VALUE.Boolean.FALSE],
-						['7.0 ==  7;',   VALUE.Boolean.FALSE],
+						['7   === 7.0;', VALUE.FALSE],
+						['7   ==  7.0;', VALUE.FALSE],
+						['7.0 === 7;',   VALUE.FALSE],
+						['7.0 ==  7;',   VALUE.FALSE],
 					]), CONFIG_COERCION_OFF);
 				});
 			});
 			context('with folding and int coersion off.', () => {
 				it('returns `false` if operands are of different numeric types.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource('7 == 7.0;'), VALUE.Boolean.FALSETYPE);
+					assert.deepStrictEqual(typeOfOperationFromSource('7 == 7.0;'), TYPE.FALSE);
 				});
 				it('returns `false` if operands are of disjoint types in general.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource('7 == null;'), VALUE.Boolean.FALSETYPE);
+					assert.deepStrictEqual(typeOfOperationFromSource('7 == null;'), TYPE.FALSE);
 				});
 			});
 		});
@@ -809,53 +808,53 @@ describe('ASTNodeOperation', () => {
 		describe('#fold', () => {
 			it('simple types.', () => {
 				foldOperations(new Map([
-					['null === null;',                          VALUE.Boolean.TRUE],
-					['null ==  null;',                          VALUE.Boolean.TRUE],
-					['null === 5;',                             VALUE.Boolean.FALSE],
-					['null ==  5;',                             VALUE.Boolean.FALSE],
-					['true === 1;',                             VALUE.Boolean.FALSE],
-					['true ==  1;',                             VALUE.Boolean.FALSE],
-					['true === 1.0;',                           VALUE.Boolean.FALSE],
-					['true ==  1.0;',                           VALUE.Boolean.FALSE],
-					['true === 5.1;',                           VALUE.Boolean.FALSE],
-					['true ==  5.1;',                           VALUE.Boolean.FALSE],
-					['true === true;',                          VALUE.Boolean.TRUE],
-					['true ==  true;',                          VALUE.Boolean.TRUE],
-					['3.0 === 3;',                              VALUE.Boolean.FALSE],
-					['3.0 ==  3;',                              VALUE.Boolean.TRUE],
-					['3 === 3.0;',                              VALUE.Boolean.FALSE],
-					['3 ==  3.0;',                              VALUE.Boolean.TRUE],
-					['0.0 === 0.0;',                            VALUE.Boolean.TRUE],
-					['0.0 ==  0.0;',                            VALUE.Boolean.TRUE],
-					['0.0 === -0.0;',                           VALUE.Boolean.FALSE],
-					['0.0 ==  -0.0;',                           VALUE.Boolean.TRUE],
-					['0 === -0;',                               VALUE.Boolean.TRUE],
-					['0 ==  -0;',                               VALUE.Boolean.TRUE],
-					['0.0 === 0;',                              VALUE.Boolean.FALSE],
-					['0.0 ==  0;',                              VALUE.Boolean.TRUE],
-					['0.0 === -0;',                             VALUE.Boolean.FALSE],
-					['0.0 ==  -0;',                             VALUE.Boolean.TRUE],
-					['-0.0 === 0;',                             VALUE.Boolean.FALSE],
-					['-0.0 ==  0;',                             VALUE.Boolean.TRUE],
-					['-0.0 === 0.0;',                           VALUE.Boolean.FALSE],
-					['-0.0 ==  0.0;',                           VALUE.Boolean.TRUE],
-					['"" == "";',                               VALUE.Boolean.TRUE],
-					['"a" === "a";',                            VALUE.Boolean.TRUE],
-					['"a" ==  "a";',                            VALUE.Boolean.TRUE],
-					['"hello\\u{20}world" === "hello world";',  VALUE.Boolean.TRUE],
-					['"hello\\u{20}world" ==  "hello world";',  VALUE.Boolean.TRUE],
-					['"a" !== "b";',                            VALUE.Boolean.TRUE],
-					['"a" !=  "b";',                            VALUE.Boolean.TRUE],
-					['"hello\\u{20}world" !== "hello20world";', VALUE.Boolean.TRUE],
-					['"hello\\u{20}world" !=  "hello20world";', VALUE.Boolean.TRUE],
+					['null === null;',                          VALUE.TRUE],
+					['null ==  null;',                          VALUE.TRUE],
+					['null === 5;',                             VALUE.FALSE],
+					['null ==  5;',                             VALUE.FALSE],
+					['true === 1;',                             VALUE.FALSE],
+					['true ==  1;',                             VALUE.FALSE],
+					['true === 1.0;',                           VALUE.FALSE],
+					['true ==  1.0;',                           VALUE.FALSE],
+					['true === 5.1;',                           VALUE.FALSE],
+					['true ==  5.1;',                           VALUE.FALSE],
+					['true === true;',                          VALUE.TRUE],
+					['true ==  true;',                          VALUE.TRUE],
+					['3.0 === 3;',                              VALUE.FALSE],
+					['3.0 ==  3;',                              VALUE.TRUE],
+					['3 === 3.0;',                              VALUE.FALSE],
+					['3 ==  3.0;',                              VALUE.TRUE],
+					['0.0 === 0.0;',                            VALUE.TRUE],
+					['0.0 ==  0.0;',                            VALUE.TRUE],
+					['0.0 === -0.0;',                           VALUE.FALSE],
+					['0.0 ==  -0.0;',                           VALUE.TRUE],
+					['0 === -0;',                               VALUE.TRUE],
+					['0 ==  -0;',                               VALUE.TRUE],
+					['0.0 === 0;',                              VALUE.FALSE],
+					['0.0 ==  0;',                              VALUE.TRUE],
+					['0.0 === -0;',                             VALUE.FALSE],
+					['0.0 ==  -0;',                             VALUE.TRUE],
+					['-0.0 === 0;',                             VALUE.FALSE],
+					['-0.0 ==  0;',                             VALUE.TRUE],
+					['-0.0 === 0.0;',                           VALUE.FALSE],
+					['-0.0 ==  0.0;',                           VALUE.TRUE],
+					['"" == "";',                               VALUE.TRUE],
+					['"a" === "a";',                            VALUE.TRUE],
+					['"a" ==  "a";',                            VALUE.TRUE],
+					['"hello\\u{20}world" === "hello world";',  VALUE.TRUE],
+					['"hello\\u{20}world" ==  "hello world";',  VALUE.TRUE],
+					['"a" !== "b";',                            VALUE.TRUE],
+					['"a" !=  "b";',                            VALUE.TRUE],
+					['"hello\\u{20}world" !== "hello20world";', VALUE.TRUE],
+					['"hello\\u{20}world" !=  "hello20world";', VALUE.TRUE],
 				]));
 			});
 			it('with int coercion off, does not coerce ints into floats.', () => {
 				foldOperations(new Map<string, VALUE.Value>([
-					['7   === 7.0;', VALUE.Boolean.FALSE],
-					['7   ==  7.0;', VALUE.Boolean.FALSE],
-					['7.0 === 7;',   VALUE.Boolean.FALSE],
-					['7.0 ==  7;',   VALUE.Boolean.FALSE],
+					['7   === 7.0;', VALUE.FALSE],
+					['7   ==  7.0;', VALUE.FALSE],
+					['7.0 === 7;',   VALUE.FALSE],
+					['7.0 ==  7;',   VALUE.FALSE],
 				]), CONFIG_COERCION_OFF);
 			});
 			it('compound types.', () => {
@@ -925,19 +924,19 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.children.slice(13).forEach((stmt) => {
-					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), VALUE.Boolean.TRUE, stmt.source);
+					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), VALUE.TRUE, stmt.source);
 				});
 			});
 			it('compound value types’ constituents are compared using same operand.', () => {
 				foldOperations(new Map([
-					['[   42.0] === [   42];',   VALUE.Boolean.FALSE],
-					['[   42.0] ==  [   42];',   VALUE.Boolean.TRUE],
-					['[a= 42.0] === [a= 42];',   VALUE.Boolean.FALSE],
-					['[a= 42.0] ==  [a= 42];',   VALUE.Boolean.TRUE],
-					['[    0.0] === [   -0.0];', VALUE.Boolean.FALSE],
-					['[    0.0] ==  [   -0.0];', VALUE.Boolean.TRUE],
-					['[a=  0.0] === [a= -0.0];', VALUE.Boolean.FALSE],
-					['[a=  0.0] ==  [a= -0.0];', VALUE.Boolean.TRUE],
+					['[   42.0] === [   42];',   VALUE.FALSE],
+					['[   42.0] ==  [   42];',   VALUE.TRUE],
+					['[a= 42.0] === [a= 42];',   VALUE.FALSE],
+					['[a= 42.0] ==  [a= 42];',   VALUE.TRUE],
+					['[    0.0] === [   -0.0];', VALUE.FALSE],
+					['[    0.0] ==  [   -0.0];', VALUE.TRUE],
+					['[a=  0.0] === [a= -0.0];', VALUE.FALSE],
+					['[a=  0.0] ==  [a= -0.0];', VALUE.TRUE],
 				]));
 			});
 		});
@@ -1041,14 +1040,14 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			it('with constant folding on.', () => {
 				typeOperations(new Map<string, VALUE.Primitive>([
-					['null  && false;', VALUE.Null.NULL],
-					['false && null;',  VALUE.Boolean.FALSE],
-					['true  && null;',  VALUE.Null.NULL],
-					['false && 42;',    VALUE.Boolean.FALSE],
-					['4.2   && true;',  VALUE.Boolean.TRUE],
-					['null  || false;', VALUE.Boolean.FALSE],
-					['false || null;',  VALUE.Null.NULL],
-					['true  || null;',  VALUE.Boolean.TRUE],
+					['null  && false;', VALUE.NULL],
+					['false && null;',  VALUE.FALSE],
+					['true  && null;',  VALUE.NULL],
+					['false && 42;',    VALUE.FALSE],
+					['4.2   && true;',  VALUE.TRUE],
+					['null  || false;', VALUE.FALSE],
+					['false || null;',  VALUE.NULL],
+					['true  || null;',  VALUE.TRUE],
 					['false || 42;',    new VALUE.Integer(42n)],
 					['4.2   || true;',  new VALUE.Float(4.2)],
 				]));
@@ -1068,7 +1067,7 @@ describe('ASTNodeOperation', () => {
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL,
-							TYPE.NULL.union(VALUE.Boolean.FALSETYPE),
+							TYPE.NULL.union(TYPE.FALSE),
 							TYPE.NULL.union(TYPE.VOID),
 						]);
 					});
@@ -1091,8 +1090,8 @@ describe('ASTNodeOperation', () => {
 						return assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL.union(hello),
 							TYPE.NULL.union(hello),
-							VALUE.Boolean.FALSETYPE.union(hello),
-							VALUE.Boolean.FALSETYPE.union(hello),
+							TYPE.FALSE.union(hello),
+							TYPE.FALSE.union(hello),
 							TYPE.VOID.union(typeUnit(42n)),
 						]);
 					});
@@ -1106,7 +1105,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
-							VALUE.Boolean.TRUETYPE,
+							TYPE.TRUE,
 							TYPE.NULL,
 						]);
 					});
@@ -1124,7 +1123,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
-							VALUE.Boolean.FALSETYPE,
+							TYPE.FALSE,
 							typeUnit(42n),
 							typeUnit(4.2),
 						]);
@@ -1148,8 +1147,8 @@ describe('ASTNodeOperation', () => {
 						assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.INT.union(hello),
 							TYPE.INT.union(hello),
-							VALUE.Boolean.TRUETYPE.union(hello),
-							VALUE.Boolean.TRUETYPE.union(TYPE.FLOAT).union(hello),
+							TYPE.TRUE.union(hello),
+							TYPE.TRUE.union(TYPE.FLOAT).union(hello),
 							TYPE.STR.union(typeUnit(42n)),
 						]);
 					});
@@ -1174,16 +1173,16 @@ describe('ASTNodeOperation', () => {
 
 		specify('#fold', () => {
 			foldOperations(new Map<string, VALUE.Value>([
-				['null && 5;',     VALUE.Null.NULL],
+				['null && 5;',     VALUE.NULL],
 				['null || 5;',     new VALUE.Integer(5n)],
-				['5 && null;',     VALUE.Null.NULL],
+				['5 && null;',     VALUE.NULL],
 				['5 || null;',     new VALUE.Integer(5n)],
-				['5.1 && true;',   VALUE.Boolean.TRUE],
+				['5.1 && true;',   VALUE.TRUE],
 				['5.1 || true;',   new VALUE.Float(5.1)],
 				['3.1 && 5;',      new VALUE.Integer(5n)],
 				['3.1 || 5;',      new VALUE.Float(3.1)],
-				['false && null;', VALUE.Boolean.FALSE],
-				['false || null;', VALUE.Null.NULL],
+				['false && null;', VALUE.FALSE],
+				['false || null;', VALUE.NULL],
 			]));
 		});
 
@@ -1378,8 +1377,8 @@ describe('ASTNodeOperation', () => {
 			context('with constant folding on.', () => {
 				it('computes type for for conditionals.', () => {
 					typeOperations(new Map<string, VALUE.Primitive>([
-						['if true then false else 2;',          VALUE.Boolean.FALSE],
-						['if false then 3.0 else null;',        VALUE.Null.NULL],
+						['if true then false else 2;',          VALUE.FALSE],
+						['if false then 3.0 else null;',        VALUE.NULL],
 						['if true then 2 else 3.0;',            new VALUE.Integer(2n)],
 						['if false then 2 + 3.0 else 1.0 * 2;', new VALUE.Float(2.0)],
 					]));
@@ -1393,8 +1392,8 @@ describe('ASTNodeOperation', () => {
 
 		specify('#fold', () => {
 			foldOperations(new Map<string, VALUE.Value>([
-				['if true then false else 2;',          VALUE.Boolean.FALSE],
-				['if false then 3.0 else null;',        VALUE.Null.NULL],
+				['if true then false else 2;',          VALUE.FALSE],
+				['if false then 3.0 else null;',        VALUE.NULL],
 				['if true then 2 else 3.0;',            new VALUE.Integer(2n)],
 				['if false then 2 + 3.0 else 1.0 * 2;', new VALUE.Float(2.0)],
 			]));

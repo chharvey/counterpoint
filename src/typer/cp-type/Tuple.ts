@@ -1,20 +1,22 @@
 import * as assert from 'assert';
 import {TypeErrorNoEntry} from '../../index.js';
-import {
-	type IntRange,
-	strictEqual,
-	instanceOf,
-	memoizeBinOp,
-} from '../../lib/index.js';
+import type {IntRange} from '../../lib/index.js';
 import type {
 	ValidAccessOperator,
 	AST,
 } from '../../validator/index.js';
 import type {TypeEntry} from '../utils-public.js';
+import {
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
+} from '../utils-private.js';
 import * as VALUE from '../cp-value/index.js';
 import {updateAccessedStaticType} from './utils-private.js';
-import {subtypeDeco} from './decorators.js';
-import type {Type} from './Type.js';
+import {
+	subtypeRules,
+	type Type,
+} from './Type.js';
 import {Union} from './Union.js';
 import {ValueType} from './ValueType.js';
 
@@ -72,7 +74,7 @@ class TypeTuple extends ValueType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	@instanceOf(() => TypeTuple)
 	public override isSubtypeOf(t: Type): boolean {
 		return (

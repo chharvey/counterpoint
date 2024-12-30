@@ -22,8 +22,10 @@ import {
 	bothFloats,
 	neitherFloats,
 } from './utils-private.js';
-import {buildDeco} from './decorators.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {
+	buildDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 

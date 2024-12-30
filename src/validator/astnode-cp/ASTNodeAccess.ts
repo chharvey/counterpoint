@@ -20,13 +20,13 @@ import {
 	Operator,
 	type ValidAccessOperator,
 } from '../Operator.js';
+import {ASTNodeKey} from './ASTNodeKey.js';
+import {ASTNodeIndex} from './ASTNodeIndex.js';
 import {
 	buildDeco,
 	typeDeco,
-} from './decorators.js';
-import {ASTNodeKey} from './ASTNodeKey.js';
-import {ASTNodeIndex} from './ASTNodeIndex.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
 
 
 
@@ -132,7 +132,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (base_value === null) {
 			return null;
 		}
-		if (this.optional && base_value.identical(VALUE.Null.NULL)) {
+		if (this.optional && base_value.identical(VALUE.NULL)) {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
