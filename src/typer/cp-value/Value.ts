@@ -1,4 +1,5 @@
 import type binaryen from 'binaryen';
+import {assert_context_name} from '../../lib/index.js';
 import {strictEqual} from '../utils-private.js';
 import type {TYPE} from '../index.js';
 import {String as ValueString} from './index.js';
@@ -11,9 +12,10 @@ import {String as ValueString} from './index.js';
  * @implements MethodDecorator<Value, Value['equal']>
  */
 export function identical(
-	method:   Value['equal'],
-	_context: ClassMethodDecoratorContext<Value, typeof method>,
+	method:  Value['equal'],
+	context: ClassMethodDecoratorContext<Value, typeof method>,
 ): typeof method {
+	assert_context_name(context, 'equal');
 	return function (this: Value, value) {
 		return this.identical(value) || method.call(this, value);
 	};

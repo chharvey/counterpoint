@@ -1,7 +1,10 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {TYPE} from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+import {
+	assert_context_name,
+	memoizeMethod,
+} from '../../lib/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
 import {
@@ -57,9 +60,10 @@ function forEither<T>(array: readonly T[], callback: (item: T, i: number, src: r
  * @implements MethodDecorator<ASTNodeCollectionLiteral, ASTNodeCollectionLiteral['assignTo']>
  */
 export function assignToDeco(
-	method:   ASTNodeCollectionLiteral['assignTo'],
-	_context: ClassMethodDecoratorContext<ASTNodeCollectionLiteral, typeof method>,
+	method:  ASTNodeCollectionLiteral['assignTo'],
+	context: ClassMethodDecoratorContext<ASTNodeCollectionLiteral, typeof method>,
 ): typeof method {
+	assert_context_name(context, 'assignTo');
 	return function (this: ASTNodeCollectionLiteral, assignee) {
 		if (assignee instanceof TYPE.Intersection) {
 			/* A value is assignable to a type intersection if and only if

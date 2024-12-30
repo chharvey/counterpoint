@@ -1,3 +1,4 @@
+import {assert_context_name} from '../../lib/index.js';
 import {OBJ} from './index.js';
 import {Type} from './Type.js';
 
@@ -9,9 +10,10 @@ import {Type} from './Type.js';
  * @implements MethodDecorator<Type, Type['isSubtypeOf']>
  */
 export function isObjectType(
-	method:   Type['isSubtypeOf'],
-	_context: ClassMethodDecoratorContext<Type, typeof method>,
+	method:  Type['isSubtypeOf'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
+	assert_context_name(context, 'isSubtypeOf');
 	return function (this: Type, t) {
 		return t.equals(OBJ) || method.call(this, t);
 	};

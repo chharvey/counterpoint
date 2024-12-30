@@ -5,7 +5,10 @@ import {
 	TYPE,
 	ErrorCode,
 } from '../../index.js';
-import {assert_instanceof} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	assert_context_name,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -26,9 +29,10 @@ import {ASTNodeCP} from './ASTNodeCP.js';
  * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['build']>
  */
 export function buildDeco(
-	method:   ASTNodeExpression['build'],
-	_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
+	method:  ASTNodeExpression['build'],
+	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
 ): typeof method {
+	assert_context_name(context, 'build');
 	return function (this: ASTNodeExpression) {
 		const value: VALUE.Value | null       = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
 		const built: binaryen.ExpressionRef   = value?.build(this.builder.module) ?? method.call(this);
@@ -47,9 +51,10 @@ export function buildDeco(
  * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['type']>
  */
 export function typeDeco(
-	method:   ASTNodeExpression['type'],
-	_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
+	method:  ASTNodeExpression['type'],
+	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
 ): typeof method {
+	assert_context_name(context, 'type');
 	return function (this: ASTNodeExpression) {
 		const type: TYPE.Type = method.call(this); // type-check first, to re-throw any TypeErrors
 		if (this.validator.config.compilerOptions.constantFolding) {

@@ -1,4 +1,5 @@
 import * as xjs from 'extrajs';
+import {assert_context_name} from '../../lib/index.js';
 import {
 	languageValuesIdentical,
 	strictEqual,
@@ -30,9 +31,10 @@ import {
  * @implements MethodDecorator<Type, Type['toString']>
  */
 export function botOrTopString(
-	method: Type['toString'],
-	_context: ClassMethodDecoratorContext<Type, typeof method>,
+	method:  Type['toString'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
+	assert_context_name(context, 'toString');
 	return function (this: Type) {
 		return (
 			this.isBottomType ? NEVER  .toString() :
@@ -81,9 +83,10 @@ export function typeConstant(
  * @implements MethodDecorator<Type, Type['intersect']>
  */
 export function intersectionRules(
-	method:   Type['intersect'],
-	_context: ClassMethodDecoratorContext<Type, typeof method>,
+	method:  Type['intersect'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
+	assert_context_name(context, 'intersect');
 	return function (this: Type, t) {
 		/* 1-5 | `T  & never   == never` */
 		if (this.isBottomType || t.isBottomType) {
@@ -116,9 +119,10 @@ export function intersectionRules(
  * @implements MethodDecorator<Type, Type['union']>
  */
 export function unionRules(
-	method:   Type['union'],
-	_context: ClassMethodDecoratorContext<Type, typeof method>,
+	method:  Type['union'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
+	assert_context_name(context, 'union');
 	return function (this: Type, t) {
 		/* 1-7 | `T \| never   == T` */
 		if (this.isBottomType) {
@@ -151,9 +155,10 @@ export function unionRules(
  * @implements MethodDecorator<Type, Type['subtract']>
  */
 export function differenceRules(
-	method:   Type['subtract'],
-	_context: ClassMethodDecoratorContext<Type, typeof method>,
+	method:  Type['subtract'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
+	assert_context_name(context, 'subtract');
 	return function (this: Type, t) {
 		/* 4-1 | `A - B == A  <->  A & B == never` */
 		if (this.intersect(t).isBottomType) {
@@ -182,9 +187,10 @@ export function differenceRules(
  * @implements MethodDecorator<Type, Type['isSubtypeOf']>
  */
 export function subtypeRules(
-	method:   Type['isSubtypeOf'],
-	_context: ClassMethodDecoratorContext<Type, typeof method>,
+	method:  Type['isSubtypeOf'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
+	assert_context_name(context, 'isSubtypeOf');
 	return function (this: Type, t) {
 		/* 2-7 | `A <: A` */
 		if (this === t) {
