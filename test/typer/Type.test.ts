@@ -1277,21 +1277,19 @@ describe('Type', () => {
 
 
 	describe('Tuple', () => {
-		specify('#getBuiltIndices', () => {
-			const tuple1: TYPE.Tuple = TYPE.Tuple.fromTypes([
+		specify('#test_getBuiltIndices', () => {
+			TYPE.Tuple.fromTypes([
 				typeUnit('a'),
 				TYPE.Tuple.fromTypes([typeUnit('b')]),
 				TYPE.Tuple.fromTypes([
 					typeUnit('c'),
 					TYPE.Tuple.fromTypes([typeUnit('d')]),
 				]),
-			]);
-			assert.deepStrictEqual(
-				[...new Array(Number(tuple1.minCount))].map((_, i) => tuple1.getBuiltIndices(i)),
+			]).test_getBuiltIndices(
 				[0, [1], [2, 3]],
 				'[A, [B], [C, [D]]] => [0, [1], [2, 3]]',
 			);
-			const tuple2: TYPE.Tuple = TYPE.Tuple.fromTypes([
+			return TYPE.Tuple.fromTypes([
 				typeUnit('a'),
 				TYPE.Tuple.fromTypes([
 					typeUnit('b'),
@@ -1306,9 +1304,7 @@ describe('Type', () => {
 					typeUnit('cc'),
 				]),
 				typeUnit('aa'),
-			]);
-			assert.deepStrictEqual(
-				[...new Array(Number(tuple2.minCount))].map((_, i) => tuple2.getBuiltIndices(i)),
+			]).test_getBuiltIndices(
 				[0, [1, 2], [3, 4, 5, 6], 7],
 				'[A, [B, Bb], [C, [D, Dd], Cc], Aa] => [0, [1, 2], [3, 4, 5, 6], 7]',
 			);

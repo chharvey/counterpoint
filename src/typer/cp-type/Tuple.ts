@@ -1,5 +1,10 @@
 import * as assert from 'assert';
-import {TypeErrorNoEntry} from '../../index.js';
+import type binaryen from 'binaryen';
+import {
+	type Local,
+	type Builder,
+	TypeErrorNoEntry,
+} from '../../index.js';
 import type {
 	ValidAccessOperator,
 	AST,
@@ -110,7 +115,7 @@ class TypeTuple extends ValueType {
 		return Union.all(this.invariants.map((t) => t.type));
 	}
 
-	public getBuiltIndices(index: number): number | readonly number[] {
+	#getBuiltIndices(index: number): number | readonly number[] {
 		if (!this.#builtIndices) {
 			let counter: number = 0;
 			function walk(entries: readonly TypeEntry[]): typeof indices {
@@ -128,6 +133,37 @@ class TypeTuple extends ValueType {
 			this.#builtIndices = walk(this.invariants);
 		}
 		return this.#builtIndices[index];
+	}
+
+	public buildAccess(builder: Builder, base_build: binaryen.ExpressionRef, accessor_index: number): binaryen.ExpressionRef {
+		const builtIndex: number | readonly number[] = this.#getBuiltIndices(accessor_index);
+		/*
+		 * If the built index is a single number, return an extract of the build at that index.
+		 * If the built index array has length 1, return a singleton tuple containing that extract.
+		 * If the built index array length is > 1, return a tuple of extracts whose first entry is a `tee` and the rest are `get`s.
+		 */
+		if (typeof builtIndex === 'number') {
+			return builder.module.tuple.extract(base_build, builtIndex);
+		} else if (builtIndex.length === 1) {
+			return builder.module.tuple.make([
+				builder.module.tuple.extract(base_build, builtIndex[0]),
+			]);
+		} else {
+			const local: Local = builder.teeLocal(builder.varCount, base_build);
+			return builder.module.tuple.make([
+				                                  builder.module.tuple.extract(local.tee(), builtIndex[0]), // eslint-disable-line @stylistic/indent
+				...builtIndex.slice(1).map((n) => builder.module.tuple.extract(local.get(), n)),
+			]);
+		}
+	}
+
+
+	public test_getBuiltIndices(expected: readonly (number | readonly number[])[], message?: string | Error): void {
+		return assert.deepStrictEqual(
+			[...new Array(this.invariants.length)].map((_, i) => this.#getBuiltIndices(i)),
+			expected,
+			message,
+		);
 	}
 }
 export {TypeTuple as Tuple};

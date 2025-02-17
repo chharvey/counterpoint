@@ -3,7 +3,6 @@ import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
-	type Local,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
@@ -63,26 +62,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (this.accessor instanceof ASTNodeIndex) {
 			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeTuple);`
 			if (base_type instanceof TYPE.Tuple) {
-				const index: number | readonly number[] = base_type.getBuiltIndices((this.accessor.val.fold() as VALUE.Integer).toNumber()); // TODO: v0.4.3: use `Number(this.accessor.index)`
-
-				/*
-				 * If the index is a single number, return an extract of the build at that index.
-				 * If the index array has length 1, return a singleton tuple containing that extract.
-				 * If the index array length is > 1, return a tuple of extracts whose first entry is a `tee` and the rest are `get`s.
-				 */
-				if (typeof index === 'number') {
-					return this.builder.module.tuple.extract(base_build, index);
-				} else if (index.length === 1) {
-					return this.builder.module.tuple.make([
-						this.builder.module.tuple.extract(base_build, index[0]),
-					]);
-				} else {
-					const local: Local = this.builder.teeLocal(this.builder.varCount, base_build);
-					return this.builder.module.tuple.make([
-						                                         this.builder.module.tuple.extract(local.tee(), index[0]), // eslint-disable-line @stylistic/indent
-						...index.slice(1).map((n) => this.builder.module.tuple.extract(local.get(), n)),
-					]);
-				}
+				return base_type.buildAccess(this.builder, base_build, (this.accessor.val.fold() as VALUE.Integer).toNumber()); // TODO: v0.4.3: use `Number(this.accessor.index)`
 			}
 			throw '`ASTNodeAccess#build` of a list is not yet supported.';
 		} else if (this.accessor instanceof ASTNodeKey) {
