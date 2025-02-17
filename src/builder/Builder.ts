@@ -6,10 +6,6 @@ import {BinVect} from './BinVect.js';
 
 
 
-export type {Local};
-
-
-
 /**
  * The Builder generates assembly code.
  */
