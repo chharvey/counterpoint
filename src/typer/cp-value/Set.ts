@@ -1,4 +1,6 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
+import type {Builder} from '../../index.js';
 import {TYPE} from '../index.js';
 import {
 	languageValuesIdentical,
@@ -57,6 +59,10 @@ class ValueSet<T extends Value = Value> extends Collection {
 	 */
 	public override toType(): TYPE.Set {
 		return new TYPE.Set(TYPE.Union.all([...this.elements].map<TYPE.Type>((el) => el.toType())));
+	}
+
+	public override build(_: Builder): binaryen.ExpressionRef {
+		throw new Error('`ValueSet#build` not yet supported.');
 	}
 
 	public get(el: T): ValueBoolean {

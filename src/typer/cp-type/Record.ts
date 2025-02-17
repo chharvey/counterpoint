@@ -86,7 +86,6 @@ class TypeRecord extends ValueType {
 		);
 	}
 
-	/** @final */
 	public get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): Type {
 		return updateAccessedStaticType(
 			((this.invariants.has(key))
@@ -97,7 +96,6 @@ class TypeRecord extends ValueType {
 		);
 	}
 
-	/** @final */
 	public valueTypes(): Type {
 		return Union.all([...this.invariants.values()].map((t) => t.type));
 	}

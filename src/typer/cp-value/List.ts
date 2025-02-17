@@ -1,3 +1,5 @@
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.js';
 import {TYPE} from '../index.js';
 import type {Value} from './Value.js';
 import {CollectionIndexed} from './CollectionIndexed.js';
@@ -19,5 +21,9 @@ export class List<T extends Value = Value> extends CollectionIndexed<T> {
 	 */
 	public override toType(): TYPE.List {
 		return new TYPE.List(TYPE.Union.all(this.items.map<TYPE.Type>((it) => it.toType())));
+	}
+
+	public override build(_: Builder): binaryen.ExpressionRef {
+		throw new Error('`List#build` not yet supported.');
 	}
 }

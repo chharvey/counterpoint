@@ -109,7 +109,6 @@ class TypeTuple extends ValueType {
 		);
 	}
 
-	/** @final */
 	public get(index: VALUE.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
 		const n: number = this.invariants.length;
 		const i: number = index.toNumber();
@@ -123,7 +122,6 @@ class TypeTuple extends ValueType {
 		);
 	}
 
-	/** @final */
 	public itemTypes(): Type {
 		return Union.all(this.invariants.map((t) => t.type));
 	}
