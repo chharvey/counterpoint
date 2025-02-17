@@ -63,7 +63,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (this.accessor instanceof ASTNodeIndex) {
 			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeTuple);`
 			if (base_type instanceof TYPE.Tuple) {
-				const index: number | readonly number[] = base_type.builtIndices[(this.accessor.val.fold() as VALUE.Integer).toNumber()]; // TODO: v0.4.3: use `Number(this.accessor.index)`
+				const index: number | readonly number[] = base_type.getBuiltIndices((this.accessor.val.fold() as VALUE.Integer).toNumber()); // TODO: v0.4.3: use `Number(this.accessor.index)`
 
 				/*
 				 * If the index is a single number, return an extract of the build at that index.

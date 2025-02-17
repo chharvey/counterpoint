@@ -45,7 +45,7 @@ class TypeTuple extends ValueType {
 	 * [A, [B], [C, [D]]]                 => [0, [1], [2, 3]]
 	 * [A, [B, Bb], [C, [D, Dd], Cc], Aa] => [0, [1, 2], [3, 4, 5, 6], 7]
 	 */
-	public readonly builtIndices: readonly (number | readonly number[])[];
+	#builtIndices?: readonly (number | readonly number[])[];
 
 	/**
 	 * Construct a new TypeTuple object.
@@ -53,22 +53,6 @@ class TypeTuple extends ValueType {
 	 */
 	public constructor(public readonly invariants: readonly TypeEntry[] = []) {
 		super(false, new Set([new VALUE.Tuple()]));
-
-		let counter: number = 0;
-		function walk(entries: readonly TypeEntry[]): typeof indices {
-			const indices: Array<number | readonly number[]> = [];
-			entries.forEach((entry) => {
-				if (entry.type instanceof TypeTuple) {
-					indices.push(walk(entry.type.invariants).flat()); // only need to flatten once, due to recursion
-				} else {
-					indices.push(counter);
-					counter += 1;
-				}
-			});
-			return indices;
-		}
-
-		this.builtIndices = walk(this.invariants);
 	}
 
 	public override get hasMutable(): boolean {
@@ -124,6 +108,26 @@ class TypeTuple extends ValueType {
 
 	public itemTypes(): Type {
 		return Union.all(this.invariants.map((t) => t.type));
+	}
+
+	public getBuiltIndices(index: number): number | readonly number[] {
+		if (!this.#builtIndices) {
+			let counter: number = 0;
+			function walk(entries: readonly TypeEntry[]): typeof indices {
+				const indices: Array<number | readonly number[]> = [];
+				entries.forEach((entry) => {
+					if (entry.type instanceof TypeTuple) {
+						indices.push(walk(entry.type.invariants).flat()); // only need to flatten once, due to recursion
+					} else {
+						indices.push(counter);
+						counter += 1;
+					}
+				});
+				return indices;
+			}
+			this.#builtIndices = walk(this.invariants);
+		}
+		return this.#builtIndices[index];
 	}
 }
 export {TypeTuple as Tuple};
