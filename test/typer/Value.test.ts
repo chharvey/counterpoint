@@ -300,7 +300,7 @@ describe('Value', () => {
 					]);
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(builder, 7n),
-						new BinVect(mod, 'tuple').vect,
+						buildConst(builder, []),
 					]);
 					return assertEqualBins(
 						new VALUE.Tuple([

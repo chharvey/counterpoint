@@ -562,7 +562,7 @@ describe('ASTNodeExpression', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
-						new BinVect(tuple.builder.module, 'tuple').vect,
+						buildConst(tuple.builder, []),
 					);
 				});
 				it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
@@ -580,7 +580,7 @@ describe('ASTNodeExpression', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
-						tuple.builder.module.tuple.make([new BinVect(tuple.builder.module, 'tuple').vect, buildConst(tuple.builder)]),
+						tuple.builder.module.tuple.make([buildConst(tuple.builder, []), buildConst(tuple.builder)]),
 					);
 				});
 				it('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
@@ -589,7 +589,7 @@ describe('ASTNodeExpression', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
-						tuple.builder.module.tuple.make([tuple.builder.module.tuple.extract(tuple.builder.module.tuple.make([new BinVect(tuple.builder.module, 'tuple').vect, buildConst(tuple.builder)]), 0), buildConst(tuple.builder)]),
+						tuple.builder.module.tuple.make([tuple.builder.module.tuple.extract(tuple.builder.module.tuple.make([buildConst(tuple.builder, []), buildConst(tuple.builder)]), 0), buildConst(tuple.builder)]),
 					);
 				});
 				it('boxed tuple with 1 item.', () => {
@@ -662,7 +662,7 @@ describe('ASTNodeExpression', () => {
 					]);
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(bldr, 7n),
-						new BinVect(mod, 'tuple').vect,
+						buildConst(bldr, []),
 					]);
 					return assertEqualBins(
 						tuple.build(),
