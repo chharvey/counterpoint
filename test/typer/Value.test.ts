@@ -107,7 +107,7 @@ describe('Value', () => {
 				const builder = new Builder();
 				return assertEqualBins(
 					VALUE.NULL.build(builder),
-					new BinVect(builder.module, null).vect,
+					new BinVect(builder.module).vect,
 				);
 			});
 		});

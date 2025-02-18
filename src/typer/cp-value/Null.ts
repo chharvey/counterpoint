@@ -44,6 +44,6 @@ export class Null extends Primitive {
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return new BinVect(builder.module, null).vect;
+		return new BinVect(builder.module).vect;
 	}
 }

@@ -64,7 +64,7 @@ export function build_tuple_like<T>(
 	// Binaryen does not allow `module.tuple.make` to be called with only 1 argument,
 	// so if there is only 1 item then we add an additional unused item.
 	return builder.module.tuple.make((builds.length === 1
-		? [builds[0], new BinVect(builder.module, null).vect]
+		? [builds[0], new BinVect(builder.module).vect]
 		: [...builds]
 	));
 }
@@ -128,7 +128,7 @@ export function build_record_like<T>(
 		// Binaryen does not allow `module.tuple.make` to be called with only 1 argument,
 		// so if there is only 1 item then we add an additional unused item.
 		return builder.module.tuple.make((builds.length === 1
-			? [builds[0].expr, new BinVect(builder.module, null).vect]
+			? [builds[0].expr, new BinVect(builder.module).vect]
 			: builds.map(({expr}) => expr)
 		));
 	}
