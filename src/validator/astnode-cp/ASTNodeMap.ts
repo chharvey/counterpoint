@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -18,6 +19,7 @@ import {ASTNodeCP} from './ASTNodeCP.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {
 	ASTNodeExpression,
+	buildDeco,
 	typeDeco,
 } from './ASTNodeExpression.js';
 import {
@@ -39,6 +41,12 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		public override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, children);
+	}
+
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		throw '`ASTNodeMap#build` not yet supported.';
 	}
 
 	@memoizeMethod

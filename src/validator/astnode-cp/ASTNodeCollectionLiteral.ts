@@ -1,16 +1,9 @@
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {TYPE} from '../../index.js';
-import {
-	assert_context_name,
-	memoizeMethod,
-} from '../../lib/index.js';
+import {assert_context_name} from '../../lib/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeCP} from './ASTNodeCP.js';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.js';
+import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
 
@@ -99,12 +92,6 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 		children: readonly ASTNodeCP[],
 	) {
 		super(start_node, {}, children);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw '`ASTNodeCollectionLiteral#build_do` not yet supported.';
 	}
 
 	/**

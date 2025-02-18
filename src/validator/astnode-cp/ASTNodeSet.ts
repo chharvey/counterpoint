@@ -1,3 +1,4 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -16,6 +17,7 @@ import type {SyntaxNodeType} from '../utils-private.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
 import {
 	ASTNodeExpression,
+	buildDeco,
 	typeDeco,
 } from './ASTNodeExpression.js';
 import {
@@ -37,6 +39,12 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
+	}
+
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		throw '`ASTNodeSet#build` not yet supported.';
 	}
 
 	@memoizeMethod
