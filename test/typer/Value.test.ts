@@ -229,10 +229,9 @@ describe('Value', () => {
 					);
 				});
 				it('boxed tuple with 1 item.', () => {
-					const mod: binaryen.Module = builder.module;
-					return assertEqualBins(
+					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Float(3.4)])]).build(builder),
-						singletonTuple(builder, mod.tuple.extract(singletonTuple(builder, buildConst(builder, 3.4)), 0)),
+						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 3.4)), 0)),
 						'[[3.4]]',
 					);
 				});
@@ -364,10 +363,9 @@ describe('Value', () => {
 					);
 				});
 				it('boxed record with 1 prop.', () => {
-					const mod: binaryen.Module = builder.module;
-					return assertEqualBins(
+					assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]]))]])).build(builder),
-						singletonTuple(builder, mod.tuple.extract(singletonTuple(builder, buildConst(builder, 3.4)), 0)),
+						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 3.4)), 0)),
 						'[a= [a= 3.4]]',
 					);
 				});

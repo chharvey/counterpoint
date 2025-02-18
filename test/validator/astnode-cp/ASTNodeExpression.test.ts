@@ -597,20 +597,18 @@ describe('ASTNodeExpression', () => {
 					const src = '[[3.4]];';
 					testModuleValidation(src);
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
-					const mod:   binaryen.Module  = tuple.builder.module;
 					return assertEqualBins(
 						tuple.build(),
-						singletonTuple(tuple.builder, mod.tuple.extract(singletonTuple(tuple.builder, buildConst(tuple.builder, 3.4)), 0)),
+						singletonTuple(tuple.builder, tuple.builder.module.tuple.extract(singletonTuple(tuple.builder, buildConst(tuple.builder, 3.4)), 0)),
 					);
 				});
 				it('boxed tuple with many items.', () => {
 					const tuple: AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[[1, 2.0, true]];', CONFIG_FOLDING_OFF);
-					const bldr:  Builder                = tuple.builder;
-					const mod:   binaryen.Module        = bldr.module;
+					const mod:   binaryen.Module        = tuple.builder.module;
 					const inner: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(bldr, 1n),
-						buildConst(bldr, 2.0),
-						buildConst(bldr, true),
+						buildConst(tuple.builder, 1n),
+						buildConst(tuple.builder, 2.0),
+						buildConst(tuple.builder, true),
 					]);
 					return assertEqualBins(
 						tuple.build(),
@@ -684,10 +682,9 @@ describe('ASTNodeExpression', () => {
 			describe('ASTNodeRecord', () => {
 				it('returns `(tuple.make)`.', () => {
 					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource('[a= 1, b= 2.0];', CONFIG_FOLDING_OFF);
-					const bldr:   Builder           = record.builder;
 					return assertEqualBins(
 						record.build(),
-						bldr.module.tuple.make([buildConst(bldr, 1n), buildConst(bldr, 2.0)]),
+						record.builder.module.tuple.make([buildConst(record.builder, 1n), buildConst(record.builder, 2.0)]),
 					);
 				});
 				it('returns a `(block)` with `(set)`s followed by a `(tuple.make)` with `(get)`s if source order differs from key order.', () => {
@@ -731,20 +728,18 @@ describe('ASTNodeExpression', () => {
 					const src = '[a= [a= 3.4]];';
 					testModuleValidation(src);
 					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(src, CONFIG_FOLDING_OFF);
-					const mod:    binaryen.Module   = record.builder.module;
 					return assertEqualBins(
 						record.build(),
-						singletonTuple(record.builder, mod.tuple.extract(singletonTuple(record.builder, buildConst(record.builder, 3.4)), 0)),
+						singletonTuple(record.builder, record.builder.module.tuple.extract(singletonTuple(record.builder, buildConst(record.builder, 3.4)), 0)),
 					);
 				});
 				it('boxed record with many props.', () => {
 					const record: AST.ASTNodeRecord      = AST.ASTNodeRecord.fromSource('[a= [a= 1, b= 2.0, c= true]];', CONFIG_FOLDING_OFF);
-					const bldr:   Builder                = record.builder;
-					const mod:    binaryen.Module        = bldr.module;
+					const mod:    binaryen.Module        = record.builder.module;
 					const inner:  binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(bldr, 1n),
-						buildConst(bldr, 2.0),
-						buildConst(bldr, true),
+						buildConst(record.builder, 1n),
+						buildConst(record.builder, 2.0),
+						buildConst(record.builder, true),
 					]);
 					return assertEqualBins(
 						record.build(),
