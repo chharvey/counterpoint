@@ -975,7 +975,7 @@ describe('ASTNodeAccess', () => {
 					builder.module.tuple.extract(builder.module.local.get(0, bintype2), 1),
 				]);
 				const inner1: binaryen.ExpressionRef = builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.tuple.make([buildConst(builder, 4.4)]), 0),
+					builder.module.tuple.extract(builder.module.tuple.make([buildConst(builder, 4.4), buildConst(builder)]), 0),
 					builder.module.tuple.extract(builder.module.local.tee(2, inner11, bintype2), 0),
 					builder.module.tuple.extract(builder.module.local.get(2, bintype2), 1),
 				]);
@@ -1009,9 +1009,7 @@ describe('ASTNodeAccess', () => {
 				]);
 			}
 			function make_tuple_1_0(builder: Builder): binaryen.ExpressionRef {
-				return builder.module.tuple.make([
-					builder.module.tuple.extract(make_tuple_1(builder), 0),
-				]);
+				return singletonTuple(builder, builder.module.tuple.extract(make_tuple_1(builder), 0));
 			}
 			function make_tuple_1_1(builder: Builder): binaryen.ExpressionRef {
 				return builder.module.tuple.make([

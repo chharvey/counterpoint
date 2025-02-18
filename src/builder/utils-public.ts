@@ -26,16 +26,17 @@ export function build_tuple_like<T>(
 	if (!items.length) {
 		return new BinVect(builder.module, 'tuple').vect;
 	}
-	return builder.module.tuple.make(items.flatMap<binaryen.ExpressionRef>((item) => {
+
+	/**
+	 * If item is neither a tuple nor a record or is an empty tuple, return the original item build.
+	 * FIXME: If item is a record, throw an error.
+	 * If item is tuple of length 1, return a single extract.
+	 * If item length is > 1, return an array of extracts whose first entry is a `tee` and the rest are `get`s.
+	 */
+	const builds: readonly binaryen.ExpressionRef[] = items.flatMap<binaryen.ExpressionRef>((item) => {
 		const item_type:  TYPE.Type              = type_fn.call(null, item);
 		const item_build: binaryen.ExpressionRef = build_fn.call(null, item);
 
-		/*
-		 * If item is neither a tuple nor a record or is an empty tuple, return original item build.
-		 * FIXME: If item is a record, throw an error.
-		 * If item is tuple of length 1, return a single extract.
-		 * If item length is > 1, return an array of extracts whose first entry is a `tee` and the rest are `get`s.
-		 */
 		if (
 			!(item_type instanceof TYPE.Tuple) && !(item_type instanceof TYPE.Record) ||
 			item_type instanceof TYPE.Tuple && item_type.invariants.length === 0
@@ -58,7 +59,14 @@ export function build_tuple_like<T>(
 				...expanded.slice(1).map((_, i) => builder.module.tuple.extract(local.get(), i + 1)),
 			];
 		}
-	}));
+	});
+
+	// Binaryen does not allow `module.tuple.make` to be called with only 1 argument,
+	// so if there is only 1 item then we add an additional unused item.
+	return builder.module.tuple.make((builds.length === 1
+		? [builds[0], new BinVect(builder.module, null).vect]
+		: [...builds]
+	));
 }
 
 
@@ -79,16 +87,16 @@ export function build_record_like<T>(
 ): binaryen.ExpressionRef {
 	assert.ok(properties.size, 'Record should be nonempty.');
 
+	/**
+	 * If value is neither a tuple nor a record or is an empty tuple, return the original value build.
+	 * FIXME: If value is a nonempty tuple, throw an error.
+	 * If value is record of size 1, return a single extract.
+	 * If value size is > 1, return an array of extracts whose first entry is a `tee` and the rest are `get`s.
+	 */
 	const builds: readonly {readonly id: bigint, readonly expr: binaryen.ExpressionRef}[] = [...properties].flatMap(([id, value]) => {
 		const value_type:  TYPE.Type              = type_fn.call(null, value);
 		const value_build: binaryen.ExpressionRef = build_fn.call(null, value);
 
-		/*
-		 * If value is neither a tuple nor a record or is an empty tuple, return original value build.
-		 * FIXME: If value is a nonempty tuple, throw an error.
-		 * If value is record of size 1, return a single extract.
-		 * If value size is > 1, return an array of extracts whose first entry is a `tee` and the rest are `get`s.
-		 */
 		if (
 			!(value_type instanceof TYPE.Tuple) && !(value_type instanceof TYPE.Record) ||
 			value_type instanceof TYPE.Tuple && value_type.invariants.length === 0
@@ -113,17 +121,19 @@ export function build_record_like<T>(
 		}
 	});
 
-	const in_order: binaryen.ExpressionRef = builder.module.tuple.make(builds.map(({expr}) => expr));
-	if (properties.size === 1) {
-		return in_order;
-	}
-	try {
-		builds.forEach(({id}, i) => assert.ok(id <= (builds[i + 1]?.id ?? Infinity), 'Record key is in order.'));
-		return in_order;
-	} catch {
-		// continue
+	if (
+		properties.size === 1 ||
+		builds.every(({id}, i) => id <= (builds[i + 1]?.id ?? Infinity)) // record keys are in order
+	) {
+		// Binaryen does not allow `module.tuple.make` to be called with only 1 argument,
+		// so if there is only 1 item then we add an additional unused item.
+		return builder.module.tuple.make((builds.length === 1
+			? [builds[0].expr, new BinVect(builder.module, null).vect]
+			: builds.map(({expr}) => expr)
+		));
 	}
 
+	assert.ok(builds.length > 1, 'there are multiple built expressions.');
 	const locals: Array<{
 		readonly id:       bigint,
 		readonly localSet: binaryen.ExpressionRef,

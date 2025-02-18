@@ -560,14 +560,21 @@ describe('ASTNodeExpression', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[3.4];', CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
-						tuple.builder.module.tuple.make([buildConst(tuple.builder, 3.4)]),
+						tuple.builder.module.tuple.make([buildConst(tuple.builder, 3.4), buildConst(tuple.builder)]),
 					);
 				});
 				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[[]];', CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
-						tuple.builder.module.tuple.make([new BinVect(tuple.builder.module, 'tuple').vect]),
+						tuple.builder.module.tuple.make([new BinVect(tuple.builder.module, 'tuple').vect, buildConst(tuple.builder)]),
+					);
+				});
+				it('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[[[]]];', CONFIG_FOLDING_OFF);
+					return assertEqualBins(
+						tuple.build(),
+						tuple.builder.module.tuple.make([tuple.builder.module.tuple.extract(tuple.builder.module.tuple.make([new BinVect(tuple.builder.module, 'tuple').vect, buildConst(tuple.builder)]), 0), buildConst(tuple.builder)]),
 					);
 				});
 				it('boxed tuple with 1 item.', () => {
@@ -575,7 +582,7 @@ describe('ASTNodeExpression', () => {
 					const mod:   binaryen.Module  = tuple.builder.module;
 					return assertEqualBins(
 						tuple.build(),
-						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(tuple.builder, 3.4)]), 0)]),
+						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(tuple.builder, 3.4), buildConst(tuple.builder)]), 0), buildConst(tuple.builder)]),
 					);
 				});
 				it('boxed tuple with many items.', () => {
@@ -602,13 +609,13 @@ describe('ASTNodeExpression', () => {
 					const mod:    binaryen.Module        = bldr.module;
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(bldr, 3n),
-						mod.tuple.extract(mod.tuple.make([buildConst(bldr, 4.0)]), 0),
+						mod.tuple.extract(mod.tuple.make([buildConst(bldr, 4.0), buildConst(bldr)]), 0),
 					]);
 					return assertEqualBins(
 						tuple.build(),
 						mod.tuple.make([
 							buildConst(bldr, 1n),
-							mod.tuple.extract(mod.tuple.make([buildConst(bldr, 2.0)]), 0),
+							mod.tuple.extract(mod.tuple.make([buildConst(bldr, 2.0), buildConst(bldr)]), 0),
 							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(0, bintype2), 1),
 						]),
@@ -697,7 +704,7 @@ describe('ASTNodeExpression', () => {
 					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource('[a= 3.4];', CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						record.build(),
-						record.builder.module.tuple.make([buildConst(record.builder, 3.4)]),
+						record.builder.module.tuple.make([buildConst(record.builder, 3.4), buildConst(record.builder)]),
 					);
 				});
 				it('boxed record with 1 prop.', () => {
@@ -705,7 +712,7 @@ describe('ASTNodeExpression', () => {
 					const mod:    binaryen.Module   = record.builder.module;
 					return assertEqualBins(
 						record.build(),
-						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(record.builder, 3.4)]), 0)]),
+						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(record.builder, 3.4), buildConst(record.builder)]), 0), buildConst(record.builder)]),
 					);
 				});
 				it('boxed record with many props.', () => {
@@ -736,13 +743,13 @@ describe('ASTNodeExpression', () => {
 					const mod:    binaryen.Module        = bldr.module;
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(bldr, 3n),
-						mod.tuple.extract(mod.tuple.make([buildConst(bldr, 4.0)]), 0),
+						mod.tuple.extract(mod.tuple.make([buildConst(bldr, 4.0), buildConst(bldr)]), 0),
 					]);
 					return assertEqualBins(
 						record.build(),
 						mod.tuple.make([
 							buildConst(bldr, 1n),
-							mod.tuple.extract(mod.tuple.make([buildConst(bldr, 2.0)]), 0),
+							mod.tuple.extract(mod.tuple.make([buildConst(bldr, 2.0), buildConst(bldr)]), 0),
 							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(0, bintype2), 1),
 						]),

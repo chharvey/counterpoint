@@ -3,6 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	type Local,
 	type Builder,
+	BinVect,
 	TypeErrorNoEntry,
 } from '../../index.js';
 import type {
@@ -145,8 +146,11 @@ class TypeTuple extends ValueType {
 		if (typeof builtIndex === 'number') {
 			return builder.module.tuple.extract(base_build, builtIndex);
 		} else if (builtIndex.length === 1) {
+			// Binaryen does not allow `module.tuple.make` to be called with only 1 argument,
+			// so if there is only 1 item then we add an additional unused item.
 			return builder.module.tuple.make([
 				builder.module.tuple.extract(base_build, builtIndex[0]),
+				new BinVect(builder.module).vect,
 			]);
 		} else {
 			const local: Local = builder.teeLocal(builder.varCount, base_build);
