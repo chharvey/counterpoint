@@ -6,7 +6,10 @@ import {
 	BinVect,
 } from '../../src/index.js';
 import {assertEqualBins} from '../assert-helpers.js';
-import {buildConst} from '../helpers.js';
+import {
+	buildConst,
+	singletonTuple,
+} from '../helpers.js';
 
 
 
@@ -207,21 +210,21 @@ describe('Value', () => {
 				it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Float(3.4)]).build(builder),
-						builder.module.tuple.make([buildConst(builder, 3.4), buildConst(builder)]),
+						singletonTuple(builder, buildConst(builder, 3.4)),
 						'[3.4]',
 					);
 				});
 				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple()]).build(builder),
-						builder.module.tuple.make([new BinVect(builder.module, 'tuple').vect, buildConst(builder)]),
+						singletonTuple(builder, new BinVect(builder.module, 'tuple').vect),
 						'[[]]',
 					);
 				});
 				it('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Tuple()])]).build(builder),
-						builder.module.tuple.make([builder.module.tuple.extract(builder.module.tuple.make([new BinVect(builder.module, 'tuple').vect, buildConst(builder)]), 0), buildConst(builder)]),
+						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, new BinVect(builder.module, 'tuple').vect), 0)),
 						'[[[]]]',
 					);
 				});
@@ -229,7 +232,7 @@ describe('Value', () => {
 					const mod: binaryen.Module = builder.module;
 					return assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Float(3.4)])]).build(builder),
-						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(builder, 3.4), buildConst(builder)]), 0), buildConst(builder)]),
+						singletonTuple(builder, mod.tuple.extract(singletonTuple(builder, buildConst(builder, 3.4)), 0)),
 						'[[3.4]]',
 					);
 				});
@@ -258,7 +261,7 @@ describe('Value', () => {
 					const mod:    binaryen.Module        = builder.module;
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(builder, 3n),
-						mod.tuple.extract(mod.tuple.make([buildConst(builder, 4.0), buildConst(builder)]), 0),
+						mod.tuple.extract(singletonTuple(builder, buildConst(builder, 4.0)), 0),
 					]);
 					return assertEqualBins(
 						new VALUE.Tuple([
@@ -271,7 +274,7 @@ describe('Value', () => {
 						]).build(builder),
 						mod.tuple.make([
 							buildConst(builder, 1n),
-							mod.tuple.extract(mod.tuple.make([buildConst(builder, 2.0), buildConst(builder)]), 0),
+							mod.tuple.extract(singletonTuple(builder, buildConst(builder, 2.0)), 0),
 							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(0, bintype2), 1),
 						]),
@@ -356,7 +359,7 @@ describe('Value', () => {
 				it('record of size 1 returns a `(tuple.make)` with 1 item.', () => {
 					assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]])).build(builder),
-						builder.module.tuple.make([buildConst(builder, 3.4), buildConst(builder)]),
+						singletonTuple(builder, buildConst(builder, 3.4)),
 						'[a= 3.4]',
 					);
 				});
@@ -364,7 +367,7 @@ describe('Value', () => {
 					const mod: binaryen.Module = builder.module;
 					return assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]]))]])).build(builder),
-						mod.tuple.make([mod.tuple.extract(mod.tuple.make([buildConst(builder, 3.4), buildConst(builder)]), 0), buildConst(builder)]),
+						singletonTuple(builder, mod.tuple.extract(singletonTuple(builder, buildConst(builder, 3.4)), 0)),
 						'[a= [a= 3.4]]',
 					);
 				});
@@ -393,7 +396,7 @@ describe('Value', () => {
 					const mod:    binaryen.Module        = builder.module;
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(builder, 3n),
-						mod.tuple.extract(mod.tuple.make([buildConst(builder, 4.0), buildConst(builder)]), 0),
+						mod.tuple.extract(singletonTuple(builder, buildConst(builder, 4.0)), 0),
 					]);
 					return assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([
@@ -406,7 +409,7 @@ describe('Value', () => {
 						])).build(builder),
 						mod.tuple.make([
 							buildConst(builder, 1n),
-							mod.tuple.extract(mod.tuple.make([buildConst(builder, 2.0), buildConst(builder)]), 0),
+							mod.tuple.extract(singletonTuple(builder, buildConst(builder, 2.0)), 0),
 							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(0, bintype2), 1),
 						]),

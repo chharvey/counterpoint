@@ -17,6 +17,7 @@ import {
 	CONFIG_FOLDING_OFF,
 	typeUnit,
 	buildConst,
+	singletonTuple,
 } from '../../helpers.js';
 
 
@@ -975,7 +976,7 @@ describe('ASTNodeAccess', () => {
 					builder.module.tuple.extract(builder.module.local.get(0, bintype2), 1),
 				]);
 				const inner1: binaryen.ExpressionRef = builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.tuple.make([buildConst(builder, 4.4), buildConst(builder)]), 0),
+					builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 4.4)), 0),
 					builder.module.tuple.extract(builder.module.local.tee(2, inner11, bintype2), 0),
 					builder.module.tuple.extract(builder.module.local.get(2, bintype2), 1),
 				]);
