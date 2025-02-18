@@ -541,6 +541,13 @@ describe('ASTNodeExpression', () => {
 			const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
 			const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
 
+			function testModuleValidation(src: string): void {
+				const goal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build(); // assert does not throw
+			}
+
 			describe('ASTNodeTuple', () => {
 				it('returns `(tuple.make)`.', () => {
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF);
@@ -550,35 +557,45 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('empty tuple returns unique BinVect representation.', () => {
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[];', CONFIG_FOLDING_OFF);
+					const src = '[];';
+					testModuleValidation(src);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
 						new BinVect(tuple.builder.module, 'tuple').vect,
 					);
 				});
 				it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[3.4];', CONFIG_FOLDING_OFF);
+					const src = '[3.4];';
+					testModuleValidation(src);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
 						tuple.builder.module.tuple.make([buildConst(tuple.builder, 3.4), buildConst(tuple.builder)]),
 					);
 				});
 				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[[]];', CONFIG_FOLDING_OFF);
+					const src = '[[]];';
+					testModuleValidation(src);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
 						tuple.builder.module.tuple.make([new BinVect(tuple.builder.module, 'tuple').vect, buildConst(tuple.builder)]),
 					);
 				});
 				it('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[[[]]];', CONFIG_FOLDING_OFF);
+					const src = '[[[]]];';
+					testModuleValidation(src);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
 						tuple.builder.module.tuple.make([tuple.builder.module.tuple.extract(tuple.builder.module.tuple.make([new BinVect(tuple.builder.module, 'tuple').vect, buildConst(tuple.builder)]), 0), buildConst(tuple.builder)]),
 					);
 				});
 				it('boxed tuple with 1 item.', () => {
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[[3.4]];', CONFIG_FOLDING_OFF);
+					const src = '[[3.4]];';
+					testModuleValidation(src);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					const mod:   binaryen.Module  = tuple.builder.module;
 					return assertEqualBins(
 						tuple.build(),
@@ -701,14 +718,18 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('record of size 1 returns a `(tuple.make)` with 1 item.', () => {
-					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource('[a= 3.4];', CONFIG_FOLDING_OFF);
+					const src = '[a= 3.4];';
+					testModuleValidation(src);
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						record.build(),
 						record.builder.module.tuple.make([buildConst(record.builder, 3.4), buildConst(record.builder)]),
 					);
 				});
 				it('boxed record with 1 prop.', () => {
-					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource('[a= [a= 3.4]];', CONFIG_FOLDING_OFF);
+					const src = '[a= [a= 3.4]];';
+					testModuleValidation(src);
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(src, CONFIG_FOLDING_OFF);
 					const mod:    binaryen.Module   = record.builder.module;
 					return assertEqualBins(
 						record.build(),
