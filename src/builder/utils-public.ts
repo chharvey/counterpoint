@@ -58,7 +58,7 @@ export function build_tuple_like<T>(
 				return expanded.map((_, i) => builder.module.tuple.extract(item_build, i));
 			}
 
-			const local: Local = builder.teeLocal(builder.varCount, item_build);
+			const local: Local = builder.teeLocal(item_build);
 			return [
 				                                   builder.module.tuple.extract(local.tee(), 0), // eslint-disable-line @stylistic/indent
 				...expanded.slice(1).map((_, i) => builder.module.tuple.extract(local.get(), i + 1)),
@@ -123,7 +123,7 @@ export function build_record_like<T>(
 				return expanded.map((_, i) => ({id, expr: builder.module.tuple.extract(value_build, i)}));
 			}
 
-			const local: Local = builder.teeLocal(builder.varCount, value_build);
+			const local: Local = builder.teeLocal(value_build);
 			return [
 				                                    {id, expr: builder.module.tuple.extract(local.tee(), 0)}, // eslint-disable-line @stylistic/indent
 				...expanded.slice(1).map((_, i) => ({id, expr: builder.module.tuple.extract(local.get(), i + 1)})),
@@ -149,7 +149,7 @@ export function build_record_like<T>(
 		readonly localSet: binaryen.ExpressionRef,
 		readonly localGet: binaryen.ExpressionRef,
 	}> = builds.map(({id, expr}) => {
-		const set_local: Local = builder.teeLocal(builder.varCount, expr);
+		const set_local: Local = builder.teeLocal(expr);
 		return {
 			id,
 			localSet: set_local.set(),

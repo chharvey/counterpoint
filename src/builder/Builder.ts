@@ -21,9 +21,11 @@ export class Builder {
 	 * Used for optimizing short-circuited expressions.
 	 * Starts at a low negative number so as not to conflict with ‘real’ varible ids.
 	 */
-	private _varCount:       bigint = -0x40n;
+	#varCount: bigint = -0x40n;
+
 	/** A setlist containing ids of local variables. */
 	private readonly locals: Local[] = [];
+
 	/** The Binaryen module to build upon building. */
 	public readonly module: binaryen.Module = binaryen.parseText(`
 		(module
@@ -33,22 +35,24 @@ export class Builder {
 
 
 	/**
-	 * Return this Builder’s short-circuit variable count, and then increment it.
-	 * @return this Builder’s current variable counter
+	 * Add a new local variable.
+	 * @param value the binaryen value of the variable to add
+	 * @return      [`this`, the new local variable]
 	 */
-	public get varCount(): bigint {
-		return this._varCount++;
+	public addLocal(value: binaryen.ExpressionRef): [this, Local] {
+		const local = new Local(this, this.#varCount++, value);
+		this.locals.push(local);
+		return [this, local];
 	}
 
 	/**
-	 * Add a local variable.
-	 * If the variable has already been added, do nothing.
-	 * If the variable is added, return the new index.
-	 * @param id    the id of the variable to add
-	 * @param value the binaryen value of the variable to add
-	 * @return      : [`this`, Was the operation performed?]
+	 * Set a local variable, given a variable id.
+	 * If a variable with that id has already been added, do nothing.
+	 * @param id    the id of the variable to set
+	 * @param value the binaryen value of the variable to set
+	 * @return      [`this`, Was the operation performed?]
 	 */
-	public addLocal(id: bigint, value: binaryen.ExpressionRef): [this, boolean] {
+	public setLocal(id: bigint, value: binaryen.ExpressionRef): [this, boolean] {
 		let did: boolean = false;
 		if (!this.hasLocal(id)) {
 			this.locals.push(new Local(this, id, value));
@@ -92,13 +96,24 @@ export class Builder {
 	}
 
 	/**
-	 * Add a local variable and return it.
-	 * If the variable has already been addded, this Builder’s state is not changed.
-	 * @param  id the id of the variable to add
-	 * @return    the local variable added (or retreived)
+	 * Add a new local variable and return it.
+	 * @param value the binaryen value of the variable to add
+	 * @return      the local variable added
 	 */
-	public teeLocal(id: bigint, value: binaryen.ExpressionRef): Local {
-		return this.addLocal(id, value)[0].getLocal(id)!;
+	public teeLocal(value: binaryen.ExpressionRef): Local;
+	/**
+	 * Set a local variable and return it.
+	 * The local variable is set to the given id.
+	 * If a variable with that id has already been addded, this Builder’s state is not changed.
+	 * @param id    the id of the variable to set
+	 * @param value the binaryen value of the variable to set
+	 * @return      the local variable set (or retreived)
+	 */
+	public teeLocal(id: bigint, value: binaryen.ExpressionRef): Local;
+	public teeLocal(arg0: bigint | binaryen.ExpressionRef, arg1?: binaryen.ExpressionRef): Local {
+		return typeof arg0 === 'number'
+			? this.addLocal(arg0)[1]
+			: this.setLocal(arg0, arg1!)[0].getLocal(arg0)!;
 	}
 
 	/**

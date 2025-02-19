@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import binaryen from 'binaryen';
 import type {Builder} from './Builder.js';
 
@@ -31,7 +30,6 @@ export class Local {
 		public readonly id: bigint,
 		value: binaryen.ExpressionRef,
 	) {
-		assert.ok(!builder.hasLocal(id), `A Local with id ${ id } has already been created.`);
 		this.#module = builder.module;
 		this.#index  = builder.getLocals().length;
 		this.#value  = value;
