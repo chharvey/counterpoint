@@ -1,5 +1,4 @@
 import binaryen from 'binaryen';
-import type {Builder} from './Builder.js';
 
 
 
@@ -21,18 +20,18 @@ export class Local {
 
 	/**
 	 * Construct a new Local object.
-	 * @param builder a builder to add the local variable to
-	 * @param id      The compiler’s internal identifier for the variable.
-	 * @param index   a WASM variable index
-	 * @param value   The Binaryen value of the variable.
+	 * @param module a Binaryen module to send instructions to
+	 * @param id     The compiler’s internal identifier for the variable.
+	 * @param index  a WASM variable index
+	 * @param value  The Binaryen value of the variable.
 	 */
 	public constructor(
-		builder: Builder,
+		module: binaryen.Module,
 		public readonly id: bigint,
 		index: number,
 		value: binaryen.ExpressionRef,
 	) {
-		this.#module = builder.module;
+		this.#module = module;
 		this.#index  = index;
 		this.#value  = value;
 		this.type    = binaryen.getExpressionType(value);

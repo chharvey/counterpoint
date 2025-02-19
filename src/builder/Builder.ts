@@ -40,7 +40,7 @@ export class Builder {
 	 * @return      [`this`, the new local variable]
 	 */
 	public addLocal(value: binaryen.ExpressionRef): [this, Local] {
-		const local = new Local(this, this.#varCount++, this.locals.length, value);
+		const local = new Local(this.module, this.#varCount++, this.locals.length, value);
 		this.locals.push(local);
 		return [this, local];
 	}
@@ -55,7 +55,7 @@ export class Builder {
 	public setLocal(id: bigint, value: binaryen.ExpressionRef): [this, boolean] {
 		let did: boolean = false;
 		if (!this.hasLocal(id)) {
-			this.locals.push(new Local(this, id, this.locals.length, value));
+			this.locals.push(new Local(this.module, id, this.locals.length, value));
 			did = true;
 		}
 		return [this, did];
