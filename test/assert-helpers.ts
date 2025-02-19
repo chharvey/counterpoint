@@ -62,6 +62,7 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Gl
 		try {
 			return assert.deepStrictEqual(actual, expected);
 		} catch {
+			assert.strictEqual(actual.length, (expected as Ref[]).length, 'Expected arrays to have the same length.');
 			return xjs.Array.forEachAggregated(actual, (act, i) => assertEqualBins(act, (expected as Ref[])[i]));
 		}
 	} else {
