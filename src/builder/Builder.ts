@@ -96,24 +96,14 @@ export class Builder {
 	}
 
 	/**
-	 * Add a new local variable and return it.
-	 * @param value the binaryen value of the variable to add
-	 * @return      the local variable added
-	 */
-	public teeLocal(value: binaryen.ExpressionRef): Local;
-	/**
-	 * Set a local variable and return it.
-	 * The local variable is set to the given id.
-	 * If a variable with that id has already been addded, this Builder’s state is not changed.
+	 * Set a local variable to the given id and return it.
+	 * If a variable with that id has already been added, this Builder’s state is not changed.
 	 * @param id    the id of the variable to set
 	 * @param value the binaryen value of the variable to set
 	 * @return      the local variable set (or retreived)
 	 */
-	public teeLocal(id: bigint, value: binaryen.ExpressionRef): Local;
-	public teeLocal(arg0: bigint | binaryen.ExpressionRef, arg1?: binaryen.ExpressionRef): Local {
-		return typeof arg0 === 'number'
-			? this.addLocal(arg0)[1]
-			: this.setLocal(arg0, arg1!)[0].getLocal(arg0)!;
+	public teeLocal(id: bigint, value: binaryen.ExpressionRef): Local {
+		return this.setLocal(id, value)[0].getLocal(id)!;
 	}
 
 	/**
