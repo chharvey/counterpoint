@@ -1039,5 +1039,68 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 		});
+
+		it('accessing tuple pointers.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let tuple: [[float, float[2]], [[float], float[2]]] = [[1.1, [2.2, 3.3]], [[4.4], [5.5, 6.6]]];
+				tuple.0;
+				tuple.1;
+				tuple.0.0;
+				tuple.0.1;
+				tuple.1.0;
+				tuple.1.1;
+				tuple.0.1.0;
+				tuple.0.1.1;
+				tuple.1.0.0;
+				tuple.1.1.0;
+				tuple.1.1.1;
+			`, CONFIG_FOLDING_OFF);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.build();
+			const mod: binaryen.Module = goal.builder.module;
+			let tee_idx: number = 5;
+			const inner0: binaryen.ExpressionRef = mod.tuple.make([
+				mod.tuple.extract(mod.local.get(4, bintype6), 0),
+				mod.tuple.extract(mod.local.get(4, bintype6), 1),
+				mod.tuple.extract(mod.local.get(4, bintype6), 2),
+			]);
+			const inner1: binaryen.ExpressionRef = mod.tuple.make([
+				mod.tuple.extract(mod.local.get(4, bintype6), 3),
+				mod.tuple.extract(mod.local.get(4, bintype6), 4),
+				mod.tuple.extract(mod.local.get(4, bintype6), 5),
+			]);
+			function make_tuple_0_1(): binaryen.ExpressionRef {
+				const i = tee_idx++;
+				return mod.tuple.make([
+					mod.tuple.extract(mod.local.tee(i, inner0, bintype3), 1),
+					mod.tuple.extract(mod.local.get(i, bintype3), 2),
+				]);
+			}
+			const inner10: binaryen.ExpressionRef = singletonTuple(goal.builder, goal.builder.module.tuple.extract(inner1, 0));
+			function make_tuple_1_1(): binaryen.ExpressionRef {
+				const i = tee_idx++;
+				return mod.tuple.make([
+					mod.tuple.extract(mod.local.tee(i, inner1, bintype3), 1),
+					mod.tuple.extract(mod.local.get(i, bintype3), 2),
+				]);
+			}
+			return assertEqualBins(
+				goal.children.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+				[
+					inner0,
+					inner1,
+					mod.tuple.extract(inner0, 0),
+					make_tuple_0_1(),
+					inner10,
+					make_tuple_1_1(),
+					mod.tuple.extract(make_tuple_0_1(), 0),
+					mod.tuple.extract(make_tuple_0_1(), 1),
+					mod.tuple.extract(inner10, 0),
+					mod.tuple.extract(make_tuple_1_1(), 0),
+					mod.tuple.extract(make_tuple_1_1(), 1),
+				],
+			);
+		});
 	});
 });

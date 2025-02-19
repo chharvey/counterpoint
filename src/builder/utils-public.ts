@@ -53,6 +53,11 @@ export function build_tuple_like<T>(
 			const expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
 			assert.ok(expanded.length > 1, 'Tuple should be nonempty.');
 
+			const expr_info = binaryen.getExpressionInfo(item_build);
+			if (expr_info.id === binaryen.ExpressionIds.LocalGet) {
+				return expanded.map((_, i) => builder.module.tuple.extract(item_build, i));
+			}
+
 			const local: Local = builder.teeLocal(builder.varCount, item_build);
 			return [
 				                                   builder.module.tuple.extract(local.tee(), 0), // eslint-disable-line @stylistic/indent
@@ -112,6 +117,11 @@ export function build_record_like<T>(
 			const bintype:  binaryen.Type            = binaryen.getExpressionType(value_build);
 			const expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
 			assert.ok(expanded.length > 1, 'Record should be nonempty.');
+
+			const expr_info = binaryen.getExpressionInfo(value_build);
+			if (expr_info.id === binaryen.ExpressionIds.LocalGet) {
+				return expanded.map((_, i) => ({id, expr: builder.module.tuple.extract(value_build, i)}));
+			}
 
 			const local: Local = builder.teeLocal(builder.varCount, value_build);
 			return [

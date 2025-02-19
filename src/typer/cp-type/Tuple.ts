@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	type Local,
 	type Builder,
@@ -153,6 +153,10 @@ class TypeTuple extends ValueType {
 				new BinVect(builder.module).vect,
 			]);
 		} else {
+			const expr_info = binaryen.getExpressionInfo(base_build);
+			if (expr_info.id === binaryen.ExpressionIds.LocalGet) {
+				return builder.module.tuple.make(builtIndex.map((n) => builder.module.tuple.extract(base_build, n)));
+			}
 			const local: Local = builder.teeLocal(builder.varCount, base_build);
 			return builder.module.tuple.make([
 				                                  builder.module.tuple.extract(local.tee(), builtIndex[0]), // eslint-disable-line @stylistic/indent

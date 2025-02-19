@@ -8,7 +8,6 @@ import {
 	VALUE,
 	TYPE,
 	type Builder,
-	BinVect,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
@@ -649,6 +648,10 @@ describe('ASTNodeExpression', () => {
 						buildConst(bldr, 5n),
 						buildConst(bldr, 6.0),
 					]);
+					const inner2: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 7n),
+						buildConst(bldr, []),
+					]);
 					const inner0: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(bldr, 1n),
 						mod.tuple.extract(mod.local.tee(0, inner01, bintype2), 0),
@@ -658,10 +661,6 @@ describe('ASTNodeExpression', () => {
 						buildConst(bldr, 4.0),
 						mod.tuple.extract(mod.local.tee(2, inner11, bintype2), 0),
 						mod.tuple.extract(mod.local.get(2, bintype2), 1),
-					]);
-					const inner2: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(bldr, 7n),
-						buildConst(bldr, []),
 					]);
 					return assertEqualBins(
 						tuple.build(),
@@ -675,6 +674,51 @@ describe('ASTNodeExpression', () => {
 							mod.tuple.extract(mod.local.tee(4, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(4, bintype2), 1),
 						]),
+					);
+				});
+				it('pointer entries.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let inner01: [float, int]   = [2.0, 3];
+						let inner11: [int,   float] = [5,   6.0];
+						let inner2:  [int,   []]    = [7,   []];
+
+						let inner0: [int,   [float, int]]   = [1,   inner01];
+						let inner1: [float, [int,   float]] = [4.0, inner11];
+
+						let tuple: [[int, [float, int]], [float, [int, float]], [int, []]] = [inner0, inner1, inner2];
+					`, CONFIG_FOLDING_OFF);
+					goal.varCheck();
+					goal.typeCheck();
+					goal.build();
+
+					const mod: binaryen.Module = goal.builder.module;
+					return assertEqualBins(
+						(goal.children as AST.ASTNodeDeclarationVariable[]).map((stmt) => stmt.assigned.build()),
+						[
+							mod.tuple.make([buildConst(goal.builder, 2.0), buildConst(goal.builder, 3n)]),
+							mod.tuple.make([buildConst(goal.builder, 5n),  buildConst(goal.builder, 6.0)]),
+							mod.tuple.make([buildConst(goal.builder, 7n),  buildConst(goal.builder, [])]),
+							mod.tuple.make([
+								buildConst(goal.builder, 1n),
+								mod.tuple.extract(mod.local.get(0, bintype2), 0),
+								mod.tuple.extract(mod.local.get(0, bintype2), 1),
+							]),
+							mod.tuple.make([
+								buildConst(goal.builder, 4.0),
+								mod.tuple.extract(mod.local.get(1, bintype2), 0),
+								mod.tuple.extract(mod.local.get(1, bintype2), 1),
+							]),
+							mod.tuple.make([
+								mod.tuple.extract(mod.local.get(3, bintype3), 0),
+								mod.tuple.extract(mod.local.get(3, bintype3), 1),
+								mod.tuple.extract(mod.local.get(3, bintype3), 2),
+								mod.tuple.extract(mod.local.get(4, bintype3), 0),
+								mod.tuple.extract(mod.local.get(4, bintype3), 1),
+								mod.tuple.extract(mod.local.get(4, bintype3), 2),
+								mod.tuple.extract(mod.local.get(2, bintype2), 0),
+								mod.tuple.extract(mod.local.get(2, bintype2), 1),
+							]),
+						],
 					);
 				});
 			});
@@ -800,7 +844,7 @@ describe('ASTNodeExpression', () => {
 					]);
 					const inner2: binaryen.ExpressionRef = mod.block(null, [
 						mod.local.set(4, buildConst(bldr, 7n)),
-						mod.local.set(5, new BinVect(mod, true).vect),
+						mod.local.set(5, buildConst(bldr, true)),
 						mod.tuple.make([
 							mod.local.get(5, binaryen.v128),
 							mod.local.get(4, binaryen.v128),
@@ -818,6 +862,62 @@ describe('ASTNodeExpression', () => {
 							mod.tuple.extract(mod.local.tee(6, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(6, bintype2), 1),
 						]),
+					);
+				});
+				it('pointer entries.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let inner_ab: [a: float, b: int]   = [a= 2.0, b= 3];
+						let inner_bb: [a: int,   b: float] = [a= 5,   b= 6.0];
+						let inner_c:  [b: int,   a: bool]  = [b= 7,   a= true];
+
+						let inner_a: [a: int,   b: [a: float, b: int]]   = [a= 1,   b= inner_ab];
+						let inner_b: [a: float, b: [a: int,   b: float]] = [a= 4.0, b= inner_bb];
+
+						let record: [
+							a: [a: int,   b: [a: float, b: int]],
+							b: [a: float, b: [a: int,   b: float]],
+							c: [b: int,   a: bool],
+						] = [a= inner_a, b= inner_b, c= inner_c];
+					`, CONFIG_FOLDING_OFF);
+					goal.varCheck();
+					goal.typeCheck();
+					goal.build();
+
+					const mod: binaryen.Module = goal.builder.module;
+					return assertEqualBins(
+						(goal.children as AST.ASTNodeDeclarationVariable[]).map((stmt) => stmt.assigned.build()),
+						[
+							mod.tuple.make([buildConst(goal.builder, 2.0), buildConst(goal.builder, 3n)]),
+							mod.tuple.make([buildConst(goal.builder, 5n),  buildConst(goal.builder, 6.0)]),
+							mod.block(null, [
+								mod.local.set(2, buildConst(goal.builder, 7n)),
+								mod.local.set(3, buildConst(goal.builder, true)),
+								mod.tuple.make([
+									mod.local.get(3, binaryen.v128),
+									mod.local.get(2, binaryen.v128),
+								]),
+							], bintype2),
+							mod.tuple.make([
+								buildConst(goal.builder, 1n),
+								mod.tuple.extract(mod.local.get(0, bintype2), 0),
+								mod.tuple.extract(mod.local.get(0, bintype2), 1),
+							]),
+							mod.tuple.make([
+								buildConst(goal.builder, 4.0),
+								mod.tuple.extract(mod.local.get(1, bintype2), 0),
+								mod.tuple.extract(mod.local.get(1, bintype2), 1),
+							]),
+							mod.tuple.make([
+								mod.tuple.extract(mod.local.get(5, bintype3), 0),
+								mod.tuple.extract(mod.local.get(5, bintype3), 1),
+								mod.tuple.extract(mod.local.get(5, bintype3), 2),
+								mod.tuple.extract(mod.local.get(6, bintype3), 0),
+								mod.tuple.extract(mod.local.get(6, bintype3), 1),
+								mod.tuple.extract(mod.local.get(6, bintype3), 2),
+								mod.tuple.extract(mod.local.get(4, bintype2), 0),
+								mod.tuple.extract(mod.local.get(4, bintype2), 1),
+							]),
+						],
 					);
 				});
 			});
