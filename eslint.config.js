@@ -24,7 +24,7 @@ export default [
 			globals: {...globals.node},
 			parser:  tseslint.parser,
 		},
-		linterOptions: {reportUnusedDisableDirectives: 'warn'},
+		linterOptions: {reportUnusedDisableDirectives: 'error'},
 		plugins:       {
 			'@stylistic':         stylistic,
 			'@typescript-eslint': tseslint.plugin,
@@ -179,7 +179,7 @@ export default [
 				],
 			},
 		},
-		linterOptions: {reportUnusedDisableDirectives: 'warn'},
+		linterOptions: {reportUnusedDisableDirectives: 'error'},
 		plugins:       {'@typescript-eslint': tseslint.plugin},
 
 		rules: {
