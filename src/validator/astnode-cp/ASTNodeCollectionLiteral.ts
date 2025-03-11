@@ -40,7 +40,7 @@ function forEither<T>(array: readonly T[], callback: (item: T, i: number, src: r
 				thrown.push(e as Error);
 				return;
 			}
-			throw 'success';
+			throw new Error('success');
 		});
 	} catch {
 		return;
@@ -94,8 +94,8 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 			| SyntaxNodeType<'tuple_literal'>
 			| SyntaxNodeType<'record_literal'>
 			| SyntaxNodeType<'set_literal'>
-			| SyntaxNodeType<'map_literal'>
-		,
+			| SyntaxNodeType<'map_literal'>,
+
 		public override readonly children: readonly ASTNodeCP[],
 	) {
 		super(start_node, {}, children);
@@ -104,7 +104,7 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw '`ASTNodeCollectionLiteral#build_do` not yet supported.';
+		throw new Error('`ASTNodeCollectionLiteral#build_do` not yet supported.');
 	}
 
 	/**

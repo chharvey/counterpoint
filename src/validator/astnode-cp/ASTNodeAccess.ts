@@ -41,8 +41,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
-			| SyntaxNodeType<'assignee'>
-		,
+			| SyntaxNodeType<'assignee'>,
+
 		private readonly kind:     ValidAccessOperator,
 		public  readonly base:     ASTNodeExpression,
 		private readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
@@ -54,7 +54,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw '`ASTNodeAccess#build_do` not yet supported.';
+		throw new Error('`ASTNodeAccess#build_do` not yet supported.');
 	}
 
 	@memoizeMethod
@@ -145,6 +145,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			if (accessor_value === null) {
 				return null;
 			}
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-return --- type guard inference is not very good here
 			return (
 				base_value instanceof VALUE.CollectionIndexed ? base_value.get(accessor_value as VALUE.Integer, this.optional, this.accessor) :
 				base_value instanceof VALUE.Set               ? base_value.get(accessor_value                                               ) :

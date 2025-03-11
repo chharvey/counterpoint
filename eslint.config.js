@@ -55,7 +55,8 @@ export default [
 			}],
 
 			/* ## Overrides of `tseslint.configs.strict` */
-			'@typescript-eslint/no-non-null-assertion': 'off', // non-null assertions can be useful
+			'@typescript-eslint/no-non-null-assertion': 'off',                                               // non-null assertions can be useful
+			'@typescript-eslint/unified-signatures':    ['error', {ignoreDifferentlyNamedParameters: true}], // overloads may have differing documentation
 
 			/* ## Overrides of `tseslint.configs.stylistic` */
 			'@typescript-eslint/array-type': ['error', { // override default opts
@@ -231,6 +232,10 @@ export default [
 
 		rules: {
 			/* # Overrides */
+			/* ## Overrides of `tseslint.configs.recommendedTypeCheckedOnly` */
+			'@typescript-eslint/no-unsafe-enum-comparison':     'off', // some enums have transparent values
+			'@typescript-eslint/restrict-template-expressions': 'off', // template interpolation is designed for this
+
 			/* ## Overrides of `tseslint.configs.stylisticTypeCheckedOnly` */
 			'@typescript-eslint/prefer-regexp-exec': 'off', // `String#match` is more ergonomic
 

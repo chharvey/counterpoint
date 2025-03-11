@@ -8,8 +8,8 @@ export class ASTNodeIndex extends ASTNodeCP {
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'property_access'>
-			| SyntaxNodeType<'property_assign'>
-		,
+			| SyntaxNodeType<'property_assign'>,
+
 		public readonly val: ASTNodeConstant,
 	) {
 		super(start_node, {}, [val]);

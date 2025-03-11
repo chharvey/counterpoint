@@ -31,8 +31,8 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'type_unary_symbol'>
-			| SyntaxNodeType<'type_unary_keyword'>
-		,
+			| SyntaxNodeType<'type_unary_keyword'>,
+
 		operator: ValidTypeOperator,
 		private readonly operand: ASTNodeType,
 	) {

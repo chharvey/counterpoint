@@ -48,6 +48,11 @@ export abstract class Value {
 	}
 
 	/**
+	 * @return a string representation of this type
+	 */
+	public abstract toString(): string;
+
+	/**
 	 * Is this value the same exact object as the argument?
 	 * @param value the object to compare
 	 * @returns are the objects identically the same?
