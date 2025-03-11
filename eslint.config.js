@@ -14,8 +14,10 @@ export default [
 			'tree-sitter-counterpoint/grammar.js',
 		],
 	},
+
 	eslint.configs.recommended,      // https://github.com/eslint/eslint/blob/v9.16.0/packages/js/src/configs/eslint-recommended.js
 	...tseslint.configs.recommended, // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/recommended.ts
+	...tseslint.configs.strict,      // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/strict.ts
 	...tseslint.configs.stylistic,   // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/stylistic.ts
 	{
 		name:            'all',
@@ -31,11 +33,18 @@ export default [
 		},
 
 		rules: {
-			/* # Overrides of Recommended Rules */
+			/* # Overrides */
+			// Override any rules from imported configs here, organizing them by the config they were imported from.
+			// Comment why the override is needed.
+
+			/* ## Overrides of `eslint.configs.recommended` */
 			'no-irregular-whitespace': ['error', {
 				skipStrings:  false, // disallow in strings
 				skipComments: true,  // allow in comments
 			}],
+
+			/* ## Overrides of `tseslint.configs.recommended` */
+			'@typescript-eslint/no-explicit-any':       ['error', {fixToUnknown: true}], // quickfix `any` to `unknown`
 			'@typescript-eslint/no-unused-expressions': 'off', // getter access and logical operations may have side-effects
 			'@typescript-eslint/no-unused-vars':        ['error', { // override default opts
 				argsIgnorePattern:              '^_',
@@ -44,6 +53,17 @@ export default [
 				ignoreRestSiblings:             true,
 				reportUsedIgnorePattern:        true,
 			}],
+
+			/* ## Overrides of `tseslint.configs.strict` */
+			'@typescript-eslint/no-non-null-assertion': 'off', // non-null assertions can be useful
+
+			/* ## Overrides of `tseslint.configs.stylistic` */
+			'@typescript-eslint/array-type': ['error', { // override default opts
+				default:  'array-simple',
+				readonly: 'array',
+			}],
+			'@typescript-eslint/consistent-type-definitions': 'off', // both object types and interfaces can be useful
+			'@typescript-eslint/no-inferrable-types':         'off', // don’t rely on TypeScript inference
 
 			/* # File Conventions (should be consistent with `/.editorconfig` file) */
 			'@stylistic/eol-last':           'error',
@@ -75,12 +95,13 @@ export default [
 				asyncArrow: 'always',
 				named:      'never',
 			}],
-			'@stylistic/space-infix-ops':        'error',
-			'@stylistic/space-unary-ops':        'error',
-			'@stylistic/switch-colon-spacing':   'error',
-			'@stylistic/template-curly-spacing': ['error', 'always'],
-			'@stylistic/template-tag-spacing':   'error',
-			'@stylistic/yield-star-spacing':     ['error', 'both'],
+			'@stylistic/space-infix-ops':         'error',
+			'@stylistic/space-unary-ops':         'error',
+			'@stylistic/switch-colon-spacing':    'error',
+			'@stylistic/template-curly-spacing':  ['error', 'always'],
+			'@stylistic/template-tag-spacing':    'error',
+			'@stylistic/type-annotation-spacing': 'error',
+			'@stylistic/yield-star-spacing':      ['error', 'both'],
 
 			/* ## Grouping Structure Style */
 			'@stylistic/array-bracket-newline':          ['error', 'consistent'],
@@ -94,8 +115,16 @@ export default [
 			'@stylistic/function-paren-newline':         'error',
 			'func-style':                                ['error', 'declaration', {allowArrowFunctions: true}],
 			'@stylistic/lines-between-class-members':    ['error', 'always', {exceptAfterSingleLine: true}],
-			'no-useless-computed-key':                   'error',
-			'@stylistic/object-curly-newline':           ['error', {
+			'@stylistic/member-delimiter-style':         ['error', {
+				overrides: {
+					typeLiteral: {
+						multiline:  {delimiter: 'comma'},
+						singleline: {delimiter: 'comma'},
+					},
+				},
+			}],
+			'no-useless-computed-key':         'error',
+			'@stylistic/object-curly-newline': ['error', {
 				ObjectExpression:  {multiline: true},
 				ObjectPattern:     {multiline: true},
 				ImportDeclaration: {multiline: true, minProperties: 2},
@@ -133,6 +162,14 @@ export default [
 			'@stylistic/semi-style': 'error',
 			'@stylistic/wrap-iife':  ['error', 'inside', {functionPrototypeMethods: true}],
 
+			/* ## Type Annotations */
+			'@typescript-eslint/consistent-type-imports':       'error',
+			'@typescript-eslint/explicit-function-return-type': ['error', {
+				allowExpressions:          true,
+				allowHigherOrderFunctions: false,
+			}],
+			'@typescript-eslint/no-import-type-side-effects': 'error',
+
 			/* # Best Practices */
 			/* ## Preferred Operators */
 			'eqeqeq':               'error',
@@ -151,21 +188,31 @@ export default [
 			'one-var':                                 ['error', 'never'],
 
 			/* ## Function Design */
-			'default-param-last':                        'off',
-			'@typescript-eslint/default-param-last':     'error',
-			'func-names':                                ['error', 'never'],
-			'no-return-await':                           'error',
-			'no-useless-constructor':                    'off',
-			'@typescript-eslint/no-useless-constructor': 'error',
-			'prefer-arrow-callback':                     ['error', {allowUnboundThis: false}],
+			'default-param-last':                    'off',
+			'@typescript-eslint/default-param-last': 'error',
+			'func-names':                            ['error', 'never'],
+			'no-return-await':                       'error',
+			'prefer-arrow-callback':                 ['error', {allowUnboundThis: false}],
+
+			/* ## Strictness */
+			'@typescript-eslint/explicit-member-accessibility': 'error',
 		},
 	},
-	...tseslint.configs.stylisticTypeCheckedOnly.map((conf) => ({ // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/stylistic-type-checked-only.ts
+
+	// NOTE: The following configs are separated from 'all' due to some of their rules requiring “type information” to run.
+	// See https://typescript-eslint.io/getting-started/typed-linting/ for more info.
+	...[
+		...tseslint.configs.recommendedTypeCheckedOnly, // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/recommended-type-checked-only.ts
+		...tseslint.configs.stylisticTypeCheckedOnly,   // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/stylistic-type-checked-only.ts
+		// excluding `tseslint.configs.strictTypeCheckedOnly` as it is too strict
+	].map((conf) => ({
 		...conf,
 		files: ['**/*.{cts,mts,ts}'],
 	})),
 	{
-		name:            'typescript-only', // separate from 'all' due to needing access to tsconfig files
+		// NOTE: These rules need access to the `languageOptions.parserOptions` config (`tsconfig.json` files).
+		// See https://typescript-eslint.io/getting-started/typed-linting/ for more info.
+		name:            'typescript-with-tsconfig',
 		files:           ['**/*.{cts,mts,ts}'],
 		languageOptions: {
 			globals:       {...globals.node},
@@ -183,55 +230,21 @@ export default [
 		plugins:       {'@typescript-eslint': tseslint.plugin},
 
 		rules: {
-			/* # Overrides of Recommended Rules */
-			'@typescript-eslint/array-type': ['error', { // override default opts
-				default:  'array-simple',
-				readonly: 'array',
-			}],
-			'@typescript-eslint/consistent-type-definitions': 'off',                           // both object types and interfaces can be useful
-			'@typescript-eslint/no-explicit-any':             ['error', {fixToUnknown: true}], // quickfix `any` to `unknown`
-			'@typescript-eslint/no-inferrable-types':         'off',                           // don’t rely on TypeScript inference
-			'@typescript-eslint/no-non-null-assertion':       'off',                           // non-null assertions can be useful
-			'@typescript-eslint/prefer-regexp-exec':          'off',                           // `String#match` is more ergonomic
-
-			/* # Layout & Formatting */
-			/* ## Indentation, Spacing, and Alignment */
-			'@stylistic/type-annotation-spacing': 'error',
-
-			/* ## Grouping Structure Style */
-			'@typescript-eslint/adjacent-overload-signatures': 'error',
-			'@stylistic/member-delimiter-style':               ['error', {
-				overrides: {
-					typeLiteral: {
-						multiline:  {delimiter: 'comma'},
-						singleline: {delimiter: 'comma'},
-					},
-				},
-			}],
-
-			/* ## Type Annotations */
-			'@typescript-eslint/consistent-type-imports':       'error',
-			'@typescript-eslint/explicit-function-return-type': ['error', {
-				allowExpressions:          true,
-				allowHigherOrderFunctions: false,
-			}],
-			'@typescript-eslint/no-import-type-side-effects': 'error',
+			/* # Overrides */
+			/* ## Overrides of `tseslint.configs.stylisticTypeCheckedOnly` */
+			'@typescript-eslint/prefer-regexp-exec': 'off', // `String#match` is more ergonomic
 
 			/* # Best Practices */
 			/* ## Conciseness */
-			'@typescript-eslint/no-unnecessary-condition':          'error',
-			'@typescript-eslint/no-unnecessary-type-arguments':     'error',
-			'@typescript-eslint/no-unnecessary-type-assertion':     'error',
-			'@typescript-eslint/non-nullable-type-assertion-style': 'error',
+			'@typescript-eslint/no-unnecessary-condition':      'error',
+			'@typescript-eslint/no-unnecessary-type-arguments': 'error',
 
 			/* ## Function Design */
 			'no-return-await':                 'off',
-			'@typescript-eslint/return-await': 'error', // needed here due to `languageOptions.parserOptions.project` // NOTE: overrides 'no-return-await' (despite different name)
+			'@typescript-eslint/return-await': 'error', // NOTE: overrides 'no-return-await' (despite different name)
 
 			/* ## Strictness */
-			'@typescript-eslint/explicit-member-accessibility':           'error',
-			'@typescript-eslint/no-non-null-asserted-nullish-coalescing': 'error',
-			'@typescript-eslint/prefer-readonly':                         'error',
+			'@typescript-eslint/prefer-readonly': 'error',
 		},
 	},
 ];
