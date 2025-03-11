@@ -15,12 +15,12 @@ export default [
 		],
 	},
 
-	eslint.configs.recommended,      // https://github.com/eslint/eslint/blob/v9.16.0/packages/js/src/configs/eslint-recommended.js
-	...tseslint.configs.recommended, // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/recommended.ts
-	...tseslint.configs.strict,      // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/strict.ts
-	...tseslint.configs.stylistic,   // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/stylistic.ts
+	eslint.configs.recommended,      // https://github.com/eslint/eslint/blob/v9.22.0/packages/js/src/configs/eslint-recommended.js
+	...tseslint.configs.recommended, // https://github.com/typescript-eslint/typescript-eslint/blob/v8.26.1/packages/eslint-plugin/src/configs/recommended.ts
+	...tseslint.configs.strict,      // https://github.com/typescript-eslint/typescript-eslint/blob/v8.26.1/packages/eslint-plugin/src/configs/strict.ts
+	...tseslint.configs.stylistic,   // https://github.com/typescript-eslint/typescript-eslint/blob/v8.26.1/packages/eslint-plugin/src/configs/stylistic.ts
 	{
-		name:            'all',
+		name:            'All',
 		files:           ['**/*.{cjs,cts,js,mjs,mts,ts}'],
 		languageOptions: {
 			globals: {...globals.node},
@@ -39,14 +39,14 @@ export default [
 
 			/* ## Overrides of `eslint.configs.recommended` */
 			'no-irregular-whitespace': ['error', {
-				skipStrings:  false, // disallow in strings
-				skipComments: true,  // allow in comments
+				skipStrings:  false, // disallow irregular whitespace in strings
+				skipComments: true,  // allow    irregular whitespace in comments
 			}],
 
 			/* ## Overrides of `tseslint.configs.recommended` */
 			'@typescript-eslint/no-explicit-any':       ['error', {fixToUnknown: true}], // quickfix `any` to `unknown`
-			'@typescript-eslint/no-unused-expressions': 'off', // getter access and logical operations may have side-effects
-			'@typescript-eslint/no-unused-vars':        ['error', { // override default opts
+			'@typescript-eslint/no-unused-expressions': 'off',                           // getter access and logical operations may have side-effects
+			'@typescript-eslint/no-unused-vars':        ['error', {                      // override default options
 				argsIgnorePattern:              '^_',
 				caughtErrors:                   'all',
 				destructuredArrayIgnorePattern: '^_',
@@ -59,7 +59,7 @@ export default [
 			'@typescript-eslint/unified-signatures':    ['error', {ignoreDifferentlyNamedParameters: true}], // overloads may have differing documentation
 
 			/* ## Overrides of `tseslint.configs.stylistic` */
-			'@typescript-eslint/array-type': ['error', { // override default opts
+			'@typescript-eslint/array-type': ['error', { // override default options
 				default:  'array-simple',
 				readonly: 'array',
 			}],
@@ -200,11 +200,11 @@ export default [
 		},
 	},
 
-	// NOTE: The following configs are separated from 'all' due to some of their rules requiring “type information” to run.
+	// NOTE: The following configs are separated from 'All' due to some of their rules requiring “type information” to run.
 	// See https://typescript-eslint.io/getting-started/typed-linting/ for more info.
 	...[
-		...tseslint.configs.recommendedTypeCheckedOnly, // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/recommended-type-checked-only.ts
-		...tseslint.configs.stylisticTypeCheckedOnly,   // https://github.com/typescript-eslint/typescript-eslint/blob/v8.18.0/packages/eslint-plugin/src/configs/stylistic-type-checked-only.ts
+		...tseslint.configs.recommendedTypeCheckedOnly, // https://github.com/typescript-eslint/typescript-eslint/blob/v8.26.1/packages/eslint-plugin/src/configs/recommended-type-checked-only.ts
+		...tseslint.configs.stylisticTypeCheckedOnly,   // https://github.com/typescript-eslint/typescript-eslint/blob/v8.26.1/packages/eslint-plugin/src/configs/stylistic-type-checked-only.ts
 		// excluding `tseslint.configs.strictTypeCheckedOnly` as it is too strict
 	].map((conf) => ({
 		...conf,
@@ -213,7 +213,7 @@ export default [
 	{
 		// NOTE: These rules need access to the `languageOptions.parserOptions` config (`tsconfig.json` files).
 		// See https://typescript-eslint.io/getting-started/typed-linting/ for more info.
-		name:            'typescript-with-tsconfig',
+		name:            'TypeScript with TSConfig',
 		files:           ['**/*.{cts,mts,ts}'],
 		languageOptions: {
 			globals:       {...globals.node},
