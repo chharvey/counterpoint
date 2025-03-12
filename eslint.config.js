@@ -98,6 +98,7 @@ export default [
 			}],
 			'@stylistic/space-infix-ops':         'error',
 			'@stylistic/space-unary-ops':         'error',
+			'@stylistic/spaced-comment':          'error',
 			'@stylistic/switch-colon-spacing':    'error',
 			'@stylistic/template-curly-spacing':  ['error', 'always'],
 			'@stylistic/template-tag-spacing':    'error',
@@ -118,6 +119,7 @@ export default [
 			'@stylistic/lines-between-class-members':    ['error', 'always', {exceptAfterSingleLine: true}],
 			'@stylistic/member-delimiter-style':         ['error', {
 				overrides: {
+					interface:   {singleline: {requireLast: true}},
 					typeLiteral: {
 						multiline:  {delimiter: 'comma'},
 						singleline: {delimiter: 'comma'},
@@ -164,16 +166,18 @@ export default [
 			'@stylistic/wrap-iife':  ['error', 'inside', {functionPrototypeMethods: true}],
 
 			/* ## Type Annotations */
-			'@typescript-eslint/consistent-type-imports':       'error',
 			'@typescript-eslint/explicit-function-return-type': ['error', {
 				allowExpressions:          true,
 				allowHigherOrderFunctions: false,
 			}],
-			'@typescript-eslint/no-import-type-side-effects': 'error',
 
 			/* # Best Practices */
-			/* ## Preferred Operators */
+			/* ## Preferred Operators & Methods */
 			'eqeqeq':               'error',
+			'no-eval':              'error',
+			'no-implied-eval':      'error',
+			'no-lonely-if':         'error',
+			'no-unneeded-ternary':  ['error', {defaultAssignment: false}],
 			'no-useless-concat':    'error',
 			'operator-assignment':  'error',
 			'prefer-object-spread': 'error',
@@ -188,12 +192,13 @@ export default [
 			'@typescript-eslint/no-use-before-define': 'error',
 			'one-var':                                 ['error', 'never'],
 
-			/* ## Function Design */
-			'default-param-last':                    'off',
-			'@typescript-eslint/default-param-last': 'error',
-			'func-names':                            ['error', 'never'],
-			'no-return-await':                       'error',
-			'prefer-arrow-callback':                 ['error', {allowUnboundThis: false}],
+			/* ## Function & Module Design */
+			'@typescript-eslint/consistent-type-imports':     'error',
+			'default-param-last':                             'off',
+			'@typescript-eslint/default-param-last':          'error',
+			'func-names':                                     ['error', 'never'],
+			'@typescript-eslint/no-import-type-side-effects': 'error',
+			'prefer-arrow-callback':                          ['error', {allowUnboundThis: false}],
 
 			/* ## Strictness */
 			'@typescript-eslint/explicit-member-accessibility': 'error',
@@ -232,6 +237,9 @@ export default [
 
 		rules: {
 			/* # Overrides */
+			// Override any rules from imported configs here, organizing them by the config they were imported from.
+			// Comment why the override is needed.
+
 			/* ## Overrides of `tseslint.configs.recommendedTypeCheckedOnly` */
 			'@typescript-eslint/no-unsafe-enum-comparison':     'off', // some enums have transparent values
 			'@typescript-eslint/restrict-template-expressions': 'off', // template interpolation is designed for this
@@ -245,8 +253,7 @@ export default [
 			'@typescript-eslint/no-unnecessary-type-arguments': 'error',
 
 			/* ## Function Design */
-			'no-return-await':                 'off',
-			'@typescript-eslint/return-await': 'error', // NOTE: overrides 'no-return-await' (despite different name)
+			'@typescript-eslint/return-await': 'error',
 
 			/* ## Strictness */
 			'@typescript-eslint/prefer-readonly': 'error',
