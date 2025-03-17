@@ -1,5 +1,8 @@
 import * as xjs from 'extrajs';
-import {assert_context_name} from '../../lib/index.js';
+import {
+	assert_context_name,
+	memoizeGetter,
+} from '../../lib/index.js';
 import {
 	languageValuesIdentical,
 	strictEqual,
@@ -21,6 +24,7 @@ import {
 	OBJ,
 	FALSE,
 	TRUE,
+	FALSY_TYPES,
 } from './index.js';
 
 
@@ -268,11 +272,6 @@ export function subtypeRules(
  * - ReferenceType
  */
 export abstract class Type {
-	static get #falsyTypes(): readonly Type[] {
-		return [VOID, NULL, FALSE];
-	}
-
-
 	/**
 	 * Construct a new Type object.
 	 * @param isMutable Whether this type is mutable. Mutable objects may change fields/entries and call mutating methods.
@@ -330,8 +329,9 @@ export abstract class Type {
 	 * @return  whether this is a subtype of `void | null | false`
 	 * @final
 	 */
-	public isDefinitelyFalsy(): boolean {
-		return this.isSubtypeOf(Union.all(Type.#falsyTypes));
+	@memoizeGetter
+	public get isDefinitelyFalsy(): boolean {
+		return this.isSubtypeOf(Union.all(...FALSY_TYPES));
 	}
 
 	/**
@@ -339,8 +339,9 @@ export abstract class Type {
 	 * @return  `false` if this is the Bottom Type or is a supertype of any of `void` or `null` or `false`; otherwise `true`
 	 * @final
 	 */
-	public isDefinitelyTruthy(): boolean {
-		return !this.isBottomType && Type.#falsyTypes.every((t) => !t.isSubtypeOf(this));
+	@memoizeGetter
+	public get isDefinitelyTruthy(): boolean {
+		return !this.isBottomType && [...FALSY_TYPES].every((t) => !t.isSubtypeOf(this));
 	}
 
 	/**
@@ -348,8 +349,13 @@ export abstract class Type {
 	 * @return this type’s intersection with all falsy types
 	 * @final
 	 */
-	public falsySide(): Type {
-		return this.intersect(Union.all(Type.#falsyTypes));
+	@memoizeGetter
+	public get falsySide(): Type {
+		return (
+			this.isDefinitelyFalsy  ? this :
+			this.isDefinitelyTruthy ? NEVER :
+			this.intersect(Union.all(...FALSY_TYPES))
+		);
 	}
 
 	/**
@@ -357,8 +363,13 @@ export abstract class Type {
 	 * @return this type, minus all falsy types
 	 * @final
 	 */
-	public truthySide(): Type {
-		return this.subtract(Union.all(Type.#falsyTypes));
+	@memoizeGetter
+	public get truthySide(): Type {
+		return (
+			this.isDefinitelyFalsy  ? NEVER :
+			this.isDefinitelyTruthy ? this :
+			this.subtract(Union.all(...FALSY_TYPES))
+		);
 	}
 
 	/**

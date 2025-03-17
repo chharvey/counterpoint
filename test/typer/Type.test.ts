@@ -76,7 +76,7 @@ describe('Type', () => {
 				TYPE.Union.all([TYPE.VOID,            TYPE.FALSE]),
 				TYPE.Union.all([TYPE.VOID, TYPE.NULL            ]),
 				TYPE.Union.all([TYPE.VOID, TYPE.NULL, TYPE.FALSE]),
-			].forEach((t) => assert.ok(t.isDefinitelyFalsy(), `Expected \`${ t }\` to be definitely falsy.`));
+			].forEach((t) => assert.ok(t.isDefinitelyFalsy, `Expected \`${ t }\` to be definitely falsy.`));
 		});
 		it('any other types are not definitely falsy.', () => {
 			[
@@ -90,7 +90,7 @@ describe('Type', () => {
 				TYPE.NULL.union(TYPE.FLOAT),
 				TYPE.FALSE.union(TYPE.STR),
 				TYPE.OBJ,
-			].forEach((t) => assert.ok(!t.isDefinitelyFalsy(), `Expected \`${ t }\` to not be definitely falsy.`));
+			].forEach((t) => assert.ok(!t.isDefinitelyFalsy, `Expected \`${ t }\` to not be definitely falsy.`));
 		});
 	});
 
@@ -106,7 +106,7 @@ describe('Type', () => {
 				TYPE.Union.all([TYPE.VOID,            TYPE.FALSE]),
 				TYPE.Union.all([TYPE.VOID, TYPE.NULL            ]),
 				TYPE.Union.all([TYPE.VOID, TYPE.NULL, TYPE.FALSE]),
-			].forEach((t) => assert.ok(!t.isDefinitelyTruthy(), `Expected \`${ t }\` to not be definitely truthy.`));
+			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${ t }\` to not be definitely truthy.`));
 		});
 		it('unions of falsy types are not definitely truthy.', () => {
 			[
@@ -115,7 +115,7 @@ describe('Type', () => {
 				TYPE.VOID.union(TYPE.INT),
 				TYPE.NULL.union(TYPE.FLOAT),
 				TYPE.FALSE.union(TYPE.STR),
-			].forEach((t) => assert.ok(!t.isDefinitelyTruthy(), `Expected \`${ t }\` to not be definitely truthy.`));
+			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${ t }\` to not be definitely truthy.`));
 		});
 		it('“valuable” primitive types are definitely truthy.', () => {
 			[
@@ -123,13 +123,13 @@ describe('Type', () => {
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
-			].forEach((t) => assert.ok(t.isDefinitelyTruthy(), `Expected \`${ t }\` to be definitely truthy.`));
+			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${ t }\` to be definitely truthy.`));
 		});
 		it('compound value types are definitely truthy.', () => {
 			[
 				TYPE.Tuple.fromTypes(),
 				TYPE.Record.fromTypes(new Map([[0x100n, TYPE.INT]])),
-			].forEach((t) => assert.ok(t.isDefinitelyTruthy(), `Expected \`${ t }\` to be definitely truthy.`));
+			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${ t }\` to be definitely truthy.`));
 		});
 		it('reference types are definitely truthy.', () => {
 			[
@@ -138,7 +138,7 @@ describe('Type', () => {
 				new TYPE.Dict(TYPE.INT),
 				new TYPE.Set(TYPE.INT),
 				new TYPE.Map(TYPE.INT, TYPE.INT),
-			].forEach((t) => assert.ok(t.isDefinitelyTruthy(), `Expected \`${ t }\` to be definitely truthy.`));
+			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${ t }\` to be definitely truthy.`));
 		});
 	});
 
@@ -154,7 +154,7 @@ describe('Type', () => {
 			[TYPE.INT,     TYPE.NEVER],
 			[TYPE.FLOAT,   TYPE.NEVER],
 			[TYPE.STR,     TYPE.NEVER],
-		]).forEach((right, left) => assert.ok(left.falsySide().equals(right), `${ left.falsySide() } == ${ right }`));
+		]).forEach((right, left) => assert.ok(left.falsySide.equals(right), `${ left.falsySide } == ${ right }`));
 	});
 
 
@@ -167,7 +167,7 @@ describe('Type', () => {
 			[TYPE.INT,     TYPE.INT],
 			[TYPE.FLOAT,   TYPE.FLOAT],
 			[TYPE.STR,     TYPE.STR],
-		]).forEach((right, left) => assert.ok(left.truthySide().equals(right), `${ left.truthySide() } == ${ right }`));
+		]).forEach((right, left) => assert.ok(left.truthySide.equals(right), `${ left.truthySide } == ${ right }`));
 	});
 
 
