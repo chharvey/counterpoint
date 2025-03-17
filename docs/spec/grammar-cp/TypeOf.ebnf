@@ -274,13 +274,12 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 Type! TypeOfUnfolded(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *Let* `falsetype` be *UnwrapAffirm:* `ToType(false)`.
-	4. *Let `falsytypes` be *UnwrapAffirm:* `Union(Void, Null, falsetype)`.
-	5. *If* *UnwrapAffirm:* `Subtype(operand, falsytypes)`:
+	3. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(operand)`:
 		1. *Return:* `ToType(true)`.
-	6. *If* *UnwrapAffirm:* `Subtype(Void, operand)` *or* *UnwrapAffirm:* `Subtype(Null, operand)` *or* *UnwrapAffirm:* `Subtype(falsetype, operand)`:
+	4. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(operand)`:
+		1. *Return:* `ToType(false)`.
+	5. *Else:*
 		1. *Return:* `Boolean`.
-	7. *Return:* `falsetype`.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: EMP] expr) :=
@@ -341,24 +340,22 @@ Type! TypeOfUnfolded(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *Let* `falsetype` be *UnwrapAffirm:* `ToType(false)`.
-	5. *Let `falsytypes` be *UnwrapAffirm:* `Union(Void, Null, falsetype)`.
-	6. *If* *UnwrapAffirm:* `Subtype(t0, falsytypes)`:
+	4. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)`:
 		1. *Return:* `t0`.
-	7. *Return:* `Union(Intersection(t0, falsytypes), t1)`.
+	5. *Else:*
+		1. *Return:* `Union(FalsySide(t0), t1)`.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *Let* `falsetype` be *UnwrapAffirm:* `ToType(false)`.
-	5. *Let `falsytypes` be *UnwrapAffirm:* `Union(Void, Null, falsetype)`.
-	6. *If* *UnwrapAffirm:* `Subtype(t0, falsytypes)`:
+	4. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)`:
 		1. *Return:* `t1`.
-	7. *If* *UnwrapAffirm:* `Subtype(Void, t0)` *or* *UnwrapAffirm:* `Subtype(Null, t0)` *or* *UnwrapAffirm:* `Subtype(falsetype, t0)`:
-		1. *Return:* `Union(Difference(t0, falsytypes), t1)`.
-	8. *Return:* `t0`.
+	5. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)`:
+		1. *Return:* `t0`.
+	6. *Else:*
+		1. *Return:* `Union(TruthySide(t0), t1)`.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: COND] expr) :=
