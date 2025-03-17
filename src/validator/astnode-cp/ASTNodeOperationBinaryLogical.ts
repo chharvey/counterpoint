@@ -1,7 +1,7 @@
 import binaryen from 'binaryen';
 import {
 	type VALUE,
-	type TYPE,
+	TYPE,
 	BinVect,
 } from '../../index.js';
 import {
@@ -74,6 +74,9 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
+		if (t0.isBottomType) {
+			return TYPE.NEVER;
+		}
 		switch (this.operator) {
 			case Operator.AND: {
 				return (

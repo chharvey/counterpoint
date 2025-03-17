@@ -274,26 +274,32 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 Type! TypeOfUnfolded(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
+	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+		1. *Return:* `Never`.
+	4. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
 		1. *Return:* `ToType(true)`.
-	4. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)` is `true`:
+	5. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)` is `true`:
 		1. *Return:* `ToType(false)`.
-	5. *Else:*
+	6. *Else:*
 		1. *Return:* `Boolean`.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: EMP] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
-	2. *Perform:* *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *Return:* `Boolean`.
+	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+		1. *Return:* `Never`.
+	4. *Return:* `Boolean`.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true`:
+	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+		1. *Return:* `Never`.
+	4. *If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true`:
 		1. *Return:* `t0`.
-	4. *Throw:* a new TypeErrorInvalidOperation.
+	5. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
@@ -325,26 +331,30 @@ Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Number)` is `true`:
+	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
+		1. *Return:* `Never`.
+	5. *If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Number)` is `true`:
 		1. *If* *UnwrapAffirm:* `Subtype(t0, Integer)` is `true` *or* *UnwrapAffirm:* `Subtype(t1, Integer)` is `true`:
 			1. *If* *UnwrapAffirm:* `Subtype(t0, Float)` is `true` *or* *UnwrapAffirm:* `Subtype(t1, Float)` is `true`:
 				1. *If* `operator` is `ID`:
 					1. *Return:* `ToType(false)`.
 		2. *Return:* `Boolean`.
-	5. *If* `t0` and `t1` are disjoint:
+	6. *If* `t0` and `t1` are disjoint:
 		1. *Return:* `ToType(false)`.
-	6. *Return:* `Boolean`.
+	7. *Return:* `Boolean`.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
+	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+		1. *Return:* `Never`.
+	5. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
 		1. *Return:* `t0`.
-	5. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)` is `true`:
+	6. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)` is `true`:
 		1. *Return:* `t1`.
-	6. *Else:*
+	7. *Else:*
 		1. *Return:* `Union(FalsySide(t0), t1)`.
 ;
 
@@ -352,11 +362,13 @@ Type! TypeOfUnfolded(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
+	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+		1. *Return:* `Never`.
+	5. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
 		1. *Return:* `t1`.
-	5. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)` is `true`:
+	6. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)` is `true`:
 		1. *Return:* `t0`.
-	6. *Else:*
+	7. *Else:*
 		1. *Return:* `Union(TruthySide(t0), t1)`.
 ;
 
@@ -365,13 +377,15 @@ Type! TypeOfUnfolded(SemanticOperation[operator: COND] expr) :=
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *Let* `t2` be *Unwrap:* `TypeOf(expr.children.2)`.
-	5. *If* *UnwrapAffirm:* `Subtype(t0, Boolean)` is `true`:
+	5. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+		1. *Return:* `Never`.
+	6. *If* *UnwrapAffirm:* `Subtype(t0, Boolean)` is `true`:
 		1. *If* `t0` is `ToType(false)`:
 			1. *Return:* `t2`.
 		2. *If* `t0` is `ToType(true)`:
 			1. *Return:* `t1`.
 		3. *Return:* `Union(t1, t2)`.
-	6. *Throw:* a new TypeErrorInvalidOperation.
+	7. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
 
