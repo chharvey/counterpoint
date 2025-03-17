@@ -85,7 +85,7 @@ class TypeTuple extends ValueType {
 				if (!thattype.optional) {
 					/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
 						We cannot do so with record types since properties are not ordered. */
-					assert.strictEqual(thistype?.optional, false, `${ thistype } should exist and not be optional.`);
+					assert.strictEqual(thistype?.optional, false, `${ thistype.type } should exist and not be optional.`);
 				}
 				return !thistype || thistype.type.isSubtypeOf(thattype.type); // Covariance for tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 				/* eslint-enable @typescript-eslint/no-unnecessary-condition */

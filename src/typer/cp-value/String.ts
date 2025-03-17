@@ -50,7 +50,7 @@ class ValueString extends Primitive {
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
 		mod;
-		throw '`ValueString#build` not yet supported.';
+		throw new Error('`ValueString#build` not yet supported.');
 	}
 
 	/**

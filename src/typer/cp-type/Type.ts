@@ -321,6 +321,11 @@ export abstract class Type {
 	}
 
 	/**
+	 * @return a string representation of this type
+	 */
+	public abstract toString(): string;
+
+	/**
 	 * Is this type definitely a ”falsy” type?
 	 * @return  whether this is a subtype of `void | null | false`
 	 * @final
@@ -478,6 +483,10 @@ export class TypeInterface extends Type {
 
 	public override get hasMutable(): boolean {
 		return super.hasMutable || [...this.properties.values()].some((t) => t.hasMutable);
+	}
+
+	public override toString(): string {
+		return `[${ [...this.properties].map((prop) => prop.join(': ')).join(', ') }]`;
 	}
 
 	public override includes(v: VALUE.Value): boolean {

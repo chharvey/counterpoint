@@ -36,8 +36,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 			| readonly [ASTNodeConstant, ASTNodeExpression,                                        ASTNodeConstant]
 			// | readonly [ASTNodeConstant,                    ...ASTNodeTemplatePartialChildrenType, ASTNodeConstant]
 			// | readonly [ASTNodeConstant, ASTNodeExpression, ...ASTNodeTemplatePartialChildrenType, ASTNodeConstant]
-			| readonly ASTNodeExpression[]
-		,
+			| readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);
 	}
@@ -45,7 +44,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw '`ASTNodeTemplate#build` not yet supported.';
+		throw new Error('`ASTNodeTemplate#build` not yet supported.');
 	}
 
 	@memoizeMethod

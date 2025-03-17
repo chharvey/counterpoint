@@ -71,7 +71,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw '`ASTNodeCall#build` not yet supported.';
+		throw new Error('`ASTNodeCall#build` not yet supported.');
 	}
 
 	@memoizeMethod
