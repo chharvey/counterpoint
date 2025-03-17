@@ -1,4 +1,5 @@
 import * as VALUE from '../cp-value/index.js';
+import type {Type} from './Type.js';
 import type {Unit} from './Unit.js';
 import {Never} from './Never.js';
 import {Void} from './Void.js';
@@ -28,3 +29,7 @@ export const FALSE: Unit<VALUE.Boolean> = VALUE.FALSE.toType();
 
 /** A Unit Type containing only the Counterpoint Language Value `true`. */
 export const TRUE: Unit<VALUE.Boolean> = VALUE.TRUE.toType();
+
+
+
+export const FALSY_TYPES = new Set<Type>([VOID, NULL, FALSE]);
