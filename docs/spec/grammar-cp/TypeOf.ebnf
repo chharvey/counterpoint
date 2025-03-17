@@ -273,10 +273,10 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 
 Type! TypeOfUnfolded(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `operand` be *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(operand)`:
+	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	3. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)`:
 		1. *Return:* `ToType(true)`.
-	4. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(operand)`:
+	4. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)`:
 		1. *Return:* `ToType(false)`.
 	5. *Else:*
 		1. *Return:* `Boolean`.
