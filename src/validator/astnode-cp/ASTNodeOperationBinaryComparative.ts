@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import binaryen from 'binaryen';
 import {
 	VALUE,
@@ -61,12 +62,11 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
-		if (bothNumeric(t0, t1) && (int_coercion || (
-			bothFloats(t0, t1) || neitherFloats(t0, t1)
-		))) {
-			return TYPE.BOOL;
-		}
-		throw new TypeErrorInvalidOperation(this);
+		assert.ok(bothNumeric(t0, t1), new TypeErrorInvalidOperation(this));
+		return (
+			int_coercion || bothFloats(t0, t1) || neitherFloats(t0, t1) ? TYPE.BOOL :
+			assert.fail(new TypeErrorInvalidOperation(this))
+		);
 	}
 
 	@memoizeMethod

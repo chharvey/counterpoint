@@ -329,7 +329,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=
 	4. *If* *UnwrapAffirm:* `Subtype(t0, Number)` *and* *UnwrapAffirm:* `Subtype(t1, Number)`:
 		1. *If* *UnwrapAffirm:* `Subtype(t0, Integer)` *or* *UnwrapAffirm:* `Subtype(t1, Integer)`:
 			1. *If* *UnwrapAffirm:* `Subtype(t0, Float)` *or* *UnwrapAffirm:* `Subtype(t1, Float)`:
-				1. *If* `operator` is `IS`:
+				1. *If* `operator` is `ID`:
 					1. *Return:* `ToType(false)`.
 		2. *Return:* `Boolean`.
 	5. *If* `t0` and `t1` are disjoint:
