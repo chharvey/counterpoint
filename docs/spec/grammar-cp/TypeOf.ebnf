@@ -342,7 +342,9 @@ Type! TypeOfUnfolded(SemanticOperation[operator: AND] expr) :=
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)`:
 		1. *Return:* `t0`.
-	5. *Else:*
+	5. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)`:
+		1. *Return:* `t1`.
+	6. *Else:*
 		1. *Return:* `Union(FalsySide(t0), t1)`.
 ;
 

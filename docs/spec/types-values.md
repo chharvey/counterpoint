@@ -467,9 +467,13 @@ The **falsy side** of a type is a type comprising all falsy values assignable to
 
 ```
 Type FalsySide(Type t) :=
-	1. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
-	2. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
-	3. *Return:* *UnwrapAffirm:* `Intersection(t, falsy_types)`.
+	1. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t)`:
+		1. *Return:* `t`.
+	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)`:
+		1. *Return:* Never.
+	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
+	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
+	5. *Return:* *UnwrapAffirm:* `Intersection(t, falsy_types)`.
 ;
 ```
 
@@ -481,9 +485,13 @@ Equivalently, the **truthy side** of a type comprises all the values in the type
 
 ```
 Type TruthySide(Type t) :=
-	1. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
-	2. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
-	3. *Retrn:* *UnwrapAffirm:* `Difference(t, falsy_types)`.
+	1. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t)`:
+		1. *Return:* Never.
+	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)`:
+		1. *Return:* `t`.
+	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
+	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
+	5. *Retrn:* *UnwrapAffirm:* `Difference(t, falsy_types)`.
 ;
 ```
 
