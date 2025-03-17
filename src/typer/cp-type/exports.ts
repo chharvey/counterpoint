@@ -32,4 +32,4 @@ export const TRUE: Unit<VALUE.Boolean> = VALUE.TRUE.toType();
 
 
 
-export const FALSY_TYPES = new Set<Type>([VOID, NULL, FALSE]);
+export const FALSY_TYPES: ReadonlySet<Type> = new Set([VOID, NULL, FALSE]);
