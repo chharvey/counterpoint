@@ -437,7 +437,7 @@ is a data type that contains values assignable to *both* type \`‹T›\` and ty
 Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
 
 ```
-Type Intersect(Type a, Type b) :=
+Type Intersection(Type a, Type b) :=
 	// 1-5 | `T  & never   == never`
 	1. *If* *UnwrapAffirm:* `IsBottomType(a)` *or* *UnwrapAffirm:* `IsBottomType(b)`:
 		1. *Return:* `Never`.

@@ -454,7 +454,7 @@ Type CombineTuplesOrRecords(Type t) :=
 					2. *Else:*
 						1. *Let* `optional` be `false`.
 					3. *Set* `data[i]` to a new Structure [
-						type=     *UnwrapAffirm:* `Intersect(data[i].type, seq_b[i].type)`,
+						type=     *UnwrapAffirm:* `Intersection(data[i].type, seq_b[i].type)`,
 						optional= optional,
 					].
 				2. *Else:*
@@ -472,7 +472,7 @@ Type CombineTuplesOrRecords(Type t) :=
 					2. *Else:*
 						1. *Let* `optional` be `false`.
 					3. *Set* `data[k]` to a new Structure [
-						type=     *UnwrapAffirm:* `Intersect(data[k].type, struct_b[k].type)`,
+						type=     *UnwrapAffirm:* `Intersection(data[k].type, struct_b[k].type)`,
 						optional= optional,
 					].
 				2. *Else:*
