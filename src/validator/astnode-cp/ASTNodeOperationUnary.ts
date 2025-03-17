@@ -52,12 +52,12 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const arg0: binaryen.ExpressionRef = this.operand.build();
 		if (this.operator === Operator.NOT) {
 			const t0: TYPE.Type = this.operand.type();
-			if (t0.isDefinitelyFalsy()) {
+			if (t0.isDefinitelyFalsy) {
 				return this.builder.module.block(null, [
 					this.builder.module.drop(arg0),
 					new BinVect(this.builder.module, true).vect,
 				], binaryen.v128);
-			} else if (t0.isDefinitelyTruthy()) {
+			} else if (t0.isDefinitelyTruthy) {
 				return this.builder.module.block(null, [
 					this.builder.module.drop(arg0),
 					new BinVect(this.builder.module, false).vect,
@@ -78,8 +78,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		switch (this.operator) {
 			case Operator.NOT: {
 				return (
-					t.isDefinitelyFalsy()  ? TYPE.TRUE :
-					t.isDefinitelyTruthy() ? TYPE.FALSE :
+					t.isDefinitelyFalsy  ? TYPE.TRUE :
+					t.isDefinitelyTruthy ? TYPE.FALSE :
 					TYPE.BOOL
 				);
 			}

@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import {
 	assert_context_name,
-	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.js';
 import {
 	languageValuesIdentical,
@@ -324,8 +324,8 @@ export abstract class Type {
 	 * @return  whether this is a subtype of `void | null | false`
 	 * @final
 	 */
-	@memoizeMethod
-	public isDefinitelyFalsy(): boolean {
+	@memoizeGetter
+	public get isDefinitelyFalsy(): boolean {
 		return this.isSubtypeOf(Union.all(...FALSY_TYPES));
 	}
 
@@ -334,8 +334,8 @@ export abstract class Type {
 	 * @return  `false` if this is the Bottom Type or is a supertype of any of `void` or `null` or `false`; otherwise `true`
 	 * @final
 	 */
-	@memoizeMethod
-	public isDefinitelyTruthy(): boolean {
+	@memoizeGetter
+	public get isDefinitelyTruthy(): boolean {
 		return !this.isBottomType && [...FALSY_TYPES].every((t) => !t.isSubtypeOf(this));
 	}
 
@@ -344,11 +344,11 @@ export abstract class Type {
 	 * @return this type’s intersection with all falsy types
 	 * @final
 	 */
-	@memoizeMethod
-	public falsySide(): Type {
+	@memoizeGetter
+	public get falsySide(): Type {
 		return (
-			this.isDefinitelyFalsy()  ? this :
-			this.isDefinitelyTruthy() ? NEVER :
+			this.isDefinitelyFalsy  ? this :
+			this.isDefinitelyTruthy ? NEVER :
 			this.intersect(Union.all(...FALSY_TYPES))
 		);
 	}
@@ -358,11 +358,11 @@ export abstract class Type {
 	 * @return this type, minus all falsy types
 	 * @final
 	 */
-	@memoizeMethod
-	public truthySide(): Type {
+	@memoizeGetter
+	public get truthySide(): Type {
 		return (
-			this.isDefinitelyFalsy()  ? NEVER :
-			this.isDefinitelyTruthy() ? this :
+			this.isDefinitelyFalsy  ? NEVER :
+			this.isDefinitelyTruthy ? this :
 			this.subtract(Union.all(...FALSY_TYPES))
 		);
 	}

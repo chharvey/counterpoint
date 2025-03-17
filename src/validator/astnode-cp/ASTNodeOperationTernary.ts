@@ -48,12 +48,12 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		const t0:                 TYPE.Type                = this.operand0.type();
 		const [arg0, arg1, arg2]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
 
-		if (t0.isDefinitelyFalsy()) {
+		if (t0.equals(TYPE.FALSE)) {
 			return this.builder.module.block(null, [
 				this.builder.module.drop(arg0),
 				arg2,
 			], binaryen.v128);
-		} else if (t0.isDefinitelyTruthy()) {
+		} else if (t0.equals(TYPE.TRUE)) {
 			return this.builder.module.block(null, [
 				this.builder.module.drop(arg0),
 				arg1,

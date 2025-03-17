@@ -52,9 +52,9 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			this.builder.module.drop(arg0),
 			arg1,
 		], binaryen.v128);
-		if (t0.isDefinitelyFalsy()) {
+		if (t0.isDefinitelyFalsy) {
 			return this.operator === Operator.AND ? arg0 : block1;
-		} else if (t0.isDefinitelyTruthy()) {
+		} else if (t0.isDefinitelyTruthy) {
 			return this.operator === Operator.AND ? block1 : arg0;
 		}
 
@@ -77,16 +77,16 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		switch (this.operator) {
 			case Operator.AND: {
 				return (
-					t0.isDefinitelyFalsy()  ? t0 :
-					t0.isDefinitelyTruthy() ? t1 :
-					t0.falsySide().union(t1)
+					t0.isDefinitelyFalsy  ? t0 :
+					t0.isDefinitelyTruthy ? t1 :
+					t0.falsySide.union(t1)
 				);
 			}
 			case Operator.OR: {
 				return (
-					t0.isDefinitelyFalsy()  ? t1 :
-					t0.isDefinitelyTruthy() ? t0 :
-					t0.truthySide().union(t1)
+					t0.isDefinitelyFalsy  ? t1 :
+					t0.isDefinitelyTruthy ? t0 :
+					t0.truthySide.union(t1)
 				);
 			}
 		}
