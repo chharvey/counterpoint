@@ -62,12 +62,14 @@ function buildTest(title: string, source: string, expected: string): string {
 				type T = never;
 				type T = void;
 				type T = bool;
+				type T = sym;
 				type T = int;
 				type T = float;
 				type T = str;
 				type T = unknown;
 			`,
 			sourceTypes(
+				s('keyword_type'),
 				s('keyword_type'),
 				s('keyword_type'),
 				s('keyword_type'),

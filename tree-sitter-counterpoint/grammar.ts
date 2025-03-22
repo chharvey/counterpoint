@@ -282,6 +282,7 @@ module.exports = grammar({
 			'never',
 			'void',
 			'bool',
+			'sym',
 			'int',
 			'float',
 			'str',
