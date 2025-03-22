@@ -254,38 +254,36 @@ class Decorator {
 						Decorator.TYPEOPERATORS_UNARY.get(punc)!,
 						basetype,
 					);
-				} else {
-					if (node.children.length === 3) { // we have either `T[]` or `T{}`
-						if (punc === Punctuator.BRAK_OPN) {
-							return new AST.ASTNodeTypeList(
-								node as SyntaxNodeType<'type_unary_symbol'>,
-								basetype,
-								null,
-							);
-						} else {
-							assert.strictEqual(punc, Punctuator.BRAC_OPN);
-							return new AST.ASTNodeTypeSet(
-								node as SyntaxNodeType<'type_unary_symbol'>,
-								basetype,
-							);
-						}
-					} else { // we have `T[n]`
-						assert.strictEqual(node.children.length, 4);
-						assert.strictEqual(punc, Punctuator.BRAK_OPN);
-						const count: bigint = BigInt(Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
-							...CONFIG_DEFAULT,
-							languageFeatures: {
-								...CONFIG_DEFAULT.languageFeatures,
-								integerRadices:    true,
-								numericSeparators: true,
-							},
-						})[0]);
+				} else if (node.children.length === 3) { // we have either `T[]` or `T{}`
+					if (punc === Punctuator.BRAK_OPN) {
 						return new AST.ASTNodeTypeList(
 							node as SyntaxNodeType<'type_unary_symbol'>,
 							basetype,
-							count,
+							null,
+						);
+					} else {
+						assert.strictEqual(punc, Punctuator.BRAC_OPN);
+						return new AST.ASTNodeTypeSet(
+							node as SyntaxNodeType<'type_unary_symbol'>,
+							basetype,
 						);
 					}
+				} else { // we have `T[n]`
+					assert.strictEqual(node.children.length, 4);
+					assert.strictEqual(punc, Punctuator.BRAK_OPN);
+					const count: bigint = BigInt(Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
+						...CONFIG_DEFAULT,
+						languageFeatures: {
+							...CONFIG_DEFAULT.languageFeatures,
+							integerRadices:    true,
+							numericSeparators: true,
+						},
+					})[0]);
+					return new AST.ASTNodeTypeList(
+						node as SyntaxNodeType<'type_unary_symbol'>,
+						basetype,
+						count,
+					);
 				}
 			}],
 
