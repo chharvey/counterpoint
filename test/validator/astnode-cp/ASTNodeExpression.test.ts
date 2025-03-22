@@ -47,13 +47,32 @@ describe('ASTNodeExpression', () => {
 					constants.map((c) => c.type()),
 					constants.map((c) => new TYPE.Unit(c.fold())),
 				);
+				(`
+					@then  @str  @false  @foobar
+				`).trim().split('  ').forEach((src) => {
+					const node: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(`${ src };`);
+					const success_message = 'Successfully ran the #fold method.';
+					const original        = node.fold.bind(node);
+					node.fold = function (this: AST.ASTNodeConstant): ReturnType<typeof this.fold> {
+						try {
+							return original.call(this);
+						} catch (err) {
+							if ((err as Error).message === 'Successfully identified a symbol literal expression.') {
+								return new VALUE.String(success_message);
+							} else {
+								throw err;
+							}
+						}
+					};
+					assert.deepStrictEqual(node.type(), new TYPE.Unit(new VALUE.String(success_message)));
+				});
 			});
 		});
 
 
 		/* eslint-disable @stylistic/array-element-newline */
 		describe('#fold', () => {
-			it('computes null and boolean values.', () => {
+			it('computes null, boolean, and symbol values.', () => {
 				assert.deepStrictEqual([
 					'null;',
 					'false;',
@@ -63,6 +82,9 @@ describe('ASTNodeExpression', () => {
 					VALUE.FALSE,
 					VALUE.TRUE,
 				]);
+				`
+					@then  @str  @false  @foobar
+				`.trim().split('  ').forEach((src) => assert.throws(() => AST.ASTNodeConstant.fromSource(`${ src };`).fold(), /Successfully identified a symbol literal expression/));
 			});
 			it('computes int values.', () => {
 				const integer_radices_on: CPConfig = {

@@ -36,6 +36,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			source === Keyword.VOID    ? TYPE.VOID :
 			source === Keyword.NULL    ? TYPE.NULL :
 			source === Keyword.BOOL    ? TYPE.BOOL :
+			source === Keyword.SYM     ? assert.fail('Successfully identified the `sym` type keyword.') :
 			source === Keyword.FALSE   ? TYPE.FALSE :
 			source === Keyword.TRUE    ? TYPE.TRUE :
 			source === Keyword.INT     ? TYPE.INT :
@@ -63,15 +64,13 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			(assert.ok(
 				isSyntaxNodeType(this.start_node, 'primitive_literal'),
 				`Expected ${ this.start_node } to be a primitive.`,
-			), ((token: SyntaxNode) => (
-				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeTypeConstant.keywordType(token.text)                    :
-				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? valueOfTokenNumber(token.text, this.validator.config).toType() :
-				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? valueOfTokenNumber(token.text, this.validator.config).toType() :
-				(assert.ok(
-					isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),
-					`Expected ${ token } to be a string.`,
-				), new VALUE.String(Validator.cookTokenString(token.text, this.validator.config)).toType())
-			))(this.start_node.children[0]))
+			), ((children: readonly SyntaxNode[]) => (
+				(isSyntaxNodeType(children[0], 'keyword_value'))                                               ? ASTNodeTypeConstant.keywordType(children[0].text) :
+				(isSyntaxNodeType(children[0], /^integer(__radix)?(__separator)?$/))                           ? valueOfTokenNumber(children[0].text, this.validator.config).toType() :
+				(isSyntaxNodeType(children[0], /^float(__separator)?$/))                                       ? valueOfTokenNumber(children[0].text, this.validator.config).toType() :
+				(isSyntaxNodeType(children[0], /^string(__comment)?(__separator)?$/))                          ? new VALUE.String(Validator.cookTokenString(children[0].text, this.validator.config)).toType() :
+				(assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`),  assert.fail('Successfully identified a symbol literal type.'))
+			))(this.start_node.children))
 		);
 	}
 }

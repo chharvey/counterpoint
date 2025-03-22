@@ -653,3 +653,20 @@ ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode__List ","? ParseNode
 AccessKind(PropertyAccess ::= "."  (INTEGER | Word | "[" Expression "]")) -> NORMAL   := NORMAL;
 AccessKind(PropertyAccess ::= "?." (INTEGER | Word | "[" Expression "]")) -> OPTIONAL := OPTIONAL;
 AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> CLAIM    := CLAIM;
+
+
+
+KeywordType(KEYWORD_TYPE :::= "never")   -> Type := Never;
+KeywordType(KEYWORD_TYPE :::= "void")    -> Type := Void;
+KeywordType(KEYWORD_TYPE :::= "bool")    -> Type := Boolean;
+KeywordType(KEYWORD_TYPE :::= "sym")     -> Type := Symbol;
+KeywordType(KEYWORD_TYPE :::= "int")     -> Type := Integer;
+KeywordType(KEYWORD_TYPE :::= "float")   -> Type := Float;
+KeywordType(KEYWORD_TYPE :::= "str")     -> Type := String;
+KeywordType(KEYWORD_TYPE :::= "unknown") -> Type := Unknown;
+
+
+
+KeywordValue(KEYWORD_VALUE :::= "null")  -> Object := null;
+KeywordValue(KEYWORD_VALUE :::= "false") -> Object := false;
+KeywordValue(KEYWORD_VALUE :::= "true")  -> Object := true;

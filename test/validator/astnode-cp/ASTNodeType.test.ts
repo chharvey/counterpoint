@@ -91,7 +91,7 @@ describe('ASTNodeType', () => {
 
 	describe('ASTNodeTypeConstant', () => {
 		describe('#eval', () => {
-			it('computes the value of constant null, boolean, or number types.', () => {
+			it('computes the value of constant null, boolean, symbol, number, and string types.', () => {
 				assert.deepStrictEqual([
 					'null',
 					'false',
@@ -107,6 +107,9 @@ describe('ASTNodeType', () => {
 					typeUnit(4.2e+3),
 					typeUnit('hi'),
 				]);
+				`
+					@then  @str  @false  @foobar
+				`.trim().split('  ').forEach((src) => assert.throws(() => AST.ASTNodeTypeConstant.fromSource(src).eval(), /Successfully identified a symbol literal type./));
 			});
 			it('computes the value of keyword type.', () => {
 				assert.deepStrictEqual([
@@ -126,6 +129,7 @@ describe('ASTNodeType', () => {
 					TYPE.STR,
 					TYPE.UNKNOWN,
 				]);
+				assert.throws(() => AST.ASTNodeTypeConstant.fromSource('sym').eval(), /Successfully identified the `sym` type keyword/);
 			});
 		});
 	});
