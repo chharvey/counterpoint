@@ -192,6 +192,10 @@ function buildTest(title: string, source: string, expected: string): string {
 				type T = null;
 				type T = false;
 				type T = true;
+				type T = @type;
+				type T = @bool;
+				type T = @true;
+				type T = @hello;
 				type T = 42;
 				type T = 4.2;
 				type T = "hello";
@@ -199,19 +203,27 @@ function buildTest(title: string, source: string, expected: string): string {
 				null;
 				false;
 				true;
+				@let;
+				@bool;
+				@true;
+				@hello;
 				42;
 				4.2;
 				"hello";
 			`,
 			(() => {
 				const primitive_literals = [
-					'keyword_value',
-					'keyword_value',
-					'keyword_value',
-					'integer',
-					'float',
-					'string',
-				].map((n) => s('primitive_literal', s(n)));
+					s('keyword_value'),
+					s('keyword_value'),
+					s('keyword_value'),
+					s('word'),
+					s('word', s('keyword_type')),
+					s('word', s('keyword_value')),
+					s('word', s('identifier')),
+					s('integer'),
+					s('float'),
+					s('string'),
+				].map((term) => s('primitive_literal', term));
 				return source_file(
 					...primitive_literals.map((pl) => declaration_type    (pl)),
 					...primitive_literals.map((pl) => statement_expression(pl)),

@@ -33,6 +33,8 @@ Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
 	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 	:= (SemanticConstant[value=String(TokenWorth(STRING))]);
+Decorate(PrimitiveLiteral ::= "@" Word) -> SemanticConstant
+	:= (SemanticConstant[value=Symbol(Decorate(Word).id)]);
 
 
 

@@ -366,6 +366,7 @@ module.exports = grammar({
 			$.string__comment,
 			$.string__separator,
 			$.string__comment__separator,
+			seq('@', $.word),
 		),
 
 

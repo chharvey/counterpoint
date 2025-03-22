@@ -37,6 +37,7 @@ PrimitiveLiteral ::=
 	| INTEGER
 	| FLOAT
 	| STRING
+	| "@" Word
 ;
 
 

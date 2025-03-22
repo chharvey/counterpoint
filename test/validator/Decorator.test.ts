@@ -55,6 +55,10 @@ describe('Decorator', () => {
 				type T = "hello";
 				% (primitive_literal (string))
 			`]],
+			['Decorate(Type > PrimitiveLiteral ::= "@" Word) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
+				type T = @hello;
+				% (primitive_literal (word (identifier)))
+			`]],
 
 			['Decorate(Expression > PrimitiveLiteral ::= KEYWORD_VALUE) -> SemanticConstant', [AST.ASTNodeConstant, `
 				false;
@@ -71,6 +75,10 @@ describe('Decorator', () => {
 			['Decorate(Expression > PrimitiveLiteral ::= STRING) -> SemanticConstant', [AST.ASTNodeConstant, `
 				"hello";
 				% (primitive_literal (string))
+			`]],
+			['Decorate(Expression > PrimitiveLiteral ::= "@" Word) -> SemanticConstant', [AST.ASTNodeConstant, `
+				@hello;
+				% (primitive_literal (word (identifier)))
 			`]],
 
 			/* ## Types */
