@@ -21,8 +21,10 @@ import {
 	bothNumeric,
 	oneFloats,
 } from './utils-private.js';
-import {buildDeco} from './decorators.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {
+	buildDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 
 
@@ -47,7 +49,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-		if (this.type().equals(VALUE.Boolean.FALSETYPE)) {
+		if (this.type().equals(TYPE.FALSE)) {
 			return this.builder.module.block(null, [
 				this.builder.module.drop(arg0),
 				this.builder.module.drop(arg1),
@@ -61,18 +63,21 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
+		if (t0.isBottomType || t1.isBottomType) {
+			return TYPE.NEVER;
+		}
 		/*
 		 * If `a` and `b` are of disjoint numeric types, then `a === b` will always return `false`.
 		 * If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
 		 */
 		if (bothNumeric(t0, t1)) {
 			if (oneFloats(t0, t1) && (this.operator === Operator.ID || !int_coercion)) {
-				return VALUE.Boolean.FALSETYPE;
+				return TYPE.FALSE;
 			}
 			return TYPE.BOOL;
 		}
 		if (t0.intersect(t1).isBottomType) {
-			return VALUE.Boolean.FALSETYPE;
+			return TYPE.FALSE;
 		}
 		return TYPE.BOOL;
 	}
@@ -92,7 +97,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 
 	private foldEquality(v0: VALUE.Value, v1: VALUE.Value): VALUE.Boolean {
 		if (bothNumeric(v0, v1) && oneFloats(v0, v1) && !this.validator.config.compilerOptions.intCoercion) {
-			return VALUE.Boolean.FALSE;
+			return VALUE.FALSE;
 		}
 		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: VALUE.Value, y: VALUE.Value) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],

@@ -1,4 +1,4 @@
-import {instanceOf} from '../../lib/decorators.js';
+import {instanceOf} from '../utils-private.js';
 import * as VALUE from '../cp-value/index.js';
 import {ValueType} from './ValueType.js';
 
@@ -10,7 +10,7 @@ import {ValueType} from './ValueType.js';
  */
 export class Float extends ValueType {
 	public constructor() {
-		super(false, new Set([new VALUE.Float(0.0)]));
+		super(false, new Set([VALUE.FLOAT_0, VALUE.FLOAT_N0]));
 	}
 
 	public override toString(): string {

@@ -430,6 +430,72 @@ A type \`‹T›\` is the **bottom type**, named Never, iff \`‹T›\` contains
 A type \`‹T›\` is the **top type**, named Unknown, iff \`‹T›\` contains all possible values.
 
 
+### IsDefinitelyFalsy
+A type is **definitely falsy** if it is a subtype of any of the falsy types or their union:
+Void, Null, or the unit type containing exactly the `false` value.
+
+```
+Boolean IsDefinitelyFalsy(Type t) :=
+	1. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
+	2. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
+	3. *Return:* `Subtype(t, falsy_types)`.
+;
+```
+
+
+### IsDefinitelyTruthy
+A type is **definitely truthy** if it is not the bottom type and it is not a supertype of any of the falsy types:
+Void, Null, or the unit type containing exactly the `false` value.
+
+```
+Boolean IsDefinitelyTruthy(Type t) :=
+	1. *If* *UnwrapAffirm:* `IsBottomType(t)` is `true`:
+		1. *Return:* `false`.
+	2. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
+	3. *Let* `falsy_types` be a new Sequence [Void, Null, `false_type`].
+	4. *For each* `falsy_type` in `falsy_types`:
+		1. *If* *UnwrapAffirm:* `Subtype(falsy_type, t)`:
+			1. *Return:* `false`.
+	5. *Return:* `true`.
+;
+```
+
+
+### FalsySide
+The **falsy side** of a type is a type comprising all falsy values assignable to the type.
+(Falsy values are values \`‹v›\` for which \`ToBoolean(‹v›)\` returns `false`.)
+
+```
+Type FalsySide(Type t) :=
+	1. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t)`:
+		1. *Return:* `t`.
+	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)`:
+		1. *Return:* Never.
+	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
+	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
+	5. *Return:* *UnwrapAffirm:* `Intersection(t, falsy_types)`.
+;
+```
+
+
+### TruthySide
+The **truthy side** of a type is a type comprising all truthy values assignable to the type.
+(Truthy values are values \`‹v›\` for which \`ToBoolean(‹v›)\` returns `true`.)
+Equivalently, the **truthy side** of a type comprises all the values in the type excluding falsy values.
+
+```
+Type TruthySide(Type t) :=
+	1. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t)`:
+		1. *Return:* Never.
+	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)`:
+		1. *Return:* `t`.
+	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
+	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
+	5. *Retrn:* *UnwrapAffirm:* `Difference(t, falsy_types)`.
+;
+```
+
+
 ### Intersection
 A data type specified as \`And<‹T›, ‹U›>\`,
 where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
@@ -437,7 +503,7 @@ is a data type that contains values assignable to *both* type \`‹T›\` and ty
 Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
 
 ```
-Type Intersect(Type a, Type b) :=
+Type Intersection(Type a, Type b) :=
 	// 1-5 | `T  & never   == never`
 	1. *If* *UnwrapAffirm:* `IsBottomType(a)` *or* *UnwrapAffirm:* `IsBottomType(b)`:
 		1. *Return:* `Never`.

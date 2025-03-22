@@ -59,9 +59,9 @@ describe('ASTNodeExpression', () => {
 					'false;',
 					'true;',
 				].map((src) => AST.ASTNodeConstant.fromSource(src).fold()), [
-					VALUE.Null.NULL,
-					VALUE.Boolean.FALSE,
-					VALUE.Boolean.TRUE,
+					VALUE.NULL,
+					VALUE.FALSE,
+					VALUE.TRUE,
 				]);
 			});
 			it('computes int values.', () => {

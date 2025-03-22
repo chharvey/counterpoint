@@ -1,4 +1,4 @@
-import {instanceOf} from '../../lib/decorators.js';
+import {instanceOf} from '../utils-private.js';
 import * as VALUE from '../cp-value/index.js';
 import {ValueType} from './ValueType.js';
 
@@ -10,7 +10,7 @@ import {ValueType} from './ValueType.js';
  */
 class TypeBoolean extends ValueType {
 	public constructor() {
-		super(false, new Set([VALUE.Boolean.FALSE, VALUE.Boolean.TRUE]));
+		super(false, new Set([VALUE.FALSE, VALUE.TRUE]));
 	}
 
 	public override toString(): string {

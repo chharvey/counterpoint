@@ -28,8 +28,8 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'type_intersection'>
-			| SyntaxNodeType<'type_union'>
-		,
+			| SyntaxNodeType<'type_union'>,
+
 		operator: ValidTypeOperator,
 		private readonly operand0: ASTNodeType,
 		private readonly operand1: ASTNodeType,

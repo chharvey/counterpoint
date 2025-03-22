@@ -1,12 +1,12 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
+import type {CodeUnit} from '../../lib/index.js';
 import {
-	type CodeUnit,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
+} from '../utils-private.js';
 import type {Value} from './Value.js';
 import {Primitive} from './Primitive.js';
 
@@ -50,7 +50,7 @@ class ValueString extends Primitive {
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
 		mod;
-		throw '`ValueString#build` not yet supported.';
+		throw new Error('`ValueString#build` not yet supported.');
 	}
 
 	/**

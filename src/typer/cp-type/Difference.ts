@@ -1,15 +1,18 @@
 import * as xjs from 'extrajs';
 import {
+	languageValuesIdentical,
 	strictEqual,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import {languageValuesIdentical} from '../utils-private.js';
+} from '../utils-private.js';
 import type * as VALUE from '../cp-value/index.js';
 import {
-	toStringDeco,
-	subtypeDeco,
-} from './decorators.js';
-import {Type} from './Type.js';
+	subtypeRules,
+	type Type,
+} from './Type.js';
+import {
+	botOrTopString,
+	TypeOperation,
+} from './TypeOperation.js';
 import {Union} from './Union.js';
 
 
@@ -19,7 +22,7 @@ import {Union} from './Union.js';
  * that contains values assignable to `T` but *not* assignable to `U`.
  * @final
  */
-export class Difference extends Type {
+export class Difference extends TypeOperation {
 	/**
 	 * Construct a new Difference object.
 	 * @param left the first type
@@ -29,7 +32,7 @@ export class Difference extends Type {
 		public readonly left:  Type,
 		public readonly right: Type,
 	) {
-		super(false, xjs.Set.difference(left.values, right.values, languageValuesIdentical));
+		super(xjs.Set.difference(left.values, right.values, languageValuesIdentical), [left, right]);
 	}
 
 	/*
@@ -55,9 +58,9 @@ export class Difference extends Type {
 		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
 	}
 
-	@toStringDeco
+	@botOrTopString
 	public override toString(): string {
-		return [this.left, this.right].map((s) => s instanceof Union ? `(${ s })` : s).join(' - ');
+		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).join(' - ');
 	}
 
 	public override includes(v: VALUE.Value): boolean {
@@ -66,7 +69,7 @@ export class Difference extends Type {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public override isSubtypeOf(t: Type): boolean {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf(t);
 	}

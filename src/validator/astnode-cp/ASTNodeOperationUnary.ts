@@ -24,8 +24,8 @@ import {
 import {
 	buildDeco,
 	typeDeco,
-} from './decorators.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 
 
@@ -52,12 +52,12 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const arg0: binaryen.ExpressionRef = this.operand.build();
 		if (this.operator === Operator.NOT) {
 			const t0: TYPE.Type = this.operand.type();
-			if (t0.isDefinitelyFalsy()) {
+			if (t0.isDefinitelyFalsy) {
 				return this.builder.module.block(null, [
 					this.builder.module.drop(arg0),
 					new BinVect(this.builder.module, true).vect,
 				], binaryen.v128);
-			} else if (t0.isDefinitelyTruthy()) {
+			} else if (t0.isDefinitelyTruthy) {
 				return this.builder.module.block(null, [
 					this.builder.module.drop(arg0),
 					new BinVect(this.builder.module, false).vect,
@@ -75,11 +75,14 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@typeDeco
 	public override type(): TYPE.Type {
 		const t: TYPE.Type = this.operand.type();
+		if (t.isBottomType) {
+			return TYPE.NEVER;
+		}
 		switch (this.operator) {
 			case Operator.NOT: {
 				return (
-					t.isDefinitelyFalsy()  ? VALUE.Boolean.TRUETYPE :
-					t.isDefinitelyTruthy() ? VALUE.Boolean.FALSETYPE :
+					t.isDefinitelyFalsy  ? TYPE.TRUE :
+					t.isDefinitelyTruthy ? TYPE.FALSE :
 					TYPE.BOOL
 				);
 			}

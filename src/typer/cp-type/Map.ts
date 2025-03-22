@@ -2,15 +2,17 @@ import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
+} from '../utils-private.js';
 import * as VALUE from '../cp-value/index.js';
 import {MUT_OPERATOR} from './utils-private.js';
 import {
-	subtypeDeco,
-	referenceSubtypeDeco,
-} from './decorators.js';
-import type {Type} from './Type.js';
-import {ReferenceType} from './ReferenceType.js';
+	subtypeRules,
+	type Type,
+} from './Type.js';
+import {
+	isObjectType,
+	ReferenceType,
+} from './ReferenceType.js';
 
 
 
@@ -47,8 +49,8 @@ class TypeMap extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
-	@referenceSubtypeDeco
+	@subtypeRules
+	@isObjectType
 	@instanceOf(() => TypeMap)
 	public override isSubtypeOf(t: Type): boolean {
 		return (

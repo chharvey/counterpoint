@@ -20,13 +20,13 @@ import {
 	ValidFunctionName,
 	invalid_function_name,
 } from './utils-private.js';
+import {ASTNodeCP} from './ASTNodeCP.js';
+import type {ASTNodeType} from './ASTNodeType.js';
 import {
 	buildDeco,
 	typeDeco,
-} from './decorators.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeType} from './ASTNodeType.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';
 import {ASTNodeTuple} from './ASTNodeTuple.js';
 import {ASTNodeRecord} from './ASTNodeRecord.js';
@@ -71,7 +71,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw '`ASTNodeCall#build` not yet supported.';
+		throw new Error('`ASTNodeCall#build` not yet supported.');
 	}
 
 	@memoizeMethod

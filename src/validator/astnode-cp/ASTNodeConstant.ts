@@ -20,8 +20,10 @@ import {
 } from '../utils-private.js';
 import {Validator} from '../Validator.js';
 import {valueOfTokenNumber} from './utils-private.js';
-import {buildDeco} from './decorators.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {
+	buildDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
 
 
 
@@ -34,9 +36,9 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	private static keywordValue(source: string): VALUE.Null | VALUE.Boolean {
 		return (
-			(source === Keyword.NULL)  ? VALUE.Null.NULL     :
-			(source === Keyword.FALSE) ? VALUE.Boolean.FALSE :
-			(source === Keyword.TRUE)  ? VALUE.Boolean.TRUE  :
+			source === Keyword.NULL  ? VALUE.NULL :
+			source === Keyword.FALSE ? VALUE.FALSE :
+			source === Keyword.TRUE  ? VALUE.TRUE :
 			assert.fail(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`)
 		);
 	}
