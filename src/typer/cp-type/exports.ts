@@ -32,6 +32,9 @@ export const FALSE: Unit<VALUE.Boolean> = VALUE.FALSE.toType();
 /** A Unit Type containing only the Counterpoint Language Value `true`. */
 export const TRUE: Unit<VALUE.Boolean> = VALUE.TRUE.toType();
 
+/** A Unit Type containing only the Counterpoint Language Value `@never`. */
+export const SYM_NEVER: Unit<VALUE.Symbol> = VALUE.SYM_NEVER.toType();
+
 
 
 export const FALSY_TYPES: ReadonlySet<Type> = new Set([VOID, NULL, FALSE]);
