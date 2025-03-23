@@ -9,6 +9,7 @@ import {
 	ReferenceErrorKind,
 } from '../../../src/index.js';
 import {typeUnit} from '../../helpers.js';
+import {extract_tokens} from '../../utils.js';
 
 
 describe('ASTNodeType', () => {
@@ -92,14 +93,11 @@ describe('ASTNodeType', () => {
 	describe('ASTNodeTypeConstant', () => {
 		describe('#eval', () => {
 			it('computes the value of constant null, boolean, symbol, number, and string types.', () => {
-				assert.deepStrictEqual([
-					'null',
-					'false',
-					'true',
-					'42',
-					'4.2e+3',
-					'"hi"',
-				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
+				assert.deepStrictEqual(extract_tokens(`
+					null  false  true
+					42  4.2e+3
+					"hi"
+				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
@@ -107,20 +105,14 @@ describe('ASTNodeType', () => {
 					typeUnit(4.2e+3),
 					typeUnit('hi'),
 				]);
-				`
+				extract_tokens(`
 					@then  @str  @false  @foobar
-				`.trim().split('  ').forEach((src) => assert.throws(() => AST.ASTNodeTypeConstant.fromSource(src).eval(), /Successfully identified a symbol literal type./));
+				`).forEach((src) => assert.throws(() => AST.ASTNodeTypeConstant.fromSource(src).eval(), /Successfully identified a symbol literal type./));
 			});
 			it('computes the value of keyword type.', () => {
-				assert.deepStrictEqual([
-					'never',
-					'void',
-					'bool',
-					'int',
-					'float',
-					'str',
-					'unknown',
-				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
+				assert.deepStrictEqual(extract_tokens(`
+					never  void  bool  int  float  str  unknown
+				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NEVER,
 					TYPE.VOID,
 					TYPE.BOOL,

@@ -58,19 +58,35 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		return (
-			(isSyntaxNodeType(this.start_node, 'keyword_type')) ?     ASTNodeTypeConstant.keywordType(this.start_node.text)                    :
-			(isSyntaxNodeType(this.start_node, 'integer'))      ?     valueOfTokenNumber(this.start_node.text, this.validator.config).toType() :
-			(assert.ok(
-				isSyntaxNodeType(this.start_node, 'primitive_literal'),
-				`Expected ${ this.start_node } to be a primitive.`,
-			), ((children: readonly SyntaxNode[]) => (
-				(isSyntaxNodeType(children[0], 'keyword_value'))                                               ? ASTNodeTypeConstant.keywordType(children[0].text) :
-				(isSyntaxNodeType(children[0], /^integer(__radix)?(__separator)?$/))                           ? valueOfTokenNumber(children[0].text, this.validator.config).toType() :
-				(isSyntaxNodeType(children[0], /^float(__separator)?$/))                                       ? valueOfTokenNumber(children[0].text, this.validator.config).toType() :
-				(isSyntaxNodeType(children[0], /^string(__comment)?(__separator)?$/))                          ? new VALUE.String(Validator.cookTokenString(children[0].text, this.validator.config)).toType() :
-				(assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`),  assert.fail('Successfully identified a symbol literal type.'))
-			))(this.start_node.children))
-		);
+		switch (true) {
+			case isSyntaxNodeType(this.start_node, 'keyword_type'): {
+				return ASTNodeTypeConstant.keywordType(this.start_node.text);
+			}
+			case isSyntaxNodeType(this.start_node, 'integer'): {
+				return valueOfTokenNumber(this.start_node.text, this.validator.config).toType();
+			}
+			default: {
+				assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
+				const children: readonly SyntaxNode[] = this.start_node.children;
+				switch (true) {
+					case isSyntaxNodeType(children[0], 'keyword_value'): {
+						return ASTNodeTypeConstant.keywordType(children[0].text);
+					}
+					case isSyntaxNodeType(children[0], /^integer(__radix)?(__separator)?$/): {
+						return valueOfTokenNumber(children[0].text, this.validator.config).toType();
+					}
+					case isSyntaxNodeType(children[0], /^float(__separator)?$/): {
+						return valueOfTokenNumber(children[0].text, this.validator.config).toType();
+					}
+					case isSyntaxNodeType(children[0], /^string(__comment)?(__separator)?$/): {
+						return new VALUE.String(Validator.cookTokenString(children[0].text, this.validator.config)).toType();
+					}
+					default: {
+						assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
+						throw new Error('Successfully identified a symbol literal type.');
+					}
+				}
+			}
+		}
 	}
 }
