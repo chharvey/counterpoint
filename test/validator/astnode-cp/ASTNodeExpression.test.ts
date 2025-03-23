@@ -38,6 +38,7 @@ describe('ASTNodeExpression', () => {
 			it('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
 				const constants: AST.ASTNodeConstant[] = extract_tokens(`
 					null  false  true
+					@then  @str  @false  @foobar
 					55  -55  033  -033  0  -0
 					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
@@ -48,25 +49,6 @@ describe('ASTNodeExpression', () => {
 					constants.map((c) => c.type()),
 					constants.map((c) => new TYPE.Unit(c.fold())),
 				);
-				extract_tokens(`
-					@then  @str  @false  @foobar
-				`).forEach((src) => {
-					const node: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(`${ src };`);
-					const success_message = 'Successfully ran the #fold method.';
-					const original        = node.fold.bind(node);
-					node.fold = function (this: AST.ASTNodeConstant): ReturnType<typeof this.fold> {
-						try {
-							return original.call(this);
-						} catch (err) {
-							if ((err as Error).message.startsWith('Successfully identified a symbol literal expression')) {
-								return new VALUE.String(success_message);
-							} else {
-								throw err;
-							}
-						}
-					};
-					assert.deepStrictEqual(node.type(), new TYPE.Unit(new VALUE.String(success_message)));
-				});
 			});
 		});
 
@@ -76,14 +58,16 @@ describe('ASTNodeExpression', () => {
 			it('computes null, boolean, and symbol values.', () => {
 				assert.deepStrictEqual(extract_tokens(`
 					null  false  true
+					@then  @str  @false  @foobar
 				`).map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).fold()), [
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
+					new VALUE.Symbol(0x8fn,  'then'),
+					new VALUE.Symbol(0x86n,  'str'),
+					new VALUE.Symbol(0x89n,  'false'),
+					new VALUE.Symbol(0x100n, 'foobar'),
 				]);
-				extract_tokens(`
-					@then  @str  @false  @foobar
-				`).forEach((src) => assert.throws(() => AST.ASTNodeConstant.fromSource(`${ src };`).fold(), /Successfully identified a symbol literal expression/));
 			});
 			it('computes int values.', () => {
 				const integer_radices_on: CPConfig = {

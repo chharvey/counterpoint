@@ -3,6 +3,7 @@ import {
 	AST,
 	type TypeEntry,
 	TYPE,
+	VALUE,
 	TypeError,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
@@ -95,19 +96,21 @@ describe('ASTNodeType', () => {
 			it('computes the value of constant null, boolean, symbol, number, and string types.', () => {
 				assert.deepStrictEqual(extract_tokens(`
 					null  false  true
+					@then  @str  @false  @foobar
 					42  4.2e+3
 					"hi"
 				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
+					new VALUE.Symbol(0x8fn,  'then').toType(),
+					new VALUE.Symbol(0x86n,  'str').toType(),
+					new VALUE.Symbol(0x89n,  'false').toType(),
+					new VALUE.Symbol(0x100n, 'foobar').toType(),
 					typeUnit(42n),
 					typeUnit(4.2e+3),
 					typeUnit('hi'),
 				]);
-				extract_tokens(`
-					@then  @str  @false  @foobar
-				`).forEach((src) => assert.throws(() => AST.ASTNodeTypeConstant.fromSource(src).eval(), /Successfully identified a symbol literal type./));
 			});
 			it('computes the value of keyword type.', () => {
 				assert.deepStrictEqual(extract_tokens(`

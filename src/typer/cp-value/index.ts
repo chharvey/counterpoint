@@ -3,6 +3,7 @@ export * from './Value.js';
 export * from './Primitive.js';
 export * from './Null.js';
 export * from './Boolean.js';
+export * from './Symbol.js';
 export * from './Number.js';
 export * from './Integer.js';
 export * from './Float.js';
