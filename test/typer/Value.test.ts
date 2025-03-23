@@ -119,6 +119,14 @@ describe('Value', () => {
 			);
 		});
 
+		specify('Symbol', () => {
+			const mod = new binaryen.Module();
+			return assertEqualBins(
+				[VALUE.SYM_NEVER.build(mod),                 new VALUE.Symbol(0x100n, 'hello').build(mod)],
+				[new BinVect(mod, mod.i32.const(0x80)).vect, new BinVect(mod, mod.i32.const(0x100)).vect],
+			);
+		});
+
 		describe('Integer', () => {
 			it('generates `(i32.const)`.', () => {
 				const data: bigint[] = [
