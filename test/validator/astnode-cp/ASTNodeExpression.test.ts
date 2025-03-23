@@ -58,7 +58,7 @@ describe('ASTNodeExpression', () => {
 						try {
 							return original.call(this);
 						} catch (err) {
-							if ((err as Error).message === 'Successfully identified a symbol literal expression.') {
+							if ((err as Error).message.startsWith('Successfully identified a symbol literal expression')) {
 								return new VALUE.String(success_message);
 							} else {
 								throw err;

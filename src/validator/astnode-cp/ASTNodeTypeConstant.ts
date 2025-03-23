@@ -83,7 +83,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 					}
 					default: {
 						assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
-						throw new Error('Successfully identified a symbol literal type.');
+						throw new Error(`Successfully identified a symbol literal type: \`${ children[1].text }\` (${ this.validator.wordNodeID(children[1]) })`);
 					}
 				}
 			}
