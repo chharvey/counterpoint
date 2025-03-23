@@ -36,7 +36,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			source === Keyword.VOID    ? TYPE.VOID :
 			source === Keyword.NULL    ? TYPE.NULL :
 			source === Keyword.BOOL    ? TYPE.BOOL :
-			source === Keyword.SYM     ? assert.fail('Successfully identified the `sym` type keyword.') :
+			source === Keyword.SYM     ? TYPE.SYM :
 			source === Keyword.FALSE   ? TYPE.FALSE :
 			source === Keyword.TRUE    ? TYPE.TRUE :
 			source === Keyword.INT     ? TYPE.INT :

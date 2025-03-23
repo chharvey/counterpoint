@@ -114,17 +114,17 @@ describe('ASTNodeType', () => {
 			});
 			it('computes the value of keyword type.', () => {
 				assert.deepStrictEqual(extract_tokens(`
-					never  void  bool  int  float  str  unknown
+					never  void  bool  sym  int  float  str  unknown
 				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NEVER,
 					TYPE.VOID,
 					TYPE.BOOL,
+					TYPE.SYM,
 					TYPE.INT,
 					TYPE.FLOAT,
 					TYPE.STR,
 					TYPE.UNKNOWN,
 				]);
-				assert.throws(() => AST.ASTNodeTypeConstant.fromSource('sym').eval(), /Successfully identified the `sym` type keyword/);
 			});
 		});
 	});
