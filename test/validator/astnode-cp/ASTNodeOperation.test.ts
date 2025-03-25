@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -126,14 +127,16 @@ describe('ASTNodeOperation', () => {
 			context('with constant folding on.', () => {
 				it('returns a constant Boolean type for boolean unary operation of anything.', () => {
 					typeOperations(new Map<string, VALUE.Boolean>([
+						['!null;',   VALUE.TRUE],
 						['!false;',  VALUE.TRUE],
 						['!true;',   VALUE.FALSE],
-						['!null;',   VALUE.TRUE],
+						['!@hello;', VALUE.FALSE],
 						['!42;',     VALUE.FALSE],
 						['!4.2e+1;', VALUE.FALSE],
+						['?null;',   VALUE.TRUE],
 						['?false;',  VALUE.TRUE],
 						['?true;',   VALUE.FALSE],
-						['?null;',   VALUE.TRUE],
+						['?@hello;', VALUE.FALSE],
 						['?42;',     VALUE.FALSE],
 						['?4.2e+1;', VALUE.FALSE],
 
@@ -193,12 +196,14 @@ describe('ASTNodeOperation', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: int = 42;
 							let var b: float = 4.2;
+							let var c: sym = @hello;
 							!a;
 							!b;
+							!c;
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						goal.children.slice(2).forEach((stmt) => {
+						goal.children.slice(3).forEach((stmt) => {
 							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.FALSE);
 						});
 					});
@@ -219,9 +224,10 @@ describe('ASTNodeOperation', () => {
 				describe('[operator=EMP]', () => {
 					it('always returns type `bool`.', () => {
 						[
+							'?null;',
 							'?false;',
 							'?true;',
-							'?null;',
+							'?@hello;',
 							'?42;',
 							'?4.2e+1;',
 
@@ -292,11 +298,12 @@ describe('ASTNodeOperation', () => {
 			it('optimizes logical NOT operator by evaluating operand type.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['!null;',  drop_then(mod, [buildConst(mod)],        true)],
-					['!false;', drop_then(mod, [buildConst(mod, false)], true)],
-					['!true;',  drop_then(mod, [buildConst(mod, true)],  false)],
-					['!42;',    drop_then(mod, [buildConst(mod, 42n)],   false)],
-					['!4.2;',   drop_then(mod, [buildConst(mod, 4.2)],   false)],
+					['!null;',   drop_then(mod, [buildConst(mod)],                true)],
+					['!false;',  drop_then(mod, [buildConst(mod, false)],         true)],
+					['!true;',   drop_then(mod, [buildConst(mod, true)],          false)],
+					['!@hello;', drop_then(mod, [buildConst(mod, Symbol(0x100))], false)],
+					['!42;',     drop_then(mod, [buildConst(mod, 42n)],           false)],
+					['!4.2;',    drop_then(mod, [buildConst(mod, 4.2)],           false)],
 				]));
 			});
 			it('returns the correct operation.', () => {
@@ -305,6 +312,7 @@ describe('ASTNodeOperation', () => {
 					['?null;',  CALL.vemp(mod, buildConst(mod))],
 					['?false;', CALL.vemp(mod, buildConst(mod, false))],
 					['?true;',  CALL.vemp(mod, buildConst(mod, true))],
+					['?@hi;',   CALL.vemp(mod, buildConst(mod, Symbol(0x100)))],
 					['?42;',    CALL.vemp(mod, buildConst(mod, 42n))],
 					['?4.2;',   CALL.vemp(mod, buildConst(mod, 4.2))],
 					['-(4);',   CALL.vneg(mod, buildConst(mod, 4n))],
@@ -783,6 +791,26 @@ describe('ASTNodeOperation', () => {
 				it('returns `false` if operands are of different numeric types.', () => {
 					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('7 === 7.0;', CONFIG_FOLDING_OFF).type(), TYPE.FALSE);
 				});
+				it('returns `bool` when operands are same numeric type.', () => {
+					xjs.Array.forEachAggregated(`
+						1 === 1;
+						1 === 2;
+						1 ==  1;
+						1 ==  2;
+					`.split('\n').slice(1, -1), (expr) => assert.strictEqual(typeOfOperationFromSource(expr), TYPE.BOOL));
+				});
+				it.skip('returns `bool` when operands are of the same primitive type.', () => {
+					xjs.Array.forEachAggregated(`
+						@symb1  === @symb1;
+						@symb1  === @symb2;
+						"hello" === "hello";
+						"hello" === "world";
+						@symb1  ==  @symb1;
+						@symb1  ==  @symb2;
+						"hello" ==  "hello";
+						"hello" ==  "world";
+					`.split('\n').slice(1, -1), (expr) => assert.strictEqual(typeOfOperationFromSource(expr), TYPE.BOOL));
+				});
 			});
 			context('with folding on but int coersion off.', () => {
 				it('returns `false` if operands are of different numeric types.', () => {
@@ -799,7 +827,8 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(typeOfOperationFromSource('7 == 7.0;'), TYPE.FALSE);
 				});
 				it('returns `false` if operands are of disjoint types in general.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource('7 == null;'), TYPE.FALSE);
+					assert.deepStrictEqual(typeOfOperationFromSource('7      == null;'), TYPE.FALSE);
+					assert.deepStrictEqual(typeOfOperationFromSource('@symb1 == 256;'),  TYPE.FALSE);
 				});
 			});
 		});
@@ -820,6 +849,18 @@ describe('ASTNodeOperation', () => {
 					['true ==  5.1;',                           VALUE.FALSE],
 					['true === true;',                          VALUE.TRUE],
 					['true ==  true;',                          VALUE.TRUE],
+					['@a === @a;',                              VALUE.TRUE],
+					['@a ==  @a;',                              VALUE.TRUE],
+					['@a === @b;',                              VALUE.FALSE],
+					['@a ==  @b;',                              VALUE.FALSE],
+					['@a === 256;',                             VALUE.FALSE], // TODO: turn on integerRadices
+					['@a ==  256;',                             VALUE.FALSE], // TODO: turn on integerRadices
+					['@a === @\'a\';',                          VALUE.FALSE],
+					['@a ==  @\'a\';',                          VALUE.FALSE],
+					['@\'a\' === @\'\\u{61}\';',                VALUE.FALSE],
+					['@\'a\' ==  @\'\\u{61}\';',                VALUE.FALSE],
+					['@\'\\u{61}\' === @\'\\u{61}\';',          VALUE.TRUE],
+					['@\'\\u{61}\' ==  @\'\\u{61}\';',          VALUE.TRUE],
 					['3.0 === 3;',                              VALUE.FALSE],
 					['3.0 ==  3;',                              VALUE.TRUE],
 					['3 === 3.0;',                              VALUE.FALSE],
@@ -966,12 +1007,22 @@ describe('ASTNodeOperation', () => {
 
 						['true === 1;',   drop_then_false(buildConst(mod, true), buildConst(mod, 1n))],
 						['true === 1.0;', drop_then_false(buildConst(mod, true), buildConst(mod, 1.0))],
+
+						['@a === null;',  drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod))],
+						['@a === false;', drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, false))],
+						['@a === 256;',   drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, 0x100n))], // TODO: turn on integerRadices
 					]));
 				});
 				it('calls `vid` when operands are same numeric type.', () => {
 					buildOperations(new Map<string, binaryen.ExpressionRef>([
 						['42  === 420;',  CALL.vid(mod, buildConst(mod, 42n), buildConst(mod, 420n))],
 						['4.2 === 42.0;', CALL.vid(mod, buildConst(mod, 4.2), buildConst(mod, 42.0))],
+					]));
+				});
+				it.skip('calls `vid` when operands are of the same primitive type.', () => {
+					buildOperations(new Map<string, binaryen.ExpressionRef>([
+						['@a === @a;', CALL.vid(mod, buildConst(mod, Symbol(0x100)), buildConst(mod, Symbol(0x100)))],
+						['@a === @b;', CALL.vid(mod, buildConst(mod, Symbol(0x100)), buildConst(mod, Symbol(0x101)))],
 					]));
 				});
 			});
@@ -992,6 +1043,10 @@ describe('ASTNodeOperation', () => {
 
 							['true == 1;',   drop_then_false(buildConst(mod, true), buildConst(mod, 1n))],
 							['true == 1.0;', drop_then_false(buildConst(mod, true), buildConst(mod, 1.0))],
+
+							['@a == null;',  drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod))],
+							['@a == false;', drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, false))],
+							['@a == 256;',   drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, 0x100n))], // TODO: turn on integerRadices
 						]));
 					});
 					it('calls `veq` when operands are same numeric type or when int coercion is allowed.', () => {
@@ -1021,6 +1076,10 @@ describe('ASTNodeOperation', () => {
 
 							['true == 1;',   drop_then_false(buildConst(mod, true), buildConst(mod, 1n))],
 							['true == 1.0;', drop_then_false(buildConst(mod, true), buildConst(mod, 1.0))],
+
+							['@a == null;',  drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod))],
+							['@a == false;', drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, false))],
+							['@a == 256;',   drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, 0x100n))], // TODO: turn on integerRadices
 						]), CONFIG_FOLDING_COERCION_OFF);
 					});
 					it('calls `veq` when operands are same numeric type.', () => {
@@ -1029,6 +1088,12 @@ describe('ASTNodeOperation', () => {
 							['4.2 == 42.0;', CALL.veq(mod, buildConst(mod, 4.2), buildConst(mod, 42.0))],
 						]), CONFIG_FOLDING_COERCION_OFF);
 					});
+				});
+				it.skip('calls `veq` when operands are of the same primitive type.', () => {
+					buildOperations(new Map<string, binaryen.ExpressionRef>([
+						['@a === @a;', CALL.vid(mod, buildConst(mod, Symbol(0x100)), buildConst(mod, Symbol(0x100)))],
+						['@a === @b;', CALL.vid(mod, buildConst(mod, Symbol(0x100)), buildConst(mod, Symbol(0x101)))],
+					]));
 				});
 			});
 		});
@@ -1040,16 +1105,22 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			it('with constant folding on.', () => {
 				typeOperations(new Map<string, VALUE.Primitive>([
-					['null  && false;', VALUE.NULL],
-					['false && null;',  VALUE.FALSE],
-					['true  && null;',  VALUE.NULL],
-					['false && 42;',    VALUE.FALSE],
-					['4.2   && true;',  VALUE.TRUE],
-					['null  || false;', VALUE.FALSE],
-					['false || null;',  VALUE.NULL],
-					['true  || null;',  VALUE.TRUE],
-					['false || 42;',    new VALUE.Integer(42n)],
-					['4.2   || true;',  new VALUE.Float(4.2)],
+					['null   && false;',  VALUE.NULL],
+					['false  && null;',   VALUE.FALSE],
+					['true   && null;',   VALUE.NULL],
+					['@never && @x;',     new VALUE.Symbol(0x100n, 'x')],
+					['@x     && @never;', VALUE.SYM_NEVER],
+					['@never || @y;',     VALUE.SYM_NEVER],
+					['@y     || @never;', new VALUE.Symbol(0x100n, 'y')],
+					['@z     && false;',  VALUE.FALSE],
+					['true   && @z;',     new VALUE.Symbol(0x100n, 'z')],
+					['false  && 42;',     VALUE.FALSE],
+					['4.2    && true;',   VALUE.TRUE],
+					['null   || false;',  VALUE.FALSE],
+					['false  || null;',   VALUE.NULL],
+					['true   || null;',   VALUE.TRUE],
+					['false  || 42;',     new VALUE.Integer(42n)],
+					['4.2    || true;',   new VALUE.Float(4.2)],
 				]));
 			});
 			context('with constant folding off.', () => {
@@ -1173,16 +1244,22 @@ describe('ASTNodeOperation', () => {
 
 		specify('#fold', () => {
 			foldOperations(new Map<string, VALUE.Value>([
-				['null && 5;',     VALUE.NULL],
-				['null || 5;',     new VALUE.Integer(5n)],
-				['5 && null;',     VALUE.NULL],
-				['5 || null;',     new VALUE.Integer(5n)],
-				['5.1 && true;',   VALUE.TRUE],
-				['5.1 || true;',   new VALUE.Float(5.1)],
-				['3.1 && 5;',      new VALUE.Integer(5n)],
-				['3.1 || 5;',      new VALUE.Float(3.1)],
-				['false && null;', VALUE.FALSE],
-				['false || null;', VALUE.NULL],
+				['@never && @x;',     new VALUE.Symbol(0x100n, 'x')],
+				['@x     && @never;', VALUE.SYM_NEVER],
+				['@never || @y;',     VALUE.SYM_NEVER],
+				['@y     || @never;', new VALUE.Symbol(0x100n, 'y')],
+				['@z     && false;',  VALUE.FALSE],
+				['true   && @z;',     new VALUE.Symbol(0x100n, 'z')],
+				['null   && 5;',      VALUE.NULL],
+				['null   || 5;',      new VALUE.Integer(5n)],
+				['5      && null;',   VALUE.NULL],
+				['5      || null;',   new VALUE.Integer(5n)],
+				['5.1    && true;',   VALUE.TRUE],
+				['5.1    || true;',   new VALUE.Float(5.1)],
+				['3.1    && 5;',      new VALUE.Integer(5n)],
+				['3.1    || 5;',      new VALUE.Float(3.1)],
+				['false  && null;',   VALUE.FALSE],
+				['false  || null;',   VALUE.NULL],
 			]));
 		});
 
