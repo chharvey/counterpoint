@@ -25,6 +25,7 @@ import {
 	OBJ,
 	FALSE,
 	TRUE,
+	SYM_NEVER,
 	FALSY_TYPES,
 } from './index.js';
 
@@ -55,6 +56,7 @@ export function typeConstant(
 				OBJ,
 				FALSE,
 				TRUE,
+				SYM_NEVER,
 			].find((c) => returned.equals(c)) ?? returned
 		);
 	};
