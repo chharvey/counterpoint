@@ -301,7 +301,7 @@ describe('ASTNodeOperation', () => {
 			});
 			it('returns the correct operation.', () => {
 				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
+				buildOperations(new Map<string, binaryen.ExpressionRef>([
 					['?null;',  CALL.vemp(mod, buildConst(mod))],
 					['?false;', CALL.vemp(mod, buildConst(mod, false))],
 					['?true;',  CALL.vemp(mod, buildConst(mod, true))],
@@ -310,6 +310,19 @@ describe('ASTNodeOperation', () => {
 					['-(4);',   CALL.vneg(mod, buildConst(mod, 4n))],
 					['-(4.2);', CALL.vneg(mod, buildConst(mod, 4.2))],
 				]));
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let var f: bool = false;
+					let var t: bool = true;
+					!f;
+					!t;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build();
+				return assertEqualBins(new Map(goal.children.slice(2).map((stmt, i) => [
+					(stmt as AST.ASTNodeStatementExpression).expr!.build(),
+					CALL.vnot(goal.builder.module, goal.builder.module.local.get(i, binaryen.v128)),
+				])));
 			});
 			it('works with vects.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -973,6 +986,25 @@ describe('ASTNodeOperation', () => {
 						['42  === 420;',  CALL.vid(mod, buildConst(mod, 42n), buildConst(mod, 420n))],
 						['4.2 === 42.0;', CALL.vid(mod, buildConst(mod, 4.2), buildConst(mod, 42.0))],
 					]));
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let var i1: int   = 42;
+						let var i2: int   = 420;
+						let var f1: float = 4.2;
+						let var f2: float = 42.0;
+						i1 === i2;
+						f1 === f2;
+					`);
+					goal.varCheck();
+					goal.typeCheck();
+					goal.build();
+					return assertEqualBins(new Map(goal.children.slice(4).map((stmt, i) => [
+						(stmt as AST.ASTNodeStatementExpression).expr!.build(),
+						CALL.vid(
+							goal.builder.module,
+							goal.builder.module.local.get(2 * i,     binaryen.v128),
+							goal.builder.module.local.get(2 * i + 1, binaryen.v128),
+						),
+					])));
 				});
 			});
 
@@ -1111,7 +1143,7 @@ describe('ASTNodeOperation', () => {
 					});
 				});
 				describe('[operator=OR]', () => {
-					it('returns `right` if it’s a subtype of `void | null | false`.', () => {
+					it('returns `right` if left is a subtype of `void | null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null = null;
 							let var b: null | false = null;
