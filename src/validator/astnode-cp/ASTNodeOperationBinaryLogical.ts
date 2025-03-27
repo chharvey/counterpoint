@@ -73,7 +73,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		return this.builder.module.if(condition, if_true, if_false);
 	}
 
-	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
 		if (t0.isBottomType) {
 			return TYPE.NEVER;
 		}

@@ -69,34 +69,34 @@ export function memoizeBinOp<Proto extends object, Return>(is_symmetric = false,
 	return (method, context) => {
 		const method_name: string = String(context.name);
 		BINOP_CACHE.has(method_name) || BINOP_CACHE.set(method_name, new WeakMap<Proto, WeakMap<Proto, Return>>());
-		const this_cache = BINOP_CACHE.get(method_name) as WeakMap<Proto, WeakMap<Proto, Return>>;
+		const left_cache = BINOP_CACHE.get(method_name) as WeakMap<Proto, WeakMap<Proto, Return>>;
 		return function (that) {
-			if (this_cache.has(this)) {
-				const that_cache: WeakMap<Proto, Return> = this_cache.get(this)!;
-				if (!that_cache.has(that)) {
+			if (left_cache.has(this)) {
+				const right_cache: WeakMap<Proto, Return> = left_cache.get(this)!;
+				if (!right_cache.has(that)) {
 					if (assumption !== undefined) {
-						that_cache.set(that, assumption);
+						right_cache.set(that, assumption);
 					}
-					that_cache.set(that, method.call(this, that));
+					right_cache.set(that, method.call(this, that));
 				}
-				return that_cache.get(that)!;
-			} else if (is_symmetric && this_cache.has(that)) {
-				const that_cache: WeakMap<Proto, Return> = this_cache.get(that)!;
-				if (!that_cache.has(this)) {
+				return right_cache.get(that)!;
+			} else if (is_symmetric && left_cache.has(that)) {
+				const right_cache: WeakMap<Proto, Return> = left_cache.get(that)!;
+				if (!right_cache.has(this)) {
 					if (assumption !== undefined) {
-						that_cache.set(this, assumption);
+						right_cache.set(this, assumption);
 					}
-					that_cache.set(this, method.call(this, that));
+					right_cache.set(this, method.call(this, that));
 				}
-				return that_cache.get(this)!;
+				return right_cache.get(this)!;
 			} else {
-				const that_cache = new WeakMap<Proto, Return>();
-				this_cache.set(this, that_cache);
+				const right_cache = new WeakMap<Proto, Return>();
+				left_cache.set(this, right_cache);
 				if (assumption !== undefined) {
-					that_cache.set(that, assumption);
+					right_cache.set(that, assumption);
 				}
 				const result: Return = method.call(this, that);
-				that_cache.set(that, result);
+				right_cache.set(that, result);
 				return result;
 			}
 		};
