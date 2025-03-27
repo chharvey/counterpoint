@@ -67,16 +67,34 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			return TYPE.NEVER;
 		}
 		/*
-		 * If `a` and `b` are of disjoint numeric types, then `a === b` will always return `false`.
-		 * If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
+		 * Identity:
+		 *
+		 * - If      the types of `a` and `b` are disjoint, then `a === b` will always evaluate to false.
+		 * - Else if the types of `a` and `b` intersect,    then `a === b` could evaluate to true.
+		 *
+		 *
+		 * Equality:
+		 *
+		 * - If any of `a` or `b` is disjoint with the Number type (it cannot contain numbers),
+		 * 	then we’ll use the same logic as Identity:
+		 * 	- If      the types of `a` and `b` are disjoint, then `a == b` will evaluate to false.
+		 * 	- Else if the types of `a` and `b` intersect,    then `a == b` could evaluate to true.
+		 *
+		 * - Else if both `a` and `b` intersect with the Number type (they both might contain numbers), then:
+		 * 	- If the types of `a` and `b` are disjoint,
+		 * 		and `intCoercion` is off,
+		 * 		and one of the types of `a` or `b` cannot contain a floating zero (0.0 or -0.0),
+		 * 		then then `a == b` will evaluate to false.
+		 * 	- Else if the types of `a` and `b` intersect,
+		 * 		or `intCoercion` is on,
+		 * 		or both types of `a` and `b` can contain a floating zero (0.0 or -0.0),
+		 * 		then `a == b` could evaluate to true.
 		 */
-		if (bothNumeric(t0, t1)) {
-			if (oneFloats(t0, t1) && (this.operator === Operator.ID || !int_coercion)) {
-				return TYPE.FALSE;
-			}
-			return TYPE.BOOL;
-		}
-		if (t0.intersect(t1).isBottomType) {
+		if (t0.intersect(t1).isBottomType && (
+			this.operator === Operator.ID ||
+			[t0, t1].some((t) => t.intersect(TYPE.INT.union(TYPE.FLOAT)).isBottomType) ||
+			!int_coercion && [t0, t1].some((t) => !t.includes(VALUE.FLOAT_0) && !t.includes(VALUE.FLOAT_N0))
+		)) {
 			return TYPE.FALSE;
 		}
 		return TYPE.BOOL;
