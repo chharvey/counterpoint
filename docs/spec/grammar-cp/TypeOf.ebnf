@@ -289,7 +289,9 @@ Type! TypeOfUnfolded(SemanticOperation[operator: EMP] expr) :=
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Never`.
-	4. *Return:* `Boolean`.
+	4. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
+		1. *Return:* `ToType(true)`.
+	5. *Return:* `Boolean`.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: NEG] expr) :=

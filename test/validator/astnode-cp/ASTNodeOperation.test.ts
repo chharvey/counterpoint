@@ -217,11 +217,24 @@ describe('ASTNodeOperation', () => {
 					});
 				});
 				describe('[operator=EMP]', () => {
-					it('always returns type `bool`.', () => {
+					it('returns type `true` for a subtype of `void | null | false`.', () => {
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+							let var a: null = null;
+							let var b: null | false = null;
+							let var c: null | void = null;
+							?a;
+							?b;
+							?c;
+						`, CONFIG_FOLDING_OFF);
+						goal.varCheck();
+						goal.typeCheck();
+						goal.children.slice(3).forEach((stmt) => {
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.TRUE);
+						});
+					});
+					it('returns type `bool` for anything else.', () => {
 						[
-							'?false;',
 							'?true;',
-							'?null;',
 							'?42;',
 							'?4.2e+1;',
 
@@ -231,6 +244,27 @@ describe('ASTNodeOperation', () => {
 							'?{41 -> 42};',
 						].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type()).forEach((typ) => {
 							assert.deepStrictEqual(typ, TYPE.BOOL);
+						});
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+							let var a: null | int = null;
+							let var b: null | int = 42;
+							let var c: bool = false;
+							let var d: bool | float = 4.2;
+							let var e: str | void = "hello";
+							let var f: int = 42;
+							let var g: float = 4.2;
+							?a;
+							?b;
+							?c;
+							?d;
+							?e;
+							?f;
+							?g;
+						`, CONFIG_FOLDING_OFF);
+						goal.varCheck();
+						goal.typeCheck();
+						goal.children.slice(7).forEach((stmt) => {
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.BOOL);
 						});
 					});
 				});
@@ -289,7 +323,7 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			it('optimizes logical NOT operator by evaluating operand type.', () => {
+			it('optimizes by evaluating operand type.', () => {
 				const mod = new binaryen.Module();
 				return buildOperations(new Map<string, binaryen.ExpressionRef>([
 					['!null;',  drop_then(mod, [buildConst(mod)],        true)],
@@ -297,16 +331,18 @@ describe('ASTNodeOperation', () => {
 					['!true;',  drop_then(mod, [buildConst(mod, true)],  false)],
 					['!42;',    drop_then(mod, [buildConst(mod, 42n)],   false)],
 					['!4.2;',   drop_then(mod, [buildConst(mod, 4.2)],   false)],
+					['?null;',  drop_then(mod, [buildConst(mod)],        true)],
+					['?false;', drop_then(mod, [buildConst(mod, false)], true)],
 				]));
 			});
 			it('returns the correct operation.', () => {
 				const mod = new binaryen.Module();
 				buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['?null;',  CALL.vemp(mod, buildConst(mod))],
-					['?false;', CALL.vemp(mod, buildConst(mod, false))],
 					['?true;',  CALL.vemp(mod, buildConst(mod, true))],
 					['?42;',    CALL.vemp(mod, buildConst(mod, 42n))],
 					['?4.2;',   CALL.vemp(mod, buildConst(mod, 4.2))],
+					['?0;',     CALL.vemp(mod, buildConst(mod, 0n))],
+					['?0.0;',   CALL.vemp(mod, buildConst(mod, 0.0))],
 					['-(4);',   CALL.vneg(mod, buildConst(mod, 4n))],
 					['-(4.2);', CALL.vneg(mod, buildConst(mod, 4.2))],
 				]));
@@ -315,14 +351,21 @@ describe('ASTNodeOperation', () => {
 					let var t: bool = true;
 					!f;
 					!t;
+					?f;
+					?t;
 				`);
 				goal.varCheck();
 				goal.typeCheck();
 				goal.build();
-				return assertEqualBins(new Map(goal.children.slice(2).map((stmt, i) => [
-					(stmt as AST.ASTNodeStatementExpression).expr!.build(),
-					CALL.vnot(goal.builder.module, goal.builder.module.local.get(i, binaryen.v128)),
-				])));
+				return assertEqualBins(
+					goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+					[
+						CALL.vnot(goal.builder.module, goal.builder.module.local.get(0, binaryen.v128)),
+						CALL.vnot(goal.builder.module, goal.builder.module.local.get(1, binaryen.v128)),
+						CALL.vemp(goal.builder.module, goal.builder.module.local.get(0, binaryen.v128)),
+						CALL.vemp(goal.builder.module, goal.builder.module.local.get(1, binaryen.v128)),
+					],
+				);
 			});
 			it('works with vects.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
