@@ -67,6 +67,83 @@ Type `bool` has two logical values, called `true` and `false`.
 These values are used for binary states.
 
 
+### `sym`
+Type `sym` contains symbols, which are values defined by the programmer.
+Symbol values can only be referenced by name, as their implementations are unexposed.
+Syntactically, symbol names are identifier names, preceeded by an `@`-sign (**U+0040 COMMERCIAL AT**).
+```
+let greeting: sym = @hello;
+```
+
+The only operations available to symbols are identity/equality
+and the logical operators (‘not’, ‘and’, ‘or’, and the ternary conditional).
+Symbols that have the same name are identical (and thus equal), and vice versa.
+Symbols have no intrinsic meaning, or any other valid operators or methods;
+their semantics may be specified by the programmer who defines them.
+```
+% Symbols are always truthy and non-empty.
+!greeting;                        %== false
+?greeting;                        %== false
+greeting && @world;               %== @world
+greeting || @world;               %== greeting
+if greeting then "yes" else "no"; %== "yes"
+
+% Symbols are identical, and equal, by name (case-sensitive).
+greeting === @hello; %== true
+greeting ==  @hello; %== true
+@world   === @world; %== true
+@world   ==  @world; %== true
+@world   !=  @WORLD; %== true
+```
+
+Symbols differ from strings in that their implementations are hidden.
+Internally, symbols are represented as integers at runtime,
+but we are never exposed to their values.
+We cannot operate and compute with symbols the same way we do with strings or integers.
+```
+let var el: sym = @fire;
+% Unfixed variables of type `sym` may be reassigned,
+set el = @air;
+set el = @aether;
+
+% but only to symbol values!
+set el = 42;         %> TypeError
+set el = "a string"; %> TypeError
+set el = @my_symbol; % ok
+
+@water + @fire;        %> TypeError
+@water.toUpperCase.(); %> TypeError
+
+% One may wish to use a union type (more narrow than `sym`) to enumerate allowed symbol values.
+let var element: @water | @earth | @fire | @air = @water;
+set element = @aether; %> TypeError
+set element = @fire;   % ok
+```
+
+Symbols serve as keys for records and dicts in the same way that integers serve as indices for tuples and lists.
+Thus, symbol values are used for dynamic access of properties at runtime,
+and comparing symbols is much more efficient than comparing strings.
+See [Dict Access](#dict-access) for details.
+
+The name of a symbol may be enclosed in single-quotes (`'` **U+0027 APOSTROPHE**),
+just like [Unicode identifiers](./variables.md#unicode-identifiers).
+However, this is not recommended as it greatly decreases code readability.
+Like Unicode identifiers, symbol names are *not* cooked, meaning escape sequences do not exist.
+Stringifying a symbol produces its name.
+```
+let greeting1: sym = @'¡héllö wôrld!';
+
+@'$5.99' != @'\u{24}5\u{2e}99'; %== true
+
+let greeting2: sym = @hello_world;
+greeting2 !== @'hello_world';      %== true
+
+"""{{ greeting2 }}"""          == "hello_world";           %== true
+"""{{ greeting1 }}"""          == "'¡héllö wôrld!'";       %== true % notice the single-quotes are included
+"""{{ @'\u{24}5\u{2e}99' }}""" == """'\u{24}5\u{2e}99'"""; %== true % escape sequences are raw
+```
+
+
 ### `int`
 Type `int` contains whole numbers, their negatives, and zero.
 

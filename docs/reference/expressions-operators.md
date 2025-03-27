@@ -241,7 +241,7 @@ For example: `tuple.3` and `record.prop`.
 
 Computed access must be used when the bound property name is computed,
 such as an operation of expressions, e.g., `map.[expr]`.
-The expression in the brackets evaluates to an item index, element, or case antecedent
+The expression in the brackets evaluates to an index, key, element, or antecedent
 of the binding object and must be of the correct type.
 
 More information about property access when used on collections
@@ -342,6 +342,7 @@ or if it’s an empty string or empty collection (such as an array or set).
 | -------------- | -------------- | --------------- |
 | `null`         | `null`         |                 |
 | `false`        | `false`        | `true`          |
+|                |                | all symbols     |
 |                | `0`            | all integers    |
 |                | `0.0`, `-0.0`  | all floats      |
 |                | `""`           | all strings     |

@@ -49,9 +49,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
+		const t0:   TYPE.Type              = this.operand.type();
 		const arg0: binaryen.ExpressionRef = this.operand.build();
 		if (this.operator === Operator.NOT) {
-			const t0: TYPE.Type = this.operand.type();
 			if (t0.isDefinitelyFalsy) {
 				return this.builder.module.block(null, [
 					this.builder.module.drop(arg0),
@@ -63,6 +63,11 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 					new BinVect(this.builder.module, false).vect,
 				], binaryen.v128);
 			}
+		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
+			return this.builder.module.block(null, [
+				this.builder.module.drop(arg0),
+				new BinVect(this.builder.module, true).vect,
+			], binaryen.v128);
 		}
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.NOT, 'vnot'],
@@ -87,7 +92,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				);
 			}
 			case Operator.EMP: {
-				return TYPE.BOOL;
+				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
 			}
 			case Operator.NEG: {
 				assert.ok(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeErrorInvalidOperation(this));

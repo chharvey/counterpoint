@@ -18,12 +18,14 @@ import {
 	UNKNOWN,
 	NULL,
 	BOOL,
+	SYM,
 	INT,
 	FLOAT,
 	STR,
 	OBJ,
 	FALSE,
 	TRUE,
+	SYM_NEVER,
 	FALSY_TYPES,
 } from './index.js';
 
@@ -47,12 +49,14 @@ export function typeConstant(
 				VOID,
 				NULL,
 				BOOL,
+				SYM,
 				INT,
 				FLOAT,
 				STR,
 				OBJ,
 				FALSE,
 				TRUE,
+				SYM_NEVER,
 			].find((c) => returned.equals(c)) ?? returned
 		);
 	};

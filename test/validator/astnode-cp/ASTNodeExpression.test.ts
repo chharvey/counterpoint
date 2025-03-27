@@ -112,6 +112,8 @@ describe('ASTNodeExpression', () => {
 				['null;',    buildConst(mod)],
 				['false;',   buildConst(mod, false)],
 				['true;',    buildConst(mod, true)],
+				['@never;',  buildConst(mod, Symbol(0x80))],
+				['@hello;',  buildConst(mod, Symbol(0x100))],
 				['0;',       buildConst(mod, 0n)],
 				['+0;',      buildConst(mod, 0n)],
 				['-0;',      buildConst(mod, 0n)],
