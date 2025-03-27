@@ -333,15 +333,12 @@ Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
 		1. *Return:* `Never`.
-	5. *If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Number)` is `true`:
-		1. *If* *UnwrapAffirm:* `Subtype(t0, Integer)` is `true` *or* *UnwrapAffirm:* `Subtype(t1, Integer)` is `true`:
-			1. *If* *UnwrapAffirm:* `Subtype(t0, Float)` is `true` *or* *UnwrapAffirm:* `Subtype(t1, Float)` is `true`:
-				1. *If* `operator` is `ID`:
-					1. *Return:* `ToType(false)`.
-		2. *Return:* `Boolean`.
-	6. *If* `t0` and `t1` are disjoint:
-		1. *Return:* `ToType(false)`.
-	7. *Return:* `Boolean`.
+	5. *If* `t0` and `t1` are disjoint:
+		1. *If* `operator` is `ID`:
+			1. *Return:* `ToType(false)`.
+		2. *If* `t0` and `Number` are disjoint *or* `t1` and `Number` are disjoint:
+			1. *Return:* `ToType(false)`.
+	6. *Return:* `Boolean`.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: AND] expr) :=

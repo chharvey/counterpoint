@@ -964,6 +964,9 @@ describe('ASTNodeOperation', () => {
 			context('identity (`===`).', () => {
 				it('optimizes by evaluating operand types.', () => {
 					buildOperations(new Map<string, binaryen.ExpressionRef>([
+						['42  === 420;',  drop_then_false(buildConst(mod, 42n), buildConst(mod, 420n))],
+						['4.2 === 42.0;', drop_then_false(buildConst(mod, 4.2), buildConst(mod, 42.0))],
+
 						['42  === 4.2;', drop_then_false(buildConst(mod, 42n), buildConst(mod, 4.2))],
 						['4.2 === 42;',  drop_then_false(buildConst(mod, 4.2), buildConst(mod, 42n))],
 
@@ -982,10 +985,6 @@ describe('ASTNodeOperation', () => {
 					]));
 				});
 				it('calls `vid` when operands are same numeric type.', () => {
-					buildOperations(new Map<string, binaryen.ExpressionRef>([
-						['42  === 420;',  CALL.vid(mod, buildConst(mod, 42n), buildConst(mod, 420n))],
-						['4.2 === 42.0;', CALL.vid(mod, buildConst(mod, 4.2), buildConst(mod, 42.0))],
-					]));
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let var i1: int   = 42;
 						let var i2: int   = 420;
@@ -1038,6 +1037,9 @@ describe('ASTNodeOperation', () => {
 				context('with int coercion off.', () => {
 					it('optimizes by evaluating operand types, without coercion.', () => {
 						buildOperations(new Map<string, binaryen.ExpressionRef>([
+							['42  == 420;',  drop_then_false(buildConst(mod, 42n), buildConst(mod, 420n))],
+							['4.2 == 42.0;', drop_then_false(buildConst(mod, 4.2), buildConst(mod, 42.0))],
+
 							['42  == 4.2;',  drop_then_false(buildConst(mod, 42n), buildConst(mod, 4.2))],
 							['4.2 == 42;',   drop_then_false(buildConst(mod, 4.2), buildConst(mod, 42n))],
 
@@ -1056,10 +1058,25 @@ describe('ASTNodeOperation', () => {
 						]), CONFIG_FOLDING_COERCION_OFF);
 					});
 					it('calls `veq` when operands are same numeric type.', () => {
-						buildOperations(new Map<string, binaryen.ExpressionRef>([
-							['42  == 420;',  CALL.veq(mod, buildConst(mod, 42n), buildConst(mod, 420n))],
-							['4.2 == 42.0;', CALL.veq(mod, buildConst(mod, 4.2), buildConst(mod, 42.0))],
-						]), CONFIG_FOLDING_COERCION_OFF);
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+							let var i1: int   = 42;
+							let var i2: int   = 420;
+							let var f1: float = 4.2;
+							let var f2: float = 42.0;
+							i1 == i2;
+							f1 == f2;
+						`);
+						goal.varCheck();
+						goal.typeCheck();
+						goal.build();
+						return assertEqualBins(new Map(goal.children.slice(4).map((stmt, i) => [
+							(stmt as AST.ASTNodeStatementExpression).expr!.build(),
+							CALL.veq(
+								goal.builder.module,
+								goal.builder.module.local.get(2 * i,     binaryen.v128),
+								goal.builder.module.local.get(2 * i + 1, binaryen.v128),
+							),
+						])));
 					});
 				});
 			});
