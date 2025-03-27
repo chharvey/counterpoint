@@ -29,7 +29,7 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	 * Returns a TYPE.Record whose entries are the types of this ValueRecord’s values.
 	 */
 	public override toType(): TYPE.Record {
-		return TYPE.Record.fromTypes(new Map([...this.properties].map(([key, val]) => [key, val.toType()])));
+		return TYPE.Record.fromTypes(new Map([...this.properties].map<[bigint, TYPE.Type]>(([key, val]) => [key, val.toType()])));
 	}
 }
 export {ValueRecord as Record};
