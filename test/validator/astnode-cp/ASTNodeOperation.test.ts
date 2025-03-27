@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import {
 	type CPConfig,
@@ -166,9 +167,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						goal.children.slice(3).forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.TRUE);
-						});
+						return xjs.Array.forEachAggregated(goal.children.slice(3), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
 					it('returns type `bool` for a supertype of `void` or a supertype of `null` or a supertype of `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -185,9 +184,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						goal.children.slice(5).forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.BOOL);
-						});
+						return xjs.Array.forEachAggregated(goal.children.slice(5), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
 					it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -198,9 +195,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						goal.children.slice(2).forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.FALSE);
-						});
+						return xjs.Array.forEachAggregated(goal.children.slice(2), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
 					});
 					it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -211,9 +206,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						goal.children.forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.FALSE);
-						});
+						return xjs.Array.forEachAggregated(goal.children, (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
 					});
 				});
 				describe('[operator=EMP]', () => {
@@ -228,9 +221,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						goal.children.slice(3).forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.TRUE);
-						});
+						return xjs.Array.forEachAggregated(goal.children.slice(3), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
 					it('returns type `bool` for anything else.', () => {
 						[
@@ -263,9 +254,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						goal.children.slice(7).forEach((stmt) => {
-							assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.BOOL);
-						});
+						return xjs.Array.forEachAggregated(goal.children.slice(7), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
 				});
 			});
