@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import type Parser from 'tree-sitter';
 import {
 	Query,
 	type QueryCapture,
@@ -16,7 +17,7 @@ import {
 describe('Decorator', () => {
 	describe('#decorateTS', () => {
 		function captureParseNode(source: string, query: string): SyntaxNode {
-			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
+			const captures: QueryCapture[] = new Query(Counterpoint as Parser.Language, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
 			assert.ok(captures.length, 'could not find any captures.');
 			return captures[0].node;
 		}
@@ -399,7 +400,7 @@ describe('Decorator', () => {
 				a = b;
 				% (statement_assignment)
 			`]],
-		]).forEach(([klass, text], description) => (description.slice(0, 5) === 'only:' ? specify.only : description.slice(0, 5) === 'skip:' ? specify.skip : specify)(description, () => {
+		]).forEach(([klass, text], description) => (description.startsWith('only:') ? specify.only : description.startsWith('skip:') ? specify.skip : specify)(description, () => {
 			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
 			return assert.ok(
 				DECORATOR.decorateTS(parsenode) instanceof klass,

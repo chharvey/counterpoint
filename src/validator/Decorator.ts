@@ -84,6 +84,7 @@ class Decorator {
 	]);
 
 
+	/* eslint-disable @typescript-eslint/unified-signatures */
 	public decorateTS(syntaxnode: SyntaxNodeType<'keyword_type'>):                      AST.ASTNodeTypeConstant;
 	public decorateTS(syntaxnode: SyntaxNodeType<'identifier'>):                        AST.ASTNodeTypeAlias | AST.ASTNodeVariable;
 	public decorateTS(syntaxnode: SyntaxNodeType<'word'>):                              AST.ASTNodeKey;
@@ -132,6 +133,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'statement'>):                    AST.ASTNodeStatement;
 	public decorateTS(syntaxnode: SyntaxNodeType<'source_file'>, config?: CPConfig):    AST.ASTNodeGoal;
 	public decorateTS(syntaxnode: SyntaxNode): AST.ASTNodeCP;
+	/* eslint-enable @typescript-eslint/unified-signatures */
 	public decorateTS(syntaxnode: SyntaxNode, config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeCP {
 		const decorators = new Map<string | RegExp, (node: SyntaxNode) => AST.ASTNodeCP>([
 			['source_file', (node) => new AST.ASTNodeGoal(
@@ -249,39 +251,37 @@ class Decorator {
 						Decorator.TYPEOPERATORS_UNARY.get(punc)!,
 						basetype,
 					);
-				} else {
-					if (node.children.length === 3) { // we have either `T[]` or `T{}`
-						if (punc === Punctuator.BRAK_OPN) {
-							return new AST.ASTNodeTypeList(
-								node as SyntaxNodeType<'type_unary_symbol'>,
-								basetype,
-								null,
-							);
-						} else {
-							assert.strictEqual(punc, Punctuator.BRAC_OPN);
-							return new AST.ASTNodeTypeSet(
-								node as SyntaxNodeType<'type_unary_symbol'>,
-								basetype,
-							);
-						}
-					} else { // we have `T[n]`
-						assert.strictEqual(node.children.length, 4);
-						assert.strictEqual(punc, Punctuator.BRAK_OPN);
-						const count: bigint | number = Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
-							...CONFIG_DEFAULT,
-							languageFeatures: {
-								...CONFIG_DEFAULT.languageFeatures,
-								integerRadices:    true,
-								numericSeparators: true,
-							},
-						});
-						assert.ok(typeof count === 'bigint'); // better type guard than `assert.strictEqual`
+				} else if (node.children.length === 3) { // we have either `T[]` or `T{}`
+					if (punc === Punctuator.BRAK_OPN) {
 						return new AST.ASTNodeTypeList(
 							node as SyntaxNodeType<'type_unary_symbol'>,
 							basetype,
-							count,
+							null,
+						);
+					} else {
+						assert.strictEqual(punc, Punctuator.BRAC_OPN);
+						return new AST.ASTNodeTypeSet(
+							node as SyntaxNodeType<'type_unary_symbol'>,
+							basetype,
 						);
 					}
+				} else { // we have `T[n]`
+					assert.strictEqual(node.children.length, 4);
+					assert.strictEqual(punc, Punctuator.BRAK_OPN);
+					const count: bigint | number = Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
+						...CONFIG_DEFAULT,
+						languageFeatures: {
+							...CONFIG_DEFAULT.languageFeatures,
+							integerRadices:    true,
+							numericSeparators: true,
+						},
+					});
+					assert.ok(typeof count === 'bigint'); // better type guard than `assert.strictEqual`
+					return new AST.ASTNodeTypeList(
+						node as SyntaxNodeType<'type_unary_symbol'>,
+						basetype,
+						count,
+					);
 				}
 			}],
 
@@ -384,7 +384,7 @@ class Decorator {
 					function_call_children
 						.find((c): c is SyntaxNodeType<'generic_arguments'> => isSyntaxNodeType(c, 'generic_arguments'))?.children
 						.filter((c): c is SyntaxNodeSupertype<'type'> => isSyntaxNodeSupertype(c, 'type'))
-						.map((c) => this.decorateTS(c)) || [],
+						.map((c) => this.decorateTS(c)) ?? [],
 					function_call_children
 						.find((c): c is SyntaxNodeType<'function_arguments'> => isSyntaxNodeType(c, 'function_arguments'))!.children
 						.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
@@ -645,9 +645,9 @@ class Decorator {
 			)],
 		]);
 		return (
-			   decorators.get(syntaxnode.type)
-			?? [...decorators].find(([key]) => key instanceof RegExp && isSyntaxNodeType(syntaxnode, key))?.[1]
-			?? ((node) => {
+			decorators.get(syntaxnode.type) ??
+			[...decorators].find(([key]) => key instanceof RegExp && isSyntaxNodeType(syntaxnode, key))?.[1] ??
+			((node) => {
 				throw new TypeError(`Could not find type of parse node \`${ node.type }\`.`);
 			})
 		)(syntaxnode);

@@ -1,17 +1,17 @@
 export * from './Type.js';
 
 export * from './Combinable.js';
-export * from './TypeIntersection.js';
-export * from './TypeUnion.js';
-export * from './TypeDifference.js';
-export * from './TypeUnit.js';
+export * from './Intersection.js';
+export * from './Union.js';
+export * from './Difference.js';
+export * from './Unit.js';
 
 
-export * from './TypeTuple.js';
-export * from './TypeRecord.js';
-export * from './TypeList.js';
-export * from './TypeDict.js';
-export * from './TypeSet.js';
-export * from './TypeMap.js';
+export * from './Tuple.js';
+export * from './Record.js';
+export * from './List.js';
+export * from './Dict.js';
+export * from './Set.js';
+export * from './Map.js';
 
 export * from './exports.js';

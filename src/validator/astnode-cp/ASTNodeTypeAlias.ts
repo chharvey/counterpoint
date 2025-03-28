@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import {
 	TYPE,
 	ReferenceErrorUndeclared,
@@ -52,7 +53,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureVar) {
+		if (this.validator.getSymbolInfo(this.id) instanceof SymbolStructureVar) {
 			throw new ReferenceErrorKind(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		}
 	}
@@ -64,12 +65,9 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 				[ValidIntrinsicName.OBJECT, TYPE.OBJ],
 			]).get(this.source)!;
 		}
-		if (this.validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-			if (symbol instanceof SymbolStructureType) {
-				return symbol.typevalue;
-			}
-		}
-		return TYPE.NEVER;
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolStructureType);
+		return symbol.typevalue;
 	}
 }

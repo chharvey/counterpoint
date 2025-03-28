@@ -16,7 +16,7 @@ import {
 	assertAssignable,
 	assertEqualBins,
 } from '../../assert-helpers.js';
-import {typeUnitFloat} from '../../helpers.js';
+import {typeUnit} from '../../helpers.js';
 
 
 
@@ -318,7 +318,7 @@ describe('ASTNodeCP', () => {
 								],
 							},
 							{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
-							{cons: TypeErrorNotAssignable,    message: `Expression of type \`${ typeUnitFloat(4.2) }\` is not assignable to type \`${ TYPE.INT }\`.`},
+							{cons: TypeErrorNotAssignable,    message: `Expression of type \`${ typeUnit(4.2) }\` is not assignable to type \`${ TYPE.INT }\`.`},
 						],
 					});
 					return true;

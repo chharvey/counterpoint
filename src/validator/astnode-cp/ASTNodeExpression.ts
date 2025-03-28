@@ -1,11 +1,14 @@
 import * as assert from 'assert';
 import binaryen from 'binaryen';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	ErrorCode,
 } from '../../index.js';
-import {assert_instanceof} from '../../lib/index.js';
+import {
+	assert_instanceof,
+	assert_context_name,
+} from '../../lib/index.js';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -16,6 +19,63 @@ import {
 } from './index.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeCP} from './ASTNodeCP.js';
+
+
+
+/**
+ * Decorator for {@link ASTNodeExpression#build} method and any overrides.
+ * First tries to compute the assessed value, and if successful, builds the assessed value.
+ * Otherwise builds this node.
+ * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['build']>
+ */
+export function buildDeco(
+	method:  ASTNodeExpression['build'],
+	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
+): typeof method {
+	assert_context_name(context, 'build');
+	return function (this: ASTNodeExpression) {
+		const value: VALUE.Value | null       = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
+		const built: binaryen.ExpressionRef   = value?.build(this.builder.module) ?? method.call(this);
+		assert.strictEqual(binaryen.getExpressionType(built), binaryen.v128);
+		return built;
+	};
+}
+
+
+
+/**
+ * Decorator for {@link ASTNodeExpression#type} method and any overrides.
+ * Type-checks and re-throws any type errors first,
+ * then computes assessed value (if applicable), and if successful,
+ * returns a constant type equal to that assessed value.
+ * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['type']>
+ */
+export function typeDeco(
+	method:  ASTNodeExpression['type'],
+	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
+): typeof method {
+	assert_context_name(context, 'type');
+	return function (this: ASTNodeExpression) {
+		const type: TYPE.Type = method.call(this); // type-check first, to re-throw any TypeErrors
+		if (this.validator.config.compilerOptions.constantFolding) {
+			let value: VALUE.Value | null = null;
+			try {
+				value = this.fold();
+			} catch (err) {
+				if (err instanceof ErrorCode) {
+					// ignore evaluation errors such as VoidError, NanError, etc.
+					return TYPE.NEVER;
+				} else {
+					throw err;
+				}
+			}
+			if (!!value && value instanceof VALUE.Primitive) {
+				return value.toType();
+			}
+		}
+		return type;
+	};
+}
 
 
 
@@ -32,57 +92,6 @@ import {ASTNodeCP} from './ASTNodeCP.js';
  * - ASTNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
-	/**
-	 * Decorator for {@link ASTNodeExpression#type} method and any overrides.
-	 * Type-checks and re-throws any type errors first,
-	 * then computes assessed value (if applicable), and if successful,
-	 * returns a constant type equal to that assessed value.
-	 * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['type']>
-	 */
-	protected static typeDeco(
-		method:   ASTNodeExpression['type'],
-		_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
-	): typeof method {
-		return function (this: ASTNodeExpression) {
-			const type: TYPE.Type = method.call(this); // type-check first, to re-throw any TypeErrors
-			if (this.validator.config.compilerOptions.constantFolding) {
-				let value: OBJ.Object | null = null;
-				try {
-					value = this.fold();
-				} catch (err) {
-					if (err instanceof ErrorCode) {
-						// ignore evaluation errors such as VoidError, NanError, etc.
-						return TYPE.NEVER;
-					} else {
-						throw err;
-					}
-				}
-				if (!!value && value instanceof OBJ.Primitive) {
-					return value.toType();
-				}
-			}
-			return type;
-		};
-	}
-
-	/**
-	 * Decorator for {@link ASTNodeExpression#build} method and any overrides.
-	 * First tries to compute the assessed value, and if successful, builds the assessed value.
-	 * Otherwise builds this node.
-	 * @implements MethodDecorator<ASTNodeExpression, (this: ASTNodeExpression) => binaryen.ExpressionRef>
-	 */
-	protected static buildDeco(
-		method:   (this: ASTNodeExpression) => binaryen.ExpressionRef,
-		_context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
-	): typeof method {
-		return function () {
-			const value: OBJ.Object | null      = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
-			const built: binaryen.ExpressionRef = value?.build(this.builder.module) ?? method.call(this);
-			assert.strictEqual(binaryen.getExpressionType(built), binaryen.v128);
-			return built;
-		};
-	}
-
 	/**
 	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -122,5 +131,5 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * If {@link CPConfig|constant folding} is off, this should not be called.
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 */
-	public abstract fold(): OBJ.Object | null;
+	public abstract fold(): VALUE.Value | null;
 }

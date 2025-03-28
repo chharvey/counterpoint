@@ -35,10 +35,10 @@ export class ASTNodeTypeList extends ASTNodeTypeCollectionLiteral {
 	public override eval(): TYPE.Type {
 		const itemstype: TYPE.Type = this.type.eval();
 		if (this.count === null) {
-			return new TYPE.TypeList(itemstype);
+			return new TYPE.List(itemstype);
 		} else if (this.count >= 0) {
-			const types: readonly TYPE.Type[] = [...new Array(Number(this.count))].map(() => itemstype);
-			return TYPE.TypeTuple.fromTypes(types);
+			const types: readonly TYPE.Type[] = [...new Array<undefined>(Number(this.count))].map(() => itemstype);
+			return TYPE.Tuple.fromTypes(types);
 		} else {
 			throw new TypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index);
 		}

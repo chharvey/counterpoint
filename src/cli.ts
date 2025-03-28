@@ -15,7 +15,7 @@ const VERSION: Promise<string> = (requireJSON(path.join(DIRNAME, '../package.jso
 (async (): Promise<void> => {
 	const cli = new CLI(process.argv);
 	async function handleCompileOrDev(): Promise<void> {
-		const result: [string, void] = await cli.compileOrDev(process.cwd());
+		const result: [string, undefined] = await cli.compileOrDev(process.cwd());
 		console.log(result[0]);
 		console.log('Success!');
 	}

@@ -29,8 +29,8 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 			| SyntaxNodeType<'type_unary_symbol'>
 			| SyntaxNodeType<'type_unary_keyword'>
 			| SyntaxNodeType<'type_intersection'>
-			| SyntaxNodeType<'type_union'>
-		,
+			| SyntaxNodeType<'type_union'>,
+
 		protected readonly operator: ValidTypeOperator,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
 	) {

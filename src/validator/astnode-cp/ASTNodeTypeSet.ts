@@ -29,6 +29,6 @@ export class ASTNodeTypeSet extends ASTNodeTypeCollectionLiteral {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		return new TYPE.TypeSet(this.type.eval());
+		return new TYPE.Set(this.type.eval());
 	}
 }

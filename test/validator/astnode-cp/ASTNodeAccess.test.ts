@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {
 	AST,
-	OBJ,
+	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
@@ -11,9 +11,7 @@ import {
 import {assert_instanceof} from '../../../src/lib/index.js';
 import {
 	CONFIG_FOLDING_OFF,
-	typeUnitInt,
-	typeUnitFloat,
-	typeUnitStr,
+	typeUnit,
 } from '../../helpers.js';
 
 
@@ -234,16 +232,16 @@ describe('ASTNodeAccess', () => {
 			return stmt.expr!.type();
 		}
 		const COMMON_TYPES = {
-			int_float: TYPE.TypeUnion.all(
+			int_float: TYPE.Union.all(
 				TYPE.INT,
 				TYPE.FLOAT,
 			),
-			int_float_str: TYPE.TypeUnion.all(
+			int_float_str: TYPE.Union.all(
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
 			),
-			int_float_str_null: TYPE.TypeUnion.all(
+			int_float_str_null: TYPE.Union.all(
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
@@ -251,20 +249,20 @@ describe('ASTNodeAccess', () => {
 			),
 		};
 		const expected: TYPE.Type[] = [
-			typeUnitInt(1n),
-			typeUnitFloat(2.0),
-			typeUnitStr('three'),
+			typeUnit(1n),
+			typeUnit(2.0),
+			typeUnit('three'),
 			TYPE.INT,
 			TYPE.FLOAT,
 			TYPE.STR,
 		];
 		const expected_o: TYPE.Type[] = [
-			typeUnitStr('three'),
+			typeUnit('three'),
 			TYPE.STR.union(TYPE.NULL),
 			TYPE.STR.union(TYPE.NULL),
 		];
 		const expected_c: TYPE.Type[] = [
-			typeUnitStr('three'),
+			typeUnit('three'),
 			TYPE.STR,
 			TYPE.STR,
 		];
@@ -296,15 +294,15 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL]);
-				const prop2                 = new TYPE.TypeTuple([{type: TYPE.BOOL, optional: true}]);
+				const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);
+				const prop2             = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]);
 				assert.deepStrictEqual(
 					program.children.slice(2, 8).map((c) => typeOfStmtExpr(c)),
 					[
-						new TYPE.TypeRecord(new Map([[0x100n, {type: prop1, optional: true}]])),
+						new TYPE.Record(new Map([[0x100n, {type: prop1, optional: true}]])),
 						prop1.union(TYPE.NULL),
 						TYPE.BOOL.union(TYPE.NULL),
-						new TYPE.TypeRecord(new Map([[0x100n, {type: prop2, optional: true}]])),
+						new TYPE.Record(new Map([[0x100n, {type: prop2, optional: true}]])),
 						prop2.union(TYPE.NULL),
 						TYPE.BOOL.union(TYPE.NULL),
 					],
@@ -368,7 +366,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(41, 43).map((c) => typeOfStmtExpr(c)),
 					[
-						typeUnitStr('three'),
+						typeUnit('three'),
 						COMMON_TYPES.int_float_str.union(TYPE.NULL),
 					],
 				);
@@ -449,7 +447,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(29, 31).map((c) => typeOfStmtExpr(c)),
 					[
-						typeUnitStr('three'),
+						typeUnit('three'),
 						COMMON_TYPES.int_float_str.union(TYPE.NULL),
 					],
 				);
@@ -513,7 +511,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(24, 27).forEach((c) => (
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
-							OBJ.Boolean.TRUETYPE,
+							TYPE.TRUE,
 						)
 					));
 					return program.children.slice(27, 30).forEach((c) => (
@@ -556,9 +554,9 @@ describe('ASTNodeAccess', () => {
 							...program.children.slice(53, 55),
 						].map((c) => typeOfStmtExpr(c)),
 						[
-							typeUnitStr('three'),
+							typeUnit('three'),
 							COMMON_TYPES.int_float_str.union(TYPE.NULL),
-							typeUnitStr('three'),
+							typeUnit('three'),
 							COMMON_TYPES.int_float_str.union(TYPE.NULL),
 						],
 					);
@@ -567,7 +565,7 @@ describe('ASTNodeAccess', () => {
 					assert.deepStrictEqual(
 						program.children.slice(51, 53).map((c) => typeOfStmtExpr(c)),
 						[
-							OBJ.Boolean.TRUETYPE,
+							TYPE.TRUE,
 							TYPE.BOOL,
 						],
 					);
@@ -696,20 +694,20 @@ describe('ASTNodeAccess', () => {
 
 
 	describe('#fold', () => {
-		function foldStmtExpr(stmt: AST.ASTNodeStatement): OBJ.Object | null {
+		function foldStmtExpr(stmt: AST.ASTNodeStatement): VALUE.Value | null {
 			assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 			return stmt.expr!.fold();
 		}
-		const expected: Array<OBJ.Object | null> = [
-			new OBJ.Integer(1n),
-			new OBJ.Float(2.0),
-			new OBJ.String('three'),
+		const expected: Array<VALUE.Value | null> = [
+			new VALUE.Integer(1n),
+			new VALUE.Float(2.0),
+			new VALUE.String('three'),
 			null,
 			null,
 			null,
 		];
-		const expected_o: Array<OBJ.Object | null> = [
-			new OBJ.String('three'),
+		const expected_o: Array<VALUE.Value | null> = [
+			new VALUE.String('three'),
 			null,
 			null,
 		];
@@ -724,7 +722,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource('null?.four;')       .fold(),
 					AST.ASTNodeAccess.fromSource('null?.[[[[[]]]]];') .fold(),
 				].forEach((t) => {
-					assert.strictEqual(t, OBJ.Null.NULL);
+					assert.strictEqual(t, VALUE.NULL);
 				});
 			});
 			it('chained optional access.', () => {
@@ -741,22 +739,22 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1 = new OBJ.Tuple([OBJ.Boolean.TRUE]);
-				const prop2 = new OBJ.Tuple();
+				const prop1 = new VALUE.Tuple([VALUE.TRUE]);
+				const prop2 = new VALUE.Tuple();
 				assert.deepStrictEqual(
 					program.children.slice(2, 7).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.Record(new Map([[0x100n, prop1]])),
+						new VALUE.Record(new Map([[0x100n, prop1]])),
 						prop1,
-						OBJ.Boolean.TRUE,
-						new OBJ.Record(new Map([[0x100n, prop2]])),
+						VALUE.TRUE,
+						new VALUE.Record(new Map([[0x100n, prop2]])),
 						prop2,
 					],
 				);
 				// must bypass type-checker:
 				assert.strictEqual(
 					AST.ASTNodeAccess.fromSource('[prop= []]?.prop?.0;').fold(),
-					OBJ.Null.NULL,
+					VALUE.NULL,
 				);
 			});
 		});
@@ -807,7 +805,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.3;')  .fold(),
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.-4;') .fold(),
 				].forEach((v) => {
-					assert.strictEqual(v, OBJ.Null.NULL);
+					assert.strictEqual(v, VALUE.NULL);
 				});
 			});
 		});
@@ -853,7 +851,7 @@ describe('ASTNodeAccess', () => {
 			it('returns null when optionally accessing key out of bounds.', () => {
 				assert.strictEqual(
 					AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"]?.d;').fold(),
-					OBJ.Null.NULL,
+					VALUE.NULL,
 				);
 			});
 		});
@@ -887,7 +885,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(49, 51).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.String('three'),
+						new VALUE.String('three'),
 						null,
 					],
 				);
@@ -896,9 +894,9 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 30).map((c) => foldStmtExpr(c)),
 					[
-						OBJ.Boolean.TRUE,
-						OBJ.Boolean.TRUE,
-						OBJ.Boolean.TRUE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.TRUE,
 						null,
 						null,
 						null,
@@ -907,7 +905,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(51, 53).map((c) => foldStmtExpr(c)),
 					[
-						OBJ.Boolean.TRUE,
+						VALUE.TRUE,
 						null,
 					],
 				);
@@ -920,7 +918,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(53, 55).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.String('three'),
+						new VALUE.String('three'),
 						null,
 					],
 				);
@@ -935,7 +933,7 @@ describe('ASTNodeAccess', () => {
 					'{1, 2.0, "three"}?.[3];',
 				].forEach((src) => assert.deepStrictEqual(
 					AST.ASTNodeAccess.fromSource(src).fold(),
-					OBJ.Boolean.FALSE,
+					VALUE.FALSE,
 				));
 			});
 			it('returns null when optionally accessing index/antecedent out of bounds.', () => {
@@ -943,7 +941,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[3];')                                .fold(),
 					AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.[["d"]];') .fold(),
 				].forEach((v) => {
-					assert.strictEqual(v, OBJ.Null.NULL);
+					assert.strictEqual(v, VALUE.NULL);
 				});
 			});
 		});

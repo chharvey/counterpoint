@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+
+
 /**
  * The type for instance method decorators.
  * @typeparam This    the `this` ‘parameter’ of the instance method
@@ -131,42 +134,5 @@ export function runOnceSetter<Param>(
 			memoset.add(this);
 			return setter.call(this, arg);
 		}
-	};
-}
-
-
-
-/**
- * Decorator for performing strict equality (`===`), and then disjuncting (`||`) that result
- * with the results of performing the method.
- * @implements MethodDecorator<Proto, (this: Proto, that: Proto, ...args: Params) => boolean>
- * @typeparam Proto       the type of the prototype
- * @typeparam Params      the method’s parameter types
- */
-export function strictEqual<Proto extends object, Params extends unknown[]>(
-	method:   (this: Proto, that: Proto, ...args: Params) => boolean,
-	_context: ClassMethodDecoratorContext<Proto, typeof method>,
-): typeof method {
-	return function (that, ...args) {
-		return this === that || method.call(this, that, ...args);
-	};
-}
-
-
-
-/**
- * Factory for decorators performing `instanceof`, and then conjuncting (`&&`) that result
- * with the results of performing the method.
- * @param cons a class/constructor to check instance of; offers potential to fail early
- * @returns MethodDecorator<Proto, (this: Proto, that: Proto, ...args: Params) => boolean>
- * @typeparam Proto       the type of the prototype
- * @typeparam Params      the method’s parameter types
- */
-export function instanceOf(cons: NewableFunction): <Proto extends object, Params extends unknown[]>(
-	method:   (this: Proto, that: Proto, ...args: Params) => boolean,
-	_context: ClassMethodDecoratorContext<Proto, typeof method>,
-) => typeof method {
-	return (method) => function (that, ...args) {
-		return that instanceof cons && method.call(this, that, ...args);
 	};
 }

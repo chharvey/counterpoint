@@ -51,7 +51,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			}
 		}
 		const assignee_type: TYPE.Type = this.assignee.type();
-		ASTNodeCP.assignExpression(this.assigned, assignee_type, this);
+		ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
 	}
 
 	public override build(): binaryen.ExpressionRef {

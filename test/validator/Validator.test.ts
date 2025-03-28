@@ -26,7 +26,7 @@ describe('Validator', () => {
 	describe('.cookTokenKeyword', () => {
 		it('assigns values 0x80n–0x100n to reserved keywords.', () => {
 			const cooked: bigint[] = KEYWORDS.map((k) => Validator.cookTokenKeyword(k));
-			const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
+			const expected: bigint[] = [...new Array<undefined>(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
 			assert.deepStrictEqual(cooked, expected);
 			cooked.forEach((value) => {
 				assert.ok(0x80n <= value, 'cooked value should be >= 0x80n.');
@@ -37,7 +37,7 @@ describe('Validator', () => {
 
 	describe('.cookTokenNumber', () => {
 		new Map<string, [string, readonly bigint[] | readonly number[]]>([
-			/* eslint-disable array-element-newline */
+			/* eslint-disable @stylistic/array-element-newline */
 			['implicit radix integers', [
 				`
 					370  037  +9037  -9037  +06  -06
@@ -56,6 +56,7 @@ describe('Validator', () => {
 					\\xe70  \\x0e7  +\\x90e7  -\\x90e7  +\\x06  -\\x06
 					\\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
 				`,
+				/* eslint-disable @stylistic/indent */
 				[
 					    4,  1,       8,      -8, 1, -1,
 					   56, 14,      78,     -78, 3, -3,
@@ -65,6 +66,7 @@ describe('Validator', () => {
 					 3696, 231,  37095,  -37095, 6, -6,
 					18396, 511, 420415, -420415, 6, -6,
 				].map((n) => BigInt(n)),
+				/* eslint-enable @stylistic/indent */
 			]],
 			['floats', [
 				`
@@ -96,6 +98,7 @@ describe('Validator', () => {
 					\\xe_70  \\x0_e7  +\\x9_0e7  -\\x9_0e7  +\\x0_6  -\\x0_6
 					\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
 				`,
+				/* eslint-disable @stylistic/indent */
 				[
 					    4,  1,       8,      -8, 1, -1,
 					   56, 14,      78,     -78, 3, -3,
@@ -105,8 +108,9 @@ describe('Validator', () => {
 					 3696, 231,  37095,  -37095, 6, -6,
 					18396, 511, 420415, -420415, 6, -6,
 				].map((n) => BigInt(n)),
+				/* eslint-enable @stylistic/indent */
 			]],
-			/* eslint-enable array-element-newline */
+			/* eslint-enable @stylistic/array-element-newline */
 		]).forEach(([source, values], description) => {
 			it(description, () => {
 				assert.deepStrictEqual(

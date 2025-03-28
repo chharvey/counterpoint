@@ -3,7 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-	OBJ,
+	VALUE,
 	type TYPE,
 } from '../src/index.js';
 
@@ -45,27 +45,36 @@ export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
 
 
 
-export function typeUnitInt(x: bigint): TYPE.TypeUnit<OBJ.Integer> {
-	return new OBJ.Integer(x).toType();
-}
-export function typeUnitFloat(x: number): TYPE.TypeUnit<OBJ.Float> {
-	return new OBJ.Float(x).toType();
-}
-export function typeUnitStr(x: string): TYPE.TypeUnit<OBJ.String> {
-	return new OBJ.String(x).toType();
+export function typeUnit(value: bigint): TYPE.Unit<VALUE.Integer>;
+export function typeUnit(value: number): TYPE.Unit<VALUE.Float>;
+export function typeUnit(value: string): TYPE.Unit<VALUE.String>;
+export function typeUnit(value: bigint | number | string): TYPE.Unit<VALUE.Integer | VALUE.Float | VALUE.String> {
+	return (
+		value === 0n              ? VALUE.INT_0 :
+		value === 1n              ? VALUE.INT_1 :
+		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
+		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
+		value === ''              ? VALUE.STR_EMPTY :
+		typeof value === 'bigint' ? new VALUE.Integer(value) :
+		typeof value === 'number' ? new VALUE.Float(value) :
+		typeof value === 'string' ? new VALUE.String(value) :
+		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+	).toType();
 }
 
 
 
 export function buildConst(mod: binaryen.Module, value: null | boolean | bigint | number = null): binaryen.ExpressionRef {
 	return (
-		value === null            ? OBJ.Null.NULL :
-		value === false           ? OBJ.Boolean.FALSE :
-		value === true            ? OBJ.Boolean.TRUE :
-		value === 0n              ? OBJ.Integer.ZERO :
-		value === 1n              ? OBJ.Integer.UNIT :
-		typeof value === 'bigint' ? new OBJ.Integer(value) :
-		typeof value === 'number' ? new OBJ.Float(value) :
+		value === null            ? VALUE.NULL :
+		value === false           ? VALUE.FALSE :
+		value === true            ? VALUE.TRUE :
+		value === 0n              ? VALUE.INT_0 :
+		value === 1n              ? VALUE.INT_1 :
+		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
+		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
+		typeof value === 'bigint' ? new VALUE.Integer(value) :
+		typeof value === 'number' ? new VALUE.Float(value) :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
 	).build(mod);
 }

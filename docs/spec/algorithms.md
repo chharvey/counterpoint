@@ -4,7 +4,7 @@ This chapter lists and defines common abstract algorithms used throughout this s
 
 
 ## DigitCount
-The **DigitCount** attribute grammar gives the [number](./data-types.md#real-integer-numbers) of
+The **DigitCount** attribute grammar gives the [number](./types-values.md#real-integer-numbers) of
 numeric (non-separator) digits in a digit sequence.
 ```
 DigitCount(DigitSequenceDec :::= [0-9]) -> RealNumber
@@ -107,7 +107,7 @@ Decodes a sequence of code units into a sequence of code points using the UTF-8 
 RealNumber Multiply(Sequence<RealNumber> ns) :=
 	1. *If* `ns.count` is 0:
 		1. *Return:* 0.
-	2. Return *UnwrapAffirm:* `Multiply(ns[0, -1])` * \x40 + `ns.lastItem`.
+	2. *Return:* *UnwrapAffirm:* `Multiply(ns[0, -1])` * \x40 + `ns.lastItem`.
 ;
 None! Continue(Sequence<RealNumber> units) :=
 	1. *For index* `i` in `units`:
@@ -191,7 +191,7 @@ Performs the type-checking piece during semantic analysis.
 
 
 ## ToBoolean
-Returns an associated [boolean value](./data-types#boolean), `true` or `false`, with a Counterpoint Language Value.
+Returns an associated [boolean value](./types-values#boolean), `true` or `false`, with a Counterpoint Language Value.
 ```
 Boolean ToBoolean(Object value) :=
 	1. *If* `value` is an instance of `Null`:
@@ -251,7 +251,7 @@ Boolean Identical(Object a, Object b) :=
 		6. *Return:* `true`.
 	9. *If* `a` and `b` are the same object:
 		1. *Return:* `true`.
-	10. Return `false`.
+	10. *Return:* `false`.
 ```
 
 
@@ -306,7 +306,7 @@ Boolean Equal(Object a, Object b) :=
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For each* `it_b` in `seq_b`:
 			1. Find an item `it_a` in `seq_a` such that *UnwrapAffirm:* `Equal(it_a, it_b)` is `true`.
-			2. *If* `it_a` does not exist:
+			2. *If* `it_a` is not set:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
 	7. *If* `a` is an instance of `Map` *and* `b` is an instance of `Map`:
@@ -321,12 +321,12 @@ Boolean Equal(Object a, Object b) :=
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For each* `it_b` in `data_b`:
 			1. Find an item `it_a` in `data_a` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
-			2. *If* `it_a` does not exist:
+			2. *If* `it_a` is not set:
 				1. *Return:* `false`.
 			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
-	8. Return `false`.
+	8. *Return:* `false`.
 ```
 
 
@@ -335,24 +335,50 @@ Boolean Equal(Object a, Object b) :=
 Attempt to assign a mutable collection literal to a mutable type when type-checking fails.
 This assignment is attempted on an entry-by-entry basis.
 ```
-None! AssignTo(Or<SemanticSet, SemanticMap> expr, Type type) :=
-	1. *If* `expr` is a SemanticSet *and* `type` is a Set type:
+None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
+	1. *If* `expr` is a SemanticTuple *and* `type` is a Tuple type:
+		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
+		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.
+		3. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
+		4. *If* `expr.children.count` is less than `seq_b_req.count`:
+			1. *Throw:* a new TypeErrorNotAssignable.
+		5. *For index* `i` in `seq_b`:
+			1. *If* `seq_b[i].optional` is `false`:
+				1. *Assert:* `expr.children[i]` is set.
+		6. *For index* `i` in `expr.children`:
+			1. Let `ib` be `seq_b[i]`.
+			2. *If:* `ib` is set:
+				1. *Perform:* `TypeCheckAssign(expr.children[i], ib.type)`.
+		7. *Return.*
+	2. *If* `expr` is a SemanticRecord *and* `type` is a Record type:
+		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
+		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `type`.
+		3. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
+		4. *If* `expr.children.count` is less than `struct_b_req.count`:
+			1. *Throw:* a new TypeErrorNotAssignable.
+		5. *For key* `k` in `struct_b`:
+			1. *If* `struct_b[k].optional` is `false`:
+				1. Find a SemanticProperty `property` in `expr.children` such that `property.children.0.id` is `k`.
+				2. *If* `property` is not set:
+					1. *Throw:* a new TypeErrorNotAssignable.
+		6. *For each* `property` in `expr.children`:
+			1. Let `vb` be `struct_b[property.children.0.id]`.
+			2. *If:* `vb` is set:
+				1. *Perform:* `TypeCheckAssign(property.children.1, vb.type)`.
+		7. *Return.*
+	3. *If* `expr` is a SemanticSet *and* `type` is a Set type:
 		1. *Let* `b_type` be the invariant over `type`.
-		2. *For each* `a_el` in `expr`:
-			1. *Let* `a_type` be *Unwrap:* `TypeOf(a_el)`.
-			2. *If* *UnwrapAffirm:* `Subtype(a_type, b_type)` is `false`:
-				1. *Throw:* a new TypeErrorNotAssignable.
-	2. *If* `expr` is a SemanticMap *and* `type` is a Map type:
+		2. *For each* `a_el` in `expr.children`:
+			1. *Perform:* `TypeCheckAssign(a_el, b_type)`.
+		3. *Return.*
+	4. *If* `expr` is a SemanticMap *and* `type` is a Map type:
 		1. *Let* `b_ant_type` be the antecedent invariant over `type`.
 		2. *Let* `b_con_type` be the consequent invariant over `type`.
-		3. *For each* `a_case` in `expr`:
-			1. *Let* `a_ant_type` be *Unwrap:* `TypeOf(a_case.0)`.
-			2. *Let* `a_con_type` be *Unwrap:* `TypeOf(a_case.1)`.
-			3. *If* *UnwrapAffirm:* `Subtype(a_ant_type, b_ant_type)` is `false`:
-				1. *Throw:* a new TypeErrorNotAssignable.
-			4. *If* *UnwrapAffirm:* `Subtype(a_con_type, b_con_type)` is `false`:
-				1. *Throw:* a new TypeErrorNotAssignable.
-	3. *Throw:* a new TypeErrorNotAssignable.
+		3. *For each* `a_case` in `expr.children`:
+			1. *Perform:* `TypeCheckAssign(a_case.0, b_ant_type)`.
+			2. *Perform:* `TypeCheckAssign(a_case.1, b_con_type)`.
+		4. *Return.*
+	5. *Throw:* a new TypeErrorNotAssignable.
 ;
 ```
 
@@ -428,7 +454,7 @@ Type CombineTuplesOrRecords(Type t) :=
 					2. *Else:*
 						1. *Let* `optional` be `false`.
 					3. *Set* `data[i]` to a new Structure [
-						type=     *UnwrapAffirm:* `Intersect(data[i].type, seq_b[i].type)`,
+						type=     *UnwrapAffirm:* `Intersection(data[i].type, seq_b[i].type)`,
 						optional= optional,
 					].
 				2. *Else:*
@@ -446,7 +472,7 @@ Type CombineTuplesOrRecords(Type t) :=
 					2. *Else:*
 						1. *Let* `optional` be `false`.
 					3. *Set* `data[k]` to a new Structure [
-						type=     *UnwrapAffirm:* `Intersect(data[k].type, struct_b[k].type)`,
+						type=     *UnwrapAffirm:* `Intersection(data[k].type, struct_b[k].type)`,
 						optional= optional,
 					].
 				2. *Else:*

@@ -107,7 +107,7 @@ Cause: A fixed variable was reassigned.
 let my_var: int = 42;
 my_var = 24;          % AssignmentError: Reassignment of fixed variable `my_var`.
 ```
-Solution(s): Remove the reassignment, or make the variable `unfixed`.
+Solution(s): Remove the reassignment, or declare the variable with `var`.
 
 
 ### Type Errors (23xx)
@@ -187,7 +187,7 @@ Cause: An immutable object was mutated.
 let x: [a: int] = [a= 42];
 x.a = 43;                  % MutabilityError: Mutation of an object of immutable type `[a: int]`.
 ```
-Solution(s): Do not mutate the object’s entries, or else give it a `mutable` type.
+Solution(s): Do not mutate the object’s entries, or else give it a `mut` type.
 
 
 

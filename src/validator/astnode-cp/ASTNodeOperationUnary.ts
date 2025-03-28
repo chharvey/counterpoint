@@ -2,8 +2,9 @@ import * as assert from 'assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
+	BinVect,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 } from '../../index.js';
@@ -20,7 +21,11 @@ import {
 	Operator,
 	type ValidOperatorUnary,
 } from '../Operator.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {
+	buildDeco,
+	typeDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 
 
@@ -42,50 +47,74 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
+		const t0:   TYPE.Type              = this.operand.type();
+		const arg0: binaryen.ExpressionRef = this.operand.build();
+		if (this.operator === Operator.NOT) {
+			if (t0.isDefinitelyFalsy) {
+				return this.builder.module.block(null, [
+					this.builder.module.drop(arg0),
+					new BinVect(this.builder.module, true).vect,
+				], binaryen.v128);
+			} else if (t0.isDefinitelyTruthy) {
+				return this.builder.module.block(null, [
+					this.builder.module.drop(arg0),
+					new BinVect(this.builder.module, false).vect,
+				], binaryen.v128);
+			}
+		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
+			return this.builder.module.block(null, [
+				this.builder.module.drop(arg0),
+				new BinVect(this.builder.module, true).vect,
+			], binaryen.v128);
+		}
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.NOT, 'vnot'],
 			[Operator.EMP, 'vemp'],
 			[Operator.NEG, 'vneg'],
-		]).get(this.operator)!, [this.operand.build()], binaryen.v128);
+		]).get(this.operator)!, [arg0], binaryen.v128);
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		const t: TYPE.Type = this.operand.type();
-		/* eslint-disable indent */
-		return (
-			(this.operator === Operator.NOT) ? (
-				(t.isSubtypeOf(TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE)))                       ? OBJ.Boolean.TRUETYPE :
-				(TYPE.VOID.isSubtypeOf(t) || TYPE.NULL.isSubtypeOf(t) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t)) ? TYPE.BOOL            :
-				OBJ.Boolean.FALSETYPE
-			) :
-			(this.operator === Operator.EMP) ? TYPE.BOOL :
-			(assert.strictEqual(this.operator, Operator.NEG), (
-				(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)))
-					? t
-					: assert.fail(new TypeErrorInvalidOperation(this))
-			))
-		);
-		/* eslint-enable indent */
+		if (t.isBottomType) {
+			return TYPE.NEVER;
+		}
+		switch (this.operator) {
+			case Operator.NOT: {
+				return (
+					t.isDefinitelyFalsy  ? TYPE.TRUE :
+					t.isDefinitelyTruthy ? TYPE.FALSE :
+					TYPE.BOOL
+				);
+			}
+			case Operator.EMP: {
+				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
+			}
+			case Operator.NEG: {
+				assert.ok(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeErrorInvalidOperation(this));
+				return t;
+			}
+		}
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v: OBJ.Object | null = this.operand.fold();
+	public override fold(): VALUE.Value | null {
+		const v: VALUE.Value | null = this.operand.fold();
 		if (!v) {
 			return v;
 		}
 		return (
-			(this.operator === Operator.NOT) ?                OBJ.Boolean.fromBoolean(!v.isTruthy)              :
-			(this.operator === Operator.EMP) ?                OBJ.Boolean.fromBoolean(!v.isTruthy || v.isEmpty) :
-			(assert.strictEqual(this.operator, Operator.NEG), this.foldNumeric(v as OBJ.Number<any>)) // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
+			(this.operator === Operator.NOT) ?                VALUE.Boolean.fromBoolean(!v.isTruthy)              :
+			(this.operator === Operator.EMP) ?                VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty) :
+			(assert.strictEqual(this.operator, Operator.NEG), this.foldNumeric(v as VALUE.Number<any>)) // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
 		);
 	}
 
-	private foldNumeric<T extends OBJ.Number<T>>(v0: T): T {
+	private foldNumeric<T extends VALUE.Number<T>>(v0: T): T {
 		try {
 			return new Map<Operator, (z: T) => T>([
 				[Operator.AFF, (z) => z],
