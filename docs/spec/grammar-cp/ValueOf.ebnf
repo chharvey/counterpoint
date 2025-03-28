@@ -17,7 +17,7 @@ Object! ValueOf(SemanticVariable var) :=
 
 String! ValueOf(SemanticTemplate tpl) :=
 	1. *Let* `values` be a mapping for each `node` in `tpl.children` to *Unwrap:* `ValueOf(node)`.
-	2. *Let* `strings` be a mapping for each `value` in `values` to `ToString(value)`.
+	2. *Let* `strings` be a mapping for each `value` in `values` to `String(value)`.
 	3. *Return:* the string-concatenation of each item in `strings`, preserving order.
 ;
 
@@ -204,8 +204,11 @@ Number! ValueOf(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
 	4. *Assert*: `v0` is an instance of `Number` *and* `v1` is an instance of `Number`.
 	5. *If* `v0` is an instance of `Integer` *and* `v1` is an instance of `Integer`:
-		1. *Return:* `Integer(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, v0, v1))`.
-	6. *Return:* `Float(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, Float(v0), Float(v1)))`.
+		1. *Let* `number` be *UnwrapAffirm:* `PerformBinaryArithmetic(expr.operator, v0, v1)`.
+		2. *Return:* `Integer(number)`.
+	6. *Else:*
+		1. *Let* `number` be *UnwrapAffirm:* `PerformBinaryArithmetic(expr.operator, Float(v0), Float(v1))`.
+		2. *Return:* `Float(number)`.
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=

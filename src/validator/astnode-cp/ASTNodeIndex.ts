@@ -15,7 +15,7 @@ export class ASTNodeIndex extends ASTNodeCP {
 		| SyntaxNodeType<'property_access'>
 		| SyntaxNodeType<'property_assign'>
 	)) {
-		super(start_node, {}, []);
+		super(start_node);
 	}
 
 	@memoizeGetter
