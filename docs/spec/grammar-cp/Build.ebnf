@@ -9,6 +9,10 @@ Sequence<Instruction> Build(Boolean b) :=
 	3. *Return:* ["Push `0` onto the operand stack."].
 ;
 
+Sequence<Instruction> Build(Symbol s) :=
+	1. *Return:* ["Push `n.id` onto the operand stack."].
+;
+
 Sequence<Instruction> Build(Number n) :=
 	1. *Return:* ["Push `n` onto the operand stack."].
 ;
