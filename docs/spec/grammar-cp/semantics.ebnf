@@ -1,10 +1,10 @@
+SemanticIndex[index: RealNumber]
+	::= ();
+
 SemanticKey[id: RealNumber]
 	::= ();
 
 
-
-SemanticIndexType
-	::= SemanticTypeConstant;
 
 SemanticItemType[optional: Boolean]
 	::= SemanticType;
@@ -13,9 +13,6 @@ SemanticPropertyType[optional: Boolean]
 	::= SemanticKey SemanticType;
 
 
-
-SemanticIndex
-	::= SemanticConstant;
 
 SemanticProperty
 	::= SemanticKey SemanticExpression;
@@ -60,7 +57,7 @@ SemanticTypeList[count: RealNumber | None]
 	::= SemanticType; // Note: a SemanticTypeList with a `count` represents a Tuple Type; otherwise it represents a List Type.
 
 SemanticTypeAccess
-	::= SemanticType (SemanticIndexType | SemanticKey);
+	::= SemanticType (SemanticIndex | SemanticKey);
 
 SemanticTypeCall
 	::= SemanticType SemanticType+;

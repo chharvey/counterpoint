@@ -45,7 +45,6 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 
 	public constructor(start_node: (
-		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'template_full'>
 		| SyntaxNodeType<'template_head'>
 		| SyntaxNodeType<'template_middle'>
@@ -72,9 +71,6 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		switch (true) {
 			case isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/): {
 				return new VALUE.String(Validator.cookTokenTemplate(this.start_node.text));
-			}
-			case isSyntaxNodeType(this.start_node, 'integer'): {
-				return valueOfTokenNumber(this.start_node.text, this.validator.config);
 			}
 			default: {
 				assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);

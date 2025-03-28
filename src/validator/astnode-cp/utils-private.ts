@@ -82,6 +82,6 @@ export function oneFloats(arg0: TYPE.Type | VALUE.Value, arg1: TYPE.Type | VALUE
 
 
 export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Integer | VALUE.Float {
-	const [cooked, is_float]: [number, boolean] = Validator.cookTokenNumber(source, config);
-	return (is_float) ? new VALUE.Float(cooked) : new VALUE.Integer(BigInt(cooked));
+	const cooked: bigint | number = Validator.cookTokenNumber(source, config);
+	return (typeof cooked === 'bigint') ? new VALUE.Integer(cooked) : new VALUE.Float(cooked);
 }

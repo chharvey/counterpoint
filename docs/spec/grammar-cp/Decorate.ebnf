@@ -124,10 +124,8 @@ Decorate(TypeUnit ::= TypeMapLiteral) -> SemanticTypeMap
 
 
 
-Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndexType
-	:= (SemanticIndexType
-		(SemanticTypeConstant[value=ToType(Integer(TokenWorth(INTEGER)))])
-	);
+Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
 Decorate(PropertyAccessType ::= "." Word) -> SemanticKey
 	:= Decorate(Word);
 
@@ -324,18 +322,14 @@ Decorate(ExpressionUnit ::= MapLiteral) -> SemanticMap
 
 
 Decorate(PropertyAccess ::= ("." | "?." | "!.") INTEGER) -> SemanticIndex
-	:= (SemanticIndex
-		(SemanticConstant[value=Integer(TokenWorth(INTEGER))])
-	);
+	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
 Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey
 	:= Decorate(Word);
 Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression
 	:= Decorate(Expression);
 
 Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex
-	:= (SemanticIndex
-		(SemanticConstant[value=Integer(TokenWorth(INTEGER))])
-	);
+	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
 Decorate(PropertyAssign ::= "." Word) -> SemanticKey
 	:= Decorate(Word);
 Decorate(PropertyAssign ::= "." "[" Expression "]") -> SemanticExpression

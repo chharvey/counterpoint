@@ -20,8 +20,8 @@ import {
 	Operator,
 	type ValidAccessOperator,
 } from '../Operator.js';
-import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
+import {ASTNodeKey} from './ASTNodeKey.js';
 import {
 	buildDeco,
 	typeDeco,
@@ -45,7 +45,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 
 		private readonly kind:     ValidAccessOperator,
 		public  readonly base:     ASTNodeExpression,
-		private readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
+		public  readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
 		this.optional = this.kind === Operator.OPTDOT;
@@ -84,7 +84,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			return (
-				(base_type instanceof TYPE.Tuple) ? base_type.get((this.accessor.val.type() as TYPE.Unit<VALUE.Integer>).value, this.kind, this.accessor) :
+				(base_type instanceof TYPE.Tuple) ? base_type.get(new VALUE.Integer(this.accessor.index), this.kind, this.accessor) :
 				(base_type instanceof TYPE.List)  ? updateAccessedDynamicType(base_type.invariant, this.kind) :
 				assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor))
 			);
@@ -136,7 +136,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as VALUE.CollectionIndexed).get(this.accessor.val.fold() as VALUE.Integer, this.optional, this.accessor);
+			return (base_value as VALUE.CollectionIndexed).get(new VALUE.Integer(this.accessor.index), this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (base_value as VALUE.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else {

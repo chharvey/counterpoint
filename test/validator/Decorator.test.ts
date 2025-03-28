@@ -136,7 +136,7 @@ describe('Decorator', () => {
 				% (type_map_literal)
 			`]],
 
-			['Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndexType', [AST.ASTNodeIndexType, `
+			['Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
 				type T = U.1;
 				% (property_access_type)
 			`]],
