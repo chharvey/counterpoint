@@ -50,7 +50,7 @@
     "extrajs": "^0.25.0",
     "prebuildify": "^6.0.0",
     "tree-sitter-cli": "~0.24.5",
-    "tsx": "^4.14.1",
+    "tsx": "^4.19.3",
     "typescript": "~5.8.0"
   }
 }
