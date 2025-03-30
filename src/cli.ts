@@ -5,9 +5,6 @@ import {
 } from './CLI.class.ts';
 
 
-/** The current version of this project (as defined in `package.json`). */
-const VERSION: Promise<string> = Promise.resolve(PACKAGE.version);
-
 
 (async (): Promise<void> => {
 	const cli = new CLI(process.argv);
@@ -23,12 +20,12 @@ const VERSION: Promise<string> = Promise.resolve(PACKAGE.version);
 				console.log(`\n${ CLI.CONFIGTEXT }`);
 			}
 		}],
-		[Command.VERSION, async () => {
-			console.log(`counterpoint version ${ await VERSION }`);
+		[Command.VERSION, () => {
+			console.log(`counterpoint version ${ PACKAGE.version }`);
 		}],
 		[Command.COMPILE, handleCompileOrDev],
 		[Command.DEV,     handleCompileOrDev],
-		[Command.RUN, async () => {
+		[Command.RUN,     async () => {
 			const result: [string, ...unknown[]] = await cli.run(process.cwd());
 			console.log(result[0]);
 			console.log('Result:', result.slice(1));
