@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {TypeErrorNoEntry} from '../../index.ts';
 import type {IntRange} from '../../lib/index.ts';
 import type {

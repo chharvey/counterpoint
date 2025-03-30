@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {VoidError01} from '../../index.ts';
 import type {AST} from '../../validator/index.ts';

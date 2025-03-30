@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import {BinVect} from '../../src/index.ts';
