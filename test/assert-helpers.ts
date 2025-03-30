@@ -4,8 +4,8 @@ import * as xjs from 'extrajs';
 import {
 	type SubclassOf,
 	assert_instanceof,
-} from '../src/lib/index.js';
-import type {TYPE} from '../src/index.js';
+} from '../src/lib/index.ts';
+import type {TYPE} from '../src/index.ts';
 
 
 

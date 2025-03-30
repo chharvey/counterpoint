@@ -3,8 +3,8 @@ import {
 	AST,
 	TYPE,
 	TypeErrorInvalidOperation,
-} from '../../../src/index.js';
-import {typeUnit} from '../../helpers.js';
+} from '../../../src/index.ts';
+import {typeUnit} from '../../helpers.ts';
 
 
 

@@ -1,9 +1,9 @@
 import {
 	VALUE,
 	TYPE,
-} from '../../index.js';
-import type {CPConfig} from '../../core/index.js';
-import {Validator} from '../index.js';
+} from '../../index.ts';
+import type {CPConfig} from '../../core/index.ts';
+import {Validator} from '../index.ts';
 
 
 

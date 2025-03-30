@@ -1,6 +1,6 @@
-import type {SyntaxNodeFamily} from '../utils-private.js';
-import type {ASTNodeType} from './index.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
+import type {ASTNodeType} from './index.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 

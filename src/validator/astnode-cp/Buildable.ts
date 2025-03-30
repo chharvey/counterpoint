@@ -1,5 +1,5 @@
 import type binaryen from 'binaryen';
-import type {ASTNodeCP} from './ASTNodeCP.js';
+import type {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 

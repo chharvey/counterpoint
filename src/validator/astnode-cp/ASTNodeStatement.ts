@@ -1,14 +1,14 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
-import {BinVect} from '../../index.js';
-import {TYPE} from '../../index.js';
+import {BinVect} from '../../index.ts';
+import {TYPE} from '../../index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import {ASTNodeGoal} from './index.js';
-import type {Buildable} from './Buildable.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+} from '../../core/index.ts';
+import {ASTNodeGoal} from './index.ts';
+import type {Buildable} from './Buildable.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 

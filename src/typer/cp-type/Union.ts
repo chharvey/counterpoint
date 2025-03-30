@@ -1,31 +1,31 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
-import type {TypeEntry} from '../utils-public.js';
+import type {TypeEntry} from '../utils-public.ts';
 import {
 	languageValuesIdentical,
 	strictEqual,
 	memoizeBinOp,
-} from '../utils-private.js';
-import type * as VALUE from '../cp-value/index.js';
+} from '../utils-private.ts';
+import type * as VALUE from '../cp-value/index.ts';
 import {
 	Tuple as TypeTuple,
 	Record as TypeRecord,
 	NEVER,
-} from './index.js';
+} from './index.ts';
 import {
 	type ReadonlyArrayOfAtLeast2,
 	language_types_equal,
-} from './utils-private.js';
+} from './utils-private.ts';
 import {
 	typeConstant,
 	unionRules,
 	differenceRules,
 	subtypeRules,
 	type Type,
-} from './Type.js';
-import {botOrTopString} from './TypeOperation.js';
-import {Intersection} from './Intersection.js';
-import {Combinable} from './Combinable.js';
+} from './Type.ts';
+import {botOrTopString} from './TypeOperation.ts';
+import {Intersection} from './Intersection.ts';
+import {Combinable} from './Combinable.ts';
 
 
 

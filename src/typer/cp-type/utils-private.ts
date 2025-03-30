@@ -1,14 +1,14 @@
-import {Keyword} from '../../parser/index.js';
+import {Keyword} from '../../parser/index.ts';
 import {
 	Operator,
 	type ValidAccessOperator,
-} from '../../validator/index.js';
-import type {TypeEntry} from '../utils-public.js';
+} from '../../validator/index.ts';
+import type {TypeEntry} from '../utils-public.ts';
 import {
 	type Type,
 	VOID,
 	NULL,
-} from './index.js';
+} from './index.ts';
 
 
 

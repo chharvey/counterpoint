@@ -10,13 +10,13 @@ import {
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
 	MutabilityError01,
-} from '../../../src/index.js';
-import {assert_instanceof} from '../../../src/lib/index.js';
+} from '../../../src/index.ts';
+import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assertAssignable,
 	assertEqualBins,
-} from '../../assert-helpers.js';
-import {typeUnit} from '../../helpers.js';
+} from '../../assert-helpers.ts';
+import {typeUnit} from '../../helpers.ts';
 
 
 

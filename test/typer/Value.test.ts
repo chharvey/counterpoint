@@ -3,9 +3,9 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	BinVect,
-} from '../../src/index.js';
-import {assertEqualBins} from '../assert-helpers.js';
-import {buildConst} from '../helpers.js';
+} from '../../src/index.ts';
+import {assertEqualBins} from '../assert-helpers.ts';
+import {buildConst} from '../helpers.ts';
 
 
 

@@ -7,8 +7,8 @@ import {
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
-} from '../../../src/index.js';
-import {typeUnit} from '../../helpers.js';
+} from '../../../src/index.ts';
+import {typeUnit} from '../../helpers.ts';
 
 
 describe('ASTNodeType', () => {

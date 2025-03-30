@@ -1,4 +1,4 @@
-import {LexError} from './LexError.js';
+import {LexError} from './LexError.ts';
 
 
 

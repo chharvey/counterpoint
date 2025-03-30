@@ -1,8 +1,8 @@
-import {Null} from './Null.js';
-import {Boolean as ValueBoolean} from './Boolean.js';
-import {Integer} from './Integer.js';
-import {Float} from './Float.js';
-import {String as ValueString} from './String.js';
+import {Null} from './Null.ts';
+import {Boolean as ValueBoolean} from './Boolean.ts';
+import {Integer} from './Integer.ts';
+import {Float} from './Float.ts';
+import {String as ValueString} from './String.ts';
 
 
 

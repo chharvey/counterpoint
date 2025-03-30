@@ -1,12 +1,12 @@
 import type binaryen from 'binaryen';
-import {assert_instanceof} from '../../lib/index.js';
+import {assert_instanceof} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import type {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ASTNodeExpression} from './ASTNodeExpression.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 

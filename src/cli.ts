@@ -3,7 +3,7 @@ import * as path from 'path';
 import {
 	CLI,
 	Command,
-} from './CLI.class.js';
+} from './CLI.class.ts';
 
 const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 

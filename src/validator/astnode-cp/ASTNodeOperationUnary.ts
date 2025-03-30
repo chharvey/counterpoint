@@ -7,26 +7,26 @@ import {
 	BinVect,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeSupertype} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidOperatorUnary,
-} from '../Operator.js';
+} from '../Operator.ts';
 import {
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
-} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 
 

@@ -1,14 +1,14 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
-import type {CodeUnit} from '../../lib/index.js';
+import type {CodeUnit} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../utils-private.js';
-import type {Value} from './Value.js';
-import {Primitive} from './Primitive.js';
+} from '../utils-private.ts';
+import type {Value} from './Value.ts';
+import {Primitive} from './Primitive.ts';
 
 
 

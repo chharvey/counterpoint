@@ -1,22 +1,22 @@
 import * as xjs from 'extrajs';
-import {TYPE} from '../index.js';
+import {TYPE} from '../index.ts';
 import {
 	languageValuesIdentical,
 	language_values_equal,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../utils-private.js';
+} from '../utils-private.ts';
 import {
 	FALSE,
 	TRUE,
-} from './index.js';
+} from './index.ts';
 import {
 	identical,
 	type Value,
-} from './Value.js';
-import type {Boolean as ValueBoolean} from './Boolean.js';
-import {Collection} from './Collection.js';
+} from './Value.ts';
+import type {Boolean as ValueBoolean} from './Boolean.ts';
+import {Collection} from './Collection.ts';
 
 
 

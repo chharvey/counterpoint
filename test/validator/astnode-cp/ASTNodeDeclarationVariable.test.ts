@@ -8,16 +8,16 @@ import {
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotAssignable,
-} from '../../../src/index.js';
-import {assert_instanceof} from '../../../src/lib/index.js';
+} from '../../../src/index.ts';
+import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assertAssignable,
 	assertEqualBins,
-} from '../../assert-helpers.js';
+} from '../../assert-helpers.ts';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
-} from '../../helpers.js';
+} from '../../helpers.ts';
 
 
 

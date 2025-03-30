@@ -6,7 +6,7 @@ import {
 	TypeErrorNotAssignable,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
-} from '../../../src/index.js';
+} from '../../../src/index.ts';
 
 
 

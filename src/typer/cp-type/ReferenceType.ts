@@ -1,6 +1,6 @@
-import {assert_context_name} from '../../lib/index.js';
-import {OBJ} from './index.js';
-import {Type} from './Type.js';
+import {assert_context_name} from '../../lib/index.ts';
+import {OBJ} from './index.ts';
+import {Type} from './Type.ts';
 
 
 

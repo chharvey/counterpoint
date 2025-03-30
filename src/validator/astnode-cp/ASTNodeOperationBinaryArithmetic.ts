@@ -7,31 +7,31 @@ import {
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeSupertype} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidOperatorArithmetic,
-} from '../Operator.js';
+} from '../Operator.ts';
 import {
 	bothNumeric,
 	eitherFloats,
 	bothInts,
 	bothFloats,
-} from './utils-private.js';
+} from './utils-private.ts';
 import {
 	buildDeco,
 	ASTNodeExpression,
-} from './ASTNodeExpression.js';
-import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
 

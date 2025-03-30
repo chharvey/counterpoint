@@ -1,11 +1,11 @@
 import type binaryen from 'binaryen';
-import {BinVect} from '../../index.js';
+import {BinVect} from '../../index.ts';
 import {
 	strictEqual,
 	instanceOf,
-} from '../utils-private.js';
-import type {Value} from './Value.js';
-import {Primitive} from './Primitive.js';
+} from '../utils-private.ts';
+import type {Value} from './Value.ts';
+import {Primitive} from './Primitive.ts';
 
 
 

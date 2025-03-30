@@ -1,6 +1,6 @@
 import type {SyntaxNode} from 'tree-sitter';
-import {stringifyAttributes} from '../core/index.js';
-import {Punctuator} from './Punctuator.js';
+import {stringifyAttributes} from '../core/index.ts';
+import {Punctuator} from './Punctuator.ts';
 
 
 

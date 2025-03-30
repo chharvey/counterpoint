@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {
 	CLI,
 	Command,
-} from '../src/CLI.class.js';
+} from '../src/CLI.class.ts';
 
 
 

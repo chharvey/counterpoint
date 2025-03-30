@@ -6,9 +6,9 @@ import {
 	CONFIG_DEFAULT,
 	KEYWORDS,
 	Validator,
-} from '../../src/index.js';
-import type {CodeUnit} from '../../src/lib/index.js';
-import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.js';
+} from '../../src/index.ts';
+import type {CodeUnit} from '../../src/lib/index.ts';
+import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.ts';
 
 
 

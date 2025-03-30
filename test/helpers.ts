@@ -5,7 +5,7 @@ import {
 	CONFIG_DEFAULT,
 	VALUE,
 	type TYPE,
-} from '../src/index.js';
+} from '../src/index.ts';
 
 
 

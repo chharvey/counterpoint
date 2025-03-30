@@ -1,7 +1,7 @@
 import binaryen from 'binaryen';
 import * as fs from 'fs';
 import * as path from 'path';
-import {BinVect} from './BinVect.js';
+import {BinVect} from './BinVect.ts';
 
 
 

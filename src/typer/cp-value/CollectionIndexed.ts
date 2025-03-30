@@ -1,22 +1,22 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {VoidError01} from '../../index.js';
-import type {AST} from '../../validator/index.js';
+import {VoidError01} from '../../index.ts';
+import type {AST} from '../../validator/index.ts';
 import {
 	language_values_equal,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../utils-private.js';
-import {NULL} from './index.js';
+} from '../utils-private.ts';
+import {NULL} from './index.ts';
 import {
 	identical,
 	type Value,
-} from './Value.js';
-import type {Null} from './Null.js';
-import type {Integer} from './Integer.js';
-import {Collection} from './Collection.js';
+} from './Value.ts';
+import type {Null} from './Null.ts';
+import type {Integer} from './Integer.ts';
+import {Collection} from './Collection.ts';
 
 
 

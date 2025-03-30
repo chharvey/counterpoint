@@ -1,5 +1,5 @@
-import type {AST} from '../validator/index.js';
-import {ReferenceError} from './ReferenceError.js';
+import type {AST} from '../validator/index.ts';
+import {ReferenceError} from './ReferenceError.ts';
 
 
 

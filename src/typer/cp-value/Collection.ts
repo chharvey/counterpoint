@@ -1,5 +1,5 @@
 import type binaryen from 'binaryen';
-import {Value} from './Value.js';
+import {Value} from './Value.ts';
 
 
 

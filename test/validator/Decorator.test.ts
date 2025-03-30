@@ -10,7 +10,7 @@ import {
 	TS_PARSER,
 	AST,
 	DECORATOR,
-} from '../../src/index.js';
+} from '../../src/index.ts';
 
 
 

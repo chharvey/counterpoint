@@ -4,30 +4,30 @@ import {
 	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeSupertype} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidOperatorComparative,
-} from '../Operator.js';
+} from '../Operator.ts';
 import {
 	bothNumeric,
 	bothFloats,
 	neitherFloats,
-} from './utils-private.js';
+} from './utils-private.ts';
 import {
 	buildDeco,
 	ASTNodeExpression,
-} from './ASTNodeExpression.js';
-import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
 

@@ -1,10 +1,10 @@
-import type {TYPE} from '../../index.js';
+import type {TYPE} from '../../index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import {ASTNodeDeclarationType} from './index.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+} from '../../core/index.ts';
+import {ASTNodeDeclarationType} from './index.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 

@@ -3,17 +3,17 @@ import type binaryen from 'binaryen';
 import {
 	type TYPE,
 	AssignmentErrorDuplicateDeclaration,
-} from '../../index.js';
-import {assert_instanceof} from '../../lib/index.js';
+} from '../../index.ts';
+import {assert_instanceof} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import {SymbolStructureType} from '../index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import type {ASTNodeType} from './ASTNodeType.js';
-import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
-import {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../core/index.ts';
+import {SymbolStructureType} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ASTNodeType} from './ASTNodeType.ts';
+import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
