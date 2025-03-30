@@ -1,15 +1,12 @@
-import {requireJSON} from '@chharvey/requirejson';
-import * as path from 'path';
+import PACKAGE from '../package.json' with {type: 'json'};
 import {
 	CLI,
 	Command,
 } from './CLI.class.ts';
 
-const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
-
 
 /** The current version of this project (as defined in `package.json`). */
-const VERSION: Promise<string> = (requireJSON(path.join(DIRNAME, '../package.json')) as Promise<{version: string}>).then((pkg) => pkg.version);
+const VERSION: Promise<string> = Promise.resolve(PACKAGE.version);
 
 
 (async (): Promise<void> => {
