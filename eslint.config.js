@@ -1,5 +1,6 @@
 import eslint from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
+import import_plugin from 'eslint-plugin-import';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -30,6 +31,7 @@ export default [
 		plugins:       {
 			'@stylistic':         stylistic,
 			'@typescript-eslint': tseslint.plugin,
+			'@import':            import_plugin,
 		},
 
 		rules: {
@@ -199,6 +201,18 @@ export default [
 			'func-names':                                     ['error', 'never'],
 			'@typescript-eslint/no-import-type-side-effects': 'error',
 			'prefer-arrow-callback':                          ['error', {allowUnboundThis: false}],
+
+			/* ### eslint-plugin-import: Helpful Warnings */
+			'@import/no-deprecated':         'warn',
+			'@import/no-empty-named-blocks': 'error',
+			'@import/no-mutable-exports':    'error',
+
+			/* ### eslint-plugin-import: Style Guide */
+			'@import/first':                'error',
+			'@import/newline-after-import': ['error', {count: 3}],
+			'@import/no-duplicates':        'error',
+			'@import/no-named-default':     'error',
+			'@import/no-default-export':    'error',
 
 			/* ## Strictness */
 			'@typescript-eslint/explicit-member-accessibility': 'error',
