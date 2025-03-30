@@ -1,7 +1,9 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
-import {BinVect} from '../../index.ts';
-import {TYPE} from '../../index.ts';
+import {
+	TYPE,
+	BinVect,
+} from '../../index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,

@@ -6,6 +6,7 @@ import tseslint from 'typescript-eslint';
 
 
 
+// eslint-disable-next-line @import/no-default-export --- eslint expects a default export
 export default [
 	{
 		ignores: [

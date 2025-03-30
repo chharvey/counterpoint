@@ -5,6 +5,7 @@ import {BinVect} from '../../src/index.ts';
 import {assertEqualBins as assert_equal_bins} from '../assert-helpers.ts';
 
 
+
 describe('BinVect', () => {
 	const MOD = new binaryen.Module();
 
