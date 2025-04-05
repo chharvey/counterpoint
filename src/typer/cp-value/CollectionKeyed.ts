@@ -26,7 +26,10 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 		super();
 	}
 
-	/** @final */
+	/**
+	 * @final
+	 * @implements Value
+	 */
 	public override get isEmpty(): boolean {
 		return this.properties.size === 0;
 	}

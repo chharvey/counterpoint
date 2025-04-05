@@ -30,7 +30,10 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 		super();
 	}
 
-	/** @final */
+	/**
+	 * @final
+	 * @implements Value
+	 */
 	public override get isEmpty(): boolean {
 		return this.items.length === 0;
 	}

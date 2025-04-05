@@ -34,12 +34,15 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		this.cases = uniques;
 	}
 
-	public override toString(): string {
-		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
-	}
-
+	/**
+	 * @implements Value
+	 */
 	public override get isEmpty(): boolean {
 		return this.cases.size === 0;
+	}
+
+	public override toString(): string {
+		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
 	}
 
 	/** @final */

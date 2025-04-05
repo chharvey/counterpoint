@@ -29,6 +29,9 @@ class ValueString extends Primitive {
 			: data;
 	}
 
+	/**
+	 * @implements Value
+	 */
 	public override get isEmpty(): boolean {
 		return this.codeunits.length === 0;
 	}

@@ -12,6 +12,7 @@ import type {Float} from './index.js';
 abstract class ValueNumber<T = unknown> extends Primitive {
 	/**
 	 * @final
+	 * @implements Value
 	 */
 	public override get isEmpty(): boolean {
 		return this.eq0();
