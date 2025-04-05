@@ -18,7 +18,7 @@ import {Number as ValueNumber} from './Number.js';
  * @final
  */
 export class Float extends ValueNumber<Float> {
-	public constructor(private readonly data: number = 0) {
+	public constructor(private readonly data: number = 0.0) {
 		super();
 		xjs.Number.assertType(this.data, xjs.NumericType.FINITE);
 	}
