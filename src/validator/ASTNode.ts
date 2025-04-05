@@ -1,5 +1,5 @@
-import {stringifyAttributes} from '../core/index.js';
-import type {Serializable} from '../parser/index.js';
+import {stringifyAttributes} from '../core/index.ts';
+import type {Serializable} from '../parser/index.ts';
 
 
 

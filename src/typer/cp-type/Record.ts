@@ -1,24 +1,24 @@
-import * as assert from 'assert';
-import {TypeErrorNoEntry} from '../../index.js';
-import type {IntRange} from '../../lib/index.js';
+import * as assert from 'node:assert';
+import {TypeErrorNoEntry} from '../../index.ts';
+import type {IntRange} from '../../lib/index.ts';
 import type {
 	ValidAccessOperator,
 	AST,
-} from '../../validator/index.js';
-import type {TypeEntry} from '../utils-public.js';
+} from '../../validator/index.ts';
+import type {TypeEntry} from '../utils-public.ts';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../utils-private.js';
-import * as VALUE from '../cp-value/index.js';
-import {updateAccessedStaticType} from './utils-private.js';
+} from '../utils-private.ts';
+import * as VALUE from '../cp-value/index.ts';
+import {updateAccessedStaticType} from './utils-private.ts';
 import {
 	subtypeRules,
 	type Type,
-} from './Type.js';
-import {Union} from './Union.js';
-import {ValueType} from './ValueType.js';
+} from './Type.ts';
+import {Union} from './Union.ts';
+import {ValueType} from './ValueType.ts';
 
 
 

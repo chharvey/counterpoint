@@ -1,6 +1,6 @@
-import {TYPE} from '../index.js';
-import type {Value} from './Value.js';
-import {CollectionKeyed} from './CollectionKeyed.js';
+import {TYPE} from '../index.ts';
+import type {Value} from './Value.ts';
+import {CollectionKeyed} from './CollectionKeyed.ts';
 
 
 

@@ -1,5 +1,5 @@
-import type {Type} from './Type.js';
-import {TypeOperation} from './TypeOperation.js';
+import type {Type} from './Type.ts';
+import {TypeOperation} from './TypeOperation.ts';
 
 
 

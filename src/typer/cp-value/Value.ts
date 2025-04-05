@@ -1,8 +1,8 @@
 import type binaryen from 'binaryen';
-import {assert_context_name} from '../../lib/index.js';
-import {strictEqual} from '../utils-private.js';
-import type {TYPE} from '../index.js';
-import {String as ValueString} from './index.js';
+import {assert_context_name} from '../../lib/index.ts';
+import {strictEqual} from '../utils-private.ts';
+import type {TYPE} from '../index.ts';
+import {String as ValueString} from './index.ts';
 
 
 

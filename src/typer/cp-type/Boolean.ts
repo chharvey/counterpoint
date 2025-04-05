@@ -1,6 +1,6 @@
-import {instanceOf} from '../utils-private.js';
-import * as VALUE from '../cp-value/index.js';
-import {ValueType} from './ValueType.js';
+import {instanceOf} from '../utils-private.ts';
+import * as VALUE from '../cp-value/index.ts';
+import {ValueType} from './ValueType.ts';
 
 
 

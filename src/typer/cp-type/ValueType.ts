@@ -1,4 +1,4 @@
-import {Type} from './Type.js';
+import {Type} from './Type.ts';
 
 
 

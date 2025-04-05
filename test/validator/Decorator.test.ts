@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type Parser from 'tree-sitter';
 import {
 	Query,
@@ -10,7 +10,7 @@ import {
 	TS_PARSER,
 	AST,
 	DECORATOR,
-} from '../../src/index.js';
+} from '../../src/index.ts';
 
 
 

@@ -1,11 +1,11 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	VALUE,
 	type TYPE,
-} from '../src/index.js';
+} from '../src/index.ts';
 
 
 

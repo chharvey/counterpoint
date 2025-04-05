@@ -1,10 +1,10 @@
 import {
 	strictEqual,
 	memoizeBinOp,
-} from '../utils-private.js';
-import * as VALUE from '../cp-value/index.js';
-import type {Type} from './Type.js';
-import {ReferenceType} from './ReferenceType.js';
+} from '../utils-private.ts';
+import * as VALUE from '../cp-value/index.ts';
+import type {Type} from './Type.ts';
+import {ReferenceType} from './ReferenceType.ts';
 
 
 

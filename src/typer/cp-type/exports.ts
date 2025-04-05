@@ -1,14 +1,14 @@
-import * as VALUE from '../cp-value/index.js';
-import type {Type} from './Type.js';
-import type {Unit} from './Unit.js';
-import {Never} from './Never.js';
-import {Void} from './Void.js';
-import {Unknown} from './Unknown.js';
-import {Boolean as TypeBoolean} from './Boolean.js';
-import {Integer} from './Integer.js';
-import {Float} from './Float.js';
-import {String as TypeString} from './String.js';
-import {Object as TypeObject} from './Object.js';
+import * as VALUE from '../cp-value/index.ts';
+import type {Type} from './Type.ts';
+import type {Unit} from './Unit.ts';
+import {Never} from './Never.ts';
+import {Void} from './Void.ts';
+import {Unknown} from './Unknown.ts';
+import {Boolean as TypeBoolean} from './Boolean.ts';
+import {Integer} from './Integer.ts';
+import {Float} from './Float.ts';
+import {String as TypeString} from './String.ts';
+import {Object as TypeObject} from './Object.ts';
 
 
 

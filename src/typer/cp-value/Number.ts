@@ -1,5 +1,5 @@
-import {Primitive} from './Primitive.js';
-import type {Float} from './index.js';
+import {Primitive} from './Primitive.ts';
+import type {Float} from './index.ts';
 
 
 

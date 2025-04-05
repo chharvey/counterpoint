@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
 	AST,
 	type TypeEntry,
@@ -7,8 +7,9 @@ import {
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
-} from '../../../src/index.js';
-import {typeUnit} from '../../helpers.js';
+} from '../../../src/index.ts';
+import {typeUnit} from '../../helpers.ts';
+
 
 
 describe('ASTNodeType', () => {

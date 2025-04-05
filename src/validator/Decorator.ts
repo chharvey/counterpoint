@@ -1,18 +1,18 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type {SyntaxNode} from 'tree-sitter';
-import type {NonemptyArray} from '../lib/index.js';
+import type {NonemptyArray} from '../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
+} from '../core/index.ts';
 import {
 	Punctuator,
 	Keyword,
-} from '../parser/index.js';
+} from '../parser/index.ts';
 import {
 	Validator,
 	AST,
-} from './index.js';
+} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
@@ -20,7 +20,7 @@ import {
 	isSyntaxNodeFamily,
 	type SyntaxNodeSupertype,
 	isSyntaxNodeSupertype,
-} from './utils-private.js';
+} from './utils-private.ts';
 import {
 	Operator,
 	type ValidAccessOperator,
@@ -30,7 +30,7 @@ import {
 	type ValidOperatorComparative,
 	type ValidOperatorEquality,
 	type ValidOperatorLogical,
-} from './Operator.js';
+} from './Operator.ts';
 
 
 

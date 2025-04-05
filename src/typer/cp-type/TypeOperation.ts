@@ -1,11 +1,11 @@
-import {assert_context_name} from '../../lib/index.js';
-import type * as VALUE from '../cp-value/index.js';
+import {assert_context_name} from '../../lib/index.ts';
+import type * as VALUE from '../cp-value/index.ts';
 import {
 	NEVER,
 	UNKNOWN,
-} from './index.js';
-import type {ReadonlyArrayOfAtLeast2} from './utils-private.js';
-import {Type} from './Type.js';
+} from './index.ts';
+import type {ReadonlyArrayOfAtLeast2} from './utils-private.ts';
+import {Type} from './Type.ts';
 
 
 

@@ -1,18 +1,18 @@
-import * as assert from 'assert';
-import {VoidError01} from '../../index.js';
-import type {AST} from '../../validator/index.js';
+import * as assert from 'node:assert';
+import {VoidError01} from '../../index.ts';
+import type {AST} from '../../validator/index.ts';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../utils-private.js';
-import {NULL} from './index.js';
+} from '../utils-private.ts';
+import {NULL} from './index.ts';
 import {
 	identical,
 	type Value,
-} from './Value.js';
-import type {Null} from './Null.js';
-import {Collection} from './Collection.js';
+} from './Value.ts';
+import type {Null} from './Null.ts';
+import {Collection} from './Collection.ts';
 
 
 

@@ -4,7 +4,8 @@
 		// Type Checking
 		"noPropertyAccessFromIndexSignature": false,
 		// Modules
-		"module": "CommonJS",
+		"module":  "CommonJS",
+		"rootDir": "./",
 		// Emit
 		"outDir":         "./",
 		"removeComments": true,

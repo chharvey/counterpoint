@@ -1,11 +1,11 @@
-import {TYPE} from '../index.js';
+import {TYPE} from '../index.ts';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../utils-private.js';
-import type {Value} from './Value.js';
-import {CollectionKeyed} from './CollectionKeyed.js';
+} from '../utils-private.ts';
+import type {Value} from './Value.ts';
+import {CollectionKeyed} from './CollectionKeyed.ts';
 
 
 

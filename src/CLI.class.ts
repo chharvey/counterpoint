@@ -1,12 +1,12 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import * as xjs from 'extrajs';
-import * as fs from 'fs';
-import * as path from 'path';
 import minimist from 'minimist'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from './core/index.js';
-import {Program} from './Program.js';
+} from './core/index.ts';
+import {Program} from './Program.ts';
 
 
 

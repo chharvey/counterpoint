@@ -3,17 +3,17 @@ import {
 	languageValuesIdentical,
 	strictEqual,
 	memoizeBinOp,
-} from '../utils-private.js';
-import type * as VALUE from '../cp-value/index.js';
+} from '../utils-private.ts';
+import type * as VALUE from '../cp-value/index.ts';
 import {
 	subtypeRules,
 	type Type,
-} from './Type.js';
+} from './Type.ts';
 import {
 	botOrTopString,
 	TypeOperation,
-} from './TypeOperation.js';
-import {Union} from './Union.js';
+} from './TypeOperation.ts';
+import {Union} from './Union.ts';
 
 
 

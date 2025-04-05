@@ -1,18 +1,18 @@
 import {
 	TYPE,
 	TypeError,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import {ASTNodeType} from './ASTNodeType.js';
-import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.ts';
 
 
 
