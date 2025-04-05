@@ -34,12 +34,22 @@ class ValueSet<T extends Value = Value> extends Collection {
 		this.elements = uniques;
 	}
 
-	public override toString(): string {
-		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
-	}
-
+	/**
+	 * @implements Value
+	 */
 	public override get isEmpty(): boolean {
 		return this.elements.size === 0;
+	}
+
+	/**
+	 * @implements Collection
+	 */
+	public override get count(): bigint {
+		return BigInt(this.elements.size);
+	}
+
+	public override toString(): string {
+		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
 	}
 
 	/** @final */

@@ -207,18 +207,23 @@ describe('Value', () => {
 				);
 			});
 			it('does not overwrite non-identical (even if equal) elements.', () => {
-				assert.deepStrictEqual(
-					new VALUE.Set(new Set([
-						new VALUE.String('a'),
-						new VALUE.Float(0.0),
-						new VALUE.Float(-0.0),
-					])),
-					new VALUE.Set(new Set([
-						new VALUE.String('a'),
-						new VALUE.Float(0.0),
-						new VALUE.Float(-0.0),
-					])),
-				);
+				assert.strictEqual(new VALUE.Set(new Set([
+					VALUE.FLOAT_0,
+					VALUE.FLOAT_N0,
+				])).count, 2n);
+			});
+		});
+
+		describe('#get', () => {
+			it('compares by identity, not equality', () => {
+				const tuples = new VALUE.Set(new Set([new VALUE.Tuple()]));
+				assert.strictEqual(tuples.get(new VALUE.Tuple()), VALUE.TRUE, 'returns true when testing identical value types.');
+
+				const lists = new VALUE.Set(new Set([new VALUE.List()]));
+				assert.strictEqual(lists.get(new VALUE.List()), VALUE.FALSE, 'returns false when testing non-identical, even if equal, reference types.');
+
+				const floats = new VALUE.Set(new Set([VALUE.FLOAT_0]));
+				assert.strictEqual(floats.get(VALUE.FLOAT_N0), VALUE.FALSE, 'returns false when testing non-identical, even if equal, value types (floating zeros are the only case of this).');
 			});
 		});
 	});
