@@ -38,6 +38,14 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 		return this.items.length === 0;
 	}
 
+	/**
+	 * @final
+	 * @implements Collection
+	 */
+	public override get count(): bigint {
+		return BigInt(this.items.length);
+	}
+
 	public override toString(): string {
 		return `[${ this.items.map((it) => it.toString()).join(', ') }]`;
 	}

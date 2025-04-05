@@ -34,6 +34,14 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 		return this.properties.size === 0;
 	}
 
+	/**
+	 * @final
+	 * @implements Collection
+	 */
+	public override get count(): bigint {
+		return BigInt(this.properties.size);
+	}
+
 	public override toString(): string {
 		return `[${ [...this.properties].map(([key, value]) => `${ key }n= ${ value }`).join(', ') }]`;
 	}

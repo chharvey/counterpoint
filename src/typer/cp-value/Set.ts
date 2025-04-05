@@ -41,6 +41,13 @@ class ValueSet<T extends Value = Value> extends Collection {
 		return this.elements.size === 0;
 	}
 
+	/**
+	 * @implements Collection
+	 */
+	public override get count(): bigint {
+		return BigInt(this.elements.size);
+	}
+
 	public override toString(): string {
 		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
 	}

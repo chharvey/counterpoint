@@ -41,6 +41,13 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		return this.cases.size === 0;
 	}
 
+	/**
+	 * @implements Collection
+	 */
+	public override get count(): bigint {
+		return BigInt(this.cases.size);
+	}
+
 	public override toString(): string {
 		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
 	}
