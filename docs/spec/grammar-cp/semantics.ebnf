@@ -81,7 +81,7 @@ SemanticExpression =:=
 
 
 
-SemanticConstant[value: Null | Boolean | Number | String]
+SemanticConstant[value: Null | Boolean | Symbol | Number | String]
 	::= ();
 
 SemanticVariable[id: RealNumber]

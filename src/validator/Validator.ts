@@ -13,7 +13,11 @@ import {
 	type Serializable,
 } from '../parser/index.js';
 import type {SymbolStructure} from './index.js';
-import {utf8Encode} from './utils-private.js';
+import {
+	type SyntaxNodeType,
+	isSyntaxNodeType,
+	utf8Encode,
+} from './utils-private.js';
 
 
 
@@ -325,12 +329,24 @@ export class Validator {
 	}
 
 	/**
-	 * Give a uniquely-generated integer identifier of a custom identifier token.
+	 * Give a uniquely-generated integer identifier of a custom language identifier token.
 	 * @param source the token’s text
 	 * @return       the unique id identifying the token
 	 */
 	public cookTokenIdentifier(source: string): bigint {
 		this.identifiers.add(source);
 		return BigInt([...this.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
+	}
+
+	/**
+	 * Return the integer identifier (ID) of a given word,
+	 * whether it be a reserved keyword, the name of a constant, or a language identifier.
+	 * @param word the SyntaxNode to get the ID of
+	 * @return     if the word is reserved or has already been cooked, its existing ID; else a new ID
+	 */
+	public wordNodeID(word: SyntaxNodeType<'word'>): bigint {
+		return isSyntaxNodeType(word.children[0], 'identifier')
+			? this.cookTokenIdentifier(word.children[0].text)
+			: Validator.cookTokenKeyword(word.children[0].text as Keyword);
 	}
 }

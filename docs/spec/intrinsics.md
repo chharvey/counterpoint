@@ -36,6 +36,11 @@ There is only one `Null` object: `null`.
 `Boolean` objects are the binary logical values `true` and `false`.
 
 
+### `Symbol`
+`Symbol` objects are defined by the programmer and are only referenceable by name.
+Symbols are identical if and only if they have the same name.
+
+
 ### `Integer`
 `Integer` objects are integer numbers with 16-bit encodings.
 

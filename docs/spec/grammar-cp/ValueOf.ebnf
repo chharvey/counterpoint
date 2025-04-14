@@ -1,4 +1,4 @@
-Or<Null, Boolean, Number, String> ValueOf(SemanticConstant const) :=
+Or<Null, Boolean, Symbol, Number, String> ValueOf(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 ;
 

@@ -8,6 +8,7 @@ import {Type} from './Type.js';
  * - Never
  * - Void
  * - TypeBoolean
+ * - TypeSymbol
  * - Integer
  * - Float
  * - TypeString

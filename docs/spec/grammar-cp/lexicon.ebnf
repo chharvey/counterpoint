@@ -47,6 +47,7 @@ KeywordType :::=
 	| "never"
 	| "void"
 	| "bool"
+	| "sym"
 	| "int"
 	| "float"
 	| "str"

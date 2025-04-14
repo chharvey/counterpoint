@@ -5,6 +5,7 @@ import {Never} from './Never.js';
 import {Void} from './Void.js';
 import {Unknown} from './Unknown.js';
 import {Boolean as TypeBoolean} from './Boolean.js';
+import {Symbol as TypeSymbol} from './Symbol.js';
 import {Integer} from './Integer.js';
 import {Float} from './Float.js';
 import {String as TypeString} from './String.js';
@@ -17,6 +18,7 @@ import {Object as TypeObject} from './Object.js';
 /** The Top Type, containing all values.                      */ export const UNKNOWN: Unknown          = new Unknown();
 /** The Null Type.                                            */ export const NULL:    Unit<VALUE.Null> = VALUE.NULL.toType();
 /** The Boolean Type.                                         */ export const BOOL:    TypeBoolean      = new TypeBoolean();
+/** The Symbol Type.                                          */ export const SYM:     TypeSymbol       = new TypeSymbol();
 /** The Integer Type.                                         */ export const INT:     Integer          = new Integer();
 /** The Float Type.                                           */ export const FLOAT:   Float            = new Float();
 /** The String Type.                                          */ export const STR:     TypeString       = new TypeString();
@@ -29,6 +31,9 @@ export const FALSE: Unit<VALUE.Boolean> = VALUE.FALSE.toType();
 
 /** A Unit Type containing only the Counterpoint Language Value `true`. */
 export const TRUE: Unit<VALUE.Boolean> = VALUE.TRUE.toType();
+
+/** A Unit Type containing only the Counterpoint Language Value `@never`. */
+export const SYM_NEVER: Unit<VALUE.Symbol> = VALUE.SYM_NEVER.toType();
 
 
 

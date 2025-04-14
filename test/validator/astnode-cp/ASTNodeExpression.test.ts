@@ -21,6 +21,7 @@ import {
 	typeUnit,
 	buildConst,
 } from '../../helpers.js';
+import {extract_tokens} from '../../utils.js';
 
 
 
@@ -35,14 +36,15 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			it('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
-				const constants: AST.ASTNodeConstant[] = `
+				const constants: AST.ASTNodeConstant[] = extract_tokens(`
 					null  false  true
+					@then  @str  @false  @foobar
 					55  -55  033  -033  0  -0
 					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 					"42😀"  "42\\u{1f600}"
-				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
+				`).map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
 				assert.deepStrictEqual(
 					constants.map((c) => c.type()),
 					constants.map((c) => new TYPE.Unit(c.fold())),
@@ -53,15 +55,18 @@ describe('ASTNodeExpression', () => {
 
 		/* eslint-disable @stylistic/array-element-newline */
 		describe('#fold', () => {
-			it('computes null and boolean values.', () => {
-				assert.deepStrictEqual([
-					'null;',
-					'false;',
-					'true;',
-				].map((src) => AST.ASTNodeConstant.fromSource(src).fold()), [
+			it('computes null, boolean, and symbol values.', () => {
+				assert.deepStrictEqual(extract_tokens(`
+					null  false  true
+					@then  @str  @false  @foobar
+				`).map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).fold()), [
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
+					new VALUE.Symbol(0x8fn,  'then'),
+					new VALUE.Symbol(0x86n,  'str'),
+					new VALUE.Symbol(0x89n,  'false'),
+					new VALUE.Symbol(0x100n, 'foobar'),
 				]);
 			});
 			it('computes int values.', () => {
@@ -72,20 +77,20 @@ describe('ASTNodeExpression', () => {
 						integerRadices: true,
 					},
 				};
-				assert.deepStrictEqual(`
+				assert.deepStrictEqual(extract_tokens(`
 					55  -55  033  -033  0  -0
 					\\o55  -\\o55  \\q033  -\\q033
-				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`, integer_radices_on).fold()), [
+				`).map((src) => AST.ASTNodeConstant.fromSource(`${ src };`, integer_radices_on).fold()), [
 					55, -55, 33, -33, 0, 0,
 					parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
 				].map((v) => new VALUE.Integer(BigInt(v))));
 			});
 			it('computes float values.', () => {
-				assert.deepStrictEqual(`
+				assert.deepStrictEqual(extract_tokens(`
 					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).fold()), [
+				`).map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).fold()), [
 					2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					-0, 6.8, 6.8, 0, -0,
@@ -107,6 +112,8 @@ describe('ASTNodeExpression', () => {
 				['null;',    buildConst(mod)],
 				['false;',   buildConst(mod, false)],
 				['true;',    buildConst(mod, true)],
+				['@never;',  buildConst(mod, Symbol(0x80))],
+				['@hello;',  buildConst(mod, Symbol(0x100))],
 				['0;',       buildConst(mod, 0n)],
 				['+0;',      buildConst(mod, 0n)],
 				['-0;',      buildConst(mod, 0n)],

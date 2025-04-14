@@ -200,6 +200,7 @@ Simple types do not comprise other types.
 - [Unknown](#unknown)
 - [Null](#null)
 - [Boolean](#boolean)
+- [Symbol](#symbol)
 - [Integer](#integer)
 - [Float](#float)
 - [String](#string)
@@ -248,6 +249,10 @@ It represents an object without any semantics.
 #### Boolean
 The **Boolean** type has two logical values, called `true` and `false`,
 the only instances of [`Boolean`](./intrinsics.md#boolean).
+
+#### Symbol
+The **Symbol** type contains instances of [`Symbol`](./intrinsics.md#symbol).
+The meaning of each Symbol value may be specified by the programmer.
 
 #### Number
 The **Number** type represents numerical values.

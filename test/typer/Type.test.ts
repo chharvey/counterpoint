@@ -33,6 +33,7 @@ describe('Type', () => {
 		TYPE.UNKNOWN,
 		TYPE.NULL,
 		TYPE.BOOL,
+		TYPE.SYM,
 		TYPE.INT,
 		TYPE.FLOAT,
 		TYPE.STR,
@@ -83,6 +84,7 @@ describe('Type', () => {
 				TYPE.UNKNOWN,
 				TYPE.TRUE,
 				TYPE.BOOL,
+				TYPE.SYM,
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
@@ -117,9 +119,10 @@ describe('Type', () => {
 				TYPE.FALSE.union(TYPE.STR),
 			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${ t }\` to not be definitely truthy.`));
 		});
-		it('“valuable” primitive types are definitely truthy.', () => {
+		it('primitive value types are definitely truthy.', () => {
 			[
 				TYPE.TRUE,
+				TYPE.SYM,
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
@@ -151,6 +154,7 @@ describe('Type', () => {
 			[TYPE.OBJ,     TYPE.NEVER],
 			[TYPE.NULL,    TYPE.NULL],
 			[TYPE.BOOL,    TYPE.FALSE],
+			[TYPE.SYM,     TYPE.NEVER],
 			[TYPE.INT,     TYPE.NEVER],
 			[TYPE.FLOAT,   TYPE.NEVER],
 			[TYPE.STR,     TYPE.NEVER],
@@ -164,6 +168,7 @@ describe('Type', () => {
 			[TYPE.VOID,    TYPE.NEVER],
 			[TYPE.NULL,    TYPE.NEVER],
 			[TYPE.BOOL,    TYPE.TRUE],
+			[TYPE.SYM,     TYPE.SYM],
 			[TYPE.INT,     TYPE.INT],
 			[TYPE.FLOAT,   TYPE.FLOAT],
 			[TYPE.STR,     TYPE.STR],
@@ -515,6 +520,7 @@ describe('Type', () => {
 				TYPE.VOID,
 				TYPE.NULL,
 				TYPE.BOOL,
+				TYPE.SYM,
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
@@ -847,11 +853,12 @@ describe('Type', () => {
 			assert.ok(!VALUE.FLOAT_0.toType().equals(VALUE.FLOAT_N0.toType()));
 		});
 		it.skip('built-in types do not equal unit types of their canonical values.', () => {
-			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),    'bool  != false');
-			assert.ok(!TYPE.BOOL  .equals(TYPE.TRUE),     'bool  != true');
-			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),  'int   != 0');
-			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)), 'float != 0.0');
-			assert.ok(!TYPE.STR   .equals(typeUnit('')),  'str   != ""');
+			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),     'bool  != false');
+			assert.ok(!TYPE.BOOL  .equals(TYPE.TRUE),      'bool  != true');
+			assert.ok(!TYPE.SYM   .equals(TYPE.SYM_NEVER), 'sym   != @never');
+			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),   'int   != 0');
+			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)),  'float != 0.0');
+			assert.ok(!TYPE.STR   .equals(typeUnit('')),   'str   != ""');
 
 			assert.ok(!TYPE.INT  .equals(typeUnit(0n) .union(typeUnit(1n))),   'int   != 0   | 1');
 			assert.ok(!TYPE.FLOAT.equals(typeUnit(0.0).union(typeUnit(-0.0))), 'float != 0.0 | -0.0');

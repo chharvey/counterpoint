@@ -282,6 +282,7 @@ module.exports = grammar({
 			'never',
 			'void',
 			'bool',
+			'sym',
 			'int',
 			'float',
 			'str',
@@ -365,6 +366,7 @@ module.exports = grammar({
 			$.string__comment,
 			$.string__separator,
 			$.string__comment__separator,
+			seq('@', $.word),
 		),
 
 

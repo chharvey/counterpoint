@@ -7,6 +7,7 @@ import {Value} from './Value.js';
  * Known subclasses:
  * - Null
  * - ValueBoolean
+ * - ValueSymbol
  * - ValueNumber
  * - ValueString
  */
