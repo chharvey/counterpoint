@@ -2,22 +2,22 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
-} from './ASTNodeExpression.js';
-import type {ASTNodeConstant} from './ASTNodeConstant.js';
+} from './ASTNodeExpression.ts';
+import type {ASTNodeConstant} from './ASTNodeConstant.ts';
 
 
 

@@ -1,25 +1,25 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	VALUE,
 	TYPE,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import {Keyword} from '../../parser/index.js';
+} from '../../core/index.ts';
+import {Keyword} from '../../parser/index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
-} from '../utils-private.js';
-import {Validator} from '../Validator.js';
-import {valueOfTokenNumber} from './utils-private.js';
-import {ASTNodeType} from './ASTNodeType.js';
+} from '../utils-private.ts';
+import {Validator} from '../Validator.ts';
+import {valueOfTokenNumber} from './utils-private.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
 
 
 

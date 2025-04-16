@@ -1,11 +1,11 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
 	type TypeEntry,
 	VALUE,
 	TYPE,
-} from '../../src/index.js';
-import {assert_instanceof} from '../../src/lib/index.js';
-import {typeUnit} from '../helpers.js';
+} from '../../src/index.ts';
+import {assert_instanceof} from '../../src/lib/index.ts';
+import {typeUnit} from '../helpers.ts';
 
 
 

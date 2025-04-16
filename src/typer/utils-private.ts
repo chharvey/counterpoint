@@ -1,5 +1,5 @@
-import type {MethodDecorator} from '../lib/index.js';
-import type {VALUE} from './index.js';
+import type {MethodDecorator} from '../lib/index.ts';
+import type {VALUE} from './index.ts';
 
 
 

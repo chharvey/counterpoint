@@ -1,5 +1,5 @@
-import type {ASTNode} from '../validator/index.js';
-import {ErrorCode} from './ErrorCode.js';
+import type {ASTNode} from '../validator/index.ts';
+import {ErrorCode} from './ErrorCode.ts';
 
 
 

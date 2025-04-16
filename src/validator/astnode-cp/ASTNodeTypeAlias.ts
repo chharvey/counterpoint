@@ -1,30 +1,30 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
 	TYPE,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
+} from '../../core/index.ts';
 import {
 	SymbolKind,
 	type SymbolStructure,
 	SymbolStructureVar,
 	SymbolStructureType,
-} from '../index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	ValidIntrinsicName,
 	is_valid_intrinsic_name,
-} from './utils-private.js';
-import {ASTNodeType} from './ASTNodeType.js';
+} from './utils-private.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
 
 
 

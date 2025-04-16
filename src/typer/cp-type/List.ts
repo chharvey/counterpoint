@@ -2,17 +2,17 @@ import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../utils-private.js';
-import * as VALUE from '../cp-value/index.js';
-import {MUT_OPERATOR} from './utils-private.js';
+} from '../utils-private.ts';
+import * as VALUE from '../cp-value/index.ts';
+import {MUT_OPERATOR} from './utils-private.ts';
 import {
 	subtypeRules,
 	type Type,
-} from './Type.js';
+} from './Type.ts';
 import {
 	isObjectType,
 	ReferenceType,
-} from './ReferenceType.js';
+} from './ReferenceType.ts';
 
 
 

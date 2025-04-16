@@ -1,13 +1,13 @@
 import {
 	strictEqual,
 	memoizeBinOp,
-} from '../utils-private.js';
-import type * as VALUE from '../cp-value/index.js';
+} from '../utils-private.ts';
+import type * as VALUE from '../cp-value/index.ts';
 import {
 	subtypeRules,
 	type Type,
-} from './Type.js';
-import {ValueType} from './ValueType.js';
+} from './Type.ts';
+import {ValueType} from './ValueType.ts';
 
 
 

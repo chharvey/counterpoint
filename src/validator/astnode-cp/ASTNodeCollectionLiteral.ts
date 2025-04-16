@@ -1,16 +1,16 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {TYPE} from '../../index.js';
+import {TYPE} from '../../index.ts';
 import {
 	assert_context_name,
 	memoizeMethod,
-} from '../../lib/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import type {ASTNodeCP} from './ASTNodeCP.js';
+} from '../../lib/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ASTNodeCP} from './ASTNodeCP.ts';
 import {
 	buildDeco,
 	ASTNodeExpression,
-} from './ASTNodeExpression.js';
+} from './ASTNodeExpression.ts';
 
 
 

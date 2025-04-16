@@ -1,14 +1,14 @@
 import {
 	type NonemptyArray,
 	assert_instanceof,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import type {ValidTypeOperator} from '../Operator.js';
-import {ASTNodeType} from './ASTNodeType.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ValidTypeOperator} from '../Operator.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
 
 
 

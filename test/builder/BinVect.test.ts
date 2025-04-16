@@ -1,8 +1,9 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
-import {BinVect} from '../../src/index.js';
-import {assertEqualBins as assert_equal_bins} from '../assert-helpers.js';
+import {BinVect} from '../../src/index.ts';
+import {assertEqualBins as assert_equal_bins} from '../assert-helpers.ts';
+
 
 
 describe('BinVect', () => {

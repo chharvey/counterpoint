@@ -3,19 +3,19 @@ import {
 	type TYPE,
 	AssignmentErrorReassignment,
 	MutabilityError01,
-} from '../../index.js';
-import {assert_instanceof} from '../../lib/index.js';
+} from '../../index.ts';
+import {assert_instanceof} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SymbolStructureVar} from '../index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeVariable} from './ASTNodeVariable.js';
-import {ASTNodeAccess} from './ASTNodeAccess.js';
-import {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../core/index.ts';
+import type {SymbolStructureVar} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {ASTNodeExpression} from './ASTNodeExpression.ts';
+import {ASTNodeVariable} from './ASTNodeVariable.ts';
+import {ASTNodeAccess} from './ASTNodeAccess.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 

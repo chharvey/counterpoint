@@ -1,5 +1,5 @@
-import type {Serializable} from '../parser/index.js';
-import {ErrorCode} from './ErrorCode.js';
+import type {Serializable} from '../parser/index.ts';
+import {ErrorCode} from './ErrorCode.ts';
 
 
 

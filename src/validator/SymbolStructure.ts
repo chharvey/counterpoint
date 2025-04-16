@@ -1,8 +1,8 @@
 import {
 	type VALUE,
 	TYPE,
-} from '../index.js';
-import type * as AST from './astnode-cp/index.js';
+} from '../index.ts';
+import type * as AST from './astnode-cp/index.ts';
 
 
 

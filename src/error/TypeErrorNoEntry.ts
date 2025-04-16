@@ -1,6 +1,6 @@
-import type {AST} from '../validator/index.js';
-import type {TYPE} from '../typer/index.js';
-import {TypeError} from './TypeError.js';
+import type {AST} from '../validator/index.ts';
+import type {TYPE} from '../typer/index.ts';
+import {TypeError} from './TypeError.ts';
 
 
 

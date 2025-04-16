@@ -1,5 +1,5 @@
 import type binaryen from 'binaryen';
-import {Value} from './Value.js';
+import {Value} from './Value.ts';
 
 
 
@@ -11,6 +11,11 @@ import {Value} from './Value.js';
  * - ValueMap
  */
 export abstract class Collection extends Value {
+	/**
+	 * Return the number of items/properties/elements/cases in this collection.
+	 */
+	public abstract get count(): bigint;
+
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
 		mod;
 		throw new Error('`Collection#build` not yet supported.');

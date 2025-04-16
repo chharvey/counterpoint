@@ -5,31 +5,31 @@ import {
 	TYPE,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	type ArgCount,
 	ValidFunctionName,
 	invalid_function_name,
-} from './utils-private.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeType} from './ASTNodeType.js';
+} from './utils-private.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {ASTNodeType} from './ASTNodeType.ts';
 import {
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
-} from './ASTNodeExpression.js';
-import {ASTNodeVariable} from './ASTNodeVariable.js';
-import {ASTNodeTuple} from './ASTNodeTuple.js';
-import {ASTNodeRecord} from './ASTNodeRecord.js';
+} from './ASTNodeExpression.ts';
+import {ASTNodeVariable} from './ASTNodeVariable.ts';
+import {ASTNodeTuple} from './ASTNodeTuple.ts';
+import {ASTNodeRecord} from './ASTNodeRecord.ts';
 
 
 

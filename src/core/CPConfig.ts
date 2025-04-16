@@ -1,9 +1,6 @@
-import {requireJSONSync} from '@chharvey/requirejson';
-import * as path from 'path';
+export {default as CONFIG_DEFAULT} from './counterpoint-config.default.json' with {type: 'json'};
 
 
-
-const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 
 /**
  * Interface for compiler configurations.
@@ -51,5 +48,3 @@ export type CPConfig = {
 		readonly intCoercion:     boolean,
 	},
 };
-
-export const CONFIG_DEFAULT: CPConfig = requireJSONSync(path.join(DIRNAME, '../../src/core/counterpoint-config.default.json')) as CPConfig;

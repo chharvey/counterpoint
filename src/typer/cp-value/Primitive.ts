@@ -1,5 +1,5 @@
-import {TYPE} from '../index.js';
-import {Value} from './Value.js';
+import {TYPE} from '../index.ts';
+import {Value} from './Value.ts';
 
 
 

@@ -1,5 +1,5 @@
-import type {AST} from '../validator/index.js';
-import {TypeError} from './TypeError.js';
+import type {AST} from '../validator/index.ts';
+import {TypeError} from './TypeError.ts';
 
 
 

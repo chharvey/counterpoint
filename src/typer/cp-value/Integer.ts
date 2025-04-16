@@ -1,20 +1,20 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
-import {BinVect} from '../../index.js';
+import {BinVect} from '../../index.ts';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../utils-private.js';
+} from '../utils-private.ts';
 import {
 	Float,
 	INT_0,
-} from './index.js';
+} from './index.ts';
 import {
 	identical,
 	type Value,
-} from './Value.js';
-import {Number as ValueNumber} from './Number.js';
+} from './Value.ts';
+import {Number as ValueNumber} from './Number.ts';
 
 
 

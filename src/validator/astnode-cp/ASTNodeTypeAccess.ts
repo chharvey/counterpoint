@@ -1,20 +1,20 @@
 import {
 	VALUE,
 	TYPE,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import {Operator} from '../Operator.js';
-import {ASTNodeIndex} from './ASTNodeIndex.js';
-import {ASTNodeKey} from './ASTNodeKey.js';
-import {ASTNodeType} from './ASTNodeType.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {Operator} from '../Operator.ts';
+import {ASTNodeIndex} from './ASTNodeIndex.ts';
+import {ASTNodeKey} from './ASTNodeKey.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
 
 
 

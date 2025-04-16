@@ -1,5 +1,5 @@
-import {Primitive} from './Primitive.js';
-import type {Float} from './index.js';
+import {Primitive} from './Primitive.ts';
+import type {Float} from './index.ts';
 
 
 
@@ -12,6 +12,7 @@ import type {Float} from './index.js';
 abstract class ValueNumber<T = unknown> extends Primitive {
 	/**
 	 * @final
+	 * @implements Value
 	 */
 	public override get isEmpty(): boolean {
 		return this.eq0();

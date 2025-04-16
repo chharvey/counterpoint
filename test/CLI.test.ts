@@ -1,8 +1,8 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
 	CLI,
 	Command,
-} from '../src/CLI.class.js';
+} from '../src/CLI.class.ts';
 
 
 

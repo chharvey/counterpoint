@@ -1,15 +1,15 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {BinVect} from '../../index.js';
+import {BinVect} from '../../index.ts';
 import {
 	strictEqual,
 	instanceOf,
-} from '../utils-private.js';
+} from '../utils-private.ts';
 import {
 	identical,
 	type Value,
-} from './Value.js';
-import {Number as ValueNumber} from './Number.js';
+} from './Value.ts';
+import {Number as ValueNumber} from './Number.ts';
 
 
 
@@ -18,7 +18,7 @@ import {Number as ValueNumber} from './Number.js';
  * @final
  */
 export class Float extends ValueNumber<Float> {
-	public constructor(private readonly data: number = 0) {
+	public constructor(private readonly data: number = 0.0) {
 		super();
 		xjs.Number.assertType(this.data, xjs.NumericType.FINITE);
 	}

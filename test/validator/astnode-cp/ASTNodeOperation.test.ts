@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
@@ -11,19 +11,19 @@ import {
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
-} from '../../../src/index.js';
-import {assert_instanceof} from '../../../src/lib/index.js';
+} from '../../../src/index.ts';
+import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assertEqualTypes,
 	assertEqualBins,
-} from '../../assert-helpers.js';
+} from '../../assert-helpers.ts';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
 	CONFIG_FOLDING_COERCION_OFF,
 	typeUnit,
 	buildConst,
-} from '../../helpers.js';
+} from '../../helpers.ts';
 
 
 

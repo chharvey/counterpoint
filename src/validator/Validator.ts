@@ -1,23 +1,23 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
-import {LexError01} from '../index.js';
-import type {CodeUnit} from '../lib/index.js';
+import {LexError01} from '../index.ts';
+import type {CodeUnit} from '../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
+} from '../core/index.ts';
 import {
 	Punctuator,
 	type Keyword,
 	KEYWORDS,
 	type Serializable,
-} from '../parser/index.js';
-import type {SymbolStructure} from './index.js';
+} from '../parser/index.ts';
+import type {SymbolStructure} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
 	utf8Encode,
-} from './utils-private.js';
+} from './utils-private.ts';
 
 
 

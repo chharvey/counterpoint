@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	AST,
@@ -6,9 +6,9 @@ import {
 	SymbolStructureType,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
-} from '../../../src/index.js';
-import {assert_instanceof} from '../../../src/lib/index.js';
-import {assertEqualBins} from '../../assert-helpers.js';
+} from '../../../src/index.ts';
+import {assert_instanceof} from '../../../src/lib/index.ts';
+import {assertEqualBins} from '../../assert-helpers.ts';
 
 
 

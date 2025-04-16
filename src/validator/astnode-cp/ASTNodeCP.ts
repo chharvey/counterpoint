@@ -4,14 +4,14 @@ import {
 	TYPE,
 	type Builder,
 	TypeErrorNotAssignable,
-} from '../../index.js';
-import {to_serializable} from '../../parser/index.js';
-import type {Validator} from '../Validator.js';
-import {ASTNode} from '../ASTNode.js';
+} from '../../index.ts';
+import {to_serializable} from '../../parser/index.ts';
+import type {Validator} from '../Validator.ts';
+import {ASTNode} from '../ASTNode.ts';
 import {
 	type ASTNodeExpression,
 	ASTNodeCollectionLiteral,
-} from './index.js';
+} from './index.ts';
 
 
 

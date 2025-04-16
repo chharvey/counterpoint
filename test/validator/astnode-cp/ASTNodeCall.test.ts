@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
 	AST,
 	VALUE,
@@ -6,7 +6,7 @@ import {
 	TypeErrorNotAssignable,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
-} from '../../../src/index.js';
+} from '../../../src/index.ts';
 
 
 

@@ -1,11 +1,11 @@
-import * as assert from 'assert';
-import {memoizeGetter} from '../../lib/index.js';
+import * as assert from 'node:assert';
+import {memoizeGetter} from '../../lib/index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
-} from '../utils-private.js';
-import {Validator} from '../Validator.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+} from '../utils-private.ts';
+import {Validator} from '../Validator.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 

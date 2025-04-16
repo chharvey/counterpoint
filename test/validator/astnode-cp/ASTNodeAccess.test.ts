@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
 	AST,
 	VALUE,
@@ -7,12 +7,12 @@ import {
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
 	VoidError01,
-} from '../../../src/index.js';
-import {assert_instanceof} from '../../../src/lib/index.js';
+} from '../../../src/index.ts';
+import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	CONFIG_FOLDING_OFF,
 	typeUnit,
-} from '../../helpers.js';
+} from '../../helpers.ts';
 
 
 

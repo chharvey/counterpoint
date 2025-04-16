@@ -3,24 +3,24 @@ import {
 	TYPE,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	type ArgCount,
 	ValidFunctionName,
 	invalid_function_name,
-} from './utils-private.js';
-import {ASTNodeType} from './ASTNodeType.js';
-import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
+} from './utils-private.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
+import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
 
 
 

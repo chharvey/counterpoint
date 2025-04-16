@@ -1,6 +1,6 @@
-import {memoizeGetter} from '../../lib/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+import {memoizeGetter} from '../../lib/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 

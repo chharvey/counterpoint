@@ -1,24 +1,24 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
 	ErrorCode,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	assert_context_name,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
+} from '../../core/index.ts';
 import {
 	ASTNodeStatement,
 	ASTNodeStatementExpression,
-} from './index.js';
-import type {Buildable} from './Buildable.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+} from './index.ts';
+import type {Buildable} from './Buildable.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 

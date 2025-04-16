@@ -2,13 +2,13 @@ import * as xjs from 'extrajs';
 import {
 	assert_context_name,
 	memoizeGetter,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	languageValuesIdentical,
 	strictEqual,
 	memoizeBinOp,
-} from '../utils-private.js';
-import type * as VALUE from '../cp-value/index.js';
+} from '../utils-private.ts';
+import type * as VALUE from '../cp-value/index.ts';
 import {
 	Intersection,
 	Union,
@@ -27,7 +27,7 @@ import {
 	TRUE,
 	SYM_NEVER,
 	FALSY_TYPES,
-} from './index.js';
+} from './index.ts';
 
 
 

@@ -1,22 +1,22 @@
 import * as xjs from 'extrajs';
-import {TYPE} from '../index.js';
+import {TYPE} from '../index.ts';
 import {
 	languageValuesIdentical,
 	language_values_equal,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../utils-private.js';
+} from '../utils-private.ts';
 import {
 	FALSE,
 	TRUE,
-} from './index.js';
+} from './index.ts';
 import {
 	identical,
 	type Value,
-} from './Value.js';
-import type {Boolean as ValueBoolean} from './Boolean.js';
-import {Collection} from './Collection.js';
+} from './Value.ts';
+import type {Boolean as ValueBoolean} from './Boolean.ts';
+import {Collection} from './Collection.ts';
 
 
 
@@ -34,12 +34,22 @@ class ValueSet<T extends Value = Value> extends Collection {
 		this.elements = uniques;
 	}
 
-	public override toString(): string {
-		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
-	}
-
+	/**
+	 * @implements Value
+	 */
 	public override get isEmpty(): boolean {
 		return this.elements.size === 0;
+	}
+
+	/**
+	 * @implements Collection
+	 */
+	public override get count(): bigint {
+		return BigInt(this.elements.size);
+	}
+
+	public override toString(): string {
+		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
 	}
 
 	/** @final */

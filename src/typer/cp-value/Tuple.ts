@@ -1,13 +1,13 @@
 import * as xjs from 'extrajs';
-import {TYPE} from '../index.js';
+import {TYPE} from '../index.ts';
 import {
 	languageValuesIdentical,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../utils-private.js';
-import type {Value} from './Value.js';
-import {CollectionIndexed} from './CollectionIndexed.js';
+} from '../utils-private.ts';
+import type {Value} from './Value.ts';
+import {CollectionIndexed} from './CollectionIndexed.ts';
 
 
 
