@@ -9,15 +9,15 @@ import {
 	TypeErrorNoEntry,
 	VoidError01,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
-import {
-	CONFIG_FOLDING_OFF,
-	typeUnit,
-} from '../../helpers.ts';
+import {typeUnit} from '../../helpers.ts';
 
 
 
 describe('ASTNodeAccess', () => {
+	function repeat<T>(value: T, times: number): T[] {
+		return Array<T>(times).fill(value);
+	}
+
 	/**
 	 * Takes a program source text and compares it to the array of expected types.
 	 * The format of the program source text must be
@@ -190,7 +190,116 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access type: access by expression.', () => {
-			// TODO:
+			const DECLS = `
+				let     list_fixed:   List.<     int | float | str> = List.<int | float | str>([   1,    2.0,    "three"]);
+				% TODO: let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
+				let     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
+				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+				let var list_unfixed: List.<     int | float | str> = list_fixed;
+				% TODO: let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
+				let var set_unfixed:  Set .<     int | float | str> = set_fixed;
+				let var map_unfixed:  Map .<str, int | float | str> = map_fixed;
+			`;
+			const SRC = `
+				${ DECLS }
+
+				list_fixed.[0];      % type \`1\`       % value \`1\`
+				list_fixed.[1];      % type \`2.0\`     % value \`2.0\`
+				list_fixed.[2];      % type \`"three"\` % value \`"three"\`
+				% TODO: dict_fixed.[@a];     % type \`1\`       % value \`1\`
+				% TODO: dict_fixed.[@b];     % type \`2.0\`     % value \`2.0\`
+				% TODO: dict_fixed.[@c];     % type \`"three"\` % value \`"three"\`
+				set_fixed.[1];       % type \`true\`    % value \`true\`
+				set_fixed.[2.0];     % type \`true\`    % value \`true\`
+				set_fixed.["three"]; % type \`true\`    % value \`true\`
+				map_fixed.["a"];     % type \`1\`       % value \`1\`
+				map_fixed.["b"];     % type \`2.0\`     % value \`2.0\`
+				map_fixed.["c"];     % type \`"three"\` % value \`"three"\`
+
+				list_unfixed.[0];      % type \`int | float | str\` % non-foldable value
+				list_unfixed.[1];      % type \`int | float | str\` % non-foldable value
+				list_unfixed.[2];      % type \`int | float | str\` % non-foldable value
+				% TODO: dict_unfixed.[@a];     % type \`int | float | str\` % non-foldable value
+				% TODO: dict_unfixed.[@b];     % type \`int | float | str\` % non-foldable value
+				% TODO: dict_unfixed.[@c];     % type \`int | float | str\` % non-foldable value
+				set_unfixed.[1];       % type \`bool\`              % non-foldable value
+				set_unfixed.[2.0];     % type \`bool\`              % non-foldable value
+				set_unfixed.["three"]; % type \`bool\`              % non-foldable value
+				map_unfixed.["a"];     % type \`int | float | str\` % non-foldable value
+				map_unfixed.["b"];     % type \`int | float | str\` % non-foldable value
+				map_unfixed.["c"];     % type \`int | float | str\` % non-foldable value
+			`;
+			const ERRS = `
+				${ DECLS }
+
+				list_fixed.[3];   % type throws TypeError % fold throws VoidError
+				list_fixed.[-4];  % type throws TypeError % fold throws VoidError
+				% TODO: dict_fixed.[@d];  % type throws TypeError % fold throws VoidError
+				set_fixed.[42.0]; % type throws TypeError % fold throws VoidError
+				map_fixed.["d"];  % type throws TypeError % fold throws VoidError
+
+				list_unfixed.[3];   % type \`int | float | str\` % non-foldable value
+				list_unfixed.[-4];  % type \`int | float | str\` % non-foldable value
+				% TODO: dict_unfixed.[@d];  % type \`int | float | str\` % non-foldable value
+				set_unfixed.[42.0]; % type \`bool\`              % non-foldable value
+				map_unfixed.["d"];  % type \`int | float | str\` % non-foldable value
+			`;
+			describe('#type', () => {
+				it('returns individual entry types for folded objects, union types for unfolded objects.', () => {
+					const N_TYPES = [
+						typeUnit(1n),
+						typeUnit(2.0),
+						typeUnit('three'),
+					] as const;
+					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
+					return testExprTypes(SRC, [
+						...N_TYPES,
+						// ...N_TYPES,
+						...repeat(TYPE.TRUE, 3),
+						...N_TYPES,
+
+						...repeat(TYPE_INT_FLOAT_STR, 3),
+						// ...repeat(TYPE_INT_FLOAT_STR, 3),
+						...repeat(TYPE.BOOL, 3),
+						...repeat(TYPE_INT_FLOAT_STR, 3),
+					]);
+				});
+				it('throws when base object is of incorrect type.', () => {
+					assert.throws(() => AST.ASTNodeAccess.fromSource('(4).[2];').type(), TypeErrorInvalidOperation);
+				});
+				it('when accessor expression is correct type but out of bounds/range, throws for folded objects, returns union type for unfolded objects.', () => {
+					// TODO:
+					ERRS;
+				});
+				it('throws when accessor expression is of incorrect type.', () => {
+					assert.throws(() => AST.ASTNodeAccess.fromSource('List.<int | float | str>([1, 2.0, "three"]).["3"];')       .type(), TypeErrorNotNarrow);
+					// TODO: assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]).[3];').type(), TypeErrorNotNarrow);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('{1, 2.0, "three"}.[true];')                                .type(), TypeErrorNotNarrow);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.["a"];')      .type(), TypeErrorNotNarrow);
+				});
+			});
+			describe('#fold', () => {
+				it('returns individual entries for folded objects.', () => {
+					const N_VALUES = [
+						new VALUE.Integer(1n),
+						new VALUE.Float(2.0),
+						new VALUE.String('three'),
+					] as const;
+					return testExprValues(SRC, [
+						...N_VALUES,
+						// ...N_VALUES,
+						...repeat(VALUE.TRUE, 3),
+						...N_VALUES,
+
+						...repeat(null, 3),
+						// ...repeat(null, 3),
+						...repeat(null, 6),
+					]);
+				});
+				it('when accessor expression is out of bounds/range, throws for folded objects, returns null for unfolded objects.', () => {
+					// TODO:
+				});
+			});
 		});
 	});
 
@@ -343,7 +452,135 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access type: access by expression.', () => {
-			// TODO:
+			const DECLS = `
+				let     list_fixed:   List.<     int | float | str> = List.<int | float | str>([   1,    2.0,    "three"]);
+				% TODO: let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
+				let     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
+				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+				let var list_unfixed: List.<     int | float | str> = list_fixed;
+				% TODO: let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
+				let var set_unfixed:  Set .<     int | float | str> = set_fixed;
+				let var map_unfixed:  Map .<str, int | float | str> = map_fixed;
+			`;
+			const SRC = `
+				${ DECLS }
+
+				list_fixed?.[0];      % type \`1\`       % value \`1\`
+				list_fixed?.[1];      % type \`2.0\`     % value \`2.0\`
+				list_fixed?.[2];      % type \`"three"\` % value \`"three"\`
+				% TODO: dict_fixed?.[@a];     % type \`1\`       % value \`1\`
+				% TODO: dict_fixed?.[@b];     % type \`2.0\`     % value \`2.0\`
+				% TODO: dict_fixed?.[@c];     % type \`"three"\` % value \`"three"\`
+				set_fixed?.[1];       % type \`true\`    % value \`true\`
+				set_fixed?.[2.0];     % type \`true\`    % value \`true\`
+				set_fixed?.["three"]; % type \`true\`    % value \`true\`
+				map_fixed?.["a"];     % type \`1\`       % value \`1\`
+				map_fixed?.["b"];     % type \`2.0\`     % value \`2.0\`
+				map_fixed?.["c"];     % type \`"three"\` % value \`"three"\`
+
+				list_unfixed?.[0];      % type \`int | float | str | null\` % non-foldable value
+				list_unfixed?.[1];      % type \`int | float | str | null\` % non-foldable value
+				list_unfixed?.[2];      % type \`int | float | str | null\` % non-foldable value
+				% TODO: dict_unfixed?.[@a];     % type \`int | float | str | null\` % non-foldable value
+				% TODO: dict_unfixed?.[@b];     % type \`int | float | str | null\` % non-foldable value
+				% TODO: dict_unfixed?.[@c];     % type \`int | float | str | null\` % non-foldable value
+				set_unfixed?.[1];       % type \`bool\`                     % non-foldable value
+				set_unfixed?.[2.0];     % type \`bool\`                     % non-foldable value
+				set_unfixed?.["three"]; % type \`bool\`                     % non-foldable value
+				map_unfixed?.["a"];     % type \`int | float | str | null\` % non-foldable value
+				map_unfixed?.["b"];     % type \`int | float | str | null\` % non-foldable value
+				map_unfixed?.["c"];     % type \`int | float | str | null\` % non-foldable value
+			`;
+			const ERRS = `
+				${ DECLS }
+
+				list_fixed?.[3];   % type \`null\`  % value \`null\`
+				list_fixed?.[-4];  % type \`null\`  % value \`null\`
+				% TODO: dict_fixed?.[@d];  % type \`null\`  % value \`null\`
+				set_fixed?.[42.0]; % type \`false\` % value \`false\`
+				map_fixed?.["d"];  % type \`null\`  % value \`null\`
+
+				list_unfixed?.[3];   % type \`int | float | str | null\` % non-foldable value
+				list_unfixed?.[-4];  % type \`int | float | str | null\` % non-foldable value
+				% TODO: dict_unfixed?.[@d];  % type \`int | float | str | null\` % non-foldable value
+				set_unfixed?.[42.0]; % type \`bool\`                     % non-foldable value
+				map_unfixed?.["d"];  % type \`int | float | str | null\` % non-foldable value
+			`;
+			describe('#type', () => {
+				it('returns individual entry types for folded objects, union types for unfolded objects.', () => {
+					const N_TYPES = [
+						typeUnit(1n),
+						typeUnit(2.0),
+						typeUnit('three'),
+					] as const;
+					const TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
+					return testExprTypes(SRC, [
+						...N_TYPES,
+						// ...N_TYPES,
+						...repeat(TYPE.TRUE, 3),
+						...N_TYPES,
+
+						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
+						// ...repeat(TYPE_INT_FLOAT_STR, 3),
+						...repeat(TYPE.BOOL, 3),
+						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
+					]);
+				});
+				it('throws when base object is of incorrect type.', () => {
+					assert.throws(() => AST.ASTNodeAccess.fromSource('(4)?.[2];').type(), TypeErrorInvalidOperation);
+				});
+				it('when accessor expression is correct type but out of bounds/range, returns `null` for folded objects, union types for unfolded objects.', () => {
+					const TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
+					return testExprTypes(ERRS, [
+						TYPE.NULL,
+						TYPE.NULL,
+						// TYPE.NULL,
+						TYPE.FALSE,
+						TYPE.NULL,
+
+						TYPE_INT_FLOAT_STR_NULL,
+						TYPE_INT_FLOAT_STR_NULL,
+						// TYPE_INT_FLOAT_STR_NULL,
+						TYPE.BOOL,
+						TYPE_INT_FLOAT_STR_NULL,
+					]);
+				});
+				it('throws when accessor expression is of incorrect type.', () => {
+					assert.throws(() => AST.ASTNodeAccess.fromSource('List.<int | float | str>([1, 2.0, "three"])?.["3"];')       .type(), TypeErrorNotNarrow);
+					// TODO: assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int | float | str>([a= 1, b= 2.0, c= "three"])?.[3];').type(), TypeErrorNotNarrow);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('{1, 2.0, "three"}?.[true];')                                .type(), TypeErrorNotNarrow);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.["a"];')      .type(), TypeErrorNotNarrow);
+				});
+			});
+			describe('#fold', () => {
+				it('returns individual entries for folded objects.', () => {
+					const N_VALUES = [
+						new VALUE.Integer(1n),
+						new VALUE.Float(2.0),
+						new VALUE.String('three'),
+					] as const;
+					return testExprValues(SRC, [
+						...N_VALUES,
+						// ...N_VALUES,
+						...repeat(VALUE.TRUE, 3),
+						...N_VALUES,
+
+						...repeat(null, 3),
+						// ...repeat(null, 3),
+						...repeat(null, 6),
+					]);
+				});
+				it('when accessor expression is out of bounds/range, returns the `null` value for folded objects, returns null for unfolded objects.', () => {
+					testExprValues(ERRS, [
+						VALUE.NULL,
+						VALUE.NULL,
+						// VALUE.NULL,
+						VALUE.FALSE,
+						VALUE.NULL,
+						...repeat(null, 4),
+					]);
+				});
+			});
 		});
 	});
 
@@ -410,452 +647,53 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access type: access by expression.', () => {
-			// TODO:
-		});
-	});
+			const SRC = `
+				let     listvoid_fixed:   (int | void)[]      = List.<int | void>([42]);
+				% TODO: let     dictvoid_fixed:   [: int | void]      = Dict.<int | void>([a= 42]);
+				let     setvoid_fixed:    (int | void){}      = {42};
+				let     mapvoid_fixed:    {str -> int | void} = {"a" -> 42};
+				let var listvoid_unfixed: (int | void)[]      = listvoid_fixed;
+				% TODO: let var dictvoid_unfixed: [: int | void]      = dictvoid_fixed;
+				let var setvoid_unfixed:  (int | void){}      = setvoid_fixed;
+				let var mapvoid_unfixed:  {str -> int | void} = mapvoid_fixed;
 
+				listvoid_fixed!.[0];  % type \`42\`   % value \`42\`
+				% TODO: dictvoid_fixed!.[@a]; % type \`42\`   % value \`42\`
+				setvoid_fixed!.[42];  % type \`true\` % value \`true\`
+				mapvoid_fixed!.["a"]; % type \`42\`   % value \`42\`
 
-	const EXPR_ACCESS_SRC: string = `
-		%% statements 0 – 4 %%
-		let a: [str] = ["a"];
-		let b: [str] = ["b"];
-		let c: [str] = ["c"];
-		let var three: str = "three";
+				listvoid_unfixed!.[0];  % type \`int\`  % non-foldable value
+				% TODO: dictvoid_unfixed!.[@a]; % type \`int\`  % non-foldable value
+				setvoid_unfixed!.[42];  % type \`bool\` % non-foldable value
+				mapvoid_unfixed!.["a"]; % type \`int\`  % non-foldable value
+			`;
+			it('#type: always subtracts void.', () => {
+				const N_TYPE = typeUnit(42n);
+				return testExprTypes(SRC, [
+					N_TYPE,
+					// N_TYPE,
+					TYPE.TRUE,
+					N_TYPE,
 
-		%% statements 4 – 10 %%
-		let     tup_fixed:    [int, float, str]              = [1, 2.0, "three"];
-		let var tup_unfixed:  [int, float, str]              = [1, 2.0, "three"];
-		let     list_fixed:   (int | float | str)[]          = List.<int | float | str>([1, 2.0, "three"]);
-		let var list_unfixed: List.<int | float | str>       = List.<int | float | str>([1, 2.0, "three"]);
-		let     set_fixed:    (int | float | str){}          = {1, 2.0, "three"};
-		let var set_unfixed:  Set.<int | float | str>        = {1, 2.0, three};
-		let     map_fixed:    {[str] -> int | float | str}   = {a -> 1, b -> 2.0, c -> "three"};
-		let var map_unfixed:  Map.<[str], int | float | str> = {a -> 1, b -> 2.0, c -> three};
-
-		%% statements 12 – 18 %%
-		tup_fixed  .[0 + 0]; % type \`1\`       % value \`1\`
-		tup_fixed  .[0 + 1]; % type \`2.0\`     % value \`2.0\`
-		tup_fixed  .[0 + 2]; % type \`"three"\` % value \`"three"\`
-		tup_unfixed.[0 + 0]; % type \`int\`     % non-computable value
-		tup_unfixed.[0 + 1]; % type \`float\`   % non-computable value
-		tup_unfixed.[0 + 2]; % type \`str\`     % non-computable value
-
-		%% statements 18 – 24 %%
-		list_fixed  .[0 + 0]; % type \`1\`                 % value \`1\`
-		list_fixed  .[0 + 1]; % type \`2.0\`               % value \`2.0\`
-		list_fixed  .[0 + 2]; % type \`"three"\`           % value \`"three"\`
-		list_unfixed.[0 + 0]; % type \`int | float | str\` % non-computable value
-		list_unfixed.[0 + 1]; % type \`int | float | str\` % non-computable value
-		list_unfixed.[0 + 2]; % type \`int | float | str\` % non-computable value
-
-		%% statements 24 – 30 %%
-		set_fixed  .[1];       % type \`true\` % value \`true\`
-		set_fixed  .[2.0];     % type \`true\` % value \`true\`
-		set_fixed  .["three"]; % type \`true\` % value \`true\`
-		set_unfixed.[1];       % type \`bool\` % non-computable value
-		set_unfixed.[2.0];     % type \`bool\` % non-computable value
-		set_unfixed.["three"]; % type \`bool\` % non-computable value
-
-		%% statements 30 – 36 %%
-		map_fixed  .[a]; % type \`1\`             % value \`1\`
-		map_fixed  .[b]; % type \`2.0\`           % value \`2.0\`
-		map_fixed  .[c]; % type \`"three"\`       % value \`"three"\`
-		map_unfixed.[a]; % type \`1 | 2.0 | str\` % non-computable value
-		map_unfixed.[b]; % type \`1 | 2.0 | str\` % non-computable value
-		map_unfixed.[c]; % type \`1 | 2.0 | str\` % non-computable value
-
-		%% statements 36 – 44 %%
-		let     tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];
-		let     tupo2_f: [int, float, ?: str] = [1, 2.0];
-		let     tupo3_f: [int, float]         = [1, 2.0, true];
-		let     tupo4_f: [int, float]         = [1, 2.0];
-		let var tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
-		let var tupo2_u: [int, float, ?: str] = [1, 2.0];
-		let var tupo3_u: [int, float]         = [1, 2.0, true];
-		let var tupo4_u: [int, float]         = [1, 2.0];
-
-		%% statements 44 – 46 %%
-		tupo1_u.[0 + 2]; % type \`str | void\` % non-computable value
-		tupo2_u.[0 + 2]; % type \`str | void\` % non-computable value
-
-		%% statements 46 – 49 %%
-		tupo1_f?.[0 + 2]; % type \`"three"\` % value \`"three"\`
-		tupo1_u?.[0 + 2]; % type \`str?\`    % non-computable value
-		tupo2_u?.[0 + 2]; % type \`str?\`    % non-computable value
-
-		%% statements 49 – 55 %%
-		list_fixed  ?.[2];       % type \`"three"\`                  % value \`"three"\`
-		list_unfixed?.[2];       % type \`int | float | str | null\` % non-computable value
-		set_fixed   ?.["three"]; % type \`true\`                     % value\`true\`
-		set_unfixed ?.[three];   % type \`bool\`                     % non-computable value
-		map_fixed   ?.[c];       % type \`"three"\`                  % value \`"three"\`
-		map_unfixed ?.[c];       % type \`int | float | str | null\` % non-computable value
-
-		%% statements 55 – 58 %%
-		tupo1_f!.[0 + 2]; % type \`"three"\` % value \`"three"\`
-		tupo1_u!.[0 + 2]; % type \`str\`     % non-computable value
-		tupo2_u!.[0 + 2]; % type \`str\`     % non-computable value
-	`;
-
-
-	describe('#type', () => {
-		function typeOfStmtExpr(stmt: AST.ASTNodeStatement): TYPE.Type {
-			assert_instanceof(stmt, AST.ASTNodeStatementExpression);
-			return stmt.expr!.type();
-		}
-		const COMMON_TYPES = {
-			int_float: TYPE.Union.all(
-				TYPE.INT,
-				TYPE.FLOAT,
-			),
-			int_float_str: TYPE.Union.all(
-				TYPE.INT,
-				TYPE.FLOAT,
-				TYPE.STR,
-			),
-			int_float_str_null: TYPE.Union.all(
-				TYPE.INT,
-				TYPE.FLOAT,
-				TYPE.STR,
-				TYPE.NULL,
-			),
-		};
-		const expected: TYPE.Type[] = [
-			typeUnit(1n),
-			typeUnit(2.0),
-			typeUnit('three'),
-			TYPE.INT,
-			TYPE.FLOAT,
-			TYPE.STR,
-		];
-		const expected_o: TYPE.Type[] = [
-			typeUnit('three'),
-			TYPE.STR.union(TYPE.NULL),
-			TYPE.STR.union(TYPE.NULL),
-		];
-		const expected_c: TYPE.Type[] = [
-			typeUnit('three'),
-			TYPE.STR,
-			TYPE.STR,
-		];
-
-		context('access by computed expression.', () => {
-			context('with constant folding on, folds expression accessor.', () => {
-				let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
-				before(() => {
-					program = AST.ASTNodeGoal.fromSource(EXPR_ACCESS_SRC);
-					program.varCheck();
-					program.typeCheck();
-				});
-				it('returns individual entry types for tuples.', () => {
-					assert.deepStrictEqual(
-						program.children.slice(12, 18).map((c) => typeOfStmtExpr(c)),
-						expected,
-					);
-				});
-				it('returns the union of all element types, constants, for lists.', () => {
-					assert.deepStrictEqual(
-						program.children.slice(18, 24).map((c) => typeOfStmtExpr(c)),
-						[
-							...expected.slice(0, 3),
-							COMMON_TYPES.int_float_str,
-							COMMON_TYPES.int_float_str,
-							COMMON_TYPES.int_float_str,
-						],
-					);
-				});
-				it('returns boolean values for sets.', () => {
-					program.children.slice(24, 27).forEach((c) => (
-						assert.deepStrictEqual(
-							typeOfStmtExpr(c),
-							TYPE.TRUE,
-						)
-					));
-					return program.children.slice(27, 30).forEach((c) => (
-						assert.deepStrictEqual(
-							typeOfStmtExpr(c),
-							TYPE.BOOL,
-						)
-					));
-				});
-				it('returns the union of all consequent types, constants, for maps.', () => {
-					assert.deepStrictEqual(
-						program.children.slice(30, 36).map((c) => typeOfStmtExpr(c)),
-						[
-							...expected.slice(0, 3),
-							COMMON_TYPES.int_float_str,
-							COMMON_TYPES.int_float_str,
-							COMMON_TYPES.int_float_str,
-						],
-					);
-				});
-				it('unions with void if tuple entry is optional.', () => {
-					assert.deepStrictEqual(
-						program.children.slice(44, 46).map((c) => typeOfStmtExpr(c)),
-						[
-							TYPE.STR.union(TYPE.VOID),
-							TYPE.STR.union(TYPE.VOID),
-						],
-					);
-				});
-				it('unions with null if tuple entry and access are optional.', () => {
-					assert.deepStrictEqual(
-						program.children.slice(46, 49).map((c) => typeOfStmtExpr(c)),
-						expected_o,
-					);
-				});
-				it('unions with null if list/map access is optional.', () => {
-					assert.deepStrictEqual(
-						[
-							...program.children.slice(49, 51),
-							...program.children.slice(53, 55),
-						].map((c) => typeOfStmtExpr(c)),
-						[
-							typeUnit('three'),
-							COMMON_TYPES.int_float_str.union(TYPE.NULL),
-							typeUnit('three'),
-							COMMON_TYPES.int_float_str.union(TYPE.NULL),
-						],
-					);
-				});
-				it('does not union with null even when set access is optional.', () => {
-					assert.deepStrictEqual(
-						program.children.slice(51, 53).map((c) => typeOfStmtExpr(c)),
-						[
-							TYPE.TRUE,
-							TYPE.BOOL,
-						],
-					);
-				});
-				it('claim access always subtracts void.', () => {
-					assert.deepStrictEqual(
-						program.children.slice(55, 58).map((c) => typeOfStmtExpr(c)),
-						expected_c,
-					);
-				});
-				it('throws when accessor expression is correct type but out of bounds for tuples.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].[3];')   .type(), TypeErrorNoEntry);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].[-4];')  .type(), TypeErrorNoEntry);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[3];')  .type(), TypeErrorNoEntry);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[-4];') .type(), TypeErrorNoEntry);
-				});
-				it('returns the list item type when accessor expression is correct type but out of bounds for lists.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let var list: (int | float | str)[] = List.<int | float| str>([1, 2.0, "three"]);
-						list.[3];
-						list.[-4];
-					`);
-					goal.varCheck();
-					goal.typeCheck();
-					goal.children.slice(1, 3).forEach((c) => {
-						assert.deepStrictEqual(
-							typeOfStmtExpr(c),
-							COMMON_TYPES.int_float_str,
-						);
-					});
-				});
-				it('throws when accessor expression is of incorrect type.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].["3"];')                            .type(), TypeErrorNotNarrow);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('{1, 2.0, "three"}.[true];')                           .type(), TypeErrorNotNarrow);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.["a"];') .type(), TypeErrorNotNarrow);
-				});
+					TYPE.INT,
+					// TYPE.INT,
+					TYPE.BOOL,
+					TYPE.INT,
+				]);
 			});
-			context('with constant folding off.', () => {
-				let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
-				before(() => {
-					program = AST.ASTNodeGoal.fromSource(EXPR_ACCESS_SRC, CONFIG_FOLDING_OFF);
-					program.varCheck();
-					program.typeCheck();
-				});
-				it('returns the union of all entry types for tuples.', () => {
-					program.children.slice(12, 18).forEach((c) => {
-						assert.deepStrictEqual(
-							typeOfStmtExpr(c),
-							COMMON_TYPES.int_float_str,
-						);
-					});
-				});
-				it('returns the union of all item types for lists.', () => {
-					program.children.slice(18, 24).forEach((c) => {
-						assert.deepStrictEqual(
-							typeOfStmtExpr(c),
-							COMMON_TYPES.int_float_str,
-						);
-					});
-				});
-				it('returns type `bool` for sets.', () => {
-					program.children.slice(24, 30).forEach((c) => {
-						assert.deepStrictEqual(
-							typeOfStmtExpr(c),
-							TYPE.BOOL,
-						);
-					});
-				});
-				it('returns the union of all consequent types for maps.', () => {
-					program.children.slice(30, 36).forEach((c) => {
-						assert.deepStrictEqual(
-							typeOfStmtExpr(c),
-							COMMON_TYPES.int_float_str,
-						);
-					});
-				});
-				it('does not union with void, even with optional tuple entries.', () => {
-					program.children.slice(44, 46).forEach((c) => {
-						assert.deepStrictEqual(
-							typeOfStmtExpr(c),
-							COMMON_TYPES.int_float_str,
-						);
-					});
-				});
-				it('unions with null if tuple entry and access are optional.', () => {
-					program.children.slice(46, 49).forEach((c) => {
-						assert.deepStrictEqual(
-							typeOfStmtExpr(c),
-							COMMON_TYPES.int_float_str_null,
-						);
-					});
-				});
-				it('unions with null if list/map access is optional.', () => {
-					[
-						...program.children.slice(49, 51),
-						...program.children.slice(53, 55),
-					].forEach((c) => {
-						assert.deepStrictEqual(
-							typeOfStmtExpr(c),
-							COMMON_TYPES.int_float_str.union(TYPE.NULL),
-						);
-					});
-				});
-				it('does not union with null even when set access is optional.', () => {
-					program.children.slice(51, 53).forEach((c) => assert.deepStrictEqual(
-						typeOfStmtExpr(c),
-						TYPE.BOOL,
-					));
-				});
-				it('claim access always subtracts void.', () => {
-					assert.deepStrictEqual(
-						program.children.slice(55, 58).map((c) => typeOfStmtExpr(c)),
-						[
-							COMMON_TYPES.int_float_str,
-							COMMON_TYPES.int_float_str,
-							COMMON_TYPES.int_float_str,
-						],
-					);
-				});
-			});
-			it('throws when base object is of incorrect type.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource('(4).[2];').type(), TypeErrorInvalidOperation);
-			});
-		});
-	});
+			specify('#fold', () => {
+				const N_VALUE = new VALUE.Integer(42n);
+				return testExprValues(SRC, [
+					N_VALUE,
+					// N_VALUE,
+					VALUE.TRUE,
+					N_VALUE,
 
-
-	describe('#fold', () => {
-		function foldStmtExpr(stmt: AST.ASTNodeStatement): VALUE.Value | null {
-			assert_instanceof(stmt, AST.ASTNodeStatementExpression);
-			return stmt.expr!.fold();
-		}
-		const expected: Array<VALUE.Value | null> = [
-			new VALUE.Integer(1n),
-			new VALUE.Float(2.0),
-			new VALUE.String('three'),
-			null,
-			null,
-			null,
-		];
-		const expected_o: Array<VALUE.Value | null> = [
-			new VALUE.String('three'),
-			null,
-			null,
-		];
-
-		context('access by computed expression.', () => {
-			let program: AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
-			before(() => {
-				program = AST.ASTNodeGoal.fromSource(EXPR_ACCESS_SRC);
-				program.varCheck();
-				program.typeCheck();
-			});
-			it('returns individual entries for tuples.', () => {
-				assert.deepStrictEqual(
-					program.children.slice(12, 18).map((c) => foldStmtExpr(c)),
-					expected,
-				);
-				assert.deepStrictEqual(
-					program.children.slice(46, 49).map((c) => foldStmtExpr(c)),
-					expected_o,
-				);
-				assert.deepStrictEqual(
-					program.children.slice(55, 58).map((c) => foldStmtExpr(c)),
-					expected_o,
-				);
-			});
-			it('returns individual entries for lists.', () => {
-				assert.deepStrictEqual(
-					program.children.slice(18, 24).map((c) => foldStmtExpr(c)),
-					expected,
-				);
-				assert.deepStrictEqual(
-					program.children.slice(49, 51).map((c) => foldStmtExpr(c)),
-					[
-						new VALUE.String('three'),
-						null,
-					],
-				);
-			});
-			it('returns individual entries for sets.', () => {
-				assert.deepStrictEqual(
-					program.children.slice(24, 30).map((c) => foldStmtExpr(c)),
-					[
-						VALUE.TRUE,
-						VALUE.TRUE,
-						VALUE.TRUE,
-						null,
-						null,
-						null,
-					],
-				);
-				assert.deepStrictEqual(
-					program.children.slice(51, 53).map((c) => foldStmtExpr(c)),
-					[
-						VALUE.TRUE,
-						null,
-					],
-				);
-			});
-			it('returns individual entries for maps.', () => {
-				assert.deepStrictEqual(
-					program.children.slice(30, 36).map((c) => foldStmtExpr(c)),
-					expected,
-				);
-				assert.deepStrictEqual(
-					program.children.slice(53, 55).map((c) => foldStmtExpr(c)),
-					[
-						new VALUE.String('three'),
-						null,
-					],
-				);
-			});
-			it('throws when accessor expression is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].[3];')                                .fold(), VoidError01);
-				assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.[["d"]];') .fold(), VoidError01);
-			});
-			it('returns false when (optionally) accessing element not in set.', () => {
-				[
-					'{1, 2.0, "three"} .[3];',
-					'{1, 2.0, "three"}?.[3];',
-				].forEach((src) => assert.deepStrictEqual(
-					AST.ASTNodeAccess.fromSource(src).fold(),
-					VALUE.FALSE,
-				));
-			});
-			it('returns null when optionally accessing index/antecedent out of bounds.', () => {
-				[
-					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[3];')                                .fold(),
-					AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.[["d"]];') .fold(),
-				].forEach((v) => {
-					assert.strictEqual(v, VALUE.NULL);
-				});
+					null,
+					// null,
+					null,
+					null,
+				]);
 			});
 		});
 	});
