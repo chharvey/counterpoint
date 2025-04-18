@@ -143,15 +143,11 @@ describe('ASTNodeAccess', () => {
 						new VALUE.Integer(1n),
 						new VALUE.Float(2.0),
 						new VALUE.String('three'),
-						null,
-						null,
-						null,
+						...repeat(null, 3),
 						new VALUE.Integer(1n),
 						new VALUE.Float(2.0),
 						new VALUE.String('three'),
-						null,
-						null,
-						null,
+						...repeat(null, 3),
 					]);
 				});
 				it('throws when index is out of bounds.', () => {
@@ -195,9 +191,7 @@ describe('ASTNodeAccess', () => {
 						new VALUE.Integer(1n),
 						new VALUE.Float(2.0),
 						new VALUE.String('three'),
-						null,
-						null,
-						null,
+						...repeat(null, 3),
 					]);
 				});
 				it('throws when key is out of range.', () => {
@@ -275,8 +269,7 @@ describe('ASTNodeAccess', () => {
 						...repeat(TYPE.TRUE, 3),
 						...N_TYPES,
 
-						...repeat(TYPE_INT_FLOAT_STR, 3),
-						...repeat(TYPE_INT_FLOAT_STR, 3),
+						...repeat(TYPE_INT_FLOAT_STR, 6),
 						...repeat(TYPE.BOOL, 3),
 						...repeat(TYPE_INT_FLOAT_STR, 3),
 					]);
@@ -287,13 +280,11 @@ describe('ASTNodeAccess', () => {
 				it('when accessor expression is correct type but out of bounds/range, returns `never` for folded objects, returns union type for unfolded objects.', () => {
 					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
 					return testExprTypes(ERRS, [
-						...repeat(TYPE.NEVER, 2),
-						TYPE.NEVER,
+						...repeat(TYPE.NEVER, 3),
 						TYPE.FALSE,
 						TYPE.NEVER,
 
-						...repeat(TYPE_INT_FLOAT_STR, 2),
-						TYPE_INT_FLOAT_STR,
+						...repeat(TYPE_INT_FLOAT_STR, 3),
 						TYPE.BOOL,
 						TYPE_INT_FLOAT_STR,
 					]);
@@ -318,20 +309,16 @@ describe('ASTNodeAccess', () => {
 						...repeat(VALUE.TRUE, 3),
 						...N_VALUES,
 
-						...repeat(null, 3),
-						...repeat(null, 3),
-						...repeat(null, 6),
+						...repeat(null, 12),
 					]);
 				});
 				it('when accessor expression is out of bounds/range, throws for folded objects, returns null for unfolded objects.', () => {
 					testExprValues(ERRS, [
-						...repeat(VoidError01, 2),
-						VoidError01,
+						...repeat(VoidError01, 3),
 						VALUE.FALSE,
 						VoidError01,
 
-						...repeat(null, 4),
-						null,
+						...repeat(null, 5),
 					]);
 				});
 			});
@@ -425,8 +412,7 @@ describe('ASTNodeAccess', () => {
 				it('unions with null if entry is optional.', () => {
 					testExprTypes(SRC, [
 						typeUnit('three'),
-						TYPE.STR.union(TYPE.NULL),
-						TYPE.STR.union(TYPE.NULL),
+						...repeat(TYPE.STR.union(TYPE.NULL), 2),
 					]);
 				});
 				// TODO: throws when entry is not optional
@@ -438,8 +424,7 @@ describe('ASTNodeAccess', () => {
 				it('returns folded values as normal.', () => {
 					testExprValues(SRC, [
 						new VALUE.String('three'),
-						null,
-						null,
+						...repeat(null, 2),
 					]);
 				});
 				it('returns null when index is out of bounds (bypassing type-checking).', () => {
@@ -463,8 +448,7 @@ describe('ASTNodeAccess', () => {
 				it('unions with null if entry is optional.', () => {
 					testExprTypes(SRC, [
 						typeUnit('three'),
-						TYPE.STR.union(TYPE.NULL),
-						TYPE.STR.union(TYPE.NULL),
+						...repeat(TYPE.STR.union(TYPE.NULL), 2),
 					]);
 				});
 				// TODO: throws when entry is not optional
@@ -476,8 +460,7 @@ describe('ASTNodeAccess', () => {
 				it('returns folded values as normal.', () => {
 					testExprValues(SRC, [
 						new VALUE.String('three'),
-						null,
-						null,
+						...repeat(null, 2),
 					]);
 				});
 				it('returns null when key is out of range (bypassing type-checking).', () => {
@@ -555,8 +538,7 @@ describe('ASTNodeAccess', () => {
 						...repeat(TYPE.TRUE, 3),
 						...N_TYPES,
 
-						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
-						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
+						...repeat(TYPE_INT_FLOAT_STR_NULL, 6),
 						...repeat(TYPE.BOOL, 3),
 						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
 					]);
@@ -567,13 +549,11 @@ describe('ASTNodeAccess', () => {
 				it('when accessor expression is correct type but out of bounds/range, returns `null` for folded objects, union types for unfolded objects.', () => {
 					const TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
 					return testExprTypes(ERRS, [
-						...repeat(TYPE.NULL, 2),
-						TYPE.NULL,
+						...repeat(TYPE.NULL, 3),
 						TYPE.FALSE,
 						TYPE.NULL,
 
-						...repeat(TYPE_INT_FLOAT_STR_NULL, 2),
-						TYPE_INT_FLOAT_STR_NULL,
+						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
 						TYPE.BOOL,
 						TYPE_INT_FLOAT_STR_NULL,
 					]);
@@ -598,20 +578,16 @@ describe('ASTNodeAccess', () => {
 						...repeat(VALUE.TRUE, 3),
 						...N_VALUES,
 
-						...repeat(null, 3),
-						...repeat(null, 3),
-						...repeat(null, 6),
+						...repeat(null, 12),
 					]);
 				});
 				it('when accessor expression is out of bounds/range, returns the `null` value for folded objects, returns null for unfolded objects.', () => {
 					testExprValues(ERRS, [
-						...repeat(VALUE.NULL, 2),
-						VALUE.NULL,
+						...repeat(VALUE.NULL, 3),
 						VALUE.FALSE,
 						VALUE.NULL,
 
-						...repeat(null, 4),
-						null,
+						...repeat(null, 5),
 					]);
 				});
 			});
@@ -643,9 +619,7 @@ describe('ASTNodeAccess', () => {
 			specify('#fold', () => {
 				testExprValues(SRC, [
 					new VALUE.String('three'),
-					null,
-					null,
-					null,
+					...repeat(null, 3),
 				]);
 			});
 		});
@@ -704,13 +678,11 @@ describe('ASTNodeAccess', () => {
 			it('#type: always subtracts void.', () => {
 				const N_TYPE = typeUnit(42n);
 				return testExprTypes(SRC, [
-					N_TYPE,
-					N_TYPE,
+					...repeat(N_TYPE, 2),
 					TYPE.TRUE,
 					N_TYPE,
 
-					TYPE.INT,
-					TYPE.INT,
+					...repeat(TYPE.INT, 2),
 					TYPE.BOOL,
 					TYPE.INT,
 				]);
@@ -718,15 +690,11 @@ describe('ASTNodeAccess', () => {
 			specify('#fold', () => {
 				const N_VALUE = new VALUE.Integer(42n);
 				return testExprValues(SRC, [
-					N_VALUE,
-					N_VALUE,
+					...repeat(N_VALUE, 2),
 					VALUE.TRUE,
 					N_VALUE,
 
-					null,
-					null,
-					null,
-					null,
+					...repeat(null, 4),
 				]);
 			});
 		});
