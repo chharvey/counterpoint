@@ -81,15 +81,20 @@ describe('ASTNodeAccess', () => {
 
 	context('access kind: dot access (`a.‹b›`).', () => {
 		context('when base is nullish.', () => {
+			const SRCS = [
+				'null.4;',
+				'null.four;',
+				'null.[[[[[]]]]];',
+			] as const;
 			it('#type: throws a TypeError.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource('null.4;')         .type(), TypeErrorNoEntry,          'access type: access by index.');
-				assert.throws(() => AST.ASTNodeAccess.fromSource('null.four;')      .type(), TypeErrorNoEntry,          'access type: access by key.');
-				assert.throws(() => AST.ASTNodeAccess.fromSource('null.[[[[[]]]]];').type(), TypeErrorInvalidOperation, 'access type: access by expression.');
+				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), [
+					TypeErrorNoEntry,
+					TypeErrorNoEntry,
+					TypeErrorInvalidOperation,
+				][i], `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
 			});
 			it('#fold: throws.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource('null.4;')         .fold(), Error, 'access type: access by index.');
-				assert.throws(() => AST.ASTNodeAccess.fromSource('null.four;')      .fold(), Error, 'access type: access by key.');
-				assert.throws(() => AST.ASTNodeAccess.fromSource('null.[[[[[]]]]];').fold(), Error, 'access type: access by expression.');
+				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), Error, `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
 			});
 		});
 
@@ -290,10 +295,12 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource('List.<int | float | str>([1, 2.0, "three"]).["3"];')       .type(), TypeErrorNotNarrow);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]).[3];').type(), TypeErrorNotNarrow);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('{1, 2.0, "three"}.[true];')                                .type(), TypeErrorNotNarrow);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.["a"];')      .type(), TypeErrorNotNarrow);
+					xjs.Array.forEachAggregated([
+						'List.<int | float | str>([1, 2.0, "three"]).["3"];',
+						'Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]).[3];',
+						'{1, 2.0, "three"}.[true];',
+						'{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.["a"];',
+					], (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 			});
 			describe('#fold', () => {
@@ -334,7 +341,7 @@ describe('ASTNodeAccess', () => {
 						AST.ASTNodeAccess.fromSource('null?.3;')         .type(),
 						AST.ASTNodeAccess.fromSource('null?.four;')      .type(),
 						AST.ASTNodeAccess.fromSource('null?.[[[[[]]]]];').type(),
-					], (t, i) => assert.ok(t.isSubtypeOf(TYPE.NULL), `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
+					], (typ, i) => assert.ok(typ.isSubtypeOf(TYPE.NULL), `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
 				});
 				it('chained optional access.', () => {
 					const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // [bool]
@@ -364,7 +371,7 @@ describe('ASTNodeAccess', () => {
 						AST.ASTNodeAccess.fromSource('null?.3;')         .fold(),
 						AST.ASTNodeAccess.fromSource('null?.four;')      .fold(),
 						AST.ASTNodeAccess.fromSource('null?.[[[[[]]]]];').fold(),
-					], (t, i) => assert.strictEqual(t, VALUE.NULL, `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
+					], (val, i) => assert.strictEqual(val, VALUE.NULL, `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
 				});
 				it('chained optional access.', () => {
 					const prop1 = new VALUE.Tuple([VALUE.TRUE]); // [true]
@@ -559,10 +566,12 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource('List.<int | float | str>([1, 2.0, "three"])?.["3"];')       .type(), TypeErrorNotNarrow);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int | float | str>([a= 1, b= 2.0, c= "three"])?.[3];').type(), TypeErrorNotNarrow);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('{1, 2.0, "three"}?.[true];')                                .type(), TypeErrorNotNarrow);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.["a"];')      .type(), TypeErrorNotNarrow);
+					xjs.Array.forEachAggregated([
+						'List.<int | float | str>([1, 2.0, "three"])?.["3"];',
+						'Dict.<int | float | str>([a= 1, b= 2.0, c= "three"])?.[3];',
+						'{1, 2.0, "three"}?.[true];',
+						'{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.["a"];',
+					], (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 			});
 			describe('#fold', () => {
