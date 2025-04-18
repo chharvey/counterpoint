@@ -18,25 +18,35 @@ describe('ASTNodeAccess', () => {
 		return Array<T>(times).fill(value);
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	type ErrorOrSubclassConstructor = abstract new (...args: any[]) => Error;
+
 	/**
 	 * Takes a program source text and compares it to the array of expected types.
 	 * The format of the program source text must be
 	 * 0 or more variable declarations and 0 or more nonempty expression-statements, possibly intermixed.
 	 * (The source text must be valid!)
 	 * The expression-statements’ expression types are compared to the expected types via `deepStrictEqual`.
-	 * @param source   the program source text to parse and analyze
-	 * @param expected the expected types of the expressions
+	 * If any of the expecteds are Error (or subclasses) constructors, then the expression type is expected to throw, and is tested against that.
+	 * @param source    the program source text to parse and analyze
+	 * @param expecteds the expected types of the expressions
 	 */
-	function testExprTypes(source: string, expected: readonly TYPE.Type[]): void {
-		const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
+	function testExprTypes(source: string, expecteds: readonly (TYPE.Type | ErrorOrSubclassConstructor)[]): void {
+		const program:    AST.ASTNodeGoal                           = AST.ASTNodeGoal.fromSource(source);
+		const statements: readonly AST.ASTNodeStatementExpression[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
 		program.varCheck();
 		program.typeCheck();
-		return assert.deepStrictEqual(
-			program.children
-				.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression)
-				.map((stmt) => stmt.expr!.type()),
-			expected,
-		);
+		return expecteds.some((it) => it instanceof Function)
+			? xjs.Array.forEachAggregated(statements, (stmt, i) => {
+				const expected: TYPE.Type | ErrorOrSubclassConstructor = expecteds[i];
+				return expected instanceof Function
+					? assert.throws(() => stmt.expr!.type(), expected)
+					: assert.deepStrictEqual(stmt.expr!.type(), expected);
+			})
+			: assert.deepStrictEqual(
+				statements.map((stmt) => stmt.expr!.type()),
+				expecteds,
+			);
 	}
 
 
@@ -46,19 +56,26 @@ describe('ASTNodeAccess', () => {
 	 * 0 or more variable declarations and 0 or more nonempty expression-statements, possibly intermixed.
 	 * (The source text must be valid!)
 	 * The expression-statements’ expression folded values, or null if they are not foldable, are compared to the expected values via `deepStrictEqual`.
-	 * @param source   the program source text to parse and analyze
-	 * @param expected the expected folded values (or null) of the expressions
+	 * If any of the expecteds are Error (or subclasses) constructors, then the expression fold is expected to throw, and is tested against that.
+	 * @param source    the program source text to parse and analyze
+	 * @param expecteds the expected folded values (or null) of the expressions
 	 */
-	function testExprValues(source: string, expected: readonly (VALUE.Value | null)[]): void {
-		const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
+	function testExprValues(source: string, expecteds: readonly (VALUE.Value | null | ErrorOrSubclassConstructor)[]): void {
+		const program:    AST.ASTNodeGoal                           = AST.ASTNodeGoal.fromSource(source);
+		const statements: readonly AST.ASTNodeStatementExpression[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
 		program.varCheck();
 		program.typeCheck();
-		return assert.deepStrictEqual(
-			program.children
-				.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression)
-				.map((stmt) => stmt.expr!.fold()),
-			expected,
-		);
+		return expecteds.some((it) => it instanceof Function)
+			? xjs.Array.forEachAggregated(statements, (stmt, i) => {
+				const expected: VALUE.Value | null | ErrorOrSubclassConstructor = expecteds[i];
+				return expected instanceof Function
+					? assert.throws(() => stmt.expr!.fold(), expected)
+					: assert.deepStrictEqual(stmt.expr!.fold(), expected);
+			})
+			: assert.deepStrictEqual(
+				statements.map((stmt) => stmt.expr!.fold()),
+				expecteds,
+			);
 	}
 
 
@@ -232,11 +249,11 @@ describe('ASTNodeAccess', () => {
 			const ERRS = `
 				${ DECLS }
 
-				list_fixed.[3];   % type throws TypeError % fold throws VoidError
-				list_fixed.[-4];  % type throws TypeError % fold throws VoidError
-				% TODO: dict_fixed.[@d];  % type throws TypeError % fold throws VoidError
-				set_fixed.[42.0]; % type throws TypeError % fold throws VoidError
-				map_fixed.["d"];  % type throws TypeError % fold throws VoidError
+				list_fixed.[3];   % type \`never\` % fold throws VoidError
+				list_fixed.[-4];  % type \`never\` % fold throws VoidError
+				% TODO: dict_fixed.[@d];  % type \`never\` % fold throws VoidError
+				set_fixed.[42.0]; % type \`false\` % value \`false\`
+				map_fixed.["d"];  % type \`never\` % fold throws VoidError
 
 				list_unfixed.[3];   % type \`int | float | str\` % non-foldable value
 				list_unfixed.[-4];  % type \`int | float | str\` % non-foldable value
@@ -267,9 +284,19 @@ describe('ASTNodeAccess', () => {
 				it('throws when base object is of incorrect type.', () => {
 					assert.throws(() => AST.ASTNodeAccess.fromSource('(4).[2];').type(), TypeErrorInvalidOperation);
 				});
-				it('when accessor expression is correct type but out of bounds/range, throws for folded objects, returns union type for unfolded objects.', () => {
-					// TODO:
-					ERRS;
+				it('when accessor expression is correct type but out of bounds/range, returns `never` for folded objects, returns union type for unfolded objects.', () => {
+					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
+					return testExprTypes(ERRS, [
+						...repeat(TYPE.NEVER, 2),
+						// TYPE.NEVER,
+						TYPE.FALSE,
+						TYPE.NEVER,
+
+						...repeat(TYPE_INT_FLOAT_STR, 2),
+						// TYPE_INT_FLOAT_STR,
+						TYPE.BOOL,
+						TYPE_INT_FLOAT_STR,
+					]);
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
 					assert.throws(() => AST.ASTNodeAccess.fromSource('List.<int | float | str>([1, 2.0, "three"]).["3"];')       .type(), TypeErrorNotNarrow);
@@ -297,7 +324,15 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('when accessor expression is out of bounds/range, throws for folded objects, returns null for unfolded objects.', () => {
-					// TODO:
+					testExprValues(ERRS, [
+						...repeat(VoidError01, 2),
+						// VoidError01,
+						VALUE.FALSE,
+						VoidError01,
+
+						...repeat(null, 4),
+						// null,
+					]);
 				});
 			});
 		});
@@ -532,14 +567,12 @@ describe('ASTNodeAccess', () => {
 				it('when accessor expression is correct type but out of bounds/range, returns `null` for folded objects, union types for unfolded objects.', () => {
 					const TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
 					return testExprTypes(ERRS, [
-						TYPE.NULL,
-						TYPE.NULL,
+						...repeat(TYPE.NULL, 2),
 						// TYPE.NULL,
 						TYPE.FALSE,
 						TYPE.NULL,
 
-						TYPE_INT_FLOAT_STR_NULL,
-						TYPE_INT_FLOAT_STR_NULL,
+						...repeat(TYPE_INT_FLOAT_STR_NULL, 2),
 						// TYPE_INT_FLOAT_STR_NULL,
 						TYPE.BOOL,
 						TYPE_INT_FLOAT_STR_NULL,
@@ -572,12 +605,13 @@ describe('ASTNodeAccess', () => {
 				});
 				it('when accessor expression is out of bounds/range, returns the `null` value for folded objects, returns null for unfolded objects.', () => {
 					testExprValues(ERRS, [
-						VALUE.NULL,
-						VALUE.NULL,
+						...repeat(VALUE.NULL, 2),
 						// VALUE.NULL,
 						VALUE.FALSE,
 						VALUE.NULL,
+
 						...repeat(null, 4),
+						// null,
 					]);
 				});
 			});
