@@ -10,6 +10,7 @@ import {
 	VoidError01,
 } from '../../../src/index.ts';
 import {typeUnit} from '../../helpers.ts';
+import {extract_lines} from '../../utils.ts';
 
 
 
@@ -81,11 +82,11 @@ describe('ASTNodeAccess', () => {
 
 	context('access kind: dot access (`a.‹b›`).', () => {
 		context('when base is nullish.', () => {
-			const SRCS = [
-				'null.4;',
-				'null.four;',
-				'null.[[[[[]]]]];',
-			] as const;
+			const SRCS = extract_lines(`
+				null.4;
+				null.four;
+				null.[[[[[]]]]];
+			`);
 			it('#type: throws a TypeError.', () => {
 				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), [
 					TypeErrorNoEntry,
@@ -116,10 +117,10 @@ describe('ASTNodeAccess', () => {
 				tup_unfixed.-2; % type \`float\`   % non-foldable value
 				tup_unfixed.-1; % type \`str\`     % non-foldable value
 			`;
-			const THROWS = [
-				'[1, 2.0, "three"].3;',
-				'[1, 2.0, "three"].-4;',
-			] as const;
+			const THROWS = extract_lines(`
+				[1, 2.0, "three"].3;
+				[1, 2.0, "three"].-4;
+			`);
 			describe('#type', () => {
 				it('return individual entry types', () => {
 					testExprTypes(SRC, [
@@ -295,12 +296,12 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
-					xjs.Array.forEachAggregated([
-						'List.<int | float | str>([1, 2.0, "three"]).["3"];',
-						'Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]).[3];',
-						'{1, 2.0, "three"}.[true];',
-						'{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.["a"];',
-					], (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
+					xjs.Array.forEachAggregated(extract_lines(`
+						List.<int | float | str>([1, 2.0, "three"]).["3"];
+						Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]).[3];
+						{1, 2.0, "three"}.[true];
+						{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.["a"];
+					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 			});
 			describe('#fold', () => {
@@ -411,10 +412,10 @@ describe('ASTNodeAccess', () => {
 				tupo1_u?.2; % type \`str?\`    % non-foldable value
 				tupo2_u?.2; % type \`str?\`    % non-foldable value
 			`;
-			const THROWS = [
-				'[1, 2.0, "three"]?.3;',
-				'[1, 2.0, "three"]?.-4;',
-			] as const;
+			const THROWS = extract_lines(`
+				[1, 2.0, "three"]?.3;
+				[1, 2.0, "three"]?.-4;
+			`);
 			describe('#type', () => {
 				it('unions with null if entry is optional.', () => {
 					testExprTypes(SRC, [
@@ -566,12 +567,12 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
-					xjs.Array.forEachAggregated([
-						'List.<int | float | str>([1, 2.0, "three"])?.["3"];',
-						'Dict.<int | float | str>([a= 1, b= 2.0, c= "three"])?.[3];',
-						'{1, 2.0, "three"}?.[true];',
-						'{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.["a"];',
-					], (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
+					xjs.Array.forEachAggregated(extract_lines(`
+						List.<int | float | str>([1, 2.0, "three"])?.["3"];
+						Dict.<int | float | str>([a= 1, b= 2.0, c= "three"])?.[3];
+						{1, 2.0, "three"}?.[true];
+						{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.["a"];
+					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 			});
 			describe('#fold', () => {
