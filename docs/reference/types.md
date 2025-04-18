@@ -639,31 +639,10 @@ elements.-\b10; %== "wind"
 Tuple size is known at compile-time,
 so attempting to retrieve an out-of-bounds index results in a compile-time error.
 Positive indices beyond the end of the list, and negative indices beyond the beginning,
-result in a TypeError. In other words, the indices *do not* loop around.
+result in a TypeErrorNoEntry. In other words, the indices *do not* loop around.
 ```
-elements.3;  %> TypeError
-elements.-4; %> TypeError
-```
-
-Tuple items can also be accessed by **bracket-accessor notation**,
-where the expression in brackets computes the index.
-```
-elements.[0];       %== "earth"
-elements.[3 - 2];   %== "wind"
-elements.[-3 + 2];  %== "fire"
-elements.[0.5 * 2]; %> TypeError % expected int but found float
-```
-
-A TypeError is produced when the compiler can determine if the index is out-of-bounds.
-```
-let i: int = 4;
-elements.[i];   %> TypeError % index `4` does not exist on type `str[3]`
-```
-If the compiler can’t compute the index, it won’t error at all,
-but this means the program could crash at runtime.
-```
-let var i: int = 4;
-elements.[i];       % no compile-time error, but value at runtime will be undefined
+elements.3;  %> TypeErrorNoEntry
+elements.-4; %> TypeErrorNoEntry
 ```
 
 A tuple’s items, type, and size are all fixed.
@@ -828,7 +807,7 @@ elements.aristotle; %== "fire"
 Record keys are known at compile-time,
 so attempting to retrieve an non-existent key results in a compile-time error.
 ```
-elements.pythagoras; %> TypeError
+elements.pythagoras; %> TypeErrorNoEntry
 ```
 
 A record’s properties, type, and size are all fixed.
@@ -903,7 +882,34 @@ For example, the expression `elements.[0]` is of type `str | bool | int`,
 and if the list were mutable, we could reassign that entry to an integer or boolean.
 
 #### List Access
-List access is the same as [Tuple Access](#tuple-access).
+List items are accessed by **bracket-accessor notation**, where the expression in brackets computes the index.
+The bracketed expression must be an Integer value (of type `int`).
+```
+let elements: str[] = List.<str>(["earth", "wind", "fire"]);
+elements.[0];       %== "earth"
+elements.[3 - 2];   %== "wind"
+elements.[-3 + 2];  %== "fire"
+elements.[0.5 * 2]; %> TypeError % expected int but found float
+```
+
+When the the compiler can determine if the index is out-of-bounds (for example if the list and index are foldable),
+then a VoidError is reported at compile-time.
+(This differs from a tuple, where a TypeErrorNoEntry would be reported.)
+```
+let i: int = 5;
+elements.[i];   %> VoidError
+```
+Most lists are dynamic and their count is unknown by the compiler, so we won’t always be warned when the index is out of bounds.
+In these cases, the typer will still analyze the expression, but an ExceptionIndexOutOfBounds is thrown at runtime.
+```
+let var i: int = 4;           % unfixed variables are not folded
+let elem: str = elements.[i]; % no compile-time error, but results in ExceptionIndexOutOfBounds
+```
+
+The [optional access operator](./expressions-operators.md#optional-access) will “catch” the exception and return `null` instead.
+```
+elements?.[i]; %== null
+```
 
 
 ### Dicts
@@ -929,7 +935,49 @@ A shorthand for the generic syntax `Dict.<T>` is `[:T]`.
 As shown above, we can mix value types, but the dict type must be homogeneous.
 
 #### Dict Access
-Dict access is the same as [Record Access](#record-access).
+Dict properties are accessed by **bracket-accessor notation**, where the expression in brackets computes the key.
+The bracketed expression should be a Symbol value (of type `sym`).
+```
+let elements: [: str] = Dict.<str>([
+	socrates=  "earth",
+	plato=     "wind",
+	aristotle= "fire",
+]);
+elements.[@socrates]; %== "earth"
+
+let key: sym = if user.hasPermissions then @plato else @aristotle;
+elements.[key]; % either "wind" or "fire" depending on `user.hasPermissions`
+elements.[2];   %> TypeError % expected sym | str but found int
+```
+A string *may* be given as an argument if the symbol name is not known ahaed of time.
+This method is not recommended, but is sometimes necessary,
+e.g., if we are parsing and accessing JSON data at runtime.
+In this case, the VM will compare the given string’s value with each of the dict’s keys’ stringified values.
+```
+claim json_data: [: str];
+json_data.["aristotle"];                   % valid, but slower than giving a symbol
+json_data.["so-crates".replace.("-", "")]; % computed strings may be given
+```
+
+When the the compiler can determine if the key is out-of-range (for example if the dict and key are foldable),
+then a VoidError is reported at compile-time.
+(This differs from a record, where a TypeErrorNoEntry would be reported.)
+```
+let s: sym = @pythagoras;
+elements.[s];             %> VoidError
+```
+Most dicts are dynamic and their range of keys is unknown by the compiler, so we won’t always be warned when the key is out of range.
+In these cases, the typer will still analyze the expression, but an ExceptionKeyOutOfRange is thrown at runtime.
+```
+let var s: sym = @pythagoras; % unfixed variables are not folded
+elements.[s];                 % no compile-time error, but results in ExceptionKeyOutOfRange
+json_data.["pythagoras"];     % no compile-time error, but results in ExceptionKeyOutOfRange
+```
+
+The [optional access operator](./expressions-operators.md#optional-access) will “catch” the exception and return `null` instead.
+```
+json_data?.["pythagoras"]; %== null
+```
 
 
 ### Sets
@@ -1076,10 +1124,10 @@ let a: str = "3rd";
 bases.[a];          %> VoidError
 ```
 If the compiler can’t compute the antecedent, it won’t error at all,
-but this means the program could crash at runtime.
+but this means an Exception could be thrown at runtime.
 ```
 let var a: str = "3rd";
-bases.[a];              % no compile-time error, but value at runtime will be undefined
+bases.[a];              % no compile-time error, but runtime exception
 ```
 We can avoid the potential crash using the
 [optional access operator](./expressions-operators.md#optional-access).

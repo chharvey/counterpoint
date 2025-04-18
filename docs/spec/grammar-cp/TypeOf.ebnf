@@ -127,18 +127,20 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		4. *Else If* `base_type` is a List type:
-			1. *Let* `t` be the union of all item types in `base_type`.
+			1. *Let* `t` be the type of the items in `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
 				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
-		5. *Else If* `base_type` is a Set type:
+		5. *Else If* `base_type` is a Dict type:
+			// TODO
+		6. *Else If* `base_type` is a Set type:
 			1. *Let* `t` be the type of the elements in `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true`:
 				1. *Set* `returned` to `Boolean`.
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
-		6. *Else If* `base_type` is a Map type:
+		7. *Else If* `base_type` is a Map type:
 			1. *Let* `k` be the type of the antecedents in `base_type`.
 			2. *Let* `v` be the type of the consequents in `base_type`.
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true`:
