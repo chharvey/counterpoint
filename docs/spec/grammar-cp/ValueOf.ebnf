@@ -102,7 +102,10 @@ Object! ValueOf(SemanticAccess access) :=
 			2. *If* `access.kind` is `OPTIONAL`:
 				1. *Return:* `null`.
 		5. *Else If* `base_value` is an instance of `Dict`:
-			// TODO
+			1. *If* `accessor_value` is a key in `base_value`:
+				1. *Return:* the item accessed at key `accessor_value` in `base_value`.
+			2. *If* `access.kind` is `OPTIONAL`:
+				1. *Return:* `null`.
 		6. *Else If* `base_value` is an instance of `Set`:
 			1. *If* `accessor_value` is in `base_value`:
 				1. *Return:* `true`.

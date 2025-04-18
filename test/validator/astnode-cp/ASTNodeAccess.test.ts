@@ -209,11 +209,11 @@ describe('ASTNodeAccess', () => {
 		context('access type: access by expression.', () => {
 			const DECLS = `
 				let     list_fixed:   List.<     int | float | str> = List.<int | float | str>([   1,    2.0,    "three"]);
-				% TODO: let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
+				let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
 				let     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
 				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
 				let var list_unfixed: List.<     int | float | str> = list_fixed;
-				% TODO: let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
+				let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
 				let var set_unfixed:  Set .<     int | float | str> = set_fixed;
 				let var map_unfixed:  Map .<str, int | float | str> = map_fixed;
 			`;
@@ -223,9 +223,9 @@ describe('ASTNodeAccess', () => {
 				list_fixed.[0];      % type \`1\`       % value \`1\`
 				list_fixed.[1];      % type \`2.0\`     % value \`2.0\`
 				list_fixed.[2];      % type \`"three"\` % value \`"three"\`
-				% TODO: dict_fixed.[@a];     % type \`1\`       % value \`1\`
-				% TODO: dict_fixed.[@b];     % type \`2.0\`     % value \`2.0\`
-				% TODO: dict_fixed.[@c];     % type \`"three"\` % value \`"three"\`
+				dict_fixed.[@a];     % type \`1\`       % value \`1\`
+				dict_fixed.[@b];     % type \`2.0\`     % value \`2.0\`
+				dict_fixed.[@c];     % type \`"three"\` % value \`"three"\`
 				set_fixed.[1];       % type \`true\`    % value \`true\`
 				set_fixed.[2.0];     % type \`true\`    % value \`true\`
 				set_fixed.["three"]; % type \`true\`    % value \`true\`
@@ -236,9 +236,9 @@ describe('ASTNodeAccess', () => {
 				list_unfixed.[0];      % type \`int | float | str\` % non-foldable value
 				list_unfixed.[1];      % type \`int | float | str\` % non-foldable value
 				list_unfixed.[2];      % type \`int | float | str\` % non-foldable value
-				% TODO: dict_unfixed.[@a];     % type \`int | float | str\` % non-foldable value
-				% TODO: dict_unfixed.[@b];     % type \`int | float | str\` % non-foldable value
-				% TODO: dict_unfixed.[@c];     % type \`int | float | str\` % non-foldable value
+				dict_unfixed.[@a];     % type \`int | float | str\` % non-foldable value
+				dict_unfixed.[@b];     % type \`int | float | str\` % non-foldable value
+				dict_unfixed.[@c];     % type \`int | float | str\` % non-foldable value
 				set_unfixed.[1];       % type \`bool\`              % non-foldable value
 				set_unfixed.[2.0];     % type \`bool\`              % non-foldable value
 				set_unfixed.["three"]; % type \`bool\`              % non-foldable value
@@ -251,13 +251,13 @@ describe('ASTNodeAccess', () => {
 
 				list_fixed.[3];   % type \`never\` % fold throws VoidError
 				list_fixed.[-4];  % type \`never\` % fold throws VoidError
-				% TODO: dict_fixed.[@d];  % type \`never\` % fold throws VoidError
+				dict_fixed.[@d];  % type \`never\` % fold throws VoidError
 				set_fixed.[42.0]; % type \`false\` % value \`false\`
 				map_fixed.["d"];  % type \`never\` % fold throws VoidError
 
 				list_unfixed.[3];   % type \`int | float | str\` % non-foldable value
 				list_unfixed.[-4];  % type \`int | float | str\` % non-foldable value
-				% TODO: dict_unfixed.[@d];  % type \`int | float | str\` % non-foldable value
+				dict_unfixed.[@d];  % type \`int | float | str\` % non-foldable value
 				set_unfixed.[42.0]; % type \`bool\`              % non-foldable value
 				map_unfixed.["d"];  % type \`int | float | str\` % non-foldable value
 			`;
@@ -271,12 +271,12 @@ describe('ASTNodeAccess', () => {
 					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
 					return testExprTypes(SRC, [
 						...N_TYPES,
-						// ...N_TYPES,
+						...N_TYPES,
 						...repeat(TYPE.TRUE, 3),
 						...N_TYPES,
 
 						...repeat(TYPE_INT_FLOAT_STR, 3),
-						// ...repeat(TYPE_INT_FLOAT_STR, 3),
+						...repeat(TYPE_INT_FLOAT_STR, 3),
 						...repeat(TYPE.BOOL, 3),
 						...repeat(TYPE_INT_FLOAT_STR, 3),
 					]);
@@ -288,19 +288,19 @@ describe('ASTNodeAccess', () => {
 					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
 					return testExprTypes(ERRS, [
 						...repeat(TYPE.NEVER, 2),
-						// TYPE.NEVER,
+						TYPE.NEVER,
 						TYPE.FALSE,
 						TYPE.NEVER,
 
 						...repeat(TYPE_INT_FLOAT_STR, 2),
-						// TYPE_INT_FLOAT_STR,
+						TYPE_INT_FLOAT_STR,
 						TYPE.BOOL,
 						TYPE_INT_FLOAT_STR,
 					]);
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
 					assert.throws(() => AST.ASTNodeAccess.fromSource('List.<int | float | str>([1, 2.0, "three"]).["3"];')       .type(), TypeErrorNotNarrow);
-					// TODO: assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]).[3];').type(), TypeErrorNotNarrow);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]).[3];').type(), TypeErrorNotNarrow);
 					assert.throws(() => AST.ASTNodeAccess.fromSource('{1, 2.0, "three"}.[true];')                                .type(), TypeErrorNotNarrow);
 					assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.["a"];')      .type(), TypeErrorNotNarrow);
 				});
@@ -314,24 +314,24 @@ describe('ASTNodeAccess', () => {
 					] as const;
 					return testExprValues(SRC, [
 						...N_VALUES,
-						// ...N_VALUES,
+						...N_VALUES,
 						...repeat(VALUE.TRUE, 3),
 						...N_VALUES,
 
 						...repeat(null, 3),
-						// ...repeat(null, 3),
+						...repeat(null, 3),
 						...repeat(null, 6),
 					]);
 				});
 				it('when accessor expression is out of bounds/range, throws for folded objects, returns null for unfolded objects.', () => {
 					testExprValues(ERRS, [
 						...repeat(VoidError01, 2),
-						// VoidError01,
+						VoidError01,
 						VALUE.FALSE,
 						VoidError01,
 
 						...repeat(null, 4),
-						// null,
+						null,
 					]);
 				});
 			});
@@ -489,11 +489,11 @@ describe('ASTNodeAccess', () => {
 		context('access type: access by expression.', () => {
 			const DECLS = `
 				let     list_fixed:   List.<     int | float | str> = List.<int | float | str>([   1,    2.0,    "three"]);
-				% TODO: let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
+				let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
 				let     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
 				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
 				let var list_unfixed: List.<     int | float | str> = list_fixed;
-				% TODO: let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
+				let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
 				let var set_unfixed:  Set .<     int | float | str> = set_fixed;
 				let var map_unfixed:  Map .<str, int | float | str> = map_fixed;
 			`;
@@ -503,9 +503,9 @@ describe('ASTNodeAccess', () => {
 				list_fixed?.[0];      % type \`1\`       % value \`1\`
 				list_fixed?.[1];      % type \`2.0\`     % value \`2.0\`
 				list_fixed?.[2];      % type \`"three"\` % value \`"three"\`
-				% TODO: dict_fixed?.[@a];     % type \`1\`       % value \`1\`
-				% TODO: dict_fixed?.[@b];     % type \`2.0\`     % value \`2.0\`
-				% TODO: dict_fixed?.[@c];     % type \`"three"\` % value \`"three"\`
+				dict_fixed?.[@a];     % type \`1\`       % value \`1\`
+				dict_fixed?.[@b];     % type \`2.0\`     % value \`2.0\`
+				dict_fixed?.[@c];     % type \`"three"\` % value \`"three"\`
 				set_fixed?.[1];       % type \`true\`    % value \`true\`
 				set_fixed?.[2.0];     % type \`true\`    % value \`true\`
 				set_fixed?.["three"]; % type \`true\`    % value \`true\`
@@ -516,9 +516,9 @@ describe('ASTNodeAccess', () => {
 				list_unfixed?.[0];      % type \`int | float | str | null\` % non-foldable value
 				list_unfixed?.[1];      % type \`int | float | str | null\` % non-foldable value
 				list_unfixed?.[2];      % type \`int | float | str | null\` % non-foldable value
-				% TODO: dict_unfixed?.[@a];     % type \`int | float | str | null\` % non-foldable value
-				% TODO: dict_unfixed?.[@b];     % type \`int | float | str | null\` % non-foldable value
-				% TODO: dict_unfixed?.[@c];     % type \`int | float | str | null\` % non-foldable value
+				dict_unfixed?.[@a];     % type \`int | float | str | null\` % non-foldable value
+				dict_unfixed?.[@b];     % type \`int | float | str | null\` % non-foldable value
+				dict_unfixed?.[@c];     % type \`int | float | str | null\` % non-foldable value
 				set_unfixed?.[1];       % type \`bool\`                     % non-foldable value
 				set_unfixed?.[2.0];     % type \`bool\`                     % non-foldable value
 				set_unfixed?.["three"]; % type \`bool\`                     % non-foldable value
@@ -531,13 +531,13 @@ describe('ASTNodeAccess', () => {
 
 				list_fixed?.[3];   % type \`null\`  % value \`null\`
 				list_fixed?.[-4];  % type \`null\`  % value \`null\`
-				% TODO: dict_fixed?.[@d];  % type \`null\`  % value \`null\`
+				dict_fixed?.[@d];  % type \`null\`  % value \`null\`
 				set_fixed?.[42.0]; % type \`false\` % value \`false\`
 				map_fixed?.["d"];  % type \`null\`  % value \`null\`
 
 				list_unfixed?.[3];   % type \`int | float | str | null\` % non-foldable value
 				list_unfixed?.[-4];  % type \`int | float | str | null\` % non-foldable value
-				% TODO: dict_unfixed?.[@d];  % type \`int | float | str | null\` % non-foldable value
+				dict_unfixed?.[@d];  % type \`int | float | str | null\` % non-foldable value
 				set_unfixed?.[42.0]; % type \`bool\`                     % non-foldable value
 				map_unfixed?.["d"];  % type \`int | float | str | null\` % non-foldable value
 			`;
@@ -551,12 +551,12 @@ describe('ASTNodeAccess', () => {
 					const TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
 					return testExprTypes(SRC, [
 						...N_TYPES,
-						// ...N_TYPES,
+						...N_TYPES,
 						...repeat(TYPE.TRUE, 3),
 						...N_TYPES,
 
 						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
-						// ...repeat(TYPE_INT_FLOAT_STR, 3),
+						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
 						...repeat(TYPE.BOOL, 3),
 						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
 					]);
@@ -568,19 +568,19 @@ describe('ASTNodeAccess', () => {
 					const TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
 					return testExprTypes(ERRS, [
 						...repeat(TYPE.NULL, 2),
-						// TYPE.NULL,
+						TYPE.NULL,
 						TYPE.FALSE,
 						TYPE.NULL,
 
 						...repeat(TYPE_INT_FLOAT_STR_NULL, 2),
-						// TYPE_INT_FLOAT_STR_NULL,
+						TYPE_INT_FLOAT_STR_NULL,
 						TYPE.BOOL,
 						TYPE_INT_FLOAT_STR_NULL,
 					]);
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
 					assert.throws(() => AST.ASTNodeAccess.fromSource('List.<int | float | str>([1, 2.0, "three"])?.["3"];')       .type(), TypeErrorNotNarrow);
-					// TODO: assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int | float | str>([a= 1, b= 2.0, c= "three"])?.[3];').type(), TypeErrorNotNarrow);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int | float | str>([a= 1, b= 2.0, c= "three"])?.[3];').type(), TypeErrorNotNarrow);
 					assert.throws(() => AST.ASTNodeAccess.fromSource('{1, 2.0, "three"}?.[true];')                                .type(), TypeErrorNotNarrow);
 					assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.["a"];')      .type(), TypeErrorNotNarrow);
 				});
@@ -594,24 +594,24 @@ describe('ASTNodeAccess', () => {
 					] as const;
 					return testExprValues(SRC, [
 						...N_VALUES,
-						// ...N_VALUES,
+						...N_VALUES,
 						...repeat(VALUE.TRUE, 3),
 						...N_VALUES,
 
 						...repeat(null, 3),
-						// ...repeat(null, 3),
+						...repeat(null, 3),
 						...repeat(null, 6),
 					]);
 				});
 				it('when accessor expression is out of bounds/range, returns the `null` value for folded objects, returns null for unfolded objects.', () => {
 					testExprValues(ERRS, [
 						...repeat(VALUE.NULL, 2),
-						// VALUE.NULL,
+						VALUE.NULL,
 						VALUE.FALSE,
 						VALUE.NULL,
 
 						...repeat(null, 4),
-						// null,
+						null,
 					]);
 				});
 			});
@@ -683,21 +683,21 @@ describe('ASTNodeAccess', () => {
 		context('access type: access by expression.', () => {
 			const SRC = `
 				let     listvoid_fixed:   (int | void)[]      = List.<int | void>([42]);
-				% TODO: let     dictvoid_fixed:   [: int | void]      = Dict.<int | void>([a= 42]);
+				let     dictvoid_fixed:   [: int | void]      = Dict.<int | void>([a= 42]);
 				let     setvoid_fixed:    (int | void){}      = {42};
 				let     mapvoid_fixed:    {str -> int | void} = {"a" -> 42};
 				let var listvoid_unfixed: (int | void)[]      = listvoid_fixed;
-				% TODO: let var dictvoid_unfixed: [: int | void]      = dictvoid_fixed;
+				let var dictvoid_unfixed: [: int | void]      = dictvoid_fixed;
 				let var setvoid_unfixed:  (int | void){}      = setvoid_fixed;
 				let var mapvoid_unfixed:  {str -> int | void} = mapvoid_fixed;
 
 				listvoid_fixed!.[0];  % type \`42\`   % value \`42\`
-				% TODO: dictvoid_fixed!.[@a]; % type \`42\`   % value \`42\`
+				dictvoid_fixed!.[@a]; % type \`42\`   % value \`42\`
 				setvoid_fixed!.[42];  % type \`true\` % value \`true\`
 				mapvoid_fixed!.["a"]; % type \`42\`   % value \`42\`
 
 				listvoid_unfixed!.[0];  % type \`int\`  % non-foldable value
-				% TODO: dictvoid_unfixed!.[@a]; % type \`int\`  % non-foldable value
+				dictvoid_unfixed!.[@a]; % type \`int\`  % non-foldable value
 				setvoid_unfixed!.[42];  % type \`bool\` % non-foldable value
 				mapvoid_unfixed!.["a"]; % type \`int\`  % non-foldable value
 			`;
@@ -705,12 +705,12 @@ describe('ASTNodeAccess', () => {
 				const N_TYPE = typeUnit(42n);
 				return testExprTypes(SRC, [
 					N_TYPE,
-					// N_TYPE,
+					N_TYPE,
 					TYPE.TRUE,
 					N_TYPE,
 
 					TYPE.INT,
-					// TYPE.INT,
+					TYPE.INT,
 					TYPE.BOOL,
 					TYPE.INT,
 				]);
@@ -719,12 +719,12 @@ describe('ASTNodeAccess', () => {
 				const N_VALUE = new VALUE.Integer(42n);
 				return testExprValues(SRC, [
 					N_VALUE,
-					// N_VALUE,
+					N_VALUE,
 					VALUE.TRUE,
 					N_VALUE,
 
 					null,
-					// null,
+					null,
 					null,
 					null,
 				]);

@@ -28,7 +28,7 @@ class ValueSymbol extends Primitive {
 	 * 	but accidents can happen. Use `id`, not `name`, to identify symbols.
 	 */
 	public constructor(
-		private readonly id:   bigint,
+		public  readonly id:   bigint,
 		private readonly name: string,
 	) {
 		super();

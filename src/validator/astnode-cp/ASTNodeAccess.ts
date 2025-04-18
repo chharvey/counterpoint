@@ -110,6 +110,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 						? updateAccessedDynamicType(base_type.invariant, this.kind)
 						: throwWrongSubtypeError(this.accessor, TYPE.INT)
 				) :
+				(base_type instanceof TYPE.Dict) ? (
+					(accessor_type.isSubtypeOf(TYPE.SYM))
+						? updateAccessedDynamicType(base_type.invariant, this.kind)
+						: accessor_type.isSubtypeOf(TYPE.STR)
+							? assert.fail(new Error('String keys for dict access are not yet supported.'))
+							: throwWrongSubtypeError(this.accessor, TYPE.INT)
+				) :
 				(base_type instanceof TYPE.Set) ? (
 					(accessor_type.isSubtypeOf(base_type.invariant))
 						? TYPE.BOOL
@@ -147,9 +154,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-return --- type guard inference is not very good here
 			return (
-				base_value instanceof VALUE.CollectionIndexed ? base_value.get(accessor_value as VALUE.Integer, this.optional, this.accessor) :
-				base_value instanceof VALUE.Set               ? base_value.get(accessor_value                                               ) :
-				(assert_instanceof(base_value, VALUE.Map),      base_value.get(accessor_value,                  this.optional, this.accessor))
+				base_value instanceof VALUE.CollectionIndexed ? base_value.get(accessor_value as VALUE.Integer,     this.optional, this.accessor) :
+				base_value instanceof VALUE.CollectionKeyed   ? base_value.get((accessor_value as VALUE.Symbol).id, this.optional, this.accessor) :
+				base_value instanceof VALUE.Set               ? base_value.get(accessor_value                                                   ) :
+				(assert_instanceof(base_value, VALUE.Map),      base_value.get(accessor_value,                      this.optional, this.accessor))
 			);
 		}
 	}

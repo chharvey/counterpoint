@@ -133,7 +133,13 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		5. *Else If* `base_type` is a Dict type:
-			// TODO
+			1. *Let* `t` be the type of the values in `base_type`.
+			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Symbol)` is `true`:
+				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
+			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, String)` is `true`:
+				1. *Throw:* a new Error "String keys for dict access are not yet supported."
+			4. *Else:*
+				1. *Throw:* a new TypeErrorNotNarrow.
 		6. *Else If* `base_type` is a Set type:
 			1. *Let* `t` be the type of the elements in `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true`:
