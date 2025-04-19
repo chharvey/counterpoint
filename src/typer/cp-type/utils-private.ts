@@ -1,7 +1,9 @@
+import {TypeErrorInvalidOperation} from '../../index.ts';
 import {Keyword} from '../../parser/index.ts';
 import {
 	Operator,
 	type ValidAccessOperator,
+	type AST,
 } from '../../validator/index.ts';
 import type {TypeEntry} from '../utils-public.ts';
 import {
@@ -24,7 +26,8 @@ export const language_types_equal = (a: Type, b: Type): boolean => a.equals(b);
 
 
 
-export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidAccessOperator): Type {
+export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidAccessOperator, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): Type {
+	new TypeErrorInvalidOperation(access);
 	return (access_kind === Operator.CLAIMDOT)
 		? entry.type.subtract(VOID)
 		: (entry.optional)

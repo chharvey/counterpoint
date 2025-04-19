@@ -94,16 +94,17 @@ class TypeTuple extends ValueType {
 	}
 
 	/** @final */
-	public get(index: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
+	public get(index: bigint, access_kind: ValidAccessOperator, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): Type {
 		const n: number = this.invariants.length;
 		const i: number = Number(index);
 		return updateAccessedStaticType(
 			(
 				(-n <= i && i < 0) ? this.invariants[i + n] :
 				(0  <= i && i < n) ? this.invariants[i]     :
-				assert.fail(new TypeErrorNoEntry('index', this, accessor))
+				assert.fail(new TypeErrorNoEntry('index', this, access.accessor))
 			),
 			access_kind,
+			access,
 		);
 	}
 
