@@ -99,12 +99,6 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			const accessor_type: TYPE.Type = this.accessor.type();
 			/* eslint-disable @stylistic/indent */
 			return (
-				(base_type instanceof TYPE.Tuple) ? (
-					(accessor_type instanceof TYPE.Unit && accessor_type.value instanceof VALUE.Integer) ? base_type.get(BigInt(accessor_type.value.toNumber()), this.kind, this.accessor) :
-					(accessor_type.isSubtypeOf(TYPE.INT))
-						? updateAccessedDynamicType(base_type.itemTypes(), this.kind)
-						: throwWrongSubtypeError(this.accessor, TYPE.INT)
-				) :
 				(base_type instanceof TYPE.List) ? (
 					(accessor_type.isSubtypeOf(TYPE.INT))
 						? updateAccessedDynamicType(base_type.invariant, this.kind)
@@ -154,10 +148,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-return --- type guard inference is not very good here
 			return (
-				base_value instanceof VALUE.CollectionIndexed ? base_value.get(BigInt((accessor_value as VALUE.Integer).toNumber()), this.optional, this.accessor) :
-				base_value instanceof VALUE.CollectionKeyed   ? base_value.get((accessor_value as VALUE.Symbol).id,                  this.optional, this.accessor) :
-				base_value instanceof VALUE.Set               ? base_value.get(accessor_value                                                                    ) :
-				(assert_instanceof(base_value, VALUE.Map),      base_value.get(accessor_value,                                       this.optional, this.accessor))
+				base_value instanceof VALUE.List           ? base_value.get(BigInt((accessor_value as VALUE.Integer).toNumber()), this.optional, this.accessor) :
+				base_value instanceof VALUE.Dict           ? base_value.get((accessor_value as VALUE.Symbol).id,                  this.optional, this.accessor) :
+				base_value instanceof VALUE.Set            ? base_value.get(accessor_value                                                                    ) :
+				(assert_instanceof(base_value, VALUE.Map),   base_value.get(accessor_value,                                       this.optional, this.accessor))
 			);
 		}
 	}

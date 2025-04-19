@@ -281,7 +281,11 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('throws when base object is of incorrect type.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource('(4).[2];').type(), TypeErrorInvalidOperation);
+					xjs.Array.forEachAggregated(extract_lines(`
+						(4).[2];
+						[10, 20, 30].[1];
+						[a= 10, b= 20, c= 30].[@b];
+					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
 				});
 				it('when accessor expression is correct type but out of bounds/range, returns `never` for folded objects, returns union type for unfolded objects.', () => {
 					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
@@ -552,7 +556,11 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('throws when base object is of incorrect type.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource('(4)?.[2];').type(), TypeErrorInvalidOperation);
+					xjs.Array.forEachAggregated(extract_lines(`
+						(4)?.[2];
+						[10, 20, 30]?.[1];
+						[a= 10, b= 20, c= 30]?.[@b];
+					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
 				});
 				it('when accessor expression is correct type but out of bounds/range, returns `null` for folded objects, union types for unfolded objects.', () => {
 					const TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);

@@ -91,25 +91,22 @@ Object! ValueOf(SemanticAccess access) :=
 	8. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_value` be *Unwrap:* `ValueOf(accessor)`.
-		3. *If* `base_value` is an instance of `Tuple`:
-			1. *Assert:* `accessor_value` is an instance of `Integer` *and* `accessor_value` is an index in `base_value`.
-			2. *Return:* the item accessed at index `accessor_value` in `base_value`.
-		4. *Else If* `base_value` is an instance of `List`:
+		3. *If* `base_value` is an instance of `List`:
 			1. *If* `accessor_value` is an index in `base_value`:
 				1. *Return:* the item accessed at index `accessor_value` in `base_value`.
 			2. *If* `access.kind` is `OPTIONAL`:
 				1. *Return:* `null`.
-		5. *Else If* `base_value` is an instance of `Dict`:
+		4. *Else If* `base_value` is an instance of `Dict`:
 			1. *If* `accessor_value` is a key in `base_value`:
 				1. *Return:* the item accessed at key `accessor_value` in `base_value`.
 			2. *If* `access.kind` is `OPTIONAL`:
 				1. *Return:* `null`.
-		6. *Else If* `base_value` is an instance of `Set`:
+		5. *Else If* `base_value` is an instance of `Set`:
 			1. *If* `accessor_value` is in `base_value`:
 				1. *Return:* `true`.
 			2. *Else*:
 				1. *Return:* `false`.
-		7. *Else:*
+		6. *Else:*
 			1. *Assert*: `base_value` is an instance of `Map`.
 			2. Find an antecedent `k` in `base_value` such that *UnwrapAffirm:* `Identical(k, accessor_value)`.
 			3. *If* `k` is set:
