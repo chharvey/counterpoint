@@ -44,7 +44,13 @@ describe('ASTNodeCall', () => {
 	const SET_CONS = [
 		'Set.<int>();',
 		'Set.<int>([]);',
+		'Set.<int>(List.<int>());',
+		'Set.<int>(Set.<int>());',
+		'Set.<int>({});',
+		'Set.<int>([1, 2, 3]);',
 		'Set.<int>(List.<int>([1, 2, 3]));',
+		'Set.<int>(Set.<int>([1, 2, 3]));',
+		'Set.<int>({1, 2, 3});',
 	] as const;
 	const MAP_CONS = [
 		'Map.<int, float>();',
@@ -83,7 +89,7 @@ describe('ASTNodeCall', () => {
 		specify('`Set.(‹…›)`', () => {
 			assert.deepStrictEqual(
 				SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.Set(TYPE.INT, true), 3),
+				repeat(new TYPE.Set(TYPE.INT, true), 9),
 			);
 		});
 		specify('`Map.(‹…›)`', () => {
@@ -130,6 +136,7 @@ describe('ASTNodeCall', () => {
 		it('throws when providing incorrect type of arguments.', () => {
 			xjs.Array.forEachAggregated([...new Map<string, readonly [string, readonly string[]]>([ // TODO: use `xjs.Map.forEachAggregated`
 				['List.<int>(42);', ['42', ['List.<int>', 'Set.<int>']]],
+				['Set.<int>(42);',  ['42', ['List.<int>', 'Set.<int>']]],
 			])], ([src, [argtype, allowed_types]]) => assert.throws(
 				() => AST.ASTNodeCall.fromSource(src).type(),
 				(err) => {
@@ -191,8 +198,8 @@ describe('ASTNodeCall', () => {
 		});
 		specify('`Set.(‹…›)`', () => {
 			assert.deepStrictEqual(SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
-				...repeat(new VALUE.Set<never>(), 2),
-				new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)),
+				...repeat(new VALUE.Set<never>(), 5),
+				...repeat(new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)), 4),
 			]);
 		});
 		specify('`Map.(‹…›)`', () => {

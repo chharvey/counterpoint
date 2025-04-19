@@ -170,17 +170,22 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 * 	new (tup2:  [T, T]);
 			 * 	new (tup:   unknown); % any tuple type with items of type T
 			 * 	new (list:  List.<T>);
+			 * 	new ('set': Set.<T>);
 			 * }
 			 * ```
 			 */
 			[ValidFunctionName.SET, () => {
 				this.countArgs(1n, [0n, 2n]);
-				const eltype:     TYPE.Type = this.typeargs[0].eval();
-				const returntype            = new TYPE.Set(eltype);
+				const eltype:           TYPE.Type            = this.typeargs[0].eval();
+				const returntype                             = new TYPE.Set(eltype);
+				const allowed_argtypes: readonly TYPE.Type[] = [
+					new TYPE.List(eltype),
+					returntype,
+				];
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
-						ASTNodeCP.typeCheckAssign(arg, new TYPE.List(eltype), this);
+						forEither(allowed_argtypes, (allowed_type) => ASTNodeCP.typeCheckAssign(arg, allowed_type, this));
 					} catch (err) {
 						// If `arg` is not an allowed type, it’s either a tuple literal or an expression with a tuple type.
 						if (arg instanceof ASTNodeTuple) {
@@ -256,10 +261,19 @@ export class ASTNodeCall extends ASTNodeExpression {
 					(assert_instanceof(arg, VALUE.Set),      [...arg.elements])
 				));
 			}
+			case ValidFunctionName.SET: {
+				if (!args.length) {
+					return new VALUE.Set();
+				}
+				const arg: VALUE.Value = args[0]!;
+				return new VALUE.Set((
+					arg instanceof VALUE.CollectionIndexed ? new Set<VALUE.Value>(arg.items) :
+					(assert_instanceof(arg, VALUE.Set),      arg.elements)
+				));
+			}
 		}
 		return new Map<ValidFunctionName, (argument: VALUE.Value | undefined) => VALUE.Value | null>([
 			[ValidFunctionName.DICT, (record) => (record === undefined) ? new VALUE.Dict() : new VALUE.Dict((record as VALUE.CollectionKeyed).properties)],
-			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new VALUE.Set()  : new VALUE.Set(new Set<VALUE.Value>((tuple as VALUE.CollectionIndexed).items))],
 			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new VALUE.Map()  : new VALUE.Map(new Map<VALUE.Value, VALUE.Value>((tuple as VALUE.CollectionIndexed).items.map((pair) => (pair as VALUE.CollectionIndexed).items as [VALUE.Value, VALUE.Value])))],
 		]).get(this.base.source as ValidFunctionName)!(args.length ? args[0]! : undefined);
 	}
