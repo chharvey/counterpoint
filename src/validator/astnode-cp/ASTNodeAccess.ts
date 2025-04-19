@@ -106,7 +106,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 							? updateAccessedDynamicType(base_type.invariant, this.kind)
 							: accessor_type.isSubtypeOf(TYPE.STR)
 								? assert.fail(new Error('String keys for dict access are not yet supported.'))
-								: throwWrongSubtypeError(this.accessor, TYPE.INT); // FIXME: shouldn’t be INT
+								: throwWrongSubtypeError(this.accessor, TYPE.Union.all(TYPE.SYM, TYPE.STR));
 					}
 					case base_type instanceof TYPE.Set: {
 						return accessor_type.isSubtypeOf(base_type.invariant)

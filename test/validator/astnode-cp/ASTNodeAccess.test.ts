@@ -292,6 +292,9 @@ describe('ASTNodeAccess', () => {
 						...repeat(TYPE_INT_FLOAT_STR, 3),
 					]);
 				});
+				it('unsupported: throws for string access of dict.', () => {
+					assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int>([a= 10, b= 20, c= 30]).["a"];').type(), /String keys for dict access are not yet supported\./);
+				});
 				it('throws when base object is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines(`
 						(4).[2];
