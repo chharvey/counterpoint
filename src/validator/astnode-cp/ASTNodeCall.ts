@@ -81,7 +81,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		if (!(this.base instanceof ASTNodeVariable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
-		return (new Map<ValidFunctionName, () => TYPE.Type>([
+		switch (this.base.source) {
 			/*
 			 * API:
 			 * ```cp
@@ -96,7 +96,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 * }
 			 * ```
 			 */
-			[ValidFunctionName.LIST, () => {
+			case ValidFunctionName.LIST: {
 				this.countArgs(1n, [0n, 2n]);
 				const itemtype:         TYPE.Type            = this.typeargs[0].eval();
 				const returntype                             = new TYPE.List(itemtype);
@@ -123,7 +123,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					}
 				}
 				return returntype.mutableOf();
-			}],
+			}
 			/*
 			 * API:
 			 * ```cp
@@ -136,7 +136,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 * }
 			 * ```
 			 */
-			[ValidFunctionName.DICT, () => {
+			case ValidFunctionName.DICT: {
 				this.countArgs(1n, [0n, 2n]);
 				const valuetype:        TYPE.Type            = this.typeargs[0].eval();
 				const returntype                             = new TYPE.Dict(valuetype);
@@ -163,7 +163,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					}
 				}
 				return returntype.mutableOf();
-			}],
+			}
 			/*
 			 * API:
 			 * ```cp
@@ -178,7 +178,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 * }
 			 * ```
 			 */
-			[ValidFunctionName.SET, () => {
+			case ValidFunctionName.SET: {
 				this.countArgs(1n, [0n, 2n]);
 				const eltype:           TYPE.Type            = this.typeargs[0].eval();
 				const returntype                             = new TYPE.Set(eltype);
@@ -205,7 +205,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 					}
 				}
 				return returntype.mutableOf();
-			}],
+			}
 			/*
 			 * API:
 			 * ```cp
@@ -221,7 +221,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 * }
 			 * ```
 			 */
-			[ValidFunctionName.MAP, () => {
+			case ValidFunctionName.MAP: {
 				this.countArgs([1n, 3n], [0n, 2n]);
 				const anttype:          TYPE.Type            = this.typeargs[0].eval();
 				const contype:          TYPE.Type            = this.typeargs[1]?.eval() ?? anttype;
@@ -251,8 +251,11 @@ export class ASTNodeCall extends ASTNodeExpression {
 					}
 				}
 				return returntype.mutableOf();
-			}],
-		]).get(this.base.source as ValidFunctionName) ?? invalid_function_name(this.base.source))();
+			}
+			default: {
+				invalid_function_name(this.base.source);
+			}
+		}
 	}
 
 	@memoizeMethod
