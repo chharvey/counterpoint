@@ -10,15 +10,14 @@ import {
 	VoidError01,
 } from '../../../src/index.ts';
 import {typeUnit} from '../../helpers.ts';
-import {extract_lines} from '../../utils.ts';
+import {
+	extract_lines,
+	repeat,
+} from '../../utils.ts';
 
 
 
 describe('ASTNodeAccess', () => {
-	function repeat<T>(value: T, times: number): T[] {
-		return Array<T>(times).fill(value);
-	}
-
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	type ErrorOrSubclassConstructor = abstract new (...args: any[]) => Error;
 

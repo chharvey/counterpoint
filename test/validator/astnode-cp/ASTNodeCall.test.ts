@@ -7,6 +7,7 @@ import {
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../../src/index.ts';
+import {repeat} from '../../utils.ts';
 
 
 
@@ -57,11 +58,10 @@ describe('ASTNodeCall', () => {
 			);
 		});
 		specify('`List.(‹…›)`', () => {
-			assert.deepStrictEqual(LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()), [
-				new TYPE.List(TYPE.INT, true),
-				new TYPE.List(TYPE.INT, true),
-				new TYPE.List(TYPE.INT, true),
-			]);
+			assert.deepStrictEqual(
+				LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
+				repeat(new TYPE.List(TYPE.INT, true), 3),
+			);
 		});
 		specify('`Dict.(‹…›)`', () => {
 			assert.deepStrictEqual(DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()), [
@@ -69,18 +69,16 @@ describe('ASTNodeCall', () => {
 			]);
 		});
 		specify('`Set.(‹…›)`', () => {
-			assert.deepStrictEqual(SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()), [
-				new TYPE.Set(TYPE.INT, true),
-				new TYPE.Set(TYPE.INT, true),
-				new TYPE.Set(TYPE.INT, true),
-			]);
+			assert.deepStrictEqual(
+				SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
+				repeat(new TYPE.Set(TYPE.INT, true), 3),
+			);
 		});
 		specify('`Map.(‹…›)`', () => {
-			assert.deepStrictEqual(MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()), [
-				new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
-				new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
-				new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
-			]);
+			assert.deepStrictEqual(
+				MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
+				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), 3),
+			);
 		});
 		it('bypasses invariance for generic arguments.', () => {
 			[
@@ -165,8 +163,7 @@ describe('ASTNodeCall', () => {
 		});
 		specify('`List.(‹…›)`', () => {
 			assert.deepStrictEqual(LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
-				new VALUE.List<never>(),
-				new VALUE.List<never>(),
+				...repeat(new VALUE.List<never>(), 2),
 				new VALUE.List<VALUE.Integer>([
 					new VALUE.Integer(1n),
 					new VALUE.Integer(2n),
@@ -181,8 +178,7 @@ describe('ASTNodeCall', () => {
 		});
 		specify('`Set.(‹…›)`', () => {
 			assert.deepStrictEqual(SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
-				new VALUE.Set<never>(),
-				new VALUE.Set<never>(),
+				...repeat(new VALUE.Set<never>(), 2),
 				new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>([
 					new VALUE.Integer(1n),
 					new VALUE.Integer(2n),
@@ -192,8 +188,7 @@ describe('ASTNodeCall', () => {
 		});
 		specify('`Map.(‹…›)`', () => {
 			assert.deepStrictEqual(MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
-				new VALUE.Map<never, never>(),
-				new VALUE.Map<never, never>(),
+				...repeat(new VALUE.Map<never, never>(), 2),
 				new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
 					[new VALUE.Integer(1n), new VALUE.Float(0.1)],
 					[new VALUE.Integer(2n), new VALUE.Float(0.2)],
