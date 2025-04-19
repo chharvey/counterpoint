@@ -69,36 +69,28 @@ Object! ValueOf(SemanticAccess access) :=
 	5. *If* `access.kind` is `OPTIONAL` *and* *UnwrapAffirm:* `Identical(base_value, null)`:
 		1. *Return:* `base_value`.
 	6. *If* `accessor` is a SemanticIndex:
-		1. *Let* `i` be a new Integer object representing `accessor.index`.
-		2. *If* `base_value` is an instance of `Tuple`:
-			1. *Assert:* `i` is an index in `base_value`.
-			2. *Return:* the item accessed at index `i` in `base_value`.
-		3. *Else:*
-			1. *Assert:* `base_value` is an instance of `List`.
-			2. *If* `i` is an index in `base_value`:
-				1. *Return:* the item accessed at index `i` in `base_value`.
-			3. *If* `access.kind` is `OPTIONAL`:
-				1. *Return:* `null`.
+		1. *Assert:* `base_value` is an instance of `Tuple`:
+		2. *If* `accessor.index` is an index in `base_value`:
+			1. *Return:* the item accessed at index `accessor.index` in `base_value`.
+		3. *If* `access.kind` is `OPTIONAL`:
+			1. *Return:* `null`.
 	7. *Else If* `accessor` is a SemanticKey:
-		1. *Let* `id` be `accessor.id`.
-		2. *If* `base_value` is an instance of `Record`:
-			1. *Assert:* `id` is a key in `base_value`.
-			2. *Return:* the value accessed at key `id` in `base_value`.
-		3. *Else:*
-			1. *Assert:* `base_value` is an instance of `Dict`.
-			2. *If* `id` is a key in `base_value`:
-				1. *Return:* the value accessed at key `id` in `base_value`.
-			3. *If* `access.kind` is `OPTIONAL`:
-				1. *Return:* `null`.
+		1. *Assert:* `base_value` is an instance of `Record`:
+		2. *If* `accessor.id` is a key in `base_value`:
+			1. *Return:* the value accessed at key `accessor.id` in `base_value`.
+		3. *If* `access.kind` is `OPTIONAL`:
+			1. *Return:* `null`.
 	8. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_value` be *Unwrap:* `ValueOf(accessor)`.
-		3. *If* `base_value` is an instance of `Tuple`:
-			1. *Assert:* `accessor_value` is an instance of `Integer` *and* `accessor_value` is an index in `base_value`.
-			2. *Return:* the item accessed at index `accessor_value` in `base_value`.
-		4. *Else If* `base_value` is an instance of `List`:
+		3. *If* `base_value` is an instance of `List`:
 			1. *If* `accessor_value` is an index in `base_value`:
 				1. *Return:* the item accessed at index `accessor_value` in `base_value`.
+			2. *If* `access.kind` is `OPTIONAL`:
+				1. *Return:* `null`.
+		4. *Else If* `base_value` is an instance of `Dict`:
+			1. *If* `accessor_value` is a key in `base_value`:
+				1. *Return:* the item accessed at key `accessor_value` in `base_value`.
 			2. *If* `access.kind` is `OPTIONAL`:
 				1. *Return:* `null`.
 		5. *Else If* `base_value` is an instance of `Set`:

@@ -90,47 +90,33 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 			2. *Set* `base_type` to `Difference(base_type, Null)`.
 	6. *Let* `returned` be *none*.
 	7. *If* `accessor` is a SemanticIndex:
-		1. *Let* `i` be `Integer(accessor.index)`.
-		2. *If* `base_type` is a Tuple type *and* `i` is an index in `base_type`:
-			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
+		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
+			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
-		3. *Else If* `base_type` is a List type:
-			1. *Let* `type` be the union of all item types in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
-		4. *Else:*
+		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
 	8. *If* `accessor` is a SemanticKey:
-		1. *Let* `id` be `accessor.id`.
-		2. *If* `base_type` is a Record type *and* `id` is a key in `base_type`:
-			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
+		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
+			1. *Let* `entry` be the item accessed at key `accessor.id` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
-		3. *Else If* `base_type` is a Dict type:
-			1. *Let* `type` be the union of all value types in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
-		4. *Else:*
+		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	9: *Else:*
+	9. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
-		3. *If* `base_type` is a Tuple type:
-			1. *If* `accessor_type` is an instance of `Unit`:
-				1. *Let* `i` be `accessor_type.value`.
-				2. *If* `i` is an instance of `Integer`:
-					1. *If* `i` is an index in `base_type`:
-						1. *Let* `entry` be the item accessed at index `i` in `base_type`.
-						2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
-					2. *Else:*
-						1. *Throw:* a new TypeErrorNoEntry.
-			2. *Else If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
-				1. *Let* `t` be the union of all item types in `base_type`.
-				2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
-			3. *Else:*
-				1. *Throw:* a new TypeErrorNotNarrow.
-		4. *Else If* `base_type` is a List type:
-			1. *Let* `t` be the union of all item types in `base_type`.
+		3. *If* `base_type` is a List type:
+			1. *Let* `t` be the type of the items in `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
 				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
 			3. *Else:*
+				1. *Throw:* a new TypeErrorNotNarrow.
+		4. *Else If* `base_type` is a Dict type:
+			1. *Let* `t` be the type of the values in `base_type`.
+			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Symbol)` is `true`:
+				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
+			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, String)` is `true`:
+				1. *Throw:* a new Error "String keys for dict access are not yet supported."
+			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		5. *Else If* `base_type` is a Set type:
 			1. *Let* `t` be the type of the elements in `base_type`.

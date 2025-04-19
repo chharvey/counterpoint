@@ -59,7 +59,7 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 	}
 
 	/** @final */
-	public get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeKey): T | Null {
+	public get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeKey | AST.ASTNodeExpression): T | Null {
 		return (
 			this.properties.has(key) ? this.properties.get(key)! :
 			access_optional          ? NULL :

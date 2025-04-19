@@ -1,7 +1,4 @@
-import {
-	VALUE,
-	TYPE,
-} from '../../index.ts';
+import {TYPE} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -39,13 +36,18 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		if (base_type instanceof TYPE.Combinable) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
-		if (this.accessor instanceof ASTNodeIndex) {
-			assert_instanceof(base_type, TYPE.Tuple);
-			return base_type.get(new VALUE.Integer(this.accessor.index).toType().value, Operator.DOT, this.accessor);
-		} else {
-			assert_instanceof(this.accessor, ASTNodeKey);
-			assert_instanceof(base_type, TYPE.Record);
-			return base_type.get(this.accessor.id, Operator.DOT, this.accessor);
+		switch (true) {
+			case this.accessor instanceof ASTNodeIndex: {
+				assert_instanceof(base_type, TYPE.Tuple);
+				return base_type.get(this.accessor.index, Operator.DOT, this.accessor);
+			}
+			case this.accessor instanceof ASTNodeKey: {
+				assert_instanceof(base_type, TYPE.Record);
+				return base_type.get(this.accessor.id, Operator.DOT, this.accessor);
+			}
+			default: {
+				throw new Error(`Expected ${ this.accessor } to be an index or key.`);
+			}
 		}
 	}
 }
