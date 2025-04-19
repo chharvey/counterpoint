@@ -135,28 +135,25 @@ describe('ASTNodeCall', () => {
 
 
 	describe('#fold', () => {
+		const TEST_VALUES = [
+			VALUE.INT_1,
+			new VALUE.Integer(2n),
+			new VALUE.Integer(3n),
+		] as const;
 		it('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
 				EVALUATE.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new VALUE.List<VALUE.Integer>([
-						new VALUE.Integer(1n),
-						new VALUE.Integer(2n),
-						new VALUE.Integer(3n),
-					]),
+					new VALUE.List<VALUE.Integer>(TEST_VALUES),
 					new VALUE.Dict<VALUE.Integer>(new Map<bigint, VALUE.Integer>([
-						[0x100n, new VALUE.Integer(1n)],
-						[0x101n, new VALUE.Integer(2n)],
-						[0x102n, new VALUE.Integer(3n)],
+						[0x100n, TEST_VALUES[0]],
+						[0x101n, TEST_VALUES[1]],
+						[0x102n, TEST_VALUES[2]],
 					])),
-					new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>([
-						new VALUE.Integer(1n),
-						new VALUE.Integer(2n),
-						new VALUE.Integer(3n),
-					])),
+					new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)),
 					new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
-						[new VALUE.Integer(1n), new VALUE.Float(0.1)],
-						[new VALUE.Integer(2n), new VALUE.Float(0.2)],
+						[TEST_VALUES[0], new VALUE.Float(0.1)],
+						[TEST_VALUES[1], new VALUE.Float(0.2)],
 					])),
 				],
 			);
@@ -164,11 +161,7 @@ describe('ASTNodeCall', () => {
 		specify('`List.(‹…›)`', () => {
 			assert.deepStrictEqual(LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
 				...repeat(new VALUE.List<never>(), 2),
-				new VALUE.List<VALUE.Integer>([
-					new VALUE.Integer(1n),
-					new VALUE.Integer(2n),
-					new VALUE.Integer(3n),
-				]),
+				new VALUE.List<VALUE.Integer>(TEST_VALUES),
 			]);
 		});
 		specify('`Dict.(‹…›)`', () => {
@@ -179,20 +172,16 @@ describe('ASTNodeCall', () => {
 		specify('`Set.(‹…›)`', () => {
 			assert.deepStrictEqual(SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
 				...repeat(new VALUE.Set<never>(), 2),
-				new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>([
-					new VALUE.Integer(1n),
-					new VALUE.Integer(2n),
-					new VALUE.Integer(3n),
-				])),
+				new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)),
 			]);
 		});
 		specify('`Map.(‹…›)`', () => {
 			assert.deepStrictEqual(MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
 				...repeat(new VALUE.Map<never, never>(), 2),
 				new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
-					[new VALUE.Integer(1n), new VALUE.Float(0.1)],
-					[new VALUE.Integer(2n), new VALUE.Float(0.2)],
-					[new VALUE.Integer(3n), new VALUE.Float(0.4)],
+					[TEST_VALUES[0], new VALUE.Float(0.1)],
+					[TEST_VALUES[1], new VALUE.Float(0.2)],
+					[TEST_VALUES[2], new VALUE.Float(0.4)],
 				])),
 			]);
 		});
