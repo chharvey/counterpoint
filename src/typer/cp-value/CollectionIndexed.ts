@@ -15,7 +15,6 @@ import {
 	type Value,
 } from './Value.ts';
 import type {Null} from './Null.ts';
-import type {Integer} from './Integer.ts';
 import {Collection} from './Collection.ts';
 
 
@@ -64,9 +63,9 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	}
 
 	/** @final */
-	public get(index: Integer, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | Null {
+	public get(index: bigint, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | Null {
 		const n: number = this.items.length;
-		const i: number = index.toNumber();
+		const i: number = Number(index);
 		return (
 			-n <= i && i < 0 ? this.items[i + n] :
 			0  <= i && i < n ? this.items[i] :

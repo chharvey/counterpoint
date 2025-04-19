@@ -84,7 +84,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			return (
-				(base_type instanceof TYPE.Tuple) ? base_type.get(new VALUE.Integer(this.accessor.index), this.kind, this.accessor) :
+				(base_type instanceof TYPE.Tuple) ? base_type.get(this.accessor.index, this.kind, this.accessor) :
 				(base_type instanceof TYPE.List)  ? updateAccessedDynamicType(base_type.invariant, this.kind) :
 				assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor))
 			);
@@ -100,7 +100,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			/* eslint-disable @stylistic/indent */
 			return (
 				(base_type instanceof TYPE.Tuple) ? (
-					(accessor_type instanceof TYPE.Unit && accessor_type.value instanceof VALUE.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
+					(accessor_type instanceof TYPE.Unit && accessor_type.value instanceof VALUE.Integer) ? base_type.get(BigInt(accessor_type.value.toNumber()), this.kind, this.accessor) :
 					(accessor_type.isSubtypeOf(TYPE.INT))
 						? updateAccessedDynamicType(base_type.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, TYPE.INT)
@@ -143,7 +143,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as VALUE.CollectionIndexed).get(new VALUE.Integer(this.accessor.index), this.optional, this.accessor);
+			return (base_value as VALUE.CollectionIndexed).get(this.accessor.index, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (base_value as VALUE.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else {
@@ -154,10 +154,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-return --- type guard inference is not very good here
 			return (
-				base_value instanceof VALUE.CollectionIndexed ? base_value.get(accessor_value as VALUE.Integer,     this.optional, this.accessor) :
-				base_value instanceof VALUE.CollectionKeyed   ? base_value.get((accessor_value as VALUE.Symbol).id, this.optional, this.accessor) :
-				base_value instanceof VALUE.Set               ? base_value.get(accessor_value                                                   ) :
-				(assert_instanceof(base_value, VALUE.Map),      base_value.get(accessor_value,                      this.optional, this.accessor))
+				base_value instanceof VALUE.CollectionIndexed ? base_value.get(BigInt((accessor_value as VALUE.Integer).toNumber()), this.optional, this.accessor) :
+				base_value instanceof VALUE.CollectionKeyed   ? base_value.get((accessor_value as VALUE.Symbol).id,                  this.optional, this.accessor) :
+				base_value instanceof VALUE.Set               ? base_value.get(accessor_value                                                                    ) :
+				(assert_instanceof(base_value, VALUE.Map),      base_value.get(accessor_value,                                       this.optional, this.accessor))
 			);
 		}
 	}

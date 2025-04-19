@@ -1,7 +1,4 @@
-import {
-	VALUE,
-	TYPE,
-} from '../../index.ts';
+import {TYPE} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -41,7 +38,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			assert_instanceof(base_type, TYPE.Tuple);
-			return base_type.get(new VALUE.Integer(this.accessor.index).toType().value, Operator.DOT, this.accessor);
+			return base_type.get(this.accessor.index, Operator.DOT, this.accessor);
 		} else {
 			assert_instanceof(this.accessor, ASTNodeKey);
 			assert_instanceof(base_type, TYPE.Record);
