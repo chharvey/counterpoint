@@ -254,15 +254,19 @@ on the binding object at runtime. This operator is designed to work with
 optional entries on types, such as optional properties on a record type.
 
 Given a record `record` of type `[a: bool, b?: int]`,
-the expression `record.b` will produce that value if it exists,
-but will result in a runtime error if there’s no actual value at that location.
-Using the optional access operator though, `record?.b` will produce `record.b`
-if it exists, but otherwise will produce `null` and avoid the error.
+the expression `record.b` would result in a crash if there’s no actual value at that location,
+so the compiler raises an error when using that syntax.
+Using the optional access operator though, `record?.b` will produce the value at `record.b`
+if it exists, but otherwise will produce `null` and avoid the crash.
 An equivalent syntax exists for dynamic access: `map?.[expr]`, etc.
+
+Conversely, optional access syntax is not allowed for required properties: `record?.a` would raise a compiler error.
 
 Note that if `foo?.bar` produces `null`, it either means that `foo.bar` does exist and is equal to `null`,
 or that there’s no value for the `bar` property bound to `foo`,
 and the optional access operator is doing its job.
+Thus the recommended approach is to implement an “Optional” discriminated union or record type,
+and use it for collections that may contain `null`.
 
 If the *binding object is `null`*, then the optional access operator also produces `null`.
 For example, `null.property` is a type error (and if the compiler were bypassed,
@@ -278,22 +282,21 @@ and will result in a runtime error if `x?.y` is `null`.
 **Type-Checking Note:**
 
 For static types (e.g., tuples and records),
-if the property is required, both regular and optional access operators do not modify the property’s declared type.
-If the property is optional,
-the regular access operator unions the property type with `void` and
-the optional access operator unions the property type with `null`.
+either the normal or optional access operator is allowed, corresponding to the optionality of the entry being accessed.
+When the optional access operator is used for an optional entry, the entry type is unioned with `null`.
 ```
-let record: [required: bool, optional?: int] = my_record;
+claim record: [required: bool, optional?: int];
 record.required;  %: bool
-record?.required; %: bool
-record.optional;  %: int | void
+record?.required; %> TypeErrorInvalidOperation
+record.optional;  %> TypeErrorInvalidOperation
 record?.optional; %: int | null
 ```
 For dynamic types (e.g., lists and dicts),
-the regular access operator treats all properties as required (does not modify the declared type), but
-the optional access operator treats all properties as optional (unions the property type with `null`).
+both normal and optional access operators are allowed.
+The normal access operator treats all entries as required (does not modify the declared type), and
+the optional access operator treats all entries as optional (unions the property type with `null`).
 ```
-let dict: [: float] = my_dict;
+claim dict: [: float];
 dict.prop;  %: float
 dict?.prop; %: float | null
 ```

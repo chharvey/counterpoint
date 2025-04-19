@@ -36,7 +36,11 @@ describe('ASTNodeAccess', () => {
 		const program:    AST.ASTNodeGoal                           = AST.ASTNodeGoal.fromSource(source);
 		const statements: readonly AST.ASTNodeStatementExpression[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
 		program.varCheck();
-		program.typeCheck();
+		try {
+			program.typeCheck();
+		} catch {
+			// if type-checking fails, proceed to `assert.throws` below
+		}
 		return expecteds.some((it) => it instanceof Function)
 			? xjs.Array.forEachAggregated(statements, (stmt, i) => {
 				const expected: TYPE.Type | ErrorOrSubclassConstructor = expecteds[i];
@@ -65,7 +69,11 @@ describe('ASTNodeAccess', () => {
 		const program:    AST.ASTNodeGoal                           = AST.ASTNodeGoal.fromSource(source);
 		const statements: readonly AST.ASTNodeStatementExpression[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
 		program.varCheck();
-		program.typeCheck();
+		try {
+			program.typeCheck();
+		} catch {
+			// if type-checking fails, proceed to `assert.throws` below
+		}
 		return expecteds.some((it) => it instanceof Function)
 			? xjs.Array.forEachAggregated(statements, (stmt, i) => {
 				const expected: VALUE.Value | null | ErrorOrSubclassConstructor = expecteds[i];
@@ -138,7 +146,15 @@ describe('ASTNodeAccess', () => {
 						TYPE.STR,
 					]);
 				});
-				// TODO: throws when entry is optional
+				it('throws when entry is optional.', () => {
+					testExprTypes(`
+						let tup_a: [int, int, ?: int] = [10, 20];
+						let tup_b: [int, int, ?: int] = [10, 20, 30];
+
+						tup_a.2;
+						tup_b.2;
+					`, repeat(TypeErrorInvalidOperation, 2));
+				});
 				it('throws when base object is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines(`
 						(4).2;
@@ -192,7 +208,15 @@ describe('ASTNodeAccess', () => {
 						TYPE.STR,
 					]);
 				});
-				// TODO: throws when entry is optional
+				it('throws when entry is optional.', () => {
+					testExprTypes(`
+						let rec_a: [x: int, y?: int, z: int] = [x= 10, z= 20];
+						let rec_b: [x: int, y?: int, z: int] = [x= 10, z= 20, y= 30];
+
+						rec_a.y;
+						rec_b.y;
+					`, repeat(TypeErrorInvalidOperation, 2));
+				});
 				it('throws when base object is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines(`
 						(4).c;
@@ -442,7 +466,15 @@ describe('ASTNodeAccess', () => {
 						...repeat(TYPE.STR.union(TYPE.NULL), 2),
 					]);
 				});
-				// TODO: throws when entry is not optional
+				it('throws when entry is not optional and base is not nullish.', () => {
+					testExprTypes(`
+						let tup_a: [int, int, ?: int] = [10, 20];
+						let tup_b: [int, int, ?: int] = [10, 20, 30];
+
+						tup_a?.1;
+						tup_b?.1;
+					`, repeat(TypeErrorInvalidOperation, 2));
+				});
 				it('throws when index is out of bounds.', () => {
 					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
 				});
@@ -478,7 +510,15 @@ describe('ASTNodeAccess', () => {
 						...repeat(TYPE.STR.union(TYPE.NULL), 2),
 					]);
 				});
-				// TODO: throws when entry is not optional
+				it('throws when entry is not optional and base is not nullish.', () => {
+					testExprTypes(`
+						let rec_a: [x: int, y?: int, z: int] = [x= 10, z= 20];
+						let rec_b: [x: int, y?: int, z: int] = [x= 10, z= 20, y= 30];
+
+						rec_a?.z;
+						rec_b?.z;
+					`, repeat(TypeErrorInvalidOperation, 2));
+				});
 				it('throws when key is out of range.', () => {
 					assert.throws(() => AST.ASTNodeAccess.fromSource(THROWS).type(), TypeErrorNoEntry);
 				});

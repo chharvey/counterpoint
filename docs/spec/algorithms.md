@@ -517,19 +517,18 @@ Type CombineTuplesOrRecords(Type t) :=
 
 
 ## UpdateAccessedStaticType
-Modifies the type of an accessed bound property of a tuple or record.
-If the bound property is required: Under claim access, subtracts Void; else returns unmodified type.
-If the bound property is optional: Under claim access, subtracts Void; under optional access, unions with Null; else unions with Void.
+Possibly modifies the type of an accessed bound property of a tuple or record.
 ```
-Type UpdateAccessedStaticType(EntryTypeStructure entry, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
+Type UpdateAccessedStaticType(EntryTypeStructure entry, Or<NORMAL, OPTIONAL, CLAIM> accesskind, Boolean is_nullish) :=
 	1. *Let* `type` be `entry.type`.
-	2. *If* `accesskind` is `CLAIM`:
-		1. *Return:* `Difference(type, Void)`.
-	3. *If* `entry.optional` is `true`:
-		1. *If* `accesskind` is `OPTIONAL`:
+	2. *If* `accesskind` is `NORMAL` *and* `entry.optional` is `false`:
+		1. *Return:* `type`.
+	3. *If* `accesskind` is `OPTIONAL`:
+		1. *If* `entry.optional` is `true` *or* `is_nullish` is `true`:
 			1. *Return:* `Union(type, Null)`.
-		2. *Return:* `Union(type, Void)`.
-	4. *Return:* `type`.
+	4. *If* `accesskind` is `CLAIM`:
+		1. *Return:* `Difference(type, Void)`.
+	5. *Throw:* a new TypeErrorInvalidOperation.
 ;
 ```
 

@@ -39,11 +39,11 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
 				assert_instanceof(base_type, TYPE.Tuple);
-				return base_type.get(this.accessor.index, Operator.DOT, this);
+				return base_type.get(this.accessor.index, Operator.DOT, false, this);
 			}
 			case this.accessor instanceof ASTNodeKey: {
 				assert_instanceof(base_type, TYPE.Record);
-				return base_type.get(this.accessor.id, Operator.DOT, this);
+				return base_type.get(this.accessor.id, Operator.DOT, false, this);
 			}
 			default: {
 				throw new Error(`Expected ${ this.accessor } to be an index or key.`);

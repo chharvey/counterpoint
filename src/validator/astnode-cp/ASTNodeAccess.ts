@@ -65,13 +65,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		return (
-			(this.optional && base_type.isSubtypeOf(TYPE.NULL)) ? base_type                                                    :
-			(this.optional && TYPE.NULL.isSubtypeOf(base_type)) ? this.type_do(base_type.subtract(TYPE.NULL)).union(TYPE.NULL) :
-			this.type_do(base_type)
+			this.optional && base_type.isSubtypeOf(TYPE.NULL) ? base_type :
+			this.optional && TYPE.NULL.isSubtypeOf(base_type) ? this.type_do(base_type.subtract(TYPE.NULL), true).union(TYPE.NULL) :
+			this.type_do(base_type, false)
 		);
 	}
 
-	private type_do(base_type: TYPE.Type): TYPE.Type {
+	private type_do(base_type: TYPE.Type, is_nullish: boolean): TYPE.Type {
 		function updateAccessedDynamicType(type: TYPE.Type, access_kind: ValidAccessOperator): TYPE.Type {
 			return (
 				(access_kind === Operator.CLAIMDOT) ? type.subtract(TYPE.VOID) :
@@ -85,12 +85,12 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
 				return base_type instanceof TYPE.Tuple
-					? base_type.get(this.accessor.index, this.kind, this)
+					? base_type.get(this.accessor.index, this.kind, is_nullish, this)
 					: assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor));
 			}
 			case this.accessor instanceof ASTNodeKey: {
 				return base_type instanceof TYPE.Record
-					? base_type.get(this.accessor.id, this.kind, this)
+					? base_type.get(this.accessor.id, this.kind, is_nullish, this)
 					: assert.fail(new TypeErrorNoEntry('property', base_type, this.accessor));
 			}
 			case this.accessor instanceof ASTNodeExpression: {
