@@ -103,14 +103,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssign(arg, returntype, this);
 					} catch (err) {
+						// If `arg` is not an allowed type, it’s either a tuple literal or an expression with a tuple type.
 						if (arg instanceof ASTNodeTuple) {
 							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, itemtype, item));
 						} else {
 							const argtype: TYPE.Type = arg.type();
-							if (!(argtype instanceof TYPE.Tuple)) {
+							if (argtype instanceof TYPE.Tuple) {
+								ASTNodeCP.checkSubtype(argtype.itemTypes(), itemtype, this);
+							} else {
 								throw err;
 							}
-							ASTNodeCP.checkSubtype(argtype.itemTypes(), itemtype, this);
 						}
 					}
 				}
@@ -137,14 +139,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssign(arg, returntype, this);
 					} catch (err) {
+						// If `arg` is not an allowed type, it’s either a record literal or an expression with a record type.
 						if (arg instanceof ASTNodeRecord) {
 							xjs.Array.forEachAggregated(arg.children, (prop) => ASTNodeCP.typeCheckAssign(prop.val, valuetype, prop.val));
 						} else {
 							const argtype: TYPE.Type = arg.type();
-							if (!(argtype instanceof TYPE.Record)) {
+							if (argtype instanceof TYPE.Record) {
+								ASTNodeCP.checkSubtype(argtype.valueTypes(), valuetype, this);
+							} else {
 								throw err;
 							}
-							ASTNodeCP.checkSubtype(argtype.valueTypes(), valuetype, this);
 						}
 					}
 				}
@@ -172,14 +176,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssign(arg, new TYPE.List(eltype), this);
 					} catch (err) {
+						// If `arg` is not an allowed type, it’s either a tuple literal or an expression with a tuple type.
 						if (arg instanceof ASTNodeTuple) {
 							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, eltype, item));
 						} else {
 							const argtype: TYPE.Type = arg.type();
-							if (!(argtype instanceof TYPE.Tuple)) {
+							if (argtype instanceof TYPE.Tuple) {
+								ASTNodeCP.checkSubtype(argtype.itemTypes(), eltype, this);
+							} else {
 								throw err;
 							}
-							ASTNodeCP.checkSubtype(argtype.itemTypes(), eltype, this);
 						}
 					}
 				}
@@ -209,14 +215,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 					try {
 						ASTNodeCP.typeCheckAssign(arg, new TYPE.List(entrytype), this);
 					} catch (err) {
+						// If `arg` is not an allowed type, it’s either a tuple literal or an expression with a tuple type.
 						if (arg instanceof ASTNodeTuple) {
 							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, entrytype, item));
 						} else {
 							const argtype: TYPE.Type = arg.type();
-							if (!(argtype instanceof TYPE.Tuple)) {
+							if (argtype instanceof TYPE.Tuple) {
+								ASTNodeCP.checkSubtype(argtype.itemTypes(), entrytype, this);
+							} else {
 								throw err;
 							}
-							ASTNodeCP.checkSubtype(argtype.itemTypes(), entrytype, this);
 						}
 					}
 				}
