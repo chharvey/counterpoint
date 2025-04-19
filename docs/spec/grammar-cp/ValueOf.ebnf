@@ -69,25 +69,17 @@ Object! ValueOf(SemanticAccess access) :=
 	5. *If* `access.kind` is `OPTIONAL` *and* *UnwrapAffirm:* `Identical(base_value, null)`:
 		1. *Return:* `base_value`.
 	6. *If* `accessor` is a SemanticIndex:
-		1. *If* `base_value` is an instance of `Tuple`:
-			1. *Assert:* `accessor.index` is an index in `base_value`.
-			2. *Return:* the item accessed at index `accessor.index` in `base_value`.
-		2. *Else:*
-			1. *Assert:* `base_value` is an instance of `List`.
-			2. *If* `accessor.index` is an index in `base_value`:
-				1. *Return:* the item accessed at index `accessor.index` in `base_value`.
-			3. *If* `access.kind` is `OPTIONAL`:
-				1. *Return:* `null`.
+		1. *Assert:* `base_value` is an instance of `Tuple`:
+		2. *If* `accessor.index` is an index in `base_value`:
+			1. *Return:* the item accessed at index `accessor.index` in `base_value`.
+		3. *If* `access.kind` is `OPTIONAL`:
+			1. *Return:* `null`.
 	7. *Else If* `accessor` is a SemanticKey:
-		1. *If* `base_value` is an instance of `Record`:
-			1. *Assert:* `accessor.id` is a key in `base_value`.
-			2. *Return:* the value accessed at key `accessor.id` in `base_value`.
-		2. *Else:*
-			1. *Assert:* `base_value` is an instance of `Dict`.
-			2. *If* `accessor.id` is a key in `base_value`:
-				1. *Return:* the value accessed at key `accessor.id` in `base_value`.
-			3. *If* `access.kind` is `OPTIONAL`:
-				1. *Return:* `null`.
+		1. *Assert:* `base_value` is an instance of `Record`:
+		2. *If* `accessor.id` is a key in `base_value`:
+			1. *Return:* the value accessed at key `accessor.id` in `base_value`.
+		3. *If* `access.kind` is `OPTIONAL`:
+			1. *Return:* `null`.
 	8. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_value` be *Unwrap:* `ValueOf(accessor)`.

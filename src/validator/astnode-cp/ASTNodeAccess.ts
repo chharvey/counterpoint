@@ -83,17 +83,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			throw new TypeErrorNotNarrow(accessor.type(), supertype, accessor.line_index, accessor.col_index);
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (
-				(base_type instanceof TYPE.Tuple) ? base_type.get(this.accessor.index, this.kind, this.accessor) :
-				(base_type instanceof TYPE.List)  ? updateAccessedDynamicType(base_type.invariant, this.kind) :
-				assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor))
-			);
+			return base_type instanceof TYPE.Tuple
+				? base_type.get(this.accessor.index, this.kind, this.accessor)
+				: assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor));
 		} else if (this.accessor instanceof ASTNodeKey) {
-			return (
-				(base_type instanceof TYPE.Record) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
-				(base_type instanceof TYPE.Dict)   ? updateAccessedDynamicType(base_type.invariant, this.kind) :
-				assert.fail(new TypeErrorNoEntry('property', base_type, this.accessor))
-			);
+			return base_type instanceof TYPE.Record
+				? base_type.get(this.accessor.id, this.kind, this.accessor)
+				: assert.fail(new TypeErrorNoEntry('property', base_type, this.accessor));
 		} else {
 			assert_instanceof(this.accessor, ASTNodeExpression);
 			const accessor_type: TYPE.Type = this.accessor.type();
@@ -137,9 +133,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as VALUE.CollectionIndexed).get(this.accessor.index, this.optional, this.accessor);
+			return (base_value as VALUE.Tuple).get(this.accessor.index, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
-			return (base_value as VALUE.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
+			return (base_value as VALUE.Record).get(this.accessor.id, this.optional, this.accessor);
 		} else {
 			assert_instanceof(this.accessor, ASTNodeExpression);
 			const accessor_value: VALUE.Value | null = this.accessor.fold();

@@ -93,21 +93,15 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
-		2. *Else If* `base_type` is a List type:
-			1. *Let* `type` be the union of all item types in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
-		3. *Else:*
+		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
 	8. *If* `accessor` is a SemanticKey:
 		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `accessor.id` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
-		2. *Else If* `base_type` is a Dict type:
-			1. *Let* `type` be the union of all value types in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
-		3. *Else:*
+		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	9: *Else:*
+	9. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
 		3. *If* `base_type` is a List type:

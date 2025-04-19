@@ -139,6 +139,12 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				// TODO: throws when entry is optional
+				it('throws when base object is of incorrect type.', () => {
+					xjs.Array.forEachAggregated(extract_lines(`
+						(4).2;
+						List.<int>([10, 20, 30]).1;
+					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
+				});
 				it('throws when index is out of bounds.', () => {
 					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
 				});
@@ -187,6 +193,12 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				// TODO: throws when entry is optional
+				it('throws when base object is of incorrect type.', () => {
+					xjs.Array.forEachAggregated(extract_lines(`
+						(4).c;
+						Dict.<int>([a= 10, b= 20, c= 30]).b;
+					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
+				});
 				it('throws when key is out of range.', () => {
 					assert.throws(() => AST.ASTNodeAccess.fromSource(THROWS).type(), TypeErrorNoEntry);
 				});
