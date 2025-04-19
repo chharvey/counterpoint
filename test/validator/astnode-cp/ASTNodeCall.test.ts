@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
 import {
 	AST,
 	VALUE,
@@ -96,40 +97,32 @@ describe('ASTNodeCall', () => {
 			);
 		});
 		it('throws if base is not an ASTNodeVariable.', () => {
-			[
+			xjs.Array.forEachAggregated([
 				'null.();',
 				'(42 || 43).<bool>();',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable);
-			});
+			], (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable, src));
 		});
 		it('throws if base is not one of the allowed strings.', () => {
-			[
+			xjs.Array.forEachAggregated([
 				'SET.<str>();',
 				'Mapping.<bool>();',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), SyntaxError);
-			});
+			], (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), SyntaxError, src));
 		});
 		it('throws when providing incorrect number of arguments.', () => {
-			[
+			xjs.Array.forEachAggregated([
 				'List.<int>([], []);',
 				'Dict.<int>([], []);',
 				'Set.<int>([], []);',
 				'Map.<int>([], []);',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount);
-			});
+			], (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount, src));
 		});
 		it('throws when providing incorrect type of arguments.', () => {
-			[
+			xjs.Array.forEachAggregated([
 				'List.<int>(42);',
 				'Dict.<int>([4.2]);',
 				'Set.<int>([42, "42"]);',
 				'Map.<int>([[42, "42"]]);',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable);
-			});
+			], (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable, src));
 		});
 	});
 
