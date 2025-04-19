@@ -8,6 +8,8 @@ import {
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../../src/index.ts';
+import {assert_instanceof} from '../../../src/lib/index.ts';
+import {assertAssignable} from '../../assert-helpers.ts';
 import {
 	extract_lines,
 	repeat,
@@ -28,7 +30,13 @@ describe('ASTNodeCall', () => {
 	const LIST_CONS = [
 		'List.<int>();',
 		'List.<int>([]);',
+		'List.<int>(List.<int>());',
+		'List.<int>(Set.<int>());',
+		'List.<int>({});',
+		'List.<int>([1, 2, 3]);',
 		'List.<int>(List.<int>([1, 2, 3]));',
+		'List.<int>(Set.<int>([1, 2, 3]));',
+		'List.<int>({1, 2, 3});',
 	] as const;
 	const DICT_CONS = [
 		'Dict.<int>();',
@@ -64,7 +72,7 @@ describe('ASTNodeCall', () => {
 		specify('`List.(‹…›)`', () => {
 			assert.deepStrictEqual(
 				LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.List(TYPE.INT, true), 3),
+				repeat(new TYPE.List(TYPE.INT, true), 9),
 			);
 		});
 		specify('`Dict.(‹…›)`', () => {
@@ -120,8 +128,24 @@ describe('ASTNodeCall', () => {
 			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount, src));
 		});
 		it('throws when providing incorrect type of arguments.', () => {
+			xjs.Array.forEachAggregated([...new Map<string, readonly [string, readonly string[]]>([ // TODO: use `xjs.Map.forEachAggregated`
+				['List.<int>(42);', ['42', ['List.<int>', 'Set.<int>']]],
+			])], ([src, [argtype, allowed_types]]) => assert.throws(
+				() => AST.ASTNodeCall.fromSource(src).type(),
+				(err) => {
+					assert_instanceof(err, AggregateError);
+					assertAssignable(err, {
+						cons:   AggregateError,
+						errors: allowed_types.map((allowed_type) => ({
+							cons:    TypeErrorNotAssignable,
+							message: `Expression of type \`${ argtype }\` is not assignable to type \`${ allowed_type }\`.`,
+						})),
+					});
+					return true;
+				},
+			));
 			xjs.Array.forEachAggregated(extract_lines(`
-				List.<int>(42);
+				List.<int>([4.2]);
 				Dict.<int>([4.2]);
 				Set.<int>([42, "42"]);
 				Map.<int>([[42, "42"]]);
@@ -156,8 +180,8 @@ describe('ASTNodeCall', () => {
 		});
 		specify('`List.(‹…›)`', () => {
 			assert.deepStrictEqual(LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
-				...repeat(new VALUE.List<never>(), 2),
-				new VALUE.List<VALUE.Integer>(TEST_VALUES),
+				...repeat(new VALUE.List<never>(), 5),
+				...repeat(new VALUE.List<VALUE.Integer>(TEST_VALUES), 4),
 			]);
 		});
 		specify('`Dict.(‹…›)`', () => {
