@@ -8,7 +8,10 @@ import {
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../../src/index.ts';
-import {repeat} from '../../utils.ts';
+import {
+	extract_lines,
+	repeat,
+} from '../../utils.ts';
 
 
 
@@ -82,13 +85,13 @@ describe('ASTNodeCall', () => {
 			);
 		});
 		it('bypasses invariance for generic arguments.', () => {
-			[
-				'List.<mut int{}>([   {42}]);',
-				'Dict.<mut int{}>([a= {42}]);',
-				'Set .<mut int{}>([   {42}]);',
-				'Map.<float, mut int{}>([[4.2, {42}]]);',
-				'Map.<mut int{}, float>([[{42}, 4.2]]);',
-			].map((src) => AST.ASTNodeCall.fromSource(src).type());
+			extract_lines(`
+				List.<mut int{}>([   {42}]);
+				Dict.<mut int{}>([a= {42}]);
+				Set .<mut int{}>([   {42}]);
+				Map.<float, mut int{}>([[4.2, {42}]]);
+				Map.<mut int{}, float>([[{42}, 4.2]]);
+			`).map((src) => AST.ASTNodeCall.fromSource(src).type());
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
@@ -97,32 +100,32 @@ describe('ASTNodeCall', () => {
 			);
 		});
 		it('throws if base is not an ASTNodeVariable.', () => {
-			xjs.Array.forEachAggregated([
-				'null.();',
-				'(42 || 43).<bool>();',
-			], (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable, src));
+			xjs.Array.forEachAggregated(extract_lines(`
+				null.();
+				(42 || 43).<bool>();
+			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable, src));
 		});
 		it('throws if base is not one of the allowed strings.', () => {
-			xjs.Array.forEachAggregated([
-				'SET.<str>();',
-				'Mapping.<bool>();',
-			], (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), SyntaxError, src));
+			xjs.Array.forEachAggregated(extract_lines(`
+				SET.<str>();
+				Mapping.<bool>();
+			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), SyntaxError, src));
 		});
 		it('throws when providing incorrect number of arguments.', () => {
-			xjs.Array.forEachAggregated([
-				'List.<int>([], []);',
-				'Dict.<int>([], []);',
-				'Set.<int>([], []);',
-				'Map.<int>([], []);',
-			], (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount, src));
+			xjs.Array.forEachAggregated(extract_lines(`
+				List.<int>([], []);
+				Dict.<int>([], []);
+				Set.<int>([], []);
+				Map.<int>([], []);
+			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount, src));
 		});
 		it('throws when providing incorrect type of arguments.', () => {
-			xjs.Array.forEachAggregated([
-				'List.<int>(42);',
-				'Dict.<int>([4.2]);',
-				'Set.<int>([42, "42"]);',
-				'Map.<int>([[42, "42"]]);',
-			], (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable, src));
+			xjs.Array.forEachAggregated(extract_lines(`
+				List.<int>(42);
+				Dict.<int>([4.2]);
+				Set.<int>([42, "42"]);
+				Map.<int>([[42, "42"]]);
+			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable, src));
 		});
 	});
 
