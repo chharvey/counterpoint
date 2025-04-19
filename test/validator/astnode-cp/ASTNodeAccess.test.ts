@@ -10,17 +10,22 @@ import {
 	VoidError01,
 } from '../../../src/index.ts';
 import {typeUnit} from '../../helpers.ts';
-import {extract_lines} from '../../utils.ts';
+import {
+	extract_lines,
+	repeat,
+} from '../../utils.ts';
 
 
 
 describe('ASTNodeAccess', () => {
-	function repeat<T>(value: T, times: number): T[] {
-		return Array<T>(times).fill(value);
-	}
-
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	type ErrorOrSubclassConstructor = abstract new (...args: any[]) => Error;
+
+	const TEST_VALUES = [
+		VALUE.INT_1,
+		new VALUE.Float(2.0),
+		new VALUE.String('three'),
+	] as const;
 
 	/**
 	 * Takes a program source text and compares it to the array of expected types.
@@ -325,16 +330,11 @@ describe('ASTNodeAccess', () => {
 			});
 			describe('#fold', () => {
 				it('returns individual entries for folded objects.', () => {
-					const N_VALUES = [
-						new VALUE.Integer(1n),
-						new VALUE.Float(2.0),
-						new VALUE.String('three'),
-					] as const;
-					return testExprValues(SRC, [
-						...N_VALUES,
-						...N_VALUES,
+					testExprValues(SRC, [
+						...TEST_VALUES,
+						...TEST_VALUES,
 						...repeat(VALUE.TRUE, 3),
-						...N_VALUES,
+						...TEST_VALUES,
 
 						...repeat(null, 12),
 					]);
@@ -600,16 +600,11 @@ describe('ASTNodeAccess', () => {
 			});
 			describe('#fold', () => {
 				it('returns individual entries for folded objects.', () => {
-					const N_VALUES = [
-						new VALUE.Integer(1n),
-						new VALUE.Float(2.0),
-						new VALUE.String('three'),
-					] as const;
-					return testExprValues(SRC, [
-						...N_VALUES,
-						...N_VALUES,
+					testExprValues(SRC, [
+						...TEST_VALUES,
+						...TEST_VALUES,
 						...repeat(VALUE.TRUE, 3),
-						...N_VALUES,
+						...TEST_VALUES,
 
 						...repeat(null, 12),
 					]);
@@ -721,11 +716,11 @@ describe('ASTNodeAccess', () => {
 				]);
 			});
 			specify('#fold', () => {
-				const N_VALUE = new VALUE.Integer(42n);
+				const val = new VALUE.Integer(42n);
 				return testExprValues(SRC, [
-					...repeat(N_VALUE, 2),
+					...repeat(val, 2),
 					VALUE.TRUE,
-					N_VALUE,
+					val,
 
 					...repeat(null, 4),
 				]);
