@@ -61,6 +61,7 @@ describe('ASTNodeCall', () => {
 		'Map.<int, float>(List.<[int, float]>());',
 		'Map.<int, float>(Set.<[int, float]>());',
 		'Map.<int, float>({});',
+		'Map.<int, float>(Map.<int, float>());',
 		`Map.<int, float>([
 			[1, 0.1],
 			[2, 0.2],
@@ -80,6 +81,16 @@ describe('ASTNodeCall', () => {
 			[1, 0.1],
 			[2, 0.2],
 			[3, 0.4],
+		});`,
+		`Map.<int, float>(Map.<int, float>([
+			[1, 0.1],
+			[2, 0.2],
+			[3, 0.4],
+		]));`,
+		`Map.<int, float>({
+			1 -> 0.1,
+			2 -> 0.2,
+			3 -> 0.4,
 		});`,
 	] as const;
 
@@ -117,7 +128,7 @@ describe('ASTNodeCall', () => {
 		specify('`Map.(‹…›)`', () => {
 			assert.deepStrictEqual(
 				MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), 9),
+				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), 12),
 			);
 		});
 		it('bypasses invariance for generic arguments.', () => {
@@ -159,7 +170,7 @@ describe('ASTNodeCall', () => {
 			xjs.Array.forEachAggregated([...new Map<string, readonly [string, readonly string[]]>([ // TODO: use `xjs.Map.forEachAggregated`
 				['List.<int>(42);', ['42', ['List.<int>', 'Set.<int>']]],
 				['Set.<int>(42);',  ['42', ['List.<int>', 'Set.<int>']]],
-				['Map.<int>(42);',  ['42', ['List.<[int, int]>', 'Set.<[int, int]>']]],
+				['Map.<int>(42);',  ['42', ['List.<[int, int]>', 'Set.<[int, int]>', 'Map.<int, int>']]],
 			])], ([src, [argtype, allowed_types]]) => assert.throws(
 				() => AST.ASTNodeCall.fromSource(src).type(),
 				(err) => {
@@ -233,12 +244,12 @@ describe('ASTNodeCall', () => {
 		});
 		specify('`Map.(‹…›)`', () => {
 			assert.deepStrictEqual(MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
-				...repeat(new VALUE.Map<never, never>(), 5),
+				...repeat(new VALUE.Map<never, never>(), 6),
 				...repeat(new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
 					[TEST_VALUES[0], new VALUE.Float(0.1)],
 					[TEST_VALUES[1], new VALUE.Float(0.2)],
 					[TEST_VALUES[2], new VALUE.Float(0.4)],
-				])), 4),
+				])), 6),
 			]);
 		});
 	});

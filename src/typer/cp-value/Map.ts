@@ -25,7 +25,7 @@ import {Collection} from './Collection.ts';
  * @final
  */
 class ValueMap<K extends Value = Value, V extends Value = Value> extends Collection {
-	public constructor(private readonly cases: ReadonlyMap<K, V> = new Map()) {
+	public constructor(public readonly cases: ReadonlyMap<K, V> = new Map()) {
 		super();
 		const uniques = new Map<K, V>();
 		[...cases].forEach(([ant, con]) => {

@@ -217,6 +217,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 * 	new (tup:   unknown); % any tuple type with items of type [K, V]
 			 * 	new (list:  List.<[K, V]>);
 			 * 	new ('set': Set.<[K, V]>);
+			 * 	new (map:   Map.<K, V>);
 			 * }
 			 * ```
 			 */
@@ -229,6 +230,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				const allowed_argtypes: readonly TYPE.Type[] = [
 					new TYPE.List(entrytype),
 					new TYPE.Set(entrytype),
+					returntype,
 				];
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
@@ -295,10 +297,11 @@ export class ASTNodeCall extends ASTNodeExpression {
 					return new VALUE.Map();
 				}
 				const arg: VALUE.Value = args[0]!;
-				return new VALUE.Map(new Map<VALUE.Value, VALUE.Value>((
-					arg instanceof VALUE.CollectionIndexed ? arg.items :
-					(assert_instanceof(arg, VALUE.Set),      [...arg.elements])
-				).map((pair) => (pair as VALUE.CollectionIndexed).items as [VALUE.Value, VALUE.Value])));
+				return new VALUE.Map((
+					arg instanceof VALUE.CollectionIndexed || arg instanceof VALUE.Set
+						? new Map<VALUE.Value, VALUE.Value>((arg instanceof VALUE.CollectionIndexed ? arg.items : [...arg.elements]).map((pair) => (pair as VALUE.CollectionIndexed).items as [VALUE.Value, VALUE.Value]))
+						: (assert_instanceof(arg, VALUE.Map), arg.cases)
+				));
 			}
 			default: {
 				invalid_function_name(this.base.source);
