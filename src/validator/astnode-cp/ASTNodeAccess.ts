@@ -82,44 +82,50 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: TYPE.Type): never {
 			throw new TypeErrorNotNarrow(accessor.type(), supertype, accessor.line_index, accessor.col_index);
 		}
-		if (this.accessor instanceof ASTNodeIndex) {
-			return base_type instanceof TYPE.Tuple
-				? base_type.get(this.accessor.index, this.kind, this.accessor)
-				: assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor));
-		} else if (this.accessor instanceof ASTNodeKey) {
-			return base_type instanceof TYPE.Record
-				? base_type.get(this.accessor.id, this.kind, this.accessor)
-				: assert.fail(new TypeErrorNoEntry('property', base_type, this.accessor));
-		} else {
-			assert_instanceof(this.accessor, ASTNodeExpression);
-			const accessor_type: TYPE.Type = this.accessor.type();
-			/* eslint-disable @stylistic/indent */
-			return (
-				(base_type instanceof TYPE.List) ? (
-					(accessor_type.isSubtypeOf(TYPE.INT))
-						? updateAccessedDynamicType(base_type.invariant, this.kind)
-						: throwWrongSubtypeError(this.accessor, TYPE.INT)
-				) :
-				(base_type instanceof TYPE.Dict) ? (
-					(accessor_type.isSubtypeOf(TYPE.SYM))
-						? updateAccessedDynamicType(base_type.invariant, this.kind)
-						: accessor_type.isSubtypeOf(TYPE.STR)
-							? assert.fail(new Error('String keys for dict access are not yet supported.'))
-							: throwWrongSubtypeError(this.accessor, TYPE.INT)
-				) :
-				(base_type instanceof TYPE.Set) ? (
-					(accessor_type.isSubtypeOf(base_type.invariant))
-						? TYPE.BOOL
-						: throwWrongSubtypeError(this.accessor, base_type.invariant)
-				) :
-				(base_type instanceof TYPE.Map) ? (
-					(accessor_type.isSubtypeOf(base_type.invariant_ant))
-						? updateAccessedDynamicType(base_type.invariant_con, this.kind)
-						: throwWrongSubtypeError(this.accessor, base_type.invariant_ant)
-				) :
-				assert.fail(new TypeErrorInvalidOperation(this))
-			);
-			/* eslint-enable @stylistic/indent */
+		switch (true) {
+			case this.accessor instanceof ASTNodeIndex: {
+				return base_type instanceof TYPE.Tuple
+					? base_type.get(this.accessor.index, this.kind, this.accessor)
+					: assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor));
+			}
+			case this.accessor instanceof ASTNodeKey: {
+				return base_type instanceof TYPE.Record
+					? base_type.get(this.accessor.id, this.kind, this.accessor)
+					: assert.fail(new TypeErrorNoEntry('property', base_type, this.accessor));
+			}
+			case this.accessor instanceof ASTNodeExpression: {
+				const accessor_type: TYPE.Type = this.accessor.type();
+				switch (true) {
+					case base_type instanceof TYPE.List: {
+						return accessor_type.isSubtypeOf(TYPE.INT)
+							? updateAccessedDynamicType(base_type.invariant, this.kind)
+							: throwWrongSubtypeError(this.accessor, TYPE.INT);
+					}
+					case base_type instanceof TYPE.Dict: {
+						return accessor_type.isSubtypeOf(TYPE.SYM)
+							? updateAccessedDynamicType(base_type.invariant, this.kind)
+							: accessor_type.isSubtypeOf(TYPE.STR)
+								? assert.fail(new Error('String keys for dict access are not yet supported.'))
+								: throwWrongSubtypeError(this.accessor, TYPE.INT); // FIXME: shouldn’t be INT
+					}
+					case base_type instanceof TYPE.Set: {
+						return accessor_type.isSubtypeOf(base_type.invariant)
+							? TYPE.BOOL
+							: throwWrongSubtypeError(this.accessor, base_type.invariant);
+					}
+					case base_type instanceof TYPE.Map: {
+						return accessor_type.isSubtypeOf(base_type.invariant_ant)
+							? updateAccessedDynamicType(base_type.invariant_con, this.kind)
+							: throwWrongSubtypeError(this.accessor, base_type.invariant_ant);
+					}
+					default: {
+						throw new TypeErrorInvalidOperation(this);
+					}
+				}
+			}
+			default: {
+				throw new Error(`Expected ${ this.accessor } to be an index, key, or bracketed expression.`);
+			}
 		}
 	}
 
@@ -132,23 +138,41 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (this.optional && base_value.identical(VALUE.NULL)) {
 			return base_value;
 		}
-		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as VALUE.Tuple).get(this.accessor.index, this.optional, this.accessor);
-		} else if (this.accessor instanceof ASTNodeKey) {
-			return (base_value as VALUE.Record).get(this.accessor.id, this.optional, this.accessor);
-		} else {
-			assert_instanceof(this.accessor, ASTNodeExpression);
-			const accessor_value: VALUE.Value | null = this.accessor.fold();
-			if (accessor_value === null) {
-				return null;
+		switch (true) {
+			case this.accessor instanceof ASTNodeIndex: {
+				return (base_value as VALUE.Tuple).get(this.accessor.index, this.optional, this.accessor);
 			}
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-return --- type guard inference is not very good here
-			return (
-				base_value instanceof VALUE.List           ? base_value.get(BigInt((accessor_value as VALUE.Integer).toNumber()), this.optional, this.accessor) :
-				base_value instanceof VALUE.Dict           ? base_value.get((accessor_value as VALUE.Symbol).id,                  this.optional, this.accessor) :
-				base_value instanceof VALUE.Set            ? base_value.get(accessor_value                                                                    ) :
-				(assert_instanceof(base_value, VALUE.Map),   base_value.get(accessor_value,                                       this.optional, this.accessor))
-			);
+			case this.accessor instanceof ASTNodeKey: {
+				return (base_value as VALUE.Record).get(this.accessor.id, this.optional, this.accessor);
+			}
+			case this.accessor instanceof ASTNodeExpression: {
+				const accessor_value: VALUE.Value | null = this.accessor.fold();
+				if (accessor_value === null) {
+					return null;
+				}
+				/* eslint-disable @typescript-eslint/no-unsafe-return --- type guard inference is not very good here */
+				switch (true) {
+					case base_value instanceof VALUE.List: {
+						return base_value.get(BigInt((accessor_value as VALUE.Integer).toNumber()), this.optional, this.accessor);
+					}
+					case base_value instanceof VALUE.Dict: {
+						return base_value.get((accessor_value as VALUE.Symbol).id, this.optional, this.accessor);
+					}
+					case base_value instanceof VALUE.Set: {
+						return base_value.get(accessor_value);
+					}
+					case base_value instanceof VALUE.Map: {
+						return base_value.get(accessor_value, this.optional, this.accessor);
+					}
+					default: {
+						throw new Error(`Expected ${ base_value } to be a List, Dict, Set, or Map.`);
+					}
+				}
+				/* eslint-enable @typescript-eslint/no-unsafe-return */
+			}
+			default: {
+				throw new Error(`Expected ${ this.accessor } to be an index, key, or bracketed expression.`);
+			}
 		}
 	}
 }
