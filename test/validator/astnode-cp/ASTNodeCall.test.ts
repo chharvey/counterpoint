@@ -11,39 +11,43 @@ import {
 
 
 describe('ASTNodeCall', () => {
-	const evaluate = [
+	const EVALUATE = [
 		'List.<int>([1, 2, 3]);',
 		'Dict.<int>([a= 1, b= 2, c= 3]);',
 		'Set.<int>([1, 2, 3]);',
 		`Map.<int, float>([
-			  [1, 0.1],
-			  [2, 0.2],
+			[1, 0.1],
+			[2, 0.2],
 		]);`,
 	] as const;
-	const list_args = [
+	const LIST_CONS = [
+		'List.<int>();',
+		'List.<int>([]);',
 		'List.<int>(List.<int>([1, 2, 3]));',
+	] as const;
+	const DICT_CONS = [
+		'Dict.<int>();',
+	] as const;
+	const SET_CONS = [
+		'Set.<int>();',
+		'Set.<int>([]);',
 		'Set.<int>(List.<int>([1, 2, 3]));',
+	] as const;
+	const MAP_CONS = [
+		'Map.<int, float>();',
+		'Map.<int, float>([]);',
 		`Map.<int, float>(List.<[int, float]>([
 			[1, 0.1],
 			[2, 0.2],
 			[3, 0.4],
 		]));`,
 	] as const;
-	const zero_empty = [
-		'List.<int>();',
-		'Dict.<int>();',
-		'Set.<int>();',
-		'Map.<int, float>();',
-		'List.<int>([]);',
-		'Set.<int>([]);',
-		'Map.<int, float>([]);',
-	] as const;
 
 
 	describe('#type', () => {
 		it('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
-				evaluate.map((src) => AST.ASTNodeCall.fromSource(src).type()),
+				EVALUATE.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new TYPE.List(TYPE.INT, true),
 					new TYPE.Dict(TYPE.INT, true),
@@ -52,29 +56,31 @@ describe('ASTNodeCall', () => {
 				],
 			);
 		});
-		it('List, Set, and Map take List-type arguments.', () => {
-			assert.deepStrictEqual(
-				list_args.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				[
-					new TYPE.List(TYPE.INT, true),
-					new TYPE.Set(TYPE.INT, true),
-					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
-				],
-			);
+		specify('`List.(‹…›)`', () => {
+			assert.deepStrictEqual(LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()), [
+				new TYPE.List(TYPE.INT, true),
+				new TYPE.List(TYPE.INT, true),
+				new TYPE.List(TYPE.INT, true),
+			]);
 		});
-		it('zero/empty functional arguments.', () => {
-			assert.deepStrictEqual(
-				zero_empty.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				[
-					new TYPE.List(TYPE.INT, true),
-					new TYPE.Dict(TYPE.INT, true),
-					new TYPE.Set(TYPE.INT, true),
-					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
-					new TYPE.List(TYPE.INT, true),
-					new TYPE.Set(TYPE.INT, true),
-					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
-				],
-			);
+		specify('`Dict.(‹…›)`', () => {
+			assert.deepStrictEqual(DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()), [
+				new TYPE.Dict(TYPE.INT, true),
+			]);
+		});
+		specify('`Set.(‹…›)`', () => {
+			assert.deepStrictEqual(SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()), [
+				new TYPE.Set(TYPE.INT, true),
+				new TYPE.Set(TYPE.INT, true),
+				new TYPE.Set(TYPE.INT, true),
+			]);
+		});
+		specify('`Map.(‹…›)`', () => {
+			assert.deepStrictEqual(MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()), [
+				new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
+				new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
+				new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
+			]);
 		});
 		it('bypasses invariance for generic arguments.', () => {
 			[
@@ -133,7 +139,7 @@ describe('ASTNodeCall', () => {
 	describe('#fold', () => {
 		it('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
-				evaluate.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
+				EVALUATE.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
 					new VALUE.List<VALUE.Integer>([
 						new VALUE.Integer(1n),
@@ -157,41 +163,43 @@ describe('ASTNodeCall', () => {
 				],
 			);
 		});
-		it('List, Set, and Map take List-value arguments.', () => {
-			assert.deepStrictEqual(
-				list_args.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
-				[
-					new VALUE.List<VALUE.Integer>([
-						new VALUE.Integer(1n),
-						new VALUE.Integer(2n),
-						new VALUE.Integer(3n),
-					]),
-					new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>([
-						new VALUE.Integer(1n),
-						new VALUE.Integer(2n),
-						new VALUE.Integer(3n),
-					])),
-					new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
-						[new VALUE.Integer(1n), new VALUE.Float(0.1)],
-						[new VALUE.Integer(2n), new VALUE.Float(0.2)],
-						[new VALUE.Integer(3n), new VALUE.Float(0.4)],
-					])),
-				],
-			);
+		specify('`List.(‹…›)`', () => {
+			assert.deepStrictEqual(LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
+				new VALUE.List<never>(),
+				new VALUE.List<never>(),
+				new VALUE.List<VALUE.Integer>([
+					new VALUE.Integer(1n),
+					new VALUE.Integer(2n),
+					new VALUE.Integer(3n),
+				]),
+			]);
 		});
-		it('zero/empty functional arguments.', () => {
-			assert.deepStrictEqual(
-				zero_empty.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
-				[
-					new VALUE.List<never>(),
-					new VALUE.Dict<never>(),
-					new VALUE.Set<never>(),
-					new VALUE.Map<never, never>(),
-					new VALUE.List<never>(),
-					new VALUE.Set<never>(),
-					new VALUE.Map<never, never>(),
-				],
-			);
+		specify('`Dict.(‹…›)`', () => {
+			assert.deepStrictEqual(DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
+				new VALUE.Dict<never>(),
+			]);
+		});
+		specify('`Set.(‹…›)`', () => {
+			assert.deepStrictEqual(SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
+				new VALUE.Set<never>(),
+				new VALUE.Set<never>(),
+				new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>([
+					new VALUE.Integer(1n),
+					new VALUE.Integer(2n),
+					new VALUE.Integer(3n),
+				])),
+			]);
+		});
+		specify('`Map.(‹…›)`', () => {
+			assert.deepStrictEqual(MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
+				new VALUE.Map<never, never>(),
+				new VALUE.Map<never, never>(),
+				new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
+					[new VALUE.Integer(1n), new VALUE.Float(0.1)],
+					[new VALUE.Integer(2n), new VALUE.Float(0.2)],
+					[new VALUE.Integer(3n), new VALUE.Float(0.4)],
+				])),
+			]);
 		});
 	});
 });
