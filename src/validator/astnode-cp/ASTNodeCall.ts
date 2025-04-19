@@ -138,12 +138,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 */
 			[ValidFunctionName.DICT, () => {
 				this.countArgs(1n, [0n, 2n]);
-				const valuetype:  TYPE.Type = this.typeargs[0].eval();
-				const returntype            = new TYPE.Dict(valuetype);
+				const valuetype:        TYPE.Type            = this.typeargs[0].eval();
+				const returntype                             = new TYPE.Dict(valuetype);
+				const allowed_argtypes: readonly TYPE.Type[] = [
+					returntype,
+					// maybe more
+				];
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
-						ASTNodeCP.typeCheckAssign(arg, returntype, this);
+						forEither(allowed_argtypes, (allowed_type) => ASTNodeCP.typeCheckAssign(arg, allowed_type, this));
 					} catch (err) {
 						// If `arg` is not an allowed type, it’s either a record literal or an expression with a record type.
 						if (arg instanceof ASTNodeRecord) {
@@ -261,6 +265,16 @@ export class ASTNodeCall extends ASTNodeExpression {
 					(assert_instanceof(arg, VALUE.Set),      [...arg.elements])
 				));
 			}
+			case ValidFunctionName.DICT: {
+				if (!args.length) {
+					return new VALUE.Dict();
+				}
+				const arg: VALUE.Value = args[0]!;
+				return new VALUE.Dict((
+					(assert_instanceof(arg, VALUE.CollectionKeyed), arg.properties)
+					// maybe more
+				));
+			}
 			case ValidFunctionName.SET: {
 				if (!args.length) {
 					return new VALUE.Set();
@@ -273,7 +287,6 @@ export class ASTNodeCall extends ASTNodeExpression {
 			}
 		}
 		return new Map<ValidFunctionName, (argument: VALUE.Value | undefined) => VALUE.Value | null>([
-			[ValidFunctionName.DICT, (record) => (record === undefined) ? new VALUE.Dict() : new VALUE.Dict((record as VALUE.CollectionKeyed).properties)],
 			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new VALUE.Map()  : new VALUE.Map(new Map<VALUE.Value, VALUE.Value>((tuple as VALUE.CollectionIndexed).items.map((pair) => (pair as VALUE.CollectionIndexed).items as [VALUE.Value, VALUE.Value])))],
 		]).get(this.base.source as ValidFunctionName)!(args.length ? args[0]! : undefined);
 	}

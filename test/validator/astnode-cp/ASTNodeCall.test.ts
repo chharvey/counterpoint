@@ -40,6 +40,9 @@ describe('ASTNodeCall', () => {
 	] as const;
 	const DICT_CONS = [
 		'Dict.<int>();',
+		'Dict.<int>(Dict.<int>());',
+		'Dict.<int>([a= 1, b= 2, c= 3]);',
+		'Dict.<int>(Dict.<int>([a= 1, b= 2, c= 3]));',
 	] as const;
 	const SET_CONS = [
 		'Set.<int>();',
@@ -82,9 +85,10 @@ describe('ASTNodeCall', () => {
 			);
 		});
 		specify('`Dict.(‹…›)`', () => {
-			assert.deepStrictEqual(DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()), [
-				new TYPE.Dict(TYPE.INT, true),
-			]);
+			assert.deepStrictEqual(
+				DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
+				repeat(new TYPE.Dict(TYPE.INT, true), 4),
+			);
 		});
 		specify('`Set.(‹…›)`', () => {
 			assert.deepStrictEqual(
@@ -153,6 +157,7 @@ describe('ASTNodeCall', () => {
 			));
 			xjs.Array.forEachAggregated(extract_lines(`
 				List.<int>([4.2]);
+				Dict.<int>(42);
 				Dict.<int>([4.2]);
 				Set.<int>([42, "42"]);
 				Map.<int>([[42, "42"]]);
@@ -193,7 +198,12 @@ describe('ASTNodeCall', () => {
 		});
 		specify('`Dict.(‹…›)`', () => {
 			assert.deepStrictEqual(DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
-				new VALUE.Dict<never>(),
+				...repeat(new VALUE.Dict<never>(), 2),
+				...repeat(new VALUE.Dict<VALUE.Integer>(new Map<bigint, VALUE.Integer>([
+					[0x100n, TEST_VALUES[0]],
+					[0x101n, TEST_VALUES[1]],
+					[0x102n, TEST_VALUES[2]],
+				])), 2),
 			]);
 		});
 		specify('`Set.(‹…›)`', () => {
