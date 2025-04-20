@@ -852,12 +852,14 @@ describe('Type', () => {
 			assert.ok(VALUE.FLOAT_0.equal(VALUE.FLOAT_N0),      'the values 0.0 and -0.0 are equal (by value equality `==`)');
 			assert.ok(!VALUE.FLOAT_0.toType().equals(VALUE.FLOAT_N0.toType()));
 		});
-		it.skip('built-in types do not equal unit types of their canonical values.', () => {
+		it('built-in types do not equal unit types of their canonical values.', () => {
 			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),     'bool  != false');
 			assert.ok(!TYPE.BOOL  .equals(TYPE.TRUE),      'bool  != true');
 			assert.ok(!TYPE.SYM   .equals(TYPE.SYM_NEVER), 'sym   != @never');
 			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),   'int   != 0');
+			assert.ok(!TYPE.INT   .equals(typeUnit(1n)),   'int   != 1');
 			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)),  'float != 0.0');
+			assert.ok(!TYPE.FLOAT .equals(typeUnit(-0.0)), 'float != -0.0');
 			assert.ok(!TYPE.STR   .equals(typeUnit('')),   'str   != ""');
 
 			assert.ok(!TYPE.INT  .equals(typeUnit(0n) .union(typeUnit(1n))),   'int   != 0   | 1');

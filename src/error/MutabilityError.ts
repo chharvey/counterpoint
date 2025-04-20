@@ -1,5 +1,5 @@
+import type {ConstructorType} from '../lib/index.ts';
 import {MutabilityError01} from './index.ts';
-import type {ConstructorType} from './utils-private.ts';
 import {ErrorCode} from './ErrorCode.ts';
 
 

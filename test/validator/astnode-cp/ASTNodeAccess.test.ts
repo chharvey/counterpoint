@@ -9,18 +9,21 @@ import {
 	TypeErrorNoEntry,
 	VoidError01,
 } from '../../../src/index.ts';
+import type {ConstructorType} from '../../../src/lib/index.ts';
 import {typeUnit} from '../../helpers.ts';
-import {extract_lines} from '../../utils.ts';
+import {
+	extract_lines,
+	repeat,
+} from '../../utils.ts';
 
 
 
 describe('ASTNodeAccess', () => {
-	function repeat<T>(value: T, times: number): T[] {
-		return Array<T>(times).fill(value);
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	type ErrorOrSubclassConstructor = abstract new (...args: any[]) => Error;
+	const TEST_VALUES = [
+		VALUE.INT_1,
+		new VALUE.Float(2.0),
+		new VALUE.String('three'),
+	] as const;
 
 	/**
 	 * Takes a program source text and compares it to the array of expected types.
@@ -32,7 +35,7 @@ describe('ASTNodeAccess', () => {
 	 * @param source    the program source text to parse and analyze
 	 * @param expecteds the expected types of the expressions
 	 */
-	function testExprTypes(source: string, expecteds: readonly (TYPE.Type | ErrorOrSubclassConstructor)[]): void {
+	function testExprTypes(source: string, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
 		const program:    AST.ASTNodeGoal                           = AST.ASTNodeGoal.fromSource(source);
 		const statements: readonly AST.ASTNodeStatementExpression[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
 		program.varCheck();
@@ -43,7 +46,7 @@ describe('ASTNodeAccess', () => {
 		}
 		return expecteds.some((it) => it instanceof Function)
 			? xjs.Array.forEachAggregated(statements, (stmt, i) => {
-				const expected: TYPE.Type | ErrorOrSubclassConstructor = expecteds[i];
+				const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
 				return expected instanceof Function
 					? assert.throws(() => stmt.expr!.type(), expected)
 					: assert.deepStrictEqual(stmt.expr!.type(), expected);
@@ -65,7 +68,7 @@ describe('ASTNodeAccess', () => {
 	 * @param source    the program source text to parse and analyze
 	 * @param expecteds the expected folded values (or null) of the expressions
 	 */
-	function testExprValues(source: string, expecteds: readonly (VALUE.Value | null | ErrorOrSubclassConstructor)[]): void {
+	function testExprValues(source: string, expecteds: readonly (VALUE.Value | null | ConstructorType<Error>)[]): void {
 		const program:    AST.ASTNodeGoal                           = AST.ASTNodeGoal.fromSource(source);
 		const statements: readonly AST.ASTNodeStatementExpression[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
 		program.varCheck();
@@ -76,7 +79,7 @@ describe('ASTNodeAccess', () => {
 		}
 		return expecteds.some((it) => it instanceof Function)
 			? xjs.Array.forEachAggregated(statements, (stmt, i) => {
-				const expected: VALUE.Value | null | ErrorOrSubclassConstructor = expecteds[i];
+				const expected: VALUE.Value | null | ConstructorType<Error> = expecteds[i];
 				return expected instanceof Function
 					? assert.throws(() => stmt.expr!.fold(), expected)
 					: assert.deepStrictEqual(stmt.expr!.fold(), expected);
@@ -130,7 +133,7 @@ describe('ASTNodeAccess', () => {
 				[1, 2.0, "three"].-4;
 			`);
 			describe('#type', () => {
-				it('return individual entry types', () => {
+				it('return individual entry types.', () => {
 					testExprTypes(SRC, [
 						typeUnit(1n),
 						typeUnit(2.0),
@@ -166,7 +169,7 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			describe('#fold', () => {
-				it('return individual entries', () => {
+				it('return individual entries.', () => {
 					testExprValues(SRC, [
 						new VALUE.Integer(1n),
 						new VALUE.Float(2.0),
@@ -198,7 +201,7 @@ describe('ASTNodeAccess', () => {
 			`;
 			const THROWS = '[a= 1, b= 2.0, c= "three"].d;';
 			describe('#type', () => {
-				it('return individual entry types', () => {
+				it('return individual entry types.', () => {
 					testExprTypes(SRC, [
 						typeUnit(1n),
 						typeUnit(2.0),
@@ -228,7 +231,7 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			describe('#fold', () => {
-				it('return individual entries', () => {
+				it('return individual entries.', () => {
 					testExprValues(SRC, [
 						new VALUE.Integer(1n),
 						new VALUE.Float(2.0),
@@ -349,16 +352,11 @@ describe('ASTNodeAccess', () => {
 			});
 			describe('#fold', () => {
 				it('returns individual entries for folded objects.', () => {
-					const N_VALUES = [
-						new VALUE.Integer(1n),
-						new VALUE.Float(2.0),
-						new VALUE.String('three'),
-					] as const;
-					return testExprValues(SRC, [
-						...N_VALUES,
-						...N_VALUES,
+					testExprValues(SRC, [
+						...TEST_VALUES,
+						...TEST_VALUES,
 						...repeat(VALUE.TRUE, 3),
-						...N_VALUES,
+						...TEST_VALUES,
 
 						...repeat(null, 12),
 					]);
@@ -640,16 +638,11 @@ describe('ASTNodeAccess', () => {
 			});
 			describe('#fold', () => {
 				it('returns individual entries for folded objects.', () => {
-					const N_VALUES = [
-						new VALUE.Integer(1n),
-						new VALUE.Float(2.0),
-						new VALUE.String('three'),
-					] as const;
-					return testExprValues(SRC, [
-						...N_VALUES,
-						...N_VALUES,
+					testExprValues(SRC, [
+						...TEST_VALUES,
+						...TEST_VALUES,
 						...repeat(VALUE.TRUE, 3),
-						...N_VALUES,
+						...TEST_VALUES,
 
 						...repeat(null, 12),
 					]);
@@ -761,11 +754,11 @@ describe('ASTNodeAccess', () => {
 				]);
 			});
 			specify('#fold', () => {
-				const N_VALUE = new VALUE.Integer(42n);
+				const val = new VALUE.Integer(42n);
 				return testExprValues(SRC, [
-					...repeat(N_VALUE, 2),
+					...repeat(val, 2),
 					VALUE.TRUE,
-					N_VALUE,
+					val,
 
 					...repeat(null, 4),
 				]);

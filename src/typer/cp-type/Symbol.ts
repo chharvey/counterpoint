@@ -1,6 +1,6 @@
 import {instanceOf} from '../utils-private.js';
 import * as VALUE from '../cp-value/index.js';
-import {ValueType} from './ValueType.js';
+import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.js';
 
 
 
@@ -8,7 +8,7 @@ import {ValueType} from './ValueType.js';
  * Class for constructing the `sym` type.
  * @final
  */
-class TypeSymbol extends ValueType {
+class TypeSymbol extends UnenumeratedPrimitiveType {
 	public constructor() {
 		super(false, new Set([VALUE.SYM_NEVER]));
 	}

@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	type SubclassOf,
+	type ConstructorType,
 	assert_instanceof,
 } from '../src/lib/index.ts';
 import type {TYPE} from '../src/index.ts';
@@ -77,7 +77,7 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Gl
 
 
 
-type ValidationObject = {cons: SubclassOf<Error>} & (
+type ValidationObject = {cons: ConstructorType<Error>} & (
 	| {message: string}
 	| {errors: ValidationObject[]}
 );
