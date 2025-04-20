@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import {TypeErrorNoEntry} from '../../index.ts';
 import type {IntRange} from '../../lib/index.ts';
 import type {
+	ValidTypeAccessOperator,
 	ValidAccessOperator,
 	AST,
 } from '../../validator/index.ts';
@@ -94,7 +95,7 @@ class TypeRecord extends ValueType {
 	}
 
 	/** @final */
-	public get(key: bigint, access_kind: ValidAccessOperator, is_type_access: boolean, is_nullish: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): Type {
+	public get(key: bigint, access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_type_access: boolean, is_nullish: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): Type {
 		return updateAccessedStaticType(
 			((this.invariants.has(key))
 				? this.invariants.get(key)!

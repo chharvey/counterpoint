@@ -8,10 +8,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {
-	Operator,
-	type ValidTypeAccessOperator,
-} from '../Operator.ts';
+import type {ValidTypeAccessOperator} from '../Operator.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
 import {ASTNodeType} from './ASTNodeType.ts';
@@ -43,11 +40,11 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
 				assert_instanceof(base_type, TYPE.Tuple);
-				return base_type.get(this.accessor.index, Operator.DOT, true, false, this);
+				return base_type.get(this.accessor.index, this.kind, true, false, this);
 			}
 			case this.accessor instanceof ASTNodeKey: {
 				assert_instanceof(base_type, TYPE.Record);
-				return base_type.get(this.accessor.id, Operator.DOT, true, false, this);
+				return base_type.get(this.accessor.id, this.kind, true, false, this);
 			}
 			default: {
 				throw new Error(`Expected ${ this.accessor } to be an index or key.`);
