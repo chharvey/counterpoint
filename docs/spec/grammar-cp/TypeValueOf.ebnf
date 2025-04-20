@@ -98,7 +98,7 @@ Type TypeValueOf(SemanticTypeAccess access) :=
 		1. *Let* `i` be `Integer(accessor.index)`.
 		2. *If* `base_type` is a Tuple type *and* `i` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
-			2. *Return:* *UnwrapAffirm:* `UpdateAccessedStaticType(entry, NORMAL)`.
+			2. *Return:* *UnwrapAffirm:* `UpdateAccessedStaticType(entry, NORMAL, true, false)`.
 		3. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
 	6. *Else:*
@@ -106,7 +106,7 @@ Type TypeValueOf(SemanticTypeAccess access) :=
 		2. *Let* `id` be `accessor.id`.
 		3. *If* `base_type` is a Record type *and* `id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
-			2. *Return:* *UnwrapAffirm:* `UpdateAccessedStaticType(entry, NORMAL)`.
+			2. *Return:* *UnwrapAffirm:* `UpdateAccessedStaticType(entry, NORMAL, true, false)`.
 		4. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
 ;

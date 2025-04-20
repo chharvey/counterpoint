@@ -85,12 +85,12 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
 				return base_type instanceof TYPE.Tuple
-					? base_type.get(this.accessor.index, this.kind, is_nullish, this)
+					? base_type.get(this.accessor.index, this.kind, false, is_nullish, this)
 					: assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor));
 			}
 			case this.accessor instanceof ASTNodeKey: {
 				return base_type instanceof TYPE.Record
-					? base_type.get(this.accessor.id, this.kind, is_nullish, this)
+					? base_type.get(this.accessor.id, this.kind, false, is_nullish, this)
 					: assert.fail(new TypeErrorNoEntry('property', base_type, this.accessor));
 			}
 			case this.accessor instanceof ASTNodeExpression: {

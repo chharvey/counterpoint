@@ -12,7 +12,7 @@ import {extract_lines} from '../../utils.ts';
 
 
 describe('ASTNodeTypeAccess', () => {
-	describe.skip('#eval', () => { // FIXME: allow optional type access
+	describe('#eval', () => {
 		/**
 		 * Takes a program source text and compares it to the array of expected types.
 		 * The format of the program source text must be 0 or more type declarations.
@@ -78,7 +78,7 @@ describe('ASTNodeTypeAccess', () => {
 					TYPE.STR,
 				]);
 			});
-			it('unions with void if entry is optional.', () => {
+			it.skip('unions with null if entry is optional.', () => {
 				testTypeEvals(`
 					type TupoC = [1,   2.0,   ?: "three"];
 					type TupoV = [int, float, ?: str];
@@ -86,8 +86,8 @@ describe('ASTNodeTypeAccess', () => {
 					type D1 = TupoC.2; % type \`"three" | void\`
 					type D2 = TupoV.2; % type \`str | void\`
 				`, 2, [
-					typeUnit('three').union(TYPE.VOID),
-					TYPE.STR.union(TYPE.VOID),
+					typeUnit('three').union(TYPE.NULL),
+					TYPE.STR.union(TYPE.NULL),
 				]);
 			});
 			it('throws when index is out of bounds.', () => {
@@ -119,7 +119,7 @@ describe('ASTNodeTypeAccess', () => {
 					TYPE.STR,
 				]);
 			});
-			it('unions with void if entry is optional.', () => {
+			it.skip('unions with null if entry is optional.', () => {
 				testTypeEvals(`
 					type RecoC = [a: 1,   b?: 2.0,   c: "three"];
 					type RecoV = [a: int, b?: float, c: str];
@@ -127,8 +127,8 @@ describe('ASTNodeTypeAccess', () => {
 					type E1 = RecoC.b; % type \`2.0 | void\`
 					type E2 = RecoV.b; % type \`float | void\`
 				`, 2, [
-					typeUnit(2.0).union(TYPE.VOID),
-					TYPE.FLOAT.union(TYPE.VOID),
+					typeUnit(2.0).union(TYPE.NULL),
+					TYPE.FLOAT.union(TYPE.NULL),
 				]);
 			});
 			it('throws when key is out of range.', () => {

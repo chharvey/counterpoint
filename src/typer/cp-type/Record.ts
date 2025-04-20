@@ -94,13 +94,14 @@ class TypeRecord extends ValueType {
 	}
 
 	/** @final */
-	public get(key: bigint, access_kind: ValidAccessOperator, is_nullish: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): Type {
+	public get(key: bigint, access_kind: ValidAccessOperator, is_type_access: boolean, is_nullish: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): Type {
 		return updateAccessedStaticType(
 			((this.invariants.has(key))
 				? this.invariants.get(key)!
 				: assert.fail(new TypeErrorNoEntry('property', this, access.accessor))
 			),
 			access_kind,
+			is_type_access,
 			is_nullish,
 			access,
 		);
