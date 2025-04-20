@@ -7,6 +7,7 @@ import {
 } from '../../../src/index.ts';
 import type {ConstructorType} from '../../../src/lib/index.ts';
 import {typeUnit} from '../../helpers.ts';
+import {extract_lines} from '../../utils.ts';
 
 
 
@@ -90,8 +91,10 @@ describe('ASTNodeTypeAccess', () => {
 				]);
 			});
 			it('throws when index is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[1, 2.0, "three"].3')  .eval(), TypeErrorNoEntry);
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[1, 2.0, "three"].-4') .eval(), TypeErrorNoEntry);
+				xjs.Array.forEachAggregated(extract_lines(`
+					[1, 2.0, "three"].3
+					[1, 2.0, "three"].-4
+				`), (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry));
 			});
 		});
 

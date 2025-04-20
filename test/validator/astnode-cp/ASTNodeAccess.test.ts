@@ -125,7 +125,7 @@ describe('ASTNodeAccess', () => {
 				[1, 2.0, "three"].-4;
 			`);
 			describe('#type', () => {
-				it('return individual entry types', () => {
+				it('return individual entry types.', () => {
 					testExprTypes(SRC, [
 						typeUnit(1n),
 						typeUnit(2.0),
@@ -153,7 +153,7 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			describe('#fold', () => {
-				it('return individual entries', () => {
+				it('return individual entries.', () => {
 					testExprValues(SRC, [
 						new VALUE.Integer(1n),
 						new VALUE.Float(2.0),
@@ -185,7 +185,7 @@ describe('ASTNodeAccess', () => {
 			`;
 			const THROWS = '[a= 1, b= 2.0, c= "three"].d;';
 			describe('#type', () => {
-				it('return individual entry types', () => {
+				it('return individual entry types.', () => {
 					testExprTypes(SRC, [
 						typeUnit(1n),
 						typeUnit(2.0),
@@ -207,7 +207,7 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			describe('#fold', () => {
-				it('return individual entries', () => {
+				it('return individual entries.', () => {
 					testExprValues(SRC, [
 						new VALUE.Integer(1n),
 						new VALUE.Float(2.0),
