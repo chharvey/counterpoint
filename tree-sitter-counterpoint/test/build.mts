@@ -372,9 +372,27 @@ function buildTest(title: string, source: string, expected: string): string {
 				type T = TupleType.0;
 				type T = RecordType.prop;
 				type T = RecordType._;
+				type T = TupleType?.0;
+				type T = RecordType?.prop;
+				type T = RecordType?._;
 				type T = Set.<T>;
 			`,
 			sourceTypes(
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('integer')),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('word', s('identifier'))),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('word')),
+				),
 				s(
 					'type_compound',
 					s('identifier'),
