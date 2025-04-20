@@ -27,7 +27,7 @@ export const language_types_equal = (a: Type, b: Type): boolean => a.equals(b);
 
 
 
-export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidTypeAccessOperator | ValidAccessOperator, _is_type_access: boolean, is_nullish: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): Type {
+export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_nullish: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): Type {
 	switch (true) {
 		case access_kind === Operator.DOT && !entry.optional: {
 			return entry.type;

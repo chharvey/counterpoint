@@ -95,7 +95,7 @@ class TypeTuple extends ValueType {
 	}
 
 	/** @final */
-	public get(index: bigint, access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_type_access: boolean, is_nullish: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): Type {
+	public get(index: bigint, access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_nullish: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): Type {
 		const n: number = this.invariants.length;
 		const i: number = Number(index);
 		return updateAccessedStaticType(
@@ -105,7 +105,6 @@ class TypeTuple extends ValueType {
 				assert.fail(new TypeErrorNoEntry('index', this, access.accessor))
 			),
 			access_kind,
-			is_type_access,
 			is_nullish,
 			access,
 		);

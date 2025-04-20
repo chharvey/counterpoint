@@ -519,7 +519,7 @@ Type CombineTuplesOrRecords(Type t) :=
 ## UpdateAccessedStaticType
 Possibly modifies the type of an accessed bound property of a tuple or record.
 ```
-Type UpdateAccessedStaticType(EntryTypeStructure entry, Or<NORMAL, OPTIONAL, CLAIM> accesskind, Boolean is_type_access, Boolean is_nullish) :=
+Type UpdateAccessedStaticType(EntryTypeStructure entry, Or<NORMAL, OPTIONAL, CLAIM> accesskind, Boolean is_nullish) :=
 	1. *Let* `type` be `entry.type`.
 	2. *If* `accesskind` is `NORMAL`:
 		1. *If* `entry.optional` is `false`:
