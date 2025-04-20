@@ -167,11 +167,11 @@ describe('ASTNodeCall', () => {
 			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount, src));
 		});
 		it('throws when providing incorrect type of arguments.', () => {
-			xjs.Array.forEachAggregated([...new Map<string, readonly [string, readonly string[]]>([ // TODO: use `xjs.Map.forEachAggregated`
+			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>([
 				['List.<int>(42);', ['42', ['List.<int>', 'Set.<int>']]],
 				['Set.<int>(42);',  ['42', ['List.<int>', 'Set.<int>']]],
 				['Map.<int>(42);',  ['42', ['List.<[int, int]>', 'Set.<[int, int]>', 'Map.<int, int>']]],
-			])], ([src, [argtype, allowed_types]]) => assert.throws(
+			]), ([argtype, allowed_types], src) => assert.throws(
 				() => AST.ASTNodeCall.fromSource(src).type(),
 				(err) => {
 					assert_instanceof(err, AggregateError);
@@ -185,7 +185,7 @@ describe('ASTNodeCall', () => {
 					return true;
 				},
 			));
-			xjs.Array.forEachAggregated(extract_lines(`
+			return xjs.Array.forEachAggregated(extract_lines(`
 				List.<int>([4.2]);
 				Dict.<int>(42);
 				Dict.<int>([4.2]);
