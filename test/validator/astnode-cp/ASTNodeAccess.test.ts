@@ -91,7 +91,7 @@ describe('ASTNodeAccess', () => {
 	}
 
 
-	context('access kind: dot access (`a.‹b›`).', () => {
+	context('access kind: normal access (`a.‹b›`).', () => {
 		context('when base is nullish.', () => {
 			const SRCS = extract_lines(`
 				null.4;
