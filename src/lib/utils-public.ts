@@ -22,7 +22,8 @@ export type CodeUnit = number;
 
 
 
-export type SubclassOf<Class extends object> = abstract new (...args: any[]) => Class; // eslint-disable-line @typescript-eslint/no-explicit-any
+/** Returns the constructor type or any possible subtype of the given type. */
+export type ConstructorType<Class extends object> = abstract new (...args: any[]) => Class; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 
 
@@ -51,7 +52,7 @@ export type Values<M> = (
  * @param cons - the class or constructor function
  * @throws {AssertionError} if false
  */
-export function assert_instanceof<Class extends object>(obj: unknown, cons: SubclassOf<Class>, err?: Parameters<typeof assert.ok>[1]): asserts obj is Class {
+export function assert_instanceof<Class extends object>(obj: unknown, cons: ConstructorType<Class>, err?: Parameters<typeof assert.ok>[1]): asserts obj is Class {
 	return assert.ok(obj instanceof cons, err || `${ obj } should be an instance of ${ cons.name || cons }.`); // eslint-disable-line @typescript-eslint/prefer-nullish-coalescing --- `err` could be the empty string
 }
 

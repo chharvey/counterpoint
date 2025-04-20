@@ -9,6 +9,7 @@ import {
 	TypeErrorNoEntry,
 	VoidError01,
 } from '../../../src/index.ts';
+import type {ConstructorType} from '../../../src/lib/index.ts';
 import {typeUnit} from '../../helpers.ts';
 import {
 	extract_lines,
@@ -18,9 +19,6 @@ import {
 
 
 describe('ASTNodeAccess', () => {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	type ErrorOrSubclassConstructor = abstract new (...args: any[]) => Error;
-
 	const TEST_VALUES = [
 		VALUE.INT_1,
 		new VALUE.Float(2.0),
@@ -37,14 +35,14 @@ describe('ASTNodeAccess', () => {
 	 * @param source    the program source text to parse and analyze
 	 * @param expecteds the expected types of the expressions
 	 */
-	function testExprTypes(source: string, expecteds: readonly (TYPE.Type | ErrorOrSubclassConstructor)[]): void {
+	function testExprTypes(source: string, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
 		const program:    AST.ASTNodeGoal                           = AST.ASTNodeGoal.fromSource(source);
 		const statements: readonly AST.ASTNodeStatementExpression[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
 		program.varCheck();
 		program.typeCheck();
 		return expecteds.some((it) => it instanceof Function)
 			? xjs.Array.forEachAggregated(statements, (stmt, i) => {
-				const expected: TYPE.Type | ErrorOrSubclassConstructor = expecteds[i];
+				const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
 				return expected instanceof Function
 					? assert.throws(() => stmt.expr!.type(), expected)
 					: assert.deepStrictEqual(stmt.expr!.type(), expected);
@@ -66,14 +64,14 @@ describe('ASTNodeAccess', () => {
 	 * @param source    the program source text to parse and analyze
 	 * @param expecteds the expected folded values (or null) of the expressions
 	 */
-	function testExprValues(source: string, expecteds: readonly (VALUE.Value | null | ErrorOrSubclassConstructor)[]): void {
+	function testExprValues(source: string, expecteds: readonly (VALUE.Value | null | ConstructorType<Error>)[]): void {
 		const program:    AST.ASTNodeGoal                           = AST.ASTNodeGoal.fromSource(source);
 		const statements: readonly AST.ASTNodeStatementExpression[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
 		program.varCheck();
 		program.typeCheck();
 		return expecteds.some((it) => it instanceof Function)
 			? xjs.Array.forEachAggregated(statements, (stmt, i) => {
-				const expected: VALUE.Value | null | ErrorOrSubclassConstructor = expecteds[i];
+				const expected: VALUE.Value | null | ConstructorType<Error> = expecteds[i];
 				return expected instanceof Function
 					? assert.throws(() => stmt.expr!.fold(), expected)
 					: assert.deepStrictEqual(stmt.expr!.fold(), expected);

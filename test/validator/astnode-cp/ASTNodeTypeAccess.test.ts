@@ -5,15 +5,13 @@ import {
 	TYPE,
 	TypeErrorNoEntry,
 } from '../../../src/index.ts';
+import type {ConstructorType} from '../../../src/lib/index.ts';
 import {typeUnit} from '../../helpers.ts';
 
 
 
 describe('ASTNodeTypeAccess', () => {
 	describe('#eval', () => {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		type ErrorOrSubclassConstructor = abstract new (...args: any[]) => Error;
-
 		/**
 		 * Takes a program source text and compares it to the array of expected types.
 		 * The format of the program source text must be 0 or more type declarations.
@@ -24,7 +22,7 @@ describe('ASTNodeTypeAccess', () => {
 		 * @param start     the index of the first statement to begin comparing (statements before this are ignored)
 		 * @param expecteds the expected evaluations of the type-expressions
 		 */
-		function testTypeEvals(source: string, start: number, expecteds: readonly (TYPE.Type | ErrorOrSubclassConstructor)[]): void {
+		function testTypeEvals(source: string, start: number, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
 			const program:    AST.ASTNodeGoal                       = AST.ASTNodeGoal.fromSource(source);
 			const statements: readonly AST.ASTNodeDeclarationType[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeDeclarationType).slice(start);
 			program.varCheck();
@@ -35,7 +33,7 @@ describe('ASTNodeTypeAccess', () => {
 			}
 			return expecteds.some((it) => it instanceof Function)
 				? xjs.Array.forEachAggregated(statements, (stmt, i) => {
-					const expected: TYPE.Type | ErrorOrSubclassConstructor = expecteds[i];
+					const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
 					return expected instanceof Function
 						? assert.throws(() => stmt.assigned.eval(), expected)
 						: assert.deepStrictEqual(stmt.assigned.eval(), expected);
