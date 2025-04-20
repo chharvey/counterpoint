@@ -8,7 +8,10 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {Operator} from '../Operator.ts';
+import {
+	Operator,
+	type ValidTypeAccessOperator,
+} from '../Operator.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
 import {ASTNodeType} from './ASTNodeType.ts';
@@ -24,10 +27,11 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
+		private readonly kind:     ValidTypeAccessOperator,
 		private readonly base:     ASTNodeType,
 		public  readonly accessor: ASTNodeIndex | ASTNodeKey,
 	) {
-		super(start_node, {}, [base, accessor]);
+		super(start_node, {kind}, [base, accessor]);
 	}
 
 	@memoizeMethod

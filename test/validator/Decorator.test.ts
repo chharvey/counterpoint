@@ -149,6 +149,19 @@ describe('Decorator', () => {
 				% (property_access_type)
 			`]],
 
+			['Decorate(PropertyAccessType ::= "?." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
+				type T = U?.1;
+				% (property_access_type)
+			`]],
+			['Decorate(PropertyAccessType ::= "?." Word) -> SemanticKey', [AST.ASTNodeKey, `
+				type T = U?.p;
+				% (property_access_type)
+			`]],
+			['Decorate(PropertyAccessType ::= "?." Word) -> SemanticKey', [AST.ASTNodeKey, `
+				type T = U?._;
+				% (property_access_type)
+			`]],
+
 			['Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
 				type T = U.p;
 				% (type_compound)
