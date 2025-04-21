@@ -37,12 +37,12 @@ describe('ASTNodeTypeAccess', () => {
 				// if type-checking fails, proceed to `assert.throws` below
 			}
 			return expecteds.some((it) => it instanceof Function)
-				? xjs.Array.forEachAggregated(statements, (stmt, i) => {
+				? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 					const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
 					return expected instanceof Function
 						? assert.throws(() => stmt.assigned.eval(), expected)
 						: assert.deepStrictEqual(stmt.assigned.eval(), expected);
-				})
+				}))
 				: assert.deepStrictEqual(
 					statements.map((stmt) => stmt.assigned.eval()),
 					expecteds,

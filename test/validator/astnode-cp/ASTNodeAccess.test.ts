@@ -45,12 +45,12 @@ describe('ASTNodeAccess', () => {
 			// if type-checking fails, proceed to `assert.throws` below
 		}
 		return expecteds.some((it) => it instanceof Function)
-			? xjs.Array.forEachAggregated(statements, (stmt, i) => {
+			? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 				const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
 				return expected instanceof Function
 					? assert.throws(() => stmt.expr!.type(), expected)
 					: assert.deepStrictEqual(stmt.expr!.type(), expected);
-			})
+			}))
 			: assert.deepStrictEqual(
 				statements.map((stmt) => stmt.expr!.type()),
 				expecteds,
@@ -78,12 +78,12 @@ describe('ASTNodeAccess', () => {
 			// if type-checking fails, proceed to `assert.throws` below
 		}
 		return expecteds.some((it) => it instanceof Function)
-			? xjs.Array.forEachAggregated(statements, (stmt, i) => {
+			? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 				const expected: VALUE.Value | null | ConstructorType<Error> = expecteds[i];
 				return expected instanceof Function
 					? assert.throws(() => stmt.expr!.fold(), expected)
 					: assert.deepStrictEqual(stmt.expr!.fold(), expected);
-			})
+			}))
 			: assert.deepStrictEqual(
 				statements.map((stmt) => stmt.expr!.fold()),
 				expecteds,
