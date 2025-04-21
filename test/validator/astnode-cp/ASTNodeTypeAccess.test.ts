@@ -51,7 +51,7 @@ describe('ASTNodeTypeAccess', () => {
 
 
 		context('access kind: normal access (`a.‹b›`).', () => {
-			context('access type: access by index.', () => {
+			context('access type: access by index / by key.', () => {
 				it('returns individual entry types.', () => {
 					testTypeEvals(`
 						type TupC = [1,   2.0,   "three"];
@@ -83,26 +83,6 @@ describe('ASTNodeTypeAccess', () => {
 						TYPE.FLOAT,
 						TYPE.STR,
 					]);
-				});
-				it('throws when entry is optional.', () => {
-					testTypeEvals(`
-						type TupoC = [1,   2.0,   ?: "three"];
-						type TupoV = [int, float, ?: str];
-
-						type D1 = TupoC.2;
-						type D2 = TupoV.2;
-					`, 2, repeat(TypeErrorInvalidOperation, 2));
-				});
-				it('throws when index is out of bounds.', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
-						[1, 2.0, "three"].3
-						[1, 2.0, "three"].-4
-					`), (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry));
-				});
-			});
-
-			context('access type: access by key.', () => {
-				it('returns individual entry types.', () => {
 					testTypeEvals(`
 						type RecC = [a: 1,   b: 2.0,   _: "three"];
 						type RecV = [a: int, b: float, _: str];
@@ -124,6 +104,13 @@ describe('ASTNodeTypeAccess', () => {
 				});
 				it('throws when entry is optional.', () => {
 					testTypeEvals(`
+						type TupoC = [1,   2.0,   ?: "three"];
+						type TupoV = [int, float, ?: str];
+
+						type D1 = TupoC.2;
+						type D2 = TupoV.2;
+					`, 2, repeat(TypeErrorInvalidOperation, 2));
+					testTypeEvals(`
 						type RecoC = [a: 1,   b?: 2.0,   c: "three"];
 						type RecoV = [a: int, b?: float, c: str];
 
@@ -131,7 +118,11 @@ describe('ASTNodeTypeAccess', () => {
 						type E2 = RecoV.b;
 					`, 2, repeat(TypeErrorInvalidOperation, 2));
 				});
-				it('throws when key is out of range.', () => {
+				it('throws when index is out of bounds / when key is out of range.', () => {
+					xjs.Array.forEachAggregated(extract_lines(`
+						[1, 2.0, "three"].3
+						[1, 2.0, "three"].-4
+					`), (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry));
 					assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[a: 1, b: 2.0, c: "three"].d').eval(), TypeErrorNoEntry);
 				});
 			});
@@ -139,7 +130,7 @@ describe('ASTNodeTypeAccess', () => {
 
 
 		context('access kind: potential access (`a?.‹b›`).', () => {
-			context('access type: access by index.', () => {
+			context('access type: access by index / by key.', () => {
 				it('unions with null if entry is optional.', () => {
 					testTypeEvals(`
 						type TupoC = [1,   2.0,   ?: "three"];
@@ -151,20 +142,6 @@ describe('ASTNodeTypeAccess', () => {
 						typeUnit('three').union(TYPE.NULL),
 						TYPE.STR.union(TYPE.NULL),
 					]);
-				});
-				it('throws when entry is not optional.', () => {
-					testTypeEvals(`
-						type TupoC = [1,   2.0,   "three"];
-						type TupoV = [int, float, str];
-
-						type D1 = TupoC?.2;
-						type D2 = TupoV?.2;
-					`, 2, repeat(TypeErrorInvalidOperation, 2));
-				});
-			});
-
-			context('access type: access by key.', () => {
-				it('unions with null if entry is optional.', () => {
 					testTypeEvals(`
 						type RecoC = [a: 1,   b?: 2.0,   c: "three"];
 						type RecoV = [a: int, b?: float, c: str];
@@ -177,6 +154,13 @@ describe('ASTNodeTypeAccess', () => {
 					]);
 				});
 				it('throws when entry is not optional.', () => {
+					testTypeEvals(`
+						type TupoC = [1,   2.0,   "three"];
+						type TupoV = [int, float, str];
+
+						type D1 = TupoC?.2;
+						type D2 = TupoV?.2;
+					`, 2, repeat(TypeErrorInvalidOperation, 2));
 					testTypeEvals(`
 						type RecoC = [a: 1,   b: 2.0,   c: "three"];
 						type RecoV = [a: int, b: float, c: str];
