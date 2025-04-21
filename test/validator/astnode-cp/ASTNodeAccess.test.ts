@@ -111,9 +111,12 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access type: by index / by key', () => {
-			const SRC_BY_INDEX = `
+			const SRC = `
 				let     tup_fixed:   [int, float, str] = [1, 2.0, "three"];
 				let var tup_unfixed: [int, float, str] = [1, 2.0, "three"];
+
+				let     rec_fixed:   [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
+				let var rec_unfixed: [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
 
 				tup_fixed.0;   % type \`1\`       % value \`1\`
 				tup_fixed.1;   % type \`2.0\`     % value \`2.0\`
@@ -127,10 +130,6 @@ describe('ASTNodeAccess', () => {
 				tup_unfixed.-3; % type \`int\`     % non-foldable value
 				tup_unfixed.-2; % type \`float\`   % non-foldable value
 				tup_unfixed.-1; % type \`str\`     % non-foldable value
-			`;
-			const SRC_BY_KEY = `
-				let     rec_fixed:   [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
-				let var rec_unfixed: [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
 
 				rec_fixed.a;   % type \`1\`       % value \`1\`
 				rec_fixed.b;   % type \`2.0\`     % value \`2.0\`
@@ -139,14 +138,14 @@ describe('ASTNodeAccess', () => {
 				rec_unfixed.b; % type \`float\`   % non-foldable value
 				rec_unfixed._; % type \`str\`     % non-foldable value
 			`;
-			const THROWS_BY_INDEX = extract_lines(`
+			const THROWS = extract_lines(`
 				[1, 2.0, "three"].3;
 				[1, 2.0, "three"].-4;
+				[a= 1, b= 2.0, c= "three"].d;
 			`);
-			const THROWS_BY_KEY = '[a= 1, b= 2.0, c= "three"].d;';
 			describe('#type', () => {
 				it('return individual entry types.', () => {
-					testExprTypes(SRC_BY_INDEX, [
+					testExprTypes(SRC, [
 						typeUnit(1n),
 						typeUnit(2.0),
 						typeUnit('three'),
@@ -159,8 +158,7 @@ describe('ASTNodeAccess', () => {
 						TYPE.INT,
 						TYPE.FLOAT,
 						TYPE.STR,
-					]);
-					testExprTypes(SRC_BY_KEY, [
+
 						typeUnit(1n),
 						typeUnit(2.0),
 						typeUnit('three'),
@@ -174,35 +172,32 @@ describe('ASTNodeAccess', () => {
 						let tup_a: [int, int, ?: int] = [10, 20];
 						let tup_b: [int, int, ?: int] = [10, 20, 30];
 
-						tup_a.2;
-						tup_b.2;
-					`, repeat(TypeErrorInvalidOperation, 2));
-					testExprTypes(`
 						let rec_a: [x: int, y?: int, z: int] = [x= 10, z= 20];
 						let rec_b: [x: int, y?: int, z: int] = [x= 10, z= 20, y= 30];
 
+						tup_a.2;
+						tup_b.2;
+
 						rec_a.y;
 						rec_b.y;
-					`, repeat(TypeErrorInvalidOperation, 2));
+					`, repeat(TypeErrorInvalidOperation, 4));
 				});
 				it('throws when base object is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines(`
 						(4).2;
 						List.<int>([10, 20, 30]).1;
-					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
-					xjs.Array.forEachAggregated(extract_lines(`
+
 						(4).c;
 						Dict.<int>([a= 10, b= 20, c= 30]).b;
 					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
 				});
 				it('throws when index is out of bounds / when key is out of range.', () => {
-					xjs.Array.forEachAggregated(THROWS_BY_INDEX, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
-					assert.throws(() => AST.ASTNodeAccess.fromSource(THROWS_BY_KEY).type(), TypeErrorNoEntry);
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
 				});
 			});
 			describe('#fold', () => {
 				it('return individual entries.', () => {
-					testExprValues(SRC_BY_INDEX, [
+					testExprValues(SRC, [
 						new VALUE.Integer(1n),
 						new VALUE.Float(2.0),
 						new VALUE.String('three'),
@@ -211,8 +206,7 @@ describe('ASTNodeAccess', () => {
 						new VALUE.Float(2.0),
 						new VALUE.String('three'),
 						...repeat(null, 3),
-					]);
-					testExprValues(SRC_BY_KEY, [
+
 						new VALUE.Integer(1n),
 						new VALUE.Float(2.0),
 						new VALUE.String('three'),
@@ -220,8 +214,7 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('throws when index is out of bounds / when key is out of range.', () => {
-					xjs.Array.forEachAggregated(THROWS_BY_INDEX, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), VoidError01));
-					assert.throws(() => AST.ASTNodeAccess.fromSource(THROWS_BY_KEY).fold(), VoidError01);
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), VoidError01));
 				});
 			});
 		});
@@ -425,36 +418,34 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access type: access by index / by key.', () => {
-			const SRC_BY_INDEX = `
+			const SRC = `
 				let     tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];
 				let var tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
 				let var tupo2_u: [int, float, ?: str] = [1, 2.0];
 
-				tupo1_f?.2; % type \`"three"\` % value \`"three"\`
-				tupo1_u?.2; % type \`str?\`    % non-foldable value
-				tupo2_u?.2; % type \`str?\`    % non-foldable value
-			`;
-			const SRC_BY_KEY = `
 				let     reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
 				let var reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
 				let var reco2_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
+
+				tupo1_f?.2; % type \`"three"\` % value \`"three"\`
+				tupo1_u?.2; % type \`str?\`    % non-foldable value
+				tupo2_u?.2; % type \`str?\`    % non-foldable value
 
 				reco1_f?.b; % type \`"three"\` % value \`"three"\`
 				reco1_u?.b; % type \`str?\`    % non-foldable value
 				reco2_u?.b; % type \`str?\`    % non-foldable value
 			`;
-			const THROWS_BY_INDEX = extract_lines(`
+			const THROWS = extract_lines(`
 				[1, 2.0, "three"]?.3;
 				[1, 2.0, "three"]?.-4;
+				[a= 1, b= 2.0, c= "three"]?.d;
 			`);
-			const THROWS_BY_KEY = '[a= 1, b= 2.0, c= "three"]?.d;';
 			describe('#type', () => {
 				it('unions with null if entry is optional.', () => {
-					testExprTypes(SRC_BY_INDEX, [
+					testExprTypes(SRC, [
 						typeUnit('three'),
 						...repeat(TYPE.STR.union(TYPE.NULL), 2),
-					]);
-					testExprTypes(SRC_BY_KEY, [
+
 						typeUnit('three'),
 						...repeat(TYPE.STR.union(TYPE.NULL), 2),
 					]);
@@ -464,36 +455,32 @@ describe('ASTNodeAccess', () => {
 						let tup_a: [int, int, ?: int] = [10, 20];
 						let tup_b: [int, int, ?: int] = [10, 20, 30];
 
-						tup_a?.1;
-						tup_b?.1;
-					`, repeat(TypeErrorInvalidOperation, 2));
-					testExprTypes(`
 						let rec_a: [x: int, y?: int, z: int] = [x= 10, z= 20];
 						let rec_b: [x: int, y?: int, z: int] = [x= 10, z= 20, y= 30];
 
+						tup_a?.1;
+						tup_b?.1;
+
 						rec_a?.z;
 						rec_b?.z;
-					`, repeat(TypeErrorInvalidOperation, 2));
+					`, repeat(TypeErrorInvalidOperation, 4));
 				});
 				it('throws when index is out of bounds / when key is out of range.', () => {
-					xjs.Array.forEachAggregated(THROWS_BY_INDEX, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
-					assert.throws(() => AST.ASTNodeAccess.fromSource(THROWS_BY_KEY).type(), TypeErrorNoEntry);
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
 				});
 			});
 			describe('#fold', () => {
 				it('returns folded values as normal.', () => {
-					testExprValues(SRC_BY_INDEX, [
+					testExprValues(SRC, [
 						new VALUE.String('three'),
 						...repeat(null, 2),
-					]);
-					testExprValues(SRC_BY_KEY, [
+
 						new VALUE.String('three'),
 						...repeat(null, 2),
 					]);
 				});
 				it('returns null when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
-					xjs.Array.forEachAggregated(THROWS_BY_INDEX, (src) => assert.strictEqual(AST.ASTNodeAccess.fromSource(src).fold(), VALUE.NULL));
-					assert.strictEqual(AST.ASTNodeAccess.fromSource(THROWS_BY_KEY).fold(), VALUE.NULL);
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.strictEqual(AST.ASTNodeAccess.fromSource(src).fold(), VALUE.NULL));
 				});
 			});
 		});
@@ -627,22 +614,21 @@ describe('ASTNodeAccess', () => {
 
 	context('access kind: claim access (`a!.‹b›`).', () => {
 		context('access type: access by index / by key.', () => {
-			const SRC_BY_INDEX = `
+			const SRC = `
 				let     tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];
 				let var tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
 				let var tupo2_u: [int, float, ?: str] = [1, 2.0];
 				let var tupvoid: [int | void]         = [42];
 
-				tupo1_f!.2; % type \`"three"\` % value \`"three"\`
-				tupo1_u!.2; % type \`str\`     % non-foldable value
-				tupo2_u!.2; % type \`str\`     % non-foldable value
-				tupvoid!.0; % type \`int\`     % non-foldable value
-			`;
-			const SRC_BY_KEY = `
 				let     reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
 				let var reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
 				let var reco2_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
 				let var recvoid: [c: int | void]             = [c= 42];
+
+				tupo1_f!.2; % type \`"three"\` % value \`"three"\`
+				tupo1_u!.2; % type \`str\`     % non-foldable value
+				tupo2_u!.2; % type \`str\`     % non-foldable value
+				tupvoid!.0; % type \`int\`     % non-foldable value
 
 				reco1_f!.b; % type \`"three"\` % value \`"three"\`
 				reco1_u!.b; % type \`str\`     % non-foldable value
@@ -650,13 +636,12 @@ describe('ASTNodeAccess', () => {
 				recvoid!.c; % type \`int\`     % non-foldable value
 			`;
 			it('#type: always subtracts void.', () => {
-				testExprTypes(SRC_BY_INDEX, [
+				testExprTypes(SRC, [
 					typeUnit('three'),
 					TYPE.STR,
 					TYPE.STR,
 					TYPE.INT,
-				]);
-				testExprTypes(SRC_BY_KEY, [
+
 					typeUnit('three'),
 					TYPE.STR,
 					TYPE.STR,
@@ -664,15 +649,12 @@ describe('ASTNodeAccess', () => {
 				]);
 			});
 			specify('#fold', () => {
-				testExprValues(SRC_BY_INDEX, [
+				testExprValues(SRC, [
 					new VALUE.String('three'),
 					...repeat(null, 3),
-				]);
-				testExprValues(SRC_BY_KEY, [
+
 					new VALUE.String('three'),
-					null,
-					null,
-					null,
+					...repeat(null, 3),
 				]);
 			});
 		});
