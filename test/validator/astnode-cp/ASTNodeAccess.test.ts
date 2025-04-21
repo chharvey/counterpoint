@@ -194,6 +194,53 @@ describe('ASTNodeAccess', () => {
 				it('throws when index is out of bounds / when key is out of range.', () => {
 					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
 				});
+				context('if base is a union type.', () => {
+					const DECLS = `
+						let var tup: [   null,     bool,     sym] | [   int, ?: float]          = [null, true, @hello];
+						let var rec: [a: null, b?: bool, c?: sym] | [a: int,           c?: str] = [a= 42];
+					`;
+					it('throws a TypeErrorNoEntry when every constituent does not have the entry (index out of bounds / key out of range).', () => {
+						testExprTypes(`
+							${ DECLS }
+
+							tup.3;
+							rec.d;
+						`, repeat(TypeErrorNoEntry, 2));
+					});
+					it('if every constituent has the entry and it’s required, returns the union of those.', () => {
+						testExprTypes(`
+							${ DECLS }
+
+							tup.0;
+							rec.a;
+						`, repeat(TYPE.NULL.union(TYPE.INT), 2));
+					});
+					it('FIXME: if some constituent is missing an entry that another constituent has, throws a TypeErrorNoEntry; but should be a TypeErrorInvalidOperation.', () => {
+						testExprTypes(`
+							${ DECLS }
+
+							tup.1; % required | optional
+							tup.2; % required | missing
+							rec.b; % optional | missing
+							rec.c; % optional | optional
+						`, [
+							TypeErrorInvalidOperation,
+							TypeErrorNoEntry,
+							TypeErrorNoEntry,
+							TypeErrorInvalidOperation,
+						]);
+					});
+					it.skip('throws a TypeErrorInvalidOperation when some constituent (but not all) does not have the entry, or has it but it is optional.', () => {
+						testExprTypes(`
+							${ DECLS }
+
+							tup.1; % required | optional
+							tup.2; % required | missing
+							rec.b; % optional | missing
+							rec.c; % optional | optional
+						`, repeat(TypeErrorInvalidOperation, 4));
+					});
+				});
 			});
 			describe('#fold', () => {
 				it('return individual entries.', () => {
@@ -467,6 +514,58 @@ describe('ASTNodeAccess', () => {
 				});
 				it('throws when index is out of bounds / when key is out of range.', () => {
 					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
+				});
+				context('if base is a union type.', () => {
+					const DECLS = `
+						let var tup: [   null,     bool,     sym] | [   int, ?: float]          = [null, true, @hello];
+						let var rec: [a: null, b?: bool, c?: sym] | [a: int,           c?: str] = [a= 42];
+					`;
+					it('throws a TypeErrorNoEntry when every constituent does not have the entry (index out of bounds / key out of range).', () => {
+						testExprTypes(`
+							${ DECLS }
+
+							tup?.3;
+							rec?.d;
+						`, repeat(TypeErrorNoEntry, 2));
+					});
+					it('throws a TypeErrorInvalidOperation when every constituent has the entry and it’s required.', () => {
+						testExprTypes(`
+							${ DECLS }
+
+							tup?.0;
+							rec?.a;
+						`, repeat(TypeErrorInvalidOperation, 2));
+					});
+					it('FIXME: if some constituent is missing an entry that another constituent has, throws a TypeErrorNoEntry; but should return the type unioned with null.', () => {
+						testExprTypes(`
+							${ DECLS }
+
+							tup?.1; % type \`bool | float | null\` % required | optional
+							tup?.2; % type \`sym          | null\` % required | missing
+							rec?.b; % type \`bool         | null\` % optional | missing
+							rec?.c; % type \`sym  | str   | null\` % optional | optional
+						`, [
+							TYPE.Union.all(TYPE.BOOL, TYPE.FLOAT, TYPE.NULL),
+							TypeErrorNoEntry,
+							TypeErrorNoEntry,
+							TYPE.Union.all(TYPE.SYM,  TYPE.STR,   TYPE.NULL),
+						]);
+					});
+					it.skip('if some constituent (but not all) has the entry and it is required, or if some constituent (and maybe all) has the entry and it is optional, returns the union of all such constituents’ entries, unioned with null.', () => {
+						testExprTypes(`
+							${ DECLS }
+
+							tup?.1; % type \`bool | float | null\` % required | optional
+							tup?.2; % type \`sym          | null\` % required | missing
+							rec?.b; % type \`bool         | null\` % optional | missing
+							rec?.c; % type \`sym  | str   | null\` % optional | optional
+						`, [
+							TYPE.Union.all(TYPE.BOOL, TYPE.FLOAT, TYPE.NULL),
+							TYPE.Union.all(TYPE.SYM,              TYPE.NULL),
+							TYPE.Union.all(TYPE.BOOL,             TYPE.NULL),
+							TYPE.Union.all(TYPE.SYM,  TYPE.STR,   TYPE.NULL),
+						]);
+					});
 				});
 			});
 			describe('#fold', () => {
