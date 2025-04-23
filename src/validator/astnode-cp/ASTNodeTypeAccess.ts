@@ -1,4 +1,8 @@
-import {TYPE} from '../../index.ts';
+import * as assert from 'node:assert';
+import {
+	TYPE,
+	TypeErrorNoEntry,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -39,12 +43,14 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		}
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
-				assert_instanceof(base_type, TYPE.Tuple);
-				return base_type.get(this.accessor.index, this.kind, false, this);
+				return base_type instanceof TYPE.Tuple
+					? base_type.get(this.accessor.index, this.kind, false, this)
+					: assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor));
 			}
 			case this.accessor instanceof ASTNodeKey: {
-				assert_instanceof(base_type, TYPE.Record);
-				return base_type.get(this.accessor.id, this.kind, false, this);
+				return base_type instanceof TYPE.Record
+					? base_type.get(this.accessor.id, this.kind, false, this)
+					: assert.fail(new TypeErrorNoEntry('property', base_type, this.accessor));
 			}
 			default: {
 				throw new Error(`Expected ${ this.accessor } to be an index or key.`);

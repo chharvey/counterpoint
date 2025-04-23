@@ -95,11 +95,10 @@ Type TypeValueOf(SemanticTypeAccess access) :=
 	3. *Let* `accessor` be `access.children.1`.
 	4. *Let* `base_type` be *UnwrapAffirm:* `CombineTuplesOrRecords(*UnwrapAffirm:* TypeValueOf(base))`.
 	5. *If* `accessor` is a SemanticIndex:
-		1. *Let* `i` be `Integer(accessor.index)`.
-		2. *If* `base_type` is a Tuple type *and* `i` is an index in `base_type`:
-			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
+		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
+			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
 			2. *Return:* *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind, false)`.
-		3. *Else:*
+		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
 	6. *Else:*
 		1. *Assert:* `accessor` is a SemanticKey.
