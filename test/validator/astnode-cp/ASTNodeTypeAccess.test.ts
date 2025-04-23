@@ -116,6 +116,12 @@ describe('ASTNodeTypeAccess', () => {
 						type E2 = RecoV.b;
 					`, 4, repeat(TypeErrorInvalidOperation, 4));
 				});
+				it('throws when base object is of incorrect type.', () => {
+					xjs.Array.forEachAggregated(extract_lines(`
+						List.<int>.1
+						Dict.<int>.b
+					`), (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry, src));
+				});
 				it('throws when index is out of bounds / when key is out of range.', () => {
 					xjs.Array.forEachAggregated(extract_lines(`
 						[1, 2.0, "three"].3
