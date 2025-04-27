@@ -264,8 +264,9 @@ export default [
 
 			/* # Best Practices */
 			/* ## Conciseness */
-			'@typescript-eslint/no-unnecessary-condition':      'error',
-			'@typescript-eslint/no-unnecessary-type-arguments': 'error',
+			'@typescript-eslint/no-unnecessary-condition':           'error',
+			'@typescript-eslint/no-unnecessary-template-expression': 'error',
+			'@typescript-eslint/no-unnecessary-type-arguments':      'error',
 
 			/* ## Function Design */
 			'@typescript-eslint/return-await': 'error',
