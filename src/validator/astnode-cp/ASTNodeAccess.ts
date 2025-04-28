@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
+	type TypeEntry,
 	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
@@ -20,6 +21,10 @@ import {
 	Operator,
 	type ValidAccessOperator,
 } from '../Operator.ts';
+import {
+	validate_static_access_kind,
+	update_accessed_type,
+} from './utils-private.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
 import {
@@ -72,38 +77,39 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 
 	private type_do(base_type: TYPE.Type, is_nullish: boolean): TYPE.Type {
-		function updateAccessedDynamicType(type: TYPE.Type, access_kind: ValidAccessOperator): TYPE.Type {
-			return (
-				(access_kind === Operator.CLAIMDOT) ? type.subtract(TYPE.VOID) :
-				(access_kind === Operator.OPTDOT)   ? type.union   (TYPE.NULL) :
-				type
-			);
-		}
 		function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: TYPE.Type): never {
 			throw new TypeErrorNotNarrow(accessor.type(), supertype, accessor.line_index, accessor.col_index);
 		}
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
-				return base_type instanceof TYPE.Tuple
-					? base_type.get(this.accessor.index, this.kind, is_nullish, this)
-					: assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor));
+				if (base_type instanceof TYPE.Tuple) {
+					const entry: TypeEntry = base_type.get(this.accessor.index, this.accessor);
+					validate_static_access_kind(this.kind, entry.optional || is_nullish, this);
+					return update_accessed_type(entry.type, this.kind);
+				} else {
+					throw new TypeErrorNoEntry('index', base_type, this.accessor);
+				}
 			}
 			case this.accessor instanceof ASTNodeKey: {
-				return base_type instanceof TYPE.Record
-					? base_type.get(this.accessor.id, this.kind, is_nullish, this)
-					: assert.fail(new TypeErrorNoEntry('property', base_type, this.accessor));
+				if (base_type instanceof TYPE.Record) {
+					const entry: TypeEntry = base_type.get(this.accessor.id, this.accessor);
+					validate_static_access_kind(this.kind, entry.optional || is_nullish, this);
+					return update_accessed_type(entry.type, this.kind);
+				} else {
+					throw new TypeErrorNoEntry('property', base_type, this.accessor);
+				}
 			}
 			case this.accessor instanceof ASTNodeExpression: {
 				const accessor_type: TYPE.Type = this.accessor.type();
 				switch (true) {
 					case base_type instanceof TYPE.List: {
 						return accessor_type.isSubtypeOf(TYPE.INT)
-							? updateAccessedDynamicType(base_type.invariant, this.kind)
+							? update_accessed_type(base_type.invariant, this.kind)
 							: throwWrongSubtypeError(this.accessor, TYPE.INT);
 					}
 					case base_type instanceof TYPE.Dict: {
 						return accessor_type.isSubtypeOf(TYPE.SYM)
-							? updateAccessedDynamicType(base_type.invariant, this.kind)
+							? update_accessed_type(base_type.invariant, this.kind)
 							: accessor_type.isSubtypeOf(TYPE.STR)
 								? assert.fail(new Error('String keys for dict access are not yet supported.'))
 								: throwWrongSubtypeError(this.accessor, TYPE.Union.all(TYPE.SYM, TYPE.STR));
@@ -115,7 +121,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					}
 					case base_type instanceof TYPE.Map: {
 						return accessor_type.isSubtypeOf(base_type.invariant_ant)
-							? updateAccessedDynamicType(base_type.invariant_con, this.kind)
+							? update_accessed_type(base_type.invariant_con, this.kind)
 							: throwWrongSubtypeError(this.accessor, base_type.invariant_ant);
 					}
 					default: {

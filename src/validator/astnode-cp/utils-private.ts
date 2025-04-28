@@ -1,9 +1,16 @@
 import {
 	VALUE,
 	TYPE,
+	TypeErrorInvalidOperation,
 } from '../../index.ts';
 import type {CPConfig} from '../../core/index.ts';
-import {Validator} from '../index.ts';
+import {
+	Operator,
+	type ValidTypeAccessOperator,
+	type ValidAccessOperator,
+	Validator,
+	type AST,
+} from '../index.ts';
 
 
 
@@ -84,4 +91,31 @@ export function oneFloats(arg0: TYPE.Type | VALUE.Value, arg1: TYPE.Type | VALUE
 export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Integer | VALUE.Float {
 	const cooked: bigint | number = Validator.cookTokenNumber(source, config);
 	return (typeof cooked === 'bigint') ? new VALUE.Integer(cooked) : new VALUE.Float(cooked);
+}
+
+
+
+export function validate_static_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): void {
+	if (
+		access_kind === Operator.DOT    && is_entry_optional ||
+		access_kind === Operator.OPTDOT && !is_entry_optional
+	) {
+		throw new TypeErrorInvalidOperation(access);
+	}
+}
+
+
+
+export function update_accessed_type(type: TYPE.Type, access_kind: ValidTypeAccessOperator | ValidAccessOperator): TYPE.Type {
+	switch (access_kind) {
+		case Operator.DOT: {
+			return type;
+		}
+		case Operator.OPTDOT: {
+			return type.union(TYPE.NULL);
+		}
+		case Operator.CLAIMDOT: {
+			return type.subtract(TYPE.VOID);
+		}
+	}
 }

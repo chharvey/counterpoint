@@ -516,35 +516,36 @@ Type CombineTuplesOrRecords(Type t) :=
 
 
 
-## UpdateAccessedStaticType
-Possibly modifies the type of an accessed bound property of a tuple or record.
+## ValidateStaticAccessKind
+Checks for correctness, matching access kind with accessed bound entry of a tuple or record.
+If access kind is normal, the entry must be non-optioal.
+If access kind is optional, the entry must be optional (or the base may be nullish).
+Otherwise, the access kind may be claim.
 ```
-Type UpdateAccessedStaticType(EntryTypeStructure entry, Or<NORMAL, OPTIONAL, CLAIM> accesskind, Boolean is_nullish) :=
-	1. *Let* `type` be `entry.type`.
-	2. *If* `accesskind` is `NORMAL`:
-		1. *If* `entry.optional` is `false`:
-			1. *Return:* `type`.
-	3. *If* `accesskind` is `OPTIONAL`:
-		1. *If* `entry.optional` is `true` *or* `is_nullish` is `true`:
-			1. *Return:* `Union(type, Null)`.
-	4. *If* `accesskind` is `CLAIM`:
-		1. *Return:* `Difference(type, Void)`.
-	5. *Throw:* a new TypeErrorInvalidOperation.
+None! ValidateStaticAccessKind(Or<NORMAL, OPTIONAL, CLAIM> accesskind, Boolean is_entry_optional) :=
+	1. *If* `accesskind` is `NORMAL` *and* `is_entry_optional` is `false`:
+		1. *Return.*
+	2. *If* `accesskind` is `OPTIONAL` *and* `is_entry_optional` is `true`:
+		1. *Return.*
+	3. *If* `accesskind` is `CLAIM`:
+		1. *Return.*
+	4. *Throw:* a new TypeErrorInvalidOperation.
 ;
 ```
 
 
 
-## UpdateAccessedDynamicType
-Modifies the type of an accessed bound property of a dynamic data type.
-Under claim access, subtracts Void; under optional access, unions with Null; else returns unmodified type.
+## UpdateAccessedType
+Possibly modifies the type of an accessed bound property of a data type.
+Under optional access, unions with Null; under claim access, subtracts Void; else returns unmodified type.
 ```
-Type UpdateAccessedDynamicType(Type type, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
-	1. *If* `accesskind` is `CLAIM`:
-		1. *Return:* `Difference(type, Void)`.
-	2. *Else If* `accesskind` is `OPTIONAL`:
+Type UpdateAccessedType(Type type, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
+	1. *If* `accesskind` is `OPTIONAL`:
 		1. *Return:* `Union(type, Null)`.
+	2. *Else If* `accesskind` is `CLAIM`:
+		1. *Return:* `Difference(type, Void)`.
 	3. *Else:*
-		1. *Return:* `type`.
+		1. *Assert:* `accesskind` is `NORMAL`.
+		2. *Return:* `type`.
 ;
 ```

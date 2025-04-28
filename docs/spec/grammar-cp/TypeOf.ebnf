@@ -92,13 +92,21 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 	7. *If* `accessor` is a SemanticIndex:
 		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind, is_nullish)`.
+			2. *Let* `is_entry_optional` be `entry.optional`.
+			3. *If* `is_nullish` is `true`:
+				1. *Set* `is_entry_optional` to `true`.
+			4. *Perform:* *Unwrap:* `ValidateStaticAccessKind(access.kind, is_entry_optional)`.
+			5. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedType(entry.type, access.kind)`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
 	8. *If* `accessor` is a SemanticKey:
 		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `accessor.id` in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind, is_nullish)`.
+			2. *Let* `is_entry_optional` be `entry.optional`.
+			3. *If* `is_nullish` is `true`:
+				1. *Set* `is_entry_optional` to `true`.
+			4. *Perform:* *Unwrap:* `ValidateStaticAccessKind(access.kind, is_entry_optional)`.
+			5. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedType(entry.type, access.kind)`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
 	9. *Else:*
@@ -107,13 +115,13 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 		3. *If* `base_type` is a List type:
 			1. *Let* `t` be the type of the items in `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
-				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
+				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedType(t, access.kind)`.
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		4. *Else If* `base_type` is a Dict type:
 			1. *Let* `t` be the type of the values in `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Symbol)` is `true`:
-				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
+				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedType(t, access.kind)`.
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, String)` is `true`:
 				1. *Throw:* a new Error "String keys for dict access are not yet supported."
 			4. *Else:*
@@ -128,7 +136,7 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 			1. *Let* `k` be the type of the antecedents in `base_type`.
 			2. *Let* `v` be the type of the consequents in `base_type`.
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true`:
-				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(v, access.kind)`.
+				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedType(v, access.kind)`.
 			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 	10. *If* `returned` is not *none*:

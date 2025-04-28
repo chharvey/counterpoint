@@ -1,5 +1,5 @@
-import * as assert from 'node:assert';
 import {
+	type TypeEntry,
 	TYPE,
 	TypeErrorNoEntry,
 } from '../../index.ts';
@@ -13,6 +13,10 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ValidTypeAccessOperator} from '../Operator.ts';
+import {
+	validate_static_access_kind,
+	update_accessed_type,
+} from './utils-private.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
 import {ASTNodeType} from './ASTNodeType.ts';
@@ -43,14 +47,22 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		}
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
-				return base_type instanceof TYPE.Tuple
-					? base_type.get(this.accessor.index, this.kind, false, this)
-					: assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor));
+				if (base_type instanceof TYPE.Tuple) {
+					const entry: TypeEntry = base_type.get(this.accessor.index, this.accessor);
+					validate_static_access_kind(this.kind, entry.optional, this);
+					return update_accessed_type(entry.type, this.kind);
+				} else {
+					throw new TypeErrorNoEntry('index', base_type, this.accessor);
+				}
 			}
 			case this.accessor instanceof ASTNodeKey: {
-				return base_type instanceof TYPE.Record
-					? base_type.get(this.accessor.id, this.kind, false, this)
-					: assert.fail(new TypeErrorNoEntry('property', base_type, this.accessor));
+				if (base_type instanceof TYPE.Record) {
+					const entry: TypeEntry = base_type.get(this.accessor.id, this.accessor);
+					validate_static_access_kind(this.kind, entry.optional, this);
+					return update_accessed_type(entry.type, this.kind);
+				} else {
+					throw new TypeErrorNoEntry('property', base_type, this.accessor);
+				}
 			}
 			default: {
 				throw new Error(`Expected ${ this.accessor } to be an index or key.`);
