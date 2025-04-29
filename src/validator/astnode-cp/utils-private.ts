@@ -105,52 +105,47 @@ export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Inte
 
 
 
-export function get_entry_info(
-	base_type:   TYPE.Type,
-	access_kind: ValidTypeAccessOperator | ValidAccessOperator,
-	accessor:    AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression,
-	access:      AST.ASTNodeTypeAccess | AST.ASTNodeAccess,
-): TypeEntry {
+export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): TypeEntry {
 	switch (true) {
-		case accessor instanceof AST.ASTNodeIndex: {
+		case access.accessor instanceof AST.ASTNodeIndex: {
 			if (base_type instanceof TYPE.Tuple) {
-				return base_type.get(accessor.index, accessor);
+				return base_type.get(access.accessor.index, access.accessor);
 			} else {
-				throw new TypeErrorNoEntry('index', base_type, accessor);
+				throw new TypeErrorNoEntry('index', base_type, access.accessor);
 			}
 		}
-		case accessor instanceof AST.ASTNodeKey: {
+		case access.accessor instanceof AST.ASTNodeKey: {
 			if (base_type instanceof TYPE.Record) {
-				return base_type.get(accessor.id, accessor);
+				return base_type.get(access.accessor.id, access.accessor);
 			} else {
-				throw new TypeErrorNoEntry('property', base_type, accessor);
+				throw new TypeErrorNoEntry('property', base_type, access.accessor);
 			}
 		}
-		case accessor instanceof AST.ASTNodeExpression: {
-			const accessor_type:   TYPE.Type = accessor.type();
-			const access_optional: boolean   = access_kind === Operator.OPTDOT;
+		case access.accessor instanceof AST.ASTNodeExpression: {
+			const accessor_type:   TYPE.Type = access.accessor.type();
+			const access_optional: boolean   = access.kind === Operator.OPTDOT;
 			switch (true) {
 				case base_type instanceof TYPE.List: {
 					return accessor_type.isSubtypeOf(TYPE.INT)
 						? {type: base_type.invariant, optional: access_optional}
-						: throwWrongSubtypeError(accessor, TYPE.INT);
+						: throwWrongSubtypeError(access.accessor, TYPE.INT);
 				}
 				case base_type instanceof TYPE.Dict: {
 					return accessor_type.isSubtypeOf(TYPE.SYM)
 						? {type: base_type.invariant, optional: access_optional}
 						: accessor_type.isSubtypeOf(TYPE.STR)
 							? assert.fail(new Error('String keys for dict access are not yet supported.'))
-							: throwWrongSubtypeError(accessor, TYPE.Union.all(TYPE.SYM, TYPE.STR));
+							: throwWrongSubtypeError(access.accessor, TYPE.Union.all(TYPE.SYM, TYPE.STR));
 				}
 				case base_type instanceof TYPE.Set: {
 					return accessor_type.isSubtypeOf(base_type.invariant)
 						? {type: TYPE.BOOL, optional: false}
-						: throwWrongSubtypeError(accessor, base_type.invariant);
+						: throwWrongSubtypeError(access.accessor, base_type.invariant);
 				}
 				case base_type instanceof TYPE.Map: {
 					return accessor_type.isSubtypeOf(base_type.invariant_ant)
 						? {type: base_type.invariant_con, optional: access_optional}
-						: throwWrongSubtypeError(accessor, base_type.invariant_ant);
+						: throwWrongSubtypeError(access.accessor, base_type.invariant_ant);
 				}
 				default: {
 					throw new TypeErrorInvalidOperation(access);
@@ -158,7 +153,7 @@ export function get_entry_info(
 			}
 		}
 		default: {
-			assert.fail(`Expected ${ accessor } to be an index, key, or bracketed expression.`);
+			assert.fail(`Expected ${ access.accessor } to be an index, key, or bracketed expression.`);
 		}
 	}
 }

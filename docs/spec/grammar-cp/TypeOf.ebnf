@@ -89,7 +89,7 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 			1. *Set* `is_nullish` to `true`.
 			2. *Set* `base_type` to `Difference(base_type, Null)`.
 	6. *Let* `returned` be *none*.
-	7. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access.kind, accessor)`.
+	7. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access)`.
 	8. *Let* `is_entry_optional` be `entry.optional`.
 	9. *If* `is_nullish` is `true`:
 		1. *Set* `is_entry_optional` to `true`.

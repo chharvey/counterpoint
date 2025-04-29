@@ -46,7 +46,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			| SyntaxNodeType<'expression_compound'>
 			| SyntaxNodeType<'assignee'>,
 
-		private readonly kind:     ValidAccessOperator,
+		public  readonly kind:     ValidAccessOperator,
 		public  readonly base:     ASTNodeExpression,
 		public  readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
@@ -75,7 +75,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 
 	private type_do(base_type: TYPE.Type, is_nullish: boolean): TYPE.Type {
-		const entry: TypeEntry = get_entry_info(base_type, this.kind, this.accessor, this);
+		const entry: TypeEntry = get_entry_info(base_type, this);
 		validate_static_access_kind(this.kind, entry.optional || is_nullish, this);
 		return update_accessed_type(entry.type, this.kind);
 	}

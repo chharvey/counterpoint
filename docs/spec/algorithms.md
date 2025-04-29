@@ -518,24 +518,26 @@ Type CombineTuplesOrRecords(Type t) :=
 
 ## GetEntryInfo
 ```
-EntryTypeStructure! GetEntryInfo(Type base_type, Or<NORMAL, OPTIONAL, CLAIM> access_kind, Or<SemanticIndex, SemanticKey, SemanticExpression> accessor) :=
-	1. *If* `accessor` is a SemanticIndex:
+EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access) :=
+	1. *Assert:* `access.children.count` is 2.
+	2. *Let* `accessor` be `access.children.1`.
+	3. *If* `accessor` is a SemanticIndex:
 		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
 			2. *Return:* `entry`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	2. *Else If* `accessor` is a SemanticKey:
+	4. *Else If* `accessor` is a SemanticKey:
 		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `accessor.id` in `base_type`.
 			2. *Return:* `entry`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	3. *Else:*
+	5. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
 		3. *Let* `accessor_optional` be `false`.
-		4. *If* `access_kind` is `OPTIONAL`:
+		4. *If* `access.kind` is `OPTIONAL`:
 			1. *Set* `accessor_optional` to `true`.
 		5. *If* `base_type` is a List type:
 			1. *Let* `t` be the type of the items in `base_type`.

@@ -32,7 +32,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
-		private readonly kind:     ValidTypeAccessOperator,
+		public  readonly kind:     ValidTypeAccessOperator,
 		private readonly base:     ASTNodeType,
 		public  readonly accessor: ASTNodeIndex | ASTNodeKey,
 	) {
@@ -45,7 +45,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		if (base_type instanceof TYPE.Combinable) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
-		const entry: TypeEntry = get_entry_info(base_type, this.kind, this.accessor, this);
+		const entry: TypeEntry = get_entry_info(base_type, this);
 		validate_static_access_kind(this.kind, entry.optional, this);
 		return update_accessed_type(entry.type, this.kind);
 	}

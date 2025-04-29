@@ -56,7 +56,7 @@ SemanticTypeMap    ::= SemanticType SemanticType;
 SemanticTypeList[count: RealNumber | None]
 	::= SemanticType; // Note: a SemanticTypeList with a `count` represents a Tuple Type; otherwise it represents a List Type.
 
-SemanticTypeAccess
+SemanticTypeAccess[kind: NORMAL | OPTIONAL]
 	::= SemanticType (SemanticIndex | SemanticKey);
 
 SemanticTypeCall
