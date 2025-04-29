@@ -516,6 +516,71 @@ Type CombineTuplesOrRecords(Type t) :=
 
 
 
+## GetEntryInfo
+```
+EntryTypeStructure! GetEntryInfo(Type base_type, Or<NORMAL, OPTIONAL, CLAIM> access_kind, Or<SemanticIndex, SemanticKey, SemanticExpression> accessor) :=
+	1. *If* `accessor` is a SemanticIndex:
+		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
+			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
+			2. *Return:* `entry`.
+		2. *Else:*
+			1. *Throw:* a new TypeErrorNoEntry.
+	2. *Else If* `accessor` is a SemanticKey:
+		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
+			1. *Let* `entry` be the item accessed at key `accessor.id` in `base_type`.
+			2. *Return:* `entry`.
+		2. *Else:*
+			1. *Throw:* a new TypeErrorNoEntry.
+	3. *Else:*
+		1. *Assert:* `accessor` is a SemanticExpression.
+		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
+		3. *Let* `accessor_optional` be `false`.
+		4. *If* `access_kind` is `OPTIONAL`:
+			1. *Set* `accessor_optional` to `true`.
+		5. *If* `base_type` is a List type:
+			1. *Let* `t` be the type of the items in `base_type`.
+			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
+				1. *Return:* a new EntryTypeStructure [
+					type=     `t`,
+					optional= `access_optional`,
+				].
+			3. *Else:*
+				1. *Throw:* a new TypeErrorNotNarrow.
+		6. *Else If* `base_type` is a Dict type:
+			1. *Let* `t` be the type of the values in `base_type`.
+			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Symbol)` is `true`:
+				1. *Return:* a new EntryTypeStructure [
+					type=     `t`,
+					optional= `access_optional`,
+				].
+			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, String)` is `true`:
+				1. *Throw:* a new Error "String keys for dict access are not yet supported."
+			4. *Else:*
+				1. *Throw:* a new TypeErrorNotNarrow.
+		7. *Else If* `base_type` is a Set type:
+			1. *Let* `t` be the type of the elements in `base_type`.
+			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true`:
+				1. *Return:* a new EntryTypeStructure [
+					type=     `Boolean`,
+					optional= `access_optional`,
+				].
+			3. *Else:*
+				1. *Throw:* a new TypeErrorNotNarrow.
+		8. *Else If* `base_type` is a Map type:
+			1. *Let* `k` be the type of the antecedents in `base_type`.
+			2. *Let* `v` be the type of the consequents in `base_type`.
+			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true`:
+				1. *Return:* a new EntryTypeStructure [
+					type=     `v`,
+					optional= `access_optional`,
+				].
+			4. *Else:*
+				1. *Throw:* a new TypeErrorNotNarrow.
+;
+```
+
+
+
 ## ValidateStaticAccessKind
 Checks for correctness, matching access kind with accessed bound entry of a tuple or record.
 If access kind is normal, the entry must be non-optioal.

@@ -94,22 +94,9 @@ Type TypeValueOf(SemanticTypeAccess access) :=
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
 	4. *Let* `base_type` be *UnwrapAffirm:* `CombineTuplesOrRecords(*UnwrapAffirm:* TypeValueOf(base))`.
-	5. *If* `accessor` is a SemanticIndex:
-		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
-			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
-			2. *Perform:* *Unwrap:* `ValidateStaticAccessKind(access.kind, entry.optional)`.
-			3. *Return:* *UnwrapAffirm:* `UpdateAccessedType(entry.type, access.kind)`.
-		2. *Else:*
-			1. *Throw:* a new TypeErrorNoEntry.
-	6. *Else:*
-		1. *Assert:* `accessor` is a SemanticKey.
-		2. *Let* `id` be `accessor.id`.
-		3. *If* `base_type` is a Record type *and* `id` is a key in `base_type`:
-			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
-			2. *Perform:* *Unwrap:* `ValidateStaticAccessKind(access.kind, entry.optional)`.
-			3. *Return:* *UnwrapAffirm:* `UpdateAccessedType(entry.type, access.kind)`.
-		4. *Else:*
-			1. *Throw:* a new TypeErrorNoEntry.
+	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access.kind, accessor)`.
+	6. *Perform:* *Unwrap:* `ValidateStaticAccessKind(access.kind, entry.optional)`.
+	7. *Return:* *UnwrapAffirm:* `UpdateAccessedType(entry.type, access.kind)`.
 ;
 
 

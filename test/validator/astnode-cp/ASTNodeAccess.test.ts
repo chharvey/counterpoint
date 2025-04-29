@@ -626,9 +626,9 @@ describe('ASTNodeAccess', () => {
 				dict_unfixed?.[@a];     % type \`int | float | str | null\` % non-foldable value
 				dict_unfixed?.[@b];     % type \`int | float | str | null\` % non-foldable value
 				dict_unfixed?.[@c];     % type \`int | float | str | null\` % non-foldable value
-				set_unfixed?.[1];       % type \`bool\`                     % non-foldable value
-				set_unfixed?.[2.0];     % type \`bool\`                     % non-foldable value
-				set_unfixed?.["three"]; % type \`bool\`                     % non-foldable value
+				set_unfixed?.[1];       % type \`bool              | null\` % non-foldable value
+				set_unfixed?.[2.0];     % type \`bool              | null\` % non-foldable value
+				set_unfixed?.["three"]; % type \`bool              | null\` % non-foldable value
 				map_unfixed?.["a"];     % type \`int | float | str | null\` % non-foldable value
 				map_unfixed?.["b"];     % type \`int | float | str | null\` % non-foldable value
 				map_unfixed?.["c"];     % type \`int | float | str | null\` % non-foldable value
@@ -645,7 +645,7 @@ describe('ASTNodeAccess', () => {
 				list_unfixed?.[3];   % type \`int | float | str | null\` % non-foldable value
 				list_unfixed?.[-4];  % type \`int | float | str | null\` % non-foldable value
 				dict_unfixed?.[@d];  % type \`int | float | str | null\` % non-foldable value
-				set_unfixed?.[42.0]; % type \`bool\`                     % non-foldable value
+				set_unfixed?.[42.0]; % type \`bool              | null\` % non-foldable value
 				map_unfixed?.["d"];  % type \`int | float | str | null\` % non-foldable value
 			`;
 			describe('#type', () => {
@@ -663,7 +663,7 @@ describe('ASTNodeAccess', () => {
 						...N_TYPES,
 
 						...repeat(TYPE_INT_FLOAT_STR_NULL, 6),
-						...repeat(TYPE.BOOL, 3),
+						...repeat(TYPE.BOOL.union(TYPE.NULL), 3),
 						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
 					]);
 				});
@@ -682,7 +682,7 @@ describe('ASTNodeAccess', () => {
 						TYPE.NULL,
 
 						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
-						TYPE.BOOL,
+						TYPE.BOOL.union(TYPE.NULL),
 						TYPE_INT_FLOAT_STR_NULL,
 					]);
 				});
