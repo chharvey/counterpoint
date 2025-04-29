@@ -15,13 +15,13 @@ import {TypeError} from './TypeError.ts';
 export class TypeErrorNoEntry extends TypeError {
 	/**
 	 * Construct a new TypeErrorNoEntry object.
-	 * @param kind     - the kind of access
-	 * @param accessee - the type of expression to which property access is performed
-	 * @param accessor - the property access index/key/expression
+	 * @param manner   - the manner of access, e.g. index, property, or parameter
+	 * @param base     - the type of expression to which property access is performed
+	 * @param accessor - the accessing index/key/expression
 	 */
-	public constructor(kind: 'index' | 'property' | 'parameter', accessee: TYPE.Type, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression) {
+	public constructor(manner: 'index' | 'property' | 'parameter', base: TYPE.Type, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression) {
 		super(
-			`${ kind[0].toUpperCase() }${ kind.slice(1) } \`${ accessor.source }\` does not exist on type \`${ accessee }\`.`,
+			`${ manner[0].toUpperCase() }${ manner.slice(1) } \`${ accessor.source }\` does not exist on type \`${ base }\`.`,
 			TypeError.CODES.get(TypeErrorNoEntry),
 			accessor.line_index,
 			accessor.col_index,

@@ -583,18 +583,19 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 
 
 
-## ValidateStaticAccessKind
-Checks for correctness, matching access kind with accessed bound entry of a tuple or record.
+## ValidateAccessKind
+Checks for correctness, matching access kind with accessed bound entry of a collection.
 If access kind is normal, the entry must be non-optioal.
 If access kind is optional, the entry must be optional (or the base may be nullish).
 Otherwise, the access kind may be claim.
+For dynamic collections, entries behave as both non-optional and optional.
 ```
-None! ValidateStaticAccessKind(Or<NORMAL, OPTIONAL, CLAIM> accesskind, Boolean is_entry_optional) :=
-	1. *If* `accesskind` is `NORMAL` *and* `is_entry_optional` is `false`:
+None! ValidateAccessKind(Or<NORMAL, OPTIONAL, CLAIM> access_kind, Boolean is_entry_optional) :=
+	1. *If* `access_kind` is `NORMAL` *and* `is_entry_optional` is `false`:
 		1. *Return.*
-	2. *If* `accesskind` is `OPTIONAL` *and* `is_entry_optional` is `true`:
+	2. *If* `access_kind` is `OPTIONAL` *and* `is_entry_optional` is `true`:
 		1. *Return.*
-	3. *If* `accesskind` is `CLAIM`:
+	3. *If* `access_kind` is `CLAIM`:
 		1. *Return.*
 	4. *Throw:* a new TypeErrorInvalidOperation.
 ;
@@ -606,13 +607,13 @@ None! ValidateStaticAccessKind(Or<NORMAL, OPTIONAL, CLAIM> accesskind, Boolean i
 Possibly modifies the type of an accessed bound property of a data type.
 Under optional access, unions with Null; under claim access, subtracts Void; else returns unmodified type.
 ```
-Type UpdateAccessedType(Type type, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
-	1. *If* `accesskind` is `OPTIONAL`:
+Type UpdateAccessedType(Type type, Or<NORMAL, OPTIONAL, CLAIM> access_kind) :=
+	1. *If* `access_kind` is `OPTIONAL`:
 		1. *Return:* `Union(type, Null)`.
-	2. *Else If* `accesskind` is `CLAIM`:
+	2. *Else If* `access_kind` is `CLAIM`:
 		1. *Return:* `Difference(type, Void)`.
 	3. *Else:*
-		1. *Assert:* `accesskind` is `NORMAL`.
+		1. *Assert:* `access_kind` is `NORMAL`.
 		2. *Return:* `type`.
 ;
 ```

@@ -20,7 +20,7 @@ import {
 } from '../Operator.ts';
 import {
 	get_entry_info,
-	validate_static_access_kind,
+	validate_access_kind,
 	update_accessed_type,
 } from './utils-private.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
@@ -76,7 +76,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 
 	private type_do(base_type: TYPE.Type, is_nullish: boolean): TYPE.Type {
 		const entry: TypeEntry = get_entry_info(base_type, this);
-		validate_static_access_kind(this.kind, entry.optional || is_nullish, this);
+		validate_access_kind(this.kind, entry.optional || is_nullish, this);
 		return update_accessed_type(entry.type, this.kind);
 	}
 
@@ -116,13 +116,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 						return base_value.get(accessor_value, this.optional, this.accessor);
 					}
 					default: {
-						throw new Error(`Expected ${ base_value } to be a List, Dict, Set, or Map.`);
+						assert.fail(`Expected ${ base_value } to be a List, Dict, Set, or Map.`);
 					}
 				}
 				/* eslint-enable @typescript-eslint/no-unsafe-return */
 			}
-			default: {
-				throw new Error(`Expected ${ this.accessor } to be an index, key, or bracketed expression.`);
+			default: { // eslint-disable-line no-fallthrough
+				assert.fail(`Expected ${ this.accessor } to be an index, key, or bracketed expression.`);
 			}
 		}
 	}

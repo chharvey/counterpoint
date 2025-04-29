@@ -160,7 +160,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 
 
 
-export function validate_static_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): void {
+export function validate_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): void {
 	if (
 		access_kind === Operator.DOT    && is_entry_optional ||
 		access_kind === Operator.OPTDOT && !is_entry_optional

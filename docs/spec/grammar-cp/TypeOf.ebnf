@@ -93,7 +93,7 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 	8. *Let* `is_entry_optional` be `entry.optional`.
 	9. *If* `is_nullish` is `true`:
 		1. *Set* `is_entry_optional` to `true`.
-	10. *Perform:* *Unwrap:* `ValidateStaticAccessKind(access.kind, is_entry_optional)`.
+	10. *Perform:* *Unwrap:* `ValidateAccessKind(access.kind, is_entry_optional)`.
 	11. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedType(entry.type, access.kind)`.
 	12. *If* `returned` is not *none*:
 		1. *If* `is_nullish` is `true`:
