@@ -144,7 +144,7 @@ export function get_entry_info(
 				}
 				case base_type instanceof TYPE.Set: {
 					return accessor_type.isSubtypeOf(base_type.invariant)
-						? {type: TYPE.BOOL, optional: access_optional}
+						? {type: TYPE.BOOL, optional: false}
 						: throwWrongSubtypeError(accessor, base_type.invariant);
 				}
 				case base_type instanceof TYPE.Map: {

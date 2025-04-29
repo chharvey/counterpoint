@@ -562,7 +562,7 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<NORMAL, OPTIONAL, CLAIM> acc
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true`:
 				1. *Return:* a new EntryTypeStructure [
 					type=     `Boolean`,
-					optional= `access_optional`,
+					optional= `false`,
 				].
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.

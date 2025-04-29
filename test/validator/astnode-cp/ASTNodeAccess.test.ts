@@ -597,56 +597,46 @@ describe('ASTNodeAccess', () => {
 			const DECLS = `
 				let     list_fixed:   List.<     int | float | str> = List.<int | float | str>([   1,    2.0,    "three"]);
 				let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
-				let     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
 				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
 				let var list_unfixed: List.<     int | float | str> = list_fixed;
 				let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
-				let var set_unfixed:  Set .<     int | float | str> = set_fixed;
 				let var map_unfixed:  Map .<str, int | float | str> = map_fixed;
 			`;
 			const SRC = `
 				${ DECLS }
 
-				list_fixed?.[0];      % type \`1\`       % value \`1\`
-				list_fixed?.[1];      % type \`2.0\`     % value \`2.0\`
-				list_fixed?.[2];      % type \`"three"\` % value \`"three"\`
-				dict_fixed?.[@a];     % type \`1\`       % value \`1\`
-				dict_fixed?.[@b];     % type \`2.0\`     % value \`2.0\`
-				dict_fixed?.[@c];     % type \`"three"\` % value \`"three"\`
-				set_fixed?.[1];       % type \`true\`    % value \`true\`
-				set_fixed?.[2.0];     % type \`true\`    % value \`true\`
-				set_fixed?.["three"]; % type \`true\`    % value \`true\`
-				map_fixed?.["a"];     % type \`1\`       % value \`1\`
-				map_fixed?.["b"];     % type \`2.0\`     % value \`2.0\`
-				map_fixed?.["c"];     % type \`"three"\` % value \`"three"\`
+				list_fixed?.[0];  % type \`1\`       % value \`1\`
+				list_fixed?.[1];  % type \`2.0\`     % value \`2.0\`
+				list_fixed?.[2];  % type \`"three"\` % value \`"three"\`
+				dict_fixed?.[@a]; % type \`1\`       % value \`1\`
+				dict_fixed?.[@b]; % type \`2.0\`     % value \`2.0\`
+				dict_fixed?.[@c]; % type \`"three"\` % value \`"three"\`
+				map_fixed?.["a"]; % type \`1\`       % value \`1\`
+				map_fixed?.["b"]; % type \`2.0\`     % value \`2.0\`
+				map_fixed?.["c"]; % type \`"three"\` % value \`"three"\`
 
-				list_unfixed?.[0];      % type \`int | float | str | null\` % non-foldable value
-				list_unfixed?.[1];      % type \`int | float | str | null\` % non-foldable value
-				list_unfixed?.[2];      % type \`int | float | str | null\` % non-foldable value
-				dict_unfixed?.[@a];     % type \`int | float | str | null\` % non-foldable value
-				dict_unfixed?.[@b];     % type \`int | float | str | null\` % non-foldable value
-				dict_unfixed?.[@c];     % type \`int | float | str | null\` % non-foldable value
-				set_unfixed?.[1];       % type \`bool              | null\` % non-foldable value
-				set_unfixed?.[2.0];     % type \`bool              | null\` % non-foldable value
-				set_unfixed?.["three"]; % type \`bool              | null\` % non-foldable value
-				map_unfixed?.["a"];     % type \`int | float | str | null\` % non-foldable value
-				map_unfixed?.["b"];     % type \`int | float | str | null\` % non-foldable value
-				map_unfixed?.["c"];     % type \`int | float | str | null\` % non-foldable value
+				list_unfixed?.[0];  % type \`int | float | str | null\` % non-foldable value
+				list_unfixed?.[1];  % type \`int | float | str | null\` % non-foldable value
+				list_unfixed?.[2];  % type \`int | float | str | null\` % non-foldable value
+				dict_unfixed?.[@a]; % type \`int | float | str | null\` % non-foldable value
+				dict_unfixed?.[@b]; % type \`int | float | str | null\` % non-foldable value
+				dict_unfixed?.[@c]; % type \`int | float | str | null\` % non-foldable value
+				map_unfixed?.["a"]; % type \`int | float | str | null\` % non-foldable value
+				map_unfixed?.["b"]; % type \`int | float | str | null\` % non-foldable value
+				map_unfixed?.["c"]; % type \`int | float | str | null\` % non-foldable value
 			`;
 			const ERRS = `
 				${ DECLS }
 
-				list_fixed?.[3];   % type \`null\`  % value \`null\`
-				list_fixed?.[-4];  % type \`null\`  % value \`null\`
-				dict_fixed?.[@d];  % type \`null\`  % value \`null\`
-				set_fixed?.[42.0]; % type \`false\` % value \`false\`
-				map_fixed?.["d"];  % type \`null\`  % value \`null\`
+				list_fixed?.[3];  % type \`null\`  % value \`null\`
+				list_fixed?.[-4]; % type \`null\`  % value \`null\`
+				dict_fixed?.[@d]; % type \`null\`  % value \`null\`
+				map_fixed?.["d"]; % type \`null\`  % value \`null\`
 
-				list_unfixed?.[3];   % type \`int | float | str | null\` % non-foldable value
-				list_unfixed?.[-4];  % type \`int | float | str | null\` % non-foldable value
-				dict_unfixed?.[@d];  % type \`int | float | str | null\` % non-foldable value
-				set_unfixed?.[42.0]; % type \`bool              | null\` % non-foldable value
-				map_unfixed?.["d"];  % type \`int | float | str | null\` % non-foldable value
+				list_unfixed?.[3];  % type \`int | float | str | null\` % non-foldable value
+				list_unfixed?.[-4]; % type \`int | float | str | null\` % non-foldable value
+				dict_unfixed?.[@d]; % type \`int | float | str | null\` % non-foldable value
+				map_unfixed?.["d"]; % type \`int | float | str | null\` % non-foldable value
 			`;
 			describe('#type', () => {
 				it('returns individual entry types for folded objects, union types for unfolded objects.', () => {
@@ -659,12 +649,9 @@ describe('ASTNodeAccess', () => {
 					return testExprTypes(SRC, [
 						...N_TYPES,
 						...N_TYPES,
-						...repeat(TYPE.TRUE, 3),
 						...N_TYPES,
 
-						...repeat(TYPE_INT_FLOAT_STR_NULL, 6),
-						...repeat(TYPE.BOOL.union(TYPE.NULL), 3),
-						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
+						...repeat(TYPE_INT_FLOAT_STR_NULL, 9),
 					]);
 				});
 				it('throws when base object is of incorrect type.', () => {
@@ -672,18 +659,29 @@ describe('ASTNodeAccess', () => {
 						(4)?.[2];
 						[10, 20, 30]?.[1];
 						[a= 10, b= 20, c= 30]?.[@b];
+						Set.<int>([10, 20, 30])?.[20];
+						{10, 20, 30}?.[20];
 					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
+					return testExprTypes(`
+						let     set_fixed:   Set.<int | float | str> = {1, 2.0, "three"};
+						let var set_unfixed: Set.<int | float | str> = set_fixed;
+
+						set_fixed?.[1];
+						set_fixed?.[2.0];
+						set_fixed?.["three"];
+						set_fixed?.[42.0];
+
+						set_unfixed?.[1];
+						set_unfixed?.[2.0];
+						set_unfixed?.["three"];
+						set_unfixed?.[42.0];
+					`, repeat(TypeErrorInvalidOperation, 8));
 				});
 				it('when accessor expression is correct type but out of bounds/range, returns `null` for folded objects, union types for unfolded objects.', () => {
 					const TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
 					return testExprTypes(ERRS, [
-						...repeat(TYPE.NULL, 3),
-						TYPE.FALSE,
-						TYPE.NULL,
-
-						...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
-						TYPE.BOOL.union(TYPE.NULL),
-						TYPE_INT_FLOAT_STR_NULL,
+						...repeat(TYPE.NULL, 4),
+						...repeat(TYPE_INT_FLOAT_STR_NULL, 4),
 					]);
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
@@ -700,19 +698,15 @@ describe('ASTNodeAccess', () => {
 					testExprValues(SRC, [
 						...TEST_VALUES,
 						...TEST_VALUES,
-						...repeat(VALUE.TRUE, 3),
 						...TEST_VALUES,
 
-						...repeat(null, 12),
+						...repeat(null, 9),
 					]);
 				});
 				it('when accessor expression is out of bounds/range, returns the `null` value for folded objects, returns null for unfolded objects.', () => {
 					testExprValues(ERRS, [
-						...repeat(VALUE.NULL, 3),
-						VALUE.FALSE,
-						VALUE.NULL,
-
-						...repeat(null, 5),
+						...repeat(VALUE.NULL, 4),
+						...repeat(null, 4),
 					]);
 				});
 			});
