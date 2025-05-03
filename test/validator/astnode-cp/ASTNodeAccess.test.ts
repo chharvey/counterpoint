@@ -180,6 +180,18 @@ describe('ASTNodeAccess', () => {
 						d.y;
 					`, repeat(TypeErrorNoEntry, 4));
 				});
+				it('throws when base object is of incorrect type.', () => {
+					xjs.Array.forEachAggregated(extract_lines(`
+						(4).2;
+						List.<int>([10, 20, 30]).1;
+
+						(4).c;
+						Dict.<int>([a= 10, b= 20, c= 30]).b;
+					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
+				});
+				it('throws when index is out of bounds / when key is out of range.', () => {
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
+				});
 				it('throws when entry is optional.', () => {
 					testExprTypes(`
 						let tup_a: [int, int, ?: int] = [10, 20];
@@ -194,18 +206,6 @@ describe('ASTNodeAccess', () => {
 						rec_a.y;
 						rec_b.y;
 					`, repeat(TypeErrorInvalidOperation, 4));
-				});
-				it('throws when base object is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
-						(4).2;
-						List.<int>([10, 20, 30]).1;
-
-						(4).c;
-						Dict.<int>([a= 10, b= 20, c= 30]).b;
-					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
-				});
-				it('throws when index is out of bounds / when key is out of range.', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
 				});
 				context('if base is a union type.', () => {
 					const DECLS = `
@@ -523,6 +523,18 @@ describe('ASTNodeAccess', () => {
 						d?.y;
 					`, repeat(TYPE.UNKNOWN, 4));
 				});
+				it('throws when base object is of incorrect type.', () => {
+					xjs.Array.forEachAggregated(extract_lines(`
+						(4)?.2;
+						List.<int>([10, 20, 30])?.1;
+
+						(4)?.c;
+						Dict.<int>([a= 10, b= 20, c= 30])?.b;
+					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
+				});
+				it('throws when index is out of bounds / when key is out of range.', () => {
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
+				});
 				it('throws when entry is not optional and base is not nullish.', () => {
 					testExprTypes(`
 						let tup_a: [int, int, ?: int] = [10, 20];
@@ -537,18 +549,6 @@ describe('ASTNodeAccess', () => {
 						rec_a?.z;
 						rec_b?.z;
 					`, repeat(TypeErrorInvalidOperation, 4));
-				});
-				it('throws when base object is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
-						(4)?.2;
-						List.<int>([10, 20, 30])?.1;
-
-						(4)?.c;
-						Dict.<int>([a= 10, b= 20, c= 30])?.b;
-					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
-				});
-				it('throws when index is out of bounds / when key is out of range.', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
 				});
 				context('if base is a union type.', () => {
 					const DECLS = `
