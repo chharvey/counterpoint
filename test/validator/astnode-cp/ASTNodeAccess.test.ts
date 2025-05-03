@@ -167,6 +167,19 @@ describe('ASTNodeAccess', () => {
 						TYPE.STR,
 					]);
 				});
+				it('throws when base object is of type unknown.', () => {
+					testExprTypes(`
+						let var a:                    unknown = [   10,    20];
+						let var b: int[2]           | unknown = [   10,    20];
+						let var c:                    unknown = [x= 10, y= 20];
+						let var d: [x: int, y: int] | unknown = [x= 10, y= 20];
+
+						a.0;
+						b.1;
+						c.x;
+						d.y;
+					`, repeat(TypeErrorNoEntry, 4));
+				});
 				it('throws when entry is optional.', () => {
 					testExprTypes(`
 						let tup_a: [int, int, ?: int] = [10, 20];
@@ -496,6 +509,19 @@ describe('ASTNodeAccess', () => {
 						typeUnit('three'),
 						...repeat(TYPE.STR.union(TYPE.NULL), 2),
 					]);
+				});
+				it('returns unknown when base object is of type unknown.', () => {
+					testExprTypes(`
+						let var a:                    unknown = [   10,    20];
+						let var b: int[2]           | unknown = [   10,    20];
+						let var c:                    unknown = [x= 10, y= 20];
+						let var d: [x: int, y: int] | unknown = [x= 10, y= 20];
+
+						a?.0;
+						b?.1;
+						c?.x;
+						d?.y;
+					`, repeat(TYPE.UNKNOWN, 4));
 				});
 				it('throws when entry is not optional and base is not nullish.', () => {
 					testExprTypes(`

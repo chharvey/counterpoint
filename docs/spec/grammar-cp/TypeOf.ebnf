@@ -85,7 +85,9 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 	5. *If* `access.kind` is `OPTIONAL`:
 		1. *If* *UnwrapAffirm:* `Subtype(base_type, Null)` is `true`:
 			1. *Return:* `base_type`.
-		2. *If* *UnwrapAffirm:* `Subtype(Null, base_type)` is `true`:
+		2. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true`:
+			1. *Return:* `Unknown`.
+		3. *If* *UnwrapAffirm:* `Subtype(Null, base_type)` is `true`:
 			1. *Set* `is_nullish` to `true`.
 			2. *Set* `base_type` to `Difference(base_type, Null)`.
 	6. *Let* `returned` be *none*.

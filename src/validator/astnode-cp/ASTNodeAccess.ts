@@ -69,6 +69,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 		return (
 			this.optional && base_type.isSubtypeOf(TYPE.NULL) ? base_type :
+			this.optional && base_type.isTopType              ? TYPE.UNKNOWN :
 			this.optional && TYPE.NULL.isSubtypeOf(base_type) ? this.type_do(base_type.subtract(TYPE.NULL), true).union(TYPE.NULL) :
 			this.type_do(base_type, false)
 		);
