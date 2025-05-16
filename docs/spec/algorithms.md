@@ -521,19 +521,57 @@ Type CombineTuplesOrRecords(Type t) :=
 EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `accessor` be `access.children.1`.
-	3. *If* `accessor` is a SemanticIndex:
+	3. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true` *and* `access.kind` is `OPTIONAL`:
+		1. *Return:* a new EntryTypeStructure [
+				type=     `Unknown`,
+				optional= `true`,
+			].
+	4. *If* `base_type` is the intersection or union of some types `a` and `b`:
+		1. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access)`, `GetEntryInfo(b, access)`].
+		2. *Let* `errors` be a filtering of `entry_infos` for each `info` such that `info` is an abrupt completion.
+		3. *Let* `entries` be a filtering of `entry_infos` for each `info` such that `info` is a normal completion.
+		4. *Set* `errors` to a mapping of `errors` for each `err` to `err.value`.
+		5. *Set* `entries` to a mapping of `entries` for each `entry` to `entry.value`.
+		6. *If* `entries.count` is 0:
+			1. *If* `errors.count` is 1:
+				1. *Throw:* `errors.0`.
+			2. *Throw:* a new AggregateError containing `errors`.
+		7. *If* `base_type` is the intersection of some types `a` and `b`:
+			1. *Let* `all_optional` be `true`.
+			2. *For each* `entry` in `entries`:
+				1. *If* `entry.optional` is `false`:
+					1. *Set* `all_optional` to `false`.
+			3. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to `Intersection(x.type, y.type)`.
+			4. *Return:* a new EntryTypeStructure [
+					type=     `intersection`,
+					optional= `all_optional`,
+				].
+		8. *Else:*
+			1. *Assert:* `base_type` is the union of some types `a` and `b`.
+			2. *Let* `any_optional` be `false`.
+			3. *For each* `entry` in `entries`:
+				1. *If* `entry.optional` is `true`:
+					1. *Set* `any_optional` to `true`.
+			4. *If* `errors.count` is greater than 0:
+				1. *Set* `any_optional` to `true`.
+			5. *Let* `union` be a reduction of `entries` for each `x` and `y` to `Union(x.type, y.type)`.
+			6. *Return:* a new EntryTypeStructure [
+					type=     `union`,
+					optional= `any_optional`,
+				].
+	5. *If* `accessor` is a SemanticIndex:
 		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
 			2. *Return:* `entry`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	4. *Else If* `accessor` is a SemanticKey:
+	6. *Else If* `accessor` is a SemanticKey:
 		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `accessor.id` in `base_type`.
 			2. *Return:* `entry`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	5. *Else:*
+	7. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
 		3. *Let* `accessor_optional` be `false`.

@@ -7,6 +7,7 @@ import {
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
 } from '../../index.ts';
+import type {ConstructorType} from '../../lib/index.ts';
 import type {CPConfig} from '../../core/index.ts';
 import {
 	Operator,
@@ -20,6 +21,15 @@ import {
 
 function throwWrongSubtypeError(accessor: AST.ASTNodeExpression, supertype: TYPE.Type): never {
 	throw new TypeErrorNotNarrow(accessor.type(), supertype, accessor.line_index, accessor.col_index);
+}
+
+
+
+function only_errors_of_type<E extends Error = Error>(err: unknown, typ: ConstructorType<E>): err is InstanceType<typeof typ> {
+	return (
+		err instanceof typ ||
+		err instanceof AggregateError && err.errors.every((suberr) => only_errors_of_type<E>(suberr, typ))
+	);
 }
 
 
@@ -106,6 +116,57 @@ export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Inte
 
 
 export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): TypeEntry {
+	if (base_type.isTopType && access.kind === Operator.OPTDOT) {
+		return {type: TYPE.UNKNOWN, optional: true};
+	}
+	if (base_type instanceof TYPE.Combinable) {
+		const entry_infos: readonly (TypeEntry | TypeErrorNoEntry)[] = base_type.operands.map((comp) => {
+			try {
+				return get_entry_info(comp, access);
+			} catch (error) {
+				if (only_errors_of_type(error, TypeErrorNoEntry)) {
+					return error;
+				}
+				throw error;
+			}
+		});
+		const errors:  readonly Error[]     = entry_infos.filter((info)                    =>   info instanceof TypeErrorNoEntry);
+		const entries: readonly TypeEntry[] = entry_infos.filter((info): info is TypeEntry => !(info instanceof TypeErrorNoEntry));
+		/* Throw an error if *all* of the intersection/union constituents do not have the accessed entry. */
+		if (!entries.length) {
+			throw errors.length === 1 ? errors[0] : new AggregateError(errors, errors.map((err) => err.message).join('\n'));
+		}
+		switch (true) {
+			case base_type instanceof TYPE.Intersection: {
+				/*
+				 * For intersections:
+				 * The accessed entry’s type is the intersection of the constituents’ corresponding entry on any types, and
+				 * the accessed entry’s optionality is the conjunction of the constituents’ corresponding optionalities.
+				 * (In other words, they must *all* be optional/missing for optional access to be valid.)
+				 */
+				return {
+					type:     TYPE.Intersection.all(entries.map((entry) => entry.type)),
+					optional: entries.every((entry) => entry.optional),
+				};
+			}
+			case base_type instanceof TYPE.Union: {
+				/*
+				 * For unions:
+				 * The accessed entry’s type is the union of the constituents’ corresponding entry on any types, and
+				 * the accessed entry’s optionality is the disjunction of the constituents’ corresponding optionalities.
+				 * (In other words, *any* of them may be optional/missing for optional access to be valid.)
+				 * Also: If all of them are not optional, but some are missing (i.e. error(s) were caught), then optional access is required.
+				 */
+				return {
+					type:     TYPE.Union.all(entries.map((entry) => entry.type)),
+					optional: entries.some((entry) => entry.optional) || !!errors.length,
+				};
+			}
+			default: {
+				assert.fail(`Expected ${ base_type } to be an intersection or union.`);
+			}
+		}
+	}
 	switch (true) {
 		case access.accessor instanceof AST.ASTNodeIndex: {
 			if (base_type instanceof TYPE.Tuple) {
