@@ -3,7 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	type TypeEntry,
 	VALUE,
-	TYPE,
+	type TYPE,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -63,21 +63,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
-		let base_type: TYPE.Type = this.base.type();
-		if (base_type instanceof TYPE.Combinable) {
-			base_type = base_type.combineTuplesOrRecords();
-		}
-		return (
-			this.optional && base_type.isSubtypeOf(TYPE.NULL) ? base_type :
-			this.optional && base_type.isTopType              ? TYPE.UNKNOWN :
-			this.optional && TYPE.NULL.isSubtypeOf(base_type) ? this.type_do(base_type.subtract(TYPE.NULL), true).union(TYPE.NULL) :
-			this.type_do(base_type, false)
-		);
-	}
-
-	private type_do(base_type: TYPE.Type, is_nullish: boolean): TYPE.Type {
-		const entry: TypeEntry = get_entry_info(base_type, this);
-		validate_access_kind(this.kind, entry.optional || is_nullish, this);
+		const entry: TypeEntry = get_entry_info(this.base.type(), this);
+		validate_access_kind(this.kind, entry.optional, this);
 		return update_accessed_type(entry.type, this.kind);
 	}
 

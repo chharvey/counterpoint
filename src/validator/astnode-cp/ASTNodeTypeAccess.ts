@@ -1,5 +1,5 @@
-import {
-	type TypeEntry,
+import type {
+	TypeEntry,
 	TYPE,
 } from '../../index.ts';
 import {
@@ -41,11 +41,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		let base_type: TYPE.Type = this.base.eval();
-		if (base_type instanceof TYPE.Combinable) {
-			base_type = base_type.combineTuplesOrRecords();
-		}
-		const entry: TypeEntry = get_entry_info(base_type, this);
+		const entry: TypeEntry = get_entry_info(this.base.eval(), this);
 		validate_access_kind(this.kind, entry.optional, this);
 		return update_accessed_type(entry.type, this.kind);
 	}

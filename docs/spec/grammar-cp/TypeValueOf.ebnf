@@ -93,10 +93,10 @@ Type TypeValueOf(SemanticTypeAccess access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
-	4. *Let* `base_type` be *UnwrapAffirm:* `CombineTuplesOrRecords(*UnwrapAffirm:* TypeValueOf(base))`.
+	4. *Let* `base_type` be *UnwrapAffirm:* `TypeValueOf(base)`.
 	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access)`.
 	6. *Perform:* *Unwrap:* `ValidateAccessKind(access.kind, entry.optional)`.
-	7. *Return:* *UnwrapAffirm:* `UpdateAccessedType(entry.type, access.kind)`.
+	7. *Return:* `UpdateAccessedType(entry.type, access.kind)`.
 ;
 
 

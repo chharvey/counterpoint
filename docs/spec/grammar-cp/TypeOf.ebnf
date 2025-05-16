@@ -81,27 +81,10 @@ Type! TypeOfUnfolded(SemanticAccess access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
-	4. *Let* `base_type` be *Unwrap:* `CombineTuplesOrRecords(*Unwrap:* TypeOf(base))`.
-	5. *If* `access.kind` is `OPTIONAL`:
-		1. *If* *UnwrapAffirm:* `Subtype(base_type, Null)` is `true`:
-			1. *Return:* `base_type`.
-		2. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true`:
-			1. *Return:* `Unknown`.
-		3. *If* *UnwrapAffirm:* `Subtype(Null, base_type)` is `true`:
-			1. *Set* `is_nullish` to `true`.
-			2. *Set* `base_type` to `Difference(base_type, Null)`.
-	6. *Let* `returned` be *none*.
-	7. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access)`.
-	8. *Let* `is_entry_optional` be `entry.optional`.
-	9. *If* `is_nullish` is `true`:
-		1. *Set* `is_entry_optional` to `true`.
-	10. *Perform:* *Unwrap:* `ValidateAccessKind(access.kind, is_entry_optional)`.
-	11. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedType(entry.type, access.kind)`.
-	12. *If* `returned` is not *none*:
-		1. *If* `is_nullish` is `true`:
-			1. *Return:* `Union(returned, Null)`.
-		2. *Return*: `returned`.
-	13. *Throw:* a new TypeErrorInvalidOperation.
+	4. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
+	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access)`.
+	6. *Perform:* *Unwrap:* `ValidateAccessKind(access.kind, entry.optional)`.
+	7. *Return:* `UpdateAccessedType(entry.type, access.kind)`.
 ;
 
 

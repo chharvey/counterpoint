@@ -9,7 +9,11 @@ import {
 	TypeErrorNoEntry,
 	VoidError01,
 } from '../../../src/index.ts';
-import type {ConstructorType} from '../../../src/lib/index.ts';
+import {
+	type ConstructorType,
+	assert_instanceof,
+} from '../../../src/lib/index.ts';
+import {assertAssignable} from '../../assert-helpers.ts';
 import {typeUnit} from '../../helpers.ts';
 import {
 	extract_lines,
@@ -98,14 +102,14 @@ describe('ASTNodeAccess', () => {
 				null.four;
 				null.[[[[[]]]]];
 			`);
-			it('#type: throws a TypeError.', () => {
+			it('#type: throws when base is a subtype of null.', () => {
 				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), [
 					TypeErrorNoEntry,
 					TypeErrorNoEntry,
 					TypeErrorInvalidOperation,
 				][i], `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
 			});
-			it('#fold: throws.', () => {
+			it('#fold: throws when base is null.', () => {
 				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), Error, `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
 			});
 		});
@@ -212,13 +216,37 @@ describe('ASTNodeAccess', () => {
 						let var tup: [   null,     bool,     sym] | [   int, ?: float]          = [null, true, @hello];
 						let var rec: [a: null, b?: bool, c?: sym] | [a: int,           c?: str] = [a= 42];
 					`;
-					it('throws a TypeErrorNoEntry when every constituent does not have the entry (index out of bounds / key out of range).', () => {
-						testExprTypes(`
+					it('throws several TypeErrorNoEntrys when every constituent does not have the entry (index out of bounds / key out of range).', () => {
+						const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							${ DECLS }
 
 							tup.3;
 							rec.d;
-						`, repeat(TypeErrorNoEntry, 2));
+						`);
+						program.varCheck();
+						return assert.throws(() => program.typeCheck(), (err) => {
+							assert_instanceof(err, AggregateError);
+							assertAssignable(err, {
+								cons:   AggregateError,
+								errors: [
+									{
+										cons:   AggregateError,
+										errors: [
+											{cons: TypeErrorNoEntry, message: 'Index `.3` does not exist on type `[null, bool, sym]`.'},
+											{cons: TypeErrorNoEntry, message: 'Index `.3` does not exist on type `[int, ?: float]`.'},
+										],
+									},
+									{
+										cons:   AggregateError,
+										errors: [
+											{cons: TypeErrorNoEntry, message: 'Property `d` does not exist on type `[257: null, 258?: bool, 259?: sym]`.'},
+											{cons: TypeErrorNoEntry, message: 'Property `d` does not exist on type `[257: int, 259?: str]`.'},
+										],
+									},
+								],
+							});
+							return true;
+						});
 					});
 					it('if every constituent has the entry and it’s required, returns the union of those.', () => {
 						testExprTypes(`
@@ -228,22 +256,7 @@ describe('ASTNodeAccess', () => {
 							rec.a;
 						`, repeat(TYPE.NULL.union(TYPE.INT), 2));
 					});
-					it('FIXME: if some constituent is missing an entry that another constituent has, throws a TypeErrorNoEntry; but should be a TypeErrorInvalidOperation.', () => {
-						testExprTypes(`
-							${ DECLS }
-
-							tup.1; % required | optional
-							tup.2; % required | missing
-							rec.b; % optional | missing
-							rec.c; % optional | optional
-						`, [
-							TypeErrorInvalidOperation,
-							TypeErrorNoEntry,
-							TypeErrorNoEntry,
-							TypeErrorInvalidOperation,
-						]);
-					});
-					it.skip('throws a TypeErrorInvalidOperation when some constituent (but not all) does not have the entry, or has it but it is optional.', () => {
+					it('throws a TypeErrorInvalidOperation when some constituent (but not all) does not have the entry, or has it but it is optional.', () => {
 						testExprTypes(`
 							${ DECLS }
 
@@ -411,13 +424,18 @@ describe('ASTNodeAccess', () => {
 
 	context('access kind: potential access (`a?.‹b›`).', () => {
 		context('when base is nullish.', () => {
+			const SRCS = extract_lines(`
+				null?.4;
+				null?.four;
+				null?.[[[[[]]]]];
+			`);
 			describe('#type', () => {
-				it('returns type of base when it is a subtype of null.', () => {
-					xjs.Array.forEachAggregated([
-						AST.ASTNodeAccess.fromSource('null?.3;')         .type(),
-						AST.ASTNodeAccess.fromSource('null?.four;')      .type(),
-						AST.ASTNodeAccess.fromSource('null?.[[[[[]]]]];').type(),
-					], (typ, i) => assert.ok(typ.isSubtypeOf(TYPE.NULL), `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
+				it('throws when base is a subtype of null.', () => {
+					xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), [
+						TypeErrorNoEntry,
+						TypeErrorNoEntry,
+						TypeErrorInvalidOperation,
+					][i], `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
 				});
 				it('chained optional access.', () => {
 					const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // [bool]
@@ -555,13 +573,37 @@ describe('ASTNodeAccess', () => {
 						let var tup: [   null,     bool,     sym] | [   int, ?: float]          = [null, true, @hello];
 						let var rec: [a: null, b?: bool, c?: sym] | [a: int,           c?: str] = [a= 42];
 					`;
-					it('throws a TypeErrorNoEntry when every constituent does not have the entry (index out of bounds / key out of range).', () => {
-						testExprTypes(`
+					it('throws several TypeErrorNoEntrys when every constituent does not have the entry (index out of bounds / key out of range).', () => {
+						const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							${ DECLS }
 
 							tup?.3;
 							rec?.d;
-						`, repeat(TypeErrorNoEntry, 2));
+						`);
+						program.varCheck();
+						return assert.throws(() => program.typeCheck(), (err) => {
+							assert_instanceof(err, AggregateError);
+							assertAssignable(err, {
+								cons:   AggregateError,
+								errors: [
+									{
+										cons:   AggregateError,
+										errors: [
+											{cons: TypeErrorNoEntry, message: 'Index `?.3` does not exist on type `[null, bool, sym]`.'},
+											{cons: TypeErrorNoEntry, message: 'Index `?.3` does not exist on type `[int, ?: float]`.'},
+										],
+									},
+									{
+										cons:   AggregateError,
+										errors: [
+											{cons: TypeErrorNoEntry, message: 'Property `d` does not exist on type `[257: null, 258?: bool, 259?: sym]`.'},
+											{cons: TypeErrorNoEntry, message: 'Property `d` does not exist on type `[257: int, 259?: str]`.'},
+										],
+									},
+								],
+							});
+							return true;
+						});
 					});
 					it('throws a TypeErrorInvalidOperation when every constituent has the entry and it’s required.', () => {
 						testExprTypes(`
@@ -571,22 +613,7 @@ describe('ASTNodeAccess', () => {
 							rec?.a;
 						`, repeat(TypeErrorInvalidOperation, 2));
 					});
-					it('FIXME: if some constituent is missing an entry that another constituent has, throws a TypeErrorNoEntry; but should return the type unioned with null.', () => {
-						testExprTypes(`
-							${ DECLS }
-
-							tup?.1; % type \`bool | float | null\` % required | optional
-							tup?.2; % type \`sym          | null\` % required | missing
-							rec?.b; % type \`bool         | null\` % optional | missing
-							rec?.c; % type \`sym  | str   | null\` % optional | optional
-						`, [
-							TYPE.Union.all(TYPE.BOOL, TYPE.FLOAT, TYPE.NULL),
-							TypeErrorNoEntry,
-							TypeErrorNoEntry,
-							TYPE.Union.all(TYPE.SYM,  TYPE.STR,   TYPE.NULL),
-						]);
-					});
-					it.skip('if some constituent (but not all) has the entry and it is required, or if some constituent (and maybe all) has the entry and it is optional, returns the union of all such constituents’ entries, unioned with null.', () => {
+					it('if some constituent (but not all) has the entry and it is required, or if some constituent (and maybe all) has the entry and it is optional, returns the union of all such constituents’ entries, unioned with null.', () => {
 						testExprTypes(`
 							${ DECLS }
 
