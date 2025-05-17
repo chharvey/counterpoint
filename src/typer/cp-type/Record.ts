@@ -93,7 +93,7 @@ class TypeRecord extends ValueType {
 	public get(key: bigint, accessor: AST.ASTNodeKey): TypeEntry {
 		return this.invariants.has(key)
 			? this.invariants.get(key)!
-			: assert.fail(new TypeErrorNoEntry('property', this, accessor));
+			: assert.fail(new TypeErrorNoEntry('key', this, accessor));
 	}
 
 	/** @final */

@@ -248,8 +248,8 @@ describe('ASTNodeAccess', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: TypeErrorNoEntry, message: 'Property `d` does not exist on type `[257: null, 258?: bool, 259?: sym]`.'},
-											{cons: TypeErrorNoEntry, message: 'Property `d` does not exist on type `[257: int, 259?: str]`.'},
+											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `[257: null, 258?: bool, 259?: sym]`.'},
+											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `[257: int, 259?: str]`.'},
 										],
 									},
 								],
@@ -623,8 +623,8 @@ describe('ASTNodeAccess', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: TypeErrorNoEntry, message: 'Property `d` does not exist on type `[257: null, 258?: bool, 259?: sym]`.'},
-											{cons: TypeErrorNoEntry, message: 'Property `d` does not exist on type `[257: int, 259?: str]`.'},
+											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `[257: null, 258?: bool, 259?: sym]`.'},
+											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `[257: int, 259?: str]`.'},
 										],
 									},
 								],

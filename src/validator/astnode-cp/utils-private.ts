@@ -179,7 +179,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 			if (base_type instanceof TYPE.Record) {
 				return base_type.get(access.accessor.id, access.accessor);
 			} else {
-				throw new TypeErrorNoEntry('property', base_type, access.accessor);
+				throw new TypeErrorNoEntry('key', base_type, access.accessor);
 			}
 		}
 		default: {
