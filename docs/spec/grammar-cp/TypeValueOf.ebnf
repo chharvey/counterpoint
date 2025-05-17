@@ -46,10 +46,10 @@ Type TypeValueOf(SemanticTypeList listtype) :=
 	1. *Assert:* `listtype.children.count` is 1.
 	2. *Let* `itemtype` be *UnwrapAffirm:* `TypeValueOf(listtype.children.0)`.
 	3. *If* `listtype.count` is a RealNumber:
-		1. *If* `listtype.count` is less than *0*:
+		1. *If* `listtype.count` is less than 0:
 			1. *Throw:* a new TypeError.
 		2. *Let* `data` be a new Sequence.
-		3. *Let* `i` be *0*.
+		3. *Let* `i` be 0.
 		4. *While* `i` is less than `listtype.count`:
 			1. Push a new EntryTypeStructure [
 				type=     `itemtype`,
@@ -123,11 +123,11 @@ Type TypeValueOf(SemanticTypeCall call) :=
 			1. *Let* `consequenttype` be `antecedenttype`.
 		3. *Else If* `call.children.count` is 3:
 			1. *Let* `consequenttype` be *UnwrapAffirm:* `TypeValueOf(call.children.2)`.
-		4. *Else*:
+		4. *Else:*
 			1. *Throw:* a new TypeError.
 		5. *Return:* a Map type whose antecedents’ type is `antecedenttype`
 			and whose consequents’ type is `consequenttype`.
-	6. *Throw* a new SyntaxError.
+	6. *Throw:* a new SyntaxError.
 ;
 
 

@@ -119,7 +119,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 									1. *Let* `items` be the union of all item types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
 										1. *Throw:* a new TypeErrorNotAssignable.
-								3. *Else*:
+								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 						4. *Else If* `base.source` is "Dict":
 							1. *Let* `is_assignable` be `TypeCheckAssign(arg, returntype)`.
@@ -132,7 +132,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 									1. *Let* `values` be the union of all value types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(values, genericarg)` is `false`:
 										1. *Throw:* a new TypeErrorNotAssignable.
-								3. *Else*:
+								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 						5. *Else If* `base.source` is "Set":
 							1. *Let* `listtype` be a List type whose items’ type is `genericarg`.
@@ -145,9 +145,9 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 									1. *Let* `items` be the union of all item types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
 										1. *Throw:* a new TypeErrorNotAssignable.
-								3. *Else*:
+								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
-					2. *Else*:
+					2. *Else:*
 						1. *Throw:* a new TypeErrorArgCount.
 				6. *Return:* a mutable copy of `returntype`.
 		2. *Throw:* a new TypeErrorArgCount.
@@ -177,12 +177,12 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						4. *Let* `argtype` be *Unwrap:* `TypeOf(arg)`.
 					3. *Else:*
 						1. *Throw:* a new TypeErrorArgCount.
-				5. *Let:* `entrytype` be a Tuple type containing the items in the Sequence [
+				5. *Let* `entrytype` be a Tuple type containing the items in the Sequence [
 					EntryTypeStructure [type= `antecedenttype`, optional= `false`],
 					EntryTypeStructure [type= `consequenttype`, optional= `false`],
 				].
-				6. *Let*: `paramtype` be a List type whose items’ type is `entrytype`.
-				7. *If*: `arg` is set:
+				6. *Let* `paramtype` be a List type whose items’ type is `entrytype`.
+				7. *If* `arg` is set:
 					1. *Let* `is_assignable` be `TypeCheckAssign(arg, paramtype)`.
 					2. *If* `is_assignable` is an abrupt completion:
 						1. *If* `arg` is a SemanticTuple:
@@ -192,12 +192,12 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 							1. *Let* `items` be the union of all item types in `argtype`.
 							2. *If* *UnwrapAffirm:* `Subtype(items, entrytype)` is `false`:
 								1. *Throw:* a new TypeErrorNotAssignable.
-						3. *Else*:
+						3. *Else:*
 							1. *Throw:* a new TypeErrorNotAssignable.
 				8. *Return:* a mutable Map type whose antecedents’ type is `antecedenttype`
 					and whose consequents’ type is `consequenttype`.
 		2. *Throw:* a new TypeErrorArgCount.
-	6. *Throw* a new SyntaxError.
+	6. *Throw:* a new SyntaxError.
 ;
 
 
@@ -242,7 +242,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	4. *If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Number)` is `true`:
 		1. *If* *UnwrapAffirm:* `Subtype(t0, Float)` is `true` *or* *UnwrapAffirm:* `Subtype(t1, Float)` is `true`:
 			1. *Return:* `Float`.
-		2. *Else*:
+		2. *Else:*
 			1. *Return:* `Integer`.
 	5. *Throw:* a new TypeErrorInvalidOperation.
 ;

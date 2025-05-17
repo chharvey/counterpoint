@@ -232,7 +232,7 @@ Boolean Identical(Object a, Object b) :=
 			1. *Note:* This assumption prevents an infinite loop,
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For index* `i` in `seq_b`:
-			1. *If* *UnwrapAffirm*: `Identical(seq_a[i], seq_b[i])` is `false`:
+			1. *If* *UnwrapAffirm:* `Identical(seq_a[i], seq_b[i])` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
 	8. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
@@ -246,7 +246,7 @@ Boolean Identical(Object a, Object b) :=
 		5. *For key* `k` in `struct_b`:
 			1. *If* `struct_a[k]` is not set:
 				1. *Return:* `false`.
-			2. *If* *UnwrapAffirm*: `Identical(struct_a[k], struct_b[k])` is `false`:
+			2. *If* *UnwrapAffirm:* `Identical(struct_a[k], struct_b[k])` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
 	9. *If* `a` and `b` are the same object:
@@ -279,7 +279,7 @@ Boolean Equal(Object a, Object b) :=
 			1. *Note:* This assumption prevents an infinite loop,
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For index* `i` in `seq_b`:
-			1. *If* *UnwrapAffirm*: `Equal(seq_a[i], seq_b[i])` is `false`:
+			1. *If* *UnwrapAffirm:* `Equal(seq_a[i], seq_b[i])` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
 	5. *If* `a` is an instance of `Record` or `Dict` *and* `b` is an instance of `Record` or `Dict`:
@@ -293,7 +293,7 @@ Boolean Equal(Object a, Object b) :=
 		5. *For key* `k` in `struct_b`:
 			1. *If* `struct_a[k]` is not set:
 				1. *Return:* `false`.
-			2. *If* *UnwrapAffirm*: `Equal(struct_a[k], struct_b[k])` is `false`:
+			2. *If* *UnwrapAffirm:* `Equal(struct_a[k], struct_b[k])` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
 	6. *If* `a` is an instance of `Set` *and* `b` is an instance of `Set`:
