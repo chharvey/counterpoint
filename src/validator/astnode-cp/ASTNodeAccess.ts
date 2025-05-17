@@ -13,6 +13,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {Punctuator} from '../../parser/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	Operator,
@@ -74,15 +75,16 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (base_value === null) {
 			return null;
 		}
-		if (this.optional && base_value.identical(VALUE.NULL)) {
-			return base_value;
-		}
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
-				return (base_value as VALUE.Tuple).get(this.accessor.index, this.optional, this.accessor);
+				return base_value instanceof VALUE.Tuple
+					? (base_value as VALUE.Tuple).get(this.accessor.index, this.optional, this.accessor)
+					: this.#assert_optional_and_return_null();
 			}
 			case this.accessor instanceof ASTNodeKey: {
-				return (base_value as VALUE.Record).get(this.accessor.id, this.optional, this.accessor);
+				return base_value instanceof VALUE.Record
+					? (base_value as VALUE.Record).get(this.accessor.id, this.optional, this.accessor)
+					: this.#assert_optional_and_return_null();
 			}
 			case this.accessor instanceof ASTNodeExpression: {
 				const accessor_value: VALUE.Value | null = this.accessor.fold();
@@ -104,14 +106,19 @@ export class ASTNodeAccess extends ASTNodeExpression {
 						return base_value.get(accessor_value, this.optional, this.accessor);
 					}
 					default: {
-						assert.fail(`Expected ${ base_value } to be a List, Dict, Set, or Map.`);
+						return this.#assert_optional_and_return_null();
 					}
 				}
 				/* eslint-enable @typescript-eslint/no-unsafe-return */
 			}
-			default: { // eslint-disable-line no-fallthrough
+			default: {
 				assert.fail(`Expected ${ this.accessor } to be an index, key, or bracketed expression.`);
 			}
 		}
+	}
+
+	#assert_optional_and_return_null(): VALUE.Null {
+		assert.ok(this.optional, `Expected the potential access operator \`${ Punctuator.OPTDOT }\`.`);
+		return VALUE.NULL;
 	}
 }

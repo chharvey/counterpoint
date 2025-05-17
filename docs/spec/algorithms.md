@@ -546,7 +546,7 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 ## ValidateAccessKind
 Checks for correctness, matching access kind with accessed bound entry of a collection.
 If access kind is normal, the entry must be non-optioal.
-If access kind is optional, the entry must be optional (or the base may be nullish).
+If access kind is optional, the entry must be optional.
 Otherwise, the access kind may be claim.
 For dynamic collections, entries behave as both non-optional and optional.
 ```

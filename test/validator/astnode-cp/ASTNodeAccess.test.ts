@@ -216,6 +216,15 @@ describe('ASTNodeAccess', () => {
 						let var tup: [   null,     bool,     sym] | [   int, ?: float]          = [null, true, @hello];
 						let var rec: [a: null, b?: bool, c?: sym] | [a: int,           c?: str] = [a= 42];
 					`;
+					it('throws when one but not all constituents are of incorrect type.', () => {
+						testExprTypes(`
+							let var mixed_tup: [null, bool, sym] | [a: null, b?: bool, c?: sym] = [null, true, @hello];
+							let var mixed_rec: [int, ?: float]   | [a: int, c?: str]            = [a= 42];
+
+							mixed_tup.a;
+							mixed_rec.0;
+						`, repeat(TypeErrorInvalidOperation, 2));
+					});
 					it('throws several TypeErrorNoEntrys when every constituent does not have the entry (index out of bounds / key out of range).', () => {
 						const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							${ DECLS }
@@ -285,6 +294,12 @@ describe('ASTNodeAccess', () => {
 						new VALUE.String('three'),
 						...repeat(null, 3),
 					]);
+				});
+				it('asserts access is optional when base is of incorrect type (bypassing type-checking).', () => {
+					xjs.Array.forEachAggregated(extract_lines(`
+						[null, true, @hello].a;
+						[a= 42].0;
+					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), assert.AssertionError));
 				});
 				it('throws when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
 					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), VoidError01));
@@ -573,6 +588,18 @@ describe('ASTNodeAccess', () => {
 						let var tup: [   null,     bool,     sym] | [   int, ?: float]          = [null, true, @hello];
 						let var rec: [a: null, b?: bool, c?: sym] | [a: int,           c?: str] = [a= 42];
 					`;
+					it('unions with null when one but not all constituents are of incorrect type.', () => {
+						testExprTypes(`
+							let var mixed_tup: [null, bool, sym] | [a: null, b?: bool, c?: sym] = [null, true, @hello];
+							let var mixed_rec: [int, ?: float]   | [a: int, c?: str]            = [a= 42];
+
+							mixed_tup?.a; % type \`null | null\`
+							mixed_rec?.0; % type \`int  | null\`
+						`, [
+							TYPE.NULL,
+							TYPE.INT.union(TYPE.NULL),
+						]);
+					});
 					it('throws several TypeErrorNoEntrys when every constituent does not have the entry (index out of bounds / key out of range).', () => {
 						const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							${ DECLS }
@@ -639,6 +666,12 @@ describe('ASTNodeAccess', () => {
 						new VALUE.String('three'),
 						...repeat(null, 2),
 					]);
+				});
+				it('returns null when base is of incorrect type (bypassing type-checking).', () => {
+					xjs.Array.forEachAggregated(extract_lines(`
+						[null, true, @hello]?.a;
+						[a= 42]?.0;
+					`), (src) => assert.strictEqual(AST.ASTNodeAccess.fromSource(src).fold(), VALUE.NULL));
 				});
 				it('returns null when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
 					xjs.Array.forEachAggregated(THROWS, (src) => assert.strictEqual(AST.ASTNodeAccess.fromSource(src).fold(), VALUE.NULL));
