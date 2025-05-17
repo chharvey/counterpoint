@@ -86,7 +86,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					? (base_value as VALUE.Record).get(this.accessor.id, this.optional, this.accessor)
 					: this.#assert_optional_and_return_null();
 			}
-			case this.accessor instanceof ASTNodeExpression: {
+			default: {
 				const accessor_value: VALUE.Value | null = this.accessor.fold();
 				if (accessor_value === null) {
 					return null;
@@ -110,9 +110,6 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					}
 				}
 				/* eslint-enable @typescript-eslint/no-unsafe-return */
-			}
-			default: {
-				assert.fail(`Expected ${ this.accessor } to be an index, key, or bracketed expression.`);
 			}
 		}
 	}

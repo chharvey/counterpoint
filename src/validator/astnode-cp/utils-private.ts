@@ -182,7 +182,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 				throw new TypeErrorNoEntry('property', base_type, access.accessor);
 			}
 		}
-		case access.accessor instanceof AST.ASTNodeExpression: {
+		default: {
 			const accessor_type:   TYPE.Type = access.accessor.type();
 			const access_optional: boolean   = access.kind === Operator.OPTDOT;
 			switch (true) {
@@ -212,9 +212,6 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 					throw new TypeErrorInvalidOperation(access);
 				}
 			}
-		}
-		default: {
-			assert.fail(`Expected ${ access.accessor } to be an index, key, or bracketed expression.`);
 		}
 	}
 }

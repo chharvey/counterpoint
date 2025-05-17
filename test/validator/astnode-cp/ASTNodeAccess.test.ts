@@ -107,14 +107,14 @@ describe('ASTNodeAccess', () => {
 					TypeErrorNoEntry,
 					TypeErrorNoEntry,
 					TypeErrorInvalidOperation,
-				][i], `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
+				][i], `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
 			});
 			it('#fold: throws when base is null.', () => {
-				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), Error, `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
+				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), Error, `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
 			});
 		});
 
-		context('access type: by index / by key', () => {
+		context('access manner: by index / by key', () => {
 			const SRC = `
 				let     tup_fixed:   [int, float, str] = [1, 2.0, "three"];
 				let var tup_unfixed: [int, float, str] = [1, 2.0, "three"];
@@ -307,7 +307,7 @@ describe('ASTNodeAccess', () => {
 			});
 		});
 
-		context('access type: access by expression.', () => {
+		context('access manner: access by expression.', () => {
 			const DECLS = `
 				let     list_fixed:   List.<     int | float | str> = List.<int | float | str>([   1,    2.0,    "three"]);
 				let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
@@ -450,7 +450,7 @@ describe('ASTNodeAccess', () => {
 						TypeErrorNoEntry,
 						TypeErrorNoEntry,
 						TypeErrorInvalidOperation,
-					][i], `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
+					][i], `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
 				});
 				it('chained optional access.', () => {
 					const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // [bool]
@@ -480,7 +480,7 @@ describe('ASTNodeAccess', () => {
 						AST.ASTNodeAccess.fromSource('null?.3;')         .fold(),
 						AST.ASTNodeAccess.fromSource('null?.four;')      .fold(),
 						AST.ASTNodeAccess.fromSource('null?.[[[[[]]]]];').fold(),
-					], (val, i) => assert.strictEqual(val, VALUE.NULL, `access type: access by ${ ['index', 'key', 'expression'][i] }.`));
+					], (val, i) => assert.strictEqual(val, VALUE.NULL, `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
 				});
 				it('chained optional access.', () => {
 					const prop1 = new VALUE.Tuple([VALUE.TRUE]); // [true]
@@ -510,7 +510,7 @@ describe('ASTNodeAccess', () => {
 			});
 		});
 
-		context('access type: access by index / by key.', () => {
+		context('access manner: access by index / by key.', () => {
 			const SRC = `
 				let     tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];
 				let var tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
@@ -679,7 +679,7 @@ describe('ASTNodeAccess', () => {
 			});
 		});
 
-		context('access type: access by expression.', () => {
+		context('access manner: access by expression.', () => {
 			const DECLS = `
 				let     list_fixed:   List.<     int | float | str> = List.<int | float | str>([   1,    2.0,    "three"]);
 				let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
@@ -801,7 +801,7 @@ describe('ASTNodeAccess', () => {
 
 
 	context('access kind: claim access (`a!.‹b›`).', () => {
-		context('access type: access by index / by key.', () => {
+		context('access manner: access by index / by key.', () => {
 			const SRC = `
 				let     tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];
 				let var tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
@@ -847,7 +847,7 @@ describe('ASTNodeAccess', () => {
 			});
 		});
 
-		context('access type: access by expression.', () => {
+		context('access manner: access by expression.', () => {
 			const SRC = `
 				let     listvoid_fixed:   (int | void)[]      = List.<int | void>([42]);
 				let     dictvoid_fixed:   [: int | void]      = Dict.<int | void>([a= 42]);
