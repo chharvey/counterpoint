@@ -225,7 +225,7 @@ describe('ASTNodeAccess', () => {
 							mixed_rec.0;
 						`, repeat(TypeErrorInvalidOperation, 2));
 					});
-					it('throws several TypeErrorNoEntrys when every constituent does not have the entry (index out of bounds / key out of range).', () => {
+					it('throws when every constituent does not have the entry (index out of bounds / key out of range).', () => {
 						const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							${ DECLS }
 
@@ -265,7 +265,7 @@ describe('ASTNodeAccess', () => {
 							rec.a;
 						`, repeat(TYPE.NULL.union(TYPE.INT), 2));
 					});
-					it('throws a TypeErrorInvalidOperation when some constituent (but not all) does not have the entry, or has it but it is optional.', () => {
+					it('throws when some constituent (but not all) does not have the entry, or has it but it is optional.', () => {
 						testExprTypes(`
 							${ DECLS }
 
@@ -600,7 +600,7 @@ describe('ASTNodeAccess', () => {
 							TYPE.INT.union(TYPE.NULL),
 						]);
 					});
-					it('throws several TypeErrorNoEntrys when every constituent does not have the entry (index out of bounds / key out of range).', () => {
+					it('throws when every constituent does not have the entry (index out of bounds / key out of range).', () => {
 						const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							${ DECLS }
 
@@ -632,7 +632,7 @@ describe('ASTNodeAccess', () => {
 							return true;
 						});
 					});
-					it('throws a TypeErrorInvalidOperation when every constituent has the entry and it’s required.', () => {
+					it('throws when every constituent has the entry and it’s required.', () => {
 						testExprTypes(`
 							${ DECLS }
 
