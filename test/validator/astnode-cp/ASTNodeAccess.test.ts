@@ -211,6 +211,48 @@ describe('ASTNodeAccess', () => {
 						rec_b.y;
 					`, repeat(TypeErrorInvalidOperation, 4));
 				});
+				context('if base is an intersection type.', () => {
+					const DECLS = `
+						type A = [a: str];
+						type B = [b: str];
+						type C = [c: str];
+						type D = [d: str];
+						let var tup: [   A,     B,       int] & [   C,  ?: D]        = [[a= "tup.0.a", c= "tup.0.c"], [b= "tup.1.b", d= "tup.1.d"], 42];
+						let var rec: [x: A, y?: int, z?: B]   & [x: C,        z?: D] = [x= [a= "rec.x.a", c= "rec.x.c"], y= 42, z= [b= "rec.z.b", d= "rec.z.d"]];
+					`;
+					const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x100n, TYPE.STR]]));
+					const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
+					const C: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x104n, TYPE.STR]]));
+					const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x106n, TYPE.STR]]));
+					it('if any constituent has the entry and it’s required, returns the intersection of those.', () => {
+						testExprTypes(`
+							${ DECLS }
+
+							tup.0; % required & required % type \`A & C\`
+							rec.x; % required & required % type \`A & C\`
+							tup.1; % required & optional % type \`B & D\`
+							tup.2; % required & missing  % type \`int\`
+						`, [
+							...repeat(A.intersect(C), 2),
+							B.intersect(D),
+							TYPE.INT,
+						]);
+					});
+					it('throws when some constituent (but not all) does not have the entry, or has it but it is optional.', () => {
+						testExprTypes(`
+							${ DECLS }
+
+							rec.y; % optional & missing
+							rec.z; % optional & optional
+						`, repeat(TypeErrorInvalidOperation, 2));
+					});
+					it('an intersection with union constituents.', () => {
+						testExprTypes(`
+							let var collection: ([alpha: bool] | [bravo: 2 | 3 | 4]) & [bravo: 3 | 4 | 5] = [bravo= 3];
+							collection.bravo; % type \`3 | 4\`
+						`, [typeUnit(3n).union(typeUnit(4n))]);
+					});
+				});
 				context('if base is a union type.', () => {
 					const DECLS = `
 						let var tup: [   null,     bool,     sym] | [   int, ?: float]          = [null, true, @hello];
@@ -261,8 +303,8 @@ describe('ASTNodeAccess', () => {
 						testExprTypes(`
 							${ DECLS }
 
-							tup.0;
-							rec.a;
+							tup.0; % type \`null | int\`
+							rec.a; % type \`null | int\`
 						`, repeat(TYPE.NULL.union(TYPE.INT), 2));
 					});
 					it('throws when some constituent (but not all) does not have the entry, or has it but it is optional.', () => {
@@ -274,6 +316,12 @@ describe('ASTNodeAccess', () => {
 							rec.b; % optional | missing
 							rec.c; % optional | optional
 						`, repeat(TypeErrorInvalidOperation, 4));
+					});
+					it('a union with intersection constituents.', () => {
+						testExprTypes(`
+							let var collection: [alpha: bool, bravo: 2 | 3 | 4] & [bravo: 3 | 4 | 5, charlie: str] | [] = [];
+							collection.bravo;
+						`, [TypeErrorInvalidOperation]);
 					});
 				});
 			});
@@ -583,6 +631,45 @@ describe('ASTNodeAccess', () => {
 						rec_b?.z;
 					`, repeat(TypeErrorInvalidOperation, 4));
 				});
+				context('if base is an intersection type.', () => {
+					const DECLS = `
+						type A = [a: str];
+						type B = [b: str];
+						type C = [c: str];
+						type D = [d: str];
+						let var tup: [   A,     B,       int] & [   C,  ?: D]        = [[a= "tup.0.a", c= "tup.0.c"], [b= "tup.1.b", d= "tup.1.d"], 42];
+						let var rec: [x: A, y?: int, z?: B]   & [x: C,        z?: D] = [x= [a= "rec.x.a", c= "rec.x.c"], y= 42, z= [b= "rec.z.b", d= "rec.z.d"]];
+					`;
+					const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
+					const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x106n, TYPE.STR]]));
+					it('throws if any constituent has the entry and it’s required.', () => {
+						testExprTypes(`
+							${ DECLS }
+
+							tup?.0; % required & required
+							rec?.x; % required & required
+							tup?.1; % required & optional
+							tup?.2; % required & missing
+						`, repeat(TypeErrorInvalidOperation, 4));
+					});
+					it('if some constituent (but not all) does not have the entry, or has it but it is optional, returns the intersection of all such constituents’ entries, unioned with null.', () => {
+						testExprTypes(`
+							${ DECLS }
+
+							rec?.y; % optional & missing  % type \`int   | null\`
+							rec?.z; % optional & optional % type \`B & D | null\`
+						`, [
+							TYPE.INT.union(TYPE.NULL),
+							B.intersect(D).union(TYPE.NULL),
+						]);
+					});
+					it('an intersection with union constituents.', () => {
+						testExprTypes(`
+							let var collection: ([alpha: bool] | [bravo: 2 | 3 | 4]) & [bravo: 3 | 4 | 5] = [bravo= 3];
+							collection?.bravo;
+						`, [TypeErrorInvalidOperation]);
+					});
+				});
 				context('if base is a union type.', () => {
 					const DECLS = `
 						let var tup: [   null,     bool,     sym] | [   int, ?: float]          = [null, true, @hello];
@@ -654,6 +741,12 @@ describe('ASTNodeAccess', () => {
 							TYPE.Union.all(TYPE.BOOL,             TYPE.NULL),
 							TYPE.Union.all(TYPE.SYM,  TYPE.STR,   TYPE.NULL),
 						]);
+					});
+					it('a union with intersection constituents.', () => {
+						testExprTypes(`
+							let var collection: [alpha: bool, bravo: 2 | 3 | 4] & [bravo: 3 | 4 | 5, charlie: str] | [] = [];
+							collection?.bravo; % type \`3 | 4 | null\`
+						`, [typeUnit(3n).union(typeUnit(4n)).union(TYPE.NULL)]);
 					});
 				});
 			});
