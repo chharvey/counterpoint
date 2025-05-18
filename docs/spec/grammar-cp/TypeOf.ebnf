@@ -77,7 +77,11 @@ Type! TypeOfUnfolded(SemanticMap map) :=
 
 
 
-Type! TypeOfUnfolded(SemanticAccess access) :=
+Type! TypeOfUnfolded(SemanticAccess[kind: RESULT] access) :=
+	1. *Throw:* a new TypeError "Operator not yet supported.".
+;
+
+Type! TypeOfUnfolded(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
@@ -257,7 +261,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: IS] expr) :=
-	1. *Throw:* new TypeError "Operator not yet supported.".
+	1. *Throw:* a new TypeError "Operator not yet supported.".
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=

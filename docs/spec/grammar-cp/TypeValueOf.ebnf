@@ -139,7 +139,7 @@ Type TypeValueOf(SemanticTypeOperation[operator: ORNULL] oper) :=
 ;
 
 Type TypeValueOf(SemanticTypeOperation[operator: OREXCP] oper) :=
-	1. *Throw:* new TypeError "Operator not yet supported.".
+	1. *Throw:* a new TypeError "Operator not yet supported.".
 ;
 
 Type TypeValueOf(SemanticTypeOperation[operator: MUTABLE] oper) :=

@@ -556,7 +556,7 @@ None! ValidateAccessKind(Or<NORMAL, MAYBE, RESULT> access_kind, Boolean is_entry
 	2. *If* `access_kind` is `MAYBE` *and* `is_entry_optional` is `true`:
 		1. *Return.*
 	3. *If* `access_kind` is `RESULT`:
-		1. *Return.*
+		1. *Throw:* a new TypeError "Operator not yet supported.".
 	4. *Throw:* a new TypeErrorInvalidOperation.
 ;
 ```
@@ -571,7 +571,7 @@ Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
 	1. *If* `access_kind` is `MAYBE`:
 		1. *Return:* `Union(type, Null)`.
 	2. *Else If* `access_kind` is `RESULT`:
-		1. *Return:* `Difference(type, Void)`.
+		1. *Throw:* a new TypeError "Operator not yet supported.".
 	3. *Else:*
 		1. *Assert:* `access_kind` is `NORMAL`.
 		2. *Return:* `type`.

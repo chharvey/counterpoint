@@ -893,7 +893,10 @@ describe('ASTNodeAccess', () => {
 	});
 
 
-	context('access kind: result access (`a!.‹b›`).', () => {
+	it('access kind: result access (`a!.‹b›`) is unsupported.', () => {
+		assert.throws(() => AST.ASTNodeAccess.fromSource('[42]!.0;'), TypeError);
+	});
+	context.skip('access kind: result access (`a!.‹b›`).', () => { // TODO: this syntax will be converted to the Result Access operator
 		context('access manner: access by index / by key.', () => {
 			const SRC = `
 				let     tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];

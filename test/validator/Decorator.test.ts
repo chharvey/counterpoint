@@ -249,17 +249,17 @@ describe('Decorator', () => {
 				% (map_literal)
 			`]],
 
-			...['.', '?.', '!.'].map((op) => [`Decorate(PropertyAccess ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
+			...['.', '?.', '!.'].map((op) => [`${ op === '!.' ? 'skip: ' : '' }Decorate(PropertyAccess ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
 				v${ op }1;
 				% (property_access)
 			`]] as const),
 
-			...['.', '?.', '!.'].flatMap((op) => ['p', '_'].map((keyname) => [`Decorate(PropertyAccess ::= "${ op }" ${ keyname === '_' ? '"_"' : 'Word' }) -> SemanticKey`, [AST.ASTNodeKey, `
+			...['.', '?.', '!.'].flatMap((op) => ['p', '_'].map((keyname) => [`${ op === '!.' ? 'skip: ' : '' }Decorate(PropertyAccess ::= "${ op }" ${ keyname === '_' ? '"_"' : 'Word' }) -> SemanticKey`, [AST.ASTNodeKey, `
 				v${ op }${ keyname };
 				% (property_access)
 			`]] as const)),
 
-			...['.', '?.', '!.'].map((op) => [`Decorate(PropertyAccess ::= "${ op }" "[" Expression "]") -> SemanticExpression`, [AST.ASTNodeExpression, `
+			...['.', '?.', '!.'].map((op) => [`${ op === '!.' ? 'skip: ' : '' }Decorate(PropertyAccess ::= "${ op }" "[" Expression "]") -> SemanticExpression`, [AST.ASTNodeExpression, `
 				v${ op }[a + b];
 				% (property_access)
 			`]] as const),
@@ -339,7 +339,7 @@ describe('Decorator', () => {
 				% (expression_additive)
 			`]],
 
-			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ (['is', 'isnt'].includes(op) ? 'skip: ' : '') }Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, [AST.ASTNodeOperation, `
+			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ ['is', 'isnt'].includes(op) ? 'skip: ' : '' }Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				a ${ op } b;
 				% (expression_comparative)
 			`]] as const),

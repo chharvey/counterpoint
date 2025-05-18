@@ -51,6 +51,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		public  readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
+		if (this.kind === Operator.DOT_RES) {
+			throw new TypeError(`Operator ${ this.kind } not yet supported.`);
+		}
 	}
 
 	@memoizeMethod
