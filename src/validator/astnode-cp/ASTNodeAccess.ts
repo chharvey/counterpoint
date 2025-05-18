@@ -41,7 +41,6 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		return expression;
 	}
 
-	private readonly optional: boolean;
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
@@ -52,7 +51,6 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		public  readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
-		this.optional = this.kind === Operator.DOT_MAY;
 	}
 
 	@memoizeMethod
@@ -75,15 +73,16 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (base_value === null) {
 			return null;
 		}
+		const KIND_MAYBE: boolean = this.kind === Operator.DOT_MAY;
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
 				return base_value instanceof VALUE.Tuple
-					? (base_value as VALUE.Tuple).get(this.accessor.index, this.optional, this.accessor)
+					? (base_value as VALUE.Tuple).get(this.accessor.index, KIND_MAYBE, this.accessor)
 					: this.#assert_maybe_and_return_null();
 			}
 			case this.accessor instanceof ASTNodeKey: {
 				return base_value instanceof VALUE.Record
-					? (base_value as VALUE.Record).get(this.accessor.id, this.optional, this.accessor)
+					? (base_value as VALUE.Record).get(this.accessor.id, KIND_MAYBE, this.accessor)
 					: this.#assert_maybe_and_return_null();
 			}
 			default: {
@@ -94,16 +93,16 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				/* eslint-disable @typescript-eslint/no-unsafe-return --- type guard inference is not very good here */
 				switch (true) {
 					case base_value instanceof VALUE.List: {
-						return base_value.get(BigInt((accessor_value as VALUE.Integer).toNumber()), this.optional, this.accessor);
+						return base_value.get(BigInt((accessor_value as VALUE.Integer).toNumber()), KIND_MAYBE, this.accessor);
 					}
 					case base_value instanceof VALUE.Dict: {
-						return base_value.get((accessor_value as VALUE.Symbol).id, this.optional, this.accessor);
+						return base_value.get((accessor_value as VALUE.Symbol).id, KIND_MAYBE, this.accessor);
 					}
 					case base_value instanceof VALUE.Set: {
 						return base_value.get(accessor_value);
 					}
 					case base_value instanceof VALUE.Map: {
-						return base_value.get(accessor_value, this.optional, this.accessor);
+						return base_value.get(accessor_value, KIND_MAYBE, this.accessor);
 					}
 					default: {
 						return this.#assert_maybe_and_return_null();
@@ -115,7 +114,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 
 	#assert_maybe_and_return_null(): VALUE.Null {
-		assert.ok(this.optional, `Expected the maybe access operator \`${ Punctuator.DOT_MAY }\`.`);
+		assert.strictEqual(this.kind, Operator.DOT_MAY, `Expected the maybe access operator \`${ Punctuator.DOT_MAY }\`.`);
 		return VALUE.NULL;
 	}
 }
