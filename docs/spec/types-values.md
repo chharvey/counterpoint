@@ -100,12 +100,14 @@ A **CompletionStructure** is a specific subtype of [Structure](#structure) with
 a mandatory property \`type\` and an optional property \`value\`.
 The value of the \`type\` property must be one of the [enumerated](#enumerated-values) specification values
 *normal*, *break*, *continue*, *return*, or *throw*, which are described below.
-The value of the \`value\` property must be a [Counterpoint Language Value](#Counterpoint-language-types).
+The value of the \`value\` property must be
+a [Counterpoint Specification Value](#counterpoint-specification-types) or
+a [Counterpoint Language Value](#counterpoint-language-types).
 
 Property  | Description
 --------- | -----------
 \`type\`  | the kind of completion structure
-\`value\` | the Counterpoint Language Value carried with the structure
+\`value\` | the Counterpoint Specification/Language Value carried with the structure
 
 Completion structures are the default values returned by all specification algorithms,
 unless explicitly stated otherwise.
