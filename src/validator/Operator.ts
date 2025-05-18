@@ -1,7 +1,7 @@
 export enum Operator {
 	DOT,
-	OPTDOT,
-	CLAIMDOT,
+	DOT_MAY,
+	DOT_RES,
 	ORNULL,
 	OREXCP,
 	MUTABLE,
@@ -35,13 +35,13 @@ export enum Operator {
 
 export type ValidTypeAccessOperator = (
 	| Operator.DOT
-	| Operator.OPTDOT
+	| Operator.DOT_MAY
 );
 
 export type ValidAccessOperator = (
 	| Operator.DOT
-	| Operator.OPTDOT
-	| Operator.CLAIMDOT
+	| Operator.DOT_MAY
+	| Operator.DOT_RES
 );
 
 export type ValidTypeOperator = (

@@ -343,7 +343,7 @@ describe('ASTNodeAccess', () => {
 						...repeat(null, 3),
 					]);
 				});
-				it('asserts access is optional when base is of incorrect type (bypassing type-checking).', () => {
+				it('asserts maybe access is used when base is of incorrect type (bypassing type-checking).', () => {
 					xjs.Array.forEachAggregated(extract_lines(`
 						[null, true, @hello].a;
 						[a= 42].0;
@@ -485,7 +485,7 @@ describe('ASTNodeAccess', () => {
 	});
 
 
-	context('access kind: potential access (`a?.‹b›`).', () => {
+	context('access kind: maybe access (`a?.‹b›`).', () => {
 		context('when base is nullish.', () => {
 			const SRCS = extract_lines(`
 				null?.4;
@@ -500,7 +500,7 @@ describe('ASTNodeAccess', () => {
 						TypeErrorInvalidOperation,
 					][i], `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
 				});
-				it('chained optional access.', () => {
+				it('chained maybe access.', () => {
 					const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // [bool]
 					const prop2 = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]); // [?: bool]
 					return testExprTypes(`
@@ -530,7 +530,7 @@ describe('ASTNodeAccess', () => {
 						AST.ASTNodeAccess.fromSource('null?.[[[[[]]]]];').fold(),
 					], (val, i) => assert.strictEqual(val, VALUE.NULL, `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
 				});
-				it('chained optional access.', () => {
+				it('chained maybe access.', () => {
 					const prop1 = new VALUE.Tuple([VALUE.TRUE]); // [true]
 					const prop2 = new VALUE.Tuple();             // []
 					return testExprValues(`
@@ -549,7 +549,7 @@ describe('ASTNodeAccess', () => {
 						prop2,                                        // []
 					]);
 				});
-				it('potential-access of non-existent value returns null (bypassing type-checking).', () => {
+				it('maybe access of non-existent value returns null (bypassing type-checking).', () => {
 					assert.strictEqual(
 						AST.ASTNodeAccess.fromSource('[prop= []]?.prop?.0;').fold(),
 						VALUE.NULL,
@@ -893,7 +893,7 @@ describe('ASTNodeAccess', () => {
 	});
 
 
-	context('access kind: claim access (`a!.‹b›`).', () => {
+	context('access kind: result access (`a!.‹b›`).', () => {
 		context('access manner: access by index / by key.', () => {
 			const SRC = `
 				let     tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];

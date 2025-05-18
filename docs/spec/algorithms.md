@@ -443,7 +443,7 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `accessor` be `access.children.1`.
-	3. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true` *and* `access.kind` is `OPTIONAL`:
+	3. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true` *and* `access.kind` is `MAYBE`:
 		1. *Return:* a new EntryTypeStructure [
 				type=     `Unknown`,
 				optional= `true`,
@@ -496,15 +496,15 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 	7. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
-		3. *Let* `accessor_optional` be `false`.
-		4. *If* `access.kind` is `OPTIONAL`:
-			1. *Set* `accessor_optional` to `true`.
+		3. *Let* `accessor_maybe` be `false`.
+		4. *If* `access.kind` is `MAYBE`:
+			1. *Set* `accessor_maybe` to `true`.
 		5. *If* `base_type` is a List type:
 			1. *Let* `t` be the type of the items in `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
 				1. *Return:* a new EntryTypeStructure [
 					type=     `t`,
-					optional= `access_optional`,
+					optional= `accessor_maybe`,
 				].
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
@@ -513,7 +513,7 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Symbol)` is `true`:
 				1. *Return:* a new EntryTypeStructure [
 					type=     `t`,
-					optional= `access_optional`,
+					optional= `accessor_maybe`,
 				].
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, String)` is `true`:
 				1. *Throw:* a new Error "String keys for dict access are not yet supported."
@@ -534,7 +534,7 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true`:
 				1. *Return:* a new EntryTypeStructure [
 					type=     `v`,
-					optional= `access_optional`,
+					optional= `accessor_maybe`,
 				].
 			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
@@ -546,16 +546,16 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 ## ValidateAccessKind
 Checks for correctness, matching access kind with accessed bound entry of a collection.
 If access kind is normal, the entry must be non-optioal.
-If access kind is optional, the entry must be optional.
-Otherwise, the access kind may be claim.
+If access kind is maybe, the entry must be optional.
+Otherwise, the access kind may be result.
 For dynamic collections, entries behave as both non-optional and optional.
 ```
-None! ValidateAccessKind(Or<NORMAL, OPTIONAL, CLAIM> access_kind, Boolean is_entry_optional) :=
+None! ValidateAccessKind(Or<NORMAL, MAYBE, RESULT> access_kind, Boolean is_entry_optional) :=
 	1. *If* `access_kind` is `NORMAL` *and* `is_entry_optional` is `false`:
 		1. *Return.*
-	2. *If* `access_kind` is `OPTIONAL` *and* `is_entry_optional` is `true`:
+	2. *If* `access_kind` is `MAYBE` *and* `is_entry_optional` is `true`:
 		1. *Return.*
-	3. *If* `access_kind` is `CLAIM`:
+	3. *If* `access_kind` is `RESULT`:
 		1. *Return.*
 	4. *Throw:* a new TypeErrorInvalidOperation.
 ;
@@ -565,12 +565,12 @@ None! ValidateAccessKind(Or<NORMAL, OPTIONAL, CLAIM> access_kind, Boolean is_ent
 
 ## UpdateAccessedType
 Possibly modifies the type of an accessed bound property of a data type.
-Under optional access, unions with Null; under claim access, subtracts Void; else returns unmodified type.
+Under maybe access, unions with Null; under result access, subtracts Void; else returns unmodified type.
 ```
-Type UpdateAccessedType(Type type, Or<NORMAL, OPTIONAL, CLAIM> access_kind) :=
-	1. *If* `access_kind` is `OPTIONAL`:
+Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
+	1. *If* `access_kind` is `MAYBE`:
 		1. *Return:* `Union(type, Null)`.
-	2. *Else If* `access_kind` is `CLAIM`:
+	2. *Else If* `access_kind` is `RESULT`:
 		1. *Return:* `Difference(type, Void)`.
 	3. *Else:*
 		1. *Assert:* `access_kind` is `NORMAL`.

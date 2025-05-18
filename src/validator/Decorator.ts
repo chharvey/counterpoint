@@ -37,9 +37,9 @@ import {
 
 class Decorator {
 	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
-		[Punctuator.DOT,      Operator.DOT],
-		[Punctuator.OPTDOT,   Operator.OPTDOT],
-		[Punctuator.CLAIMDOT, Operator.CLAIMDOT],
+		[Punctuator.DOT,     Operator.DOT],
+		[Punctuator.DOT_MAY, Operator.DOT_MAY],
+		[Punctuator.DOT_RES, Operator.DOT_RES],
 	]);
 
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, ValidTypeOperator> = new Map<Punctuator | Keyword, ValidTypeOperator>([

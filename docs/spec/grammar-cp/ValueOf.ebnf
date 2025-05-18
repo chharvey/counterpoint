@@ -70,23 +70,23 @@ Object! ValueOf(SemanticAccess access) :=
 		1. *If* `base_value` is an instance of `Tuple`:
 			1. *If* `accessor.index` is an index in `base_value`:
 				1. *Return:* the item accessed at index `accessor.index` in `base_value`.
-			2. *Else If* `access.kind` is `OPTIONAL`:
+			2. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
 			3. *Else:*
 				1. *Throw:* a new VoidError.
 		2. *Else:*
-			1. *Assert:* `access.kind` is `OPTIONAL`.
+			1. *Assert:* `access.kind` is `MAYBE`.
 			2. *Return:* `null`.
 	6. *Else If* `accessor` is a SemanticKey:
 		1. *If* `base_value` is an instance of `Record`:
 			1. *If* `accessor.id` is a key in `base_value`:
 				1. *Return:* the value accessed at key `accessor.id` in `base_value`.
-			2. *Else If* `access.kind` is `OPTIONAL`:
+			2. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
 			3. *Else:*
 				1. *Throw:* a new VoidError.
 		2. *Else:*
-			1. *Assert:* `access.kind` is `OPTIONAL`.
+			1. *Assert:* `access.kind` is `MAYBE`.
 			2. *Return:* `null`.
 	7. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
@@ -94,14 +94,14 @@ Object! ValueOf(SemanticAccess access) :=
 		3. *If* `base_value` is an instance of `List`:
 			1. *If* `accessor_value` is an index in `base_value`:
 				1. *Return:* the item accessed at index `accessor_value` in `base_value`.
-			2. *Else If* `access.kind` is `OPTIONAL`:
+			2. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
 			3. *Else:*
 				1. *Throw:* a new VoidError.
 		4. *Else If* `base_value` is an instance of `Dict`:
 			1. *If* `accessor_value` is a key in `base_value`:
 				1. *Return:* the item accessed at key `accessor_value` in `base_value`.
-			2. *Else If* `access.kind` is `OPTIONAL`:
+			2. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
 			3. *Else:*
 				1. *Throw:* a new VoidError.
@@ -114,12 +114,12 @@ Object! ValueOf(SemanticAccess access) :=
 			1. Find an antecedent `k` in `base_value` such that *UnwrapAffirm:* `Identical(k, accessor_value)`.
 			2. *If* `k` is set:
 				1. *Return:* the consequent accessed at antecedent `k` in `base_value`.
-			3. *Else If* `access.kind` is `OPTIONAL`:
+			3. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
 			3. *Else:*
 				1. *Throw:* a new VoidError.
 		1. *Else:*
-			1. *Assert:* `access.kind` is `OPTIONAL`.
+			1. *Assert:* `access.kind` is `MAYBE`.
 			2. *Return:* `null`.
 ;
 

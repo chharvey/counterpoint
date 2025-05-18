@@ -663,13 +663,13 @@ set x = ["hello", 42, true];
 The symbol `?:` in the type signature indicates that the item is optional.
 In a tuple type, all optional items *must* come after all required items.
 
-Use the [optional access operator](./expressions-operators.md#optional-access) `?.` to access optional tuple entries.
+Use the [maybe access operator](./expressions-operators.md#maybe-access) `?.` to access optional tuple entries.
 ```
 let x2: bool? = x?.2;
 ```
 If `x.2` exists, the expression `x?.2` produces that value; otherwise it produces `null`.
 
-We can use the [claim access operator](./expressions-operators.md#claim-access) `!.`
+We can use the [result access operator](./expressions-operators.md#result-access) `!.`
 to tell the type-checker that the property definitely exists and is not type `void`.
 It should only be used if we are certain the property exists.
 ```
@@ -827,13 +827,13 @@ set y = [
 The symbol `?:` in the type signature indicates that the property is optional.
 In a record type, required and optional properties may be intermixed (order isn’t enforced).
 
-Use the [optional access operator](./expressions-operators.md#optional-access) `?.` to access optional record entries.
+Use the [maybe access operator](./expressions-operators.md#maybe-access) `?.` to access optional record entries.
 ```
 let ym: str? = y?.middlename;
 ```
 If `y.middlename` exists, the expression `y?.middlename` produces that value; otherwise it produces `null`.
 
-We can use the [claim access operator](./expressions-operators.md#claim-access) `!.`
+We can use the [result access operator](./expressions-operators.md#result-access) `!.`
 to tell the type-checker that the property definitely exists and is not type `void`.
 It should only be used if we are certain the property exists.
 ```
@@ -890,7 +890,7 @@ let var i: int = 4;           % unfixed variables are not folded
 let elem: str = elements.[i]; % no compile-time error, but results in ExceptionIndexOutOfBounds
 ```
 
-The [optional access operator](./expressions-operators.md#optional-access) will “catch” the exception and return `null` instead.
+The [maybe access operator](./expressions-operators.md#maybe-access) will “catch” the exception and return `null` instead.
 ```
 elements?.[i]; %== null
 ```
@@ -958,7 +958,7 @@ elements.[s];                 % no compile-time error, but results in ExceptionK
 json_data.["pythagoras"];     % no compile-time error, but results in ExceptionKeyOutOfRange
 ```
 
-The [optional access operator](./expressions-operators.md#optional-access) will “catch” the exception and return `null` instead.
+The [maybe access operator](./expressions-operators.md#maybe-access) will “catch” the exception and return `null` instead.
 ```
 json_data?.["pythagoras"]; %== null
 ```
@@ -1114,7 +1114,7 @@ let var a: str = "3rd";
 bases.[a];              % no compile-time error, but runtime exception
 ```
 We can avoid the potential crash using the
-[optional access operator](./expressions-operators.md#optional-access).
+[maybe access operator](./expressions-operators.md#maybe-access).
 ```
 bases?.[a]; % produces the consequent if it exists, else `null`
 ```

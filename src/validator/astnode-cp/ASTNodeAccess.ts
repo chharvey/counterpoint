@@ -52,7 +52,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		public  readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
-		this.optional = this.kind === Operator.OPTDOT;
+		this.optional = this.kind === Operator.DOT_MAY;
 	}
 
 	@memoizeMethod
@@ -79,12 +79,12 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			case this.accessor instanceof ASTNodeIndex: {
 				return base_value instanceof VALUE.Tuple
 					? (base_value as VALUE.Tuple).get(this.accessor.index, this.optional, this.accessor)
-					: this.#assert_optional_and_return_null();
+					: this.#assert_maybe_and_return_null();
 			}
 			case this.accessor instanceof ASTNodeKey: {
 				return base_value instanceof VALUE.Record
 					? (base_value as VALUE.Record).get(this.accessor.id, this.optional, this.accessor)
-					: this.#assert_optional_and_return_null();
+					: this.#assert_maybe_and_return_null();
 			}
 			default: {
 				const accessor_value: VALUE.Value | null = this.accessor.fold();
@@ -106,7 +106,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 						return base_value.get(accessor_value, this.optional, this.accessor);
 					}
 					default: {
-						return this.#assert_optional_and_return_null();
+						return this.#assert_maybe_and_return_null();
 					}
 				}
 				/* eslint-enable @typescript-eslint/no-unsafe-return */
@@ -114,8 +114,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 	}
 
-	#assert_optional_and_return_null(): VALUE.Null {
-		assert.ok(this.optional, `Expected the potential access operator \`${ Punctuator.OPTDOT }\`.`);
+	#assert_maybe_and_return_null(): VALUE.Null {
+		assert.ok(this.optional, `Expected the maybe access operator \`${ Punctuator.DOT_MAY }\`.`);
 		return VALUE.NULL;
 	}
 }

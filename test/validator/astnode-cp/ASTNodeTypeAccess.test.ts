@@ -131,7 +131,7 @@ describe('ASTNodeTypeAccess', () => {
 		});
 
 
-		context('access kind: potential access (`a?.‹b›`).', () => {
+		context('access kind: maybe access (`a?.‹b›`).', () => {
 			it('unions with null if entry is optional.', () => {
 				testTypeEvals(`
 					type TupoC = [1,   2.0,   ?: "three"];

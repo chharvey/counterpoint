@@ -116,7 +116,7 @@ export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Inte
 
 
 export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): TypeEntry {
-	if (base_type.isTopType && access.kind === Operator.OPTDOT) {
+	if (base_type.isTopType && access.kind === Operator.DOT_MAY) {
 		return {type: TYPE.UNKNOWN, optional: true};
 	}
 	if (base_type instanceof TYPE.Combinable) {
@@ -142,7 +142,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 				 * For intersections:
 				 * The accessed entry’s type is the intersection of the constituents’ corresponding entry on any types, and
 				 * the accessed entry’s optionality is the conjunction of the constituents’ corresponding optionalities.
-				 * (In other words, they must *all* be optional/missing for optional access to be valid.)
+				 * (In other words, they must *all* be optional/missing for maybe access to be valid.)
 				 */
 				return {
 					type:     TYPE.Intersection.all(entries.map((entry) => entry.type)),
@@ -154,8 +154,8 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 				 * For unions:
 				 * The accessed entry’s type is the union of the constituents’ corresponding entry on any types, and
 				 * the accessed entry’s optionality is the disjunction of the constituents’ corresponding optionalities.
-				 * (In other words, *any* of them may be optional/missing for optional access to be valid.)
-				 * Also: If all of them are not optional, but some are missing (i.e. error(s) were caught), then optional access is required.
+				 * (In other words, *any* of them may be optional/missing for maybe access to be valid.)
+				 * Also: If all of them are not optional, but some are missing (i.e. error(s) were caught), then maybe access is required.
 				 */
 				return {
 					type:     TYPE.Union.all(entries.map((entry) => entry.type)),
@@ -183,17 +183,17 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 			}
 		}
 		default: {
-			const accessor_type:   TYPE.Type = access.accessor.type();
-			const access_optional: boolean   = access.kind === Operator.OPTDOT;
+			const accessor_type:  TYPE.Type = access.accessor.type();
+			const accessor_maybe: boolean   = access.kind === Operator.DOT_MAY;
 			switch (true) {
 				case base_type instanceof TYPE.List: {
 					return accessor_type.isSubtypeOf(TYPE.INT)
-						? {type: base_type.invariant, optional: access_optional}
+						? {type: base_type.invariant, optional: accessor_maybe}
 						: throwWrongSubtypeError(access.accessor, TYPE.INT);
 				}
 				case base_type instanceof TYPE.Dict: {
 					return accessor_type.isSubtypeOf(TYPE.SYM)
-						? {type: base_type.invariant, optional: access_optional}
+						? {type: base_type.invariant, optional: accessor_maybe}
 						: accessor_type.isSubtypeOf(TYPE.STR)
 							? assert.fail(new Error('String keys for dict access are not yet supported.'))
 							: throwWrongSubtypeError(access.accessor, TYPE.Union.all(TYPE.SYM, TYPE.STR));
@@ -205,7 +205,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 				}
 				case base_type instanceof TYPE.Map: {
 					return accessor_type.isSubtypeOf(base_type.invariant_ant)
-						? {type: base_type.invariant_con, optional: access_optional}
+						? {type: base_type.invariant_con, optional: accessor_maybe}
 						: throwWrongSubtypeError(access.accessor, base_type.invariant_ant);
 				}
 				default: {
@@ -220,8 +220,8 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 
 export function validate_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): void {
 	if (
-		access_kind === Operator.DOT    && is_entry_optional ||
-		access_kind === Operator.OPTDOT && !is_entry_optional
+		access_kind === Operator.DOT     &&  is_entry_optional ||
+		access_kind === Operator.DOT_MAY && !is_entry_optional
 	) {
 		throw new TypeErrorInvalidOperation(access);
 	}
@@ -234,10 +234,10 @@ export function update_accessed_type(type: TYPE.Type, access_kind: ValidTypeAcce
 		case Operator.DOT: {
 			return type;
 		}
-		case Operator.OPTDOT: {
+		case Operator.DOT_MAY: {
 			return type.union(TYPE.NULL);
 		}
-		case Operator.CLAIMDOT: {
+		case Operator.DOT_RES: {
 			return type.subtract(TYPE.VOID);
 		}
 	}
