@@ -884,13 +884,13 @@ If a set is declared with duplicates, they are collapsed:
 The set `{"water", "water"}` only conains 1 element.
 Sets may have several elements that are un-identical but “equal”.
 ```
-let x: [str] = ["water"];
-let y: [str] = ["water"];
+let x: str[] = List.<str>(["water"]);
+let y: str[] = List.<str>(["water"]);
 let elements: (float | [str]){} = {0.0, -0.0, x, y};
 ```
 In this example, the elements `0.0` and `-0.0` are not identical
 (even if they are equal by the floating-point definition of equality).
-Similarly, `x` and `y` are not identical, but they are equal by tuple composition.
+Similarly, `x` and `y` are not identical, but they are equal by list composition.
 Even though `0.0 == -0.0` and `x == y`, this set has four elements.
 
 #### Set Access
@@ -900,11 +900,11 @@ The value is `true` if the element is in the set, and `false` if not.
 ```
 let bases: Object{} = {
 	"who",
-	["what"],
+	List.<str>(["what"]),
 	{ "i" -> {"don’t" -> "know"} },
 };
 bases.["""{{ "w" }}{{ "h" }}{{ "o" }}"""]; %== true
-bases.[["what"]];                          %== false
+bases.[List.<str>(["what"])];              %== false
 bases.["idk"];                             %== false
 ```
 
