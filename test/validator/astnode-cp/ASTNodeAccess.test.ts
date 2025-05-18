@@ -283,8 +283,8 @@ describe('ASTNodeAccess', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: TypeErrorNoEntry, message: 'Index `.3` does not exist on type `[null, bool, sym]`.'},
-											{cons: TypeErrorNoEntry, message: 'Index `.3` does not exist on type `[int, ?: float]`.'},
+											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `[null, bool, sym]`.'},
+											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `[int, ?: float]`.'},
 										],
 									},
 									{
@@ -703,8 +703,8 @@ describe('ASTNodeAccess', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: TypeErrorNoEntry, message: 'Index `?.3` does not exist on type `[null, bool, sym]`.'},
-											{cons: TypeErrorNoEntry, message: 'Index `?.3` does not exist on type `[int, ?: float]`.'},
+											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `[null, bool, sym]`.'},
+											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `[int, ?: float]`.'},
 										],
 									},
 									{
