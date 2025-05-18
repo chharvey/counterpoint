@@ -1,4 +1,7 @@
-import type {MethodDecorator} from '../lib/index.ts';
+import type {
+	ConstructorType,
+	MethodDecorator,
+} from '../lib/index.ts';
 import type {VALUE} from './index.ts';
 
 
@@ -42,8 +45,8 @@ export function strictEqual<Proto extends object, Params extends unknown[]>(
  * @param     cons      a function returning a class/constructor to check instance of; offers potential to fail early
  * @returns             MethodDecorator<Proto, (this: Proto, that: Proto, ...args: Params) => boolean>
  */
-export function instanceOf<ProtoThis extends object, ProtoThat extends object, Params extends unknown[]>(cons: () => NewableFunction): MethodDecorator<ProtoThis, (this: ProtoThis, that: ProtoThat, ...args: Params) => boolean> {
-	let klass: NewableFunction | null = null;
+export function instanceOf<ProtoThis extends object, ProtoThat extends object, Params extends unknown[]>(cons: () => ConstructorType<object>): MethodDecorator<ProtoThis, (this: ProtoThis, that: ProtoThat, ...args: Params) => boolean> {
+	let klass: ConstructorType<object> | null = null;
 	return (method) => function (that, ...args) {
 		klass ??= cons.call(null);
 		return that instanceof klass && method.call(this, that, ...args);

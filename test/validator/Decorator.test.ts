@@ -11,6 +11,7 @@ import {
 	AST,
 	DECORATOR,
 } from '../../src/index.ts';
+import type {ConstructorType} from '../../src/lib/index.ts';
 
 
 
@@ -21,7 +22,7 @@ describe('Decorator', () => {
 			assert.ok(captures.length, 'could not find any captures.');
 			return captures[0].node;
 		}
-		new Map<string, [NewableFunction, string]>([
+		new Map<string, readonly [ConstructorType<AST.ASTNodeCP>, string]>([
 			['Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey', [AST.ASTNodeKey, `
 				[mut= 42];
 				% (word "mut")
@@ -359,12 +360,12 @@ describe('Decorator', () => {
 			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ (['is', 'isnt'].includes(op) ? 'skip: ' : '') }Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				a ${ op } b;
 				% (expression_comparative)
-			`]] as [string, [NewableFunction, string]]),
+			`]] as const),
 
 			...['===', '!==', '==', '!='].map((op) => [`Decorate(ExpressionEquality ::= ExpressionEquality "${ op }" ExpressionComparative) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				a ${ op } b;
 				% (expression_equality)
-			`]] as [string, [NewableFunction, string]]),
+			`]] as const),
 
 			['Decorate(ExpressionConjunctive ::= ExpressionConjunctive "&&" ExpressionEquality) -> SemanticOperation', [AST.ASTNodeOperation, `
 				a && b;
