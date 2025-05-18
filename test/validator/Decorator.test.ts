@@ -137,31 +137,15 @@ describe('Decorator', () => {
 				% (type_map_literal)
 			`]],
 
-			['Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
-				type T = U.1;
+			...['.', '?.'].map((op) => [`Decorate(PropertyAccessType ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
+				type T = U${ op }1;
 				% (property_access_type)
-			`]],
-			['Decorate(PropertyAccessType ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
-				type T = U.p;
-				% (property_access_type)
-			`]],
-			['Decorate(PropertyAccessType ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
-				type T = U._;
-				% (property_access_type)
-			`]],
+			`]] as const),
 
-			['Decorate(PropertyAccessType ::= "?." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
-				type T = U?.1;
+			...['.', '?.'].flatMap((op) => ['p', '_'].map((keyname) => [`Decorate(PropertyAccessType ::= "${ op }" ${ keyname === '_' ? '"_"' : 'Word' }) -> SemanticKey`, [AST.ASTNodeKey, `
+				type T = U${ op }${ keyname };
 				% (property_access_type)
-			`]],
-			['Decorate(PropertyAccessType ::= "?." Word) -> SemanticKey', [AST.ASTNodeKey, `
-				type T = U?.p;
-				% (property_access_type)
-			`]],
-			['Decorate(PropertyAccessType ::= "?." Word) -> SemanticKey', [AST.ASTNodeKey, `
-				type T = U?._;
-				% (property_access_type)
-			`]],
+			`]] as const)),
 
 			['Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
 				type T = U.p;
@@ -265,22 +249,20 @@ describe('Decorator', () => {
 				% (map_literal)
 			`]],
 
-			['Decorate(PropertyAccess ::= ("." | "?." | "!.") INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
-				v.1;
+			...['.', '?.', '!.'].map((op) => [`Decorate(PropertyAccess ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
+				v${ op }1;
 				% (property_access)
-			`]],
-			['Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey', [AST.ASTNodeKey, `
-				v?.p;
+			`]] as const),
+
+			...['.', '?.', '!.'].flatMap((op) => ['p', '_'].map((keyname) => [`Decorate(PropertyAccess ::= "${ op }" ${ keyname === '_' ? '"_"' : 'Word' }) -> SemanticKey`, [AST.ASTNodeKey, `
+				v${ op }${ keyname };
 				% (property_access)
-			`]],
-			['Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey', [AST.ASTNodeKey, `
-				v?._;
+			`]] as const)),
+
+			...['.', '?.', '!.'].map((op) => [`Decorate(PropertyAccess ::= "${ op }" "[" Expression "]") -> SemanticExpression`, [AST.ASTNodeExpression, `
+				v${ op }[a + b];
 				% (property_access)
-			`]],
-			['Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
-				v!.[a + b];
-				% (property_access)
-			`]],
+			`]] as const),
 
 			['Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
 				v.1 = false;
