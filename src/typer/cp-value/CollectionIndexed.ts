@@ -63,13 +63,13 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	}
 
 	/** @final */
-	public get(index: bigint, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | Null {
+	public get(index: bigint, is_access_maybe: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | Null {
 		const n: number = this.items.length;
 		const i: number = Number(index);
 		return (
 			-n <= i && i < 0 ? this.items[i + n] :
 			0  <= i && i < n ? this.items[i] :
-			access_optional  ? NULL :
+			is_access_maybe  ? NULL :
 			assert.fail(new VoidError01(accessor))
 		);
 	}

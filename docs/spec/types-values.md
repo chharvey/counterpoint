@@ -100,12 +100,14 @@ A **CompletionStructure** is a specific subtype of [Structure](#structure) with
 a mandatory property \`type\` and an optional property \`value\`.
 The value of the \`type\` property must be one of the [enumerated](#enumerated-values) specification values
 *normal*, *break*, *continue*, *return*, or *throw*, which are described below.
-The value of the \`value\` property must be a [Counterpoint Language Value](#Counterpoint-language-types).
+The value of the \`value\` property must be
+a [Counterpoint Specification Value](#counterpoint-specification-types) or
+a [Counterpoint Language Value](#counterpoint-language-types).
 
 Property  | Description
 --------- | -----------
 \`type\`  | the kind of completion structure
-\`value\` | the Counterpoint Language Value carried with the structure
+\`value\` | the Counterpoint Specification/Language Value carried with the structure
 
 Completion structures are the default values returned by all specification algorithms,
 unless explicitly stated otherwise.
@@ -414,7 +416,7 @@ Boolean IsReference(Type t) :=
 		`String`,
 	].
 	4. *Set* `valuetypes` to a reduction of `valuetypes` for each `a` and `b` to *UnwrapAffirm:* `Union(a, b)`.
-	5. *If* *UnwrapAffirm:* `Subtype(t, valuetypes)`:
+	5. *If* *UnwrapAffirm:* `Subtype(t, valuetypes)` is `true`:
 		1. *Return:* `false`.
 	6. *If* `t` is a Tuple or Record type:
 		1. *Return:* `false`.
@@ -472,13 +474,13 @@ The **falsy side** of a type is a type comprising all falsy values assignable to
 
 ```
 Type FalsySide(Type t) :=
-	1. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t)`:
+	1. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t)` is `true`:
 		1. *Return:* `t`.
-	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)`:
+	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)` is `true`:
 		1. *Return:* Never.
 	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
 	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
-	5. *Return:* *UnwrapAffirm:* `Intersection(t, falsy_types)`.
+	5. *Return:* `Intersection(t, falsy_types)`.
 ;
 ```
 
@@ -490,13 +492,13 @@ Equivalently, the **truthy side** of a type comprises all the values in the type
 
 ```
 Type TruthySide(Type t) :=
-	1. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t)`:
+	1. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t)` is `true`:
 		1. *Return:* Never.
-	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)`:
+	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)` is `true`:
 		1. *Return:* `t`.
 	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
 	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
-	5. *Retrn:* *UnwrapAffirm:* `Difference(t, falsy_types)`.
+	5. *Return:* `Difference(t, falsy_types)`.
 ;
 ```
 
@@ -510,17 +512,17 @@ Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
 ```
 Type Intersection(Type a, Type b) :=
 	// 1-5 | `T  & never   == never`
-	1. *If* *UnwrapAffirm:* `IsBottomType(a)` *or* *UnwrapAffirm:* `IsBottomType(b)`:
+	1. *If* *UnwrapAffirm:* `IsBottomType(a)` is `true` *or* *UnwrapAffirm:* `IsBottomType(b)` is `true`:
 		1. *Return:* `Never`.
 	// 1-6 | `T  & unknown == T`
-	2. *If* *UnwrapAffirm:* `IsTopType(a)`:
+	2. *If* *UnwrapAffirm:* `IsTopType(a)` is `true`:
 		1. *Return:* `b`.
-	3. *If* *UnwrapAffirm:* `IsTopType(b)`:
+	3. *If* *UnwrapAffirm:* `IsTopType(b)` is `true`:
 		1. *Return:* `a`.
 	// 3-3 | `A <: B  <->  A  & B == A`
-	4. *If* *UnwrapAffirm:* `Subtype(a, b)`:
+	4. *If* *UnwrapAffirm:* `Subtype(a, b)` is `true`:
 		1. *Return:* `a`.
-	5. *If* *UnwrapAffirm:* `Subtype(b, a)`:
+	5. *If* *UnwrapAffirm:* `Subtype(b, a)` is `true`:
 		1. *Return:* `b`.
 	6. *Return:* a new type with values given by the the intersection of values in `a` and `b`.
 ;
@@ -539,17 +541,17 @@ For example, the type \`Or<Integer, Null>\` contains values of either \`Integer\
 ```
 Type Union(Type a, Type b) :=
 	// 1-7 | `T \| never   == T`
-	1. *If* *UnwrapAffirm:* `IsBottomType(a)`:
+	1. *If* *UnwrapAffirm:* `IsBottomType(a)` is `true`:
 		1. *Return:* `b`.
-	2. *If* *UnwrapAffirm:* `IsBottomType(b)`:
+	2. *If* *UnwrapAffirm:* `IsBottomType(b)` is `true`:
 		1. *Return:* `a`.
 	// 1-8 | `T \| unknown == unknown`
-	3. *If* *UnwrapAffirm:* `IsTopType(a)` *or* *UnwrapAffirm:* `IsTopType(b)`:
+	3. *If* *UnwrapAffirm:* `IsTopType(a)` is `true` *or* *UnwrapAffirm:* `IsTopType(b)` is `true`:
 		1. *Return:* `Unknown`.
 	// 3-4 | `A <: B  <->  A \| B == B`
-	4. *If* *UnwrapAffirm:* `Subtype(a, b)`:
+	4. *If* *UnwrapAffirm:* `Subtype(a, b)` is `true`:
 		1. *Return:* `b`.
-	5. *If* *UnwrapAffirm:* `Subtype(b, a)`:
+	5. *If* *UnwrapAffirm:* `Subtype(b, a)` is `true`:
 		1. *Return:* `a`.
 	6. *Return:* a new type with values given by the the union of values in `a` and `b`.
 ;
@@ -584,38 +586,38 @@ A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignab
 ```
 Boolean Subtype(Type a, Type b) :=
 	// 1-1 | `never <: T`
-	1. *If* *UnwrapAffirm:* `IsBottomType(a)`:
+	1. *If* *UnwrapAffirm:* `IsBottomType(a)` is `true`:
 		1. *Return:* `true`.
 	// 1-3 | `T       <: never  <->  T == never`
-	2. *If* *UnwrapAffirm:* `IsBottomType(b)`:
+	2. *If* *UnwrapAffirm:* `IsBottomType(b)` is `true`:
 		1. *Return:* `IsBottomType(a)`.
 	// 1-4 | `unknown <: T      <->  T == unknown`
-	3. *If* *UnwrapAffirm:* `IsTopType(a)`:
+	3. *If* *UnwrapAffirm:* `IsTopType(a)` is `true`:
 		1. *Return:* `IsTopType(b)`.
 	// 1-2 | `T     <: unknown`
-	4. *If* *UnwrapAffirm:* `IsTopType(b)`:
+	4. *If* *UnwrapAffirm:* `IsTopType(b)` is `true`:
 		1. *Return:* `true`.
 	5. *If* `a` is the intersection of some types `x` and `y`:
 		// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
-		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
+		1. *If* *UnwrapAffirm:* `Subtype(x, b)` is `true` *or* *UnwrapAffirm:* `Subtype(y, b)` is `true`:
 			1. *Return:* `true`.
 		// 3-1 | `A  & B <: A  &&  A  & B <: B`
-		2. *If* *UnwrapAffirm:* `Equal(x, b)` *or* *UnwrapAffirm:* `Equal(y, b)`:
+		2. *If* *UnwrapAffirm:* `Equal(x, b)` is `true` *or* *UnwrapAffirm:* `Equal(y, b)` is `true`:
 			1. *Return:* `true`.
 	6. *If* `b` is the intersection of some types `x` and `y`:
 		// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
-		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *and* *UnwrapAffirm:* `Subtype(a, y)`:
+		1. *If* *UnwrapAffirm:* `Subtype(a, x)` is `true` *and* *UnwrapAffirm:* `Subtype(a, y)` is `true`:
 			1. *Return:* `true`.
 	7. *If* `a` is the union of some types `x` and `y`:
 		// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
-		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *and* *UnwrapAffirm:* `Subtype(y, b)`:
+		1. *If* *UnwrapAffirm:* `Subtype(x, b)` is `true` *and* *UnwrapAffirm:* `Subtype(y, b)` is `true`:
 			1. *Return:* `true`.
 	8. *If* `b` is the union of some types `x` and `y`:
 		// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
-		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+		1. *If* *UnwrapAffirm:* `Subtype(a, x)` is `true` *or* *UnwrapAffirm:* `Subtype(a, y)` is `true`:
 			1. *Return:* `true`.
 		// 3-2 | `A <: A \| B  &&  B <: A \| B`
-		2. *If* *UnwrapAffirm:* `Equal(a, x)` *or* *UnwrapAffirm:* `Equal(a, y)`:
+		2. *If* *UnwrapAffirm:* `Equal(a, x)` is `true` *or* *UnwrapAffirm:* `Equal(a, y)` is `true`:
 			1. *Return:* `true`.
 	9. *If* `a` is a Tuple type *and* `b` is a Tuple type:
 		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
@@ -698,7 +700,7 @@ A type \`‹T›\` is **equal** to type \`‹U›\` iff \`‹T›\` is a subtype
 
 ```
 Boolean Equal(Type a, Type b) :=
-	1. *If* *UnwrapAffirm:* `Subtype(a, b)` *and* *UnwrapAffirm:* `Subtype(b, a)`:
+	1. *If* *UnwrapAffirm:* `Subtype(a, b)` is `true` *and* *UnwrapAffirm:* `Subtype(b, a)` is `true`:
 		1. *Return:* `true`.
 	2. *Else:*
 		1. *Return:* `false`.

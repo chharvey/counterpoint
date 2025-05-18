@@ -11,6 +11,7 @@ import {
 	AST,
 	DECORATOR,
 } from '../../src/index.ts';
+import type {ConstructorType} from '../../src/lib/index.ts';
 
 
 
@@ -21,7 +22,7 @@ describe('Decorator', () => {
 			assert.ok(captures.length, 'could not find any captures.');
 			return captures[0].node;
 		}
-		new Map<string, [NewableFunction, string]>([
+		new Map<string, readonly [ConstructorType<AST.ASTNodeCP>, string]>([
 			['Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey', [AST.ASTNodeKey, `
 				[mut= 42];
 				% (word "mut")
@@ -136,18 +137,15 @@ describe('Decorator', () => {
 				% (type_map_literal)
 			`]],
 
-			['Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
-				type T = U.1;
+			...['.', '?.'].map((op) => [`Decorate(PropertyAccessType ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
+				type T = U${ op }1;
 				% (property_access_type)
-			`]],
-			['Decorate(PropertyAccessType ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
-				type T = U.p;
+			`]] as const),
+
+			...['.', '?.'].flatMap((op) => ['p', '_'].map((keyname) => [`Decorate(PropertyAccessType ::= "${ op }" ${ keyname === '_' ? '"_"' : 'Word' }) -> SemanticKey`, [AST.ASTNodeKey, `
+				type T = U${ op }${ keyname };
 				% (property_access_type)
-			`]],
-			['Decorate(PropertyAccessType ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
-				type T = U._;
-				% (property_access_type)
-			`]],
+			`]] as const)),
 
 			['Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
 				type T = U.p;
@@ -251,22 +249,20 @@ describe('Decorator', () => {
 				% (map_literal)
 			`]],
 
-			['Decorate(PropertyAccess ::= ("." | "?." | "!.") INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
-				v.1;
+			...['.', '?.', '!.'].map((op) => [`${ op === '!.' ? 'skip: ' : '' }Decorate(PropertyAccess ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
+				v${ op }1;
 				% (property_access)
-			`]],
-			['Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey', [AST.ASTNodeKey, `
-				v?.p;
+			`]] as const),
+
+			...['.', '?.', '!.'].flatMap((op) => ['p', '_'].map((keyname) => [`${ op === '!.' ? 'skip: ' : '' }Decorate(PropertyAccess ::= "${ op }" ${ keyname === '_' ? '"_"' : 'Word' }) -> SemanticKey`, [AST.ASTNodeKey, `
+				v${ op }${ keyname };
 				% (property_access)
-			`]],
-			['Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey', [AST.ASTNodeKey, `
-				v?._;
+			`]] as const)),
+
+			...['.', '?.', '!.'].map((op) => [`${ op === '!.' ? 'skip: ' : '' }Decorate(PropertyAccess ::= "${ op }" "[" Expression "]") -> SemanticExpression`, [AST.ASTNodeExpression, `
+				v${ op }[a + b];
 				% (property_access)
-			`]],
-			['Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
-				v!.[a + b];
-				% (property_access)
-			`]],
+			`]] as const),
 
 			['Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
 				v.1 = false;
@@ -343,15 +339,15 @@ describe('Decorator', () => {
 				% (expression_additive)
 			`]],
 
-			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ (['is', 'isnt'].includes(op) ? 'skip: ' : '') }Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, [AST.ASTNodeOperation, `
+			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ ['is', 'isnt'].includes(op) ? 'skip: ' : '' }Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				a ${ op } b;
 				% (expression_comparative)
-			`]] as [string, [NewableFunction, string]]),
+			`]] as const),
 
 			...['===', '!==', '==', '!='].map((op) => [`Decorate(ExpressionEquality ::= ExpressionEquality "${ op }" ExpressionComparative) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				a ${ op } b;
 				% (expression_equality)
-			`]] as [string, [NewableFunction, string]]),
+			`]] as const),
 
 			['Decorate(ExpressionConjunctive ::= ExpressionConjunctive "&&" ExpressionEquality) -> SemanticOperation', [AST.ASTNodeOperation, `
 				a && b;

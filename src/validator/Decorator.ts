@@ -23,6 +23,7 @@ import {
 } from './utils-private.ts';
 import {
 	Operator,
+	type ValidTypeAccessOperator,
 	type ValidAccessOperator,
 	type ValidTypeOperator,
 	type ValidOperatorUnary,
@@ -36,9 +37,9 @@ import {
 
 class Decorator {
 	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
-		[Punctuator.DOT,      Operator.DOT],
-		[Punctuator.OPTDOT,   Operator.OPTDOT],
-		[Punctuator.CLAIMDOT, Operator.CLAIMDOT],
+		[Punctuator.DOT,     Operator.DOT],
+		[Punctuator.DOT_MAY, Operator.DOT_MAY],
+		[Punctuator.DOT_RES, Operator.DOT_RES],
 	]);
 
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, ValidTypeOperator> = new Map<Punctuator | Keyword, ValidTypeOperator>([
@@ -227,6 +228,7 @@ class Decorator {
 			['type_compound', (node) => (
 				(isSyntaxNodeType(node.children[1], 'property_access_type')) ? new AST.ASTNodeTypeAccess(
 					node as SyntaxNodeType<'type_compound'>,
+					Decorator.ACCESSORS.get(node.children[1].children[0].text as Punctuator) as ValidTypeAccessOperator,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 					this.decorateTS(node.children[1]),
 				) :

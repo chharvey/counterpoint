@@ -124,9 +124,9 @@ Decorate(TypeUnit ::= TypeMapLiteral) -> SemanticTypeMap
 
 
 
-Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndex
+Decorate(PropertyAccessType ::= ("." | "?.") INTEGER) -> SemanticIndex
 	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
-Decorate(PropertyAccessType ::= "." Word) -> SemanticKey
+Decorate(PropertyAccessType ::= ("." | "?.") Word) -> SemanticKey
 	:= Decorate(Word);
 
 Decorate(GenericCall ::= "." GenericArguments) -> Sequence<SemanticType>
@@ -137,7 +137,7 @@ Decorate(GenericCall ::= "." GenericArguments) -> Sequence<SemanticType>
 Decorate(TypeCompound ::= TypeUnit) -> SemanticType
 	:= Decorate(TypeUnit);
 Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess
-	:= (SemanticTypeAccess
+	:= (SemanticTypeAccess[kind=AccessKind(PropertyAccessType)]
 		Decorate(TypeCompound)
 		Decorate(PropertyAccessType)
 	);
@@ -644,9 +644,9 @@ ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode__List ","? ParseNode
 
 
 
-AccessKind(PropertyAccess ::= "."  (INTEGER | Word | "[" Expression "]")) -> NORMAL   := NORMAL;
-AccessKind(PropertyAccess ::= "?." (INTEGER | Word | "[" Expression "]")) -> OPTIONAL := OPTIONAL;
-AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> CLAIM    := CLAIM;
+AccessKind(PropertyAccess ::= "."  (INTEGER | Word | "[" Expression "]")) -> NORMAL := NORMAL;
+AccessKind(PropertyAccess ::= "?." (INTEGER | Word | "[" Expression "]")) -> MAYBE  := MAYBE;
+AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> RESULT := RESULT;
 
 
 

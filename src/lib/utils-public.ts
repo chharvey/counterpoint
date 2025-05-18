@@ -96,7 +96,7 @@ export function forEither<T>(array: readonly T[], callback: (item: T, i: number,
 		return;
 	}
 	throw (
-		thrown.length >= 2 ? new AggregateError(thrown) :
+		thrown.length >= 2 ? new AggregateError(thrown, thrown.map((err) => err.message).join('\n')) :
 		thrown.length      ? thrown[0] :
 		new Error('An unexpected error occurred.')
 	);

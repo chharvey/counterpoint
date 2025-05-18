@@ -3,11 +3,15 @@ import * as xjs from 'extrajs';
 import {
 	AST,
 	TYPE,
+	TypeErrorInvalidOperation,
 	TypeErrorNoEntry,
 } from '../../../src/index.ts';
 import type {ConstructorType} from '../../../src/lib/index.ts';
 import {typeUnit} from '../../helpers.ts';
-import {extract_lines} from '../../utils.ts';
+import {
+	extract_lines,
+	repeat,
+} from '../../utils.ts';
 
 
 
@@ -33,23 +37,27 @@ describe('ASTNodeTypeAccess', () => {
 				// if type-checking fails, proceed to `assert.throws` below
 			}
 			return expecteds.some((it) => it instanceof Function)
-				? xjs.Array.forEachAggregated(statements, (stmt, i) => {
+				? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 					const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
 					return expected instanceof Function
 						? assert.throws(() => stmt.assigned.eval(), expected)
 						: assert.deepStrictEqual(stmt.assigned.eval(), expected);
-				})
+				}))
 				: assert.deepStrictEqual(
 					statements.map((stmt) => stmt.assigned.eval()),
 					expecteds,
 				);
 		}
 
-		context('access type: access by index.', () => {
+
+		context('access kind: normal access (`a.‹b›`).', () => {
 			it('returns individual entry types.', () => {
 				testTypeEvals(`
 					type TupC = [1,   2.0,   "three"];
 					type TupV = [int, float, str];
+
+					type RecC = [a: 1,   b: 2.0,   _: "three"];
+					type RecV = [a: int, b: float, _: str];
 
 					type A1 = TupC.0;  % type \`1\`
 					type A2 = TupC.1;  % type \`2.0\`
@@ -63,46 +71,6 @@ describe('ASTNodeTypeAccess', () => {
 					type B4 = TupV.-3; % type \`int\`
 					type B5 = TupV.-2; % type \`float\`
 					type B6 = TupV.-1; % type \`str\`
-				`, 2, [
-					typeUnit(1n),
-					typeUnit(2.0),
-					typeUnit('three'),
-					TYPE.INT,
-					TYPE.FLOAT,
-					TYPE.STR,
-					typeUnit(1n),
-					typeUnit(2.0),
-					typeUnit('three'),
-					TYPE.INT,
-					TYPE.FLOAT,
-					TYPE.STR,
-				]);
-			});
-			it('unions with void if entry is optional.', () => {
-				testTypeEvals(`
-					type TupoC = [1,   2.0,   ?: "three"];
-					type TupoV = [int, float, ?: str];
-
-					type D1 = TupoC.2; % type \`"three" | void\`
-					type D2 = TupoV.2; % type \`str | void\`
-				`, 2, [
-					typeUnit('three').union(TYPE.VOID),
-					TYPE.STR.union(TYPE.VOID),
-				]);
-			});
-			it('throws when index is out of bounds.', () => {
-				xjs.Array.forEachAggregated(extract_lines(`
-					[1, 2.0, "three"].3
-					[1, 2.0, "three"].-4
-				`), (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry));
-			});
-		});
-
-		context('access type: access by key.', () => {
-			it('returns individual entry types.', () => {
-				testTypeEvals(`
-					type RecC = [a: 1,   b: 2.0,   _: "three"];
-					type RecV = [a: int, b: float, _: str];
 
 					type C1 = RecC.a; % type \`1\`
 					type C2 = RecC.b; % type \`2.0\`
@@ -110,7 +78,20 @@ describe('ASTNodeTypeAccess', () => {
 					type C4 = RecV.a; % type \`int\`
 					type C5 = RecV.b; % type \`float\`
 					type C6 = RecV._; % type \`str\`
-				`, 2, [
+				`, 4, [
+					typeUnit(1n),
+					typeUnit(2.0),
+					typeUnit('three'),
+					TYPE.INT,
+					TYPE.FLOAT,
+					TYPE.STR,
+					typeUnit(1n),
+					typeUnit(2.0),
+					typeUnit('three'),
+					TYPE.INT,
+					TYPE.FLOAT,
+					TYPE.STR,
+
 					typeUnit(1n),
 					typeUnit(2.0),
 					typeUnit('three'),
@@ -119,20 +100,73 @@ describe('ASTNodeTypeAccess', () => {
 					TYPE.STR,
 				]);
 			});
-			it('unions with void if entry is optional.', () => {
+			it('throws when entry is optional.', () => {
 				testTypeEvals(`
+					type TupoC = [1,   2.0,   ?: "three"];
+					type TupoV = [int, float, ?: str];
+
 					type RecoC = [a: 1,   b?: 2.0,   c: "three"];
 					type RecoV = [a: int, b?: float, c: str];
 
-					type E1 = RecoC.b; % type \`2.0 | void\`
-					type E2 = RecoV.b; % type \`float | void\`
-				`, 2, [
-					typeUnit(2.0).union(TYPE.VOID),
-					TYPE.FLOAT.union(TYPE.VOID),
+					type D1 = TupoC.2;
+					type D2 = TupoV.2;
+
+					type E1 = RecoC.b;
+					type E2 = RecoV.b;
+				`, 4, repeat(TypeErrorInvalidOperation, 4));
+			});
+			it('throws when base object is of incorrect type.', () => {
+				xjs.Array.forEachAggregated(extract_lines(`
+					List.<int>.1
+					Dict.<int>.b
+				`), (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry, src));
+			});
+			it('throws when index is out of bounds / when key is out of range.', () => {
+				xjs.Array.forEachAggregated(extract_lines(`
+					[1, 2.0, "three"].3
+					[1, 2.0, "three"].-4
+					[a: 1, b: 2.0, c: "three"].d
+				`), (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry));
+			});
+		});
+
+
+		context('access kind: maybe access (`a?.‹b›`).', () => {
+			it('unions with null if entry is optional.', () => {
+				testTypeEvals(`
+					type TupoC = [1,   2.0,   ?: "three"];
+					type TupoV = [int, float, ?: str];
+
+					type RecoC = [a: 1,   b?: 2.0,   c: "three"];
+					type RecoV = [a: int, b?: float, c: str];
+
+					type D1 = TupoC?.2; % type \`"three" | null\`
+					type D2 = TupoV?.2; % type \`str | null\`
+
+					type E1 = RecoC?.b; % type \`2.0 | null\`
+					type E2 = RecoV?.b; % type \`float | null\`
+				`, 4, [
+					typeUnit('three').union(TYPE.NULL),
+					TYPE.STR.union(TYPE.NULL),
+
+					typeUnit(2.0).union(TYPE.NULL),
+					TYPE.FLOAT.union(TYPE.NULL),
 				]);
 			});
-			it('throws when key is out of range.', () => {
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource('[a: 1, b: 2.0, c: "three"].d').eval(), TypeErrorNoEntry);
+			it('throws when entry is not optional.', () => {
+				testTypeEvals(`
+					type TupoC = [1,   2.0,   "three"];
+					type TupoV = [int, float, str];
+
+					type RecoC = [a: 1,   b: 2.0,   c: "three"];
+					type RecoV = [a: int, b: float, c: str];
+
+					type D1 = TupoC?.2;
+					type D2 = TupoV?.2;
+
+					type E1 = RecoC?.b; % type \`2.0 | null\`
+					type E2 = RecoV?.b; % type \`float | null\`
+				`, 4, repeat(TypeErrorInvalidOperation, 4));
 			});
 		});
 	});
