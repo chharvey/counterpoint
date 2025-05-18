@@ -202,6 +202,7 @@ export default [
 			'func-names':                                     ['error', 'never'],
 			'@typescript-eslint/no-import-type-side-effects': 'error',
 			'prefer-arrow-callback':                          ['error', {allowUnboundThis: false}],
+			'require-await':                                  'error',
 
 			/* ### eslint-plugin-import: Helpful Warnings */
 			'@import/no-deprecated':         'warn',
@@ -256,16 +257,19 @@ export default [
 			// Comment why the override is needed.
 
 			/* ## Overrides of `tseslint.configs.recommendedTypeCheckedOnly` */
-			'@typescript-eslint/no-unsafe-enum-comparison':     'off', // some enums have transparent values
-			'@typescript-eslint/restrict-template-expressions': 'off', // template interpolation is designed for this
+			'@typescript-eslint/no-unsafe-enum-comparison':     'off',   // some enums have transparent values
+			'@typescript-eslint/restrict-template-expressions': 'off',   // template interpolation is designed for this
+			'@typescript-eslint/require-await':                 'off',   // disallow functions to be `async` without containing an `await`, even if they are promise-returning
+			'require-await':                                    'error', // turn eslint’s version back on
 
 			/* ## Overrides of `tseslint.configs.stylisticTypeCheckedOnly` */
 			'@typescript-eslint/prefer-regexp-exec': 'off', // `String#match` is more ergonomic
 
 			/* # Best Practices */
 			/* ## Conciseness */
-			'@typescript-eslint/no-unnecessary-condition':      'error',
-			'@typescript-eslint/no-unnecessary-type-arguments': 'error',
+			'@typescript-eslint/no-unnecessary-condition':           'error',
+			'@typescript-eslint/no-unnecessary-template-expression': 'error',
+			'@typescript-eslint/no-unnecessary-type-arguments':      'error',
 
 			/* ## Function Design */
 			'@typescript-eslint/return-await': 'error',
