@@ -7,7 +7,7 @@ import {
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
-	VoidError01,
+	VoidErrorOutOfBounds,
 } from '../../../src/index.ts';
 import {
 	type ConstructorType,
@@ -350,7 +350,7 @@ describe('ASTNodeAccess', () => {
 					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), assert.AssertionError));
 				});
 				it('throws when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), VoidError01));
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), VoidErrorOutOfBounds));
 				});
 			});
 		});
@@ -473,9 +473,9 @@ describe('ASTNodeAccess', () => {
 				});
 				it('when accessor expression is out of bounds/range, throws for folded objects, returns null for unfolded objects.', () => {
 					testExprValues(ERRS, [
-						...repeat(VoidError01, 3),
+						...repeat(VoidErrorOutOfBounds, 3),
 						VALUE.FALSE,
-						VoidError01,
+						VoidErrorOutOfBounds,
 
 						...repeat(null, 5),
 					]);

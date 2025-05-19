@@ -877,11 +877,11 @@ elements.[0.5 * 2]; %> TypeError % expected int but found float
 ```
 
 When the the compiler can determine if the index is out-of-bounds (for example if the list and index are foldable),
-then a VoidError is reported at compile-time.
+then a VoidErrorOutOfBounds is reported at compile-time.
 (This differs from a tuple, where a TypeErrorNoEntry would be reported.)
 ```
 let i: int = 4;
-elements.[i];   %> VoidError
+elements.[i];   %> VoidErrorOutOfBounds
 ```
 Most lists are dynamic and their count is unknown by the compiler, so we won’t always be warned when the index is out of bounds.
 In these cases, the typer will still analyze the expression, but an ExceptionIndexOutOfBounds is thrown at runtime.
@@ -944,11 +944,11 @@ json_data.["so-crates".replace.("-", "")]; % computed strings may be given
 ```
 
 When the the compiler can determine if the key is out-of-range (for example if the dict and key are foldable),
-then a VoidError is reported at compile-time.
+then a VoidErrorOutOfBounds is reported at compile-time.
 (This differs from a record, where a TypeErrorNoEntry would be reported.)
 ```
 let s: sym = @pythagoras;
-elements.[s];             %> VoidError
+elements.[s];             %> VoidErrorOutOfBounds
 ```
 Most dicts are dynamic and their range of keys is unknown by the compiler, so we won’t always be warned when the key is out of range.
 In these cases, the typer will still analyze the expression, but an ExceptionKeyOutOfRange is thrown at runtime.
@@ -1102,10 +1102,10 @@ bases.["""{{ 2 }}nd"""]; %== ["what"]
 bases.[3].["i"];         %== {"don’t" -> "know"}
 ```
 
-A VoidError is produced when the compiler can determine if the antecedent does not exist.
+A VoidErrorOutOfBounds is produced when the compiler can determine if the antecedent does not exist.
 ```
 let a: str = "3rd";
-bases.[a];          %> VoidError
+bases.[a];          %> VoidErrorOutOfBounds
 ```
 If the compiler can’t compute the antecedent, it won’t error at all,
 but this means an Exception could be thrown at runtime.
