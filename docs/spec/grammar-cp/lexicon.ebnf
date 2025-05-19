@@ -45,7 +45,6 @@ Punctuator :::=
 
 KeywordType :::=
 	| "never"
-	| "void"
 	| "bool"
 	| "sym"
 	| "int"
@@ -72,6 +71,7 @@ KeywordOther :::=
 		| "type"
 		| "let"
 		| "_"
+		| "void"
 	// modifier
 		| "var"
 ;

@@ -23,6 +23,7 @@ Word ::=
 		| "type"
 		| "let"
 		| "_"
+		| "void"
 	// modifier
 		| "var"
 	| KEYWORD_TYPE

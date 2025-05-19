@@ -28,7 +28,7 @@ describe('Decorator', () => {
 				% (word "mut")
 			`]],
 			['Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey', [AST.ASTNodeKey, `
-				[void= 42];
+				[bool= 42];
 				% (word (keyword_type))
 			`]],
 			['Decorate(Word ::= KEYWORD_VALUE) -> SemanticKey', [AST.ASTNodeKey, `

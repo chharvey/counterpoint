@@ -60,7 +60,6 @@ function buildTest(title: string, source: string, expected: string): string {
 		KEYWORD_TYPE: [
 			xjs.String.dedent`
 				type T = never;
-				type T = void;
 				type T = bool;
 				type T = sym;
 				type T = int;
@@ -69,7 +68,6 @@ function buildTest(title: string, source: string, expected: string): string {
 				type T = unknown;
 			`,
 			sourceTypes(
-				s('keyword_type'),
 				s('keyword_type'),
 				s('keyword_type'),
 				s('keyword_type'),
