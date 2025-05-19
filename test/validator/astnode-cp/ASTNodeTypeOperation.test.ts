@@ -44,7 +44,6 @@ describe('ASTNodeTypeOperation', () => {
 					'mut [a: int, b: float, c: str]',
 					'mut int[3]',
 					'mut never',
-					'mut void',
 					'mut null',
 					'mut bool',
 					'mut int',

@@ -409,7 +409,6 @@ Boolean IsReference(Type t) :=
 	2. *Assert:* `t` is a Counterpoint Language Type.
 	3. *Let* `valuetypes` be a new Sequence [
 		`Never`,
-		`Void`,
 		`Null`,
 		`Boolean`,
 		`Number`,

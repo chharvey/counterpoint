@@ -10,9 +10,8 @@ import {
 import {
 	intersectionRules,
 	subtypeRules,
-	type Type,
+	Type,
 } from './Type.ts';
-import {ValueType} from './ValueType.ts';
 
 
 
@@ -20,13 +19,17 @@ import {ValueType} from './ValueType.ts';
  * Class for constructing the `void` type.
  * @final
  */
-export class Void extends ValueType {
+export class Void extends Type {
 	public constructor() {
 		super(false);
 	}
 
 	public override toString(): string {
 		return 'void';
+	}
+
+	public override get isReference(): boolean {
+		throw new Error();
 	}
 
 	public override includes(_v: VALUE.Value): boolean {
