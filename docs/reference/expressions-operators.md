@@ -778,8 +778,10 @@ Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
 
 ### Type Property Access
 ```
-<Type> `.` int-literal
-<Type> `.` word
+<Type> `.`  int-literal
+<Type> `.`  word
+<Type> `?.` int-literal
+<Type> `?.` word
 ```
 The **type property accesss** syntax for types is analogous to the property access syntax of values.
 It accesses the index or key of a tuple or record type respectively.
@@ -791,7 +793,7 @@ type T3 = T.3;             %> TypeError
 
 type R = [a: bool, b?: int, c: str];
 type Ra = R.a;                       %== bool
-type Rc = R.b;                       %== int | void
+type Rc = R?.b;                      %== int | null
 type Rd = R.d;                       %> TypeError
 ```
 

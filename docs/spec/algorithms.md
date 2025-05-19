@@ -565,7 +565,7 @@ None! ValidateAccessKind(Or<NORMAL, MAYBE, RESULT> access_kind, Boolean is_entry
 
 ## UpdateAccessedType
 Possibly modifies the type of an accessed bound property of a data type.
-Under maybe access, unions with Null; under result access, subtracts Void; else returns unmodified type.
+Under maybe access, unions with Null; else returns unmodified type.
 ```
 Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
 	1. *If* `access_kind` is `MAYBE`:

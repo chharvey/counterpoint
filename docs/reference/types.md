@@ -880,7 +880,7 @@ When the the compiler can determine if the index is out-of-bounds (for example i
 then a VoidError is reported at compile-time.
 (This differs from a tuple, where a TypeErrorNoEntry would be reported.)
 ```
-let i: int = 5;
+let i: int = 4;
 elements.[i];   %> VoidError
 ```
 Most lists are dynamic and their count is unknown by the compiler, so we won’t always be warned when the index is out of bounds.
