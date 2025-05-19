@@ -158,35 +158,31 @@ describe('ASTNodeOperation', () => {
 
 			context('with constant folding off.', () => {
 				describe('[operator=NOT]', () => {
-					it('returns type `true` for a subtype of `void | null | false`.', () => {
+					it('returns type `true` for a subtype of `null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null = null;
 							let var b: null | false = null;
-							let var c: null | void = null;
 							!a;
 							!b;
-							!c;
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						return xjs.Array.forEachAggregated(goal.children.slice(3), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
+						return xjs.Array.forEachAggregated(goal.children.slice(2), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
-					it('returns type `bool` for a supertype of `void` or a supertype of `null` or a supertype of `false`.', () => {
+					it('returns type `bool` for a supertype of `T narrows null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null | int = null;
 							let var b: null | int = 42;
 							let var c: bool = false;
 							let var d: bool | float = 4.2;
-							let var e: str | void = "hello";
 							!a;
 							!b;
 							!c;
 							!d;
-							!e;
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						return xjs.Array.forEachAggregated(goal.children.slice(5), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
+						return xjs.Array.forEachAggregated(goal.children.slice(4), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
 					it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -214,18 +210,16 @@ describe('ASTNodeOperation', () => {
 					});
 				});
 				describe('[operator=EMP]', () => {
-					it('returns type `true` for a subtype of `void | null | false`.', () => {
+					it('returns type `true` for a subtype of `null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null = null;
 							let var b: null | false = null;
-							let var c: null | void = null;
 							?a;
 							?b;
-							?c;
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						return xjs.Array.forEachAggregated(goal.children.slice(3), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
+						return xjs.Array.forEachAggregated(goal.children.slice(2), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
 					it('returns type `bool` for anything else.', () => {
 						[
@@ -246,20 +240,18 @@ describe('ASTNodeOperation', () => {
 							let var b: null | int = 42;
 							let var c: bool = false;
 							let var d: bool | float = 4.2;
-							let var e: str | void = "hello";
 							let var f: int = 42;
 							let var g: float = 4.2;
 							?a;
 							?b;
 							?c;
 							?d;
-							?e;
 							?f;
 							?g;
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						return xjs.Array.forEachAggregated(goal.children.slice(7), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
+						return xjs.Array.forEachAggregated(goal.children.slice(6), (stmt) => assert.deepStrictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
 				});
 			});
@@ -1209,48 +1201,42 @@ describe('ASTNodeOperation', () => {
 			});
 			context('with constant folding off.', () => {
 				describe('[operator=AND]', () => {
-					it('returns `left` if it’s a subtype of `void | null | false`.', () => {
+					it('returns `left` if it’s a subtype of `null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null = null;
 							let var b: null | false = null;
-							let var c: null | void = null;
 							a && 42;
 							b && 42;
-							c && 42;
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
+						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL,
 							TYPE.NULL.union(TYPE.FALSE),
-							TYPE.NULL.union(TYPE.VOID),
 						]);
 					});
-					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
+					it('returns `T | right` if left is a supertype of `T narrows null | false`.', () => {
 						const hello: TYPE.Unit<VALUE.String> = typeUnit('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null | int = null;
 							let var b: null | int = 42;
 							let var c: bool = false;
 							let var d: bool | float = 4.2;
-							let var e: str | void = "hello";
 							a && "hello";
 							b && "hello";
 							c && "hello";
 							d && "hello";
-							e && 42;
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						return assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
+						return assertEqualTypes(goal.children.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL.union(hello),
 							TYPE.NULL.union(hello),
 							TYPE.FALSE.union(hello),
 							TYPE.FALSE.union(hello),
-							TYPE.VOID.union(typeUnit(42n)),
 						]);
 					});
-					it('returns `right` if left does not contain `void` nor `null` nor `false`.', () => {
+					it('returns `right` if left does not contain `null` nor `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: int = 42;
 							let var b: float = 4.2;
@@ -1266,48 +1252,42 @@ describe('ASTNodeOperation', () => {
 					});
 				});
 				describe('[operator=OR]', () => {
-					it('returns `right` if left is a subtype of `void | null | false`.', () => {
+					it('returns `right` if left is a subtype of `null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null = null;
 							let var b: null | false = null;
-							let var c: null | void = null;
 							a || false;
 							b || 42;
-							c || 4.2;
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
+						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.FALSE,
 							typeUnit(42n),
-							typeUnit(4.2),
 						]);
 					});
-					it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
+					it('returns `(left - T) | right` if left is a supertype of `T narrows null | false`.', () => {
 						const hello: TYPE.Unit<VALUE.String> = typeUnit('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: null | int = null;
 							let var b: null | int = 42;
 							let var c: bool = false;
 							let var d: bool | float = 4.2;
-							let var e: str | void = "hello";
 							a || "hello";
 							b || "hello";
 							c || "hello";
 							d || "hello";
-							e || 42;
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
+						assertEqualTypes(goal.children.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.INT.union(hello),
 							TYPE.INT.union(hello),
 							TYPE.TRUE.union(hello),
 							TYPE.TRUE.union(TYPE.FLOAT).union(hello),
-							TYPE.STR.union(typeUnit(42n)),
 						]);
 					});
-					it('returns `left` if it does not contain `void` nor `null` nor `false`.', () => {
+					it('returns `left` if it does not contain `null` nor `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let var a: int = 42;
 							let var b: float = 4.2;
