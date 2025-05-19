@@ -33,7 +33,6 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	private static keywordType(source: string): TYPE.Type {
 		return (
 			source === Keyword.NEVER   ? TYPE.NEVER :
-			source === Keyword.VOID    ? TYPE.VOID :
 			source === Keyword.NULL    ? TYPE.NULL :
 			source === Keyword.BOOL    ? TYPE.BOOL :
 			source === Keyword.SYM     ? TYPE.SYM :

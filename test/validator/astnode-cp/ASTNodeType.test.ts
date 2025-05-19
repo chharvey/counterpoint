@@ -115,10 +115,9 @@ describe('ASTNodeType', () => {
 			});
 			it('computes the value of keyword type.', () => {
 				assert.deepStrictEqual(extract_tokens(`
-					never  void  bool  sym  int  float  str  unknown
+					never  bool  sym  int  float  str  unknown
 				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NEVER,
-					TYPE.VOID,
 					TYPE.BOOL,
 					TYPE.SYM,
 					TYPE.INT,
