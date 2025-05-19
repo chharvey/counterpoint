@@ -658,14 +658,6 @@ let x2: bool? = x?.2;
 ```
 If `x.2` exists, the expression `x?.2` produces that value; otherwise it produces `null`.
 
-We can use the [result access operator](./expressions-operators.md#result-access) `!.`
-to tell the type-checker that the property definitely exists and is not type `void`.
-It should only be used if we are certain the property exists.
-```
-let x2: bool = x!.2;
-```
-The expression `x!.2` behaves just like `x.2`, except that it bypasses the compiler’s TypeError.
-
 
 ### Records
 Records are fixed-size unordered lists of keyed values. Key–value pairs are called **properties**,
@@ -821,14 +813,6 @@ Use the [maybe access operator](./expressions-operators.md#maybe-access) `?.` to
 let ym: str? = y?.middlename;
 ```
 If `y.middlename` exists, the expression `y?.middlename` produces that value; otherwise it produces `null`.
-
-We can use the [result access operator](./expressions-operators.md#result-access) `!.`
-to tell the type-checker that the property definitely exists and is not type `void`.
-It should only be used if we are certain the property exists.
-```
-let ym: str = y!.middlename;
-```
-The expression `y!.middlename` behaves just like `y.middlename`, except that it bypasses the compiler’s TypeError.
 
 
 ### Lists

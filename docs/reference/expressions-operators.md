@@ -304,26 +304,7 @@ dict?.[@prop]; %: float | null
 ```
 
 #### Result Access
-The **result access** syntax is just like regular property access, except that
-it makes a **claim** (a compile-time type assertion) that the accessed property
-is not of type `void`. This is useful when accessing optional entries of compound types.
-
-Result access has the same runtime behavior of regular property access.
-Its purpose is to tell the type-checker,
-“I know what I’m doing; This property exists and its type is not type `void`.”
-```
-let item: [str, ?: int] = ["apples", 42];
-let quantity: int = item!.1;
-```
-The expression `item!.1` has type `int`, despite being an optional entry.
-It will produce the value `42` at runtime.
-Note that bypassing the compiler’s type-checking process should be done carefully.
-If not used correctly, it could lead to runtime errors.
-```
-let item: [str, ?: int] = ["apples"];
-let quantity: int = item!.1; % runtime error!
-```
-An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
+// TODO: v0.5.0
 
 
 ### Logical Negation, Emptiness
