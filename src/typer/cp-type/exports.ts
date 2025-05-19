@@ -37,4 +37,4 @@ export const SYM_NEVER: Unit<VALUE.Symbol> = VALUE.SYM_NEVER.toType();
 
 
 
-export const FALSY_TYPES: ReadonlySet<Type> = new Set([VOID, NULL, FALSE]);
+export const FALSY_TYPES: ReadonlySet<Type> = new Set([NULL, FALSE]);

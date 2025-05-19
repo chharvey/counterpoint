@@ -138,7 +138,7 @@ describe('Type', () => {
 	specify('#falsySide', () => {
 		new Map<TYPE.Type, TYPE.Type>([
 			[TYPE.NEVER,   TYPE.NEVER],
-			[TYPE.UNKNOWN, TYPE.VOID.union(TYPE.NULL).union(TYPE.FALSE)],
+			[TYPE.UNKNOWN, TYPE.NULL.union(TYPE.FALSE)],
 			[TYPE.OBJ,     TYPE.NEVER],
 			[TYPE.NULL,    TYPE.NULL],
 			[TYPE.BOOL,    TYPE.FALSE],

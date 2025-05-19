@@ -330,7 +330,7 @@ export abstract class Type {
 
 	/**
 	 * Is this type definitely a ”falsy” type?
-	 * @return  whether this is a subtype of `void | null | false`
+	 * @return  whether this is a subtype of `null | false`
 	 * @final
 	 */
 	@memoizeGetter
@@ -340,7 +340,7 @@ export abstract class Type {
 
 	/**
 	 * Is this type definitely a “truthy” type?
-	 * @return  `false` if this is the Bottom Type or is a supertype of any of `void` or `null` or `false`; otherwise `true`
+	 * @return  `false` if this is the Bottom Type or is a supertype of any of `null` or `false`; otherwise `true`
 	 * @final
 	 */
 	@memoizeGetter

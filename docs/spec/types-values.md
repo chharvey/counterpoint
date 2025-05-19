@@ -439,12 +439,12 @@ A type \`‹T›\` is the **top type**, named Unknown, iff \`‹T›\` contains 
 
 ### IsDefinitelyFalsy
 A type is **definitely falsy** if it is a subtype of any of the falsy types or their union:
-Void, Null, or the unit type containing exactly the `false` value.
+Null or the unit type containing exactly the `false` value.
 
 ```
 Boolean IsDefinitelyFalsy(Type t) :=
 	1. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
-	2. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
+	2. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Null, false_type)`.
 	3. *Return:* `Subtype(t, falsy_types)`.
 ;
 ```
@@ -452,14 +452,14 @@ Boolean IsDefinitelyFalsy(Type t) :=
 
 ### IsDefinitelyTruthy
 A type is **definitely truthy** if it is not the bottom type and it is not a supertype of any of the falsy types:
-Void, Null, or the unit type containing exactly the `false` value.
+Null or the unit type containing exactly the `false` value.
 
 ```
 Boolean IsDefinitelyTruthy(Type t) :=
 	1. *If* *UnwrapAffirm:* `IsBottomType(t)` is `true`:
 		1. *Return:* `false`.
 	2. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
-	3. *Let* `falsy_types` be a new Sequence [Void, Null, `false_type`].
+	3. *Let* `falsy_types` be a new Sequence [Null, `false_type`].
 	4. *For each* `falsy_type` in `falsy_types`:
 		1. *If* *UnwrapAffirm:* `Subtype(falsy_type, t)`:
 			1. *Return:* `false`.
@@ -479,7 +479,7 @@ Type FalsySide(Type t) :=
 	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)` is `true`:
 		1. *Return:* Never.
 	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
-	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
+	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Null, false_type)`.
 	5. *Return:* `Intersection(t, falsy_types)`.
 ;
 ```
@@ -497,7 +497,7 @@ Type TruthySide(Type t) :=
 	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)` is `true`:
 		1. *Return:* `t`.
 	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
-	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
+	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Null, false_type)`.
 	5. *Return:* `Difference(t, falsy_types)`.
 ;
 ```
