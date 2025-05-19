@@ -14,7 +14,6 @@ import {
 	Union,
 	Difference,
 	NEVER,
-	VOID,
 	UNKNOWN,
 	NULL,
 	BOOL,
@@ -46,7 +45,6 @@ export function typeConstant(
 			returned.isBottomType ? NEVER :
 			returned.isTopType    ? UNKNOWN :
 			[
-				VOID,
 				NULL,
 				BOOL,
 				SYM,
