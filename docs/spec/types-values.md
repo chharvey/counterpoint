@@ -198,7 +198,6 @@ and [reference objects](./intrinsics.md#reference-objects) respectively.
 Simple types do not comprise other types.
 
 - [Never](#never)
-- [Void](#void)
 - [Unknown](#unknown)
 - [Null](#null)
 - [Boolean](#boolean)
@@ -217,21 +216,6 @@ Never is a subtype of every type,
 and no type (except Never itself) is a subtype of Never.
 Never is the the “absorption element” of the [intersection](#intersection) operation
 and the “identity element” of the [union](#union) operation.
-
-#### Void
-The **Void** type represents the completion of an evaluation but the absence of a value.
-It is the return type of a function that may have side-effects but that does not return a value.
-It is also partly the type of an optional entry in a collection.
-
-There are no values assignable to Void, but it is different from Never in that
-it does not behave like the Bottom Type.
-Void is not a subtype of every other type; in fact, the only types of which Void is a subtype
-are type unions that include it in their construction.
-In general, given a type \`‹T›\`,
-the [intersection](#intersection) \`And<‹T›, Void>\` is not necessarily the same as Void, and
-the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T›\`.
-
-The Void type is also unlike Null in that no Counterpoint Language Value has type Void.
 
 #### Unknown
 The **Unknown** type is the Top Type and it represents the set of all possible values.

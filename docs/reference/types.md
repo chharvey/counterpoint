@@ -39,16 +39,6 @@ Type `never` is most commonly a result of a type operation that produces the Bot
 for example, the intersection of two disjoint types.
 
 
-### `void`
-Type `void` represents the completion of an evaluation but the absence of a value.
-It is used to describe functions that complete execution (and may have side-effects), but return no value.
-(Unlike `never`, `void` indicates that the function has returned.)
-Type `void` is also used to represent part of the types of optional entries in collections,
-such as a record’s optional property.
-There are no values assignble to `void`, but some expressions may have type `void`,
-for example, property access and function calls.
-
-
 ### `unknown`
 Type  `unknown` is at the top of the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
@@ -493,7 +483,6 @@ I {{ "\u{2764}" }} Unicode!
 
 ### `Object`
 Type `Object` is the type of all values, that is, every value is assignable to `Object`.
-Expressions of type `void` cannot hold values, so they are not assignable to `Object`.
 
 
 
