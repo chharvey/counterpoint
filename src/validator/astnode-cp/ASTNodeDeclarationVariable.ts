@@ -33,12 +33,16 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		public  readonly unfixed:  boolean,
 		private readonly assignee: ASTNodeVariable | null,
 		public readonly typenode: ASTNodeType,
-		public readonly assigned: ASTNodeExpression,
+		public readonly assigned: ASTNodeExpression | null,
 	) {
 		super(
 			start_node,
 			{unfixed},
-			(assignee) ? [assignee, typenode, assigned] : [typenode, assigned],
+			[
+				...(assignee ? [assignee] : []),
+				typenode,
+				...(assigned ? [assigned] : []),
+			],
 		);
 	}
 

@@ -619,21 +619,29 @@ class Decorator {
 				this.decorateTS(node.children[3] as SyntaxNodeSupertype<'type'>),
 			)],
 
-			['declaration_variable', (node) => (node.children.length === 7)
-				? new AST.ASTNodeDeclarationVariable(
+			['declaration_variable', (node) => (
+				node.children.length === 7 ? new AST.ASTNodeDeclarationVariable(
 					node as SyntaxNodeType<'declaration_variable'>,
 					false,
 					isSyntaxNodeType(node.children[1], 'identifier') ? new AST.ASTNodeVariable(node.children[1]) : null,
 					this.decorateTypeNode (node.children[3] as SyntaxNodeSupertype<'type'>),
 					this.decorateTS       (node.children[5] as SyntaxNodeSupertype<'expression'>),
-				)
-				: (assert.strictEqual(node.children.length, 8), new AST.ASTNodeDeclarationVariable(
+				) :
+				node.children.length === 8 ? new AST.ASTNodeDeclarationVariable(
 					node as SyntaxNodeType<'declaration_variable'>,
 					true,
 					isSyntaxNodeType(node.children[2], 'identifier') ? new AST.ASTNodeVariable(node.children[2]) : null,
 					this.decorateTypeNode (node.children[4] as SyntaxNodeSupertype<'type'>),
 					this.decorateTS       (node.children[6] as SyntaxNodeSupertype<'expression'>),
-				))],
+				) :
+				(assert.strictEqual(node.children.length, 6), new AST.ASTNodeDeclarationVariable(
+					node as SyntaxNodeType<'declaration_variable'>,
+					true,
+					isSyntaxNodeType(node.children[2], 'identifier') ? new AST.ASTNodeVariable(node.children[2]) : null,
+					this.decorateTypeNode(node.children[4] as SyntaxNodeSupertype<'type'>),
+					null,
+				))
+			)],
 
 			['statement_expression', (node) => new AST.ASTNodeStatementExpression(
 				node as SyntaxNodeType<'statement_expression'>,
