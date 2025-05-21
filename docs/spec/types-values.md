@@ -153,12 +153,13 @@ Property      | Description
 ##### SymbolStructureVar
 A **SymbolStructureVar** represents a variable referencing a Counterpoint Language Value.
 
-Property    | Description
------------ | -----------
-\`id\`      | the unique identifier of the declared symbol
-\`unfixed\` | a Boolean, whether the variable may be reassigned
-\`type\`    | the Counterpoint Language Type of the variable
-\`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
+Property          | Description
+----------------- | -----------
+\`id\`            | the unique identifier of the declared symbol
+\`unfixed\`       | a Boolean, whether the variable may be reassigned
+\`uninitialized\` | a Boolean, whether the variable was declared without an initial value
+\`type\`          | the Counterpoint Language Type of the variable
+\`value\`         | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
 
 
 ### Nodes

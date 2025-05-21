@@ -25,15 +25,41 @@ describe('ASTNodeDeclarationVariable', () => {
 	describe('#varCheck', () => {
 		it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown` and a preset null `value` value.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let x: int = 42;
+				let     a:  int = 42;
+				let var b:  int = 42;
+				let var c?: int;
 			`);
 			assert.ok(!goal.validator.hasSymbol(0x100n));
+			assert.ok(!goal.validator.hasSymbol(0x101n));
+			assert.ok(!goal.validator.hasSymbol(0x102n));
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(0x100n));
-			const info: SymbolStructure | null = goal.validator.getSymbolInfo(0x100n);
-			assert_instanceof(info, SymbolStructureVar);
-			assert.strictEqual(info.type, TYPE.UNKNOWN);
-			assert.strictEqual(info.value, null);
+			assert.ok(goal.validator.hasSymbol(0x101n));
+			assert.ok(goal.validator.hasSymbol(0x102n));
+			const info_a: SymbolStructure | null = goal.validator.getSymbolInfo(0x100n);
+			const info_b: SymbolStructure | null = goal.validator.getSymbolInfo(0x101n);
+			const info_c: SymbolStructure | null = goal.validator.getSymbolInfo(0x102n);
+			assert_instanceof(info_a, SymbolStructureVar);
+			assert_instanceof(info_b, SymbolStructureVar);
+			assert_instanceof(info_c, SymbolStructureVar);
+			assert.partialDeepStrictEqual(info_a, {
+				unfixed:       false,
+				uninitialized: false,
+				type:          TYPE.UNKNOWN,
+				value:         null,
+			});
+			assert.partialDeepStrictEqual(info_b, {
+				unfixed:       true,
+				uninitialized: false,
+				type:          TYPE.UNKNOWN,
+				value:         null,
+			});
+			assert.partialDeepStrictEqual(info_c, {
+				unfixed:       true,
+				uninitialized: true,
+				type:          TYPE.UNKNOWN,
+				value:         null,
+			});
 		});
 
 		it('for blank identifiers, does not add to symbol table.', () => {

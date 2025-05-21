@@ -47,12 +47,15 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 
 	public override varCheck(): void {
-		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
+		if (!this.unfixed) {
+			assert.ok(this.assigned, `Symbol \`${ this.source }\` should be initialized with a value.`);
+		}
+		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c?.varCheck());
 		if (this.assignee) {
 			if (this.validator.hasSymbol(this.assignee.id)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
-			this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
+			this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed, !this.assigned));
 		}
 	}
 
