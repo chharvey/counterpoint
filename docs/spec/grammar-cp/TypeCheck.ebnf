@@ -39,25 +39,26 @@ None! TypeCheck(SemanticDeclarationType decl) :=
 
 
 None! TypeCheck(SemanticDeclarationVariable decl) :=
-	1. *If* `decl.children.count` is 2:
-		1. *Let* `typenode` be `decl.children.0`.
-		2. *Let* `assigned` be `decl.children.1`.
-	2. *Else:*
-		1. *Assert:* `decl.children.count` is 3.
-		2. *Let* `assignee` be `decl.children.0`.
-		3. *Let* `typenode` be `decl.children.1`.
-		4. *Let* `assigned` be `decl.children.2`.
-	3. *Assert:* `typenode` and `assigned` are set.
-	4. *Perform:* *UnwrapAffirm:* `TypeCheck(assigned)`.
-	5. *Let* `assignee_type` be *Unwrap:* `TypeValueOf(typenode)`.
-	6. *Let* `assigned_type` be *Unwrap:* `TypeOf(assigned)`.
-	7. *Perform:* *Unwrap:* `TypeCheckAssign(assigned_type, assignee_type)`.
-	8. *If* `assignee` is set:
-		1. *Let* `value` be *Unwrap:* `ValueOf(assigned)`.
-		2. *Assert:* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `assignee.id`:
-		3. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
-		4. *Set* `symbol.type` to `assignee_type`.
-		5. *If* `assignee_type` is not mutable and has no mutable parts *and* `decl.unfixed` is `false`:
+	1. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticVariable.
+	2. *Let* `typenode` be an item `child` in `decl.children` such that `child` is a SemanticType.
+	3. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
+	4. *If* `assigned` is not *none*:
+		1. *Perform:* *UnwrapAffirm:* `TypeCheck(assigned)`.
+	5. *Assert:* `typenode` is not *none*.
+	6. *Let* `assignee_type` be *Unwrap:* `TypeValueOf(typenode)`.
+	7. *If* `assigned` is not *none*:
+		1. *Perform:* *Unwrap:* `TypeCheckAssign(assigned, assignee_type)`.
+	8. *Else:*
+		1. *Set* `assignee_type` to `Union(assignee_type, Null)`.
+	9. *If* `assignee` is not *none*:
+		1. *If* `assigned` is not *none*:
+			1. *Let* `value` be *Unwrap:* `ValueOf(assigned)`.
+		2. *Else:*
+			1. *Let* `value` be *none*.
+		3. *Assert:* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `assignee.id`:
+		4. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
+		5. *Set* `symbol.type` to `assignee_type`.
+		6. *If* `assignee_type` is not mutable and has no mutable parts *and* `decl.unfixed` is `false`:
 			1. *Assert:* `symbol.unfixed` is `false`.
 			2. *Set* `symbol.value` to `value`.
 ;

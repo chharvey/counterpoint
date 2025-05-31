@@ -158,6 +158,23 @@ describe('ASTNodeExpression', () => {
 		});
 
 
+		describe('#type', () => {
+			it('returns union with `null` when variable is uninitialized.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let var x?: int;
+					x;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				assert.ok((goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
+				return assert.deepStrictEqual(
+					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.type(),
+					TYPE.INT.union(TYPE.NULL),
+				);
+			});
+		});
+
+
 		describe('#fold', () => {
 			it('assesses the value of a fixed variable.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`

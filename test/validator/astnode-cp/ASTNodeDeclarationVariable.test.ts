@@ -113,6 +113,20 @@ describe('ASTNodeDeclarationVariable', () => {
 			return var_.typeCheck();
 		});
 
+		it('passes typechecking when uninitialized.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let var the_answer?: int | float;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
+				unfixed:       true,
+				uninitialized: true,
+				type:          TYPE.INT.union(TYPE.FLOAT).union(TYPE.NULL),
+				value:         null,
+			});
+		});
+
 		it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  null =  21  *  2;

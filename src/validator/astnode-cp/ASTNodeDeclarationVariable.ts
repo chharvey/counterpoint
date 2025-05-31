@@ -3,7 +3,7 @@ import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	type VALUE,
-	type TYPE,
+	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
 import {assert_instanceof} from '../../lib/index.ts';
@@ -60,11 +60,11 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 
 	public override typeCheck(): void {
-		this.assigned.typeCheck();
-		const assignee_type: TYPE.Type = this.typenode.eval();
-		ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
+		this.assigned?.typeCheck();
+		const assignee_type: TYPE.Type = this.assigned ? this.typenode.eval() : this.typenode.eval().union(TYPE.NULL); // TODO: use separate ‘read’ and ‘write’ types
+		this.assigned && ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
 		if (this.assignee) {
-			const value: VALUE.Value | null = this.assigned.fold(); // fold first before checking, to rethrow any errors
+			const value: VALUE.Value | null = this.assigned?.fold() ?? null; // fold first before checking, to rethrow any errors
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
 			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar;
 			symbol.type = assignee_type;

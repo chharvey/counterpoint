@@ -28,8 +28,8 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 
 	public constructor(
 		start_node: SyntaxNodeType<'statement_assignment'>,
-		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		public readonly assigned:  ASTNodeExpression,
+		public readonly assignee: ASTNodeVariable | ASTNodeAccess,
+		public readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
