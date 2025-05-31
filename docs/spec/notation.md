@@ -1385,7 +1385,7 @@ that satisfy the predicate ‹e›.
 (In the example below, assume `sequence` is a sequence of RealNumber values.)
 ```
 1. *Let* `result1` be a filtering of `sequence` indexed by `i` such that `sequence[i] > 0`.
-1. *Let* `result2` be a filtering of `sequence` indexed by `i` such that `sequence[i]` is even.
+2. *Let* `result2` be a filtering of `sequence` indexed by `i` such that `sequence[i]` is even.
 ```
 is shorthand for
 ```
@@ -1415,6 +1415,27 @@ is shorthand for
 4. *For each* `it` in `sequence`:
 	1. *If* `it` is an integer:
 		1. Push `it` to `result2`.
+```
+
+##### Find
+A step that contains «an item ‹it› in ‹s› such that ‹e›» is shorthand for
+the first item of a filtering of ‹s› satisfying the predicate ‹e›, else *none*.
+
+(In the example below, assume `sequence` is a sequence of RealNumber values.)
+```
+1. *Let* `result1` be an item `it` in `sequence` such that `it > 0`.
+2. *Let* `result2` be an item `it` in `sequence` such that `it` is even.
+```
+is shorthand for
+```
+1. *Let* `result1` be *none*.
+2. *Let* `result1_filter` be a filtering of `sequence` for each `it` such that `it > 0`.
+3. *If* `result1_filter.count` is greater than 0:
+	1. *Set* `result1` to `result1_filter.0`.
+4. *Let* `result2` be *none*.
+5. *Let* `result2_filter` be a filtering of `sequence` for each `it` such that `it` is even.
+6. *If* `result2_filter.count` is greater than 0:
+	1. *Set* `result2` to `result2_filter.0`.
 ```
 
 ##### Reductions
