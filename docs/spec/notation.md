@@ -1163,7 +1163,7 @@ The step is shorthand for the following steps:
 3. *If* ‹s› has a `value` property:
 	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `‹s›.value`.
 4. *Else:*
-	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `none`.
+	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with *none*.
 ```
 
 For example, setting a variable to an unwrap step …
@@ -1180,7 +1180,7 @@ For example, setting a variable to an unwrap step …
 4. *If* `call` has a `value` property:
 	1. *Let* `v` be `call.value`.
 5. *Else:*
-	1. *Let* `v` be `none`.
+	1. *Let* `v` be *none*.
 ```
 
 #### UnwrapAffirm
@@ -1192,7 +1192,7 @@ The step is shorthand for the following steps:
 2. *If* ‹s› has a `value` property:
 	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `‹s›.value`.
 3. *Else:*
-	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `none`.
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with *none*.
 ```
 
 For example, setting a variable to an unwrap-affirm step …
@@ -1207,7 +1207,7 @@ For example, setting a variable to an unwrap-affirm step …
 3. *If* `call` has a `value` property:
 	1. *Let* `v` be `call.value`.
 4. *Else:*
-	1. *Let* `v` be `none`.
+	1. *Let* `v` be *none*.
 ```
 
 #### Shorthand Notation

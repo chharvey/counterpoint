@@ -10,7 +10,7 @@ Object! ValueOf(SemanticVariable var) :=
 	3. *If* `symbol.unfixed` is `false`:
 		1. *Assert:* `symbol.value` is not *none*.
 		2. *Return:* `symbol.value`.
-	2. *Throw:* `none`.
+	2. *Throw:* *none*.
 ;
 
 

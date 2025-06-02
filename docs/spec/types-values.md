@@ -98,7 +98,7 @@ A name–value pair of a structure is called a **property**.
 #### CompletionStructure
 A **CompletionStructure** is a specific subtype of [Structure](#structure) with
 a mandatory property \`type\` and an optional property \`value\`.
-The value of the \`type\` property must be one of the [enumerated](#enumerated-values) specification values
+The value of the \`type\` property must be one of the [enumerated](#enumerated-words) specification values
 *normal*, *break*, *continue*, *return*, or *throw*, which are described below.
 The value of the \`value\` property must be
 a [Counterpoint Specification Value](#counterpoint-specification-types) or
@@ -117,8 +117,8 @@ This table summarizes the enumerated values of a completion structure’s \`type
 Type       | Meaning
 ---------- | -------
 *normal*   | TODO
-*continue* | TODO
 *break*    | TODO
+*continue* | TODO
 *return*   | TODO
 *throw*    | TODO
 

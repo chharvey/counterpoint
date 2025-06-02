@@ -92,7 +92,7 @@ None! VarCheck(SemanticDeclarationVariable decl) :=
 			unfixed=       `decl.unfixed`,
 			uninitialized= `uninitialized`,
 			type=          `Unknown`,
-			value=         none,
+			value=         *none*,
 		].
 		3. Add `symbol` as a record for `assignee.id` to the validator.
 ;

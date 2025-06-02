@@ -551,11 +551,11 @@ Otherwise, the access kind may be result.
 For dynamic collections, entries behave as both non-optional and optional.
 ```
 None! ValidateAccessKind(Or<NORMAL, MAYBE, RESULT> access_kind, Boolean is_entry_optional) :=
-	1. *If* `access_kind` is `NORMAL` *and* `is_entry_optional` is `false`:
+	1. *If* `access_kind` is *NORMAL* *and* `is_entry_optional` is `false`:
 		1. *Return.*
-	2. *If* `access_kind` is `MAYBE` *and* `is_entry_optional` is `true`:
+	2. *If* `access_kind` is *MAYBE* *and* `is_entry_optional` is `true`:
 		1. *Return.*
-	3. *If* `access_kind` is `RESULT`:
+	3. *If* `access_kind` is *RESULT*:
 		1. *Throw:* a new TypeError "Operator not yet supported.".
 	4. *Throw:* a new TypeErrorInvalidOperation.
 ;
@@ -568,12 +568,12 @@ Possibly modifies the type of an accessed bound property of a data type.
 Under maybe access, unions with Null; else returns unmodified type.
 ```
 Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
-	1. *If* `access_kind` is `MAYBE`:
+	1. *If* `access_kind` is *MAYBE*:
 		1. *Return:* `Union(type, Null)`.
-	2. *Else If* `access_kind` is `RESULT`:
+	2. *Else If* `access_kind` is *RESULT*:
 		1. *Throw:* a new TypeError "Operator not yet supported.".
 	3. *Else:*
-		1. *Assert:* `access_kind` is `NORMAL`.
+		1. *Assert:* `access_kind` is *NORMAL*.
 		2. *Return:* `type`.
 ;
 ```
