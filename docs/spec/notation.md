@@ -1125,16 +1125,16 @@ A step that says «*Break.*» (with no number) implies «*Break:* 1.».
 
 #### Return
 An algorithm step that reads «*Return:* ‹v›.» (where ‹v› is a metavariable representing a completion value)
-is shorthand for «*Return:* [type= normal, value= ‹v›].», meaning
+is shorthand for «*Return:* [kind= *normal*, value= ‹v›].», meaning
 the algorithm outputs a normal completion structure with a \`value\` of ‹v›.
 
-However, an algorithm step that reads «*Return:* [type= ‹type›, value= ‹v›].» is to be interpreted as-is,
+However, an algorithm step that reads «*Return:* [kind= ‹type›, value= ‹v›].» is to be interpreted as-is,
 as returning the completion structure itself, not “wrapped” in a new normal completion.
 Similarly, an algorithm step that reads «*Return:* ‹CS›.»,
 where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
 is also to be interpreted as-is, as returning the completion structure itself.
 
-An algorithm step that reads «*Return*.» is shorthand for «*Return:* [type= normal].», that is,
+An algorithm step that reads «*Return*.» is shorthand for «*Return:* [kind= *normal*].», that is,
 it outputs a normal completion structure without a \`value\` (thus the output type is None).
 
 An algorithm with no Return statement is implied to return a normal completion with no value.
@@ -1142,11 +1142,11 @@ An algorithm with no Return statement is implied to return a normal completion w
 #### Throw
 When an algorithm step reads «*Throw:* ‹v›.» (where ‹v› is a metavariable representing a completion value),
 a throw completion structure whose \`value\` is ‹v› is returned.
-That is, the step is shorthand for «*Return:* [type= throw, value= ‹v›].».
+That is, the step is shorthand for «*Return:* [kind= *throw*, value= ‹v›].».
 Note that such a completion structure is “abrupt”.
 
-An algorithm step that reads «*Throw:* [type= ‹type›, value= ‹v›].» is to be interpreted
-as «*Return:* [type= throw, value= ‹v›]», not the original completion “wrapped” in a new *throw* completion.
+An algorithm step that reads «*Throw:* [kind= ‹kind›, value= ‹v›].» is to be interpreted
+as «*Return:* [kind= *throw*, value= ‹v›]», not the original completion “wrapped” in a new *throw* completion.
 Similarly, an algorithm step that reads «*Throw:* ‹CS›.»,
 where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
 is also to be interpreted in the same manner, as returning a *throw* completion structure

@@ -122,8 +122,8 @@ Type       | Meaning
 *return*   | TODO
 *throw*    | TODO
 
-The term “normal completion” refers to any completion with a \`type\` of *normal*, and
-the term “abrupt completion” refers to any completion with a \`type\` other than *normal*.
+The term “normal completion” refers to any completion structure with a \`kind\` of *normal*, and
+the term “abrupt completion” refers to any completion structure with a \`kind\` other than *normal*.
 
 
 #### EntryTypeStructure
