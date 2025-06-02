@@ -405,6 +405,9 @@ describe('ASTNodeDeclarationVariable', () => {
 				let var c: int = 42;     % unfixed, foldable: \`(local.set)\`
 				let d:     int = c + 10; % fixed, unfoldable: \`(local.set)\`
 				let _:     int = c + 10; % blank, unfoldable: \`(drop)\`
+
+				let var e?: bool; % assignee, uninitialized: \`(local.set)\`
+				let var _?: bool; % blank, uninitialized:    \`(nop)\`
 			`);
 			goal.varCheck();
 			goal.typeCheck();
@@ -412,6 +415,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.deepStrictEqual(goal.builder.getLocals(), [
 				{id: 0x102n, type: binaryen.v128},
 				{id: 0x103n, type: binaryen.v128},
+				{id: 0x104n, type: binaryen.v128},
 			]);
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build()),
@@ -420,9 +424,12 @@ describe('ASTNodeDeclarationVariable', () => {
 					goal.builder.module.nop(),
 					goal.builder.module.nop(),
 
-					goal.builder.module.local.set(0, (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.local.set(1, (goal.children[4] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.drop(        (goal.children[5] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.local.set(0, (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.local.set(1, (goal.children[4] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.drop(        (goal.children[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+
+					goal.builder.module.local.set(2, VALUE.NULL.build(goal.builder.module)),
+					goal.builder.module.nop(),
 				],
 			);
 		});
@@ -433,6 +440,9 @@ describe('ASTNodeDeclarationVariable', () => {
 				let _:     bool  = true; % blank, foldable:   \`(drop)\`      instead of \`(nop)\`
 				let var b: float = 4.2;  % unfixed, foldable: \`(local.set)\` (same behavior)
 				let _:     bool  = !b;   % blank, unfoldable: \`(drop)\`      (same behavior)
+
+				let var c?: bool; % assignee, uninitialized: \`(local.set)\` (same behavior)
+				let var _?: bool; % blank, uninitialized:    \`(nop)\`       (same behavior)
 			`, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();
@@ -440,14 +450,18 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.deepStrictEqual(goal.builder.getLocals(), [
 				{id: 0x100n, type: binaryen.v128},
 				{id: 0x101n, type: binaryen.v128},
+				{id: 0x102n, type: binaryen.v128},
 			]);
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build()),
 				[
-					goal.builder.module.local.set(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.drop(        (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.local.set(1, (goal.children[2] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.drop(        (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.local.set(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.drop(        (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.local.set(1, (goal.children[2] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.drop(        (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+
+					goal.builder.module.local.set(2, VALUE.NULL.build(goal.builder.module)),
+					goal.builder.module.nop(),
 				],
 			);
 		});

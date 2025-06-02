@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	type VALUE,
+	VALUE,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
@@ -77,19 +77,20 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 
 	public override build(): binaryen.ExpressionRef {
 		if (
-			this.validator.config.compilerOptions.constantFolding && this.assigned.fold() &&
-			(!this.unfixed || !this.assignee)
+			this.validator.config.compilerOptions.constantFolding && this.assigned?.fold() &&
+			(!this.unfixed || !this.assignee) ||
+			!this.assignee && !this.assigned
 		) {
 			return this.builder.module.nop();
 		}
-		const value: binaryen.ExpressionRef = this.assigned.build();
+		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder.module);
 		if (this.assignee) {
 			const assignee_type: TYPE.Type = this.typenode.eval(); // eval first before adding, to rethrow any errors
 			const local = this.builder.addLocal(this.assignee.id, binaryen.v128)[0].getLocalInfo(this.assignee.id)!;
 			return this.builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
 				this.builder.module,
 				assignee_type,
-				this.assigned.type(),
+				this.assigned?.type() ?? TYPE.NULL,
 				value,
 				this.validator.config.compilerOptions.intCoercion,
 			));
