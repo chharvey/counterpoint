@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	type VALUE,
-	type TYPE,
+	TYPE,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../index.ts';
@@ -72,7 +72,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
 		const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 		assert_instanceof(symbol, SymbolStructureVar);
-		return symbol.type;
+		return symbol.uninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
 	}
 
 	@memoizeMethod

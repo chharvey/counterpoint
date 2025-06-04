@@ -122,7 +122,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
 				unfixed:       true,
 				uninitialized: true,
-				type:          TYPE.INT.union(TYPE.FLOAT).union(TYPE.NULL),
+				type:          TYPE.INT.union(TYPE.FLOAT),
 				value:         null,
 			});
 		});

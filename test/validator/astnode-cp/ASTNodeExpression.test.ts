@@ -159,17 +159,23 @@ describe('ASTNodeExpression', () => {
 
 
 		describe('#type', () => {
-			it('returns union with `null` when variable is uninitialized.', () => {
+			it('unions with `null` when accessed variable is uninitialized.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let var w:  int = 42;
 					let var x?: int;
+					w;
 					x;
 				`);
 				goal.varCheck();
 				goal.typeCheck();
-				assert.ok((goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
+				assert.ok( (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned);
+				assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).assigned);
 				return assert.deepStrictEqual(
-					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.type(),
-					TYPE.INT.union(TYPE.NULL),
+					goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+					[
+						TYPE.INT,
+						TYPE.INT.union(TYPE.NULL),
+					],
 				);
 			});
 		});

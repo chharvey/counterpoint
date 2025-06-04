@@ -101,15 +101,15 @@ describe('ASTNodeCP', () => {
 					goal.varCheck();
 					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
-				it('assignee type is unioned with `null` when uninitialized.', () => {
+				it('assignee type is not unioned with `null` when uninitialized.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let var x?: int;
 						x = 42;
 					`);
 					goal.varCheck();
 					goal.typeCheck();
-					const expected: TYPE.Type = TYPE.INT.union(TYPE.NULL);
-					assert.deepStrictEqual(((goal.children[1] as AST.ASTNodeAssignment).assignee as AST.ASTNodeVariable).type(), expected);
+					const expected: TYPE.Type = TYPE.INT;
+					assert.deepStrictEqual(((goal.children[1] as AST.ASTNodeAssignment).assignee as AST.ASTNodeVariable).type(), expected.union(TYPE.NULL)); // FIXME: false negative: should not be unioned with `null`
 					return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
 						unfixed:       true,
 						uninitialized: true,

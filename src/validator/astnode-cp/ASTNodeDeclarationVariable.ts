@@ -61,7 +61,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 
 	public override typeCheck(): void {
 		this.assigned?.typeCheck();
-		const assignee_type: TYPE.Type = this.assigned ? this.typenode.eval() : this.typenode.eval().union(TYPE.NULL); // TODO: use separate ‘read’ and ‘write’ types
+		const assignee_type: TYPE.Type = this.typenode.eval();
 		this.assigned && ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
 		if (this.assignee) {
 			const value: VALUE.Value | null = this.assigned?.fold() ?? null; // fold first before checking, to rethrow any errors
