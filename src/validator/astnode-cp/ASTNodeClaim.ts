@@ -28,7 +28,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'expression_claim'>,
+		start_node: SyntaxNodeType<'expression_cast'>,
 		private readonly claimed_type: ASTNodeType,
 		private readonly operand: ASTNodeExpression,
 	) {

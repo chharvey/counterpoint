@@ -116,8 +116,8 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'property_assign'>):                   AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_compound'>):               AST.ASTNodeAccess | AST.ASTNodeCall;
 	public decorateTS(syntaxnode: SyntaxNodeType<'assignee'>):                          AST.ASTNodeVariable | AST.ASTNodeAccess;
-	public decorateTS(syntaxnode: SyntaxNodeType<'expression_claim'>):                  AST.ASTNodeClaim;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):           AST.ASTNodeExpression | AST.ASTNodeOperationUnary;
+	public decorateTS(syntaxnode: SyntaxNodeType<'expression_cast'>):                   AST.ASTNodeClaim;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_exponential'>):            AST.ASTNodeOperationBinaryArithmetic;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_multiplicative'>):         AST.ASTNodeOperationBinaryArithmetic;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_additive'>):               AST.ASTNodeOperationBinaryArithmetic;
@@ -407,12 +407,6 @@ class Decorator {
 					this.decorateTS(node.children[1] as SyntaxNodeType<'property_assign'>),
 				)],
 
-			['expression_claim', (node) => new AST.ASTNodeClaim(
-				node as SyntaxNodeType<'expression_claim'>,
-				this.decorateTypeNode(node.children[1] as SyntaxNodeSupertype<'type'>),
-				this.decorateTS      (node.children[3] as SyntaxNodeSupertype<'expression'>),
-			)],
-
 			['expression_unary_symbol', (node) => (node.children[0].text === Punctuator.AFF) // `+a` is a no-op
 				? this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>)
 				: new AST.ASTNodeOperationUnary(
@@ -420,6 +414,12 @@ class Decorator {
 					Decorator.OPERATORS_UNARY.get(node.children[0].text as Punctuator) as ValidOperatorUnary,
 					this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>),
 				)],
+
+			['expression_cast', (node) => new AST.ASTNodeClaim(
+				node as SyntaxNodeType<'expression_cast'>,
+				this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
+				this.decorateTS      (node.children[0] as SyntaxNodeSupertype<'expression'>),
+			)],
 
 			['expression_exponential', (node) => new AST.ASTNodeOperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_exponential'>,

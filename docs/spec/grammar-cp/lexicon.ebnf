@@ -63,6 +63,7 @@ KeywordValue :::=
 KeywordOther :::=
 	// operator
 		| "mut"
+		| "as"
 		| "is"
 		| "isnt"
 		| "if"

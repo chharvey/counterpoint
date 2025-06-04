@@ -373,18 +373,8 @@ Decorate(Assignee ::= ExpressionCompound PropertyAssign) -> SemanticAccess
 
 
 
-Decorate(ExpressionClaim ::= ExpressionCompound) -> SemanticExpression
+Decorate(ExpressionUnarySymbol ::= ExpressionCompound) -> SemanticExpression
 	:= Decorate(ExpressionCompound);
-Decorate(ExpressionClaim ::= "<" Type ">" ExpressionClaim) -> SemanticClaim
-	:= (SemanticClaim
-		Decorate(Type)
-		Decorate(ExpressionClaim)
-	);
-
-
-
-Decorate(ExpressionUnarySymbol ::= ExpressionClaim) -> SemanticExpression
-	:= Decorate(ExpressionClaim);
 Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation
 	:= (SemanticOperation[operator=NOT]
 		Decorate(ExpressionUnarySymbol)
@@ -398,6 +388,16 @@ Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticExpress
 Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperation
 	:= (SemanticOperation[operator=NEG]
 		Decorate(ExpressionUnarySymbol)
+	);
+
+
+
+Decorate(ExpressionCast ::= ExpressionUnarySymbol) -> SemanticExpression
+	:= Decorate(ExpressionUnarySymbol);
+Decorate(ExpressionCast ::= ExpressionCast "as" "<" Type ">") -> SemanticClaim
+	:= (SemanticClaim
+		Decorate(Type)
+		Decorate(ExpressionCast)
 	);
 
 

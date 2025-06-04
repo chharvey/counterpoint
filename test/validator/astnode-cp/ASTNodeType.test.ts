@@ -104,7 +104,7 @@ describe('ASTNodeType', () => {
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
-					new VALUE.Symbol(0x8fn,  'then').toType(),
+					new VALUE.Symbol(0x90n,  'then').toType(),
 					new VALUE.Symbol(0x86n,  'str').toType(),
 					new VALUE.Symbol(0x89n,  'false').toType(),
 					new VALUE.Symbol(0x100n, 'foobar').toType(),

@@ -299,11 +299,6 @@ describe('Decorator', () => {
 				% (assignee)
 			`]],
 
-			['Decorate(ExpressionClaim ::= "<" Type ">" ExpressionClaim) -> SemanticOperation', [AST.ASTNodeClaim, `
-				<T>a;
-				% (expression_claim)
-			`]],
-
 			['Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation', [AST.ASTNodeOperation, `
 				!v;
 				% (expression_unary_symbol)
@@ -321,7 +316,12 @@ describe('Decorator', () => {
 				% (expression_unary_symbol)
 			`]],
 
-			['Decorate(ExpressionExponential ::= ExpressionClaim "^" ExpressionExponential) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionCast ::= ExpressionCast "as" "<" Type ">") -> SemanticOperation', [AST.ASTNodeClaim, `
+				a as <T>;
+				% (expression_cast)
+			`]],
+
+			['Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticOperation', [AST.ASTNodeOperation, `
 				a ^ b;
 				% (expression_exponential)
 			`]],

@@ -143,11 +143,15 @@ Assignee ::=
 	| ExpressionCompound PropertyAssign
 ;
 
-ExpressionClaim       ::= ExpressionCompound | "<" Type ">"            ExpressionClaim;
-ExpressionUnarySymbol ::= ExpressionClaim    | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
+ExpressionUnarySymbol
+	::= ExpressionCompound | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
+
+ExpressionCast ::=
+	| ExpressionUnarySymbol
+	| ExpressionCast "as" "<" Type ">" ;
 
 ExpressionExponential
-	::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
+	::= ExpressionCast ("^" ExpressionExponential)?;
 
 ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                                            ExpressionExponential;
 ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                                            ExpressionMultiplicative;
