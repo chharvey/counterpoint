@@ -398,22 +398,24 @@ class Decorator {
 				))
 			)],
 
-			['assignee', (node) => (node.children.length === 1)
+			['assignee', (node) => (node.children.length === 1
 				? new AST.ASTNodeVariable(node.children[0] as SyntaxNodeType<'identifier'>)
 				: new AST.ASTNodeAccess(
 					node as SyntaxNodeType<'assignee'>,
 					Operator.DOT,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 					this.decorateTS(node.children[1] as SyntaxNodeType<'property_assign'>),
-				)],
+				)
+			)],
 
-			['expression_unary_symbol', (node) => (node.children[0].text === Punctuator.AFF) // `+a` is a no-op
+			['expression_unary_symbol', (node) => (node.children[0].text === Punctuator.AFF // `+a` is a no-op
 				? this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>)
 				: new AST.ASTNodeOperationUnary(
 					node as SyntaxNodeType<'expression_unary_symbol'>,
 					Decorator.OPERATORS_UNARY.get(node.children[0].text as Punctuator) as ValidOperatorUnary,
 					this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>),
-				)],
+				)
+			)],
 
 			['expression_cast', (node) => new AST.ASTNodeClaim(
 				node as SyntaxNodeType<'expression_cast'>,
@@ -626,7 +628,7 @@ class Decorator {
 				this.decorateTS(node.children[3] as SyntaxNodeSupertype<'type'>),
 			)],
 
-			['declaration_variable', (node) => (node.children.length === 7)
+			['declaration_variable', (node) => (node.children.length === 7
 				? new AST.ASTNodeDeclarationVariable(
 					node as SyntaxNodeType<'declaration_variable'>,
 					false,
@@ -640,7 +642,8 @@ class Decorator {
 					(assert.ok(isSyntaxNodeType(node.children[2], 'identifier')), new AST.ASTNodeVariable(node.children[2])),
 					this.decorateTypeNode (node.children[4] as SyntaxNodeSupertype<'type'>),
 					this.decorateTS       (node.children[6] as SyntaxNodeSupertype<'expression'>),
-				))],
+				))
+			)],
 
 			['statement_expression', (node) => new AST.ASTNodeStatementExpression(
 				node as SyntaxNodeType<'statement_expression'>,
