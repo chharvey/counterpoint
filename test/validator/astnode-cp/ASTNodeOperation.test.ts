@@ -5,6 +5,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
+	SymbolStructureVar,
 	VALUE,
 	TYPE,
 	BinVect,
@@ -1543,9 +1544,14 @@ describe('ASTNodeOperation', () => {
 					]));
 				});
 			});
-			it.skip('returns `never` when condition is `never`.', () => {
-				// TODO: write a goal and varcheck
-				assert.ok(AST.ASTNodeOperationTernary.fromSource('if <never>n then true else false;').type().isBottomType);
+			it('returns `never` when condition is `never`.', () => {
+				const ternary: AST.ASTNodeOperationTernary = AST.ASTNodeOperationTernary.fromSource('if <never>n then true else false;');
+				ternary.validator.addSymbol(new SymbolStructureVar(
+					// @ts-expect-error --- it’s private
+					(ternary.operand0 as AST.ASTNodeClaim).operand as AST.ASTNodeVariable,
+					false,
+				));
+				return assert.ok(ternary.type().isBottomType);
 			});
 			it('throws when condition is not a subtype of `boolean`.', () => {
 				assert.throws(() => AST.ASTNodeOperationTernary.fromSource('if 2 then true else false;').type(), TypeErrorInvalidOperation);

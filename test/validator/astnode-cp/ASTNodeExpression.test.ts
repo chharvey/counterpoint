@@ -4,6 +4,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
+	SymbolStructureVar,
 	VALUE,
 	TYPE,
 	ReferenceErrorUndeclared,
@@ -584,10 +585,19 @@ describe('ASTNodeExpression', () => {
 			it('returns the type value of the claimed type.', () => {
 				assert.ok(AST.ASTNodeClaim.fromSource('<int?>3;').type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
-			it.skip('`never` is assignable to any type (even though intersection is empty).', () => {
-				// TODO: write a goal and varcheck
-				assert.ok(AST.ASTNodeClaim.fromSource('<never>n;').type().isBottomType);
-				assert.ok(AST.ASTNodeClaim.fromSource('<int>n;').type().equals(TYPE.INT));
+			it('`never` is assignable to any type (even though intersection is empty).', () => {
+				new Map<string, (typ: TYPE.Type) => boolean>([
+					['<never>n;', (typ) => typ.isBottomType],
+					['<int>n;',   (typ) => typ.equals(TYPE.INT)],
+				]).forEach((assertion, src) => {
+					const claim: AST.ASTNodeClaim = AST.ASTNodeClaim.fromSource(src);
+					claim.validator.addSymbol(new SymbolStructureVar(
+						// @ts-expect-error --- it’s private
+						claim.operand as AST.ASTNodeVariable,
+						false,
+					));
+					return assert.ok(assertion.call(null, claim.type()));
+				});
 				assert.throws(() => AST.ASTNodeClaim.fromSource('<never>3;').type(), TypeErrorNotAssignable);
 			});
 			it('throws when the operand type and claimed type do not overlap.', () => {
