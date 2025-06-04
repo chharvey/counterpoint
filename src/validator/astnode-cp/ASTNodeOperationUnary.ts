@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
@@ -7,26 +7,26 @@ import {
 	BinVect,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeSupertype} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidOperatorUnary,
-} from '../Operator.js';
+} from '../Operator.ts';
 import {
 	buildDeco,
 	typeDeco,
-} from './decorators.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 
 
@@ -49,20 +49,25 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
+		const t0:   TYPE.Type              = this.operand.type();
 		const arg0: binaryen.ExpressionRef = this.operand.build();
 		if (this.operator === Operator.NOT) {
-			const t0: TYPE.Type = this.operand.type();
-			if (t0.isDefinitelyFalsy()) {
+			if (t0.isDefinitelyFalsy) {
 				return this.builder.module.block(null, [
 					this.builder.module.drop(arg0),
 					new BinVect(this.builder.module, true).vect,
 				], binaryen.v128);
-			} else if (t0.isDefinitelyTruthy()) {
+			} else if (t0.isDefinitelyTruthy) {
 				return this.builder.module.block(null, [
 					this.builder.module.drop(arg0),
 					new BinVect(this.builder.module, false).vect,
 				], binaryen.v128);
 			}
+		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
+			return this.builder.module.block(null, [
+				this.builder.module.drop(arg0),
+				new BinVect(this.builder.module, true).vect,
+			], binaryen.v128);
 		}
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.NOT, 'vnot'],
@@ -75,16 +80,19 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@typeDeco
 	public override type(): TYPE.Type {
 		const t: TYPE.Type = this.operand.type();
+		if (t.isBottomType) {
+			return TYPE.NEVER;
+		}
 		switch (this.operator) {
 			case Operator.NOT: {
 				return (
-					t.isDefinitelyFalsy()  ? VALUE.Boolean.TRUETYPE :
-					t.isDefinitelyTruthy() ? VALUE.Boolean.FALSETYPE :
+					t.isDefinitelyFalsy  ? TYPE.TRUE :
+					t.isDefinitelyTruthy ? TYPE.FALSE :
 					TYPE.BOOL
 				);
 			}
 			case Operator.EMP: {
-				return TYPE.BOOL;
+				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
 			}
 			case Operator.NEG: {
 				assert.ok(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeErrorInvalidOperation(this));

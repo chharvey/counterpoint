@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	VALUE,
@@ -6,27 +6,27 @@ import {
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidAccessOperator,
-} from '../Operator.js';
+} from '../Operator.ts';
+import {ASTNodeKey} from './ASTNodeKey.ts';
+import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {
 	buildDeco,
 	typeDeco,
-} from './decorators.js';
-import {ASTNodeKey} from './ASTNodeKey.js';
-import {ASTNodeIndex} from './ASTNodeIndex.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
 
 
 
@@ -41,8 +41,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
-			| SyntaxNodeType<'assignee'>
-		,
+			| SyntaxNodeType<'assignee'>,
+
 		private readonly kind:     ValidAccessOperator,
 		public  readonly base:     ASTNodeExpression,
 		private readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
@@ -54,7 +54,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw '`ASTNodeAccess#build_do` not yet supported.';
+		throw new Error('`ASTNodeAccess#build_do` not yet supported.');
 	}
 
 	@memoizeMethod
@@ -132,7 +132,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (base_value === null) {
 			return null;
 		}
-		if (this.optional && base_value.identical(VALUE.Null.NULL)) {
+		if (this.optional && base_value.identical(VALUE.NULL)) {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
@@ -145,6 +145,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			if (accessor_value === null) {
 				return null;
 			}
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-return --- type guard inference is not very good here
 			return (
 				base_value instanceof VALUE.CollectionIndexed ? base_value.get(accessor_value as VALUE.Integer, this.optional, this.accessor) :
 				base_value instanceof VALUE.Set               ? base_value.get(accessor_value                                               ) :

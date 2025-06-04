@@ -1,27 +1,29 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	VALUE,
 	type TYPE,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import {Keyword} from '../../parser/index.js';
+} from '../../core/index.ts';
+import {Keyword} from '../../parser/index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
-} from '../utils-private.js';
-import {Validator} from '../Validator.js';
-import {valueOfTokenNumber} from './utils-private.js';
-import {buildDeco} from './decorators.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+} from '../utils-private.ts';
+import {Validator} from '../Validator.ts';
+import {valueOfTokenNumber} from './utils-private.ts';
+import {
+	buildDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
 
 
 
@@ -34,9 +36,9 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	private static keywordValue(source: string): VALUE.Null | VALUE.Boolean {
 		return (
-			(source === Keyword.NULL)  ? VALUE.Null.NULL     :
-			(source === Keyword.FALSE) ? VALUE.Boolean.FALSE :
-			(source === Keyword.TRUE)  ? VALUE.Boolean.TRUE  :
+			source === Keyword.NULL  ? VALUE.NULL :
+			source === Keyword.FALSE ? VALUE.FALSE :
+			source === Keyword.TRUE  ? VALUE.TRUE :
 			assert.fail(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`)
 		);
 	}

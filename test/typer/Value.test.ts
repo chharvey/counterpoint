@@ -1,11 +1,11 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
 	VALUE,
 	BinVect,
-} from '../../src/index.js';
-import {assertEqualBins} from '../assert-helpers.js';
-import {buildConst} from '../helpers.js';
+} from '../../src/index.ts';
+import {assertEqualBins} from '../assert-helpers.ts';
+import {buildConst} from '../helpers.ts';
 
 
 
@@ -105,7 +105,7 @@ describe('Value', () => {
 			it('returns a v128 with `null` as an argument.', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
-					VALUE.Null.NULL.build(mod),
+					VALUE.NULL.build(mod),
 					new BinVect(mod, null).vect,
 				);
 			});
@@ -114,7 +114,7 @@ describe('Value', () => {
 		specify('Boolean', () => {
 			const mod = new binaryen.Module();
 			return assertEqualBins(
-				[VALUE.Boolean.FALSE.build(mod), VALUE.Boolean.TRUE.build(mod)],
+				[VALUE.FALSE.build(mod),       VALUE.TRUE.build(mod)],
 				[new BinVect(mod, false).vect, new BinVect(mod, true).vect],
 			);
 		});
@@ -183,7 +183,7 @@ describe('Value', () => {
 			it('returns `(tuple.make)`.', () => {
 				const mod = new binaryen.Module();
 				return assertEqualBins(
-					new VALUE.Tuple([VALUE.Integer.UNIT, new VALUE.Float(2.0)]).build(mod),
+					new VALUE.Tuple([VALUE.INT_1,        new VALUE.Float(2.0)]).build(mod),
 					mod.tuple.make([buildConst(mod, 1n), buildConst(mod, 2.0)]),
 				);
 			});
@@ -197,28 +197,33 @@ describe('Value', () => {
 				assert.deepStrictEqual(
 					new VALUE.Set(new Set([
 						new VALUE.String('a'),
-						VALUE.Integer.ZERO,
+						VALUE.INT_0,
 						new VALUE.Integer(-0n),
 					])),
 					new VALUE.Set(new Set([
 						new VALUE.String('a'),
-						VALUE.Integer.ZERO,
+						VALUE.INT_0,
 					])),
 				);
 			});
 			it('does not overwrite non-identical (even if equal) elements.', () => {
-				assert.deepStrictEqual(
-					new VALUE.Set(new Set([
-						new VALUE.String('a'),
-						new VALUE.Float(0.0),
-						new VALUE.Float(-0.0),
-					])),
-					new VALUE.Set(new Set([
-						new VALUE.String('a'),
-						new VALUE.Float(0.0),
-						new VALUE.Float(-0.0),
-					])),
-				);
+				assert.strictEqual(new VALUE.Set(new Set([
+					VALUE.FLOAT_0,
+					VALUE.FLOAT_N0,
+				])).count, 2n);
+			});
+		});
+
+		describe('#get', () => {
+			it('compares by identity, not equality', () => {
+				const tuples = new VALUE.Set(new Set([new VALUE.Tuple()]));
+				assert.strictEqual(tuples.get(new VALUE.Tuple()), VALUE.TRUE, 'returns true when testing identical value types.');
+
+				const lists = new VALUE.Set(new Set([new VALUE.List()]));
+				assert.strictEqual(lists.get(new VALUE.List()), VALUE.FALSE, 'returns false when testing non-identical, even if equal, reference types.');
+
+				const floats = new VALUE.Set(new Set([VALUE.FLOAT_0]));
+				assert.strictEqual(floats.get(VALUE.FLOAT_N0), VALUE.FALSE, 'returns false when testing non-identical, even if equal, value types (floating zeros are the only case of this).');
 			});
 		});
 	});
@@ -229,20 +234,20 @@ describe('Value', () => {
 			it('overwrites identical antecedents.', () => {
 				assert.deepStrictEqual(
 					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
-						[new VALUE.String('a'),  VALUE.Integer.UNIT],
-						[VALUE.Integer.ZERO,     new VALUE.Float(2.0)],
+						[new VALUE.String('a'),  VALUE.INT_1],
+						[VALUE.INT_0,            new VALUE.Float(2.0)],
 						[new VALUE.Integer(-0n), new VALUE.String('three')],
 					])),
 					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
-						[new VALUE.String('a'), VALUE.Integer.UNIT],
-						[VALUE.Integer.ZERO,    new VALUE.String('three')],
+						[new VALUE.String('a'), VALUE.INT_1],
+						[VALUE.INT_0,           new VALUE.String('three')],
 					])),
 				);
 			});
 			it('does not overwrite non-identical (even if equal) antecedents.', () => {
 				assert.deepStrictEqual(
 					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
-						[new VALUE.String('a'), VALUE.Integer.UNIT],
+						[new VALUE.String('a'), VALUE.INT_1],
 						[new VALUE.Float(0.0),  new VALUE.Float(2.0)],
 						[new VALUE.Float(-0.0), new VALUE.String('three')],
 					])),

@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
@@ -6,9 +6,9 @@ import {
 	CONFIG_DEFAULT,
 	KEYWORDS,
 	Validator,
-} from '../../src/index.js';
-import type {CodeUnit} from '../../src/lib/index.js';
-import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.js';
+} from '../../src/index.ts';
+import type {CodeUnit} from '../../src/lib/index.ts';
+import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.ts';
 
 
 
@@ -26,7 +26,7 @@ describe('Validator', () => {
 	describe('.cookTokenKeyword', () => {
 		it('assigns values 0x80n–0x100n to reserved keywords.', () => {
 			const cooked: bigint[] = KEYWORDS.map((k) => Validator.cookTokenKeyword(k));
-			const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
+			const expected: bigint[] = [...new Array<undefined>(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
 			assert.deepStrictEqual(cooked, expected);
 			cooked.forEach((value) => {
 				assert.ok(0x80n <= value, 'cooked value should be >= 0x80n.');

@@ -1,23 +1,23 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	type VALUE,
 	type TYPE,
 	AssignmentErrorDuplicateDeclaration,
-} from '../../index.js';
-import {assert_instanceof} from '../../lib/index.js';
+} from '../../index.ts';
+import {assert_instanceof} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import {SymbolStructureVar} from '../index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeType} from './ASTNodeType.js';
-import type {ASTNodeExpression} from './ASTNodeExpression.js';
-import type {ASTNodeVariable} from './ASTNodeVariable.js';
-import {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../core/index.ts';
+import {SymbolStructureVar} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {ASTNodeType} from './ASTNodeType.ts';
+import type {ASTNodeExpression} from './ASTNodeExpression.ts';
+import type {ASTNodeVariable} from './ASTNodeVariable.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -62,7 +62,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar;
 			symbol.type = assignee_type;
 			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
-				assert.ok(!symbol.unfixed, `${ symbol } should not be unfixed.`);
+				assert.ok(!symbol.unfixed, `Symbol \`${ symbol.source }\` should not be unfixed.`);
 				symbol.value = value;
 			}
 		}

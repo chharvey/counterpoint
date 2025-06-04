@@ -1,19 +1,22 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {VoidError01} from '../../index.js';
+import {VoidError01} from '../../index.ts';
+import type {AST} from '../../validator/index.ts';
 import {
+	language_values_equal,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import type {AST} from '../../validator/index.js';
-import {language_values_equal} from '../utils-private.js';
-import {equalsDeco} from './decorators.js';
-import type {Value} from './Value.js';
-import {Null} from './Null.js';
-import type {Integer} from './Integer.js';
-import {Collection} from './Collection.js';
+} from '../utils-private.ts';
+import {NULL} from './index.ts';
+import {
+	identical,
+	type Value,
+} from './Value.ts';
+import type {Null} from './Null.ts';
+import type {Integer} from './Integer.ts';
+import {Collection} from './Collection.ts';
 
 
 
@@ -27,9 +30,20 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 		super();
 	}
 
-	/** @final */
+	/**
+	 * @final
+	 * @implements Value
+	 */
 	public override get isEmpty(): boolean {
 		return this.items.length === 0;
+	}
+
+	/**
+	 * @final
+	 * @implements Collection
+	 */
+	public override get count(): bigint {
+		return BigInt(this.items.length);
 	}
 
 	public override toString(): string {
@@ -38,8 +52,8 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 
 	/** @final */
 	@strictEqual
-	@equalsDeco
 	@instanceOf(() => CollectionIndexed)
+	@identical
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
 		return xjs.Array.is<Value>(this.items, (value as CollectionIndexed).items, language_values_equal);
@@ -54,9 +68,9 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 		const n: number = this.items.length;
 		const i: number = index.toNumber();
 		return (
-			(-n <= i && i < 0) ? this.items[i + n] :
-			(0  <= i && i < n) ? this.items[i] :
-			(access_optional) ? Null.NULL :
+			-n <= i && i < 0 ? this.items[i + n] :
+			0  <= i && i < n ? this.items[i] :
+			access_optional  ? NULL :
 			assert.fail(new VoidError01(accessor))
 		);
 	}

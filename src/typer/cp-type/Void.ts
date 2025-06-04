@@ -1,18 +1,18 @@
 import {
 	strictEqual,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import type * as VALUE from '../cp-value/index.js';
+} from '../utils-private.ts';
+import type * as VALUE from '../cp-value/index.ts';
 import {
 	NEVER,
 	VOID,
-} from './index.js';
+} from './index.ts';
 import {
-	intersectDeco,
-	subtypeDeco,
-} from './decorators.js';
-import type {Type} from './Type.js';
-import {ValueType} from './ValueType.js';
+	intersectionRules,
+	subtypeRules,
+	type Type,
+} from './Type.ts';
+import {ValueType} from './ValueType.ts';
 
 
 
@@ -34,15 +34,15 @@ export class Void extends ValueType {
 	}
 
 	@memoizeBinOp(true)
-	// @operatorDeco // slower than returning a constant
-	@intersectDeco
+	// @typeConstant // slower than returning a constant
+	@intersectionRules
 	public override intersect(_t: Type): Type {
 		return NEVER;
 	}
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;
 	}

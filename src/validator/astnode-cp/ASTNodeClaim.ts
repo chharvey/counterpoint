@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
-	type OBJ,
+	type VALUE,
 	TYPE,
 	TypeErrorNotAssignable,
 } from '../../index.js';
@@ -12,7 +12,10 @@ import {
 } from '../../core/index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
 import type {ASTNodeType} from './ASTNodeType.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {
+	buildDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.js';
 
 
 
@@ -33,13 +36,13 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return this.operand.build();
 	}
 
 	@memoizeMethod
-	// Explicitly omitting `@ASTNodeExpression.typeDeco` because we don’t want to include folding logic.
+	// Explicitly omitting `@typeDeco` because we don’t want to include folding logic.
 	public override type(): TYPE.Type {
 		const claimed_type:  TYPE.Type = this.claimed_type.eval();
 		const computed_type: TYPE.Type = this.operand.type();
@@ -63,7 +66,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
+	public override fold(): VALUE.Value | null {
 		return this.operand.fold();
 	}
 }

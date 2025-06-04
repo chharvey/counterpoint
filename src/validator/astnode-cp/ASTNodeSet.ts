@@ -3,23 +3,25 @@ import {
 	VALUE,
 	TYPE,
 	TypeErrorNotAssignable,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
+	ASTNodeExpression,
 	typeDeco,
+} from './ASTNodeExpression.ts';
+import {
 	assignToDeco,
-} from './decorators.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
+	ASTNodeCollectionLiteral,
+} from './ASTNodeCollectionLiteral.ts';
 
 
 

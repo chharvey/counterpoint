@@ -1,18 +1,18 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type {SyntaxNode} from 'tree-sitter';
-import type {NonemptyArray} from '../lib/index.js';
+import type {NonemptyArray} from '../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
+} from '../core/index.ts';
 import {
 	Punctuator,
 	Keyword,
-} from '../parser/index.js';
+} from '../parser/index.ts';
 import {
 	Validator,
 	AST,
-} from './index.js';
+} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
@@ -20,7 +20,7 @@ import {
 	isSyntaxNodeFamily,
 	type SyntaxNodeSupertype,
 	isSyntaxNodeSupertype,
-} from './utils-private.js';
+} from './utils-private.ts';
 import {
 	Operator,
 	type ValidAccessOperator,
@@ -30,7 +30,7 @@ import {
 	type ValidOperatorComparative,
 	type ValidOperatorEquality,
 	type ValidOperatorLogical,
-} from './Operator.js';
+} from './Operator.ts';
 
 
 
@@ -84,6 +84,7 @@ class Decorator {
 	]);
 
 
+	/* eslint-disable @typescript-eslint/unified-signatures */
 	public decorateTS(syntaxnode: SyntaxNodeType<'keyword_type'>):                      AST.ASTNodeTypeConstant;
 	public decorateTS(syntaxnode: SyntaxNodeType<'identifier'>):                        AST.ASTNodeTypeAlias | AST.ASTNodeVariable;
 	public decorateTS(syntaxnode: SyntaxNodeType<'word'>):                              AST.ASTNodeKey;
@@ -133,6 +134,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'statement'>):                    AST.ASTNodeStatement;
 	public decorateTS(syntaxnode: SyntaxNodeType<'source_file'>, config?: CPConfig):    AST.ASTNodeGoal;
 	public decorateTS(syntaxnode: SyntaxNode): AST.ASTNodeCP;
+	/* eslint-enable @typescript-eslint/unified-signatures */
 	public decorateTS(syntaxnode: SyntaxNode, config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeCP {
 		const decorators = new Map<string | RegExp, (node: SyntaxNode) => AST.ASTNodeCP>([
 			['source_file', (node) => new AST.ASTNodeGoal(
@@ -253,38 +255,36 @@ class Decorator {
 						Decorator.TYPEOPERATORS_UNARY.get(punc)!,
 						basetype,
 					);
-				} else {
-					if (node.children.length === 3) { // we have either `T[]` or `T{}`
-						if (punc === Punctuator.BRAK_OPN) {
-							return new AST.ASTNodeTypeList(
-								node as SyntaxNodeType<'type_unary_symbol'>,
-								basetype,
-								null,
-							);
-						} else {
-							assert.strictEqual(punc, Punctuator.BRAC_OPN);
-							return new AST.ASTNodeTypeSet(
-								node as SyntaxNodeType<'type_unary_symbol'>,
-								basetype,
-							);
-						}
-					} else { // we have `T[n]`
-						assert.strictEqual(node.children.length, 4);
-						assert.strictEqual(punc, Punctuator.BRAK_OPN);
-						const count: bigint = BigInt(Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
-							...CONFIG_DEFAULT,
-							languageFeatures: {
-								...CONFIG_DEFAULT.languageFeatures,
-								integerRadices:    true,
-								numericSeparators: true,
-							},
-						})[0]);
+				} else if (node.children.length === 3) { // we have either `T[]` or `T{}`
+					if (punc === Punctuator.BRAK_OPN) {
 						return new AST.ASTNodeTypeList(
 							node as SyntaxNodeType<'type_unary_symbol'>,
 							basetype,
-							count,
+							null,
+						);
+					} else {
+						assert.strictEqual(punc, Punctuator.BRAC_OPN);
+						return new AST.ASTNodeTypeSet(
+							node as SyntaxNodeType<'type_unary_symbol'>,
+							basetype,
 						);
 					}
+				} else { // we have `T[n]`
+					assert.strictEqual(node.children.length, 4);
+					assert.strictEqual(punc, Punctuator.BRAK_OPN);
+					const count: bigint = BigInt(Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
+						...CONFIG_DEFAULT,
+						languageFeatures: {
+							...CONFIG_DEFAULT.languageFeatures,
+							integerRadices:    true,
+							numericSeparators: true,
+						},
+					})[0]);
+					return new AST.ASTNodeTypeList(
+						node as SyntaxNodeType<'type_unary_symbol'>,
+						basetype,
+						count,
+					);
 				}
 			}],
 

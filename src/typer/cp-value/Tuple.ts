@@ -1,13 +1,13 @@
 import * as xjs from 'extrajs';
+import {TYPE} from '../index.ts';
 import {
+	languageValuesIdentical,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import {TYPE} from '../index.js';
-import {languageValuesIdentical} from '../utils-private.js';
-import type {Value} from './Value.js';
-import {CollectionIndexed} from './CollectionIndexed.js';
+} from '../utils-private.ts';
+import type {Value} from './Value.ts';
+import {CollectionIndexed} from './CollectionIndexed.ts';
 
 
 
@@ -28,7 +28,7 @@ class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	 * Returns a TYPE.Tuple whose entries are the types of this ValueTuple’s items.
 	 */
 	public override toType(): TYPE.Tuple {
-		return TYPE.Tuple.fromTypes(this.items.map((it) => it.toType()));
+		return TYPE.Tuple.fromTypes(this.items.map<TYPE.Type>((it) => it.toType()));
 	}
 }
 export {ValueTuple as Tuple};

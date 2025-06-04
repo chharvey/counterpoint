@@ -1,8 +1,8 @@
 import type {
 	AST,
 	SymbolKind,
-} from '../validator/index.js';
-import {ReferenceError} from './ReferenceError.js';
+} from '../validator/index.ts';
+import {ReferenceError} from './ReferenceError.ts';
 
 
 

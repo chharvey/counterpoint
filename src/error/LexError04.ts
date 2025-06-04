@@ -1,5 +1,5 @@
-import type {Serializable} from '../parser/index.js';
-import {LexError} from './LexError.js';
+import type {Serializable} from '../parser/index.ts';
+import {LexError} from './LexError.ts';
 
 
 

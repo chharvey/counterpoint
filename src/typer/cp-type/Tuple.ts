@@ -1,22 +1,24 @@
-import * as assert from 'assert';
-import {TypeErrorNoEntry} from '../../index.js';
-import {
-	type IntRange,
-	strictEqual,
-	instanceOf,
-	memoizeBinOp,
-} from '../../lib/index.js';
+import * as assert from 'node:assert';
+import {TypeErrorNoEntry} from '../../index.ts';
+import type {IntRange} from '../../lib/index.ts';
 import type {
 	ValidAccessOperator,
 	AST,
-} from '../../validator/index.js';
-import type {TypeEntry} from '../utils-public.js';
-import * as VALUE from '../cp-value/index.js';
-import {updateAccessedStaticType} from './utils-private.js';
-import {subtypeDeco} from './decorators.js';
-import type {Type} from './Type.js';
-import {Union} from './Union.js';
-import {ValueType} from './ValueType.js';
+} from '../../validator/index.ts';
+import type {TypeEntry} from '../utils-public.ts';
+import {
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
+} from '../utils-private.ts';
+import * as VALUE from '../cp-value/index.ts';
+import {updateAccessedStaticType} from './utils-private.ts';
+import {
+	subtypeRules,
+	type Type,
+} from './Type.ts';
+import {Union} from './Union.ts';
+import {ValueType} from './ValueType.ts';
 
 
 
@@ -72,7 +74,7 @@ class TypeTuple extends ValueType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	@instanceOf(() => TypeTuple)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
@@ -83,7 +85,7 @@ class TypeTuple extends ValueType {
 				if (!thattype.optional) {
 					/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
 						We cannot do so with record types since properties are not ordered. */
-					assert.strictEqual(thistype?.optional, false, `${ thistype } should exist and not be optional.`);
+					assert.strictEqual(thistype?.optional, false, `${ thistype.type } should exist and not be optional.`);
 				}
 				return !thistype || thistype.type.isSubtypeOf(thattype.type); // Covariance for tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 				/* eslint-enable @typescript-eslint/no-unnecessary-condition */

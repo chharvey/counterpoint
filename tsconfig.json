@@ -8,7 +8,10 @@
 		"strict":                             true,
 
 		// Modules
-		"module": "node16",
+		"module":                          "node18",
+		"rewriteRelativeImportExtensions": true,
+		"resolveJsonModule":               true,
+		"rootDir":                         "./src/",
 
 		// Emit
 		"noEmitOnError": true,
@@ -16,6 +19,7 @@
 
 		// Interop Constraints
 		"allowSyntheticDefaultImports": true,
+		"verbatimModuleSyntax":         true,
 
 		// Language and Environment
 		"target": "es2022",

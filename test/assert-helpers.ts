@@ -1,11 +1,11 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	type SubclassOf,
 	assert_instanceof,
-} from '../src/lib/index.js';
-import type {TYPE} from '../src/index.js';
+} from '../src/lib/index.ts';
+import type {TYPE} from '../src/index.ts';
 
 
 
@@ -39,19 +39,20 @@ export function assertEqualTypes(param1: TYPE.Type | readonly TYPE.Type[] | Read
 		try {
 			return assert.deepStrictEqual(param1, param2);
 		} catch {
-			return xjs.Array.forEachAggregated(param1, (act, i) => assertEqualTypes(act, (param2 as TYPE.Type[])[i]));
+			return xjs.Array.forEachAggregated(param1, (act, i) => assertEqualTypes(act as TYPE.Type, (param2 as TYPE.Type[])[i]));
 		}
 	} else {
 		try {
 			return assert.deepStrictEqual(param1, param2);
 		} catch {
-			return assert.ok((param1 as TYPE.Type).equals(param2 as TYPE.Type), `${ param1 } == ${ param2 }`);
+			return assert.ok((param1 as TYPE.Type).equals(param2 as TYPE.Type), `${ param1 as TYPE.Type } == ${ param2 }`);
 		}
 	}
 }
 
 
 
+/* eslint-disable @typescript-eslint/no-duplicate-type-constituents */
 export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref, expected: Ref): void;
 export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: readonly Ref[], expected: readonly Ref[]): void;
 export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(bins: ReadonlyMap<Ref, Ref>): void;
@@ -72,6 +73,7 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Gl
 		}
 	}
 }
+/* eslint-enable @typescript-eslint/no-duplicate-type-constituents */
 
 
 
@@ -86,7 +88,7 @@ export function assertAssignable(actual: Error, validation: ValidationObject): v
 	} else if ('errors' in validation) {
 		assert.ok(
 			validation.cons === AggregateError || validation.cons.prototype instanceof AggregateError, // validation.cons extends AggregateError
-			`The \`cons\` value of validation object ${ validation } with an \`errors\` property must be \`AggregateError\` or a subclass of it.`,
+			`The \`cons\` value of validation object ${ validation.cons } with an \`errors\` property must be \`AggregateError\` or a subclass of it.`,
 		);
 		assert.strictEqual(
 			(actual as AggregateError).errors.length,
@@ -95,7 +97,7 @@ export function assertAssignable(actual: Error, validation: ValidationObject): v
 		);
 		return xjs.Array.forEachAggregated(
 			validation.errors,
-			(subvalidation, i) => assertAssignable((actual as AggregateError).errors[i], subvalidation),
+			(subvalidation, i) => assertAssignable((actual as AggregateError).errors[i] as Error, subvalidation),
 		);
 	}
 }

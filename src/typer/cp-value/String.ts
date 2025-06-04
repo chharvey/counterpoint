@@ -1,14 +1,14 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
+import type {CodeUnit} from '../../lib/index.ts';
 import {
-	type CodeUnit,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import type {Value} from './Value.js';
-import {Primitive} from './Primitive.js';
+} from '../utils-private.ts';
+import type {Value} from './Value.ts';
+import {Primitive} from './Primitive.ts';
 
 
 
@@ -29,6 +29,9 @@ class ValueString extends Primitive {
 			: data;
 	}
 
+	/**
+	 * @implements Value
+	 */
 	public override get isEmpty(): boolean {
 		return this.codeunits.length === 0;
 	}
@@ -50,7 +53,7 @@ class ValueString extends Primitive {
 
 	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
 		mod;
-		throw '`ValueString#build` not yet supported.';
+		throw new Error('`ValueString#build` not yet supported.');
 	}
 
 	/**

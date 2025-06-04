@@ -1,20 +1,81 @@
-import * as assert from 'assert';
-import type binaryen from 'binaryen';
-import type {
+import * as assert from 'node:assert';
+import binaryen from 'binaryen';
+import {
 	VALUE,
 	TYPE,
-} from '../../index.js';
-import {assert_instanceof} from '../../lib/index.js';
+	ErrorCode,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	assert_context_name,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
+} from '../../core/index.ts';
 import {
 	ASTNodeStatement,
 	ASTNodeStatementExpression,
-} from './index.js';
-import type {Buildable} from './Buildable.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+} from './index.ts';
+import type {Buildable} from './Buildable.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+
+
+
+/**
+ * Decorator for {@link ASTNodeExpression#build} method and any overrides.
+ * First tries to compute the assessed value, and if successful, builds the assessed value.
+ * Otherwise builds this node.
+ * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['build']>
+ */
+export function buildDeco(
+	method:  ASTNodeExpression['build'],
+	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
+): typeof method {
+	assert_context_name(context, 'build');
+	return function (this: ASTNodeExpression) {
+		const value: VALUE.Value | null       = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
+		const built: binaryen.ExpressionRef   = value?.build(this.builder.module) ?? method.call(this);
+		assert.strictEqual(binaryen.getExpressionType(built), binaryen.v128);
+		return built;
+	};
+}
+
+
+
+/**
+ * Decorator for {@link ASTNodeExpression#type} method and any overrides.
+ * Type-checks and re-throws any type errors first,
+ * then computes assessed value (if applicable), and if successful,
+ * returns a constant type equal to that assessed value.
+ * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['type']>
+ */
+export function typeDeco(
+	method:  ASTNodeExpression['type'],
+	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
+): typeof method {
+	assert_context_name(context, 'type');
+	return function (this: ASTNodeExpression) {
+		const type: TYPE.Type = method.call(this); // type-check first, to re-throw any TypeErrors
+		if (this.validator.config.compilerOptions.constantFolding) {
+			let value: VALUE.Value | null = null;
+			try {
+				value = this.fold();
+			} catch (err) {
+				if (err instanceof ErrorCode) {
+					// ignore evaluation errors such as VoidError, NanError, etc.
+					return TYPE.NEVER;
+				} else {
+					throw err;
+				}
+			}
+			if (!!value && value instanceof VALUE.Primitive) {
+				return value.toType();
+			}
+		}
+		return type;
+	};
+}
 
 
 

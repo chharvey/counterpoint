@@ -1,30 +1,33 @@
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeSupertype} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidOperatorComparative,
-} from '../Operator.js';
+} from '../Operator.ts';
 import {
 	bothNumeric,
 	bothFloats,
 	neitherFloats,
-} from './utils-private.js';
-import {buildDeco} from './decorators.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
+} from './utils-private.ts';
+import {
+	buildDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
 
@@ -59,12 +62,11 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
-		if (bothNumeric(t0, t1) && (int_coercion || (
-			bothFloats(t0, t1) || neitherFloats(t0, t1)
-		))) {
-			return TYPE.BOOL;
-		}
-		throw new TypeErrorInvalidOperation(this);
+		assert.ok(bothNumeric(t0, t1), new TypeErrorInvalidOperation(this));
+		return (
+			int_coercion || bothFloats(t0, t1) || neitherFloats(t0, t1) ? TYPE.BOOL :
+			assert.fail(new TypeErrorInvalidOperation(this))
+		);
 	}
 
 	@memoizeMethod

@@ -1,15 +1,15 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
 	AST,
 	type TypeEntry,
-	VALUE,
 	TYPE,
 	TypeError,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
-} from '../../../src/index.js';
-import {typeUnit} from '../../helpers.js';
+} from '../../../src/index.ts';
+import {typeUnit} from '../../helpers.ts';
+
 
 
 describe('ASTNodeType', () => {
@@ -102,8 +102,8 @@ describe('ASTNodeType', () => {
 					'"hi"',
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
-					VALUE.Boolean.FALSETYPE,
-					VALUE.Boolean.TRUETYPE,
+					TYPE.FALSE,
+					TYPE.TRUE,
 					typeUnit(42n),
 					typeUnit(4.2e+3),
 					typeUnit('hi'),

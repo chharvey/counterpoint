@@ -4,7 +4,7 @@ import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDe
 import type {
 	NonemptyArray,
 	CodeUnit,
-} from '../lib/index.js';
+} from '../lib/index.ts';
 
 
 
@@ -49,7 +49,7 @@ function familyName<RuleName extends string>(family_name: string, ...suffices: r
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
-	return [...new Array(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
+	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
 }
 
 

@@ -1,2 +1,2 @@
-export * from './Builder.js';
-export * from './BinVect.js';
+export * from './Builder.ts';
+export * from './BinVect.ts';

@@ -1,6 +1,6 @@
-import {instanceOf} from '../../lib/decorators.js';
-import * as VALUE from '../cp-value/index.js';
-import {ValueType} from './ValueType.js';
+import {instanceOf} from '../utils-private.ts';
+import * as VALUE from '../cp-value/index.ts';
+import {ValueType} from './ValueType.ts';
 
 
 
@@ -10,7 +10,7 @@ import {ValueType} from './ValueType.js';
  */
 export class Integer extends ValueType {
 	public constructor() {
-		super(false, new Set([VALUE.Integer.ZERO]));
+		super(false, new Set([VALUE.INT_0, VALUE.INT_1]));
 	}
 
 	public override toString(): string {

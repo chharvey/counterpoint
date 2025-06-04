@@ -1,11 +1,11 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
 	type TypeEntry,
 	VALUE,
 	TYPE,
-} from '../../src/index.js';
-import {assert_instanceof} from '../../src/lib/index.js';
-import {typeUnit} from '../helpers.js';
+} from '../../src/index.ts';
+import {assert_instanceof} from '../../src/lib/index.ts';
+import {typeUnit} from '../helpers.ts';
 
 
 
@@ -37,13 +37,15 @@ describe('Type', () => {
 		TYPE.FLOAT,
 		TYPE.STR,
 		TYPE.OBJ,
+		TYPE.FALSE,
+		TYPE.TRUE,
 	];
 
 
 	it('a type operation equaling to a built-in type returns that type by reference.', () => {
-		assert.strictEqual(TYPE.BOOL.intersect(TYPE.STR),                         TYPE.NEVER);
-		assert.strictEqual(TYPE.BOOL.union(TYPE.UNKNOWN),                         TYPE.UNKNOWN);
-		assert.strictEqual(VALUE.Boolean.FALSETYPE.union(VALUE.Boolean.TRUETYPE), TYPE.BOOL);
+		assert.strictEqual(TYPE.BOOL.intersect(TYPE.STR), TYPE.NEVER);
+		assert.strictEqual(TYPE.BOOL.union(TYPE.UNKNOWN), TYPE.UNKNOWN);
+		assert.strictEqual(TYPE.FALSE.union(TYPE.TRUE),   TYPE.BOOL);
 	});
 
 
@@ -64,49 +66,47 @@ describe('Type', () => {
 
 
 	describe('#isDefinitelyFalsy', () => {
-		const FALSE = VALUE.Boolean.FALSETYPE;
 		it('only a combination of `never`, `void`, `null`, and `false` are definitely falsy.', () => {
 			[
 				TYPE.NEVER,
-				TYPE.Union.all([                      FALSE]),
-				TYPE.Union.all([           TYPE.NULL       ]),
-				TYPE.Union.all([           TYPE.NULL, FALSE]),
-				TYPE.Union.all([TYPE.VOID                  ]),
-				TYPE.Union.all([TYPE.VOID,            FALSE]),
-				TYPE.Union.all([TYPE.VOID, TYPE.NULL       ]),
-				TYPE.Union.all([TYPE.VOID, TYPE.NULL, FALSE]),
-			].forEach((t) => assert.ok(t.isDefinitelyFalsy(), `Expected \`${ t }\` to be definitely falsy.`));
+				TYPE.Union.all([                      TYPE.FALSE]),
+				TYPE.Union.all([           TYPE.NULL            ]),
+				TYPE.Union.all([           TYPE.NULL, TYPE.FALSE]),
+				TYPE.Union.all([TYPE.VOID                       ]),
+				TYPE.Union.all([TYPE.VOID,            TYPE.FALSE]),
+				TYPE.Union.all([TYPE.VOID, TYPE.NULL            ]),
+				TYPE.Union.all([TYPE.VOID, TYPE.NULL, TYPE.FALSE]),
+			].forEach((t) => assert.ok(t.isDefinitelyFalsy, `Expected \`${ t }\` to be definitely falsy.`));
 		});
 		it('any other types are not definitely falsy.', () => {
 			[
 				TYPE.UNKNOWN,
-				VALUE.Boolean.TRUETYPE,
+				TYPE.TRUE,
 				TYPE.BOOL,
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
 				TYPE.VOID.union(TYPE.INT),
 				TYPE.NULL.union(TYPE.FLOAT),
-				FALSE.union(TYPE.STR),
+				TYPE.FALSE.union(TYPE.STR),
 				TYPE.OBJ,
-			].forEach((t) => assert.ok(!t.isDefinitelyFalsy(), `Expected \`${ t }\` to not be definitely falsy.`));
+			].forEach((t) => assert.ok(!t.isDefinitelyFalsy, `Expected \`${ t }\` to not be definitely falsy.`));
 		});
 	});
 
 
 	describe('#isDefinitelyTruthy', () => {
-		const FALSE = VALUE.Boolean.FALSETYPE;
 		it('all definitely falsy types are not definitely truthy.', () => {
 			[
 				TYPE.NEVER,
-				TYPE.Union.all([                      FALSE]),
-				TYPE.Union.all([           TYPE.NULL       ]),
-				TYPE.Union.all([           TYPE.NULL, FALSE]),
-				TYPE.Union.all([TYPE.VOID                  ]),
-				TYPE.Union.all([TYPE.VOID,            FALSE]),
-				TYPE.Union.all([TYPE.VOID, TYPE.NULL       ]),
-				TYPE.Union.all([TYPE.VOID, TYPE.NULL, FALSE]),
-			].forEach((t) => assert.ok(!t.isDefinitelyTruthy(), `Expected \`${ t }\` to not be definitely truthy.`));
+				TYPE.Union.all([                      TYPE.FALSE]),
+				TYPE.Union.all([           TYPE.NULL            ]),
+				TYPE.Union.all([           TYPE.NULL, TYPE.FALSE]),
+				TYPE.Union.all([TYPE.VOID                       ]),
+				TYPE.Union.all([TYPE.VOID,            TYPE.FALSE]),
+				TYPE.Union.all([TYPE.VOID, TYPE.NULL            ]),
+				TYPE.Union.all([TYPE.VOID, TYPE.NULL, TYPE.FALSE]),
+			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${ t }\` to not be definitely truthy.`));
 		});
 		it('unions of falsy types are not definitely truthy.', () => {
 			[
@@ -114,22 +114,22 @@ describe('Type', () => {
 				TYPE.BOOL,
 				TYPE.VOID.union(TYPE.INT),
 				TYPE.NULL.union(TYPE.FLOAT),
-				FALSE.union(TYPE.STR),
-			].forEach((t) => assert.ok(!t.isDefinitelyTruthy(), `Expected \`${ t }\` to not be definitely truthy.`));
+				TYPE.FALSE.union(TYPE.STR),
+			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${ t }\` to not be definitely truthy.`));
 		});
 		it('“valuable” primitive types are definitely truthy.', () => {
 			[
-				VALUE.Boolean.TRUETYPE,
+				TYPE.TRUE,
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
-			].forEach((t) => assert.ok(t.isDefinitelyTruthy(), `Expected \`${ t }\` to be definitely truthy.`));
+			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${ t }\` to be definitely truthy.`));
 		});
 		it('compound value types are definitely truthy.', () => {
 			[
 				TYPE.Tuple.fromTypes(),
 				TYPE.Record.fromTypes(new Map([[0x100n, TYPE.INT]])),
-			].forEach((t) => assert.ok(t.isDefinitelyTruthy(), `Expected \`${ t }\` to be definitely truthy.`));
+			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${ t }\` to be definitely truthy.`));
 		});
 		it('reference types are definitely truthy.', () => {
 			[
@@ -138,24 +138,23 @@ describe('Type', () => {
 				new TYPE.Dict(TYPE.INT),
 				new TYPE.Set(TYPE.INT),
 				new TYPE.Map(TYPE.INT, TYPE.INT),
-			].forEach((t) => assert.ok(t.isDefinitelyTruthy(), `Expected \`${ t }\` to be definitely truthy.`));
+			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${ t }\` to be definitely truthy.`));
 		});
 	});
 
 
 	specify('#falsySide', () => {
-		const FALSE = VALUE.Boolean.FALSETYPE;
-		return new Map<TYPE.Type, TYPE.Type>([
+		new Map<TYPE.Type, TYPE.Type>([
 			[TYPE.NEVER,   TYPE.NEVER],
-			[TYPE.UNKNOWN, TYPE.VOID.union(TYPE.NULL).union(FALSE)],
+			[TYPE.UNKNOWN, TYPE.VOID.union(TYPE.NULL).union(TYPE.FALSE)],
 			[TYPE.VOID,    TYPE.VOID],
 			[TYPE.OBJ,     TYPE.NEVER],
 			[TYPE.NULL,    TYPE.NULL],
-			[TYPE.BOOL,    FALSE],
+			[TYPE.BOOL,    TYPE.FALSE],
 			[TYPE.INT,     TYPE.NEVER],
 			[TYPE.FLOAT,   TYPE.NEVER],
 			[TYPE.STR,     TYPE.NEVER],
-		]).forEach((right, left) => assert.ok(left.falsySide().equals(right), `${ left.falsySide() } == ${ right }`));
+		]).forEach((right, left) => assert.ok(left.falsySide.equals(right), `${ left.falsySide } == ${ right }`));
 	});
 
 
@@ -164,11 +163,11 @@ describe('Type', () => {
 			[TYPE.NEVER,   TYPE.NEVER],
 			[TYPE.VOID,    TYPE.NEVER],
 			[TYPE.NULL,    TYPE.NEVER],
-			[TYPE.BOOL,    VALUE.Boolean.TRUETYPE],
+			[TYPE.BOOL,    TYPE.TRUE],
 			[TYPE.INT,     TYPE.INT],
 			[TYPE.FLOAT,   TYPE.FLOAT],
 			[TYPE.STR,     TYPE.STR],
-		]).forEach((right, left) => assert.ok(left.truthySide().equals(right), `${ left.truthySide() } == ${ right }`));
+		]).forEach((right, left) => assert.ok(left.truthySide.equals(right), `${ left.truthySide } == ${ right }`));
 	});
 
 
@@ -234,8 +233,8 @@ describe('Type', () => {
 		});
 		it('3-9 | `C <: A --> (A  & B)  & C == B  & C`', () => {
 			const a: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL, TYPE.INT]);
-			const b: TYPE.Tuple = TYPE.Tuple.fromTypes([VALUE.Boolean.TRUETYPE]);
-			const c: TYPE.Tuple = TYPE.Tuple.fromTypes([VALUE.Boolean.FALSETYPE, typeUnit(42n)]);
+			const b: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.TRUE]);
+			const c: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.FALSE, typeUnit(42n)]);
 			const actual:   TYPE.Type = a.intersect(b).intersect(c);
 			const expected: TYPE.Type = b.intersect(c);
 			assert.ok(actual.equals(expected), '([bool, int] & [true]) & [false, 42] == [true] & [false, 42]');
@@ -244,7 +243,7 @@ describe('Type', () => {
 		describe('Intersection', () => {
 			it('optimizes nested intersections: `(A & B) & A === A & B`', () => {
 				const a: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL, TYPE.INT]);
-				const b: TYPE.Tuple = TYPE.Tuple.fromTypes([VALUE.Boolean.TRUETYPE]);
+				const b: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.TRUE]);
 				const expected: TYPE.Type = a.intersect(b);
 				assert.strictEqual(expected.intersect(a), expected);
 			});
@@ -537,8 +536,8 @@ describe('Type', () => {
 
 		describe('Unit', () => {
 			it('unit Boolean types should be subtypes of `bool`.', () => {
-				assert.ok(VALUE.Boolean.FALSETYPE.isSubtypeOf(TYPE.BOOL), 'Boolean.FALSETYPE');
-				assert.ok(VALUE.Boolean.TRUETYPE .isSubtypeOf(TYPE.BOOL), 'Boolean.TRUETYPE');
+				assert.ok(TYPE.FALSE.isSubtypeOf(TYPE.BOOL), 'TYPE.FALSE');
+				assert.ok(TYPE.TRUE .isSubtypeOf(TYPE.BOOL), 'TYPE.TRUE');
 			});
 			it('unit Integer types should be subtypes of `int`.', () => {
 				[42n, -42n, 0n, -0n].map((v) => typeUnit(v)).forEach((itype) => {
@@ -830,7 +829,7 @@ describe('Type', () => {
 				assert.ok(new TYPE.TypeInterface(new Map<string, TYPE.Type>([
 					['foo', TYPE.OBJ],
 					['bar', TYPE.NULL],
-					['diz', VALUE.Boolean.TRUETYPE],
+					['diz', TYPE.TRUE],
 					['qux', TYPE.INT.union(TYPE.FLOAT)],
 				])).isSubtypeOf(t0));
 			});
@@ -840,14 +839,22 @@ describe('Type', () => {
 
 	describe('#equals', () => {
 		it('bool == false | true', () => {
-			assert.ok(TYPE.BOOL.equals(VALUE.Boolean.FALSETYPE.union(VALUE.Boolean.TRUETYPE)));
+			assert.ok(TYPE.BOOL.equals(TYPE.FALSE.union(TYPE.TRUE)));
+		});
+		it('0.0 != -0.0', () => {
+			assert.ok(!VALUE.FLOAT_0.identical(VALUE.FLOAT_N0), 'the values 0.0 and -0.0 are not identical (by value identity `===`)');
+			assert.ok(VALUE.FLOAT_0.equal(VALUE.FLOAT_N0),      'the values 0.0 and -0.0 are equal (by value equality `==`)');
+			assert.ok(!VALUE.FLOAT_0.toType().equals(VALUE.FLOAT_N0.toType()));
 		});
 		it.skip('built-in types do not equal unit types of their canonical values.', () => {
-			assert.ok(!TYPE.BOOL  .equals(VALUE.Boolean.FALSETYPE), 'bool  != false');
-			assert.ok(!TYPE.BOOL  .equals(VALUE.Boolean.TRUETYPE),  'bool  != true');
-			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),            'int   != 0');
-			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)),           'float != 0.0');
-			assert.ok(!TYPE.STR   .equals(typeUnit('')),            'str   != ""');
+			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),    'bool  != false');
+			assert.ok(!TYPE.BOOL  .equals(TYPE.TRUE),     'bool  != true');
+			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),  'int   != 0');
+			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)), 'float != 0.0');
+			assert.ok(!TYPE.STR   .equals(typeUnit('')),  'str   != ""');
+
+			assert.ok(!TYPE.INT  .equals(typeUnit(0n) .union(typeUnit(1n))),   'int   != 0   | 1');
+			assert.ok(!TYPE.FLOAT.equals(typeUnit(0.0).union(typeUnit(-0.0))), 'float != 0.0 | -0.0');
 		});
 	});
 
@@ -1017,16 +1024,16 @@ describe('Type', () => {
 							TYPE.INT,
 						]);
 						const right: TYPE.Tuple = TYPE.Tuple.fromTypes([
-							VALUE.Boolean.TRUETYPE,
+							TYPE.TRUE,
 						]);
 
 						const intersection: TYPE.Type = left.intersect(right);
 						assert_instanceof(intersection, TYPE.Intersection);
 
 						const combined: TYPE.Type = intersection.combineTuplesOrRecords();
-						assert.deepStrictEqual(combined, TYPE.Tuple.fromTypes([VALUE.Boolean.TRUETYPE, TYPE.INT]));
+						assert.deepStrictEqual(combined, TYPE.Tuple.fromTypes([TYPE.TRUE, TYPE.INT]));
 
-						const v = new VALUE.Tuple<VALUE.Boolean | VALUE.Integer>([VALUE.Boolean.TRUE, VALUE.Integer.UNIT]);
+						const v = new VALUE.Tuple<VALUE.Boolean | VALUE.Integer>([VALUE.TRUE, VALUE.INT_1]);
 
 						assert.ok(combined.includes(v), `
 							let x: [true, int] = [true, 1]; % ok
@@ -1091,7 +1098,7 @@ describe('Type', () => {
 						]));
 						const right: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
 							[0x103n, TYPE.STR],
-							[0x100n, VALUE.Boolean.FALSETYPE],
+							[0x100n, TYPE.FALSE],
 							[0x101n, TYPE.INT],
 						]));
 
@@ -1100,14 +1107,14 @@ describe('Type', () => {
 
 						const combined: TYPE.Type = intersection.combineTuplesOrRecords();
 						assert.deepStrictEqual(combined, TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[0x100n, VALUE.Boolean.FALSETYPE],
+							[0x100n, TYPE.FALSE],
 							[0x101n, typeUnit(42n)],
 							[0x102n, TYPE.STR],
 							[0x103n, TYPE.STR],
 						])));
 
 						const v = new VALUE.Record<VALUE.Boolean | VALUE.Integer | VALUE.String>(new Map<bigint, VALUE.Boolean | VALUE.Integer | VALUE.String>([
-							[0x100n, VALUE.Boolean.FALSE],
+							[0x100n, VALUE.FALSE],
 							[0x101n, new VALUE.Integer(42n)],
 							[0x102n, new VALUE.String('hello')],
 							[0x103n, new VALUE.String('world')],
@@ -1181,7 +1188,7 @@ describe('Type', () => {
 						const combined: TYPE.Type = union.combineTuplesOrRecords();
 						assert.deepStrictEqual(combined, TYPE.Tuple.fromTypes([TYPE.BOOL.union(TYPE.INT), TYPE.INT.union(TYPE.BOOL)]));
 
-						const v = new VALUE.Tuple<VALUE.Boolean>([VALUE.Boolean.TRUE, VALUE.Boolean.TRUE]);
+						const v = new VALUE.Tuple<VALUE.Boolean>([VALUE.TRUE, VALUE.TRUE]);
 
 						assert.ok(combined.includes(v), `
 							let x: [bool | int, int | bool] = [true, true]; % ok
@@ -1256,8 +1263,8 @@ describe('Type', () => {
 						])));
 
 						const v = new VALUE.Record<VALUE.Boolean>(new Map<bigint, VALUE.Boolean>([
-							[0x100n, VALUE.Boolean.TRUE],
-							[0x101n, VALUE.Boolean.TRUE],
+							[0x100n, VALUE.TRUE],
+							[0x101n, VALUE.TRUE],
 						]));
 
 						assert.ok(combined.includes(v), `

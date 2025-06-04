@@ -1,19 +1,21 @@
-export * from './Value.js';
+export * from './Value.ts';
 
-export * from './Primitive.js';
-export * from './Null.js';
-export * from './Boolean.js';
-export * from './Number.js';
-export * from './Integer.js';
-export * from './Float.js';
-export * from './String.js';
+export * from './Primitive.ts';
+export * from './Null.ts';
+export * from './Boolean.ts';
+export * from './Number.ts';
+export * from './Integer.ts';
+export * from './Float.ts';
+export * from './String.ts';
 
-export * from './CollectionIndexed.js';
-export * from './CollectionKeyed.js';
+export * from './CollectionIndexed.ts';
+export * from './CollectionKeyed.ts';
 
-export * from './Tuple.js';
-export * from './Record.js';
-export * from './List.js';
-export * from './Dict.js';
-export * from './Set.js';
-export * from './Map.js';
+export * from './Tuple.ts';
+export * from './Record.ts';
+export * from './List.ts';
+export * from './Dict.ts';
+export * from './Set.ts';
+export * from './Map.ts';
+
+export * from './exports.ts';

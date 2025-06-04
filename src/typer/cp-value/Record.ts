@@ -1,11 +1,11 @@
+import {TYPE} from '../index.ts';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import {TYPE} from '../index.js';
-import type {Value} from './Value.js';
-import {CollectionKeyed} from './CollectionKeyed.js';
+} from '../utils-private.ts';
+import type {Value} from './Value.ts';
+import {CollectionKeyed} from './CollectionKeyed.ts';
 
 
 
@@ -29,7 +29,7 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	 * Returns a TYPE.Record whose entries are the types of this ValueRecord’s values.
 	 */
 	public override toType(): TYPE.Record {
-		return TYPE.Record.fromTypes(new Map([...this.properties].map(([key, val]) => [key, val.toType()])));
+		return TYPE.Record.fromTypes(new Map([...this.properties].map<[bigint, TYPE.Type]>(([key, val]) => [key, val.toType()])));
 	}
 }
 export {ValueRecord as Record};

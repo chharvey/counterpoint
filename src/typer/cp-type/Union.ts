@@ -1,31 +1,31 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
+import type {TypeEntry} from '../utils-public.ts';
 import {
+	languageValuesIdentical,
 	strictEqual,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import type {TypeEntry} from '../utils-public.js';
-import {languageValuesIdentical} from '../utils-private.js';
-import type * as VALUE from '../cp-value/index.js';
+} from '../utils-private.ts';
+import type * as VALUE from '../cp-value/index.ts';
 import {
 	Tuple as TypeTuple,
 	Record as TypeRecord,
 	NEVER,
-} from './index.js';
-import {language_types_equal} from './utils-private.js';
-import {
-	toStringDeco,
-	operatorDeco,
-	unionDeco,
-	subtractDeco,
-	subtypeDeco,
-} from './decorators.js';
-import type {Type} from './Type.js';
-import {Intersection} from './Intersection.js';
+} from './index.ts';
 import {
 	type ReadonlyArrayOfAtLeast2,
-	Combinable,
-} from './Combinable.js';
+	language_types_equal,
+} from './utils-private.ts';
+import {
+	typeConstant,
+	unionRules,
+	differenceRules,
+	subtypeRules,
+	type Type,
+} from './Type.ts';
+import {botOrTopString} from './TypeOperation.ts';
+import {Intersection} from './Intersection.ts';
+import {Combinable} from './Combinable.ts';
 
 
 
@@ -133,7 +133,7 @@ export class Union extends Combinable {
 		return super.hasMutable || this.operands.some((s) => s.hasMutable);
 	}
 
-	@toStringDeco
+	@botOrTopString
 	public override toString(): string {
 		return this.operands.join(' | ');
 	}
@@ -143,8 +143,8 @@ export class Union extends Combinable {
 	}
 
 	@memoizeBinOp(true)
-	@operatorDeco
-	@unionDeco
+	@typeConstant
+	@unionRules
 	public override union(t: Type): Type {
 		/*
 		 * 3-a | `A <: C --> (A \| B) \| C == B \| C`
@@ -167,8 +167,8 @@ export class Union extends Combinable {
 		}
 	}
 
-	@operatorDeco
-	@subtractDeco
+	@typeConstant
+	@differenceRules
 	public override subtract(t: Type): Type {
 		/* 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
 		return Union.all(this.operands.map((s) => s.subtract(t)));
@@ -176,7 +176,7 @@ export class Union extends Combinable {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.operands.every((s) => s.isSubtypeOf(t));

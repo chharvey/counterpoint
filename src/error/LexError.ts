@@ -3,9 +3,9 @@ import {
 	LexError03,
 	LexError04,
 	LexError05,
-} from './index.js';
-import type {ConstructorType} from './utils-private.js';
-import {ErrorCode} from './ErrorCode.js';
+} from './index.ts';
+import type {ConstructorType} from './utils-private.ts';
+import {ErrorCode} from './ErrorCode.ts';
 
 
 

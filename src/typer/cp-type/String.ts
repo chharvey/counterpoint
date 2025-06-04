@@ -1,5 +1,6 @@
-import * as VALUE from '../cp-value/index.js';
-import {ValueType} from './ValueType.js';
+import {instanceOf} from '../utils-private.ts';
+import * as VALUE from '../cp-value/index.ts';
+import {ValueType} from './ValueType.ts';
 
 
 
@@ -9,15 +10,16 @@ import {ValueType} from './ValueType.js';
  */
 class TypeString extends ValueType {
 	public constructor() {
-		super(false, new Set([new VALUE.String('')]));
+		super(false, new Set([VALUE.STR_EMPTY]));
 	}
 
 	public override toString(): string {
 		return 'str';
 	}
 
-	public override includes(v: VALUE.Value): boolean {
-		return v instanceof VALUE.String;
+	@instanceOf(() => VALUE.String)
+	public override includes(_: VALUE.Value): boolean {
+		return true;
 	}
 }
 export {TypeString as String};

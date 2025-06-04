@@ -1,4 +1,4 @@
-import {Builder} from '../../src/index.js';
+import {Builder} from '../../src/index.ts';
 
 
 

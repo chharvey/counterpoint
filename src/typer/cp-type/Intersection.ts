@@ -1,30 +1,30 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
+import type {TypeEntry} from '../utils-public.ts';
 import {
+	languageValuesIdentical,
 	strictEqual,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import type {TypeEntry} from '../utils-public.js';
-import {languageValuesIdentical} from '../utils-private.js';
-import type * as VALUE from '../cp-value/index.js';
+} from '../utils-private.ts';
+import type * as VALUE from '../cp-value/index.ts';
 import {
 	Union,
 	Tuple as TypeTuple,
 	Record as TypeRecord,
 	NEVER,
-} from './index.js';
-import {language_types_equal} from './utils-private.js';
-import {
-	toStringDeco,
-	operatorDeco,
-	intersectDeco,
-	subtypeDeco,
-} from './decorators.js';
-import type {Type} from './Type.js';
+} from './index.ts';
 import {
 	type ReadonlyArrayOfAtLeast2,
-	Combinable,
-} from './Combinable.js';
+	language_types_equal,
+} from './utils-private.ts';
+import {
+	typeConstant,
+	intersectionRules,
+	subtypeRules,
+	type Type,
+} from './Type.ts';
+import {botOrTopString} from './TypeOperation.ts';
+import {Combinable} from './Combinable.ts';
 
 
 
@@ -126,7 +126,7 @@ export class Intersection extends Combinable {
 		return super.hasMutable || this.operands.some((s) => s.hasMutable);
 	}
 
-	@toStringDeco
+	@botOrTopString
 	public override toString(): string {
 		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).join(' & ');
 	}
@@ -136,8 +136,8 @@ export class Intersection extends Combinable {
 	}
 
 	@memoizeBinOp(true)
-	@operatorDeco
-	@intersectDeco
+	@typeConstant
+	@intersectionRules
 	public override intersect(t: Type): Type {
 		/*
 		 * 3-9 | `C <: A --> (A  & B)  & C == B  & C`
@@ -162,7 +162,7 @@ export class Intersection extends Combinable {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
+	@subtypeRules
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.operands.some((s) => s.isSubtypeOf(t))) {

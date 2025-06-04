@@ -1,15 +1,18 @@
-import * as assert from 'assert';
-import {VoidError01} from '../../index.js';
+import * as assert from 'node:assert';
+import {VoidError01} from '../../index.ts';
+import type {AST} from '../../validator/index.ts';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import type {AST} from '../../validator/index.js';
-import {equalsDeco} from './decorators.js';
-import type {Value} from './Value.js';
-import {Null} from './Null.js';
-import {Collection} from './Collection.js';
+} from '../utils-private.ts';
+import {NULL} from './index.ts';
+import {
+	identical,
+	type Value,
+} from './Value.ts';
+import type {Null} from './Null.ts';
+import {Collection} from './Collection.ts';
 
 
 
@@ -23,9 +26,20 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 		super();
 	}
 
-	/** @final */
+	/**
+	 * @final
+	 * @implements Value
+	 */
 	public override get isEmpty(): boolean {
 		return this.properties.size === 0;
+	}
+
+	/**
+	 * @final
+	 * @implements Collection
+	 */
+	public override get count(): bigint {
+		return BigInt(this.properties.size);
 	}
 
 	public override toString(): string {
@@ -34,8 +48,8 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 
 	/** @final */
 	@strictEqual
-	@equalsDeco
 	@instanceOf(() => CollectionKeyed)
+	@identical
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
 		return (
@@ -46,10 +60,10 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 
 	/** @final */
 	public get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeKey): T | Null {
-		return (this.properties.has(key))
-			? this.properties.get(key)!
-			: (access_optional)
-				? Null.NULL
-				: assert.fail(new VoidError01(accessor));
+		return (
+			this.properties.has(key) ? this.properties.get(key)! :
+			access_optional          ? NULL :
+			assert.fail(new VoidError01(accessor))
+		);
 	}
 }

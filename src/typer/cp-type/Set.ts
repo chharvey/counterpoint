@@ -2,15 +2,17 @@ import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
-} from '../../lib/index.js';
-import * as VALUE from '../cp-value/index.js';
-import {MUT_OPERATOR} from './utils-private.js';
+} from '../utils-private.ts';
+import * as VALUE from '../cp-value/index.ts';
+import {MUT_OPERATOR} from './utils-private.ts';
 import {
-	subtypeDeco,
-	referenceSubtypeDeco,
-} from './decorators.js';
-import type {Type} from './Type.js';
-import {ReferenceType} from './ReferenceType.js';
+	subtypeRules,
+	type Type,
+} from './Type.ts';
+import {
+	isObjectType,
+	ReferenceType,
+} from './ReferenceType.ts';
 
 
 
@@ -45,8 +47,8 @@ class TypeSet extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeDeco
-	@referenceSubtypeDeco
+	@subtypeRules
+	@isObjectType
 	@instanceOf(() => TypeSet)
 	public override isSubtypeOf(t: Type): boolean {
 		return (

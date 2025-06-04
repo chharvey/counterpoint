@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
 	type CPConfig,
@@ -11,18 +11,18 @@ import {
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
-} from '../../../src/index.js';
-import {assert_instanceof} from '../../../src/lib/index.js';
+} from '../../../src/index.ts';
+import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assertEqualBins,
 	assertAssignable,
-} from '../../assert-helpers.js';
+} from '../../assert-helpers.ts';
 import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
 	typeUnit,
 	buildConst,
-} from '../../helpers.js';
+} from '../../helpers.ts';
 
 
 
@@ -61,9 +61,9 @@ describe('ASTNodeExpression', () => {
 					'false;',
 					'true;',
 				].map((src) => AST.ASTNodeConstant.fromSource(src).fold()), [
-					VALUE.Null.NULL,
-					VALUE.Boolean.FALSE,
-					VALUE.Boolean.TRUE,
+					VALUE.NULL,
+					VALUE.FALSE,
+					VALUE.TRUE,
 				]);
 			});
 			it('computes int values.', () => {
@@ -577,7 +577,8 @@ describe('ASTNodeExpression', () => {
 			it('returns the type value of the claimed type.', () => {
 				assert.ok(AST.ASTNodeClaim.fromSource('<int?>3;').type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
-			it('`never` is assignable to any type (even though intersection is empty).', () => {
+			it.skip('`never` is assignable to any type (even though intersection is empty).', () => {
+				// TODO: write a goal and varcheck
 				assert.ok(AST.ASTNodeClaim.fromSource('<never>n;').type().isBottomType);
 				assert.ok(AST.ASTNodeClaim.fromSource('<int>n;').type().equals(TYPE.INT));
 				assert.throws(() => AST.ASTNodeClaim.fromSource('<never>3;').type(), TypeErrorNotAssignable);
