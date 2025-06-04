@@ -9,6 +9,10 @@ Sequence<Instruction> Build(Boolean b) :=
 	3. *Return:* ["Push `0` onto the operand stack."].
 ;
 
+Sequence<Instruction> Build(Symbol s) :=
+	1. *Return:* ["Push `n.id` onto the operand stack."].
+;
+
 Sequence<Instruction> Build(Number n) :=
 	1. *Return:* ["Push `n` onto the operand stack."].
 ;
@@ -131,7 +135,7 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NE
 ;
 
 Sequence<Instruction> BuildExpression(SemanticOperation[operator: IS] expr) :=
-	1. *Throw:* new TypeError "Operator not yet supported.".
+	1. *Throw:* a new TypeError "Operator not yet supported.".
 ;
 
 Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | GT | LE | GE | ID | EQ] expr) :=

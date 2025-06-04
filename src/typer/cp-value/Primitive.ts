@@ -7,6 +7,7 @@ import {Value} from './Value.ts';
  * Known subclasses:
  * - Null
  * - ValueBoolean
+ * - ValueSymbol
  * - ValueNumber
  * - ValueString
  */

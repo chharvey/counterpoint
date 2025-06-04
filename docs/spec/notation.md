@@ -1221,17 +1221,17 @@ A step that begins with «*Else If* …:» desugars to an ‘else’ step with a
 	1. ‹A›.
 2. *Else If* ‹y›:
 	1. ‹B›.
-3. *Else*:
+3. *Else:*
 	1. ‹C›.
 ```
 is shorthand for
 ```
 1. *If* ‹x›:
 	1. ‹A›.
-2. *Else*:
+2. *Else:*
 	1. *If* ‹y›:
 		1. ‹B›.
-	2. *Else*:
+	2. *Else:*
 		1. ‹C›.
 ```
 
@@ -1240,7 +1240,7 @@ A step that begins with «*If* … *and* …:» desugars to an ‘if’ step wit
 ```
 1. *If* ‹x› *and* ‹y›:
 	1. ‹A›.
-2. *Else*:
+2. *Else:*
 	1. ‹B›.
 ```
 is shorthand for
@@ -1248,9 +1248,9 @@ is shorthand for
 1. *If* ‹x›:
 	1. *If* ‹y›:
 		1. ‹A›.
-	2. *Else*:
+	2. *Else:*
 		1. ‹B›.
-2. *Else*:
+2. *Else:*
 	1. ‹B›.
 ```
 
@@ -1259,7 +1259,7 @@ A step that begins with «*If* … *or* …:» desugars to two ‘if’ steps wi
 ```
 1. *If* ‹x› *or* ‹y›:
 	1. ‹A›.
-2. *Else*:
+2. *Else:*
 	1. ‹B›.
 ```
 is shorthand for
@@ -1268,7 +1268,7 @@ is shorthand for
 	1. ‹A›.
 2. *Else If* ‹y›:
 	1. ‹A›.
-3. *Else*:
+3. *Else:*
 	1. ‹B›.
 ```
 
@@ -1402,8 +1402,8 @@ is shorthand for
 A step that contains «a filtering of ‹s› for each ‹it› such that ‹e›» is shorthand for an indexed filtering,
 replacing the *For index* step with a *For each* step.
 ```
-1. *Let* `result1` be a filering of `sequence` for each `it` such that `it > 0`.
-2. *Let* `result2` be a filering of `sequence` for each `it` such that `it` is an integer.
+1. *Let* `result1` be a filtering of `sequence` for each `it` such that `it > 0`.
+2. *Let* `result2` be a filtering of `sequence` for each `it` such that `it` is an integer.
 ```
 is shorthand for
 ```
@@ -1444,7 +1444,7 @@ It skips the first iteration.
 ```
 is shorthand for
 ```
-1. *Assert*: `sequence` is not empty.
+1. *Assert:* `sequence` is not empty.
 2. *Let* `result` be a reduction of `sequence[1 ..]` with `accum` for each `it` to `accum + it` starting with `sequence.0`.
 ```
 

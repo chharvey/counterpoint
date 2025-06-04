@@ -21,6 +21,24 @@ import {typeUnit} from '../../helpers.ts';
 
 
 describe('ASTNodeCP', () => {
+	describe('ASTNodeIndex', () => {
+		describe('#index', () => {
+			it('returns the cooked value of the integer token.', () => {
+				[0n, 1n, 2n, 4n, 8n, 16n].forEach((index) => {
+					const type_accessor: AST.ASTNodeIndex | AST.ASTNodeKey = AST.ASTNodeTypeAccess.fromSource(`MyTuple.${ index }`).accessor;
+					assert_instanceof(type_accessor, AST.ASTNodeIndex);
+					assert.strictEqual(type_accessor.index, index);
+
+					const expr_accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = AST.ASTNodeAccess.fromSource(`my_tuple.${ index };`).accessor;
+					assert_instanceof(expr_accessor, AST.ASTNodeIndex);
+					assert.strictEqual(expr_accessor.index, index);
+				});
+			});
+		});
+	});
+
+
+
 	describe('ASTNodeStatementExpression', () => {
 		describe('#build', () => {
 			it('returns `(nop)` for empty statement expression.', () => {
@@ -88,8 +106,8 @@ describe('ASTNodeCP', () => {
 			context('for property reassignment.', () => {
 				it('allows assignment directly on objects.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						List.<int>([42]).0                   = 42;
-						Dict.<int>([i= 42]).i                = 42;
+						List.<int>([42]).[0]                 = 42;
+						Dict.<int>([i= 42]).[@i]             = 42;
 						Set.<int>([42]).[43]                 = false;
 						Map.<bool, int>([[true, 42]]).[true] = 42;
 					`);
@@ -100,11 +118,11 @@ describe('ASTNodeCP', () => {
 					[
 						`
 							let l: mut int[] = List.<int>([42]);
-							l.0 = 4.2;
+							l.[0] = 4.2;
 						`,
 						`
 							let d: mut [:int] = Dict.<int>([i= 42]);
-							d.i = 4.2;
+							d.[@i] = 4.2;
 						`,
 						`
 							let s: mut int{} = Set.<int>([42]);
@@ -132,11 +150,11 @@ describe('ASTNodeCP', () => {
 						`,
 						`
 							let l: int[] = List.<int>([42]);
-							l.0 = 43;
+							l.[0] = 43;
 						`,
 						`
 							let d: [:int] = Dict.<int>([i= 42]);
-							d.i = 43;
+							d.[@i] = 43;
 						`,
 						`
 							let s: int{} = Set.<int>([42]);

@@ -282,6 +282,7 @@ module.exports = grammar({
 			'never',
 			'void',
 			'bool',
+			'sym',
 			'int',
 			'float',
 			'str',
@@ -365,6 +366,7 @@ module.exports = grammar({
 			$.string__comment,
 			$.string__separator,
 			$.string__comment__separator,
+			seq('@', $.word),
 		),
 
 
@@ -398,8 +400,8 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		property_access_type: $ => seq('.', choice($.integer, $.word)),
-		generic_call:         $ => seq('.', $.generic_arguments),
+		property_access_type: $ => seq(choice('.', '?.'), choice($.integer, $.word)),
+		generic_call:         $ => seq('.',               $.generic_arguments),
 
 		_type_compound: $ => choice(
 			$._type_unit,

@@ -3,7 +3,7 @@ Type! TypeOf(SemanticExpression expr) :=
 	2. *Let* `folded` be `ValueOf(expr)`.
 	3. *If* `folded` is an abrupt completion:
 		1. *Return:* `t`.
-	4. *If* `folded.value` is an instance of `Null`, `Boolean`, `Integer`, `Float`, or `String`:
+	4. *If* `folded.value` is an instance of `Null`, `Boolean`, `Symbol`, `Integer`, `Float`, or `String`:
 		1. *Return:* `ToType(folded.value)`.
 	5. *Return:* `t`.
 ;
@@ -77,83 +77,18 @@ Type! TypeOfUnfolded(SemanticMap map) :=
 
 
 
-Type! TypeOfUnfolded(SemanticAccess access) :=
+Type! TypeOfUnfolded(SemanticAccess[kind: RESULT] access) :=
+	1. *Throw:* a new TypeError "Operator not yet supported.".
+;
+
+Type! TypeOfUnfolded(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
-	4. *Let* `base_type` be *Unwrap:* `CombineTuplesOrRecords(*Unwrap:* TypeOf(base))`.
-	5. *If* `access.kind` is `OPTIONAL`:
-		1. *If* *UnwrapAffirm:* `Subtype(base_type, Null)` is `true`:
-			1. *Return:* `base_type`.
-		2. *If* *UnwrapAffirm:* `Subtype(Null, base_type)` is `true`:
-			1. *Set* `is_nullish` to `true`.
-			2. *Set* `base_type` to `Difference(base_type, Null)`.
-	6. *Let* `returned` be *none*.
-	7. *If* `accessor` is a SemanticIndex:
-		1. *Assert:* `accessor.children.count` is 1.
-		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor.children.0)`.
-		3. *Assert:* `accessor_type` is an instance of `Unit`.
-		4. *Let* `i` be `accessor_type.value`.
-		5. *Assert:* `i` is an instance of `Integer`.
-		6. *If* `base_type` is a Tuple type *and* `i` is an index in `base_type`:
-			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
-		7. *Else If* `base_type` is a List type:
-			1. *Let* `type` be the union of all item types in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
-		8. *Else:*
-			1. *Throw:* a new TypeErrorNoEntry.
-	8. *If* `accessor` is a SemanticKey:
-		1. *Let* `id` be `accessor.id`.
-		2. *If* `base_type` is a Record type *and* `id` is a key in `base_type`:
-			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
-		3. *Else If* `base_type` is a Dict type:
-			1. *Let* `type` be the union of all value types in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access.kind)`.
-		4. *Else:*
-			1. *Throw:* a new TypeErrorNoEntry.
-	9: *Else:*
-		1. *Assert:* `accessor` is a SemanticExpression.
-		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
-		3. *If* `base_type` is a Tuple type:
-			1. *If* `accessor_type` is an instance of `Unit`:
-				1. *Let* `i` be `accessor_type.value`.
-				2. *If* `i` is an instance of `Integer`:
-					1. *If* `i` is an index in `base_type`:
-						1. *Let* `entry` be the item accessed at index `i` in `base_type`.
-						2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access.kind)`.
-					2. *Else:*
-						1. *Throw:* a new TypeErrorNoEntry.
-			2. *Else If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
-				1. *Let* `t` be the union of all item types in `base_type`.
-				2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
-			3. *Else:*
-				1. *Throw:* a new TypeErrorNotNarrow.
-		4. *Else If* `base_type` is a List type:
-			1. *Let* `t` be the union of all item types in `base_type`.
-			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
-				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access.kind)`.
-			3. *Else:*
-				1. *Throw:* a new TypeErrorNotNarrow.
-		5. *Else If* `base_type` is a Set type:
-			1. *Let* `t` be the type of the elements in `base_type`.
-			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true`:
-				1. *Set* `returned` to `Boolean`.
-			3. *Else:*
-				1. *Throw:* a new TypeErrorNotNarrow.
-		6. *Else If* `base_type` is a Map type:
-			1. *Let* `k` be the type of the antecedents in `base_type`.
-			2. *Let* `v` be the type of the consequents in `base_type`.
-			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true`:
-				1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(v, access.kind)`.
-			4. *Else:*
-				1. *Throw:* a new TypeErrorNotNarrow.
-	10. *If* `returned` is not *none*:
-		1. *If* `is_nullish` is `true`:
-			1. *Return:* `Union(returned, Null)`.
-		2. *Return*: `returned`.
-	11. *Throw:* a new TypeErrorInvalidOperation.
+	4. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
+	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access)`.
+	6. *Perform:* *Unwrap:* `ValidateAccessKind(access.kind, entry.optional)`.
+	7. *Return:* `UpdateAccessedType(entry.type, access.kind)`.
 ;
 
 
@@ -167,7 +102,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 	4. *If* `base.source` is one of "List", "Dict", or "Set":
 		1. *If* `call.children.count` is 2 or 3:
 			1. *If* `call.children.1` is a SemanticType:
-				1. *Let* `genericarg` be *UnwrapAffirm:* `TypeValueOf(call.children.1)`.
+				1. *Let* `genericarg` be *Unwrap:* `TypeValueOf(call.children.1)`.
 				2. *If* `base.source` is "List":
 					1. *Let* `returntype` be a List type whose items’ type is `genericarg`.
 				3. *Else If* `base.source` is "Dict":
@@ -188,7 +123,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 									1. *Let* `items` be the union of all item types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
 										1. *Throw:* a new TypeErrorNotAssignable.
-								3. *Else*:
+								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 						4. *Else If* `base.source` is "Dict":
 							1. *Let* `is_assignable` be `TypeCheckAssign(arg, returntype)`.
@@ -201,7 +136,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 									1. *Let* `values` be the union of all value types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(values, genericarg)` is `false`:
 										1. *Throw:* a new TypeErrorNotAssignable.
-								3. *Else*:
+								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 						5. *Else If* `base.source` is "Set":
 							1. *Let* `listtype` be a List type whose items’ type is `genericarg`.
@@ -214,23 +149,23 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 									1. *Let* `items` be the union of all item types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
 										1. *Throw:* a new TypeErrorNotAssignable.
-								3. *Else*:
+								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
-					2. *Else*:
+					2. *Else:*
 						1. *Throw:* a new TypeErrorArgCount.
 				6. *Return:* a mutable copy of `returntype`.
 		2. *Throw:* a new TypeErrorArgCount.
 	5. *Else If* `base.source` is "Map":
 		1. *If* `call.children.count` is 2 or 3 or 4:
 			1. *If* `call.children.1` is a SemanticType:
-				1. *Let* `antecedenttype` be *UnwrapAffirm:* `TypeValueOf(call.children.1)`.
+				1. *Let* `antecedenttype` be *Unwrap:* `TypeValueOf(call.children.1)`.
 				2. *If* `call.children.count` is 2:
 					1. *Note:* The call looks like "Map.<K>()".
 					2. *Let* `consequenttype` be `antecedenttype`.
 				3. *Else If* `call.children.count` is 3:
 					1. *If* `call.children.2` is a SemanticType:
 						1. *Note:* The call looks like "Map.<K, V>()".
-						2. *Let* `consequenttype` be *UnwrapAffirm:* `TypeValueOf(call.children.2)`.
+						2. *Let* `consequenttype` be *Unwrap:* `TypeValueOf(call.children.2)`.
 					2. *Else:*
 						1. *Assert:* `call.children.2` is a SemanticExpression.
 						2. *Note:* The call looks like "Map.<K>(arg)".
@@ -241,17 +176,17 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 					1. *Assert:* `call.children.count` is 4.
 					2. *If* `call.children.2` is a SemanticType *and* `call.children.3` is a SemanticExpression:
 						1. *Note:* The call looks like "Map.<K, V>(arg)".
-						2. *Let* `consequenttype` be *UnwrapAffirm:* `TypeValueOf(call.children.2)`.
+						2. *Let* `consequenttype` be *Unwrap:* `TypeValueOf(call.children.2)`.
 						3. *Let* `arg` be `call.children.3`.
 						4. *Let* `argtype` be *Unwrap:* `TypeOf(arg)`.
 					3. *Else:*
 						1. *Throw:* a new TypeErrorArgCount.
-				5. *Let:* `entrytype` be a Tuple type containing the items in the Sequence [
+				5. *Let* `entrytype` be a Tuple type containing the items in the Sequence [
 					EntryTypeStructure [type= `antecedenttype`, optional= `false`],
 					EntryTypeStructure [type= `consequenttype`, optional= `false`],
 				].
-				6. *Let*: `paramtype` be a List type whose items’ type is `entrytype`.
-				7. *If*: `arg` is set:
+				6. *Let* `paramtype` be a List type whose items’ type is `entrytype`.
+				7. *If* `arg` is set:
 					1. *Let* `is_assignable` be `TypeCheckAssign(arg, paramtype)`.
 					2. *If* `is_assignable` is an abrupt completion:
 						1. *If* `arg` is a SemanticTuple:
@@ -261,12 +196,12 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 							1. *Let* `items` be the union of all item types in `argtype`.
 							2. *If* *UnwrapAffirm:* `Subtype(items, entrytype)` is `false`:
 								1. *Throw:* a new TypeErrorNotAssignable.
-						3. *Else*:
+						3. *Else:*
 							1. *Throw:* a new TypeErrorNotAssignable.
 				8. *Return:* a mutable Map type whose antecedents’ type is `antecedenttype`
 					and whose consequents’ type is `consequenttype`.
 		2. *Throw:* a new TypeErrorArgCount.
-	6. *Throw* a new SyntaxError.
+	6. *Throw:* a new SyntaxError.
 ;
 
 
@@ -323,7 +258,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	4. *If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Number)` is `true`:
 		1. *If* *UnwrapAffirm:* `Subtype(t0, Float)` is `true` *or* *UnwrapAffirm:* `Subtype(t1, Float)` is `true`:
 			1. *Return:* `Float`.
-		2. *Else*:
+		2. *Else:*
 			1. *Return:* `Integer`.
 	5. *Throw:* a new TypeErrorInvalidOperation.
 ;
@@ -338,7 +273,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: IS] expr) :=
-	1. *Throw:* new TypeError "Operator not yet supported.".
+	1. *Throw:* a new TypeError "Operator not yet supported.".
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=
@@ -401,6 +336,6 @@ Type! TypeOfUnfolded(SemanticOperation[operator: COND] expr) :=
 
 
 
-Type ToType(Or<Null, Boolean, Number> v) :=
+Type ToType(Or<Null, Boolean, Symbol, Number, String> v) :=
 	1. *Return:* a new Type containing only the value `v`.
 ;

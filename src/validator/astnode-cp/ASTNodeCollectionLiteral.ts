@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {TYPE} from '../../index.ts';
 import {
 	assert_context_name,
+	forEither,
 	memoizeMethod,
 } from '../../lib/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
@@ -11,46 +12,6 @@ import {
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
-
-
-
-/**
- * Executes a callback on each item of an array until that callback returns.
- * If the callback throws, the error is saved, and execution proceeds to the next iteration.
- * If any iteration returns, this method returns and the errors are discarded.
- * If all iterations throw, the errors are collected into a single AggregateError, which is then thrown.
- *
- * The “dual” of {@link Array#forEach} — this method returns as soon as a callback call is successful; otherwise throws.
- *
- * Similar to {@link Promise.any}, but synchronous.
- *
- * @typeparam T                the type of items in the array
- * @param     array            the array of items
- * @param     callback         the function to call on each item
- * @throws    {AggregateError} if two or more iterations throws an error
- * @throws    {Error}          if one iteration throws an error
- */
-function forEither<T>(array: readonly T[], callback: (item: T, i: number, src: readonly T[]) => void): void {
-	const thrown: Error[] = [];
-	try {
-		array.forEach((it, i, src) => {
-			try {
-				callback.call(null, it, i, src);
-			} catch (e) {
-				thrown.push(e as Error);
-				return;
-			}
-			throw new Error('success');
-		});
-	} catch {
-		return;
-	}
-	throw (
-		thrown.length >= 2 ? new AggregateError(thrown) :
-		thrown.length      ? thrown[0] :
-		new Error('An unexpected error occurred.')
-	);
-}
 
 
 

@@ -23,6 +23,7 @@ import {
 } from './utils-private.ts';
 import {
 	Operator,
+	type ValidTypeAccessOperator,
 	type ValidAccessOperator,
 	type ValidTypeOperator,
 	type ValidOperatorUnary,
@@ -36,9 +37,9 @@ import {
 
 class Decorator {
 	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
-		[Punctuator.DOT,      Operator.DOT],
-		[Punctuator.OPTDOT,   Operator.OPTDOT],
-		[Punctuator.CLAIMDOT, Operator.CLAIMDOT],
+		[Punctuator.DOT,     Operator.DOT],
+		[Punctuator.DOT_MAY, Operator.DOT_MAY],
+		[Punctuator.DOT_RES, Operator.DOT_RES],
 	]);
 
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, ValidTypeOperator> = new Map<Punctuator | Keyword, ValidTypeOperator>([
@@ -96,7 +97,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_record_literal'>):               AST.ASTNodeTypeRecord;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_dict_literal'>):                 AST.ASTNodeTypeDict;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_map_literal'>):                  AST.ASTNodeTypeMap;
-	public decorateTS(syntaxnode: SyntaxNodeType<'property_access_type'>):              AST.ASTNodeIndexType | AST.ASTNodeKey;
+	public decorateTS(syntaxnode: SyntaxNodeType<'property_access_type'>):              AST.ASTNodeIndex | AST.ASTNodeKey;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_compound'>):                     AST.ASTNodeTypeAccess | AST.ASTNodeTypeCall;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_unary_symbol'>):                 AST.ASTNodeTypeOperationUnary | AST.ASTNodeTypeList | AST.ASTNodeTypeSet;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_unary_keyword'>):                AST.ASTNodeTypeOperationUnary;
@@ -218,10 +219,7 @@ class Decorator {
 			)],
 
 			['property_access_type', (node) => (
-				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndexType(
-					node as SyntaxNodeType<'property_access_type'>,
-					new AST.ASTNodeTypeConstant(node.children[1]),
-				) :
+				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(node.children[1]) :
 				(assert.ok(
 					isSyntaxNodeType(node.children[1], 'word'),
 					`Expected ${ node.children[1] } to be a \`SyntaxNodeType<'word'>\`.`,
@@ -231,6 +229,7 @@ class Decorator {
 			['type_compound', (node) => (
 				(isSyntaxNodeType(node.children[1], 'property_access_type')) ? new AST.ASTNodeTypeAccess(
 					node as SyntaxNodeType<'type_compound'>,
+					Decorator.ACCESSORS.get(node.children[1].children[0].text as Punctuator) as ValidTypeAccessOperator,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 					this.decorateTS(node.children[1]),
 				) :
@@ -272,14 +271,15 @@ class Decorator {
 				} else { // we have `T[n]`
 					assert.strictEqual(node.children.length, 4);
 					assert.strictEqual(punc, Punctuator.BRAK_OPN);
-					const count: bigint = BigInt(Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
+					const count: bigint | number = Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
 						...CONFIG_DEFAULT,
 						languageFeatures: {
 							...CONFIG_DEFAULT.languageFeatures,
 							integerRadices:    true,
 							numericSeparators: true,
 						},
-					})[0]);
+					});
+					assert.ok(typeof count === 'bigint'); // better type guard than `assert.strictEqual`
 					return new AST.ASTNodeTypeList(
 						node as SyntaxNodeType<'type_unary_symbol'>,
 						basetype,
@@ -360,20 +360,14 @@ class Decorator {
 			)],
 
 			['property_access', (node) => (
-				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(
-					node as SyntaxNodeType<'property_access'>,
-					new AST.ASTNodeConstant(node.children[1]),
-				) :
-				          (isSyntaxNodeType     (node.children[1], 'word')) ?                                                                  this.decorateTS(node.children[1]) : // eslint-disable-line @stylistic/indent
+				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(node.children[1]) :
+				(isSyntaxNodeType(node.children[1], 'word'))    ? this.decorateTS(node.children[1]) :
 				(assert.ok(isSyntaxNodeSupertype(node.children[2], 'expression'), `Expected ${ node.children[2] } to be an expression node.`), this.decorateTS(node.children[2]))
 			)],
 
 			['property_assign', (node) => (
-				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(
-					node as SyntaxNodeType<'property_assign'>,
-					new AST.ASTNodeConstant(node.children[1]),
-				) :
-				          (isSyntaxNodeType     (node.children[1], 'word')) ?                                                                  this.decorateTS(node.children[1]) : // eslint-disable-line @stylistic/indent
+				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(node.children[1]) :
+				(isSyntaxNodeType(node.children[1], 'word'))    ? this.decorateTS(node.children[1]) :
 				(assert.ok(isSyntaxNodeSupertype(node.children[2], 'expression'), `Expected ${ node.children[2] } to be an expression node.`), this.decorateTS(node.children[2]))
 			)],
 

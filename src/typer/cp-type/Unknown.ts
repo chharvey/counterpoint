@@ -18,6 +18,7 @@ export class Unknown extends ReferenceType {
 			VALUE.NULL,
 			VALUE.FALSE,
 			VALUE.TRUE,
+			VALUE.SYM_NEVER,
 			VALUE.INT_0,
 			VALUE.INT_1,
 			VALUE.FLOAT_0,

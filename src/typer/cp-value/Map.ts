@@ -25,7 +25,7 @@ import {Collection} from './Collection.ts';
  * @final
  */
 class ValueMap<K extends Value = Value, V extends Value = Value> extends Collection {
-	public constructor(private readonly cases: ReadonlyMap<K, V> = new Map()) {
+	public constructor(public readonly cases: ReadonlyMap<K, V> = new Map()) {
 		super();
 		const uniques = new Map<K, V>();
 		[...cases].forEach(([ant, con]) => {
@@ -75,10 +75,10 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		);
 	}
 
-	public get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | Null {
+	public get(ant: K, is_access_maybe: boolean, accessor: AST.ASTNodeExpression): V | Null {
 		return (
 			xjs.Map.has(this.cases, ant, languageValuesIdentical) ? xjs.Map.get(this.cases, ant, languageValuesIdentical)! :
-			access_optional                                       ? NULL :
+			is_access_maybe                                       ? NULL :
 			assert.fail(new VoidError01(accessor))
 		);
 	}

@@ -1,10 +1,7 @@
 import * as assert from 'node:assert';
 import {TypeErrorNoEntry} from '../../index.ts';
 import type {IntRange} from '../../lib/index.ts';
-import type {
-	ValidAccessOperator,
-	AST,
-} from '../../validator/index.ts';
+import type {AST} from '../../validator/index.ts';
 import type {TypeEntry} from '../utils-public.ts';
 import {
 	strictEqual,
@@ -12,7 +9,6 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import * as VALUE from '../cp-value/index.ts';
-import {updateAccessedStaticType} from './utils-private.ts';
 import {
 	subtypeRules,
 	type Type,
@@ -94,14 +90,10 @@ class TypeRecord extends ValueType {
 	}
 
 	/** @final */
-	public get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): Type {
-		return updateAccessedStaticType(
-			((this.invariants.has(key))
-				? this.invariants.get(key)!
-				: assert.fail(new TypeErrorNoEntry('property', this, accessor))
-			),
-			access_kind,
-		);
+	public get(key: bigint, accessor: AST.ASTNodeKey): TypeEntry {
+		return this.invariants.has(key)
+			? this.invariants.get(key)!
+			: assert.fail(new TypeErrorNoEntry('key', this, accessor));
 	}
 
 	/** @final */

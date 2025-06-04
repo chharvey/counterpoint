@@ -36,7 +36,7 @@ describe('Validator', () => {
 	});
 
 	describe('.cookTokenNumber', () => {
-		new Map<string, [string, number[]]>([
+		new Map<string, [string, readonly bigint[] | readonly number[]]>([
 			/* eslint-disable @stylistic/array-element-newline */
 			['implicit radix integers', [
 				`
@@ -44,7 +44,7 @@ describe('Validator', () => {
 				`,
 				[
 					370, 37, 9037, -9037, 6, -6,
-				],
+				].map((n) => BigInt(n)),
 			]],
 			['explicit radix integers', [
 				`
@@ -65,7 +65,7 @@ describe('Validator', () => {
 					  370, 37,    9037,   -9037, 6, -6,
 					 3696, 231,  37095,  -37095, 6, -6,
 					18396, 511, 420415, -420415, 6, -6,
-				],
+				].map((n) => BigInt(n)),
 				/* eslint-enable @stylistic/indent */
 			]],
 			['floats', [
@@ -86,7 +86,7 @@ describe('Validator', () => {
 				`,
 				[
 					12345, 12345, -12345, 1234567, 1234567, -1234567, 12345678, 12345678, -12345678,
-				],
+				].map((n) => BigInt(n)),
 			]],
 			['explicit radix integers with separators', [
 				`
@@ -107,14 +107,14 @@ describe('Validator', () => {
 					  370, 37,    9037,   -9037, 6, -6,
 					 3696, 231,  37095,  -37095, 6, -6,
 					18396, 511, 420415, -420415, 6, -6,
-				],
+				].map((n) => BigInt(n)),
 				/* eslint-enable @stylistic/indent */
 			]],
 			/* eslint-enable @stylistic/array-element-newline */
 		]).forEach(([source, values], description) => {
 			it(description, () => {
 				assert.deepStrictEqual(
-					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)[0]),
+					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)),
 					values,
 				);
 			});

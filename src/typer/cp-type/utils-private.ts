@@ -1,14 +1,5 @@
 import {Keyword} from '../../parser/index.ts';
-import {
-	Operator,
-	type ValidAccessOperator,
-} from '../../validator/index.ts';
-import type {TypeEntry} from '../utils-public.ts';
-import {
-	type Type,
-	VOID,
-	NULL,
-} from './index.ts';
+import type {Type} from './index.ts';
 
 
 
@@ -23,13 +14,5 @@ export type ReadonlyArrayOfAtLeast2<T> = readonly [T, T, ...readonly T[]];
 export const language_types_equal = (a: Type, b: Type): boolean => a.equals(b);
 
 
-
-export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidAccessOperator): Type {
-	return (access_kind === Operator.CLAIMDOT)
-		? entry.type.subtract(VOID)
-		: (entry.optional)
-			? entry.type.union((access_kind === Operator.OPTDOT) ? NULL : VOID)
-			: entry.type;
-}
 
 export const MUT_OPERATOR = `${ Keyword.MUTABLE } `;

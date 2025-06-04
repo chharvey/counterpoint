@@ -37,6 +37,7 @@ PrimitiveLiteral ::=
 	| INTEGER
 	| FLOAT
 	| STRING
+	| "@" Word
 ;
 
 
@@ -70,8 +71,8 @@ TypeUnit ::=
 	| TypeMapLiteral
 ;
 
-PropertyAccessType ::= "." (INTEGER | Word);
-GenericCall        ::= "." GenericArguments;
+PropertyAccessType ::= ("." | "?.") (INTEGER | Word);
+GenericCall        ::=  "."         GenericArguments;
 
 TypeCompound ::=
 	| TypeUnit

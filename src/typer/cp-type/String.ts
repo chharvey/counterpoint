@@ -1,6 +1,6 @@
 import {instanceOf} from '../utils-private.ts';
 import * as VALUE from '../cp-value/index.ts';
-import {ValueType} from './ValueType.ts';
+import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
 
 
 
@@ -8,7 +8,7 @@ import {ValueType} from './ValueType.ts';
  * Class for constructing the `str` type.
  * @final
  */
-class TypeString extends ValueType {
+class TypeString extends UnenumeratedPrimitiveType {
 	public constructor() {
 		super(false, new Set([VALUE.STR_EMPTY]));
 	}

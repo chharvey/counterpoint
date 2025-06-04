@@ -8,9 +8,7 @@ import {Type} from './Type.ts';
  * - Never
  * - Void
  * - TypeBoolean
- * - Integer
- * - Float
- * - TypeString
+ * - UnenumeratedPrimitiveType
  * - Unit
  * - TypeTuple
  * - TypeRecord

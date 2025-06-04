@@ -25,7 +25,7 @@ import {Collection} from './Collection.ts';
  * @final
  */
 class ValueSet<T extends Value = Value> extends Collection {
-	public constructor(private readonly elements: ReadonlySet<T> = new Set()) {
+	public constructor(public readonly elements: ReadonlySet<T> = new Set()) {
 		super();
 		const uniques = new Set<T>();
 		[...elements].forEach((el) => {

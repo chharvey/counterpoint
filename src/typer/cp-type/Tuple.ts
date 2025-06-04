@@ -1,10 +1,7 @@
 import * as assert from 'node:assert';
 import {TypeErrorNoEntry} from '../../index.ts';
 import type {IntRange} from '../../lib/index.ts';
-import type {
-	ValidAccessOperator,
-	AST,
-} from '../../validator/index.ts';
+import type {AST} from '../../validator/index.ts';
 import type {TypeEntry} from '../utils-public.ts';
 import {
 	strictEqual,
@@ -12,7 +9,6 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import * as VALUE from '../cp-value/index.ts';
-import {updateAccessedStaticType} from './utils-private.ts';
 import {
 	subtypeRules,
 	type Type,
@@ -94,16 +90,13 @@ class TypeTuple extends ValueType {
 	}
 
 	/** @final */
-	public get(index: VALUE.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
+	public get(index: bigint, accessor: AST.ASTNodeIndex): TypeEntry {
 		const n: number = this.invariants.length;
-		const i: number = index.toNumber();
-		return updateAccessedStaticType(
-			(
-				(-n <= i && i < 0) ? this.invariants[i + n] :
-				(0  <= i && i < n) ? this.invariants[i]     :
-				assert.fail(new TypeErrorNoEntry('index', this, accessor))
-			),
-			access_kind,
+		const i: number = Number(index);
+		return (
+			(-n <= i && i < 0) ? this.invariants[i + n] :
+			(0  <= i && i < n) ? this.invariants[i] :
+			assert.fail(new TypeErrorNoEntry('index', this, accessor))
 		);
 	}
 
