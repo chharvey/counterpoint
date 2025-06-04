@@ -411,24 +411,27 @@ Normally, the compiler will compute the type of an expression, but sometimes the
 or we as programmers know more than the compiler does, based on conditions or circumstances of our code.
 We can use a claim to tell the compiler, “I know what I’m doing and the type should be *that*.”
 
-Type claims are a general form of [Claim Access](#claim-access).
-For example, we could use claim access to say that an optional entry exists on an object:
+Type claims are a general form of [non-null assertions] (link pending).
+For example, we could use non-null assertion to say that an optional entry exists on an object:
 ```
-let unfixed item: [str, ?: int] = ['apples', 42];
-let quantity: int = item!.1;
+let var item: [str, ?: int] = ["apples", 42];
+let quantity: int = item?.1~?;
 ```
-The more general form of this is claiming that `item.1` is of type `int`:
+Since `item.1` is optional, `item?.1` is of type `int | null`.
+By using the non-null assertion `~?`, we can subtract type null.
+
+The more general form of this is simply claiming that `item?.1` is of type `int`:
 ```
-let unfixed item: [str, ?: int] = ['apples', 42];
-let quantity: int = <int>item.1;
+let var item: [str, ?: int] = ["apples", 42];
+let quantity: int = <int>item?.1;
 ```
 
-Type claims can be used in situations where claim access cannot.
-Whereas claim access can only tell the compiler that a property *exists*,
+Type claims can be used in situations where non-null assertion cannot.
+Whereas non-null assertions can only tell the compiler that a property *exists*,
 type claims can widen, narrow, or shift the type of an expression.
 ```
-let unfixed item: [str, int | str] = ['apples', 42];
-let ingredient: obj        = <obj>item.0;        % widening
+let var item: [str, int | str] = ["apples", 42];
+let ingredient: unknown    = <unknown>item.0;    % widening
 let quantity:   int        = <int>item.1;        % narrowing
 let in_stock:   int | bool = <int | bool>item.1; % shifting
 ```
@@ -439,7 +442,7 @@ and its claimed type are disjoint (i.e. if there’s no overlap).
 <str>42; %> TypeError
 ```
 
-A note of caution: Like claim access, **type claims should never be used to “hack” the compiler**.
+A note of caution: **Type claims should never be used to “hack” the compiler**.
 Using type claims to “just get your code to compile” is never recommended,
 because it won’t prevent runtime errors and it will most likely cause more problems down the road.
 But there are cases in which human reasoning about type safety outsmarts the compiler,
