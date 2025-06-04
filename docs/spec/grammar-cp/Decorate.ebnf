@@ -396,8 +396,8 @@ Decorate(ExpressionCast ::= ExpressionUnarySymbol) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol);
 Decorate(ExpressionCast ::= ExpressionCast "as" "<" Type ">") -> SemanticClaim
 	:= (SemanticClaim
-		Decorate(Type)
 		Decorate(ExpressionCast)
+		Decorate(Type)
 	);
 
 

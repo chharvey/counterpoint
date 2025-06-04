@@ -113,7 +113,7 @@ SemanticCall
 	::= SemanticExpression SemanticType* SemanticExpression*;
 
 SemanticClaim
-	::= SemanticType SemanticExpression;
+	::= SemanticExpression SemanticType;
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;

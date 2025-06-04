@@ -419,8 +419,8 @@ class Decorator {
 
 			['expression_cast', (node) => new AST.ASTNodeClaim(
 				node as SyntaxNodeType<'expression_cast'>,
-				this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
 				this.decorateTS      (node.children[0] as SyntaxNodeSupertype<'expression'>),
+				this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
 			)],
 
 			['expression_exponential', (node) => new AST.ASTNodeOperationBinaryArithmetic(
