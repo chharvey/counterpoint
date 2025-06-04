@@ -80,11 +80,15 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>- …</code></td>
 		</tr>
 		<tr>
-			<th>4</th>
+			<th rowspan="2">4</th>
+			<td>Type Cast</td>
+			<td rowspan="2">binary infix</td>
+			<td rowspan="2">left-to-right</td>
+			<td><code>… as …</code></td>
+		</tr>
+		<tr>
 			<td>Type Claim</td>
-			<td>unary prefix</td>
-			<td>right-to-left</td>
-			<td><code>&lt; … &gt; …</code></td>
+			<td><code>… as &lt; … &gt;</code></td>
 		</tr>
 		<tr>
 			<th>5</th>
@@ -398,11 +402,12 @@ this is important to mention because it could affect how we write
 [additive expressions](#parsing-additive-expressions).
 
 
-### Type Claim
+### Type Cast/Claim
 ```
-`<` <Type> `>` <obj>
+<Object>  as <Object>
+<unknown> as `<` <Type> `>`
 ```
-The expression `<T>expr` tells the type system to treat `expr` as type `T`,
+The expression `expr as <T>` tells the type system to treat `expr` as type `T`,
 even though it might have been computed as a different type.
 This is called a **type claim**, because we’re *claiming* that `expr` is of type `T`.
 (We say “claim” instead of “assert”, which is an unrelated concept.)
@@ -423,7 +428,7 @@ By using the non-null assertion `~?`, we can subtract type null.
 The more general form of this is simply claiming that `item?.1` is of type `int`:
 ```
 let var item: [str, ?: int] = ["apples", 42];
-let quantity: int = <int>item?.1;
+let quantity: int = item?.1 as <int>;
 ```
 
 Type claims can be used in situations where non-null assertion cannot.
@@ -431,15 +436,15 @@ Whereas non-null assertions can only tell the compiler that a property *exists*,
 type claims can widen, narrow, or shift the type of an expression.
 ```
 let var item: [str, int | str] = ["apples", 42];
-let ingredient: unknown    = <unknown>item.0;    % widening
-let quantity:   int        = <int>item.1;        % narrowing
-let in_stock:   int | bool = <int | bool>item.1; % shifting
+let ingredient: unknown    = item.0 as <unknown>;    % widening
+let quantity:   int        = item.1 as <int>;        % narrowing
+let in_stock:   int | bool = item.1 as <int | bool>; % shifting
 ```
 
 The compiler will throw an error when encountering a type claim if its operand’s computed type
 and its claimed type are disjoint (i.e. if there’s no overlap).
 ```
-<str>42; %> TypeError
+42 as <str>; %> TypeError
 ```
 
 A note of caution: **Type claims should never be used to “hack” the compiler**.
