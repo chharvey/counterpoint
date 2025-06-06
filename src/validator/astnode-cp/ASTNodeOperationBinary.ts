@@ -19,6 +19,7 @@ import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 /**
  * Known subclasses:
+ * - ASTNodeOperationBinaryCast
  * - ASTNodeOperationBinaryArithmetic
  * - ASTNodeOperationBinaryComparative
  * - ASTNodeOperationBinaryEquality

@@ -9,6 +9,7 @@ export enum Operator {
 	EMP,
 	AFF,
 	NEG,
+	CAST,
 	EXP,
 	MUL,
 	DIV,
@@ -84,6 +85,7 @@ export type ValidOperatorLogical = (
 );
 
 export type ValidOperatorBinary = (
+	| Operator.CAST
 	| ValidOperatorArithmetic
 	| ValidOperatorComparative
 	| ValidOperatorEquality

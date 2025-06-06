@@ -61,6 +61,7 @@ class Decorator {
 	]);
 
 	private static readonly OPERATORS_BINARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
+		[Keyword   .AS,   Operator.CAST],
 		[Punctuator.EXP,  Operator.EXP],
 		[Punctuator.MUL,  Operator.MUL],
 		[Punctuator.DIV,  Operator.DIV],
@@ -117,7 +118,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_compound'>):               AST.ASTNodeAccess | AST.ASTNodeCall;
 	public decorateTS(syntaxnode: SyntaxNodeType<'assignee'>):                          AST.ASTNodeVariable | AST.ASTNodeAccess;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):           AST.ASTNodeExpression | AST.ASTNodeOperationUnary;
-	public decorateTS(syntaxnode: SyntaxNodeType<'expression_cast'>):                   AST.ASTNodeClaim;
+	public decorateTS(syntaxnode: SyntaxNodeType<'expression_cast'>):                   AST.ASTNodeOperationBinaryCast | AST.ASTNodeClaim;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_exponential'>):            AST.ASTNodeOperationBinaryArithmetic;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_multiplicative'>):         AST.ASTNodeOperationBinaryArithmetic;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_additive'>):               AST.ASTNodeOperationBinaryArithmetic;
@@ -417,10 +418,17 @@ class Decorator {
 				)
 			)],
 
-			['expression_cast', (node) => new AST.ASTNodeClaim(
-				node as SyntaxNodeType<'expression_cast'>,
-				this.decorateTS      (node.children[0] as SyntaxNodeSupertype<'expression'>),
-				this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
+			['expression_cast', (node) => (node.children.length === 3
+				? new AST.ASTNodeOperationBinaryCast(
+					node as SyntaxNodeType<'expression_cast'>,
+					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
+					this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
+				)
+				: (assert.strictEqual(node.children.length, 5, `Expected \`${ node }\` to have 5 children.`), new AST.ASTNodeClaim(
+					node as SyntaxNodeType<'expression_cast'>,
+					this.decorateTS      (node.children[0] as SyntaxNodeSupertype<'expression'>),
+					this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
+				))
 			)],
 
 			['expression_exponential', (node) => new AST.ASTNodeOperationBinaryArithmetic(

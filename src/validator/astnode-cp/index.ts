@@ -35,6 +35,7 @@ export * from './ASTNodeClaim.ts';
 export * from './ASTNodeOperation.ts';
 export * from './ASTNodeOperationUnary.ts';
 export * from './ASTNodeOperationBinary.ts';
+export * from './ASTNodeOperationBinaryCast.ts';
 export * from './ASTNodeOperationBinaryArithmetic.ts';
 export * from './ASTNodeOperationBinaryComparative.ts';
 export * from './ASTNodeOperationBinaryEquality.ts';
