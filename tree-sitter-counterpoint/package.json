@@ -30,7 +30,8 @@
     "postdist": "tree-sitter generate",
     "pretest": "tsx ./test/build.mts",
     "test": "tree-sitter test",
-    "build": "npm run dist && npm run test && npm run prebuildify",
+    "build": "npm run dist && npm run test",
+    "postbuild": "npm run prebuildify",
     "install": "node-gyp-build",
     "prebuildify": "prebuildify --napi --strip"
   },
