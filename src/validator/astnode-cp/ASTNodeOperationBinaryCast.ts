@@ -12,7 +12,10 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
-import {Operator} from '../Operator.ts';
+import {
+	Operator,
+	type ValidOperatorCast,
+} from '../Operator.ts';
 import {
 	buildDeco,
 	ASTNodeExpression,
@@ -30,6 +33,7 @@ export class ASTNodeOperationBinaryCast extends ASTNodeOperationBinary {
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
+		protected override readonly operator: ValidOperatorCast,
 		operand0: ASTNodeExpression,
 		operand1: ASTNodeExpression,
 	) {

@@ -494,14 +494,14 @@ module.exports = grammar({
 		_expression_conjunctive:    $ => choice($._expression_equality,       alias($.expression_conjunctive_dfn,    $.expression_conjunctive)),
 		_expression_disjunctive:    $ => choice($._expression_conjunctive,    alias($.expression_disjunctive_dfn,    $.expression_disjunctive)),
 
-		expression_cast_dfn:           $ => seq($._expression_cast,           'as',                                                   choice($._expression_unary_symbol, seq('<', $._type, '>'))),
-		expression_exponential_dfn:    $ => seq($._expression_cast,           '^',                                                    $._expression_exponential),
-		expression_multiplicative_dfn: $ => seq($._expression_multiplicative, choice('*', '/'),                                       $._expression_exponential),
-		expression_additive_dfn:       $ => seq($._expression_additive,       choice('+', '-'),                                       $._expression_multiplicative),
-		expression_comparative_dfn:    $ => seq($._expression_comparative,    choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), $._expression_additive),
-		expression_equality_dfn:       $ => seq($._expression_equality,       choice('===', '!==', '==', '!='),                       $._expression_comparative),
-		expression_conjunctive_dfn:    $ => seq($._expression_conjunctive,    choice('&&', '!&'),                                     $._expression_equality),
-		expression_disjunctive_dfn:    $ => seq($._expression_disjunctive,    choice('||', '!|'),                                     $._expression_conjunctive),
+		expression_cast_dfn:           $ => choice(seq($._expression_cast,           choice('as', 'as?', 'as!'),                             $._expression_unary_symbol), seq($._expression_cast, 'as', '<', $._type, '>')),
+		expression_exponential_dfn:    $ =>        seq($._expression_cast,           '^',                                                    $._expression_exponential),
+		expression_multiplicative_dfn: $ =>        seq($._expression_multiplicative, choice('*', '/'),                                       $._expression_exponential),
+		expression_additive_dfn:       $ =>        seq($._expression_additive,       choice('+', '-'),                                       $._expression_multiplicative),
+		expression_comparative_dfn:    $ =>        seq($._expression_comparative,    choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), $._expression_additive),
+		expression_equality_dfn:       $ =>        seq($._expression_equality,       choice('===', '!==', '==', '!='),                       $._expression_comparative),
+		expression_conjunctive_dfn:    $ =>        seq($._expression_conjunctive,    choice('&&', '!&'),                                     $._expression_equality),
+		expression_disjunctive_dfn:    $ =>        seq($._expression_disjunctive,    choice('||', '!|'),                                     $._expression_conjunctive),
 
 		expression_conditional: $ => seq('if', $._expression, 'then', $._expression, 'else', $._expression),
 

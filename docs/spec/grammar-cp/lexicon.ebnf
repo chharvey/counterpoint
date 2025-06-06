@@ -64,6 +64,8 @@ KeywordOther :::=
 	// operator
 		| "mut"
 		| "as"
+		| "as?"
+		| "as!"
 		| "is"
 		| "isnt"
 		| "if"

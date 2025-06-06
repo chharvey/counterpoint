@@ -52,15 +52,17 @@ TokenWorth(KeywordValue :::= "false")   -> RealNumber := \x89;
 TokenWorth(KeywordValue :::= "true")    -> RealNumber := \x8a;
 TokenWorth(KeywordOther :::= "mut")     -> RealNumber := \x8b;
 TokenWorth(KeywordOther :::= "as")      -> RealNumber := \x8c;
-TokenWorth(KeywordOther :::= "is")      -> RealNumber := \x8d;
-TokenWorth(KeywordOther :::= "isnt")    -> RealNumber := \x8e;
-TokenWorth(KeywordOther :::= "if")      -> RealNumber := \x8f;
-TokenWorth(KeywordOther :::= "then")    -> RealNumber := \x90;
-TokenWorth(KeywordOther :::= "else")    -> RealNumber := \x91;
-TokenWorth(KeywordOther :::= "type")    -> RealNumber := \x92;
-TokenWorth(KeywordOther :::= "let")     -> RealNumber := \x93;
-TokenWorth(KeywordOther :::= "_")       -> RealNumber := \x94;
-TokenWorth(KeywordOther :::= "var")     -> RealNumber := \x95;
+TokenWorth(KeywordOther :::= "as?")     -> RealNumber := \x8d;
+TokenWorth(KeywordOther :::= "as!")     -> RealNumber := \x8e;
+TokenWorth(KeywordOther :::= "is")      -> RealNumber := \x8f;
+TokenWorth(KeywordOther :::= "isnt")    -> RealNumber := \x90;
+TokenWorth(KeywordOther :::= "if")      -> RealNumber := \x91;
+TokenWorth(KeywordOther :::= "then")    -> RealNumber := \x92;
+TokenWorth(KeywordOther :::= "else")    -> RealNumber := \x93;
+TokenWorth(KeywordOther :::= "type")    -> RealNumber := \x94;
+TokenWorth(KeywordOther :::= "let")     -> RealNumber := \x95;
+TokenWorth(KeywordOther :::= "_")       -> RealNumber := \x96;
+TokenWorth(KeywordOther :::= "var")     -> RealNumber := \x97;
 
 
 

@@ -792,10 +792,22 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		ExpressionCast: [
 			xjs.String.dedent`
-				value as Klass;
-				value as <T>;
+				value as  Klass;
+				value as? Klass;
+				value as! Klass;
+				value as  <T>;
 			`,
 			sourceExpressions(
+				s(
+					'expression_cast',
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'expression_cast',
+					s('identifier'),
+					s('identifier'),
+				),
 				s(
 					'expression_cast',
 					s('identifier'),

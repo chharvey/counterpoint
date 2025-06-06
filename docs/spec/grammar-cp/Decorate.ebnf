@@ -399,6 +399,16 @@ Decorate(ExpressionCast ::= ExpressionCast "as" ExpressionUnarySymbol) -> Semant
 		Decorate(ExpressionCast)
 		Decorate(ExpressionUnarySymbol)
 	);
+Decorate(ExpressionCast ::= ExpressionCast "as?" ExpressionUnarySymbol) -> SemanticOperation
+	:= (SemanticOperation[operator=MAYBE]
+		Decorate(ExpressionCast)
+		Decorate(ExpressionUnarySymbol)
+	);
+Decorate(ExpressionCast ::= ExpressionCast "as!" ExpressionUnarySymbol) -> SemanticOperation
+	:= (SemanticOperation[operator=RESULT]
+		Decorate(ExpressionCast)
+		Decorate(ExpressionUnarySymbol)
+	);
 Decorate(ExpressionCast ::= ExpressionCast "as" "<" Type ">") -> SemanticClaim
 	:= (SemanticClaim
 		Decorate(ExpressionCast)

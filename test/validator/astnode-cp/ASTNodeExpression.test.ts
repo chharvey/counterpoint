@@ -66,7 +66,7 @@ describe('ASTNodeExpression', () => {
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
-					new VALUE.Symbol(0x90n,  'then'),
+					new VALUE.Symbol(0x92n,  'then'),
 					new VALUE.Symbol(0x86n,  'str'),
 					new VALUE.Symbol(0x89n,  'false'),
 					new VALUE.Symbol(0x100n, 'foobar'),

@@ -320,6 +320,14 @@ describe('Decorator', () => {
 				a as Klass;
 				% (expression_cast)
 			`]],
+			['Decorate(ExpressionCast ::= ExpressionCast "as?" ExpressionUnarySymbol) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a as? Klass;
+				% (expression_cast)
+			`]],
+			['Decorate(ExpressionCast ::= ExpressionCast "as!" ExpressionUnarySymbol) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a as! Klass;
+				% (expression_cast)
+			`]],
 			['Decorate(ExpressionCast ::= ExpressionCast "as" "<" Type ">") -> SemanticOperation', [AST.ASTNodeClaim, `
 				a as <T>;
 				% (expression_cast)

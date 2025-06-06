@@ -119,7 +119,7 @@ SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
 SemanticOperation[operator: NEG]
 	::= SemanticExpression[type: Number];
-SemanticOperation[operator: CAST]
+SemanticOperation[operator: CAST | MAYBE | RESULT]
 	::= SemanticExpression SemanticExpression[type: Class];
 SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE | IS]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];

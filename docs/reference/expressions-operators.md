@@ -80,11 +80,17 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>- …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">4</th>
-			<td>Type Cast</td>
-			<td rowspan="2">binary infix</td>
-			<td rowspan="2">left-to-right</td>
+			<th rowspan="4">4</th>
+			<td rowspan="3">Type Cast</td>
+			<td rowspan="4">binary infix</td>
+			<td rowspan="4">left-to-right</td>
 			<td><code>… as …</code></td>
+		</tr>
+		<tr>
+			<td><code>… as? …</code></td>
+		</tr>
+		<tr>
+			<td><code>… as! …</code></td>
 		</tr>
 		<tr>
 			<td>Type Claim</td>
@@ -404,13 +410,21 @@ this is important to mention because it could affect how we write
 
 ### Type Cast/Claim
 ```
-<Object>  as <Class>
-<unknown> as `<` <Type> `>`
+<Object>  as  <Class>
+<Object>  as? <Class>
+<Object>  as! <Class>
+<unknown> as  `<` <Type> `>`
 ```
 The expression `expr as Klass` explicitly **casts** the `expr` into a `Klass`.
 This means that at compile time, `expr` is treated as type `Klass` within its containing expression,
 and the object to which `expr` evaluates is converted to a `Klass` instance at runtime.
 If the runtime conversion is not possible, than an error is thrown.
+
+`expr as? Klass` always returns a `Maybe` object and never throws.
+If `expr` is a `Klass` instance, a `Some` is returned; otherwise it returns a `None`.
+
+`expr as! Klass` always returns a `Result` object and never throws.
+If `expr` is a `Klass` instance, an `Ok` is returned; otherwise it returns a `Fail`.
 
 The expression `expr as <T>` tells the type system to treat `expr` as type `T`,
 even though it might have been computed as a different type.
@@ -463,6 +477,21 @@ cat.meow.();                  % calls `meow` on the `Cat` instance
 let dog: Dog = animal as Dog; % throws error: `Cat` cannot be converted to `Dog`
 dog.woof.();                  % unreachable
 ```
+The `as?` and `as!` casts can be useful in tandem with maybe/result access respectively.
+```
+let cat_m: Maybe.<Cat> = animal as? Cat; %== Some.<Cat>
+cat_m?.meow.();                          % calls `meow`
+
+let dog_m: Maybe.<Dog> = animal as? Dog; %== None
+dog_m?.woof.();                          %== None
+
+let cat_r: Result.<Cat> = animal as! Cat; %== Ok.<Cat>
+cat_r!.meow.();                           % calls `meow`
+
+let dog_r: Result.<Dog> = animal as! Dog; %== Fail
+dog_r?.woof.();                           %== Fail
+```
+
 
 A compile-time claim (`expr as <Klass>`) *claims* to the type-checker that `expr` is already of type `Klass`,
 but no double-check is performed at runtime. The program will proceed as usual, assuming `expr` is assignable to type `Klass`.
