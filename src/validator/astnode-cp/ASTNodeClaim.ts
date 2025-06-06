@@ -28,11 +28,11 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'expression_claim'>,
-		private readonly claimed_type: ASTNodeType,
+		start_node: SyntaxNodeType<'expression_cast'>,
 		private readonly operand: ASTNodeExpression,
+		private readonly claimed_type: ASTNodeType,
 	) {
-		super(start_node, {}, [claimed_type, operand]);
+		super(start_node, {}, [operand, claimed_type]);
 	}
 
 	@memoizeMethod

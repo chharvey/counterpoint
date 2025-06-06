@@ -66,7 +66,7 @@ describe('ASTNodeExpression', () => {
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
-					new VALUE.Symbol(0x8fn,  'then'),
+					new VALUE.Symbol(0x92n,  'then'),
 					new VALUE.Symbol(0x86n,  'str'),
 					new VALUE.Symbol(0x89n,  'false'),
 					new VALUE.Symbol(0x100n, 'foobar'),
@@ -567,28 +567,28 @@ describe('ASTNodeExpression', () => {
 
 	describe('ASTNodeClaim', () => {
 		const samples: string[] = [
-			'null;',
-			'false;',
-			'true;',
-			'0;',
-			'+0;',
-			'-0;',
-			'42;',
-			'+42;',
-			'-42;',
-			'0.0;',
-			'+0.0;',
-			'-0.0;',
-			'-4.2e-2;',
+			'null',
+			'false',
+			'true',
+			'0',
+			'+0',
+			'-0',
+			'42',
+			'+42',
+			'-42',
+			'0.0',
+			'+0.0',
+			'-0.0',
+			'-4.2e-2',
 		];
 		describe('#type', () => {
 			it('returns the type value of the claimed type.', () => {
-				assert.ok(AST.ASTNodeClaim.fromSource('<int?>3;').type().equals(TYPE.INT.union(TYPE.NULL)));
+				assert.ok(AST.ASTNodeClaim.fromSource('3 as <int?>;').type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
 			it('`never` is assignable to any type (even though intersection is empty).', () => {
 				new Map<string, (typ: TYPE.Type) => boolean>([
-					['<never>n;', (typ) => typ.isBottomType],
-					['<int>n;',   (typ) => typ.equals(TYPE.INT)],
+					['n as <never>;', (typ) => typ.isBottomType],
+					['n as <int>;',   (typ) => typ.equals(TYPE.INT)],
 				]).forEach((assertion, src) => {
 					const claim: AST.ASTNodeClaim = AST.ASTNodeClaim.fromSource(src);
 					claim.validator.addSymbol(new SymbolStructureVar(
@@ -598,44 +598,38 @@ describe('ASTNodeExpression', () => {
 					));
 					return assert.ok(assertion.call(null, claim.type()));
 				});
-				assert.throws(() => AST.ASTNodeClaim.fromSource('<never>3;').type(), TypeErrorNotAssignable);
+				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <never>;').type(), TypeErrorNotAssignable);
 			});
 			it('throws when the operand type and claimed type do not overlap.', () => {
-				assert.throws(() => AST.ASTNodeClaim.fromSource('<str>3;')      .type(), TypeErrorNotAssignable);
-				assert.throws(() => AST.ASTNodeClaim.fromSource('<int>"three";').type(), TypeErrorNotAssignable);
+				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <str>;')      .type(), TypeErrorNotAssignable);
+				assert.throws(() => AST.ASTNodeClaim.fromSource('"three" as <int>;').type(), TypeErrorNotAssignable);
 			});
 			it('with int coersion off, does not allow converting between int and float.', () => {
-				AST.ASTNodeClaim.fromSource('<float>3;').type(); // assert does not throw
-				AST.ASTNodeClaim.fromSource('<int>3.0;').type(); // assert does not throw
-				assert.throws(() => AST.ASTNodeClaim.fromSource('<float>3;', CONFIG_COERCION_OFF).type(), TypeErrorNotAssignable);
-				assert.throws(() => AST.ASTNodeClaim.fromSource('<int>3.0;', CONFIG_COERCION_OFF).type(), TypeErrorNotAssignable);
+				AST.ASTNodeClaim.fromSource('3 as <float>;').type(); // assert does not throw
+				AST.ASTNodeClaim.fromSource('3.0 as <int>;').type(); // assert does not throw
+				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <float>;', CONFIG_COERCION_OFF).type(), TypeErrorNotAssignable);
+				assert.throws(() => AST.ASTNodeClaim.fromSource('3.0 as <int>;', CONFIG_COERCION_OFF).type(), TypeErrorNotAssignable);
 			});
 		});
 
 
 		describe('#fold', () => {
 			it('returns the fold of the operand.', () => {
-				samples.forEach((expr) => {
-					const src: string = `<obj>${ expr }`;
-					assert.deepStrictEqual(
-						AST.ASTNodeClaim     .fromSource(src) .fold(),
-						AST.ASTNodeExpression.fromSource(expr).fold(),
-						expr,
-					);
-				});
+				samples.forEach((expr) => assert.deepStrictEqual(
+					AST.ASTNodeClaim     .fromSource(`${ expr } as <obj>;`) .fold(),
+					AST.ASTNodeExpression.fromSource(`${ expr };`).fold(),
+					expr,
+				));
 			});
 		});
 
 
 		describe('#build', () => {
 			it('returns the build of the operand.', () => {
-				samples.forEach((expr) => {
-					const src: string = `<unknown>${ expr }`;
-					assertEqualBins(
-						AST.ASTNodeClaim     .fromSource(src) .build(),
-						AST.ASTNodeExpression.fromSource(expr).build(),
-					);
-				});
+				samples.forEach((expr) => assertEqualBins(
+					AST.ASTNodeClaim     .fromSource(`${ expr } as <unknown>;`) .build(),
+					AST.ASTNodeExpression.fromSource(`${ expr };`).build(),
+				));
 			});
 		});
 	});

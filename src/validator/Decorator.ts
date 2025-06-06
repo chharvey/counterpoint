@@ -27,6 +27,7 @@ import {
 	type ValidAccessOperator,
 	type ValidTypeOperator,
 	type ValidOperatorUnary,
+	type ValidOperatorCast,
 	type ValidOperatorArithmetic,
 	type ValidOperatorComparative,
 	type ValidOperatorEquality,
@@ -61,27 +62,30 @@ class Decorator {
 	]);
 
 	private static readonly OPERATORS_BINARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
-		[Punctuator.EXP,  Operator.EXP],
-		[Punctuator.MUL,  Operator.MUL],
-		[Punctuator.DIV,  Operator.DIV],
-		[Punctuator.ADD,  Operator.ADD],
-		[Punctuator.SUB,  Operator.SUB],
-		[Punctuator.LT,   Operator.LT],
-		[Punctuator.GT,   Operator.GT],
-		[Punctuator.LE,   Operator.LE],
-		[Punctuator.GE,   Operator.GE],
-		[Punctuator.NLT,  Operator.NLT],
-		[Punctuator.NGT,  Operator.NGT],
-		[Keyword   .IS,   Operator.IS],
-		[Keyword   .ISNT, Operator.ISNT],
-		[Punctuator.ID,   Operator.ID],
-		[Punctuator.NID,  Operator.NID],
-		[Punctuator.EQ,   Operator.EQ],
-		[Punctuator.NEQ,  Operator.NEQ],
-		[Punctuator.AND,  Operator.AND],
-		[Punctuator.NAND, Operator.NAND],
-		[Punctuator.OR,   Operator.OR],
-		[Punctuator.NOR,  Operator.NOR],
+		[Keyword   .AS,     Operator.CAST],
+		[Keyword   .AS_MAY, Operator.CAST_MAY],
+		[Keyword   .AS_RES, Operator.CAST_RES],
+		[Punctuator.EXP,    Operator.EXP],
+		[Punctuator.MUL,    Operator.MUL],
+		[Punctuator.DIV,    Operator.DIV],
+		[Punctuator.ADD,    Operator.ADD],
+		[Punctuator.SUB,    Operator.SUB],
+		[Punctuator.LT,     Operator.LT],
+		[Punctuator.GT,     Operator.GT],
+		[Punctuator.LE,     Operator.LE],
+		[Punctuator.GE,     Operator.GE],
+		[Punctuator.NLT,    Operator.NLT],
+		[Punctuator.NGT,    Operator.NGT],
+		[Keyword   .IS,     Operator.IS],
+		[Keyword   .ISNT,   Operator.ISNT],
+		[Punctuator.ID,     Operator.ID],
+		[Punctuator.NID,    Operator.NID],
+		[Punctuator.EQ,     Operator.EQ],
+		[Punctuator.NEQ,    Operator.NEQ],
+		[Punctuator.AND,    Operator.AND],
+		[Punctuator.NAND,   Operator.NAND],
+		[Punctuator.OR,     Operator.OR],
+		[Punctuator.NOR,    Operator.NOR],
 	]);
 
 
@@ -116,8 +120,8 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'property_assign'>):                   AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_compound'>):               AST.ASTNodeAccess | AST.ASTNodeCall;
 	public decorateTS(syntaxnode: SyntaxNodeType<'assignee'>):                          AST.ASTNodeVariable | AST.ASTNodeAccess;
-	public decorateTS(syntaxnode: SyntaxNodeType<'expression_claim'>):                  AST.ASTNodeClaim;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):           AST.ASTNodeExpression | AST.ASTNodeOperationUnary;
+	public decorateTS(syntaxnode: SyntaxNodeType<'expression_cast'>):                   AST.ASTNodeOperationBinaryCast | AST.ASTNodeClaim;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_exponential'>):            AST.ASTNodeOperationBinaryArithmetic;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_multiplicative'>):         AST.ASTNodeOperationBinaryArithmetic;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_additive'>):               AST.ASTNodeOperationBinaryArithmetic;
@@ -398,28 +402,38 @@ class Decorator {
 				))
 			)],
 
-			['assignee', (node) => (node.children.length === 1)
+			['assignee', (node) => (node.children.length === 1
 				? new AST.ASTNodeVariable(node.children[0] as SyntaxNodeType<'identifier'>)
 				: new AST.ASTNodeAccess(
 					node as SyntaxNodeType<'assignee'>,
 					Operator.DOT,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 					this.decorateTS(node.children[1] as SyntaxNodeType<'property_assign'>),
-				)],
-
-			['expression_claim', (node) => new AST.ASTNodeClaim(
-				node as SyntaxNodeType<'expression_claim'>,
-				this.decorateTypeNode(node.children[1] as SyntaxNodeSupertype<'type'>),
-				this.decorateTS      (node.children[3] as SyntaxNodeSupertype<'expression'>),
+				)
 			)],
 
-			['expression_unary_symbol', (node) => (node.children[0].text === Punctuator.AFF) // `+a` is a no-op
+			['expression_unary_symbol', (node) => (node.children[0].text === Punctuator.AFF // `+a` is a no-op
 				? this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>)
 				: new AST.ASTNodeOperationUnary(
 					node as SyntaxNodeType<'expression_unary_symbol'>,
 					Decorator.OPERATORS_UNARY.get(node.children[0].text as Punctuator) as ValidOperatorUnary,
 					this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>),
-				)],
+				)
+			)],
+
+			['expression_cast', (node) => (node.children.length === 3
+				? new AST.ASTNodeOperationBinaryCast(
+					node as SyntaxNodeType<'expression_cast'>,
+					Decorator.OPERATORS_BINARY.get(node.children[1].text as Keyword)! as ValidOperatorCast,
+					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
+					this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
+				)
+				: (assert.strictEqual(node.children.length, 5, `Expected \`${ node }\` to have 5 children.`), new AST.ASTNodeClaim(
+					node as SyntaxNodeType<'expression_cast'>,
+					this.decorateTS      (node.children[0] as SyntaxNodeSupertype<'expression'>),
+					this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
+				))
+			)],
 
 			['expression_exponential', (node) => new AST.ASTNodeOperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_exponential'>,
@@ -626,7 +640,7 @@ class Decorator {
 				this.decorateTS(node.children[3] as SyntaxNodeSupertype<'type'>),
 			)],
 
-			['declaration_variable', (node) => (node.children.length === 7)
+			['declaration_variable', (node) => (node.children.length === 7
 				? new AST.ASTNodeDeclarationVariable(
 					node as SyntaxNodeType<'declaration_variable'>,
 					false,
@@ -640,7 +654,8 @@ class Decorator {
 					(assert.ok(isSyntaxNodeType(node.children[2], 'identifier')), new AST.ASTNodeVariable(node.children[2])),
 					this.decorateTypeNode (node.children[4] as SyntaxNodeSupertype<'type'>),
 					this.decorateTS       (node.children[6] as SyntaxNodeSupertype<'expression'>),
-				))],
+				))
+			)],
 
 			['statement_expression', (node) => new AST.ASTNodeStatementExpression(
 				node as SyntaxNodeType<'statement_expression'>,

@@ -80,11 +80,21 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>- …</code></td>
 		</tr>
 		<tr>
-			<th>4</th>
+			<th rowspan="4">4</th>
+			<td rowspan="3">Type Cast</td>
+			<td rowspan="4">binary infix</td>
+			<td rowspan="4">left-to-right</td>
+			<td><code>… as …</code></td>
+		</tr>
+		<tr>
+			<td><code>… as? …</code></td>
+		</tr>
+		<tr>
+			<td><code>… as! …</code></td>
+		</tr>
+		<tr>
 			<td>Type Claim</td>
-			<td>unary prefix</td>
-			<td>right-to-left</td>
-			<td><code>&lt; … &gt; …</code></td>
+			<td><code>… as &lt; … &gt;</code></td>
 		</tr>
 		<tr>
 			<th>5</th>
@@ -398,14 +408,28 @@ this is important to mention because it could affect how we write
 [additive expressions](#parsing-additive-expressions).
 
 
-### Type Claim
+### Type Cast/Claim
 ```
-`<` <Type> `>` <obj>
+<Object>  as  <Class>
+<Object>  as? <Class>
+<Object>  as! <Class>
+<unknown> as  `<` <Type> `>`
 ```
-The expression `<T>expr` tells the type system to treat `expr` as type `T`,
+The expression `expr as Klass` explicitly **casts** the `expr` into a `Klass`.
+This means that at compile time, `expr` is treated as type `Klass` within its containing expression,
+and the object to which `expr` evaluates is converted to a `Klass` instance at runtime.
+If the runtime conversion is not possible, than an error is thrown.
+
+`expr as? Klass` always returns a `Maybe` object and never throws.
+If `expr` is a `Klass` instance, a `Some` is returned; otherwise it returns a `None`.
+
+`expr as! Klass` always returns a `Result` object and never throws.
+If `expr` is a `Klass` instance, an `Ok` is returned; otherwise it returns a `Fail`.
+
+The expression `expr as <T>` tells the type system to treat `expr` as type `T`,
 even though it might have been computed as a different type.
 This is called a **type claim**, because we’re *claiming* that `expr` is of type `T`.
-(We say “claim” instead of “assert”, which is an unrelated concept.)
+(We say “claim” instead of “assert”, because no runtime error is thrown.)
 
 Normally, the compiler will compute the type of an expression, but sometimes the compiler gets it wrong,
 or we as programmers know more than the compiler does, based on conditions or circumstances of our code.
@@ -423,7 +447,7 @@ By using the non-null assertion `~?`, we can subtract type null.
 The more general form of this is simply claiming that `item?.1` is of type `int`:
 ```
 let var item: [str, ?: int] = ["apples", 42];
-let quantity: int = <int>item?.1;
+let quantity: int = item?.1 as <int>;
 ```
 
 Type claims can be used in situations where non-null assertion cannot.
@@ -431,16 +455,61 @@ Whereas non-null assertions can only tell the compiler that a property *exists*,
 type claims can widen, narrow, or shift the type of an expression.
 ```
 let var item: [str, int | str] = ["apples", 42];
-let ingredient: unknown    = <unknown>item.0;    % widening
-let quantity:   int        = <int>item.1;        % narrowing
-let in_stock:   int | bool = <int | bool>item.1; % shifting
+let ingredient: unknown    = item.0 as <unknown>;    % widening
+let quantity:   int        = item.1 as <int>;        % narrowing
+let in_stock:   int | bool = item.1 as <int | bool>; % shifting
 ```
 
 The compiler will throw an error when encountering a type claim if its operand’s computed type
 and its claimed type are disjoint (i.e. if there’s no overlap).
 ```
-<str>42; %> TypeError
+42 as <str>; %> TypeError
 ```
+
+#### Cast vs Claim
+A runtime cast (`expr as Klass`) will alwyas check whether `Klass` is a class, and whether `expr` is actually an instance of it at runtime;
+if not, then the program throws. This operator is preferred in such circumstances.
+```
+let animal: Animal = Cat.();
+let cat: Cat = animal as Cat; % cast is allowed (`Animal` and `Cat` overlap)
+cat.meow.();                  % calls `meow` on the `Cat` instance
+
+let dog: Dog = animal as Dog; % throws error: `Cat` cannot be converted to `Dog`
+dog.woof.();                  % unreachable
+```
+The `as?` and `as!` casts can be useful in tandem with maybe/result access respectively.
+```
+let cat_m: Maybe.<Cat> = animal as? Cat; %== Some.<Cat>
+cat_m?.meow.();                          % calls `meow`
+
+let dog_m: Maybe.<Dog> = animal as? Dog; %== None
+dog_m?.woof.();                          %== None
+
+let cat_r: Result.<Cat> = animal as! Cat; %== Ok.<Cat>
+cat_r!.meow.();                           % calls `meow`
+
+let dog_r: Result.<Dog> = animal as! Dog; %== Fail
+dog_r?.woof.();                           %== Fail
+```
+
+
+A compile-time claim (`expr as <Klass>`) *claims* to the type-checker that `expr` is already of type `Klass`,
+but no double-check is performed at runtime. The program will proceed as usual, assuming `expr` is assignable to type `Klass`.
+That means that if it’s *not* such an instance, an error could be thrown down the line,
+for example, when attempting to access a nonexistent method.
+```
+let animal: Animal = Cat.();
+let cat: Cat = animal as <Cat>; % claim is allowed (`Animal` and `Cat` overlap)
+cat.meow.();                    % calls `meow` on the `Cat` instance
+
+let dog: Dog = animal as <Dog>; % claim is allowed (`Animal` and `Dog` overlap)
+dog.woof.();                    % throws error: method `woof` not found on `Cat` instance
+```
+
+The benefits that type claim over type cast include the following, as demonstrated in the last section.
+- We can narrow types that would otherwise be too wide.
+- We can use type operator syntax like intersections and unions.
+- We can reference non-class types and type aliases by name.
 
 A note of caution: **Type claims should never be used to “hack” the compiler**.
 Using type claims to “just get your code to compile” is never recommended,
