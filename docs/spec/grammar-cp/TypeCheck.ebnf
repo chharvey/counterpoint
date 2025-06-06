@@ -66,14 +66,20 @@ None! TypeCheck(SemanticDeclarationVariable decl) :=
 None! TypeCheck(SemanticAssignment assignment) :=
 	1. *Assert:* `assignment.children.count` is 2.
 	2. *Let* `assignee` be `assignment.children.0`.
-	3. *Perform:* *UnwrapAffirm:* `TypeCheck(assignee)`.
-	4. *Perform:* *UnwrapAffirm:* `TypeCheck(assignment.children.1)`.
-	5. *If* `assignee` is a SemanticAccess:
-		1. *Let* `base_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
-		2. *If* `base_type` is not mutable:
+	3. *Let* `assigned` be `assignment.children.1`.
+	4. *Perform:* *UnwrapAffirm:* `TypeCheck(assignee)`.
+	5. *Perform:* *UnwrapAffirm:* `TypeCheck(assigned)`.
+	6. *If* `assignee` is a SemanticVariable:
+		1. *Perform:* *Unwrap:* `TypeOf(assignee)`.
+		2. *Let* `symbol` be the SymbolStructureVar in the validator’s symbol table whose `id` is `assignee.id`.
+		3. *Let* `assignee_type` be `symbol.type`.
+	7. *Else:*
+		1. *Assert:* `assignee` is a SemanticAccess.
+		2. *Let* `base_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
+		3. *If* `base_type` is not mutable:
 			1. *Throw:* a new MutabilityError01.
-	6. *Let* `assignee_type` be *Unwrap:* `TypeOf(assignee)`.
-	7. *Return:* `TypeCheckAssign(assignment.children.1, assignee_type)`.
+		4. *Let* `assignee_type` be *Unwrap:* `TypeOf(assignee)`.
+	8. *Return:* `TypeCheckAssign(assigned, assignee_type)`.
 ;
 
 
