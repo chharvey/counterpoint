@@ -494,7 +494,7 @@ module.exports = grammar({
 		_expression_conjunctive:    $ => choice($._expression_equality,       alias($.expression_conjunctive_dfn,    $.expression_conjunctive)),
 		_expression_disjunctive:    $ => choice($._expression_conjunctive,    alias($.expression_disjunctive_dfn,    $.expression_disjunctive)),
 
-		expression_cast_dfn:           $ => seq($._expression_cast,           'as',                                                   '<', $._type, '>'),
+		expression_cast_dfn:           $ => seq($._expression_cast,           'as',                                                   choice($._expression_unary_symbol, seq('<', $._type, '>'))),
 		expression_exponential_dfn:    $ => seq($._expression_cast,           '^',                                                    $._expression_exponential),
 		expression_multiplicative_dfn: $ => seq($._expression_multiplicative, choice('*', '/'),                                       $._expression_exponential),
 		expression_additive_dfn:       $ => seq($._expression_additive,       choice('+', '-'),                                       $._expression_multiplicative),
