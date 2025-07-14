@@ -260,8 +260,8 @@ describe('ASTNodeAccess', () => {
 					`;
 					it('throws when one but not all constituents are of incorrect type.', () => {
 						testExprTypes(`
-							let var mixed_tup: [null, bool, sym] | [a: null, b?: bool, c?: sym] = [null, true, @hello];
-							let var mixed_rec: [int, ?: float]   | [a: int, c?: str]            = [a= 42];
+							let var mixed_tup: [str, bool, sym] | [a: str,  b?: bool, c?: sym] = ["hello", true, @world];
+							let var mixed_rec: [int, ?: float]  | [a: int, c?: str]            = [a= 42];
 
 							mixed_tup.a;
 							mixed_rec.0;
@@ -411,6 +411,15 @@ describe('ASTNodeAccess', () => {
 				map_unfixed.["d"];  % type \`int | float | str\` % non-foldable value
 			`;
 			describe('#type', () => {
+				it('throws when one but not all constituents are of incorrect type.', () => {
+					testExprTypes(`
+						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = List.<str | bool | sym>(["hello", true, @world]);
+						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = Dict.<int | str>([a= 42]);
+
+						mixed_list.[@a];
+						mixed_dict.[0];
+					`, repeat(TypeErrorInvalidOperation, 2));
+				});
 				it('returns individual entry types for folded objects, union types for unfolded objects.', () => {
 					const N_TYPES = [
 						typeUnit(1n),
@@ -677,13 +686,13 @@ describe('ASTNodeAccess', () => {
 					`;
 					it('unions with null when one but not all constituents are of incorrect type.', () => {
 						testExprTypes(`
-							let var mixed_tup: [null, bool, sym] | [a: null, b?: bool, c?: sym] = [null, true, @hello];
-							let var mixed_rec: [int, ?: float]   | [a: int, c?: str]            = [a= 42];
+							let var mixed_tup: [str, bool, sym] | [a: str,  b?: bool, c?: sym] = ["hello", true, @world];
+							let var mixed_rec: [int, ?: float]  | [a: int, c?: str]            = [a= 42];
 
-							mixed_tup?.a; % type \`null | null\`
+							mixed_tup?.a; % type \`null | str\`
 							mixed_rec?.0; % type \`int  | null\`
 						`, [
-							TYPE.NULL,
+							TYPE.STR.union(TYPE.NULL), // FIXME: TYPE.NULL.union(TYPE.STR)
 							TYPE.INT.union(TYPE.NULL),
 						]);
 					});
@@ -818,6 +827,18 @@ describe('ASTNodeAccess', () => {
 				map_unfixed?.["d"]; % type \`int | float | str | null\` % non-foldable value
 			`;
 			describe('#type', () => {
+				it('unions with null when one but not all constituents are of incorrect type.', () => {
+					testExprTypes(`
+						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = List.<str | bool | sym>(["hello", true, @world]);
+						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = Dict.<int | str>([a= 42]);
+
+						mixed_list?.[@a]; % type \`null | (str | bool | sym)\`
+						mixed_dict?.[0];  % type \`(int | float) | null\`
+					`, [
+						TYPE.Union.all(TYPE.STR, TYPE.BOOL, TYPE.SYM, TYPE.NULL), // FIXME: TYPE.Union.all(TYPE.NULL, TYPE.STR, TYPE.BOOL, TYPE.SYM)
+						TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.NULL),
+					]);
+				});
 				it('returns individual entry types for folded objects, union types for unfolded objects.', () => {
 					const N_TYPES = [
 						typeUnit(1n),

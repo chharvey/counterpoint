@@ -538,6 +538,8 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 				].
 			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
+		9. *Else:*
+			1. *Throw:* a new TypeErrorInvalidOperation.
 ;
 ```
 
