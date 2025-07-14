@@ -186,6 +186,9 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 			const accessor_type:  TYPE.Type = access.accessor.type();
 			const accessor_maybe: boolean   = access.kind === Operator.DOT_MAY;
 			switch (true) {
+				case base_type === TYPE.NULL: {
+					return {type: TYPE.NULL, optional: true};
+				}
 				case base_type instanceof TYPE.List: {
 					return accessor_type.isSubtypeOf(TYPE.INT)
 						? {type: base_type.invariant, optional: accessor_maybe}

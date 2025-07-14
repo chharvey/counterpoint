@@ -416,9 +416,13 @@ describe('ASTNodeAccess', () => {
 						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = List.<str | bool | sym>(["hello", true, @world]);
 						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = Dict.<int | str>([a= 42]);
 
+						let var nullish_map: {int -> bool} | null = {42 -> false};
+
 						mixed_list.[@a];
 						mixed_dict.[0];
-					`, repeat(TypeErrorInvalidOperation, 2));
+
+						nullish_map.[42];
+					`, repeat(TypeErrorInvalidOperation, 3));
 				});
 				it('returns individual entry types for folded objects, union types for unfolded objects.', () => {
 					const N_TYPES = [
@@ -832,11 +836,16 @@ describe('ASTNodeAccess', () => {
 						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = List.<str | bool | sym>(["hello", true, @world]);
 						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = Dict.<int | str>([a= 42]);
 
+						let var nullish_map: {int -> bool} | null = {42 -> false};
+
 						mixed_list?.[@a]; % type \`null | (str | bool | sym)\`
 						mixed_dict?.[0];  % type \`(int | float) | null\`
+
+						nullish_map?.[42]; % type \`bool | null\`
 					`, [
 						TYPE.Union.all(TYPE.STR, TYPE.BOOL, TYPE.SYM, TYPE.NULL), // FIXME: TYPE.Union.all(TYPE.NULL, TYPE.STR, TYPE.BOOL, TYPE.SYM)
 						TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.NULL),
+						TYPE.Union.all(TYPE.BOOL, TYPE.NULL),
 					]);
 				});
 				it('returns individual entry types for folded objects, union types for unfolded objects.', () => {
