@@ -15,17 +15,8 @@ import {
 	Difference,
 	NEVER,
 	UNKNOWN,
-	NULL,
-	BOOL,
-	SYM,
-	INT,
-	FLOAT,
-	STR,
-	OBJ,
-	FALSE,
-	TRUE,
-	SYM_NEVER,
 	FALSY_TYPES,
+	TYPE_CONSTANTS,
 } from './index.ts';
 
 
@@ -44,18 +35,7 @@ export function typeConstant(
 		return (
 			returned.isBottomType ? NEVER :
 			returned.isTopType    ? UNKNOWN :
-			[
-				NULL,
-				BOOL,
-				SYM,
-				INT,
-				FLOAT,
-				STR,
-				OBJ,
-				FALSE,
-				TRUE,
-				SYM_NEVER,
-			].find((c) => returned.equals(c)) ?? returned
+			TYPE_CONSTANTS.find((c) => returned.equals(c)) ?? returned
 		);
 	};
 }

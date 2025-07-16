@@ -5,7 +5,7 @@ import {
 	type ConstructorType,
 	assert_instanceof,
 } from '../src/lib/index.ts';
-import type {TYPE} from '../src/index.ts';
+import {TYPE} from '../src/index.ts';
 
 
 
@@ -36,17 +36,17 @@ export function assertEqualTypes(param1: TYPE.Type | readonly TYPE.Type[] | Read
 	if (param1 instanceof Map) {
 		return assertEqualTypes([...param1.keys()], [...param1.values()]);
 	} else if (Array.isArray(param1)) {
-		try {
-			return assert.deepStrictEqual(param1, param2);
-		} catch {
-			return xjs.Array.forEachAggregated(param1, (act, i) => assertEqualTypes(act as TYPE.Type, (param2 as TYPE.Type[])[i]));
-		}
+		return xjs.Array.forEachAggregated(param1, (act, i) => assertEqualTypes(act as TYPE.Type, (param2 as TYPE.Type[])[i]));
 	} else {
-		try {
-			return assert.deepStrictEqual(param1, param2);
-		} catch {
-			return assert.ok((param1 as TYPE.Type).equals(param2 as TYPE.Type), `${ param1 as TYPE.Type } == ${ param2 }`);
-		}
+		if (TYPE.TYPE_CONSTANTS.includes(param2 as TYPE.Type)) {
+			return assert.strictEqual(param1, param2);
+		} else {
+			try {
+				return assert.deepStrictEqual(param1, param2);
+			} catch {
+				return assert.ok((param1 as TYPE.Type).equals(param2 as TYPE.Type), `${ param1 as TYPE.Type } == ${ param2 }`);
+			}
+		};
 	}
 }
 
