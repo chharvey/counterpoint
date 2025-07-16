@@ -4,8 +4,8 @@ import * as xjs from 'extrajs';
 import {
 	type ConstructorType,
 	assert_instanceof,
-} from '../src/lib/index.ts';
-import type {TYPE} from '../src/index.ts';
+	type TYPE,
+} from '../src/index.ts';
 
 
 

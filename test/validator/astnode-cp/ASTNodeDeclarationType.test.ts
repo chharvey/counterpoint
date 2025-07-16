@@ -1,13 +1,13 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	AST,
 	type SymbolStructure,
 	SymbolStructureType,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
 
 

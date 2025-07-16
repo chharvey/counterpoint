@@ -1,6 +1,8 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	type ConstructorType,
+	assert_instanceof,
 	AST,
 	VALUE,
 	TYPE,
@@ -9,10 +11,6 @@ import {
 	TypeErrorNoEntry,
 	VoidError01,
 } from '../../../src/index.ts';
-import {
-	type ConstructorType,
-	assert_instanceof,
-} from '../../../src/lib/index.ts';
 import {assertAssignable} from '../../assert-helpers.ts';
 import {typeUnit} from '../../helpers.ts';
 import {

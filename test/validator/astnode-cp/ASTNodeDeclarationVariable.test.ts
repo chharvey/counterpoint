@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
+	assert_instanceof,
 	AST,
 	type SymbolStructure,
 	SymbolStructureVar,
@@ -9,7 +10,6 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotAssignable,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assertAssignable,
 	assertEqualBins,

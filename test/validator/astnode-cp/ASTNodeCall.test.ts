@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	AST,
 	VALUE,
 	TYPE,
@@ -8,7 +9,6 @@ import {
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {assertAssignable} from '../../assert-helpers.ts';
 import {
 	extract_lines,

@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	AST,
 	TYPE,
 	ReferenceErrorUndeclared,
@@ -11,7 +12,6 @@ import {
 	TypeErrorNotAssignable,
 	MutabilityError01,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assertAssignable,
 	assertEqualBins,

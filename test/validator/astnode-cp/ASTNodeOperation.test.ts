@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
@@ -12,7 +13,6 @@ import {
 	NanErrorInvalid,
 	NanErrorDivZero,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assertEqualTypes,
 	assertEqualBins,

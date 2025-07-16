@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
+	assert_instanceof,
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
@@ -11,7 +12,6 @@ import {
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateKey,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assertEqualBins,
 	assertAssignable,

@@ -1,12 +1,12 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	type ConstructorType,
 	AST,
 	TYPE,
 	TypeErrorInvalidOperation,
 	TypeErrorNoEntry,
 } from '../../../src/index.ts';
-import type {ConstructorType} from '../../../src/lib/index.ts';
 import {typeUnit} from '../../helpers.ts';
 import {
 	extract_lines,

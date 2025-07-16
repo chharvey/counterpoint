@@ -2,12 +2,12 @@ import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
+	type CodeUnit,
 	type CPConfig,
 	CONFIG_DEFAULT,
 	KEYWORDS,
 	Validator,
 } from '../../src/index.ts';
-import type {CodeUnit} from '../../src/lib/index.ts';
 import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.ts';
 
 

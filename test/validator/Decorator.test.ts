@@ -7,11 +7,11 @@ import {
 } from 'tree-sitter';
 import Counterpoint from 'tree-sitter-counterpoint';
 import {
+	type ConstructorType,
 	TS_PARSER,
 	AST,
 	DECORATOR,
 } from '../../src/index.ts';
-import type {ConstructorType} from '../../src/lib/index.ts';
 
 
 
