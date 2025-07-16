@@ -13,6 +13,7 @@ import {
 } from '../../../src/index.ts';
 import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
+	assertEqualTypes,
 	assertEqualBins,
 	assertAssignable,
 } from '../../assert-helpers.ts';
@@ -45,7 +46,7 @@ describe('ASTNodeExpression', () => {
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 					"42😀"  "42\\u{1f600}"
 				`).map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
-				assert.deepStrictEqual(
+				return assertEqualTypes(
 					constants.map((c) => c.type()),
 					constants.map((c) => new TYPE.Unit(c.fold())),
 				);
@@ -97,7 +98,7 @@ describe('ASTNodeExpression', () => {
 				].map((v) => new VALUE.Float(v)));
 			});
 			it('computes string values.', () => {
-				assert.deepStrictEqual(
+				assertEqualTypes(
 					AST.ASTNodeConstant.fromSource('"42😀\\u{1f600}";').type(),
 					typeUnit('42😀\u{1f600}'),
 				);
@@ -170,7 +171,7 @@ describe('ASTNodeExpression', () => {
 				goal.typeCheck();
 				assert.ok( (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned);
 				assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).assigned);
-				return assert.deepStrictEqual(
+				return assertEqualTypes(
 					goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
 					[
 						TYPE.INT,
@@ -351,7 +352,7 @@ describe('ASTNodeExpression', () => {
 					types = templates.map((t) => t.type());
 				});
 				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
-					assert.deepStrictEqual(
+					assertEqualTypes(
 						types.slice(0, 2),
 						templates.slice(0, 2).map((t) => new TYPE.Unit<VALUE.String>(t.fold()!)),
 					);
@@ -457,7 +458,7 @@ describe('ASTNodeExpression', () => {
 						};
 					`, config),
 				];
-				assert.deepStrictEqual(
+				return assertEqualTypes(
 					collections.map((node) => node.type()),
 					[
 						TYPE.Tuple.fromTypes(expected),

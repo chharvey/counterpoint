@@ -13,7 +13,10 @@ import {
 	type ConstructorType,
 	assert_instanceof,
 } from '../../../src/lib/index.ts';
-import {assertAssignable} from '../../assert-helpers.ts';
+import {
+	assertEqualTypes,
+	assertAssignable,
+} from '../../assert-helpers.ts';
 import {typeUnit} from '../../helpers.ts';
 import {
 	extract_lines,
@@ -53,11 +56,11 @@ describe('ASTNodeAccess', () => {
 				const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
 				return expected instanceof Function
 					? assert.throws(() => stmt.expr!.type(), expected)
-					: assert.deepStrictEqual(stmt.expr!.type(), expected);
+					: assertEqualTypes(stmt.expr!.type(), expected);
 			}))
-			: assert.deepStrictEqual(
+			: assertEqualTypes(
 				statements.map((stmt) => stmt.expr!.type()),
-				expecteds,
+				expecteds as TYPE.Type[],
 			);
 	}
 
@@ -694,7 +697,7 @@ describe('ASTNodeAccess', () => {
 							mixed_tup?.a; % type \`null | str\`
 							mixed_rec?.0; % type \`int  | null\`
 						`, [
-							TYPE.STR.union(TYPE.NULL), // FIXME: TYPE.NULL.union(TYPE.STR)
+							TYPE.NULL.union(TYPE.STR),
 							TYPE.INT.union(TYPE.NULL),
 						]);
 					});
@@ -841,7 +844,7 @@ describe('ASTNodeAccess', () => {
 
 						nullish_map?.[42]; % type \`bool | null\`
 					`, [
-						TYPE.Union.all(TYPE.STR, TYPE.BOOL, TYPE.SYM, TYPE.NULL), // FIXME: TYPE.Union.all(TYPE.NULL, TYPE.STR, TYPE.BOOL, TYPE.SYM)
+						TYPE.Union.all(TYPE.NULL, TYPE.STR, TYPE.BOOL, TYPE.SYM),
 						TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.NULL),
 						TYPE.Union.all(TYPE.BOOL, TYPE.NULL),
 					]);

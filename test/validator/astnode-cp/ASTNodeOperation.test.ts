@@ -28,7 +28,7 @@ import {
 
 
 function typeOperations(tests: ReadonlyMap<string, VALUE.Primitive>, config: CPConfig = CONFIG_DEFAULT): void {
-	return assert.deepStrictEqual(
+	return assertEqualTypes(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type()),
 		[...tests.values()].map((expected) => new TYPE.Unit(expected)),
 	);
@@ -553,18 +553,18 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			context('with constant folding and int coersion on.', () => {
 				it('returns a constant Integer type for any operation of integers.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3 * 2;').type(), typeUnit(7n * 3n * 2n));
+					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3 * 2;').type(), typeUnit(7n * 3n * 2n));
 				});
 				it('returns a constant Float type for any operation of mix of integers and floats.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('3.0 * 2.7;')   .type(), typeUnit(3.0 * 2.7));
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3.0 * 2;') .type(), typeUnit(7 * 3.0 * 2));
+					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('3.0 * 2.7;')   .type(), typeUnit(3.0 * 2.7));
+					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3.0 * 2;') .type(), typeUnit(7 * 3.0 * 2));
 				});
 			});
 			context('with folding off but int coersion on.', () => {
 				it('returns Integer for integer arithmetic.', () => {
 					const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource('(7 + 3) * 2;', CONFIG_FOLDING_OFF);
 					assert.strictEqual(node.type(), TYPE.INT);
-					assert.deepStrictEqual(
+					assertEqualTypes(
 						[node.operand0.type(), node.operand1.type()],
 						[TYPE.INT,             typeUnit(2n)],
 					);
@@ -572,7 +572,7 @@ describe('ASTNodeOperation', () => {
 				it('returns Float for float arithmetic.', () => {
 					const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3.0 ^ 2;', CONFIG_FOLDING_OFF);
 					assert.strictEqual(node.type(), TYPE.FLOAT);
-					assert.deepStrictEqual(
+					assertEqualTypes(
 						[node.operand0.type(), node.operand1.type()],
 						[typeUnit(7n),         TYPE.FLOAT],
 					);
@@ -811,7 +811,7 @@ describe('ASTNodeOperation', () => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
 						const fold: VALUE.Value | null = expr.fold();
 						assert_instanceof(fold, VALUE.Boolean);
-						assert.deepStrictEqual(
+						assertEqualTypes(
 							expr.type(),
 							new TYPE.Unit<VALUE.Boolean>(fold),
 						);
@@ -1208,7 +1208,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						assertEqualTypes(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL,
 							TYPE.NULL.union(TYPE.FALSE),
 						]);
@@ -1243,7 +1243,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						assertEqualTypes(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.TRUE,
 							TYPE.NULL,
 						]);
@@ -1259,7 +1259,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						assertEqualTypes(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.FALSE,
 							typeUnit(42n),
 						]);
@@ -1294,7 +1294,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						assertEqualTypes(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.INT,
 							TYPE.FLOAT,
 						]);
