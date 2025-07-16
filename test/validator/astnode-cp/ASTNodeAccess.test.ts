@@ -101,7 +101,7 @@ describe('ASTNodeAccess', () => {
 	context('access kind: normal access (`a.‹b›`).', () => {
 		context('when base is nullish.', () => {
 			const SRCS = extract_lines(`
-				null.4;
+				null.3;
 				null.four;
 				null.[[[[[]]]]];
 			`);
@@ -502,17 +502,17 @@ describe('ASTNodeAccess', () => {
 
 	context('access kind: maybe access (`a?.‹b›`).', () => {
 		context('when base is nullish.', () => {
-			const SRCS = extract_lines(`
-				null?.4;
+			const SRC = `
+				null?.3;
 				null?.four;
 				null?.[[[[[]]]]];
-			`);
+			`;
 			describe('#type', () => {
 				it('throws when base is a subtype of null.', () => {
-					xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), [
+					testExprTypes(SRC, [
 						...repeat(TypeErrorNoEntry, 2),
-						TypeErrorInvalidOperation,
-					][i], `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
+						TYPE.NULL,
+					]);
 				});
 				it('chained maybe access.', () => {
 					const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // [bool]
@@ -538,11 +538,7 @@ describe('ASTNodeAccess', () => {
 			});
 			describe('#fold', () => {
 				it('returns base when it is null.', () => {
-					xjs.Array.forEachAggregated([
-						AST.ASTNodeAccess.fromSource('null?.3;')         .fold(),
-						AST.ASTNodeAccess.fromSource('null?.four;')      .fold(),
-						AST.ASTNodeAccess.fromSource('null?.[[[[[]]]]];').fold(),
-					], (val, i) => assert.strictEqual(val, VALUE.NULL, `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
+					testExprValues(SRC, repeat(VALUE.NULL, 3));
 				});
 				it('chained maybe access.', () => {
 					const prop1 = new VALUE.Tuple([VALUE.TRUE]); // [true]
