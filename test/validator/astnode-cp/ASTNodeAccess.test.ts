@@ -104,8 +104,7 @@ describe('ASTNodeAccess', () => {
 			`);
 			it('#type: throws when base is a subtype of null.', () => {
 				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), [
-					TypeErrorNoEntry,
-					TypeErrorNoEntry,
+					...repeat(TypeErrorNoEntry, 2),
 					TypeErrorInvalidOperation,
 				][i], `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
 			});
@@ -508,8 +507,7 @@ describe('ASTNodeAccess', () => {
 			describe('#type', () => {
 				it('throws when base is a subtype of null.', () => {
 					xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), [
-						TypeErrorNoEntry,
-						TypeErrorNoEntry,
+						...repeat(TypeErrorNoEntry, 2),
 						TypeErrorInvalidOperation,
 					][i], `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
 				});
