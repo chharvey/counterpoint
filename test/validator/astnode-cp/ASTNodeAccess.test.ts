@@ -345,7 +345,7 @@ describe('ASTNodeAccess', () => {
 						...repeat(null, 3),
 					]);
 				});
-				it('asserts maybe access is used when base is of incorrect type (bypassing type-checking).', () => {
+				it('throws AssertionError when base is of incorrect type (bypassing type-checking).', () => {
 					xjs.Array.forEachAggregated(extract_lines(`
 						[null, true, @hello].a;
 						[a= 42].0;
@@ -561,7 +561,7 @@ describe('ASTNodeAccess', () => {
 				});
 				it('maybe access of non-existent value returns null (bypassing type-checking).', () => {
 					assert.strictEqual(
-						AST.ASTNodeAccess.fromSource('[prop= []]?.prop?.0;').fold(),
+						AST.ASTNodeAccess.fromSource('[prop= []].prop?.0;').fold(),
 						VALUE.NULL,
 					);
 				});
@@ -770,11 +770,11 @@ describe('ASTNodeAccess', () => {
 						...repeat(null, 2),
 					]);
 				});
-				it('returns null when base is of incorrect type (bypassing type-checking).', () => {
+				it('throws AssertionError when base is of incorrect type (bypassing type-checking).', () => {
 					xjs.Array.forEachAggregated(extract_lines(`
 						[null, true, @hello]?.a;
 						[a= 42]?.0;
-					`), (src) => assert.strictEqual(AST.ASTNodeAccess.fromSource(src).fold(), VALUE.NULL));
+					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), assert.AssertionError));
 				});
 				it('returns null when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
 					xjs.Array.forEachAggregated(THROWS, (src) => assert.strictEqual(AST.ASTNodeAccess.fromSource(src).fold(), VALUE.NULL));
@@ -900,6 +900,21 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			describe('#fold', () => {
+				it('short-circuits evaluation of accessor expression when base is null.', () => {
+					testExprValues(`
+						let list: List.<int> | null = null;
+						let dict: Dict.<int> | null = Dict.<int>([a= 42]);
+
+						let var index: int = 0;
+						let var key:   sym = @a;
+
+						list?.[index]; % value \`null\`     (\`index\` is never attempted to be folded because \`list\` is null)
+						dict?.[key];   % non-foldable value (\`key\` is attempted to be folded because \`dict\` is not null)
+					`, [
+						VALUE.NULL,
+						null,
+					]);
+				});
 				it('returns individual entries for folded objects.', () => {
 					testExprValues(SRC, [
 						...TEST_VALUES,
