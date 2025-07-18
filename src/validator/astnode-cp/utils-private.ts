@@ -34,6 +34,13 @@ function only_errors_of_type<E extends Error = Error>(err: unknown, types: reado
 
 
 
+/**
+ * Either a bigint, or a half-closed range of integers from min (inclusive) to max (exclusive).
+ * @example
+ * const r: ArgCount = [3n, 7n]; % a range of integers including 3, 4, 5, and 6, but not 7.
+ * @index 0 the minimum, inclusive
+ * @index 1 the maximum, exclusive
+ */
 export type ArgCount = bigint | readonly [bigint, bigint];
 
 

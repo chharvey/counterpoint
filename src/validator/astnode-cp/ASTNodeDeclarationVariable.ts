@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -83,13 +83,11 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		) {
 			return this.builder.module.nop();
 		}
-		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder.module);
+		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
 		if (this.assignee) {
-			const assignee_type: TYPE.Type = this.typenode.eval(); // eval first before adding, to rethrow any errors
-			const local = this.builder.addLocal(this.assignee.id, binaryen.v128)[0].getLocalInfo(this.assignee.id)!;
-			return this.builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+			return this.builder.teeLocal(this.assignee.id, value).set(ASTNodeStatement.coerceAssignment(
 				this.builder.module,
-				assignee_type,
+				this.typenode.eval(),
 				this.assigned?.type() ?? TYPE.NULL,
 				value,
 				this.validator.config.compilerOptions.intCoercion,

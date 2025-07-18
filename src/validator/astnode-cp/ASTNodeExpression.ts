@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
@@ -34,10 +34,7 @@ export function buildDeco(
 ): typeof method {
 	assert_context_name(context, 'build');
 	return function (this: ASTNodeExpression) {
-		const value: VALUE.Value | null       = this.validator.config.compilerOptions.constantFolding ? this.fold() : null;
-		const built: binaryen.ExpressionRef   = value?.build(this.builder.module) ?? method.call(this);
-		assert.strictEqual(binaryen.getExpressionType(built), binaryen.v128);
-		return built;
+		return (this.validator.config.compilerOptions.constantFolding ? this.fold() : null)?.build(this.builder) ?? method.call(this);
 	};
 }
 

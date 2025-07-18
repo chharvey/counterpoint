@@ -1,6 +1,9 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {BinVect} from '../../index.ts';
+import {
+	type Builder,
+	BinVect,
+} from '../../index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -24,7 +27,7 @@ export class Float extends ValueNumber<Float> {
 	}
 
 	public override toString(): string {
-		return `${ this.data }${ (this.data % 1 === 0) ? '.0' : '' }`;
+		return `${ this.data }${ Number.isInteger(this.data) ? '.0' : '' }`;
 	}
 
 	@strictEqual
@@ -42,12 +45,12 @@ export class Float extends ValueNumber<Float> {
 		return this.data === (value as ValueNumber).toFloat().data;
 	}
 
-	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
+	public override build(builder: Builder): binaryen.ExpressionRef {
 		return new BinVect(
-			mod,
+			builder.module,
 			Object.is(this.data, -0.0)
-				? mod.f64.ceil(mod.f64.const(-0.5))
-				: mod.f64.const(this.data),
+				? builder.module.f64.ceil(builder.module.f64.const(-0.5))
+				: builder.module.f64.const(this.data),
 		).vect;
 	}
 
