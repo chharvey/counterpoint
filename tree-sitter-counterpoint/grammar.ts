@@ -280,7 +280,6 @@ module.exports = grammar({
 		/* # LEXICON */
 		keyword_type: _$ => token(choice(
 			'never',
-			'void',
 			'bool',
 			'sym',
 			'int',
@@ -347,6 +346,7 @@ module.exports = grammar({
 			'type',
 			'let',
 			'_',
+			'void',
 			// modifier
 			'var',
 			$.keyword_type,
@@ -513,8 +513,12 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		declaration_type:     $ => seq('type', choice('_',                      $.identifier ), '=', $._type,                     ';'),
-		declaration_variable: $ => seq('let',  choice('_', seq(optional('var'), $.identifier)), ':', $._type, '=', $._expression, ';'),
+		declaration_type: $ => seq('type', choice('_', $.identifier ), '=', $._type, ';'),
+
+		declaration_variable: $ => choice(
+			seq('let', optional('var'), choice('_', $.identifier), ':',  $._type, '=', $._expression, ';'),
+			seq('let',          'var',  choice('_', $.identifier), '?:', $._type,                     ';'),
+		),
 
 		_declaration: $ => choice(
 			$.declaration_type,

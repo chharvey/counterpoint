@@ -53,7 +53,7 @@ export abstract class ASTNodeCP extends ASTNode {
 		) {
 			throw new TypeErrorNotAssignable(assigned_type, assignee_type, node);
 		}
-		if (!assigned_type.isReference && assignee_type.equals(TYPE.UNKNOWN)) {
+		if (!assigned_type.isReference && assignee_type.isTopType) {
 			// @ts-expect-error --- will use this in type claim operators
 			return 'autoboxed';
 		}

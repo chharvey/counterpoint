@@ -9,6 +9,10 @@ import {
 
 
 
+const TYPE_UNIT_MEMO = new Map<symbol | bigint | number | string, TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String>>();
+
+
+
 export const CONFIG_RADICES_SEPARATORS_ON: CPConfig = {
 	...CONFIG_DEFAULT,
 	languageFeatures: {
@@ -50,7 +54,7 @@ export function typeUnit(value: bigint): TYPE.Unit<VALUE.Integer>;
 export function typeUnit(value: number): TYPE.Unit<VALUE.Float>;
 export function typeUnit(value: string): TYPE.Unit<VALUE.String>;
 export function typeUnit(value: symbol | bigint | number | string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String> {
-	return (
+	TYPE_UNIT_MEMO.has(value) || TYPE_UNIT_MEMO.set(value, (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
 		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
@@ -61,7 +65,8 @@ export function typeUnit(value: symbol | bigint | number | string): TYPE.Unit<VA
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? new VALUE.String(value) :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
-	).toType();
+	).toType());
+	return TYPE_UNIT_MEMO.get(value)!;
 }
 
 

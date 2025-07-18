@@ -62,7 +62,7 @@ describe('ASTNodeDeclarationType', () => {
 			`);
 			goal.varCheck();
 			goal.typeCheck();
-			assert.deepStrictEqual(
+			return assert.strictEqual(
 				(goal.validator.getSymbolInfo(0x100n) as SymbolStructureType).typevalue,
 				TYPE.INT,
 			);

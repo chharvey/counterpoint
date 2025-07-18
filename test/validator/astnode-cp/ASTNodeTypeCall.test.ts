@@ -5,13 +5,14 @@ import {
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../../src/index.ts';
+import {assertEqualTypes} from '../../assert-helpers.ts';
 
 
 
 describe('ASTNodeTypeCall', () => {
 	describe('#eval', () => {
 		it('evaluates List, Dict, Set, and Map.', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				[
 					'List.<null>',
 					'Dict.<bool>',
@@ -27,7 +28,7 @@ describe('ASTNodeTypeCall', () => {
 			);
 		});
 		it('Map has a default type parameter.', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeTypeCall.fromSource('Map.<int>').eval(),
 				new TYPE.Map(TYPE.INT, TYPE.INT),
 			);

@@ -98,7 +98,7 @@ A name–value pair of a structure is called a **property**.
 #### CompletionStructure
 A **CompletionStructure** is a specific subtype of [Structure](#structure) with
 a mandatory property \`type\` and an optional property \`value\`.
-The value of the \`type\` property must be one of the [enumerated](#enumerated-values) specification values
+The value of the \`type\` property must be one of the [enumerated](#enumerated-words) specification values
 *normal*, *break*, *continue*, *return*, or *throw*, which are described below.
 The value of the \`value\` property must be
 a [Counterpoint Specification Value](#counterpoint-specification-types) or
@@ -117,13 +117,13 @@ This table summarizes the enumerated values of a completion structure’s \`type
 Type       | Meaning
 ---------- | -------
 *normal*   | TODO
-*continue* | TODO
 *break*    | TODO
+*continue* | TODO
 *return*   | TODO
 *throw*    | TODO
 
-The term “normal completion” refers to any completion with a \`type\` of *normal*, and
-the term “abrupt completion” refers to any completion with a \`type\` other than *normal*.
+The term “normal completion” refers to any completion structure with a \`kind\` of *normal*, and
+the term “abrupt completion” refers to any completion structure with a \`kind\` other than *normal*.
 
 
 #### EntryTypeStructure
@@ -153,12 +153,13 @@ Property      | Description
 ##### SymbolStructureVar
 A **SymbolStructureVar** represents a variable referencing a Counterpoint Language Value.
 
-Property    | Description
------------ | -----------
-\`id\`      | the unique identifier of the declared symbol
-\`unfixed\` | a Boolean, whether the variable may be reassigned
-\`type\`    | the Counterpoint Language Type of the variable
-\`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
+Property          | Description
+----------------- | -----------
+\`id\`            | the unique identifier of the declared symbol
+\`unfixed\`       | a Boolean, whether the variable may be reassigned
+\`uninitialized\` | a Boolean, whether the variable was declared without an initial value
+\`type\`          | the Counterpoint Language Type of the variable
+\`value\`         | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
 
 
 ### Nodes
@@ -198,7 +199,6 @@ and [reference objects](./intrinsics.md#reference-objects) respectively.
 Simple types do not comprise other types.
 
 - [Never](#never)
-- [Void](#void)
 - [Unknown](#unknown)
 - [Null](#null)
 - [Boolean](#boolean)
@@ -217,21 +217,6 @@ Never is a subtype of every type,
 and no type (except Never itself) is a subtype of Never.
 Never is the the “absorption element” of the [intersection](#intersection) operation
 and the “identity element” of the [union](#union) operation.
-
-#### Void
-The **Void** type represents the completion of an evaluation but the absence of a value.
-It is the return type of a function that may have side-effects but that does not return a value.
-It is also partly the type of an optional entry in a collection.
-
-There are no values assignable to Void, but it is different from Never in that
-it does not behave like the Bottom Type.
-Void is not a subtype of every other type; in fact, the only types of which Void is a subtype
-are type unions that include it in their construction.
-In general, given a type \`‹T›\`,
-the [intersection](#intersection) \`And<‹T›, Void>\` is not necessarily the same as Void, and
-the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T›\`.
-
-The Void type is also unlike Null in that no Counterpoint Language Value has type Void.
 
 #### Unknown
 The **Unknown** type is the Top Type and it represents the set of all possible values.
@@ -409,7 +394,6 @@ Boolean IsReference(Type t) :=
 	2. *Assert:* `t` is a Counterpoint Language Type.
 	3. *Let* `valuetypes` be a new Sequence [
 		`Never`,
-		`Void`,
 		`Null`,
 		`Boolean`,
 		`Number`,
@@ -439,12 +423,12 @@ A type \`‹T›\` is the **top type**, named Unknown, iff \`‹T›\` contains 
 
 ### IsDefinitelyFalsy
 A type is **definitely falsy** if it is a subtype of any of the falsy types or their union:
-Void, Null, or the unit type containing exactly the `false` value.
+Null or the unit type containing exactly the `false` value.
 
 ```
 Boolean IsDefinitelyFalsy(Type t) :=
 	1. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
-	2. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
+	2. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Null, false_type)`.
 	3. *Return:* `Subtype(t, falsy_types)`.
 ;
 ```
@@ -452,14 +436,14 @@ Boolean IsDefinitelyFalsy(Type t) :=
 
 ### IsDefinitelyTruthy
 A type is **definitely truthy** if it is not the bottom type and it is not a supertype of any of the falsy types:
-Void, Null, or the unit type containing exactly the `false` value.
+Null or the unit type containing exactly the `false` value.
 
 ```
 Boolean IsDefinitelyTruthy(Type t) :=
 	1. *If* *UnwrapAffirm:* `IsBottomType(t)` is `true`:
 		1. *Return:* `false`.
 	2. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
-	3. *Let* `falsy_types` be a new Sequence [Void, Null, `false_type`].
+	3. *Let* `falsy_types` be a new Sequence [Null, `false_type`].
 	4. *For each* `falsy_type` in `falsy_types`:
 		1. *If* *UnwrapAffirm:* `Subtype(falsy_type, t)`:
 			1. *Return:* `false`.
@@ -479,7 +463,7 @@ Type FalsySide(Type t) :=
 	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)` is `true`:
 		1. *Return:* Never.
 	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
-	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
+	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Null, false_type)`.
 	5. *Return:* `Intersection(t, falsy_types)`.
 ;
 ```
@@ -497,7 +481,7 @@ Type TruthySide(Type t) :=
 	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)` is `true`:
 		1. *Return:* `t`.
 	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
-	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Void, Null, false_type)`.
+	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Null, false_type)`.
 	5. *Return:* `Difference(t, falsy_types)`.
 ;
 ```

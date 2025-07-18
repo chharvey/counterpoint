@@ -13,7 +13,6 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import {Punctuator} from '../../parser/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	Operator,
@@ -77,16 +76,17 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return null;
 		}
 		const KIND_MAYBE: boolean = this.kind === Operator.DOT_MAY;
+		if (KIND_MAYBE && base_value.identical(VALUE.NULL)) {
+			return VALUE.NULL;
+		}
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
-				return base_value instanceof VALUE.Tuple
-					? (base_value as VALUE.Tuple).get(this.accessor.index, KIND_MAYBE, this.accessor)
-					: this.#assert_maybe_and_return_null();
+				assert_instanceof(base_value, VALUE.Tuple);
+				return base_value.get(this.accessor.index, KIND_MAYBE, this.accessor);
 			}
 			case this.accessor instanceof ASTNodeKey: {
-				return base_value instanceof VALUE.Record
-					? (base_value as VALUE.Record).get(this.accessor.id, KIND_MAYBE, this.accessor)
-					: this.#assert_maybe_and_return_null();
+				assert_instanceof(base_value, VALUE.Record);
+				return base_value.get(this.accessor.id, KIND_MAYBE, this.accessor);
 			}
 			default: {
 				const accessor_value: VALUE.Value | null = this.accessor.fold();
@@ -108,16 +108,11 @@ export class ASTNodeAccess extends ASTNodeExpression {
 						return base_value.get(accessor_value, KIND_MAYBE, this.accessor);
 					}
 					default: {
-						return this.#assert_maybe_and_return_null();
+						assert.fail(`Expected ${ base_value } to have a \`get\` method.`);
 					}
 				}
 				/* eslint-enable @typescript-eslint/no-unsafe-return */
 			}
 		}
-	}
-
-	#assert_maybe_and_return_null(): VALUE.Null {
-		assert.strictEqual(this.kind, Operator.DOT_MAY, `Expected the maybe access operator \`${ Punctuator.DOT_MAY }\`.`);
-		return VALUE.NULL;
 	}
 }
