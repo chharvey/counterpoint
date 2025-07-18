@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	AST,
 	TYPE,
 	ReferenceErrorUndeclared,
@@ -11,7 +12,6 @@ import {
 	TypeErrorNotAssignable,
 	MutabilityError01,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assertAssignable,
 	assertEqualBins,
@@ -100,6 +100,32 @@ describe('ASTNodeCP', () => {
 					`);
 					goal.varCheck();
 					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+				});
+				it('allows reassignment when uninitialized.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let var x?: int;
+						x = 42;
+					`);
+					goal.varCheck();
+					goal.typeCheck();
+					return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
+						unfixed:       true,
+						uninitialized: true,
+						type:          TYPE.INT,
+						value:         null,
+					});
+				});
+				it('does not allow reassignment of `null` when uninitialized.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let var x?: int;
+						x = null;
+					`);
+					goal.varCheck();
+					assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
+						unfixed:       true,
+						uninitialized: true,
+					});
+					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
 			});
 

@@ -197,24 +197,32 @@ as a result of some internal process.
 
 
 ### Void Errors (31xx)
-A void error is raised when an expression that has no value is used in some way.
+A void error is raised when an operation cannot produce a value when it is expected to do so.
 
-1.  3100                     — A general mutability error not covered by one of the following cases.
-1. [3101](#3101-voiderror01) — A void expression is used as a value.
+1.  3100                              — A general void error not covered by one of the following cases.
+1. [3301](#3301-voiderroroutofbounds) — An attempt was made to access a collection given an accessor beyond the collection’s bounds.
 
-#### 3101: VoidError01
-Cause: An expression without a value is used as a value.
+#### 3101: VoidErrorOutOfBounds
+Cause: A list was accessed at an index greater than or equal to its length,
+or a dict or map was accessed at a key that it does not have.
 ```
-let v: void = returnVoid.(); % VoidError: Value is undefined.
+List.<str>(["earth", "wind", "fire"]).[4]; % VoidErrorOutOfBounds
+
+Dict.<str>([
+	socrates=  "earth",
+	plato=     "wind",
+	aristotle= "fire",
+]).[@pythagoras]; % VoidErrorOutOfBounds
 ```
-Solution(s): Void expressions may be evaluated, but do not operate on them,
-assign them to variables/properties/parameters, or return them from non-void functions.
+Solution(s): Access collections only at existing indices/keys,
+iterate over them dynamically using loops or list iteration methods,
+or use the maybe access operator.
 
 
 ### Nan Errors (32xx)
 A Nan error is raised when a numerical expression does not successfully evaluate.
 
-1.  3200                         — A general mutability error not covered by one of the following cases.
+1.  3200                         — A general nan error not covered by one of the following cases.
 1. [3201](#3201-nanerrorinvalid) — The value is not a valid number.
 1. [3202](#3202-nanerrordivzero) — Division by zero.
 

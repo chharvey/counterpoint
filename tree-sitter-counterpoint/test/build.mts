@@ -60,7 +60,6 @@ function buildTest(title: string, source: string, expected: string): string {
 		KEYWORD_TYPE: [
 			xjs.String.dedent`
 				type T = never;
-				type T = void;
 				type T = bool;
 				type T = sym;
 				type T = int;
@@ -69,7 +68,6 @@ function buildTest(title: string, source: string, expected: string): string {
 				type T = unknown;
 			`,
 			sourceTypes(
-				s('keyword_type'),
 				s('keyword_type'),
 				s('keyword_type'),
 				s('keyword_type'),
@@ -1073,6 +1071,9 @@ function buildTest(title: string, source: string, expected: string): string {
 				let 'å': A = a;
 				let var 'é': E = e;
 				let _: T = v;
+				let var _: T = v;
+				let var uninit?: T;
+				let var _?: T;
 			`,
 			s(
 				'source_file',
@@ -1119,6 +1120,20 @@ function buildTest(title: string, source: string, expected: string): string {
 				s(
 					'declaration_variable',
 					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'declaration_variable',
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'declaration_variable',
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'declaration_variable',
 					s('identifier'),
 				),
 			),

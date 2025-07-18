@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	AST,
 	VALUE,
 	TYPE,
@@ -8,8 +9,10 @@ import {
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
-import {assertAssignable} from '../../assert-helpers.ts';
+import {
+	assertEqualTypes,
+	assertAssignable,
+} from '../../assert-helpers.ts';
 import {
 	extract_lines,
 	repeat,
@@ -97,7 +100,7 @@ describe('ASTNodeCall', () => {
 
 	describe('#type', () => {
 		it('evaluates List, Dict, Set, and Map.', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				EVALUATE.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new TYPE.List(TYPE.INT, true),
@@ -108,25 +111,25 @@ describe('ASTNodeCall', () => {
 			);
 		});
 		specify('`List.(‹…›)`', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				repeat(new TYPE.List(TYPE.INT, true), 9),
 			);
 		});
 		specify('`Dict.(‹…›)`', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				repeat(new TYPE.Dict(TYPE.INT, true), 4),
 			);
 		});
 		specify('`Set.(‹…›)`', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				repeat(new TYPE.Set(TYPE.INT, true), 9),
 			);
 		});
 		specify('`Map.(‹…›)`', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), 12),
 			);
@@ -141,7 +144,7 @@ describe('ASTNodeCall', () => {
 			`).map((src) => AST.ASTNodeCall.fromSource(src).type());
 		});
 		it('Map has a default type parameter.', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeCall.fromSource('Map.<int>();').type(),
 				new TYPE.Map(TYPE.INT, TYPE.INT, true),
 			);

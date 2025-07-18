@@ -20,5 +20,6 @@ export * from './TypeErrorNoEntry.ts';
 export * from './TypeErrorNotCallable.ts';
 export * from './TypeErrorArgCount.ts';
 export * from './MutabilityError01.ts';
-export {VoidError01} from './VoidError.ts';
+export * from './VoidError.ts';
+export * from './VoidErrorOutOfBounds.ts';
 export * from './NanError.ts';

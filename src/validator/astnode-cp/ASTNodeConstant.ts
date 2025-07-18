@@ -35,12 +35,11 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	private static keywordValue(source: string): VALUE.Null | VALUE.Boolean {
-		return (
-			source === Keyword.NULL  ? VALUE.NULL :
-			source === Keyword.FALSE ? VALUE.FALSE :
-			source === Keyword.TRUE  ? VALUE.TRUE :
-			assert.fail(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`)
-		);
+		return new Map<string, VALUE.Null | VALUE.Boolean>([
+			[Keyword.NULL,  VALUE.NULL],
+			[Keyword.FALSE, VALUE.FALSE],
+			[Keyword.TRUE,  VALUE.TRUE],
+		]).get(source) ?? assert.fail(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`);
 	}
 
 

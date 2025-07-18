@@ -14,7 +14,7 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
-import {ASTNodeAccess} from './ASTNodeAccess.ts';
+import type {ASTNodeAccess} from './ASTNodeAccess.ts';
 import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
@@ -28,8 +28,8 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 
 	public constructor(
 		start_node: SyntaxNodeType<'statement_assignment'>,
-		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		public readonly assigned:  ASTNodeExpression,
+		public readonly assignee: ASTNodeVariable | ASTNodeAccess,
+		public readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
@@ -44,13 +44,18 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 
 	public override typeCheck(): void {
 		super.typeCheck();
-		if (this.assignee instanceof ASTNodeAccess) {
+		let assignee_type: TYPE.Type | null = null;
+		if (this.assignee instanceof ASTNodeVariable) {
+			this.assignee.type(); // rethrow any errors
+			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar;
+			assignee_type = symbol.type;
+		} else {
 			const base_type: TYPE.Type = this.assignee.base.type();
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, this);
 			}
+			assignee_type = this.assignee.type();
 		}
-		const assignee_type: TYPE.Type = this.assignee.type();
 		ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
 	}
 

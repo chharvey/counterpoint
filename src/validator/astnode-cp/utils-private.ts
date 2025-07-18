@@ -25,10 +25,10 @@ function throwWrongSubtypeError(accessor: AST.ASTNodeExpression, supertype: TYPE
 
 
 
-function only_errors_of_type<E extends Error = Error>(err: unknown, typ: ConstructorType<E>): err is InstanceType<typeof typ> {
+function only_errors_of_type<E extends Error = Error>(err: unknown, types: readonly ConstructorType<E>[]): boolean {
 	return (
-		err instanceof typ ||
-		err instanceof AggregateError && err.errors.every((suberr) => only_errors_of_type<E>(suberr, typ))
+		types.some((typ) => err instanceof typ) ||
+		err instanceof AggregateError && err.errors.every((suberr) => only_errors_of_type<E>(suberr, types))
 	);
 }
 
@@ -120,18 +120,18 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 		return {type: TYPE.UNKNOWN, optional: true};
 	}
 	if (base_type instanceof TYPE.Combinable) {
-		const entry_infos: readonly (TypeEntry | TypeErrorNoEntry)[] = base_type.operands.map((comp) => {
+		const entry_infos: readonly (TypeEntry | TypeErrorNoEntry | TypeErrorNotNarrow)[] = base_type.operands.map((comp) => {
 			try {
 				return get_entry_info(comp, access);
 			} catch (error) {
-				if (only_errors_of_type(error, TypeErrorNoEntry)) {
-					return error;
+				if (only_errors_of_type(error, [TypeErrorNoEntry, TypeErrorNotNarrow])) {
+					return error as TypeErrorNoEntry | TypeErrorNotNarrow;
 				}
 				throw error;
 			}
 		});
-		const errors:  readonly Error[]     = entry_infos.filter((info)                    =>   info instanceof TypeErrorNoEntry);
-		const entries: readonly TypeEntry[] = entry_infos.filter((info): info is TypeEntry => !(info instanceof TypeErrorNoEntry));
+		const errors:  readonly Error[]     = entry_infos.filter((info)                    =>   info instanceof TypeErrorNoEntry || info instanceof TypeErrorNotNarrow);
+		const entries: readonly TypeEntry[] = entry_infos.filter((info): info is TypeEntry => !(info instanceof TypeErrorNoEntry || info instanceof TypeErrorNotNarrow));
 		/* Throw an error if *all* of the intersection/union constituents do not have the accessed entry. */
 		if (!entries.length) {
 			throw errors.length === 1 ? errors[0] : new AggregateError(errors, errors.map((err) => err.message).join('\n'));
@@ -186,6 +186,9 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 			const accessor_type:  TYPE.Type = access.accessor.type();
 			const accessor_maybe: boolean   = access.kind === Operator.DOT_MAY;
 			switch (true) {
+				case base_type === TYPE.NULL: {
+					return {type: TYPE.NULL, optional: true};
+				}
 				case base_type instanceof TYPE.List: {
 					return accessor_type.isSubtypeOf(TYPE.INT)
 						? {type: base_type.invariant, optional: accessor_maybe}

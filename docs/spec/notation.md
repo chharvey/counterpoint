@@ -1125,16 +1125,16 @@ A step that says «*Break.*» (with no number) implies «*Break:* 1.».
 
 #### Return
 An algorithm step that reads «*Return:* ‹v›.» (where ‹v› is a metavariable representing a completion value)
-is shorthand for «*Return:* [type= normal, value= ‹v›].», meaning
+is shorthand for «*Return:* [kind= *normal*, value= ‹v›].», meaning
 the algorithm outputs a normal completion structure with a \`value\` of ‹v›.
 
-However, an algorithm step that reads «*Return:* [type= ‹type›, value= ‹v›].» is to be interpreted as-is,
+However, an algorithm step that reads «*Return:* [kind= ‹type›, value= ‹v›].» is to be interpreted as-is,
 as returning the completion structure itself, not “wrapped” in a new normal completion.
 Similarly, an algorithm step that reads «*Return:* ‹CS›.»,
 where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
 is also to be interpreted as-is, as returning the completion structure itself.
 
-An algorithm step that reads «*Return*.» is shorthand for «*Return:* [type= normal].», that is,
+An algorithm step that reads «*Return*.» is shorthand for «*Return:* [kind= *normal*].», that is,
 it outputs a normal completion structure without a \`value\` (thus the output type is None).
 
 An algorithm with no Return statement is implied to return a normal completion with no value.
@@ -1142,11 +1142,11 @@ An algorithm with no Return statement is implied to return a normal completion w
 #### Throw
 When an algorithm step reads «*Throw:* ‹v›.» (where ‹v› is a metavariable representing a completion value),
 a throw completion structure whose \`value\` is ‹v› is returned.
-That is, the step is shorthand for «*Return:* [type= throw, value= ‹v›].».
+That is, the step is shorthand for «*Return:* [kind= *throw*, value= ‹v›].».
 Note that such a completion structure is “abrupt”.
 
-An algorithm step that reads «*Throw:* [type= ‹type›, value= ‹v›].» is to be interpreted
-as «*Return:* [type= throw, value= ‹v›]», not the original completion “wrapped” in a new *throw* completion.
+An algorithm step that reads «*Throw:* [kind= ‹kind›, value= ‹v›].» is to be interpreted
+as «*Return:* [kind= *throw*, value= ‹v›]», not the original completion “wrapped” in a new *throw* completion.
 Similarly, an algorithm step that reads «*Throw:* ‹CS›.»,
 where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
 is also to be interpreted in the same manner, as returning a *throw* completion structure
@@ -1163,7 +1163,7 @@ The step is shorthand for the following steps:
 3. *If* ‹s› has a `value` property:
 	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `‹s›.value`.
 4. *Else:*
-	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `none`.
+	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with *none*.
 ```
 
 For example, setting a variable to an unwrap step …
@@ -1180,7 +1180,7 @@ For example, setting a variable to an unwrap step …
 4. *If* `call` has a `value` property:
 	1. *Let* `v` be `call.value`.
 5. *Else:*
-	1. *Let* `v` be `none`.
+	1. *Let* `v` be *none*.
 ```
 
 #### UnwrapAffirm
@@ -1192,7 +1192,7 @@ The step is shorthand for the following steps:
 2. *If* ‹s› has a `value` property:
 	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `‹s›.value`.
 3. *Else:*
-	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `none`.
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with *none*.
 ```
 
 For example, setting a variable to an unwrap-affirm step …
@@ -1207,7 +1207,7 @@ For example, setting a variable to an unwrap-affirm step …
 3. *If* `call` has a `value` property:
 	1. *Let* `v` be `call.value`.
 4. *Else:*
-	1. *Let* `v` be `none`.
+	1. *Let* `v` be *none*.
 ```
 
 #### Shorthand Notation
@@ -1385,7 +1385,7 @@ that satisfy the predicate ‹e›.
 (In the example below, assume `sequence` is a sequence of RealNumber values.)
 ```
 1. *Let* `result1` be a filtering of `sequence` indexed by `i` such that `sequence[i] > 0`.
-1. *Let* `result2` be a filtering of `sequence` indexed by `i` such that `sequence[i]` is even.
+2. *Let* `result2` be a filtering of `sequence` indexed by `i` such that `sequence[i]` is even.
 ```
 is shorthand for
 ```
@@ -1415,6 +1415,27 @@ is shorthand for
 4. *For each* `it` in `sequence`:
 	1. *If* `it` is an integer:
 		1. Push `it` to `result2`.
+```
+
+##### Find
+A step that contains «an item ‹it› in ‹s› such that ‹e›» is shorthand for
+the first item of a filtering of ‹s› satisfying the predicate ‹e›, else *none*.
+
+(In the example below, assume `sequence` is a sequence of RealNumber values.)
+```
+1. *Let* `result1` be an item `it` in `sequence` such that `it > 0`.
+2. *Let* `result2` be an item `it` in `sequence` such that `it` is even.
+```
+is shorthand for
+```
+1. *Let* `result1` be *none*.
+2. *Let* `result1_filter` be a filtering of `sequence` for each `it` such that `it > 0`.
+3. *If* `result1_filter.count` is greater than 0:
+	1. *Set* `result1` to `result1_filter.0`.
+4. *Let* `result2` be *none*.
+5. *Let* `result2_filter` be a filtering of `sequence` for each `it` such that `it` is even.
+6. *If* `result2_filter.count` is greater than 0:
+	1. *Set* `result2` to `result2_filter.0`.
 ```
 
 ##### Reductions

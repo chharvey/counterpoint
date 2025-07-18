@@ -4,6 +4,7 @@ import {
 	TYPE,
 	TypeErrorInvalidOperation,
 } from '../../../src/index.ts';
+import {assertEqualTypes} from '../../assert-helpers.ts';
 import {typeUnit} from '../../helpers.ts';
 
 
@@ -11,7 +12,7 @@ import {typeUnit} from '../../helpers.ts';
 describe('ASTNodeTypeOperation', () => {
 	describe('#eval', () => {
 		specify('ASTNodeTypeOperationUnary[operator=ORNULL]', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeTypeOperationUnary.fromSource('int?').eval(),
 				TYPE.INT.union(TYPE.NULL),
 			);
@@ -20,7 +21,7 @@ describe('ASTNodeTypeOperation', () => {
 
 		describe('ASTNodeTypeOperationUnary[operator=MUTABLE]', () => {
 			it('does not throw if operating on a reference type.', () => {
-				assert.deepStrictEqual(
+				assertEqualTypes(
 					AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
 					new TYPE.List(TYPE.INT, true),
 				);
@@ -44,7 +45,6 @@ describe('ASTNodeTypeOperation', () => {
 					'mut [a: int, b: float, c: str]',
 					'mut int[3]',
 					'mut never',
-					'mut void',
 					'mut null',
 					'mut bool',
 					'mut int',
@@ -60,11 +60,11 @@ describe('ASTNodeTypeOperation', () => {
 
 
 		specify('ASTNodeTypeOperationBinary[operator=AND|OR]', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeTypeOperationBinary.fromSource('Object & 3').eval(),
 				TYPE.OBJ.intersect(typeUnit(3n)),
 			);
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeTypeOperationBinary.fromSource('4.2 | int').eval(),
 				typeUnit(4.2).union(TYPE.INT),
 			);

@@ -1,3 +1,4 @@
+import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {Value} from './Value.ts';
 
@@ -12,6 +13,7 @@ import {Value} from './Value.ts';
  * - ValueString
  */
 export abstract class Primitive extends Value {
+	@memoizeMethod
 	/** @final */ public override toType(): TYPE.Unit<this> {
 		return new TYPE.Unit<this>(this);
 	}

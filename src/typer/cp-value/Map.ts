@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import {VoidError01} from '../../index.ts';
+import {VoidErrorOutOfBounds} from '../../index.ts';
 import type {AST} from '../../validator/index.ts';
 import {TYPE} from '../index.ts';
 import {
@@ -79,7 +79,7 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		return (
 			xjs.Map.has(this.cases, ant, languageValuesIdentical) ? xjs.Map.get(this.cases, ant, languageValuesIdentical)! :
 			is_access_maybe                                       ? NULL :
-			assert.fail(new VoidError01(accessor))
+			assert.fail(new VoidErrorOutOfBounds('key', this, ant, accessor))
 		);
 	}
 }

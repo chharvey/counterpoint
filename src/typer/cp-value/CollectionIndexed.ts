@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {VoidError01} from '../../index.ts';
+import {VoidErrorOutOfBounds} from '../../index.ts';
 import type {AST} from '../../validator/index.ts';
 import {
 	language_values_equal,
@@ -70,7 +70,7 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 			-n <= i && i < 0 ? this.items[i + n] :
 			0  <= i && i < n ? this.items[i] :
 			is_access_maybe  ? NULL :
-			assert.fail(new VoidError01(accessor))
+			assert.fail(new VoidErrorOutOfBounds('index', this, index, accessor))
 		);
 	}
 }

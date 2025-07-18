@@ -39,16 +39,6 @@ Type `never` is most commonly a result of a type operation that produces the Bot
 for example, the intersection of two disjoint types.
 
 
-### `void`
-Type `void` represents the completion of an evaluation but the absence of a value.
-It is used to describe functions that complete execution (and may have side-effects), but return no value.
-(Unlike `never`, `void` indicates that the function has returned.)
-Type `void` is also used to represent part of the types of optional entries in collections,
-such as a record’s optional property.
-There are no values assignble to `void`, but some expressions may have type `void`,
-for example, property access and function calls.
-
-
 ### `unknown`
 Type  `unknown` is at the top of the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
@@ -493,7 +483,6 @@ I {{ "\u{2764}" }} Unicode!
 
 ### `Object`
 Type `Object` is the type of all values, that is, every value is assignable to `Object`.
-Expressions of type `void` cannot hold values, so they are not assignable to `Object`.
 
 
 
@@ -669,14 +658,6 @@ let x2: bool? = x?.2;
 ```
 If `x.2` exists, the expression `x?.2` produces that value; otherwise it produces `null`.
 
-We can use the [result access operator](./expressions-operators.md#result-access) `!.`
-to tell the type-checker that the property definitely exists and is not type `void`.
-It should only be used if we are certain the property exists.
-```
-let x2: bool = x!.2;
-```
-The expression `x!.2` behaves just like `x.2`, except that it bypasses the compiler’s TypeError.
-
 
 ### Records
 Records are fixed-size unordered lists of keyed values. Key–value pairs are called **properties**,
@@ -833,14 +814,6 @@ let ym: str? = y?.middlename;
 ```
 If `y.middlename` exists, the expression `y?.middlename` produces that value; otherwise it produces `null`.
 
-We can use the [result access operator](./expressions-operators.md#result-access) `!.`
-to tell the type-checker that the property definitely exists and is not type `void`.
-It should only be used if we are certain the property exists.
-```
-let ym: str = y!.middlename;
-```
-The expression `y!.middlename` behaves just like `y.middlename`, except that it bypasses the compiler’s TypeError.
-
 
 ### Lists
 Lists are variable-size ordered lists of indexed values, with indices starting at `0`.
@@ -877,11 +850,11 @@ elements.[0.5 * 2]; %> TypeError % expected int but found float
 ```
 
 When the the compiler can determine if the index is out-of-bounds (for example if the list and index are foldable),
-then a VoidError is reported at compile-time.
+then a VoidErrorOutOfBounds is reported at compile-time.
 (This differs from a tuple, where a TypeErrorNoEntry would be reported.)
 ```
 let i: int = 4;
-elements.[i];   %> VoidError
+elements.[i];   %> VoidErrorOutOfBounds
 ```
 Most lists are dynamic and their count is unknown by the compiler, so we won’t always be warned when the index is out of bounds.
 In these cases, the typer will still analyze the expression, but an ExceptionIndexOutOfBounds is thrown at runtime.
@@ -944,11 +917,11 @@ json_data.["so-crates".replace.("-", "")]; % computed strings may be given
 ```
 
 When the the compiler can determine if the key is out-of-range (for example if the dict and key are foldable),
-then a VoidError is reported at compile-time.
+then a VoidErrorOutOfBounds is reported at compile-time.
 (This differs from a record, where a TypeErrorNoEntry would be reported.)
 ```
 let s: sym = @pythagoras;
-elements.[s];             %> VoidError
+elements.[s];             %> VoidErrorOutOfBounds
 ```
 Most dicts are dynamic and their range of keys is unknown by the compiler, so we won’t always be warned when the key is out of range.
 In these cases, the typer will still analyze the expression, but an ExceptionKeyOutOfRange is thrown at runtime.
@@ -1102,10 +1075,10 @@ bases.["""{{ 2 }}nd"""]; %== ["what"]
 bases.[3].["i"];         %== {"don’t" -> "know"}
 ```
 
-A VoidError is produced when the compiler can determine if the antecedent does not exist.
+A VoidErrorOutOfBounds is produced when the compiler can determine if the antecedent does not exist.
 ```
 let a: str = "3rd";
-bases.[a];          %> VoidError
+bases.[a];          %> VoidErrorOutOfBounds
 ```
 If the compiler can’t compute the antecedent, it won’t error at all,
 but this means an Exception could be thrown at runtime.

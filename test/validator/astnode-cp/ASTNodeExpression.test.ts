@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
+	assert_instanceof,
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
@@ -13,8 +14,8 @@ import {
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
+	assertEqualTypes,
 	assertEqualBins,
 	assertAssignable,
 } from '../../assert-helpers.ts';
@@ -48,7 +49,7 @@ describe('ASTNodeExpression', () => {
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 					"42😀"  "42\\u{1f600}"
 				`).map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
-				assert.deepStrictEqual(
+				return assertEqualTypes(
 					constants.map((c) => c.type()),
 					constants.map((c) => new TYPE.Unit(c.fold())),
 				);
@@ -100,7 +101,7 @@ describe('ASTNodeExpression', () => {
 				].map((v) => new VALUE.Float(v)));
 			});
 			it('computes string values.', () => {
-				assert.deepStrictEqual(
+				assertEqualTypes(
 					AST.ASTNodeConstant.fromSource('"42😀\\u{1f600}";').type(),
 					typeUnit('42😀\u{1f600}'),
 				);
@@ -157,6 +158,29 @@ describe('ASTNodeExpression', () => {
 					type FOO = int;
 					42 || FOO;
 				`).varCheck(), ReferenceErrorKind);
+			});
+		});
+
+
+		describe('#type', () => {
+			it('unions with `null` when accessed variable is uninitialized.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let var w:  int = 42;
+					let var x?: int;
+					w;
+					x;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				assert.ok( (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned);
+				assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).assigned);
+				return assertEqualTypes(
+					goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+					[
+						TYPE.INT,
+						TYPE.INT.union(TYPE.NULL),
+					],
+				);
 			});
 		});
 
@@ -331,21 +355,19 @@ describe('ASTNodeExpression', () => {
 					types = templates.map((t) => t.type());
 				});
 				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
-					assert.deepStrictEqual(
+					assertEqualTypes(
 						types.slice(0, 2),
 						templates.slice(0, 2).map((t) => new TYPE.Unit<VALUE.String>(t.fold()!)),
 					);
 				});
 				it('for non-foldable interpolations, returns `String`.', () => {
-					assert.deepStrictEqual(types[2], TYPE.STR);
+					assert.strictEqual(types[2], TYPE.STR);
 				});
 			});
 			context('with constant folding off.', () => {
 				it('always returns `String`.', () => {
 					templates = initTemplates(CONFIG_FOLDING_OFF);
-					templates.forEach((t) => {
-						assert.deepStrictEqual(t.type(), TYPE.STR);
-					});
+					return templates.forEach((t) => assert.strictEqual(t.type(), TYPE.STR));
 				});
 			});
 		});
@@ -439,7 +461,7 @@ describe('ASTNodeExpression', () => {
 						};
 					`, config),
 				];
-				assert.deepStrictEqual(
+				return assertEqualTypes(
 					collections.map((node) => node.type()),
 					[
 						TYPE.Tuple.fromTypes(expected),

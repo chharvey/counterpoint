@@ -610,11 +610,25 @@ Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -
 		Decorate(Type)
 		Decorate(Expression)
 	);
+Decorate(DeclarationVariable ::= "let" "var" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=true]
+		Decorate(Type)
+		Decorate(Expression)
+	);
 Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression)
+	);
+Decorate(DeclarationVariable ::= "let" "var" "_" "?:" Type ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=true]
+		Decorate(Type)
+	);
+Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER "?:" Type ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=true]
+		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		Decorate(Type)
 	);
 
 
@@ -676,7 +690,6 @@ AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> RES
 
 
 KeywordType(KEYWORD_TYPE :::= "never")   -> Type := Never;
-KeywordType(KEYWORD_TYPE :::= "void")    -> Type := Void;
 KeywordType(KEYWORD_TYPE :::= "bool")    -> Type := Boolean;
 KeywordType(KEYWORD_TYPE :::= "sym")     -> Type := Symbol;
 KeywordType(KEYWORD_TYPE :::= "int")     -> Type := Integer;

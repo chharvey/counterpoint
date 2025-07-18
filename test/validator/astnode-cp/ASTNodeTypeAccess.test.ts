@@ -1,12 +1,13 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	type ConstructorType,
 	AST,
 	TYPE,
 	TypeErrorInvalidOperation,
 	TypeErrorNoEntry,
 } from '../../../src/index.ts';
-import type {ConstructorType} from '../../../src/lib/index.ts';
+import {assertEqualTypes} from '../../assert-helpers.ts';
 import {typeUnit} from '../../helpers.ts';
 import {
 	extract_lines,
@@ -41,11 +42,11 @@ describe('ASTNodeTypeAccess', () => {
 					const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
 					return expected instanceof Function
 						? assert.throws(() => stmt.assigned.eval(), expected)
-						: assert.deepStrictEqual(stmt.assigned.eval(), expected);
+						: assertEqualTypes(stmt.assigned.eval(), expected);
 				}))
-				: assert.deepStrictEqual(
+				: assertEqualTypes(
 					statements.map((stmt) => stmt.assigned.eval()),
-					expecteds,
+					expecteds as TYPE.Type[],
 				);
 		}
 

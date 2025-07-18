@@ -7,11 +7,11 @@ import {
 } from 'tree-sitter';
 import Counterpoint from 'tree-sitter-counterpoint';
 import {
+	type ConstructorType,
 	TS_PARSER,
 	AST,
 	DECORATOR,
 } from '../../src/index.ts';
-import type {ConstructorType} from '../../src/lib/index.ts';
 
 
 
@@ -28,7 +28,7 @@ describe('Decorator', () => {
 				% (word "mut")
 			`]],
 			['Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey', [AST.ASTNodeKey, `
-				[void= 42];
+				[bool= 42];
 				% (word (keyword_type))
 			`]],
 			['Decorate(Word ::= KEYWORD_VALUE) -> SemanticKey', [AST.ASTNodeKey, `
@@ -407,8 +407,20 @@ describe('Decorator', () => {
 				let a: T = b;
 				% (declaration_variable)
 			`]],
+			['Decorate(DeclarationVariable ::= "let" "var" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let var _: T = b;
+				% (declaration_variable)
+			`]],
 			['Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				let var a: T = b;
+				% (declaration_variable)
+			`]],
+			['Decorate(DeclarationVariable ::= "let" "var" "_" "?:" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let var _?: T;
+				% (declaration_variable)
+			`]],
+			['Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER "?:" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let var a?: T;
 				% (declaration_variable)
 			`]],
 

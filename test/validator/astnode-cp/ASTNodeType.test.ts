@@ -9,6 +9,7 @@ import {
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
 } from '../../../src/index.ts';
+import {assertEqualTypes} from '../../assert-helpers.ts';
 import {typeUnit} from '../../helpers.ts';
 import {extract_tokens} from '../../utils.ts';
 
@@ -18,7 +19,7 @@ describe('ASTNodeType', () => {
 	describe('#eval', () => {
 		describe('ASTNodeTypeCollectionLiteral', () => {
 			specify('ASTNodeTypeTuple', () => {
-				assert.deepStrictEqual(
+				assertEqualTypes(
 					AST.ASTNodeTypeTuple.fromSource('[int, bool, ?:str]').eval(),
 					new TYPE.Tuple([
 						{type: TYPE.INT,  optional: false},
@@ -30,7 +31,7 @@ describe('ASTNodeType', () => {
 
 			specify('ASTNodeTypeRecord', () => {
 				const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('[x: int, y?: bool, _: str]');
-				return assert.deepStrictEqual(
+				return assertEqualTypes(
 					rec.eval(),
 					new TYPE.Record(new Map<bigint, TypeEntry>(rec.children.map((c, i) => [c.key.id, [
 						{type: TYPE.INT,  optional: false},
@@ -42,7 +43,7 @@ describe('ASTNodeType', () => {
 
 			describe('ASTNodeTypeList', () => {
 				it('returns a TYPE.List if there is no count.', () => {
-					assert.deepStrictEqual(
+					assertEqualTypes(
 						AST.ASTNodeTypeList.fromSource('(int | bool)[]').eval(),
 						new TYPE.List(TYPE.INT.union(TYPE.BOOL)),
 					);
@@ -53,7 +54,7 @@ describe('ASTNodeType', () => {
 						TYPE.INT.union(TYPE.BOOL),
 						TYPE.INT.union(TYPE.BOOL),
 					] as const;
-					return assert.deepStrictEqual(
+					return assertEqualTypes(
 						AST.ASTNodeTypeList.fromSource('(int | bool)[3]').eval(),
 						TYPE.Tuple.fromTypes(expected),
 					);
@@ -64,7 +65,7 @@ describe('ASTNodeType', () => {
 			});
 
 			specify('ASTNodeType{Dict,Set,Map}', () => {
-				assert.deepStrictEqual(
+				assertEqualTypes(
 					[
 						AST.ASTNodeTypeDict .fromSource('[:int | bool]')  .eval(),
 						AST.ASTNodeTypeSet  .fromSource('(int | bool){}') .eval(),
@@ -95,7 +96,7 @@ describe('ASTNodeType', () => {
 	describe('ASTNodeTypeConstant', () => {
 		describe('#eval', () => {
 			it('computes the value of constant null, boolean, symbol, number, and string types.', () => {
-				assert.deepStrictEqual(extract_tokens(`
+				assertEqualTypes(extract_tokens(`
 					null  false  true
 					@then  @str  @false  @foobar
 					42  4.2e+3
@@ -114,11 +115,10 @@ describe('ASTNodeType', () => {
 				]);
 			});
 			it('computes the value of keyword type.', () => {
-				assert.deepStrictEqual(extract_tokens(`
-					never  void  bool  sym  int  float  str  unknown
+				assertEqualTypes(extract_tokens(`
+					never  bool  sym  int  float  str  unknown
 				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NEVER,
-					TYPE.VOID,
 					TYPE.BOOL,
 					TYPE.SYM,
 					TYPE.INT,
@@ -166,7 +166,7 @@ describe('ASTNodeType', () => {
 
 		describe('#eval', () => {
 			it('computes the value of reserved types.', () => {
-				assert.deepStrictEqual([
+				assertEqualTypes([
 					'Object',
 				].map((src) => AST.ASTNodeTypeAlias.fromSource(src).eval()), [
 					TYPE.OBJ,
@@ -179,7 +179,7 @@ describe('ASTNodeType', () => {
 				`);
 				goal.varCheck();
 				goal.typeCheck();
-				assert.deepStrictEqual(
+				return assert.strictEqual(
 					((goal
 						.children[1] as AST.ASTNodeDeclarationType)
 						.assigned as AST.ASTNodeTypeAlias)
@@ -194,19 +194,19 @@ describe('ASTNodeType', () => {
 
 	describe('ASTNodeTypeOperation', () => {
 		specify('#eval', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeTypeOperationUnary.fromSource('int?').eval(),
 				TYPE.INT.union(TYPE.NULL),
 			);
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
 				new TYPE.List(TYPE.INT, true),
 			);
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeTypeOperationBinary.fromSource('Object & 3').eval(),
 				TYPE.OBJ.intersect(typeUnit(3n)),
 			);
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeTypeOperationBinary.fromSource('4.2 | int').eval(),
 				typeUnit(4.2).union(TYPE.INT),
 			);
