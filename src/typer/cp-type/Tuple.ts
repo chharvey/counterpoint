@@ -168,7 +168,7 @@ class TypeTuple extends ValueType {
 
 	public test_getBuiltIndices(expected: readonly (number | readonly number[])[], message?: string | Error): void {
 		return assert.deepStrictEqual(
-			[...new Array(this.invariants.length)].map((_, i) => this.#getBuiltIndices(i)),
+			this.invariants.map((_, i) => this.#getBuiltIndices(i)),
 			expected,
 			message,
 		);
