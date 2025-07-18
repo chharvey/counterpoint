@@ -301,6 +301,11 @@ describe('ASTNodeOperation', () => {
 					['!42;',    (builder) => drop_then(builder.module, [buildConst(builder, 42n)],   false)],
 					['!4.2;',   (builder) => drop_then(builder.module, [buildConst(builder, 4.2)],   false)],
 				]));
+				// eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition
+				false && buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['![];',    (builder) => drop_then(builder.module, [new VALUE.Tuple().build(builder)], false)],
+					['![4.2];', (builder) => drop_then(builder.module, [new VALUE.Tuple([new VALUE.Float(4.2)]).build(builder)], false)],
+				]));
 			});
 			it('returns the correct operation.', () => {
 				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
@@ -311,6 +316,11 @@ describe('ASTNodeOperation', () => {
 					['?4.2;',   (builder) => CALL.vemp(builder.module, buildConst(builder, 4.2))],
 					['-(4);',   (builder) => CALL.vneg(builder.module, buildConst(builder, 4n))],
 					['-(4.2);', (builder) => CALL.vneg(builder.module, buildConst(builder, 4.2))],
+				]));
+				// eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition
+				false && buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['?[];',    (builder) => CALL.vemp(builder.module, new VALUE.Tuple().build(builder))],
+					['?[4.2];', (builder) => CALL.vemp(builder.module, new VALUE.Tuple([new VALUE.Float(4.2)]).build(builder))],
 				]));
 			});
 			it('works with vects.', () => {
