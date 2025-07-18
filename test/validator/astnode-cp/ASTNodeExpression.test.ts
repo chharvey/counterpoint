@@ -1,11 +1,13 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
 	VALUE,
 	TYPE,
+	type Builder,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
@@ -20,6 +22,7 @@ import {
 	CONFIG_FOLDING_OFF,
 	typeUnit,
 	buildConst,
+	singletonTuple,
 } from '../../helpers.ts';
 
 
@@ -102,26 +105,27 @@ describe('ASTNodeExpression', () => {
 
 
 		specify('#build', () => {
-			const mod = new binaryen.Module();
-			const tests = new Map<string, binaryen.ExpressionRef>([
-				['null;',    buildConst(mod)],
-				['false;',   buildConst(mod, false)],
-				['true;',    buildConst(mod, true)],
-				['0;',       buildConst(mod, 0n)],
-				['+0;',      buildConst(mod, 0n)],
-				['-0;',      buildConst(mod, 0n)],
-				['42;',      buildConst(mod, 42n)],
-				['+42;',     buildConst(mod, 42n)],
-				['-42;',     buildConst(mod, -42n)],
-				['0.0;',     buildConst(mod, 0)],
-				['+0.0;',    buildConst(mod, 0)],
-				['-0.0;',    buildConst(mod, -0)],
-				['-4.2e-2;', buildConst(mod, -0.042)],
-			]);
-			return assertEqualBins(
-				[...tests.keys()].map((src) => AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF).build()),
-				[...tests.values()],
-			);
+			xjs.Array.forEachAggregated([...new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+				['null;',    (builder) => buildConst(builder)],
+				['false;',   (builder) => buildConst(builder, false)],
+				['true;',    (builder) => buildConst(builder, true)],
+				['0;',       (builder) => buildConst(builder, 0n)],
+				['+0;',      (builder) => buildConst(builder, 0n)],
+				['-0;',      (builder) => buildConst(builder, 0n)],
+				['42;',      (builder) => buildConst(builder, 42n)],
+				['+42;',     (builder) => buildConst(builder, 42n)],
+				['-42;',     (builder) => buildConst(builder, -42n)],
+				['0.0;',     (builder) => buildConst(builder, 0)],
+				['+0.0;',    (builder) => buildConst(builder, 0)],
+				['-0.0;',    (builder) => buildConst(builder, -0)],
+				['-4.2e-2;', (builder) => buildConst(builder, -0.042)],
+			])], ([src, expected_fn]) => { // TODO: upgrade 'extrajs' to v0.26 and use `xjs.Map.forEachAggregated`
+				const constant: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF);
+				return assertEqualBins(
+					constant.build(),
+					expected_fn.call(null, constant.builder),
+				);
+			});
 		});
 	});
 
@@ -232,8 +236,8 @@ describe('ASTNodeExpression', () => {
 						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(),
 					],
 					[
-						buildConst(goal.builder.module, 42n),
-						buildConst(goal.builder.module, 42.0),
+						buildConst(goal.builder, 42n),
+						buildConst(goal.builder, 42.0),
 					],
 				);
 			});
@@ -534,21 +538,388 @@ describe('ASTNodeExpression', () => {
 
 
 		describe('#build', () => {
-			specify.skip('ASTNodeTuple', () => {
-				const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF);
-				assertEqualBins(
-					tuple.build(),
-					tuple.builder.module.tuple.make([buildConst(tuple.builder.module, 1n), buildConst(tuple.builder.module, 2.0)]),
-				);
+			const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
+			const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
+
+			function testModuleValidation(src: string): void {
+				const goal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build(); // assert does not throw
+			}
+
+			describe('ASTNodeTuple', () => {
+				it('returns `(tuple.make)`.', () => {
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF);
+					return assertEqualBins(
+						tuple.build(),
+						tuple.builder.module.tuple.make([buildConst(tuple.builder, 1n), buildConst(tuple.builder, 2.0)]),
+					);
+				});
+				it('empty tuple returns unique BinVect representation.', () => {
+					const src = '[];';
+					testModuleValidation(src);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
+					return assertEqualBins(
+						tuple.build(),
+						buildConst(tuple.builder, []),
+					);
+				});
+				it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
+					const src = '[3.4];';
+					testModuleValidation(src);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
+					return assertEqualBins(
+						tuple.build(),
+						singletonTuple(tuple.builder, buildConst(tuple.builder, 3.4)),
+					);
+				});
+				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
+					const src = '[[]];';
+					testModuleValidation(src);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
+					return assertEqualBins(
+						tuple.build(),
+						singletonTuple(tuple.builder, buildConst(tuple.builder, [])),
+					);
+				});
+				it('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
+					const src = '[[[]]];';
+					testModuleValidation(src);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
+					return assertEqualBins(
+						tuple.build(),
+						singletonTuple(tuple.builder, tuple.builder.module.tuple.extract(singletonTuple(tuple.builder, buildConst(tuple.builder, [])), 0)),
+					);
+				});
+				it('boxed tuple with 1 item.', () => {
+					const src = '[[3.4]];';
+					testModuleValidation(src);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
+					return assertEqualBins(
+						tuple.build(),
+						singletonTuple(tuple.builder, tuple.builder.module.tuple.extract(singletonTuple(tuple.builder, buildConst(tuple.builder, 3.4)), 0)),
+					);
+				});
+				it('boxed tuple with many items.', () => {
+					const tuple: AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[[1, 2.0, true]];', CONFIG_FOLDING_OFF);
+					const mod:   binaryen.Module        = tuple.builder.module;
+					const inner: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(tuple.builder, 1n),
+						buildConst(tuple.builder, 2.0),
+						buildConst(tuple.builder, true),
+					]);
+					return assertEqualBins(
+						tuple.build(),
+						mod.tuple.make([
+							mod.tuple.extract(mod.local.tee(0, inner, bintype3), 0),
+							mod.tuple.extract(mod.local.get(0, bintype3), 1),
+							mod.tuple.extract(mod.local.get(0, bintype3), 2),
+						]),
+					);
+				});
+				it('nested tuples.', () => {
+					const tuple:  AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[1, [2.0], [3, [4.0]]];', CONFIG_FOLDING_OFF);
+					const bldr:   Builder                = tuple.builder;
+					const mod:    binaryen.Module        = bldr.module;
+					const inner2: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 3n),
+						mod.tuple.extract(singletonTuple(bldr, buildConst(bldr, 4.0)), 0),
+					]);
+					return assertEqualBins(
+						tuple.build(),
+						mod.tuple.make([
+							buildConst(bldr, 1n),
+							mod.tuple.extract(singletonTuple(bldr, buildConst(bldr, 2.0)), 0),
+							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
+							mod.tuple.extract(mod.local.get(0, bintype2), 1),
+						]),
+					);
+				});
+				it('multiple entries.', () => {
+					const tuple:   AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[[1, [2.0, 3]], [4.0, [5, 6.0]], [7, []]];', CONFIG_FOLDING_OFF);
+					const bldr:    Builder                = tuple.builder;
+					const mod:     binaryen.Module        = bldr.module;
+					const inner01: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 2.0),
+						buildConst(bldr, 3n),
+					]);
+					const inner11: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 5n),
+						buildConst(bldr, 6.0),
+					]);
+					const inner2: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 7n),
+						buildConst(bldr, []),
+					]);
+					const inner0: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 1n),
+						mod.tuple.extract(mod.local.tee(0, inner01, bintype2), 0),
+						mod.tuple.extract(mod.local.get(0, bintype2), 1),
+					]);
+					const inner1: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 4.0),
+						mod.tuple.extract(mod.local.tee(2, inner11, bintype2), 0),
+						mod.tuple.extract(mod.local.get(2, bintype2), 1),
+					]);
+					return assertEqualBins(
+						tuple.build(),
+						mod.tuple.make([
+							mod.tuple.extract(mod.local.tee(1, inner0, bintype3), 0),
+							mod.tuple.extract(mod.local.get(1, bintype3), 1),
+							mod.tuple.extract(mod.local.get(1, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(3, inner1, bintype3), 0),
+							mod.tuple.extract(mod.local.get(3, bintype3), 1),
+							mod.tuple.extract(mod.local.get(3, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(4, inner2, bintype2), 0),
+							mod.tuple.extract(mod.local.get(4, bintype2), 1),
+						]),
+					);
+				});
+				it('pointer entries.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let inner01: [float, int]   = [2.0, 3];
+						let inner11: [int,   float] = [5,   6.0];
+						let inner2:  [int,   []]    = [7,   []];
+
+						let inner0: [int,   [float, int]]   = [1,   inner01];
+						let inner1: [float, [int,   float]] = [4.0, inner11];
+
+						let tuple: [[int, [float, int]], [float, [int, float]], [int, []]] = [inner0, inner1, inner2];
+					`, CONFIG_FOLDING_OFF);
+					goal.varCheck();
+					goal.typeCheck();
+					goal.build();
+
+					const mod: binaryen.Module = goal.builder.module;
+					return assertEqualBins(
+						(goal.children as AST.ASTNodeDeclarationVariable[]).map((stmt) => stmt.assigned.build()),
+						[
+							mod.tuple.make([buildConst(goal.builder, 2.0), buildConst(goal.builder, 3n)]),
+							mod.tuple.make([buildConst(goal.builder, 5n),  buildConst(goal.builder, 6.0)]),
+							mod.tuple.make([buildConst(goal.builder, 7n),  buildConst(goal.builder, [])]),
+							mod.tuple.make([
+								buildConst(goal.builder, 1n),
+								mod.tuple.extract(mod.local.get(0, bintype2), 0),
+								mod.tuple.extract(mod.local.get(0, bintype2), 1),
+							]),
+							mod.tuple.make([
+								buildConst(goal.builder, 4.0),
+								mod.tuple.extract(mod.local.get(1, bintype2), 0),
+								mod.tuple.extract(mod.local.get(1, bintype2), 1),
+							]),
+							mod.tuple.make([
+								mod.tuple.extract(mod.local.get(3, bintype3), 0),
+								mod.tuple.extract(mod.local.get(3, bintype3), 1),
+								mod.tuple.extract(mod.local.get(3, bintype3), 2),
+								mod.tuple.extract(mod.local.get(4, bintype3), 0),
+								mod.tuple.extract(mod.local.get(4, bintype3), 1),
+								mod.tuple.extract(mod.local.get(4, bintype3), 2),
+								mod.tuple.extract(mod.local.get(2, bintype2), 0),
+								mod.tuple.extract(mod.local.get(2, bintype2), 1),
+							]),
+						],
+					);
+				});
 			});
-			it.skip('foldable.', () => {
-				AST.ASTNodeTuple.fromSource('[1, 2.0, null];').build();
-			});
-			it.skip('non-foldable.', () => {
-				AST.ASTNodeGoal.fromSource(`
-					let unfixed x: null = null;
-					[1, 2.0, x];
-				`).build();
+
+			describe('ASTNodeRecord', () => {
+				it('returns `(tuple.make)`.', () => {
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource('[a= 1, b= 2.0];', CONFIG_FOLDING_OFF);
+					return assertEqualBins(
+						record.build(),
+						record.builder.module.tuple.make([buildConst(record.builder, 1n), buildConst(record.builder, 2.0)]),
+					);
+				});
+				it('returns a `(block)` with `(set)`s followed by a `(tuple.make)` with `(get)`s if source order differs from key order.', () => {
+					const goal = AST.ASTNodeGoal.fromSource(`
+						[a= 1, b= 2.0];
+						[b= 2.0, a= 1];
+					`, CONFIG_FOLDING_OFF);
+					goal.varCheck();
+					goal.typeCheck();
+					goal.build();
+					const bldr: Builder         = goal.builder;
+					const mod:  binaryen.Module = bldr.module;
+					return assertEqualBins(
+						goal.children.map((stmt) => stmt.build()),
+						[
+							mod.tuple.make([
+								buildConst(bldr, 1n),
+								buildConst(bldr, 2.0),
+							]),
+							mod.block(null, [
+								mod.local.set(0, buildConst(bldr, 2.0)),
+								mod.local.set(1, buildConst(bldr, 1n)),
+								mod.tuple.make([
+									mod.local.get(1, binaryen.v128),
+									mod.local.get(0, binaryen.v128),
+								]),
+							], bintype2),
+						].map((expected) => mod.drop(expected)),
+					);
+				});
+				it('record of size 1 returns a `(tuple.make)` with 1 item.', () => {
+					const src = '[a= 3.4];';
+					testModuleValidation(src);
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(src, CONFIG_FOLDING_OFF);
+					return assertEqualBins(
+						record.build(),
+						singletonTuple(record.builder, buildConst(record.builder, 3.4)),
+					);
+				});
+				it('boxed record with 1 prop.', () => {
+					const src = '[a= [a= 3.4]];';
+					testModuleValidation(src);
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(src, CONFIG_FOLDING_OFF);
+					return assertEqualBins(
+						record.build(),
+						singletonTuple(record.builder, record.builder.module.tuple.extract(singletonTuple(record.builder, buildConst(record.builder, 3.4)), 0)),
+					);
+				});
+				it('boxed record with many props.', () => {
+					const record: AST.ASTNodeRecord      = AST.ASTNodeRecord.fromSource('[a= [a= 1, b= 2.0, c= true]];', CONFIG_FOLDING_OFF);
+					const mod:    binaryen.Module        = record.builder.module;
+					const inner:  binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(record.builder, 1n),
+						buildConst(record.builder, 2.0),
+						buildConst(record.builder, true),
+					]);
+					return assertEqualBins(
+						record.build(),
+						mod.tuple.make([
+							mod.tuple.extract(mod.local.tee(0, inner, bintype3), 0),
+							mod.tuple.extract(mod.local.get(0, bintype3), 1),
+							mod.tuple.extract(mod.local.get(0, bintype3), 2),
+						]),
+					);
+				});
+				it('nested records.', () => {
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(`[
+						a= 1,
+						b= [a= 2.0],
+						c= [a= 3, b= [a= 4.0]],
+					];`, CONFIG_FOLDING_OFF);
+					const bldr:   Builder                = record.builder;
+					const mod:    binaryen.Module        = bldr.module;
+					const inner2: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 3n),
+						mod.tuple.extract(singletonTuple(bldr, buildConst(bldr, 4.0)), 0),
+					]);
+					return assertEqualBins(
+						record.build(),
+						mod.tuple.make([
+							buildConst(bldr, 1n),
+							mod.tuple.extract(singletonTuple(bldr, buildConst(bldr, 2.0)), 0),
+							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
+							mod.tuple.extract(mod.local.get(0, bintype2), 1),
+						]),
+					);
+				});
+				it('multiple entries.', () => {
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(`[
+						a= [a= 1,   b= [a= 2.0, b= 3]],
+						b= [a= 4.0, b= [a= 5, b= 6.0]],
+						c= [b= 7,   a= true],
+					];`, CONFIG_FOLDING_OFF);
+					const bldr:    Builder                = record.builder;
+					const mod:     binaryen.Module        = bldr.module;
+					const inner01: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 2.0),
+						buildConst(bldr, 3n),
+					]);
+					const inner11: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 5n),
+						buildConst(bldr, 6.0),
+					]);
+					const inner0: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 1n),
+						mod.tuple.extract(mod.local.tee(0, inner01, bintype2), 0),
+						mod.tuple.extract(mod.local.get(0, bintype2), 1),
+					]);
+					const inner1: binaryen.ExpressionRef = mod.tuple.make([
+						buildConst(bldr, 4.0),
+						mod.tuple.extract(mod.local.tee(2, inner11, bintype2), 0),
+						mod.tuple.extract(mod.local.get(2, bintype2), 1),
+					]);
+					const inner2: binaryen.ExpressionRef = mod.block(null, [
+						mod.local.set(4, buildConst(bldr, 7n)),
+						mod.local.set(5, buildConst(bldr, true)),
+						mod.tuple.make([
+							mod.local.get(5, binaryen.v128),
+							mod.local.get(4, binaryen.v128),
+						]),
+					], bintype2);
+					return assertEqualBins(
+						record.build(),
+						mod.tuple.make([
+							mod.tuple.extract(mod.local.tee(1, inner0, bintype3), 0),
+							mod.tuple.extract(mod.local.get(1, bintype3), 1),
+							mod.tuple.extract(mod.local.get(1, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(3, inner1, bintype3), 0),
+							mod.tuple.extract(mod.local.get(3, bintype3), 1),
+							mod.tuple.extract(mod.local.get(3, bintype3), 2),
+							mod.tuple.extract(mod.local.tee(6, inner2, bintype2), 0),
+							mod.tuple.extract(mod.local.get(6, bintype2), 1),
+						]),
+					);
+				});
+				it('pointer entries.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let inner_ab: [a: float, b: int]   = [a= 2.0, b= 3];
+						let inner_bb: [a: int,   b: float] = [a= 5,   b= 6.0];
+						let inner_c:  [b: int,   a: bool]  = [b= 7,   a= true];
+
+						let inner_a: [a: int,   b: [a: float, b: int]]   = [a= 1,   b= inner_ab];
+						let inner_b: [a: float, b: [a: int,   b: float]] = [a= 4.0, b= inner_bb];
+
+						let record: [
+							a: [a: int,   b: [a: float, b: int]],
+							b: [a: float, b: [a: int,   b: float]],
+							c: [b: int,   a: bool],
+						] = [a= inner_a, b= inner_b, c= inner_c];
+					`, CONFIG_FOLDING_OFF);
+					goal.varCheck();
+					goal.typeCheck();
+					goal.build();
+
+					const mod: binaryen.Module = goal.builder.module;
+					return assertEqualBins(
+						(goal.children as AST.ASTNodeDeclarationVariable[]).map((stmt) => stmt.assigned.build()),
+						[
+							mod.tuple.make([buildConst(goal.builder, 2.0), buildConst(goal.builder, 3n)]),
+							mod.tuple.make([buildConst(goal.builder, 5n),  buildConst(goal.builder, 6.0)]),
+							mod.block(null, [
+								mod.local.set(2, buildConst(goal.builder, 7n)),
+								mod.local.set(3, buildConst(goal.builder, true)),
+								mod.tuple.make([
+									mod.local.get(3, binaryen.v128),
+									mod.local.get(2, binaryen.v128),
+								]),
+							], bintype2),
+							mod.tuple.make([
+								buildConst(goal.builder, 1n),
+								mod.tuple.extract(mod.local.get(0, bintype2), 0),
+								mod.tuple.extract(mod.local.get(0, bintype2), 1),
+							]),
+							mod.tuple.make([
+								buildConst(goal.builder, 4.0),
+								mod.tuple.extract(mod.local.get(1, bintype2), 0),
+								mod.tuple.extract(mod.local.get(1, bintype2), 1),
+							]),
+							mod.tuple.make([
+								mod.tuple.extract(mod.local.get(5, bintype3), 0),
+								mod.tuple.extract(mod.local.get(5, bintype3), 1),
+								mod.tuple.extract(mod.local.get(5, bintype3), 2),
+								mod.tuple.extract(mod.local.get(6, bintype3), 0),
+								mod.tuple.extract(mod.local.get(6, bintype3), 1),
+								mod.tuple.extract(mod.local.get(6, bintype3), 2),
+								mod.tuple.extract(mod.local.get(4, bintype2), 0),
+								mod.tuple.extract(mod.local.get(4, bintype2), 1),
+							]),
+						],
+					);
+				});
 			});
 		});
 	});

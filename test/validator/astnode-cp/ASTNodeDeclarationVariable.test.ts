@@ -369,7 +369,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build();
-			assert.deepStrictEqual(goal.builder.getLocals(), [
+			assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
 				{id: 0x102n, type: binaryen.v128},
 				{id: 0x103n, type: binaryen.v128},
 			]);
@@ -397,7 +397,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build();
-			assert.deepStrictEqual(goal.builder.getLocals(), [
+			assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
 				{id: 0x100n, type: binaryen.v128},
 				{id: 0x101n, type: binaryen.v128},
 			]);
@@ -410,6 +410,46 @@ describe('ASTNodeDeclarationVariable', () => {
 					goal.builder.module.drop(        (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned.build()),
 				],
 			);
+		});
+
+		it('tuples and records.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let tup: [   int,    float,    [   null,    [   null,    bool]]] = [   42,    4.2,    [   null,    [   null,    true]]];
+				let rec: [a: int, b: float, c: [d: null, e: [f: null, g: bool]]] = [a= 42, b= 4.2, c= [d= null, e= [f= null, g= true]]];
+			`, CONFIG_FOLDING_OFF);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.build();
+			const [tup, rec] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
+			const [tup_2, rec_c]         = [tup.children[2],   rec.children[2].val]   as [AST.ASTNodeTuple, AST.ASTNodeRecord];
+			const [tup_2_1, rec_c_e]     = [tup_2.children[1], rec_c.children[1].val] as [AST.ASTNodeTuple, AST.ASTNodeRecord];
+			assert.deepStrictEqual(goal.builder.getLocals().map(({id, value}) => ({id, value})), [
+				{id: -0x40n,  value: tup_2_1.build()},
+				{id: -0x3fn,  value: tup_2.build()},
+				{id:  0x100n, value: tup.build()},
+				{id: -0x3en,  value: rec_c_e.build()},
+				{id: -0x3dn,  value: rec_c.build()},
+				{id:  0x108n, value: rec.build()},
+			]);
+			return assertEqualBins(
+				goal.children.map((stmt) => stmt.build()),
+				[
+					goal.builder.module.local.set(2, tup.build()),
+					goal.builder.module.local.set(5, rec.build()),
+				],
+			);
+		});
+
+		it('throws when tuples and records contain each other.', () => {
+			[
+				'let tup: [   int,    float,    [   null,    bool],    [g: bool, h: int],    [[j: float]]] = [   42,    4.2,    [   null,    true],    [g= false, h= 42],    [[j= 4.2]]];',
+				'let rec: [a: int, b: float, c: [d: null, e: bool], f: [   bool,    int], i: [k: [float]]] = [a= 42, b= 4.2, c= [d= null, e= true], f= [   false,    42], i= [k= [4.2]]];',
+			].forEach((src) => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+				goal.varCheck();
+				goal.typeCheck();
+				return assert.throws(() => goal.build(), /not yet supported/);
+			});
 		});
 	});
 });

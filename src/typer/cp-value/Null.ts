@@ -1,5 +1,8 @@
 import type binaryen from 'binaryen';
-import {BinVect} from '../../index.ts';
+import {
+	type Builder,
+	BinVect,
+} from '../../index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -40,7 +43,7 @@ export class Null extends Primitive {
 		return true;
 	}
 
-	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		return new BinVect(mod, null).vect;
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return new BinVect(builder.module).vect;
 	}
 }

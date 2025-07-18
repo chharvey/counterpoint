@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	type TYPE,
@@ -50,22 +51,17 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 				throw new MutabilityError01(base_type, this);
 			}
 		}
-		const assignee_type: TYPE.Type = this.assignee.type();
-		ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
+		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.type(), this);
 	}
 
 	public override build(): binaryen.ExpressionRef {
 		const id: bigint = (this.assignee as ASTNodeVariable).id;
-		const local = this.builder.getLocalInfo(id);
-		if (!local) {
-			throw new ReferenceError(`Variable with id ${ id } not found.`);
-		}
-		return this.builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
+		return this.builder.getLocal(id)?.set(ASTNodeStatement.coerceAssignment(
 			this.builder.module,
 			this.assignee.type(),
 			this.assigned.type(),
 			this.assigned.build(),
 			this.validator.config.compilerOptions.intCoercion,
-		));
+		)) ?? assert.fail(new ReferenceError(`Variable with id ${ id } not found.`));
 	}
 }

@@ -1,6 +1,10 @@
 import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {VoidError01} from '../../index.ts';
+import {
+	type Builder,
+	VoidError01,
+} from '../../index.ts';
 import type {AST} from '../../validator/index.ts';
 import {TYPE} from '../index.ts';
 import {
@@ -73,6 +77,10 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 			TYPE.Union.all([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
 			TYPE.Union.all([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
 		);
+	}
+
+	public override build(_: Builder): binaryen.ExpressionRef {
+		throw new Error('`ValueMap#build` not yet supported.');
 	}
 
 	public get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | Null {

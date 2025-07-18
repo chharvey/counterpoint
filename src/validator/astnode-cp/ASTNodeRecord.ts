@@ -1,7 +1,9 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	build_record_like,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -21,6 +23,7 @@ import type {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeProperty} from './ASTNodeProperty.ts';
 import {
 	ASTNodeExpression,
+	buildDeco,
 	typeDeco,
 } from './ASTNodeExpression.ts';
 import {
@@ -55,13 +58,23 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		return build_record_like<ASTNodeExpression>(
+			new Map<bigint, ASTNodeExpression>(this.children.map((child) => [child.key.id, child.val])),
+			this.builder,
+			(expr) => expr.type(),
+			(expr) => expr.build(),
+		);
+	}
+
+	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
-		const props: ReadonlyMap<bigint, TYPE.Type> = new Map<bigint, TYPE.Type>(this.children.map((c) => {
-			const valuetype: TYPE.Type = c.val.type();
-			return [c.key.id, valuetype];
-		}));
-		return TYPE.Record.fromTypes(props);
+		return TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>(this.children.map((c) => [
+			c.key.id,
+			c.val.type(),
+		])));
 	}
 
 	@memoizeMethod
@@ -79,7 +92,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	public override assignTo(assignee: TYPE.Type): void {
 		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
 		if (assignee instanceof TYPE.Record) {
-			if (this.children.length < assignee.count[0]) {
+			if (this.children.length < assignee.minCount) {
 				throw err;
 			}
 			assignee.invariants.forEach((entry, key) => { // using `.forEach` to short-circuit

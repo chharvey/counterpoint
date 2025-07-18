@@ -1,5 +1,8 @@
 import type binaryen from 'binaryen';
-import {BinVect} from '../../index.ts';
+import {
+	type Builder,
+	BinVect,
+} from '../../index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -51,8 +54,8 @@ class ValueBoolean extends Primitive {
 		return this.data === (value as ValueBoolean).data;
 	}
 
-	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		return new BinVect(mod, this.isTruthy).vect;
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return new BinVect(builder.module, this.isTruthy).vect;
 	}
 }
 export {ValueBoolean as Boolean};

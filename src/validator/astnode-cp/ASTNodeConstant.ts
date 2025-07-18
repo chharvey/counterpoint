@@ -20,10 +20,7 @@ import {
 } from '../utils-private.ts';
 import {Validator} from '../Validator.ts';
 import {valueOfTokenNumber} from './utils-private.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 
 
 
@@ -56,9 +53,9 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@buildDeco
+	// @buildDeco // explicitly leaving off for performance
 	public override build(): binaryen.ExpressionRef {
-		return this.fold().build(this.builder.module);
+		return this.fold().build(this.builder);
 	}
 
 	@memoizeMethod

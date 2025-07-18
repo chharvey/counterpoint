@@ -1,5 +1,10 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {TYPE} from '../index.ts';
+import {
+	build_tuple_like,
+	type Builder,
+} from '../../index.ts';
 import {
 	languageValuesIdentical,
 	strictEqual,
@@ -29,6 +34,15 @@ class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	 */
 	public override toType(): TYPE.Tuple {
 		return TYPE.Tuple.fromTypes(this.items.map<TYPE.Type>((it) => it.toType()));
+	}
+
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return build_tuple_like<T>(
+			this.items,
+			builder,
+			(value) => value.toType(),
+			(value) => value.build(builder),
+		);
 	}
 }
 export {ValueTuple as Tuple};
