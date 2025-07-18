@@ -1,8 +1,8 @@
-type DevToggleKey =
+type DevToggleKey = (
 	// v0.5.0
 		| 'stringConstant-build'
 		| 'stringTemplate-build'
-;
+);
 type DevToggleVal = [boolean, DevToggleKey[]?];
 
 

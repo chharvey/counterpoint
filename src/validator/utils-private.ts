@@ -8,10 +8,11 @@ import type {
 
 
 
-export type SyntaxNodeType<T extends string> =
+export type SyntaxNodeType<T extends string> = (
 	& SyntaxNode
 	& {readonly isNamed: true}
-	& {readonly type: T};
+	& {readonly type: T}
+);
 
 
 
@@ -25,15 +26,13 @@ export function isSyntaxNodeType<T extends string>(node: SyntaxNode, type_or_reg
 
 
 
-type Join<Strings extends Readonly<NonemptyArray<string>>> =
-	Strings extends [infer S0, ...infer SRest]
-		? `${ S0 extends string ? '' | `__${ S0 }` : '' }${ SRest extends Readonly<NonemptyArray<string>> ? Join<SRest> : '' }`
-		: '';
+type Join<Strings extends Readonly<NonemptyArray<string>>> = Strings extends [infer S0, ...infer SRest]
+	? `${ S0 extends string ? '' | `__${ S0 }` : '' }${ SRest extends Readonly<NonemptyArray<string>> ? Join<SRest> : '' }`
+	: '';
 
 
 
-export type SyntaxNodeFamily<Name extends string, Suffices extends Readonly<NonemptyArray<string>>> =
-	SyntaxNodeType<`${ Name }${ Join<Suffices> }`>;
+export type SyntaxNodeFamily<Name extends string, Suffices extends Readonly<NonemptyArray<string>>> = SyntaxNodeType<`${ Name }${ Join<Suffices> }`>;
 
 
 
@@ -63,12 +62,12 @@ export function isSyntaxNodeFamily<
 
 
 
-type Category =
+type Category = (
 	| 'type'
 	| 'expression'
 	| 'declaration'
 	| 'statement'
-;
+);
 
 
 
@@ -139,12 +138,12 @@ type CodePoint = number;
  * An encoded character is a sequence of code units
  * that corresponds to a single code point in the UTF-8 encoding.
  */
-type EncodedChar =
+type EncodedChar = (
 	| [CodeUnit]
 	| [CodeUnit, CodeUnit]
 	| [CodeUnit, CodeUnit, CodeUnit]
 	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
-;
+);
 
 
 
