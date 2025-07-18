@@ -105,7 +105,7 @@ describe('ASTNodeExpression', () => {
 
 
 		specify('#build', () => {
-			xjs.Array.forEachAggregated([...new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+			xjs.Map.forEachAggregated(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 				['null;',    (builder) => buildConst(builder)],
 				['false;',   (builder) => buildConst(builder, false)],
 				['true;',    (builder) => buildConst(builder, true)],
@@ -119,7 +119,7 @@ describe('ASTNodeExpression', () => {
 				['+0.0;',    (builder) => buildConst(builder, 0)],
 				['-0.0;',    (builder) => buildConst(builder, -0)],
 				['-4.2e-2;', (builder) => buildConst(builder, -0.042)],
-			])], ([src, expected_fn]) => { // TODO: upgrade 'extrajs' to v0.26 and use `xjs.Map.forEachAggregated`
+			]), (expected_fn, src) => {
 				const constant: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF);
 				return assertEqualBins(
 					constant.build(),
