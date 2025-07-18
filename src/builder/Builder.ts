@@ -149,7 +149,11 @@ export class Builder {
 				mod.if(
 					vect.isInt,
 					BinVect.asBool(mod, mod.i32.eqz(vect.intValue)),
-					BinVect.asBool(mod, mod.f64.eq(vect.floatValue, mod.f64.const(0.0))), // also takes care of -0.0
+					mod.if(
+						vect.isFloat,
+						BinVect.asBool(mod, mod.f64.eq(vect.floatValue, mod.f64.const(0.0))), // also takes care of -0.0
+						BinVect.asBool(mod, vect.isTuple),
+					),
 				),
 			);
 		})(this.module)], binaryen.v128));
