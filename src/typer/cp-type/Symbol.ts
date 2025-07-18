@@ -1,6 +1,6 @@
-import {instanceOf} from '../utils-private.js';
-import * as VALUE from '../cp-value/index.js';
-import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.js';
+import {instanceOf} from '../utils-private.ts';
+import * as VALUE from '../cp-value/index.ts';
+import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
 
 
 

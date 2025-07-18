@@ -1,4 +1,5 @@
 import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
 import {assert_context_name} from '../../lib/index.ts';
 import {strictEqual} from '../utils-private.ts';
 import type {TYPE} from '../index.ts';
@@ -92,8 +93,8 @@ export abstract class Value {
 
 	/**
 	 * Create an ExpressionRef that implements this object.
-	 * @param mod the module to build from
+	 * @param builder the builder that builds this object
 	 * @return the directions to print
 	 */
-	public abstract build(mod: binaryen.Module): binaryen.ExpressionRef;
+	public abstract build(builder: Builder): binaryen.ExpressionRef;
 }

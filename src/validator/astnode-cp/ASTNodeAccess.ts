@@ -3,7 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	type TypeEntry,
 	VALUE,
-	type TYPE,
+	TYPE,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -58,7 +58,23 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeAccess#build_do` not yet supported.');
+		const base_type: TYPE.Type = this.base.type();
+		const base_build: binaryen.ExpressionRef = this.base.build();
+		if (this.accessor instanceof ASTNodeIndex) {
+			if (base_type instanceof TYPE.Tuple) {
+				return base_type.buildAccess(this.builder, base_build, Number(this.accessor.index));
+			}
+			throw new Error('`ASTNodeAccess#build` of a list is not yet supported.');
+		} else if (this.accessor instanceof ASTNodeKey) {
+			if (base_type instanceof TYPE.Record) {
+				throw new Error('`ASTNodeAccess#build` of a record is not yet supported.');
+			}
+			throw new Error('`ASTNodeAccess#build` of a dict is not yet supported.');
+		} else {
+			assert_instanceof(this.accessor, ASTNodeExpression);
+			this.accessor.build();
+			throw new Error('`ASTNodeAccess#build` of a list/dict/set/map is not yet supported.');
+		}
 	}
 
 	@memoizeMethod

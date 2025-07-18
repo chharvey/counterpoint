@@ -9,6 +9,7 @@ import {
 	SymbolStructureVar,
 	VALUE,
 	TYPE,
+	type Builder,
 	BinVect,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
@@ -40,11 +41,14 @@ function foldOperations(tests: Map<string, VALUE.Value>, config: CPConfig = CONF
 		[...tests.values()],
 	);
 }
-function buildOperations(tests: ReadonlyMap<string, binaryen.ExpressionRef>, config: CPConfig = CONFIG_FOLDING_OFF): void {
-	return assertEqualBins(
-		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).build()),
-		[...tests.values()],
-	);
+function buildOperations(tests: ReadonlyMap<string, (builder: Builder) => binaryen.ExpressionRef>, config: CPConfig = CONFIG_FOLDING_OFF): void {
+	return xjs.Array.forEachAggregated([...tests], ([src, expected_fn]) => { // TODO: upgrade 'extrajs' to v0.26 and use `xjs.Map.forEachAggregated`
+		const operation: AST.ASTNodeOperation = AST.ASTNodeOperation.fromSource(src, config);
+		return assertEqualBins(
+			operation.build(),
+			expected_fn.call(null, operation.builder),
+		);
+	});
 }
 function typeOfOperationFromSource(src: string): TYPE.Type {
 	return AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_COERCION_OFF).type();
@@ -105,17 +109,16 @@ describe('ASTNodeOperation', () => {
 
 	describe('#build', () => {
 		it('compound expression.', () => {
-			const mod = new binaryen.Module();
-			return buildOperations(new Map([
-				['42 ^ 2 * 420;', CALL.vmul(
-					mod,
-					CALL.vexp(mod, buildConst(mod, 42n), buildConst(mod, 2n)),
-					buildConst(mod, 420n),
+			buildOperations(new Map([
+				['42 ^ 2 * 420;', (builder) => CALL.vmul(
+					builder.module,
+					CALL.vexp(builder.module, buildConst(builder, 42n), buildConst(builder, 2n)),
+					buildConst(builder, 420n),
 				)],
-				['2 * 3.0 + 5;', CALL.vadd(
-					mod,
-					CALL.vmul(mod, buildConst(mod, 2n), buildConst(mod, 3.0)),
-					buildConst(mod, 5n),
+				['2 * 3.0 + 5;', (builder) => CALL.vadd(
+					builder.module,
+					CALL.vmul(builder.module, buildConst(builder, 2n), buildConst(builder, 3.0)),
+					buildConst(builder, 5n),
 				)],
 			]));
 		});
@@ -309,29 +312,37 @@ describe('ASTNodeOperation', () => {
 
 		describe('#build', () => {
 			it('optimizes by evaluating operand type.', () => {
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['!null;',   drop_then(mod, [buildConst(mod)],                true)],
-					['!false;',  drop_then(mod, [buildConst(mod, false)],         true)],
-					['!true;',   drop_then(mod, [buildConst(mod, true)],          false)],
-					['!@hello;', drop_then(mod, [buildConst(mod, Symbol(0x100))], false)],
-					['!42;',     drop_then(mod, [buildConst(mod, 42n)],           false)],
-					['!4.2;',    drop_then(mod, [buildConst(mod, 4.2)],           false)],
-					['?null;',   drop_then(mod, [buildConst(mod)],                true)],
-					['?false;',  drop_then(mod, [buildConst(mod, false)],         true)],
+				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['!null;',   (builder) => drop_then(builder.module, [buildConst(builder)],                true)],
+					['!false;',  (builder) => drop_then(builder.module, [buildConst(builder, false)],         true)],
+					['!true;',   (builder) => drop_then(builder.module, [buildConst(builder, true)],          false)],
+					['!@hello;', (builder) => drop_then(builder.module, [buildConst(builder, Symbol(0x100))], false)],
+					['!42;',     (builder) => drop_then(builder.module, [buildConst(builder, 42n)],           false)],
+					['!4.2;',    (builder) => drop_then(builder.module, [buildConst(builder, 4.2)],           false)],
+					['?null;',   (builder) => drop_then(builder.module, [buildConst(builder)],                true)],
+					['?false;',  (builder) => drop_then(builder.module, [buildConst(builder, false)],         true)],
+				]));
+				// eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition
+				false && buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['![];',    (builder) => drop_then(builder.module, [new VALUE.Tuple().build(builder)], false)],
+					['![4.2];', (builder) => drop_then(builder.module, [new VALUE.Tuple([new VALUE.Float(4.2)]).build(builder)], false)],
 				]));
 			});
 			it('returns the correct operation.', () => {
-				const mod = new binaryen.Module();
-				buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['?true;',  CALL.vemp(mod, buildConst(mod, true))],
-					['?@hi;',   CALL.vemp(mod, buildConst(mod, Symbol(0x100)))],
-					['?42;',    CALL.vemp(mod, buildConst(mod, 42n))],
-					['?4.2;',   CALL.vemp(mod, buildConst(mod, 4.2))],
-					['?0;',     CALL.vemp(mod, buildConst(mod, 0n))],
-					['?0.0;',   CALL.vemp(mod, buildConst(mod, 0.0))],
-					['-(4);',   CALL.vneg(mod, buildConst(mod, 4n))],
-					['-(4.2);', CALL.vneg(mod, buildConst(mod, 4.2))],
+				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['?true;',  (builder) => CALL.vemp(builder.module, buildConst(builder, true))],
+					['?@hi;',   (builder) => CALL.vemp(builder.module, buildConst(builder, Symbol(0x100)))],
+					['?42;',    (builder) => CALL.vemp(builder.module, buildConst(builder, 42n))],
+					['?4.2;',   (builder) => CALL.vemp(builder.module, buildConst(builder, 4.2))],
+					['?0;',     (builder) => CALL.vemp(builder.module, buildConst(builder, 0n))],
+					['?0.0;',   (builder) => CALL.vemp(builder.module, buildConst(builder, 0.0))],
+					['-(4);',   (builder) => CALL.vneg(builder.module, buildConst(builder, 4n))],
+					['-(4.2);', (builder) => CALL.vneg(builder.module, buildConst(builder, 4.2))],
+				]));
+				// eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition
+				false && buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['?[];',    (builder) => CALL.vemp(builder.module, new VALUE.Tuple().build(builder))],
+					['?[4.2];', (builder) => CALL.vemp(builder.module, new VALUE.Tuple([new VALUE.Float(4.2)]).build(builder))],
 				]));
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let var f: bool = false;
@@ -459,8 +470,8 @@ describe('ASTNodeOperation', () => {
 				));
 				/* eslint-disable @stylistic/quote-props */
 				const const_ = {
-					'2':   buildConst(goal.builder.module, 2n),
-					'2.4': buildConst(goal.builder.module, 2.4),
+					'2':   buildConst(goal.builder, 2n),
+					'2.4': buildConst(goal.builder, 2.4),
 				} as const;
 				/* eslint-enable @stylistic/quote-props */
 				return assertEqualBins(
@@ -526,8 +537,8 @@ describe('ASTNodeOperation', () => {
 				];
 				/* eslint-disable @stylistic/quote-props */
 				const const_ = {
-					'2': buildConst(goal.builder.module, 2n),
-					'3': buildConst(goal.builder.module, 3n),
+					'2': buildConst(goal.builder, 2n),
+					'3': buildConst(goal.builder, 3n),
 				} as const;
 				/* eslint-enable @stylistic/quote-props */
 				const inners: readonly binaryen.ExpressionRef[] = [
@@ -647,23 +658,22 @@ describe('ASTNodeOperation', () => {
 
 
 		specify('#build', () => {
-			const mod = new binaryen.Module();
-			return buildOperations(new Map<string, binaryen.ExpressionRef>([
-				['42 + 420;', CALL.vadd(mod, buildConst(mod, 42n), buildConst(mod, 420n))],
-				['3 * 2.1;',  CALL.vmul(mod, buildConst(mod, 3n),  buildConst(mod, 2.1))],
+			buildOperations(new Map([
+				['42 + 420;', (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+				['3 * 2.1;',  (builder) => CALL.vmul(builder.module, buildConst(builder, 3n),  buildConst(builder, 2.1))],
 
-				[' 126 /  3;', CALL.vdiv(mod, buildConst(mod,  126n), buildConst(mod,  3n))],
-				['-126 /  3;', CALL.vdiv(mod, buildConst(mod, -126n), buildConst(mod,  3n))],
-				[' 126 / -3;', CALL.vdiv(mod, buildConst(mod,  126n), buildConst(mod, -3n))],
-				['-126 / -3;', CALL.vdiv(mod, buildConst(mod, -126n), buildConst(mod, -3n))],
-				[' 200 /  3;', CALL.vdiv(mod, buildConst(mod,  200n), buildConst(mod,  3n))],
-				[' 200 / -3;', CALL.vdiv(mod, buildConst(mod,  200n), buildConst(mod, -3n))],
-				['-200 /  3;', CALL.vdiv(mod, buildConst(mod, -200n), buildConst(mod,  3n))],
-				['-200 / -3;', CALL.vdiv(mod, buildConst(mod, -200n), buildConst(mod, -3n))],
+				[' 126 /  3;', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder,  3n))],
+				['-126 /  3;', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder,  3n))],
+				[' 126 / -3;', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder, -3n))],
+				['-126 / -3;', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder, -3n))],
+				[' 200 /  3;', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder,  3n))],
+				[' 200 / -3;', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder, -3n))],
+				['-200 /  3;', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder,  3n))],
+				['-200 / -3;', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder, -3n))],
 
-				['42  - 420;',  CALL.vadd(mod, buildConst(mod, 42n), CALL.vneg(mod, buildConst(mod, 420n)))],
-				['4.2 - 42.0;', CALL.vadd(mod, buildConst(mod, 4.2), CALL.vneg(mod, buildConst(mod, 42.0)))],
-				['4.2 - 42;',   CALL.vadd(mod, buildConst(mod, 4.2), CALL.vneg(mod, buildConst(mod, 42n)))],
+				['42  - 420;',  (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), CALL.vneg(builder.module, buildConst(builder, 420n)))],
+				['4.2 - 42.0;', (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42.0)))],
+				['4.2 - 42;',   (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42n)))],
 			]));
 		});
 	});
@@ -734,24 +744,23 @@ describe('ASTNodeOperation', () => {
 
 		describe('#build', () => {
 			it('returns the correct operation.', () => {
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['3   <  3;',   CALL.vlt(mod, buildConst(mod, 3n),  buildConst(mod, 3n))],
-					['3   >  3;',   CALL.vgt(mod, buildConst(mod, 3n),  buildConst(mod, 3n))],
-					['3   <= 3;',   CALL.vle(mod, buildConst(mod, 3n),  buildConst(mod, 3n))],
-					['3   >= 3;',   CALL.vge(mod, buildConst(mod, 3n),  buildConst(mod, 3n))],
-					['5   <  9.2;', CALL.vlt(mod, buildConst(mod, 5n),  buildConst(mod, 9.2))],
-					['5   >  9.2;', CALL.vgt(mod, buildConst(mod, 5n),  buildConst(mod, 9.2))],
-					['5   <= 9.2;', CALL.vle(mod, buildConst(mod, 5n),  buildConst(mod, 9.2))],
-					['5   >= 9.2;', CALL.vge(mod, buildConst(mod, 5n),  buildConst(mod, 9.2))],
-					['5.2 <  3;',   CALL.vlt(mod, buildConst(mod, 5.2), buildConst(mod, 3n))],
-					['5.2 >  3;',   CALL.vgt(mod, buildConst(mod, 5.2), buildConst(mod, 3n))],
-					['5.2 <= 3;',   CALL.vle(mod, buildConst(mod, 5.2), buildConst(mod, 3n))],
-					['5.2 >= 3;',   CALL.vge(mod, buildConst(mod, 5.2), buildConst(mod, 3n))],
-					['5.2 <  9.2;', CALL.vlt(mod, buildConst(mod, 5.2), buildConst(mod, 9.2))],
-					['5.2 >  9.2;', CALL.vgt(mod, buildConst(mod, 5.2), buildConst(mod, 9.2))],
-					['5.2 <= 9.2;', CALL.vle(mod, buildConst(mod, 5.2), buildConst(mod, 9.2))],
-					['5.2 >= 9.2;', CALL.vge(mod, buildConst(mod, 5.2), buildConst(mod, 9.2))],
+				buildOperations(new Map([
+					['3   <  3;',   (builder) => CALL.vlt(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
+					['3   >  3;',   (builder) => CALL.vgt(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
+					['3   <= 3;',   (builder) => CALL.vle(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
+					['3   >= 3;',   (builder) => CALL.vge(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
+					['5   <  9.2;', (builder) => CALL.vlt(builder.module, buildConst(builder, 5n),  buildConst(builder, 9.2))],
+					['5   >  9.2;', (builder) => CALL.vgt(builder.module, buildConst(builder, 5n),  buildConst(builder, 9.2))],
+					['5   <= 9.2;', (builder) => CALL.vle(builder.module, buildConst(builder, 5n),  buildConst(builder, 9.2))],
+					['5   >= 9.2;', (builder) => CALL.vge(builder.module, buildConst(builder, 5n),  buildConst(builder, 9.2))],
+					['5.2 <  3;',   (builder) => CALL.vlt(builder.module, buildConst(builder, 5.2), buildConst(builder, 3n))],
+					['5.2 >  3;',   (builder) => CALL.vgt(builder.module, buildConst(builder, 5.2), buildConst(builder, 3n))],
+					['5.2 <= 3;',   (builder) => CALL.vle(builder.module, buildConst(builder, 5.2), buildConst(builder, 3n))],
+					['5.2 >= 3;',   (builder) => CALL.vge(builder.module, buildConst(builder, 5.2), buildConst(builder, 3n))],
+					['5.2 <  9.2;', (builder) => CALL.vlt(builder.module, buildConst(builder, 5.2), buildConst(builder, 9.2))],
+					['5.2 >  9.2;', (builder) => CALL.vgt(builder.module, buildConst(builder, 5.2), buildConst(builder, 9.2))],
+					['5.2 <= 9.2;', (builder) => CALL.vle(builder.module, buildConst(builder, 5.2), buildConst(builder, 9.2))],
+					['5.2 >= 9.2;', (builder) => CALL.vge(builder.module, buildConst(builder, 5.2), buildConst(builder, 9.2))],
 				]));
 			});
 		});
@@ -1021,37 +1030,36 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			const mod = new binaryen.Module();
-			function drop_then_false(expr1: binaryen.ExpressionRef, expr2: binaryen.ExpressionRef): binaryen.ExpressionRef {
+			function drop_then_false(mod: binaryen.Module, expr1: binaryen.ExpressionRef, expr2: binaryen.ExpressionRef): binaryen.ExpressionRef {
 				return drop_then(mod, [expr1, expr2], false);
 			}
 
 			context('identity (`===`).', () => {
 				it('optimizes by evaluating operand types.', () => {
-					buildOperations(new Map<string, binaryen.ExpressionRef>([
-						['42  === 420;',  drop_then_false(buildConst(mod, 42n), buildConst(mod, 420n))],
-						['4.2 === 42.0;', drop_then_false(buildConst(mod, 4.2), buildConst(mod, 42.0))],
+					buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+						['42  === 420;',  (builder) => drop_then_false(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+						['4.2 === 42.0;', (builder) => drop_then_false(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
 
-						['42  === 4.2;', drop_then_false(buildConst(mod, 42n), buildConst(mod, 4.2))],
-						['4.2 === 42;',  drop_then_false(buildConst(mod, 4.2), buildConst(mod, 42n))],
+						['42  === 4.2;', (builder) => drop_then_false(builder.module, buildConst(builder, 42n), buildConst(builder, 4.2))],
+						['4.2 === 42;',  (builder) => drop_then_false(builder.module, buildConst(builder, 4.2), buildConst(builder, 42n))],
 
-						['null === 0;',   drop_then_false(buildConst(mod), buildConst(mod, 0n))],
-						['null === 0.0;', drop_then_false(buildConst(mod), buildConst(mod, 0.0))],
+						['null === 0;',   (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, 0n))],
+						['null === 0.0;', (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, 0.0))],
 
-						['null  === false;', drop_then_false(buildConst(mod), buildConst(mod, false))],
-						['null  === true;',  drop_then_false(buildConst(mod), buildConst(mod, true))],
-						['false === true;',  drop_then_false(buildConst(mod, false), buildConst(mod, true))],
+						['null  === false;', (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, false))],
+						['null  === true;',  (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, true))],
+						['false === true;',  (builder) => drop_then_false(builder.module, buildConst(builder, false), buildConst(builder, true))],
 
-						['false === 0;',   drop_then_false(buildConst(mod, false), buildConst(mod, 0n))],
-						['false === 0.0;', drop_then_false(buildConst(mod, false), buildConst(mod, 0.0))],
+						['false === 0;',   (builder) => drop_then_false(builder.module, buildConst(builder, false), buildConst(builder, 0n))],
+						['false === 0.0;', (builder) => drop_then_false(builder.module, buildConst(builder, false), buildConst(builder, 0.0))],
 
-						['true === 1;',   drop_then_false(buildConst(mod, true), buildConst(mod, 1n))],
-						['true === 1.0;', drop_then_false(buildConst(mod, true), buildConst(mod, 1.0))],
+						['true === 1;',   (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1n))],
+						['true === 1.0;', (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
 
-						['@a === null;',  drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod))],
-						['@a === false;', drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, false))],
-						['@a === 256;',   drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, 0x100n))], // TODO: turn on integerRadices
-						['@a === @b;',    drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, 0x101n))],
+						['@a === null;',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
+						['@a === false;', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
+						['@a === 256;',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))], // TODO: turn on integerRadices
+						['@a === @b;',    (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x101n))],
 					]));
 				});
 				it('calls `vid` when operands are same numeric type.', () => {
@@ -1076,8 +1084,8 @@ describe('ASTNodeOperation', () => {
 					])));
 				});
 				it('calls `vid` when operands are of the same primitive type.', () => {
-					buildOperations(new Map<string, binaryen.ExpressionRef>([
-						['@a === @a;', CALL.vid(mod, buildConst(mod, Symbol(0x100)), buildConst(mod, Symbol(0x100)))],
+					buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+						['@a === @a;', (builder) => CALL.vid(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, Symbol(0x100)))],
 					]));
 				});
 			});
@@ -1085,60 +1093,60 @@ describe('ASTNodeOperation', () => {
 			context('equality (`==`).', () => {
 				context('with int coercion on.', () => {
 					it('optimizes by evaluating operand types, ignoring numeric types.', () => {
-						buildOperations(new Map<string, binaryen.ExpressionRef>([
-							['null == 0;',   drop_then_false(buildConst(mod), buildConst(mod, 0n))],
-							['null == 0.0;', drop_then_false(buildConst(mod), buildConst(mod, 0.0))],
+						buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+							['null == 0;',   (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, 0n))],
+							['null == 0.0;', (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, 0.0))],
 
-							['null  == false;', drop_then_false(buildConst(mod), buildConst(mod, false))],
-							['null  == true;',  drop_then_false(buildConst(mod), buildConst(mod, true))],
-							['false == true;',  drop_then_false(buildConst(mod, false), buildConst(mod, true))],
+							['null  == false;', (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, false))],
+							['null  == true;',  (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, true))],
+							['false == true;',  (builder) => drop_then_false(builder.module, buildConst(builder, false), buildConst(builder, true))],
 
-							['false == 0;',   drop_then_false(buildConst(mod, false), buildConst(mod, 0n))],
-							['false == 0.0;', drop_then_false(buildConst(mod, false), buildConst(mod, 0.0))],
+							['false == 0;',   (builder) => drop_then_false(builder.module, buildConst(builder, false), buildConst(builder, 0n))],
+							['false == 0.0;', (builder) => drop_then_false(builder.module, buildConst(builder, false), buildConst(builder, 0.0))],
 
-							['true == 1;',   drop_then_false(buildConst(mod, true), buildConst(mod, 1n))],
-							['true == 1.0;', drop_then_false(buildConst(mod, true), buildConst(mod, 1.0))],
+							['true == 1;',   (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1n))],
+							['true == 1.0;', (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
 
-							['@a == null;',  drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod))],
-							['@a == false;', drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, false))],
-							['@a == 256;',   drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, 0x100n))], // TODO: turn on integerRadices
+							['@a == null;',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
+							['@a == false;', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
+							['@a == 256;',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))], // TODO: turn on integerRadices
 						]));
 					});
 					it('calls `veq` when operands are same numeric type or when int coercion is allowed.', () => {
-						buildOperations(new Map<string, binaryen.ExpressionRef>([
-							['42  == 420;',  CALL.veq(mod, buildConst(mod, 42n), buildConst(mod, 420n))],
-							['42  == 4.2;',  CALL.veq(mod, buildConst(mod, 42n), buildConst(mod, 4.2))],
-							['4.2 == 42;',   CALL.veq(mod, buildConst(mod, 4.2), buildConst(mod, 42n))],
-							['4.2 == 42.0;', CALL.veq(mod, buildConst(mod, 4.2), buildConst(mod, 42.0))],
+						buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+							['42  == 420;',  (builder) => CALL.veq(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+							['42  == 4.2;',  (builder) => CALL.veq(builder.module, buildConst(builder, 42n), buildConst(builder, 4.2))],
+							['4.2 == 42;',   (builder) => CALL.veq(builder.module, buildConst(builder, 4.2), buildConst(builder, 42n))],
+							['4.2 == 42.0;', (builder) => CALL.veq(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
 						]));
 					});
 				});
 				context('with int coercion off.', () => {
 					it('optimizes by evaluating operand types, without coercion.', () => {
-						buildOperations(new Map<string, binaryen.ExpressionRef>([
-							['42  == 420;',  drop_then_false(buildConst(mod, 42n), buildConst(mod, 420n))],
-							['4.2 == 42.0;', drop_then_false(buildConst(mod, 4.2), buildConst(mod, 42.0))],
+						buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+							['42  == 420;',  (builder) => drop_then_false(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+							['4.2 == 42.0;', (builder) => drop_then_false(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
 
-							['42  == 4.2;',  drop_then_false(buildConst(mod, 42n), buildConst(mod, 4.2))],
-							['4.2 == 42;',   drop_then_false(buildConst(mod, 4.2), buildConst(mod, 42n))],
+							['42  == 4.2;',  (builder) => drop_then_false(builder.module, buildConst(builder, 42n), buildConst(builder, 4.2))],
+							['4.2 == 42;',   (builder) => drop_then_false(builder.module, buildConst(builder, 4.2), buildConst(builder, 42n))],
 
-							['null == 0;',   drop_then_false(buildConst(mod), buildConst(mod, 0n))],
-							['null == 0.0;', drop_then_false(buildConst(mod), buildConst(mod, 0.0))],
+							['null == 0;',   (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, 0n))],
+							['null == 0.0;', (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, 0.0))],
 
-							['null  == false;', drop_then_false(buildConst(mod), buildConst(mod, false))],
-							['null  == true;',  drop_then_false(buildConst(mod), buildConst(mod, true))],
-							['false == true;',  drop_then_false(buildConst(mod, false), buildConst(mod, true))],
+							['null  == false;', (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, false))],
+							['null  == true;',  (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, true))],
+							['false == true;',  (builder) => drop_then_false(builder.module, buildConst(builder, false), buildConst(builder, true))],
 
-							['false == 0;',   drop_then_false(buildConst(mod, false), buildConst(mod, 0n))],
-							['false == 0.0;', drop_then_false(buildConst(mod, false), buildConst(mod, 0.0))],
+							['false == 0;',   (builder) => drop_then_false(builder.module, buildConst(builder, false), buildConst(builder, 0n))],
+							['false == 0.0;', (builder) => drop_then_false(builder.module, buildConst(builder, false), buildConst(builder, 0.0))],
 
-							['true == 1;',   drop_then_false(buildConst(mod, true), buildConst(mod, 1n))],
-							['true == 1.0;', drop_then_false(buildConst(mod, true), buildConst(mod, 1.0))],
+							['true == 1;',   (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1n))],
+							['true == 1.0;', (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
 
-							['@a == null;',  drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod))],
-							['@a == false;', drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, false))],
-							['@a == 256;',   drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, 0x100n))], // TODO: turn on integerRadices
-							['@a == @b;',    drop_then_false(buildConst(mod, Symbol(0x100)), buildConst(mod, 0x101n))],
+							['@a == null;',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
+							['@a == false;', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
+							['@a == 256;',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))], // TODO: turn on integerRadices
+							['@a == @b;',    (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x101n))],
 						]), CONFIG_FOLDING_COERCION_OFF);
 					});
 					it('calls `veq` when operands are same numeric type.', () => {
@@ -1164,8 +1172,8 @@ describe('ASTNodeOperation', () => {
 					});
 				});
 				it('calls `veq` when operands are of the same primitive type.', () => {
-					buildOperations(new Map<string, binaryen.ExpressionRef>([
-						['@a === @a;', CALL.vid(mod, buildConst(mod, Symbol(0x100)), buildConst(mod, Symbol(0x100)))],
+					buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+						['@a === @a;', (builder) => CALL.vid(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, Symbol(0x100)))],
 					]));
 				});
 			});
@@ -1356,40 +1364,39 @@ describe('ASTNodeOperation', () => {
 			}
 
 			it('optimizes by evaluating left operand type.', () => {
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['42 && 420;',        drop_then(mod, [buildConst(mod, 42n)], buildConst(mod, 420n))],
-					['4.2 || -420;',      buildConst(mod, 4.2)],
-					['null && 201.0e-1;', buildConst(mod)],
-					['false || null;',    drop_then(mod, [buildConst(mod, false)], buildConst(mod))],
-					['true && 201.0e-1;', drop_then(mod, [buildConst(mod, true)], buildConst(mod, 20.1))],
+				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['42 && 420;',        (builder) => drop_then(builder.module, [buildConst(builder, 42n)], buildConst(builder, 420n))],
+					['4.2 || -420;',      (builder) => buildConst(builder, 4.2)],
+					['null && 201.0e-1;', (builder) => buildConst(builder)],
+					['false || null;',    (builder) => drop_then(builder.module, [buildConst(builder, false)], buildConst(builder))],
+					['true && 201.0e-1;', (builder) => drop_then(builder.module, [buildConst(builder, true)], buildConst(builder, 20.1))],
 
-					['1 && 2 || 3 && 4;', drop_then(
-						mod,
-						[buildConst(mod, 1n)],
-						buildConst(mod, 2n),
+					['1 && 2 || 3 && 4;', (builder) => drop_then(
+						builder.module,
+						[buildConst(builder, 1n)],
+						buildConst(builder, 2n),
 					)],
-					['null && 2 || 3 && null;', drop_then(
-						mod,
-						[buildConst(mod)],
+					['null && 2 || 3 && null;', (builder) => drop_then(
+						builder.module,
+						[buildConst(builder)],
 						drop_then(
-							mod,
-							[buildConst(mod, 3n)],
-							buildConst(mod),
+							builder.module,
+							[buildConst(builder, 3n)],
+							buildConst(builder),
 						),
 					)],
-					['(1 || 2) && (3 || 4);', drop_then(
-						mod,
-						[buildConst(mod, 1n)],
-						buildConst(mod, 3n),
+					['(1 || 2) && (3 || 4);', (builder) => drop_then(
+						builder.module,
+						[buildConst(builder, 1n)],
+						buildConst(builder, 3n),
 					)],
-					['(1 || null) && (null || 4);', drop_then(
-						mod,
-						[buildConst(mod, 1n)],
+					['(1 || null) && (null || 4);', (builder) => drop_then(
+						builder.module,
+						[buildConst(builder, 1n)],
 						drop_then(
-							mod,
-							[buildConst(mod)],
-							buildConst(mod, 4n),
+							builder.module,
+							[buildConst(builder)],
+							buildConst(builder, 4n),
 						),
 					)],
 				]));
@@ -1528,6 +1535,7 @@ describe('ASTNodeOperation', () => {
 					// @ts-expect-error --- it’s private
 					(ternary.operand0 as AST.ASTNodeClaim).operand as AST.ASTNodeVariable,
 					false,
+					false,
 				));
 				return assert.ok(ternary.type().isBottomType);
 			});
@@ -1549,11 +1557,10 @@ describe('ASTNodeOperation', () => {
 
 		describe('#build', () => {
 			it('optimizes by evaluating condition operand type.', () => {
-				const mod = new binaryen.Module();
-				return buildOperations(new Map<string, binaryen.ExpressionRef>([
-					['if true  then false else 2;',    drop_then(mod, [buildConst(mod, true)],  buildConst(mod, false))],
-					['if true  then 2     else 3.0;',  drop_then(mod, [buildConst(mod, true)],  buildConst(mod, 2n))],
-					['if false then 3.0   else null;', drop_then(mod, [buildConst(mod, false)], buildConst(mod))],
+				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['if true  then false else 2;',    (builder) => drop_then(builder.module, [buildConst(builder, true)],  buildConst(builder, false))],
+					['if true  then 2     else 3.0;',  (builder) => drop_then(builder.module, [buildConst(builder, true)],  buildConst(builder, 2n))],
+					['if false then 3.0   else null;', (builder) => drop_then(builder.module, [buildConst(builder, false)], buildConst(builder))],
 				]));
 			});
 			it('returns `(if)`.', () => {

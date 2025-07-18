@@ -53,23 +53,24 @@ export function assertEqualTypes(param1: TYPE.Type | readonly TYPE.Type[] | Read
 
 
 /* eslint-disable @typescript-eslint/no-duplicate-type-constituents */
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref, expected: Ref): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref, expected: Ref, message?: Parameters<typeof assert.strictEqual>[2]): void;
 export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: readonly Ref[], expected: readonly Ref[]): void;
 export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(bins: ReadonlyMap<Ref, Ref>): void;
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref | readonly Ref[] | ReadonlyMap<Ref, Ref>, expected?: Ref | readonly Ref[]): void {
+export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref | readonly Ref[] | ReadonlyMap<Ref, Ref>, expected?: Ref | readonly Ref[], message?: Parameters<typeof assert.strictEqual>[2]): void {
 	if (actual instanceof Map) {
 		return assertEqualBins([...actual.keys()], [...actual.values()]);
 	} if (Array.isArray(actual)) {
 		try {
 			return assert.deepStrictEqual(actual, expected);
 		} catch {
+			assert.strictEqual(actual.length, (expected as Ref[]).length, 'Expected arrays to have the same length.');
 			return xjs.Array.forEachAggregated(actual, (act, i) => assertEqualBins(act, (expected as Ref[])[i]));
 		}
 	} else {
 		try {
-			return assert.deepStrictEqual(actual, expected);
+			return assert.deepStrictEqual(actual, expected, message);
 		} catch {
-			return assert.strictEqual(binaryen.emitText(actual as Ref), binaryen.emitText(expected as Ref));
+			return assert.strictEqual(binaryen.emitText(actual as Ref), binaryen.emitText(expected as Ref), message);
 		}
 	}
 }

@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	build_tuple_like,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -46,17 +47,18 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.tuple.make(this.children.map((expr) => expr.build()));
+		return build_tuple_like<ASTNodeExpression>(
+			this.children,
+			this.builder,
+			(expr) => expr.type(),
+			(expr) => expr.build(),
+		);
 	}
 
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
-		const items: readonly TYPE.Type[] = this.children.map((c) => {
-			const itemtype: TYPE.Type = c.type();
-			return itemtype;
-		});
-		return TYPE.Tuple.fromTypes(items);
+		return TYPE.Tuple.fromTypes(this.children.map((c) => c.type()));
 	}
 
 	@memoizeMethod
@@ -71,7 +73,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	public override assignTo(assignee: TYPE.Type): void {
 		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
 		if (assignee instanceof TYPE.Tuple) {
-			if (this.children.length < assignee.count[0]) {
+			if (this.children.length < assignee.minCount) {
 				throw err;
 			}
 			assignee.invariants.forEach((entry, i) => { // using `.forEach` to short-circuit

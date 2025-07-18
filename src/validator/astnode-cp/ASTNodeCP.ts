@@ -5,6 +5,7 @@ import {
 	type Builder,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
+import {memoizeGetter} from '../../lib/index.ts';
 import {to_serializable} from '../../parser/index.ts';
 import type {Validator} from '../Validator.ts';
 import {ASTNode} from '../ASTNode.ts';
@@ -120,10 +121,12 @@ export abstract class ASTNodeCP extends ASTNode {
 		super(to_serializable(start_node), attributes, children);
 	}
 
+	@memoizeGetter
 	public get validator(): Validator {
 		return (this.parent as ASTNodeCP).validator;
 	}
 
+	@memoizeGetter
 	public get builder(): Builder {
 		return (this.parent as ASTNodeCP).builder;
 	}

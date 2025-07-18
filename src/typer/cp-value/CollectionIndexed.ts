@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {VoidErrorOutOfBounds} from '../../index.ts';
 import type {AST} from '../../validator/index.ts';
@@ -56,10 +55,6 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
 		return xjs.Array.is<Value>(this.items, (value as CollectionIndexed).items, language_values_equal);
-	}
-
-	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		return mod.tuple.make(this.items.map((item) => item.build(mod)));
 	}
 
 	/** @final */

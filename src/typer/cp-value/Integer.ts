@@ -1,6 +1,9 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
-import {BinVect} from '../../index.ts';
+import {
+	type Builder,
+	BinVect,
+} from '../../index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -64,8 +67,8 @@ export class Integer extends ValueNumber<Integer> {
 		return this.toFloat().equal(value);
 	}
 
-	public override build(mod: binaryen.Module): binaryen.ExpressionRef {
-		return new BinVect(mod, mod.i32.const(this.toNumber())).vect;
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return new BinVect(builder.module, builder.module.i32.const(this.toNumber())).vect;
 	}
 
 	public override toFloat(): Float {
