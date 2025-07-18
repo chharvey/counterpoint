@@ -69,7 +69,7 @@ export class Builder {
 	 */
 	public removeLocal(id: bigint): [this, boolean] {
 		let did = false;
-		const found = this.locals.find((var_) => var_.id === id);
+		const found = this.getLocal(id);
 		if (found) {
 			this.locals.splice(this.locals.indexOf(found), 1);
 			did = true;
@@ -83,13 +83,13 @@ export class Builder {
 	 * @return Does the setlist of locals include the id?
 	 */
 	public hasLocal(id: bigint): boolean {
-		return !!this.locals.find((var_) => var_.id === id);
+		return !!this.getLocal(id);
 	}
 
 	/**
 	 * Get the local with the given id in this Builder’s list, if it’s been added; else, return `null`.
-	 * @param  id the local whose data to get
-	 * @return    the data or `null`
+	 * @param  id the id of the local to get
+	 * @return    the local or `null`
 	 */
 	public getLocal(id: bigint): Local | null {
 		return this.locals.find((var_) => var_.id === id) ?? null;

@@ -27,7 +27,7 @@ export class Float extends ValueNumber<Float> {
 	}
 
 	public override toString(): string {
-		return `${ this.data }${ (this.data % 1 === 0) ? '.0' : '' }`;
+		return `${ this.data }${ Number.isInteger(this.data) ? '.0' : '' }`;
 	}
 
 	@strictEqual
