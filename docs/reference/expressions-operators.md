@@ -448,11 +448,11 @@ and its claimed type are disjoint (i.e. if there’s no overlap).
 ```
 
 #### Cast vs Claim
-A runtime cast (`expr as Klass`) will alwyas check whether `Klass` is a class, and whether `expr` is actually an instance of it at runtime;
+A runtime cast (`expr as Klass`) will always check whether `Klass` is a class, and whether `expr` is actually an instance of it at runtime;
 if not, then the program throws. This operator is preferred in such circumstances.
 ```
 let animal: Animal = Cat.();
-let cat: Cat = animal as Cat; % cast is allowed (`Animal` and `Cat` overlap)
+let cat: Cat = animal as Cat; % cast is allowed (`Cat` can be converted to `Cat`)
 cat.meow.();                  % calls `meow` on the `Cat` instance
 
 let dog: Dog = animal as Dog; % throws error: `Cat` cannot be converted to `Dog`

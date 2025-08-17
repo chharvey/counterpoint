@@ -149,7 +149,7 @@ ExpressionUnarySymbol
 
 ExpressionCast ::=
 	| (ExpressionCast ("as" | "as?" | "as!"))? ExpressionUnarySymbol
-	| ExpressionCast  "as"                     "<" Type ">"
+	|  ExpressionCast  "as"                    "<" Type ">"
 ;
 
 ExpressionExponential
