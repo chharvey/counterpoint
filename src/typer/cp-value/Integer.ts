@@ -26,24 +26,24 @@ const BITS_PER_BYTE = 8;
 
 
 /**
- * A 16-bit signed integer in two’s complement.
+ * A 64-bit signed integer in two’s complement.
  * @final
  */
 export class Integer extends ValueNumber<Integer> {
 	/**
 	 * Internal implementation of this Int16.
-	 * A 16-bit integer stored in a Int16Array.
+	 * A 64-bit integer stored in a BigInt64Array.
 	 */
-	private readonly data: number;
+	private readonly data: bigint;
 
 	/**
 	 * Construct a new Integer object from a bigint or from data.
 	 * @param data - a numeric value or data
-	 * @returns the value represented as a 16-bit signed integer
+	 * @returns the value represented as a 64-bit signed integer
 	 */
 	public constructor(data: bigint = 0n) {
-		const internal = new Int16Array(1);
-		internal[0] = Number(data); // need to store in Int16Array first to ensure 16-bit
+		const internal = new BigInt64Array(1);
+		internal[0] = data; // need to store in BigInt64Array first to ensure 64-bit
 		super();
 		this.data = internal[0];
 	}
@@ -80,8 +80,18 @@ export class Integer extends ValueNumber<Integer> {
 	 * @param  u Interpret as unsigned?
 	 * @return   the numeric value
 	 */
+	private toBigInt(u: boolean = false): bigint {
+		return u && this.data < 0n ? this.data + 2n ** BigInt(BigInt64Array.BYTES_PER_ELEMENT * BITS_PER_BYTE) : this.data;
+	}
+
+	/**
+	 * Return the signed or unsigned interpretation of this integer as a number.
+	 * Note: Some precision may be lost, especially for integers larger than 2^53.
+	 * @param  u Interpret as unsigned?
+	 * @return   the numeric value as a number
+	 */
 	public toNumber(u: boolean = false): number {
-		return u && this.data < 0 ? this.data + 2 ** (Int16Array.BYTES_PER_ELEMENT * BITS_PER_BYTE) : this.data;
+		return Number(this.toBigInt(u));
 	}
 
 	public override plus(addend: Integer): Integer {
@@ -174,7 +184,7 @@ export class Integer extends ValueNumber<Integer> {
 	public override divide(divisor: Integer): Integer {
 		return (divisor.eq0())
 			? assert.fail(new RangeError('Division by zero.'))
-			: new Integer(BigInt(Math.trunc(this.data / divisor.data)));
+			: new Integer(this.data / divisor.data);
 	}
 
 	/**
