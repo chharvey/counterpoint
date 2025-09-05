@@ -113,7 +113,7 @@ function tokenWorthString(
 			];
 		} else if (`${ text[1] }${ text[2] }` === 'u{') {
 			/* an escape sequence */
-			const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !;
+			const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/)!;
 			return [
 				...utf8Encode(tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
 				...tokenWorthString(text.slice(sequence[0].length), allow_comments, allow_separators),
