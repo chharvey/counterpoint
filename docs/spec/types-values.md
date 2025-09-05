@@ -248,43 +248,43 @@ instances of [`Integer`](./intrinsics.md#integer) and [`Float`](./intrinsics.md#
 
 ##### Integer
 The **Integer** type represents [mathematical integers](#real-integer-numbers).
-The Counterpoint compiler represents Integers as 16-bit signed two’s complement values.
+The Counterpoint compiler represents Integers as 64-bit signed two’s complement values.
 
 The Integers `0` and `-0` represent the same mathematical value, *0*.
-The maximum possible value of an Integer is *32,767* and the minimum value is *&minus;32,768*.
+The maximum possible value of an Integer is *9,223,372,036,854,775,807* and the minimum value is *&minus;9,223,372,036,854,775,808*.
 
 The following table lays out some integers and their encodings.
 
-| Encoding                                       | Value      | Notes
-| ---------------------------------------------- | ---------- | ---
-| `\b0000_0000 \b0000_0000` &emsp; (`\x00 \x00`) | *0* = *&minus;0*
-| `\b0000_0000 \b0000_0001` &emsp; (`\x00 \x01`) | *1*
-| `\b0000_0000 \b0000_0010` &emsp; (`\x00 \x02`) | *2*
-| `\b0000_0000 \b0000_0011` &emsp; (`\x00 \x03`) | *3*
-…
-| `\b0111_1111 \b1111_1100` &emsp; (`\x7f \xfc`) | *32,764* &emsp; (*7FFC<sub>16</sub>*)
-| `\b0111_1111 \b1111_1101` &emsp; (`\x7f \xfd`) | *32,765* &emsp; (*7FFD<sub>16</sub>*)
-| `\b0111_1111 \b1111_1110` &emsp; (`\x7f \xfe`) | *32,766* &emsp; (*7FFE<sub>16</sub>*)
-| `\b0111_1111 \b1111_1111` &emsp; (`\x7f \xff`) | *32,767* &emsp; (*7FFF<sub>16</sub>*)               | maximum value, *2<sup>15</sup> &minus; 1*
-| `\b1000_0000 \b0000_0000` &emsp; (`\x80 \x00`) | *&minus;32,768* &emsp; (*&minus;8000<sub>16</sub>*) | minimum value, *&minus;2<sup>15</sup>*
-| `\b1000_0000 \b0000_0001` &emsp; (`\x80 \x01`) | *&minus;32,767* &emsp; (*&minus;7FFF<sub>16</sub>*)
-| `\b1000_0000 \b0000_0010` &emsp; (`\x80 \x02`) | *&minus;32,766* &emsp; (*&minus;7FFE<sub>16</sub>*)
-| `\b1000_0000 \b0000_0011` &emsp; (`\x80 \x03`) | *&minus;32,765* &emsp; (*&minus;7FFD<sub>16</sub>*)
-…
-| `\b1111_1111 \b1111_1100` &emsp; (`\xff \xfc`) | *&minus;4*
-| `\b1111_1111 \b1111_1101` &emsp; (`\xff \xfd`) | *&minus;3*
-| `\b1111_1111 \b1111_1110` &emsp; (`\xff \xfe`) | *&minus;2*
-| `\b1111_1111 \b1111_1111` &emsp; (`\xff \xff`) | *&minus;1*
+| Encoding (written in hexadecimal)  | Value  | Notes
+| ---------------------------------- | ------ | -----
+| `\x00_00_00_00_00_00_00_00`        | *0* = *&minus;0*
+| `\x00_00_00_00_00_00_00_01`        | *1*
+| `\x00_00_00_00_00_00_00_02`        | *2*
+| `\x00_00_00_00_00_00_00_03`        | *3*
+| …
+| `\x7f_ff_ff_ff_ff_ff_ff_fc`        | *9,223,372,036,854,775,804* &emsp; (*7FFF,FFFF,FFFF,FFFC<sub>16</sub>*)
+| `\x7f_ff_ff_ff_ff_ff_ff_fd`        | *9,223,372,036,854,775,805* &emsp; (*7FFF,FFFF,FFFF,FFFD<sub>16</sub>*)
+| `\x7f_ff_ff_ff_ff_ff_ff_fe`        | *9,223,372,036,854,775,806* &emsp; (*7FFF,FFFF,FFFF,FFFE<sub>16</sub>*)
+| `\x7f_ff_ff_ff_ff_ff_ff_ff`        | *9,223,372,036,854,775,807* &emsp; (*7FFF,FFFF,FFFF,FFFF<sub>16</sub>*)               | maximum value, *2<sup>63</sup> &minus; 1*
+| `\x80_00_00_00_00_00_00_00`        | *&minus;9,223,372,036,854,775,808* &emsp; (*&minus;8000,0000,0000,0000<sub>16</sub>*) | minimum value, *&minus;2<sup>63</sup>*
+| `\x80_00_00_00_00_00_00_01`        | *&minus;9,223,372,036,854,775,807* &emsp; (*&minus;7FFF,FFFF,FFFF,FFFF<sub>16</sub>*)
+| `\x80_00_00_00_00_00_00_02`        | *&minus;9,223,372,036,854,775,806* &emsp; (*&minus;7FFF,FFFF,FFFF,FFFE<sub>16</sub>*)
+| `\x80_00_00_00_00_00_00_03`        | *&minus;9,223,372,036,854,775,805* &emsp; (*&minus;7FFF,FFFF,FFFF,FFFD<sub>16</sub>*)
+| …
+| `\xff_ff_ff_ff_ff_ff_ff_fc`        | *&minus;4*
+| `\xff_ff_ff_ff_ff_ff_ff_fd`        | *&minus;3*
+| `\xff_ff_ff_ff_ff_ff_ff_fe`        | *&minus;2*
+| `\xff_ff_ff_ff_ff_ff_ff_ff`        | *&minus;1*
 
 Note: To encode a mathematical integer *i* in two’s complement:
-If *i* is within the interval *[0, 2<sup>15</sup> - 1]*, simply return its representation in base 2.
-If *i* is within the interval *[&minus;2<sup>15</sup>, -1]*, return the binary representation of *i + 2<sup>16</sup>*.
+If *i* is within the interval *[0, 2<sup>63</sup> - 1]*, simply return its representation in base 2.
+If *i* is within the interval *[&minus;2<sup>63</sup>, -1]*, return the binary representation of *i + 2<sup>64</sup>*.
 Else, *i* cannot be encoded.
 
 When performing arithmetic operations such as addition, subtraction, and multiplication,
-computed values that are out of range will overflow as if doing modular arithmetic modulus *2<sup>16</sup>*,
-offset towards negative infinity by *2<sup>15</sup>*.
-For example, the sum represented by *32,767 + 1* will overflow and produce the value represented by *&minus;32,768*.
+computed values that are out of range will overflow as if doing modular arithmetic modulus *2<sup>64</sup>*,
+offset towards negative infinity by *2<sup>63</sup>*.
+For example, the sum represented by *9,223,372,036,854,775,807 + 1* will overflow and produce the value represented by *&minus;9,223,372,036,854,775,808*.
 The behavior of performing arithmetic operations that are invalid in the integers
 (such as dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
 The result of division is rounded towards zero. Dividing by zero results in an error.

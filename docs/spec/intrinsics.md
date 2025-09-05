@@ -42,11 +42,11 @@ Symbols are identical if and only if they have the same name.
 
 
 ### `Integer`
-`Integer` objects are integer numbers with 16-bit encodings.
+`Integer` objects are integer numbers with 64-bit signed two’s complement encodings.
 
 
 ### `Float`
-`Float` objects are rational numbers encoded in IEEE 754-2019 format.
+`Float` objects are rational numbers encoded in IEEE 754-2019 64-bit format.
 
 
 ### `String`
