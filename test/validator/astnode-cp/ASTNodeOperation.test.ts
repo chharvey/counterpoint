@@ -41,7 +41,7 @@ function foldOperations(tests: Map<string, VALUE.Value>, config: CPConfig = CONF
 	);
 }
 function buildOperations(tests: ReadonlyMap<string, (builder: Builder) => binaryen.ExpressionRef>, config: CPConfig = CONFIG_FOLDING_OFF): void {
-	return xjs.Array.forEachAggregated([...tests], ([src, expected_fn]) => { // TODO: upgrade 'extrajs' to v0.26 and use `xjs.Map.forEachAggregated`
+	return xjs.Map.forEachAggregated(tests, (expected_fn, src) => {
 		const operation: AST.ASTNodeOperation = AST.ASTNodeOperation.fromSource(src, config);
 		return assertEqualBins(
 			operation.build(),
