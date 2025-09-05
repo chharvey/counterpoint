@@ -259,9 +259,11 @@ export class Builder {
 	 */
 	public setupModule(): () => void {
 		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
+			/* eslint-disable @stylistic/operator-linebreak */
 			binaryen.Features.ReferenceTypes |
 			binaryen.Features.SIMD128 |
 			binaryen.Features.Multivalue
+			/* eslint-enable @stylistic/operator-linebreak */
 		));
 		this.#setupFunctions();
 		return () => {
