@@ -218,10 +218,7 @@ export class Builder {
 			const vects = [0, 1].map((i) => new BinVect(this.module, this.module.local.get(i, binaryen.v128))) as readonly BinVect[] as readonly [BinVect, BinVect];
 			return mod.if(
 				mod.i32.and(vects[0].isSpecial(), vects[1].isSpecial()),
-				BinVect.asBool(mod, mod.i32.eq(
-					mod.i16x8.extract_lane_s(vects[0].vect, 3), // TODO: hide thie implementation detail
-					mod.i16x8.extract_lane_s(vects[1].vect, 3), // TODO: hide thie implementation detail
-				)),
+				BinVect.asBool(mod, mod.i32.eq(vects[0].specialValue, vects[1].specialValue)),
 				mod.if(
 					mod.i32.and(vects[0].isInt, vects[1].isInt),
 					BinVect.asBool(mod, mod.i64.eq(vects[0].intValue, vects[1].intValue)), // `i64.eq` for ints gives the same result as `ID` operator
