@@ -207,9 +207,11 @@ export class Integer extends ValueNumber<Integer> {
 	 * 		(exponent === 2) ? base * base :
 	 * 		(base === 0)     ? 0           :
 	 * 		(base === 1)     ? 1           :
+	 * 		(base === 2 && exponent < 64) ? 1 << exponent : // `1 << x` (when `x` is less than bit width) is a more performant way to do `2 ** x`
 	 * 		(exponent % 2 === 0)
-	 * 			?        expFast(base ** 2,  exponent      / 2)
-	 * 			: base * expFast(base ** 2, (exponent - 1) / 2)
+	 * 			// `x >> 1` is a more performant way to do `x / 2`
+	 * 			?        expFast(base ** 2,  exponent      >> 1)
+	 * 			: base * expFast(base ** 2, (exponent - 1) >> 1)
 	 * 	);
 	 * }
 	 * ```
