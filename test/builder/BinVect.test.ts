@@ -38,8 +38,8 @@ describe('BinVect', () => {
 		it('throws when any ExpressionRef address component is not an `i32`.', () => {
 			assert.throws(() => new BinVect(MOD, [42]), TypeError);
 			assert.throws(() => new BinVect(MOD, [MOD.f64.const(42)]), TypeError);
-			assert.throws(() => new BinVect(MOD, [MOD.i32.const(42), 42]), TypeError);
-			assert.throws(() => new BinVect(MOD, [MOD.i32.const(42), MOD.f64.const(42)]), TypeError);
+			assert.throws(() => new BinVect(MOD, [MOD.i64.const(42, 0), 42]), TypeError);
+			assert.throws(() => new BinVect(MOD, [MOD.i64.const(42, 0), MOD.f64.const(42)]), TypeError);
 		});
 	});
 
@@ -63,9 +63,9 @@ describe('BinVect', () => {
 		});
 
 		it('with `binaryen.ExpressionRef` argument representing an `int`.', () => {
-			test_vect<binaryen.ExpressionRef>(MOD.i32.const(42), (arg, exp) => {
-				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0014));
-				exp = MOD.i32x4.replace_lane(exp, 2, arg);
+			test_vect<binaryen.ExpressionRef>(MOD.i64.const(42, 0), (arg, exp) => {
+				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0018));
+				exp = MOD.i64x2.replace_lane(exp, 1, arg);
 				return exp;
 			});
 		});
@@ -80,8 +80,8 @@ describe('BinVect', () => {
 
 		it('with `binaryen.ExpressionRef` argument representing any `v128`.', () => {
 			let argument: binaryen.ExpressionRef = MOD.v128.const(new Uint8Array(16));
-			argument = MOD.i16x8.replace_lane(argument, 3, MOD.i32.const(0x0014));
-			argument = MOD.i32x4.replace_lane(argument, 2, MOD.i32.const(42));
+			argument = MOD.i16x8.replace_lane(argument, 3, MOD.i32.const(0x0018));
+			argument = MOD.i64x2.replace_lane(argument, 1, MOD.i64.const(42, 0));
 			return test_vect<binaryen.ExpressionRef>(argument, (arg) => arg);
 		});
 

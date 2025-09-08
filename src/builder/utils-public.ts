@@ -10,6 +10,29 @@ import {
 
 
 /**
+ * Convert a BigInt (signed 64-bit) to Binaryen `i64.const`.
+ * @param    mod   a Binaryen module instance
+ * @param    value a BigInt in the range [-2^63, 2^63 - 1]
+ * @returns        an `i64.const(low, high)` expression
+ */
+
+export function bigint_to_i64(mod: binaryen.Module, value: bigint): binaryen.ExpressionRef {
+	const MIN_I64 = -(1n << 63n);     // more performant than `-(2n ** 63n)`
+	const MAX_I64 = (1n << 63n) - 1n; // more performant than `(2n ** 63n) - 1`
+	if (value < MIN_I64 || value > MAX_I64) {
+		throw new RangeError('BigInt out of signed 64-bit range.');
+	}
+
+	const MASK32 = 0xffff_ffffn;
+	const low:  number = Number(value & MASK32);
+	const high: number = Number((value >> 32n) & MASK32);
+
+	return mod.i64.const(low, high);
+}
+
+
+
+/**
  * Build a thing that looks like a tuple.
  * @typeparam T -  the type of items in the tuple-like. Could be `ASTNodeExpression`s, `Value`s, `Type`s, etc.
  * @param items    the tuple-like, an array of items

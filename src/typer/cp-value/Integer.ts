@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
+	bigint_to_i64,
 	type Builder,
 	BinVect,
 } from '../../index.ts';
@@ -68,7 +69,7 @@ export class Integer extends ValueNumber<Integer> {
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return new BinVect(builder.module, builder.module.i32.const(this.toNumber())).vect;
+		return new BinVect(builder.module, bigint_to_i64(builder.module, this.data)).vect;
 	}
 
 	public override toFloat(): Float {

@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
 	VALUE,
+	bigint_to_i64,
 	Builder,
 	BinVect,
 } from '../../src/index.ts';
@@ -177,13 +178,13 @@ describe('Value', () => {
 			const builder = new Builder();
 			const mod: binaryen.Module = builder.module;
 			return assertEqualBins(
-				[VALUE.SYM_NEVER.build(builder),             new VALUE.Symbol(0x100n, 'hello').build(builder)],
-				[new BinVect(mod, mod.i32.const(0x80)).vect, new BinVect(mod, mod.i32.const(0x100)).vect],
+				[VALUE.SYM_NEVER.build(builder),                new VALUE.Symbol(0x100n, 'hello').build(builder)],
+				[new BinVect(mod, mod.i64.const(0x80, 0)).vect, new BinVect(mod, mod.i64.const(0x100, 0)).vect],
 			);
 		});
 
 		describe('Integer', () => {
-			it('generates `(i32.const)`.', () => {
+			it('generates `(i64.const)`.', () => {
 				const data: bigint[] = [
 					42n + -420n,
 					...[
@@ -202,7 +203,7 @@ describe('Value', () => {
 				const builder = new Builder();
 				return assertEqualBins(
 					data.map((x) => new VALUE.Integer(x).build(builder)),
-					data.map((x) => new BinVect(builder.module, builder.module.i32.const(Number(x))).vect),
+					data.map((x) => new BinVect(builder.module, bigint_to_i64(builder.module, x)).vect),
 				);
 			});
 		});

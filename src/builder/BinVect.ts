@@ -42,10 +42,9 @@ import binaryen from 'binaryen';
  * Lanes 4–7 are ignored.
  *
  * ## Integer Values
- * When the Header is `\x0014`, it represents an `i32` value.
- * Lanes 4–5 together form an `i32` representing a Counterpoint `int` value.
- * Lanes 6–7 are ignored.
- * Header values of `\x0012` and `\x0018` are not yet supported but reserved for future use.
+ * When the Header is `\x0018`, it represents an `i64` value.
+ * Lanes 4–7 together form an `i64` representing a Counterpoint `int` value.
+ * Header values of `\x0012` and `\x0014` are not yet supported but reserved for future use.
  *
  * ## Float Values
  * When the Header is `\x0028`, it represents an `f64` value.
@@ -117,7 +116,7 @@ export class BinVect {
 	 * @param  mod a module to create the instance in
 	 * @param  arg one of the following:
 	 *             - the native value `null`, `false`, or `true` (corresponding to its representation)
-	 *             - a Binaryen `i32`, `f64`, or `v128` value to use in a `v128`
+	 *             - a Binaryen `i64`, `f64`, or `v128` value to use in a `v128`
 	 *             - a one- or two-length address
 	 *             - the native string value `'tuple'`, indicating empty Counterpoint Tuple object
 	 */
@@ -148,14 +147,14 @@ export class BinVect {
 		} else if (typeof arg === 'number') {
 			// the arg represents a dynamic Binaryen expression
 			/*
-			 * If the arg represents an `int`, set Lane 3 to `\x0014` and set Lane 4–5 (joined) to its `i32` value;
+			 * If the arg represents an `int`, set Lane 3 to `\x0018` and set Lane 4–7 (joined) to its `i64` value;
 			 * else, if the arg represents a `float`, set Lane 3 to `\x0028` and set Lanes 4–7 (joined) to its `f64` value;
 			 * else, if the arg is any other `v128`, set all lanes to those lanes.
 			 */
 			switch (binaryen.getExpressionType(arg)) {
-				case binaryen.i32: {
-					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0014));
-					this.#internal = this.mod.i32x4.replace_lane(this.#internal, 2, arg);
+				case binaryen.i64: {
+					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0018));
+					this.#internal = this.mod.i64x2.replace_lane(this.#internal, 1, arg);
 					break;
 				}
 				case binaryen.f64: {
@@ -168,7 +167,7 @@ export class BinVect {
 					break;
 				}
 				default: {
-					throw new TypeError('Expected either `i32`, `f64`, or `v128`.');
+					throw new TypeError('Expected either `i64`, `f64`, or `v128`.');
 				}
 			}
 		} else if (typeof arg[0] === 'bigint') {
@@ -253,7 +252,7 @@ export class BinVect {
 
 	/** The value as interpreted as an int. */
 	public get intValue(): binaryen.ExpressionRef {
-		return this.mod.i32x4.extract_lane(this.#internal, 2);
+		return this.mod.i64x2.extract_lane(this.#internal, 1);
 	}
 
 	/** The value as interpreted as a float. */
