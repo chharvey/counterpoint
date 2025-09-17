@@ -214,7 +214,7 @@ Type! TypeOf(SemanticClaim claim) :=
 	2. *Assert:* `claim.children.count` is 2.
 	3. Let `computed_type` be `TypeOf(claim.children.0)`.
 	4. Let `claimed_type` be `TypeValueOf(claim.children.1)`.
-	5. *If* `Intersect(computed_type, claimed_type)` is `never`:
+	5. *If* *UnwrapAffirm:* `Intersection(computed_type, claimed_type)` is `Never`:
 		1. *Throw:* a new TypeErrorNotAssignable.
 	6. Return `claimed_type`.
 ;

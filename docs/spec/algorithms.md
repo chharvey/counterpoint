@@ -463,7 +463,7 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 			2. *For each* `entry` in `entries`:
 				1. *If* `entry.optional` is `false`:
 					1. *Set* `all_optional` to `false`.
-			3. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to `Intersection(x.type, y.type)`.
+			3. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to *UnwrapAffirm:* `Intersection(x.type, y.type)`.
 			4. *Return:* a new EntryTypeStructure [
 					type=     `intersection`,
 					optional= `all_optional`,
