@@ -556,7 +556,7 @@ Compound types are composed of other types.
 Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax         | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
 ------------------ | -------- | ------------  | ------------------- | ---------------------------- | -------------------------------------------- | -------------------------------------- | --------------------
 [Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `[str, str, str]` / `str[3]` | *(none)*                                     | `["x", "y", "z"]`                      | `[]`
-[Record](#records) | Fixed    | words         | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
+[Record](#records) | Fixed    | symbols       | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
 [List](#lists)     | Variable | integers      | `List.<str>`        | `str[]`                      | `List.(["x", "y", "z"])`                     | *(none)*                               | *(none)*
 [Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                     | `Dict.([a= "x", b= "y", c= "z"])`            | *(none)*                               | *(none)*
 [Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                      | `Set.(["x", "y", "z"])`                      | `{"x", "y", "z"}`                      | `{}`
