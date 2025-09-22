@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import type {TypeEntry} from '../utils-public.ts';
+import type {EntryType} from '../utils-public.ts';
 import {
 	languageValuesIdentical,
 	strictEqual,
@@ -57,7 +57,7 @@ export class Union extends Combinable {
 	 * For any overlapping items, their type union is taken, as well as the disjunction of their optionality.
 	 */
 	private static unionTuples(s: TypeTuple, t: TypeTuple): TypeTuple {
-		const items: TypeEntry[] = [];
+		const items: EntryType[] = [];
 		t.invariants.forEach((typ, i) => {
 			if (s.invariants[i]) {
 				items[i] = {
@@ -75,7 +75,7 @@ export class Union extends Combinable {
 	 * For any overlapping properties, their type union is taken, as well as the disjunction of their optionality.
 	 */
 	private static unionRecords(s: TypeRecord, t: TypeRecord): TypeRecord {
-		const props = new Map<bigint, TypeEntry>();
+		const props = new Map<bigint, EntryType>();
 		[...t.invariants].forEach(([id, typ]) => {
 			if (s.invariants.has(id)) {
 				props.set(id, {

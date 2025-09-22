@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import type {TypeEntry} from '../utils-public.ts';
+import type {EntryType} from '../utils-public.ts';
 import {
 	languageValuesIdentical,
 	strictEqual,
@@ -56,7 +56,7 @@ export class Intersection extends Combinable {
 	 * For any overlapping items, their type intersection is taken, as well as the conjunction of their optionality.
 	 */
 	private static intersectTuples(s: TypeTuple, t: TypeTuple): TypeTuple {
-		const items: TypeEntry[] = [...s.invariants];
+		const items: EntryType[] = [...s.invariants];
 		t.invariants.forEach((typ, i) => {
 			items[i] = s.invariants[i] ? {
 				type:     s.invariants[i].type.intersect(typ.type),
@@ -72,7 +72,7 @@ export class Intersection extends Combinable {
 	 * For any overlapping properties, their type intersection is taken, as well as the conjunction of their optionality.
 	 */
 	private static intersectRecords(s: TypeRecord, t: TypeRecord): TypeRecord {
-		const props = new Map<bigint, TypeEntry>([...s.invariants]);
+		const props = new Map<bigint, EntryType>([...s.invariants]);
 		[...t.invariants].forEach(([id, typ]) => {
 			props.set(id, s.invariants.has(id) ? {
 				type:     s.invariants.get(id)!.type.intersect(typ.type),

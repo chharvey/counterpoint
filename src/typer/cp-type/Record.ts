@@ -10,7 +10,7 @@ import type {
 	ValidAccessOperator,
 	AST,
 } from '../../validator/index.ts';
-import type {TypeEntry} from '../utils-public.ts';
+import type {EntryType} from '../utils-public.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -38,7 +38,7 @@ class TypeRecord extends ValueType {
 	 * @return a new record type with the provided properties
 	 */
 	public static fromTypes(propertytypes: ReadonlyMap<bigint, Type> = new Map()): TypeRecord {
-		return new TypeRecord(new Map<bigint, TypeEntry>([...propertytypes].map(([id, t]) => [id, {
+		return new TypeRecord(new Map<bigint, EntryType>([...propertytypes].map(([id, t]) => [id, {
 			type:     t,
 			optional: false,
 		}])));
@@ -57,7 +57,7 @@ class TypeRecord extends ValueType {
 	 * Construct a new TypeRecord object.
 	 * @param invariants a map of this type’s property ids along with their associated types
 	 */
-	public constructor(public readonly invariants: ReadonlyMap<bigint, TypeEntry> = new Map()) {
+	public constructor(public readonly invariants: ReadonlyMap<bigint, EntryType> = new Map()) {
 		super(false, new Set([new VALUE.Record()]));
 	}
 
@@ -87,7 +87,7 @@ class TypeRecord extends ValueType {
 		return (
 			this.minCount >= (t as TypeRecord).minCount &&
 			[...(t as TypeRecord).invariants].every(([id, thattype]) => {
-				const thistype: TypeEntry | undefined = this.invariants.get(id);
+				const thistype: EntryType | undefined = this.invariants.get(id);
 				if (!thattype.optional) {
 					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.
 						We can however make the assertion in tuple types because of item ordering. */
@@ -117,7 +117,7 @@ class TypeRecord extends ValueType {
 	#getBuiltIndices(key: bigint): number | readonly number[] {
 		if (!this.#builtIndices) {
 			let counter: number = 0;
-			function walk(entries: ReadonlyMap<bigint, TypeEntry>): typeof indices {
+			function walk(entries: ReadonlyMap<bigint, EntryType>): typeof indices {
 				const indices = new Map<bigint, number | readonly number[]>();
 				entries.forEach((entry, k) => {
 					if (entry.type instanceof TypeRecord) {
