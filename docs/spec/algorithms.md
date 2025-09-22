@@ -236,8 +236,8 @@ Boolean Identical(Object a, Object b) :=
 				1. *Return:* `false`.
 		6. *Return:* `true`.
 	8. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
-		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
-		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
+		1. *Let* `struct_a` be a new Schema whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a new Schema whose properties are exactly the properties in `b`.
 		3. *If* `struct_a.count` is not `struct_b.count`:
 			1. *Return:* `false`.
 		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `true`, and use this assumption when performing the following step.
@@ -283,8 +283,8 @@ Boolean Equal(Object a, Object b) :=
 				1. *Return:* `false`.
 		6. *Return:* `true`.
 	5. *If* `a` is an instance of `Record` or `Dict` *and* `b` is an instance of `Record` or `Dict`:
-		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
-		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
+		1. *Let* `struct_a` be a new Schema whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a new Schema whose properties are exactly the properties in `b`.
 		3. *If* `struct_a.count` is not `struct_b.count`:
 			1. *Return:* `false`.
 		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following step.
@@ -352,7 +352,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 		7. *Return.*
 	2. *If* `expr` is a SemanticRecord *and* `type` is a Record type:
 		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
-		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `type`.
+		2. *Let* `struct_b` be a Schema whose properties are exactly the properties in `type`.
 		3. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
 		4. *If* `expr.children.count` is less than `struct_b_req.count`:
 			1. *Throw:* a new TypeErrorNotAssignable.
@@ -453,7 +453,7 @@ Type CombineTuplesOrRecords(Type t) :=
 						1. *Let* `optional` be `true`.
 					2. *Else:*
 						1. *Let* `optional` be `false`.
-					3. *Set* `data[i]` to a new Structure [
+					3. *Set* `data[i]` to a new Schema [
 						type=     *UnwrapAffirm:* `Intersection(data[i].type, seq_b[i].type)`,
 						optional= optional,
 					].
@@ -462,8 +462,8 @@ Type CombineTuplesOrRecords(Type t) :=
 			5. *Assert:* In `data`, all optional items follow all required items.
 			6. *Return:* a subtype of `Tuple` whose items are `data`.
 		2. *If* `a` is a Record type *and* `b` is a Record type:
-			1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
-			2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+			1. *Let* `struct_a` be a Schema whose properties are exactly the properties in `a`.
+			2. *Let* `struct_b` be a Schema whose properties are exactly the properties in `b`.
 			3. *Let* `data` be a copy of `struct_a`.
 			4. *For key* `k` in `struct_b`:
 				1. *If* `data[k]` is set:
@@ -471,7 +471,7 @@ Type CombineTuplesOrRecords(Type t) :=
 						1. *Let* `optional` be `true`.
 					2. *Else:*
 						1. *Let* `optional` be `false`.
-					3. *Set* `data[k]` to a new Structure [
+					3. *Set* `data[k]` to a new Schema [
 						type=     *UnwrapAffirm:* `Intersection(data[k].type, struct_b[k].type)`,
 						optional= optional,
 					].
@@ -489,23 +489,23 @@ Type CombineTuplesOrRecords(Type t) :=
 						1. *Let* `optional` be `true`.
 					2. *Else:*
 						1. *Let* `optional` be `false`.
-					3. *Set* `data[i]` to a new Structure [
+					3. *Set* `data[i]` to a new Schema [
 						type=     *UnwrapAffirm:* `Union(seq_a[i].type, seq_b[i].type)`,
 						optional= optional,
 					].
 			5. *Assert:* In `data`, all optional items follow all required items.
 			6. *Return:* a subtype of `Tuple` whose items are `data`.
 		2. *If* `a` is a Record type *and* `b` is a Record type:
-			1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
-			2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
-			3. *Let* `data` be a new Structure.
+			1. *Let* `struct_a` be a Schema whose properties are exactly the properties in `a`.
+			2. *Let* `struct_b` be a Schema whose properties are exactly the properties in `b`.
+			3. *Let* `data` be a new Schema.
 			4. *For key* `k` in `struct_b`:
 				1. *If* `struct_a[k]` is set:
 					1. *If* `struct_a[k].optional` is `true` *or* `struct_b[k].optional` is `true`:
 						1. *Let* `optional` be `true`.
 					2. *Else:*
 						1. *Let* `optional` be `false`.
-					3. *Set* `data[k]` to a new Structure [
+					3. *Set* `data[k]` to a new Schema [
 						type=     *UnwrapAffirm:* `Union(struct_a[k].type, struct_b[k].type)`,
 						optional= optional,
 					].
@@ -521,7 +521,7 @@ Modifies the type of an accessed bound property of a tuple or record.
 If the bound property is required: Under claim access, subtracts Void; else returns unmodified type.
 If the bound property is optional: Under claim access, subtracts Void; under optional access, unions with Null; else unions with Void.
 ```
-Type UpdateAccessedStaticType(EntryTypeStructure entry, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
+Type UpdateAccessedStaticType(EntryTypeSchema entry, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
 	1. *Let* `type` be `entry.type`.
 	2. *If* `accesskind` is `CLAIM`:
 		1. *Return:* `Difference(type, Void)`.

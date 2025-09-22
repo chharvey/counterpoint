@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import {
-	type TypeEntry,
+	type EntryType,
 	VALUE,
 	TYPE,
 } from '../../src/index.ts';
@@ -720,20 +720,20 @@ describe('Type', () => {
 				]))), '[x: int, y: bool, z: str] !<: [y: bool!, z: Object, w: int | float]');
 			});
 			it('optional entries are not assignable to required entries.', () => {
-				assert.ok(new TYPE.Record(new Map<bigint, TypeEntry>([
+				assert.ok(new TYPE.Record(new Map<bigint, EntryType>([
 					[0x100n, {type: TYPE.STR,  optional: false}],
 					[0x101n, {type: TYPE.INT,  optional: true}],
 					[0x102n, {type: TYPE.BOOL, optional: false}],
-				])).isSubtypeOf(new TYPE.Record(new Map<bigint, TypeEntry>([
+				])).isSubtypeOf(new TYPE.Record(new Map<bigint, EntryType>([
 					[0x100n, {type: TYPE.STR,  optional: true}],
 					[0x101n, {type: TYPE.INT,  optional: true}],
 					[0x102n, {type: TYPE.BOOL, optional: false}],
 				]))), '[a: str, b?: int, c: bool] <: [a?: str, b?: int, c: bool]');
-				assert.ok(!new TYPE.Record(new Map<bigint, TypeEntry>([
+				assert.ok(!new TYPE.Record(new Map<bigint, EntryType>([
 					[0x100n, {type: TYPE.STR,  optional: false}],
 					[0x101n, {type: TYPE.INT,  optional: true}],
 					[0x102n, {type: TYPE.BOOL, optional: false}],
-				])).isSubtypeOf(new TYPE.Record(new Map<bigint, TypeEntry>([
+				])).isSubtypeOf(new TYPE.Record(new Map<bigint, EntryType>([
 					[0x100n, {type: TYPE.STR,  optional: true}],
 					[0x101n, {type: TYPE.INT,  optional: false}],
 					[0x102n, {type: TYPE.BOOL, optional: false}],
@@ -1069,17 +1069,17 @@ describe('Type', () => {
 					});
 					it('takes the conjunction of optionality.', () => {
 						const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-						const actual: TYPE.Type = new TYPE.Record(new Map<bigint, TypeEntry>([
+						const actual: TYPE.Type = new TYPE.Record(new Map<bigint, EntryType>([
 							[foo, {type: TYPE.OBJ,  optional: false}],
 							[bar, {type: TYPE.NULL, optional: true}],
 							[qux, {type: TYPE.BOOL, optional: true}],
-						])).intersect(new TYPE.Record(new Map<bigint, TypeEntry>([
+						])).intersect(new TYPE.Record(new Map<bigint, EntryType>([
 							[foo, {type: TYPE.OBJ, optional: false}],
 							[diz, {type: TYPE.INT, optional: true}],
 							[qux, {type: TYPE.STR, optional: false}],
 						])));
 						assert_instanceof(actual, TYPE.Intersection);
-						assert.ok(actual.combineTuplesOrRecords().equals(new TYPE.Record(new Map<bigint, TypeEntry>([
+						assert.ok(actual.combineTuplesOrRecords().equals(new TYPE.Record(new Map<bigint, EntryType>([
 							[foo, {type: TYPE.OBJ,                      optional: false}],
 							[bar, {type: TYPE.NULL,                     optional: true}],
 							[qux, {type: TYPE.BOOL.intersect(TYPE.STR), optional: false}],
@@ -1222,17 +1222,17 @@ describe('Type', () => {
 					});
 					it('takes the disjunction of optionality.', () => {
 						const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-						const actual: TYPE.Type = new TYPE.Record(new Map<bigint, TypeEntry>([
+						const actual: TYPE.Type = new TYPE.Record(new Map<bigint, EntryType>([
 							[foo, {type: TYPE.OBJ,  optional: false}],
 							[bar, {type: TYPE.NULL, optional: true}],
 							[qux, {type: TYPE.BOOL, optional: true}],
-						])).union(new TYPE.Record(new Map<bigint, TypeEntry>([
+						])).union(new TYPE.Record(new Map<bigint, EntryType>([
 							[foo, {type: TYPE.OBJ, optional: false}],
 							[diz, {type: TYPE.INT, optional: true}],
 							[qux, {type: TYPE.STR, optional: false}],
 						])));
 						assert_instanceof(actual, TYPE.Union);
-						assert.ok(actual.combineTuplesOrRecords().equals(new TYPE.Record(new Map<bigint, TypeEntry>([
+						assert.ok(actual.combineTuplesOrRecords().equals(new TYPE.Record(new Map<bigint, EntryType>([
 							[foo, {type: TYPE.OBJ,                  optional: false}],
 							[qux, {type: TYPE.BOOL.union(TYPE.STR), optional: true}],
 						]))), `

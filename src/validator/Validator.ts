@@ -12,7 +12,7 @@ import {
 	KEYWORDS,
 	type Serializable,
 } from '../parser/index.ts';
-import type {SymbolStructure} from './index.ts';
+import type {SymbolSchema} from './index.ts';
 import {utf8Encode} from './utils-private.ts';
 
 
@@ -257,7 +257,7 @@ export class Validator {
 
 
 	/** A symbol table, which keeps tracks of variables. */
-	private readonly symbol_table = new Map<bigint, SymbolStructure>();
+	private readonly symbol_table = new Map<bigint, SymbolSchema>();
 
 	/**
 	 * A bank of unique identifier names.
@@ -277,7 +277,7 @@ export class Validator {
 	 * @param symbol the object encoding data of the symbol
 	 * @returns this
 	 */
-	public addSymbol(symbol: SymbolStructure): this {
+	public addSymbol(symbol: SymbolSchema): this {
 		this.symbol_table.set(symbol.id, symbol);
 		return this;
 	}
@@ -306,7 +306,7 @@ export class Validator {
 	 * @param id the symbol id to check
 	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
 	 */
-	public getSymbolInfo(id: bigint): SymbolStructure | null {
+	public getSymbolInfo(id: bigint): SymbolSchema | null {
 		return this.symbol_table.get(id) ?? null;
 	}
 
@@ -314,7 +314,7 @@ export class Validator {
 	 * Return a copy of this Validator’s symbols.
 	 * @return the symbols in a new map
 	 */
-	public getSymbols(): Map<bigint, SymbolStructure> {
+	public getSymbols(): Map<bigint, SymbolSchema> {
 		return new Map([...this.symbol_table]);
 	}
 

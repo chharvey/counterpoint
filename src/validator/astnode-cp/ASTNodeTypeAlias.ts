@@ -15,9 +15,9 @@ import {
 } from '../../core/index.ts';
 import {
 	SymbolKind,
-	type SymbolStructure,
-	SymbolStructureVar,
-	SymbolStructureType,
+	type SymbolSchema,
+	SymbolSchemaVar,
+	SymbolSchemaType,
 } from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
@@ -53,7 +53,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbolInfo(this.id) instanceof SymbolStructureVar) {
+		if (this.validator.getSymbolInfo(this.id) instanceof SymbolSchemaVar) {
 			throw new ReferenceErrorKind(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		}
 	}
@@ -66,8 +66,8 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 			]).get(this.source)!;
 		}
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
-		const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-		assert_instanceof(symbol, SymbolStructureType);
+		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolSchemaType);
 		return symbol.typevalue;
 	}
 }

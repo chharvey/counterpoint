@@ -9,7 +9,7 @@ Below is an example of
 prose that might appear in this specification; the double-angle quotes refer to wording used in the
 steps of a hypothetical [specification algorithm](#algorithms).
 > In an algorithm, a step that reads «*Let* \`x\` be the value of \`X\`.» means to say
-> «If \`X\` is a completion structure, then let \`x\` be \`X.value\`; otherwise let \`x\` be \`X\`.»
+> «If \`X\` is a CompletionSchema, then let \`x\` be \`X.value\`; otherwise let \`x\` be \`X\`.»
 
 Algorithm variables, values, and identifiers are delimited with \`back-ticks\` (**U+0060**) as illustrated above.
 
@@ -30,29 +30,29 @@ but placeholders for such types.
 
 ### Counterpoint Specification Values
 [Counterpoint Specification Values](./types-values.md#counterpoint-specification-types) are indicated with an *italic typeface*.
-For instance, a sequence of real numbers can be written as *[2, 4, 6]*.
+For instance, a Sequence of real numbers can be written as *[2, 4, 6]*.
 
 #### Sequences
 Sequences are denoted within square brackets (**U+005B**, **U+005D**), with comma-separated (**U+002C**) entries.
-The notation *[`1685`, `"Bach"`]* represents a sequence containing two items:
+The notation *[`1685`, `"Bach"`]* represents a Sequence containing two items:
 the [Integer](./types-values.md#integer) representing the real number *1685*,
 and the [String value](./types-values.md#string) `"Bach"`.
 
-Fixed entries of a sequence may be accessed using 0-origin dot notation (**U+002E**).
-If the example sequence above were assigned to the specification variable \`bach\`,
+Fixed entries of a Sequence may be accessed using 0-origin dot notation (**U+002E**).
+If the example Sequence above were assigned to the specification variable \`bach\`,
 then \`bach.0\` is shorthand for «the 0th entry of \`bach\`», which is the value `1685`.
 
-Variable entries of a sequence may be accessed using bracket notation.
+Variable entries of a Sequence may be accessed using bracket notation.
 For example, using a variable index \`i\` we may access «the *i*th entry of \`bach\`» via \`bach\[i\]\`.
 
-#### Structures
-Structures are denoted with left and right square brackets,
+#### Schemata
+Schemata (“Schemas”) are denoted with left and right square brackets,
 and name–value pairs are delimited with equals signs (**U+003D**).
-For example, a structure with a \`name\` property of `"Bach"` and a \`yob\` property of `1685`
+For example, a Schema with a \`name\` property of `"Bach"` and a \`yob\` property of `1685`
 would be written as *[name= `"Bach"`, yob= `1685`]*.
 
-Entries of a structure can be accessed using dot notation.
-If the example structure above were assigned to the specification variable \`bach\`,
+Entries of a Schema can be accessed using dot notation.
+If the example Schema above were assigned to the specification variable \`bach\`,
 then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which is the value `"Bach"`.
 
 
@@ -896,8 +896,8 @@ In an attribute grammar, attributes are defined on nodes of a parse tree via the
 of a context-free grammar.
 In this specification, attributes are “synthesized” and thus propagate in a bottom-up manner:
 given a parse node, computing an attribute of that node might require looking at its children.
-Attributes are always [normal completion structures](/.types-values.md#completionstructure).
-For notational convenience, only the value of the completion structure is written.
+Attributes are always [normal CompletionSchemata](/.types-values.md#completionschema).
+For notational convenience, only the value of the CompletionSchema is written.
 
 
 ### Example
@@ -913,7 +913,7 @@ Quantity([0-9] :::= "9") -> Integer := 9;
 ```
 This example illustrates a hypothetical attribute grammar that defines an attribute
 called `Quantity` on an `INT` token.
-The attributes themselves are [completion structures](./types-values.md#completionstructure)
+The attributes themselves are [CompletionSchemata](./types-values.md#completionschema)
 whose \`type\` properties are *normal* and whose \`value\` properties are of type `Integer`.
 Each rule defines the attribute on the token matching a different pattern defined by a CFG,
 and then denotes that the returned object will be an integer.
@@ -1046,18 +1046,18 @@ An algorithm consists of a name, an output type, zero or more parameters, and a 
 The steps are formatted as an ordered list;
 the list is *ordered* in that the outcome could change if the steps were not performed in the order given.
 
-An algorithm must always output a [CompletionStructure](/.types-values.md#completionstructure) object,
+An algorithm must always output a [CompletionSchema](/.types-values.md#completionschema) object,
 which is returned by the algorithm to its invoker.
-The completion structure might or might not have a \`value\`.
+The CompletionSchema might or might not have a \`value\`.
 
 The output type of an algorithm is the type of the \`value\` (if it exists) of
-a returned normal completion structure, and it is specified before
+a returned normal completion, and it is specified before
 the name of the algorithm in its header.
-If an algorithm outputs a normal completion structure without a \`value\`,
+If an algorithm outputs a normal CompletionSchema without a \`value\`,
 the output type is specified as [None](./types-values.md#none).
 
-If an algorithm outputs an *abrupt* completion structure, its \`value\`, if it exists,
-though it is still included in the returned structure, is *not* indicated in the output type,
+If an algorithm outputs an *abrupt* completion, its \`value\`, if it exists,
+though it is still included in the returned CompletionSchema, is *not* indicated in the output type,
 however, an exclamation point `!` is appended to the return type.
 For example, an algorithm with return type `Boolean!` will return a normal completion with
 a \`value\` of type `Boolean`, or an abrupt completion.
@@ -1126,34 +1126,34 @@ A step that says «*Break.*» (with no number) implies «*Break:* 1.».
 #### Return
 An algorithm step that reads «*Return:* ‹v›.» (where ‹v› is a metavariable representing a completion value)
 is shorthand for «*Return:* [type= normal, value= ‹v›].», meaning
-the algorithm outputs a normal completion structure with a \`value\` of ‹v›.
+the algorithm outputs a normal completion with a \`value\` of ‹v›.
 
 However, an algorithm step that reads «*Return:* [type= ‹type›, value= ‹v›].» is to be interpreted as-is,
-as returning the completion structure itself, not “wrapped” in a new normal completion.
+as returning the CompletionSchema itself, not “wrapped” in a new normal completion.
 Similarly, an algorithm step that reads «*Return:* ‹CS›.»,
-where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
-is also to be interpreted as-is, as returning the completion structure itself.
+where ‹CS› represents an actual CompletionSchema object (such as the result of an algorithm call),
+is also to be interpreted as-is, as returning the CompletionSchema itself.
 
 An algorithm step that reads «*Return*.» is shorthand for «*Return:* [type= normal].», that is,
-it outputs a normal completion structure without a \`value\` (thus the output type is None).
+it outputs a normal completion without a \`value\` (thus the output type is None).
 
 An algorithm with no Return statement is implied to return a normal completion with no value.
 
 #### Throw
 When an algorithm step reads «*Throw:* ‹v›.» (where ‹v› is a metavariable representing a completion value),
-a throw completion structure whose \`value\` is ‹v› is returned.
+a CompletionSchema whose \`value\` is ‹v› is returned.
 That is, the step is shorthand for «*Return:* [type= throw, value= ‹v›].».
-Note that such a completion structure is “abrupt”.
+Note that such a completion is “abrupt”.
 
 An algorithm step that reads «*Throw:* [type= ‹type›, value= ‹v›].» is to be interpreted
-as «*Return:* [type= throw, value= ‹v›]», not the original completion “wrapped” in a new *throw* completion.
+as «*Return:* [type= throw, value= ‹v›]», not the original CompletionSchema “wrapped” in a new CompletionSchema.
 Similarly, an algorithm step that reads «*Throw:* ‹CS›.»,
-where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
-is also to be interpreted in the same manner, as returning a *throw* completion structure
+where ‹CS› represents an actual CompletionSchema object (such as the result of an algorithm call),
+is also to be interpreted in the same manner, as returning a *throw*-typed CompletionSchema
 whose value is the value of ‹CS›.
 
 #### Unwrap
-An algorithm step that contains «*Unwrap:* ‹s›» (where ‹s› is a completion structure or algorithm call)
+An algorithm step that contains «*Unwrap:* ‹s›» (where ‹s› is a CompletionSchema or algorithm call)
 returns ‹s› if it is an abrupt completion, but otherwise replaces ‹s› with its value.
 The step is shorthand for the following steps:
 ```
@@ -1184,7 +1184,7 @@ For example, setting a variable to an unwrap step …
 ```
 
 #### UnwrapAffirm
-An algorithm step that contains «*UnwrapAffirm:* ‹s›» (where ‹s› is a completion structure or algorithm call)
+An algorithm step that contains «*UnwrapAffirm:* ‹s›» (where ‹s› is a CompletionSchema or algorithm call)
 assumes ‹s› is a normal completion and replaces ‹s› with its value.
 The step is shorthand for the following steps:
 ```
@@ -1273,7 +1273,7 @@ is shorthand for
 ```
 
 ##### For
-A step that reads «*For index* ‹i› in ‹s›:» (where ‹i› is a variable and ‹s› is a sequence)
+A step that reads «*For index* ‹i› in ‹s›:» (where ‹i› is a variable and ‹s› is a Sequence)
 is shorthand for the following steps:
 ```
 1. *Let* `‹i›` be 0.
@@ -1282,7 +1282,7 @@ is shorthand for the following steps:
 	2. Increment `‹i›`.
 ```
 
-A step that reads «*For key* ‹k› in ‹s›:» (where ‹k› is a variable and ‹s› is a structure)
+A step that reads «*For key* ‹k› in ‹s›:» (where ‹k› is a variable and ‹s› is a Schema)
 is shorthand for the following steps:
 ```
 1. *Let* `i` be 0.
@@ -1293,14 +1293,14 @@ is shorthand for the following steps:
 ```
 Note that this algorithm does not require the keys in ‹s› to be iterated over in any particular order.
 
-A step that reads «*For each* ‹it› in ‹s›:» (where ‹it› is a variable and ‹s› is a sequence)
+A step that reads «*For each* ‹it› in ‹s›:» (where ‹it› is a variable and ‹s› is a Sequence)
 is shorthand for the following steps:
 ```
 1. *For index* `i` in `‹s›`:
 	1. Perform the substeps listed under the *For each* step, replacing `‹it›` with `‹s›[i]`.
 ```
 
-A step that reads «*For each* ‹val› in ‹s›:» (where ‹val› is a variable and ‹s› is a structure)
+A step that reads «*For each* ‹val› in ‹s›:» (where ‹val› is a variable and ‹s› is a Schema)
 is shorthand for the following steps:
 ```
 1. *For key* `k` in `‹s›`:
@@ -1308,7 +1308,7 @@ is shorthand for the following steps:
 ```
 
 ##### Spread
-An algorithm step that contains «...‹s›» (where ‹s› is a sequence)
+An algorithm step that contains «...‹s›» (where ‹s› is a Sequence)
 is shorthand for the following steps:
 ```
 1. *For each* `it` in ‹s›:
@@ -1317,18 +1317,18 @@ is shorthand for the following steps:
 
 ##### Mappings
 A step that contains «a mapping of ‹s› indexed by ‹i› to ‹e›» is shorthand for a *For* loop
-that populates a new sequence, where ‹s› is a starting sequence, ‹i› is an index variable,
+that populates a new Sequence, where ‹s› is a starting Sequence, ‹i› is an index variable,
 and ‹e› is an expression possibly containing ‹s› and ‹i›.
-The new sequence is the result of mapping each item in the starting sequence to
+The new Sequence is the result of mapping each item in the starting Sequence to
 a value prescribed by the expression ‹e›.
 
-(In the example below, assume `sequence` is a sequence of RealNumber values.)
+(In the example below, assume `sequence` is a Sequence of RealNumber values.)
 ```
 1. *Let* `result` be a mapping of `sequence` indexed by `i` to `sequence[i] + 1`.
 ```
 is shorthand for
 ```
-1. *Let* `result` be an empty sequence.
+1. *Let* `result` be an empty Sequence.
 2. *For index* `i` in `sequence`:
 	1. Push `sequence[i] + 1` to `result`.
 ```
@@ -1340,60 +1340,60 @@ replacing the *For index* step with a *For each* step.
 ```
 is shorthand for
 ```
-1. *Let* `result` be an empty sequence.
+1. *Let* `result` be an empty Sequence.
 2. *For each* `it` in `sequence`:
 	1. Push `it + 1` to `result`.
 ```
 
 ##### Flattened Mappings
 A step that contains «a flattened mapping of ‹s› indexed by ‹i› to ‹e›» is similar to a [Mapping](#mappings) step,
-except that the expression ‹e› must be a sequence, and the resulting sequence,
-rather than being a sequence of sequences, is instead a sequence of values perscribed by items of ‹e›.
+except that the expression ‹e› must be a Sequence, and the resulting Sequence,
+rather than being a Sequence of Sequences, is instead a Sequence of values perscribed by items of ‹e›.
 
-(In the example below, assume `sequence` is a sequence of RealNumber values.)
+(In the example below, assume `sequence` is a Sequence of RealNumber values.)
 ```
 1. *Let* `result` be a flattened mapping of `sequence` indexed by `i` to `[sequence[i], sequence[i] + 1]`.
 ```
 is shorthand for
 ```
 1. *Let* `map` be a mapping of `sequence` indexed by `i` to `[sequence[i], sequence[i] + 1]`.
-2. *Let* `result` be an empty sequence.
+2. *Let* `result` be an empty Sequence.
 3. *For index* `i` in `map`:
 	1. Push `...map` to `result`.
 ```
 
 A step that contains «a flattened mapping of ‹s› for each ‹it› to ‹e›» is like an indexed mapping
-except instead of indices the mapping iterates over sequence items.
+except instead of indices the mapping iterates over Sequence items.
 ```
 1. *Let* `result` be a flattened mapping of `sequence` for each `it` to `[it, it + 1]`.
 ```
 is shorthand for
 ```
 1. *Let* `map` be a mapping of `sequence` for each `it` to `[it, it + 1]`.
-2. *Let* `result` be an empty sequence.
+2. *Let* `result` be an empty Sequence.
 3. *For index* `i` in `map`:
 	1. Push `...map` to `result`.
 ```
 
 ##### Filterings
 A step that contains «a filtering of ‹s› indexed by ‹i› such that ‹e›» is shorthand for a *For* loop
-that populates a new sequence, where ‹s› is a starting sequence, ‹i› is an index variable,
+that populates a new Sequence, where ‹s› is a starting Sequence, ‹i› is an index variable,
 and ‹e› is a predicate, possibly containing ‹s› and ‹i›, to be satisfied.
-The new sequence is the result of finding only the items in the starting sequence
+The new Sequence is the result of finding only the items in the starting Sequence
 that satisfy the predicate ‹e›.
 
-(In the example below, assume `sequence` is a sequence of RealNumber values.)
+(In the example below, assume `sequence` is a Sequence of RealNumber values.)
 ```
 1. *Let* `result1` be a filtering of `sequence` indexed by `i` such that `sequence[i] > 0`.
 1. *Let* `result2` be a filtering of `sequence` indexed by `i` such that `sequence[i]` is even.
 ```
 is shorthand for
 ```
-1. *Let* `result1` be an empty sequence.
+1. *Let* `result1` be an empty Sequence.
 2. *For index* `i` in `sequence`:
 	1. *If* `sequence[i] > 0`:
 		1. Push `sequence[i]` to `result1`.
-3. *Let* `result2` be an empty sequence.
+3. *Let* `result2` be an empty Sequence.
 4. *For index* `i` in `sequence`:
 	1. *If* `sequence[i]` is even:
 		1. Push `sequence[i]` to `result2`.
@@ -1407,11 +1407,11 @@ replacing the *For index* step with a *For each* step.
 ```
 is shorthand for
 ```
-1. *Let* `result1` be an empty sequence.
+1. *Let* `result1` be an empty Sequence.
 2. *For each* `it` in `sequence`:
 	1. *If* `it > 0` is `true`:
 		1. Push `it` to `result1`.
-3. *Let* `result2` be an empty sequence.
+3. *Let* `result2` be an empty Sequence.
 4. *For each* `it` in `sequence`:
 	1. *If* `it` is an integer:
 		1. Push `it` to `result2`.
@@ -1419,11 +1419,11 @@ is shorthand for
 
 ##### Reductions
 A step that contains «a reduction of ‹s› with ‹accum› for each ‹it› to ‹e› starting with ‹p›» is shorthand for
-a *For* loop that updates a result; where ‹s› is a starting sequence; ‹accum› is an accumulator value; ‹it› is an item in ‹s›;
+a *For* loop that updates a result; where ‹s› is a starting Sequence; ‹accum› is an accumulator value; ‹it› is an item in ‹s›;
 ‹e› is an expression possibly containing ‹s›, ‹accum›, and ‹it›; and ‹p› is the initial value of ‹accum›.
 The updated result is the result of setting ‹accum› to the evaluation of ‹e›, for each ‹it› in ‹s›.
 
-(In the example below, assume `sequence` is a sequence of Structures with a \`prop\` property.)
+(In the example below, assume `sequence` is a Sequence of Schemata with a \`prop\` property.)
 ```
 1. *Let* `result` be a reduction of `sequence` with `accum` for each `it` to `[...accum, it.prop]` starting with `[]`.
 ```
@@ -1434,11 +1434,11 @@ is shorthand for
 	1. *Set* `result` to `[...result, it.prop]`.
 ```
 
-A step that contains «a reduction of ‹s› for each ‹a› and ‹b› to ‹e›» assumes the sequence is nonempty,
+A step that contains «a reduction of ‹s› for each ‹a› and ‹b› to ‹e›» assumes the Sequence is nonempty,
 uses ‹a› as the accumulator value, ‹b› as the iterated item in ‹s›, and the item at index 0 in ‹s› as the initial value.
 It skips the first iteration.
 
-(In the example below, assume `sequence` is a sequence of RealNumber values.)
+(In the example below, assume `sequence` is a Sequence of RealNumber values.)
 ```
 1. *Let* `result` be a reduction of `sequence` for each `a` and `b` to `a + b`.
 ```

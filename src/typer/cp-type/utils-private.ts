@@ -3,7 +3,7 @@ import {
 	Operator,
 	type ValidAccessOperator,
 } from '../../validator/index.ts';
-import type {TypeEntry} from '../utils-public.ts';
+import type {EntryType} from '../utils-public.ts';
 import {
 	type Type,
 	VOID,
@@ -24,7 +24,7 @@ export const language_types_equal = (a: Type, b: Type): boolean => a.equals(b);
 
 
 
-export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidAccessOperator): Type {
+export function updateAccessedStaticType(entry: EntryType, access_kind: ValidAccessOperator): Type {
 	return (access_kind === Operator.CLAIMDOT)
 		? entry.type.subtract(VOID)
 		: (entry.optional)

@@ -7,7 +7,7 @@ import type {TYPE} from './index.ts';
  * @property type     - the type value, a Counterpoint Language Type
  * @property optional - is the entry optional on the collection?
  */
-export type TypeEntry = {
+export type EntryType = {
 	readonly type:     TYPE.Type,
 	readonly optional: boolean,
 };

@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import {
-	type TypeEntry,
+	type EntryType,
 	TYPE,
 	AssignmentErrorDuplicateKey,
 } from '../../index.ts';
@@ -47,7 +47,7 @@ export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		const entries: ReadonlyMap<bigint, TypeEntry> = new Map<bigint, TypeEntry>(this.children.map((c) => {
+		const entries: ReadonlyMap<bigint, EntryType> = new Map<bigint, EntryType>(this.children.map((c) => {
 			const valuetype: TYPE.Type = c.val.eval();
 			return [
 				c.key.id,

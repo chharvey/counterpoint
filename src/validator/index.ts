@@ -6,4 +6,4 @@ export * from './Validator.ts';
 export * from './ASTNode.ts';
 export * as AST from './astnode-cp/index.ts';
 
-export * from './SymbolStructure.ts';
+export * from './SymbolSchema.ts';

@@ -17,7 +17,7 @@ They are not directly observable from Counterpoint code.
 ### None
 The **None** type has one value called *none*.
 It signifies a variable with no meaningful value.
-An algorithm with output type None returns a [completion structure](#completionstructure)
+An algorithm with output type None returns a [CompletionSchema](#completionschema)
 with no \`value\` property.
 
 
@@ -82,21 +82,21 @@ These operations are implied with their typical meaning in the context of real n
 A **Sequence** is an ordered list of values. The values may be a mix of any type.
 If the values fall within a certain type \`‹T›\` (a metavariable),
 the Sequence type is denoted \`Sequence<‹T›>\`.
-For example, a sequence of Integers is denoted \`Sequence&lt;Integer&gt;\`.
+For example, a Sequence of Integers is denoted \`Sequence&lt;Integer&gt;\`.
 
 
 ### Vector
 A **Vector** is an ordered list of values where the number of values is fixed.
-For example, the notation \`Vector&lt;Integer, Float&gt;\` indicates a sequence of two items,
+For example, the notation \`Vector&lt;Integer, Float&gt;\` indicates a list of two items,
 the first of which is of type \`Integer\` and the second of which is of type \`Float\`.
 
 
-### Structure
-A **Structure** is an unordered list of name–value pairs. The names are unique words and the values may be any type.
-A name–value pair of a structure is called a **property**.
+### Schema
+A **Schema** is an unordered list of name–value pairs. The names are unique words and the values may be any type.
+A name–value pair of a Schema is called a **property**.
 
-#### CompletionStructure
-A **CompletionStructure** is a specific subtype of [Structure](#structure) with
+#### CompletionSchema
+A **CompletionSchema** is a specific subtype of [Schema](#schema) with
 a mandatory property \`type\` and an optional property \`value\`.
 The value of the \`type\` property must be one of the [enumerated](#enumerated-values) specification values
 *normal*, *break*, *continue*, *return*, or *throw*, which are described below.
@@ -104,13 +104,13 @@ The value of the \`value\` property must be a [Counterpoint Language Value](#Cou
 
 Property  | Description
 --------- | -----------
-\`type\`  | the kind of completion structure
-\`value\` | the Counterpoint Language Value carried with the structure
+\`type\`  | the kind of completion
+\`value\` | the Counterpoint Language Value carried with the completion
 
-Completion structures are the default values returned by all specification algorithms,
+CompletionSchemas are the default values returned by all specification algorithms,
 unless explicitly stated otherwise.
 
-This table summarizes the enumerated values of a completion structure’s \`type\` property.
+This table summarizes the enumerated values of a CompletionSchema’s \`type\` property.
 
 Type       | Meaning
 ---------- | -------
@@ -120,12 +120,12 @@ Type       | Meaning
 *return*   | TODO
 *throw*    | TODO
 
-The term “normal completion” refers to any completion with a \`type\` of *normal*, and
-the term “abrupt completion” refers to any completion with a \`type\` other than *normal*.
+The term “normal completion” refers to any CompletionSchema with a \`type\` of *normal*, and
+the term “abrupt completion” refers to any CompletionSchema with a \`type\` other than *normal*.
 
 
-#### EntryTypeStructure
-An **EntryTypeStructure** represents an entry in a static collection type.
+#### EntryTypeSchema
+An **EntryTypeSchema** represents an entry in a static collection type.
 It contains the type value and whether the entry is optional.
 
 Property     | Description
@@ -134,22 +134,22 @@ Property     | Description
 \`optional\` | a Boolean, whether the entry is optional
 
 
-#### SymbolStructure
-A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Counterpoint source code.
+#### SymbolSchema
+A **SymbolSchema** encapsulates the compile-time information of a declared symbol in Counterpoint source code.
 Symbols are identifiers that refer to Counterpoint Language Values or Counterpoint Language Types.
 
 Symbol structures’ properties are described in the tables below.
 
-##### SymbolStructureType
-A **SymbolStructureType** represents a type alias referencing a Counterpoint Language Type.
+##### SymbolSchemaType
+A **SymbolSchemaType** represents a type alias referencing a Counterpoint Language Type.
 
 Property      | Description
 ------------- | -----------
 \`id\`        | the unique identifier of the declared symbol
 \`typevalue\` | the assessed type (a Counterpoint Language Type) of this symbol
 
-##### SymbolStructureVar
-A **SymbolStructureVar** represents a variable referencing a Counterpoint Language Value.
+##### SymbolSchemaVar
+A **SymbolSchemaVar** represents a variable referencing a Counterpoint Language Value.
 
 Property    | Description
 ----------- | -----------
@@ -345,16 +345,16 @@ Compound types are derived from other types.
 
 #### Tuple Types
 A **Tuple** type describes instances of [`Tuple`](./intrinsics.md#tuple) and is parameterized by
-a [Sequence](#sequence) of [EntryTypeStructure](#entrytypestructure) items, called invariants.
+a [Sequence](#sequence) of [EntryTypeSchema](#entrytypeschema) items, called invariants.
 The objects that any given Tuple type describes are `Tuple` objects whose
-items’ types match up with the invariants in the sequence in order.
+items’ types match up with the invariants in the Sequence in order.
 Tuples have a static size, are ordered, and are 0-origin indexable by Integers.
 
 #### Record Types
 A **Record** type describes instances of [`Record`](./intrinsics.md#record) and is parameterized by
-a [Structure](#structure) with [EntryTypeStructure](#entrytypestructure) values, called invariants.
+a [Schema](#schema) with [EntryTypeSchema](#entrytypeschema) values, called invariants.
 The objects that any given Record type describes are `Record` objects whose
-properties’ types match up with the invariants in the structure by name.
+properties’ types match up with the invariants in the Schema by name.
 Records have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
 #### List Types

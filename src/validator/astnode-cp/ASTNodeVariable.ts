@@ -17,9 +17,9 @@ import {
 } from '../../core/index.ts';
 import {
 	SymbolKind,
-	type SymbolStructure,
-	SymbolStructureVar,
-	SymbolStructureType,
+	type SymbolSchema,
+	SymbolSchemaVar,
+	SymbolSchemaType,
 } from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
@@ -51,7 +51,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbolInfo(this.id) instanceof SymbolStructureType) {
+		if (this.validator.getSymbolInfo(this.id) instanceof SymbolSchemaType) {
 			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
@@ -67,16 +67,16 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	@typeDeco
 	public override type(): TYPE.Type {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
-		const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-		assert_instanceof(symbol, SymbolStructureVar);
+		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolSchemaVar);
 		return symbol.type;
 	}
 
 	@memoizeMethod
 	public override fold(): VALUE.Value | null {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
-		const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-		assert_instanceof(symbol, SymbolStructureVar);
+		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolSchemaVar);
 		if (!symbol.unfixed) {
 			return symbol.value;
 		}
