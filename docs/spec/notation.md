@@ -9,7 +9,7 @@ Below is an example of
 prose that might appear in this specification; the double-angle quotes refer to wording used in the
 steps of a hypothetical [specification algorithm](#algorithms).
 > In an algorithm, a step that reads «*Let* \`x\` be the value of \`X\`.» means to say
-> «If \`X\` is a completion structure, then let \`x\` be \`X.value\`; otherwise let \`x\` be \`X\`.»
+> «If \`X\` is a CompletionSchema, then let \`x\` be \`X.value\`; otherwise let \`x\` be \`X\`.»
 
 Algorithm variables, values, and identifiers are delimited with \`back-ticks\` (**U+0060**) as illustrated above.
 
@@ -45,14 +45,14 @@ then \`bach.0\` is shorthand for «the 0th entry of \`bach\`», which is the val
 Variable entries of a sequence may be accessed using bracket notation.
 For example, using a variable index \`i\` we may access «the *i*th entry of \`bach\`» via \`bach\[i\]\`.
 
-#### Structures
-Structures are denoted with left and right square brackets,
+#### Schemata
+Schemata (“Schemas”) are denoted with left and right square brackets,
 and name–value pairs are delimited with equals signs (**U+003D**).
-For example, a structure with a \`name\` property of `"Bach"` and a \`yob\` property of `1685`
+For example, a Schema with a \`name\` property of `"Bach"` and a \`yob\` property of `1685`
 would be written as *[name= `"Bach"`, yob= `1685`]*.
 
-Entries of a structure can be accessed using dot notation.
-If the example structure above were assigned to the specification variable \`bach\`,
+Entries of a Schema can be accessed using dot notation.
+If the example Schema above were assigned to the specification variable \`bach\`,
 then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which is the value `"Bach"`.
 
 
@@ -896,8 +896,8 @@ In an attribute grammar, attributes are defined on nodes of a parse tree via the
 of a context-free grammar.
 In this specification, attributes are “synthesized” and thus propagate in a bottom-up manner:
 given a parse node, computing an attribute of that node might require looking at its children.
-Attributes are always [normal completion structures](/.types-values.md#completionstructure).
-For notational convenience, only the value of the completion structure is written.
+Attributes are always [normal CompletionSchemata](/.types-values.md#completionschema).
+For notational convenience, only the value of the CompletionSchema is written.
 
 
 ### Example
@@ -913,7 +913,7 @@ Quantity([0-9] :::= "9") -> Integer := 9;
 ```
 This example illustrates a hypothetical attribute grammar that defines an attribute
 called `Quantity` on an `INT` token.
-The attributes themselves are [completion structures](./types-values.md#completionstructure)
+The attributes themselves are [CompletionSchemata](./types-values.md#completionschema)
 whose \`type\` properties are *normal* and whose \`value\` properties are of type `Integer`.
 Each rule defines the attribute on the token matching a different pattern defined by a CFG,
 and then denotes that the returned object will be an integer.
@@ -1046,18 +1046,18 @@ An algorithm consists of a name, an output type, zero or more parameters, and a 
 The steps are formatted as an ordered list;
 the list is *ordered* in that the outcome could change if the steps were not performed in the order given.
 
-An algorithm must always output a [CompletionStructure](/.types-values.md#completionstructure) object,
+An algorithm must always output a [CompletionSchema](/.types-values.md#completionschema) object,
 which is returned by the algorithm to its invoker.
-The completion structure might or might not have a \`value\`.
+The CompletionSchema might or might not have a \`value\`.
 
 The output type of an algorithm is the type of the \`value\` (if it exists) of
-a returned normal completion structure, and it is specified before
+a returned normal completion, and it is specified before
 the name of the algorithm in its header.
-If an algorithm outputs a normal completion structure without a \`value\`,
+If an algorithm outputs a normal CompletionSchema without a \`value\`,
 the output type is specified as [None](./types-values.md#none).
 
-If an algorithm outputs an *abrupt* completion structure, its \`value\`, if it exists,
-though it is still included in the returned structure, is *not* indicated in the output type,
+If an algorithm outputs an *abrupt* completion, its \`value\`, if it exists,
+though it is still included in the returned CompletionSchema, is *not* indicated in the output type,
 however, an exclamation point `!` is appended to the return type.
 For example, an algorithm with return type `Boolean!` will return a normal completion with
 a \`value\` of type `Boolean`, or an abrupt completion.
@@ -1126,34 +1126,34 @@ A step that says «*Break.*» (with no number) implies «*Break:* 1.».
 #### Return
 An algorithm step that reads «*Return:* ‹v›.» (where ‹v› is a metavariable representing a completion value)
 is shorthand for «*Return:* [type= normal, value= ‹v›].», meaning
-the algorithm outputs a normal completion structure with a \`value\` of ‹v›.
+the algorithm outputs a normal completion with a \`value\` of ‹v›.
 
 However, an algorithm step that reads «*Return:* [type= ‹type›, value= ‹v›].» is to be interpreted as-is,
-as returning the completion structure itself, not “wrapped” in a new normal completion.
+as returning the CompletionSchema itself, not “wrapped” in a new normal completion.
 Similarly, an algorithm step that reads «*Return:* ‹CS›.»,
-where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
-is also to be interpreted as-is, as returning the completion structure itself.
+where ‹CS› represents an actual CompletionSchema object (such as the result of an algorithm call),
+is also to be interpreted as-is, as returning the CompletionSchema itself.
 
 An algorithm step that reads «*Return*.» is shorthand for «*Return:* [type= normal].», that is,
-it outputs a normal completion structure without a \`value\` (thus the output type is None).
+it outputs a normal completion without a \`value\` (thus the output type is None).
 
 An algorithm with no Return statement is implied to return a normal completion with no value.
 
 #### Throw
 When an algorithm step reads «*Throw:* ‹v›.» (where ‹v› is a metavariable representing a completion value),
-a throw completion structure whose \`value\` is ‹v› is returned.
+a CompletionSchema whose \`value\` is ‹v› is returned.
 That is, the step is shorthand for «*Return:* [type= throw, value= ‹v›].».
-Note that such a completion structure is “abrupt”.
+Note that such a completion is “abrupt”.
 
 An algorithm step that reads «*Throw:* [type= ‹type›, value= ‹v›].» is to be interpreted
-as «*Return:* [type= throw, value= ‹v›]», not the original completion “wrapped” in a new *throw* completion.
+as «*Return:* [type= throw, value= ‹v›]», not the original CompletionSchema “wrapped” in a new CompletionSchema.
 Similarly, an algorithm step that reads «*Throw:* ‹CS›.»,
-where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
-is also to be interpreted in the same manner, as returning a *throw* completion structure
+where ‹CS› represents an actual CompletionSchema object (such as the result of an algorithm call),
+is also to be interpreted in the same manner, as returning a *throw*-typed CompletionSchema
 whose value is the value of ‹CS›.
 
 #### Unwrap
-An algorithm step that contains «*Unwrap:* ‹s›» (where ‹s› is a completion structure or algorithm call)
+An algorithm step that contains «*Unwrap:* ‹s›» (where ‹s› is a CompletionSchema or algorithm call)
 returns ‹s› if it is an abrupt completion, but otherwise replaces ‹s› with its value.
 The step is shorthand for the following steps:
 ```
@@ -1184,7 +1184,7 @@ For example, setting a variable to an unwrap step …
 ```
 
 #### UnwrapAffirm
-An algorithm step that contains «*UnwrapAffirm:* ‹s›» (where ‹s› is a completion structure or algorithm call)
+An algorithm step that contains «*UnwrapAffirm:* ‹s›» (where ‹s› is a CompletionSchema or algorithm call)
 assumes ‹s› is a normal completion and replaces ‹s› with its value.
 The step is shorthand for the following steps:
 ```
@@ -1282,7 +1282,7 @@ is shorthand for the following steps:
 	2. Increment `‹i›`.
 ```
 
-A step that reads «*For key* ‹k› in ‹s›:» (where ‹k› is a variable and ‹s› is a structure)
+A step that reads «*For key* ‹k› in ‹s›:» (where ‹k› is a variable and ‹s› is a Schema)
 is shorthand for the following steps:
 ```
 1. *Let* `i` be 0.
@@ -1300,7 +1300,7 @@ is shorthand for the following steps:
 	1. Perform the substeps listed under the *For each* step, replacing `‹it›` with `‹s›[i]`.
 ```
 
-A step that reads «*For each* ‹val› in ‹s›:» (where ‹val› is a variable and ‹s› is a structure)
+A step that reads «*For each* ‹val› in ‹s›:» (where ‹val› is a variable and ‹s› is a Schema)
 is shorthand for the following steps:
 ```
 1. *For key* `k` in `‹s›`:
@@ -1423,7 +1423,7 @@ a *For* loop that updates a result; where ‹s› is a starting sequence; ‹acc
 ‹e› is an expression possibly containing ‹s›, ‹accum›, and ‹it›; and ‹p› is the initial value of ‹accum›.
 The updated result is the result of setting ‹accum› to the evaluation of ‹e›, for each ‹it› in ‹s›.
 
-(In the example below, assume `sequence` is a sequence of Structures with a \`prop\` property.)
+(In the example below, assume `sequence` is a sequence of Schemata with a \`prop\` property.)
 ```
 1. *Let* `result` be a reduction of `sequence` with `accum` for each `it` to `[...accum, it.prop]` starting with `[]`.
 ```

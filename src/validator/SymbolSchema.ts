@@ -16,7 +16,7 @@ export enum SymbolKind {
 
 
 
-export abstract class SymbolStructure {
+export abstract class SymbolSchema {
 	public constructor(
 		/** The unique identifier of the symbol, the cooked value of the token. */
 		public readonly id: bigint,
@@ -32,7 +32,7 @@ export abstract class SymbolStructure {
 
 
 
-export class SymbolStructureType extends SymbolStructure {
+export class SymbolSchemaType extends SymbolSchema {
 	/** The assessed value of the symbol. */
 	public typevalue: TYPE.Type = TYPE.UNKNOWN;
 	public constructor(node: AST.ASTNodeTypeAlias) {
@@ -42,7 +42,7 @@ export class SymbolStructureType extends SymbolStructure {
 
 
 
-export class SymbolStructureVar extends SymbolStructure {
+export class SymbolSchemaVar extends SymbolSchema {
 	/** The variable’s Type. */
 	public type:  TYPE.Type = TYPE.UNKNOWN;
 	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */

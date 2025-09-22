@@ -19,8 +19,8 @@ Type TypeOfUnfolded(SemanticConstant const) :=
 
 
 Type TypeOfUnfolded(SemanticVariable var) :=
-	1. *Assert:* The validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`.
-	2. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
+	1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
+	2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 	3. *Return:* `symbol.type`.
 ;
 
@@ -35,7 +35,7 @@ Type TypeOfUnfolded(StringTemplate template) :=
 Type! TypeOfUnfolded(SemanticTuple tuple) :=
 	1. *Let* `data` be a new Sequence.
 	2. *For each* `item` in `tuple`:
-		1. *Let* `typedatum` be a new EntryTypeStructure [
+		1. *Let* `typedatum` be a new EntryTypeSchema [
 			type=     *Unwrap:* `TypeOf(item)`,
 			optional= `false`,
 		].
@@ -46,10 +46,10 @@ Type! TypeOfUnfolded(SemanticTuple tuple) :=
 
 
 Type! TypeOfUnfolded(SemanticRecord record) :=
-	1. *Let* `data` be a new Structure.
+	1. *Let* `data` be a new Schema.
 	2. *For each* `property` in `record`:
 		1. *Assert:* `property.children.count` is 2.
-		2. *Let* `typedatum` be a new EntryTypeStructure [
+		2. *Let* `typedatum` be a new EntryTypeSchema [
 			type=     *Unwrap:* `TypeOf(property.children.1)`,
 			optional= `false`,
 		].
@@ -247,8 +247,8 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 					3. *Else:*
 						1. *Throw:* a new TypeErrorArgCount.
 				5. *Let:* `entrytype` be a Tuple type containing the items in the Sequence [
-					EntryTypeStructure [type= `antecedenttype`, optional= `false`],
-					EntryTypeStructure [type= `consequenttype`, optional= `false`],
+					EntryTypeSchema [type= `antecedenttype`, optional= `false`],
+					EntryTypeSchema [type= `consequenttype`, optional= `false`],
 				].
 				6. *Let*: `paramtype` be a List type whose items’ type is `entrytype`.
 				7. *If*: `arg` is set:
