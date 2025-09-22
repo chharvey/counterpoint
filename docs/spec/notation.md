@@ -30,19 +30,19 @@ but placeholders for such types.
 
 ### Counterpoint Specification Values
 [Counterpoint Specification Values](./types-values.md#counterpoint-specification-types) are indicated with an *italic typeface*.
-For instance, a sequence of real numbers can be written as *[2, 4, 6]*.
+For instance, a Sequence of real numbers can be written as *[2, 4, 6]*.
 
 #### Sequences
 Sequences are denoted within square brackets (**U+005B**, **U+005D**), with comma-separated (**U+002C**) entries.
-The notation *[`1685`, `"Bach"`]* represents a sequence containing two items:
+The notation *[`1685`, `"Bach"`]* represents a Sequence containing two items:
 the [Integer](./types-values.md#integer) representing the real number *1685*,
 and the [String value](./types-values.md#string) `"Bach"`.
 
-Fixed entries of a sequence may be accessed using 0-origin dot notation (**U+002E**).
-If the example sequence above were assigned to the specification variable \`bach\`,
+Fixed entries of a Sequence may be accessed using 0-origin dot notation (**U+002E**).
+If the example Sequence above were assigned to the specification variable \`bach\`,
 then \`bach.0\` is shorthand for «the 0th entry of \`bach\`», which is the value `1685`.
 
-Variable entries of a sequence may be accessed using bracket notation.
+Variable entries of a Sequence may be accessed using bracket notation.
 For example, using a variable index \`i\` we may access «the *i*th entry of \`bach\`» via \`bach\[i\]\`.
 
 #### Schemata
@@ -1273,7 +1273,7 @@ is shorthand for
 ```
 
 ##### For
-A step that reads «*For index* ‹i› in ‹s›:» (where ‹i› is a variable and ‹s› is a sequence)
+A step that reads «*For index* ‹i› in ‹s›:» (where ‹i› is a variable and ‹s› is a Sequence)
 is shorthand for the following steps:
 ```
 1. *Let* `‹i›` be 0.
@@ -1293,7 +1293,7 @@ is shorthand for the following steps:
 ```
 Note that this algorithm does not require the keys in ‹s› to be iterated over in any particular order.
 
-A step that reads «*For each* ‹it› in ‹s›:» (where ‹it› is a variable and ‹s› is a sequence)
+A step that reads «*For each* ‹it› in ‹s›:» (where ‹it› is a variable and ‹s› is a Sequence)
 is shorthand for the following steps:
 ```
 1. *For index* `i` in `‹s›`:
@@ -1308,7 +1308,7 @@ is shorthand for the following steps:
 ```
 
 ##### Spread
-An algorithm step that contains «...‹s›» (where ‹s› is a sequence)
+An algorithm step that contains «...‹s›» (where ‹s› is a Sequence)
 is shorthand for the following steps:
 ```
 1. *For each* `it` in ‹s›:
@@ -1317,18 +1317,18 @@ is shorthand for the following steps:
 
 ##### Mappings
 A step that contains «a mapping of ‹s› indexed by ‹i› to ‹e›» is shorthand for a *For* loop
-that populates a new sequence, where ‹s› is a starting sequence, ‹i› is an index variable,
+that populates a new Sequence, where ‹s› is a starting Sequence, ‹i› is an index variable,
 and ‹e› is an expression possibly containing ‹s› and ‹i›.
-The new sequence is the result of mapping each item in the starting sequence to
+The new Sequence is the result of mapping each item in the starting Sequence to
 a value prescribed by the expression ‹e›.
 
-(In the example below, assume `sequence` is a sequence of RealNumber values.)
+(In the example below, assume `sequence` is a Sequence of RealNumber values.)
 ```
 1. *Let* `result` be a mapping of `sequence` indexed by `i` to `sequence[i] + 1`.
 ```
 is shorthand for
 ```
-1. *Let* `result` be an empty sequence.
+1. *Let* `result` be an empty Sequence.
 2. *For index* `i` in `sequence`:
 	1. Push `sequence[i] + 1` to `result`.
 ```
@@ -1340,60 +1340,60 @@ replacing the *For index* step with a *For each* step.
 ```
 is shorthand for
 ```
-1. *Let* `result` be an empty sequence.
+1. *Let* `result` be an empty Sequence.
 2. *For each* `it` in `sequence`:
 	1. Push `it + 1` to `result`.
 ```
 
 ##### Flattened Mappings
 A step that contains «a flattened mapping of ‹s› indexed by ‹i› to ‹e›» is similar to a [Mapping](#mappings) step,
-except that the expression ‹e› must be a sequence, and the resulting sequence,
-rather than being a sequence of sequences, is instead a sequence of values perscribed by items of ‹e›.
+except that the expression ‹e› must be a Sequence, and the resulting Sequence,
+rather than being a Sequence of Sequences, is instead a Sequence of values perscribed by items of ‹e›.
 
-(In the example below, assume `sequence` is a sequence of RealNumber values.)
+(In the example below, assume `sequence` is a Sequence of RealNumber values.)
 ```
 1. *Let* `result` be a flattened mapping of `sequence` indexed by `i` to `[sequence[i], sequence[i] + 1]`.
 ```
 is shorthand for
 ```
 1. *Let* `map` be a mapping of `sequence` indexed by `i` to `[sequence[i], sequence[i] + 1]`.
-2. *Let* `result` be an empty sequence.
+2. *Let* `result` be an empty Sequence.
 3. *For index* `i` in `map`:
 	1. Push `...map` to `result`.
 ```
 
 A step that contains «a flattened mapping of ‹s› for each ‹it› to ‹e›» is like an indexed mapping
-except instead of indices the mapping iterates over sequence items.
+except instead of indices the mapping iterates over Sequence items.
 ```
 1. *Let* `result` be a flattened mapping of `sequence` for each `it` to `[it, it + 1]`.
 ```
 is shorthand for
 ```
 1. *Let* `map` be a mapping of `sequence` for each `it` to `[it, it + 1]`.
-2. *Let* `result` be an empty sequence.
+2. *Let* `result` be an empty Sequence.
 3. *For index* `i` in `map`:
 	1. Push `...map` to `result`.
 ```
 
 ##### Filterings
 A step that contains «a filtering of ‹s› indexed by ‹i› such that ‹e›» is shorthand for a *For* loop
-that populates a new sequence, where ‹s› is a starting sequence, ‹i› is an index variable,
+that populates a new Sequence, where ‹s› is a starting Sequence, ‹i› is an index variable,
 and ‹e› is a predicate, possibly containing ‹s› and ‹i›, to be satisfied.
-The new sequence is the result of finding only the items in the starting sequence
+The new Sequence is the result of finding only the items in the starting Sequence
 that satisfy the predicate ‹e›.
 
-(In the example below, assume `sequence` is a sequence of RealNumber values.)
+(In the example below, assume `sequence` is a Sequence of RealNumber values.)
 ```
 1. *Let* `result1` be a filtering of `sequence` indexed by `i` such that `sequence[i] > 0`.
 1. *Let* `result2` be a filtering of `sequence` indexed by `i` such that `sequence[i]` is even.
 ```
 is shorthand for
 ```
-1. *Let* `result1` be an empty sequence.
+1. *Let* `result1` be an empty Sequence.
 2. *For index* `i` in `sequence`:
 	1. *If* `sequence[i] > 0`:
 		1. Push `sequence[i]` to `result1`.
-3. *Let* `result2` be an empty sequence.
+3. *Let* `result2` be an empty Sequence.
 4. *For index* `i` in `sequence`:
 	1. *If* `sequence[i]` is even:
 		1. Push `sequence[i]` to `result2`.
@@ -1407,11 +1407,11 @@ replacing the *For index* step with a *For each* step.
 ```
 is shorthand for
 ```
-1. *Let* `result1` be an empty sequence.
+1. *Let* `result1` be an empty Sequence.
 2. *For each* `it` in `sequence`:
 	1. *If* `it > 0` is `true`:
 		1. Push `it` to `result1`.
-3. *Let* `result2` be an empty sequence.
+3. *Let* `result2` be an empty Sequence.
 4. *For each* `it` in `sequence`:
 	1. *If* `it` is an integer:
 		1. Push `it` to `result2`.
@@ -1419,11 +1419,11 @@ is shorthand for
 
 ##### Reductions
 A step that contains «a reduction of ‹s› with ‹accum› for each ‹it› to ‹e› starting with ‹p›» is shorthand for
-a *For* loop that updates a result; where ‹s› is a starting sequence; ‹accum› is an accumulator value; ‹it› is an item in ‹s›;
+a *For* loop that updates a result; where ‹s› is a starting Sequence; ‹accum› is an accumulator value; ‹it› is an item in ‹s›;
 ‹e› is an expression possibly containing ‹s›, ‹accum›, and ‹it›; and ‹p› is the initial value of ‹accum›.
 The updated result is the result of setting ‹accum› to the evaluation of ‹e›, for each ‹it› in ‹s›.
 
-(In the example below, assume `sequence` is a sequence of Schemata with a \`prop\` property.)
+(In the example below, assume `sequence` is a Sequence of Schemata with a \`prop\` property.)
 ```
 1. *Let* `result` be a reduction of `sequence` with `accum` for each `it` to `[...accum, it.prop]` starting with `[]`.
 ```
@@ -1434,11 +1434,11 @@ is shorthand for
 	1. *Set* `result` to `[...result, it.prop]`.
 ```
 
-A step that contains «a reduction of ‹s› for each ‹a› and ‹b› to ‹e›» assumes the sequence is nonempty,
+A step that contains «a reduction of ‹s› for each ‹a› and ‹b› to ‹e›» assumes the Sequence is nonempty,
 uses ‹a› as the accumulator value, ‹b› as the iterated item in ‹s›, and the item at index 0 in ‹s› as the initial value.
 It skips the first iteration.
 
-(In the example below, assume `sequence` is a sequence of RealNumber values.)
+(In the example below, assume `sequence` is a Sequence of RealNumber values.)
 ```
 1. *Let* `result` be a reduction of `sequence` for each `a` and `b` to `a + b`.
 ```

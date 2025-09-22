@@ -82,12 +82,12 @@ These operations are implied with their typical meaning in the context of real n
 A **Sequence** is an ordered list of values. The values may be a mix of any type.
 If the values fall within a certain type \`‹T›\` (a metavariable),
 the Sequence type is denoted \`Sequence<‹T›>\`.
-For example, a sequence of Integers is denoted \`Sequence&lt;Integer&gt;\`.
+For example, a Sequence of Integers is denoted \`Sequence&lt;Integer&gt;\`.
 
 
 ### Vector
 A **Vector** is an ordered list of values where the number of values is fixed.
-For example, the notation \`Vector&lt;Integer, Float&gt;\` indicates a sequence of two items,
+For example, the notation \`Vector&lt;Integer, Float&gt;\` indicates a list of two items,
 the first of which is of type \`Integer\` and the second of which is of type \`Float\`.
 
 
@@ -347,7 +347,7 @@ Compound types are derived from other types.
 A **Tuple** type describes instances of [`Tuple`](./intrinsics.md#tuple) and is parameterized by
 a [Sequence](#sequence) of [EntryTypeSchema](#entrytypeschema) items, called invariants.
 The objects that any given Tuple type describes are `Tuple` objects whose
-items’ types match up with the invariants in the sequence in order.
+items’ types match up with the invariants in the Sequence in order.
 Tuples have a static size, are ordered, and are 0-origin indexable by Integers.
 
 #### Record Types
