@@ -9,3 +9,4 @@
 1. [Counterpoint Programming Language: Statements](./language-statements.md)
 1. [Counterpoint Programming Language: Goal Symbols](./language-goal.md)
 1. [Intrinsics](./intrinsics.md)
+1. [The Heap](./heap.md)
