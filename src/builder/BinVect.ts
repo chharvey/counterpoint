@@ -203,7 +203,7 @@ export class BinVect {
 		return this.mod.i32.eqz(this.#type);
 	}
 
-	/** Whether the value is intended to be interpreted as a special value: null, true, or false. */
+	/** Whether the value is intended to be interpreted as a special value: null, false, or true. */
 	public isSpecial(value?: null | boolean): binaryen.ExpressionRef {
 		return (
 			value === null  ? this.mod.i32.eq(this.#type, this.mod.i32.const(0x0001)) :
@@ -231,6 +231,11 @@ export class BinVect {
 	/** Whether the value is intended to be interpreted as a Tuple object. */
 	public get isTuple(): binaryen.ExpressionRef {
 		return this.#checkTypeRange(0x0060n, 0x006fn);
+	}
+
+	/** The value as interpreted as a special value: null, false, or true. */
+	public get specialValue(): binaryen.ExpressionRef {
+		return this.#type;
 	}
 
 	/** The value as interpreted as an int. */
