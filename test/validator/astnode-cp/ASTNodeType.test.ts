@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import {
 	AST,
-	type TypeEntry,
+	type EntryType,
 	TYPE,
 	VALUE,
 	TypeError,
@@ -33,7 +33,7 @@ describe('ASTNodeType', () => {
 				const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('[x: int, y?: bool, _: str]');
 				return assertEqualTypes(
 					rec.eval(),
-					new TYPE.Record(new Map<bigint, TypeEntry>(rec.children.map((c, i) => [c.key.id, [
+					new TYPE.Record(new Map<bigint, EntryType>(rec.children.map((c, i) => [c.key.id, [
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: true},
 						{type: TYPE.STR,  optional: false},

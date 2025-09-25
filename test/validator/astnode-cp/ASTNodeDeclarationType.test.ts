@@ -3,8 +3,8 @@ import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	AST,
-	type SymbolStructure,
-	SymbolStructureType,
+	type SymbolSchema,
+	SymbolSchemaType,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../../src/index.ts';
@@ -14,15 +14,15 @@ import {assertEqualBins} from '../../assert-helpers.ts';
 
 describe('ASTNodeDeclarationType', () => {
 	describe('#varCheck', () => {
-		it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown`.', () => {
+		it('adds a SymbolSchema to the symbol table with a preset `type` value of `unknown`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
 			`);
 			assert.ok(!goal.validator.hasSymbol(0x100n));
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(0x100n));
-			const info: SymbolStructure | null = goal.validator.getSymbolInfo(0x100n);
-			assert_instanceof(info, SymbolStructureType);
+			const info: SymbolSchema | null = goal.validator.getSymbolInfo(0x100n);
+			assert_instanceof(info, SymbolSchemaType);
 			assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
 		});
 
@@ -56,14 +56,14 @@ describe('ASTNodeDeclarationType', () => {
 
 
 	describe('#typeCheck', () => {
-		it('sets `SymbolStructure#value`.', () => {
+		it('sets `SymbolSchema#value`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
 			`);
 			goal.varCheck();
 			goal.typeCheck();
 			return assert.strictEqual(
-				(goal.validator.getSymbolInfo(0x100n) as SymbolStructureType).typevalue,
+				(goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 				TYPE.INT,
 			);
 		});

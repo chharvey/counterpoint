@@ -10,7 +10,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SymbolStructureVar} from '../index.ts';
+import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
@@ -38,7 +38,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	public override varCheck(): void {
 		super.varCheck();
 		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
-		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolStructureVar).unfixed) {
+		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolSchemaVar).unfixed) {
 			throw new AssignmentErrorReassignment(assignee);
 		}
 	}
@@ -48,7 +48,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		let assignee_type: TYPE.Type | null = null;
 		if (this.assignee instanceof ASTNodeVariable) {
 			this.assignee.type(); // rethrow any errors
-			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar;
+			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
 			assignee_type = symbol.type;
 		} else {
 			const base_type: TYPE.Type = this.assignee.base.type();

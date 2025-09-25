@@ -236,8 +236,8 @@ Boolean Identical(Object a, Object b) :=
 				1. *Return:* `false`.
 		6. *Return:* `true`.
 	8. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
-		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
-		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
+		1. *Let* `struct_a` be a new Schema whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a new Schema whose properties are exactly the properties in `b`.
 		3. *If* `struct_a.count` is not `struct_b.count`:
 			1. *Return:* `false`.
 		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `true`, and use this assumption when performing the following step.
@@ -283,8 +283,8 @@ Boolean Equal(Object a, Object b) :=
 				1. *Return:* `false`.
 		6. *Return:* `true`.
 	5. *If* `a` is an instance of `Record` or `Dict` *and* `b` is an instance of `Record` or `Dict`:
-		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
-		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
+		1. *Let* `struct_a` be a new Schema whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a new Schema whose properties are exactly the properties in `b`.
 		3. *If* `struct_a.count` is not `struct_b.count`:
 			1. *Return:* `false`.
 		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following step.
@@ -352,7 +352,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 		7. *Return.*
 	2. *If* `expr` is a SemanticRecord *and* `type` is a Record type:
 		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
-		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `type`.
+		2. *Let* `struct_b` be a Schema whose properties are exactly the properties in `type`.
 		3. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
 		4. *If* `expr.children.count` is less than `struct_b_req.count`:
 			1. *Throw:* a new TypeErrorNotAssignable.
@@ -440,11 +440,11 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 
 ## GetEntryInfo
 ```
-EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access) :=
+EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `accessor` be `access.children.1`.
 	3. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true` *and* `access.kind` is `MAYBE`:
-		1. *Return:* a new EntryTypeStructure [
+		1. *Return:* a new EntryTypeSchema [
 				type=     `Unknown`,
 				optional= `true`,
 			].
@@ -464,7 +464,7 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 				1. *If* `entry.optional` is `false`:
 					1. *Set* `all_optional` to `false`.
 			3. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to `Intersection(x.type, y.type)`.
-			4. *Return:* a new EntryTypeStructure [
+			4. *Return:* a new EntryTypeSchema [
 					type=     `intersection`,
 					optional= `all_optional`,
 				].
@@ -477,7 +477,7 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 			4. *If* `errors.count` is greater than 0:
 				1. *Set* `any_optional` to `true`.
 			5. *Let* `union` be a reduction of `entries` for each `x` and `y` to `Union(x.type, y.type)`.
-			6. *Return:* a new EntryTypeStructure [
+			6. *Return:* a new EntryTypeSchema [
 					type=     `union`,
 					optional= `any_optional`,
 				].
@@ -502,7 +502,7 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 		5. *If* `base_type` is a List type:
 			1. *Let* `t` be the type of the items in `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
-				1. *Return:* a new EntryTypeStructure [
+				1. *Return:* a new EntryTypeSchema [
 					type=     `t`,
 					optional= `accessor_maybe`,
 				].
@@ -511,7 +511,7 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 		6. *Else If* `base_type` is a Dict type:
 			1. *Let* `t` be the type of the values in `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Symbol)` is `true`:
-				1. *Return:* a new EntryTypeStructure [
+				1. *Return:* a new EntryTypeSchema [
 					type=     `t`,
 					optional= `accessor_maybe`,
 				].
@@ -522,7 +522,7 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 		7. *Else If* `base_type` is a Set type:
 			1. *Let* `t` be the type of the elements in `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true`:
-				1. *Return:* a new EntryTypeStructure [
+				1. *Return:* a new EntryTypeSchema [
 					type=     `Boolean`,
 					optional= `false`,
 				].
@@ -532,7 +532,7 @@ EntryTypeStructure! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, Semantic
 			1. *Let* `k` be the type of the antecedents in `base_type`.
 			2. *Let* `v` be the type of the consequents in `base_type`.
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true`:
-				1. *Return:* a new EntryTypeStructure [
+				1. *Return:* a new EntryTypeSchema [
 					type=     `v`,
 					optional= `accessor_maybe`,
 				].

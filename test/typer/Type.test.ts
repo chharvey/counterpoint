@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import {
 	assert_instanceof,
-	type TypeEntry,
+	type EntryType,
 	VALUE,
 	TYPE,
 } from '../../src/index.ts';
@@ -712,20 +712,20 @@ describe('Type', () => {
 				]))), '[x: int, y: bool, z: str] !<: [y: bool!, z: Object, w: int | float]');
 			});
 			it('optional entries are not assignable to required entries.', () => {
-				assert.ok(new TYPE.Record(new Map<bigint, TypeEntry>([
+				assert.ok(new TYPE.Record(new Map<bigint, EntryType>([
 					[0x100n, {type: TYPE.STR,  optional: false}],
 					[0x101n, {type: TYPE.INT,  optional: true}],
 					[0x102n, {type: TYPE.BOOL, optional: false}],
-				])).isSubtypeOf(new TYPE.Record(new Map<bigint, TypeEntry>([
+				])).isSubtypeOf(new TYPE.Record(new Map<bigint, EntryType>([
 					[0x100n, {type: TYPE.STR,  optional: true}],
 					[0x101n, {type: TYPE.INT,  optional: true}],
 					[0x102n, {type: TYPE.BOOL, optional: false}],
 				]))), '[a: str, b?: int, c: bool] <: [a?: str, b?: int, c: bool]');
-				assert.ok(!new TYPE.Record(new Map<bigint, TypeEntry>([
+				assert.ok(!new TYPE.Record(new Map<bigint, EntryType>([
 					[0x100n, {type: TYPE.STR,  optional: false}],
 					[0x101n, {type: TYPE.INT,  optional: true}],
 					[0x102n, {type: TYPE.BOOL, optional: false}],
-				])).isSubtypeOf(new TYPE.Record(new Map<bigint, TypeEntry>([
+				])).isSubtypeOf(new TYPE.Record(new Map<bigint, EntryType>([
 					[0x100n, {type: TYPE.STR,  optional: true}],
 					[0x101n, {type: TYPE.INT,  optional: false}],
 					[0x102n, {type: TYPE.BOOL, optional: false}],

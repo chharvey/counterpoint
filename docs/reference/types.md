@@ -482,7 +482,8 @@ I {{ "\u{2764}" }} Unicode!
 
 
 ### `Object`
-Type `Object` is the type of all values, that is, every value is assignable to `Object`.
+Type `Object` is the type of all references, that is, every reference type is assignable to `Object`.
+This is because all reference objects are ultimately instances of the `Object` class.
 
 
 

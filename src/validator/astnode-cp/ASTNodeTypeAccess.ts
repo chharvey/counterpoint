@@ -1,5 +1,5 @@
 import type {
-	TypeEntry,
+	EntryType,
 	TYPE,
 } from '../../index.ts';
 import {
@@ -41,7 +41,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		const entry: TypeEntry = get_entry_info(this.base.eval(), this);
+		const entry: EntryType = get_entry_info(this.base.eval(), this);
 		validate_access_kind(this.kind, entry.optional, this);
 		return update_accessed_type(entry.type, this.kind);
 	}

@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import {
-	type TypeEntry,
+	type EntryType,
 	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
@@ -122,12 +122,12 @@ export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Inte
 
 
 
-export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): TypeEntry {
+export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): EntryType {
 	if (base_type.isTopType && access.kind === Operator.DOT_MAY) {
 		return {type: TYPE.UNKNOWN, optional: true};
 	}
 	if (base_type instanceof TYPE.Combinable) {
-		const entry_infos: readonly (TypeEntry | TypeErrorNoEntry | TypeErrorNotNarrow)[] = base_type.operands.map((comp) => {
+		const entry_infos: readonly (EntryType | TypeErrorNoEntry | TypeErrorNotNarrow)[] = base_type.operands.map((comp) => {
 			try {
 				return get_entry_info(comp, access);
 			} catch (error) {
@@ -138,7 +138,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 			}
 		});
 		const errors:  readonly Error[]     = entry_infos.filter((info)                    =>   info instanceof TypeErrorNoEntry || info instanceof TypeErrorNotNarrow);
-		const entries: readonly TypeEntry[] = entry_infos.filter((info): info is TypeEntry => !(info instanceof TypeErrorNoEntry || info instanceof TypeErrorNotNarrow));
+		const entries: readonly EntryType[] = entry_infos.filter((info): info is EntryType => !(info instanceof TypeErrorNoEntry || info instanceof TypeErrorNotNarrow));
 		/* Throw an error if *all* of the intersection/union constituents do not have the accessed entry. */
 		if (!entries.length) {
 			throw errors.length === 1 ? errors[0] : new AggregateError(errors, errors.map((err) => err.message).join('\n'));
