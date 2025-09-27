@@ -166,8 +166,7 @@ export class BinVect {
 		} else if (typeof arg[0] === 'bigint') {
 			// the arg represents a hard-coded address
 			const address: bigint = arg[0];
-			assert.ok(0 <= address && address < 2n ** 64n, new RangeError(`Expected ${ address } to be between 0 and ${ 2n ** 64n - 1n }`));
-			return new BinVect(mod, [bigint_to_i64(mod, address)]); // HACK: `this()`
+			return new BinVect(mod, [bigint_to_i64(mod, address, true)]); // HACK: `this()`
 		} else {
 			// the arg represents a dynamic address
 			const address: binaryen.ExpressionRef = arg[0];

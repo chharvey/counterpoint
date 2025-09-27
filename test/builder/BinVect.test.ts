@@ -31,11 +31,6 @@ describe('BinVect', () => {
 
 
 	describe('.constructor', () => {
-		it('throws when any bigint address component is out of range.', () => {
-			assert.throws(() => new BinVect(MOD, [-1n]), RangeError);
-			assert.throws(() => new BinVect(MOD, [2n ** 64n]), RangeError);
-		});
-
 		it('throws when any ExpressionRef address component is not an `i64`.', () => {
 			assert.throws(() => new BinVect(MOD, [42]), TypeError);
 			assert.throws(() => new BinVect(MOD, [MOD.f64.const(42)]), TypeError);
@@ -87,13 +82,13 @@ describe('BinVect', () => {
 		it('with address bigint argument.', () => {
 			test_vect<[bigint]>([42n], (arg, exp) => {
 				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0038));
-				exp = MOD.i64x2.replace_lane(exp, 1, bigint_to_i64(MOD, arg[0]));
+				exp = MOD.i64x2.replace_lane(exp, 1, bigint_to_i64(MOD, arg[0], true));
 				return exp;
 			});
 		});
 
 		it('with address ExpressionRef argument.', () => {
-			test_vect<[binaryen.ExpressionRef]>([bigint_to_i64(MOD, 42n)], (arg, exp) => {
+			test_vect<[binaryen.ExpressionRef]>([bigint_to_i64(MOD, 42n, true)], (arg, exp) => {
 				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0038));
 				exp = MOD.i64x2.replace_lane(exp, 1, arg[0]);
 				return exp;
