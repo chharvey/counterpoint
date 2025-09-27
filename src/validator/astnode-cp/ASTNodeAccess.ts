@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
-	type TypeEntry,
+	type EntryType,
 	VALUE,
 	TYPE,
 } from '../../index.ts';
@@ -80,7 +80,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
-		const entry: TypeEntry = get_entry_info(this.base.type(), this);
+		const entry: EntryType = get_entry_info(this.base.type(), this);
 		validate_access_kind(this.kind, entry.optional, this);
 		return update_accessed_type(entry.type, this.kind);
 	}
