@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
+import {bigint_to_i64} from './utils-public.ts';
 
 
 
@@ -31,7 +32,7 @@ import binaryen from 'binaryen';
  * `\x0022` | The vector holds an `f16` value.
  * `\x0024` | The vector holds an `f32` value.
  * `\x0028` | The vector holds an `f64` value.
- * `\x0034` | The vector holds an address (represented by an `i32`).
+ * `\x0038` | The vector holds an address (represented by an `i64`).
  * `\x0060` | The vector represents an empty Tuple object.
  *
  * # Value Types
@@ -55,8 +56,7 @@ import binaryen from 'binaryen';
  * Header values of `\x0022` and `\x0024` reserved for future use. Data is always right-aligned.
  *
  * ## Address Values
- * When the Header is `\x0034`, it represents an address of an object in the heap, indexed by an `i32`, held in Lanes 6–7.
- * TODO: starting in WASM 3.0, change this to `i64`!
+ * When the Header is `\x0038`, it represents an address of an object in the heap, indexed by an `i64`, held in Lanes 4–7.
  *
  * ## The Empty Tuple Value
  * The Header value `\x0060` represents an empty Counterpoint Tuple object.
@@ -76,7 +76,7 @@ import binaryen from 'binaryen';
  * f16:                \x0000 \x0000 \x0000 \x0022 | \x0000 \x0000 \x0000 \x????
  * f32:                \x0000 \x0000 \x0000 \x0024 | \x0000 \x0000 \x???? \x????
  * f64:                \x0000 \x0000 \x0000 \x0028 | \x???? \x???? \x???? \x????
- * address:            \x0000 \x0000 \x0000 \x0034 | \x0000 \x0000 \x???? \x????
+ * address:            \x0000 \x0000 \x0000 \x0038 | \x???? \x???? \x???? \x????
  * empty tuple:        \x0000 \x0000 \x0000 \x0060 | \x0000 \x0000 \x0000 \x0000
  * ```
  */
@@ -111,7 +111,7 @@ export class BinVect {
 	 * @param  arg one of the following:
 	 *             - the native value `null`, `false`, or `true` (corresponding to its representation)
 	 *             - a Binaryen `i64`, `f64`, or `v128` value to use in a `v128`
-	 *             - an address, either hard-coded (native bigint) or dynamic (of type `i32`)
+	 *             - an address, either hard-coded (native bigint) or dynamic (of type `i64`)
 	 *             - the native string value `'tuple'`, indicating empty Counterpoint Tuple object
 	 */
 	public constructor(
@@ -166,21 +166,21 @@ export class BinVect {
 		} else if (typeof arg[0] === 'bigint') {
 			// the arg represents a hard-coded address
 			const address: bigint = arg[0];
-			assert.ok(0 <= address && address < 2n ** 32n, new RangeError(`Expected ${ address } to be between 0 and ${ 2n ** 32n - 1n }`));
-			return new BinVect(mod, [mod.i32.const(Number(address))]); // HACK: `this()`
+			assert.ok(0 <= address && address < 2n ** 64n, new RangeError(`Expected ${ address } to be between 0 and ${ 2n ** 64n - 1n }`));
+			return new BinVect(mod, [bigint_to_i64(mod, address)]); // HACK: `this()`
 		} else {
 			// the arg represents a dynamic address
 			const address: binaryen.ExpressionRef = arg[0];
 			assert.strictEqual(
 				binaryen.getExpressionType(address),
-				binaryen.i32,
-				new TypeError('Expected address value to be an `i32`.'),
+				binaryen.i64,
+				new TypeError('Expected address value to be an `i64`.'),
 			);
 			/*
-			 * Set Lane 3 to `\x0034` and set Lanes 6–7 (joined) to its `i32` value.
+			 * Set Lane 3 to `\x0038` and set Lanes 4–7 (joined) to its `i64` value.
 			 */
-			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0034));
-			this.#internal = this.mod.i32x4.replace_lane(this.#internal, 3, address);
+			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0038));
+			this.#internal = this.mod.i64x2.replace_lane(this.#internal, 1, address);
 		}
 
 		this.#type = this.mod.i16x8.extract_lane_s(this.#internal, 3);
@@ -250,6 +250,6 @@ export class BinVect {
 
 	/** The value as interpreted as an address. */
 	public get addrValue(): binaryen.ExpressionRef {
-		return this.mod.i32x4.extract_lane(this.#internal, 3);
+		return this.mod.i64x2.extract_lane(this.#internal, 1);
 	}
 }
