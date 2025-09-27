@@ -6,7 +6,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
-	SymbolStructureVar,
+	SymbolSchemaVar,
 	VALUE,
 	TYPE,
 	type Builder,
@@ -984,9 +984,10 @@ describe('ASTNodeExpression', () => {
 					['n as <int>;',   (typ) => typ.equals(TYPE.INT)],
 				]).forEach((assertion, src) => {
 					const claim: AST.ASTNodeClaim = AST.ASTNodeClaim.fromSource(src);
-					claim.validator.addSymbol(new SymbolStructureVar(
+					claim.validator.addSymbol(new SymbolSchemaVar(
 						// @ts-expect-error --- it’s private
 						claim.operand as AST.ASTNodeVariable,
+						false,
 						false,
 					));
 					return assert.ok(assertion.call(null, claim.type()));
