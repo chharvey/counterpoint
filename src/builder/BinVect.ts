@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
+import {bigint_to_i64} from './utils-public.ts';
 
 
 
@@ -31,7 +32,7 @@ import binaryen from 'binaryen';
  * `\x0022` | The vector holds an `f16` value.
  * `\x0024` | The vector holds an `f32` value.
  * `\x0028` | The vector holds an `f64` value.
- * `\x0034` | The vector holds an address (represented by an `i32`).
+ * `\x0038` | The vector holds an address (represented by an `i64`).
  * `\x0060` | The vector represents an empty Tuple object.
  *
  * # Value Types
@@ -44,9 +45,9 @@ import binaryen from 'binaryen';
  * ## Integer Values
  * When the Header is `\x0012`, `\x0014`, or `\x0018`, it represents an `i16`, `i32`, or `i64` value respectively.
  * The value may be interpreted as signed or unsigned.
- * Currently, only `i32` signed values are used.
- * Lanes 4–5 are ignored, and Lanes 6–7 together form the `i32` representing a Counterpoint `int` value.
- * Header values of `\x0012` and `\x0018` reserved for future use. Data is always right-aligned.
+ * Currently, only `i64` values are used.
+ * Lanes 4–7 together form the `i64` representing a Counterpoint `int` value.
+ * Header values of `\x0012` and `\x0014` reserved for future use. Data is always right-aligned.
  *
  * ## Float Values
  * When the Header is `\x0022`, `\x0024`, or `\x0028`, it represents an `f16`, `f32`, or `f64` value respectively.
@@ -55,8 +56,7 @@ import binaryen from 'binaryen';
  * Header values of `\x0022` and `\x0024` reserved for future use. Data is always right-aligned.
  *
  * ## Address Values
- * When the Header is `\x0034`, it represents an address of an object in the heap, indexed by an `i32`, held in Lanes 6–7.
- * TODO: starting in WASM 3.0, change this to `i64`!
+ * When the Header is `\x0038`, it represents an address of an object in the heap, indexed by an `i64`, held in Lanes 4–7.
  *
  * ## The Empty Tuple Value
  * The Header value `\x0060` represents an empty Counterpoint Tuple object.
@@ -76,7 +76,7 @@ import binaryen from 'binaryen';
  * f16:                \x0000 \x0000 \x0000 \x0022 | \x0000 \x0000 \x0000 \x????
  * f32:                \x0000 \x0000 \x0000 \x0024 | \x0000 \x0000 \x???? \x????
  * f64:                \x0000 \x0000 \x0000 \x0028 | \x???? \x???? \x???? \x????
- * address:            \x0000 \x0000 \x0000 \x0034 | \x0000 \x0000 \x???? \x????
+ * address:            \x0000 \x0000 \x0000 \x0038 | \x???? \x???? \x???? \x????
  * empty tuple:        \x0000 \x0000 \x0000 \x0060 | \x0000 \x0000 \x0000 \x0000
  * ```
  */
@@ -110,8 +110,8 @@ export class BinVect {
 	 * @param  mod a module to create the instance in
 	 * @param  arg one of the following:
 	 *             - the native value `null`, `false`, or `true` (corresponding to its representation)
-	 *             - a Binaryen `i32`, `f64`, or `v128` value to use in a `v128`
-	 *             - an address, either hard-coded (native bigint) or dynamic (of type `i32`)
+	 *             - a Binaryen `i64`, `f64`, or `v128` value to use in a `v128`
+	 *             - an address, either hard-coded (native bigint) or dynamic (of type `i64`)
 	 *             - the native string value `'tuple'`, indicating empty Counterpoint Tuple object
 	 */
 	public constructor(
@@ -140,14 +140,14 @@ export class BinVect {
 		} else if (typeof arg === 'number') {
 			// the arg represents a dynamic Binaryen expression
 			/*
-			 * If the arg represents an `int`, set Lane 3 to `\x0014` and set Lane 6–7 (joined) to its `i32` value;
+			 * If the arg represents an `int`, set Lane 3 to `\x0018` and set Lane 4–7 (joined) to its `i64` value;
 			 * else, if the arg represents a `float`, set Lane 3 to `\x0028` and set Lanes 4–7 (joined) to its `f64` value;
 			 * else, if the arg is any other `v128`, set all lanes to those lanes.
 			 */
 			switch (binaryen.getExpressionType(arg)) {
-				case binaryen.i32: {
-					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0014));
-					this.#internal = this.mod.i32x4.replace_lane(this.#internal, 3, arg);
+				case binaryen.i64: {
+					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0018));
+					this.#internal = this.mod.i64x2.replace_lane(this.#internal, 1, arg);
 					break;
 				}
 				case binaryen.f64: {
@@ -160,27 +160,26 @@ export class BinVect {
 					break;
 				}
 				default: {
-					throw new TypeError('Expected either `i32`, `f64`, or `v128`.');
+					throw new TypeError('Expected either `i64`, `f64`, or `v128`.');
 				}
 			}
 		} else if (typeof arg[0] === 'bigint') {
 			// the arg represents a hard-coded address
 			const address: bigint = arg[0];
-			assert.ok(0 <= address && address < 2n ** 32n, new RangeError(`Expected ${ address } to be between 0 and ${ 2n ** 32n - 1n }`));
-			return new BinVect(mod, [mod.i32.const(Number(address))]); // HACK: `this()`
+			return new BinVect(mod, [bigint_to_i64(mod, address, true)]); // HACK: `this()`
 		} else {
 			// the arg represents a dynamic address
 			const address: binaryen.ExpressionRef = arg[0];
 			assert.strictEqual(
 				binaryen.getExpressionType(address),
-				binaryen.i32,
-				new TypeError('Expected address value to be an `i32`.'),
+				binaryen.i64,
+				new TypeError('Expected address value to be an `i64`.'),
 			);
 			/*
-			 * Set Lane 3 to `\x0034` and set Lanes 6–7 (joined) to its `i32` value.
+			 * Set Lane 3 to `\x0038` and set Lanes 4–7 (joined) to its `i64` value.
 			 */
-			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0034));
-			this.#internal = this.mod.i32x4.replace_lane(this.#internal, 3, address);
+			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0038));
+			this.#internal = this.mod.i64x2.replace_lane(this.#internal, 1, address);
 		}
 
 		this.#type = this.mod.i16x8.extract_lane_s(this.#internal, 3);
@@ -203,7 +202,7 @@ export class BinVect {
 		return this.mod.i32.eqz(this.#type);
 	}
 
-	/** Whether the value is intended to be interpreted as a special value: null, true, or false. */
+	/** Whether the value is intended to be interpreted as a special value: null, false, or true. */
 	public isSpecial(value?: null | boolean): binaryen.ExpressionRef {
 		return (
 			value === null  ? this.mod.i32.eq(this.#type, this.mod.i32.const(0x0001)) :
@@ -233,9 +232,14 @@ export class BinVect {
 		return this.#checkTypeRange(0x0060n, 0x006fn);
 	}
 
+	/** The value as interpreted as a special value: null, false, or true. */
+	public get specialValue(): binaryen.ExpressionRef {
+		return this.#type;
+	}
+
 	/** The value as interpreted as an int. */
 	public get intValue(): binaryen.ExpressionRef {
-		return this.mod.i32x4.extract_lane(this.#internal, 2);
+		return this.mod.i64x2.extract_lane(this.#internal, 1);
 	}
 
 	/** The value as interpreted as a float. */
@@ -245,6 +249,6 @@ export class BinVect {
 
 	/** The value as interpreted as an address. */
 	public get addrValue(): binaryen.ExpressionRef {
-		return this.mod.i32x4.extract_lane(this.#internal, 3);
+		return this.mod.i64x2.extract_lane(this.#internal, 1);
 	}
 }

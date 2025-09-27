@@ -48,7 +48,7 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 			TYPE.FLOAT.isSubtypeOf(assignee_type) &&
 			!TYPE.INT.isSubtypeOf(assignee_type)
 		) {
-			return new BinVect(mod, mod.f64.convert_u.i32(value)).vect;
+			return new BinVect(mod, mod.f64.convert_u.i64(value)).vect;
 		}
 		return value;
 	}

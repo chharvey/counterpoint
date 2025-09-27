@@ -619,29 +619,28 @@ describe('ASTNodeOperation', () => {
 		describe('#fold', () => {
 			it('computes the value of an integer operation of constants.', () => {
 				foldOperations(new Map([
-					['42 + 420;',           new VALUE.Integer(42n + 420n)],
-					['42 - 420;',           new VALUE.Integer(42n + -420n)],
-					[' 126 /  3;',          new VALUE.Integer(BigInt(Math.trunc( 126 /  3)))],
-					['-126 /  3;',          new VALUE.Integer(BigInt(Math.trunc(-126 /  3)))],
-					[' 126 / -3;',          new VALUE.Integer(BigInt(Math.trunc( 126 / -3)))],
-					['-126 / -3;',          new VALUE.Integer(BigInt(Math.trunc(-126 / -3)))],
-					[' 200 /  3;',          new VALUE.Integer(BigInt(Math.trunc( 200 /  3)))],
-					[' 200 / -3;',          new VALUE.Integer(BigInt(Math.trunc( 200 / -3)))],
-					['-200 /  3;',          new VALUE.Integer(BigInt(Math.trunc(-200 /  3)))],
-					['-200 / -3;',          new VALUE.Integer(BigInt(Math.trunc(-200 / -3)))],
-					['42 ^ 2 * 420;',       new VALUE.Integer((42n ** 2n * 420n) % (2n ** 16n))],
-					['2 ^ 15 + 2 ^ 14;',    new VALUE.Integer(-(2n ** 14n))],
-					['-(2 ^ 14) - 2 ^ 15;', new VALUE.Integer(2n ** 14n)],
-					['-(5) ^ +(2 * 3);',    new VALUE.Integer((-5n) ** (2n * 3n))],
+					['42 + 420;',        new VALUE.Integer(42n + 420n)],
+					['42 - 420;',        new VALUE.Integer(42n + -420n)],
+					[' 126 /  3;',       new VALUE.Integer( 126n /  3n)],
+					['-126 /  3;',       new VALUE.Integer(-126n /  3n)],
+					[' 126 / -3;',       new VALUE.Integer( 126n / -3n)],
+					['-126 / -3;',       new VALUE.Integer(-126n / -3n)],
+					[' 200 /  3;',       new VALUE.Integer( 200n /  3n)],
+					[' 200 / -3;',       new VALUE.Integer( 200n / -3n)],
+					['-200 /  3;',       new VALUE.Integer(-200n /  3n)],
+					['-200 / -3;',       new VALUE.Integer(-200n / -3n)],
+					['-(5) ^ +(2 * 3);', new VALUE.Integer((-5n) ** (2n * 3n))],
 				]));
 			});
 			it('overflows integers properly.', () => {
 				assert.deepStrictEqual([
-					'2 ^ 15 + 2 ^ 14;',
-					'-(2 ^ 14) - 2 ^ 15;',
+					'2 ^ 63 + 2 ^ 62;',
+					'-(2 ^ 62) - 2 ^ 63;',
+					'42 ^ 2 * 420;',
 				].map((src) => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).fold()), [
-					new VALUE.Integer(-(2n ** 14n)),
-					new VALUE.Integer(2n ** 14n),
+					new VALUE.Integer(-(2n ** 62n)),
+					new VALUE.Integer(2n ** 62n),
+					new VALUE.Integer((42n ** 2n * 420n) % (2n ** 64n)),
 				]);
 			});
 			it('computes the value of a float operation of constants.', () => {

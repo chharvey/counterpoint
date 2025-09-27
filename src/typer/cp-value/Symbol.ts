@@ -1,5 +1,6 @@
 import type binaryen from 'binaryen';
 import {
+	bigint_to_i64,
 	type Builder,
 	BinVect,
 } from '../../index.ts';
@@ -53,7 +54,7 @@ class ValueSymbol extends Primitive {
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return new BinVect(builder.module, builder.module.i32.const(Number(this.id))).vect;
+		return new BinVect(builder.module, bigint_to_i64(builder.module, this.id)).vect;
 	}
 }
 export {ValueSymbol as Symbol};
