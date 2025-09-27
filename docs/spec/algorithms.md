@@ -476,7 +476,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 					1. *Set* `any_optional` to `true`.
 			4. *If* `errors.count` is greater than 0:
 				1. *Set* `any_optional` to `true`.
-			5. *Let* `union` be a reduction of `entries` for each `x` and `y` to `Union(x.type, y.type)`.
+			5. *Let* `union` be a reduction of `entries` for each `x` and `y` to *UnwrapAffirm:* `Union(x.type, y.type)`.
 			6. *Return:* a new EntryTypeSchema [
 					type=     `union`,
 					optional= `any_optional`,

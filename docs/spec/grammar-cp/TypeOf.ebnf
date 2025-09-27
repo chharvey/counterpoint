@@ -64,7 +64,7 @@ Type! TypeOfUnfolded(SemanticRecord record) :=
 
 Type! TypeOfUnfolded(SemanticSet set) :=
 	1. *Let* `types` be a mapping of `set` for each `el` to *Unwrap:* `TypeOf(el)`.
-	2. *Let* `t` be `Union(...types)`.
+	2. *Let* `t` be *UnwrapAffirm:* `Union(...types)`.
 	3. *Return:* a new mutable Set type whose types are `t`.
 ;
 
@@ -73,8 +73,8 @@ Type! TypeOfUnfolded(SemanticSet set) :=
 Type! TypeOfUnfolded(SemanticMap map) :=
 	1. *Let* `ant_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.0)`.
 	2. *Let* `con_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.
-	3. *Let* `k` be `Union(...ant_types)`.
-	4. *Let* `v` be `Union(...con_types)`.
+	3. *Let* `k` be *UnwrapAffirm:* `Union(...ant_types)`.
+	4. *Let* `v` be *UnwrapAffirm:* `Union(...con_types)`.
 	5. *Return:* a new mutable Map type whose antecedent types are `k` and whose consequent types are `v`.
 ;
 
