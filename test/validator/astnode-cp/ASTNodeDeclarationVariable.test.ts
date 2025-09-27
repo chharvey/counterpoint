@@ -3,8 +3,8 @@ import binaryen from 'binaryen';
 import {
 	assert_instanceof,
 	AST,
-	type SymbolStructure,
-	SymbolStructureVar,
+	type SymbolSchema,
+	SymbolSchemaVar,
 	VALUE,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
@@ -23,7 +23,7 @@ import {
 
 describe('ASTNodeDeclarationVariable', () => {
 	describe('#varCheck', () => {
-		it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown` and a preset null `value` value.', () => {
+		it('adds a SymbolSchema to the symbol table with a preset `type` value of `unknown` and a preset null `value` value.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let     a:  int = 42;
 				let var b:  int = 42;
@@ -36,12 +36,12 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.ok(goal.validator.hasSymbol(0x100n));
 			assert.ok(goal.validator.hasSymbol(0x101n));
 			assert.ok(goal.validator.hasSymbol(0x102n));
-			const info_a: SymbolStructure | null = goal.validator.getSymbolInfo(0x100n);
-			const info_b: SymbolStructure | null = goal.validator.getSymbolInfo(0x101n);
-			const info_c: SymbolStructure | null = goal.validator.getSymbolInfo(0x102n);
-			assert_instanceof(info_a, SymbolStructureVar);
-			assert_instanceof(info_b, SymbolStructureVar);
-			assert_instanceof(info_c, SymbolStructureVar);
+			const info_a: SymbolSchema | null = goal.validator.getSymbolInfo(0x100n);
+			const info_b: SymbolSchema | null = goal.validator.getSymbolInfo(0x101n);
+			const info_c: SymbolSchema | null = goal.validator.getSymbolInfo(0x102n);
+			assert_instanceof(info_a, SymbolSchemaVar);
+			assert_instanceof(info_b, SymbolSchemaVar);
+			assert_instanceof(info_c, SymbolSchemaVar);
 			assert.partialDeepStrictEqual(info_a, {
 				unfixed:       false,
 				uninitialized: false,
@@ -146,7 +146,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				let x: float = 42;
 			`, CONFIG_COERCION_OFF).typeCheck(), TypeErrorNotAssignable);
 		});
-		it('does not set `SymbolStructureVar#value` when assignee type has mutable.', () => {
+		it('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let immut:  int[3]         = [42, 420, 4200];
 				let mut:    mut int[]      = List.<int>([42, 420, 4200]);
@@ -155,9 +155,9 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			const [immut, mut, mutmut] = [
-				goal.validator.getSymbolInfo(0x100n) as SymbolStructureVar,
-				goal.validator.getSymbolInfo(0x101n) as SymbolStructureVar,
-				goal.validator.getSymbolInfo(0x102n) as SymbolStructureVar,
+				goal.validator.getSymbolInfo(0x100n) as SymbolSchemaVar,
+				goal.validator.getSymbolInfo(0x101n) as SymbolSchemaVar,
+				goal.validator.getSymbolInfo(0x102n) as SymbolSchemaVar,
 			];
 			assert.deepStrictEqual(
 				[immut.source, immut.value],

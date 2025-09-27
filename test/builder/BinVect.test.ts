@@ -30,16 +30,12 @@ describe('BinVect', () => {
 	describe('.constructor', () => {
 		it('throws when any bigint address component is out of range.', () => {
 			assert.throws(() => new BinVect(MOD, [-1n]), RangeError);
-			assert.throws(() => new BinVect(MOD, [2n ** 16n]), RangeError);
-			assert.throws(() => new BinVect(MOD, [42n, -1n]), RangeError);
-			assert.throws(() => new BinVect(MOD, [42n, 2n ** 16n]), RangeError);
+			assert.throws(() => new BinVect(MOD, [2n ** 32n]), RangeError);
 		});
 
 		it('throws when any ExpressionRef address component is not an `i32`.', () => {
 			assert.throws(() => new BinVect(MOD, [42]), TypeError);
 			assert.throws(() => new BinVect(MOD, [MOD.f64.const(42)]), TypeError);
-			assert.throws(() => new BinVect(MOD, [MOD.i64.const(42, 0), 42]), TypeError);
-			assert.throws(() => new BinVect(MOD, [MOD.i64.const(42, 0), MOD.f64.const(42)]), TypeError);
 		});
 	});
 
@@ -85,36 +81,18 @@ describe('BinVect', () => {
 			return test_vect<binaryen.ExpressionRef>(argument, (arg) => arg);
 		});
 
-		it('with one-length address bigint argument.', () => {
+		it('with address bigint argument.', () => {
 			test_vect<[bigint]>([42n], (arg, exp) => {
-				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0032));
-				exp = MOD.i16x8.replace_lane(exp, 4, MOD.i32.const(Number(arg[0])));
+				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0034));
+				exp = MOD.i32x4.replace_lane(exp, 3, MOD.i32.const(Number(arg[0])));
 				return exp;
 			});
 		});
 
-		it('with one-length address ExpressionRef argument.', () => {
+		it('with address ExpressionRef argument.', () => {
 			test_vect<[binaryen.ExpressionRef]>([MOD.i32.const(42)], (arg, exp) => {
-				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0032));
-				exp = MOD.i16x8.replace_lane(exp, 4, arg[0]);
-				return exp;
-			});
-		});
-
-		it('with two-length address bigint argument.', () => {
-			test_vect<[bigint, bigint]>([42n, 43n], (arg, exp) => {
 				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0034));
-				exp = MOD.i16x8.replace_lane(exp, 4, MOD.i32.const(Number(arg[0])));
-				exp = MOD.i16x8.replace_lane(exp, 5, MOD.i32.const(Number(arg[1])));
-				return exp;
-			});
-		});
-
-		it('with two-length address ExpressionRef argument.', () => {
-			test_vect<[binaryen.ExpressionRef, binaryen.ExpressionRef]>([MOD.i32.const(42), MOD.i32.const(43)], (arg, exp) => {
-				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0034));
-				exp = MOD.i16x8.replace_lane(exp, 4, arg[0]);
-				exp = MOD.i16x8.replace_lane(exp, 5, arg[1]);
+				exp = MOD.i32x4.replace_lane(exp, 3, arg[0]);
 				return exp;
 			});
 		});

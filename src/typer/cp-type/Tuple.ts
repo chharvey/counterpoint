@@ -7,7 +7,7 @@ import {
 	TypeErrorNoEntry,
 } from '../../index.ts';
 import type {AST} from '../../validator/index.ts';
-import type {TypeEntry} from '../utils-public.ts';
+import type {EntryType} from '../utils-public.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -53,7 +53,7 @@ class TypeTuple extends ValueType {
 	 * Construct a new TypeTuple object.
 	 * @param invariants this type’s item types
 	 */
-	public constructor(public readonly invariants: readonly TypeEntry[] = []) {
+	public constructor(public readonly invariants: readonly EntryType[] = []) {
 		super(false, new Set([new VALUE.Tuple()]));
 	}
 
@@ -84,7 +84,7 @@ class TypeTuple extends ValueType {
 			this.minCount >= (t as TypeTuple).minCount &&
 			(t as TypeTuple).invariants.every((thattype, i) => {
 				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
-				const thistype: TypeEntry | undefined = this.invariants[i];
+				const thistype: EntryType | undefined = this.invariants[i];
 				if (!thattype.optional) {
 					/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
 						We cannot do so with record types since properties are not ordered. */
@@ -95,7 +95,7 @@ class TypeTuple extends ValueType {
 		);
 	}
 
-	public get(index: bigint, accessor: AST.ASTNodeIndex): TypeEntry {
+	public get(index: bigint, accessor: AST.ASTNodeIndex): EntryType {
 		const n: number = this.invariants.length;
 		const i: number = Number(index);
 		return (
@@ -112,7 +112,7 @@ class TypeTuple extends ValueType {
 	#getBuiltIndices(index: number): number | readonly number[] {
 		if (!this.#builtIndices) {
 			let counter: number = 0;
-			function walk(entries: readonly TypeEntry[]): typeof indices {
+			function walk(entries: readonly EntryType[]): typeof indices {
 				const indices: Array<number | readonly number[]> = [];
 				entries.forEach((entry) => {
 					if (entry.type instanceof TypeTuple) {

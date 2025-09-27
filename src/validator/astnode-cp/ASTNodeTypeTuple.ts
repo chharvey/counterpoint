@@ -1,5 +1,5 @@
 import {
-	type TypeEntry,
+	type EntryType,
 	TYPE,
 } from '../../index.ts';
 import {
@@ -33,7 +33,7 @@ export class ASTNodeTypeTuple extends ASTNodeTypeCollectionLiteral {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		const entries: readonly TypeEntry[] = this.children.map((c) => {
+		const entries: readonly EntryType[] = this.children.map((c) => {
 			const itemtype: TYPE.Type = c.val.eval();
 			return {
 				type:     itemtype,

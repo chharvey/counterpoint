@@ -6,7 +6,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
-	SymbolStructureVar,
+	SymbolSchemaVar,
 	VALUE,
 	TYPE,
 	type Builder,
@@ -1530,7 +1530,7 @@ describe('ASTNodeOperation', () => {
 			});
 			it('returns `never` when condition is `never`.', () => {
 				const ternary: AST.ASTNodeOperationTernary = AST.ASTNodeOperationTernary.fromSource('if n as <never> then true else false;');
-				ternary.validator.addSymbol(new SymbolStructureVar(
+				ternary.validator.addSymbol(new SymbolSchemaVar(
 					// @ts-expect-error --- it’s private
 					(ternary.operand0 as AST.ASTNodeClaim).operand as AST.ASTNodeVariable,
 					false,

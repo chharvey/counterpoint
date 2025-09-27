@@ -4,7 +4,7 @@ This chapter describes the objects built in to the standard “core” Counterpo
 
 
 ## Primitive and Composite Values
-Primitive values are unbreakable and are instances of `Null`, `Boolean`, `Integer`, `Float`, or `String`.
+Primitive values are unbreakable and are instances of `Null`, `Boolean`, `Symbol`, `Integer`, `Float`, or `String`.
 These types are discussed in the [Types and Values](./types-values.md#simple-types) chapter.
 
 Composite values are not primitive values and are composed of other values (of any kind).
@@ -23,6 +23,7 @@ if unsigned integers are supported, the maximum count would be increased to *65,
 Data values are described completely by their value and have no identity;
 they are [identical](./algorithms.md#identical) if and only if they have the “same value”.
 All primitive values are data values because two primitive values that have the same value are one in the same.
+There are some types of data values that are not primitive (they are composite).
 When a data value is assigned to a variable or parameter, a copy of its value is assigned.
 All data values are immutable.
 Data values do not all have a common ancestor.
@@ -65,7 +66,7 @@ Symbols are identical if and only if they have the same name.
 ## Reference Objects
 Reference objects have an identity and are identifiable by reference;
 they are [identical](./algorithms.md#identical) if and only if they have the same reference.
-Reference objects that have the “same value” are not necessarily identical.
+Reference objects that are “equal” (by some definition) are not necessarily identical.
 When a reference object is assigned to a variable or parameter, a new reference to the object is assigned,
 and any change to the object is observable in every reference.
 All reference objects belong to the `Object` class.
