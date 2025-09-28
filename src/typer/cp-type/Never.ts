@@ -13,7 +13,7 @@ import {ValueType} from './ValueType.ts';
  * Class for constructing the Bottom Type, the type containing no values.
  * @final
  */
-export class Never extends ValueType {
+export class Nothing extends ValueType {
 	public constructor() {
 		super(false);
 	}

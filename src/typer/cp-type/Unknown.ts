@@ -13,7 +13,7 @@ import {ReferenceType} from './ReferenceType.ts';
  * Class for constructing the Top Type, the type containing all values.
  * @final
  */
-export class Unknown extends ReferenceType {
+export class Anything extends ReferenceType {
 	public constructor() {
 		super(false, new Set<VALUE.Value>([
 			VALUE.NULL,

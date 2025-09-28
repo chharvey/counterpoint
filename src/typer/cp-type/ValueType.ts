@@ -5,7 +5,7 @@ import {Type} from './Type.ts';
 /**
  * Parent class for value types (types of data that are passed by value).
  * Known subclasses:
- * - Never
+ * - Nothing
  * - TypeBoolean
  * - UnenumeratedPrimitiveType
  * - Unit

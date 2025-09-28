@@ -1,8 +1,8 @@
 import * as VALUE from '../cp-value/index.ts';
 import type {Type} from './Type.ts';
 import type {Unit} from './Unit.ts';
-import {Never} from './Never.ts';
-import {Unknown} from './Unknown.ts';
+import {Nothing} from './Never.ts';
+import {Anything} from './Unknown.ts';
 import {Boolean as TypeBoolean} from './Boolean.ts';
 import {Symbol as TypeSymbol} from './Symbol.ts';
 import {Integer} from './Integer.ts';
@@ -12,8 +12,8 @@ import {Object as TypeObject} from './Object.ts';
 
 
 
-/** The Bottom Type, containing no values. */ export const NOTHING:  Never            = new Never();
-/** The Top Type, containing all values.   */ export const ANYTHING: Unknown          = new Unknown();
+/** The Bottom Type, containing no values. */ export const NOTHING:  Nothing          = new Nothing();
+/** The Top Type, containing all values.   */ export const ANYTHING: Anything         = new Anything();
 /** The Null Type.                         */ export const NULL:     Unit<VALUE.Null> = VALUE.NULL.toType();
 /** The Boolean Type.                      */ export const BOOL:     TypeBoolean      = new TypeBoolean();
 /** The Symbol Type.                       */ export const SYM:      TypeSymbol       = new TypeSymbol();
