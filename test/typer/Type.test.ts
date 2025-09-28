@@ -139,13 +139,13 @@ describe('Type', () => {
 		new Map<TYPE.Type, TYPE.Type>([
 			[TYPE.NOTHING,  TYPE.NOTHING],
 			[TYPE.ANYTHING, TYPE.NULL.union(TYPE.FALSE)],
-			[TYPE.OBJ,      TYPE.NOTHING],
 			[TYPE.NULL,     TYPE.NULL],
 			[TYPE.BOOL,     TYPE.FALSE],
 			[TYPE.SYM,      TYPE.NOTHING],
 			[TYPE.INT,      TYPE.NOTHING],
 			[TYPE.FLOAT,    TYPE.NOTHING],
 			[TYPE.STR,      TYPE.NOTHING],
+			[TYPE.OBJ,      TYPE.NOTHING],
 		]).forEach((right, left) => assert.ok(left.falsySide.equals(right), `${ left.falsySide } == ${ right }`));
 	});
 
@@ -159,6 +159,7 @@ describe('Type', () => {
 			[TYPE.INT,     TYPE.INT],
 			[TYPE.FLOAT,   TYPE.FLOAT],
 			[TYPE.STR,     TYPE.STR],
+			[TYPE.OBJ,     TYPE.OBJ],
 		]).forEach((right, left) => assert.ok(left.truthySide.equals(right), `${ left.truthySide } == ${ right }`));
 	});
 
