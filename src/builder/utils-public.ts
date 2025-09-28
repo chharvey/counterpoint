@@ -23,8 +23,12 @@ export function build_tuple_like<T>(
 	type_fn:  (item: T) => TYPE.Type,
 	build_fn: (item: T) => binaryen.ExpressionRef,
 ): binaryen.ExpressionRef {
+	/*
+	 * Due to limitations of the runtime system, empty tuples cannot be compiled in the same manner as nonempty tuples,
+	 * so we use a dummy address of \x0000_0000 instead.
+	 */
 	if (!items.length) {
-		return new BinVect(builder.module, 'tuple').vect;
+		return new BinVect(builder.module, [0n]).vect;
 	}
 
 	/**

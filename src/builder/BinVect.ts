@@ -8,7 +8,6 @@ import binaryen from 'binaryen';
  * - one of three primitive special constants, the Counterpoint values `null`, `false`, or `true`, as a value on the stack
  * - a numeric value of Counterpoint type `int` or `float`, as a value on the stack
  * - an address of a Counterpoint reference type, as a pointer to an object in the heap
- * - an empty Tuple value
  *
  * # Layout
  * The 128-bit vector has 8 lanes (indexed 0–7), 16 bits each.
@@ -32,7 +31,6 @@ import binaryen from 'binaryen';
  * `\x0024` | The vector holds an `f32` value.
  * `\x0028` | The vector holds an `f64` value.
  * `\x0034` | The vector holds an address (represented by an `i32`).
- * `\x0060` | The vector represents an empty Tuple object.
  *
  * # Value Types
  * ## Special Constants
@@ -58,10 +56,6 @@ import binaryen from 'binaryen';
  * When the Header is `\x0034`, it represents an address of an object in the heap, indexed by an `i32`, held in Lanes 6–7.
  * TODO: starting in WASM 3.0, change this to `i64`!
  *
- * ## The Empty Tuple Value
- * The Header value `\x0060` represents an empty Counterpoint Tuple object.
- * (Due to limitations of the runtime system, empty tuples cannot be compiled in the same manner as nonempty tuples.)
- *
  * The following diagram may prove useful:
  * ```
  *                     Lane 0 Lane 1 Lane 2 Lane 3 | Lane 4 Lane 5 Lane 6 Lane 7
@@ -77,7 +71,6 @@ import binaryen from 'binaryen';
  * f32:                \x0000 \x0000 \x0000 \x0024 | \x0000 \x0000 \x???? \x????
  * f64:                \x0000 \x0000 \x0000 \x0028 | \x???? \x???? \x???? \x????
  * address:            \x0000 \x0000 \x0000 \x0034 | \x0000 \x0000 \x???? \x????
- * empty tuple:        \x0000 \x0000 \x0000 \x0060 | \x0000 \x0000 \x0000 \x0000
  * ```
  */
 export class BinVect {
@@ -112,7 +105,6 @@ export class BinVect {
 	 *             - the native value `null`, `false`, or `true` (corresponding to its representation)
 	 *             - a Binaryen `i32`, `f64`, or `v128` value to use in a `v128`
 	 *             - an address, either hard-coded (native bigint) or dynamic (of type `i32`)
-	 *             - the native string value `'tuple'`, indicating empty Counterpoint Tuple object
 	 */
 	public constructor(
 		private readonly mod: binaryen.Module,
@@ -120,7 +112,6 @@ export class BinVect {
 			| null | boolean
 			| binaryen.ExpressionRef
 			| readonly [bigint] | readonly [binaryen.ExpressionRef]
-			| 'tuple'
 		) = null,
 	) {
 		this.#internal = this.mod.v128.const(new Uint8Array(16)); // HACK: TypeScript bug where native-private fields are not emitted in constructor when `useDefineForClassFields` compiler option is off
@@ -134,9 +125,6 @@ export class BinVect {
 		} else if (arg === true) {
 			// the arg represents the Counterpoint `true` value
 			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0003));
-		} else if (arg === 'tuple') {
-			// the arg represents the an empty Counterpoint Tuple object
-			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0062));
 		} else if (typeof arg === 'number') {
 			// the arg represents a dynamic Binaryen expression
 			/*
@@ -226,11 +214,6 @@ export class BinVect {
 	/** Whether the value is intended to be interpreted as an address. */
 	public get isAddr(): binaryen.ExpressionRef {
 		return this.#checkTypeRange(0x0030n, 0x003fn);
-	}
-
-	/** Whether the value is intended to be interpreted as a Tuple object. */
-	public get isTuple(): binaryen.ExpressionRef {
-		return this.#checkTypeRange(0x0060n, 0x006fn);
 	}
 
 	/** The value as interpreted as an int. */

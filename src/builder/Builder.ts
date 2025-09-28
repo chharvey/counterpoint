@@ -152,7 +152,7 @@ export class Builder {
 					mod.if(
 						vect.isFloat,
 						BinVect.asBool(mod, mod.f64.eq(vect.floatValue, mod.f64.const(0.0))), // also takes care of -0.0
-						BinVect.asBool(mod, vect.isTuple),
+						BinVect.asBool(mod, mod.i32.and(vect.isAddr, mod.i32.eqz(vect.addrValue))),
 					),
 				),
 			);

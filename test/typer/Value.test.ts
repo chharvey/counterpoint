@@ -253,7 +253,7 @@ describe('Value', () => {
 				it('empty tuple returns unique BinVect representation.', () => {
 					assertEqualBins(
 						new VALUE.Tuple().build(builder),
-						new BinVect(builder.module, 'tuple').vect,
+						new BinVect(builder.module, [0n]).vect,
 						'[]',
 					);
 				});
@@ -267,14 +267,14 @@ describe('Value', () => {
 				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple()]).build(builder),
-						singletonTuple(builder, new BinVect(builder.module, 'tuple').vect),
+						singletonTuple(builder, new BinVect(builder.module, [0n]).vect),
 						'[[]]',
 					);
 				});
 				it('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Tuple()])]).build(builder),
-						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, new BinVect(builder.module, 'tuple').vect), 0)),
+						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, new BinVect(builder.module, [0n]).vect), 0)),
 						'[[[]]]',
 					);
 				});
