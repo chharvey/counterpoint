@@ -1,8 +1,8 @@
 import * as VALUE from '../cp-value/index.ts';
 import type {Type} from './Type.ts';
 import type {Unit} from './Unit.ts';
-import {Nothing} from './Never.ts';
-import {Anything} from './Unknown.ts';
+import {Nothing} from './Nothing.ts';
+import {Anything} from './Anything.ts';
 import {Boolean as TypeBoolean} from './Boolean.ts';
 import {Symbol as TypeSymbol} from './Symbol.ts';
 import {Integer} from './Integer.ts';
