@@ -39,7 +39,7 @@ TokenWorth(Punctuator :::= "=")   -> RealNumber := \x25;
 
 
 
-TokenWorth(KeywordType  :::= "never")   -> RealNumber := \x80;
+TokenWorth(KeywordType  :::= "nothing") -> RealNumber := \x80;
 TokenWorth(KeywordType  :::= "bool")    -> RealNumber := \x81;
 TokenWorth(KeywordType  :::= "sym")     -> RealNumber := \x82;
 TokenWorth(KeywordType  :::= "int")     -> RealNumber := \x83;

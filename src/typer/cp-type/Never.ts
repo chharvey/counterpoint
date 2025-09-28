@@ -1,3 +1,4 @@
+import {Keyword} from '../../parser/index.ts';
 import {
 	strictEqual,
 	memoizeBinOp,
@@ -22,7 +23,7 @@ export class Never extends ValueType {
 	}
 
 	public override toString(): string {
-		return 'never';
+		return Keyword.NEVER;
 	}
 
 	public override includes(_v: VALUE.Value): boolean {

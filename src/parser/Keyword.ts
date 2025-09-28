@@ -1,6 +1,6 @@
 export enum Keyword {
 	// type literal
-	NEVER   = 'never',
+	NEVER   = 'nothing',
 	VOID    = 'void',
 	BOOL    = 'bool',
 	SYM     = 'sym',

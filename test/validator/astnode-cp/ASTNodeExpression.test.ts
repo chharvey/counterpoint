@@ -978,10 +978,10 @@ describe('ASTNodeExpression', () => {
 			it('returns the type value of the claimed type.', () => {
 				assert.ok(AST.ASTNodeClaim.fromSource('3 as <int?>;').type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
-			it('`never` is assignable to any type (even though intersection is empty).', () => {
+			it('`nothing` is assignable to any type (even though intersection is empty).', () => {
 				new Map<string, (typ: TYPE.Type) => boolean>([
-					['n as <never>;', (typ) => typ.isBottomType],
-					['n as <int>;',   (typ) => typ.equals(TYPE.INT)],
+					['n as <nothing>;', (typ) => typ.isBottomType],
+					['n as <int>;',     (typ) => typ.equals(TYPE.INT)],
 				]).forEach((assertion, src) => {
 					const claim: AST.ASTNodeClaim = AST.ASTNodeClaim.fromSource(src);
 					claim.validator.addSymbol(new SymbolSchemaVar(
@@ -992,7 +992,7 @@ describe('ASTNodeExpression', () => {
 					));
 					return assert.ok(assertion.call(null, claim.type()));
 				});
-				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <never>;').type(), TypeErrorNotAssignable);
+				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <nothing>;').type(), TypeErrorNotAssignable);
 			});
 			it('throws when the operand type and claimed type do not overlap.', () => {
 				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <str>;')      .type(), TypeErrorNotAssignable);

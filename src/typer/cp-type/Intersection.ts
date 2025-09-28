@@ -33,7 +33,7 @@ import {Combinable} from './Combinable.ts';
 export class Intersection extends Combinable {
 	/**
 	 * Intersect all the given types.
-	 * If an empty array is given, return type `never`.
+	 * If an empty array is given, return type `nothing`.
 	 * @param types the types to intersect
 	 * @returns the intersection
 	 */

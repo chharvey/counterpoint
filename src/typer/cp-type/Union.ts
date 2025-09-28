@@ -32,7 +32,7 @@ import {Combinable} from './Combinable.ts';
 export class Union extends Combinable {
 	/**
 	 * Unions all the given types.
-	 * If an empty array is given, return type `never`.
+	 * If an empty array is given, return type `nothing`.
 	 * @param types the types to union
 	 * @returns the union
 	 */
@@ -74,7 +74,7 @@ export class Union extends Combinable {
 	 * We can assert that this is never bottom because
 	 * the only case in which it could be bottom is
 	 * if both the left and the right are bottom,
-	 * which is impossible because the algorithm would have already produced the `never` type.
+	 * which is impossible because the algorithm would have already produced the `nothing` type.
 	 */
 
 	/*

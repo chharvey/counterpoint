@@ -406,11 +406,11 @@ describe('ASTNodeAccess', () => {
 			const ERRS = `
 				${ DECLS }
 
-				list_fixed.[3];   % type \`never\` % fold throws VoidError
-				list_fixed.[-4];  % type \`never\` % fold throws VoidError
-				dict_fixed.[@d];  % type \`never\` % fold throws VoidError
+				list_fixed.[3];   % type \`nothing\` % fold throws VoidError
+				list_fixed.[-4];  % type \`nothing\` % fold throws VoidError
+				dict_fixed.[@d];  % type \`nothing\` % fold throws VoidError
 				set_fixed.[42.0]; % type \`false\` % value \`false\`
-				map_fixed.["d"];  % type \`never\` % fold throws VoidError
+				map_fixed.["d"];  % type \`nothing\` % fold throws VoidError
 
 				list_unfixed.[3];   % type \`int | float | str\` % non-foldable value
 				list_unfixed.[-4];  % type \`int | float | str\` % non-foldable value
@@ -460,7 +460,7 @@ describe('ASTNodeAccess', () => {
 						[a= 10, b= 20, c= 30].[@b];
 					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
 				});
-				it('when accessor expression is correct type but out of bounds/range, returns `never` for folded objects, returns union type for unfolded objects.', () => {
+				it('when accessor expression is correct type but out of bounds/range, returns `nothing` for folded objects, returns union type for unfolded objects.', () => {
 					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
 					return testExprTypes(ERRS, [
 						...repeat(TYPE.NEVER, 3),

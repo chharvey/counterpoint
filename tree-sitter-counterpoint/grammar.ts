@@ -279,7 +279,7 @@ module.exports = grammar({
 
 		/* # LEXICON */
 		keyword_type: _$ => token(choice(
-			'never',
+			'nothing',
 			'bool',
 			'sym',
 			'int',

@@ -66,7 +66,7 @@ describe('Type', () => {
 
 
 	describe('#isDefinitelyFalsy', () => {
-		it('only a combination of `never`, `null`, and `false` are definitely falsy.', () => {
+		it('only a combination of `nothing`, `null`, and `false` are definitely falsy.', () => {
 			[
 				TYPE.NEVER,
 				TYPE.Union.all([           TYPE.FALSE]),
@@ -198,7 +198,7 @@ describe('Type', () => {
 
 
 	describe('#intersect', () => {
-		it('1-5 | `T  & never   == never`', () => {
+		it('1-5 | `T  & nothing == nothing`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.intersect(TYPE.NEVER).isBottomType, `${ t }`);
 			});
@@ -265,7 +265,7 @@ describe('Type', () => {
 
 
 	describe('#union', () => {
-		it('1-7 | `T \| never   == T`', () => {
+		it('1-7 | `T \| nothing == T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.union(TYPE.NEVER).equals(t), `${ t }`);
 			});
@@ -332,7 +332,7 @@ describe('Type', () => {
 
 
 	describe('#subtract', () => {
-		it('4-1 | `A - B == A  <->  A & B == never`', () => {
+		it('4-1 | `A - B == A  <->  A & B == nothing`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.intersect(b).isBottomType) {
 					assert.ok(a.subtract(b).equals(a), `forward: ${ a }, ${ b }`);
@@ -342,7 +342,7 @@ describe('Type', () => {
 				}
 			});
 		});
-		it('4-2 | `A - B == never  <->  A <: B`', () => {
+		it('4-2 | `A - B == nothing  <->  A <: B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b)) {
 					assert.ok(a.subtract(b).isBottomType, `forward: ${ a }, ${ b }`);
@@ -352,7 +352,7 @@ describe('Type', () => {
 				}
 			});
 		});
-		it('4-3 | `A <: B - C  <->  A <: B  &&  A & C == never`', () => {
+		it('4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(b.subtract(c))) {
 					assert.ok(a.isSubtypeOf(b) && a.intersect(c).isBottomType, `forward: ${ a }, ${ b }, ${ c }`);
@@ -376,24 +376,24 @@ describe('Type', () => {
 
 
 	describe('#isSubtypeOf', () => {
-		it('1-1 | `never <: T`', () => {
+		it('1-1 | `nothing <: T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(TYPE.NEVER.isSubtypeOf(t), `${ t }`);
 			});
 		});
-		it('1-2 | `T     <: unknown`', () => {
+		it('1-2 | `T       <: unknown`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.isSubtypeOf(TYPE.UNKNOWN), `${ t }`);
 			});
 		});
-		it('1-3 | `T       <: never  <->  T == never`', () => {
+		it('1-3 | `T       <: nothing  <->  T == nothing`', () => {
 			builtin_types.forEach((t) => {
 				if (t.isSubtypeOf(TYPE.NEVER)) {
 					assert.ok(t.isBottomType, `${ t }`);
 				}
 			});
 		});
-		it('1-4 | `unknown <: T      <->  T == unknown`', () => {
+		it('1-4 | `unknown <: T        <->  T == unknown`', () => {
 			builtin_types.forEach((t) => {
 				if (TYPE.UNKNOWN.isSubtypeOf(t)) {
 					assert.ok(t.isTopType, `${ t }`);

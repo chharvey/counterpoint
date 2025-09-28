@@ -689,7 +689,7 @@ AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> RES
 
 
 
-KeywordType(KEYWORD_TYPE :::= "never")   -> Type := Never;
+KeywordType(KEYWORD_TYPE :::= "nothing") -> Type := Nothing;
 KeywordType(KEYWORD_TYPE :::= "bool")    -> Type := Boolean;
 KeywordType(KEYWORD_TYPE :::= "sym")     -> Type := Symbol;
 KeywordType(KEYWORD_TYPE :::= "int")     -> Type := Integer;

@@ -198,7 +198,7 @@ and [reference objects](./intrinsics.md#reference-objects) respectively.
 ### Simple Types
 Simple types do not comprise other types.
 
-- [Never](#never)
+- [Nothing](#nothing)
 - [Unknown](#unknown)
 - [Null](#null)
 - [Boolean](#boolean)
@@ -208,14 +208,14 @@ Simple types do not comprise other types.
 - [String](#string)
 - [Object](#object)
 
-#### Never
-The **Never** type is the Botton Type and it represents the set of no values.
-No value is assignable to Never,
-and expressions of type Never are accepted everywhere.
+#### Nothing
+The **Nothing** type is the Botton Type and it represents the set of no values.
+No value is assignable to Nothing,
+and expressions of type Nothing are accepted everywhere.
 
-Never is a subtype of every type,
-and no type (except Never itself) is a subtype of Never.
-Never is the the “absorption element” of the [intersection](#intersection) operation
+Nothing is a subtype of every type,
+and no type (except Nothing itself) is a subtype of Nothing.
+Nothing is the the “absorption element” of the [intersection](#intersection) operation
 and the “identity element” of the [union](#union) operation.
 
 #### Unknown
@@ -393,7 +393,7 @@ Boolean IsReference(Type t) :=
 		1. *Return:* `false`.
 	2. *Assert:* `t` is a Counterpoint Language Type.
 	3. *Let* `valuetypes` be a new Sequence [
-		`Never`,
+		`Nothing`,
 		`Null`,
 		`Boolean`,
 		`Number`,
@@ -414,7 +414,7 @@ Boolean IsReference(Type t) :=
 
 
 ### IsBottomType
-A type \`‹T›\` is the **bottom type**, named Never, iff \`‹T›\` contains no values.
+A type \`‹T›\` is the **bottom type**, named Nothing, iff \`‹T›\` contains no values.
 
 
 ### IsTopType
@@ -461,7 +461,7 @@ Type FalsySide(Type t) :=
 	1. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t)` is `true`:
 		1. *Return:* `t`.
 	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)` is `true`:
-		1. *Return:* Never.
+		1. *Return:* `Nothing`.
 	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
 	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Null, false_type)`.
 	5. *Return:* `Intersection(t, falsy_types)`.
@@ -477,7 +477,7 @@ Equivalently, the **truthy side** of a type comprises all the values in the type
 ```
 Type TruthySide(Type t) :=
 	1. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t)` is `true`:
-		1. *Return:* Never.
+		1. *Return:* `Nothing`.
 	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)` is `true`:
 		1. *Return:* `t`.
 	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
@@ -495,9 +495,9 @@ Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
 
 ```
 Type Intersection(Type a, Type b) :=
-	// 1-5 | `T  & never   == never`
+	// 1-5 | `T  & nothing == nothing`
 	1. *If* *UnwrapAffirm:* `IsBottomType(a)` is `true` *or* *UnwrapAffirm:* `IsBottomType(b)` is `true`:
-		1. *Return:* `Never`.
+		1. *Return:* `Nothing`.
 	// 1-6 | `T  & unknown == T`
 	2. *If* *UnwrapAffirm:* `IsTopType(a)` is `true`:
 		1. *Return:* `b`.
@@ -524,7 +524,7 @@ For example, the type \`Or<Integer, Null>\` contains values of either \`Integer\
 
 ```
 Type Union(Type a, Type b) :=
-	// 1-7 | `T \| never   == T`
+	// 1-7 | `T \| nothing == T`
 	1. *If* *UnwrapAffirm:* `IsBottomType(a)` is `true`:
 		1. *Return:* `b`.
 	2. *If* *UnwrapAffirm:* `IsBottomType(b)` is `true`:
@@ -569,16 +569,16 @@ A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignab
 
 ```
 Boolean Subtype(Type a, Type b) :=
-	// 1-1 | `never <: T`
+	// 1-1 | `nothing <: T`
 	1. *If* *UnwrapAffirm:* `IsBottomType(a)` is `true`:
 		1. *Return:* `true`.
-	// 1-3 | `T       <: never  <->  T == never`
+	// 1-3 | `T       <: nothing  <->  T == nothing`
 	2. *If* *UnwrapAffirm:* `IsBottomType(b)` is `true`:
 		1. *Return:* `IsBottomType(a)`.
-	// 1-4 | `unknown <: T      <->  T == unknown`
+	// 1-4 | `unknown <: T        <->  T == unknown`
 	3. *If* *UnwrapAffirm:* `IsTopType(a)` is `true`:
 		1. *Return:* `IsTopType(b)`.
-	// 1-2 | `T     <: unknown`
+	// 1-2 | `T       <: unknown`
 	4. *If* *UnwrapAffirm:* `IsTopType(b)` is `true`:
 		1. *Return:* `true`.
 	5. *If* `a` is the intersection of some types `x` and `y`:
@@ -694,7 +694,7 @@ Boolean Equal(Type a, Type b) :=
 
 ### Disjoint
 A type \`‹T›\` is **disjoint** with type \`‹U›\` iff \`‹T›\` and \`‹U›\` have no values in common.
-That is, their intersection is empty, or equal to the [Bottom Type](#never).
+That is, their intersection is empty, or equal to the [Bottom Type](#nothing).
 
 
 
@@ -721,13 +721,13 @@ For brevity, this section uses the following notational conventions:
 ### Special Elements
 \# | Law | Description
 -- | --- | -----------
-1-1 | `never <: T`              | Bottom is a subtype   of any type.
-1-2 | `T     <: unknown`        | Top    is a supertype of any type.
-1-3 | `T       <: never  <->  T == never`   | Any subtype   of Bottom is Bottom (follows from 3-3, 1-5, 2-7)
-1-4 | `unknown <: T      <->  T == unknown` | Any supertype of Top    is Top    (follows from 3-4, 1-8, 2-7)
-1-5 | `T  & never   == never`   | Bottom is The Absorption Element of Intersection (follows from 1-1 and 3-3)
+1-1 | `nothing <: T`       | Bottom is a subtype   of any type.
+1-2 | `T       <: unknown` | Top    is a supertype of any type.
+1-3 | `T       <: nothing  <->  T == nothing` | Any subtype   of Bottom is Bottom (follows from 3-3, 1-5, 2-7)
+1-4 | `unknown <: T        <->  T == unknown` | Any supertype of Top    is Top    (follows from 3-4, 1-8, 2-7)
+1-5 | `T  & nothing == nothing` | Bottom is The Absorption Element of Intersection (follows from 1-1 and 3-3)
 1-6 | `T  & unknown == T`       | Top    is The Identity   Element of Intersection (follows from 1-2 and 3-3)
-1-7 | `T \| never   == T`       | Bottom is The Identity   Element of Union        (follows from 1-1 and 3-4)
+1-7 | `T \| nothing == T`       | Bottom is The Identity   Element of Union        (follows from 1-1 and 3-4)
 1-8 | `T \| unknown == unknown` | Top    is The Absorption Element of Union        (follows from 1-2 and 3-4)
 
 
@@ -763,8 +763,8 @@ For brevity, this section uses the following notational conventions:
 ### Difference Properties
 \# | Law | Description
 -- | --- | -----------
-4-1 | `A - B == A  <->  A & B == never`             | The difference of two types is the first type iff they are disjoint.
-4-2 | `A - B == never  <->  A <: B`                 | The difference of two types is empty iff the first type is a subtype of the second type.
-4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` | Any subtype of a difference is a subtype of its first part and disjoint with its second part.
+4-1 | `A - B == A  <->  A & B == nothing`             | The difference of two types is the first type iff they are disjoint.
+4-2 | `A - B == nothing  <->  A <: B`                 | The difference of two types is empty iff the first type is a subtype of the second type.
+4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing` | Any subtype of a difference is a subtype of its first part and disjoint with its second part.
 4-4 | `(A \| B) - C == (A - C) \| (B - C)` | Difference is Right-Distributive    over Union
 4-5 | `A - (B \| C) == (A - B)  & (A - C)` | Difference is Left-Antidistributive over Union

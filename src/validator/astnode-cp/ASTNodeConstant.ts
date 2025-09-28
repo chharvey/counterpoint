@@ -86,6 +86,10 @@ export class ASTNodeConstant extends ASTNodeExpression {
 					}
 					default: {
 						assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
+						// FIXME: update to `@nothing` symbol and remove next line
+						if (children[1].text === 'never') {
+							return VALUE.SYM_NEVER;
+						}
 						return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text);
 					}
 				}

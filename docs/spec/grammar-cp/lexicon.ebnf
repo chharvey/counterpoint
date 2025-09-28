@@ -44,7 +44,7 @@ Punctuator :::=
 
 
 KeywordType :::=
-	| "never"
+	| "nothing"
 	| "bool"
 	| "sym"
 	| "int"

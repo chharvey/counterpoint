@@ -59,7 +59,7 @@ function buildTest(title: string, source: string, expected: string): string {
 		/* # TERMINALS */
 		KEYWORD_TYPE: [
 			xjs.String.dedent`
-				type T = never;
+				type T = nothing;
 				type T = bool;
 				type T = sym;
 				type T = int;

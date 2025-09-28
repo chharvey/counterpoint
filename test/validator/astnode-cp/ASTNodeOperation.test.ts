@@ -95,7 +95,7 @@ describe('ASTNodeOperation', () => {
 
 
 	describe('#type', () => {
-		it('returns Never for NanErrors.', () => {
+		it('returns `nothing` for NanErrors.', () => {
 			[
 				AST.ASTNodeOperationBinaryArithmetic.fromSource('-4 ^ -0.5;').type(),
 				AST.ASTNodeOperationBinaryArithmetic.fromSource('1.5 / 0.0;').type(),
@@ -1529,8 +1529,8 @@ describe('ASTNodeOperation', () => {
 					]));
 				});
 			});
-			it('returns `never` when condition is `never`.', () => {
-				const ternary: AST.ASTNodeOperationTernary = AST.ASTNodeOperationTernary.fromSource('if n as <never> then true else false;');
+			it('returns `nothing` when condition is `nothing`.', () => {
+				const ternary: AST.ASTNodeOperationTernary = AST.ASTNodeOperationTernary.fromSource('if n as <nothing> then true else false;');
 				ternary.validator.addSymbol(new SymbolSchemaVar(
 					// @ts-expect-error --- it’s private
 					(ternary.operand0 as AST.ASTNodeClaim).operand as AST.ASTNodeVariable,

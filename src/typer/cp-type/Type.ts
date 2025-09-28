@@ -53,7 +53,7 @@ export function intersectionRules(
 ): typeof method {
 	assert_context_name(context, 'intersect');
 	return function (this: Type, t) {
-		/* 1-5 | `T  & never   == never` */
+		/* 1-5 | `T  & nothing == nothing` */
 		if (this.isBottomType || t.isBottomType) {
 			return NEVER;
 		}
@@ -89,7 +89,7 @@ export function unionRules(
 ): typeof method {
 	assert_context_name(context, 'union');
 	return function (this: Type, t) {
-		/* 1-7 | `T \| never   == T` */
+		/* 1-7 | `T \| nothing == T` */
 		if (this.isBottomType) {
 			return t;
 		}
@@ -125,12 +125,12 @@ export function differenceRules(
 ): typeof method {
 	assert_context_name(context, 'subtract');
 	return function (this: Type, t) {
-		/* 4-1 | `A - B == A  <->  A & B == never` */
+		/* 4-1 | `A - B == A  <->  A & B == nothing` */
 		if (this.intersect(t).isBottomType) {
 			return this;
 		}
 
-		/* 4-2 | `A - B == never  <->  A <: B` */
+		/* 4-2 | `A - B == nothing  <->  A <: B` */
 		if (this.isSubtypeOf(t)) {
 			return NEVER;
 		}
@@ -161,19 +161,19 @@ export function subtypeRules(
 		if (this === t) {
 			return true;
 		}
-		/* 1-1 | `never <: T` */
+		/* 1-1 | `nothing <: T` */
 		if (this.isBottomType) {
 			return true;
 		}
-		/* 1-3 | `T       <: never  <->  T == never` */
+		/* 1-3 | `T       <: nothing  <->  T == nothing` */
 		if (t.isBottomType) {
 			return this.isBottomType;
 		}
-		/* 1-4 | `unknown <: T      <->  T == unknown` */
+		/* 1-4 | `unknown <: T        <->  T == unknown` */
 		if (this.isTopType) {
 			return t.isTopType;
 		}
-		/* 1-2 | `T     <: unknown` */
+		/* 1-2 | `T       <: unknown` */
 		if (t.isTopType) {
 			return true;
 		}
@@ -234,7 +234,7 @@ export function subtypeRules(
 				return true;
 			}
 		}
-		/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
+		/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing` */
 		if (t instanceof Difference) {
 			return this.isSubtypeOf(t.left) && this.intersect(t.right).isBottomType;
 		}
@@ -267,7 +267,7 @@ export abstract class Type {
 
 	/**
 	 * Return whether this type has no values assignable to it,
-	 * i.e., it is equal to the type `never`.
+	 * i.e., it is equal to the type `nothing`.
 	 * Used internally for special cases of computations.
 	 * @return `true if this type is the bottom type
 	 */
