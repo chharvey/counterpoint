@@ -45,19 +45,19 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.partialDeepStrictEqual(info_a, {
 				unfixed:       false,
 				uninitialized: false,
-				type:          TYPE.UNKNOWN,
+				type:          TYPE.ANYTHING,
 				value:         null,
 			});
 			assert.partialDeepStrictEqual(info_b, {
 				unfixed:       true,
 				uninitialized: false,
-				type:          TYPE.UNKNOWN,
+				type:          TYPE.ANYTHING,
 				value:         null,
 			});
 			assert.partialDeepStrictEqual(info_c, {
 				unfixed:       true,
 				uninitialized: true,
-				type:          TYPE.UNKNOWN,
+				type:          TYPE.ANYTHING,
 				value:         null,
 			});
 		});

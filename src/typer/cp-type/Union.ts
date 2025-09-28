@@ -6,7 +6,7 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import type * as VALUE from '../cp-value/index.ts';
-import {NEVER} from './index.ts';
+import {NOTHING} from './index.ts';
 import {
 	type ReadonlyArrayOfAtLeast2,
 	language_types_equal,
@@ -43,7 +43,7 @@ export class Union extends Combinable {
 			? Union.all(...arg0)
 			: arg0
 				? [arg0, ...args].reduce((a, b) => a.union(b))
-				: NEVER;
+				: NOTHING;
 	}
 
 

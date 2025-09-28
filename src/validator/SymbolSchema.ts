@@ -34,7 +34,7 @@ export abstract class SymbolSchema {
 
 export class SymbolSchemaType extends SymbolSchema {
 	/** The assessed value of the symbol. */
-	public typevalue: TYPE.Type = TYPE.UNKNOWN;
+	public typevalue: TYPE.Type = TYPE.ANYTHING;
 	public constructor(node: AST.ASTNodeTypeAlias) {
 		super(node.id, node.line_index, node.col_index, node.source);
 	}
@@ -44,7 +44,7 @@ export class SymbolSchemaType extends SymbolSchema {
 
 export class SymbolSchemaVar extends SymbolSchema {
 	/** The variable’s Type. */
-	public type:  TYPE.Type = TYPE.UNKNOWN;
+	public type:  TYPE.Type = TYPE.ANYTHING;
 	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
 	public value: VALUE.Value | null = null;
 	public constructor(

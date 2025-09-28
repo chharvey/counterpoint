@@ -13,8 +13,8 @@ import {
 	Intersection,
 	Union,
 	Difference,
-	NEVER,
-	UNKNOWN,
+	NOTHING,
+	ANYTHING,
 	FALSY_TYPES,
 	TYPE_CONSTANTS,
 } from './index.ts';
@@ -33,8 +33,8 @@ export function typeConstant(
 	return function (this: Type, t) {
 		const returned: Type = method.call(this, t);
 		return (
-			returned.isBottomType ? NEVER :
-			returned.isTopType    ? UNKNOWN :
+			returned.isBottomType ? NOTHING :
+			returned.isTopType    ? ANYTHING :
 			TYPE_CONSTANTS.find((c) => returned.equals(c)) ?? returned
 		);
 	};
@@ -55,7 +55,7 @@ export function intersectionRules(
 	return function (this: Type, t) {
 		/* 1-5 | `T  & nothing  == nothing` */
 		if (this.isBottomType || t.isBottomType) {
-			return NEVER;
+			return NOTHING;
 		}
 		/* 1-6 | `T  & anything == T` */
 		if (this.isTopType) {
@@ -98,7 +98,7 @@ export function unionRules(
 		}
 		/* 1-8 | `T \| anything == anything` */
 		if (this.isTopType || t.isTopType) {
-			return UNKNOWN;
+			return ANYTHING;
 		}
 		/* 3-4 | `A <: B  <->  A \| B == B` */
 		if (this.isSubtypeOf(t)) {
@@ -132,7 +132,7 @@ export function differenceRules(
 
 		/* 4-2 | `A - B == nothing  <->  A <: B` */
 		if (this.isSubtypeOf(t)) {
-			return NEVER;
+			return NOTHING;
 		}
 
 		/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
@@ -335,7 +335,7 @@ export abstract class Type {
 	public get falsySide(): Type {
 		return (
 			this.isDefinitelyFalsy  ? this :
-			this.isDefinitelyTruthy ? NEVER :
+			this.isDefinitelyTruthy ? NOTHING :
 			this.intersect(Union.all(...FALSY_TYPES))
 		);
 	}
@@ -348,7 +348,7 @@ export abstract class Type {
 	@memoizeGetter
 	public get truthySide(): Type {
 		return (
-			this.isDefinitelyFalsy  ? NEVER :
+			this.isDefinitelyFalsy  ? NOTHING :
 			this.isDefinitelyTruthy ? this :
 			this.subtract(Union.all(...FALSY_TYPES))
 		);

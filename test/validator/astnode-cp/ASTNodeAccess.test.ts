@@ -463,9 +463,9 @@ describe('ASTNodeAccess', () => {
 				it('when accessor expression is correct type but out of bounds/range, returns `nothing` for folded objects, returns union type for unfolded objects.', () => {
 					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
 					return testExprTypes(ERRS, [
-						...repeat(TYPE.NEVER, 3),
+						...repeat(TYPE.NOTHING, 3),
 						TYPE.FALSE,
-						TYPE.NEVER,
+						TYPE.NOTHING,
 
 						...repeat(TYPE_INT_FLOAT_STR, 3),
 						TYPE.BOOL,
@@ -618,7 +618,7 @@ describe('ASTNodeAccess', () => {
 						b?.1;
 						c?.x;
 						d?.y;
-					`, repeat(TYPE.UNKNOWN, 4));
+					`, repeat(TYPE.ANYTHING, 4));
 				});
 				it('throws when base object is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines(`

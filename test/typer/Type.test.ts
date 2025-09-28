@@ -28,8 +28,8 @@ describe('Type', () => {
 		});
 	}
 	const builtin_types: readonly TYPE.Type[] = [
-		TYPE.NEVER,
-		TYPE.UNKNOWN,
+		TYPE.NOTHING,
+		TYPE.ANYTHING,
 		TYPE.NULL,
 		TYPE.BOOL,
 		TYPE.SYM,
@@ -43,9 +43,9 @@ describe('Type', () => {
 
 
 	it('a type operation equaling to a built-in type returns that type by reference.', () => {
-		assert.strictEqual(TYPE.BOOL.intersect(TYPE.STR), TYPE.NEVER);
-		assert.strictEqual(TYPE.BOOL.union(TYPE.UNKNOWN), TYPE.UNKNOWN);
-		assert.strictEqual(TYPE.FALSE.union(TYPE.TRUE),   TYPE.BOOL);
+		assert.strictEqual(TYPE.BOOL.intersect(TYPE.STR),  TYPE.NOTHING);
+		assert.strictEqual(TYPE.BOOL.union(TYPE.ANYTHING), TYPE.ANYTHING);
+		assert.strictEqual(TYPE.FALSE.union(TYPE.TRUE),    TYPE.BOOL);
 	});
 
 
@@ -68,7 +68,7 @@ describe('Type', () => {
 	describe('#isDefinitelyFalsy', () => {
 		it('only a combination of `nothing`, `null`, and `false` are definitely falsy.', () => {
 			[
-				TYPE.NEVER,
+				TYPE.NOTHING,
 				TYPE.Union.all([           TYPE.FALSE]),
 				TYPE.Union.all([TYPE.NULL            ]),
 				TYPE.Union.all([TYPE.NULL, TYPE.FALSE]),
@@ -76,7 +76,7 @@ describe('Type', () => {
 		});
 		it('any other types are not definitely falsy.', () => {
 			[
-				TYPE.UNKNOWN,
+				TYPE.ANYTHING,
 				TYPE.TRUE,
 				TYPE.BOOL,
 				TYPE.SYM,
@@ -94,7 +94,7 @@ describe('Type', () => {
 	describe('#isDefinitelyTruthy', () => {
 		it('all definitely falsy types are not definitely truthy.', () => {
 			[
-				TYPE.NEVER,
+				TYPE.NOTHING,
 				TYPE.Union.all([           TYPE.FALSE]),
 				TYPE.Union.all([TYPE.NULL            ]),
 				TYPE.Union.all([TYPE.NULL, TYPE.FALSE]),
@@ -102,7 +102,7 @@ describe('Type', () => {
 		});
 		it('unions of falsy types are not definitely truthy.', () => {
 			[
-				TYPE.UNKNOWN,
+				TYPE.ANYTHING,
 				TYPE.BOOL,
 				TYPE.NULL.union(TYPE.FLOAT),
 				TYPE.FALSE.union(TYPE.STR),
@@ -137,23 +137,23 @@ describe('Type', () => {
 
 	specify('#falsySide', () => {
 		new Map<TYPE.Type, TYPE.Type>([
-			[TYPE.NEVER,   TYPE.NEVER],
-			[TYPE.UNKNOWN, TYPE.NULL.union(TYPE.FALSE)],
-			[TYPE.OBJ,     TYPE.NEVER],
-			[TYPE.NULL,    TYPE.NULL],
-			[TYPE.BOOL,    TYPE.FALSE],
-			[TYPE.SYM,     TYPE.NEVER],
-			[TYPE.INT,     TYPE.NEVER],
-			[TYPE.FLOAT,   TYPE.NEVER],
-			[TYPE.STR,     TYPE.NEVER],
+			[TYPE.NOTHING,  TYPE.NOTHING],
+			[TYPE.ANYTHING, TYPE.NULL.union(TYPE.FALSE)],
+			[TYPE.OBJ,      TYPE.NOTHING],
+			[TYPE.NULL,     TYPE.NULL],
+			[TYPE.BOOL,     TYPE.FALSE],
+			[TYPE.SYM,      TYPE.NOTHING],
+			[TYPE.INT,      TYPE.NOTHING],
+			[TYPE.FLOAT,    TYPE.NOTHING],
+			[TYPE.STR,      TYPE.NOTHING],
 		]).forEach((right, left) => assert.ok(left.falsySide.equals(right), `${ left.falsySide } == ${ right }`));
 	});
 
 
 	specify('#truthySide', () => {
 		new Map<TYPE.Type, TYPE.Type>([
-			[TYPE.NEVER,   TYPE.NEVER],
-			[TYPE.NULL,    TYPE.NEVER],
+			[TYPE.NOTHING, TYPE.NOTHING],
+			[TYPE.NULL,    TYPE.NOTHING],
 			[TYPE.BOOL,    TYPE.TRUE],
 			[TYPE.SYM,     TYPE.SYM],
 			[TYPE.INT,     TYPE.INT],
@@ -200,12 +200,12 @@ describe('Type', () => {
 	describe('#intersect', () => {
 		it('1-5 | `T  & nothing  == nothing`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.intersect(TYPE.NEVER).isBottomType, `${ t }`);
+				assert.ok(t.intersect(TYPE.NOTHING).isBottomType, `${ t }`);
 			});
 		});
 		it('1-6 | `T  & anything == T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.intersect(TYPE.UNKNOWN).equals(t), `${ t }`);
+				assert.ok(t.intersect(TYPE.ANYTHING).equals(t), `${ t }`);
 			});
 		});
 		it('2-1 | `A  & B == B  & A`', () => {
@@ -267,12 +267,12 @@ describe('Type', () => {
 	describe('#union', () => {
 		it('1-7 | `T \| nothing  == T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.union(TYPE.NEVER).equals(t), `${ t }`);
+				assert.ok(t.union(TYPE.NOTHING).equals(t), `${ t }`);
 			});
 		});
 		it('1-8 | `T \| anything == anything`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.union(TYPE.UNKNOWN).isTopType, `${ t }`);
+				assert.ok(t.union(TYPE.ANYTHING).isTopType, `${ t }`);
 			});
 		});
 		it('2-2 | `A \| B == B \| A`', () => {
@@ -378,24 +378,24 @@ describe('Type', () => {
 	describe('#isSubtypeOf', () => {
 		it('1-1 | `nothing  <: T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(TYPE.NEVER.isSubtypeOf(t), `${ t }`);
+				assert.ok(TYPE.NOTHING.isSubtypeOf(t), `${ t }`);
 			});
 		});
 		it('1-2 | `T        <: anything`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.isSubtypeOf(TYPE.UNKNOWN), `${ t }`);
+				assert.ok(t.isSubtypeOf(TYPE.ANYTHING), `${ t }`);
 			});
 		});
 		it('1-3 | `T        <: nothing  <->  T == nothing`', () => {
 			builtin_types.forEach((t) => {
-				if (t.isSubtypeOf(TYPE.NEVER)) {
+				if (t.isSubtypeOf(TYPE.NOTHING)) {
 					assert.ok(t.isBottomType, `${ t }`);
 				}
 			});
 		});
 		it('1-4 | `anything <: T        <->  T == anything`', () => {
 			builtin_types.forEach((t) => {
-				if (TYPE.UNKNOWN.isSubtypeOf(t)) {
+				if (TYPE.ANYTHING.isSubtypeOf(t)) {
 					assert.ok(t.isTopType, `${ t }`);
 				}
 			});
@@ -555,8 +555,8 @@ describe('Type', () => {
 					TYPE.BOOL,
 					TYPE.STR,
 				]);
-				assert.ok(tuple.isSubtypeOf(TYPE.UNKNOWN), '[int, bool, str] <: anything;');
-				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(tuple), 'anything !<: [int, bool, str]');
+				assert.ok(tuple.isSubtypeOf(TYPE.ANYTHING), '[int, bool, str] <: anything;');
+				assert.ok(!TYPE.ANYTHING.isSubtypeOf(tuple), 'anything !<: [int, bool, str]');
 			});
 			it('is neither a subtype nor a supertype of `Object`.', () => {
 				const tuple: TYPE.Tuple = TYPE.Tuple.fromTypes([
@@ -575,7 +575,7 @@ describe('Type', () => {
 				]).isSubtypeOf(TYPE.Tuple.fromTypes([
 					TYPE.INT.union(TYPE.FLOAT),
 					TYPE.BOOL.union(TYPE.NULL),
-					TYPE.UNKNOWN,
+					TYPE.ANYTHING,
 				])), '[int, bool, str] <: [int | float, bool?, anything];');
 				assert.ok(!TYPE.Tuple.fromTypes([
 					TYPE.INT,
@@ -648,8 +648,8 @@ describe('Type', () => {
 					[0x101n, TYPE.BOOL],
 					[0x102n, TYPE.STR],
 				]));
-				assert.ok(record.isSubtypeOf(TYPE.UNKNOWN), '[x: int, y: bool, z: str] <: anything;');
-				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(record), 'anything !<: [x: int, y: bool, z: str]');
+				assert.ok(record.isSubtypeOf(TYPE.ANYTHING), '[x: int, y: bool, z: str] <: anything;');
+				assert.ok(!TYPE.ANYTHING.isSubtypeOf(record), 'anything !<: [x: int, y: bool, z: str]');
 			});
 			it('is neither a subtype nor a supertype of `Object`.', () => {
 				const record: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -667,7 +667,7 @@ describe('Type', () => {
 					[0x102n, TYPE.STR],
 				])).isSubtypeOf(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
-					[0x102n, TYPE.UNKNOWN],
+					[0x102n, TYPE.ANYTHING],
 					[0x100n, TYPE.INT.union(TYPE.FLOAT)],
 				]))), '[x: int, y: bool, z: str] <: [y: bool!, z: anything, x: int | float];');
 				assert.ok(!TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([

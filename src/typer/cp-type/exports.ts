@@ -12,15 +12,15 @@ import {Object as TypeObject} from './Object.ts';
 
 
 
-/** The Bottom Type, containing no values. */ export const NEVER:   Never            = new Never();
-/** The Top Type, containing all values.   */ export const UNKNOWN: Unknown          = new Unknown();
-/** The Null Type.                         */ export const NULL:    Unit<VALUE.Null> = VALUE.NULL.toType();
-/** The Boolean Type.                      */ export const BOOL:    TypeBoolean      = new TypeBoolean();
-/** The Symbol Type.                       */ export const SYM:     TypeSymbol       = new TypeSymbol();
-/** The Integer Type.                      */ export const INT:     Integer          = new Integer();
-/** The Float Type.                        */ export const FLOAT:   Float            = new Float();
-/** The String Type.                       */ export const STR:     TypeString       = new TypeString();
-/** The Object Type.                       */ export const OBJ:     TypeObject       = new TypeObject();
+/** The Bottom Type, containing no values. */ export const NOTHING:  Never            = new Never();
+/** The Top Type, containing all values.   */ export const ANYTHING: Unknown          = new Unknown();
+/** The Null Type.                         */ export const NULL:     Unit<VALUE.Null> = VALUE.NULL.toType();
+/** The Boolean Type.                      */ export const BOOL:     TypeBoolean      = new TypeBoolean();
+/** The Symbol Type.                       */ export const SYM:      TypeSymbol       = new TypeSymbol();
+/** The Integer Type.                      */ export const INT:      Integer          = new Integer();
+/** The Float Type.                        */ export const FLOAT:    Float            = new Float();
+/** The String Type.                       */ export const STR:      TypeString       = new TypeString();
+/** The Object Type.                       */ export const OBJ:      TypeObject       = new TypeObject();
 
 
 

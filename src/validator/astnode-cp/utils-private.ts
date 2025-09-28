@@ -124,7 +124,7 @@ export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Inte
 
 export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): EntryType {
 	if (base_type.isTopType && access.kind === Operator.DOT_MAY) {
-		return {type: TYPE.UNKNOWN, optional: true};
+		return {type: TYPE.ANYTHING, optional: true};
 	}
 	if (base_type instanceof TYPE.Combinable) {
 		const entry_infos: readonly (EntryType | TypeErrorNoEntry | TypeErrorNotNarrow)[] = base_type.operands.map((comp) => {

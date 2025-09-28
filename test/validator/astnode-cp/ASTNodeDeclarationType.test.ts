@@ -23,7 +23,7 @@ describe('ASTNodeDeclarationType', () => {
 			assert.ok(goal.validator.hasSymbol(0x100n));
 			const info: SymbolSchema | null = goal.validator.getSymbolInfo(0x100n);
 			assert_instanceof(info, SymbolSchemaType);
-			assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
+			assert.strictEqual(info.typevalue, TYPE.ANYTHING);
 		});
 
 		it('for blank identifiers, does not add to symbol table.', () => {

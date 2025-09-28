@@ -118,13 +118,13 @@ describe('ASTNodeType', () => {
 				assertEqualTypes(extract_tokens(`
 					nothing  bool  sym  int  float  str  anything
 				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
-					TYPE.NEVER,
+					TYPE.NOTHING,
 					TYPE.BOOL,
 					TYPE.SYM,
 					TYPE.INT,
 					TYPE.FLOAT,
 					TYPE.STR,
-					TYPE.UNKNOWN,
+					TYPE.ANYTHING,
 				]);
 			});
 		});

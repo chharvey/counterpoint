@@ -8,7 +8,7 @@ import {
 import type * as VALUE from '../cp-value/index.ts';
 import {
 	Union,
-	NEVER,
+	NOTHING,
 } from './index.ts';
 import {
 	type ReadonlyArrayOfAtLeast2,
@@ -44,7 +44,7 @@ export class Intersection extends Combinable {
 			? Intersection.all(...arg0)
 			: arg0
 				? [arg0, ...args].reduce((a, b) => a.intersect(b))
-				: NEVER;
+				: NOTHING;
 	}
 
 

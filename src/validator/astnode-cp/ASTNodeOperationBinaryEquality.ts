@@ -64,7 +64,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		if (t0.isBottomType || t1.isBottomType) {
-			return TYPE.NEVER;
+			return TYPE.NOTHING;
 		}
 		/*
 		 * Identity:

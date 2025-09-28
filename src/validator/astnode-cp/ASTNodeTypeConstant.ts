@@ -32,7 +32,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 
 	private static keywordType(source: string): TYPE.Type {
 		return new Map<string, TYPE.Type>([
-			[Keyword.NOTHING,  TYPE.NEVER],
+			[Keyword.NOTHING,  TYPE.NOTHING],
 			[Keyword.NULL,     TYPE.NULL],
 			[Keyword.BOOL,     TYPE.BOOL],
 			[Keyword.SYM,      TYPE.SYM],
@@ -41,7 +41,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			[Keyword.INT,      TYPE.INT],
 			[Keyword.FLOAT,    TYPE.FLOAT],
 			[Keyword.STR,      TYPE.STR],
-			[Keyword.ANYTHING, TYPE.UNKNOWN],
+			[Keyword.ANYTHING, TYPE.ANYTHING],
 		]).get(source) ?? assert.fail(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`);
 	}
 

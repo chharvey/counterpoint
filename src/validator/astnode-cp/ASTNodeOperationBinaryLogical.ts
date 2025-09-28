@@ -74,7 +74,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
 		if (t0.isBottomType) {
-			return TYPE.NEVER;
+			return TYPE.NOTHING;
 		}
 		switch (this.operator) {
 			case Operator.AND: {
