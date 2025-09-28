@@ -250,7 +250,7 @@ The same is true conversely.
 *(NOTE: This may change in future versions.)*
 ```
 type MyFirstType = float;
-let my_first_var: unknown = MyFirstType; %> ReferenceError [1]
+let my_first_var: anything = MyFirstType; %> ReferenceError [1]
 
 let my_next_var: float = 4.2;
 type MyNextType = my_next_var | int;  %> ReferenceError [2]

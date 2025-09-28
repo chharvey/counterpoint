@@ -47,7 +47,7 @@ export class Difference extends TypeOperation {
 	 * We can assert that this is never top because
 	 * the only case in which it could be top is
 	 * if the left is top and the right is bottom,
-	 * which is impossible because the algorithm would have already produced the `unknown` type.
+	 * which is impossible because the algorithm would have already produced the `anything` type.
 	 */
 
 	public override get isReference(): boolean {

@@ -50,7 +50,7 @@ KeywordType :::=
 	| "int"
 	| "float"
 	| "str"
-	| "unknown"
+	| "anything"
 ;
 
 KeywordValue :::=

@@ -53,11 +53,11 @@ export function intersectionRules(
 ): typeof method {
 	assert_context_name(context, 'intersect');
 	return function (this: Type, t) {
-		/* 1-5 | `T  & nothing == nothing` */
+		/* 1-5 | `T  & nothing  == nothing` */
 		if (this.isBottomType || t.isBottomType) {
 			return NEVER;
 		}
-		/* 1-6 | `T  & unknown == T` */
+		/* 1-6 | `T  & anything == T` */
 		if (this.isTopType) {
 			return t;
 		}
@@ -89,14 +89,14 @@ export function unionRules(
 ): typeof method {
 	assert_context_name(context, 'union');
 	return function (this: Type, t) {
-		/* 1-7 | `T \| nothing == T` */
+		/* 1-7 | `T \| nothing  == T` */
 		if (this.isBottomType) {
 			return t;
 		}
 		if (t.isBottomType) {
 			return this;
 		}
-		/* 1-8 | `T \| unknown == unknown` */
+		/* 1-8 | `T \| anything == anything` */
 		if (this.isTopType || t.isTopType) {
 			return UNKNOWN;
 		}
@@ -161,19 +161,19 @@ export function subtypeRules(
 		if (this === t) {
 			return true;
 		}
-		/* 1-1 | `nothing <: T` */
+		/* 1-1 | `nothing  <: T` */
 		if (this.isBottomType) {
 			return true;
 		}
-		/* 1-3 | `T       <: nothing  <->  T == nothing` */
+		/* 1-3 | `T        <: nothing  <->  T == nothing` */
 		if (t.isBottomType) {
 			return this.isBottomType;
 		}
-		/* 1-4 | `unknown <: T        <->  T == unknown` */
+		/* 1-4 | `anything <: T        <->  T == anything` */
 		if (this.isTopType) {
 			return t.isTopType;
 		}
-		/* 1-2 | `T       <: unknown` */
+		/* 1-2 | `T        <: anything` */
 		if (t.isTopType) {
 			return true;
 		}
@@ -278,7 +278,7 @@ export abstract class Type {
 
 	/**
 	 * Return whether this type has all values assignable to it,
-	 * i.e., it is equal to the type `unknown`.
+	 * i.e., it is equal to the type `anything`.
 	 * Used internally for special cases of computations.
 	 * @return `true if this type is the top type
 	 */

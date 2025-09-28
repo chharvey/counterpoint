@@ -179,12 +179,12 @@ describe('ASTNodeAccess', () => {
 						TYPE.STR,
 					]);
 				});
-				it('throws when base object is of type unknown.', () => {
+				it('throws when base object is of type `anything`.', () => {
 					testExprTypes(`
-						let var a:                    unknown = [   10,    20];
-						let var b: int[2]           | unknown = [   10,    20];
-						let var c:                    unknown = [x= 10, y= 20];
-						let var d: [x: int, y: int] | unknown = [x= 10, y= 20];
+						let var a:                    anything = [   10,    20];
+						let var b: int[2]           | anything = [   10,    20];
+						let var c:                    anything = [x= 10, y= 20];
+						let var d: [x: int, y: int] | anything = [x= 10, y= 20];
 
 						a.0;
 						b.1;
@@ -607,12 +607,12 @@ describe('ASTNodeAccess', () => {
 						...repeat(TYPE.STR.union(TYPE.NULL), 2),
 					]);
 				});
-				it('returns unknown when base object is of type unknown.', () => {
+				it('returns `anything` when base object is of type `anything`.', () => {
 					testExprTypes(`
-						let var a:                    unknown = [   10,    20];
-						let var b: int[2]           | unknown = [   10,    20];
-						let var c:                    unknown = [x= 10, y= 20];
-						let var d: [x: int, y: int] | unknown = [x= 10, y= 20];
+						let var a:                    anything = [   10,    20];
+						let var b: int[2]           | anything = [   10,    20];
+						let var c:                    anything = [x= 10, y= 20];
+						let var d: [x: int, y: int] | anything = [x= 10, y= 20];
 
 						a?.0;
 						b?.1;

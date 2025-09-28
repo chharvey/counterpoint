@@ -285,7 +285,7 @@ module.exports = grammar({
 			'int',
 			'float',
 			'str',
-			'unknown',
+			'anything',
 		)),
 		keyword_value: _$ => token(choice(
 			'null',

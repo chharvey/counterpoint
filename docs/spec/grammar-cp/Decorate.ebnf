@@ -689,13 +689,13 @@ AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> RES
 
 
 
-KeywordType(KEYWORD_TYPE :::= "nothing") -> Type := Nothing;
-KeywordType(KEYWORD_TYPE :::= "bool")    -> Type := Boolean;
-KeywordType(KEYWORD_TYPE :::= "sym")     -> Type := Symbol;
-KeywordType(KEYWORD_TYPE :::= "int")     -> Type := Integer;
-KeywordType(KEYWORD_TYPE :::= "float")   -> Type := Float;
-KeywordType(KEYWORD_TYPE :::= "str")     -> Type := String;
-KeywordType(KEYWORD_TYPE :::= "unknown") -> Type := Unknown;
+KeywordType(KEYWORD_TYPE :::= "nothing")  -> Type := Nothing;
+KeywordType(KEYWORD_TYPE :::= "bool")     -> Type := Boolean;
+KeywordType(KEYWORD_TYPE :::= "sym")      -> Type := Symbol;
+KeywordType(KEYWORD_TYPE :::= "int")      -> Type := Integer;
+KeywordType(KEYWORD_TYPE :::= "float")    -> Type := Float;
+KeywordType(KEYWORD_TYPE :::= "str")      -> Type := String;
+KeywordType(KEYWORD_TYPE :::= "anything") -> Type := Anything;
 
 
 

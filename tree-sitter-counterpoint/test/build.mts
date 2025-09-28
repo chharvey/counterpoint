@@ -65,7 +65,7 @@ function buildTest(title: string, source: string, expected: string): string {
 				type T = int;
 				type T = float;
 				type T = str;
-				type T = unknown;
+				type T = anything;
 			`,
 			sourceTypes(
 				s('keyword_type'),

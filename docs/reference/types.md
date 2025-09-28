@@ -39,11 +39,11 @@ Type `nothing` is most commonly a result of a type operation that produces the B
 for example, the intersection of two disjoint types.
 
 
-### `unknown`
-Type  `unknown` is at the top of the type hierarchy —
+### `anything`
+Type `anything` is at the top of the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
 
-Type `unknown` is used to describe a value or expression about which nothing is known.
+Type `anything` is used to describe a value or expression about which nothing is known.
 Therefore, the compiler will not assume it has any properties or is valid in some operations.
 
 ### `null`

@@ -80,7 +80,7 @@ export class Intersection extends Combinable {
 	 * We can assert that this is never top because
 	 * the only case in which it could be top is
 	 * if both the left and the right are top,
-	 * which is impossible because the algorithm would have already produced the `unknown` type.
+	 * which is impossible because the algorithm would have already produced the `anything` type.
 	 */
 
 	public override get isReference(): boolean {

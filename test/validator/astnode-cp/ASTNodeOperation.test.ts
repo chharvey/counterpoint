@@ -791,10 +791,10 @@ describe('ASTNodeOperation', () => {
 				});
 				it('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let a: unknown = [];
-						let b: unknown = [42];
-						let c: unknown = [x= 42];
-						let d: Object  = {41 -> 42};
+						let a: anything = [];
+						let b: anything = [42];
+						let c: anything = [x= 42];
+						let d: Object   = {41 -> 42};
 						a !== [];
 						b !== [42];
 						c !== [x= 42];
@@ -946,20 +946,20 @@ describe('ASTNodeOperation', () => {
 			});
 			it('compound types.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: unknown = [];
-					let b: unknown = [42];
-					let c: unknown = [x= 42];
-					let d: Object  = List.<int>([]);
-					let e: Object  = List.<int>([42]);
-					let f: Object  = Dict.<int>([x= 42]);
-					let g: Object  = {};
-					let h: Object  = {42};
-					let i: Object  = {41 -> 42};
+					let a: anything = [];
+					let b: anything = [42];
+					let c: anything = [x= 42];
+					let d: Object   = List.<int>([]);
+					let e: Object   = List.<int>([42]);
+					let f: Object   = Dict.<int>([x= 42]);
+					let g: Object   = {};
+					let h: Object   = {42};
+					let i: Object   = {41 -> 42};
 
-					let bb: unknown = [[42]];
-					let cc: unknown = [x= [42]];
-					let hh: Object  = {[42]};
-					let ii: Object  = {[41] -> [42]};
+					let bb: anything = [[42]];
+					let cc: anything = [x= [42]];
+					let hh: Object   = {[42]};
+					let ii: Object   = {[41] -> [42]};
 
 					a === [];
 					b === [42];
@@ -1404,11 +1404,11 @@ describe('ASTNodeOperation', () => {
 
 			it('returns a special case of `(if)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: unknown = 42;
-					let b: unknown = 4.2;
-					let c: unknown = null;
-					let d: unknown = false;
-					let e: unknown = true;
+					let a: anything = 42;
+					let b: anything = 4.2;
+					let c: anything = null;
+					let d: anything = false;
+					let e: anything = true;
 
 					a && 420;
 					b || -420;
@@ -1460,10 +1460,10 @@ describe('ASTNodeOperation', () => {
 
 			it('counts internal variables correctly.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: unknown = 1;
-					let b: unknown = 2;
-					let c: unknown = 3;
-					let d: unknown = 4;
+					let a: anything = 1;
+					let b: anything = 2;
+					let c: anything = 3;
+					let d: anything = 4;
 
 					a && b || c && d;
 					(a || b) && (c || d);

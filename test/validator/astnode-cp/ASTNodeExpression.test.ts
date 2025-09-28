@@ -1021,7 +1021,7 @@ describe('ASTNodeExpression', () => {
 		describe('#build', () => {
 			it('returns the build of the operand.', () => {
 				samples.forEach((expr) => assertEqualBins(
-					AST.ASTNodeClaim     .fromSource(`${ expr } as <unknown>;`) .build(),
+					AST.ASTNodeClaim     .fromSource(`${ expr } as <anything>;`) .build(),
 					AST.ASTNodeExpression.fromSource(`${ expr };`).build(),
 				));
 			});

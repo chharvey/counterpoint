@@ -198,12 +198,12 @@ describe('Type', () => {
 
 
 	describe('#intersect', () => {
-		it('1-5 | `T  & nothing == nothing`', () => {
+		it('1-5 | `T  & nothing  == nothing`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.intersect(TYPE.NEVER).isBottomType, `${ t }`);
 			});
 		});
-		it('1-6 | `T  & unknown == T`', () => {
+		it('1-6 | `T  & anything == T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.intersect(TYPE.UNKNOWN).equals(t), `${ t }`);
 			});
@@ -265,12 +265,12 @@ describe('Type', () => {
 
 
 	describe('#union', () => {
-		it('1-7 | `T \| nothing == T`', () => {
+		it('1-7 | `T \| nothing  == T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.union(TYPE.NEVER).equals(t), `${ t }`);
 			});
 		});
-		it('1-8 | `T \| unknown == unknown`', () => {
+		it('1-8 | `T \| anything == anything`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.union(TYPE.UNKNOWN).isTopType, `${ t }`);
 			});
@@ -376,24 +376,24 @@ describe('Type', () => {
 
 
 	describe('#isSubtypeOf', () => {
-		it('1-1 | `nothing <: T`', () => {
+		it('1-1 | `nothing  <: T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(TYPE.NEVER.isSubtypeOf(t), `${ t }`);
 			});
 		});
-		it('1-2 | `T       <: unknown`', () => {
+		it('1-2 | `T        <: anything`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.isSubtypeOf(TYPE.UNKNOWN), `${ t }`);
 			});
 		});
-		it('1-3 | `T       <: nothing  <->  T == nothing`', () => {
+		it('1-3 | `T        <: nothing  <->  T == nothing`', () => {
 			builtin_types.forEach((t) => {
 				if (t.isSubtypeOf(TYPE.NEVER)) {
 					assert.ok(t.isBottomType, `${ t }`);
 				}
 			});
 		});
-		it('1-4 | `unknown <: T        <->  T == unknown`', () => {
+		it('1-4 | `anything <: T        <->  T == anything`', () => {
 			builtin_types.forEach((t) => {
 				if (TYPE.UNKNOWN.isSubtypeOf(t)) {
 					assert.ok(t.isTopType, `${ t }`);
@@ -549,14 +549,14 @@ describe('Type', () => {
 		});
 
 		describe('Tuple', () => {
-			it('is a subtype but not a supertype of `unknown`.', () => {
+			it('is a subtype but not a supertype of `anything`.', () => {
 				const tuple: TYPE.Tuple = TYPE.Tuple.fromTypes([
 					TYPE.INT,
 					TYPE.BOOL,
 					TYPE.STR,
 				]);
-				assert.ok(tuple.isSubtypeOf(TYPE.UNKNOWN), '[int, bool, str] <: unknown;');
-				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(tuple), 'unknown !<: [int, bool, str]');
+				assert.ok(tuple.isSubtypeOf(TYPE.UNKNOWN), '[int, bool, str] <: anything;');
+				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(tuple), 'anything !<: [int, bool, str]');
 			});
 			it('is neither a subtype nor a supertype of `Object`.', () => {
 				const tuple: TYPE.Tuple = TYPE.Tuple.fromTypes([
@@ -576,7 +576,7 @@ describe('Type', () => {
 					TYPE.INT.union(TYPE.FLOAT),
 					TYPE.BOOL.union(TYPE.NULL),
 					TYPE.UNKNOWN,
-				])), '[int, bool, str] <: [int | float, bool?, unknown];');
+				])), '[int, bool, str] <: [int | float, bool?, anything];');
 				assert.ok(!TYPE.Tuple.fromTypes([
 					TYPE.INT,
 					TYPE.BOOL,
@@ -642,14 +642,14 @@ describe('Type', () => {
 		});
 
 		describe('Record', () => {
-			it('is a subtype but not a supertype of `unknown`.', () => {
+			it('is a subtype but not a supertype of `anything`.', () => {
 				const record: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT],
 					[0x101n, TYPE.BOOL],
 					[0x102n, TYPE.STR],
 				]));
-				assert.ok(record.isSubtypeOf(TYPE.UNKNOWN), '[x: int, y: bool, z: str] <: unknown;');
-				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(record), 'unknown !<: [x: int, y: bool, z: str]');
+				assert.ok(record.isSubtypeOf(TYPE.UNKNOWN), '[x: int, y: bool, z: str] <: anything;');
+				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(record), 'anything !<: [x: int, y: bool, z: str]');
 			});
 			it('is neither a subtype nor a supertype of `Object`.', () => {
 				const record: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -669,7 +669,7 @@ describe('Type', () => {
 					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
 					[0x102n, TYPE.UNKNOWN],
 					[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] <: [y: bool!, z: unknown, x: int | float];');
+				]))), '[x: int, y: bool, z: str] <: [y: bool!, z: anything, x: int | float];');
 				assert.ok(!TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT],
 					[0x101n, TYPE.BOOL],

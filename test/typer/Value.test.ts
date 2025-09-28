@@ -87,8 +87,8 @@ describe('Value', () => {
 			});
 			it.skip('Dicts may contain circular references.', () => {
 				`
-					let a: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>([x= null]);
-					let b: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>([x= null]);
+					let a: mut Dict.<Dict.<anything>> = Dict.<Dict.<anything>>([x= null]);
+					let b: mut Dict.<Dict.<anything>> = Dict.<Dict.<anything>>([x= null]);
 					a.set.(.y, b);
 					b.set.(.y, a);
 					set a.[.y] = b;

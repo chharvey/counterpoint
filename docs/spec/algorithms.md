@@ -445,7 +445,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 	2. *Let* `accessor` be `access.children.1`.
 	3. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true` *and* `access.kind` is `MAYBE`:
 		1. *Return:* a new EntryTypeSchema [
-				type=     `Unknown`,
+				type=     `Anything`,
 				optional= `true`,
 			].
 	4. *If* `base_type` is the intersection or union of some types `a` and `b`:

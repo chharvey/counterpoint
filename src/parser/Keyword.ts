@@ -7,7 +7,7 @@ export enum Keyword {
 	INT     = 'int',
 	FLOAT   = 'float',
 	STR     = 'str',
-	UNKNOWN = 'unknown',
+	UNKNOWN = 'anything',
 
 	// value literal
 	NULL  = 'null',

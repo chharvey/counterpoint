@@ -116,7 +116,7 @@ describe('ASTNodeType', () => {
 			});
 			it('computes the value of keyword type.', () => {
 				assertEqualTypes(extract_tokens(`
-					nothing  bool  sym  int  float  str  unknown
+					nothing  bool  sym  int  float  str  anything
 				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NEVER,
 					TYPE.BOOL,

@@ -1,3 +1,4 @@
+import {Keyword} from '../../parser/index.ts';
 import {
 	strictEqual,
 	memoizeBinOp,
@@ -36,7 +37,7 @@ export class Unknown extends ReferenceType {
 	}
 
 	public override toString(): string {
-		return 'unknown';
+		return Keyword.UNKNOWN;
 	}
 
 	public override includes(_v: VALUE.Value): boolean {
