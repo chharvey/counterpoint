@@ -177,7 +177,7 @@ describe('Value', () => {
 			const builder = new Builder();
 			const mod: binaryen.Module = builder.module;
 			return assertEqualBins(
-				[VALUE.SYM_NEVER.build(builder),             new VALUE.Symbol(0x100n, 'hello').build(builder)],
+				[VALUE.SYM_NOTHING.build(builder),           new VALUE.Symbol(0x100n, 'hello').build(builder)],
 				[new BinVect(mod, mod.i32.const(0x80)).vect, new BinVect(mod, mod.i32.const(0x100)).vect],
 			);
 		});

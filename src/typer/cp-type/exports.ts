@@ -30,8 +30,8 @@ export const FALSE: Unit<VALUE.Boolean> = VALUE.FALSE.toType();
 /** A Unit Type containing only the Counterpoint Language Value `true`. */
 export const TRUE: Unit<VALUE.Boolean> = VALUE.TRUE.toType();
 
-/** A Unit Type containing only the Counterpoint Language Value `@never`. */
-export const SYM_NEVER: Unit<VALUE.Symbol> = VALUE.SYM_NEVER.toType();
+/** A Unit Type containing only the Counterpoint Language Value `@nothing`. */
+export const SYM_NOTHING: Unit<VALUE.Symbol> = VALUE.SYM_NOTHING.toType();
 
 
 
@@ -49,5 +49,5 @@ export const TYPE_CONSTANTS = [
 	OBJ,
 	FALSE,
 	TRUE,
-	SYM_NEVER,
+	SYM_NOTHING,
 ] as const;

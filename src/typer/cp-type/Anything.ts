@@ -19,7 +19,7 @@ export class Anything extends ReferenceType {
 			VALUE.NULL,
 			VALUE.FALSE,
 			VALUE.TRUE,
-			VALUE.SYM_NEVER,
+			VALUE.SYM_NOTHING,
 			VALUE.INT_0,
 			VALUE.INT_1,
 			VALUE.FLOAT_0,

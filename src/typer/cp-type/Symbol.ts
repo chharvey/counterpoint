@@ -10,7 +10,7 @@ import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
  */
 class TypeSymbol extends UnenumeratedPrimitiveType {
 	public constructor() {
-		super(false, new Set([VALUE.SYM_NEVER]));
+		super(false, new Set([VALUE.SYM_NOTHING]));
 	}
 
 	public override toString(): string {
