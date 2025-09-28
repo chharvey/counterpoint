@@ -11,7 +11,7 @@ import {String as ValueString} from './String.ts';
 /** The Counterpoint Language Null    Value `null`.   */ export const NULL:      Null         = new Null();
 /** The Counterpoint Language Boolean Value `false`.  */ export const FALSE:     ValueBoolean = new ValueBoolean();
 /** The Counterpoint Language Boolean Value `true`.   */ export const TRUE:      ValueBoolean = new ValueBoolean(true);
-/** The Counterpoint Language Symbol  Value `@never`. */ export const SYM_NEVER: ValueSymbol  = new ValueSymbol(0x80n, Keyword.NEVER);
+/** The Counterpoint Language Symbol  Value `@never`. */ export const SYM_NEVER: ValueSymbol  = new ValueSymbol(0x80n, Keyword.NOTHING);
 /** The Counterpoint Language Integer Value `0`.      */ export const INT_0:     Integer      = new Integer();
 /** The Counterpoint Language Integer Value `1`.      */ export const INT_1:     Integer      = new Integer(1n);
 /** The Counterpoint Language Float   Value `0.0`.    */ export const FLOAT_0:   Float        = new Float();

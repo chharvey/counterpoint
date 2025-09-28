@@ -37,7 +37,7 @@ export class Unknown extends ReferenceType {
 	}
 
 	public override toString(): string {
-		return Keyword.UNKNOWN;
+		return Keyword.ANYTHING;
 	}
 
 	public override includes(_v: VALUE.Value): boolean {

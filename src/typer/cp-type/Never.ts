@@ -23,7 +23,7 @@ export class Never extends ValueType {
 	}
 
 	public override toString(): string {
-		return Keyword.NEVER;
+		return Keyword.NOTHING;
 	}
 
 	public override includes(_v: VALUE.Value): boolean {
