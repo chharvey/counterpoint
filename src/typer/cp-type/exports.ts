@@ -12,15 +12,15 @@ import {Object as TypeObject} from './Object.ts';
 
 
 
-/** The Bottom Type, containing no values. */ export const NOTHING:  Nothing          = new Nothing();
-/** The Top Type, containing all values.   */ export const ANYTHING: Anything         = new Anything();
-/** The Null Type.                         */ export const NULL:     Unit<VALUE.Null> = VALUE.NULL.toType();
-/** The Boolean Type.                      */ export const BOOL:     TypeBoolean      = new TypeBoolean();
-/** The Symbol Type.                       */ export const SYM:      TypeSymbol       = new TypeSymbol();
-/** The Integer Type.                      */ export const INT:      Integer          = new Integer();
-/** The Float Type.                        */ export const FLOAT:    Float            = new Float();
-/** The String Type.                       */ export const STR:      TypeString       = new TypeString();
-/** The Object Type.                       */ export const OBJ:      TypeObject       = new TypeObject();
+/** The Counterpoint Language Nothing  Type `nothing`.  */ export const NOTHING:  Nothing          = new Nothing();
+/** The Counterpoint Language Anything Type `anything`. */ export const ANYTHING: Anything         = new Anything();
+/** The Counterpoint Language Null     Type `null`.     */ export const NULL:     Unit<VALUE.Null> = VALUE.NULL.toType();
+/** The Counterpoint Language Boolean  Type `bool`.     */ export const BOOL:     TypeBoolean      = new TypeBoolean();
+/** The Counterpoint Language Symbol   Type `sym`.      */ export const SYM:      TypeSymbol       = new TypeSymbol();
+/** The Counterpoint Language Integer  Type `int`.      */ export const INT:      Integer          = new Integer();
+/** The Counterpoint Language Float    Type `float`.    */ export const FLOAT:    Float            = new Float();
+/** The Counterpoint Language String   Type `str`.      */ export const STR:      TypeString       = new TypeString();
+/** The Counterpoint Language Object   Type `Object`.   */ export const OBJ:      TypeObject       = new TypeObject();
 
 
 
