@@ -23,7 +23,6 @@ import {
 } from '../../assert-helpers.ts';
 import {
 	CONFIG_FOLDING_OFF,
-	CONFIG_COERCION_OFF,
 	typeUnit,
 	buildConst,
 	singletonTuple,
@@ -992,17 +991,12 @@ describe('ASTNodeExpression', () => {
 					));
 					return assert.ok(assertion.call(null, claim.type()));
 				});
-				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <never>;').type(), TypeErrorNotAssignable);
 			});
 			it('throws when the operand type and claimed type do not overlap.', () => {
 				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <str>;')      .type(), TypeErrorNotAssignable);
 				assert.throws(() => AST.ASTNodeClaim.fromSource('"three" as <int>;').type(), TypeErrorNotAssignable);
-			});
-			it('with int coersion off, does not allow converting between int and float.', () => {
-				AST.ASTNodeClaim.fromSource('3 as <float>;').type(); // assert does not throw
-				AST.ASTNodeClaim.fromSource('3.0 as <int>;').type(); // assert does not throw
-				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <float>;', CONFIG_COERCION_OFF).type(), TypeErrorNotAssignable);
-				assert.throws(() => AST.ASTNodeClaim.fromSource('3.0 as <int>;', CONFIG_COERCION_OFF).type(), TypeErrorNotAssignable);
+				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <float>;')    .type(), TypeErrorNotAssignable);
+				assert.throws(() => AST.ASTNodeClaim.fromSource('3.0 as <int>;')    .type(), TypeErrorNotAssignable);
 			});
 		});
 
