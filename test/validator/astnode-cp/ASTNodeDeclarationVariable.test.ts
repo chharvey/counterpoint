@@ -398,9 +398,9 @@ describe('ASTNodeDeclarationVariable', () => {
 	describe('#build', () => {
 		it('with constant folding on.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let a: int   = 42;      % fixed, foldable: \`(nop)\`
-				let b: float = 4.2 * a; % fixed, foldable: \`(nop)\`
-				let _: bool  = true;    % blank, foldable: \`(nop)\`
+				let a: int  = 42;     % fixed, foldable: \`(nop)\`
+				let b: int  = 42 * a; % fixed, foldable: \`(nop)\`
+				let _: bool = true;   % blank, foldable: \`(nop)\`
 
 				let var c: int = 42;     % unfixed, foldable: \`(local.set)\`
 				let d:     int = c + 10; % fixed, unfoldable: \`(local.set)\`

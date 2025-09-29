@@ -19,9 +19,8 @@ import {
 	type ValidOperatorComparative,
 } from '../Operator.ts';
 import {
-	bothNumeric,
+	bothInts,
 	bothFloats,
-	neitherFloats,
 } from './utils-private.ts';
 import {
 	buildDeco,
@@ -61,13 +60,12 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
 	}
 
-	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
 		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NEVER;
 		}
-		assert.ok(bothNumeric(t0, t1), new TypeErrorInvalidOperation(this));
 		return (
-			int_coercion || bothFloats(t0, t1) || neitherFloats(t0, t1) ? TYPE.BOOL :
+			bothInts(t0, t1) || bothFloats(t0, t1) ? TYPE.BOOL :
 			assert.fail(new TypeErrorInvalidOperation(this))
 		);
 	}

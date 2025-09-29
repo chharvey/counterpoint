@@ -257,7 +257,7 @@ describe('ASTNodeExpression', () => {
 			it('with constant folding on, returns `({i32,f64}.const)` for fixed & foldable variables.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let x: int = 42;
-					let y: float = 4.2 * 10;
+					let y: float = 4.2 * 10.0;
 					x;
 					y;
 				`);
@@ -461,7 +461,7 @@ describe('ASTNodeExpression', () => {
 						{
 							"a" || "" -> 1,
 							21 + 21   -> 2.0,
-							3 * 1.0   -> "three",
+							3.0 * 1.0 -> "three",
 						};
 					`, config),
 				];
@@ -522,7 +522,7 @@ describe('ASTNodeExpression', () => {
 							{
 								"a" || "" -> 1,
 								21 + 21   -> 2.0,
-								3 * 1.0   -> "three",
+								3.0 * 1.0 -> "three",
 							};
 						`),
 					].map((c) => c.fold()),
@@ -551,7 +551,7 @@ describe('ASTNodeExpression', () => {
 					{
 						"a" || "" -> 1,
 						21 + 21   -> 2.0,
-						3 * 1.0   -> z,
+						3.0 * 1.0 -> z,
 					};
 				`);
 				goal.varCheck();

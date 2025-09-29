@@ -46,7 +46,7 @@ export class ASTNodeOperationBinaryCast extends ASTNodeOperationBinary {
 		throw new Error('ASTNodeOperationBinaryCast#build not yet supported.');
 	}
 
-	protected override type_do(_t0: TYPE.Type, _t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
+	protected override type_do(_t0: TYPE.Type, _t1: TYPE.Type): TYPE.Type {
 		throw new Error('ASTNodeOperationBinaryCast#type not yet supported.');
 	}
 
