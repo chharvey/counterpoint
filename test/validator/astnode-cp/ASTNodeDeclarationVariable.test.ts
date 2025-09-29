@@ -14,10 +14,7 @@ import {
 	assertAssignable,
 	assertEqualBins,
 } from '../../assert-helpers.ts';
-import {
-	CONFIG_FOLDING_OFF,
-	CONFIG_COERCION_OFF,
-} from '../../helpers.ts';
+import {CONFIG_FOLDING_OFF} from '../../helpers.ts';
 
 
 
@@ -133,18 +130,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			`).typeCheck(), TypeErrorNotAssignable);
 		});
 
-		it('with int coersion on, allows assigning ints to floats.', () => {
-			const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
-				let x: float = 42;
-			`);
-			var_.varCheck();
-			return var_.typeCheck();
-		});
-
-		it('with int coersion off, throws when assigning int to float.', () => {
+		it('throws when assigning int to float.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
-			`, CONFIG_COERCION_OFF).typeCheck(), TypeErrorNotAssignable);
+			`).typeCheck(), TypeErrorNotAssignable);
 		});
 		it('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
