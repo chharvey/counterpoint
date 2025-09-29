@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	VALUE,
+	type VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
@@ -81,15 +81,13 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		if (!v1) {
 			return v1;
 		}
-		if (this.operator === Operator.DIV && v1 instanceof VALUE.Number && v1.eq0()) {
+		if (this.operator === Operator.DIV && (v1 as VALUE.Number).eq0()) {
 			throw new NanErrorDivZero(this.operand1);
 		}
-		return (v0 instanceof VALUE.Integer && v1 instanceof VALUE.Integer)
-			? this.foldNumeric(v0, v1)
-			: this.foldNumeric(
-				(v0 as VALUE.Number).toFloat(),
-				(v1 as VALUE.Number).toFloat(),
-			);
+		return this.foldNumeric(
+			(v0 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+			(v1 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+		);
 	}
 
 	private foldNumeric<T extends VALUE.Number<T>>(v0: T, v1: T): T {

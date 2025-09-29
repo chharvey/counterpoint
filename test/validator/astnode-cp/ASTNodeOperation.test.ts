@@ -21,7 +21,6 @@ import {
 } from '../../assert-helpers.ts';
 import {
 	CONFIG_FOLDING_OFF,
-	CONFIG_COERCION_OFF,
 	CONFIG_FOLDING_COERCION_OFF,
 	typeUnit,
 	buildConst,
@@ -629,12 +628,12 @@ describe('ASTNodeOperation', () => {
 			it('computes the value of a float operation of constants.', () => {
 				foldOperations(new Map<string, VALUE.Value>([
 					['3.0e1 - 201.0e-1;', new VALUE.Float(30 - 20.1)],
-					['3 * 2.1;',          new VALUE.Float(3 * 2.1)],
+					['3.0 * 2.1;',        new VALUE.Float(3.0 * 2.1)],
 				]));
 			});
 			it('throws when performing an operation that does not yield a valid number.', () => {
-				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('42 / 0;')    .fold(), NanErrorDivZero);
-				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('-4 ^ -0.5;') .fold(), NanErrorInvalid);
+				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('42 / 0;')     .fold(), NanErrorDivZero);
+				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('-4.0 ^ -0.5;').fold(), NanErrorInvalid);
 			});
 		});
 
@@ -846,7 +845,7 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#fold', () => {
-			it('simple types.', () => {
+			it('simple non-numeric types.', () => {
 				foldOperations(new Map([
 					['null === null;',                          VALUE.TRUE],
 					['null ==  null;',                          VALUE.TRUE],
@@ -872,24 +871,6 @@ describe('ASTNodeOperation', () => {
 					['@\'a\' ==  @\'\\u{61}\';',                VALUE.FALSE],
 					['@\'\\u{61}\' === @\'\\u{61}\';',          VALUE.TRUE],
 					['@\'\\u{61}\' ==  @\'\\u{61}\';',          VALUE.TRUE],
-					['3.0 === 3;',                              VALUE.FALSE],
-					['3.0 ==  3;',                              VALUE.TRUE],
-					['3 === 3.0;',                              VALUE.FALSE],
-					['3 ==  3.0;',                              VALUE.TRUE],
-					['0.0 === 0.0;',                            VALUE.TRUE],
-					['0.0 ==  0.0;',                            VALUE.TRUE],
-					['0.0 === -0.0;',                           VALUE.FALSE],
-					['0.0 ==  -0.0;',                           VALUE.TRUE],
-					['0 === -0;',                               VALUE.TRUE],
-					['0 ==  -0;',                               VALUE.TRUE],
-					['0.0 === 0;',                              VALUE.FALSE],
-					['0.0 ==  0;',                              VALUE.TRUE],
-					['0.0 === -0;',                             VALUE.FALSE],
-					['0.0 ==  -0;',                             VALUE.TRUE],
-					['-0.0 === 0;',                             VALUE.FALSE],
-					['-0.0 ==  0;',                             VALUE.TRUE],
-					['-0.0 === 0.0;',                           VALUE.FALSE],
-					['-0.0 ==  0.0;',                           VALUE.TRUE],
 					['"" == "";',                               VALUE.TRUE],
 					['"a" === "a";',                            VALUE.TRUE],
 					['"a" ==  "a";',                            VALUE.TRUE],
@@ -901,13 +882,29 @@ describe('ASTNodeOperation', () => {
 					['"hello\\u{20}world" !=  "hello20world";', VALUE.TRUE],
 				]));
 			});
-			it('with int coercion off, does not coerce ints into floats.', () => {
-				foldOperations(new Map<string, VALUE.Value>([
-					['7   === 7.0;', VALUE.FALSE],
-					['7   ==  7.0;', VALUE.FALSE],
-					['7.0 === 7;',   VALUE.FALSE],
-					['7.0 ==  7;',   VALUE.FALSE],
-				]), CONFIG_COERCION_OFF);
+			context('numeric types.', () => {
+				it('for identity (`===`), always returns `false` for distinct values.', () => {
+					foldOperations(new Map<string, VALUE.Value>([
+						['0   === -0;',   VALUE.TRUE],
+						['0.0 === -0.0;', VALUE.FALSE],
+						['0   === 0.0;',  VALUE.FALSE],
+						['0   === -0.0;', VALUE.FALSE],
+						['-0  === 0.0;',  VALUE.FALSE],
+						['-0  === -0.0;', VALUE.FALSE],
+						['3   === 3.0;',  VALUE.FALSE],
+					]));
+				});
+				it('for equality (`==`), only returns `true` for mathematically equal values (coerces ints to floats when mixed).', () => {
+					foldOperations(new Map<string, VALUE.Value>([
+						['0   == -0;',   VALUE.TRUE],
+						['0.0 == -0.0;', VALUE.TRUE],
+						['0   == 0.0;',  VALUE.TRUE],
+						['0   == -0.0;', VALUE.TRUE],
+						['-0  == 0.0;',  VALUE.TRUE],
+						['-0  == -0.0;', VALUE.TRUE],
+						['3   == 3.0;',  VALUE.TRUE],
+					]));
+				});
 			});
 			it('compound types.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`

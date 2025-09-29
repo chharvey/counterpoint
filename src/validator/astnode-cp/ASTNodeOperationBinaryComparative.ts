@@ -80,12 +80,10 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		if (!v1) {
 			return v1;
 		}
-		return (v0 instanceof VALUE.Integer && v1 instanceof VALUE.Integer)
-			? this.foldComparative(v0, v1)
-			: this.foldComparative(
-				(v0 as VALUE.Number).toFloat(),
-				(v1 as VALUE.Number).toFloat(),
-			);
+		return this.foldComparative(
+			(v0 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+			(v1 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+		);
 	}
 
 	private foldComparative<T extends VALUE.Number<T>>(v0: T, v1: T): VALUE.Boolean {
