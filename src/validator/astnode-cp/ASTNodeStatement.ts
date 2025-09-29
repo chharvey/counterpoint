@@ -1,10 +1,6 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
-	TYPE,
-	BinVect,
-} from '../../index.ts';
-import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
@@ -33,24 +29,6 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(src, config);
 		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
 		return goal.children[0];
-	}
-
-	protected static coerceAssignment(
-		mod:           binaryen.Module,
-		assignee_type: TYPE.Type,
-		assigned_type: TYPE.Type,
-		value:         binaryen.ExpressionRef,
-		int_coercion:  boolean = true,
-	): binaryen.ExpressionRef {
-		if ( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
-			int_coercion &&
-			assigned_type.isSubtypeOf(TYPE.INT) &&
-			TYPE.FLOAT.isSubtypeOf(assignee_type) &&
-			!TYPE.INT.isSubtypeOf(assignee_type)
-		) {
-			return new BinVect(mod, mod.f64.convert_u.i64(value)).vect;
-		}
-		return value;
 	}
 
 
