@@ -208,12 +208,6 @@ Floating-point values can be operated on just as integers can.
 There is no truncation for division, but dividing by zero still raises an error.
 The floating-point value `0.0` is *not identical* to the value `-0.0`.
 
-Float values are considered “contageous” in that they “infect” any integers they are operated with.
-For example, in the expression `1 + 2.3`, the integer `1` is *coerced* into the float `1.0`,
-giving the same result as `1.0 + 2.3`.
-If an expression contains *any* float value anywhere, then
-*all* the integers in the expression are coerced into floats.
-
 
 ### `str`
 Type `str` represents textual data.

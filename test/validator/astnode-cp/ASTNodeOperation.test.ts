@@ -21,7 +21,6 @@ import {
 } from '../../assert-helpers.ts';
 import {
 	CONFIG_FOLDING_OFF,
-	CONFIG_FOLDING_COERCION_OFF,
 	typeUnit,
 	buildConst,
 } from '../../helpers.ts';
@@ -50,7 +49,7 @@ function buildOperations(tests: ReadonlyMap<string, (builder: Builder) => binary
 	});
 }
 function typeOfOperationFromSource(src: string): TYPE.Type {
-	return AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_COERCION_OFF).type();
+	return AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type();
 }
 
 
