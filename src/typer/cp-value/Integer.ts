@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	bigint_to_i64,
@@ -183,9 +182,10 @@ export class Integer extends ValueNumber<Integer> {
 	 * ```
 	 */
 	public override divide(divisor: Integer): Integer {
-		return (divisor.eq0())
-			? assert.fail(new RangeError('Division by zero.'))
-			: new Integer(this.data / divisor.data);
+		if (divisor.eq0()) {
+			throw new RangeError('Division by zero.');
+		}
+		return new Integer(this.data / divisor.data);
 	}
 
 	/**

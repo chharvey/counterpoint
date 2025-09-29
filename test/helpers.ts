@@ -31,23 +31,6 @@ export const CONFIG_FOLDING_OFF: CPConfig = {
 	},
 };
 
-export const CONFIG_COERCION_OFF: CPConfig = {
-	...CONFIG_DEFAULT,
-	compilerOptions: {
-		...CONFIG_DEFAULT.compilerOptions,
-		intCoercion: false,
-	},
-};
-
-export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
-	...CONFIG_DEFAULT,
-	compilerOptions: {
-		...CONFIG_DEFAULT.compilerOptions,
-		constantFolding: false,
-		intCoercion:     false,
-	},
-};
-
 
 
 export function typeUnit(value: symbol): TYPE.Unit<VALUE.Symbol>;
