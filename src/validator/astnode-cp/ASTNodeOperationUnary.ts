@@ -98,6 +98,12 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				assert.ok(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeErrorInvalidOperation(this));
 				return t;
 			}
+			case Operator.INT: {
+				throw new Error('TODO:');
+			}
+			case Operator.FLOAT: {
+				throw new Error('TODO:');
+			}
 		}
 	}
 

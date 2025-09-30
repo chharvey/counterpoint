@@ -54,11 +54,13 @@ class Decorator {
 		[Punctuator.UNION, Operator.OR],
 	]);
 
-	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator, Operator> = new Map<Punctuator, Operator>([
+	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
 		[Punctuator.NOT, Operator.NOT],
 		[Punctuator.EMP, Operator.EMP],
 		[Punctuator.AFF, Operator.AFF],
 		[Punctuator.NEG, Operator.NEG],
+		[Keyword.INT,    Operator.INT],
+		[Keyword.FLOAT,  Operator.FLOAT],
 	]);
 
 	private static readonly OPERATORS_BINARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
@@ -419,6 +421,12 @@ class Decorator {
 					Decorator.OPERATORS_UNARY.get(node.children[0].text as Punctuator) as ValidOperatorUnary,
 					this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>),
 				)
+			)],
+
+			['expression_unary_keyword', (node) => new AST.ASTNodeOperationUnary(
+				node as SyntaxNodeType<'expression_unary_symbol'>,
+				Decorator.OPERATORS_UNARY.get(node.children[0].text as Keyword) as ValidOperatorUnary,
+				this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>),
 			)],
 
 			['expression_cast', (node) => (node.children.length === 3
