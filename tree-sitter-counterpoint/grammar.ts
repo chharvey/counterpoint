@@ -481,11 +481,13 @@ module.exports = grammar({
 			seq($._expression_compound, $.property_assign),
 		),
 
-		_expression_unary_symbol: $ => choice($._expression_compound, alias($.expression_unary_symbol_dfn, $.expression_unary_symbol)),
+		_expression_unary_symbol:  $ => choice($._expression_compound,     alias($.expression_unary_symbol_dfn,  $.expression_unary_symbol)),
+		_expression_unary_keyword: $ => choice($._expression_unary_symbol, alias($.expression_unary_keyword_dfn, $.expression_unary_keyword)),
 
-		expression_unary_symbol_dfn: $ => seq(choice('!', '?', '+', '-'), $._expression_unary_symbol),
+		expression_unary_symbol_dfn:  $ => seq(choice('!', '?', '+', '-'), $._expression_unary_symbol),
+		expression_unary_keyword_dfn: $ => seq(choice('int', 'float'),     $._expression_unary_keyword),
 
-		_expression_cast:           $ => choice($._expression_unary_symbol,   alias($.expression_cast_dfn,           $.expression_cast)),
+		_expression_cast:           $ => choice($._expression_unary_keyword,  alias($.expression_cast_dfn,           $.expression_cast)),
 		_expression_exponential:    $ => choice($._expression_cast,           alias($.expression_exponential_dfn,    $.expression_exponential)),
 		_expression_multiplicative: $ => choice($._expression_exponential,    alias($.expression_multiplicative_dfn, $.expression_multiplicative)),
 		_expression_additive:       $ => choice($._expression_multiplicative, alias($.expression_additive_dfn,       $.expression_additive)),
