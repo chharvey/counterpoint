@@ -24,6 +24,7 @@ import {
 	typeUnit,
 	buildConst,
 } from '../../helpers.ts';
+import {extract_lines} from '../../utils.ts';
 
 
 
@@ -253,6 +254,41 @@ describe('ASTNodeOperation', () => {
 						goal.typeCheck();
 						return xjs.Array.forEachAggregated(goal.children.slice(6), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
+				});
+			});
+			describe('[operator=INT | FLOAT]', () => {
+				it('returns the respective type for numeric operands.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let var my_int: int   = 7;
+						let var my_flt: float = -3.5;
+
+						int   my_int;
+						int   my_flt;
+						float my_int;
+						float my_flt;
+					`);
+					goal.varCheck();
+					goal.typeCheck();
+					return assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						TYPE.INT,
+						TYPE.INT,
+						TYPE.FLOAT,
+						TYPE.FLOAT,
+					]);
+				});
+				it('throws for non-numeric operands.', () => {
+					xjs.Array.forEachAggregated(extract_lines(`
+						int   null;
+						int   @symb;
+						int   "string";
+						int   ["string tuple"];
+						int   [record= "string"];
+						float null;
+						float @symb;
+						float "string";
+						float ["string tuple"];
+						float [record= "string"];
+					`), (src) => assert.throws(() => AST.ASTNodeOperationUnary.fromSource(src).type(), TypeErrorInvalidOperation));
 				});
 			});
 		});

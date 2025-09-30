@@ -79,6 +79,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		const TYPE_NUMBER = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
 		const t: TYPE.Type = this.operand.type();
 		if (t.isBottomType) {
 			return TYPE.NEVER;
@@ -95,14 +96,16 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
 			}
 			case Operator.NEG: {
-				assert.ok(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeErrorInvalidOperation(this));
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
 				return t;
 			}
 			case Operator.INT: {
-				throw new Error('TODO:');
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				return TYPE.INT;
 			}
 			case Operator.FLOAT: {
-				throw new Error('TODO:');
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				return TYPE.FLOAT;
 			}
 		}
 	}
