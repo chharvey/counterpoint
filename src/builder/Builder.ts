@@ -128,10 +128,10 @@ export class Builder {
 		[result_both_ints, result_both_floats]: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
 	): binaryen.FunctionRef {
 		const mod: binaryen.Module = this.module;
-		const local_vects: [BinVect, BinVect] = [
+		const local_vects = [
 			new BinVect(mod, mod.local.get(0, binaryen.v128)),
 			new BinVect(mod, mod.local.get(1, binaryen.v128)),
-		];
+		] as const;
 		return mod.addFunction(name, binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
 			mod.if(
 				mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
@@ -147,10 +147,10 @@ export class Builder {
 
 	#setupFunctions(): void {
 		const mod: binaryen.Module = this.module;
-		const local_vects: [BinVect, BinVect] = [
+		const local_vects = [
 			new BinVect(mod, mod.local.get(0, binaryen.v128)),
 			new BinVect(mod, mod.local.get(1, binaryen.v128)),
-		];
+		] as const;
 		mod.addFunction('vnot', binaryen.v128, binaryen.v128, [], mod.block(null, [
 			BinVect.asBool(mod, mod.i32.or(local_vects[0].isSpecial(null), local_vects[0].isSpecial(false))),
 		], binaryen.v128));
@@ -229,7 +229,7 @@ export class Builder {
 			BinVect.asBool(mod, mod.f64.eq(mod.f64.convert_u.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
 			BinVect.asBool(mod, mod.f64.eq(                      local_vects[0].floatValue, mod.f64.convert_u.i64(local_vects[1].intValue))),
 			BinVect.asBool(mod, mod.f64.eq(                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
-		];
+		] as const;
 		mod.addFunction('veq', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
 			mod.if(
 				mod.i32.or(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
