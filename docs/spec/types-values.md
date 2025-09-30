@@ -277,8 +277,8 @@ The following table lays out some integers and their encodings.
 | `\xff_ff_ff_ff_ff_ff_ff_ff`        | *&minus;1*
 
 Note: To encode a mathematical integer *i* in two’s complement:
-If *i* is within the interval *[0, 2<sup>63</sup> - 1]*, simply return its representation in base 2.
-If *i* is within the interval *[&minus;2<sup>63</sup>, -1]*, return the binary representation of *i + 2<sup>64</sup>*.
+If *i* is within the interval *[0, 2<sup>63</sup> &minus; 1]*, simply return its representation in base 2.
+If *i* is within the interval *[&minus;2<sup>63</sup>, &minus;1]*, return the binary representation of *i + 2<sup>64</sup>*.
 Else, *i* cannot be encoded.
 
 When performing arithmetic operations such as addition, subtraction, and multiplication,
