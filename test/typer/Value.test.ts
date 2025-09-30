@@ -587,6 +587,29 @@ describe('Value', () => {
 	});
 
 
+	describe('Number', () => {
+		describe('#toInt', () => {
+			specify('Integer', () => {
+				const i = new VALUE.Integer(42n);
+				assert.strictEqual(i.toInt(), i, '`Integer#toInt` should return self.');
+			});
+			specify('Float', () => {
+				assert.deepStrictEqual(new VALUE.Float(42.69).toInt(), new VALUE.Integer(42n), '`Float#toInt` should truncate (round-to-zero).');
+			});
+		});
+
+		describe('#toFloat', () => {
+			specify('Integer', () => {
+				assert.deepStrictEqual(new VALUE.Integer(42n).toFloat(), new VALUE.Float(42), '`Integer#toFloat` should return an equivalent value.');
+			});
+			specify('Float', () => {
+				const f = new VALUE.Float(42.69);
+				assert.strictEqual(f.toFloat(), f, '`Float#toFloat` should return self.');
+			});
+		});
+	});
+
+
 	describe('Map', () => {
 		describe('.constructor', () => {
 			it('overwrites identical antecedents.', () => {

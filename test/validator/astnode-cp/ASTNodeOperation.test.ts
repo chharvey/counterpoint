@@ -341,6 +341,30 @@ describe('ASTNodeOperation', () => {
 					['?{41 -> 42};',          VALUE.FALSE],
 				]));
 			});
+			it('[operator=INT | FLOAT]: returns a numeric conversion only if needed.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let my_int: int   = 7;
+					let my_flt: float = -3.5;
+
+					int   my_int;
+					int   my_flt;
+					float my_int;
+					float my_flt;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				const exprs:    readonly AST.ASTNodeOperationUnary[] = goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary);
+				const values:   readonly (VALUE.Value | null)[]      = exprs.map((expr) => expr.fold());
+				const operands: readonly (VALUE.Value | null)[]      = exprs.map((expr) => expr.operand.fold());
+				assert.strictEqual(values[0], operands[0]);
+				assert.strictEqual(values[3], operands[3]);
+				return assert.deepStrictEqual(values, [
+					new VALUE.Integer(7n),
+					new VALUE.Integer(-3n),
+					new VALUE.Float(7.0),
+					new VALUE.Float(-3.5),
+				]);
+			});
 		});
 
 

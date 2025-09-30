@@ -8,6 +8,7 @@ import {
 	strictEqual,
 	instanceOf,
 } from '../utils-private.ts';
+import {Integer} from './index.ts';
 import {
 	identical,
 	type Value,
@@ -52,6 +53,10 @@ export class Float extends ValueNumber<Float> {
 				? builder.module.f64.ceil(builder.module.f64.const(-0.5))
 				: builder.module.f64.const(this.data),
 		).vect;
+	}
+
+	public override toInt(): Integer {
+		return new Integer(BigInt(Math.trunc(this.data)));
 	}
 
 	public override toFloat(): this {

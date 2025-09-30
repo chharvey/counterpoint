@@ -116,11 +116,23 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		if (!v) {
 			return v;
 		}
-		return (
-			(this.operator === Operator.NOT) ?                VALUE.Boolean.fromBoolean(!v.isTruthy)              :
-			(this.operator === Operator.EMP) ?                VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty) :
-			(assert.strictEqual(this.operator, Operator.NEG), this.foldNumeric(v as VALUE.Number<any>)) // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
-		);
+		switch (this.operator) {
+			case Operator.NOT: {
+				return VALUE.Boolean.fromBoolean(!v.isTruthy);
+			}
+			case Operator.EMP: {
+				return VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty);
+			}
+			case Operator.NEG: {
+				return this.foldNumeric(v as VALUE.Number<any>); // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
+			}
+			case Operator.INT: {
+				return (v as VALUE.Number).toInt();
+			}
+			case Operator.FLOAT: {
+				return (v as VALUE.Number).toFloat();
+			}
+		}
 	}
 
 	private foldNumeric<T extends VALUE.Number<T>>(v0: T): T {
