@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	VALUE,
+	type VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
@@ -22,8 +22,6 @@ import {
 	type ValidOperatorArithmetic,
 } from '../Operator.ts';
 import {
-	bothNumeric,
-	eitherFloats,
 	bothInts,
 	bothFloats,
 } from './utils-private.ts';
@@ -62,15 +60,13 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
 	}
 
-	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
 		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NEVER;
 		}
-		assert.ok(bothNumeric(t0, t1), new TypeErrorInvalidOperation(this));
 		return (
-			bothInts(t0, t1)   ? TYPE.INT :
+			bothInts  (t0, t1) ? TYPE.INT :
 			bothFloats(t0, t1) ? TYPE.FLOAT :
-			int_coercion       ? eitherFloats(t0, t1) ? TYPE.FLOAT : t0.union(t1) :
 			assert.fail(new TypeErrorInvalidOperation(this))
 		);
 	}
@@ -85,15 +81,13 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		if (!v1) {
 			return v1;
 		}
-		if (this.operator === Operator.DIV && v1 instanceof VALUE.Number && v1.eq0()) {
+		if (this.operator === Operator.DIV && (v1 as VALUE.Number).eq0()) {
 			throw new NanErrorDivZero(this.operand1);
 		}
-		return (v0 instanceof VALUE.Integer && v1 instanceof VALUE.Integer)
-			? this.foldNumeric(v0, v1)
-			: this.foldNumeric(
-				(v0 as VALUE.Number).toFloat(),
-				(v1 as VALUE.Number).toFloat(),
-			);
+		return this.foldNumeric(
+			(v0 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+			(v1 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+		);
 	}
 
 	private foldNumeric<T extends VALUE.Number<T>>(v0: T, v1: T): T {

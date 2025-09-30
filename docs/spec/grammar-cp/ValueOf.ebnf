@@ -221,12 +221,7 @@ Number! ValueOf(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
 	4. *Assert:* `v0` is an instance of `Number` *and* `v1` is an instance of `Number`.
-	5. *If* `v0` is an instance of `Integer` *and* `v1` is an instance of `Integer`:
-		1. *Let* `number` be *UnwrapAffirm:* `PerformBinaryArithmetic(expr.operator, v0, v1)`.
-		2. *Return:* `Integer(number)`.
-	6. *Else:*
-		1. *Let* `number` be *UnwrapAffirm:* `PerformBinaryArithmetic(expr.operator, Float(v0), Float(v1))`.
-		2. *Return:* `Float(number)`.
+	5. *Return:* `PerformBinaryArithmetic(expr.operator, v0, v1)`.
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
@@ -234,9 +229,7 @@ Boolean! ValueOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
 	4. *Assert:* `v0` is an instance of `Number` *and* `v1` is an instance of `Number`.
-	5. *If* `v0` is an instance of `Integer` *and* `v1` is an instance of `Integer`:
-		1. *Return:* `PerformBinaryCompare(expr.operator, v0, v1)`.
-	6. *Return:* `PerformBinaryCompare(expr.operator, Float(v0), Float(v1))`.
+	5. *Return:* `PerformBinaryCompare(expr.operator, v0, v1)`.
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: IS] expr) :=

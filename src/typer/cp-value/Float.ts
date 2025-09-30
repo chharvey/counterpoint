@@ -71,7 +71,7 @@ export class Float extends ValueNumber<Float> {
 	}
 
 	public override divide(divisor: Float): Float {
-		if (divisor.data === 0) {
+		if (divisor.eq0()) {
 			throw new RangeError('Division by zero.');
 		}
 		return new Float(this.data / divisor.data);

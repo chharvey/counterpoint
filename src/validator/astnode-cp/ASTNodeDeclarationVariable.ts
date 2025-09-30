@@ -3,7 +3,7 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
-	TYPE,
+	type TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
 import {assert_instanceof} from '../../lib/index.ts';
@@ -84,16 +84,8 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			return this.builder.module.nop();
 		}
 		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
-		if (this.assignee) {
-			return this.builder.teeLocal(this.assignee.id, value).set(ASTNodeStatement.coerceAssignment(
-				this.builder.module,
-				this.typenode.eval(),
-				this.assigned?.type() ?? TYPE.NULL,
-				value,
-				this.validator.config.compilerOptions.intCoercion,
-			));
-		} else {
-			return this.builder.module.drop(value);
-		}
+		return this.assignee
+			? this.builder.teeLocal(this.assignee.id, value).set(value)
+			: this.builder.module.drop(value);
 	}
 }
