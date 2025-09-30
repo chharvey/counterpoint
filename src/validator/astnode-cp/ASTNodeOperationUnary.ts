@@ -70,9 +70,11 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			], binaryen.v128);
 		}
 		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.NOT, 'vnot'],
-			[Operator.EMP, 'vemp'],
-			[Operator.NEG, 'vneg'],
+			[Operator.NOT,   'vnot'],
+			[Operator.EMP,   'vemp'],
+			[Operator.NEG,   'vneg'],
+			[Operator.INT,   'vtoi'],
+			[Operator.FLOAT, 'vtof'],
 		]).get(this.operator)!, [arg0], binaryen.v128);
 	}
 
