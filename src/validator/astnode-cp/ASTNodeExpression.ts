@@ -61,7 +61,7 @@ export function typeDeco(
 			} catch (err) {
 				if (err instanceof ErrorCode) {
 					// ignore evaluation errors such as VoidError, NanError, etc.
-					return TYPE.NEVER;
+					return TYPE.NOTHING;
 				} else {
 					throw err;
 				}

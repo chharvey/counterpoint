@@ -115,21 +115,21 @@ describe('ASTNodeExpression', () => {
 
 		specify('#build', () => {
 			xjs.Map.forEachAggregated(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
-				['null;',    (builder) => buildConst(builder)],
-				['false;',   (builder) => buildConst(builder, false)],
-				['true;',    (builder) => buildConst(builder, true)],
-				['@never;',  (builder) => buildConst(builder, Symbol(0x80))],
-				['@hello;',  (builder) => buildConst(builder, Symbol(0x100))],
-				['0;',       (builder) => buildConst(builder, 0n)],
-				['+0;',      (builder) => buildConst(builder, 0n)],
-				['-0;',      (builder) => buildConst(builder, 0n)],
-				['42;',      (builder) => buildConst(builder, 42n)],
-				['+42;',     (builder) => buildConst(builder, 42n)],
-				['-42;',     (builder) => buildConst(builder, -42n)],
-				['0.0;',     (builder) => buildConst(builder, 0)],
-				['+0.0;',    (builder) => buildConst(builder, 0)],
-				['-0.0;',    (builder) => buildConst(builder, -0)],
-				['-4.2e-2;', (builder) => buildConst(builder, -0.042)],
+				['null;',     (builder) => buildConst(builder)],
+				['false;',    (builder) => buildConst(builder, false)],
+				['true;',     (builder) => buildConst(builder, true)],
+				['@nothing;', (builder) => buildConst(builder, Symbol(0x80))],
+				['@hello;',   (builder) => buildConst(builder, Symbol(0x100))],
+				['0;',        (builder) => buildConst(builder, 0n)],
+				['+0;',       (builder) => buildConst(builder, 0n)],
+				['-0;',       (builder) => buildConst(builder, 0n)],
+				['42;',       (builder) => buildConst(builder, 42n)],
+				['+42;',      (builder) => buildConst(builder, 42n)],
+				['-42;',      (builder) => buildConst(builder, -42n)],
+				['0.0;',      (builder) => buildConst(builder, 0)],
+				['+0.0;',     (builder) => buildConst(builder, 0)],
+				['-0.0;',     (builder) => buildConst(builder, -0)],
+				['-4.2e-2;',  (builder) => buildConst(builder, -0.042)],
 			]), (expected_fn, src) => {
 				const constant: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF);
 				return assertEqualBins(
@@ -978,10 +978,10 @@ describe('ASTNodeExpression', () => {
 			it('returns the type value of the claimed type.', () => {
 				assert.ok(AST.ASTNodeClaim.fromSource('3 as <int?>;').type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
-			it('`never` is assignable to any type (even though intersection is empty).', () => {
+			it('`nothing` is assignable to any type (even though intersection is empty).', () => {
 				new Map<string, (typ: TYPE.Type) => boolean>([
-					['n as <never>;', (typ) => typ.isBottomType],
-					['n as <int>;',   (typ) => typ.equals(TYPE.INT)],
+					['n as <nothing>;', (typ) => typ.isBottomType],
+					['n as <int>;',     (typ) => typ.equals(TYPE.INT)],
 				]).forEach((assertion, src) => {
 					const claim: AST.ASTNodeClaim = AST.ASTNodeClaim.fromSource(src);
 					claim.validator.addSymbol(new SymbolSchemaVar(
@@ -992,7 +992,7 @@ describe('ASTNodeExpression', () => {
 					));
 					return assert.ok(assertion.call(null, claim.type()));
 				});
-				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <never>;').type(), TypeErrorNotAssignable);
+				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <nothing>;').type(), TypeErrorNotAssignable);
 			});
 			it('throws when the operand type and claimed type do not overlap.', () => {
 				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <str>;')      .type(), TypeErrorNotAssignable);
@@ -1021,7 +1021,7 @@ describe('ASTNodeExpression', () => {
 		describe('#build', () => {
 			it('returns the build of the operand.', () => {
 				samples.forEach((expr) => assertEqualBins(
-					AST.ASTNodeClaim     .fromSource(`${ expr } as <unknown>;`) .build(),
+					AST.ASTNodeClaim     .fromSource(`${ expr } as <anything>;`) .build(),
 					AST.ASTNodeExpression.fromSource(`${ expr };`).build(),
 				));
 			});

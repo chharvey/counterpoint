@@ -1,3 +1,4 @@
+import {Keyword} from '../../parser/index.ts';
 import {
 	strictEqual,
 	memoizeBinOp,
@@ -12,7 +13,7 @@ import {ValueType} from './ValueType.ts';
  * Class for constructing the Bottom Type, the type containing no values.
  * @final
  */
-export class Never extends ValueType {
+export class Nothing extends ValueType {
 	public constructor() {
 		super(false);
 	}
@@ -22,7 +23,7 @@ export class Never extends ValueType {
 	}
 
 	public override toString(): string {
-		return 'never';
+		return Keyword.NOTHING;
 	}
 
 	public override includes(_v: VALUE.Value): boolean {

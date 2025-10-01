@@ -95,7 +95,7 @@ describe('ASTNodeOperation', () => {
 
 
 	describe('#type', () => {
-		it('returns Never for NanErrors.', () => {
+		it('returns `nothing` for NanErrors.', () => {
 			[
 				AST.ASTNodeOperationBinaryArithmetic.fromSource('-4 ^ -0.5;').type(),
 				AST.ASTNodeOperationBinaryArithmetic.fromSource('1.5 / 0.0;').type(),
@@ -791,10 +791,10 @@ describe('ASTNodeOperation', () => {
 				});
 				it('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let a: unknown = [];
-						let b: unknown = [42];
-						let c: unknown = [x= 42];
-						let d: Object  = {41 -> 42};
+						let a: anything = [];
+						let b: anything = [42];
+						let c: anything = [x= 42];
+						let d: Object   = {41 -> 42};
 						a !== [];
 						b !== [42];
 						c !== [x= 42];
@@ -946,20 +946,20 @@ describe('ASTNodeOperation', () => {
 			});
 			it('compound types.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: unknown = [];
-					let b: unknown = [42];
-					let c: unknown = [x= 42];
-					let d: Object  = List.<int>([]);
-					let e: Object  = List.<int>([42]);
-					let f: Object  = Dict.<int>([x= 42]);
-					let g: Object  = {};
-					let h: Object  = {42};
-					let i: Object  = {41 -> 42};
+					let a: anything = [];
+					let b: anything = [42];
+					let c: anything = [x= 42];
+					let d: Object   = List.<int>([]);
+					let e: Object   = List.<int>([42]);
+					let f: Object   = Dict.<int>([x= 42]);
+					let g: Object   = {};
+					let h: Object   = {42};
+					let i: Object   = {41 -> 42};
 
-					let bb: unknown = [[42]];
-					let cc: unknown = [x= [42]];
-					let hh: Object  = {[42]};
-					let ii: Object  = {[41] -> [42]};
+					let bb: anything = [[42]];
+					let cc: anything = [x= [42]];
+					let hh: Object   = {[42]};
+					let ii: Object   = {[41] -> [42]};
 
 					a === [];
 					b === [42];
@@ -1186,22 +1186,22 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			it('with constant folding on.', () => {
 				typeOperations(new Map<string, VALUE.Primitive>([
-					['null   && false;',  VALUE.NULL],
-					['false  && null;',   VALUE.FALSE],
-					['true   && null;',   VALUE.NULL],
-					['@never && @x;',     new VALUE.Symbol(0x100n, 'x')],
-					['@x     && @never;', VALUE.SYM_NEVER],
-					['@never || @y;',     VALUE.SYM_NEVER],
-					['@y     || @never;', new VALUE.Symbol(0x100n, 'y')],
-					['@z     && false;',  VALUE.FALSE],
-					['true   && @z;',     new VALUE.Symbol(0x100n, 'z')],
-					['false  && 42;',     VALUE.FALSE],
-					['4.2    && true;',   VALUE.TRUE],
-					['null   || false;',  VALUE.FALSE],
-					['false  || null;',   VALUE.NULL],
-					['true   || null;',   VALUE.TRUE],
-					['false  || 42;',     new VALUE.Integer(42n)],
-					['4.2    || true;',   new VALUE.Float(4.2)],
+					['null     && false;',    VALUE.NULL],
+					['false    && null;',     VALUE.FALSE],
+					['true     && null;',     VALUE.NULL],
+					['@nothing && @x;',       new VALUE.Symbol(0x100n, 'x')],
+					['@x       && @nothing;', VALUE.SYM_NOTHING],
+					['@nothing || @y;',       VALUE.SYM_NOTHING],
+					['@y       || @nothing;', new VALUE.Symbol(0x100n, 'y')],
+					['@z       && false;',    VALUE.FALSE],
+					['true     && @z;',       new VALUE.Symbol(0x100n, 'z')],
+					['false    && 42;',       VALUE.FALSE],
+					['4.2      && true;',     VALUE.TRUE],
+					['null     || false;',    VALUE.FALSE],
+					['false    || null;',     VALUE.NULL],
+					['true     || null;',     VALUE.TRUE],
+					['false    || 42;',       new VALUE.Integer(42n)],
+					['4.2      || true;',     new VALUE.Float(4.2)],
 				]));
 			});
 			context('with constant folding off.', () => {
@@ -1313,22 +1313,22 @@ describe('ASTNodeOperation', () => {
 
 		specify('#fold', () => {
 			foldOperations(new Map<string, VALUE.Value>([
-				['@never && @x;',     new VALUE.Symbol(0x100n, 'x')],
-				['@x     && @never;', VALUE.SYM_NEVER],
-				['@never || @y;',     VALUE.SYM_NEVER],
-				['@y     || @never;', new VALUE.Symbol(0x100n, 'y')],
-				['@z     && false;',  VALUE.FALSE],
-				['true   && @z;',     new VALUE.Symbol(0x100n, 'z')],
-				['null   && 5;',      VALUE.NULL],
-				['null   || 5;',      new VALUE.Integer(5n)],
-				['5      && null;',   VALUE.NULL],
-				['5      || null;',   new VALUE.Integer(5n)],
-				['5.1    && true;',   VALUE.TRUE],
-				['5.1    || true;',   new VALUE.Float(5.1)],
-				['3.1    && 5;',      new VALUE.Integer(5n)],
-				['3.1    || 5;',      new VALUE.Float(3.1)],
-				['false  && null;',   VALUE.FALSE],
-				['false  || null;',   VALUE.NULL],
+				['@nothing && @x;',       new VALUE.Symbol(0x100n, 'x')],
+				['@x       && @nothing;', VALUE.SYM_NOTHING],
+				['@nothing || @y;',       VALUE.SYM_NOTHING],
+				['@y       || @nothing;', new VALUE.Symbol(0x100n, 'y')],
+				['@z       && false;',    VALUE.FALSE],
+				['true     && @z;',       new VALUE.Symbol(0x100n, 'z')],
+				['null     && 5;',        VALUE.NULL],
+				['null     || 5;',        new VALUE.Integer(5n)],
+				['5        && null;',     VALUE.NULL],
+				['5        || null;',     new VALUE.Integer(5n)],
+				['5.1      && true;',     VALUE.TRUE],
+				['5.1      || true;',     new VALUE.Float(5.1)],
+				['3.1      && 5;',        new VALUE.Integer(5n)],
+				['3.1      || 5;',        new VALUE.Float(3.1)],
+				['false    && null;',     VALUE.FALSE],
+				['false    || null;',     VALUE.NULL],
 			]));
 		});
 
@@ -1404,11 +1404,11 @@ describe('ASTNodeOperation', () => {
 
 			it('returns a special case of `(if)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: unknown = 42;
-					let b: unknown = 4.2;
-					let c: unknown = null;
-					let d: unknown = false;
-					let e: unknown = true;
+					let a: anything = 42;
+					let b: anything = 4.2;
+					let c: anything = null;
+					let d: anything = false;
+					let e: anything = true;
 
 					a && 420;
 					b || -420;
@@ -1460,10 +1460,10 @@ describe('ASTNodeOperation', () => {
 
 			it('counts internal variables correctly.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: unknown = 1;
-					let b: unknown = 2;
-					let c: unknown = 3;
-					let d: unknown = 4;
+					let a: anything = 1;
+					let b: anything = 2;
+					let c: anything = 3;
+					let d: anything = 4;
 
 					a && b || c && d;
 					(a || b) && (c || d);
@@ -1529,8 +1529,8 @@ describe('ASTNodeOperation', () => {
 					]));
 				});
 			});
-			it('returns `never` when condition is `never`.', () => {
-				const ternary: AST.ASTNodeOperationTernary = AST.ASTNodeOperationTernary.fromSource('if n as <never> then true else false;');
+			it('returns `nothing` when condition is `nothing`.', () => {
+				const ternary: AST.ASTNodeOperationTernary = AST.ASTNodeOperationTernary.fromSource('if n as <nothing> then true else false;');
 				ternary.validator.addSymbol(new SymbolSchemaVar(
 					// @ts-expect-error --- it’s private
 					(ternary.operand0 as AST.ASTNodeClaim).operand as AST.ASTNodeVariable,

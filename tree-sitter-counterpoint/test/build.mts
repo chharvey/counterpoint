@@ -59,13 +59,13 @@ function buildTest(title: string, source: string, expected: string): string {
 		/* # TERMINALS */
 		KEYWORD_TYPE: [
 			xjs.String.dedent`
-				type T = never;
+				type T = nothing;
 				type T = bool;
 				type T = sym;
 				type T = int;
 				type T = float;
 				type T = str;
-				type T = unknown;
+				type T = anything;
 			`,
 			sourceTypes(
 				s('keyword_type'),

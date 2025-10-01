@@ -23,7 +23,7 @@ import {
 
 describe('ASTNodeDeclarationVariable', () => {
 	describe('#varCheck', () => {
-		it('adds a SymbolSchema to the symbol table with a preset `type` value of `unknown` and a preset null `value` value.', () => {
+		it('adds a SymbolSchema to the symbol table with a preset `type` value of `anything` and a preset null `value` value.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let     a:  int = 42;
 				let var b:  int = 42;
@@ -45,19 +45,19 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.partialDeepStrictEqual(info_a, {
 				unfixed:       false,
 				uninitialized: false,
-				type:          TYPE.UNKNOWN,
+				type:          TYPE.ANYTHING,
 				value:         null,
 			});
 			assert.partialDeepStrictEqual(info_b, {
 				unfixed:       true,
 				uninitialized: false,
-				type:          TYPE.UNKNOWN,
+				type:          TYPE.ANYTHING,
 				value:         null,
 			});
 			assert.partialDeepStrictEqual(info_c, {
 				unfixed:       true,
 				uninitialized: true,
-				type:          TYPE.UNKNOWN,
+				type:          TYPE.ANYTHING,
 				value:         null,
 			});
 		});
@@ -196,13 +196,13 @@ describe('ASTNodeDeclarationVariable', () => {
 		});
 		it('allows assigning a collection literal to super reference type (autoboxing at runtime).', () => {
 			typeCheckGoal(`
-				let v: unknown = [   42,    "hello"];
-				let s: unknown = [a= 42, b= "hello"];
+				let v: anything = [   42,    "hello"];
+				let s: anything = [a= 42, b= "hello"];
 			`);
 			typeCheckGoal(`
-				let v: mut unknown = [   42,    "hello"];
-				let s: mut unknown = [a= 42, b= "hello"];
-			`); // mut unknown == unknown
+				let v: mut anything = [   42,    "hello"];
+				let s: mut anything = [a= 42, b= "hello"];
+			`); // mut anything == anything
 		});
 		context('assigning a collection literal to a wider mutable type.', () => {
 			it('disallows assigning Tuples/Records to Lists/Dicts', () => {
@@ -292,10 +292,10 @@ describe('ASTNodeDeclarationVariable', () => {
 					let s: mut (int | str){} = {42 -> "43"};
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`
-					let t1: mut unknown               = [42, "43"];
+					let t1: mut anything              = [42, "43"];
 					let t4: mut ([int, str] | Object) = [42, "43"];
 
-					let r1: mut unknown                     = [a= 42, b= "43"];
+					let r1: mut anything                    = [a= 42, b= "43"];
 					let r4: mut ([a: int, b: str] | Object) = [a= 42, b= "43"];
 
 					let s1: mut (42 | 4.3){}            = {42};

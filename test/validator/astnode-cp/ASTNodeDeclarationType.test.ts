@@ -14,7 +14,7 @@ import {assertEqualBins} from '../../assert-helpers.ts';
 
 describe('ASTNodeDeclarationType', () => {
 	describe('#varCheck', () => {
-		it('adds a SymbolSchema to the symbol table with a preset `type` value of `unknown`.', () => {
+		it('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
 			`);
@@ -23,7 +23,7 @@ describe('ASTNodeDeclarationType', () => {
 			assert.ok(goal.validator.hasSymbol(0x100n));
 			const info: SymbolSchema | null = goal.validator.getSymbolInfo(0x100n);
 			assert_instanceof(info, SymbolSchemaType);
-			assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
+			assert.strictEqual(info.typevalue, TYPE.ANYTHING);
 		});
 
 		it('for blank identifiers, does not add to symbol table.', () => {

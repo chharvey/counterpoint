@@ -81,7 +81,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	public override type(): TYPE.Type {
 		const t: TYPE.Type = this.operand.type();
 		if (t.isBottomType) {
-			return TYPE.NEVER;
+			return TYPE.NOTHING;
 		}
 		switch (this.operator) {
 			case Operator.NOT: {

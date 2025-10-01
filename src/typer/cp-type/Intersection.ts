@@ -8,7 +8,7 @@ import {
 import type * as VALUE from '../cp-value/index.ts';
 import {
 	Union,
-	NEVER,
+	NOTHING,
 } from './index.ts';
 import {
 	type ReadonlyArrayOfAtLeast2,
@@ -33,7 +33,7 @@ import {Combinable} from './Combinable.ts';
 export class Intersection extends Combinable {
 	/**
 	 * Intersect all the given types.
-	 * If an empty array is given, return type `never`.
+	 * If an empty array is given, return type `nothing`.
 	 * @param types the types to intersect
 	 * @returns the intersection
 	 */
@@ -44,7 +44,7 @@ export class Intersection extends Combinable {
 			? Intersection.all(...arg0)
 			: arg0
 				? [arg0, ...args].reduce((a, b) => a.intersect(b))
-				: NEVER;
+				: NOTHING;
 	}
 
 
@@ -80,7 +80,7 @@ export class Intersection extends Combinable {
 	 * We can assert that this is never top because
 	 * the only case in which it could be top is
 	 * if both the left and the right are top,
-	 * which is impossible because the algorithm would have already produced the `unknown` type.
+	 * which is impossible because the algorithm would have already produced the `anything` type.
 	 */
 
 	public override get isReference(): boolean {

@@ -90,7 +90,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 * 	new (tup0:  []);
 			 * 	new (tup1:  [T]);
 			 * 	new (tup2:  [T, T]);
-			 * 	new (tup:   unknown); % any tuple type with items of type T
+			 * 	new (tup:   anything); % any tuple type with items of type T
 			 * 	new (list:  List.<T>);
 			 * 	new ('set': Set.<T>);
 			 * }
@@ -131,7 +131,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 * 	new ();
 			 * 	new (recA:  [a: T]);
 			 * 	new (recAB: [a: T, b: T]);
-			 * 	new (rec:   unknown); % any record type with values of type T
+			 * 	new (rec:   anything); % any record type with values of type T
 			 * 	new (dict:  Dict.<T>);
 			 * }
 			 * ```
@@ -172,7 +172,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 * 	new (tup0:  []);
 			 * 	new (tup1:  [T]);
 			 * 	new (tup2:  [T, T]);
-			 * 	new (tup:   unknown); % any tuple type with items of type T
+			 * 	new (tup:   anything); % any tuple type with items of type T
 			 * 	new (list:  List.<T>);
 			 * 	new ('set': Set.<T>);
 			 * }
@@ -214,7 +214,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 * 	new (tup0:  []);
 			 * 	new (tup1:  [[K, V]]);
 			 * 	new (tup2:  [[K, V], [K, V]]);
-			 * 	new (tup:   unknown); % any tuple type with items of type [K, V]
+			 * 	new (tup:   anything); % any tuple type with items of type [K, V]
 			 * 	new (list:  List.<[K, V]>);
 			 * 	new ('set': Set.<[K, V]>);
 			 * 	new (map:   Map.<K, V>);

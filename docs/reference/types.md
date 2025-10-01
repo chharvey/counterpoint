@@ -28,22 +28,22 @@ An instance of a reference type is called a “reference object” or simply an 
 Simple types are individual basic types. They cannot be broken up into smaller types.
 
 
-### `never`
-Type `never` is at the bottom of the type hierarchy —
+### `nothing`
+Type `nothing` is at the bottom of the type hierarchy —
 it contains no values and is a subtype of every other type.
 
-Type `never` is used to describe the return type of functions that never return,
+Type `nothing` is used to describe the return type of functions that never return,
 or the type of an expression that never evaluates.
 
-Type `never` is most commonly a result of a type operation that produces the Bottom type,
+Type `nothing` is most commonly a result of a type operation that produces the Bottom type,
 for example, the intersection of two disjoint types.
 
 
-### `unknown`
-Type  `unknown` is at the top of the type hierarchy —
+### `anything`
+Type `anything` is at the top of the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
 
-Type `unknown` is used to describe a value or expression about which nothing is known.
+Type `anything` is used to describe a value or expression about which nothing is known.
 Therefore, the compiler will not assume it has any properties or is valid in some operations.
 
 ### `null`

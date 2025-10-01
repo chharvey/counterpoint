@@ -6,7 +6,7 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import type * as VALUE from '../cp-value/index.ts';
-import {NEVER} from './index.ts';
+import {NOTHING} from './index.ts';
 import {
 	type ReadonlyArrayOfAtLeast2,
 	language_types_equal,
@@ -32,7 +32,7 @@ import {Combinable} from './Combinable.ts';
 export class Union extends Combinable {
 	/**
 	 * Unions all the given types.
-	 * If an empty array is given, return type `never`.
+	 * If an empty array is given, return type `nothing`.
 	 * @param types the types to union
 	 * @returns the union
 	 */
@@ -43,7 +43,7 @@ export class Union extends Combinable {
 			? Union.all(...arg0)
 			: arg0
 				? [arg0, ...args].reduce((a, b) => a.union(b))
-				: NEVER;
+				: NOTHING;
 	}
 
 
@@ -74,14 +74,14 @@ export class Union extends Combinable {
 	 * We can assert that this is never bottom because
 	 * the only case in which it could be bottom is
 	 * if both the left and the right are bottom,
-	 * which is impossible because the algorithm would have already produced the `never` type.
+	 * which is impossible because the algorithm would have already produced the `nothing` type.
 	 */
 
 	/*
 	 * We can assert that this is never top because
 	 * the only case in which it could be top is
 	 * if either the left or the right is top,
-	 * which is impossible because the algorithm would have already produced the `unknown` type.
+	 * which is impossible because the algorithm would have already produced the `anything` type.
 	 */
 
 	public override get isReference(): boolean {

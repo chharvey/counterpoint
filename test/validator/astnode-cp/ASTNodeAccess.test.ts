@@ -179,12 +179,12 @@ describe('ASTNodeAccess', () => {
 						TYPE.STR,
 					]);
 				});
-				it('throws when base object is of type unknown.', () => {
+				it('throws when base object is of type `anything`.', () => {
 					testExprTypes(`
-						let var a:                    unknown = [   10,    20];
-						let var b: int[2]           | unknown = [   10,    20];
-						let var c:                    unknown = [x= 10, y= 20];
-						let var d: [x: int, y: int] | unknown = [x= 10, y= 20];
+						let var a:                    anything = [   10,    20];
+						let var b: int[2]           | anything = [   10,    20];
+						let var c:                    anything = [x= 10, y= 20];
+						let var d: [x: int, y: int] | anything = [x= 10, y= 20];
 
 						a.0;
 						b.1;
@@ -406,11 +406,11 @@ describe('ASTNodeAccess', () => {
 			const ERRS = `
 				${ DECLS }
 
-				list_fixed.[3];   % type \`never\` % fold throws VoidError
-				list_fixed.[-4];  % type \`never\` % fold throws VoidError
-				dict_fixed.[@d];  % type \`never\` % fold throws VoidError
+				list_fixed.[3];   % type \`nothing\` % fold throws VoidError
+				list_fixed.[-4];  % type \`nothing\` % fold throws VoidError
+				dict_fixed.[@d];  % type \`nothing\` % fold throws VoidError
 				set_fixed.[42.0]; % type \`false\` % value \`false\`
-				map_fixed.["d"];  % type \`never\` % fold throws VoidError
+				map_fixed.["d"];  % type \`nothing\` % fold throws VoidError
 
 				list_unfixed.[3];   % type \`int | float | str\` % non-foldable value
 				list_unfixed.[-4];  % type \`int | float | str\` % non-foldable value
@@ -460,12 +460,12 @@ describe('ASTNodeAccess', () => {
 						[a= 10, b= 20, c= 30].[@b];
 					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
 				});
-				it('when accessor expression is correct type but out of bounds/range, returns `never` for folded objects, returns union type for unfolded objects.', () => {
+				it('when accessor expression is correct type but out of bounds/range, returns `nothing` for folded objects, returns union type for unfolded objects.', () => {
 					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
 					return testExprTypes(ERRS, [
-						...repeat(TYPE.NEVER, 3),
+						...repeat(TYPE.NOTHING, 3),
 						TYPE.FALSE,
-						TYPE.NEVER,
+						TYPE.NOTHING,
 
 						...repeat(TYPE_INT_FLOAT_STR, 3),
 						TYPE.BOOL,
@@ -607,18 +607,18 @@ describe('ASTNodeAccess', () => {
 						...repeat(TYPE.STR.union(TYPE.NULL), 2),
 					]);
 				});
-				it('returns unknown when base object is of type unknown.', () => {
+				it('returns `anything` when base object is of type `anything`.', () => {
 					testExprTypes(`
-						let var a:                    unknown = [   10,    20];
-						let var b: int[2]           | unknown = [   10,    20];
-						let var c:                    unknown = [x= 10, y= 20];
-						let var d: [x: int, y: int] | unknown = [x= 10, y= 20];
+						let var a:                    anything = [   10,    20];
+						let var b: int[2]           | anything = [   10,    20];
+						let var c:                    anything = [x= 10, y= 20];
+						let var d: [x: int, y: int] | anything = [x= 10, y= 20];
 
 						a?.0;
 						b?.1;
 						c?.x;
 						d?.y;
-					`, repeat(TYPE.UNKNOWN, 4));
+					`, repeat(TYPE.ANYTHING, 4));
 				});
 				it('throws when base object is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines(`

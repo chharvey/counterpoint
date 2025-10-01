@@ -326,8 +326,8 @@ dict?.[@prop]; %: float | null
 
 ### Logical Negation, Emptiness
 ```
-`!` <unknown>
-`?` <unknown>
+`!` <anything>
+`?` <anything>
 ```
 The **logical negation** operator, `!`, returns the opposite boolean value of the operand’s “logical value”.
 
@@ -391,10 +391,10 @@ this is important to mention because it could affect how we write
 
 ### Type Cast/Claim
 ```
-<Object>  as  <Class>
-<Object>  as? <Class>
-<Object>  as! <Class>
-<unknown> as  `<` <Type> `>`
+<Object>   as  <Class>
+<Object>   as? <Class>
+<Object>   as! <Class>
+<anything> as  `<` <Type> `>`
 ```
 The expression `expr as Klass` explicitly **casts** the `expr` into a `Klass`.
 This means that at compile time, `expr` is treated as type `Klass` within its containing expression,
@@ -436,7 +436,7 @@ Whereas non-null assertions can only tell the compiler that a property *exists*,
 type claims can widen, narrow, or shift the type of an expression.
 ```
 let var item: [str, int | str] = ["apples", 42];
-let ingredient: unknown    = item.0 as <unknown>;    % widening
+let ingredient: anything   = item.0 as <anything>;   % widening
 let quantity:   int        = item.1 as <int>;        % narrowing
 let in_stock:   int | bool = item.1 as <int | bool>; % shifting
 ```
@@ -664,10 +664,10 @@ but they are reserved for future semantics.
 
 ### Equality
 ```
-<unknown> `===`  <unknown>
-<unknown> `!==`  <unknown>
-<unknown> `==`   <unknown>
-<unknown> `!=`   <unknown>
+<anything> `===`  <anything>
+<anything> `!==`  <anything>
+<anything> `==`   <anything>
+<anything> `!=`   <anything>
 ```
 These operators compare two values.
 Any type of operands are valid. The result is a boolean value.
@@ -723,8 +723,8 @@ assume equal until determined otherwise.
 
 ### Conjunctive
 ```
-<unknown> `&&` <unknown>
-<unknown> `!&` <unknown>
+<anything> `&&` <anything>
+<anything> `!&` <anything>
 ```
 The **logical conjunction** operator `&&` (”and”) produces the left-hand operand if it is “falsy”;
 otherwise it produces the right-hand operand. The operands may be of any type.
@@ -750,8 +750,8 @@ a !& b; % sugar for `!(a && b)`
 
 ### Disjunctive
 ```
-<unknown> `||` <unknown>
-<unknown> `!|` <unknown>
+<anything> `||` <anything>
+<anything> `!|` <anything>
 ```
 The **logical disjunction** operator `||` (“or”) produces the left-hand operand if it is “truthy”;
 otherwise it produces the right-hand operand. The operands may be of any type.
@@ -777,7 +777,7 @@ a !| b; % sugar for `!(a || b)`
 
 ### Conditional
 ```
-`if` <bool> `then` <unknown> `else` <unknown>
+`if` <bool> `then` <anything> `else` <anything>
 ```
 The conditional operator is a ternary operator that takes three operand expressions:
 a condition, a consequent, and an alternative.

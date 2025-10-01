@@ -44,7 +44,7 @@ describe('ASTNodeTypeOperation', () => {
 					'mut [int, float, str]',
 					'mut [a: int, b: float, c: str]',
 					'mut int[3]',
-					'mut never',
+					'mut nothing',
 					'mut null',
 					'mut bool',
 					'mut int',
@@ -52,7 +52,7 @@ describe('ASTNodeTypeOperation', () => {
 					'mut str',
 				].forEach((src) => assert.throws(() => AST.ASTNodeTypeOperation.fromSource(src).eval(), TypeErrorInvalidOperation));
 				[
-					'mut unknown',
+					'mut anything',
 					'mut Object',
 				].map((src) => AST.ASTNodeTypeOperation.fromSource(src).eval()); // assert does not throw if `[isRef=false]`
 			});

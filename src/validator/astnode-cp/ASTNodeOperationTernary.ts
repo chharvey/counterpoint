@@ -70,7 +70,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		const [t0, t1, t2]: TYPE.Type[] = this.children.map((operand) => operand.type());
 		assert.ok(t0.isSubtypeOf(TYPE.BOOL), new TypeErrorInvalidOperation(this));
 		return (
-			t0.isBottomType       ? TYPE.NEVER :
+			t0.isBottomType       ? TYPE.NOTHING :
 			t0.equals(TYPE.FALSE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
 			t0.equals(TYPE.TRUE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
 			t1.union(t2)
