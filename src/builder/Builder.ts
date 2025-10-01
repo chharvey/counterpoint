@@ -177,6 +177,28 @@ export class Builder {
 				new BinVect(mod, mod.f64.neg(local_vects[0].floatValue)).vect,
 			),
 		], binaryen.v128));
+		mod.addFunction('vtoi', binaryen.v128, binaryen.v128, [], mod.block(null, [
+			mod.if(
+				local_vects[0].isInt,
+				local_vects[0].vect,
+				mod.if(
+					local_vects[0].isFloat,
+					new BinVect(mod, mod.i64.trunc_s.f64(local_vects[0].floatValue)).vect,
+					mod.unreachable(),
+				),
+			),
+		], binaryen.v128));
+		mod.addFunction('vtof', binaryen.v128, binaryen.v128, [], mod.block(null, [
+			mod.if(
+				local_vects[0].isFloat,
+				local_vects[0].vect,
+				mod.if(
+					local_vects[0].isInt,
+					new BinVect(mod, mod.f64.convert_s.i64(local_vects[0].intValue)).vect,
+					mod.unreachable(),
+				),
+			),
+		], binaryen.v128));
 		this.#binOpFunction('vexp', [
 			new BinVect(mod, mod.call('exp', [local_vects[0].intValue, local_vects[1].intValue], binaryen.i64)).vect,
 			mod.unreachable(),
@@ -226,8 +248,8 @@ export class Builder {
 		], binaryen.v128));
 		const veq_opts = [
 			BinVect.asBool(mod, mod.i64.eq(                      local_vects[0].intValue,                         local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.eq(mod.f64.convert_u.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
-			BinVect.asBool(mod, mod.f64.eq(                      local_vects[0].floatValue, mod.f64.convert_u.i64(local_vects[1].intValue))),
+			BinVect.asBool(mod, mod.f64.eq(mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
+			BinVect.asBool(mod, mod.f64.eq(                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
 			BinVect.asBool(mod, mod.f64.eq(                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
 		] as const;
 		mod.addFunction('veq', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [

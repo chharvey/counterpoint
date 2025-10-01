@@ -24,6 +24,7 @@ import {
 	typeUnit,
 	buildConst,
 } from '../../helpers.ts';
+import {extract_lines} from '../../utils.ts';
 
 
 
@@ -64,6 +65,8 @@ describe('ASTNodeOperation', () => {
 		vnot: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], binaryen.v128),
 		vemp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], binaryen.v128),
 		vneg: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], binaryen.v128),
+		vtoi: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtoi', [arg], binaryen.v128),
+		vtof: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtof', [arg], binaryen.v128),
 
 		vexp: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vexp', [arg0, arg1], binaryen.v128),
 		vmul: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vmul', [arg0, arg1], binaryen.v128),
@@ -255,6 +258,41 @@ describe('ASTNodeOperation', () => {
 					});
 				});
 			});
+			describe('[operator=INT | FLOAT]', () => {
+				it('returns the respective type for numeric operands.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let var my_int: int   = 7;
+						let var my_flt: float = -3.5;
+
+						int   my_int;
+						int   my_flt;
+						float my_int;
+						float my_flt;
+					`);
+					goal.varCheck();
+					goal.typeCheck();
+					return assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						TYPE.INT,
+						TYPE.INT,
+						TYPE.FLOAT,
+						TYPE.FLOAT,
+					]);
+				});
+				it('throws for non-numeric operands.', () => {
+					xjs.Array.forEachAggregated(extract_lines(`
+						int   null;
+						int   @symb;
+						int   "string";
+						int   ["string tuple"];
+						int   [record= "string"];
+						float null;
+						float @symb;
+						float "string";
+						float ["string tuple"];
+						float [record= "string"];
+					`), (src) => assert.throws(() => AST.ASTNodeOperationUnary.fromSource(src).type(), TypeErrorInvalidOperation));
+				});
+			});
 		});
 
 
@@ -304,6 +342,30 @@ describe('ASTNodeOperation', () => {
 					['?{42};',                VALUE.FALSE],
 					['?{41 -> 42};',          VALUE.FALSE],
 				]));
+			});
+			it('[operator=INT | FLOAT]: returns a numeric conversion only if needed.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let my_int: int   = 7;
+					let my_flt: float = -3.5;
+
+					int   my_int;
+					int   my_flt;
+					float my_int;
+					float my_flt;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				const exprs:    readonly AST.ASTNodeOperationUnary[] = goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary);
+				const values:   readonly (VALUE.Value | null)[]      = exprs.map((expr) => expr.fold());
+				const operands: readonly (VALUE.Value | null)[]      = exprs.map((expr) => expr.operand.fold());
+				assert.strictEqual(values[0], operands[0]);
+				assert.strictEqual(values[3], operands[3]);
+				return assert.deepStrictEqual(values, [
+					new VALUE.Integer(7n),
+					new VALUE.Integer(-3n),
+					new VALUE.Float(7.0),
+					new VALUE.Float(-3.5),
+				]);
 			});
 		});
 
@@ -432,6 +494,29 @@ describe('ASTNodeOperation', () => {
 						CALL.vneg(goal.builder.module, CALL.vneg(goal.builder.module, extracts[5])),
 					].map((expected) => goal.builder.module.drop(expected)),
 				);
+			});
+			it('[operator=INT | FLOAT]: returns a numeric conversion.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let var my_int: int   = 7;
+					let var my_flt: float = -3.5;
+
+					int   my_int;
+					int   my_flt;
+					float my_int;
+					float my_flt;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build();
+				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
+					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build()
+				));
+				return assertEqualBins(goal.children.slice(2).map((stmt) => stmt.build()), [
+					goal.builder.module.drop(CALL.vtoi(goal.builder.module, extracts[0])),
+					goal.builder.module.drop(CALL.vtoi(goal.builder.module, extracts[1])),
+					goal.builder.module.drop(CALL.vtof(goal.builder.module, extracts[2])),
+					goal.builder.module.drop(CALL.vtof(goal.builder.module, extracts[3])),
+				]);
 			});
 		});
 	});

@@ -70,15 +70,18 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			], binaryen.v128);
 		}
 		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.NOT, 'vnot'],
-			[Operator.EMP, 'vemp'],
-			[Operator.NEG, 'vneg'],
+			[Operator.NOT,   'vnot'],
+			[Operator.EMP,   'vemp'],
+			[Operator.NEG,   'vneg'],
+			[Operator.INT,   'vtoi'],
+			[Operator.FLOAT, 'vtof'],
 		]).get(this.operator)!, [arg0], binaryen.v128);
 	}
 
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		const TYPE_NUMBER = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
 		const t: TYPE.Type = this.operand.type();
 		if (t.isBottomType) {
 			return TYPE.NEVER;
@@ -95,8 +98,16 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
 			}
 			case Operator.NEG: {
-				assert.ok(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeErrorInvalidOperation(this));
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
 				return t;
+			}
+			case Operator.INT: {
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				return TYPE.INT;
+			}
+			case Operator.FLOAT: {
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				return TYPE.FLOAT;
 			}
 		}
 	}
@@ -107,11 +118,23 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		if (!v) {
 			return v;
 		}
-		return (
-			(this.operator === Operator.NOT) ?                VALUE.Boolean.fromBoolean(!v.isTruthy)              :
-			(this.operator === Operator.EMP) ?                VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty) :
-			(assert.strictEqual(this.operator, Operator.NEG), this.foldNumeric(v as VALUE.Number<any>)) // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
-		);
+		switch (this.operator) {
+			case Operator.NOT: {
+				return VALUE.Boolean.fromBoolean(!v.isTruthy);
+			}
+			case Operator.EMP: {
+				return VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty);
+			}
+			case Operator.NEG: {
+				return this.foldNumeric(v as VALUE.Number<any>); // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
+			}
+			case Operator.INT: {
+				return (v as VALUE.Number).toInt();
+			}
+			case Operator.FLOAT: {
+				return (v as VALUE.Number).toFloat();
+			}
+		}
 	}
 
 	private foldNumeric<T extends VALUE.Number<T>>(v0: T): T {

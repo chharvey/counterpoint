@@ -1,5 +1,8 @@
 import {Primitive} from './Primitive.ts';
-import type {Float} from './index.ts';
+import type {
+	Integer,
+	Float,
+} from './index.ts';
 
 
 
@@ -17,6 +20,12 @@ abstract class ValueNumber<T = unknown> extends Primitive {
 	public override get isEmpty(): boolean {
 		return this.eq0();
 	}
+
+	/**
+	 * Type-coerce this number into an int.
+	 * @returns the equivalent signed integer value
+	 */
+	public abstract toInt(): Integer;
 
 	/**
 	 * Type-coerce this number into a float.

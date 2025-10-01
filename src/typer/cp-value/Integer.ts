@@ -71,6 +71,10 @@ export class Integer extends ValueNumber<Integer> {
 		return new BinVect(builder.module, bigint_to_i64(builder.module, this.data)).vect;
 	}
 
+	public override toInt(): Integer {
+		return this;
+	}
+
 	public override toFloat(): Float {
 		return new Float(this.toNumber());
 	}

@@ -316,15 +316,24 @@ describe('Decorator', () => {
 				% (expression_unary_symbol)
 			`]],
 
-			['Decorate(ExpressionCast ::= ExpressionCast "as" ExpressionUnarySymbol) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionUnaryKeyword ::= "int" ExpressionUnaryKeyword) -> SemanticOperation', [AST.ASTNodeOperation, `
+				int v;
+				% (expression_unary_keyword)
+			`]],
+			['Decorate(ExpressionUnaryKeyword ::= "float" ExpressionUnaryKeyword) -> SemanticOperation', [AST.ASTNodeOperation, `
+				float v;
+				% (expression_unary_keyword)
+			`]],
+
+			['Decorate(ExpressionCast ::= ExpressionCast "as" ExpressionUnaryKeyword) -> SemanticOperation', [AST.ASTNodeOperation, `
 				a as Klass;
 				% (expression_cast)
 			`]],
-			['Decorate(ExpressionCast ::= ExpressionCast "as?" ExpressionUnarySymbol) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionCast ::= ExpressionCast "as?" ExpressionUnaryKeyword) -> SemanticOperation', [AST.ASTNodeOperation, `
 				a as? Klass;
 				% (expression_cast)
 			`]],
-			['Decorate(ExpressionCast ::= ExpressionCast "as!" ExpressionUnarySymbol) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionCast ::= ExpressionCast "as!" ExpressionUnaryKeyword) -> SemanticOperation', [AST.ASTNodeOperation, `
 				a as! Klass;
 				% (expression_cast)
 			`]],
