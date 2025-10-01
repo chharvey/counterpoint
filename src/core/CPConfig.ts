@@ -40,11 +40,5 @@ export type CPConfig = {
 		 * @default true
 		 */
 		readonly constantFolding: boolean,
-		/**
-		 * Coerce integers into floats if mixed with floats in arithmetic expressions.
-		 * @version v0.2.0
-		 * @default true
-		 */
-		readonly intCoercion:     boolean,
 	},
 };

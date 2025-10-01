@@ -204,7 +204,7 @@ describe('ASTNodeCP', () => {
 			it('always returns `(local.set)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let var y: float = 4.2;
-					y = y * 10;
+					y = y * 10.0;
 				`);
 				goal.varCheck();
 				goal.typeCheck();
@@ -214,7 +214,7 @@ describe('ASTNodeCP', () => {
 					goal.builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build()),
 				);
 			});
-			it('coerces as necessary.', () => {
+			it('allows switching between union members.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let var x: float | int = 4.2;
 					let var y: int | float = 4.2;
@@ -222,8 +222,6 @@ describe('ASTNodeCP', () => {
 					x = 16;
 					x = x;
 					x = y;
-					x = 52 + x;
-					x = x + x;
 				`);
 				goal.varCheck();
 				goal.typeCheck();

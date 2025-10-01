@@ -117,7 +117,7 @@ SemanticClaim
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
-SemanticOperation[operator: NEG]
+SemanticOperation[operator: NEG | INT | FLOAT]
 	::= SemanticExpression[type: Number];
 SemanticOperation[operator: CAST | MAYBE | RESULT | IS]
 	::= SemanticExpression SemanticExpression[type: Class];

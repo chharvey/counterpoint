@@ -52,7 +52,6 @@ type CustomArgsType = {
 
 	// Compiler Options
 	constantFolding: null | boolean,
-	intCoercion:     null | boolean,
 };
 
 
@@ -114,7 +113,6 @@ export class CLI {
 
 		Compiler Options:
 		--[no-]constantFolding         (on by default)
-		--[no-]intCoercion             (on by default)
 	`.trimStart();
 
 	/** Options argument to `minimist` function. */
@@ -130,7 +128,6 @@ export class CLI {
 			'numericSeparators',
 			// Compiler Options
 			'constantFolding',
-			'intCoercion',
 		],
 		string: [
 			// CLI Options
@@ -156,7 +153,6 @@ export class CLI {
 
 			// Compiler Options
 			constantFolding: null,
-			intCoercion:     null,
 		},
 		unknown(arg) {
 			if (arg.startsWith('-')) { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
@@ -232,7 +228,6 @@ export class CLI {
 		if (this.argv.integerRadices    !== null) returned.languageFeatures.integerRadices    = this.argv.integerRadices;
 		if (this.argv.numericSeparators !== null) returned.languageFeatures.numericSeparators = this.argv.numericSeparators;
 		if (this.argv.constantFolding   !== null) returned.compilerOptions.constantFolding    = this.argv.constantFolding;
-		if (this.argv.intCoercion       !== null) returned.compilerOptions.intCoercion        = this.argv.intCoercion;
 		/* eslint-enable curly */
 
 		return returned;

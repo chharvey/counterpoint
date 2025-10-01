@@ -392,22 +392,35 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 
 
 
-Decorate(ExpressionCast ::= ExpressionUnarySymbol) -> SemanticExpression
+Decorate(ExpressionUnaryKeyword ::= ExpressionUnarySymbol) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol);
-Decorate(ExpressionCast ::= ExpressionCast "as" ExpressionUnarySymbol) -> SemanticOperation
+Decorate(ExpressionUnaryKeyword ::= "int" ExpressionUnaryKeyword) -> SemanticOperation
+	:= (SemanticOperation[operator=INT]
+		Decorate(ExpressionUnaryKeyword)
+	);
+Decorate(ExpressionUnaryKeyword ::= "float" ExpressionUnaryKeyword) -> SemanticOperation
+	:= (SemanticOperation[operator=FLOAT]
+		Decorate(ExpressionUnaryKeyword)
+	);
+
+
+
+Decorate(ExpressionCast ::= ExpressionUnaryKeyword) -> SemanticExpression
+	:= Decorate(ExpressionUnaryKeyword);
+Decorate(ExpressionCast ::= ExpressionCast "as" ExpressionUnaryKeyword) -> SemanticOperation
 	:= (SemanticOperation[operator=CAST]
 		Decorate(ExpressionCast)
-		Decorate(ExpressionUnarySymbol)
+		Decorate(ExpressionUnaryKeyword)
 	);
-Decorate(ExpressionCast ::= ExpressionCast "as?" ExpressionUnarySymbol) -> SemanticOperation
+Decorate(ExpressionCast ::= ExpressionCast "as?" ExpressionUnaryKeyword) -> SemanticOperation
 	:= (SemanticOperation[operator=MAYBE]
 		Decorate(ExpressionCast)
-		Decorate(ExpressionUnarySymbol)
+		Decorate(ExpressionUnaryKeyword)
 	);
-Decorate(ExpressionCast ::= ExpressionCast "as!" ExpressionUnarySymbol) -> SemanticOperation
+Decorate(ExpressionCast ::= ExpressionCast "as!" ExpressionUnaryKeyword) -> SemanticOperation
 	:= (SemanticOperation[operator=RESULT]
 		Decorate(ExpressionCast)
-		Decorate(ExpressionUnarySymbol)
+		Decorate(ExpressionUnaryKeyword)
 	);
 Decorate(ExpressionCast ::= ExpressionCast "as" "<" Type ">") -> SemanticClaim
 	:= (SemanticClaim

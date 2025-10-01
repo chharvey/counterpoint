@@ -8,6 +8,7 @@ import {
 	strictEqual,
 	instanceOf,
 } from '../utils-private.ts';
+import {Integer} from './index.ts';
 import {
 	identical,
 	type Value,
@@ -54,6 +55,10 @@ export class Float extends ValueNumber<Float> {
 		).vect;
 	}
 
+	public override toInt(): Integer {
+		return new Integer(BigInt(Math.trunc(this.data)));
+	}
+
 	public override toFloat(): this {
 		return this;
 	}
@@ -71,7 +76,7 @@ export class Float extends ValueNumber<Float> {
 	}
 
 	public override divide(divisor: Float): Float {
-		if (divisor.data === 0) {
+		if (divisor.eq0()) {
 			throw new RangeError('Division by zero.');
 		}
 		return new Float(this.data / divisor.data);

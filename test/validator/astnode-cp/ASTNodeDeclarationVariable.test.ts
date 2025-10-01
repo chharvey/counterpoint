@@ -14,10 +14,7 @@ import {
 	assertAssignable,
 	assertEqualBins,
 } from '../../assert-helpers.ts';
-import {
-	CONFIG_FOLDING_OFF,
-	CONFIG_COERCION_OFF,
-} from '../../helpers.ts';
+import {CONFIG_FOLDING_OFF} from '../../helpers.ts';
 
 
 
@@ -133,18 +130,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			`).typeCheck(), TypeErrorNotAssignable);
 		});
 
-		it('with int coersion on, allows assigning ints to floats.', () => {
-			const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
-				let x: float = 42;
-			`);
-			var_.varCheck();
-			return var_.typeCheck();
-		});
-
-		it('with int coersion off, throws when assigning int to float.', () => {
+		it('throws when assigning int to float.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
-			`, CONFIG_COERCION_OFF).typeCheck(), TypeErrorNotAssignable);
+			`).typeCheck(), TypeErrorNotAssignable);
 		});
 		it('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -398,9 +387,9 @@ describe('ASTNodeDeclarationVariable', () => {
 	describe('#build', () => {
 		it('with constant folding on.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let a: int   = 42;      % fixed, foldable: \`(nop)\`
-				let b: float = 4.2 * a; % fixed, foldable: \`(nop)\`
-				let _: bool  = true;    % blank, foldable: \`(nop)\`
+				let a: int  = 42;     % fixed, foldable: \`(nop)\`
+				let b: int  = 42 * a; % fixed, foldable: \`(nop)\`
+				let _: bool = true;   % blank, foldable: \`(nop)\`
 
 				let var c: int = 42;     % unfixed, foldable: \`(local.set)\`
 				let d:     int = c + 10; % fixed, unfoldable: \`(local.set)\`

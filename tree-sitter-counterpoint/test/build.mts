@@ -788,6 +788,23 @@ function buildTest(title: string, source: string, expected: string): string {
 			),
 		],
 
+		ExpressionUnaryKeyword: [
+			xjs.String.dedent`
+				int   value;
+				float value;
+			`,
+			sourceExpressions(
+				s(
+					'expression_unary_keyword',
+					s('identifier'),
+				),
+				s(
+					'expression_unary_keyword',
+					s('identifier'),
+				),
+			),
+		],
+
 		ExpressionCast: [
 			xjs.String.dedent`
 				value as  Klass;

@@ -62,12 +62,6 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 
 	public override build(): binaryen.ExpressionRef {
 		const id: bigint = (this.assignee as ASTNodeVariable).id;
-		return this.builder.getLocal(id)?.set(ASTNodeStatement.coerceAssignment(
-			this.builder.module,
-			this.assignee.type(),
-			this.assigned.type(),
-			this.assigned.build(),
-			this.validator.config.compilerOptions.intCoercion,
-		)) ?? assert.fail(new ReferenceError(`Variable with id ${ id } not found.`));
+		return this.builder.getLocal(id)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ id } not found.`));
 	}
 }

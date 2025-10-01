@@ -18,10 +18,6 @@ import {
 	type ValidOperatorEquality,
 } from '../Operator.ts';
 import {
-	bothNumeric,
-	oneFloats,
-} from './utils-private.ts';
-import {
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -62,42 +58,36 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 	}
 
-	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
 		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NOTHING;
 		}
-		/*
-		 * Identity:
-		 *
-		 * - If      the types of `a` and `b` are disjoint, then `a === b` will always evaluate to false.
-		 * - Else if the types of `a` and `b` intersect,    then `a === b` could evaluate to true.
-		 *
-		 *
-		 * Equality:
-		 *
-		 * - If any of `a` or `b` is disjoint with the Number type (it cannot contain numbers),
-		 * 	then we’ll use the same logic as Identity:
-		 * 	- If      the types of `a` and `b` are disjoint, then `a == b` will evaluate to false.
-		 * 	- Else if the types of `a` and `b` intersect,    then `a == b` could evaluate to true.
-		 *
-		 * - Else if both `a` and `b` intersect with the Number type (they both might contain numbers), then:
-		 * 	- If the types of `a` and `b` are disjoint,
-		 * 		and `intCoercion` is off,
-		 * 		and one of the types of `a` or `b` cannot contain a floating zero (0.0 or -0.0),
-		 * 		then then `a == b` will evaluate to false.
-		 * 	- Else if the types of `a` and `b` intersect,
-		 * 		or `intCoercion` is on,
-		 * 		or both types of `a` and `b` can contain a floating zero (0.0 or -0.0),
-		 * 		then `a == b` could evaluate to true.
-		 */
-		if (t0.intersect(t1).isBottomType && (
-			this.operator === Operator.ID ||
-			[t0, t1].some((t) => t.intersect(TYPE.INT.union(TYPE.FLOAT)).isBottomType) ||
-			!int_coercion && [t0, t1].some((t) => !t.includes(VALUE.FLOAT_0) && !t.includes(VALUE.FLOAT_N0))
-		)) {
-			return TYPE.FALSE;
+		const DISJOINT_TYPES = t0.intersect(t1).isBottomType;
+		switch (this.operator) {
+			case Operator.ID: {
+				/*
+				 * Identity:
+				 * - If      the types of `a` and `b` are disjoint, then `a === b` will always evaluate to false.
+				 * - Else if the types of `a` and `b` intersect,    then `a === b` could evaluate to true.
+				 */
+				return DISJOINT_TYPES ? TYPE.FALSE : TYPE.BOOL;
+			}
+			case Operator.EQ: {
+				/*
+				 * Equality:
+				 * - If the types of `a` and `b` are disjoint,
+				 * 	*and* any of `a` or `b` is disjoint with the Number type (it cannot contain numbers),
+				 * 	then `a === b` will always evaluate to false.
+				 * - Else if the types of `a` and `b` intersect,
+				 * 	*or* both `a` and `b` intersect with the Number type (they both might contain numbers),
+				 * 	then `a === b` could evaluate to true.
+				 */
+				return DISJOINT_TYPES && [t0, t1].some((t) => t.intersect(TYPE.INT.union(TYPE.FLOAT)).isBottomType) ? TYPE.FALSE : TYPE.BOOL;
+			}
+			default: {
+				return TYPE.BOOL;
+			}
 		}
-		return TYPE.BOOL;
 	}
 
 	@memoizeMethod
@@ -114,9 +104,6 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	private foldEquality(v0: VALUE.Value, v1: VALUE.Value): VALUE.Boolean {
-		if (bothNumeric(v0, v1) && oneFloats(v0, v1) && !this.validator.config.compilerOptions.intCoercion) {
-			return VALUE.FALSE;
-		}
 		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: VALUE.Value, y: VALUE.Value) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],
 			[Operator.EQ, (x, y) => x.equal(y)],

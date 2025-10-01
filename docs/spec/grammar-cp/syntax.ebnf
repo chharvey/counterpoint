@@ -144,11 +144,11 @@ Assignee ::=
 	| ExpressionCompound PropertyAssign
 ;
 
-ExpressionUnarySymbol
-	::= ExpressionCompound | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
+ExpressionUnarySymbol  ::= ExpressionCompound    | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
+ExpressionUnaryKeyword ::= ExpressionUnarySymbol | ("int" | "float")       ExpressionUnaryKeyword;
 
 ExpressionCast ::=
-	| (ExpressionCast ("as" | "as?" | "as!"))? ExpressionUnarySymbol
+	| (ExpressionCast ("as" | "as?" | "as!"))? ExpressionUnaryKeyword
 	|  ExpressionCast  "as"                    "<" Type ">"
 ;
 
