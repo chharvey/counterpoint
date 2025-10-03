@@ -1,7 +1,7 @@
 export enum Operator {
 	DOT,
-	OPTDOT,
-	CLAIMDOT,
+	DOT_MAY,
+	DOT_RES,
 	ORNULL,
 	OREXCP,
 	MUTABLE,
@@ -9,6 +9,11 @@ export enum Operator {
 	EMP,
 	AFF,
 	NEG,
+	INT,
+	FLOAT,
+	CAST,
+	CAST_MAY,
+	CAST_RES,
 	EXP,
 	MUL,
 	DIV,
@@ -33,10 +38,15 @@ export enum Operator {
 	COND,
 }
 
+export type ValidTypeAccessOperator = (
+	| Operator.DOT
+	| Operator.DOT_MAY
+);
+
 export type ValidAccessOperator = (
 	| Operator.DOT
-	| Operator.OPTDOT
-	| Operator.CLAIMDOT
+	| Operator.DOT_MAY
+	| Operator.DOT_RES
 );
 
 export type ValidTypeOperator = (
@@ -51,6 +61,14 @@ export type ValidOperatorUnary = (
 	| Operator.NOT
 	| Operator.EMP
 	| Operator.NEG
+	| Operator.INT
+	| Operator.FLOAT
+);
+
+export type ValidOperatorCast = (
+	| Operator.CAST
+	| Operator.CAST_MAY
+	| Operator.CAST_RES
 );
 
 export type ValidOperatorArithmetic = (
@@ -79,6 +97,7 @@ export type ValidOperatorLogical = (
 );
 
 export type ValidOperatorBinary = (
+	| ValidOperatorCast
 	| ValidOperatorArithmetic
 	| ValidOperatorComparative
 	| ValidOperatorEquality

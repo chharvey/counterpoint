@@ -1,11 +1,11 @@
+import type {ConstructorType} from '../lib/index.ts';
 import {
 	LexError01,
 	LexError03,
 	LexError04,
 	LexError05,
-} from './index.js';
-import type {ConstructorType} from './utils-private.js';
-import {ErrorCode} from './ErrorCode.js';
+} from './index.ts';
+import {ErrorCode} from './ErrorCode.ts';
 
 
 

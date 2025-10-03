@@ -14,7 +14,7 @@ function familyName<RuleName extends string>(family_name: string, ...suffices: r
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
-	return [...new Array(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
+	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
 }
 
 /**
@@ -47,7 +47,7 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
 	...params: readonly string[]
 ): RuleBuilders<RuleName, BaseGrammarRuleName> {
 	const rules_obj: RuleBuilders<RuleName, BaseGrammarRuleName> = {} as RuleBuilders<RuleName, BaseGrammarRuleName>;
-	new Map<RuleName, RuleBuilder<RuleName>>([...new Array(2 ** params.length)].map((_, nth) => {
+	new Map<RuleName, RuleBuilder<RuleName>>([...new Array<undefined>(2 ** params.length)].map((_, nth) => {
 		const args_arr: readonly string[] = argsArr(nth, params);
 		const args_obj: Record<string, boolean> = {};
 		args_arr.forEach((arg) => {
@@ -89,37 +89,41 @@ function call<RuleName extends string>(family_name: string, ...args: readonly (s
 
 
 /* # LEXER HELPERS */
-const WORD_BASIC   = /[A-Za-z_][A-Za-z0-9_]*/;
+const WORD_BASIC   = /[A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+/;
 const WORD_UNICODE = /'[^']*'/;
 
 const DIGIT_SEQ_BIN            = /[0-1]+/;
 const DIGIT_SEQ_BIN__SEPARATOR = /([0-1]_?)*[0-1]/;
 const DIGIT_SEQ_QUA            = /[0-3]+/;
 const DIGIT_SEQ_QUA__SEPARATOR = /([0-3]_?)*[0-3]/;
+const DIGIT_SEQ_SEX            = /[0-5]+/;
+const DIGIT_SEQ_SEX__SEPARATOR = /([0-5]_?)*[0-5]/;
 const DIGIT_SEQ_OCT            = /[0-7]+/;
 const DIGIT_SEQ_OCT__SEPARATOR = /([0-7]_?)*[0-7]/;
 const DIGIT_SEQ_DEC            = /[0-9]+/;
 const DIGIT_SEQ_DEC__SEPARATOR = /([0-9]_?)*[0-9]/;
 const DIGIT_SEQ_HEX            = /[0-9a-f]+/;
 const DIGIT_SEQ_HEX__SEPARATOR = /([0-9a-f]_?)*[0-9a-f]/;
-const DIGIT_SEQ_HTD            = /[0-9a-z]+/;
-const DIGIT_SEQ_HTD__SEPARATOR = /([0-9a-z]_?)*[0-9a-z]/;
+const DIGIT_SEQ_NIF            = /[0-9a-z]+/;
+const DIGIT_SEQ_NIF__SEPARATOR = /([0-9a-z]_?)*[0-9a-z]/;
 
 const INTEGER_DIGITS_RADIX = choice(
 	seq('\\b',           DIGIT_SEQ_BIN),
 	seq('\\q',           DIGIT_SEQ_QUA),
+	seq('\\s',           DIGIT_SEQ_SEX),
 	seq('\\o',           DIGIT_SEQ_OCT),
 	seq(optional('\\d'), DIGIT_SEQ_DEC),
 	seq('\\x',           DIGIT_SEQ_HEX),
-	seq('\\z',           DIGIT_SEQ_HTD),
+	seq('\\z',           DIGIT_SEQ_NIF),
 );
 const INTEGER_DIGITS_RADIX__SEPARATOR = choice(
 	seq('\\b',           DIGIT_SEQ_BIN__SEPARATOR),
 	seq('\\q',           DIGIT_SEQ_QUA__SEPARATOR),
+	seq('\\s',           DIGIT_SEQ_SEX__SEPARATOR),
 	seq('\\o',           DIGIT_SEQ_OCT__SEPARATOR),
 	seq(optional('\\d'), DIGIT_SEQ_DEC__SEPARATOR),
 	seq('\\x',           DIGIT_SEQ_HEX__SEPARATOR),
-	seq('\\z',           DIGIT_SEQ_HTD__SEPARATOR),
+	seq('\\z',           DIGIT_SEQ_NIF__SEPARATOR),
 );
 
 const SIGNED_DIGIT_SEQ_DEC            = seq(/[+-]?/, DIGIT_SEQ_DEC);
@@ -134,9 +138,8 @@ const DELIM_TEMPLATE     = '"""';
 const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
-const COMMENTER_MULTI    = '%%';
 
-/* eslint-disable function-call-argument-newline */
+/* eslint-disable @stylistic/function-call-argument-newline */
 const STRING_ESCAPE = choice(
 	DELIM_STRING,
 	ESCAPER,
@@ -171,7 +174,7 @@ const STRING_ESCAPE__COMMENT_SEPARATOR = choice(
 	'\n',
 	/[^"\\%stnru\n]/,
 );
-/* eslint-enable function-call-argument-newline */
+/* eslint-enable @stylistic/function-call-argument-newline */
 
 const STRING_CHAR = choice(
 	/[^"\\]/,
@@ -251,20 +254,22 @@ const OPT_COM = optional(',');
 function iff(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral {
 	return (condition) ? consequent : blank();
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ifSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
 	return (condition) ? [consequent] : [];
 }
 function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function repCom(production: RuleOrLiteral): ChoiceRule {
 	return optional(repCom1(production));
 }
 
 
 
+/* eslint-disable @stylistic/arrow-parens */
 module.exports = grammar({
-	/* eslint-disable arrow-parens */
 	name: 'counterpoint',
 
 	rules: {
@@ -274,13 +279,13 @@ module.exports = grammar({
 
 		/* # LEXICON */
 		keyword_type: _$ => token(choice(
-			'never',
-			'void',
+			'nothing',
 			'bool',
+			'sym',
 			'int',
 			'float',
 			'str',
-			'unknown',
+			'anything',
 		)),
 		keyword_value: _$ => token(choice(
 			'null',
@@ -304,7 +309,7 @@ module.exports = grammar({
 			_$ => token(seq(
 				(!separator) ? SIGNED_DIGIT_SEQ_DEC : SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
 				'.',
-				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR,
+				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR, // eslint-disable-line @stylistic/indent
 				optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
 			))
 		), 'separator'),
@@ -331,7 +336,7 @@ module.exports = grammar({
 		/* # SYNTAX */
 		word: $ => choice(
 			// operator
-			'mutable',
+			'mut',
 			'is',
 			'isnt',
 			'if',
@@ -340,8 +345,10 @@ module.exports = grammar({
 			// storage
 			'type',
 			'let',
+			'_',
+			'void',
 			// modifier
-			'unfixed',
+			'var',
 			$.keyword_type,
 			$.keyword_value,
 			$.identifier,
@@ -359,6 +366,7 @@ module.exports = grammar({
 			$.string__comment,
 			$.string__separator,
 			$.string__comment__separator,
+			seq('@', $.word),
 		),
 
 
@@ -368,7 +376,7 @@ module.exports = grammar({
 		), 'named', 'optional'),
 
 		_items_type: $ => choice(
-			             seq(repCom1($.entry_type), OPT_COM),
+			             seq(repCom1($.entry_type), OPT_COM), // eslint-disable-line @stylistic/indent
 			seq(optional(seq(repCom1($.entry_type), ','    )), repCom1($[call('entry_type', 'optional')]), OPT_COM),
 		),
 
@@ -392,8 +400,8 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		property_access_type: $ => seq('.', choice($.integer, $.word)),
-		generic_call:         $ => seq('.', $.generic_arguments),
+		property_access_type: $ => seq(choice('.', '?.'), choice($.integer, $.word)),
+		generic_call:         $ => seq('.',               $.generic_arguments),
 
 		_type_compound: $ => choice(
 			$._type_unit,
@@ -416,7 +424,7 @@ module.exports = grammar({
 			$._type_unary_symbol,
 			alias($.type_unary_keyword_dfn, $.type_unary_keyword),
 		),
-		type_unary_keyword_dfn: $ => seq('mutable', $._type_unary_keyword),
+		type_unary_keyword_dfn: $ => seq('mut', $._type_unary_keyword),
 
 		_type_intersection: $ => choice($._type_unary_keyword, alias($.type_intersection_dfn, $.type_intersection)),
 		_type_union:        $ => choice($._type_intersection,  alias($.type_union_dfn,        $.type_union)),
@@ -424,11 +432,11 @@ module.exports = grammar({
 		type_intersection_dfn: $ => seq($._type_intersection, '&', $._type_unary_keyword),
 		type_union_dfn:        $ => seq($._type_union,        '|', $._type_intersection),
 
-		/* eslint-disable function-paren-newline */
+		/* eslint-disable @stylistic/function-paren-newline */
 		_type: $ => choice(
 			$._type_union,
 		),
-		/* eslint-enable function-paren-newline */
+		/* eslint-enable @stylistic/function-paren-newline */
 
 
 		/* ## Expressions */
@@ -473,13 +481,14 @@ module.exports = grammar({
 			seq($._expression_compound, $.property_assign),
 		),
 
-		_expression_unary_symbol: $ => choice($._expression_compound,     alias($.expression_unary_symbol_dfn, $.expression_unary_symbol)),
-		_expression_claim:        $ => choice($._expression_unary_symbol, alias($.expression_claim_dfn,        $.expression_claim)),
+		_expression_unary_symbol:  $ => choice($._expression_compound,     alias($.expression_unary_symbol_dfn,  $.expression_unary_symbol)),
+		_expression_unary_keyword: $ => choice($._expression_unary_symbol, alias($.expression_unary_keyword_dfn, $.expression_unary_keyword)),
 
-		expression_unary_symbol_dfn: $ => seq(choice('!', '?', '+', '-'), $._expression_unary_symbol),
-		expression_claim_dfn:        $ => seq('<', $._type, '>',          $._expression_claim),
+		expression_unary_symbol_dfn:  $ => seq(choice('!', '?', '+', '-'), $._expression_unary_symbol),
+		expression_unary_keyword_dfn: $ => seq(choice('int', 'float'),     $._expression_unary_keyword),
 
-		_expression_exponential:    $ => choice($._expression_claim,          alias($.expression_exponential_dfn,    $.expression_exponential)),
+		_expression_cast:           $ => choice($._expression_unary_keyword,  alias($.expression_cast_dfn,           $.expression_cast)),
+		_expression_exponential:    $ => choice($._expression_cast,           alias($.expression_exponential_dfn,    $.expression_exponential)),
 		_expression_multiplicative: $ => choice($._expression_exponential,    alias($.expression_multiplicative_dfn, $.expression_multiplicative)),
 		_expression_additive:       $ => choice($._expression_multiplicative, alias($.expression_additive_dfn,       $.expression_additive)),
 		_expression_comparative:    $ => choice($._expression_additive,       alias($.expression_comparative_dfn,    $.expression_comparative)),
@@ -487,13 +496,14 @@ module.exports = grammar({
 		_expression_conjunctive:    $ => choice($._expression_equality,       alias($.expression_conjunctive_dfn,    $.expression_conjunctive)),
 		_expression_disjunctive:    $ => choice($._expression_conjunctive,    alias($.expression_disjunctive_dfn,    $.expression_disjunctive)),
 
-		expression_exponential_dfn:    $ => seq($._expression_claim,          '^',                                                    $._expression_exponential),
-		expression_multiplicative_dfn: $ => seq($._expression_multiplicative, choice('*', '/'),                                       $._expression_exponential),
-		expression_additive_dfn:       $ => seq($._expression_additive,       choice('+', '-'),                                       $._expression_multiplicative),
-		expression_comparative_dfn:    $ => seq($._expression_comparative,    choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), $._expression_additive),
-		expression_equality_dfn:       $ => seq($._expression_equality,       choice('===', '!==', '==', '!='),                       $._expression_comparative),
-		expression_conjunctive_dfn:    $ => seq($._expression_conjunctive,    choice('&&', '!&'),                                     $._expression_equality),
-		expression_disjunctive_dfn:    $ => seq($._expression_disjunctive,    choice('||', '!|'),                                     $._expression_conjunctive),
+		expression_cast_dfn:           $ => choice(seq($._expression_cast,           choice('as', 'as?', 'as!'),                             $._expression_unary_symbol), seq($._expression_cast, 'as', '<', $._type, '>')),
+		expression_exponential_dfn:    $ =>        seq($._expression_cast,           '^',                                                    $._expression_exponential),
+		expression_multiplicative_dfn: $ =>        seq($._expression_multiplicative, choice('*', '/'),                                       $._expression_exponential),
+		expression_additive_dfn:       $ =>        seq($._expression_additive,       choice('+', '-'),                                       $._expression_multiplicative),
+		expression_comparative_dfn:    $ =>        seq($._expression_comparative,    choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), $._expression_additive),
+		expression_equality_dfn:       $ =>        seq($._expression_equality,       choice('===', '!==', '==', '!='),                       $._expression_comparative),
+		expression_conjunctive_dfn:    $ =>        seq($._expression_conjunctive,    choice('&&', '!&'),                                     $._expression_equality),
+		expression_disjunctive_dfn:    $ =>        seq($._expression_disjunctive,    choice('||', '!|'),                                     $._expression_conjunctive),
 
 		expression_conditional: $ => seq('if', $._expression, 'then', $._expression, 'else', $._expression),
 
@@ -504,8 +514,12 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		declaration_type:     $ => seq('type',                      $.identifier, '=', $._type,                     ';'),
-		declaration_variable: $ => seq('let',  optional('unfixed'), $.identifier, ':', $._type, '=', $._expression, ';'),
+		declaration_type: $ => seq('type', choice('_', $.identifier ), '=', $._type, ';'),
+
+		declaration_variable: $ => choice(
+			seq('let', optional('var'), choice('_', $.identifier), ':',  $._type, '=', $._expression, ';'),
+			seq('let',          'var',  choice('_', $.identifier), '?:', $._type,                     ';'),
+		),
 
 		_declaration: $ => choice(
 			$.declaration_type,
@@ -553,5 +567,5 @@ module.exports = grammar({
 		$._declaration,
 		$._statement,
 	],
-	/* eslint-enable arrow-parens */
 });
+/* eslint-enable @stylistic/arrow-parens */

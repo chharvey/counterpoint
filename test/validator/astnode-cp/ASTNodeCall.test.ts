@@ -1,17 +1,27 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	AST,
-	OBJ,
+	VALUE,
 	TYPE,
 	TypeErrorNotAssignable,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
-} from '../../../src/index.js';
+} from '../../../src/index.ts';
+import {
+	assertEqualTypes,
+	assertAssignable,
+} from '../../assert-helpers.ts';
+import {
+	extract_lines,
+	repeat,
+} from '../../utils.ts';
 
 
 
 describe('ASTNodeCall', () => {
-	const evaluate = [
+	const EVALUATE = [
 		'List.<int>([1, 2, 3])',
 		'Dict.<int>([a= 1, b= 2, c= 3])',
 		'Set.<int>([1, 2, 3])',
@@ -21,170 +31,231 @@ describe('ASTNodeCall', () => {
 			[3, 0.4],
 		])`,
 	] as const;
-	const list_args = [
+	const LIST_CONS = [
+		'List.<int>()',
+		'List.<int>([])',
+		'List.<int>(List.<int>())',
+		'List.<int>(Set.<int>())',
+		'List.<int>({})',
+		'List.<int>([1, 2, 3])',
 		'List.<int>(List.<int>([1, 2, 3]))',
+		'List.<int>(Set.<int>([1, 2, 3]))',
+		'List.<int>({1, 2, 3})',
+	] as const;
+	const DICT_CONS = [
+		'Dict.<int>()',
+		'Dict.<int>(Dict.<int>())',
+		'Dict.<int>([a= 1, b= 2, c= 3])',
+		'Dict.<int>(Dict.<int>([a= 1, b= 2, c= 3]))',
+	] as const;
+	const SET_CONS = [
+		'Set.<int>()',
+		'Set.<int>([])',
+		'Set.<int>(List.<int>())',
+		'Set.<int>(Set.<int>())',
+		'Set.<int>({})',
+		'Set.<int>([1, 2, 3])',
 		'Set.<int>(List.<int>([1, 2, 3]))',
+		'Set.<int>(Set.<int>([1, 2, 3]))',
+		'Set.<int>({1, 2, 3})',
+	] as const;
+	const MAP_CONS = [
+		'Map.<int, float>()',
+		'Map.<int, float>([])',
+		'Map.<int, float>(List.<[int, float]>())',
+		'Map.<int, float>(Set.<[int, float]>())',
+		'Map.<int, float>({})',
+		'Map.<int, float>(Map.<int, float>())',
+		`Map.<int, float>([
+			[1, 0.1],
+			[2, 0.2],
+			[3, 0.4],
+		])`,
 		`Map.<int, float>(List.<[int, float]>([
 			[1, 0.1],
 			[2, 0.2],
 			[3, 0.4],
 		]))`,
-	] as const;
-	const zero_empty = [
-		'List.<int>()',
-		'Dict.<int>()',
-		'Set.<int>()',
-		'Map.<int, float>()',
-		'List.<int>([])',
-		'Set.<int>([])',
-		'Map.<int, float>([])',
+		`Map.<int, float>(Set.<[int, float]>([
+			[1, 0.1],
+			[2, 0.2],
+			[3, 0.4],
+		]))`,
+		`Map.<int, float>({
+			[1, 0.1],
+			[2, 0.2],
+			[3, 0.4],
+		})`,
+		`Map.<int, float>(Map.<int, float>([
+			[1, 0.1],
+			[2, 0.2],
+			[3, 0.4],
+		]))`,
+		`Map.<int, float>({
+			1 -> 0.1,
+			2 -> 0.2,
+			3 -> 0.4,
+		})`,
 	] as const;
 
 
 	describe('#type', () => {
 		it('evaluates List, Dict, Set, and Map.', () => {
-			assert.deepStrictEqual(
-				evaluate.map((src) => AST.ASTNodeCall.fromSource(src).type()),
+			assertEqualTypes(
+				EVALUATE.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
-					new TYPE.TypeList(TYPE.INT, true),
-					new TYPE.TypeDict(TYPE.INT, true),
-					new TYPE.TypeSet(TYPE.INT, true),
-					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
+					new TYPE.List(TYPE.INT, true),
+					new TYPE.Dict(TYPE.INT, true),
+					new TYPE.Set(TYPE.INT, true),
+					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
 				],
 			);
 		});
-		it('List, Set, and Map take List-type arguments.', () => {
-			assert.deepStrictEqual(
-				list_args.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				[
-					new TYPE.TypeList(TYPE.INT, true),
-					new TYPE.TypeSet(TYPE.INT, true),
-					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
-				],
+		specify('`List.(‹…›)`', () => {
+			assertEqualTypes(
+				LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
+				repeat(new TYPE.List(TYPE.INT, true), 9),
 			);
 		});
-		it('zero/empty functional arguments.', () => {
-			assert.deepStrictEqual(
-				zero_empty.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				[
-					new TYPE.TypeList(TYPE.INT, true),
-					new TYPE.TypeDict(TYPE.INT, true),
-					new TYPE.TypeSet(TYPE.INT, true),
-					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
-					new TYPE.TypeList(TYPE.INT, true),
-					new TYPE.TypeSet(TYPE.INT, true),
-					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT, true),
-				],
+		specify('`Dict.(‹…›)`', () => {
+			assertEqualTypes(
+				DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
+				repeat(new TYPE.Dict(TYPE.INT, true), 4),
 			);
+		});
+		specify('`Set.(‹…›)`', () => {
+			assertEqualTypes(
+				SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
+				repeat(new TYPE.Set(TYPE.INT, true), 9),
+			);
+		});
+		specify('`Map.(‹…›)`', () => {
+			assertEqualTypes(
+				MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
+				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), 12),
+			);
+		});
+		it('bypasses invariance for generic arguments.', () => {
+			extract_lines(`
+				List.<mut int{}>([   {42}])
+				Dict.<mut int{}>([a= {42}])
+				Set .<mut int{}>([   {42}])
+				Map.<float, mut int{}>([[4.2, {42}]])
+				Map.<mut int{}, float>([[{42}, 4.2]])
+			`).map((src) => AST.ASTNodeCall.fromSource(src).type());
 		});
 		it('Map has a default type parameter.', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeCall.fromSource('Map.<int>()').type(),
-				new TYPE.TypeMap(TYPE.INT, TYPE.INT, true),
+				new TYPE.Map(TYPE.INT, TYPE.INT, true),
 			);
 		});
 		it('throws if base is not an ASTNodeVariable.', () => {
-			[
-				'null.()',
-				'(42 || 43).<bool>()',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable);
-			});
+			xjs.Array.forEachAggregated(extract_lines(`
+				null.()
+				(42 || 43).<bool>()
+			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable, src));
 		});
 		it('throws if base is not one of the allowed strings.', () => {
-			[
-				'SET.<str>()',
-				'Mapping.<bool>()',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), SyntaxError);
-			});
+			xjs.Array.forEachAggregated(extract_lines(`
+				SET.<str>()
+				Mapping.<bool>()
+			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), SyntaxError, src));
 		});
 		it('throws when providing incorrect number of arguments.', () => {
-			[
-				'List.<int>([], [])',
-				'Dict.<int>([], [])',
-				'Set.<int>([], [])',
-				'Map.<int>([], [])',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount);
-			});
+			xjs.Array.forEachAggregated(extract_lines(`
+				List.<int>([], [])
+				Dict.<int>([], [])
+				Set.<int>([], [])
+				Map.<int>([], [])
+			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount, src));
 		});
 		it('throws when providing incorrect type of arguments.', () => {
-			[
-				'List.<int>(42)',
-				'Dict.<int>([4.2])',
-				'Set.<int>([42, "42"])',
-				'Map.<int>([42, "42"])',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable);
-			});
+			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>([
+				['List.<int>(42)', ['42', ['List.<int>', 'Set.<int>']]],
+				['Set.<int>(42)',  ['42', ['List.<int>', 'Set.<int>']]],
+				['Map.<int>(42)',  ['42', ['List.<[int, int]>', 'Set.<[int, int]>', 'Map.<int, int>']]],
+			]), ([argtype, allowed_types], src) => assert.throws(
+				() => AST.ASTNodeCall.fromSource(src).type(),
+				(err) => {
+					assert_instanceof(err, AggregateError);
+					assertAssignable(err, {
+						cons:   AggregateError,
+						errors: allowed_types.map((allowed_type) => ({
+							cons:    TypeErrorNotAssignable,
+							message: `Expression of type \`${ argtype }\` is not assignable to type \`${ allowed_type }\`.`,
+						})),
+					});
+					return true;
+				},
+			));
+			return xjs.Array.forEachAggregated(extract_lines(`
+				List.<int>([4.2])
+				Dict.<int>(42)
+				Dict.<int>([4.2])
+				Set.<int>([42, "42"])
+				Map.<int>([[42, "42"]])
+			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable, src));
 		});
 	});
 
 
 	describe('#fold', () => {
+		const TEST_VALUES = [
+			VALUE.INT_1,
+			new VALUE.Integer(2n),
+			new VALUE.Integer(3n),
+		] as const;
 		it('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
-				evaluate.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
+				EVALUATE.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
-					new OBJ.List<OBJ.Integer>([
-						new OBJ.Integer(1n),
-						new OBJ.Integer(2n),
-						new OBJ.Integer(3n),
-					]),
-					new OBJ.Dict<OBJ.Integer>(new Map<bigint, OBJ.Integer>([
-						[0x100n, new OBJ.Integer(1n)],
-						[0x101n, new OBJ.Integer(2n)],
-						[0x102n, new OBJ.Integer(3n)],
+					new VALUE.List<VALUE.Integer>(TEST_VALUES),
+					new VALUE.Dict<VALUE.Integer>(new Map<bigint, VALUE.Integer>([
+						[0x100n, TEST_VALUES[0]],
+						[0x101n, TEST_VALUES[1]],
+						[0x102n, TEST_VALUES[2]],
 					])),
-					new OBJ.Set<OBJ.Integer>(new Set<OBJ.Integer>([
-						new OBJ.Integer(1n),
-						new OBJ.Integer(2n),
-						new OBJ.Integer(3n),
-					])),
-					new OBJ.Map<OBJ.Integer, OBJ.Float>(new Map<OBJ.Integer, OBJ.Float>([
-						[new OBJ.Integer(1n), new OBJ.Float(0.1)],
-						[new OBJ.Integer(2n), new OBJ.Float(0.2)],
-						[new OBJ.Integer(3n), new OBJ.Float(0.4)],
+					new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)),
+					new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
+						[TEST_VALUES[0], new VALUE.Float(0.1)],
+						[TEST_VALUES[1], new VALUE.Float(0.2)],
+						[TEST_VALUES[2], new VALUE.Float(0.4)],
 					])),
 				],
 			);
 		});
-		it('List, Set, and Map take List-value arguments.', () => {
-			assert.deepStrictEqual(
-				list_args.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
-				[
-					new OBJ.List<OBJ.Integer>([
-						new OBJ.Integer(1n),
-						new OBJ.Integer(2n),
-						new OBJ.Integer(3n),
-					]),
-					new OBJ.Set<OBJ.Integer>(new Set<OBJ.Integer>([
-						new OBJ.Integer(1n),
-						new OBJ.Integer(2n),
-						new OBJ.Integer(3n),
-					])),
-					new OBJ.Map<OBJ.Integer, OBJ.Float>(new Map<OBJ.Integer, OBJ.Float>([
-						[new OBJ.Integer(1n), new OBJ.Float(0.1)],
-						[new OBJ.Integer(2n), new OBJ.Float(0.2)],
-						[new OBJ.Integer(3n), new OBJ.Float(0.4)],
-					])),
-				],
-			);
+		specify('`List.(‹…›)`', () => {
+			assert.deepStrictEqual(LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
+				...repeat(new VALUE.List<never>(), 5),
+				...repeat(new VALUE.List<VALUE.Integer>(TEST_VALUES), 4),
+			]);
 		});
-		it('zero/empty functional arguments.', () => {
-			assert.deepStrictEqual(
-				zero_empty.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
-				[
-					new OBJ.List<never>(),
-					new OBJ.Dict<never>(),
-					new OBJ.Set<never>(),
-					new OBJ.Map<never, never>(),
-					new OBJ.List<never>(),
-					new OBJ.Set<never>(),
-					new OBJ.Map<never, never>(),
-				],
-			);
+		specify('`Dict.(‹…›)`', () => {
+			assert.deepStrictEqual(DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
+				...repeat(new VALUE.Dict<never>(), 2),
+				...repeat(new VALUE.Dict<VALUE.Integer>(new Map<bigint, VALUE.Integer>([
+					[0x100n, TEST_VALUES[0]],
+					[0x101n, TEST_VALUES[1]],
+					[0x102n, TEST_VALUES[2]],
+				])), 2),
+			]);
+		});
+		specify('`Set.(‹…›)`', () => {
+			assert.deepStrictEqual(SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
+				...repeat(new VALUE.Set<never>(), 5),
+				...repeat(new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)), 4),
+			]);
+		});
+		specify('`Map.(‹…›)`', () => {
+			assert.deepStrictEqual(MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
+				...repeat(new VALUE.Map<never, never>(), 6),
+				...repeat(new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
+					[TEST_VALUES[0], new VALUE.Float(0.1)],
+					[TEST_VALUES[1], new VALUE.Float(0.2)],
+					[TEST_VALUES[2], new VALUE.Float(0.4)],
+				])), 6),
+			]);
 		});
 	});
 });

@@ -1,22 +1,22 @@
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	type TYPE,
-	type Builder,
 	AssignmentErrorReassignment,
 	MutabilityError01,
-} from '../../index.js';
-import {assert_instanceof} from '../../lib/index.js';
+} from '../../index.ts';
+import {assert_instanceof} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SymbolStructureVar} from '../index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeVariable} from './ASTNodeVariable.js';
-import {ASTNodeAccess} from './ASTNodeAccess.js';
-import {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../core/index.ts';
+import type {SymbolSchemaVar} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {ASTNodeExpression} from './ASTNodeExpression.ts';
+import {ASTNodeVariable} from './ASTNodeVariable.ts';
+import type {ASTNodeAccess} from './ASTNodeAccess.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -29,8 +29,8 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 
 	public constructor(
 		start_node: SyntaxNodeType<'statement_assignment'>,
-		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		public readonly assigned:  ASTNodeExpression,
+		public readonly assignee: ASTNodeVariable | ASTNodeAccess,
+		public readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
@@ -38,35 +38,30 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	public override varCheck(): void {
 		super.varCheck();
 		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
-		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolStructureVar).unfixed) {
+		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolSchemaVar).unfixed) {
 			throw new AssignmentErrorReassignment(assignee);
 		}
 	}
 
 	public override typeCheck(): void {
 		super.typeCheck();
-		if (this.assignee instanceof ASTNodeAccess) {
+		let assignee_type: TYPE.Type | null = null;
+		if (this.assignee instanceof ASTNodeVariable) {
+			this.assignee.type(); // rethrow any errors
+			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
+			assignee_type = symbol.type;
+		} else {
 			const base_type: TYPE.Type = this.assignee.base.type();
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, this);
 			}
+			assignee_type = this.assignee.type();
 		}
-		const assignee_type: TYPE.Type = this.assignee.type();
-		ASTNodeCP.assignExpression(this.assigned, assignee_type, this);
+		ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
 	}
 
-	public override build(builder: Builder): binaryen.ExpressionRef {
+	public override build(): binaryen.ExpressionRef {
 		const id: bigint = (this.assignee as ASTNodeVariable).id;
-		const local = builder.getLocalInfo(id);
-		if (!local) {
-			throw new ReferenceError(`Variable with id ${ id } not found.`);
-		}
-		return builder.module.local.set(local.index, ASTNodeStatement.coerceAssignment(
-			builder.module,
-			this.assignee.type(),
-			this.assigned.type(),
-			this.assigned.build(builder),
-			this.validator.config.compilerOptions.intCoercion,
-		));
+		return this.builder.getLocal(id)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ id } not found.`));
 	}
 }

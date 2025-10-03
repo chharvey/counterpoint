@@ -1,17 +1,18 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
 	AST,
 	TYPE,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
-} from '../../../src/index.js';
+} from '../../../src/index.ts';
+import {assertEqualTypes} from '../../assert-helpers.ts';
 
 
 
 describe('ASTNodeTypeCall', () => {
 	describe('#eval', () => {
 		it('evaluates List, Dict, Set, and Map.', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				[
 					'List.<null>',
 					'Dict.<bool>',
@@ -19,23 +20,23 @@ describe('ASTNodeTypeCall', () => {
 					'Map.<int, float>',
 				].map((src) => AST.ASTNodeTypeCall.fromSource(src).eval()),
 				[
-					new TYPE.TypeList(TYPE.NULL),
-					new TYPE.TypeDict(TYPE.BOOL),
-					new TYPE.TypeSet(TYPE.STR),
-					new TYPE.TypeMap(TYPE.INT, TYPE.FLOAT),
+					new TYPE.List(TYPE.NULL),
+					new TYPE.Dict(TYPE.BOOL),
+					new TYPE.Set(TYPE.STR),
+					new TYPE.Map(TYPE.INT, TYPE.FLOAT),
 				],
 			);
 		});
 		it('Map has a default type parameter.', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeTypeCall.fromSource('Map.<int>').eval(),
-				new TYPE.TypeMap(TYPE.INT, TYPE.INT),
+				new TYPE.Map(TYPE.INT, TYPE.INT),
 			);
 		});
 		it('throws if base is not an ASTNodeTypeAlias.', () => {
 			[
 				'int.<str>',
-				'(List | Dict).<bool>',
+				'(int | float).<bool>',
 			].forEach((src) => {
 				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorNotCallable);
 			});

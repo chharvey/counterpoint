@@ -1,21 +1,18 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type {SyntaxNode} from 'tree-sitter';
-import {
-	type NonemptyArray,
-	throw_expression,
-} from '../lib/index.js';
+import type {NonemptyArray} from '../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
+} from '../core/index.ts';
 import {
 	Punctuator,
 	Keyword,
-} from '../parser/index.js';
+} from '../parser/index.ts';
 import {
 	Validator,
 	AST,
-} from './index.js';
+} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
@@ -23,25 +20,27 @@ import {
 	isSyntaxNodeFamily,
 	type SyntaxNodeSupertype,
 	isSyntaxNodeSupertype,
-} from './utils-private.js';
+} from './utils-private.ts';
 import {
 	Operator,
+	type ValidTypeAccessOperator,
 	type ValidAccessOperator,
 	type ValidTypeOperator,
 	type ValidOperatorUnary,
+	type ValidOperatorCast,
 	type ValidOperatorArithmetic,
 	type ValidOperatorComparative,
 	type ValidOperatorEquality,
 	type ValidOperatorLogical,
-} from './Operator.js';
+} from './Operator.ts';
 
 
 
 class Decorator {
 	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
-		[Punctuator.DOT,      Operator.DOT],
-		[Punctuator.OPTDOT,   Operator.OPTDOT],
-		[Punctuator.CLAIMDOT, Operator.CLAIMDOT],
+		[Punctuator.DOT,     Operator.DOT],
+		[Punctuator.DOT_MAY, Operator.DOT_MAY],
+		[Punctuator.DOT_RES, Operator.DOT_RES],
 	]);
 
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, ValidTypeOperator> = new Map<Punctuator | Keyword, ValidTypeOperator>([
@@ -55,38 +54,44 @@ class Decorator {
 		[Punctuator.UNION, Operator.OR],
 	]);
 
-	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator, Operator> = new Map<Punctuator, Operator>([
+	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
 		[Punctuator.NOT, Operator.NOT],
 		[Punctuator.EMP, Operator.EMP],
 		[Punctuator.AFF, Operator.AFF],
 		[Punctuator.NEG, Operator.NEG],
+		[Keyword.INT,    Operator.INT],
+		[Keyword.FLOAT,  Operator.FLOAT],
 	]);
 
 	private static readonly OPERATORS_BINARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
-		[Punctuator.EXP,  Operator.EXP],
-		[Punctuator.MUL,  Operator.MUL],
-		[Punctuator.DIV,  Operator.DIV],
-		[Punctuator.ADD,  Operator.ADD],
-		[Punctuator.SUB,  Operator.SUB],
-		[Punctuator.LT,   Operator.LT],
-		[Punctuator.GT,   Operator.GT],
-		[Punctuator.LE,   Operator.LE],
-		[Punctuator.GE,   Operator.GE],
-		[Punctuator.NLT,  Operator.NLT],
-		[Punctuator.NGT,  Operator.NGT],
-		[Keyword   .IS,   Operator.IS],
-		[Keyword   .ISNT, Operator.ISNT],
-		[Punctuator.ID,   Operator.ID],
-		[Punctuator.NID,  Operator.NID],
-		[Punctuator.EQ,   Operator.EQ],
-		[Punctuator.NEQ,  Operator.NEQ],
-		[Punctuator.AND,  Operator.AND],
-		[Punctuator.NAND, Operator.NAND],
-		[Punctuator.OR,   Operator.OR],
-		[Punctuator.NOR,  Operator.NOR],
+		[Keyword   .AS,     Operator.CAST],
+		[Keyword   .AS_MAY, Operator.CAST_MAY],
+		[Keyword   .AS_RES, Operator.CAST_RES],
+		[Punctuator.EXP,    Operator.EXP],
+		[Punctuator.MUL,    Operator.MUL],
+		[Punctuator.DIV,    Operator.DIV],
+		[Punctuator.ADD,    Operator.ADD],
+		[Punctuator.SUB,    Operator.SUB],
+		[Punctuator.LT,     Operator.LT],
+		[Punctuator.GT,     Operator.GT],
+		[Punctuator.LE,     Operator.LE],
+		[Punctuator.GE,     Operator.GE],
+		[Punctuator.NLT,    Operator.NLT],
+		[Punctuator.NGT,    Operator.NGT],
+		[Keyword   .IS,     Operator.IS],
+		[Keyword   .ISNT,   Operator.ISNT],
+		[Punctuator.ID,     Operator.ID],
+		[Punctuator.NID,    Operator.NID],
+		[Punctuator.EQ,     Operator.EQ],
+		[Punctuator.NEQ,    Operator.NEQ],
+		[Punctuator.AND,    Operator.AND],
+		[Punctuator.NAND,   Operator.NAND],
+		[Punctuator.OR,     Operator.OR],
+		[Punctuator.NOR,    Operator.NOR],
 	]);
 
 
+	/* eslint-disable @typescript-eslint/unified-signatures */
 	public decorateTS(syntaxnode: SyntaxNodeType<'keyword_type'>):                      AST.ASTNodeTypeConstant;
 	public decorateTS(syntaxnode: SyntaxNodeType<'identifier'>):                        AST.ASTNodeTypeAlias | AST.ASTNodeVariable;
 	public decorateTS(syntaxnode: SyntaxNodeType<'word'>):                              AST.ASTNodeKey;
@@ -98,7 +103,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_record_literal'>):               AST.ASTNodeTypeRecord;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_dict_literal'>):                 AST.ASTNodeTypeDict;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_map_literal'>):                  AST.ASTNodeTypeMap;
-	public decorateTS(syntaxnode: SyntaxNodeType<'property_access_type'>):              AST.ASTNodeIndexType | AST.ASTNodeKey;
+	public decorateTS(syntaxnode: SyntaxNodeType<'property_access_type'>):              AST.ASTNodeIndex | AST.ASTNodeKey;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_compound'>):                     AST.ASTNodeTypeAccess | AST.ASTNodeTypeCall;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_unary_symbol'>):                 AST.ASTNodeTypeOperationUnary | AST.ASTNodeTypeList | AST.ASTNodeTypeSet;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_unary_keyword'>):                AST.ASTNodeTypeOperationUnary;
@@ -118,7 +123,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_compound'>):               AST.ASTNodeAccess | AST.ASTNodeCall;
 	public decorateTS(syntaxnode: SyntaxNodeType<'assignee'>):                          AST.ASTNodeVariable | AST.ASTNodeAccess;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):           AST.ASTNodeExpression | AST.ASTNodeOperationUnary;
-	public decorateTS(syntaxnode: SyntaxNodeType<'expression_claim'>):                  AST.ASTNodeClaim;
+	public decorateTS(syntaxnode: SyntaxNodeType<'expression_cast'>):                   AST.ASTNodeOperationBinaryCast | AST.ASTNodeClaim;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_exponential'>):            AST.ASTNodeOperationBinaryArithmetic;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_multiplicative'>):         AST.ASTNodeOperationBinaryArithmetic;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_additive'>):               AST.ASTNodeOperationBinaryArithmetic;
@@ -137,6 +142,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'block'>):                             AST.ASTNodeBlock;
 	public decorateTS(syntaxnode: SyntaxNodeType<'source_file'>, config?: CPConfig):    AST.ASTNodeGoal;
 	public decorateTS(syntaxnode: SyntaxNode): AST.ASTNodeCP;
+	/* eslint-enable @typescript-eslint/unified-signatures */
 	public decorateTS(syntaxnode: SyntaxNode, config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeCP {
 		const decorators = new Map<string | RegExp, (node: SyntaxNode) => AST.ASTNodeCP>([
 			['source_file', (node) => new AST.ASTNodeGoal(
@@ -151,7 +157,7 @@ class Decorator {
 			['identifier', (node) => (
 				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/))                                                                     ? new AST.ASTNodeTypeAlias(node as SyntaxNodeType<'identifier'>) :
 				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|assignee|declaration_variable|statement_expression|statement_assignment)$/)) ? new AST.ASTNodeVariable (node as SyntaxNodeType<'identifier'>) :
-				throw_expression(new TypeError(`Expected ${ node.parent } to be a node that contains an identifier.`))
+				assert.fail(`Expected ${ node.parent } to be a node that contains an identifier.`)
 			)],
 
 			/* # PRODUCTIONS */
@@ -160,7 +166,7 @@ class Decorator {
 			['primitive_literal', (node) => (
 				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/))                                                                     ? new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'primitive_literal'>) :
 				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|assignee|declaration_variable|statement_expression|statement_assignment)$/)) ? new AST.ASTNodeConstant    (node as SyntaxNodeType<'primitive_literal'>) :
-				throw_expression(new TypeError(`Expected ${ node.parent } to be a node that contains a primitive literal.`))
+				assert.fail(`Expected ${ node.parent } to be a node that contains a primitive literal.`)
 			)],
 
 			/* ## Types */
@@ -218,10 +224,7 @@ class Decorator {
 			)],
 
 			['property_access_type', (node) => (
-				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndexType(
-					node as SyntaxNodeType<'property_access_type'>,
-					new AST.ASTNodeTypeConstant(node.children[1]),
-				) :
+				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(node.children[1]) :
 				(assert.ok(
 					isSyntaxNodeType(node.children[1], 'word'),
 					`Expected ${ node.children[1] } to be a \`SyntaxNodeType<'word'>\`.`,
@@ -231,6 +234,7 @@ class Decorator {
 			['type_compound', (node) => (
 				(isSyntaxNodeType(node.children[1], 'property_access_type')) ? new AST.ASTNodeTypeAccess(
 					node as SyntaxNodeType<'type_compound'>,
+					Decorator.ACCESSORS.get(node.children[1].children[0].text as Punctuator) as ValidTypeAccessOperator,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 					this.decorateTS(node.children[1]),
 				) :
@@ -255,38 +259,37 @@ class Decorator {
 						Decorator.TYPEOPERATORS_UNARY.get(punc)!,
 						basetype,
 					);
-				} else {
-					if (node.children.length === 3) { // we have either `T[]` or `T{}`
-						if (punc === Punctuator.BRAK_OPN) {
-							return new AST.ASTNodeTypeList(
-								node as SyntaxNodeType<'type_unary_symbol'>,
-								basetype,
-								null,
-							);
-						} else {
-							assert.strictEqual(punc, Punctuator.BRAC_OPN);
-							return new AST.ASTNodeTypeSet(
-								node as SyntaxNodeType<'type_unary_symbol'>,
-								basetype,
-							);
-						}
-					} else { // we have `T[n]`
-						assert.strictEqual(node.children.length, 4);
-						assert.strictEqual(punc, Punctuator.BRAK_OPN);
-						const count: bigint = BigInt(Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
-							...CONFIG_DEFAULT,
-							languageFeatures: {
-								...CONFIG_DEFAULT.languageFeatures,
-								integerRadices:    true,
-								numericSeparators: true,
-							},
-						})[0]);
+				} else if (node.children.length === 3) { // we have either `T[]` or `T{}`
+					if (punc === Punctuator.BRAK_OPN) {
 						return new AST.ASTNodeTypeList(
 							node as SyntaxNodeType<'type_unary_symbol'>,
 							basetype,
-							count,
+							null,
+						);
+					} else {
+						assert.strictEqual(punc, Punctuator.BRAC_OPN);
+						return new AST.ASTNodeTypeSet(
+							node as SyntaxNodeType<'type_unary_symbol'>,
+							basetype,
 						);
 					}
+				} else { // we have `T[n]`
+					assert.strictEqual(node.children.length, 4);
+					assert.strictEqual(punc, Punctuator.BRAK_OPN);
+					const count: bigint | number = Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
+						...CONFIG_DEFAULT,
+						languageFeatures: {
+							...CONFIG_DEFAULT.languageFeatures,
+							integerRadices:    true,
+							numericSeparators: true,
+						},
+					});
+					assert.ok(typeof count === 'bigint'); // better type guard than `assert.strictEqual`
+					return new AST.ASTNodeTypeList(
+						node as SyntaxNodeType<'type_unary_symbol'>,
+						basetype,
+						count,
+					);
 				}
 			}],
 
@@ -362,20 +365,14 @@ class Decorator {
 			)],
 
 			['property_access', (node) => (
-				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(
-					node as SyntaxNodeType<'property_access'>,
-					new AST.ASTNodeConstant(node.children[1]),
-				) :
-				          (isSyntaxNodeType     (node.children[1], 'word')) ?                                                                  this.decorateTS(node.children[1]) :
+				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(node.children[1]) :
+				(isSyntaxNodeType(node.children[1], 'word'))    ? this.decorateTS(node.children[1]) :
 				(assert.ok(isSyntaxNodeSupertype(node.children[2], 'expression'), `Expected ${ node.children[2] } to be an expression node.`), this.decorateTS(node.children[2]))
 			)],
 
 			['property_assign', (node) => (
-				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(
-					node as SyntaxNodeType<'property_assign'>,
-					new AST.ASTNodeConstant(node.children[1]),
-				) :
-				          (isSyntaxNodeType     (node.children[1], 'word')) ?                                                                  this.decorateTS(node.children[1]) :
+				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(node.children[1]) :
+				(isSyntaxNodeType(node.children[1], 'word'))    ? this.decorateTS(node.children[1]) :
 				(assert.ok(isSyntaxNodeSupertype(node.children[2], 'expression'), `Expected ${ node.children[2] } to be an expression node.`), this.decorateTS(node.children[2]))
 			)],
 
@@ -395,7 +392,7 @@ class Decorator {
 					function_call_children
 						.find((c): c is SyntaxNodeType<'generic_arguments'> => isSyntaxNodeType(c, 'generic_arguments'))?.children
 						.filter((c): c is SyntaxNodeSupertype<'type'> => isSyntaxNodeSupertype(c, 'type'))
-						.map((c) => this.decorateTS(c)) || [],
+						.map((c) => this.decorateTS(c)) ?? [],
 					function_call_children
 						.find((c): c is SyntaxNodeType<'function_arguments'> => isSyntaxNodeType(c, 'function_arguments'))!.children
 						.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
@@ -406,27 +403,43 @@ class Decorator {
 				))
 			)],
 
-			['assignee', (node) => (node.children.length === 1)
+			['assignee', (node) => (node.children.length === 1
 				? new AST.ASTNodeVariable(node.children[0] as SyntaxNodeType<'identifier'>)
 				: new AST.ASTNodeAccess(
 					node as SyntaxNodeType<'assignee'>,
 					Operator.DOT,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 					this.decorateTS(node.children[1] as SyntaxNodeType<'property_assign'>),
-				)],
+				)
+			)],
 
-			['expression_unary_symbol', (node) => (node.children[0].text === Punctuator.AFF) // `+a` is a no-op
+			['expression_unary_symbol', (node) => (node.children[0].text === Punctuator.AFF // `+a` is a no-op
 				? this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>)
 				: new AST.ASTNodeOperationUnary(
 					node as SyntaxNodeType<'expression_unary_symbol'>,
 					Decorator.OPERATORS_UNARY.get(node.children[0].text as Punctuator) as ValidOperatorUnary,
 					this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>),
-				)],
+				)
+			)],
 
-			['expression_claim', (node) => new AST.ASTNodeClaim(
-				node as SyntaxNodeType<'expression_claim'>,
-				this.decorateTypeNode(node.children[1] as SyntaxNodeSupertype<'type'>),
-				this.decorateTS      (node.children[3] as SyntaxNodeSupertype<'expression'>),
+			['expression_unary_keyword', (node) => new AST.ASTNodeOperationUnary(
+				node as SyntaxNodeType<'expression_unary_symbol'>,
+				Decorator.OPERATORS_UNARY.get(node.children[0].text as Keyword) as ValidOperatorUnary,
+				this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>),
+			)],
+
+			['expression_cast', (node) => (node.children.length === 3
+				? new AST.ASTNodeOperationBinaryCast(
+					node as SyntaxNodeType<'expression_cast'>,
+					Decorator.OPERATORS_BINARY.get(node.children[1].text as Keyword)! as ValidOperatorCast,
+					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
+					this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
+				)
+				: (assert.strictEqual(node.children.length, 5, `Expected \`${ node }\` to have 5 children.`), new AST.ASTNodeClaim(
+					node as SyntaxNodeType<'expression_cast'>,
+					this.decorateTS      (node.children[0] as SyntaxNodeSupertype<'expression'>),
+					this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
+				))
 			)],
 
 			['expression_exponential', (node) => new AST.ASTNodeOperationBinaryArithmetic(
@@ -630,16 +643,32 @@ class Decorator {
 			/* ## Statements */
 			['declaration_type', (node) => new AST.ASTNodeDeclarationType(
 				node as SyntaxNodeType<'declaration_type'>,
-				new AST.ASTNodeTypeAlias(node.children[1] as SyntaxNodeType<'identifier'>),
+				(isSyntaxNodeType(node.children[1], 'identifier')) ? new AST.ASTNodeTypeAlias(node.children[1]) : null,
 				this.decorateTS(node.children[3] as SyntaxNodeSupertype<'type'>),
 			)],
 
-			['declaration_variable', (node) => new AST.ASTNodeDeclarationVariable(
-				node as SyntaxNodeType<'declaration_variable'>,
-				node.children.length === 8,
-				new AST.ASTNodeVariable(((node.children.length === 7) ? node.children[1] : node.children[2]) as SyntaxNodeType<'identifier'>),
-				this.decorateTypeNode  (((node.children.length === 7) ? node.children[3] : node.children[4]) as SyntaxNodeSupertype<'type'>),
-				this.decorateTS        (((node.children.length === 7) ? node.children[5] : node.children[6]) as SyntaxNodeSupertype<'expression'>),
+			['declaration_variable', (node) => (
+				node.children.length === 7 ? new AST.ASTNodeDeclarationVariable(
+					node as SyntaxNodeType<'declaration_variable'>,
+					false,
+					isSyntaxNodeType(node.children[1], 'identifier') ? new AST.ASTNodeVariable(node.children[1]) : null,
+					this.decorateTypeNode (node.children[3] as SyntaxNodeSupertype<'type'>),
+					this.decorateTS       (node.children[5] as SyntaxNodeSupertype<'expression'>),
+				) :
+				node.children.length === 8 ? new AST.ASTNodeDeclarationVariable(
+					node as SyntaxNodeType<'declaration_variable'>,
+					true,
+					isSyntaxNodeType(node.children[2], 'identifier') ? new AST.ASTNodeVariable(node.children[2]) : null,
+					this.decorateTypeNode (node.children[4] as SyntaxNodeSupertype<'type'>),
+					this.decorateTS       (node.children[6] as SyntaxNodeSupertype<'expression'>),
+				) :
+				(assert.strictEqual(node.children.length, 6), new AST.ASTNodeDeclarationVariable(
+					node as SyntaxNodeType<'declaration_variable'>,
+					true,
+					isSyntaxNodeType(node.children[2], 'identifier') ? new AST.ASTNodeVariable(node.children[2]) : null,
+					this.decorateTypeNode(node.children[4] as SyntaxNodeSupertype<'type'>),
+					null,
+				))
 			)],
 
 			['statement_expression', (node) => new AST.ASTNodeStatementExpression(
@@ -661,9 +690,9 @@ class Decorator {
 			)],
 		]);
 		return (
-			   decorators.get(syntaxnode.type)
-			?? [...decorators].find(([key]) => key instanceof RegExp && isSyntaxNodeType(syntaxnode, key))?.[1]
-			?? ((node) => {
+			decorators.get(syntaxnode.type) ??
+			[...decorators].find(([key]) => key instanceof RegExp && isSyntaxNodeType(syntaxnode, key))?.[1] ??
+			((node) => {
 				throw new TypeError(`Could not find type of parse node \`${ node.type }\`.`);
 			})
 		)(syntaxnode);

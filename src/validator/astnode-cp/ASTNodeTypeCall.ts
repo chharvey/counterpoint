@@ -3,24 +3,24 @@ import {
 	TYPE,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	type ArgCount,
 	ValidFunctionName,
 	invalid_function_name,
-} from './utils-private.js';
-import {ASTNodeType} from './ASTNodeType.js';
-import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
+} from './utils-private.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
+import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
 
 
 
@@ -50,17 +50,29 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
 			throw new TypeErrorNotCallable(this.base.eval(), this.base);
 		}
-		return (new Map<ValidFunctionName, () => TYPE.Type>([
-			[ValidFunctionName.LIST, () => (this.countArgs(1n), new TYPE.TypeList(this.args[0].eval()))],
-			[ValidFunctionName.DICT, () => (this.countArgs(1n), new TYPE.TypeDict(this.args[0].eval()))],
-			[ValidFunctionName.SET,  () => (this.countArgs(1n), new TYPE.TypeSet (this.args[0].eval()))],
-			[ValidFunctionName.MAP,  () => {
+		switch (this.base.source) {
+			case ValidFunctionName.LIST: {
+				this.countArgs(1n);
+				return new TYPE.List(this.args[0].eval());
+			}
+			case ValidFunctionName.DICT: {
+				this.countArgs(1n);
+				return new TYPE.Dict(this.args[0].eval());
+			}
+			case ValidFunctionName.SET: {
+				this.countArgs(1n);
+				return new TYPE.Set(this.args[0].eval());
+			}
+			case ValidFunctionName.MAP: {
 				this.countArgs([1n, 3n]);
 				const anttype: TYPE.Type = this.args[0].eval();
 				const contype: TYPE.Type = this.args[1]?.eval() ?? anttype; // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- `this.args[1]` could be undefined
-				return new TYPE.TypeMap(anttype, contype);
-			}],
-		]).get(this.base.source as ValidFunctionName) || invalid_function_name(this.base.source))();
+				return new TYPE.Map(anttype, contype);
+			}
+			default: {
+				invalid_function_name(this.base.source);
+			}
+		}
 	}
 
 	/**

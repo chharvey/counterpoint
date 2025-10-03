@@ -2,24 +2,24 @@ import * as xjs from 'extrajs';
 import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	type Builder,
+	Builder,
 	ParseError01,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
+} from '../../core/index.ts';
 import {
 	TS_PARSER,
 	type Serializable,
 	to_serializable,
-} from '../../parser/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import {DECORATOR} from '../Decorator.js';
-import {Validator} from '../Validator.js';
-import type {Buildable} from './Buildable.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeBlock} from './ASTNodeBlock.js';
+} from '../../parser/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {DECORATOR} from '../Decorator.ts';
+import {Validator} from '../Validator.ts';
+import type {Buildable} from './Buildable.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {ASTNodeBlock} from './ASTNodeBlock.ts';
 
 
 
@@ -57,22 +57,31 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 		return DECORATOR.decorateTS(root_node, config);
 	}
 
-	private readonly _validator: Validator;
+
+	readonly #validator: Validator;
+	readonly #builder:   Builder;
+
+
 	public constructor(
 		start_node: SyntaxNodeType<'source_file'>,
 		public readonly block: ASTNodeBlock | null,
 		config: CPConfig,
 	) {
 		super(start_node, {}, (block) ? [block] : []);
-		this._validator = new Validator(config);
+		this.#validator = new Validator(config);
+		this.#builder   = new Builder();
 	}
 
 	public override get validator(): Validator {
-		return this._validator;
+		return this.#validator;
+	}
+
+	public override get builder(): Builder {
+		return this.#builder;
 	}
 
 	/** @implements Buildable */
-	public build(builder: Builder): binaryen.ExpressionRef | binaryen.Module {
-		return this.block?.build(builder) || builder.module.nop();
+	public build(): binaryen.ExpressionRef {
+		return this.block?.build() ?? this.builder.module.nop();
 	}
 }

@@ -1,23 +1,35 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
+	build_record_like,
 	AssignmentErrorDuplicateKey,
-} from '../../index.js';
+	TypeErrorNotAssignable,
+} from '../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import type {ASTNodeKey} from './ASTNodeKey.js';
-import type {ASTNodeProperty} from './ASTNodeProperty.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
+} from '../../core/index.ts';
+import type {EntryType} from '../../typer/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {ASTNodeKey} from './ASTNodeKey.ts';
+import type {ASTNodeProperty} from './ASTNodeProperty.ts';
+import {
+	ASTNodeExpression,
+	buildDeco,
+	typeDeco,
+} from './ASTNodeExpression.ts';
+import {
+	assignToDeco,
+	ASTNodeCollectionLiteral,
+} from './ASTNodeCollectionLiteral.ts';
 
 
 
@@ -46,23 +58,57 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
-	public override type(): TYPE.Type {
-		const props: ReadonlyMap<bigint, TYPE.Type> = new Map<bigint, TYPE.Type>(this.children.map((c) => {
-			const valuetype: TYPE.Type = c.val.type();
-			return [c.key.id, valuetype];
-		}));
-		return TYPE.TypeRecord.fromTypes(props);
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		return build_record_like<ASTNodeExpression>(
+			new Map<bigint, ASTNodeExpression>(this.children.map((child) => [child.key.id, child.val])),
+			this.builder,
+			(expr) => expr.type(),
+			(expr) => expr.build(),
+		);
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const properties: ReadonlyMap<bigint, OBJ.Object | null> = new Map(this.children.map((c) => [
+	@typeDeco
+	public override type(): TYPE.Type {
+		return TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>(this.children.map((c) => [
+			c.key.id,
+			c.val.type(),
+		])));
+	}
+
+	@memoizeMethod
+	public override fold(): VALUE.Value | null {
+		const properties: ReadonlyMap<bigint, VALUE.Value | null> = new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.fold(),
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
-			: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
+			: new VALUE.Record(properties as ReadonlyMap<bigint, VALUE.Value>);
+	}
+
+	@assignToDeco
+	public override assignTo(assignee: TYPE.Type): void {
+		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
+		if (assignee instanceof TYPE.Record) {
+			if (this.children.length < assignee.minCount) {
+				throw err;
+			}
+			assignee.invariants.forEach((entry, key) => { // using `.forEach` to short-circuit
+				/* NOTE: We *cannot* assert the property exists since properties are not ordered.
+					We can however make the assertion in tuples because of item ordering. */
+				if (!entry.optional && !this.children.find((prop) => prop.key.id === key)) {
+					throw err;
+				}
+			});
+			return xjs.Array.forEachAggregated(this.children, (prop) => {
+				const thattype: EntryType | undefined = assignee.invariants.get(prop.key.id);
+				if (thattype) {
+					return ASTNodeCP.typeCheckAssign(prop.val, thattype.type, prop);
+				}
+			});
+		}
+		throw err;
 	}
 }

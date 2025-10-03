@@ -1,21 +1,15 @@
-import {requireJSON} from '@chharvey/requirejson';
-import * as path from 'path';
+import PACKAGE from '../package.json' with {type: 'json'};
 import {
 	CLI,
 	Command,
-} from './CLI.class.js';
+} from './CLI.class.ts';
 
-const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
-
-
-/** The current version of this project (as defined in `package.json`). */
-const VERSION: Promise<string> = (requireJSON(path.join(DIRNAME, '../package.json')) as Promise<{version: string}>).then((pkg) => pkg.version);
 
 
 (async (): Promise<void> => {
 	const cli = new CLI(process.argv);
 	async function handleCompileOrDev(): Promise<void> {
-		const result: [string, void] = await cli.compileOrDev(process.cwd());
+		const result: [string, undefined] = await cli.compileOrDev(process.cwd());
 		console.log(result[0]);
 		console.log('Success!');
 	}
@@ -26,12 +20,12 @@ const VERSION: Promise<string> = (requireJSON(path.join(DIRNAME, '../package.jso
 				console.log(`\n${ CLI.CONFIGTEXT }`);
 			}
 		}],
-		[Command.VERSION, async () => {
-			console.log(`counterpoint version ${ await VERSION }`);
+		[Command.VERSION, () => {
+			console.log(`counterpoint version ${ PACKAGE.version }`);
 		}],
 		[Command.COMPILE, handleCompileOrDev],
 		[Command.DEV,     handleCompileOrDev],
-		[Command.RUN, async () => {
+		[Command.RUN,     async () => {
 			const result: [string, ...unknown[]] = await cli.run(process.cwd());
 			console.log(result[0]);
 			console.log('Result:', result.slice(1));

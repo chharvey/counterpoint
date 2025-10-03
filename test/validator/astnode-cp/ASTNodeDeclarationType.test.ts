@@ -1,31 +1,40 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	AST,
-	type SymbolStructure,
-	SymbolStructureType,
+	type SymbolSchema,
+	SymbolSchemaType,
 	TYPE,
-	Builder,
 	AssignmentErrorDuplicateDeclaration,
-} from '../../../src/index.js';
-import {assert_instanceof} from '../../../src/lib/index.js';
-import {assertEqualBins} from '../../assert-helpers.js';
+} from '../../../src/index.ts';
+import {assertEqualBins} from '../../assert-helpers.ts';
 
 
 
 describe('ASTNodeDeclarationType', () => {
 	describe('#varCheck', () => {
-		it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown`.', () => {
+		it('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 				type T = int;
 			}`);
 			assert.ok(!goal.validator.hasSymbol(0x100n));
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(0x100n));
-			const info: SymbolStructure | null = goal.validator.getSymbolInfo(0x100n);
-			assert_instanceof(info, SymbolStructureType);
-			assert.strictEqual(info.typevalue, TYPE.UNKNOWN);
+			const info: SymbolSchema | null = goal.validator.getSymbolInfo(0x100n);
+			assert_instanceof(info, SymbolSchemaType);
+			assert.strictEqual(info.typevalue, TYPE.ANYTHING);
 		});
+
+		it('for blank identifiers, does not add to symbol table.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				type _ = str;
+			}`);
+			assert.ok(!goal.validator.hasSymbol(256n));
+			goal.varCheck();
+			return assert.ok(!goal.validator.hasSymbol(256n));
+		});
+
 		it('throws if the validator already contains a record for the symbol.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 				type T = int;
@@ -36,18 +45,25 @@ describe('ASTNodeDeclarationType', () => {
 				type FOO = float;
 			}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 		});
+
+		it('allows duplicate declaration of blank identifier.', () => {
+			AST.ASTNodeGoal.fromSource(`{
+				type _ = int | float;
+				type _ = [str, bool];
+			}`).varCheck(); // assert does not throw
+		});
 	});
 
 
 	describe('#typeCheck', () => {
-		it('sets `SymbolStructure#value`.', () => {
+		it('sets `SymbolSchema#value`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 				type T = int;
 			}`);
 			goal.varCheck();
 			goal.typeCheck();
-			assert.deepStrictEqual(
-				(goal.validator.getSymbolInfo(0x100n) as SymbolStructureType).typevalue,
+			return assert.strictEqual(
+				(goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 				TYPE.INT,
 			);
 		});
@@ -56,16 +72,11 @@ describe('ASTNodeDeclarationType', () => {
 
 	describe('#build', () => {
 		it('always returns `(nop)`.', () => {
-			const src: string = `{
+			const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 				type T = int;
 				type U = T | float;
-			}`;
-			const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
-			const builder = new Builder(src);
-			return xjs.Array.forEachAggregated(block.children, (stmt) => {
-				assert.ok(stmt instanceof AST.ASTNodeDeclarationType);
-				return assertEqualBins(stmt.build(builder), builder.module.nop());
-			});
+			}`);
+			return xjs.Array.forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), goal.builder.module.nop()));
 		});
 	});
 });

@@ -9,6 +9,10 @@ Sequence<Instruction> Build(Boolean b) :=
 	3. *Return:* ["Push `0` onto the operand stack."].
 ;
 
+Sequence<Instruction> Build(Symbol s) :=
+	1. *Return:* ["Push `n.id` onto the operand stack."].
+;
+
 Sequence<Instruction> Build(Number n) :=
 	1. *Return:* ["Push `n` onto the operand stack."].
 ;
@@ -27,17 +31,16 @@ Sequence<Instruction> Build(SemanticExpression expr) :=
 	1. *Let* `folded` be `ValueOf(expr)`.
 	2. *If* `folded` is an abrupt completion:
 		1. *Return:* `BuildExpression(expr)`.
-	3. *Assert:* `folded.value` exists.
+	3. *Assert:* `folded.value` is set.
 	4. *Return:* `Build(folded.value)`.
 ;
 
 
 
 Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
-	1. *Let* `sequence` be an empty sequence of `Instruction`s.
-	2. *If* `stmt.children.count` is greater than 0:
-		1. *Set* `sequence` to *UnwrapAffirm:* `Build(stmt.children.0)`.
-	3. *Return:* `sequence`.
+	1. *If* `stmt.children.count` is greater than 0:
+		1. *Return:* `Build(stmt.children.0)`.
+	2. *Return:* [].
 ;
 
 
@@ -47,17 +50,31 @@ Sequence<Instruction> Build(SemanticDeclarationType decl) :=
 ;
 
 Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
-	1. *Assert:* `decl.children.count` is 3.
-	2. *Let* `folded` be `ValueOf(decl)`.
-	3. *If* `folded` is a normal completion *and* `decl.unfixed` is `false`:
-		1. *Note:* references to the variable will be constant-propegated by its fixed value.
-		2. *Return:* [].
-	4. *Let* `name` be the string-concatenation of "glb" and `decl.children.0.id`.
-	5. *Let* `instrs` be *UnwrapAffirm:* `Build(decl.childen.2)`.
-	6. *Return:* [
-		...instrs,
-		"DECL the global variable `name`.",
-	].
+	1. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticVariable.
+	2. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
+	3. *If* `assigned` is *none*:
+		1. *If* `assignee` is *none*:
+			1. *Return:* [].
+		2. *Else:*
+			1. *Let* `instrs` be *UnwrapAffirm:* `Build(null)`.
+	4. *Else:*
+		1. *Let* `value` be `ValueOf(assigned)`.
+		2. *If* `value` is a normal completion:
+			1. *If* `decl.unfixed` is `false` *or* `assignee` is *none*:
+				1. *Note:* references to the variable will be constant-propegated by its fixed value.
+				2. *Return:* [].
+		3. *Let* `instrs` be *UnwrapAffirm:* `Build(assigned)`.
+	5. *If* `assignee` is *none*:
+		1. *Return:* [
+			...instrs,
+			"DROP",
+		].
+	6. *Else:*
+		1. *Let* `name` be the string-concatenation of "glb" and `assignee.id`.
+		2. *Return:* [
+			...instrs,
+			"DECL the global variable `name`.",
+		].
 ;
 
 Sequence<Instruction> Build(SemanticAssignment assign) :=
@@ -109,14 +126,20 @@ Sequence<Instruction> BuildExpression(SemanticTemplate tpl) :=
 
 
 
-Sequence<Instruction> BuildExpression(SemanticClaim claim) :=
-	1. *Assert:* `claim.children.count` is 2.
-	2. *Return:* `Build(claim.children.1)`.
+Sequence<Instruction> BuildExpression(SemanticTuple tuple) :=
+	// TO BE DETERMINED
 ;
 
 
 
-Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NEG] expr) :=
+Sequence<Instruction> BuildExpression(SemanticClaim claim) :=
+	1. *Assert:* `claim.children.count` is 2.
+	2. *Return:* `Build(claim.children.0)`.
+;
+
+
+
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NEG | INT | FLOAT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `instrs` be *UnwrapAffirm:* `Build(expr.children.0)`.
 	3. *Return:* [
@@ -126,7 +149,7 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NE
 ;
 
 Sequence<Instruction> BuildExpression(SemanticOperation[operator: IS] expr) :=
-	1. *Throw:* new TypeError "Operator not yet supported.".
+	1. *Throw:* a new TypeError "Operator not yet supported.".
 ;
 
 Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | GT | LE | GE | ID | EQ] expr) :=

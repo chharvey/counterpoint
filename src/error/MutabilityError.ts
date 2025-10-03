@@ -1,6 +1,6 @@
-import {MutabilityError01} from './index.js';
-import type {ConstructorType} from './utils-private.js';
-import {ErrorCode} from './ErrorCode.js';
+import type {ConstructorType} from '../lib/index.ts';
+import {MutabilityError01} from './index.ts';
+import {ErrorCode} from './ErrorCode.ts';
 
 
 

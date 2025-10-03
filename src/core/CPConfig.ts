@@ -1,9 +1,6 @@
-import {requireJSONSync} from '@chharvey/requirejson';
-import * as path from 'path';
+export {default as CONFIG_DEFAULT} from './counterpoint-config.default.json' with {type: 'json'};
 
 
-
-const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 
 /**
  * Interface for compiler configurations.
@@ -19,13 +16,13 @@ export type CPConfig = {
 		 * @version v0.2.0
 		 * @default true
 		 */
-		readonly comments: boolean,
+		readonly comments:          boolean,
 		/**
 		 * Integer literals with a specified radix or “base.”
 		 * @version v0.2.0
 		 * @default false
 		 */
-		readonly integerRadices: boolean,
+		readonly integerRadices:    boolean,
 		/**
 		 * Separators in numeric tokens.
 		 * @version v0.2.0
@@ -43,13 +40,5 @@ export type CPConfig = {
 		 * @default true
 		 */
 		readonly constantFolding: boolean,
-		/**
-		 * Coerce integers into floats if mixed with floats in arithmetic expressions.
-		 * @version v0.2.0
-		 * @default true
-		 */
-		readonly intCoercion: boolean,
 	},
 };
-
-export const CONFIG_DEFAULT: CPConfig = requireJSONSync(path.join(DIRNAME, '../../src/core/counterpoint-config.default.json')) as CPConfig;

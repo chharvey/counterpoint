@@ -1,6 +1,6 @@
-import type {SyntaxNodeType} from '../utils-private.js';
-import type {ASTNodeCP} from './ASTNodeCP.js';
-import {ASTNodeType} from './ASTNodeType.js';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ASTNodeCP} from './ASTNodeCP.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
 
 
 
@@ -20,8 +20,8 @@ export abstract class ASTNodeTypeCollectionLiteral extends ASTNodeType {
 			| SyntaxNodeType<'type_record_literal'>
 			| SyntaxNodeType<'type_dict_literal'>
 			| SyntaxNodeType<'type_map_literal'>
-			| SyntaxNodeType<'type_unary_symbol'>
-		,
+			| SyntaxNodeType<'type_unary_symbol'>,
+
 		public override readonly children: readonly ASTNodeCP[],
 		/** Does this node represent a reference type (versus a value type)? */
 		attributes: Record<string, unknown> = {},

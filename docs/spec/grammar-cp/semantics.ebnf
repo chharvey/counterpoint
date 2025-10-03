@@ -1,10 +1,10 @@
+SemanticIndex[index: RealNumber]
+	::= ();
+
 SemanticKey[id: RealNumber]
 	::= ();
 
 
-
-SemanticIndexType
-	::= SemanticTypeConstant;
 
 SemanticItemType[optional: Boolean]
 	::= SemanticType;
@@ -13,9 +13,6 @@ SemanticPropertyType[optional: Boolean]
 	::= SemanticKey SemanticType;
 
 
-
-SemanticIndex
-	::= SemanticConstant;
 
 SemanticProperty
 	::= SemanticKey SemanticExpression;
@@ -59,8 +56,8 @@ SemanticTypeMap    ::= SemanticType SemanticType;
 SemanticTypeList[count: RealNumber | None]
 	::= SemanticType; // Note: a SemanticTypeList with a `count` represents a Tuple Type; otherwise it represents a List Type.
 
-SemanticTypeAccess
-	::= SemanticType (SemanticIndexType | SemanticKey);
+SemanticTypeAccess[kind: NORMAL | MAYBE]
+	::= SemanticType (SemanticIndex | SemanticKey);
 
 SemanticTypeCall
 	::= SemanticType SemanticType+;
@@ -85,7 +82,7 @@ SemanticExpression =:=
 
 
 
-SemanticConstant[value: Null | Boolean | Number | String]
+SemanticConstant[value: Null | Boolean | Symbol | Number | String]
 	::= ();
 
 SemanticVariable[id: RealNumber]
@@ -109,24 +106,24 @@ SemanticRecord ::= SemanticProperty+;
 SemanticSet    ::= SemanticExpression*;
 SemanticMap    ::= SemanticCase+;
 
-SemanticAccess[kind: NORMAL | OPTIONAL | CLAIM]
+SemanticAccess[kind: NORMAL | MAYBE | RESULT]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
 SemanticCall
 	::= SemanticExpression SemanticType* SemanticExpression*;
 
 SemanticClaim
-	::= SemanticType SemanticExpression;
+	::= SemanticExpression SemanticType;
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
-SemanticOperation[operator: NEG]
+SemanticOperation[operator: NEG | INT | FLOAT]
 	::= SemanticExpression[type: Number];
-SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE | IS]
+SemanticOperation[operator: CAST | MAYBE | RESULT | IS]
+	::= SemanticExpression SemanticExpression[type: Class];
+SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
-SemanticOperation[operator: ID | EQ]
-	::= SemanticExpression[type: Object] SemanticExpression[type: Object];
-SemanticOperation[operator: AND | OR]
+SemanticOperation[operator: ID | EQ | AND | OR]
 	::= SemanticExpression SemanticExpression;
 SemanticOperation[operator: COND]
 	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
@@ -147,10 +144,10 @@ SemanticDeclaration =:=
 ;
 
 SemanticDeclarationType
-	::= SemanticTypeAlias SemanticType;
+	::= SemanticTypeAlias? SemanticType;
 
 SemanticDeclarationVariable[unfixed: Boolean]
-	::= SemanticVariable SemanticType SemanticExpression;
+	::= SemanticVariable? SemanticType SemanticExpression?;
 
 
 
