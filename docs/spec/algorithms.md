@@ -367,13 +367,13 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 				1. *Perform:* `TypeCheckAssign(property.children.1, vb.type)`.
 		7. *Return.*
 	3. *If* `expr` is a SemanticSet *and* `type` is a Set type:
-		1. *Let* `b_type` be the invariant over `type`.
+		1. *Let* `b_type` be the type argument over `type`.
 		2. *For each* `a_el` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_el, b_type)`.
 		3. *Return.*
 	4. *If* `expr` is a SemanticMap *and* `type` is a Map type:
-		1. *Let* `b_ant_type` be the antecedent invariant over `type`.
-		2. *Let* `b_con_type` be the consequent invariant over `type`.
+		1. *Let* `b_ant_type` be the antecedent type argument over `type`.
+		2. *Let* `b_con_type` be the consequent type argument over `type`.
 		3. *For each* `a_case` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_case.0, b_ant_type)`.
 			2. *Perform:* `TypeCheckAssign(a_case.1, b_con_type)`.

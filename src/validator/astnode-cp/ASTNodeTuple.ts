@@ -76,13 +76,13 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 			if (this.children.length < assignee.minCount) {
 				throw err;
 			}
-			assignee.invariants.forEach((entry, i) => { // using `.forEach` to short-circuit
+			assignee.typeargs.forEach((entry, i) => { // using `Array#forEach` instead of `xjs.Array.forEach` to short-circuit
 				/* NOTE: We can assert the item exists because of item ordering.
 					We cannot do so with records since properties are not ordered. */
 				entry.optional || assert.ok(this.children[i], err);
 			});
 			return xjs.Array.forEachAggregated(this.children, (expr, i) => {
-				const thattype: EntryType | undefined = assignee.invariants.at(i);
+				const thattype: EntryType | undefined = assignee.typeargs.at(i);
 				if (thattype) {
 					return ASTNodeCP.typeCheckAssign(expr, thattype.type, expr);
 				}

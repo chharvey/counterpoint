@@ -23,24 +23,24 @@ import {
 class TypeMap extends ReferenceType {
 	/**
 	 * Construct a new TypeMap object.
-	 * @param invariant_ant a union of antecedent types in this map type
-	 * @param invariant_con a union of consequent types in this map type
+	 * @param typearg_ant a union of antecedent types in this map type
+	 * @param typearg_con a union of consequent types in this map type
 	 * @param is_mutable is this type mutable?
 	 */
 	public constructor(
-		public readonly invariant_ant: Type,
-		public readonly invariant_con: Type,
+		public readonly typearg_ant: Type,
+		public readonly typearg_con: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new VALUE.Map()]));
 	}
 
 	public override get hasMutable(): boolean {
-		return super.hasMutable || this.invariant_ant.hasMutable || this.invariant_con.hasMutable;
+		return super.hasMutable || this.typearg_ant.hasMutable || this.typearg_con.hasMutable;
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Map.<${ this.invariant_ant }, ${ this.invariant_con }>`;
+		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Map.<${ this.typearg_ant }, ${ this.typearg_con }>`;
 	}
 
 	public override includes(v: VALUE.Value): boolean {
@@ -56,18 +56,18 @@ class TypeMap extends ReferenceType {
 		return (
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
-				? this.invariant_ant.equals((t as TypeMap).invariant_ant) && this.invariant_con.equals((t as TypeMap).invariant_con)      // Invariance for mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.
-				: this.invariant_ant.equals((t as TypeMap).invariant_ant) && this.invariant_con.isSubtypeOf((t as TypeMap).invariant_con) // Invariance for immutable maps’ keys: `A == C && --> Map.<A, B> <: Map.<C, B>`. // Covariance for immutable maps’ values: `B <: D --> Map.<A, B> <: Map.<A, D>`.
+				? this.typearg_ant.equals((t as TypeMap).typearg_ant) && this.typearg_con.equals((t as TypeMap).typearg_con)      // Invariance for mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.
+				: this.typearg_ant.equals((t as TypeMap).typearg_ant) && this.typearg_con.isSubtypeOf((t as TypeMap).typearg_con) // Invariance for immutable maps’ antecedents: `A == C && --> Map.<A, B> <: Map.<C, B>`. // Covariance for immutable maps’ consequents: `B <: D --> Map.<A, B> <: Map.<A, D>`.
 			)
 		);
 	}
 
 	public override mutableOf(): TypeMap {
-		return new TypeMap(this.invariant_ant, this.invariant_con, true);
+		return new TypeMap(this.typearg_ant, this.typearg_con, true);
 	}
 
 	public override immutableOf(): TypeMap {
-		return new TypeMap(this.invariant_ant, this.invariant_con, false);
+		return new TypeMap(this.typearg_ant, this.typearg_con, false);
 	}
 }
 export {TypeMap as Map};

@@ -198,25 +198,25 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 				}
 				case base_type instanceof TYPE.List: {
 					return accessor_type.isSubtypeOf(TYPE.INT)
-						? {type: base_type.invariant, optional: accessor_maybe}
+						? {type: base_type.typearg, optional: accessor_maybe}
 						: throwWrongSubtypeError(access.accessor, TYPE.INT);
 				}
 				case base_type instanceof TYPE.Dict: {
 					return accessor_type.isSubtypeOf(TYPE.SYM)
-						? {type: base_type.invariant, optional: accessor_maybe}
+						? {type: base_type.typearg, optional: accessor_maybe}
 						: accessor_type.isSubtypeOf(TYPE.STR)
 							? assert.fail(new Error('String keys for dict access are not yet supported.'))
 							: throwWrongSubtypeError(access.accessor, TYPE.Union.all(TYPE.SYM, TYPE.STR));
 				}
 				case base_type instanceof TYPE.Set: {
-					return accessor_type.isSubtypeOf(base_type.invariant)
+					return accessor_type.isSubtypeOf(base_type.typearg)
 						? {type: TYPE.BOOL, optional: false}
-						: throwWrongSubtypeError(access.accessor, base_type.invariant);
+						: throwWrongSubtypeError(access.accessor, base_type.typearg);
 				}
 				case base_type instanceof TYPE.Map: {
-					return accessor_type.isSubtypeOf(base_type.invariant_ant)
-						? {type: base_type.invariant_con, optional: accessor_maybe}
-						: throwWrongSubtypeError(access.accessor, base_type.invariant_ant);
+					return accessor_type.isSubtypeOf(base_type.typearg_ant)
+						? {type: base_type.typearg_con, optional: accessor_maybe}
+						: throwWrongSubtypeError(access.accessor, base_type.typearg_ant);
 				}
 				default: {
 					throw new TypeErrorInvalidOperation(access);

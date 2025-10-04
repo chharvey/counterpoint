@@ -70,7 +70,7 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 
 	/**
 	 * @inheritdoc
-	 * Returns a TYPE.Map whose invariants are the respective unions of the types of this ValueMap’s antecedents and consequents.
+	 * Returns a TYPE.Map whose type arguments are the respective unions of the types of this ValueMap’s antecedents and consequents.
 	 */
 	public override toType(): TYPE.Map {
 		return new TYPE.Map(

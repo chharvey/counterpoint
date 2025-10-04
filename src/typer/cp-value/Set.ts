@@ -65,7 +65,7 @@ class ValueSet<T extends Value = Value> extends Collection {
 
 	/**
 	 * @inheritdoc
-	 * Returns a TYPE.Set whose invariant is the union of the types of this ValueSet’s elements.
+	 * Returns a TYPE.Set whose type argument is the union of the types of this ValueSet’s elements.
 	 */
 	public override toType(): TYPE.Set {
 		return new TYPE.Set(TYPE.Union.all([...this.elements].map<TYPE.Type>((el) => el.toType())));
