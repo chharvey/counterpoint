@@ -106,11 +106,11 @@ describe('ASTNodeAccess', () => {
 
 	context('access kind: normal access (`a.‹b›`).', () => {
 		context('when base is nullish.', () => {
-			const SRCS = extract_lines(`
+			const SRCS = extract_lines`
 				null.3;
 				null.four;
 				null.[[[[[]]]]];
-			`);
+			`;
 			it('#type: throws when base is a subtype of null.', () => {
 				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), [
 					...repeat(TypeErrorNoEntry, 2),
@@ -150,11 +150,11 @@ describe('ASTNodeAccess', () => {
 				rec_unfixed.b; % type \`float\`   % non-foldable value
 				rec_unfixed._; % type \`str\`     % non-foldable value
 			`;
-			const THROWS = extract_lines(`
+			const THROWS = extract_lines`
 				[1, 2.0, "three"].3;
 				[1, 2.0, "three"].-4;
 				[a= 1, b= 2.0, c= "three"].d;
-			`);
+			`;
 			describe('#type', () => {
 				it('return individual entry types.', () => {
 					testExprTypes(SRC, [
@@ -193,13 +193,13 @@ describe('ASTNodeAccess', () => {
 					`, repeat(TypeErrorNoEntry, 4));
 				});
 				it('throws when base object is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
+					xjs.Array.forEachAggregated(extract_lines`
 						(4).2;
 						List.<int>([10, 20, 30]).1;
 
 						(4).c;
 						Dict.<int>([a= 10, b= 20, c= 30]).b;
-					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
+					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
 				});
 				it('throws when index is out of bounds / when key is out of range.', () => {
 					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
@@ -352,10 +352,10 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('throws AssertionError when base is of incorrect type (bypassing type-checking).', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
+					xjs.Array.forEachAggregated(extract_lines`
 						[null, true, @hello].a;
 						[a= 42].0;
-					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), assert.AssertionError));
+					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), assert.AssertionError));
 				});
 				it('throws when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
 					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), VoidErrorOutOfBounds));
@@ -454,11 +454,11 @@ describe('ASTNodeAccess', () => {
 					assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int>([a= 10, b= 20, c= 30]).["a"];').type(), /String keys for dict access are not yet supported\./);
 				});
 				it('throws when base object is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
+					xjs.Array.forEachAggregated(extract_lines`
 						(4).[2];
 						[10, 20, 30].[1];
 						[a= 10, b= 20, c= 30].[@b];
-					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
+					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
 				});
 				it('when accessor expression is correct type but out of bounds/range, returns `never` for folded objects, returns union type for unfolded objects.', () => {
 					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
@@ -473,12 +473,12 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
+					xjs.Array.forEachAggregated(extract_lines`
 						List.<int | float | str>([1, 2.0, "three"]).["3"];
 						Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]).[3];
 						{1, 2.0, "three"}.[true];
 						{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.["a"];
-					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
+					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 			});
 			describe('#fold', () => {
@@ -592,11 +592,11 @@ describe('ASTNodeAccess', () => {
 				reco1_u?.b; % type \`str?\`    % non-foldable value
 				reco2_u?.b; % type \`str?\`    % non-foldable value
 			`;
-			const THROWS = extract_lines(`
+			const THROWS = extract_lines`
 				[1, 2.0, "three"]?.3;
 				[1, 2.0, "three"]?.-4;
 				[a= 1, b= 2.0, c= "three"]?.d;
-			`);
+			`;
 			describe('#type', () => {
 				it('unions with null if entry is optional.', () => {
 					testExprTypes(SRC, [
@@ -621,13 +621,13 @@ describe('ASTNodeAccess', () => {
 					`, repeat(TYPE.UNKNOWN, 4));
 				});
 				it('throws when base object is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
+					xjs.Array.forEachAggregated(extract_lines`
 						(4)?.2;
 						List.<int>([10, 20, 30])?.1;
 
 						(4)?.c;
 						Dict.<int>([a= 10, b= 20, c= 30])?.b;
-					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
+					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
 				});
 				it('throws when index is out of bounds / when key is out of range.', () => {
 					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
@@ -777,10 +777,10 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('throws AssertionError when base is of incorrect type (bypassing type-checking).', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
+					xjs.Array.forEachAggregated(extract_lines`
 						[null, true, @hello]?.a;
 						[a= 42]?.0;
-					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), assert.AssertionError));
+					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), assert.AssertionError));
 				});
 				it('returns null when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
 					xjs.Array.forEachAggregated(THROWS, (src) => assert.strictEqual(AST.ASTNodeAccess.fromSource(src).fold(), VALUE.NULL));
@@ -867,13 +867,13 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('throws when base object is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
+					xjs.Array.forEachAggregated(extract_lines`
 						(4)?.[2];
 						[10, 20, 30]?.[1];
 						[a= 10, b= 20, c= 30]?.[@b];
 						Set.<int>([10, 20, 30])?.[20];
 						{10, 20, 30}?.[20];
-					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
+					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
 					return testExprTypes(`
 						let     set_fixed:   Set.<int | float | str> = {1, 2.0, "three"};
 						let var set_unfixed: Set.<int | float | str> = set_fixed;
@@ -897,12 +897,12 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
+					xjs.Array.forEachAggregated(extract_lines`
 						List.<int | float | str>([1, 2.0, "three"])?.["3"];
 						Dict.<int | float | str>([a= 1, b= 2.0, c= "three"])?.[3];
 						{1, 2.0, "three"}?.[true];
 						{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.["a"];
-					`), (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
+					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 			});
 			describe('#fold', () => {
