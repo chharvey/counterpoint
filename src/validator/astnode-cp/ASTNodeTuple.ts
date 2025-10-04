@@ -82,12 +82,10 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 				entry.optional || assert.ok(this.children[i], err);
 			});
 			return xjs.Array.forEachAggregated(this.children, (expr, i) => {
-				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
-				const thattype: EntryType | undefined = assignee.invariants[i];
+				const thattype: EntryType | undefined = assignee.invariants.at(i);
 				if (thattype) {
 					return ASTNodeCP.typeCheckAssign(expr, thattype.type, expr);
 				}
-				/* eslint-enable @typescript-eslint/no-unnecessary-condition */
 			});
 		}
 		throw err;

@@ -83,12 +83,11 @@ class TypeTuple extends ValueType {
 		return (
 			this.minCount >= (t as TypeTuple).minCount &&
 			(t as TypeTuple).invariants.every((thattype, i) => {
-				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
-				const thistype: EntryType | undefined = this.invariants[i];
+				const thistype: EntryType | undefined = this.invariants.at(i);
 				if (!thattype.optional) {
 					/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
 						We cannot do so with record types since properties are not ordered. */
-					assert.strictEqual(thistype?.optional, false, `${ thistype.type } should exist and not be optional.`);
+					assert.strictEqual(thistype?.optional, false, `${ thistype!.type } should exist and not be optional.`);
 				}
 				return thistype?.type.isSubtypeOf(thattype.type) ?? true; // Covariance for tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 			})
