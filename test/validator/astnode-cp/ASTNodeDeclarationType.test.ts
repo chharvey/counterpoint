@@ -9,6 +9,7 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 } from '../../../src/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
+import {setupScript} from '../../helpers.ts';
 
 
 
@@ -57,13 +58,10 @@ describe('ASTNodeDeclarationType', () => {
 
 	describe('#typeCheck', () => {
 		it('sets `SymbolSchema#value`.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+			assert.strictEqual(
+				(setupScript(`{
 				type T = int;
-			}`);
-			goal.varCheck();
-			goal.typeCheck();
-			return assert.strictEqual(
-				(goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
+			}`, null, {build: false}).goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 				TYPE.INT,
 			);
 		});
@@ -72,11 +70,11 @@ describe('ASTNodeDeclarationType', () => {
 
 	describe('#build', () => {
 		it('always returns `(nop)`.', () => {
-			const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+			const {stmts, mod} = setupScript(`{
 				type T = int;
 				type U = T | float;
 			}`);
-			return xjs.Array.forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), goal.builder.module.nop()));
+			return xjs.Array.forEachAggregated(stmts, (stmt) => assertEqualBins(stmt.build(), mod.nop()));
 		});
 	});
 });

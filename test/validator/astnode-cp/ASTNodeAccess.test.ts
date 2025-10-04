@@ -20,6 +20,7 @@ import {
 } from '../../assert-helpers.ts';
 import {
 	CONFIG_FOLDING_OFF,
+	setupScript,
 	typeUnit,
 	buildConst,
 	singletonTuple,
@@ -49,14 +50,14 @@ describe('ASTNodeAccess', () => {
 	 * @param expecteds the expected types of the expressions
 	 */
 	function testExprTypes(source: string, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
-		const program:    AST.ASTNodeBlock                          = AST.ASTNodeBlock.fromSource(source);
-		const statements: readonly AST.ASTNodeStatementExpression[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
-		program.varCheck();
+		const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
+		goal.varCheck();
 		try {
-			program.typeCheck();
+			goal.typeCheck();
 		} catch {
 			// if type-checking fails, proceed to `assert.throws` below
 		}
+		const statements: readonly AST.ASTNodeStatementExpression[] = goal.block!.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
 		return expecteds.some((it) => it instanceof Function)
 			? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 				const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
@@ -82,14 +83,14 @@ describe('ASTNodeAccess', () => {
 	 * @param expecteds the expected folded values (or null) of the expressions
 	 */
 	function testExprValues(source: string, expecteds: readonly (VALUE.Value | null | ConstructorType<Error>)[]): void {
-		const program:    AST.ASTNodeBlock                          = AST.ASTNodeBlock.fromSource(source);
-		const statements: readonly AST.ASTNodeStatementExpression[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
-		program.varCheck();
+		const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
+		goal.varCheck();
 		try {
-			program.typeCheck();
+			goal.typeCheck();
 		} catch {
 			// if type-checking fails, proceed to `assert.throws` below
 		}
+		const statements: readonly AST.ASTNodeStatementExpression[] = goal.block!.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
 		return expecteds.some((it) => it instanceof Function)
 			? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 				const expected: VALUE.Value | null | ConstructorType<Error> = expecteds[i];
@@ -276,14 +277,14 @@ describe('ASTNodeAccess', () => {
 						}`, repeat(TypeErrorInvalidOperation, 2));
 					});
 					it('throws when every constituent does not have the entry (index out of bounds / key out of range).', () => {
-						const program: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 							${ DECLS }
 
 							tup.3;
 							rec.d;
 						}`);
-						program.varCheck();
-						return assert.throws(() => program.typeCheck(), (err) => {
+						goal.varCheck();
+						return assert.throws(() => goal.typeCheck(), (err) => {
 							assert_instanceof(err, AggregateError);
 							assertAssignable(err, {
 								cons:   AggregateError,
@@ -704,14 +705,14 @@ describe('ASTNodeAccess', () => {
 						]);
 					});
 					it('throws when every constituent does not have the entry (index out of bounds / key out of range).', () => {
-						const program: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 							${ DECLS }
 
 							tup?.3;
 							rec?.d;
 						}`);
-						program.varCheck();
-						return assert.throws(() => program.typeCheck(), (err) => {
+						goal.varCheck();
+						return assert.throws(() => goal.typeCheck(), (err) => {
 							assert_instanceof(err, AggregateError);
 							assertAssignable(err, {
 								cons:   AggregateError,
@@ -1033,7 +1034,7 @@ describe('ASTNodeAccess', () => {
 		});
 
 		it('accessing tuple pointers.', () => {
-			const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+			const {goal, stmts, mod} = setupScript(`{
 				let tuple: [[float, float[2]], [[float], float[2]]] = [[1.1, [2.2, 3.3]], [[4.4], [5.5, 6.6]]];
 				tuple.0;
 				tuple.1;
@@ -1047,10 +1048,6 @@ describe('ASTNodeAccess', () => {
 				tuple.1.1.0;
 				tuple.1.1.1;
 			}`, CONFIG_FOLDING_OFF);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.build();
-			const mod: binaryen.Module = goal.builder.module;
 			let tee_idx: number = 5;
 			const inner0: binaryen.ExpressionRef = mod.tuple.make([
 				mod.tuple.extract(mod.local.get(4, bintype6), 0),
@@ -1069,7 +1066,7 @@ describe('ASTNodeAccess', () => {
 					mod.tuple.extract(mod.local.get(i, bintype3), 2),
 				]);
 			}
-			const inner10: binaryen.ExpressionRef = singletonTuple(goal.builder, goal.builder.module.tuple.extract(inner1, 0));
+			const inner10: binaryen.ExpressionRef = singletonTuple(goal.builder, mod.tuple.extract(inner1, 0));
 			function make_tuple_1_1(): binaryen.ExpressionRef {
 				const i = tee_idx++;
 				return mod.tuple.make([
@@ -1078,7 +1075,7 @@ describe('ASTNodeAccess', () => {
 				]);
 			}
 			return assertEqualBins(
-				goal.children.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+				stmts.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
 				[
 					inner0,
 					inner1,

@@ -21,6 +21,7 @@ import {
 } from '../../assert-helpers.ts';
 import {
 	CONFIG_FOLDING_OFF,
+	setupScript,
 	typeUnit,
 	buildConst,
 } from '../../helpers.ts';
@@ -164,18 +165,15 @@ describe('ASTNodeOperation', () => {
 			context('with constant folding off.', () => {
 				describe('[operator=NOT]', () => {
 					it('returns type `true` for a subtype of `null | false`.', () => {
-						const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						xjs.Array.forEachAggregated(setupScript(`{
 							let var a: null = null;
 							let var b: null | false = null;
 							!a;
 							!b;
-						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						return xjs.Array.forEachAggregated(goal.children.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
+						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
 					it('returns type `bool` for a supertype of `T narrows null | false`.', () => {
-						const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						xjs.Array.forEachAggregated(setupScript(`{
 							let var a: null | int = null;
 							let var b: null | int = 42;
 							let var c: bool = false;
@@ -184,47 +182,35 @@ describe('ASTNodeOperation', () => {
 							!b;
 							!c;
 							!d;
-						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						return xjs.Array.forEachAggregated(goal.children.slice(4), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
+						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(4), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
 					it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
-						const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						xjs.Array.forEachAggregated(setupScript(`{
 							let var a: int = 42;
 							let var b: float = 4.2;
 							let var c: sym = @hello;
 							!a;
 							!b;
 							!c;
-						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						return xjs.Array.forEachAggregated(goal.children.slice(3), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
+						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(3), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
 					});
 					it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
-						const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						xjs.Array.forEachAggregated(setupScript(`{
 							![];
 							![42];
 							![a= 42];
 							!{41 -> 42};
-						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						return xjs.Array.forEachAggregated(goal.children, (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
+						}`, CONFIG_FOLDING_OFF, {build: false}).stmts, (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
 					});
 				});
 				describe('[operator=EMP]', () => {
 					it('returns type `true` for a subtype of `null | false`.', () => {
-						const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						xjs.Array.forEachAggregated(setupScript(`{
 							let var a: null = null;
 							let var b: null | false = null;
 							?a;
 							?b;
-						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						return xjs.Array.forEachAggregated(goal.children.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
+						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
 					it('returns type `bool` for anything else.', () => {
 						[
@@ -238,7 +224,7 @@ describe('ASTNodeOperation', () => {
 							'?[a= 42]',
 							'?{41 -> 42}',
 						].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type()).forEach((typ) => assert.strictEqual(typ, TYPE.BOOL));
-						const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						return xjs.Array.forEachAggregated(setupScript(`{
 							let var a: null | int = null;
 							let var b: null | int = 42;
 							let var c: bool = false;
@@ -251,16 +237,13 @@ describe('ASTNodeOperation', () => {
 							?d;
 							?f;
 							?g;
-						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						return xjs.Array.forEachAggregated(goal.children.slice(6), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
+						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(6), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
 				});
 			});
 			describe('[operator=INT | FLOAT]', () => {
 				it('returns the respective type for numeric operands.', () => {
-					const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+					assert.deepStrictEqual(setupScript(`{
 						let var my_int: int   = 7;
 						let var my_flt: float = -3.5;
 
@@ -268,10 +251,7 @@ describe('ASTNodeOperation', () => {
 						int   my_flt;
 						float my_int;
 						float my_flt;
-					}`);
-					goal.varCheck();
-					goal.typeCheck();
-					return assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+					}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 						TYPE.INT,
 						TYPE.INT,
 						TYPE.FLOAT,
@@ -344,7 +324,7 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 			it('[operator=INT | FLOAT]: returns a numeric conversion only if needed.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const exprs: readonly AST.ASTNodeOperationUnary[] = setupScript(`{
 					let my_int: int   = 7;
 					let my_flt: float = -3.5;
 
@@ -352,12 +332,9 @@ describe('ASTNodeOperation', () => {
 					int   my_flt;
 					float my_int;
 					float my_flt;
-				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				const exprs:    readonly AST.ASTNodeOperationUnary[] = goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary);
-				const values:   readonly (VALUE.Value | null)[]      = exprs.map((expr) => expr.fold());
-				const operands: readonly (VALUE.Value | null)[]      = exprs.map((expr) => expr.operand.fold());
+				}`, null, {build: false}).stmts.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary);
+				const values:   readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.fold());
+				const operands: readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.operand.fold());
 				assert.strictEqual(values[0], operands[0]);
 				assert.strictEqual(values[3], operands[3]);
 				return assert.deepStrictEqual(values, [
@@ -404,7 +381,7 @@ describe('ASTNodeOperation', () => {
 					['?[]',    (builder) => CALL.vemp(builder.module, new VALUE.Tuple().build(builder))],
 					['?[4.2]', (builder) => CALL.vemp(builder.module, new VALUE.Tuple([new VALUE.Float(4.2)]).build(builder))],
 				]));
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {stmts, mod} = setupScript(`{
 					let var f: bool = false;
 					let var t: bool = true;
 					!f;
@@ -412,21 +389,18 @@ describe('ASTNodeOperation', () => {
 					?f;
 					?t;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+					stmts.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
 					[
-						CALL.vnot(goal.builder.module, goal.builder.module.local.get(0, binaryen.v128)),
-						CALL.vnot(goal.builder.module, goal.builder.module.local.get(1, binaryen.v128)),
-						CALL.vemp(goal.builder.module, goal.builder.module.local.get(0, binaryen.v128)),
-						CALL.vemp(goal.builder.module, goal.builder.module.local.get(1, binaryen.v128)),
+						CALL.vnot(mod, mod.local.get(0, binaryen.v128)),
+						CALL.vnot(mod, mod.local.get(1, binaryen.v128)),
+						CALL.vemp(mod, mod.local.get(0, binaryen.v128)),
+						CALL.vemp(mod, mod.local.get(1, binaryen.v128)),
 					],
 				);
 			});
 			it('works with vects.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {stmts, mod} = setupScript(`{
 					let var x: int | float = 42;
 					let var y: int | float = 4.2;
 
@@ -439,26 +413,23 @@ describe('ASTNodeOperation', () => {
 					-x;
 					-y;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
+				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(2).map((stmt) => (
 					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build()
 				));
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build()),
+					stmts.slice(2).map((stmt) => stmt.build()),
 					[
-						drop_then(goal.builder.module, [extracts[0]], false),
-						drop_then(goal.builder.module, [extracts[1]], false),
-						CALL.vemp(goal.builder.module, extracts[2]),
-						CALL.vemp(goal.builder.module, extracts[3]),
-						CALL.vneg(goal.builder.module, extracts[4]),
-						CALL.vneg(goal.builder.module, extracts[5]),
-					].map((expected) => goal.builder.module.drop(expected)),
+						drop_then(mod, [extracts[0]], false),
+						drop_then(mod, [extracts[1]], false),
+						CALL.vemp(mod, extracts[2]),
+						CALL.vemp(mod, extracts[3]),
+						CALL.vneg(mod, extracts[4]),
+						CALL.vneg(mod, extracts[5]),
+					].map((expected) => mod.drop(expected)),
 				);
 			});
 			it('multiple operations.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {stmts, mod} = setupScript(`{
 					let var x: int | float = 42;
 					let var y: int | float = 4.2;
 
@@ -471,32 +442,29 @@ describe('ASTNodeOperation', () => {
 					--x;
 					--y;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
+				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(2).map((stmt) => (
 					(((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build()
 				));
 				assertEqualBins(
-					goal.children.slice(4).map((stmt) => (
+					stmts.slice(4).map((stmt) => (
 						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build()
 					)),
-					extracts.slice(2).map((extract) => CALL.vneg(goal.builder.module, extract)),
+					extracts.slice(2).map((extract) => CALL.vneg(mod, extract)),
 				);
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build()),
+					stmts.slice(2).map((stmt) => stmt.build()),
 					[
-						drop_then(goal.builder.module, [drop_then(goal.builder.module, [extracts[0]], false)], true),
-						CALL.vemp(goal.builder.module, CALL.vemp(goal.builder.module, extracts[1])),
-						drop_then(goal.builder.module, [CALL.vneg(goal.builder.module, extracts[2])], false),
-						CALL.vemp(goal.builder.module, CALL.vneg(goal.builder.module, extracts[3])),
-						CALL.vneg(goal.builder.module, CALL.vneg(goal.builder.module, extracts[4])),
-						CALL.vneg(goal.builder.module, CALL.vneg(goal.builder.module, extracts[5])),
-					].map((expected) => goal.builder.module.drop(expected)),
+						drop_then(mod, [drop_then(mod, [extracts[0]], false)], true),
+						CALL.vemp(mod, CALL.vemp(mod, extracts[1])),
+						drop_then(mod, [CALL.vneg(mod, extracts[2])], false),
+						CALL.vemp(mod, CALL.vneg(mod, extracts[3])),
+						CALL.vneg(mod, CALL.vneg(mod, extracts[4])),
+						CALL.vneg(mod, CALL.vneg(mod, extracts[5])),
+					].map((expected) => mod.drop(expected)),
 				);
 			});
 			it('[operator=INT | FLOAT]: returns a numeric conversion.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {stmts, mod} = setupScript(`{
 					let var my_int: int   = 7;
 					let var my_flt: float = -3.5;
 
@@ -505,17 +473,14 @@ describe('ASTNodeOperation', () => {
 					float my_int;
 					float my_flt;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
+				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(2).map((stmt) => (
 					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build()
 				));
-				return assertEqualBins(goal.children.slice(2).map((stmt) => stmt.build()), [
-					goal.builder.module.drop(CALL.vtoi(goal.builder.module, extracts[0])),
-					goal.builder.module.drop(CALL.vtoi(goal.builder.module, extracts[1])),
-					goal.builder.module.drop(CALL.vtof(goal.builder.module, extracts[2])),
-					goal.builder.module.drop(CALL.vtof(goal.builder.module, extracts[3])),
+				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
+					mod.drop(CALL.vtoi(mod, extracts[0])),
+					mod.drop(CALL.vtoi(mod, extracts[1])),
+					mod.drop(CALL.vtof(mod, extracts[2])),
+					mod.drop(CALL.vtof(mod, extracts[3])),
 				]);
 			});
 		});
@@ -526,7 +491,7 @@ describe('ASTNodeOperation', () => {
 	describe('ASTNodeOperationBinary', () => {
 		describe('#build', () => {
 			it('works with vects.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {goal, stmts, mod} = setupScript(`{
 					let var x: int   = 42;
 					let var y: float = 4.2;
 
@@ -541,10 +506,7 @@ describe('ASTNodeOperation', () => {
 					x == 2.4;
 					y == 2.4;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
+				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(2).map((stmt) => (
 					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build()
 				));
 				/* eslint-disable @stylistic/quote-props */
@@ -554,31 +516,28 @@ describe('ASTNodeOperation', () => {
 				} as const;
 				/* eslint-enable @stylistic/quote-props */
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build()),
+					stmts.slice(2).map((stmt) => stmt.build()),
 					[
-						CALL.vmul(goal.builder.module, extracts[0], const_['2']),
-						CALL.vmul(goal.builder.module, extracts[1], const_['2.4']),
+						CALL.vmul(mod, extracts[0], const_['2']),
+						CALL.vmul(mod, extracts[1], const_['2.4']),
 
-						CALL.vlt(goal.builder.module, extracts[2], const_['2']),
-						CALL.vlt(goal.builder.module, extracts[3], const_['2.4']),
+						CALL.vlt(mod, extracts[2], const_['2']),
+						CALL.vlt(mod, extracts[3], const_['2.4']),
 
-						CALL.veq(goal.builder.module, extracts[4], const_['2']),
-						CALL.veq(goal.builder.module, extracts[5], const_['2']),
-						CALL.veq(goal.builder.module, extracts[6], const_['2.4']),
-						CALL.veq(goal.builder.module, extracts[7], const_['2.4']),
-					].map((expected) => goal.builder.module.drop(expected)),
+						CALL.veq(mod, extracts[4], const_['2']),
+						CALL.veq(mod, extracts[5], const_['2']),
+						CALL.veq(mod, extracts[6], const_['2.4']),
+						CALL.veq(mod, extracts[7], const_['2.4']),
+					].map((expected) => mod.drop(expected)),
 				);
 			});
 			it('multiple unions.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {stmts, mod} = setupScript(`{
 					let var x: int | float = 42;
 					let var y: int | float = 4.2;
 					x == y;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = goal.children.slice(2).map((stmt) => {
+				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = stmts.slice(2).map((stmt) => {
 					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
 					return [
 						binexp.operand0.build(),
@@ -586,25 +545,22 @@ describe('ASTNodeOperation', () => {
 					];
 				});
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build()),
+					stmts.slice(2).map((stmt) => stmt.build()),
 					[
-						CALL.veq(goal.builder.module, extracts[0][0], extracts[0][1]),
-					].map((expected) => goal.builder.module.drop(expected)),
+						CALL.veq(mod, extracts[0][0], extracts[0][1]),
+					].map((expected) => mod.drop(expected)),
 				);
 			});
 			it('multiple operations.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {goal, stmts, mod} = setupScript(`{
 					let var x: int   = 42;
 					let var y: float = 4.2;
 					x + 2 + 3;
 					2.0 + y + 3.0;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
 				const extracts: readonly binaryen.ExpressionRef[] = [
-					(((goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(),
-					(((goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(),
+					(((stmts[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(),
+					(((stmts[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(),
 				];
 				const const_ = {
 					'2':   buildConst(goal.builder, 2n),
@@ -613,18 +569,18 @@ describe('ASTNodeOperation', () => {
 					'3.0': buildConst(goal.builder, 3.0),
 				} as const;
 				const inners: readonly binaryen.ExpressionRef[] = [
-					CALL.vadd(goal.builder.module, extracts[0], const_['2']),
-					CALL.vadd(goal.builder.module, const_['2.0'], extracts[1]),
+					CALL.vadd(mod, extracts[0], const_['2']),
+					CALL.vadd(mod, const_['2.0'], extracts[1]),
 				];
 				assertEqualBins(
-					goal.children.slice(2).map((stmt) => (
+					stmts.slice(2).map((stmt) => (
 						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build()
 					)),
 					inners,
 				);
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build()),
-					inners.map((inner, i) => goal.builder.module.drop(CALL.vadd(goal.builder.module, inner, [const_['3'], const_['3.0']][i]))),
+					stmts.slice(2).map((stmt) => stmt.build()),
+					inners.map((inner, i) => mod.drop(CALL.vadd(mod, inner, [const_['3'], const_['3.0']][i]))),
 				);
 			});
 		});
@@ -851,7 +807,7 @@ describe('ASTNodeOperation', () => {
 					]));
 				});
 				it('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
-					const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+					setupScript(`{
 						let a: anything = [];
 						let b: anything = [42];
 						let c: anything = [x= 42];
@@ -873,10 +829,7 @@ describe('ASTNodeOperation', () => {
 						c != [y= 42];
 						d != {41 -> 43};
 						d != {43 -> 42};
-					}`);
-					block.varCheck();
-					block.typeCheck();
-					block.children.slice(4).forEach((stmt) => {
+					}`, null, {build: false}).stmts.slice(4).forEach((stmt) => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
 						const fold: VALUE.Value | null = expr.fold();
 						assert_instanceof(fold, VALUE.Boolean);
@@ -991,7 +944,7 @@ describe('ASTNodeOperation', () => {
 				});
 			});
 			it('compound types.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				setupScript(`{
 					let a: anything = [];
 					let b: anything = [42];
 					let c: anything = [x= 42];
@@ -1053,10 +1006,7 @@ describe('ASTNodeOperation', () => {
 					c != [y= 42];
 					i != {41 -> 43};
 					i != {43 -> 42};
-				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.children.slice(13).forEach((stmt) => {
+				}`, null, {build: false}).stmts.slice(13).forEach((stmt) => {
 					assert.strictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), VALUE.TRUE, stmt.source);
 				});
 			});
@@ -1109,7 +1059,7 @@ describe('ASTNodeOperation', () => {
 					]));
 				});
 				it('calls `vid` when operands are same numeric type.', () => {
-					const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+					const {stmts, mod} = setupScript(`{
 						let var i1: int   = 42;
 						let var i2: int   = 420;
 						let var f1: float = 4.2;
@@ -1117,15 +1067,12 @@ describe('ASTNodeOperation', () => {
 						i1 === i2;
 						f1 === f2;
 					}`);
-					goal.varCheck();
-					goal.typeCheck();
-					goal.build();
-					return assertEqualBins(new Map(goal.children.slice(4).map((stmt, i) => [
+					return assertEqualBins(new Map(stmts.slice(4).map((stmt, i) => [
 						(stmt as AST.ASTNodeStatementExpression).expr!.build(),
 						CALL.vid(
-							goal.builder.module,
-							goal.builder.module.local.get(2 * i,     binaryen.v128),
-							goal.builder.module.local.get(2 * i + 1, binaryen.v128),
+							mod,
+							mod.local.get(2 * i,     binaryen.v128),
+							mod.local.get(2 * i + 1, binaryen.v128),
 						),
 					])));
 				});
@@ -1165,7 +1112,7 @@ describe('ASTNodeOperation', () => {
 						['4.2 == 42',   (builder) => CALL.veq(builder.module, buildConst(builder, 4.2), buildConst(builder, 42n))],
 						['4.2 == 42.0', (builder) => CALL.veq(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
 					]));
-					const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+					const {stmts, mod} = setupScript(`{
 						let var i1: int   = 42;
 						let var i2: int   = 420;
 						let var f1: float = 4.2;
@@ -1173,15 +1120,12 @@ describe('ASTNodeOperation', () => {
 						i1 == i2;
 						f1 == f2;
 					}`);
-					goal.varCheck();
-					goal.typeCheck();
-					goal.build();
-					return assertEqualBins(new Map(goal.children.slice(4).map((stmt, i) => [
+					return assertEqualBins(new Map(stmts.slice(4).map((stmt, i) => [
 						(stmt as AST.ASTNodeStatementExpression).expr!.build(),
 						CALL.veq(
-							goal.builder.module,
-							goal.builder.module.local.get(2 * i,     binaryen.v128),
-							goal.builder.module.local.get(2 * i + 1, binaryen.v128),
+							mod,
+							mod.local.get(2 * i,     binaryen.v128),
+							mod.local.get(2 * i + 1, binaryen.v128),
 						),
 					])));
 				});
@@ -1221,22 +1165,19 @@ describe('ASTNodeOperation', () => {
 			context('with constant folding off.', () => {
 				describe('[operator=AND]', () => {
 					it('returns `left` if it’s a subtype of `null | false`.', () => {
-						const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						assertEqualTypes(setupScript(`{
 							let var a: null = null;
 							let var b: null | false = null;
 							a && 42;
 							b && 42;
-						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						assertEqualTypes(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL,
 							TYPE.NULL.union(TYPE.FALSE),
 						]);
 					});
 					it('returns `T | right` if left is a supertype of `T narrows null | false`.', () => {
 						const hello: TYPE.Unit<VALUE.String> = typeUnit('hello');
-						const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						return assertEqualTypes(setupScript(`{
 							let var a: null | int = null;
 							let var b: null | int = 42;
 							let var c: bool = false;
@@ -1245,10 +1186,7 @@ describe('ASTNodeOperation', () => {
 							b && "hello";
 							c && "hello";
 							d && "hello";
-						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						return assertEqualTypes(goal.children.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL.union(hello),
 							TYPE.NULL.union(hello),
 							TYPE.FALSE.union(hello),
@@ -1256,15 +1194,12 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `right` if left does not contain `null` nor `false`.', () => {
-						const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						assertEqualTypes(setupScript(`{
 							let var a: int = 42;
 							let var b: float = 4.2;
 							a && true;
 							b && null;
-						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						assertEqualTypes(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.TRUE,
 							TYPE.NULL,
 						]);
@@ -1272,22 +1207,19 @@ describe('ASTNodeOperation', () => {
 				});
 				describe('[operator=OR]', () => {
 					it('returns `right` if left is a subtype of `null | false`.', () => {
-						const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						assertEqualTypes(setupScript(`{
 							let var a: null = null;
 							let var b: null | false = null;
 							a || false;
 							b || 42;
-						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						assertEqualTypes(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.FALSE,
 							typeUnit(42n),
 						]);
 					});
 					it('returns `(left - T) | right` if left is a supertype of `T narrows null | false`.', () => {
 						const hello: TYPE.Unit<VALUE.String> = typeUnit('hello');
-						const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						assertEqualTypes(setupScript(`{
 							let var a: null | int = null;
 							let var b: null | int = 42;
 							let var c: bool = false;
@@ -1296,10 +1228,7 @@ describe('ASTNodeOperation', () => {
 							b || "hello";
 							c || "hello";
 							d || "hello";
-						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						assertEqualTypes(goal.children.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.INT.union(hello),
 							TYPE.INT.union(hello),
 							TYPE.TRUE.union(hello),
@@ -1307,15 +1236,12 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `left` if it does not contain `null` nor `false`.', () => {
-						const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+						assertEqualTypes(setupScript(`{
 							let var a: int = 42;
 							let var b: float = 4.2;
 							a || true;
 							b || null;
-						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						assertEqualTypes(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.INT,
 							TYPE.FLOAT,
 						]);
@@ -1417,7 +1343,7 @@ describe('ASTNodeOperation', () => {
 			});
 
 			it('returns a special case of `(if)`.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {stmts, mod} = setupScript(`{
 					let a: anything = 42;
 					let b: anything = 4.2;
 					let c: anything = null;
@@ -1430,10 +1356,7 @@ describe('ASTNodeOperation', () => {
 					d || null;
 					e && 201.0e-1;
 				}`, CONFIG_FOLDING_OFF);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = goal.children.slice(5).map((stmt) => {
+				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = stmts.slice(5).map((stmt) => {
 					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
 					return [
 						binexp.operand0.build(),
@@ -1441,39 +1364,39 @@ describe('ASTNodeOperation', () => {
 					];
 				});
 				return assertEqualBins(
-					goal.children.slice(5).map((stmt) => stmt.build()),
+					stmts.slice(5).map((stmt) => stmt.build()),
 					[
 						create_if(
-							goal.builder.module,
+							mod,
 							[5, extracts[0][0], binaryen.v128],
 							(getter) => [extracts[0][1], getter],
 						),
 						create_if(
-							goal.builder.module,
+							mod,
 							[6, extracts[1][0], binaryen.v128],
 							(getter) => [getter, extracts[1][1]],
 						),
 						create_if(
-							goal.builder.module,
+							mod,
 							[7, extracts[2][0], binaryen.v128],
 							(getter) => [extracts[2][1], getter],
 						),
 						create_if(
-							goal.builder.module,
+							mod,
 							[8, extracts[3][0], binaryen.v128],
 							(getter) => [getter, extracts[3][1]],
 						),
 						create_if(
-							goal.builder.module,
+							mod,
 							[9, extracts[4][0], binaryen.v128],
 							(getter) => [extracts[4][1], getter],
 						),
-					].map((expected) => goal.builder.module.drop(expected)),
+					].map((expected) => mod.drop(expected)),
 				);
 			});
 
 			it('counts internal variables correctly.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {stmts, mod} = setupScript(`{
 					let a: anything = 1;
 					let b: anything = 2;
 					let c: anything = 3;
@@ -1482,10 +1405,7 @@ describe('ASTNodeOperation', () => {
 					a && b || c && d;
 					(a || b) && (c || d);
 				}`, CONFIG_FOLDING_OFF);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const extracts: readonly (readonly (readonly binaryen.ExpressionRef[])[])[] = goal.children.slice(4).map((stmt) => {
+				const extracts: readonly (readonly (readonly binaryen.ExpressionRef[])[])[] = stmts.slice(4).map((stmt) => {
 					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
 					const outer0 = binexp.operand0 as AST.ASTNodeOperationBinary;
 					const outer1 = binexp.operand1 as AST.ASTNodeOperationBinary;
@@ -1495,35 +1415,35 @@ describe('ASTNodeOperation', () => {
 					];
 				});
 				return assertEqualBins(
-					goal.children.slice(4).map((stmt) => stmt.build()),
+					stmts.slice(4).map((stmt) => stmt.build()),
 					[
 						create_if(
-							goal.builder.module,
+							mod,
 							[6, create_if(
-								goal.builder.module,
+								mod,
 								[4, extracts[0][0][0], binaryen.v128],
 								(getter) => [extracts[0][0][1], getter],
 							), binaryen.v128],
 							(getter) => [getter, create_if(
-								goal.builder.module,
+								mod,
 								[5, extracts[0][1][0], binaryen.v128],
 								(getter_) => [extracts[0][1][1], getter_],
 							)],
 						),
 						create_if(
-							goal.builder.module,
+							mod,
 							[9, create_if(
-								goal.builder.module,
+								mod,
 								[7, extracts[1][0][0], binaryen.v128],
 								(getter) => [getter, extracts[1][0][1]],
 							), binaryen.v128],
 							(getter) => [create_if(
-								goal.builder.module,
+								mod,
 								[8, extracts[1][1][0], binaryen.v128],
 								(getter_) => [getter_, extracts[1][1][1]],
 							), getter],
 						),
-					].map((expected) => goal.builder.module.drop(expected)),
+					].map((expected) => mod.drop(expected)),
 				);
 			});
 		});
@@ -1578,17 +1498,14 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 			it('returns `(if)`.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {stmts, mod} = setupScript(`{
 					let a: bool = true;
 					let b: bool = false;
 
 					if a then 1 else 2;
 					if b then 3 else 4;
 				}`, CONFIG_FOLDING_OFF);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = goal.children.slice(2).map((stmt) => {
+				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = stmts.slice(2).map((stmt) => {
 					const terexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationTernary;
 					return [
 						terexp.operand0.build(),
@@ -1597,11 +1514,11 @@ describe('ASTNodeOperation', () => {
 					];
 				});
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build()),
+					stmts.slice(2).map((stmt) => stmt.build()),
 					[
-						goal.builder.module.if(new BinVect(goal.builder.module, extracts[0][0]).isSpecial(true), extracts[0][1], extracts[0][2]),
-						goal.builder.module.if(new BinVect(goal.builder.module, extracts[1][0]).isSpecial(true), extracts[1][1], extracts[1][2]),
-					].map((expected) => goal.builder.module.drop(expected)),
+						mod.if(new BinVect(mod, extracts[0][0]).isSpecial(true), extracts[0][1], extracts[0][2]),
+						mod.if(new BinVect(mod, extracts[1][0]).isSpecial(true), extracts[1][1], extracts[1][2]),
+					].map((expected) => mod.drop(expected)),
 				);
 			});
 		});

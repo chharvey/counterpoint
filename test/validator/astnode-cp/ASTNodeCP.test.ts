@@ -16,7 +16,10 @@ import {
 	assertAssignable,
 	assertEqualBins,
 } from '../../assert-helpers.ts';
-import {typeUnit} from '../../helpers.ts';
+import {
+	setupScript,
+	typeUnit,
+} from '../../helpers.ts';
 
 
 
@@ -50,19 +53,15 @@ describe('ASTNodeCP', () => {
 				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
 			});
 			it('returns `(drop)` for nonempty non-foldable statement expression.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {stmts, mod} = setupScript(`{
 					let var x: int = 42;
 					x * 10;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const stmt: AST.ASTNodeStatement = goal.children[1];
-				assert_instanceof(stmt, AST.ASTNodeStatementExpression);
-				assert.ok(stmt.expr);
+				assert_instanceof(stmts[1], AST.ASTNodeStatementExpression);
+				assert.ok(stmts[1].expr);
 				return assertEqualBins(
-					stmt.build(),
-					goal.builder.module.drop(stmt.expr.build()),
+					stmts[1].build(),
+					mod.drop(stmts[1].expr.build()),
 				);
 			});
 		});
@@ -102,13 +101,10 @@ describe('ASTNodeCP', () => {
 					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
 				it('allows reassignment when uninitialized.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+					assert.partialDeepStrictEqual(setupScript(`{
 						let var x?: int;
 						x = 42;
-					}`);
-					goal.varCheck();
-					goal.typeCheck();
-					return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
+					}`, null, {build: false}).goal.validator.getSymbolInfo(0x100n), {
 						unfixed:       true,
 						uninitialized: true,
 						type:          TYPE.INT,
@@ -131,14 +127,12 @@ describe('ASTNodeCP', () => {
 
 			context('for property reassignment.', () => {
 				it('allows assignment directly on objects.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+					setupScript(`{
 						List.<int>([42]).[0]                 = 42;
 						Dict.<int>([i= 42]).[@i]             = 42;
 						Set.<int>([42]).[43]                 = false;
 						Map.<bool, int>([[true, 42]]).[true] = 42;
-					}`);
-					goal.varCheck();
-					return goal.typeCheck(); // assert does not throw
+					}`, null, {build: false}); // assert does not throw
 				});
 				it('throws when property assignee type is not supertype.', () => {
 					[
@@ -202,20 +196,17 @@ describe('ASTNodeCP', () => {
 
 		describe('#build', () => {
 			it('always returns `(local.set)`.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {stmts, mod} = setupScript(`{
 					let var y: float = 4.2;
 					y = y * 10.0;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
 				return assertEqualBins(
-					goal.children[1].build(),
-					goal.builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build()),
+					stmts[1].build(),
+					mod.local.set(0, (stmts[1] as AST.ASTNodeAssignment).assigned.build()),
 				);
 			});
 			it('allows switching between union members.', () => {
-				const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				const {stmts, mod} = setupScript(`{
 					let var x: float | int = 4.2;
 					let var y: int | float = 4.2;
 					x = 8.4;
@@ -223,12 +214,9 @@ describe('ASTNodeCP', () => {
 					x = x;
 					x = y;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
 				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build()),
-					goal.children.slice(2).map((stmt) => goal.builder.module.local.set(0, (stmt as AST.ASTNodeAssignment).assigned.build())),
+					stmts.slice(2).map((stmt) => stmt.build()),
+					stmts.slice(2).map((stmt) => mod.local.set(0, (stmt as AST.ASTNodeAssignment).assigned.build())),
 				);
 			});
 		});
@@ -353,8 +341,14 @@ describe('ASTNodeCP', () => {
 
 		describe('#build', () => {
 			it('always returns `(nop)`.', () => {
+				// empty
+				const empty: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource('');
+				empty.varCheck();
+				empty.typeCheck();
+				assertEqualBins(empty.build(), empty.builder.module.nop());
+
+				// scripts
 				xjs.Array.forEachAggregated([
-					'',
 					'{;}',
 					`{
 						42;
@@ -364,11 +358,12 @@ describe('ASTNodeCP', () => {
 						x;
 					}`,
 				], (src) => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-					goal.varCheck();
-					goal.typeCheck();
-					return assertEqualBins(goal.build(), goal.builder.module.nop());
+					const {goal, mod} = setupScript(src, null, {build: false});
+					return assertEqualBins(goal.build(), mod.nop());
 				});
+
+				// modules
+				return;
 			});
 		});
 	});

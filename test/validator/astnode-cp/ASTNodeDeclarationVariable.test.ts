@@ -14,7 +14,10 @@ import {
 	assertAssignable,
 	assertEqualBins,
 } from '../../assert-helpers.ts';
-import {CONFIG_FOLDING_OFF} from '../../helpers.ts';
+import {
+	CONFIG_FOLDING_OFF,
+	setupScript,
+} from '../../helpers.ts';
 
 
 
@@ -111,12 +114,9 @@ describe('ASTNodeDeclarationVariable', () => {
 		});
 
 		it('passes typechecking when uninitialized.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+			assert.partialDeepStrictEqual(setupScript(`{
 				let var the_answer?: int | float;
-			}`);
-			goal.varCheck();
-			goal.typeCheck();
-			return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
+			}`, null, {build: false}).goal.validator.getSymbolInfo(0x100n), {
 				unfixed:       true,
 				uninitialized: true,
 				type:          TYPE.INT.union(TYPE.FLOAT),
@@ -136,13 +136,11 @@ describe('ASTNodeDeclarationVariable', () => {
 			`).typeCheck(), TypeErrorNotAssignable);
 		});
 		it('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+			const {goal} = setupScript(`{
 				let immut:  int[3]         = [42, 420, 4200];
 				let mut:    mut int[]      = List.<int>([42, 420, 4200]);
 				let mutmut: (mut int[])[3] = [List.<int>([42]), List.<int>([420]), List.<int>([4200])];
-			}`);
-			goal.varCheck();
-			goal.typeCheck();
+			}`, null, {build: false});
 			const [immut, mut, mutmut] = [
 				goal.validator.getSymbolInfo(0x100n) as SymbolSchemaVar,
 				goal.validator.getSymbolInfo(0x101n) as SymbolSchemaVar,
@@ -386,7 +384,7 @@ describe('ASTNodeDeclarationVariable', () => {
 
 	describe('#build', () => {
 		it('with constant folding on.', () => {
-			const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+			const {goal, stmts, mod} = setupScript(`{
 				let a: int  = 42;     % fixed, foldable: \`(nop)\`
 				let b: int  = 42 * a; % fixed, foldable: \`(nop)\`
 				let _: bool = true;   % blank, foldable: \`(nop)\`
@@ -398,33 +396,30 @@ describe('ASTNodeDeclarationVariable', () => {
 				let var e?: bool; % assignee, uninitialized: \`(local.set)\`
 				let var _?: bool; % blank, uninitialized:    \`(nop)\`
 			}`);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.build();
 			assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
 				{id: 0x102n, type: binaryen.v128},
 				{id: 0x103n, type: binaryen.v128},
 				{id: 0x104n, type: binaryen.v128},
 			]);
 			return assertEqualBins(
-				goal.children.map((stmt) => stmt.build()),
+				stmts.map((stmt) => stmt.build()),
 				[
-					goal.builder.module.nop(),
-					goal.builder.module.nop(),
-					goal.builder.module.nop(),
+					mod.nop(),
+					mod.nop(),
+					mod.nop(),
 
-					goal.builder.module.local.set(0, (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					goal.builder.module.local.set(1, (goal.children[4] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					goal.builder.module.drop(        (goal.children[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(0, (stmts[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(1, (stmts[4] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.drop(        (stmts[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
 
-					goal.builder.module.local.set(2, VALUE.NULL.build(goal.builder)),
-					goal.builder.module.nop(),
+					mod.local.set(2, VALUE.NULL.build(goal.builder)),
+					mod.nop(),
 				],
 			);
 		});
 
 		it('with constant folding off, never returns `(nop)`.', () => {
-			const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+			const {goal, stmts, mod} = setupScript(`{
 				let a:     int   = 42;   % fixed, foldable:   \`(local.set)\` instead of \`(nop)\`
 				let _:     bool  = true; % blank, foldable:   \`(drop)\`      instead of \`(nop)\`
 				let var b: float = 4.2;  % unfixed, foldable: \`(local.set)\` (same behavior)
@@ -433,37 +428,31 @@ describe('ASTNodeDeclarationVariable', () => {
 				let var c?: bool; % assignee, uninitialized: \`(local.set)\` (same behavior)
 				let var _?: bool; % blank, uninitialized:    \`(nop)\`       (same behavior)
 			}`, CONFIG_FOLDING_OFF);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.build();
 			assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
 				{id: 0x100n, type: binaryen.v128},
 				{id: 0x101n, type: binaryen.v128},
 				{id: 0x102n, type: binaryen.v128},
 			]);
 			return assertEqualBins(
-				goal.children.map((stmt) => stmt.build()),
+				stmts.map((stmt) => stmt.build()),
 				[
-					goal.builder.module.local.set(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					goal.builder.module.drop(        (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					goal.builder.module.local.set(1, (goal.children[2] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					goal.builder.module.drop(        (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(0, (stmts[0] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.drop(        (stmts[1] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(1, (stmts[2] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.drop(        (stmts[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
 
-					goal.builder.module.local.set(2, VALUE.NULL.build(goal.builder)),
-					goal.builder.module.nop(),
+					mod.local.set(2, VALUE.NULL.build(goal.builder)),
+					mod.nop(),
 				],
 			);
 		});
 
 		it('tuples and records.', () => {
-			const goal: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+			const {goal, stmts, mod} = setupScript(`{
 				let tup: [   int,    float,    [   null,    [   null,    bool]]] = [   42,    4.2,    [   null,    [   null,    true]]];
 				let rec: [a: int, b: float, c: [d: null, e: [f: null, g: bool]]] = [a= 42, b= 4.2, c= [d= null, e= [f= null, g= true]]];
 			}`, CONFIG_FOLDING_OFF);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.build();
-			const [tup, rec] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
+			const [tup, rec] = stmts.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 			const [tup_2, rec_c]         = [tup.children[2],   rec.children[2].val]   as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 			const [tup_2_1, rec_c_e]     = [tup_2.children[1], rec_c.children[1].val] as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 			assert.deepStrictEqual(goal.builder.getLocals().map(({id, value}) => ({id, value})), [
@@ -475,10 +464,10 @@ describe('ASTNodeDeclarationVariable', () => {
 				{id:  0x108n, value: rec.build()},
 			]);
 			return assertEqualBins(
-				goal.children.map((stmt) => stmt.build()),
+				stmts.map((stmt) => stmt.build()),
 				[
-					goal.builder.module.local.set(2, tup.build()),
-					goal.builder.module.local.set(5, rec.build()),
+					mod.local.set(2, tup.build()),
+					mod.local.set(5, rec.build()),
 				],
 			);
 		});
@@ -488,9 +477,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				'let tup: [   int,    float,    [   null,    bool],    [g: bool, h: int],    [[j: float]]] = [   42,    4.2,    [   null,    true],    [g= false, h= 42],    [[j= 4.2]]];',
 				'let rec: [a: int, b: float, c: [d: null, e: bool], f: [   bool,    int], i: [k: [float]]] = [a= 42, b= 4.2, c= [d= null, e= true], f= [   false,    42], i= [k= [4.2]]];',
 			].forEach((src) => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{ ${ src } }`, CONFIG_FOLDING_OFF);
-				goal.varCheck();
-				goal.typeCheck();
+				const {goal} = setupScript(`{ ${ src } }`, CONFIG_FOLDING_OFF, {build: false});
 				return assert.throws(() => goal.build(), /not yet supported/);
 			});
 		});

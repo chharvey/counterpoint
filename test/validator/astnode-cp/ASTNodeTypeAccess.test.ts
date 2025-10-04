@@ -29,14 +29,14 @@ describe('ASTNodeTypeAccess', () => {
 		 * @param expecteds the expected evaluations of the type-expressions
 		 */
 		function testTypeEvals(source: string, start: number, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
-			const program:    AST.ASTNodeBlock                      = AST.ASTNodeBlock.fromSource(source);
-			const statements: readonly AST.ASTNodeDeclarationType[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeDeclarationType).slice(start);
-			program.varCheck();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
+			goal.varCheck();
 			try {
-				program.typeCheck();
+				goal.typeCheck();
 			} catch {
 				// if type-checking fails, proceed to `assert.throws` below
 			}
+			const statements: readonly AST.ASTNodeDeclarationType[] = goal.block!.children.filter((stmt) => stmt instanceof AST.ASTNodeDeclarationType).slice(start);
 			return expecteds.some((it) => it instanceof Function)
 				? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 					const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];

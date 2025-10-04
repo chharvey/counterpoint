@@ -10,7 +10,10 @@ import {
 	ReferenceErrorKind,
 } from '../../../src/index.ts';
 import {assertEqualTypes} from '../../assert-helpers.ts';
-import {typeUnit} from '../../helpers.ts';
+import {
+	setupScript,
+	typeUnit,
+} from '../../helpers.ts';
 import {extract_tokens} from '../../utils.ts';
 
 
@@ -80,13 +83,11 @@ describe('ASTNodeType', () => {
 			});
 
 			it('does not throw if value type contains reference type.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				setupScript(`{
 					type A =   [int, List.<float>, str];
 					type C =   [a: int, b: List.<float>, c: str];
 					type E = Set.<float>  [3];
-				}`);
-				goal.varCheck();
-				goal.typeCheck(); // assert does not throw
+				}`, null, {build: false}); // assert does not throw
 			});
 		});
 	});
@@ -173,17 +174,11 @@ describe('ASTNodeType', () => {
 				]);
 			});
 			it('computes the value of a type alias.', () => {
-				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
-					type T = int;
-					type U = T;
-				}`);
-				block.varCheck();
-				block.typeCheck();
-				return assert.strictEqual(
-					((block
-						.children[1] as AST.ASTNodeDeclarationType)
-						.assigned as AST.ASTNodeTypeAlias)
-						.eval(),
+				assert.strictEqual(
+					((setupScript(`{
+						type T = int;
+						type U = T;
+					}`).stmts[1] as AST.ASTNodeDeclarationType).assigned as AST.ASTNodeTypeAlias).eval(),
 					TYPE.INT,
 				);
 			});
