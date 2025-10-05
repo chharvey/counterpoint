@@ -7,7 +7,10 @@ import {
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
 } from '../../index.ts';
-import type {ConstructorType} from '../../lib/index.ts';
+import {
+	type ConstructorType,
+	assert_instanceof,
+} from '../../lib/index.ts';
 import type {CPConfig} from '../../core/index.ts';
 import {
 	Operator,
@@ -123,7 +126,8 @@ export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Inte
 
 
 export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): EntryType {
-	if (base_type.isTopType && access.kind === Operator.DOT_MAY) {
+	const accessor_maybe: boolean = access.kind === Operator.DOT_MAY;
+	if (base_type.isTopType && accessor_maybe) {
 		return {type: TYPE.UNKNOWN, optional: true};
 	}
 	if (base_type instanceof TYPE.Combinable) {
@@ -190,8 +194,9 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 			}
 		}
 		default: {
-			const accessor_type:  TYPE.Type = access.accessor.type();
-			const accessor_maybe: boolean   = access.kind === Operator.DOT_MAY;
+			assert_instanceof(access, AST.ASTNodeAccess);
+			assert_instanceof(access.accessor, AST.ASTNodeExpression);
+			const accessor_type: TYPE.Type = access.accessor.type();
 			switch (true) {
 				case base_type === TYPE.NULL: {
 					return {type: TYPE.NULL, optional: true};

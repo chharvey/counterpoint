@@ -22,6 +22,7 @@ import {
 	SymbolSchemaType,
 } from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
+import type {Reassignable} from './Reassignable.ts';
 import {
 	buildDeco,
 	typeDeco,
@@ -30,7 +31,7 @@ import {
 
 
 
-export class ASTNodeVariable extends ASTNodeExpression {
+export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeVariable {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeVariable);
@@ -81,5 +82,15 @@ export class ASTNodeVariable extends ASTNodeExpression {
 			return symbol.value;
 		}
 		return null;
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Reassignable
+	 */
+	@memoizeMethod
+	public writeType(): TYPE.Type {
+		this.type(); // re-assert any assumptions and re-throw any errors
+		return (this.validator.getSymbolInfo(this.id) as SymbolSchemaVar).type;
 	}
 }

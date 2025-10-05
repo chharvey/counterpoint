@@ -579,3 +579,23 @@ Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
 		2. *Return:* `type`.
 ;
 ```
+
+
+
+## WriteTypeOf
+Assuming reassignment of a symbol/entry is valid, gives the write-type of that symbol/entry.
+```
+Type! WriteTypeOf(Or<SemanticVariable, SemanticAccess> reassignable) :=
+	1. *If* `reassignable` is a SemanticVariable:
+		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `reassignable.id`.
+		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+		3. *Return:* `symbol.type`.
+	2. *Else:*
+		1. *Assert:* `reassignable` is a SemanticAccess.
+		2. *Assert:* `reassignable.children.count` is 2.
+		3. *Let* `base` be `reassignable.children.0`.
+		4. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
+		5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, reassignable)`.
+		6. *Return:* `entry.type`.
+;
+```

@@ -23,6 +23,7 @@ import {
 	validate_access_kind,
 	update_accessed_type,
 } from './utils-private.ts';
+import type {Reassignable} from './Reassignable.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
 import {
@@ -33,7 +34,7 @@ import {
 
 
 
-export class ASTNodeAccess extends ASTNodeExpression {
+export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAccess {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeAccess);
@@ -45,9 +46,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			| SyntaxNodeType<'expression_compound'>
 			| SyntaxNodeType<'assignee'>,
 
-		public  readonly kind:     ValidAccessOperator,
-		public  readonly base:     ASTNodeExpression,
-		public  readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
+		public readonly kind:     ValidAccessOperator,
+		public readonly base:     ASTNodeExpression,
+		public readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
 		if (this.kind === Operator.DOT_RES) {
@@ -130,5 +131,15 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				/* eslint-enable @typescript-eslint/no-unsafe-return */
 			}
 		}
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Reassignable
+	 */
+	@memoizeMethod
+	public writeType(): TYPE.Type {
+		this.type(); // re-assert any assumptions and re-throw any errors
+		return get_entry_info(this.base.type(), this).type;
 	}
 }

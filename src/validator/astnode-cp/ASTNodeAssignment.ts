@@ -15,7 +15,7 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
-import type {ASTNodeAccess} from './ASTNodeAccess.ts';
+import {ASTNodeAccess} from './ASTNodeAccess.ts';
 import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
@@ -45,29 +45,23 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 
 	public override typeCheck(): void {
 		super.typeCheck();
-		let assignee_type: TYPE.Type | null = null;
-		if (this.assignee instanceof ASTNodeVariable) {
-			this.assignee.type(); // rethrow any errors
-			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
-			assignee_type = symbol.type;
-		} else {
+		if (this.assignee instanceof ASTNodeAccess) {
 			const base_type: TYPE.Type = this.assignee.base.type();
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, this);
 			}
-			assignee_type = this.assignee.type();
 		}
-		ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
+		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.writeType(), this);
 	}
 
 	public override build(): binaryen.ExpressionRef {
-		const id: bigint = (this.assignee as ASTNodeVariable).id;
-		return this.builder.getLocal(id)?.set(ASTNodeStatement.coerceAssignment(
+		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
+		return this.builder.getLocal(this.assignee.id)?.set(ASTNodeStatement.coerceAssignment(
 			this.builder.module,
-			this.assignee.type(),
+			this.assignee.writeType(),
 			this.assigned.type(),
 			this.assigned.build(),
 			this.validator.config.compilerOptions.intCoercion,
-		)) ?? assert.fail(new ReferenceError(`Variable with id ${ id } not found.`));
+		)) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
 	}
 }
