@@ -440,7 +440,7 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 
 ## GetEntryInfo
 ```
-EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access) :=
+EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access, Boolean is_writing) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `accessor` be `access.children.1`.
 	3. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true` *and* `access.kind` is `MAYBE`:
@@ -449,7 +449,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				optional= `true`,
 			].
 	4. *If* `base_type` is the intersection or union of some types `a` and `b`:
-		1. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access)`, `GetEntryInfo(b, access)`].
+		1. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access, is_writing)`, `GetEntryInfo(b, access, is_writing)`].
 		2. *Let* `errors` be a filtering of `entry_infos` for each `info` such that `info` is an abrupt completion.
 		3. *Let* `entries` be a filtering of `entry_infos` for each `info` such that `info` is a normal completion.
 		4. *Set* `errors` to a mapping of `errors` for each `err` to `err.value`.
@@ -521,7 +521,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				1. *Throw:* a new TypeErrorNotNarrow.
 		7. *Else If* `base_type` is a Set type:
 			1. *Let* `t` be the type of the elements in `base_type`.
-			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true`:
+			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true` *or* `is_writing` is `false`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `Boolean`,
 					optional= `false`,
@@ -531,7 +531,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 		8. *Else If* `base_type` is a Map type:
 			1. *Let* `k` be the type of the antecedents in `base_type`.
 			2. *Let* `v` be the type of the consequents in `base_type`.
-			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true`:
+			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true` *or* `is_writing` is `false`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `v`,
 					optional= `accessor_maybe`,
@@ -595,7 +595,7 @@ Type! WriteTypeOf(Or<SemanticVariable, SemanticAccess> reassignable) :=
 		2. *Assert:* `reassignable.children.count` is 2.
 		3. *Let* `base` be `reassignable.children.0`.
 		4. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
-		5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, reassignable)`.
+		5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, reassignable, true)`.
 		6. *Return:* `entry.type`.
 ;
 ```

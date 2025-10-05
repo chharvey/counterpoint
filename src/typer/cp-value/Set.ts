@@ -75,8 +75,8 @@ class ValueSet<T extends Value = Value> extends Collection {
 		throw new Error('`ValueSet#build` not yet supported.');
 	}
 
-	public get(el: T): ValueBoolean {
-		return xjs.Set.has(this.elements, el, languageValuesIdentical) ? TRUE : FALSE;
+	public get(el: Value): ValueBoolean {
+		return xjs.Set.has<Value>(this.elements, el, languageValuesIdentical) ? TRUE : FALSE;
 	}
 }
 export {ValueSet as Set};

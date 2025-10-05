@@ -88,7 +88,7 @@ Type! TypeOfUnfolded(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
-	4. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access)`.
+	4. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access, false)`.
 	5. *Perform:* *Unwrap:* `ValidateAccessKind(access.kind, entry.optional)`.
 	6. *Return:* `UpdateAccessedType(entry.type, access.kind)`.
 ;

@@ -406,17 +406,39 @@ describe('ASTNodeAccess', () => {
 			const ERRS = `
 				${ DECLS }
 
-				list_fixed.[3];   % type \`never\` % fold throws VoidError
-				list_fixed.[-4];  % type \`never\` % fold throws VoidError
-				dict_fixed.[@d];  % type \`never\` % fold throws VoidError
-				set_fixed.[42.0]; % type \`false\` % value \`false\`
-				map_fixed.["d"];  % type \`never\` % fold throws VoidError
+				list_fixed.[3];    % type \`never\`             % fold throws VoidError
+				list_fixed.[-4];   % type \`never\`             % fold throws VoidError
+				dict_fixed.[@d];   % type \`never\`             % fold throws VoidError
+				list_unfixed.[3];  % type \`int | float | str\` % non-foldable value
+				list_unfixed.[-4]; % type \`int | float | str\` % non-foldable value
+				dict_unfixed.[@d]; % type \`int | float | str\` % non-foldable value
+			`;
+			const ALLOWS = `
+				${ DECLS }
+				let     set_mut_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
+				let     map_mut_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+				let var set_mut_unfixed:  Set .<     int | float | str> = set_fixed;
+				let var map_mut_unfixed:  Map .<str, int | float | str> = map_fixed;
 
-				list_unfixed.[3];   % type \`int | float | str\` % non-foldable value
-				list_unfixed.[-4];  % type \`int | float | str\` % non-foldable value
-				dict_unfixed.[@d];  % type \`int | float | str\` % non-foldable value
-				set_unfixed.[42.0]; % type \`bool\`              % non-foldable value
-				map_unfixed.["d"];  % type \`int | float | str\` % non-foldable value
+				% correct type, but out of range
+				set_fixed      .[42.0]; % type \`false\`             % value \`false\`
+				map_fixed      .["d"];  % type \`null\`              % value \`null\`
+				set_unfixed    .[42.0]; % type \`bool\`              % non-foldable value
+				map_unfixed    .["d"];  % type \`int | float | str\` % non-foldable value
+				set_mut_fixed  .[42.0]; % type \`false\`             % value \`false\`
+				map_mut_fixed  .["d"];  % type \`null\`              % value \`null\`
+				set_mut_unfixed.[42.0]; % type \`bool\`              % non-foldable value
+				map_mut_unfixed.["d"];  % type \`int | float | str\` % non-foldable value
+
+				% incorrect type
+				set_fixed      .[true]; % type \`false\`             % value \`false\`
+				map_fixed      .[true]; % type \`null\`              % value \`null\`
+				set_unfixed    .[true]; % type \`bool\`              % non-foldable value
+				map_unfixed    .[true]; % type \`int | float | str\` % non-foldable value
+				set_mut_fixed  .[true]; % type \`false\`             % value \`false\`
+				map_mut_fixed  .[true]; % type \`null\`              % value \`null\`
+				set_mut_unfixed.[true]; % type \`bool\`              % non-foldable value
+				map_mut_unfixed.[true]; % type \`int | float | str\` % non-foldable value
 			`;
 			describe('#type', () => {
 				it('throws when one but not all constituents are of incorrect type.', () => {
@@ -460,25 +482,27 @@ describe('ASTNodeAccess', () => {
 						[a= 10, b= 20, c= 30].[@b];
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
 				});
-				it('when accessor expression is correct type but out of bounds/range, returns `never` for folded objects, returns union type for unfolded objects.', () => {
+				it('for Lists/Dicts: when accessor expression is correct type but out of bounds/range, returns `never` for folded objects, returns union type for unfolded objects.', () => {
 					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
 					return testExprTypes(ERRS, [
 						...repeat(TYPE.NEVER, 3),
-						TYPE.FALSE,
-						TYPE.NEVER,
-
 						...repeat(TYPE_INT_FLOAT_STR, 3),
-						TYPE.BOOL,
-						TYPE_INT_FLOAT_STR,
 					]);
 				});
-				it('throws when accessor expression is of incorrect type.', () => {
+				it('for Lists/Dicts: throws when accessor expression is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						List.<int | float | str>([1, 2.0, "three"]).["3"];
 						Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]).[3];
-						{1, 2.0, "three"}.[true];
-						{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.["a"];
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
+				});
+				it('for Sets/Maps: when expression is correct type but out of range or incorrect type, returns entry type.', () => {
+					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
+					return testExprTypes(ALLOWS, repeat([
+						TYPE.FALSE,
+						TYPE.NULL,
+						TYPE.BOOL,
+						TYPE_INT_FLOAT_STR,
+					], 4).flat());
 				});
 			});
 			describe('#fold', () => {
@@ -492,14 +516,18 @@ describe('ASTNodeAccess', () => {
 						...repeat(null, 12),
 					]);
 				});
-				it('when accessor expression is out of bounds/range, throws for folded objects, returns null for unfolded objects.', () => {
+				it('for Lists/Dicts: when accessor expression is out of bounds/range, throws for folded objects, returns null for unfolded objects.', () => {
 					testExprValues(ERRS, [
 						...repeat(VoidErrorOutOfBounds, 3),
-						VALUE.FALSE,
-						VoidErrorOutOfBounds,
-
-						...repeat(null, 5),
+						...repeat(null, 3),
 					]);
+				});
+				it('for Sets/Maps: when expression is correct type but out of range or incorrect type, returns `null` value for folded objects, returns native null for unfolded objects.', () => {
+					testExprValues(ALLOWS, repeat([
+						VALUE.FALSE,
+						VALUE.NULL,
+						...repeat(null, 2),
+					], 4).flat());
 				});
 			});
 		});
@@ -900,8 +928,6 @@ describe('ASTNodeAccess', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						List.<int | float | str>([1, 2.0, "three"])?.["3"];
 						Dict.<int | float | str>([a= 1, b= 2.0, c= "three"])?.[3];
-						{1, 2.0, "three"}?.[true];
-						{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.["a"];
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 			});

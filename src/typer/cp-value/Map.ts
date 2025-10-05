@@ -1,11 +1,6 @@
-import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	VoidErrorOutOfBounds,
-} from '../../index.ts';
-import type {AST} from '../../validator/index.ts';
+import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
 	languageValuesIdentical,
@@ -83,12 +78,8 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		throw new Error('`ValueMap#build` not yet supported.');
 	}
 
-	public get(ant: K, is_access_maybe: boolean, accessor: AST.ASTNodeExpression): V | Null {
-		return (
-			xjs.Map.has(this.cases, ant, languageValuesIdentical) ? xjs.Map.get(this.cases, ant, languageValuesIdentical)! :
-			is_access_maybe                                       ? NULL :
-			assert.fail(new VoidErrorOutOfBounds('key', this, ant, accessor))
-		);
+	public get(ant: Value): V | Null {
+		return xjs.Map.has<Value, V>(this.cases, ant, languageValuesIdentical) ? xjs.Map.get<Value, V>(this.cases, ant, languageValuesIdentical)! : NULL;
 	}
 }
 export {ValueMap as Map};

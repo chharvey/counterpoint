@@ -122,7 +122,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 						return base_value.get(accessor_value);
 					}
 					case base_value instanceof VALUE.Map: {
-						return base_value.get(accessor_value, KIND_MAYBE, this.accessor);
+						return base_value.get(accessor_value);
 					}
 					default: {
 						assert.fail(`Expected ${ base_value } to have a \`get\` method.`);
@@ -140,6 +140,6 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	@memoizeMethod
 	public writeType(): TYPE.Type {
 		this.type(); // re-assert any assumptions and re-throw any errors
-		return get_entry_info(this.base.type(), this).type;
+		return get_entry_info(this.base.type(), this, true).type;
 	}
 }

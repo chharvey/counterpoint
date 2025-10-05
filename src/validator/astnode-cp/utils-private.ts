@@ -125,7 +125,7 @@ export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Inte
 
 
 
-export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): EntryType {
+export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess, is_writing: boolean = false): EntryType {
 	const accessor_maybe: boolean = access.kind === Operator.DOT_MAY;
 	if (base_type.isTopType && accessor_maybe) {
 		return {type: TYPE.UNKNOWN, optional: true};
@@ -133,7 +133,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 	if (base_type instanceof TYPE.Combinable) {
 		const entry_infos: readonly (EntryType | TypeErrorNoEntry | TypeErrorNotNarrow)[] = base_type.operands.map((comp) => {
 			try {
-				return get_entry_info(comp, access);
+				return get_entry_info(comp, access, is_writing);
 			} catch (error) {
 				if (only_errors_of_type(error, [TypeErrorNoEntry, TypeErrorNotNarrow])) {
 					return error as TypeErrorNoEntry | TypeErrorNotNarrow;
@@ -214,12 +214,12 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 							: throwWrongSubtypeError(access.accessor, TYPE.Union.all(TYPE.SYM, TYPE.STR));
 				}
 				case base_type instanceof TYPE.Set: {
-					return accessor_type.isSubtypeOf(base_type.typearg)
+					return accessor_type.isSubtypeOf(base_type.typearg) || !is_writing
 						? {type: TYPE.BOOL, optional: false}
 						: throwWrongSubtypeError(access.accessor, base_type.typearg);
 				}
 				case base_type instanceof TYPE.Map: {
-					return accessor_type.isSubtypeOf(base_type.typearg_ant)
+					return accessor_type.isSubtypeOf(base_type.typearg_ant) || !is_writing
 						? {type: base_type.typearg_con, optional: accessor_maybe}
 						: throwWrongSubtypeError(access.accessor, base_type.typearg_ant);
 				}
