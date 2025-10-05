@@ -52,13 +52,9 @@ export class List extends ReferenceType {
 	@isObjectType
 	@instanceOf(() => List)
 	public override isSubtypeOf(t: Type): boolean {
-		return (
-			(!t.isMutable || this.isMutable) &&
-			(t.isMutable
-				? this.typearg.equals((t as List).typearg)      // Invariance for   mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.
-				: this.typearg.isSubtypeOf((t as List).typearg) // Covariance for immutable lists: `A <: B -->     List.<A> <:     List.<B>`.
-			)
-		);
+		return t.isMutable
+			? this.typearg.equals((t as List).typearg)       // Invariance for   mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.
+			: this.typearg.isSubtypeOf((t as List).typearg); // Covariance for immutable lists: `A <: B -->     List.<A> <:     List.<B>`.
 	}
 
 	public override mutableOf(): List {

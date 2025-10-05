@@ -54,13 +54,9 @@ class TypeMap extends ReferenceType {
 	@isObjectType
 	@instanceOf(() => TypeMap)
 	public override isSubtypeOf(t: Type): boolean {
-		return (
-			(!t.isMutable || this.isMutable) &&
-			(t.isMutable
-				? this.typearg_ant.equals((t as TypeMap).typearg_ant)      && this.typearg_con.equals((t as TypeMap).typearg_con)      // Invariance for   mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.
-				: this.typearg_ant.isSubtypeOf((t as TypeMap).typearg_ant) && this.typearg_con.isSubtypeOf((t as TypeMap).typearg_con) // Covariance for immutable maps: `A <: C && B <: D -->     Map.<A, B> <:     Map.<C, D>`.
-			)
-		);
+		return t.isMutable
+			? this.typearg_ant.equals((t as TypeMap).typearg_ant)      && this.typearg_con.equals((t as TypeMap).typearg_con)       // Invariance for   mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.
+			: this.typearg_ant.isSubtypeOf((t as TypeMap).typearg_ant) && this.typearg_con.isSubtypeOf((t as TypeMap).typearg_con); // Covariance for immutable maps: `A <: C && B <: D -->     Map.<A, B> <:     Map.<C, D>`.
 	}
 
 	public override mutableOf(): TypeMap {

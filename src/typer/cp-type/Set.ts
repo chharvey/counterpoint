@@ -52,13 +52,9 @@ class TypeSet extends ReferenceType {
 	@isObjectType
 	@instanceOf(() => TypeSet)
 	public override isSubtypeOf(t: Type): boolean {
-		return (
-			(!t.isMutable || this.isMutable) &&
-			(t.isMutable
-				? this.typearg.equals((t as TypeSet).typearg)      // Invariance for   mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.
-				: this.typearg.isSubtypeOf((t as TypeSet).typearg) // Covariance for immutable sets: `A <: B -->     Set.<A> <:     Set.<B>`.
-			)
-		);
+		return t.isMutable
+			? this.typearg.equals((t as TypeSet).typearg)       // Invariance for   mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.
+			: this.typearg.isSubtypeOf((t as TypeSet).typearg); // Covariance for immutable sets: `A <: B -->     Set.<A> <:     Set.<B>`.
 	}
 
 	public override mutableOf(): TypeSet {

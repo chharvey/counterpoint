@@ -178,6 +178,10 @@ export function subtypeRules(
 			return true;
 		}
 
+		if (!this.isMutable && t.isMutable) {
+			return false;
+		}
+
 		/*
 		 * Denormalize intersection/union types.
 		 *
