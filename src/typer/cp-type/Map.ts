@@ -56,8 +56,8 @@ class TypeMap extends ReferenceType {
 		return (
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
-				? this.typearg_ant.equals((t as TypeMap).typearg_ant) && this.typearg_con.equals((t as TypeMap).typearg_con)      // Invariance for mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.
-				: this.typearg_ant.equals((t as TypeMap).typearg_ant) && this.typearg_con.isSubtypeOf((t as TypeMap).typearg_con) // Invariance for immutable maps’ antecedents: `A == C && --> Map.<A, B> <: Map.<C, B>`. // Covariance for immutable maps’ consequents: `B <: D --> Map.<A, B> <: Map.<A, D>`.
+				? this.typearg_ant.equals((t as TypeMap).typearg_ant)      && this.typearg_con.equals((t as TypeMap).typearg_con)      // Invariance for   mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.
+				: this.typearg_ant.isSubtypeOf((t as TypeMap).typearg_ant) && this.typearg_con.isSubtypeOf((t as TypeMap).typearg_con) // Covariance for immutable maps: `A <: C && B <: D -->     Map.<A, B> <:     Map.<C, D>`.
 			)
 		);
 	}

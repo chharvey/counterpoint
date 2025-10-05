@@ -54,8 +54,8 @@ export class Dict extends ReferenceType {
 		return (
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
-				? this.typearg.equals((t as Dict).typearg)      // Invariance for mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.
-				: this.typearg.isSubtypeOf((t as Dict).typearg) // Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.
+				? this.typearg.equals((t as Dict).typearg)      // Invariance for   mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.
+				: this.typearg.isSubtypeOf((t as Dict).typearg) // Covariance for immutable dicts: `A <: B -->     Dict.<A> <:     Dict.<B>`.
 			)
 		);
 	}

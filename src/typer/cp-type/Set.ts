@@ -54,8 +54,8 @@ class TypeSet extends ReferenceType {
 		return (
 			(!t.isMutable || this.isMutable) &&
 			(t.isMutable
-				? this.typearg.equals((t as TypeSet).typearg) // Invariance for mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.
-				: this.typearg.equals((t as TypeSet).typearg) // Invariance for immutable sets: `A == B --> Set.<A> <: Set.<B>`.
+				? this.typearg.equals((t as TypeSet).typearg)      // Invariance for   mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.
+				: this.typearg.isSubtypeOf((t as TypeSet).typearg) // Covariance for immutable sets: `A <: B -->     Set.<A> <:     Set.<B>`.
 			)
 		);
 	}
