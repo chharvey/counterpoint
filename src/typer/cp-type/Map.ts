@@ -43,8 +43,9 @@ class TypeMap extends ReferenceType {
 		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Map.<${ this.typearg_ant }, ${ this.typearg_con }>`;
 	}
 
+	@instanceOf(() => VALUE.Map)
 	public override includes(v: VALUE.Value): boolean {
-		return v instanceof VALUE.Map && v.toType().isSubtypeOf(this);
+		return v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual

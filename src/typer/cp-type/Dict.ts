@@ -41,8 +41,9 @@ export class Dict extends ReferenceType {
 		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Dict.<${ this.typearg }>`;
 	}
 
+	@instanceOf(() => VALUE.Dict)
 	public override includes(v: VALUE.Value): boolean {
-		return v instanceof VALUE.Dict && v.toType().isSubtypeOf(this);
+		return v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual

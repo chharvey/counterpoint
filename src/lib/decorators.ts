@@ -11,8 +11,8 @@
  * @returns           a new value that is the result of decorating `method`
  */
 export type MethodDecorator<
-	This                                            = any,
-	Value extends (this: This, ...args: any) => any = (this: This, ...args: any) => any,
+	This                                              = any,
+	Value extends (this: This, ...args: any[]) => any = (this: This, ...args: any[]) => any,
 > = (
 	method:  Value,
 	context: ClassMethodDecoratorContext<This, Value>,

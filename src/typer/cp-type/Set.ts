@@ -41,8 +41,9 @@ class TypeSet extends ReferenceType {
 		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Set.<${ this.typearg }>`;
 	}
 
+	@instanceOf(() => VALUE.Set)
 	public override includes(v: VALUE.Value): boolean {
-		return v instanceof VALUE.Set && v.toType().isSubtypeOf(this);
+		return v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual

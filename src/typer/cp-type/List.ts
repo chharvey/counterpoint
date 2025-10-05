@@ -41,8 +41,9 @@ export class List extends ReferenceType {
 		return `${ (this.isMutable) ? MUT_OPERATOR : '' }List.<${ this.typearg }>`;
 	}
 
+	@instanceOf(() => VALUE.List)
 	public override includes(v: VALUE.Value): boolean {
-		return v instanceof VALUE.List && v.toType().isSubtypeOf(this);
+		return v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual
