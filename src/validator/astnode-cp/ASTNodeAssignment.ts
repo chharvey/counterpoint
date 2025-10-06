@@ -1,35 +1,36 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
 import {
-	TYPE,
-	INST,
-	Builder,
-	AssignmentError10,
+	type TYPE,
+	AssignmentErrorReassignment,
 	MutabilityError01,
-	CPConfig,
+} from '../../index.ts';
+import {assert_instanceof} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SymbolStructureVar,
-	SyntaxNodeType,
-} from './package.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeVariable} from './ASTNodeVariable.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
-import {ASTNodeAccess} from './ASTNodeAccess.js';
-import {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../core/index.ts';
+import type {SymbolSchemaVar} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {ASTNodeExpression} from './ASTNodeExpression.ts';
+import {ASTNodeVariable} from './ASTNodeVariable.ts';
+import {ASTNodeAccess} from './ASTNodeAccess.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
 export class ASTNodeAssignment extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAssignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeAssignment);
+		assert_instanceof(statement, ASTNodeAssignment);
 		return statement;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'statement_assignment'>,
-		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		private readonly assigned: ASTNodeExpression,
+		public readonly assignee: ASTNodeVariable | ASTNodeAccess,
+		public readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
@@ -37,8 +38,8 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	public override varCheck(): void {
 		super.varCheck();
 		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
-		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolStructureVar).unfixed) {
-			throw new AssignmentError10(assignee);
+		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolSchemaVar).unfixed) {
+			throw new AssignmentErrorReassignment(assignee);
 		}
 	}
 
@@ -50,26 +51,11 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 				throw new MutabilityError01(base_type, this);
 			}
 		}
-		const assignee_type: TYPE.Type = this.assignee.type();
-		try {
-			return ASTNodeCP.typeCheckAssignment(
-				this.assigned.type(),
-				assignee_type,
-				this,
-				this.validator,
-			);
-		} catch (err) {
-			if (!(this.assigned instanceof ASTNodeCollectionLiteral && this.assigned.assignTo(assignee_type))) {
-				throw err;
-			}
-		}
+		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.writeType(), this);
 	}
 
-	public override build(builder: Builder): INST.InstructionStatement {
-		const tofloat: boolean = this.assignee.type().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
-		return new INST.InstructionStatement(
-			builder.stmtCount,
-			new INST.InstructionGlobalSet((this.assignee as ASTNodeVariable).id, this.assigned.build(builder, tofloat)),
-		);
+	public override build(): binaryen.ExpressionRef {
+		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
+		return this.builder.getLocal(this.assignee.id)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
 	}
 }

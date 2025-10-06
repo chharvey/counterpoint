@@ -1,49 +1,48 @@
-import * as assert from 'assert';
-import {
+import type {
+	EntryType,
 	TYPE,
-	OBJ,
-	CPConfig,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-	Operator,
-} from './package.js';
-import type {ASTNodeKey} from './ASTNodeKey.js';
-import {ASTNodeIndexType} from './ASTNodeIndexType.js';
-import {ASTNodeType} from './ASTNodeType.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ValidTypeAccessOperator} from '../Operator.ts';
+import {
+	get_entry_info,
+	validate_access_kind,
+	update_accessed_type,
+} from './utils-private.ts';
+import type {ASTNodeIndex} from './ASTNodeIndex.ts';
+import type {ASTNodeKey} from './ASTNodeKey.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
 
 
 
 export class ASTNodeTypeAccess extends ASTNodeType {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeAccess {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeAccess);
+		assert_instanceof(typ, ASTNodeTypeAccess);
 		return typ;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
+		public  readonly kind:     ValidTypeAccessOperator,
 		private readonly base:     ASTNodeType,
-		private readonly accessor: ASTNodeIndexType | ASTNodeKey,
+		public  readonly accessor: ASTNodeIndex | ASTNodeKey,
 	) {
-		super(start_node, {}, [base, accessor]);
+		super(start_node, {kind}, [base, accessor]);
 	}
 
-	protected override eval_do(): TYPE.Type {
-		let base_type: TYPE.Type = this.base.eval();
-		if (base_type instanceof TYPE.TypeIntersection || base_type instanceof TYPE.TypeUnion) {
-			base_type = base_type.combineTuplesOrRecords();
-		}
-		if (this.accessor instanceof ASTNodeIndexType) {
-			const accessor_type = this.accessor.val.eval() as TYPE.TypeUnit<OBJ.Integer>;
-			const base_type_tuple: TYPE.TypeTuple = (TYPE.TypeTuple.isUnitType(base_type))
-				? base_type.value.toType()
-				: base_type as TYPE.TypeTuple;
-			return base_type_tuple.get(accessor_type.value, Operator.DOT, this.accessor);
-		} else /* (this.accessor instanceof ASTNodeKey) */ {
-			const base_type_record: TYPE.TypeRecord = (TYPE.TypeRecord.isUnitType(base_type))
-				? base_type.value.toType()
-				: base_type as TYPE.TypeRecord;
-			return base_type_record.get(this.accessor.id, Operator.DOT, this.accessor);
-		}
+	@memoizeMethod
+	public override eval(): TYPE.Type {
+		const entry: EntryType = get_entry_info(this.base.eval(), this);
+		validate_access_kind(this.kind, entry.optional, this);
+		return update_accessed_type(entry.type, this.kind);
 	}
 }

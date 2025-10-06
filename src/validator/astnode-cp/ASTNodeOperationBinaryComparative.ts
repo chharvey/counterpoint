@@ -1,30 +1,39 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import binaryen from 'binaryen';
 import {
+	VALUE,
 	TYPE,
-	OBJ,
-	INST,
-	Builder,
-	TypeError01,
-	CPConfig,
-	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
-	Operator,
-	ValidOperatorComparative,
-} from './package.js';
+	TypeErrorInvalidOperation,
+} from '../../index.ts';
 import {
-	bothNumeric,
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
+	CONFIG_DEFAULT,
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
+import {
+	Operator,
+	type ValidOperatorComparative,
+} from '../Operator.ts';
+import {
+	bothInts,
 	bothFloats,
-	neitherFloats,
-} from './utils-private.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
+} from './utils-private.ts';
+import {
+	buildDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
 
 export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryComparative {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinaryComparative);
+		assert_instanceof(expression, ASTNodeOperationBinaryComparative);
 		return expression;
 	}
 
@@ -40,43 +49,45 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 	}
 
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopComparative {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionBinopComparative(
-			this.operator,
-			this.operand0.build(builder, tofloat),
-			this.operand1.build(builder, tofloat),
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.LT, 'vlt'],
+			[Operator.GT, 'vgt'],
+			[Operator.LE, 'vle'],
+			[Operator.GE, 'vge'],
+		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
+	}
+
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
+		if (t0.isBottomType || t1.isBottomType) {
+			return TYPE.NOTHING;
+		}
+		return (
+			bothInts(t0, t1) || bothFloats(t0, t1) ? TYPE.BOOL :
+			assert.fail(new TypeErrorInvalidOperation(this))
 		);
 	}
 
-	protected override type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
-		if (bothNumeric(t0, t1) && (int_coercion || (
-			bothFloats(t0, t1) || neitherFloats(t0, t1)
-		))) {
-			return TYPE.BOOL;
-		}
-		throw new TypeError01(this);
-	}
-
-	protected override fold_do(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand0.fold();
+	@memoizeMethod
+	public override fold(): VALUE.Value | null {
+		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: OBJ.Object | null = this.operand1.fold();
+		const v1: VALUE.Value | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}
-		return (v0 instanceof OBJ.Integer && v1 instanceof OBJ.Integer)
-			? this.foldComparative(v0, v1)
-			: this.foldComparative(
-				(v0 as OBJ.Number).toFloat(),
-				(v1 as OBJ.Number).toFloat(),
-			);
+		return this.foldComparative(
+			(v0 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+			(v1 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+		);
 	}
 
-	private foldComparative<T extends OBJ.Number<T>>(v0: T, v1: T): OBJ.Boolean {
-		return OBJ.Boolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
+	private foldComparative<T extends VALUE.Number<T>>(v0: T, v1: T): VALUE.Boolean {
+		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
 			[Operator.LT, (x, y) => x.lt(y)],
 			[Operator.GT, (x, y) => y.lt(x)],
 			[Operator.LE, (x, y) => x.equal(y) || x.lt(y)],

@@ -1,76 +1,96 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
 import {
+	type VALUE,
 	TYPE,
-	OBJ,
-	INST,
-	Builder,
-	ReferenceError01,
-	ReferenceError03,
-	CPConfig,
+	ReferenceErrorUndeclared,
+	ReferenceErrorKind,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+	memoizeGetter,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
+} from '../../core/index.ts';
+import {
 	SymbolKind,
-	SymbolStructure,
-	SymbolStructureVar,
-	SymbolStructureType,
-	SyntaxNodeType,
-} from './package.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+	type SymbolSchema,
+	SymbolSchemaVar,
+	SymbolSchemaType,
+} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {Reassignable} from './Reassignable.ts';
+import {
+	buildDeco,
+	typeDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
 
 
 
-export class ASTNodeVariable extends ASTNodeExpression {
+export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeVariable {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeVariable);
+		assert_instanceof(expression, ASTNodeVariable);
 		return expression;
 	}
 
-
-	private _id: bigint | null = null; // TODO use memoize decorator
 
 	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
+	@memoizeGetter
 	public get id(): bigint {
-		return this._id ??= this.validator.cookTokenIdentifier(this.start_node.text);
-	}
-
-	public override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.FLOAT);
+		return this.validator.cookTokenIdentifier(this.start_node.text);
 	}
 
 	public override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
-			throw new ReferenceError01(this);
+			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
-			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
+		if (this.validator.getSymbolInfo(this.id) instanceof SymbolSchemaType) {
+			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
 	}
 
-	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
-		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.getLocal(this.id)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 
-	protected override type_do(): TYPE.Type {
-		if (this.validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-			if (symbol instanceof SymbolStructureVar) {
-				return symbol.type;
-			}
-		}
-		return TYPE.NEVER;
+	@memoizeMethod
+	@typeDeco
+	public override type(): TYPE.Type {
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolSchemaVar);
+		return symbol.uninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
 	}
 
-	protected override fold_do(): OBJ.Object | null {
-		if (this.validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
-				return symbol.value;
-			}
+	@memoizeMethod
+	public override fold(): VALUE.Value | null {
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolSchemaVar);
+		if (!symbol.unfixed) {
+			return symbol.value;
 		}
 		return null;
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Reassignable
+	 */
+	@memoizeMethod
+	public writeType(): TYPE.Type {
+		this.type(); // re-assert any assumptions and re-throw any errors
+		return (this.validator.getSymbolInfo(this.id) as SymbolSchemaVar).type;
 	}
 }

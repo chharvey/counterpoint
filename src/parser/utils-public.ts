@@ -3,5 +3,5 @@ import Counterpoint from 'tree-sitter-counterpoint';
 
 
 
-export const TS_PARSER: Parser = new Parser();
-TS_PARSER.setLanguage(Counterpoint);
+export const TS_PARSER = new Parser();
+TS_PARSER.setLanguage(Counterpoint as Parser.Language);

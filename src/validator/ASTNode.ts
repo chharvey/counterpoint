@@ -1,7 +1,5 @@
-import {
-	Serializable,
-	stringifyAttributes,
-} from './package.js';
+import {stringifyAttributes} from '../core/index.ts';
+import type {Serializable} from '../parser/index.ts';
 
 
 
@@ -23,17 +21,17 @@ import {
  */
 export class ASTNode implements Serializable {
 	/** @implements Serializable */
-	public readonly tagname: string = this.constructor.name.slice('ASTNode'.length);
+	public readonly tagname:      string = this.constructor.name.slice('ASTNode'.length);
 	/** @implements Serializable */
-	public readonly source: string = this.start.source;
+	public readonly source:       string;
 	/** @implements Serializable */
-	public readonly source_index: number = this.start.source_index;
+	public readonly source_index: number;
 	/** @implements Serializable */
-	public readonly line_index: number = this.start.line_index;
+	public readonly line_index:   number;
 	/** @implements Serializable */
-	public readonly col_index: number = this.start.col_index;
+	public readonly col_index:    number;
 
-	private _parent: ASTNode | null = null;
+	#parent: ASTNode | null = null;
 
 	/**
 	 * Construct a new ASTNode object.
@@ -47,19 +45,23 @@ export class ASTNode implements Serializable {
 		private readonly attributes: Record<string, unknown> = {},
 		public readonly children: readonly ASTNode[] = [],
 	) {
+		this.source       = this.start.source;
+		this.source_index = this.start.source_index;
+		this.line_index   = this.start.line_index;
+		this.col_index    = this.start.col_index;
 		children.forEach((c) => {
-			c._parent = this;
+			c.#parent = this;
 		});
 	}
 
 	/** The unique parent node containing this node. */
 	public get parent(): ASTNode | null {
-		return this._parent;
+		return this.#parent;
 	}
 
 	/** @implements Serializable */
 	public serialize(): string {
-		const attributes: Map<string, string> = new Map<string, string>([
+		const attributes = new Map<string, string>([
 			['line',   (this.line_index + 1).toString()],
 			['col',    (this.col_index  + 1).toString()],
 			['source', this.source],

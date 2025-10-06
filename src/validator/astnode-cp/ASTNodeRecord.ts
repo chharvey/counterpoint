@@ -1,26 +1,42 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	VALUE,
 	TYPE,
-	OBJ,
-	INST,
-	Builder,
-	NonemptyArray,
-	CPConfig,
+	build_record_like,
+	AssignmentErrorDuplicateKey,
+	TypeErrorNotAssignable,
+} from '../../index.ts';
+import {
+	type NonemptyArray,
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeProperty} from './ASTNodeProperty.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
+} from '../../core/index.ts';
+import type {EntryType} from '../../typer/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {ASTNodeKey} from './ASTNodeKey.ts';
+import type {ASTNodeProperty} from './ASTNodeProperty.ts';
+import {
+	ASTNodeExpression,
+	buildDeco,
+	typeDeco,
+} from './ASTNodeExpression.ts';
+import {
+	assignToDeco,
+	ASTNodeCollectionLiteral,
+} from './ASTNodeCollectionLiteral.ts';
 
 
 
 export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeRecord {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeRecord);
+		assert_instanceof(expression, ASTNodeRecord);
 		return expression;
 	}
 
@@ -31,61 +47,68 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		super(start_node, children);
 	}
 
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		builder;
-		throw 'ASTNodeRecord#build_do not yet supported.';
+	public override varCheck(): void {
+		super.varCheck();
+		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
+		xjs.Array.forEachAggregated(keys.map((key) => key.id), (id, i, ids) => {
+			if (ids.slice(0, i).includes(id)) {
+				throw new AssignmentErrorDuplicateKey(keys[i]);
+			}
+		});
 	}
 
-	protected override type_do(): TYPE.Type {
-		return TYPE.TypeRecord.fromTypes(new Map(this.children.map((c) => [
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		return build_record_like<ASTNodeExpression>(
+			new Map<bigint, ASTNodeExpression>(this.children.map((child) => [child.key.id, child.val])),
+			this.builder,
+			(expr) => expr.type(),
+			(expr) => expr.build(),
+		);
+	}
+
+	@memoizeMethod
+	@typeDeco
+	public override type(): TYPE.Type {
+		return TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>(this.children.map((c) => [
 			c.key.id,
 			c.val.type(),
-		])), true);
+		])));
 	}
 
-	protected override fold_do(): OBJ.Object | null {
-		const properties: ReadonlyMap<bigint, OBJ.Object | null> = new Map(this.children.map((c) => [
+	@memoizeMethod
+	public override fold(): VALUE.Value | null {
+		const properties: ReadonlyMap<bigint, VALUE.Value | null> = new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.fold(),
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
-			: new OBJ.Record(properties as ReadonlyMap<bigint, OBJ.Object>);
+			: new VALUE.Record(properties as ReadonlyMap<bigint, VALUE.Value>);
 	}
 
-	protected override assignTo_do(assignee: TYPE.Type): boolean {
-		if (TYPE.TypeRecord.isUnitType(assignee) || assignee instanceof TYPE.TypeRecord) {
-			const assignee_type_record: TYPE.TypeRecord = (TYPE.TypeRecord.isUnitType(assignee))
-				? assignee.value.toType()
-				: assignee;
-			if (this.children.length < assignee_type_record.count[0]) {
-				return false;
+	@assignToDeco
+	public override assignTo(assignee: TYPE.Type): void {
+		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
+		if (assignee instanceof TYPE.Record) {
+			if (this.children.length < assignee.minCount) {
+				throw err;
 			}
-			try {
-				xjs.Array.forEachAggregated([...assignee_type_record.propertytypes], ([id, thattype]) => {
-					const prop: ASTNodeProperty | undefined = this.children.find((p) => p.key.id === id);
-					if (!thattype.optional && !prop) {
-						throw new TypeError(`Property \`${ id }\` does not exist on type \`${ this.type() }\`.`);
-					}
-				});
-			} catch (err) {
-				// TODO: use the caught error as the cause of a new error
-				return false;
-			}
-			xjs.Array.forEachAggregated([...assignee_type_record.propertytypes], ([id, thattype]) => {
-				const prop: ASTNodeProperty | undefined = this.children.find((p) => p.key.id === id);
-				const expr: ASTNodeExpression | undefined = prop?.val;
-				if (expr) {
-					return ASTNodeCP.typeCheckAssignment(
-						expr.type(),
-						thattype.type,
-						expr,
-						this.validator,
-					);
+			assignee.typeargs.forEach((entry, key) => { // using `Array#forEach` instead of `xjs.Array.forEach` to short-circuit
+				/* NOTE: We *cannot* assert the property exists since properties are not ordered.
+					We can however make the assertion in tuples because of item ordering. */
+				if (!entry.optional && !this.children.find((prop) => prop.key.id === key)) {
+					throw err;
 				}
 			});
-			return true;
+			return xjs.Array.forEachAggregated(this.children, (prop) => {
+				const thattype: EntryType | undefined = assignee.typeargs.get(prop.key.id);
+				if (thattype) {
+					return ASTNodeCP.typeCheckAssign(prop.val, thattype.type, prop);
+				}
+			});
 		}
-		return false;
+		throw err;
 	}
 }

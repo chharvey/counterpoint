@@ -1,9 +1,9 @@
-export * from './Operator.js';
+export * from './Operator.ts';
 
-export * from './ASTNode.js';
-export * as AST from './astnode-cp/index.js';
+export * from './Decorator.ts';
+export * from './Validator.ts';
 
-export * from './Decorator.js';
-export * from './Validator.js';
+export * from './ASTNode.ts';
+export * as AST from './astnode-cp/index.ts';
 
-export * from './SymbolStructure.js';
+export * from './SymbolSchema.ts';

@@ -1,54 +1,74 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
 	TYPE,
-	ReferenceError01,
-	ReferenceError03,
-	CPConfig,
+	ReferenceErrorUndeclared,
+	ReferenceErrorKind,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+	memoizeGetter,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
+} from '../../core/index.ts';
+import {
 	SymbolKind,
-	SymbolStructure,
-	SymbolStructureVar,
-	SymbolStructureType,
-	SyntaxNodeType,
-} from './package.js';
-import {ASTNodeType} from './ASTNodeType.js';
+	type SymbolSchema,
+	SymbolSchemaVar,
+	SymbolSchemaType,
+} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {
+	ValidIntrinsicName,
+	is_valid_intrinsic_name,
+} from './utils-private.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
 
 
 
 export class ASTNodeTypeAlias extends ASTNodeType {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeAlias {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeAlias);
+		assert_instanceof(typ, ASTNodeTypeAlias);
 		return typ;
 	}
 
-
-	private _id: bigint | null = null; // TODO use memoize decorator
 
 	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
+	@memoizeGetter
 	public get id(): bigint {
-		return this._id ??= this.validator.cookTokenIdentifier(this.start_node.text);
+		return this.validator.cookTokenIdentifier(this.start_node.text);
 	}
 
 	public override varCheck(): void {
-		if (!this.validator.hasSymbol(this.id)) {
-			throw new ReferenceError01(this);
+		// NOTE: ignore var-checking `this` for now if source is an intrinsic identifier, as semantics is determined by syntax.
+		if (is_valid_intrinsic_name(this.source)) {
+			return;
 		}
-		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureVar) {
-			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
+		if (!this.validator.hasSymbol(this.id)) {
+			throw new ReferenceErrorUndeclared(this);
+		}
+		if (this.validator.getSymbolInfo(this.id) instanceof SymbolSchemaVar) {
+			throw new ReferenceErrorKind(this, SymbolKind.VALUE, SymbolKind.TYPE);
+			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
 	}
 
-	protected override eval_do(): TYPE.Type {
-		if (this.validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-			if (symbol instanceof SymbolStructureType) {
-				return symbol.typevalue;
-			}
+	@memoizeMethod
+	public override eval(): TYPE.Type {
+		if (is_valid_intrinsic_name(this.source)) {
+			return new Map<ValidIntrinsicName, TYPE.Type>([
+				[ValidIntrinsicName.OBJECT, TYPE.OBJ],
+			]).get(this.source)!;
 		}
-		return TYPE.NEVER;
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolSchemaType);
+		return symbol.typevalue;
 	}
 }

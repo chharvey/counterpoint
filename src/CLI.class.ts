@@ -1,12 +1,12 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import * as xjs from 'extrajs';
-import * as fs from 'fs';
-import * as path from 'path';
 import minimist from 'minimist'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
-} from './core/index.js';
-import {Builder} from './builder/index.js';
+} from './index.ts';
+import {Program} from './Program.ts';
 
 
 
@@ -30,20 +30,20 @@ export enum Command {
 type CustomArgsType = {
 	// CLI Options
 	/** Display help text. */
-	help: boolean,
+	help:     boolean,
 	/** Display version number. */
-	version: boolean,
+	version:  boolean,
 	/** Specify output filepath. */
-	out?: string,
+	out?:     string,
 	/** Specify configuration filepath. */
 	project?: string,
 	/** Display configuration options. */
-	config: boolean,
+	config:   boolean,
 	// abbrevs
-	h: boolean,
-	v: boolean,
-	o: string,
-	p: string,
+	h:        boolean,
+	v:        boolean,
+	o:        string,
+	p:        string,
 
 	// Language Features
 	comments:          null | boolean,
@@ -52,7 +52,6 @@ type CustomArgsType = {
 
 	// Compiler Options
 	constantFolding: null | boolean,
-	intCoercion:     null | boolean,
 };
 
 
@@ -114,7 +113,6 @@ export class CLI {
 
 		Compiler Options:
 		--[no-]constantFolding         (on by default)
-		--[no-]intCoercion             (on by default)
 	`.trimStart();
 
 	/** Options argument to `minimist` function. */
@@ -130,7 +128,6 @@ export class CLI {
 			'numericSeparators',
 			// Compiler Options
 			'constantFolding',
-			'intCoercion',
 		],
 		string: [
 			// CLI Options
@@ -156,10 +153,9 @@ export class CLI {
 
 			// Compiler Options
 			constantFolding: null,
-			intCoercion:     null,
 		},
 		unknown(arg) {
-			if (arg[0] === '-') { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
+			if (arg.startsWith('-')) { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
 				throw new Error(xjs.String.dedent`
 					Unknown CLI option: ${ arg }
 					${ CLI.HELPTEXT }
@@ -190,7 +186,7 @@ export class CLI {
 				['d',       Command.DEV],
 				['run',     Command.RUN],
 				['r',       Command.RUN],
-			]).get(this.argv._[0]) || Command.HELP
+			]).get(this.argv._[0]) ?? Command.HELP
 		);
 		if (this.argv.out === '' || this.argv.project === '') {
 			throw new Error(`
@@ -210,20 +206,20 @@ export class CLI {
 	 * @return the computed configuration object
 	 */
 	private async computeConfig(cwd: string): Promise<CPConfig> {
-		const config: PartialCPConfig | Promise<PartialCPConfig> = (this.argv.project)
-			? fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8').then((text) => JSON.parse(text))
+		const config: PartialCPConfig = this.argv.project
+			? JSON.parse(await fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8')) as PartialCPConfig
 			: {};
 
 		const returned: Mutable<CPConfig> = {
 			...CONFIG_DEFAULT,
-			...await config,
+			...config,
 			languageFeatures: {
 				...CONFIG_DEFAULT.languageFeatures,
-				...(await config).languageFeatures,
+				...config.languageFeatures,
 			},
 			compilerOptions: {
 				...CONFIG_DEFAULT.compilerOptions,
-				...(await config).compilerOptions,
+				...config.compilerOptions,
 			},
 		};
 
@@ -232,7 +228,6 @@ export class CLI {
 		if (this.argv.integerRadices    !== null) returned.languageFeatures.integerRadices    = this.argv.integerRadices;
 		if (this.argv.numericSeparators !== null) returned.languageFeatures.numericSeparators = this.argv.numericSeparators;
 		if (this.argv.constantFolding   !== null) returned.compilerOptions.constantFolding    = this.argv.constantFolding;
-		if (this.argv.intCoercion       !== null) returned.compilerOptions.intCoercion        = this.argv.intCoercion;
 		/* eslint-enable curly */
 
 		return returned;
@@ -257,14 +252,14 @@ export class CLI {
 	 * Run the command `compile` or `dev`.
 	 * @param cwd the current working directory, `process.cwd()`
 	 */
-	public async compileOrDev(cwd: string): Promise<[string, void]> {
+	public async compileOrDev(cwd: string): Promise<[string, undefined]> {
 		const inputfilepath: string = this.inputPath(cwd);
 		const outputfilepath: string = this.argv.out ? path.join(cwd, path.normalize(this.argv.out)) : path.format({
 			...path.parse(inputfilepath),
 			base: void 0,
 			ext:  this.command === Command.DEV ? '.wat' : '.wasm',
 		});
-		const cg: Builder = new Builder(...await Promise.all([
+		const program = new Program(...await Promise.all([
 			fs.promises.readFile(inputfilepath, 'utf8'),
 			this.computeConfig(cwd),
 		]));
@@ -274,7 +269,7 @@ export class CLI {
 				Source file: ${ inputfilepath }
 				${ (this.command === Command.DEV) ? 'Intermediate text file (for debugging):' : 'Destination binary file:' } ${ outputfilepath }
 			`.trimStart(),
-			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? cg.print() : await cg.compile()),
+			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? program.print() : program.compile()) as Promise<undefined>,
 		]);
 	}
 

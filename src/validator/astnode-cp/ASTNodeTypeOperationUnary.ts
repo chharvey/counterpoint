@@ -1,30 +1,38 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
 	TYPE,
-	throw_expression,
-	CPConfig,
+	TypeErrorInvalidOperation,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {
 	Operator,
-	ValidTypeOperator,
-} from './package.js';
-import type {ASTNodeType} from './ASTNodeType.js';
-import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
+	type ValidTypeOperator,
+} from '../Operator.ts';
+import type {ASTNodeType} from './ASTNodeType.ts';
+import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.ts';
 
 
 
 export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperationUnary {
 		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeOperationUnary);
+		assert_instanceof(typ, ASTNodeTypeOperationUnary);
 		return typ;
 	}
 
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'type_unary_symbol'>
-			| SyntaxNodeType<'type_unary_keyword'>
-		,
+			| SyntaxNodeType<'type_unary_keyword'>,
+
 		operator: ValidTypeOperator,
 		private readonly operand: ASTNodeType,
 	) {
@@ -34,11 +42,16 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		}
 	}
 
-	protected override eval_do(): TYPE.Type {
+	@memoizeMethod
+	public override eval(): TYPE.Type {
+		const t: TYPE.Type = this.operand.eval();
+		if (this.operator === Operator.MUTABLE && !t.isReference) {
+			throw new TypeErrorInvalidOperation(this);
+		}
 		return (
-			(this.operator === Operator.ORNULL)  ? this.operand.eval().union(TYPE.NULL) :
-			(this.operator === Operator.MUTABLE) ? this.operand.eval().mutableOf() :
-			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
+			(this.operator === Operator.ORNULL)  ? t.union(TYPE.NULL) :
+			(this.operator === Operator.MUTABLE) ? t.mutableOf()      :
+			assert.fail(`ASTNodeTypeOperationUnary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
 		);
 	}
 }

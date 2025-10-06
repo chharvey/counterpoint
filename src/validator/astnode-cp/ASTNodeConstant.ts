@@ -1,44 +1,46 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	TYPE,
-	OBJ,
-	INST,
-	Builder,
-	throw_expression,
-	CPConfig,
+	VALUE,
+	type TYPE,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	Keyword,
-	Validator,
-	SyntaxNodeType,
+} from '../../core/index.ts';
+import {Keyword} from '../../parser/index.ts';
+import {
+	type SyntaxNodeType,
 	isSyntaxNodeType,
-} from './package.js';
-import {valueOfTokenNumber} from './utils-private.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+} from '../utils-private.ts';
+import {Validator} from '../Validator.ts';
+import {valueOfTokenNumber} from './utils-private.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 
 
 
 export class ASTNodeConstant extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeConstant {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeConstant);
+		assert_instanceof(expression, ASTNodeConstant);
 		return expression;
 	}
 
-
-	private static keywordValue(source: string): OBJ.Object {
-		return (
-			(source === Keyword.NULL)  ? OBJ.Null.NULL :
-			(source === Keyword.FALSE) ? OBJ.Boolean.FALSE :
-			(source === Keyword.TRUE)  ? OBJ.Boolean.TRUE :
-			throw_expression(new Error(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`))
-		);
+	private static keywordValue(source: string): VALUE.Null | VALUE.Boolean {
+		return new Map<string, VALUE.Null | VALUE.Boolean>([
+			[Keyword.NULL,  VALUE.NULL],
+			[Keyword.FALSE, VALUE.FALSE],
+			[Keyword.TRUE,  VALUE.TRUE],
+		]).get(source) ?? assert.fail(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`);
 	}
 
-	private _value: OBJ.Primitive | null = null;
 
 	public constructor(start_node: (
-		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'template_full'>
 		| SyntaxNodeType<'template_head'>
 		| SyntaxNodeType<'template_middle'>
@@ -48,32 +50,46 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node);
 	}
 
-	private get value(): OBJ.Object {
-		return this._value ??= (
-			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new OBJ.String(Validator.cookTokenTemplate(this.start_node.text)) :
-			(isSyntaxNodeType(this.start_node, 'integer'))                            ? valueOfTokenNumber(this.start_node.text, this.validator.config) :
-			(isSyntaxNodeType(this.start_node, 'primitive_literal'),                    ((token: SyntaxNode) => (
-				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeConstant.keywordValue(token.text) :
-				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? valueOfTokenNumber(token.text, this.validator.config) :
-				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? valueOfTokenNumber(token.text, this.validator.config) :
-				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),  new OBJ.String(Validator.cookTokenString(token.text, this.validator.config)))
-			))(this.start_node.children[0]))
-		);
+	@memoizeMethod
+	// @buildDeco // explicitly leaving off for performance
+	public override build(): binaryen.ExpressionRef {
+		return this.fold().build(this.builder);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.value instanceof OBJ.Float;
+	@memoizeMethod
+	// @typeDeco // explicitly leaving off for performance
+	public override type(): TYPE.Type {
+		return this.fold().toType();
 	}
 
-	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionConst {
-		return INST.InstructionConst.fromCPValue(this.fold(), to_float);
-	}
-
-	protected override type_do(): TYPE.Type {
-		return new TYPE.TypeUnit<OBJ.Primitive>(this.value);
-	}
-
-	protected override fold_do(): OBJ.Object {
-		return this.value;
+	@memoizeMethod
+	public override fold(): VALUE.Primitive {
+		switch (true) {
+			case isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/): {
+				return new VALUE.String(Validator.cookTokenTemplate(this.start_node.text));
+			}
+			default: {
+				assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
+				const children: readonly SyntaxNode[] = this.start_node.children;
+				switch (true) {
+					case isSyntaxNodeType(children[0], 'keyword_value'): {
+						return ASTNodeConstant.keywordValue(children[0].text);
+					}
+					case isSyntaxNodeType(children[0], /^integer(__radix)?(__separator)?$/): {
+						return valueOfTokenNumber(children[0].text, this.validator.config);
+					}
+					case isSyntaxNodeType(children[0], /^float(__separator)?$/): {
+						return valueOfTokenNumber(children[0].text, this.validator.config);
+					}
+					case isSyntaxNodeType(children[0], /^string(__comment)?(__separator)?$/): {
+						return new VALUE.String(Validator.cookTokenString(children[0].text, this.validator.config));
+					}
+					default: {
+						assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
+						return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text);
+					}
+				}
+			}
+		}
 	}
 }

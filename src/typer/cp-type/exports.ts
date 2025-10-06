@@ -1,22 +1,53 @@
-import {OBJ as VALUE} from './package.js';
-import type {TypeUnit} from './TypeUnit.js';
-import {TypeNever} from './TypeNever.js';
-import {TypeVoid} from './TypeVoid.js';
-import {TypeUnknown} from './TypeUnknown.js';
-import {TypeObject} from './TypeObject.js';
-import {TypeBoolean} from './TypeBoolean.js';
-import {TypeInteger} from './TypeInteger.js';
-import {TypeFloat} from './TypeFloat.js';
-import {TypeString} from './TypeString.js';
+import * as VALUE from '../cp-value/index.ts';
+import type {Type} from './Type.ts';
+import type {Unit} from './Unit.ts';
+import {Nothing} from './Nothing.ts';
+import {Anything} from './Anything.ts';
+import {Boolean as TypeBoolean} from './Boolean.ts';
+import {Symbol as TypeSymbol} from './Symbol.ts';
+import {Integer} from './Integer.ts';
+import {Float} from './Float.ts';
+import {String as TypeString} from './String.ts';
+import {Object as TypeObject} from './Object.ts';
 
 
 
-/** The Bottom Type, containing no values. */                    export const NEVER:   TypeNever            = TypeNever.INSTANCE;
-/** The Void Type, representing a completion but not a value. */ export const VOID:    TypeVoid             = TypeVoid.INSTANCE;
-/** The Top Type, containing all values. */                      export const UNKNOWN: TypeUnknown          = TypeUnknown.INSTANCE;
-/** The Object Type. */                                          export const OBJ:     TypeObject           = TypeObject.INSTANCE;
-/** The Null Type. */                                            export const NULL:    TypeUnit<VALUE.Null> = VALUE.Null.NULLTYPE;
-/** The Boolean Type. */                                         export const BOOL:    TypeBoolean          = TypeBoolean.INSTANCE;
-/** The Integer Type. */                                         export const INT:     TypeInteger          = TypeInteger.INSTANCE;
-/** The Float Type. */                                           export const FLOAT:   TypeFloat            = TypeFloat.INSTANCE;
-/** The String Type. */                                          export const STR:     TypeString           = TypeString.INSTANCE;
+/** The Counterpoint Language Nothing  Type `nothing`.  */ export const NOTHING:  Nothing          = new Nothing();
+/** The Counterpoint Language Anything Type `anything`. */ export const ANYTHING: Anything         = new Anything();
+/** The Counterpoint Language Null     Type `null`.     */ export const NULL:     Unit<VALUE.Null> = VALUE.NULL.toType();
+/** The Counterpoint Language Boolean  Type `bool`.     */ export const BOOL:     TypeBoolean      = new TypeBoolean();
+/** The Counterpoint Language Symbol   Type `sym`.      */ export const SYM:      TypeSymbol       = new TypeSymbol();
+/** The Counterpoint Language Integer  Type `int`.      */ export const INT:      Integer          = new Integer();
+/** The Counterpoint Language Float    Type `float`.    */ export const FLOAT:    Float            = new Float();
+/** The Counterpoint Language String   Type `str`.      */ export const STR:      TypeString       = new TypeString();
+/** The Counterpoint Language Object   Type `Object`.   */ export const OBJ:      TypeObject       = new TypeObject();
+
+
+
+/** A Unit Type containing only the Counterpoint Language Value `false`. */
+export const FALSE: Unit<VALUE.Boolean> = VALUE.FALSE.toType();
+
+/** A Unit Type containing only the Counterpoint Language Value `true`. */
+export const TRUE: Unit<VALUE.Boolean> = VALUE.TRUE.toType();
+
+/** A Unit Type containing only the Counterpoint Language Value `@nothing`. */
+export const SYM_NOTHING: Unit<VALUE.Symbol> = VALUE.SYM_NOTHING.toType();
+
+
+
+export const FALSY_TYPES: ReadonlySet<Type> = new Set([NULL, FALSE]);
+
+
+
+export const TYPE_CONSTANTS = [
+	NULL,
+	BOOL,
+	SYM,
+	INT,
+	FLOAT,
+	STR,
+	OBJ,
+	FALSE,
+	TRUE,
+	SYM_NOTHING,
+] as const;

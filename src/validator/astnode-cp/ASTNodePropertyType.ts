@@ -1,16 +1,13 @@
-import type {SyntaxNodeType} from './package.js';
-import type {ASTNodeType} from './index.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeKey} from './ASTNodeKey.js';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
+import type {ASTNodeType} from './index.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {ASTNodeKey} from './ASTNodeKey.ts';
 
 
 
 export class ASTNodePropertyType extends ASTNodeCP {
 	public constructor(
-		start_node:
-			| SyntaxNodeType<'entry_type__named'>
-			| SyntaxNodeType<'entry_type__named__optional'>
-		,
+		start_node: SyntaxNodeFamily<'entry_type__named', ['optional']>,
 		public readonly optional: boolean,
 		public readonly key:      ASTNodeKey,
 		public readonly val:      ASTNodeType,

@@ -1,50 +1,62 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
 import {
-	INST,
-	Builder,
-	AssignmentError01,
-	CPConfig,
+	type TYPE,
+	AssignmentErrorDuplicateDeclaration,
+} from '../../index.ts';
+import {assert_instanceof} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SymbolStructureType,
-	SyntaxNodeType,
-} from './package.js';
-import type {ASTNodeType} from './ASTNodeType.js';
-import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
-import {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../core/index.ts';
+import {SymbolSchemaType} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ASTNodeType} from './ASTNodeType.ts';
+import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
 export class ASTNodeDeclarationType extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationType {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeDeclarationType);
+		assert_instanceof(statement, ASTNodeDeclarationType);
 		return statement;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_type'>,
-		private readonly assignee: ASTNodeTypeAlias,
+		private readonly assignee: ASTNodeTypeAlias | null,
 		public  readonly assigned: ASTNodeType,
 	) {
-		super(start_node, {}, [assignee, assigned]);
+		super(
+			start_node,
+			{},
+			(assignee) ? [assignee, assigned] : [assigned],
+		);
 	}
 
 	public override varCheck(): void {
-		if (this.validator.hasSymbol(this.assignee.id)) {
-			throw new AssignmentError01(this.assignee);
-		}
+		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`.
 		this.assigned.varCheck();
-		this.validator.addSymbol(new SymbolStructureType(this.assignee));
+		if (this.assignee) {
+			if (this.validator.hasSymbol(this.assignee.id)) {
+				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
+			}
+			this.validator.addSymbol(new SymbolSchemaType(this.assignee));
+		}
 	}
 
 	public override typeCheck(): void {
-		const symbol: SymbolStructureType | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureType | null;
-		if (symbol) {
-			symbol.typevalue = this.assigned.eval();
+		const typevalue: TYPE.Type = this.assigned.eval(); // evaluate first before checking, to rethrow any errors
+		if (this.assignee) {
+			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
+			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaType;
+			symbol.typevalue = typevalue;
 		}
 	}
 
-	public override build(_builder: Builder): INST.InstructionNone {
-		return new INST.InstructionNone();
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.nop();
 	}
 }

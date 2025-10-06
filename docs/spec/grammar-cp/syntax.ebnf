@@ -13,7 +13,7 @@
 
 Word ::=
 	// operator
-		| "mutable"
+		| "mut"
 		| "is"
 		| "isnt"
 		| "if"
@@ -22,8 +22,10 @@ Word ::=
 	// storage
 		| "type"
 		| "let"
+		| "_"
+		| "void"
 	// modifier
-		| "unfixed"
+		| "var"
 	| KEYWORD_TYPE
 	| KEYWORD_VALUE
 	| IDENTIFIER
@@ -36,6 +38,7 @@ PrimitiveLiteral ::=
 	| INTEGER
 	| FLOAT
 	| STRING
+	| "@" Word
 ;
 
 
@@ -69,8 +72,8 @@ TypeUnit ::=
 	| TypeMapLiteral
 ;
 
-PropertyAccessType ::= "." (INTEGER | Word);
-GenericCall        ::= "." GenericArguments;
+PropertyAccessType ::= ("." | "?.") (INTEGER | Word);
+GenericCall        ::=  "."         GenericArguments;
 
 TypeCompound ::=
 	| TypeUnit
@@ -79,12 +82,17 @@ TypeCompound ::=
 
 TypeUnarySymbol ::=
 	| TypeCompound
-	| TypeUnarySymbol ("?" | "!" | "[" INTEGER? "]" | "{" "}")
+	| TypeUnarySymbol (
+		| "?"
+		| "!"
+		| "[" INTEGER? "]"
+		| "{" "}"
+	)
 ;
 
 TypeUnaryKeyword ::=
 	| TypeUnarySymbol
-	| "mutable" TypeUnaryKeyword
+	| "mut" TypeUnaryKeyword
 ;
 
 TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;
@@ -108,7 +116,7 @@ ExpressionGrouped ::= "("        Expression          ")";
 TupleLiteral      ::= "[" ( ","? Expression# ","? )? "]";
 RecordLiteral     ::= "["   ","? Property#   ","?    "]";
 SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
-MapLiteral        ::= "{"   ","? Case#       ","?    "}";
+MapLiteral        ::= "{"   ","? Case #      ","?    "}";
 FunctionArguments ::= "(" ( ","? Expression# ","? )? ")";
 
 ExpressionUnit ::=
@@ -136,11 +144,16 @@ Assignee ::=
 	| ExpressionCompound PropertyAssign
 ;
 
-ExpressionUnarySymbol ::= ExpressionCompound    | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
-ExpressionClaim       ::= ExpressionUnarySymbol | "<" Type ">"            ExpressionClaim;
+ExpressionUnarySymbol  ::= ExpressionCompound    | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
+ExpressionUnaryKeyword ::= ExpressionUnarySymbol | ("int" | "float")       ExpressionUnaryKeyword;
+
+ExpressionCast ::=
+	| (ExpressionCast ("as" | "as?" | "as!"))? ExpressionUnaryKeyword
+	|  ExpressionCast  "as"                    "<" Type ">"
+;
 
 ExpressionExponential
-	::= ExpressionClaim ("^" ExpressionExponential)?;
+	::= ExpressionCast ("^" ExpressionExponential)?;
 
 ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                                            ExpressionExponential;
 ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                                            ExpressionMultiplicative;
@@ -159,8 +172,13 @@ Expression ::=
 
 
 
-DeclarationType     ::= "type"            IDENTIFIER "=" Type                ";";
-DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
+DeclarationType
+	::= "type" ("_" | IDENTIFIER) "=" Type ";";
+
+DeclarationVariable ::=
+	| "let" "var"? ("_" | IDENTIFIER) ":"  Type "=" Expression ";"
+	| "let" "var"  ("_" | IDENTIFIER) "?:" Type                ";"
+;
 
 Declaration ::=
 	| DeclarationType

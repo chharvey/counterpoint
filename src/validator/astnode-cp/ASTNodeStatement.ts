@@ -1,13 +1,12 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
-	Instruction,
-	Builder,
-} from './package.js';
-import {ASTNodeBlock} from './index.js';
-import type {Buildable} from './Buildable.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+} from '../../core/index.ts';
+import {ASTNodeBlock} from './index.ts';
+import type {Buildable} from './Buildable.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 
@@ -32,6 +31,7 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 		return block.children[0];
 	}
 
+
 	/** @implements Buildable */
-	public abstract build(builder: Builder): Instruction;
+	public abstract build(): binaryen.ExpressionRef;
 }

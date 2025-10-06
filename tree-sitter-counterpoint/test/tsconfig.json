@@ -1,0 +1,9 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		// Modules
+		"rootDir": "./",
+	},
+	"include": [], // override parent
+	"files":   ["./build.mts"],
+}

@@ -1,79 +1,92 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	TYPE,
-	OBJ,
-	INST,
-	Builder,
-	AssignmentError01,
-	CPConfig,
+	VALUE,
+	type TYPE,
+	AssignmentErrorDuplicateDeclaration,
+} from '../../index.ts';
+import {assert_instanceof} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SymbolStructureVar,
-	SyntaxNodeType,
-} from './package.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeType} from './ASTNodeType.js';
-import type {ASTNodeExpression} from './ASTNodeExpression.js';
-import type {ASTNodeVariable} from './ASTNodeVariable.js';
-import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
-import {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../core/index.ts';
+import {SymbolSchemaVar} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {ASTNodeType} from './ASTNodeType.ts';
+import type {ASTNodeExpression} from './ASTNodeExpression.ts';
+import type {ASTNodeVariable} from './ASTNodeVariable.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
 export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeDeclarationVariable);
+		assert_instanceof(statement, ASTNodeDeclarationVariable);
 		return statement;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_variable'>,
 		public  readonly unfixed:  boolean,
-		private readonly assignee: ASTNodeVariable,
-		private readonly typenode: ASTNodeType,
-		private readonly assigned: ASTNodeExpression,
+		private readonly assignee: ASTNodeVariable | null,
+		public  readonly typenode: ASTNodeType,
+		public  readonly assigned: ASTNodeExpression | null,
 	) {
-		super(start_node, {unfixed}, [assignee, typenode, assigned]);
+		super(
+			start_node,
+			{unfixed},
+			[
+				...(assignee ? [assignee] : []),
+				typenode,
+				...(assigned ? [assigned] : []),
+			],
+		);
 	}
 
 	public override varCheck(): void {
-		if (this.validator.hasSymbol(this.assignee.id)) {
-			throw new AssignmentError01(this.assignee);
+		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`. It’s called only during reassignment.
+		if (!this.unfixed) {
+			assert.ok(this.assigned, `Symbol \`${ this.source }\` should be initialized with a value.`);
 		}
-		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
-		this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
+		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c?.varCheck());
+		if (this.assignee) {
+			if (this.validator.hasSymbol(this.assignee.id)) {
+				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
+			}
+			this.validator.addSymbol(new SymbolSchemaVar(this.assignee, this.unfixed, !this.assigned));
+		}
 	}
 
 	public override typeCheck(): void {
-		this.assigned.typeCheck();
+		this.assigned?.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode.eval();
-		try {
-			ASTNodeCP.typeCheckAssignment(
-				this.assigned.type(),
-				assignee_type,
-				this,
-				this.validator,
-			);
-		} catch (err) {
-			if (!(this.assigned instanceof ASTNodeCollectionLiteral && this.assigned.assignTo(assignee_type))) {
-				throw err;
-			}
-		}
-		const symbol: SymbolStructureVar | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
-		if (symbol) {
+		this.assigned && ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
+		if (this.assignee) {
+			const value: VALUE.Value | null = this.assigned?.fold() ?? null; // fold first before checking, to rethrow any errors
+			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
+			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
 			symbol.type = assignee_type;
 			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
-				symbol.value = this.assigned.fold();
+				assert.ok(!symbol.unfixed, `Symbol \`${ symbol.source }\` should not be unfixed.`);
+				symbol.value = value;
 			}
 		}
 	}
 
-	public override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.typenode.eval().isSubtypeOf(TYPE.FLOAT) || this.assigned.shouldFloat();
-		const value: OBJ.Object | null = this.assignee.fold();
-		return (this.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
-			? new INST.InstructionNone()
-			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat));
+	public override build(): binaryen.ExpressionRef {
+		if (
+			this.validator.config.compilerOptions.constantFolding && this.assigned?.fold() &&
+			(!this.unfixed || !this.assignee) ||
+			!this.assignee && !this.assigned
+		) {
+			return this.builder.module.nop();
+		}
+		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
+		return this.assignee
+			? this.builder.teeLocal(this.assignee.id, value).set(value)
+			: this.builder.module.drop(value);
 	}
 }

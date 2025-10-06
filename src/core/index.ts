@@ -1,7 +1,5 @@
-export * from './utils-public.js';
+export * from './utils-public.ts';
 
-export * from './CPConfig.js';
+export * from './CPConfig.ts';
 
-export {Dev} from './Dev.js';
-
-export * from './Serializable.js';
+export {Dev} from './Dev.ts';

@@ -1,18 +1,25 @@
-import * as assert from 'assert';
+import type {TYPE} from '../../index.ts';
 import {
-	TYPE,
-	CPConfig,
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
-	ValidOperatorBinary,
-} from './package.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
+import type {ValidOperatorBinary} from '../Operator.ts';
+import {
+	ASTNodeExpression,
+	typeDeco,
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 
 
 /**
  * Known subclasses:
+ * - ASTNodeOperationBinaryCast
  * - ASTNodeOperationBinaryArithmetic
  * - ASTNodeOperationBinaryComparative
  * - ASTNodeOperationBinaryEquality
@@ -21,9 +28,10 @@ import {ASTNodeOperation} from './ASTNodeOperation.js';
 export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinary);
+		assert_instanceof(expression, ASTNodeOperationBinary);
 		return expression;
 	}
+
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
@@ -34,20 +42,17 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 		super(start_node, operator, [operand0, operand1]);
 	}
 
-	public override shouldFloat(): boolean {
-		return this.operand0.shouldFloat() || this.operand1.shouldFloat();
-	}
-
 	/**
 	 * @final
 	 */
-	protected override type_do(): TYPE.Type {
-		return this.type_do_do(
+	@memoizeMethod
+	@typeDeco
+	public override type(): TYPE.Type {
+		return this.type_do(
 			this.operand0.type(),
 			this.operand1.type(),
-			this.validator.config.compilerOptions.intCoercion,
 		);
 	}
 
-	protected abstract type_do_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type;
+	protected abstract type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type;
 }

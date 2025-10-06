@@ -1,16 +1,34 @@
 import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	TYPE,
-	TypeError03,
-	serialize,
-	Punctuator,
-	Validator,
-	ASTNode,
-} from './package.js';
+	type TYPE,
+	type Builder,
+	TypeErrorNotAssignable,
+} from '../../index.ts';
+import {memoizeGetter} from '../../lib/index.ts';
+import {to_serializable} from '../../parser/index.ts';
+import type {Validator} from '../Validator.ts';
+import {ASTNode} from '../ASTNode.ts';
+import {
+	type ASTNodeExpression,
+	ASTNodeCollectionLiteral,
+} from './index.ts';
 
 
 
+/**
+ * Known subclasses:
+ * - ASTNodeIndex
+ * - ASTNodeKey
+ * - ASTNodeItemType
+ * - ASTNodePropertyType
+ * - ASTNodeProperty
+ * - ASTNodeCase
+ * - ASTNodeType
+ * - ASTNodeExpression
+ * - ASTNodeStatement
+ * - ASTNodeGoal
+ */
 export abstract class ASTNodeCP extends ASTNode {
 	/**
 	 * Type-check an assignment.
@@ -18,23 +36,60 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * @param assigned_type the type of the expression assigned
 	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
 	 * @param node          the node where the assignment took place
-	 * @param validator     a validator for type-checking purposes
-	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
+	 * @throws {TypeErrorNotAssignable} if the assigned expression is not assignable to the assignee
 	 */
-	public static typeCheckAssignment(
+	public static checkSubtype(
 		assigned_type: TYPE.Type,
 		assignee_type: TYPE.Type,
 		node:          ASTNodeCP,
-		validator:     Validator,
 	): void {
-		const is_subtype: boolean = assigned_type.isSubtypeOf(assignee_type);
-		const treatIntAsSubtypeOfFloat: boolean = (
-			   validator.config.compilerOptions.intCoercion
-			&& assigned_type.isSubtypeOf(TYPE.INT)
-			&& TYPE.FLOAT.isSubtypeOf(assignee_type)
-		);
-		if (!is_subtype && !treatIntAsSubtypeOfFloat) {
-			throw new TypeError03(assigned_type, assignee_type, node);
+		if (!assigned_type.isSubtypeOf(assignee_type)) {
+			throw new TypeErrorNotAssignable(assigned_type, assignee_type, node);
+		}
+	}
+
+	/**
+	 * Type-check an expression to an assignee type.
+	 * Attempts to call {@link ASTNodeCP.checkSubtype} first,
+	 * but if catching an error, attempts to assign entry-by-entry
+	 * if the assigned expression is a variable collection literal.
+	 *
+	 * We want to be able to assign mutable collection literals to wider mutable types
+	 * so that we can mutate them with different values:
+	 * ```
+	 * let my_ints: mut int{} = {42}; % <-- assignment should not fail
+	 * set my_ints.[43] = true;
+	 * ```
+	 *
+	 * Normally, mutable Set types are invariant — that is, if `A` is a subtype of `B`,
+	 * then `mut Set.<A>` would be unassignable to `mut Set.<B>`.
+	 * However, when a Set *literal* such as `{a1, a2}` is assigned to a wider mutable type `mut B{}`,
+	 * it’s too conservative to infer too narrow a type `mut A{}`,
+	 * since we can predict it will be mutated later with elements of type `B`.
+	 * Therefore we want to allow the assignment, bypassing invariance.
+	 *
+	 * @final
+	 * @param  assigned      the expression assigned
+	 * @param  assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
+	 * @param  node          the node where the assignment took place
+	 * @throws {TypeErrorNotAssignable} if {@link ASTNodeCP.checkSubtype} throws, and:
+	 *                       if the assigned expression is not a collection literal,
+	 *                       is not a reference object,
+	 *                       or is not entry-wise assignable
+	 */
+	public static typeCheckAssign(
+		assigned:      ASTNodeExpression,
+		assignee_type: TYPE.Type,
+		node:          ASTNodeCP,
+	): void {
+		try {
+			return ASTNodeCP.checkSubtype(assigned.type(), assignee_type, node);
+		} catch (err) {
+			if (assigned instanceof ASTNodeCollectionLiteral) {
+				return assigned.assignTo(assignee_type);
+			} else {
+				throw err;
+			}
 		}
 	}
 
@@ -51,27 +106,17 @@ export abstract class ASTNodeCP extends ASTNode {
 		attributes: Record<string, unknown> = {},
 		public override readonly children: readonly ASTNodeCP[] = [],
 	) {
-		super(((node: SyntaxNode) => { // COMBAK: TypeScript 4.6+ allows non-`this` code before `super()`
-			// @ts-expect-error --- Property `input` does actually exist on type `Tree`
-			const tree_text:    string = node.tree.input;
-			const source:       string = node.text;
-			const source_index: number = node.startIndex;
-			const prev_chars:   readonly string[] = [...tree_text.slice(0, source_index)];
-			return {
-				source,
-				source_index,
-				line_index: prev_chars.filter((c) => c === '\n').length,
-				col_index:  source_index - (prev_chars.lastIndexOf('\n') + 1),
-				tagname:    Object.values(Punctuator).find((punct) => punct === node.type) ? 'PUNCTUATOR' : node.type,
-				serialize() {
-					return serialize(this, this.source);
-				},
-			};
-		})(start_node), attributes, children);
+		super(to_serializable(start_node), attributes, children);
 	}
 
+	@memoizeGetter
 	public get validator(): Validator {
 		return (this.parent as ASTNodeCP).validator;
+	}
+
+	@memoizeGetter
+	public get builder(): Builder {
+		return (this.parent as ASTNodeCP).builder;
 	}
 
 	/**
