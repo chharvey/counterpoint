@@ -367,13 +367,13 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 				1. *Perform:* `TypeCheckAssign(property.children.1, vb.type)`.
 		7. *Return.*
 	3. *If* `expr` is a SemanticSet *and* `type` is a Set type:
-		1. *Let* `b_type` be the invariant over `type`.
+		1. *Let* `b_type` be the type argument over `type`.
 		2. *For each* `a_el` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_el, b_type)`.
 		3. *Return.*
 	4. *If* `expr` is a SemanticMap *and* `type` is a Map type:
-		1. *Let* `b_ant_type` be the antecedent invariant over `type`.
-		2. *Let* `b_con_type` be the consequent invariant over `type`.
+		1. *Let* `b_ant_type` be the antecedent type argument over `type`.
+		2. *Let* `b_con_type` be the consequent type argument over `type`.
 		3. *For each* `a_case` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_case.0, b_ant_type)`.
 			2. *Perform:* `TypeCheckAssign(a_case.1, b_con_type)`.
@@ -440,7 +440,7 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 
 ## GetEntryInfo
 ```
-EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access) :=
+EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access, Boolean is_writing) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `accessor` be `access.children.1`.
 	3. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true` *and* `access.kind` is `MAYBE`:
@@ -449,7 +449,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				optional= `true`,
 			].
 	4. *If* `base_type` is the intersection or union of some types `a` and `b`:
-		1. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access)`, `GetEntryInfo(b, access)`].
+		1. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access, is_writing)`, `GetEntryInfo(b, access, is_writing)`].
 		2. *Let* `errors` be a filtering of `entry_infos` for each `info` such that `info` is an abrupt completion.
 		3. *Let* `entries` be a filtering of `entry_infos` for each `info` such that `info` is a normal completion.
 		4. *Set* `errors` to a mapping of `errors` for each `err` to `err.value`.
@@ -521,7 +521,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				1. *Throw:* a new TypeErrorNotNarrow.
 		7. *Else If* `base_type` is a Set type:
 			1. *Let* `t` be the type of the elements in `base_type`.
-			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true`:
+			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true` *or* `is_writing` is `false`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `Boolean`,
 					optional= `false`,
@@ -531,7 +531,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 		8. *Else If* `base_type` is a Map type:
 			1. *Let* `k` be the type of the antecedents in `base_type`.
 			2. *Let* `v` be the type of the consequents in `base_type`.
-			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true`:
+			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true` *or* `is_writing` is `false`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `v`,
 					optional= `accessor_maybe`,
@@ -577,5 +577,25 @@ Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
 	3. *Else:*
 		1. *Assert:* `access_kind` is *NORMAL*.
 		2. *Return:* `type`.
+;
+```
+
+
+
+## WriteTypeOf
+Assuming reassignment of a symbol/entry is valid, gives the write-type of that symbol/entry.
+```
+Type! WriteTypeOf(Or<SemanticVariable, SemanticAccess> reassignable) :=
+	1. *If* `reassignable` is a SemanticVariable:
+		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `reassignable.id`.
+		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+		3. *Return:* `symbol.type`.
+	2. *Else:*
+		1. *Assert:* `reassignable` is a SemanticAccess.
+		2. *Assert:* `reassignable.children.count` is 2.
+		3. *Let* `base` be `reassignable.children.0`.
+		4. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
+		5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, reassignable, true)`.
+		6. *Return:* `entry.type`.
 ;
 ```

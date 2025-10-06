@@ -55,6 +55,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		}
 		if (this.validator.getSymbolInfo(this.id) instanceof SymbolSchemaVar) {
 			throw new ReferenceErrorKind(this, SymbolKind.VALUE, SymbolKind.TYPE);
+			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
 	}
 

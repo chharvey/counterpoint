@@ -985,7 +985,7 @@ bases.[List.<str>(["what"])];              %== false
 bases.["idk"];                             %== false
 ```
 
-A TypeError is produced when the expression is not assignable to the set’s invariant.
+A TypeError is produced when the expression is not assignable to the set’s type argument.
 ```
 let a: int = 3;
 bases.[a];      %> TypeError

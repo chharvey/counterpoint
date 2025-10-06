@@ -61,6 +61,9 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	 * Determine whether this node may be assigned to the given type.
 	 * Note that it’s not sufficient to check whether this node’s `.type()` is a subtype of the assignee:
 	 * When we assign collection literals, we want to check entry by entry if typechecking fails.
+	 *
+	 * Note that this method must be present for Tuple and Record nodes (even though they are immutable),
+	 * because we want to ensure it applies for any nested types.
 	 * @param  assignee                 the type to assign to
 	 * @throws {TypeErrorNotAssignable} if this node is not assignable to the assignee
 	 */

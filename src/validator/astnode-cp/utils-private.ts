@@ -7,7 +7,10 @@ import {
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
 } from '../../index.ts';
-import type {ConstructorType} from '../../lib/index.ts';
+import {
+	type ConstructorType,
+	assert_instanceof,
+} from '../../lib/index.ts';
 import type {CPConfig} from '../../core/index.ts';
 import {
 	Operator,
@@ -83,14 +86,15 @@ export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Inte
 
 
 
-export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): EntryType {
-	if (base_type.isTopType && access.kind === Operator.DOT_MAY) {
+export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess, is_writing: boolean = false): EntryType {
+	const accessor_maybe: boolean = access.kind === Operator.DOT_MAY;
+	if (base_type.isTopType && accessor_maybe) {
 		return {type: TYPE.ANYTHING, optional: true};
 	}
 	if (base_type instanceof TYPE.Combinable) {
 		const entry_infos: readonly (EntryType | TypeErrorNoEntry | TypeErrorNotNarrow)[] = base_type.operands.map((comp) => {
 			try {
-				return get_entry_info(comp, access);
+				return get_entry_info(comp, access, is_writing);
 			} catch (error) {
 				if (only_errors_of_type(error, [TypeErrorNoEntry, TypeErrorNotNarrow])) {
 					return error as TypeErrorNoEntry | TypeErrorNotNarrow;
@@ -151,33 +155,34 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 			}
 		}
 		default: {
-			const accessor_type:  TYPE.Type = access.accessor.type();
-			const accessor_maybe: boolean   = access.kind === Operator.DOT_MAY;
+			assert_instanceof(access, AST.ASTNodeAccess);
+			assert_instanceof(access.accessor, AST.ASTNodeExpression);
+			const accessor_type: TYPE.Type = access.accessor.type();
 			switch (true) {
 				case base_type === TYPE.NULL: {
 					return {type: TYPE.NULL, optional: true};
 				}
 				case base_type instanceof TYPE.List: {
 					return accessor_type.isSubtypeOf(TYPE.INT)
-						? {type: base_type.invariant, optional: accessor_maybe}
+						? {type: base_type.typearg, optional: accessor_maybe}
 						: throwWrongSubtypeError(access.accessor, TYPE.INT);
 				}
 				case base_type instanceof TYPE.Dict: {
 					return accessor_type.isSubtypeOf(TYPE.SYM)
-						? {type: base_type.invariant, optional: accessor_maybe}
+						? {type: base_type.typearg, optional: accessor_maybe}
 						: accessor_type.isSubtypeOf(TYPE.STR)
 							? assert.fail(new Error('String keys for dict access are not yet supported.'))
 							: throwWrongSubtypeError(access.accessor, TYPE.Union.all(TYPE.SYM, TYPE.STR));
 				}
 				case base_type instanceof TYPE.Set: {
-					return accessor_type.isSubtypeOf(base_type.invariant)
+					return accessor_type.isSubtypeOf(base_type.typearg) || !is_writing
 						? {type: TYPE.BOOL, optional: false}
-						: throwWrongSubtypeError(access.accessor, base_type.invariant);
+						: throwWrongSubtypeError(access.accessor, base_type.typearg);
 				}
 				case base_type instanceof TYPE.Map: {
-					return accessor_type.isSubtypeOf(base_type.invariant_ant)
-						? {type: base_type.invariant_con, optional: accessor_maybe}
-						: throwWrongSubtypeError(access.accessor, base_type.invariant_ant);
+					return accessor_type.isSubtypeOf(base_type.typearg_ant) || !is_writing
+						? {type: base_type.typearg_con, optional: accessor_maybe}
+						: throwWrongSubtypeError(access.accessor, base_type.typearg_ant);
 				}
 				default: {
 					throw new TypeErrorInvalidOperation(access);

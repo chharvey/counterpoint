@@ -37,6 +37,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	}
 
 	public override varCheck(): void {
+		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`.
 		this.assigned.varCheck();
 		if (this.assignee) {
 			if (this.validator.hasSymbol(this.assignee.id)) {

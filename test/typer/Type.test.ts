@@ -751,11 +751,11 @@ describe('Type', () => {
 				assert.ok(new TYPE.List(TYPE.INT.union(TYPE.BOOL)).isSubtypeOf(TYPE.OBJ), 'List.<int | bool> <: Object;');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.List(TYPE.INT.union(TYPE.BOOL))), 'Object !<: List.<int | bool>');
 			});
-			it('Covariance for immutable lists: `A <: B --> List.<A> <: List.<B>`.', () => {
+			it('Covariance for immutable lists: `A <: B -->     List.<A> <:     List.<B>`.', () => {
 				assert.ok(new TYPE.List(TYPE.INT).isSubtypeOf(new TYPE.List(TYPE.INT.union(TYPE.FLOAT))), 'List.<int> <: List.<int | float>');
 				assert.ok(!new TYPE.List(TYPE.INT.union(TYPE.FLOAT)).isSubtypeOf(new TYPE.List(TYPE.INT)), 'List.<int | float> !<: List.<int>');
 			});
-			it('Invariance for mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.', () => {
+			it('Invariance for   mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.', () => {
 				assert.ok(!new TYPE.List(TYPE.INT, true).isSubtypeOf(new TYPE.List(TYPE.INT.union(TYPE.FLOAT), true)), 'mut List.<int> !<: mut List.<int | float>');
 			});
 		});
@@ -765,11 +765,11 @@ describe('Type', () => {
 				assert.ok(new TYPE.Dict(TYPE.INT.union(TYPE.BOOL)).isSubtypeOf(TYPE.OBJ), 'Dict.<int | bool> <: Object;');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.Dict(TYPE.INT.union(TYPE.BOOL))), 'Object !<: Dict.<int | bool>');
 			});
-			it('Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.', () => {
+			it('Covariance for immutable dicts: `A <: B -->     Dict.<A> <:     Dict.<B>`.', () => {
 				assert.ok(new TYPE.Dict(TYPE.INT).isSubtypeOf(new TYPE.Dict(TYPE.INT.union(TYPE.FLOAT))), 'Dict.<int> <: Dict.<int | float>');
 				assert.ok(!new TYPE.Dict(TYPE.INT.union(TYPE.FLOAT)).isSubtypeOf(new TYPE.Dict(TYPE.INT)), 'Dict.<int | float> !<: Dict.<int>');
 			});
-			it('Invariance for mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.', () => {
+			it('Invariance for   mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.', () => {
 				assert.ok(!new TYPE.Dict(TYPE.INT, true).isSubtypeOf(new TYPE.Dict(TYPE.INT.union(TYPE.FLOAT), true)), 'mut Dict.<int> !<: mut Dict.<int | float>');
 			});
 		});
@@ -779,11 +779,11 @@ describe('Type', () => {
 				assert.ok(new TYPE.Set(TYPE.INT).isSubtypeOf(TYPE.OBJ), 'Set.<int> <: Object');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.Set(TYPE.INT)), 'Object !<: Set.<int>');
 			});
-			it('Invariance for immutable sets: `A == B --> Set.<A> <: Set.<B>`.', () => {
-				assert.ok(!new TYPE.Set(TYPE.INT).isSubtypeOf(new TYPE.Set(TYPE.INT.union(TYPE.FLOAT))), 'Set.<int> !<: Set.<int | float>');
+			it('Covariance for immutable sets: `A <: B -->     Set.<A> <:     Set.<B>`.', () => {
+				assert.ok(new TYPE.Set(TYPE.INT).isSubtypeOf(new TYPE.Set(TYPE.INT.union(TYPE.FLOAT))), 'Set.<int> !<: Set.<int | float>');
 				assert.ok(!new TYPE.Set(TYPE.INT.union(TYPE.FLOAT)).isSubtypeOf(new TYPE.Set(TYPE.INT)), 'Set.<int | float> !<: Set.<int>');
 			});
-			it('Invariance for mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.', () => {
+			it('Invariance for   mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.', () => {
 				assert.ok(!new TYPE.Set(TYPE.INT, true).isSubtypeOf(new TYPE.Set(TYPE.INT.union(TYPE.FLOAT), true)), 'mut Set.<int> !<: mut Set.<int | float>');
 			});
 		});
@@ -793,15 +793,26 @@ describe('Type', () => {
 				assert.ok(new TYPE.Map(TYPE.INT, TYPE.BOOL).isSubtypeOf(TYPE.OBJ), 'Map.<int, bool> <: Object');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.Map(TYPE.INT, TYPE.BOOL)), 'Object !<: Map.<int, bool>');
 			});
-			it('Invariance for immutable maps’ keys: `A == C && --> Map.<A, B> <: Map.<C, B>`.', () => {
-				assert.ok(!new TYPE.Map(TYPE.INT, TYPE.BOOL).isSubtypeOf(new TYPE.Map(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL)), 'Map.<int, bool> !<: Map.<int | float, bool>');
+			it('Covariance for immutable maps: `A <: C && B <: D -->     Map.<A, B> <:     Map.<C, D>`.', () => {
+				const INT_BOOL       = new TYPE.Map(TYPE.INT,                 TYPE.BOOL);
+				const INTSTR_BOOL    = new TYPE.Map(TYPE.INT.union(TYPE.STR), TYPE.BOOL);
+				const INT_BOOLSTR    = new TYPE.Map(TYPE.INT,                 TYPE.BOOL.union(TYPE.STR));
+				const INTSTR_BOOLSTR = new TYPE.Map(TYPE.INT.union(TYPE.STR), TYPE.BOOL.union(TYPE.STR));
+
+				assert.ok(INT_BOOL.isSubtypeOf(INTSTR_BOOL),    'Map.<int, bool> <: Map.<int | str, bool>');
+				assert.ok(INT_BOOL.isSubtypeOf(INT_BOOLSTR),    'Map.<int, bool> <: Map.<int,       bool | str>');
+				assert.ok(INT_BOOL.isSubtypeOf(INTSTR_BOOLSTR), 'Map.<int, bool> <: Map.<int | str, bool | str>');
+
+				assert.ok(!INTSTR_BOOL   .isSubtypeOf(INT_BOOL), 'Map.<int | str, bool>       !<: Map.<int, bool>');
+				assert.ok(!INT_BOOLSTR   .isSubtypeOf(INT_BOOL), 'Map.<int,       bool | str> !<: Map.<int, bool>');
+				assert.ok(!INTSTR_BOOLSTR.isSubtypeOf(INT_BOOL), 'Map.<int | str, bool | str> !<: Map.<int, bool>');
 			});
-			it('Covariance for immutable maps’ values: `B <: D --> Map.<A, B> <: Map.<A, D>`.', () => {
-				assert.ok( new TYPE.Map(TYPE.INT, TYPE.BOOL)                 .isSubtypeOf(new TYPE.Map(TYPE.INT, TYPE.BOOL.union(TYPE.NULL))), 'Map.<int, bool>         <: Map.<int, bool | null>');
-				assert.ok(!new TYPE.Map(TYPE.INT, TYPE.BOOL.union(TYPE.NULL)).isSubtypeOf(new TYPE.Map(TYPE.INT, TYPE.BOOL)),                  'Map.<int, bool | null> !<: Map.<int, bool>');
-			});
-			it('Invariance for mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.', () => {
-				assert.ok(!new TYPE.Map(TYPE.INT, TYPE.BOOL, true).isSubtypeOf(new TYPE.Map(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL.union(TYPE.NULL), true)), 'mut Map.<int, bool> !<: mut Map.<int | float, bool | null>');
+			it('Invariance for   mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.', () => {
+				const INT_BOOL = new TYPE.Map(TYPE.INT, TYPE.BOOL, true);
+
+				assert.ok(!INT_BOOL.isSubtypeOf(new TYPE.Map(TYPE.INT.union(TYPE.STR), TYPE.BOOL, true)),                 'mut Map.<int, bool> !<: mut Map.<int | str, bool>');
+				assert.ok(!INT_BOOL.isSubtypeOf(new TYPE.Map(TYPE.INT,                 TYPE.BOOL.union(TYPE.STR), true)), 'mut Map.<int, bool> !<: mut Map.<int,       bool | str>');
+				assert.ok(!INT_BOOL.isSubtypeOf(new TYPE.Map(TYPE.INT.union(TYPE.STR), TYPE.BOOL.union(TYPE.STR), true)), 'mut Map.<int, bool> !<: mut Map.<int | str, bool | str>');
 			});
 		});
 

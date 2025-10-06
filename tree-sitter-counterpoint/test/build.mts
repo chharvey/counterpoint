@@ -14,24 +14,12 @@ function s(name: string, ...operands: readonly string[]): string {
 	`;
 }
 
-function source_file(...statements: readonly string[]): string {
-	return s('source_file', ...statements);
-}
-
-function declaration_type(typ: string): string {
-	return s('declaration_type', s('identifier'), typ);
-}
-
-function statement_expression(expr: string): string {
-	return s('statement_expression', expr);
-}
-
 function sourceTypes(...types: readonly string[]): string {
-	return source_file(...types.map((typ) => declaration_type(typ)));
+	return s('source_file', ...types.map((typ) => s('declaration_type', s('identifier'), typ)));
 }
 
 function sourceExpressions(...expressions: readonly string[]): string {
-	return source_file(...expressions.map((expr) => statement_expression(expr)));
+	return s('source_file', ...expressions.map((expr) => s('statement_expression', expr)));
 }
 
 
@@ -222,9 +210,10 @@ function buildTest(title: string, source: string, expected: string): string {
 					s('float'),
 					s('string'),
 				].map((term) => s('primitive_literal', term));
-				return source_file(
-					...primitive_literals.map((pl) => declaration_type    (pl)),
-					...primitive_literals.map((pl) => statement_expression(pl)),
+				return s(
+					'source_file',
+					...primitive_literals.map((pl) => s('declaration_type', s('identifier'), pl)),
+					...primitive_literals.map((pl) => s('statement_expression', pl)),
 				);
 			})(),
 		],

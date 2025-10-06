@@ -9,6 +9,7 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorReassignment,
 	TypeErrorInvalidOperation,
+	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
 	MutabilityError01,
 } from '../../../src/index.ts';
@@ -162,6 +163,19 @@ describe('ASTNodeCP', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 						goal.varCheck();
 						assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+					});
+				});
+				it('throws when Set/Map accessor expression is not a valid type.', () => {
+					xjs.Array.forEachAggregated([`
+						let s: mut int{} = Set.<int>([42]);
+						s.[4.3] = true;
+					`, `
+						let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
+						m.["true"] = 43;
+					`], (src) => {
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+						goal.varCheck();
+						assert.throws(() => goal.typeCheck(), TypeErrorNotNarrow);
 					});
 				});
 				it('throws when assignee’s base type is not mutable.', () => {
