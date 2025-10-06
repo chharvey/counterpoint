@@ -66,7 +66,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * so that we can mutate them with different values:
 	 * ```
 	 * let my_ints: mut int{} = {42}; % <-- assignment should not fail
-	 * set my_ints[43] = true;
+	 * set my_ints.[43] = true;
 	 * ```
 	 *
 	 * Normally, mutable Set types are invariant — that is, if `A` is a subtype of `B`,

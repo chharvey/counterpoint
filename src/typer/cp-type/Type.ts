@@ -18,6 +18,10 @@ import {
 	FALSY_TYPES,
 	TYPE_CONSTANTS,
 } from './index.ts';
+import {
+	Variance,
+	type GenericParameter,
+} from './utils-private.ts';
 
 
 
@@ -176,6 +180,10 @@ export function subtypeRules(
 		/* 1-2 | `T     <: unknown` */
 		if (t.isTopType) {
 			return true;
+		}
+
+		if (!this.isMutable && t.isMutable) {
+			return false;
 		}
 
 		/*
@@ -457,6 +465,7 @@ export class TypeInterface extends Type {
 	public constructor(
 		private readonly properties: ReadonlyMap<string, Type>,
 		is_mutable: boolean = false,
+		private readonly typeparams: ReadonlyMap<string, GenericParameter> = new Map(),
 	) {
 		super(is_mutable);
 	}
@@ -535,6 +544,28 @@ export class TypeInterface extends Type {
 	@subtypeRules
 	public override isSubtypeOf(t: Type): boolean {
 		if (t instanceof TypeInterface) {
+			if (![...this.typeparams.entries()].every(([name, this_param]) => {
+				const that_param: GenericParameter | undefined = t.typeparams.get(name);
+				if (!that_param) {
+					return true;
+				}
+				switch (t.isMutable ? that_param.variance.whenMutable : that_param.variance.normally) {
+					case Variance.INVARIANT: {
+						return this_param.assigned.equals(that_param.assigned);
+					}
+					case Variance.COVARIANT: {
+						return this_param.assigned.isSubtypeOf(that_param.assigned);
+					}
+					case Variance.CONTRAVARIANT: {
+						return that_param.assigned.isSubtypeOf(this_param.assigned);
+					}
+					case Variance.BIVARIANT: {
+						return true;
+					}
+				}
+			})) {
+				return false;
+			}
 			return [...t.properties].every(([name, type_]) => (
 				this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
 			));
