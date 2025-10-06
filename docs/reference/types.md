@@ -39,16 +39,6 @@ Type `never` is most commonly a result of a type operation that produces the Bot
 for example, the intersection of two disjoint types.
 
 
-### `void`
-Type `void` represents the completion of an evaluation but the absence of a value.
-It is used to describe functions that complete execution (and may have side-effects), but return no value.
-(Unlike `never`, `void` indicates that the function has returned.)
-Type `void` is also used to represent part of the types of optional entries in collections,
-such as a record’s optional property.
-There are no values assignble to `void`, but some expressions may have type `void`,
-for example, property access and function calls.
-
-
 ### `unknown`
 Type  `unknown` is at the top of the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
@@ -65,6 +55,83 @@ when no other value is appropriate.
 ### `bool`
 Type `bool` has two logical values, called `true` and `false`.
 These values are used for binary states.
+
+
+### `sym`
+Type `sym` contains symbols, which are values defined by the programmer.
+Symbol values can only be referenced by name, as their implementations are unexposed.
+Syntactically, symbol names are identifier names, preceeded by an `@`-sign (**U+0040 COMMERCIAL AT**).
+```
+let greeting: sym = @hello;
+```
+
+The only operations available to symbols are identity/equality
+and the logical operators (‘not’, ‘and’, ‘or’, and the ternary conditional).
+Symbols that have the same name are identical (and thus equal), and vice versa.
+Symbols have no intrinsic meaning, or any other valid operators or methods;
+their semantics may be specified by the programmer who defines them.
+```
+% Symbols are always truthy and non-empty.
+!greeting;                        %== false
+?greeting;                        %== false
+greeting && @world;               %== @world
+greeting || @world;               %== greeting
+if greeting then "yes" else "no"; %== "yes"
+
+% Symbols are identical, and equal, by name (case-sensitive).
+greeting === @hello; %== true
+greeting ==  @hello; %== true
+@world   === @world; %== true
+@world   ==  @world; %== true
+@world   !=  @WORLD; %== true
+```
+
+Symbols differ from strings in that their implementations are hidden.
+Internally, symbols are represented as integers at runtime,
+but we are never exposed to their values.
+We cannot operate and compute with symbols the same way we do with strings or integers.
+```
+let var el: sym = @fire;
+% Unfixed variables of type `sym` may be reassigned,
+set el = @air;
+set el = @aether;
+
+% but only to symbol values!
+set el = 42;         %> TypeError
+set el = "a string"; %> TypeError
+set el = @my_symbol; % ok
+
+@water + @fire;        %> TypeError
+@water.toUpperCase.(); %> TypeError
+
+% One may wish to use a union type (more narrow than `sym`) to enumerate allowed symbol values.
+let var element: @water | @earth | @fire | @air = @water;
+set element = @aether; %> TypeError
+set element = @fire;   % ok
+```
+
+Symbols serve as keys for records and dicts in the same way that integers serve as indices for tuples and lists.
+Thus, symbol values are used for dynamic access of properties at runtime,
+and comparing symbols is much more efficient than comparing strings.
+See [Dict Access](#dict-access) for details.
+
+The name of a symbol may be enclosed in single-quotes (`'` **U+0027 APOSTROPHE**),
+just like [Unicode identifiers](./variables.md#unicode-identifiers).
+However, this is not recommended as it greatly decreases code readability.
+Like Unicode identifiers, symbol names are *not* cooked, meaning escape sequences do not exist.
+Stringifying a symbol produces its name.
+```
+let greeting1: sym = @'¡héllö wôrld!';
+
+@'$5.99' != @'\u{24}5\u{2e}99'; %== true
+
+let greeting2: sym = @hello_world;
+greeting2 !== @'hello_world';      %== true
+
+"""{{ greeting2 }}"""          == "hello_world";           %== true
+"""{{ greeting1 }}"""          == "'¡héllö wôrld!'";       %== true % notice the single-quotes are included
+"""{{ @'\u{24}5\u{2e}99' }}""" == """'\u{24}5\u{2e}99'"""; %== true % escape sequences are raw
+```
 
 
 ### `int`
@@ -417,7 +484,6 @@ I {{ "\u{2764}" }} Unicode!
 ### `Object`
 Type `Object` is the type of all references, that is, every reference type is assignable to `Object`.
 This is because all reference objects are ultimately instances of the `Object` class.
-Expressions of type `void` cannot hold values, so they are not assignable to `Object`.
 
 
 
@@ -491,7 +557,7 @@ Compound types are composed of other types.
 Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax         | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
 ------------------ | -------- | ------------  | ------------------- | ---------------------------- | -------------------------------------------- | -------------------------------------- | --------------------
 [Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `[str, str, str]` / `str[3]` | *(none)*                                     | `["x", "y", "z"]`                      | `[]`
-[Record](#records) | Fixed    | words         | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
+[Record](#records) | Fixed    | symbols       | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
 [List](#lists)     | Variable | integers      | `List.<str>`        | `str[]`                      | `List.(["x", "y", "z"])`                     | *(none)*                               | *(none)*
 [Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                     | `Dict.([a= "x", b= "y", c= "z"])`            | *(none)*                               | *(none)*
 [Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                      | `Set.(["x", "y", "z"])`                      | `{"x", "y", "z"}`                      | `{}`
@@ -525,9 +591,9 @@ let elements_and_more: [str, str, str, bool, int] = ["earth", "wind", "fire"]; %
 ```
 The first declaration is allowed because the last two items are simply dropped off.
 
-Because tuples are read-only, the `mutable` operator is invalid on tuple types.
+Because tuples are read-only, the `mut` operator is invalid on tuple types.
 ```
-let elements: mutable [str, str, str] = ["earth", "wind", "fire"]; %> TypeError
+let elements: mut [str, str, str] = ["earth", "wind", "fire"]; %> TypeError
 ```
 
 Note: If a tuple is homogeneous (its items are all of the same type),
@@ -563,31 +629,10 @@ elements.-\b10; %== "wind"
 Tuple size is known at compile-time,
 so attempting to retrieve an out-of-bounds index results in a compile-time error.
 Positive indices beyond the end of the list, and negative indices beyond the beginning,
-result in a TypeError. In other words, the indices *do not* loop around.
+result in a TypeErrorNoEntry. In other words, the indices *do not* loop around.
 ```
-elements.3;  %> TypeError
-elements.-4; %> TypeError
-```
-
-Tuple items can also be accessed by **bracket-accessor notation**,
-where the expression in brackets computes the index.
-```
-elements.[0];       %== "earth"
-elements.[3 - 2];   %== "wind"
-elements.[-3 + 2];  %== "fire"
-elements.[0.5 * 2]; %> TypeError % expected int but found float
-```
-
-A TypeError is produced when the compiler can determine if the index is out-of-bounds.
-```
-let i: int = 4;
-elements.[i];   %> TypeError % index `4` does not exist on type `str[3]`
-```
-If the compiler can’t compute the index, it won’t error at all,
-but this means the program could crash at runtime.
-```
-let var i: int = 4;
-elements.[i];       % no compile-time error, but value at runtime will be undefined
+elements.3;  %> TypeErrorNoEntry
+elements.-4; %> TypeErrorNoEntry
 ```
 
 A tuple’s items, type, and size are all fixed.
@@ -603,32 +648,16 @@ tuple; %== [true, 4, "hello"];
 Tuple types may have optional items, indicating that a tuple of that type might or might not have that item.
 ```
 let var x: [str, int, ?: bool] = ["hello", 42];
-x = ["hello", 42, true];
+set x = ["hello", 42, true];
 ```
 The symbol `?:` in the type signature indicates that the item is optional.
 In a tuple type, all optional items *must* come after all required items.
 
-When we access an optional item, its type is unioned with `void`,
-because the compiler doesn’t know if there’s an actual value there.
-Evaluating such an expression could result in a runtime error, since void expressions have no actual value.
-```
-let x2: bool | void = x.2; % potential runtime error
-```
-However, the [optional access operator](./expressions-operators.md#optional-access) `?.`
-can anticipate this error and return `null` whenever the value doesn’t exist.
+Use the [maybe access operator](./expressions-operators.md#maybe-access) `?.` to access optional tuple entries.
 ```
 let x2: bool? = x?.2;
 ```
-If `x.2` exists, the expression `x?.2` produces that value; otherwise it produces `null`,
-avoiding the runtime error.
-
-We can use the [claim access operator](./expressions-operators.md#claim-access) `!.`
-to tell the type-checker that the property definitely exists and is not type `void`.
-It should only be used if we are certain the property exists.
-```
-let x2: bool = x!.2;
-```
-The expression `x!.2` behaves just like `x.2`, except that it bypasses the compiler’s TypeError.
+If `x.2` exists, the expression `x?.2` produces that value; otherwise it produces `null`.
 
 
 ### Records
@@ -727,9 +756,9 @@ let elements_and_more: [
 ```
 The first declaration is allowed because the unused properties are simply dropped off.
 
-Because records are read-only, the `mutable` operator is invalid on record types.
+Because records are read-only, the `mut` operator is invalid on record types.
 ```
-let elements: mutable [x: str, y: str, z: str] = [x= "earth", y= "wind", z= "fire"]; %> TypeError
+let elements: mut [x: str, y: str, z: str] = [x= "earth", y= "wind", z= "fire"]; %> TypeError
 ```
 
 #### Record Access
@@ -752,7 +781,7 @@ elements.aristotle; %== "fire"
 Record keys are known at compile-time,
 so attempting to retrieve an non-existent key results in a compile-time error.
 ```
-elements.pythagoras; %> TypeError
+elements.pythagoras; %> TypeErrorNoEntry
 ```
 
 A record’s properties, type, and size are all fixed.
@@ -771,7 +800,7 @@ let var y: [firstname: str, middlename?: str, lastname: str] = [
 	firstname= "Martha",
 	lastname=  "Dandridge",
 ];
-y = [
+set y = [
 	firstname=  "Martha",
 	lastname=   "Washington",
 	middlename= "Dandridge",
@@ -780,27 +809,11 @@ y = [
 The symbol `?:` in the type signature indicates that the property is optional.
 In a record type, required and optional properties may be intermixed (order isn’t enforced).
 
-When we access an optional property, its type is unioned with `void`,
-because the compiler doesn’t know if there’s an actual value there.
-Evaluating such an expression could result in a runtime error, since void expressions have no actual value.
-```
-let ym: str | void = y.middlename; % potential runtime error
-```
-However, the [optional access operator](./expressions-operators.md#optional-access) `?.`
-can anticipate this error and return `null` whenever the value doesn’t exist.
+Use the [maybe access operator](./expressions-operators.md#maybe-access) `?.` to access optional record entries.
 ```
 let ym: str? = y?.middlename;
 ```
-If `y.middlename` exists, the expression `y?.middlename` produces that value; otherwise it produces `null`,
-avoiding the runtime error.
-
-We can use the [claim access operator](./expressions-operators.md#claim-access) `!.`
-to tell the type-checker that the property definitely exists and is not type `void`.
-It should only be used if we are certain the property exists.
-```
-let ym: str = y!.middlename;
-```
-The expression `y!.middlename` behaves just like `y.middlename`, except that it bypasses the compiler’s TypeError.
+If `y.middlename` exists, the expression `y?.middlename` produces that value; otherwise it produces `null`.
 
 
 ### Lists
@@ -827,7 +840,34 @@ For example, the expression `elements.[0]` is of type `str | bool | int`,
 and if the list were mutable, we could reassign that entry to an integer or boolean.
 
 #### List Access
-List access is the same as [Tuple Access](#tuple-access).
+List items are accessed by **bracket-accessor notation**, where the expression in brackets computes the index.
+The bracketed expression must be an Integer value (of type `int`).
+```
+let elements: str[] = List.<str>(["earth", "wind", "fire"]);
+elements.[0];       %== "earth"
+elements.[3 - 2];   %== "wind"
+elements.[-3 + 2];  %== "fire"
+elements.[0.5 * 2]; %> TypeError % expected int but found float
+```
+
+When the the compiler can determine if the index is out-of-bounds (for example if the list and index are foldable),
+then a VoidErrorOutOfBounds is reported at compile-time.
+(This differs from a tuple, where a TypeErrorNoEntry would be reported.)
+```
+let i: int = 4;
+elements.[i];   %> VoidErrorOutOfBounds
+```
+Most lists are dynamic and their count is unknown by the compiler, so we won’t always be warned when the index is out of bounds.
+In these cases, the typer will still analyze the expression, but an ExceptionIndexOutOfBounds is thrown at runtime.
+```
+let var i: int = 4;           % unfixed variables are not folded
+let elem: str = elements.[i]; % no compile-time error, but results in ExceptionIndexOutOfBounds
+```
+
+The [maybe access operator](./expressions-operators.md#maybe-access) will “catch” the exception and return `null` instead.
+```
+elements?.[i]; %== null
+```
 
 
 ### Dicts
@@ -853,7 +893,49 @@ A shorthand for the generic syntax `Dict.<T>` is `[:T]`.
 As shown above, we can mix value types, but the dict type must be homogeneous.
 
 #### Dict Access
-Dict access is the same as [Record Access](#record-access).
+Dict properties are accessed by **bracket-accessor notation**, where the expression in brackets computes the key.
+The bracketed expression should be a Symbol value (of type `sym`).
+```
+let elements: [: str] = Dict.<str>([
+	socrates=  "earth",
+	plato=     "wind",
+	aristotle= "fire",
+]);
+elements.[@socrates]; %== "earth"
+
+let key: sym = if user.hasPermissions then @plato else @aristotle;
+elements.[key]; % either "wind" or "fire" depending on `user.hasPermissions`
+elements.[2];   %> TypeError % expected sym | str but found int
+```
+A string *may* be given as an argument if the symbol name is not known ahaed of time.
+This method is not recommended, but is sometimes necessary,
+e.g., if we are parsing and accessing JSON data at runtime.
+In this case, the VM will compare the given string’s value with each of the dict’s keys’ stringified values.
+```
+claim json_data: [: str];
+json_data.["aristotle"];                   % valid, but slower than giving a symbol
+json_data.["so-crates".replace.("-", "")]; % computed strings may be given
+```
+
+When the the compiler can determine if the key is out-of-range (for example if the dict and key are foldable),
+then a VoidErrorOutOfBounds is reported at compile-time.
+(This differs from a record, where a TypeErrorNoEntry would be reported.)
+```
+let s: sym = @pythagoras;
+elements.[s];             %> VoidErrorOutOfBounds
+```
+Most dicts are dynamic and their range of keys is unknown by the compiler, so we won’t always be warned when the key is out of range.
+In these cases, the typer will still analyze the expression, but an ExceptionKeyOutOfRange is thrown at runtime.
+```
+let var s: sym = @pythagoras; % unfixed variables are not folded
+elements.[s];                 % no compile-time error, but results in ExceptionKeyOutOfRange
+json_data.["pythagoras"];     % no compile-time error, but results in ExceptionKeyOutOfRange
+```
+
+The [maybe access operator](./expressions-operators.md#maybe-access) will “catch” the exception and return `null` instead.
+```
+json_data?.["pythagoras"]; %== null
+```
 
 
 ### Sets
@@ -909,7 +991,7 @@ bases.[List.<str>(["what"])];              %== false
 bases.["idk"];                             %== false
 ```
 
-A TypeError is produced when the expression is not assignable to the set’s invariant.
+A TypeError is produced when the expression is not assignable to the set’s type argument.
 ```
 let a: int = 3;
 bases.[a];      %> TypeError
@@ -994,19 +1076,19 @@ bases.["""{{ 2 }}nd"""]; %== ["what"]
 bases.[3].["i"];         %== {"don’t" -> "know"}
 ```
 
-A VoidError is produced when the compiler can determine if the antecedent does not exist.
+A VoidErrorOutOfBounds is produced when the compiler can determine if the antecedent does not exist.
 ```
 let a: str = "3rd";
-bases.[a];          %> VoidError
+bases.[a];          %> VoidErrorOutOfBounds
 ```
 If the compiler can’t compute the antecedent, it won’t error at all,
-but this means the program could crash at runtime.
+but this means an Exception could be thrown at runtime.
 ```
 let var a: str = "3rd";
-bases.[a];              % no compile-time error, but value at runtime will be undefined
+bases.[a];              % no compile-time error, but runtime exception
 ```
 We can avoid the potential crash using the
-[optional access operator](./expressions-operators.md#optional-access).
+[maybe access operator](./expressions-operators.md#maybe-access).
 ```
 bases?.[a]; % produces the consequent if it exists, else `null`
 ```

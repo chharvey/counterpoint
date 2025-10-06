@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
@@ -13,8 +14,8 @@ import {
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateKey,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
+	assertEqualTypes,
 	assertEqualBins,
 	assertAssignable,
 } from '../../assert-helpers.ts';
@@ -24,6 +25,7 @@ import {
 	buildConst,
 	singletonTuple,
 } from '../../helpers.ts';
+import {extract_tokens} from '../../utils.ts';
 
 
 
@@ -38,15 +40,16 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			it('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
-				const constants: AST.ASTNodeConstant[] = `
+				const constants: AST.ASTNodeConstant[] = extract_tokens(`
 					null  false  true
+					@then  @str  @false  @foobar
 					55  -55  033  -033  0  -0
 					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 					"42😀"  "42\\u{1f600}"
-				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
-				assert.deepStrictEqual(
+				`).map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
+				return assertEqualTypes(
 					constants.map((c) => c.type()),
 					constants.map((c) => new TYPE.Unit(c.fold())),
 				);
@@ -56,15 +59,18 @@ describe('ASTNodeExpression', () => {
 
 		/* eslint-disable @stylistic/array-element-newline */
 		describe('#fold', () => {
-			it('computes null and boolean values.', () => {
-				assert.deepStrictEqual([
-					'null;',
-					'false;',
-					'true;',
-				].map((src) => AST.ASTNodeConstant.fromSource(src).fold()), [
+			it('computes null, boolean, and symbol values.', () => {
+				assert.deepStrictEqual(extract_tokens(`
+					null  false  true
+					@then  @str  @false  @foobar
+				`).map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).fold()), [
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
+					new VALUE.Symbol(0x8fn,  'then'),
+					new VALUE.Symbol(0x86n,  'str'),
+					new VALUE.Symbol(0x89n,  'false'),
+					new VALUE.Symbol(0x100n, 'foobar'),
 				]);
 			});
 			it('computes int values.', () => {
@@ -75,27 +81,27 @@ describe('ASTNodeExpression', () => {
 						integerRadices: true,
 					},
 				};
-				assert.deepStrictEqual(`
+				assert.deepStrictEqual(extract_tokens(`
 					55  -55  033  -033  0  -0
 					\\o55  -\\o55  \\q033  -\\q033
-				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`, integer_radices_on).fold()), [
+				`).map((src) => AST.ASTNodeConstant.fromSource(`${ src };`, integer_radices_on).fold()), [
 					55, -55, 33, -33, 0, 0,
 					parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
 				].map((v) => new VALUE.Integer(BigInt(v))));
 			});
 			it('computes float values.', () => {
-				assert.deepStrictEqual(`
+				assert.deepStrictEqual(extract_tokens(`
 					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).fold()), [
+				`).map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).fold()), [
 					2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					-0, 6.8, 6.8, 0, -0,
 				].map((v) => new VALUE.Float(v)));
 			});
 			it('computes string values.', () => {
-				assert.deepStrictEqual(
+				assertEqualTypes(
 					AST.ASTNodeConstant.fromSource('"42😀\\u{1f600}";').type(),
 					typeUnit('42😀\u{1f600}'),
 				);
@@ -109,6 +115,8 @@ describe('ASTNodeExpression', () => {
 				['null;',    (builder) => buildConst(builder)],
 				['false;',   (builder) => buildConst(builder, false)],
 				['true;',    (builder) => buildConst(builder, true)],
+				['@never;',  (builder) => buildConst(builder, Symbol(0x80))],
+				['@hello;',  (builder) => buildConst(builder, Symbol(0x100))],
 				['0;',       (builder) => buildConst(builder, 0n)],
 				['+0;',      (builder) => buildConst(builder, 0n)],
 				['-0;',      (builder) => buildConst(builder, 0n)],
@@ -151,6 +159,29 @@ describe('ASTNodeExpression', () => {
 					type FOO = int;
 					42 || FOO;
 				`).varCheck(), ReferenceErrorKind);
+			});
+		});
+
+
+		describe('#type', () => {
+			it('unions with `null` when accessed variable is uninitialized.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let var w:  int = 42;
+					let var x?: int;
+					w;
+					x;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				assert.ok( (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned);
+				assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).assigned);
+				return assertEqualTypes(
+					goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+					[
+						TYPE.INT,
+						TYPE.INT.union(TYPE.NULL),
+					],
+				);
 			});
 		});
 
@@ -325,21 +356,19 @@ describe('ASTNodeExpression', () => {
 					types = templates.map((t) => t.type());
 				});
 				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
-					assert.deepStrictEqual(
+					assertEqualTypes(
 						types.slice(0, 2),
 						templates.slice(0, 2).map((t) => new TYPE.Unit<VALUE.String>(t.fold()!)),
 					);
 				});
 				it('for non-foldable interpolations, returns `String`.', () => {
-					assert.deepStrictEqual(types[2], TYPE.STR);
+					assert.strictEqual(types[2], TYPE.STR);
 				});
 			});
 			context('with constant folding off.', () => {
 				it('always returns `String`.', () => {
 					templates = initTemplates(CONFIG_FOLDING_OFF);
-					templates.forEach((t) => {
-						assert.deepStrictEqual(t.type(), TYPE.STR);
-					});
+					return templates.forEach((t) => assert.strictEqual(t.type(), TYPE.STR));
 				});
 			});
 		});
@@ -433,7 +462,7 @@ describe('ASTNodeExpression', () => {
 						};
 					`, config),
 				];
-				assert.deepStrictEqual(
+				return assertEqualTypes(
 					collections.map((node) => node.type()),
 					[
 						TYPE.Tuple.fromTypes(expected),
@@ -693,7 +722,7 @@ describe('ASTNodeExpression', () => {
 
 					const mod: binaryen.Module = goal.builder.module;
 					return assertEqualBins(
-						(goal.children as AST.ASTNodeDeclarationVariable[]).map((stmt) => stmt.assigned.build()),
+						(goal.children as AST.ASTNodeDeclarationVariable[]).map((stmt) => stmt.assigned!.build()),
 						[
 							mod.tuple.make([buildConst(goal.builder, 2.0), buildConst(goal.builder, 3n)]),
 							mod.tuple.make([buildConst(goal.builder, 5n),  buildConst(goal.builder, 6.0)]),
@@ -885,7 +914,7 @@ describe('ASTNodeExpression', () => {
 
 					const mod: binaryen.Module = goal.builder.module;
 					return assertEqualBins(
-						(goal.children as AST.ASTNodeDeclarationVariable[]).map((stmt) => stmt.assigned.build()),
+						(goal.children as AST.ASTNodeDeclarationVariable[]).map((stmt) => stmt.assigned!.build()),
 						[
 							mod.tuple.make([buildConst(goal.builder, 2.0), buildConst(goal.builder, 3n)]),
 							mod.tuple.make([buildConst(goal.builder, 5n),  buildConst(goal.builder, 6.0)]),

@@ -4,7 +4,7 @@ This chapter describes the objects built in to the standard “core” Counterpo
 
 
 ## Primitive and Composite Values
-Primitive values are unbreakable and are instances of `Null`, `Boolean`, `Integer`, `Float`, or `String`.
+Primitive values are unbreakable and are instances of `Null`, `Boolean`, `Symbol`, `Integer`, `Float`, or `String`.
 These types are discussed in the [Types and Values](./types-values.md#simple-types) chapter.
 
 Composite values are not primitive values and are composed of other values (of any kind).
@@ -35,6 +35,11 @@ There is only one `Null` object: `null`.
 
 ### `Boolean`
 `Boolean` objects are the binary logical values `true` and `false`.
+
+
+### `Symbol`
+`Symbol` objects are defined by the programmer and are only referenceable by name.
+Symbols are identical if and only if they have the same name.
 
 
 ### `Integer`

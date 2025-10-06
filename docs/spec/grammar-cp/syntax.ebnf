@@ -23,6 +23,7 @@ Word ::=
 		| "type"
 		| "let"
 		| "_"
+		| "void"
 	// modifier
 		| "var"
 	| KEYWORD_TYPE
@@ -37,6 +38,7 @@ PrimitiveLiteral ::=
 	| INTEGER
 	| FLOAT
 	| STRING
+	| "@" Word
 ;
 
 
@@ -70,8 +72,8 @@ TypeUnit ::=
 	| TypeMapLiteral
 ;
 
-PropertyAccessType ::= "." (INTEGER | Word);
-GenericCall        ::= "." GenericArguments;
+PropertyAccessType ::= ("." | "?.") (INTEGER | Word);
+GenericCall        ::=  "."         GenericArguments;
 
 TypeCompound ::=
 	| TypeUnit
@@ -167,8 +169,13 @@ Expression ::=
 
 
 
-DeclarationType     ::= "type" ("_" |        IDENTIFIER) "=" Type                ";";
-DeclarationVariable ::= "let"  ("_" | "var"? IDENTIFIER) ":" Type "=" Expression ";";
+DeclarationType
+	::= "type" ("_" | IDENTIFIER) "=" Type ";";
+
+DeclarationVariable ::=
+	| "let" "var"? ("_" | IDENTIFIER) ":"  Type "=" Expression ";"
+	| "let" "var"  ("_" | IDENTIFIER) "?:" Type                ";"
+;
 
 Declaration ::=
 	| DeclarationType

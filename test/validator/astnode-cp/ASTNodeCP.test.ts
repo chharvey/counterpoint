@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	AST,
 	TYPE,
 	ReferenceErrorUndeclared,
@@ -8,10 +9,10 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorReassignment,
 	TypeErrorInvalidOperation,
+	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
 	MutabilityError01,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assertAssignable,
 	assertEqualBins,
@@ -21,6 +22,24 @@ import {typeUnit} from '../../helpers.ts';
 
 
 describe('ASTNodeCP', () => {
+	describe('ASTNodeIndex', () => {
+		describe('#index', () => {
+			it('returns the cooked value of the integer token.', () => {
+				[0n, 1n, 2n, 4n, 8n, 16n].forEach((index) => {
+					const type_accessor: AST.ASTNodeIndex | AST.ASTNodeKey = AST.ASTNodeTypeAccess.fromSource(`MyTuple.${ index }`).accessor;
+					assert_instanceof(type_accessor, AST.ASTNodeIndex);
+					assert.strictEqual(type_accessor.index, index);
+
+					const expr_accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = AST.ASTNodeAccess.fromSource(`my_tuple.${ index };`).accessor;
+					assert_instanceof(expr_accessor, AST.ASTNodeIndex);
+					assert.strictEqual(expr_accessor.index, index);
+				});
+			});
+		});
+	});
+
+
+
 	describe('ASTNodeStatementExpression', () => {
 		describe('#build', () => {
 			it('returns `(nop)` for empty statement expression.', () => {
@@ -83,13 +102,39 @@ describe('ASTNodeCP', () => {
 					goal.varCheck();
 					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
+				it('allows reassignment when uninitialized.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let var x?: int;
+						x = 42;
+					`);
+					goal.varCheck();
+					goal.typeCheck();
+					return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
+						unfixed:       true,
+						uninitialized: true,
+						type:          TYPE.INT,
+						value:         null,
+					});
+				});
+				it('does not allow reassignment of `null` when uninitialized.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let var x?: int;
+						x = null;
+					`);
+					goal.varCheck();
+					assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
+						unfixed:       true,
+						uninitialized: true,
+					});
+					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+				});
 			});
 
 			context('for property reassignment.', () => {
 				it('allows assignment directly on objects.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						List.<int>([42]).0                   = 42;
-						Dict.<int>([i= 42]).i                = 42;
+						List.<int>([42]).[0]                 = 42;
+						Dict.<int>([i= 42]).[@i]             = 42;
 						Set.<int>([42]).[43]                 = false;
 						Map.<bool, int>([[true, 42]]).[true] = 42;
 					`);
@@ -100,11 +145,11 @@ describe('ASTNodeCP', () => {
 					[
 						`
 							let l: mut int[] = List.<int>([42]);
-							l.0 = 4.2;
+							l.[0] = 4.2;
 						`,
 						`
 							let d: mut [:int] = Dict.<int>([i= 42]);
-							d.i = 4.2;
+							d.[@i] = 4.2;
 						`,
 						`
 							let s: mut int{} = Set.<int>([42]);
@@ -120,6 +165,19 @@ describe('ASTNodeCP', () => {
 						assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 					});
 				});
+				it('throws when Set/Map accessor expression is not a valid type.', () => {
+					xjs.Array.forEachAggregated([`
+						let s: mut int{} = Set.<int>([42]);
+						s.[4.3] = true;
+					`, `
+						let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
+						m.["true"] = 43;
+					`], (src) => {
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+						goal.varCheck();
+						assert.throws(() => goal.typeCheck(), TypeErrorNotNarrow);
+					});
+				});
 				it('throws when assignee’s base type is not mutable.', () => {
 					[
 						`
@@ -132,11 +190,11 @@ describe('ASTNodeCP', () => {
 						`,
 						`
 							let l: int[] = List.<int>([42]);
-							l.0 = 43;
+							l.[0] = 43;
 						`,
 						`
 							let d: [:int] = Dict.<int>([i= 42]);
-							d.i = 43;
+							d.[@i] = 43;
 						`,
 						`
 							let s: int{} = Set.<int>([42]);

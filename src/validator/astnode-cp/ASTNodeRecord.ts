@@ -95,7 +95,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			if (this.children.length < assignee.minCount) {
 				throw err;
 			}
-			assignee.invariants.forEach((entry, key) => { // using `.forEach` to short-circuit
+			assignee.typeargs.forEach((entry, key) => { // using `Array#forEach` instead of `xjs.Array.forEach` to short-circuit
 				/* NOTE: We *cannot* assert the property exists since properties are not ordered.
 					We can however make the assertion in tuples because of item ordering. */
 				if (!entry.optional && !this.children.find((prop) => prop.key.id === key)) {
@@ -103,7 +103,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 				}
 			});
 			return xjs.Array.forEachAggregated(this.children, (prop) => {
-				const thattype: EntryType | undefined = assignee.invariants.get(prop.key.id);
+				const thattype: EntryType | undefined = assignee.typeargs.get(prop.key.id);
 				if (thattype) {
 					return ASTNodeCP.typeCheckAssign(prop.val, thattype.type, prop);
 				}

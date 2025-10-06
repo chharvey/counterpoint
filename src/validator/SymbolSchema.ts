@@ -51,6 +51,8 @@ export class SymbolSchemaVar extends SymbolSchema {
 		node: AST.ASTNodeVariable,
 		/** May the symbol be reassigned? */
 		public readonly unfixed: boolean,
+		/** Was the symbol declared without an initial value? */
+		public readonly uninitialized: boolean,
 	) {
 		super(node.id, node.line_index, node.col_index, node.source);
 	}

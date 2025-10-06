@@ -40,8 +40,8 @@ TokenWorth(Punctuator :::= "=")   -> RealNumber := \x25;
 
 
 TokenWorth(KeywordType  :::= "never")   -> RealNumber := \x80;
-TokenWorth(KeywordType  :::= "void")    -> RealNumber := \x81;
-TokenWorth(KeywordType  :::= "bool")    -> RealNumber := \x82;
+TokenWorth(KeywordType  :::= "bool")    -> RealNumber := \x81;
+TokenWorth(KeywordType  :::= "sym")     -> RealNumber := \x82;
 TokenWorth(KeywordType  :::= "int")     -> RealNumber := \x83;
 TokenWorth(KeywordType  :::= "float")   -> RealNumber := \x84;
 TokenWorth(KeywordType  :::= "str")     -> RealNumber := \x85;
@@ -58,7 +58,8 @@ TokenWorth(KeywordOther :::= "else")    -> RealNumber := \x8f;
 TokenWorth(KeywordOther :::= "type")    -> RealNumber := \x90;
 TokenWorth(KeywordOther :::= "let")     -> RealNumber := \x91;
 TokenWorth(KeywordOther :::= "_")       -> RealNumber := \x92;
-TokenWorth(KeywordOther :::= "var")     -> RealNumber := \x93;
+TokenWorth(KeywordType  :::= "void")    -> RealNumber := \x93;
+TokenWorth(KeywordOther :::= "var")     -> RealNumber := \x94;
 
 
 
@@ -265,19 +266,3 @@ TokenWorth(TemplateTail :::= "}}" TemplateChars__EndDelim #x22 #x22 #x22) -> Seq
 
 	TokenWorth(TemplateChars__EndInterp) -> Sequence<RealNumber>
 		:= "Return a mapping of `TemplateChars__EndInterp` for each `character` to `UTF8Encoding(CodePoint(character))`.";
-
-
-
-KeywordType(KEYWORD_TYPE :::= "never")   -> Type := Never;
-KeywordType(KEYWORD_TYPE :::= "void")    -> Type := Void;
-KeywordType(KEYWORD_TYPE :::= "bool")    -> Type := Boolean;
-KeywordType(KEYWORD_TYPE :::= "int")     -> Type := Integer;
-KeywordType(KEYWORD_TYPE :::= "float")   -> Type := Float;
-KeywordType(KEYWORD_TYPE :::= "str")     -> Type := String;
-KeywordType(KEYWORD_TYPE :::= "unknown") -> Type := Unknown;
-
-
-
-KeywordValue(KEYWORD_VALUE :::= "null")  -> Object := null;
-KeywordValue(KEYWORD_VALUE :::= "false") -> Object := false;
-KeywordValue(KEYWORD_VALUE :::= "true")  -> Object := true;

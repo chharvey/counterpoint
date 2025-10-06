@@ -45,19 +45,19 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… .[ … ]</code></td>
 		</tr>
 		<tr>
-			<td>Optional Access</td>
+			<td>Maybe Access</td>
 			<td><code>… ?. …</code></td>
 		</tr>
 		<tr>
-			<td>Computed Optional Access</td>
+			<td>Computed Maybe Access</td>
 			<td><code>… ?.[ … ]</code></td>
 		</tr>
 		<tr>
-			<td>Claim Access</td>
+			<td>Result Access</td>
 			<td><code>… !. …</code></td>
 		</tr>
 		<tr>
-			<td>Computed Claim Access</td>
+			<td>Computed Result Access</td>
 			<td><code>… !.[ … ]</code></td>
 		</tr>
 		<tr>
@@ -236,40 +236,46 @@ the property it accesses is called the **bound property** (or index, field, memb
 There are two flavors of the operator: literal access and computed access.
 
 Literal access requires a literal (integer or word) and can be used to access a literal bound property.
-Tuples/lists take integer literal properties and records/dicts take word (key) properties.
+Tuples take integer literal properties and records take word (key) properties.
 For example: `tuple.3` and `record.prop`.
 
 Computed access must be used when the bound property name is computed,
 such as an operation of expressions, e.g., `map.[expr]`.
-The expression in the brackets evaluates to an item index, element, or case antecedent
+The expression in the brackets evaluates to an index, key, element, or antecedent
 of the binding object and must be of the correct type.
 
 More information about property access when used on collections
 can be found in the [Types](./types) chapter.
 
-#### Optional Access
-The **optional access** syntax is almost the same as property access, except that
+#### Maybe Access
+The **maybe access** syntax is almost the same as property access, except that
 the operator produces the `null` value if and when there is no such bound property
 on the binding object at runtime. This operator is designed to work with
-optional entries on types, such as optional properties on a record type.
+optional entries on types, such as optional properties on a record type, as well as
+[the `Maybe` algeraic sum type] (link pending).
 
 Given a record `record` of type `[a: bool, b?: int]`,
-the expression `record.b` will produce that value if it exists,
-but will result in a runtime error if there’s no actual value at that location.
-Using the optional access operator though, `record?.b` will produce `record.b`
-if it exists, but otherwise will produce `null` and avoid the error.
+the expression `record.b` would result in a crash if there’s no actual value at that location,
+so the compiler raises an error when using that syntax.
+Using the maybe access operator though, `record?.b` will produce the value at `record.b`
+if it exists, but otherwise will produce `null` and avoid the crash.
 An equivalent syntax exists for dynamic access: `map?.[expr]`, etc.
+
+Conversely, maybe access syntax is not allowed for required properties: `record?.a` would raise a compiler error.
 
 Note that if `foo?.bar` produces `null`, it either means that `foo.bar` does exist and is equal to `null`,
 or that there’s no value for the `bar` property bound to `foo`,
-and the optional access operator is doing its job.
+and the maybe access operator is doing its job.
+Thus the recommended approach is to use
+[the `Maybe` discriminated union type] (link pending)
+for all entries in a collection that may contain `null`.
 
-If the *binding object is `null`*, then the optional access operator also produces `null`.
+If the *binding object is `null`*, then the maybe access operator also produces `null`.
 For example, `null.property` is a type error (and if the compiler were bypassed,
 it would cause a runtime error), but `null?.property` will simply produce `null`.
-This facet makes optional access safe to use when chained.
+This facet makes maybe access safe to use when chained.
 
-When the optional access operator is chained, it should be chained down the line, e.g., `x?.y?.z`.
+When the maybe access operator is chained, it should be chained down the line, e.g., `x?.y?.z`.
 This is equivalent to `(x?.y)?.z`, and if `x?.y` (or `x.y` for that matter) is `null`,
 then the whole expression also results in `null`.
 However, `x?.y.z` (which can be thought of as `(x?.y).z`) is not the same,
@@ -278,47 +284,27 @@ and will result in a runtime error if `x?.y` is `null`.
 **Type-Checking Note:**
 
 For static types (e.g., tuples and records),
-if the property is required, both regular and optional access operators do not modify the property’s declared type.
-If the property is optional,
-the regular access operator unions the property type with `void` and
-the optional access operator unions the property type with `null`.
+either the normal or maybe access operator is allowed, corresponding to the optionality of the entry being accessed.
+When the maybe access operator is used for an optional entry, the entry type is unioned with `null`.
 ```
-let record: [required: bool, optional?: int] = my_record;
+claim record: [required: bool, optional?: int];
 record.required;  %: bool
-record?.required; %: bool
-record.optional;  %: int | void
+record?.required; %> TypeErrorInvalidOperation
+record.optional;  %> TypeErrorInvalidOperation
 record?.optional; %: int | null
 ```
 For dynamic types (e.g., lists and dicts),
-the regular access operator treats all properties as required (does not modify the declared type), but
-the optional access operator treats all properties as optional (unions the property type with `null`).
+both normal and maybe access operators are allowed.
+The normal access operator treats all entries as required (does not modify the declared type), and
+the maybe access operator treats all entries as optional (unions the property type with `null`).
 ```
-let dict: [: float] = my_dict;
-dict.prop;  %: float
-dict?.prop; %: float | null
+claim dict: [: float];
+dict.[@prop];  %: float
+dict?.[@prop]; %: float | null
 ```
 
-#### Claim Access
-The **claim access** syntax is just like regular property access, except that
-it makes a **claim** (a compile-time type assertion) that the accessed property
-is not of type `void`. This is useful when accessing optional entries of compound types.
-
-Claim access has the same runtime behavior of regular property access.
-Its purpose is to tell the type-checker,
-“I know what I’m doing; This property exists and its type is not type `void`.”
-```
-let item: [str, ?: int] = ["apples", 42];
-let quantity: int = item!.1;
-```
-The expression `item!.1` has type `int`, despite being an optional entry.
-It will produce the value `42` at runtime.
-Note that bypassing the compiler’s type-checking process should be done carefully.
-If not used correctly, it could lead to runtime errors.
-```
-let item: [str, ?: int] = ["apples"];
-let quantity: int = item!.1; % runtime error!
-```
-An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
+#### Result Access
+// TODO: v0.5.0
 
 
 ### Logical Negation, Emptiness
@@ -342,6 +328,7 @@ or if it’s an empty string or empty collection (such as an array or set).
 | -------------- | -------------- | --------------- |
 | `null`         | `null`         |                 |
 | `false`        | `false`        | `true`          |
+|                |                | all symbols     |
 |                | `0`            | all integers    |
 |                | `0.0`, `-0.0`  | all floats      |
 |                | `""`           | all strings     |
@@ -772,8 +759,10 @@ Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
 
 ### Type Property Access
 ```
-<Type> `.` int-literal
-<Type> `.` word
+<Type> `.`  int-literal
+<Type> `.`  word
+<Type> `?.` int-literal
+<Type> `?.` word
 ```
 The **type property accesss** syntax for types is analogous to the property access syntax of values.
 It accesses the index or key of a tuple or record type respectively.
@@ -785,7 +774,7 @@ type T3 = T.3;             %> TypeError
 
 type R = [a: bool, b?: int, c: str];
 type Ra = R.a;                       %== bool
-type Rc = R.b;                       %== int | void
+type Rc = R?.b;                      %== int | null
 type Rd = R.d;                       %> TypeError
 ```
 
@@ -877,7 +866,7 @@ type Volunteer = [
 	agency:      str,
 	hoursWorked: float,
 ];
-% claim alice: Employee & Volunteer;
+claim alice: Employee & Volunteer;
 alice.name;        %: str
 alice.id;          %: int
 alice.jobTitle;    %: str
@@ -897,8 +886,8 @@ type B = [
 	key:    2 | 3 | 4,
 	valueB: float,
 ];
-% claim data: A & B;
-data.key;    %: 2 | 3 % `(1 | 2 | 3) & (2 | 3 | 4)`
+claim data: A & B;
+data.key;    %: 2 | 3 % gotten by `(1 | 2 | 3) & (2 | 3 | 4)`
 data.valueA; %: int
 data.valueB; %: float
 ```
@@ -930,7 +919,7 @@ type Volunteer = [
 	agency:      str,
 	hoursWorked: float,
 ];
-% claim bob: Employee | Volunteer;
+claim bob: Employee | Volunteer;
 bob.name;        %: str
 bob.hoursWorked; %: float
 bob.id;          %> TypeError
@@ -939,7 +928,16 @@ bob.agency;      %> TypeError
 ```
 Type `Employee | Volunteer` is *either* an employee *or* a volunteer,
 so we’re only guaranteed it will have the properties that are present in *both* types.
-We can’t access properties that are in one type but not the other.
+With normal access, we can’t access properties that are in one type but not the other.
+
+But with [maybe access](#maybe-access), we can access a property that exists on one type but not the other,
+noting that the resulting type is unioned with `null`.
+The maybe access operator will return the property value if it exists, else `null`.
+```
+bob?.id;       %: int | null
+bob?.jobTitle; %: str | null
+bob?.agency;   %: str | null
+```
 
 Overlapping properties in a union are themselves unioned.
 ```
@@ -951,7 +949,7 @@ type B = [
 	key:    2 | 3 | 4,
 	valueB: float,
 ];
-% claim data: A | B;
+claim data: A | B;
 data.key; %: 1 | 2 | 3 | 4 % `(1 | 2 | 3) | (2 | 3 | 4)`
 ```
 

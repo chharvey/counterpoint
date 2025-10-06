@@ -27,7 +27,7 @@ import {Collection} from './Collection.ts';
  * @final
  */
 class ValueSet<T extends Value = Value> extends Collection {
-	public constructor(private readonly elements: ReadonlySet<T> = new Set()) {
+	public constructor(public readonly elements: ReadonlySet<T> = new Set()) {
 		super();
 		const uniques = new Set<T>();
 		[...elements].forEach((el) => {
@@ -65,7 +65,7 @@ class ValueSet<T extends Value = Value> extends Collection {
 
 	/**
 	 * @inheritdoc
-	 * Returns a TYPE.Set whose invariant is the union of the types of this ValueSet’s elements.
+	 * Returns a TYPE.Set whose type argument is the union of the types of this ValueSet’s elements.
 	 */
 	public override toType(): TYPE.Set {
 		return new TYPE.Set(TYPE.Union.all([...this.elements].map<TYPE.Type>((el) => el.toType())));
@@ -75,8 +75,8 @@ class ValueSet<T extends Value = Value> extends Collection {
 		throw new Error('`ValueSet#build` not yet supported.');
 	}
 
-	public get(el: T): ValueBoolean {
-		return xjs.Set.has(this.elements, el, languageValuesIdentical) ? TRUE : FALSE;
+	public get(el: Value): ValueBoolean {
+		return xjs.Set.has<Value>(this.elements, el, languageValuesIdentical) ? TRUE : FALSE;
 	}
 }
 export {ValueSet as Set};

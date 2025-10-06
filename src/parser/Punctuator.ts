@@ -11,9 +11,9 @@ export enum Punctuator {
 	MAPTO    = '->',
 
 	// compound
-	DOT      = '.',
-	OPTDOT   = '?.',
-	CLAIMDOT = '!.',
+	DOT     = '.',
+	DOT_MAY = '?.',
+	DOT_RES = '!.',
 
 	// unary
 	NOT    = '!',

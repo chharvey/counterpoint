@@ -43,15 +43,15 @@ export function build_tuple_like<T>(
 
 		if (
 			!(item_type instanceof TYPE.Tuple) && !(item_type instanceof TYPE.Record) ||
-			item_type instanceof TYPE.Tuple && item_type.invariants.length === 0
+			item_type instanceof TYPE.Tuple && item_type.typeargs.length === 0
 		) {
 			return item_build;
 		} else if (item_type instanceof TYPE.Record) {
 			throw new Error('Records within tuples not yet supported.');
-		} else if (item_type.invariants.length === 1) {
+		} else if (item_type.typeargs.length === 1) {
 			return builder.module.tuple.extract(item_build, 0);
 		} else {
-			assert.ok(item_type.invariants.length > 1, 'Tuple should be nonempty.');
+			assert.ok(item_type.typeargs.length > 1, 'Tuple should be nonempty.');
 
 			const bintype:  binaryen.Type            = binaryen.getExpressionType(item_build);
 			const expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);
@@ -108,15 +108,15 @@ export function build_record_like<T>(
 
 		if (
 			!(value_type instanceof TYPE.Tuple) && !(value_type instanceof TYPE.Record) ||
-			value_type instanceof TYPE.Tuple && value_type.invariants.length === 0
+			value_type instanceof TYPE.Tuple && value_type.typeargs.length === 0
 		) {
 			return {id, expr: value_build};
 		} else if (value_type instanceof TYPE.Tuple) {
 			throw new Error('Tuples within records not yet supported.');
-		} else if (value_type.invariants.size === 1) {
+		} else if (value_type.typeargs.size === 1) {
 			return {id, expr: builder.module.tuple.extract(value_build, 0)};
 		} else {
-			assert.ok(value_type.invariants.size > 1, 'Record should be nonempty.');
+			assert.ok(value_type.typeargs.size > 1, 'Record should be nonempty.');
 
 			const bintype:  binaryen.Type            = binaryen.getExpressionType(value_build);
 			const expanded: readonly binaryen.Type[] = binaryen.expandType(bintype);

@@ -23,26 +23,27 @@ import {
 export class Dict extends ReferenceType {
 	/**
 	 * Construct a new Dict object.
-	 * @param invariant a union of types in this dict type
+	 * @param typearg a union of types in this dict type
 	 * @param is_mutable is this type mutable?
 	 */
 	public constructor(
-		public readonly invariant: Type,
+		public readonly typearg: Type,
 		is_mutable: boolean = false,
 	) {
 		super(is_mutable, new Set([new VALUE.Dict()]));
 	}
 
 	public override get hasMutable(): boolean {
-		return super.hasMutable || this.invariant.hasMutable;
+		return super.hasMutable || this.typearg.hasMutable;
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Dict.<${ this.invariant }>`;
+		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Dict.<${ this.typearg }>`;
 	}
 
+	@instanceOf(() => VALUE.Dict)
 	public override includes(v: VALUE.Value): boolean {
-		return v instanceof VALUE.Dict && v.toType().isSubtypeOf(this);
+		return v.toType().isSubtypeOf(this);
 	}
 
 	@strictEqual
@@ -51,20 +52,16 @@ export class Dict extends ReferenceType {
 	@isObjectType
 	@instanceOf(() => Dict)
 	public override isSubtypeOf(t: Type): boolean {
-		return (
-			(!t.isMutable || this.isMutable) &&
-			(t.isMutable
-				? this.invariant.equals((t as Dict).invariant)      // Invariance for mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.
-				: this.invariant.isSubtypeOf((t as Dict).invariant) // Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.
-			)
-		);
+		return t.isMutable
+			? this.typearg.equals((t as Dict).typearg)       // Invariance for   mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.
+			: this.typearg.isSubtypeOf((t as Dict).typearg); // Covariance for immutable dicts: `A <: B -->     Dict.<A> <:     Dict.<B>`.
 	}
 
 	public override mutableOf(): Dict {
-		return new Dict(this.invariant, true);
+		return new Dict(this.typearg, true);
 	}
 
 	public override immutableOf(): Dict {
-		return new Dict(this.invariant, false);
+		return new Dict(this.typearg, false);
 	}
 }

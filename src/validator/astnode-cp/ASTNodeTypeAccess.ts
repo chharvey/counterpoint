@@ -1,5 +1,5 @@
-import {
-	type VALUE,
+import type {
+	EntryType,
 	TYPE,
 } from '../../index.ts';
 import {
@@ -11,9 +11,14 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {Operator} from '../Operator.ts';
-import {ASTNodeKey} from './ASTNodeKey.ts';
-import {ASTNodeIndexType} from './ASTNodeIndexType.ts';
+import type {ValidTypeAccessOperator} from '../Operator.ts';
+import {
+	get_entry_info,
+	validate_access_kind,
+	update_accessed_type,
+} from './utils-private.ts';
+import type {ASTNodeIndex} from './ASTNodeIndex.ts';
+import type {ASTNodeKey} from './ASTNodeKey.ts';
 import {ASTNodeType} from './ASTNodeType.ts';
 
 
@@ -27,26 +32,17 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
+		public  readonly kind:     ValidTypeAccessOperator,
 		private readonly base:     ASTNodeType,
-		private readonly accessor: ASTNodeIndexType | ASTNodeKey,
+		public  readonly accessor: ASTNodeIndex | ASTNodeKey,
 	) {
-		super(start_node, {}, [base, accessor]);
+		super(start_node, {kind}, [base, accessor]);
 	}
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		let base_type: TYPE.Type = this.base.eval();
-		if (base_type instanceof TYPE.Combinable) {
-			base_type = base_type.combineTuplesOrRecords();
-		}
-		if (this.accessor instanceof ASTNodeIndexType) {
-			const accessor_type = this.accessor.val.eval() as TYPE.Unit<VALUE.Integer>;
-			assert_instanceof(base_type, TYPE.Tuple);
-			return base_type.get(accessor_type.value, Operator.DOT, this.accessor);
-		} else {
-			assert_instanceof(this.accessor, ASTNodeKey);
-			assert_instanceof(base_type, TYPE.Record);
-			return base_type.get(this.accessor.id, Operator.DOT, this.accessor);
-		}
+		const entry: EntryType = get_entry_info(this.base.eval(), this);
+		validate_access_kind(this.kind, entry.optional, this);
+		return update_accessed_type(entry.type, this.kind);
 	}
 }

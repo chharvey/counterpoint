@@ -1,10 +1,10 @@
+SemanticIndex[index: RealNumber]
+	::= ();
+
 SemanticKey[id: RealNumber]
 	::= ();
 
 
-
-SemanticIndexType
-	::= SemanticTypeConstant;
 
 SemanticItemType[optional: Boolean]
 	::= SemanticType;
@@ -13,9 +13,6 @@ SemanticPropertyType[optional: Boolean]
 	::= SemanticKey SemanticType;
 
 
-
-SemanticIndex
-	::= SemanticConstant;
 
 SemanticProperty
 	::= SemanticKey SemanticExpression;
@@ -59,8 +56,8 @@ SemanticTypeMap    ::= SemanticType SemanticType;
 SemanticTypeList[count: RealNumber | None]
 	::= SemanticType; // Note: a SemanticTypeList with a `count` represents a Tuple Type; otherwise it represents a List Type.
 
-SemanticTypeAccess
-	::= SemanticType (SemanticIndexType | SemanticKey);
+SemanticTypeAccess[kind: NORMAL | MAYBE]
+	::= SemanticType (SemanticIndex | SemanticKey);
 
 SemanticTypeCall
 	::= SemanticType SemanticType+;
@@ -77,14 +74,14 @@ SemanticExpression =:=
 	| SemanticVariable
 	| SemanticTemplate
 	| SemanticCollectionLiteral
-	| SemanticCall
 	| SemanticAccess
+	| SemanticCall
 	| SemanticOperation
 ;
 
 
 
-SemanticConstant[value: Null | Boolean | Number | String]
+SemanticConstant[value: Null | Boolean | Symbol | Number | String]
 	::= ();
 
 SemanticVariable[id: RealNumber]
@@ -108,7 +105,7 @@ SemanticRecord ::= SemanticProperty+;
 SemanticSet    ::= SemanticExpression*;
 SemanticMap    ::= SemanticCase+;
 
-SemanticAccess[kind: NORMAL | OPTIONAL | CLAIM]
+SemanticAccess[kind: NORMAL | MAYBE | RESULT]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
 SemanticCall
@@ -146,7 +143,7 @@ SemanticDeclarationType
 	::= SemanticTypeAlias? SemanticType;
 
 SemanticDeclarationVariable[unfixed: Boolean]
-	::= SemanticVariable? SemanticType SemanticExpression;
+	::= SemanticVariable? SemanticType SemanticExpression?;
 
 
 

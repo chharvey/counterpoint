@@ -33,6 +33,8 @@ Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
 	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 	:= (SemanticConstant[value=String(TokenWorth(STRING))]);
+Decorate(PrimitiveLiteral ::= "@" Word) -> SemanticConstant
+	:= (SemanticConstant[value=Symbol(Decorate(Word).id)]);
 
 
 
@@ -122,11 +124,9 @@ Decorate(TypeUnit ::= TypeMapLiteral) -> SemanticTypeMap
 
 
 
-Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndexType
-	:= (SemanticIndexType
-		(SemanticTypeConstant[value=ToType(Integer(TokenWorth(INTEGER)))])
-	);
-Decorate(PropertyAccessType ::= "." Word) -> SemanticKey
+Decorate(PropertyAccessType ::= ("." | "?.") INTEGER) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
+Decorate(PropertyAccessType ::= ("." | "?.") Word) -> SemanticKey
 	:= Decorate(Word);
 
 Decorate(GenericCall ::= "." GenericArguments) -> Sequence<SemanticType>
@@ -137,7 +137,7 @@ Decorate(GenericCall ::= "." GenericArguments) -> Sequence<SemanticType>
 Decorate(TypeCompound ::= TypeUnit) -> SemanticType
 	:= Decorate(TypeUnit);
 Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess
-	:= (SemanticTypeAccess
+	:= (SemanticTypeAccess[kind=AccessKind(PropertyAccessType)]
 		Decorate(TypeCompound)
 		Decorate(PropertyAccessType)
 	);
@@ -322,18 +322,14 @@ Decorate(ExpressionUnit ::= MapLiteral) -> SemanticMap
 
 
 Decorate(PropertyAccess ::= ("." | "?." | "!.") INTEGER) -> SemanticIndex
-	:= (SemanticIndex
-		(SemanticConstant[value=Integer(TokenWorth(INTEGER))])
-	);
+	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
 Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey
 	:= Decorate(Word);
 Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression
 	:= Decorate(Expression);
 
 Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex
-	:= (SemanticIndex
-		(SemanticConstant[value=Integer(TokenWorth(INTEGER))])
-	);
+	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
 Decorate(PropertyAssign ::= "." Word) -> SemanticKey
 	:= Decorate(Word);
 Decorate(PropertyAssign ::= "." "[" Expression "]") -> SemanticExpression
@@ -589,11 +585,25 @@ Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -
 		Decorate(Type)
 		Decorate(Expression)
 	);
+Decorate(DeclarationVariable ::= "let" "var" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=true]
+		Decorate(Type)
+		Decorate(Expression)
+	);
 Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression)
+	);
+Decorate(DeclarationVariable ::= "let" "var" "_" "?:" Type ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=true]
+		Decorate(Type)
+	);
+Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER "?:" Type ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=true]
+		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		Decorate(Type)
 	);
 
 
@@ -648,6 +658,22 @@ ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode__List ","? ParseNode
 
 
 
-AccessKind(PropertyAccess ::= "."  (INTEGER | Word | "[" Expression "]")) -> NORMAL   := NORMAL;
-AccessKind(PropertyAccess ::= "?." (INTEGER | Word | "[" Expression "]")) -> OPTIONAL := OPTIONAL;
-AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> CLAIM    := CLAIM;
+AccessKind(PropertyAccess ::= "."  (INTEGER | Word | "[" Expression "]")) -> NORMAL := NORMAL;
+AccessKind(PropertyAccess ::= "?." (INTEGER | Word | "[" Expression "]")) -> MAYBE  := MAYBE;
+AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> RESULT := RESULT;
+
+
+
+KeywordType(KEYWORD_TYPE :::= "never")   -> Type := Never;
+KeywordType(KEYWORD_TYPE :::= "bool")    -> Type := Boolean;
+KeywordType(KEYWORD_TYPE :::= "sym")     -> Type := Symbol;
+KeywordType(KEYWORD_TYPE :::= "int")     -> Type := Integer;
+KeywordType(KEYWORD_TYPE :::= "float")   -> Type := Float;
+KeywordType(KEYWORD_TYPE :::= "str")     -> Type := String;
+KeywordType(KEYWORD_TYPE :::= "unknown") -> Type := Unknown;
+
+
+
+KeywordValue(KEYWORD_VALUE :::= "null")  -> Object := null;
+KeywordValue(KEYWORD_VALUE :::= "false") -> Object := false;
+KeywordValue(KEYWORD_VALUE :::= "true")  -> Object := true;

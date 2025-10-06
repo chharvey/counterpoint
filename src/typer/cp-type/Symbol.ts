@@ -5,21 +5,21 @@ import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
 
 
 /**
- * Class for constructing the `str` type.
+ * Class for constructing the `sym` type.
  * @final
  */
-class TypeString extends UnenumeratedPrimitiveType {
+class TypeSymbol extends UnenumeratedPrimitiveType {
 	public constructor() {
-		super(false, new Set([VALUE.STR_EMPTY]));
+		super(false, new Set([VALUE.SYM_NEVER]));
 	}
 
 	public override toString(): string {
-		return 'str';
+		return 'sym';
 	}
 
-	@instanceOf(() => VALUE.String)
+	@instanceOf(() => VALUE.Symbol)
 	public override includes(_: VALUE.Value): boolean {
 		return true;
 	}
 }
-export {TypeString as String};
+export {TypeSymbol as Symbol};

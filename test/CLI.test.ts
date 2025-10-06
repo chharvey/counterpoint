@@ -14,7 +14,7 @@ describe('CLI', () => {
 					npx cpc
 				`.trim().split(' '));
 				assert.deepStrictEqual([cli.argv.h, cli.argv.help], [false, false]);
-				assert.deepStrictEqual(cli.command, Command.HELP);
+				return assert.strictEqual(cli.command, Command.HELP);
 			});
 		});
 		context('--help', () => {

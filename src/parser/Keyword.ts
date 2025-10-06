@@ -3,6 +3,7 @@ export enum Keyword {
 	NEVER   = 'never',
 	VOID    = 'void',
 	BOOL    = 'bool',
+	SYM     = 'sym',
 	INT     = 'int',
 	FLOAT   = 'float',
 	STR     = 'str',

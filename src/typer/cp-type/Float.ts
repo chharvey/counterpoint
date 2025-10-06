@@ -1,6 +1,6 @@
 import {instanceOf} from '../utils-private.ts';
 import * as VALUE from '../cp-value/index.ts';
-import {ValueType} from './ValueType.ts';
+import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
 
 
 
@@ -8,7 +8,7 @@ import {ValueType} from './ValueType.ts';
  * Class for constructing the `float` type.
  * @final
  */
-export class Float extends ValueType {
+export class Float extends UnenumeratedPrimitiveType {
 	public constructor() {
 		super(false, new Set([VALUE.FLOAT_0, VALUE.FLOAT_N0]));
 	}

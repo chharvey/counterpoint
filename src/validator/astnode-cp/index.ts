@@ -1,10 +1,9 @@
 export * from './ASTNodeCP.ts';
 
+export * from './ASTNodeIndex.ts';
 export * from './ASTNodeKey.ts';
-export * from './ASTNodeIndexType.ts';
 export * from './ASTNodeItemType.ts';
 export * from './ASTNodePropertyType.ts';
-export * from './ASTNodeIndex.ts';
 export * from './ASTNodeProperty.ts';
 export * from './ASTNodeCase.ts';
 export * from './ASTNodeType.ts';

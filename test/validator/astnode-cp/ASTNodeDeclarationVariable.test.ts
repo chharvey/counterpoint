@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
+	assert_instanceof,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaVar,
@@ -9,7 +10,6 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotAssignable,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assertAssignable,
 	assertEqualBins,
@@ -18,6 +18,7 @@ import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
 } from '../../helpers.ts';
+import {extract_lines} from '../../utils.ts';
 
 
 
@@ -25,15 +26,41 @@ describe('ASTNodeDeclarationVariable', () => {
 	describe('#varCheck', () => {
 		it('adds a SymbolSchema to the symbol table with a preset `type` value of `unknown` and a preset null `value` value.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let x: int = 42;
+				let     a:  int = 42;
+				let var b:  int = 42;
+				let var c?: int;
 			`);
 			assert.ok(!goal.validator.hasSymbol(0x100n));
+			assert.ok(!goal.validator.hasSymbol(0x101n));
+			assert.ok(!goal.validator.hasSymbol(0x102n));
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(0x100n));
-			const info: SymbolSchema | null = goal.validator.getSymbolInfo(0x100n);
-			assert_instanceof(info, SymbolSchemaVar);
-			assert.strictEqual(info.type, TYPE.UNKNOWN);
-			assert.strictEqual(info.value, null);
+			assert.ok(goal.validator.hasSymbol(0x101n));
+			assert.ok(goal.validator.hasSymbol(0x102n));
+			const info_a: SymbolSchema | null = goal.validator.getSymbolInfo(0x100n);
+			const info_b: SymbolSchema | null = goal.validator.getSymbolInfo(0x101n);
+			const info_c: SymbolSchema | null = goal.validator.getSymbolInfo(0x102n);
+			assert_instanceof(info_a, SymbolSchemaVar);
+			assert_instanceof(info_b, SymbolSchemaVar);
+			assert_instanceof(info_c, SymbolSchemaVar);
+			assert.partialDeepStrictEqual(info_a, {
+				unfixed:       false,
+				uninitialized: false,
+				type:          TYPE.UNKNOWN,
+				value:         null,
+			});
+			assert.partialDeepStrictEqual(info_b, {
+				unfixed:       true,
+				uninitialized: false,
+				type:          TYPE.UNKNOWN,
+				value:         null,
+			});
+			assert.partialDeepStrictEqual(info_c, {
+				unfixed:       true,
+				uninitialized: true,
+				type:          TYPE.UNKNOWN,
+				value:         null,
+			});
 		});
 
 		it('for blank identifiers, does not add to symbol table.', () => {
@@ -87,6 +114,20 @@ describe('ASTNodeDeclarationVariable', () => {
 			return var_.typeCheck();
 		});
 
+		it('passes typechecking when uninitialized.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let var the_answer?: int | float;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
+				unfixed:       true,
+				uninitialized: true,
+				type:          TYPE.INT.union(TYPE.FLOAT),
+				value:         null,
+			});
+		});
+
 		it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  null =  21  *  2;
@@ -136,12 +177,27 @@ describe('ASTNodeDeclarationVariable', () => {
 				['mutmut',      null],
 			);
 		});
-		it('immutable sets/maps should not be covariant due to bracket access.', () => {
-			typeCheckGoal([
-				'let s: Set.<int | str>       = Set.<int>([42, 43]);',
-				'let m: Map.<int | str, bool> = Map.<int, bool>([[42, false], [43, true]]);',
-				// otherwise one would access `s.["hello"]` or `m.["hello"]`
-			], TypeErrorNotAssignable);
+		it('immutable lists/dicts/sets/maps should be covariant.', () => {
+			typeCheckGoal(extract_lines`
+				let l: List.<int | str> = List.<int>([42, 43]);
+				let d: Dict.<int | str> = Dict.<int>([a= 42, b= 43]);
+				let s: Set.<int | str>  = Set.<int>([42, 43]);
+
+				let mk: Map.<int | str, bool>       = Map.<int, bool>([[42, false], [43, true]]);
+				let mv: Map.<int,       bool | str> = Map.<int, bool>([[42, false], [43, true]]);
+				let m:  Map.<int | str, bool | str> = Map.<int, bool>([[42, false], [43, true]]);
+			`);
+		});
+		it('mutable lists/dicts/sets/maps should not be covariant.', () => {
+			typeCheckGoal(extract_lines`
+				let l: mut List.<int | str> = List.<int>([42, 43]);
+				let d: mut Dict.<int | str> = Dict.<int>([a= 42, b= 43]);
+				let s: mut Set.<int | str>  = Set.<int>([42, 43]);
+
+				let mk: mut Map.<int | str, bool>       = Map.<int, bool>([[42, false], [43, true]]);
+				let mv: mut Map.<int,       bool | str> = Map.<int, bool>([[42, false], [43, true]]);
+				let m:  mut Map.<int | str, bool | str> = Map.<int, bool>([[42, false], [43, true]]);
+			`, TypeErrorNotAssignable);
 		});
 		it('assigning collection literals.', () => {
 			typeCheckGoal(`
@@ -365,6 +421,9 @@ describe('ASTNodeDeclarationVariable', () => {
 				let var c: int = 42;     % unfixed, foldable: \`(local.set)\`
 				let d:     int = c + 10; % fixed, unfoldable: \`(local.set)\`
 				let _:     int = c + 10; % blank, unfoldable: \`(drop)\`
+
+				let var e?: bool; % assignee, uninitialized: \`(local.set)\`
+				let var _?: bool; % blank, uninitialized:    \`(nop)\`
 			`);
 			goal.varCheck();
 			goal.typeCheck();
@@ -372,6 +431,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
 				{id: 0x102n, type: binaryen.v128},
 				{id: 0x103n, type: binaryen.v128},
+				{id: 0x104n, type: binaryen.v128},
 			]);
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build()),
@@ -380,9 +440,12 @@ describe('ASTNodeDeclarationVariable', () => {
 					goal.builder.module.nop(),
 					goal.builder.module.nop(),
 
-					goal.builder.module.local.set(0, (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.local.set(1, (goal.children[4] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.drop(        (goal.children[5] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.local.set(0, (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.local.set(1, (goal.children[4] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.drop(        (goal.children[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+
+					goal.builder.module.local.set(2, VALUE.NULL.build(goal.builder)),
+					goal.builder.module.nop(),
 				],
 			);
 		});
@@ -393,6 +456,9 @@ describe('ASTNodeDeclarationVariable', () => {
 				let _:     bool  = true; % blank, foldable:   \`(drop)\`      instead of \`(nop)\`
 				let var b: float = 4.2;  % unfixed, foldable: \`(local.set)\` (same behavior)
 				let _:     bool  = !b;   % blank, unfoldable: \`(drop)\`      (same behavior)
+
+				let var c?: bool; % assignee, uninitialized: \`(local.set)\` (same behavior)
+				let var _?: bool; % blank, uninitialized:    \`(nop)\`       (same behavior)
 			`, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();
@@ -400,14 +466,18 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
 				{id: 0x100n, type: binaryen.v128},
 				{id: 0x101n, type: binaryen.v128},
+				{id: 0x102n, type: binaryen.v128},
 			]);
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build()),
 				[
-					goal.builder.module.local.set(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.drop(        (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.local.set(1, (goal.children[2] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.drop(        (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.local.set(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.drop(        (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.local.set(1, (goal.children[2] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.drop(        (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+
+					goal.builder.module.local.set(2, VALUE.NULL.build(goal.builder)),
+					goal.builder.module.nop(),
 				],
 			);
 		});

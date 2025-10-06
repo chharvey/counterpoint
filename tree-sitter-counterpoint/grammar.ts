@@ -280,8 +280,8 @@ module.exports = grammar({
 		/* # LEXICON */
 		keyword_type: _$ => token(choice(
 			'never',
-			'void',
 			'bool',
+			'sym',
 			'int',
 			'float',
 			'str',
@@ -346,6 +346,7 @@ module.exports = grammar({
 			'type',
 			'let',
 			'_',
+			'void',
 			// modifier
 			'var',
 			$.keyword_type,
@@ -365,6 +366,7 @@ module.exports = grammar({
 			$.string__comment,
 			$.string__separator,
 			$.string__comment__separator,
+			seq('@', $.word),
 		),
 
 
@@ -398,8 +400,8 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		property_access_type: $ => seq('.', choice($.integer, $.word)),
-		generic_call:         $ => seq('.', $.generic_arguments),
+		property_access_type: $ => seq(choice('.', '?.'), choice($.integer, $.word)),
+		generic_call:         $ => seq('.',               $.generic_arguments),
 
 		_type_compound: $ => choice(
 			$._type_unit,
@@ -511,8 +513,12 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		declaration_type:     $ => seq('type', choice('_',                      $.identifier ), '=', $._type,                     ';'),
-		declaration_variable: $ => seq('let',  choice('_', seq(optional('var'), $.identifier)), ':', $._type, '=', $._expression, ';'),
+		declaration_type: $ => seq('type', choice('_', $.identifier ), '=', $._type, ';'),
+
+		declaration_variable: $ => choice(
+			seq('let', optional('var'), choice('_', $.identifier), ':',  $._type, '=', $._expression, ';'),
+			seq('let',          'var',  choice('_', $.identifier), '?:', $._type,                     ';'),
+		),
 
 		_declaration: $ => choice(
 			$.declaration_type,

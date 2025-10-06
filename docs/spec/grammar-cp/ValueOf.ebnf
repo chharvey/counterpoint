@@ -1,4 +1,4 @@
-Or<Null, Boolean, Number, String> ValueOf(SemanticConstant const) :=
+Or<Null, Boolean, Symbol, Number, String> ValueOf(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 ;
 
@@ -10,14 +10,14 @@ Object! ValueOf(SemanticVariable var) :=
 	3. *If* `symbol.unfixed` is `false`:
 		1. *Assert:* `symbol.value` is not *none*.
 		2. *Return:* `symbol.value`.
-	2. *Throw:* `none`.
+	2. *Throw:* *none*.
 ;
 
 
 
 String! ValueOf(SemanticTemplate tpl) :=
 	1. *Let* `values` be a mapping for each `node` in `tpl.children` to *Unwrap:* `ValueOf(node)`.
-	2. *Let* `strings` be a mapping for each `value` in `values` to `ToString(value)`.
+	2. *Let* `strings` be a mapping for each `value` in `values` to `String(value)`.
 	3. *Return:* the string-concatenation of each item in `strings`, preserving order.
 ;
 
@@ -61,61 +61,67 @@ Map! ValueOf(SemanticMap map) :=
 
 
 
-Object! ValueOf(SemanticAccess access) :=
+Object! ValueOf(SemanticAccess[kind: RESULT] access) :=
+	1. *Throw:* a new TypeError "Operator not yet supported.".
+;
+
+Object! ValueOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
 	4. *Let* `base_value` be *Unwrap:* `ValueOf(base)`.
-	5. *If* `access.kind` is `OPTIONAL` *and* *UnwrapAffirm:* `Identical(base_value, null)`:
-		1. *Return:* `base_value`.
-	6. *If* `accessor` is a SemanticIndex:
-		1. *Assert:* `accessor.children.count` is 1.
-		2. *Let* `accessor_value` be *Unwrap:* `ValueOf(accessor.children.0)`.
-		3. *Assert:* `accessor_value` is an instance of `Integer`.
-		4. *If* `base_value` is an instance of `Tuple`:
-			1. *Assert:* `accessor_value` is an index in `base_value`.
-			2. *Return:* the item accessed at index `accessor_value` in `base_value`.
-		5. *Else:*
-			1. *Assert:* `base_value` is an instance of `List`.
-			2. *If* `accessor_value` is an index in `base_value`:
-				1. *Return:* the item accessed at index `accessor_value` in `base_value`.
-			3. *If* `access.kind` is `OPTIONAL`:
+	5. *If* `accessor` is a SemanticIndex:
+		1. *If* `base_value` is an instance of `Tuple`:
+			1. *If* `accessor.index` is an index in `base_value`:
+				1. *Return:* the item accessed at index `accessor.index` in `base_value`.
+			2. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
-	7. *Else If* `accessor` is a SemanticKey:
-		1. *Let* `id` be `accessor.id`.
-		2. *If* `base_value` is an instance of `Record`:
-			1. *Assert:* `id` is a key in `base_value`.
-			2. *Return:* the value accessed at key `id` in `base_value`.
-		3. *Else:*
-			1. *Assert:* `base_value` is an instance of `Dict`.
-			2. *If* `id` is a key in `base_value`:
-				1. *Return:* the value accessed at key `id` in `base_value`.
-			3. *If* `access.kind` is `OPTIONAL`:
+			3. *Else:*
+				1. *Throw:* a new VoidError.
+		2. *Else:*
+			1. *Assert:* `access.kind` is `MAYBE`.
+			2. *Return:* `null`.
+	6. *Else If* `accessor` is a SemanticKey:
+		1. *If* `base_value` is an instance of `Record`:
+			1. *If* `accessor.id` is a key in `base_value`:
+				1. *Return:* the value accessed at key `accessor.id` in `base_value`.
+			2. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
-	8. *Else:*
+			3. *Else:*
+				1. *Throw:* a new VoidError.
+		2. *Else:*
+			1. *Assert:* `access.kind` is `MAYBE`.
+			2. *Return:* `null`.
+	7. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_value` be *Unwrap:* `ValueOf(accessor)`.
-		3. *If* `base_value` is an instance of `Tuple`:
-			1. *Assert:* `accessor_value` is an instance of `Integer` *and* `accessor_value` is an index in `base_value`.
-			2. *Return:* the item accessed at index `accessor_value` in `base_value`.
-		4. *Else If* `base_value` is an instance of `List`:
+		3. *If* `base_value` is an instance of `List`:
 			1. *If* `accessor_value` is an index in `base_value`:
 				1. *Return:* the item accessed at index `accessor_value` in `base_value`.
-			2. *If* `access.kind` is `OPTIONAL`:
+			2. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
+			3. *Else:*
+				1. *Throw:* a new VoidError.
+		4. *Else If* `base_value` is an instance of `Dict`:
+			1. *If* `accessor_value` is a key in `base_value`:
+				1. *Return:* the item accessed at key `accessor_value` in `base_value`.
+			2. *Else If* `access.kind` is `MAYBE`:
+				1. *Return:* `null`.
+			3. *Else:*
+				1. *Throw:* a new VoidError.
 		5. *Else If* `base_value` is an instance of `Set`:
 			1. *If* `accessor_value` is in `base_value`:
 				1. *Return:* `true`.
-			2. *Else*:
+			2. *Else:*
 				1. *Return:* `false`.
-		6. *Else:*
-			1. *Assert*: `base_value` is an instance of `Map`.
-			2. Find an antecedent `k` in `base_value` such that *UnwrapAffirm:* `Identical(k, accessor_value)`.
-			3. *If* `k` is set:
+		6. *Else If* `base_value` is an instance of `Map`:
+			1. Find an antecedent `k` in `base_value` such that *UnwrapAffirm:* `Identical(k, accessor_value)`.
+			2. *If* `k` is set:
 				1. *Return:* the consequent accessed at antecedent `k` in `base_value`.
-			4. *If*: `access.kind` is `OPTIONAL`:
-				1. *Return:* `null`.
-	9. *Throw:* a new VoidError.
+			3. *Return:* `null`.
+		1. *Else:*
+			1. *Assert:* `access.kind` is `MAYBE`.
+			2. *Return:* `null`.
 ;
 
 
@@ -204,24 +210,27 @@ Number! ValueOf(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
-	4. *Assert*: `v0` is an instance of `Number` *and* `v1` is an instance of `Number`.
+	4. *Assert:* `v0` is an instance of `Number` *and* `v1` is an instance of `Number`.
 	5. *If* `v0` is an instance of `Integer` *and* `v1` is an instance of `Integer`:
-		1. *Return:* `Integer(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, v0, v1))`.
-	6. *Return:* `Float(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, Float(v0), Float(v1)))`.
+		1. *Let* `number` be *UnwrapAffirm:* `PerformBinaryArithmetic(expr.operator, v0, v1)`.
+		2. *Return:* `Integer(number)`.
+	6. *Else:*
+		1. *Let* `number` be *UnwrapAffirm:* `PerformBinaryArithmetic(expr.operator, Float(v0), Float(v1))`.
+		2. *Return:* `Float(number)`.
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
-	4. *Assert*: `v0` is an instance of `Number` *and* `v1` is an instance of `Number`.
+	4. *Assert:* `v0` is an instance of `Number` *and* `v1` is an instance of `Number`.
 	5. *If* `v0` is an instance of `Integer` *and* `v1` is an instance of `Integer`:
 		1. *Return:* `PerformBinaryCompare(expr.operator, v0, v1)`.
 	6. *Return:* `PerformBinaryCompare(expr.operator, Float(v0), Float(v1))`.
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: IS] expr) :=
-	1. *Throw:* new TypeError "Operator not yet supported.".
+	1. *Throw:* a new TypeError "Operator not yet supported.".
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: ID] expr) :=
