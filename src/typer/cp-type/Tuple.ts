@@ -51,23 +51,23 @@ class TypeTuple extends ValueType {
 
 	/**
 	 * Construct a new TypeTuple object.
-	 * @param invariants this type’s item types
+	 * @param typeargs this type’s item types
 	 */
-	public constructor(public readonly invariants: readonly EntryType[] = []) {
+	public constructor(public readonly typeargs: readonly EntryType[] = []) {
 		super(false, new Set([new VALUE.Tuple()]));
 	}
 
 	public override get hasMutable(): boolean {
-		return super.hasMutable || this.invariants.some((t) => t.type.hasMutable);
+		return super.hasMutable || this.typeargs.some((t) => t.type.hasMutable);
 	}
 
 	/** The minimum possible number of items in this tuple type. */
 	public get minCount(): bigint {
-		return BigInt(this.invariants.filter((it) => !it.optional).length);
+		return BigInt(this.typeargs.filter((it) => !it.optional).length);
 	}
 
 	public override toString(): string {
-		return `[${ this.invariants.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
+		return `[${ this.typeargs.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
 	@instanceOf(() => VALUE.Tuple)
@@ -82,13 +82,12 @@ class TypeTuple extends ValueType {
 	public override isSubtypeOf(t: Type): boolean {
 		return (
 			this.minCount >= (t as TypeTuple).minCount &&
-			(t as TypeTuple).invariants.every((thattype, i) => {
-				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
-				const thistype: EntryType | undefined = this.invariants[i];
+			(t as TypeTuple).typeargs.every((thattype, i) => {
+				const thistype: EntryType | undefined = this.typeargs.at(i);
 				if (!thattype.optional) {
 					/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
 						We cannot do so with record types since properties are not ordered. */
-					assert.strictEqual(thistype?.optional, false, `${ thistype.type } should exist and not be optional.`);
+					assert.strictEqual(thistype?.optional, false, `${ thistype!.type } should exist and not be optional.`);
 				}
 				return thistype?.type.isSubtypeOf(thattype.type) ?? true; // Covariance for tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 			})
@@ -96,17 +95,17 @@ class TypeTuple extends ValueType {
 	}
 
 	public get(index: bigint, accessor: AST.ASTNodeIndex): EntryType {
-		const n: number = this.invariants.length;
+		const n: number = this.typeargs.length;
 		const i: number = Number(index);
 		return (
-			(-n <= i && i < 0) ? this.invariants[i + n] :
-			(0  <= i && i < n) ? this.invariants[i] :
+			(-n <= i && i < 0) ? this.typeargs[i + n] :
+			(0  <= i && i < n) ? this.typeargs[i] :
 			assert.fail(new TypeErrorNoEntry('index', this, accessor))
 		);
 	}
 
 	public itemTypes(): Type {
-		return Union.all(this.invariants.map((t) => t.type));
+		return Union.all(this.typeargs.map((t) => t.type));
 	}
 
 	#getBuiltIndices(index: number): number | readonly number[] {
@@ -116,7 +115,7 @@ class TypeTuple extends ValueType {
 				const indices: Array<number | readonly number[]> = [];
 				entries.forEach((entry) => {
 					if (entry.type instanceof TypeTuple) {
-						indices.push(walk(entry.type.invariants).flat()); // only need to flatten once, due to recursion
+						indices.push(walk(entry.type.typeargs).flat()); // only need to flatten once, due to recursion
 					} else {
 						indices.push(counter);
 						counter += 1;
@@ -124,7 +123,7 @@ class TypeTuple extends ValueType {
 				});
 				return indices;
 			}
-			this.#builtIndices = walk(this.invariants);
+			this.#builtIndices = walk(this.typeargs);
 		}
 		return this.#builtIndices[index];
 	}
@@ -161,7 +160,7 @@ class TypeTuple extends ValueType {
 
 	public test_getBuiltIndices(expected: readonly (number | readonly number[])[], message?: string | Error): void {
 		return assert.deepStrictEqual(
-			this.invariants.map((_, i) => this.#getBuiltIndices(i)),
+			this.typeargs.map((_, i) => this.#getBuiltIndices(i)),
 			expected,
 			message,
 		);

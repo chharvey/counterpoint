@@ -337,45 +337,45 @@ Compound types are derived from other types.
 
 #### Tuple Types
 A **Tuple** type describes instances of [`Tuple`](./intrinsics.md#tuple) and is parameterized by
-a [Sequence](#sequence) of [EntryTypeSchema](#entrytypeschema) items, called invariants.
+a [Sequence](#sequence) of [EntryTypeSchema](#entrytypeschema) items, called *type arguments*.
 The objects that any given Tuple type describes are `Tuple` objects whose
-items’ types match up with the invariants in the Sequence in order.
+items’ types match up with the type arguments in the Sequence in order.
 Tuples have a static size, are ordered, and are 0-origin indexable by Integers.
 
 #### Record Types
 A **Record** type describes instances of [`Record`](./intrinsics.md#record) and is parameterized by
-a [Schema](#schema) with [EntryTypeSchema](#entrytypeschema) values, called invariants.
+a [Schema](#schema) with [EntryTypeSchema](#entrytypeschema) values, called *type arguments*.
 The objects that any given Record type describes are `Record` objects whose
-properties’ types match up with the invariants in the Schema by name.
+properties’ types match up with the type arguments in the Schema by name.
 Records have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
 #### List Types
 A **List** type describes instances of [`List`](./intrinsics.md#list) and is parameterized by a single type,
-called an invariant, representing items.
+called a *type argument*, representing items.
 The objects that any given List type describes are `List` objects whose
-items are assignable to the invariant of the List type.
+items are assignable to the type argument of the List type.
 Lists have a dynamic size, are ordered, and are 0-origin indexable by Integers.
 
 #### Dict Types
 A **Dict** type describes instances of [`Dict`](./intrinsics.md#dict) and is parameterized by a single type,
-called an invariant, representing values.
+called a *type argument*, representing values.
 The objects that any given Dict type describes are `Dict` objects whose
-values are assignable to the invariant of the Dict type.
+values are assignable to the type argument of the Dict type.
 Dicts have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
 #### Set Types
 A **Set** type describes instances of [`Set`](./intrinsics.md#set) and is parameterized by a single type,
-called an invariant, representing elements.
+called a *type argument*, representing elements.
 The objects that any given Set type describes are `Set` objects whose
-elements are assignable to the invariant of the Set type.
+elements are assignable to the type argument of the Set type.
 Sets have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by their elements.
 The value corresponding to a set index is a [Boolean](#boolean) value indicating whether the set contains that element.
 
 #### Map Types
 A **Map** type describes instances of [`Map`](./intrinsics.md#map) and is parameterized by a pair of two types,
-called invariants, the first of which represents antecedents and the second of which represents consequents.
+called *type arguments*, the first of which represents antecedents and the second of which represents consequents.
 The objects that any given Map type describes are `Map` objects whose
-antcedents and consequents are respectively assignable to the invariants of the Map type.
+antcedents and consequents are respectively assignable to the type arguments of the Map type.
 Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by their antecedents.
 
 <sup>&lowast;</sup>Rather, developers should not depend on any implementation of order.

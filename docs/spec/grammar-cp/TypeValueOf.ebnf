@@ -94,7 +94,7 @@ Type! TypeValueOf(SemanticTypeAccess access) :=
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
 	4. *Let* `base_type` be *Unwrap:* `TypeValueOf(base)`.
-	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access)`.
+	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access, false)`.
 	6. *Perform:* *Unwrap:* `ValidateAccessKind(access.kind, entry.optional)`.
 	7. *Return:* `UpdateAccessedType(entry.type, access.kind)`.
 ;

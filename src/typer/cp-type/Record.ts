@@ -51,23 +51,23 @@ class TypeRecord extends ValueType {
 
 	/**
 	 * Construct a new TypeRecord object.
-	 * @param invariants a map of this type’s property ids along with their associated types
+	 * @param typeargs a map of this type’s property ids along with their associated types
 	 */
-	public constructor(public readonly invariants: ReadonlyMap<bigint, EntryType> = new Map()) {
+	public constructor(public readonly typeargs: ReadonlyMap<bigint, EntryType> = new Map()) {
 		super(false, new Set([new VALUE.Record()]));
 	}
 
 	public override get hasMutable(): boolean {
-		return super.hasMutable || [...this.invariants.values()].some((t) => t.type.hasMutable);
+		return super.hasMutable || [...this.typeargs.values()].some((t) => t.type.hasMutable);
 	}
 
 	/** The minimum possible number of properties in this record type. */
 	public get minCount(): bigint {
-		return BigInt([...this.invariants.values()].filter((val) => !val.optional).length);
+		return BigInt([...this.typeargs.values()].filter((val) => !val.optional).length);
 	}
 
 	public override toString(): string {
-		return `[${ [...this.invariants].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
+		return `[${ [...this.typeargs].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
 	@instanceOf(() => VALUE.Record)
@@ -82,8 +82,8 @@ class TypeRecord extends ValueType {
 	public override isSubtypeOf(t: Type): boolean {
 		return (
 			this.minCount >= (t as TypeRecord).minCount &&
-			[...(t as TypeRecord).invariants].every(([id, thattype]) => {
-				const thistype: EntryType | undefined = this.invariants.get(id);
+			[...(t as TypeRecord).typeargs].every(([id, thattype]) => {
+				const thistype: EntryType | undefined = this.typeargs.get(id);
 				if (!thattype.optional) {
 					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.
 						We can however make the assertion in tuple types because of item ordering. */
@@ -97,13 +97,13 @@ class TypeRecord extends ValueType {
 	}
 
 	public get(key: bigint, accessor: AST.ASTNodeKey): EntryType {
-		return this.invariants.has(key)
-			? this.invariants.get(key)!
+		return this.typeargs.has(key)
+			? this.typeargs.get(key)!
 			: assert.fail(new TypeErrorNoEntry('key', this, accessor));
 	}
 
 	public valueTypes(): Type {
-		return Union.all([...this.invariants.values()].map((t) => t.type));
+		return Union.all([...this.typeargs.values()].map((t) => t.type));
 	}
 
 	#getBuiltIndices(key: bigint): number | readonly number[] {
@@ -113,7 +113,7 @@ class TypeRecord extends ValueType {
 				const indices = new Map<bigint, number | readonly number[]>();
 				entries.forEach((entry, k) => {
 					if (entry.type instanceof TypeRecord) {
-						indices.set(k, [...walk(entry.type.invariants)].map(([_, val]) => val).flat()); // only need to flatten once, due to recursion
+						indices.set(k, [...walk(entry.type.typeargs)].map(([_, val]) => val).flat()); // only need to flatten once, due to recursion
 						// throw new Error('Nested record access not yet supported.');
 					} else {
 						indices.set(k, counter);
@@ -122,7 +122,7 @@ class TypeRecord extends ValueType {
 				});
 				return indices;
 			}
-			this.#builtIndices = walk(this.invariants);
+			this.#builtIndices = walk(this.typeargs);
 		}
 		return this.#builtIndices.get(key)!;
 	}
@@ -158,7 +158,7 @@ class TypeRecord extends ValueType {
 
 	public test_getBuiltIndices(expected: readonly (number | readonly number[])[], message?: string | Error): void {
 		return assert.deepStrictEqual(
-			[...this.invariants.keys()].map((key) => this.#getBuiltIndices(key)),
+			[...this.typeargs.keys()].map((key) => this.#getBuiltIndices(key)),
 			expected,
 			message,
 		);

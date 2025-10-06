@@ -136,13 +136,13 @@ describe('ASTNodeCall', () => {
 			);
 		});
 		it('bypasses invariance for generic arguments.', () => {
-			extract_lines(`
+			extract_lines`
 				List.<mut int{}>([   {42}])
 				Dict.<mut int{}>([a= {42}])
 				Set .<mut int{}>([   {42}])
 				Map.<float, mut int{}>([[4.2, {42}]])
 				Map.<mut int{}, float>([[{42}, 4.2]])
-			`).map((src) => AST.ASTNodeCall.fromSource(src).type());
+			`.map((src) => AST.ASTNodeCall.fromSource(src).type());
 		});
 		it('Map has a default type parameter.', () => {
 			assertEqualTypes(
@@ -151,24 +151,24 @@ describe('ASTNodeCall', () => {
 			);
 		});
 		it('throws if base is not an ASTNodeVariable.', () => {
-			xjs.Array.forEachAggregated(extract_lines(`
+			xjs.Array.forEachAggregated(extract_lines`
 				null.()
 				(42 || 43).<bool>()
-			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable, src));
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable, src));
 		});
 		it('throws if base is not one of the allowed strings.', () => {
-			xjs.Array.forEachAggregated(extract_lines(`
+			xjs.Array.forEachAggregated(extract_lines`
 				SET.<str>()
 				Mapping.<bool>()
-			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), SyntaxError, src));
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), SyntaxError, src));
 		});
 		it('throws when providing incorrect number of arguments.', () => {
-			xjs.Array.forEachAggregated(extract_lines(`
+			xjs.Array.forEachAggregated(extract_lines`
 				List.<int>([], [])
 				Dict.<int>([], [])
 				Set.<int>([], [])
 				Map.<int>([], [])
-			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount, src));
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount, src));
 		});
 		it('throws when providing incorrect type of arguments.', () => {
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>([
@@ -189,13 +189,13 @@ describe('ASTNodeCall', () => {
 					return true;
 				},
 			));
-			return xjs.Array.forEachAggregated(extract_lines(`
+			return xjs.Array.forEachAggregated(extract_lines`
 				List.<int>([4.2])
 				Dict.<int>(42)
 				Dict.<int>([4.2])
 				Set.<int>([42, "42"])
 				Map.<int>([[42, "42"]])
-			`), (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable, src));
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable, src));
 		});
 	});
 

@@ -18,6 +18,7 @@ import {
 	CONFIG_FOLDING_OFF,
 	setupScript,
 } from '../../helpers.ts';
+import {extract_lines} from '../../utils.ts';
 
 
 
@@ -163,12 +164,27 @@ describe('ASTNodeDeclarationVariable', () => {
 				['mutmut',      null],
 			);
 		});
-		it('immutable sets/maps should not be covariant due to bracket access.', () => {
-			typeCheckGoal([
-				'let s: Set.<int | str>       = Set.<int>([42, 43]);',
-				'let m: Map.<int | str, bool> = Map.<int, bool>([[42, false], [43, true]]);',
-				// otherwise one would access `s.["hello"]` or `m.["hello"]`
-			], TypeErrorNotAssignable);
+		it('immutable lists/dicts/sets/maps should be covariant.', () => {
+			typeCheckGoal(extract_lines`
+				let l: List.<int | str> = List.<int>([42, 43]);
+				let d: Dict.<int | str> = Dict.<int>([a= 42, b= 43]);
+				let s: Set.<int | str>  = Set.<int>([42, 43]);
+
+				let mk: Map.<int | str, bool>       = Map.<int, bool>([[42, false], [43, true]]);
+				let mv: Map.<int,       bool | str> = Map.<int, bool>([[42, false], [43, true]]);
+				let m:  Map.<int | str, bool | str> = Map.<int, bool>([[42, false], [43, true]]);
+			`);
+		});
+		it('mutable lists/dicts/sets/maps should not be covariant.', () => {
+			typeCheckGoal(extract_lines`
+				let l: mut List.<int | str> = List.<int>([42, 43]);
+				let d: mut Dict.<int | str> = Dict.<int>([a= 42, b= 43]);
+				let s: mut Set.<int | str>  = Set.<int>([42, 43]);
+
+				let mk: mut Map.<int | str, bool>       = Map.<int, bool>([[42, false], [43, true]]);
+				let mv: mut Map.<int,       bool | str> = Map.<int, bool>([[42, false], [43, true]]);
+				let m:  mut Map.<int | str, bool | str> = Map.<int, bool>([[42, false], [43, true]]);
+			`, TypeErrorNotAssignable);
 		});
 		it('assigning collection literals.', () => {
 			typeCheckGoal(`{

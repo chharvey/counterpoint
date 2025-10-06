@@ -32,8 +32,8 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		start_node: SyntaxNodeType<'declaration_variable'>,
 		public  readonly unfixed:  boolean,
 		private readonly assignee: ASTNodeVariable | null,
-		public readonly typenode: ASTNodeType,
-		public readonly assigned: ASTNodeExpression | null,
+		public  readonly typenode: ASTNodeType,
+		public  readonly assigned: ASTNodeExpression | null,
 	) {
 		super(
 			start_node,
@@ -47,6 +47,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 
 	public override varCheck(): void {
+		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`. It’s called only during reassignment.
 		if (!this.unfixed) {
 			assert.ok(this.assigned, `Symbol \`${ this.source }\` should be initialized with a value.`);
 		}

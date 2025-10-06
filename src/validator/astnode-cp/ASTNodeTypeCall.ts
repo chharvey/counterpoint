@@ -66,7 +66,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 			case ValidFunctionName.MAP: {
 				this.countArgs([1n, 3n]);
 				const anttype: TYPE.Type = this.args[0].eval();
-				const contype: TYPE.Type = this.args[1]?.eval() ?? anttype; // eslint-disable-line @typescript-eslint/no-unnecessary-condition --- `this.args[1]` could be undefined
+				const contype: TYPE.Type = this.args.at(1)?.eval() ?? anttype;
 				return new TYPE.Map(anttype, contype);
 			}
 			default: {

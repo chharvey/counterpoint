@@ -49,11 +49,10 @@ describe('BinVect', () => {
 			);
 		}
 
-		it('with `null`/`false`/`true`/\'tuple\' argument.', () => {
-			test_vect<null>   (null,    (_, exp) => MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0001)));
-			test_vect<boolean>(false,   (_, exp) => MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0002)));
-			test_vect<boolean>(true,    (_, exp) => MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0003)));
-			test_vect<'tuple'>('tuple', (_, exp) => MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0062)));
+		it('with `null` / `false` / `true` argument.', () => {
+			test_vect<null>   (null,  (_, exp) => MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0001)));
+			test_vect<boolean>(false, (_, exp) => MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0002)));
+			test_vect<boolean>(true,  (_, exp) => MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0003)));
 		});
 
 		it('with `binaryen.ExpressionRef` argument representing an `int`.', () => {

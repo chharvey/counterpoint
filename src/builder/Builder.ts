@@ -164,7 +164,7 @@ export class Builder {
 					mod.if(
 						local_vects[0].isFloat,
 						BinVect.asBool(mod, mod.f64.eq(local_vects[0].floatValue, mod.f64.const(0.0))), // also takes care of -0.0
-						BinVect.asBool(mod, local_vects[0].isTuple),
+						BinVect.asBool(mod, mod.i32.and(local_vects[0].isAddr, mod.i64.eqz(local_vects[0].addrValue))),
 					),
 				),
 			),
