@@ -1,6 +1,7 @@
 _KEYWORD_OTHER =:=
 	// operator
 		| "mut"
+		| "as"
 		| "is"
 		| "isnt"
 		| "if"

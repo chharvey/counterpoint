@@ -273,6 +273,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					a: V.0,
 					b: W.<float>,
 				];
+				type V = [let: str, bool: str, true: str, foo: str];
 			`,
 			sourceTypes(
 				s(
@@ -304,6 +305,13 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							),
 						),
 					),
+				),
+				s(
+					'type_record_literal',
+					s('entry_type__named', s('word'),                     s('keyword_type')),
+					s('entry_type__named', s('word', s('keyword_type')),  s('keyword_type')),
+					s('entry_type__named', s('word', s('keyword_value')), s('keyword_type')),
+					s('entry_type__named', s('word', s('identifier')),    s('keyword_type')),
 				),
 			),
 		],
@@ -347,6 +355,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				type T = RecordType?.prop;
 				type T = RecordType?._;
 				type T = Set.<T>;
+				type T = SomeType.let;
+				type T = SomeType.bool;
+				type T = SomeType.true;
+				type T = SomeType.foo;
 			`,
 			sourceTypes(
 				s(
@@ -386,6 +398,26 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						'generic_call',
 						s('generic_arguments', s('identifier')),
 					),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('word')),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('word', s('keyword_type'))),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('word', s('keyword_value'))),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('word', s('identifier'))),
 				),
 			),
 		],
@@ -539,7 +571,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		RecordLiteral: [
 			xjs.String.dedent`
-				[a= 1, b= [x= 2], _= [y= [k= 3]]];
+				[a= 1, b= [x= 2], _= [y= [k= 3]], let= 4, bool= 5, true= 6];
 			`,
 			sourceExpressions(s(
 				'record_literal',
@@ -578,6 +610,21 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							),
 						),
 					),
+				),
+				s(
+					'property',
+					s('word'),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'property',
+					s('word', s('keyword_type')),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'property',
+					s('word', s('keyword_value')),
+					s('primitive_literal', s('integer')),
 				),
 			)),
 		],
@@ -648,6 +695,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				List.();
 				Dict.([]);
 				Set.<T>();
+				record.let;
+				record.bool;
+				record.true;
 			`,
 			sourceExpressions(
 				s(
@@ -727,6 +777,21 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						),
 						s('function_arguments'),
 					),
+				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_access', s('word')),
+				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_access', s('word', s('keyword_type'))),
+				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_access', s('word', s('keyword_value'))),
 				),
 			),
 		],
@@ -1146,6 +1211,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				record.prop  = c;
 				record._     = c;
 				list.[index] = d;
+				record.let   = 1;
+				record.bool  = 2;
+				record.true  = 3;
 			`,
 			s(
 				'source_file',
@@ -1192,6 +1260,33 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						s('property_assign', s('identifier')),
 					),
 					s('identifier'),
+				),
+				s(
+					'statement_assignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word')),
+					),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'statement_assignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word', s('keyword_type'))),
+					),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'statement_assignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word', s('keyword_value'))),
+					),
+					s('primitive_literal', s('integer')),
 				),
 			),
 		],

@@ -338,6 +338,7 @@ module.exports = grammar({
 		word: $ => choice(
 			// operator
 			'mut',
+			'as',
 			'is',
 			'isnt',
 			'if',
@@ -574,6 +575,7 @@ module.exports = grammar({
 		global: $ => [
 			// operator
 			'mut',
+			'as',
 			'is',
 			'isnt',
 			'if',
