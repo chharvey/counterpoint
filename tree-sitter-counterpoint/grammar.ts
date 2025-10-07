@@ -13,6 +13,7 @@ function argsArr(nth: number, params: readonly string[]): readonly string[] {
 function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
 	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
 }
@@ -545,16 +546,19 @@ module.exports = grammar({
 	],
 
 	/**
+	 * Uses the GLR algorithm to resolve *intended conflicts* in the grammar.
+	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/2-the-grammar-dsl.html
+	 */
+	conflicts: _$ => [
+		// example:
+		// familyNameAll('integer', ['radix', 'separator']).map((rulename) => _$[rulename]),
+	],
+
+	/**
 	 * Tries to match `$.identifier` first before matching any keyword literals in the grammar.
 	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/3-writing-the-grammar.html#keyword-extraction
 	 */
 	word: $ => $.identifier,
-
-	conflicts: $ => [
-		familyNameAll('integer', ['radix', 'separator']),
-		familyNameAll('float',   ['separator']),
-		familyNameAll('string',  ['comment', 'separator']),
-	].map((familyname) => familyname.map((rulename) => $[rulename])),
 
 	supertypes: $ => [
 		$._type_unit,
