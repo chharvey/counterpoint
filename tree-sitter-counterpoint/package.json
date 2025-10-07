@@ -28,7 +28,7 @@
   "scripts": {
     "dist": "tsc",
     "postdist": "tree-sitter generate",
-    "pretest": "tsx ./test/build.mts",
+    "pretest": "tsc --project ./test/tsconfig.json && tsx ./test/build.mts",
     "test": "tree-sitter test",
     "build": "npm run dist && npm run test && npm run prebuildify",
     "install": "node-gyp-build",
