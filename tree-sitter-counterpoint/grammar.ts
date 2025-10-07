@@ -546,7 +546,7 @@ module.exports = grammar({
 
 	/**
 	 * Tries to match `$.identifier` first before matching any keyword literals in the grammar.
-	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers#keyword-extraction
+	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/3-writing-the-grammar.html#keyword-extraction
 	 */
 	word: $ => $.identifier,
 
