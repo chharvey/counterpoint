@@ -568,5 +568,26 @@ module.exports = grammar({
 		$._declaration,
 		$._statement,
 	],
+
+	reserved: {
+		global: $ => [
+			// operator
+			'mut',
+			'is',
+			'isnt',
+			'if',
+			'then',
+			'else',
+			// storage
+			'type',
+			'let',
+			'_',
+			'void',
+			// modifier
+			'var',
+			$.keyword_type,
+			$.keyword_value,
+		],
+	},
 });
 /* eslint-enable @stylistic/arrow-parens */
