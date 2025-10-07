@@ -264,6 +264,7 @@ export class CLI {
 			this.computeConfig(cwd),
 		]));
 		return Promise.all([
+			// eslint-disable-next-line @typescript-eslint/await-thenable --- we want to return the string and promise together while it’s resolving
 			xjs.String.dedent`
 				Compiling………
 				Source file: ${ inputfilepath }

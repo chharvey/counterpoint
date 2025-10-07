@@ -24,22 +24,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 
 
-function buildTest(title: string, source: string, expected: string): string {
-	return xjs.String.dedent`
-		${ '='.repeat(title.length) }
-		${ title }
-		${ '='.repeat(title.length) }
-
-		${ source }
-
-		---
-
-		${ expected }
-	`;
-}
-
-
-
 (async (): Promise<void> => {
 	const FILEPATH = path.join(import.meta.dirname, './corpus/index.txt');
 	await fs.promises.mkdir(path.dirname(FILEPATH), {recursive: true});
@@ -1214,10 +1198,17 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		// Statement
 		// consists of #{Declaration,Statement{Expression,Assignment}}
-	})
-		.map(([title, [source, expected]]) => buildTest(title, source, expected))
-		.filter((test) => !!test)
-		.join(''));
+	}).map(([title, [source, expected]]) => xjs.String.dedent`
+		${ '='.repeat(title.length) }
+		${ title }
+		${ '='.repeat(title.length) }
+
+		${ source }
+
+		---
+
+		${ expected }
+	`).filter((test) => !!test).join(''));
 })().catch((err) => {
 	console.error(err);
 	process.exit(1);

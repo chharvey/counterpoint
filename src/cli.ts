@@ -8,29 +8,32 @@ import {
 
 (async (): Promise<void> => {
 	const cli = new CLI(process.argv);
-	async function handleCompileOrDev(): Promise<void> {
-		const result: [string, undefined] = await cli.compileOrDev(process.cwd());
-		console.log(result[0]);
-		console.log('Success!');
-	}
-	await new Map<Command, () => void | Promise<void>>([
-		[Command.HELP, () => {
+	switch (cli.command) {
+		case Command.HELP: {
 			console.log(CLI.HELPTEXT);
 			if (cli.argv.config) {
 				console.log(`\n${ CLI.CONFIGTEXT }`);
 			}
-		}],
-		[Command.VERSION, () => {
+			break;
+		}
+		case Command.VERSION: {
 			console.log(`counterpoint version ${ PACKAGE.version }`);
-		}],
-		[Command.COMPILE, handleCompileOrDev],
-		[Command.DEV,     handleCompileOrDev],
-		[Command.RUN,     async () => {
+			break;
+		}
+		case Command.COMPILE:
+		case Command.DEV: {
+			const result: [string, undefined] = await cli.compileOrDev(process.cwd());
+			console.log(result[0]);
+			console.log('Success!');
+			break;
+		}
+		case Command.RUN: {
 			const result: [string, ...unknown[]] = await cli.run(process.cwd());
 			console.log(result[0]);
 			console.log('Result:', result.slice(1));
-		}],
-	]).get(cli.command)!();
+			break;
+		}
+	}
 })().catch((err) => {
 	if (err instanceof AggregateError) {
 		err.errors.forEach((er) => console.error(er));
