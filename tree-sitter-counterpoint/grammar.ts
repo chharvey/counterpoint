@@ -279,21 +279,6 @@ module.exports = grammar({
 
 
 		/* # LEXICON */
-		keyword_type: _$ => token(choice(
-			'nothing',
-			'bool',
-			'sym',
-			'int',
-			'float',
-			'str',
-			'anything',
-		)),
-		keyword_value: _$ => token(choice(
-			'null',
-			'false',
-			'true',
-		)),
-
 		identifier: _$ => token(choice(
 			WORD_BASIC,
 			WORD_UNICODE,
@@ -335,6 +320,21 @@ module.exports = grammar({
 
 
 		/* # SYNTAX */
+		keyword_type: _$ => choice(
+			'nothing',
+			'bool',
+			'sym',
+			'int',
+			'float',
+			'str',
+			'anything',
+		),
+		keyword_value: _$ => choice(
+			'null',
+			'false',
+			'true',
+		),
+
 		word: $ => choice(
 			// operator
 			'mut',
@@ -351,13 +351,12 @@ module.exports = grammar({
 			'void',
 			// modifier
 			'var',
+			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
-			$.identifier,
 		),
 
 		primitive_literal: $ => choice(
-			$.keyword_value,
 			$.integer,
 			$.integer__radix,
 			$.integer__separator,
@@ -368,6 +367,7 @@ module.exports = grammar({
 			$.string__comment,
 			$.string__separator,
 			$.string__comment__separator,
+			$.keyword_value,
 			seq('@', $.word),
 		),
 
@@ -392,8 +392,8 @@ module.exports = grammar({
 		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM,       '>'),
 
 		_type_unit: $ => choice(
-			$.keyword_type,
 			$.identifier,
+			$.keyword_type,
 			$.primitive_literal,
 			$.type_grouped,
 			$.type_tuple_literal,
@@ -572,7 +572,7 @@ module.exports = grammar({
 	],
 
 	reserved: {
-		global: $ => [
+		global: _$ => [
 			// operator
 			'mut',
 			'as',
@@ -588,8 +588,18 @@ module.exports = grammar({
 			'void',
 			// modifier
 			'var',
-			$.keyword_type,
-			$.keyword_value,
+			// type keyword
+			'nothing',
+			'bool',
+			'sym',
+			'int',
+			'float',
+			'str',
+			'anything',
+			// value keyword
+			'null',
+			'false',
+			'true',
 		],
 	},
 });

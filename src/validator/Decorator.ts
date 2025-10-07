@@ -92,8 +92,8 @@ class Decorator {
 
 
 	/* eslint-disable @typescript-eslint/unified-signatures */
-	public decorateTS(syntaxnode: SyntaxNodeType<'keyword_type'>):                      AST.ASTNodeTypeConstant;
 	public decorateTS(syntaxnode: SyntaxNodeType<'identifier'>):                        AST.ASTNodeTypeAlias | AST.ASTNodeVariable;
+	public decorateTS(syntaxnode: SyntaxNodeType<'keyword_type'>):                      AST.ASTNodeTypeConstant;
 	public decorateTS(syntaxnode: SyntaxNodeType<'word'>):                              AST.ASTNodeKey;
 	public decorateTS(syntaxnode: SyntaxNodeType<'primitive_literal'>):                 AST.ASTNodeTypeConstant | AST.ASTNodeConstant;
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'entry_type',        ['optional']>): AST.ASTNodeItemType;
@@ -153,8 +153,6 @@ class Decorator {
 			)],
 
 			/* # TERMINALS */
-			['keyword_type', (node) => new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'keyword_type'>)],
-
 			['identifier', (node) => (
 				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/))                                                                     ? new AST.ASTNodeTypeAlias(node as SyntaxNodeType<'identifier'>) :
 				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|assignee|declaration_variable|statement_expression|statement_assignment)$/)) ? new AST.ASTNodeVariable (node as SyntaxNodeType<'identifier'>) :
@@ -162,6 +160,8 @@ class Decorator {
 			)],
 
 			/* # PRODUCTIONS */
+			['keyword_type', (node) => new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'keyword_type'>)],
+
 			['word', (node) => new AST.ASTNodeKey(node as SyntaxNodeType<'word'>)],
 
 			['primitive_literal', (node) => (

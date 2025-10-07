@@ -29,40 +29,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 	await fs.promises.mkdir(path.dirname(FILEPATH), {recursive: true});
 	return fs.promises.writeFile(FILEPATH, Object.entries({
 		/* # TERMINALS */
-		KEYWORD_TYPE: [
-			xjs.String.dedent`
-				type T = nothing;
-				type T = bool;
-				type T = sym;
-				type T = int;
-				type T = float;
-				type T = str;
-				type T = anything;
-			`,
-			sourceTypes(
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-			),
-		],
-
-		KEYWORD_VALUE: [
-			xjs.String.dedent`
-				null;
-				false;
-				true;
-			`,
-			sourceExpressions(
-				s('primitive_literal', s('keyword_value')),
-				s('primitive_literal', s('keyword_value')),
-				s('primitive_literal', s('keyword_value')),
-			),
-		],
-
 		IDENTIFIER: [
 			xjs.String.dedent`
 				my_variable;
@@ -156,6 +122,40 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		/* # PRODUCTIONS */
 		// Word
 		// tested in #{PrimitiveLiteral,EntryType,PropertyAccessType,Property,PropertyAccess,PropertyAssign}
+
+		KeywordType: [
+			xjs.String.dedent`
+				type T = nothing;
+				type T = bool;
+				type T = sym;
+				type T = int;
+				type T = float;
+				type T = str;
+				type T = anything;
+			`,
+			sourceTypes(
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+			),
+		],
+
+		KeywordValue: [
+			xjs.String.dedent`
+				null;
+				false;
+				true;
+			`,
+			sourceExpressions(
+				s('primitive_literal', s('keyword_value')),
+				s('primitive_literal', s('keyword_value')),
+				s('primitive_literal', s('keyword_value')),
+			),
+		],
 
 		PrimitiveLiteral: [
 			xjs.String.dedent`
@@ -338,7 +338,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		],
 
 		// TypeUnit
-		// consists of #{KEYWORD_TYPE,IDENTIFIER,PrimitiveLiteral,TypeGrouped,Type{Tuple,Record,Dict,Map}Literal}
+		// consists of #{IDENTIFIER,KeywordType,PrimitiveLiteral,TypeGrouped,Type{Tuple,Record,Dict,Map}Literal}
 
 		// PropertyAccessType
 		// tested in #TypeCompound

@@ -27,23 +27,19 @@ describe('Decorator', () => {
 				[mut= 42];
 				% (word "mut")
 			`]],
-			['Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey', [AST.ASTNodeKey, `
-				[bool= 42];
-				% (word (keyword_type))
-			`]],
-			['Decorate(Word ::= KEYWORD_VALUE) -> SemanticKey', [AST.ASTNodeKey, `
-				[true= 42];
-				% (word (keyword_value))
-			`]],
 			['Decorate(Word ::= IDENTIFIER) -> SemanticKey', [AST.ASTNodeKey, `
 				[foobar= 42];
 				% (word (identifier))
 			`]],
-
-			['Decorate(Type > PrimitiveLiteral ::= KEYWORD_VALUE) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
-				type T = false;
-				% (primitive_literal (keyword_value))
+			['Decorate(Word ::= KeywordType) -> SemanticKey', [AST.ASTNodeKey, `
+				[bool= 42];
+				% (word (keyword_type))
 			`]],
+			['Decorate(Word ::= KeywordValue) -> SemanticKey', [AST.ASTNodeKey, `
+				[true= 42];
+				% (word (keyword_value))
+			`]],
+
 			['Decorate(Type > PrimitiveLiteral ::= INTEGER) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
 				type T = 42;
 				% (primitive_literal (integer))
@@ -56,15 +52,15 @@ describe('Decorator', () => {
 				type T = "hello";
 				% (primitive_literal (string))
 			`]],
+			['Decorate(Type > PrimitiveLiteral ::= KeywordValue) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
+				type T = false;
+				% (primitive_literal (keyword_value))
+			`]],
 			['Decorate(Type > PrimitiveLiteral ::= "@" Word) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
 				type T = @hello;
 				% (primitive_literal (word (identifier)))
 			`]],
 
-			['Decorate(Expression > PrimitiveLiteral ::= KEYWORD_VALUE) -> SemanticConstant', [AST.ASTNodeConstant, `
-				false;
-				% (primitive_literal (keyword_value))
-			`]],
 			['Decorate(Expression > PrimitiveLiteral ::= INTEGER) -> SemanticConstant', [AST.ASTNodeConstant, `
 				42;
 				% (primitive_literal (integer))
@@ -76,6 +72,10 @@ describe('Decorator', () => {
 			['Decorate(Expression > PrimitiveLiteral ::= STRING) -> SemanticConstant', [AST.ASTNodeConstant, `
 				"hello";
 				% (primitive_literal (string))
+			`]],
+			['Decorate(Expression > PrimitiveLiteral ::= KeywordValue) -> SemanticConstant', [AST.ASTNodeConstant, `
+				false;
+				% (primitive_literal (keyword_value))
 			`]],
 			['Decorate(Expression > PrimitiveLiteral ::= "@" Word) -> SemanticConstant', [AST.ASTNodeConstant, `
 				@hello;
