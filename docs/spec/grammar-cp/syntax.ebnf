@@ -1,5 +1,3 @@
-// KEYWORD_TYPE    ::= [./lexicon.ebnf#KeywordType];
-// KEYWORD_VALUE   ::= [./lexicon.ebnf#KeywordValue];
 // IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
 // INTEGER         ::= [./lexicon.ebnf#Integer];
 // FLOAT           ::= [./lexicon.ebnf#Float];
@@ -11,9 +9,28 @@
 
 
 
+KeywordType ::=
+	| "nothing"
+	| "bool"
+	| "sym"
+	| "int"
+	| "float"
+	| "str"
+	| "anything"
+;
+
+KeywordValue ::=
+	| "null"
+	| "false"
+	| "true"
+;
+
+
+
 Word ::=
 	// operator
 		| "mut"
+		| "as"
 		| "is"
 		| "isnt"
 		| "if"
@@ -26,18 +43,18 @@ Word ::=
 		| "void"
 	// modifier
 		| "var"
-	| KEYWORD_TYPE
-	| KEYWORD_VALUE
 	| IDENTIFIER
+	| KeywordType
+	| KeywordValue
 ;
 
 
 
 PrimitiveLiteral ::=
-	| KEYWORD_VALUE
 	| INTEGER
 	| FLOAT
 	| STRING
+	| KeywordValue
 	| "@" Word
 ;
 
@@ -62,8 +79,8 @@ TypeMapLiteral    ::= "{" Type "->" Type       "}";
 GenericArguments  ::= "<"  ","? Type# ","?     ">";
 
 TypeUnit ::=
-	| KEYWORD_TYPE
 	| IDENTIFIER
+	| KeywordType
 	| PrimitiveLiteral
 	| TypeGrouped
 	| TypeTupleLiteral

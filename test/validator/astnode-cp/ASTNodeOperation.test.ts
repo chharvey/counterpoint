@@ -279,7 +279,7 @@ describe('ASTNodeOperation', () => {
 					]);
 				});
 				it('throws for non-numeric operands.', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
+					xjs.Array.forEachAggregated(extract_lines`
 						int   null;
 						int   @symb;
 						int   "string";
@@ -290,7 +290,7 @@ describe('ASTNodeOperation', () => {
 						float "string";
 						float ["string tuple"];
 						float [record= "string"];
-					`), (src) => assert.throws(() => AST.ASTNodeOperationUnary.fromSource(src).type(), TypeErrorInvalidOperation));
+					`, (src) => assert.throws(() => AST.ASTNodeOperationUnary.fromSource(src).type(), TypeErrorInvalidOperation));
 				});
 			});
 		});
