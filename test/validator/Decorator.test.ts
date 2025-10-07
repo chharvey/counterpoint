@@ -8,6 +8,7 @@ import {
 import Counterpoint from 'tree-sitter-counterpoint';
 import {
 	type ConstructorType,
+	assert_instanceof,
 	TS_PARSER,
 	AST,
 	DECORATOR,
@@ -444,10 +445,7 @@ describe('Decorator', () => {
 			`]],
 		]).forEach(([klass, text], description) => (description.startsWith('only:') ? specify.only : description.startsWith('skip:') ? specify.skip : specify)(description, () => {
 			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
-			return assert.ok(
-				DECORATOR.decorateTS(parsenode) instanceof klass,
-				`\`${ parsenode.text }\` not an instance of ${ klass.name }.`,
-			);
+			return assert_instanceof(DECORATOR.decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
 		}));
 		describe('Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', () => {
 			it('type operator `!` is not yet supported.', () => {
