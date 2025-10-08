@@ -203,10 +203,20 @@ export class Builder {
 			new BinVect(mod, mod.call('exp', [local_vects[0].intValue, local_vects[1].intValue], binaryen.i64)).vect,
 			mod.unreachable(),
 		]);
-		this.#binOpFunction('vmul', [
+		this.#binOpFunction('_vmul', [
 			new BinVect(mod, mod.i64.mul(local_vects[0].intValue,   local_vects[1].intValue)).vect,
 			new BinVect(mod, mod.f64.mul(local_vects[0].floatValue, local_vects[1].floatValue)).vect,
 		]);
+		mod.addFunction('vmul', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
+			mod.if(
+				mod.i32.or(
+					mod.i32.and(local_vects[0].isInt,   mod.i64.eqz(local_vects[0].intValue)),
+					mod.i32.and(local_vects[0].isFloat, mod.f64.eq(local_vects[0].floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+				),
+				local_vects[0].vect,
+				mod.call('_vmul', [local_vects[0].vect, local_vects[1].vect], binaryen.v128),
+			),
+		], binaryen.v128));
 		this.#binOpFunction('vdiv', [
 			new BinVect(mod, mod.i64.div_s(local_vects[0].intValue,   local_vects[1].intValue)).vect,
 			new BinVect(mod, mod.f64.div  (local_vects[0].floatValue, local_vects[1].floatValue)).vect,
@@ -272,8 +282,8 @@ export class Builder {
 	public setupModule(): () => void {
 		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
 			/* eslint-disable @stylistic/operator-linebreak */
-			binaryen.Features.ReferenceTypes |
 			binaryen.Features.SIMD128 |
+			binaryen.Features.ReferenceTypes |
 			binaryen.Features.Multivalue
 			/* eslint-enable @stylistic/operator-linebreak */
 		));

@@ -139,7 +139,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
 			const {goal} = setupScript(`{
 				let immut:  int[3]         = [42, 420, 4200];
-				let mut:    mut int[]      = List.<int>([42, 420, 4200]);
+				let 'mut':  mut int[]      = List.<int>([42, 420, 4200]);
 				let mutmut: (mut int[])[3] = [List.<int>([42]), List.<int>([420]), List.<int>([4200])];
 			}`, null, {build: false});
 			const [immut, mut, mutmut] = [
@@ -157,7 +157,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			);
 			assert.deepStrictEqual(
 				[mut.source, mut.value],
-				['mut',      null],
+				['\'mut\'',  null],
 			);
 			return assert.deepStrictEqual(
 				[mutmut.source, mutmut.value],

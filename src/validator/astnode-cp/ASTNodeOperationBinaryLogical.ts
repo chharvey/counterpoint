@@ -61,15 +61,16 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 		const local: Local = this.builder.addLocal(arg0)[1];
 
-		const condition: binaryen.ExpressionRef = new BinVect(this.builder.module, this.builder.module.call(
+		const arg0_truthy: binaryen.ExpressionRef = new BinVect(this.builder.module, this.builder.module.call(
 			'vnot',
 			[local.tee()],
 			binaryen.v128,
 		)).isSpecial(false);
 		arg0 = local.get();
 
-		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
-		return this.builder.module.if(condition, if_true, if_false);
+		return this.operator === Operator.AND
+			? this.builder.module.if(arg0_truthy, arg1, arg0)
+			: this.builder.module.if(arg0_truthy, arg0, arg1);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {

@@ -34,65 +34,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 
 
-function buildTest(title: string, source: string, expected: string): string {
-	return xjs.String.dedent`
-		${ '='.repeat(title.length) }
-		${ title }
-		${ '='.repeat(title.length) }
-
-		${ source }
-
-		---
-
-		${ expected }
-	`;
-}
-
-
-
 (async (): Promise<void> => {
 	const FILEPATH = path.join(import.meta.dirname, './corpus/index.txt');
 	await fs.promises.mkdir(path.dirname(FILEPATH), {recursive: true});
 	return fs.promises.writeFile(FILEPATH, Object.entries({
 		/* # TERMINALS */
-		KEYWORD_TYPE: [
-			xjs.String.dedent`
-				{
-					type T = nothing;
-					type T = bool;
-					type T = sym;
-					type T = int;
-					type T = float;
-					type T = str;
-					type T = anything;
-				}
-			`,
-			sourceTypes(
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-			),
-		],
-
-		KEYWORD_VALUE: [
-			xjs.String.dedent`
-				{
-					null;
-					false;
-					true;
-				}
-			`,
-			sourceExpressions(
-				s('primitive_literal', s('keyword_value')),
-				s('primitive_literal', s('keyword_value')),
-				s('primitive_literal', s('keyword_value')),
-			),
-		],
-
 		IDENTIFIER: [
 			xjs.String.dedent`
 				{
@@ -194,6 +140,44 @@ function buildTest(title: string, source: string, expected: string): string {
 		/* # PRODUCTIONS */
 		// Word
 		// tested in #{PrimitiveLiteral,EntryType,PropertyAccessType,Property,PropertyAccess,PropertyAssign}
+
+		KeywordType: [
+			xjs.String.dedent`
+				{
+					type T = nothing;
+					type T = bool;
+					type T = sym;
+					type T = int;
+					type T = float;
+					type T = str;
+					type T = anything;
+				}
+			`,
+			sourceTypes(
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+			),
+		],
+
+		KeywordValue: [
+			xjs.String.dedent`
+				{
+					null;
+					false;
+					true;
+				}
+			`,
+			sourceExpressions(
+				s('primitive_literal', s('keyword_value')),
+				s('primitive_literal', s('keyword_value')),
+				s('primitive_literal', s('keyword_value')),
+			),
+		],
 
 		PrimitiveLiteral: [
 			xjs.String.dedent`
@@ -317,6 +301,7 @@ function buildTest(title: string, source: string, expected: string): string {
 						a: V.0,
 						b: W.<float>,
 					];
+					type V = [let: str, bool: str, true: str, foo: str];
 				}
 			`,
 			sourceTypes(
@@ -350,6 +335,13 @@ function buildTest(title: string, source: string, expected: string): string {
 						),
 					),
 				),
+				s(
+					'type_record_literal',
+					s('entry_type__named', s('word'),                     s('keyword_type')),
+					s('entry_type__named', s('word', s('keyword_type')),  s('keyword_type')),
+					s('entry_type__named', s('word', s('keyword_value')), s('keyword_type')),
+					s('entry_type__named', s('word', s('identifier')),    s('keyword_type')),
+				),
 			),
 		],
 
@@ -379,7 +371,7 @@ function buildTest(title: string, source: string, expected: string): string {
 		],
 
 		// TypeUnit
-		// consists of #{KEYWORD_TYPE,IDENTIFIER,PrimitiveLiteral,TypeGrouped,Type{Tuple,Record,Dict,Map}Literal}
+		// consists of #{IDENTIFIER,KeywordType,PrimitiveLiteral,TypeGrouped,Type{Tuple,Record,Dict,Map}Literal}
 
 		// PropertyAccessType
 		// tested in #TypeCompound
@@ -397,6 +389,10 @@ function buildTest(title: string, source: string, expected: string): string {
 					type T = RecordType?.prop;
 					type T = RecordType?._;
 					type T = Set.<T>;
+					type T = SomeType.let;
+					type T = SomeType.bool;
+					type T = SomeType.true;
+					type T = SomeType.foo;
 				}
 			`,
 			sourceTypes(
@@ -437,6 +433,26 @@ function buildTest(title: string, source: string, expected: string): string {
 						'generic_call',
 						s('generic_arguments', s('identifier')),
 					),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('word')),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('word', s('keyword_type'))),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('word', s('keyword_value'))),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_access_type', s('word', s('identifier'))),
 				),
 			),
 		],
@@ -605,7 +621,7 @@ function buildTest(title: string, source: string, expected: string): string {
 		RecordLiteral: [
 			xjs.String.dedent`
 				{
-					[a= 1, b= [x= 2], _= [y= [k= 3]]];
+					[a= 1, b= [x= 2], _= [y= [k= 3]], let= 4, bool= 5, true= 6];
 				}
 			`,
 			sourceExpressions(s(
@@ -645,6 +661,21 @@ function buildTest(title: string, source: string, expected: string): string {
 							),
 						),
 					),
+				),
+				s(
+					'property',
+					s('word'),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'property',
+					s('word', s('keyword_type')),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'property',
+					s('word', s('keyword_value')),
+					s('primitive_literal', s('integer')),
 				),
 			)),
 		],
@@ -720,6 +751,9 @@ function buildTest(title: string, source: string, expected: string): string {
 					List.();
 					Dict.([]);
 					Set.<T>();
+					record.let;
+					record.bool;
+					record.true;
 				}
 			`,
 			sourceExpressions(
@@ -800,6 +834,21 @@ function buildTest(title: string, source: string, expected: string): string {
 						),
 						s('function_arguments'),
 					),
+				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_access', s('word')),
+				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_access', s('word', s('keyword_type'))),
+				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_access', s('word', s('keyword_value'))),
 				),
 			),
 		],
@@ -1246,6 +1295,9 @@ function buildTest(title: string, source: string, expected: string): string {
 					record.prop  = c;
 					record._     = c;
 					list.[index] = d;
+					record.let   = 1;
+					record.bool  = 2;
+					record.true  = 3;
 				}
 			`,
 			sourceStatements(
@@ -1293,6 +1345,33 @@ function buildTest(title: string, source: string, expected: string): string {
 					),
 					s('identifier'),
 				),
+				s(
+					'statement_assignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word')),
+					),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'statement_assignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word', s('keyword_type'))),
+					),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'statement_assignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word', s('keyword_value'))),
+					),
+					s('primitive_literal', s('integer')),
+				),
 			),
 		],
 
@@ -1338,10 +1417,17 @@ function buildTest(title: string, source: string, expected: string): string {
 				),
 			),
 		],
-	})
-		.map(([title, [source, expected]]) => buildTest(title, source, expected))
-		.filter((test) => !!test)
-		.join(''));
+	}).map(([title, [source, expected]]) => xjs.String.dedent`
+		${ '='.repeat(title.length) }
+		${ title }
+		${ '='.repeat(title.length) }
+
+		${ source }
+
+		---
+
+		${ expected }
+	`).filter((test) => !!test).join(''));
 })().catch((err) => {
 	console.error(err);
 	process.exit(1);

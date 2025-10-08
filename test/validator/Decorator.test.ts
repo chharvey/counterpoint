@@ -8,6 +8,7 @@ import {
 import Counterpoint from 'tree-sitter-counterpoint';
 import {
 	type ConstructorType,
+	assert_instanceof,
 	TS_PARSER,
 	AST,
 	DECORATOR,
@@ -29,31 +30,25 @@ describe('Decorator', () => {
 				}
 				% (word "mut")
 			`]],
-			['Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey', [AST.ASTNodeKey, `
-				{
-					[bool= 42];
-				}
-				% (word (keyword_type))
-			`]],
-			['Decorate(Word ::= KEYWORD_VALUE) -> SemanticKey', [AST.ASTNodeKey, `
-				{
-					[true= 42];
-				}
-				% (word (keyword_value))
-			`]],
 			['Decorate(Word ::= IDENTIFIER) -> SemanticKey', [AST.ASTNodeKey, `
 				{
 					[foobar= 42];
 				}
 				% (word (identifier))
 			`]],
-
-			['Decorate(Type > PrimitiveLiteral ::= KEYWORD_VALUE) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
+			['Decorate(Word ::= KeywordType) -> SemanticKey', [AST.ASTNodeKey, `
 				{
-					type T = false;
+					[bool= 42];
 				}
-				% (primitive_literal (keyword_value))
+				% (word (keyword_type))
 			`]],
+			['Decorate(Word ::= KeywordValue) -> SemanticKey', [AST.ASTNodeKey, `
+				{
+					[true= 42];
+				}
+				% (word (keyword_value))
+			`]],
+
 			['Decorate(Type > PrimitiveLiteral ::= INTEGER) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
 				{
 					type T = 42;
@@ -72,6 +67,12 @@ describe('Decorator', () => {
 				}
 				% (primitive_literal (string))
 			`]],
+			['Decorate(Type > PrimitiveLiteral ::= KeywordValue) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
+				{
+					type T = false;
+				}
+				% (primitive_literal (keyword_value))
+			`]],
 			['Decorate(Type > PrimitiveLiteral ::= "@" Word) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
 				{
 					type T = @hello;
@@ -79,12 +80,6 @@ describe('Decorator', () => {
 				% (primitive_literal (word (identifier)))
 			`]],
 
-			['Decorate(Expression > PrimitiveLiteral ::= KEYWORD_VALUE) -> SemanticConstant', [AST.ASTNodeConstant, `
-				{
-					false;
-				}
-				% (primitive_literal (keyword_value))
-			`]],
 			['Decorate(Expression > PrimitiveLiteral ::= INTEGER) -> SemanticConstant', [AST.ASTNodeConstant, `
 				{
 					42;
@@ -102,6 +97,12 @@ describe('Decorator', () => {
 					"hello";
 				}
 				% (primitive_literal (string))
+			`]],
+			['Decorate(Expression > PrimitiveLiteral ::= KeywordValue) -> SemanticConstant', [AST.ASTNodeConstant, `
+				{
+					false;
+				}
+				% (primitive_literal (keyword_value))
 			`]],
 			['Decorate(Expression > PrimitiveLiteral ::= "@" Word) -> SemanticConstant', [AST.ASTNodeConstant, `
 				{
@@ -640,10 +641,7 @@ describe('Decorator', () => {
 			`]],
 		]).forEach(([klass, text], description) => (description.startsWith('only:') ? specify.only : description.startsWith('skip:') ? specify.skip : specify)(description, () => {
 			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
-			return assert.ok(
-				DECORATOR.decorateTS(parsenode) instanceof klass,
-				`\`${ parsenode.text }\` not an instance of ${ klass.name }.`,
-			);
+			return assert_instanceof(DECORATOR.decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
 		}));
 		describe('Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', () => {
 			it('type operator `!` is not yet supported.', () => {

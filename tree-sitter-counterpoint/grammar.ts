@@ -13,6 +13,7 @@ function argsArr(nth: number, params: readonly string[]): readonly string[] {
 function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
 	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
 }
@@ -278,21 +279,6 @@ module.exports = grammar({
 
 
 		/* # LEXICON */
-		keyword_type: _$ => token(choice(
-			'nothing',
-			'bool',
-			'sym',
-			'int',
-			'float',
-			'str',
-			'anything',
-		)),
-		keyword_value: _$ => token(choice(
-			'null',
-			'false',
-			'true',
-		)),
-
 		identifier: _$ => token(choice(
 			WORD_BASIC,
 			WORD_UNICODE,
@@ -334,9 +320,25 @@ module.exports = grammar({
 
 
 		/* # SYNTAX */
+		keyword_type: _$ => choice(
+			'nothing',
+			'bool',
+			'sym',
+			'int',
+			'float',
+			'str',
+			'anything',
+		),
+		keyword_value: _$ => choice(
+			'null',
+			'false',
+			'true',
+		),
+
 		word: $ => choice(
 			// operator
 			'mut',
+			'as',
 			'is',
 			'isnt',
 			'if',
@@ -349,13 +351,12 @@ module.exports = grammar({
 			'void',
 			// modifier
 			'var',
+			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
-			$.identifier,
 		),
 
 		primitive_literal: $ => choice(
-			$.keyword_value,
 			$.integer,
 			$.integer__radix,
 			$.integer__separator,
@@ -366,6 +367,7 @@ module.exports = grammar({
 			$.string__comment,
 			$.string__separator,
 			$.string__comment__separator,
+			$.keyword_value,
 			seq('@', $.word),
 		),
 
@@ -390,8 +392,8 @@ module.exports = grammar({
 		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM,       '>'),
 
 		_type_unit: $ => choice(
-			$.keyword_type,
 			$.identifier,
+			$.keyword_type,
 			$.primitive_literal,
 			$.type_grouped,
 			$.type_tuple_literal,
@@ -548,16 +550,19 @@ module.exports = grammar({
 	],
 
 	/**
+	 * Uses the GLR algorithm to resolve *intended conflicts* in the grammar.
+	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/2-the-grammar-dsl.html
+	 */
+	conflicts: _$ => [
+		// example:
+		// familyNameAll('integer', ['radix', 'separator']).map((rulename) => _$[rulename]),
+	],
+
+	/**
 	 * Tries to match `$.identifier` first before matching any keyword literals in the grammar.
-	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers#keyword-extraction
+	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/3-writing-the-grammar.html#keyword-extraction
 	 */
 	word: $ => $.identifier,
-
-	conflicts: $ => [
-		familyNameAll('integer', ['radix', 'separator']),
-		familyNameAll('float',   ['separator']),
-		familyNameAll('string',  ['comment', 'separator']),
-	].map((familyname) => familyname.map((rulename) => $[rulename])),
 
 	supertypes: $ => [
 		$._type_unit,
@@ -567,5 +572,37 @@ module.exports = grammar({
 		$._declaration,
 		$._statement,
 	],
+
+	reserved: {
+		global: _$ => [
+			// operator
+			'mut',
+			'as',
+			'is',
+			'isnt',
+			'if',
+			'then',
+			'else',
+			// storage
+			'type',
+			'let',
+			'_',
+			'void',
+			// modifier
+			'var',
+			// type keyword
+			'nothing',
+			'bool',
+			'sym',
+			'int',
+			'float',
+			'str',
+			'anything',
+			// value keyword
+			'null',
+			'false',
+			'true',
+		],
+	},
 });
 /* eslint-enable @stylistic/arrow-parens */
