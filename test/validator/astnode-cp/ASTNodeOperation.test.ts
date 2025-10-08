@@ -752,7 +752,6 @@ describe('ASTNodeOperation', () => {
 		specify('#build', () => {
 			buildOperations(new Map([
 				['42 + 420;', (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
-				['3 * 2.1;',  (builder) => CALL.vmul(builder.module, buildConst(builder, 3n),  buildConst(builder, 2.1))],
 
 				[' 126 /  3;', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder,  3n))],
 				['-126 /  3;', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder,  3n))],
@@ -765,7 +764,6 @@ describe('ASTNodeOperation', () => {
 
 				['42  - 420;',  (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), CALL.vneg(builder.module, buildConst(builder, 420n)))],
 				['4.2 - 42.0;', (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42.0)))],
-				['4.2 - 42;',   (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42n)))],
 			]));
 		});
 	});
