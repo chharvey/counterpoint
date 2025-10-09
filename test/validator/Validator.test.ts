@@ -1,14 +1,14 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
+	type CodeUnit,
 	type CPConfig,
 	CONFIG_DEFAULT,
 	KEYWORDS,
 	Validator,
-} from '../../src/index.js';
-import type {CodeUnit} from '../../src/lib/index.js';
-import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.js';
+} from '../../src/index.ts';
+import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.ts';
 
 
 
@@ -26,7 +26,7 @@ describe('Validator', () => {
 	describe('.cookTokenKeyword', () => {
 		it('assigns values 0x80n–0x100n to reserved keywords.', () => {
 			const cooked: bigint[] = KEYWORDS.map((k) => Validator.cookTokenKeyword(k));
-			const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
+			const expected: bigint[] = [...new Array<undefined>(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
 			assert.deepStrictEqual(cooked, expected);
 			cooked.forEach((value) => {
 				assert.ok(0x80n <= value, 'cooked value should be >= 0x80n.');
@@ -36,33 +36,37 @@ describe('Validator', () => {
 	});
 
 	describe('.cookTokenNumber', () => {
-		new Map<string, [string, number[]]>([
-			/* eslint-disable array-element-newline */
+		new Map<string, [string, readonly bigint[] | readonly number[]]>([
+			/* eslint-disable @stylistic/array-element-newline */
 			['implicit radix integers', [
 				`
 					370  037  +9037  -9037  +06  -06
 				`,
 				[
 					370, 37, 9037, -9037, 6, -6,
-				],
+				].map((n) => BigInt(n)),
 			]],
 			['explicit radix integers', [
 				`
 					\\b100  \\b001  +\\b1000  -\\b1000  +\\b01  -\\b01
 					\\q320  \\q032  +\\q1032  -\\q1032  +\\q03  -\\q03
+					\\s320  \\s032  +\\s1432  -\\s1532  +\\s03  -\\s03
 					\\o370  \\o037  +\\o1037  -\\o1037  +\\o06  -\\o06
 					\\d370  \\d037  +\\d9037  -\\d9037  +\\d06  -\\d06
 					\\xe70  \\x0e7  +\\x90e7  -\\x90e7  +\\x06  -\\x06
 					\\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
 				`,
+				/* eslint-disable @stylistic/indent */
 				[
 					    4,  1,       8,      -8, 1, -1,
 					   56, 14,      78,     -78, 3, -3,
+					  120, 20,     380,    -416, 3, -3,
 					  248, 31,     543,    -543, 6, -6,
 					  370, 37,    9037,   -9037, 6, -6,
 					 3696, 231,  37095,  -37095, 6, -6,
 					18396, 511, 420415, -420415, 6, -6,
-				],
+				].map((n) => BigInt(n)),
+				/* eslint-enable @stylistic/indent */
 			]],
 			['floats', [
 				`
@@ -82,31 +86,35 @@ describe('Validator', () => {
 				`,
 				[
 					12345, 12345, -12345, 1234567, 1234567, -1234567, 12345678, 12345678, -12345678,
-				],
+				].map((n) => BigInt(n)),
 			]],
 			['explicit radix integers with separators', [
 				`
 					\\b1_00  \\b0_01  +\\b1_000  -\\b1_000  +\\b0_1  -\\b0_1
 					\\q3_20  \\q0_32  +\\q1_032  -\\q1_032  +\\q0_3  -\\q0_3
+					\\s3_20  \\s0_32  +\\s1_432  -\\s1_532  +\\s0_3  -\\s0_3
 					\\o3_70  \\o0_37  +\\o1_037  -\\o1_037  +\\o0_6  -\\o0_6
 					\\d3_70  \\d0_37  +\\d9_037  -\\d9_037  +\\d0_6  -\\d0_6
 					\\xe_70  \\x0_e7  +\\x9_0e7  -\\x9_0e7  +\\x0_6  -\\x0_6
 					\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
 				`,
+				/* eslint-disable @stylistic/indent */
 				[
 					    4,  1,       8,      -8, 1, -1,
 					   56, 14,      78,     -78, 3, -3,
+					  120, 20,     380,    -416, 3, -3,
 					  248, 31,     543,    -543, 6, -6,
 					  370, 37,    9037,   -9037, 6, -6,
 					 3696, 231,  37095,  -37095, 6, -6,
 					18396, 511, 420415, -420415, 6, -6,
-				],
+				].map((n) => BigInt(n)),
+				/* eslint-enable @stylistic/indent */
 			]],
-			/* eslint-enable array-element-newline */
+			/* eslint-enable @stylistic/array-element-newline */
 		]).forEach(([source, values], description) => {
 			it(description, () => {
 				assert.deepStrictEqual(
-					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)[0]),
+					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)),
 					values,
 				);
 			});

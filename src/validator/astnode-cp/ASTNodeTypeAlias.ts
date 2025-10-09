@@ -1,29 +1,30 @@
+import * as assert from 'node:assert';
 import {
 	TYPE,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
+} from '../../core/index.ts';
 import {
 	SymbolKind,
-	type SymbolStructure,
-	SymbolStructureVar,
-	SymbolStructureType,
-} from '../index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+	type SymbolSchema,
+	SymbolSchemaVar,
+	SymbolSchemaType,
+} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	ValidIntrinsicName,
 	is_valid_intrinsic_name,
-} from './utils-private.js';
-import {ASTNodeType} from './ASTNodeType.js';
+} from './utils-private.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
 
 
 
@@ -52,8 +53,9 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureVar) {
+		if (this.validator.getSymbolInfo(this.id) instanceof SymbolSchemaVar) {
 			throw new ReferenceErrorKind(this, SymbolKind.VALUE, SymbolKind.TYPE);
+			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
 	}
 
@@ -64,12 +66,9 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 				[ValidIntrinsicName.OBJECT, TYPE.OBJ],
 			]).get(this.source)!;
 		}
-		if (this.validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-			if (symbol instanceof SymbolStructureType) {
-				return symbol.typevalue;
-			}
-		}
-		return TYPE.NEVER;
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolSchemaType);
+		return symbol.typevalue;
 	}
 }

@@ -1,5 +1,5 @@
-import type {TYPE} from '../typer/index.js';
-import {TypeError} from './TypeError.js';
+import type {TYPE} from '../typer/index.ts';
+import {TypeError} from './TypeError.ts';
 
 
 

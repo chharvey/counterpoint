@@ -1,16 +1,15 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
-import type {Builder} from '../../index.js';
-import type {NonemptyArray} from '../../lib/index.js';
+import type {NonemptyArray} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import {ASTNodeGoal} from './index.js';
-import type {Buildable} from './Buildable.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeGoal} from './index.ts';
+import type {Buildable} from './Buildable.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -36,21 +35,20 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	}
 
 	/** @implements Buildable */
-	public build(builder: Builder): binaryen.ExpressionRef | binaryen.Module {
-		if (!this.children.length) {
-			return builder.module.nop();
-		} else {
-			const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build(builder)); // must build before calling `.getLocals()`
-			const fn_name:    string                   = 'fn0';
-			builder.module.addFunction(
-				fn_name,
-				binaryen.none,
-				binaryen.none,
-				builder.getLocals().map((var_) => var_.type),
-				builder.module.block(null, [...statements]),
-			);
-			builder.module.addFunctionExport(fn_name, fn_name);
-			return builder.module;
-		}
+	public build(): binaryen.ExpressionRef {
+		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 child.');
+		const validate_module: () => void = this.builder.setupModule();
+		const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build()); // must build before calling `.getLocals()`
+		const fn_name:    string                   = 'fn0';
+		this.builder.module.addFunction(
+			fn_name,
+			binaryen.none,
+			binaryen.none,
+			this.builder.getLocals().map((var_) => var_.type),
+			this.builder.module.block(null, statements),
+		);
+		this.builder.module.addFunctionExport(fn_name, fn_name);
+		validate_module();
+		return this.builder.module.nop();
 	}
 }

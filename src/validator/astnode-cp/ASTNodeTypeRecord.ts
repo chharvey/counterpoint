@@ -1,23 +1,23 @@
 import * as xjs from 'extrajs';
 import {
-	type TypeEntry,
+	type EntryType,
 	TYPE,
 	AssignmentErrorDuplicateKey,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import type {ASTNodeKey} from './ASTNodeKey.js';
-import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
-import {ASTNodeType} from './ASTNodeType.js';
-import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ASTNodeKey} from './ASTNodeKey.ts';
+import type {ASTNodePropertyType} from './ASTNodePropertyType.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.ts';
 
 
 
@@ -47,7 +47,7 @@ export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		const entries: ReadonlyMap<bigint, TypeEntry> = new Map<bigint, TypeEntry>(this.children.map((c) => {
+		const entries: ReadonlyMap<bigint, EntryType> = new Map<bigint, EntryType>(this.children.map((c) => {
 			const valuetype: TYPE.Type = c.val.eval();
 			return [
 				c.key.id,
@@ -57,6 +57,6 @@ export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 				},
 			];
 		}));
-		return new TYPE.TypeRecord(entries);
+		return new TYPE.Record(entries);
 	}
 }

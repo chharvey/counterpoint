@@ -1,13 +1,12 @@
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.js';
-import {assert_instanceof} from '../../lib/index.js';
+import {assert_instanceof} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import type {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ASTNodeExpression} from './ASTNodeExpression.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -25,9 +24,9 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return (this.expr)
-			? builder.module.drop(this.expr.build(builder))
-			: builder.module.nop();
+	public override build(): binaryen.ExpressionRef {
+		return !this.expr || (this.validator.config.compilerOptions.constantFolding && this.expr.fold())
+			? this.builder.module.nop()
+			: this.builder.module.drop(this.expr.build());
 	}
 }

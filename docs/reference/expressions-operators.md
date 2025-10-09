@@ -45,19 +45,19 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… .[ … ]</code></td>
 		</tr>
 		<tr>
-			<td>Optional Access</td>
+			<td>Maybe Access</td>
 			<td><code>… ?. …</code></td>
 		</tr>
 		<tr>
-			<td>Computed Optional Access</td>
+			<td>Computed Maybe Access</td>
 			<td><code>… ?.[ … ]</code></td>
 		</tr>
 		<tr>
-			<td>Claim Access</td>
+			<td>Result Access</td>
 			<td><code>… !. …</code></td>
 		</tr>
 		<tr>
-			<td>Computed Claim Access</td>
+			<td>Computed Result Access</td>
 			<td><code>… !.[ … ]</code></td>
 		</tr>
 		<tr>
@@ -80,21 +80,42 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>- …</code></td>
 		</tr>
 		<tr>
-			<th>4</th>
-			<td>Type Claim</td>
-			<td>unary prefix</td>
-			<td>right-to-left</td>
-			<td><code>&lt; … &gt; …</code></td>
+			<th rowspan="2">4</th>
+			<td>Integer Conversion</td>
+			<td rowspan="2">unary prefix</td>
+			<td rowspan="2">right-to-left</td>
+			<td><code>int …</code></td>
 		</tr>
 		<tr>
-			<th>5</th>
+			<td>Float Conversion</td>
+			<td><code>float …</code></td>
+		</tr>
+		<tr>
+			<th rowspan="4">5</th>
+			<td rowspan="3">Type Cast</td>
+			<td rowspan="4">binary infix</td>
+			<td rowspan="4">left-to-right</td>
+			<td><code>… as …</code></td>
+		</tr>
+		<tr>
+			<td><code>… as? …</code></td>
+		</tr>
+		<tr>
+			<td><code>… as! …</code></td>
+		</tr>
+		<tr>
+			<td>Type Claim</td>
+			<td><code>… as &lt; … &gt;</code></td>
+		</tr>
+		<tr>
+			<th>6</th>
 			<td>Exponentiation</td>
 			<td>binary infix</td>
 			<td>right-to-left</td>
 			<td><code>… ^ …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">6</th>
+			<th rowspan="2">7</th>
 			<td>Multiplication</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -105,7 +126,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… / …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">7</th>
+			<th rowspan="2">8</th>
 			<td>Addition</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -116,7 +137,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… - …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="8">8</th>
+			<th rowspan="8">9</th>
 			<td>Less Than</td>
 			<td rowspan="8">binary infix</td>
 			<td rowspan="8">left-to-right</td>
@@ -151,7 +172,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… isnt …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="4">9</th>
+			<th rowspan="4">10</th>
 			<td>Identity</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
@@ -170,7 +191,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… != …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">10</th>
+			<th rowspan="2">11</th>
 			<td>Conjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -181,7 +202,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !& …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">11</th>
+			<th rowspan="2">12</th>
 			<td>Disjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -192,7 +213,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th>12</th>
+			<th>13</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
@@ -243,40 +264,46 @@ the property it accesses is called the **bound property** (or index, field, memb
 There are two flavors of the operator: literal access and computed access.
 
 Literal access requires a literal (integer or word) and can be used to access a literal bound property.
-Tuples/lists take integer literal properties and records/dicts take word (key) properties.
+Tuples take integer literal properties and records take word (key) properties.
 For example: `tuple.3` and `record.prop`.
 
 Computed access must be used when the bound property name is computed,
 such as an operation of expressions, e.g., `map.[expr]`.
-The expression in the brackets evaluates to an item index, element, or case antecedent
+The expression in the brackets evaluates to an index, key, element, or antecedent
 of the binding object and must be of the correct type.
 
 More information about property access when used on collections
 can be found in the [Types](./types) chapter.
 
-#### Optional Access
-The **optional access** syntax is almost the same as property access, except that
+#### Maybe Access
+The **maybe access** syntax is almost the same as property access, except that
 the operator produces the `null` value if and when there is no such bound property
 on the binding object at runtime. This operator is designed to work with
-optional entries on types, such as optional properties on a record type.
+optional entries on types, such as optional properties on a record type, as well as
+[the `Maybe` algeraic sum type] (link pending).
 
 Given a record `record` of type `[a: bool, b?: int]`,
-the expression `record.b` will produce that value if it exists,
-but will result in a runtime error if there’s no actual value at that location.
-Using the optional access operator though, `record?.b` will produce `record.b`
-if it exists, but otherwise will produce `null` and avoid the error.
+the expression `record.b` would result in a crash if there’s no actual value at that location,
+so the compiler raises an error when using that syntax.
+Using the maybe access operator though, `record?.b` will produce the value at `record.b`
+if it exists, but otherwise will produce `null` and avoid the crash.
 An equivalent syntax exists for dynamic access: `map?.[expr]`, etc.
+
+Conversely, maybe access syntax is not allowed for required properties: `record?.a` would raise a compiler error.
 
 Note that if `foo?.bar` produces `null`, it either means that `foo.bar` does exist and is equal to `null`,
 or that there’s no value for the `bar` property bound to `foo`,
-and the optional access operator is doing its job.
+and the maybe access operator is doing its job.
+Thus the recommended approach is to use
+[the `Maybe` discriminated union type] (link pending)
+for all entries in a collection that may contain `null`.
 
-If the *binding object is `null`*, then the optional access operator also produces `null`.
+If the *binding object is `null`*, then the maybe access operator also produces `null`.
 For example, `null.property` is a type error (and if the compiler were bypassed,
 it would cause a runtime error), but `null?.property` will simply produce `null`.
-This facet makes optional access safe to use when chained.
+This facet makes maybe access safe to use when chained.
 
-When the optional access operator is chained, it should be chained down the line, e.g., `x?.y?.z`.
+When the maybe access operator is chained, it should be chained down the line, e.g., `x?.y?.z`.
 This is equivalent to `(x?.y)?.z`, and if `x?.y` (or `x.y` for that matter) is `null`,
 then the whole expression also results in `null`.
 However, `x?.y.z` (which can be thought of as `(x?.y).z`) is not the same,
@@ -285,53 +312,33 @@ and will result in a runtime error if `x?.y` is `null`.
 **Type-Checking Note:**
 
 For static types (e.g., tuples and records),
-if the property is required, both regular and optional access operators do not modify the property’s declared type.
-If the property is optional,
-the regular access operator unions the property type with `void` and
-the optional access operator unions the property type with `null`.
+either the normal or maybe access operator is allowed, corresponding to the optionality of the entry being accessed.
+When the maybe access operator is used for an optional entry, the entry type is unioned with `null`.
 ```
-let record: [required: bool, optional?: int] = my_record;
+claim record: [required: bool, optional?: int];
 record.required;  %: bool
-record?.required; %: bool
-record.optional;  %: int | void
+record?.required; %> TypeErrorInvalidOperation
+record.optional;  %> TypeErrorInvalidOperation
 record?.optional; %: int | null
 ```
 For dynamic types (e.g., lists and dicts),
-the regular access operator treats all properties as required (does not modify the declared type), but
-the optional access operator treats all properties as optional (unions the property type with `null`).
+both normal and maybe access operators are allowed.
+The normal access operator treats all entries as required (does not modify the declared type), and
+the maybe access operator treats all entries as optional (unions the property type with `null`).
 ```
-let dict: [: float] = my_dict;
-dict.prop;  %: float
-dict?.prop; %: float | null
+claim dict: [: float];
+dict.[@prop];  %: float
+dict?.[@prop]; %: float | null
 ```
 
-#### Claim Access
-The **claim access** syntax is just like regular property access, except that
-it makes a **claim** (a compile-time type assertion) that the accessed property
-is not of type `void`. This is useful when accessing optional entries of compound types.
-
-Claim access has the same runtime behavior of regular property access.
-Its purpose is to tell the type-checker,
-“I know what I’m doing; This property exists and its type is not type `void`.”
-```
-let unfixed item: [str, ?: int] = ["apples", 42];
-let quantity: int = item!.1;
-```
-The expression `item!.1` has type `int`, despite being an optional entry.
-It will produce the value `42` at runtime.
-Note that bypassing the compiler’s type-checking process should be done carefully.
-If not used correctly, it could lead to runtime errors.
-```
-let unfixed item: [str, ?: int] = ["apples"];
-let quantity: int = item!.1; % runtime error!
-```
-An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
+#### Result Access
+// TODO: v0.5.0
 
 
 ### Logical Negation, Emptiness
 ```
-`!` <unknown>
-`?` <unknown>
+`!` <anything>
+`?` <anything>
 ```
 The **logical negation** operator, `!`, returns the opposite boolean value of the operand’s “logical value”.
 
@@ -349,6 +356,7 @@ or if it’s an empty string or empty collection (such as an array or set).
 | -------------- | -------------- | --------------- |
 | `null`         | `null`         |                 |
 | `false`        | `false`        | `true`          |
+|                |                | all symbols     |
 |                | `0`            | all integers    |
 |                | `0.0`, `-0.0`  | all floats      |
 |                | `""`           | all strings     |
@@ -392,48 +400,133 @@ this is important to mention because it could affect how we write
 [additive expressions](#parsing-additive-expressions).
 
 
-### Type Claim
+### Numeric Conversions
 ```
-`<` <Type> `>` <obj>
+int   <Number>
+float <Number>
 ```
-The expression `<T>expr` tells the type system to treat `expr` as type `T`,
+The keywords `int` and `float` can also be used as unary prefix operators.
+They convert their numeric operand into their respective type. If the operand is not numeric, a type error is raised.
+```
+let my_int: int   = 7;
+let my_flt: float = -3.5;
+
+2 * int my_flt;     % converts -3.5 to -3; result is same as `2 * -3`
+float my_int / 3.5; % converts 7 to 7.0; result is same as `7.0 / 3.5`
+```
+When converting floats to integers, the “round-toward-zero” (truncation) method is used.
+Both `-0.0` and `0.0` convert to `0`.
+If the floating-point number is greater than the maximal integer *2^63 &minus; 1*, the maximal integer is returned;
+likewise for less than the minimal integer *&minus;2^63*.
+For NaN and other unrepresentable values, an error is raised.
+
+When converting integers to floats, some precision will be lost for integers greater than *2^53*, as per the *IEEE 754* specification.
+
+
+### Type Cast/Claim
+```
+<Object>   as  <Class>
+<Object>   as? <Class>
+<Object>   as! <Class>
+<anything> as  `<` <Type> `>`
+```
+The expression `expr as Klass` explicitly **casts** the `expr` into a `Klass`.
+This means that at compile time, `expr` is treated as type `Klass` within its containing expression,
+and the object to which `expr` evaluates is converted to a `Klass` instance at runtime.
+If the runtime conversion is not possible, than an error is thrown.
+
+`expr as? Klass` always returns a `Maybe` object and never throws.
+If `expr` is a `Klass` instance, a `Some` is returned; otherwise it returns a `None`.
+
+`expr as! Klass` always returns a `Result` object and never throws.
+If `expr` is a `Klass` instance, an `Ok` is returned; otherwise it returns a `Fail`.
+
+The expression `expr as <T>` tells the type system to treat `expr` as type `T`,
 even though it might have been computed as a different type.
 This is called a **type claim**, because we’re *claiming* that `expr` is of type `T`.
-(We say “claim” instead of “assert”, which is an unrelated concept.)
+(We say “claim” instead of “assert”, because no runtime error is thrown.)
 
 Normally, the compiler will compute the type of an expression, but sometimes the compiler gets it wrong,
 or we as programmers know more than the compiler does, based on conditions or circumstances of our code.
 We can use a claim to tell the compiler, “I know what I’m doing and the type should be *that*.”
 
-Type claims are a general form of [Claim Access](#claim-access).
-For example, we could use claim access to say that an optional entry exists on an object:
+Type claims are a general form of [non-null assertions] (link pending).
+For example, we could use non-null assertion to say that an optional entry exists on an object:
 ```
-let unfixed item: [str, ?: int] = ['apples', 42];
-let quantity: int = item!.1;
+let var item: [str, ?: int] = ["apples", 42];
+let quantity: int = item?.1~?;
 ```
-The more general form of this is claiming that `item.1` is of type `int`:
+Since `item.1` is optional, `item?.1` is of type `int | null`.
+By using the non-null assertion `~?`, we can subtract type null.
+
+The more general form of this is simply claiming that `item?.1` is of type `int`:
 ```
-let unfixed item: [str, ?: int] = ['apples', 42];
-let quantity: int = <int>item.1;
+let var item: [str, ?: int] = ["apples", 42];
+let quantity: int = item?.1 as <int>;
 ```
 
-Type claims can be used in situations where claim access cannot.
-Whereas claim access can only tell the compiler that a property *exists*,
+Type claims can be used in situations where non-null assertion cannot.
+Whereas non-null assertions can only tell the compiler that a property *exists*,
 type claims can widen, narrow, or shift the type of an expression.
 ```
-let unfixed item: [str, int | str] = ['apples', 42];
-let ingredient: obj        = <obj>item.0;        % widening
-let quantity:   int        = <int>item.1;        % narrowing
-let in_stock:   int | bool = <int | bool>item.1; % shifting
+let var item: [str, int | str] = ["apples", 42];
+let ingredient: anything   = item.0 as <anything>;   % widening
+let quantity:   int        = item.1 as <int>;        % narrowing
+let in_stock:   int | bool = item.1 as <int | bool>; % shifting
 ```
 
 The compiler will throw an error when encountering a type claim if its operand’s computed type
 and its claimed type are disjoint (i.e. if there’s no overlap).
 ```
-<str>42; %> TypeError
+42 as <str>; %> TypeError
 ```
 
-A note of caution: Like claim access, **type claims should never be used to “hack” the compiler**.
+#### Cast vs Claim
+A runtime cast (`expr as Klass`) will always check whether `Klass` is a class, and whether `expr` is actually an instance of it at runtime;
+if not, then the program throws. This operator is preferred in such circumstances.
+```
+let animal: Animal = Cat.();
+let cat: Cat = animal as Cat; % cast is allowed (`Cat` can be converted to `Cat`)
+cat.meow.();                  % calls `meow` on the `Cat` instance
+
+let dog: Dog = animal as Dog; % throws error: `Cat` cannot be converted to `Dog`
+dog.woof.();                  % unreachable
+```
+The `as?` and `as!` casts can be useful in tandem with maybe/result access respectively.
+```
+let cat_m: Maybe.<Cat> = animal as? Cat; %== Some.<Cat>
+cat_m?.meow.();                          % calls `meow`
+
+let dog_m: Maybe.<Dog> = animal as? Dog; %== None
+dog_m?.woof.();                          %== None
+
+let cat_r: Result.<Cat> = animal as! Cat; %== Ok.<Cat>
+cat_r!.meow.();                           % calls `meow`
+
+let dog_r: Result.<Dog> = animal as! Dog; %== Fail
+dog_r?.woof.();                           %== Fail
+```
+
+
+A compile-time claim (`expr as <Klass>`) *claims* to the type-checker that `expr` is already of type `Klass`,
+but no double-check is performed at runtime. The program will proceed as usual, assuming `expr` is assignable to type `Klass`.
+That means that if it’s *not* such an instance, an error could be thrown down the line,
+for example, when attempting to access a nonexistent method.
+```
+let animal: Animal = Cat.();
+let cat: Cat = animal as <Cat>; % claim is allowed (`Animal` and `Cat` overlap)
+cat.meow.();                    % calls `meow` on the `Cat` instance
+
+let dog: Dog = animal as <Dog>; % claim is allowed (`Animal` and `Dog` overlap)
+dog.woof.();                    % throws error: method `woof` not found on `Cat` instance
+```
+
+The benefits that type claim over type cast include the following, as demonstrated in the last section.
+- We can narrow types that would otherwise be too wide.
+- We can use type operator syntax like intersections and unions.
+- We can reference non-class types and type aliases by name.
+
+A note of caution: **Type claims should never be used to “hack” the compiler**.
 Using type claims to “just get your code to compile” is never recommended,
 because it won’t prevent runtime errors and it will most likely cause more problems down the road.
 But there are cases in which human reasoning about type safety outsmarts the compiler,
@@ -605,10 +698,10 @@ but they are reserved for future semantics.
 
 ### Equality
 ```
-<unknown> `===`  <unknown>
-<unknown> `!==`  <unknown>
-<unknown> `==`   <unknown>
-<unknown> `!=`   <unknown>
+<anything> `===`  <anything>
+<anything> `!==`  <anything>
+<anything> `==`   <anything>
+<anything> `!=`   <anything>
 ```
 These operators compare two values.
 Any type of operands are valid. The result is a boolean value.
@@ -658,14 +751,14 @@ the compiler will assume they’re equal until it can find a property that misma
 If it can’t, it’ll just return true instead of diving down an infinitely long rabbit hole.
 
 Of course, the identity operator (`===`) *always* compares reference objects by reference,
-but compound value objects are still compared compositionally, and the same principle applies —
+but compound data values are still compared compositionally, and the same principle applies —
 assume equal until determined otherwise.
 
 
 ### Conjunctive
 ```
-<unknown> `&&` <unknown>
-<unknown> `!&` <unknown>
+<anything> `&&` <anything>
+<anything> `!&` <anything>
 ```
 The **logical conjunction** operator `&&` (”and”) produces the left-hand operand if it is “falsy”;
 otherwise it produces the right-hand operand. The operands may be of any type.
@@ -691,8 +784,8 @@ a !& b; % sugar for `!(a && b)`
 
 ### Disjunctive
 ```
-<unknown> `||` <unknown>
-<unknown> `!|` <unknown>
+<anything> `||` <anything>
+<anything> `!|` <anything>
 ```
 The **logical disjunction** operator `||` (“or”) produces the left-hand operand if it is “truthy”;
 otherwise it produces the right-hand operand. The operands may be of any type.
@@ -718,7 +811,7 @@ a !| b; % sugar for `!(a || b)`
 
 ### Conditional
 ```
-`if` <bool> `then` <unknown> `else` <unknown>
+`if` <bool> `then` <anything> `else` <anything>
 ```
 The conditional operator is a ternary operator that takes three operand expressions:
 a condition, a consequent, and an alternative.
@@ -802,7 +895,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td>Mutable</td>
 			<td>unary prefix</td>
 			<td>right-to-left</td>
-			<td><code>mutable …</code></td>
+			<td><code>mut …</code></td>
 		</tr>
 		<tr>
 			<th>5</th>
@@ -828,8 +921,10 @@ Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
 
 ### Type Property Access
 ```
-<Type> `.` int-literal
-<Type> `.` word
+<Type> `.`  int-literal
+<Type> `.`  word
+<Type> `?.` int-literal
+<Type> `?.` word
 ```
 The **type property accesss** syntax for types is analogous to the property access syntax of values.
 It accesses the index or key of a tuple or record type respectively.
@@ -841,7 +936,7 @@ type T3 = T.3;             %> TypeError
 
 type R = [a: bool, b?: int, c: str];
 type Ra = R.a;                       %== bool
-type Rc = R.b;                       %== int | void
+type Rc = R?.b;                      %== int | null
 type Rd = R.d;                       %> TypeError
 ```
 
@@ -856,7 +951,7 @@ type T = int?; % equivalent to `type T = int | null;`
 ```
 This operator is useful for describing values that might be null.
 ```
-let unfixed hello: str? = null;
+let var hello: str? = null;
 set hello = "world";
 ```
 
@@ -892,18 +987,18 @@ The **Set** operator `T{}` is shorthand for `Set.<T>`.
 
 ### Mutable
 ```
-`mutable` <Type>
+`mut` <Type>
 ```
-The `mutable` type operator allows properties in a complex type to be reassigned.
+The `mut` type operator allows properties in a complex type to be reassigned.
 It allows us to modify composite objects by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
-let elements: mutable str{} = {"water", "earth", "fire", "wind"};
+let elements: mut str{} = {"water", "earth", "fire", "wind"};
 elements.["wind"] = false;
 elements.["air"]  = true;
 elements; %== {"water", "earth", "fire", "air"}
 ```
-If `elements` were just of type `str{}` (without `mutable`),
+If `elements` were just of type `str{}` (without `mut`),
 then attempting to modify it would result in a [Mutability Error](./errors.md#mutability-errors-24xx).
 
 
@@ -933,7 +1028,7 @@ type Volunteer = [
 	agency:      str,
 	hoursWorked: float,
 ];
-% claim alice: Employee & Volunteer;
+claim alice: Employee & Volunteer;
 alice.name;        %: str
 alice.id;          %: int
 alice.jobTitle;    %: str
@@ -953,8 +1048,8 @@ type B = [
 	key:    2 | 3 | 4,
 	valueB: float,
 ];
-% claim data: A & B;
-data.key;    %: 2 | 3 % `(1 | 2 | 3) & (2 | 3 | 4)`
+claim data: A & B;
+data.key;    %: 2 | 3 % gotten by `(1 | 2 | 3) & (2 | 3 | 4)`
 data.valueA; %: int
 data.valueB; %: float
 ```
@@ -969,7 +1064,7 @@ This holds for tuple types as well, accounting for indices rather than keys.
 The **union** operator creates a type that is either one operand, or the other, or some combination of both.
 ```
 type T = bool | int;
-let unfixed v: T = false;
+let var v: T = false;
 set v = 42;
 ```
 
@@ -986,7 +1081,7 @@ type Volunteer = [
 	agency:      str,
 	hoursWorked: float,
 ];
-% claim bob: Employee | Volunteer;
+claim bob: Employee | Volunteer;
 bob.name;        %: str
 bob.hoursWorked; %: float
 bob.id;          %> TypeError
@@ -995,7 +1090,16 @@ bob.agency;      %> TypeError
 ```
 Type `Employee | Volunteer` is *either* an employee *or* a volunteer,
 so we’re only guaranteed it will have the properties that are present in *both* types.
-We can’t access properties that are in one type but not the other.
+With normal access, we can’t access properties that are in one type but not the other.
+
+But with [maybe access](#maybe-access), we can access a property that exists on one type but not the other,
+noting that the resulting type is unioned with `null`.
+The maybe access operator will return the property value if it exists, else `null`.
+```
+bob?.id;       %: int | null
+bob?.jobTitle; %: str | null
+bob?.agency;   %: str | null
+```
 
 Overlapping properties in a union are themselves unioned.
 ```
@@ -1007,7 +1111,7 @@ type B = [
 	key:    2 | 3 | 4,
 	valueB: float,
 ];
-% claim data: A | B;
+claim data: A | B;
 data.key; %: 1 | 2 | 3 | 4 % `(1 | 2 | 3) | (2 | 3 | 4)`
 ```
 

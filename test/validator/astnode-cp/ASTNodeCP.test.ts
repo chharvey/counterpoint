@@ -1,53 +1,67 @@
-import * as assert from 'assert';
-import type binaryen from 'binaryen';
+import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	AST,
 	TYPE,
-	Builder,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorReassignment,
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
-} from '../../../src/index.js';
-import {assert_instanceof} from '../../../src/lib/index.js';
+} from '../../../src/index.ts';
 import {
 	assertAssignable,
 	assertEqualBins,
-} from '../../assert-helpers.js';
-import {typeUnitFloat} from '../../helpers.js';
+} from '../../assert-helpers.ts';
+import {
+	setupScript,
+	typeUnit,
+} from '../../helpers.ts';
 
 
 
 describe('ASTNodeCP', () => {
+	describe('ASTNodeIndex', () => {
+		describe('#index', () => {
+			it('returns the cooked value of the integer token.', () => {
+				[0n, 1n, 2n, 4n, 8n, 16n].forEach((index) => {
+					const type_accessor: AST.ASTNodeIndex | AST.ASTNodeKey = AST.ASTNodeTypeAccess.fromSource(`MyTuple.${ index }`).accessor;
+					assert_instanceof(type_accessor, AST.ASTNodeIndex);
+					assert.strictEqual(type_accessor.index, index);
+
+					const expr_accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = AST.ASTNodeAccess.fromSource(`my_tuple.${ index }`).accessor;
+					assert_instanceof(expr_accessor, AST.ASTNodeIndex);
+					assert.strictEqual(expr_accessor.index, index);
+				});
+			});
+		});
+	});
+
+
+
 	describe('ASTNodeStatementExpression', () => {
 		describe('#build', () => {
 			it('returns `(nop)` for empty statement expression.', () => {
-				const src: string = ';';
-				const builder = new Builder(`{ ${ src } }`);
-				const instr: binaryen.ExpressionRef = AST.ASTNodeStatementExpression.fromSource(src).build(builder);
-				return assertEqualBins(instr, builder.module.nop());
+				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(';');
+				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
 			});
-			it('returns `(drop)` for nonempty statement expression.', () => {
-				const src: string = '42 + 420';
-				const builder = new Builder(`{ ${ src }; }`);
-				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(`${ src };`);
+			it('returns `(nop)` for nonempty foldable statement expression.', () => {
+				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource('42 + 420;');
+				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
+			});
+			it('returns `(drop)` for nonempty non-foldable statement expression.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var x: int = 42;
+					x * 10;
+				}`);
+				assert_instanceof(stmts[1], AST.ASTNodeStatementExpression);
+				assert.ok(stmts[1].expr);
 				return assertEqualBins(
-					stmt.build(builder),
-					builder.module.drop(stmt.expr!.build(builder)),
+					stmts[1].build(),
+					mod.drop(stmts[1].expr.build()),
 				);
-			});
-			it('multiple statements.', () => {
-				const src: string = '{ 42; 420; }';
-				const generator = new Builder(src);
-				return AST.ASTNodeBlock.fromSource(src).children.forEach((stmt) => {
-					assert_instanceof(stmt, AST.ASTNodeStatementExpression);
-					return assertEqualBins(
-						stmt.build(generator),
-						generator.module.drop(stmt.expr!.build(generator)),
-					);
-				});
 			});
 		});
 	});
@@ -160,7 +174,7 @@ describe('ASTNodeCP', () => {
 								],
 							},
 							{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
-							{cons: TypeErrorNotAssignable,    message: `Expression of type \`${ typeUnitFloat(4.2) }\` is not assignable to type \`${ TYPE.INT }\`.`},
+							{cons: TypeErrorNotAssignable,    message: `Expression of type \`${ typeUnit(4.2) }\` is not assignable to type \`${ TYPE.INT }\`.`},
 						],
 					});
 					return true;
@@ -170,17 +184,30 @@ describe('ASTNodeCP', () => {
 
 
 		describe('#build', () => {
-			it('returns `(nop)` for empty program.', () => {
-				const src: string = '';
-				const builder = new Builder(src);
-				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
-				return assertEqualBins(instr, builder.module.nop());
-			});
-			it('returns binaryen.Module for non-empty program.', () => {
-				const src: string = '{;}';
-				const builder = new Builder(src);
-				const instr: binaryen.ExpressionRef | binaryen.Module = AST.ASTNodeGoal.fromSource(src).build(builder);
-				assert.strictEqual(instr, builder.module);
+			it('always returns `(nop)`.', () => {
+				// empty
+				const empty: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource('');
+				empty.varCheck();
+				empty.typeCheck();
+				assertEqualBins(empty.build(), empty.builder.module.nop());
+
+				// scripts
+				xjs.Array.forEachAggregated([
+					'{;}',
+					`{
+						42;
+					}`,
+					`{
+						let x: int = 42;
+						x;
+					}`,
+				], (src) => {
+					const {goal, mod} = setupScript(src, null, {build: false});
+					return assertEqualBins(goal.build(), mod.nop());
+				});
+
+				// modules
+				return;
 			});
 		});
 	});

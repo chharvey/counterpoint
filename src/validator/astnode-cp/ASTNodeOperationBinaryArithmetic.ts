@@ -1,36 +1,35 @@
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	type VALUE,
 	TYPE,
-	type Builder,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
-} from '../../index.js';
+} from '../../index.ts';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeSupertype} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidOperatorArithmetic,
-} from '../Operator.js';
+} from '../Operator.ts';
 import {
-	bothNumeric,
-	eitherFloats,
+	bothInts,
 	bothFloats,
-	neitherFloats,
-} from './utils-private.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
-import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
+} from './utils-private.ts';
+import {
+	buildDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
 
@@ -51,66 +50,50 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		const args:    readonly [binaryen.ExpressionRef, binaryen.ExpressionRef] = ASTNodeOperation.coerceOperands(builder, this.operand0, this.operand1);
-		const bintype: binaryen.Type                                             = this.type().binType();
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.EXP, 'vexp'],
+			[Operator.MUL, 'vmul'],
+			[Operator.DIV, 'vdiv'],
+			[Operator.ADD, 'vadd'],
+		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
+	}
+
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
+		if (t0.isBottomType || t1.isBottomType) {
+			return TYPE.NOTHING;
+		}
 		return (
-			(this.operator === Operator.EXP) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
-				[binaryen.i32, builder.module.call('exp', [...args], binaryen.i32)],
-				[binaryen.f64, builder.module.unreachable()], // TODO: support runtime exponentiation for floats
-			]).get(bintype)! :
-			(this.operator === Operator.DIV) ? new Map<binaryen.Type, binaryen.ExpressionRef>([
-				[binaryen.i32, builder.module.i32.div_s (...args)],
-				[binaryen.f64, builder.module.f64.div   (...args)],
-			]).get(bintype)! :
-			builder.module[new Map<binaryen.Type, 'i32' | 'f64'>([
-				[binaryen.i32, 'i32'],
-				[binaryen.f64, 'f64'],
-			]).get(bintype)!][new Map<Operator, 'mul' | 'add' | 'sub'>([
-				[Operator.MUL, 'mul'],
-				[Operator.ADD, 'add'],
-				[Operator.SUB, 'sub'],
-			]).get(this.operator)!](...args)
+			bothInts  (t0, t1) ? TYPE.INT :
+			bothFloats(t0, t1) ? TYPE.FLOAT :
+			assert.fail(new TypeErrorInvalidOperation(this))
 		);
 	}
 
-	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
-		return (bothNumeric(t0, t1))
-			? (int_coercion)
-				? (eitherFloats(t0, t1))
-					? TYPE.FLOAT
-					: TYPE.INT
-				: (
-					(bothFloats   (t0, t1)) ? TYPE.FLOAT :
-					(neitherFloats(t0, t1)) ? TYPE.INT   :
-					throw_expression(new TypeErrorInvalidOperation(this))
-				)
-			: throw_expression(new TypeErrorInvalidOperation(this));
-	}
-
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand0.fold();
+	public override fold(): VALUE.Value | null {
+		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: OBJ.Object | null = this.operand1.fold();
+		if (this.operator === Operator.MUL && (v0 as VALUE.Number).eq0()) {
+			return v0;
+		}
+		const v1: VALUE.Value | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}
-		if (this.operator === Operator.DIV && v1 instanceof OBJ.Number && v1.eq0()) {
+		if (this.operator === Operator.DIV && (v1 as VALUE.Number).eq0()) {
 			throw new NanErrorDivZero(this.operand1);
 		}
-		return (v0 instanceof OBJ.Integer && v1 instanceof OBJ.Integer)
-			? this.foldNumeric(v0, v1)
-			: this.foldNumeric(
-				(v0 as OBJ.Number).toFloat(),
-				(v1 as OBJ.Number).toFloat(),
-			);
+		return this.foldNumeric(
+			(v0 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+			(v1 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+		);
 	}
 
-	private foldNumeric<T extends OBJ.Number<T>>(v0: T, v1: T): T {
+	private foldNumeric<T extends VALUE.Number<T>>(v0: T, v1: T): T {
 		try {
 			return new Map<Operator, (x: T, y: T) => T>([
 				[Operator.EXP, (x, y) => x.exp(y)],

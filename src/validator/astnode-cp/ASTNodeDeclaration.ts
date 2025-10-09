@@ -3,7 +3,7 @@ import type {
 	ASTNodeDeclarationVariable,
 	ASTNodeDeclarationClaim,
 	ASTNodeDeclarationReassignment,
-} from './index.js';
+} from './index.ts';
 
 
 

@@ -1,5 +1,3 @@
-// KEYWORD_TYPE    ::= [./lexicon.ebnf#KeywordType];
-// KEYWORD_VALUE   ::= [./lexicon.ebnf#KeywordValue];
 // IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
 // INTEGER         ::= [./lexicon.ebnf#Integer];
 // FLOAT           ::= [./lexicon.ebnf#Float];
@@ -11,9 +9,28 @@
 
 
 
+KeywordType ::=
+	| "nothing"
+	| "bool"
+	| "sym"
+	| "int"
+	| "float"
+	| "str"
+	| "anything"
+;
+
+KeywordValue ::=
+	| "null"
+	| "false"
+	| "true"
+;
+
+
+
 Word ::=
 	// operator
-		| "mutable"
+		| "mut"
+		| "as"
 		| "is"
 		| "isnt"
 		| "if"
@@ -22,20 +39,25 @@ Word ::=
 	// storage
 		| "type"
 		| "let"
+		| "claim"
+		| "set"
+		| "_"
+		| "void"
 	// modifier
-		| "unfixed"
-	| KEYWORD_TYPE
-	| KEYWORD_VALUE
+		| "var"
 	| IDENTIFIER
+	| KeywordType
+	| KeywordValue
 ;
 
 
 
 PrimitiveLiteral ::=
-	| KEYWORD_VALUE
 	| INTEGER
 	| FLOAT
 	| STRING
+	| KeywordValue
+	| "@" Word
 ;
 
 
@@ -59,8 +81,8 @@ TypeMapLiteral    ::= "{" Type "->" Type       "}";
 GenericArguments  ::= "<"  ","? Type# ","?     ">";
 
 TypeUnit ::=
-	| KEYWORD_TYPE
 	| IDENTIFIER
+	| KeywordType
 	| PrimitiveLiteral
 	| TypeGrouped
 	| TypeTupleLiteral
@@ -69,8 +91,8 @@ TypeUnit ::=
 	| TypeMapLiteral
 ;
 
-PropertyAccessType ::= "." (INTEGER | Word);
-GenericCall        ::= "." GenericArguments;
+PropertyAccessType ::= ("." | "?.") (INTEGER | Word);
+GenericCall        ::=  "."         GenericArguments;
 
 TypeCompound ::=
 	| TypeUnit
@@ -89,7 +111,7 @@ TypeUnarySymbol ::=
 
 TypeUnaryKeyword ::=
 	| TypeUnarySymbol
-	| "mutable" TypeUnaryKeyword
+	| "mut" TypeUnaryKeyword
 ;
 
 TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;
@@ -141,11 +163,16 @@ Assignee ::=
 	| ExpressionCompound PropertyAssign
 ;
 
-ExpressionUnarySymbol ::= ExpressionCompound    | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
-ExpressionClaim       ::= ExpressionUnarySymbol | "<" Type ">"            ExpressionClaim;
+ExpressionUnarySymbol  ::= ExpressionCompound    | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
+ExpressionUnaryKeyword ::= ExpressionUnarySymbol | ("int" | "float")       ExpressionUnaryKeyword;
+
+ExpressionCast ::=
+	| (ExpressionCast ("as" | "as?" | "as!"))? ExpressionUnaryKeyword
+	|  ExpressionCast  "as"                    "<" Type ">"
+;
 
 ExpressionExponential
-	::= ExpressionClaim ("^" ExpressionExponential)?;
+	::= ExpressionCast ("^" ExpressionExponential)?;
 
 ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                                            ExpressionExponential;
 ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                                            ExpressionMultiplicative;
@@ -179,10 +206,16 @@ Block
 
 
 
-DeclarationType         ::= "type"             IDENTIFIER "=" Type                ";";
-DeclarationVariable     ::= "let"   "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
-DeclarationClaim        ::= "claim"            Assignee   ":" Type                ";";
-DeclarationReassignment ::= "set"              Assignee            "=" Expression ";";
+DeclarationType
+	::= "type" ("_" | IDENTIFIER) "=" Type ";";
+
+DeclarationVariable ::=
+	| "let" "var"? ("_" | IDENTIFIER) ":"  Type "=" Expression ";"
+	| "let" "var"  ("_" | IDENTIFIER) "?:" Type                ";"
+;
+
+DeclarationClaim        ::= "claim" Assignee ":" Type       ";";
+DeclarationReassignment ::= "set"   Assignee "=" Expression ";";
 
 Declaration ::=
 	| DeclarationType

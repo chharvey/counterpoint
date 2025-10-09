@@ -1,243 +1,305 @@
-import * as assert from 'assert';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {Builder} from '../../index.js';
 import {
-	throw_expression,
-	memoizeMethod,
+	assert_context_name,
+	memoizeGetter,
+} from '../../lib/index.ts';
+import {
+	languageValuesIdentical,
 	strictEqual,
-} from '../../lib/index.js';
-import {languageValuesIdentical} from '../utils-private.js';
-import * as OBJ from '../cp-object/index.js';
+	memoizeBinOp,
+} from '../utils-private.ts';
+import type * as VALUE from '../cp-value/index.ts';
 import {
-	TypeIntersection,
-	TypeUnion,
-	TypeDifference,
-	TypeUnit,
-	NEVER,
-	VOID,
-	UNKNOWN,
-	NULL,
-	BOOL,
-	INT,
-	FLOAT,
-} from './index.js';
+	Intersection,
+	Union,
+	Difference,
+	NOTHING,
+	ANYTHING,
+	FALSY_TYPES,
+	TYPE_CONSTANTS,
+} from './index.ts';
+import {
+	Variance,
+	type GenericParameter,
+} from './utils-private.ts';
+
+
+
+/**
+ * Decorator for any type binary operation.
+ * Simplifies return values to values that already exist, if possible.
+ * @implements MethodDecorator<Type, (t: Type) => Type>
+ */
+export function typeConstant(
+	method:   (t: Type) => Type,
+	_context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	return function (this: Type, t) {
+		const returned: Type = method.call(this, t);
+		return (
+			returned.isBottomType ? NOTHING :
+			returned.isTopType    ? ANYTHING :
+			TYPE_CONSTANTS.find((c) => returned.equals(c)) ?? returned
+		);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#intersect} method and any overrides.
+ * Contains shortcuts for constructing type intersections.
+ * @implements MethodDecorator<Type, Type['intersect']>
+ */
+export function intersectionRules(
+	method:  Type['intersect'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'intersect');
+	return function (this: Type, t) {
+		/* 1-5 | `T  & nothing  == nothing` */
+		if (this.isBottomType || t.isBottomType) {
+			return NOTHING;
+		}
+		/* 1-6 | `T  & anything == T` */
+		if (this.isTopType) {
+			return t;
+		}
+		if (t.isTopType) {
+			return this;
+		}
+		/* 3-3 | `A <: B  <->  A  & B == A` */
+		if (this.isSubtypeOf(t)) {
+			return this;
+		}
+		if (t.isSubtypeOf(this)) {
+			return t;
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#union} method and any overrides.
+ * Contains shortcuts for constructing type unions.
+ * @implements MethodDecorator<Type, Type['union']>
+ */
+export function unionRules(
+	method:  Type['union'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'union');
+	return function (this: Type, t) {
+		/* 1-7 | `T \| nothing  == T` */
+		if (this.isBottomType) {
+			return t;
+		}
+		if (t.isBottomType) {
+			return this;
+		}
+		/* 1-8 | `T \| anything == anything` */
+		if (this.isTopType || t.isTopType) {
+			return ANYTHING;
+		}
+		/* 3-4 | `A <: B  <->  A \| B == B` */
+		if (this.isSubtypeOf(t)) {
+			return t;
+		}
+		if (t.isSubtypeOf(this)) {
+			return this;
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#subtract} method and any overrides.
+ * Contains shortcuts for constructing type differences.
+ * @implements MethodDecorator<Type, Type['subtract']>
+ */
+export function differenceRules(
+	method:  Type['subtract'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'subtract');
+	return function (this: Type, t) {
+		/* 4-1 | `A - B == A  <->  A & B == nothing` */
+		if (this.intersect(t).isBottomType) {
+			return this;
+		}
+
+		/* 4-2 | `A - B == nothing  <->  A <: B` */
+		if (this.isSubtypeOf(t)) {
+			return NOTHING;
+		}
+
+		/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
+		if (t instanceof Union) {
+			return Intersection.all(t.operands.map((s) => this.subtract(s)));
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#isSubtypeOf} method and any overrides.
+ * Contains shortcuts for determining subtypes.
+ * @implements MethodDecorator<Type, Type['isSubtypeOf']>
+ */
+export function subtypeRules(
+	method:  Type['isSubtypeOf'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'isSubtypeOf');
+	return function (this: Type, t) {
+		/* 2-7 | `A <: A` */
+		if (this === t) {
+			return true;
+		}
+		/* 1-1 | `nothing  <: T` */
+		if (this.isBottomType) {
+			return true;
+		}
+		/* 1-3 | `T        <: nothing  <->  T == nothing` */
+		if (t.isBottomType) {
+			return this.isBottomType;
+		}
+		/* 1-4 | `anything <: T        <->  T == anything` */
+		if (this.isTopType) {
+			return t.isTopType;
+		}
+		/* 1-2 | `T        <: anything` */
+		if (t.isTopType) {
+			return true;
+		}
+
+		if (!this.isMutable && t.isMutable) {
+			return false;
+		}
+
+		/*
+		 * Denormalize intersection/union types.
+		 *
+		 * An assignee of intersection type `A & (B | C)` will attempt to convert to `(A & B) | (A & C)`
+		 * when being assigned a value.
+		 * A type union in this case is more performant, as only one constituent of the union is sufficient —
+		 * the value only need be assignable to `A & B` or `A & C`, which allows for short-circuiting.
+		 *
+		 * Likewise, when a value is of union type `A | (B & C)`, it will attempt to convert to `(A | B) & (A | C)`
+		 * when being assigned to a target.
+		 * In this scenario, a type intersection can allow for short-circuiting —
+		 * only one of the constituents `A | B` or `A | C` need be assignable.
+		 *
+		 * Inspiration: https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/#optimizations-by-comparing-non-normalized-intersections
+		 */
+		if (t instanceof Intersection) {
+			const maybe_union: Type = t.denormalize();
+			if (maybe_union instanceof Union && this.isSubtypeOf(maybe_union)) {
+				return true;
+			}
+		}
+		if (this instanceof Union) {
+			const maybe_intersection: Type = this.denormalize();
+			if (maybe_intersection instanceof Intersection && maybe_intersection.isSubtypeOf(t)) {
+				return true;
+			}
+		}
+
+		if (t instanceof Intersection) {
+			/*
+			 * 3-1 | `A  & B <: A  &&  A  & B <: B`
+			 *     | `A  & B  & C <: A  & B`
+			 */
+			if (this instanceof Intersection && t.operands.every((s) => this.operands.some((r) => r.equals(s)))) {
+				return true;
+			}
+			/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
+			return t.operands.every((s) => this.isSubtypeOf(s));
+		}
+		if (t instanceof Union) {
+			/*
+			 * 3-2 | `A <: A \| B  &&  B <: A \| B`
+			 *     | `A \| B <: A \| B \| C`
+			 */
+			if (this instanceof Union && this.operands.every((s) => t.operands.some((r) => r.equals(s)))) {
+				return true;
+			}
+			/* 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
+			if (t.operands.some((s) => this.isSubtypeOf(s))) {
+				return true;
+			}
+			/* 3-2 | `A <: A \| B  &&  B <: A \| B` */
+			if (t.operands.some((s) => this.equals(s))) {
+				return true;
+			}
+		}
+		/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing` */
+		if (t instanceof Difference) {
+			return this.isSubtypeOf(t.left) && this.intersect(t.right).isBottomType;
+		}
+
+		return method.call(this, t);
+	};
+}
 
 
 
 /**
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
- * - TypeIntersection
- * - TypeUnion
- * - TypeDifference
- * - TypeUnit
+ * - TypeOperation
+ * - ValueType
  * - TypeInterface
- * - TypeNever
- * - TypeVoid
- * - TypeUnknown
- * - TypeBoolean
- * - TypeInteger
- * - TypeFloat
- * - TypeString
- * - TypeObject
- * - TypeTuple
- * - TypeRecord
- * - TypeList
- * - TypeDict
- * - TypeSet
- * - TypeMap
+ * - ReferenceType
  */
 export abstract class Type {
 	/**
-	 * Decorator for {@link Type#intersect} method and any overrides.
-	 * Contains shortcuts for constructing type intersections.
-	 * @implements MethodDecorator<Type, Type['intersect']>
-	 */
-	protected static intersectDeco(
-		method:   Type['intersect'],
-		_context: ClassMethodDecoratorContext<Type, typeof method>,
-	): typeof method {
-		return function (this: Type, t) {
-			/** 1-5 | `T  & never   == never` */
-			if (this.isBottomType || t.isBottomType) {
-				return NEVER;
-			}
-			/** 1-6 | `T  & unknown == T` */
-			if (this.isTopType) {
-				return t;
-			}
-			if (t.isTopType) {
-				return this;
-			}
-			/** 3-3 | `A <: B  <->  A  & B == A` */
-			if (this.isSubtypeOf(t)) {
-				return this;
-			}
-			if (t.isSubtypeOf(this)) {
-				return t;
-			}
-
-			return method.call(this, t);
-		};
-	}
-
-	/**
-	 * Decorator for {@link Type#union} method and any overrides.
-	 * Contains shortcuts for constructing type unions.
-	 * @implements MethodDecorator<Type, Type['union']>
-	 */
-	protected static unionDeco(
-		method:   Type['union'],
-		_context: ClassMethodDecoratorContext<Type, typeof method>,
-	): typeof method {
-		return function (this: Type, t) {
-			/** 1-7 | `T \| never   == T` */
-			if (this.isBottomType) {
-				return t;
-			}
-			if (t.isBottomType) {
-				return this;
-			}
-			/** 1-8 | `T \| unknown == unknown` */
-			if (this.isTopType || t.isTopType) {
-				return UNKNOWN;
-			}
-			/** 3-4 | `A <: B  <->  A \| B == B` */
-			if (this.isSubtypeOf(t)) {
-				return t;
-			}
-			if (t.isSubtypeOf(this)) {
-				return this;
-			}
-
-			return method.call(this, t);
-		};
-	}
-
-	/**
-	 * Decorator for {@link Type#subtract} method and any overrides.
-	 * Contains shortcuts for constructing type differences.
-	 * @implements MethodDecorator<Type, Type['subtract']>
-	 */
-	protected static subtractDeco(
-		method:   Type['subtract'],
-		_context: ClassMethodDecoratorContext<Type, typeof method>,
-	): typeof method {
-		return function (this: Type, t) {
-			/** 4-1 | `A - B == A  <->  A & B == never` */
-			if (this.intersect(t).isBottomType) {
-				return this;
-			}
-
-			/** 4-2 | `A - B == never  <->  A <: B` */
-			if (this.isSubtypeOf(t)) {
-				return NEVER;
-			}
-
-			if (t instanceof TypeUnion) {
-				return t.subtractedFrom(this);
-			}
-
-			return method.call(this, t);
-		};
-	}
-
-	/**
-	 * Decorator for {@link Type#isSubtypeOf} method and any overrides.
-	 * Contains shortcuts for determining subtypes.
-	 * @implements MethodDecorator<Type, Type['isSubtypeOf']>
-	 */
-	protected static subtypeDeco(
-		method:   Type['isSubtypeOf'],
-		_context: ClassMethodDecoratorContext<Type, typeof method>,
-	): typeof method {
-		return function (this: Type, t) {
-			/** 2-7 | `A <: A` */
-			if (this === t) {
-				return true;
-			}
-			/** 1-1 | `never <: T` */
-			if (this.isBottomType) {
-				return true;
-			}
-			/** 1-3 | `T       <: never  <->  T == never` */
-			if (t.isBottomType) {
-				return this.isBottomType;
-			}
-			/** 1-4 | `unknown <: T      <->  T == unknown` */
-			if (this.isTopType) {
-				return t.isTopType;
-			}
-			/** 1-2 | `T     <: unknown` */
-			if (t.isTopType) {
-				return true;
-			}
-
-			if (t instanceof TypeIntersection) {
-				return t.isSupertypeOf(this);
-			}
-			if (t instanceof TypeUnion) {
-				if (t.isNecessarilySupertypeOf(this)) {
-					return true;
-				}
-			}
-			if (t instanceof TypeDifference) {
-				return t.isSupertypeOf(this);
-			}
-
-			return method.call(this, t);
-		};
-	}
-
-	/**
-	 * Intersect all the given types.
-	 * If an empty array is given, return type `never`.
-	 * @param types the types to intersect
-	 * @returns the intersection
-	 */
-	public static intersectAll(types: readonly Type[]): Type {
-		return (types.length) ? types.reduce((a, b) => a.intersect(b)) : NEVER;
-	}
-
-	/**
-	 * Unions all the given types.
-	 * If an empty array is given, return type `never`.
-	 * @param types the types to union
-	 * @returns the union
-	 */
-	public static unionAll(types: readonly Type[]): Type {
-		return (types.length) ? types.reduce((a, b) => a.union(b)) : NEVER;
-	}
-
-
-	/**
-	 * Whether this type is a reference type or a value type.
-	 */
-	public readonly isReference: boolean = true;
-	/**
-	 * Whether this type has no values assignable to it,
-	 * i.e., it is equal to the type `never`.
-	 * Used internally for special cases of computations.
-	 */
-	public readonly isBottomType: boolean = this.values.size === 0;
-	/**
-	 * Whether this type has all values assignable to it,
-	 * i.e., it is equal to the type `unknown`.
-	 * Used internally for special cases of computations.
-	 */
-	public readonly isTopType: boolean = false;
-
-	/**
 	 * Construct a new Type object.
-	 * @param isMutable Whether this type is `mutable`. Mutable objects may change fields/entries and call mutating methods.
+	 * @param isMutable Whether this type is mutable. Mutable objects may change fields/entries and call mutating methods.
 	 * @param values    An enumerated set of values that are assignable to this type.
 	 */
 	public constructor(
 		public readonly isMutable: boolean,
-		public readonly values:    ReadonlySet<OBJ.Object> = new Set(),
+		public readonly values:    ReadonlySet<VALUE.Value> = new Set(),
 	) {
 	}
+
+	/**
+	 * Return whether this type has no values assignable to it,
+	 * i.e., it is equal to the type `nothing`.
+	 * Used internally for special cases of computations.
+	 * @return `true if this type is the bottom type
+	 */
+	// eslint-disable-next-line @typescript-eslint/class-literal-property-style --- overridden in subclasses by getters
+	public get isBottomType(): boolean {
+		return false;
+	}
+
+	/**
+	 * Return whether this type has all values assignable to it,
+	 * i.e., it is equal to the type `anything`.
+	 * Used internally for special cases of computations.
+	 * @return `true if this type is the top type
+	 */
+	// eslint-disable-next-line @typescript-eslint/class-literal-property-style --- overridden in subclasses by getters
+	public get isTopType(): boolean {
+		return false;
+	}
+
+	/**
+	 * Return whether this type is a reference type or a value type.
+	 * @return `true` if this type is a reference type
+	 */
+	public abstract get isReference(): boolean;
 
 	/**
 	 * Return whether this type is mutable or has a mutable operand or component.
@@ -248,12 +310,65 @@ export abstract class Type {
 	}
 
 	/**
+	 * @return a string representation of this type
+	 */
+	public abstract toString(): string;
+
+	/**
+	 * Is this type definitely a ”falsy” type?
+	 * @return  whether this is a subtype of `null | false`
+	 * @final
+	 */
+	@memoizeGetter
+	public get isDefinitelyFalsy(): boolean {
+		return this.isSubtypeOf(Union.all(...FALSY_TYPES));
+	}
+
+	/**
+	 * Is this type definitely a “truthy” type?
+	 * @return  `false` if this is the Bottom Type or is a supertype of any of `null` or `false`; otherwise `true`
+	 * @final
+	 */
+	@memoizeGetter
+	public get isDefinitelyTruthy(): boolean {
+		return !this.isBottomType && [...FALSY_TYPES].every((t) => !t.isSubtypeOf(this));
+	}
+
+	/**
+	 * Returns the “falsy side” of this type.
+	 * @return this type’s intersection with all falsy types
+	 * @final
+	 */
+	@memoizeGetter
+	public get falsySide(): Type {
+		return (
+			this.isDefinitelyFalsy  ? this :
+			this.isDefinitelyTruthy ? NOTHING :
+			this.intersect(Union.all(...FALSY_TYPES))
+		);
+	}
+
+	/**
+	 * Returns the “truthy side” of this type.
+	 * @return this type, minus all falsy types
+	 * @final
+	 */
+	@memoizeGetter
+	public get truthySide(): Type {
+		return (
+			this.isDefinitelyFalsy  ? NOTHING :
+			this.isDefinitelyTruthy ? this :
+			this.subtract(Union.all(...FALSY_TYPES))
+		);
+	}
+
+	/**
 	 * Return whether this type “includes” the value, i.e.,
 	 * whether the value is assignable to this type.
 	 * @param v the value to check
 	 * @returns Is `v` assignable to this type?
 	 */
-	public includes(v: OBJ.Object): boolean {
+	public includes(v: VALUE.Value): boolean {
 		return xjs.Set.has(this.values, v, languageValuesIdentical);
 	}
 
@@ -262,14 +377,15 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type intersection
 	 */
-	@Type.intersectDeco
+	@memoizeBinOp(true)
+	@typeConstant
+	@intersectionRules
 	public intersect(t: Type): Type {
-		/** 2-1 | `A  & B == B  & A` */
-		if (t instanceof TypeIntersection || t instanceof TypeUnion) {
+		/* 2-1 | `A  & B == B  & A` */
+		if (t instanceof Intersection) {
 			return t.intersect(this);
 		}
-
-		return new TypeIntersection(this, t);
+		return new Intersection(this, t).normalize();
 	}
 
 	/**
@@ -277,13 +393,15 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type union
 	 */
-	@Type.unionDeco
+	@memoizeBinOp(true)
+	@typeConstant
+	@unionRules
 	public union(t: Type): Type {
-		/** 2-2 | `A \| B == B \| A` */
-		if (t instanceof TypeUnion) {
+		/* 2-2 | `A \| B == B \| A` */
+		if (t instanceof Union) {
 			return t.union(this);
 		}
-		return new TypeUnion(this, t);
+		return new Union(this, t).normalize();
 	}
 
 	/**
@@ -291,9 +409,10 @@ export abstract class Type {
 	 * @param t the other type
 	 * @returns the type difference
 	 */
-	@Type.subtractDeco
+	@typeConstant
+	@differenceRules
 	public subtract(t: Type): Type {
-		return new TypeDifference(this, t);
+		return new Difference(this, t);
 	}
 
 	/**
@@ -302,10 +421,10 @@ export abstract class Type {
 	 * @returns Is this type a subtype of the argument?
 	 */
 	@strictEqual
-	@Type.subtypeDeco
+	@memoizeBinOp()
+	@subtypeRules
 	public isSubtypeOf(t: Type): boolean {
-		return !this.isBottomType && !!this.values.size // these checks are needed in cases of `Object` and `void`, which don’t store values
-			&& [...this.values].every((v) => t.includes(v));
+		return [...this.values].every((v) => t.includes(v));
 	}
 
 	/**
@@ -317,6 +436,7 @@ export abstract class Type {
 	 * @returns Is this type equal to the argument?
 	 */
 	@strictEqual
+	@memoizeBinOp(true)
 	public equals(t: Type): boolean {
 		return this.isMutable === t.isMutable && this.isSubtypeOf(t) && t.isSubtypeOf(this);
 	}
@@ -328,62 +448,15 @@ export abstract class Type {
 	public immutableOf(): Type {
 		return this;
 	}
-
-	/**
-	 * Return a corresponding Binaryen type.
-	 * @return the best match for a Binaryen type equivalent to this type
-	 * @final
-	 */
-	@memoizeMethod
-	public binType(): binaryen.Type {
-		const is_bin_int: boolean = (
-			   this.equals(NULL)
-			|| this.equals(BOOL) || this.equals(OBJ.Boolean.FALSETYPE) || this.equals(OBJ.Boolean.TRUETYPE)
-			|| this.equals(INT) || (this instanceof TypeUnit && this.value instanceof OBJ.Integer)
-		);
-		const is_bin_float: boolean = this.equals(FLOAT) || (this instanceof TypeUnit && this.value instanceof OBJ.Float);
-		return (
-			(this.isBottomType) ? binaryen.unreachable :
-			(this.equals(VOID)) ? binaryen.none        :
-			(is_bin_int)        ? binaryen.i32         :
-			(is_bin_float)      ? binaryen.f64         :
-			(this instanceof TypeUnion) ? ((left_type: binaryen.Type, right_type: binaryen.Type): binaryen.Type => {
-				assert.notStrictEqual(left_type,  binaryen.unreachable);
-				assert.notStrictEqual(right_type, binaryen.unreachable);
-				if (left_type === binaryen.none) {
-					left_type = right_type;
-				}
-				if (right_type === binaryen.none) {
-					right_type = left_type;
-				}
-				return Builder.createBinTypeEither(left_type, right_type);
-			})(this.left.binType(), this.right.binType()) :
-			throw_expression(new TypeError(`Translation from \`${ this }\` to a binaryen type is not yet supported.`))
-		);
-	}
-
-	/**
-	 * @return a default Binaryen value given this type
-	 */
-	public defaultBinValue(mod: binaryen.Module): binaryen.ExpressionRef {
-		return (
-			(this.binType() === binaryen.i32) ? mod.i32.const(0) :
-			(this.binType() === binaryen.f64) ? mod.f64.const(0) :
-			(this instanceof TypeUnion)       ? Builder.createBinEither(mod, false, this.left.defaultBinValue(mod), this.right.defaultBinValue(mod)) :
-			throw_expression(new TypeError(`Could not determine a default value for \`${ this }\`.`))
-		);
-	}
 }
 
 
 
 /**
  * An Interface Type is a set of properties that a value must have.
+ * @deprecated
  */
 export class TypeInterface extends Type {
-	public override readonly isBottomType: boolean = [...this.properties.values()].some((value) => value.isBottomType);
-	public override readonly isTopType:    boolean = this.properties.size === 0;
-
 	/**
 	 * Construct a new TypeInterface object.
 	 * @param properties a map of this type’s members’ names along with their associated types
@@ -392,15 +465,32 @@ export class TypeInterface extends Type {
 	public constructor(
 		private readonly properties: ReadonlyMap<string, Type>,
 		is_mutable: boolean = false,
+		private readonly typeparams: ReadonlyMap<string, GenericParameter> = new Map(),
 	) {
 		super(is_mutable);
+	}
+
+	public override get isBottomType(): boolean {
+		return [...this.properties.values()].some((value) => value.isBottomType);
+	}
+
+	public override get isTopType(): boolean {
+		return this.properties.size === 0;
+	}
+
+	public override get isReference(): boolean {
+		return true;
 	}
 
 	public override get hasMutable(): boolean {
 		return super.hasMutable || [...this.properties.values()].some((t) => t.hasMutable);
 	}
 
-	public override includes(v: OBJ.Object): boolean {
+	public override toString(): string {
+		return `[${ [...this.properties].map((prop) => prop.join(': ')).join(', ') }]`;
+	}
+
+	public override includes(v: VALUE.Value): boolean {
 		return [...this.properties.keys()].every((key) => key in v);
 	}
 
@@ -408,7 +498,9 @@ export class TypeInterface extends Type {
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
-	@Type.intersectDeco
+	@memoizeBinOp(true)
+	@typeConstant
+	@intersectionRules
 	public override intersect(t: Type): Type {
 		if (t instanceof TypeInterface) {
 			const props = new Map<string, Type>([...this.properties]);
@@ -425,7 +517,9 @@ export class TypeInterface extends Type {
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
 	 */
-	@Type.unionDeco
+	@memoizeBinOp(true)
+	@typeConstant
+	@unionRules
 	public override union(t: Type): Type {
 		if (t instanceof TypeInterface) {
 			const props = new Map<string, Type>();
@@ -446,9 +540,32 @@ export class TypeInterface extends Type {
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
 	 */
 	@strictEqual
-	@Type.subtypeDeco
+	@memoizeBinOp()
+	@subtypeRules
 	public override isSubtypeOf(t: Type): boolean {
 		if (t instanceof TypeInterface) {
+			if (![...this.typeparams.entries()].every(([name, this_param]) => {
+				const that_param: GenericParameter | undefined = t.typeparams.get(name);
+				if (!that_param) {
+					return true;
+				}
+				switch (t.isMutable ? that_param.variance.whenMutable : that_param.variance.normally) {
+					case Variance.INVARIANT: {
+						return this_param.assigned.equals(that_param.assigned);
+					}
+					case Variance.COVARIANT: {
+						return this_param.assigned.isSubtypeOf(that_param.assigned);
+					}
+					case Variance.CONTRAVARIANT: {
+						return that_param.assigned.isSubtypeOf(this_param.assigned);
+					}
+					case Variance.BIVARIANT: {
+						return true;
+					}
+				}
+			})) {
+				return false;
+			}
 			return [...t.properties].every(([name, type_]) => (
 				this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
 			));

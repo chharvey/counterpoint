@@ -19,10 +19,10 @@ None! VarCheck(SemanticTypeAlias var) :=
 	1. *Note:* Skip var-checking of `var` for now if source is "Object", as semantics is determined by syntax.
 	2. *If* `var.source` is "Object":
 		1. *Return.*
-	3. *If* the validator’s symbol table does not contain a SymbolStructure `symbol` whose `id` is `var.id`:
+	3. *If* the validator’s symbol table does not contain a SymbolSchema `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceErrorUndeclared.
 	// TODO: Throw a ReferenceErrorDeadZone if the variable is declared further down in source.
-	4. *If* `symbol` is an instance of `SymbolStructureVar`:
+	4. *If* `symbol` is an instance of `SymbolSchemaVar`:
 		1. *Throw:* a new ReferenceErrorKind.
 ;
 
@@ -37,10 +37,10 @@ None! VarCheck(SemanticTypeCall call) :=
 
 
 None! VarCheck(SemanticVariable var) :=
-	1. *If* the validator’s symbol table does not contain a SymbolStructure `symbol` whose `id` is `var.id`:
+	1. *If* the validator’s symbol table does not contain a SymbolSchema `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceErrorUndeclared.
 	// TODO: Throw a ReferenceErrorDeadZone if the variable is declared further down in source.
-	2. *If* `symbol` is an instance of `SymbolStructureType`:
+	2. *If* `symbol` is an instance of `SymbolSchemaType`:
 		1. *Throw:* a new ReferenceErrorKind.
 ;
 
@@ -55,34 +55,47 @@ None! VarCheck(SemanticCall call) :=
 
 
 None! VarCheck(SemanticDeclarationType decl) :=
-	1. *Assert:* `decl.children.count` is 2.
-	2. *Let* `id` be `decl.children.0.id`.
-	3. *If* the validator’s symbol table contains a SymbolStructure whose `id` is `var.id`:
-		1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
-	4. *Perform:* *Unwrap:* `VarCheck(decl.children.1)`.
-	5. *Let* `symbol` be a new SymbolStructureType [
-		id=        `id`,
-		typevalue= `Unknown`,
-	].
-	6. Add `symbol` as a record for `id` to the validator.
+	1. *If* `decl.children.count` is 1:
+		1. *Perform:* *Unwrap:* `VarCheck(decl.children.0)`.
+	2. *Else:*
+		1. *Assert:* `decl.children.count` is 2.
+		2. *Perform:* *Unwrap:* `VarCheck(decl.children.1)`.
+		3. *Let* `id` be `decl.children.0.id`.
+		4. *If* the validator’s symbol table contains a SymbolSchema whose `id` is `var.id`:
+			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
+		5. *Let* `symbol` be a new SymbolSchemaType [
+			id=        `id`,
+			typevalue= `Anything`,
+		].
+		6. Add `symbol` as a record for `id` to the validator.
 ;
 
 
 
 None! VarCheck(SemanticDeclarationVariable decl) :=
-	1. *Assert:* `decl.children.count` is 3.
-	2. *Let* `id` be `decl.children.0.id`.
-	3. *If* the validator’s symbol table contains a SymbolStructure whose `id` is `var.id`:
-		1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
-	4. *Perform:* *Unwrap:* `VarCheck(decl.children.1)`.
-	5. *Perform:* *Unwrap:* `VarCheck(decl.children.2)`.
-	6. *Let* `symbol` be a new SymbolStructureVar [
-		id=      `id`,
-		unfixed= `decl.unfixed`,
-		type=    `Unknown`,
-		value=   none,
-	].
-	7. Add `symbol` as a record for `id` to the validator.
+	1. *Let* `uninitialized` be `true`.
+	2. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticVariable.
+	3. *Let* `typenode` be an item `child` in `decl.children` such that `child` is a SemanticType.
+	4. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
+	5. *If* `decl.unfixed` is `false`:
+		1. *Assert:* `assigned` is not *none*.
+		2. *Note:* We can make this assertion due to the language syntax.
+	6. *Assert:* `typenode` is not *none*.
+	7. *Perform:* *Unwrap:* `VarCheck(typenode)`.
+	8. *If* `assigned` is not *none*:
+		1. *Set* `uninitialized` to `false`.
+		2. *Perform:* *Unwrap:* `VarCheck(assigned)`.
+	9. *If* `assignee` is not *none*:
+		1. *If* the validator’s symbol table contains a SymbolSchema whose `id` is `assignee.id`:
+			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
+		2. *Let* `symbol` be a new SymbolSchemaVar [
+			id=            `assignee.id`,
+			unfixed=       `decl.unfixed`,
+			uninitialized= `uninitialized`,
+			type=          `Anything`,
+			value=         *none*,
+		].
+		3. Add `symbol` as a record for `assignee.id` to the validator.
 ;
 
 

@@ -1,6 +1,7 @@
 _KEYWORD_OTHER =:=
 	// operator
-		| "mutable"
+		| "mut"
+		| "as"
 		| "is"
 		| "isnt"
 		| "if"
@@ -9,29 +10,32 @@ _KEYWORD_OTHER =:=
 	// storage
 		| "type"
 		| "let"
+		| "_"
 	// modifier
-		| "unfixed"
+		| "var"
 ;
 
 Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey
 	:= (SemanticKey[id=TokenWorth(_KEYWORD_OTHER)]);
-Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey
-	:= (SemanticKey[id=TokenWorth(KEYWORD_TYPE)]);
-Decorate(Word ::= KEYWORD_VALUE) -> SemanticKey
-	:= (SemanticKey[id=TokenWorth(KEYWORD_VALUE)]);
 Decorate(Word ::= IDENTIFIER) -> SemanticKey
 	:= (SemanticKey[id=TokenWorth(IDENTIFIER)]);
+Decorate(Word ::= KeywordType) -> SemanticKey
+	:= (SemanticKey[id=TokenId(KeywordType)]);
+Decorate(Word ::= KeywordValue) -> SemanticKey
+	:= (SemanticKey[id=TokenId(KeywordValue)]);
 
 
 
-Decorate(PrimitiveLiteral ::= KEYWORD_VALUE) -> SemanticConstant
-	:= (SemanticConstant[value=KeywordValue(KEYWORD_VALUE)]);
 Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticConstant
 	:= (SemanticConstant[value=Integer(TokenWorth(INTEGER))]);
 Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
 	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 	:= (SemanticConstant[value=String(TokenWorth(STRING))]);
+Decorate(PrimitiveLiteral ::= KeywordValue) -> SemanticConstant
+	:= (SemanticConstant[value=KeywordValue(KeywordValue)]);
+Decorate(PrimitiveLiteral ::= "@" Word) -> SemanticConstant
+	:= (SemanticConstant[value=Symbol(Decorate(Word).id)]);
 
 
 
@@ -102,10 +106,10 @@ Decorate(GenericArguments ::= "<" ","? Type# ","? ">") -> Sequence<SemanticType>
 
 
 
-Decorate(TypeUnit ::= KEYWORD_TYPE) -> SemanticTypeConstant
-	:= (SemanticTypeConstant[value=KeywordType(KEYWORD_TYPE)]);
 Decorate(TypeUnit ::= IDENTIFIER) -> SemanticTypeAlias
 	:= (SemanticTypeAlias[id=TokenWorth(IDENTIFIER)]);
+Decorate(TypeUnit ::= KeywordType) -> SemanticTypeConstant
+	:= (SemanticTypeConstant[value=KeywordType(KeywordType)]);
 Decorate(TypeUnit ::= PrimitiveLiteral) -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=ToType(Decorate(PrimitiveLiteral).value)]);
 Decorate(TypeUnit ::= TypeGrouped) -> SemanticType
@@ -121,11 +125,9 @@ Decorate(TypeUnit ::= TypeMapLiteral) -> SemanticTypeMap
 
 
 
-Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndexType
-	:= (SemanticIndexType
-		(SemanticTypeConstant[value=ToType(Integer(TokenWorth(INTEGER)))])
-	);
-Decorate(PropertyAccessType ::= "." Word) -> SemanticKey
+Decorate(PropertyAccessType ::= ("." | "?.") INTEGER) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
+Decorate(PropertyAccessType ::= ("." | "?.") Word) -> SemanticKey
 	:= Decorate(Word);
 
 Decorate(GenericCall ::= "." GenericArguments) -> Sequence<SemanticType>
@@ -136,7 +138,7 @@ Decorate(GenericCall ::= "." GenericArguments) -> Sequence<SemanticType>
 Decorate(TypeCompound ::= TypeUnit) -> SemanticType
 	:= Decorate(TypeUnit);
 Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess
-	:= (SemanticTypeAccess
+	:= (SemanticTypeAccess[kind=AccessKind(PropertyAccessType)]
 		Decorate(TypeCompound)
 		Decorate(PropertyAccessType)
 	);
@@ -175,7 +177,7 @@ Decorate(TypeUnarySymbol ::= TypeUnarySymbol "{" "}") -> SemanticTypeSet
 
 Decorate(TypeUnaryKeyword ::= TypeUnarySymbol) -> SemanticType
 	:= Decorate(TypeUnarySymbol);
-Decorate(TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword) -> SemanticTypeOperation
+Decorate(TypeUnaryKeyword ::= "mut" TypeUnaryKeyword) -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=MUTABLE]
 		Decorate(TypeUnaryKeyword)
 	);
@@ -321,18 +323,14 @@ Decorate(ExpressionUnit ::= MapLiteral) -> SemanticMap
 
 
 Decorate(PropertyAccess ::= ("." | "?." | "!.") INTEGER) -> SemanticIndex
-	:= (SemanticIndex
-		(SemanticConstant[value=Integer(TokenWorth(INTEGER))])
-	);
+	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
 Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey
 	:= Decorate(Word);
 Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression
 	:= Decorate(Expression);
 
 Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex
-	:= (SemanticIndex
-		(SemanticConstant[value=Integer(TokenWorth(INTEGER))])
-	);
+	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
 Decorate(PropertyAssign ::= "." Word) -> SemanticKey
 	:= Decorate(Word);
 Decorate(PropertyAssign ::= "." "[" Expression "]") -> SemanticExpression
@@ -395,21 +393,49 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 
 
 
-Decorate(ExpressionClaim ::= ExpressionUnarySymbol) -> SemanticExpression
+Decorate(ExpressionUnaryKeyword ::= ExpressionUnarySymbol) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol);
-Decorate(ExpressionClaim ::= "<" Type ">" ExpressionClaim) -> SemanticClaim
-	:= (SemanticClaim
-		Decorate(Type)
-		Decorate(ExpressionClaim)
+Decorate(ExpressionUnaryKeyword ::= "int" ExpressionUnaryKeyword) -> SemanticOperation
+	:= (SemanticOperation[operator=INT]
+		Decorate(ExpressionUnaryKeyword)
+	);
+Decorate(ExpressionUnaryKeyword ::= "float" ExpressionUnaryKeyword) -> SemanticOperation
+	:= (SemanticOperation[operator=FLOAT]
+		Decorate(ExpressionUnaryKeyword)
 	);
 
 
 
-Decorate(ExpressionExponential ::= ExpressionClaim) -> SemanticExpression
-	:= Decorate(ExpressionClaim);
-Decorate(ExpressionExponential ::= ExpressionClaim "^" ExpressionExponential) -> SemanticOperation
+Decorate(ExpressionCast ::= ExpressionUnaryKeyword) -> SemanticExpression
+	:= Decorate(ExpressionUnaryKeyword);
+Decorate(ExpressionCast ::= ExpressionCast "as" ExpressionUnaryKeyword) -> SemanticOperation
+	:= (SemanticOperation[operator=CAST]
+		Decorate(ExpressionCast)
+		Decorate(ExpressionUnaryKeyword)
+	);
+Decorate(ExpressionCast ::= ExpressionCast "as?" ExpressionUnaryKeyword) -> SemanticOperation
+	:= (SemanticOperation[operator=MAYBE]
+		Decorate(ExpressionCast)
+		Decorate(ExpressionUnaryKeyword)
+	);
+Decorate(ExpressionCast ::= ExpressionCast "as!" ExpressionUnaryKeyword) -> SemanticOperation
+	:= (SemanticOperation[operator=RESULT]
+		Decorate(ExpressionCast)
+		Decorate(ExpressionUnaryKeyword)
+	);
+Decorate(ExpressionCast ::= ExpressionCast "as" "<" Type ">") -> SemanticClaim
+	:= (SemanticClaim
+		Decorate(ExpressionCast)
+		Decorate(Type)
+	);
+
+
+
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol) -> SemanticExpression
+	:= Decorate(ExpressionUnarySymbol);
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticOperation
 	:= (SemanticOperation[operator=EXP]
-		Decorate(ExpressionClaim)
+		Decorate(ExpressionUnarySymbol)
 		Decorate(ExpressionExponential)
 	);
 
@@ -596,6 +622,10 @@ Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock
 
 
 
+Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType
+	:= (SemanticDeclarationType
+		Decorate(Type)
+	);
 Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType
 	:= (SemanticDeclarationType
 		(SemanticTypeAlias[id=TokenWorth(IDENTIFIER)])
@@ -604,22 +634,41 @@ Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarat
 
 
 
+Decorate(DeclarationVariable ::= "let" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=false]
+		Decorate(Type)
+		Decorate(Expression)
+	);
 Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=false]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression)
 	);
-Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable ::= "let" "var" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=true]
+		Decorate(Type)
+		Decorate(Expression)
+	);
+Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression)
 	);
+Decorate(DeclarationVariable ::= "let" "var" "_" "?:" Type ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=true]
+		Decorate(Type)
+	);
+Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER "?:" Type ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=true]
+		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		Decorate(Type)
+	);
 
 
 
-Decorate(DeclarationClaim ::= "claim" Assignee ":" Type) -> SemanticDeclarationClaim
+Decorate(DeclarationClaim ::= "claim" Assignee ":" Type ";") -> SemanticDeclarationClaim
 	:= (SemanticDeclarationClaim
 		Decorate(Assignee)
 		Decorate(Type)
@@ -665,6 +714,35 @@ ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode__List ","? ParseNode
 
 
 
-AccessKind(PropertyAccess ::= "."  (INTEGER | Word | "[" Expression "]")) -> NORMAL   := NORMAL;
-AccessKind(PropertyAccess ::= "?." (INTEGER | Word | "[" Expression "]")) -> OPTIONAL := OPTIONAL;
-AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> CLAIM    := CLAIM;
+AccessKind(PropertyAccess ::= "."  (INTEGER | Word | "[" Expression "]")) -> NORMAL := NORMAL;
+AccessKind(PropertyAccess ::= "?." (INTEGER | Word | "[" Expression "]")) -> MAYBE  := MAYBE;
+AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> RESULT := RESULT;
+
+
+
+TokenId(KeywordType  ::= "nothing")  -> TokenWorth("nothing");
+TokenId(KeywordType  ::= "bool")     -> TokenWorth("bool");
+TokenId(KeywordType  ::= "sym")      -> TokenWorth("sym");
+TokenId(KeywordType  ::= "int")      -> TokenWorth("int");
+TokenId(KeywordType  ::= "float")    -> TokenWorth("float");
+TokenId(KeywordType  ::= "str")      -> TokenWorth("str");
+TokenId(KeywordType  ::= "anything") -> TokenWorth("anything");
+TokenId(KeywordValue ::= "null")     -> TokenWorth("null");
+TokenId(KeywordValue ::= "false")    -> TokenWorth("false");
+TokenId(KeywordValue ::= "true")     -> TokenWorth("true");
+
+
+
+KeywordType(KeywordType ::= "nothing")  -> Type := Nothing;
+KeywordType(KeywordType ::= "bool")     -> Type := Boolean;
+KeywordType(KeywordType ::= "sym")      -> Type := Symbol;
+KeywordType(KeywordType ::= "int")      -> Type := Integer;
+KeywordType(KeywordType ::= "float")    -> Type := Float;
+KeywordType(KeywordType ::= "str")      -> Type := String;
+KeywordType(KeywordType ::= "anything") -> Type := Anything;
+
+
+
+KeywordValue(KeywordValue ::= "null")  -> Object := null;
+KeywordValue(KeywordValue ::= "false") -> Object := false;
+KeywordValue(KeywordValue ::= "true")  -> Object := true;

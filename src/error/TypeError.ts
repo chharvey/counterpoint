@@ -1,3 +1,4 @@
+import type {ConstructorType} from '../lib/index.ts';
 import {
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
@@ -5,9 +6,8 @@ import {
 	TypeErrorNoEntry,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
-} from './index.js';
-import type {ConstructorType} from './utils-private.js';
-import {ErrorCode} from './ErrorCode.js';
+} from './index.ts';
+import {ErrorCode} from './ErrorCode.ts';
 
 
 

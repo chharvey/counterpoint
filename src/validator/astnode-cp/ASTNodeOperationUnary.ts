@@ -1,29 +1,32 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
-	Builder,
+	BinVect,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
-} from '../../index.js';
+} from '../../index.ts';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeSupertype} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidOperatorUnary,
-} from '../Operator.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
+} from '../Operator.ts';
+import {
+	buildDeco,
+	typeDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 
 
@@ -34,6 +37,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return expression;
 	}
 
+
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		private readonly operator: ValidOperatorUnary,
@@ -42,83 +46,98 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		super(start_node, operator, [operand]);
 	}
 
-	/**
-	 * Return an instruction performing the operation on the argument.
-	 * @param mod   the binaryen module
-	 * @param type_ the compile-time type of the operand
-	 * @param arg   the operand
-	 * @return      an instruction that performs the operation at runtime
-	 */
-	private operate(mod: binaryen.Module, type_: TYPE.Type, arg: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		const bintype: binaryen.Type = binaryen.getExpressionType(arg);
-		assert.strictEqual(bintype, type_.binType());
-		if (type_ instanceof TYPE.TypeUnion) {
-			// assert: `arg` is equivalent to a result of `Builder.createBinEither()`
-			return Builder.createBinEither(
-				mod,
-				mod.tuple.extract(arg, 0),
-				this.operate(mod, type_.left,  mod.tuple.extract(arg, 1)),
-				this.operate(mod, type_.right, mod.tuple.extract(arg, 2)),
-			);
-		} else {
-			ASTNodeOperation.expectIntOrFloat(bintype);
-			return (this.operator === Operator.NEG && bintype === binaryen.f64)
-				? mod.f64.neg(arg)
-				: mod.call(new Map<binaryen.Type, ReadonlyMap<Operator, string>>([
-					[binaryen.i32, new Map<Operator, string>([
-						[Operator.NOT, 'inot'],
-						[Operator.EMP, 'iemp'],
-						[Operator.NEG, 'neg'],
-					])],
-					[binaryen.f64, new Map<Operator, string>([
-						[Operator.NOT, 'fnot'],
-						[Operator.EMP, 'femp'],
-					])],
-				]).get(bintype)!.get(this.operator)!, [arg], binaryen.i32);
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		const t0:   TYPE.Type              = this.operand.type();
+		const arg0: binaryen.ExpressionRef = this.operand.build();
+		if (this.operator === Operator.NOT) {
+			if (t0.isDefinitelyFalsy) {
+				return this.builder.module.block(null, [
+					this.builder.module.drop(arg0),
+					new BinVect(this.builder.module, true).vect,
+				], binaryen.v128);
+			} else if (t0.isDefinitelyTruthy) {
+				return this.builder.module.block(null, [
+					this.builder.module.drop(arg0),
+					new BinVect(this.builder.module, false).vect,
+				], binaryen.v128);
+			}
+		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
+			return this.builder.module.block(null, [
+				this.builder.module.drop(arg0),
+				new BinVect(this.builder.module, true).vect,
+			], binaryen.v128);
+		}
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.NOT,   'vnot'],
+			[Operator.EMP,   'vemp'],
+			[Operator.NEG,   'vneg'],
+			[Operator.INT,   'vtoi'],
+			[Operator.FLOAT, 'vtof'],
+		]).get(this.operator)!, [arg0], binaryen.v128);
+	}
+
+	@memoizeMethod
+	@typeDeco
+	public override type(): TYPE.Type {
+		const TYPE_NUMBER = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
+		const t: TYPE.Type = this.operand.type();
+		if (t.isBottomType) {
+			return TYPE.NOTHING;
+		}
+		switch (this.operator) {
+			case Operator.NOT: {
+				return (
+					t.isDefinitelyFalsy  ? TYPE.TRUE :
+					t.isDefinitelyTruthy ? TYPE.FALSE :
+					TYPE.BOOL
+				);
+			}
+			case Operator.EMP: {
+				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
+			}
+			case Operator.NEG: {
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				return t;
+			}
+			case Operator.INT: {
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				return TYPE.INT;
+			}
+			case Operator.FLOAT: {
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				return TYPE.FLOAT;
+			}
 		}
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return this.operate(builder.module, this.operand.type(), this.operand.build(builder));
-	}
-
-	@memoizeMethod
-	@ASTNodeExpression.typeDeco
-	public override type(): TYPE.Type {
-		const t: TYPE.Type = this.operand.type();
-		/* eslint-disable indent */
-		return (
-			(this.operator === Operator.NOT) ? (
-				(t.isSubtypeOf(TYPE.VOID.union(TYPE.NULL).union(OBJ.Boolean.FALSETYPE)))                       ? OBJ.Boolean.TRUETYPE :
-				(TYPE.VOID.isSubtypeOf(t) || TYPE.NULL.isSubtypeOf(t) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t)) ? TYPE.BOOL            :
-				OBJ.Boolean.FALSETYPE
-			) :
-			(this.operator === Operator.EMP) ? TYPE.BOOL :
-			(assert.strictEqual(this.operator, Operator.NEG), (
-				(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)))
-					? t
-					: throw_expression(new TypeErrorInvalidOperation(this))
-			))
-		);
-		/* eslint-enable indent */
-	}
-
-	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v: OBJ.Object | null = this.operand.fold();
+	public override fold(): VALUE.Value | null {
+		const v: VALUE.Value | null = this.operand.fold();
 		if (!v) {
 			return v;
 		}
-		return (
-			(this.operator === Operator.NOT) ?                OBJ.Boolean.fromBoolean(!v.isTruthy)              :
-			(this.operator === Operator.EMP) ?                OBJ.Boolean.fromBoolean(!v.isTruthy || v.isEmpty) :
-			(assert.strictEqual(this.operator, Operator.NEG), this.foldNumeric(v as OBJ.Number<any>)) // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
-		);
+		switch (this.operator) {
+			case Operator.NOT: {
+				return VALUE.Boolean.fromBoolean(!v.isTruthy);
+			}
+			case Operator.EMP: {
+				return VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty);
+			}
+			case Operator.NEG: {
+				return this.foldNumeric(v as VALUE.Number<any>); // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
+			}
+			case Operator.INT: {
+				return (v as VALUE.Number).toInt();
+			}
+			case Operator.FLOAT: {
+				return (v as VALUE.Number).toFloat();
+			}
+		}
 	}
 
-	private foldNumeric<T extends OBJ.Number<T>>(v0: T): T {
+	private foldNumeric<T extends VALUE.Number<T>>(v0: T): T {
 		try {
 			return new Map<Operator, (z: T) => T>([
 				[Operator.AFF, (z) => z],

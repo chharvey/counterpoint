@@ -4,14 +4,15 @@ import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDe
 import type {
 	NonemptyArray,
 	CodeUnit,
-} from '../lib/index.js';
+} from '../lib/index.ts';
 
 
 
-export type SyntaxNodeType<T extends string> =
+export type SyntaxNodeType<T extends string> = (
 	& SyntaxNode
 	& {readonly isNamed: true}
-	& {readonly type: T};
+	& {readonly type: T}
+);
 
 
 
@@ -25,15 +26,13 @@ export function isSyntaxNodeType<T extends string>(node: SyntaxNode, type_or_reg
 
 
 
-type Join<Strings extends Readonly<NonemptyArray<string>>> =
-	Strings extends [infer S0, ...infer SRest]
-		? `${ S0 extends string ? '' | `__${ S0 }` : '' }${ SRest extends Readonly<NonemptyArray<string>> ? Join<SRest> : '' }`
-		: '';
+type Join<Strings extends Readonly<NonemptyArray<string>>> = Strings extends [infer S0, ...infer SRest]
+	? `${ S0 extends string ? '' | `__${ S0 }` : '' }${ SRest extends Readonly<NonemptyArray<string>> ? Join<SRest> : '' }`
+	: '';
 
 
 
-export type SyntaxNodeFamily<Name extends string, Suffices extends Readonly<NonemptyArray<string>>> =
-	SyntaxNodeType<`${ Name }${ Join<Suffices> }`>;
+export type SyntaxNodeFamily<Name extends string, Suffices extends Readonly<NonemptyArray<string>>> = SyntaxNodeType<`${ Name }${ Join<Suffices> }`>;
 
 
 
@@ -49,7 +48,7 @@ function familyName<RuleName extends string>(family_name: string, ...suffices: r
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
-	return [...new Array(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
+	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
 }
 
 
@@ -63,18 +62,18 @@ export function isSyntaxNodeFamily<
 
 
 
-type Category =
+type Category = (
 	| 'type'
 	| 'expression'
 	| 'declaration'
 	| 'statement'
-;
+);
 
 
 
-export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ?
-	| SyntaxNodeType<'keyword_type'>
+export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 	| SyntaxNodeType<'identifier'>
+	| SyntaxNodeType<'keyword_type'>
 	| SyntaxNodeType<'primitive_literal'>
 	| SyntaxNodeType<'type_grouped'>
 	| SyntaxNodeType<'type_tuple_literal'>
@@ -86,7 +85,7 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ?
 	| SyntaxNodeType<'type_unary_keyword'>
 	| SyntaxNodeType<'type_intersection'>
 	| SyntaxNodeType<'type_union'>
-: C extends 'expression' ?
+) : C extends 'expression' ? (
 	| SyntaxNodeType<'identifier'>
 	| SyntaxNodeType<'primitive_literal'>
 	| SyntaxNodeType<'string_template'>
@@ -97,7 +96,7 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ?
 	| SyntaxNodeType<'map_literal'>
 	| SyntaxNodeType<'expression_compound'>
 	| SyntaxNodeType<'expression_unary_symbol'>
-	| SyntaxNodeType<'expression_claim'>
+	| SyntaxNodeType<'expression_cast'>
 	| SyntaxNodeType<'expression_exponential'>
 	| SyntaxNodeType<'expression_multiplicative'>
 	| SyntaxNodeType<'expression_additive'>
@@ -106,22 +105,22 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ?
 	| SyntaxNodeType<'expression_conjunctive'>
 	| SyntaxNodeType<'expression_disjunctive'>
 	| SyntaxNodeType<'expression_conditional'>
-: C extends 'declaration' ?
+) : C extends 'declaration' ? (
 	| SyntaxNodeType<'declaration_type'>
 	| SyntaxNodeType<'declaration_variable'>
 	| SyntaxNodeType<'declaration_claim'>
 	| SyntaxNodeType<'declaration_reassignment'>
-: C extends 'statement' ?
+) : C extends 'statement' ? (
 	| SyntaxNodeSupertype<'declaration'>
 	| SyntaxNodeType<'statement_expression'>
-: never;
+) : never;
 
 
 
 export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode, category: C): syntaxnode is SyntaxNodeSupertype<C> {
 	return new Map<Category, (node: SyntaxNode) => boolean>([
-		['type',        (node) => isSyntaxNodeType(node, /^keyword_type|identifier|primitive_literal|type_grouped|type_(tuple|record|dict|map)_literal|type_(compound|unary_symbol|unary_keyword|intersection|union)$/)],
-		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template|expression_grouped|(tuple|record|set|map)_literal|expression_(compound|unary_symbol|claim|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional)$/)],
+		['type',        (node) => isSyntaxNodeType(node, /^identifier|keyword_type|primitive_literal|type_grouped|type_(tuple|record|dict|map)_literal|type_(compound|unary_(symbol|keyword)|intersection|union)$/)],
+		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template|expression_grouped|(tuple|record|set|map)_literal|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional)$/)],
 		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable|claim|reassignment)$/)],
 		['statement',   (node) => isSyntaxNodeType(node, 'statement_expression') || isSyntaxNodeSupertype(node, 'declaration')],
 	]).get(category)!(syntaxnode);
@@ -141,12 +140,12 @@ type CodePoint = number;
  * An encoded character is a sequence of code units
  * that corresponds to a single code point in the UTF-8 encoding.
  */
-type EncodedChar =
+type EncodedChar = (
 	| [CodeUnit]
 	| [CodeUnit, CodeUnit]
 	| [CodeUnit, CodeUnit, CodeUnit]
 	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
-;
+);
 
 
 
