@@ -145,10 +145,11 @@ Symbol structures’ properties are described in the tables below.
 ##### SymbolSchemaType
 A **SymbolSchemaType** represents a type alias referencing a Counterpoint Language Type.
 
-Property      | Description
-------------- | -----------
-\`id\`        | the unique identifier of the declared symbol
-\`typevalue\` | the assessed type (a Counterpoint Language Type) of this symbol
+Property      | Read-Only? | Description
+------------- | ---------- | -----------
+\`id\`        | yes        | the unique identifier of the declared symbol
+\`isNominal\` | yes        | whether this symbol represents a nominal type
+\`typevalue\` | no         | the assessed type (a Counterpoint Language Type) of this symbol
 
 ##### SymbolSchemaVar
 A **SymbolSchemaVar** represents a variable referencing a Counterpoint Language Value.

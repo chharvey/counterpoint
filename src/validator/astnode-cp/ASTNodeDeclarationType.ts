@@ -44,7 +44,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 			if (this.validator.hasSymbol(this.assignee.id)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
-			this.validator.addSymbol(new SymbolSchemaType(this.assignee));
+			this.validator.addSymbol(new SymbolSchemaType(this.assignee, this.nominal));
 		}
 	}
 
