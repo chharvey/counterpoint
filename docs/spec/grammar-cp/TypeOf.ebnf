@@ -21,7 +21,7 @@ Type TypeOfUnfolded(SemanticConstant const) :=
 Type TypeOfUnfolded(SemanticVariable var) :=
 	1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
 	2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
-	3. *If* `symbol.uninitialized` is `true`:
+	3. *If* `symbol.isUninitialized` is `true`:
 		1. *Return:* `Union(symbol.type, Null)`.
 	4. *Else:*
 		1. *Return:* `symbol.type`.

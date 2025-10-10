@@ -41,22 +41,22 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert_instanceof(info_b, SymbolSchemaVar);
 			assert_instanceof(info_c, SymbolSchemaVar);
 			assert.partialDeepStrictEqual(info_a, {
-				unfixed:       false,
-				uninitialized: false,
-				type:          TYPE.ANYTHING,
-				value:         null,
+				isUnfixed:       false,
+				isUninitialized: false,
+				type:            TYPE.ANYTHING,
+				value:           null,
 			});
 			assert.partialDeepStrictEqual(info_b, {
-				unfixed:       true,
-				uninitialized: false,
-				type:          TYPE.ANYTHING,
-				value:         null,
+				isUnfixed:       true,
+				isUninitialized: false,
+				type:            TYPE.ANYTHING,
+				value:           null,
 			});
 			assert.partialDeepStrictEqual(info_c, {
-				unfixed:       true,
-				uninitialized: true,
-				type:          TYPE.ANYTHING,
-				value:         null,
+				isUnfixed:       true,
+				isUninitialized: true,
+				type:            TYPE.ANYTHING,
+				value:           null,
 			});
 		});
 
@@ -118,10 +118,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
-				unfixed:       true,
-				uninitialized: true,
-				type:          TYPE.INT.union(TYPE.FLOAT),
-				value:         null,
+				isUnfixed:       true,
+				isUninitialized: true,
+				type:            TYPE.INT.union(TYPE.FLOAT),
+				value:           null,
 			});
 		});
 
