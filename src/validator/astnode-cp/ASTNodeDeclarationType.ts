@@ -26,12 +26,13 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_type'>,
+		private readonly nominal:  boolean,
 		private readonly assignee: ASTNodeTypeAlias | null,
 		public  readonly assigned: ASTNodeType,
 	) {
 		super(
 			start_node,
-			{},
+			{nominal},
 			(assignee) ? [assignee, assigned] : [assigned],
 		);
 	}

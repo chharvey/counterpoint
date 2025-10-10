@@ -645,11 +645,13 @@ class Decorator {
 			['declaration_type', (node) => (
 				node.children.length === 5 ? new AST.ASTNodeDeclarationType(
 					node as SyntaxNodeType<'declaration_type'>,
+					false,
 					(isSyntaxNodeType(node.children[1], 'identifier')) ? new AST.ASTNodeTypeAlias(node.children[1]) : null,
 					this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
 				) :
 				(assert.strictEqual(node.children.length, 6), new AST.ASTNodeDeclarationType(
 					node as SyntaxNodeType<'declaration_type'>,
+					true,
 					(isSyntaxNodeType(node.children[2], 'identifier')) ? new AST.ASTNodeTypeAlias(node.children[2]) : null,
 					this.decorateTypeNode(node.children[4] as SyntaxNodeSupertype<'type'>),
 				))

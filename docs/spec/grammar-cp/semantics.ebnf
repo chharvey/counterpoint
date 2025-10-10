@@ -143,7 +143,7 @@ SemanticDeclaration =:=
 	| SemanticDeclarationVariable
 ;
 
-SemanticDeclarationType
+SemanticDeclarationType[nominal: Boolean]
 	::= SemanticTypeAlias? SemanticType;
 
 SemanticDeclarationVariable[unfixed: Boolean]
