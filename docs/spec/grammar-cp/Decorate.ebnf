@@ -601,11 +601,11 @@ Decorate(Expression ::= ExpressionConditional) -> SemanticExpression
 
 
 
-Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType
+Decorate(DeclarationType ::= "type" "nominal"? "_" "=" Type ";") -> SemanticDeclarationType
 	:= (SemanticDeclarationType
 		Decorate(Type)
 	);
-Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType
+Decorate(DeclarationType ::= "type" "nominal"? IDENTIFIER "=" Type ";") -> SemanticDeclarationType
 	:= (SemanticDeclarationType
 		(SemanticTypeAlias[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)

@@ -42,6 +42,7 @@ Word ::=
 		| "_"
 		| "void"
 	// modifier
+		| "nominal"
 		| "var"
 	| IDENTIFIER
 	| KeywordType
@@ -190,7 +191,7 @@ Expression ::=
 
 
 DeclarationType
-	::= "type" ("_" | IDENTIFIER) "=" Type ";";
+	::= "type" "nominal"? ("_" | IDENTIFIER) "=" Type ";";
 
 DeclarationVariable ::=
 	| "let" "var"? ("_" | IDENTIFIER) ":"  Type "=" Expression ";"

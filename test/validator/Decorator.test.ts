@@ -408,6 +408,14 @@ describe('Decorator', () => {
 				type T = U;
 				% (declaration_type)
 			`]],
+			['Decorate(DeclarationType ::= "type" "nominal" "_" "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
+				type nominal _ = U;
+				% (declaration_type)
+			`]],
+			['Decorate(DeclarationType ::= "type" "nominal" IDENTIFIER "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
+				type nominal T = U;
+				% (declaration_type)
+			`]],
 
 			['Decorate(DeclarationVariable ::= "let" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				let _: T = b;
