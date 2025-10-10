@@ -346,7 +346,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 			1. *If* `seq_b[i].optional` is `false`:
 				1. *Assert:* `expr.children[i]` is set.
 		6. *For index* `i` in `expr.children`:
-			1. Let `ib` be `seq_b[i]`.
+			1. *Let* `ib` be `seq_b[i]`.
 			2. *If:* `ib` is set:
 				1. *Perform:* `TypeCheckAssign(expr.children[i], ib.type)`.
 		7. *Return.*
@@ -362,7 +362,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 				2. *If* `property` is not set:
 					1. *Throw:* a new TypeErrorNotAssignable.
 		6. *For each* `property` in `expr.children`:
-			1. Let `vb` be `struct_b[property.children.0.id]`.
+			1. *Let* `vb` be `struct_b[property.children.0.id]`.
 			2. *If:* `vb` is set:
 				1. *Perform:* `TypeCheckAssign(property.children.1, vb.type)`.
 		7. *Return.*

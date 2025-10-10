@@ -1134,7 +1134,7 @@ Similarly, an algorithm step that reads «*Return:* ‹CS›.»,
 where ‹CS› represents an actual CompletionSchema object (such as the result of an algorithm call),
 is also to be interpreted as-is, as returning the CompletionSchema itself.
 
-An algorithm step that reads «*Return*.» is shorthand for «*Return:* [kind= *normal*].», that is,
+An algorithm step that reads «*Return.*» is shorthand for «*Return:* [kind= *normal*].», that is,
 it outputs a normal completion without a \`value\` (thus the output type is None).
 
 An algorithm with no Return statement is implied to return a normal completion with no value.
