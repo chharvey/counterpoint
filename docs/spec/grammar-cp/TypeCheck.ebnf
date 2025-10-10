@@ -13,7 +13,7 @@ None! TypeCheck(Or<
 
 
 None TypeCheck(SemanticType type) :=
-	1. *Return*.
+	1. *Return.*
 ;
 
 
@@ -66,15 +66,16 @@ None! TypeCheck(SemanticDeclarationVariable decl) :=
 Type! TypeCheck(SemanticDeclarationClaim claim) :=
 	1. *Assert:* `claim.children.count` is 2.
 	2. *Let* `assignee` be `claim.children.0`.
-	3. Let `computed_type` be `TypeOf(assignee)`.
-	4. Let `claimed_type` be `TypeValueOf(claim.children.1)`.
-	5. *If* *UnwrapAffirm:* `Intersection(computed_type, claimed_type)` is `Nothing`:
+	3. *Let* `computed_type` be *Unwrap:* `TypeOf(assignee)`.
+	4. *Let* `claimed_type` be *Unwrap:* `TypeValueOf(claim.children.1)`.
+	5. *Let* `intersection` be *UnwrapAffirm:* `Intersection(computed_type, claimed_type)`.
+	6. *If* *UnwrapAffirm:* `IsBottomType(intersection)` is `true` *and* *UnwrapAffirm:* `IsBottomType(computed_type)` is `false` *and* *UnwrapAffirm:* `IsBottomType(claimed_type)` is `false`:
 		1. *Throw:* a new TypeErrorNotAssignable.
-	6. *If* `assignee` is a SemanticVariable:
-		1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `assignee.id`:
-			1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
+	7. *If* `assignee` is a SemanticVariable:
+		1. *If* the validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`:
+			1. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 			2. *Set* `symbol.type` to `claimed_type`.
-	7. *Else:*
+	8. *Else:*
 		// TODO
 ;
 

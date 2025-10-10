@@ -47,13 +47,13 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		const computed_type: TYPE.Type = this.operand.type();
 		const claimed_type:  TYPE.Type = this.claimed_type.eval();
 		/* If the types are disjoint and neither of the types are the Bottom Type, throw an error. */
-		if (claimed_type.intersect(computed_type).isBottomType && !claimed_type.isBottomType && !computed_type.isBottomType) {
+		if (claimed_type.intersect(computed_type).isBottomType && !computed_type.isBottomType && !claimed_type.isBottomType) {
 			/*
 				`Conversion of type \`${ computed_type }\` to type \`${ claimed_type }\` may be a mistake
 				because neither type sufficiently overlaps with the other.
-				If this was intentional, convert the expression to \`obj\` first.`;
+				If this was intentional, convert the expression to \`anything\` first.`;
 			*/
-			throw new TypeErrorNotAssignable(claimed_type, computed_type, this);
+			throw new TypeErrorNotAssignable(computed_type, claimed_type, this);
 		}
 		return claimed_type;
 	}
