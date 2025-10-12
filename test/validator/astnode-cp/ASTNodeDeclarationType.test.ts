@@ -68,7 +68,7 @@ describe('ASTNodeDeclarationType', () => {
 
 
 	describe('#typeCheck', () => {
-		it('sets `SymbolSchema#value`.', () => {
+		it('sets `SymbolSchemaType#typevalue`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
 				type nominal U = str;
@@ -79,9 +79,9 @@ describe('ASTNodeDeclarationType', () => {
 				(goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 				TYPE.INT,
 			);
-			return assert.strictEqual(
+			return assert.deepStrictEqual(
 				(goal.validator.getSymbolInfo(0x101n) as SymbolSchemaType).typevalue,
-				TYPE.STR,
+				new TYPE.Nominal(0x101n, TYPE.STR),
 			);
 		});
 	});
