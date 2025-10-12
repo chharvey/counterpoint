@@ -1,5 +1,6 @@
 export * from './Type.ts';
 
+export * from './Nominal.ts';
 export * from './Combinable.ts';
 export * from './Intersection.ts';
 export * from './Union.ts';
