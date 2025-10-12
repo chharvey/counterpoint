@@ -6,6 +6,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
+	SymbolSchemaType,
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
@@ -977,22 +978,23 @@ describe('ASTNodeExpression', () => {
 			it('returns the type value of the claimed type.', () => {
 				assert.ok(AST.ASTNodeClaim.fromSource('3 as <int?>;').type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
-			it('`nothing` is assignable to any type (even though intersection is empty).', () => {
-				new Map<string, (typ: TYPE.Type) => boolean>([
-					['n as <nothing>;', (typ) => typ.isBottomType],
-					['n as <int>;',     (typ) => typ.equals(TYPE.INT)],
-				]).forEach((assertion, src) => {
-					const claim: AST.ASTNodeClaim = AST.ASTNodeClaim.fromSource(src);
-					claim.validator.addSymbol(new SymbolSchemaVar(
-						// @ts-expect-error --- it’s private
-						claim.operand as AST.ASTNodeVariable,
-						false,
-						false,
-					));
-					return assert.ok(assertion.call(null, claim.type()));
-				});
+			it('allows claiming to `nothing` even though intersection is empty.', () => {
+				assert.ok(AST.ASTNodeClaim.fromSource('42 as <nothing>;').type().isBottomType);
 			});
-			it('throws when the operand type and claimed type do not overlap.', () => {
+			it('allows claiming a `nothing` expression even though intersection is empty.', () => {
+				const claim: AST.ASTNodeClaim = AST.ASTNodeClaim.fromSource('n as <int>;');
+				claim.validator.addSymbol(new SymbolSchemaVar(claim.operand as AST.ASTNodeVariable, false, false));
+				(claim.validator.getSymbolInfo(0x100n) as SymbolSchemaVar).type = TYPE.NOTHING;
+				assert.strictEqual(claim.type(), TYPE.INT);
+			});
+			it('allows claiming to a nominal type.', () => {
+				const claim: AST.ASTNodeClaim = AST.ASTNodeClaim.fromSource('"Alice" as <Name>;');
+				claim.validator.addSymbol(new SymbolSchemaType(claim.claimed_type as AST.ASTNodeTypeAlias, true));
+				const expected = new TYPE.Nominal(0x100n, TYPE.STR);
+				(claim.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue = expected;
+				assert.strictEqual(claim.type(), expected);
+			});
+			it('throws when the operand type and claimed type do not overlap (and neither is `nothing`).', () => {
 				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <str>;')      .type(), TypeErrorNotAssignable);
 				assert.throws(() => AST.ASTNodeClaim.fromSource('"three" as <int>;').type(), TypeErrorNotAssignable);
 				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <float>;')    .type(), TypeErrorNotAssignable);

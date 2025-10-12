@@ -20,8 +20,8 @@ export class Nominal extends Type {
 	 * @param shape The underlying structure (a Type) of this type.
 	 */
 	public constructor(
-		public  readonly id:    bigint,
-		private readonly shape: Type,
+		public readonly id:    bigint,
+		public readonly shape: Type,
 	) {
 		super(shape.isMutable, shape.values);
 		return new Proxy(this, {
