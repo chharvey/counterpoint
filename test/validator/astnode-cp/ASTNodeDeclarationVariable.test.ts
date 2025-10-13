@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	AST,
@@ -109,6 +110,32 @@ describe('ASTNodeDeclarationVariable', () => {
 			`);
 			var_.varCheck();
 			return var_.typeCheck();
+		});
+
+		context('when assignee is a nominal type.', () => {
+			it('throws when assigned is not type-claimed correctly (even if structurally assignable).', () => {
+				xjs.Array.forEachAggregated(extract_lines`
+					let n: Name = "Alice";
+					let n: Name = "Alice" as <str>;
+					let n: Name = "Alice" as <"Alice">;
+				`, (stmt) => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						type nominal Name = str;
+						${ stmt }
+					`);
+					goal.varCheck();
+					(goal.children[1] as AST.ASTNodeDeclarationVariable).assigned!.typeCheck(); // assert does not throw
+					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+				});
+			});
+			it('passes when assigned is type-claimed correctly.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					type nominal Name = str;
+					let n: Name = "Alice" as <Name>;
+				`);
+				goal.varCheck();
+				goal.typeCheck(); // assert does not throw
+			});
 		});
 
 		it('passes typechecking when uninitialized.', () => {
