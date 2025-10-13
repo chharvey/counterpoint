@@ -1,3 +1,4 @@
+import {Keyword} from '../../parser/index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -44,8 +45,11 @@ export class Nominal extends Type {
 
 	// declare the missing members to pacify TS
 	public declare isReference: boolean;
-	public declare toString:    () => string;
 
+
+	public override toString(): string {
+		return `${ Keyword.NOMINAL } ${ this.shape.toString() }`;
+	}
 
 	@strictEqual
 	@memoizeBinOp()

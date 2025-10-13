@@ -556,7 +556,17 @@ describe('Type', () => {
 				assert.ok(!null_str.isSubtypeOf(nom_null_str),  'str | null !<: NomNullishStr');
 			});
 			it('allows nominal subtyping based only on identifier.', () => {
+				// though these would never be allowed in a program
 				assert.ok(iso8601.isSubtypeOf(new TYPE.Nominal(0x101n, TYPE.STR)), 'Iso8601 <: Iso8601');
+				assert.ok(iso8601.isSubtypeOf(new TYPE.Nominal(0x101n, TYPE.INT)), 'Iso8601 <: NomInt');
+				assert.ok(!iso8601.isSubtypeOf(new TYPE.Nominal(0x102n, TYPE.STR)), 'Iso8601 <: NomStr');
+			});
+			it('allows nested nominal types.', () => {
+				const t = new TYPE.Nominal(0x102n, TYPE.NULL);
+				const u = new TYPE.Nominal(0x103n, t);
+				assert.ok(t.isSubtypeOf(TYPE.NULL));
+				assert.ok(u.isSubtypeOf(TYPE.NULL));
+				assert.ok(!u.isSubtypeOf(t));
 			});
 		});
 
