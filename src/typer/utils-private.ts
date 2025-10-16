@@ -2,7 +2,18 @@ import type {
 	ConstructorType,
 	MethodDecorator,
 } from '../lib/index.ts';
-import type {VALUE} from './index.ts';
+import type {
+	VALUE,
+	TYPE,
+} from './index.ts';
+
+
+
+/**
+ * Comparator lambda for checking equality of Counterpoint Language Types.
+ * Takes two types `a` and `b` and returns the result of «*UnwrapAffirm:* \`Equal(a, b)\`» in the Counterpoint specification.
+ */
+export const language_types_equal = (a: TYPE.Type, b: TYPE.Type): boolean => a.equals(b);
 
 
 

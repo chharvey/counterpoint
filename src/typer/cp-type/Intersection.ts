@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	language_types_equal,
 	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
@@ -10,10 +11,7 @@ import {
 	Union,
 	NEVER,
 } from './index.ts';
-import {
-	type ReadonlyArrayOfAtLeast2,
-	language_types_equal,
-} from './utils-private.ts';
+import type {ReadonlyArrayOfAtLeast2} from './utils-private.ts';
 import {
 	typeConstant,
 	intersectionRules,
