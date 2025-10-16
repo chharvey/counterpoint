@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	languageValuesIdentical,
+	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
@@ -59,8 +59,8 @@ export class Union extends Combinable {
 	) {
 		super(
 			operands.reduce(
-				(accum, next) => xjs.Set.union(accum, next.values, languageValuesIdentical),
-				xjs.Set.union(operand0.values, operand1.values, languageValuesIdentical),
+				(accum, next) => xjs.Set.union(accum, next.values, language_values_identical),
+				xjs.Set.union(operand0.values, operand1.values, language_values_identical),
 			),
 			[
 				...(operand0 instanceof Union ? operand0.operands : [operand0] as const),

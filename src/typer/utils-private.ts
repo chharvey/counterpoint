@@ -7,13 +7,17 @@ import type {VALUE} from './index.ts';
 
 
 /**
- * Comparator function for checking “sameness” of `Type#values` set elements.
- * Values should be “the same” iff they are identical per the Counterpoint specification.
+ * Comparator lambda for checking identity of Counterpoint Language Values.
+ * Takes two values `a` and `b` and returns the result of `a === b` in the Counterpoint language.
  */
-export const languageValuesIdentical = (a: VALUE.Value, b: VALUE.Value): boolean => a.identical(b);
+export const language_values_identical = (a: VALUE.Value, b: VALUE.Value): boolean => a.identical(b);
 
 
 
+/**
+ * Comparator lambda for checking equality of Counterpoint Language Values.
+ * Takes two values `a` and `b` and returns the result of `a == b` in the Counterpoint language.
+ */
 export const language_values_equal = (a: VALUE.Value, b: VALUE.Value): boolean => a.equal(b);
 
 

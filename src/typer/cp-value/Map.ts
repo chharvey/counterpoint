@@ -3,7 +3,7 @@ import * as xjs from 'extrajs';
 import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
-	languageValuesIdentical,
+	language_values_identical,
 	language_values_equal,
 	strictEqual,
 	instanceOf,
@@ -28,7 +28,7 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		super();
 		const uniques = new Map<K, V>();
 		[...cases].forEach(([ant, con]) => {
-			xjs.Map.set(uniques, ant, con, languageValuesIdentical);
+			xjs.Map.set(uniques, ant, con, language_values_identical);
 		});
 		this.cases = uniques;
 	}
@@ -78,7 +78,7 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 	}
 
 	public get(ant: Value): V | Null {
-		return xjs.Map.has<Value, V>(this.cases, ant, languageValuesIdentical) ? xjs.Map.get<Value, V>(this.cases, ant, languageValuesIdentical)! : NULL;
+		return xjs.Map.has<Value, V>(this.cases, ant, language_values_identical) ? xjs.Map.get<Value, V>(this.cases, ant, language_values_identical)! : NULL;
 	}
 }
 export {ValueMap as Map};

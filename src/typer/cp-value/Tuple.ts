@@ -5,7 +5,7 @@ import {
 	type Builder,
 } from '../../index.ts';
 import {
-	languageValuesIdentical,
+	language_values_identical,
 	language_values_equal,
 	strictEqual,
 	instanceOf,
@@ -28,7 +28,7 @@ class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	@instanceOf(() => ValueTuple)
 	@memoizeBinOp(true, true)
 	public override identical(value: Value): boolean {
-		return CollectionIndexed.samenessDfn<T>(this, value as ValueTuple<T>, languageValuesIdentical);
+		return CollectionIndexed.samenessDfn<T>(this, value as ValueTuple<T>, language_values_identical);
 	}
 
 	@strictEqual

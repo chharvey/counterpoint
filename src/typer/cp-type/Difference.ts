@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import {
-	languageValuesIdentical,
+	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
@@ -32,7 +32,7 @@ export class Difference extends TypeOperation {
 		public readonly left:  Type,
 		public readonly right: Type,
 	) {
-		super(xjs.Set.difference(left.values, right.values, languageValuesIdentical), [left, right]);
+		super(xjs.Set.difference(left.values, right.values, language_values_identical), [left, right]);
 	}
 
 	/*
