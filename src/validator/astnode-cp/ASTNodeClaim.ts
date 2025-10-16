@@ -49,13 +49,13 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		const computed_shape: TYPE.Type = computed_type instanceof TYPE.Nominal ? computed_type.shape : computed_type;
 		const claimed_shape:  TYPE.Type = claimed_type  instanceof TYPE.Nominal ? claimed_type.shape  : claimed_type;
 		/* If the type shapes are disjoint and neither of the types are the Bottom Type, throw an error. */
-		if (computed_shape.intersect(claimed_shape).isBottomType && !claimed_type.isBottomType && !computed_type.isBottomType) {
+		if (computed_shape.intersect(claimed_shape).isBottomType && !computed_type.isBottomType && !claimed_type.isBottomType) {
 			/*
 				`Conversion of type \`${ computed_type }\` to type \`${ claimed_type }\` may be a mistake
 				because neither type sufficiently overlaps with the other.
-				If this was intentional, convert the expression to \`obj\` first.`;
+				If this was intentional, convert the expression to \`anything\` first.`;
 			*/
-			throw new TypeErrorNotAssignable(claimed_type, computed_type, this);
+			throw new TypeErrorNotAssignable(computed_type, claimed_type, this);
 		}
 		return claimed_type;
 	}

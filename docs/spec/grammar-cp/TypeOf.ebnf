@@ -211,11 +211,12 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 Type! TypeOf(SemanticClaim claim) :=
 	1. *Note:* This algorithm overrides `TypeOf(SemanticExpression)`.
 	2. *Assert:* `claim.children.count` is 2.
-	3. Let `computed_type` be `TypeOf(claim.children.0)`.
-	4. Let `claimed_type` be `TypeValueOf(claim.children.1)`.
-	5. *If* *UnwrapAffirm:* `Intersection(computed_type, claimed_type)` is `Nothing`:
+	3. *Let* `computed_type` be *Unwrap:* `TypeOf(claim.children.0)`.
+	4. *Let* `claimed_type` be *Unwrap:* `TypeValueOf(claim.children.1)`.
+	5. *Let* `intersection` be *UnwrapAffirm:* `Intersection(computed_type, claimed_type)`.
+	6. *If* *UnwrapAffirm:* `IsBottomType(intersection)` is `true` *and* *UnwrapAffirm:* `IsBottomType(computed_type)` is `false` *and* *UnwrapAffirm:* `IsBottomType(claimed_type)` is `false`:
 		1. *Throw:* a new TypeErrorNotAssignable.
-	6. Return `claimed_type`.
+	7. *Return:* `claimed_type`.
 ;
 
 

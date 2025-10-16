@@ -270,63 +270,70 @@ Boolean Equal(Object a, Object b) :=
 			1. *Return:* `true`.
 		2. *If* `a` is `-0.0` *and* `b` is `0.0`:
 			1. *Return:* `true`.
-	4. *If* `a` is an instance of `Tuple` or `List` *and* `b` is an instance of `Tuple` or `List`:
-		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
-		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+	4. Let the substeps of this step be a subroutine for determining equality of given Sequences of items, `seq_a` and `seq_b`.
+		1. *Assert:* `seq_a` is a Sequence of Counterpoint language values.
+		2. *Assert:* `seq_b` is a Sequence of Counterpoint language values.
 		3. *If* `seq_a.count` is not `seq_b.count`:
 			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following step.
-			1. *Note:* This assumption prevents an infinite loop,
-				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For index* `i` in `seq_b`:
+		4. *For index* `i` in `seq_b`:
 			1. *If* *UnwrapAffirm:* `Equal(seq_a[i], seq_b[i])` is `false`:
 				1. *Return:* `false`.
-		6. *Return:* `true`.
-	5. *If* `a` is an instance of `Record` or `Dict` *and* `b` is an instance of `Record` or `Dict`:
-		1. *Let* `struct_a` be a new Schema whose properties are exactly the properties in `a`.
-		2. *Let* `struct_b` be a new Schema whose properties are exactly the properties in `b`.
-		3. *If* `struct_a.count` is not `struct_b.count`:
+		5. *Return:* `true`.
+	5. Let the substeps of this step be a subroutine for determining equality of given Schemata of values, `sch_a` and `sch_b`.
+		1. *Assert:* `sch_a` is a Schema of Conterpoint language values.
+		2. *Assert:* `sch_b` is a Schema of Conterpoint language values.
+		3. *If* `sch_a.count` is not `sch_b.count`:
 			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following step.
-			1. *Note:* This assumption prevents an infinite loop,
-				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For key* `k` in `struct_b`:
-			1. *If* `struct_a[k]` is not set:
+		4. *For key* `k` in `sch_b`:
+			1. *If* `sch_a[k]` is not set:
 				1. *Return:* `false`.
-			2. *If* *UnwrapAffirm:* `Equal(struct_a[k], struct_b[k])` is `false`:
+			2. *If* *UnwrapAffirm:* `Equal(sch_a[k], sch_b[k])` is `false`:
 				1. *Return:* `false`.
-		6. *Return:* `true`.
-	6. *If* `a` is an instance of `Set` *and* `b` is an instance of `Set`:
+		5. *Return:* `true`.
+	6. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following steps.
+		1. *Note:* This assumption prevents an infinite loop,
+			if `a` and `b` ever recursively contain themselves or each other.
+	7. *If* `a` is an instance of `Tuple` *and* `b` is an instance of `Tuple`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *Perform:* The subroutine listed in Step 4 of this algorithm.
+	8. *If* `a` is an instance of `List` *and* `b` is an instance of `List`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *Perform:* The subroutine listed in Step 4 of this algorithm.
+	9. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
+		1. *Let* `sch_a` be a new Schema whose properties are exactly the properties in `a`.
+		2. *Let* `sch_b` be a new Schema whose properties are exactly the properties in `b`.
+		3. *Perform:* The subroutine listed in Step 5 of this algorithm.
+	10. *If* `a` is an instance of `Dict` *and* `b` is an instance of `Dict`:
+		1. *Let* `sch_a` be a new Schema whose properties are exactly the properties in `a`.
+		2. *Let* `sch_b` be a new Schema whose properties are exactly the properties in `b`.
+		3. *Perform:* The subroutine listed in Step 5 of this algorithm.
+	11. *If* `a` is an instance of `Set` *and* `b` is an instance of `Set`:
 		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
 		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
 		3. *If* `seq_a.count` is not `seq_b.count`:
 			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following step.
-			1. *Note:* This assumption prevents an infinite loop,
-				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For each* `it_b` in `seq_b`:
+		4. *For each* `it_b` in `seq_b`:
 			1. Find an item `it_a` in `seq_a` such that *UnwrapAffirm:* `Equal(it_a, it_b)` is `true`.
 			2. *If* `it_a` is not set:
 				1. *Return:* `false`.
-		6. *Return:* `true`.
-	7. *If* `a` is an instance of `Map` *and* `b` is an instance of `Map`:
+		5. *Return:* `true`.
+	12. *If* `a` is an instance of `Map` *and* `b` is an instance of `Map`:
 		1. *Let* `data_a` be a new Sequence of 2-tuples,
 			whose items are exactly the antecedents and consequents in `a`.
 		2. *Let* `data_b` be a new Sequence of 2-tuples,
 			whose items are exactly the antecedents and consequents in `b`.
 		3. *If* `data_a.count` is not `data_b.count`:
 			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following step.
-			1. *Note:* This assumption prevents an infinite loop,
-				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For each* `it_b` in `data_b`:
+		4. *For each* `it_b` in `data_b`:
 			1. Find an item `it_a` in `data_a` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
 			2. *If* `it_a` is not set:
 				1. *Return:* `false`.
 			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
 				1. *Return:* `false`.
-		6. *Return:* `true`.
-	8. *Return:* `false`.
+		5. *Return:* `true`.
+	13. *Return:* `false`.
 ```
 
 
@@ -346,7 +353,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 			1. *If* `seq_b[i].optional` is `false`:
 				1. *Assert:* `expr.children[i]` is set.
 		6. *For index* `i` in `expr.children`:
-			1. Let `ib` be `seq_b[i]`.
+			1. *Let* `ib` be `seq_b[i]`.
 			2. *If:* `ib` is set:
 				1. *Perform:* `TypeCheckAssign(expr.children[i], ib.type)`.
 		7. *Return.*
@@ -362,7 +369,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 				2. *If* `property` is not set:
 					1. *Throw:* a new TypeErrorNotAssignable.
 		6. *For each* `property` in `expr.children`:
-			1. Let `vb` be `struct_b[property.children.0.id]`.
+			1. *Let* `vb` be `struct_b[property.children.0.id]`.
 			2. *If:* `vb` is set:
 				1. *Perform:* `TypeCheckAssign(property.children.1, vb.type)`.
 		7. *Return.*
