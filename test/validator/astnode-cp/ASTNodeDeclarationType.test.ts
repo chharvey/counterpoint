@@ -28,14 +28,8 @@ describe('ASTNodeDeclarationType', () => {
 			const info_u: SymbolSchema | null = goal.validator.getSymbolInfo(0x101n);
 			assert_instanceof(info_t, SymbolSchemaType);
 			assert_instanceof(info_u, SymbolSchemaType);
-			assert.partialDeepStrictEqual(info_t, {
-				isNominal: false,
-				typevalue: TYPE.ANYTHING,
-			});
-			assert.partialDeepStrictEqual(info_u, {
-				isNominal: true,
-				typevalue: TYPE.ANYTHING,
-			});
+			assert.strictEqual(info_t.typevalue, TYPE.ANYTHING);
+			assert.strictEqual(info_u.typevalue, TYPE.ANYTHING);
 		});
 
 		it('for blank identifiers, does not add to symbol table.', () => {

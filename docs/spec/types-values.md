@@ -148,7 +148,6 @@ A **SymbolSchemaType** represents a type alias referencing a Counterpoint Langua
 Property      | Read-Only? | Description
 ------------- | ---------- | -----------
 \`id\`        | yes        | the unique identifier of the declared symbol
-\`isNominal\` | yes        | whether this symbol represents a nominal type
 \`typevalue\` | no         | the assessed type (a Counterpoint Language Type) of this symbol
 
 ##### SymbolSchemaVar

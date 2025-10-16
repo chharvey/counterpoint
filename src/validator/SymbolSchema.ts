@@ -35,10 +35,7 @@ export abstract class SymbolSchema {
 export class SymbolSchemaType extends SymbolSchema {
 	/** The assessed value of the symbol. */
 	public typevalue: TYPE.Type = TYPE.ANYTHING;
-	public constructor(
-		node: AST.ASTNodeTypeAlias,
-		public readonly isNominal: boolean,
-	) {
+	public constructor(node: AST.ASTNodeTypeAlias) {
 		super(node.id, node.line_index, node.col_index, node.source);
 	}
 }

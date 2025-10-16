@@ -26,15 +26,10 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_type'>,
-		private readonly nominal:  boolean,
 		private readonly assignee: ASTNodeTypeAlias | null,
 		public  readonly assigned: ASTNodeType,
 	) {
-		super(
-			start_node,
-			{nominal},
-			(assignee) ? [assignee, assigned] : [assigned],
-		);
+		super(start_node, {}, assignee ? [assignee, assigned] : [assigned]);
 	}
 
 	public override varCheck(): void {
@@ -44,7 +39,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 			if (this.validator.hasSymbol(this.assignee.id)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
-			this.validator.addSymbol(new SymbolSchemaType(this.assignee, this.nominal));
+			this.validator.addSymbol(new SymbolSchemaType(this.assignee));
 		}
 	}
 

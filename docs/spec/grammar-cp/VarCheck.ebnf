@@ -64,7 +64,6 @@ None! VarCheck(SemanticDeclarationType decl) :=
 			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
 		5. *Let* `symbol` be a new SymbolSchemaType [
 			id=        `id`,
-			isNominal= `decl.nominal`,
 			typevalue= `Anything`,
 		].
 		6. Add `symbol` as a record for `id` to the validator.
