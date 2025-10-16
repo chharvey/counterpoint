@@ -50,8 +50,8 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 
 	/** @final */
 	@strictEqual
-	@instanceOf(() => CollectionIndexed)
 	@identical
+	@instanceOf(() => CollectionIndexed)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
 		return xjs.Array.is<Value>(this.items, (value as CollectionIndexed).items, language_values_equal);
