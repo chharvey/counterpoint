@@ -10,7 +10,6 @@ import {
 } from '../utils-private.ts';
 import type * as VALUE from '../cp-value/index.ts';
 import {
-	Nominal,
 	Intersection,
 	Union,
 	Difference,
@@ -167,20 +166,6 @@ export function subtypeRules(
 			return true;
 		}
 
-		/*
-		 * If `t` is a nominal type, then `this` must be in its hierarchy —
-		 * it must either be equal to it, or be a nominal subtype of it (by extension or by narrowing) —
-		 * in order for it to be a subtype.
-		 */
-		if (t instanceof Nominal) {
-			if (this instanceof Nominal) {
-				// TODO: nominal type hierarchy
-				return this.id === t.id;
-			} else {
-				return false;
-			}
-		}
-
 		/* 1-1 | `nothing  <: T` */
 		if (this.isBottomType) {
 			return true;
@@ -272,7 +257,6 @@ export function subtypeRules(
 /**
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
- * - Nominal
  * - TypeOperation
  * - ValueType
  * - TypeInterface

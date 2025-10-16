@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
-	TYPE,
+	type TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
 import {assert_instanceof} from '../../lib/index.ts';
@@ -53,7 +53,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		if (this.assignee) {
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
 			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaType;
-			symbol.typevalue = this.nominal ? new TYPE.Nominal(this.assignee.id, typevalue) : typevalue;
+			symbol.typevalue = typevalue;
 		}
 	}
 

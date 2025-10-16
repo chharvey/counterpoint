@@ -79,9 +79,9 @@ describe('ASTNodeDeclarationType', () => {
 				(goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 				TYPE.INT,
 			);
-			return assert.deepStrictEqual(
+			return assert.strictEqual(
 				(goal.validator.getSymbolInfo(0x101n) as SymbolSchemaType).typevalue,
-				new TYPE.Nominal(0x101n, TYPE.STR),
+				TYPE.STR,
 			);
 		});
 	});

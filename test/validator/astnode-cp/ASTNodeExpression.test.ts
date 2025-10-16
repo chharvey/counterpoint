@@ -987,12 +987,11 @@ describe('ASTNodeExpression', () => {
 				(claim.validator.getSymbolInfo(0x100n) as SymbolSchemaVar).type = TYPE.NOTHING;
 				assert.strictEqual(claim.type(), TYPE.INT);
 			});
-			it('allows claiming to a nominal type.', () => {
+			it('allows claiming to a type alias.', () => {
 				const claim: AST.ASTNodeClaim = AST.ASTNodeClaim.fromSource('"Alice" as <Name>;');
 				claim.validator.addSymbol(new SymbolSchemaType(claim.claimed_type as AST.ASTNodeTypeAlias, true));
-				const expected = new TYPE.Nominal(0x100n, TYPE.STR);
-				(claim.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue = expected;
-				assert.strictEqual(claim.type(), expected);
+				(claim.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue = TYPE.STR;
+				assert.strictEqual(claim.type(), TYPE.STR);
 			});
 			it('throws when the operand type and claimed type do not overlap (and neither is `nothing`).', () => {
 				assert.throws(() => AST.ASTNodeClaim.fromSource('3 as <str>;')      .type(), TypeErrorNotAssignable);

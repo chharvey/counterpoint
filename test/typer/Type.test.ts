@@ -527,49 +527,6 @@ describe('Type', () => {
 			assert.ok(!sub.isSubtypeOf(right),            '2 | 3  !<:  3');
 		});
 
-		describe('Nominal', () => {
-			const nom_bool = new TYPE.Nominal(0x100n, TYPE.BOOL); // `type nominal NomBool = bool;`
-			const iso8601  = new TYPE.Nominal(0x101n, TYPE.STR);  // `type nominal Iso8601 = str;`
-			it('allows structural subtyping in one direction only.', () => {
-				const str_bool: TYPE.Type = TYPE.STR.union(TYPE.BOOL);
-				assert.ok(nom_bool.isSubtypeOf(TYPE.BOOL),      'NomBool <: bool');
-				assert.ok(nom_bool.isSubtypeOf(str_bool),       'NomBool <: str | bool');
-				assert.ok(nom_bool.isSubtypeOf(TYPE.ANYTHING),  'NomBool <: anything');
-				assert.ok(iso8601.isSubtypeOf(TYPE.STR),        'Iso8601 <: str');
-				assert.ok(iso8601.isSubtypeOf(str_bool),        'Iso8601 <: str | bool');
-				assert.ok(iso8601.isSubtypeOf(TYPE.ANYTHING),   'Iso8601 <: anything');
-
-				assert.ok(new TYPE.Nominal(0x102n, TYPE.INT.union(TYPE.STR)).isSubtypeOf(TYPE.Union.all([TYPE.INT, TYPE.FLOAT, TYPE.STR])), 'NomIntStr < int | float | str'); // `type nominal NomIntStr = int | str;`
-
-				const null_str: TYPE.Type = TYPE.STR.union(TYPE.NULL);
-				const nom_null_str = new TYPE.Nominal(0x102n, null_str); // `type nominal NomNullishStr = str | null;`
-
-				assert.ok(nom_null_str.isSubtypeOf(null_str),                                         'NomNullishStr <: str | null');
-				assert.ok(nom_null_str.isSubtypeOf(TYPE.Union.all([TYPE.STR, TYPE.BOOL, TYPE.NULL])), 'NomNullishStr <: str | bool | null');
-
-				assert.ok(!TYPE.NOTHING.isSubtypeOf(nom_bool),  'nothing    !<: NomBool');
-				assert.ok(!TYPE.NOTHING.isSubtypeOf(iso8601),   'nothing    !<: Iso8601');
-				assert.ok(!TYPE.BOOL.isSubtypeOf(nom_bool),     'bool       !<: NomBool');
-				assert.ok(!TYPE.STR.isSubtypeOf(iso8601),       'str        !<: Iso8601');
-				assert.ok(!TYPE.STR.isSubtypeOf(nom_null_str),  'str        !<: NomNullishStr');
-				assert.ok(!TYPE.NULL.isSubtypeOf(nom_null_str), 'null       !<: NomNullishStr');
-				assert.ok(!null_str.isSubtypeOf(nom_null_str),  'str | null !<: NomNullishStr');
-			});
-			it('allows nominal subtyping based only on identifier.', () => {
-				// though these would never be allowed in a program
-				assert.ok(iso8601.isSubtypeOf(new TYPE.Nominal(0x101n, TYPE.STR)), 'Iso8601 <: Iso8601');
-				assert.ok(iso8601.isSubtypeOf(new TYPE.Nominal(0x101n, TYPE.INT)), 'Iso8601 <: NomInt');
-				assert.ok(!iso8601.isSubtypeOf(new TYPE.Nominal(0x102n, TYPE.STR)), 'Iso8601 <: NomStr');
-			});
-			it('allows nested nominal types.', () => {
-				const t = new TYPE.Nominal(0x102n, TYPE.NULL);
-				const u = new TYPE.Nominal(0x103n, t);
-				assert.ok(t.isSubtypeOf(TYPE.NULL));
-				assert.ok(u.isSubtypeOf(TYPE.NULL));
-				assert.ok(!u.isSubtypeOf(t));
-			});
-		});
-
 		describe('Unit', () => {
 			it('unit Boolean types should be subtypes of `bool`.', () => {
 				assert.ok(TYPE.FALSE.isSubtypeOf(TYPE.BOOL), 'TYPE.FALSE');
@@ -966,14 +923,6 @@ describe('Type', () => {
 					}
 				});
 			});
-		});
-	});
-
-
-	describe('Nominal', () => {
-		it('`#isBottomType`/`#isTopType` returns true for nominal type defined as `nothing`/`anything`.', () => {
-			assert.ok(new TYPE.Nominal(0x100n, TYPE.NOTHING).isBottomType, '`type nominal Bot = nothing;`  is bottom type.');
-			assert.ok(new TYPE.Nominal(0x101n, TYPE.ANYTHING).isTopType,   '`type nominal Top = anything;` is top type.');
 		});
 	});
 
