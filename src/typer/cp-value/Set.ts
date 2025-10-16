@@ -3,7 +3,7 @@ import * as xjs from 'extrajs';
 import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
-	languageValuesIdentical,
+	language_values_identical,
 	language_values_equal,
 	strictEqual,
 	instanceOf,
@@ -31,7 +31,7 @@ class ValueSet<T extends Value = Value> extends Collection {
 		super();
 		const uniques = new Set<T>();
 		[...elements].forEach((el) => {
-			xjs.Set.add(uniques, el, languageValuesIdentical);
+			xjs.Set.add(uniques, el, language_values_identical);
 		});
 		this.elements = uniques;
 	}
@@ -75,7 +75,7 @@ class ValueSet<T extends Value = Value> extends Collection {
 	}
 
 	public get(el: Value): ValueBoolean {
-		return xjs.Set.has<Value>(this.elements, el, languageValuesIdentical) ? TRUE : FALSE;
+		return xjs.Set.has<Value>(this.elements, el, language_values_identical) ? TRUE : FALSE;
 	}
 }
 export {ValueSet as Set};

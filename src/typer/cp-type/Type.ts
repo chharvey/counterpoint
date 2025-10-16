@@ -4,7 +4,7 @@ import {
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
-	languageValuesIdentical,
+	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
@@ -369,7 +369,7 @@ export abstract class Type {
 	 * @returns Is `v` assignable to this type?
 	 */
 	public includes(v: VALUE.Value): boolean {
-		return xjs.Set.has(this.values, v, languageValuesIdentical);
+		return xjs.Set.has(this.values, v, language_values_identical);
 	}
 
 	/**
