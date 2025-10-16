@@ -1,7 +1,15 @@
 import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
-import type {Value} from './Value.ts';
+import {
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
+} from '../utils-private.ts';
+import {
+	identical,
+	type Value,
+} from './Value.ts';
 import {CollectionKeyed} from './CollectionKeyed.ts';
 
 
@@ -13,6 +21,14 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
 export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
 	public override toString(): string {
 		return `Dict.(${ super.toString() })`;
+	}
+
+	@strictEqual
+	@identical
+	@instanceOf(() => Dict)
+	@memoizeBinOp(true, true)
+	public override equal(value: Value): boolean {
+		return CollectionKeyed.equalDfn<T>(this, value as Dict<T>);
 	}
 
 	/**

@@ -51,10 +51,9 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
 	}
 
-	/** @final */
 	@strictEqual
-	@instanceOf(() => ValueMap)
 	@identical
+	@instanceOf(() => ValueMap)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
 		return (

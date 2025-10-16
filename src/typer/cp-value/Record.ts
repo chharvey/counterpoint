@@ -9,7 +9,10 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import type {Value} from './Value.ts';
+import {
+	identical,
+	type Value,
+} from './Value.ts';
 import {CollectionKeyed} from './CollectionKeyed.ts';
 
 
@@ -27,6 +30,14 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 			this.properties.size === (value as ValueRecord).properties.size &&
 			[...(value as ValueRecord).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.identical(thatvalue))
 		);
+	}
+
+	@strictEqual
+	@identical
+	@instanceOf(() => ValueRecord)
+	@memoizeBinOp(true, true)
+	public override equal(value: Value): boolean {
+		return CollectionKeyed.equalDfn<T>(this, value as ValueRecord<T>);
 	}
 
 	/**
