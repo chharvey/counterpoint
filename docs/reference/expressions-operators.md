@@ -509,8 +509,8 @@ The parser receives these tokens and produces the correct expression.
 <int | float> `!<` <int | float>
 <int | float> `!>` <int | float>
 
-<Object> `is`   <Object>
-<Object> `isnt` <Object>
+<Object> `is`   <Class>
+<Object> `isnt` <Class>
 ```
 The numerical comparative operators,
 

@@ -147,10 +147,8 @@ describe('Value', () => {
 				`
 					let a: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>([x= null]);
 					let b: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>([x= null]);
-					a.set.(.y, b);
-					b.set.(.y, a);
-					set a.[.y] = b;
-					set b.[.y] = a;
+					a.set.(@y, b);
+					b.set.(@y, a);
 					assert.equal.(a, b);
 					assert.equal.(b, a);
 				`;

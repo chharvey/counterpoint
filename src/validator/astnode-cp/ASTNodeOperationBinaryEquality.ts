@@ -120,8 +120,8 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: VALUE.Value, y: VALUE.Value) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],
 			[Operator.EQ, (x, y) => x.equal(y)],
-			// [Operator.ISNT, (x, y) => !x.identical(y)],
-			// [Operator.NEQ,  (x, y) => !x.equal(y)],
+			// [Operator.NID, (x, y) => !x.identical(y)],
+			// [Operator.NEQ, (x, y) => !x.equal(y)],
 		]).get(this.operator)!(v0, v1));
 	}
 }
