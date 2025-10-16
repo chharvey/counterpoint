@@ -54,7 +54,6 @@ class ValueSet<T extends Value = Value> extends Collection {
 		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
 	}
 
-	/** @final */
 	@strictEqual
 	@identical
 	@instanceOf(() => ValueSet)

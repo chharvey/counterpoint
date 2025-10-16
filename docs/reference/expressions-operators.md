@@ -576,8 +576,8 @@ All four of these operators are **commutative**, meaning the order of operands d
 Remember: Expressions are always evaluated from left to right, so side-effects could still be observed.
 
 #### Equality by Composition
-The equality operator `==` compares compound objects by their entries.
-Two compound objects are equal if they contain equal values.
+The equality operator `==` compares compound objects by their type and entries.
+Two compound objects are equal if they have the same constructor and contain equal values.
 For tuples and lists, entries are compared index by index; for records and dicts, key by key;
 and for maps, antecedent–consequent pairs are compared recursively (as they may be objects themselves).
 Sets are equal if they contain each others’ elements.

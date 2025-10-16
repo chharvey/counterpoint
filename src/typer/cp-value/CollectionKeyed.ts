@@ -1,16 +1,8 @@
 import * as assert from 'node:assert';
 import {VoidErrorOutOfBounds} from '../../index.ts';
 import type {AST} from '../../validator/index.ts';
-import {
-	strictEqual,
-	instanceOf,
-	memoizeBinOp,
-} from '../utils-private.ts';
 import {NULL} from './index.ts';
-import {
-	identical,
-	type Value,
-} from './Value.ts';
+import type {Value} from './Value.ts';
 import type {Null} from './Null.ts';
 import {Collection} from './Collection.ts';
 
@@ -22,6 +14,14 @@ import {Collection} from './Collection.ts';
  * - Dict
  */
 export abstract class CollectionKeyed<T extends Value = Value> extends Collection {
+	protected static equalDfn<T extends Value = Value>(a: CollectionKeyed<T>, b: CollectionKeyed<T>): boolean {
+		return (
+			a.properties.size === b.properties.size &&
+			[...b.properties].every(([thatkey, thatvalue]) => !!a.properties.get(thatkey)?.equal(thatvalue))
+		);
+	}
+
+
 	public constructor(public readonly properties: ReadonlyMap<bigint, T> = new Map()) {
 		super();
 	}
@@ -44,18 +44,6 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 
 	public override toString(): string {
 		return `[${ [...this.properties].map(([key, value]) => `${ key }n= ${ value }`).join(', ') }]`;
-	}
-
-	/** @final */
-	@strictEqual
-	@identical
-	@instanceOf(() => CollectionKeyed)
-	@memoizeBinOp(true, true)
-	public override equal(value: Value): boolean {
-		return (
-			this.properties.size === (value as CollectionKeyed).properties.size &&
-			[...(value as CollectionKeyed).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue))
-		);
 	}
 
 	/** @final */

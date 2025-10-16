@@ -1,18 +1,8 @@
 import * as assert from 'node:assert';
-import * as xjs from 'extrajs';
 import {VoidErrorOutOfBounds} from '../../index.ts';
 import type {AST} from '../../validator/index.ts';
-import {
-	language_values_equal,
-	strictEqual,
-	instanceOf,
-	memoizeBinOp,
-} from '../utils-private.ts';
 import {NULL} from './index.ts';
-import {
-	identical,
-	type Value,
-} from './Value.ts';
+import type {Value} from './Value.ts';
 import type {Null} from './Null.ts';
 import {Collection} from './Collection.ts';
 
@@ -24,6 +14,14 @@ import {Collection} from './Collection.ts';
  * - List
  */
 export abstract class CollectionIndexed<T extends Value = Value> extends Collection {
+	protected static equalDfn<T extends Value = Value>(a: CollectionIndexed<T>, b: CollectionIndexed<T>): boolean {
+		return (
+			a.items.length === b.items.length &&
+			b.items.every((thatvalue, i) => !!a.items[i].equal(thatvalue))
+		);
+	}
+
+
 	public constructor(public readonly items: readonly T[] = []) {
 		super();
 	}
@@ -46,15 +44,6 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 
 	public override toString(): string {
 		return `[${ this.items.map((it) => it.toString()).join(', ') }]`;
-	}
-
-	/** @final */
-	@strictEqual
-	@identical
-	@instanceOf(() => CollectionIndexed)
-	@memoizeBinOp(true, true)
-	public override equal(value: Value): boolean {
-		return xjs.Array.is<Value>(this.items, (value as CollectionIndexed).items, language_values_equal);
 	}
 
 	/** @final */

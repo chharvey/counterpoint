@@ -51,7 +51,6 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
 	}
 
-	/** @final */
 	@strictEqual
 	@identical
 	@instanceOf(() => ValueMap)
