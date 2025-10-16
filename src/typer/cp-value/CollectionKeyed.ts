@@ -14,10 +14,15 @@ import {Collection} from './Collection.ts';
  * - Dict
  */
 export abstract class CollectionKeyed<T extends Value = Value> extends Collection {
-	protected static equalDfn<T extends Value = Value>(a: CollectionKeyed<T>, b: CollectionKeyed<T>): boolean {
+	protected static samenessDfn<T extends Value = Value>(
+		a:          CollectionKeyed<T>,
+		b:          CollectionKeyed<T>,
+		comparator: (a: T, b: T) => boolean,
+	): boolean {
 		return (
+			a.properties === b.properties ||
 			a.properties.size === b.properties.size &&
-			[...b.properties].every(([thatkey, thatvalue]) => !!a.properties.get(thatkey)?.equal(thatvalue))
+			[...b.properties].every(([thatkey, thatvalue]) => a.properties.has(thatkey) && comparator.call(null, a.properties.get(thatkey)!, thatvalue))
 		);
 	}
 

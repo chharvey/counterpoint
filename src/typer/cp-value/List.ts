@@ -2,6 +2,7 @@ import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
+	language_values_equal,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
@@ -28,7 +29,7 @@ export class List<T extends Value = Value> extends CollectionIndexed<T> {
 	@instanceOf(() => List)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
-		return CollectionIndexed.equalDfn<T>(this, value as List<T>);
+		return CollectionIndexed.samenessDfn<T>(this, value as List<T>, language_values_equal);
 	}
 
 	/**
