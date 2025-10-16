@@ -14,10 +14,15 @@ import {Collection} from './Collection.ts';
  * - List
  */
 export abstract class CollectionIndexed<T extends Value = Value> extends Collection {
-	protected static equalDfn<T extends Value = Value>(a: CollectionIndexed<T>, b: CollectionIndexed<T>): boolean {
+	protected static samenessDfn<T extends Value = Value>(
+		a:          CollectionIndexed<T>,
+		b:          CollectionIndexed<T>,
+		comparator: (a: T, b: T) => boolean,
+	): boolean {
 		return (
+			a.items === b.items ||
 			a.items.length === b.items.length &&
-			b.items.every((thatvalue, i) => !!a.items[i].equal(thatvalue))
+			b.items.every((thatvalue, i) => comparator.call(null, a.items[i], thatvalue))
 		);
 	}
 

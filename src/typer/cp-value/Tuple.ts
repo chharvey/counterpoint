@@ -1,5 +1,4 @@
 import type binaryen from 'binaryen';
-import * as xjs from 'extrajs';
 import {TYPE} from '../index.ts';
 import {
 	build_tuple_like,
@@ -7,6 +6,7 @@ import {
 } from '../../index.ts';
 import {
 	languageValuesIdentical,
+	language_values_equal,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
@@ -28,7 +28,7 @@ class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	@instanceOf(() => ValueTuple)
 	@memoizeBinOp(true, true)
 	public override identical(value: Value): boolean {
-		return xjs.Array.is<Value>(this.items, (value as ValueTuple).items, languageValuesIdentical);
+		return CollectionIndexed.samenessDfn<T>(this, value as ValueTuple<T>, languageValuesIdentical);
 	}
 
 	@strictEqual
@@ -36,7 +36,7 @@ class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	@instanceOf(() => ValueTuple)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
-		return CollectionIndexed.equalDfn<T>(this, value as ValueTuple<T>);
+		return CollectionIndexed.samenessDfn<T>(this, value as ValueTuple<T>, language_values_equal);
 	}
 
 	/**

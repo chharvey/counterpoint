@@ -5,6 +5,8 @@ import {
 } from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
+	languageValuesIdentical,
+	language_values_equal,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
@@ -26,10 +28,7 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	@instanceOf(() => ValueRecord)
 	@memoizeBinOp(true, true)
 	public override identical(value: Value): boolean {
-		return (
-			this.properties.size === (value as ValueRecord).properties.size &&
-			[...(value as ValueRecord).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.identical(thatvalue))
-		);
+		return CollectionKeyed.samenessDfn<T>(this, value as ValueRecord<T>, languageValuesIdentical);
 	}
 
 	@strictEqual
@@ -37,7 +36,7 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	@instanceOf(() => ValueRecord)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
-		return CollectionKeyed.equalDfn<T>(this, value as ValueRecord<T>);
+		return CollectionKeyed.samenessDfn<T>(this, value as ValueRecord<T>, language_values_equal);
 	}
 
 	/**
