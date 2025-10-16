@@ -11,7 +11,10 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import type {Value} from './Value.ts';
+import {
+	identical,
+	type Value,
+} from './Value.ts';
 import {CollectionIndexed} from './CollectionIndexed.ts';
 
 
@@ -26,6 +29,14 @@ class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	@memoizeBinOp(true, true)
 	public override identical(value: Value): boolean {
 		return xjs.Array.is<Value>(this.items, (value as ValueTuple).items, languageValuesIdentical);
+	}
+
+	@strictEqual
+	@identical
+	@instanceOf(() => ValueTuple)
+	@memoizeBinOp(true, true)
+	public override equal(value: Value): boolean {
+		return CollectionIndexed.equalDfn<T>(this, value as ValueTuple<T>);
 	}
 
 	/**
