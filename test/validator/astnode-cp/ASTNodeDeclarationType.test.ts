@@ -17,19 +17,13 @@ describe('ASTNodeDeclarationType', () => {
 		it('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
-				type nominal U = str;
 			`);
 			assert.ok(!goal.validator.hasSymbol(0x100n));
-			assert.ok(!goal.validator.hasSymbol(0x101n));
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(0x100n));
-			assert.ok(goal.validator.hasSymbol(0x101n));
 			const info_t: SymbolSchema | null = goal.validator.getSymbolInfo(0x100n);
-			const info_u: SymbolSchema | null = goal.validator.getSymbolInfo(0x101n);
 			assert_instanceof(info_t, SymbolSchemaType);
-			assert_instanceof(info_u, SymbolSchemaType);
 			assert.strictEqual(info_t.typevalue, TYPE.ANYTHING);
-			assert.strictEqual(info_u.typevalue, TYPE.ANYTHING);
 		});
 
 		it('for blank identifiers, does not add to symbol table.', () => {
@@ -65,17 +59,12 @@ describe('ASTNodeDeclarationType', () => {
 		it('sets `SymbolSchemaType#typevalue`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
-				type nominal U = str;
 			`);
 			goal.varCheck();
 			goal.typeCheck();
-			assert.strictEqual(
+			return assert.strictEqual(
 				(goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 				TYPE.INT,
-			);
-			return assert.strictEqual(
-				(goal.validator.getSymbolInfo(0x101n) as SymbolSchemaType).typevalue,
-				TYPE.STR,
 			);
 		});
 	});

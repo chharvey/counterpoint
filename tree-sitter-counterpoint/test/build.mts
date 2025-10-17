@@ -1091,8 +1091,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				type T = A | B & C;
 				type 'Ü' = T;
 				type _ = D;
-				type nominal T = E;
-				type nominal _ = F;
 			`,
 			s(
 				'source_file',
@@ -1108,15 +1106,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							s('identifier'),
 						),
 					),
-				),
-				s(
-					'declaration_type',
-					s('identifier'),
-					s('identifier'),
-				),
-				s(
-					'declaration_type',
-					s('identifier'),
 				),
 				s(
 					'declaration_type',

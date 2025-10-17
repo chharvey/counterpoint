@@ -517,7 +517,7 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		declaration_type: $ => seq('type', optional('nominal'), choice('_', $.identifier), '=', $._type, ';'),
+		declaration_type: $ => seq('type', choice('_', $.identifier), '=', $._type, ';'),
 
 		declaration_variable: $ => choice(
 			seq('let', optional('var'), choice('_', $.identifier), ':',  $._type, '=', $._expression, ';'),

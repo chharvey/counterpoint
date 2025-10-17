@@ -120,7 +120,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				let n: Name = "Alice" as <Name>;
 			`, (stmt) => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type nominal Name = str;
+					type Name = str;
 					${ stmt }
 				`);
 				goal.varCheck();

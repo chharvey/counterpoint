@@ -191,7 +191,7 @@ Expression ::=
 
 
 DeclarationType
-	::= "type" "nominal"? ("_" | IDENTIFIER) "=" Type ";";
+	::= "type" ("_" | IDENTIFIER) "=" Type ";";
 
 DeclarationVariable ::=
 	| "let" "var"? ("_" | IDENTIFIER) ":"  Type "=" Expression ";"
