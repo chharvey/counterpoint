@@ -1,14 +1,14 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
+	type CodeUnit,
 	type CPConfig,
 	CONFIG_DEFAULT,
 	KEYWORDS,
 	Validator,
-} from '../../src/index.js';
-import type {CodeUnit} from '../../src/lib/index.js';
-import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.js';
+} from '../../src/index.ts';
+import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.ts';
 
 
 
@@ -24,27 +24,27 @@ describe('Validator', () => {
 
 
 	describe('.cookTokenKeyword', () => {
-		it('assigns values 128n–255n to reserved keywords.', () => {
+		it('assigns values 0x80n–0x100n to reserved keywords.', () => {
 			const cooked: bigint[] = KEYWORDS.map((k) => Validator.cookTokenKeyword(k));
-			const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
+			const expected: bigint[] = [...new Array<undefined>(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
 			assert.deepStrictEqual(cooked, expected);
 			cooked.forEach((value) => {
-				assert.ok(128n <= value, 'cooked value should be >= 128n.');
-				assert.ok(value < 256n, 'cooked value should be < 256n.');
+				assert.ok(0x80n <= value, 'cooked value should be >= 0x80n.');
+				assert.ok(value < 0x100n, 'cooked value should be < 0x100n.');
 			});
 		});
 	});
 
 	describe('.cookTokenNumber', () => {
-		new Map<string, [string, number[]]>([
-			/* eslint-disable array-element-newline */
+		new Map<string, [string, readonly bigint[] | readonly number[]]>([
+			/* eslint-disable @stylistic/array-element-newline */
 			['implicit radix integers', [
 				`
 					370  037  +9037  -9037  +06  -06
 				`,
 				[
 					370, 37, 9037, -9037, 6, -6,
-				],
+				].map((n) => BigInt(n)),
 			]],
 			['explicit radix integers', [
 				`
@@ -56,6 +56,7 @@ describe('Validator', () => {
 					\\xe70  \\x0e7  +\\x90e7  -\\x90e7  +\\x06  -\\x06
 					\\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
 				`,
+				/* eslint-disable @stylistic/indent */
 				[
 					    4,  1,       8,      -8, 1, -1,
 					   56, 14,      78,     -78, 3, -3,
@@ -64,7 +65,8 @@ describe('Validator', () => {
 					  370, 37,    9037,   -9037, 6, -6,
 					 3696, 231,  37095,  -37095, 6, -6,
 					18396, 511, 420415, -420415, 6, -6,
-				],
+				].map((n) => BigInt(n)),
+				/* eslint-enable @stylistic/indent */
 			]],
 			['floats', [
 				`
@@ -84,7 +86,7 @@ describe('Validator', () => {
 				`,
 				[
 					12345, 12345, -12345, 1234567, 1234567, -1234567, 12345678, 12345678, -12345678,
-				],
+				].map((n) => BigInt(n)),
 			]],
 			['explicit radix integers with separators', [
 				`
@@ -96,6 +98,7 @@ describe('Validator', () => {
 					\\xe_70  \\x0_e7  +\\x9_0e7  -\\x9_0e7  +\\x0_6  -\\x0_6
 					\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
 				`,
+				/* eslint-disable @stylistic/indent */
 				[
 					    4,  1,       8,      -8, 1, -1,
 					   56, 14,      78,     -78, 3, -3,
@@ -104,13 +107,14 @@ describe('Validator', () => {
 					  370, 37,    9037,   -9037, 6, -6,
 					 3696, 231,  37095,  -37095, 6, -6,
 					18396, 511, 420415, -420415, 6, -6,
-				],
+				].map((n) => BigInt(n)),
+				/* eslint-enable @stylistic/indent */
 			]],
-			/* eslint-enable array-element-newline */
+			/* eslint-enable @stylistic/array-element-newline */
 		]).forEach(([source, values], description) => {
 			it(description, () => {
 				assert.deepStrictEqual(
-					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)[0]),
+					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)),
 					values,
 				);
 			});
@@ -320,10 +324,10 @@ describe('Validator', () => {
 						cooked = actual_raw.map((word) => validator.cookTokenIdentifier(word));
 					});
 					if (i === 0) {
-						it('assigns ids starting from 256n.', () => {
+						it('assigns ids starting from 0x100n.', () => {
 							assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
 						});
-						return it('assigns unique ids 256n or greater.', () => {
+						return it('assigns unique ids 0x100n or greater.', () => {
 							cooked.forEach((value) => assert.ok(value >= 0x100n));
 						});
 					} else {

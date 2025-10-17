@@ -1,8 +1,8 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
 	CLI,
 	Command,
-} from '../src/CLI.class.js';
+} from '../src/CLI.class.ts';
 
 
 
@@ -14,7 +14,7 @@ describe('CLI', () => {
 					npx cpc
 				`.trim().split(' '));
 				assert.deepStrictEqual([cli.argv.h, cli.argv.help], [false, false]);
-				assert.deepStrictEqual(cli.command, Command.HELP);
+				return assert.strictEqual(cli.command, Command.HELP);
 			});
 		});
 		context('--help', () => {

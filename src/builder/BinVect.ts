@@ -1,5 +1,6 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
+import {bigint_to_i64} from './utils-public.ts';
 
 
 
@@ -18,20 +19,19 @@ import binaryen from 'binaryen';
  * # Header Lane
  * Lane 3 must be one of the following values:
  *
- * Value               | Description
- * -----               | -----------
- * `\x0000`            | The vector is in its default state, having no value.
- * `\x0001`            | The vector represents the `null`  primitive constant.
- * `\x0002`            | The vector represents the `false` primitive constant.
- * `\x0003`            | The vector represents the `true`  primitive constant.
- * `\x0012` (reserved) | The vector holds an `i16` value
- * `\x0014`            | The vector holds an `i32` value
- * `\x0018` (reserved) | The vector holds an `i64` value
- * `\x0022` (reserved) | The vector holds an `f16` value
- * `\x0024` (reserved) | The vector holds an `f32` value
- * `\x0028`            | The vector holds an `f64` value
- * `\x0032`            | The vector holds an address with 1 component
- * `\x0034`            | The vector holds an address with 2 components
+ * Value    | Description
+ * -------- | -----------
+ * `\x0000` | The vector is in its default state, having no value.
+ * `\x0001` | The vector represents the `null`  primitive constant.
+ * `\x0002` | The vector represents the `false` primitive constant.
+ * `\x0003` | The vector represents the `true`  primitive constant.
+ * `\x0012` | The vector holds an `i16` value.
+ * `\x0014` | The vector holds an `i32` value.
+ * `\x0018` | The vector holds an `i64` value.
+ * `\x0022` | The vector holds an `f16` value.
+ * `\x0024` | The vector holds an `f32` value.
+ * `\x0028` | The vector holds an `f64` value.
+ * `\x0038` | The vector holds an address (represented by an `i64`).
  *
  * # Value Types
  * ## Special Constants
@@ -41,44 +41,36 @@ import binaryen from 'binaryen';
  * Lanes 4–7 are ignored.
  *
  * ## Integer Values
- * When the Header is `\x0014`, it represents an `i32` value.
- * Lanes 4–5 together form an `i32` representing a Counterpoint `int` value.
- * Lanes 6–7 are ignored.
- * Header values of `\x0012` and `\x0018` are not yet supported but reserved for future use.
+ * When the Header is `\x0012`, `\x0014`, or `\x0018`, it represents an `i16`, `i32`, or `i64` value respectively.
+ * The value may be interpreted as signed or unsigned.
+ * Currently, only `i64` values are used.
+ * Lanes 4–7 together form the `i64` representing a Counterpoint `int` value.
+ * Header values of `\x0012` and `\x0014` reserved for future use. Data is always right-aligned.
  *
  * ## Float Values
- * When the Header is `\x0028`, it represents an `f64` value.
- * Lanes 4–7 together form an `f64` representing a Counterpoint `float` value.
- * Header values of `\x0022` and `\x0024` are not yet supported but reserved for future use.
+ * When the Header is `\x0022`, `\x0024`, or `\x0028`, it represents an `f16`, `f32`, or `f64` value respectively.
+ * Currently, only `f64` values are used.
+ * Lanes 4–7 together form the `f64` representing a Counterpoint `float` value.
+ * Header values of `\x0022` and `\x0024` reserved for future use. Data is always right-aligned.
  *
  * ## Address Values
- * When the Header is `\x0032`, it represents an address with 1 component,
- * comprising 16 bits, held by Lane 4.
- * Lanes 5–7 are ignored.
- * The single 16-bit component is an index on Page 0 of memory.
- *
- * When the Header is `\x0034`, it represents an address with 2 components,
- * comprising 16 bits each, held by Lanes 4 and 5 respectively.
- * Lanes 6–7 are ignored.
- * The two 16-bit components are indices of memory in little-endian format:
- * the first is the index on some Page, and the second is that Page’s index (defaulting to 0).
+ * When the Header is `\x0038`, it represents an address of an object in the heap, indexed by an `i64`, held in Lanes 4–7.
  *
  * The following diagram may prove useful:
  * ```
- *                      Lane 0 Lane 1 Lane 2 Lane 3 | Lane 4 Lane 5 Lane 6 Lane 7
- *                        ----   ----   ----   ---- |   ----   ----   ----   ----
- * No value (default):  \x0000 \x0000 \x0000 \x0000 | \x0000 \x0000 \x0000 \x0000
- * null:                \x0000 \x0000 \x0000 \x0001 | \x0000 \x0000 \x0000 \x0000
- * false:               \x0000 \x0000 \x0000 \x0002 | \x0000 \x0000 \x0000 \x0000
- * true:                \x0000 \x0000 \x0000 \x0003 | \x0000 \x0000 \x0000 \x0000
- * i16:                 \x0000 \x0000 \x0000 \x0012 | \x???? \x0000 \x0000 \x0000
- * i32:                 \x0000 \x0000 \x0000 \x0014 | \x???? \x???? \x0000 \x0000
- * i64:                 \x0000 \x0000 \x0000 \x0018 | \x???? \x???? \x???? \x????
- * f16:                 \x0000 \x0000 \x0000 \x0022 | \x???? \x0000 \x0000 \x0000
- * f32:                 \x0000 \x0000 \x0000 \x0024 | \x???? \x???? \x0000 \x0000
- * f64:                 \x0000 \x0000 \x0000 \x0028 | \x???? \x???? \x???? \x????
- * 1-component address: \x0000 \x0000 \x0000 \x0032 | \x???? \x0000 \x0000 \x0000
- * 2-component address: \x0000 \x0000 \x0000 \x0034 | \x???? \x???? \x0000 \x0000
+ *                     Lane 0 Lane 1 Lane 2 Lane 3 | Lane 4 Lane 5 Lane 6 Lane 7
+ *                       ----   ----   ----   ---- |   ----   ----   ----   ----
+ * No value (default): \x0000 \x0000 \x0000 \x0000 | \x0000 \x0000 \x0000 \x0000
+ * null:               \x0000 \x0000 \x0000 \x0001 | \x0000 \x0000 \x0000 \x0000
+ * false:              \x0000 \x0000 \x0000 \x0002 | \x0000 \x0000 \x0000 \x0000
+ * true:               \x0000 \x0000 \x0000 \x0003 | \x0000 \x0000 \x0000 \x0000
+ * i16:                \x0000 \x0000 \x0000 \x0012 | \x0000 \x0000 \x0000 \x????
+ * i32:                \x0000 \x0000 \x0000 \x0014 | \x0000 \x0000 \x???? \x????
+ * i64:                \x0000 \x0000 \x0000 \x0018 | \x???? \x???? \x???? \x????
+ * f16:                \x0000 \x0000 \x0000 \x0022 | \x0000 \x0000 \x0000 \x????
+ * f32:                \x0000 \x0000 \x0000 \x0024 | \x0000 \x0000 \x???? \x????
+ * f64:                \x0000 \x0000 \x0000 \x0028 | \x???? \x???? \x???? \x????
+ * address:            \x0000 \x0000 \x0000 \x0038 | \x???? \x???? \x???? \x????
  * ```
  */
 export class BinVect {
@@ -111,16 +103,15 @@ export class BinVect {
 	 * @param  mod a module to create the instance in
 	 * @param  arg one of the following:
 	 *             - the native value `null`, `false`, or `true` (corresponding to its representation)
-	 *             - a Binaryen `i32`, `f64`, or `v128` value to use in a `v128`
-	 *             - a one- or two-length address
+	 *             - a Binaryen `i64`, `f64`, or `v128` value to use in a `v128`
+	 *             - an address, either hard-coded (native bigint) or dynamic (of type `i64`)
 	 */
 	public constructor(
 		private readonly mod: binaryen.Module,
 		arg: (
 			| null | boolean
 			| binaryen.ExpressionRef
-			| readonly [bigint]         | readonly [binaryen.ExpressionRef]
-			| readonly [bigint, bigint] | readonly [binaryen.ExpressionRef, binaryen.ExpressionRef]
+			| readonly [bigint] | readonly [binaryen.ExpressionRef]
 		) = null,
 	) {
 		this.#internal = this.mod.v128.const(new Uint8Array(16)); // HACK: TypeScript bug where native-private fields are not emitted in constructor when `useDefineForClassFields` compiler option is off
@@ -137,14 +128,14 @@ export class BinVect {
 		} else if (typeof arg === 'number') {
 			// the arg represents a dynamic Binaryen expression
 			/*
-			 * If the arg represents an `int`, set Lane 3 to `\x0014` and set Lane 4–5 (joined) to its `i32` value;
+			 * If the arg represents an `int`, set Lane 3 to `\x0018` and set Lane 4–7 (joined) to its `i64` value;
 			 * else, if the arg represents a `float`, set Lane 3 to `\x0028` and set Lanes 4–7 (joined) to its `f64` value;
 			 * else, if the arg is any other `v128`, set all lanes to those lanes.
 			 */
 			switch (binaryen.getExpressionType(arg)) {
-				case binaryen.i32: {
-					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0014));
-					this.#internal = this.mod.i32x4.replace_lane(this.#internal, 2, arg);
+				case binaryen.i64: {
+					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0018));
+					this.#internal = this.mod.i64x2.replace_lane(this.#internal, 1, arg);
 					break;
 				}
 				case binaryen.f64: {
@@ -157,37 +148,26 @@ export class BinVect {
 					break;
 				}
 				default: {
-					throw new TypeError('Expected either `i32`, `f64`, or `v128`.');
+					throw new TypeError('Expected either `i64`, `f64`, or `v128`.');
 				}
 			}
 		} else if (typeof arg[0] === 'bigint') {
-			// the arg represents a hard-coded 1- or 2-length address
-			arg.forEach((bi) => assert.ok(0 <= bi && bi < 2n ** 16n, new RangeError(`Expected ${ bi } to be between 0 and ${ 2 ** 16 - 1 }`)));
-			return new BinVect(mod, arg.map((bi) => mod.i32.const(Number(bi))) as (
-				[binaryen.ExpressionRef] | [binaryen.ExpressionRef, binaryen.ExpressionRef]
-			)); // HACK: `this()`
+			// the arg represents a hard-coded address
+			const address: bigint = arg[0];
+			return new BinVect(mod, [bigint_to_i64(mod, address, true)]); // HACK: `this()`
 		} else {
-			// the arg represents a dynamic 1- or 2-length address
-			(arg as readonly [binaryen.ExpressionRef] | readonly [binaryen.ExpressionRef, binaryen.ExpressionRef]).forEach((comp) => assert.strictEqual(
-				binaryen.getExpressionType(comp),
-				binaryen.i32,
-				new TypeError('Expected each address component to be an `i32`.'),
-			));
+			// the arg represents a dynamic address
+			const address: binaryen.ExpressionRef = arg[0];
+			assert.strictEqual(
+				binaryen.getExpressionType(address),
+				binaryen.i64,
+				new TypeError('Expected address value to be an `i64`.'),
+			);
 			/*
-			 * If the arg represents a 1-length address, set Lane 3 to `\x0032`,
-			 * and set Lane 4 to the respective `i16` value;
-			 * else, if the arg represents a 2-length address, Lane 3 to `\x0034`,
-			 * and set Lanes 4–5 to the respective `i16` values.
+			 * Set Lane 3 to `\x0038` and set Lanes 4–7 (joined) to its `i64` value.
 			 */
-			if (arg.length === 1) {
-				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0032));
-				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 4, arg[0]);
-			} else {
-				assert.strictEqual(arg.length, 2);
-				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0034));
-				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 4, arg[0]);
-				this.#internal = this.mod.i16x8.replace_lane(this.#internal, 5, arg[1] as binaryen.ExpressionRef);
-			}
+			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0038));
+			this.#internal = this.mod.i64x2.replace_lane(this.#internal, 1, address);
 		}
 
 		this.#type = this.mod.i16x8.extract_lane_s(this.#internal, 3);
@@ -210,7 +190,7 @@ export class BinVect {
 		return this.mod.i32.eqz(this.#type);
 	}
 
-	/** Whether the value is intended to be interpreted as a special value: null, true, or false. */
+	/** Whether the value is intended to be interpreted as a special value: null, false, or true. */
 	public isSpecial(value?: null | boolean): binaryen.ExpressionRef {
 		return (
 			value === null  ? this.mod.i32.eq(this.#type, this.mod.i32.const(0x0001)) :
@@ -235,9 +215,14 @@ export class BinVect {
 		return this.#checkTypeRange(0x0030n, 0x003fn);
 	}
 
+	/** The value as interpreted as a special value: null, false, or true. */
+	public get specialValue(): binaryen.ExpressionRef {
+		return this.#type;
+	}
+
 	/** The value as interpreted as an int. */
 	public get intValue(): binaryen.ExpressionRef {
-		return this.mod.i32x4.extract_lane(this.#internal, 2);
+		return this.mod.i64x2.extract_lane(this.#internal, 1);
 	}
 
 	/** The value as interpreted as a float. */
@@ -245,16 +230,8 @@ export class BinVect {
 		return this.mod.f64x2.extract_lane(this.#internal, 1);
 	}
 
-	/** The value as interpreted as a 1-length address. */
-	public get addr1Value(): binaryen.ExpressionRef {
-		return this.mod.tuple.make([this.mod.i16x8.extract_lane_s(this.#internal, 4)]);
-	}
-
-	/** The value as interpreted as a 2-length address. */
-	public get addr2Value(): binaryen.ExpressionRef {
-		return this.mod.tuple.make([
-			this.mod.i16x8.extract_lane_s(this.#internal, 4),
-			this.mod.i16x8.extract_lane_s(this.#internal, 5),
-		]);
+	/** The value as interpreted as an address. */
+	public get addrValue(): binaryen.ExpressionRef {
+		return this.mod.i64x2.extract_lane(this.#internal, 1);
 	}
 }

@@ -1,26 +1,45 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	AST,
 	TYPE,
-	ReferenceError01,
-	ReferenceError03,
-	AssignmentError01,
-	AssignmentError10,
-	TypeError01,
-	TypeError03,
+	ReferenceErrorUndeclared,
+	ReferenceErrorKind,
+	AssignmentErrorDuplicateDeclaration,
+	AssignmentErrorReassignment,
+	TypeErrorInvalidOperation,
+	TypeErrorNotNarrow,
+	TypeErrorNotAssignable,
 	MutabilityError01,
-} from '../../../src/index.js';
-import {assert_instanceof} from '../../../src/lib/index.js';
+} from '../../../src/index.ts';
 import {
 	assertAssignable,
 	assertEqualBins,
-} from '../../assert-helpers.js';
-import {typeUnit} from '../../helpers.js';
+} from '../../assert-helpers.ts';
+import {typeUnit} from '../../helpers.ts';
 
 
 
 describe('ASTNodeCP', () => {
+	describe('ASTNodeIndex', () => {
+		describe('#index', () => {
+			it('returns the cooked value of the integer token.', () => {
+				[0n, 1n, 2n, 4n, 8n, 16n].forEach((index) => {
+					const type_accessor: AST.ASTNodeIndex | AST.ASTNodeKey = AST.ASTNodeTypeAccess.fromSource(`MyTuple.${ index }`).accessor;
+					assert_instanceof(type_accessor, AST.ASTNodeIndex);
+					assert.strictEqual(type_accessor.index, index);
+
+					const expr_accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = AST.ASTNodeAccess.fromSource(`my_tuple.${ index };`).accessor;
+					assert_instanceof(expr_accessor, AST.ASTNodeIndex);
+					assert.strictEqual(expr_accessor.index, index);
+				});
+			});
+		});
+	});
+
+
+
 	describe('ASTNodeStatementExpression', () => {
 		describe('#build', () => {
 			it('returns `(nop)` for empty statement expression.', () => {
@@ -62,13 +81,13 @@ describe('ASTNodeCP', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					let i: int = 42;
 					i = 43;
-				`).varCheck(), AssignmentError10);
+				`).varCheck(), AssignmentErrorReassignment);
 			});
 			it('always throws for type alias reassignment.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					type T = 42;
 					T = 43;
-				`).varCheck(), ReferenceError03);
+				`).varCheck(), ReferenceErrorKind);
 			});
 		});
 
@@ -81,28 +100,56 @@ describe('ASTNodeCP', () => {
 						i = 4.3;
 					`);
 					goal.varCheck();
-					assert.throws(() => goal.typeCheck(), TypeError03);
+					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+				});
+				it('allows reassignment when uninitialized.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let var x?: int;
+						x = 42;
+					`);
+					goal.varCheck();
+					goal.typeCheck();
+					return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
+						isUnfixed:       true,
+						isUninitialized: true,
+						type:            TYPE.INT,
+						value:           null,
+					});
+				});
+				it('does not allow reassignment of `null` when uninitialized.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let var x?: int;
+						x = null;
+					`);
+					goal.varCheck();
+					assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
+						isUnfixed:       true,
+						isUninitialized: true,
+					});
+					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
 			});
 
 			context('for property reassignment.', () => {
+				it('allows assignment directly on objects.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						List.<int>([42]).[0]                 = 42;
+						Dict.<int>([i= 42]).[@i]             = 42;
+						Set.<int>([42]).[43]                 = false;
+						Map.<bool, int>([[true, 42]]).[true] = 42;
+					`);
+					goal.varCheck();
+					return goal.typeCheck(); // assert does not throw
+				});
 				it('throws when property assignee type is not supertype.', () => {
 					[
 						`
-							let t: mut [42] = [42];
-							t.0 = 4.2;
-						`,
-						`
-							let r: mut [i: 42] = [i= 42];
-							r.i = 4.2;
-						`,
-						`
 							let l: mut int[] = List.<int>([42]);
-							l.0 = 4.2;
+							l.[0] = 4.2;
 						`,
 						`
 							let d: mut [:int] = Dict.<int>([i= 42]);
-							d.i = 4.2;
+							d.[@i] = 4.2;
 						`,
 						`
 							let s: mut int{} = Set.<int>([42]);
@@ -115,34 +162,47 @@ describe('ASTNodeCP', () => {
 					].forEach((src) => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 						goal.varCheck();
-						assert.throws(() => goal.typeCheck(), TypeError03);
+						assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+					});
+				});
+				it('throws when Set/Map accessor expression is not a valid type.', () => {
+					xjs.Array.forEachAggregated([`
+						let s: mut int{} = Set.<int>([42]);
+						s.[4.3] = true;
+					`, `
+						let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
+						m.["true"] = 43;
+					`], (src) => {
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+						goal.varCheck();
+						assert.throws(() => goal.typeCheck(), TypeErrorNotNarrow);
 					});
 				});
 				it('throws when assignee’s base type is not mutable.', () => {
 					[
 						`
-							let t: [42] = [42];
-							t.0 = 4.2;
+							let t: [int] = [42];
+							t.0 = 43;
 						`,
 						`
-							let r: [i: 42] = [i= 42];
-							r.i = 4.2;
+							let r: [i: int] = [i= 42];
+							r.i = 43;
 						`,
 						`
 							let l: int[] = List.<int>([42]);
-							l.0 = 4.2;
+							l.[0] = 43;
 						`,
 						`
 							let d: [:int] = Dict.<int>([i= 42]);
-							d.i = 4.2;
+							d.[@i] = 43;
 						`,
 						`
 							let s: int{} = Set.<int>([42]);
-							s.[42] = 4.2;
+							s.[43] = true;
 						`,
 						`
 							let m: {bool -> int} = Map.<bool, int>([[true, 42]]);
-							m.[true] = 4.2;
+							m.[true] = 43;
 						`,
 					].forEach((src) => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
@@ -158,7 +218,7 @@ describe('ASTNodeCP', () => {
 			it('always returns `(local.set)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let var y: float = 4.2;
-					y = y * 10;
+					y = y * 10.0;
 				`);
 				goal.varCheck();
 				goal.typeCheck();
@@ -168,7 +228,7 @@ describe('ASTNodeCP', () => {
 					goal.builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build()),
 				);
 			});
-			it('coerces as necessary.', () => {
+			it('allows switching between union members.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let var x: float | int = 4.2;
 					let var y: int | float = 4.2;
@@ -176,8 +236,6 @@ describe('ASTNodeCP', () => {
 					x = 16;
 					x = x;
 					x = y;
-					x = 52 + x;
-					x = x + x;
 				`);
 				goal.varCheck();
 				goal.typeCheck();
@@ -216,15 +274,15 @@ describe('ASTNodeCP', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: ReferenceError01, message: '`a` is never declared.'},
-											{cons: ReferenceError01, message: '`b` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`a` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`b` is never declared.'},
 										],
 									},
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: ReferenceError01, message: '`c` is never declared.'},
-											{cons: ReferenceError01, message: '`d` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`c` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`d` is never declared.'},
 										],
 									},
 								],
@@ -235,24 +293,24 @@ describe('ASTNodeCP', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: ReferenceError01, message: '`V` is never declared.'},
-											{cons: ReferenceError01, message: '`W` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`V` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`W` is never declared.'},
 										],
 									},
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: ReferenceError01, message: '`X` is never declared.'},
-											{cons: ReferenceError01, message: '`Y` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`X` is never declared.'},
+											{cons: ReferenceErrorUndeclared, message: '`Y` is never declared.'},
 										],
 									},
 								],
 							},
-							{cons: AssignmentError01, message: 'Duplicate declaration: `x` is already declared.'},
-							{cons: AssignmentError10, message: 'Reassignment of a fixed variable: `x`.'},
-							{cons: AssignmentError01, message: 'Duplicate declaration: `T` is already declared.'},
-							{cons: ReferenceError03, message: '`x` refers to a value, but is used as a type.'},
-							{cons: ReferenceError03, message: '`T` refers to a type, but is used as a value.'},
+							{cons: AssignmentErrorDuplicateDeclaration, message: 'Duplicate declaration of `x`.'},
+							{cons: AssignmentErrorReassignment,         message: 'Reassignment of fixed variable `x`.'},
+							{cons: AssignmentErrorDuplicateDeclaration, message: 'Duplicate declaration of `T`.'},
+							{cons: ReferenceErrorKind,                  message: '`x` refers to a value, but is used as a type.'},
+							{cons: ReferenceErrorKind,                  message: '`T` refers to a type, but is used as a value.'},
 						],
 					});
 					return true;
@@ -286,19 +344,19 @@ describe('ASTNodeCP', () => {
 							{
 								cons:   AggregateError,
 								errors: [
-									{cons: TypeError01, message: 'Invalid operation: `a * b` at line 6 col 6.'}, // TODO remove line&col numbers from message
-									{cons: TypeError01, message: 'Invalid operation: `c * d` at line 6 col 14.'},
+									{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `a * b` at line 6 col 6.'}, // TODO remove line&col numbers from message
+									{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `c * d` at line 6 col 14.'},
 								],
 							},
 							{
 								cons:   AggregateError,
 								errors: [
-									{cons: TypeError01, message: 'Invalid operation: `e * f` at line 11 col 6.'},
-									{cons: TypeError01, message: 'Invalid operation: `g * h` at line 11 col 14.'},
+									{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `e * f` at line 11 col 6.'},
+									{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `g * h` at line 11 col 14.'},
 								],
 							},
-							{cons: TypeError01, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
-							{cons: TypeError03, message: `Expression of type ${ typeUnit(4.2) } is not assignable to type ${ TYPE.INT }.`},
+							{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
+							{cons: TypeErrorNotAssignable,    message: `Expression of type \`${ typeUnit(4.2) }\` is not assignable to type \`${ TYPE.INT }\`.`},
 						],
 					});
 					return true;

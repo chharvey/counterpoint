@@ -1,18 +1,19 @@
-import {TYPE} from '../../index.js';
+import {TYPE} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import {ASTNodeType} from './ASTNodeType.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.ts';
 
 
 
-export class ASTNodeTypeMap extends ASTNodeType {
+export class ASTNodeTypeMap extends ASTNodeTypeCollectionLiteral {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeMap {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert_instanceof(typ, ASTNodeTypeMap);
@@ -24,11 +25,11 @@ export class ASTNodeTypeMap extends ASTNodeType {
 		private readonly antecedenttype: ASTNodeType,
 		private readonly consequenttype: ASTNodeType,
 	) {
-		super(start_node, {}, [antecedenttype, consequenttype]);
+		super(start_node, [antecedenttype, consequenttype]);
 	}
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		return new TYPE.TypeMap(this.antecedenttype.eval(), this.consequenttype.eval());
+		return new TYPE.Map(this.antecedenttype.eval(), this.consequenttype.eval());
 	}
 }

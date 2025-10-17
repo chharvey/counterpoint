@@ -1,5 +1,5 @@
-import {stringifyAttributes} from '../core/index.js';
-import type {Serializable} from '../parser/index.js';
+import {stringifyAttributes} from '../core/index.ts';
+import type {Serializable} from '../parser/index.ts';
 
 
 
@@ -21,15 +21,15 @@ import type {Serializable} from '../parser/index.js';
  */
 export class ASTNode implements Serializable {
 	/** @implements Serializable */
-	public readonly tagname: string = this.constructor.name.slice('ASTNode'.length);
+	public readonly tagname:      string = this.constructor.name.slice('ASTNode'.length);
 	/** @implements Serializable */
-	public readonly source: string;
+	public readonly source:       string;
 	/** @implements Serializable */
 	public readonly source_index: number;
 	/** @implements Serializable */
-	public readonly line_index: number;
+	public readonly line_index:   number;
 	/** @implements Serializable */
-	public readonly col_index: number;
+	public readonly col_index:    number;
 
 	#parent: ASTNode | null = null;
 

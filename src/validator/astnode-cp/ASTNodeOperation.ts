@@ -1,14 +1,14 @@
 import {
 	type NonemptyArray,
 	assert_instanceof,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeSupertype} from '../utils-private.js';
-import type {Operator} from '../Operator.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
+import type {Operator} from '../Operator.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 
 
 

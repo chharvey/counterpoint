@@ -1,27 +1,26 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	OBJ,
+	VALUE,
 	type TYPE,
-} from '../../index.js';
+} from '../../index.ts';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import {Keyword} from '../../parser/index.js';
-import {Validator} from '../index.js';
+} from '../../core/index.ts';
+import {Keyword} from '../../parser/index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
-} from '../utils-private.js';
-import {valueOfTokenNumber} from './utils-private.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+} from '../utils-private.ts';
+import {Validator} from '../Validator.ts';
+import {valueOfTokenNumber} from './utils-private.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 
 
 
@@ -32,18 +31,16 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return expression;
 	}
 
-	private static keywordValue(source: string): OBJ.Null | OBJ.Boolean {
-		return (
-			(source === Keyword.NULL)  ? OBJ.Null.NULL     :
-			(source === Keyword.FALSE) ? OBJ.Boolean.FALSE :
-			(source === Keyword.TRUE)  ? OBJ.Boolean.TRUE  :
-			throw_expression(new Error(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`))
-		);
+	private static keywordValue(source: string): VALUE.Null | VALUE.Boolean {
+		return new Map<string, VALUE.Null | VALUE.Boolean>([
+			[Keyword.NULL,  VALUE.NULL],
+			[Keyword.FALSE, VALUE.FALSE],
+			[Keyword.TRUE,  VALUE.TRUE],
+		]).get(source) ?? assert.fail(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`);
 	}
 
 
 	public constructor(start_node: (
-		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'template_full'>
 		| SyntaxNodeType<'template_head'>
 		| SyntaxNodeType<'template_middle'>
@@ -54,34 +51,45 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	// @buildDeco // explicitly leaving off for performance
 	public override build(): binaryen.ExpressionRef {
-		return this.fold().build(this.builder.module);
+		return this.fold().build(this.builder);
 	}
 
 	@memoizeMethod
-	// explicitly leaving off `@ASTNodeExpression.typeDeco` for performance
+	// @typeDeco // explicitly leaving off for performance
 	public override type(): TYPE.Type {
 		return this.fold().toType();
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Primitive {
-		return (
-			(isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) ? new OBJ.String(Validator.cookTokenTemplate(this.start_node.text)) :
-			(isSyntaxNodeType(this.start_node, 'integer'))                            ? valueOfTokenNumber(this.start_node.text, this.validator.config)   :
-			(assert.ok(
-				isSyntaxNodeType(this.start_node, 'primitive_literal'),
-				`Expected ${ this.start_node } to be a primitive.`,
-			), ((token: SyntaxNode) => (
-				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeConstant.keywordValue(token.text)              :
-				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? valueOfTokenNumber(token.text, this.validator.config) :
-				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? valueOfTokenNumber(token.text, this.validator.config) :
-				(assert.ok(
-					isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),
-					`Expected ${ token } to be a string.`,
-				), new OBJ.String(Validator.cookTokenString(token.text, this.validator.config)))
-			))(this.start_node.children[0]))
-		);
+	public override fold(): VALUE.Primitive {
+		switch (true) {
+			case isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/): {
+				return new VALUE.String(Validator.cookTokenTemplate(this.start_node.text));
+			}
+			default: {
+				assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
+				const children: readonly SyntaxNode[] = this.start_node.children;
+				switch (true) {
+					case isSyntaxNodeType(children[0], /^integer(__radix)?(__separator)?$/): {
+						return valueOfTokenNumber(children[0].text, this.validator.config);
+					}
+					case isSyntaxNodeType(children[0], /^float(__separator)?$/): {
+						return valueOfTokenNumber(children[0].text, this.validator.config);
+					}
+					case isSyntaxNodeType(children[0], /^string(__comment)?(__separator)?$/): {
+						return new VALUE.String(Validator.cookTokenString(children[0].text, this.validator.config));
+					}
+					case isSyntaxNodeType(children[0], 'keyword_value'): {
+						return ASTNodeConstant.keywordValue(children[0].children[0].text);
+					}
+					default: {
+						assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
+						return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text);
+					}
+				}
+			}
+		}
 	}
 }

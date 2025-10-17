@@ -1,16 +1,16 @@
 type ErrorCodeConstructorProperties = {
 	/** A message to the user. */
-	readonly message: string,
+	readonly message:     string,
 	/**
 	 * The name of the error.
 	 * @default ErrorCode.NAME
 	 */
-	readonly name?: string,
+	readonly name?:       string,
 	/**
 	 * The error number.
 	 * @default 0
 	 */
-	readonly code?: number,
+	readonly code?:       number,
 	/**
 	 * The line index in source code.
 	 * @default null
@@ -20,7 +20,7 @@ type ErrorCodeConstructorProperties = {
 	 * The column index in source code.
 	 * @default null
 	 */
-	readonly col_index?: number,
+	readonly col_index?:  number,
 };
 
 
@@ -38,16 +38,16 @@ type ErrorCodeConstructorProperties = {
  */
 export class ErrorCode extends Error {
 	/** The name of this class of errors. */
-	public static readonly NAME: string = 'Error';
+	static readonly #NAME = 'Error';
 
 
 	/** The name of this error. */
-	public declare readonly name: string;
+	public declare readonly name:    string;
 	/** A message to the user. */
 	public declare readonly message: string;
 
 	/** The error number. */
-	public readonly code: number;
+	public readonly code:       number;
 	/**
 	 * The (zero-based) line index of the source code that caused the error.
 	 * `null` if the line number cannot be determined.
@@ -57,7 +57,7 @@ export class ErrorCode extends Error {
 	 * The (zero-based) column index of the source code that caused the error.
 	 * `null` if the column number cannot be determined.
 	 */
-	public readonly col_index: number | null;
+	public readonly col_index:  number | null;
 
 	/**
 	 * Construct a new ErrorCode object.
@@ -74,8 +74,8 @@ export class ErrorCode extends Error {
 			props = {message: props};
 		}
 		super(props.message);
-		this.code       = props.code || 0;
-		this.name       = (props.name) ? props.name.concat((this.code) ? `${ this.code }` : '') : ErrorCode.NAME;
+		this.code       = props.code ?? 0;
+		this.name       = (props.name) ? props.name.concat((this.code) ? `${ this.code }` : '') : ErrorCode.#NAME;
 		this.line_index = (props.line_index !== void 0) ? props.line_index : null;
 		this.col_index  = (props.col_index  !== void 0) ? props.col_index  : null;
 	}

@@ -1,4 +1,5 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import type Parser from 'tree-sitter';
 import {
 	Query,
 	type QueryCapture,
@@ -6,42 +7,40 @@ import {
 } from 'tree-sitter';
 import Counterpoint from 'tree-sitter-counterpoint';
 import {
+	type ConstructorType,
+	assert_instanceof,
 	TS_PARSER,
 	AST,
 	DECORATOR,
-} from '../../src/index.js';
+} from '../../src/index.ts';
 
 
 
 describe('Decorator', () => {
 	describe('#decorateTS', () => {
 		function captureParseNode(source: string, query: string): SyntaxNode {
-			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
+			const captures: QueryCapture[] = new Query(Counterpoint as Parser.Language, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
 			assert.ok(captures.length, 'could not find any captures.');
 			return captures[0].node;
 		}
-		new Map<string, [NewableFunction, string]>([
+		new Map<string, readonly [ConstructorType<AST.ASTNodeCP>, string]>([
 			['Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey', [AST.ASTNodeKey, `
 				[mut= 42];
 				% (word "mut")
-			`]],
-			['Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey', [AST.ASTNodeKey, `
-				[void= 42];
-				% (word (keyword_type))
-			`]],
-			['Decorate(Word ::= KEYWORD_VALUE) -> SemanticKey', [AST.ASTNodeKey, `
-				[true= 42];
-				% (word (keyword_value))
 			`]],
 			['Decorate(Word ::= IDENTIFIER) -> SemanticKey', [AST.ASTNodeKey, `
 				[foobar= 42];
 				% (word (identifier))
 			`]],
-
-			['Decorate(Type > PrimitiveLiteral ::= KEYWORD_VALUE) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
-				type T = false;
-				% (primitive_literal (keyword_value))
+			['Decorate(Word ::= KeywordType) -> SemanticKey', [AST.ASTNodeKey, `
+				[bool= 42];
+				% (word (keyword_type))
 			`]],
+			['Decorate(Word ::= KeywordValue) -> SemanticKey', [AST.ASTNodeKey, `
+				[true= 42];
+				% (word (keyword_value))
+			`]],
+
 			['Decorate(Type > PrimitiveLiteral ::= INTEGER) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
 				type T = 42;
 				% (primitive_literal (integer))
@@ -54,11 +53,15 @@ describe('Decorator', () => {
 				type T = "hello";
 				% (primitive_literal (string))
 			`]],
-
-			['Decorate(Expression > PrimitiveLiteral ::= KEYWORD_VALUE) -> SemanticConstant', [AST.ASTNodeConstant, `
-				false;
+			['Decorate(Type > PrimitiveLiteral ::= KeywordValue) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
+				type T = false;
 				% (primitive_literal (keyword_value))
 			`]],
+			['Decorate(Type > PrimitiveLiteral ::= "@" Word) -> SemanticTypeConstant', [AST.ASTNodeTypeConstant, `
+				type T = @hello;
+				% (primitive_literal (word (identifier)))
+			`]],
+
 			['Decorate(Expression > PrimitiveLiteral ::= INTEGER) -> SemanticConstant', [AST.ASTNodeConstant, `
 				42;
 				% (primitive_literal (integer))
@@ -70,6 +73,14 @@ describe('Decorator', () => {
 			['Decorate(Expression > PrimitiveLiteral ::= STRING) -> SemanticConstant', [AST.ASTNodeConstant, `
 				"hello";
 				% (primitive_literal (string))
+			`]],
+			['Decorate(Expression > PrimitiveLiteral ::= KeywordValue) -> SemanticConstant', [AST.ASTNodeConstant, `
+				false;
+				% (primitive_literal (keyword_value))
+			`]],
+			['Decorate(Expression > PrimitiveLiteral ::= "@" Word) -> SemanticConstant', [AST.ASTNodeConstant, `
+				@hello;
+				% (primitive_literal (word (identifier)))
 			`]],
 
 			/* ## Types */
@@ -99,16 +110,20 @@ describe('Decorator', () => {
 			`]],
 
 			['Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType', [AST.ASTNodeType, `
-				type T = (int | float);
+				type T = (3 | float);
 				% (type_grouped)
 			`]],
 
+			['Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
+				type T = [];
+				% (type_tuple_literal)
+			`]],
 			['Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
 				type T = [int, ?: float];
 				% (type_tuple_literal)
 			`]],
 
-			['Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
+			['Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType ","? "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
 				type T = [a?: int, b: float];
 				% (type_record_literal)
 			`]],
@@ -123,18 +138,15 @@ describe('Decorator', () => {
 				% (type_map_literal)
 			`]],
 
-			['Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndexType', [AST.ASTNodeIndexType, `
-				type T = U.1;
+			...['.', '?.'].map((op) => [`Decorate(PropertyAccessType ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
+				type T = U${ op }1;
 				% (property_access_type)
-			`]],
-			['Decorate(PropertyAccessType ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
-				type T = U.p;
+			`]] as const),
+
+			...['.', '?.'].flatMap((op) => ['p', '_'].map((keyname) => [`Decorate(PropertyAccessType ::= "${ op }" ${ keyname === '_' ? '"_"' : 'Word' }) -> SemanticKey`, [AST.ASTNodeKey, `
+				type T = U${ op }${ keyname };
 				% (property_access_type)
-			`]],
-			['Decorate(PropertyAccessType ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
-				type T = U._;
-				% (property_access_type)
-			`]],
+			`]] as const)),
 
 			['Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
 				type T = U.p;
@@ -214,6 +226,10 @@ describe('Decorator', () => {
 				% (expression_grouped)
 			`]],
 
+			['Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+				[];
+				% (tuple_literal)
+			`]],
 			['Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
 				[42, 6.9];
 				% (tuple_literal)
@@ -234,22 +250,20 @@ describe('Decorator', () => {
 				% (map_literal)
 			`]],
 
-			['Decorate(PropertyAccess ::= ("." | "?." | "!.") INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
-				v.1;
+			...['.', '?.', '!.'].map((op) => [`${ op === '!.' ? 'skip: ' : '' }Decorate(PropertyAccess ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
+				v${ op }1;
 				% (property_access)
-			`]],
-			['Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey', [AST.ASTNodeKey, `
-				v?.p;
+			`]] as const),
+
+			...['.', '?.', '!.'].flatMap((op) => ['p', '_'].map((keyname) => [`${ op === '!.' ? 'skip: ' : '' }Decorate(PropertyAccess ::= "${ op }" ${ keyname === '_' ? '"_"' : 'Word' }) -> SemanticKey`, [AST.ASTNodeKey, `
+				v${ op }${ keyname };
 				% (property_access)
-			`]],
-			['Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey', [AST.ASTNodeKey, `
-				v?._;
+			`]] as const)),
+
+			...['.', '?.', '!.'].map((op) => [`${ op === '!.' ? 'skip: ' : '' }Decorate(PropertyAccess ::= "${ op }" "[" Expression "]") -> SemanticExpression`, [AST.ASTNodeExpression, `
+				v${ op }[a + b];
 				% (property_access)
-			`]],
-			['Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression', [AST.ASTNodeExpression, `
-				v!.[a + b];
-				% (property_access)
-			`]],
+			`]] as const),
 
 			['Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
 				v.1 = false;
@@ -303,6 +317,32 @@ describe('Decorator', () => {
 				% (expression_unary_symbol)
 			`]],
 
+			['Decorate(ExpressionUnaryKeyword ::= "int" ExpressionUnaryKeyword) -> SemanticOperation', [AST.ASTNodeOperation, `
+				int v;
+				% (expression_unary_keyword)
+			`]],
+			['Decorate(ExpressionUnaryKeyword ::= "float" ExpressionUnaryKeyword) -> SemanticOperation', [AST.ASTNodeOperation, `
+				float v;
+				% (expression_unary_keyword)
+			`]],
+
+			['Decorate(ExpressionCast ::= ExpressionCast "as" ExpressionUnaryKeyword) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a as Klass;
+				% (expression_cast)
+			`]],
+			['Decorate(ExpressionCast ::= ExpressionCast "as?" ExpressionUnaryKeyword) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a as? Klass;
+				% (expression_cast)
+			`]],
+			['Decorate(ExpressionCast ::= ExpressionCast "as!" ExpressionUnaryKeyword) -> SemanticOperation', [AST.ASTNodeOperation, `
+				a as! Klass;
+				% (expression_cast)
+			`]],
+			['Decorate(ExpressionCast ::= ExpressionCast "as" "<" Type ">") -> SemanticOperation', [AST.ASTNodeClaim, `
+				a as <T>;
+				% (expression_cast)
+			`]],
+
 			['Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticOperation', [AST.ASTNodeOperation, `
 				a ^ b;
 				% (expression_exponential)
@@ -326,15 +366,15 @@ describe('Decorator', () => {
 				% (expression_additive)
 			`]],
 
-			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ (['is', 'isnt'].includes(op) ? 'skip: ' : '') }Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, [AST.ASTNodeOperation, `
+			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ ['is', 'isnt'].includes(op) ? 'skip: ' : '' }Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				a ${ op } b;
 				% (expression_comparative)
-			`]] as [string, [NewableFunction, string]]),
+			`]] as const),
 
 			...['===', '!==', '==', '!='].map((op) => [`Decorate(ExpressionEquality ::= ExpressionEquality "${ op }" ExpressionComparative) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				a ${ op } b;
 				% (expression_equality)
-			`]] as [string, [NewableFunction, string]]),
+			`]] as const),
 
 			['Decorate(ExpressionConjunctive ::= ExpressionConjunctive "&&" ExpressionEquality) -> SemanticOperation', [AST.ASTNodeOperation, `
 				a && b;
@@ -377,8 +417,20 @@ describe('Decorator', () => {
 				let a: T = b;
 				% (declaration_variable)
 			`]],
+			['Decorate(DeclarationVariable ::= "let" "var" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let var _: T = b;
+				% (declaration_variable)
+			`]],
 			['Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				let var a: T = b;
+				% (declaration_variable)
+			`]],
+			['Decorate(DeclarationVariable ::= "let" "var" "_" "?:" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let var _?: T;
+				% (declaration_variable)
+			`]],
+			['Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER "?:" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				let var a?: T;
 				% (declaration_variable)
 			`]],
 
@@ -391,12 +443,9 @@ describe('Decorator', () => {
 				a = b;
 				% (statement_assignment)
 			`]],
-		]).forEach(([klass, text], description) => (description.slice(0, 5) === 'only:' ? specify.only : description.slice(0, 5) === 'skip:' ? specify.skip : specify)(description, () => {
+		]).forEach(([klass, text], description) => (description.startsWith('only:') ? specify.only : description.startsWith('skip:') ? specify.skip : specify)(description, () => {
 			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
-			return assert.ok(
-				DECORATOR.decorateTS(parsenode) instanceof klass,
-				`\`${ parsenode.text }\` not an instance of ${ klass.name }.`,
-			);
+			return assert_instanceof(DECORATOR.decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
 		}));
 		describe('Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', () => {
 			it('type operator `!` is not yet supported.', () => {

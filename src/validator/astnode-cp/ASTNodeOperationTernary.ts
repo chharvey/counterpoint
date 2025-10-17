@@ -1,23 +1,27 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
 	BinVect,
-	TypeError01,
-} from '../../index.js';
+	TypeErrorInvalidOperation,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeSupertype} from '../utils-private.js';
-import type {Operator} from '../Operator.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
+import type {Operator} from '../Operator.ts';
+import {
+	buildDeco,
+	typeDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 
 
@@ -39,17 +43,17 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const t0:                 TYPE.Type                = this.operand0.type();
 		const [arg0, arg1, arg2]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
 
-		if (t0.isDefinitelyFalsy()) {
+		if (t0.equals(TYPE.FALSE)) {
 			return this.builder.module.block(null, [
 				this.builder.module.drop(arg0),
 				arg2,
 			], binaryen.v128);
-		} else if (t0.isDefinitelyTruthy()) {
+		} else if (t0.equals(TYPE.TRUE)) {
 			return this.builder.module.block(null, [
 				this.builder.module.drop(arg0),
 				arg1,
@@ -60,26 +64,26 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		// compute types early to rethrow any errors
 		const [t0, t1, t2]: TYPE.Type[] = this.children.map((operand) => operand.type());
-		assert.ok(t0.isSubtypeOf(TYPE.BOOL), new TypeError01(this));
+		assert.ok(t0.isSubtypeOf(TYPE.BOOL), new TypeErrorInvalidOperation(this));
 		return (
-			t0.isBottomType                  ? TYPE.NEVER :
-			t0.equals(OBJ.Boolean.FALSETYPE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
-			t0.equals(OBJ.Boolean.TRUETYPE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
+			t0.isBottomType       ? TYPE.NOTHING :
+			t0.equals(TYPE.FALSE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
+			t0.equals(TYPE.TRUE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
 			t1.union(t2)
 		);
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand0.fold();
+	public override fold(): VALUE.Value | null {
+		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		return (v0 === OBJ.Boolean.TRUE)
+		return (v0 === VALUE.TRUE)
 			? this.operand1.fold()
 			: this.operand2.fold();
 	}

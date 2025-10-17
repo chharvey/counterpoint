@@ -1,32 +1,37 @@
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
-	type OBJ,
+	type VALUE,
 	TYPE,
-	ReferenceError01,
-	ReferenceError03,
-} from '../../index.js';
+	ReferenceErrorUndeclared,
+	ReferenceErrorKind,
+} from '../../index.ts';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
+} from '../../core/index.ts';
 import {
 	SymbolKind,
-	type SymbolStructure,
-	SymbolStructureVar,
-	SymbolStructureType,
-} from '../index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+	type SymbolSchema,
+	SymbolSchemaVar,
+	SymbolSchemaType,
+} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {Reassignable} from './Reassignable.ts';
+import {
+	buildDeco,
+	typeDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
 
 
 
-export class ASTNodeVariable extends ASTNodeExpression {
+export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeVariable {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeVariable);
@@ -45,43 +50,47 @@ export class ASTNodeVariable extends ASTNodeExpression {
 
 	public override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
-			throw new ReferenceError01(this);
+			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
-			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
+		if (this.validator.getSymbolInfo(this.id) instanceof SymbolSchemaType) {
+			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		const local = this.builder.getLocalInfo(this.id);
-		return (local)
-			? this.builder.module.local.get(local.index, local.type)
-			: throw_expression(new ReferenceError(`Variable with id ${ this.id } not found.`));
+		return this.builder.getLocal(this.id)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
-		if (this.validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-			if (symbol instanceof SymbolStructureVar) {
-				return symbol.type;
-			}
-		}
-		return TYPE.NEVER;
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolSchemaVar);
+		return symbol.isUninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		if (this.validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
-			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
-				return symbol.value;
-			}
+	public override fold(): VALUE.Value | null {
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		assert_instanceof(symbol, SymbolSchemaVar);
+		if (!symbol.isUnfixed) {
+			return symbol.value;
 		}
 		return null;
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Reassignable
+	 */
+	@memoizeMethod
+	public writeType(): TYPE.Type {
+		this.type(); // re-assert any assumptions and re-throw any errors
+		return (this.validator.getSymbolInfo(this.id) as SymbolSchemaVar).type;
 	}
 }

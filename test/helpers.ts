@@ -1,11 +1,16 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-	OBJ,
+	VALUE,
 	type TYPE,
-} from '../src/index.js';
+	type Builder,
+} from '../src/index.ts';
+
+
+
+const TYPE_UNIT_MEMO = new Map<symbol | bigint | number | string, TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String>>();
 
 
 
@@ -26,50 +31,50 @@ export const CONFIG_FOLDING_OFF: CPConfig = {
 	},
 };
 
-export const CONFIG_COERCION_OFF: CPConfig = {
-	...CONFIG_DEFAULT,
-	compilerOptions: {
-		...CONFIG_DEFAULT.compilerOptions,
-		intCoercion: false,
-	},
-};
-
-export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
-	...CONFIG_DEFAULT,
-	compilerOptions: {
-		...CONFIG_DEFAULT.compilerOptions,
-		constantFolding: false,
-		intCoercion:     false,
-	},
-};
 
 
-
-export function typeUnit(value: bigint): TYPE.TypeUnit<OBJ.Integer>;
-export function typeUnit(value: number): TYPE.TypeUnit<OBJ.Float>;
-export function typeUnit(value: string): TYPE.TypeUnit<OBJ.String>;
-export function typeUnit(value: bigint | number | string): TYPE.TypeUnit<OBJ.Integer | OBJ.Float | OBJ.String> {
-	return (
-		value === 0n              ? OBJ.Integer.ZERO :
-		value === 1n              ? OBJ.Integer.UNIT :
-		typeof value === 'bigint' ? new OBJ.Integer(value) :
-		typeof value === 'number' ? new OBJ.Float(value) :
-		typeof value === 'string' ? new OBJ.String(value) :
+export function typeUnit(value: symbol): TYPE.Unit<VALUE.Symbol>;
+export function typeUnit(value: bigint): TYPE.Unit<VALUE.Integer>;
+export function typeUnit(value: number): TYPE.Unit<VALUE.Float>;
+export function typeUnit(value: string): TYPE.Unit<VALUE.String>;
+export function typeUnit(value: symbol | bigint | number | string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String> {
+	TYPE_UNIT_MEMO.has(value) || TYPE_UNIT_MEMO.set(value, (
+		value === 0n              ? VALUE.INT_0 :
+		value === 1n              ? VALUE.INT_1 :
+		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
+		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
+		value === ''              ? VALUE.STR_EMPTY :
+		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), '') :
+		typeof value === 'bigint' ? new VALUE.Integer(value) :
+		typeof value === 'number' ? new VALUE.Float(value) :
+		typeof value === 'string' ? new VALUE.String(value) :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
-	).toType();
+	).toType());
+	return TYPE_UNIT_MEMO.get(value)!;
 }
 
 
 
-export function buildConst(mod: binaryen.Module, value: null | boolean | bigint | number = null): binaryen.ExpressionRef {
+export function buildConst(builder: Builder, value: null | boolean | symbol | bigint | number | string | [] = null): binaryen.ExpressionRef {
 	return (
-		value === null            ? OBJ.Null.NULL :
-		value === false           ? OBJ.Boolean.FALSE :
-		value === true            ? OBJ.Boolean.TRUE :
-		value === 0n              ? OBJ.Integer.ZERO :
-		value === 1n              ? OBJ.Integer.UNIT :
-		typeof value === 'bigint' ? new OBJ.Integer(value) :
-		typeof value === 'number' ? new OBJ.Float(value) :
+		value === null            ? VALUE.NULL :
+		value === false           ? VALUE.FALSE :
+		value === true            ? VALUE.TRUE :
+		value === 0n              ? VALUE.INT_0 :
+		value === 1n              ? VALUE.INT_1 :
+		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
+		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
+		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), '') :
+		typeof value === 'bigint' ? new VALUE.Integer(value) :
+		typeof value === 'number' ? new VALUE.Float(value) :
+		typeof value === 'string' ? assert.fail('String argument to `buildConst` is not yet supported.') :
+		Array.isArray(value)      ? new VALUE.Tuple() :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
-	).build(mod);
+	).build(builder);
+}
+
+
+
+export function singletonTuple(builder: Builder, item: binaryen.ExpressionRef): binaryen.ExpressionRef {
+	return builder.module.tuple.make([item, buildConst(builder)]);
 }

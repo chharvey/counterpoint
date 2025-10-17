@@ -1,19 +1,23 @@
 import type binaryen from 'binaryen';
 import {
-	type OBJ,
+	type VALUE,
 	TYPE,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import type {ASTNodeConstant} from './ASTNodeConstant.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {
+	buildDeco,
+	typeDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
+import type {ASTNodeConstant} from './ASTNodeConstant.ts';
 
 
 
@@ -32,30 +36,29 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 			| readonly [ASTNodeConstant, ASTNodeExpression,                                        ASTNodeConstant]
 			// | readonly [ASTNodeConstant,                    ...ASTNodeTemplatePartialChildrenType, ASTNodeConstant]
 			// | readonly [ASTNodeConstant, ASTNodeExpression, ...ASTNodeTemplatePartialChildrenType, ASTNodeConstant]
-			| readonly ASTNodeExpression[]
-		,
+			| readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw '`ASTNodeTemplate#build` not yet supported.';
+		throw new Error('`ASTNodeTemplate#build` not yet supported.');
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		return TYPE.STR;
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.String | null {
-		const values: Array<OBJ.Object | null> = [...this.children].map((expr) => expr.fold());
+	public override fold(): VALUE.String | null {
+		const values: readonly (VALUE.Value | null)[] = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))
 			? null
-			: (values as OBJ.Object[])
+			: (values as readonly VALUE.Value[])
 				.map((value) => value.toCPString())
 				.reduce((a, b) => a.concatenate(b));
 	}

@@ -4,24 +4,22 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	Builder,
 	ParseError01,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
+} from '../../core/index.ts';
 import {
 	TS_PARSER,
 	type Serializable,
 	to_serializable,
-} from '../../parser/index.js';
-import {
-	DECORATOR,
-	Validator,
-} from '../index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import type {Buildable} from './Buildable.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../parser/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {DECORATOR} from '../Decorator.ts';
+import {Validator} from '../Validator.ts';
+import type {Buildable} from './Buildable.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 

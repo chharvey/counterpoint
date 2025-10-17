@@ -3,9 +3,21 @@
 
 
 
+function argsArr(nth: number, params: readonly string[]): readonly string[] {
+	// e.g. `['await', 'static', 'instance', 'method']`
+	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
+		.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
+		.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
+		.map(([param, _to_include]) => param);                   // `['static', 'method']`
+}
 function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
+	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
+}
+
 /**
  * Generate a list of productions from a set of parameters.
  * E.g., to generate the following EBNF production:
@@ -36,17 +48,14 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
 	...params: readonly string[]
 ): RuleBuilders<RuleName, BaseGrammarRuleName> {
 	const rules_obj: RuleBuilders<RuleName, BaseGrammarRuleName> = {} as RuleBuilders<RuleName, BaseGrammarRuleName>;
-	new Map<RuleName, RuleBuilder<RuleName>>([...new Array(2 ** params.length)].map((_, nth) => { // e.g. `['await', 'static', 'instance', 'method']`
-		const args_arr: readonly string[] = [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
-			.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
-			.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
-			.map(([param, _to_include]) => param);                   // `['static', 'method']`
+	new Map<RuleName, RuleBuilder<RuleName>>([...new Array<undefined>(2 ** params.length)].map((_, nth) => {
+		const args_arr: readonly string[] = argsArr(nth, params);
 		const args_obj: Record<string, boolean> = {};
 		args_arr.forEach((arg) => {
 			args_obj[arg] = true;
-		}); // `{static: true, method: true}`
+		});
 		return [
-			familyName(family_name, ...args_arr), // 'family_name__static__method'
+			familyName(family_name, ...args_arr),
 			parameterized_rule.call(null, args_obj),
 		];
 	})).forEach((rule, name) => {
@@ -130,9 +139,8 @@ const DELIM_TEMPLATE     = '"""';
 const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
-const COMMENTER_MULTI    = '%%';
 
-/* eslint-disable function-call-argument-newline */
+/* eslint-disable @stylistic/function-call-argument-newline */
 const STRING_ESCAPE = choice(
 	DELIM_STRING,
 	ESCAPER,
@@ -167,7 +175,7 @@ const STRING_ESCAPE__COMMENT_SEPARATOR = choice(
 	'\n',
 	/[^"\\%stnru\n]/,
 );
-/* eslint-enable function-call-argument-newline */
+/* eslint-enable @stylistic/function-call-argument-newline */
 
 const STRING_CHAR = choice(
 	/[^"\\]/,
@@ -235,26 +243,34 @@ const OPT_COM = optional(',');
 
 /**
  * Reference a rule based on a condition.
+ *
+ * If needing an alternative, use a simple ternary operator:
+ * ```
+ * (condition) ? consequent : alternative
+ * ```
  * @param condition   the condition to test
  * @param consequent  if condition is true, this will be produced
- * @param alternative if condition is false, this will be
- *                    @default blank()
- * @returns           either `consequent` or `alternative` based on `condition`
+ * @returns           either `consequent` or `blank()` based on `condition`
  */
-function iff(condition: boolean, consequent: RuleOrLiteral, alternative: RuleOrLiteral = blank()): RuleOrLiteral {
-	return (condition) ? consequent : alternative;
+function iff(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral {
+	return (condition) ? consequent : blank();
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function ifSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
+	return (condition) ? [consequent] : [];
 }
 function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function repCom(production: RuleOrLiteral): ChoiceRule {
 	return optional(repCom1(production));
 }
 
 
 
+/* eslint-disable @stylistic/arrow-parens */
 module.exports = grammar({
-	/* eslint-disable arrow-parens */
 	name: 'counterpoint',
 
 	rules: {
@@ -263,20 +279,6 @@ module.exports = grammar({
 
 
 		/* # LEXICON */
-		keyword_type: _$ => token(choice(
-			'void',
-			'bool',
-			'int',
-			'float',
-			'str',
-			'obj',
-		)),
-		keyword_value: _$ => token(choice(
-			'null',
-			'false',
-			'true',
-		)),
-
 		identifier: _$ => token(choice(
 			WORD_BASIC,
 			WORD_UNICODE,
@@ -293,7 +295,7 @@ module.exports = grammar({
 			_$ => token(seq(
 				(!separator) ? SIGNED_DIGIT_SEQ_DEC : SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
 				'.',
-				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR,
+				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR, // eslint-disable-line @stylistic/indent
 				optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
 			))
 		), 'separator'),
@@ -318,9 +320,25 @@ module.exports = grammar({
 
 
 		/* # SYNTAX */
+		keyword_type: _$ => choice(
+			'nothing',
+			'bool',
+			'sym',
+			'int',
+			'float',
+			'str',
+			'anything',
+		),
+		keyword_value: _$ => choice(
+			'null',
+			'false',
+			'true',
+		),
+
 		word: $ => choice(
 			// operator
 			'mut',
+			'as',
 			'is',
 			'isnt',
 			'if',
@@ -330,15 +348,16 @@ module.exports = grammar({
 			'type',
 			'let',
 			'_',
+			'void',
 			// modifier
+			'nominal',
 			'var',
+			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
-			$.identifier,
 		),
 
 		primitive_literal: $ => choice(
-			$.keyword_value,
 			$.integer,
 			$.integer__radix,
 			$.integer__separator,
@@ -349,6 +368,8 @@ module.exports = grammar({
 			$.string__comment,
 			$.string__separator,
 			$.string__comment__separator,
+			$.keyword_value,
+			seq('@', $.word),
 		),
 
 
@@ -358,13 +379,13 @@ module.exports = grammar({
 		), 'named', 'optional'),
 
 		_items_type: $ => choice(
-			             seq(repCom1($.entry_type), OPT_COM),
-			seq(optional(seq(repCom1($.entry_type), ','    )), repCom1($.entry_type__optional), OPT_COM),
+			             seq(repCom1($.entry_type), OPT_COM), // eslint-disable-line @stylistic/indent
+			seq(optional(seq(repCom1($.entry_type), ','    )), repCom1($[call('entry_type', 'optional')]), OPT_COM),
 		),
 
-		_properties_type: $ => seq(repCom1(choice($.entry_type__named, $.entry_type__named__optional)), OPT_COM),
+		_properties_type: $ => seq(repCom1(choice($[call('entry_type', 'named')], $[call('entry_type', 'named', 'optional')])), OPT_COM),
 
-		type_grouped:        $ => seq('(', $._type,                                  ')'),
+		type_grouped:        $ => seq('(',                       $._type,            ')'),
 		type_tuple_literal:  $ => seq('[', optional(seq(OPT_COM, $._items_type)),    ']'),
 		type_record_literal: $ => seq('[',              OPT_COM, $._properties_type, ']'),
 		type_dict_literal:   $ => seq('[', ':', $._type,                             ']'),
@@ -372,8 +393,8 @@ module.exports = grammar({
 		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM,       '>'),
 
 		_type_unit: $ => choice(
-			$.keyword_type,
 			$.identifier,
+			$.keyword_type,
 			$.primitive_literal,
 			$.type_grouped,
 			$.type_tuple_literal,
@@ -382,8 +403,8 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		property_access_type: $ => seq('.', choice($.integer, $.word)),
-		generic_call:         $ => seq('.', $.generic_arguments),
+		property_access_type: $ => seq(choice('.', '?.'), choice($.integer, $.word)),
+		generic_call:         $ => seq('.',               $.generic_arguments),
 
 		_type_compound: $ => choice(
 			$._type_unit,
@@ -395,7 +416,12 @@ module.exports = grammar({
 			$._type_compound,
 			alias($.type_unary_symbol_dfn, $.type_unary_symbol),
 		),
-		type_unary_symbol_dfn: $ => seq($._type_unary_symbol, choice('?', '!', seq('[', optional($.integer), ']'), seq('{', '}'))),
+		type_unary_symbol_dfn: $ => seq($._type_unary_symbol, choice(
+			'?',
+			'!',
+			seq('[', optional($.integer), ']'),
+			seq('{', '}'),
+		)),
 
 		_type_unary_keyword: $ => choice(
 			$._type_unary_symbol,
@@ -409,11 +435,11 @@ module.exports = grammar({
 		type_intersection_dfn: $ => seq($._type_intersection, '&', $._type_unary_keyword),
 		type_union_dfn:        $ => seq($._type_union,        '|', $._type_intersection),
 
-		/* eslint-disable function-paren-newline */
+		/* eslint-disable @stylistic/function-paren-newline */
 		_type: $ => choice(
 			$._type_union,
 		),
-		/* eslint-enable function-paren-newline */
+		/* eslint-enable @stylistic/function-paren-newline */
 
 
 		/* ## Expressions */
@@ -458,13 +484,14 @@ module.exports = grammar({
 			seq($._expression_compound, $.property_assign),
 		),
 
-		_expression_unary_symbol: $ => choice(
-			$._expression_compound,
-			alias($.expression_unary_symbol_dfn, $.expression_unary_symbol),
-		),
-		expression_unary_symbol_dfn: $ => seq(choice('!', '?', '+', '-'), $._expression_unary_symbol),
+		_expression_unary_symbol:  $ => choice($._expression_compound,     alias($.expression_unary_symbol_dfn,  $.expression_unary_symbol)),
+		_expression_unary_keyword: $ => choice($._expression_unary_symbol, alias($.expression_unary_keyword_dfn, $.expression_unary_keyword)),
 
-		_expression_exponential:    $ => choice($._expression_unary_symbol,   alias($.expression_exponential_dfn,    $.expression_exponential)),
+		expression_unary_symbol_dfn:  $ => seq(choice('!', '?', '+', '-'), $._expression_unary_symbol),
+		expression_unary_keyword_dfn: $ => seq(choice('int', 'float'),     $._expression_unary_keyword),
+
+		_expression_cast:           $ => choice($._expression_unary_keyword,  alias($.expression_cast_dfn,           $.expression_cast)),
+		_expression_exponential:    $ => choice($._expression_cast,           alias($.expression_exponential_dfn,    $.expression_exponential)),
 		_expression_multiplicative: $ => choice($._expression_exponential,    alias($.expression_multiplicative_dfn, $.expression_multiplicative)),
 		_expression_additive:       $ => choice($._expression_multiplicative, alias($.expression_additive_dfn,       $.expression_additive)),
 		_expression_comparative:    $ => choice($._expression_additive,       alias($.expression_comparative_dfn,    $.expression_comparative)),
@@ -472,13 +499,14 @@ module.exports = grammar({
 		_expression_conjunctive:    $ => choice($._expression_equality,       alias($.expression_conjunctive_dfn,    $.expression_conjunctive)),
 		_expression_disjunctive:    $ => choice($._expression_conjunctive,    alias($.expression_disjunctive_dfn,    $.expression_disjunctive)),
 
-		expression_exponential_dfn:    $ => seq($._expression_unary_symbol,   '^',                                                    $._expression_exponential),
-		expression_multiplicative_dfn: $ => seq($._expression_multiplicative, choice('*', '/'),                                       $._expression_exponential),
-		expression_additive_dfn:       $ => seq($._expression_additive,       choice('+', '-'),                                       $._expression_multiplicative),
-		expression_comparative_dfn:    $ => seq($._expression_comparative,    choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), $._expression_additive),
-		expression_equality_dfn:       $ => seq($._expression_equality,       choice('===', '!==', '==', '!='),                       $._expression_comparative),
-		expression_conjunctive_dfn:    $ => seq($._expression_conjunctive,    choice('&&', '!&'),                                     $._expression_equality),
-		expression_disjunctive_dfn:    $ => seq($._expression_disjunctive,    choice('||', '!|'),                                     $._expression_conjunctive),
+		expression_cast_dfn:           $ => choice(seq($._expression_cast,           choice('as', 'as?', 'as!'),                             $._expression_unary_symbol), seq($._expression_cast, 'as', '<', $._type, '>')),
+		expression_exponential_dfn:    $ =>        seq($._expression_cast,           '^',                                                    $._expression_exponential),
+		expression_multiplicative_dfn: $ =>        seq($._expression_multiplicative, choice('*', '/'),                                       $._expression_exponential),
+		expression_additive_dfn:       $ =>        seq($._expression_additive,       choice('+', '-'),                                       $._expression_multiplicative),
+		expression_comparative_dfn:    $ =>        seq($._expression_comparative,    choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), $._expression_additive),
+		expression_equality_dfn:       $ =>        seq($._expression_equality,       choice('===', '!==', '==', '!='),                       $._expression_comparative),
+		expression_conjunctive_dfn:    $ =>        seq($._expression_conjunctive,    choice('&&', '!&'),                                     $._expression_equality),
+		expression_disjunctive_dfn:    $ =>        seq($._expression_disjunctive,    choice('||', '!|'),                                     $._expression_conjunctive),
 
 		expression_conditional: $ => seq('if', $._expression, 'then', $._expression, 'else', $._expression),
 
@@ -489,8 +517,12 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		declaration_type:     $ => seq('type', choice('_',                      $.identifier ), '=', $._type,                     ';'),
-		declaration_variable: $ => seq('let',  choice('_', seq(optional('var'), $.identifier)), ':', $._type, '=', $._expression, ';'),
+		declaration_type: $ => seq('type', choice('_', $.identifier), '=', $._type, ';'),
+
+		declaration_variable: $ => choice(
+			seq('let', optional('var'), choice('_', $.identifier), ':',  $._type, '=', $._expression, ';'),
+			seq('let',          'var',  choice('_', $.identifier), '?:', $._type,                     ';'),
+		),
 
 		_declaration: $ => choice(
 			$.declaration_type,
@@ -517,8 +549,17 @@ module.exports = grammar({
 	],
 
 	/**
+	 * Uses the GLR algorithm to resolve *intended conflicts* in the grammar.
+	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/2-the-grammar-dsl.html
+	 */
+	conflicts: _$ => [
+		// example:
+		// familyNameAll('integer', ['radix', 'separator']).map((rulename) => _$[rulename]),
+	],
+
+	/**
 	 * Tries to match `$.identifier` first before matching any keyword literals in the grammar.
-	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers#keyword-extraction
+	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/3-writing-the-grammar.html#keyword-extraction
 	 */
 	word: $ => $.identifier,
 
@@ -530,5 +571,38 @@ module.exports = grammar({
 		$._declaration,
 		$._statement,
 	],
-	/* eslint-enable arrow-parens */
+
+	reserved: {
+		global: _$ => [
+			// operator
+			'mut',
+			'as',
+			'is',
+			'isnt',
+			'if',
+			'then',
+			'else',
+			// storage
+			'type',
+			'let',
+			'_',
+			'void',
+			// modifier
+			'nominal',
+			'var',
+			// type keyword
+			'nothing',
+			'bool',
+			'sym',
+			'int',
+			'float',
+			'str',
+			'anything',
+			// value keyword
+			'null',
+			'false',
+			'true',
+		],
+	},
 });
+/* eslint-enable @stylistic/arrow-parens */
