@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	AST,
@@ -41,22 +42,22 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert_instanceof(info_b, SymbolSchemaVar);
 			assert_instanceof(info_c, SymbolSchemaVar);
 			assert.partialDeepStrictEqual(info_a, {
-				unfixed:       false,
-				uninitialized: false,
-				type:          TYPE.ANYTHING,
-				value:         null,
+				isUnfixed:       false,
+				isUninitialized: false,
+				type:            TYPE.ANYTHING,
+				value:           null,
 			});
 			assert.partialDeepStrictEqual(info_b, {
-				unfixed:       true,
-				uninitialized: false,
-				type:          TYPE.ANYTHING,
-				value:         null,
+				isUnfixed:       true,
+				isUninitialized: false,
+				type:            TYPE.ANYTHING,
+				value:           null,
 			});
 			assert.partialDeepStrictEqual(info_c, {
-				unfixed:       true,
-				uninitialized: true,
-				type:          TYPE.ANYTHING,
-				value:         null,
+				isUnfixed:       true,
+				isUninitialized: true,
+				type:            TYPE.ANYTHING,
+				value:           null,
 			});
 		});
 
@@ -111,6 +112,22 @@ describe('ASTNodeDeclarationVariable', () => {
 			return var_.typeCheck();
 		});
 
+		it('passes when assigned is structurally assignable.', () => {
+			xjs.Array.forEachAggregated(extract_lines`
+				let n: Name = "Alice";
+				let n: Name = "Alice" as <str>;
+				let n: Name = "Alice" as <"Alice">;
+				let n: Name = "Alice" as <Name>;
+			`, (stmt) => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					type Name = str;
+					${ stmt }
+				`);
+				goal.varCheck();
+				goal.typeCheck(); // assert does not throw
+			});
+		});
+
 		it('passes typechecking when uninitialized.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let var the_answer?: int | float;
@@ -118,10 +135,10 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
-				unfixed:       true,
-				uninitialized: true,
-				type:          TYPE.INT.union(TYPE.FLOAT),
-				value:         null,
+				isUnfixed:       true,
+				isUninitialized: true,
+				type:            TYPE.INT.union(TYPE.FLOAT),
+				value:           null,
 			});
 		});
 

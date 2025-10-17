@@ -165,6 +165,7 @@ export function subtypeRules(
 		if (this === t) {
 			return true;
 		}
+
 		/* 1-1 | `nothing  <: T` */
 		if (this.isBottomType) {
 			return true;
@@ -326,12 +327,12 @@ export abstract class Type {
 
 	/**
 	 * Is this type definitely a “truthy” type?
-	 * @return  `false` if this is the Bottom Type or is a supertype of any of `null` or `false`; otherwise `true`
+	 * @return `false` if this is the Bottom Type or is definitely “falsy” or is a supertype of any of `null` or `false`; otherwise `true`
 	 * @final
 	 */
 	@memoizeGetter
 	public get isDefinitelyTruthy(): boolean {
-		return !this.isBottomType && [...FALSY_TYPES].every((t) => !t.isSubtypeOf(this));
+		return !this.isBottomType && !this.isDefinitelyFalsy && [...FALSY_TYPES].every((t) => !t.isSubtypeOf(this));
 	}
 
 	/**

@@ -350,6 +350,7 @@ module.exports = grammar({
 			'_',
 			'void',
 			// modifier
+			'nominal',
 			'var',
 			$.identifier,
 			$.keyword_type,
@@ -516,7 +517,7 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		declaration_type: $ => seq('type', choice('_', $.identifier ), '=', $._type, ';'),
+		declaration_type: $ => seq('type', choice('_', $.identifier), '=', $._type, ';'),
 
 		declaration_variable: $ => choice(
 			seq('let', optional('var'), choice('_', $.identifier), ':',  $._type, '=', $._expression, ';'),
@@ -587,6 +588,7 @@ module.exports = grammar({
 			'_',
 			'void',
 			// modifier
+			'nominal',
 			'var',
 			// type keyword
 			'nothing',

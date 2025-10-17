@@ -110,10 +110,10 @@ describe('ASTNodeCP', () => {
 					goal.varCheck();
 					goal.typeCheck();
 					return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
-						unfixed:       true,
-						uninitialized: true,
-						type:          TYPE.INT,
-						value:         null,
+						isUnfixed:       true,
+						isUninitialized: true,
+						type:            TYPE.INT,
+						value:           null,
 					});
 				});
 				it('does not allow reassignment of `null` when uninitialized.', () => {
@@ -123,8 +123,8 @@ describe('ASTNodeCP', () => {
 					`);
 					goal.varCheck();
 					assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
-						unfixed:       true,
-						uninitialized: true,
+						isUnfixed:       true,
+						isUninitialized: true,
 					});
 					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});

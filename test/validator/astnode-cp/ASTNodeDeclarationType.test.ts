@@ -56,7 +56,7 @@ describe('ASTNodeDeclarationType', () => {
 
 
 	describe('#typeCheck', () => {
-		it('sets `SymbolSchema#value`.', () => {
+		it('sets `SymbolSchemaType#typevalue`.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
 			`);
