@@ -579,20 +579,40 @@ describe('ASTNodeDeclaration', () => {
 
 	describe('ASTNodeDeclarationClaim', () => {
 		describe('#typeCheck', () => {
-			it('throws when the assignee type and claimed type do not overlap (including int and float).', () => {
+			it('allows claimed type to be a subtype of assignee type.', () => {
+				xjs.Array.forEachAggregated(extract_lines`
+					claim x: int;
+					claim x: float;
+				`, (stmt) => {
+					setupScript(`{
+						let var x: int | float = 4.2;
+						${ stmt }
+					}`, null, {build: false}); // assert does not throw
+				});
+			});
+			it('throws when the claimed type is not a subtype of the assignee type (including int and float).', () => {
 				xjs.Array.forEachAggregated([`{
 					let x: int = 3;
-					claim x: str;
+					claim x: str; % disjoint
 				}`, `{
 					let x: int = 3;
-					claim x: float;
+					claim x: float; % disjoint
 				}`, `{
 					let x: float = 3.0;
-					claim x: int;
+					claim x: int; % disjoint
+				}`, `{
+					let x: 42 | 43 | 44 = 42;
+					claim x: 43 | 44 | 45; % overlapping
+				}`, `{
+					let x: int | float = 42;
+					claim x: int | float | str; % supertype
+				}`, `{
+					let x: int | float = 42;
+					claim x: anything; % supertype
 				}`], (src) => {
 					const {stmts} = setupScript(src, null, {typeCheck: false});
 					stmts[0].typeCheck(); // assert does not throw
-					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotAssignable);
+					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
 				});
 			});
 			it('allows claim after reassignment.', () => {
@@ -611,13 +631,6 @@ describe('ASTNodeDeclaration', () => {
 				stmts[0].typeCheck(); // assert does not throw
 				stmts[1].typeCheck(); // assert does not throw
 				return assert.throws(() => stmts[2].typeCheck(), TypeErrorNotAssignable);
-			});
-			it('allows semi-overlapping types.', () => {
-				setupScript(`{
-					let var x: 42 | 43 = 42;
-					claim x: 43 | 44;        % the types intersect, so the claim is allowed
-					set x = 44;
-				}`, null, {build: false}); // assert does not throw
 			});
 			it.skip('allows narrowing tuple/record properties.', () => {
 				setupScript(`{
@@ -671,7 +684,7 @@ describe('ASTNodeDeclaration', () => {
 			it('always returns `(nop)`.', () => {
 				const {stmts, mod} = setupScript(`{
 					type T = int;
-					let x: int = 42;
+					let var x: int = 42;
 					claim x: T;
 				}`);
 				return assertEqualBins(stmts[2].build(), mod.nop());

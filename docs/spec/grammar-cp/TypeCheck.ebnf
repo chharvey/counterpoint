@@ -68,14 +68,13 @@ Type! TypeCheck(SemanticDeclarationClaim claim) :=
 	2. *Let* `assignee` be `claim.children.0`.
 	3. *Let* `computed_type` be *Unwrap:* `TypeOf(assignee)`.
 	4. *Let* `claimed_type` be *Unwrap:* `TypeValueOf(claim.children.1)`.
-	5. *Let* `intersection` be *UnwrapAffirm:* `Intersection(computed_type, claimed_type)`.
-	6. *If* *UnwrapAffirm:* `IsBottomType(intersection)` is `true` *and* *UnwrapAffirm:* `IsBottomType(computed_type)` is `false` *and* *UnwrapAffirm:* `IsBottomType(claimed_type)` is `false`:
-		1. *Throw:* a new TypeErrorNotAssignable.
-	7. *If* `assignee` is a SemanticVariable:
+	5. *If* *UnwrapAffirm:* `Subtype(claimed_type, computed_type)` is `false`:
+		1. *Throw:* a new TypeErrorNotNarrow.
+	6. *If* `assignee` is a SemanticVariable:
 		1. *If* the validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`:
 			1. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 			2. *Set* `symbol.type` to `claimed_type`.
-	8. *Else:*
+	7. *Else:*
 		// TODO
 ;
 
