@@ -1,9 +1,9 @@
-import * as assert from 'assert';
 import type binaryen from 'binaryen';
 import {
 	type TYPE,
 	TypeErrorNotAssignable,
 } from '../../index.js';
+import {assert_instanceof} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -20,7 +20,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.js';
 export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationClaim {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeDeclarationClaim);
+		assert_instanceof(statement, ASTNodeDeclarationClaim);
 		return statement;
 	}
 
