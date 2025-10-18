@@ -29,11 +29,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		private readonly assignee: ASTNodeTypeAlias | null,
 		public  readonly assigned: ASTNodeType,
 	) {
-		super(
-			start_node,
-			{},
-			(assignee) ? [assignee, assigned] : [assigned],
-		);
+		super(start_node, {}, assignee ? [assignee, assigned] : [assigned]);
 	}
 
 	public override varCheck(): void {

@@ -29,8 +29,8 @@ export class ASTNodeClaim extends ASTNodeExpression {
 
 	public constructor(
 		start_node: SyntaxNodeType<'expression_cast'>,
-		private readonly operand: ASTNodeExpression,
-		private readonly claimed_type: ASTNodeType,
+		public readonly operand:      ASTNodeExpression,
+		public readonly claimed_type: ASTNodeType,
 	) {
 		super(start_node, {}, [operand, claimed_type]);
 	}
@@ -42,7 +42,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	// Explicitly omitting `@typeDeco` because we don’t want to include folding logic.
+	// @typeDeco // explicitly leaving off to omit folding logic
 	public override type(): TYPE.Type {
 		const computed_type: TYPE.Type = this.operand.type();
 		const claimed_type:  TYPE.Type = this.claimed_type.eval();

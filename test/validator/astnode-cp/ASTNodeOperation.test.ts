@@ -1487,12 +1487,7 @@ describe('ASTNodeOperation', () => {
 			});
 			it('returns `nothing` when condition is `nothing`.', () => {
 				const ternary: AST.ASTNodeOperationTernary = AST.ASTNodeOperationTernary.fromSource('if n as <nothing> then true else false');
-				ternary.validator.addSymbol(new SymbolSchemaVar(
-					// @ts-expect-error --- it’s private
-					(ternary.operand0 as AST.ASTNodeClaim).operand as AST.ASTNodeVariable,
-					false,
-					false,
-				));
+				ternary.validator.addSymbol(new SymbolSchemaVar((ternary.operand0 as AST.ASTNodeClaim).operand as AST.ASTNodeVariable, false, false));
 				return assert.ok(ternary.type().isBottomType);
 			});
 			it('throws when condition is not a subtype of `boolean`.', () => {

@@ -1,7 +1,16 @@
 import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
-import type {Value} from './Value.ts';
+import {
+	language_values_equal,
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
+} from '../utils-private.ts';
+import {
+	identical,
+	type Value,
+} from './Value.ts';
 import {CollectionIndexed} from './CollectionIndexed.ts';
 
 
@@ -13,6 +22,14 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
 export class List<T extends Value = Value> extends CollectionIndexed<T> {
 	public override toString(): string {
 		return `List.(${ super.toString() })`;
+	}
+
+	@strictEqual
+	@identical
+	@instanceOf(() => List)
+	@memoizeBinOp(true, true)
+	public override equal(value: Value): boolean {
+		return CollectionIndexed.samenessDfn<T>(this, value as List<T>, language_values_equal);
 	}
 
 	/**

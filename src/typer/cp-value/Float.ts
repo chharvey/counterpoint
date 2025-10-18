@@ -39,8 +39,8 @@ export class Float extends ValueNumber<Float> {
 	}
 
 	@strictEqual
-	@instanceOf(() => ValueNumber)
 	@identical
+	@instanceOf(() => ValueNumber)
 	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
 	public override equal(value: Value): boolean {
 		return this.data === (value as ValueNumber).toFloat().data;

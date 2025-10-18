@@ -78,6 +78,7 @@ KeywordOther :::=
 		| "_"
 		| "void"
 	// modifier
+		| "nominal"
 		| "var"
 ;
 

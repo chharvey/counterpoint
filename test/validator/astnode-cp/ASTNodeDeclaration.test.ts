@@ -71,11 +71,11 @@ describe('ASTNodeDeclaration', () => {
 
 
 		describe('#typeCheck', () => {
-			it('sets `SymbolSchema#value`.', () => {
+			it('sets `SymbolSchemaType#typevalue`.', () => {
 				assert.strictEqual(
 					(setupScript(`{
-					type T = int;
-				}`, null, {build: false}).goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
+						type T = int;
+					}`, null, {build: false}).goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 					TYPE.INT,
 				);
 			});
@@ -117,22 +117,22 @@ describe('ASTNodeDeclaration', () => {
 				assert_instanceof(info_b, SymbolSchemaVar);
 				assert_instanceof(info_c, SymbolSchemaVar);
 				assert.partialDeepStrictEqual(info_a, {
-					unfixed:       false,
-					uninitialized: false,
-					type:          TYPE.ANYTHING,
-					value:         null,
+					isUnfixed:       false,
+					isUninitialized: false,
+					type:            TYPE.ANYTHING,
+					value:           null,
 				});
 				assert.partialDeepStrictEqual(info_b, {
-					unfixed:       true,
-					uninitialized: false,
-					type:          TYPE.ANYTHING,
-					value:         null,
+					isUnfixed:       true,
+					isUninitialized: false,
+					type:            TYPE.ANYTHING,
+					value:           null,
 				});
 				assert.partialDeepStrictEqual(info_c, {
-					unfixed:       true,
-					uninitialized: true,
-					type:          TYPE.ANYTHING,
-					value:         null,
+					isUnfixed:       true,
+					isUninitialized: true,
+					type:            TYPE.ANYTHING,
+					value:           null,
 				});
 			});
 			it('for blank identifiers, does not add to symbol table.', () => {
@@ -183,14 +183,27 @@ describe('ASTNodeDeclaration', () => {
 				var_.varCheck();
 				return var_.typeCheck();
 			});
+			it('passes when assigned is structurally assignable.', () => {
+				xjs.Array.forEachAggregated(extract_lines`
+					let n: Name = "Alice";
+					let n: Name = "Alice" as <str>;
+					let n: Name = "Alice" as <"Alice">;
+					let n: Name = "Alice" as <Name>;
+				`, (stmt) => {
+					setupScript(`{
+						type Name = str;
+						${ stmt }
+					}`, null, {build: false}); // assert does not throw
+				});
+			});
 			it('passes typechecking when uninitialized.', () => {
 				assert.partialDeepStrictEqual(setupScript(`{
 					let var the_answer?: int | float;
 				}`, null, {build: false}).goal.validator.getSymbolInfo(0x100n), {
-					unfixed:       true,
-					uninitialized: true,
-					type:          TYPE.INT.union(TYPE.FLOAT),
-					value:         null,
+					isUnfixed:       true,
+					isUninitialized: true,
+					type:            TYPE.INT.union(TYPE.FLOAT),
+					value:           null,
 				});
 			});
 			it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
@@ -666,10 +679,10 @@ describe('ASTNodeDeclaration', () => {
 						let var x?: int;
 						set x = 42;
 					}`, null, {build: false}).goal.validator.getSymbolInfo(0x100n), {
-						unfixed:       true,
-						uninitialized: true,
-						type:          TYPE.INT,
-						value:         null,
+						isUnfixed:       true,
+						isUninitialized: true,
+						type:            TYPE.INT,
+						value:           null,
 					});
 				});
 				it('does not allow reassignment of `null` when uninitialized.', () => {
@@ -679,8 +692,8 @@ describe('ASTNodeDeclaration', () => {
 					}`);
 					goal.varCheck();
 					assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
-						unfixed:       true,
-						uninitialized: true,
+						isUnfixed:       true,
+						isUninitialized: true,
 					});
 					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});

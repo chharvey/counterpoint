@@ -44,6 +44,7 @@ Word ::=
 		| "_"
 		| "void"
 	// modifier
+		| "nominal"
 		| "var"
 	| IDENTIFIER
 	| KeywordType
