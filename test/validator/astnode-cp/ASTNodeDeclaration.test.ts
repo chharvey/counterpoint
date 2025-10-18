@@ -579,103 +579,164 @@ describe('ASTNodeDeclaration', () => {
 
 	describe('ASTNodeDeclarationClaim', () => {
 		describe('#typeCheck', () => {
-			it('allows claimed type to be a subtype of assignee type.', () => {
-				xjs.Array.forEachAggregated(extract_lines`
-					claim x: int;
-					claim x: float;
-				`, (stmt) => {
-					setupScript(`{
+			context('for variables.', () => {
+				it('allows claimed type to be a subtype of assignee type.', () => {
+					xjs.Array.forEachAggregated(extract_lines`
+						claim x: int;
+						claim x: float;
+					`, (stmt) => {
+						setupScript(`{
+							let var x: int | float = 4.2;
+							${ stmt }
+						}`, null, {build: false}); // assert does not throw
+					});
+				});
+				it('throws when the claimed type is not a subtype of the assignee type (including int and float).', () => {
+					xjs.Array.forEachAggregated([`{
+						let x: int = 3;
+						claim x: str; % disjoint
+					}`, `{
+						let x: int = 3;
+						claim x: float; % disjoint
+					}`, `{
+						let x: float = 3.0;
+						claim x: int; % disjoint
+					}`, `{
+						let x: 42 | 43 | 44 = 42;
+						claim x: 43 | 44 | 45; % overlapping
+					}`, `{
+						let x: int | float = 42;
+						claim x: int | float | str; % supertype
+					}`, `{
+						let x: int | float = 42;
+						claim x: anything; % supertype
+					}`], (src) => {
+						const {stmts} = setupScript(src, null, {typeCheck: false});
+						stmts[0].typeCheck(); // assert does not throw
+						return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
+					});
+				});
+				it('accessing variable after claim is narrowed.', () => {
+					const {stmts} = setupScript(`{
 						let var x: int | float = 4.2;
-						${ stmt }
+						x;            % type \`int | float\`
+						claim x: int;
+						x;            % type \`int\`
+					}`, null, {build: false});
+					return assert.deepStrictEqual(
+						[stmts[1], stmts[3]].map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+						[TYPE.INT.union(TYPE.FLOAT), TYPE.INT],
+					);
+				});
+				it('allows claim after reassignment.', () => {
+					setupScript(`{
+						let var x: bool | null = false;
+						set x = true;
+						claim x: null;
 					}`, null, {build: false}); // assert does not throw
 				});
-			});
-			it('throws when the claimed type is not a subtype of the assignee type (including int and float).', () => {
-				xjs.Array.forEachAggregated([`{
-					let x: int = 3;
-					claim x: str; % disjoint
-				}`, `{
-					let x: int = 3;
-					claim x: float; % disjoint
-				}`, `{
-					let x: float = 3.0;
-					claim x: int; % disjoint
-				}`, `{
-					let x: 42 | 43 | 44 = 42;
-					claim x: 43 | 44 | 45; % overlapping
-				}`, `{
-					let x: int | float = 42;
-					claim x: int | float | str; % supertype
-				}`, `{
-					let x: int | float = 42;
-					claim x: anything; % supertype
-				}`], (src) => {
-					const {stmts} = setupScript(src, null, {typeCheck: false});
+				it('allows reassigning correct type after claim.', () => {
+					setupScript(`{
+						let var x: bool | null = false;
+						claim x: bool;
+						set x = true;
+					}`, null, {build: false}); // assert does not throw
+				});
+				it('disallows reassigning incorrect type after claim.', () => {
+					const {stmts} = setupScript(`{
+						let var x: bool | null = false;
+						claim x: bool;
+						set x = null;
+					}`, null, {typeCheck: false});
 					stmts[0].typeCheck(); // assert does not throw
-					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
+					stmts[1].typeCheck(); // assert does not throw
+					return assert.throws(() => stmts[2].typeCheck(), TypeErrorNotAssignable);
 				});
 			});
-			it('allows claim after reassignment.', () => {
-				setupScript(`{
-					let var x: bool | null = false;
-					set x = true;
-					claim x: null;
-				}`, null, {build: false}); // assert does not throw
-			});
-			it('disallows reassigning incorrect type after claim.', () => {
-				const {stmts} = setupScript(`{
-					let var x: bool | null = false;
-					claim x: null;
-					set x = true;
-				}`, null, {typeCheck: false});
-				stmts[0].typeCheck(); // assert does not throw
-				stmts[1].typeCheck(); // assert does not throw
-				return assert.throws(() => stmts[2].typeCheck(), TypeErrorNotAssignable);
-			});
-			it.skip('allows narrowing tuple/record properties.', () => {
-				setupScript(`{
-					let var tuple: [int | null, [value: int | null]] = [null, [value= 42]];
-					claim tuple.0:       int;
-					claim tuple.1.value: null;
-				}`, null, {build: false}); // assert does not throw
-			});
-			it.skip('disallows mutating incorrect type after claim.', () => {
-				const {stmts} = setupScript(`{
-					let var record: [value: int | null, tuple: [int | null]] = [value= null, tuple= [42]];
-					claim record.value:   int;
-					claim record.tuple.0: null;
-					set record = [value= null, tuple= [42]];
-				}`, null, {typeCheck: false});
-				xjs.Array.forEachAggregated(stmts.slice(0, -1), (stmt) => stmt.typeCheck()); // assert does not throw
-				return assert.throws(() => stmts.at(-1)!.typeCheck(), TypeErrorNotAssignable);
-			});
-			it.skip('allows mutating correct type after claim.', () => {
-				setupScript(`{
-					let var record: [value: int | null, tuple: [int | null]] = [value= null, tuple= [42]];
-					claim record.value:   int;
-					claim record.tuple.0: null;
-					set record = [value= 43, tuple= [null]];
-				}`, null, {build: false}); // assert does not throw
-			});
-			it.skip('accessing property after claim is narrowed.', () => {
-				const {stmts} = setupScript(`{
-					let var record: [value: int | null, tuple: [int | null]] = [value= null, tuple= [42]];
-					record.value;               % type \`int | null\`
-					record.tuple.0;             % type \`[int | null]\`
-					claim record.value:   null;
-					claim record.tuple.0: int;
-					record.value;               % type \`null\`
-					record.tuple.0;             % type \`int\`
-				}`, null, {build: false});
-				const INT_NULL: TYPE.Type = TYPE.INT.union(TYPE.NULL);
-				assert.deepStrictEqual(
-					stmts.slice(1, 3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
-					[INT_NULL, TYPE.Tuple.fromTypes([INT_NULL])],
-				);
-				return assert.deepStrictEqual(
-					stmts.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
-					[TYPE.NULL, TYPE.INT],
-				);
+			context.skip('for accesses.', () => {
+				it('allows claiming access of compound types.', () => {
+					setupScript(`{
+						let var tuple: [int | null, [value: int | null]] = [null, [value= 42]];
+						claim tuple.0:       int;
+						claim tuple.1.value: null;
+
+						let var list: (int | float)[] = List.<int | float>([2.718, 6.283]);
+						claim list.[0]: float;
+						claim list.[1]: float;
+
+						let var dict: [: int | float] = Dict.<int | float>([e= 2.718, tau= 6.283]);
+						claim dict.[@e]:   float;
+						claim dict.[@tau]: float;
+
+						let var 'set': (int | float){} = {2.718, 6.283};
+						claim 'set'.[2.718]: true;
+						claim 'set'.[6.283]: true;
+
+						let var map: {str -> int | float} = {"e" -> 2.718, "tau" -> 6.283};
+						claim map.["e"]:   float;
+						claim map.["tau"]: float;
+					}`, null, {build: false}); // assert does not throw
+				});
+				it('accessing property after claim is narrowed.', () => {
+					const {stmts} = setupScript(`{
+						let var record: [value: int | null, tuple: [int | null]] = [value= null, tuple= [42]];
+						record.value;               % type \`int | null\`
+						record.tuple.0;             % type \`[int | null]\`
+						claim record.value:   null;
+						claim record.tuple.0: int;
+						record.value;               % type \`null\`
+						record.tuple.0;             % type \`int\`
+					}`, null, {build: false});
+					const INT_NULL: TYPE.Type = TYPE.INT.union(TYPE.NULL);
+					return assert.deepStrictEqual(
+						[...stmts.slice(1, 3), ...stmts.slice(5)].map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+						[INT_NULL, TYPE.Tuple.fromTypes([INT_NULL]), TYPE.NULL, TYPE.INT],
+					);
+				});
+				it('allows claim after mutation.', () => {
+					xjs.Array.forEachAggregated([`{
+						let var record: [value: int | null, tuple: [int | null]] = [value= null, tuple= [42]];
+						set record = [value= 43, tuple= [null]];
+						claim record.value:   null;
+						claim record.tuple.0: int;
+					}`, `{
+						let var list: mut (int | float)[] = List.<int | float>([2.718, 6.283]);
+						set list.[0] = 1.618;
+						claim list.[0]: int;
+					}`], (src) => {
+						setupScript(src, null, {typeCheck: false}); // assert does not throw
+					});
+				});
+				it('allows mutating correct type after claim.', () => {
+					xjs.Array.forEachAggregated([`{
+						let var record: [value: int | null, tuple: [int | null]] = [value= null, tuple= [42]];
+						claim record.value:   int;
+						claim record.tuple.0: null;
+						set record = [value= 43, tuple= [null]];
+					}`, `{
+						let var list: mut (int | float)[] = List.<int | float>([2.718, 6.283]);
+						claim list.[0]: float;
+						set list.[0] = 1.618;
+					}`], (src) => {
+						setupScript(src, null, {typeCheck: false}); // assert does not throw
+					});
+				});
+				it('disallows mutating incorrect type after claim.', () => {
+					xjs.Array.forEachAggregated([`{
+						let var record: [value: int | null, tuple: [int | null]] = [value= null, tuple= [42]];
+						claim record.value:   int;
+						claim record.tuple.0: null;
+						set record = [value= null, tuple= [42]];
+					}`, `{
+						let var list: mut (int | float)[] = List.<int | float>([2.718, 6.283]);
+						claim list.[0]: float;
+						set list.[0] = 42;
+					}`], (src) => {
+						const {stmts} = setupScript(src, null, {typeCheck: false});
+						xjs.Array.forEachAggregated(stmts.slice(0, -1), (stmt) => stmt.typeCheck()); // assert does not throw
+						return assert.throws(() => stmts.at(-1)!.typeCheck(), TypeErrorNotAssignable);
+					});
+				});
 			});
 		});
 
