@@ -77,10 +77,10 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 				 * Equality:
 				 * - If the types of `a` and `b` are disjoint,
 				 * 	*and* any of `a` or `b` is disjoint with the Number type (it cannot contain numbers),
-				 * 	then `a === b` will always evaluate to false.
+				 * 	then `a == b` will always evaluate to false.
 				 * - Else if the types of `a` and `b` intersect,
 				 * 	*or* both `a` and `b` intersect with the Number type (they both might contain numbers),
-				 * 	then `a === b` could evaluate to true.
+				 * 	then `a == b` could evaluate to true.
 				 */
 				return DISJOINT_TYPES && [t0, t1].some((t) => t.intersect(TYPE.INT.union(TYPE.FLOAT)).isBottomType) ? TYPE.FALSE : TYPE.BOOL;
 			}
@@ -107,8 +107,8 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: VALUE.Value, y: VALUE.Value) => boolean>([
 			[Operator.ID, (x, y) => x.identical(y)],
 			[Operator.EQ, (x, y) => x.equal(y)],
-			// [Operator.ISNT, (x, y) => !x.identical(y)],
-			// [Operator.NEQ,  (x, y) => !x.equal(y)],
+			// [Operator.NID, (x, y) => !x.identical(y)],
+			// [Operator.NEQ, (x, y) => !x.equal(y)],
 		]).get(this.operator)!(v0, v1));
 	}
 }

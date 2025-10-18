@@ -70,7 +70,7 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
-		return symbol.uninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
+		return symbol.isUninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
 	}
 
 	@memoizeMethod
@@ -78,7 +78,7 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
-		if (!symbol.unfixed) {
+		if (!symbol.isUnfixed) {
 			return symbol.value;
 		}
 		return null;

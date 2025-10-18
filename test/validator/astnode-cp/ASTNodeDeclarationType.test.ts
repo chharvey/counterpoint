@@ -57,11 +57,11 @@ describe('ASTNodeDeclarationType', () => {
 
 
 	describe('#typeCheck', () => {
-		it('sets `SymbolSchema#value`.', () => {
+		it('sets `SymbolSchemaType#typevalue`.', () => {
 			assert.strictEqual(
 				(setupScript(`{
-				type T = int;
-			}`, null, {build: false}).goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
+					type T = int;
+				}`, null, {build: false}).goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 				TYPE.INT,
 			);
 		});

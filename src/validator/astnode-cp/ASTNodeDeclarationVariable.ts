@@ -70,7 +70,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
 			symbol.type = assignee_type;
 			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
-				assert.ok(!symbol.unfixed, `Symbol \`${ symbol.source }\` should not be unfixed.`);
+				assert.ok(!symbol.isUnfixed, `Symbol \`${ symbol.source }\` should not be unfixed.`);
 				symbol.value = value;
 			}
 		}

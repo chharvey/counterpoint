@@ -108,7 +108,7 @@ describe('Type', () => {
 				TYPE.FALSE.union(TYPE.STR),
 			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${ t }\` to not be definitely truthy.`));
 		});
-		it('primitive value types are definitely truthy.', () => {
+		it('primitive value types (except `bool`) are definitely truthy.', () => {
 			[
 				TYPE.TRUE,
 				TYPE.SYM,
@@ -925,7 +925,6 @@ describe('Type', () => {
 			});
 		});
 	});
-
 
 
 	describe('Combinable', () => {
