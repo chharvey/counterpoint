@@ -104,6 +104,16 @@ class TypeTuple extends ValueType {
 		);
 	}
 
+	public set(index: bigint, typ: Type, accessor: AST.ASTNodeIndex): void {
+		const i: number = Number(index);
+		const entrytype: EntryType | undefined = this.typeargs.at(i);
+		if (entrytype) {
+			(this.typeargs as EntryType[])[i] = {...entrytype, type: typ};
+		} else {
+			throw new TypeErrorNoEntry('index', this, accessor);
+		}
+	}
+
 	public itemTypes(): Type {
 		return Union.all(this.typeargs.map((t) => t.type));
 	}

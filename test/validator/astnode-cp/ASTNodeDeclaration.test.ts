@@ -653,13 +653,14 @@ describe('ASTNodeDeclaration', () => {
 					return assert.throws(() => stmts[2].typeCheck(), TypeErrorNotAssignable);
 				});
 			});
-			context.skip('for accesses.', () => {
+			context('for accesses.', () => {
 				it('allows claiming access of compound types.', () => {
 					setupScript(`{
 						let var tuple: [int | null, [value: int | null]] = [null, [value= 42]];
 						claim tuple.0:       int;
 						claim tuple.1.value: null;
 
+						%% TODO: uncomment these
 						let var list: (int | float)[] = List.<int | float>([2.718, 6.283]);
 						claim list.[0]: float;
 						claim list.[1]: float;
@@ -675,13 +676,14 @@ describe('ASTNodeDeclaration', () => {
 						let var map: {str -> int | float} = {"e" -> 2.718, "tau" -> 6.283};
 						claim map.["e"]:   float;
 						claim map.["tau"]: float;
+						%%
 					}`, null, {build: false}); // assert does not throw
 				});
 				it('accessing property after claim is narrowed.', () => {
 					const {stmts} = setupScript(`{
 						let var record: [value: int | null, tuple: [int | null]] = [value= null, tuple= [42]];
 						record.value;               % type \`int | null\`
-						record.tuple.0;             % type \`[int | null]\`
+						record.tuple.0;             % type \`int | null\`
 						claim record.value:   null;
 						claim record.tuple.0: int;
 						record.value;               % type \`null\`
@@ -689,8 +691,8 @@ describe('ASTNodeDeclaration', () => {
 					}`, null, {build: false});
 					const INT_NULL: TYPE.Type = TYPE.INT.union(TYPE.NULL);
 					return assert.deepStrictEqual(
-						[...stmts.slice(1, 3), ...stmts.slice(5)].map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
-						[INT_NULL, TYPE.Tuple.fromTypes([INT_NULL]), TYPE.NULL, TYPE.INT],
+						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+						[INT_NULL, INT_NULL, TYPE.NULL, TYPE.INT],
 					);
 				});
 				it('allows claim after mutation.', () => {
@@ -703,8 +705,9 @@ describe('ASTNodeDeclaration', () => {
 						let var list: mut (int | float)[] = List.<int | float>([2.718, 6.283]);
 						set list.[0] = 1.618;
 						claim list.[0]: int;
-					}`], (src) => {
-						setupScript(src, null, {typeCheck: false}); // assert does not throw
+					}`], (src, i) => {
+						i === 0 && setupScript(src, null, {build: false}); // assert does not throw
+						i === 1 && assert.throws(() => setupScript(src, null, {build: false}), /not yet supported/);
 					});
 				});
 				it('allows mutating correct type after claim.', () => {
@@ -717,8 +720,9 @@ describe('ASTNodeDeclaration', () => {
 						let var list: mut (int | float)[] = List.<int | float>([2.718, 6.283]);
 						claim list.[0]: float;
 						set list.[0] = 1.618;
-					}`], (src) => {
-						setupScript(src, null, {typeCheck: false}); // assert does not throw
+					}`], (src, i) => {
+						i === 0 && setupScript(src, null, {build: false}); // assert does not throw
+						i === 1 && assert.throws(() => setupScript(src, null, {build: false}), /not yet supported/);
 					});
 				});
 				it('disallows mutating incorrect type after claim.', () => {
@@ -731,10 +735,25 @@ describe('ASTNodeDeclaration', () => {
 						let var list: mut (int | float)[] = List.<int | float>([2.718, 6.283]);
 						claim list.[0]: float;
 						set list.[0] = 42;
-					}`], (src) => {
+					}`], (src, i) => {
 						const {stmts} = setupScript(src, null, {typeCheck: false});
-						xjs.Array.forEachAggregated(stmts.slice(0, -1), (stmt) => stmt.typeCheck()); // assert does not throw
-						return assert.throws(() => stmts.at(-1)!.typeCheck(), TypeErrorNotAssignable);
+						if (i === 0) {
+							xjs.Array.forEachAggregated(stmts.slice(0, -1), (stmt) => stmt.typeCheck()); // assert does not throw
+							return assert.throws(() => stmts.at(-1)!.typeCheck(), (err) => {
+								assert_instanceof(err, AggregateError);
+								assertAssignable(err, {
+									cons:   AggregateError,
+									errors: [
+										{cons: TypeErrorNotAssignable, message: 'Expression of type `null` is not assignable to type `int`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression of type `42` is not assignable to type `null`.'},
+									],
+								});
+								return true;
+							});
+						} else {
+							stmts[0].typeCheck(); // assert does not throw
+							assert.throws(() => stmts[1].typeCheck(), /not yet supported/);
+						}
 					});
 				});
 			});

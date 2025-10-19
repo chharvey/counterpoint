@@ -75,7 +75,35 @@ Type! TypeCheck(SemanticDeclarationClaim claim) :=
 			1. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 			2. *Set* `symbol.type` to `claimed_type`.
 	7. *Else:*
-		// TODO
+		1. *Assert:* `assignee` is a SemanticAccess.
+		2. *Assert:* `assignee.children.count` is 2.
+		3. *Let* `base_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
+		4. *Let* `accessor` be `assignee.children.1`.
+		5. *If* `base_type` is a Tuple type:
+			1. *Assert:* `accessor` is a SemanticIndex.
+			2. *If* `accessor.index` is an index in `base_type`:
+				1. *Let* `old_entry` be a the item accessed at index `accessor.index` in `base_type`.
+				2. *Let* `new_entry` be a new EntryTypeSchema [
+					type=     `claimed_type`,
+					optional= `old_entry.optional`,
+				].
+				3. *Set* the item at index `accessor.index` in `base_type` to `new_entry`.
+			3. *Else:*
+				1. *Throw:* a new TypeErrorNoEntry.
+		6. *Else If* `base_type` is a Record type:
+			1. *Assert:* `accessor` is a SemanticKey.
+			2. *If* `accessor.id` is a key in `base_type`:
+				1. *Let* `old_entry` be the item accessed at key `accessor.id` in `base_type`.
+				2. *Let* `new_entry` be a new EntryTypeSchema [
+					type=     `claimed_type`,
+					optional= `old_entry.optional`,
+				].
+				3. *Set* the item at key `accessor.id` in `base_type` to `new_entry`.
+			3. *Else:*
+				1. *Throw:* a new TypeErrorNoEntry.
+		7. *Else:*
+			1. *Assert:* `accessor` is a SemanticExpression.
+			// TODO
 ;
 
 
