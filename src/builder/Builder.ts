@@ -254,10 +254,10 @@ export class Builder {
 	}
 
 	/**
-	 * Prepare this builder’s module and return an action to validate it.
-	 * @return a callback that validates the module, to be performed after any further modifications to the module are made
+	 * Prepare this builder’s module, with optional additional actions/modifications.
+	 * @param main a callback to run after setup but before validation
 	 */
-	public setupModule(): () => void {
+	public setupModule(main?: (mod: binaryen.Module) => void): void {
 		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
 			/* eslint-disable @stylistic/operator-linebreak */
 			binaryen.Features.SIMD128 |
@@ -266,10 +266,9 @@ export class Builder {
 			/* eslint-enable @stylistic/operator-linebreak */
 		));
 		this.#setupFunctions();
-		return () => {
-			if (!this.module.validate()) {
-				throw new Error('Invalid WebAssembly module.');
-			}
-		};
+		main?.call(null, this.module);
+		if (!this.module.validate()) {
+			throw new Error('Invalid WebAssembly module.');
+		}
 	}
 }
