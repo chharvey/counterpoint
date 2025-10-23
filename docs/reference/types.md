@@ -556,12 +556,12 @@ Compound types are composed of other types.
 
 Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax                 | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
 ------------------ | -------- | ------------  | ------------------- | ------------------------------------ | -------------------------------------------- | -------------------------------------- | --------------------
-[Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `["x", "y", "z"]`                      | `[]`
+[Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `("x", "y", "z")`<sup>&lowast;</sup>   | `()`
 [Record](#records) | Fixed    | symbols       | *(none)*            | `[a: str, b: str, c: str]`           | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
-[List](#lists)     | Variable | integers      | `List.<str>`        | `str[]`                              | `List.(["x", "y", "z"])`                     | *(none)*                               | *(none)*
+[List](#lists)     | Variable | integers      | `List.<str>`        | `str[]`                              | `List.(("x", "y", "z"))`                     | *(none)*                               | *(none)*
 [Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                             | `Dict.([a= "x", b= "y", c= "z"])`            | *(none)*                               | *(none)*
-[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                              | `Set.(["x", "y", "z"])`                      | `{"x", "y", "z"}`                      | `{}`
-[Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`                       | `Map.([["u", "x"], ["v", "y"], ["w", "z"]])` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
+[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
+[Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`                       | `Map.((("u", "x"), ("v", "y"), ("w", "z")))` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
 
 
 ### Tuples
@@ -580,7 +580,7 @@ Tuple literals are comma-separated expressions within parentheses.
 Tuple types use the same syntax, but instead of value expressions
 they contain type expressions (a.k.a. types).
 ```
-let elements: (str, str, str) = ["earth", "wind", "fire"];
+let elements: (str, str, str) = ("earth", "wind", "fire");
 ```
 <sup>&lowast;</sup>Note: A tuple type or expression with exactly 1 entry must have either a leading or trailing comma,
 so as not to be confused with a grouped expression/type.
@@ -588,27 +588,27 @@ I.e., `(T)` is just a parenthesized type, whereas `(T,)` is a 1-tuple type.
 
 ```
 let element:   (str)  = "air";
-let singleton: (str,) = ["air"];
+let singleton: (str,) = ("air",);
 ```
 
 Larger tuples are always assignable to smaller tuples,
 but assigning a smaller tuple to a larger tuple results in a TypeError.
 ```
-let elements: (str, str, str) = ["earth", "wind", "fire", true, 42];
-let elements_and_more: (str, str, str, bool, int) = ["earth", "wind", "fire"]; %> TypeError
+let elements: (str, str, str) = ("earth", "wind", "fire", true, 42);
+let elements_and_more: (str, str, str, bool, int) = ("earth", "wind", "fire"); %> TypeError
 ```
 The first declaration is allowed because the last two items are simply dropped off.
 
 Because tuples are read-only, the `mut` operator is invalid on tuple types.
 ```
-let elements: mut (str, str, str) = ["earth", "wind", "fire"]; %> TypeError
+let elements: mut (str, str, str) = ("earth", "wind", "fire"); %> TypeError
 ```
 
 #### Tuple Access
 Items of a tuple can be accessed via 0-based **dot-accessor notation**
 (index `0` represents the first item).
 ```
-let elements: (str, str, str) = ["earth", "wind", "fire"];
+let elements: (str, str, str) = ("earth", "wind", "fire");
 elements.0; %== "earth"
 elements.1; %== "wind"
 elements.2; %== "fire"
@@ -638,18 +638,18 @@ elements.-4; %> TypeErrorNoEntry
 
 A tuple’s items, type, and size are all fixed.
 ```
-let tuple: (bool, int, str) = [true, 4, "hello"];
+let tuple: (bool, int, str) = (true, 4, "hello");
 set tuple.0 = false;   %> MutabilityError
 set tuple.1 = 2;       %> MutabilityError
 set tuple.2 = "world"; %> MutabilityError
-tuple; %== [true, 4, "hello"];
+tuple; %== (true, 4, "hello");
 ```
 
 #### Optional Items
 Tuple types may have optional items, indicating that a tuple of that type might or might not have that item.
 ```
-let var x: (str, int, ?: bool) = ["hello", 42];
-set x = ["hello", 42, true];
+let var x: (str, int, ?: bool) = ("hello", 42);
+set x = ("hello", 42, true);
 ```
 The symbol `?:` in the type signature indicates that the item is optional.
 In a tuple type, all optional items *must* come after all required items.
@@ -829,12 +829,12 @@ where `T` indicates the type of items in the list.
 Lists are constructed via the constructor syntax `List.<T>(arg)`,
 where `arg` is a [Tuple](#tuples) object.
 ```
-let elements: List.<str> = List.<str>(["earth", "wind", "fire"]);
+let elements: List.<str> = List.<str>(("earth", "wind", "fire"));
 ```
 A shorthand for the generic syntax `List.<T>` is `T[]`.
 We can mix item types, but the list type must be homogeneous.
 ```
-let elements: (str | bool | int)[] = List.<str | bool | int>(["earth", "wind", "fire", true, 42]);
+let elements: (str | bool | int)[] = List.<str | bool | int>(("earth", "wind", "fire", true, 42));
 ```
 The compiler considers all items in the list as having the same type.
 For example, the expression `elements.[0]` is of type `str | bool | int`,
@@ -844,7 +844,7 @@ and if the list were mutable, we could reassign that entry to an integer or bool
 List items are accessed by **bracket-accessor notation**, where the expression in brackets computes the index.
 The bracketed expression must be an Integer value (of type `int`).
 ```
-let elements: str[] = List.<str>(["earth", "wind", "fire"]);
+let elements: str[] = List.<str>(("earth", "wind", "fire"));
 elements.[0];       %== "earth"
 elements.[3 - 2];   %== "wind"
 elements.[-3 + 2];  %== "fire"
@@ -948,7 +948,7 @@ where `T` indicates the type of elements in the set.
 Sets may be constructed via the constructor syntax `Set.<T>(arg)`,
 where `arg` is a [Tuple](#tuples) object of elements.
 ```
-let elements: Set.<str> = Set.<str>(["earth", "wind", "fire"]);
+let elements: Set.<str> = Set.<str>(("earth", "wind", "fire"));
 ```
 The set above has elements of one type.
 Typically this will be the case, but it’s possible for a set to contain a mix of different element types.
@@ -968,8 +968,8 @@ If a set is declared with duplicates, they are collapsed:
 The set `{"water", "water"}` only conains 1 element.
 Sets may have several elements that are un-identical but “equal”.
 ```
-let x: str[] = List.<str>(["water"]);
-let y: str[] = List.<str>(["water"]);
+let x: str[] = List.<str>(("water",));
+let y: str[] = List.<str>(("water",));
 let elements: (float | [str]){} = {0.0, -0.0, x, y};
 ```
 In this example, the elements `0.0` and `-0.0` are not identical
@@ -984,11 +984,11 @@ The value is `true` if the element is in the set, and `false` if not.
 ```
 let bases: Object{} = {
 	"who",
-	List.<str>(["what"]),
+	List.<str>(("what",)),
 	{ "i" -> {"don’t" -> "know"} },
 };
 bases.["""{{ "w" }}{{ "h" }}{{ "o" }}"""]; %== true
-bases.[List.<str>(["what"])];              %== false
+bases.[List.<str>(("what",))];             %== false
 bases.["idk"];                             %== false
 ```
 
@@ -1010,11 +1010,11 @@ where `K` indicates the type of antecedents and `V` indicates the type of conseq
 Maps may be constructed via the constructor syntax `Map.<K, V>(arg)`,
 where `arg` is a [Tuple](#tuples) object of key-value pairs (also Tuples).
 ```
-let bases: Map.<int | str, Object> = Map.<int | str, Object>([
-	[1,     "who"],
-	["2nd", ["what"]],
-	[1 + 2, { "i" -> {"don’t" -> "know"} }],
-]);
+let bases: Map.<int | str, Object> = Map.<int | str, Object>((
+	(1,     "who"),
+	("2nd", ("what",)),
+	(1 + 2, { "i" -> {"don’t" -> "know"} }),
+));
 ```
 The map above has antecedents and consequents of various types.
 Typically, all the antecedents will be of one type and all the consequents will be of one type,
@@ -1025,7 +1025,7 @@ and the map literal shorthand syntax is a sequence of comma-separated `key -> va
 ```
 let bases: {int | str -> Object} = {
 	1     -> "who",
-	"2nd" -> ["what"],
+	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
 };
 ```
@@ -1039,7 +1039,7 @@ In the case of maps, antecedents that are identical are considered “the same o
 ```
 let bases: {int | str -> Object} = {
 	1     -> "who",
-	"2nd" -> ["what"],
+	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
 	4 - 1 -> [i= [`don’t`= "know"]],
 };
@@ -1052,7 +1052,7 @@ let x: int{} = {3};
 let y: int{} = {3};
 let bases: {float | [int] -> Object} = {
 	0.0  -> "who",
-	-0.0 -> ["what"],
+	-0.0 -> ("what",),
 	x    -> { "i" -> {"don’t" -> "know"} },
 	y    -> [i= [`don’t`= "know"]],
 };
@@ -1069,11 +1069,11 @@ where the expression in the brackets is the antecedent to get.
 ```
 let bases: {int | str -> Object} = {
 	1     -> "who",
-	"2nd" -> ["what"],
+	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
 };
 bases.[-1 * -1];         %== "who"
-bases.["""{{ 2 }}nd"""]; %== ["what"]
+bases.["""{{ 2 }}nd"""]; %== ("what",)
 bases.[3].["i"];         %== {"don’t" -> "know"}
 ```
 

@@ -276,6 +276,16 @@ Decorate(StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEM
 
 
 
+Decorate(Items ::= Expression ",") -> Sequence<SemanticExpression>
+	:= [Decorate(Expression)];
+Decorate(Items ::= "," Expression# ","?) -> Sequence<SemanticExpression>
+	:= ParseList(Expression, SemanticExpression);
+Decorate(Items ::= Expression__0 "," Expression__1# ","?) -> Sequence<SemanticExpression>
+	:= [
+		Decorate(Expression__0),
+		...ParseList(Expression__1, SemanticExpression),
+	];
+
 Decorate(Property ::= Word "=" Expression) -> SemanticProperty
 	:= (SemanticProperty
 		Decorate(Word)
@@ -293,11 +303,11 @@ Decorate(Case ::= Expression "->" Expression) -> SemanticCase
 Decorate(ExpressionGrouped ::= "(" Expression ")") -> SemanticExpression
 	:= Decorate(Expression);
 
-Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple
+Decorate(TupleLiteral ::= "(" ")") -> SemanticTuple
 	:= (SemanticTuple);
-Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple
+Decorate(TupleLiteral ::= "(" Items ")") -> SemanticTuple
 	:= (SemanticTuple
-		...ParseList(Expression, SemanticExpression)
+		...Decorate(Items)
 	);
 
 Decorate(RecordLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord

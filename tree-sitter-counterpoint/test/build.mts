@@ -542,16 +542,26 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TupleLiteral: [
 			xjs.String.dedent`
-				[1, [2], [[3]]];
+				();
+				(,a);
+				(,a, b);
+				(a, b, c);
+				(1, (2,), ((3,),),);
 			`,
-			sourceExpressions(s(
-				'tuple_literal',
-				/* eslint-disable @stylistic/indent */
-				                                      s('primitive_literal', s('integer')),
-				                   s('tuple_literal', s('primitive_literal', s('integer'))),
-				s('tuple_literal', s('tuple_literal', s('primitive_literal', s('integer')))),
-				/* eslint-enable @stylistic/indent */
-			)),
+			sourceExpressions(
+				s('tuple_literal'),
+				s('tuple_literal', s('identifier')),
+				s('tuple_literal', s('identifier'), s('identifier')),
+				s('tuple_literal', s('identifier'), s('identifier'), s('identifier')),
+				s(
+					'tuple_literal',
+					/* eslint-disable @stylistic/indent */
+					                                      s('primitive_literal', s('integer')),
+					                   s('tuple_literal', s('primitive_literal', s('integer'))),
+					s('tuple_literal', s('tuple_literal', s('primitive_literal', s('integer')))),
+					/* eslint-enable @stylistic/indent */
+				),
+			),
 		],
 
 		RecordLiteral: [
@@ -663,7 +673,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				list?.[index];
 				list!.[index];
 				List.();
-				Dict.([]);
+				Dict.(record);
 				Set.<T>();
 			`,
 			sourceExpressions(
@@ -729,7 +739,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						'function_call',
 						s(
 							'function_arguments',
-							s('tuple_literal'),
+							s('identifier'),
 						),
 					),
 				),

@@ -450,11 +450,16 @@ module.exports = grammar({
 			seq($.template_head, optional($._expression), repeat(seq($.template_middle, optional($._expression))), $.template_tail),
 		),
 
+		_items: $ => choice(
+			seq(         $._expression,  ','),
+			seq(optional($._expression), ',', repCom1($._expression), OPT_COM),
+		),
+
 		property: $ => seq($.word,        '=',  $._expression),
 		case:     $ => seq($._expression, '->', $._expression),
 
-		expression_grouped: $ => seq('(',                               $._expression,             ')'),
-		tuple_literal:      $ => seq('[', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), ']'),
+		expression_grouped: $ => seq('(',                       $._expression,                     ')'),
+		tuple_literal:      $ => seq('(', optional(             $._items                        ), ')'),
 		record_literal:     $ => seq('[',              OPT_COM, repCom1($.property),    OPT_COM,   ']'),
 		set_literal:        $ => seq('{', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), '}'),
 		map_literal:        $ => seq('{',              OPT_COM, repCom1($.case),        OPT_COM,   '}'),

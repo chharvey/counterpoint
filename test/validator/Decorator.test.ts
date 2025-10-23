@@ -225,12 +225,12 @@ describe('Decorator', () => {
 				% (expression_grouped)
 			`]],
 
-			['Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
-				[];
+			['Decorate(TupleLiteral ::= "(" ")") -> SemanticTuple', [AST.ASTNodeTuple, `
+				();
 				% (tuple_literal)
 			`]],
-			['Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
-				[42, 6.9];
+			['Decorate(TupleLiteral ::= "(" Items ")") -> SemanticTuple', [AST.ASTNodeTuple, `
+				(42, 6.9);
 				% (tuple_literal)
 			`]],
 

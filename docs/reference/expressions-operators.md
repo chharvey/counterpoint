@@ -332,7 +332,7 @@ or if it’s an empty string or empty collection (such as an array or set).
 |                | `0`            | all integers    |
 |                | `0.0`, `-0.0`  | all floats      |
 |                | `""`           | all strings     |
-|                | `[]`, `{}`     | all collections |
+|                | `()`, `{}`     | all collections |
 |                |                | any other value |
 
 

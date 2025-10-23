@@ -451,7 +451,7 @@ describe('ASTNodeExpression', () => {
 					AST.ASTNodeSet,
 					AST.ASTNodeMap,
 				] = [
-					AST.ASTNodeTuple  .fromSource('[   1,    2.0,    "three"];', config),
+					AST.ASTNodeTuple  .fromSource('(   1,    2.0,    "three");', config),
 					AST.ASTNodeRecord .fromSource('[a= 1, b= 2.0, _= "three"];', config),
 					AST.ASTNodeSet    .fromSource('{   1,    2.0,    "three"};', config),
 					AST.ASTNodeMap.fromSource(`
@@ -481,8 +481,8 @@ describe('ASTNodeExpression', () => {
 			}));
 			it('does not throw if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					  [   1,    List.<float>([2.2]),    "three"];
-					  [a= 1, b= List.<float>([2.2]), c= "three"];
+					(   1,    List.<float>((2.2,)),    "three");
+					  [a= 1, b= List.<float>((2.2,)), c= "three"];
 				`);
 				goal.varCheck();
 				goal.typeCheck(); // assert does not throw
@@ -494,7 +494,7 @@ describe('ASTNodeExpression', () => {
 			it('returns Tuple/Record for constant collections.', () => {
 				assert.deepStrictEqual(
 					[
-						AST.ASTNodeTuple  .fromSource('  [   1,    2.0,    "three"];'),
+						AST.ASTNodeTuple  .fromSource('(   1,    2.0,    "three");'),
 						AST.ASTNodeRecord .fromSource('  [a= 1, b= 2.0, c= "three"];'),
 					].map((c) => c.fold()),
 					[
@@ -542,7 +542,7 @@ describe('ASTNodeExpression', () => {
 					let var x: int   = 1;
 					let var y: float = 2.0;
 					let var z: str   = "three";
-					[x, 2.0, "three"];
+					(x, 2.0, "three");
 					[a= 1, b= y, c= "three"];
 					{1, 2.0, z};
 					{
@@ -579,14 +579,14 @@ describe('ASTNodeExpression', () => {
 
 			describe('ASTNodeTuple', () => {
 				it('returns `(tuple.make)`.', () => {
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('(1, 2.0);', CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
 						tuple.builder.module.tuple.make([buildConst(tuple.builder, 1n), buildConst(tuple.builder, 2.0)]),
 					);
 				});
 				it('empty tuple returns unique BinVect representation.', () => {
-					const src = '[];';
+					const src = '();';
 					testModuleValidation(src);
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
@@ -595,7 +595,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
-					const src = '[3.4];';
+					const src = '(3.4,);';
 					testModuleValidation(src);
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
@@ -604,7 +604,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
-					const src = '[[]];';
+					const src = '((),);';
 					testModuleValidation(src);
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
@@ -613,7 +613,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
-					const src = '[[[]]];';
+					const src = '(((),),);';
 					testModuleValidation(src);
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
@@ -622,7 +622,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('boxed tuple with 1 item.', () => {
-					const src = '[[3.4]];';
+					const src = '((3.4,),);';
 					testModuleValidation(src);
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
@@ -631,7 +631,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('boxed tuple with many items.', () => {
-					const tuple: AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[[1, 2.0, true]];', CONFIG_FOLDING_OFF);
+					const tuple: AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('((1, 2.0, true),);', CONFIG_FOLDING_OFF);
 					const mod:   binaryen.Module        = tuple.builder.module;
 					const inner: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(tuple.builder, 1n),
@@ -648,7 +648,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('nested tuples.', () => {
-					const tuple:  AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[1, [2.0], [3, [4.0]]];', CONFIG_FOLDING_OFF);
+					const tuple:  AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('(1, (2.0,), (3, (4.0,)));', CONFIG_FOLDING_OFF);
 					const bldr:   Builder                = tuple.builder;
 					const mod:    binaryen.Module        = bldr.module;
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
@@ -666,7 +666,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('multiple entries.', () => {
-					const tuple:   AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[[1, [2.0, 3]], [4.0, [5, 6.0]], [7, []]];', CONFIG_FOLDING_OFF);
+					const tuple:   AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('((1, (2.0, 3)), (4.0, (5, 6.0)), (7, ()));', CONFIG_FOLDING_OFF);
 					const bldr:    Builder                = tuple.builder;
 					const mod:     binaryen.Module        = bldr.module;
 					const inner01: binaryen.ExpressionRef = mod.tuple.make([
@@ -707,14 +707,14 @@ describe('ASTNodeExpression', () => {
 				});
 				it('pointer entries.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let inner01: (float, int)   = [2.0, 3];
-						let inner11: (int,   float) = [5,   6.0];
-						let inner2:  (int,   ())    = [7,   []];
+						let inner01: (float, int)   = (2.0, 3);
+						let inner11: (int,   float) = (5,   6.0);
+						let inner2:  (int,   ())    = (7,   ());
 
-						let inner0: (int,   (float, int))   = [1,   inner01];
-						let inner1: (float, (int,   float)) = [4.0, inner11];
+						let inner0: (int,   (float, int))   = (1,   inner01);
+						let inner1: (float, (int,   float)) = (4.0, inner11);
 
-						let tuple: ((int, (float, int)), (float, (int, float)), (int, ())) = [inner0, inner1, inner2];
+						let tuple: ((int, (float, int)), (float, (int, float)), (int, ())) = (inner0, inner1, inner2);
 					`, CONFIG_FOLDING_OFF);
 					goal.varCheck();
 					goal.typeCheck();
