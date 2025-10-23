@@ -53,14 +53,14 @@ ItemsType ::=
 ;
 
 PropertiesType
-	::= EntryType<+Named><-Optional, +Optional># ","?;
+	::= ","? EntryType<+Named><-Optional, +Optional># ","?;
 
-TypeGrouped       ::= "(" Type                 ")";
-TypeTupleLiteral  ::= "(" ItemsType?           ")";
-TypeRecordLiteral ::= "["  ","? PropertiesType "]";
-TypeDictLiteral   ::= "[" ":" Type             "]";
-TypeMapLiteral    ::= "{" Type "->" Type       "}";
-GenericArguments  ::= "<"  ","? Type# ","?     ">";
+TypeGrouped       ::= "(" Type             ")";
+TypeTupleLiteral  ::= "(" ItemsType?       ")";
+TypeRecordLiteral ::= "(" PropertiesType   ")";
+TypeDictLiteral   ::= "[" ":" Type         "]";
+TypeMapLiteral    ::= "{" Type "->" Type   "}";
+GenericArguments  ::= "<"  ","? Type# ","? ">";
 
 TypeUnit ::=
 	| KEYWORD_TYPE

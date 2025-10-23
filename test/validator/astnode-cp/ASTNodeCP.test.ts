@@ -185,7 +185,7 @@ describe('ASTNodeCP', () => {
 							t.0 = 43;
 						`,
 						`
-							let r: [i: int] = [i= 42];
+							let r: (i: int) = [i= 42];
 							r.i = 43;
 						`,
 						`

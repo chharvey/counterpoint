@@ -285,11 +285,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TypeRecordLiteral: [
 			xjs.String.dedent`
-				type T = [a: bool, b?: int, _: str];
-				type U = [
+				type T = (a: bool, b?: int, _: str);
+				type U = (
 					a: V.0,
 					b: W.<float>,
-				];
+				);
 			`,
 			sourceTypes(
 				s(

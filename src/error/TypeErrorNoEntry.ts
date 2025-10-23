@@ -9,7 +9,7 @@ import {TypeError} from './TypeError.ts';
  * or when a named argument does not match a known parameter name.
  * @example
  * (42, 420).2;                      % TypeErrorNoEntry: Index `2` does not exist on type `(42, 420)`.
- * [a= 42, b= 420].c;                % TypeErrorNoEntry: Key `c` does not exist on type `[a: 42, b: 420]`.
+ * [a= 42, b= 420].c;                % TypeErrorNoEntry: Key `c` does not exist on type `(a: 42, b: 420)`.
  * ((x: int): int => x + 1).(y= 42); % TypeErrorNoEntry: Parameter `y` does not exist on type `(x: int) => int`.
  */
 export class TypeErrorNoEntry extends TypeError {

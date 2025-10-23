@@ -129,9 +129,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 			 * ```cp
 			 * declare class Dict<T> {
 			 * 	new ();
-			 * 	new (recA:  [a: T]);
-			 * 	new (recAB: [a: T, b: T]);
-			 * 	new (rec:   unknown); % any record type with values of type T
+			 * 	new (recA:  (a: T));
+			 * 	new (recAB: (a: T, b: T));
+			 * 	new (rec:   unknown); % any record type with values of type `T`
 			 * 	new (dict:  Dict.<T>);
 			 * }
 			 * ```

@@ -30,7 +30,7 @@ describe('ASTNodeType', () => {
 			});
 
 			specify('ASTNodeTypeRecord', () => {
-				const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('[x: int, y?: bool, _: str]');
+				const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('(x: int, y?: bool, _: str)');
 				return assertEqualTypes(
 					rec.eval(),
 					new TYPE.Record(new Map<bigint, EntryType>(rec.children.map((c, i) => [c.key.id, [
@@ -82,7 +82,7 @@ describe('ASTNodeType', () => {
 			it('does not throw if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					type A =   (int, List.<float>, str);
-					type C =   [a: int, b: List.<float>, c: str];
+					type C =   (a: int, b: List.<float>, c: str);
 					type E = Set.<float>  [3];
 				`);
 				goal.varCheck();

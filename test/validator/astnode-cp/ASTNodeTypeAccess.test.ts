@@ -57,8 +57,8 @@ describe('ASTNodeTypeAccess', () => {
 					type TupC = (1,   2.0,   "three");
 					type TupV = (int, float, str);
 
-					type RecC = [a: 1,   b: 2.0,   _: "three"];
-					type RecV = [a: int, b: float, _: str];
+					type RecC = (a: 1,   b: 2.0,   _: "three");
+					type RecV = (a: int, b: float, _: str);
 
 					type A1 = TupC.0;  % type \`1\`
 					type A2 = TupC.1;  % type \`2.0\`
@@ -106,8 +106,8 @@ describe('ASTNodeTypeAccess', () => {
 					type TupoC = (1,   2.0,   ?: "three");
 					type TupoV = (int, float, ?: str);
 
-					type RecoC = [a: 1,   b?: 2.0,   c: "three"];
-					type RecoV = [a: int, b?: float, c: str];
+					type RecoC = (a: 1,   b?: 2.0,   c: "three");
+					type RecoV = (a: int, b?: float, c: str);
 
 					type D1 = TupoC.2;
 					type D2 = TupoV.2;
@@ -126,7 +126,7 @@ describe('ASTNodeTypeAccess', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					(1, 2.0, "three").3
 					(1, 2.0, "three").-4
-					[a: 1, b: 2.0, c: "three"].d
+					(a: 1, b: 2.0, c: "three").d
 				`, (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry));
 			});
 		});
@@ -138,8 +138,8 @@ describe('ASTNodeTypeAccess', () => {
 					type TupoC = (1,   2.0,   ?: "three");
 					type TupoV = (int, float, ?: str);
 
-					type RecoC = [a: 1,   b?: 2.0,   c: "three"];
-					type RecoV = [a: int, b?: float, c: str];
+					type RecoC = (a: 1,   b?: 2.0,   c: "three");
+					type RecoV = (a: int, b?: float, c: str);
 
 					type D1 = TupoC?.2; % type \`"three" | null\`
 					type D2 = TupoV?.2; % type \`str | null\`
@@ -159,8 +159,8 @@ describe('ASTNodeTypeAccess', () => {
 					type TupoC = (1,   2.0,   "three");
 					type TupoV = (int, float, str);
 
-					type RecoC = [a: 1,   b: 2.0,   c: "three"];
-					type RecoV = [a: int, b: float, c: str];
+					type RecoC = (a: 1,   b: 2.0,   c: "three");
+					type RecoV = (a: int, b: float, c: str);
 
 					type D1 = TupoC?.2;
 					type D2 = TupoV?.2;

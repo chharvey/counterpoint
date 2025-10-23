@@ -557,7 +557,7 @@ Compound types are composed of other types.
 Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax                 | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
 ------------------ | -------- | ------------  | ------------------- | ------------------------------------ | -------------------------------------------- | -------------------------------------- | --------------------
 [Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `("x", "y", "z")`<sup>&lowast;</sup>   | `()`
-[Record](#records) | Fixed    | symbols       | *(none)*            | `[a: str, b: str, c: str]`           | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
+[Record](#records) | Fixed    | symbols       | *(none)*            | `(a: str, b: str, c: str)`           | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
 [List](#lists)     | Variable | integers      | `List.<str>`        | `str[]`                              | `List.(("x", "y", "z"))`                     | *(none)*                               | *(none)*
 [Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                             | `Dict.([a= "x", b= "y", c= "z"])`            | *(none)*                               | *(none)*
 [Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
@@ -709,12 +709,12 @@ Record literals cannot contain the same key more than once.
 Record literal types are similar to record values, except that the colon `:` is used as the key–value delimiter,
 and the property values are replaced with types.
 ```
-type StyleMap = [
+type StyleMap = (
 	fontWeight: int,
 	fontStyle:  "normal" | "italic" | "oblique",
 	fontSize:   float,
 	fontFamily: str,
-];
+);
 let my_styles: StyleMap = [
 	fontFamily= "sans-serif",
 	fontSize=   1.25;
@@ -731,11 +731,11 @@ cause any side-effects, those side-effects will be observed in the order the ent
 Larger records are always assignable to smaller records,
 but assigning a smaller record to a larger record results in a TypeError.
 ```
-let elements: [
+let elements: (
 	socrates:  str,
 	plato:     str,
 	aristotle: str,
-] = [
+) = [
 	socrates=   "earth",
 	euclid=     true,
 	plato=      "wind",
@@ -743,13 +743,13 @@ let elements: [
 	aristotle=  "fire",
 ];
 
-let elements_and_more: [
+let elements_and_more: (
 	socrates:   str,
 	plato:      str,
 	aristotle:  str,
 	euclid:     bool,
 	pythagoras: int,
-] = [
+) = [
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
@@ -759,17 +759,17 @@ The first declaration is allowed because the unused properties are simply droppe
 
 Because records are read-only, the `mut` operator is invalid on record types.
 ```
-let elements: mut [x: str, y: str, z: str] = [x= "earth", y= "wind", z= "fire"]; %> TypeError
+let elements: mut (x: str, y: str, z: str) = [x= "earth", y= "wind", z= "fire"]; %> TypeError
 ```
 
 #### Record Access
 Values of a record can be accessed via **dot-accessor notation**.
 ```
-let elements: [
+let elements: (
 	socrates:  str,
 	plato:     str,
 	aristotle: str,
-] = [
+) = [
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
@@ -787,7 +787,7 @@ elements.pythagoras; %> TypeErrorNoEntry
 
 A record’s properties, type, and size are all fixed.
 ```
-let record: [a: bool, b: int, c: str] = [a= true, b= 4, c= "hello"];
+let record: (a: bool, b: int, c: str) = [a= true, b= 4, c= "hello"];
 set record.a = false;   %> MutabilityError
 set record.b = 2;       %> MutabilityError
 set record.c = "world"; %> MutabilityError
@@ -797,7 +797,7 @@ record; %== [a= true, b= 4, c= "hello"];
 #### Optional Properties
 Record types may have optional properties, indicating that a record of that type might or might not have that property.
 ```
-let var y: [firstname: str, middlename?: str, lastname: str] = [
+let var y: (firstname: str, middlename?: str, lastname: str) = [
 	firstname= "Martha",
 	lastname=  "Dandridge",
 ];

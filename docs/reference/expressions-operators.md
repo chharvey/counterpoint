@@ -287,7 +287,7 @@ For static types (e.g., tuples and records),
 either the normal or maybe access operator is allowed, corresponding to the optionality of the entry being accessed.
 When the maybe access operator is used for an optional entry, the entry type is unioned with `null`.
 ```
-claim record: [required: bool, optional?: int];
+claim record: (required: bool, optional?: int);
 record.required;  %: bool
 record?.required; %> TypeErrorInvalidOperation
 record.optional;  %> TypeErrorInvalidOperation
@@ -772,7 +772,7 @@ type T1 = T.1;             %== int
 type T_1 = T.-1;           %== str
 type T3 = T.3;             %> TypeError
 
-type R = [a: bool, b?: int, c: str];
+type R = (a: bool, b?: int, c: str);
 type Ra = R.a;                       %== bool
 type Rc = R?.b;                      %== int | null
 type Rd = R.d;                       %> TypeError
@@ -846,26 +846,26 @@ then attempting to modify it would result in a [Mutability Error](./errors.md#mu
 ```
 The **intersection** operator creates a strict combination of the operands.
 ```
-type T = [foo: bool] & [bar: int];
-let v: T = [
+type T = (foo: bool) & (bar: int);
+let v: T = (
 	foo= false,
 	bar= 42,
-];
+);
 ```
 
 When accessing an *intersection* of record types, we can access the *union* of the properties of each type.
 ```
-type Employee = [
+type Employee = (
 	name:        str,
 	id:          int,
 	jobTitle:    str,
 	hoursWorked: float,
-];
-type Volunteer = [
+);
+type Volunteer = (
 	name:        str,
 	agency:      str,
 	hoursWorked: float,
-];
+);
 claim alice: Employee & Volunteer;
 alice.name;        %: str
 alice.id;          %: int
@@ -878,14 +878,14 @@ so we’re guaranteed it will have the properties that are present in *either* t
 
 Overlapping properties in an intersection are themselves intersected.
 ```
-type A = [
+type A = (
 	key:    1 | 2 | 3,
 	valueA: int,
-];
-type B = [
+);
+type B = (
 	key:    2 | 3 | 4,
 	valueB: float,
-];
+);
 claim data: A & B;
 data.key;    %: 2 | 3 % gotten by `(1 | 2 | 3) & (2 | 3 | 4)`
 data.valueA; %: int
@@ -908,17 +908,17 @@ v = 42;
 
 When accessing a *union* of record types, we can only access the *intersection* of the properties of each type.
 ```
-type Employee = [
+type Employee = (
 	name:        str,
 	id:          int,
 	jobTitle:    str,
 	hoursWorked: float,
-];
-type Volunteer = [
+);
+type Volunteer = (
 	name:        str,
 	agency:      str,
 	hoursWorked: float,
-];
+);
 claim bob: Employee | Volunteer;
 bob.name;        %: str
 bob.hoursWorked; %: float
@@ -941,14 +941,14 @@ bob?.agency;   %: str | null
 
 Overlapping properties in a union are themselves unioned.
 ```
-type A = [
+type A = (
 	key:    1 | 2 | 3,
 	valueA: int,
-];
-type B = [
+);
+type B = (
 	key:    2 | 3 | 4,
 	valueB: float,
-];
+);
 claim data: A | B;
 data.key; %: 1 | 2 | 3 | 4 % `(1 | 2 | 3) | (2 | 3 | 4)`
 ```

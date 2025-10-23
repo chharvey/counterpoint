@@ -92,19 +92,19 @@ describe('Decorator', () => {
 				% (entry_type__optional)
 			`]],
 			['Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
-				type T = [a: int];
+				type T = (a: int);
 				% (entry_type__named)
 			`]],
 			['Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
-				type T = [a?: int];
+				type T = (a?: int);
 				% (entry_type__named__optional)
 			`]],
 			['Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
-				type T = [_: int];
+				type T = (_: int);
 				% (entry_type__named)
 			`]],
 			['Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
-				type T = [_?: int];
+				type T = (_?: int);
 				% (entry_type__named__optional)
 			`]],
 
@@ -122,8 +122,8 @@ describe('Decorator', () => {
 				% (type_tuple_literal)
 			`]],
 
-			['Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType ","? "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
-				type T = [a?: int, b: float];
+			['Decorate(TypeRecordLiteral ::= "(" PropertiesType ")") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
+				type T = (a?: int, b: float);
 				% (type_record_literal)
 			`]],
 

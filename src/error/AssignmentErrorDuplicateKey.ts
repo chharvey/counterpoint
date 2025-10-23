@@ -8,7 +8,7 @@ import {AssignmentError} from './AssignmentError.ts';
  * @example
  * [foo= "a", foo= "b"]; % AssignmentErrorDuplicateKey: Duplicate record key `foo`.
  * @example
- * type MyType = [bar: int, bar: str]; % AssignmentErrorDuplicateKey: Duplicate record key `bar`.
+ * type MyType = (bar: int, bar: str); % AssignmentErrorDuplicateKey: Duplicate record key `bar`.
  */
 export class AssignmentErrorDuplicateKey extends AssignmentError {
 	/**

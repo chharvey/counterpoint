@@ -648,8 +648,8 @@ describe('Type', () => {
 					[0x101n, TYPE.BOOL],
 					[0x102n, TYPE.STR],
 				]));
-				assert.ok(record.isSubtypeOf(TYPE.UNKNOWN), '[x: int, y: bool, z: str] <: unknown;');
-				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(record), 'unknown !<: [x: int, y: bool, z: str]');
+				assert.ok(record.isSubtypeOf(TYPE.UNKNOWN), '(x: int, y: bool, z: str) <: unknown;');
+				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(record), 'unknown !<: (x: int, y: bool, z: str)');
 			});
 			it('is neither a subtype nor a supertype of `Object`.', () => {
 				const record: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -657,8 +657,8 @@ describe('Type', () => {
 					[0x101n, TYPE.BOOL],
 					[0x102n, TYPE.STR],
 				]));
-				assert.ok(!record.isSubtypeOf(TYPE.OBJ), '[x: int, y: bool, z: str] !<: Object;');
-				assert.ok(!TYPE.OBJ.isSubtypeOf(record), 'Object !<: [x: int, y: bool, z: str]');
+				assert.ok(!record.isSubtypeOf(TYPE.OBJ), '(x: int, y: bool, z: str) !<: Object;');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(record), 'Object !<: (x: int, y: bool, z: str)');
 			});
 			it('matches per key.', () => {
 				assert.ok(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -669,7 +669,7 @@ describe('Type', () => {
 					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
 					[0x102n, TYPE.UNKNOWN],
 					[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] <: [y: bool!, z: unknown, x: int | float];');
+				]))), '(x: int, y: bool, z: str) <: (y: bool!, z: unknown, x: int | float);');
 				assert.ok(!TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT],
 					[0x101n, TYPE.BOOL],
@@ -678,7 +678,7 @@ describe('Type', () => {
 					[0x100n, TYPE.BOOL.union(TYPE.NULL)],
 					[0x101n, TYPE.OBJ],
 					[0x102n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] !<: [x: bool!, y: Object, z: int | float];');
+				]))), '(x: int, y: bool, z: str) !<: (x: bool!, y: Object, z: int | float);');
 			});
 			it('returns false if assigned is smaller than assignee.', () => {
 				assert.ok(!TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -688,7 +688,7 @@ describe('Type', () => {
 					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
 					[0x102n, TYPE.OBJ],
 					[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool] !<: [y: bool!, z: Object, x: int | float];');
+				]))), '(x: int, y: bool) !<: (y: bool!, z: Object, x: int | float);');
 			});
 			it('skips rest if assigned is larger than assignee.', () => {
 				assert.ok(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -698,7 +698,7 @@ describe('Type', () => {
 				])).isSubtypeOf(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
 					[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] <: [y: bool!, x: int | float];');
+				]))), '(x: int, y: bool, z: str) <: (y: bool!, x: int | float);');
 			});
 			it('returns false if assignee contains keys that assigned does not.', () => {
 				assert.ok(!TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -709,7 +709,7 @@ describe('Type', () => {
 					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
 					[0x102n, TYPE.OBJ],
 					[0x103n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] !<: [y: bool!, z: Object, w: int | float]');
+				]))), '(x: int, y: bool, z: str) !<: (y: bool!, z: Object, w: int | float)');
 			});
 			it('optional entries are not assignable to required entries.', () => {
 				assert.ok(new TYPE.Record(new Map<bigint, EntryType>([
@@ -720,7 +720,7 @@ describe('Type', () => {
 					[0x100n, {type: TYPE.STR,  optional: true}],
 					[0x101n, {type: TYPE.INT,  optional: true}],
 					[0x102n, {type: TYPE.BOOL, optional: false}],
-				]))), '[a: str, b?: int, c: bool] <: [a?: str, b?: int, c: bool]');
+				]))), '(a: str, b?: int, c: bool) <: (a?: str, b?: int, c: bool)');
 				assert.ok(!new TYPE.Record(new Map<bigint, EntryType>([
 					[0x100n, {type: TYPE.STR,  optional: false}],
 					[0x101n, {type: TYPE.INT,  optional: true}],
@@ -729,7 +729,7 @@ describe('Type', () => {
 					[0x100n, {type: TYPE.STR,  optional: true}],
 					[0x101n, {type: TYPE.INT,  optional: false}],
 					[0x102n, {type: TYPE.BOOL, optional: false}],
-				]))), '[a: str, b?: int, c: bool] !<: [a?: str, b: int, c: bool]');
+				]))), '(a: str, b?: int, c: bool) !<: (a?: str, b: int, c: bool)');
 			});
 			it('Covariance for records: `A <: B --> Record.<A> <: Record.<B>`.', () => {
 				assert.ok(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -738,10 +738,10 @@ describe('Type', () => {
 				])).isSubtypeOf(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT.union(TYPE.NULL)],
 					[0x101n, TYPE.FLOAT.union(TYPE.NULL)],
-				]))), '[a: int, b: float] <: [a: int?, b: float?]');
+				]))), '(a: int, b: float) <: (a: int?, b: float?)');
 			});
 			it('Record is never a subtype of Dict.', () => {
-				assert.ok(!TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]])).isSubtypeOf(new TYPE.Dict(TYPE.INT, false)), '[a: int] !<: [: int]');
+				assert.ok(!TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]])).isSubtypeOf(new TYPE.Dict(TYPE.INT, false)), '(a: int) !<: [: int]');
 			});
 		});
 

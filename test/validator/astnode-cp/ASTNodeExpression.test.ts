@@ -407,20 +407,20 @@ describe('ASTNodeExpression', () => {
 			describe('ASTNodeRecord', () => {
 				it('throws if containing duplicate keys.', () => {
 					[
-						AST.ASTNodeTypeRecord .fromSource('[a: int, b: float, c: str]'),
+						AST.ASTNodeTypeRecord .fromSource('(a: int, b: float, c: str)'),
 						AST.ASTNodeRecord     .fromSource('[a= 1, b= 2.0, c= "three"];'),
 					].forEach((node) => node.varCheck()); // assert does not throw
 
 					[
-						AST.ASTNodeTypeRecord .fromSource('[a: int, b: float, a: str]'),
-						AST.ASTNodeTypeRecord .fromSource('[_: int, b: float, _: str]'),
+						AST.ASTNodeTypeRecord .fromSource('(a: int, b: float, a: str)'),
+						AST.ASTNodeTypeRecord .fromSource('(_: int, b: float, _: str)'),
 						AST.ASTNodeRecord     .fromSource('[a= 1, b= 2.0, a= "three"];'),
 						AST.ASTNodeRecord     .fromSource('[_= 1, b= 2.0, _= "three"];'),
 					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentErrorDuplicateKey));
 
 					new Map<AST.ASTNodeCP, string[]>([
-						[AST.ASTNodeTypeRecord .fromSource('[c: int, d: float, c: str, d: bool]'),   ['c', 'd']],
-						[AST.ASTNodeTypeRecord .fromSource('[e: int, f: float, e: str, e: bool]'),   ['e', 'e']],
+						[AST.ASTNodeTypeRecord .fromSource('(c: int, d: float, c: str, d: bool)'),   ['c', 'd']],
+						[AST.ASTNodeTypeRecord .fromSource('(e: int, f: float, e: str, e: bool)'),   ['e', 'e']],
 						[AST.ASTNodeRecord     .fromSource('[c= 1, d= 2.0, c= "three", d= false];'), ['c', 'd']],
 						[AST.ASTNodeRecord     .fromSource('[e= 1, f= 2.0, e= "three", e= false];'), ['e', 'e']],
 					]).forEach((dupes, node) => assert.throws(() => node.varCheck(), (err) => {
@@ -895,18 +895,18 @@ describe('ASTNodeExpression', () => {
 				});
 				it('pointer entries.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let inner_ab: [a: float, b: int]   = [a= 2.0, b= 3];
-						let inner_bb: [a: int,   b: float] = [a= 5,   b= 6.0];
-						let inner_c:  [b: int,   a: bool]  = [b= 7,   a= true];
+						let inner_ab: (a: float, b: int)   = [a= 2.0, b= 3];
+						let inner_bb: (a: int,   b: float) = [a= 5,   b= 6.0];
+						let inner_c:  (b: int,   a: bool)  = [b= 7,   a= true];
 
-						let inner_a: [a: int,   b: [a: float, b: int]]   = [a= 1,   b= inner_ab];
-						let inner_b: [a: float, b: [a: int,   b: float]] = [a= 4.0, b= inner_bb];
+						let inner_a: (a: int,   b: (a: float, b: int))   = [a= 1,   b= inner_ab];
+						let inner_b: (a: float, b: (a: int,   b: float)) = [a= 4.0, b= inner_bb];
 
-						let record: [
-							a: [a: int,   b: [a: float, b: int]],
-							b: [a: float, b: [a: int,   b: float]],
-							c: [b: int,   a: bool],
-						] = [a= inner_a, b= inner_b, c= inner_c];
+						let record: (
+							a: (a: int,   b: (a: float, b: int)),
+							b: (a: float, b: (a: int,   b: float)),
+							c: (b: int,   a: bool),
+						) = [a= inner_a, b= inner_b, c= inner_c];
 					`, CONFIG_FOLDING_OFF);
 					goal.varCheck();
 					goal.typeCheck();

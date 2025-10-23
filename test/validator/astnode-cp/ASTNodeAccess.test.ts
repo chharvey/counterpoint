@@ -127,8 +127,8 @@ describe('ASTNodeAccess', () => {
 				let     tup_fixed:   (int, float, str) = (1, 2.0, "three");
 				let var tup_unfixed: (int, float, str) = (1, 2.0, "three");
 
-				let     rec_fixed:   [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
-				let var rec_unfixed: [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
+				let     rec_fixed:   (a: int, b: float, _: str) = [a= 1, b= 2.0, _= "three"];
+				let var rec_unfixed: (a: int, b: float, _: str) = [a= 1, b= 2.0, _= "three"];
 
 				tup_fixed.0;   % type \`1\`       % value \`1\`
 				tup_fixed.1;   % type \`2.0\`     % value \`2.0\`
@@ -184,7 +184,7 @@ describe('ASTNodeAccess', () => {
 						let var a:                    unknown = (   10,    20);
 						let var b: int[2]           | unknown = (   10,    20);
 						let var c:                    unknown = [x= 10, y= 20];
-						let var d: [x: int, y: int] | unknown = [x= 10, y= 20];
+						let var d: (x: int, y: int) | unknown = [x= 10, y= 20];
 
 						a.0;
 						b.1;
@@ -209,8 +209,8 @@ describe('ASTNodeAccess', () => {
 						let tup_a: (int, int, ?: int) = (10, 20);
 						let tup_b: (int, int, ?: int) = (10, 20, 30);
 
-						let rec_a: [x: int, y?: int, z: int] = [x= 10, z= 20];
-						let rec_b: [x: int, y?: int, z: int] = [x= 10, z= 20, y= 30];
+						let rec_a: (x: int, y?: int, z: int) = [x= 10, z= 20];
+						let rec_b: (x: int, y?: int, z: int) = [x= 10, z= 20, y= 30];
 
 						tup_a.2;
 						tup_b.2;
@@ -221,12 +221,12 @@ describe('ASTNodeAccess', () => {
 				});
 				context('if base is an intersection type.', () => {
 					const DECLS = `
-						type A = [a: str];
-						type B = [b: str];
-						type C = [c: str];
-						type D = [d: str];
+						type A = (a: str);
+						type B = (b: str);
+						type C = (c: str);
+						type D = (d: str);
 						let var tup: (   A,     B,       int) & (   C,  ?: D)        = ([a= "tup.0.a", c= "tup.0.c"], [b= "tup.1.b", d= "tup.1.d"], 42);
-						let var rec: [x: A, y?: int, z?: B]   & [x: C,        z?: D] = [x= [a= "rec.x.a", c= "rec.x.c"], y= 42, z= [b= "rec.z.b", d= "rec.z.d"]];
+						let var rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = [x= [a= "rec.x.a", c= "rec.x.c"], y= 42, z= [b= "rec.z.b", d= "rec.z.d"]];
 					`;
 					const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x100n, TYPE.STR]]));
 					const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
@@ -256,7 +256,7 @@ describe('ASTNodeAccess', () => {
 					});
 					it('an intersection with union constituents.', () => {
 						testExprTypes(`
-							let var collection: ([alpha: bool] | [bravo: 2 | 3 | 4]) & [bravo: 3 | 4 | 5] = [bravo= 3];
+							let var collection: ((alpha: bool) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = [bravo= 3];
 							collection.bravo; % type \`3 | 4\`
 						`, [typeUnit(3n).union(typeUnit(4n))]);
 					});
@@ -264,12 +264,12 @@ describe('ASTNodeAccess', () => {
 				context('if base is a union type.', () => {
 					const DECLS = `
 						let var tup: (   null,     bool,     sym) | (   int, ?: float)          = (null, true, @hello);
-						let var rec: [a: null, b?: bool, c?: sym] | [a: int,           c?: str] = [a= 42];
+						let var rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = [a= 42];
 					`;
 					it('throws when one but not all constituents are of incorrect type.', () => {
 						testExprTypes(`
-							let var mixed_tup: (str, bool, sym) | [a: str,  b?: bool, c?: sym] = ("hello", true, @world);
-							let var mixed_rec: (int, ?: float)  | [a: int, c?: str]            = [a= 42];
+							let var mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
+							let var mixed_rec: (int, ?: float)  | (a: int, c?: str)            = [a= 42];
 
 							mixed_tup.a;
 							mixed_rec.0;
@@ -298,8 +298,8 @@ describe('ASTNodeAccess', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `[257: null, 258?: bool, 259?: sym]`.'},
-											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `[257: int, 259?: str]`.'},
+											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(257: null, 258?: bool, 259?: sym)`.'},
+											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(257: int, 259?: str)`.'},
 										],
 									},
 								],
@@ -327,7 +327,7 @@ describe('ASTNodeAccess', () => {
 					});
 					it('a union with intersection constituents.', () => {
 						testExprTypes(`
-							let var collection: [alpha: bool, bravo: 2 | 3 | 4] & [bravo: 3 | 4 | 5, charlie: str] | () = ();
+							let var collection: (alpha: bool, bravo: 2 | 3 | 4) & (bravo: 3 | 4 | 5, charlie: str) | () = ();
 							collection.bravo;
 						`, [TypeErrorInvalidOperation]);
 					});
@@ -552,8 +552,8 @@ describe('ASTNodeAccess', () => {
 					const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // (bool,)
 					const prop2 = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]); // (?: bool)
 					return testExprTypes(`
-						let var bound1: [prop?: (bool,)] = [prop= (true,)];
-						let var bound2: [prop?: (?: bool)] = [prop= ()];
+						let var bound1: (prop?: (bool,)) = [prop= (true,)];
+						let var bound2: (prop?: (?: bool)) = [prop= ()];
 						bound1;
 						bound1?.prop;
 						bound1?.prop?.0;
@@ -561,10 +561,10 @@ describe('ASTNodeAccess', () => {
 						bound2?.prop;
 						bound2?.prop?.0;
 					`, [
-						new TYPE.Record(new Map([[0x100n, {type: prop1, optional: true}]])), // [prop?: (bool,)]
+						new TYPE.Record(new Map([[0x100n, {type: prop1, optional: true}]])), // (prop?: (bool,))
 						prop1.union(TYPE.NULL),                                              // (bool,) | null
 						TYPE.BOOL.union(TYPE.NULL),                                          // bool | null
-						new TYPE.Record(new Map([[0x100n, {type: prop2, optional: true}]])), // [prop?: (?: bool)]
+						new TYPE.Record(new Map([[0x100n, {type: prop2, optional: true}]])), // (prop?: (?: bool))
 						prop2.union(TYPE.NULL),                                              // (?: bool) | null
 						TYPE.BOOL.union(TYPE.NULL),                                          // bool | null
 					]);
@@ -578,8 +578,8 @@ describe('ASTNodeAccess', () => {
 					const prop1 = new VALUE.Tuple([VALUE.TRUE]); // (true,)
 					const prop2 = new VALUE.Tuple();             // ()
 					return testExprValues(`
-						let bound1: [prop?: (bool,)] = [prop= (true,)];
-						let bound2: [prop?: (?: bool)] = [prop= ()];
+						let bound1: (prop?: (bool,)) = [prop= (true,)];
+						let bound2: (prop?: (?: bool)) = [prop= ()];
 						bound1;
 						bound1?.prop;
 						bound1?.prop?.0;
@@ -608,9 +608,9 @@ describe('ASTNodeAccess', () => {
 				let var tupo1_u: (int, float, ?: str) = (1, 2.0, "three");
 				let var tupo2_u: (int, float, ?: str) = (1, 2.0);
 
-				let     reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
-				let var reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
-				let var reco2_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
+				let     reco1_f: (a: int, c: float, b?: str) = [a= 1, c= 2.0, b= "three"];
+				let var reco1_u: (a: int, c: float, b?: str) = [a= 1, c= 2.0, b= "three"];
+				let var reco2_u: (a: int, c: float, b?: str) = [a= 1, c= 2.0];
 
 				tupo1_f?.2; % type \`"three"\` % value \`"three"\`
 				tupo1_u?.2; % type \`str?\`    % non-foldable value
@@ -640,7 +640,7 @@ describe('ASTNodeAccess', () => {
 						let var a:                    unknown = (   10,    20);
 						let var b: int[2]           | unknown = (   10,    20);
 						let var c:                    unknown = [x= 10, y= 20];
-						let var d: [x: int, y: int] | unknown = [x= 10, y= 20];
+						let var d: (x: int, y: int) | unknown = [x= 10, y= 20];
 
 						a?.0;
 						b?.1;
@@ -665,8 +665,8 @@ describe('ASTNodeAccess', () => {
 						let tup_a: (int, int, ?: int) = (10, 20);
 						let tup_b: (int, int, ?: int) = (10, 20, 30);
 
-						let rec_a: [x: int, y?: int, z: int] = [x= 10, z= 20];
-						let rec_b: [x: int, y?: int, z: int] = [x= 10, z= 20, y= 30];
+						let rec_a: (x: int, y?: int, z: int) = [x= 10, z= 20];
+						let rec_b: (x: int, y?: int, z: int) = [x= 10, z= 20, y= 30];
 
 						tup_a?.1;
 						tup_b?.1;
@@ -677,12 +677,12 @@ describe('ASTNodeAccess', () => {
 				});
 				context('if base is an intersection type.', () => {
 					const DECLS = `
-						type A = [a: str];
-						type B = [b: str];
-						type C = [c: str];
-						type D = [d: str];
+						type A = (a: str);
+						type B = (b: str);
+						type C = (c: str);
+						type D = (d: str);
 						let var tup: (   A,     B,       int) & (   C,  ?: D)        = ([a= "tup.0.a", c= "tup.0.c"], [b= "tup.1.b", d= "tup.1.d"], 42);
-						let var rec: [x: A, y?: int, z?: B]   & [x: C,        z?: D] = [x= [a= "rec.x.a", c= "rec.x.c"], y= 42, z= [b= "rec.z.b", d= "rec.z.d"]];
+						let var rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = [x= [a= "rec.x.a", c= "rec.x.c"], y= 42, z= [b= "rec.z.b", d= "rec.z.d"]];
 					`;
 					const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
 					const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x106n, TYPE.STR]]));
@@ -709,7 +709,7 @@ describe('ASTNodeAccess', () => {
 					});
 					it('an intersection with union constituents.', () => {
 						testExprTypes(`
-							let var collection: ([alpha: bool] | [bravo: 2 | 3 | 4]) & [bravo: 3 | 4 | 5] = [bravo= 3];
+							let var collection: ((alpha: bool) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = [bravo= 3];
 							collection?.bravo;
 						`, [TypeErrorInvalidOperation]);
 					});
@@ -717,12 +717,12 @@ describe('ASTNodeAccess', () => {
 				context('if base is a union type.', () => {
 					const DECLS = `
 						let var tup: (   null,     bool,     sym) | (   int, ?: float)          = (null, true, @hello);
-						let var rec: [a: null, b?: bool, c?: sym] | [a: int,           c?: str] = [a= 42];
+						let var rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = [a= 42];
 					`;
 					it('unions with null when one but not all constituents are of incorrect type.', () => {
 						testExprTypes(`
-							let var mixed_tup: (str, bool, sym) | [a: str,  b?: bool, c?: sym] = ("hello", true, @world);
-							let var mixed_rec: (int, ?: float)  | [a: int, c?: str]            = [a= 42];
+							let var mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
+							let var mixed_rec: (int, ?: float)  | (a: int, c?: str)            = [a= 42];
 
 							mixed_tup?.a; % type \`null | str\`
 							mixed_rec?.0; % type \`int  | null\`
@@ -754,8 +754,8 @@ describe('ASTNodeAccess', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `[257: null, 258?: bool, 259?: sym]`.'},
-											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `[257: int, 259?: str]`.'},
+											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(257: null, 258?: bool, 259?: sym)`.'},
+											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(257: int, 259?: str)`.'},
 										],
 									},
 								],
@@ -788,7 +788,7 @@ describe('ASTNodeAccess', () => {
 					});
 					it('a union with intersection constituents.', () => {
 						testExprTypes(`
-							let var collection: [alpha: bool, bravo: 2 | 3 | 4] & [bravo: 3 | 4 | 5, charlie: str] | () = ();
+							let var collection: (alpha: bool, bravo: 2 | 3 | 4) & (bravo: 3 | 4 | 5, charlie: str) | () = ();
 							collection?.bravo; % type \`3 | 4 | null\`
 						`, [typeUnit(3n).union(typeUnit(4n)).union(TYPE.NULL)]);
 					});

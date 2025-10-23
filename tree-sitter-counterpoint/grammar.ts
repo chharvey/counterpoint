@@ -385,14 +385,14 @@ module.exports = grammar({
 			);
 		},
 
-		_properties_type: $ => seq(repCom1(choice($[call('entry_type', 'named')], $[call('entry_type', 'named', 'optional')])), OPT_COM),
+		_properties_type: $ => seq(OPT_COM, repCom1(choice($[call('entry_type', 'named')], $[call('entry_type', 'named', 'optional')])), OPT_COM),
 
-		type_grouped:        $ => seq('(', $._type,                                  ')'),
-		type_tuple_literal:  $ => seq('(', optional($._items_type),                  ')'),
-		type_record_literal: $ => seq('[',              OPT_COM, $._properties_type, ']'),
-		type_dict_literal:   $ => seq('[', ':', $._type,                             ']'),
-		type_map_literal:    $ => seq('{', $._type, '->', $._type,                   '}'),
-		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM,       '>'),
+		type_grouped:        $ => seq('(', $._type,                            ')'),
+		type_tuple_literal:  $ => seq('(', optional($._items_type),            ')'),
+		type_record_literal: $ => seq('(', $._properties_type,                 ')'),
+		type_dict_literal:   $ => seq('[', ':', $._type,                       ']'),
+		type_map_literal:    $ => seq('{', $._type, '->', $._type,             '}'),
+		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM, '>'),
 
 		_type_unit: $ => choice(
 			$.keyword_type,

@@ -202,12 +202,12 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('assigning collection literals.', () => {
 			typeCheckGoal(`
 				let c: int[3] = (42, 420, 4200);
-				let d: [n42: int, n420: int] = [
+				let d: (n42: int, n420: int) = [
 					n42=  42,
 					n420= 420,
 				];
 				let v: (   int,    str) = (   42,    "hello");
-				let s: [a: int, b: str] = [a= 42, b= "hello"];
+				let s: (a: int, b: str) = [a= 42, b= "hello"];
 			`);
 		});
 		it('allows assigning a collection literal to super reference type (autoboxing at runtime).', () => {
@@ -237,8 +237,8 @@ describe('ASTNodeDeclarationVariable', () => {
 
 					let t3_1: (           List.<float>,) = (       (4.3,),);
 					let t3_2: (       mut List.<float>,) = (       (4.3,),);
-					let r3_1: [inner:     List.<float>]  = [inner= (4.3,)];
-					let r3_2: [inner: mut List.<float>]  = [inner= (4.3,)];
+					let r3_1: (inner:     List.<float>)  = [inner= (4.3,)];
+					let r3_2: (inner: mut List.<float>)  = [inner= (4.3,)];
 				`.split('\n'), TypeErrorNotAssignable);
 			});
 			it('allows assigning Sets and Maps.', () => {
@@ -251,8 +251,8 @@ describe('ASTNodeDeclarationVariable', () => {
 				return typeCheckGoal(`
 					let tuple_of_set:  (   mut int{},)        = (   {42},);
 					let tuple_of_map:  (   mut {int -> str},) = (   {42 -> "hello"},);
-					let record_of_set: [k: mut int{}]         = [k= {42}];
-					let record_of_map: [k: mut {int -> str}]  = [k= {42 -> "hello"}];
+					let record_of_set: (k: mut int{})         = [k= {42}];
+					let record_of_map: (k: mut {int -> str})  = [k= {42 -> "hello"}];
 					tuple_of_set.0.[43]  = true;
 					tuple_of_map.0.[43]  = "world";
 					record_of_set.k.[43] = true;
@@ -262,7 +262,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			it('should throw when assigning combo type to union.', () => {
 				typeCheckGoal(`
 					let x: (   bool,    int) | (   int,    bool) = (   true,    false);
-					let x: [a: bool, b: int] | [a: int, b: bool] = [a= true, b= false];
+					let x: (a: bool, b: int) | (a: int, b: bool) = [a= true, b= false];
 				`.split('\n'), (err) => {
 					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
@@ -275,17 +275,17 @@ describe('ASTNodeDeclarationVariable', () => {
 					return true;
 				});
 				return typeCheckGoal(`
-					type Employee = [
+					type Employee = (
 						name:         str,
 						id:           int,
 						job_title:    str,
 						hours_worked: float,
-					];
-					type Volunteer = [
+					);
+					type Volunteer = (
 						name:         str,
 						agency:       str,
 						hours_worked: float,
-					];
+					);
 					let bob: Employee | Volunteer = [
 						name=         "Bob", %: str
 						hours_worked= 80.0,  %: float
@@ -295,8 +295,8 @@ describe('ASTNodeDeclarationVariable', () => {
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
-							{cons: TypeErrorNotAssignable, message: 'Expression of type `[256: "Bob", 259: 80.0]` is not assignable to type `[256: str, 257: int, 258: str, 259: float]`.'},
-							{cons: TypeErrorNotAssignable, message: 'Expression of type `[256: "Bob", 259: 80.0]` is not assignable to type `[256: str, 261: str, 259: float]`.'},
+							{cons: TypeErrorNotAssignable, message: 'Expression of type `(256: "Bob", 259: 80.0)` is not assignable to type `(256: str, 257: int, 258: str, 259: float)`.'},
+							{cons: TypeErrorNotAssignable, message: 'Expression of type `(256: "Bob", 259: 80.0)` is not assignable to type `(256: str, 261: str, 259: float)`.'},
 						],
 					});
 					return true;
@@ -312,7 +312,7 @@ describe('ASTNodeDeclarationVariable', () => {
 					let t4: mut ((int, str) | Object) = (42, "43");
 
 					let r1: mut unknown                     = [a= 42, b= "43"];
-					let r4: mut ([a: int, b: str] | Object) = [a= 42, b= "43"];
+					let r4: mut ((a: int, b: str) | Object) = [a= 42, b= "43"];
 
 					let s1: mut (42 | 4.3){}            = {42};
 					let s2: mut (int | float){}         = {42};
@@ -485,7 +485,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('tuples and records.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let tup: (   int,    float,    (   null,    (   null,    bool))) = (   42,    4.2,    (   null,    (   null,    true)));
-				let rec: [a: int, b: float, c: [d: null, e: [f: null, g: bool]]] = [a= 42, b= 4.2, c= [d= null, e= [f= null, g= true]]];
+				let rec: (a: int, b: float, c: (d: null, e: (f: null, g: bool))) = [a= 42, b= 4.2, c= [d= null, e= [f= null, g= true]]];
 			`, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();
@@ -512,8 +512,8 @@ describe('ASTNodeDeclarationVariable', () => {
 
 		it('throws when tuples and records contain each other.', () => {
 			[
-				'let tup: (   int,    float,    (   null,    bool),    [g: bool, h: int],    ([j: float],)) = (   42,    4.2,    (   null,    true),    [g= false, h= 42],    ([j= 4.2],));',
-				'let rec: [a: int, b: float, c: [d: null, e: bool], f: (   bool,    int), i: [k: (float,)]] = [a= 42, b= 4.2, c= [d= null, e= true], f= (   false,    42), i= [k= (4.2,)]];',
+				'let tup: (   int,    float,    (   null,    bool),    (g: bool, h: int),    ((j: float),)) = (   42,    4.2,    (   null,    true),    [g= false, h= 42],    ([j= 4.2],));',
+				'let rec: (a: int, b: float, c: (d: null, e: bool), f: (   bool,    int), i: (k: (float,))) = [a= 42, b= 4.2, c= [d= null, e= true], f= (   false,    42), i= [k= (4.2,)]];',
 			].forEach((src) => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
 				goal.varCheck();
