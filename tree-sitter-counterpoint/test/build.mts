@@ -325,6 +325,16 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		TypeListLiteral: [
+			xjs.String.dedent`
+				type T = [bool];
+			`,
+			sourceTypes(s(
+				'type_list_literal',
+				s('keyword_type'),
+			)),
+		],
+
 		TypeDictLiteral: [
 			xjs.String.dedent`
 				type T = [: bool];

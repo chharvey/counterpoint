@@ -754,7 +754,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 
 
 ### Grouping
-Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
+Read about Tuples, Records, Lists, Sets, and Maps in the [Types](./types.md) chapter.
 
 
 ### Type Property Access

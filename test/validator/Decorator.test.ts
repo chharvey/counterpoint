@@ -127,6 +127,11 @@ describe('Decorator', () => {
 				% (type_record_literal)
 			`]],
 
+			['Decorate(TypeListLiteral ::= "[" Type "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
+				type T = [int];
+				% (type_list_literal)
+			`]],
+
 			['Decorate(TypeDictLiteral ::= "[" ":" Type "]") -> SemanticTypeDict', [AST.ASTNodeTypeDict, `
 				type T = [:int];
 				% (type_dict_literal)

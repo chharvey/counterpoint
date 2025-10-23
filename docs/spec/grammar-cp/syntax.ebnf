@@ -58,6 +58,7 @@ PropertiesType
 TypeGrouped       ::= "(" Type             ")";
 TypeTupleLiteral  ::= "(" ItemsType?       ")";
 TypeRecordLiteral ::= "(" PropertiesType   ")";
+TypeListLiteral   ::= "[" Type             "]";
 TypeDictLiteral   ::= "[" ":" Type         "]";
 TypeMapLiteral    ::= "{" Type "->" Type   "}";
 GenericArguments  ::= "<"  ","? Type# ","? ">";
@@ -68,6 +69,7 @@ TypeUnit ::=
 	| PrimitiveLiteral
 	| TypeGrouped
 	| TypeTupleLiteral
+	| TypeListLiteral
 	| TypeRecordLiteral
 	| TypeDictLiteral
 	| TypeMapLiteral

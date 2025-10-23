@@ -78,6 +78,7 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 	| SyntaxNodeType<'type_grouped'>
 	| SyntaxNodeType<'type_tuple_literal'>
 	| SyntaxNodeType<'type_record_literal'>
+	| SyntaxNodeType<'type_list_literal'>
 	| SyntaxNodeType<'type_dict_literal'>
 	| SyntaxNodeType<'type_map_literal'>
 	| SyntaxNodeType<'type_compound'>
@@ -117,7 +118,7 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 
 export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode, category: C): syntaxnode is SyntaxNodeSupertype<C> {
 	return new Map<Category, (node: SyntaxNode) => boolean>([
-		['type',        (node) => isSyntaxNodeType(node, /^keyword_type|identifier|primitive_literal|type_grouped|type_(tuple|record|dict|map)_literal|type_(compound|unary_symbol|unary_keyword|intersection|union)$/)],
+		['type',        (node) => isSyntaxNodeType(node, /^keyword_type|identifier|primitive_literal|type_grouped|type_(tuple|record|list|dict|map)_literal|type_(compound|unary_symbol|unary_keyword|intersection|union)$/)],
 		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template|expression_grouped|(tuple|record|set|map)_literal|expression_(compound|unary_symbol|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional)$/)],
 		['declaration', (node) => isSyntaxNodeType(node, /^declaration_type|declaration_variable$/)],
 		['statement',   (node) => isSyntaxNodeType(node, /^statement_expression|statement_assignment$/) || isSyntaxNodeSupertype(node, 'declaration')],

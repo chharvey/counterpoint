@@ -24,7 +24,7 @@ export class ASTNodeTypeList extends ASTNodeTypeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'type_unary_symbol'>,
+		start_node: SyntaxNodeType<'type_list_literal'> | SyntaxNodeType<'type_unary_symbol'>,
 		private readonly type:  ASTNodeType,
 		private readonly count: bigint | null = null,
 	) {
