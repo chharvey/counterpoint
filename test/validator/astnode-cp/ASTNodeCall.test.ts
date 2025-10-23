@@ -61,8 +61,8 @@ describe('ASTNodeCall', () => {
 	const MAP_CONS = [
 		'Map.<int, float>();',
 		'Map.<int, float>([]);',
-		'Map.<int, float>(List.<[int, float]>());',
-		'Map.<int, float>(Set.<[int, float]>());',
+		'Map.<int, float>(List.<(int, float)>());',
+		'Map.<int, float>(Set.<(int, float)>());',
 		'Map.<int, float>({});',
 		'Map.<int, float>(Map.<int, float>());',
 		`Map.<int, float>([
@@ -70,12 +70,12 @@ describe('ASTNodeCall', () => {
 			[2, 0.2],
 			[3, 0.4],
 		]);`,
-		`Map.<int, float>(List.<[int, float]>([
+		`Map.<int, float>(List.<(int, float)>([
 			[1, 0.1],
 			[2, 0.2],
 			[3, 0.4],
 		]));`,
-		`Map.<int, float>(Set.<[int, float]>([
+		`Map.<int, float>(Set.<(int, float)>([
 			[1, 0.1],
 			[2, 0.2],
 			[3, 0.4],
@@ -173,7 +173,7 @@ describe('ASTNodeCall', () => {
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>([
 				['List.<int>(42);', ['42', ['List.<int>', 'Set.<int>']]],
 				['Set.<int>(42);',  ['42', ['List.<int>', 'Set.<int>']]],
-				['Map.<int>(42);',  ['42', ['List.<[int, int]>', 'Set.<[int, int]>', 'Map.<int, int>']]],
+				['Map.<int>(42);',  ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],
 			]), ([argtype, allowed_types], src) => assert.throws(
 				() => AST.ASTNodeCall.fromSource(src).type(),
 				(err) => {

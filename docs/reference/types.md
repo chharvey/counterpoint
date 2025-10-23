@@ -554,14 +554,14 @@ let GREETING: """Hello World!""" = "Hello World!"; %> ParseError
 ## Compound Types
 Compound types are composed of other types.
 
-Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax         | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
------------------- | -------- | ------------  | ------------------- | ---------------------------- | -------------------------------------------- | -------------------------------------- | --------------------
-[Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `[str, str, str]` / `str[3]` | *(none)*                                     | `["x", "y", "z"]`                      | `[]`
-[Record](#records) | Fixed    | symbols       | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
-[List](#lists)     | Variable | integers      | `List.<str>`        | `str[]`                      | `List.(["x", "y", "z"])`                     | *(none)*                               | *(none)*
-[Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                     | `Dict.([a= "x", b= "y", c= "z"])`            | *(none)*                               | *(none)*
-[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                      | `Set.(["x", "y", "z"])`                      | `{"x", "y", "z"}`                      | `{}`
-[Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`               | `Map.([["u", "x"], ["v", "y"], ["w", "z"]])` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
+Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax                 | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
+------------------ | -------- | ------------  | ------------------- | ------------------------------------ | -------------------------------------------- | -------------------------------------- | --------------------
+[Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `["x", "y", "z"]`                      | `[]`
+[Record](#records) | Fixed    | symbols       | *(none)*            | `[a: str, b: str, c: str]`           | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
+[List](#lists)     | Variable | integers      | `List.<str>`        | `str[]`                              | `List.(["x", "y", "z"])`                     | *(none)*                               | *(none)*
+[Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                             | `Dict.([a= "x", b= "y", c= "z"])`            | *(none)*                               | *(none)*
+[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                              | `Set.(["x", "y", "z"])`                      | `{"x", "y", "z"}`                      | `{}`
+[Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`                       | `Map.([["u", "x"], ["v", "y"], ["w", "z"]])` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
 
 
 ### Tuples
@@ -573,41 +573,42 @@ The order of entries is significant: looping and iteration are performed in inde
 Tuples are heterogeneous, meaning they can be declared with different entry types.
 They are also read-only, which means their entries cannot be added, deleted, or reassigned.
 
-For example, the tuple `[3, 4.0, "seven"]` has an integer in the first position at index `0`,
-followed by a float at index `1`, followed by a string at index `2`. Its count is 3.
+For example, the tuple `(3, 4.0, "seven")` has an integer in the first position at index `0`,
+followed by a float at index `1`, followed by a string at index `2`. Its count is *3*.
 
-Tuple literals are comma-separated expressions within square brackets.
+Tuple literals are comma-separated expressions within parentheses.
 Tuple types use the same syntax, but instead of value expressions
 they contain type expressions (a.k.a. types).
 ```
-let elements: [str, str, str] = ["earth", "wind", "fire"];
+let elements: (str, str, str) = ["earth", "wind", "fire"];
+```
+<sup>&lowast;</sup>Note: A tuple type or expression with exactly 1 entry must have either a leading or trailing comma,
+so as not to be confused with a grouped expression/type.
+I.e., `(T)` is just a parenthesized type, whereas `(T,)` is a 1-tuple type.
+
+```
+let element:   (str)  = "air";
+let singleton: (str,) = ["air"];
 ```
 
 Larger tuples are always assignable to smaller tuples,
 but assigning a smaller tuple to a larger tuple results in a TypeError.
 ```
-let elements: [str, str, str] = ["earth", "wind", "fire", true, 42];
-let elements_and_more: [str, str, str, bool, int] = ["earth", "wind", "fire"]; %> TypeError
+let elements: (str, str, str) = ["earth", "wind", "fire", true, 42];
+let elements_and_more: (str, str, str, bool, int) = ["earth", "wind", "fire"]; %> TypeError
 ```
 The first declaration is allowed because the last two items are simply dropped off.
 
 Because tuples are read-only, the `mut` operator is invalid on tuple types.
 ```
-let elements: mut [str, str, str] = ["earth", "wind", "fire"]; %> TypeError
-```
-
-Note: If a tuple is homogeneous (its items are all of the same type),
-then we can use shorthand notation to annotate it:
-```
-let elements: str[3] = ["earth", "wind", "fire"];
-%             ^ shorthand for `[str, str, str]`
+let elements: mut (str, str, str) = ["earth", "wind", "fire"]; %> TypeError
 ```
 
 #### Tuple Access
 Items of a tuple can be accessed via 0-based **dot-accessor notation**
 (index `0` represents the first item).
 ```
-let elements: [str, str, str] = ["earth", "wind", "fire"];
+let elements: (str, str, str) = ["earth", "wind", "fire"];
 elements.0; %== "earth"
 elements.1; %== "wind"
 elements.2; %== "fire"
@@ -637,7 +638,7 @@ elements.-4; %> TypeErrorNoEntry
 
 A tuple’s items, type, and size are all fixed.
 ```
-let tuple: [bool, int, str] = [true, 4, "hello"];
+let tuple: (bool, int, str) = [true, 4, "hello"];
 set tuple.0 = false;   %> MutabilityError
 set tuple.1 = 2;       %> MutabilityError
 set tuple.2 = "world"; %> MutabilityError
@@ -647,7 +648,7 @@ tuple; %== [true, 4, "hello"];
 #### Optional Items
 Tuple types may have optional items, indicating that a tuple of that type might or might not have that item.
 ```
-let var x: [str, int, ?: bool] = ["hello", 42];
+let var x: (str, int, ?: bool) = ["hello", 42];
 set x = ["hello", 42, true];
 ```
 The symbol `?:` in the type signature indicates that the item is optional.

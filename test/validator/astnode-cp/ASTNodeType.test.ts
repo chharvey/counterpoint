@@ -20,7 +20,7 @@ describe('ASTNodeType', () => {
 		describe('ASTNodeTypeCollectionLiteral', () => {
 			specify('ASTNodeTypeTuple', () => {
 				assertEqualTypes(
-					AST.ASTNodeTypeTuple.fromSource('[int, bool, ?:str]').eval(),
+					AST.ASTNodeTypeTuple.fromSource('(int, bool, ?:str)').eval(),
 					new TYPE.Tuple([
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: false},
@@ -81,7 +81,7 @@ describe('ASTNodeType', () => {
 
 			it('does not throw if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type A =   [int, List.<float>, str];
+					type A =   (int, List.<float>, str);
 					type C =   [a: int, b: List.<float>, c: str];
 					type E = Set.<float>  [3];
 				`);

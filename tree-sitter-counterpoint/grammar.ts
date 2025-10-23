@@ -376,15 +376,19 @@ module.exports = grammar({
 			$ => seq(iff(named, seq($.word, iff(!optional, ':'))), iff(optional, '?:'), $._type)
 		), 'named', 'optional'),
 
-		_items_type: $ => choice(
-			             seq(repCom1($.entry_type), OPT_COM), // eslint-disable-line @stylistic/indent
-			seq(optional(seq(repCom1($.entry_type), ','    )), repCom1($[call('entry_type', 'optional')]), OPT_COM),
-		),
+		_items_type: $ => {
+			const LIST_ENT_OPT: SeqRule = repCom1($[call('entry_type', 'optional')]);
+			return choice(
+				seq(                                                                 OPT_COM,              LIST_ENT_OPT,   OPT_COM),
+				seq(         $.entry_type,                                           ',',     optional(seq(LIST_ENT_OPT,   OPT_COM))),
+				seq(optional($.entry_type), ',', repCom1($.entry_type), optional(seq(',',                  LIST_ENT_OPT)), OPT_COM),
+			);
+		},
 
 		_properties_type: $ => seq(repCom1(choice($[call('entry_type', 'named')], $[call('entry_type', 'named', 'optional')])), OPT_COM),
 
-		type_grouped:        $ => seq('(',                       $._type,            ')'),
-		type_tuple_literal:  $ => seq('[', optional(seq(OPT_COM, $._items_type)),    ']'),
+		type_grouped:        $ => seq('(', $._type,                                  ')'),
+		type_tuple_literal:  $ => seq('(', optional($._items_type),                  ')'),
 		type_record_literal: $ => seq('[',              OPT_COM, $._properties_type, ']'),
 		type_dict_literal:   $ => seq('[', ':', $._type,                             ']'),
 		type_map_literal:    $ => seq('{', $._type, '->', $._type,                   '}'),

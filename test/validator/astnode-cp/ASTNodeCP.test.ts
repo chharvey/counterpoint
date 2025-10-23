@@ -181,7 +181,7 @@ describe('ASTNodeCP', () => {
 				it('throws when assignee’s base type is not mutable.', () => {
 					[
 						`
-							let t: [int] = [42];
+							let t: (int,) = [42];
 							t.0 = 43;
 						`,
 						`

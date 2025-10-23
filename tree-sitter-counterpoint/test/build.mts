@@ -228,16 +228,33 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TypeTupleLiteral: [
 			xjs.String.dedent`
-				type T = [bool, int, ?: str];
-				type U = [
+				type A = ();
+				type B = (bool,);
+				type C = (?: bool);
+				type D = (bool, int);
+				type E = (bool, ?: int);
+				type U = (
 					V.0,
 					W.<float>,
-				];
+				);
 			`,
 			sourceTypes(
+				s('type_tuple_literal'),
 				s(
 					'type_tuple_literal',
-					s('entry_type',           s('keyword_type')),
+					s('entry_type', s('keyword_type')),
+				),
+				s(
+					'type_tuple_literal',
+					s('entry_type__optional', s('keyword_type')),
+				),
+				s(
+					'type_tuple_literal',
+					s('entry_type', s('keyword_type')),
+					s('entry_type', s('keyword_type')),
+				),
+				s(
+					'type_tuple_literal',
 					s('entry_type',           s('keyword_type')),
 					s('entry_type__optional', s('keyword_type')),
 				),

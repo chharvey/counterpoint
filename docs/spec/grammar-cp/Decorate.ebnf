@@ -55,14 +55,32 @@ Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyTyp
 
 
 
-Decorate(ItemsType ::= EntryType<-Named><-Optional># ","?) -> Sequence<SemanticItemType>
-	:= ParseList(EntryType<-Named><-Optional>, SemanticItemType);
-Decorate(ItemsType ::= EntryType<-Named><+Optional># ","?) -> Sequence<SemanticItemType>
+Decorate(ItemsType ::= ","? EntryType<-Named><+Optional># ","?) -> Sequence<SemanticItemType>
 	:= ParseList(EntryType<-Named><+Optional>, SemanticItemType);
-Decorate(ItemsType ::= EntryType<-Named><-Optional># "," EntryType<-Named><+Optional># ","?) -> Sequence<SemanticItemType>
+Decorate(ItemsType ::= EntryType<-Named><-Optional> ",") -> Sequence<SemanticItemType>
+	:= [Decorate(EntryType<-Named><-Optional>)];
+Decorate(ItemsType ::= EntryType<-Named><-Optional> "," EntryType<-Named><+Optional># ","?) -> Sequence<SemanticItemType>
+	:= [
+		Decorate(EntryType<-Named><-Optional>),
+		...ParseList(EntryType<-Named><+Optional>, SemanticItemType),
+	];
+Decorate(ItemsType ::= "," EntryType<-Named><-Optional># ","?) -> Sequence<SemanticItemType>
+	:= ParseList(EntryType<-Named><-Optional>, SemanticItemType);
+Decorate(ItemsType ::= "," EntryType<-Named><-Optional># "," EntryType<-Named><+Optional># ","?) -> Sequence<SemanticItemType>
 	:= [
 		...ParseList(EntryType<-Named><-Optional>, SemanticItemType),
 		...ParseList(EntryType<-Named><+Optional>, SemanticItemType),
+	];
+Decorate(ItemsType ::= EntryType<-Named><-Optional>__0 "," EntryType<-Named><-Optional>__1# ","?) -> Sequence<SemanticItemType>
+	:= [
+		Decorate(EntryType<-Named><-Optional>__0),
+		...ParseList(EntryType<-Named><-Optional>__1, SemanticItemType),
+	];
+Decorate(ItemsType ::= EntryType<-Named><-Optional>__0 "," EntryType<-Named><-Optional>__1# "," EntryType<-Named><+Optional># ","?) -> Sequence<SemanticItemType>
+	:= [
+		Decorate(EntryType<-Named><-Optional>__0),
+		...ParseList(EntryType<-Named><-Optional>__1, SemanticItemType),
+		...ParseList(EntryType<-Named><+Optional>,    SemanticItemType),
 	];
 
 
@@ -77,9 +95,9 @@ Decorate(PropertiesType ::= EntryType<+Named><+Optional># ","?) -> Sequence<Sema
 Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType
 	:= Decorate(Type);
 
-Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple
+Decorate(TypeTupleLiteral ::= "(" ")") -> SemanticTypeTuple
 	:= (SemanticTypeTuple);
-Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeTuple
+Decorate(TypeTupleLiteral ::= "(" ItemsType ")") -> SemanticTypeTuple
 	:= (SemanticTypeTuple
 		...Decorate(ItemsType)
 	);

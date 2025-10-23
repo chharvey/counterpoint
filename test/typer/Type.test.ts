@@ -55,10 +55,10 @@ describe('Type', () => {
 			const b: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.INT]);
 			const c: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.STR]);
 			const tests = new Map<TYPE.Type, string>([
-				[a.intersect(b).union(c), '[bool] & [int] | [str]'],
-				[a.intersect(b.union(c)), '[bool] & ([int] | [str])'],
-				[a.union(b).intersect(c), '([bool] | [int]) & [str]'],
-				[a.union(b.intersect(c)), '[bool] | [int] & [str]'],
+				[a.intersect(b).union(c), '(bool,) & (int,) | (str,)'],
+				[a.intersect(b.union(c)), '(bool,) & ((int,) | (str,))'],
+				[a.union(b).intersect(c), '((bool,) | (int,)) & (str,)'],
+				[a.union(b.intersect(c)), '(bool,) | (int,) & (str,)'],
 			]);
 			return assert.deepStrictEqual([...tests.keys()].map((k) => k.toString()), [...tests.values()]);
 		});
@@ -229,7 +229,7 @@ describe('Type', () => {
 			const c: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.FALSE, typeUnit(42n)]);
 			const actual:   TYPE.Type = a.intersect(b).intersect(c);
 			const expected: TYPE.Type = b.intersect(c);
-			assert.ok(actual.equals(expected), '([bool, int] & [true]) & [false, 42] == [true] & [false, 42]');
+			assert.ok(actual.equals(expected), '((bool, int) & (true,)) & (false, 42) == (true,) & (false, 42)');
 			assert.deepStrictEqual(actual, expected);
 		});
 		describe('Intersection', () => {
@@ -555,8 +555,8 @@ describe('Type', () => {
 					TYPE.BOOL,
 					TYPE.STR,
 				]);
-				assert.ok(tuple.isSubtypeOf(TYPE.UNKNOWN), '[int, bool, str] <: unknown;');
-				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(tuple), 'unknown !<: [int, bool, str]');
+				assert.ok(tuple.isSubtypeOf(TYPE.UNKNOWN), '(int, bool, str) <: unknown;');
+				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(tuple), 'unknown !<: (int, bool, str)');
 			});
 			it('is neither a subtype nor a supertype of `Object`.', () => {
 				const tuple: TYPE.Tuple = TYPE.Tuple.fromTypes([
@@ -564,8 +564,8 @@ describe('Type', () => {
 					TYPE.BOOL,
 					TYPE.STR,
 				]);
-				assert.ok(!tuple.isSubtypeOf(TYPE.OBJ), '[int, bool, str] !<: Object;');
-				assert.ok(!TYPE.OBJ.isSubtypeOf(tuple), 'Object !<: [int, bool, str]');
+				assert.ok(!tuple.isSubtypeOf(TYPE.OBJ), '(int, bool, str) !<: Object;');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(tuple), 'Object !<: (int, bool, str)');
 			});
 			it('matches per index.', () => {
 				assert.ok(TYPE.Tuple.fromTypes([
@@ -576,7 +576,7 @@ describe('Type', () => {
 					TYPE.INT.union(TYPE.FLOAT),
 					TYPE.BOOL.union(TYPE.NULL),
 					TYPE.UNKNOWN,
-				])), '[int, bool, str] <: [int | float, bool?, unknown];');
+				])), '(int, bool, str) <: (int | float, bool?, unknown);');
 				assert.ok(!TYPE.Tuple.fromTypes([
 					TYPE.INT,
 					TYPE.BOOL,
@@ -585,7 +585,7 @@ describe('Type', () => {
 					TYPE.BOOL.union(TYPE.NULL),
 					TYPE.OBJ,
 					TYPE.INT.union(TYPE.FLOAT),
-				])), '[int, bool, str] !<: [bool?, Object, int | float];');
+				])), '(int, bool, str) !<: (bool?, Object, int | float);');
 			});
 			it('returns false if assigned is smaller than assignee.', () => {
 				assert.ok(!TYPE.Tuple.fromTypes([
@@ -595,7 +595,7 @@ describe('Type', () => {
 					TYPE.INT.union(TYPE.FLOAT),
 					TYPE.BOOL.union(TYPE.NULL),
 					TYPE.OBJ,
-				])), '[int, bool] !<: [int | float, bool?, Object];');
+				])), '(int, bool) !<: (int | float, bool?, Object);');
 			});
 			it('skips rest if assigned is larger than assignee.', () => {
 				assert.ok(TYPE.Tuple.fromTypes([
@@ -605,7 +605,7 @@ describe('Type', () => {
 				]).isSubtypeOf(TYPE.Tuple.fromTypes([
 					TYPE.INT.union(TYPE.FLOAT),
 					TYPE.BOOL.union(TYPE.NULL),
-				])), '[int, bool, str] <: [int | float, bool?];');
+				])), '(int, bool, str) <: (int | float, bool?);');
 			});
 			it('with optional entries, checks minimum count only.', () => {
 				assert.ok(new TYPE.Tuple([
@@ -619,7 +619,7 @@ describe('Type', () => {
 					{type: TYPE.INT, optional: true},
 					{type: TYPE.INT, optional: true},
 					{type: TYPE.INT, optional: true},
-				])), '[int, int, ?:int, ?:int] <: [int, ?:int, ?:int, ?:int, ?:int]');
+				])), '(int, int, ?:int, ?:int) <: (int, ?:int, ?:int, ?:int, ?:int)');
 				assert.ok(!new TYPE.Tuple([
 					{type: TYPE.INT, optional: false},
 					{type: TYPE.INT, optional: true},
@@ -631,13 +631,13 @@ describe('Type', () => {
 					{type: TYPE.INT, optional: false},
 					{type: TYPE.INT, optional: true},
 					{type: TYPE.INT, optional: true},
-				])), '[int, ?:int, ?:int, ?:int, ?:int] !<: [int, int, ?:int, ?:int]');
+				])), '(int, ?:int, ?:int, ?:int, ?:int) !<: (int, int, ?:int, ?:int)');
 			});
 			it('Covariance for tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.', () => {
 				assert.ok(TYPE.Tuple.fromTypes([TYPE.INT, TYPE.FLOAT]).isSubtypeOf(TYPE.Tuple.fromTypes([TYPE.INT.union(TYPE.NULL), TYPE.FLOAT.union(TYPE.NULL)])), '[int, float] <: [int?, float?]');
 			});
 			it('Tuple is never a subtype of List.', () => {
-				assert.ok(!TYPE.Tuple.fromTypes([TYPE.INT]).isSubtypeOf(new TYPE.List(TYPE.INT, false)), '[int] !<: int[]');
+				assert.ok(!TYPE.Tuple.fromTypes([TYPE.INT]).isSubtypeOf(new TYPE.List(TYPE.INT, false)), '(int,) !<: int[]');
 			});
 		});
 

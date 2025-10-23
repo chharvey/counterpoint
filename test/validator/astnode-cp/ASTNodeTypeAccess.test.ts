@@ -54,8 +54,8 @@ describe('ASTNodeTypeAccess', () => {
 		context('access kind: normal access (`a.‹b›`).', () => {
 			it('returns individual entry types.', () => {
 				testTypeEvals(`
-					type TupC = [1,   2.0,   "three"];
-					type TupV = [int, float, str];
+					type TupC = (1,   2.0,   "three");
+					type TupV = (int, float, str);
 
 					type RecC = [a: 1,   b: 2.0,   _: "three"];
 					type RecV = [a: int, b: float, _: str];
@@ -103,8 +103,8 @@ describe('ASTNodeTypeAccess', () => {
 			});
 			it('throws when entry is optional.', () => {
 				testTypeEvals(`
-					type TupoC = [1,   2.0,   ?: "three"];
-					type TupoV = [int, float, ?: str];
+					type TupoC = (1,   2.0,   ?: "three");
+					type TupoV = (int, float, ?: str);
 
 					type RecoC = [a: 1,   b?: 2.0,   c: "three"];
 					type RecoV = [a: int, b?: float, c: str];
@@ -124,8 +124,8 @@ describe('ASTNodeTypeAccess', () => {
 			});
 			it('throws when index is out of bounds / when key is out of range.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
-					[1, 2.0, "three"].3
-					[1, 2.0, "three"].-4
+					(1, 2.0, "three").3
+					(1, 2.0, "three").-4
 					[a: 1, b: 2.0, c: "three"].d
 				`, (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry));
 			});
@@ -135,8 +135,8 @@ describe('ASTNodeTypeAccess', () => {
 		context('access kind: maybe access (`a?.‹b›`).', () => {
 			it('unions with null if entry is optional.', () => {
 				testTypeEvals(`
-					type TupoC = [1,   2.0,   ?: "three"];
-					type TupoV = [int, float, ?: str];
+					type TupoC = (1,   2.0,   ?: "three");
+					type TupoV = (int, float, ?: str);
 
 					type RecoC = [a: 1,   b?: 2.0,   c: "three"];
 					type RecoV = [a: int, b?: float, c: str];
@@ -156,8 +156,8 @@ describe('ASTNodeTypeAccess', () => {
 			});
 			it('throws when entry is not optional.', () => {
 				testTypeEvals(`
-					type TupoC = [1,   2.0,   "three"];
-					type TupoV = [int, float, str];
+					type TupoC = (1,   2.0,   "three");
+					type TupoV = (int, float, str);
 
 					type RecoC = [a: 1,   b: 2.0,   c: "three"];
 					type RecoV = [a: int, b: float, c: str];

@@ -206,7 +206,7 @@ describe('ASTNodeDeclarationVariable', () => {
 					n42=  42,
 					n420= 420,
 				];
-				let v: [   int,    str] = [   42,    "hello"];
+				let v: (   int,    str) = [   42,    "hello"];
 				let s: [a: int, b: str] = [a= 42, b= "hello"];
 			`);
 		});
@@ -235,10 +235,10 @@ describe('ASTNodeDeclarationVariable', () => {
 					let r1_2: mut Dict.<42 | 4.3> = [a= 43];
 					let r2_2: mut Dict.<int>      = [a= 43];
 
-					let t3_1: [           List.<float>] = [       [4.3]];
-					let t3_2: [       mut List.<float>] = [       [4.3]];
-					let r3_1: [inner:     List.<float>] = [inner= [4.3]];
-					let r3_2: [inner: mut List.<float>] = [inner= [4.3]];
+					let t3_1: (           List.<float>,) = [       [4.3]];
+					let t3_2: (       mut List.<float>,) = [       [4.3]];
+					let r3_1: [inner:     List.<float>]  = [inner= [4.3]];
+					let r3_2: [inner: mut List.<float>]  = [inner= [4.3]];
 				`.split('\n'), TypeErrorNotAssignable);
 			});
 			it('allows assigning Sets and Maps.', () => {
@@ -249,10 +249,10 @@ describe('ASTNodeDeclarationVariable', () => {
 					m.[44]   = "45";
 				`);
 				return typeCheckGoal(`
-					let tuple_of_set:  [   mut int{}]        = [   {42}];
-					let tuple_of_map:  [   mut {int -> str}] = [   {42 -> "hello"}];
-					let record_of_set: [k: mut int{}]        = [k= {42}];
-					let record_of_map: [k: mut {int -> str}] = [k= {42 -> "hello"}];
+					let tuple_of_set:  (   mut int{},)        = [   {42}];
+					let tuple_of_map:  (   mut {int -> str},) = [   {42 -> "hello"}];
+					let record_of_set: [k: mut int{}]         = [k= {42}];
+					let record_of_map: [k: mut {int -> str}]  = [k= {42 -> "hello"}];
 					tuple_of_set.0.[43]  = true;
 					tuple_of_map.0.[43]  = "world";
 					record_of_set.k.[43] = true;
@@ -261,7 +261,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			});
 			it('should throw when assigning combo type to union.', () => {
 				typeCheckGoal(`
-					let x: [   bool,    int] | [   int,    bool] = [   true,    false];
+					let x: (   bool,    int) | (   int,    bool) = [   true,    false];
 					let x: [a: bool, b: int] | [a: int, b: bool] = [a= true, b= false];
 				`.split('\n'), (err) => {
 					assert_instanceof(err, AggregateError);
@@ -309,7 +309,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`
 					let t1: mut unknown               = [42, "43"];
-					let t4: mut ([int, str] | Object) = [42, "43"];
+					let t4: mut ((int, str) | Object) = [42, "43"];
 
 					let r1: mut unknown                     = [a= 42, b= "43"];
 					let r4: mut ([a: int, b: str] | Object) = [a= 42, b= "43"];
@@ -484,7 +484,7 @@ describe('ASTNodeDeclarationVariable', () => {
 
 		it('tuples and records.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let tup: [   int,    float,    [   null,    [   null,    bool]]] = [   42,    4.2,    [   null,    [   null,    true]]];
+				let tup: (   int,    float,    (   null,    (   null,    bool))) = [   42,    4.2,    [   null,    [   null,    true]]];
 				let rec: [a: int, b: float, c: [d: null, e: [f: null, g: bool]]] = [a= 42, b= 4.2, c= [d= null, e= [f= null, g= true]]];
 			`, CONFIG_FOLDING_OFF);
 			goal.varCheck();
@@ -512,8 +512,8 @@ describe('ASTNodeDeclarationVariable', () => {
 
 		it('throws when tuples and records contain each other.', () => {
 			[
-				'let tup: [   int,    float,    [   null,    bool],    [g: bool, h: int],    [[j: float]]] = [   42,    4.2,    [   null,    true],    [g= false, h= 42],    [[j= 4.2]]];',
-				'let rec: [a: int, b: float, c: [d: null, e: bool], f: [   bool,    int], i: [k: [float]]] = [a= 42, b= 4.2, c= [d= null, e= true], f= [   false,    42], i= [k= [4.2]]];',
+				'let tup: (   int,    float,    (   null,    bool),    [g: bool, h: int],    ([j: float],)) = [   42,    4.2,    [   null,    true],    [g= false, h= 42],    [[j= 4.2]]];',
+				'let rec: [a: int, b: float, c: [d: null, e: bool], f: (   bool,    int), i: [k: (float,)]] = [a= 42, b= 4.2, c= [d= null, e= true], f= [   false,    42], i= [k= [4.2]]];',
 			].forEach((src) => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
 				goal.varCheck();

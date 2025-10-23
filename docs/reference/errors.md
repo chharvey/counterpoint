@@ -146,7 +146,7 @@ Solution(s): Ensure the expression has an assignable type.
 #### 2304: TypeErrorNoEntry
 Cause: A non-existent index, key, or parameter name was accessed.
 ```
-[42, 420].2;                      % TypeError: Index `2` does not exist on type `[42, 420]`.
+[42, 420].2;                      % TypeError: Index `2` does not exist on type `(42, 420)`.
 [a= 42, b= 420].c;                % TypeError: Property `c` does not exist on type `[a: 42, b: 420]`.
 ((x: int): int => x + 1).(y= 42); % TypeError: Parameter `y` does not exist on type `(x: int) => int`.
 ```

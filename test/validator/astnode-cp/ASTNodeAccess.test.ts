@@ -124,8 +124,8 @@ describe('ASTNodeAccess', () => {
 
 		context('access manner: by index / by key', () => {
 			const SRC = `
-				let     tup_fixed:   [int, float, str] = [1, 2.0, "three"];
-				let var tup_unfixed: [int, float, str] = [1, 2.0, "three"];
+				let     tup_fixed:   (int, float, str) = [1, 2.0, "three"];
+				let var tup_unfixed: (int, float, str) = [1, 2.0, "three"];
 
 				let     rec_fixed:   [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
 				let var rec_unfixed: [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
@@ -206,8 +206,8 @@ describe('ASTNodeAccess', () => {
 				});
 				it('throws when entry is optional.', () => {
 					testExprTypes(`
-						let tup_a: [int, int, ?: int] = [10, 20];
-						let tup_b: [int, int, ?: int] = [10, 20, 30];
+						let tup_a: (int, int, ?: int) = [10, 20];
+						let tup_b: (int, int, ?: int) = [10, 20, 30];
 
 						let rec_a: [x: int, y?: int, z: int] = [x= 10, z= 20];
 						let rec_b: [x: int, y?: int, z: int] = [x= 10, z= 20, y= 30];
@@ -225,7 +225,7 @@ describe('ASTNodeAccess', () => {
 						type B = [b: str];
 						type C = [c: str];
 						type D = [d: str];
-						let var tup: [   A,     B,       int] & [   C,  ?: D]        = [[a= "tup.0.a", c= "tup.0.c"], [b= "tup.1.b", d= "tup.1.d"], 42];
+						let var tup: (   A,     B,       int) & (   C,  ?: D)        = [[a= "tup.0.a", c= "tup.0.c"], [b= "tup.1.b", d= "tup.1.d"], 42];
 						let var rec: [x: A, y?: int, z?: B]   & [x: C,        z?: D] = [x= [a= "rec.x.a", c= "rec.x.c"], y= 42, z= [b= "rec.z.b", d= "rec.z.d"]];
 					`;
 					const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x100n, TYPE.STR]]));
@@ -263,13 +263,13 @@ describe('ASTNodeAccess', () => {
 				});
 				context('if base is a union type.', () => {
 					const DECLS = `
-						let var tup: [   null,     bool,     sym] | [   int, ?: float]          = [null, true, @hello];
+						let var tup: (   null,     bool,     sym) | (   int, ?: float)          = [null, true, @hello];
 						let var rec: [a: null, b?: bool, c?: sym] | [a: int,           c?: str] = [a= 42];
 					`;
 					it('throws when one but not all constituents are of incorrect type.', () => {
 						testExprTypes(`
-							let var mixed_tup: [str, bool, sym] | [a: str,  b?: bool, c?: sym] = ["hello", true, @world];
-							let var mixed_rec: [int, ?: float]  | [a: int, c?: str]            = [a= 42];
+							let var mixed_tup: (str, bool, sym) | [a: str,  b?: bool, c?: sym] = ["hello", true, @world];
+							let var mixed_rec: (int, ?: float)  | [a: int, c?: str]            = [a= 42];
 
 							mixed_tup.a;
 							mixed_rec.0;
@@ -291,8 +291,8 @@ describe('ASTNodeAccess', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `[null, bool, sym]`.'},
-											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `[int, ?: float]`.'},
+											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `(null, bool, sym)`.'},
+											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `(int, ?: float)`.'},
 										],
 									},
 									{
@@ -327,7 +327,7 @@ describe('ASTNodeAccess', () => {
 					});
 					it('a union with intersection constituents.', () => {
 						testExprTypes(`
-							let var collection: [alpha: bool, bravo: 2 | 3 | 4] & [bravo: 3 | 4 | 5, charlie: str] | [] = [];
+							let var collection: [alpha: bool, bravo: 2 | 3 | 4] & [bravo: 3 | 4 | 5, charlie: str] | () = [];
 							collection.bravo;
 						`, [TypeErrorInvalidOperation]);
 					});
@@ -549,11 +549,11 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('chained maybe access.', () => {
-					const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // [bool]
-					const prop2 = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]); // [?: bool]
+					const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // (bool,)
+					const prop2 = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]); // (?: bool)
 					return testExprTypes(`
-						let var bound1: [prop?: [bool]] = [prop= [true]];
-						let var bound2: [prop?: [?: bool]] = [prop= []];
+						let var bound1: [prop?: (bool,)] = [prop= [true]];
+						let var bound2: [prop?: (?: bool)] = [prop= []];
 						bound1;
 						bound1?.prop;
 						bound1?.prop?.0;
@@ -561,11 +561,11 @@ describe('ASTNodeAccess', () => {
 						bound2?.prop;
 						bound2?.prop?.0;
 					`, [
-						new TYPE.Record(new Map([[0x100n, {type: prop1, optional: true}]])), // [prop?: [bool]]
-						prop1.union(TYPE.NULL),                                              // [bool] | null
+						new TYPE.Record(new Map([[0x100n, {type: prop1, optional: true}]])), // [prop?: (bool,)]
+						prop1.union(TYPE.NULL),                                              // (bool,) | null
 						TYPE.BOOL.union(TYPE.NULL),                                          // bool | null
-						new TYPE.Record(new Map([[0x100n, {type: prop2, optional: true}]])), // [prop?: [?: bool]]
-						prop2.union(TYPE.NULL),                                              // [?: bool] | null
+						new TYPE.Record(new Map([[0x100n, {type: prop2, optional: true}]])), // [prop?: (?: bool)]
+						prop2.union(TYPE.NULL),                                              // (?: bool) | null
 						TYPE.BOOL.union(TYPE.NULL),                                          // bool | null
 					]);
 				});
@@ -578,8 +578,8 @@ describe('ASTNodeAccess', () => {
 					const prop1 = new VALUE.Tuple([VALUE.TRUE]); // [true]
 					const prop2 = new VALUE.Tuple();             // []
 					return testExprValues(`
-						let bound1: [prop?: [bool]] = [prop= [true]];
-						let bound2: [prop?: [?: bool]] = [prop= []];
+						let bound1: [prop?: (bool,)] = [prop= [true]];
+						let bound2: [prop?: (?: bool)] = [prop= []];
 						bound1;
 						bound1?.prop;
 						bound1?.prop?.0;
@@ -604,9 +604,9 @@ describe('ASTNodeAccess', () => {
 
 		context('access manner: access by index / by key.', () => {
 			const SRC = `
-				let     tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];
-				let var tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
-				let var tupo2_u: [int, float, ?: str] = [1, 2.0];
+				let     tupo1_f: (int, float, ?: str) = [1, 2.0, "three"];
+				let var tupo1_u: (int, float, ?: str) = [1, 2.0, "three"];
+				let var tupo2_u: (int, float, ?: str) = [1, 2.0];
 
 				let     reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
 				let var reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
@@ -662,8 +662,8 @@ describe('ASTNodeAccess', () => {
 				});
 				it('throws when entry is not optional and base is not nullish.', () => {
 					testExprTypes(`
-						let tup_a: [int, int, ?: int] = [10, 20];
-						let tup_b: [int, int, ?: int] = [10, 20, 30];
+						let tup_a: (int, int, ?: int) = [10, 20];
+						let tup_b: (int, int, ?: int) = [10, 20, 30];
 
 						let rec_a: [x: int, y?: int, z: int] = [x= 10, z= 20];
 						let rec_b: [x: int, y?: int, z: int] = [x= 10, z= 20, y= 30];
@@ -681,7 +681,7 @@ describe('ASTNodeAccess', () => {
 						type B = [b: str];
 						type C = [c: str];
 						type D = [d: str];
-						let var tup: [   A,     B,       int] & [   C,  ?: D]        = [[a= "tup.0.a", c= "tup.0.c"], [b= "tup.1.b", d= "tup.1.d"], 42];
+						let var tup: (   A,     B,       int) & (   C,  ?: D)        = [[a= "tup.0.a", c= "tup.0.c"], [b= "tup.1.b", d= "tup.1.d"], 42];
 						let var rec: [x: A, y?: int, z?: B]   & [x: C,        z?: D] = [x= [a= "rec.x.a", c= "rec.x.c"], y= 42, z= [b= "rec.z.b", d= "rec.z.d"]];
 					`;
 					const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
@@ -716,13 +716,13 @@ describe('ASTNodeAccess', () => {
 				});
 				context('if base is a union type.', () => {
 					const DECLS = `
-						let var tup: [   null,     bool,     sym] | [   int, ?: float]          = [null, true, @hello];
+						let var tup: (   null,     bool,     sym) | (   int, ?: float)          = [null, true, @hello];
 						let var rec: [a: null, b?: bool, c?: sym] | [a: int,           c?: str] = [a= 42];
 					`;
 					it('unions with null when one but not all constituents are of incorrect type.', () => {
 						testExprTypes(`
-							let var mixed_tup: [str, bool, sym] | [a: str,  b?: bool, c?: sym] = ["hello", true, @world];
-							let var mixed_rec: [int, ?: float]  | [a: int, c?: str]            = [a= 42];
+							let var mixed_tup: (str, bool, sym) | [a: str,  b?: bool, c?: sym] = ["hello", true, @world];
+							let var mixed_rec: (int, ?: float)  | [a: int, c?: str]            = [a= 42];
 
 							mixed_tup?.a; % type \`null | str\`
 							mixed_rec?.0; % type \`int  | null\`
@@ -747,8 +747,8 @@ describe('ASTNodeAccess', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `[null, bool, sym]`.'},
-											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `[int, ?: float]`.'},
+											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `(null, bool, sym)`.'},
+											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `(int, ?: float)`.'},
 										],
 									},
 									{
@@ -788,7 +788,7 @@ describe('ASTNodeAccess', () => {
 					});
 					it('a union with intersection constituents.', () => {
 						testExprTypes(`
-							let var collection: [alpha: bool, bravo: 2 | 3 | 4] & [bravo: 3 | 4 | 5, charlie: str] | [] = [];
+							let var collection: [alpha: bool, bravo: 2 | 3 | 4] & [bravo: 3 | 4 | 5, charlie: str] | () = [];
 							collection?.bravo; % type \`3 | 4 | null\`
 						`, [typeUnit(3n).union(typeUnit(4n)).union(TYPE.NULL)]);
 					});
@@ -1060,7 +1060,7 @@ describe('ASTNodeAccess', () => {
 
 		it('accessing tuple pointers.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let tuple: [[float, float[2]], [[float], float[2]]] = [[1.1, [2.2, 3.3]], [[4.4], [5.5, 6.6]]];
+				let tuple: ((float, float[2]), ((float,), float[2])) = [[1.1, [2.2, 3.3]], [[4.4], [5.5, 6.6]]];
 				tuple.0;
 				tuple.1;
 				tuple.0.0;

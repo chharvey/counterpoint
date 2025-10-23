@@ -47,15 +47,16 @@ EntryType<Named, Optional>
 	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
 
 ItemsType ::=
-	|  EntryType<-Named><-Optional># ","?
-	| (EntryType<-Named><-Optional># ",")? EntryType<-Named><+Optional># ","?
+	|                                                                  ","?  EntryType<-Named><+Optional>#   ","?
+	| EntryType<-Named><-Optional>                                     ","  (EntryType<-Named><+Optional>#   ","?)?
+	| EntryType<-Named><-Optional>? "," EntryType<-Named><-Optional># (","   EntryType<-Named><+Optional>#)? ","?
 ;
 
 PropertiesType
 	::= EntryType<+Named><-Optional, +Optional># ","?;
 
 TypeGrouped       ::= "(" Type                 ")";
-TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
+TypeTupleLiteral  ::= "(" ItemsType?           ")";
 TypeRecordLiteral ::= "["  ","? PropertiesType "]";
 TypeDictLiteral   ::= "[" ":" Type             "]";
 TypeMapLiteral    ::= "{" Type "->" Type       "}";

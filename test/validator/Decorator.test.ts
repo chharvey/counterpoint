@@ -84,11 +84,11 @@ describe('Decorator', () => {
 
 			/* ## Types */
 			['Decorate(EntryType<-Named><-Optional> ::= Type) -> SemanticItemType', [AST.ASTNodeItemType, `
-				type T = [int];
+				type T = (int,);
 				% (entry_type)
 			`]],
 			['Decorate(EntryType<-Named><+Optional> ::= "?:" Type) -> SemanticItemType', [AST.ASTNodeItemType, `
-				type T = [?: int];
+				type T = (?: int);
 				% (entry_type__optional)
 			`]],
 			['Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
@@ -113,12 +113,12 @@ describe('Decorator', () => {
 				% (type_grouped)
 			`]],
 
-			['Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
-				type T = [];
+			['Decorate(TypeTupleLiteral ::= "(" ")") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
+				type T = ();
 				% (type_tuple_literal)
 			`]],
-			['Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
-				type T = [int, ?: float];
+			['Decorate(TypeTupleLiteral ::= "(" ItemsType ")") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
+				type T = (int, ?: float);
 				% (type_tuple_literal)
 			`]],
 

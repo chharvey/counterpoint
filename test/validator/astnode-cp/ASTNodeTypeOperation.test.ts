@@ -41,7 +41,7 @@ describe('ASTNodeTypeOperation', () => {
 
 			it('throws if operating on any value type.', () => {
 				[
-					'mut [int, float, str]',
+					'mut (int, float, str)',
 					'mut [a: int, b: float, c: str]',
 					'mut int[3]',
 					'mut never',

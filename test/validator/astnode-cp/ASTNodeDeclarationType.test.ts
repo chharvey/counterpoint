@@ -49,7 +49,7 @@ describe('ASTNodeDeclarationType', () => {
 		it('allows duplicate declaration of blank identifier.', () => {
 			AST.ASTNodeGoal.fromSource(`
 				type _ = int | float;
-				type _ = [str, bool];
+				type _ = (str, bool);
 			`).varCheck(); // assert does not throw
 		});
 	});

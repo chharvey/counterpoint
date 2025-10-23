@@ -707,14 +707,14 @@ describe('ASTNodeExpression', () => {
 				});
 				it('pointer entries.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let inner01: [float, int]   = [2.0, 3];
-						let inner11: [int,   float] = [5,   6.0];
-						let inner2:  [int,   []]    = [7,   []];
+						let inner01: (float, int)   = [2.0, 3];
+						let inner11: (int,   float) = [5,   6.0];
+						let inner2:  (int,   ())    = [7,   []];
 
-						let inner0: [int,   [float, int]]   = [1,   inner01];
-						let inner1: [float, [int,   float]] = [4.0, inner11];
+						let inner0: (int,   (float, int))   = [1,   inner01];
+						let inner1: (float, (int,   float)) = [4.0, inner11];
 
-						let tuple: [[int, [float, int]], [float, [int, float]], [int, []]] = [inner0, inner1, inner2];
+						let tuple: ((int, (float, int)), (float, (int, float)), (int, ())) = [inner0, inner1, inner2];
 					`, CONFIG_FOLDING_OFF);
 					goal.varCheck();
 					goal.typeCheck();

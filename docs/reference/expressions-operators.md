@@ -767,7 +767,7 @@ Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
 The **type property accesss** syntax for types is analogous to the property access syntax of values.
 It accesses the index or key of a tuple or record type respectively.
 ```
-type T = [bool, int, str];
+type T = (bool, int, str);
 type T1 = T.1;             %== int
 type T_1 = T.-1;           %== str
 type T3 = T.3;             %> TypeError
