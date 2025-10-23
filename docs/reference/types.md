@@ -557,9 +557,9 @@ Compound types are composed of other types.
 Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax                 | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
 ------------------ | -------- | ------------  | ------------------- | ------------------------------------ | -------------------------------------------- | -------------------------------------- | --------------------
 [Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `("x", "y", "z")`<sup>&lowast;</sup>   | `()`
-[Record](#records) | Fixed    | symbols       | *(none)*            | `(a: str, b: str, c: str)`           | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
+[Record](#records) | Fixed    | symbols       | *(none)*            | `(a: str, b: str, c: str)`           | *(none)*                                     | `(a= "x", b= "y", c= "z")`             | *(none)*
 [List](#lists)     | Variable | integers      | `List.<str>`        | `str[]`                              | `List.(("x", "y", "z"))`                     | *(none)*                               | *(none)*
-[Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                             | `Dict.([a= "x", b= "y", c= "z"])`            | *(none)*                               | *(none)*
+[Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                             | `Dict.((a= "x", b= "y", c= "z"))`            | *(none)*                               | *(none)*
 [Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
 [Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`                       | `Map.((("u", "x"), ("v", "y"), ("w", "z")))` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
 
@@ -673,12 +673,12 @@ They are also read-only, which means their entries cannot be added, deleted, or 
 
 For example, the record
 ```
-[
+(
 	fontFamily= "sans-serif",
 	fontSize=   1.25,
 	fontStyle=  "oblique",
 	fontWeight= 400,
-];
+);
 ```
 has a count of 4.
 
@@ -686,23 +686,23 @@ Keys may be reserved keywords, not just restricted to identifiers.
 This is because the record key will always be lexically bound to the record —
 it will never stand alone, so there’s no risk of syntax error.
 ```
-[
+(
 	let=   "to initialize a variable",
 	is=    "referential identity",
 	int=   "the Integer type",
 	false= "the negative boolean value",
-];
+);
 ```
 Conventionally, whitespace is omitted between the key name and the equals sign delimiter `=`.
 This practice helps programmers differentiate between record properties and variable declarations/assignments.
 
 Record literals cannot contain the same key more than once.
 ```
-[
+(
 	fontFamily= "sans-serif",
 	fontSize=   1.25,
 	fontFamily= "serif",      %> AssignmentError
-];
+);
 ```
 > AssignmentError: Duplicate record key: `fontFamily` is already set.
 
@@ -715,12 +715,12 @@ type StyleMap = (
 	fontSize:   float,
 	fontFamily: str,
 );
-let my_styles: StyleMap = [
+let my_styles: StyleMap = (
 	fontFamily= "sans-serif",
 	fontSize=   1.25;
 	fontStyle=  "oblique",
 	fontWeight= 400,
-];
+);
 ```
 Notice how the properties may be written out of order. Records are famous for being order-independent,
 and we should not assume that any looping or iteration over a record is performed in any particular order.
@@ -735,13 +735,13 @@ let elements: (
 	socrates:  str,
 	plato:     str,
 	aristotle: str,
-) = [
+) = (
 	socrates=   "earth",
 	euclid=     true,
 	plato=      "wind",
 	pythagoras= 42,
 	aristotle=  "fire",
-];
+);
 
 let elements_and_more: (
 	socrates:   str,
@@ -749,17 +749,17 @@ let elements_and_more: (
 	aristotle:  str,
 	euclid:     bool,
 	pythagoras: int,
-) = [
+) = (
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
-]; %> TypeError
+); %> TypeError
 ```
 The first declaration is allowed because the unused properties are simply dropped off.
 
 Because records are read-only, the `mut` operator is invalid on record types.
 ```
-let elements: mut (x: str, y: str, z: str) = [x= "earth", y= "wind", z= "fire"]; %> TypeError
+let elements: mut (x: str, y: str, z: str) = (x= "earth", y= "wind", z= "fire"); %> TypeError
 ```
 
 #### Record Access
@@ -769,11 +769,11 @@ let elements: (
 	socrates:  str,
 	plato:     str,
 	aristotle: str,
-) = [
+) = (
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
-];
+);
 elements.socrates;  %== "earth"
 elements.plato;     %== "wind"
 elements.aristotle; %== "fire"
@@ -787,25 +787,25 @@ elements.pythagoras; %> TypeErrorNoEntry
 
 A record’s properties, type, and size are all fixed.
 ```
-let record: (a: bool, b: int, c: str) = [a= true, b= 4, c= "hello"];
+let record: (a: bool, b: int, c: str) = (a= true, b= 4, c= "hello");
 set record.a = false;   %> MutabilityError
 set record.b = 2;       %> MutabilityError
 set record.c = "world"; %> MutabilityError
-record; %== [a= true, b= 4, c= "hello"];
+record; %== (a= true, b= 4, c= "hello");
 ```
 
 #### Optional Properties
 Record types may have optional properties, indicating that a record of that type might or might not have that property.
 ```
-let var y: (firstname: str, middlename?: str, lastname: str) = [
+let var y: (firstname: str, middlename?: str, lastname: str) = (
 	firstname= "Martha",
 	lastname=  "Dandridge",
-];
-set y = [
+);
+set y = (
 	firstname=  "Martha",
 	lastname=   "Washington",
 	middlename= "Dandridge",
-];
+);
 ```
 The symbol `?:` in the type signature indicates that the property is optional.
 In a record type, required and optional properties may be intermixed (order isn’t enforced).
@@ -883,12 +883,12 @@ where `T` indicates the type of values in the dict.
 Dicts are constructed via the constructor syntax `Dict.<T>(arg)`,
 where `arg` is a [Record](#records) object.
 ```
-let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
+let my_styles: Dict.<int | float | str> = Dict.<int | float | str>((
 	fontFamily= "sans-serif",
 	fontSize=   1.25,
 	fontStyle=  "oblique",
 	fontWeight= 400,
-]);
+));
 ```
 A shorthand for the generic syntax `Dict.<T>` is `[:T]`.
 As shown above, we can mix value types, but the dict type must be homogeneous.
@@ -897,11 +897,11 @@ As shown above, we can mix value types, but the dict type must be homogeneous.
 Dict properties are accessed by **bracket-accessor notation**, where the expression in brackets computes the key.
 The bracketed expression should be a Symbol value (of type `sym`).
 ```
-let elements: [: str] = Dict.<str>([
+let elements: [: str] = Dict.<str>((
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
-]);
+));
 elements.[@socrates]; %== "earth"
 
 let key: sym = if user.hasPermissions then @plato else @aristotle;
@@ -1041,10 +1041,10 @@ let bases: {int | str -> Object} = {
 	1     -> "who",
 	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
-	4 - 1 -> [i= [`don’t`= "know"]],
+	4 - 1 -> (i= ('don’t'= "know")),
 };
 ```
-The consequent corresponding to the antecedent `3` will be `` [i= [`don’t`= "know"]] ``.
+The consequent corresponding to the antecedent `3` will be `` (i= ('don’t'= "know")) ``.
 
 Maps may have several antecedents that are un-identical but “equal”.
 ```
@@ -1054,7 +1054,7 @@ let bases: {float | [int] -> Object} = {
 	0.0  -> "who",
 	-0.0 -> ("what",),
 	x    -> { "i" -> {"don’t" -> "know"} },
-	y    -> [i= [`don’t`= "know"]],
+	y    -> (i= ('don’t'= "know")),
 };
 ```
 In this example, the antecedents `0.0` and `-0.0` are not identical

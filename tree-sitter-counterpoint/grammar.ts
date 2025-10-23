@@ -460,7 +460,7 @@ module.exports = grammar({
 
 		expression_grouped: $ => seq('(',                       $._expression,                     ')'),
 		tuple_literal:      $ => seq('(', optional(             $._items                        ), ')'),
-		record_literal:     $ => seq('[',              OPT_COM, repCom1($.property),    OPT_COM,   ']'),
+		record_literal:     $ => seq('(',              OPT_COM, repCom1($.property),    OPT_COM,   ')'),
 		set_literal:        $ => seq('{', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), '}'),
 		map_literal:        $ => seq('{',              OPT_COM, repCom1($.case),        OPT_COM,   '}'),
 		function_arguments: $ => seq('(', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), ')'),

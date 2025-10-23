@@ -134,7 +134,7 @@ describe('ASTNodeCP', () => {
 				it('allows assignment directly on objects.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						List.<int>((42,)).[0]                 = 42;
-						Dict.<int>([i= 42]).[@i]              = 42;
+						Dict.<int>((i= 42)).[@i]              = 42;
 						Set.<int>((42,)).[43]                 = false;
 						Map.<bool, int>(((true, 42),)).[true] = 42;
 					`);
@@ -148,7 +148,7 @@ describe('ASTNodeCP', () => {
 							l.[0] = 4.2;
 						`,
 						`
-							let d: mut [:int] = Dict.<int>([i= 42]);
+							let d: mut [:int] = Dict.<int>((i= 42));
 							d.[@i] = 4.2;
 						`,
 						`
@@ -185,7 +185,7 @@ describe('ASTNodeCP', () => {
 							t.0 = 43;
 						`,
 						`
-							let r: (i: int) = [i= 42];
+							let r: (i: int) = (i= 42);
 							r.i = 43;
 						`,
 						`
@@ -193,7 +193,7 @@ describe('ASTNodeCP', () => {
 							l.[0] = 43;
 						`,
 						`
-							let d: [:int] = Dict.<int>([i= 42]);
+							let d: [:int] = Dict.<int>((i= 42));
 							d.[@i] = 43;
 						`,
 						`

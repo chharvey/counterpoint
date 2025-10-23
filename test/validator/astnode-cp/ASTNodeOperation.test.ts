@@ -145,13 +145,13 @@ describe('ASTNodeOperation', () => {
 
 						['!();',         VALUE.FALSE],
 						['!(42,);',      VALUE.FALSE],
-						['![a= 42];',    VALUE.FALSE],
+						['!(a= 42);',    VALUE.FALSE],
 						['!{};',         VALUE.FALSE],
 						['!{42};',       VALUE.FALSE],
 						['!{41 -> 42};', VALUE.FALSE],
 						['?();',         VALUE.TRUE],
 						['?(42,);',      VALUE.FALSE],
-						['?[a= 42];',    VALUE.FALSE],
+						['?(a= 42);',    VALUE.FALSE],
 						['?{};',         VALUE.TRUE],
 						['?{42};',       VALUE.FALSE],
 						['?{41 -> 42};', VALUE.FALSE],
@@ -204,7 +204,7 @@ describe('ASTNodeOperation', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							!();
 							!(42,);
-							![a= 42];
+							!(a= 42);
 							!{41 -> 42};
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
@@ -233,7 +233,7 @@ describe('ASTNodeOperation', () => {
 
 							'?();',
 							'?(42,);',
-							'?[a= 42];',
+							'?(a= 42);',
 							'?{41 -> 42};',
 						].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type()).forEach((typ) => assert.strictEqual(typ, TYPE.BOOL));
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -274,10 +274,10 @@ describe('ASTNodeOperation', () => {
 					['!"hello";',             VALUE.FALSE],
 					['!();',                  VALUE.FALSE],
 					['!(42,);',               VALUE.FALSE],
-					['![a= 42];',             VALUE.FALSE],
+					['!(a= 42);',             VALUE.FALSE],
 					['!List.<int>(());',      VALUE.FALSE],
 					['!List.<int>((42,));',   VALUE.FALSE],
-					['!Dict.<int>([a= 42]);', VALUE.FALSE],
+					['!Dict.<int>((a= 42));', VALUE.FALSE],
 					['!{};',                  VALUE.FALSE],
 					['!{42};',                VALUE.FALSE],
 					['!{41 -> 42};',          VALUE.FALSE],
@@ -297,10 +297,10 @@ describe('ASTNodeOperation', () => {
 					['?"hello";',             VALUE.FALSE],
 					['?();',                  VALUE.TRUE],
 					['?(42,);',               VALUE.FALSE],
-					['?[a= 42];',             VALUE.FALSE],
+					['?(a= 42);',             VALUE.FALSE],
 					['?List.<int>(());',      VALUE.TRUE],
 					['?List.<int>((42,));',   VALUE.FALSE],
-					['?Dict.<int>([a= 42]);', VALUE.FALSE],
+					['?Dict.<int>((a= 42));', VALUE.FALSE],
 					['?{};',                  VALUE.TRUE],
 					['?{42};',                VALUE.FALSE],
 					['?{41 -> 42};',          VALUE.FALSE],
@@ -794,11 +794,11 @@ describe('ASTNodeOperation', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let a: unknown = ();
 						let b: unknown = (42,);
-						let c: unknown = [x= 42];
+						let c: unknown = (x= 42);
 						let d: Object  = {41 -> 42};
 						a !== ();
 						b !== (42,);
-						c !== [x= 42];
+						c !== (x= 42);
 						d !== {41 -> 42};
 						a === a;
 						b === b;
@@ -806,11 +806,11 @@ describe('ASTNodeOperation', () => {
 						d === d;
 						a == ();
 						b == (42,);
-						c == [x= 42];
+						c == (x= 42);
 						d == {41 -> 42};
 						b != (42, 43);
-						c != [x= 43];
-						c != [y= 42];
+						c != (x= 43);
+						c != (y= 42);
 						d != {41 -> 43};
 						d != {43 -> 42};
 					`);
@@ -949,25 +949,25 @@ describe('ASTNodeOperation', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let a: unknown = ();
 					let b: unknown = (42,);
-					let c: unknown = [x= 42];
+					let c: unknown = (x= 42);
 					let d: Object  = List.<int>(());
 					let e: Object  = List.<int>((42,));
-					let f: Object  = Dict.<int>([x= 42]);
+					let f: Object  = Dict.<int>((x= 42));
 					let g: Object  = {};
 					let h: Object  = {42};
 					let i: Object  = {41 -> 42};
 
 					let bb: unknown = ((42,),);
-					let cc: unknown = [x= (42,)];
+					let cc: unknown = (x= (42,));
 					let hh: Object  = {(42,)};
 					let ii: Object  = {(41,) -> (42,)};
 
 					a === ();
 					b === (42,);
-					c === [x= 42];
+					c === (x= 42);
 					d !== List.<int>(());
 					e !== List.<int>((42,));
-					f !== Dict.<int>([x= 42]);
+					f !== Dict.<int>((x= 42));
 					g !== {};
 					h !== {42};
 					i !== {41 -> 42};
@@ -982,16 +982,16 @@ describe('ASTNodeOperation', () => {
 					i === i;
 					a == ();
 					b == (42,);
-					c == [x= 42];
+					c == (x= 42);
 					d == List.<int>(());
 					e == List.<int>((42,));
-					f == Dict.<int>([x= 42]);
+					f == Dict.<int>((x= 42));
 					g == {};
 					h == {42};
 					i == {41 -> 42};
 
 					bb === ((42,),);
-					cc === [x= (42,)];
+					cc === (x= (42,));
 					hh !== {(42,)};
 					ii !== {(41,) -> (42,)};
 					bb === bb;
@@ -999,13 +999,13 @@ describe('ASTNodeOperation', () => {
 					hh === hh;
 					ii === ii;
 					bb == ((42,),);
-					cc == [x= (42,)];
+					cc == (x= (42,));
 					hh == {(42,)};
 					ii == {(41,) -> (42,)};
 
 					b != (42, 43);
-					c != [x= 43];
-					c != [y= 42];
+					c != (x= 43);
+					c != (y= 42);
 					i != {41 -> 43};
 					i != {43 -> 42};
 				`);
@@ -1019,12 +1019,12 @@ describe('ASTNodeOperation', () => {
 				foldOperations(new Map([
 					['(   42.0,)  === (   42,);',   VALUE.FALSE],
 					['(   42.0,)  ==  (   42,);',   VALUE.TRUE],
-					['[a= 42.0]   === [a= 42];',    VALUE.FALSE],
-					['[a= 42.0]   ==  [a= 42];',    VALUE.TRUE],
+					['(a= 42.0)   === (a= 42);',    VALUE.FALSE],
+					['(a= 42.0)   ==  (a= 42);',    VALUE.TRUE],
 					['(    0.0,)  === (   -0.0,);', VALUE.FALSE],
 					['(    0.0,)  ==  (   -0.0,);', VALUE.TRUE],
-					['[a=  0.0]   === [a= -0.0];',  VALUE.FALSE],
-					['[a=  0.0]   ==  [a= -0.0];',  VALUE.TRUE],
+					['(a=  0.0)   === (a= -0.0);',  VALUE.FALSE],
+					['(a=  0.0)   ==  (a= -0.0);',  VALUE.TRUE],
 				]));
 			});
 		});

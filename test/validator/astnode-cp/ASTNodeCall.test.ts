@@ -23,7 +23,7 @@ import {
 describe('ASTNodeCall', () => {
 	const EVALUATE = [
 		'List.<int>((1, 2, 3));',
-		'Dict.<int>([a= 1, b= 2, c= 3]);',
+		'Dict.<int>((a= 1, b= 2, c= 3));',
 		'Set.<int>((1, 2, 3));',
 		`Map.<int, float>((
 			(1, 0.1),
@@ -44,8 +44,8 @@ describe('ASTNodeCall', () => {
 	const DICT_CONS = [
 		'Dict.<int>();',
 		'Dict.<int>(Dict.<int>());',
-		'Dict.<int>([a= 1, b= 2, c= 3]);',
-		'Dict.<int>(Dict.<int>([a= 1, b= 2, c= 3]));',
+		'Dict.<int>((a= 1, b= 2, c= 3));',
+		'Dict.<int>(Dict.<int>((a= 1, b= 2, c= 3)));',
 	] as const;
 	const SET_CONS = [
 		'Set.<int>();',
@@ -137,7 +137,7 @@ describe('ASTNodeCall', () => {
 		it('bypasses invariance for generic arguments.', () => {
 			extract_lines`
 				List.<mut int{}>((   {42},));
-				Dict.<mut int{}>([a= {42}]);
+				Dict.<mut int{}>((a= {42}));
 				Set .<mut int{}>((   {42},));
 				Map.<float, mut int{}>(((4.2, {42}),));
 				Map.<mut int{}, float>((({42}, 4.2),));

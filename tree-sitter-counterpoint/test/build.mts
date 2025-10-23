@@ -566,7 +566,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		RecordLiteral: [
 			xjs.String.dedent`
-				[a= 1, b= [x= 2], _= [y= [k= 3]]];
+				(a= 1, b= (x= 2), _= (y= (k= 3)));
 			`,
 			sourceExpressions(s(
 				'record_literal',

@@ -310,7 +310,7 @@ Decorate(TupleLiteral ::= "(" Items ")") -> SemanticTuple
 		...Decorate(Items)
 	);
 
-Decorate(RecordLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord
+Decorate(RecordLiteral ::= "(" ","? Property# ","? ")") -> SemanticRecord
 	:= (SemanticRecord
 		...ParseList(Property, SemanticProperty)
 	);

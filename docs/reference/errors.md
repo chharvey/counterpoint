@@ -95,7 +95,7 @@ Solution(s): Remove the duplicate declaration, or change it to a reassignment (i
 #### 2202: AssignmentErrorDuplicateKey
 Cause: A duplicate key in a record literal or type literal was encountered.
 ```
-[foo= "a", foo= "b"]; % AssignmentError: Duplicate record key `foo`.
+(foo= "a", foo= "b"); % AssignmentError: Duplicate record key `foo`.
 
 type MyType = (bar: int, bar: str); % AssignmentError: Duplicate record key `bar`.
 ```
@@ -147,7 +147,7 @@ Solution(s): Ensure the expression has an assignable type.
 Cause: A non-existent index, key, or parameter name was accessed.
 ```
 (42, 420).2;                      % TypeError: Index `2` does not exist on type `(42, 420)`.
-[a= 42, b= 420].c;                % TypeError: Property `c` does not exist on type `(a: 42, b: 420)`.
+(a= 42, b= 420).c;                % TypeError: Property `c` does not exist on type `(a: 42, b: 420)`.
 ((x: int): int => x + 1).(y= 42); % TypeError: Parameter `y` does not exist on type `(x: int) => int`.
 ```
 Solution(s): Ensure the index/property/parameter access has the correct index or name.
@@ -184,7 +184,7 @@ A mutability error is raised when the compiler recognizes an attempt to mutate a
 #### 2401: MutabilityError01
 Cause: An immutable object was mutated.
 ```
-let x: (a: int) = [a= 42];
+let x: (a: int) = (a= 42);
 x.a = 43;                  % MutabilityError: Mutation of an object of immutable type `(a: int)`.
 ```
 Solution(s): Do not mutate the object’s entries, or else give it a `mut` type.
@@ -208,11 +208,11 @@ or a dict or map was accessed at a key that it does not have.
 ```
 List.<str>(("earth", "wind", "fire")).[4]; % VoidErrorOutOfBounds
 
-Dict.<str>([
+Dict.<str>((
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
-]).[@pythagoras]; % VoidErrorOutOfBounds
+)).[@pythagoras]; % VoidErrorOutOfBounds
 ```
 Solution(s): Access collections only at existing indices/keys,
 iterate over them dynamically using loops or list iteration methods,

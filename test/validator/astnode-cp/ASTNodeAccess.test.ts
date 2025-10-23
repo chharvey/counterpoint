@@ -127,8 +127,8 @@ describe('ASTNodeAccess', () => {
 				let     tup_fixed:   (int, float, str) = (1, 2.0, "three");
 				let var tup_unfixed: (int, float, str) = (1, 2.0, "three");
 
-				let     rec_fixed:   (a: int, b: float, _: str) = [a= 1, b= 2.0, _= "three"];
-				let var rec_unfixed: (a: int, b: float, _: str) = [a= 1, b= 2.0, _= "three"];
+				let     rec_fixed:   (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
+				let var rec_unfixed: (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
 
 				tup_fixed.0;   % type \`1\`       % value \`1\`
 				tup_fixed.1;   % type \`2.0\`     % value \`2.0\`
@@ -153,7 +153,7 @@ describe('ASTNodeAccess', () => {
 			const THROWS = extract_lines`
 				(1, 2.0, "three").3;
 				(1, 2.0, "three").-4;
-				[a= 1, b= 2.0, c= "three"].d;
+				(a= 1, b= 2.0, c= "three").d;
 			`;
 			describe('#type', () => {
 				it('return individual entry types.', () => {
@@ -183,8 +183,8 @@ describe('ASTNodeAccess', () => {
 					testExprTypes(`
 						let var a:                    unknown = (   10,    20);
 						let var b: int[2]           | unknown = (   10,    20);
-						let var c:                    unknown = [x= 10, y= 20];
-						let var d: (x: int, y: int) | unknown = [x= 10, y= 20];
+						let var c:                    unknown = (x= 10, y= 20);
+						let var d: (x: int, y: int) | unknown = (x= 10, y= 20);
 
 						a.0;
 						b.1;
@@ -198,7 +198,7 @@ describe('ASTNodeAccess', () => {
 						List.<int>((10, 20, 30)).1;
 
 						(4).c;
-						Dict.<int>([a= 10, b= 20, c= 30]).b;
+						Dict.<int>((a= 10, b= 20, c= 30)).b;
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
 				});
 				it('throws when index is out of bounds / when key is out of range.', () => {
@@ -209,8 +209,8 @@ describe('ASTNodeAccess', () => {
 						let tup_a: (int, int, ?: int) = (10, 20);
 						let tup_b: (int, int, ?: int) = (10, 20, 30);
 
-						let rec_a: (x: int, y?: int, z: int) = [x= 10, z= 20];
-						let rec_b: (x: int, y?: int, z: int) = [x= 10, z= 20, y= 30];
+						let rec_a: (x: int, y?: int, z: int) = (x= 10, z= 20);
+						let rec_b: (x: int, y?: int, z: int) = (x= 10, z= 20, y= 30);
 
 						tup_a.2;
 						tup_b.2;
@@ -225,8 +225,8 @@ describe('ASTNodeAccess', () => {
 						type B = (b: str);
 						type C = (c: str);
 						type D = (d: str);
-						let var tup: (   A,     B,       int) & (   C,  ?: D)        = ([a= "tup.0.a", c= "tup.0.c"], [b= "tup.1.b", d= "tup.1.d"], 42);
-						let var rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = [x= [a= "rec.x.a", c= "rec.x.c"], y= 42, z= [b= "rec.z.b", d= "rec.z.d"]];
+						let var tup: (   A,     B,       int) & (   C,  ?: D)        = ((a= "tup.0.a", c= "tup.0.c"), (b= "tup.1.b", d= "tup.1.d"), 42);
+						let var rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = (x= (a= "rec.x.a", c= "rec.x.c"), y= 42, z= (b= "rec.z.b", d= "rec.z.d"));
 					`;
 					const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x100n, TYPE.STR]]));
 					const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
@@ -256,7 +256,7 @@ describe('ASTNodeAccess', () => {
 					});
 					it('an intersection with union constituents.', () => {
 						testExprTypes(`
-							let var collection: ((alpha: bool) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = [bravo= 3];
+							let var collection: ((alpha: bool) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = (bravo= 3);
 							collection.bravo; % type \`3 | 4\`
 						`, [typeUnit(3n).union(typeUnit(4n))]);
 					});
@@ -264,12 +264,12 @@ describe('ASTNodeAccess', () => {
 				context('if base is a union type.', () => {
 					const DECLS = `
 						let var tup: (   null,     bool,     sym) | (   int, ?: float)          = (null, true, @hello);
-						let var rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = [a= 42];
+						let var rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = (a= 42);
 					`;
 					it('throws when one but not all constituents are of incorrect type.', () => {
 						testExprTypes(`
 							let var mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
-							let var mixed_rec: (int, ?: float)  | (a: int, c?: str)            = [a= 42];
+							let var mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
 
 							mixed_tup.a;
 							mixed_rec.0;
@@ -354,7 +354,7 @@ describe('ASTNodeAccess', () => {
 				it('throws AssertionError when base is of incorrect type (bypassing type-checking).', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						(null, true, @hello).a;
-						[a= 42].0;
+						(a= 42).0;
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), assert.AssertionError));
 				});
 				it('throws when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
@@ -366,7 +366,7 @@ describe('ASTNodeAccess', () => {
 		context('access manner: access by expression.', () => {
 			const DECLS = `
 				let     list_fixed:   List.<     int | float | str> = List.<int | float | str>((   1,    2.0,    "three"));
-				let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
+				let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>((a= 1, b= 2.0, c= "three"));
 				let     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
 				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
 				let var list_unfixed: List.<     int | float | str> = list_fixed;
@@ -444,7 +444,7 @@ describe('ASTNodeAccess', () => {
 				it('throws when one but not all constituents are of incorrect type.', () => {
 					testExprTypes(`
 						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = List.<str | bool | sym>(("hello", true, @world));
-						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = Dict.<int | str>([a= 42]);
+						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = Dict.<int | str>((a= 42));
 
 						let var nullish_map: {int -> bool} | null = {42 -> false};
 
@@ -473,13 +473,13 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('unsupported: throws for string access of dict.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int>([a= 10, b= 20, c= 30]).["a"];').type(), /String keys for dict access are not yet supported\./);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int>((a= 10, b= 20, c= 30)).["a"];').type(), /String keys for dict access are not yet supported\./);
 				});
 				it('throws when base object is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						(4).[2];
 						(10, 20, 30).[1];
-						[a= 10, b= 20, c= 30].[@b];
+						(a= 10, b= 20, c= 30).[@b];
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
 				});
 				it('for Lists/Dicts: when accessor expression is correct type but out of bounds/range, returns `never` for folded objects, returns union type for unfolded objects.', () => {
@@ -492,7 +492,7 @@ describe('ASTNodeAccess', () => {
 				it('for Lists/Dicts: throws when accessor expression is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						List.<int | float | str>((1, 2.0, "three")).["3"];
-						Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]).[3];
+						Dict.<int | float | str>((a= 1, b= 2.0, c= "three")).[3];
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 				it('for Sets/Maps: when expression is correct type but out of range or incorrect type, returns entry type.', () => {
@@ -552,8 +552,8 @@ describe('ASTNodeAccess', () => {
 					const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // (bool,)
 					const prop2 = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]); // (?: bool)
 					return testExprTypes(`
-						let var bound1: (prop?: (bool,)) = [prop= (true,)];
-						let var bound2: (prop?: (?: bool)) = [prop= ()];
+						let var bound1: (prop?: (bool,)) = (prop= (true,));
+						let var bound2: (prop?: (?: bool)) = (prop= ());
 						bound1;
 						bound1?.prop;
 						bound1?.prop?.0;
@@ -578,24 +578,24 @@ describe('ASTNodeAccess', () => {
 					const prop1 = new VALUE.Tuple([VALUE.TRUE]); // (true,)
 					const prop2 = new VALUE.Tuple();             // ()
 					return testExprValues(`
-						let bound1: (prop?: (bool,)) = [prop= (true,)];
-						let bound2: (prop?: (?: bool)) = [prop= ()];
+						let bound1: (prop?: (bool,)) = (prop= (true,));
+						let bound2: (prop?: (?: bool)) = (prop= ());
 						bound1;
 						bound1?.prop;
 						bound1?.prop?.0;
 						bound2;
 						bound2?.prop;
 					`, [
-						new VALUE.Record(new Map([[0x100n, prop1]])), // [prop= (true,)]
+						new VALUE.Record(new Map([[0x100n, prop1]])), // (prop= (true,))
 						prop1,                                        // (true,)
 						VALUE.TRUE,                                   // true
-						new VALUE.Record(new Map([[0x100n, prop2]])), // [prop= ()]
+						new VALUE.Record(new Map([[0x100n, prop2]])), // (prop= ())
 						prop2,                                        // ()
 					]);
 				});
 				it('maybe access of non-existent value returns null (bypassing type-checking).', () => {
 					assert.strictEqual(
-						AST.ASTNodeAccess.fromSource('[prop= ()].prop?.0;').fold(),
+						AST.ASTNodeAccess.fromSource('(prop= ()).prop?.0;').fold(),
 						VALUE.NULL,
 					);
 				});
@@ -608,9 +608,9 @@ describe('ASTNodeAccess', () => {
 				let var tupo1_u: (int, float, ?: str) = (1, 2.0, "three");
 				let var tupo2_u: (int, float, ?: str) = (1, 2.0);
 
-				let     reco1_f: (a: int, c: float, b?: str) = [a= 1, c= 2.0, b= "three"];
-				let var reco1_u: (a: int, c: float, b?: str) = [a= 1, c= 2.0, b= "three"];
-				let var reco2_u: (a: int, c: float, b?: str) = [a= 1, c= 2.0];
+				let     reco1_f: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
+				let var reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
+				let var reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
 
 				tupo1_f?.2; % type \`"three"\` % value \`"three"\`
 				tupo1_u?.2; % type \`str?\`    % non-foldable value
@@ -623,7 +623,7 @@ describe('ASTNodeAccess', () => {
 			const THROWS = extract_lines`
 				(1, 2.0, "three")?.3;
 				(1, 2.0, "three")?.-4;
-				[a= 1, b= 2.0, c= "three"]?.d;
+				(a= 1, b= 2.0, c= "three")?.d;
 			`;
 			describe('#type', () => {
 				it('unions with null if entry is optional.', () => {
@@ -639,8 +639,8 @@ describe('ASTNodeAccess', () => {
 					testExprTypes(`
 						let var a:                    unknown = (   10,    20);
 						let var b: int[2]           | unknown = (   10,    20);
-						let var c:                    unknown = [x= 10, y= 20];
-						let var d: (x: int, y: int) | unknown = [x= 10, y= 20];
+						let var c:                    unknown = (x= 10, y= 20);
+						let var d: (x: int, y: int) | unknown = (x= 10, y= 20);
 
 						a?.0;
 						b?.1;
@@ -654,7 +654,7 @@ describe('ASTNodeAccess', () => {
 						List.<int>((10, 20, 30))?.1;
 
 						(4)?.c;
-						Dict.<int>([a= 10, b= 20, c= 30])?.b;
+						Dict.<int>((a= 10, b= 20, c= 30))?.b;
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
 				});
 				it('throws when index is out of bounds / when key is out of range.', () => {
@@ -665,8 +665,8 @@ describe('ASTNodeAccess', () => {
 						let tup_a: (int, int, ?: int) = (10, 20);
 						let tup_b: (int, int, ?: int) = (10, 20, 30);
 
-						let rec_a: (x: int, y?: int, z: int) = [x= 10, z= 20];
-						let rec_b: (x: int, y?: int, z: int) = [x= 10, z= 20, y= 30];
+						let rec_a: (x: int, y?: int, z: int) = (x= 10, z= 20);
+						let rec_b: (x: int, y?: int, z: int) = (x= 10, z= 20, y= 30);
 
 						tup_a?.1;
 						tup_b?.1;
@@ -681,8 +681,8 @@ describe('ASTNodeAccess', () => {
 						type B = (b: str);
 						type C = (c: str);
 						type D = (d: str);
-						let var tup: (   A,     B,       int) & (   C,  ?: D)        = ([a= "tup.0.a", c= "tup.0.c"], [b= "tup.1.b", d= "tup.1.d"], 42);
-						let var rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = [x= [a= "rec.x.a", c= "rec.x.c"], y= 42, z= [b= "rec.z.b", d= "rec.z.d"]];
+						let var tup: (   A,     B,       int) & (   C,  ?: D)        = ((a= "tup.0.a", c= "tup.0.c"), (b= "tup.1.b", d= "tup.1.d"), 42);
+						let var rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = (x= (a= "rec.x.a", c= "rec.x.c"), y= 42, z= (b= "rec.z.b", d= "rec.z.d"));
 					`;
 					const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
 					const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x106n, TYPE.STR]]));
@@ -709,7 +709,7 @@ describe('ASTNodeAccess', () => {
 					});
 					it('an intersection with union constituents.', () => {
 						testExprTypes(`
-							let var collection: ((alpha: bool) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = [bravo= 3];
+							let var collection: ((alpha: bool) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = (bravo= 3);
 							collection?.bravo;
 						`, [TypeErrorInvalidOperation]);
 					});
@@ -717,12 +717,12 @@ describe('ASTNodeAccess', () => {
 				context('if base is a union type.', () => {
 					const DECLS = `
 						let var tup: (   null,     bool,     sym) | (   int, ?: float)          = (null, true, @hello);
-						let var rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = [a= 42];
+						let var rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = (a= 42);
 					`;
 					it('unions with null when one but not all constituents are of incorrect type.', () => {
 						testExprTypes(`
 							let var mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
-							let var mixed_rec: (int, ?: float)  | (a: int, c?: str)            = [a= 42];
+							let var mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
 
 							mixed_tup?.a; % type \`null | str\`
 							mixed_rec?.0; % type \`int  | null\`
@@ -807,7 +807,7 @@ describe('ASTNodeAccess', () => {
 				it('throws AssertionError when base is of incorrect type (bypassing type-checking).', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						(null, true, @hello)?.a;
-						[a= 42]?.0;
+						(a= 42)?.0;
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), assert.AssertionError));
 				});
 				it('returns null when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
@@ -819,7 +819,7 @@ describe('ASTNodeAccess', () => {
 		context('access manner: access by expression.', () => {
 			const DECLS = `
 				let     list_fixed:   List.<     int | float | str> = List.<int | float | str>((   1,    2.0,    "three"));
-				let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>([a= 1, b= 2.0, c= "three"]);
+				let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>((a= 1, b= 2.0, c= "three"));
 				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
 				let var list_unfixed: List.<     int | float | str> = list_fixed;
 				let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
@@ -865,7 +865,7 @@ describe('ASTNodeAccess', () => {
 				it('unions with null when one but not all constituents are of incorrect type.', () => {
 					testExprTypes(`
 						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = List.<str | bool | sym>(("hello", true, @world));
-						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = Dict.<int | str>([a= 42]);
+						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = Dict.<int | str>((a= 42));
 
 						let var nullish_map: {int -> bool} | null = {42 -> false};
 
@@ -898,7 +898,7 @@ describe('ASTNodeAccess', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						(4)?.[2];
 						(10, 20, 30)?.[1];
-						[a= 10, b= 20, c= 30]?.[@b];
+						(a= 10, b= 20, c= 30)?.[@b];
 						Set.<int>((10, 20, 30))?.[20];
 						{10, 20, 30}?.[20];
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
@@ -927,7 +927,7 @@ describe('ASTNodeAccess', () => {
 				it('throws when accessor expression is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						List.<int | float | str>((1, 2.0, "three"))?.["3"];
-						Dict.<int | float | str>([a= 1, b= 2.0, c= "three"])?.[3];
+						Dict.<int | float | str>((a= 1, b= 2.0, c= "three"))?.[3];
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 			});
@@ -935,7 +935,7 @@ describe('ASTNodeAccess', () => {
 				it('short-circuits evaluation of accessor expression when base is null.', () => {
 					testExprValues(`
 						let list: List.<int> | null = null;
-						let dict: Dict.<int> | null = Dict.<int>([a= 42]);
+						let dict: Dict.<int> | null = Dict.<int>((a= 42));
 
 						let var index: int = 0;
 						let var key:   sym = @a;

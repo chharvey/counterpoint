@@ -8,11 +8,11 @@ import {VoidError} from './VoidError.ts';
  * @example
  * List.<str>(("earth", "wind", "fire")).[4]; % VoidErrorOutOfBounds: Index `4` is out of bounds on…
  *
- * Dict.<str>([
+ * Dict.<str>((
  * 	socrates=  "earth",
  * 	plato=     "wind",
  * 	aristotle= "fire",
- * ]).[@pythagoras]; % VoidErrorOutOfBounds: Key `"pythagoras"` is out of bounds on…
+ * )).[@pythagoras]; % VoidErrorOutOfBounds: Key `"pythagoras"` is out of bounds on…
  */
 export class VoidErrorOutOfBounds extends VoidError {
 	/**

@@ -6,7 +6,7 @@ import {AssignmentError} from './AssignmentError.ts';
 /**
  * An AssignmentErrorDuplicateKey is thrown when the validator encounters a duplicate key in a record literal or record type literal.
  * @example
- * [foo= "a", foo= "b"]; % AssignmentErrorDuplicateKey: Duplicate record key `foo`.
+ * (foo= "a", foo= "b"); % AssignmentErrorDuplicateKey: Duplicate record key `foo`.
  * @example
  * type MyType = (bar: int, bar: str); % AssignmentErrorDuplicateKey: Duplicate record key `bar`.
  */

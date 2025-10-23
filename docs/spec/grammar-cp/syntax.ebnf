@@ -120,7 +120,7 @@ Case     ::= Expression "->" Expression;
 
 ExpressionGrouped ::= "("        Expression          ")";
 TupleLiteral      ::= "("        Items?              ")";
-RecordLiteral     ::= "["   ","? Property#   ","?    "]";
+RecordLiteral     ::= "("   ","? Property#   ","?    ")";
 SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
 MapLiteral        ::= "{"   ","? Case #      ","?    "}";
 FunctionArguments ::= "(" ( ","? Expression# ","? )? ")";

@@ -24,19 +24,19 @@ describe('Decorator', () => {
 		}
 		new Map<string, readonly [ConstructorType<AST.ASTNodeCP>, string]>([
 			['Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey', [AST.ASTNodeKey, `
-				[mut= 42];
+				(mut= 42);
 				% (word "mut")
 			`]],
 			['Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey', [AST.ASTNodeKey, `
-				[bool= 42];
+				(bool= 42);
 				% (word (keyword_type))
 			`]],
 			['Decorate(Word ::= KEYWORD_VALUE) -> SemanticKey', [AST.ASTNodeKey, `
-				[true= 42];
+				(true= 42);
 				% (word (keyword_value))
 			`]],
 			['Decorate(Word ::= IDENTIFIER) -> SemanticKey', [AST.ASTNodeKey, `
-				[foobar= 42];
+				(foobar= 42);
 				% (word (identifier))
 			`]],
 
@@ -207,11 +207,11 @@ describe('Decorator', () => {
 			`]],
 
 			['Decorate(Property ::= Word "=" Expression) -> SemanticProperty', [AST.ASTNodeProperty, `
-				[a= 42];
+				(a= 42);
 				% (property)
 			`]],
 			['Decorate(Property ::= Word "=" Expression) -> SemanticProperty', [AST.ASTNodeProperty, `
-				[_= 42];
+				(_= 42);
 				% (property)
 			`]],
 
@@ -234,8 +234,8 @@ describe('Decorator', () => {
 				% (tuple_literal)
 			`]],
 
-			['Decorate(RecordLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
-				[a= 42, b= 6.9];
+			['Decorate(RecordLiteral ::= "(" ","? Property# ","? ")") -> SemanticRecord', [AST.ASTNodeRecord, `
+				(a= 42, b= 6.9);
 				% (record_literal)
 			`]],
 
