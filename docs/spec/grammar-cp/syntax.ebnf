@@ -87,12 +87,7 @@ TypeCompound ::=
 
 TypeUnarySymbol ::=
 	| TypeCompound
-	| TypeUnarySymbol (
-		| "?"
-		| "!"
-		| "[" INTEGER? "]"
-		| "{" "}"
-	)
+	| TypeUnarySymbol ("?" | "!")
 ;
 
 TypeUnaryKeyword ::=

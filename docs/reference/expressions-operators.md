@@ -801,28 +801,6 @@ hello = "world";
 To be announced.
 
 
-### List
-```
-<Type> `[]`
-```
-The **List** operator `T[]` is shorthand for `List.<T>`.
-
-
-### Tuple
-```
-<Type> `[` <Integer> `]`
-```
-The **Tuple** operator `T[‹n›]` (where `‹n›` is 0 or greater) is shorthand for a tuple type with repeated entries of `T`.
-E.g., `int[3]` is shorthand for `[int, int, int]`.
-
-
-### Set
-```
-<Type> `{}`
-```
-The **Set** operator `T{}` is shorthand for `Set.<T>`.
-
-
 ### Mutable
 ```
 `mut` <Type>

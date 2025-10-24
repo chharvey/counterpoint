@@ -108,7 +108,7 @@ Decorate(TypeRecordLiteral ::= "(" PropertiesType ")") -> SemanticTypeRecord
 	);
 
 Decorate(TypeListLiteral ::= "[" Type "]") -> SemanticTypeList
-	:= (SemanticTypeList[count=none]
+	:= (SemanticTypeList
 		...Decorate(Type)
 	);
 
@@ -189,18 +189,6 @@ Decorate(TypeUnarySymbol ::= TypeUnarySymbol "?") -> SemanticTypeOperation
 	);
 Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=OREXCP]
-		Decorate(TypeUnarySymbol)
-	);
-Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" "]") -> SemanticTypeList
-	:= (SemanticTypeList[count=none]
-		Decorate(TypeUnarySymbol)
-	);
-Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" INTEGER "]") -> SemanticTypeList
-	:= (SemanticTypeList[count=TokenWorth(INTEGER)]
-		Decorate(TypeUnarySymbol)
-	);
-Decorate(TypeUnarySymbol ::= TypeUnarySymbol "{" "}") -> SemanticTypeSet
-	:= (SemanticTypeSet
 		Decorate(TypeUnarySymbol)
 	);
 

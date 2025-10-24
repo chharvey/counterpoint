@@ -182,7 +182,7 @@ describe('ASTNodeAccess', () => {
 				it('throws when base object is of type unknown.', () => {
 					testExprTypes(`
 						let var a:                    unknown = (   10,    20);
-						let var b: int[2]           | unknown = (   10,    20);
+						let var b: (int, int)       | unknown = (   10,    20);
 						let var c:                    unknown = (x= 10, y= 20);
 						let var d: (x: int, y: int) | unknown = (x= 10, y= 20);
 
@@ -638,7 +638,7 @@ describe('ASTNodeAccess', () => {
 				it('returns unknown when base object is of type unknown.', () => {
 					testExprTypes(`
 						let var a:                    unknown = (   10,    20);
-						let var b: int[2]           | unknown = (   10,    20);
+						let var b: (int, int)       | unknown = (   10,    20);
 						let var c:                    unknown = (x= 10, y= 20);
 						let var d: (x: int, y: int) | unknown = (x= 10, y= 20);
 
@@ -1060,7 +1060,7 @@ describe('ASTNodeAccess', () => {
 
 		it('accessing tuple pointers.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let tuple: ((float, float[2]), ((float,), float[2])) = ((1.1, (2.2, 3.3)), ((4.4,), (5.5, 6.6)));
+				let tuple: ((float, (float, float)), ((float,), (float, float))) = ((1.1, (2.2, 3.3)), ((4.4,), (5.5, 6.6)));
 				tuple.0;
 				tuple.1;
 				tuple.0.0;

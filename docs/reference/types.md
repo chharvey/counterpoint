@@ -558,9 +558,9 @@ Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit T
 ------------------ | -------- | ------------  | ------------------- | ------------------------------------ | -------------------------------------------- | -------------------------------------- | --------------------
 [Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `("x", "y", "z")`<sup>&lowast;</sup>   | `()`
 [Record](#records) | Fixed    | symbols       | *(none)*            | `(a: str, b: str, c: str)`           | *(none)*                                     | `(a= "x", b= "y", c= "z")`             | *(none)*
-[List](#lists)     | Variable | integers      | `List.<str>`        | `[str]` / `str[]`                    | `List.(("x", "y", "z"))`                     | `["x", "y", "z"]`                      | `[]`
+[List](#lists)     | Variable | integers      | `List.<str>`        | `[str]`                              | `List.(("x", "y", "z"))`                     | `["x", "y", "z"]`                      | `[]`
 [Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                             | `Dict.((a= "x", b= "y", c= "z"))`            | `[a= "x", b= "y", c= "z"]`             | *(none)*
-[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
+[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `{str}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
 [Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`                       | `Map.((("u", "x"), ("v", "y"), ("w", "z")))` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
 
 
@@ -831,11 +831,11 @@ where `arg` is a [Tuple](#tuples) object.
 ```
 let elements: List.<str> = List.<str>(("earth", "wind", "fire"));
 ```
-A shorthand for the generic syntax `List.<T>` is `T[]`,
+A shorthand for the generic syntax `List.<T>` is `[T]`,
 and the list literal shorthand syntax is a sequence of comma-separated expressions within square brackets.
 We can mix item types, but the list type must be homogeneous.
 ```
-let elements: (str | bool | int)[] = ["earth", "wind", "fire", true, 42];
+let elements: [str | bool | int] = ["earth", "wind", "fire", true, 42];
 ```
 The compiler considers all items in the list as having the same type.
 For example, the expression `elements.[0]` is of type `str | bool | int`,
@@ -845,7 +845,7 @@ and if the list were mutable, we could reassign that entry to an integer or bool
 List items are accessed by **bracket-accessor notation**, where the expression in brackets computes the index.
 The bracketed expression must be an Integer value (of type `int`).
 ```
-let elements: str[] = ["earth", "wind", "fire"];
+let elements: [str] = ["earth", "wind", "fire"];
 elements.[0];       %== "earth"
 elements.[3 - 2];   %== "wind"
 elements.[-3 + 2];  %== "fire"
@@ -965,10 +965,10 @@ let elements: Set.<str> = Set.<str>(("earth", "wind", "fire"));
 The set above has elements of one type.
 Typically this will be the case, but it’s possible for a set to contain a mix of different element types.
 
-A shorthand for the generic syntax `Set.<T>` is `T{}`,
+A shorthand for the generic syntax `Set.<T>` is `{T}`,
 and the set literal shorthand syntax is a sequence of comma-separated expressions within curly braces.
 ```
-let elements: str{} = {"earth", "wind", "fire"};
+let elements: {str} = {"earth", "wind", "fire"};
 ```
 
 The size of sets is not known at compile-time, and could change during run-time.
@@ -980,9 +980,9 @@ If a set is declared with duplicates, they are collapsed:
 The set `{"water", "water"}` only conains 1 element.
 Sets may have several elements that are un-identical but “equal”.
 ```
-let x: str[] = List.<str>(("water",));
-let y: str[] = List.<str>(("water",));
-let elements: (float | [str]){} = {0.0, -0.0, x, y};
+let x: [str] = List.<str>(("water",));
+let y: [str] = List.<str>(("water",));
+let elements: {float | [str]} = {0.0, -0.0, x, y};
 ```
 In this example, the elements `0.0` and `-0.0` are not identical
 (even if they are equal by the floating-point definition of equality).
@@ -994,7 +994,7 @@ Elements of a set can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the element to get.
 The value is `true` if the element is in the set, and `false` if not.
 ```
-let bases: Object{} = {
+let bases: {Object} = {
 	"who",
 	List.<str>(("what",)),
 	{ "i" -> {"don’t" -> "know"} },
@@ -1060,9 +1060,9 @@ The consequent corresponding to the antecedent `3` will be `` (i= ('don’t'= "k
 
 Maps may have several antecedents that are un-identical but “equal”.
 ```
-let x: int{} = {3};
-let y: int{} = {3};
-let bases: {float | [int] -> Object} = {
+let x: {int} = {3};
+let y: {int} = {3};
+let bases: {float | {int} -> Object} = {
 	0.0  -> "who",
 	-0.0 -> ("what",),
 	x    -> { "i" -> {"don’t" -> "know"} },

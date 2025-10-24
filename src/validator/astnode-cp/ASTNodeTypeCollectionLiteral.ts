@@ -25,9 +25,7 @@ export abstract class ASTNodeTypeCollectionLiteral extends ASTNodeType {
 			| SyntaxNodeType<'type_unary_symbol'>,
 
 		public override readonly children: readonly ASTNodeCP[],
-		/** Does this node represent a reference type (versus a value type)? */
-		attributes: Record<string, unknown> = {},
 	) {
-		super(start_node, {...attributes}, children);
+		super(start_node, {}, children);
 	}
 }

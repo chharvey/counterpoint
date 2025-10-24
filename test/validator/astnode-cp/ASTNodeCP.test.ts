@@ -144,7 +144,7 @@ describe('ASTNodeCP', () => {
 				it('throws when property assignee type is not supertype.', () => {
 					[
 						`
-							let l: mut int[] = List.<int>((42,));
+							let l: mut [int] = List.<int>((42,));
 							l.[0] = 4.2;
 						`,
 						`
@@ -152,7 +152,7 @@ describe('ASTNodeCP', () => {
 							d.[@i] = 4.2;
 						`,
 						`
-							let s: mut int{} = Set.<int>((42,));
+							let s: mut {int} = Set.<int>((42,));
 							s.[42] = 4.2;
 						`,
 						`
@@ -167,7 +167,7 @@ describe('ASTNodeCP', () => {
 				});
 				it('throws when Set/Map accessor expression is not a valid type.', () => {
 					xjs.Array.forEachAggregated([`
-						let s: mut int{} = Set.<int>((42,));
+						let s: mut {int} = Set.<int>((42,));
 						s.[4.3] = true;
 					`, `
 						let m: mut {bool -> int} = Map.<bool, int>(((true, 42),));
@@ -189,7 +189,7 @@ describe('ASTNodeCP', () => {
 							r.i = 43;
 						`,
 						`
-							let l: int[] = List.<int>((42,));
+							let l: [int] = List.<int>((42,));
 							l.[0] = 43;
 						`,
 						`
@@ -197,7 +197,7 @@ describe('ASTNodeCP', () => {
 							d.[@i] = 43;
 						`,
 						`
-							let s: int{} = Set.<int>((42,));
+							let s: {int} = Set.<int>((42,));
 							s.[43] = true;
 						`,
 						`

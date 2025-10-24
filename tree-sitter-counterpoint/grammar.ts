@@ -422,12 +422,7 @@ module.exports = grammar({
 			$._type_compound,
 			alias($.type_unary_symbol_dfn, $.type_unary_symbol),
 		),
-		type_unary_symbol_dfn: $ => seq($._type_unary_symbol, choice(
-			'?',
-			'!',
-			seq('[', optional($.integer), ']'),
-			seq('{', '}'),
-		)),
+		type_unary_symbol_dfn: $ => seq($._type_unary_symbol, choice('?', '!')),
 
 		_type_unary_keyword: $ => choice(
 			$._type_unary_symbol,

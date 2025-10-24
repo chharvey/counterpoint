@@ -431,27 +431,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				type T = T?;
 				type T = T!;
-				type T = T[];
-				type T = T[3];
-				type T = T{};
 			`,
 			sourceTypes(
 				s(
 					'type_unary_symbol',
 					s('identifier'),
-				),
-				s(
-					'type_unary_symbol',
-					s('identifier'),
-				),
-				s(
-					'type_unary_symbol',
-					s('identifier'),
-				),
-				s(
-					'type_unary_symbol',
-					s('identifier'),
-					s('integer'),
 				),
 				s(
 					'type_unary_symbol',

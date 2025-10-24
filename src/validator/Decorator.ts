@@ -9,10 +9,7 @@ import {
 	Punctuator,
 	Keyword,
 } from '../parser/index.ts';
-import {
-	Validator,
-	AST,
-} from './index.ts';
+import {AST} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
@@ -258,48 +255,11 @@ class Decorator {
 				))
 			)],
 
-			['type_unary_symbol', (node) => {
-				const basetype: AST.ASTNodeType = this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>);
-				const punc = node.children[1].text as Punctuator;
-				if (node.children.length === 2) {
-					return new AST.ASTNodeTypeOperationUnary(
-						node as SyntaxNodeType<'type_unary_symbol'>,
-						Decorator.TYPEOPERATORS_UNARY.get(punc)!,
-						basetype,
-					);
-				} else if (node.children.length === 3) { // we have either `T[]` or `T{}`
-					if (punc === Punctuator.BRAK_OPN) {
-						return new AST.ASTNodeTypeList(
-							node as SyntaxNodeType<'type_unary_symbol'>,
-							basetype,
-							null,
-						);
-					} else {
-						assert.strictEqual(punc, Punctuator.BRAC_OPN);
-						return new AST.ASTNodeTypeSet(
-							node as SyntaxNodeType<'type_unary_symbol'>,
-							basetype,
-						);
-					}
-				} else { // we have `T[n]`
-					assert.strictEqual(node.children.length, 4);
-					assert.strictEqual(punc, Punctuator.BRAK_OPN);
-					const count: bigint | number = Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
-						...CONFIG_DEFAULT,
-						languageFeatures: {
-							...CONFIG_DEFAULT.languageFeatures,
-							integerRadices:    true,
-							numericSeparators: true,
-						},
-					});
-					assert.ok(typeof count === 'bigint'); // better type guard than `assert.strictEqual`
-					return new AST.ASTNodeTypeList(
-						node as SyntaxNodeType<'type_unary_symbol'>,
-						basetype,
-						count,
-					);
-				}
-			}],
+			['type_unary_symbol', (node) => new AST.ASTNodeTypeOperationUnary(
+				node as SyntaxNodeType<'type_unary_symbol'>,
+				Decorator.TYPEOPERATORS_UNARY.get(node.children[1].text as Punctuator)!,
+				this.decorateTypeNode(node.children[0] as SyntaxNodeSupertype<'type'>),
+			)],
 
 			['type_unary_keyword', (node) => new AST.ASTNodeTypeOperationUnary(
 				node as SyntaxNodeType<'type_unary_keyword'>,

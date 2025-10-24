@@ -174,18 +174,6 @@ describe('Decorator', () => {
 				type T = U!;
 				% (type_unary_symbol)
 			`]],
-			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
-				type T = U[];
-				% (type_unary_symbol)
-			`]],
-			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" INTEGER "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
-				type T = U[3];
-				% (type_unary_symbol)
-			`]],
-			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "{" "}") -> SemanticTypeSet', [AST.ASTNodeTypeSet, `
-				type T = U{};
-				% (type_unary_symbol)
-			`]],
 
 			['Decorate(TypeUnaryKeyword ::= "mut" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				type T = mut U;

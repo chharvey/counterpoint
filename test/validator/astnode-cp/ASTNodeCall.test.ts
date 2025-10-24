@@ -136,11 +136,11 @@ describe('ASTNodeCall', () => {
 		});
 		it('bypasses invariance for generic arguments.', () => {
 			extract_lines`
-				List.<mut int{}>((   {42},));
-				Dict.<mut int{}>((a= {42}));
-				Set .<mut int{}>((   {42},));
-				Map.<float, mut int{}>(((4.2, {42}),));
-				Map.<mut int{}, float>((({42}, 4.2),));
+				List.<mut {int}>((   {42},));
+				Dict.<mut {int}>((a= {42}));
+				Set .<mut {int}>((   {42},));
+				Map.<float, mut {int}>(((4.2, {42}),));
+				Map.<mut {int}, float>((({42}, 4.2),));
 			`.map((src) => AST.ASTNodeCall.fromSource(src).type());
 		});
 		it('Map has a default type parameter.', () => {

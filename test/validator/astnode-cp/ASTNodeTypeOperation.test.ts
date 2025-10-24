@@ -22,13 +22,13 @@ describe('ASTNodeTypeOperation', () => {
 		describe('ASTNodeTypeOperationUnary[operator=MUTABLE]', () => {
 			it('does not throw if operating on a reference type.', () => {
 				assertEqualTypes(
-					AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
+					AST.ASTNodeTypeOperationUnary.fromSource('mut [int]').eval(),
 					new TYPE.List(TYPE.INT, true),
 				);
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type A = mut int[][];
-					type B = int[3];
-					type F = Object[];
+					type A = mut [[int]];
+					type B = (int, int, int);
+					type F = [Object];
 
 					type C = mut (A & F);
 					type D = mut (A | B);
@@ -43,7 +43,7 @@ describe('ASTNodeTypeOperation', () => {
 				[
 					'mut (int, float, str)',
 					'mut (a: int, b: float, c: str)',
-					'mut int[3]',
+					'mut (int, int, int)',
 					'mut never',
 					'mut null',
 					'mut bool',

@@ -149,9 +149,9 @@ describe('ASTNodeDeclarationVariable', () => {
 		});
 		it('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let immut:  int[3]         = (42, 420, 4200);
-				let 'mut':  mut int[]      = List.<int>((42, 420, 4200));
-				let mutmut: (mut int[])[3] = (List.<int>((42,)), List.<int>((420,)), List.<int>((4200,)));
+				let immut:  (int, int, int)                   = (42, 420, 4200);
+				let 'mut':  mut [int]                         = List.<int>((42, 420, 4200));
+				let mutmut: (mut [int], mut [int], mut [int]) = (List.<int>((42,)), List.<int>((420,)), List.<int>((4200,)));
 			`);
 			goal.varCheck();
 			goal.typeCheck();
@@ -201,7 +201,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		});
 		it('assigning collection literals.', () => {
 			typeCheckGoal(`
-				let c: int[3] = (42, 420, 4200);
+				let c: (int, int, int) = (42, 420, 4200);
 				let d: (n42: int, n420: int) = (
 					n42=  42,
 					n420= 420,
@@ -245,7 +245,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				typeCheckGoal(`
 					let l: mut [int | str]   = [   42,      "43"];
 					let d: mut [: int | str] = [a= 42,   b= "43"];
-					let s: mut (int | str){} = {   42,      "43"};
+					let s: mut {int | str}   = {   42,      "43"};
 					let m: mut {int -> str}  = {   42 ->    "43"};
 					l.[1]    = "44";
 					d.[@a]   = "44";
@@ -255,11 +255,11 @@ describe('ASTNodeDeclarationVariable', () => {
 				return typeCheckGoal(`
 					let tuple_of_list:  (   mut [int],)        = (   [42],);
 					let tuple_of_dict:  (   mut [:int],)       = (   [a= 42],);
-					let tuple_of_set:   (   mut int{},)        = (   {42},);
+					let tuple_of_set:   (   mut {int},)        = (   {42},);
 					let tuple_of_map:   (   mut {int -> str},) = (   {42 -> "hello"},);
 					let record_of_list: (k: mut [int])         = (k= [42]);
 					let record_of_dict: (k: mut [:int])        = (k= [b= 42]);
-					let record_of_set:  (k: mut int{})         = (k= {42});
+					let record_of_set:  (k: mut {int})         = (k= {42});
 					let record_of_map:  (k: mut {int -> str})  = (k= {42 -> "hello"});
 					tuple_of_list.0.[0]  = 43;
 					tuple_of_dict.0.[@a]  = 43;
@@ -316,8 +316,8 @@ describe('ASTNodeDeclarationVariable', () => {
 			});
 			it('throws when not assigned to correct type.', () => {
 				typeCheckGoal(`
-					let s: mut {int -> str}  = {42,   "43"};
-					let s: mut (int | str){} = {42 -> "43"};
+					let s: mut {int -> str} = {42,   "43"};
+					let s: mut {int | str}  = {42 -> "43"};
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`
 					let t1: mut unknown               = (42, "43");
@@ -326,29 +326,29 @@ describe('ASTNodeDeclarationVariable', () => {
 					let r1: mut unknown                     = (a= 42, b= "43");
 					let r4: mut ((a: int, b: str) | Object) = (a= 42, b= "43");
 
-					let s1: mut (42 | 4.3){}            = {42};
-					let s2: mut (int | float){}         = {42};
+					let s1: mut {42 | 4.3}              = {42};
+					let s2: mut {int | float}           = {42};
 					let s3: mut Object                  = {42};
-					let s4: mut (int{} | {str -> bool}) = {42};
-					let s5: mut (int{} | Object)        = {42};
+					let s4: mut ({int} | {str -> bool}) = {42};
+					let s5: mut ({int} | Object)        = {42};
 
 					let m1: mut {int -> float}            = {42 -> 4.3};
 					let m2: mut {int? -> float?}          = {42 -> 4.3};
 					let m3: mut Object                    = {42 -> 4.3};
-					let m4: mut ({int -> float} | str{})  = {42 -> 4.3};
+					let m4: mut ({int -> float} | {str})  = {42 -> 4.3};
 					let m5: mut ({int -> float} | Object) = {42 -> 4.3};
 				`);
 			});
 			it('throws when entries mismatch.', () => {
 				typeCheckGoal(`
-					let s1: mut int{} = {"42"};
-					let s2: mut int{} = {42, "43"};
+					let s1: mut {int} = {"42"};
+					let s2: mut {int} = {42, "43"};
 
 					let m1: mut {int -> str} = {4.2 -> "43"};
 					let m2: mut {int -> str} = {42  -> 4.3};
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`
-					let s3: mut (bool | str){} = {46, 47};
+					let s3: mut {bool | str} = {46, 47};
 
 					let m3_1: mut {str -> bool} = {1 -> false, 2.0 -> true};
 					let m3_2: mut {str -> bool} = {"a" -> 3,   "b" -> 4.0};
