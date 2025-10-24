@@ -263,6 +263,10 @@ describe('Decorator', () => {
 				% (dict_literal)
 			`]],
 
+			['Decorate(SetLiteral ::= "{" "}") -> SemanticSet', [AST.ASTNodeSet, `
+				{};
+				% (set_literal)
+			`]],
 			['Decorate(SetLiteral ::= "{" ","? Expression# ","? "}") -> SemanticSet', [AST.ASTNodeSet, `
 				{42, 6.9};
 				% (set_literal)
