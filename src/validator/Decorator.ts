@@ -97,6 +97,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_record_literal'>):               AST.ASTNodeTypeRecord;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_list_literal'>):                 AST.ASTNodeTypeList;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_dict_literal'>):                 AST.ASTNodeTypeDict;
+	public decorateTS(syntaxnode: SyntaxNodeType<'type_set_literal'>):                  AST.ASTNodeTypeSet;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_map_literal'>):                  AST.ASTNodeTypeMap;
 	public decorateTS(syntaxnode: SyntaxNodeType<'property_access_type'>):              AST.ASTNodeIndex | AST.ASTNodeKey;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_compound'>):                     AST.ASTNodeTypeAccess | AST.ASTNodeTypeCall;
@@ -217,6 +218,11 @@ class Decorator {
 			['type_dict_literal', (node) => new AST.ASTNodeTypeDict(
 				node as SyntaxNodeType<'type_dict_literal'>,
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'type'>),
+			)],
+
+			['type_set_literal', (node) => new AST.ASTNodeTypeSet(
+				node as SyntaxNodeType<'type_set_literal'>,
+				this.decorateTypeNode(node.children[1] as SyntaxNodeSupertype<'type'>),
 			)],
 
 			['type_map_literal', (node) => new AST.ASTNodeTypeMap(

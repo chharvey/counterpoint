@@ -20,6 +20,7 @@ export abstract class ASTNodeTypeCollectionLiteral extends ASTNodeType {
 			| SyntaxNodeType<'type_record_literal'>
 			| SyntaxNodeType<'type_list_literal'>
 			| SyntaxNodeType<'type_dict_literal'>
+			| SyntaxNodeType<'type_set_literal'>
 			| SyntaxNodeType<'type_map_literal'>
 			| SyntaxNodeType<'type_unary_symbol'>,
 

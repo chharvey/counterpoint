@@ -345,6 +345,16 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			)),
 		],
 
+		TypeSetLiteral: [
+			xjs.String.dedent`
+				type T = {bool};
+			`,
+			sourceTypes(s(
+				'type_set_literal',
+				s('keyword_type'),
+			)),
+		],
+
 		TypeMapLiteral: [
 			xjs.String.dedent`
 				type T = {int -> float};

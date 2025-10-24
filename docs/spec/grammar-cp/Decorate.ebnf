@@ -117,6 +117,11 @@ Decorate(TypeDictLiteral ::= "[" ":" Type "]") -> SemanticTypeDict
 		Decorate(Type)
 	);
 
+Decorate(TypeSetLiteral ::= "{" Type "}") -> SemanticTypeSet
+	:= (SemanticTypeSet
+		...Decorate(Type)
+	);
+
 Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMap
 	:= (SemanticTypeMap
 		Decorate(Type__0)
@@ -144,6 +149,8 @@ Decorate(TypeUnit ::= TypeListLiteral) -> SemanticTypeList
 	:= Decorate(TypeListLiteral);
 Decorate(TypeUnit ::= TypeDictLiteral) -> SemanticTypeDict
 	:= Decorate(TypeDictLiteral);
+Decorate(TypeUnit ::= TypeSetLiteral) -> SemanticTypeSet
+	:= Decorate(TypeSetLiteral);
 Decorate(TypeUnit ::= TypeMapLiteral) -> SemanticTypeMap
 	:= Decorate(TypeMapLiteral);
 

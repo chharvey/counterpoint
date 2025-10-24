@@ -137,6 +137,11 @@ describe('Decorator', () => {
 				% (type_dict_literal)
 			`]],
 
+			['Decorate(TypeSetLiteral ::= "{" Type "}") -> SemanticTypeSet', [AST.ASTNodeTypeSet, `
+				type T = {int};
+				% (type_set_literal)
+			`]],
+
 			['Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMap', [AST.ASTNodeTypeMap, `
 				type T = {int -> float};
 				% (type_map_literal)
