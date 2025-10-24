@@ -378,19 +378,24 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 		2. *For each* `a_it` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_it, b_type)`.
 		3. *Return.*
-	4. *If* `expr` is a SemanticSet *and* `type` is a Set type:
+	4. *If* `expr` is a SemanticDict *and* `type` is a Dict type:
+		1. *Let* `b_type` be the type argument over `type`.
+		2. *For each* `a_prop` in `expr.children`:
+			1. *Perform:* `TypeCheckAssign(a_prop.children.1, b_type)`.
+		3. *Return.*
+	5. *If* `expr` is a SemanticSet *and* `type` is a Set type:
 		1. *Let* `b_type` be the type argument over `type`.
 		2. *For each* `a_el` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_el, b_type)`.
 		3. *Return.*
-	5. *If* `expr` is a SemanticMap *and* `type` is a Map type:
+	6. *If* `expr` is a SemanticMap *and* `type` is a Map type:
 		1. *Let* `b_ant_type` be the antecedent type argument over `type`.
 		2. *Let* `b_con_type` be the consequent type argument over `type`.
 		3. *For each* `a_case` in `expr.children`:
-			1. *Perform:* `TypeCheckAssign(a_case.0, b_ant_type)`.
-			2. *Perform:* `TypeCheckAssign(a_case.1, b_con_type)`.
+			1. *Perform:* `TypeCheckAssign(a_case.children.0, b_ant_type)`.
+			2. *Perform:* `TypeCheckAssign(a_case.children.1, b_con_type)`.
 		4. *Return.*
-	6. *Throw:* a new TypeErrorNotAssignable.
+	7. *Throw:* a new TypeErrorNotAssignable.
 ;
 ```
 

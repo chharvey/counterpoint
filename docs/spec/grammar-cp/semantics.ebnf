@@ -97,6 +97,7 @@ SemanticCollectionLiteral =:=
 	| SemanticTuple
 	| SemanticRecord
 	| SemanticList
+	| SemanticDict
 	| SemanticSet
 	| SemanticMap
 ;
@@ -104,6 +105,7 @@ SemanticCollectionLiteral =:=
 SemanticTuple  ::= SemanticExpression*;
 SemanticRecord ::= SemanticProperty+;
 SemanticList   ::= SemanticExpression*;
+SemanticDict   ::= SemanticProperty+;
 SemanticSet    ::= SemanticExpression*;
 SemanticMap    ::= SemanticCase+;
 

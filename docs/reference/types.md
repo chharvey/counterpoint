@@ -559,7 +559,7 @@ Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit T
 [Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `("x", "y", "z")`<sup>&lowast;</sup>   | `()`
 [Record](#records) | Fixed    | symbols       | *(none)*            | `(a: str, b: str, c: str)`           | *(none)*                                     | `(a= "x", b= "y", c= "z")`             | *(none)*
 [List](#lists)     | Variable | integers      | `List.<str>`        | `[str]` / `str[]`                    | `List.(("x", "y", "z"))`                     | `["x", "y", "z"]`                      | `[]`
-[Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                             | `Dict.((a= "x", b= "y", c= "z"))`            | *(none)*                               | *(none)*
+[Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                             | `Dict.((a= "x", b= "y", c= "z"))`            | `[a= "x", b= "y", c= "z"]`             | *(none)*
 [Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
 [Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`                       | `Map.((("u", "x"), ("v", "y"), ("w", "z")))` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
 
@@ -891,18 +891,19 @@ let my_styles: Dict.<int | float | str> = Dict.<int | float | str>((
 	fontWeight= 400,
 ));
 ```
-A shorthand for the generic syntax `Dict.<T>` is `[:T]`.
+A shorthand for the generic syntax `Dict.<T>` is `[:T]`,
+and the dict literal shorthand syntax is a sequence of comma-separated `key= value` pairs within square brackets.
 As shown above, we can mix value types, but the dict type must be homogeneous.
 
 #### Dict Access
 Dict properties are accessed by **bracket-accessor notation**, where the expression in brackets computes the key.
 The bracketed expression should be a Symbol value (of type `sym`).
 ```
-let elements: [: str] = Dict.<str>((
+let elements: [: str] = [
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
-));
+];
 elements.[@socrates]; %== "earth"
 
 let key: sym = if user.hasPermissions then @plato else @aristotle;

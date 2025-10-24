@@ -631,6 +631,51 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			)),
 		],
 
+		DictLiteral: [
+			xjs.String.dedent`
+				[a= 1, b= [x= 2], _= [y= [k= 3]]];
+			`,
+			sourceExpressions(s(
+				'dict_literal',
+				s(
+					'property',
+					s('word', s('identifier')),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'property',
+					s('word', s('identifier')),
+					s(
+						'dict_literal',
+						s(
+							'property',
+							s('word', s('identifier')),
+							s('primitive_literal', s('integer')),
+						),
+					),
+				),
+				s(
+					'property',
+					s('word'),
+					s(
+						'dict_literal',
+						s(
+							'property',
+							s('word', s('identifier')),
+							s(
+								'dict_literal',
+								s(
+									'property',
+									s('word', s('identifier')),
+									s('primitive_literal', s('integer')),
+								),
+							),
+						),
+					),
+				),
+			)),
+		],
+
 		SetLiteral: [
 			xjs.String.dedent`
 				{1, 2, 3};

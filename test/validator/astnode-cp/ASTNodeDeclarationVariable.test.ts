@@ -241,28 +241,34 @@ describe('ASTNodeDeclarationVariable', () => {
 					let r3_2: (inner: mut List.<float>)  = (inner= (4.3,));
 				`.split('\n'), TypeErrorNotAssignable);
 			});
-			it('allows assigning Lists, Sets, and Maps.', () => {
+			it('allows assigning Lists, Dicts, Sets, and Maps.', () => {
 				typeCheckGoal(`
-					let l: mut [int | str]   = [42,   "43"];
-					let s: mut (int | str){} = {42,   "43"};
-					let m: mut {int -> str}  = {42 -> "43"};
+					let l: mut [int | str]   = [   42,      "43"];
+					let d: mut [: int | str] = [a= 42,   b= "43"];
+					let s: mut (int | str){} = {   42,      "43"};
+					let m: mut {int -> str}  = {   42 ->    "43"};
 					l.[1]    = "44";
+					d.[@a]   = "44";
 					s.["44"] = true;
 					m.[44]   = "45";
 				`);
 				return typeCheckGoal(`
 					let tuple_of_list:  (   mut [int],)        = (   [42],);
+					let tuple_of_dict:  (   mut [:int],)       = (   [a= 42],);
 					let tuple_of_set:   (   mut int{},)        = (   {42},);
 					let tuple_of_map:   (   mut {int -> str},) = (   {42 -> "hello"},);
 					let record_of_list: (k: mut [int])         = (k= [42]);
+					let record_of_dict: (k: mut [:int])        = (k= [b= 42]);
 					let record_of_set:  (k: mut int{})         = (k= {42});
 					let record_of_map:  (k: mut {int -> str})  = (k= {42 -> "hello"});
 					tuple_of_list.0.[0]  = 43;
-					tuple_of_set.0.[43]  = true;
-					tuple_of_map.0.[43]  = "world";
-					record_of_list.k.[0] = 43;
-					record_of_set.k.[43] = true;
-					record_of_map.k.[43] = "world";
+					tuple_of_dict.0.[@a]  = 43;
+					tuple_of_set.0.[43]   = true;
+					tuple_of_map.0.[43]   = "world";
+					record_of_list.k.[0]  = 43;
+					record_of_dict.k.[@b] = 43;
+					record_of_set.k.[43]  = true;
+					record_of_map.k.[43]  = "world";
 				`);
 			});
 			it('should throw when assigning combo type to union.', () => {

@@ -124,6 +124,7 @@ ExpressionGrouped ::= "("        Expression          ")";
 TupleLiteral      ::= "("        Items?              ")";
 RecordLiteral     ::= "("   ","? Property#   ","?    ")";
 ListLiteral       ::= "[" ( ","? Expression# ","? )? "]";
+DictLiteral       ::= "["   ","? Property#   ","?    "]";
 SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
 MapLiteral        ::= "{"   ","? Case #      ","?    "}";
 FunctionArguments ::= "(" ( ","? Expression# ","? )? ")";
@@ -136,6 +137,7 @@ ExpressionUnit ::=
 	| TupleLiteral
 	| RecordLiteral
 	| ListLiteral
+	| DictLiteral
 	| SetLiteral
 	| MapLiteral
 ;

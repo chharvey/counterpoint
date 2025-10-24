@@ -511,10 +511,11 @@ describe('ASTNodeExpression', () => {
 					],
 				);
 			});
-			it('returns a constant List/Set/Map for foldable entries.', () => {
+			it('returns a constant List/Dict/Set/Map for foldable entries.', () => {
 				assert.deepStrictEqual(
 					[
 						AST.ASTNodeList.fromSource('[1, 2.0, "three"];'),
+						AST.ASTNodeDict.fromSource('[a= 1, b= 2.0, c= "three"];'),
 						AST.ASTNodeSet.fromSource('{1, 2.0, "three"};'),
 						AST.ASTNodeMap.fromSource(`
 							{
@@ -530,6 +531,11 @@ describe('ASTNodeExpression', () => {
 							new VALUE.Float(2.0),
 							new VALUE.String('three'),
 						]),
+						new VALUE.Dict(new Map<bigint, VALUE.Value>([
+							[0x100n, new VALUE.Integer(1n)],
+							[0x101n, new VALUE.Float(2.0)],
+							[0x102n, new VALUE.String('three')],
+						])),
 						new VALUE.Set(new Set([
 							new VALUE.Integer(1n),
 							new VALUE.Float(2.0),
@@ -551,6 +557,7 @@ describe('ASTNodeExpression', () => {
 					(x, 2.0, "three");
 					(a= 1, b= y, c= "three");
 					[x, 2.0, "three"];
+					[a= 1, b= y, c= "three"];
 					{1, 2.0, z};
 					{
 						"a" || "" -> 1,

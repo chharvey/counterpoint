@@ -213,7 +213,7 @@ Operations that are associative are indicated as so in their respective sections
 
 
 ### Grouping
-Read about Tuples, Records, Lists, Sets, and Maps in the [Types](./types.md) chapter.
+Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.md) chapter.
 
 
 ### Property Access
@@ -754,7 +754,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 
 
 ### Grouping
-Read about Tuples, Records, Lists, Sets, and Maps in the [Types](./types.md) chapter.
+Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.md) chapter.
 
 
 ### Type Property Access

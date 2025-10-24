@@ -112,6 +112,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'tuple_literal'>):                     AST.ASTNodeTuple;
 	public decorateTS(syntaxnode: SyntaxNodeType<'record_literal'>):                    AST.ASTNodeRecord;
 	public decorateTS(syntaxnode: SyntaxNodeType<'list_literal'>):                      AST.ASTNodeList;
+	public decorateTS(syntaxnode: SyntaxNodeType<'dict_literal'>):                      AST.ASTNodeDict;
 	public decorateTS(syntaxnode: SyntaxNodeType<'set_literal'>):                       AST.ASTNodeSet;
 	public decorateTS(syntaxnode: SyntaxNodeType<'map_literal'>):                       AST.ASTNodeMap;
 	public decorateTS(syntaxnode: SyntaxNodeType<'property_access'>):                   AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
@@ -356,6 +357,13 @@ class Decorator {
 				node.children
 					.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
 					.map((c) => this.decorateTS(c)), // TODO: use `this.decorateExprNode`
+			)],
+
+			['dict_literal', (node) => new AST.ASTNodeDict(
+				node as SyntaxNodeType<'dict_literal'>,
+				node.children
+					.filter((c): c is SyntaxNodeType<'property'> => isSyntaxNodeType(c, 'property'))
+					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeProperty>,
 			)],
 
 			['set_literal', (node) => new AST.ASTNodeSet(
