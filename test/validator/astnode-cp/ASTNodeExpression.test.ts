@@ -404,11 +404,12 @@ describe('ASTNodeExpression', () => {
 
 	describe('ASTNodeCollectionLiteral', () => {
 		describe('#varCheck', () => {
-			describe('ASTNodeRecord', () => {
+			describe('ASTNode{{Type}Record,Dict}', () => {
 				it('throws if containing duplicate keys.', () => {
 					[
 						AST.ASTNodeTypeRecord .fromSource('(a: int, b: float, c: str)'),
 						AST.ASTNodeRecord     .fromSource('(a= 1, b= 2.0, c= "three");'),
+						AST.ASTNodeDict       .fromSource('[a= 1, b= 2.0, c= "three"];'),
 					].forEach((node) => node.varCheck()); // assert does not throw
 
 					[
@@ -416,6 +417,8 @@ describe('ASTNodeExpression', () => {
 						AST.ASTNodeTypeRecord .fromSource('(_: int, b: float, _: str)'),
 						AST.ASTNodeRecord     .fromSource('(a= 1, b= 2.0, a= "three");'),
 						AST.ASTNodeRecord     .fromSource('(_= 1, b= 2.0, _= "three");'),
+						AST.ASTNodeDict       .fromSource('[a= 1, b= 2.0, a= "three"];'),
+						AST.ASTNodeDict       .fromSource('[_= 1, b= 2.0, _= "three"];'),
 					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentErrorDuplicateKey));
 
 					new Map<AST.ASTNodeCP, string[]>([
@@ -423,13 +426,15 @@ describe('ASTNodeExpression', () => {
 						[AST.ASTNodeTypeRecord .fromSource('(e: int, f: float, e: str, e: bool)'),   ['e', 'e']],
 						[AST.ASTNodeRecord     .fromSource('(c= 1, d= 2.0, c= "three", d= false);'), ['c', 'd']],
 						[AST.ASTNodeRecord     .fromSource('(e= 1, f= 2.0, e= "three", e= false);'), ['e', 'e']],
+						[AST.ASTNodeDict       .fromSource('[c= 1, d= 2.0, c= "three", d= false];'), ['c', 'd']],
+						[AST.ASTNodeDict       .fromSource('[e= 1, f= 2.0, e= "three", e= false];'), ['e', 'e']],
 					]).forEach((dupes, node) => assert.throws(() => node.varCheck(), (err) => {
 						assert_instanceof(err, AggregateError);
 						assertAssignable(err, {
 							cons:   AggregateError,
 							errors: dupes.map((k) => ({
 								cons:    AssignmentErrorDuplicateKey,
-								message: `Duplicate record key \`${ k }\`.`,
+								message: `Duplicate record/dict key \`${ k }\`.`,
 							})),
 						});
 						return true;

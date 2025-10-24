@@ -4,11 +4,12 @@ import {AssignmentError} from './AssignmentError.ts';
 
 
 /**
- * An AssignmentErrorDuplicateKey is thrown when the validator encounters a duplicate key in a record literal or record type literal.
+ * An AssignmentErrorDuplicateKey is thrown when the validator encounters a duplicate key in a record type, record literal, or dict literal.
  * @example
- * (foo= "a", foo= "b"); % AssignmentErrorDuplicateKey: Duplicate record key `foo`.
+ * type MyType = (bar: int, bar: str); % AssignmentErrorDuplicateKey: Duplicate record/dict key `bar`.
  * @example
- * type MyType = (bar: int, bar: str); % AssignmentErrorDuplicateKey: Duplicate record key `bar`.
+ * (foo= "a", foo= "b"); % AssignmentErrorDuplicateKey: Duplicate record/dict key `foo`.
+ * [foo= "a", foo= "b"]; % AssignmentErrorDuplicateKey: Duplicate record/dict key `foo`.
  */
 export class AssignmentErrorDuplicateKey extends AssignmentError {
 	/**
@@ -17,7 +18,7 @@ export class AssignmentErrorDuplicateKey extends AssignmentError {
 	 */
 	public constructor(key: AST.ASTNodeKey) {
 		super(
-			`Duplicate record key \`${ key.source }\`.`,
+			`Duplicate record/dict key \`${ key.source }\`.`,
 			AssignmentError.CODES.get(AssignmentErrorDuplicateKey),
 			key.line_index,
 			key.col_index,

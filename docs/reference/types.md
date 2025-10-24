@@ -704,7 +704,7 @@ Record literals cannot contain the same key more than once.
 	fontFamily= "serif",      %> AssignmentError
 );
 ```
-> AssignmentError: Duplicate record key: `fontFamily` is already set.
+> AssignmentError: Duplicate record/dict key: `fontFamily` is already set.
 
 Record literal types are similar to record values, except that the colon `:` is used as the key–value delimiter,
 and the property values are replaced with types.
@@ -894,6 +894,16 @@ let my_styles: Dict.<int | float | str> = Dict.<int | float | str>((
 A shorthand for the generic syntax `Dict.<T>` is `[:T]`,
 and the dict literal shorthand syntax is a sequence of comma-separated `key= value` pairs within square brackets.
 As shown above, we can mix value types, but the dict type must be homogeneous.
+
+Dict literals cannot contain the same key more than once.
+```
+[
+	fontFamily= "sans-serif",
+	fontSize=   1.25,
+	fontFamily= "serif",      %> AssignmentError
+];
+```
+> AssignmentError: Duplicate record/dict key: `fontFamily` is already set.
 
 #### Dict Access
 Dict properties are accessed by **bracket-accessor notation**, where the expression in brackets computes the key.

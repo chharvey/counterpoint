@@ -78,7 +78,7 @@ An assignment error is raised when the compiler detects an illegal declaration o
 
 1.  2200                                             — A general assignment error not covered by one of the following cases.
 1. [2201](#2201-assignmenterrorduplicatedeclaration) — The validator encountered a duplicate declaration.
-1. [2202](#2202-assignmenterrorduplicatekey)         — The validator encountered a duplicate record key.
+1. [2202](#2202-assignmenterrorduplicatekey)         — The validator encountered a duplicate record/dict key.
 1. [2210](#2210-assignmenterrorreassignment)         — A reassignment of a fixed variable was attempted.
 
 #### 2201: AssignmentErrorDuplicateDeclaration
@@ -93,11 +93,12 @@ type MyType = float; % AssignmentError: Duplicate declaration of `MyType`.
 Solution(s): Remove the duplicate declaration, or change it to a reassignment (if possible).
 
 #### 2202: AssignmentErrorDuplicateKey
-Cause: A duplicate key in a record literal or type literal was encountered.
+Cause: A duplicate key in a record type, record literal, or dict literal was encountered.
 ```
-(foo= "a", foo= "b"); % AssignmentError: Duplicate record key `foo`.
+type MyType = (bar: int, bar: str); % AssignmentErrorDuplicateKey: Duplicate record/dict key `bar`.
 
-type MyType = (bar: int, bar: str); % AssignmentError: Duplicate record key `bar`.
+(foo= "a", foo= "b"); % AssignmentErrorDuplicateKey: Duplicate record/dict key `foo`.
+[foo= "a", foo= "b"]; % AssignmentErrorDuplicateKey: Duplicate record/dict key `foo`.
 ```
 Solution(s): Remove or rename the duplicate key.
 
