@@ -558,7 +558,7 @@ Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit T
 ------------------ | -------- | ------------  | ------------------- | ------------------------------------ | -------------------------------------------- | -------------------------------------- | --------------------
 [Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `("x", "y", "z")`<sup>&lowast;</sup>   | `()`
 [Record](#records) | Fixed    | symbols       | *(none)*            | `(a: str, b: str, c: str)`           | *(none)*                                     | `(a= "x", b= "y", c= "z")`             | *(none)*
-[List](#lists)     | Variable | integers      | `List.<str>`        | `[str]` / `str[]`                    | `List.(("x", "y", "z"))`                     | *(none)*                               | *(none)*
+[List](#lists)     | Variable | integers      | `List.<str>`        | `[str]` / `str[]`                    | `List.(("x", "y", "z"))`                     | `["x", "y", "z"]`                      | `[]`
 [Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                             | `Dict.((a= "x", b= "y", c= "z"))`            | *(none)*                               | *(none)*
 [Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
 [Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`                       | `Map.((("u", "x"), ("v", "y"), ("w", "z")))` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
@@ -831,10 +831,11 @@ where `arg` is a [Tuple](#tuples) object.
 ```
 let elements: List.<str> = List.<str>(("earth", "wind", "fire"));
 ```
-A shorthand for the generic syntax `List.<T>` is `T[]`.
+A shorthand for the generic syntax `List.<T>` is `T[]`,
+and the list literal shorthand syntax is a sequence of comma-separated expressions within square brackets.
 We can mix item types, but the list type must be homogeneous.
 ```
-let elements: (str | bool | int)[] = List.<str | bool | int>(("earth", "wind", "fire", true, 42));
+let elements: (str | bool | int)[] = ["earth", "wind", "fire", true, 42];
 ```
 The compiler considers all items in the list as having the same type.
 For example, the expression `elements.[0]` is of type `str | bool | int`,
@@ -844,7 +845,7 @@ and if the list were mutable, we could reassign that entry to an integer or bool
 List items are accessed by **bracket-accessor notation**, where the expression in brackets computes the index.
 The bracketed expression must be an Integer value (of type `int`).
 ```
-let elements: str[] = List.<str>(("earth", "wind", "fire"));
+let elements: str[] = ["earth", "wind", "fire"];
 elements.[0];       %== "earth"
 elements.[3 - 2];   %== "wind"
 elements.[-3 + 2];  %== "fire"

@@ -619,6 +619,18 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			)),
 		],
 
+		ListLiteral: [
+			xjs.String.dedent`
+				[1, 2, 3];
+			`,
+			sourceExpressions(s(
+				'list_literal',
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+			)),
+		],
+
 		SetLiteral: [
 			xjs.String.dedent`
 				{1, 2, 3};

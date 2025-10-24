@@ -41,6 +41,7 @@ export function assignToDeco(
  * Known subclasses:
  * - ASTNodeTuple
  * - ASTNodeRecord
+ * - ASTNodeList
  * - ASTNodeSet
  * - ASTNodeMap
  */
@@ -49,6 +50,7 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 		start_node:
 			| SyntaxNodeType<'tuple_literal'>
 			| SyntaxNodeType<'record_literal'>
+			| SyntaxNodeType<'list_literal'>
 			| SyntaxNodeType<'set_literal'>
 			| SyntaxNodeType<'map_literal'>,
 

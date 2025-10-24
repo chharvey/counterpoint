@@ -123,6 +123,7 @@ Case     ::= Expression "->" Expression;
 ExpressionGrouped ::= "("        Expression          ")";
 TupleLiteral      ::= "("        Items?              ")";
 RecordLiteral     ::= "("   ","? Property#   ","?    ")";
+ListLiteral       ::= "[" ( ","? Expression# ","? )? "]";
 SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
 MapLiteral        ::= "{"   ","? Case #      ","?    "}";
 FunctionArguments ::= "(" ( ","? Expression# ","? )? ")";
@@ -134,6 +135,7 @@ ExpressionUnit ::=
 	| ExpressionGrouped
 	| TupleLiteral
 	| RecordLiteral
+	| ListLiteral
 	| SetLiteral
 	| MapLiteral
 ;

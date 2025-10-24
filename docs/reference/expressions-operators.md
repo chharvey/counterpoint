@@ -213,7 +213,7 @@ Operations that are associative are indicated as so in their respective sections
 
 
 ### Grouping
-Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
+Read about Tuples, Records, Lists, Sets, and Maps in the [Types](./types.md) chapter.
 
 
 ### Property Access
@@ -324,16 +324,16 @@ The **emptiness operator**, `?`, determines whether a value is considered “emp
 A value is “empty” if it’s “falsy”, if it’s a zero numeric value (`0`, `0.0`, or `-0.0`),
 or if it’s an empty string or empty collection (such as an array or set).
 
-| “Falsy” Values | “Empty” Values | “Truthy” Values |
-| -------------- | -------------- | --------------- |
-| `null`         | `null`         |                 |
-| `false`        | `false`        | `true`          |
-|                |                | all symbols     |
-|                | `0`            | all integers    |
-|                | `0.0`, `-0.0`  | all floats      |
-|                | `""`           | all strings     |
-|                | `()`, `{}`     | all collections |
-|                |                | any other value |
+| “Falsy” Values | “Empty” Values   | “Truthy” Values |
+| -------------- | ---------------- | --------------- |
+| `null`         | `null`           |                 |
+| `false`        | `false`          | `true`          |
+|                |                  | all symbols     |
+|                | `0`              | all integers    |
+|                | `0.0`, `-0.0`    | all floats      |
+|                | `""`             | all strings     |
+|                | `()`, `[]`, `{}` | all collections |
+|                |                  | any other value |
 
 
 ### Mathematical Affirmation, Mathematical Negation

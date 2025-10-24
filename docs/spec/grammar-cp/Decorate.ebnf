@@ -322,6 +322,13 @@ Decorate(RecordLiteral ::= "(" ","? Property# ","? ")") -> SemanticRecord
 		...ParseList(Property, SemanticProperty)
 	);
 
+Decorate(ListLiteral ::= "[" "]") -> SemanticList
+	:= (SemanticList);
+Decorate(ListLiteral ::= "[" ( ","? Expression# ","? )? "]") -> SemanticList
+	:= (SemanticList
+		...ParseList(Expression, SemanticExpression)
+	);
+
 Decorate(SetLiteral ::= "{" ","? Expression# ","? "}") -> SemanticSet
 	:= (SemanticSet
 		...ParseList(Expression, SemanticExpression)
@@ -349,6 +356,8 @@ Decorate(ExpressionUnit ::= TupleLiteral) -> SemanticTuple
 	:= Decorate(TupleLiteral);
 Decorate(ExpressionUnit ::= RecordLiteral) -> SemanticRecord
 	:= Decorate(RecordLiteral);
+Decorate(ExpressionUnit ::= ListLiteral) -> SemanticList
+	:= Decorate(ListLiteral);
 Decorate(ExpressionUnit ::= SetLiteral) -> SemanticSet
 	:= Decorate(SetLiteral);
 Decorate(ExpressionUnit ::= MapLiteral) -> SemanticMap

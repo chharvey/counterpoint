@@ -96,12 +96,14 @@ SemanticTemplatePartial
 SemanticCollectionLiteral =:=
 	| SemanticTuple
 	| SemanticRecord
+	| SemanticList
 	| SemanticSet
 	| SemanticMap
 ;
 
 SemanticTuple  ::= SemanticExpression*;
 SemanticRecord ::= SemanticProperty+;
+SemanticList   ::= SemanticExpression*;
 SemanticSet    ::= SemanticExpression*;
 SemanticMap    ::= SemanticCase+;
 

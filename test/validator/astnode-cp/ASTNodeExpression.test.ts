@@ -511,9 +511,10 @@ describe('ASTNodeExpression', () => {
 					],
 				);
 			});
-			it('returns a constant Set/Map for foldable entries.', () => {
+			it('returns a constant List/Set/Map for foldable entries.', () => {
 				assert.deepStrictEqual(
 					[
+						AST.ASTNodeList.fromSource('[1, 2.0, "three"];'),
 						AST.ASTNodeSet.fromSource('{1, 2.0, "three"};'),
 						AST.ASTNodeMap.fromSource(`
 							{
@@ -524,6 +525,11 @@ describe('ASTNodeExpression', () => {
 						`),
 					].map((c) => c.fold()),
 					[
+						new VALUE.List([
+							new VALUE.Integer(1n),
+							new VALUE.Float(2.0),
+							new VALUE.String('three'),
+						]),
 						new VALUE.Set(new Set([
 							new VALUE.Integer(1n),
 							new VALUE.Float(2.0),
@@ -544,6 +550,7 @@ describe('ASTNodeExpression', () => {
 					let var z: str   = "three";
 					(x, 2.0, "three");
 					(a= 1, b= y, c= "three");
+					[x, 2.0, "three"];
 					{1, 2.0, z};
 					{
 						"a" || "" -> 1,
@@ -553,15 +560,7 @@ describe('ASTNodeExpression', () => {
 				`);
 				goal.varCheck();
 				goal.typeCheck();
-				assert.deepStrictEqual(
-					[
-						(goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple,
-						(goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord,
-						(goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeSet,
-						(goal.children[6] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap,
-					].map((c) => c.fold()),
-					[null, null, null, null],
-				);
+				xjs.Array.forEachAggregated(goal.children.slice(3), (c) => assert.strictEqual((c as AST.ASTNodeStatementExpression).expr!.fold(), null));
 			});
 		});
 
