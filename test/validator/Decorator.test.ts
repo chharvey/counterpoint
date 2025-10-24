@@ -170,7 +170,7 @@ describe('Decorator', () => {
 				type T = U?;
 				% (type_unary_symbol)
 			`]],
-			['skip: Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				type T = U!;
 				% (type_unary_symbol)
 			`]],
@@ -439,13 +439,6 @@ describe('Decorator', () => {
 				`\`${ parsenode.text }\` not an instance of ${ klass.name }.`,
 			);
 		}));
-		describe('Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', () => {
-			it('type operator `!` is not yet supported.', () => {
-				assert.throws(() => DECORATOR.decorateTS(captureParseNode(`
-					type T = U!;
-				`, '(type_unary_symbol)')), /not yet supported/);
-			});
-		});
 		['is', 'isnt'].forEach((op) => describe(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
 			it(`operator \`${ op }\` is not yet supported.`, () => {
 				assert.throws(() => DECORATOR.decorateTS(captureParseNode(`
