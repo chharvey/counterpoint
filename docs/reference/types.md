@@ -565,7 +565,7 @@ Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit T
 
 
 ### Tuples
-Tuples are fixed-size ordered lists of indexed values, with indices starting at `0`.
+Tuples are fixed-size ordered lists of indexed values, with indices starting at *0*.
 The values in a tuple are called **items** (the actual values) or **entries** (the “slots” where values are stored).
 The number of entries in a tuple is called its **count**.
 The count of a tuple is fixed and known at compile-time, as is the type of each entry in it.
@@ -818,7 +818,7 @@ If `y.middlename` exists, the expression `y?.middlename` produces that value; ot
 
 
 ### Lists
-Lists are variable-size ordered lists of indexed values, with indices starting at `0`.
+Lists are variable-size ordered lists of indexed values, with indices starting at *0*.
 The values in a list are called **items** (the actual values) or **entries** (the slots the values are stored in).
 The number of entries in a list is called its **count**; the count of a list is variable and unknown at compile-time.
 Lists are homogeneous, meaning all entries in the list have the same type (or parent type).
@@ -994,7 +994,7 @@ Elements of a set can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the element to get.
 The value is `true` if the element is in the set, and `false` if not.
 ```
-let bases: {Object} = {
+let bases: {anything} = {
 	"who",
 	List.<str>(("what",)),
 	{ "i" -> {"don’t" -> "know"} },
@@ -1022,7 +1022,7 @@ where `K` indicates the type of antecedents and `V` indicates the type of conseq
 Maps may be constructed via the constructor syntax `Map.<K, V>(arg)`,
 where `arg` is a [Tuple](#tuples) object of key-value pairs (also Tuples).
 ```
-let bases: Map.<int | str, Object> = Map.<int | str, Object>((
+let bases: Map.<int | str, anything> = Map.<int | str, anything>((
 	(1,     "who"),
 	("2nd", ("what",)),
 	(1 + 2, { "i" -> {"don’t" -> "know"} }),
@@ -1035,7 +1035,7 @@ but this isn’t a requirement.
 A shorthand for the generic syntax `Map.<K, V>` is `{K -> V}`,
 and the map literal shorthand syntax is a sequence of comma-separated `key -> value` pairs within curly braces.
 ```
-let bases: {int | str -> Object} = {
+let bases: {int | str -> anything} = {
 	1     -> "who",
 	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
@@ -1049,7 +1049,7 @@ Like records, the order of entries in a map is not necessarily significant.
 Antecedents have unique consequents in that latter declarations take precedence.
 In the case of maps, antecedents that are identical are considered “the same object”.
 ```
-let bases: {int | str -> Object} = {
+let bases: {int | str -> anything} = {
 	1     -> "who",
 	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
@@ -1062,7 +1062,7 @@ Maps may have several antecedents that are un-identical but “equal”.
 ```
 let x: {int} = {3};
 let y: {int} = {3};
-let bases: {float | {int} -> Object} = {
+let bases: {float | {int} -> anything} = {
 	0.0  -> "who",
 	-0.0 -> ("what",),
 	x    -> { "i" -> {"don’t" -> "know"} },
@@ -1079,7 +1079,7 @@ Even though `0.0 == -0.0` and `x == y`, this map has four entries.
 Consequents of a map can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the antecedent to get.
 ```
-let bases: {int | str -> Object} = {
+let bases: {int | str -> anything} = {
 	1     -> "who",
 	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },

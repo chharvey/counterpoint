@@ -106,7 +106,7 @@ Solution(s): Remove or rename the duplicate key.
 Cause: A fixed variable was reassigned.
 ```
 let my_var: int = 42;
-my_var = 24;          % AssignmentError: Reassignment of fixed variable `my_var`.
+set my_var = 24;      % AssignmentError: Reassignment of fixed variable `my_var`.
 ```
 Solution(s): Remove the reassignment, or declare the variable with `var`.
 
@@ -186,7 +186,7 @@ A mutability error is raised when the compiler recognizes an attempt to mutate a
 Cause: An immutable object was mutated.
 ```
 let x: (a: int) = (a= 42);
-x.a = 43;                  % MutabilityError: Mutation of an object of immutable type `(a: int)`.
+set x.a = 43;              % MutabilityError: Mutation of an object of immutable type `(a: int)`.
 ```
 Solution(s): Do not mutate the object’s entries, or else give it a `mut` type.
 
