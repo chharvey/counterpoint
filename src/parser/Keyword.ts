@@ -31,6 +31,7 @@ export enum Keyword {
 	BLANK = '_',
 
 	// modifier
+	NOMINAL = 'nominal',
 	UNFIXED = 'var',
 }
 

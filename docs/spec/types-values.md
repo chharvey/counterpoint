@@ -145,21 +145,21 @@ Symbol structures’ properties are described in the tables below.
 ##### SymbolSchemaType
 A **SymbolSchemaType** represents a type alias referencing a Counterpoint Language Type.
 
-Property      | Description
-------------- | -----------
-\`id\`        | the unique identifier of the declared symbol
-\`typevalue\` | the assessed type (a Counterpoint Language Type) of this symbol
+Property      | Read-Only? | Description
+------------- | ---------- | -----------
+\`id\`        | yes        | the unique identifier of the declared symbol
+\`typevalue\` | no         | the assessed type (a Counterpoint Language Type) of this symbol
 
 ##### SymbolSchemaVar
 A **SymbolSchemaVar** represents a variable referencing a Counterpoint Language Value.
 
-Property          | Description
------------------ | -----------
-\`id\`            | the unique identifier of the declared symbol
-\`unfixed\`       | a Boolean, whether the variable may be reassigned
-\`uninitialized\` | a Boolean, whether the variable was declared without an initial value
-\`type\`          | the Counterpoint Language Type of the variable
-\`value\`         | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
+Property            | Read-Only? | Description
+------------------- | ---------- | -----------
+\`id\`              | yes        | the unique identifier of the declared symbol
+\`isUnfixed\`       | yes        | a Boolean, whether the variable may be reassigned
+\`isUninitialized\` | yes        | a Boolean, whether the variable was declared without an initial value
+\`type\`            | no         | the Counterpoint Language Type of the variable
+\`value\`           | no         | if \`isUnfixed\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
 
 
 ### Nodes
@@ -379,6 +379,26 @@ antcedents and consequents are respectively assignable to the type arguments of 
 Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by their antecedents.
 
 <sup>&lowast;</sup>Rather, developers should not depend on any implementation of order.
+
+
+### Nominal Types
+Nominal types form a type hierarchy where assignability is determined by name alone.
+
+For classes:
+- Any value assigned to a nominal class must be instantiated by it (or a subclass thereof).
+- Any type assignable to a nominal class must be either a subclass of it,
+	or an interface (or sub-interface thereof) that explicitly extends it (or a subclass thereof).
+- Any class or interface that extends a nominal class must also be nominal.
+
+For interfaces:
+- Any value assigned to a nominal interface must be instantiated by
+	a class (or subclass thereof) that explicitly implements it (or a sub-interface thereof).
+- Any type assignable to a nominal interface must be either a sub-interface of it,
+	or a class (or subclass thereof) that explicitly implements it (or a sub-interface thereof).
+- Futher, if a nominal interface *extends some nominal superclass*, then
+	any class that explicitly implements it must *also* explicitly extend the superclass.
+- Any class that implements a nominal interface must also be nominal.
+- Any interface that inherits from a nominal interface must also be nominal.
 
 
 

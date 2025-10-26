@@ -259,7 +259,7 @@ describe('ASTNodeOperation', () => {
 					]);
 				});
 				it('throws for non-numeric operands.', () => {
-					xjs.Array.forEachAggregated(extract_lines(`
+					xjs.Array.forEachAggregated(extract_lines`
 						int   null
 						int   @symb
 						int   "string"
@@ -270,7 +270,7 @@ describe('ASTNodeOperation', () => {
 						float "string"
 						float ["string tuple"]
 						float [record= "string"]
-					`), (src) => assert.throws(() => AST.ASTNodeOperationUnary.fromSource(src).type(), TypeErrorInvalidOperation));
+					`, (src) => assert.throws(() => AST.ASTNodeOperationUnary.fromSource(src).type(), TypeErrorInvalidOperation));
 				});
 			});
 		});
@@ -671,6 +671,30 @@ describe('ASTNodeOperation', () => {
 					['3.0 * 2.1',        new VALUE.Float(3.0 * 2.1)],
 				]));
 			});
+			it('short-circuits when multiplicand is zero.', () => {
+				const {stmts} = setupScript(`{
+					let var i: int   = 42;
+					let var f: float = 4.2;
+
+					0 * i;    % value \`0\`
+					0.0 * f;  % value \`0.0\`
+					-0.0 * f; % value \`-0.0\`
+
+					1 * i;    % non-foldable value
+					1.0 * f;  % non-foldable value
+					-1.0 * f; % non-foldable value
+				}`);
+				const exprs:     readonly AST.ASTNodeExpression[] = stmts.slice(2).map((stmt) => ((stmt as AST.ASTNodeStatementExpression).expr!));
+				const expecteds: readonly (VALUE.Value | null)[]  = exprs.slice(0, 3).map((op) => (op as AST.ASTNodeOperationBinaryArithmetic).operand0.fold());
+				assert.deepStrictEqual(
+					exprs.map((op) => op.fold()),
+					[...expecteds, null, null, null],
+				);
+				return assert.deepStrictEqual(
+					expecteds,
+					[VALUE.INT_0, VALUE.FLOAT_0, VALUE.FLOAT_N0],
+				);
+			});
 			it('throws when performing an operation that does not yield a valid number.', () => {
 				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('42 / 0')     .fold(), NanErrorDivZero);
 				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('-4.0 ^ -0.5').fold(), NanErrorInvalid);
@@ -681,7 +705,6 @@ describe('ASTNodeOperation', () => {
 		specify('#build', () => {
 			buildOperations(new Map([
 				['42 + 420', (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
-				['3 * 2.1',  (builder) => CALL.vmul(builder.module, buildConst(builder, 3n),  buildConst(builder, 2.1))],
 
 				[' 126 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder,  3n))],
 				['-126 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder,  3n))],
@@ -694,7 +717,6 @@ describe('ASTNodeOperation', () => {
 
 				['42  - 420',  (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), CALL.vneg(builder.module, buildConst(builder, 420n)))],
 				['4.2 - 42.0', (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42.0)))],
-				['4.2 - 42',   (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42n)))],
 			]));
 		});
 	});
@@ -1465,12 +1487,7 @@ describe('ASTNodeOperation', () => {
 			});
 			it('returns `nothing` when condition is `nothing`.', () => {
 				const ternary: AST.ASTNodeOperationTernary = AST.ASTNodeOperationTernary.fromSource('if n as <nothing> then true else false');
-				ternary.validator.addSymbol(new SymbolSchemaVar(
-					// @ts-expect-error --- it’s private
-					(ternary.operand0 as AST.ASTNodeClaim).operand as AST.ASTNodeVariable,
-					false,
-					false,
-				));
+				ternary.validator.addSymbol(new SymbolSchemaVar((ternary.operand0 as AST.ASTNodeClaim).operand as AST.ASTNodeVariable, false, false));
 				return assert.ok(ternary.type().isBottomType);
 			});
 			it('throws when condition is not a subtype of `boolean`.', () => {

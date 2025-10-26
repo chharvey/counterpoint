@@ -57,7 +57,7 @@ describe('ASTNodeDeclarationType', () => {
 
 
 	describe('#typeCheck', () => {
-		it('sets `SymbolSchema#value`.', () => {
+		it('sets `SymbolSchemaType#typevalue`.', () => {
 			assert.strictEqual(
 				(setupScript(`{
 					type T = int;

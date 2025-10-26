@@ -62,7 +62,8 @@ TokenWorth(KeywordOther :::= "type")     -> RealNumber := \x93;
 TokenWorth(KeywordOther :::= "let")      -> RealNumber := \x94;
 TokenWorth(KeywordOther :::= "_")        -> RealNumber := \x95;
 TokenWorth(KeywordOther :::= "void")     -> RealNumber := \x96;
-TokenWorth(KeywordOther :::= "var")      -> RealNumber := \x97;
+TokenWorth(KeywordOther :::= "nominal")  -> RealNumber := \x97;
+TokenWorth(KeywordOther :::= "var")      -> RealNumber := \x98;
 
 
 

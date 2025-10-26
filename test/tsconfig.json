@@ -3,6 +3,9 @@
 	"compilerOptions": {
 		// Modules
 		"rootDir": "../",
+
+		// Emit
+		"noEmit": true,
 	},
 	"include": ["./"],
 }

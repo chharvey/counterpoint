@@ -77,6 +77,9 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		if (!v0) {
 			return v0;
 		}
+		if (this.operator === Operator.MUL && (v0 as VALUE.Number).eq0()) {
+			return v0;
+		}
 		const v1: VALUE.Value | null = this.operand1.fold();
 		if (!v1) {
 			return v1;

@@ -3,9 +3,9 @@ import {Builder} from '../../src/index.ts';
 
 
 describe('Builder', () => {
-	describe('#build', () => {
+	describe('#setupModule', () => {
 		it('validates successfully.', () => {
-			new Builder().setupModule()(); // assert does not throw
+			new Builder().setupModule(); // assert does not throw
 		});
 	});
 });

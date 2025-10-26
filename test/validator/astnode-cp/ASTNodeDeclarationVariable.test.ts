@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	AST,
@@ -44,22 +45,22 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert_instanceof(info_b, SymbolSchemaVar);
 			assert_instanceof(info_c, SymbolSchemaVar);
 			assert.partialDeepStrictEqual(info_a, {
-				unfixed:       false,
-				uninitialized: false,
-				type:          TYPE.ANYTHING,
-				value:         null,
+				isUnfixed:       false,
+				isUninitialized: false,
+				type:            TYPE.ANYTHING,
+				value:           null,
 			});
 			assert.partialDeepStrictEqual(info_b, {
-				unfixed:       true,
-				uninitialized: false,
-				type:          TYPE.ANYTHING,
-				value:         null,
+				isUnfixed:       true,
+				isUninitialized: false,
+				type:            TYPE.ANYTHING,
+				value:           null,
 			});
 			assert.partialDeepStrictEqual(info_c, {
-				unfixed:       true,
-				uninitialized: true,
-				type:          TYPE.ANYTHING,
-				value:         null,
+				isUnfixed:       true,
+				isUninitialized: true,
+				type:            TYPE.ANYTHING,
+				value:           null,
 			});
 		});
 
@@ -114,14 +115,28 @@ describe('ASTNodeDeclarationVariable', () => {
 			return var_.typeCheck();
 		});
 
+		it('passes when assigned is structurally assignable.', () => {
+			xjs.Array.forEachAggregated(extract_lines`
+				let n: Name = "Alice";
+				let n: Name = "Alice" as <str>;
+				let n: Name = "Alice" as <"Alice">;
+				let n: Name = "Alice" as <Name>;
+			`, (stmt) => {
+				setupScript(`{
+					type Name = str;
+					${ stmt }
+				}`, null, {build: false}); // assert does not throw
+			});
+		});
+
 		it('passes typechecking when uninitialized.', () => {
 			assert.partialDeepStrictEqual(setupScript(`{
 				let var the_answer?: int | float;
 			}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
-				unfixed:       true,
-				uninitialized: true,
-				type:          TYPE.INT.union(TYPE.FLOAT),
-				value:         null,
+				isUnfixed:       true,
+				isUninitialized: true,
+				type:            TYPE.INT.union(TYPE.FLOAT),
+				value:           null,
 			});
 		});
 
@@ -139,7 +154,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
 			const {goal} = setupScript(`{
 				let immut:  int[3]         = [42, 420, 4200];
-				let mut:    mut int[]      = List.<int>([42, 420, 4200]);
+				let 'mut':  mut int[]      = List.<int>([42, 420, 4200]);
 				let mutmut: (mut int[])[3] = [List.<int>([42]), List.<int>([420]), List.<int>([4200])];
 			}`, null, {build: false});
 			const [immut, mut, mutmut] = [
@@ -157,7 +172,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			);
 			assert.deepStrictEqual(
 				[mut.source, mut.value],
-				['mut',      null],
+				['\'mut\'',  null],
 			);
 			return assert.deepStrictEqual(
 				[mutmut.source, mutmut.value],

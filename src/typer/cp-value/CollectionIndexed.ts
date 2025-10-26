@@ -1,18 +1,8 @@
 import * as assert from 'node:assert';
-import * as xjs from 'extrajs';
 import {VoidErrorOutOfBounds} from '../../index.ts';
 import type {AST} from '../../validator/index.ts';
-import {
-	language_values_equal,
-	strictEqual,
-	instanceOf,
-	memoizeBinOp,
-} from '../utils-private.ts';
 import {NULL} from './index.ts';
-import {
-	identical,
-	type Value,
-} from './Value.ts';
+import type {Value} from './Value.ts';
 import type {Null} from './Null.ts';
 import {Collection} from './Collection.ts';
 
@@ -24,6 +14,19 @@ import {Collection} from './Collection.ts';
  * - List
  */
 export abstract class CollectionIndexed<T extends Value = Value> extends Collection {
+	protected static samenessDfn<T extends Value = Value>(
+		a:          CollectionIndexed<T>,
+		b:          CollectionIndexed<T>,
+		comparator: (a: T, b: T) => boolean,
+	): boolean {
+		return (
+			a.items === b.items ||
+			a.items.length === b.items.length &&
+			b.items.every((thatvalue, i) => comparator.call(null, a.items[i], thatvalue))
+		);
+	}
+
+
 	public constructor(public readonly items: readonly T[] = []) {
 		super();
 	}
@@ -49,23 +52,7 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	}
 
 	/** @final */
-	@strictEqual
-	@instanceOf(() => CollectionIndexed)
-	@identical
-	@memoizeBinOp(true, true)
-	public override equal(value: Value): boolean {
-		return xjs.Array.is<Value>(this.items, (value as CollectionIndexed).items, language_values_equal);
-	}
-
-	/** @final */
 	public get(index: bigint, is_access_maybe: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | Null {
-		const n: number = this.items.length;
-		const i: number = Number(index);
-		return (
-			-n <= i && i < 0 ? this.items[i + n] :
-			0  <= i && i < n ? this.items[i] :
-			is_access_maybe  ? NULL :
-			assert.fail(new VoidErrorOutOfBounds('index', this, index, accessor))
-		);
+		return this.items.at(Number(index)) ?? (is_access_maybe ? NULL : assert.fail(new VoidErrorOutOfBounds('index', this, index, accessor)));
 	}
 }

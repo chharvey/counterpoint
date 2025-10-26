@@ -1,16 +1,8 @@
 import * as assert from 'node:assert';
 import {VoidErrorOutOfBounds} from '../../index.ts';
 import type {AST} from '../../validator/index.ts';
-import {
-	strictEqual,
-	instanceOf,
-	memoizeBinOp,
-} from '../utils-private.ts';
 import {NULL} from './index.ts';
-import {
-	identical,
-	type Value,
-} from './Value.ts';
+import type {Value} from './Value.ts';
 import type {Null} from './Null.ts';
 import {Collection} from './Collection.ts';
 
@@ -22,6 +14,19 @@ import {Collection} from './Collection.ts';
  * - Dict
  */
 export abstract class CollectionKeyed<T extends Value = Value> extends Collection {
+	protected static samenessDfn<T extends Value = Value>(
+		a:          CollectionKeyed<T>,
+		b:          CollectionKeyed<T>,
+		comparator: (a: T, b: T) => boolean,
+	): boolean {
+		return (
+			a.properties === b.properties ||
+			a.properties.size === b.properties.size &&
+			[...b.properties].every(([thatkey, thatvalue]) => a.properties.has(thatkey) && comparator.call(null, a.properties.get(thatkey)!, thatvalue))
+		);
+	}
+
+
 	public constructor(public readonly properties: ReadonlyMap<bigint, T> = new Map()) {
 		super();
 	}
@@ -47,23 +52,9 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 	}
 
 	/** @final */
-	@strictEqual
-	@instanceOf(() => CollectionKeyed)
-	@identical
-	@memoizeBinOp(true, true)
-	public override equal(value: Value): boolean {
-		return (
-			this.properties.size === (value as CollectionKeyed).properties.size &&
-			[...(value as CollectionKeyed).properties].every(([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue))
-		);
-	}
-
-	/** @final */
 	public get(key: bigint, is_access_maybe: boolean, accessor: AST.ASTNodeKey | AST.ASTNodeExpression): T | Null {
-		return (
-			this.properties.has(key) ? this.properties.get(key)! :
-			is_access_maybe          ? NULL :
-			assert.fail(new VoidErrorOutOfBounds('key', this, key, accessor))
-		);
+		return this.properties.has(key)
+			? this.properties.get(key)!
+			: is_access_maybe ? NULL : assert.fail(new VoidErrorOutOfBounds('key', this, key, accessor));
 	}
 }

@@ -347,6 +347,8 @@ export class Validator {
 	public wordNodeID(word: SyntaxNodeType<'word'>): bigint {
 		return isSyntaxNodeType(word.children[0], 'identifier')
 			? this.cookTokenIdentifier(word.children[0].text)
-			: Validator.cookTokenKeyword(word.children[0].text as Keyword);
+			: isSyntaxNodeType(word.children[0], 'keyword_type') || isSyntaxNodeType(word.children[0], 'keyword_value')
+				? Validator.cookTokenKeyword(word.children[0].children[0].text as Keyword)
+				: Validator.cookTokenKeyword(word.children[0].text as Keyword);
 	}
 }

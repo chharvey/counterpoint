@@ -1,7 +1,8 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	languageValuesIdentical,
+	language_types_equal,
+	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
@@ -10,10 +11,7 @@ import {
 	Union,
 	NOTHING,
 } from './index.ts';
-import {
-	type ReadonlyArrayOfAtLeast2,
-	language_types_equal,
-} from './utils-private.ts';
+import type {ReadonlyArrayOfAtLeast2} from './utils-private.ts';
 import {
 	typeConstant,
 	intersectionRules,
@@ -60,8 +58,8 @@ export class Intersection extends Combinable {
 	) {
 		super(
 			operands.reduce(
-				(accum, next) => xjs.Set.intersection(accum, next.values, languageValuesIdentical),
-				xjs.Set.intersection(operand0.values, operand1.values, languageValuesIdentical),
+				(accum, next) => xjs.Set.intersection(accum, next.values, language_values_identical),
+				xjs.Set.intersection(operand0.values, operand1.values, language_values_identical),
 			),
 			[
 				...(operand0 instanceof Intersection ? operand0.operands : [operand0] as const),
