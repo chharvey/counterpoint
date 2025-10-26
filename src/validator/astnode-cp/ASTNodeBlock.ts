@@ -37,18 +37,20 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	/** @implements Buildable */
 	public build(): binaryen.ExpressionRef {
 		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 child.');
-		const validate_module: () => void = this.builder.setupModule();
-		const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build()); // must build before calling `.getLocals()`
-		const fn_name:    string                   = 'fn0';
-		this.builder.module.addFunction(
-			fn_name,
-			binaryen.none,
-			binaryen.none,
-			this.builder.getLocals().map((var_) => var_.type),
-			this.builder.module.block(null, statements),
-		);
-		this.builder.module.addFunctionExport(fn_name, fn_name);
-		validate_module();
+		this.builder.setupModule((mod) => {
+			if (this.children.length) {
+				const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build()); // must build before calling `.getLocals()`
+				const fn_name:    string                   = 'fn0';
+				mod.addFunction(
+					fn_name,
+					binaryen.none,
+					binaryen.none,
+					this.builder.getLocals().map((var_) => var_.type),
+					mod.block(null, statements),
+				);
+				mod.addFunctionExport(fn_name, fn_name);
+			}
+		});
 		return this.builder.module.nop();
 	}
 }
