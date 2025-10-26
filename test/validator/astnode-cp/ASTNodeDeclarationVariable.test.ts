@@ -31,16 +31,16 @@ describe('ASTNodeDeclarationVariable', () => {
 				let var b:  int = 42;
 				let var c?: int;
 			}`);
-			assert.ok(!goal.validator.hasSymbol(0x100n));
-			assert.ok(!goal.validator.hasSymbol(0x101n));
-			assert.ok(!goal.validator.hasSymbol(0x102n));
+			assert.ok(!goal.block!.validator.hasSymbol(0x100n));
+			assert.ok(!goal.block!.validator.hasSymbol(0x101n));
+			assert.ok(!goal.block!.validator.hasSymbol(0x102n));
 			goal.varCheck();
-			assert.ok(goal.validator.hasSymbol(0x100n));
-			assert.ok(goal.validator.hasSymbol(0x101n));
-			assert.ok(goal.validator.hasSymbol(0x102n));
-			const info_a: SymbolSchema | null = goal.validator.getSymbolInfo(0x100n);
-			const info_b: SymbolSchema | null = goal.validator.getSymbolInfo(0x101n);
-			const info_c: SymbolSchema | null = goal.validator.getSymbolInfo(0x102n);
+			assert.ok(goal.block!.validator.hasSymbol(0x100n));
+			assert.ok(goal.block!.validator.hasSymbol(0x101n));
+			assert.ok(goal.block!.validator.hasSymbol(0x102n));
+			const info_a: SymbolSchema | null = goal.block!.validator.getSymbolInfo(0x100n);
+			const info_b: SymbolSchema | null = goal.block!.validator.getSymbolInfo(0x101n);
+			const info_c: SymbolSchema | null = goal.block!.validator.getSymbolInfo(0x102n);
 			assert_instanceof(info_a, SymbolSchemaVar);
 			assert_instanceof(info_b, SymbolSchemaVar);
 			assert_instanceof(info_c, SymbolSchemaVar);
@@ -68,9 +68,9 @@ describe('ASTNodeDeclarationVariable', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 				let _: float = 4.2;
 			}`);
-			assert.ok(!goal.validator.hasSymbol(256n));
+			assert.ok(!goal.block!.validator.hasSymbol(256n));
 			goal.varCheck();
-			return assert.ok(!goal.validator.hasSymbol(256n));
+			return assert.ok(!goal.block!.validator.hasSymbol(256n));
 		});
 
 		it('throws if the validator already contains a record for the variable.', () => {
@@ -132,7 +132,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('passes typechecking when uninitialized.', () => {
 			assert.partialDeepStrictEqual(setupScript(`{
 				let var the_answer?: int | float;
-			}`, null, {build: false}).goal.validator.getSymbolInfo(0x100n), {
+			}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
 				isUnfixed:       true,
 				isUninitialized: true,
 				type:            TYPE.INT.union(TYPE.FLOAT),
@@ -158,9 +158,9 @@ describe('ASTNodeDeclarationVariable', () => {
 				let mutmut: (mut int[])[3] = [List.<int>([42]), List.<int>([420]), List.<int>([4200])];
 			}`, null, {build: false});
 			const [immut, mut, mutmut] = [
-				goal.validator.getSymbolInfo(0x100n) as SymbolSchemaVar,
-				goal.validator.getSymbolInfo(0x101n) as SymbolSchemaVar,
-				goal.validator.getSymbolInfo(0x102n) as SymbolSchemaVar,
+				goal.block!.validator.getSymbolInfo(0x100n) as SymbolSchemaVar,
+				goal.block!.validator.getSymbolInfo(0x101n) as SymbolSchemaVar,
+				goal.block!.validator.getSymbolInfo(0x102n) as SymbolSchemaVar,
 			];
 			assert.deepStrictEqual(
 				[immut.source, immut.value],

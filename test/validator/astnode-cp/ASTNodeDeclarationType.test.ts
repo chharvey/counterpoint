@@ -19,10 +19,10 @@ describe('ASTNodeDeclarationType', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 				type T = int;
 			}`);
-			assert.ok(!goal.validator.hasSymbol(0x100n));
+			assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			goal.varCheck();
-			assert.ok(goal.validator.hasSymbol(0x100n));
-			const info: SymbolSchema | null = goal.validator.getSymbolInfo(0x100n);
+			assert.ok(goal.block!.validator.hasSymbol(0x100n));
+			const info: SymbolSchema | null = goal.block!.validator.getSymbolInfo(0x100n);
 			assert_instanceof(info, SymbolSchemaType);
 			assert.strictEqual(info.typevalue, TYPE.ANYTHING);
 		});
@@ -31,9 +31,9 @@ describe('ASTNodeDeclarationType', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 				type _ = str;
 			}`);
-			assert.ok(!goal.validator.hasSymbol(256n));
+			assert.ok(!goal.block!.validator.hasSymbol(256n));
 			goal.varCheck();
-			return assert.ok(!goal.validator.hasSymbol(256n));
+			return assert.ok(!goal.block!.validator.hasSymbol(256n));
 		});
 
 		it('throws if the validator already contains a record for the symbol.', () => {
@@ -61,7 +61,7 @@ describe('ASTNodeDeclarationType', () => {
 			assert.strictEqual(
 				(setupScript(`{
 					type T = int;
-				}`, null, {build: false}).goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
+				}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 				TYPE.INT,
 			);
 		});

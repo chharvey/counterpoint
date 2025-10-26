@@ -139,7 +139,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'statement_expression'>):              AST.ASTNodeStatementExpression;
 	public decorateTS(syntaxnode: SyntaxNodeType<'statement_assignment'>):              AST.ASTNodeAssignment;
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'statement'>):                    AST.ASTNodeStatement;
-	public decorateTS(syntaxnode: SyntaxNodeType<'block'>):                             AST.ASTNodeBlock;
+	public decorateTS(syntaxnode: SyntaxNodeType<'block'>,       config?: CPConfig):    AST.ASTNodeBlock;
 	public decorateTS(syntaxnode: SyntaxNodeType<'source_file'>, config?: CPConfig):    AST.ASTNodeGoal;
 	public decorateTS(syntaxnode: SyntaxNode): AST.ASTNodeCP;
 	/* eslint-enable @typescript-eslint/unified-signatures */
@@ -147,7 +147,7 @@ class Decorator {
 		const decorators = new Map<string | RegExp, (node: SyntaxNode) => AST.ASTNodeCP>([
 			['source_file', (node) => new AST.ASTNodeGoal(
 				node as SyntaxNodeType<'source_file'>,
-				(node.children.length) ? this.decorateTS(node.children[0] as SyntaxNodeType<'block'>) : null,
+				(node.children.length) ? this.decorateTS(node.children[0] as SyntaxNodeType<'block'>, config) : null,
 				config,
 			)],
 
@@ -687,6 +687,7 @@ class Decorator {
 				node.children
 					.filter((c): c is SyntaxNodeSupertype<'statement'> => isSyntaxNodeSupertype(c, 'statement'))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeStatement>,
+				config,
 			)],
 		]);
 		return (

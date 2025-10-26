@@ -105,7 +105,7 @@ describe('ASTNodeCP', () => {
 					assert.partialDeepStrictEqual(setupScript(`{
 						let var x?: int;
 						x = 42;
-					}`, null, {build: false}).goal.validator.getSymbolInfo(0x100n), {
+					}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
 						isUnfixed:       true,
 						isUninitialized: true,
 						type:            TYPE.INT,
@@ -118,7 +118,7 @@ describe('ASTNodeCP', () => {
 						x = null;
 					}`);
 					goal.varCheck();
-					assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
+					assert.partialDeepStrictEqual(goal.block!.validator.getSymbolInfo(0x100n), {
 						isUnfixed:       true,
 						isUninitialized: true,
 					});

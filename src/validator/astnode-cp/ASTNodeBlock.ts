@@ -5,6 +5,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {Validator} from '../Validator.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeGoal} from './index.ts';
 import type {Buildable} from './Buildable.ts';
@@ -27,11 +28,20 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 		return goal.block;
 	}
 
+
+	readonly #validator: Validator;
+
 	public constructor(
 		start_node: SyntaxNodeType<'block'>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeStatement>>,
+		config: CPConfig,
 	) {
 		super(start_node, {}, children);
+		this.#validator = new Validator(config);
+	}
+
+	public override get validator(): Validator {
+		return this.#validator;
 	}
 
 	/** @implements Buildable */
