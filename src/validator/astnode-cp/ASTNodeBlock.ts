@@ -29,7 +29,7 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	}
 
 
-	private readonly _validator: Validator;
+	readonly #validator: Validator;
 
 	public constructor(
 		start_node: SyntaxNodeType<'block'>,
@@ -37,11 +37,11 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 		config: CPConfig,
 	) {
 		super(start_node, {}, children);
-		this._validator = new Validator(config);
+		this.#validator = new Validator(config);
 	}
 
 	public override get validator(): Validator {
-		return this._validator;
+		return this.#validator;
 	}
 
 	/** @implements Buildable */
