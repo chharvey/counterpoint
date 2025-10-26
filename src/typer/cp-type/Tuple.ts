@@ -95,13 +95,7 @@ class TypeTuple extends ValueType {
 	}
 
 	public get(index: bigint, accessor: AST.ASTNodeIndex): EntryType {
-		const n: number = this.typeargs.length;
-		const i: number = Number(index);
-		return (
-			(-n <= i && i < 0) ? this.typeargs[i + n] :
-			(0  <= i && i < n) ? this.typeargs[i] :
-			assert.fail(new TypeErrorNoEntry('index', this, accessor))
-		);
+		return this.typeargs.at(Number(index)) ?? assert.fail(new TypeErrorNoEntry('index', this, accessor));
 	}
 
 	public set(index: bigint, typ: Type, accessor: AST.ASTNodeIndex): void {
