@@ -135,7 +135,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'expression'>):                   AST.ASTNodeExpression;
 	public decorateTS(syntaxnode: SyntaxNodeType<'statement_expression'>):              AST.ASTNodeStatementExpression;
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'statement'>):                    AST.ASTNodeStatement;
-	public decorateTS(syntaxnode: SyntaxNodeType<'block'>):                             AST.ASTNodeBlock;
+	public decorateTS(syntaxnode: SyntaxNodeType<'block'>, config?: CPConfig):          AST.ASTNodeBlock;
 	public decorateTS(syntaxnode: SyntaxNodeType<'declaration_type'>):                  AST.ASTNodeDeclarationType;
 	public decorateTS(syntaxnode: SyntaxNodeType<'declaration_variable'>):              AST.ASTNodeDeclarationVariable;
 	public decorateTS(syntaxnode: SyntaxNodeType<'declaration_claim'>):                 AST.ASTNodeDeclarationClaim;
@@ -148,7 +148,7 @@ class Decorator {
 		const decorators = new Map<string | RegExp, (node: SyntaxNode) => AST.ASTNodeCP>([
 			['source_file', (node) => new AST.ASTNodeGoal(
 				node as SyntaxNodeType<'source_file'>,
-				(node.children.length) ? this.decorateTS(node.children[0] as SyntaxNodeType<'block'>) : null,
+				(node.children.length) ? this.decorateTS(node.children[0] as SyntaxNodeType<'block'>, config) : null,
 				config,
 			)],
 
@@ -652,6 +652,7 @@ class Decorator {
 				node.children
 					.filter((c): c is SyntaxNodeSupertype<'statement'> => isSyntaxNodeSupertype(c, 'statement'))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeStatement>,
+				config,
 			)],
 
 			['declaration_type', (node) => new AST.ASTNodeDeclarationType(
