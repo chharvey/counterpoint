@@ -63,7 +63,7 @@ describe('ASTNodeDeclaration', () => {
 			it('allows duplicate declaration of blank identifier.', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					type _ = int | float;
-					type _ = [str, bool];
+					type _ = (str, bool);
 				}`).varCheck(); // assert does not throw
 			});
 		});
@@ -217,9 +217,9 @@ describe('ASTNodeDeclaration', () => {
 			});
 			it('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
 				const {goal} = setupScript(`{
-					let immut:  int[3]         = [42, 420, 4200];
-					let 'mut':  mut int[]      = List.<int>([42, 420, 4200]);
-					let mutmut: (mut int[])[3] = [List.<int>([42]), List.<int>([420]), List.<int>([4200])];
+					let immut:  (int, int, int)                   = (42, 420, 4200);
+					let 'mut':  mut [int]                         = List.<int>((42, 420, 4200));
+					let mutmut: (mut [int], mut [int], mut [int]) = (List.<int>((42,)), List.<int>((420,)), List.<int>((4200,)));
 				}`, null, {build: false});
 				const [immut, mut, mutmut] = [
 					goal.block!.validator.getSymbolInfo(0x100n) as SymbolSchemaVar,
@@ -245,90 +245,102 @@ describe('ASTNodeDeclaration', () => {
 			});
 			it('immutable lists/dicts/sets/maps should be covariant.', () => {
 				typeCheckGoal(extract_lines`
-					let l: List.<int | str> = List.<int>([42, 43]);
-					let d: Dict.<int | str> = Dict.<int>([a= 42, b= 43]);
-					let s: Set.<int | str>  = Set.<int>([42, 43]);
+					let l: List.<int | str> = List.<int>((42, 43));
+					let d: Dict.<int | str> = Dict.<int>((a= 42, b= 43));
+					let s: Set.<int | str>  = Set.<int>((42, 43));
 
-					let mk: Map.<int | str, bool>       = Map.<int, bool>([[42, false], [43, true]]);
-					let mv: Map.<int,       bool | str> = Map.<int, bool>([[42, false], [43, true]]);
-					let m:  Map.<int | str, bool | str> = Map.<int, bool>([[42, false], [43, true]]);
+					let mk: Map.<int | str, bool>       = Map.<int, bool>(((42, false), (43, true)));
+					let mv: Map.<int,       bool | str> = Map.<int, bool>(((42, false), (43, true)));
+					let m:  Map.<int | str, bool | str> = Map.<int, bool>(((42, false), (43, true)));
 				`);
 			});
 			it('mutable lists/dicts/sets/maps should not be covariant.', () => {
 				typeCheckGoal(extract_lines`
-					let l: mut List.<int | str> = List.<int>([42, 43]);
-					let d: mut Dict.<int | str> = Dict.<int>([a= 42, b= 43]);
-					let s: mut Set.<int | str>  = Set.<int>([42, 43]);
+					let l: mut List.<int | str> = List.<int>((42, 43));
+					let d: mut Dict.<int | str> = Dict.<int>((a= 42, b= 43));
+					let s: mut Set.<int | str>  = Set.<int>((42, 43));
 
-					let mk: mut Map.<int | str, bool>       = Map.<int, bool>([[42, false], [43, true]]);
-					let mv: mut Map.<int,       bool | str> = Map.<int, bool>([[42, false], [43, true]]);
-					let m:  mut Map.<int | str, bool | str> = Map.<int, bool>([[42, false], [43, true]]);
+					let mk: mut Map.<int | str, bool>       = Map.<int, bool>(((42, false), (43, true)));
+					let mv: mut Map.<int,       bool | str> = Map.<int, bool>(((42, false), (43, true)));
+					let m:  mut Map.<int | str, bool | str> = Map.<int, bool>(((42, false), (43, true)));
 				`, TypeErrorNotAssignable);
 			});
 			it('assigning collection literals.', () => {
 				typeCheckGoal(`{
-					let c: int[3] = [42, 420, 4200];
-					let d: [n42: int, n420: int] = [
+					let c: (int, int, int) = (42, 420, 4200);
+					let d: (n42: int, n420: int) = (
 						n42=  42,
 						n420= 420,
-					];
-					let v: [   int,    str] = [   42,    "hello"];
-					let s: [a: int, b: str] = [a= 42, b= "hello"];
+					);
+					let v: (   int,    str) = (   42,    "hello");
+					let s: (a: int, b: str) = (a= 42, b= "hello");
 				}`);
 			});
 			it('allows assigning a collection literal to super reference type (autoboxing at runtime).', () => {
 				typeCheckGoal(`{
-					let v: anything = [   42,    "hello"];
-					let s: anything = [a= 42, b= "hello"];
+					let v: anything = (   42,    "hello");
+					let s: anything = (a= 42, b= "hello");
 				}`);
 				typeCheckGoal(`{
-					let v: mut anything = [   42,    "hello"];
-					let s: mut anything = [a= 42, b= "hello"];
+					let v: mut anything = (   42,    "hello");
+					let s: mut anything = (a= 42, b= "hello");
 				}`); // mut anything == anything
 			});
 			context('assigning a collection literal to a wider mutable type.', () => {
 				it('disallows assigning Tuples/Records to Lists/Dicts', () => {
 					typeCheckGoal(`
-						let t1_1: List.<42 | 4.3> = [42];
-						let t2_1: List.<int>      = [42];
+						let t1_1: List.<42 | 4.3> = (42);
+						let t2_1: List.<int>      = (42);
 
-						let t1_2: mut List.<42 | 4.3> = [43];
-						let t2_2: mut List.<int>      = [43];
+						let t1_2: mut List.<42 | 4.3> = (43);
+						let t2_2: mut List.<int>      = (43);
 
-						let r1_1: Dict.<42 | 4.3> = [a= 42];
-						let r2_1: Dict.<int>      = [a= 42];
+						let r1_1: Dict.<42 | 4.3> = (a= 42);
+						let r2_1: Dict.<int>      = (a= 42);
 
-						let r1_2: mut Dict.<42 | 4.3> = [a= 43];
-						let r2_2: mut Dict.<int>      = [a= 43];
+						let r1_2: mut Dict.<42 | 4.3> = (a= 43);
+						let r2_2: mut Dict.<int>      = (a= 43);
 
-						let t3_1: [           List.<float>] = [       [4.3]];
-						let t3_2: [       mut List.<float>] = [       [4.3]];
-						let r3_1: [inner:     List.<float>] = [inner= [4.3]];
-						let r3_2: [inner: mut List.<float>] = [inner= [4.3]];
+						let t3_1: (           List.<float>,) = (       (4.3,),);
+						let t3_2: (       mut List.<float>,) = (       (4.3,),);
+						let r3_1: (inner:     List.<float>)  = (inner= (4.3,));
+						let r3_2: (inner: mut List.<float>)  = (inner= (4.3,));
 					`.split('\n'), TypeErrorNotAssignable);
 				});
-				it('allows assigning Sets and Maps.', () => {
+				it('allows assigning Lists, Dicts, Sets, and Maps.', () => {
 					typeCheckGoal(`{
-						let s: mut (int | str){} = {42,   "43"};
-						let m: mut {int -> str}  = {42 -> "43"};
+						let l: mut [int | str]   = [   42,      "43"];
+						let d: mut [: int | str] = [a= 42,   b= "43"];
+						let s: mut {int | str}   = {   42,      "43"};
+						let m: mut {int -> str}  = {   42 ->    "43"};
+						set l.[1]    = "44";
+						set d.[@a]   = "44";
 						set s.["44"] = true;
 						set m.[44]   = "45";
 					}`);
 					return typeCheckGoal(`{
-						let tuple_of_set:  [   mut int{}]        = [   {42}];
-						let tuple_of_map:  [   mut {int -> str}] = [   {42 -> "hello"}];
-						let record_of_set: [k: mut int{}]        = [k= {42}];
-						let record_of_map: [k: mut {int -> str}] = [k= {42 -> "hello"}];
-						set tuple_of_set.0.[43]  = true;
-						set tuple_of_map.0.[43]  = "world";
-						set record_of_set.k.[43] = true;
-						set record_of_map.k.[43] = "world";
+						let tuple_of_list:  (   mut [int],)        = (   [42],);
+						let tuple_of_dict:  (   mut [:int],)       = (   [a= 42],);
+						let tuple_of_set:   (   mut {int},)        = (   {42},);
+						let tuple_of_map:   (   mut {int -> str},) = (   {42 -> "hello"},);
+						let record_of_list: (k: mut [int])         = (k= [42]);
+						let record_of_dict: (k: mut [:int])        = (k= [b= 42]);
+						let record_of_set:  (k: mut {int})         = (k= {42});
+						let record_of_map:  (k: mut {int -> str})  = (k= {42 -> "hello"});
+						set tuple_of_list.0.[0]   = 43;
+						set tuple_of_dict.0.[@a]  = 43;
+						set tuple_of_set.0.[43]   = true;
+						set tuple_of_map.0.[43]   = "world";
+						set record_of_list.k.[0]  = 43;
+						set record_of_dict.k.[@b] = 43;
+						set record_of_set.k.[43]  = true;
+						set record_of_map.k.[43]  = "world";
 					}`);
 				});
 				it('should throw when assigning combo type to union.', () => {
 					typeCheckGoal(`
-						let x: [   bool,    int] | [   int,    bool] = [   true,    false];
-						let x: [a: bool, b: int] | [a: int, b: bool] = [a= true, b= false];
+						let x: (   bool,    int) | (   int,    bool) = (   true,    false);
+						let x: (a: bool, b: int) | (a: int, b: bool) = (a= true, b= false);
 					`.split('\n'), (err) => {
 						assert_instanceof(err, AggregateError);
 						assertAssignable(err, {
@@ -341,28 +353,28 @@ describe('ASTNodeDeclaration', () => {
 						return true;
 					});
 					return typeCheckGoal(`{
-						type Employee = [
+						type Employee = (
 							name:         str,
 							id:           int,
 							job_title:    str,
 							hours_worked: float,
-						];
-						type Volunteer = [
+						);
+						type Volunteer = (
 							name:         str,
 							agency:       str,
 							hours_worked: float,
-						];
-						let bob: Employee | Volunteer = [
+						);
+						let bob: Employee | Volunteer = (
 							name=         "Bob", %: str
 							hours_worked= 80.0,  %: float
-						];
+						);
 					}`, (err) => {
 						assert_instanceof(err, AggregateError);
 						assertAssignable(err, {
 							cons:   AggregateError,
 							errors: [
-								{cons: TypeErrorNotAssignable, message: 'Expression of type `[256: "Bob", 259: 80.0]` is not assignable to type `[256: str, 257: int, 258: str, 259: float]`.'},
-								{cons: TypeErrorNotAssignable, message: 'Expression of type `[256: "Bob", 259: 80.0]` is not assignable to type `[256: str, 261: str, 259: float]`.'},
+								{cons: TypeErrorNotAssignable, message: 'Expression of type `(256: "Bob", 259: 80.0)` is not assignable to type `(256: str, 257: int, 258: str, 259: float)`.'},
+								{cons: TypeErrorNotAssignable, message: 'Expression of type `(256: "Bob", 259: 80.0)` is not assignable to type `(256: str, 261: str, 259: float)`.'},
 							],
 						});
 						return true;
@@ -370,39 +382,39 @@ describe('ASTNodeDeclaration', () => {
 				});
 				it('throws when not assigned to correct type.', () => {
 					typeCheckGoal(`
-						let s: mut {int -> str}  = {42,   "43"};
-						let s: mut (int | str){} = {42 -> "43"};
+						let s: mut {int -> str} = {42,   "43"};
+						let s: mut {int | str}  = {42 -> "43"};
 					`.split('\n'), TypeErrorNotAssignable);
 					typeCheckGoal(`{
-						let t1: mut anything              = [42, "43"];
-						let t4: mut ([int, str] | Object) = [42, "43"];
+						let t1: mut anything              = (42, "43");
+						let t4: mut ((int, str) | Object) = (42, "43");
 
-						let r1: mut anything                    = [a= 42, b= "43"];
-						let r4: mut ([a: int, b: str] | Object) = [a= 42, b= "43"];
+						let r1: mut anything                    = (a= 42, b= "43");
+						let r4: mut ((a: int, b: str) | Object) = (a= 42, b= "43");
 
-						let s1: mut (42 | 4.3){}            = {42};
-						let s2: mut (int | float){}         = {42};
+						let s1: mut {42 | 4.3}              = {42};
+						let s2: mut {int | float}           = {42};
 						let s3: mut Object                  = {42};
-						let s4: mut (int{} | {str -> bool}) = {42};
-						let s5: mut (int{} | Object)        = {42};
+						let s4: mut ({int} | {str -> bool}) = {42};
+						let s5: mut ({int} | Object)        = {42};
 
 						let m1: mut {int -> float}            = {42 -> 4.3};
 						let m2: mut {int? -> float?}          = {42 -> 4.3};
 						let m3: mut Object                    = {42 -> 4.3};
-						let m4: mut ({int -> float} | str{})  = {42 -> 4.3};
+						let m4: mut ({int -> float} | {str})  = {42 -> 4.3};
 						let m5: mut ({int -> float} | Object) = {42 -> 4.3};
 					}`);
 				});
 				it('throws when entries mismatch.', () => {
 					typeCheckGoal(`
-						let s1: mut int{} = {"42"};
-						let s2: mut int{} = {42, "43"};
+						let s1: mut {int} = {"42"};
+						let s2: mut {int} = {42, "43"};
 
 						let m1: mut {int -> str} = {4.2 -> "43"};
 						let m2: mut {int -> str} = {42  -> 4.3};
 					`.split('\n'), TypeErrorNotAssignable);
 					typeCheckGoal(`{
-						let s3: mut (bool | str){} = {46, 47};
+						let s3: mut {bool | str} = {46, 47};
 
 						let m3_1: mut {str -> bool} = {1 -> false, 2.0 -> true};
 						let m3_2: mut {str -> bool} = {"a" -> 3,   "b" -> 4.0};
@@ -542,8 +554,8 @@ describe('ASTNodeDeclaration', () => {
 			});
 			it('tuples and records.', () => {
 				const {goal, stmts, mod} = setupScript(`{
-					let tup: [   int,    float,    [   null,    [   null,    bool]]] = [   42,    4.2,    [   null,    [   null,    true]]];
-					let rec: [a: int, b: float, c: [d: null, e: [f: null, g: bool]]] = [a= 42, b= 4.2, c= [d= null, e= [f= null, g= true]]];
+					let tup: (   int,    float,    (   null,    (   null,    bool))) = (   42,    4.2,    (   null,    (   null,    true)));
+					let rec: (a: int, b: float, c: (d: null, e: (f: null, g: bool))) = (a= 42, b= 4.2, c= (d= null, e= (f= null, g= true)));
 				}`, CONFIG_FOLDING_OFF);
 				const [tup, rec] = stmts.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 				const [tup_2, rec_c]         = [tup.children[2],   rec.children[2].val]   as [AST.ASTNodeTuple, AST.ASTNodeRecord];
@@ -566,8 +578,8 @@ describe('ASTNodeDeclaration', () => {
 			});
 			it('throws when tuples and records contain each other.', () => {
 				[
-					'let tup: [   int,    float,    [   null,    bool],    [g: bool, h: int],    [[j: float]]] = [   42,    4.2,    [   null,    true],    [g= false, h= 42],    [[j= 4.2]]];',
-					'let rec: [a: int, b: float, c: [d: null, e: bool], f: [   bool,    int], i: [k: [float]]] = [a= 42, b= 4.2, c= [d= null, e= true], f= [   false,    42], i= [k= [4.2]]];',
+					'let tup: (   int,    float,    (   null,    bool),    (g: bool, h: int),    ((j: float),)) = (   42,    4.2,    (   null,    true),    (g= false, h= 42),    ((j= 4.2),));',
+					'let rec: (a: int, b: float, c: (d: null, e: bool), f: (   bool,    int), i: (k: (float,))) = (a= 42, b= 4.2, c= (d= null, e= true), f= (   false,    42), i= (k= (4.2,)));',
 				].forEach((src) => {
 					const {goal} = setupScript(`{ ${ src } }`, CONFIG_FOLDING_OFF, {build: false});
 					return assert.throws(() => goal.build(), /not yet supported/);
@@ -656,20 +668,20 @@ describe('ASTNodeDeclaration', () => {
 			context('for accesses.', () => {
 				it('allows claiming access of compound types.', () => {
 					setupScript(`{
-						let var tuple: [int | null, [value: int | null]] = [null, [value= 42]];
+						let var tuple: (int | null, (value: int | null)) = (null, (value= 42));
 						claim tuple.0:       int;
 						claim tuple.1.value: null;
 
 						%% TODO: uncomment these
-						let var list: (int | float)[] = List.<int | float>([2.718, 6.283]);
+						let var list: [int | float] = [2.718, 6.283];
 						claim list.[0]: float;
 						claim list.[1]: float;
 
-						let var dict: [: int | float] = Dict.<int | float>([e= 2.718, tau= 6.283]);
+						let var dict: [: int | float] = [e= 2.718, tau= 6.283];
 						claim dict.[@e]:   float;
 						claim dict.[@tau]: float;
 
-						let var 'set': (int | float){} = {2.718, 6.283};
+						let var 'set': {int | float} = {2.718, 6.283};
 						claim 'set'.[2.718]: true;
 						claim 'set'.[6.283]: true;
 
@@ -681,7 +693,7 @@ describe('ASTNodeDeclaration', () => {
 				});
 				it('accessing property after claim is narrowed.', () => {
 					const {stmts} = setupScript(`{
-						let var record: [value: int | null, tuple: [int | null]] = [value= null, tuple= [42]];
+						let var record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
 						record.value;               % type \`int | null\`
 						record.tuple.0;             % type \`int | null\`
 						claim record.value:   null;
@@ -697,12 +709,12 @@ describe('ASTNodeDeclaration', () => {
 				});
 				it('allows claim after mutation.', () => {
 					xjs.Array.forEachAggregated([`{
-						let var record: [value: int | null, tuple: [int | null]] = [value= null, tuple= [42]];
-						set record = [value= 43, tuple= [null]];
+						let var record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
+						set record = (value= 43, tuple= (null,));
 						claim record.value:   null;
 						claim record.tuple.0: int;
 					}`, `{
-						let var list: mut (int | float)[] = List.<int | float>([2.718, 6.283]);
+						let var list: mut [int | float] = [2.718, 6.283];
 						set list.[0] = 1.618;
 						claim list.[0]: int;
 					}`], (src, i) => {
@@ -712,12 +724,12 @@ describe('ASTNodeDeclaration', () => {
 				});
 				it('allows mutating correct type after claim.', () => {
 					xjs.Array.forEachAggregated([`{
-						let var record: [value: int | null, tuple: [int | null]] = [value= null, tuple= [42]];
+						let var record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
 						claim record.value:   int;
 						claim record.tuple.0: null;
-						set record = [value= 43, tuple= [null]];
+						set record = (value= 43, tuple= (null,));
 					}`, `{
-						let var list: mut (int | float)[] = List.<int | float>([2.718, 6.283]);
+						let var list: mut [int | float] = [2.718, 6.283];
 						claim list.[0]: float;
 						set list.[0] = 1.618;
 					}`], (src, i) => {
@@ -727,12 +739,12 @@ describe('ASTNodeDeclaration', () => {
 				});
 				it('disallows mutating incorrect type after claim.', () => {
 					xjs.Array.forEachAggregated([`{
-						let var record: [value: int | null, tuple: [int | null]] = [value= null, tuple= [42]];
+						let var record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
 						claim record.value:   int;
 						claim record.tuple.0: null;
-						set record = [value= null, tuple= [42]];
+						set record = (value= null, tuple= (42,));
 					}`, `{
-						let var list: mut (int | float)[] = List.<int | float>([2.718, 6.283]);
+						let var list: mut [int | float] = [2.718, 6.283];
 						claim list.[0]: float;
 						set list.[0] = 42;
 					}`], (src, i) => {
@@ -833,28 +845,28 @@ describe('ASTNodeDeclaration', () => {
 			context('for property reassignment.', () => {
 				it('allows assignment directly on objects.', () => {
 					setupScript(`{
-						set List.<int>([42]).[0]                 = 42;
-						set Dict.<int>([i= 42]).[@i]             = 42;
-						set Set.<int>([42]).[43]                 = false;
-						set Map.<bool, int>([[true, 42]]).[true] = 42;
+						set List.<int>((42,)).[0]                 = 42;
+						set Dict.<int>((i= 42)).[@i]              = 42;
+						set Set.<int>((42,)).[43]                 = false;
+						set Map.<bool, int>(((true, 42),)).[true] = 42;
 					}`, null, {build: false}); // assert does not throw
 				});
 				it('throws when property assignee type is not supertype.', () => {
 					[
 						`{
-							let l: mut int[] = List.<int>([42]);
+							let l: mut [int] = List.<int>((42,));
 							set l.[0] = 4.2;
 						}`,
 						`{
-							let d: mut [:int] = Dict.<int>([i= 42]);
+							let d: mut [:int] = Dict.<int>((i= 42));
 							set d.[@i] = 4.2;
 						}`,
 						`{
-							let s: mut int{} = Set.<int>([42]);
+							let s: mut {int} = Set.<int>((42,));
 							set s.[42] = 4.2;
 						}`,
 						`{
-							let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
+							let m: mut {bool -> int} = Map.<bool, int>(((true, 42),));
 							set m.[true] = 4.2;
 						}`,
 					].forEach((src) => {
@@ -865,10 +877,10 @@ describe('ASTNodeDeclaration', () => {
 				});
 				it('throws when Set/Map accessor expression is not a valid type.', () => {
 					xjs.Array.forEachAggregated([`{
-						let s: mut int{} = Set.<int>([42]);
+						let s: mut {int} = Set.<int>((42,));
 						set s.[4.3] = true;
 					}`, `{
-						let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
+						let m: mut {bool -> int} = Map.<bool, int>(((true, 42),));
 						set m.["true"] = 43;
 					}`], (src) => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
@@ -879,27 +891,27 @@ describe('ASTNodeDeclaration', () => {
 				it('throws when assignee’s base type is not mutable.', () => {
 					[
 						`{
-							let t: [int] = [42];
+							let t: (int,) = (42,);
 							set t.0 = 43;
 						}`,
 						`{
-							let r: [i: int] = [i= 42];
+							let r: (i: int) = (i= 42);
 							set r.i = 43;
 						}`,
 						`{
-							let l: int[] = List.<int>([42]);
+							let l: [int] = List.<int>((42,));
 							set l.[0] = 43;
 						}`,
 						`{
-							let d: [:int] = Dict.<int>([i= 42]);
+							let d: [:int] = Dict.<int>((i= 42));
 							set d.[@i] = 43;
 						}`,
 						`{
-							let s: int{} = Set.<int>([42]);
+							let s: {int} = Set.<int>((42,));
 							set s.[43] = true;
 						}`,
 						`{
-							let m: {bool -> int} = Map.<bool, int>([[true, 42]]);
+							let m: {bool -> int} = Map.<bool, int>(((true, 42),));
 							set m.[true] = 43;
 						}`,
 					].forEach((src) => {

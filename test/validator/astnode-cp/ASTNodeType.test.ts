@@ -4,7 +4,6 @@ import {
 	type EntryType,
 	TYPE,
 	VALUE,
-	TypeError,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
@@ -23,7 +22,7 @@ describe('ASTNodeType', () => {
 		describe('ASTNodeTypeCollectionLiteral', () => {
 			specify('ASTNodeTypeTuple', () => {
 				assertEqualTypes(
-					AST.ASTNodeTypeTuple.fromSource('[int, bool, ?:str]').eval(),
+					AST.ASTNodeTypeTuple.fromSource('(int, bool, ?:str)').eval(),
 					new TYPE.Tuple([
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: false},
@@ -33,7 +32,7 @@ describe('ASTNodeType', () => {
 			});
 
 			specify('ASTNodeTypeRecord', () => {
-				const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('[x: int, y?: bool, _: str]');
+				const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('(x: int, y?: bool, _: str)');
 				return assertEqualTypes(
 					rec.eval(),
 					new TYPE.Record(new Map<bigint, EntryType>(rec.children.map((c, i) => [c.key.id, [
@@ -44,49 +43,29 @@ describe('ASTNodeType', () => {
 				);
 			});
 
-			describe('ASTNodeTypeList', () => {
-				it('returns a TYPE.List if there is no count.', () => {
-					assertEqualTypes(
-						AST.ASTNodeTypeList.fromSource('(int | bool)[]').eval(),
-						new TYPE.List(TYPE.INT.union(TYPE.BOOL)),
-					);
-				});
-				it('returns a TYPE.Tuple if there is a count.', () => {
-					const expected = [
-						TYPE.INT.union(TYPE.BOOL),
-						TYPE.INT.union(TYPE.BOOL),
-						TYPE.INT.union(TYPE.BOOL),
-					] as const;
-					return assertEqualTypes(
-						AST.ASTNodeTypeList.fromSource('(int | bool)[3]').eval(),
-						TYPE.Tuple.fromTypes(expected),
-					);
-				});
-				it('throws if count is negative.', () => {
-					assert.throws(() => AST.ASTNodeTypeList.fromSource('(int | bool)[-3]').eval(), TypeError);
-				});
-			});
-
-			specify('ASTNodeType{Dict,Set,Map}', () => {
+			specify('ASTNodeType{List,Dict,Set,Map}', () => {
+				const INT_BOOL: TYPE.Type = TYPE.INT.union(TYPE.BOOL);
 				assertEqualTypes(
 					[
-						AST.ASTNodeTypeDict .fromSource('[:int | bool]')  .eval(),
-						AST.ASTNodeTypeSet  .fromSource('(int | bool){}') .eval(),
-						AST.ASTNodeTypeMap  .fromSource('{int -> bool}')  .eval(),
+						AST.ASTNodeTypeList. fromSource('[int | bool]')  .eval(),
+						AST.ASTNodeTypeDict .fromSource('[:int | bool]') .eval(),
+						AST.ASTNodeTypeSet  .fromSource('{int | bool}')  .eval(),
+						AST.ASTNodeTypeMap  .fromSource('{int -> bool}') .eval(),
 					],
 					[
-						new TYPE.Dict(TYPE.INT.union(TYPE.BOOL)),
-						new TYPE.Set(TYPE.INT.union(TYPE.BOOL)),
-						new TYPE.Map(TYPE.INT, TYPE.BOOL),
+						new TYPE.List(INT_BOOL),
+						new TYPE.Dict(INT_BOOL),
+						new TYPE.Set (INT_BOOL),
+						new TYPE.Map (TYPE.INT, TYPE.BOOL),
 					],
 				);
 			});
 
 			it('does not throw if value type contains reference type.', () => {
 				setupScript(`{
-					type A =   [int, List.<float>, str];
-					type C =   [a: int, b: List.<float>, c: str];
-					type E = Set.<float>  [3];
+					type A = (int, List.<float>, str);
+					type C = (a: int, b: List.<float>, c: str);
+					type E = (Set.<float>, Set.<float>, Set.<float>);
 				}`, null, {build: false}); // assert does not throw
 			});
 		});
@@ -182,29 +161,6 @@ describe('ASTNodeType', () => {
 					TYPE.INT,
 				);
 			});
-		});
-	});
-
-
-
-	describe('ASTNodeTypeOperation', () => {
-		specify('#eval', () => {
-			assertEqualTypes(
-				AST.ASTNodeTypeOperationUnary.fromSource('int?').eval(),
-				TYPE.INT.union(TYPE.NULL),
-			);
-			assertEqualTypes(
-				AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
-				new TYPE.List(TYPE.INT, true),
-			);
-			assertEqualTypes(
-				AST.ASTNodeTypeOperationBinary.fromSource('Object & 3').eval(),
-				TYPE.OBJ.intersect(typeUnit(3n)),
-			);
-			assertEqualTypes(
-				AST.ASTNodeTypeOperationBinary.fromSource('4.2 | int').eval(),
-				typeUnit(4.2).union(TYPE.INT),
-			);
 		});
 	});
 });

@@ -548,18 +548,18 @@ let GREETING: """Hello World!""" = "Hello World!"; %> ParseError
 ## Compound Types
 Compound types are composed of other types.
 
-Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax         | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
------------------- | -------- | ------------  | ------------------- | ---------------------------- | -------------------------------------------- | -------------------------------------- | --------------------
-[Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `[str, str, str]` / `str[3]` | *(none)*                                     | `["x", "y", "z"]`                      | `[]`
-[Record](#records) | Fixed    | symbols       | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= "x", b= "y", c= "z"]`             | *(none)*
-[List](#lists)     | Variable | integers      | `List.<str>`        | `str[]`                      | `List.(["x", "y", "z"])`                     | *(none)*                               | *(none)*
-[Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                     | `Dict.([a= "x", b= "y", c= "z"])`            | *(none)*                               | *(none)*
-[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `str{}`                      | `Set.(["x", "y", "z"])`                      | `{"x", "y", "z"}`                      | `{}`
-[Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`               | `Map.([["u", "x"], ["v", "y"], ["w", "z"]])` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
+Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax                 | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
+------------------ | -------- | ------------  | ------------------- | ------------------------------------ | -------------------------------------------- | -------------------------------------- | --------------------
+[Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `("x", "y", "z")`<sup>&lowast;</sup>   | `()`
+[Record](#records) | Fixed    | symbols       | *(none)*            | `(a: str, b: str, c: str)`           | *(none)*                                     | `(a= "x", b= "y", c= "z")`             | *(none)*
+[List](#lists)     | Variable | integers      | `List.<str>`        | `[str]`                              | `List.(("x", "y", "z"))`                     | `["x", "y", "z"]`                      | `[]`
+[Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                             | `Dict.((a= "x", b= "y", c= "z"))`            | `[a= "x", b= "y", c= "z"]`             | *(none)*
+[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `{str}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
+[Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`                       | `Map.((("u", "x"), ("v", "y"), ("w", "z")))` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
 
 
 ### Tuples
-Tuples are fixed-size ordered lists of indexed values, with indices starting at `0`.
+Tuples are fixed-size ordered lists of indexed values, with indices starting at *0*.
 The values in a tuple are called **items** (the actual values) or **entries** (the “slots” where values are stored).
 The number of entries in a tuple is called its **count**.
 The count of a tuple is fixed and known at compile-time, as is the type of each entry in it.
@@ -567,41 +567,42 @@ The order of entries is significant: looping and iteration are performed in inde
 Tuples are heterogeneous, meaning they can be declared with different entry types.
 They are also read-only, which means their entries cannot be added, deleted, or reassigned.
 
-For example, the tuple `[3, 4.0, "seven"]` has an integer in the first position at index `0`,
-followed by a float at index `1`, followed by a string at index `2`. Its count is 3.
+For example, the tuple `(3, 4.0, "seven")` has an integer in the first position at index `0`,
+followed by a float at index `1`, followed by a string at index `2`. Its count is *3*.
 
-Tuple literals are comma-separated expressions within square brackets.
+Tuple literals are comma-separated expressions within parentheses.
 Tuple types use the same syntax, but instead of value expressions
 they contain type expressions (a.k.a. types).
 ```
-let elements: [str, str, str] = ["earth", "wind", "fire"];
+let elements: (str, str, str) = ("earth", "wind", "fire");
+```
+<sup>&lowast;</sup>Note: A tuple type or expression with exactly 1 entry must have either a leading or trailing comma,
+so as not to be confused with a grouped expression/type.
+I.e., `(T)` is just a parenthesized type, whereas `(T,)` is a 1-tuple type.
+
+```
+let element:   (str)  = "air";
+let singleton: (str,) = ("air",);
 ```
 
 Larger tuples are always assignable to smaller tuples,
 but assigning a smaller tuple to a larger tuple results in a TypeError.
 ```
-let elements: [str, str, str] = ["earth", "wind", "fire", true, 42];
-let elements_and_more: [str, str, str, bool, int] = ["earth", "wind", "fire"]; %> TypeError
+let elements: (str, str, str) = ("earth", "wind", "fire", true, 42);
+let elements_and_more: (str, str, str, bool, int) = ("earth", "wind", "fire"); %> TypeError
 ```
 The first declaration is allowed because the last two items are simply dropped off.
 
 Because tuples are read-only, the `mut` operator is invalid on tuple types.
 ```
-let elements: mut [str, str, str] = ["earth", "wind", "fire"]; %> TypeError
-```
-
-Note: If a tuple is homogeneous (its items are all of the same type),
-then we can use shorthand notation to annotate it:
-```
-let elements: str[3] = ["earth", "wind", "fire"];
-%             ^ shorthand for `[str, str, str]`
+let elements: mut (str, str, str) = ("earth", "wind", "fire"); %> TypeError
 ```
 
 #### Tuple Access
 Items of a tuple can be accessed via 0-based **dot-accessor notation**
 (index `0` represents the first item).
 ```
-let elements: [str, str, str] = ["earth", "wind", "fire"];
+let elements: (str, str, str) = ("earth", "wind", "fire");
 elements.0; %== "earth"
 elements.1; %== "wind"
 elements.2; %== "fire"
@@ -631,18 +632,18 @@ elements.-4; %> TypeErrorNoEntry
 
 A tuple’s items, type, and size are all fixed.
 ```
-let tuple: [bool, int, str] = [true, 4, "hello"];
+let tuple: (bool, int, str) = (true, 4, "hello");
 set tuple.0 = false;   %> MutabilityError
 set tuple.1 = 2;       %> MutabilityError
 set tuple.2 = "world"; %> MutabilityError
-tuple; %== [true, 4, "hello"];
+tuple; %== (true, 4, "hello");
 ```
 
 #### Optional Items
 Tuple types may have optional items, indicating that a tuple of that type might or might not have that item.
 ```
-let var x: [str, int, ?: bool] = ["hello", 42];
-set x = ["hello", 42, true];
+let var x: (str, int, ?: bool) = ("hello", 42);
+set x = ("hello", 42, true);
 ```
 The symbol `?:` in the type signature indicates that the item is optional.
 In a tuple type, all optional items *must* come after all required items.
@@ -666,12 +667,12 @@ They are also read-only, which means their entries cannot be added, deleted, or 
 
 For example, the record
 ```
-[
+(
 	fontFamily= "sans-serif",
 	fontSize=   1.25,
 	fontStyle=  "oblique",
 	fontWeight= 400,
-];
+);
 ```
 has a count of 4.
 
@@ -679,41 +680,41 @@ Keys may be reserved keywords, not just restricted to identifiers.
 This is because the record key will always be lexically bound to the record —
 it will never stand alone, so there’s no risk of syntax error.
 ```
-[
+(
 	let=   "to initialize a variable",
 	is=    "referential identity",
 	int=   "the Integer type",
 	false= "the negative boolean value",
-];
+);
 ```
 Conventionally, whitespace is omitted between the key name and the equals sign delimiter `=`.
 This practice helps programmers differentiate between record properties and variable declarations/assignments.
 
 Record literals cannot contain the same key more than once.
 ```
-[
+(
 	fontFamily= "sans-serif",
 	fontSize=   1.25,
 	fontFamily= "serif",      %> AssignmentError
-];
+);
 ```
-> AssignmentError: Duplicate record key: `fontFamily` is already set.
+> AssignmentError: Duplicate record/dict key: `fontFamily` is already set.
 
 Record literal types are similar to record values, except that the colon `:` is used as the key–value delimiter,
 and the property values are replaced with types.
 ```
-type StyleMap = [
+type StyleMap = (
 	fontWeight: int,
 	fontStyle:  "normal" | "italic" | "oblique",
 	fontSize:   float,
 	fontFamily: str,
-];
-let my_styles: StyleMap = [
+);
+let my_styles: StyleMap = (
 	fontFamily= "sans-serif",
 	fontSize=   1.25;
 	fontStyle=  "oblique",
 	fontWeight= 400,
-];
+);
 ```
 Notice how the properties may be written out of order. Records are famous for being order-independent,
 and we should not assume that any looping or iteration over a record is performed in any particular order.
@@ -724,49 +725,49 @@ cause any side-effects, those side-effects will be observed in the order the ent
 Larger records are always assignable to smaller records,
 but assigning a smaller record to a larger record results in a TypeError.
 ```
-let elements: [
+let elements: (
 	socrates:  str,
 	plato:     str,
 	aristotle: str,
-] = [
+) = (
 	socrates=   "earth",
 	euclid=     true,
 	plato=      "wind",
 	pythagoras= 42,
 	aristotle=  "fire",
-];
+);
 
-let elements_and_more: [
+let elements_and_more: (
 	socrates:   str,
 	plato:      str,
 	aristotle:  str,
 	euclid:     bool,
 	pythagoras: int,
-] = [
+) = (
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
-]; %> TypeError
+); %> TypeError
 ```
 The first declaration is allowed because the unused properties are simply dropped off.
 
 Because records are read-only, the `mut` operator is invalid on record types.
 ```
-let elements: mut [x: str, y: str, z: str] = [x= "earth", y= "wind", z= "fire"]; %> TypeError
+let elements: mut (x: str, y: str, z: str) = (x= "earth", y= "wind", z= "fire"); %> TypeError
 ```
 
 #### Record Access
 Values of a record can be accessed via **dot-accessor notation**.
 ```
-let elements: [
+let elements: (
 	socrates:  str,
 	plato:     str,
 	aristotle: str,
-] = [
+) = (
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
-];
+);
 elements.socrates;  %== "earth"
 elements.plato;     %== "wind"
 elements.aristotle; %== "fire"
@@ -780,25 +781,25 @@ elements.pythagoras; %> TypeErrorNoEntry
 
 A record’s properties, type, and size are all fixed.
 ```
-let record: [a: bool, b: int, c: str] = [a= true, b= 4, c= "hello"];
+let record: (a: bool, b: int, c: str) = (a= true, b= 4, c= "hello");
 set record.a = false;   %> MutabilityError
 set record.b = 2;       %> MutabilityError
 set record.c = "world"; %> MutabilityError
-record; %== [a= true, b= 4, c= "hello"];
+record; %== (a= true, b= 4, c= "hello");
 ```
 
 #### Optional Properties
 Record types may have optional properties, indicating that a record of that type might or might not have that property.
 ```
-let var y: [firstname: str, middlename?: str, lastname: str] = [
+let var y: (firstname: str, middlename?: str, lastname: str) = (
 	firstname= "Martha",
 	lastname=  "Dandridge",
-];
-set y = [
+);
+set y = (
 	firstname=  "Martha",
 	lastname=   "Washington",
 	middlename= "Dandridge",
-];
+);
 ```
 The symbol `?:` in the type signature indicates that the property is optional.
 In a record type, required and optional properties may be intermixed (order isn’t enforced).
@@ -811,7 +812,7 @@ If `y.middlename` exists, the expression `y?.middlename` produces that value; ot
 
 
 ### Lists
-Lists are variable-size ordered lists of indexed values, with indices starting at `0`.
+Lists are variable-size ordered lists of indexed values, with indices starting at *0*.
 The values in a list are called **items** (the actual values) or **entries** (the slots the values are stored in).
 The number of entries in a list is called its **count**; the count of a list is variable and unknown at compile-time.
 Lists are homogeneous, meaning all entries in the list have the same type (or parent type).
@@ -822,12 +823,13 @@ where `T` indicates the type of items in the list.
 Lists are constructed via the constructor syntax `List.<T>(arg)`,
 where `arg` is a [Tuple](#tuples) object.
 ```
-let elements: List.<str> = List.<str>(["earth", "wind", "fire"]);
+let elements: List.<str> = List.<str>(("earth", "wind", "fire"));
 ```
-A shorthand for the generic syntax `List.<T>` is `T[]`.
+A shorthand for the generic syntax `List.<T>` is `[T]`,
+and the list literal shorthand syntax is a sequence of comma-separated expressions within square brackets.
 We can mix item types, but the list type must be homogeneous.
 ```
-let elements: (str | bool | int)[] = List.<str | bool | int>(["earth", "wind", "fire", true, 42]);
+let elements: [str | bool | int] = ["earth", "wind", "fire", true, 42];
 ```
 The compiler considers all items in the list as having the same type.
 For example, the expression `elements.[0]` is of type `str | bool | int`,
@@ -837,7 +839,7 @@ and if the list were mutable, we could reassign that entry to an integer or bool
 List items are accessed by **bracket-accessor notation**, where the expression in brackets computes the index.
 The bracketed expression must be an Integer value (of type `int`).
 ```
-let elements: str[] = List.<str>(["earth", "wind", "fire"]);
+let elements: [str] = ["earth", "wind", "fire"];
 elements.[0];       %== "earth"
 elements.[3 - 2];   %== "wind"
 elements.[-3 + 2];  %== "fire"
@@ -876,25 +878,36 @@ where `T` indicates the type of values in the dict.
 Dicts are constructed via the constructor syntax `Dict.<T>(arg)`,
 where `arg` is a [Record](#records) object.
 ```
-let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
+let my_styles: Dict.<int | float | str> = Dict.<int | float | str>((
 	fontFamily= "sans-serif",
 	fontSize=   1.25,
 	fontStyle=  "oblique",
 	fontWeight= 400,
-]);
+));
 ```
-A shorthand for the generic syntax `Dict.<T>` is `[:T]`.
+A shorthand for the generic syntax `Dict.<T>` is `[:T]`,
+and the dict literal shorthand syntax is a sequence of comma-separated `key= value` pairs within square brackets.
 As shown above, we can mix value types, but the dict type must be homogeneous.
+
+Dict literals cannot contain the same key more than once.
+```
+[
+	fontFamily= "sans-serif",
+	fontSize=   1.25,
+	fontFamily= "serif",      %> AssignmentError
+];
+```
+> AssignmentError: Duplicate record/dict key: `fontFamily` is already set.
 
 #### Dict Access
 Dict properties are accessed by **bracket-accessor notation**, where the expression in brackets computes the key.
 The bracketed expression should be a Symbol value (of type `sym`).
 ```
-let elements: [: str] = Dict.<str>([
+let elements: [: str] = [
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
-]);
+];
 elements.[@socrates]; %== "earth"
 
 let key: sym = if user.hasPermissions then @plato else @aristotle;
@@ -941,15 +954,15 @@ where `T` indicates the type of elements in the set.
 Sets may be constructed via the constructor syntax `Set.<T>(arg)`,
 where `arg` is a [Tuple](#tuples) object of elements.
 ```
-let elements: Set.<str> = Set.<str>(["earth", "wind", "fire"]);
+let elements: Set.<str> = Set.<str>(("earth", "wind", "fire"));
 ```
 The set above has elements of one type.
 Typically this will be the case, but it’s possible for a set to contain a mix of different element types.
 
-A shorthand for the generic syntax `Set.<T>` is `T{}`,
+A shorthand for the generic syntax `Set.<T>` is `{T}`,
 and the set literal shorthand syntax is a sequence of comma-separated expressions within curly braces.
 ```
-let elements: str{} = {"earth", "wind", "fire"};
+let elements: {str} = {"earth", "wind", "fire"};
 ```
 
 The size of sets is not known at compile-time, and could change during run-time.
@@ -961,9 +974,9 @@ If a set is declared with duplicates, they are collapsed:
 The set `{"water", "water"}` only conains 1 element.
 Sets may have several elements that are un-identical but “equal”.
 ```
-let x: str[] = List.<str>(["water"]);
-let y: str[] = List.<str>(["water"]);
-let elements: (float | [str]){} = {0.0, -0.0, x, y};
+let x: [str] = List.<str>(("water",));
+let y: [str] = List.<str>(("water",));
+let elements: {float | [str]} = {0.0, -0.0, x, y};
 ```
 In this example, the elements `0.0` and `-0.0` are not identical
 (even if they are equal by the floating-point definition of equality).
@@ -975,13 +988,13 @@ Elements of a set can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the element to get.
 The value is `true` if the element is in the set, and `false` if not.
 ```
-let bases: Object{} = {
+let bases: {anything} = {
 	"who",
-	List.<str>(["what"]),
+	List.<str>(("what",)),
 	{ "i" -> {"don’t" -> "know"} },
 };
 bases.["""{{ "w" }}{{ "h" }}{{ "o" }}"""]; %== true
-bases.[List.<str>(["what"])];              %== false
+bases.[List.<str>(("what",))];             %== false
 bases.["idk"];                             %== false
 ```
 
@@ -1003,11 +1016,11 @@ where `K` indicates the type of antecedents and `V` indicates the type of conseq
 Maps may be constructed via the constructor syntax `Map.<K, V>(arg)`,
 where `arg` is a [Tuple](#tuples) object of key-value pairs (also Tuples).
 ```
-let bases: Map.<int | str, Object> = Map.<int | str, Object>([
-	[1,     "who"],
-	["2nd", ["what"]],
-	[1 + 2, { "i" -> {"don’t" -> "know"} }],
-]);
+let bases: Map.<int | str, anything> = Map.<int | str, anything>((
+	(1,     "who"),
+	("2nd", ("what",)),
+	(1 + 2, { "i" -> {"don’t" -> "know"} }),
+));
 ```
 The map above has antecedents and consequents of various types.
 Typically, all the antecedents will be of one type and all the consequents will be of one type,
@@ -1016,9 +1029,9 @@ but this isn’t a requirement.
 A shorthand for the generic syntax `Map.<K, V>` is `{K -> V}`,
 and the map literal shorthand syntax is a sequence of comma-separated `key -> value` pairs within curly braces.
 ```
-let bases: {int | str -> Object} = {
+let bases: {int | str -> anything} = {
 	1     -> "who",
-	"2nd" -> ["what"],
+	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
 };
 ```
@@ -1030,24 +1043,24 @@ Like records, the order of entries in a map is not necessarily significant.
 Antecedents have unique consequents in that latter declarations take precedence.
 In the case of maps, antecedents that are identical are considered “the same object”.
 ```
-let bases: {int | str -> Object} = {
+let bases: {int | str -> anything} = {
 	1     -> "who",
-	"2nd" -> ["what"],
+	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
-	4 - 1 -> [i= [`don’t`= "know"]],
+	4 - 1 -> (i= ('don’t'= "know")),
 };
 ```
-The consequent corresponding to the antecedent `3` will be `` [i= [`don’t`= "know"]] ``.
+The consequent corresponding to the antecedent `3` will be `` (i= ('don’t'= "know")) ``.
 
 Maps may have several antecedents that are un-identical but “equal”.
 ```
-let x: int{} = {3};
-let y: int{} = {3};
-let bases: {float | [int] -> Object} = {
+let x: {int} = {3};
+let y: {int} = {3};
+let bases: {float | {int} -> anything} = {
 	0.0  -> "who",
-	-0.0 -> ["what"],
+	-0.0 -> ("what",),
 	x    -> { "i" -> {"don’t" -> "know"} },
-	y    -> [i= [`don’t`= "know"]],
+	y    -> (i= ('don’t'= "know")),
 };
 ```
 In this example, the antecedents `0.0` and `-0.0` are not identical
@@ -1060,13 +1073,13 @@ Even though `0.0 == -0.0` and `x == y`, this map has four entries.
 Consequents of a map can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the antecedent to get.
 ```
-let bases: {int | str -> Object} = {
+let bases: {int | str -> anything} = {
 	1     -> "who",
-	"2nd" -> ["what"],
+	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
 };
 bases.[-1 * -1];         %== "who"
-bases.["""{{ 2 }}nd"""]; %== ["what"]
+bases.["""{{ 2 }}nd"""]; %== ("what",)
 bases.[3].["i"];         %== {"don’t" -> "know"}
 ```
 

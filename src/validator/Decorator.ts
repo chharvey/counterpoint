@@ -9,10 +9,7 @@ import {
 	Punctuator,
 	Keyword,
 } from '../parser/index.ts';
-import {
-	Validator,
-	AST,
-} from './index.ts';
+import {AST} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
@@ -101,7 +98,9 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_grouped'>):                      AST.ASTNodeType;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_tuple_literal'>):                AST.ASTNodeTypeTuple;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_record_literal'>):               AST.ASTNodeTypeRecord;
+	public decorateTS(syntaxnode: SyntaxNodeType<'type_list_literal'>):                 AST.ASTNodeTypeList;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_dict_literal'>):                 AST.ASTNodeTypeDict;
+	public decorateTS(syntaxnode: SyntaxNodeType<'type_set_literal'>):                  AST.ASTNodeTypeSet;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_map_literal'>):                  AST.ASTNodeTypeMap;
 	public decorateTS(syntaxnode: SyntaxNodeType<'property_access_type'>):              AST.ASTNodeIndex | AST.ASTNodeKey;
 	public decorateTS(syntaxnode: SyntaxNodeType<'type_compound'>):                     AST.ASTNodeTypeAccess | AST.ASTNodeTypeCall;
@@ -116,6 +115,8 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_grouped'>):                AST.ASTNodeExpression;
 	public decorateTS(syntaxnode: SyntaxNodeType<'tuple_literal'>):                     AST.ASTNodeTuple;
 	public decorateTS(syntaxnode: SyntaxNodeType<'record_literal'>):                    AST.ASTNodeRecord;
+	public decorateTS(syntaxnode: SyntaxNodeType<'list_literal'>):                      AST.ASTNodeList;
+	public decorateTS(syntaxnode: SyntaxNodeType<'dict_literal'>):                      AST.ASTNodeDict;
 	public decorateTS(syntaxnode: SyntaxNodeType<'set_literal'>):                       AST.ASTNodeSet;
 	public decorateTS(syntaxnode: SyntaxNodeType<'map_literal'>):                       AST.ASTNodeMap;
 	public decorateTS(syntaxnode: SyntaxNodeType<'property_access'>):                   AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
@@ -213,9 +214,19 @@ class Decorator {
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodePropertyType>,
 			)],
 
+			['type_list_literal', (node) => new AST.ASTNodeTypeList(
+				node as SyntaxNodeType<'type_list_literal'>,
+				this.decorateTypeNode(node.children[1] as SyntaxNodeSupertype<'type'>),
+			)],
+
 			['type_dict_literal', (node) => new AST.ASTNodeTypeDict(
 				node as SyntaxNodeType<'type_dict_literal'>,
 				this.decorateTypeNode(node.children[2] as SyntaxNodeSupertype<'type'>),
+			)],
+
+			['type_set_literal', (node) => new AST.ASTNodeTypeSet(
+				node as SyntaxNodeType<'type_set_literal'>,
+				this.decorateTypeNode(node.children[1] as SyntaxNodeSupertype<'type'>),
 			)],
 
 			['type_map_literal', (node) => new AST.ASTNodeTypeMap(
@@ -251,48 +262,11 @@ class Decorator {
 				))
 			)],
 
-			['type_unary_symbol', (node) => {
-				const basetype: AST.ASTNodeType = this.decorateTypeNode(node.children[0] as SyntaxNodeSupertype<'type'>);
-				const punc = node.children[1].text as Punctuator;
-				if (node.children.length === 2) {
-					return new AST.ASTNodeTypeOperationUnary(
-						node as SyntaxNodeType<'type_unary_symbol'>,
-						Decorator.TYPEOPERATORS_UNARY.get(punc)!,
-						basetype,
-					);
-				} else if (node.children.length === 3) { // we have either `T[]` or `T{}`
-					if (punc === Punctuator.BRAK_OPN) {
-						return new AST.ASTNodeTypeList(
-							node as SyntaxNodeType<'type_unary_symbol'>,
-							basetype,
-							null,
-						);
-					} else {
-						assert.strictEqual(punc, Punctuator.BRAC_OPN);
-						return new AST.ASTNodeTypeSet(
-							node as SyntaxNodeType<'type_unary_symbol'>,
-							basetype,
-						);
-					}
-				} else { // we have `T[n]`
-					assert.strictEqual(node.children.length, 4);
-					assert.strictEqual(punc, Punctuator.BRAK_OPN);
-					const count: bigint | number = Validator.cookTokenNumber(node.children[2].text, { // TODO: add field `Decorator#config`
-						...CONFIG_DEFAULT,
-						languageFeatures: {
-							...CONFIG_DEFAULT.languageFeatures,
-							integerRadices:    true,
-							numericSeparators: true,
-						},
-					});
-					assert.ok(typeof count === 'bigint'); // better type guard than `assert.strictEqual`
-					return new AST.ASTNodeTypeList(
-						node as SyntaxNodeType<'type_unary_symbol'>,
-						basetype,
-						count,
-					);
-				}
-			}],
+			['type_unary_symbol', (node) => new AST.ASTNodeTypeOperationUnary(
+				node as SyntaxNodeType<'type_unary_symbol'>,
+				Decorator.TYPEOPERATORS_UNARY.get(node.children[1].text as Punctuator)!,
+				this.decorateTypeNode(node.children[0] as SyntaxNodeSupertype<'type'>),
+			)],
 
 			['type_unary_keyword', (node) => new AST.ASTNodeTypeOperationUnary(
 				node as SyntaxNodeType<'type_unary_keyword'>,
@@ -346,6 +320,20 @@ class Decorator {
 
 			['record_literal', (node) => new AST.ASTNodeRecord(
 				node as SyntaxNodeType<'record_literal'>,
+				node.children
+					.filter((c): c is SyntaxNodeType<'property'> => isSyntaxNodeType(c, 'property'))
+					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeProperty>,
+			)],
+
+			['list_literal', (node) => new AST.ASTNodeList(
+				node as SyntaxNodeType<'list_literal'>,
+				node.children
+					.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
+					.map((c) => this.decorateExprNode(c)),
+			)],
+
+			['dict_literal', (node) => new AST.ASTNodeDict(
+				node as SyntaxNodeType<'dict_literal'>,
 				node.children
 					.filter((c): c is SyntaxNodeType<'property'> => isSyntaxNodeType(c, 'property'))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeProperty>,

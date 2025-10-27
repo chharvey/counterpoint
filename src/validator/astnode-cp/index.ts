@@ -27,6 +27,8 @@ export * from './ASTNodeTemplate.ts';
 export * from './ASTNodeCollectionLiteral.ts';
 export * from './ASTNodeTuple.ts';
 export * from './ASTNodeRecord.ts';
+export * from './ASTNodeList.ts';
+export * from './ASTNodeDict.ts';
 export * from './ASTNodeSet.ts';
 export * from './ASTNodeMap.ts';
 export * from './ASTNodeAccess.ts';
