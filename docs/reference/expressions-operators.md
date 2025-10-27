@@ -241,7 +241,7 @@ Operations that are associative are indicated as so in their respective sections
 
 
 ### Grouping
-Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
+Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.md) chapter.
 
 
 ### Property Access
@@ -315,7 +315,7 @@ For static types (e.g., tuples and records),
 either the normal or maybe access operator is allowed, corresponding to the optionality of the entry being accessed.
 When the maybe access operator is used for an optional entry, the entry type is unioned with `null`.
 ```
-claim record: [required: bool, optional?: int];
+claim record: (required: bool, optional?: int);
 record.required;  %: bool
 record?.required; %> TypeErrorInvalidOperation
 record.optional;  %> TypeErrorInvalidOperation
@@ -352,16 +352,16 @@ The **emptiness operator**, `?`, determines whether a value is considered “emp
 A value is “empty” if it’s “falsy”, if it’s a zero numeric value (`0`, `0.0`, or `-0.0`),
 or if it’s an empty string or empty collection (such as an array or set).
 
-| “Falsy” Values | “Empty” Values | “Truthy” Values |
-| -------------- | -------------- | --------------- |
-| `null`         | `null`         |                 |
-| `false`        | `false`        | `true`          |
-|                |                | all symbols     |
-|                | `0`            | all integers    |
-|                | `0.0`, `-0.0`  | all floats      |
-|                | `""`           | all strings     |
-|                | `[]`, `{}`     | all collections |
-|                |                | any other value |
+| “Falsy” Values | “Empty” Values   | “Truthy” Values |
+| -------------- | ---------------- | --------------- |
+| `null`         | `null`           |                 |
+| `false`        | `false`          | `true`          |
+|                |                  | all symbols     |
+|                | `0`              | all integers    |
+|                | `0.0`, `-0.0`    | all floats      |
+|                | `""`             | all strings     |
+|                | `()`, `[]`, `{}` | all collections |
+|                |                  | any other value |
 
 
 ### Mathematical Affirmation, Mathematical Negation
@@ -916,7 +916,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 
 
 ### Grouping
-Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
+Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.md) chapter.
 
 
 ### Type Property Access
@@ -929,12 +929,12 @@ Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
 The **type property accesss** syntax for types is analogous to the property access syntax of values.
 It accesses the index or key of a tuple or record type respectively.
 ```
-type T = [bool, int, str];
+type T = (bool, int, str);
 type T1 = T.1;             %== int
 type T_1 = T.-1;           %== str
 type T3 = T.3;             %> TypeError
 
-type R = [a: bool, b?: int, c: str];
+type R = (a: bool, b?: int, c: str);
 type Ra = R.a;                       %== bool
 type Rc = R?.b;                      %== int | null
 type Rd = R.d;                       %> TypeError
@@ -963,28 +963,6 @@ hello = "world";
 To be announced.
 
 
-### List
-```
-<Type> `[]`
-```
-The **List** operator `T[]` is shorthand for `List.<T>`.
-
-
-### Tuple
-```
-<Type> `[` <Integer> `]`
-```
-The **Tuple** operator `T[‹n›]` (where `‹n›` is 0 or greater) is shorthand for a tuple type with repeated entries of `T`.
-E.g., `int[3]` is shorthand for `[int, int, int]`.
-
-
-### Set
-```
-<Type> `{}`
-```
-The **Set** operator `T{}` is shorthand for `Set.<T>`.
-
-
 ### Mutable
 ```
 `mut` <Type>
@@ -1008,26 +986,26 @@ then attempting to modify it would result in a [Mutability Error](./errors.md#mu
 ```
 The **intersection** operator creates a strict combination of the operands.
 ```
-type T = [foo: bool] & [bar: int];
-let v: T = [
+type T = (foo: bool) & (bar: int);
+let v: T = (
 	foo= false,
 	bar= 42,
-];
+);
 ```
 
 When accessing an *intersection* of record types, we can access the *union* of the properties of each type.
 ```
-type Employee = [
+type Employee = (
 	name:        str,
 	id:          int,
 	jobTitle:    str,
 	hoursWorked: float,
-];
-type Volunteer = [
+);
+type Volunteer = (
 	name:        str,
 	agency:      str,
 	hoursWorked: float,
-];
+);
 claim alice: Employee & Volunteer;
 alice.name;        %: str
 alice.id;          %: int
@@ -1040,14 +1018,14 @@ so we’re guaranteed it will have the properties that are present in *either* t
 
 Overlapping properties in an intersection are themselves intersected.
 ```
-type A = [
+type A = (
 	key:    1 | 2 | 3,
 	valueA: int,
-];
-type B = [
+);
+type B = (
 	key:    2 | 3 | 4,
 	valueB: float,
-];
+);
 claim data: A & B;
 data.key;    %: 2 | 3 % gotten by `(1 | 2 | 3) & (2 | 3 | 4)`
 data.valueA; %: int
@@ -1070,17 +1048,17 @@ v = 42;
 
 When accessing a *union* of record types, we can only access the *intersection* of the properties of each type.
 ```
-type Employee = [
+type Employee = (
 	name:        str,
 	id:          int,
 	jobTitle:    str,
 	hoursWorked: float,
-];
-type Volunteer = [
+);
+type Volunteer = (
 	name:        str,
 	agency:      str,
 	hoursWorked: float,
-];
+);
 claim bob: Employee | Volunteer;
 bob.name;        %: str
 bob.hoursWorked; %: float
@@ -1103,14 +1081,14 @@ bob?.agency;   %: str | null
 
 Overlapping properties in a union are themselves unioned.
 ```
-type A = [
+type A = (
 	key:    1 | 2 | 3,
 	valueA: int,
-];
-type B = [
+);
+type B = (
 	key:    2 | 3 | 4,
 	valueB: float,
-];
+);
 claim data: A | B;
 data.key; %: 1 | 2 | 3 | 4 % `(1 | 2 | 3) | (2 | 3 | 4)`
 ```

@@ -22,74 +22,74 @@ import {
 
 describe('ASTNodeCall', () => {
 	const EVALUATE = [
-		'List.<int>([1, 2, 3]);',
-		'Dict.<int>([a= 1, b= 2, c= 3]);',
-		'Set.<int>([1, 2, 3]);',
-		`Map.<int, float>([
-			[1, 0.1],
-			[2, 0.2],
-		]);`,
+		'List.<int>((1, 2, 3));',
+		'Dict.<int>((a= 1, b= 2, c= 3));',
+		'Set.<int>((1, 2, 3));',
+		`Map.<int, float>((
+			(1, 0.1),
+			(2, 0.2),
+		));`,
 	] as const;
 	const LIST_CONS = [
 		'List.<int>();',
-		'List.<int>([]);',
+		'List.<int>(());',
 		'List.<int>(List.<int>());',
 		'List.<int>(Set.<int>());',
 		'List.<int>({});',
-		'List.<int>([1, 2, 3]);',
-		'List.<int>(List.<int>([1, 2, 3]));',
-		'List.<int>(Set.<int>([1, 2, 3]));',
+		'List.<int>((1, 2, 3));',
+		'List.<int>(List.<int>((1, 2, 3)));',
+		'List.<int>(Set.<int>((1, 2, 3)));',
 		'List.<int>({1, 2, 3});',
 	] as const;
 	const DICT_CONS = [
 		'Dict.<int>();',
 		'Dict.<int>(Dict.<int>());',
-		'Dict.<int>([a= 1, b= 2, c= 3]);',
-		'Dict.<int>(Dict.<int>([a= 1, b= 2, c= 3]));',
+		'Dict.<int>((a= 1, b= 2, c= 3));',
+		'Dict.<int>(Dict.<int>((a= 1, b= 2, c= 3)));',
 	] as const;
 	const SET_CONS = [
 		'Set.<int>();',
-		'Set.<int>([]);',
+		'Set.<int>(());',
 		'Set.<int>(List.<int>());',
 		'Set.<int>(Set.<int>());',
 		'Set.<int>({});',
-		'Set.<int>([1, 2, 3]);',
-		'Set.<int>(List.<int>([1, 2, 3]));',
-		'Set.<int>(Set.<int>([1, 2, 3]));',
+		'Set.<int>((1, 2, 3));',
+		'Set.<int>(List.<int>((1, 2, 3)));',
+		'Set.<int>(Set.<int>((1, 2, 3)));',
 		'Set.<int>({1, 2, 3});',
 	] as const;
 	const MAP_CONS = [
 		'Map.<int, float>();',
-		'Map.<int, float>([]);',
-		'Map.<int, float>(List.<[int, float]>());',
-		'Map.<int, float>(Set.<[int, float]>());',
+		'Map.<int, float>(());',
+		'Map.<int, float>(List.<(int, float)>());',
+		'Map.<int, float>(Set.<(int, float)>());',
 		'Map.<int, float>({});',
 		'Map.<int, float>(Map.<int, float>());',
-		`Map.<int, float>([
-			[1, 0.1],
-			[2, 0.2],
-			[3, 0.4],
-		]);`,
-		`Map.<int, float>(List.<[int, float]>([
-			[1, 0.1],
-			[2, 0.2],
-			[3, 0.4],
-		]));`,
-		`Map.<int, float>(Set.<[int, float]>([
-			[1, 0.1],
-			[2, 0.2],
-			[3, 0.4],
-		]));`,
+		`Map.<int, float>((
+			(1, 0.1),
+			(2, 0.2),
+			(3, 0.4),
+		));`,
+		`Map.<int, float>(List.<(int, float)>((
+			(1, 0.1),
+			(2, 0.2),
+			(3, 0.4),
+		)));`,
+		`Map.<int, float>(Set.<(int, float)>((
+			(1, 0.1),
+			(2, 0.2),
+			(3, 0.4),
+		)));`,
 		`Map.<int, float>({
-			[1, 0.1],
-			[2, 0.2],
-			[3, 0.4],
+			(1, 0.1),
+			(2, 0.2),
+			(3, 0.4),
 		});`,
-		`Map.<int, float>(Map.<int, float>([
-			[1, 0.1],
-			[2, 0.2],
-			[3, 0.4],
-		]));`,
+		`Map.<int, float>(Map.<int, float>((
+			(1, 0.1),
+			(2, 0.2),
+			(3, 0.4),
+		)));`,
 		`Map.<int, float>({
 			1 -> 0.1,
 			2 -> 0.2,
@@ -136,11 +136,11 @@ describe('ASTNodeCall', () => {
 		});
 		it('bypasses invariance for generic arguments.', () => {
 			extract_lines`
-				List.<mut int{}>([   {42}]);
-				Dict.<mut int{}>([a= {42}]);
-				Set .<mut int{}>([   {42}]);
-				Map.<float, mut int{}>([[4.2, {42}]]);
-				Map.<mut int{}, float>([[{42}, 4.2]]);
+				List.<mut {int}>((   {42},));
+				Dict.<mut {int}>((a= {42}));
+				Set .<mut {int}>((   {42},));
+				Map.<float, mut {int}>(((4.2, {42}),));
+				Map.<mut {int}, float>((({42}, 4.2),));
 			`.map((src) => AST.ASTNodeCall.fromSource(src).type());
 		});
 		it('Map has a default type parameter.', () => {
@@ -163,17 +163,17 @@ describe('ASTNodeCall', () => {
 		});
 		it('throws when providing incorrect number of arguments.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
-				List.<int>([], []);
-				Dict.<int>([], []);
-				Set.<int>([], []);
-				Map.<int>([], []);
+				List.<int>((), ());
+				Dict.<int>((), ());
+				Set.<int>((), ());
+				Map.<int>((), ());
 			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount, src));
 		});
 		it('throws when providing incorrect type of arguments.', () => {
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>([
 				['List.<int>(42);', ['42', ['List.<int>', 'Set.<int>']]],
 				['Set.<int>(42);',  ['42', ['List.<int>', 'Set.<int>']]],
-				['Map.<int>(42);',  ['42', ['List.<[int, int]>', 'Set.<[int, int]>', 'Map.<int, int>']]],
+				['Map.<int>(42);',  ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],
 			]), ([argtype, allowed_types], src) => assert.throws(
 				() => AST.ASTNodeCall.fromSource(src).type(),
 				(err) => {
@@ -189,11 +189,11 @@ describe('ASTNodeCall', () => {
 				},
 			));
 			return xjs.Array.forEachAggregated(extract_lines`
-				List.<int>([4.2]);
+				List.<int>((4.2,));
 				Dict.<int>(42);
-				Dict.<int>([4.2]);
-				Set.<int>([42, "42"]);
-				Map.<int>([[42, "42"]]);
+				Dict.<int>((4.2,));
+				Set.<int>((42, "42"));
+				Map.<int>(((42, "42"),));
 			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable, src));
 		});
 	});
