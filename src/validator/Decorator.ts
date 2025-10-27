@@ -133,13 +133,14 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):            AST.ASTNodeOperationUnary | AST.ASTNodeOperationBinaryLogical;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_conditional'>):            AST.ASTNodeOperationTernary;
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'expression'>):                   AST.ASTNodeExpression;
+	public decorateTS(syntaxnode: SyntaxNodeType<'statement_expression'>):              AST.ASTNodeStatementExpression;
+	public decorateTS(syntaxnode: SyntaxNodeSupertype<'statement'>):                    AST.ASTNodeStatement;
+	public decorateTS(syntaxnode: SyntaxNodeType<'block'>, config?: CPConfig):          AST.ASTNodeBlock;
 	public decorateTS(syntaxnode: SyntaxNodeType<'declaration_type'>):                  AST.ASTNodeDeclarationType;
 	public decorateTS(syntaxnode: SyntaxNodeType<'declaration_variable'>):              AST.ASTNodeDeclarationVariable;
+	public decorateTS(syntaxnode: SyntaxNodeType<'declaration_claim'>):                 AST.ASTNodeDeclarationClaim;
+	public decorateTS(syntaxnode: SyntaxNodeType<'declaration_reassignment'>):          AST.ASTNodeDeclarationReassignment;
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'declaration'>):                  AST.ASTNodeDeclaration;
-	public decorateTS(syntaxnode: SyntaxNodeType<'statement_expression'>):              AST.ASTNodeStatementExpression;
-	public decorateTS(syntaxnode: SyntaxNodeType<'statement_assignment'>):              AST.ASTNodeAssignment;
-	public decorateTS(syntaxnode: SyntaxNodeSupertype<'statement'>):                    AST.ASTNodeStatement;
-	public decorateTS(syntaxnode: SyntaxNodeType<'block'>,       config?: CPConfig):    AST.ASTNodeBlock;
 	public decorateTS(syntaxnode: SyntaxNodeType<'source_file'>, config?: CPConfig):    AST.ASTNodeGoal;
 	public decorateTS(syntaxnode: SyntaxNode): AST.ASTNodeCP;
 	/* eslint-enable @typescript-eslint/unified-signatures */
@@ -153,8 +154,8 @@ class Decorator {
 
 			/* # TERMINALS */
 			['identifier', (node) => (
-				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/))                                                                     ? new AST.ASTNodeTypeAlias(node as SyntaxNodeType<'identifier'>) :
-				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|assignee|declaration_variable|statement_expression|statement_assignment)$/)) ? new AST.ASTNodeVariable (node as SyntaxNodeType<'identifier'>) :
+				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim))$/))                                                ? new AST.ASTNodeTypeAlias(node as SyntaxNodeType<'identifier'>) :
+				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_(access|assign)|assignee|declaration_(variable|reassignment)|statement_expression)$/)) ? new AST.ASTNodeVariable (node as SyntaxNodeType<'identifier'>) :
 				assert.fail(`Expected ${ node.parent } to be a node that contains an identifier.`)
 			)],
 
@@ -164,8 +165,8 @@ class Decorator {
 			['word', (node) => new AST.ASTNodeKey(node as SyntaxNodeType<'word'>)],
 
 			['primitive_literal', (node) => (
-				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_type)$/))                                                                     ? new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'primitive_literal'>) :
-				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_access|property_assign|assignee|declaration_variable|statement_expression|statement_assignment)$/)) ? new AST.ASTNodeConstant    (node as SyntaxNodeType<'primitive_literal'>) :
+				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim))$/))                                                ? new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'primitive_literal'>) :
+				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property|case|function_arguments|property_(access|assign)|assignee|declaration_(variable|reassignment)|statement_expression)$/)) ? new AST.ASTNodeConstant    (node as SyntaxNodeType<'primitive_literal'>) :
 				assert.fail(`Expected ${ node.parent } to be a node that contains a primitive literal.`)
 			)],
 
@@ -641,6 +642,19 @@ class Decorator {
 			)],
 
 			/* ## Statements */
+			['statement_expression', (node) => new AST.ASTNodeStatementExpression(
+				node as SyntaxNodeType<'statement_expression'>,
+				(node.children.length === 2) ? this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>) : void 0,
+			)],
+
+			['block', (node) => new AST.ASTNodeBlock(
+				node as SyntaxNodeType<'block'>,
+				node.children
+					.filter((c): c is SyntaxNodeSupertype<'statement'> => isSyntaxNodeSupertype(c, 'statement'))
+					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeStatement>,
+				config,
+			)],
+
 			['declaration_type', (node) => new AST.ASTNodeDeclarationType(
 				node as SyntaxNodeType<'declaration_type'>,
 				(isSyntaxNodeType(node.children[1], 'identifier')) ? new AST.ASTNodeTypeAlias(node.children[1]) : null,
@@ -671,23 +685,16 @@ class Decorator {
 				))
 			)],
 
-			['statement_expression', (node) => new AST.ASTNodeStatementExpression(
-				node as SyntaxNodeType<'statement_expression'>,
-				(node.children.length === 2) ? this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>) : void 0,
+			['declaration_claim', (node) => new AST.ASTNodeDeclarationClaim(
+				node as SyntaxNodeType<'declaration_claim'>,
+				this.decorateTS(node.children[1] as SyntaxNodeType<'assignee'>),
+				this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
 			)],
 
-			['statement_assignment', (node) => new AST.ASTNodeAssignment(
-				node as SyntaxNodeType<'statement_assignment'>,
-				this.decorateTS(node.children[0] as SyntaxNodeType<'assignee'>),
-				this.decorateExprNode(node.children[2] as SyntaxNodeSupertype<'expression'>),
-			)],
-
-			['block', (node) => new AST.ASTNodeBlock(
-				node as SyntaxNodeType<'block'>,
-				node.children
-					.filter((c): c is SyntaxNodeSupertype<'statement'> => isSyntaxNodeSupertype(c, 'statement'))
-					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeStatement>,
-				config,
+			['declaration_reassignment', (node) => new AST.ASTNodeDeclarationReassignment(
+				node as SyntaxNodeType<'declaration_reassignment'>,
+				this.decorateTS(node.children[1] as SyntaxNodeType<'assignee'>),
+				this.decorateExprNode(node.children[3] as SyntaxNodeSupertype<'expression'>),
 			)],
 		]);
 		return (

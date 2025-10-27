@@ -28,6 +28,8 @@ export enum Keyword {
 	// storage
 	TYPE  = 'type',
 	LET   = 'let',
+	CLAIM = 'claim',
+	SET   = 'set',
 	BLANK = '_',
 
 	// modifier

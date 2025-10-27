@@ -1,11 +1,13 @@
-import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	type TYPE,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -23,7 +25,7 @@ import {
 export class ASTNodeClaim extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeClaim {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeClaim);
+		assert_instanceof(expression, ASTNodeClaim);
 		return expression;
 	}
 

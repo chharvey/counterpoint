@@ -9,9 +9,7 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorReassignment,
 	TypeErrorInvalidOperation,
-	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
-	MutabilityError01,
 } from '../../../src/index.ts';
 import {
 	assertAssignable,
@@ -70,174 +68,6 @@ describe('ASTNodeCP', () => {
 
 
 
-	describe('ASTNodeAssignment', () => {
-		describe('#varCheck', () => {
-			it('throws if the variable is not unfixed.', () => {
-				AST.ASTNodeGoal.fromSource(`{
-					let var i: int = 42;
-					i = 43;
-				}`).varCheck(); // assert does not throw
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					let i: int = 42;
-					i = 43;
-				}`).varCheck(), AssignmentErrorReassignment);
-			});
-			it('always throws for type alias reassignment.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					type T = 42;
-					T = 43;
-				}`).varCheck(), ReferenceErrorKind);
-			});
-		});
-
-
-		describe('#typeCheck', () => {
-			context('for variable reassignment.', () => {
-				it('throws when variable assignee type is not supertype.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
-						let var i: int = 42;
-						i = 4.3;
-					}`);
-					goal.varCheck();
-					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
-				});
-				it('allows reassignment when uninitialized.', () => {
-					assert.partialDeepStrictEqual(setupScript(`{
-						let var x?: int;
-						x = 42;
-					}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
-						isUnfixed:       true,
-						isUninitialized: true,
-						type:            TYPE.INT,
-						value:           null,
-					});
-				});
-				it('does not allow reassignment of `null` when uninitialized.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
-						let var x?: int;
-						x = null;
-					}`);
-					goal.varCheck();
-					assert.partialDeepStrictEqual(goal.block!.validator.getSymbolInfo(0x100n), {
-						isUnfixed:       true,
-						isUninitialized: true,
-					});
-					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
-				});
-			});
-
-			context('for property reassignment.', () => {
-				it('allows assignment directly on objects.', () => {
-					setupScript(`{
-						List.<int>([42]).[0]                 = 42;
-						Dict.<int>([i= 42]).[@i]             = 42;
-						Set.<int>([42]).[43]                 = false;
-						Map.<bool, int>([[true, 42]]).[true] = 42;
-					}`, null, {build: false}); // assert does not throw
-				});
-				it('throws when property assignee type is not supertype.', () => {
-					[
-						`{
-							let l: mut int[] = List.<int>([42]);
-							l.[0] = 4.2;
-						}`,
-						`{
-							let d: mut [:int] = Dict.<int>([i= 42]);
-							d.[@i] = 4.2;
-						}`,
-						`{
-							let s: mut int{} = Set.<int>([42]);
-							s.[42] = 4.2;
-						}`,
-						`{
-							let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
-							m.[true] = 4.2;
-						}`,
-					].forEach((src) => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-						goal.varCheck();
-						assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
-					});
-				});
-				it('throws when Set/Map accessor expression is not a valid type.', () => {
-					xjs.Array.forEachAggregated([`{
-						let s: mut int{} = Set.<int>([42]);
-						s.[4.3] = true;
-					}`, `{
-						let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
-						m.["true"] = 43;
-					}`], (src) => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-						goal.varCheck();
-						assert.throws(() => goal.typeCheck(), TypeErrorNotNarrow);
-					});
-				});
-				it('throws when assignee’s base type is not mutable.', () => {
-					[
-						`{
-							let t: [int] = [42];
-							t.0 = 43;
-						}`,
-						`{
-							let r: [i: int] = [i= 42];
-							r.i = 43;
-						}`,
-						`{
-							let l: int[] = List.<int>([42]);
-							l.[0] = 43;
-						}`,
-						`{
-							let d: [:int] = Dict.<int>([i= 42]);
-							d.[@i] = 43;
-						}`,
-						`{
-							let s: int{} = Set.<int>([42]);
-							s.[43] = true;
-						}`,
-						`{
-							let m: {bool -> int} = Map.<bool, int>([[true, 42]]);
-							m.[true] = 43;
-						}`,
-					].forEach((src) => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-						goal.varCheck();
-						assert.throws(() => goal.typeCheck(), MutabilityError01);
-					});
-				});
-			});
-		});
-
-
-		describe('#build', () => {
-			it('always returns `(local.set)`.', () => {
-				const {stmts, mod} = setupScript(`{
-					let var y: float = 4.2;
-					y = y * 10.0;
-				}`);
-				return assertEqualBins(
-					stmts[1].build(),
-					mod.local.set(0, (stmts[1] as AST.ASTNodeAssignment).assigned.build()),
-				);
-			});
-			it('allows switching between union members.', () => {
-				const {stmts, mod} = setupScript(`{
-					let var x: float | int = 4.2;
-					let var y: int | float = 4.2;
-					x = 8.4;
-					x = 16;
-					x = x;
-					x = y;
-				}`);
-				return assertEqualBins(
-					stmts.slice(2).map((stmt) => stmt.build()),
-					stmts.slice(2).map((stmt) => mod.local.set(0, (stmt as AST.ASTNodeAssignment).assigned.build())),
-				);
-			});
-		});
-	});
-
-
-
 	describe('ASTNodeGoal', () => {
 		describe('#varCheck', () => {
 			it('aggregates multiple errors.', () => {
@@ -246,7 +76,7 @@ describe('ASTNodeCP', () => {
 					let y: V & W | X & Y = null;
 					let x: int = 42;
 					let x: int = 420;
-					x = 4200;
+					set x = 4200;
 					type T = int;
 					type T = float;
 					let z: x = null;

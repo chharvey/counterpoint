@@ -601,6 +601,27 @@ Decorate(Expression ::= ExpressionConditional) -> SemanticExpression
 
 
 
+Decorate(StatementExpression ::= ";") -> SemanticStatementExpression
+	:= (SemanticStatementExpression);
+Decorate(StatementExpression ::= Expression ";") -> SemanticStatementExpression
+	:= (SemanticStatementExpression Decorate(Expression));
+
+
+
+Decorate(Statement ::= StatementExpression) -> SemanticStatementExpression
+	:= Decorate(StatementExpression);
+Decorate(Statement ::= Declaration) -> SemanticDeclaration
+	:= Decorate(Declaration);
+
+
+
+Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock
+	:= (SemanticBlock
+		...ParseList(Statement, SemanticStatement)
+	);
+
+
+
 Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType
 	:= (SemanticDeclarationType
 		Decorate(Type)
@@ -647,41 +668,30 @@ Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER "?:" Type ";") -> Semant
 
 
 
-Decorate(Declaration ::= DeclarationType) -> SemanticDeclarationType
-	:= Decorate(DeclarationType);
-Decorate(Declaration ::= DeclarationVariable) -> SemanticDeclarationVariable
-	:= Decorate(DeclarationVariable);
+Decorate(DeclarationClaim ::= "claim" Assignee ":" Type ";") -> SemanticDeclarationClaim
+	:= (SemanticDeclarationClaim
+		Decorate(Assignee)
+		Decorate(Type)
+	);
 
 
 
-Decorate(StatementExpression ::= ";") -> SemanticStatementExpression
-	:= (SemanticStatementExpression);
-Decorate(StatementExpression ::= Expression ";") -> SemanticStatementExpression
-	:= (SemanticStatementExpression Decorate(Expression));
-
-
-
-Decorate(StatementAssignment ::= Assignee "=" Expression ";") -> SemanticAssignment
-	:= (SemanticAssignment
+Decorate(DeclarationReassignment ::= "set" Assignee "=" Expression ";") -> SemanticDeclarationReassignment
+	:= (SemanticDeclarationReassignment
 		Decorate(Assignee)
 		Decorate(Expression)
 	);
 
 
 
-Decorate(Statement ::= Declaration) -> SemanticDeclaration
-	:= Decorate(Declaration);
-Decorate(Statement ::= StatementExpression) -> SemanticStatementExpression
-	:= Decorate(StatementExpression);
-Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
+Decorate(Declaration ::= DeclarationType) -> SemanticDeclarationType
+	:= Decorate(DeclarationType);
+Decorate(Declaration ::= DeclarationVariable) -> SemanticDeclarationVariable
+	:= Decorate(DeclarationVariable);
+Decorate(Declaration ::= DeclarationClaim) -> SemanticDeclarationClaim
+	:= Decorate(DeclarationClaim);
+Decorate(Declaration ::= DeclarationReassignment) -> SemanticDeclarationReassignment
 	:= Decorate(StatementAssignment);
-
-
-
-Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock
-	:= (SemanticBlock
-		...ParseList(Statement, SemanticStatement)
-	);
 
 
 

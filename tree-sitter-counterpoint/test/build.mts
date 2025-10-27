@@ -854,7 +854,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		],
 
 		// Assignee
-		// tested in #StatementAssignment
+		// tested in #DeclarationReassignment
 
 		ExpressionUnarySymbol: [
 			xjs.String.dedent`
@@ -1165,6 +1165,63 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 
 		/* ## Statements */
+		StatementExpression: [
+			xjs.String.dedent`
+				{
+					my_var;
+				}
+			`,
+			sourceStatements(s('statement_expression', s('identifier'))),
+		],
+
+		// Statement
+		// consists of #{Declaration,StatementExpression}
+
+		Block: [
+			xjs.String.dedent`
+				{
+					type T = U;
+					let a: T = b;
+					claim a: U;
+					set a = b;
+					a;
+				}
+			`,
+			sourceStatements(
+				s(
+					'declaration_type',
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'declaration_variable',
+					s('identifier'),
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'declaration_claim',
+					s(
+						'assignee',
+						s('identifier'),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_expression',
+					s('identifier'),
+				),
+			),
+		],
+
 		DeclarationType: [
 			xjs.String.dedent`
 				{
@@ -1275,34 +1332,22 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
-		// Declaration
-		// consists of #Declaration{Type,Variable}
-
-		StatementExpression: [
+		DeclarationClaim: [
 			xjs.String.dedent`
 				{
-					my_var;
-				}
-			`,
-			sourceStatements(s('statement_expression', s('identifier'))),
-		],
-
-		StatementAssignment: [
-			xjs.String.dedent`
-				{
-					my_var       = a;
-					tuple.1      = b;
-					record.prop  = c;
-					record._     = c;
-					list.[index] = d;
-					record.let   = 1;
-					record.bool  = 2;
-					record.true  = 3;
+					claim my_var:       T;
+					claim tuple.1:      U;
+					claim record.prop:  V;
+					claim record._:     X;
+					claim list.[index]: W;
+					claim record.let:   Y;
+					claim record.bool:  Z;
+					claim record.true:  S;
 				}
 			`,
 			sourceStatements(
 				s(
-					'statement_assignment',
+					'declaration_claim',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1310,7 +1355,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_assignment',
+					'declaration_claim',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1319,7 +1364,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_assignment',
+					'declaration_claim',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1328,7 +1373,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_assignment',
+					'declaration_claim',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1337,7 +1382,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_assignment',
+					'declaration_claim',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1346,7 +1391,95 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_assignment',
+					'declaration_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word')),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word', s('keyword_type'))),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word', s('keyword_value'))),
+					),
+					s('identifier'),
+				),
+			),
+		],
+
+		DeclarationReassignment: [
+			xjs.String.dedent`
+				{
+					set my_var       = a;
+					set tuple.1      = b;
+					set record.prop  = c;
+					set record._     = c;
+					set list.[index] = d;
+					set record.let   = 1;
+					set record.bool  = 2;
+					set record.true  = 3;
+				}
+			`,
+			sourceStatements(
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('integer')),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word', s('identifier'))),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('word')),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_assign', s('identifier')),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_reassignment',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1355,7 +1488,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('primitive_literal', s('integer')),
 				),
 				s(
-					'statement_assignment',
+					'declaration_reassignment',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1364,7 +1497,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('primitive_literal', s('integer')),
 				),
 				s(
-					'statement_assignment',
+					'declaration_reassignment',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1375,48 +1508,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
-		// Statement
-		// consists of #{Declaration,Statement{Expression,Assignment}}
-
-		Block: [
-			xjs.String.dedent`
-				{
-					type T = U;
-					let a: T = b;
-					a;
-					a = b;
-				}
-			`,
-			s(
-				'source_file',
-				s(
-					'block',
-					s(
-						'declaration_type',
-						s('identifier'),
-						s('identifier'),
-					),
-					s(
-						'declaration_variable',
-						s('identifier'),
-						s('identifier'),
-						s('identifier'),
-					),
-					s(
-						'statement_expression',
-						s('identifier'),
-					),
-					s(
-						'statement_assignment',
-						s(
-							'assignee',
-							s('identifier'),
-						),
-						s('identifier'),
-					),
-				),
-			),
-		],
+		// Declaration
+		// consists of #Declaration{Type,Variable,Claim,Reassignment}
 	}).map(([title, [source, expected]]) => xjs.String.dedent`
 		${ '='.repeat(title.length) }
 		${ title }

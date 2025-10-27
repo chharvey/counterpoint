@@ -105,7 +105,7 @@ Solution(s): Remove or rename the duplicate key.
 Cause: A fixed variable was reassigned.
 ```
 let my_var: int = 42;
-my_var = 24;          % AssignmentError: Reassignment of fixed variable `my_var`.
+set my_var = 24;      % AssignmentError: Reassignment of fixed variable `my_var`.
 ```
 Solution(s): Remove the reassignment, or declare the variable with `var`.
 
@@ -119,7 +119,7 @@ A type error is raised when the compiler recognizes a type mismatch.
 1. [2303](#2303-typeerrornotassignable)    — An expression was assigned to a type to which it is not assignable.
 1. [2304](#2304-typeerrornoentry)          — The validator encountered a non-existent index/property/argument access.
 1. [2305](#2305-typeerrornotcallable)      — The validator encountered an attempt to call a non-callable object.
-1. [2306](#2306-typeerrorargcount)         — An incorrect number of arguments is passed to a callable object.
+1. [2306](#2306-typeerrorargcount)         — An incorrect number of arguments was passed to a callable object.
 
 #### 2301: TypeErrorInvalidOperation
 Cause: An invalid operation was performed.
@@ -185,7 +185,7 @@ A mutability error is raised when the compiler recognizes an attempt to mutate a
 Cause: An immutable object was mutated.
 ```
 let x: [a: int] = [a= 42];
-x.a = 43;                  % MutabilityError: Mutation of an object of immutable type `[a: int]`.
+set x.a = 43;              % MutabilityError: Mutation of an object of immutable type `[a: int]`.
 ```
 Solution(s): Do not mutate the object’s entries, or else give it a `mut` type.
 

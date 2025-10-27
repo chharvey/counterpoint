@@ -13,9 +13,8 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 /**
  * A sematic node representing a statement.
  * Known subclasses:
- * - ASTNodeDeclaration
  * - ASTNodeStatementExpression
- * - ASTNodeAssignment
+ * - ASTNodeDeclaration
  */
 export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 	/**

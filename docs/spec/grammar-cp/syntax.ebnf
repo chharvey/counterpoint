@@ -39,6 +39,8 @@ Word ::=
 	// storage
 		| "type"
 		| "let"
+		| "claim"
+		| "set"
 		| "_"
 		| "void"
 	// modifier
@@ -190,6 +192,21 @@ Expression ::=
 
 
 
+StatementExpression
+	::= Expression? ";";
+
+Statement ::=
+	| StatementExpression
+	| Declaration
+;
+
+
+
+Block
+	::= "{" Statement+ "}";
+
+
+
 DeclarationType
 	::= "type" ("_" | IDENTIFIER) "=" Type ";";
 
@@ -198,29 +215,15 @@ DeclarationVariable ::=
 	| "let" "var"  ("_" | IDENTIFIER) "?:" Type                ";"
 ;
 
+DeclarationClaim        ::= "claim" Assignee ":" Type       ";";
+DeclarationReassignment ::= "set"   Assignee "=" Expression ";";
+
 Declaration ::=
 	| DeclarationType
 	| DeclarationVariable
+	| DeclarationClaim
+	| DeclarationReassignment
 ;
-
-
-
-StatementExpression
-	::= Expression? ";";
-
-StatementAssignment
-	::= Assignee "=" Expression ";";
-
-Statement ::=
-	| Declaration
-	| StatementExpression
-	| StatementAssignment
-;
-
-
-
-Block
-	::= "{" Statement+ "}";
 
 
 
