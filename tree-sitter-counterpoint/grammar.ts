@@ -354,6 +354,8 @@ module.exports = grammar({
 			// modifier
 			'nominal',
 			'var',
+			// control
+			'unless',
 			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
@@ -521,9 +523,23 @@ module.exports = grammar({
 		/* ## Statements */
 		statement_expression: $ => seq(optional($._expression), ';'),
 
+		...parameterize('statement_conditional', ({if: if_}) => $ => seq(
+			iff(!if_, 'unless'),
+			iff( if_, 'if'),
+			$._expression,
+			'then',
+			$.block,
+			iff(!if_, ';'),
+			iff( if_, choice(
+				seq(optional(seq('else', $.block)), ';'),
+				seq('else', $[call('statement_conditional', {if: if_})]),
+			)),
+		), 'if'),
+
 		_statement: $ => choice(
-			$._declaration,
 			$.statement_expression,
+			choice($.statement_conditional, $.statement_conditional__if), // TODO: write a function for representing calling `StatementConditional<±If>`
+			$._declaration,
 		),
 
 		block: $ => seq('{', repeat1($._statement), '}'),
@@ -598,6 +614,8 @@ module.exports = grammar({
 			// modifier
 			'nominal',
 			'var',
+			// control
+			'unless',
 			// type keyword
 			'nothing',
 			'bool',

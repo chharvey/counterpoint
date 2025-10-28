@@ -46,6 +46,8 @@ Word ::=
 	// modifier
 		| "nominal"
 		| "var"
+	// control
+		| "unless"
 	| IDENTIFIER
 	| KeywordType
 	| KeywordValue
@@ -195,8 +197,19 @@ Expression ::=
 StatementExpression
 	::= Expression? ";";
 
+StatementConditional<If> ::=
+	. <If->"unless" <If+>"if" Expression
+	. "then" Block
+	. <If->";"
+	. <If+>(
+		| ("else" Block)? ";"
+		| "else" StatementConditional<?If>
+	)
+;
+
 Statement ::=
 	| StatementExpression
+	| StatementConditional<±If>
 	| Declaration
 ;
 

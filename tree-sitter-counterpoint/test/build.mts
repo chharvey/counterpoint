@@ -1174,8 +1174,57 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceStatements(s('statement_expression', s('identifier'))),
 		],
 
+		StatementConditional: [
+			xjs.String.dedent`
+				{
+					if condition then { consequent; };
+					unless condition then { alternative; };
+					if condition then { consequent; } else { alternative; };
+					if condition1 then { consequent1; } else if condition2 then { consequent2; } else { alternative; };
+					if condition1 then { consequent1; } else if condition2 then { consequent2; } else if condition3 then { consequent3; } else { alternative; };
+				}
+			`,
+			sourceStatements(
+				s('statement_conditional__if', s('identifier'), s('block', s('statement_expression', s('identifier')))),
+				s('statement_conditional', s('identifier'), s('block', s('statement_expression', s('identifier')))),
+				s(
+					'statement_conditional__if',
+					s('identifier'),
+					s('block', s('statement_expression', s('identifier'))),
+					s('block', s('statement_expression', s('identifier'))),
+				),
+				s(
+					'statement_conditional__if',
+					s('identifier'),
+					s('block', s('statement_expression', s('identifier'))),
+					s(
+						'statement_conditional__if',
+						s('identifier'),
+						s('block', s('statement_expression', s('identifier'))),
+						s('block', s('statement_expression', s('identifier'))),
+					),
+				),
+				s(
+					'statement_conditional__if',
+					s('identifier'),
+					s('block', s('statement_expression', s('identifier'))),
+					s(
+						'statement_conditional__if',
+						s('identifier'),
+						s('block', s('statement_expression', s('identifier'))),
+						s(
+							'statement_conditional__if',
+							s('identifier'),
+							s('block', s('statement_expression', s('identifier'))),
+							s('block', s('statement_expression', s('identifier'))),
+						),
+					),
+				),
+			),
+		],
+
 		// Statement
-		// consists of #{Declaration,StatementExpression}
+		// consists of #{StatementExpression,StatementConditional,Declaration}
 
 		Block: [
 			xjs.String.dedent`
