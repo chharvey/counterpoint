@@ -637,29 +637,29 @@ describe('Decorator', () => {
 				% (statement_expression)
 			`]],
 
-			['Decorate(StatementConditional<-If> ::= "unless" Expression "then" Block ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
-				{
-					unless condition then { alternative; };
-				}
-				% (statement_conditional)
-			`]],
-			['Decorate(StatementConditional<+If> ::= "if" Expression "then" Block ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
+			['Decorate(StatementConditional<-Unless> ::= "if" Expression "then" Block ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
 				{
 					if condition then { consequent; };
 				}
-				% (statement_conditional__if)
+				% (statement_conditional)
 			`]],
-			['Decorate(StatementConditional<+If> ::= "if" Expression "then" Block__0 "else" Block__1 ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
+			['Decorate(StatementConditional<-Unless> ::= "if" Expression "then" Block__0 "else" Block__1 ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
 				{
 					if condition then { consequent; } else { alternative; };
 				}
-				% (statement_conditional__if)
+				% (statement_conditional)
 			`]],
-			['Decorate(StatementConditional<+If> ::= "if" Expression "then" Block "else" StatementConditional<+If>) -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
+			['Decorate(StatementConditional<-Unless> ::= "if" Expression "then" Block "else" StatementConditional<-Unless>) -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
 				{
 					if condition1 then { consequent1; } else if condition2 then { consequent2; } else { alternative; };
 				}
-				% (statement_conditional__if)
+				% (statement_conditional)
+			`]],
+			['Decorate(StatementConditional<+Unless> ::= "unless" Expression "then" Block ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
+				{
+					unless condition then { alternative; };
+				}
+				% (statement_conditional__unless)
 			`]],
 
 			['Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock', [AST.ASTNodeBlock, `

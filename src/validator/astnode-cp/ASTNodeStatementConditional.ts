@@ -23,7 +23,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'statement_conditional', ['if']>,
+		start_node: SyntaxNodeFamily<'statement_conditional', ['unless']>,
 		unless:     boolean,
 		private readonly condition:    ASTNodeExpression,
 		private readonly consequent:   ASTNodeBlock,

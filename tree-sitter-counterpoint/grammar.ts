@@ -523,22 +523,22 @@ module.exports = grammar({
 		/* ## Statements */
 		statement_expression: $ => seq(optional($._expression), ';'),
 
-		...parameterize('statement_conditional', ({if: if_}) => $ => seq(
-			iff(!if_, 'unless'),
-			iff( if_, 'if'),
+		...parameterize('statement_conditional', ({unless}) => $ => seq(
+			iff(!unless, 'if'),
+			iff( unless, 'unless'),
 			$._expression,
 			'then',
 			$.block,
-			iff(!if_, ';'),
-			iff( if_, choice(
+			iff(!unless, choice(
 				seq(optional(seq('else', $.block)), ';'),
-				seq('else', $[call('statement_conditional', {if: if_})]),
+				seq('else', $[call('statement_conditional', {unless})]),
 			)),
-		), 'if'),
+			iff(unless, ';'),
+		), 'unless'),
 
 		_statement: $ => choice(
 			$.statement_expression,
-			choice($.statement_conditional, $.statement_conditional__if), // TODO: write a function for representing calling `StatementConditional<±If>`
+			choice($.statement_conditional, $.statement_conditional__unless), // TODO: write a function for representing calling `StatementConditional<±Unless>`
 			$._declaration,
 		),
 

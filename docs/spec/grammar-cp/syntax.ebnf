@@ -197,19 +197,19 @@ Expression ::=
 StatementExpression
 	::= Expression? ";";
 
-StatementConditional<If> ::=
-	. <If->"unless" <If+>"if" Expression
+StatementConditional<Unless> ::=
+	. <Unless->"if" <Unless+>"unless" Expression
 	. "then" Block
-	. <If->";"
-	. <If+>(
+	. <Unless->(
 		| ("else" Block)? ";"
-		| "else" StatementConditional<?If>
+		| "else" StatementConditional<?Unless>
 	)
+	. <Unless+>";"
 ;
 
 Statement ::=
 	| StatementExpression
-	| StatementConditional<±If>
+	| StatementConditional<±Unless>
 	| Declaration
 ;
 
