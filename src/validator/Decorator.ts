@@ -650,20 +650,19 @@ class Decorator {
 
 			['statement_conditional', (node) => new AST.ASTNodeStatementConditional(
 				node as SyntaxNodeType<'statement_conditional'>,
-				((condition) => new AST.ASTNodeOperationUnary(
-					condition,
-					Operator.NOT,
-					this.decorateExprNode(condition),
-				))(node.children[1] as SyntaxNodeSupertype<'expression'>),
+				true,
+				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[3] as SyntaxNodeType<'block'>, config),
 			)],
 
 			['statement_conditional__if', (node) => node.children.length === 5 ? new AST.ASTNodeStatementConditional(
 				node as SyntaxNodeType<'statement_conditional__if'>,
+				false,
 				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[3] as SyntaxNodeType<'block'>, config),
 			) : new AST.ASTNodeStatementConditional(
 				node as SyntaxNodeType<'statement_conditional__if'>,
+				false,
 				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[3] as SyntaxNodeType<'block'>, config),
 				(node.children.length === 7

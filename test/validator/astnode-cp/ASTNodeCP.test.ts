@@ -91,24 +91,15 @@ describe('ASTNodeCP', () => {
 					}`, null, {build: false}); // assert does not throw
 				}));
 			});
-			context('when condition is not subtype of Boolean.', () => {
-				it('`if` statements throw.', () => {
-					xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
-						const {stmts} = setupScript(`{
-							${ decl }
-							if cond then { "consequent"; } else { "alternative"; };
-						}`, null, {typeCheck: false});
-						stmts[0].typeCheck(); // assert does not throw
-						return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotAssignable);
-					});
-				});
-				it('`unless` statements pass.', () => { // FIXME: should throw!
-					xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
-						setupScript(`{
-							${ decl }
-							unless cond then { "consequent"; };
-						}`, null, {build: false}); // assert does not throw
-					});
+			it('throws when condition is not subtype of Boolean.', () => {
+				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
+					const {stmts} = setupScript(`{
+						${ decl }
+						if     cond then { "consequent"; } else { "alternative"; };
+						unless cond then { "consequent"; };
+					}`, null, {typeCheck: false});
+					stmts[0].typeCheck(); // assert does not throw
+					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
 				});
 			});
 		});

@@ -24,11 +24,12 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_conditional', ['if']>,
+		unless:     boolean,
 		private readonly condition:    ASTNodeExpression,
 		private readonly consequent:   ASTNodeBlock,
 		private readonly alternative?: ASTNodeBlock | ASTNodeStatementConditional,
 	) {
-		super(start_node, {}, alternative ? [condition, consequent, alternative] : [condition, consequent]);
+		super(start_node, {unless}, alternative ? [condition, consequent, alternative] : [condition, consequent]);
 	}
 
 	public override typeCheck(): void {
