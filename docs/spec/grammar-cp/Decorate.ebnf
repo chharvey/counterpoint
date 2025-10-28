@@ -608,8 +608,35 @@ Decorate(StatementExpression ::= Expression ";") -> SemanticStatementExpression
 
 
 
+Decorate(StatementConditional<-If> ::= "unless" Expression "then" Block ";") -> SemanticStatementConditional
+	:= (SemanticStatementConditional
+		(SemanticOperation[operator=NOT] Decorate(Expression))
+		Decorate(Block)
+	);
+Decorate(StatementConditional<+If> ::= "if" Expression "then" Block ";") -> SemanticStatementConditional
+	:= (SemanticStatementConditional
+		Decorate(Expression)
+		Decorate(Block)
+	);
+Decorate(StatementConditional<+If> ::= "if" Expression "then" Block__0 "else" Block__1 ";") -> SemanticStatementConditional
+	:= (SemanticStatementConditional
+		Decorate(Expression)
+		Decorate(Block__0)
+		Decorate(Block__1)
+	);
+Decorate(StatementConditional<+If> ::= "if" Expression "then" Block "else" StatementConditional<+If>) -> SemanticStatementConditional
+	:= (SemanticStatementConditional
+		Decorate(Expression)
+		Decorate(Block)
+		Decorate(StatementConditional<+If>)
+	);
+
+
+
 Decorate(Statement ::= StatementExpression) -> SemanticStatementExpression
 	:= Decorate(StatementExpression);
+Decorate(Statement ::= StatementConditional<±If>) -> SemanticStatementConditional
+	:= Decorate(StatementConditional<±If>);
 Decorate(Statement ::= Declaration) -> SemanticDeclaration
 	:= Decorate(Declaration);
 

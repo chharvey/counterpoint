@@ -43,6 +43,7 @@ export * from './ASTNodeOperationBinaryLogical.ts';
 export * from './ASTNodeOperationTernary.ts';
 export * from './ASTNodeStatement.ts';
 export * from './ASTNodeStatementExpression.ts';
+export * from './ASTNodeStatementConditional.ts';
 export * from './ASTNodeBlock.ts';
 export * from './ASTNodeDeclaration.ts';
 export * from './ASTNodeDeclarationType.ts';

@@ -134,6 +134,7 @@ class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_conditional'>):            AST.ASTNodeOperationTernary;
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'expression'>):                   AST.ASTNodeExpression;
 	public decorateTS(syntaxnode: SyntaxNodeType<'statement_expression'>):              AST.ASTNodeStatementExpression;
+	public decorateTS(syntaxnode: SyntaxNodeFamily<'statement_conditional', ['if']>):   AST.ASTNodeStatementConditional;
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'statement'>):                    AST.ASTNodeStatement;
 	public decorateTS(syntaxnode: SyntaxNodeType<'block'>, config?: CPConfig):          AST.ASTNodeBlock;
 	public decorateTS(syntaxnode: SyntaxNodeType<'declaration_type'>):                  AST.ASTNodeDeclarationType;
@@ -645,6 +646,30 @@ class Decorator {
 			['statement_expression', (node) => new AST.ASTNodeStatementExpression(
 				node as SyntaxNodeType<'statement_expression'>,
 				(node.children.length === 2) ? this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>) : void 0,
+			)],
+
+			['statement_conditional', (node) => new AST.ASTNodeStatementConditional(
+				node as SyntaxNodeType<'statement_conditional'>,
+				((condition) => new AST.ASTNodeOperationUnary(
+					condition,
+					Operator.NOT,
+					this.decorateExprNode(condition),
+				))(node.children[1] as SyntaxNodeSupertype<'expression'>),
+				this.decorateTS(node.children[3] as SyntaxNodeType<'block'>, config),
+			)],
+
+			['statement_conditional__if', (node) => node.children.length === 5 ? new AST.ASTNodeStatementConditional(
+				node as SyntaxNodeType<'statement_conditional__if'>,
+				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
+				this.decorateTS(node.children[3] as SyntaxNodeType<'block'>, config),
+			) : new AST.ASTNodeStatementConditional(
+				node as SyntaxNodeType<'statement_conditional__if'>,
+				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
+				this.decorateTS(node.children[3] as SyntaxNodeType<'block'>, config),
+				(node.children.length === 7
+					? this.decorateTS(node.children[5] as SyntaxNodeType<'block'>, config)
+					: this.decorateTS(node.children[5] as SyntaxNodeType<'statement_conditional__if'>)
+				),
 			)],
 
 			['block', (node) => new AST.ASTNodeBlock(

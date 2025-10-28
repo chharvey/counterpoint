@@ -132,6 +132,7 @@ SemanticOperation[operator: COND]
 
 SemanticStatement =:=
 	| SemanticStatementExpression
+	| SemanticStatementConditional
 	| SemanticDeclaration
 ;
 
@@ -139,6 +140,11 @@ SemanticStatement =:=
 
 SemanticStatementExpression
 	::= SemanticExpression?;
+
+
+
+SemanticStatementConditional
+	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;
 
 
 
