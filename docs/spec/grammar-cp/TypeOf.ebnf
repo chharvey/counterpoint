@@ -344,7 +344,8 @@ Type! TypeOfUnfolded(SemanticOperation[operator: COND] expr) :=
 		2. *If* `t0` is `ToType(true)`:
 			1. *Return:* `t1`.
 		3. *Return:* `Union(t1, t2)`.
-	7. *Throw:* a new TypeErrorInvalidOperation.
+	7. *Else:*
+		1. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
 

@@ -19,6 +19,7 @@ import {
 	setupScript,
 	typeUnit,
 } from '../../helpers.ts';
+import {extract_lines} from '../../utils.ts';
 
 
 
@@ -62,6 +63,53 @@ describe('ASTNodeCP', () => {
 					stmts[1].build(),
 					mod.drop(stmts[1].expr.build()),
 				);
+			});
+		});
+	});
+
+
+
+	describe('ASTNodeStatementConditional', () => {
+		describe('#typeCheck', () => {
+			const NON_BOOLS: readonly string[] = extract_lines`
+				let var cond: int         = 42;
+				let var cond: int | false = 42;
+				let var cond: int | true  = 42;
+				let var cond: int | bool  = 42;
+			`;
+			const BOOLS: readonly string[] = extract_lines`
+				let var cond: false = false;
+				let var cond: true  = true;
+				let var cond: bool  = false;
+			`;
+			it('passes when condition is subtype of Boolean.', () => {
+				xjs.Array.forEachAggregated([BOOLS, NON_BOOLS], (decl_set) => xjs.Array.forEachAggregated(decl_set, (decl) => {
+					setupScript(`{
+						${ decl }
+						if     ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; } else { "alternative"; };
+						unless ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; };
+					}`, null, {build: false}); // assert does not throw
+				}));
+			});
+			context('when condition is not subtype of Boolean.', () => {
+				it('`if` statements throw.', () => {
+					xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
+						const {stmts} = setupScript(`{
+							${ decl }
+							if cond then { "consequent"; } else { "alternative"; };
+						}`, null, {typeCheck: false});
+						stmts[0].typeCheck(); // assert does not throw
+						return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotAssignable);
+					});
+				});
+				it('`unless` statements pass.', () => { // FIXME: should throw!
+					xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
+						setupScript(`{
+							${ decl }
+							unless cond then { "consequent"; };
+						}`, null, {build: false}); // assert does not throw
+					});
+				});
 			});
 		});
 	});

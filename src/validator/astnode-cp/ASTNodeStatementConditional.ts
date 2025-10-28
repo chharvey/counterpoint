@@ -1,4 +1,8 @@
 import type binaryen from 'binaryen';
+import {
+	TYPE,
+	TypeErrorNotAssignable,
+} from '../../index.ts';
 import {assert_instanceof} from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -25,6 +29,14 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 		private readonly alternative?: ASTNodeBlock | ASTNodeStatementConditional,
 	) {
 		super(start_node, {}, alternative ? [condition, consequent, alternative] : [condition, consequent]);
+	}
+
+	public override typeCheck(): void {
+		super.typeCheck();
+		const condition_type: TYPE.Type = this.condition.type();
+		if (!condition_type.isSubtypeOf(TYPE.BOOL)) {
+			throw new TypeErrorNotAssignable(condition_type, TYPE.BOOL, this.condition);
+		}
 	}
 
 	public override build(): binaryen.ExpressionRef {

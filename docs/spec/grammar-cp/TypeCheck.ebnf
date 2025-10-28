@@ -25,6 +25,20 @@ None! TypeCheck(SemanticExpression expr) :=
 
 
 
+None! TypeCheck(SemanticStatementConditional stmt) :=
+	1. *For each* `it` in `stmt.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	2. *Assert:* `stmt.children.count` is greater than 1.
+	3. *Assert:* `stmt.children.0` is a SemanticExpression.
+	4. *Let* `condition_type` be *Unwrap:* `TypeOf(stmt.children.0)`.
+	5. *If* *UnwrapAffirm:* `Subtype(condition_type, Boolean)` is `true`:
+		1. *Return.*
+	6. *Else:*
+		1. *Throw:* a new TypeErrorNotAssignable.
+;
+
+
+
 None! TypeCheck(SemanticDeclarationType decl) :=
 	1. *If* `decl.children.count` is 1:
 		1. *Let* `typevalue` be *Unwrap:* `TypeValueOf(decl.children.0)`.

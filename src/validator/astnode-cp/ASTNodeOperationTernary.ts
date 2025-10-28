@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
 	VALUE,
@@ -68,7 +67,9 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	public override type(): TYPE.Type {
 		// compute types early to rethrow any errors
 		const [t0, t1, t2]: TYPE.Type[] = this.children.map((operand) => operand.type());
-		assert.ok(t0.isSubtypeOf(TYPE.BOOL), new TypeErrorInvalidOperation(this));
+		if (!t0.isSubtypeOf(TYPE.BOOL)) {
+			throw new TypeErrorInvalidOperation(this);
+		}
 		return (
 			t0.isBottomType       ? TYPE.NOTHING :
 			t0.equals(TYPE.FALSE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
