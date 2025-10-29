@@ -5,7 +5,10 @@ import {
 	AssignmentErrorReassignment,
 	MutabilityError01,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -54,6 +57,7 @@ export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
 		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.writeType(), this);
 	}
 
+	@memoizeMethod
 	public override build(): binaryen.ExpressionRef {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
 		return this.builder.getLocal(this.assignee.id)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));

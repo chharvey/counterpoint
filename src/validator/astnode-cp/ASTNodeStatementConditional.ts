@@ -5,7 +5,10 @@ import {
 	BinVect,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -42,6 +45,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 		}
 	}
 
+	@memoizeMethod
 	public override build(): binaryen.ExpressionRef {
 		let   condition_build:   binaryen.ExpressionRef = this.condition.build();
 		const consequent_build:  binaryen.ExpressionRef = this.consequent.build();

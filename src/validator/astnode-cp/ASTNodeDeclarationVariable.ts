@@ -6,7 +6,10 @@ import {
 	type TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -76,6 +79,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 	}
 
+	@memoizeMethod
 	public override build(): binaryen.ExpressionRef {
 		if (
 			this.validator.config.compilerOptions.constantFolding && this.assigned?.fold() &&

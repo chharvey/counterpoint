@@ -1,6 +1,9 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
-import type {NonemptyArray} from '../../lib/index.ts';
+import {
+	type NonemptyArray,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -45,6 +48,7 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	}
 
 	/** @implements Buildable */
+	@memoizeMethod
 	public build(): binaryen.ExpressionRef {
 		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 child.');
 		return this.builder.module.block(null, this.children.map((stmt) => stmt.build()));

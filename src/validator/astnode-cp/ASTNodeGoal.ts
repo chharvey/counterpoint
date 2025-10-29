@@ -5,6 +5,7 @@ import {
 	Builder,
 	ParseError01,
 } from '../../index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -81,6 +82,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	}
 
 	/** @implements Buildable */
+	@memoizeMethod
 	public build(): binaryen.ExpressionRef {
 		if (this.block) {
 			const block_build: binaryen.ExpressionRef = this.block.build(); // must build before calling `.getLocals()`
