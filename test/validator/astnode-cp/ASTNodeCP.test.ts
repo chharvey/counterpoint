@@ -1,9 +1,11 @@
 import * as assert from 'node:assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	AST,
 	TYPE,
+	BinVect,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateDeclaration,
@@ -101,6 +103,79 @@ describe('ASTNodeCP', () => {
 					stmts[0].typeCheck(); // assert does not throw
 					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
 				});
+			});
+		});
+
+
+		describe('#build', () => {
+			it('always retuns `(if)`.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var cond: bool = false;
+					if cond then {
+						42;
+					} else {
+						4.2;
+					};
+				}`);
+				const stmt = stmts[1] as AST.ASTNodeStatementConditional;
+				return assertEqualBins(stmt.build(), mod.if(
+					new BinVect(mod, stmt.condition.build()).isSpecial(true),
+					stmt.consequent.build(),
+					stmt.alternative!.build(),
+				));
+			});
+			it('produces `(nop)` for antecedent if there is none.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var cond: bool = false;
+					if cond then {
+						42;
+					};
+				}`);
+				const stmt = stmts[1] as AST.ASTNodeStatementConditional;
+				assertEqualBins(stmt.build(), mod.if(
+					new BinVect(mod, stmt.condition.build()).isSpecial(true),
+					stmt.consequent.build(),
+					mod.nop(),
+				));
+			});
+			it('negates the condition for `unless` statements.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var cond: bool = false;
+					unless cond then {
+						42;
+					};
+				}`);
+				const stmt = stmts[1] as AST.ASTNodeStatementConditional;
+				assertEqualBins(stmt.build(), mod.if(
+					new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(true),
+					stmt.consequent.build(),
+					mod.nop(),
+				));
+			});
+			it('nested if–else.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var cond1: bool = false;
+					let var cond2: bool = true;
+					if cond1 then {
+						42;
+					} else if cond2 then {
+						4.2;
+					} else {
+						null;
+					};
+				}`);
+				const stmt1 = stmts[2] as AST.ASTNodeStatementConditional;
+				const stmt2 = stmt1.alternative as AST.ASTNodeStatementConditional;
+				assertEqualBins(stmt1.build(), mod.if(
+					new BinVect(mod, stmt1.condition.build()).isSpecial(true),
+					stmt1.consequent.build(),
+					stmt2.build(),
+				));
+				assertEqualBins(stmt2.build(), mod.if(
+					new BinVect(mod, stmt2.condition.build()).isSpecial(true),
+					stmt2.consequent.build(),
+					stmt2.alternative!.build(),
+				));
 			});
 		});
 	});

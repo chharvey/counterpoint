@@ -45,6 +45,34 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 
 
 
+Sequence<Instruction> Build(SemanticStatementConditional stmt) :=
+	1. *Assert:* `stmt.children.count` is greater than 1.
+	2. *Let* `instrs0` be *UnwrapAffirm:* `Build(stmt.children.0)`.
+	3. *If* `stmt.unless` is `true`:
+		1. Append "NOT" to `instrs0`.
+	4. *Let* `instrs1` be *UnwrapAffirm:* `Build(stmt.children.1)`.
+	5. *If* `stmt.children.count` is 3:
+		1. *Let* `instrs2` be *UnwrapAffirm:* `Build(expr.children.2)`.
+	6. *Else:*
+		1. *Let* `instrs2` be [].
+	7. *Return:* [
+		...instrs0,
+		"IF",
+		...instrs1,
+		"ELSE",
+		...instrs2,
+		"END",
+	].
+;
+
+
+
+Sequence<Instruction> Build(SemanticBlock block) :=
+	1. *Return:* a flattened mapping of `block.children` for each `stmt` to *UnwrapAffirm:* `Build(stmt)`.
+;
+
+
+
 Sequence<Instruction> Build(SemanticDeclarationType decl) :=
 	1. *Return:* [].
 ;
@@ -81,7 +109,7 @@ Sequence<Instruction> Build(SemanticDeclarationClaim decl) :=
 	1. *Return:* [].
 ;
 
-Sequence<Instruction> Build(SemanticAssignment assign) :=
+Sequence<Instruction> Build(SemanticDeclarationReassignment assign) :=
 	1. *Assert:* `assign.children.count` is 2.
 	2. *Let* `name` be the string-concatenation of "glb" and `assign.children.0.id`.
 	3. *Let* `instrs` be *UnwrapAffirm:* `Build(assign.childen.1)`.
@@ -89,12 +117,6 @@ Sequence<Instruction> Build(SemanticAssignment assign) :=
 		...instrs,
 		"SET the global variable `name`.",
 	].
-;
-
-
-
-Sequence<Instruction> Build(SemanticBlock block) :=
-	1. *Return:* a flattened mapping of `block.children` for each `stmt` to *UnwrapAffirm:* `Build(stmt)`.
 ;
 
 
