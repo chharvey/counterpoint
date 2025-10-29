@@ -1,5 +1,5 @@
 import * as xjs from 'extrajs';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	Builder,
@@ -82,6 +82,20 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 
 	/** @implements Buildable */
 	public build(): binaryen.ExpressionRef {
-		return this.block?.build() ?? this.builder.module.nop();
+		if (this.block) {
+			const block_build: binaryen.ExpressionRef = this.block.build(); // must build before calling `.getLocals()`
+			this.builder.setupModule((mod) => {
+				const fn_name: string = 'fn0';
+				mod.addFunction(
+					fn_name,
+					binaryen.none,
+					binaryen.none,
+					this.builder.getLocals().map((var_) => var_.type),
+					block_build,
+				);
+				mod.addFunctionExport(fn_name, fn_name);
+			});
+		}
+		return this.builder.module.nop();
 	}
 }

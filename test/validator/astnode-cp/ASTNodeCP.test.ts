@@ -107,6 +107,20 @@ describe('ASTNodeCP', () => {
 
 
 
+	describe('ASTNodeBlock', () => {
+		describe('#build', () => {
+			it('always retuns `(block)`.', () => {
+				const {goal, stmts, mod} = setupScript(`{
+					let var x: int = 42;
+					x;
+				}`);
+				assertEqualBins(goal.block!.build(), mod.block(null, stmts.map((stmt) => stmt.build())));
+			});
+		});
+	});
+
+
+
 	describe('ASTNodeGoal', () => {
 		describe('#varCheck', () => {
 			it('aggregates multiple errors.', () => {
