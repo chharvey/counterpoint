@@ -14,6 +14,7 @@ import {ASTNodeGoal} from './index.ts';
 import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeStatement} from './ASTNodeStatement.ts';
+import type {ASTNodeStatementConditional} from './ASTNodeStatementConditional.ts';
 
 
 
@@ -32,18 +33,18 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	}
 
 
-	readonly #validator: Validator;
+	#validator?: Validator;
 
 	public constructor(
 		start_node: SyntaxNodeType<'block'>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeStatement>>,
-		config: CPConfig,
+		private readonly config:           CPConfig,
 	) {
 		super(start_node, {}, children);
-		this.#validator = new Validator(config);
 	}
 
 	public override get validator(): Validator {
+		this.#validator ??= new Validator(this.config, (this.parent as ASTNodeStatementConditional | ASTNodeGoal | undefined)?.validator);
 		return this.#validator;
 	}
 

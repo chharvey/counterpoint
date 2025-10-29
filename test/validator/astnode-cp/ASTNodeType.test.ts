@@ -150,6 +150,14 @@ describe('ASTNodeType', () => {
 					type U = float | T;
 				}`).varCheck(), ReferenceErrorUndeclared);
 			});
+			it('throws when declared in an inner scope.', () => {
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					if true then {
+						type T = int;
+					};
+					type U = float | T;
+				}`).varCheck(), ReferenceErrorUndeclared);
+			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					T;

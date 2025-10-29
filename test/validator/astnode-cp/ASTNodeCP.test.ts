@@ -191,6 +191,18 @@ describe('ASTNodeCP', () => {
 				}`);
 				assertEqualBins(goal.block!.build(), mod.block(null, stmts.map((stmt) => stmt.build())));
 			});
+			it('nesting scopes.', () => {
+				setupScript(`{
+					let var x: int = 42;
+					x;
+					if true then {
+						x;
+						let var y: float = 4.2;
+						y;
+					};
+					x;
+				}`); // assert does not throw
+			});
 		});
 	});
 
