@@ -1,8 +1,9 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	drop_then,
 	BinVect,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
@@ -49,15 +50,9 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		const [arg0, arg1, arg2]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
 
 		if (t0.equals(TYPE.FALSE)) {
-			return this.builder.module.block(null, [
-				this.builder.module.drop(arg0),
-				arg2,
-			], binaryen.v128);
+			return drop_then(this.builder.module, [arg0], arg2);
 		} else if (t0.equals(TYPE.TRUE)) {
-			return this.builder.module.block(null, [
-				this.builder.module.drop(arg0),
-				arg1,
-			], binaryen.v128);
+			return drop_then(this.builder.module, [arg0], arg1);
 		}
 
 		return this.builder.module.if(new BinVect(this.builder.module, arg0).isSpecial(true), arg1, arg2);

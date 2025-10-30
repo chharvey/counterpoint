@@ -9,6 +9,7 @@ import {
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
+	drop_then,
 	type Builder,
 	BinVect,
 	TypeErrorInvalidOperation,
@@ -79,19 +80,6 @@ describe('ASTNodeOperation', () => {
 		vid:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',  [arg0, arg1], binaryen.v128),
 		veq:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',  [arg0, arg1], binaryen.v128),
 	} as const;
-
-	/**
-	 * Return a block containing `(drop)` expressions for each of `args`, followed by a second expression.
-	 * If `final` is provided as an ExpressionRef, it is the second expression;
-	 * otherwise, a BinVect of boolean value is the second expression.
-	 */
-	function drop_then(mod: binaryen.Module, args: readonly binaryen.ExpressionRef[], final: binaryen.ExpressionRef | boolean): binaryen.ExpressionRef {
-		return mod.block(null, [
-			...args.map((arg) => mod.drop(arg)),
-			typeof final === 'number' ? final : new BinVect(mod, final).vect,
-		], binaryen.v128);
-	}
-
 
 
 
