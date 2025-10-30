@@ -45,7 +45,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-		if (this.type().equals(TYPE.FALSE)) {
+		if (this.type().isSubtypeOf(TYPE.FALSE)) {
 			return drop_then(this.builder.module, [arg0, arg1], false);
 		}
 		return this.builder.module.call(new Map<Operator, string>([

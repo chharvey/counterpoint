@@ -49,10 +49,10 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		const t0:                 TYPE.Type                = this.operand0.type();
 		const [arg0, arg1, arg2]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
 
-		if (t0.equals(TYPE.FALSE)) {
-			return drop_then(this.builder.module, [arg0], arg2);
-		} else if (t0.equals(TYPE.TRUE)) {
+		if (t0.isSubtypeOf(TYPE.TRUE)) {
 			return drop_then(this.builder.module, [arg0], arg1);
+		} else if (t0.isSubtypeOf(TYPE.FALSE)) {
+			return drop_then(this.builder.module, [arg0], arg2);
 		}
 
 		return this.builder.module.if(new BinVect(this.builder.module, arg0).isSpecial(true), arg1, arg2);

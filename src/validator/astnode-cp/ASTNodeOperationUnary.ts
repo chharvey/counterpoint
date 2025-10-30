@@ -49,16 +49,11 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		const t0:   TYPE.Type              = this.operand.type();
 		const arg0: binaryen.ExpressionRef = this.operand.build();
-		if (this.operator === Operator.NOT) {
-			if (t0.isDefinitelyFalsy) {
-				return drop_then(this.builder.module, [arg0], true);
-			} else if (t0.isDefinitelyTruthy) {
-				return drop_then(this.builder.module, [arg0], false);
-			}
-		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
+		if (this.type().isSubtypeOf(TYPE.TRUE)) {
 			return drop_then(this.builder.module, [arg0], true);
+		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
+			return drop_then(this.builder.module, [arg0], false);
 		}
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.NOT,   'vnot'],
