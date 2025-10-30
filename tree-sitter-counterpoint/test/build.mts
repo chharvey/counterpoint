@@ -724,7 +724,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// tested in #FunctionCall
 
 		// ExpressionUnit
-		// consists of #{IDENTIFIER,PrimitiveLiteral,StringTemplate,ExpressionGrouped,{Tuple,Record,Set,Map}Literal}
+		// consists of #{IDENTIFIER,PrimitiveLiteral,StringTemplate,ExpressionGrouped,{Tuple,Record,Set,Map}Literal,Block}
 
 		// PropertyAccess
 		// tested in #ExpressionCompound
@@ -1150,14 +1150,37 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					if a then b else c;
+					if a then {b} else {c};
+					if a then ({b}) else ({c});
+					if a then ({ b; }) else ({ c; });
 				}
 			`,
-			sourceExpressions(s(
-				'expression_conditional',
-				s('identifier'),
-				s('identifier'),
-				s('identifier'),
-			)),
+			sourceExpressions(
+				s(
+					'expression_conditional',
+					s('identifier'),
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'expression_conditional',
+					s('identifier'),
+					s('set_literal', s('identifier')),
+					s('set_literal', s('identifier')),
+				),
+				s(
+					'expression_conditional',
+					s('identifier'),
+					s('expression_grouped', s('set_literal', s('identifier'))),
+					s('expression_grouped', s('set_literal', s('identifier'))),
+				),
+				s(
+					'expression_conditional',
+					s('identifier'),
+					s('expression_grouped', s('block', s('statement_expression', s('identifier')))),
+					s('expression_grouped', s('block', s('statement_expression', s('identifier')))),
+				),
+			),
 		],
 
 		// Expression
@@ -1234,6 +1257,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					claim a: U;
 					set a = b;
 					a;
+					{
+						b;
+					};
 				}
 			`,
 			sourceStatements(
@@ -1267,6 +1293,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'statement_expression',
 					s('identifier'),
+				),
+				s(
+					'statement_expression',
+					s('block', s('statement_expression', s('identifier'))),
 				),
 			),
 		],

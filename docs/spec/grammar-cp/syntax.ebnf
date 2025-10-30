@@ -150,6 +150,7 @@ ExpressionUnit<Block> ::=
 	| RecordLiteral
 	| SetLiteral
 	| MapLiteral
+	| <Block+>Block
 ;
 
 PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression<+Block> "]");

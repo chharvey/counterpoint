@@ -246,18 +246,23 @@ const OPT_COM = optional(',');
  *
  * If needing an alternative, use a simple ternary operator:
  * ```
- * (condition) ? consequent : alternative
+ * condition ? consequent : alternative
  * ```
  * @param condition   the condition to test
  * @param consequent  if condition is true, this will be produced
  * @returns           either `consequent` or `blank()` based on `condition`
  */
 function iff(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral {
-	return (condition) ? consequent : blank();
+	return condition ? consequent : blank();
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function ifSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
-	return (condition) ? [consequent] : [];
+/**
+ * Like {@link iff}, but meant for spreading, like in a choice list.
+ * @param condition   the condition to test
+ * @param consequent  if condition is true, this will be produced
+ * @returns           either `[consequent]` or `[]` based on `condition`
+ */
+function iffSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
+	return condition ? [consequent] : [];
 }
 function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
@@ -462,7 +467,7 @@ module.exports = grammar({
 		map_literal:        $ => seq('{',              OPT_COM, repCom1($.case),               OPT_COM,   '}'),
 		function_arguments: $ => seq('(', optional(seq(OPT_COM, repCom1($._expression__block), OPT_COM)), ')'),
 
-		...parameterize('_expression_unit', () => $ => choice(
+		...parameterize('_expression_unit', ({block}) => $ => choice(
 			$.identifier,
 			$.primitive_literal,
 			$.string_template,
@@ -471,6 +476,7 @@ module.exports = grammar({
 			$.record_literal,
 			$.set_literal,
 			$.map_literal,
+			...iffSpread(block, $.block),
 		), 'block'),
 
 		property_access: $ => seq(choice('.', '?.', '!.'), choice($.integer, $.word, seq('[', $._expression__block, ']'))),
