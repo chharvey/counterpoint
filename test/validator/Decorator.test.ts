@@ -10,8 +10,8 @@ import {
 	type ConstructorType,
 	assert_instanceof,
 	TS_PARSER,
+	Decorator,
 	AST,
-	DECORATOR,
 } from '../../src/index.ts';
 
 
@@ -675,11 +675,11 @@ describe('Decorator', () => {
 
 		]).forEach(([klass, text], description) => (description.startsWith('only:') ? specify.only : description.startsWith('skip:') ? specify.skip : specify)(description, () => {
 			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
-			return assert_instanceof(DECORATOR.decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
+			return assert_instanceof(new Decorator().decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
 		}));
 		describe('Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', () => {
 			it('type operator `!` is not yet supported.', () => {
-				assert.throws(() => DECORATOR.decorateTS(captureParseNode(`
+				assert.throws(() => new Decorator().decorateTS(captureParseNode(`
 					{
 						type T = U!;
 					}
@@ -688,7 +688,7 @@ describe('Decorator', () => {
 		});
 		['is', 'isnt'].forEach((op) => describe(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
 			it(`operator \`${ op }\` is not yet supported.`, () => {
-				assert.throws(() => DECORATOR.decorateTS(captureParseNode(`
+				assert.throws(() => new Decorator().decorateTS(captureParseNode(`
 					{
 						a ${ op } b;
 					}
