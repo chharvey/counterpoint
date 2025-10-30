@@ -2,6 +2,7 @@ import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	drop_then,
 	type Local,
 	BinVect,
 } from '../../index.ts';
@@ -49,10 +50,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		let [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
 
 		const t0:     TYPE.Type              = this.operand0.type();
-		const block1: binaryen.ExpressionRef = this.builder.module.block(null, [
-			this.builder.module.drop(arg0),
-			arg1,
-		], binaryen.v128);
+		const block1: binaryen.ExpressionRef = drop_then(this.builder.module, [arg0], arg1);
 		if (t0.isDefinitelyFalsy) {
 			return this.operator === Operator.AND ? arg0 : block1;
 		} else if (t0.isDefinitelyTruthy) {
