@@ -476,7 +476,7 @@ module.exports = grammar({
 			$.record_literal,
 			$.set_literal,
 			$.map_literal,
-			...iffSpread(block, $.block),
+			...iffSpread(block, alias($.block, $.expression_block)),
 		), 'block'),
 
 		property_access: $ => seq(choice('.', '?.', '!.'), choice($.integer, $.word, seq('[', $._expression__block, ']'))),

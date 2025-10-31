@@ -1177,8 +1177,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'expression_conditional',
 					s('identifier'),
-					s('expression_grouped', s('block', s('statement_expression', s('identifier')))),
-					s('expression_grouped', s('block', s('statement_expression', s('identifier')))),
+					s('expression_grouped', s('expression_block', s('statement_expression', s('identifier')))),
+					s('expression_grouped', s('expression_block', s('statement_expression', s('identifier')))),
 				),
 			),
 		],
@@ -1296,7 +1296,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 				s(
 					'statement_expression',
-					s('block', s('statement_expression', s('identifier'))),
+					s('expression_block', s('statement_expression', s('identifier'))),
 				),
 			),
 		],
