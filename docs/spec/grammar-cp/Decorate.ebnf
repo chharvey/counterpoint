@@ -319,6 +319,8 @@ Decorate(ExpressionUnit<Block> ::= SetLiteral) -> SemanticSet
 	:= Decorate(SetLiteral);
 Decorate(ExpressionUnit<Block> ::= MapLiteral) -> SemanticMap
 	:= Decorate(MapLiteral);
+Decorate(ExpressionUnit<Block> ::= <Block+>Block) -> SemanticExpressionBlock
+	:= (SemanticExpressionBlock Decorate(Block));
 
 
 

@@ -121,6 +121,7 @@ export class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'record_literal'>):                      AST.ASTNodeRecord;
 	public decorateTS(syntaxnode: SyntaxNodeType<'set_literal'>):                         AST.ASTNodeSet;
 	public decorateTS(syntaxnode: SyntaxNodeType<'map_literal'>):                         AST.ASTNodeMap;
+	public decorateTS(syntaxnode: SyntaxNodeType<'expression_block'>):                    AST.ASTNodeExpressionBlock;
 	public decorateTS(syntaxnode: SyntaxNodeType<'property_access'>):                     AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
 	public decorateTS(syntaxnode: SyntaxNodeType<'property_assign'>):                     AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_compound'>):                 AST.ASTNodeAccess | AST.ASTNodeCall;
@@ -367,6 +368,11 @@ export class Decorator {
 				node.children
 					.filter((c): c is SyntaxNodeType<'case'> => isSyntaxNodeType(c, 'case'))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeCase>,
+			)],
+
+			['expression_block', (node) => new AST.ASTNodeExpressionBlock(
+				node as SyntaxNodeType<'expression_block'>,
+				this.decorateBlockNode(node as SyntaxNodeType<'block'>),
 			)],
 
 			['property_access', (node) => (
@@ -674,13 +680,7 @@ export class Decorator {
 				this.decorateTS(node.children[3] as SyntaxNodeType<'block'>),
 			)],
 
-			['block', (node) => new AST.ASTNodeBlock(
-				node as SyntaxNodeType<'block'>,
-				node.children
-					.filter((c): c is SyntaxNodeSupertype<'statement'> => isSyntaxNodeSupertype(c, 'statement'))
-					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeStatement>,
-				this.config,
-			)],
+			['block', (node) => this.decorateBlockNode(node as SyntaxNodeType<'block'>)],
 
 			['declaration_type', (node) => new AST.ASTNodeDeclarationType(
 				node as SyntaxNodeType<'declaration_type'>,
@@ -746,6 +746,16 @@ export class Decorator {
 			(isSyntaxNodeType(exprnode, 'identifier'))        ? new AST.ASTNodeVariable(exprnode) :
 			(isSyntaxNodeType(exprnode, 'primitive_literal')) ? new AST.ASTNodeConstant(exprnode) :
 			this.decorateTS(exprnode)
+		);
+	}
+
+	private decorateBlockNode(blocknode: SyntaxNodeType<'block'>): AST.ASTNodeBlock {
+		return new AST.ASTNodeBlock(
+			blocknode,
+			blocknode.children
+				.filter((c): c is SyntaxNodeSupertype<'statement'> => isSyntaxNodeSupertype(c, 'statement'))
+				.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeStatement>,
+			this.config,
 		);
 	}
 }

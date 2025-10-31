@@ -77,6 +77,7 @@ export function typeDeco(
  * - ASTNodeVariable
  * - ASTNodeTemplate
  * - ASTNodeCollectionLiteral
+ * - ASTNodeExpressionBlock
  * - ASTNodeAccess
  * - ASTNodeCall
  * - ASTNodeClaim

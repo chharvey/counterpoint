@@ -20,11 +20,11 @@ import type {ASTNodeStatementConditional} from './ASTNodeStatementConditional.ts
 
 export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	/**
-	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
+	 * Construct a new ASTNodeBlock from a source text and optionally a configuration.
 	 * The source text must parse successfully.
 	 * @param src    the source text
 	 * @param config the configuration
-	 * @returns      a new ASTNodeGoal representing the given source
+	 * @returns      a new ASTNodeBlock representing the given source
 	 */
 	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeBlock {
 		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(src, config);

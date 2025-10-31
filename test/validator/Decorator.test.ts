@@ -350,6 +350,20 @@ describe('Decorator', () => {
 				% (map_literal)
 			`]],
 
+			['Decorate(ExpressionUnit<Block> ::= <Block+>Block) -> SemanticExpressionBlock', [AST.ASTNodeExpressionBlock, `
+				{
+					type T = U;
+					let a: T = b;
+					claim a: U;
+					set a = b;
+					a;
+					{
+						b;
+					};
+				}
+				% (expression_block)
+			`]],
+
 			...['.', '?.', '!.'].map((op) => [`${ op === '!.' ? 'skip: ' : '' }Decorate(PropertyAccess ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
 				{
 					v${ op }1;
@@ -605,6 +619,9 @@ describe('Decorator', () => {
 					claim a: U;
 					set a = b;
 					a;
+					{
+						b;
+					};
 				}
 				% (block)
 			`]],
