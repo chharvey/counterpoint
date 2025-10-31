@@ -9,6 +9,7 @@ import {
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
+	drop_then,
 	type Builder,
 	BinVect,
 	TypeErrorInvalidOperation,
@@ -82,17 +83,70 @@ describe('ASTNodeOperation', () => {
 	} as const;
 
 	/**
-	 * Return a block containing `(drop)` expressions for each of `args`, followed by a second expression.
-	 * If `final` is provided as an ExpressionRef, it is the second expression;
-	 * otherwise, a BinVect of boolean value is the second expression.
+	 * The type of a helper for creating outputs for short-circuited operations.
+	 * @param mod  the module to perform the operation
+	 * @param tee  parameters for teeing the first (left-hand) operand; either a 3-tuple:
+	 *             ```
+	 *             [
+	 *             	value, // the operand value
+	 *             	index, // the local index to tee the value (default `0`)
+	 *             	type,  // the value’s type (default `binaryen.v128`)
+	 *             ]
+	 *             ```
+	 *             or a plain value, which is converted to a tuple with the above defaults.
+	 * @param arg1 the second (right-hand) operand
+	 * @return     the new binaryen expression
 	 */
-	function drop_then(mod: binaryen.Module, args: readonly binaryen.ExpressionRef[], final: binaryen.ExpressionRef | boolean): binaryen.ExpressionRef {
-		return mod.block(null, [
-			...args.map((arg) => mod.drop(arg)),
-			typeof final === 'number' ? final : new BinVect(mod, final).vect,
-		], binaryen.v128);
+	type OperationHelper = (
+		mod: binaryen.Module,
+		tee: binaryen.ExpressionRef | [value: binaryen.ExpressionRef, index?: number, type?: binaryen.Type],
+		arg1: binaryen.ExpressionRef,
+	) => binaryen.ExpressionRef;
+
+	function normalizeTee(tee: binaryen.ExpressionRef | [value: binaryen.ExpressionRef, index?: number, type?: binaryen.Type]): {readonly value: binaryen.ExpressionRef, readonly index: number, readonly type: binaryen.Type} {
+		// eslint-disable-next-line prefer-const --- some of them are reassigned
+		let [value, index, type]: [value: binaryen.ExpressionRef, index?: number | undefined, type?: binaryen.Type | undefined] = typeof tee === 'object' ? tee : [tee];
+		index ??= 0;
+		type  ??= binaryen.v128;
+		return {value, index, type};
 	}
 
+	const BINOP = {
+		mul: ((mod, tee, op1) => {
+			const {value, index, type} = normalizeTee(tee);
+
+			const local_tee: binaryen.ExpressionRef = mod.local.tee(index, value, type);
+			const local_get: binaryen.ExpressionRef = mod.local.get(index, type);
+			const teeer                             = new BinVect(mod, local_tee);
+			const getter                            = new BinVect(mod, local_get);
+			return mod.if(
+				mod.i32.or(
+					mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+					mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+				),
+				local_get,
+				CALL.vmul(mod, local_get, op1),
+			);
+		}) as OperationHelper,
+
+		and: ((mod, tee, op1) => {
+			const {value, index, type} = normalizeTee(tee);
+			return mod.if(
+				new BinVect(mod, CALL.vnot(mod, mod.local.tee(index, value, type))).isSpecial(false),
+				op1,
+				mod.local.get(index, type),
+			);
+		}) as OperationHelper,
+
+		or: ((mod, tee, op1) => {
+			const {value, index, type} = normalizeTee(tee);
+			return mod.if(
+				new BinVect(mod, CALL.vnot(mod, mod.local.tee(index, value, type))).isSpecial(false),
+				mod.local.get(index, type),
+				op1,
+			);
+		}) as OperationHelper,
+	} as const;
 
 
 
@@ -117,10 +171,10 @@ describe('ASTNodeOperation', () => {
 					CALL.vexp(builder.module, buildConst(builder, 42n), buildConst(builder, 2n)),
 					buildConst(builder, 420n),
 				)],
-				['2 * 3.0 + 5', (builder) => CALL.vadd(
+				['2.1 * 3.1 + 5.1', (builder) => CALL.vadd(
 					builder.module,
-					CALL.vmul(builder.module, buildConst(builder, 2n), buildConst(builder, 3.0)),
-					buildConst(builder, 5n),
+					CALL.vmul(builder.module, buildConst(builder, 2.1), buildConst(builder, 3.1)),
+					buildConst(builder, 5.1),
 				)],
 			]));
 		});
@@ -518,8 +572,8 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
 					[
-						CALL.vmul(mod, extracts[0], const_['2']),
-						CALL.vmul(mod, extracts[1], const_['2.4']),
+						BINOP.mul(mod, [extracts[0], 2], const_['2']),
+						BINOP.mul(mod, [extracts[1], 3], const_['2.4']),
 
 						CALL.vlt(mod, extracts[2], const_['2']),
 						CALL.vlt(mod, extracts[3], const_['2.4']),
@@ -528,6 +582,29 @@ describe('ASTNodeOperation', () => {
 						CALL.veq(mod, extracts[5], const_['2']),
 						CALL.veq(mod, extracts[6], const_['2.4']),
 						CALL.veq(mod, extracts[7], const_['2.4']),
+					].map((expected) => mod.drop(expected)),
+				);
+			});
+			it('drops the first operand if it is an identity element.', () => {
+				const {goal, stmts, mod} = setupScript(`{
+					let var x: int   = 42;
+					let var y: float = 4.2;
+
+					1 * x;
+					0.0 + y;
+				}`);
+				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(2).map((stmt) => (
+					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand1.build()
+				));
+				const const_ = {
+					'1':   buildConst(goal.builder, 1n),
+					'0.0': buildConst(goal.builder, 0.0),
+				} as const;
+				return assertEqualBins(
+					stmts.slice(2).map((stmt) => stmt.build()),
+					[
+						drop_then(mod, [const_['1']],   extracts[0]),
+						drop_then(mod, [const_['0.0']], extracts[1]),
 					].map((expected) => mod.drop(expected)),
 				);
 			});
@@ -1296,35 +1373,6 @@ describe('ASTNodeOperation', () => {
 
 
 		describe('#build', () => {
-			/**
-			 * A helper for creating a conditional expression.
-			 * Given a value to tee and callbacks to perform giving the condition and branches,
-			 * return an `(if)` whose condition and branches are given by the callback.
-			 * @param mod       the module to perform the conditional
-			 * @param tee       parameters for teeing the value:
-			 *                  [
-			 *                  	the local index to tee the value,
-			 *                  	the value,
-			 *                  	the value’s type,
-			 *                  ]
-			 * @param branches  the callback to perform; given a getter, returns two branches: [if_true, if_false]
-			 * @return          the new `(if)` expression
-			 */
-			function create_if(
-				mod:                binaryen.Module,
-				[index, arg, type]: [number, binaryen.ExpressionRef, binaryen.Type],
-				branches:           (local_get: binaryen.ExpressionRef) => [binaryen.ExpressionRef, binaryen.ExpressionRef],
-			): binaryen.ExpressionRef {
-				return mod.if(
-					new BinVect(mod, mod.call(
-						'vnot',
-						[mod.local.tee(index, arg, type)],
-						binaryen.v128,
-					)).isSpecial(false),
-					...branches.call(null, mod.local.get(index, type)),
-				);
-			}
-
 			it('optimizes by evaluating left operand type.', () => {
 				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 					['42 && 420',        (builder) => drop_then(builder.module, [buildConst(builder, 42n)], buildConst(builder, 420n))],
@@ -1388,30 +1436,30 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					stmts.slice(5).map((stmt) => stmt.build()),
 					[
-						create_if(
+						BINOP.and(
 							mod,
-							[5, extracts[0][0], binaryen.v128],
-							(getter) => [extracts[0][1], getter],
+							[extracts[0][0], 5],
+							extracts[0][1],
 						),
-						create_if(
+						BINOP.or(
 							mod,
-							[6, extracts[1][0], binaryen.v128],
-							(getter) => [getter, extracts[1][1]],
+							[extracts[1][0], 6],
+							extracts[1][1],
 						),
-						create_if(
+						BINOP.and(
 							mod,
-							[7, extracts[2][0], binaryen.v128],
-							(getter) => [extracts[2][1], getter],
+							[extracts[2][0], 7],
+							extracts[2][1],
 						),
-						create_if(
+						BINOP.or(
 							mod,
-							[8, extracts[3][0], binaryen.v128],
-							(getter) => [getter, extracts[3][1]],
+							[extracts[3][0], 8],
+							extracts[3][1],
 						),
-						create_if(
+						BINOP.and(
 							mod,
-							[9, extracts[4][0], binaryen.v128],
-							(getter) => [extracts[4][1], getter],
+							[extracts[4][0], 9],
+							extracts[4][1],
 						),
 					].map((expected) => mod.drop(expected)),
 				);
@@ -1439,31 +1487,31 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					stmts.slice(4).map((stmt) => stmt.build()),
 					[
-						create_if(
+						BINOP.or(
 							mod,
-							[6, create_if(
+							[BINOP.and(
 								mod,
-								[4, extracts[0][0][0], binaryen.v128],
-								(getter) => [extracts[0][0][1], getter],
-							), binaryen.v128],
-							(getter) => [getter, create_if(
+								[extracts[0][0][0], 4],
+								extracts[0][0][1],
+							), 6],
+							BINOP.and(
 								mod,
-								[5, extracts[0][1][0], binaryen.v128],
-								(getter_) => [extracts[0][1][1], getter_],
-							)],
+								[extracts[0][1][0], 5],
+								extracts[0][1][1],
+							),
 						),
-						create_if(
+						BINOP.and(
 							mod,
-							[9, create_if(
+							[BINOP.or(
 								mod,
-								[7, extracts[1][0][0], binaryen.v128],
-								(getter) => [getter, extracts[1][0][1]],
-							), binaryen.v128],
-							(getter) => [create_if(
+								[extracts[1][0][0], 7],
+								extracts[1][0][1],
+							), 9],
+							BINOP.or(
 								mod,
-								[8, extracts[1][1][0], binaryen.v128],
-								(getter_) => [getter_, extracts[1][1][1]],
-							), getter],
+								[extracts[1][1][0], 8],
+								extracts[1][1][1],
+							),
 						),
 					].map((expected) => mod.drop(expected)),
 				);
