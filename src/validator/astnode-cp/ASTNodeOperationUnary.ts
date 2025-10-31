@@ -4,7 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	BinVect,
+	drop_then,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 } from '../../index.ts';
@@ -49,25 +49,11 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		const t0:   TYPE.Type              = this.operand.type();
 		const arg0: binaryen.ExpressionRef = this.operand.build();
-		if (this.operator === Operator.NOT) {
-			if (t0.isDefinitelyFalsy) {
-				return this.builder.module.block(null, [
-					this.builder.module.drop(arg0),
-					new BinVect(this.builder.module, true).vect,
-				], binaryen.v128);
-			} else if (t0.isDefinitelyTruthy) {
-				return this.builder.module.block(null, [
-					this.builder.module.drop(arg0),
-					new BinVect(this.builder.module, false).vect,
-				], binaryen.v128);
-			}
-		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
-			return this.builder.module.block(null, [
-				this.builder.module.drop(arg0),
-				new BinVect(this.builder.module, true).vect,
-			], binaryen.v128);
+		if (this.type().isSubtypeOf(TYPE.TRUE)) {
+			return drop_then(this.builder.module, [arg0], true);
+		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
+			return drop_then(this.builder.module, [arg0], false);
 		}
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.NOT,   'vnot'],

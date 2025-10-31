@@ -156,12 +156,29 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: IS] expr) :=
 	1. *Throw:* a new TypeError "Operator not yet supported.".
 ;
 
-Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | GT | LE | GE | ID | EQ] expr) :=
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | DIV | ADD | LT | GT | LE | GE | ID | EQ] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
 		...builds.0,
 		...builds.1,
 		"`expr.operator`",
+	].
+;
+
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: MUL] expr) :=
+	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
+	2. *Return:* [
+		...builds.0,
+		"TEE the local variable `operand0`.",
+		0,
+		"EQ"
+		"IF"
+		"GET the local variable `operand0`.",
+		"ELSE",
+		"GET the local variable `operand0`.",
+		...builds.1,
+		"`expr.operator`",
+		"END",
 	].
 ;
 

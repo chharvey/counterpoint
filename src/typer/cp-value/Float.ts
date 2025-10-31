@@ -71,8 +71,8 @@ export class Float extends ValueNumber<Float> {
 		return new Float(this.data - subtrahend.data);
 	}
 
-	public override times(multiplicand: Float): Float {
-		return new Float(this.data * multiplicand.data);
+	public override times(multiplier: Float): Float {
+		return new Float(this.data * multiplier.data);
 	}
 
 	public override divide(divisor: Float): Float {
@@ -94,7 +94,11 @@ export class Float extends ValueNumber<Float> {
 	 * The floating-point numbers `0.0` and `-0.0`, while not identical, are mathematically equal.
 	 */
 	public override eq0(): boolean {
-		return this.data === 0;
+		return this.data === 0.0;
+	}
+
+	public override eq1(): boolean {
+		return this.data === 1.0;
 	}
 
 	public override lt(y: Float): boolean {
