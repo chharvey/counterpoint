@@ -47,10 +47,10 @@ abstract class ValueNumber<T = unknown> extends Primitive {
 	public abstract minus(subtrahend: T): T;
 	/**
 	 * Multiply two numbers.
-	 * @param multiplicand - the multiplicand
-	 * @return the product, `this multiplier * multiplicand`
+	 * @param multiplier - the multiplier
+	 * @return the product, `this multiplicand * multiplier`
 	 */
-	public abstract times(multiplicand: T): T;
+	public abstract times(multiplier: T): T;
 	/**
 	 * Divide two numbers.
 	 * @param divisor - the divisor

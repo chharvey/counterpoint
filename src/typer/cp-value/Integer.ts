@@ -108,36 +108,36 @@ export class Integer extends ValueNumber<Integer> {
 
 	/**
 	 * ```ts
-	 * function mulSlow(multiplier: number, multiplicand: number): number {
+	 * function mulSlow(multiplicand: number, multiplier: number): number {
 	 * 	return (
-	 * 		(multiplier === 0) ? 0                 :
-	 * 		(multiplier === 1) ? multiplicand      :
+	 * 		(multiplicand === 0) ? 0 :
+	 * 		(multiplicand === 1) ? multiplier :
+	 * 		(multiplicand === 2) ? multiplier << 1 :
+	 * 		(multiplier <   0) ? -mulSlow(multiplicand, -multiplier) :
+	 * 		(multiplier === 0) ? 0 :
+	 * 		(multiplier === 1) ? multiplicand :
 	 * 		(multiplier === 2) ? multiplicand << 1 :
-	 * 		(multiplicand <   0) ? -mulSlow(multiplier, -multiplicand) :
-	 * 		(multiplicand === 0) ? 0                                   :
-	 * 		(multiplicand === 1) ? multiplier                          :
-	 * 		(multiplicand === 2) ? multiplier << 1                     :
-	 * 		multiplier + mulSlow(multiplier, multiplicand - 1)
+	 * 		multiplicand + mulSlow(multiplicand, multiplier - 1)
 	 * 	)
 	 * }
-	 * function mulFast(multiplier: number, multiplicand: number): number {
+	 * function mulFast(multiplicand: number, multiplier: number): number {
 	 * 	return (
-	 * 		(multiplier === 0) ? 0                 :
-	 * 		(multiplier === 1) ? multiplicand      :
+	 * 		(multiplicand === 0) ? 0 :
+	 * 		(multiplicand === 1) ? multiplier :
+	 * 		(multiplicand === 2) ? multiplier << 1 :
+	 * 		(multiplier <   0) ? -mulFast(multiplicand, -multiplier) :
+	 * 		(multiplier === 0) ? 0 :
+	 * 		(multiplier === 1) ? multiplicand :
 	 * 		(multiplier === 2) ? multiplicand << 1 :
-	 * 		(multiplicand <   0) ? -mulFast(multiplier, -multiplicand) :
-	 * 		(multiplicand === 0) ? 0                                   :
-	 * 		(multiplicand === 1) ? multiplier                          :
-	 * 		(multiplicand === 2) ? multiplier << 1                     :
-	 * 		(multiplicand % 2 === 0)
-	 * 			?              mulFast(multiplier * 2,  multiplicand      / 2)
-	 * 			: multiplier + mulFast(multiplier * 2, (multiplicand - 1) / 2)
+	 * 		(multiplier % 2 === 0)
+	 * 			?                mulFast(multiplicand * 2,  multiplier      / 2)
+	 * 			: multiplicand + mulFast(multiplicand * 2, (multiplier - 1) / 2)
 	 * 	)
 	 * }
 	 * ```
 	 */
-	public override times(multiplicand: Integer): Integer {
-		return new Integer(BigInt(this.data * multiplicand.data));
+	public override times(multiplier: Integer): Integer {
+		return new Integer(BigInt(this.data * multiplier.data));
 	}
 
 	/**

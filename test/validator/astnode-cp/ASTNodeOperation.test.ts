@@ -170,10 +170,10 @@ describe('ASTNodeOperation', () => {
 					CALL.vexp(builder.module, buildConst(builder, 42n), buildConst(builder, 2n)),
 					buildConst(builder, 420n),
 				)],
-				['2 * 3.0 + 5;', (builder) => CALL.vadd(
+				['2.1 * 3.1 + 5.1;', (builder) => CALL.vadd(
 					builder.module,
-					BINOP.mul(builder.module, buildConst(builder, 2n), buildConst(builder, 3.0)),
-					buildConst(builder, 5n),
+					BINOP.mul(builder.module, buildConst(builder, 2.1), buildConst(builder, 3.1)),
+					buildConst(builder, 5.1),
 				)],
 			]));
 		});

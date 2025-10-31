@@ -71,8 +71,8 @@ export class Float extends ValueNumber<Float> {
 		return new Float(this.data - subtrahend.data);
 	}
 
-	public override times(multiplicand: Float): Float {
-		return new Float(this.data * multiplicand.data);
+	public override times(multiplier: Float): Float {
+		return new Float(this.data * multiplier.data);
 	}
 
 	public override divide(divisor: Float): Float {
