@@ -1,7 +1,7 @@
 import binaryen from 'binaryen';
 import {
-	type VALUE,
 	TYPE,
+	drop_then,
 	BinVect,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -51,15 +51,16 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 		const consequent_build:  binaryen.ExpressionRef = this.consequent.build();
 		const alternative_build: binaryen.ExpressionRef = this.alternative?.build() ?? this.builder.module.nop();
 
-		if (this.validator.config.compilerOptions.constantFolding) {
-			const condition_fold: VALUE.Value | null = this.condition.fold();
-			if (!this.unless && condition_fold?.isTruthy || this.unless && condition_fold && !condition_fold.isTruthy) {
-				// `if true…` or `unless false…` -> build the consequent
-				return consequent_build;
-			} else if (!this.unless && condition_fold && !condition_fold.isTruthy || this.unless && condition_fold?.isTruthy) {
-				// `if false…` or `unless true…` -> build the alternative
-				return alternative_build;
-			}
+		const condition_type:   TYPE.Type = this.condition.type();
+		const condition_truthy: boolean   = condition_type.isSubtypeOf(TYPE.TRUE);
+		const condition_falsy:  boolean   = condition_type.isSubtypeOf(TYPE.FALSE);
+
+		if (!this.unless && condition_truthy || this.unless && condition_falsy) {
+			// `if true…` or `unless false…` -> just return the consequent
+			return drop_then(this.builder.module, [condition_build], consequent_build, binaryen.none);
+		} else if (!this.unless && condition_falsy || this.unless && condition_truthy) {
+			// `if false…` or `unless true…` -> just return the alternative
+			return drop_then(this.builder.module, [condition_build], alternative_build, binaryen.none);
 		}
 
 		if (this.unless) {
