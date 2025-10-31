@@ -75,6 +75,11 @@ abstract class ValueNumber<T = unknown> extends Primitive {
 	 */
 	public abstract eq0(): boolean;
 	/**
+	 * Is the number equal to one?
+	 * @returns Is the number equal to one?
+	 */
+	public abstract eq1(): boolean;
+	/**
 	 * Is the number strictly less than the argument?
 	 * @param y - the argument
 	 * @returns Is the number strictly less than the argument?

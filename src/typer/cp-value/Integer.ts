@@ -9,10 +9,7 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import {
-	Float,
-	INT_0,
-} from './index.ts';
+import {Float} from './index.ts';
 import {
 	identical,
 	type Value,
@@ -233,7 +230,11 @@ export class Integer extends ValueNumber<Integer> {
 	}
 
 	public override eq0(): boolean {
-		return this.equal(INT_0);
+		return this.data === 0n;
+	}
+
+	public override eq1(): boolean {
+		return this.data === 1n;
 	}
 
 	public override lt(y: Integer): boolean {

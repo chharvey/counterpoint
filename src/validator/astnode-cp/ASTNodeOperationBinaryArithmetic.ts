@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	type VALUE,
 	TYPE,
+	drop_then,
 	type Local,
 	BinVect,
 	TypeErrorInvalidOperation,
@@ -59,7 +60,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		const v0:           VALUE.Value | null       = this.operand0.fold();
 
 		// if multiplicand is not foldable, short-circuit by testing zero
-		if (this.operator === Operator.MUL && !v0) {
+		if (!v0 && this.operator === Operator.MUL) {
 			const local0: Local = this.builder.addLocal(arg0)[1];
 			const teeer         = new BinVect(mod, local0.tee());
 			const getter        = new BinVect(mod, local0.get());
@@ -71,6 +72,10 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				local0.get(),
 				mod.call('vmul', [local0.get(), arg1], binaryen.v128),
 			);
+		}
+
+		if (v0 && (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1() || this.operator === Operator.ADD && (v0 as VALUE.Number).eq0())) {
+			return drop_then(mod, [arg0], arg1);
 		}
 
 		return this.builder.module.call(new Map<Operator, string>([
@@ -103,6 +108,9 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		}
 		const v1: VALUE.Value | null = this.operand1.fold();
 		if (!v1) {
+			return v1;
+		}
+		if (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1() || this.operator === Operator.ADD && (v0 as VALUE.Number).eq0()) {
 			return v1;
 		}
 		if (this.operator === Operator.DIV && (v1 as VALUE.Number).eq0()) {

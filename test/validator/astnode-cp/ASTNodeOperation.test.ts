@@ -623,6 +623,32 @@ describe('ASTNodeOperation', () => {
 					].map((expected) => goal.builder.module.drop(expected)),
 				);
 			});
+			it('drops the first operand if it is an identity element.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let var x: int   = 42;
+					let var y: float = 4.2;
+
+					1 * x;
+					0.0 + y;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build();
+				const extracts: readonly binaryen.ExpressionRef[] = goal.children.slice(2).map((stmt) => (
+					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand1.build()
+				));
+				const const_ = {
+					'1':   buildConst(goal.builder, 1n),
+					'0.0': buildConst(goal.builder, 0.0),
+				} as const;
+				return assertEqualBins(
+					goal.children.slice(2).map((stmt) => stmt.build()),
+					[
+						drop_then(goal.builder.module, [const_['1']],   extracts[0]),
+						drop_then(goal.builder.module, [const_['0.0']], extracts[1]),
+					].map((expected) => goal.builder.module.drop(expected)),
+				);
+			});
 			it('multiple unions.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let var x: int | float = 42;
