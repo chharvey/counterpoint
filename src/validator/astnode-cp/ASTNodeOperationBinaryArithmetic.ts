@@ -4,6 +4,8 @@ import * as xjs from 'extrajs';
 import {
 	type VALUE,
 	TYPE,
+	type Local,
+	BinVect,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
@@ -52,16 +54,33 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
+		const mod:          binaryen.Module          = this.builder.module;
+		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
+
+		if (this.operator === Operator.MUL) {
+			const local0: Local = this.builder.addLocal(arg0)[1];
+			const teeer         = new BinVect(mod, local0.tee());
+			const getter        = new BinVect(mod, local0.get());
+			return mod.if(
+				mod.i32.or(
+					mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+					mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+				),
+				local0.get(),
+				mod.call('vmul', [local0.get(), arg1], binaryen.v128),
+			);
+		}
+
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.EXP, 'vexp'],
 			[Operator.MUL, 'vmul'],
 			[Operator.DIV, 'vdiv'],
 			[Operator.ADD, 'vadd'],
-		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
+		]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
-		if (t0.isBottomType || t1.isBottomType) {
+		if (t0.isBottomType) {
 			return TYPE.NOTHING;
 		}
 		return (

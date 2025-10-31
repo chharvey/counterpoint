@@ -81,6 +81,39 @@ describe('ASTNodeOperation', () => {
 		veq:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',  [arg0, arg1], binaryen.v128),
 	} as const;
 
+	/**
+	 * A helper for creating a conditional expression for the multiplication operator.
+	 * Given a value to tee and callbacks to perform giving the condition and branches,
+	 * return an `(if)` whose condition and branches are given by the callback.
+	 * @param mod        the module to perform the conditional
+	 * @param tee        parameters for teeing the multiplicand (the first (left-hand) operand):
+	 *                   [
+	 *                   	the local index to tee the value,
+	 *                   	the value,
+	 *                   	the value’s type,
+	 *                   ]
+	 * @param multiplier the second (right-hand) operand
+	 * @return           the new `(if)` expression
+	 */
+	function binop_mul(
+		mod:                         binaryen.Module,
+		[index, multiplicand, type]: [number, binaryen.ExpressionRef, binaryen.Type],
+		multiplier:                  binaryen.ExpressionRef,
+	): binaryen.ExpressionRef {
+		const local_tee: binaryen.ExpressionRef = mod.local.tee(index, multiplicand, type);
+		const local_get: binaryen.ExpressionRef = mod.local.get(index, type);
+		const teeer                             = new BinVect(mod, local_tee);
+		const getter                            = new BinVect(mod, local_get);
+		return mod.if(
+			mod.i32.or(
+				mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+				mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+			),
+			local_get,
+			CALL.vmul(mod, local_get, multiplier),
+		);
+	}
+
 
 
 	describe('#type', () => {
@@ -99,14 +132,14 @@ describe('ASTNodeOperation', () => {
 	describe('#build', () => {
 		it('compound expression.', () => {
 			buildOperations(new Map([
-				['42 ^ 2 * 420;', (builder) => CALL.vmul(
+				['42 ^ 2 * 420;', (builder) => binop_mul(
 					builder.module,
-					CALL.vexp(builder.module, buildConst(builder, 42n), buildConst(builder, 2n)),
+					[0, CALL.vexp(builder.module, buildConst(builder, 42n), buildConst(builder, 2n)), binaryen.v128],
 					buildConst(builder, 420n),
 				)],
 				['2 * 3.0 + 5;', (builder) => CALL.vadd(
 					builder.module,
-					CALL.vmul(builder.module, buildConst(builder, 2n), buildConst(builder, 3.0)),
+					binop_mul(builder.module, [0, buildConst(builder, 2n), binaryen.v128], buildConst(builder, 3.0)),
 					buildConst(builder, 5n),
 				)],
 			]));
@@ -544,8 +577,8 @@ describe('ASTNodeOperation', () => {
 				return assertEqualBins(
 					goal.children.slice(2).map((stmt) => stmt.build()),
 					[
-						CALL.vmul(goal.builder.module, extracts[0], const_['2']),
-						CALL.vmul(goal.builder.module, extracts[1], const_['2.4']),
+						binop_mul(goal.builder.module, [2, extracts[0], binaryen.v128], const_['2']),
+						binop_mul(goal.builder.module, [3, extracts[1], binaryen.v128], const_['2.4']),
 
 						CALL.vlt(goal.builder.module, extracts[2], const_['2']),
 						CALL.vlt(goal.builder.module, extracts[3], const_['2.4']),
