@@ -1,5 +1,5 @@
 import * as xjs from 'extrajs';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	Builder,
@@ -19,7 +19,7 @@ import {DECORATOR} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
 import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import type {ASTNodeStatement} from './ASTNodeStatement.ts';
+import type {ASTNodeBlock} from './ASTNodeBlock.ts';
 
 
 
@@ -64,10 +64,10 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 
 	public constructor(
 		start_node: SyntaxNodeType<'source_file'>,
-		public override readonly children: readonly ASTNodeStatement[],
+		public readonly block: ASTNodeBlock | null,
 		config: CPConfig,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, (block) ? [block] : []);
 		this.#validator = new Validator(config);
 		this.#builder   = new Builder();
 	}
@@ -82,20 +82,6 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 
 	/** @implements Buildable */
 	public build(): binaryen.ExpressionRef {
-		this.builder.setupModule((mod) => {
-			if (this.children.length) {
-				const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build()); // must build before calling `.getLocals()`
-				const fn_name:    string                   = 'fn0';
-				mod.addFunction(
-					fn_name,
-					binaryen.none,
-					binaryen.none,
-					this.builder.getLocals().map((var_) => var_.type),
-					mod.block(null, statements),
-				);
-				mod.addFunctionExport(fn_name, fn_name);
-			}
-		});
-		return this.builder.module.nop();
+		return this.block?.build() ?? this.builder.module.nop();
 	}
 }

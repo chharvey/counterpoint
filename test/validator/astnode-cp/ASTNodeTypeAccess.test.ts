@@ -29,14 +29,14 @@ describe('ASTNodeTypeAccess', () => {
 		 * @param expecteds the expected evaluations of the type-expressions
 		 */
 		function testTypeEvals(source: string, start: number, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
-			const program:    AST.ASTNodeGoal                       = AST.ASTNodeGoal.fromSource(source);
-			const statements: readonly AST.ASTNodeDeclarationType[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeDeclarationType).slice(start);
-			program.varCheck();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
+			goal.varCheck();
 			try {
-				program.typeCheck();
+				goal.typeCheck();
 			} catch {
 				// if type-checking fails, proceed to `assert.throws` below
 			}
+			const statements: readonly AST.ASTNodeDeclarationType[] = goal.block!.children.filter((stmt) => stmt instanceof AST.ASTNodeDeclarationType).slice(start);
 			return expecteds.some((it) => it instanceof Function)
 				? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 					const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
@@ -53,7 +53,7 @@ describe('ASTNodeTypeAccess', () => {
 
 		context('access kind: normal access (`a.‹b›`).', () => {
 			it('returns individual entry types.', () => {
-				testTypeEvals(`
+				testTypeEvals(`{
 					type TupC = [1,   2.0,   "three"];
 					type TupV = [int, float, str];
 
@@ -79,7 +79,7 @@ describe('ASTNodeTypeAccess', () => {
 					type C4 = RecV.a; % type \`int\`
 					type C5 = RecV.b; % type \`float\`
 					type C6 = RecV._; % type \`str\`
-				`, 4, [
+				}`, 4, [
 					typeUnit(1n),
 					typeUnit(2.0),
 					typeUnit('three'),
@@ -102,7 +102,7 @@ describe('ASTNodeTypeAccess', () => {
 				]);
 			});
 			it('throws when entry is optional.', () => {
-				testTypeEvals(`
+				testTypeEvals(`{
 					type TupoC = [1,   2.0,   ?: "three"];
 					type TupoV = [int, float, ?: str];
 
@@ -114,7 +114,7 @@ describe('ASTNodeTypeAccess', () => {
 
 					type E1 = RecoC.b;
 					type E2 = RecoV.b;
-				`, 4, repeat(TypeErrorInvalidOperation, 4));
+				}`, 4, repeat(TypeErrorInvalidOperation, 4));
 			});
 			it('throws when base object is of incorrect type.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
@@ -134,7 +134,7 @@ describe('ASTNodeTypeAccess', () => {
 
 		context('access kind: maybe access (`a?.‹b›`).', () => {
 			it('unions with null if entry is optional.', () => {
-				testTypeEvals(`
+				testTypeEvals(`{
 					type TupoC = [1,   2.0,   ?: "three"];
 					type TupoV = [int, float, ?: str];
 
@@ -146,7 +146,7 @@ describe('ASTNodeTypeAccess', () => {
 
 					type E1 = RecoC?.b; % type \`2.0 | null\`
 					type E2 = RecoV?.b; % type \`float | null\`
-				`, 4, [
+				}`, 4, [
 					typeUnit('three').union(TYPE.NULL),
 					TYPE.STR.union(TYPE.NULL),
 
@@ -155,7 +155,7 @@ describe('ASTNodeTypeAccess', () => {
 				]);
 			});
 			it('throws when entry is not optional.', () => {
-				testTypeEvals(`
+				testTypeEvals(`{
 					type TupoC = [1,   2.0,   "three"];
 					type TupoV = [int, float, str];
 
@@ -167,7 +167,7 @@ describe('ASTNodeTypeAccess', () => {
 
 					type E1 = RecoC?.b; % type \`2.0 | null\`
 					type E2 = RecoV?.b; % type \`float | null\`
-				`, 4, repeat(TypeErrorInvalidOperation, 4));
+				}`, 4, repeat(TypeErrorInvalidOperation, 4));
 			});
 		});
 	});

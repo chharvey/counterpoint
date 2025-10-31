@@ -60,10 +60,12 @@ TokenWorth(KeywordOther :::= "then")     -> RealNumber := \x91;
 TokenWorth(KeywordOther :::= "else")     -> RealNumber := \x92;
 TokenWorth(KeywordOther :::= "type")     -> RealNumber := \x93;
 TokenWorth(KeywordOther :::= "let")      -> RealNumber := \x94;
-TokenWorth(KeywordOther :::= "_")        -> RealNumber := \x95;
-TokenWorth(KeywordOther :::= "void")     -> RealNumber := \x96;
-TokenWorth(KeywordOther :::= "nominal")  -> RealNumber := \x97;
-TokenWorth(KeywordOther :::= "var")      -> RealNumber := \x98;
+TokenWorth(KeywordOther :::= "claim")    -> RealNumber := \x95;
+TokenWorth(KeywordOther :::= "set")      -> RealNumber := \x96;
+TokenWorth(KeywordOther :::= "_")        -> RealNumber := \x97;
+TokenWorth(KeywordOther :::= "void")     -> RealNumber := \x98;
+TokenWorth(KeywordOther :::= "nominal")  -> RealNumber := \x99;
+TokenWorth(KeywordOther :::= "var")      -> RealNumber := \x9a;
 
 
 

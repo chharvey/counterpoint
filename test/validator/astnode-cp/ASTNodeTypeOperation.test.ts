@@ -5,7 +5,10 @@ import {
 	TypeErrorInvalidOperation,
 } from '../../../src/index.ts';
 import {assertEqualTypes} from '../../assert-helpers.ts';
-import {typeUnit} from '../../helpers.ts';
+import {
+	setupScript,
+	typeUnit,
+} from '../../helpers.ts';
 
 
 
@@ -25,7 +28,7 @@ describe('ASTNodeTypeOperation', () => {
 					AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
 					new TYPE.List(TYPE.INT, true),
 				);
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				setupScript(`{
 					type A = mut int[][];
 					type B = int[3];
 					type F = Object[];
@@ -34,9 +37,7 @@ describe('ASTNodeTypeOperation', () => {
 					type D = mut (A | B);
 
 					type E = mut Object; % equivalent to \`Object\`
-				`);
-				goal.varCheck();
-				return goal.typeCheck(); // assert does not throw
+				}`, null, {build: false}); // assert does not throw
 			});
 
 			it('throws if operating on any value type.', () => {
