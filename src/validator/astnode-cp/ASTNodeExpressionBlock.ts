@@ -12,7 +12,11 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {ASTNodeBlock} from './index.ts';
+import {
+	type ASTNodeStatement,
+	ASTNodeStatementExpression,
+	type ASTNodeBlock,
+} from './index.ts';
 import {
 	buildDeco,
 	typeDeco,
@@ -45,11 +49,22 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
-		throw new Error('not yet supported.');
+		const last_stmt: ASTNodeStatement = this.block.children.at(-1)!;
+		/* TODO: For now, all block-expressions must have a type, thus must have a determinant.
+		but after #46 (void functions), block-expressions don’t need a determinant and thus may have a “void” type.
+		In those cases, instead of throwing errors here, return `null`. */
+		if (!(last_stmt instanceof ASTNodeStatementExpression)) {
+			throw new Error('The last statement of a block-expression must be an expression-statement.');
+		}
+		const expr: ASTNodeExpression | undefined = last_stmt.expr;
+		if (!expr) {
+			throw new Error('The determining expression-statement of a block-expression must be nonempty.');
+		}
+		return expr.type();
 	}
 
 	@memoizeMethod
 	public override fold(): VALUE.Value | null {
-		throw new Error('not yet supported.');
+		return null; // TODO:
 	}
 }

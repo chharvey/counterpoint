@@ -1002,4 +1002,50 @@ describe('ASTNodeExpression', () => {
 			});
 		});
 	});
+
+
+
+	describe('ASTNodeExpressionBlock', () => {
+		describe('#type', () => {
+			it('throws when the last statement is not an expression-statement.', () => {
+				const {goal} = setupScript(`{
+					let var x: int = 42;
+					let var y: int | null = {
+						x;
+						let var z: int = 69;
+						%> Error!
+					};
+					x;
+					y;
+				}`, null, {typeCheck: false});
+				assert.throws(() => goal.typeCheck(), /The last statement of a block-expression must be an expression-statement/);
+			});
+			it('throws when the determinant is empty.', () => {
+				const {goal} = setupScript(`{
+					let var x: int = 42;
+					let var y: int | null = {
+						x;
+						let var z: int = 69;
+						; %> Error!
+					};
+					x;
+					y;
+				}`, null, {typeCheck: false});
+				assert.throws(() => goal.typeCheck(), /The determining expression-statement of a block-expression must be nonempty/);
+			});
+			it('returns the type of the determinant.', () => {
+				const {stmts} = setupScript(`{
+					let var x: int = 42;
+					let var y: int | null = {
+						x;
+						let var z: int = 69;
+						z; % type \`int\`
+					};
+					x;
+					y;
+				}`, null, {build: false});
+				assertEqualTypes((stmts[1] as AST.ASTNodeDeclarationVariable).assigned!.type(), TYPE.INT);
+			});
+		});
+	});
 });
