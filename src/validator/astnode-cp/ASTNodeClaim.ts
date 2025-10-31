@@ -1,21 +1,23 @@
-import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	type TYPE,
 	TypeErrorNotAssignable,
-} from '../../index.js';
-import {memoizeMethod} from '../../lib/index.js';
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import type {ASTNodeType} from './ASTNodeType.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ASTNodeType} from './ASTNodeType.ts';
 import {
 	buildDeco,
 	ASTNodeExpression,
-} from './ASTNodeExpression.js';
+} from './ASTNodeExpression.ts';
 
 
 
@@ -23,7 +25,7 @@ import {
 export class ASTNodeClaim extends ASTNodeExpression {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeClaim {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeClaim);
+		assert_instanceof(expression, ASTNodeClaim);
 		return expression;
 	}
 

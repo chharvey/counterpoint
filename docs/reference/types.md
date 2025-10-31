@@ -493,12 +493,12 @@ but they can only be reassigned to the same value, so having an unfixed variable
 Variables with unit types are conventionally written in MACRO_CASE.
 ```
 let var TAU: true = true;
-TAU = true;
-TAU = false; %> TypeError
+set TAU = true;
+set TAU = false; %> TypeError
 
 let var CAR_WHEELS: 4 = 4;
 let CAT_FEET: \b100 = \o4;
-CAR_WHEELS = CAT_FEET;
+set CAR_WHEELS = CAT_FEET;
 ```
 
 The assigned value doesn’t need to be a literal; it may be an expression,

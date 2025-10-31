@@ -274,7 +274,7 @@ module.exports = grammar({
 	name: 'counterpoint',
 
 	rules: {
-		source_file: $ => repeat($._statement),
+		source_file: $ => optional($.block),
 
 
 
@@ -347,6 +347,8 @@ module.exports = grammar({
 			// storage
 			'type',
 			'let',
+			'claim',
+			'set',
 			'_',
 			'void',
 			// modifier
@@ -529,6 +531,15 @@ module.exports = grammar({
 
 
 		/* ## Statements */
+		statement_expression: $ => seq(optional($._expression), ';'),
+
+		_statement: $ => choice(
+			$._declaration,
+			$.statement_expression,
+		),
+
+		block: $ => seq('{', repeat1($._statement), '}'),
+
 		declaration_type: $ => seq('type', choice('_', $.identifier), '=', $._type, ';'),
 
 		declaration_variable: $ => choice(
@@ -536,19 +547,14 @@ module.exports = grammar({
 			seq('let',          'var',  choice('_', $.identifier), '?:', $._type,                     ';'),
 		),
 
+		declaration_claim:        $ => seq('claim', $.assignee, ':', $._type,       ';'),
+		declaration_reassignment: $ => seq('set',   $.assignee, '=', $._expression, ';'),
+
 		_declaration: $ => choice(
 			$.declaration_type,
 			$.declaration_variable,
-		),
-
-		statement_expression: $ => seq(optional($._expression), ';'),
-
-		statement_assignment: $ => seq($.assignee, '=', $._expression, ';'),
-
-		_statement: $ => choice(
-			$._declaration,
-			$.statement_expression,
-			$.statement_assignment,
+			$.declaration_claim,
+			$.declaration_reassignment,
 		),
 	},
 
@@ -597,6 +603,8 @@ module.exports = grammar({
 			// storage
 			'type',
 			'let',
+			'claim',
+			'set',
 			'_',
 			'void',
 			// modifier

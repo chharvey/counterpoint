@@ -73,6 +73,8 @@ KeywordOther :::=
 	// storage
 		| "type"
 		| "let"
+		| "claim"
+		| "set"
 		| "_"
 		| "void"
 	// modifier

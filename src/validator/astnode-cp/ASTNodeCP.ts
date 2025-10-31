@@ -27,6 +27,7 @@ import {
  * - ASTNodeType
  * - ASTNodeExpression
  * - ASTNodeStatement
+ * - ASTNodeBlock
  * - ASTNodeGoal
  */
 export abstract class ASTNodeCP extends ASTNode {
