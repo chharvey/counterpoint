@@ -56,8 +56,10 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	public override build(): binaryen.ExpressionRef {
 		const mod:          binaryen.Module          = this.builder.module;
 		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
+		const v0:           VALUE.Value | null       = this.operand0.fold();
 
-		if (this.operator === Operator.MUL) {
+		// if multiplicand is not foldable, short-circuit by testing zero
+		if (this.operator === Operator.MUL && !v0) {
 			const local0: Local = this.builder.addLocal(arg0)[1];
 			const teeer         = new BinVect(mod, local0.tee());
 			const getter        = new BinVect(mod, local0.get());

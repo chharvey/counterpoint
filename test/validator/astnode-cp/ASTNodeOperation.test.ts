@@ -165,14 +165,14 @@ describe('ASTNodeOperation', () => {
 	describe('#build', () => {
 		it('compound expression.', () => {
 			buildOperations(new Map([
-				['42 ^ 2 * 420;', (builder) => BINOP.mul(
+				['42 ^ 2 * 420;', (builder) => CALL.vmul(
 					builder.module,
 					CALL.vexp(builder.module, buildConst(builder, 42n), buildConst(builder, 2n)),
 					buildConst(builder, 420n),
 				)],
 				['2.1 * 3.1 + 5.1;', (builder) => CALL.vadd(
 					builder.module,
-					BINOP.mul(builder.module, buildConst(builder, 2.1), buildConst(builder, 3.1)),
+					CALL.vmul(builder.module, buildConst(builder, 2.1), buildConst(builder, 3.1)),
 					buildConst(builder, 5.1),
 				)],
 			]));
