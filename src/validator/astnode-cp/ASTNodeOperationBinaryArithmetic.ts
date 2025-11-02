@@ -4,7 +4,6 @@ import * as xjs from 'extrajs';
 import {
 	type VALUE,
 	TYPE,
-	drop_then,
 	type Local,
 	BinVect,
 	TypeErrorInvalidOperation,
@@ -59,7 +58,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
 		const v0:           VALUE.Value | null       = this.operand0.fold();
 
-		// if multiplicand is not foldable, short-circuit by testing zero
+		// if operand0 is not foldable, short-circuit by testing zero
 		if (!v0 && this.operator === Operator.MUL) {
 			const local0: Local = this.builder.addLocal(arg0)[1];
 			const teeer         = new BinVect(mod, local0.tee());
@@ -75,7 +74,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		}
 
 		if (v0 && (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1() || this.operator === Operator.ADD && (v0 as VALUE.Number).eq0())) {
-			return drop_then(mod, [arg0], arg1);
+			return arg1;
 		}
 
 		return this.builder.module.call(new Map<Operator, string>([

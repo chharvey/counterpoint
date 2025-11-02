@@ -585,29 +585,6 @@ describe('ASTNodeOperation', () => {
 					].map((expected) => mod.drop(expected)),
 				);
 			});
-			it('drops the first operand if it is an identity element.', () => {
-				const {goal, stmts, mod} = setupScript(`{
-					let var x: int   = 42;
-					let var y: float = 4.2;
-
-					1 * x;
-					0.0 + y;
-				}`);
-				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(2).map((stmt) => (
-					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand1.build()
-				));
-				const const_ = {
-					'1':   buildConst(goal.builder, 1n),
-					'0.0': buildConst(goal.builder, 0.0),
-				} as const;
-				return assertEqualBins(
-					stmts.slice(2).map((stmt) => stmt.build()),
-					[
-						drop_then(mod, [const_['1']],   extracts[0]),
-						drop_then(mod, [const_['0.0']], extracts[1]),
-					].map((expected) => mod.drop(expected)),
-				);
-			});
 			it('multiple unions.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var x: int | float = 42;
@@ -779,22 +756,37 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		specify('#build', () => {
-			buildOperations(new Map([
-				['42 + 420', (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+		describe('#build', () => {
+			it('calls the correct WASM function.', () => {
+				buildOperations(new Map([
+					['42 + 420', (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
 
-				[' 126 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder,  3n))],
-				['-126 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder,  3n))],
-				[' 126 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder, -3n))],
-				['-126 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder, -3n))],
-				[' 200 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder,  3n))],
-				[' 200 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder, -3n))],
-				['-200 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder,  3n))],
-				['-200 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder, -3n))],
+					[' 126 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder,  3n))],
+					['-126 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder,  3n))],
+					[' 126 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder, -3n))],
+					['-126 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder, -3n))],
+					[' 200 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder,  3n))],
+					[' 200 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder, -3n))],
+					['-200 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder,  3n))],
+					['-200 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder, -3n))],
 
-				['42  - 420',  (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), CALL.vneg(builder.module, buildConst(builder, 420n)))],
-				['4.2 - 42.0', (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42.0)))],
-			]));
+					['42  - 420',  (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), CALL.vneg(builder.module, buildConst(builder, 420n)))],
+					['4.2 - 42.0', (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42.0)))],
+				]));
+			});
+			it('does not compile the first operand if it is foldable and an identity element.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var x: int   = 42;
+					let var y: float = 4.2;
+
+					1 * x;
+					0.0 + y;
+				}`);
+				return assertEqualBins(
+					stmts.slice(2).map((stmt) => stmt.build()),
+					stmts.slice(2).map((stmt) => (mod.drop(((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand1.build()))),
+				);
+			});
 		});
 	});
 
