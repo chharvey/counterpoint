@@ -32,8 +32,10 @@
     "dist": "tsc",
     "postdist": "eslint .",
     "pretest": "tsc --project ./test/tsconfig.json",
-    "test": "mocha -r tsx src/index.ts --timeout 10000 './test/**/*.test.ts'",
-    "prebuild": "npm run build -w tree-sitter-counterpoint && npm rebuild",
+    "test": "mocha --require tsx ./src/index.ts --timeout 10000 './test/**/*.test.ts'",
+    "testonly": "npm run test --ignore-scripts",
+    "fastbuild": "npm run postbuild -w ./tree-sitter-counterpoint/ && npm rebuild",
+    "prebuild": "npm run build -w ./tree-sitter-counterpoint/ && npm rebuild",
     "build": "rm -rf ./build/ && npm run dist && npm run test"
   },
   "dependencies": {
