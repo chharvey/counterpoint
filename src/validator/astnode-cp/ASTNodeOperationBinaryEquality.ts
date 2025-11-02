@@ -2,7 +2,7 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
-	BinVect,
+	drop_then,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -45,12 +45,8 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-		if (this.type().equals(TYPE.FALSE)) {
-			return this.builder.module.block(null, [
-				this.builder.module.drop(arg0),
-				this.builder.module.drop(arg1),
-				new BinVect(this.builder.module, false).vect,
-			], binaryen.v128);
+		if (this.type().isSubtypeOf(TYPE.FALSE)) {
+			return drop_then(this.builder.module, [arg0, arg1], false);
 		}
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.ID, 'vid'],
