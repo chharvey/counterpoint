@@ -290,7 +290,7 @@ describe('ASTNodeExpression', () => {
 					{id: id1},
 					{id: id2, type: type2},
 				] = goal.builder.getLocals();
-				assert.deepStrictEqual([id0, id1, id2], [var0.id, -0x40n, var1.id]);
+				assert.deepStrictEqual([id0, id1, id2], [var0.id, -0x100n, var1.id]);
 				return assertEqualBins(
 					[
 						var0.build(),

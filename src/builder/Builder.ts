@@ -15,13 +15,19 @@ export class Builder {
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
 	];
 
+	/**
+	 * The minimum allowed value for temporary IDs used for optimizing short-circuiting expressions.
+	 * Starts at a low negative number so as not to conflict with ‘real’ varible ids.
+	 */
+	private static readonly MIN_VALUE_TEMP_ID = -0x100n;
+
 
 	/**
 	 * A counter for internal variables.
 	 * Used for optimizing short-circuited expressions.
 	 * Starts at a low negative number so as not to conflict with ‘real’ varible ids.
 	 */
-	#varCount: bigint = -0x40n;
+	#varCount: bigint = Builder.MIN_VALUE_TEMP_ID;
 
 	/** A setlist containing ids of local variables. */
 	private readonly locals: Local[] = [];
