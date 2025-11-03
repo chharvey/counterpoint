@@ -20,7 +20,7 @@ For example, the default value of [`comments`](#comments) is `true`.
 If in your `counterpoint-config.json` you have `{"languageFeatures": {"comments": false}}`,
 that would override the default. However, if you run
 ```shell
-$ npx cpc c ./my-program.cp -p=./counterpoint-config.json --comments
+$ npx cpc c ./my-program.cpls -p=./counterpoint-config.json --comments
 ```
 the `--comments` option would override your config file and turn comments back on again.
 

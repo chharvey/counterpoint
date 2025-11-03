@@ -71,14 +71,14 @@ export class CLI {
 
 		Examples:
 		\`\`\`
-		# Compile \`test.cp\` to \`test.wasm\`:
-		$ cpc compile test.cp
+		# Compile \`test.cpls\` to \`test.wasm\`:
+		$ cpc compile test.cpls
 
-		# Compile \`src/input.cp\` to \`build/output.wasm\`:
-		$ cpc compile src/input.cp --out build/output.wasm
+		# Compile \`src/input.cpls\` to \`build/output.wasm\`:
+		$ cpc compile src/input.cpls --out build/output.wasm
 
-		# Debug \`program.cp\` (writes to \`program.wat\`):
-		$ cpc dev program.cp
+		# Debug \`program.cpls\` (writes to \`program.wat\`):
+		$ cpc dev program.cpls
 
 		# Execute \`program.wasm\`:
 		$ cpc run program.wasm

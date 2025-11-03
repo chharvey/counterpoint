@@ -51,9 +51,9 @@ describe('CLI', () => {
 			it('same as `c`; compiles given file.', () => {
 				['compile', 'c'].forEach((command) => {
 					const cli = new CLI(`
-						npx cpc ${ command } ./sample/test-v0.1.cp
+						npx cpc ${ command } ./sample/test-v0.1.cpls
 					`.trim().split(' '));
-					assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cp');
+					assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cpls');
 					assert.strictEqual(cli.command, Command.COMPILE);
 				});
 			});
@@ -61,16 +61,16 @@ describe('CLI', () => {
 		context('compile --out', () => {
 			it('same as `-o`; compiles given file to specified output.', () => {
 				const cli = new CLI(`
-					npx cpc compile ./sample/test-v0.1.cp --out ./sample/testout.wasm
+					npx cpc compile ./sample/test-v0.1.cpls --out ./sample/testout.wasm
 				`.trim().split(' '));
-				assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cp');
+				assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cpls');
 				assert.strictEqual(cli.argv.out, './sample/testout.wasm');
 				assert.strictEqual(cli.argv.out, cli.argv.o);
 			});
 			it('throws when no output file is provided.', () => {
 				assert.throws(
 					() => new CLI(`
-						npx cpc compile ./sample/test-v0.1.cp --out
+						npx cpc compile ./sample/test-v0.1.cpls --out
 					`.trim().split(' ')),
 					/Invalid CLI arguments!/,
 				);
@@ -79,16 +79,16 @@ describe('CLI', () => {
 		context('compile --project', () => {
 			it('same as `-p`; compiles given file with the specified project settings.', () => {
 				const cli = new CLI(`
-					npx cpc compile ./sample/test-v0.1.cp --project ./sample/counterpoint-config.json
+					npx cpc compile ./sample/test-v0.1.cpls --project ./sample/counterpoint-config.json
 				`.trim().split(' '));
-				assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cp');
+				assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cpls');
 				assert.strictEqual(cli.argv.project, './sample/counterpoint-config.json');
 				assert.strictEqual(cli.argv.project, cli.argv.p);
 			});
 			it('throws when no project file is provided.', () => {
 				assert.throws(
 					() => new CLI(`
-						npx cpc compile ./sample/test-v0.1.cp --project
+						npx cpc compile ./sample/test-v0.1.cpls --project
 					`.trim().split(' ')),
 					/Invalid CLI arguments!/,
 				);
@@ -98,9 +98,9 @@ describe('CLI', () => {
 			it('same as `d`; debugs given file.', () => {
 				['dev', 'd'].forEach((command) => {
 					const cli = new CLI(`
-						npx cpc ${ command } ./sample/test-v0.1.cp
+						npx cpc ${ command } ./sample/test-v0.1.cpls
 					`.trim().split(' '));
-					assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cp');
+					assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cpls');
 					assert.strictEqual(cli.command, Command.DEV);
 				});
 			});
@@ -108,16 +108,16 @@ describe('CLI', () => {
 		context('dev --out', () => {
 			it('same as `-o`; debugs given file to specified output.', () => {
 				const cli = new CLI(`
-					npx cpc dev ./sample/test-v0.1.cp --out ./sample/testout.wat
+					npx cpc dev ./sample/test-v0.1.cpls --out ./sample/testout.wat
 				`.trim().split(' '));
-				assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cp');
+				assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cpls');
 				assert.strictEqual(cli.argv.out, './sample/testout.wat');
 				assert.strictEqual(cli.argv.out, cli.argv.o);
 			});
 			it('throws when no output file is provided.', () => {
 				assert.throws(
 					() => new CLI(`
-						npx cpc dev ./sample/test-v0.1.cp --out
+						npx cpc dev ./sample/test-v0.1.cpls --out
 					`.trim().split(' ')),
 					/Invalid CLI arguments!/,
 				);
@@ -126,16 +126,16 @@ describe('CLI', () => {
 		context('dev --project', () => {
 			it('same as `-p`; debugs given file with the specified project settings.', () => {
 				const cli = new CLI(`
-					npx cpc dev ./sample/test-v0.1.cp --project ./sample/counterpoint-config.json
+					npx cpc dev ./sample/test-v0.1.cpls --project ./sample/counterpoint-config.json
 				`.trim().split(' '));
-				assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cp');
+				assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cpls');
 				assert.strictEqual(cli.argv.project, './sample/counterpoint-config.json');
 				assert.strictEqual(cli.argv.project, cli.argv.p);
 			});
 			it('throws when no project file is provided.', () => {
 				assert.throws(
 					() => new CLI(`
-						npx cpc dev ./sample/test-v0.1.cp --project
+						npx cpc dev ./sample/test-v0.1.cpls --project
 					`.trim().split(' ')),
 					/Invalid CLI arguments!/,
 				);
