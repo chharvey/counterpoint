@@ -9,6 +9,7 @@ import {
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
+	bigint_to_i64,
 	drop_then,
 	type Builder,
 	BinVect,
@@ -125,7 +126,31 @@ describe('ASTNodeOperation', () => {
 					mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
 				),
 				local_get,
-				CALL.vmul(mod, local_get, op1),
+				mod.if(
+					mod.i32.or(
+						mod.i32.and(getter.isInt,   mod.i64.eq(getter.intValue,   bigint_to_i64(mod, 1n))),
+						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(1.0))),
+					),
+					op1,
+					CALL.vmul(mod, local_get, op1),
+				),
+			);
+		}) as OperationHelper,
+
+		add: ((mod, tee, op1) => {
+			const {value, index, type} = normalizeTee(tee);
+
+			const local_tee: binaryen.ExpressionRef = mod.local.tee(index, value, type);
+			const local_get: binaryen.ExpressionRef = mod.local.get(index, type);
+			const teeer                             = new BinVect(mod, local_tee);
+			const getter                            = new BinVect(mod, local_get);
+			return mod.if(
+				mod.i32.or(
+					mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+					mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+				),
+				op1,
+				CALL.vadd(mod, local_get, op1),
 			);
 		}) as OperationHelper,
 
@@ -552,6 +577,9 @@ describe('ASTNodeOperation', () => {
 					x * 2;
 					y * 2.4;
 
+					x + 2;
+					y + 2.4;
+
 					x < 2;
 					y < 2.4;
 
@@ -575,13 +603,16 @@ describe('ASTNodeOperation', () => {
 						BINOP.mul(mod, [extracts[0], 2], const_['2']),
 						BINOP.mul(mod, [extracts[1], 3], const_['2.4']),
 
-						CALL.vlt(mod, extracts[2], const_['2']),
-						CALL.vlt(mod, extracts[3], const_['2.4']),
+						BINOP.add(mod, [extracts[2], 4], const_['2']),
+						BINOP.add(mod, [extracts[3], 5], const_['2.4']),
 
-						CALL.veq(mod, extracts[4], const_['2']),
-						CALL.veq(mod, extracts[5], const_['2']),
-						CALL.veq(mod, extracts[6], const_['2.4']),
-						CALL.veq(mod, extracts[7], const_['2.4']),
+						CALL.vlt(mod, extracts[4], const_['2']),
+						CALL.vlt(mod, extracts[5], const_['2.4']),
+
+						CALL.veq(mod, extracts[6], const_['2']),
+						CALL.veq(mod, extracts[7], const_['2']),
+						CALL.veq(mod, extracts[8], const_['2.4']),
+						CALL.veq(mod, extracts[9], const_['2.4']),
 					].map((expected) => mod.drop(expected)),
 				);
 			});
@@ -623,8 +654,8 @@ describe('ASTNodeOperation', () => {
 					'3.0': buildConst(goal.builder, 3.0),
 				} as const;
 				const inners: readonly binaryen.ExpressionRef[] = [
-					CALL.vadd(mod, extracts[0], const_['2']),
-					CALL.vadd(mod, const_['2.0'], extracts[1]),
+					BINOP.add(mod, [extracts[0], 2], const_['2']),
+					CALL.vadd(mod, const_['2.0'],    extracts[1]),
 				];
 				assertEqualBins(
 					stmts.slice(2).map((stmt) => (
@@ -634,7 +665,10 @@ describe('ASTNodeOperation', () => {
 				);
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
-					inners.map((inner, i) => mod.drop(CALL.vadd(mod, inner, [const_['3'], const_['3.0']][i]))),
+					inners.map((inner, i) => mod.drop([
+						BINOP.add(mod, [inner, 3], const_['3']),
+						BINOP.add(mod, [inner, 4], const_['3.0']),
+					][i])),
 				);
 			});
 		});
