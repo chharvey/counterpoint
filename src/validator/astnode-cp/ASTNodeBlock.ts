@@ -20,11 +20,11 @@ import type {ASTNodeStatementConditional} from './ASTNodeStatementConditional.ts
 
 export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	/**
-	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
+	 * Construct a new ASTNodeBlock from a source text and optionally a configuration.
 	 * The source text must parse successfully.
 	 * @param src    the source text
 	 * @param config the configuration
-	 * @returns      a new ASTNodeGoal representing the given source
+	 * @returns      a new ASTNodeBlock representing the given source
 	 */
 	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeBlock {
 		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(src, config);
@@ -51,7 +51,7 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	/** @implements Buildable */
 	@memoizeMethod
 	public build(): binaryen.ExpressionRef {
-		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 child.');
+		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 statement.');
 		return this.builder.module.block(null, this.children.map((stmt) => stmt.build()));
 	}
 }

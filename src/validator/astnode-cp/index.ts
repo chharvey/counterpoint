@@ -29,6 +29,7 @@ export * from './ASTNodeTuple.ts';
 export * from './ASTNodeRecord.ts';
 export * from './ASTNodeSet.ts';
 export * from './ASTNodeMap.ts';
+export * from './ASTNodeExpressionBlock.ts';
 export * from './ASTNodeAccess.ts';
 export * from './ASTNodeCall.ts';
 export * from './ASTNodeClaim.ts';

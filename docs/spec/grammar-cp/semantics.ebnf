@@ -74,6 +74,7 @@ SemanticExpression =:=
 	| SemanticVariable
 	| SemanticTemplate
 	| SemanticCollectionLiteral
+	| SemanticExpressionBlock
 	| SemanticAccess
 	| SemanticCall
 	| SemanticClaim
@@ -105,6 +106,9 @@ SemanticTuple  ::= SemanticExpression*;
 SemanticRecord ::= SemanticProperty+;
 SemanticSet    ::= SemanticExpression*;
 SemanticMap    ::= SemanticCase+;
+
+SemanticExpressionBlock
+	::= SemanticBlock;
 
 SemanticAccess[kind: NORMAL | MAYBE | RESULT]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);

@@ -16,7 +16,7 @@ import {
 	to_serializable,
 } from '../../parser/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {DECORATOR} from '../Decorator.ts';
+import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
 import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
@@ -55,7 +55,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeGoal {
 		const root_node = TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>;
 		report_syntax_errors(root_node);
-		return DECORATOR.decorateTS(root_node, config);
+		return new Decorator(config).decorateTS(root_node);
 	}
 
 

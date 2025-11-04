@@ -1002,4 +1002,130 @@ describe('ASTNodeExpression', () => {
 			});
 		});
 	});
+
+
+
+	describe('ASTNodeExpressionBlock', () => {
+		describe('#type', () => {
+			it('throws when the last statement is not an expression-statement.', () => {
+				const {goal} = setupScript(`{
+					let var x: int = 42;
+					let var y: int | null = {
+						x;
+						let var z: int = 69;
+						%> Error!
+					};
+					x;
+					y;
+				}`, null, {typeCheck: false});
+				assert.throws(() => goal.typeCheck(), /The last statement of a block-expression must be an expression-statement/);
+			});
+			it('throws when the determinant is empty.', () => {
+				const {goal} = setupScript(`{
+					let var x: int = 42;
+					let var y: int | null = {
+						x;
+						let var z: int = 69;
+						; %> Error!
+					};
+					x;
+					y;
+				}`, null, {typeCheck: false});
+				assert.throws(() => goal.typeCheck(), /The determining expression-statement of a block-expression must be nonempty/);
+			});
+			it('returns the type of the determinant.', () => {
+				const {stmts} = setupScript(`{
+					let var x: int = 42;
+					let var y: int | null = {
+						x;
+						let var z: int = 69;
+						z; % type \`int\`
+					};
+					x;
+					y;
+				}`, null, {build: false});
+				assertEqualTypes((stmts[1] as AST.ASTNodeDeclarationVariable).assigned!.type(), TYPE.INT);
+			});
+		});
+
+
+		describe('#fold', () => {
+			it('returns null if any statement is not an expression-statement.', () => {
+				assert.strictEqual(((setupScript(`{
+					let x: int = 42;
+					let y: int | null = {
+						x;
+						let z: int = 69;
+						z;
+					};
+					x;
+					y;
+				}`, null, {build: false}).stmts[1] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock).fold(), null);
+			});
+			it('returns null if any statement is an expression-statement with a non-foldable expression.', () => {
+				assert.strictEqual(((setupScript(`{
+					let var x: int = 42;
+					let z: int = 69;
+					let var y: int | null = {
+						x;
+						z;
+					};
+					x;
+					y;
+				}`, null, {build: false}).stmts[2] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock).fold(), null);
+			});
+			it('returns the folded value of the last statement, provided it’s an expression-statement with a foldable expression.', () => {
+				const {stmts} = setupScript(`{
+					let x: int = 42;
+					let z: int = 69;
+					let y: int | null = {
+						x;
+						;
+						z;
+					};
+					x;
+					y;
+				}`, null, {build: false});
+				const block_expression = (stmts[2] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock;
+				assert.strictEqual(
+					block_expression.fold(),
+					(block_expression.block.children.at(-1) as AST.ASTNodeStatementExpression).expr!.fold(),
+				);
+				return assert.deepStrictEqual(
+					(stmts[4] as AST.ASTNodeStatementExpression).expr!.fold(),
+					new VALUE.Integer(69n),
+				);
+			});
+			it('sanity check.', () => {
+				assert.deepStrictEqual(
+					(setupScript(`{
+						let x: int = 42 - { 42; 69; };
+						x;
+					}`, null, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
+					new VALUE.Integer(42n - 69n),
+				);
+			});
+		});
+
+
+		describe('#build', () => {
+			it('builds each statement except last as usual, then outputs last expression-statement build.', () => {
+				const {goal, stmts, mod} = setupScript(`{
+					let var x: int = 42;
+					let var y: int | null = {
+						x;
+						let var z: int = 69;
+						z;
+					};
+					x;
+					y;
+				}`);
+				return assertEqualBins((stmts[1] as AST.ASTNodeDeclarationVariable).assigned!.build(), mod.block(null, [
+					mod.drop(mod.local.get(0, binaryen.v128)),
+					mod.local.set(1, buildConst(goal.builder, 69n)),
+					mod.local.get(1, binaryen.v128),
+				], binaryen.v128));
+			});
+		});
+	});
 });
