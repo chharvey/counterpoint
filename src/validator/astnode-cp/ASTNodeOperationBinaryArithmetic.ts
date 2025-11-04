@@ -4,7 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	type VALUE,
 	TYPE,
-	drop_then,
+	bigint_to_i64,
 	type Local,
 	BinVect,
 	TypeErrorInvalidOperation,
@@ -59,23 +59,46 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
 		const v0:           VALUE.Value | null       = this.operand0.fold();
 
-		// if multiplicand is not foldable, short-circuit by testing zero
-		if (!v0 && this.operator === Operator.MUL) {
+		// if operand0 is not foldable, short-circuit by using identity laws
+		if (!v0) {
 			const local0: Local = this.builder.addLocal(arg0)[1];
 			const teeer         = new BinVect(mod, local0.tee());
 			const getter        = new BinVect(mod, local0.get());
-			return mod.if(
-				mod.i32.or(
-					mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
-					mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
-				),
-				local0.get(),
-				mod.call('vmul', [local0.get(), arg1], binaryen.v128),
-			);
+			if (this.operator === Operator.MUL) {
+				// if arg0 is mathematically 0, return it
+				return mod.if(
+					mod.i32.or(
+						mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+					),
+					local0.get(),
+					// else if arg0 is mathematically 1, return arg1
+					mod.if(
+						mod.i32.or(
+							mod.i32.and(getter.isInt,   mod.i64.eq(getter.intValue,   bigint_to_i64(mod, 1n))),
+							mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(1.0))),
+						),
+						arg1,
+						// else return a `vmul` call
+						mod.call('vmul', [local0.get(), arg1], binaryen.v128),
+					),
+				);
+			} else if (this.operator === Operator.ADD) {
+				// if arg0 is mathematically 0, return arg1
+				return mod.if(
+					mod.i32.or(
+						mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+					),
+					arg1,
+					// else return a `vadd` call
+					mod.call('vadd', [local0.get(), arg1], binaryen.v128),
+				);
+			}
 		}
 
 		if (v0 && (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1() || this.operator === Operator.ADD && (v0 as VALUE.Number).eq0())) {
-			return drop_then(mod, [arg0], arg1);
+			return arg1;
 		}
 
 		return this.builder.module.call(new Map<Operator, string>([

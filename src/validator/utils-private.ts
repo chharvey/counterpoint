@@ -98,6 +98,7 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 	| SyntaxNodeType<'dict_literal'>
 	| SyntaxNodeType<'set_literal'>
 	| SyntaxNodeType<'map_literal'>
+	| SyntaxNodeType<'expression_block'>
 	| SyntaxNodeType<'expression_compound'>
 	| SyntaxNodeType<'expression_unary_symbol'>
 	| SyntaxNodeType<'expression_cast'>
@@ -109,14 +110,15 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 	| SyntaxNodeType<'expression_conjunctive'>
 	| SyntaxNodeType<'expression_disjunctive'>
 	| SyntaxNodeType<'expression_conditional'>
+) : C extends 'statement' ? (
+	| SyntaxNodeType<'statement_expression'>
+	| SyntaxNodeType<'statement_conditional'>
+	| SyntaxNodeSupertype<'declaration'>
 ) : C extends 'declaration' ? (
 	| SyntaxNodeType<'declaration_type'>
 	| SyntaxNodeType<'declaration_variable'>
 	| SyntaxNodeType<'declaration_claim'>
 	| SyntaxNodeType<'declaration_reassignment'>
-) : C extends 'statement' ? (
-	| SyntaxNodeSupertype<'declaration'>
-	| SyntaxNodeType<'statement_expression'>
 ) : never;
 
 
@@ -124,9 +126,9 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode, category: C): syntaxnode is SyntaxNodeSupertype<C> {
 	return new Map<Category, (node: SyntaxNode) => boolean>([
 		['type',        (node) => isSyntaxNodeType(node, /^identifier|keyword_type|primitive_literal|type_grouped|type_(tuple|record|list|dict|set|map)_literal|type_(compound|unary_(symbol|keyword)|intersection|union)$/)],
-		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template|expression_grouped|(tuple|record|list|dict|set|map)_literal|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional)$/)],
+		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template|expression_grouped|(tuple|record|list|dict|set|map)_literal|expression_block|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional)$/)],
+		['statement',   (node) => isSyntaxNodeType(node, /^statement_(expression|conditional)|declaration$/) || isSyntaxNodeSupertype(node, 'declaration')],
 		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable|claim|reassignment)$/)],
-		['statement',   (node) => isSyntaxNodeType(node, 'statement_expression') || isSyntaxNodeSupertype(node, 'declaration')],
 	]).get(category)!(syntaxnode);
 }
 

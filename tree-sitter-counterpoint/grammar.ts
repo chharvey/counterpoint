@@ -246,18 +246,23 @@ const OPT_COM = optional(',');
  *
  * If needing an alternative, use a simple ternary operator:
  * ```
- * (condition) ? consequent : alternative
+ * condition ? consequent : alternative
  * ```
  * @param condition   the condition to test
  * @param consequent  if condition is true, this will be produced
  * @returns           either `consequent` or `blank()` based on `condition`
  */
 function iff(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral {
-	return (condition) ? consequent : blank();
+	return condition ? consequent : blank();
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function ifSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
-	return (condition) ? [consequent] : [];
+/**
+ * Like {@link iff}, but meant for spreading, like in a choice list.
+ * @param condition   the condition to test
+ * @param consequent  if condition is true, this will be produced
+ * @returns           either `[consequent]` or `[]` based on `condition`
+ */
+function iffSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
+	return condition ? [consequent] : [];
 }
 function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
@@ -354,6 +359,8 @@ module.exports = grammar({
 			// modifier
 			'nominal',
 			'var',
+			// control
+			'unless',
 			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
@@ -450,27 +457,27 @@ module.exports = grammar({
 		/* ## Expressions */
 		string_template: $ => choice(
 			$.template_full,
-			seq($.template_head, optional($._expression), repeat(seq($.template_middle, optional($._expression))), $.template_tail),
+			seq($.template_head, optional($._expression__block), repeat(seq($.template_middle, optional($._expression__block))), $.template_tail),
 		),
 
 		_items: $ => choice(
-			seq(         $._expression,  ','),
-			seq(optional($._expression), ',', repCom1($._expression), OPT_COM),
+			seq(         $._expression__block,  ','),
+			seq(optional($._expression__block), ',', repCom1($._expression__block), OPT_COM),
 		),
 
-		property: $ => seq($.word,        '=',  $._expression),
-		case:     $ => seq($._expression, '->', $._expression),
+		property: $ => seq($.word,               '=',  $._expression__block),
+		case:     $ => seq($._expression__block, '->', $._expression__block),
 
-		expression_grouped: $ => seq('(',                       $._expression,                     ')'),
-		tuple_literal:      $ => seq('(', optional(             $._items                        ), ')'),
-		record_literal:     $ => seq('(',              OPT_COM, repCom1($.property),    OPT_COM,   ')'),
-		list_literal:       $ => seq('[', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), ']'),
-		dict_literal:       $ => seq('[',              OPT_COM, repCom1($.property),    OPT_COM,   ']'),
-		set_literal:        $ => seq('{', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), '}'),
-		map_literal:        $ => seq('{',              OPT_COM, repCom1($.case),        OPT_COM,   '}'),
-		function_arguments: $ => seq('(', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), ')'),
+		expression_grouped: $ => seq('(',                       $._expression__block,                     ')'),
+		tuple_literal:      $ => seq('(', optional(             $._items                               ), ')'),
+		record_literal:     $ => seq('(',              OPT_COM, repCom1($.property),           OPT_COM,   ')'),
+		list_literal:       $ => seq('[', optional(seq(OPT_COM, repCom1($._expression__block), OPT_COM)), ']'),
+		dict_literal:       $ => seq('[',              OPT_COM, repCom1($.property),           OPT_COM,   ']'),
+		set_literal:        $ => seq('{', optional(seq(OPT_COM, repCom1($._expression__block), OPT_COM)), '}'),
+		map_literal:        $ => seq('{',              OPT_COM, repCom1($.case),               OPT_COM,   '}'),
+		function_arguments: $ => seq('(', optional(seq(OPT_COM, repCom1($._expression__block), OPT_COM)), ')'),
 
-		_expression_unit: $ => choice(
+		...parameterize('_expression_unit', ({block}) => $ => choice(
 			$.identifier,
 			$.primitive_literal,
 			$.string_template,
@@ -481,61 +488,76 @@ module.exports = grammar({
 			$.dict_literal,
 			$.set_literal,
 			$.map_literal,
-		),
+			...iffSpread(block, alias($.block, $.expression_block)),
+		), 'block'),
 
-		property_access: $ => seq(choice('.', '?.', '!.'), choice($.integer, $.word, seq('[', $._expression, ']'))),
-		property_assign: $ => seq('.',                     choice($.integer, $.word, seq('[', $._expression, ']'))),
+		property_access: $ => seq(choice('.', '?.', '!.'), choice($.integer, $.word, seq('[', $._expression__block, ']'))),
+		property_assign: $ => seq('.',                     choice($.integer, $.word, seq('[', $._expression__block, ']'))),
 		function_call:   $ => seq('.',                     optional($.generic_arguments), $.function_arguments),
 
-		_expression_compound: $ => choice(
-			$._expression_unit,
-			alias($.expression_compound_dfn, $.expression_compound),
-		),
-		expression_compound_dfn: $ => seq($._expression_compound, choice($.property_access, $.function_call)),
+		...parameterize('_expression_compound', ({block}) => $ => choice(
+			$[call('_expression_unit', {block})],
+			alias($[call('expression_compound_dfn', {block})], $.expression_compound),
+		), 'block'),
+		...parameterize('expression_compound_dfn', ({block}) => $ => seq($[call('_expression_compound', {block})], choice($.property_access, $.function_call)), 'block'),
 
 		assignee: $ => choice(
 			$.identifier,
-			seq($._expression_compound, $.property_assign),
+			seq($._expression_compound__block, $.property_assign),
 		),
 
-		_expression_unary_symbol:  $ => choice($._expression_compound,     alias($.expression_unary_symbol_dfn,  $.expression_unary_symbol)),
-		_expression_unary_keyword: $ => choice($._expression_unary_symbol, alias($.expression_unary_keyword_dfn, $.expression_unary_keyword)),
+		...parameterize('_expression_unary_symbol',  ({block}) => $ => choice($[call('_expression_compound',     {block})], alias($[call('expression_unary_symbol_dfn',  {block})], $.expression_unary_symbol)),  'block'),
+		...parameterize('_expression_unary_keyword', ({block}) => $ => choice($[call('_expression_unary_symbol', {block})], alias($[call('expression_unary_keyword_dfn', {block})], $.expression_unary_keyword)), 'block'),
 
-		expression_unary_symbol_dfn:  $ => seq(choice('!', '?', '+', '-'), $._expression_unary_symbol),
-		expression_unary_keyword_dfn: $ => seq(choice('int', 'float'),     $._expression_unary_keyword),
+		...parameterize('expression_unary_symbol_dfn',  ({block}) => $ => seq(choice('!', '?', '+', '-'), $[call('_expression_unary_symbol',  {block})]), 'block'),
+		...parameterize('expression_unary_keyword_dfn', ({block}) => $ => seq(choice('int', 'float'),     $[call('_expression_unary_keyword', {block})]), 'block'),
 
-		_expression_cast:           $ => choice($._expression_unary_keyword,  alias($.expression_cast_dfn,           $.expression_cast)),
-		_expression_exponential:    $ => choice($._expression_cast,           alias($.expression_exponential_dfn,    $.expression_exponential)),
-		_expression_multiplicative: $ => choice($._expression_exponential,    alias($.expression_multiplicative_dfn, $.expression_multiplicative)),
-		_expression_additive:       $ => choice($._expression_multiplicative, alias($.expression_additive_dfn,       $.expression_additive)),
-		_expression_comparative:    $ => choice($._expression_additive,       alias($.expression_comparative_dfn,    $.expression_comparative)),
-		_expression_equality:       $ => choice($._expression_comparative,    alias($.expression_equality_dfn,       $.expression_equality)),
-		_expression_conjunctive:    $ => choice($._expression_equality,       alias($.expression_conjunctive_dfn,    $.expression_conjunctive)),
-		_expression_disjunctive:    $ => choice($._expression_conjunctive,    alias($.expression_disjunctive_dfn,    $.expression_disjunctive)),
+		...parameterize('_expression_cast',           ({block}) => $ => choice($[call('_expression_unary_keyword',  {block})], alias($[call('expression_cast_dfn',           {block})], $.expression_cast)),           'block'),
+		...parameterize('_expression_exponential',    ({block}) => $ => choice($[call('_expression_cast',           {block})], alias($[call('expression_exponential_dfn',    {block})], $.expression_exponential)),    'block'),
+		...parameterize('_expression_multiplicative', ({block}) => $ => choice($[call('_expression_exponential',    {block})], alias($[call('expression_multiplicative_dfn', {block})], $.expression_multiplicative)), 'block'),
+		...parameterize('_expression_additive',       ({block}) => $ => choice($[call('_expression_multiplicative', {block})], alias($[call('expression_additive_dfn',       {block})], $.expression_additive)),       'block'),
+		...parameterize('_expression_comparative',    ({block}) => $ => choice($[call('_expression_additive',       {block})], alias($[call('expression_comparative_dfn',    {block})], $.expression_comparative)),    'block'),
+		...parameterize('_expression_equality',       ({block}) => $ => choice($[call('_expression_comparative',    {block})], alias($[call('expression_equality_dfn',       {block})], $.expression_equality)),       'block'),
+		...parameterize('_expression_conjunctive',    ({block}) => $ => choice($[call('_expression_equality',       {block})], alias($[call('expression_conjunctive_dfn',    {block})], $.expression_conjunctive)),    'block'),
+		...parameterize('_expression_disjunctive',    ({block}) => $ => choice($[call('_expression_conjunctive',    {block})], alias($[call('expression_disjunctive_dfn',    {block})], $.expression_disjunctive)),    'block'),
 
-		expression_cast_dfn:           $ => choice(seq($._expression_cast,           choice('as', 'as?', 'as!'),                             $._expression_unary_symbol), seq($._expression_cast, 'as', '<', $._type, '>')),
-		expression_exponential_dfn:    $ =>        seq($._expression_cast,           '^',                                                    $._expression_exponential),
-		expression_multiplicative_dfn: $ =>        seq($._expression_multiplicative, choice('*', '/'),                                       $._expression_exponential),
-		expression_additive_dfn:       $ =>        seq($._expression_additive,       choice('+', '-'),                                       $._expression_multiplicative),
-		expression_comparative_dfn:    $ =>        seq($._expression_comparative,    choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), $._expression_additive),
-		expression_equality_dfn:       $ =>        seq($._expression_equality,       choice('===', '!==', '==', '!='),                       $._expression_comparative),
-		expression_conjunctive_dfn:    $ =>        seq($._expression_conjunctive,    choice('&&', '!&'),                                     $._expression_equality),
-		expression_disjunctive_dfn:    $ =>        seq($._expression_disjunctive,    choice('||', '!|'),                                     $._expression_conjunctive),
+		...parameterize('expression_cast_dfn',           ({block}) => $ => choice(seq($[call('_expression_cast',           {block})], choice('as', 'as?', 'as!'),                             $[call('_expression_unary_symbol',   {block})]), seq($[call('_expression_cast', {block})], 'as', '<', $._type, '>')), 'block'),
+		...parameterize('expression_exponential_dfn',    ({block}) => $ =>        seq($[call('_expression_cast',           {block})], '^',                                                    $[call('_expression_exponential',    {block})]), 'block'),
+		...parameterize('expression_multiplicative_dfn', ({block}) => $ =>        seq($[call('_expression_multiplicative', {block})], choice('*', '/'),                                       $[call('_expression_exponential',    {block})]), 'block'),
+		...parameterize('expression_additive_dfn',       ({block}) => $ =>        seq($[call('_expression_additive',       {block})], choice('+', '-'),                                       $[call('_expression_multiplicative', {block})]), 'block'),
+		...parameterize('expression_comparative_dfn',    ({block}) => $ =>        seq($[call('_expression_comparative',    {block})], choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), $[call('_expression_additive',       {block})]), 'block'),
+		...parameterize('expression_equality_dfn',       ({block}) => $ =>        seq($[call('_expression_equality',       {block})], choice('===', '!==', '==', '!='),                       $[call('_expression_comparative',    {block})]), 'block'),
+		...parameterize('expression_conjunctive_dfn',    ({block}) => $ =>        seq($[call('_expression_conjunctive',    {block})], choice('&&', '!&'),                                     $[call('_expression_equality',       {block})]), 'block'),
+		...parameterize('expression_disjunctive_dfn',    ({block}) => $ =>        seq($[call('_expression_disjunctive',    {block})], choice('||', '!|'),                                     $[call('_expression_conjunctive',    {block})]), 'block'),
 
-		expression_conditional: $ => seq('if', $._expression, 'then', $._expression, 'else', $._expression),
+		expression_conditional: $ => seq('if', $._expression__block, 'then', $._expression, 'else', $._expression),
 
-		_expression: $ => choice(
-			$._expression_disjunctive,
+		...parameterize('_expression', ({block}) => $ => choice(
+			$[call('_expression_disjunctive', {block})],
 			$.expression_conditional,
-		),
+		), 'block'),
 
 
 		/* ## Statements */
-		statement_expression: $ => seq(optional($._expression), ';'),
+		statement_expression: $ => seq(optional($._expression__block), ';'),
+
+		...parameterize('statement_conditional', ({unless}) => $ => seq(
+			iff(!unless, 'if'),
+			iff( unless, 'unless'),
+			$._expression__block,
+			'then',
+			$.block,
+			iff(!unless, choice(
+				seq(optional(seq('else', $.block)), ';'),
+				seq('else', $[call('statement_conditional', {unless})]),
+			)),
+			iff(unless, ';'),
+		), 'unless'),
 
 		_statement: $ => choice(
-			$._declaration,
 			$.statement_expression,
+			choice($.statement_conditional, $.statement_conditional__unless), // TODO: write a function for representing calling `StatementConditional<±Unless>`
+			$._declaration,
 		),
 
 		block: $ => seq('{', repeat1($._statement), '}'),
@@ -543,12 +565,12 @@ module.exports = grammar({
 		declaration_type: $ => seq('type', choice('_', $.identifier), '=', $._type, ';'),
 
 		declaration_variable: $ => choice(
-			seq('let', optional('var'), choice('_', $.identifier), ':',  $._type, '=', $._expression, ';'),
-			seq('let',          'var',  choice('_', $.identifier), '?:', $._type,                     ';'),
+			seq('let', optional('var'), choice('_', $.identifier), ':',  $._type, '=', $._expression__block, ';'),
+			seq('let',          'var',  choice('_', $.identifier), '?:', $._type,                            ';'),
 		),
 
-		declaration_claim:        $ => seq('claim', $.assignee, ':', $._type,       ';'),
-		declaration_reassignment: $ => seq('set',   $.assignee, '=', $._expression, ';'),
+		declaration_claim:        $ => seq('claim', $.assignee, ':', $._type,              ';'),
+		declaration_reassignment: $ => seq('set',   $.assignee, '=', $._expression__block, ';'),
 
 		_declaration: $ => choice(
 			$.declaration_type,
@@ -610,6 +632,8 @@ module.exports = grammar({
 			// modifier
 			'nominal',
 			'var',
+			// control
+			'unless',
 			// type keyword
 			'nothing',
 			'bool',

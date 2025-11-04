@@ -1,6 +1,9 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
-import type {NonemptyArray} from '../../lib/index.ts';
+import type binaryen from 'binaryen';
+import {
+	type NonemptyArray,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -11,16 +14,17 @@ import {ASTNodeGoal} from './index.ts';
 import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeStatement} from './ASTNodeStatement.ts';
+import type {ASTNodeStatementConditional} from './ASTNodeStatementConditional.ts';
 
 
 
 export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	/**
-	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
+	 * Construct a new ASTNodeBlock from a source text and optionally a configuration.
 	 * The source text must parse successfully.
 	 * @param src    the source text
 	 * @param config the configuration
-	 * @returns      a new ASTNodeGoal representing the given source
+	 * @returns      a new ASTNodeBlock representing the given source
 	 */
 	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeBlock {
 		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(src, config);
@@ -29,38 +33,25 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	}
 
 
-	readonly #validator: Validator;
+	#validator?: Validator;
 
 	public constructor(
 		start_node: SyntaxNodeType<'block'>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeStatement>>,
-		config: CPConfig,
+		private readonly config:           CPConfig,
 	) {
 		super(start_node, {}, children);
-		this.#validator = new Validator(config);
 	}
 
 	public override get validator(): Validator {
+		this.#validator ??= new Validator(this.config, (this.parent as ASTNodeStatementConditional | ASTNodeGoal | undefined)?.validator);
 		return this.#validator;
 	}
 
 	/** @implements Buildable */
+	@memoizeMethod
 	public build(): binaryen.ExpressionRef {
-		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 child.');
-		this.builder.setupModule((mod) => {
-			if (this.children.length) {
-				const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build()); // must build before calling `.getLocals()`
-				const fn_name:    string                   = 'fn0';
-				mod.addFunction(
-					fn_name,
-					binaryen.none,
-					binaryen.none,
-					this.builder.getLocals().map((var_) => var_.type),
-					mod.block(null, statements),
-				);
-				mod.addFunctionExport(fn_name, fn_name);
-			}
-		});
-		return this.builder.module.nop();
+		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 statement.');
+		return this.builder.module.block(null, this.children.map((stmt) => stmt.build()));
 	}
 }

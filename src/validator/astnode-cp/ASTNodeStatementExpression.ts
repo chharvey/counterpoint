@@ -1,5 +1,8 @@
 import type binaryen from 'binaryen';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -24,6 +27,7 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 
+	@memoizeMethod
 	public override build(): binaryen.ExpressionRef {
 		return !this.expr || (this.validator.config.compilerOptions.constantFolding && this.expr.fold())
 			? this.builder.module.nop()

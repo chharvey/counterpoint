@@ -835,7 +835,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// tested in #FunctionCall
 
 		// ExpressionUnit
-		// consists of #{IDENTIFIER,PrimitiveLiteral,StringTemplate,ExpressionGrouped,{Tuple,Record,Set,Map}Literal}
+		// consists of #{IDENTIFIER,PrimitiveLiteral,StringTemplate,ExpressionGrouped,{Tuple,Record,Set,Map}Literal,Block}
 
 		// PropertyAccess
 		// tested in #ExpressionCompound
@@ -1261,14 +1261,37 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					if a then b else c;
+					if a then {b} else {c};
+					if a then ({b}) else ({c});
+					if a then ({ b; }) else ({ c; });
 				}
 			`,
-			sourceExpressions(s(
-				'expression_conditional',
-				s('identifier'),
-				s('identifier'),
-				s('identifier'),
-			)),
+			sourceExpressions(
+				s(
+					'expression_conditional',
+					s('identifier'),
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'expression_conditional',
+					s('identifier'),
+					s('set_literal', s('identifier')),
+					s('set_literal', s('identifier')),
+				),
+				s(
+					'expression_conditional',
+					s('identifier'),
+					s('expression_grouped', s('set_literal', s('identifier'))),
+					s('expression_grouped', s('set_literal', s('identifier'))),
+				),
+				s(
+					'expression_conditional',
+					s('identifier'),
+					s('expression_grouped', s('expression_block', s('statement_expression', s('identifier')))),
+					s('expression_grouped', s('expression_block', s('statement_expression', s('identifier')))),
+				),
+			),
 		],
 
 		// Expression
@@ -1285,8 +1308,57 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceStatements(s('statement_expression', s('identifier'))),
 		],
 
+		StatementConditional: [
+			xjs.String.dedent`
+				{
+					if     condition  then { consequent; };
+					unless condition  then { alternative; };
+					if     condition  then { consequent; }  else { alternative; };
+					if     condition1 then { consequent1; } else if condition2 then { consequent2; } else { alternative; };
+					if     condition1 then { consequent1; } else if condition2 then { consequent2; } else if condition3 then { consequent3; } else { alternative; };
+				}
+			`,
+			sourceStatements(
+				s('statement_conditional',         s('identifier'), s('block', s('statement_expression', s('identifier')))),
+				s('statement_conditional__unless', s('identifier'), s('block', s('statement_expression', s('identifier')))),
+				s(
+					'statement_conditional',
+					s('identifier'),
+					s('block', s('statement_expression', s('identifier'))),
+					s('block', s('statement_expression', s('identifier'))),
+				),
+				s(
+					'statement_conditional',
+					s('identifier'),
+					s('block', s('statement_expression', s('identifier'))),
+					s(
+						'statement_conditional',
+						s('identifier'),
+						s('block', s('statement_expression', s('identifier'))),
+						s('block', s('statement_expression', s('identifier'))),
+					),
+				),
+				s(
+					'statement_conditional',
+					s('identifier'),
+					s('block', s('statement_expression', s('identifier'))),
+					s(
+						'statement_conditional',
+						s('identifier'),
+						s('block', s('statement_expression', s('identifier'))),
+						s(
+							'statement_conditional',
+							s('identifier'),
+							s('block', s('statement_expression', s('identifier'))),
+							s('block', s('statement_expression', s('identifier'))),
+						),
+					),
+				),
+			),
+		],
+
 		// Statement
-		// consists of #{Declaration,StatementExpression}
+		// consists of #{StatementExpression,StatementConditional,Declaration}
 
 		Block: [
 			xjs.String.dedent`
@@ -1296,6 +1368,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					claim a: U;
 					set a = b;
 					a;
+					{
+						b;
+					};
 				}
 			`,
 			sourceStatements(
@@ -1329,6 +1404,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'statement_expression',
 					s('identifier'),
+				),
+				s(
+					'statement_expression',
+					s('expression_block', s('statement_expression', s('identifier'))),
 				),
 			),
 		],

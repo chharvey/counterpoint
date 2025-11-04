@@ -7,6 +7,7 @@ import type {ASTNodeCP} from './ASTNodeCP.ts';
  * Known implementers:
  * - ASTNodeExpression
  * - ASTNodeStatement
+ * - ASTNodeBlock
  * - ASTNodeGoal
  */
 export interface Buildable extends ASTNodeCP {

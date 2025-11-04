@@ -1,10 +1,11 @@
 import * as xjs from 'extrajs';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	Builder,
 	ParseError01,
 } from '../../index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -15,7 +16,7 @@ import {
 	to_serializable,
 } from '../../parser/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {DECORATOR} from '../Decorator.ts';
+import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
 import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
@@ -54,7 +55,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeGoal {
 		const root_node = TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>;
 		report_syntax_errors(root_node);
-		return DECORATOR.decorateTS(root_node, config);
+		return new Decorator(config).decorateTS(root_node);
 	}
 
 
@@ -81,7 +82,22 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	}
 
 	/** @implements Buildable */
+	@memoizeMethod
 	public build(): binaryen.ExpressionRef {
-		return this.block?.build() ?? this.builder.module.nop();
+		if (this.block) {
+			const block_build: binaryen.ExpressionRef = this.block.build(); // must build before calling `.getLocals()`
+			this.builder.setupModule((mod) => {
+				const fn_name: string = 'fn0';
+				mod.addFunction(
+					fn_name,
+					binaryen.none,
+					binaryen.none,
+					this.builder.getLocals().map((var_) => var_.type),
+					block_build,
+				);
+				mod.addFunctionExport(fn_name, fn_name);
+			});
+		}
+		return this.builder.module.nop();
 	}
 }

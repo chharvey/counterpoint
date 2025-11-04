@@ -46,6 +46,8 @@ Word ::=
 	// modifier
 		| "nominal"
 		| "var"
+	// control
+		| "unless"
 	| IDENTIFIER
 	| KeywordType
 	| KeywordValue
@@ -126,27 +128,27 @@ Type ::=
 
 StringTemplate ::=
 	| TEMPLATE_FULL
-	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
+	| TEMPLATE_HEAD Expression<+Block>? (TEMPLATE_MIDDLE Expression<+Block>?)* TEMPLATE_TAIL
 ;
 
 Items ::=
-	| Expression  ","
-	| Expression? "," Expression# ","?
+	| Expression<+Block>  ","
+	| Expression<+Block>? "," Expression<+Block># ","?
 ;
 
-Property ::= Word       "="  Expression;
-Case     ::= Expression "->" Expression;
+Property ::= Word               "="  Expression<+Block>;
+Case     ::= Expression<+Block> "->" Expression<+Block>;
 
-ExpressionGrouped ::= "("        Expression          ")";
-TupleLiteral      ::= "("        Items?              ")";
-RecordLiteral     ::= "("   ","? Property#   ","?    ")";
-ListLiteral       ::= "[" ( ","? Expression# ","? )? "]";
-DictLiteral       ::= "["   ","? Property#   ","?    "]";
-SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
-MapLiteral        ::= "{"   ","? Case #      ","?    "}";
-FunctionArguments ::= "(" ( ","? Expression# ","? )? ")";
+ExpressionGrouped ::= "("        Expression<+Block>          ")";
+TupleLiteral      ::= "("        Items?                      ")";
+RecordLiteral     ::= "("   ","? Property#           ","?    ")";
+ListLiteral       ::= "[" ( ","? Expression<+Block># ","? )? "]";
+DictLiteral       ::= "["   ","? Property#           ","?    "]";
+SetLiteral        ::= "{" ( ","? Expression<+Block># ","? )? "}";
+MapLiteral        ::= "{"   ","? Case#               ","?    "}";
+FunctionArguments ::= "(" ( ","? Expression<+Block># ","? )? ")";
 
-ExpressionUnit ::=
+ExpressionUnit<Block> ::=
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate
@@ -157,55 +159,67 @@ ExpressionUnit ::=
 	| DictLiteral
 	| SetLiteral
 	| MapLiteral
+	| <Block+>Block
 ;
 
-PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");
-PropertyAssign ::=  "."                (INTEGER | Word | "[" Expression "]");
+PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression<+Block> "]");
+PropertyAssign ::=  "."                (INTEGER | Word | "[" Expression<+Block> "]");
 FunctionCall   ::=  "."                GenericArguments? FunctionArguments;
 
-ExpressionCompound ::=
-	| ExpressionUnit
-	| ExpressionCompound (PropertyAccess | FunctionCall)
+ExpressionCompound<Block> ::=
+	| ExpressionUnit<?Block>
+	| ExpressionCompound<?Block> (PropertyAccess | FunctionCall)
 ;
 
 Assignee ::=
 	| IDENTIFIER
-	| ExpressionCompound PropertyAssign
+	| ExpressionCompound<+Block> PropertyAssign
 ;
 
-ExpressionUnarySymbol  ::= ExpressionCompound    | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
-ExpressionUnaryKeyword ::= ExpressionUnarySymbol | ("int" | "float")       ExpressionUnaryKeyword;
+ExpressionUnarySymbol  <Block> ::= ExpressionCompound    <?Block> | ("!" | "?" | "+" | "-") ExpressionUnarySymbol  <?Block>;
+ExpressionUnaryKeyword <Block> ::= ExpressionUnarySymbol <?Block> | ("int" | "float")       ExpressionUnaryKeyword <?Block>;
 
-ExpressionCast ::=
-	| (ExpressionCast ("as" | "as?" | "as!"))? ExpressionUnaryKeyword
-	|  ExpressionCast  "as"                    "<" Type ">"
+ExpressionCast<Block> ::=
+	| (ExpressionCast<?Block> ("as" | "as?" | "as!"))? ExpressionUnaryKeyword<?Block>
+	|  ExpressionCast<?Block>  "as"                    "<" Type ">"
 ;
 
-ExpressionExponential
-	::= ExpressionCast ("^" ExpressionExponential)?;
+ExpressionExponential<Block>
+	::= ExpressionCast<?Block> ("^" ExpressionExponential<?Block>)?;
 
-ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                                            ExpressionExponential;
-ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                                            ExpressionMultiplicative;
-ExpressionComparative    ::= (ExpressionComparative    ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "isnt"))? ExpressionAdditive;
-ExpressionEquality       ::= (ExpressionEquality       ("===" | "!==" | "==" | "!="))?                           ExpressionComparative;
-ExpressionConjunctive    ::= (ExpressionConjunctive    ("&&" | "!&"))?                                           ExpressionEquality;
-ExpressionDisjunctive    ::= (ExpressionDisjunctive    ("||" | "!|"))?                                           ExpressionConjunctive;
+ExpressionMultiplicative <Block> ::= (ExpressionMultiplicative <?Block> ("*" | "/" ))?                                            ExpressionExponential    <?Block>;
+ExpressionAdditive       <Block> ::= (ExpressionAdditive       <?Block> ("+" | "-" ))?                                            ExpressionMultiplicative <?Block>;
+ExpressionComparative    <Block> ::= (ExpressionComparative    <?Block> ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "isnt"))? ExpressionAdditive       <?Block>;
+ExpressionEquality       <Block> ::= (ExpressionEquality       <?Block> ("===" | "!==" | "==" | "!="))?                           ExpressionComparative    <?Block>;
+ExpressionConjunctive    <Block> ::= (ExpressionConjunctive    <?Block> ("&&" | "!&"))?                                           ExpressionEquality       <?Block>;
+ExpressionDisjunctive    <Block> ::= (ExpressionDisjunctive    <?Block> ("||" | "!|"))?                                           ExpressionConjunctive    <?Block>;
 
 ExpressionConditional
-	::= "if" Expression "then" Expression "else" Expression;
+	::= "if" Expression<+Block> "then" Expression<-Block> "else" Expression<-Block>;
 
-Expression ::=
-	| ExpressionDisjunctive
+Expression<Block> ::=
+	| ExpressionDisjunctive<?Block>
 	| ExpressionConditional
 ;
 
 
 
 StatementExpression
-	::= Expression? ";";
+	::= Expression<+Block>? ";";
+
+StatementConditional<Unless> ::=
+	. <Unless->"if" <Unless+>"unless" Expression<+Block>
+	. "then" Block
+	. <Unless->(
+		| ("else" Block)? ";"
+		| "else" StatementConditional<?Unless>
+	)
+	. <Unless+>";"
+;
 
 Statement ::=
 	| StatementExpression
+	| StatementConditional<±Unless>
 	| Declaration
 ;
 
@@ -220,12 +234,12 @@ DeclarationType
 	::= "type" ("_" | IDENTIFIER) "=" Type ";";
 
 DeclarationVariable ::=
-	| "let" "var"? ("_" | IDENTIFIER) ":"  Type "=" Expression ";"
-	| "let" "var"  ("_" | IDENTIFIER) "?:" Type                ";"
+	| "let" "var"? ("_" | IDENTIFIER) ":"  Type "=" Expression<+Block> ";"
+	| "let" "var"  ("_" | IDENTIFIER) "?:" Type                        ";"
 ;
 
-DeclarationClaim        ::= "claim" Assignee ":" Type       ";";
-DeclarationReassignment ::= "set"   Assignee "=" Expression ";";
+DeclarationClaim        ::= "claim" Assignee ":" Type               ";";
+DeclarationReassignment ::= "set"   Assignee "=" Expression<+Block> ";";
 
 Declaration ::=
 	| DeclarationType

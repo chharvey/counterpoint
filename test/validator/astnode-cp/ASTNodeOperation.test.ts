@@ -9,6 +9,7 @@ import {
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
+	bigint_to_i64,
 	drop_then,
 	type Builder,
 	BinVect,
@@ -125,7 +126,31 @@ describe('ASTNodeOperation', () => {
 					mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
 				),
 				local_get,
-				CALL.vmul(mod, local_get, op1),
+				mod.if(
+					mod.i32.or(
+						mod.i32.and(getter.isInt,   mod.i64.eq(getter.intValue,   bigint_to_i64(mod, 1n))),
+						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(1.0))),
+					),
+					op1,
+					CALL.vmul(mod, local_get, op1),
+				),
+			);
+		}) as OperationHelper,
+
+		add: ((mod, tee, op1) => {
+			const {value, index, type} = normalizeTee(tee);
+
+			const local_tee: binaryen.ExpressionRef = mod.local.tee(index, value, type);
+			const local_get: binaryen.ExpressionRef = mod.local.get(index, type);
+			const teeer                             = new BinVect(mod, local_tee);
+			const getter                            = new BinVect(mod, local_get);
+			return mod.if(
+				mod.i32.or(
+					mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+					mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+				),
+				op1,
+				CALL.vadd(mod, local_get, op1),
 			);
 		}) as OperationHelper,
 
@@ -177,6 +202,21 @@ describe('ASTNodeOperation', () => {
 					buildConst(builder, 5.1),
 				)],
 			]));
+		});
+		it('with block-expressions.', () => {
+			const {stmts, mod} = setupScript(`{
+				let var x: int = 42;
+				let var y: int = 69;
+				x + { x; y; };
+			}`);
+			return assertEqualBins((stmts[2] as AST.ASTNodeStatementExpression).expr!.build(), BINOP.add(
+				mod,
+				[mod.local.get(0, binaryen.v128), 2],
+				mod.block(null, [
+					mod.drop(mod.local.get(0, binaryen.v128)),
+					mod.local.get(1, binaryen.v128),
+				], binaryen.v128),
+			));
 		});
 	});
 
@@ -552,6 +592,9 @@ describe('ASTNodeOperation', () => {
 					x * 2;
 					y * 2.4;
 
+					x + 2;
+					y + 2.4;
+
 					x < 2;
 					y < 2.4;
 
@@ -575,36 +618,16 @@ describe('ASTNodeOperation', () => {
 						BINOP.mul(mod, [extracts[0], 2], const_['2']),
 						BINOP.mul(mod, [extracts[1], 3], const_['2.4']),
 
-						CALL.vlt(mod, extracts[2], const_['2']),
-						CALL.vlt(mod, extracts[3], const_['2.4']),
+						BINOP.add(mod, [extracts[2], 4], const_['2']),
+						BINOP.add(mod, [extracts[3], 5], const_['2.4']),
 
-						CALL.veq(mod, extracts[4], const_['2']),
-						CALL.veq(mod, extracts[5], const_['2']),
-						CALL.veq(mod, extracts[6], const_['2.4']),
-						CALL.veq(mod, extracts[7], const_['2.4']),
-					].map((expected) => mod.drop(expected)),
-				);
-			});
-			it('drops the first operand if it is an identity element.', () => {
-				const {goal, stmts, mod} = setupScript(`{
-					let var x: int   = 42;
-					let var y: float = 4.2;
+						CALL.vlt(mod, extracts[4], const_['2']),
+						CALL.vlt(mod, extracts[5], const_['2.4']),
 
-					1 * x;
-					0.0 + y;
-				}`);
-				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(2).map((stmt) => (
-					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand1.build()
-				));
-				const const_ = {
-					'1':   buildConst(goal.builder, 1n),
-					'0.0': buildConst(goal.builder, 0.0),
-				} as const;
-				return assertEqualBins(
-					stmts.slice(2).map((stmt) => stmt.build()),
-					[
-						drop_then(mod, [const_['1']],   extracts[0]),
-						drop_then(mod, [const_['0.0']], extracts[1]),
+						CALL.veq(mod, extracts[6], const_['2']),
+						CALL.veq(mod, extracts[7], const_['2']),
+						CALL.veq(mod, extracts[8], const_['2.4']),
+						CALL.veq(mod, extracts[9], const_['2.4']),
 					].map((expected) => mod.drop(expected)),
 				);
 			});
@@ -646,8 +669,8 @@ describe('ASTNodeOperation', () => {
 					'3.0': buildConst(goal.builder, 3.0),
 				} as const;
 				const inners: readonly binaryen.ExpressionRef[] = [
-					CALL.vadd(mod, extracts[0], const_['2']),
-					CALL.vadd(mod, const_['2.0'], extracts[1]),
+					BINOP.add(mod, [extracts[0], 2], const_['2']),
+					CALL.vadd(mod, const_['2.0'],    extracts[1]),
 				];
 				assertEqualBins(
 					stmts.slice(2).map((stmt) => (
@@ -657,7 +680,10 @@ describe('ASTNodeOperation', () => {
 				);
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
-					inners.map((inner, i) => mod.drop(CALL.vadd(mod, inner, [const_['3'], const_['3.0']][i]))),
+					inners.map((inner, i) => mod.drop([
+						BINOP.add(mod, [inner, 3], const_['3']),
+						BINOP.add(mod, [inner, 4], const_['3.0']),
+					][i])),
 				);
 			});
 		});
@@ -779,22 +805,37 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		specify('#build', () => {
-			buildOperations(new Map([
-				['42 + 420', (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+		describe('#build', () => {
+			it('calls the correct WASM function.', () => {
+				buildOperations(new Map([
+					['42 + 420', (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
 
-				[' 126 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder,  3n))],
-				['-126 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder,  3n))],
-				[' 126 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder, -3n))],
-				['-126 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder, -3n))],
-				[' 200 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder,  3n))],
-				[' 200 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder, -3n))],
-				['-200 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder,  3n))],
-				['-200 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder, -3n))],
+					[' 126 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder,  3n))],
+					['-126 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder,  3n))],
+					[' 126 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder, -3n))],
+					['-126 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder, -3n))],
+					[' 200 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder,  3n))],
+					[' 200 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder, -3n))],
+					['-200 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder,  3n))],
+					['-200 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder, -3n))],
 
-				['42  - 420',  (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), CALL.vneg(builder.module, buildConst(builder, 420n)))],
-				['4.2 - 42.0', (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42.0)))],
-			]));
+					['42  - 420',  (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), CALL.vneg(builder.module, buildConst(builder, 420n)))],
+					['4.2 - 42.0', (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42.0)))],
+				]));
+			});
+			it('does not compile the first operand if it is foldable and an identity element.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var x: int   = 42;
+					let var y: float = 4.2;
+
+					1 * x;
+					0.0 + y;
+				}`);
+				return assertEqualBins(
+					stmts.slice(2).map((stmt) => stmt.build()),
+					stmts.slice(2).map((stmt) => (mod.drop(((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand1.build()))),
+				);
+			});
 		});
 	});
 

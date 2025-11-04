@@ -73,6 +73,7 @@ SemanticExpression =:=
 	| SemanticVariable
 	| SemanticTemplate
 	| SemanticCollectionLiteral
+	| SemanticExpressionBlock
 	| SemanticAccess
 	| SemanticCall
 	| SemanticClaim
@@ -109,6 +110,9 @@ SemanticDict   ::= SemanticProperty+;
 SemanticSet    ::= SemanticExpression*;
 SemanticMap    ::= SemanticCase+;
 
+SemanticExpressionBlock
+	::= SemanticBlock;
+
 SemanticAccess[kind: NORMAL | MAYBE | RESULT]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
@@ -135,6 +139,7 @@ SemanticOperation[operator: COND]
 
 SemanticStatement =:=
 	| SemanticStatementExpression
+	| SemanticStatementConditional
 	| SemanticDeclaration
 ;
 
@@ -142,6 +147,11 @@ SemanticStatement =:=
 
 SemanticStatementExpression
 	::= SemanticExpression?;
+
+
+
+SemanticStatementConditional[unless: Boolean]
+	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;
 
 
 

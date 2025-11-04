@@ -1,5 +1,5 @@
 Type! TypeOf(SemanticExpression expr) :=
-	1. *Let* `t` be *Unrwap:* `TypeOfUnfolded(expr)`.
+	1. *Let* `t` be *Unwrap:* `TypeOfUnfolded(expr)`.
 	2. *Let* `folded` be `ValueOf(expr)`.
 	3. *If* `folded` is an abrupt completion:
 		1. *Return:* `t`.
@@ -92,6 +92,20 @@ Type! TypeOfUnfolded(SemanticMap map) :=
 	3. *Let* `k` be *UnwrapAffirm:* `Union(...ant_types)`.
 	4. *Let* `v` be *UnwrapAffirm:* `Union(...con_types)`.
 	5. *Return:* a new mutable Map type whose antecedent types are `k` and whose consequent types are `v`.
+;
+
+
+
+Type! TypeOfUnfolded(SemanticExpressionBlock block) :=
+	1. *Assert:* `block.children.count` is greater than 0.
+	2. *Let* `last_stmt` be `block.children.-1`.
+	3. *If* `last_stmt` is not a SemanticStatementExpression:
+		1. *Throw:* a new Error.
+	4. *If* `last_stmt.children.count` is less than 1:
+		1. *Throw:* a new Error.
+	5. *Let* `expr` be `last_stmt.children.0`.
+	6. *Assert:* `expr` is a SemanticExpression.
+	7. *Return:* `TypeOf(expr)`.
 ;
 
 
@@ -360,7 +374,8 @@ Type! TypeOfUnfolded(SemanticOperation[operator: COND] expr) :=
 		2. *If* `t0` is `ToType(true)`:
 			1. *Return:* `t1`.
 		3. *Return:* `Union(t1, t2)`.
-	7. *Throw:* a new TypeErrorInvalidOperation.
+	7. *Else:*
+		1. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
 
