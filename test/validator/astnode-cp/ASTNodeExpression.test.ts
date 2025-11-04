@@ -1097,5 +1097,26 @@ describe('ASTNodeExpression', () => {
 				);
 			});
 		});
+
+
+		describe('#build', () => {
+			it('builds each statement except last as usual, then outputs last expression-statement build.', () => {
+				const {goal, stmts, mod} = setupScript(`{
+					let var x: int = 42;
+					let var y: int | null = {
+						x;
+						let var z: int = 69;
+						z;
+					};
+					x;
+					y;
+				}`);
+				return assertEqualBins((stmts[1] as AST.ASTNodeDeclarationVariable).assigned!.build(), mod.block(null, [
+					mod.drop(mod.local.get(0, binaryen.v128)),
+					mod.local.set(1, buildConst(goal.builder, 69n)),
+					mod.local.get(1, binaryen.v128),
+				], binaryen.v128));
+			});
+		});
 	});
 });

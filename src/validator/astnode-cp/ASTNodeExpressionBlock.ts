@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import type {
 	VALUE,
 	TYPE,
@@ -44,7 +44,11 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw new Error('not yet supported.');
+		const block_stmts: binaryen.ExpressionRef[] = [
+			...this.block.children.slice(0, -1).map((stmt) => stmt.build()),
+			(this.block.children.at(-1) as ASTNodeStatementExpression).expr!.build(),
+		];
+		return this.builder.module.block(null, block_stmts, binaryen.getExpressionType(block_stmts.at(-1)!));
 	}
 
 	@memoizeMethod
