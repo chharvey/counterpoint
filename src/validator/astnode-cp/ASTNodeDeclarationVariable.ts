@@ -90,7 +90,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
 		return this.assignee
-			? this.builder.teeLocal(this.assignee.id, value).set(value)
+			? this.builder.teeLocal(this.assignee.id, value).set()
 			: this.builder.module.drop(value);
 	}
 }
