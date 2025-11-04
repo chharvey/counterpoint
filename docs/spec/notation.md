@@ -553,14 +553,22 @@ Therefore, a nonterminal on the left-hand side `P<F, G>` is equivalent to `P<F><
 ##### Production Arguments
 When a parameterized production is referenced as a nonterminal on the right-hand side,
 identifiers are sent as arguments, which determine the production used.
+
+- `<+F>`: definitely include the suffix `F`
+- `<-F>`: definitely exclude the suffix `F`
+- `<?F>`: include the suffix `F` if and only if it appears in the nonterminal
+- `<!F>`: include the suffix `F` exactly when it does not appear in the nonterminal
+
 ```
 N ::=
 	| A<+X>
 	| B<-X>
 ;
 
-M<Y>
-	::= C<?Y>;
+M<Y> ::=
+	| C<?Y>
+	| D<!Y>
+;
 ```
 transforms to
 ```
@@ -569,16 +577,26 @@ N ::=
 	| B
 ;
 
-M   ::= C;
-M_Y ::= C_Y;
+M ::=
+	| C
+	| D_Y
+;
+M_Y ::=
+	| C_Y
+	| D
+;
 ```
 Production arguments expand combinatorially, the same way parameters do.
+
+- `<±F>`: shorthand for the argument `<-F, +F>`
+
 ```
 N ::=
 	| I<-X, +X>
 	| J<+Y, -Y>
 	| K<-X><+X>
 	| L<+Y><-Y>
+	| II<±X>
 ;
 
 M ::=
@@ -594,7 +612,13 @@ M ::=
 
 O<Z, W> ::=
 	| P<?Z, ?W>
-	| Q<?Z><?W>
+	| Q<?Z, !W>
+	| R<!Z, ?W>
+	| S<!Z, !W>
+	| T<?Z><?W>
+	| U<?Z><!W>
+	| V<!Z><?W>
+	| W<!Z><!W>
 ;
 ```
 transforms to
@@ -606,6 +630,8 @@ N ::=
 	| J
 	| K_X
 	| L_Y
+	| II
+	| II_X
 ;
 
 M ::=
@@ -625,19 +651,43 @@ M ::=
 
 O ::=
 	| P
-	| Q
+	| Q_W
+	| R_Z
+	| S_Z_W
+	| T
+	| U_W
+	| V_Z
+	| W_Z_W
 ;
 O_Z ::=
 	| P_Z
-	| Q_Z
+	| Q_Z_W
+	| R
+	| S_W
+	| T_Z
+	| U_Z_W
+	| V
+	| W_W
 ;
 O_W ::=
 	| P_W
-	| Q_W
+	| Q
+	| R_Z_W
+	| S_Z
+	| T_W
+	| U
+	| V_Z_W
+	| W_Z
 ;
 O_Z_W ::=
 	| P_Z_W
-	| Q_Z_W
+	| Q_Z
+	| R_W
+	| S
+	| T_Z_W
+	| U_Z
+	| V_W
+	| W
 ;
 ```
 Notice that a nonterminal on the right-hand side `P<⊛F, ⊗G>` is *not* equivalent to `P<⊛F><⊗G>`.
@@ -645,7 +695,8 @@ Notice that a nonterminal on the right-hand side `P<⊛F, ⊗G>` is *not* equiva
 The former (`P<⊛F, ⊗G>`) acts like a disjunction (`P<⊛F> | P<⊗G> | P<⊛F><⊗G>`), while
 the latter (`P<⊛F><⊗G>`) acts like a conjunction (only `P<⊛F><⊗G>`).
 
-However, a nonterminal on the right-hand side `P<?F, ?G>` *is* equivalent to `P<?F><?G>`.
+However, a nonterminal on the right-hand side `P<⊛F, ⊗G>` *is* equivalent to `P<⊛F><⊗G>`,
+where `⊛` and `⊗` are metavariables representing one of the symbols `?` and `!`.
 
 ##### Production Conditionals
 A production conditional determines whether or not an item appears in the sequence of a production.

@@ -60,6 +60,14 @@ describe('ASTNodeDeclaration', () => {
 					type FOO = float;
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
+			it('throws if the same identifier was declared in an outer scope (shadowing).', () => {
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					type T = int;
+					if true then {
+						type T = float;
+					};
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+			});
 			it('allows duplicate declaration of blank identifier.', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					type _ = int | float;
@@ -150,6 +158,14 @@ describe('ASTNodeDeclaration', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type FOO = float;
 					let FOO: int = 42;
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+			});
+			it('throws if the same identifier was declared in an outer scope (shadowing).', () => {
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					let var x: int = 42;
+					if true then {
+						let var x: float = 4.2;
+					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
 			it('allows duplicate declaration of blank identifier.', () => {

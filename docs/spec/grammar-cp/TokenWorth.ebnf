@@ -66,6 +66,7 @@ TokenWorth(KeywordOther :::= "_")        -> RealNumber := \x97;
 TokenWorth(KeywordOther :::= "void")     -> RealNumber := \x98;
 TokenWorth(KeywordOther :::= "nominal")  -> RealNumber := \x99;
 TokenWorth(KeywordOther :::= "var")      -> RealNumber := \x9a;
+TokenWorth(KeywordOther :::= "unless")   -> RealNumber := \x9b;
 
 
 

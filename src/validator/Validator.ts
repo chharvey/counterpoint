@@ -269,8 +269,12 @@ export class Validator {
 	/**
 	 * Construct a new Validator object.
 	 * @param config - The configuration settings for an instance program.
+	 * @param parent - a parent validator from which to inherit symbols
 	 */
-	public constructor(public readonly config: CPConfig = CONFIG_DEFAULT) {
+	public constructor(
+		public  readonly config:  CPConfig = CONFIG_DEFAULT,
+		private readonly parent?: Validator,
+	) {
 	}
 
 	/**
@@ -299,7 +303,7 @@ export class Validator {
 	 * @returns Does the symbol table have a symbol with the given id?
 	 */
 	public hasSymbol(id: bigint): boolean {
-		return this.symbol_table.has(id);
+		return this.symbol_table.has(id) || (this.parent?.symbol_table.has(id) ?? false);
 	}
 
 	/**
@@ -308,7 +312,7 @@ export class Validator {
 	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
 	 */
 	public getSymbolInfo(id: bigint): SymbolSchema | null {
-		return this.symbol_table.get(id) ?? null;
+		return this.symbol_table.get(id) ?? this.parent?.symbol_table.get(id) ?? null;
 	}
 
 	/**
@@ -316,7 +320,7 @@ export class Validator {
 	 * @return the symbols in a new map
 	 */
 	public getSymbols(): Map<bigint, SymbolSchema> {
-		return new Map([...this.symbol_table]);
+		return new Map([...(this.parent?.symbol_table ?? []), ...this.symbol_table]);
 	}
 
 	/**
@@ -335,7 +339,7 @@ export class Validator {
 	 */
 	public cookTokenIdentifier(source: string): bigint {
 		this.identifiers.add(source);
-		return BigInt([...this.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
+		return BigInt([...(this.parent?.identifiers ?? []), ...this.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
 	}
 
 	/**

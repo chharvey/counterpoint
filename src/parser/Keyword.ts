@@ -35,6 +35,9 @@ export enum Keyword {
 	// modifier
 	NOMINAL = 'nominal',
 	UNFIXED = 'var',
+
+	// control
+	UNLESS = 'unless',
 }
 
 

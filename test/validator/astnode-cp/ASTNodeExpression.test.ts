@@ -152,6 +152,14 @@ describe('ASTNodeExpression', () => {
 				}`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeVariable.fromSource('i').varCheck(), ReferenceErrorUndeclared);
 			});
+			it('throws when declared in an inner scope.', () => {
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					if true then {
+						let var i: int = 42;
+					};
+					i;
+				}`).varCheck(), ReferenceErrorUndeclared);
+			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					i;
