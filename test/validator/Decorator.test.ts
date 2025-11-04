@@ -305,7 +305,7 @@ describe('Decorator', () => {
 				% (case)
 			`]],
 
-			['Decorate(ExpressionGrouped ::= "(" Expression ")") -> SemanticExpression', [AST.ASTNodeExpression, `
+			['Decorate(ExpressionGrouped ::= "(" Expression<+Block> ")") -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
 					(42 || 6.9);
 				}
@@ -338,7 +338,7 @@ describe('Decorator', () => {
 				}
 				% (list_literal)
 			`]],
-			['Decorate(ListLiteral ::= "[" ","? Expression# ","? "]") -> SemanticSet', [AST.ASTNodeList, `
+			['Decorate(ListLiteral ::= "[" ","? Expression<+Block># ","? "]") -> SemanticSet', [AST.ASTNodeList, `
 				{
 					[42, 6.9];
 				}
@@ -358,7 +358,7 @@ describe('Decorator', () => {
 				}
 				% (set_literal)
 			`]],
-			['Decorate(SetLiteral ::= "{" ","? Expression# ","? "}") -> SemanticSet', [AST.ASTNodeSet, `
+			['Decorate(SetLiteral ::= "{" ","? Expression<+Block># ","? "}") -> SemanticSet', [AST.ASTNodeSet, `
 				{
 					{42, 6.9};
 				}
