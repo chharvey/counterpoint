@@ -273,14 +273,14 @@ Decorate(Case ::= Expression<+Block> "->" Expression<+Block>) -> SemanticCase
 
 
 
-Decorate(ExpressionGrouped ::= "(" Expression ")") -> SemanticExpression
-	:= Decorate(Expression);
+Decorate(ExpressionGrouped ::= "(" Expression<+Block> ")") -> SemanticExpression
+	:= Decorate(Expression<+Block>);
 
 Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple
 	:= (SemanticTuple);
-Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple
+Decorate(TupleLiteral ::= "[" ","? Expression<+Block># ","? "]") -> SemanticTuple
 	:= (SemanticTuple
-		...ParseList(Expression, SemanticExpression)
+		...ParseList(Expression<+Block>, SemanticExpression)
 	);
 
 Decorate(RecordLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord
@@ -288,9 +288,9 @@ Decorate(RecordLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord
 		...ParseList(Property, SemanticProperty)
 	);
 
-Decorate(SetLiteral ::= "{" ","? Expression# ","? "}") -> SemanticSet
+Decorate(SetLiteral ::= "{" ","? Expression<+Block># ","? "}") -> SemanticSet
 	:= (SemanticSet
-		...ParseList(Expression, SemanticExpression)
+		...ParseList(Expression<+Block>, SemanticExpression)
 	);
 
 Decorate(MapLiteral ::= "{" ","? Case# ","? "}") -> SemanticMap
@@ -298,8 +298,8 @@ Decorate(MapLiteral ::= "{" ","? Case# ","? "}") -> SemanticMap
 		...ParseList(Case, SemanticCase)
 	);
 
-Decorate(FunctionArguments ::= "(" ( ","? Expression# ","? )? ")") -> Sequence<SemanticExpression>
-	:= ParseList(Expression, SemanticExpression);
+Decorate(FunctionArguments ::= "(" ( ","? Expression<+Block># ","? )? ")") -> Sequence<SemanticExpression>
+	:= ParseList(Expression<+Block>, SemanticExpression);
 
 
 

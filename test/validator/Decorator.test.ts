@@ -309,7 +309,7 @@ describe('Decorator', () => {
 				% (case)
 			`]],
 
-			['Decorate(ExpressionGrouped ::= "(" Expression ")") -> SemanticExpression', [AST.ASTNodeExpression, `
+			['Decorate(ExpressionGrouped ::= "(" Expression<+Block> ")") -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
 					(42 || 6.9);
 				}
@@ -322,7 +322,7 @@ describe('Decorator', () => {
 				}
 				% (tuple_literal)
 			`]],
-			['Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+			['Decorate(TupleLiteral ::= "[" ","? Expression<+Block># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
 				{
 					[42, 6.9];
 				}
@@ -336,7 +336,7 @@ describe('Decorator', () => {
 				% (record_literal)
 			`]],
 
-			['Decorate(SetLiteral ::= "{" ","? Expression# ","? "}") -> SemanticSet', [AST.ASTNodeSet, `
+			['Decorate(SetLiteral ::= "{" ","? Expression<+Block># ","? "}") -> SemanticSet', [AST.ASTNodeSet, `
 				{
 					{42, 6.9};
 				}
