@@ -1096,6 +1096,15 @@ describe('ASTNodeExpression', () => {
 					new VALUE.Integer(69n),
 				);
 			});
+			it('sanity check.', () => {
+				assert.deepStrictEqual(
+					(setupScript(`{
+						let x: int = 42 - { 42; 69; };
+						x;
+					}`, null, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
+					new VALUE.Integer(42n - 69n),
+				);
+			});
 		});
 
 

@@ -178,6 +178,21 @@ describe('ASTNodeOperation', () => {
 				)],
 			]));
 		});
+		it('with block-expressions.', () => {
+			const {stmts, mod} = setupScript(`{
+				let var x: int = 42;
+				let var y: int = 69;
+				x + { x; y; };
+			}`);
+			return assertEqualBins((stmts[2] as AST.ASTNodeStatementExpression).expr!.build(), CALL.vadd(
+				mod,
+				mod.local.get(0, binaryen.v128),
+				mod.block(null, [
+					mod.drop(mod.local.get(0, binaryen.v128)),
+					mod.local.get(1, binaryen.v128),
+				], binaryen.v128),
+			));
+		});
 	});
 
 
