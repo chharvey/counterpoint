@@ -51,7 +51,7 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	/** @implements Buildable */
 	@memoizeMethod
 	public build(): binaryen.ExpressionRef {
-		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 child.');
+		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 statement.');
 		return this.builder.module.block(null, this.children.map((stmt) => stmt.build()));
 	}
 }
