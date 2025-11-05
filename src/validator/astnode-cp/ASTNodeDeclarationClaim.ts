@@ -10,6 +10,7 @@ import {
 } from '../../core/index.js';
 import type {SymbolSchemaVar} from '../index.js';
 import type {SyntaxNodeType} from '../utils-private.js';
+import {if_constant_folding} from './Foldable.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import type {ASTNodeType} from './ASTNodeType.js';
@@ -33,6 +34,11 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 		private readonly claimed_type: ASTNodeType,
 	) {
 		super(start_node, {}, [assignee, claimed_type]);
+	}
+
+	@if_constant_folding
+	public override get isFoldable(): boolean {
+		return true;
 	}
 
 	public override typeCheck(): void {

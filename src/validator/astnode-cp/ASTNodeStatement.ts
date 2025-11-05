@@ -5,8 +5,9 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {ASTNodeBlock} from './index.ts';
-import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {Foldable} from './Foldable.ts';
+import type {Buildable} from './Buildable.ts';
 
 
 
@@ -17,7 +18,7 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
  * - ASTNodeStatementConditional
  * - ASTNodeDeclaration
  */
-export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
+export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Buildable {
 	/**
 	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -31,6 +32,9 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 		return block.children[0];
 	}
 
+
+	/** @implements Foldable */
+	public abstract get isFoldable(): boolean;
 
 	/** @implements Buildable */
 	public abstract build(): binaryen.ExpressionRef;

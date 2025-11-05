@@ -16,6 +16,7 @@ import {
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
+import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeAccess} from './ASTNodeAccess.ts';
@@ -36,6 +37,11 @@ export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
 		public readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
+	}
+
+	@if_constant_folding
+	public override get isFoldable(): boolean {
+		return false;
 	}
 
 	public override varCheck(): void {

@@ -11,8 +11,8 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {ASTNodeStatementExpression} from './index.ts';
-import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {Buildable} from './Buildable.ts';
 
 
 

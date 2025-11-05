@@ -550,7 +550,7 @@ describe('ASTNodeDeclaration', () => {
 					let _:     bool  = !b;   % blank, unfoldable: \`(drop)\`      (same behavior)
 
 					let var c?: bool; % assignee, uninitialized: \`(local.set)\` (same behavior)
-					let var _?: bool; % blank, uninitialized:    \`(nop)\`       (same behavior)
+					let var _?: bool; % blank, uninitialized:    \`(drop)\`      instead of \`(nop)\`
 				}`, CONFIG_FOLDING_OFF);
 				assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
 					{id: 0x100n, type: binaryen.v128},
@@ -566,7 +566,7 @@ describe('ASTNodeDeclaration', () => {
 						mod.drop(        (stmts[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
 
 						mod.local.set(2, VALUE.NULL.build(goal.builder)),
-						mod.nop(),
+						mod.drop(        VALUE.NULL.build(goal.builder)),
 					],
 				);
 			});

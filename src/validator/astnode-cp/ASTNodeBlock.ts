@@ -11,14 +11,18 @@ import {
 import {Validator} from '../Validator.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeGoal} from './index.ts';
-import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
+import {
+	if_constant_folding,
+	type Foldable,
+} from './Foldable.ts';
+import type {Buildable} from './Buildable.ts';
 import type {ASTNodeStatement} from './ASTNodeStatement.ts';
 import type {ASTNodeStatementConditional} from './ASTNodeStatementConditional.ts';
 
 
 
-export class ASTNodeBlock extends ASTNodeCP implements Buildable {
+export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 	/**
 	 * Construct a new ASTNodeBlock from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -46,6 +50,12 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 	public override get validator(): Validator {
 		this.#validator ??= new Validator(this.config, (this.parent as ASTNodeStatementConditional | ASTNodeGoal | undefined)?.validator);
 		return this.#validator;
+	}
+
+	/** @implements Foldable */
+	@if_constant_folding
+	public get isFoldable(): boolean {
+		return this.children.every((stmt) => stmt.isFoldable);
 	}
 
 	/** @implements Buildable */
