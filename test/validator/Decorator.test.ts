@@ -26,25 +26,25 @@ describe('Decorator', () => {
 		new Map<string, readonly [ConstructorType<AST.ASTNodeCP>, string]>([
 			['Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey', [AST.ASTNodeKey, `
 				{
-					[mut= 42];
+					(mut= 42);
 				}
 				% (word "mut")
 			`]],
 			['Decorate(Word ::= IDENTIFIER) -> SemanticKey', [AST.ASTNodeKey, `
 				{
-					[foobar= 42];
+					(foobar= 42);
 				}
 				% (word (identifier))
 			`]],
 			['Decorate(Word ::= KeywordType) -> SemanticKey', [AST.ASTNodeKey, `
 				{
-					[bool= 42];
+					(bool= 42);
 				}
 				% (word (keyword_type))
 			`]],
 			['Decorate(Word ::= KeywordValue) -> SemanticKey', [AST.ASTNodeKey, `
 				{
-					[true= 42];
+					(true= 42);
 				}
 				% (word (keyword_value))
 			`]],
@@ -114,37 +114,37 @@ describe('Decorator', () => {
 			/* ## Types */
 			['Decorate(EntryType<-Named><-Optional> ::= Type) -> SemanticItemType', [AST.ASTNodeItemType, `
 				{
-					type T = [int];
+					type T = (int,);
 				}
 				% (entry_type)
 			`]],
 			['Decorate(EntryType<-Named><+Optional> ::= "?:" Type) -> SemanticItemType', [AST.ASTNodeItemType, `
 				{
-					type T = [?: int];
+					type T = (?: int);
 				}
 				% (entry_type__optional)
 			`]],
 			['Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
 				{
-					type T = [a: int];
+					type T = (a: int);
 				}
 				% (entry_type__named)
 			`]],
 			['Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
 				{
-					type T = [a?: int];
+					type T = (a?: int);
 				}
 				% (entry_type__named__optional)
 			`]],
 			['Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
 				{
-					type T = [_: int];
+					type T = (_: int);
 				}
 				% (entry_type__named)
 			`]],
 			['Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType', [AST.ASTNodePropertyType, `
 				{
-					type T = [_?: int];
+					type T = (_?: int);
 				}
 				% (entry_type__named__optional)
 			`]],
@@ -156,24 +156,31 @@ describe('Decorator', () => {
 				% (type_grouped)
 			`]],
 
-			['Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
+			['Decorate(TypeTupleLiteral ::= "(" ")") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
 				{
-					type T = [];
+					type T = ();
 				}
 				% (type_tuple_literal)
 			`]],
-			['Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
+			['Decorate(TypeTupleLiteral ::= "(" ItemsType ")") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
 				{
-					type T = [int, ?: float];
+					type T = (int, ?: float);
 				}
 				% (type_tuple_literal)
 			`]],
 
-			['Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType ","? "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
+			['Decorate(TypeRecordLiteral ::= "(" PropertiesType ")") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
 				{
-					type T = [a?: int, b: float];
+					type T = (a?: int, b: float);
 				}
 				% (type_record_literal)
+			`]],
+
+			['Decorate(TypeListLiteral ::= "[" Type "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
+				{
+					type T = [int];
+				}
+				% (type_list_literal)
 			`]],
 
 			['Decorate(TypeDictLiteral ::= "[" ":" Type "]") -> SemanticTypeDict', [AST.ASTNodeTypeDict, `
@@ -181,6 +188,13 @@ describe('Decorator', () => {
 					type T = [:int];
 				}
 				% (type_dict_literal)
+			`]],
+
+			['Decorate(TypeSetLiteral ::= "{" Type "}") -> SemanticTypeSet', [AST.ASTNodeTypeSet, `
+				{
+					type T = {int};
+				}
+				% (type_set_literal)
 			`]],
 
 			['Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMap', [AST.ASTNodeTypeMap, `
@@ -223,27 +237,9 @@ describe('Decorator', () => {
 				}
 				% (type_unary_symbol)
 			`]],
-			['skip: Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				{
 					type T = U!;
-				}
-				% (type_unary_symbol)
-			`]],
-			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
-				{
-					type T = U[];
-				}
-				% (type_unary_symbol)
-			`]],
-			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" INTEGER "]") -> SemanticTypeList', [AST.ASTNodeTypeList, `
-				{
-					type T = U[3];
-				}
-				% (type_unary_symbol)
-			`]],
-			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "{" "}") -> SemanticTypeSet', [AST.ASTNodeTypeSet, `
-				{
-					type T = U{};
 				}
 				% (type_unary_symbol)
 			`]],
@@ -291,13 +287,13 @@ describe('Decorator', () => {
 
 			['Decorate(Property ::= Word "=" Expression<+Block>) -> SemanticProperty', [AST.ASTNodeProperty, `
 				{
-					[a= 42];
+					(a= 42);
 				}
 				% (property)
 			`]],
 			['Decorate(Property ::= Word "=" Expression<+Block>) -> SemanticProperty', [AST.ASTNodeProperty, `
 				{
-					[_= 42];
+					(_= 42);
 				}
 				% (property)
 			`]],
@@ -316,26 +312,52 @@ describe('Decorator', () => {
 				% (expression_grouped)
 			`]],
 
-			['Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+			['Decorate(TupleLiteral ::= "(" ")") -> SemanticTuple', [AST.ASTNodeTuple, `
 				{
-					[];
+					();
 				}
 				% (tuple_literal)
 			`]],
-			['Decorate(TupleLiteral ::= "[" ","? Expression<+Block># ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+			['Decorate(TupleLiteral ::= "(" Items ")") -> SemanticTuple', [AST.ASTNodeTuple, `
 				{
-					[42, 6.9];
+					(42, 6.9);
 				}
 				% (tuple_literal)
 			`]],
 
-			['Decorate(RecordLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord', [AST.ASTNodeRecord, `
+			['Decorate(RecordLiteral ::= "(" ","? Property# ","? ")") -> SemanticRecord', [AST.ASTNodeRecord, `
 				{
-					[a= 42, b= 6.9];
+					(a= 42, b= 6.9);
 				}
 				% (record_literal)
 			`]],
 
+			['Decorate(ListLiteral ::= "[" "]") -> SemanticSet', [AST.ASTNodeList, `
+				{
+					[];
+				}
+				% (list_literal)
+			`]],
+			['Decorate(ListLiteral ::= "[" ","? Expression<+Block># ","? "]") -> SemanticSet', [AST.ASTNodeList, `
+				{
+					[42, 6.9];
+				}
+				% (list_literal)
+			`]],
+
+			['Decorate(DictLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord', [AST.ASTNodeDict, `
+				{
+					[a= 42, b= 6.9];
+				}
+				% (dict_literal)
+			`]],
+
+			['Decorate(SetLiteral ::= "{" "}") -> SemanticSet', [AST.ASTNodeSet, `
+				{
+					{};
+				}
+				% (set_literal)
+			`]],
 			['Decorate(SetLiteral ::= "{" ","? Expression<+Block># ","? "}") -> SemanticSet', [AST.ASTNodeSet, `
 				{
 					{42, 6.9};
@@ -694,15 +716,6 @@ describe('Decorator', () => {
 			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
 			return assert_instanceof(new Decorator().decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
 		}));
-		describe('Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', () => {
-			it('type operator `!` is not yet supported.', () => {
-				assert.throws(() => new Decorator().decorateTS(captureParseNode(`
-					{
-						type T = U!;
-					}
-				`, '(type_unary_symbol)')), /not yet supported/);
-			});
-		});
 		['is', 'isnt'].forEach((op) => describe(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
 			it(`operator \`${ op }\` is not yet supported.`, () => {
 				assert.throws(() => new Decorator().decorateTS(captureParseNode(`

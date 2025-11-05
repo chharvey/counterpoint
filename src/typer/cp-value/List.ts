@@ -21,7 +21,7 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  */
 export class List<T extends Value = Value> extends CollectionIndexed<T> {
 	public override toString(): string {
-		return `List.(${ super.toString() })`;
+		return `[${ super.toString() }]`;
 	}
 
 	@strictEqual

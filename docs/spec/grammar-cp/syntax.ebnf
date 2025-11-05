@@ -69,19 +69,22 @@ EntryType<Named, Optional>
 	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
 
 ItemsType ::=
-	|  EntryType<-Named><-Optional># ","?
-	| (EntryType<-Named><-Optional># ",")? EntryType<-Named><+Optional># ","?
+	|                                                                  ","?  EntryType<-Named><+Optional>#   ","?
+	| EntryType<-Named><-Optional>                                     ","  (EntryType<-Named><+Optional>#   ","?)?
+	| EntryType<-Named><-Optional>? "," EntryType<-Named><-Optional># (","   EntryType<-Named><+Optional>#)? ","?
 ;
 
 PropertiesType
-	::= EntryType<+Named><-Optional, +Optional># ","?;
+	::= ","? EntryType<+Named><-Optional, +Optional># ","?;
 
-TypeGrouped       ::= "(" Type                 ")";
-TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
-TypeRecordLiteral ::= "["  ","? PropertiesType "]";
-TypeDictLiteral   ::= "[" ":" Type             "]";
-TypeMapLiteral    ::= "{" Type "->" Type       "}";
-GenericArguments  ::= "<"  ","? Type# ","?     ">";
+TypeGrouped       ::= "(" Type             ")";
+TypeTupleLiteral  ::= "(" ItemsType?       ")";
+TypeRecordLiteral ::= "(" PropertiesType   ")";
+TypeListLiteral   ::= "[" Type             "]";
+TypeDictLiteral   ::= "[" ":" Type         "]";
+TypeSetLiteral    ::= "{" Type             "}";
+TypeMapLiteral    ::= "{" Type "->" Type   "}";
+GenericArguments  ::= "<"  ","? Type# ","? ">";
 
 TypeUnit ::=
 	| IDENTIFIER
@@ -89,8 +92,10 @@ TypeUnit ::=
 	| PrimitiveLiteral
 	| TypeGrouped
 	| TypeTupleLiteral
+	| TypeListLiteral
 	| TypeRecordLiteral
 	| TypeDictLiteral
+	| TypeSetLiteral
 	| TypeMapLiteral
 ;
 
@@ -104,12 +109,7 @@ TypeCompound ::=
 
 TypeUnarySymbol ::=
 	| TypeCompound
-	| TypeUnarySymbol (
-		| "?"
-		| "!"
-		| "[" INTEGER? "]"
-		| "{" "}"
-	)
+	| TypeUnarySymbol ("?" | "!")
 ;
 
 TypeUnaryKeyword ::=
@@ -131,15 +131,22 @@ StringTemplate ::=
 	| TEMPLATE_HEAD Expression<+Block>? (TEMPLATE_MIDDLE Expression<+Block>?)* TEMPLATE_TAIL
 ;
 
+Items ::=
+	| Expression<+Block>  ","
+	| Expression<+Block>? "," Expression<+Block># ","?
+;
+
 Property ::= Word               "="  Expression<+Block>;
 Case     ::= Expression<+Block> "->" Expression<+Block>;
 
-ExpressionGrouped ::= "("       Expression<+Block>         ")";
-TupleLiteral      ::= "[" (","? Expression<+Block># ","?)? "]";
-RecordLiteral     ::= "["  ","? Property#           ","?   "]";
-SetLiteral        ::= "{" (","? Expression<+Block># ","?)? "}";
-MapLiteral        ::= "{"  ","? Case#               ","?   "}";
-FunctionArguments ::= "(" (","? Expression<+Block># ","?)? ")";
+ExpressionGrouped ::= "("        Expression<+Block>          ")";
+TupleLiteral      ::= "("        Items?                      ")";
+RecordLiteral     ::= "("   ","? Property#           ","?    ")";
+ListLiteral       ::= "[" ( ","? Expression<+Block># ","? )? "]";
+DictLiteral       ::= "["   ","? Property#           ","?    "]";
+SetLiteral        ::= "{" ( ","? Expression<+Block># ","? )? "}";
+MapLiteral        ::= "{"   ","? Case#               ","?    "}";
+FunctionArguments ::= "(" ( ","? Expression<+Block># ","? )? ")";
 
 ExpressionUnit<Block> ::=
 	| IDENTIFIER
@@ -148,6 +155,8 @@ ExpressionUnit<Block> ::=
 	| ExpressionGrouped
 	| TupleLiteral
 	| RecordLiteral
+	| ListLiteral
+	| DictLiteral
 	| SetLiteral
 	| MapLiteral
 	| <Block+>Block

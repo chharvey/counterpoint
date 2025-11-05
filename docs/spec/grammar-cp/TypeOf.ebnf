@@ -62,6 +62,22 @@ Type! TypeOfUnfolded(SemanticRecord record) :=
 
 
 
+Type! TypeOfUnfolded(SemanticList list) :=
+	1. *Let* `types` be a mapping of `list` for each `it` to *Unwrap:* `TypeOf(it)`.
+	2. *Let* `t` be `Union(...types)`.
+	3. *Return:* a new mutable List type whose types are `t`.
+;
+
+
+
+Type! TypeOfUnfolded(SemanticDict dict) :=
+	1. *Let* `types` be a mapping of `dict` for each `prop` to *Unwrap:* `TypeOf(prop.children.1)`.
+	2. *Let* `t` be `Union(...types)`.
+	3. *Return:* a new mutable Dict type whose types are `t`.
+;
+
+
+
 Type! TypeOfUnfolded(SemanticSet set) :=
 	1. *Let* `types` be a mapping of `set` for each `el` to *Unwrap:* `TypeOf(el)`.
 	2. *Let* `t` be *UnwrapAffirm:* `Union(...types)`.

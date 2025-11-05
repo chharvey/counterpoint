@@ -240,15 +240,15 @@ describe('ASTNodeOperation', () => {
 						['?42',     VALUE.FALSE],
 						['?4.2e+1', VALUE.FALSE],
 
-						['![]',         VALUE.FALSE],
-						['![42]',       VALUE.FALSE],
-						['![a= 42]',    VALUE.FALSE],
+						['!()',         VALUE.FALSE],
+						['!(42,)',      VALUE.FALSE],
+						['!(a= 42)',    VALUE.FALSE],
 						['!{}',         VALUE.FALSE],
 						['!{42}',       VALUE.FALSE],
 						['!{41 -> 42}', VALUE.FALSE],
-						['?[]',         VALUE.TRUE],
-						['?[42]',       VALUE.FALSE],
-						['?[a= 42]',    VALUE.FALSE],
+						['?()',         VALUE.TRUE],
+						['?(42,)',      VALUE.FALSE],
+						['?(a= 42)',    VALUE.FALSE],
 						['?{}',         VALUE.TRUE],
 						['?{42}',       VALUE.FALSE],
 						['?{41 -> 42}', VALUE.FALSE],
@@ -290,9 +290,9 @@ describe('ASTNodeOperation', () => {
 					});
 					it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
-							![];
-							![42];
-							![a= 42];
+							!();
+							!(42,);
+							!(a= 42);
 							!{41 -> 42};
 						}`, CONFIG_FOLDING_OFF, {build: false}).stmts, (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
 					});
@@ -313,9 +313,9 @@ describe('ASTNodeOperation', () => {
 							'?42',
 							'?4.2e+1',
 
-							'?[]',
-							'?[42]',
-							'?[a= 42]',
+							'?()',
+							'?(42,)',
+							'?(a= 42)',
 							'?{41 -> 42}',
 						].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type()).forEach((typ) => assert.strictEqual(typ, TYPE.BOOL));
 						return xjs.Array.forEachAggregated(setupScript(`{
@@ -373,48 +373,48 @@ describe('ASTNodeOperation', () => {
 		describe('#fold', () => {
 			specify('[operator=NOT]', () => {
 				foldOperations(new Map([
-					['!false',               VALUE.TRUE],
-					['!true',                VALUE.FALSE],
-					['!null',                VALUE.TRUE],
-					['!0',                   VALUE.FALSE],
-					['!42',                  VALUE.FALSE],
-					['!0.0',                 VALUE.FALSE],
-					['!-0.0',                VALUE.FALSE],
-					['!4.2e+1',              VALUE.FALSE],
-					['!""',                  VALUE.FALSE],
-					['!"hello"',             VALUE.FALSE],
-					['![]',                  VALUE.FALSE],
-					['![42]',                VALUE.FALSE],
-					['![a= 42]',             VALUE.FALSE],
-					['!List.<int>([])',      VALUE.FALSE],
-					['!List.<int>([42])',    VALUE.FALSE],
-					['!Dict.<int>([a= 42])', VALUE.FALSE],
-					['!{}',                  VALUE.FALSE],
-					['!{42}',                VALUE.FALSE],
-					['!{41 -> 42}',          VALUE.FALSE],
+					['!false',      VALUE.TRUE],
+					['!true',       VALUE.FALSE],
+					['!null',       VALUE.TRUE],
+					['!0',          VALUE.FALSE],
+					['!42',         VALUE.FALSE],
+					['!0.0',        VALUE.FALSE],
+					['!-0.0',       VALUE.FALSE],
+					['!4.2e+1',     VALUE.FALSE],
+					['!""',         VALUE.FALSE],
+					['!"hello"',    VALUE.FALSE],
+					['!()',         VALUE.FALSE],
+					['!(42,)',      VALUE.FALSE],
+					['!(a= 42)',    VALUE.FALSE],
+					['![]',         VALUE.FALSE],
+					['![42]',       VALUE.FALSE],
+					['![a= 42]',    VALUE.FALSE],
+					['!{}',         VALUE.FALSE],
+					['!{42}',       VALUE.FALSE],
+					['!{41 -> 42}', VALUE.FALSE],
 				]));
 			});
 			specify('[operator=EMP]', () => {
 				foldOperations(new Map([
-					['?false',               VALUE.TRUE],
-					['?true',                VALUE.FALSE],
-					['?null',                VALUE.TRUE],
-					['?0',                   VALUE.TRUE],
-					['?42',                  VALUE.FALSE],
-					['?0.0',                 VALUE.TRUE],
-					['?-0.0',                VALUE.TRUE],
-					['?4.2e+1',              VALUE.FALSE],
-					['?""',                  VALUE.TRUE],
-					['?"hello"',             VALUE.FALSE],
-					['?[]',                  VALUE.TRUE],
-					['?[42]',                VALUE.FALSE],
-					['?[a= 42]',             VALUE.FALSE],
-					['?List.<int>([])',      VALUE.TRUE],
-					['?List.<int>([42])',    VALUE.FALSE],
-					['?Dict.<int>([a= 42])', VALUE.FALSE],
-					['?{}',                  VALUE.TRUE],
-					['?{42}',                VALUE.FALSE],
-					['?{41 -> 42}',          VALUE.FALSE],
+					['?false',      VALUE.TRUE],
+					['?true',       VALUE.FALSE],
+					['?null',       VALUE.TRUE],
+					['?0',          VALUE.TRUE],
+					['?42',         VALUE.FALSE],
+					['?0.0',        VALUE.TRUE],
+					['?-0.0',       VALUE.TRUE],
+					['?4.2e+1',     VALUE.FALSE],
+					['?""',         VALUE.TRUE],
+					['?"hello"',    VALUE.FALSE],
+					['?()',         VALUE.TRUE],
+					['?(42,)',      VALUE.FALSE],
+					['?(a= 42)',    VALUE.FALSE],
+					['?[]',         VALUE.TRUE],
+					['?[42]',       VALUE.FALSE],
+					['?[a= 42]',    VALUE.FALSE],
+					['?{}',         VALUE.TRUE],
+					['?{42}',       VALUE.FALSE],
+					['?{41 -> 42}', VALUE.FALSE],
 				]));
 			});
 			it('[operator=INT | FLOAT]: returns a numeric conversion only if needed.', () => {
@@ -455,8 +455,8 @@ describe('ASTNodeOperation', () => {
 				]));
 				// eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition
 				false && buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
-					['![]',    (builder) => drop_then(builder.module, [new VALUE.Tuple().build(builder)], false)],
-					['![4.2]', (builder) => drop_then(builder.module, [new VALUE.Tuple([new VALUE.Float(4.2)]).build(builder)], false)],
+					['!()',     (builder) => drop_then(builder.module, [new VALUE.Tuple().build(builder)], false)],
+					['!(4.2,)', (builder) => drop_then(builder.module, [new VALUE.Tuple([new VALUE.Float(4.2)]).build(builder)], false)],
 				]));
 			});
 			it('returns the correct operation.', () => {
@@ -472,8 +472,8 @@ describe('ASTNodeOperation', () => {
 				]));
 				// eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition
 				false && buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
-					['?[]',    (builder) => CALL.vemp(builder.module, new VALUE.Tuple().build(builder))],
-					['?[4.2]', (builder) => CALL.vemp(builder.module, new VALUE.Tuple([new VALUE.Float(4.2)]).build(builder))],
+					['?()',     (builder) => CALL.vemp(builder.module, new VALUE.Tuple().build(builder))],
+					['?(4.2,)', (builder) => CALL.vemp(builder.module, new VALUE.Tuple([new VALUE.Float(4.2)]).build(builder))],
 				]));
 				const {stmts, mod} = setupScript(`{
 					let var f: bool = false;
@@ -948,25 +948,25 @@ describe('ASTNodeOperation', () => {
 				});
 				it('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
 					setupScript(`{
-						let a: anything = [];
-						let b: anything = [42];
-						let c: anything = [x= 42];
+						let a: anything = ();
+						let b: anything = (42,);
+						let c: anything = (x= 42);
 						let d: Object   = {41 -> 42};
-						a !== [];
-						b !== [42];
-						c !== [x= 42];
+						a !== ();
+						b !== (42,);
+						c !== (x= 42);
 						d !== {41 -> 42};
 						a === a;
 						b === b;
 						c === c;
 						d === d;
-						a == [];
-						b == [42];
-						c == [x= 42];
+						a == ();
+						b == (42,);
+						c == (x= 42);
 						d == {41 -> 42};
-						b != [42, 43];
-						c != [x= 43];
-						c != [y= 42];
+						b != (42, 43);
+						c != (x= 43);
+						c != (y= 42);
 						d != {41 -> 43};
 						d != {43 -> 42};
 					}`, null, {build: false}).stmts.slice(4).forEach((stmt) => {
@@ -1085,27 +1085,27 @@ describe('ASTNodeOperation', () => {
 			});
 			it('compound types.', () => {
 				setupScript(`{
-					let a: anything = [];
-					let b: anything = [42];
-					let c: anything = [x= 42];
-					let d: Object   = List.<int>([]);
-					let e: Object   = List.<int>([42]);
-					let f: Object   = Dict.<int>([x= 42]);
+					let a: anything = ();
+					let b: anything = (42,);
+					let c: anything = (x= 42);
+					let d: Object   = [];
+					let e: Object   = [42];
+					let f: Object   = [x= 42];
 					let g: Object   = {};
 					let h: Object   = {42};
 					let i: Object   = {41 -> 42};
 
-					let bb: anything = [[42]];
-					let cc: anything = [x= [42]];
-					let hh: Object   = {[42]};
-					let ii: Object   = {[41] -> [42]};
+					let bb: anything = ((42,),);
+					let cc: anything = (x= (42,));
+					let hh: Object   = {(42,)};
+					let ii: Object   = {(41,) -> (42,)};
 
-					a === [];
-					b === [42];
-					c === [x= 42];
-					d !== List.<int>([]);
-					e !== List.<int>([42]);
-					f !== Dict.<int>([x= 42]);
+					a === ();
+					b === (42,);
+					c === (x= 42);
+					d !== [];
+					e !== [42];
+					f !== [x= 42];
 					g !== {};
 					h !== {42};
 					i !== {41 -> 42};
@@ -1118,32 +1118,32 @@ describe('ASTNodeOperation', () => {
 					g === g;
 					h === h;
 					i === i;
-					a == [];
-					b == [42];
-					c == [x= 42];
-					d == List.<int>([]);
-					e == List.<int>([42]);
-					f == Dict.<int>([x= 42]);
+					a == ();
+					b == (42,);
+					c == (x= 42);
+					d == [];
+					e == [42];
+					f == [x= 42];
 					g == {};
 					h == {42};
 					i == {41 -> 42};
 
-					bb === [[42]];
-					cc === [x= [42]];
-					hh !== {[42]};
-					ii !== {[41] -> [42]};
+					bb === ((42,),);
+					cc === (x= (42,));
+					hh !== {(42,)};
+					ii !== {(41,) -> (42,)};
 					bb === bb;
 					cc === cc;
 					hh === hh;
 					ii === ii;
-					bb == [[42]];
-					cc == [x= [42]];
-					hh == {[42]};
-					ii == {[41] -> [42]};
+					bb == ((42,),);
+					cc == (x= (42,));
+					hh == {(42,)};
+					ii == {(41,) -> (42,)};
 
-					b != [42, 43];
-					c != [x= 43];
-					c != [y= 42];
+					b != (42, 43);
+					c != (x= 43);
+					c != (y= 42);
 					i != {41 -> 43};
 					i != {43 -> 42};
 				}`, null, {build: false}).stmts.slice(13).forEach((stmt) => {
@@ -1152,14 +1152,14 @@ describe('ASTNodeOperation', () => {
 			});
 			it('compound value types’ constituents are compared using same operand.', () => {
 				foldOperations(new Map([
-					['[   42.0] === [   42]',   VALUE.FALSE],
-					['[   42.0] ==  [   42]',   VALUE.TRUE],
-					['[a= 42.0] === [a= 42]',   VALUE.FALSE],
-					['[a= 42.0] ==  [a= 42]',   VALUE.TRUE],
-					['[    0.0] === [   -0.0]', VALUE.FALSE],
-					['[    0.0] ==  [   -0.0]', VALUE.TRUE],
-					['[a=  0.0] === [a= -0.0]', VALUE.FALSE],
-					['[a=  0.0] ==  [a= -0.0]', VALUE.TRUE],
+					['(   42.0,)  === (   42,)',   VALUE.FALSE],
+					['(   42.0,)  ==  (   42,)',   VALUE.TRUE],
+					['(a= 42.0)   === (a= 42)',    VALUE.FALSE],
+					['(a= 42.0)   ==  (a= 42)',    VALUE.TRUE],
+					['(    0.0,)  === (   -0.0,)', VALUE.FALSE],
+					['(    0.0,)  ==  (   -0.0,)', VALUE.TRUE],
+					['(a=  0.0)   === (a= -0.0)',  VALUE.FALSE],
+					['(a=  0.0)   ==  (a= -0.0)',  VALUE.TRUE],
 				]));
 			});
 		});

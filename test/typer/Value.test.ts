@@ -26,12 +26,12 @@ describe('Value', () => {
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
-				])), '["earth", "wind", "fire"] === ["earth", "wind", "fire"]');
+				])), '("earth", "wind", "fire") === ("earth", "wind", "fire")');
 			});
 		});
 
 		describe('Record', () => {
-			it('Records with the same itesm are identical.', () => {
+			it('Records with the same items are identical.', () => {
 				assert.ok(new VALUE.Record<VALUE.String>(new Map<bigint, VALUE.String>([
 					[0x100n, new VALUE.String('earth')],
 					[0x101n, new VALUE.String('wind')],
@@ -40,7 +40,35 @@ describe('Value', () => {
 					[0x100n, new VALUE.String('earth')],
 					[0x101n, new VALUE.String('wind')],
 					[0x102n, new VALUE.String('fire')],
-				]))), '[a= "earth", b= "wind", c= "fire"] === [a= "earth", b= "wind", c= "fire"]');
+				]))), '(a= "earth", b= "wind", c= "fire") === (a= "earth", b= "wind", c= "fire")');
+			});
+		});
+
+		describe('List', () => {
+			it('Lists with the same items are not identical.', () => {
+				assert.ok(!new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				]).identical(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])), '["earth", "wind", "fire"] !== ["earth", "wind", "fire"]');
+			});
+		});
+
+		describe('Dict', () => {
+			it('Dicts with the same items are not identical.', () => {
+				assert.ok(!new VALUE.Dict<VALUE.String>(new Map<bigint, VALUE.String>([
+					[0x100n, new VALUE.String('earth')],
+					[0x101n, new VALUE.String('wind')],
+					[0x102n, new VALUE.String('fire')],
+				])).identical(new VALUE.Dict<VALUE.String>(new Map<bigint, VALUE.String>([
+					[0x100n, new VALUE.String('earth')],
+					[0x101n, new VALUE.String('wind')],
+					[0x102n, new VALUE.String('fire')],
+				]))), '[a= "earth", b= "wind", c= "fire"] !== [a= "earth", b= "wind", c= "fire"]');
 			});
 		});
 	});
@@ -59,8 +87,8 @@ describe('Value', () => {
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
 				]);
-				assert.ok(!tuple.equal(list), '["earth", "wind", "fire"] != List.<str>(["earth", "wind", "fire"])');
-				assert.ok(!list.equal(tuple), 'List.<str>(["earth", "wind", "fire"]) != ["earth", "wind", "fire"]');
+				assert.ok(!tuple.equal(list), '("earth", "wind", "fire") != ["earth", "wind", "fire"]');
+				assert.ok(!list.equal(tuple), '["earth", "wind", "fire"] != ("earth", "wind", "fire")');
 			});
 		});
 		describe('CollectionKeyed', () => {
@@ -75,8 +103,8 @@ describe('Value', () => {
 					[0x102n, new VALUE.String('fire')],
 					[0x101n, new VALUE.String('wind')],
 				]));
-				assert.ok(!record.equal(dict), '[a= "earth", b= "wind", c= "fire"] != Dict.<str>([a= "earth", c= "fire", b= "wind"])');
-				assert.ok(!dict.equal(record), 'Dict.<str>([a= "earth", c= "fire", b= "wind"]) != [a= "earth", b= "wind", c= "fire"]');
+				assert.ok(!record.equal(dict), '(a= "earth", b= "wind", c= "fire") != [a= "earth", c= "fire", b= "wind"]');
+				assert.ok(!dict.equal(record), '[a= "earth", c= "fire", b= "wind"] != (a= "earth", b= "wind", c= "fire")');
 			});
 		});
 
@@ -90,7 +118,7 @@ describe('Value', () => {
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
-				])), '["earth", "wind", "fire"] == ["earth", "wind", "fire"]');
+				])), '("earth", "wind", "fire") == ("earth", "wind", "fire")');
 			});
 		});
 
@@ -104,7 +132,7 @@ describe('Value', () => {
 					[0x100n, new VALUE.String('earth')],
 					[0x102n, new VALUE.String('fire')],
 					[0x101n, new VALUE.String('wind')],
-				]))), '[a= "earth", b= "wind", c= "fire"] == [a= "earth", c= "fire", b= "wind"]');
+				]))), '(a= "earth", b= "wind", c= "fire") == (a= "earth", c= "fire", b= "wind")');
 			});
 		});
 
@@ -118,12 +146,12 @@ describe('Value', () => {
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
-				])), 'List.<str>(["earth", "wind", "fire"]) == List.<str>(["earth", "wind", "fire"])');
+				])), '["earth", "wind", "fire"] == ["earth", "wind", "fire"]');
 			});
 			it.skip('Lists may contain circular references.', () => {
 				`
-					let a: mut List.<List.<Object>> = List.<List.<Object>>([]);
-					let b: mut List.<List.<Object>> = List.<List.<Object>>([]);
+					let a: mut List.<List.<Object>> = List.<List.<Object>>(());
+					let b: mut List.<List.<Object>> = List.<List.<Object>>(());
 					a.append.(b);
 					b.append.(a);
 					assert.equal.(a, b);
@@ -142,14 +170,14 @@ describe('Value', () => {
 					[0x100n, new VALUE.String('earth')],
 					[0x102n, new VALUE.String('fire')],
 					[0x101n, new VALUE.String('wind')],
-				]))), 'Dict.<str>([a= "earth", b= "wind", c= "fire"]) == Dict.<str>([a= "earth", c= "fire", b= "wind"])');
+				]))), '[a= "earth", b= "wind", c= "fire"] == [a= "earth", c= "fire", b= "wind"]');
 			});
 			it.skip('Dicts may contain circular references.', () => {
 				`
-					let a: mut Dict.<Dict.<Object>> = Dict.<Dict.<Object>>([x= [a= []]]);
-					let b: mut Dict.<Dict.<Object>> = Dict.<Dict.<Object>>([x= [a= []]]);
-					a.set.(@y, b);
-					b.set.(@y, a);
+					let a: mut Dict.<anything> = [x= null];
+					let b: mut Dict.<anything> = [x= null];
+					a.set.(@x, b);
+					b.set.(@x, a);
 					assert.equal.(a, b);
 					assert.equal.(b, a);
 				`;
@@ -286,42 +314,42 @@ describe('Value', () => {
 					assertEqualBins(
 						new VALUE.Tuple([VALUE.INT_1, new VALUE.Float(2.0)]).build(builder),
 						builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
-						'[1, 2.0]',
+						'(1, 2.0)',
 					);
 				});
 				it('empty tuple returns unique BinVect representation.', () => {
 					assertEqualBins(
 						new VALUE.Tuple().build(builder),
 						new BinVect(builder.module, [0n]).vect,
-						'[]',
+						'()',
 					);
 				});
 				it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Float(3.4)]).build(builder),
 						singletonTuple(builder, buildConst(builder, 3.4)),
-						'[3.4]',
+						'(3.4,)',
 					);
 				});
 				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple()]).build(builder),
 						singletonTuple(builder, new BinVect(builder.module, [0n]).vect),
-						'[[]]',
+						'((),)',
 					);
 				});
 				it('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Tuple()])]).build(builder),
 						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, new BinVect(builder.module, [0n]).vect), 0)),
-						'[[[]]]',
+						'(((),),)',
 					);
 				});
 				it('boxed tuple with 1 item.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Float(3.4)])]).build(builder),
 						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 3.4)), 0)),
-						'[[3.4]]',
+						'((3.4,),)',
 					);
 				});
 				it('boxed tuple with many items.', () => {
@@ -342,7 +370,7 @@ describe('Value', () => {
 							mod.tuple.extract(mod.local.get(0, bintype3), 1),
 							mod.tuple.extract(mod.local.get(0, bintype3), 2),
 						]),
-						'[[1, 2.0, true]]',
+						'((1, 2.0, true),)',
 					);
 				});
 				it('nested tuples.', () => {
@@ -366,7 +394,7 @@ describe('Value', () => {
 							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(0, bintype2), 1),
 						]),
-						'[1, [2.0], [3, [4.0]]]',
+						'(1, (2.0,), (3, (4.0,)))',
 					);
 				});
 				it('multiple entries.', () => {
@@ -424,7 +452,7 @@ describe('Value', () => {
 							mod.tuple.extract(mod.local.tee(4, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(4, bintype2), 1),
 						]),
-						'[[1, [2.0, 3]], [4.0, [5, 6.0]], [7, []]]',
+						'((1, (2.0, 3)), (4.0, (5, 6.0)), (7, ()))',
 					);
 				});
 			});
@@ -441,21 +469,21 @@ describe('Value', () => {
 							[0x101n, new VALUE.Float(2.0)],
 						])).build(builder),
 						builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
-						'[a= 1, b= 2.0]',
+						'(a= 1, b= 2.0)',
 					);
 				});
 				it('record of size 1 returns a `(tuple.make)` with 1 item.', () => {
 					assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]])).build(builder),
 						singletonTuple(builder, buildConst(builder, 3.4)),
-						'[a= 3.4]',
+						'(a= 3.4)',
 					);
 				});
 				it('boxed record with 1 prop.', () => {
 					assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]]))]])).build(builder),
 						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 3.4)), 0)),
-						'[a= [a= 3.4]]',
+						'(a= (a= 3.4))',
 					);
 				});
 				it('boxed record with many props.', () => {
@@ -476,7 +504,7 @@ describe('Value', () => {
 							mod.tuple.extract(mod.local.get(0, bintype3), 1),
 							mod.tuple.extract(mod.local.get(0, bintype3), 2),
 						]),
-						'[a= [a= 1, b= 2.0, c= true]]',
+						'(a= (a= 1, b= 2.0, c= true))',
 					);
 				});
 				it('nested records.', () => {
@@ -500,11 +528,11 @@ describe('Value', () => {
 							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(0, bintype2), 1),
 						]),
-						`[
+						`(
 							a= 1,
-							b= [a= 2.0],
-							c= [a= 3, b= [a= 4.0]],
-						]`,
+							b= (a= 2.0),
+							c= (a= 3, b= (a= 4.0)),
+						)`,
 					);
 				});
 				it('multiple entries.', () => {
@@ -566,11 +594,11 @@ describe('Value', () => {
 							mod.tuple.extract(mod.local.tee(6, inner2, bintype2), 0),
 							mod.tuple.extract(mod.local.get(6, bintype2), 1),
 						]),
-						`[
-							a= [a= 1,   b= [a= 2.0, b= 3]],
-							b= [a= 4.0, b= [a= 5, b= 6.0]],
-							c= [b= 7,   a= true],
-						]`,
+						`(
+							a= (a= 1,   b= (a= 2.0, b= 3)),
+							b= (a= 4.0, b= (a= 5, b= 6.0)),
+							c= (b= 7,   a= true),
+						)`,
 					);
 				});
 			});
