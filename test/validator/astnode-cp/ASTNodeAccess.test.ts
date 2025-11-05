@@ -196,10 +196,10 @@ describe('ASTNodeAccess', () => {
 				it('throws when base object is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						(4).2
-						List.<int>((10, 20, 30)).1
+						[10, 20, 30].1
 
 						(4).c
-						Dict.<int>((a= 10, b= 20, c= 30)).b
+						[a= 10, b= 20, c= 30].b
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
 				});
 				it('throws when index is out of bounds / when key is out of range.', () => {
@@ -366,8 +366,8 @@ describe('ASTNodeAccess', () => {
 
 		context('access manner: access by expression.', () => {
 			const DECLS = `
-				let     list_fixed:   List.<     int | float | str> = List.<int | float | str>((   1,    2.0,    "three"));
-				let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>((a= 1, b= 2.0, c= "three"));
+				let     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
+				let     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
 				let     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
 				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
 				let var list_unfixed: List.<     int | float | str> = list_fixed;
@@ -444,8 +444,8 @@ describe('ASTNodeAccess', () => {
 			describe('#type', () => {
 				it('throws when one but not all constituents are of incorrect type.', () => {
 					testExprTypes(`{
-						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = List.<str | bool | sym>(("hello", true, @world));
-						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = Dict.<int | str>((a= 42));
+						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = ["hello", true, @world];
+						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = [a= 42];
 
 						let var nullish_map: {int -> bool} | null = {42 -> false};
 
@@ -474,7 +474,7 @@ describe('ASTNodeAccess', () => {
 					]);
 				});
 				it('unsupported: throws for string access of dict.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource('Dict.<int>((a= 10, b= 20, c= 30)).["a"]').type(), /String keys for dict access are not yet supported\./);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('[a= 10, b= 20, c= 30].["a"]').type(), /String keys for dict access are not yet supported\./);
 				});
 				it('throws when base object is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
@@ -492,8 +492,8 @@ describe('ASTNodeAccess', () => {
 				});
 				it('for Lists/Dicts: throws when accessor expression is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
-						List.<int | float | str>((1, 2.0, "three")).["3"]
-						Dict.<int | float | str>((a= 1, b= 2.0, c= "three")).[3]
+						[1, 2.0, "three"].["3"]
+						[a= 1, b= 2.0, c= "three"].[3]
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 				it('for Sets/Maps: when expression is correct type but out of range or incorrect type, returns entry type.', () => {
@@ -652,10 +652,10 @@ describe('ASTNodeAccess', () => {
 				it('throws when base object is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						(4)?.2
-						List.<int>((10, 20, 30))?.1
+						[10, 20, 30]?.1
 
 						(4)?.c
-						Dict.<int>((a= 10, b= 20, c= 30))?.b
+						[a= 10, b= 20, c= 30]?.b
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
 				});
 				it('throws when index is out of bounds / when key is out of range.', () => {
@@ -819,8 +819,8 @@ describe('ASTNodeAccess', () => {
 
 		context('access manner: access by expression.', () => {
 			const DECLS = `
-				let     list_fixed:   List.<     int | float | str> = List.<int | float | str>((   1,    2.0,    "three"));
-				let     dict_fixed:   Dict.<     int | float | str> = Dict.<int | float | str>((a= 1, b= 2.0, c= "three"));
+				let     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
+				let     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
 				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
 				let var list_unfixed: List.<     int | float | str> = list_fixed;
 				let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
@@ -865,8 +865,8 @@ describe('ASTNodeAccess', () => {
 			describe('#type', () => {
 				it('unions with null when one but not all constituents are of incorrect type.', () => {
 					testExprTypes(`{
-						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = List.<str | bool | sym>(("hello", true, @world));
-						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = Dict.<int | str>((a= 42));
+						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = ["hello", true, @world];
+						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = [a= 42];
 
 						let var nullish_map: {int -> bool} | null = {42 -> false};
 
@@ -927,8 +927,8 @@ describe('ASTNodeAccess', () => {
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
-						List.<int | float | str>((1, 2.0, "three"))?.["3"]
-						Dict.<int | float | str>((a= 1, b= 2.0, c= "three"))?.[3]
+						[1, 2.0, "three"]?.["3"]
+						[a= 1, b= 2.0, c= "three"]?.[3]
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 			});
@@ -936,7 +936,7 @@ describe('ASTNodeAccess', () => {
 				it('short-circuits evaluation of accessor expression when base is null.', () => {
 					testExprValues(`{
 						let list: List.<int> | null = null;
-						let dict: Dict.<int> | null = Dict.<int>((a= 42));
+						let dict: Dict.<int> | null = [a= 42];
 
 						let var index: int = 0;
 						let var key:   sym = @a;

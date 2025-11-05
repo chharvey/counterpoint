@@ -48,7 +48,7 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	}
 
 	public override toString(): string {
-		return `(${ this.items.map((it) => it.toString()).join(', ') }${ this.items.length === 1 ? ',' : '' })`; // TODO: move to ValueTuple when updating ValueList#toString
+		return this.items.map((it) => it.toString()).join(', ');
 	}
 
 	/** @final */

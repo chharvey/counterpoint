@@ -21,7 +21,7 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  */
 export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
 	public override toString(): string {
-		return `Dict.(${ super.toString() })`;
+		return `[${ super.toString() }]`;
 	}
 
 	@strictEqual

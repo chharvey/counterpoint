@@ -35,27 +35,34 @@ describe('ASTNodeCall', () => {
 		'List.<int>()',
 		'List.<int>(())',
 		'List.<int>(List.<int>())',
+		'List.<int>([])',
 		'List.<int>(Set.<int>())',
 		'List.<int>({})',
 		'List.<int>((1, 2, 3))',
 		'List.<int>(List.<int>((1, 2, 3)))',
+		'List.<int>([1, 2, 3])',
 		'List.<int>(Set.<int>((1, 2, 3)))',
 		'List.<int>({1, 2, 3})',
 	] as const;
 	const DICT_CONS = [
 		'Dict.<int>()',
+		// 'Dict.<int>((=))', // empty record is impossible
 		'Dict.<int>(Dict.<int>())',
+		// 'Dict.<int>([=])', // empty dict literal is impossible
 		'Dict.<int>((a= 1, b= 2, c= 3))',
 		'Dict.<int>(Dict.<int>((a= 1, b= 2, c= 3)))',
+		'Dict.<int>([a= 1, b= 2, c= 3])',
 	] as const;
 	const SET_CONS = [
 		'Set.<int>()',
 		'Set.<int>(())',
 		'Set.<int>(List.<int>())',
+		'Set.<int>([])',
 		'Set.<int>(Set.<int>())',
 		'Set.<int>({})',
 		'Set.<int>((1, 2, 3))',
 		'Set.<int>(List.<int>((1, 2, 3)))',
+		'Set.<int>([1, 2, 3])',
 		'Set.<int>(Set.<int>((1, 2, 3)))',
 		'Set.<int>({1, 2, 3})',
 	] as const;
@@ -63,9 +70,11 @@ describe('ASTNodeCall', () => {
 		'Map.<int, float>()',
 		'Map.<int, float>(())',
 		'Map.<int, float>(List.<(int, float)>())',
+		'Map.<int, float>([])',
 		'Map.<int, float>(Set.<(int, float)>())',
 		'Map.<int, float>({})',
 		'Map.<int, float>(Map.<int, float>())',
+		// 'Map.<int, float>({->})', // empty map literal is impossible
 		`Map.<int, float>((
 			(1, 0.1),
 			(2, 0.2),
@@ -76,6 +85,11 @@ describe('ASTNodeCall', () => {
 			(2, 0.2),
 			(3, 0.4),
 		)))`,
+		`Map.<int, float>([
+			(1, 0.1),
+			(2, 0.2),
+			(3, 0.4),
+		])`,
 		`Map.<int, float>(Set.<(int, float)>((
 			(1, 0.1),
 			(2, 0.2),
@@ -114,25 +128,25 @@ describe('ASTNodeCall', () => {
 		specify('`List.(‹…›)`', () => {
 			assertEqualTypes(
 				LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.List(TYPE.INT, true), 9),
+				repeat(new TYPE.List(TYPE.INT, true), 11),
 			);
 		});
 		specify('`Dict.(‹…›)`', () => {
 			assertEqualTypes(
 				DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.Dict(TYPE.INT, true), 4),
+				repeat(new TYPE.Dict(TYPE.INT, true), 5),
 			);
 		});
 		specify('`Set.(‹…›)`', () => {
 			assertEqualTypes(
 				SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.Set(TYPE.INT, true), 9),
+				repeat(new TYPE.Set(TYPE.INT, true), 11),
 			);
 		});
 		specify('`Map.(‹…›)`', () => {
 			assertEqualTypes(
 				MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), 12),
+				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), 14),
 			);
 		});
 		it('bypasses invariance for generic arguments.', () => {
@@ -227,8 +241,8 @@ describe('ASTNodeCall', () => {
 		});
 		specify('`List.(‹…›)`', () => {
 			assert.deepStrictEqual(LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
-				...repeat(new VALUE.List<never>(), 5),
-				...repeat(new VALUE.List<VALUE.Integer>(TEST_VALUES), 4),
+				...repeat(new VALUE.List<never>(), 6),
+				...repeat(new VALUE.List<VALUE.Integer>(TEST_VALUES), 5),
 			]);
 		});
 		specify('`Dict.(‹…›)`', () => {
@@ -238,23 +252,23 @@ describe('ASTNodeCall', () => {
 					[0x100n, TEST_VALUES[0]],
 					[0x101n, TEST_VALUES[1]],
 					[0x102n, TEST_VALUES[2]],
-				])), 2),
+				])), 3),
 			]);
 		});
 		specify('`Set.(‹…›)`', () => {
 			assert.deepStrictEqual(SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
-				...repeat(new VALUE.Set<never>(), 5),
-				...repeat(new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)), 4),
+				...repeat(new VALUE.Set<never>(), 6),
+				...repeat(new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)), 5),
 			]);
 		});
 		specify('`Map.(‹…›)`', () => {
 			assert.deepStrictEqual(MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
-				...repeat(new VALUE.Map<never, never>(), 6),
+				...repeat(new VALUE.Map<never, never>(), 7),
 				...repeat(new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
 					[TEST_VALUES[0], new VALUE.Float(0.1)],
 					[TEST_VALUES[1], new VALUE.Float(0.2)],
 					[TEST_VALUES[2], new VALUE.Float(0.4)],
-				])), 6),
+				])), 7),
 			]);
 		});
 	});

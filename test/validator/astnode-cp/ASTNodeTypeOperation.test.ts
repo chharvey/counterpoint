@@ -22,6 +22,11 @@ describe('ASTNodeTypeOperation', () => {
 		});
 
 
+		specify('ASTNodeTypeOperationUnary[operator=OREXCP]', () => {
+			assert.throws(() => AST.ASTNodeTypeOperationUnary.fromSource('int!').eval(), /not yet supported/);
+		});
+
+
 		describe('ASTNodeTypeOperationUnary[operator=MUTABLE]', () => {
 			it('does not throw if operating on a reference type.', () => {
 				assertEqualTypes(

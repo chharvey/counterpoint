@@ -15,14 +15,14 @@ import {ASTNodeType} from './ASTNodeType.ts';
  */
 export abstract class ASTNodeTypeCollectionLiteral extends ASTNodeType {
 	protected constructor(
-		start_node:
+		start_node: (
 			| SyntaxNodeType<'type_tuple_literal'>
 			| SyntaxNodeType<'type_record_literal'>
 			| SyntaxNodeType<'type_list_literal'>
 			| SyntaxNodeType<'type_dict_literal'>
 			| SyntaxNodeType<'type_set_literal'>
 			| SyntaxNodeType<'type_map_literal'>
-			| SyntaxNodeType<'type_unary_symbol'>,
+		),
 
 		public override readonly children: readonly ASTNodeCP[],
 	) {

@@ -85,7 +85,7 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 	public override assignTo(assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.Dict) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg`
-			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssign(expr.val, assignee.typearg, expr));
+			return xjs.Array.forEachAggregated(this.children, (prop) => ASTNodeCP.typeCheckAssign(prop.val, assignee.typearg, prop));
 		}
 		throw new TypeErrorNotAssignable(this.type(), assignee, this);
 	}

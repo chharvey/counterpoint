@@ -373,48 +373,48 @@ describe('ASTNodeOperation', () => {
 		describe('#fold', () => {
 			specify('[operator=NOT]', () => {
 				foldOperations(new Map([
-					['!false',               VALUE.TRUE],
-					['!true',                VALUE.FALSE],
-					['!null',                VALUE.TRUE],
-					['!0',                   VALUE.FALSE],
-					['!42',                  VALUE.FALSE],
-					['!0.0',                 VALUE.FALSE],
-					['!-0.0',                VALUE.FALSE],
-					['!4.2e+1',              VALUE.FALSE],
-					['!""',                  VALUE.FALSE],
-					['!"hello"',             VALUE.FALSE],
-					['!()',                  VALUE.FALSE],
-					['!(42,)',               VALUE.FALSE],
-					['!(a= 42)',             VALUE.FALSE],
-					['!List.<int>(())',      VALUE.FALSE],
-					['!List.<int>((42,))',   VALUE.FALSE],
-					['!Dict.<int>((a= 42))', VALUE.FALSE],
-					['!{}',                  VALUE.FALSE],
-					['!{42}',                VALUE.FALSE],
-					['!{41 -> 42}',          VALUE.FALSE],
+					['!false',      VALUE.TRUE],
+					['!true',       VALUE.FALSE],
+					['!null',       VALUE.TRUE],
+					['!0',          VALUE.FALSE],
+					['!42',         VALUE.FALSE],
+					['!0.0',        VALUE.FALSE],
+					['!-0.0',       VALUE.FALSE],
+					['!4.2e+1',     VALUE.FALSE],
+					['!""',         VALUE.FALSE],
+					['!"hello"',    VALUE.FALSE],
+					['!()',         VALUE.FALSE],
+					['!(42,)',      VALUE.FALSE],
+					['!(a= 42)',    VALUE.FALSE],
+					['![]',         VALUE.FALSE],
+					['![42]',       VALUE.FALSE],
+					['![a= 42]',    VALUE.FALSE],
+					['!{}',         VALUE.FALSE],
+					['!{42}',       VALUE.FALSE],
+					['!{41 -> 42}', VALUE.FALSE],
 				]));
 			});
 			specify('[operator=EMP]', () => {
 				foldOperations(new Map([
-					['?false',               VALUE.TRUE],
-					['?true',                VALUE.FALSE],
-					['?null',                VALUE.TRUE],
-					['?0',                   VALUE.TRUE],
-					['?42',                  VALUE.FALSE],
-					['?0.0',                 VALUE.TRUE],
-					['?-0.0',                VALUE.TRUE],
-					['?4.2e+1',              VALUE.FALSE],
-					['?""',                  VALUE.TRUE],
-					['?"hello"',             VALUE.FALSE],
-					['?()',                  VALUE.TRUE],
-					['?(42,)',               VALUE.FALSE],
-					['?(a= 42)',             VALUE.FALSE],
-					['?List.<int>(())',      VALUE.TRUE],
-					['?List.<int>((42,))',   VALUE.FALSE],
-					['?Dict.<int>((a= 42))', VALUE.FALSE],
-					['?{}',                  VALUE.TRUE],
-					['?{42}',                VALUE.FALSE],
-					['?{41 -> 42}',          VALUE.FALSE],
+					['?false',      VALUE.TRUE],
+					['?true',       VALUE.FALSE],
+					['?null',       VALUE.TRUE],
+					['?0',          VALUE.TRUE],
+					['?42',         VALUE.FALSE],
+					['?0.0',        VALUE.TRUE],
+					['?-0.0',       VALUE.TRUE],
+					['?4.2e+1',     VALUE.FALSE],
+					['?""',         VALUE.TRUE],
+					['?"hello"',    VALUE.FALSE],
+					['?()',         VALUE.TRUE],
+					['?(42,)',      VALUE.FALSE],
+					['?(a= 42)',    VALUE.FALSE],
+					['?[]',         VALUE.TRUE],
+					['?[42]',       VALUE.FALSE],
+					['?[a= 42]',    VALUE.FALSE],
+					['?{}',         VALUE.TRUE],
+					['?{42}',       VALUE.FALSE],
+					['?{41 -> 42}', VALUE.FALSE],
 				]));
 			});
 			it('[operator=INT | FLOAT]: returns a numeric conversion only if needed.', () => {
@@ -1088,9 +1088,9 @@ describe('ASTNodeOperation', () => {
 					let a: anything = ();
 					let b: anything = (42,);
 					let c: anything = (x= 42);
-					let d: Object   = List.<int>(());
-					let e: Object   = List.<int>((42,));
-					let f: Object   = Dict.<int>((x= 42));
+					let d: Object   = [];
+					let e: Object   = [42];
+					let f: Object   = [x= 42];
 					let g: Object   = {};
 					let h: Object   = {42};
 					let i: Object   = {41 -> 42};
@@ -1103,9 +1103,9 @@ describe('ASTNodeOperation', () => {
 					a === ();
 					b === (42,);
 					c === (x= 42);
-					d !== List.<int>(());
-					e !== List.<int>((42,));
-					f !== Dict.<int>((x= 42));
+					d !== [];
+					e !== [42];
+					f !== [x= 42];
 					g !== {};
 					h !== {42};
 					i !== {41 -> 42};
@@ -1121,9 +1121,9 @@ describe('ASTNodeOperation', () => {
 					a == ();
 					b == (42,);
 					c == (x= 42);
-					d == List.<int>(());
-					e == List.<int>((42,));
-					f == Dict.<int>((x= 42));
+					d == [];
+					e == [42];
+					f == [x= 42];
 					g == {};
 					h == {42};
 					i == {41 -> 42};

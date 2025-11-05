@@ -553,7 +553,7 @@ Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit T
 [Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `("x", "y", "z")`<sup>&lowast;</sup>   | `()`
 [Record](#records) | Fixed    | symbols       | *(none)*            | `(a: str, b: str, c: str)`           | *(none)*                                     | `(a= "x", b= "y", c= "z")`             | *(none)*
 [List](#lists)     | Variable | integers      | `List.<str>`        | `[str]`                              | `List.(("x", "y", "z"))`                     | `["x", "y", "z"]`                      | `[]`
-[Dict](#dicts)     | Variable | atoms/strings | `Dict.<str>`        | `[:str]`                             | `Dict.((a= "x", b= "y", c= "z"))`            | `[a= "x", b= "y", c= "z"]`             | *(none)*
+[Dict](#dicts)     | Variable | symbols       | `Dict.<str>`        | `[:str]`                             | `Dict.((a= "x", b= "y", c= "z"))`            | `[a= "x", b= "y", c= "z"]`             | *(none)*
 [Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `{str}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
 [Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`                       | `Map.((("u", "x"), ("v", "y"), ("w", "z")))` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
 
@@ -974,8 +974,8 @@ If a set is declared with duplicates, they are collapsed:
 The set `{"water", "water"}` only conains 1 element.
 Sets may have several elements that are un-identical but “equal”.
 ```
-let x: [str] = List.<str>(("water",));
-let y: [str] = List.<str>(("water",));
+let x: [str] = ["water"];
+let y: [str] = ["water"];
 let elements: {float | [str]} = {0.0, -0.0, x, y};
 ```
 In this example, the elements `0.0` and `-0.0` are not identical
@@ -990,11 +990,11 @@ The value is `true` if the element is in the set, and `false` if not.
 ```
 let bases: {anything} = {
 	"who",
-	List.<str>(("what",)),
+	["what"],
 	{ "i" -> {"don’t" -> "know"} },
 };
 bases.["""{{ "w" }}{{ "h" }}{{ "o" }}"""]; %== true
-bases.[List.<str>(("what",))];             %== false
+bases.[["what"]];                          %== false
 bases.["idk"];                             %== false
 ```
 
