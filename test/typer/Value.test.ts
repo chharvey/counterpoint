@@ -30,7 +30,7 @@ describe('Value', () => {
 		});
 
 		describe('Record', () => {
-			it('Records with the same itesm are identical.', () => {
+			it('Records with the same items are identical.', () => {
 				assert.ok(new VALUE.Record<VALUE.String>(new Map<bigint, VALUE.String>([
 					[0x100n, new VALUE.String('earth')],
 					[0x101n, new VALUE.String('wind')],
@@ -39,7 +39,35 @@ describe('Value', () => {
 					[0x100n, new VALUE.String('earth')],
 					[0x101n, new VALUE.String('wind')],
 					[0x102n, new VALUE.String('fire')],
-				]))), '[a= "earth", b= "wind", c= "fire"] === [a= "earth", b= "wind", c= "fire"]');
+				]))), '(a= "earth", b= "wind", c= "fire") === (a= "earth", b= "wind", c= "fire")');
+			});
+		});
+
+		describe('List', () => {
+			it('Lists with the same items are not identical.', () => {
+				assert.ok(!new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				]).identical(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])), '["earth", "wind", "fire"] !== ["earth", "wind", "fire"]');
+			});
+		});
+
+		describe('Dict', () => {
+			it('Dicts with the same items are not identical.', () => {
+				assert.ok(!new VALUE.Dict<VALUE.String>(new Map<bigint, VALUE.String>([
+					[0x100n, new VALUE.String('earth')],
+					[0x101n, new VALUE.String('wind')],
+					[0x102n, new VALUE.String('fire')],
+				])).identical(new VALUE.Dict<VALUE.String>(new Map<bigint, VALUE.String>([
+					[0x100n, new VALUE.String('earth')],
+					[0x101n, new VALUE.String('wind')],
+					[0x102n, new VALUE.String('fire')],
+				]))), '[a= "earth", b= "wind", c= "fire"] !== [a= "earth", b= "wind", c= "fire"]');
 			});
 		});
 	});
