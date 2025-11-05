@@ -215,7 +215,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for a fixed variable of mutable type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let fixed_mutable: mut int{} = {1, 2, 3};
+					let fixed_mutable: mut {int} = {1, 2, 3};
 					fixed_mutable;
 				`);
 				goal.varCheck();
@@ -231,7 +231,7 @@ describe('ASTNodeExpression', () => {
 					let var x: int = 21 * 2;
 					let y: int = x / 2;
 					y;
-					let z: mut int{} = {11, 22, 33};
+					let z: mut {int} = {11, 22, 33};
 					let w: bool = z.[22];
 					w;
 				`);
@@ -404,32 +404,37 @@ describe('ASTNodeExpression', () => {
 
 	describe('ASTNodeCollectionLiteral', () => {
 		describe('#varCheck', () => {
-			describe('ASTNodeRecord', () => {
+			describe('ASTNode{{Type}Record,Dict}', () => {
 				it('throws if containing duplicate keys.', () => {
 					[
-						AST.ASTNodeTypeRecord .fromSource('[a: int, b: float, c: str]'),
-						AST.ASTNodeRecord     .fromSource('[a= 1, b= 2.0, c= "three"];'),
+						AST.ASTNodeTypeRecord .fromSource('(a: int, b: float, c: str)'),
+						AST.ASTNodeRecord     .fromSource('(a= 1, b= 2.0, c= "three");'),
+						AST.ASTNodeDict       .fromSource('[a= 1, b= 2.0, c= "three"];'),
 					].forEach((node) => node.varCheck()); // assert does not throw
 
 					[
-						AST.ASTNodeTypeRecord .fromSource('[a: int, b: float, a: str]'),
-						AST.ASTNodeTypeRecord .fromSource('[_: int, b: float, _: str]'),
-						AST.ASTNodeRecord     .fromSource('[a= 1, b= 2.0, a= "three"];'),
-						AST.ASTNodeRecord     .fromSource('[_= 1, b= 2.0, _= "three"];'),
+						AST.ASTNodeTypeRecord .fromSource('(a: int, b: float, a: str)'),
+						AST.ASTNodeTypeRecord .fromSource('(_: int, b: float, _: str)'),
+						AST.ASTNodeRecord     .fromSource('(a= 1, b= 2.0, a= "three");'),
+						AST.ASTNodeRecord     .fromSource('(_= 1, b= 2.0, _= "three");'),
+						AST.ASTNodeDict       .fromSource('[a= 1, b= 2.0, a= "three"];'),
+						AST.ASTNodeDict       .fromSource('[_= 1, b= 2.0, _= "three"];'),
 					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentErrorDuplicateKey));
 
 					new Map<AST.ASTNodeCP, string[]>([
-						[AST.ASTNodeTypeRecord .fromSource('[c: int, d: float, c: str, d: bool]'),   ['c', 'd']],
-						[AST.ASTNodeTypeRecord .fromSource('[e: int, f: float, e: str, e: bool]'),   ['e', 'e']],
-						[AST.ASTNodeRecord     .fromSource('[c= 1, d= 2.0, c= "three", d= false];'), ['c', 'd']],
-						[AST.ASTNodeRecord     .fromSource('[e= 1, f= 2.0, e= "three", e= false];'), ['e', 'e']],
+						[AST.ASTNodeTypeRecord .fromSource('(c: int, d: float, c: str, d: bool)'),   ['c', 'd']],
+						[AST.ASTNodeTypeRecord .fromSource('(e: int, f: float, e: str, e: bool)'),   ['e', 'e']],
+						[AST.ASTNodeRecord     .fromSource('(c= 1, d= 2.0, c= "three", d= false);'), ['c', 'd']],
+						[AST.ASTNodeRecord     .fromSource('(e= 1, f= 2.0, e= "three", e= false);'), ['e', 'e']],
+						[AST.ASTNodeDict       .fromSource('[c= 1, d= 2.0, c= "three", d= false];'), ['c', 'd']],
+						[AST.ASTNodeDict       .fromSource('[e= 1, f= 2.0, e= "three", e= false];'), ['e', 'e']],
 					]).forEach((dupes, node) => assert.throws(() => node.varCheck(), (err) => {
 						assert_instanceof(err, AggregateError);
 						assertAssignable(err, {
 							cons:   AggregateError,
 							errors: dupes.map((k) => ({
 								cons:    AssignmentErrorDuplicateKey,
-								message: `Duplicate record key \`${ k }\`.`,
+								message: `Duplicate record/dict key \`${ k }\`.`,
 							})),
 						});
 						return true;
@@ -451,8 +456,8 @@ describe('ASTNodeExpression', () => {
 					AST.ASTNodeSet,
 					AST.ASTNodeMap,
 				] = [
-					AST.ASTNodeTuple  .fromSource('[   1,    2.0,    "three"];', config),
-					AST.ASTNodeRecord .fromSource('[a= 1, b= 2.0, _= "three"];', config),
+					AST.ASTNodeTuple  .fromSource('(   1,    2.0,    "three");', config),
+					AST.ASTNodeRecord .fromSource('(a= 1, b= 2.0, _= "three");', config),
 					AST.ASTNodeSet    .fromSource('{   1,    2.0,    "three"};', config),
 					AST.ASTNodeMap.fromSource(`
 						{
@@ -481,8 +486,8 @@ describe('ASTNodeExpression', () => {
 			}));
 			it('does not throw if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					  [   1,    List.<float>([2.2]),    "three"];
-					  [a= 1, b= List.<float>([2.2]), c= "three"];
+					(   1,    [2.2],    "three");
+					(a= 1, b= [2.2], c= "three");
 				`);
 				goal.varCheck();
 				goal.typeCheck(); // assert does not throw
@@ -494,8 +499,8 @@ describe('ASTNodeExpression', () => {
 			it('returns Tuple/Record for constant collections.', () => {
 				assert.deepStrictEqual(
 					[
-						AST.ASTNodeTuple  .fromSource('  [   1,    2.0,    "three"];'),
-						AST.ASTNodeRecord .fromSource('  [a= 1, b= 2.0, c= "three"];'),
+						AST.ASTNodeTuple  .fromSource('(   1,    2.0,    "three");'),
+						AST.ASTNodeRecord .fromSource('(a= 1, b= 2.0, c= "three");'),
 					].map((c) => c.fold()),
 					[
 						new VALUE.Tuple([
@@ -511,9 +516,11 @@ describe('ASTNodeExpression', () => {
 					],
 				);
 			});
-			it('returns a constant Set/Map for foldable entries.', () => {
+			it('returns a constant List/Dict/Set/Map for foldable entries.', () => {
 				assert.deepStrictEqual(
 					[
+						AST.ASTNodeList.fromSource('[1, 2.0, "three"];'),
+						AST.ASTNodeDict.fromSource('[a= 1, b= 2.0, c= "three"];'),
 						AST.ASTNodeSet.fromSource('{1, 2.0, "three"};'),
 						AST.ASTNodeMap.fromSource(`
 							{
@@ -524,6 +531,16 @@ describe('ASTNodeExpression', () => {
 						`),
 					].map((c) => c.fold()),
 					[
+						new VALUE.List([
+							new VALUE.Integer(1n),
+							new VALUE.Float(2.0),
+							new VALUE.String('three'),
+						]),
+						new VALUE.Dict(new Map<bigint, VALUE.Value>([
+							[0x100n, new VALUE.Integer(1n)],
+							[0x101n, new VALUE.Float(2.0)],
+							[0x102n, new VALUE.String('three')],
+						])),
 						new VALUE.Set(new Set([
 							new VALUE.Integer(1n),
 							new VALUE.Float(2.0),
@@ -542,6 +559,8 @@ describe('ASTNodeExpression', () => {
 					let var x: int   = 1;
 					let var y: float = 2.0;
 					let var z: str   = "three";
+					(x, 2.0, "three");
+					(a= 1, b= y, c= "three");
 					[x, 2.0, "three"];
 					[a= 1, b= y, c= "three"];
 					{1, 2.0, z};
@@ -553,15 +572,7 @@ describe('ASTNodeExpression', () => {
 				`);
 				goal.varCheck();
 				goal.typeCheck();
-				assert.deepStrictEqual(
-					[
-						(goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple,
-						(goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord,
-						(goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeSet,
-						(goal.children[6] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap,
-					].map((c) => c.fold()),
-					[null, null, null, null],
-				);
+				xjs.Array.forEachAggregated(goal.children.slice(3), (c) => assert.strictEqual((c as AST.ASTNodeStatementExpression).expr!.fold(), null));
 			});
 		});
 
@@ -579,14 +590,14 @@ describe('ASTNodeExpression', () => {
 
 			describe('ASTNodeTuple', () => {
 				it('returns `(tuple.make)`.', () => {
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('[1, 2.0];', CONFIG_FOLDING_OFF);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('(1, 2.0);', CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						tuple.build(),
 						tuple.builder.module.tuple.make([buildConst(tuple.builder, 1n), buildConst(tuple.builder, 2.0)]),
 					);
 				});
 				it('empty tuple returns unique BinVect representation.', () => {
-					const src = '[];';
+					const src = '();';
 					testModuleValidation(src);
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
@@ -595,7 +606,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
-					const src = '[3.4];';
+					const src = '(3.4,);';
 					testModuleValidation(src);
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
@@ -604,7 +615,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
-					const src = '[[]];';
+					const src = '((),);';
 					testModuleValidation(src);
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
@@ -613,7 +624,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
-					const src = '[[[]]];';
+					const src = '(((),),);';
 					testModuleValidation(src);
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
@@ -622,7 +633,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('boxed tuple with 1 item.', () => {
-					const src = '[[3.4]];';
+					const src = '((3.4,),);';
 					testModuleValidation(src);
 					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
@@ -631,7 +642,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('boxed tuple with many items.', () => {
-					const tuple: AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[[1, 2.0, true]];', CONFIG_FOLDING_OFF);
+					const tuple: AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('((1, 2.0, true),);', CONFIG_FOLDING_OFF);
 					const mod:   binaryen.Module        = tuple.builder.module;
 					const inner: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(tuple.builder, 1n),
@@ -648,7 +659,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('nested tuples.', () => {
-					const tuple:  AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[1, [2.0], [3, [4.0]]];', CONFIG_FOLDING_OFF);
+					const tuple:  AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('(1, (2.0,), (3, (4.0,)));', CONFIG_FOLDING_OFF);
 					const bldr:   Builder                = tuple.builder;
 					const mod:    binaryen.Module        = bldr.module;
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
@@ -666,7 +677,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('multiple entries.', () => {
-					const tuple:   AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('[[1, [2.0, 3]], [4.0, [5, 6.0]], [7, []]];', CONFIG_FOLDING_OFF);
+					const tuple:   AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('((1, (2.0, 3)), (4.0, (5, 6.0)), (7, ()));', CONFIG_FOLDING_OFF);
 					const bldr:    Builder                = tuple.builder;
 					const mod:     binaryen.Module        = bldr.module;
 					const inner01: binaryen.ExpressionRef = mod.tuple.make([
@@ -707,14 +718,14 @@ describe('ASTNodeExpression', () => {
 				});
 				it('pointer entries.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let inner01: [float, int]   = [2.0, 3];
-						let inner11: [int,   float] = [5,   6.0];
-						let inner2:  [int,   []]    = [7,   []];
+						let inner01: (float, int)   = (2.0, 3);
+						let inner11: (int,   float) = (5,   6.0);
+						let inner2:  (int,   ())    = (7,   ());
 
-						let inner0: [int,   [float, int]]   = [1,   inner01];
-						let inner1: [float, [int,   float]] = [4.0, inner11];
+						let inner0: (int,   (float, int))   = (1,   inner01);
+						let inner1: (float, (int,   float)) = (4.0, inner11);
 
-						let tuple: [[int, [float, int]], [float, [int, float]], [int, []]] = [inner0, inner1, inner2];
+						let tuple: ((int, (float, int)), (float, (int, float)), (int, ())) = (inner0, inner1, inner2);
 					`, CONFIG_FOLDING_OFF);
 					goal.varCheck();
 					goal.typeCheck();
@@ -754,7 +765,7 @@ describe('ASTNodeExpression', () => {
 
 			describe('ASTNodeRecord', () => {
 				it('returns `(tuple.make)`.', () => {
-					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource('[a= 1, b= 2.0];', CONFIG_FOLDING_OFF);
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource('(a= 1, b= 2.0);', CONFIG_FOLDING_OFF);
 					return assertEqualBins(
 						record.build(),
 						record.builder.module.tuple.make([buildConst(record.builder, 1n), buildConst(record.builder, 2.0)]),
@@ -762,8 +773,8 @@ describe('ASTNodeExpression', () => {
 				});
 				it('returns a `(block)` with `(set)`s followed by a `(tuple.make)` with `(get)`s if source order differs from key order.', () => {
 					const goal = AST.ASTNodeGoal.fromSource(`
-						[a= 1, b= 2.0];
-						[b= 2.0, a= 1];
+						(a= 1, b= 2.0);
+						(b= 2.0, a= 1);
 					`, CONFIG_FOLDING_OFF);
 					goal.varCheck();
 					goal.typeCheck();
@@ -789,7 +800,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('record of size 1 returns a `(tuple.make)` with 1 item.', () => {
-					const src = '[a= 3.4];';
+					const src = '(a= 3.4);';
 					testModuleValidation(src);
 					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
@@ -798,7 +809,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('boxed record with 1 prop.', () => {
-					const src = '[a= [a= 3.4]];';
+					const src = '(a= (a= 3.4));';
 					testModuleValidation(src);
 					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(src, CONFIG_FOLDING_OFF);
 					return assertEqualBins(
@@ -807,7 +818,7 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('boxed record with many props.', () => {
-					const record: AST.ASTNodeRecord      = AST.ASTNodeRecord.fromSource('[a= [a= 1, b= 2.0, c= true]];', CONFIG_FOLDING_OFF);
+					const record: AST.ASTNodeRecord      = AST.ASTNodeRecord.fromSource('(a= (a= 1, b= 2.0, c= true));', CONFIG_FOLDING_OFF);
 					const mod:    binaryen.Module        = record.builder.module;
 					const inner:  binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(record.builder, 1n),
@@ -824,11 +835,11 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('nested records.', () => {
-					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(`[
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(`(
 						a= 1,
-						b= [a= 2.0],
-						c= [a= 3, b= [a= 4.0]],
-					];`, CONFIG_FOLDING_OFF);
+						b= (a= 2.0),
+						c= (a= 3, b= (a= 4.0)),
+					);`, CONFIG_FOLDING_OFF);
 					const bldr:   Builder                = record.builder;
 					const mod:    binaryen.Module        = bldr.module;
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
@@ -846,11 +857,11 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('multiple entries.', () => {
-					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(`[
-						a= [a= 1,   b= [a= 2.0, b= 3]],
-						b= [a= 4.0, b= [a= 5, b= 6.0]],
-						c= [b= 7,   a= true],
-					];`, CONFIG_FOLDING_OFF);
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(`(
+						a= (a= 1,   b= (a= 2.0, b= 3)),
+						b= (a= 4.0, b= (a= 5, b= 6.0)),
+						c= (b= 7,   a= true),
+					);`, CONFIG_FOLDING_OFF);
 					const bldr:    Builder                = record.builder;
 					const mod:     binaryen.Module        = bldr.module;
 					const inner01: binaryen.ExpressionRef = mod.tuple.make([
@@ -895,18 +906,18 @@ describe('ASTNodeExpression', () => {
 				});
 				it('pointer entries.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let inner_ab: [a: float, b: int]   = [a= 2.0, b= 3];
-						let inner_bb: [a: int,   b: float] = [a= 5,   b= 6.0];
-						let inner_c:  [b: int,   a: bool]  = [b= 7,   a= true];
+						let inner_ab: (a: float, b: int)   = (a= 2.0, b= 3);
+						let inner_bb: (a: int,   b: float) = (a= 5,   b= 6.0);
+						let inner_c:  (b: int,   a: bool)  = (b= 7,   a= true);
 
-						let inner_a: [a: int,   b: [a: float, b: int]]   = [a= 1,   b= inner_ab];
-						let inner_b: [a: float, b: [a: int,   b: float]] = [a= 4.0, b= inner_bb];
+						let inner_a: (a: int,   b: (a: float, b: int))   = (a= 1,   b= inner_ab);
+						let inner_b: (a: float, b: (a: int,   b: float)) = (a= 4.0, b= inner_bb);
 
-						let record: [
-							a: [a: int,   b: [a: float, b: int]],
-							b: [a: float, b: [a: int,   b: float]],
-							c: [b: int,   a: bool],
-						] = [a= inner_a, b= inner_b, c= inner_c];
+						let record: (
+							a: (a: int,   b: (a: float, b: int)),
+							b: (a: float, b: (a: int,   b: float)),
+							c: (b: int,   a: bool),
+						) = (a= inner_a, b= inner_b, c= inner_c);
 					`, CONFIG_FOLDING_OFF);
 					goal.varCheck();
 					goal.typeCheck();

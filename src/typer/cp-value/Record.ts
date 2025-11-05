@@ -24,6 +24,10 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  * @final
  */
 class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
+	public override toString(): string {
+		return `(${ super.toString() })`;
+	}
+
 	@strictEqual
 	@instanceOf(() => ValueRecord)
 	@memoizeBinOp(true, true)

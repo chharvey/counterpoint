@@ -228,16 +228,33 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TypeTupleLiteral: [
 			xjs.String.dedent`
-				type T = [bool, int, ?: str];
-				type U = [
+				type A = ();
+				type B = (bool,);
+				type C = (?: bool);
+				type D = (bool, int);
+				type E = (bool, ?: int);
+				type U = (
 					V.0,
 					W.<float>,
-				];
+				);
 			`,
 			sourceTypes(
+				s('type_tuple_literal'),
 				s(
 					'type_tuple_literal',
-					s('entry_type',           s('keyword_type')),
+					s('entry_type', s('keyword_type')),
+				),
+				s(
+					'type_tuple_literal',
+					s('entry_type__optional', s('keyword_type')),
+				),
+				s(
+					'type_tuple_literal',
+					s('entry_type', s('keyword_type')),
+					s('entry_type', s('keyword_type')),
+				),
+				s(
+					'type_tuple_literal',
 					s('entry_type',           s('keyword_type')),
 					s('entry_type__optional', s('keyword_type')),
 				),
@@ -268,11 +285,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TypeRecordLiteral: [
 			xjs.String.dedent`
-				type T = [a: bool, b?: int, _: str];
-				type U = [
+				type T = (a: bool, b?: int, _: str);
+				type U = (
 					a: V.0,
 					b: W.<float>,
-				];
+				);
 			`,
 			sourceTypes(
 				s(
@@ -308,12 +325,32 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		TypeListLiteral: [
+			xjs.String.dedent`
+				type T = [bool];
+			`,
+			sourceTypes(s(
+				'type_list_literal',
+				s('keyword_type'),
+			)),
+		],
+
 		TypeDictLiteral: [
 			xjs.String.dedent`
 				type T = [: bool];
 			`,
 			sourceTypes(s(
 				'type_dict_literal',
+				s('keyword_type'),
+			)),
+		],
+
+		TypeSetLiteral: [
+			xjs.String.dedent`
+				type T = {bool};
+			`,
+			sourceTypes(s(
+				'type_set_literal',
 				s('keyword_type'),
 			)),
 		],
@@ -394,27 +431,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				type T = T?;
 				type T = T!;
-				type T = T[];
-				type T = T[3];
-				type T = T{};
 			`,
 			sourceTypes(
 				s(
 					'type_unary_symbol',
 					s('identifier'),
-				),
-				s(
-					'type_unary_symbol',
-					s('identifier'),
-				),
-				s(
-					'type_unary_symbol',
-					s('identifier'),
-				),
-				s(
-					'type_unary_symbol',
-					s('identifier'),
-					s('integer'),
 				),
 				s(
 					'type_unary_symbol',
@@ -525,21 +546,31 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TupleLiteral: [
 			xjs.String.dedent`
-				[1, [2], [[3]]];
+				();
+				(,a);
+				(,a, b);
+				(a, b, c);
+				(1, (2,), ((3,),),);
 			`,
-			sourceExpressions(s(
-				'tuple_literal',
-				/* eslint-disable @stylistic/indent */
-				                                      s('primitive_literal', s('integer')),
-				                   s('tuple_literal', s('primitive_literal', s('integer'))),
-				s('tuple_literal', s('tuple_literal', s('primitive_literal', s('integer')))),
-				/* eslint-enable @stylistic/indent */
-			)),
+			sourceExpressions(
+				s('tuple_literal'),
+				s('tuple_literal', s('identifier')),
+				s('tuple_literal', s('identifier'), s('identifier')),
+				s('tuple_literal', s('identifier'), s('identifier'), s('identifier')),
+				s(
+					'tuple_literal',
+					/* eslint-disable @stylistic/indent */
+					                                      s('primitive_literal', s('integer')),
+					                   s('tuple_literal', s('primitive_literal', s('integer'))),
+					s('tuple_literal', s('tuple_literal', s('primitive_literal', s('integer')))),
+					/* eslint-enable @stylistic/indent */
+				),
+			),
 		],
 
 		RecordLiteral: [
 			xjs.String.dedent`
-				[a= 1, b= [x= 2], _= [y= [k= 3]]];
+				(a= 1, b= (x= 2), _= (y= (k= 3)));
 			`,
 			sourceExpressions(s(
 				'record_literal',
@@ -570,6 +601,63 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							s('word', s('identifier')),
 							s(
 								'record_literal',
+								s(
+									'property',
+									s('word', s('identifier')),
+									s('primitive_literal', s('integer')),
+								),
+							),
+						),
+					),
+				),
+			)),
+		],
+
+		ListLiteral: [
+			xjs.String.dedent`
+				[1, 2, 3];
+			`,
+			sourceExpressions(s(
+				'list_literal',
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+			)),
+		],
+
+		DictLiteral: [
+			xjs.String.dedent`
+				[a= 1, b= [x= 2], _= [y= [k= 3]]];
+			`,
+			sourceExpressions(s(
+				'dict_literal',
+				s(
+					'property',
+					s('word', s('identifier')),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'property',
+					s('word', s('identifier')),
+					s(
+						'dict_literal',
+						s(
+							'property',
+							s('word', s('identifier')),
+							s('primitive_literal', s('integer')),
+						),
+					),
+				),
+				s(
+					'property',
+					s('word'),
+					s(
+						'dict_literal',
+						s(
+							'property',
+							s('word', s('identifier')),
+							s(
+								'dict_literal',
 								s(
 									'property',
 									s('word', s('identifier')),
@@ -646,7 +734,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				list?.[index];
 				list!.[index];
 				List.();
-				Dict.([]);
+				Dict.(record);
 				Set.<T>();
 			`,
 			sourceExpressions(
@@ -712,7 +800,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						'function_call',
 						s(
 							'function_arguments',
-							s('tuple_literal'),
+							s('identifier'),
 						),
 					),
 				),
