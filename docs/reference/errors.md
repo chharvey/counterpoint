@@ -207,13 +207,13 @@ A void error is raised when an operation cannot produce a value when it is expec
 Cause: A list was accessed at an index greater than or equal to its length,
 or a dict or map was accessed at a key that it does not have.
 ```
-List.<str>(("earth", "wind", "fire")).[4]; % VoidErrorOutOfBounds
+["earth", "wind", "fire"].[4]; % VoidErrorOutOfBounds
 
-Dict.<str>((
+[
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
-)).[@pythagoras]; % VoidErrorOutOfBounds
+].[@pythagoras]; % VoidErrorOutOfBounds
 ```
 Solution(s): Access collections only at existing indices/keys,
 iterate over them dynamically using loops or list iteration methods,

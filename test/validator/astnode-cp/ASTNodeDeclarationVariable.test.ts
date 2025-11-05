@@ -150,8 +150,8 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let immut:  (int, int, int)                   = (42, 420, 4200);
-				let 'mut':  mut [int]                         = List.<int>((42, 420, 4200));
-				let mutmut: (mut [int], mut [int], mut [int]) = (List.<int>((42,)), List.<int>((420,)), List.<int>((4200,)));
+				let 'mut':  mut [int]                         = [42, 420, 4200];
+				let mutmut: (mut [int], mut [int], mut [int]) = ([42], [420], [4200]);
 			`);
 			goal.varCheck();
 			goal.typeCheck();

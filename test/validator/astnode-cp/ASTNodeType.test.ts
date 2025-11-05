@@ -60,9 +60,9 @@ describe('ASTNodeType', () => {
 
 			it('does not throw if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type A = (int, List.<float>, str);
-					type C = (a: int, b: List.<float>, c: str);
-					type E = (Set.<float>, Set.<float>, Set.<float>);
+					type A = (int, [float], str);
+					type C = (a: int, b: [float], c: str);
+					type E = ({float}, {float}, {float});
 				`);
 				goal.varCheck();
 				goal.typeCheck(); // assert does not throw
