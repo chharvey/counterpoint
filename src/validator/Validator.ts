@@ -339,7 +339,7 @@ export class Validator {
 	 */
 	public cookTokenIdentifier(source: string): bigint {
 		this.identifiers.add(source);
-		return BigInt([...(this.parent?.identifiers ?? []), ...this.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
+		return BigInt([...new Set([...(this.parent?.identifiers ?? []), ...this.identifiers])].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
 	}
 
 	/**
