@@ -14,7 +14,10 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
-import {ASTNodeStatement} from './ASTNodeStatement.ts';
+import {
+	buildDeco,
+	ASTNodeStatement,
+} from './ASTNodeStatement.ts';
 
 
 
@@ -58,7 +61,8 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.nop();
+		assert.fail('Expected `ASTNodeDeclarationType#isFoldable` to be true.');
 	}
 }

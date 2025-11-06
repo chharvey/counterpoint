@@ -17,7 +17,10 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {ASTNodeBlock} from './index.ts';
 import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
-import {ASTNodeStatement} from './ASTNodeStatement.ts';
+import {
+	buildDeco,
+	ASTNodeStatement,
+} from './ASTNodeStatement.ts';
 
 
 
@@ -52,6 +55,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		let   condition_build:   binaryen.ExpressionRef = this.condition.build();
 		const consequent_build:  binaryen.ExpressionRef = this.consequent.build();

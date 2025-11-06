@@ -20,7 +20,10 @@ import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeAccess} from './ASTNodeAccess.ts';
-import {ASTNodeStatement} from './ASTNodeStatement.ts';
+import {
+	buildDeco,
+	ASTNodeStatement,
+} from './ASTNodeStatement.ts';
 
 
 
@@ -64,6 +67,7 @@ export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
 		return this.builder.getLocal(this.assignee.id)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));

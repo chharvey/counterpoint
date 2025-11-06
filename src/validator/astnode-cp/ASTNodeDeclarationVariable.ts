@@ -21,7 +21,10 @@ import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import type {ASTNodeVariable} from './ASTNodeVariable.ts';
-import {ASTNodeStatement} from './ASTNodeStatement.ts';
+import {
+	buildDeco,
+	ASTNodeStatement,
+} from './ASTNodeStatement.ts';
 
 
 
@@ -108,10 +111,8 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		if (this.isFoldable) {
-			return this.builder.module.nop();
-		}
 		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
 		return this.assignee
 			? this.builder.teeLocal(this.assignee.id, value).set()

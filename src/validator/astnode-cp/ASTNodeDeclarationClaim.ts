@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	TYPE,
@@ -17,7 +18,10 @@ import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';
 import {ASTNodeAccess} from './ASTNodeAccess.js';
-import {ASTNodeStatement} from './ASTNodeStatement.js';
+import {
+	buildDeco,
+	ASTNodeStatement,
+} from './ASTNodeStatement.ts';
 
 
 
@@ -75,7 +79,8 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 		}
 	}
 
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.nop();
+		assert.fail('Expected `ASTNodeDeclarationClaim#isFoldable` to be true.');
 	}
 }
