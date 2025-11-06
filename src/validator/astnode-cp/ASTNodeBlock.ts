@@ -45,6 +45,7 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 		private readonly config:           CPConfig,
 	) {
 		super(start_node, {}, children);
+		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 statement.');
 	}
 
 	public override get validator(): Validator {
@@ -61,7 +62,6 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 	/** @implements Buildable */
 	@memoizeMethod
 	public build(): binaryen.ExpressionRef {
-		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 statement.');
 		return this.isFoldable
 			? this.builder.module.nop()
 			: this.builder.module.block(null, this.children.map((stmt) => stmt.build()));

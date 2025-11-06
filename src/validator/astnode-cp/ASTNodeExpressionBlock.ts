@@ -38,7 +38,7 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 		start_node: SyntaxNodeType<'expression_block'>,
 		public readonly block: ASTNodeBlock,
 	) {
-		super(start_node, {}, block.children);
+		super(start_node, {}, [block]);
 	}
 
 	@memoizeMethod
