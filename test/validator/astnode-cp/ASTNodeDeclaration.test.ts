@@ -506,69 +506,74 @@ describe('ASTNodeDeclaration', () => {
 
 
 		describe('#build', () => {
+			const SRC = `{
+				%                                      % constant folding on | constant folding off
+				%                                      % ------------------- | --------------------
+
+				% Foldable cases:
+				let var _?:         int;               % \`(nop)\`           | \`(drop)\`
+				let     _:          int = 42;          % \`(nop)\`           | \`(drop)\`
+				let var _:          int = 42;          % \`(nop)\`           | \`(drop)\`
+				let     assignee_a: int = 42;          % \`(nop)\`           | \`(local.set)\`
+
+				% Non-Foldable cases:
+				let var assignee_b?: int;              % \`(local.set)\`     | same as when constant folding on
+				let var assignee_c:  int = 42;         % \`(local.set)\`     | same as when constant folding on
+				let     _:           int = assignee_c; % \`(drop)\`          | same as when constant folding on
+				let var _:           int = assignee_c; % \`(drop)\`          | same as when constant folding on
+				let     assignee_d:  int = assignee_c; % \`(local.set)\`     | same as when constant folding on
+				let var assignee_e:  int = assignee_c; % \`(local.set)\`     | same as when constant folding on
+
+				%% Syntactically impossible cases (for completion):
+				let _?:         int;
+				let assignee6?: int;
+				%%
+			}`;
 			it('with constant folding on.', () => {
-				const {goal, stmts, mod} = setupScript(`{
-					let a: int  = 42;     % fixed, foldable: \`(nop)\`
-					let b: int  = 42 * a; % fixed, foldable: \`(nop)\`
-					let _: bool = true;   % blank, foldable: \`(nop)\`
-
-					let var c: int = 42;     % unfixed, foldable: \`(local.set)\`
-					let d:     int = c + 10; % fixed, unfoldable: \`(local.set)\`
-					let _:     int = c + 10; % blank, unfoldable: \`(drop)\`
-
-					let var e?: bool; % assignee, uninitialized: \`(local.set)\`
-					let var _?: bool; % blank, uninitialized:    \`(nop)\`
-				}`);
+				const {goal, stmts, mod} = setupScript(SRC);
 				assert.partialDeepStrictEqual(goal.builder.getLocals(), [
-					{id:  0x102n, type: binaryen.v128}, // declare   `c` on line 5
-					{id: -0x100n, type: binaryen.v128}, // reference `c` on line 6
-					{id:  0x103n, type: binaryen.v128}, // declare   `d` on line 6
-					{id:  -0xffn, type: binaryen.v128}, // reference `c` on line 7
-					{id:  0x104n, type: binaryen.v128}, // declare   `e` on line 9
+					// `0x100n` corresponds to `assignee_a`, which is not in the builder
+					{id: 0x101n, type: binaryen.v128},
+					{id: 0x102n, type: binaryen.v128},
+					{id: 0x103n, type: binaryen.v128},
+					{id: 0x104n, type: binaryen.v128},
 				]);
-				return assertEqualBins(
-					stmts.map((stmt) => stmt.build()),
-					[
-						mod.nop(),
-						mod.nop(),
-						mod.nop(),
+				return assertEqualBins(stmts.map((stmt) => stmt.build()), [
+					mod.nop(),
+					mod.nop(),
+					mod.nop(),
+					mod.nop(),
 
-						mod.local.set(0, (stmts[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-						mod.local.set(2, (stmts[4] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-						mod.drop(        (stmts[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-
-						mod.local.set(4, VALUE.NULL.build(goal.builder)),
-						mod.nop(),
-					],
-				);
+					mod.local.set(0, VALUE.NULL.build(goal.builder)),
+					mod.local.set(1, (stmts[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.drop(        (stmts[6] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.drop(        (stmts[7] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(2, (stmts[8] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(3, (stmts[9] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+				]);
 			});
 			it('with constant folding off, never returns `(nop)`.', () => {
-				const {goal, stmts, mod} = setupScript(`{
-					let a:     int   = 42;   % fixed, foldable:   \`(local.set)\` instead of \`(nop)\`
-					let _:     bool  = true; % blank, foldable:   \`(drop)\`      instead of \`(nop)\`
-					let var b: float = 4.2;  % unfixed, foldable: \`(local.set)\` (same behavior)
-					let _:     bool  = !b;   % blank, unfoldable: \`(drop)\`      (same behavior)
-
-					let var c?: bool; % assignee, uninitialized: \`(local.set)\` (same behavior)
-					let var _?: bool; % blank, uninitialized:    \`(drop)\`      instead of \`(nop)\`
-				}`, CONFIG_FOLDING_OFF);
-				assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
+				const {goal, stmts, mod} = setupScript(SRC, CONFIG_FOLDING_OFF);
+				assert.partialDeepStrictEqual(goal.builder.getLocals(), [
 					{id: 0x100n, type: binaryen.v128},
 					{id: 0x101n, type: binaryen.v128},
 					{id: 0x102n, type: binaryen.v128},
+					{id: 0x103n, type: binaryen.v128},
+					{id: 0x104n, type: binaryen.v128},
 				]);
-				return assertEqualBins(
-					stmts.map((stmt) => stmt.build()),
-					[
-						mod.local.set(0, (stmts[0] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-						mod.drop(        (stmts[1] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-						mod.local.set(1, (stmts[2] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-						mod.drop(        (stmts[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+				return assertEqualBins(stmts.map((stmt) => stmt.build()), [
+					mod.drop(        VALUE.NULL.build(goal.builder)),
+					mod.drop(        (stmts[1] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.drop(        (stmts[2] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(0, (stmts[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
 
-						mod.local.set(2, VALUE.NULL.build(goal.builder)),
-						mod.drop(        VALUE.NULL.build(goal.builder)),
-					],
-				);
+					mod.local.set(1, VALUE.NULL.build(goal.builder)),
+					mod.local.set(2, (stmts[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.drop(        (stmts[6] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.drop(        (stmts[7] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(3, (stmts[8] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(4, (stmts[9] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+				]);
 			});
 			it('tuples and records.', () => {
 				const {goal, stmts, mod} = setupScript(`{
