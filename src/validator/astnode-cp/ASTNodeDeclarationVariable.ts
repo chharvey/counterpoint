@@ -115,7 +115,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public override build(): binaryen.ExpressionRef {
 		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
 		return this.assignee
-			? this.builder.teeLocal(this.assignee.id, value).set()
+			? this.builder.teeLocal(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar, value).set()
 			: this.builder.module.drop(value);
 	}
 }

@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	AST,
@@ -531,13 +530,6 @@ describe('ASTNodeDeclaration', () => {
 			}`;
 			it('with constant folding on.', () => {
 				const {goal, stmts, mod} = setupScript(SRC);
-				assert.partialDeepStrictEqual(goal.builder.getLocals(), [
-					// `0x100n` corresponds to `assignee_a`, which is not in the builder
-					{id: 0x101n, type: binaryen.v128},
-					{id: 0x102n, type: binaryen.v128},
-					{id: 0x103n, type: binaryen.v128},
-					{id: 0x104n, type: binaryen.v128},
-				]);
 				return assertEqualBins(stmts.map((stmt) => stmt.build()), [
 					mod.nop(),
 					mod.nop(),
@@ -554,13 +546,6 @@ describe('ASTNodeDeclaration', () => {
 			});
 			it('with constant folding off, never returns `(nop)`.', () => {
 				const {goal, stmts, mod} = setupScript(SRC, CONFIG_FOLDING_OFF);
-				assert.partialDeepStrictEqual(goal.builder.getLocals(), [
-					{id: 0x100n, type: binaryen.v128},
-					{id: 0x101n, type: binaryen.v128},
-					{id: 0x102n, type: binaryen.v128},
-					{id: 0x103n, type: binaryen.v128},
-					{id: 0x104n, type: binaryen.v128},
-				]);
 				return assertEqualBins(stmts.map((stmt) => stmt.build()), [
 					mod.drop(        VALUE.NULL.build(goal.builder)),
 					mod.drop(        (stmts[1] as AST.ASTNodeDeclarationVariable).assigned!.build()),
@@ -583,13 +568,13 @@ describe('ASTNodeDeclaration', () => {
 				const [tup, rec] = stmts.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 				const [tup_2, rec_c]         = [tup.children[2],   rec.children[2].val]   as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 				const [tup_2_1, rec_c_e]     = [tup_2.children[1], rec_c.children[1].val] as [AST.ASTNodeTuple, AST.ASTNodeRecord];
-				assert.deepStrictEqual(goal.builder.getLocals().map(({id, value}) => ({id, value})), [ // can’t use `partialDeepStrictEqual` because `.value` is a getter
-					{id: -0x100n, value: tup_2_1.build()},
-					{id:  -0xffn, value: tup_2.build()},
-					{id:  0x100n, value: tup.build()},
-					{id:  -0xfen, value: rec_c_e.build()},
-					{id:  -0xfdn, value: rec_c.build()},
-					{id:  0x108n, value: rec.build()},
+				assert.deepStrictEqual(goal.builder.getLocals().map((local) => local.value), [
+					tup_2_1.build(),
+					tup_2.build(),
+					tup.build(),
+					rec_c_e.build(),
+					rec_c.build(),
+					rec.build(),
 				]);
 				return assertEqualBins(
 					stmts.map((stmt) => stmt.build()),

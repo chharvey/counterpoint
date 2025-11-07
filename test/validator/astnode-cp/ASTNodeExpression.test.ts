@@ -293,20 +293,15 @@ describe('ASTNodeExpression', () => {
 				}`);
 				const var0 = (stmts[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 				const var1 = (stmts[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const [
-					{id: id0, type: type0},
-					{id: id1},
-					{id: id2, type: type2},
-				] = goal.builder.getLocals();
-				assert.deepStrictEqual([id0, id1, id2], [var0.id, -0x100n, var1.id]);
+				const types: readonly binaryen.Type[] = goal.builder.getLocals().map((local) => local.type);
 				return assertEqualBins(
 					[
 						var0.build(),
 						var1.build(),
 					],
 					[
-						mod.local.get(0, type0),
-						mod.local.get(2, type2),
+						mod.local.get(0, types[0]),
+						mod.local.get(2, types[2]),
 					],
 				);
 			});
@@ -319,19 +314,15 @@ describe('ASTNodeExpression', () => {
 				}`, CONFIG_FOLDING_OFF);
 				const var0 = (stmts[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 				const var1 = (stmts[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const [
-					{id: id0, type: type0},
-					{id: id1, type: type1},
-				] = goal.builder.getLocals();
-				assert.deepStrictEqual([var0.id, var1.id], [id0, id1]);
+				const types: readonly binaryen.Type[] = goal.builder.getLocals().map((local) => local.type);
 				assertEqualBins(
 					[
 						var0.build(),
 						var1.build(),
 					],
 					[
-						mod.local.get(0, type0),
-						mod.local.get(1, type1),
+						mod.local.get(0, types[0]),
+						mod.local.get(1, types[1]),
 					],
 				);
 			});

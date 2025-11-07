@@ -61,7 +61,7 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return this.builder.getLocal(this.id)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
+		return this.builder.getLocal(this.validator.getSymbolInfo(this.id) as SymbolSchemaVar)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 
 	@memoizeMethod
