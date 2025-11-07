@@ -71,29 +71,6 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 
 	@memoizeMethod
 	public override fold(): VALUE.Value | null {
-		/*
-		If any statement is not an expression-statement, this block is unfoldable.
-		If any expression-statement has an expression and it is unfoldable, this block is unfoldable.
-		If any statement (except the last one) is an empty expression-statement, it has no effect on the foldability (inconclusive).
-		*/
-		for (const stmt of this.block.children.slice(0, -1)) {
-			if (!(stmt instanceof ASTNodeStatementExpression)) {
-				return null;
-			}
-			if (!stmt.expr) {
-				continue;
-			}
-			const value: VALUE.Value | null = stmt.expr.fold();
-			if (!value) {
-				return null;
-			}
-		}
-		/*
-		By this point, all statements (except the last) have been foldable or empty expression-statements.
-		Based on validations in `.type()`, we can assert that the last statement is a nonempty expression-statement.
-		The folded value of this block is the folded value of that expression-statement’s expression, provided it’s foldable.
-		If it’s not, then this block is not foldable.
-		*/
-		return (this.block.children.at(-1) as ASTNodeStatementExpression).expr!.fold();
+		return this.block.isFoldable ? (this.block.children.at(-1) as ASTNodeStatementExpression).expr!.fold() : null;
 	}
 }

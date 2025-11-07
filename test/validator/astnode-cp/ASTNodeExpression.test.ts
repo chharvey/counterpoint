@@ -1052,19 +1052,7 @@ describe('ASTNodeExpression', () => {
 
 
 		describe('#fold', () => {
-			it('returns null if any statement is not an expression-statement.', () => {
-				assert.strictEqual(((setupScript(`{
-					let x: int = 42;
-					let y: int | null = {
-						x;
-						let z: int = 69;
-						z;
-					};
-					x;
-					y;
-				}`, null, {build: false}).stmts[1] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock).fold(), null);
-			});
-			it('returns null if any statement is an expression-statement with a non-foldable expression.', () => {
+			it('returns null if the block is not foldable.', () => {
 				assert.strictEqual(((setupScript(`{
 					let var x: int = 42;
 					let z: int = 69;
@@ -1076,12 +1064,14 @@ describe('ASTNodeExpression', () => {
 					y;
 				}`, null, {build: false}).stmts[2] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock).fold(), null);
 			});
-			it('returns the folded value of the last statement, provided it’s an expression-statement with a foldable expression.', () => {
+			it('returns the folded value of the last statement, provided the block is foldable.', () => {
 				const {stmts} = setupScript(`{
 					let x: int = 42;
 					let z: int = 69;
 					let y: int | null = {
 						x;
+						let w: int = x;
+						w;
 						;
 						z;
 					};
