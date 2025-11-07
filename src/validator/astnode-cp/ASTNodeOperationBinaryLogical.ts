@@ -57,7 +57,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			return this.operator === Operator.AND ? block1 : arg0;
 		}
 
-		const local0: Local = this.builder.addLocal(arg0)[1];
+		const local0: Local = this.builder.addLocal(arg0);
 
 		const arg0_truthy: binaryen.ExpressionRef = new BinVect(mod, mod.call(
 			'vnot',

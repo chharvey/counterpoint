@@ -33,10 +33,10 @@ export class Builder {
 	 * @param value the binaryen value of the variable to add
 	 * @return      [`this`, the new local variable]
 	 */
-	public addLocal(value: binaryen.ExpressionRef): [this, Local] {
+	public addLocal(value: binaryen.ExpressionRef): Local {
 		const local = new Local(this.module, this.locals.length, value);
 		this.locals.push(local);
-		return [this, local];
+		return local;
 	}
 
 	/**
@@ -44,31 +44,31 @@ export class Builder {
 	 * If a variable with that id has already been added, do nothing.
 	 * @param schema the compiler’s internal data for a declared variable
 	 * @param value  the binaryen value of the variable to set
-	 * @return       [`this`, Was the operation performed?]
+	 * @return       Was the operation performed?
 	 */
-	public setLocal(schema: SymbolSchemaVar, value: binaryen.ExpressionRef): [this, boolean] {
+	public setLocal(schema: SymbolSchemaVar, value: binaryen.ExpressionRef): boolean {
 		let did: boolean = false;
 		if (!this.getLocal(schema)) {
 			this.locals.push(new Local(this.module, this.locals.length, value, schema));
 			did = true;
 		}
-		return [this, did];
+		return did;
 	}
 
 	/**
 	 * Remove a local variable.
 	 * If the local variable doesn’t exist, do nothing.
 	 * @param  schema the symbol schema of the variable to remove
-	 * @return        [`this`, Was the operation performed?]
+	 * @return        Was the operation performed?
 	 */
-	public removeLocal(schema: SymbolSchemaVar): [this, boolean] {
+	public removeLocal(schema: SymbolSchemaVar): boolean {
 		let did = false;
 		const found = this.getLocal(schema);
 		if (found) {
 			this.locals.splice(this.locals.indexOf(found), 1);
 			did = true;
 		}
-		return [this, did];
+		return did;
 	}
 
 	/**
@@ -88,7 +88,8 @@ export class Builder {
 	 * @return      the local variable set (or retreived)
 	 */
 	public teeLocal(schema: SymbolSchemaVar, value: binaryen.ExpressionRef): Local {
-		return this.setLocal(schema, value)[0].getLocal(schema)!;
+		this.setLocal(schema, value);
+		return this.getLocal(schema)!;
 	}
 
 	/**
