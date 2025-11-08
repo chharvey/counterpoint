@@ -75,7 +75,7 @@ ItemsType ::=
 ;
 
 PropertiesType
-	::= ","? EntryType<+Named><-Optional, +Optional># ","?;
+	::= ","? EntryType<+Named><∓Optional># ","?;
 
 TypeGrouped       ::= "(" Type             ")";
 TypeTupleLiteral  ::= "(" ItemsType?       ")";

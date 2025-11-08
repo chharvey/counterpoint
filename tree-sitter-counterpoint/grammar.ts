@@ -68,20 +68,30 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
  * References a production with arguments. Arguments must be provided in order.
  * E.g., to generate the following EBNF item:
  * ```ebnf
- * Item<+ParamA><+ParamB><-ParamC><?ParamD>
+ * Item<+ParamA><+ParamB, +ParamC><-ParamD, +ParamD><?ParamE><!ParamF>
  * ```
  * we can call:
  * ```js
- * call($, 'item', 'param_a', 'param_b', {param_d})
+ * call($, 'item', 'param_a', ['param_b', 'param_c'], ['', 'param_d'], {param_e}, {param_f: !param_f})
  * ```
  * @param $           the grammar symbols object
  * @param family_name the name of the production without parameters
  * @param args        argument names or objects of inherited argument values from the containing production
  * @returns           a property name of the `$` object
  */
-function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name: string, ...args: readonly (string | Readonly<Record<string, boolean>>)[]): Rule {
+function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name: string, ...args: readonly (string | readonly string[] | Readonly<Record<string, boolean>>)[]): Rule {
+	if (args.some((arg) => Array.isArray(arg))) {
+		const [index, opts] = args.entries().find(([_, arg]) => Array.isArray(arg)) as [number, readonly string[]];
+		return choice(...opts.map((opt) => call<RuleName>(
+			$,
+			family_name,
+			...args.slice(0, index),
+			opt,
+			...args.slice(index + 1),
+		)));
+	}
 	return $[familyName(family_name, ...args.flatMap((arg) => ((typeof arg === 'string')
-		? [arg]
+		? arg.length ? [arg] : []
 		: Object.entries(arg)
 			.filter(([_,    is_true]) => is_true)
 			.map   (([name, _])       => name)
@@ -397,7 +407,7 @@ module.exports = grammar({
 			);
 		},
 
-		_properties_type: $ => seq(OPT_COM, repCom1(choice(call($, 'entry_type', 'named'), call($, 'entry_type', 'named', 'optional'))), OPT_COM),
+		_properties_type: $ => seq(OPT_COM, repCom1(call($, 'entry_type', 'named', ['', 'optional'])), OPT_COM),
 
 		type_grouped:        $ => seq('(', $._type,                            ')'),
 		type_tuple_literal:  $ => seq('(', optional($._items_type),            ')'),
@@ -557,7 +567,7 @@ module.exports = grammar({
 
 		_statement: $ => choice(
 			$.statement_expression,
-			choice($.statement_conditional, $.statement_conditional__unless), // TODO: write a function for representing calling `StatementConditional<∓Unless>`
+			call($, 'statement_conditional', ['', 'unless']),
 			$._declaration,
 		),
 
