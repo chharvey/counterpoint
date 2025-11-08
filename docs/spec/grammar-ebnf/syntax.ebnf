@@ -38,14 +38,14 @@ Item ::=
 ;
 
 
-Order  ::= ( Order  "&"? )? Item;
-Concat ::= ( Concat "&&" )? Order;
-Altern ::= ( Altern "|"  )? Concat;
+Seq    ::= ( Seq    "&"? )? Item;
+UnSeq  ::= ( UnSeq  "&&" )? Seq;
+Choice ::= ( Choice "|"  )? UnSeq;
 
 
 
 Definition
-	::= ("&" | "&&" | "|")? Altern;
+	::= ("&" | "&&" | "|")? Choice;
 
 
 

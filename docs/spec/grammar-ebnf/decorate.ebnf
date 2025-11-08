@@ -146,38 +146,38 @@ Decorate(Item ::= ConditionSet Item) -> SemanticItem
 	);
 
 
-Decorate(Order ::= Item) -> SemanticExpr
+Decorate(Seq ::= Item) -> SemanticExpr
 	:= Decorate(Item);
-Decorate(Order ::= Order "&"? Item) -> SematicOp
-	:= (SematicOp[operator=ORDER]
-		Decorate(Order)
+Decorate(Seq ::= Seq "&"? Item) -> SematicOp
+	:= (SematicOp[operator=SEQ]
+		Decorate(Seq)
 		Decorate(Item)
 	);
 
 
 
-Decorate(Concat ::= Order) -> SemanticExpr
-	:= Decorate(Order);
-Decorate(Concat ::= Concat "&&" Order) -> SematicOp
-	:= (SematicOp[operator=CONCAT]
-		Decorate(Concat)
-		Decorate(Order)
+Decorate(UnSeq ::= Seq) -> SemanticExpr
+	:= Decorate(Seq);
+Decorate(UnSeq ::= UnSeq "&&" Seq) -> SematicOp
+	:= (SematicOp[operator=UNSEQ]
+		Decorate(UnSeq)
+		Decorate(Seq)
 	);
 
 
 
-Decorate(Altern ::= Concat) -> SemanticExpr
-	:= Decorate(Concat);
-Decorate(Altern ::= Altern "|" Concat) -> SematicOp
-	:= (SematicOp[operator=ALTERN]
-		Decorate(Altern)
-		Decorate(Concat)
+Decorate(Choice ::= UnSeq) -> SemanticExpr
+	:= Decorate(UnSeq);
+Decorate(Choice ::= Choice "|" UnSeq) -> SematicOp
+	:= (SematicOp[operator=CHOICE]
+		Decorate(Choice)
+		Decorate(UnSeq)
 	);
 
 
 
-Decorate(Definition ::= Altern) -> SemanticExpr
-	:= Decorate(Altern);
+Decorate(Definition ::= Choice) -> SemanticExpr
+	:= Decorate(Choice);
 
 
 

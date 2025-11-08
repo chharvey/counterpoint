@@ -98,7 +98,7 @@ ChoiceData Transform(SemanticOp[operator: OPT] expr, Text nt, Sequence<Productio
 	].
 ;
 
-ChoiceData Transform(SemanticOp[operator: ORDER] expr, Text nt, Sequence<ProductionData> data) :=
+ChoiceData Transform(SemanticOp[operator: SEQ] expr, Text nt, Sequence<ProductionData> data) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *UnwrapAffirm:* `Transform(expr.children.0, nt, data)`.
 	3. *Let* `operand1` be *UnwrapAffirm:* `Transform(expr.children.1, nt, data)`.
@@ -108,7 +108,7 @@ ChoiceData Transform(SemanticOp[operator: ORDER] expr, Text nt, Sequence<Product
 		].
 ;
 
-ChoiceData Transform(SemanticOp[operator: CONCAT] expr, Text nt, Sequence<ProductionData> data) :=
+ChoiceData Transform(SemanticOp[operator: UNSEQ] expr, Text nt, Sequence<ProductionData> data) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *UnwrapAffirm:* `Transform(expr.children.0, nt, data)`.
 	3. *Let* `operand1` be *UnwrapAffirm:* `Transform(expr.children.1, nt, data)`.
@@ -119,7 +119,7 @@ ChoiceData Transform(SemanticOp[operator: CONCAT] expr, Text nt, Sequence<Produc
 		].
 ;
 
-ChoiceData Transform(SemanticOp[operator: ALTERN] expr, Text nt, Sequence<ProductionData> data) :=
+ChoiceData Transform(SemanticOp[operator: CHOICE] expr, Text nt, Sequence<ProductionData> data) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *UnwrapAffirm:* `Transform(expr.children.0, nt, data)`.
 	3. *Let* `operand1` be *UnwrapAffirm:* `Transform(expr.children.1, nt, data)`.
