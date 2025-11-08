@@ -58,7 +58,7 @@
     "globals": "^16.0.0",
     "mocha": "^11.7.1",
     "tsx": "^4.19.3",
-    "typescript": "~5.8.0",
+    "typescript": "~5.9.0",
     "typescript-eslint": "^8.18.0"
   },
   "engines": {
