@@ -11,8 +11,7 @@ export default [
 	{
 		ignores: [
 			'**/build/',
-			'tree-sitter-counterpoint/bindings/node/index.js',
-			'tree-sitter-counterpoint/bindings/node/index.d.ts',
+			'tree-sitter-counterpoint/bindings/node/*.{js,ts}',
 			'tree-sitter-counterpoint/grammar.js',
 		],
 	},

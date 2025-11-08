@@ -1,5 +1,10 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-/// <reference path="../node_modules/tree-sitter-cli/dsl.d.ts"/>
+/**
+ * @file Tree-sitter parser for the Counterpoint Programming Language.
+ * @author Chris Harvey <1362083+chharvey@users.noreply.github.com>
+ * @license GPL-3.0-or-later
+ */
+
+/// <reference types="tree-sitter-cli/dsl.d.ts"/>
 
 
 
