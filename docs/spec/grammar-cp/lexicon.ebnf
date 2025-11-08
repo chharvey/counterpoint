@@ -96,7 +96,7 @@ Identifier
 
 
 Integer<Radix, Separator>
-	:::= ("+" | "-")? <Radix->DigitSequenceDec<?Separator> . <Radix+>IntegerDigitsRadix<?Separator>;
+	:::= ("+" | "-")? <Radix->DigitSequenceDec<?Separator> & <Radix+>IntegerDigitsRadix<?Separator>;
 
 IntegerDigitsRadix<Separator> :::=
 	| "\b"  DigitSequenceBin<?Separator>
@@ -117,13 +117,13 @@ ExponentPart<Separator>
 SignedDigitSequenceDec<Separator>
 	:::= ("+" | "-")? DigitSequenceDec<?Separator>;
 
-DigitSequenceBin<Separator> :::= ( DigitSequenceBin<?Separator> . <Separator+>"_"? )? [0-1];
-DigitSequenceQua<Separator> :::= ( DigitSequenceQua<?Separator> . <Separator+>"_"? )? [0-3];
-DigitSequenceSex<Separator> :::= ( DigitSequenceSex<?Separator> . <Separator+>"_"? )? [0-5];
-DigitSequenceOct<Separator> :::= ( DigitSequenceOct<?Separator> . <Separator+>"_"? )? [0-7];
-DigitSequenceDec<Separator> :::= ( DigitSequenceDec<?Separator> . <Separator+>"_"? )? [0-9];
-DigitSequenceHex<Separator> :::= ( DigitSequenceHex<?Separator> . <Separator+>"_"? )? [0-9a-f];
-DigitSequenceNif<Separator> :::= ( DigitSequenceNif<?Separator> . <Separator+>"_"? )? [0-9a-z];
+DigitSequenceBin<Separator> :::= ( DigitSequenceBin<?Separator> & <Separator+>"_"? )? [0-1];
+DigitSequenceQua<Separator> :::= ( DigitSequenceQua<?Separator> & <Separator+>"_"? )? [0-3];
+DigitSequenceSex<Separator> :::= ( DigitSequenceSex<?Separator> & <Separator+>"_"? )? [0-5];
+DigitSequenceOct<Separator> :::= ( DigitSequenceOct<?Separator> & <Separator+>"_"? )? [0-7];
+DigitSequenceDec<Separator> :::= ( DigitSequenceDec<?Separator> & <Separator+>"_"? )? [0-9];
+DigitSequenceHex<Separator> :::= ( DigitSequenceHex<?Separator> & <Separator+>"_"? )? [0-9a-f];
+DigitSequenceNif<Separator> :::= ( DigitSequenceNif<?Separator> & <Separator+>"_"? )? [0-9a-z];
 
 
 

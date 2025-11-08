@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type Parser from 'tree-sitter';
 import {
 	Query,
 	type QueryCapture,
@@ -19,7 +18,7 @@ import {
 describe('Decorator', () => {
 	describe('#decorateTS', () => {
 		function captureParseNode(source: string, query: string): SyntaxNode {
-			const captures: QueryCapture[] = new Query(Counterpoint as Parser.Language, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
+			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
 			assert.ok(captures.length, 'could not find any captures.');
 			return captures[0].node;
 		}
