@@ -158,7 +158,7 @@ Decorate(Order ::= Order "."? Item) -> SematicOp
 
 Decorate(Concat ::= Order) -> SemanticExpr
 	:= Decorate(Order);
-Decorate(Concat ::= Concat "&" Order) -> SematicOp
+Decorate(Concat ::= Concat "&&" Order) -> SematicOp
 	:= (SematicOp[operator=CONCAT]
 		Decorate(Concat)
 		Decorate(Order)

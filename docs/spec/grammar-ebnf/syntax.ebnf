@@ -39,13 +39,13 @@ Item ::=
 
 
 Order  ::= ( Order  "."? )? Item;
-Concat ::= ( Concat "&"  )? Order;
+Concat ::= ( Concat "&&" )? Order;
 Altern ::= ( Altern "|"  )? Concat;
 
 
 
 Definition
-	::= ("." | "&" | "|")? Altern;
+	::= ("." | "&&" | "|")? Altern;
 
 
 
