@@ -119,6 +119,19 @@ ChoiceData Transform(SemanticOp[operator: UNSEQ] expr, Text nt, Sequence<Product
 		].
 ;
 
+ChoiceData Transform(SemanticOp[operator: UNCHOICE] expr, Text nt, Sequence<ProductionData> data) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be *UnwrapAffirm:* `Transform(expr.children.0, nt, data)`.
+	3. *Let* `operand1` be *UnwrapAffirm:* `Transform(expr.children.1, nt, data)`.
+	4. *Return:* a flattened mapping from `operand0` indexed by `i` to
+		a flattened mapping from `operand1` indexed by `j` to [
+			[...operand0[i]],
+			[...operand1[j]],
+			[...operand0[i], ...operand1[j]],
+			[...operand1[j], ...operand0[i]],
+		].
+;
+
 ChoiceData Transform(SemanticOp[operator: CHOICE] expr, Text nt, Sequence<ProductionData> data) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *UnwrapAffirm:* `Transform(expr.children.0, nt, data)`.

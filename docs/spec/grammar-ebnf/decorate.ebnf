@@ -166,17 +166,27 @@ Decorate(UnSeq ::= UnSeq "&&" Seq) -> SematicOp
 
 
 
-Decorate(Choice ::= UnSeq) -> SemanticExpr
-	:= Decorate(UnSeq);
-Decorate(Choice ::= Choice "|" UnSeq) -> SematicOp
-	:= (SematicOp[operator=CHOICE]
-		Decorate(Choice)
-		Decorate(UnSeq)
+Decorate(UnChoice ::= Unseq) -> SemanticExpr
+	:= Decorate(Unseq);
+Decorate(UnChoice ::= UnChoice "||" Unseq) -> SematicOp
+	:= (SematicOp[operator=UNCHOICE]
+		Decorate(UnChoice)
+		Decorate(Unseq)
 	);
 
 
 
-Decorate(Definition ::= Choice) -> SemanticExpr
+Decorate(Choice ::= UnChoice) -> SemanticExpr
+	:= Decorate(UnChoice);
+Decorate(Choice ::= Choice "|" UnChoice) -> SematicOp
+	:= (SematicOp[operator=CHOICE]
+		Decorate(Choice)
+		Decorate(UnChoice)
+	);
+
+
+
+Decorate(Definition ::= ("&" | "&&" | "||" | "|")? Choice) -> SemanticExpr
 	:= Decorate(Choice);
 
 

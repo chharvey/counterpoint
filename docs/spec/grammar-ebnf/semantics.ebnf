@@ -33,7 +33,7 @@ SemanticItem
 
 SemanticOp[operator: PLUS | HASH | OPT]
 	::= SemanticExpr;
-SemanticOp[operator: SEQ | UNSEQ | CHOICE]
+SemanticOp[operator: SEQ | UNSEQ | UNCHOICE | CHOICE]
 	::= SemanticExpr SemanticExpr;
 
 

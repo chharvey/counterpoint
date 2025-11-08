@@ -333,7 +333,7 @@ Usage of an explicit operator can help control grouping and separation of items 
 ##### Unordered Concatenation
 Unordered Concatenation of symbols is concatenation where the order is not important.
 
-Unordered Concatenation syntax uses the symbol `&&` and is shorthand for an alternative choice with concatenation:
+Unordered Concatenation syntax uses the symbol `&&` and is shorthand for an alternative choice of concatenation:
 ```
 N
 	::= A && B;
@@ -370,8 +370,65 @@ N ::=
 ```
 **(Notice that not all permutations are available here — namely, `A C B` and `B C A` are missing.)**
 
-Unordered Concatenation is weaker than concatenation:
+Unordered Concatenation is weaker than Ordered Concatenation:
 `A && B C` is equivalent to `A && (B C)`.
+`A && B & C` is equivalent to `A && (B & C)`.
+
+##### Unordered Alternation
+Unordered Alternation of symbols is Unordered Concatenation, where only at least one symbol is required.
+
+Unordered Alternation syntax uses the symbol `||` and is shorthand for an alternative choice of concatenation with optional operands:
+```
+N
+	::= A || B;
+```
+transforms to
+```
+N ::=
+	| A
+	| B
+	| A B
+	| B A
+;
+```
+
+Unordered Alternation is evaluated left-to-right, so the EBNF expression `A || B || C`
+is equivalent to `(A || B) || C`.
+```
+N
+	::= A || B || C;
+```
+transforms to
+```
+N ::=
+	| A || B
+	| C
+	| (A || B) C
+	| C (A || B)
+;
+```
+which in turn transforms to
+```
+N ::=
+	| A
+	| B
+	| A B
+	| B A
+	| C
+	| A C
+	| B C
+	| A B C
+	| B A C
+	| C A
+	| C B
+	| C A B
+	| C B A
+;
+```
+**(Notice that not all permutations are available here — namely, `A C B` and `B C A` are missing.)**
+
+Unordered Alternation is weaker than Unordered Concatenation:
+`A || B && C` is equivalent to `A || (B && C)`.
 
 ##### Alternation
 Alternation of symbols indicates an alternative choice of those symbols in the formal grammar.
@@ -411,7 +468,7 @@ N ::=
 ;
 ```
 
-Alternation is weaker than Unordered Concatenation:
+Alternation is weaker than Unordered Alternation:
 `A | B && C` is equivalent to `A | (B && C)`.
 
 Alternation on its own is not that interesting, but it can be useful when combined with other operations:

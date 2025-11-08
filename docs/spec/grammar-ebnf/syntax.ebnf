@@ -38,14 +38,15 @@ Item ::=
 ;
 
 
-Seq    ::= ( Seq    "&"? )? Item;
-UnSeq  ::= ( UnSeq  "&&" )? Seq;
-Choice ::= ( Choice "|"  )? UnSeq;
+Seq      ::= (Seq      "&"?)? Item;
+UnSeq    ::= (UnSeq    "&&")? Seq;
+UnChoice ::= (UnChoice "||")? Unseq;
+Choice   ::= (Choice   "|" )? UnChoice;
 
 
 
 Definition
-	::= ("&" | "&&" | "|")? Choice;
+	::= ("&" | "&&" | "||" | "|")? Choice;
 
 
 
