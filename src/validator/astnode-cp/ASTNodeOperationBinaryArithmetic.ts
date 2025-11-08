@@ -61,7 +61,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 
 		// if operand0 is not foldable, short-circuit by using identity laws
 		if (!v0) {
-			const local0: Local = this.builder.addLocal(arg0)[1];
+			const local0: Local = this.builder.addLocal(arg0);
 			const teeer         = new BinVect(mod, local0.tee());
 			const getter        = new BinVect(mod, local0.get());
 			if (this.operator === Operator.MUL) {

@@ -11,14 +11,19 @@ import {
 import {Validator} from '../Validator.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeGoal} from './index.ts';
-import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
+import {
+	if_constant_folding,
+	type Foldable,
+} from './Foldable.ts';
+import type {Buildable} from './Buildable.ts';
+import type {ASTNodeExpressionBlock} from './ASTNodeExpressionBlock.ts';
 import type {ASTNodeStatement} from './ASTNodeStatement.ts';
 import type {ASTNodeStatementConditional} from './ASTNodeStatementConditional.ts';
 
 
 
-export class ASTNodeBlock extends ASTNodeCP implements Buildable {
+export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 	/**
 	 * Construct a new ASTNodeBlock from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -41,17 +46,25 @@ export class ASTNodeBlock extends ASTNodeCP implements Buildable {
 		private readonly config:           CPConfig,
 	) {
 		super(start_node, {}, children);
+		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 statement.');
 	}
 
 	public override get validator(): Validator {
-		this.#validator ??= new Validator(this.config, (this.parent as ASTNodeStatementConditional | ASTNodeGoal | undefined)?.validator);
+		this.#validator ??= new Validator(this.config, (this.parent as ASTNodeExpressionBlock | ASTNodeStatementConditional | ASTNodeGoal | undefined)?.validator);
 		return this.#validator;
+	}
+
+	/** @implements Foldable */
+	@if_constant_folding
+	public get isFoldable(): boolean {
+		return this.children.every((stmt) => stmt.isFoldable);
 	}
 
 	/** @implements Buildable */
 	@memoizeMethod
 	public build(): binaryen.ExpressionRef {
-		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 statement.');
-		return this.builder.module.block(null, this.children.map((stmt) => stmt.build()));
+		return this.isFoldable
+			? this.builder.module.nop()
+			: this.builder.module.block(null, this.children.map((stmt) => stmt.build()));
 	}
 }

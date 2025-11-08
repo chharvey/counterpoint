@@ -23,7 +23,6 @@ import {
 	validate_access_kind,
 	update_accessed_type,
 } from './utils-private.ts';
-import type {Reassignable} from './Reassignable.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
 import {
@@ -31,6 +30,7 @@ import {
 	typeDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
+import type {Reassignable} from './Reassignable.ts';
 
 
 

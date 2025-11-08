@@ -1,4 +1,4 @@
-export * from './Value.ts';
+export {Value} from './Value.ts';
 
 export * from './Primitive.ts';
 export * from './Null.ts';

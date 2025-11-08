@@ -15,8 +15,12 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {ASTNodeBlock} from './index.ts';
+import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
-import {ASTNodeStatement} from './ASTNodeStatement.ts';
+import {
+	buildDeco,
+	ASTNodeStatement,
+} from './ASTNodeStatement.ts';
 
 
 
@@ -37,6 +41,11 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 		super(start_node, {unless}, alternative ? [condition, consequent, alternative] : [condition, consequent]);
 	}
 
+	@if_constant_folding
+	public override get isFoldable(): boolean {
+		return !!this.condition.fold() && this.consequent.isFoldable && (!this.alternative || !!this.alternative.isFoldable);
+	}
+
 	public override typeCheck(): void {
 		super.typeCheck();
 		const condition_type: TYPE.Type = this.condition.type();
@@ -46,6 +55,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		let   condition_build:   binaryen.ExpressionRef = this.condition.build();
 		const consequent_build:  binaryen.ExpressionRef = this.consequent.build();

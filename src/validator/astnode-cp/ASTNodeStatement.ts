@@ -1,12 +1,31 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
+import {assert_context_name} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {ASTNodeBlock} from './index.ts';
-import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {Foldable} from './Foldable.ts';
+import type {Buildable} from './Buildable.ts';
+
+
+
+/**
+ * Decorator for {@link ASTNodeStatement#build} method and any overrides.
+ * Returns `(nop)` if this node is foldable, else calls the `build()` method.
+ * @implements MethodDecorator<ASTNodeStatement, ASTNodeStatement['build']>
+ */
+export function buildDeco(
+	method:  ASTNodeStatement['build'],
+	context: ClassMethodDecoratorContext<ASTNodeStatement, typeof method>,
+): typeof method {
+	assert_context_name(context, 'build');
+	return function (this: ASTNodeStatement) {
+		return this.isFoldable ? this.builder.module.nop() : method.call(this);
+	};
+}
 
 
 
@@ -17,7 +36,7 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
  * - ASTNodeStatementConditional
  * - ASTNodeDeclaration
  */
-export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
+export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Buildable {
 	/**
 	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -31,6 +50,9 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 		return block.children[0];
 	}
 
+
+	/** @implements Foldable */
+	public abstract get isFoldable(): boolean;
 
 	/** @implements Buildable */
 	public abstract build(): binaryen.ExpressionRef;

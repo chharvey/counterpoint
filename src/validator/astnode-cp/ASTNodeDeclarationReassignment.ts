@@ -16,10 +16,14 @@ import {
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
+import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeAccess} from './ASTNodeAccess.ts';
-import {ASTNodeStatement} from './ASTNodeStatement.ts';
+import {
+	buildDeco,
+	ASTNodeStatement,
+} from './ASTNodeStatement.ts';
 
 
 
@@ -38,11 +42,15 @@ export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
 		super(start_node, {}, [assignee, assigned]);
 	}
 
+	@if_constant_folding
+	public override get isFoldable(): boolean {
+		return false;
+	}
+
 	public override varCheck(): void {
 		super.varCheck();
-		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
-		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolSchemaVar).isUnfixed) {
-			throw new AssignmentErrorReassignment(assignee);
+		if (this.assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar).isUnfixed) {
+			throw new AssignmentErrorReassignment(this.assignee);
 		}
 	}
 
@@ -58,8 +66,9 @@ export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
-		return this.builder.getLocal(this.assignee.id)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
+		return this.builder.getLocal(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
 	}
 }

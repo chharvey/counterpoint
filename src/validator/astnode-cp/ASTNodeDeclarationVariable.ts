@@ -17,10 +17,14 @@ import {
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
+import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import type {ASTNodeVariable} from './ASTNodeVariable.ts';
-import {ASTNodeStatement} from './ASTNodeStatement.ts';
+import {
+	buildDeco,
+	ASTNodeStatement,
+} from './ASTNodeStatement.ts';
 
 
 
@@ -46,6 +50,33 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 				typenode,
 				...(assigned ? [assigned] : []),
 			],
+		);
+	}
+
+	@if_constant_folding
+	public override get isFoldable(): boolean {
+		/*
+		 * Foldable cases:
+		 * - `let var _?:       T;`
+		 * - `let     _:        T = assigned_foldable;`
+		 * - `let var _:        T = assigned_foldable;`
+		 * - `let     assignee: T = assigned_foldable;`
+		 *
+		 * Non-Foldable cases:
+		 * - `let var assignee?: T;`
+		 * - `let var assignee:  T = assigned_foldable;`
+		 * - `let     _:         T = assigned_non_foldable;`
+		 * - `let var _:         T = assigned_non_foldable;`
+		 * - `let     assignee:  T = assigned_non_foldable;`
+		 * - `let var assignee:  T = assigned_non_foldable;`
+		 *
+		 * Syntactically impossible cases (for completion):
+		 * - `let _?:        T;`
+		 * - `let assignee?: T;`
+		 */
+		return (
+			!this.assigned          && !this.assignee ||
+			!!this.assigned?.fold() && !(this.assignee && this.unfixed)
 		);
 	}
 
@@ -80,17 +111,11 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		if (
-			this.validator.config.compilerOptions.constantFolding && this.assigned?.fold() &&
-			(!this.unfixed || !this.assignee) ||
-			!this.assignee && !this.assigned
-		) {
-			return this.builder.module.nop();
-		}
 		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
 		return this.assignee
-			? this.builder.teeLocal(this.assignee.id, value).set()
+			? this.builder.teeLocal(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar, value).set()
 			: this.builder.module.drop(value);
 	}
 }

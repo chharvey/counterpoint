@@ -1,4 +1,5 @@
 import type binaryen from 'binaryen';
+import {VALUE} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -8,8 +9,12 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
+import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
-import {ASTNodeStatement} from './ASTNodeStatement.ts';
+import {
+	buildDeco,
+	ASTNodeStatement,
+} from './ASTNodeStatement.ts';
 
 
 
@@ -27,10 +32,14 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 
+	@if_constant_folding
+	public override get isFoldable(): boolean {
+		return !this.expr || !!this.expr.fold();
+	}
+
 	@memoizeMethod
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return !this.expr || (this.validator.config.compilerOptions.constantFolding && this.expr.fold())
-			? this.builder.module.nop()
-			: this.builder.module.drop(this.expr.build());
+		return this.builder.module.drop(this.validator.config.compilerOptions.constantFolding ? this.expr!.build() : this.expr?.build() ?? VALUE.NULL.build(this.builder));
 	}
 }

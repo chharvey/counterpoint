@@ -157,7 +157,7 @@ class TypeRecord extends ValueType {
 			if (expr_info.id === binaryen.ExpressionIds.LocalGet) {
 				return builder.module.tuple.make(builtIndex.map((n) => builder.module.tuple.extract(base_build, n)));
 			}
-			const local: Local = builder.addLocal(base_build)[1];
+			const local: Local = builder.addLocal(base_build);
 			return builder.module.tuple.make([
 				                                  builder.module.tuple.extract(local.tee(), builtIndex[0]), // eslint-disable-line @stylistic/indent
 				...builtIndex.slice(1).map((n) => builder.module.tuple.extract(local.get(), n)),

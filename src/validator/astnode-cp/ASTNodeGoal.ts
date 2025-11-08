@@ -18,8 +18,8 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
-import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {Buildable} from './Buildable.ts';
 import type {ASTNodeBlock} from './ASTNodeBlock.ts';
 
 
