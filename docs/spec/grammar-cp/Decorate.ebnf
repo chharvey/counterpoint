@@ -685,8 +685,8 @@ Decorate(StatementConditional<+Unless> ::= "unless" Expression<+Block> "then" Bl
 
 Decorate(Statement ::= StatementExpression) -> SemanticStatementExpression
 	:= Decorate(StatementExpression);
-Decorate(Statement ::= StatementConditional<±Unless>) -> SemanticStatementConditional
-	:= Decorate(StatementConditional<±Unless>);
+Decorate(Statement ::= StatementConditional<∓Unless>) -> SemanticStatementConditional
+	:= Decorate(StatementConditional<∓Unless>);
 Decorate(Statement ::= Declaration) -> SemanticDeclaration
 	:= Decorate(Declaration);
 

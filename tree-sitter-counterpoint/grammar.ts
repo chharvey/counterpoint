@@ -556,7 +556,7 @@ module.exports = grammar({
 
 		_statement: $ => choice(
 			$.statement_expression,
-			choice($.statement_conditional, $.statement_conditional__unless), // TODO: write a function for representing calling `StatementConditional<±Unless>`
+			choice($.statement_conditional, $.statement_conditional__unless), // TODO: write a function for representing calling `StatementConditional<∓Unless>`
 			$._declaration,
 		),
 

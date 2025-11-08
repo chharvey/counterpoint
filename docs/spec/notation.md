@@ -588,7 +588,7 @@ M_Y ::=
 ```
 Production arguments expand combinatorially, the same way parameters do.
 
-- `<±F>`: shorthand for the argument `<-F, +F>`
+- `<∓F>`: shorthand for the argument `<-F, +F>`
 
 ```
 N ::=
@@ -596,7 +596,7 @@ N ::=
 	| J<+Y, -Y>
 	| K<-X><+X>
 	| L<+Y><-Y>
-	| II<±X>
+	| II<∓X>
 ;
 
 M ::=

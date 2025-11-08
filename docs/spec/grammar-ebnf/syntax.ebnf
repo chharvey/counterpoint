@@ -6,7 +6,7 @@
 
 
 ParameterSet ::= "<"                                IDENTIFIER             # ">";
-ArgumentSet  ::= "<" (("+" | "-" | "±" | "?" | "!") IDENTIFIER            )# ">";
+ArgumentSet  ::= "<" (("+" | "-" | "∓" | "?" | "!") IDENTIFIER            )# ">";
 ConditionSet ::= "<" (                              IDENTIFIER ("+" | "-"))# ">";
 
 
