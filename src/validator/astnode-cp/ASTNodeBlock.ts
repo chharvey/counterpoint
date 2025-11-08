@@ -17,6 +17,7 @@ import {
 	type Foldable,
 } from './Foldable.ts';
 import type {Buildable} from './Buildable.ts';
+import type {ASTNodeExpressionBlock} from './ASTNodeExpressionBlock.ts';
 import type {ASTNodeStatement} from './ASTNodeStatement.ts';
 import type {ASTNodeStatementConditional} from './ASTNodeStatementConditional.ts';
 
@@ -49,7 +50,7 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 	}
 
 	public override get validator(): Validator {
-		this.#validator ??= new Validator(this.config, (this.parent as ASTNodeStatementConditional | ASTNodeGoal | undefined)?.validator);
+		this.#validator ??= new Validator(this.config, (this.parent as ASTNodeExpressionBlock | ASTNodeStatementConditional | ASTNodeGoal | undefined)?.validator);
 		return this.#validator;
 	}
 

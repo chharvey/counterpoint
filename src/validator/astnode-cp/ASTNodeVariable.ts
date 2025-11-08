@@ -22,12 +22,12 @@ import {
 	SymbolSchemaType,
 } from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {Reassignable} from './Reassignable.ts';
 import {
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
+import type {Reassignable} from './Reassignable.ts';
 
 
 
