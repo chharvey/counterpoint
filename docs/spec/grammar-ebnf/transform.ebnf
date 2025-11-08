@@ -164,6 +164,8 @@ Sequence<Text> Expand(SemanticRef ref, Text nt) :=
 					1. Push `power_suffix[j][k].name` to `suffixes`.
 				2. *If* `power_suffix[j][k].append` is INHERIT *and* `nt` contains the suffix `power_suffix[j][k].name`:
 					1. Push `power_suffix[j][k].name` to `suffixes`.
+				3. *If* `power_suffix[j][k].append` is NOTINHERIT *and* `nt` does not contain the suffix `power_suffix[j][k].name`:
+					1. Push `power_suffix[j][k].name` to `suffixes`.
 			3. *Let* `suffix` be the concatenation of each element of `suffixes`, separated by "_".
 			4. *Let* `name` be the concatenation of `expands[i]` with `suffix`.
 			5. *Push* `name` to `names`.

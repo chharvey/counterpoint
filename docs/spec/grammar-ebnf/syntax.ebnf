@@ -5,9 +5,9 @@
 
 
 
-ParameterSet ::= "<"                    IDENTIFIER             # ">";
-ArgumentSet  ::= "<" (("+" | "-" | "?") IDENTIFIER            )# ">";
-ConditionSet ::= "<" (                  IDENTIFIER ("+" | "-"))# ">";
+ParameterSet ::= "<"                                IDENTIFIER             # ">";
+ArgumentSet  ::= "<" (("+" | "-" | "±" | "?" | "!") IDENTIFIER            )# ">";
+ConditionSet ::= "<" (                              IDENTIFIER ("+" | "-"))# ">";
 
 
 

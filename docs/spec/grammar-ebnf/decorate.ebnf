@@ -22,8 +22,15 @@ Decorate(ArgumentSet__0__CSL ::= "+" IDENTIFIER) -> Sequence<SemanticArg>
 	:= [(SemanticArg[name=TokenWorth(IDENTIFIER)][append=TRUE])];
 Decorate(ArgumentSet__0__CSL ::= "-" IDENTIFIER) -> Sequence<SemanticArg>
 	:= [(SemanticArg[name=TokenWorth(IDENTIFIER)][append=FALSE])];
+Decorate(ArgumentSet__0__CSL ::= "±" IDENTIFIER) -> Sequence<SemanticArg>
+	:= [
+		(SemanticArg[name=TokenWorth(IDENTIFIER)][append=FALSE]),
+		(SemanticArg[name=TokenWorth(IDENTIFIER)][append=TRUE]),
+	];
 Decorate(ArgumentSet__0__CSL ::= "?" IDENTIFIER) -> Sequence<SemanticArg>
 	:= [(SemanticArg[name=TokenWorth(IDENTIFIER)][append=INHERIT])];
+Decorate(ArgumentSet__0__CSL ::= "!" IDENTIFIER) -> Sequence<SemanticArg>
+	:= [(SemanticArg[name=TokenWorth(IDENTIFIER)][append=NOTINHERIT])];
 Decorate(ArgumentSet__0__CSL ::= ArgumentSet__0__CSL "," "+" IDENTIFIER) -> Sequence<SemanticArg>
 	:= [
 		...Decorate(ArgumentSet__0__CSL),
