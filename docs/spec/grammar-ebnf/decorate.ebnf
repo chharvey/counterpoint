@@ -148,7 +148,7 @@ Decorate(Item ::= ConditionSet Item) -> SemanticItem
 
 Decorate(Order ::= Item) -> SemanticExpr
 	:= Decorate(Item);
-Decorate(Order ::= Order "."? Item) -> SematicOp
+Decorate(Order ::= Order "&"? Item) -> SematicOp
 	:= (SematicOp[operator=ORDER]
 		Decorate(Order)
 		Decorate(Item)

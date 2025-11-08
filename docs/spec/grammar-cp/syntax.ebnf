@@ -66,7 +66,7 @@ PrimitiveLiteral ::=
 
 
 EntryType<Named, Optional>
-	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
+	::= <Named+>(Word & <Optional->":") <Optional+>"?:" Type;
 
 ItemsType ::=
 	|                                                                  ","?  EntryType<-Named><+Optional>#   ","?
@@ -208,13 +208,13 @@ StatementExpression
 	::= Expression<+Block>? ";";
 
 StatementConditional<Unless> ::=
-	. <Unless->"if" <Unless+>"unless" Expression<+Block>
-	. "then" Block
-	. <Unless->(
+	& <Unless->"if" <Unless+>"unless" Expression<+Block>
+	& "then" Block
+	& <Unless->(
 		| ("else" Block)? ";"
 		| "else" StatementConditional<?Unless>
 	)
-	. <Unless+>";"
+	& <Unless+>";"
 ;
 
 Statement ::=

@@ -286,7 +286,7 @@ The following table is an informative summary of the operators described below.
 		</tr>
 		<tr>
 			<td>Ordered Concatenation (Explicit)</td>
-			<td><code>… . …</code></td>
+			<td><code>… & …</code></td>
 		</tr>
 		<tr>
 			<th>5</th>
@@ -317,10 +317,10 @@ N
 ##### Ordered Concatenation
 Ordered Concatenation is exactly the same as a sequence of symbols as described above.
 
-Ordered Concatenation syntax uses the optional symbol `.`, but it is equivalent to whitespace.
+Ordered Concatenation syntax uses the optional symbol `&`, but it is equivalent to whitespace.
 ```
 N
-	::= A . B;
+	::= A & B;
 ```
 is equivalent to
 ```
