@@ -260,10 +260,7 @@ export class Validator {
 	/** A symbol table, which keeps tracks of variables. */
 	private readonly symbol_table = new Map<bigint, SymbolSchema>();
 
-	/**
-	 * A bank of unique identifier names.
-	 * COMBAK: Note that this is only temporary, until we have identifiers bound to object and lexical environments.
-	 */
+	/** A bank of unique identifier names. */
 	private readonly identifiers = new Set<string>();
 
 	/**
@@ -338,8 +335,11 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	public cookTokenIdentifier(source: string): bigint {
+		if (this.parent) {
+			return this.parent.cookTokenIdentifier(source);
+		}
 		this.identifiers.add(source);
-		return BigInt([...new Set([...(this.parent?.identifiers ?? []), ...this.identifiers])].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
+		return BigInt([...this.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
 	}
 
 	/**
