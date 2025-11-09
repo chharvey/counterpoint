@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
@@ -58,7 +59,7 @@ function typeOfOperationFromSource(src: string): TYPE.Type {
 
 
 
-describe('ASTNodeOperation', () => {
+test.suite('ASTNodeOperation', () => {
 	function typeOfStmtExpr(stmt: AST.ASTNodeStatement): TYPE.Type {
 		assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 		return stmt.expr!.type();
@@ -175,8 +176,8 @@ describe('ASTNodeOperation', () => {
 
 
 
-	describe('#type', () => {
-		it('returns `nothing` for NanErrors.', () => {
+	test.suite('#type', () => {
+		test.test('returns `nothing` for NanErrors.', () => {
 			[
 				AST.ASTNodeOperationBinaryArithmetic.fromSource('-4.0 ^ -0.5').type(),
 				AST.ASTNodeOperationBinaryArithmetic.fromSource('1.5 / 0.0').type(),
@@ -188,8 +189,8 @@ describe('ASTNodeOperation', () => {
 
 
 
-	describe('#build', () => {
-		it('compound expression.', () => {
+	test.suite('#build', () => {
+		test.test('compound expression.', () => {
 			buildOperations(new Map([
 				['42 ^ 2 * 420', (builder) => CALL.vmul(
 					builder.module,
@@ -203,7 +204,7 @@ describe('ASTNodeOperation', () => {
 				)],
 			]));
 		});
-		it('with block-expressions.', () => {
+		test.test('with block-expressions.', () => {
 			const {stmts, mod} = setupScript(`{
 				let var x: int = 42;
 				let var y: int = 69;
@@ -222,10 +223,10 @@ describe('ASTNodeOperation', () => {
 
 
 
-	describe('ASTNodeOperationUnary', () => {
-		describe('#type', () => {
-			context('with constant folding on.', () => {
-				it('returns a constant Boolean type for boolean unary operation of anything.', () => {
+	test.suite('ASTNodeOperationUnary', () => {
+		test.suite('#type', () => {
+			test.suite('with constant folding on.', () => {
+				test.test('returns a constant Boolean type for boolean unary operation of anything.', () => {
 					typeOperations(new Map<string, VALUE.Boolean>([
 						['!null',   VALUE.TRUE],
 						['!false',  VALUE.TRUE],
@@ -256,9 +257,9 @@ describe('ASTNodeOperation', () => {
 				});
 			});
 
-			context('with constant folding off.', () => {
-				describe('[operator=NOT]', () => {
-					it('returns type `true` for a subtype of `null | false`.', () => {
+			test.suite('with constant folding off.', () => {
+				test.suite('[operator=NOT]', () => {
+					test.test('returns type `true` for a subtype of `null | false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
 							let var a: null = null;
 							let var b: null | false = null;
@@ -266,7 +267,7 @@ describe('ASTNodeOperation', () => {
 							!b;
 						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
-					it('returns type `bool` for a supertype of `T narrows null | false`.', () => {
+					test.test('returns type `bool` for a supertype of `T narrows null | false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
 							let var a: null | int = null;
 							let var b: null | int = 42;
@@ -278,7 +279,7 @@ describe('ASTNodeOperation', () => {
 							!d;
 						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(4), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
-					it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
+					test.test('returns type `false` for any type not a supertype of `null` or `false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
 							let var a: int = 42;
 							let var b: float = 4.2;
@@ -288,7 +289,7 @@ describe('ASTNodeOperation', () => {
 							!c;
 						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(3), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
 					});
-					it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
+					test.test('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
 							!();
 							!(42,);
@@ -297,8 +298,8 @@ describe('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF, {build: false}).stmts, (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
 					});
 				});
-				describe('[operator=EMP]', () => {
-					it('returns type `true` for a subtype of `null | false`.', () => {
+				test.suite('[operator=EMP]', () => {
+					test.test('returns type `true` for a subtype of `null | false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
 							let var a: null = null;
 							let var b: null | false = null;
@@ -306,7 +307,7 @@ describe('ASTNodeOperation', () => {
 							?b;
 						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
-					it('returns type `bool` for anything else.', () => {
+					test.test('returns type `bool` for anything else.', () => {
 						[
 							'?true',
 							'?@hello',
@@ -335,8 +336,8 @@ describe('ASTNodeOperation', () => {
 					});
 				});
 			});
-			describe('[operator=INT | FLOAT]', () => {
-				it('returns the respective type for numeric operands.', () => {
+			test.suite('[operator=INT | FLOAT]', () => {
+				test.test('returns the respective type for numeric operands.', () => {
 					assert.deepStrictEqual(setupScript(`{
 						let var my_int: int   = 7;
 						let var my_flt: float = -3.5;
@@ -352,7 +353,7 @@ describe('ASTNodeOperation', () => {
 						TYPE.FLOAT,
 					]);
 				});
-				it('throws for non-numeric operands.', () => {
+				test.test('throws for non-numeric operands.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						int   null
 						int   @symb
@@ -370,8 +371,8 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#fold', () => {
-			specify('[operator=NOT]', () => {
+		test.suite('#fold', () => {
+			test.test('[operator=NOT]', () => {
 				foldOperations(new Map([
 					['!false',      VALUE.TRUE],
 					['!true',       VALUE.FALSE],
@@ -394,7 +395,7 @@ describe('ASTNodeOperation', () => {
 					['!{41 -> 42}', VALUE.FALSE],
 				]));
 			});
-			specify('[operator=EMP]', () => {
+			test.test('[operator=EMP]', () => {
 				foldOperations(new Map([
 					['?false',      VALUE.TRUE],
 					['?true',       VALUE.FALSE],
@@ -417,7 +418,7 @@ describe('ASTNodeOperation', () => {
 					['?{41 -> 42}', VALUE.FALSE],
 				]));
 			});
-			it('[operator=INT | FLOAT]: returns a numeric conversion only if needed.', () => {
+			test.test('[operator=INT | FLOAT]: returns a numeric conversion only if needed.', () => {
 				const exprs: readonly AST.ASTNodeOperationUnary[] = setupScript(`{
 					let my_int: int   = 7;
 					let my_flt: float = -3.5;
@@ -441,8 +442,8 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#build', () => {
-			it('optimizes by evaluating operand type.', () => {
+		test.suite('#build', () => {
+			test.test('optimizes by evaluating operand type.', () => {
 				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 					['!null',   (builder) => drop_then(builder.module, [buildConst(builder)],                true)],
 					['!false',  (builder) => drop_then(builder.module, [buildConst(builder, false)],         true)],
@@ -459,7 +460,7 @@ describe('ASTNodeOperation', () => {
 					['!(4.2,)', (builder) => drop_then(builder.module, [new VALUE.Tuple([new VALUE.Float(4.2)]).build(builder)], false)],
 				]));
 			});
-			it('returns the correct operation.', () => {
+			test.test('returns the correct operation.', () => {
 				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 					['?true',  (builder) => CALL.vemp(builder.module, buildConst(builder, true))],
 					['?@hi',   (builder) => CALL.vemp(builder.module, buildConst(builder, Symbol(0x100)))],
@@ -493,7 +494,7 @@ describe('ASTNodeOperation', () => {
 					],
 				);
 			});
-			it('works with vects.', () => {
+			test.test('works with vects.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var x: int | float = 42;
 					let var y: int | float = 4.2;
@@ -522,7 +523,7 @@ describe('ASTNodeOperation', () => {
 					].map((expected) => mod.drop(expected)),
 				);
 			});
-			it('multiple operations.', () => {
+			test.test('multiple operations.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var x: int | float = 42;
 					let var y: int | float = 4.2;
@@ -557,7 +558,7 @@ describe('ASTNodeOperation', () => {
 					].map((expected) => mod.drop(expected)),
 				);
 			});
-			it('[operator=INT | FLOAT]: returns a numeric conversion.', () => {
+			test.test('[operator=INT | FLOAT]: returns a numeric conversion.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var my_int: int   = 7;
 					let var my_flt: float = -3.5;
@@ -582,9 +583,9 @@ describe('ASTNodeOperation', () => {
 
 
 
-	describe('ASTNodeOperationBinary', () => {
-		describe('#build', () => {
-			it('works with vects.', () => {
+	test.suite('ASTNodeOperationBinary', () => {
+		test.suite('#build', () => {
+			test.test('works with vects.', () => {
 				const {goal, stmts, mod} = setupScript(`{
 					let var x: int   = 42;
 					let var y: float = 4.2;
@@ -631,7 +632,7 @@ describe('ASTNodeOperation', () => {
 					].map((expected) => mod.drop(expected)),
 				);
 			});
-			it('multiple unions.', () => {
+			test.test('multiple unions.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var x: int | float = 42;
 					let var y: int | float = 4.2;
@@ -651,7 +652,7 @@ describe('ASTNodeOperation', () => {
 					].map((expected) => mod.drop(expected)),
 				);
 			});
-			it('multiple operations.', () => {
+			test.test('multiple operations.', () => {
 				const {goal, stmts, mod} = setupScript(`{
 					let var x: int   = 42;
 					let var y: float = 4.2;
@@ -691,22 +692,22 @@ describe('ASTNodeOperation', () => {
 
 
 
-	describe('ASTNodeOperationBinaryArithmetic', () => {
-		describe('#type', () => {
-			context('with constant folding on.', () => {
-				it('returns a constant Integer type for any operation of integers.', () => {
+	test.suite('ASTNodeOperationBinaryArithmetic', () => {
+		test.suite('#type', () => {
+			test.suite('with constant folding on.', () => {
+				test.test('returns a constant Integer type for any operation of integers.', () => {
 					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3 * 2').type(), typeUnit(7n * 3n * 2n));
 				});
-				it('returns a constant Float type for any operation of floats.', () => {
+				test.test('returns a constant Float type for any operation of floats.', () => {
 					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('7.1 * 3.1 * 2.1').type(), typeUnit(7.1 * 3.1 * 2.1));
 				});
-				it('throws for any operation of mix of integers and floats.', () => {
+				test.test('throws for any operation of mix of integers and floats.', () => {
 					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('3 * 2.7')     .type(), TypeErrorInvalidOperation);
 					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3.0 * 2') .type(), TypeErrorInvalidOperation);
 				});
 			});
-			context('with constant folding off.', () => {
-				it('returns Integer for integer arithmetic.', () => {
+			test.suite('with constant folding off.', () => {
+				test.test('returns Integer for integer arithmetic.', () => {
 					const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource('(7 + 3) * 2', CONFIG_FOLDING_OFF);
 					assert.strictEqual(node.type(), TYPE.INT);
 					assertEqualTypes(
@@ -714,7 +715,7 @@ describe('ASTNodeOperation', () => {
 						[TYPE.INT,             typeUnit(2n)],
 					);
 				});
-				it('returns Float for float arithmetic.', () => {
+				test.test('returns Float for float arithmetic.', () => {
 					const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource('7.1 * 3.1 ^ 2.1', CONFIG_FOLDING_OFF);
 					assert.strictEqual(node.type(), TYPE.FLOAT);
 					assertEqualTypes(
@@ -722,11 +723,11 @@ describe('ASTNodeOperation', () => {
 						[typeUnit(7.1),        TYPE.FLOAT],
 					);
 				});
-				it('throws for any operation of mix of integers and floats.', () => {
+				test.test('throws for any operation of mix of integers and floats.', () => {
 					assert.throws(() => typeOfOperationFromSource('7.0 + 3'), TypeErrorInvalidOperation);
 				});
 			});
-			it('throws for arithmetic operation of non-numbers.', () => {
+			test.test('throws for arithmetic operation of non-numbers.', () => {
 				[
 					'null + 5',
 					'5 * null',
@@ -741,8 +742,8 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#fold', () => {
-			it('computes the value of an integer operation of constants.', () => {
+		test.suite('#fold', () => {
+			test.test('computes the value of an integer operation of constants.', () => {
 				foldOperations(new Map([
 					['42 + 420',        new VALUE.Integer(42n + 420n)],
 					['42 - 420',        new VALUE.Integer(42n + -420n)],
@@ -757,7 +758,7 @@ describe('ASTNodeOperation', () => {
 					['-(5) ^ +(2 * 3)', new VALUE.Integer((-5n) ** (2n * 3n))],
 				]));
 			});
-			it('overflows integers properly.', () => {
+			test.test('overflows integers properly.', () => {
 				assert.deepStrictEqual([
 					'2 ^ 63 + 2 ^ 62',
 					'-(2 ^ 62) - 2 ^ 63',
@@ -768,13 +769,13 @@ describe('ASTNodeOperation', () => {
 					new VALUE.Integer((42n ** 2n * 420n) % (2n ** 64n)),
 				]);
 			});
-			it('computes the value of a float operation of constants.', () => {
+			test.test('computes the value of a float operation of constants.', () => {
 				foldOperations(new Map<string, VALUE.Value>([
 					['3.0e1 - 201.0e-1', new VALUE.Float(30 - 20.1)],
 					['3.0 * 2.1',        new VALUE.Float(3.0 * 2.1)],
 				]));
 			});
-			it('short-circuits when multiplicand is zero.', () => {
+			test.test('short-circuits when multiplicand is zero.', () => {
 				const {stmts} = setupScript(`{
 					let var i: int   = 42;
 					let var f: float = 4.2;
@@ -798,15 +799,15 @@ describe('ASTNodeOperation', () => {
 					[VALUE.INT_0, VALUE.FLOAT_0, VALUE.FLOAT_N0],
 				);
 			});
-			it('throws when performing an operation that does not yield a valid number.', () => {
+			test.test('throws when performing an operation that does not yield a valid number.', () => {
 				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('42 / 0')     .fold(), NanErrorDivZero);
 				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('-4.0 ^ -0.5').fold(), NanErrorInvalid);
 			});
 		});
 
 
-		describe('#build', () => {
-			it('calls the correct WASM function.', () => {
+		test.suite('#build', () => {
+			test.test('calls the correct WASM function.', () => {
 				buildOperations(new Map([
 					['42 + 420', (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
 
@@ -823,7 +824,7 @@ describe('ASTNodeOperation', () => {
 					['4.2 - 42.0', (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42.0)))],
 				]));
 			});
-			it('does not compile the first operand if it is foldable and an identity element.', () => {
+			test.test('does not compile the first operand if it is foldable and an identity element.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var x: int   = 42;
 					let var y: float = 4.2;
@@ -841,9 +842,9 @@ describe('ASTNodeOperation', () => {
 
 
 
-	describe('ASTNodeOperationBinaryComparative', () => {
-		describe('#type', () => {
-			it('with folding on, returns a constant value.', () => {
+	test.suite('ASTNodeOperationBinaryComparative', () => {
+		test.suite('#type', () => {
+			test.test('with folding on, returns a constant value.', () => {
 				typeOperations(new Map<string, VALUE.Boolean>([
 					['2 <  3', VALUE.TRUE],
 					['2 >  3', VALUE.FALSE],
@@ -853,22 +854,22 @@ describe('ASTNodeOperation', () => {
 					['2 !> 3', VALUE.TRUE],
 				]));
 			});
-			context('with folding off.', () => {
-				it('returns `Boolean` if both operands are of the same numeric type.', () => {
+			test.suite('with folding off.', () => {
+				test.test('returns `Boolean` if both operands are of the same numeric type.', () => {
 					assert.strictEqual(typeOfOperationFromSource('7   <  3'),   TYPE.BOOL);
 					assert.strictEqual(typeOfOperationFromSource('7.0 >= 3.0'), TYPE.BOOL);
 				});
-				it('throws for any operation of mix of integers and floats.', () => {
+				test.test('throws for any operation of mix of integers and floats.', () => {
 					assert.throws(() => typeOfOperationFromSource('7.0 <= 3'), TypeErrorInvalidOperation);
 				});
 			});
-			it('throws for comparative operation of non-numbers.', () => {
+			test.test('throws for comparative operation of non-numbers.', () => {
 				assert.throws(() => AST.ASTNodeOperationBinaryComparative.fromSource('7.0 <= null').type(), TypeErrorInvalidOperation);
 			});
 		});
 
 
-		specify('#fold', () => {
+		test.test('#fold', () => {
 			foldOperations(new Map([
 				['3   <  3',   VALUE.FALSE],
 				['3   >  3',   VALUE.FALSE],
@@ -898,8 +899,8 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#build', () => {
-			it('returns the correct operation.', () => {
+		test.suite('#build', () => {
+			test.test('returns the correct operation.', () => {
 				buildOperations(new Map([
 					['3   <  3',   (builder) => CALL.vlt(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
 					['3   >  3',   (builder) => CALL.vgt(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
@@ -924,10 +925,10 @@ describe('ASTNodeOperation', () => {
 
 
 
-	describe('ASTNodeOperationBinaryEquality', () => {
-		describe('#type', () => {
-			context('with folding on.', () => {
-				it('for numeric literals.', () => {
+	test.suite('ASTNodeOperationBinaryEquality', () => {
+		test.suite('#type', () => {
+			test.suite('with folding on.', () => {
+				test.test('for numeric literals.', () => {
 					typeOperations(new Map<string, VALUE.Boolean>([
 						['0   === -0',   VALUE.TRUE],
 						['0.0 === -0.0', VALUE.FALSE],
@@ -946,7 +947,7 @@ describe('ASTNodeOperation', () => {
 						['3   == 3.0',  VALUE.TRUE],
 					]));
 				});
-				it('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
+				test.test('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
 					setupScript(`{
 						let a: anything = ();
 						let b: anything = (42,);
@@ -980,24 +981,24 @@ describe('ASTNodeOperation', () => {
 					});
 				});
 			});
-			context('with folding off.', () => {
-				context('for numeric types.', () => {
-					it('for equality (`==`), coerces ints to floats when mixed.', () => {
+			test.suite('with folding off.', () => {
+				test.suite('for numeric types.', () => {
+					test.test('for equality (`==`), coerces ints to floats when mixed.', () => {
 						assert.strictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('7 == 7.0', CONFIG_FOLDING_OFF).type(), TYPE.BOOL);
 						assert.strictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('1 == 2',   CONFIG_FOLDING_OFF).type(), TYPE.BOOL);
 					});
-					it('for identity (`===`), returns `false` if operands are of different numeric types.', () => {
+					test.test('for identity (`===`), returns `false` if operands are of different numeric types.', () => {
 						assert.strictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('7 === 7.0', CONFIG_FOLDING_OFF).type(), TYPE.FALSE);
 						assert.strictEqual(AST.ASTNodeOperationBinaryEquality.fromSource('1 === 2',   CONFIG_FOLDING_OFF).type(), TYPE.FALSE);
 					});
-					it('returns `bool` when operands are same numeric type.', () => {
+					test.test('returns `bool` when operands are same numeric type.', () => {
 						xjs.Array.forEachAggregated(`
 							1 === 1
 							1 ==  1
 						`.split('\n').slice(1, -1), (expr) => assert.strictEqual(typeOfOperationFromSource(expr), TYPE.BOOL));
 					});
 				});
-				it('returns `false` when operands are of the same primitive type but have different values.', () => {
+				test.test('returns `false` when operands are of the same primitive type but have different values.', () => {
 					xjs.Array.forEachAggregated(`
 						@symb1  === @symb2
 						"hello" === "world"
@@ -1005,7 +1006,7 @@ describe('ASTNodeOperation', () => {
 						"hello" ==  "world"
 					`.split('\n').slice(1, -1), (expr) => assert.strictEqual(typeOfOperationFromSource(expr), TYPE.FALSE));
 				});
-				it('returns `bool` when operands are of the same primitive type and have the same value.', () => {
+				test.test('returns `bool` when operands are of the same primitive type and have the same value.', () => {
 					xjs.Array.forEachAggregated(`
 						@symb1  === @symb1
 						"hello" === "hello"
@@ -1013,7 +1014,7 @@ describe('ASTNodeOperation', () => {
 						"hello" ==  "hello"
 					`.split('\n').slice(1, -1), (expr) => assert.strictEqual(typeOfOperationFromSource(expr), TYPE.BOOL));
 				});
-				it('returns `false` if operands are of disjoint types in general.', () => {
+				test.test('returns `false` if operands are of disjoint types in general.', () => {
 					assert.strictEqual(typeOfOperationFromSource('7      == null'), TYPE.FALSE);
 					assert.strictEqual(typeOfOperationFromSource('@symb1 == 256'),  TYPE.FALSE);
 				});
@@ -1021,8 +1022,8 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#fold', () => {
-			it('simple non-numeric types.', () => {
+		test.suite('#fold', () => {
+			test.test('simple non-numeric types.', () => {
 				foldOperations(new Map([
 					['null === null',                          VALUE.TRUE],
 					['null ==  null',                          VALUE.TRUE],
@@ -1059,8 +1060,8 @@ describe('ASTNodeOperation', () => {
 					['"hello\\u{20}world" !=  "hello20world"', VALUE.TRUE],
 				]));
 			});
-			context('numeric types.', () => {
-				it('for identity (`===`), always returns `false` for distinct values.', () => {
+			test.suite('numeric types.', () => {
+				test.test('for identity (`===`), always returns `false` for distinct values.', () => {
 					foldOperations(new Map<string, VALUE.Value>([
 						['0   === -0',   VALUE.TRUE],
 						['0.0 === -0.0', VALUE.FALSE],
@@ -1071,7 +1072,7 @@ describe('ASTNodeOperation', () => {
 						['3   === 3.0',  VALUE.FALSE],
 					]));
 				});
-				it('for equality (`==`), only returns `true` for mathematically equal values (coerces ints to floats when mixed).', () => {
+				test.test('for equality (`==`), only returns `true` for mathematically equal values (coerces ints to floats when mixed).', () => {
 					foldOperations(new Map<string, VALUE.Value>([
 						['0   == -0',   VALUE.TRUE],
 						['0.0 == -0.0', VALUE.TRUE],
@@ -1083,7 +1084,7 @@ describe('ASTNodeOperation', () => {
 					]));
 				});
 			});
-			it('compound types.', () => {
+			test.test('compound types.', () => {
 				setupScript(`{
 					let a: anything = ();
 					let b: anything = (42,);
@@ -1150,7 +1151,7 @@ describe('ASTNodeOperation', () => {
 					assert.strictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), VALUE.TRUE, stmt.source);
 				});
 			});
-			it('compound value types’ constituents are compared using same operand.', () => {
+			test.test('compound value types’ constituents are compared using same operand.', () => {
 				foldOperations(new Map([
 					['(   42.0,)  === (   42,)',   VALUE.FALSE],
 					['(   42.0,)  ==  (   42,)',   VALUE.TRUE],
@@ -1165,13 +1166,13 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#build', () => {
+		test.suite('#build', () => {
 			function drop_then_false(mod: binaryen.Module, expr1: binaryen.ExpressionRef, expr2: binaryen.ExpressionRef): binaryen.ExpressionRef {
 				return drop_then(mod, [expr1, expr2], false);
 			}
 
-			context('identity (`===`).', () => {
-				it('optimizes by evaluating operand types.', () => {
+			test.suite('identity (`===`).', () => {
+				test.test('optimizes by evaluating operand types.', () => {
 					buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 						['42  === 420',  (builder) => drop_then_false(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
 						['4.2 === 42.0', (builder) => drop_then_false(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
@@ -1198,7 +1199,7 @@ describe('ASTNodeOperation', () => {
 						['@a === @b',    (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x101n))],
 					]));
 				});
-				it('calls `vid` when operands are same numeric type.', () => {
+				test.test('calls `vid` when operands are same numeric type.', () => {
 					const {stmts, mod} = setupScript(`{
 						let var i1: int   = 42;
 						let var i2: int   = 420;
@@ -1216,15 +1217,15 @@ describe('ASTNodeOperation', () => {
 						),
 					])));
 				});
-				it('calls `vid` when operands are of the same primitive type.', () => {
+				test.test('calls `vid` when operands are of the same primitive type.', () => {
 					buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 						['@a === @a', (builder) => CALL.vid(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, Symbol(0x100)))],
 					]));
 				});
 			});
 
-			context('equality (`==`).', () => {
-				it('optimizes by evaluating operand types, ignoring numeric types.', () => {
+			test.suite('equality (`==`).', () => {
+				test.test('optimizes by evaluating operand types, ignoring numeric types.', () => {
 					buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 						['null == 0',   (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, 0n))],
 						['null == 0.0', (builder) => drop_then_false(builder.module, buildConst(builder), buildConst(builder, 0.0))],
@@ -1245,7 +1246,7 @@ describe('ASTNodeOperation', () => {
 						['@a == @b',    (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x101n))],
 					]));
 				});
-				it('calls `veq` when operands are same numeric type or when int coercion is allowed.', () => {
+				test.test('calls `veq` when operands are same numeric type or when int coercion is allowed.', () => {
 					buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 						['42  == 420',  (builder) => CALL.veq(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
 						['42  == 4.2',  (builder) => CALL.veq(builder.module, buildConst(builder, 42n), buildConst(builder, 4.2))],
@@ -1269,7 +1270,7 @@ describe('ASTNodeOperation', () => {
 						),
 					])));
 				});
-				it('calls `veq` when operands are of the same primitive type.', () => {
+				test.test('calls `veq` when operands are of the same primitive type.', () => {
 					buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 						['@a == @a', (builder) => CALL.veq(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, Symbol(0x100)))],
 					]));
@@ -1280,9 +1281,9 @@ describe('ASTNodeOperation', () => {
 
 
 
-	describe('ASTNodeOperationBinaryLogical', () => {
-		describe('#type', () => {
-			it('with constant folding on.', () => {
+	test.suite('ASTNodeOperationBinaryLogical', () => {
+		test.suite('#type', () => {
+			test.test('with constant folding on.', () => {
 				typeOperations(new Map<string, VALUE.Primitive>([
 					['null     && false',    VALUE.NULL],
 					['false    && null',     VALUE.FALSE],
@@ -1302,9 +1303,9 @@ describe('ASTNodeOperation', () => {
 					['4.2      || true',     new VALUE.Float(4.2)],
 				]));
 			});
-			context('with constant folding off.', () => {
-				describe('[operator=AND]', () => {
-					it('returns `left` if it’s a subtype of `null | false`.', () => {
+			test.suite('with constant folding off.', () => {
+				test.suite('[operator=AND]', () => {
+					test.test('returns `left` if it’s a subtype of `null | false`.', () => {
 						assertEqualTypes(setupScript(`{
 							let var a: null = null;
 							let var b: null | false = null;
@@ -1315,7 +1316,7 @@ describe('ASTNodeOperation', () => {
 							TYPE.NULL.union(TYPE.FALSE),
 						]);
 					});
-					it('returns `T | right` if left is a supertype of `T narrows null | false`.', () => {
+					test.test('returns `T | right` if left is a supertype of `T narrows null | false`.', () => {
 						const hello: TYPE.Unit<VALUE.String> = typeUnit('hello');
 						return assertEqualTypes(setupScript(`{
 							let var a: null | int = null;
@@ -1333,7 +1334,7 @@ describe('ASTNodeOperation', () => {
 							TYPE.FALSE.union(hello),
 						]);
 					});
-					it('returns `right` if left does not contain `null` nor `false`.', () => {
+					test.test('returns `right` if left does not contain `null` nor `false`.', () => {
 						assertEqualTypes(setupScript(`{
 							let var a: int = 42;
 							let var b: float = 4.2;
@@ -1345,8 +1346,8 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 				});
-				describe('[operator=OR]', () => {
-					it('returns `right` if left is a subtype of `null | false`.', () => {
+				test.suite('[operator=OR]', () => {
+					test.test('returns `right` if left is a subtype of `null | false`.', () => {
 						assertEqualTypes(setupScript(`{
 							let var a: null = null;
 							let var b: null | false = null;
@@ -1357,7 +1358,7 @@ describe('ASTNodeOperation', () => {
 							typeUnit(42n),
 						]);
 					});
-					it('returns `(left - T) | right` if left is a supertype of `T narrows null | false`.', () => {
+					test.test('returns `(left - T) | right` if left is a supertype of `T narrows null | false`.', () => {
 						const hello: TYPE.Unit<VALUE.String> = typeUnit('hello');
 						assertEqualTypes(setupScript(`{
 							let var a: null | int = null;
@@ -1375,7 +1376,7 @@ describe('ASTNodeOperation', () => {
 							TYPE.TRUE.union(TYPE.FLOAT).union(hello),
 						]);
 					});
-					it('returns `left` if it does not contain `null` nor `false`.', () => {
+					test.test('returns `left` if it does not contain `null` nor `false`.', () => {
 						assertEqualTypes(setupScript(`{
 							let var a: int = 42;
 							let var b: float = 4.2;
@@ -1391,7 +1392,7 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		specify('#fold', () => {
+		test.test('#fold', () => {
 			foldOperations(new Map<string, VALUE.Value>([
 				['@nothing && @x',       new VALUE.Symbol(0x100n, 'x')],
 				['@x       && @nothing', VALUE.SYM_NOTHING],
@@ -1413,8 +1414,8 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#build', () => {
-			it('optimizes by evaluating left operand type.', () => {
+		test.suite('#build', () => {
+			test.test('optimizes by evaluating left operand type.', () => {
 				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 					['42 && 420',        (builder) => drop_then(builder.module, [buildConst(builder, 42n)], buildConst(builder, 420n))],
 					['4.2 || -420',      (builder) => buildConst(builder, 4.2)],
@@ -1453,7 +1454,7 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 
-			it('returns a special case of `(if)`.', () => {
+			test.test('returns a special case of `(if)`.', () => {
 				const {stmts, mod} = setupScript(`{
 					let a: anything = 42;
 					let b: anything = 4.2;
@@ -1506,7 +1507,7 @@ describe('ASTNodeOperation', () => {
 				);
 			});
 
-			it('counts internal variables correctly.', () => {
+			test.test('counts internal variables correctly.', () => {
 				const {stmts, mod} = setupScript(`{
 					let a: anything = 1;
 					let b: anything = 2;
@@ -1562,10 +1563,10 @@ describe('ASTNodeOperation', () => {
 
 
 
-	describe('ASTNodeOperationTernary', () => {
-		describe('#type', () => {
-			context('with constant folding on.', () => {
-				it('computes type for for conditionals.', () => {
+	test.suite('ASTNodeOperationTernary', () => {
+		test.suite('#type', () => {
+			test.suite('with constant folding on.', () => {
+				test.test('computes type for for conditionals.', () => {
 					typeOperations(new Map<string, VALUE.Primitive>([
 						['if true then false else 2',          VALUE.FALSE],
 						['if false then 3.0 else null',        VALUE.NULL],
@@ -1574,18 +1575,18 @@ describe('ASTNodeOperation', () => {
 					]));
 				});
 			});
-			it('returns `nothing` when condition is `nothing`.', () => {
+			test.test('returns `nothing` when condition is `nothing`.', () => {
 				const ternary: AST.ASTNodeOperationTernary = AST.ASTNodeOperationTernary.fromSource('if n as <nothing> then true else false');
 				ternary.validator.addSymbol(new SymbolSchemaVar((ternary.operand0 as AST.ASTNodeClaim).operand as AST.ASTNodeVariable, false, false));
 				return assert.ok(ternary.type().isBottomType);
 			});
-			it('throws when condition is not a subtype of `boolean`.', () => {
+			test.test('throws when condition is not a subtype of `boolean`.', () => {
 				assert.throws(() => AST.ASTNodeOperationTernary.fromSource('if 2 then true else false').type(), TypeErrorInvalidOperation);
 			});
 		});
 
 
-		specify('#fold', () => {
+		test.test('#fold', () => {
 			foldOperations(new Map<string, VALUE.Value>([
 				['if true then false else 2',          VALUE.FALSE],
 				['if false then 3.0 else null',        VALUE.NULL],
@@ -1595,15 +1596,15 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		describe('#build', () => {
-			it('optimizes by evaluating condition operand type.', () => {
+		test.suite('#build', () => {
+			test.test('optimizes by evaluating condition operand type.', () => {
 				buildOperations(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 					['if true  then false else 2',    (builder) => drop_then(builder.module, [buildConst(builder, true)],  buildConst(builder, false))],
 					['if true  then 2     else 3.0',  (builder) => drop_then(builder.module, [buildConst(builder, true)],  buildConst(builder, 2n))],
 					['if false then 3.0   else null', (builder) => drop_then(builder.module, [buildConst(builder, false)], buildConst(builder))],
 				]));
 			});
-			it('returns `(if)`.', () => {
+			test.test('returns `(if)`.', () => {
 				const {stmts, mod} = setupScript(`{
 					let a: bool = true;
 					let b: bool = false;

@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import {
@@ -9,12 +10,12 @@ import {assertEqualBins as assert_equal_bins} from '../assert-helpers.ts';
 
 
 
-describe('BinVect', () => {
+test.suite('BinVect', () => {
 	const MOD = new binaryen.Module();
 
 
-	describe('.asBool', () => {
-		it('returns `(if)` containing two v128 branches storing boolean values.', () => {
+	test.suite('.asBool', () => {
+		test.test('returns `(if)` containing two v128 branches storing boolean values.', () => {
 			xjs.Array.forEachAggregated([
 				MOD.i32.const(0),
 				MOD.i32.const(1),
@@ -30,15 +31,15 @@ describe('BinVect', () => {
 	});
 
 
-	describe('.constructor', () => {
-		it('throws when any ExpressionRef address component is not an `i64`.', () => {
+	test.suite('.constructor', () => {
+		test.test('throws when any ExpressionRef address component is not an `i64`.', () => {
 			assert.throws(() => new BinVect(MOD, [42]), TypeError);
 			assert.throws(() => new BinVect(MOD, [MOD.f64.const(42)]), TypeError);
 		});
 	});
 
 
-	describe('#vect', () => {
+	test.suite('#vect', () => {
 		function test_vect<Arg extends ConstructorParameters<typeof BinVect>[1]>(
 			argument:    Arg,
 			expected_fn: (arg: Arg, exp: binaryen.ExpressionRef) => typeof exp,
@@ -49,13 +50,13 @@ describe('BinVect', () => {
 			);
 		}
 
-		it('with `null` / `false` / `true` argument.', () => {
+		test.test('with `null` / `false` / `true` argument.', () => {
 			test_vect<null>   (null,  (_, exp) => MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0001)));
 			test_vect<boolean>(false, (_, exp) => MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0002)));
 			test_vect<boolean>(true,  (_, exp) => MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0003)));
 		});
 
-		it('with `binaryen.ExpressionRef` argument representing an `int`.', () => {
+		test.test('with `binaryen.ExpressionRef` argument representing an `int`.', () => {
 			test_vect<binaryen.ExpressionRef>(MOD.i64.const(42, 0), (arg, exp) => {
 				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0018));
 				exp = MOD.i64x2.replace_lane(exp, 1, arg);
@@ -63,7 +64,7 @@ describe('BinVect', () => {
 			});
 		});
 
-		it('with `binaryen.ExpressionRef` argument representing a `float`.', () => {
+		test.test('with `binaryen.ExpressionRef` argument representing a `float`.', () => {
 			test_vect<binaryen.ExpressionRef>(MOD.f64.const(4.2), (arg, exp) => {
 				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0028));
 				exp = MOD.f64x2.replace_lane(exp, 1, arg);
@@ -71,14 +72,14 @@ describe('BinVect', () => {
 			});
 		});
 
-		it('with `binaryen.ExpressionRef` argument representing any `v128`.', () => {
+		test.test('with `binaryen.ExpressionRef` argument representing any `v128`.', () => {
 			let argument: binaryen.ExpressionRef = MOD.v128.const(new Uint8Array(16));
 			argument = MOD.i16x8.replace_lane(argument, 3, MOD.i32.const(0x0018));
 			argument = MOD.i64x2.replace_lane(argument, 1, MOD.i64.const(42, 0));
 			return test_vect<binaryen.ExpressionRef>(argument, (arg) => arg);
 		});
 
-		it('with address bigint argument.', () => {
+		test.test('with address bigint argument.', () => {
 			test_vect<[bigint]>([42n], (arg, exp) => {
 				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0038));
 				exp = MOD.i64x2.replace_lane(exp, 1, bigint_to_i64(MOD, arg[0], true));
@@ -86,7 +87,7 @@ describe('BinVect', () => {
 			});
 		});
 
-		it('with address ExpressionRef argument.', () => {
+		test.test('with address ExpressionRef argument.', () => {
 			test_vect<[binaryen.ExpressionRef]>([bigint_to_i64(MOD, 42n, true)], (arg, exp) => {
 				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0038));
 				exp = MOD.i64x2.replace_lane(exp, 1, arg[0]);
@@ -96,7 +97,7 @@ describe('BinVect', () => {
 	});
 
 
-	specify('#isSpecial', () => {
+	test.test('#isSpecial', () => {
 		new Map([
 			[null,  0x0001],
 			[false, 0x0002],

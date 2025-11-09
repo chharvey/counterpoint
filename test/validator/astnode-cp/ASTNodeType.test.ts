@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import {
 	AST,
 	type EntryType,
@@ -17,10 +18,10 @@ import {extract_tokens} from '../../utils.ts';
 
 
 
-describe('ASTNodeType', () => {
-	describe('#eval', () => {
-		describe('ASTNodeTypeCollectionLiteral', () => {
-			specify('ASTNodeTypeTuple', () => {
+test.suite('ASTNodeType', () => {
+	test.suite('#eval', () => {
+		test.suite('ASTNodeTypeCollectionLiteral', () => {
+			test.test('ASTNodeTypeTuple', () => {
 				assertEqualTypes(
 					AST.ASTNodeTypeTuple.fromSource('(int, bool, ?:str)').eval(),
 					new TYPE.Tuple([
@@ -31,7 +32,7 @@ describe('ASTNodeType', () => {
 				);
 			});
 
-			specify('ASTNodeTypeRecord', () => {
+			test.test('ASTNodeTypeRecord', () => {
 				const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('(x: int, y?: bool, _: str)');
 				return assertEqualTypes(
 					rec.eval(),
@@ -43,7 +44,7 @@ describe('ASTNodeType', () => {
 				);
 			});
 
-			specify('ASTNodeType{List,Dict,Set,Map}', () => {
+			test.test('ASTNodeType{List,Dict,Set,Map}', () => {
 				const INT_BOOL: TYPE.Type = TYPE.INT.union(TYPE.BOOL);
 				assertEqualTypes(
 					[
@@ -61,7 +62,7 @@ describe('ASTNodeType', () => {
 				);
 			});
 
-			it('does not throw if value type contains reference type.', () => {
+			test.test('does not throw if value type contains reference type.', () => {
 				setupScript(`{
 					type A = (int, [float], str);
 					type C = (a: int, b: [float], c: str);
@@ -73,9 +74,9 @@ describe('ASTNodeType', () => {
 
 
 
-	describe('ASTNodeTypeConstant', () => {
-		describe('#eval', () => {
-			it('computes the value of constant null, boolean, symbol, number, and string types.', () => {
+	test.suite('ASTNodeTypeConstant', () => {
+		test.suite('#eval', () => {
+			test.test('computes the value of constant null, boolean, symbol, number, and string types.', () => {
 				assertEqualTypes(extract_tokens(`
 					null  false  true
 					@then  @str  @false  @foobar
@@ -94,7 +95,7 @@ describe('ASTNodeType', () => {
 					typeUnit('hi'),
 				]);
 			});
-			it('computes the value of keyword type.', () => {
+			test.test('computes the value of keyword type.', () => {
 				assertEqualTypes(extract_tokens(`
 					nothing  bool  sym  int  float  str  anything
 				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
@@ -112,15 +113,15 @@ describe('ASTNodeType', () => {
 
 
 
-	describe('ASTNodeTypeAlias', () => {
-		describe('#varCheck', () => {
-			it('does not throw when referencing intrinsic identifiers.', () => {
+	test.suite('ASTNodeTypeAlias', () => {
+		test.suite('#varCheck', () => {
+			test.test('does not throw when referencing intrinsic identifiers.', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					type T = Object;
 					let obj: Object = 42;
 				}`).varCheck(); // assert does not throw
 			});
-			it('throws if the validator does not contain a record for the identifier.', () => {
+			test.test('throws if the validator does not contain a record for the identifier.', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					type T = int;
 					type U = float | T;
@@ -129,7 +130,7 @@ describe('ASTNodeType', () => {
 					type U = float | T;
 				}`).varCheck(), ReferenceErrorUndeclared);
 			});
-			it('throws when declared in an inner scope.', () => {
+			test.test('throws when declared in an inner scope.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					if true then {
 						type T = int;
@@ -137,13 +138,13 @@ describe('ASTNodeType', () => {
 					type U = float | T;
 				}`).varCheck(), ReferenceErrorUndeclared);
 			});
-			it.skip('throws when there is a temporal dead zone.', () => {
+			test.test.todo('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					T;
 					type T = int;
 				}`).varCheck(), ReferenceErrorDeadZone);
 			});
-			it('throws if was declared as a value variable.', () => {
+			test.test('throws if was declared as a value variable.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let FOO: int = 42;
 					type T = FOO | float;
@@ -152,15 +153,15 @@ describe('ASTNodeType', () => {
 		});
 
 
-		describe('#eval', () => {
-			it('computes the value of reserved types.', () => {
+		test.suite('#eval', () => {
+			test.test('computes the value of reserved types.', () => {
 				assertEqualTypes([
 					'Object',
 				].map((src) => AST.ASTNodeTypeAlias.fromSource(src).eval()), [
 					TYPE.OBJ,
 				]);
 			});
-			it('computes the value of a type alias.', () => {
+			test.test('computes the value of a type alias.', () => {
 				assert.strictEqual(
 					((setupScript(`{
 						type T = int;

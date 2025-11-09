@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
@@ -25,10 +26,10 @@ import {extract_lines} from '../../utils.ts';
 
 
 
-describe('ASTNodeCP', () => {
-	describe('ASTNodeIndex', () => {
-		describe('#index', () => {
-			it('returns the cooked value of the integer token.', () => {
+test.suite('ASTNodeCP', () => {
+	test.suite('ASTNodeIndex', () => {
+		test.suite('#index', () => {
+			test.test('returns the cooked value of the integer token.', () => {
 				[0n, 1n, 2n, 4n, 8n, 16n].forEach((index) => {
 					const type_accessor: AST.ASTNodeIndex | AST.ASTNodeKey = AST.ASTNodeTypeAccess.fromSource(`MyTuple.${ index }`).accessor;
 					assert_instanceof(type_accessor, AST.ASTNodeIndex);
@@ -44,17 +45,17 @@ describe('ASTNodeCP', () => {
 
 
 
-	describe('ASTNodeStatementExpression', () => {
-		describe('#build', () => {
-			it('returns `(nop)` for empty statement expression.', () => {
+	test.suite('ASTNodeStatementExpression', () => {
+		test.suite('#build', () => {
+			test.test('returns `(nop)` for empty statement expression.', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(';');
 				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
 			});
-			it('returns `(nop)` for nonempty foldable statement expression.', () => {
+			test.test('returns `(nop)` for nonempty foldable statement expression.', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource('42 + 420;');
 				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
 			});
-			it('returns `(drop)` for nonempty non-foldable statement expression.', () => {
+			test.test('returns `(drop)` for nonempty non-foldable statement expression.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var x: int = 42;
 					x * 10;
@@ -71,8 +72,8 @@ describe('ASTNodeCP', () => {
 
 
 
-	describe('ASTNodeStatementConditional', () => {
-		describe('#typeCheck', () => {
+	test.suite('ASTNodeStatementConditional', () => {
+		test.suite('#typeCheck', () => {
 			const NON_BOOLS: readonly string[] = extract_lines`
 				let var cond: int         = 42;
 				let var cond: int | false = 42;
@@ -84,7 +85,7 @@ describe('ASTNodeCP', () => {
 				let var cond: true  = true;
 				let var cond: bool  = false;
 			`;
-			it('passes when condition is subtype of Boolean.', () => {
+			test.test('passes when condition is subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated([BOOLS, NON_BOOLS], (decl_set) => xjs.Array.forEachAggregated(decl_set, (decl) => {
 					setupScript(`{
 						${ decl }
@@ -93,7 +94,7 @@ describe('ASTNodeCP', () => {
 					}`, null, {build: false}); // assert does not throw
 				}));
 			});
-			it('throws when condition is not subtype of Boolean.', () => {
+			test.test('throws when condition is not subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
 					const {stmts} = setupScript(`{
 						${ decl }
@@ -107,8 +108,8 @@ describe('ASTNodeCP', () => {
 		});
 
 
-		describe('#build', () => {
-			it('always retuns `(if)`.', () => {
+		test.suite('#build', () => {
+			test.test('always retuns `(if)`.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var cond: bool = false;
 					if cond then {
@@ -124,7 +125,7 @@ describe('ASTNodeCP', () => {
 					stmt.alternative!.build(),
 				));
 			});
-			it('produces `(nop)` for antecedent if there is none.', () => {
+			test.test('produces `(nop)` for antecedent if there is none.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var cond: bool = false;
 					if cond then {
@@ -138,7 +139,7 @@ describe('ASTNodeCP', () => {
 					mod.nop(),
 				));
 			});
-			it('negates the condition for `unless` statements.', () => {
+			test.test('negates the condition for `unless` statements.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var cond: bool = false;
 					unless cond then {
@@ -152,7 +153,7 @@ describe('ASTNodeCP', () => {
 					mod.nop(),
 				));
 			});
-			it('nested if–else.', () => {
+			test.test('nested if–else.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var cond1: bool = false;
 					let var cond2: bool = true;
@@ -182,16 +183,16 @@ describe('ASTNodeCP', () => {
 
 
 
-	describe('ASTNodeBlock', () => {
-		describe('#build', () => {
-			it('always retuns `(block)`.', () => {
+	test.suite('ASTNodeBlock', () => {
+		test.suite('#build', () => {
+			test.test('always retuns `(block)`.', () => {
 				const {goal, stmts, mod} = setupScript(`{
 					let var x: int = 42;
 					x;
 				}`);
 				assertEqualBins(goal.block!.build(), mod.block(null, stmts.map((stmt) => stmt.build())));
 			});
-			it('nesting scopes.', () => {
+			test.test('nesting scopes.', () => {
 				setupScript(`{
 					let var x: int = 42;
 					x;
@@ -208,9 +209,9 @@ describe('ASTNodeCP', () => {
 
 
 
-	describe('ASTNodeGoal', () => {
-		describe('#varCheck', () => {
-			it('aggregates multiple errors.', () => {
+	test.suite('ASTNodeGoal', () => {
+		test.suite('#varCheck', () => {
+			test.test('aggregates multiple errors.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					a + b || c * d;
 					let y: V & W | X & Y = null;
@@ -277,8 +278,8 @@ describe('ASTNodeCP', () => {
 		});
 
 
-		describe('#typeCheck', () => {
-			it('aggregates multiple errors.', () => {
+		test.suite('#typeCheck', () => {
+			test.test('aggregates multiple errors.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let a: null = null;
 					let b: null = null;
@@ -323,8 +324,8 @@ describe('ASTNodeCP', () => {
 		});
 
 
-		describe('#build', () => {
-			it('always returns `(nop)`.', () => {
+		test.suite('#build', () => {
+			test.test('always returns `(nop)`.', () => {
 				// empty
 				const empty: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource('');
 				empty.varCheck();
