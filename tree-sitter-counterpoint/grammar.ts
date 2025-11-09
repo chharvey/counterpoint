@@ -401,14 +401,17 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		property_access_type: $ => seq(choice('.', '?.'), choice($.integer, $.word)),
-		generic_call:         $ => seq('.',               $.generic_arguments),
+		property_access_type: $ => choice($.integer, $.word),
+		generic_call:         $ => $.generic_arguments,
 
 		_type_compound: $ => choice(
 			$._type_unit,
 			alias($.type_compound_dfn, $.type_compound),
 		),
-		type_compound_dfn: $ => seq($._type_compound, choice($.property_access_type, $.generic_call)),
+		type_compound_dfn: $ => seq($._type_compound, choice(
+			seq(choice('.', '?.'), $.property_access_type),
+			seq('.',               $.generic_call),
+		)),
 
 		_type_unary_symbol: $ => choice(
 			$._type_compound,
@@ -467,19 +470,22 @@ module.exports = grammar({
 			$.map_literal,
 		),
 
-		property_access: $ => seq(choice('.', '?.', '!.'), choice($.integer, $.word, seq('[', $._expression, ']'))),
-		property_assign: $ => seq('.',                     choice($.integer, $.word, seq('[', $._expression, ']'))),
-		function_call:   $ => seq('.',                     optional($.generic_arguments), $.function_arguments),
+		property_access: $ => choice($.integer, $.word, seq('[', $._expression, ']')),
+		property_assign: $ => choice($.integer, $.word, seq('[', $._expression, ']')),
+		function_call:   $ => seq(optional($.generic_arguments), $.function_arguments),
 
 		_expression_compound: $ => choice(
 			$._expression_unit,
 			alias($.expression_compound_dfn, $.expression_compound),
 		),
-		expression_compound_dfn: $ => seq($._expression_compound, choice($.property_access, $.function_call)),
+		expression_compound_dfn: $ => seq($._expression_compound, choice(
+			seq(choice('.', '?.', '!.'), $.property_access),
+			seq('.',                     $.function_call),
+		)),
 
 		assignee: $ => choice(
 			$.identifier,
-			seq($._expression_compound, $.property_assign),
+			seq($._expression_compound, '.', $.property_assign),
 		),
 
 		_expression_unary_symbol: $ => choice(
