@@ -124,27 +124,29 @@ Decorate(TypeUnit ::= TypeMapLiteral) -> SemanticTypeMap
 
 
 
-Decorate(PropertyAccessType ::= INTEGER) -> SemanticIndex
+Decorate(PropertyAccessorType ::= INTEGER) -> SemanticIndex
 	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
-Decorate(PropertyAccessType ::= Word) -> SemanticKey
+Decorate(PropertyAccessorType ::= Word) -> SemanticKey
 	:= Decorate(Word);
-
-Decorate(GenericCall ::= GenericArguments) -> Sequence<SemanticType>
-	:= Decorate(GenericArguments);
 
 
 
 Decorate(TypeCompound ::= TypeUnit) -> SemanticType
 	:= Decorate(TypeUnit);
-Decorate(TypeCompound ::= TypeCompound ("." | "?.") PropertyAccessType) -> SemanticTypeAccess
-	:= (SemanticTypeAccess[kind=AccessKind(("." | "?.") PropertyAccessType)]
+Decorate(TypeCompound ::= TypeCompound "." PropertyAccessorType) -> SemanticTypeAccess
+	:= (SemanticTypeAccess[kind=NORMAL]
 		Decorate(TypeCompound)
-		Decorate(PropertyAccessType)
+		Decorate(PropertyAccessorType)
 	);
-Decorate(TypeCompound ::= TypeCompound "." GenericCall) -> SemanticTypeCall
+Decorate(TypeCompound ::= TypeCompound "?." PropertyAccessorType) -> SemanticTypeAccess
+	:= (SemanticTypeAccess[kind=MAYBE]
+		Decorate(TypeCompound)
+		Decorate(PropertyAccessorType)
+	);
+Decorate(TypeCompound ::= TypeCompound "." GenericArguments) -> SemanticTypeCall
 	:= (SemanticTypeCall
 		Decorate(TypeCompound)
-		...Decorate(GenericCall)
+		...Decorate(GenericArguments)
 	);
 
 
@@ -321,54 +323,52 @@ Decorate(ExpressionUnit ::= MapLiteral) -> SemanticMap
 
 
 
-Decorate(PropertyAccess ::= INTEGER) -> SemanticIndex
+Decorate(PropertyAccessor ::= INTEGER) -> SemanticIndex
 	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
-Decorate(PropertyAccess ::= Word) -> SemanticKey
+Decorate(PropertyAccessor ::= Word) -> SemanticKey
 	:= Decorate(Word);
-Decorate(PropertyAccess ::= "[" Expression "]") -> SemanticExpression
+Decorate(PropertyAccessor ::= "[" Expression "]") -> SemanticExpression
 	:= Decorate(Expression);
-
-Decorate(PropertyAssign ::= INTEGER) -> SemanticIndex
-	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
-Decorate(PropertyAssign ::= Word) -> SemanticKey
-	:= Decorate(Word);
-Decorate(PropertyAssign ::= "[" Expression "]") -> SemanticExpression
-	:= Decorate(Expression);
-
-Decorate(FunctionCall ::= FunctionArguments) -> Vector<Sequence<SemanticType>, Sequence<SemanticExpression>>
-	:= [
-		[],
-		Decorate(FunctionArguments),
-	];
-Decorate(FunctionCall ::= GenericArguments FunctionArguments) -> Vector<Sequence<SemanticType>, Sequence<SemanticExpression>>
-	:= [
-		Decorate(GenericArguments),
-		Decorate(FunctionArguments),
-	];
 
 
 
 Decorate(ExpressionCompound ::= ExpressionUnit) -> SemanticExpression
 	:= Decorate(ExpressionUnit);
-Decorate(ExpressionCompound ::= ExpressionCompound ("." | "?." | "!.") PropertyAccess) -> SemanticAccess
-	:= (SemanticAccess[kind=AccessKind(("." | "?." | "!.") PropertyAccess)]
+Decorate(ExpressionCompound ::= ExpressionCompound "." PropertyAccessor) -> SemanticAccess
+	:= (SemanticAccess[kind=NORMAL]
 		Decorate(ExpressionCompound)
-		Decorate(PropertyAccess)
+		Decorate(PropertyAccessor)
 	);
-Decorate(ExpressionCompound ::= ExpressionCompound "." FunctionCall) -> SemanticCall
+Decorate(ExpressionCompound ::= ExpressionCompound "?." PropertyAccessor) -> SemanticAccess
+	:= (SemanticAccess[kind=MAYBE]
+		Decorate(ExpressionCompound)
+		Decorate(PropertyAccessor)
+	);
+Decorate(ExpressionCompound ::= ExpressionCompound "!." PropertyAccessor) -> SemanticAccess
+	:= (SemanticAccess[kind=RESULT]
+		Decorate(ExpressionCompound)
+		Decorate(PropertyAccessor)
+	);
+Decorate(ExpressionCompound ::= ExpressionCompound "." FunctionArguments) -> SemanticCall
 	:= (SemanticCall
 		Decorate(ExpressionCompound)
-		...(...Decorate(FunctionCall))
+		...Decorate(FunctionArguments)
+	);
+Decorate(ExpressionCompound ::= ExpressionCompound "." GenericArguments FunctionArguments) -> SemanticCall
+	:= (SemanticCall
+		Decorate(ExpressionCompound)
+		...Decorate(GenericArguments)
+		...Decorate(FunctionArguments)
 	);
 
 
 
 Decorate(Assignee ::= IDENTIFIER) -> SemanticVariable
 	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
-Decorate(Assignee ::= ExpressionCompound "." FPropertyAssign) -> SemanticAccess
+Decorate(Assignee ::= ExpressionCompound "." PropertyAccessor) -> SemanticAccess
 	:= (SemanticAccess[kind=NORMAL]
 		Decorate(ExpressionCompound)
-		Decorate(PropertyAssign)
+		Decorate(PropertyAccessor)
 	);
 
 
@@ -655,12 +655,6 @@ ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode__List ","? ParseNode
 		...Decorate(ParseNode__List),
 		Decorate(ParseNode),
 	];
-
-
-
-AccessKind(PropertyAccess ::= "."  (PropertyAccessType | PropertyAccess)) -> NORMAL := NORMAL;
-AccessKind(PropertyAccess ::= "?." (PropertyAccessType | PropertyAccess)) -> MAYBE  := MAYBE;
-AccessKind(PropertyAccess ::= "!." (PropertyAccessType | PropertyAccess)) -> RESULT := RESULT;
 
 
 

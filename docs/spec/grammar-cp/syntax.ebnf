@@ -72,14 +72,13 @@ TypeUnit ::=
 	| TypeMapLiteral
 ;
 
-PropertyAccessType ::= INTEGER | Word;
-GenericCall        ::= GenericArguments;
+PropertyAccessorType ::= INTEGER | Word;
 
 TypeCompound ::=
 	| TypeUnit
 	| TypeCompound (
-		| ("." | "?.") PropertyAccessType
-		|  "."         GenericCall
+		| ("." | "?.") PropertyAccessorType
+		|  "."         GenericArguments
 	)
 ;
 
@@ -133,21 +132,19 @@ ExpressionUnit ::=
 	| MapLiteral
 ;
 
-PropertyAccess ::= INTEGER | Word | "[" Expression "]";
-PropertyAssign ::= INTEGER | Word | "[" Expression "]";
-FunctionCall   ::= GenericArguments? FunctionArguments;
+PropertyAccessor ::= INTEGER | Word | "[" Expression "]";
 
 ExpressionCompound ::=
 	| ExpressionUnit
 	| ExpressionCompound (
-		| ("." | "?." | "!.") PropertyAccess
-		|  "."                FunctionCall
+		| ("." | "?." | "!.") PropertyAccessor
+		|  "."                GenericArguments? FunctionArguments
 	)
 ;
 
 Assignee ::=
 	| IDENTIFIER
-	| ExpressionCompound "." PropertyAssign
+	| ExpressionCompound "." PropertyAccessor
 ;
 
 ExpressionUnarySymbol ::=
