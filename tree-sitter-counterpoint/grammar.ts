@@ -436,14 +436,16 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		property_access_type: $ => seq(choice('.', '?.'), choice($.integer, $.word)),
-		generic_call:         $ => seq('.',               $.generic_arguments),
+		property_accessor_type: $ => choice($.integer, $.word),
 
 		_type_compound: $ => choice(
 			$._type_unit,
 			alias($.type_compound_dfn, $.type_compound),
 		),
-		type_compound_dfn: $ => seq($._type_compound, choice($.property_access_type, $.generic_call)),
+		type_compound_dfn: $ => seq($._type_compound, choice(
+			seq(choice('.', '?.'), $.property_accessor_type),
+			seq('.',               $.generic_arguments),
+		)),
 
 		_type_unary_symbol: $ => choice(
 			$._type_compound,
@@ -507,19 +509,20 @@ module.exports = grammar({
 			...iffSpread(block, alias($.block, $.expression_block)),
 		), 'block'),
 
-		property_access: $ => seq(choice('.', '?.', '!.'), choice($.integer, $.word, seq('[', $._expression__block, ']'))),
-		property_assign: $ => seq('.',                     choice($.integer, $.word, seq('[', $._expression__block, ']'))),
-		function_call:   $ => seq('.',                     optional($.generic_arguments), $.function_arguments),
+		property_accessor: $ => choice($.integer, $.word, seq('[', $._expression__block, ']')),
 
 		...parameterize('_expression_compound', ({block}) => $ => choice(
 			call($, '_expression_unit', {block}),
 			alias(call($, 'expression_compound_dfn', {block}), $.expression_compound),
 		), 'block'),
-		...parameterize('expression_compound_dfn', ({block}) => $ => seq(call($, '_expression_compound', {block}), choice($.property_access, $.function_call)), 'block'),
+		...parameterize('expression_compound_dfn', ({block}) => $ => seq(call($, '_expression_compound', {block}), choice(
+			seq(choice('.', '?.', '!.'), $.property_accessor),
+			seq('.',                     optional($.generic_arguments), $.function_arguments),
+		)), 'block'),
 
 		assignee: $ => choice(
 			$.identifier,
-			seq($._expression_compound__block, $.property_assign),
+			seq($._expression_compound__block, '.', $.property_accessor),
 		),
 
 		...parameterize('_expression_unary_symbol',  ({block}) => $ => choice(call($, '_expression_compound',     {block}), alias(call($, 'expression_unary_symbol_dfn',  {block}), $.expression_unary_symbol)),  'block'),

@@ -204,27 +204,32 @@ test.suite('Decorator', () => {
 				% (type_map_literal)
 			`]],
 
-			...['.', '?.'].map((op) => [`Decorate(PropertyAccessType ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
+			['Decorate(PropertyAccessorType ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
 				{
-					type T = U${ op }1;
+					type T = U.1;
 				}
-				% (property_access_type)
-			`]] as const),
-
-			...['.', '?.'].flatMap((op) => ['p', '_'].map((keyname) => [`Decorate(PropertyAccessType ::= "${ op }" ${ keyname === '_' ? '"_"' : 'Word' }) -> SemanticKey`, [AST.ASTNodeKey, `
+				% (property_accessor_type)
+			`]],
+			['Decorate(PropertyAccessorType ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
 				{
-					type T = U${ op }${ keyname };
+					type T = U.p;
 				}
-				% (property_access_type)
-			`]] as const)),
+				% (property_accessor_type)
+			`]],
 
-			['Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
+			['Decorate(TypeCompound ::= TypeCompound "." PropertyAccessorType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
 				{
 					type T = U.p;
 				}
 				% (type_compound)
 			`]],
-			['Decorate(TypeCompound ::= TypeCompound GenericCall) -> SemanticTypeCall', [AST.ASTNodeTypeCall, `
+			['Decorate(TypeCompound ::= TypeCompound "?." PropertyAccessorType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
+				{
+					type T = U?.p;
+				}
+				% (type_compound)
+			`]],
+			['Decorate(TypeCompound ::= TypeCompound "." GenericArguments) -> SemanticTypeCall', [AST.ASTNodeTypeCall, `
 				{
 					type T = List.<U>;
 				}
@@ -386,59 +391,69 @@ test.suite('Decorator', () => {
 				% (expression_block)
 			`]],
 
-			...['.', '?.', '!.'].map((op) => [`Decorate(PropertyAccess ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
+			['Decorate(ExpressionCompound<Block> > PropertyAccessor ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
 				{
-					v${ op }1;
+					v.1;
 				}
-				% (property_access)
-			`]] as const),
-
-			...['.', '?.', '!.'].flatMap((op) => ['p', '_'].map((keyname) => [`Decorate(PropertyAccess ::= "${ op }" ${ keyname === '_' ? '"_"' : 'Word' }) -> SemanticKey`, [AST.ASTNodeKey, `
+				% (property_accessor)
+			`]],
+			['Decorate(ExpressionCompound<Block> > PropertyAccessor ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
 				{
-					v${ op }${ keyname };
+					v.p;
 				}
-				% (property_access)
-			`]] as const)),
-
-			...['.', '?.', '!.'].map((op) => [`Decorate(PropertyAccess ::= "${ op }" "[" Expression<+Block> "]") -> SemanticExpression`, [AST.ASTNodeExpression, `
+				% (property_accessor)
+			`]],
+			['Decorate(ExpressionCompound<Block> > PropertyAccessor ::= "[" Expression<+Block> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
-					v${ op }[a + b];
+					v.[a + b];
 				}
-				% (property_access)
-			`]] as const),
+				% (property_accessor)
+			`]],
 
-			['Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
+			['Decorate(Assignee > PropertyAccessor ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
 				{
 					set v.1 = false;
 				}
-				% (property_assign)
+				% (property_accessor)
 			`]],
-			['Decorate(PropertyAssign ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
+			['Decorate(Assignee > PropertyAccessor ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
 				{
 					set v.p = false;
 				}
-				% (property_assign)
+				% (property_accessor)
 			`]],
-			['Decorate(PropertyAssign ::= "." Word) -> SemanticKey', [AST.ASTNodeKey, `
-				{
-					set v._ = false;
-				}
-				% (property_assign)
-			`]],
-			['Decorate(PropertyAssign ::= "." "[" Expression<+Block> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
+			['Decorate(Assignee > PropertyAccessor ::= "[" Expression<+Block> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
 					set v.[a + b] = false;
 				}
-				% (property_assign)
+				% (property_accessor)
 			`]],
 
-			['Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> PropertyAccess) -> SemanticAccess', [AST.ASTNodeAccess, `
+			['Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
 				{
 					v.p;
 				}
 				% (expression_compound)
 			`]],
-			['Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> FunctionCall) -> SemanticCall', [AST.ASTNodeCall, `
+			['Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "?." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
+				{
+					v?.p;
+				}
+				% (expression_compound)
+			`]],
+			['skip: Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "!." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
+				{
+					v!.p;
+				}
+				% (expression_compound)
+			`]],
+			['Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "." FunctionArguments) -> SemanticCall', [AST.ASTNodeCall, `
+				{
+					List.();
+				}
+				% (expression_compound)
+			`]],
+			['Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "." GenericArguments FunctionArguments) -> SemanticCall', [AST.ASTNodeCall, `
 				{
 					List.<T>();
 				}
@@ -451,7 +466,7 @@ test.suite('Decorator', () => {
 				}
 				% (assignee)
 			`]],
-			['Decorate(Assignee ::= ExpressionCompound<+Block> PropertyAssign) -> SemanticAccess', [AST.ASTNodeAccess, `
+			['Decorate(Assignee ::= ExpressionCompound<+Block> "." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
 				{
 					set v.1 = 42;
 				}
