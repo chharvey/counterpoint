@@ -969,8 +969,8 @@ test.suite('ASTNodeAccess', () => {
 	});
 
 
-	test.test('access kind: result access (`a!.‹b›`) is unsupported.', () => { // TODO: v0.5.0
-		assert.throws(() => AST.ASTNodeAccess.fromSource('(42,)!.0;'), TypeError);
+	test.test.todo('access kind: result access (`a!.‹b›`).', () => {
+		assert.ok('TODO:');
 	});
 
 	test.suite('#build', () => {

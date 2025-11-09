@@ -93,7 +93,7 @@ Value! ValueOf(SemanticExpressionBlock block) :=
 
 
 Object! ValueOf(SemanticAccess[kind: RESULT] access) :=
-	1. *Throw:* a new TypeError "Operator not yet supported.".
+	// TODO: implement
 ;
 
 Object! ValueOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
@@ -283,7 +283,7 @@ Boolean! ValueOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: IS] expr) :=
-	1. *Throw:* a new TypeError "Operator not yet supported.".
+	// TODO: implement
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: ID] expr) :=

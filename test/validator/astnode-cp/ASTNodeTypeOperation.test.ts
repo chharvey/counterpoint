@@ -23,8 +23,8 @@ test.suite('ASTNodeTypeOperation', () => {
 		});
 
 
-		test.test('ASTNodeTypeOperationUnary[operator=OREXCP]', () => {
-			assert.throws(() => AST.ASTNodeTypeOperationUnary.fromSource('int!').eval(), /not yet supported/);
+		test.test.todo('ASTNodeTypeOperationUnary[operator=OREXCP]', () => {
+			assert.ok('TODO:');
 		});
 
 

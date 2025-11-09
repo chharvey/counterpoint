@@ -237,7 +237,7 @@ test.suite('Decorator', () => {
 				}
 				% (type_unary_symbol)
 			`]],
-			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+			['todo: Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				{
 					type T = U!;
 				}
@@ -386,21 +386,21 @@ test.suite('Decorator', () => {
 				% (expression_block)
 			`]],
 
-			...['.', '?.', '!.'].map((op) => [`${ op === '!.' ? 'todo: ' : '' }Decorate(PropertyAccess ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
+			...['.', '?.', '!.'].map((op) => [`Decorate(PropertyAccess ::= "${ op }" INTEGER) -> SemanticIndex`, [AST.ASTNodeIndex, `
 				{
 					v${ op }1;
 				}
 				% (property_access)
 			`]] as const),
 
-			...['.', '?.', '!.'].flatMap((op) => ['p', '_'].map((keyname) => [`${ op === '!.' ? 'todo: ' : '' }Decorate(PropertyAccess ::= "${ op }" ${ keyname === '_' ? '"_"' : 'Word' }) -> SemanticKey`, [AST.ASTNodeKey, `
+			...['.', '?.', '!.'].flatMap((op) => ['p', '_'].map((keyname) => [`Decorate(PropertyAccess ::= "${ op }" ${ keyname === '_' ? '"_"' : 'Word' }) -> SemanticKey`, [AST.ASTNodeKey, `
 				{
 					v${ op }${ keyname };
 				}
 				% (property_access)
 			`]] as const)),
 
-			...['.', '?.', '!.'].map((op) => [`${ op === '!.' ? 'todo: ' : '' }Decorate(PropertyAccess ::= "${ op }" "[" Expression<+Block> "]") -> SemanticExpression`, [AST.ASTNodeExpression, `
+			...['.', '?.', '!.'].map((op) => [`Decorate(PropertyAccess ::= "${ op }" "[" Expression<+Block> "]") -> SemanticExpression`, [AST.ASTNodeExpression, `
 				{
 					v${ op }[a + b];
 				}
@@ -711,7 +711,6 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_reassignment)
 			`]],
-
 		]).forEach(([klass, text], description) => {
 			test.test(description, {
 				skip: description.startsWith('skip:'),
@@ -720,6 +719,30 @@ test.suite('Decorator', () => {
 			}, () => {
 				const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
 				return assert_instanceof(new Decorator().decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
+			});
+		});
+		['!'].forEach((op) => {
+			test.suite(`Decorate(TypeUnarySymbol ::= TypeUnarySymbol "${ op }") -> SemanticTypeOperation`, () => {
+				test.test(`operator \`${ op }\` is not yet supported.`, () => {
+					assert.throws(() => new Decorator().decorateTS(captureParseNode(`
+						{
+							type T = U${ op };
+						}
+					`, '(type_unary_symbol)')), /not yet supported/);
+				});
+			});
+		});
+		['!.'].forEach((op) => {
+			['1', '_', 'p', '[a + b]'].forEach((accessor) => {
+				test.suite(`Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "${ op }" PropertyAccess) -> SemanticAccess`, () => {
+					test.test(`operator \`${ op }\` is not yet supported.`, () => {
+						assert.throws(() => new Decorator().decorateTS(captureParseNode(`
+							{
+								v${ op }${ accessor };
+							}
+						`, '(expression_compound)')), /not yet supported/);
+					});
+				});
 			});
 		});
 		['is', 'isnt'].forEach((op) => {

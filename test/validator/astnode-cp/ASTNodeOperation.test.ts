@@ -843,6 +843,9 @@ test.suite('ASTNodeOperation', () => {
 
 
 	test.suite('ASTNodeOperationBinaryComparative', () => {
+		test.test.todo('ASTNodeOperationUnary[operator=IS]', () => {
+			assert.ok('TODO:');
+		});
 		test.suite('#type', () => {
 			test.test('with folding on, returns a constant value.', () => {
 				typeOperations(new Map<string, VALUE.Boolean>([
