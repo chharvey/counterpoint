@@ -139,7 +139,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		/* # PRODUCTIONS */
 		// Word
-		// tested in #{PrimitiveLiteral,EntryType,PropertyAccessType,Property,PropertyAccess,PropertyAssign}
+		// tested in #{PrimitiveLiteral,EntryType,PropertyAccessorType,Property,PropertyAccessor}
 
 		KeywordType: [
 			xjs.String.dedent`
@@ -292,7 +292,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						s(
 							'type_compound',
 							s('identifier'),
-							s('property_access_type', s('integer')),
+							s('property_accessor_type', s('integer')),
 						),
 					),
 					s(
@@ -300,10 +300,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						s(
 							'type_compound',
 							s('identifier'),
-							s(
-								'generic_call',
-								s('generic_arguments', s('keyword_type')),
-							),
+							s('generic_arguments', s('keyword_type')),
 						),
 					),
 				),
@@ -336,7 +333,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						s(
 							'type_compound',
 							s('identifier'),
-							s('property_access_type', s('integer')),
+							s('property_accessor_type', s('integer')),
 						),
 					),
 					s(
@@ -345,10 +342,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						s(
 							'type_compound',
 							s('identifier'),
-							s(
-								'generic_call',
-								s('generic_arguments', s('keyword_type')),
-							),
+							s('generic_arguments', s('keyword_type')),
 						),
 					),
 				),
@@ -414,7 +408,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// TypeUnit
 		// consists of #{IDENTIFIER,KeywordType,PrimitiveLiteral,TypeGrouped,Type{Tuple,Record,Dict,Map}Literal}
 
-		// PropertyAccessType
+		// PropertyAccessorType
 		// tested in #TypeCompound
 
 		// GenericCall
@@ -440,60 +434,57 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'type_compound',
 					s('identifier'),
-					s('property_access_type', s('integer')),
+					s('property_accessor_type', s('integer')),
 				),
 				s(
 					'type_compound',
 					s('identifier'),
-					s('property_access_type', s('word', s('identifier'))),
+					s('property_accessor_type', s('word', s('identifier'))),
 				),
 				s(
 					'type_compound',
 					s('identifier'),
-					s('property_access_type', s('word')),
+					s('property_accessor_type', s('word')),
 				),
 				s(
 					'type_compound',
 					s('identifier'),
-					s('property_access_type', s('integer')),
+					s('property_accessor_type', s('integer')),
 				),
 				s(
 					'type_compound',
 					s('identifier'),
-					s('property_access_type', s('word', s('identifier'))),
+					s('property_accessor_type', s('word', s('identifier'))),
 				),
 				s(
 					'type_compound',
 					s('identifier'),
-					s('property_access_type', s('word')),
+					s('property_accessor_type', s('word')),
 				),
 				s(
 					'type_compound',
 					s('identifier'),
-					s(
-						'generic_call',
-						s('generic_arguments', s('identifier')),
-					),
+					s('generic_arguments', s('identifier')),
 				),
 				s(
 					'type_compound',
 					s('identifier'),
-					s('property_access_type', s('word')),
+					s('property_accessor_type', s('word')),
 				),
 				s(
 					'type_compound',
 					s('identifier'),
-					s('property_access_type', s('word', s('keyword_type'))),
+					s('property_accessor_type', s('word', s('keyword_type'))),
 				),
 				s(
 					'type_compound',
 					s('identifier'),
-					s('property_access_type', s('word', s('keyword_value'))),
+					s('property_accessor_type', s('word', s('keyword_value'))),
 				),
 				s(
 					'type_compound',
 					s('identifier'),
-					s('property_access_type', s('word', s('identifier'))),
+					s('property_accessor_type', s('word', s('identifier'))),
 				),
 			),
 		],
@@ -837,11 +828,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// ExpressionUnit
 		// consists of #{IDENTIFIER,PrimitiveLiteral,StringTemplate,ExpressionGrouped,{Tuple,Record,Set,Map}Literal,Block}
 
-		// PropertyAccess
-		// tested in #ExpressionCompound
-
-		// PropertyAssign
-		// tested in #Assignee
+		// PropertyAccessor
+		// tested in #{ExpressionCompound,Assignee}
 
 		// FunctionCall
 		// tested in #ExpressionCompound
@@ -871,95 +859,83 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('integer')),
+					s('property_accessor', s('integer')),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('integer')),
+					s('property_accessor', s('integer')),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('integer')),
+					s('property_accessor', s('integer')),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('word', s('identifier'))),
+					s('property_accessor', s('word', s('identifier'))),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('word', s('identifier'))),
+					s('property_accessor', s('word', s('identifier'))),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('word', s('identifier'))),
+					s('property_accessor', s('word', s('identifier'))),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('word')),
+					s('property_accessor', s('word')),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('identifier')),
+					s('property_accessor', s('identifier')),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('identifier')),
+					s('property_accessor', s('identifier')),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('identifier')),
+					s('property_accessor', s('identifier')),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('function_call', s('function_arguments')),
+					s('function_arguments'),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s(
-						'function_call',
-						s(
-							'function_arguments',
-							s('identifier'),
-						),
-					),
+					s('function_arguments', s('identifier')),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s(
-						'function_call',
-						s(
-							'generic_arguments',
-							s('identifier'),
-						),
-						s('function_arguments'),
-					),
+					s('generic_arguments', s('identifier')),
+					s('function_arguments'),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('word')),
+					s('property_accessor', s('word')),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('word', s('keyword_type'))),
+					s('property_accessor', s('word', s('keyword_type'))),
 				),
 				s(
 					'expression_compound',
 					s('identifier'),
-					s('property_access', s('word', s('keyword_value'))),
+					s('property_accessor', s('word', s('keyword_value'))),
 				),
 			),
 		],
@@ -1549,7 +1525,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('integer')),
+						s('property_accessor', s('integer')),
 					),
 					s('identifier'),
 				),
@@ -1558,7 +1534,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('word', s('identifier'))),
+						s('property_accessor', s('word', s('identifier'))),
 					),
 					s('identifier'),
 				),
@@ -1567,7 +1543,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('word')),
+						s('property_accessor', s('word')),
 					),
 					s('identifier'),
 				),
@@ -1576,7 +1552,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('identifier')),
+						s('property_accessor', s('identifier')),
 					),
 					s('identifier'),
 				),
@@ -1585,7 +1561,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('word')),
+						s('property_accessor', s('word')),
 					),
 					s('identifier'),
 				),
@@ -1594,7 +1570,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('word', s('keyword_type'))),
+						s('property_accessor', s('word', s('keyword_type'))),
 					),
 					s('identifier'),
 				),
@@ -1603,7 +1579,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('word', s('keyword_value'))),
+						s('property_accessor', s('word', s('keyword_value'))),
 					),
 					s('identifier'),
 				),
@@ -1637,7 +1613,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('integer')),
+						s('property_accessor', s('integer')),
 					),
 					s('identifier'),
 				),
@@ -1646,7 +1622,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('word', s('identifier'))),
+						s('property_accessor', s('word', s('identifier'))),
 					),
 					s('identifier'),
 				),
@@ -1655,7 +1631,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('word')),
+						s('property_accessor', s('word')),
 					),
 					s('identifier'),
 				),
@@ -1664,7 +1640,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('identifier')),
+						s('property_accessor', s('identifier')),
 					),
 					s('identifier'),
 				),
@@ -1673,7 +1649,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('word')),
+						s('property_accessor', s('word')),
 					),
 					s('primitive_literal', s('integer')),
 				),
@@ -1682,7 +1658,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('word', s('keyword_type'))),
+						s('property_accessor', s('word', s('keyword_type'))),
 					),
 					s('primitive_literal', s('integer')),
 				),
@@ -1691,7 +1667,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						s('identifier'),
-						s('property_assign', s('word', s('keyword_value'))),
+						s('property_accessor', s('word', s('keyword_value'))),
 					),
 					s('primitive_literal', s('integer')),
 				),
