@@ -63,7 +63,7 @@ type CustomArgsType = {
 export class CLI {
 	/** Text to print on --help. */
 	public static readonly HELPTEXT: string = xjs.String.dedent`
-		Usage: cpc <command> <filepath> [<options>]
+		Usage: cplc <command> <filepath> [<options>]
 
 		Parse, analyze, and compile a Counterpoint source code file.
 		Executables are in WASM binary format. Plaintext outputs are in WAT format.
@@ -72,16 +72,16 @@ export class CLI {
 		Examples:
 		\`\`\`
 		# Compile \`test.cpls\` to \`test.wasm\`:
-		$ cpc compile test.cpls
+		$ cplc compile test.cpls
 
 		# Compile \`src/input.cpls\` to \`build/output.wasm\`:
-		$ cpc compile src/input.cpls --out build/output.wasm
+		$ cplc compile src/input.cpls --out build/output.wasm
 
 		# Debug \`program.cpls\` (writes to \`program.wat\`):
-		$ cpc dev program.cpls
+		$ cplc dev program.cpls
 
 		# Execute \`program.wasm\`:
-		$ cpc run program.wasm
+		$ cplc run program.wasm
 		\`\`\`
 
 		Commands:
