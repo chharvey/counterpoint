@@ -199,103 +199,97 @@ we would have to explicitly enclose the function in grouping symbols: `(\(): boo
 
 
 
-## Named Arguments
-The arguments we send into a function may be **named**, which only means they’re preceded by a label.
-The labels indicate which of the function’s parameters the argument is assigned to.
+## Named Parameters and Arguments
+A function’s parameter list determines a contract that its caller must follow.
+This includes not only the *types* required of the arguments, but also whether
+they be **positonal** (unnamed and ordered) or **named** (and unordered).
+
 ```
-function move_2d(player: Player, x: float, y: float): void {
-	"""Player {{ player }} has moved {{ x }} horizontally and {{ y }} vertically.""";
+function compute_hypotenuse($a: float, $b: float): float {
+	let aa: float = a ^ 2;
+	let bb: float = b ^ 2;
+	let cc: float = aa + bb;
+	return cc ^ 0.5;
 }
-
-move_2d.(my_player,    1.0,    2.0);
-move_2d.(my_player, x= 1.0, y= 2.0); % same as above
-move_2d.(my_player, y= 2.0, x= 1.0); % same as above
-
-move_2d.(x= 2.0, y= 1.0, my_player); %> ParseError
 ```
-Notice that not all arguments have to be named, but the arguments that *are* named
-don’t have to appear in the same order as their assigned parameters.
-And all named arguments *must* be given after all positional (unnamed) arguments.
+We made one tiny change to our `compute_hypotenuse` function by prepending each argument with a `$` symbol
+(doing so is known as **punning**).
+This means the argument is named, and its **external name** — the name the caller gives it —
+is the same as its **internal name** — the name referenced in the function body.
+When called, the arguments *must* be named: preceded by a label, which indicates
+the corresponding parameter to which the argument is assigned.
+```
+compute_hypotenuse.(a= 3.0, b= 4.0); %=>  5.0
+compute_hypotenuse.(b= 8.0, a= 6.0); %=> 10.0
+compute_hypotenuse.(3.0, 4.0);       %> TypeError
+```
+Notice that we may send named arguments in any order; they don’t need to be the same order as in the function definition.
+It’s a type error to give positional arguments for named parameters or vice versa.
+
+If we want to use different external parameter names than those used internally,
+we can **alias** the internal name to an external name with a `=` symbol.
+Our new `distance` function uses the external parameter names `x1`, `x2`, `y1`, and `y2`,
+while maintaining internal parameter names of `ax`, `ay`, `bx`, and `'by'`.
+```
+%%%
+Gives the distance between two points (x1, x2) and (y1, y2).
+%%%
+function distance(x1= ax: float, x2= ay: float, y1= bx: float, y2= 'by': float): float {
+	return ((bx - ax) ^ 2 + ('by' - ay) ^ 2) ^ 0.5;
+}
+% typeof distance: \(x1: float, x2: float, y1: float, y2: float) => float
+
+distance.(x1= 2.0, x2= 3.0, y1= 4.0, y2= 5.0);
+```
+
+When a function parameter uses the `$param` syntax (shorthand for `param= param`),
+we sometimes say it is “punned” as opposed to “aliased”.
+
+A function may have both positional and named parameters, but all named parameters *must* come after all positional parameters.
+Accordingly, all named arguments *must* be given after all positional arguments.
+However, within the named parameters, punned and un-punned parameters may be intermixed;
+and the named arguments may be given in any order.
+```
+function foo(a: int, b: int, $c: int, delta= d: int, $e: int): void { return; }
+foo.(1, 2, delta= 4, c= 3, e= 5);
+```
 
 
 
 ## Type Signatures
-Every function has a static **type signature**, which describes its input and output types.
-“Type signature” is a fancy word for function type.
+Every function has a static **type signature**, which describes its input and output types as well as its calling contract.
 ```
 function add(a: int, b: int): int {
 	return a + b;
 }
+function subtract($a: int, subtrahend= b: int): int {
+	return a - b;
+}
 
-% typeof add: \(a: int, b: int) => int
+% typeof add: \(int, int) => int
+% typeof subtract: \(a: int, subtrahend: int) => int
 
-add.(a= 2, b= 3);
+add.(2, 3);
+subtract.(subtrahend= 3, a= 2);
 ```
-The type signature `\(a: int, b: int) => int` tells us that the function takes two parameters
-whose names are `a` and `b`, each of type `int`, and it returns a value of type `int`.
+The type signature `\(int, int) => int` tells us that the function takes two parameters,
+each of type `int`, and it returns a value of type `int`.
+The signature `\(a: int, subtrahend: int) => int`, is basically the same, but it includes the parameters’ external names `a` and `subtrahend`.
 
-Though all function definitions (both declarations and expressions) require named parameters,
-type signatures do not. This allows us to specify a function type that cannot be called with named arguments.
+When parameters are positional like in `add` above, they are completely internal to the function’s implementation,
+and the caller does not know their names. This provides good encapsulation, but it also means the caller may only provide positional arguments.
+However, it does not mean *documentation* cannot provide good naming.
+If authors want, they may document the parameter names in the function’s commentdoc so consumers know which order to provide them in.
 ```
-let mult: \(int, int) => int =
-	\(a: int, b: int): int => a * b;
+%%%
+Divide two numbers.
+@param  dividend the number to divide (the numerator)
+@param  divisor  the number to divide *by* (the denominator)
+@return `dividend / divisor`, assuming `divisor != 0.0`
+%%%
+function divide(a: float, b: float): float { ... }
 
-% typeof mult: \(int, int) => int
-
-mult.(a= 2, b= 3); %> TypeError (cannot send named arguments)
-```
-This time, the parameters `a` and `b` are completely internal to the function’s implementation,
-and the caller does not know their names. On the downside, the caller may only provide positional arguments.
-
-In a type signature, either *all* of the parameters are named, or *none* of them are —
-there is no mixing named and positional parameters.
-The type signature of a function declaration or function expression is implicit, so its parameters are always named.
-Only explicit type signatures (that is, “type expressions”) may have positional parameters.
-
-For example, the first type signature below has named parameters —
-any function assigned to that type may be called with corresponding named arguments.
-The second type signature has positional parameters, so any implementations can only be called with positional arguments.
-```
-type BinOp1 = \(left: float, right: float) => float;
-type BinOp2 = \(      float,        float) => float;
-
-% assume `fn1` is of type `BinOp1`
-fn1.(      1.5,        2.5); % ok
-fn1.(left= 1.5, right= 2.5); % ok
-
-% assume `fn2` is of type `BinOp2`
-fn2.(      1.5,        2.5); % ok
-fn2.(left= 1.5, right= 2.5); %> TypeError (cannot send named arguments)
-```
-
-
-### Parameter Aliasing
-When assigning a function to a type signature with named parameters,
-the assigned parameter order must match up with the assignee parameters.
-```
-type BinaryOperator = \(left: float, right: float) => float;
-let subtract: BinaryOperator = \(x: float, y: float): float => x - y; %> TypeError
-```
-This errors because a caller must be able to call `subtract` with the named arguments `left` and `right`.
-
-Function parameter syntax includes a mechanism for handling function assignment/implementation with named parameters.
-In the parameter name, we use `left= x` to **alias** the real parameter `x` to the assignee parameter `left`.
-```
-let subtract: BinaryOperator = \(left= x: float, right= y: float): float => x - y;
-subtract.(left= 2.5, right= 1.5);
-```
-This lets the function author internally use the parameter names `x` and `y`
-while still allowing the caller to call the function with named arguments `left` and `right` repectively.
-
-Function types with positional parameters are useful when a function type needs to be implemented many times.
-(For example, the parameter of a [higher-order function](#higher-order-functions) should probably
-be specified with positional parameters.)
-```
-type BinaryOperatorUnnamed = \(float, float) => float;
-let add:      BinaryOperatorUnnamed = \(augend:       float, addend:     float): float => augend       + addend;
-let subtract: BinaryOperatorUnnamed = \(minuend:      float, subtrahend: float): float => minuend      - subtrahend;
-let multiply: BinaryOperatorUnnamed = \(multiplicand: float, multiplier: float): float => multiplicand * multiplier;
-let divide:   BinaryOperatorUnnamed = \(dividend:     float, divisor:    float): float => dividend     / divisor;
+% typeof divide: \(float, float) => float
 ```
 
 
@@ -318,13 +312,13 @@ function iterate(list: [float], callback: \(item: float) => void): void {
 ```
 And a caller might use it as so:
 ```
-iterate.([2.0, 4.0, 8.0, 16.0], \(item: float): void {
+iterate.([2.0, 4.0, 8.0, 16.0], \($item: float): void {
 	"""2 to the {{ item }} power is {{ 2.0 ^ item }}""";
 	return;
 });
 ```
 If the caller doesn’t like `item` as the callback parameter name,
-they can [alias](#parameter-alaising) it to a more sensible name:
+they can [alias](#named-parameters-and-arguments) it to a more sensible name:
 ```
 iterate.([2.0, 4.0, 8.0, 16.0], (item= n: float): void {
 	"""2 to the {{ n }} power is {{ 2.0 ^ n }}""";
@@ -426,11 +420,16 @@ This contrasts to other languages that are “call-by-reference”, in which *on
 not the object, is sent into the function and thus may be reassigned by it.
 
 Notice that a parameter must be declared `var` in order for it to be reassigned.
+(When an unfixed parameter is “punned”, it uses the syntax `var $param`.)
 ```
-function reassign_both(var a: int, b: int): void {
+function reassign_demo(var a: int, b: int, var $c: int, delta= var d: int): void {
 	set a += 1; % ok
 	set b -= 1; %> AssignmentError
+	set c += 1; % ok
+	set d -= 1; % ok
+	return;
 }
+reassign_demo.(1, 2, c= 3, delta= 4);
 ```
 
 Call-by-sharing also means that any mutations made to the object inside the function are
