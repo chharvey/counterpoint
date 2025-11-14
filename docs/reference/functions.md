@@ -46,12 +46,15 @@ compute_hypotenuse || null;              %> Error
 
 
 Not all functions need to have an output when they return — those are called **void functions**.
+The body of a void function *must* include a return statement in every code path —
+whether it be an empty `return;` statement or a statement that returns another void function call.
 The function below does nothing but evaluate a string when called.
 Typically, void functions will have observable side-effects, such as modifying non-local variables.
 ```
 function myVoidFunction(message: str): void {
 	"""Here is the message: {{ message }}""";
 	%                          ^ parameter
+	return;
 }
 myVoidFunction.("Hello world!"); % evaluates the string
 %               ^ argument
@@ -310,12 +313,14 @@ function iterate(list: [float], callback: \(item: float) => void): void {
 	for val: float of list do {
 		callback.(item= val);
 	};
+	return;
 }
 ```
 And a caller might use it as so:
 ```
 iterate.([2.0, 4.0, 8.0, 16.0], \(item: float): void {
 	"""2 to the {{ item }} power is {{ 2.0 ^ item }}""";
+	return;
 });
 ```
 If the caller doesn’t like `item` as the callback parameter name,
@@ -323,6 +328,7 @@ they can [alias](#parameter-alaising) it to a more sensible name:
 ```
 iterate.([2.0, 4.0, 8.0, 16.0], (item= n: float): void {
 	"""2 to the {{ n }} power is {{ 2.0 ^ n }}""";
+	return;
 });
 ```
 However, considering that `IteratorFn` might be implemented many times,
@@ -336,11 +342,13 @@ function iterate(list: [float], callback: \(float) => void): void {
 		% now we just can’t call `callback` with named arguments
 		callback.(val);
 	};
+	return;
 }
 
 iterate.([2.0, 4.0, 8.0, 16.0], \(n: float): void {
 %                                 ^ no parameter aliasing necessary
 	"""2 to the {{ n }} power is {{ 2.0 ^ n }}""";
+	return;
 });
 ```
 
@@ -355,7 +363,7 @@ This might be counter-intuitive for some programmers who are used to evaluation 
 ```
 function say_all(message1: str, message2: str): void {
 	print.("printing...");
-	print.("""{{ message1 }} {{ message2 }}""");
+	return print.("""{{ message1 }} {{ message2 }}""");
 }
 function say_hello(): str {
 	print.("hello");
@@ -380,7 +388,7 @@ function say_all(message1: \() => str, message2: \() => str): void {
 	% call in any order you like
 	let w: str = message2.();
 	let h: str = message1.();
-	print.("""{{ h }} {{ w }}""");
+	return print.("""{{ h }} {{ w }}""");
 }
 function say_hello(): str {
 	print.("hello");
@@ -432,6 +440,7 @@ since those mutations apply to the shared object.
 let arg: mut [int] = [42];
 function mutate(param: mut [int]): void {
 	set param.[0] = 43;
+	return;
 }
 mutate.(arg);
 arg; % modified to `[43]`
