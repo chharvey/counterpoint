@@ -1105,9 +1105,8 @@ bases?.[a]; % produces the consequent if it exists, else `null`
 ## Callable Types
 
 
-### Function
-Functions are callable objects, which codify algorithms to be dynamically executed
-and can be reused many times.
+### Functions
+Functions are callable objects, which codify algorithms to be dynamically executed and can be reused many times.
 
 Some functions have parameters, and these functions take arguments when called.
 When a function is called, it obtains control of execution within a new scope.

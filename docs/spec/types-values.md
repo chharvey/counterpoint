@@ -383,13 +383,15 @@ Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by
 
 ### Callable Types
 
-- [Function](#function-type)
+- [Function Types](#function-types)
 
-#### Function Type
-A **Function Type** contains [`Function` objects](./intrinsics.md#function) and is described by types
-representing parameters and a return value.
-The objects that any Function Type contains are `Function` objects whose
-parameters and return value are respectively assignable to the types describing the Function Type.
+#### Function Types
+A **Function** type describes instances of [`Function`](./intrinsics.md#function) and is parameterized by a triple containing
+a [Sequence](#sequence) of [EntryTypeSchema](#entrytypeschema) items representing positional function parameters, followed by
+a [Schema](#schema) with [EntryTypeSchema](#entrytypeschema) values representing named function parameters, followed optionally by
+a type representing a return type.
+The objects that any given Function type describes are `Function` objects whose
+parameters and return type are respectively assignable to the types parameterizing the Function Type.
 
 
 ### Nominal Types
