@@ -1,10 +1,10 @@
+import type {TYPE} from '../../index.ts';
 import {
-	TYPE,
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
-} from './package.js';
-import {ASTNodeDeclarationType} from './index.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+} from '../../core/index.ts';
+import {ASTNodeDeclarationType} from './index.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 
@@ -13,12 +13,7 @@ import {ASTNodeCP} from './ASTNodeCP.js';
  * Known subclasses:
  * - ASTNodeTypeConstant
  * - ASTNodeTypeAlias
- * - ASTNodeTypeTuple
- * - ASTNodeTypeRecord
- * - ASTNodeTypeList
- * - ASTNodeTypeDict
- * - ASTNodeTypeSet
- * - ASTNodeTypeMap
+ * - ASTNodeTypeCollectionLiteral
  * - ASTNodeTypeAccess
  * - ASTNodeTypeCall
  * - ASTNodeTypeOperation
@@ -31,24 +26,21 @@ export abstract class ASTNodeType extends ASTNodeCP {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeType representing the given source
 	 */
-	static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeType {
+	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeType {
 		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
 		return statement.assigned;
 	}
-	private assessed?: TYPE.Type;
+
 	/**
 	 * @final
 	 */
-	override typeCheck(): void {
+	public override typeCheck(): void {
 		return; // no type-checking necessary
 	}
+
 	/**
 	 * Assess the type-value of this node at compile-time.
 	 * @returns the computed type-value of this node
-	 * @final
 	 */
-	eval(): TYPE.Type {
-		return this.assessed ||= this.eval_do();
-	}
-	protected abstract eval_do(): TYPE.Type;
+	public abstract eval(): TYPE.Type;
 }

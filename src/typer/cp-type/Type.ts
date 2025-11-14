@@ -1,103 +1,366 @@
 import * as xjs from 'extrajs';
 import {
-	languageValuesIdentical,
-	OBJ,
-} from './package.js';
+	assert_context_name,
+	memoizeGetter,
+} from '../../lib/index.ts';
 import {
-	TypeIntersection,
-	TypeUnion,
-	TypeDifference,
-	TypeUnit,
-	TypeBoolean,
-	TypeInteger,
-	TypeFloat,
-	TypeString,
-	TypeObject,
-} from './index.js';
+	language_values_identical,
+	strictEqual,
+	memoizeBinOp,
+} from '../utils-private.ts';
+import type * as VALUE from '../cp-value/index.ts';
+import {
+	Intersection,
+	Union,
+	Difference,
+	NOTHING,
+	ANYTHING,
+	FALSY_TYPES,
+	TYPE_CONSTANTS,
+} from './index.ts';
+import {
+	Variance,
+	type GenericParameter,
+} from './utils-private.ts';
+
+
+
+/**
+ * Decorator for any type binary operation.
+ * Simplifies return values to values that already exist, if possible.
+ * @implements MethodDecorator<Type, (t: Type) => Type>
+ */
+export function typeConstant(
+	method:   (t: Type) => Type,
+	_context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	return function (this: Type, t) {
+		const returned: Type = method.call(this, t);
+		return (
+			returned.isBottomType ? NOTHING :
+			returned.isTopType    ? ANYTHING :
+			TYPE_CONSTANTS.find((c) => returned.equals(c)) ?? returned
+		);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#intersect} method and any overrides.
+ * Contains shortcuts for constructing type intersections.
+ * @implements MethodDecorator<Type, Type['intersect']>
+ */
+export function intersectionRules(
+	method:  Type['intersect'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'intersect');
+	return function (this: Type, t) {
+		/* 1-5 | `T  & nothing  == nothing` */
+		if (this.isBottomType || t.isBottomType) {
+			return NOTHING;
+		}
+		/* 1-6 | `T  & anything == T` */
+		if (this.isTopType) {
+			return t;
+		}
+		if (t.isTopType) {
+			return this;
+		}
+		/* 3-3 | `A <: B  <->  A  & B == A` */
+		if (this.isSubtypeOf(t)) {
+			return this;
+		}
+		if (t.isSubtypeOf(this)) {
+			return t;
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#union} method and any overrides.
+ * Contains shortcuts for constructing type unions.
+ * @implements MethodDecorator<Type, Type['union']>
+ */
+export function unionRules(
+	method:  Type['union'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'union');
+	return function (this: Type, t) {
+		/* 1-7 | `T \| nothing  == T` */
+		if (this.isBottomType) {
+			return t;
+		}
+		if (t.isBottomType) {
+			return this;
+		}
+		/* 1-8 | `T \| anything == anything` */
+		if (this.isTopType || t.isTopType) {
+			return ANYTHING;
+		}
+		/* 3-4 | `A <: B  <->  A \| B == B` */
+		if (this.isSubtypeOf(t)) {
+			return t;
+		}
+		if (t.isSubtypeOf(this)) {
+			return this;
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#subtract} method and any overrides.
+ * Contains shortcuts for constructing type differences.
+ * @implements MethodDecorator<Type, Type['subtract']>
+ */
+export function differenceRules(
+	method:  Type['subtract'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'subtract');
+	return function (this: Type, t) {
+		/* 4-1 | `A - B == A  <->  A & B == nothing` */
+		if (this.intersect(t).isBottomType) {
+			return this;
+		}
+
+		/* 4-2 | `A - B == nothing  <->  A <: B` */
+		if (this.isSubtypeOf(t)) {
+			return NOTHING;
+		}
+
+		/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
+		if (t instanceof Union) {
+			return Intersection.all(t.operands.map((s) => this.subtract(s)));
+		}
+
+		return method.call(this, t);
+	};
+}
+
+
+
+/**
+ * Decorator for {@link Type#isSubtypeOf} method and any overrides.
+ * Contains shortcuts for determining subtypes.
+ * @implements MethodDecorator<Type, Type['isSubtypeOf']>
+ */
+export function subtypeRules(
+	method:  Type['isSubtypeOf'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'isSubtypeOf');
+	return function (this: Type, t) {
+		/* 2-7 | `A <: A` */
+		if (this === t) {
+			return true;
+		}
+
+		/* 1-1 | `nothing  <: T` */
+		if (this.isBottomType) {
+			return true;
+		}
+		/* 1-3 | `T        <: nothing  <->  T == nothing` */
+		if (t.isBottomType) {
+			return this.isBottomType;
+		}
+		/* 1-4 | `anything <: T        <->  T == anything` */
+		if (this.isTopType) {
+			return t.isTopType;
+		}
+		/* 1-2 | `T        <: anything` */
+		if (t.isTopType) {
+			return true;
+		}
+
+		if (!this.isMutable && t.isMutable) {
+			return false;
+		}
+
+		/*
+		 * Denormalize intersection/union types.
+		 *
+		 * An assignee of intersection type `A & (B | C)` will attempt to convert to `(A & B) | (A & C)`
+		 * when being assigned a value.
+		 * A type union in this case is more performant, as only one constituent of the union is sufficient —
+		 * the value only need be assignable to `A & B` or `A & C`, which allows for short-circuiting.
+		 *
+		 * Likewise, when a value is of union type `A | (B & C)`, it will attempt to convert to `(A | B) & (A | C)`
+		 * when being assigned to a target.
+		 * In this scenario, a type intersection can allow for short-circuiting —
+		 * only one of the constituents `A | B` or `A | C` need be assignable.
+		 *
+		 * Inspiration: https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/#optimizations-by-comparing-non-normalized-intersections
+		 */
+		if (t instanceof Intersection) {
+			const maybe_union: Type = t.denormalize();
+			if (maybe_union instanceof Union && this.isSubtypeOf(maybe_union)) {
+				return true;
+			}
+		}
+		if (this instanceof Union) {
+			const maybe_intersection: Type = this.denormalize();
+			if (maybe_intersection instanceof Intersection && maybe_intersection.isSubtypeOf(t)) {
+				return true;
+			}
+		}
+
+		if (t instanceof Intersection) {
+			/*
+			 * 3-1 | `A  & B <: A  &&  A  & B <: B`
+			 *     | `A  & B  & C <: A  & B`
+			 */
+			if (this instanceof Intersection && t.operands.every((s) => this.operands.some((r) => r.equals(s)))) {
+				return true;
+			}
+			/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
+			return t.operands.every((s) => this.isSubtypeOf(s));
+		}
+		if (t instanceof Union) {
+			/*
+			 * 3-2 | `A <: A \| B  &&  B <: A \| B`
+			 *     | `A \| B <: A \| B \| C`
+			 */
+			if (this instanceof Union && this.operands.every((s) => t.operands.some((r) => r.equals(s)))) {
+				return true;
+			}
+			/* 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
+			if (t.operands.some((s) => this.isSubtypeOf(s))) {
+				return true;
+			}
+			/* 3-2 | `A <: A \| B  &&  B <: A \| B` */
+			if (t.operands.some((s) => this.equals(s))) {
+				return true;
+			}
+		}
+		/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing` */
+		if (t instanceof Difference) {
+			return this.isSubtypeOf(t.left) && this.intersect(t.right).isBottomType;
+		}
+
+		return method.call(this, t);
+	};
+}
 
 
 
 /**
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
- * - TypeIntersection
- * - TypeUnion
- * - TypeDifference
+ * - TypeOperation
+ * - ValueType
  * - TypeInterface
- * - TypeNever
- * - TypeVoid
- * - TypeUnit
- * - TypeUnknown
- * - TypeBoolean
- * - TypeInteger
- * - TypeFloat
- * - TypeString
- * - TypeObject
- * - TypeTuple
- * - TypeRecord
- * - TypeList
- * - TypeDict
- * - TypeSet
- * - TypeMap
+ * - ReferenceType
  */
 export abstract class Type {
-	/** The Bottom Type, containing no values. */                    static get NEVER():   TypeNever   { return TypeNever.INSTANCE; }
-	/** The Void Type, representing a completion but not a value. */ static get VOID():    TypeVoid    { return TypeVoid.INSTANCE; }
-	/** The Top Type, containing all values. */                      static get UNKNOWN(): TypeUnknown { return TypeUnknown.INSTANCE; }
-	/** The Null Type. */                                            static get NULL():    TypeUnit    { return OBJ.Null.NULLTYPE; }
-	/** The Boolean Type. */                                         static get BOOL():    TypeBoolean { return TypeBoolean.INSTANCE; }
-	/** The Integer Type. */                                         static get INT():     TypeInteger { return TypeInteger.INSTANCE; }
-	/** The Float Type. */                                           static get FLOAT():   TypeFloat   { return TypeFloat.INSTANCE; }
-	/** The String Type. */                                          static get STR():     TypeString  { return TypeString.INSTANCE; }
-	/** The Object Type. */                                          static get OBJ():     TypeObject  { return TypeObject.INSTANCE; }
-	/**
-	 * Intersect all the given types.
-	 * @param types the types to intersect
-	 * @returns the intersection
-	 */
-	static intersectAll(types: Type[]): Type {
-		return types.reduce((a, b) => a.intersect(b));
-	}
-	/**
-	 * Unions all the given types.
-	 * @param types the types to union
-	 * @returns the union
-	 */
-	static unionAll(types: Type[]): Type {
-		return types.reduce((a, b) => a.union(b));
-	};
-
-
-	/**
-	 * Whether this type has no values assignable to it,
-	 * i.e., it is equal to the type `never`.
-	 * Used internally for special cases of computations.
-	 */
-	readonly isBottomType: boolean = this.values.size === 0;
-	/**
-	 * Whether this type has all values assignable to it,
-	 * i.e., it is equal to the type `unknown`.
-	 * Used internally for special cases of computations.
-	 */
-	readonly isTopType: boolean = false;
-
 	/**
 	 * Construct a new Type object.
-	 * @param isMutable Whether this type is `mutable`. Mutable objects may change fields/entries and call mutating methods.
+	 * @param isMutable Whether this type is mutable. Mutable objects may change fields/entries and call mutating methods.
 	 * @param values    An enumerated set of values that are assignable to this type.
 	 */
-	constructor (
-		readonly isMutable: boolean,
-		readonly values:    ReadonlySet<OBJ.Object> = new Set(),
+	public constructor(
+		public readonly isMutable: boolean,
+		public readonly values:    ReadonlySet<VALUE.Value> = new Set(),
 	) {
 	}
+
+	/**
+	 * Return whether this type has no values assignable to it,
+	 * i.e., it is equal to the type `nothing`.
+	 * Used internally for special cases of computations.
+	 * @return `true if this type is the bottom type
+	 */
+	// eslint-disable-next-line @typescript-eslint/class-literal-property-style --- overridden in subclasses by getters
+	public get isBottomType(): boolean {
+		return false;
+	}
+
+	/**
+	 * Return whether this type has all values assignable to it,
+	 * i.e., it is equal to the type `anything`.
+	 * Used internally for special cases of computations.
+	 * @return `true if this type is the top type
+	 */
+	// eslint-disable-next-line @typescript-eslint/class-literal-property-style --- overridden in subclasses by getters
+	public get isTopType(): boolean {
+		return false;
+	}
+
+	/**
+	 * Return whether this type is a reference type or a value type.
+	 * @return `true` if this type is a reference type
+	 */
+	public abstract get isReference(): boolean;
 
 	/**
 	 * Return whether this type is mutable or has a mutable operand or component.
 	 * @return `true` if this type is mutable or has a mutable operand/component
 	 */
-	get hasMutable(): boolean {
+	public get hasMutable(): boolean {
 		return this.isMutable;
+	}
+
+	/**
+	 * @return a string representation of this type
+	 */
+	public abstract toString(): string;
+
+	/**
+	 * Is this type definitely a ”falsy” type?
+	 * @return  whether this is a subtype of `null | false`
+	 * @final
+	 */
+	@memoizeGetter
+	public get isDefinitelyFalsy(): boolean {
+		return this.isSubtypeOf(Union.all(...FALSY_TYPES));
+	}
+
+	/**
+	 * Is this type definitely a “truthy” type?
+	 * @return `false` if this is the Bottom Type or is definitely “falsy” or is a supertype of any of `null` or `false`; otherwise `true`
+	 * @final
+	 */
+	@memoizeGetter
+	public get isDefinitelyTruthy(): boolean {
+		return !this.isBottomType && !this.isDefinitelyFalsy && [...FALSY_TYPES].every((t) => !t.isSubtypeOf(this));
+	}
+
+	/**
+	 * Returns the “falsy side” of this type.
+	 * @return this type’s intersection with all falsy types
+	 * @final
+	 */
+	@memoizeGetter
+	public get falsySide(): Type {
+		return (
+			this.isDefinitelyFalsy  ? this :
+			this.isDefinitelyTruthy ? NOTHING :
+			this.intersect(Union.all(...FALSY_TYPES))
+		);
+	}
+
+	/**
+	 * Returns the “truthy side” of this type.
+	 * @return this type, minus all falsy types
+	 * @final
+	 */
+	@memoizeGetter
+	public get truthySide(): Type {
+		return (
+			this.isDefinitelyFalsy  ? NOTHING :
+			this.isDefinitelyTruthy ? this :
+			this.subtract(Union.all(...FALSY_TYPES))
+		);
 	}
 
 	/**
@@ -106,115 +369,65 @@ export abstract class Type {
 	 * @param v the value to check
 	 * @returns Is `v` assignable to this type?
 	 */
-	includes(v: OBJ.Object): boolean {
-		return xjs.Set.has(this.values, v, languageValuesIdentical);
+	public includes(v: VALUE.Value): boolean {
+		return xjs.Set.has(this.values, v, language_values_identical);
 	}
+
 	/**
 	 * Return the type intersection of this type with another.
 	 * @param t the other type
 	 * @returns the type intersection
-	 * @final
 	 */
-	intersect(t: Type): Type {
-		/** 1-5 | `T  & never   == never` */
-		if (t.isBottomType) { return Type.NEVER; }
-		if (this.isBottomType) { return this }
-		/** 1-6 | `T  & unknown == T` */
-		if (t.isTopType) { return this; }
-		if (this.isTopType) { return t; }
-		/** 3-3 | `A <: B  <->  A  & B == A` */
-		if (this.isSubtypeOf(t)) { return this }
-		if (t.isSubtypeOf(this)) { return t }
-
-		return this.intersect_do(t)
+	@memoizeBinOp(true)
+	@typeConstant
+	@intersectionRules
+	public intersect(t: Type): Type {
+		/* 2-1 | `A  & B == B  & A` */
+		if (t instanceof Intersection) {
+			return t.intersect(this);
+		}
+		return new Intersection(this, t).normalize();
 	}
-	protected intersect_do(t: Type): Type {
-		/** 2-2 | `A \| B == B \| A` */
-		if (t instanceof TypeUnion) { return t.intersect(this); }
 
-		return new TypeIntersection(this, t);
-	}
 	/**
 	 * Return the type union of this type with another.
 	 * @param t the other type
 	 * @returns the type union
-	 * @final
 	 */
-	union(t: Type): Type {
-		/** 1-7 | `T \| never   == T` */
-		if (t.isBottomType) { return this; }
-		if (this.isBottomType) { return t; }
-		/** 1-8 | `T \| unknown == unknown` */
-		if (t.isTopType) { return t; }
-		if (this.isTopType) { return Type.UNKNOWN; }
-		/** 3-4 | `A <: B  <->  A \| B == B` */
-		if (this.isSubtypeOf(t)) { return t }
-		if (t.isSubtypeOf(this)) { return this }
-
-		return this.union_do(t)
+	@memoizeBinOp(true)
+	@typeConstant
+	@unionRules
+	public union(t: Type): Type {
+		/* 2-2 | `A \| B == B \| A` */
+		if (t instanceof Union) {
+			return t.union(this);
+		}
+		return new Union(this, t).normalize();
 	}
-	protected union_do(t: Type): Type {
-		/** 2-1 | `A  & B == B  & A` */
-		if (t instanceof TypeIntersection) { return t.union(this); }
 
-		return new TypeUnion(this, t);
-	}
 	/**
 	 * Return a new type that includes the values in this type that are not included in the argument type.
 	 * @param t the other type
 	 * @returns the type difference
-	 * @final
 	 */
-	subtract(t: Type): Type {
-		/** 4-1 | `A - B == A  <->  A & B == never` */
-		if (this.intersect(t).isBottomType) { return this; }
-
-		/** 4-2 | `A - B == never  <->  A <: B` */
-		if (this.isSubtypeOf(t)) { return Type.NEVER; }
-
-		if (t instanceof TypeUnion) {
-			return t.subtractedFrom(this);
-		}
-
-		return this.subtract_do(t);
+	@typeConstant
+	@differenceRules
+	public subtract(t: Type): Type {
+		return new Difference(this, t);
 	}
-	protected subtract_do(t: Type): Type {
-		return new TypeDifference(this, t);
-	}
+
 	/**
 	 * Return whether this type is a structural subtype of the given type.
 	 * @param t the type to compare
 	 * @returns Is this type a subtype of the argument?
-	 * @final
 	 */
-	isSubtypeOf(t: Type): boolean {
-		/** 2-7 | `A <: A` */
-		if (this === t) { return true }
-		/** 1-1 | `never <: T` */
-		if (this.isBottomType) { return true; };
-		/** 1-3 | `T       <: never  <->  T == never` */
-		if (t.isBottomType) { return this.isBottomType; }
-		/** 1-4 | `unknown <: T      <->  T == unknown` */
-		if (this.isTopType) { return t.isTopType; };
-		/** 1-2 | `T     <: unknown` */
-		if (t.isTopType) { return true; }
-
-		if (t instanceof TypeIntersection) {
-			return t.isSupertypeOf(this);
-		}
-		if (t instanceof TypeUnion) {
-			if (t.isNecessarilySupertypeOf(this)) { return true; }
-		}
-		if (t instanceof TypeDifference) {
-			return t.isSupertypeOf(this);
-		}
-
-		return this.isSubtypeOf_do(t)
+	@strictEqual
+	@memoizeBinOp()
+	@subtypeRules
+	public isSubtypeOf(t: Type): boolean {
+		return [...this.values].every((v) => t.includes(v));
 	}
-	protected isSubtypeOf_do(t: Type): boolean {
-		return !this.isBottomType && !!this.values.size // these checks are needed in cases of `obj` and `void`, which don’t store values
-			&& [...this.values].every((v) => t.includes(v));
-	}
+
 	/**
 	 * Return whether this type is structurally equal to the given type.
 	 * Two types are structurally equal if they are subtypes of each other.
@@ -223,13 +436,17 @@ export abstract class Type {
 	 * @param t the type to compare
 	 * @returns Is this type equal to the argument?
 	 */
-	equals(t: Type): boolean {
+	@strictEqual
+	@memoizeBinOp(true)
+	public equals(t: Type): boolean {
 		return this.isMutable === t.isMutable && this.isSubtypeOf(t) && t.isSubtypeOf(this);
 	}
-	mutableOf(): Type {
+
+	public mutableOf(): Type {
 		return this;
 	}
-	immutableOf(): Type {
+
+	public immutableOf(): Type {
 		return this;
 	}
 }
@@ -238,154 +455,131 @@ export abstract class Type {
 
 /**
  * An Interface Type is a set of properties that a value must have.
+ * @deprecated
  */
 export class TypeInterface extends Type {
-	override readonly isBottomType: boolean = [...this.properties.values()].some((value) => value.isBottomType);
-	override readonly isTopType: boolean = this.properties.size === 0;
-
 	/**
 	 * Construct a new TypeInterface object.
 	 * @param properties a map of this type’s members’ names along with their associated types
 	 * @param is_mutable is this type mutable?
 	 */
-	constructor (
+	public constructor(
 		private readonly properties: ReadonlyMap<string, Type>,
 		is_mutable: boolean = false,
+		private readonly typeparams: ReadonlyMap<string, GenericParameter> = new Map(),
 	) {
 		super(is_mutable);
 	}
 
-	override get hasMutable(): boolean {
+	public override get isBottomType(): boolean {
+		return [...this.properties.values()].some((value) => value.isBottomType);
+	}
+
+	public override get isTopType(): boolean {
+		return this.properties.size === 0;
+	}
+
+	public override get isReference(): boolean {
+		return true;
+	}
+
+	public override get hasMutable(): boolean {
 		return super.hasMutable || [...this.properties.values()].some((t) => t.hasMutable);
 	}
-	override includes(v: OBJ.Object): boolean {
-		return [...this.properties.keys()].every((key) => key in v)
+
+	public override toString(): string {
+		return `[${ [...this.properties].map((prop) => prop.join(': ')).join(', ') }]`;
 	}
+
+	public override includes(v: VALUE.Value): boolean {
+		return [...this.properties.keys()].every((key) => key in v);
+	}
+
 	/**
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
-	protected override intersect_do(t: TypeInterface): TypeInterface {
-		const props: Map<string, Type> = new Map([...this.properties]);
-		;[...t.properties].forEach(([name, type_]) => {
-			props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_)
-		})
-		return new TypeInterface(props)
+	@memoizeBinOp(true)
+	@typeConstant
+	@intersectionRules
+	public override intersect(t: Type): Type {
+		if (t instanceof TypeInterface) {
+			const props = new Map<string, Type>([...this.properties]);
+			[...t.properties].forEach(([name, type_]) => {
+				props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_);
+			});
+			return new TypeInterface(props);
+		} else {
+			return super.intersect(t);
+		}
 	}
+
 	/**
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
 	 */
-	protected override union_do(t: TypeInterface): TypeInterface {
-		const props: Map<string, Type> = new Map();
-		;[...this.properties].forEach(([name, type_]) => {
-			if (t.properties.has(name)) {
-				props.set(name, type_.union(t.properties.get(name)!))
-			}
-		})
-		return new TypeInterface(props)
+	@memoizeBinOp(true)
+	@typeConstant
+	@unionRules
+	public override union(t: Type): Type {
+		if (t instanceof TypeInterface) {
+			const props = new Map<string, Type>();
+			[...this.properties].forEach(([name, type_]) => {
+				if (t.properties.has(name)) {
+					props.set(name, type_.union(t.properties.get(name)!));
+				}
+			});
+			return new TypeInterface(props);
+		} else {
+			return super.union(t);
+		}
 	}
+
 	/**
 	 * In the general case, `S` is a subtype of `T` if every property of `T` exists in `S`,
 	 * and for each of those properties `#prop`, the type of `S#prop` is a subtype of `T#prop`.
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
 	 */
-	protected override isSubtypeOf_do(t: TypeInterface) {
-		return [...t.properties].every(([name, type_]) =>
-			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
-		)
+	@strictEqual
+	@memoizeBinOp()
+	@subtypeRules
+	public override isSubtypeOf(t: Type): boolean {
+		if (t instanceof TypeInterface) {
+			if (![...this.typeparams.entries()].every(([name, this_param]) => {
+				const that_param: GenericParameter | undefined = t.typeparams.get(name);
+				if (!that_param) {
+					return true;
+				}
+				switch (t.isMutable ? that_param.variance.whenMutable : that_param.variance.normally) {
+					case Variance.INVARIANT: {
+						return this_param.assigned.equals(that_param.assigned);
+					}
+					case Variance.COVARIANT: {
+						return this_param.assigned.isSubtypeOf(that_param.assigned);
+					}
+					case Variance.CONTRAVARIANT: {
+						return that_param.assigned.isSubtypeOf(this_param.assigned);
+					}
+					case Variance.BIVARIANT: {
+						return true;
+					}
+				}
+			})) {
+				return false;
+			}
+			return [...t.properties].every(([name, type_]) => (
+				this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
+			));
+		} else {
+			return super.isSubtypeOf(t);
+		}
 	}
-	override mutableOf(): TypeInterface {
+
+	public override mutableOf(): TypeInterface {
 		return new TypeInterface(this.properties, true);
 	}
-	override immutableOf(): TypeInterface {
+
+	public override immutableOf(): TypeInterface {
 		return new TypeInterface(this.properties, false);
-	}
-}
-
-
-
-/**
- * Class for constructing the Bottom Type, the type containing no values.
- * @final
- */
-class TypeNever extends Type {
-	static readonly INSTANCE: TypeNever = new TypeNever();
-
-	override readonly isBottomType: boolean = true;
-	override readonly isTopType: boolean = false;
-
-	private constructor () {
-		super(false);
-	}
-
-	override toString(): string {
-		return 'never';
-	}
-	override includes(_v: OBJ.Object): boolean {
-		return false
-	}
-	override equals(t: Type): boolean {
-		return t.isBottomType;
-	}
-}
-
-
-
-/**
- * Class for constructing the `void` type.
- * @final
- */
-class TypeVoid extends Type {
-	static readonly INSTANCE: TypeVoid = new TypeVoid();
-
-	override readonly isBottomType: boolean = false;
-	override readonly isTopType: boolean = false;
-
-	private constructor () {
-		super(false);
-	}
-
-	override toString(): string {
-		return 'void';
-	}
-	override includes(_v: OBJ.Object): boolean {
-		return false;
-	}
-	protected override intersect_do(_t: Type): Type {
-		return Type.NEVER;
-	}
-	protected override isSubtypeOf_do(_t: Type): boolean {
-		return false;
-	}
-	override equals(t: Type): boolean {
-		return t === TypeVoid.INSTANCE || super.equals(t);
-	}
-}
-
-
-
-/**
- * Class for constructing the Top Type, the type containing all values.
- * @final
- */
-class TypeUnknown extends Type {
-	static readonly INSTANCE: TypeUnknown = new TypeUnknown();
-
-	override readonly isBottomType: boolean = false;
-	override readonly isTopType: boolean = true;
-
-	private constructor () {
-		super(false);
-	}
-
-	override toString(): string {
-		return 'unknown';
-	}
-	override includes(_v: OBJ.Object): boolean {
-		return true
-	}
-	override equals(t: Type): boolean {
-		return t.isTopType;
 	}
 }

@@ -1,27 +1,22 @@
-import {
-	Keyword,
-	Validator,
-	SyntaxNodeType,
-	isSyntaxNodeType,
-} from './package.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+import {memoizeGetter} from '../../lib/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 
 export class ASTNodeKey extends ASTNodeCP {
-	private _id: bigint | null = null; // TODO use memoize decorator
-
-	constructor (start_node: SyntaxNodeType<'word'>) {
+	public constructor(start_node: SyntaxNodeType<'word'>) {
 		super(start_node);
 	}
 
-	get id(): bigint {
-		return this._id ??= (isSyntaxNodeType(this.start_node.children[0], 'identifier'))
-			? this.validator.cookTokenIdentifier(this.start_node.children[0].text)
-			: Validator.cookTokenKeyword(this.start_node.children[0].text as Keyword);
+	// NOTE: this needs to be a getter instead of a field because it depends on `this.validator`, which is also a getter
+	@memoizeGetter
+	public get id(): bigint {
+		return this.validator.wordNodeID(this.start_node as SyntaxNodeType<'word'>);
 	}
 
-	override varCheck(): void {
-		this.id; // initialize `this._id`
+	public override varCheck(): void {
+		super.varCheck();
+		this.id; // `this.id` must be initialized during `varCheck` because it modifies the validator’s state
 	}
 }

@@ -1,16 +1,14 @@
-import type {
-	SyntaxNodeType,
-} from './package.js';
-import type {ASTNodeExpression} from './index.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ASTNodeExpression} from './index.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 
 export class ASTNodeCase extends ASTNodeCP {
-	constructor (
+	public constructor(
 		start_node: SyntaxNodeType<'case'>,
-		readonly antecedent: ASTNodeExpression,
-		readonly consequent: ASTNodeExpression,
+		public readonly antecedent: ASTNodeExpression,
+		public readonly consequent: ASTNodeExpression,
 	) {
 		super(start_node, {}, [antecedent, consequent]);
 	}

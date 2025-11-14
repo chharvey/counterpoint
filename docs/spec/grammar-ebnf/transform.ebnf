@@ -98,7 +98,7 @@ ChoiceData Transform(SemanticOp[operator: OPT] expr, Text nt, Sequence<Productio
 	].
 ;
 
-ChoiceData Transform(SemanticOp[operator: ORDER] expr, Text nt, Sequence<ProductionData> data) :=
+ChoiceData Transform(SemanticOp[operator: SEQ] expr, Text nt, Sequence<ProductionData> data) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *UnwrapAffirm:* `Transform(expr.children.0, nt, data)`.
 	3. *Let* `operand1` be *UnwrapAffirm:* `Transform(expr.children.1, nt, data)`.
@@ -108,7 +108,7 @@ ChoiceData Transform(SemanticOp[operator: ORDER] expr, Text nt, Sequence<Product
 		].
 ;
 
-ChoiceData Transform(SemanticOp[operator: CONCAT] expr, Text nt, Sequence<ProductionData> data) :=
+ChoiceData Transform(SemanticOp[operator: UNSEQ] expr, Text nt, Sequence<ProductionData> data) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *UnwrapAffirm:* `Transform(expr.children.0, nt, data)`.
 	3. *Let* `operand1` be *UnwrapAffirm:* `Transform(expr.children.1, nt, data)`.
@@ -119,7 +119,20 @@ ChoiceData Transform(SemanticOp[operator: CONCAT] expr, Text nt, Sequence<Produc
 		].
 ;
 
-ChoiceData Transform(SemanticOp[operator: ALTERN] expr, Text nt, Sequence<ProductionData> data) :=
+ChoiceData Transform(SemanticOp[operator: UNCHOICE] expr, Text nt, Sequence<ProductionData> data) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be *UnwrapAffirm:* `Transform(expr.children.0, nt, data)`.
+	3. *Let* `operand1` be *UnwrapAffirm:* `Transform(expr.children.1, nt, data)`.
+	4. *Return:* a flattened mapping from `operand0` indexed by `i` to
+		a flattened mapping from `operand1` indexed by `j` to [
+			[...operand0[i]],
+			[...operand1[j]],
+			[...operand0[i], ...operand1[j]],
+			[...operand1[j], ...operand0[i]],
+		].
+;
+
+ChoiceData Transform(SemanticOp[operator: CHOICE] expr, Text nt, Sequence<ProductionData> data) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *UnwrapAffirm:* `Transform(expr.children.0, nt, data)`.
 	3. *Let* `operand1` be *UnwrapAffirm:* `Transform(expr.children.1, nt, data)`.
@@ -134,7 +147,7 @@ ChoiceData Transform(SemanticOp[operator: ALTERN] expr, Text nt, Sequence<Produc
 
 Sequence<ProductionData> Transform(SemanticProduction prod) :=
 	1. *Assert:* `prod.children.count` is 2.
-	2. *Let* `prods` be an empty sequence.
+	2. *Let* `prods` be an empty Sequence.
 	3. *Let* `names` be *UnwrapAffirm:* `Expand(prod.children.0)`
 	4. *Let* `defn` be *UnwrapAffirm:* `Transform(prod.children.1, names[i], prods)`.
 	5. *Set* `prods` to a mapping from `names` indexed by `i` to [name= names[i], defn= defn].
@@ -155,14 +168,16 @@ Sequence<Text> Expand(SemanticRef ref, Text nt) :=
 		1. *Return:* [`ref.name`].
 	3. *Let* `expands` be *UnwrapAffirm:* `Expand(ref.children.0)`.
 	4. *Let* `power_suffix` be *UnwrapAffirm:* `PowerSequence<SemanticArg>(args)`.
-	5. *Let* `names` be an empty sequence.
+	5. *Let* `names` be an empty Sequence.
 	6. *For* `i` in `expands`:
 		1. *For* `j` in `power_suffix`:
-			1. *Let* `suffixes` be an empty sequence.
+			1. *Let* `suffixes` be an empty Sequence.
 			2. *For* `k` in `power_suffix[j]`:
 				1. *If* `power_suffix[j][k].append` is TRUE:
 					1. Push `power_suffix[j][k].name` to `suffixes`.
 				2. *If* `power_suffix[j][k].append` is INHERIT *and* `nt` contains the suffix `power_suffix[j][k].name`:
+					1. Push `power_suffix[j][k].name` to `suffixes`.
+				3. *If* `power_suffix[j][k].append` is NOTINHERIT *and* `nt` does not contain the suffix `power_suffix[j][k].name`:
 					1. Push `power_suffix[j][k].name` to `suffixes`.
 			3. *Let* `suffix` be the concatenation of each element of `suffixes`, separated by "_".
 			4. *Let* `name` be the concatenation of `expands[i]` with `suffix`.
@@ -178,7 +193,7 @@ Sequence<Text> Expand(SemanticNonterminal nt) :=
 		1. *Return:* [`nt.name`].
 	3. *Let* `expands` be *UnwrapAffirm:* `Expand(nt.children.0)`.
 	4. *Let* `power_suffix` be *UnwrapAffirm:* `PowerSequence<SemanticParam>(params)`.
-	5. *Let* `names` be an empty sequence.
+	5. *Let* `names` be an empty Sequence.
 	6. *For* `i` in `expands`:
 		1. *For* `j` in `power_suffix`:
 			1. *Let* `suffixes` be a mapping from `power_suffix[j]` indexed by `k` to `power_suffix[j][k].name`.
@@ -195,6 +210,6 @@ Sequence<Sequence<T>> PowerSequence<T>(Sequence<T> seq) :=
 		For example, the power set of `["a", "b", "c"]` is
 		`[[], ["a"], ["b"], ["c"], ["a", "b"], ["a", "c"], ["b", "c"], ["a", "b", "c"]]`.
 		A “power sequence” is the ordered analog of a power set, wherein order is preserved,
-		i.e., the sequence `["a", "b"]` is not the same as the sequence `["b", "a"]`.
-	2. *Return:* the power sequence of `seq`, preserving order.
+		i.e., the Sequence `["a", "b"]` is not the same as the Sequence `["b", "a"]`.
+	2. *Return:* the power Sequence of `seq`, preserving order.
 ;

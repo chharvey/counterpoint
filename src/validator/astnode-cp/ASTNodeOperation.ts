@@ -1,12 +1,14 @@
-import * as assert from 'assert';
 import {
-	NonemptyArray,
-	CPConfig,
+	type NonemptyArray,
+	assert_instanceof,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
-	Operator,
-} from './package.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
+import type {Operator} from '../Operator.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 
 
 
@@ -17,17 +19,19 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
  * - ASTNodeOperationTernary
  */
 export abstract class ASTNodeOperation extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperation {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperation {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperation);
+		assert_instanceof(expression, ASTNodeOperation);
 		return expression;
 	}
-	override readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
-	constructor(
+
+
+	public override readonly tagname: string = 'Operation'; // TODO remove after refactoring tests using `#serialize`
+	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		operator: Operator,
-		override readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
+		public override readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
 	) {
-		super(start_node, {operator}, children)
+		super(start_node, {operator}, children);
 	}
 }

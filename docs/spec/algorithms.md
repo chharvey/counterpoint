@@ -4,7 +4,7 @@ This chapter lists and defines common abstract algorithms used throughout this s
 
 
 ## DigitCount
-The **DigitCount** attribute grammar gives the [number](./data-types.md#real-integer-numbers) of
+The **DigitCount** attribute grammar gives the [number](./types-values.md#real-integer-numbers) of
 numeric (non-separator) digits in a digit sequence.
 ```
 DigitCount(DigitSequenceDec :::= [0-9]) -> RealNumber
@@ -107,7 +107,7 @@ Decodes a sequence of code units into a sequence of code points using the UTF-8 
 RealNumber Multiply(Sequence<RealNumber> ns) :=
 	1. *If* `ns.count` is 0:
 		1. *Return:* 0.
-	2. Return *UnwrapAffirm:* `Multiply(ns[0, -1])` * \x40 + `ns.lastItem`.
+	2. *Return:* *UnwrapAffirm:* `Multiply(ns[0, -1])` * \x40 + `ns.lastItem`.
 ;
 None! Continue(Sequence<RealNumber> units) :=
 	1. *For index* `i` in `units`:
@@ -191,7 +191,7 @@ Performs the type-checking piece during semantic analysis.
 
 
 ## ToBoolean
-Returns an associated [boolean value](./data-types#boolean), `true` or `false`, with a Counterpoint Language Value.
+Returns an associated [boolean value](./types-values#boolean), `true` or `false`, with a Counterpoint Language Value.
 ```
 Boolean ToBoolean(Object value) :=
 	1. *If* `value` is an instance of `Null`:
@@ -223,9 +223,35 @@ Boolean Identical(Object a, Object b) :=
 		1. *If* `a` and `b` are exactly the same sequence of code units
 			(same length and same code units at corresponding indices):
 			1. *Return:* `true`.
-	7. *If* `a` and `b` are the same object:
+	7. *If* `a` is an instance of `Tuple` *and* `b` is an instance of `Tuple`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *If* `seq_a.count` is not `seq_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `true`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For index* `i` in `seq_b`:
+			1. *If* *UnwrapAffirm:* `Identical(seq_a[i], seq_b[i])` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	8. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
+		1. *Let* `struct_a` be a new Schema whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a new Schema whose properties are exactly the properties in `b`.
+		3. *If* `struct_a.count` is not `struct_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `true`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For key* `k` in `struct_b`:
+			1. *If* `struct_a[k]` is not set:
+				1. *Return:* `false`.
+			2. *If* *UnwrapAffirm:* `Identical(struct_a[k], struct_b[k])` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	9. *If* `a` and `b` are the same object:
 		1. *Return:* `true`.
-	8. Return `false`.
+	10. *Return:* `false`.
 ```
 
 
@@ -244,190 +270,132 @@ Boolean Equal(Object a, Object b) :=
 			1. *Return:* `true`.
 		2. *If* `a` is `-0.0` *and* `b` is `0.0`:
 			1. *Return:* `true`.
-	4. *If* `a` is an instance of `Tuple` or `List` *and* `b` is an instance of `Tuple` or `List`:
+	4. Let the substeps of this step be a subroutine for determining equality of given Sequences of items, `seq_a` and `seq_b`.
+		1. *Assert:* `seq_a` is a Sequence of Counterpoint language values.
+		2. *Assert:* `seq_b` is a Sequence of Counterpoint language values.
+		3. *If* `seq_a.count` is not `seq_b.count`:
+			1. *Return:* `false`.
+		4. *For index* `i` in `seq_b`:
+			1. *If* *UnwrapAffirm:* `Equal(seq_a[i], seq_b[i])` is `false`:
+				1. *Return:* `false`.
+		5. *Return:* `true`.
+	5. Let the substeps of this step be a subroutine for determining equality of given Schemata of values, `sch_a` and `sch_b`.
+		1. *Assert:* `sch_a` is a Schema of Conterpoint language values.
+		2. *Assert:* `sch_b` is a Schema of Conterpoint language values.
+		3. *If* `sch_a.count` is not `sch_b.count`:
+			1. *Return:* `false`.
+		4. *For key* `k` in `sch_b`:
+			1. *If* `sch_a[k]` is not set:
+				1. *Return:* `false`.
+			2. *If* *UnwrapAffirm:* `Equal(sch_a[k], sch_b[k])` is `false`:
+				1. *Return:* `false`.
+		5. *Return:* `true`.
+	6. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following steps.
+		1. *Note:* This assumption prevents an infinite loop,
+			if `a` and `b` ever recursively contain themselves or each other.
+	7. *If* `a` is an instance of `Tuple` *and* `b` is an instance of `Tuple`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *Perform:* The subroutine listed in Step 4 of this algorithm.
+	8. *If* `a` is an instance of `List` *and* `b` is an instance of `List`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *Perform:* The subroutine listed in Step 4 of this algorithm.
+	9. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
+		1. *Let* `sch_a` be a new Schema whose properties are exactly the properties in `a`.
+		2. *Let* `sch_b` be a new Schema whose properties are exactly the properties in `b`.
+		3. *Perform:* The subroutine listed in Step 5 of this algorithm.
+	10. *If* `a` is an instance of `Dict` *and* `b` is an instance of `Dict`:
+		1. *Let* `sch_a` be a new Schema whose properties are exactly the properties in `a`.
+		2. *Let* `sch_b` be a new Schema whose properties are exactly the properties in `b`.
+		3. *Perform:* The subroutine listed in Step 5 of this algorithm.
+	11. *If* `a` is an instance of `Set` *and* `b` is an instance of `Set`:
 		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
 		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
 		3. *If* `seq_a.count` is not `seq_b.count`:
 			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
-			1. *Note:* This assumption prevents an infinite loop,
-				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For index* `i` in `seq_b`:
-			1. *If* *UnwrapAffirm*: `Equal(seq_a[i], seq_b[i])` is `false`:
-				1. *Return:* `false`.
-		6. *Return:* `true`.
-	5. *If* `a` is an instance of `Record` or `Dict` *and* `b` is an instance of `Record` or `Dict`:
-		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
-		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
-		3. *If* `struct_a.count` is not `struct_b.count`:
-			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
-			1. *Note:* This assumption prevents an infinite loop,
-				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For key* `k` in `struct_b`:
-			1. *If* `struct_a[k]` is not set:
-				1. *Return:* `false`.
-			2. *If* *UnwrapAffirm*: `Equal(struct_a[k], struct_b[k])` is `false`:
-				1. *Return:* `false`.
-		6. *Return:* `true`.
-	6. *If* `a` is an instance of `Set` *and* `b` is an instance of `Set`:
-		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
-		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
-		3. *If* `seq_a.count` is not `seq_b.count`:
-			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
-			1. *Note:* This assumption prevents an infinite loop,
-				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For each* `it_b` in `seq_b`:
+		4. *For each* `it_b` in `seq_b`:
 			1. Find an item `it_a` in `seq_a` such that *UnwrapAffirm:* `Equal(it_a, it_b)` is `true`.
-			2. *If* `it_a` does not exist:
+			2. *If* `it_a` is not set:
 				1. *Return:* `false`.
-		6. *Return:* `true`.
-	7. *If* `a` is an instance of `Map` *and* `b` is an instance of `Map`:
+		5. *Return:* `true`.
+	12. *If* `a` is an instance of `Map` *and* `b` is an instance of `Map`:
 		1. *Let* `data_a` be a new Sequence of 2-tuples,
 			whose items are exactly the antecedents and consequents in `a`.
 		2. *Let* `data_b` be a new Sequence of 2-tuples,
 			whose items are exactly the antecedents and consequents in `b`.
 		3. *If* `data_a.count` is not `data_b.count`:
 			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
-			1. *Note:* This assumption prevents an infinite loop,
-				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For each* `it_b` in `data_b`:
+		4. *For each* `it_b` in `data_b`:
 			1. Find an item `it_a` in `data_a` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
-			2. *If* `it_a` does not exist:
+			2. *If* `it_a` is not set:
 				1. *Return:* `false`.
 			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
 				1. *Return:* `false`.
-		6. *Return:* `true`.
-	8. Return `false`.
+		5. *Return:* `true`.
+	13. *Return:* `false`.
 ```
 
 
 
-## Subtype
-Determines whether one type is a subtype of another.
+## AssignTo
+Attempt to assign a mutable collection literal to a mutable type when type-checking fails.
+This assignment is attempted on an entry-by-entry basis.
 ```
-Boolean Subtype(Type a, Type b) :=
-	1. *If* *UnwrapAffirm:* `Identical(a, b)`:
-		// 2-7 | `A <: A`
-		1. *Return:* `true`.
-	2. *If* *UnwrapAffirm:* `IsEmpty(a)`:
-		// 1-1 | `never <: T`
-		1. *Return:* `true`.
-	3. *If* *UnwrapAffirm:* `IsEmpty(b)`:
-		// 1-3 | `T       <: never  <->  T == never`
-		1. *Return:* `IsEmpty(a)`.
-	4. *If* *UnwrapAffirm:* `IsUniverse(a)`:
-		// 1-4 | `unknown <: T      <->  T == unknown`
-		1. *Return:* `IsUniverse(b)`.
-	5. *If* *UnwrapAffirm:* `IsUniverse(b)`:
-		// 1-2 | `T     <: unknown`
-		1. *Return:* `true`.
-	6. *If* `a` is the intersection of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Equal(x, b)` *or* *UnwrapAffirm:* `Equal(y, b)`:
-			// 3-1 | `A  & B <: A  &&  A  & B <: B`
-			1. *Return:* `true`.
-		2. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
-			// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
-			1. *Return:* `true`.
-	7. *If* `b` is the intersection of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
-			// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
-			1. *Return:* `true`.
-	8. *If* `a` is the union of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
-			// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
-			1. *Return:* `true`.
-	9. *If* `b` is the union of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Equal(a, x)` *or* *UnwrapAffirm:* `Equal(a, y)`:
-			// 3-2 | `A <: A \| B  &&  B <: A \| B`
-			1. *Return:* `true`.
-		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
-			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
-			1. *Return:* `true`.
-	10. *If* `a` is a `Tuple` type *and* `b` is a `Tuple` type:
-		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
-		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
-		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
-		4. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
-		5. *If* `seq_a_req.count` is less than `seq_b_req.count`:
-			1. *Return:* `false`.
-		6. *If* `b` is mutable:
-			1. *If* `a` is not mutable:
-				1. *Return:* `false`.
-		7. *For index* `i` in `seq_b`:
+None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
+	1. *If* `expr` is a SemanticTuple *and* `type` is a Tuple type:
+		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
+		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.
+		3. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
+		4. *If* `expr.children.count` is less than `seq_b_req.count`:
+			1. *Throw:* a new TypeErrorNotAssignable.
+		5. *For index* `i` in `seq_b`:
 			1. *If* `seq_b[i].optional` is `false`:
-				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
-			2. *If* `seq_a[i]` is set:
-				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(seq_a[i].type, seq_b[i].type)` is `false`:
-					1. *Return:* `false`.
-				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
-					1. *Return:* `false`.
-		8. *Return:* `true`.
-	11. *If* `a` is a `Record` type *and* `b` is a `Record` type:
-		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
-		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
-		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
-		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
-		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
-			1. *Return:* `false`.
-		6. *If* `b` is mutable:
-			1. *If* `a` is not mutable:
-				1. *Return:* `false`.
-		7. *For key* `k` in `struct_b`:
+				1. *Assert:* `expr.children[i]` is set.
+		6. *For index* `i` in `expr.children`:
+			1. *Let* `ib` be `seq_b[i]`.
+			2. *If:* `ib` is set:
+				1. *Perform:* `TypeCheckAssign(expr.children[i], ib.type)`.
+		7. *Return.*
+	2. *If* `expr` is a SemanticRecord *and* `type` is a Record type:
+		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
+		2. *Let* `struct_b` be a Schema whose properties are exactly the properties in `type`.
+		3. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
+		4. *If* `expr.children.count` is less than `struct_b_req.count`:
+			1. *Throw:* a new TypeErrorNotAssignable.
+		5. *For key* `k` in `struct_b`:
 			1. *If* `struct_b[k].optional` is `false`:
-				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
-					1. *Return:* `false`.
-			2. *If* `struct_a[k]` is set:
-				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(struct_a[k].type, struct_b[k].type)` is `false`:
-					1. *Return:* `false`.
-				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
-					1. *Return:* `false`.
-		8. *Return:* `true`.
-	12. *If* `a` is a `List` type *and* `b` is a `List` type:
-		1. *Let* `ai` be the union of types in `a`.
-		2. *Let* `bi` be the union of types in `b`.
-		3. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ai, bi)` is `true`:
-				1. *Return:* `true`.
-		4. *Else:*
-			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
-				1. *Return:* `true`.
-	13. *If* `a` is a `Dict` type *and* `b` is a `Dict` type:
-		1. *Let* `av` be the union of value types in `a`.
-		2. *Let* `bv` be the union of value types in `b`.
-		3. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
-				1. *Return:* `true`.
-		4. *Else:*
-			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
-				1. *Return:* `true`.
-	14. *If* `a` is a `Set` type *and* `b` is a `Set` type:
-		1. *Let* `ae` be the union of types in `a`.
-		2. *Let* `be` be the union of types in `b`.
-		3. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ae, be)` is `true`:
-				1. *Return:* `true`.
-		4. *Else:*
-			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
-				1. *Return:* `true`.
-	15. *If* `a` is a `Map` type *and* `b` is a `Map` type:
-		1. *Let* `ak` be the union of antecedent types in `a`.
-		2. *Let* `av` be the union of consequent types in `a`.
-		3. *Let* `bk` be the union of antecedent types in `b`.
-		4. *Let* `bv` be the union of consequent types in `b`.
-		5. *If* `b` is mutable:
-			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ak, bk)` is `true` *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
-					1. *Return:* `true`.
-		6. *Else:*
-			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
-				1. *Return:* `true`.
-	16. *If* every value that is assignable to `a` is also assignable to `b`:
-		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
-			because an instance of `Integer` is an instance of `Object`.
-		2. *Return:* `true`.
-	17. *Return:* `false`.
+				1. Find a SemanticProperty `property` in `expr.children` such that `property.children.0.id` is `k`.
+				2. *If* `property` is not set:
+					1. *Throw:* a new TypeErrorNotAssignable.
+		6. *For each* `property` in `expr.children`:
+			1. *Let* `vb` be `struct_b[property.children.0.id]`.
+			2. *If:* `vb` is set:
+				1. *Perform:* `TypeCheckAssign(property.children.1, vb.type)`.
+		7. *Return.*
+	3. *If* `expr` is a SemanticList *and* `type` is a List type:
+		1. *Let* `b_type` be the type argument over `type`.
+		2. *For each* `a_it` in `expr.children`:
+			1. *Perform:* `TypeCheckAssign(a_it, b_type)`.
+		3. *Return.*
+	4. *If* `expr` is a SemanticDict *and* `type` is a Dict type:
+		1. *Let* `b_type` be the type argument over `type`.
+		2. *For each* `a_prop` in `expr.children`:
+			1. *Perform:* `TypeCheckAssign(a_prop.children.1, b_type)`.
+		3. *Return.*
+	5. *If* `expr` is a SemanticSet *and* `type` is a Set type:
+		1. *Let* `b_type` be the type argument over `type`.
+		2. *For each* `a_el` in `expr.children`:
+			1. *Perform:* `TypeCheckAssign(a_el, b_type)`.
+		3. *Return.*
+	6. *If* `expr` is a SemanticMap *and* `type` is a Map type:
+		1. *Let* `b_ant_type` be the antecedent type argument over `type`.
+		2. *Let* `b_con_type` be the consequent type argument over `type`.
+		3. *For each* `a_case` in `expr.children`:
+			1. *Perform:* `TypeCheckAssign(a_case.children.0, b_ant_type)`.
+			2. *Perform:* `TypeCheckAssign(a_case.children.1, b_con_type)`.
+		4. *Return.*
+	7. *Throw:* a new TypeErrorNotAssignable.
 ;
 ```
 
@@ -453,7 +421,7 @@ Number! PerformBinaryArithmetic(Text op, Number operand0, Number operand1) :=
 		1. *Let* `result` be the sum, `operand0 + operand1`,
 			obtained by adding `operand0` (the augend) to `operand1` (the addend).
 		2. *Return:* `result`.
-	5. *Throw:* a new TypeError01.
+	5. *Throw:* a new TypeErrorInvalidOperation.
 ```
 
 
@@ -482,118 +450,169 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 		2. *If* `operand1` is strictly less than `operand0`:
 			1. *Return:* `true`.
 		3. *Return:* `false`.
-	5. *Throw:* a new TypeError01.
+	5. *Throw:* a new TypeErrorInvalidOperation.
 ```
 
 
 
-## CombineTuplesOrRecords
-Combines an intersection or union of tuples or records for the purposes of type-checking index/property access.
+## GetEntryInfo
 ```
-Type CombineTuplesOrRecords(Type t) :=
-	1. *If* `t` is the intersection of some types `a` and `b`:
-		1. *If* `Subtype(a, Tuple)` *and* `Subtype(b, Tuple)`:
-			1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
-			2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
-			3. *Let* `data` be a copy of `seq_a`.
-			4. *For index* `i` in `seq_b`:
-				1. *If* `data[i]` is set:
-					1. *If* `data[i].optional` is `true` *and* `seq_b[i].optional` is `true`:
-						1. *Let* `optional` be `true`.
-					2. *Else:*
-						1. *Let* `optional` be `false`.
-					3. *Set* `data[i]` to a new Structure [
-						type=     *UnwrapAffirm:* `Intersect(data[i].type, seq_b[i].type)`,
-						optional= optional,
-					].
-				2. *Else:*
-					1. *Set* `data[i]` to `seq_b[i]`.
-			5. *Assert:* In `data`, all optional items follow all required items.
-			6. *Return:* a subtype of `Tuple` whose items are `data`.
-		2. *If* `Subtype(a, Record)` *and* `Subtype(b, Record)`:
-			1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
-			2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
-			3. *Let* `data` be a copy of `struct_a`.
-			4. *For key* `k` in `struct_b`:
-				1. *If* `data[k]` is set:
-					1. *If* `data[k].optional` is `true` *and* `struct_b[k].optional` is `true`:
-						1. *Let* `optional` be `true`.
-					2. *Else:*
-						1. *Let* `optional` be `false`.
-					3. *Set* `data[k]` to a new Structure [
-						type=     *UnwrapAffirm:* `Intersect(data[k].type, struct_b[k].type)`,
-						optional= optional,
-					].
-				2. *Else:*
-					1. *Set* `data[k]` to `struct_b[k]`.
-			5. *Return:* a subtype of `Record` whose properties are `data`.
-	2. *If* `t` is the union of some types `a` and `b`:
-		1. *If* `Subtype(a, Tuple)` *and* `Subtype(b, Tuple)`:
-			1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
-			2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
-			3. *Let* `data` be a new Sequence.
-			4. *For index* `i` in `seq_b`:
-				1. *If* `seq_a[i]` is set:
-					1. *If* `seq_a[i].optional` is `true` *or* `seq_b[i].optional` is `true`:
-						1. *Let* `optional` be `true`.
-					2. *Else:*
-						1. *Let* `optional` be `false`.
-					3. *Set* `data[i]` to a new Structure [
-						type=     *UnwrapAffirm:* `Union(seq_a[i].type, seq_b[i].type)`,
-						optional= optional,
-					].
-			5. *Assert:* In `data`, all optional items follow all required items.
-			6. *Return:* a subtype of `Tuple` whose items are `data`.
-		2. *If* `Subtype(a, Record)` *and* `Subtype(b, Record)`:
-			1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
-			2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
-			3. *Let* `data` be a new Structure.
-			4. *For key* `k` in `struct_b`:
-				1. *If* `struct_a[k]` is set:
-					1. *If* `struct_a[k].optional` is `true` *or* `struct_b[k].optional` is `true`:
-						1. *Let* `optional` be `true`.
-					2. *Else:*
-						1. *Let* `optional` be `false`.
-					3. *Set* `data[k]` to a new Structure [
-						type=     *UnwrapAffirm:* `Union(struct_a[k].type, struct_b[k].type)`,
-						optional= optional,
-					].
-			5. *Return:* a subtype of `Record` whose properties are `data`.
-	3. *Return:* `t`.
+EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access, Boolean is_writing) :=
+	1. *Assert:* `access.children.count` is 2.
+	2. *Let* `accessor` be `access.children.1`.
+	3. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true` *and* `access.kind` is `MAYBE`:
+		1. *Return:* a new EntryTypeSchema [
+				type=     `Anything`,
+				optional= `true`,
+			].
+	4. *If* `base_type` is the intersection or union of some types `a` and `b`:
+		1. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access, is_writing)`, `GetEntryInfo(b, access, is_writing)`].
+		2. *Let* `errors` be a filtering of `entry_infos` for each `info` such that `info` is an abrupt completion.
+		3. *Let* `entries` be a filtering of `entry_infos` for each `info` such that `info` is a normal completion.
+		4. *Set* `errors` to a mapping of `errors` for each `err` to `err.value`.
+		5. *Set* `entries` to a mapping of `entries` for each `entry` to `entry.value`.
+		6. *If* `entries.count` is 0:
+			1. *If* `errors.count` is 1:
+				1. *Throw:* `errors.0`.
+			2. *Throw:* a new AggregateError containing `errors`.
+		7. *If* `base_type` is the intersection of some types `a` and `b`:
+			1. *Let* `all_optional` be `true`.
+			2. *For each* `entry` in `entries`:
+				1. *If* `entry.optional` is `false`:
+					1. *Set* `all_optional` to `false`.
+			3. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to *UnwrapAffirm:* `Intersection(x.type, y.type)`.
+			4. *Return:* a new EntryTypeSchema [
+					type=     `intersection`,
+					optional= `all_optional`,
+				].
+		8. *Else:*
+			1. *Assert:* `base_type` is the union of some types `a` and `b`.
+			2. *Let* `any_optional` be `false`.
+			3. *For each* `entry` in `entries`:
+				1. *If* `entry.optional` is `true`:
+					1. *Set* `any_optional` to `true`.
+			4. *If* `errors.count` is greater than 0:
+				1. *Set* `any_optional` to `true`.
+			5. *Let* `union` be a reduction of `entries` for each `x` and `y` to *UnwrapAffirm:* `Union(x.type, y.type)`.
+			6. *Return:* a new EntryTypeSchema [
+					type=     `union`,
+					optional= `any_optional`,
+				].
+	5. *If* `accessor` is a SemanticIndex:
+		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
+			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
+			2. *Return:* `entry`.
+		2. *Else:*
+			1. *Throw:* a new TypeErrorNoEntry.
+	6. *Else If* `accessor` is a SemanticKey:
+		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
+			1. *Let* `entry` be the item accessed at key `accessor.id` in `base_type`.
+			2. *Return:* `entry`.
+		2. *Else:*
+			1. *Throw:* a new TypeErrorNoEntry.
+	7. *Else:*
+		1. *Assert:* `accessor` is a SemanticExpression.
+		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
+		3. *Let* `accessor_maybe` be `false`.
+		4. *If* `access.kind` is `MAYBE`:
+			1. *Set* `accessor_maybe` to `true`.
+		5. *If* `base_type` is a List type:
+			1. *Let* `t` be the type of the items in `base_type`.
+			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
+				1. *Return:* a new EntryTypeSchema [
+					type=     `t`,
+					optional= `accessor_maybe`,
+				].
+			3. *Else:*
+				1. *Throw:* a new TypeErrorNotNarrow.
+		6. *Else If* `base_type` is a Dict type:
+			1. *Let* `t` be the type of the values in `base_type`.
+			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Symbol)` is `true`:
+				1. *Return:* a new EntryTypeSchema [
+					type=     `t`,
+					optional= `accessor_maybe`,
+				].
+			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, String)` is `true`:
+				1. *Throw:* a new Error "String keys for dict access are not yet supported."
+			4. *Else:*
+				1. *Throw:* a new TypeErrorNotNarrow.
+		7. *Else If* `base_type` is a Set type:
+			1. *Let* `t` be the type of the elements in `base_type`.
+			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true` *or* `is_writing` is `false`:
+				1. *Return:* a new EntryTypeSchema [
+					type=     `Boolean`,
+					optional= `false`,
+				].
+			3. *Else:*
+				1. *Throw:* a new TypeErrorNotNarrow.
+		8. *Else If* `base_type` is a Map type:
+			1. *Let* `k` be the type of the antecedents in `base_type`.
+			2. *Let* `v` be the type of the consequents in `base_type`.
+			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true` *or* `is_writing` is `false`:
+				1. *Return:* a new EntryTypeSchema [
+					type=     `v`,
+					optional= `accessor_maybe`,
+				].
+			4. *Else:*
+				1. *Throw:* a new TypeErrorNotNarrow.
+		9. *Else:*
+			1. *Throw:* a new TypeErrorInvalidOperation.
 ;
 ```
 
 
 
-## UpdateAccessedStaticType
-Modifies the type of an accessed bound property of a tuple or record.
-If the bound property is required: Under claim access, subtracts Void; else returns unmodified type.
-If the bound property is optional: Under claim access, subtracts Void; under optional access, unions with Null; else unions with Void.
+## ValidateAccessKind
+Checks for correctness, matching access kind with accessed bound entry of a collection.
+If access kind is normal, the entry must be non-optioal.
+If access kind is maybe, the entry must be optional.
+Otherwise, the access kind may be result.
+For dynamic collections, entries behave as both non-optional and optional.
 ```
-Type UpdateAccessedStaticType(EntryTypeStructure entry, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
-	1. *Let* `type` be `entry.type`.
-	2. *If* `accesskind` is `CLAIM`:
-		1. *Return:* `Difference(type, Void)`.
-	3. *If* `entry.optional` is `true`:
-		1. *If* `accesskind` is `OPTIONAL`:
-			1. *Return:* `Union(type, Null)`.
-		2. *Return:* `Union(type, Void)`.
-	4. *Return:* `type`.
+None! ValidateAccessKind(Or<NORMAL, MAYBE, RESULT> access_kind, Boolean is_entry_optional) :=
+	1. *If* `access_kind` is *NORMAL* *and* `is_entry_optional` is `false`:
+		1. *Return.*
+	2. *If* `access_kind` is *MAYBE* *and* `is_entry_optional` is `true`:
+		1. *Return.*
+	3. *If* `access_kind` is *RESULT*:
+		1. *Throw:* a new TypeError "Operator not yet supported.".
+	4. *Throw:* a new TypeErrorInvalidOperation.
 ;
 ```
 
 
 
-## UpdateAccessedDynamicType
-Modifies the type of an accessed bound property of a dynamic data type.
-Under claim access, subtracts Void; under optional access, unions with Null; else returns unmodified type.
+## UpdateAccessedType
+Possibly modifies the type of an accessed bound property of a data type.
+Under maybe access, unions with Null; else returns unmodified type.
 ```
-Type UpdateAccessedDynamicType(Type type, Or<NORMAL, OPTIONAL, CLAIM> accesskind) :=
-	1. *If* `accesskind` is `CLAIM`:
-		1. *Return:* `Difference(type, Void)`.
-	2. *Else If* `accesskind` is `OPTIONAL`:
+Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
+	1. *If* `access_kind` is *MAYBE*:
 		1. *Return:* `Union(type, Null)`.
+	2. *Else If* `access_kind` is *RESULT*:
+		1. *Throw:* a new TypeError "Operator not yet supported.".
 	3. *Else:*
-		1. *Return:* `type`.
+		1. *Assert:* `access_kind` is *NORMAL*.
+		2. *Return:* `type`.
+;
+```
+
+
+
+## WriteTypeOf
+Assuming reassignment of a symbol/entry is valid, gives the write-type of that symbol/entry.
+```
+Type! WriteTypeOf(Or<SemanticVariable, SemanticAccess> reassignable) :=
+	1. *If* `reassignable` is a SemanticVariable:
+		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `reassignable.id`.
+		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+		3. *Return:* `symbol.type`.
+	2. *Else:*
+		1. *Assert:* `reassignable` is a SemanticAccess.
+		2. *Assert:* `reassignable.children.count` is 2.
+		3. *Let* `base` be `reassignable.children.0`.
+		4. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
+		5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, reassignable, true)`.
+		6. *Return:* `entry.type`.
 ;
 ```

@@ -9,8 +9,20 @@ Sequence<Instruction> Build(Boolean b) :=
 	3. *Return:* ["Push `0` onto the operand stack."].
 ;
 
+Sequence<Instruction> Build(Symbol s) :=
+	1. *Return:* ["Push `n.id` onto the operand stack."].
+;
+
 Sequence<Instruction> Build(Number n) :=
 	1. *Return:* ["Push `n` onto the operand stack."].
+;
+
+Sequence<Instruction> Build(String s) :=
+	// TO BE DETERMINED
+;
+
+Sequence<Instruction> Build(Collection c) :=
+	// TO BE DETERMINED
 ;
 
 
@@ -19,17 +31,44 @@ Sequence<Instruction> Build(SemanticExpression expr) :=
 	1. *Let* `folded` be `ValueOf(expr)`.
 	2. *If* `folded` is an abrupt completion:
 		1. *Return:* `BuildExpression(expr)`.
-	3. *Assert:* `folded.value` exists.
+	3. *Assert:* `folded.value` is set.
 	4. *Return:* `Build(folded.value)`.
 ;
 
 
 
 Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
-	1. *Let* `sequence` be an empty sequence of `Instruction`s.
-	2. *If* `stmt.children.count` is greater than 0:
-		1. *Set* `sequence` to *UnwrapAffirm:* `Build(stmt.children.0)`.
-	3. *Return:* `sequence`.
+	1. *If* `stmt.children.count` is greater than 0:
+		1. *Return:* `Build(stmt.children.0)`.
+	2. *Return:* [].
+;
+
+
+
+Sequence<Instruction> Build(SemanticStatementConditional stmt) :=
+	1. *Assert:* `stmt.children.count` is greater than 1.
+	2. *Let* `instrs0` be *UnwrapAffirm:* `Build(stmt.children.0)`.
+	3. *If* `stmt.unless` is `true`:
+		1. Append "NOT" to `instrs0`.
+	4. *Let* `instrs1` be *UnwrapAffirm:* `Build(stmt.children.1)`.
+	5. *If* `stmt.children.count` is 3:
+		1. *Let* `instrs2` be *UnwrapAffirm:* `Build(expr.children.2)`.
+	6. *Else:*
+		1. *Let* `instrs2` be [].
+	7. *Return:* [
+		...instrs0,
+		"IF",
+		...instrs1,
+		"ELSE",
+		...instrs2,
+		"END",
+	].
+;
+
+
+
+Sequence<Instruction> Build(SemanticBlock block) :=
+	1. *Return:* a flattened mapping of `block.children` for each `stmt` to *UnwrapAffirm:* `Build(stmt)`.
 ;
 
 
@@ -39,20 +78,38 @@ Sequence<Instruction> Build(SemanticDeclarationType decl) :=
 ;
 
 Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
-	1. *Assert:* `decl.children.count` is 3.
-	2. *Let* `folded` be `ValueOf(decl)`.
-	3. *If* `folded` is a normal completion *and* `decl.unfixed` is `false`:
-		1. *Note:* references to the variable will be constant-propegated by its fixed value.
-		2. *Return:* [].
-	4. *Let* `name` be the string-concatenation of "glb" and `decl.children.0.id`.
-	5. *Let* `instrs` be *UnwrapAffirm:* `Build(decl.childen.2)`.
-	6. *Return:* [
-		...instrs,
-		"DECL the global variable `name`.",
-	].
+	1. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticVariable.
+	2. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
+	3. *If* `assigned` is *none*:
+		1. *If* `assignee` is *none*:
+			1. *Return:* [].
+		2. *Else:*
+			1. *Let* `instrs` be *UnwrapAffirm:* `Build(null)`.
+	4. *Else:*
+		1. *Let* `value` be `ValueOf(assigned)`.
+		2. *If* `value` is a normal completion:
+			1. *If* `decl.unfixed` is `false` *or* `assignee` is *none*:
+				1. *Note:* references to the variable will be constant-propegated by its fixed value.
+				2. *Return:* [].
+		3. *Let* `instrs` be *UnwrapAffirm:* `Build(assigned)`.
+	5. *If* `assignee` is *none*:
+		1. *Return:* [
+			...instrs,
+			"DROP",
+		].
+	6. *Else:*
+		1. *Let* `name` be the string-concatenation of "glb" and `assignee.id`.
+		2. *Return:* [
+			...instrs,
+			"DECL the global variable `name`.",
+		].
 ;
 
-Sequence<Instruction> Build(SemanticAssignment assign) :=
+Sequence<Instruction> Build(SemanticDeclarationClaim decl) :=
+	1. *Return:* [].
+;
+
+Sequence<Instruction> Build(SemanticDeclarationReassignment assign) :=
 	1. *Assert:* `assign.children.count` is 2.
 	2. *Let* `name` be the string-concatenation of "glb" and `assign.children.0.id`.
 	3. *Let* `instrs` be *UnwrapAffirm:* `Build(assign.childen.1)`.
@@ -65,7 +122,10 @@ Sequence<Instruction> Build(SemanticAssignment assign) :=
 
 
 Sequence<Instruction> Build(SemanticGoal goal) :=
-	1. *Return:* a flattened mapping of `goal.children` for each `stmt` to *UnwrapAffirm:* `Build(stmt)`.
+	1. *If* `goal.children.count` is 1:
+		1. *Return:* `Build(goal.children.0)`.
+	2. *Else:*
+		1. *Return:* [].
 ;
 
 
@@ -92,14 +152,36 @@ Sequence<Instruction> BuildExpression(SemanticTemplate tpl) :=
 
 
 
-Sequence<Instruction> BuildExpression(SemanticClaim claim) :=
-	1. *Assert:* `claim.children.count` is 2.
-	2. *Return:* `Build(claim.children.1)`.
+Sequence<Instruction> BuildExpression(SemanticTuple tuple) :=
+	// TO BE DETERMINED
 ;
 
 
 
-Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NEG] expr) :=
+Sequence<Instruction> BuildExpression(SemanticExpressionBlock block) :=
+	1. *Assert:* `block.children.count` is greater than 0.
+	2. *Let* `but_last` be a flattened mapping of `block.children[0 .. -1]` for each `stmt` to *UnwrapAffirm:* `Build(stmt)`.
+	3. *Let* `last_stmt` be `block.children.-1`.
+	4. *Assert:* `last_stmt` is a SemanticStatementExpression.
+	5. *Assert:* `last_stmt.children.count` is greater than 0.
+	6. *Let* `expr` be `last_stmt.children.0`.
+	7. *Let* `last` be *UnwrapAffirm:* `Build(expr)`.
+	8. *Return:* [
+		...`but_last`,
+		`last`,
+	].
+;
+
+
+
+Sequence<Instruction> BuildExpression(SemanticClaim claim) :=
+	1. *Assert:* `claim.children.count` is 2.
+	2. *Return:* `Build(claim.children.0)`.
+;
+
+
+
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NEG | INT | FLOAT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `instrs` be *UnwrapAffirm:* `Build(expr.children.0)`.
 	3. *Return:* [
@@ -109,15 +191,32 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NE
 ;
 
 Sequence<Instruction> BuildExpression(SemanticOperation[operator: IS] expr) :=
-	1. *Throw:* new TypeError "Operator not yet supported.".
+	1. *Throw:* a new TypeError "Operator not yet supported.".
 ;
 
-Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | GT | LE | GE | ID | EQ] expr) :=
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | DIV | ADD | LT | GT | LE | GE | ID | EQ] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
 		...builds.0,
 		...builds.1,
 		"`expr.operator`",
+	].
+;
+
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: MUL] expr) :=
+	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
+	2. *Return:* [
+		...builds.0,
+		"TEE the local variable `operand0`.",
+		0,
+		"EQ"
+		"IF"
+		"GET the local variable `operand0`.",
+		"ELSE",
+		"GET the local variable `operand0`.",
+		...builds.1,
+		"`expr.operator`",
+		"END",
 	].
 ;
 

@@ -1,16 +1,46 @@
+import * as xjs from 'extrajs';
+import binaryen from 'binaryen';
+import type {SyntaxNode} from 'tree-sitter';
 import {
-	INST,
 	Builder,
-	CPConfig,
+	ParseError01,
+} from '../../index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
+} from '../../core/index.ts';
+import {
 	TS_PARSER,
-	DECORATOR,
-	Validator,
-	SyntaxNodeType,
-} from './package.js';
-import type {Buildable} from './Buildable.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
-import type {ASTNodeStatement} from './ASTNodeStatement.js';
+	type Serializable,
+	to_serializable,
+} from '../../parser/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {Decorator} from '../Decorator.ts';
+import {Validator} from '../Validator.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {Buildable} from './Buildable.ts';
+import type {ASTNodeBlock} from './ASTNodeBlock.ts';
+
+
+
+function report_syntax_errors(node: SyntaxNode): void {
+	xjs.Array.forEachAggregated<SyntaxNode>(node.children, (n) => {
+		if (n.type === 'ERROR') {
+			throw new ParseError01(to_serializable(n));
+		} else if (n.type === 'MISSING' || n.text === '') {
+			const serializable: Serializable = to_serializable(n);
+			const err = new ParseError01(to_serializable(n));
+			// @ts-expect-error --- TODO: write class for `ParseError02`
+			err.message = (n.type === 'MISSING')
+				? err.message.replace(/Unexpected/, 'Expected')
+				: `Expected token: \`${ n.type }\` at line ${ serializable.line_index + 1 } col ${ serializable.col_index + 1 }.`;
+			throw err;
+		} else if (n.childCount > 0) {
+			report_syntax_errors(n);
+		}
+	});
+}
 
 
 
@@ -22,28 +52,52 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeGoal representing the given source
 	 */
-	static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeGoal {
-		return DECORATOR.decorateTS(TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>, config);
+	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeGoal {
+		const root_node = TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>;
+		report_syntax_errors(root_node);
+		return new Decorator(config).decorateTS(root_node);
 	}
-	private readonly _validator: Validator;
-	constructor(
+
+
+	readonly #validator: Validator;
+	readonly #builder:   Builder;
+
+
+	public constructor(
 		start_node: SyntaxNodeType<'source_file'>,
-		override readonly children: readonly ASTNodeStatement[],
+		public readonly block: ASTNodeBlock | null,
 		config: CPConfig,
 	) {
-		super(start_node, {}, children)
-		this._validator = new Validator(config);
+		super(start_node, {}, (block) ? [block] : []);
+		this.#validator = new Validator(config);
+		this.#builder   = new Builder();
 	}
-	override get validator(): Validator {
-		return this._validator;
+
+	public override get validator(): Validator {
+		return this.#validator;
 	}
+
+	public override get builder(): Builder {
+		return this.#builder;
+	}
+
 	/** @implements Buildable */
-	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
-		return (!this.children.length)
-			? new INST.InstructionNone()
-			: new INST.InstructionModule([
-				...Builder.IMPORTS,
-				...(this.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
-			])
+	@memoizeMethod
+	public build(): binaryen.ExpressionRef {
+		if (this.block) {
+			const block_build: binaryen.ExpressionRef = this.block.build(); // must build before calling `.getLocals()`
+			this.builder.setupModule((mod) => {
+				const fn_name: string = 'fn0';
+				mod.addFunction(
+					fn_name,
+					binaryen.none,
+					binaryen.none,
+					this.builder.getLocals().map((var_) => var_.type),
+					block_build,
+				);
+				mod.addFunctionExport(fn_name, fn_name);
+			});
+		}
+		return this.builder.module.nop();
 	}
 }

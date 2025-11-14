@@ -1,80 +1,136 @@
-import * as assert from 'assert';
-import * as xjs from 'extrajs'
+import * as assert from 'node:assert';
+import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
+	VALUE,
 	TYPE,
-	OBJ,
-	INST,
-	Builder,
-	TypeError01,
-	NanError01,
-	CPConfig,
+	drop_then,
+	TypeErrorInvalidOperation,
+	NanErrorInvalid,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
+import {
 	Operator,
-	ValidOperatorUnary,
-} from './package.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
+	type ValidOperatorUnary,
+} from '../Operator.ts';
+import {
+	buildDeco,
+	typeDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 
 
 export class ASTNodeOperationUnary extends ASTNodeOperation {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationUnary);
+		assert_instanceof(expression, ASTNodeOperationUnary);
 		return expression;
 	}
-	constructor(
+
+
+	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		readonly operator: ValidOperatorUnary,
-		readonly operand: ASTNodeExpression,
+		private readonly operator: ValidOperatorUnary,
+		public  readonly operand:  ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand]);
 	}
-	override shouldFloat(): boolean {
-		return this.operand.shouldFloat();
-	}
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionUnop(
-			this.operator,
-			this.operand.build(builder, tofloat),
-		)
-	}
-	protected override type_do(): TYPE.Type {
-		const t0: TYPE.Type = this.operand.type();
-		return (
-			(this.operator === Operator.NOT) ? (
-				(t0.isSubtypeOf(TYPE.Type.VOID.union(TYPE.Type.NULL).union(OBJ.Boolean.FALSETYPE))) ? OBJ.Boolean.TRUETYPE :
-				(TYPE.Type.VOID.isSubtypeOf(t0) || TYPE.Type.NULL.isSubtypeOf(t0) || OBJ.Boolean.FALSETYPE.isSubtypeOf(t0)) ? TYPE.Type.BOOL :
-				OBJ.Boolean.FALSETYPE
-			) :
-			(this.operator === Operator.EMP) ? TYPE.Type.BOOL :
-			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(TYPE.Type.INT.union(TYPE.Type.FLOAT)))
-				? t0
-				: (() => { throw new TypeError01(this); })()
-		);
-	}
-	protected override fold_do(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand.fold();
-		if (!v0) {
-			return v0;
+
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		const arg0: binaryen.ExpressionRef = this.operand.build();
+		if (this.type().isSubtypeOf(TYPE.TRUE)) {
+			return drop_then(this.builder.module, [arg0], true);
+		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
+			return drop_then(this.builder.module, [arg0], false);
 		}
-		return (
-			(this.operator === Operator.NOT) ? OBJ.Boolean.fromBoolean(!v0.isTruthy) :
-			(this.operator === Operator.EMP) ? OBJ.Boolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
-			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as OBJ.Number<any>) :
-			(() => { throw new ReferenceError(`Operator ${ Operator[this.operator] } not found.`) })()
-		)
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.NOT,   'vnot'],
+			[Operator.EMP,   'vemp'],
+			[Operator.NEG,   'vneg'],
+			[Operator.INT,   'vtoi'],
+			[Operator.FLOAT, 'vtof'],
+		]).get(this.operator)!, [arg0], binaryen.v128);
 	}
-	private foldNumeric<T extends OBJ.Number<T>>(z: T): T {
+
+	@memoizeMethod
+	@typeDeco
+	public override type(): TYPE.Type {
+		const TYPE_NUMBER = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
+		const t: TYPE.Type = this.operand.type();
+		if (t.isBottomType) {
+			return TYPE.NOTHING;
+		}
+		switch (this.operator) {
+			case Operator.NOT: {
+				return (
+					t.isDefinitelyFalsy  ? TYPE.TRUE :
+					t.isDefinitelyTruthy ? TYPE.FALSE :
+					TYPE.BOOL
+				);
+			}
+			case Operator.EMP: {
+				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
+			}
+			case Operator.NEG: {
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				return t;
+			}
+			case Operator.INT: {
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				return TYPE.INT;
+			}
+			case Operator.FLOAT: {
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				return TYPE.FLOAT;
+			}
+		}
+	}
+
+	@memoizeMethod
+	public override fold(): VALUE.Value | null {
+		const v: VALUE.Value | null = this.operand.fold();
+		if (!v) {
+			return v;
+		}
+		switch (this.operator) {
+			case Operator.NOT: {
+				return VALUE.Boolean.fromBoolean(!v.isTruthy);
+			}
+			case Operator.EMP: {
+				return VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty);
+			}
+			case Operator.NEG: {
+				return this.foldNumeric(v as VALUE.Number<any>); // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
+			}
+			case Operator.INT: {
+				return (v as VALUE.Number).toInt();
+			}
+			case Operator.FLOAT: {
+				return (v as VALUE.Number).toFloat();
+			}
+		}
+	}
+
+	private foldNumeric<T extends VALUE.Number<T>>(v0: T): T {
 		try {
 			return new Map<Operator, (z: T) => T>([
 				[Operator.AFF, (z) => z],
 				[Operator.NEG, (z) => z.neg()],
-			]).get(this.operator)!(z)
+			]).get(this.operator)!(v0);
 		} catch (err) {
-			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
+			throw (err instanceof xjs.NaNError) ? new NanErrorInvalid(this) : err;
 		}
 	}
 }

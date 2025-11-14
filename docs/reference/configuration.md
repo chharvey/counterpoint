@@ -13,14 +13,14 @@ Your JSON file should be a single object, with two optional properties: `languag
 [Counterpoint API coming soon]
 
 - Without a config file, the Counterpoint compiler will use the configuration default values, listed in the next section.
-- To use a config file during compilation, you must specify it on the command line. Run `npx cpc --help` for details.
-- Even with a config file, you may override it with per-option CLI arguments. Run `npx cpc --config` for details.
+- To use a config file during compilation, you must specify it on the command line. Run `npx cplc --help` for details.
+- Even with a config file, you may override it with per-option CLI arguments. Run `npx cplc --config` for details.
 
 For example, the default value of [`comments`](#comments) is `true`.
 If in your `counterpoint-config.json` you have `{"languageFeatures": {"comments": false}}`,
 that would override the default. However, if you run
 ```shell
-$ npx cpc c ./my-program.cp -p=./counterpoint-config.json --comments
+$ npx cplc c ./my-program.cpls -p=./counterpoint-config.json --comments
 ```
 the `--comments` option would override your config file and turn comments back on again.
 
@@ -111,20 +111,3 @@ it will only produce assembly code for that output.
 With this disabled, compilation will be faster,
 but all computations and short-circuiting will take place at runtime.
 Disabling is useful for inspecting assembly code during development.
-
-#### `intCoercion`
-```
-@version v0.2.0
-@type    boolean
-@default true
-```
-Allows mixing integer and float operands in arithmetic expressions.
-
-If enabled, allows expressions such as `2 + 3.0` where integer and float types may be mixed.
-Before the computation is made, the integer operands are coerced into floats (e.g. becoming `2.0 + 3.0`).
-If the value is known, the coercion is made at compile-time. If, however, the value is unknown
-(e.g. `x + 3.0` where `x` is an integer), the coercion is made at runtime.
-
-Put another way: If enabled, allows type `int` to be a subtype of type `float`.
-
-If disabled, mixing different numeric types will result in a type error.

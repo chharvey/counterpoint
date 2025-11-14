@@ -1,69 +1,67 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
-	TYPE,
-	OBJ,
-	INST,
-	Builder,
-	TypeError03,
-	CPConfig,
+	type VALUE,
+	type TYPE,
+	TypeErrorNotAssignable,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
-import type {ASTNodeType} from './ASTNodeType.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ASTNodeType} from './ASTNodeType.ts';
+import {
+	buildDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
 
 
 
 
 export class ASTNodeClaim extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeClaim {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeClaim {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeClaim);
+		assert_instanceof(expression, ASTNodeClaim);
 		return expression;
 	}
-	private typed_?: TYPE.Type;
-	constructor(
-		start_node: SyntaxNodeType<'expression_claim'>,
-		readonly claimed_type: ASTNodeType,
-		readonly operand: ASTNodeExpression,
+
+	public constructor(
+		start_node: SyntaxNodeType<'expression_cast'>,
+		public readonly operand:      ASTNodeExpression,
+		public readonly claimed_type: ASTNodeType,
 	) {
-		super(start_node, {}, [claimed_type, operand]);
+		super(start_node, {}, [operand, claimed_type]);
 	}
-	override shouldFloat(): boolean {
-		return this.type().isSubtypeOf(TYPE.Type.FLOAT);
+
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		return this.operand.build();
 	}
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionExpression {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return this.operand.build(builder, tofloat);
-	}
-	override type(): TYPE.Type { // WARNING: overriding a final method!
-		// TODO: use JS decorators for memoizing this method
-		if (!this.typed_) {
-			this.typed_ = this.type_do();
-		};
-		return this.typed_;
-	}
-	protected override type_do(): TYPE.Type {
-		const claimed_type:  TYPE.Type = this.claimed_type.eval();
+
+	@memoizeMethod
+	// @typeDeco // explicitly leaving off to omit folding logic
+	public override type(): TYPE.Type {
 		const computed_type: TYPE.Type = this.operand.type();
-		const is_intersection_empty: boolean = claimed_type.intersect(computed_type).equals(TYPE.Type.NEVER);
-		const treatIntAsSubtypeOfFloat: boolean = this.validator.config.compilerOptions.intCoercion && (
-			   computed_type.isSubtypeOf(TYPE.Type.INT) && TYPE.Type.FLOAT.isSubtypeOf(claimed_type)
-			|| claimed_type .isSubtypeOf(TYPE.Type.INT) && TYPE.Type.FLOAT.isSubtypeOf(computed_type)
-			|| TYPE.Type.INT.isSubtypeOf(computed_type) && claimed_type .isSubtypeOf(TYPE.Type.FLOAT)
-			|| TYPE.Type.INT.isSubtypeOf(claimed_type)  && computed_type.isSubtypeOf(TYPE.Type.FLOAT)
-		);
-		if (is_intersection_empty && !treatIntAsSubtypeOfFloat) {
+		const claimed_type:  TYPE.Type = this.claimed_type.eval();
+		/* If the types are disjoint and neither of the types are the Bottom Type, throw an error. */
+		if (computed_type.intersect(claimed_type).isBottomType && !computed_type.isBottomType && !claimed_type.isBottomType) {
 			/*
 				`Conversion of type \`${ computed_type }\` to type \`${ claimed_type }\` may be a mistake
-				because neither type sufficiently overlaps with the other. If this was intentional,
-				convert the expression to \`obj\` first.`;
+				because neither type sufficiently overlaps with the other.
+				If this was intentional, convert the expression to \`anything\` first.`;
 			*/
-			throw new TypeError03(claimed_type, computed_type, this);
+			throw new TypeErrorNotAssignable(computed_type, claimed_type, this);
 		}
 		return claimed_type;
 	}
-	protected override fold_do(): OBJ.Object | null {
+
+	@memoizeMethod
+	public override fold(): VALUE.Value | null {
 		return this.operand.fold();
 	}
 }

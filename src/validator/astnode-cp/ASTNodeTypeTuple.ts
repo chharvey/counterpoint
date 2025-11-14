@@ -1,31 +1,45 @@
-import * as assert from 'assert';
 import {
+	type EntryType,
 	TYPE,
-	CPConfig,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
-import type {ASTNodeItemType} from './ASTNodeItemType.js';
-import {ASTNodeType} from './ASTNodeType.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ASTNodeItemType} from './ASTNodeItemType.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
+import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.ts';
 
 
 
-export class ASTNodeTypeTuple extends ASTNodeType {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
+export class ASTNodeTypeTuple extends ASTNodeTypeCollectionLiteral {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeTuple);
+		assert_instanceof(typ, ASTNodeTypeTuple);
 		return typ;
 	}
-	constructor (
+
+	public constructor(
 		start_node: SyntaxNodeType<'type_tuple_literal'>,
-		override readonly children: readonly ASTNodeItemType[],
+		public override readonly children: readonly ASTNodeItemType[],
 	) {
-		super(start_node, {}, children);
+		super(start_node, children);
 	}
-	protected override eval_do(): TYPE.Type {
-		return new TYPE.TypeTuple(this.children.map((c) => ({
-			type:     c.val.eval(),
-			optional: c.optional,
-		})));
+
+	@memoizeMethod
+	public override eval(): TYPE.Type {
+		const entries: readonly EntryType[] = this.children.map((c) => {
+			const itemtype: TYPE.Type = c.val.eval();
+			return {
+				type:     itemtype,
+				optional: c.optional,
+			};
+		});
+		return new TYPE.Tuple(entries);
 	}
 }

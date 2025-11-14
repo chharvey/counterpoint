@@ -1,0 +1,84 @@
+import type binaryen from 'binaryen';
+import * as xjs from 'extrajs';
+import type {Builder} from '../../index.ts';
+import {TYPE} from '../index.ts';
+import {
+	language_values_identical,
+	language_values_equal,
+	strictEqual,
+	instanceOf,
+	memoizeBinOp,
+} from '../utils-private.ts';
+import {NULL} from './index.ts';
+import {
+	identical,
+	type Value,
+} from './Value.ts';
+import type {Null} from './Null.ts';
+import {Collection} from './Collection.ts';
+
+
+
+/**
+ * A dynamic unordered association of value–value pairs.
+ * @final
+ */
+class ValueMap<K extends Value = Value, V extends Value = Value> extends Collection {
+	public constructor(public readonly cases: ReadonlyMap<K, V> = new Map()) {
+		super();
+		const uniques = new Map<K, V>();
+		[...cases].forEach(([ant, con]) => {
+			xjs.Map.set(uniques, ant, con, language_values_identical);
+		});
+		this.cases = uniques;
+	}
+
+	/**
+	 * @implements Value
+	 */
+	public override get isEmpty(): boolean {
+		return this.cases.size === 0;
+	}
+
+	/**
+	 * @implements Collection
+	 */
+	public override get count(): bigint {
+		return BigInt(this.cases.size);
+	}
+
+	public override toString(): string {
+		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
+	}
+
+	@strictEqual
+	@identical
+	@instanceOf(() => ValueMap)
+	@memoizeBinOp(true, true)
+	public override equal(value: Value): boolean {
+		return (
+			this.cases.size === (value as ValueMap).cases.size &&
+			[...(value as ValueMap).cases].every(([thatant, thatcon]) => !!xjs.Map.get<Value, Value>(this.cases, thatant, language_values_equal)?.equal(thatcon))
+		);
+	}
+
+	/**
+	 * @inheritdoc
+	 * Returns a TYPE.Map whose type arguments are the respective unions of the types of this ValueMap’s antecedents and consequents.
+	 */
+	public override toType(): TYPE.Map {
+		return new TYPE.Map(
+			TYPE.Union.all([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
+			TYPE.Union.all([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
+		);
+	}
+
+	public override build(_: Builder): binaryen.ExpressionRef {
+		throw new Error('`ValueMap#build` not yet supported.');
+	}
+
+	public get(ant: Value): V | Null {
+		return xjs.Map.has<Value, V>(this.cases, ant, language_values_identical) ? xjs.Map.get<Value, V>(this.cases, ant, language_values_identical)! : NULL;
+	}
+}
+export {ValueMap as Map};

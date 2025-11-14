@@ -1,12 +1,14 @@
-import * as assert from 'assert';
 import {
-	NonemptyArray,
-	CPConfig,
+	type NonemptyArray,
+	assert_instanceof,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-	ValidTypeOperator,
-} from './package.js';
-import {ASTNodeType} from './ASTNodeType.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ValidTypeOperator} from '../Operator.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
 
 
 
@@ -16,21 +18,22 @@ import {ASTNodeType} from './ASTNodeType.js';
  * - ASTNodeTypeOperationBinary
  */
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperation {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperation {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeOperation);
+		assert_instanceof(typ, ASTNodeTypeOperation);
 		return typ;
 	}
-	constructor (
+
+	public constructor(
 		start_node:
 			| SyntaxNodeType<'type_unary_symbol'>
 			| SyntaxNodeType<'type_unary_keyword'>
 			| SyntaxNodeType<'type_intersection'>
-			| SyntaxNodeType<'type_union'>
-		,
-		readonly operator: ValidTypeOperator,
-		override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
+			| SyntaxNodeType<'type_union'>,
+
+		protected readonly operator: ValidTypeOperator,
+		public override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
 	) {
-		super(start_node, {operator}, children)
+		super(start_node, {operator}, children);
 	}
 }

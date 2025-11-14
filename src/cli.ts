@@ -1,47 +1,44 @@
-import {requireJSON} from '@chharvey/requirejson';
-import * as path from 'path';
+import PACKAGE from '../package.json' with {type: 'json'};
 import {
 	CLI,
 	Command,
-} from './CLI.class.js';
-
-const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
+} from './CLI.class.ts';
 
 
-/** The current version of this project (as defined in `package.json`). */
-const VERSION: Promise<string> = requireJSON(path.join(DIRNAME, '../package.json')).then((pkg: any) => pkg.version);
 
-
-(async () => {
-	async function handleCompileOrDev() {
-		const result: [string, void] = await cli.compileOrDev(process.cwd());
-		console.log(result[0]);
-		console.log('Success!');
-	}
-	const cli: CLI = new CLI(process.argv);
-	await new Map<Command, () => void | Promise<void>>([
-		[Command.HELP, () => {
+(async (): Promise<void> => {
+	const cli = new CLI(process.argv);
+	switch (cli.command) {
+		case Command.HELP: {
 			console.log(CLI.HELPTEXT);
 			if (cli.argv.config) {
-				console.log('\n' + CLI.CONFIGTEXT);
-			};
-		}],
-		[Command.VERSION, async () => {
-			console.log(`counterpoint version ${ await VERSION }`);
-		}],
-		[Command.COMPILE, handleCompileOrDev],
-		[Command.DEV,     handleCompileOrDev],
-		[Command.RUN, async () => {
+				console.log(`\n${ CLI.CONFIGTEXT }`);
+			}
+			break;
+		}
+		case Command.VERSION: {
+			console.log(`counterpoint version ${ PACKAGE.version }`);
+			break;
+		}
+		case Command.COMPILE:
+		case Command.DEV: {
+			const result: [string, undefined] = await cli.compileOrDev(process.cwd());
+			console.log(result[0]);
+			console.log('Success!');
+			break;
+		}
+		case Command.RUN: {
 			const result: [string, ...unknown[]] = await cli.run(process.cwd());
 			console.log(result[0]);
 			console.log('Result:', result.slice(1));
-		}],
-	]).get(cli.command)!();
+			break;
+		}
+	}
 })().catch((err) => {
 	if (err instanceof AggregateError) {
 		err.errors.forEach((er) => console.error(er));
 	} else {
 		console.error(err);
-	};
+	}
 	process.exit(1);
 });

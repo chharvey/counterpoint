@@ -1,51 +1,64 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
+	type VALUE,
 	TYPE,
-	OBJ,
-	INST,
-	Builder,
-	CPConfig,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import type {ASTNodeConstant} from './ASTNodeConstant.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {
+	buildDeco,
+	typeDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
+import type {ASTNodeConstant} from './ASTNodeConstant.ts';
 
 
 
 export class ASTNodeTemplate extends ASTNodeExpression {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTemplate {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTemplate {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeTemplate);
+		assert_instanceof(expression, ASTNodeTemplate);
 		return expression;
 	}
-	constructor(
+
+	public constructor(
 		start_node: SyntaxNodeType<'string_template'>,
-		override readonly children: // FIXME spread types
+		public override readonly children: // FIXME spread types
 			| readonly [ASTNodeConstant]
 			| readonly [ASTNodeConstant,                                                           ASTNodeConstant]
 			| readonly [ASTNodeConstant, ASTNodeExpression,                                        ASTNodeConstant]
 			// | readonly [ASTNodeConstant,                    ...ASTNodeTemplatePartialChildrenType, ASTNodeConstant]
 			// | readonly [ASTNodeConstant, ASTNodeExpression, ...ASTNodeTemplatePartialChildrenType, ASTNodeConstant]
-			| readonly ASTNodeExpression[]
-		,
+			| readonly ASTNodeExpression[],
 	) {
-		super(start_node, {}, children)
+		super(start_node, {}, children);
 	}
-	override shouldFloat(): boolean {
-		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
+
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		throw new Error('`ASTNodeTemplate#build` not yet supported.');
 	}
-	protected override build_do(_builder: Builder): INST.InstructionExpression {
-		throw new Error('ASTNodeTemplate#build_do not yet supported.');
+
+	@memoizeMethod
+	@typeDeco
+	public override type(): TYPE.Type {
+		return TYPE.STR;
 	}
-	protected override type_do(): TYPE.Type {
-		return TYPE.Type.STR;
-	}
-	protected override fold_do(): OBJ.String | null {
-		const values: (OBJ.Object | null)[] = [...this.children].map((expr) => expr.fold());
+
+	@memoizeMethod
+	public override fold(): VALUE.String | null {
+		const values: readonly (VALUE.Value | null)[] = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))
 			? null
-			: (values as OBJ.Object[])
+			: (values as readonly VALUE.Value[])
 				.map((value) => value.toCPString())
 				.reduce((a, b) => a.concatenate(b));
 	}

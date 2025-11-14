@@ -1,0 +1,12 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		// Modules
+		"rootDir": "./",
+
+		// Emit
+		"noEmit": true,
+	},
+	"include": [], // override parent
+	"files":   ["./build.mts"],
+}

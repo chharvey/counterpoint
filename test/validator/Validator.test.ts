@@ -1,19 +1,14 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
-	CPConfig,
+	type CodeUnit,
+	type CPConfig,
 	CONFIG_DEFAULT,
-	PUNCTUATORS,
 	KEYWORDS,
 	Validator,
-} from '../../src/index.js';
-import type {
-	CodeUnit,
-} from '../../src/lib/index.js';
-import {
-	CONFIG_RADICES_SEPARATORS_ON,
-} from '../helpers.js';
+} from '../../src/index.ts';
+import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.ts';
 
 
 
@@ -28,58 +23,50 @@ describe('Validator', () => {
 	}
 
 
-	describe('.cookTokenPunctuator', () => {
-		it('assigns values 0n–127n to punctuator tokens.', () => {
-			const cooked: bigint[] = PUNCTUATORS.map((p) => Validator.cookTokenPunctuator(p));
-			const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i)).slice(0, PUNCTUATORS.length);
-			assert.deepStrictEqual(cooked, expected);
-			cooked.forEach((value) => {
-				assert.ok(0n <= value, 'cooked value should be >= 0n.');
-				assert.ok(value < 128n, 'cooked value should be < 128n.');
-			});
-		});
-	});
-
-
 	describe('.cookTokenKeyword', () => {
-		it('assigns values 128n–255n to reserved keywords.', () => {
+		it('assigns values 0x80n–0x100n to reserved keywords.', () => {
 			const cooked: bigint[] = KEYWORDS.map((k) => Validator.cookTokenKeyword(k));
-			const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
+			const expected: bigint[] = [...new Array<undefined>(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
 			assert.deepStrictEqual(cooked, expected);
 			cooked.forEach((value) => {
-				assert.ok(128n <= value, 'cooked value should be >= 128n.');
-				assert.ok(value < 256n, 'cooked value should be < 256n.');
+				assert.ok(0x80n <= value, 'cooked value should be >= 0x80n.');
+				assert.ok(value < 0x100n, 'cooked value should be < 0x100n.');
 			});
 		});
 	});
 
 	describe('.cookTokenNumber', () => {
-		new Map<string, [string, number[]]>([
+		new Map<string, [string, readonly bigint[] | readonly number[]]>([
+			/* eslint-disable @stylistic/array-element-newline */
 			['implicit radix integers', [
 				`
 					370  037  +9037  -9037  +06  -06
 				`,
 				[
 					370, 37, 9037, -9037, 6, -6,
-				],
+				].map((n) => BigInt(n)),
 			]],
 			['explicit radix integers', [
 				`
 					\\b100  \\b001  +\\b1000  -\\b1000  +\\b01  -\\b01
 					\\q320  \\q032  +\\q1032  -\\q1032  +\\q03  -\\q03
+					\\s320  \\s032  +\\s1432  -\\s1532  +\\s03  -\\s03
 					\\o370  \\o037  +\\o1037  -\\o1037  +\\o06  -\\o06
 					\\d370  \\d037  +\\d9037  -\\d9037  +\\d06  -\\d06
 					\\xe70  \\x0e7  +\\x90e7  -\\x90e7  +\\x06  -\\x06
 					\\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
 				`,
+				/* eslint-disable @stylistic/indent */
 				[
 					    4,  1,       8,      -8, 1, -1,
 					   56, 14,      78,     -78, 3, -3,
+					  120, 20,     380,    -416, 3, -3,
 					  248, 31,     543,    -543, 6, -6,
 					  370, 37,    9037,   -9037, 6, -6,
 					 3696, 231,  37095,  -37095, 6, -6,
 					18396, 511, 420415, -420415, 6, -6,
-				],
+				].map((n) => BigInt(n)),
+				/* eslint-enable @stylistic/indent */
 			]],
 			['floats', [
 				`
@@ -99,30 +86,35 @@ describe('Validator', () => {
 				`,
 				[
 					12345, 12345, -12345, 1234567, 1234567, -1234567, 12345678, 12345678, -12345678,
-				],
+				].map((n) => BigInt(n)),
 			]],
 			['explicit radix integers with separators', [
 				`
 					\\b1_00  \\b0_01  +\\b1_000  -\\b1_000  +\\b0_1  -\\b0_1
 					\\q3_20  \\q0_32  +\\q1_032  -\\q1_032  +\\q0_3  -\\q0_3
+					\\s3_20  \\s0_32  +\\s1_432  -\\s1_532  +\\s0_3  -\\s0_3
 					\\o3_70  \\o0_37  +\\o1_037  -\\o1_037  +\\o0_6  -\\o0_6
 					\\d3_70  \\d0_37  +\\d9_037  -\\d9_037  +\\d0_6  -\\d0_6
 					\\xe_70  \\x0_e7  +\\x9_0e7  -\\x9_0e7  +\\x0_6  -\\x0_6
 					\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
 				`,
+				/* eslint-disable @stylistic/indent */
 				[
 					    4,  1,       8,      -8, 1, -1,
 					   56, 14,      78,     -78, 3, -3,
+					  120, 20,     380,    -416, 3, -3,
 					  248, 31,     543,    -543, 6, -6,
 					  370, 37,    9037,   -9037, 6, -6,
 					 3696, 231,  37095,  -37095, 6, -6,
 					18396, 511, 420415, -420415, 6, -6,
-				],
+				].map((n) => BigInt(n)),
+				/* eslint-enable @stylistic/indent */
 			]],
+			/* eslint-enable @stylistic/array-element-newline */
 		]).forEach(([source, values], description) => {
 			it(description, () => {
-				return assert.deepStrictEqual(
-					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)[0]),
+				assert.deepStrictEqual(
+					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)),
 					values,
 				);
 			});
@@ -136,68 +128,68 @@ describe('Validator', () => {
 		}
 		it('produces the cooked string value.', () => {
 			assert.deepStrictEqual([
-				`''`,
-				`'hello'`,
-				`'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6'`,
-				`'0 \\u{24} 1 \\u{005f} 2 \\u{} 3'`,
-				xjs.String.dedent`'012\\
+				'""',
+				'"hello"',
+				'"0 \\" 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6"',
+				'"0 \\u{24} 1 \\u{005f} 2 \\u{} 3"',
+				xjs.String.dedent`"012\\
 				345\\%
-				678'`,
-				`'😀'`,
-				`'\u{10001}'`,
-				`'\\\u{10001}'`,
-				`'\\u{10001}'`,
+				678"`,
+				'"😀"',
+				'"\u{10001}"',
+				'"\\\u{10001}"',
+				'"\\u{10001}"',
 			].map((src) => decodeCooked(src, CONFIG_DEFAULT)), [
-				``,
-				`hello`,
-				`0 ' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`,
-				`0 $ 1 _ 2 \0 3`,
-				`012 345%\n678`,
-				`\u{1f600}`,
-				`\u{10001}`,
-				`\u{10001}`,
-				`\u{10001}`,
+				'',
+				'hello',
+				'0 " 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6',
+				'0 $ 1 _ 2 \0 3',
+				'012 345%\n678',
+				'\u{1f600}',
+				'\u{10001}',
+				'\u{10001}',
+				'\u{10001}',
 			]);
 		});
 		it('may contain an escaped `u` anywhere.', () => {
 			assert.strictEqual(
-				decodeCooked(`'abc\\udef\\u'`, CONFIG_DEFAULT),
-				`abcudefu`,
+				decodeCooked('"abc\\udef\\u"', CONFIG_DEFAULT),
+				'abcudefu',
 			);
 		});
 		context('In-String Comments', () => {
 			function cook(config: CPConfig): string[] {
 				return [
-					xjs.String.dedent`'The five boxing wizards % jump quickly.'`,
+					xjs.String.dedent`"The five boxing wizards % jump quickly."`,
 
-					xjs.String.dedent`'The five % boxing wizards
-					jump quickly.'`,
+					xjs.String.dedent`"The five % boxing wizards
+					jump quickly."`,
 
-					xjs.String.dedent`'The five boxing wizards %
-					jump quickly.'`,
+					xjs.String.dedent`"The five boxing wizards %
+					jump quickly."`,
 
-					xjs.String.dedent`'The five boxing wizards jump quickly.%
-					'`,
+					xjs.String.dedent`"The five boxing wizards jump quickly.%
+					"`,
 
-					`'The five %% boxing wizards %% jump quickly.'`,
+					'"The five %% boxing wizards %% jump quickly."',
 
-					`'The five boxing wizards %%%% jump quickly.'`,
+					'"The five boxing wizards %%%% jump quickly."',
 
-					xjs.String.dedent`'The five %% boxing
+					xjs.String.dedent`"The five %% boxing
 					wizards %% jump
-					quickly.'`,
+					quickly."`,
 
-					xjs.String.dedent`'The five boxing
+					xjs.String.dedent`"The five boxing
 					wizards %% jump
-					quickly.%%'`,
+					quickly.%%"`,
 
-					xjs.String.dedent`'The five boxing
+					xjs.String.dedent`"The five boxing
 					wizards %% jump
-					quickly.'`,
+					quickly."`,
 				].map((src) => decodeCooked(src, config));
 			}
 			context('with comments enabled.', () => {
-				const data: {description: string, expected: string}[] = [
+				const data: Array<{description: string, expected: string}> = [
 					{description: 'removes a line comment not ending in a LF.',   expected: 'The five boxing wizards '},
 					{description: 'preserves a LF when line comment ends in LF.', expected: 'The five \njump quickly.'},
 					{description: 'preserves a LF with empty line comment.',      expected: 'The five boxing wizards \njump quickly.'},
@@ -251,29 +243,28 @@ describe('Validator', () => {
 		it('produces the cooked template value.', () => {
 			assert.deepStrictEqual(
 				[
-					`''''''`,
-					`'''hello'''`,
-					`'''head{{`,
-					`}}midl{{`,
-					`}}tail'''`,
-					`'''0 \\\` 1'''`,
-					`'''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7'''`,
-					`'''0 \\u{24} 1 \\u{005f} 2 \\u{} 3'''`,
-					xjs.String.dedent`'''012\\
+					'""""""',
+					'"""hello"""',
+					'"""head{{',
+					'}}midl{{',
+					'}}tail"""',
+					'"""0 \\" 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6"""',
+					'"""0 \\u{24} 1 \\u{005f} 2 \\u{} 3"""',
+					xjs.String.dedent`"""012\\
 					345
-					678'''`,
-					`'''😀 \\😀 \\u{1f600}'''`,
+					678"""`,
+					'"""😀 \\😀 \\u{1f600}"""',
 				].map((src) => decodeCooked(src)),
 				[
-					``, `hello`,
-					`head`,
-					`midl`,
-					`tail`,
-					`0 \\\` 1`,
-					`0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`,
-					`0 \\u{24} 1 \\u{005f} 2 \\u{} 3`,
-					`012\\\n345\n678`,
-					`\u{1f600} \\\u{1f600} \\u{1f600}`,
+					'',
+					'hello',
+					'head',
+					'midl',
+					'tail',
+					'0 \\" 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6',
+					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3',
+					'012\\\n345\n678',
+					'\u{1f600} \\\u{1f600} \\u{1f600}',
 				],
 			);
 		});
@@ -281,49 +272,75 @@ describe('Validator', () => {
 
 
 	describe('#cookTokenIdentifier', () => {
-		[
-			`
-				this be a word
-				_words _can _start _with _underscores
-				_and0 _can1 contain2 numb3rs
-				a word _can repeat _with the same id
-			`,
-			`
-				\`this\` \`is\` \`a\` \`unicode word\`
-				\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
-				\`except\` \`back-ticks\` \`.\`
-			`,
-		].forEach((src, i) => {
-			const validator = new Validator();
-			let cooked: bigint[];
-			context([
-				'basic identifiers.',
-				'unicode identifiers.',
-			][i], () => {
-				before(() => {
-					cooked = src.trim().split(/\s+/).map((word) => validator.cookTokenIdentifier(word));
-				});
-				it('assigns ids starting from 256n', () => {
-					return assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
-				});
-				it('assigns unique ids 256n or greater.', () => {
-					return cooked.forEach((value) => {
-						assert.ok(value >= 256n);
+		type Data = {
+			readonly src: string,
+			readonly raw: string[],
+		};
+		new Map<string, [Data, Data]>([
+			['basic identifiers.', [
+				{
+					src: `
+						this be a word
+						_words _can _start _with _underscores_
+						and can1 contain2 numb3rs and under_scores_
+						a word can_ repeat with_ the same id
+					`,
+					raw: ['this', 'be', 'a', 'word', '_words', '_can', '_start', '_with', '_underscores_', 'and', 'can1', 'contain2', 'numb3rs', 'and', 'under_scores_', 'a', 'word', 'can_', 'repeat', 'with_', 'the', 'same', 'id'],
+				},
+				{
+					src: `
+						alpha bravo charlie delta echo
+						echo delta charlie bravo alpha
+					`,
+					raw: ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'echo', 'delta', 'charlie', 'bravo', 'alpha'],
+				},
+			]],
+			['unicode identifiers.', [
+				{
+					src: `
+						'this' 'is' 'a' 'unicode word'
+						'unicode words start and end with' 'apostrophes' 'but cannot contain them'
+						'ány' 'unicödè wörd' 'cán' 'cöntáin' 'ány' 'cháráctèr'
+						'èxcèpt' '‘ápöströphès’' '.'
+					`,
+					raw: ['\'this\'', '\'is\'', '\'a\'', '\'unicode word\'', '\'unicode words start and end with\'', '\'apostrophes\'', '\'but cannot contain them\'', '\'ány\'', '\'unicödè wörd\'', '\'cán\'', '\'cöntáin\'', '\'ány\'', '\'cháráctèr\'', '\'èxcèpt\'', '\'‘ápöströphès’\'', '\'.\''],
+				},
+				{
+					src: `
+						'alpha' 'bravo' 'charlie' 'delta' 'echo'
+						'echo' 'delta' 'charlie' 'bravo' 'alpha'
+					`,
+					raw: ['\'alpha\'', '\'bravo\'', '\'charlie\'', '\'delta\'', '\'echo\'', '\'echo\'', '\'delta\'', '\'charlie\'', '\'bravo\'', '\'alpha\''],
+				},
+			]],
+		]).forEach((datas, cxt) => {
+			context(cxt, () => {
+				datas.forEach((data, i) => {
+					const actual_raw: RegExpMatchArray = data.src.match(/[A-Za-z_][A-Za-z0-9_]*|'[^']*'/g)!;
+					const validator = new Validator();
+					let cooked: bigint[] = [];
+					before(() => {
+						assert.deepStrictEqual(actual_raw, data.raw);
+						cooked = actual_raw.map((word) => validator.cookTokenIdentifier(word));
 					});
+					if (i === 0) {
+						it('assigns ids starting from 0x100n.', () => {
+							assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
+						});
+						return it('assigns unique ids 0x100n or greater.', () => {
+							cooked.forEach((value) => assert.ok(value >= 0x100n));
+						});
+					} else {
+						assert.strictEqual(i, 1);
+						return it('assigns the same value to identical identifier names.', () => {
+							assert.deepStrictEqual(
+								cooked.slice(0, 5),
+								cooked.slice(5).reverse(),
+							);
+						});
+					}
 				});
 			});
 		});
-
-		it('assigns the same value to identical identifier names.', () => {
-			const validator = new Validator();
-			const cooked: bigint[] = `
-				alpha bravo charlie delta echo
-				echo delta charlie bravo alpha
-			`.trim().split(/\s+/).map((word) => validator.cookTokenIdentifier(word));
-			return assert.deepStrictEqual(
-				cooked.slice(0, 5),
-				cooked.slice(5).reverse(),
-			);
-		});
 	});
-})
+});

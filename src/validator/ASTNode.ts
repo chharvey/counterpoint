@@ -1,7 +1,5 @@
-import {
-	Serializable,
-	stringifyAttributes,
-} from './package.js';
+import {stringifyAttributes} from '../core/index.ts';
+import type {Serializable} from '../parser/index.ts';
 
 
 
@@ -23,17 +21,17 @@ import {
  */
 export class ASTNode implements Serializable {
 	/** @implements Serializable */
-	readonly tagname: string = this.constructor.name.slice('ASTNode'.length);
+	public readonly tagname:      string = this.constructor.name.slice('ASTNode'.length);
 	/** @implements Serializable */
-	readonly source: string = this.start.source;
+	public readonly source:       string;
 	/** @implements Serializable */
-	readonly source_index: number = this.start.source_index;
+	public readonly source_index: number;
 	/** @implements Serializable */
-	readonly line_index: number = this.start.line_index;
+	public readonly line_index:   number;
 	/** @implements Serializable */
-	readonly col_index: number = this.start.col_index;
+	public readonly col_index:    number;
 
-	private _parent: ASTNode | null = null;
+	#parent?: ASTNode;
 
 	/**
 	 * Construct a new ASTNode object.
@@ -42,22 +40,28 @@ export class ASTNode implements Serializable {
 	 * @param attributes Any other attributes to attach.
 	 * @param children   The set of child inputs that creates this ASTNode.
 	 */
-	constructor (
+	public constructor(
 		private readonly start: Serializable,
-		private readonly attributes: {[key: string]: unknown} = {},
-		readonly children: readonly ASTNode[] = [],
+		private readonly attributes: Record<string, unknown> = {},
+		public readonly children: readonly ASTNode[] = [],
 	) {
-		children.forEach((c) => { c._parent = this; });
+		this.source       = this.start.source;
+		this.source_index = this.start.source_index;
+		this.line_index   = this.start.line_index;
+		this.col_index    = this.start.col_index;
+		children.forEach((c) => {
+			c.#parent = this;
+		});
 	}
 
 	/** The unique parent node containing this node. */
-	get parent(): ASTNode | null {
-		return this._parent;
+	public get parent(): ASTNode | undefined {
+		return this.#parent;
 	}
 
 	/** @implements Serializable */
-	serialize(): string {
-		const attributes: Map<string, string> = new Map<string, string>([
+	public serialize(): string {
+		const attributes = new Map<string, string>([
 			['line',   (this.line_index + 1).toString()],
 			['col',    (this.col_index  + 1).toString()],
 			['source', this.source],
@@ -66,6 +70,6 @@ export class ASTNode implements Serializable {
 			attributes.set(key, `${ value }`);
 		});
 		const contents: string = this.children.map((child) => child.serialize()).join('');
-		return `<${ this.tagname } ${ stringifyAttributes(attributes) }${ (contents) ? `>${ contents }</${ this.tagname }>` : `/>` }`;
+		return `<${ this.tagname } ${ stringifyAttributes(attributes) }${ (contents) ? `>${ contents }</${ this.tagname }>` : '/>' }`;
 	}
 }

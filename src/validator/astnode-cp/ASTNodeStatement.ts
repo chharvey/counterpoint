@@ -1,24 +1,42 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
+import {assert_context_name} from '../../lib/index.ts';
 import {
-	CPConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
-	Instruction,
-	Builder,
-} from './package.js';
-import {ASTNodeGoal} from './index.js';
-import type {Buildable} from './Buildable.js';
-import {ASTNodeCP} from './ASTNodeCP.js';
+} from '../../core/index.ts';
+import {ASTNodeBlock} from './index.ts';
+import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {Foldable} from './Foldable.ts';
+import type {Buildable} from './Buildable.ts';
+
+
+
+/**
+ * Decorator for {@link ASTNodeStatement#build} method and any overrides.
+ * Returns `(nop)` if this node is foldable, else calls the `build()` method.
+ * @implements MethodDecorator<ASTNodeStatement, ASTNodeStatement['build']>
+ */
+export function buildDeco(
+	method:  ASTNodeStatement['build'],
+	context: ClassMethodDecoratorContext<ASTNodeStatement, typeof method>,
+): typeof method {
+	assert_context_name(context, 'build');
+	return function (this: ASTNodeStatement) {
+		return this.isFoldable ? this.builder.module.nop() : method.call(this);
+	};
+}
 
 
 
 /**
  * A sematic node representing a statement.
  * Known subclasses:
- * - ASTNodeDeclaration
  * - ASTNodeStatementExpression
- * - ASTNodeAssignment
+ * - ASTNodeStatementConditional
+ * - ASTNodeDeclaration
  */
-export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
+export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Buildable {
 	/**
 	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -26,11 +44,16 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeStatement representing the given source
 	 */
-	static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatement {
-		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(src, config);
-		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
-		return goal.children[0];
+	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatement {
+		const block: ASTNodeBlock = ASTNodeBlock.fromSource(`{ ${ src } }`, config);
+		assert.strictEqual(block.children.length, 1, 'semantic block should have 1 child');
+		return block.children[0];
 	}
+
+
+	/** @implements Foldable */
+	public abstract get isFoldable(): boolean;
+
 	/** @implements Buildable */
-	abstract build(builder: Builder): Instruction;
+	public abstract build(): binaryen.ExpressionRef;
 }

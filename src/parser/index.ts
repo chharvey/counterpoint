@@ -1,4 +1,6 @@
-export * from './utils-public.js';
+export * from './utils-public.ts';
 
-export * from './Punctuator.js';
-export * from './Keyword.js';
+export * from './Punctuator.ts';
+export * from './Keyword.ts';
+
+export * from './Serializable.ts';

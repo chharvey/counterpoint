@@ -1,15 +1,33 @@
-import {ErrorCode} from './ErrorCode.js';
+import type {ConstructorType} from '../lib/index.ts';
+import {
+	AssignmentErrorDuplicateDeclaration,
+	AssignmentErrorDuplicateKey,
+	AssignmentErrorReassignment,
+} from './index.ts';
+import {ErrorCode} from './ErrorCode.ts';
 
 
 
 /**
  * An AssignmentError is thrown when the validator detects an illegal declaration or assignment.
+ *
+ * Known subclasses:
+ * - AssignmentErrorDuplicateDeclaration
+ * - AssignmentErrorDuplicateKey
+ * - AssignmentErrorReassignment
  */
 export class AssignmentError extends ErrorCode {
-	/** The name of this class of errors. */
-	static override readonly NAME: string = 'AssignmentError';
-	/** The number series of this class of errors. */
-	static readonly CODE: number = 2200;
+	static readonly #CODE = 2200;
+
+	protected static get CODES(): ReadonlyMap<ConstructorType<AssignmentError>, number> {
+		return new Map<ConstructorType<AssignmentError>, number>([
+			[AssignmentErrorDuplicateDeclaration,  1],
+			[AssignmentErrorDuplicateKey,          2],
+			[AssignmentErrorReassignment,         10],
+		]);
+	}
+
+
 	/**
 	 * Construct a new AssignmentError object.
 	 * @param message a message to the user
@@ -17,11 +35,11 @@ export class AssignmentError extends ErrorCode {
 	 * @param line    the line index in source code
 	 * @param col     the column index in source code
 	 */
-	constructor (message: string, code: number = 0, line?: number, col?: number) {
+	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name: AssignmentError.NAME,
-			code: AssignmentError.CODE + code,
+			name: AssignmentError.name,
+			code: AssignmentError.#CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});

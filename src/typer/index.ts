@@ -1,4 +1,4 @@
-export * from './utils-public.js';
+export * from './utils-public.ts';
 
-export * as TYPE from './cp-type/index.js';
-export * as OBJ from './cp-object/index.js';
+export * as VALUE from './cp-value/index.ts';
+export * as TYPE from './cp-type/index.ts';

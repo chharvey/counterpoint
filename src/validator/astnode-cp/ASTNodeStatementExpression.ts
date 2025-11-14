@@ -1,31 +1,45 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
+import {VALUE} from '../../index.ts';
 import {
-	Builder,
-	INST,
-	CPConfig,
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeType,
-} from './package.js';
-import type {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {if_constant_folding} from './Foldable.ts';
+import type {ASTNodeExpression} from './ASTNodeExpression.ts';
+import {
+	buildDeco,
+	ASTNodeStatement,
+} from './ASTNodeStatement.ts';
 
 
 
 export class ASTNodeStatementExpression extends ASTNodeStatement {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeStatementExpression);
+		assert_instanceof(statement, ASTNodeStatementExpression);
 		return statement;
 	}
-	constructor(
+
+	public constructor(
 		start_node: SyntaxNodeType<'statement_expression'>,
-		readonly expr?: ASTNodeExpression,
+		public readonly expr?: ASTNodeExpression,
 	) {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
-	override build(builder: Builder): INST.InstructionNone | INST.InstructionStatement {
-		return (this.expr)
-			? new INST.InstructionStatement(builder.stmtCount, this.expr.build(builder))
-			: new INST.InstructionNone();
+
+	@if_constant_folding
+	public override get isFoldable(): boolean {
+		return !this.expr || !!this.expr.fold();
+	}
+
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.drop(this.validator.config.compilerOptions.constantFolding ? this.expr!.build() : this.expr?.build() ?? VALUE.NULL.build(this.builder));
 	}
 }

@@ -1,64 +1,86 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type {SyntaxNode} from 'tree-sitter';
 import {
+	VALUE,
 	TYPE,
-	OBJ,
-	CPConfig,
-	CONFIG_DEFAULT,
-	Keyword,
-	Validator,
-	SyntaxNodeType,
-	isSyntaxNodeType,
-} from './package.js';
+} from '../../index.ts';
 import {
-	valueOfTokenNumber,
-} from './utils-private.js';
-import {ASTNodeType} from './ASTNodeType.js';
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
+	CONFIG_DEFAULT,
+} from '../../core/index.ts';
+import {Keyword} from '../../parser/index.ts';
+import {
+	type SyntaxNodeType,
+	isSyntaxNodeType,
+} from '../utils-private.ts';
+import {Validator} from '../Validator.ts';
+import {valueOfTokenNumber} from './utils-private.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
 
 
 
 export class ASTNodeTypeConstant extends ASTNodeType {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeConstant {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeConstant {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeConstant);
+		assert_instanceof(typ, ASTNodeTypeConstant);
 		return typ;
 	}
 
 	private static keywordType(source: string): TYPE.Type {
-		return (
-			(source === Keyword.VOID)  ? TYPE.Type.VOID :
-			(source === Keyword.NULL)  ? TYPE.Type.NULL :
-			(source === Keyword.BOOL)  ? TYPE.Type.BOOL :
-			(source === Keyword.FALSE) ? OBJ.Boolean.FALSETYPE :
-			(source === Keyword.TRUE ) ? OBJ.Boolean.TRUETYPE :
-			(source === Keyword.INT)   ? TYPE.Type.INT :
-			(source === Keyword.FLOAT) ? TYPE.Type.FLOAT :
-			(source === Keyword.STR)   ? TYPE.Type.STR :
-			(source === Keyword.OBJ)   ? TYPE.Type.OBJ :
-			(() => { throw new Error(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`); })()
-		);
+		return new Map<string, TYPE.Type>([
+			[Keyword.NOTHING,  TYPE.NOTHING],
+			[Keyword.NULL,     TYPE.NULL],
+			[Keyword.BOOL,     TYPE.BOOL],
+			[Keyword.SYM,      TYPE.SYM],
+			[Keyword.FALSE,    TYPE.FALSE],
+			[Keyword.TRUE,     TYPE.TRUE],
+			[Keyword.INT,      TYPE.INT],
+			[Keyword.FLOAT,    TYPE.FLOAT],
+			[Keyword.STR,      TYPE.STR],
+			[Keyword.ANYTHING, TYPE.ANYTHING],
+		]).get(source) ?? assert.fail(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`);
 	}
 
 
-	private _type: TYPE.Type | null = null;
-
-	constructor (start_node:
+	public constructor(start_node: (
 		| SyntaxNodeType<'keyword_type'>
-		| SyntaxNodeType<'integer'>
 		| SyntaxNodeType<'primitive_literal'>
-	) {
+	)) {
 		super(start_node);
 	}
-	protected override eval_do(): TYPE.Type {
-		return this._type ??= (
-			(isSyntaxNodeType(this.start_node, 'keyword_type'))     ? ASTNodeTypeConstant.keywordType(this.start_node.text) :
-			(isSyntaxNodeType(this.start_node, 'integer'))          ? new TYPE.TypeUnit(valueOfTokenNumber(this.start_node.text, this.validator.config)) :
-			(isSyntaxNodeType(this.start_node, 'primitive_literal'),  ((token: SyntaxNode) => (
-				(isSyntaxNodeType(token, 'keyword_value'))                     ? ASTNodeTypeConstant.keywordType(token.text) :
-				(isSyntaxNodeType(token, /^integer(__radix)?(__separator)?$/)) ? new TYPE.TypeUnit(valueOfTokenNumber(token.text, this.validator.config)) :
-				(isSyntaxNodeType(token, /^float(__separator)?$/))             ? new TYPE.TypeUnit(valueOfTokenNumber(token.text, this.validator.config)) :
-				(isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/) , new TYPE.TypeUnit(new OBJ.String(Validator.cookTokenString(token.text, this.validator.config))))
-			))(this.start_node.children[0]))
-		);
+
+	@memoizeMethod
+	public override eval(): TYPE.Type {
+		switch (true) {
+			case isSyntaxNodeType(this.start_node, 'keyword_type'): {
+				return ASTNodeTypeConstant.keywordType(this.start_node.children[0].text);
+			}
+			default: {
+				assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
+				const children: readonly SyntaxNode[] = this.start_node.children;
+				switch (true) {
+					case isSyntaxNodeType(children[0], /^integer(__radix)?(__separator)?$/): {
+						return valueOfTokenNumber(children[0].text, this.validator.config).toType();
+					}
+					case isSyntaxNodeType(children[0], /^float(__separator)?$/): {
+						return valueOfTokenNumber(children[0].text, this.validator.config).toType();
+					}
+					case isSyntaxNodeType(children[0], /^string(__comment)?(__separator)?$/): {
+						return new VALUE.String(Validator.cookTokenString(children[0].text, this.validator.config)).toType();
+					}
+					case isSyntaxNodeType(children[0], 'keyword_value'): {
+						return ASTNodeTypeConstant.keywordType(children[0].children[0].text);
+					}
+					default: {
+						assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
+						return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text).toType();
+					}
+				}
+			}
+		}
 	}
 }

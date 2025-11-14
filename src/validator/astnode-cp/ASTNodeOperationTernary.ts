@@ -1,64 +1,85 @@
-import * as assert from 'assert';
+import type binaryen from 'binaryen';
 import {
+	VALUE,
 	TYPE,
-	OBJ,
-	INST,
-	Builder,
-	TypeError01,
-	CPConfig,
+	drop_then,
+	BinVect,
+	TypeErrorInvalidOperation,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CPConfig,
 	CONFIG_DEFAULT,
-	SyntaxNodeSupertype,
-	Operator,
-} from './package.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperation} from './ASTNodeOperation.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
+import type {Operator} from '../Operator.ts';
+import {
+	buildDeco,
+	typeDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 
 
 export class ASTNodeOperationTernary extends ASTNodeOperation {
-	static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationTernary {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationTernary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationTernary);
+		assert_instanceof(expression, ASTNodeOperationTernary);
 		return expression;
 	}
-	constructor(
+
+	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		readonly operator: Operator.COND,
-		readonly operand0: ASTNodeExpression,
-		readonly operand1: ASTNodeExpression,
-		readonly operand2: ASTNodeExpression,
+		operator: Operator.COND,
+		public readonly operand0: ASTNodeExpression,
+		public readonly operand1: ASTNodeExpression,
+		public readonly operand2: ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
-	override shouldFloat(): boolean {
-		return this.operand1.shouldFloat() || this.operand2.shouldFloat();
+
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		const t0:                 TYPE.Type                = this.operand0.type();
+		const [arg0, arg1, arg2]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
+
+		if (t0.isSubtypeOf(TYPE.TRUE)) {
+			return drop_then(this.builder.module, [arg0], arg1);
+		} else if (t0.isSubtypeOf(TYPE.FALSE)) {
+			return drop_then(this.builder.module, [arg0], arg2);
+		}
+
+		return this.builder.module.if(new BinVect(this.builder.module, arg0).isSpecial(true), arg1, arg2);
 	}
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionCond {
-		const tofloat: boolean = to_float || this.shouldFloat();
-		return new INST.InstructionCond(
-			this.operand0.build(builder, false),
-			this.operand1.build(builder, tofloat),
-			this.operand2.build(builder, tofloat),
-		)
+
+	@memoizeMethod
+	@typeDeco
+	public override type(): TYPE.Type {
+		// compute types early to rethrow any errors
+		const [t0, t1, t2]: TYPE.Type[] = this.children.map((operand) => operand.type());
+		if (!t0.isSubtypeOf(TYPE.BOOL)) {
+			throw new TypeErrorInvalidOperation(this);
+		}
+		return (
+			t0.isBottomType       ? TYPE.NOTHING :
+			t0.equals(TYPE.FALSE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
+			t0.equals(TYPE.TRUE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
+			t1.union(t2)
+		);
 	}
-	protected override type_do(): TYPE.Type {
-		const t0: TYPE.Type = this.operand0.type();
-		const t1: TYPE.Type = this.operand1.type();
-		const t2: TYPE.Type = this.operand2.type();
-		return (t0.isSubtypeOf(TYPE.Type.BOOL))
-			? (t0 instanceof TYPE.TypeUnit)
-				? (t0.value === OBJ.Boolean.FALSE)
-					? t2 // If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
-					: t1 // If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
-				: t1.union(t2)
-			: (() => { throw new TypeError01(this) })()
-	}
-	protected override fold_do(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand0.fold();
+
+	@memoizeMethod
+	public override fold(): VALUE.Value | null {
+		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		return (v0 === OBJ.Boolean.TRUE)
+		return (v0 === VALUE.TRUE)
 			? this.operand1.fold()
 			: this.operand2.fold();
 	}

@@ -1,28 +1,28 @@
 {
 	"compilerOptions": {
 		// Type Checking
-		"exactOptionalPropertyTypes": true,
-		"noImplicitOverride":         true,
-		"noImplicitReturns":          true,
-		"noUnusedLocals":             true,
-		"noUnusedParameters":         true,
-		"strict":                     true,
+		"exactOptionalPropertyTypes":         true,
+		"noImplicitOverride":                 true,
+		"noImplicitReturns":                  true,
+		"noPropertyAccessFromIndexSignature": true,
+		"strict":                             true,
 
 		// Modules
-		"module":           "ES2020",
-		"moduleResolution": "Node",
+		"module":                          "node18",
+		"rewriteRelativeImportExtensions": true,
+		"resolveJsonModule":               true,
+		"rootDir":                         "./src/",
 
 		// Emit
-		"importsNotUsedAsValues": "error",
-		"noEmitOnError":          true,
-		"outDir":                 "./build/",
+		"noEmitOnError": true,
+		"outDir":        "./build/",
 
 		// Interop Constraints
 		"allowSyntheticDefaultImports": true,
+		"verbatimModuleSyntax":         true,
 
 		// Language and Environment
-		"target": "ES2021", // set `"useDefineForClassFields": false` when upgrading to ES2022
-		// "useDefineForClassFields": false,
+		"target": "es2022",
 
 		// Completeness
 		"skipLibCheck": true,
