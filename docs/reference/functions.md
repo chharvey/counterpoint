@@ -293,6 +293,40 @@ function divide(a: float, b: float): float { ... }
 ```
 
 
+### Function Assignment and Variance
+Function return types are **covariant**, meaning that the *assigned* (source) function’s return type
+must be a subtype of the *assignee* (target) function’s return type.
+```
+type Stringify = \(int | float) => str;
+
+claim f: Stringify;
+let result: str = f.(42); % expected to return type `str`
+
+let g: Stringify = \(n: int | float): str | null {...}; %> TypeError % return type `str | null` is not assignable to return type `str`
+```
+Conversely, function parameter types are **contravariant**, meaning that the *assignee* (target) function’s parameters
+must be assignable to the *assigned* (source) function’s parameters.
+```
+type Stringify = \(int | float) => str;
+
+claim f: Stringify;
+f.(4.2); % expected to accept type `float`
+
+let g: Stringify = \(n: int): str {...}; %> TypeError % parameter type `int | float` is not assignable to parameter type `int`
+```
+
+Aside from the parameter *types* being compatible, the parameter positions and names are also taken into account.
+For positional parameters, the rules of tuple type assignment apply; for named parameters, the rules of record assignment apply.
+
+Parameter assignment in a nutshell (assigning function type `G` to function type `F`):
+- positional parameters are matched up one-by-one by index
+- named parameters are matched up one-by-one by key, and they don’t need to be in the same order
+- every required parameter in `G` must have a corresponding required parameter in `F`
+- every optional parameter in `G` may or may not have a corresponding parameter, required or optional, in `F`
+- any additional parameters in `F` not corresponding to any parameters in `G` may be optional or required
+- for corresponding parameters, the parameter in `G` must be a supertype of its corresponding parameter in `F`
+
+
 
 ## Higher-Order Functions
 **Higher-order functions** include functions that take other functions as arguments.
