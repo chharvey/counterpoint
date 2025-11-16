@@ -1,4 +1,5 @@
 import type binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -38,6 +39,11 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		throw new Error('TODO:');
+	}
+
+	public override varCheck(): void {
+		// Do not call `super.varCheck()` as we VarCheck children in a different order.
+		xjs.Array.forEachAggregated(this.doFirst ? [this.block, this.condition] : [this.condition, this.block], (c) => c.varCheck());
 	}
 
 	public override typeCheck(): void {

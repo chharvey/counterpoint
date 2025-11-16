@@ -172,6 +172,24 @@ describe('ASTNodeExpression', () => {
 					42 || FOO;
 				}`).varCheck(), ReferenceErrorKind);
 			});
+			it('iteration variable of `for` loop is scoped only to the block.', () => {
+				AST.ASTNodeGoal.fromSource(`{
+					for it: float of [1.1, 2.2, 3.3] do {
+						it;
+					};
+				}`).varCheck(); // assert does not throw
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					for it: float of [1.1, 2.2, 3.3, it] do {
+						42;
+					};
+				}`).varCheck(), ReferenceErrorUndeclared, 'iteraion variable cannot be referenced in the iterator expression.');
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					for it: float of [1.1, 2.2, 3.3] do {
+						42;
+					};
+					it;
+				}`).varCheck(), ReferenceErrorUndeclared, 'iteration variable cannot be referenced after the iteration statement.');
+			});
 		});
 
 

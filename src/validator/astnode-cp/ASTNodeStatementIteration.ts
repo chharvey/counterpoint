@@ -1,4 +1,6 @@
 import type binaryen from 'binaryen';
+import * as xjs from 'extrajs';
+import {AssignmentErrorDuplicateDeclaration} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -7,6 +9,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeBlock} from './index.ts';
 import {if_constant_folding} from './Foldable.ts';
@@ -40,6 +43,22 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		throw new Error('TODO:');
+	}
+
+	public override varCheck(): void {
+		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`.
+		xjs.Array.forEachAggregated([this.typenode, this.iterable], (c) => c.varCheck());
+		if (this.assignee) {
+			if (this.block.validator.hasSymbol(this.assignee.id)) {
+				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
+			}
+			this.block.validator.addSymbol(new SymbolSchemaVar(
+				this.assignee,
+				false, // because it should not be manually reassigned
+				false, // because it won’t ever be nullish upon accessing
+			));
+		}
+		this.block.varCheck(); // VarCheck(block) must come after assignee checks, because assignee may be referenced inside block
 	}
 
 	public override typeCheck(): void {

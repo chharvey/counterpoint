@@ -148,6 +148,11 @@ describe('ASTNodeType', () => {
 					let FOO: int = 42;
 					type T = FOO | float;
 				}`).varCheck(), ReferenceErrorKind);
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					for FOO: int of [42] do {
+						type T = FOO | float;
+					};
+				}`).varCheck(), ReferenceErrorKind);
 			});
 		});
 
