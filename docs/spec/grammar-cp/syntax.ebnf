@@ -48,6 +48,11 @@ Word ::=
 		| "var"
 	// control
 		| "unless"
+		| "while"
+		| "until"
+		| "for"
+		| "of"
+		| "do"
 	| IDENTIFIER
 	| KeywordType
 	| KeywordValue

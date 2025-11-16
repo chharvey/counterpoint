@@ -38,6 +38,11 @@ export enum Keyword {
 
 	// control
 	UNLESS = 'unless',
+	WHILE  = 'while',
+	UNTIL  = 'until',
+	FOR    = 'for',
+	OF     = 'of',
+	DO     = 'do',
 }
 
 

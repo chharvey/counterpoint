@@ -82,6 +82,11 @@ KeywordOther :::=
 		| "var"
 	// control
 		| "unless"
+		| "while"
+		| "until"
+		| "for"
+		| "of"
+		| "do"
 ;
 
 

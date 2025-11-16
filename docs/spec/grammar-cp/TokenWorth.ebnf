@@ -67,6 +67,11 @@ TokenWorth(KeywordOther :::= "void")     -> RealNumber := \x98;
 TokenWorth(KeywordOther :::= "nominal")  -> RealNumber := \x99;
 TokenWorth(KeywordOther :::= "var")      -> RealNumber := \x9a;
 TokenWorth(KeywordOther :::= "unless")   -> RealNumber := \x9b;
+TokenWorth(KeywordOther :::= "while")    -> RealNumber := \x9c;
+TokenWorth(KeywordOther :::= "until")    -> RealNumber := \x9d;
+TokenWorth(KeywordOther :::= "for")      -> RealNumber := \x9e;
+TokenWorth(KeywordOther :::= "of")       -> RealNumber := \x9f;
+TokenWorth(KeywordOther :::= "do")       -> RealNumber := \xa0;
 
 
 

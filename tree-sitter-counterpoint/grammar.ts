@@ -377,6 +377,11 @@ module.exports = grammar({
 			'var',
 			// control
 			'unless',
+			'while',
+			'until',
+			'for',
+			'of',
+			'do',
 			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
@@ -653,6 +658,11 @@ module.exports = grammar({
 			'var',
 			// control
 			'unless',
+			'while',
+			'until',
+			'for',
+			'of',
+			'do',
 			// type keyword
 			'nothing',
 			'bool',
