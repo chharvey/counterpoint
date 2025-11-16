@@ -633,8 +633,8 @@ Boolean Subtype(Type a, Type b) :=
 					1. *Return:* `false`.
 		7. *Return:* `true`.
 	11. *If* `a` is a List type *and* `b` is a List type:
-		1. *Let* `ai` be the union of types in `a`.
-		2. *Let* `bi` be the union of types in `b`.
+		1. *Let* `ai` be the type argument over `a`.
+		2. *Let* `bi` be the type argument over `b`.
 		3. *If* `b` is mutable:
 			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ai, bi)` is `true`:
 				1. *Return:* `true`.
@@ -642,8 +642,8 @@ Boolean Subtype(Type a, Type b) :=
 			1. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
 				1. *Return:* `true`.
 	12. *If* `a` is a Dict type *and* `b` is a Dict type:
-		1. *Let* `av` be the union of value types in `a`.
-		2. *Let* `bv` be the union of value types in `b`.
+		1. *Let* `av` be the type argument over `a`.
+		2. *Let* `bv` be the type argument over `b`.
 		3. *If* `b` is mutable:
 			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
 				1. *Return:* `true`.
@@ -651,8 +651,8 @@ Boolean Subtype(Type a, Type b) :=
 			1. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 				1. *Return:* `true`.
 	13. *If* `a` is a Set type *and* `b` is a Set type:
-		1. *Let* `ae` be the union of types in `a`.
-		2. *Let* `be` be the union of types in `b`.
+		1. *Let* `ae` be the type argument over `a`.
+		2. *Let* `be` be the type argument over `b`.
 		3. *If* `b` is mutable:
 			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ae, be)` is `true`:
 				1. *Return:* `true`.
@@ -660,10 +660,10 @@ Boolean Subtype(Type a, Type b) :=
 			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
 				1. *Return:* `true`.
 	14. *If* `a` is a Map type *and* `b` is a Map type:
-		1. *Let* `ak` be the union of antecedent types in `a`.
-		2. *Let* `av` be the union of consequent types in `a`.
-		3. *Let* `bk` be the union of antecedent types in `b`.
-		4. *Let* `bv` be the union of consequent types in `b`.
+		1. *Let* `ak` be the antecedent type argument over `a`.
+		2. *Let* `av` be the consequent type argument over `a`.
+		3. *Let* `bk` be the antecedent type argument over `b`.
+		4. *Let* `bv` be the consequent type argument over `b`.
 		5. *If* `b` is mutable:
 			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ak, bk)` is `true` *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
 					1. *Return:* `true`.

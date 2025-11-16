@@ -507,7 +507,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 		4. *If* `access.kind` is `MAYBE`:
 			1. *Set* `accessor_maybe` to `true`.
 		5. *If* `base_type` is a List type:
-			1. *Let* `t` be the type of the items in `base_type`.
+			1. *Let* `t` be the type argument over `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `t`,
@@ -516,7 +516,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		6. *Else If* `base_type` is a Dict type:
-			1. *Let* `t` be the type of the values in `base_type`.
+			1. *Let* `t` be the type argument over `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Symbol)` is `true`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `t`,
@@ -527,7 +527,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		7. *Else If* `base_type` is a Set type:
-			1. *Let* `t` be the type of the elements in `base_type`.
+			1. *Let* `t` be the type argument over `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true` *or* `is_writing` is `false`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `Boolean`,
@@ -536,8 +536,8 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		8. *Else If* `base_type` is a Map type:
-			1. *Let* `k` be the type of the antecedents in `base_type`.
-			2. *Let* `v` be the type of the consequents in `base_type`.
+			1. *Let* `k` be the antecedent type argument over `base_type`.
+			2. *Let* `v` be the consequent type argument over `base_type`.
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true` *or* `is_writing` is `false`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `v`,
