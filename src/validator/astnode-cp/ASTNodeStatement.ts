@@ -34,6 +34,8 @@ export function buildDeco(
  * Known subclasses:
  * - ASTNodeStatementExpression
  * - ASTNodeStatementConditional
+ * - ASTNodeStatementLoop
+ * - ASTNodeStatementIteration
  * - ASTNodeDeclaration
  */
 export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Buildable {

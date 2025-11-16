@@ -47,6 +47,8 @@ export * from './ASTNodeOperationTernary.ts';
 export {ASTNodeStatement} from './ASTNodeStatement.ts';
 export * from './ASTNodeStatementExpression.ts';
 export * from './ASTNodeStatementConditional.ts';
+export * from './ASTNodeStatementLoop.ts';
+export * from './ASTNodeStatementIteration.ts';
 export * from './ASTNodeBlock.ts';
 export * from './ASTNodeDeclaration.ts';
 export * from './ASTNodeDeclarationType.ts';
