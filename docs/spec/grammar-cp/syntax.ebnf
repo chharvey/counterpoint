@@ -72,7 +72,8 @@ TypeUnit ::=
 	| TypeMapLiteral
 ;
 
-PropertyAccessorType ::= INTEGER | Word;
+PropertyAccessorType
+	::= INTEGER | Word;
 
 TypeCompound ::=
 	| TypeUnit
@@ -132,7 +133,8 @@ ExpressionUnit ::=
 	| MapLiteral
 ;
 
-PropertyAccessor ::= INTEGER | Word | "[" Expression "]";
+PropertyAccessor
+	::= INTEGER | Word | "[" Expression "]";
 
 ExpressionCompound ::=
 	| ExpressionUnit

@@ -670,11 +670,11 @@ Boolean Subtype(Type a, Type b) :=
 		6. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 				1. *Return:* `true`.
-	15. *If* every value that is assignable to `a` is also assignable to `b`:
-		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
-			because an instance of `Integer` is an instance of `Object`.
-		2. *Return:* `true`.
-	16. *Return:* `false`.
+	15. *If* `IsReference(a)` is `true` *and* `Equal(b, Object)` is `true`:
+		1. *Return:* `true`.
+	16. *If* every value that is assignable to `a` is also assignable to `b`:
+		1. *Return:* `true`.
+	17. *Return:* `false`.
 ;
 ```
 
