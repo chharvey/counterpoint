@@ -225,9 +225,13 @@ StatementConditional<Unless> ::=
 	& <Unless+>";"
 ;
 
+StatementLoop
+	::= (("while" | "until") Expression<+Block> && "do" Block) ";";
+
 Statement ::=
 	| StatementExpression
 	| StatementConditional<∓Unless>
+	| StatementLoop
 	| Declaration
 ;
 

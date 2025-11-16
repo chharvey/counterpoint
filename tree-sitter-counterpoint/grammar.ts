@@ -287,6 +287,12 @@ function repCom1(production: RuleOrLiteral): SeqRule {
 function repCom(production: RuleOrLiteral): ChoiceRule {
 	return optional(repCom1(production));
 }
+function uSeq(left: RuleOrLiteral, right: RuleOrLiteral): ChoiceRule {
+	return choice(
+		seq(left, right),
+		seq(right, left),
+	);
+}
 
 
 
@@ -578,9 +584,12 @@ module.exports = grammar({
 			iff(unless, ';'),
 		), 'unless'),
 
+		statement_loop: $ => seq(uSeq(seq(choice('while', 'until'), $._expression__block), seq('do', $.block)), ';'),
+
 		_statement: $ => choice(
 			$.statement_expression,
 			call($, 'statement_conditional', ['', 'unless']),
+			$.statement_loop,
 			$._declaration,
 		),
 
