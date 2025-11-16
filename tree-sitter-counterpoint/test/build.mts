@@ -1350,8 +1350,21 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		StatementIteration: [
+			xjs.String.dedent`
+				{
+					for _:  T of iterable do { iterate; };
+					for it: T of iterable do { iterate; };
+				}
+			`,
+			sourceStatements(
+				s('statement_iteration',                  s('identifier'), s('identifier'), s('block', s('statement_expression', s('identifier')))),
+				s('statement_iteration', s('identifier'), s('identifier'), s('identifier'), s('block', s('statement_expression', s('identifier')))),
+			),
+		],
+
 		// Statement
-		// consists of #{Statement{Expression,Conditional,Loop},Declaration}
+		// consists of #{Statement{Expression,Conditional,Loop,Iteration},Declaration}
 
 		Block: [
 			xjs.String.dedent`

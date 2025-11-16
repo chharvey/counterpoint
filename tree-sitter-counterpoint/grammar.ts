@@ -586,10 +586,13 @@ module.exports = grammar({
 
 		statement_loop: $ => seq(uSeq(seq(choice('while', 'until'), $._expression__block), seq('do', $.block)), ';'),
 
+		statement_iteration: $ => seq('for', choice('_', $.identifier), ':', $._type, 'of', $._expression__block, 'do', $.block, ';'),
+
 		_statement: $ => choice(
 			$.statement_expression,
 			call($, 'statement_conditional', ['', 'unless']),
 			$.statement_loop,
+			$.statement_iteration,
 			$._declaration,
 		),
 
