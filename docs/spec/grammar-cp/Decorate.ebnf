@@ -683,10 +683,53 @@ Decorate(StatementConditional<+Unless> ::= "unless" Expression<+Block> "then" Bl
 
 
 
+Decorate(StatementLoop ::= "while" Expression<+Block> "do" Block ";") -> SemanticStatementLoop
+	:= (SemanticStatementLoop[doFirst=false][until=false]
+		Decorate(Expression<+Block>)
+		Decorate(Block)
+	);
+Decorate(StatementLoop ::= "do" Block "while" Expression<+Block> ";") -> SemanticStatementLoop
+	:= (SemanticStatementLoop[doFirst=true][until=false]
+		Decorate(Expression<+Block>)
+		Decorate(Block)
+	);
+Decorate(StatementLoop ::= "until" Expression<+Block> "do" Block ";") -> SemanticStatementLoop
+	:= (SemanticStatementLoop[doFirst=false][until=true]
+		Decorate(Expression<+Block>)
+		Decorate(Block)
+	);
+Decorate(StatementLoop ::= "do" Block "until" Expression<+Block> ";") -> SemanticStatementLoop
+	:= (SemanticStatementLoop[doFirst=true][until=true]
+		Decorate(Expression<+Block>)
+		Decorate(Block)
+	);
+
+
+
+Decorate(StatementIteration ::= "for" "_" ":" Type "of" Expression<+Block> "do" Block ";") -> SemanticStatementIteration
+	:= (SemanticStatementIteration
+		(SemanticType     Decorate(Type))
+		(SemanticIterable Decorate(Expression<+Block>))
+		Decorate(Block)
+	);
+Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "of" Expression<+Block> "do" Block ";") -> SemanticStatementIteration
+	:= (SemanticStatementIteration
+		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticType     Decorate(Type))
+		(SemanticIterable Decorate(Expression<+Block>))
+		Decorate(Block)
+	);
+
+
+
 Decorate(Statement ::= StatementExpression) -> SemanticStatementExpression
 	:= Decorate(StatementExpression);
 Decorate(Statement ::= StatementConditional<∓Unless>) -> SemanticStatementConditional
 	:= Decorate(StatementConditional<∓Unless>);
+Decorate(Statement ::= StatementLoop) -> SemanticStatementLoop
+	:= Decorate(StatementLoop);
+Decorate(Statement ::= StatementIteration) -> SemanticStatementIteration
+	:= Decorate(StatementIteration);
 Decorate(Statement ::= Declaration) -> SemanticDeclaration
 	:= Decorate(Declaration);
 

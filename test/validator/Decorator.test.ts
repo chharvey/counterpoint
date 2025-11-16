@@ -648,6 +648,44 @@ describe('Decorator', () => {
 				% (statement_conditional__unless)
 			`]],
 
+			['Decorate(StatementLoop ::= "while" Expression<+Block> "do" Block ";") -> SemanticStatementLoop', [AST.ASTNodeStatementLoop, `
+				{
+					while condition do { loop; };
+				}
+				% (statement_loop)
+			`]],
+			['Decorate(StatementLoop ::= "do" Block "while" Expression<+Block> ";") -> SemanticStatementLoop', [AST.ASTNodeStatementLoop, `
+				{
+					do { loop; } while condition;
+				}
+				% (statement_loop)
+			`]],
+			['Decorate(StatementLoop ::= "until" Expression<+Block> "do" Block ";") -> SemanticStatementLoop', [AST.ASTNodeStatementLoop, `
+				{
+					until condition do { loop; };
+				}
+				% (statement_loop)
+			`]],
+			['Decorate(StatementLoop ::= "do" Block "until" Expression<+Block> ";") -> SemanticStatementLoop', [AST.ASTNodeStatementLoop, `
+				{
+					do { loop; } until condition;
+				}
+				% (statement_loop)
+			`]],
+
+			['Decorate(StatementIteration ::= "for" "_" ":" Type "of" Expression<+Block> "do" Block ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
+				{
+					for _: T of iterable do { iterate; };
+				}
+				% (statement_iteration)
+			`]],
+			['Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "of" Expression<+Block> "do" Block ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
+				{
+					for it: T of iterable do { iterate; };
+				}
+				% (statement_iteration)
+			`]],
+
 			['Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock', [AST.ASTNodeBlock, `
 				{
 					type T = U;
@@ -658,6 +696,9 @@ describe('Decorator', () => {
 					{
 						b;
 					};
+					if condition then { consequent; };
+					while condition do { loop; };
+					for it: T of iterable do { iterate; };
 				}
 				% (block)
 			`]],
