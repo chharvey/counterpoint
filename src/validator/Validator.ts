@@ -300,7 +300,7 @@ export class Validator {
 	 * @returns Does the symbol table have a symbol with the given id?
 	 */
 	public hasSymbol(id: bigint): boolean {
-		return this.symbol_table.has(id) || (this.parent?.symbol_table.has(id) ?? false);
+		return this.symbol_table.has(id) || (this.parent?.hasSymbol(id) ?? false);
 	}
 
 	/**
@@ -309,7 +309,7 @@ export class Validator {
 	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
 	 */
 	public getSymbolInfo(id: bigint): SymbolSchema | null {
-		return this.symbol_table.get(id) ?? this.parent?.symbol_table.get(id) ?? null;
+		return this.symbol_table.get(id) ?? this.parent?.getSymbolInfo(id) ?? null;
 	}
 
 	/**

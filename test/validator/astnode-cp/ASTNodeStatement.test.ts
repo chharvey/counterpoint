@@ -106,6 +106,30 @@ describe('ASTNodeStatement', () => {
 						};
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					let var x: int = 42;
+					if true then {
+						for x: bool of [false, true] do {
+							null;
+						};
+					};
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					let var x: int = 42;
+					while false do {
+						for x: bool of [false, true] do {
+							null;
+						};
+					};
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					let var x: int = 42;
+					for it: float of [1.1, 2.2, 3.3] do {
+						for x: bool of [false, true] do {
+							null;
+						};
+					};
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
 		});
 	});
