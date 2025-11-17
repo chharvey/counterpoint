@@ -32,27 +32,8 @@ import {
  */
 export abstract class ASTNodeCP extends ASTNode {
 	/**
-	 * Type-check an assignment.
-	 * @final
-	 * @param assigned_type the type of the expression assigned
-	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
-	 * @param node          the node where the assignment took place
-	 * @throws {TypeErrorNotAssignable} if the assigned expression is not assignable to the assignee
-	 */
-	public static checkSubtype(
-		assigned_type: TYPE.Type,
-		assignee_type: TYPE.Type,
-		node:          ASTNodeCP,
-	): void {
-		if (!assigned_type.isSubtypeOf(assignee_type)) {
-			throw new TypeErrorNotAssignable(assigned_type, assignee_type, node);
-		}
-	}
-
-	/**
 	 * Type-check an expression to an assignee type.
-	 * Attempts to call {@link ASTNodeCP.checkSubtype} first,
-	 * but if catching an error, attempts to assign entry-by-entry
+	 * Attempts to check subtyping rules first, but if failing, attempts to assign entry-by-entry
 	 * if the assigned expression is a variable collection literal.
 	 *
 	 * We want to be able to assign mutable collection literals to wider mutable types
@@ -73,7 +54,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * @param  assigned      the expression assigned
 	 * @param  assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
 	 * @param  node          the node where the assignment took place
-	 * @throws {TypeErrorNotAssignable} if {@link ASTNodeCP.checkSubtype} throws, and:
+	 * @throws {TypeErrorNotAssignable} if the assigned expression’s type is not a subtype of the assignee’s type, and:
 	 *                       if the assigned expression is not a collection literal,
 	 *                       is not a reference object,
 	 *                       or is not entry-wise assignable
@@ -83,14 +64,12 @@ export abstract class ASTNodeCP extends ASTNode {
 		assignee_type: TYPE.Type,
 		node:          ASTNodeCP,
 	): void {
-		try {
-			return ASTNodeCP.checkSubtype(assigned.type(), assignee_type, node);
-		} catch (err) {
+		const assigned_type: TYPE.Type = assigned.type();
+		if (!assigned_type.isSubtypeOf(assignee_type)) {
 			if (assigned instanceof ASTNodeCollectionLiteral) {
 				return assigned.assignTo(assignee_type);
-			} else {
-				throw err;
 			}
+			throw new TypeErrorNotAssignable(assigned_type, assignee_type, node);
 		}
 	}
 

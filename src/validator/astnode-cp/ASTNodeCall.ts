@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../index.ts';
@@ -115,7 +116,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 						} else {
 							const argtype: TYPE.Type = arg.type();
 							if (argtype instanceof TYPE.Tuple) {
-								ASTNodeCP.checkSubtype(argtype.itemTypes(), itemtype, this);
+								const tupleitemtypes: TYPE.Type = argtype.itemTypes();
+								if (!tupleitemtypes.isSubtypeOf(itemtype)) {
+									throw new TypeErrorNotNarrow(tupleitemtypes, itemtype, this.line_index, this.col_index);
+								}
 							} else {
 								throw err;
 							}
@@ -155,7 +159,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 						} else {
 							const argtype: TYPE.Type = arg.type();
 							if (argtype instanceof TYPE.Record) {
-								ASTNodeCP.checkSubtype(argtype.valueTypes(), valuetype, this);
+								const recordvaluetypes: TYPE.Type = argtype.valueTypes();
+								if (!recordvaluetypes.isSubtypeOf(valuetype)) {
+									throw new TypeErrorNotNarrow(recordvaluetypes, valuetype, this.line_index, this.col_index);
+								}
 							} else {
 								throw err;
 							}
@@ -197,7 +204,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 						} else {
 							const argtype: TYPE.Type = arg.type();
 							if (argtype instanceof TYPE.Tuple) {
-								ASTNodeCP.checkSubtype(argtype.itemTypes(), eltype, this);
+								const tupleitemtypes: TYPE.Type = argtype.itemTypes();
+								if (!tupleitemtypes.isSubtypeOf(eltype)) {
+									throw new TypeErrorNotNarrow(tupleitemtypes, eltype, this.line_index, this.col_index);
+								}
 							} else {
 								throw err;
 							}
@@ -243,7 +253,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 						} else {
 							const argtype: TYPE.Type = arg.type();
 							if (argtype instanceof TYPE.Tuple) {
-								ASTNodeCP.checkSubtype(argtype.itemTypes(), entrytype, this);
+								const tupleitemtypes: TYPE.Type = argtype.itemTypes();
+								if (!tupleitemtypes.isSubtypeOf(entrytype)) {
+									throw new TypeErrorNotNarrow(tupleitemtypes, entrytype, this.line_index, this.col_index);
+								}
 							} else {
 								throw err;
 							}
