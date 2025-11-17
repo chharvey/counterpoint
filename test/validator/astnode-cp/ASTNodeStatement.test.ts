@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as xjs from 'extrajs';
 import {
 	type Validator,
 	AST,
@@ -6,12 +7,114 @@ import {
 	SymbolSchemaVar,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
+	TypeErrorInvalidOperation,
+	TypeErrorNotNarrow,
+	TypeErrorNotAssignable,
 } from '../../../src/index.js';
 import {assert_instanceof} from '../../../src/lib/index.js';
+import {setupScript} from '../../helpers.js';
+import {extract_lines} from '../../utils.ts';
 
 
 
 describe('ASTNodeStatement', () => {
+	describe('#typeCheck', () => {
+		describe('ASTNodeStatementLoop', () => {
+			const NON_BOOLS: readonly string[] = extract_lines`
+				let var cond: int         = 42;
+				let var cond: int | false = 42;
+				let var cond: int | true  = 42;
+				let var cond: int | bool  = 42;
+			`;
+			const BOOLS: readonly string[] = extract_lines`
+				let var cond: false = false;
+				let var cond: true  = true;
+				let var cond: bool  = false;
+			`;
+			it('passes when condition is subtype of Boolean.', () => {
+				xjs.Array.forEachAggregated([BOOLS, NON_BOOLS], (decl_set) => xjs.Array.forEachAggregated(decl_set, (decl) => {
+					setupScript(`{
+						${ decl }
+						while ${ decl_set === NON_BOOLS ? '!!' : '' }cond do { "consequent"; };
+						until ${ decl_set === NON_BOOLS ? '!!' : '' }cond do { "consequent"; };
+					}`, null, {build: false}); // assert does not throw
+				}));
+			});
+			it('throws when condition is not subtype of Boolean.', () => {
+				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
+					const {stmts} = setupScript(`{
+						${ decl }
+						while cond do { "consequent"; };
+						until cond do { "consequent"; };
+					}`, null, {typeCheck: false});
+					stmts[0].typeCheck(); // assert does not throw
+					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+				});
+			});
+		});
+
+		describe('ASTNodeStatementIteration', () => {
+			it('passes when iterable is subtype of List and iteration variable is a supertype of List item type.', () => {
+				xjs.Array.forEachAggregated(extract_lines`
+					str
+					"hello" | "to the" | "world"
+					anything
+				`, (vartype) => {
+					setupScript(`{
+						for it: ${ vartype } of ["hello", "world"] do {
+							let greeting: ${ vartype } = it;
+						};
+					}`, null, {build: false}); // assert does not throw
+				});
+			});
+			it('throws when iterable is not subtype of List.', () => {
+				xjs.Array.forEachAggregated(extract_lines`
+					"hello, world"
+					("hello", "world")
+					(a= "hello", b= "world")
+					[a= "hello", b= "world"]
+					{"hello", "world"}
+					{"a" -> "hello", "b" -> "world"}
+				`, (collection) => {
+					const {stmts} = setupScript(`{
+						for it: str of ${ collection } do {
+							;
+						};
+					}`, null, {typeCheck: false});
+					return assert.throws(() => stmts[0].typeCheck(), TypeErrorNotAssignable);
+				});
+			});
+			it('throws when iteration variable is not supertype of List item type.', () => {
+				xjs.Array.forEachAggregated(extract_lines`
+					int
+					[str]
+					"to the"
+					"hello" & "world"
+					"hello" | "to the"
+					"to the" | "world"
+					nothing
+				`, (vartype) => {
+					const {stmts} = setupScript(`{
+						for it: ${ vartype } of ["hello", "world"] do {
+							;
+						};
+					}`, null, {typeCheck: false});
+					return assert.throws(() => stmts[0].typeCheck(), TypeErrorNotNarrow);
+				});
+			});
+			it('throws when block type-checking fails.', () => {
+				const {stmts} = setupScript(`{
+					for it: str of ["hello", "world"] do {
+						42 + it; %> TypeErrorInvalidOperation
+					};
+				}`, null, {typeCheck: false});
+				assert.throws(() => (stmts[0] as AST.ASTNodeStatementIteration).block.children[0].typeCheck(), TypeErrorInvalidOperation);
+				return assert.throws(() => stmts[0].typeCheck(), TypeErrorInvalidOperation);
+			});
+		});
+	});
+
+
 	describe('ASTNodeStatementIteration', () => {
 		describe('#varCheck', () => {
 			it('adds a SymbolSchema to the symbol table with a preset `type` value of `anything` and a preset null `value` value.', () => {

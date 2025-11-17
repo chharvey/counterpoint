@@ -1,6 +1,12 @@
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {AssignmentErrorDuplicateDeclaration} from '../../index.ts';
+import {
+	TYPE,
+	AssignmentErrorDuplicateDeclaration,
+	TypeErrorNotNarrow,
+	TypeErrorNotAssignable,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -62,7 +68,20 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 	}
 
 	public override typeCheck(): void {
-		throw new Error('TODO:');
+		const assignee_type: TYPE.Type = this.typenode.eval();
+		const iterable_type: TYPE.Type = this.iterable.type();
+		if (!(iterable_type instanceof TYPE.List)) {
+			throw new TypeErrorNotAssignable(iterable_type, new TYPE.List(TYPE.ANYTHING), this.iterable);
+		}
+		const item_type: TYPE.Type = iterable_type.typearg;
+		if (!item_type.isSubtypeOf(assignee_type)) {
+			throw new TypeErrorNotNarrow(item_type, assignee_type, this.line_index, this.col_index);
+		}
+		if (this.assignee) {
+			assert.ok(this.block.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
+			(this.block.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar).type = assignee_type;
+		}
+		this.block.typeCheck();
 	}
 
 	@memoizeMethod
