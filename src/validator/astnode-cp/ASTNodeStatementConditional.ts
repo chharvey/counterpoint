@@ -48,9 +48,8 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 
 	public override typeCheck(): void {
 		super.typeCheck();
-		const condition_type: TYPE.Type = this.condition.type();
-		if (!condition_type.isSubtypeOf(TYPE.BOOL)) {
-			throw new TypeErrorNotAssignable(condition_type, TYPE.BOOL, this.condition);
+		if (!this.condition.type().isSubtypeOf(TYPE.BOOL)) {
+			throw new TypeErrorNotAssignable(this.condition, TYPE.BOOL);
 		}
 	}
 

@@ -64,12 +64,11 @@ export abstract class ASTNodeCP extends ASTNode {
 		assignee_type: TYPE.Type,
 		node:          ASTNodeCP,
 	): void {
-		const assigned_type: TYPE.Type = assigned.type();
-		if (!assigned_type.isSubtypeOf(assignee_type)) {
+		if (!assigned.type().isSubtypeOf(assignee_type)) {
 			if (assigned instanceof ASTNodeCollectionLiteral) {
 				return assigned.assignTo(assignee_type);
 			}
-			throw new TypeErrorNotAssignable(assigned_type, assignee_type, node);
+			throw new TypeErrorNotAssignable(assigned, assignee_type, node);
 		}
 	}
 

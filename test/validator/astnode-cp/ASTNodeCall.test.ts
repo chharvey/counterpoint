@@ -189,7 +189,7 @@ describe('ASTNodeCall', () => {
 				['List.<int>(42)', ['42', ['List.<int>', 'Set.<int>']]],
 				['Set.<int>(42)',  ['42', ['List.<int>', 'Set.<int>']]],
 				['Map.<int>(42)',  ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],
-			]), ([argtype, allowed_types], src) => assert.throws(
+			]), ([argexpr, allowed_types], src) => assert.throws(
 				() => AST.ASTNodeCall.fromSource(src).type(),
 				(err) => {
 					assert_instanceof(err, AggregateError);
@@ -197,7 +197,7 @@ describe('ASTNodeCall', () => {
 						cons:   AggregateError,
 						errors: allowed_types.map((allowed_type) => ({
 							cons:    TypeErrorNotAssignable,
-							message: `Expression of type \`${ argtype }\` is not assignable to type \`${ allowed_type }\`.`,
+							message: `Expression \`${ argexpr }\` is not assignable to type \`${ allowed_type }\`.`,
 						})),
 					});
 					return true;

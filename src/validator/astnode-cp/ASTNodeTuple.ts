@@ -71,7 +71,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 
 	@assignToDeco
 	public override assignTo(assignee: TYPE.Type): void {
-		const err = new TypeErrorNotAssignable(this.type(), assignee, this);
+		const err = new TypeErrorNotAssignable(this, assignee);
 		if (assignee instanceof TYPE.Tuple) {
 			if (this.children.length < assignee.minCount) {
 				throw err;

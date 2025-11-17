@@ -87,6 +87,6 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg`
 			return xjs.Array.forEachAggregated(this.children, (prop) => ASTNodeCP.typeCheckAssign(prop.val, assignee.typearg, prop));
 		}
-		throw new TypeErrorNotAssignable(this.type(), assignee, this);
+		throw new TypeErrorNotAssignable(this, assignee);
 	}
 }

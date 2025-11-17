@@ -70,6 +70,6 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg`
 			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssign(expr, assignee.typearg, expr));
 		}
-		throw new TypeErrorNotAssignable(this.type(), assignee, this);
+		throw new TypeErrorNotAssignable(this, assignee);
 	}
 }

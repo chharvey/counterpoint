@@ -361,12 +361,18 @@ describe('ASTNodeDeclaration', () => {
 						assertAssignable(err, {
 							cons:   AggregateError,
 							errors: [
-								{cons: TypeErrorNotAssignable, message: 'Expression of type `false` is not assignable to type `int`.'},
-								{cons: TypeErrorNotAssignable, message: 'Expression of type `true` is not assignable to type `int`.'},
+								{cons: TypeErrorNotAssignable, message: 'Expression `false` is not assignable to type `int`.'},
+								{cons: TypeErrorNotAssignable, message: 'Expression `true` is not assignable to type `int`.'},
 							],
 						});
 						return true;
 					});
+					const BOB: string = `
+						(
+							name=         "Bob", %: str
+							hours_worked= 80.0,  %: float
+						)
+					`.trim();
 					return typeCheckGoal(`{
 						type Employee = (
 							name:         str,
@@ -379,17 +385,14 @@ describe('ASTNodeDeclaration', () => {
 							agency:       str,
 							hours_worked: float,
 						);
-						let bob: Employee | Volunteer = (
-							name=         "Bob", %: str
-							hours_worked= 80.0,  %: float
-						);
+						let bob: Employee | Volunteer = ${ BOB };
 					}`, (err) => {
 						assert_instanceof(err, AggregateError);
 						assertAssignable(err, {
 							cons:   AggregateError,
 							errors: [
-								{cons: TypeErrorNotAssignable, message: 'Expression of type `(256: "Bob", 259: 80.0)` is not assignable to type `(256: str, 257: int, 258: str, 259: float)`.'},
-								{cons: TypeErrorNotAssignable, message: 'Expression of type `(256: "Bob", 259: 80.0)` is not assignable to type `(256: str, 261: str, 259: float)`.'},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(256: str, 257: int, 258: str, 259: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(256: str, 261: str, 259: float)\`.`},
 							],
 						});
 						return true;
@@ -444,36 +447,36 @@ describe('ASTNodeDeclaration', () => {
 								{
 									cons:   AggregateError,
 									errors: [
-										{cons: TypeErrorNotAssignable, message: 'Expression of type `46` is not assignable to type `bool | str`.'},
-										{cons: TypeErrorNotAssignable, message: 'Expression of type `47` is not assignable to type `bool | str`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression `46` is not assignable to type `bool | str`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression `47` is not assignable to type `bool | str`.'},
 									],
 								},
 								{
 									cons:   AggregateError,
 									errors: [
-										{cons: TypeErrorNotAssignable, message: 'Expression of type `1` is not assignable to type `str`.'},
-										{cons: TypeErrorNotAssignable, message: 'Expression of type `2.0` is not assignable to type `str`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression `1` is not assignable to type `str`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression `2.0` is not assignable to type `str`.'},
 									],
 								},
 								{
 									cons:   AggregateError,
 									errors: [
-										{cons: TypeErrorNotAssignable, message: 'Expression of type `3` is not assignable to type `bool`.'},
-										{cons: TypeErrorNotAssignable, message: 'Expression of type `4.0` is not assignable to type `bool`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression `3` is not assignable to type `bool`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression `4.0` is not assignable to type `bool`.'},
 									],
 								},
 								{
 									cons:   AggregateError,
 									errors: [
-										{cons: TypeErrorNotAssignable, message: 'Expression of type `5` is not assignable to type `str`.'},
-										{cons: TypeErrorNotAssignable, message: 'Expression of type `6.0` is not assignable to type `bool`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression `5` is not assignable to type `str`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression `6.0` is not assignable to type `bool`.'},
 									],
 								},
 								{
 									cons:   AggregateError,
 									errors: [
-										{cons: TypeErrorNotAssignable, message: 'Expression of type `7` is not assignable to type `str`.'},
-										{cons: TypeErrorNotAssignable, message: 'Expression of type `8.0` is not assignable to type `bool`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression `7` is not assignable to type `str`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression `8.0` is not assignable to type `bool`.'},
 									],
 								},
 								{
@@ -482,15 +485,15 @@ describe('ASTNodeDeclaration', () => {
 										{
 											cons:   AggregateError,
 											errors: [
-												{cons: TypeErrorNotAssignable, message: 'Expression of type `9` is not assignable to type `str`.'},
-												{cons: TypeErrorNotAssignable, message: 'Expression of type `"a"` is not assignable to type `bool`.'},
+												{cons: TypeErrorNotAssignable, message: 'Expression `9` is not assignable to type `str`.'},
+												{cons: TypeErrorNotAssignable, message: 'Expression `"a"` is not assignable to type `bool`.'},
 											],
 										},
 										{
 											cons:   AggregateError,
 											errors: [
-												{cons: TypeErrorNotAssignable, message: 'Expression of type `10.0` is not assignable to type `str`.'},
-												{cons: TypeErrorNotAssignable, message: 'Expression of type `"b"` is not assignable to type `bool`.'},
+												{cons: TypeErrorNotAssignable, message: 'Expression `10.0` is not assignable to type `str`.'},
+												{cons: TypeErrorNotAssignable, message: 'Expression `"b"` is not assignable to type `bool`.'},
 											],
 										},
 									],
@@ -764,8 +767,8 @@ describe('ASTNodeDeclaration', () => {
 								assertAssignable(err, {
 									cons:   AggregateError,
 									errors: [
-										{cons: TypeErrorNotAssignable, message: 'Expression of type `null` is not assignable to type `int`.'},
-										{cons: TypeErrorNotAssignable, message: 'Expression of type `42` is not assignable to type `null`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression `null` is not assignable to type `int`.'},
+										{cons: TypeErrorNotAssignable, message: 'Expression `42` is not assignable to type `null`.'},
 									],
 								});
 								return true;

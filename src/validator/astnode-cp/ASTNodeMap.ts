@@ -80,6 +80,6 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 				))
 			));
 		}
-		throw new TypeErrorNotAssignable(this.type(), assignee, this);
+		throw new TypeErrorNotAssignable(this, assignee);
 	}
 }

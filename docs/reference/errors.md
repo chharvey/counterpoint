@@ -139,8 +139,8 @@ Solution(s): Ensure the assigned type is a subtype of the assignee.
 #### 2303: TypeErrorNotAssignable
 Cause: A variable, property, or parameter was assigned an expression of an incorrect type.
 ```
-let x: int = true;              % TypeError: Expression of type `true` is not assignable to type `int`.
-((x: int): int => x + 1).(4.2); % TypeError: Expression of type `4.2` is not assignable to type `int`.
+let x: int = true;               % TypeError: Expression `true` is not assignable to type `int`.
+(\(x: int): int => x + 1).(4.2); % TypeError: Expression `4.2` is not assignable to type `int`.
 ```
 Solution(s): Ensure the expression has an assignable type.
 
