@@ -1,6 +1,8 @@
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	TYPE,
+	type TYPE,
+	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../index.ts';
@@ -18,7 +20,10 @@ import {
 	type ArgCount,
 	ValidFunctionName,
 	invalid_function_name,
+	type ConstructorSchema,
+	CLASS_API,
 } from './utils-private.ts';
+import type {ASTNodeCall} from './index.ts';
 import {ASTNodeType} from './ASTNodeType.ts';
 import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
 
@@ -30,6 +35,51 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		assert_instanceof(typ, ASTNodeTypeCall);
 		return typ;
 	}
+
+	/**
+	 * Type-checks assignment of generic arguments to a type call or generic constructor call, and resolves unprovided generic arguments.
+	 * @param constructor_schema the name of the class constructor’s schema
+	 * @param args               the actual generic argument nodes provided
+	 * @param call_node          the type/function call
+	 * @return                   a list of resolved generic parameter assignments
+	 */
+	public static checkGenericArgs(constructor_schema: ConstructorSchema, args: readonly ASTNodeType[], call_node: ASTNodeTypeCall | ASTNodeCall): TYPE.Type[] {
+		const {genericParams: generic_params}: ConstructorSchema = constructor_schema;
+
+		/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
+		const expected_generic = {
+			min: BigInt(generic_params.filter((param) => !param.default).length),
+			max: BigInt(generic_params.length),
+		} as const;
+		const actual_generic: bigint = BigInt(args.length);
+		// TODO: throw AggregateError if both
+		if (actual_generic < expected_generic.min) {
+			throw new TypeErrorArgCount(actual_generic, expected_generic.min, true, call_node);
+		}
+		if (actual_generic > expected_generic.max) {
+			throw new TypeErrorArgCount(actual_generic, expected_generic.max, true, call_node);
+		}
+
+		/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */
+		const generic_args: TYPE.Type[] = args.map((t_arg) => t_arg.eval());
+		generic_params.forEach((param, i) => {
+			if (!args.at(i)) {
+				assert.ok(param.default); // we can assert this due to argument counting above
+				generic_args[i] = param.default.call(null, generic_args);
+			}
+			if (param.constraint) {
+				const arg:             TYPE.Type = generic_args.at(i)!;
+				const constraint_type: TYPE.Type = param.constraint.type.call(null, generic_args);
+				if (param.constraint.direction === 'narrows' && !arg.isSubtypeOf(constraint_type)) {
+					throw new TypeErrorNotNarrow(arg, constraint_type, call_node.line_index, call_node.col_index);
+				} else if (param.constraint.direction === 'widens' && !constraint_type.isSubtypeOf(arg)) {
+					throw new TypeErrorNotNarrow(constraint_type, arg, call_node.line_index, call_node.col_index);
+				}
+			}
+		});
+		return [...generic_args];
+	}
+
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
@@ -52,22 +102,20 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		}
 		switch (this.base.source) {
 			case ValidFunctionName.LIST: {
-				this.countArgs(1n);
-				return new TYPE.List(this.args[0].eval());
+				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
+				return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
 			}
 			case ValidFunctionName.DICT: {
-				this.countArgs(1n);
-				return new TYPE.Dict(this.args[0].eval());
+				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
+				return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
 			}
 			case ValidFunctionName.SET: {
-				this.countArgs(1n);
-				return new TYPE.Set(this.args[0].eval());
+				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
+				return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
 			}
 			case ValidFunctionName.MAP: {
-				this.countArgs([1n, 3n]);
-				const anttype: TYPE.Type = this.args[0].eval();
-				const contype: TYPE.Type = this.args.at(1)?.eval() ?? anttype;
-				return new TYPE.Map(anttype, contype);
+				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
+				return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
 			}
 			default: {
 				invalid_function_name(this.base.source);

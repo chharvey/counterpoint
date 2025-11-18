@@ -185,8 +185,10 @@ describe('ASTNodeCall', () => {
 			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount, src));
 		});
 		it('throws when providing incorrect type of arguments.', () => {
+			// API overload checks
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>([
 				['List.<int>(42)', ['42', ['List.<int>', 'Set.<int>']]],
+				['Dict.<int>(42)', ['42', ['Dict.<int>']]],
 				['Set.<int>(42)',  ['42', ['List.<int>', 'Set.<int>']]],
 				['Map.<int>(42)',  ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],
 			]), ([argexpr, allowed_types], src) => assert.throws(
@@ -195,18 +197,21 @@ describe('ASTNodeCall', () => {
 					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
 						cons:   AggregateError,
-						errors: allowed_types.map((allowed_type) => ({
-							cons:    TypeErrorNotAssignable,
-							message: `Expression \`${ argexpr }\` is not assignable to type \`${ allowed_type }\`.`,
-						})),
+						errors: [
+							{cons: TypeErrorArgCount, message: 'Got `1` arguments, but expected `0`.'},
+							...allowed_types.map((allowed_type) => ({
+								cons:    TypeErrorNotAssignable,
+								message: `Expression \`${ argexpr }\` is not assignable to type \`${ allowed_type }\`.`,
+							})),
+						],
 					});
 					return true;
 				},
 			));
+			// if API overload checks fail, check allowed types not in API
 			return xjs.Array.forEachAggregated(extract_lines`
 				List.<int>((4.2,))
-				Dict.<int>(42)
-				Dict.<int>((4.2,))
+				Dict.<int>((a= 4.2))
 				Set.<int>((42, "42"))
 				Map.<int>(((42, "42"),))
 			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable, src));

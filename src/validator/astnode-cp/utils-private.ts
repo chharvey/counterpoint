@@ -69,6 +69,133 @@ export function invalid_function_name(source: string): never {
 
 
 
+type GenericArgsSpec = readonly TYPE.Type[]; // TODO: intersect with `Readonly<Record<string, TYPE.Type>>` once we have named arguments
+
+/**
+ * A schema for a generic parameter.
+ * @property positional    - Is the parameter positional (as opposed to named)? If true, this schema must not have a `name` property.
+ * @property name          - Is the parameter named? If true, this schema must not have a `positional` property.
+ * @property covariant     - The manner in which the parameter is covariant (in the `out` position).
+ * @property contravariant - The manner in which the parameter is contravariant (in the `in` position).
+ * @property constraint    - The type, if any, that the parameter is required to narrow or widen.
+ * @property default       - The default value of the parameter, which is an optional parameter.
+ */
+type GenericParameterSchema = (
+	& ({readonly positional: true}) // TODO: union with `{readonly name: string}` once we have named arguments
+	& {
+		readonly covariant?:     'never' | 'always' | 'when_mutable',
+		readonly contravariant?: 'never' | 'always' | 'when_mutable',
+		readonly constraint?:    {readonly direction: 'narrows' | 'widens', readonly type: (generic_params: GenericArgsSpec) => TYPE.Type},
+		readonly default?:       (generic_params: GenericArgsSpec) => TYPE.Type,
+	}
+);
+
+/**
+ * A schema for a functional parameter.
+ * @property positional - Is the parameter positional (as opposed to named)? If true, this schema must not have a `name` property.
+ * @property name       - Is the parameter named? If true, this schema must not have a `positional` property.
+ * @property type       - The required type of the parameter.
+ * @property optional   - Is the parameter optional? If true, it may or may not have a default value.
+ * @property default    - The default value of the parameter. If present, this schema’s `optional` property must be `true`.
+ */
+type FunctionParameterSchema = (
+	& ({readonly positional: true}) // TODO: union with `{readonly name: string}` once we have named arguments
+	& {readonly type: (generic_params: GenericArgsSpec) => TYPE.Type}
+	& ({readonly optional?: false} | {readonly optional: true, readonly default?: unknown})
+);
+
+/**
+ * A schema for a constructor type call or constructor call.
+ * @property genericParams - an array of generic parameters for the class
+ * @property overloads     - a list of class constructor overload signatures
+ * @property returnType    - the return type of the constructor call, or type of the type call (they’re the same)
+ */
+export type ConstructorSchema = {
+	readonly genericParams: readonly GenericParameterSchema[],
+	readonly overloads:     readonly (readonly FunctionParameterSchema[])[],
+	readonly returnType:    (generic_params: GenericArgsSpec) => TYPE.Type,
+};
+
+/**
+ * ```cpl
+ * declare class List<T> {
+ * 	new ();
+ * 	new (tup0:  ());
+ * 	new (tup1:  (T,));
+ * 	new (tup2:  (T, T));
+ * 	new (tup:   anything); % any tuple type with items of type `T`
+ * 	new (list:  List.<T>);
+ * 	new ('set': Set.<T>);
+ * }
+ * declare class Dict<T> {
+ * 	new ();
+ * 	new (recA:  (a: T));
+ * 	new (recAB: (a: T, b: T));
+ * 	new (rec:   anything); % any record type with values of type `T`
+ * 	new (dict:  Dict.<T>);
+ * }
+ * declare class Set<T> {
+ * 	new ();
+ * 	new (tup0:  ());
+ * 	new (tup1:  (T,));
+ * 	new (tup2:  (T, T));
+ * 	new (tup:   anything); % any tuple type with items of type `T`
+ * 	new (list:  List.<T>);
+ * 	new ('set': Set.<T>);
+ * }
+ * declare class Map<K, V> {
+ * 	new ();
+ * 	new (tup0:  ());
+ * 	new (tup1:  ((K, V),));
+ * 	new (tup2:  ((K, V), (K, V)));
+ * 	new (tup:   anything); % any tuple type with items of type `(K, V)`
+ * 	new (list:  List.<(K, V)>);
+ * 	new ('set': Set.<(K, V)>);
+ * 	new (map:   Map.<K, V>);
+ * }
+ * ```
+ */
+export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
+	[ValidFunctionName.LIST, {
+		genericParams: [{positional: true}],
+		overloads:     [
+			[],
+			[{positional: true, type: (generic_params) => new TYPE.List(generic_params[0])}],
+			[{positional: true, type: (generic_params) => new TYPE.Set (generic_params[0])}],
+		],
+		returnType: (generic_params) => new TYPE.List(generic_params[0]),
+	}],
+	[ValidFunctionName.DICT, {
+		genericParams: [{positional: true}],
+		overloads:     [
+			[],
+			[{positional: true, type: (generic_params) => new TYPE.Dict(generic_params[0])}],
+		],
+		returnType: (generic_params) => new TYPE.Dict(generic_params[0]),
+	}],
+	[ValidFunctionName.SET, {
+		genericParams: [{positional: true}],
+		overloads:     [
+			[],
+			[{positional: true, type: (generic_params) => new TYPE.List(generic_params[0])}],
+			[{positional: true, type: (generic_params) => new TYPE.Set (generic_params[0])}],
+		],
+		returnType: (generic_params) => new TYPE.Set(generic_params[0]),
+	}],
+	[ValidFunctionName.MAP, {
+		genericParams: [{positional: true}, {positional: true, default: (generic_params) => generic_params[0]}],
+		overloads:     [
+			[],
+			[{positional: true, type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}],
+			[{positional: true, type: (generic_params) => new TYPE.Set (TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}],
+			[{positional: true, type: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1])}],
+		],
+		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
+	}],
+]);
+
+
+
 export function bothInts(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return t0.isSubtypeOf(TYPE.INT) && t1.isSubtypeOf(TYPE.INT);
 }
