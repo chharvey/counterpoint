@@ -201,22 +201,58 @@ export class Builder {
 			new BinVect(mod, mod.i64.add(local_vects[0].intValue,   local_vects[1].intValue)).vect,
 			new BinVect(mod, mod.f64.add(local_vects[0].floatValue, local_vects[1].floatValue)).vect,
 		]);
-		this.#binOpFunction('vlt', [
-			BinVect.asBool(mod, mod.i64.lt_s(local_vects[0].intValue,   local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.lt  (local_vects[0].floatValue, local_vects[1].floatValue)),
-		]);
-		this.#binOpFunction('vgt', [
-			BinVect.asBool(mod, mod.i64.gt_s(local_vects[0].intValue,   local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.gt  (local_vects[0].floatValue, local_vects[1].floatValue)),
-		]);
-		this.#binOpFunction('vle', [
-			BinVect.asBool(mod, mod.i64.le_s(local_vects[0].intValue,   local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.le  (local_vects[0].floatValue, local_vects[1].floatValue)),
-		]);
-		this.#binOpFunction('vge', [
-			BinVect.asBool(mod, mod.i64.ge_s(local_vects[0].intValue,   local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.ge  (local_vects[0].floatValue, local_vects[1].floatValue)),
-		]);
+		const vlt_opts = [
+			BinVect.asBool(mod, mod.i64.lt_s(                      local_vects[0].intValue,                         local_vects[1].intValue)),
+			BinVect.asBool(mod, mod.f64.lt  (mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
+			BinVect.asBool(mod, mod.f64.lt  (                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
+			BinVect.asBool(mod, mod.f64.lt  (                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
+		] as const;
+		mod.addFunction('vlt', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
+			mod.if(
+				local_vects[0].isInt,
+				mod.if(local_vects[1].isInt, vlt_opts[0b00], mod.if(local_vects[1].isFloat, vlt_opts[0b01], mod.unreachable())),
+				mod.if(local_vects[1].isInt, vlt_opts[0b10], mod.if(local_vects[1].isFloat, vlt_opts[0b11], mod.unreachable())),
+			),
+		], binaryen.v128));
+		const vgt_opts = [
+			BinVect.asBool(mod, mod.i64.gt_s(                      local_vects[0].intValue,                         local_vects[1].intValue)),
+			BinVect.asBool(mod, mod.f64.gt  (mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
+			BinVect.asBool(mod, mod.f64.gt  (                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
+			BinVect.asBool(mod, mod.f64.gt  (                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
+		] as const;
+		mod.addFunction('vgt', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
+			mod.if(
+				local_vects[0].isInt,
+				mod.if(local_vects[1].isInt, vgt_opts[0b00], mod.if(local_vects[1].isFloat, vgt_opts[0b01], mod.unreachable())),
+				mod.if(local_vects[1].isInt, vgt_opts[0b10], mod.if(local_vects[1].isFloat, vgt_opts[0b11], mod.unreachable())),
+			),
+		], binaryen.v128));
+		const vle_opts = [
+			BinVect.asBool(mod, mod.i64.le_s(                      local_vects[0].intValue,                         local_vects[1].intValue)),
+			BinVect.asBool(mod, mod.f64.le  (mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
+			BinVect.asBool(mod, mod.f64.le  (                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
+			BinVect.asBool(mod, mod.f64.le  (                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
+		] as const;
+		mod.addFunction('vle', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
+			mod.if(
+				local_vects[0].isInt,
+				mod.if(local_vects[1].isInt, vle_opts[0b00], mod.if(local_vects[1].isFloat, vle_opts[0b01], mod.unreachable())),
+				mod.if(local_vects[1].isInt, vle_opts[0b10], mod.if(local_vects[1].isFloat, vle_opts[0b11], mod.unreachable())),
+			),
+		], binaryen.v128));
+		const vge_opts = [
+			BinVect.asBool(mod, mod.i64.ge_s(                      local_vects[0].intValue,                         local_vects[1].intValue)),
+			BinVect.asBool(mod, mod.f64.ge  (mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
+			BinVect.asBool(mod, mod.f64.ge  (                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
+			BinVect.asBool(mod, mod.f64.ge  (                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
+		] as const;
+		mod.addFunction('vge', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
+			mod.if(
+				local_vects[0].isInt,
+				mod.if(local_vects[1].isInt, vge_opts[0b00], mod.if(local_vects[1].isFloat, vge_opts[0b01], mod.unreachable())),
+				mod.if(local_vects[1].isInt, vge_opts[0b10], mod.if(local_vects[1].isFloat, vge_opts[0b11], mod.unreachable())),
+			),
+		], binaryen.v128));
 		mod.addFunction('vid', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
 			mod.if(
 				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
