@@ -187,8 +187,9 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						1. *Throw:* a new TypeErrorArgCount.
 				6. *Return:* a mutable copy of `returntype`.
 		2. *Throw:* a new TypeErrorArgCount.
-	5. *Else If* `base.source` is "Map":
-		1. *If* `call.children.count` is 2 or 3 or 4:
+	5. *Else:*
+		1. *Assert:* `base.source` is "Map".
+		2. *If* `call.children.count` is 2 or 3 or 4:
 			1. *If* `call.children.1` is a SemanticType:
 				1. *Let* `antecedenttype` be *Unwrap:* `TypeValueOf(call.children.1)`.
 				2. *If* `call.children.count` is 2:
@@ -232,8 +233,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 							1. *Throw:* a new TypeErrorNotAssignable.
 				8. *Return:* a mutable Map type whose antecedents’ type is `antecedenttype`
 					and whose consequents’ type is `consequenttype`.
-		2. *Throw:* a new TypeErrorArgCount.
-	6. *Throw:* a new SyntaxError.
+		3. *Throw:* a new TypeErrorArgCount.
 ;
 
 

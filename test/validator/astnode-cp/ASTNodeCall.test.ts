@@ -113,6 +113,16 @@ describe('ASTNodeCall', () => {
 	] as const;
 
 
+	describe('#varCheck', () => {
+		it('throws if base is not one of the allowed strings.', () => {
+			xjs.Array.forEachAggregated(extract_lines`
+				SET.<str>()
+				Mapping.<bool>()
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).varCheck(), SyntaxError, src));
+		});
+	});
+
+
 	describe('#type', () => {
 		it('evaluates List, Dict, Set, and Map.', () => {
 			assertEqualTypes(
@@ -169,12 +179,6 @@ describe('ASTNodeCall', () => {
 				null.()
 				(42 || 43).<bool>()
 			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable, src));
-		});
-		it('throws if base is not one of the allowed strings.', () => {
-			xjs.Array.forEachAggregated(extract_lines`
-				SET.<str>()
-				Mapping.<bool>()
-			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), SyntaxError, src));
 		});
 		it('throws when providing incorrect number of arguments.', () => {
 			xjs.Array.forEachAggregated(extract_lines`

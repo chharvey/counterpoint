@@ -19,7 +19,7 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	type ArgCount,
 	ValidFunctionName,
-	invalid_function_name,
+	check_valid_function_name,
 	type ConstructorSchema,
 	CLASS_API,
 } from './utils-private.ts';
@@ -92,6 +92,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	public override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
 		// (`this.base.source` must be a `ValidFunctionName`)
+		check_valid_function_name(this.base.source);
 		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
 
@@ -100,7 +101,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
 			throw new TypeErrorNotCallable(this.base.eval(), this.base);
 		}
-		switch (this.base.source) {
+		switch (this.base.source as ValidFunctionName) {
 			case ValidFunctionName.LIST: {
 				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
 				return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
@@ -116,9 +117,6 @@ export class ASTNodeTypeCall extends ASTNodeType {
 			case ValidFunctionName.MAP: {
 				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
 				return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
-			}
-			default: {
-				invalid_function_name(this.base.source);
 			}
 		}
 	}

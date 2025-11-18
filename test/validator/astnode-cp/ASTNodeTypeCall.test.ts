@@ -10,6 +10,18 @@ import {assertEqualTypes} from '../../assert-helpers.ts';
 
 
 describe('ASTNodeTypeCall', () => {
+	describe('#varCheck', () => {
+		it('throws if base is not one of the allowed strings.', () => {
+			[
+				'SET.<str>',
+				'Mapping.<bool>',
+			].forEach((src) => {
+				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).varCheck(), SyntaxError);
+			});
+		});
+	});
+
+
 	describe('#eval', () => {
 		it('evaluates List, Dict, Set, and Map.', () => {
 			assertEqualTypes(
@@ -39,14 +51,6 @@ describe('ASTNodeTypeCall', () => {
 				'(int | float).<bool>',
 			].forEach((src) => {
 				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorNotCallable);
-			});
-		});
-		it('throws if base is not one of the allowed strings.', () => {
-			[
-				'SET.<str>',
-				'Mapping.<bool>',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), SyntaxError);
 			});
 		});
 		it('throws when providing incorrect number of arguments.', () => {

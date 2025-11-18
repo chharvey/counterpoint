@@ -63,8 +63,10 @@ export function is_valid_intrinsic_name(source: string): source is ValidIntrinsi
 	return Object.values<string>(ValidIntrinsicName).includes(source);
 }
 
-export function invalid_function_name(source: string): never {
-	throw new SyntaxError(`Unexpected token: ${ source }; expected \`${ Object.values(ValidFunctionName).join(' | ') }\`.`);
+export function check_valid_function_name(source: string): asserts source is ValidFunctionName {
+	if (!Object.values<string>(ValidFunctionName).includes(source)) {
+		throw new SyntaxError(`Unexpected token: ${ source }; expected \`${ Object.values(ValidFunctionName).join(' | ') }\`.`);
+	}
 }
 
 

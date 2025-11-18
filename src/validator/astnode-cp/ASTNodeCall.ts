@@ -21,7 +21,7 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	type ArgCount,
 	ValidFunctionName,
-	invalid_function_name,
+	check_valid_function_name,
 	type ConstructorSchema,
 	CLASS_API,
 } from './utils-private.ts';
@@ -58,6 +58,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	public override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
 		// (`this.base.source` must be a `ValidFunctionName`)
+		check_valid_function_name(this.base.source);
 		return xjs.Array.forEachAggregated([
 			...this.typeargs,
 			...this.exprargs,
@@ -65,7 +66,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	}
 
 	public override typeCheck(): void {
-		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
+		// NOTE: ignore type-checking `this.base` for now, as semantics is determined by syntax.
 		// (`this.base.source` must be a `ValidFunctionName`)
 		xjs.Array.forEachAggregated([
 			...this.typeargs,
@@ -86,7 +87,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		if (!(this.base instanceof ASTNodeVariable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
-		switch (this.base.source) {
+		switch (this.base.source as ValidFunctionName) {
 			case ValidFunctionName.LIST: {
 				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
 				const resolved_generic_args: TYPE.Type[] = ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.typeargs, this);
@@ -213,9 +214,6 @@ export class ASTNodeCall extends ASTNodeExpression {
 				}
 				return constructor_schema.returnType(resolved_generic_args).mutableOf();
 			}
-			default: {
-				invalid_function_name(this.base.source);
-			}
 		}
 	}
 
@@ -225,7 +223,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		if (args.includes(null)) {
 			return null;
 		}
-		switch (this.base.source) {
+		switch (this.base.source as ValidFunctionName) {
 			case ValidFunctionName.LIST: {
 				if (!args.length) {
 					return new VALUE.List();
@@ -266,9 +264,6 @@ export class ASTNodeCall extends ASTNodeExpression {
 						? new Map<VALUE.Value, VALUE.Value>((arg instanceof VALUE.CollectionIndexed ? arg.items : [...arg.elements]).map((pair) => (pair as VALUE.CollectionIndexed).items as [VALUE.Value, VALUE.Value]))
 						: (assert_instanceof(arg, VALUE.Map), arg.cases)
 				));
-			}
-			default: {
-				invalid_function_name(this.base.source);
 			}
 		}
 	}
