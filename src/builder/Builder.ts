@@ -109,7 +109,7 @@ export class Builder {
 		return this;
 	}
 
-	#binOpFunction(
+	#binOpArithmetic(
 		name:                                   string,
 		[result_both_ints, result_both_floats]: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
 	): binaryen.FunctionRef {
@@ -127,6 +127,25 @@ export class Builder {
 					result_both_floats,
 					mod.unreachable(),
 				),
+			),
+		], binaryen.v128));
+	}
+
+	#binOpComparative(
+		name:                                         string,
+		[int_int, int_float, float_int, float_float]: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef],
+		neither?:                                     binaryen.ExpressionRef,
+	): binaryen.FunctionRef {
+		const mod: binaryen.Module = this.module;
+		const local_vects = [
+			new BinVect(mod, mod.local.get(0, binaryen.v128)),
+			new BinVect(mod, mod.local.get(1, binaryen.v128)),
+		] as const;
+		return mod.addFunction(name, binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
+			mod.if(
+				local_vects[0].isInt,
+				mod.if(local_vects[1].isInt, int_int,   mod.if(local_vects[1].isFloat, int_float,   neither ?? mod.unreachable())),
+				mod.if(local_vects[1].isInt, float_int, mod.if(local_vects[1].isFloat, float_float, neither ?? mod.unreachable())),
 			),
 		], binaryen.v128));
 	}
@@ -185,74 +204,46 @@ export class Builder {
 				),
 			),
 		], binaryen.v128));
-		this.#binOpFunction('vexp', [
+		this.#binOpArithmetic('vexp', [
 			new BinVect(mod, mod.call('exp', [local_vects[0].intValue, local_vects[1].intValue], binaryen.i64)).vect,
 			mod.unreachable(),
 		]);
-		this.#binOpFunction('vmul', [
+		this.#binOpArithmetic('vmul', [
 			new BinVect(mod, mod.i64.mul(local_vects[0].intValue,   local_vects[1].intValue)).vect,
 			new BinVect(mod, mod.f64.mul(local_vects[0].floatValue, local_vects[1].floatValue)).vect,
 		]);
-		this.#binOpFunction('vdiv', [
+		this.#binOpArithmetic('vdiv', [
 			new BinVect(mod, mod.i64.div_s(local_vects[0].intValue,   local_vects[1].intValue)).vect,
 			new BinVect(mod, mod.f64.div  (local_vects[0].floatValue, local_vects[1].floatValue)).vect,
 		]);
-		this.#binOpFunction('vadd', [
+		this.#binOpArithmetic('vadd', [
 			new BinVect(mod, mod.i64.add(local_vects[0].intValue,   local_vects[1].intValue)).vect,
 			new BinVect(mod, mod.f64.add(local_vects[0].floatValue, local_vects[1].floatValue)).vect,
 		]);
-		const vlt_opts = [
+		this.#binOpComparative('vlt', [
 			BinVect.asBool(mod, mod.i64.lt_s(                      local_vects[0].intValue,                         local_vects[1].intValue)),
 			BinVect.asBool(mod, mod.f64.lt  (mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
 			BinVect.asBool(mod, mod.f64.lt  (                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
 			BinVect.asBool(mod, mod.f64.lt  (                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
-		] as const;
-		mod.addFunction('vlt', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
-			mod.if(
-				local_vects[0].isInt,
-				mod.if(local_vects[1].isInt, vlt_opts[0b00], mod.if(local_vects[1].isFloat, vlt_opts[0b01], mod.unreachable())),
-				mod.if(local_vects[1].isInt, vlt_opts[0b10], mod.if(local_vects[1].isFloat, vlt_opts[0b11], mod.unreachable())),
-			),
-		], binaryen.v128));
-		const vgt_opts = [
+		]);
+		this.#binOpComparative('vgt', [
 			BinVect.asBool(mod, mod.i64.gt_s(                      local_vects[0].intValue,                         local_vects[1].intValue)),
 			BinVect.asBool(mod, mod.f64.gt  (mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
 			BinVect.asBool(mod, mod.f64.gt  (                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
 			BinVect.asBool(mod, mod.f64.gt  (                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
-		] as const;
-		mod.addFunction('vgt', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
-			mod.if(
-				local_vects[0].isInt,
-				mod.if(local_vects[1].isInt, vgt_opts[0b00], mod.if(local_vects[1].isFloat, vgt_opts[0b01], mod.unreachable())),
-				mod.if(local_vects[1].isInt, vgt_opts[0b10], mod.if(local_vects[1].isFloat, vgt_opts[0b11], mod.unreachable())),
-			),
-		], binaryen.v128));
-		const vle_opts = [
+		]);
+		this.#binOpComparative('vle', [
 			BinVect.asBool(mod, mod.i64.le_s(                      local_vects[0].intValue,                         local_vects[1].intValue)),
 			BinVect.asBool(mod, mod.f64.le  (mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
 			BinVect.asBool(mod, mod.f64.le  (                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
 			BinVect.asBool(mod, mod.f64.le  (                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
-		] as const;
-		mod.addFunction('vle', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
-			mod.if(
-				local_vects[0].isInt,
-				mod.if(local_vects[1].isInt, vle_opts[0b00], mod.if(local_vects[1].isFloat, vle_opts[0b01], mod.unreachable())),
-				mod.if(local_vects[1].isInt, vle_opts[0b10], mod.if(local_vects[1].isFloat, vle_opts[0b11], mod.unreachable())),
-			),
-		], binaryen.v128));
-		const vge_opts = [
+		]);
+		this.#binOpComparative('vge', [
 			BinVect.asBool(mod, mod.i64.ge_s(                      local_vects[0].intValue,                         local_vects[1].intValue)),
 			BinVect.asBool(mod, mod.f64.ge  (mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
 			BinVect.asBool(mod, mod.f64.ge  (                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
 			BinVect.asBool(mod, mod.f64.ge  (                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
-		] as const;
-		mod.addFunction('vge', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
-			mod.if(
-				local_vects[0].isInt,
-				mod.if(local_vects[1].isInt, vge_opts[0b00], mod.if(local_vects[1].isFloat, vge_opts[0b01], mod.unreachable())),
-				mod.if(local_vects[1].isInt, vge_opts[0b10], mod.if(local_vects[1].isFloat, vge_opts[0b11], mod.unreachable())),
-			),
-		], binaryen.v128));
+		]);
 		mod.addFunction('vid', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
 			mod.if(
 				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
@@ -268,23 +259,12 @@ export class Builder {
 				),
 			),
 		], binaryen.v128));
-		const veq_opts = [
+		this.#binOpComparative('veq', [
 			BinVect.asBool(mod, mod.i64.eq(                      local_vects[0].intValue,                         local_vects[1].intValue)),
 			BinVect.asBool(mod, mod.f64.eq(mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
 			BinVect.asBool(mod, mod.f64.eq(                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
 			BinVect.asBool(mod, mod.f64.eq(                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
-		] as const;
-		mod.addFunction('veq', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
-			mod.if(
-				mod.i32.or(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
-				mod.call('vid', local_vects.map((v) => v.vect), binaryen.v128),
-				mod.if(
-					local_vects[0].isInt,
-					mod.if(local_vects[1].isInt, veq_opts[0b00], mod.if(local_vects[1].isFloat, veq_opts[0b01], new BinVect(mod, false).vect)),
-					mod.if(local_vects[1].isInt, veq_opts[0b10], mod.if(local_vects[1].isFloat, veq_opts[0b11], new BinVect(mod, false).vect)),
-				),
-			),
-		], binaryen.v128));
+		], new BinVect(mod, false).vect);
 	}
 
 	/**
