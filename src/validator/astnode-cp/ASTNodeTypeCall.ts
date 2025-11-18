@@ -18,7 +18,7 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	type ArgCount,
-	ValidFunctionName,
+	type ValidFunctionName,
 	check_valid_function_name,
 	type ConstructorSchema,
 	CLASS_API,
@@ -101,24 +101,8 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
 			throw new TypeErrorNotCallable(this.base.eval(), this.base);
 		}
-		switch (this.base.source as ValidFunctionName) {
-			case ValidFunctionName.LIST: {
-				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
-				return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
-			}
-			case ValidFunctionName.DICT: {
-				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
-				return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
-			}
-			case ValidFunctionName.SET: {
-				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
-				return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
-			}
-			case ValidFunctionName.MAP: {
-				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
-				return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
-			}
-		}
+		const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
+		return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
 	}
 
 	/**

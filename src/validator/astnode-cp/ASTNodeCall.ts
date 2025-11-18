@@ -87,10 +87,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 		if (!(this.base instanceof ASTNodeVariable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
+		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
+		const resolved_generic_args: TYPE.Type[]       = ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.typeargs, this);
 		switch (this.base.source as ValidFunctionName) {
 			case ValidFunctionName.LIST: {
-				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
-				const resolved_generic_args: TYPE.Type[] = ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.typeargs, this);
 				try {
 					this.checkFunctionArgs(constructor_schema, resolved_generic_args);
 				} catch (err) {
@@ -117,11 +117,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 						}
 					}
 				}
-				return constructor_schema.returnType(resolved_generic_args).mutableOf();
+				break;
 			}
 			case ValidFunctionName.DICT: {
-				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
-				const resolved_generic_args: TYPE.Type[] = ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.typeargs, this);
 				try {
 					this.checkFunctionArgs(constructor_schema, resolved_generic_args);
 				} catch (err) {
@@ -148,11 +146,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 						}
 					}
 				}
-				return constructor_schema.returnType(resolved_generic_args).mutableOf();
+				break;
 			}
 			case ValidFunctionName.SET: {
-				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
-				const resolved_generic_args: TYPE.Type[] = ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.typeargs, this);
 				try {
 					this.checkFunctionArgs(constructor_schema, resolved_generic_args);
 				} catch (err) {
@@ -179,11 +175,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 						}
 					}
 				}
-				return constructor_schema.returnType(resolved_generic_args).mutableOf();
+				break;
 			}
 			case ValidFunctionName.MAP: {
-				const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
-				const resolved_generic_args: TYPE.Type[] = ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.typeargs, this);
 				try {
 					this.checkFunctionArgs(constructor_schema, resolved_generic_args);
 				} catch (err) {
@@ -212,9 +206,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 						}
 					}
 				}
-				return constructor_schema.returnType(resolved_generic_args).mutableOf();
+				break;
 			}
 		}
+		return constructor_schema.returnType(resolved_generic_args).mutableOf();
 	}
 
 	@memoizeMethod
