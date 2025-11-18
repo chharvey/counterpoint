@@ -110,21 +110,24 @@ export class Builder {
 	}
 
 	#binOpArithmetic(
-		name:                                   string,
-		[result_both_ints, result_both_floats]: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
+		name:       string,
+		method_i64: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		method_f64: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 	): binaryen.FunctionRef {
 		const mod: binaryen.Module = this.module;
 		const local_vects = [
 			new BinVect(mod, mod.local.get(0, binaryen.v128)),
 			new BinVect(mod, mod.local.get(1, binaryen.v128)),
 		] as const;
+		const int_int:     binaryen.ExpressionRef = new BinVect(mod, method_i64.call(null, local_vects[0].intValue,   local_vects[1].intValue))   .vect;
+		const float_float: binaryen.ExpressionRef = new BinVect(mod, method_f64.call(null, local_vects[0].floatValue, local_vects[1].floatValue)) .vect;
 		return mod.addFunction(name, binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
 			mod.if(
 				mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
-				result_both_ints,
+				int_int,
 				mod.if(
 					mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
-					result_both_floats,
+					float_float,
 					mod.unreachable(),
 				),
 			),
@@ -132,15 +135,20 @@ export class Builder {
 	}
 
 	#binOpComparative(
-		name:                                         string,
-		[int_int, int_float, float_int, float_float]: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef, binaryen.ExpressionRef],
-		neither?:                                     binaryen.ExpressionRef,
+		name:       string,
+		method_i64: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		method_f64: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		neither?:   binaryen.ExpressionRef,
 	): binaryen.FunctionRef {
 		const mod: binaryen.Module = this.module;
 		const local_vects = [
 			new BinVect(mod, mod.local.get(0, binaryen.v128)),
 			new BinVect(mod, mod.local.get(1, binaryen.v128)),
 		] as const;
+		const int_int:     binaryen.ExpressionRef = BinVect.asBool(mod, method_i64.call(null,                       local_vects[0].intValue,                         local_vects[1].intValue));
+		const int_float:   binaryen.ExpressionRef = BinVect.asBool(mod, method_f64.call(null, mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue));
+		const float_int:   binaryen.ExpressionRef = BinVect.asBool(mod, method_f64.call(null,                       local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue)));
+		const float_float: binaryen.ExpressionRef = BinVect.asBool(mod, method_f64.call(null,                       local_vects[0].floatValue,                       local_vects[1].floatValue));
 		return mod.addFunction(name, binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
 			mod.if(
 				local_vects[0].isInt,
@@ -204,46 +212,23 @@ export class Builder {
 				),
 			),
 		], binaryen.v128));
-		this.#binOpArithmetic('vexp', [
-			new BinVect(mod, mod.call('exp', [local_vects[0].intValue, local_vects[1].intValue], binaryen.i64)).vect,
-			mod.unreachable(),
-		]);
-		this.#binOpArithmetic('vmul', [
-			new BinVect(mod, mod.i64.mul(local_vects[0].intValue,   local_vects[1].intValue)).vect,
-			new BinVect(mod, mod.f64.mul(local_vects[0].floatValue, local_vects[1].floatValue)).vect,
-		]);
-		this.#binOpArithmetic('vdiv', [
-			new BinVect(mod, mod.i64.div_s(local_vects[0].intValue,   local_vects[1].intValue)).vect,
-			new BinVect(mod, mod.f64.div  (local_vects[0].floatValue, local_vects[1].floatValue)).vect,
-		]);
-		this.#binOpArithmetic('vadd', [
-			new BinVect(mod, mod.i64.add(local_vects[0].intValue,   local_vects[1].intValue)).vect,
-			new BinVect(mod, mod.f64.add(local_vects[0].floatValue, local_vects[1].floatValue)).vect,
-		]);
-		this.#binOpComparative('vlt', [
-			BinVect.asBool(mod, mod.i64.lt_s(                      local_vects[0].intValue,                         local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.lt  (mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
-			BinVect.asBool(mod, mod.f64.lt  (                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
-			BinVect.asBool(mod, mod.f64.lt  (                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
-		]);
-		this.#binOpComparative('vgt', [
-			BinVect.asBool(mod, mod.i64.gt_s(                      local_vects[0].intValue,                         local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.gt  (mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
-			BinVect.asBool(mod, mod.f64.gt  (                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
-			BinVect.asBool(mod, mod.f64.gt  (                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
-		]);
-		this.#binOpComparative('vle', [
-			BinVect.asBool(mod, mod.i64.le_s(                      local_vects[0].intValue,                         local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.le  (mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
-			BinVect.asBool(mod, mod.f64.le  (                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
-			BinVect.asBool(mod, mod.f64.le  (                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
-		]);
-		this.#binOpComparative('vge', [
-			BinVect.asBool(mod, mod.i64.ge_s(                      local_vects[0].intValue,                         local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.ge  (mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
-			BinVect.asBool(mod, mod.f64.ge  (                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
-			BinVect.asBool(mod, mod.f64.ge  (                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
-		]);
+		mod.addFunction('vexp', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
+			mod.if(
+				mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
+				new BinVect(mod, mod.call('exp', [local_vects[0].intValue, local_vects[1].intValue], binaryen.i64)).vect,
+				mod.unreachable(),
+			),
+		], binaryen.v128));
+
+		this.#binOpArithmetic('vmul', (i0, i1) => mod.i64.mul   (i0, i1), (f0, f1) => mod.f64.mul(f0, f1));
+		this.#binOpArithmetic('vdiv', (i0, i1) => mod.i64.div_s (i0, i1), (f0, f1) => mod.f64.div(f0, f1));
+		this.#binOpArithmetic('vadd', (i0, i1) => mod.i64.add   (i0, i1), (f0, f1) => mod.f64.add(f0, f1));
+
+		this.#binOpComparative('vlt', (i0, i1) => mod.i64.lt_s(i0, i1), (f0, f1) => mod.f64.lt(f0, f1));
+		this.#binOpComparative('vgt', (i0, i1) => mod.i64.gt_s(i0, i1), (f0, f1) => mod.f64.gt(f0, f1));
+		this.#binOpComparative('vle', (i0, i1) => mod.i64.le_s(i0, i1), (f0, f1) => mod.f64.le(f0, f1));
+		this.#binOpComparative('vge', (i0, i1) => mod.i64.ge_s(i0, i1), (f0, f1) => mod.f64.ge(f0, f1));
+
 		mod.addFunction('vid', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
 			mod.if(
 				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
@@ -259,12 +244,8 @@ export class Builder {
 				),
 			),
 		], binaryen.v128));
-		this.#binOpComparative('veq', [
-			BinVect.asBool(mod, mod.i64.eq(                      local_vects[0].intValue,                         local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.eq(mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
-			BinVect.asBool(mod, mod.f64.eq(                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
-			BinVect.asBool(mod, mod.f64.eq(                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
-		], new BinVect(mod, false).vect);
+
+		this.#binOpComparative('veq', (i0, i1) => mod.i64.eq(i0, i1), (f0, f1) => mod.f64.eq(f0, f1));
 	}
 
 	/**
