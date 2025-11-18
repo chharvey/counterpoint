@@ -118,7 +118,7 @@ describe('ASTNodeCall', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				SET.<str>()
 				Mapping.<bool>()
-			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).varCheck(), SyntaxError, src));
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).varCheck(), SyntaxError));
 		});
 	});
 
@@ -178,7 +178,7 @@ describe('ASTNodeCall', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				null.()
 				(42 || 43).<bool>()
-			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable, src));
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable));
 		});
 		it('throws when providing incorrect number of arguments.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
@@ -186,7 +186,7 @@ describe('ASTNodeCall', () => {
 				Dict.<int>((), ())
 				Set.<int>((), ())
 				Map.<int>((), ())
-			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount, src));
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount));
 		});
 		it('throws when providing incorrect type of arguments.', () => {
 			// API overload checks
@@ -218,7 +218,7 @@ describe('ASTNodeCall', () => {
 				Dict.<int>((a= 4.2))
 				Set.<int>((42, "42"))
 				Map.<int>(((42, "42"),))
-			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable, src));
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable));
 		});
 	});
 

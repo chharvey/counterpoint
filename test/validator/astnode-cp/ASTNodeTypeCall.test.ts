@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
 import {
 	AST,
 	TYPE,
@@ -6,16 +7,17 @@ import {
 	TypeErrorArgCount,
 } from '../../../src/index.ts';
 import {assertEqualTypes} from '../../assert-helpers.ts';
+import {extract_lines} from '../../utils.ts';
 
 
 
 describe('ASTNodeTypeCall', () => {
 	describe('#varCheck', () => {
 		it('throws if base is not one of the allowed strings.', () => {
-			[
-				'SET.<str>',
-				'Mapping.<bool>',
-			].forEach((src) => {
+			xjs.Array.forEachAggregated(extract_lines`
+				SET.<str>
+				Mapping.<bool>
+			`, (src) => {
 				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).varCheck(), SyntaxError);
 			});
 		});
@@ -46,22 +48,18 @@ describe('ASTNodeTypeCall', () => {
 			);
 		});
 		it('throws if base is not an ASTNodeTypeAlias.', () => {
-			[
-				'int.<str>',
-				'(int | float).<bool>',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorNotCallable);
-			});
+			xjs.Array.forEachAggregated(extract_lines`
+				int.<str>
+				(int | float).<bool>
+			`, (src) => assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorNotCallable));
 		});
 		it('throws when providing incorrect number of arguments.', () => {
-			[
-				'List.<null, null>',
-				'Dict.<bool, bool, bool>',
-				'Set.<str, str, str, str>',
-				'Map.<int, int, int, int, int>',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorArgCount);
-			});
+			xjs.Array.forEachAggregated(extract_lines`
+				List.<null, null>
+				Dict.<bool, bool, bool>
+				Set.<str, str, str, str>
+				Map.<int, int, int, int, int>
+			`, (src) => assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorArgCount));
 		});
 	});
 });
