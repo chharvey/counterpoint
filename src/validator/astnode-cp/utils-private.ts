@@ -77,6 +77,11 @@ export function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return t0.isSubtypeOf(TYPE.FLOAT) && t1.isSubtypeOf(TYPE.FLOAT);
 }
 
+export function bothNumbers(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
+	return t0.isSubtypeOf(NUMBER) && t1.isSubtypeOf(NUMBER);
+}
+
 
 
 export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Integer | VALUE.Float {
