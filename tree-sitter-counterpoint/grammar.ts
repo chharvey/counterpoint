@@ -8,19 +8,18 @@
 
 
 
-function argsArr(nth: number, params: readonly string[]): readonly string[] {
+function argsArr(nth: number, params: readonly string[]): string[] {
 	// e.g. `['await', 'static', 'instance', 'method']`
-	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
+	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `['0', '1', '0', '1']`
 		.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
 		.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
 		.map(([param, _to_include]) => param);                   // `['static', 'method']`
 }
-function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
+function familyName<RuleName extends string>(family_name: string, suffices: readonly string[]): RuleName {
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
-	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
+	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, argsArr(nth, params)));
 }
 
 /**
@@ -60,7 +59,7 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
 			args_obj[arg] = true;
 		});
 		return [
-			familyName(family_name, ...args_arr),
+			familyName(family_name, args_arr),
 			parameterized_rule.call(null, args_obj),
 		];
 	})).forEach((rule, name) => {
@@ -95,7 +94,7 @@ function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name:
 			...args.slice(index + 1),
 		)));
 	}
-	return $[familyName(family_name, ...args.flatMap((arg) => ((typeof arg === 'string')
+	return $[familyName(family_name, args.flatMap((arg) => ((typeof arg === 'string')
 		? arg.length ? [arg] : []
 		: Object.entries(arg)
 			.filter(([_,    is_true]) => is_true)
@@ -394,16 +393,9 @@ module.exports = grammar({
 		),
 
 		primitive_literal: $ => choice(
-			$.integer,
-			$.integer__radix,
-			$.integer__separator,
-			$.integer__radix__separator,
-			$.float,
-			$.float__separator,
-			$.string,
-			$.string__comment,
-			$.string__separator,
-			$.string__comment__separator,
+			call($, 'integer', ['', 'radix'], ['', 'separator']),
+			call($, 'float', ['', 'separator']),
+			call($, 'string', ['', 'comment'], ['', 'separator']),
 			$.keyword_value,
 			seq('@', $.word),
 		),
@@ -642,10 +634,10 @@ module.exports = grammar({
 	supertypes: $ => [
 		$._type_unit,
 		$._type,
-		$._expression_unit,
-		$._expression,
-		$._declaration,
+		...familyNameAll('_expression_unit', ['block']).map((rulename) => $[rulename]),
+		...familyNameAll('_expression',      ['block']).map((rulename) => $[rulename]),
 		$._statement,
+		$._declaration,
 	],
 
 	reserved: {

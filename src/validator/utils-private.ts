@@ -37,18 +37,18 @@ export type SyntaxNodeFamily<Name extends string, Suffices extends Readonly<None
 
 
 // NOTE: copied from `../../tree-sitter-counterpoint/grammar.ts`
-function argsArr(nth: number, params: readonly string[]): readonly string[] {
+function argsArr(nth: number, params: readonly string[]): string[] {
 	// e.g. `['await', 'static', 'instance', 'method']`
-	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
+	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `['0', '1', '0', '1']`
 		.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
 		.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
 		.map(([param, _to_include]) => param);                   // `['static', 'method']`
 }
-function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
+function familyName<RuleName extends string>(family_name: string, suffices: readonly string[]): RuleName {
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
-	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
+	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, argsArr(nth, params)));
 }
 
 
