@@ -89,26 +89,28 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 
 		if (!this.until && condition_truthy || this.until && condition_falsy) {
 			// `while true…` or `until false…` -> replace condition check with just condition; always repeat
-			return this.#buildBlock(this.builder.module.drop(condition_build), block_build, 'repeat');
+			return this.#buildBlock('exit', 'repeat', this.builder.module.drop(condition_build), block_build, 0);
 		} else if (!this.until && condition_falsy || this.until && condition_truthy) {
 			// `while false…` or `until true…` -> replace condition check with just condition; always exit
-			return this.#buildBlock(this.builder.module.drop(condition_build), block_build, 'exit');
+			return this.#buildBlock('exit', 'repeat', this.builder.module.drop(condition_build), block_build, 1);
 		}
 
 		return this.#buildBlock(
+			'exit',
+			'repeat',
 			this.builder.module.br_if('exit', new BinVect(
 				this.builder.module,
 				this.until ? this.builder.module.call('vnot', [condition_build], binaryen.v128) : condition_build,
 			).isSpecial(false)),
 			block_build,
-			'repeat',
+			0,
 		);
 	}
 
-	#buildBlock(condition_build: binaryen.ExpressionRef, block_build: binaryen.ExpressionRef, next_label: 'repeat' | 'exit'): binaryen.ExpressionRef {
-		return this.builder.module.block('exit', [this.builder.module.loop('repeat', this.builder.module.block(null, (this.doFirst
-			? [block_build, condition_build, this.builder.module.br(next_label)]
-			: [condition_build, block_build, this.builder.module.br(next_label)]
+	#buildBlock(label_block: string, label_loop: string, condition_build: binaryen.ExpressionRef, block_build: binaryen.ExpressionRef, branch_depth: number): binaryen.ExpressionRef {
+		return this.builder.module.block(label_block, [this.builder.module.loop(label_loop, this.builder.module.block(null, (this.doFirst
+			? [block_build, condition_build, this.builder.module.br([label_loop, label_block][branch_depth])]
+			: [condition_build, block_build, this.builder.module.br([label_loop, label_block][branch_depth])]
 		)))]);
 	}
 }

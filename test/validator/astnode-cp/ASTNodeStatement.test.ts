@@ -120,6 +120,9 @@ describe('ASTNodeStatement', () => {
 
 	describe('#build', () => {
 		describe('ASTNodeStatementLoop', () => {
+			function makeLoop(mod: binaryen.Module, label_block: string, label_loop: string, instrs: readonly binaryen.ExpressionRef[], branch_depth: number): binaryen.ExpressionRef {
+				return mod.block(label_block, [mod.loop(label_loop, mod.block(null, [...instrs, mod.br([label_loop, label_block][branch_depth])]))]);
+			}
 			it('always retuns `(block (loop (block)))`.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var cond: bool = false;
@@ -129,11 +132,10 @@ describe('ASTNodeStatement', () => {
 					};
 				}`);
 				const stmt = stmts[1] as AST.ASTNodeStatementLoop;
-				return assertEqualBins(stmt.build(), mod.block('exit', [mod.loop('repeat', mod.block(null, [
+				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit', 'repeat', [
 					mod.br_if('exit', new BinVect(mod, stmt.condition.build()).isSpecial(false)),
 					stmt.block.build(),
-					mod.br('repeat'),
-				]))]));
+				], 0));
 			});
 			it('skips condition check if condition is definitely truthy/falsy.', () => {
 				const {stmts, mod} = setupScript(`{
@@ -155,27 +157,23 @@ describe('ASTNodeStatement', () => {
 					%%
 				}`);
 				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
-					mod.block('exit', [mod.loop('repeat', mod.block(null, [
+					makeLoop(mod, 'exit', 'repeat', [
 						mod.drop((stmts[2] as AST.ASTNodeStatementLoop).condition.build()),
 						(stmts[2] as AST.ASTNodeStatementLoop).block.build(),
-						mod.br('repeat'),
-					]))]),
+					], 0),
 					/* FIXME: provide dynamic labels
-					mod.block('exit', [mod.loop('repeat', mod.block(null, [
+					makeLoop(mod, 'exit', 'repeat', [
 						(stmts[3] as AST.ASTNodeStatementLoop).block.build(),
 						mod.drop((stmts[3] as AST.ASTNodeStatementLoop).condition.build()),
-						mod.br('repeat'),
-					]))]),
-					mod.block('exit', [mod.loop('repeat', mod.block(null, [
+					], 0),
+					makeLoop(mod, 'exit', 'repeat', [
 						mod.drop((stmts[4] as AST.ASTNodeStatementLoop).condition.build()),
 						(stmts[4] as AST.ASTNodeStatementLoop).block.build(),
-						mod.br('exit'),
-					]))]),
-					mod.block('exit', [mod.loop('repeat', mod.block(null, [
+					], 1),
+					makeLoop(mod, 'exit', 'repeat', [
 						(stmts[5] as AST.ASTNodeStatementLoop).block.build(),
 						mod.drop((stmts[5] as AST.ASTNodeStatementLoop).condition.build()),
-						mod.br('exit'),
-					]))]),
+					], 1),
 					 */
 				]);
 			});
@@ -196,11 +194,10 @@ describe('ASTNodeStatement', () => {
 					};
 				}`);
 				const stmt = stmts[1] as AST.ASTNodeStatementLoop;
-				return assertEqualBins(stmt.build(), mod.block('exit', [mod.loop('repeat', mod.block(null, [
+				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit', 'repeat', [
 					mod.br_if('exit', new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(false)),
 					stmt.block.build(),
-					mod.br('repeat'),
-				]))]));
+				], 0));
 			});
 		});
 
