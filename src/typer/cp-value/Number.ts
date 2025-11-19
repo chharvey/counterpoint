@@ -84,6 +84,6 @@ abstract class ValueNumber<T = unknown> extends Primitive {
 	 * @param y - the argument
 	 * @returns Is the number strictly less than the argument?
 	 */
-	public abstract lt(y: T): boolean;
+	public abstract lt(y: ValueNumber): boolean;
 }
 export {ValueNumber as Number};

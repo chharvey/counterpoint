@@ -453,7 +453,7 @@ We can use a claim to tell the compiler, “I know what I’m doing and the type
 Type claims are a general form of [non-null assertions] (link pending).
 For example, we could use non-null assertion to say that an optional entry exists on an object:
 ```
-let var item: [str, ?: int] = ["apples", 42];
+let var item: (str, ?: int) = ("apples", 42);
 let quantity: int = item?.1~?;
 ```
 Since `item.1` is optional, `item?.1` is of type `int | null`.
@@ -461,7 +461,7 @@ By using the non-null assertion `~?`, we can subtract type null.
 
 The more general form of this is simply claiming that `item?.1` is of type `int`:
 ```
-let var item: [str, ?: int] = ["apples", 42];
+let var item: (str, ?: int) = ("apples", 42);
 let quantity: int = item?.1 as <int>;
 ```
 
@@ -469,7 +469,7 @@ Type claims can be used in situations where non-null assertion cannot.
 Whereas non-null assertions can only tell the compiler that a property *exists*,
 type claims can widen, narrow, or shift the type of an expression.
 ```
-let var item: [str, int | str] = ["apples", 42];
+let var item: (str, int | str) = ("apples", 42);
 let ingredient: anything   = item.0 as <anything>;   % widening
 let quantity:   int        = item.1 as <int>;        % narrowing
 let in_stock:   int | bool = item.1 as <int | bool>; % shifting
@@ -507,7 +507,6 @@ let dog_r: Result.<Dog> = animal as! Dog; %== Fail
 dog_r?.woof.();                           %== Fail
 ```
 
-
 A compile-time claim (`expr as <Klass>`) *claims* to the type-checker that `expr` is already of type `Klass`,
 but no double-check is performed at runtime. The program will proceed as usual, assuming `expr` is assignable to type `Klass`.
 That means that if it’s *not* such an instance, an error could be thrown down the line,
@@ -531,7 +530,6 @@ Using type claims to “just get your code to compile” is never recommended,
 because it won’t prevent runtime errors and it will most likely cause more problems down the road.
 But there are cases in which human reasoning about type safety outsmarts the compiler,
 so in those cases we may use type claims to write good code.
-
 
 
 ### Exponentiation
