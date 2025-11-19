@@ -67,10 +67,10 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 
 		if (!this.unless && condition_truthy || this.unless && condition_falsy) {
 			// `if true…` or `unless false…` -> just return the consequent
-			return drop_then(this.builder.module, [condition_build], consequent_build, binaryen.none);
+			return drop_then(this.builder.module, [condition_build], consequent_build);
 		} else if (!this.unless && condition_falsy || this.unless && condition_truthy) {
 			// `if false…` or `unless true…` -> just return the alternative
-			return drop_then(this.builder.module, [condition_build], alternative_build, binaryen.none);
+			return drop_then(this.builder.module, [condition_build], alternative_build);
 		}
 
 		return this.builder.module.if(

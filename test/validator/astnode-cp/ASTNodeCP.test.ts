@@ -165,25 +165,21 @@ describe('ASTNodeCP', () => {
 						mod,
 						[(stmts[2] as AST.ASTNodeStatementConditional).condition.build()],
 						(stmts[2] as AST.ASTNodeStatementConditional).consequent.build(),
-						binaryen.none,
 					),
 					drop_then(
 						mod,
 						[(stmts[3] as AST.ASTNodeStatementConditional).condition.build()],
 						(stmts[3] as AST.ASTNodeStatementConditional).consequent.build(),
-						binaryen.none,
 					),
 					drop_then(
 						mod,
 						[(stmts[4] as AST.ASTNodeStatementConditional).condition.build()],
 						mod.nop(),
-						binaryen.none,
 					),
 					drop_then(
 						mod,
 						[(stmts[5] as AST.ASTNodeStatementConditional).condition.build()],
 						(stmts[5] as AST.ASTNodeStatementConditional).alternative!.build(),
-						binaryen.none,
 					),
 				]);
 			});
