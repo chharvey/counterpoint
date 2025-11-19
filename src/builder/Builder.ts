@@ -30,8 +30,8 @@ export class Builder {
 	];
 
 
-	/** A setlist containing local variables. */ // TODO: make this a set
-	private readonly locals: Local[] = [];
+	/** A set containing local variables. */
+	private readonly locals = new Set<Local>();
 
 	/** A set containing blocks. */
 	private readonly blocks = new Set<Block>();
@@ -50,8 +50,8 @@ export class Builder {
 	 * @return      [`this`, the new local variable]
 	 */
 	public addLocal(value: binaryen.ExpressionRef): Local {
-		const local = new Local(this.module, this.locals.length, value);
-		this.locals.push(local);
+		const local = new Local(this.module, this.locals.size, value);
+		this.locals.add(local);
 		return local;
 	}
 
@@ -65,23 +65,7 @@ export class Builder {
 	public setLocal(schema: SymbolSchemaVar, value: binaryen.ExpressionRef): boolean {
 		let did: boolean = false;
 		if (!this.getLocal(schema)) {
-			this.locals.push(new Local(this.module, this.locals.length, value, schema));
-			did = true;
-		}
-		return did;
-	}
-
-	/**
-	 * Remove a local variable.
-	 * If the local variable doesn’t exist, do nothing.
-	 * @param  schema the symbol schema of the variable to remove
-	 * @return        Was the operation performed?
-	 */
-	public removeLocal(schema: SymbolSchemaVar): boolean {
-		let did = false;
-		const found = this.getLocal(schema);
-		if (found) {
-			this.locals.splice(this.locals.indexOf(found), 1);
+			this.locals.add(new Local(this.module, this.locals.size, value, schema));
 			did = true;
 		}
 		return did;
@@ -93,7 +77,7 @@ export class Builder {
 	 * @return        the local or `null`
 	 */
 	public getLocal(schema: SymbolSchemaVar): Local | null {
-		return this.locals.find((local) => local.schema === schema) ?? null;
+		return [...this.locals].find((local) => local.schema === schema) ?? null;
 	}
 
 	/**
@@ -114,15 +98,6 @@ export class Builder {
 	 */
 	public getLocals(): Local[] {
 		return [...this.locals];
-	}
-
-	/**
-	 * Remove all local variables in this Builder.
-	 * @return `this`
-	 */
-	public clearLocals(): this {
-		this.locals.length = 0;
-		return this;
 	}
 
 	/**
