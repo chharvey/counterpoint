@@ -99,7 +99,8 @@ TypeUnit ::=
 	| TypeMapLiteral
 ;
 
-PropertyAccessorType ::= INTEGER | Word;
+PropertyAccessorType
+	::= INTEGER | Word;
 
 TypeCompound ::=
 	| TypeUnit
@@ -164,7 +165,8 @@ ExpressionUnit<Block> ::=
 	| <Block+>Block
 ;
 
-PropertyAccessor ::= INTEGER | Word | "[" Expression<+Block> "]";
+PropertyAccessor
+	::= INTEGER | Word | "[" Expression<+Block> "]";
 
 ExpressionCompound<Block> ::=
 	| ExpressionUnit<?Block>
