@@ -1,7 +1,8 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
+	BinVect,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -42,7 +43,7 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 
 	@if_constant_folding
 	public override get isFoldable(): boolean {
-		throw new Error('TODO:');
+		return !!this.condition.fold() && this.block.isFoldable;
 	}
 
 	public override varCheck(): void {
@@ -61,6 +62,53 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw new Error('TODO:');
+		/*
+			;; if `doFirst`:
+			(block $exit
+				(loop $repeat
+					‹body›
+					(br_if $exit (not ‹cond›))
+					br $repeat
+				)
+			)
+			;; else:
+			(block $exit
+				(loop $repeat
+					(br_if $exit (not ‹cond›))
+					‹body›
+					br $repeat
+				)
+			)
+		*/
+		const condition_build: binaryen.ExpressionRef = this.condition.build();
+		const block_build:     binaryen.ExpressionRef = this.block.build();
+
+		const condition_type:   TYPE.Type = this.condition.type();
+		const condition_truthy: boolean   = condition_type.isSubtypeOf(TYPE.TRUE);
+		const condition_falsy:  boolean   = condition_type.isSubtypeOf(TYPE.FALSE);
+
+		if (!this.until && condition_truthy || this.until && condition_falsy) {
+			// `while true…` or `until false…` -> replace condition check with just condition; always repeat
+			return this.#buildBlock(this.builder.module.drop(condition_build), block_build, 'repeat');
+		} else if (!this.until && condition_falsy || this.until && condition_truthy) {
+			// `while false…` or `until true…` -> replace condition check with just condition; always exit
+			return this.#buildBlock(this.builder.module.drop(condition_build), block_build, 'exit');
+		}
+
+		return this.#buildBlock(
+			this.builder.module.br_if('exit', new BinVect(
+				this.builder.module,
+				this.until ? this.builder.module.call('vnot', [condition_build], binaryen.v128) : condition_build,
+			).isSpecial(false)),
+			block_build,
+			'repeat',
+		);
+	}
+
+	#buildBlock(condition_build: binaryen.ExpressionRef, block_build: binaryen.ExpressionRef, next_label: 'repeat' | 'exit'): binaryen.ExpressionRef {
+		return this.builder.module.block('exit', [this.builder.module.loop('repeat', this.builder.module.block(null, (this.doFirst
+			? [block_build, condition_build, this.builder.module.br(next_label)]
+			: [condition_build, block_build, this.builder.module.br(next_label)]
+		)))]);
 	}
 }

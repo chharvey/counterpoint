@@ -48,7 +48,7 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 
 	@if_constant_folding
 	public override get isFoldable(): boolean {
-		throw new Error('TODO:');
+		return !!this.iterable.fold() && this.block.isFoldable;
 	}
 
 	public override varCheck(): void {
@@ -87,6 +87,6 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw new Error('TODO:');
+		throw new Error('`ASTNodeStatementIteration#build` not yet supported.');
 	}
 }

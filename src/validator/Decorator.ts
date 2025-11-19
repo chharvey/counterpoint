@@ -665,7 +665,7 @@ export class Decorator {
 				// we have `("while" | "until") Expression "do" Block ";"`
 				node as SyntaxNodeType<'statement_loop'>,
 				false,
-				node.children[2].text === Keyword.UNTIL,
+				node.children[0].text === Keyword.UNTIL,
 				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[3] as SyntaxNodeType<'block'>),
 			)],

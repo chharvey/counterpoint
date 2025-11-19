@@ -1,17 +1,20 @@
 import * as assert from 'assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	type Validator,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaVar,
 	TYPE,
+	BinVect,
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
 } from '../../../src/index.js';
-import {assert_instanceof} from '../../../src/lib/index.js';
+import {assertEqualBins} from '../../assert-helpers.ts';
 import {setupScript} from '../../helpers.js';
 import {extract_lines} from '../../utils.ts';
 
@@ -110,6 +113,115 @@ describe('ASTNodeStatement', () => {
 				}`, null, {typeCheck: false});
 				assert.throws(() => (stmts[0] as AST.ASTNodeStatementIteration).block.children[0].typeCheck(), TypeErrorInvalidOperation);
 				return assert.throws(() => stmts[0].typeCheck(), TypeErrorInvalidOperation);
+			});
+		});
+	});
+
+
+	describe('#build', () => {
+		describe('ASTNodeStatementLoop', () => {
+			it('always retuns `(block (loop (block)))`.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var cond: bool = false;
+					while cond do {
+						42;
+						4.2;
+					};
+				}`);
+				const stmt = stmts[1] as AST.ASTNodeStatementLoop;
+				return assertEqualBins(stmt.build(), mod.block('exit', [mod.loop('repeat', mod.block(null, [
+					mod.br_if('exit', new BinVect(mod, stmt.condition.build()).isSpecial(false)),
+					stmt.block.build(),
+					mod.br('repeat'),
+				]))]));
+			});
+			it('skips condition check if condition is definitely truthy/falsy.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var TRUE:  true  = true;
+					let var FALSE: false = false;
+					while TRUE do {
+						42;
+					};
+					%% FIXME: provide dynamic labels
+					do {
+						42;
+					} while TRUE;
+					while FALSE do {
+						42;
+					};
+					do {
+						42;
+					} while FALSE;
+					%%
+				}`);
+				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
+					mod.block('exit', [mod.loop('repeat', mod.block(null, [
+						mod.drop((stmts[2] as AST.ASTNodeStatementLoop).condition.build()),
+						(stmts[2] as AST.ASTNodeStatementLoop).block.build(),
+						mod.br('repeat'),
+					]))]),
+					/* FIXME: provide dynamic labels
+					mod.block('exit', [mod.loop('repeat', mod.block(null, [
+						(stmts[3] as AST.ASTNodeStatementLoop).block.build(),
+						mod.drop((stmts[3] as AST.ASTNodeStatementLoop).condition.build()),
+						mod.br('repeat'),
+					]))]),
+					mod.block('exit', [mod.loop('repeat', mod.block(null, [
+						mod.drop((stmts[4] as AST.ASTNodeStatementLoop).condition.build()),
+						(stmts[4] as AST.ASTNodeStatementLoop).block.build(),
+						mod.br('exit'),
+					]))]),
+					mod.block('exit', [mod.loop('repeat', mod.block(null, [
+						(stmts[5] as AST.ASTNodeStatementLoop).block.build(),
+						mod.drop((stmts[5] as AST.ASTNodeStatementLoop).condition.build()),
+						mod.br('exit'),
+					]))]),
+					 */
+				]);
+			});
+			it('produces `(nop)` if entire statement is foldable.', () => {
+				const {stmts, mod} = setupScript(`{
+					let cond: bool = true;
+					while cond do {
+						42;
+					};
+				}`);
+				return assertEqualBins(stmts[1].build(), mod.nop());
+			});
+			it('negates the condition for `until` statements.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var cond: bool = false;
+					until cond do {
+						42;
+					};
+				}`);
+				const stmt = stmts[1] as AST.ASTNodeStatementLoop;
+				return assertEqualBins(stmt.build(), mod.block('exit', [mod.loop('repeat', mod.block(null, [
+					mod.br_if('exit', new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(false)),
+					stmt.block.build(),
+					mod.br('repeat'),
+				]))]));
+			});
+		});
+
+		describe('ASTNodeStatementIteration', () => {
+			it('produces `(nop)` if entire statement is foldable.', () => {
+				const {stmts, mod} = setupScript(`{
+					for it: int of [10, 20, 30, 40] do {
+						42;
+					};
+				}`);
+				return assertEqualBins(stmts[0].build(), mod.nop());
+			});
+			it('if not foldable, is not yet supported.', () => {
+				const {stmts} = setupScript(`{
+					let var i: int = 42;
+					for it: int of [10, 20, 30, 40] do {
+						set i = it;
+					};
+				}`, null, {build: false});
+				stmts[0].build(); // assert does not throw
+				return assert.throws(() => stmts[1].build(), /not yet supported/);
 			});
 		});
 	});
