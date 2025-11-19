@@ -84,6 +84,9 @@ export class BinVect {
 	 * @return          the `if` expression
 	 */
 	public static asBool(mod: binaryen.Module, condition: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		if (binaryen.getExpressionType(condition) !== binaryen.i32) {
+			throw new TypeError('Expected `i32`.');
+		}
 		return mod.if(
 			condition,
 			new BinVect(mod, true).vect,

@@ -845,22 +845,47 @@ describe('ASTNodeOperation', () => {
 		describe('#type', () => {
 			it('with folding on, returns a constant value.', () => {
 				typeOperations(new Map<string, VALUE.Boolean>([
-					['2 <  3', VALUE.TRUE],
-					['2 >  3', VALUE.FALSE],
-					['2 <= 3', VALUE.TRUE],
-					['2 >= 3', VALUE.FALSE],
-					['2 !< 3', VALUE.FALSE],
-					['2 !> 3', VALUE.TRUE],
+					['2   <  3',   VALUE.TRUE],
+					['2   >  3',   VALUE.FALSE],
+					['2   <= 3',   VALUE.TRUE],
+					['2   >= 3',   VALUE.FALSE],
+					['2   !< 3',   VALUE.FALSE],
+					['2   !> 3',   VALUE.TRUE],
+					['2.0 <  3',   VALUE.TRUE],
+					['2.0 >  3',   VALUE.FALSE],
+					['2.0 <= 3',   VALUE.TRUE],
+					['2.0 >= 3',   VALUE.FALSE],
+					['2.0 !< 3',   VALUE.FALSE],
+					['2.0 !> 3',   VALUE.TRUE],
+					['2   <  3.0', VALUE.TRUE],
+					['2   >  3.0', VALUE.FALSE],
+					['2   <= 3.0', VALUE.TRUE],
+					['2   >= 3.0', VALUE.FALSE],
+					['2   !< 3.0', VALUE.FALSE],
+					['2   !> 3.0', VALUE.TRUE],
 				]));
 			});
-			context('with folding off.', () => {
-				it('returns `Boolean` if both operands are of the same numeric type.', () => {
-					assert.strictEqual(typeOfOperationFromSource('7   <  3'),   TYPE.BOOL);
-					assert.strictEqual(typeOfOperationFromSource('7.0 >= 3.0'), TYPE.BOOL);
-				});
-				it('throws for any operation of mix of integers and floats.', () => {
-					assert.throws(() => typeOfOperationFromSource('7.0 <= 3'), TypeErrorInvalidOperation);
-				});
+			it('with folding off, returns `Boolean` if both operands are of numeric type.', () => {
+				xjs.Array.forEachAggregated(extract_lines`
+					2   <  3
+					2   >  3
+					2   <= 3
+					2   >= 3
+					2   !< 3
+					2   !> 3
+					2.0 <  3
+					2.0 >  3
+					2.0 <= 3
+					2.0 >= 3
+					2.0 !< 3
+					2.0 !> 3
+					2   <  3.0
+					2   >  3.0
+					2   <= 3.0
+					2   >= 3.0
+					2   !< 3.0
+					2   !> 3.0
+				`, (src) => assert.strictEqual(AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type(), TYPE.BOOL));
 			});
 			it('throws for comparative operation of non-numbers.', () => {
 				assert.throws(() => AST.ASTNodeOperationBinaryComparative.fromSource('7.0 <= null').type(), TypeErrorInvalidOperation);
