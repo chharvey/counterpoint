@@ -62,6 +62,10 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
+		const block       = this.builder.teeBlock(this);
+		const LABEL_BLOCK = `exit${ block.index }`;
+		const LABEL_LOOP  = `repeat${ block.index }`;
+
 		/*
 			;; if `doFirst`:
 			(block $exit
@@ -89,16 +93,16 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 
 		if (!this.until && condition_truthy || this.until && condition_falsy) {
 			// `while true…` or `until false…` -> replace condition check with just condition; always repeat
-			return this.#buildBlock('exit', 'repeat', this.builder.module.drop(condition_build), block_build, 0);
+			return this.#buildBlock(LABEL_BLOCK, LABEL_LOOP, this.builder.module.drop(condition_build), block_build, 0);
 		} else if (!this.until && condition_falsy || this.until && condition_truthy) {
 			// `while false…` or `until true…` -> replace condition check with just condition; always exit
-			return this.#buildBlock('exit', 'repeat', this.builder.module.drop(condition_build), block_build, 1);
+			return this.#buildBlock(LABEL_BLOCK, LABEL_LOOP, this.builder.module.drop(condition_build), block_build, 1);
 		}
 
 		return this.#buildBlock(
-			'exit',
-			'repeat',
-			this.builder.module.br_if('exit', new BinVect(
+			LABEL_BLOCK,
+			LABEL_LOOP,
+			this.builder.module.br_if(LABEL_BLOCK, new BinVect(
 				this.builder.module,
 				this.until ? this.builder.module.call('vnot', [condition_build], binaryen.v128) : condition_build,
 			).isSpecial(false)),

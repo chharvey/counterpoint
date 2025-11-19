@@ -1,9 +1,22 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import binaryen from 'binaryen';
-import type {SymbolSchemaVar} from '../validator/index.ts';
+import type {
+	AST,
+	SymbolSchemaVar,
+} from '../validator/index.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
+
+
+
+/**
+ * A type modeling the Binaryen `module.block`.
+ */
+type Block = {
+	readonly index: number,
+	readonly node:  AST.ASTNodeCP,
+};
 
 
 
@@ -17,8 +30,11 @@ export class Builder {
 	];
 
 
-	/** A setlist containing ids of local variables. */
+	/** A setlist containing local variables. */ // TODO: make this a set
 	private readonly locals: Local[] = [];
+
+	/** A set containing blocks. */
+	private readonly blocks = new Set<Block>();
 
 	/** The Binaryen module to build upon building. */
 	public readonly module: binaryen.Module = binaryen.parseText(`
@@ -107,6 +123,40 @@ export class Builder {
 	public clearLocals(): this {
 		this.locals.length = 0;
 		return this;
+	}
+
+	/**
+	 * Set a new block, given an ASTNode.
+	 * @param node node that builds the block
+	 * @return     Was the operation performed?
+	 */
+	public setBlock(node: AST.ASTNodeCP): boolean {
+		let did: boolean = false;
+		if (!this.getBlock(node)) {
+			this.blocks.add({node, index: this.blocks.size});
+			did = true;
+		}
+		return did;
+	}
+
+	/**
+	 * Get the block with the given node in this Builder’s list, if it’s been added; else, return `null`.
+	 * @param  node the node of the block to get
+	 * @return      the block or `null`
+	 */
+	public getBlock(node: AST.ASTNodeCP): Block | null {
+		return [...this.blocks].find((block) => block.node === node) ?? null;
+	}
+
+	/**
+	 * Set a block to the given id and return it.
+	 * If a block with that id has already been added, this Builder’s state is not changed.
+	 * @param node the node of the block to set
+	 * @return     the block set (or retreived)
+	 */
+	public teeBlock(node: AST.ASTNodeCP): Block {
+		this.setBlock(node);
+		return this.getBlock(node)!;
 	}
 
 	#binOpFunction(

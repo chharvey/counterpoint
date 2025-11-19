@@ -132,8 +132,8 @@ describe('ASTNodeStatement', () => {
 					};
 				}`);
 				const stmt = stmts[1] as AST.ASTNodeStatementLoop;
-				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit', 'repeat', [
-					mod.br_if('exit', new BinVect(mod, stmt.condition.build()).isSpecial(false)),
+				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit0', 'repeat0', [
+					mod.br_if('exit0', new BinVect(mod, stmt.condition.build()).isSpecial(false)),
 					stmt.block.build(),
 				], 0));
 			});
@@ -144,7 +144,6 @@ describe('ASTNodeStatement', () => {
 					while TRUE do {
 						42;
 					};
-					%% FIXME: provide dynamic labels
 					do {
 						42;
 					} while TRUE;
@@ -154,27 +153,24 @@ describe('ASTNodeStatement', () => {
 					do {
 						42;
 					} while FALSE;
-					%%
 				}`);
 				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
-					makeLoop(mod, 'exit', 'repeat', [
+					makeLoop(mod, 'exit0', 'repeat0', [
 						mod.drop((stmts[2] as AST.ASTNodeStatementLoop).condition.build()),
 						(stmts[2] as AST.ASTNodeStatementLoop).block.build(),
 					], 0),
-					/* FIXME: provide dynamic labels
-					makeLoop(mod, 'exit', 'repeat', [
+					makeLoop(mod, 'exit1', 'repeat1', [
 						(stmts[3] as AST.ASTNodeStatementLoop).block.build(),
 						mod.drop((stmts[3] as AST.ASTNodeStatementLoop).condition.build()),
 					], 0),
-					makeLoop(mod, 'exit', 'repeat', [
+					makeLoop(mod, 'exit2', 'repeat2', [
 						mod.drop((stmts[4] as AST.ASTNodeStatementLoop).condition.build()),
 						(stmts[4] as AST.ASTNodeStatementLoop).block.build(),
 					], 1),
-					makeLoop(mod, 'exit', 'repeat', [
+					makeLoop(mod, 'exit3', 'repeat3', [
 						(stmts[5] as AST.ASTNodeStatementLoop).block.build(),
 						mod.drop((stmts[5] as AST.ASTNodeStatementLoop).condition.build()),
 					], 1),
-					 */
 				]);
 			});
 			it('produces `(nop)` if entire statement is foldable.', () => {
@@ -194,8 +190,8 @@ describe('ASTNodeStatement', () => {
 					};
 				}`);
 				const stmt = stmts[1] as AST.ASTNodeStatementLoop;
-				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit', 'repeat', [
-					mod.br_if('exit', new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(false)),
+				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit0', 'repeat0', [
+					mod.br_if('exit0', new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(false)),
 					stmt.block.build(),
 				], 0));
 			});
