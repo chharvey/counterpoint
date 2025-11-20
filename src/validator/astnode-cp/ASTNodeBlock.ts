@@ -9,7 +9,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {Validator} from '../Validator.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeGoal} from './index.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
@@ -41,7 +41,7 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 	#validator?: Validator;
 
 	public constructor(
-		start_node: SyntaxNodeType<'block'>,
+		start_node: SyntaxNodeFamily<'block', ['break']>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeStatement>>,
 		private readonly config:           CPConfig,
 	) {

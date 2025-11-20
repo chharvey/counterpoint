@@ -10,7 +10,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SymbolSchemaVar} from '../index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import {if_constant_folding} from './Foldable.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
@@ -33,7 +33,7 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'declaration_claim'>,
+		start_node: SyntaxNodeFamily<'declaration_claim', ['break']>,
 		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		private readonly claimed_type: ASTNodeType,
 	) {

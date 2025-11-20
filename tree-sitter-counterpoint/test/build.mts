@@ -1340,13 +1340,20 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					until condition do { loop; };
 					do { loop; } while condition;
 					do { loop; } until condition;
+					while condition do {
+						if condition then { consequent; };
+					};
 				}
 			`,
 			sourceStatements(
-				s('statement_loop', s('identifier'), s('block', s('statement_expression', s('identifier')))),
-				s('statement_loop', s('identifier'), s('block', s('statement_expression', s('identifier')))),
-				s('statement_loop', s('block', s('statement_expression', s('identifier'))), s('identifier')),
-				s('statement_loop', s('block', s('statement_expression', s('identifier'))), s('identifier')),
+				s('statement_loop', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_loop', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_loop', s('block__break', s('statement_expression__break', s('identifier'))), s('identifier')),
+				s('statement_loop', s('block__break', s('statement_expression__break', s('identifier'))), s('identifier')),
+				s('statement_loop', s('identifier'), s(
+					'block__break',
+					s('statement_conditional__break', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				)),
 			),
 		],
 
@@ -1358,8 +1365,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceStatements(
-				s('statement_iteration',                  s('identifier'), s('identifier'), s('block', s('statement_expression', s('identifier')))),
-				s('statement_iteration', s('identifier'), s('identifier'), s('identifier'), s('block', s('statement_expression', s('identifier')))),
+				s('statement_iteration',                  s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_iteration', s('identifier'), s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
 			),
 		],
 
@@ -1377,6 +1384,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					{
 						b;
 					};
+					if condition then { consequent; };
+					while condition do { loop; };
+					for it: T of iterable do { iterate; };
 				}
 			`,
 			sourceStatements(
@@ -1415,6 +1425,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_expression',
 					s('expression_block', s('statement_expression', s('identifier'))),
 				),
+				s('statement_conditional',                                   s('identifier'), s('block',        s('statement_expression',        s('identifier')))),
+				s('statement_loop',                                          s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_iteration',   s('identifier'), s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
 			),
 		],
 

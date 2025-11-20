@@ -14,7 +14,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeSupertype} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {Operator} from '../Operator.ts';
 import {
 	buildDeco,
@@ -33,7 +33,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeSupertype<'expression'>,
+		start_node: SyntaxNodeFamily<'expression_conditional', ['break']>,
 		operator: Operator.COND,
 		public readonly operand0: ASTNodeExpression,
 		public readonly operand1: ASTNodeExpression,

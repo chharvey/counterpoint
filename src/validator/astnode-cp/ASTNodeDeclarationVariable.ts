@@ -15,7 +15,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
@@ -36,7 +36,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'declaration_variable'>,
+		start_node: SyntaxNodeFamily<'declaration_variable', ['break']>,
 		public  readonly unfixed:  boolean,
 		private readonly assignee: ASTNodeVariable | null,
 		public  readonly typenode: ASTNodeType,

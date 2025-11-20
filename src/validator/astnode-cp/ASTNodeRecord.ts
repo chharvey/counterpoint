@@ -17,7 +17,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {EntryType} from '../../typer/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeProperty} from './ASTNodeProperty.ts';
@@ -41,7 +41,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'record_literal'>,
+		start_node: SyntaxNodeFamily<'record_literal', ['break']>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, children);

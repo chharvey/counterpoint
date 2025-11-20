@@ -32,7 +32,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'statement_conditional', ['unless']>,
+		start_node: SyntaxNodeFamily<'statement_conditional', ['unless', 'break']>,
 		private readonly unless:       boolean,
 		public  readonly condition:    ASTNodeExpression,
 		public  readonly consequent:   ASTNodeBlock,
