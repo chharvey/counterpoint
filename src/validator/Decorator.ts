@@ -142,6 +142,7 @@ export class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'statement_conditional', ['unless', 'break']>): AST.ASTNodeStatementConditional;
 	public decorateTS(syntaxnode: SyntaxNodeType<'statement_loop'>):                               AST.ASTNodeStatementLoop;
 	public decorateTS(syntaxnode: SyntaxNodeType<'statement_iteration'>):                          AST.ASTNodeStatementIteration;
+	public decorateTS(syntaxnode: SyntaxNodeType<'statement_break'>):                              AST.ASTNodeStatementBreak;
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'statement'>):                               AST.ASTNodeStatement;
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'block', ['break']>):                           AST.ASTNodeBlock;
 	public decorateTS(syntaxnode: SyntaxNodeType<'declaration_type'>):                             AST.ASTNodeDeclarationType;
@@ -676,6 +677,12 @@ export class Decorator {
 				this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
 				this.decorateExprNode(node.children[5] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[7] as SyntaxNodeType<'block__break'>),
+			)],
+
+			['statement_break', (node) => new AST.ASTNodeStatementBreak(
+				node as SyntaxNodeType<'statement_break'>,
+				node.children[0].text === Keyword.CONTINUE,
+				isSyntaxNodeType(node.children[1], 'integer') ? node.children[1] : undefined,
 			)],
 
 			[/^block(__break)?$/, (node) => this.decorateBlockNode(node as SyntaxNodeFamily<'block', ['break']>)],
