@@ -140,6 +140,8 @@ SemanticOperation[operator: COND]
 SemanticStatement =:=
 	| SemanticStatementExpression
 	| SemanticStatementConditional
+	| SemanticStatementLoop
+	| SemanticStatementIteration
 	| SemanticDeclaration
 ;
 
@@ -152,6 +154,16 @@ SemanticStatementExpression
 
 SemanticStatementConditional[unless: Boolean]
 	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;
+
+
+
+SemanticStatementLoop[doFirst: Boolean][until: Boolean]
+	::= SemanticExpression SemanticBlock;
+
+
+
+SemanticStatementIteration
+	::= SemanticVariable? SemanticType SemanticExpression SemanticBlock;
 
 
 

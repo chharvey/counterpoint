@@ -140,6 +140,8 @@ export class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'expression'>):                     AST.ASTNodeExpression;
 	public decorateTS(syntaxnode: SyntaxNodeType<'statement_expression'>):                AST.ASTNodeStatementExpression;
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'statement_conditional', ['unless']>): AST.ASTNodeStatementConditional;
+	public decorateTS(syntaxnode: SyntaxNodeType<'statement_loop'>):                      AST.ASTNodeStatementLoop;
+	public decorateTS(syntaxnode: SyntaxNodeType<'statement_iteration'>):                 AST.ASTNodeStatementIteration;
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'statement'>):                      AST.ASTNodeStatement;
 	public decorateTS(syntaxnode: SyntaxNodeType<'block'>):                               AST.ASTNodeBlock;
 	public decorateTS(syntaxnode: SyntaxNodeType<'declaration_type'>):                    AST.ASTNodeDeclarationType;
@@ -650,6 +652,30 @@ export class Decorator {
 				true,
 				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[3] as SyntaxNodeType<'block'>),
+			)],
+
+			['statement_loop', (node) => node.children[0].text === Keyword.DO ? new AST.ASTNodeStatementLoop(
+				// we have `"do" Block ("while" | "until") Expression ";"`
+				node as SyntaxNodeType<'statement_loop'>,
+				true,
+				node.children[2].text === Keyword.UNTIL,
+				this.decorateExprNode(node.children[3] as SyntaxNodeSupertype<'expression'>),
+				this.decorateTS(node.children[1] as SyntaxNodeType<'block'>),
+			) : new AST.ASTNodeStatementLoop(
+				// we have `("while" | "until") Expression "do" Block ";"`
+				node as SyntaxNodeType<'statement_loop'>,
+				false,
+				node.children[0].text === Keyword.UNTIL,
+				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
+				this.decorateTS(node.children[3] as SyntaxNodeType<'block'>),
+			)],
+
+			['statement_iteration', (node) => new AST.ASTNodeStatementIteration(
+				node as SyntaxNodeType<'statement_iteration'>,
+				isSyntaxNodeType(node.children[1], 'identifier') ? new AST.ASTNodeVariable(node.children[1]) : null,
+				this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
+				this.decorateExprNode(node.children[5] as SyntaxNodeSupertype<'expression'>),
+				this.decorateTS(node.children[7] as SyntaxNodeType<'block'>),
 			)],
 
 			['block', (node) => this.decorateBlockNode(node as SyntaxNodeType<'block'>)],

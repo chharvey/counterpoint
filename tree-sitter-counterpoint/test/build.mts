@@ -1333,8 +1333,38 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		StatementLoop: [
+			xjs.String.dedent`
+				{
+					while condition do { loop; };
+					until condition do { loop; };
+					do { loop; } while condition;
+					do { loop; } until condition;
+				}
+			`,
+			sourceStatements(
+				s('statement_loop', s('identifier'), s('block', s('statement_expression', s('identifier')))),
+				s('statement_loop', s('identifier'), s('block', s('statement_expression', s('identifier')))),
+				s('statement_loop', s('block', s('statement_expression', s('identifier'))), s('identifier')),
+				s('statement_loop', s('block', s('statement_expression', s('identifier'))), s('identifier')),
+			),
+		],
+
+		StatementIteration: [
+			xjs.String.dedent`
+				{
+					for _:  T of iterable do { iterate; };
+					for it: T of iterable do { iterate; };
+				}
+			`,
+			sourceStatements(
+				s('statement_iteration',                  s('identifier'), s('identifier'), s('block', s('statement_expression', s('identifier')))),
+				s('statement_iteration', s('identifier'), s('identifier'), s('identifier'), s('block', s('statement_expression', s('identifier')))),
+			),
+		],
+
 		// Statement
-		// consists of #{StatementExpression,StatementConditional,Declaration}
+		// consists of #{Statement{Expression,Conditional,Loop,Iteration},Declaration}
 
 		Block: [
 			xjs.String.dedent`

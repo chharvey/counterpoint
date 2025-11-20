@@ -113,6 +113,8 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 ) : C extends 'statement' ? (
 	| SyntaxNodeType<'statement_expression'>
 	| SyntaxNodeType<'statement_conditional'>
+	| SyntaxNodeType<'statement_loop'>
+	| SyntaxNodeType<'statement_iteration'>
 	| SyntaxNodeSupertype<'declaration'>
 ) : C extends 'declaration' ? (
 	| SyntaxNodeType<'declaration_type'>
@@ -127,7 +129,7 @@ export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode
 	return new Map<Category, (node: SyntaxNode) => boolean>([
 		['type',        (node) => isSyntaxNodeType(node, /^identifier|keyword_type|primitive_literal|type_grouped|type_(tuple|record|list|dict|set|map)_literal|type_(compound|unary_(symbol|keyword)|intersection|union)$/)],
 		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template|expression_grouped|(tuple|record|list|dict|set|map)_literal|expression_block|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional)$/)],
-		['statement',   (node) => isSyntaxNodeType(node, /^statement_(expression|conditional)|declaration$/) || isSyntaxNodeSupertype(node, 'declaration')],
+		['statement',   (node) => isSyntaxNodeType(node, /^statement_(expression|conditional|loop|iteration)|declaration$/) || isSyntaxNodeSupertype(node, 'declaration')],
 		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable|claim|reassignment)$/)],
 	]).get(category)!(syntaxnode);
 }

@@ -48,6 +48,11 @@ Word ::=
 		| "var"
 	// control
 		| "unless"
+		| "while"
+		| "until"
+		| "for"
+		| "of"
+		| "do"
 	| IDENTIFIER
 	| KeywordType
 	| KeywordValue
@@ -222,9 +227,17 @@ StatementConditional<Unless> ::=
 	& <Unless+>";"
 ;
 
+StatementLoop
+	::= (("while" | "until") Expression<+Block> && "do" Block) ";";
+
+StatementIteration
+	::= "for" ("_" | IDENTIFIER) ":" Type "of" Expression<+Block> "do" Block ";";
+
 Statement ::=
 	| StatementExpression
 	| StatementConditional<∓Unless>
+	| StatementLoop
+	| StatementIteration
 	| Declaration
 ;
 
