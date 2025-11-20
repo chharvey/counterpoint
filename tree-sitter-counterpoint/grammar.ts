@@ -383,6 +383,8 @@ module.exports = grammar({
 			'for',
 			'of',
 			'do',
+			'break',
+			'continue',
 			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
@@ -663,6 +665,8 @@ module.exports = grammar({
 			'for',
 			'of',
 			'do',
+			'break',
+			'continue',
 			// type keyword
 			'nothing',
 			'bool',

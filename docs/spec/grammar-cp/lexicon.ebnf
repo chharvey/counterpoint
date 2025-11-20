@@ -87,6 +87,8 @@ KeywordOther :::=
 		| "for"
 		| "of"
 		| "do"
+		| "break"
+		| "continue"
 ;
 
 

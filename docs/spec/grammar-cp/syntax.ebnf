@@ -53,6 +53,8 @@ Word ::=
 		| "for"
 		| "of"
 		| "do"
+		| "break"
+		| "continue"
 	| IDENTIFIER
 	| KeywordType
 	| KeywordValue
