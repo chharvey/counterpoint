@@ -264,20 +264,16 @@ const OPT_COM = optional(',');
  * ```
  * condition ? consequent : alternative
  * ```
+ * Otherwise, spread it into a rule:
+ * @example
+ * {
+ * 	...parameterize('entry_type__optional', ({named}) => $ => seq(...iff(named, $.word), '?:', $._type), 'named'),
+ * }
  * @param condition   the condition to test
  * @param consequent  if condition is true, this will be produced
- * @returns           either `consequent` or `blank()` based on `condition`
+ * @returns           if `condition`, then `[consequent]`; else `[]`
  */
-function iff(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral {
-	return condition ? consequent : blank();
-}
-/**
- * Like {@link iff}, but meant for spreading, like in a choice list.
- * @param condition   the condition to test
- * @param consequent  if condition is true, this will be produced
- * @returns           either `[consequent]` or `[]` based on `condition`
- */
-function iffSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
+function iff(condition: boolean, consequent: RuleOrLiteral): [RuleOrLiteral] | [] {
 	return condition ? [consequent] : [];
 }
 function repCom1(production: RuleOrLiteral): SeqRule {
@@ -411,7 +407,7 @@ module.exports = grammar({
 
 		/* ## Types */
 		...parameterize('entry_type', ({named, optional}) => (
-			$ => seq(iff(named, seq($.word, iff(!optional, ':'))), iff(optional, '?:'), $._type)
+			$ => seq(...iff(named, seq($.word, ...iff(!optional, ':'))), ...iff(optional, '?:'), $._type)
 		), 'named', 'optional'),
 
 		_items_type: $ => {
@@ -517,7 +513,7 @@ module.exports = grammar({
 			$.dict_literal,
 			$.set_literal,
 			$.map_literal,
-			...iffSpread(block, alias($.block, $.expression_block)),
+			...iff(block, alias($.block, $.expression_block)),
 		), 'block'),
 
 		property_accessor: $ => choice($.integer, $.word, seq('[', $._expression__block, ']')),
@@ -572,16 +568,16 @@ module.exports = grammar({
 		statement_expression: $ => seq(optional($._expression__block), ';'),
 
 		...parameterize('statement_conditional', ({unless}) => $ => seq(
-			iff(!unless, 'if'),
-			iff( unless, 'unless'),
+			!unless ? 'if' : 'unless',
 			$._expression__block,
 			'then',
 			$.block,
-			iff(!unless, choice(
-				seq(optional(seq('else', $.block)), ';'),
-				seq('else', call($, 'statement_conditional', {unless})),
-			)),
-			iff(unless, ';'),
+			!unless
+				? choice(
+					seq(optional(seq('else', $.block)), ';'),
+					seq('else', call($, 'statement_conditional', {unless})),
+				)
+				: ';',
 		), 'unless'),
 
 		statement_loop: $ => seq(uSeq(seq(choice('while', 'until'), $._expression__block), seq('do', $.block)), ';'),
