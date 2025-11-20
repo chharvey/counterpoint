@@ -1370,8 +1370,28 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		StatementBreak: [
+			xjs.String.dedent`
+				{
+					while condition do {
+						break;
+						break 2;
+						continue;
+						continue 2;
+					};
+				}
+			`,
+			sourceStatements(s('statement_loop', s('identifier'), s(
+				'block__break',
+				s('statement_break'),
+				s('statement_break', s('integer')),
+				s('statement_break'),
+				s('statement_break', s('integer')),
+			))),
+		],
+
 		// Statement
-		// consists of #{Statement{Expression,Conditional,Loop,Iteration},Declaration}
+		// consists of #{Statement{Expression,Conditional,Loop,Iteration,Break},Declaration}
 
 		Block: [
 			xjs.String.dedent`

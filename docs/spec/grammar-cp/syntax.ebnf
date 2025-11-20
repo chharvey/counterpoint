@@ -235,11 +235,15 @@ StatementLoop
 StatementIteration
 	::= "for" ("_" | IDENTIFIER) ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";";
 
+StatementBreak
+	::= ("break" | "continue") INTEGER? ";";
+
 Statement<Break> ::=
 	| StatementExpression<?Break>
 	| StatementConditional<∓Unless><?Break>
 	| StatementLoop
 	| StatementIteration
+	| <Break+>StatementBreak
 	| Declaration<?Break>
 ;
 
