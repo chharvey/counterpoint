@@ -78,17 +78,10 @@ describe('ASTNodeExpression', () => {
 				]);
 			});
 			it('computes int values.', () => {
-				const integer_radices_on: CPConfig = {
-					...CONFIG_DEFAULT,
-					languageFeatures: {
-						...CONFIG_DEFAULT.languageFeatures,
-						integerRadices: true,
-					},
-				};
 				assert.deepStrictEqual(extract_tokens(`
 					55  -55  033  -033  0  -0
 					\\o55  -\\o55  \\q033  -\\q033
-				`).map((src) => AST.ASTNodeConstant.fromSource(src, integer_radices_on).fold()), [
+				`).map((src) => AST.ASTNodeConstant.fromSource(src, CONFIG_DEFAULT).fold()), [
 					55, -55, 33, -33, 0, 0,
 					parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
 				].map((v) => new VALUE.Integer(BigInt(v))));

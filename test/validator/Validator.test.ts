@@ -3,12 +3,9 @@ import * as xjs from 'extrajs';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
 	type CodeUnit,
-	type CPConfig,
-	CONFIG_DEFAULT,
 	KEYWORDS,
 	Validator,
 } from '../../src/index.ts';
-import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.ts';
 
 
 
@@ -114,7 +111,7 @@ describe('Validator', () => {
 		]).forEach(([source, values], description) => {
 			it(description, () => {
 				assert.deepStrictEqual(
-					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)),
+					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number)),
 					values,
 				);
 			});
@@ -123,8 +120,8 @@ describe('Validator', () => {
 
 
 	describe('.cookTokenString', () => {
-		function decodeCooked(source: string, config: CPConfig): string {
-			return utf8Decode(Validator.cookTokenString(source, config));
+		function decodeCooked(source: string): string {
+			return utf8Decode(Validator.cookTokenString(source));
 		}
 		it('produces the cooked string value.', () => {
 			assert.deepStrictEqual([
@@ -139,7 +136,7 @@ describe('Validator', () => {
 				'"\u{10001}"',
 				'"\\\u{10001}"',
 				'"\\u{10001}"',
-			].map((src) => decodeCooked(src, CONFIG_DEFAULT)), [
+			].map((src) => decodeCooked(src)), [
 				'',
 				'hello',
 				'0 " 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6',
@@ -153,12 +150,12 @@ describe('Validator', () => {
 		});
 		it('may contain an escaped `u` anywhere.', () => {
 			assert.strictEqual(
-				decodeCooked('"abc\\udef\\u"', CONFIG_DEFAULT),
+				decodeCooked('"abc\\udef\\u"'),
 				'abcudefu',
 			);
 		});
 		context('In-String Comments', () => {
-			function cook(config: CPConfig): string[] {
+			function cook(): string[] {
 				return [
 					xjs.String.dedent`"The five boxing wizards % jump quickly."`,
 
@@ -186,7 +183,7 @@ describe('Validator', () => {
 					xjs.String.dedent`"The five boxing
 					wizards %% jump
 					quickly."`,
-				].map((src) => decodeCooked(src, config));
+				].map((src) => decodeCooked(src));
 			}
 			context('with comments enabled.', () => {
 				const data: Array<{description: string, expected: string}> = [
@@ -200,37 +197,15 @@ describe('Validator', () => {
 					{description: 'removes last multiline comment.',              expected: 'The five boxing\nwizards '},
 					{description: 'removes multiline comment without end delim.', expected: 'The five boxing\nwizards '},
 				];
-				cook(CONFIG_DEFAULT).forEach((actual, i) => {
+				cook().forEach((actual, i) => {
 					it(data[i].description, () => {
 						assert.strictEqual(actual, data[i].expected);
 					});
 				});
 			});
-			it('with comments disabled.', () => {
-				assert.deepStrictEqual(cook({
-					...CONFIG_DEFAULT,
-					languageFeatures: {
-						...CONFIG_DEFAULT.languageFeatures,
-						comments: false,
-					},
-				}), [
-					'The five boxing wizards % jump quickly.',
-					'The five % boxing wizards\njump quickly.',
-					'The five boxing wizards %\njump quickly.',
-					'The five boxing wizards jump quickly.%\n',
-					'The five %% boxing wizards %% jump quickly.',
-					'The five boxing wizards %%%% jump quickly.',
-					'The five %% boxing\nwizards %% jump\nquickly.',
-					'The five boxing\nwizards %% jump\nquickly.%%',
-					'The five boxing\nwizards %% jump\nquickly.',
-				]);
-			});
 			it('`String.fromCodePoint` throws when UTF-8 encoding input is out of range.', () => {
 				const out_of_range = 'a00061'; // NOTE: the valid range of input may change as Unicode evolves
-				assert.throws(() => Validator.cookTokenString(
-					`'a string literal with a unicode \\u{${ out_of_range }} escape sequence out of range'`,
-					CONFIG_DEFAULT,
-				), RangeError);
+				assert.throws(() => Validator.cookTokenString(`'a string literal with a unicode \\u{${ out_of_range }} escape sequence out of range'`), RangeError);
 			});
 		});
 	});
