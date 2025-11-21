@@ -113,14 +113,14 @@ IntegerDigitsRadix<Separator> :::=
 	| "\z"  DigitSequenceNif<?Separator>
 ;
 
-Float<Separator>
-	:::= SignedDigitSequenceDec<?Separator> "." DigitSequenceDec<?Separator> ExponentPart<?Separator>?;
+Float
+	:::= SignedDigitSequenceDec "." DigitSequenceDec<+Separator> ExponentPart?;
 
-ExponentPart<Separator>
-	:::= "e" SignedDigitSequenceDec<?Separator>;
+ExponentPart
+	:::= "e" SignedDigitSequenceDec;
 
-SignedDigitSequenceDec<Separator>
-	:::= ("+" | "-")? DigitSequenceDec<?Separator>;
+SignedDigitSequenceDec
+	:::= ("+" | "-")? DigitSequenceDec<+Separator>;
 
 DigitSequenceBin<Separator> :::= ( DigitSequenceBin<?Separator> & <Separator+>"_"? )? [0-1];
 DigitSequenceQua<Separator> :::= ( DigitSequenceQua<?Separator> & <Separator+>"_"? )? [0-3];
@@ -405,7 +405,7 @@ Goal<Separator> :::=
 	| KeywordOther
 	| Identifier
 	| Integer<?Separator>
-	| Float<?Separator>
+	| Float
 	| String
 	| TemplateFull
 	| TemplateHead

@@ -143,10 +143,8 @@ const INTEGER_DIGITS_RADIX__SEPARATOR = choice(
 	seq('\\z',           DIGIT_SEQ_NIF__SEPARATOR),
 );
 
-const SIGNED_DIGIT_SEQ_DEC            = seq(/[+-]?/, DIGIT_SEQ_DEC);
 const SIGNED_DIGIT_SEQ_DEC__SEPARATOR = seq(/[+-]?/, DIGIT_SEQ_DEC__SEPARATOR);
 
-const EXPONENT_PART            = seq('e', SIGNED_DIGIT_SEQ_DEC);
 const EXPONENT_PART__SEPARATOR = seq('e', SIGNED_DIGIT_SEQ_DEC__SEPARATOR);
 
 const ESCAPER            = '\\';
@@ -265,14 +263,12 @@ module.exports = grammar({
 			_$ => token(seq(/[+-]?/, (!separator) ? INTEGER_DIGITS_RADIX : INTEGER_DIGITS_RADIX__SEPARATOR))
 		), 'separator'),
 
-		...parameterize('float', ({separator}) => (
-			_$ => token(seq(
-				(!separator) ? SIGNED_DIGIT_SEQ_DEC : SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
-				'.',
-				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR, // eslint-disable-line @stylistic/indent
-				optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
-			))
-		), 'separator'),
+		float: _$ => token(seq(
+			SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
+			'.',
+			DIGIT_SEQ_DEC__SEPARATOR,
+			optional(EXPONENT_PART__SEPARATOR),
+		)),
 
 		string: _$ => token(seq(
 			DELIM_STRING,
@@ -339,7 +335,6 @@ module.exports = grammar({
 			$.integer,
 			$.integer__separator,
 			$.float,
-			$.float__separator,
 			$.string,
 			$.keyword_value,
 			seq('@', $.word),

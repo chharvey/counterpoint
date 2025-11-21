@@ -75,7 +75,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 					case isSyntaxNodeType(children[0], /^integer(__separator)?$/): {
 						return valueOfTokenNumber(children[0].text);
 					}
-					case isSyntaxNodeType(children[0], /^float(__separator)?$/): {
+					case isSyntaxNodeType(children[0], /^float$/): {
 						return valueOfTokenNumber(children[0].text);
 					}
 					case isSyntaxNodeType(children[0], /^string$/): {

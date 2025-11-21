@@ -66,7 +66,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 					case isSyntaxNodeType(children[0], /^integer(__separator)?$/): {
 						return valueOfTokenNumber(children[0].text).toType();
 					}
-					case isSyntaxNodeType(children[0], /^float(__separator)?$/): {
+					case isSyntaxNodeType(children[0], /^float$/): {
 						return valueOfTokenNumber(children[0].text).toType();
 					}
 					case isSyntaxNodeType(children[0], /^string$/): {
