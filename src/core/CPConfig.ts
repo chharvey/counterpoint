@@ -10,14 +10,7 @@ export type CPConfig = {
 	 * Options for which language features to enable/disable.
 	 * Disabling features can improve compiler speed.
 	 */
-	readonly languageFeatures: {
-		/**
-		 * Separators in numeric tokens.
-		 * @version v0.2.0
-		 * @default false
-		 */
-		readonly numericSeparators: boolean,
-	},
+	readonly languageFeatures: {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	/**
 	 * Options for the compiler.
 	 */

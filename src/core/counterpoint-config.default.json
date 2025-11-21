@@ -1,6 +1,5 @@
 {
 	"languageFeatures": {
-		"numericSeparators" : false
 	},
 	"compilerOptions": {
 		"constantFolding": true

@@ -32,22 +32,6 @@ the `--foo` option would override your config file.
 ### `languageFeatures`
 Language features are aspects of the Counterpoint Programming Language that may be enabled and disabled at will.
 
-#### `numericSeparators`
-```
-@version v0.2.0
-@type    boolean
-@default false
-```
-Allows numeric separator symbols within number tokens.
-
-If enabled, number tokens may contain underscore characters `_` to help visually group and separate the digits.
-The numeric separator can only appear between digits, cannot appear at the beginning or end of a token,
-and cannot appear consecutively (two or more in a row).
-
-For example, `1_000_000` represents *1,000,000* and `\b1011_0100` represents *180*.
-
-With this disabled, number tokens cannot contain the numeric separator character.
-
 
 ### `compilerOptions`
 Compiler options control how source code is compiled into assembly code.

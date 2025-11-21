@@ -64,13 +64,13 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				const children: readonly SyntaxNode[] = this.start_node.children;
 				switch (true) {
 					case isSyntaxNodeType(children[0], /^integer(__separator)?$/): {
-						return valueOfTokenNumber(children[0].text, this.validator.config).toType();
+						return valueOfTokenNumber(children[0].text).toType();
 					}
 					case isSyntaxNodeType(children[0], /^float(__separator)?$/): {
-						return valueOfTokenNumber(children[0].text, this.validator.config).toType();
+						return valueOfTokenNumber(children[0].text).toType();
 					}
 					case isSyntaxNodeType(children[0], /^string(__separator)?$/): {
-						return new VALUE.String(Validator.cookTokenString(children[0].text, this.validator.config)).toType();
+						return new VALUE.String(Validator.cookTokenString(children[0].text)).toType();
 					}
 					case isSyntaxNodeType(children[0], 'keyword_value'): {
 						return ASTNodeTypeConstant.keywordType(children[0].children[0].text);

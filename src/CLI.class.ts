@@ -46,7 +46,6 @@ type CustomArgsType = {
 	p:        string,
 
 	// Language Features
-	numericSeparators: null | boolean,
 
 	// Compiler Options
 	constantFolding: null | boolean,
@@ -105,7 +104,6 @@ export class CLI {
 		These options will override those in the configuration file provided by \`--project\`.
 
 		Language Features:
-		--[no-]numericSeparators
 
 		Compiler Options:
 		--[no-]constantFolding         (on by default)
@@ -119,7 +117,6 @@ export class CLI {
 			'version',
 			'config',
 			// Language Features
-			'numericSeparators',
 			// Compiler Options
 			'constantFolding',
 		],
@@ -141,7 +138,6 @@ export class CLI {
 			config:  false,
 
 			// Language Features
-			numericSeparators: null,
 
 			// Compiler Options
 			constantFolding: null,
@@ -216,7 +212,6 @@ export class CLI {
 		};
 
 		/* eslint-disable curly */
-		if (this.argv.numericSeparators !== null) returned.languageFeatures.numericSeparators = this.argv.numericSeparators;
 		if (this.argv.constantFolding   !== null) returned.compilerOptions.constantFolding    = this.argv.constantFolding;
 		/* eslint-enable curly */
 
