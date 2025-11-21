@@ -132,34 +132,32 @@ DigitSequenceNif<Separator> :::= ( DigitSequenceNif<?Separator> & <Separator+>"_
 
 
 
-String<Comment, Separator>
-	:::= #x22 StringChars<?Comment><?Separator>? StringUnfinished<?Comment>? #x22;
+String<Separator>
+	:::= #x22 StringChars<?Separator>? StringUnfinished? #x22;
 
-	StringChars<Comment, Separator>
-		:::= StringChar<?Comment><?Separator> StringChars<?Comment><?Separator>?;
+	StringChars<Separator>
+		:::= StringChar<?Separator> StringChars<?Separator>?;
 
-		StringChar<Comment, Separator> :::=
-			| <Comment->[^"\#x03]
-			| <Comment+>[^"\%#x03]
-			| "\"  StringEscape<?Comment><?Separator>
+		StringChar<Separator> :::=
+			| [^"\%#x03]
+			| "\"  StringEscape<?Separator>
 			| "\u" [^"{#x03]
-			| <Comment+>("%"  ([^"%#x0a#x03] [^"#x0a#x03]*)? #x0a)
-			| <Comment+>("%%" ("%"? [^"%#x03])*              "%%")
+			| "%"  ([^"%#x0a#x03] [^"#x0a#x03]*)? #x0a
+			| "%%" ("%"? [^"%#x03])*              "%%"
 		;
 
-			StringEscape<Comment, Separator> :::=
-				| #x22 | "\" | <Comment+>"%"
+			StringEscape<Separator> :::=
+				| #x22 | "\" | "%"
 				| "s" | "t" | "n" | "r"
 				| "u{" DigitSequenceHex<?Separator>? "}"
 				| #x0a
-				| <Comment->[^"\stnru#x0a#x03]
-				| <Comment+>[^"\%stnru#x0a#x03]
+				| [^"\%stnru#x0a#x03]
 			;
 
-	StringUnfinished<Comment> :::=
+	StringUnfinished :::=
 		| "\u"
-		| <Comment+>("%"  ([^"%#x0a#x03] [^"#x0a#x03]*)?)
-		| <Comment+>("%%" ("%"? [^"%#x03])*)
+		| "%"  ([^"%#x0a#x03] [^"#x0a#x03]*)?
+		| "%%" ("%"? [^"%#x03])*
 	;
 
 
