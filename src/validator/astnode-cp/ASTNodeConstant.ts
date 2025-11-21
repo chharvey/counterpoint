@@ -78,7 +78,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 					case isSyntaxNodeType(children[0], /^float(__separator)?$/): {
 						return valueOfTokenNumber(children[0].text);
 					}
-					case isSyntaxNodeType(children[0], /^string(__separator)?$/): {
+					case isSyntaxNodeType(children[0], /^string$/): {
 						return new VALUE.String(Validator.cookTokenString(children[0].text));
 					}
 					case isSyntaxNodeType(children[0], 'keyword_value'): {

@@ -132,24 +132,24 @@ DigitSequenceNif<Separator> :::= ( DigitSequenceNif<?Separator> & <Separator+>"_
 
 
 
-String<Separator>
-	:::= #x22 StringChars<?Separator>? StringUnfinished? #x22;
+String
+	:::= #x22 StringChars? StringUnfinished? #x22;
 
-	StringChars<Separator>
-		:::= StringChar<?Separator> StringChars<?Separator>?;
+	StringChars
+		:::= StringChar StringChars?;
 
-		StringChar<Separator> :::=
+		StringChar :::=
 			| [^"\%#x03]
-			| "\"  StringEscape<?Separator>
+			| "\"  StringEscape
 			| "\u" [^"{#x03]
 			| "%"  ([^"%#x0a#x03] [^"#x0a#x03]*)? #x0a
 			| "%%" ("%"? [^"%#x03])*              "%%"
 		;
 
-			StringEscape<Separator> :::=
+			StringEscape :::=
 				| #x22 | "\" | "%"
 				| "s" | "t" | "n" | "r"
-				| "u{" DigitSequenceHex<?Separator>? "}"
+				| "u{" DigitSequenceHex<+Separator>? "}"
 				| #x0a
 				| [^"\%stnru#x0a#x03]
 			;
@@ -406,7 +406,7 @@ Goal<Separator> :::=
 	| Identifier
 	| Integer<?Separator>
 	| Float<?Separator>
-	| String<?Separator>
+	| String
 	| TemplateFull
 	| TemplateHead
 	| TemplateMiddle

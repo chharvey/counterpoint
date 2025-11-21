@@ -128,7 +128,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('primitive_literal', s('string')),
 				s('primitive_literal', s('string')),
 				s('primitive_literal', s('string')),
-				s('primitive_literal', s('string__separator')),
+				s('primitive_literal', s('string')),
 			),
 		],
 

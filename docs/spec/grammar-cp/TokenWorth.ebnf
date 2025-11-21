@@ -188,52 +188,52 @@ TokenWorth([0-9a-z] :::= "z") -> RealNumber  :=  \x023;
 
 
 
-TokenWorth(String<Separator> :::= #x22 #x22) -> Sequence<RealNumber>
+TokenWorth(String :::= #x22 #x22) -> Sequence<RealNumber>
 	:= [];
-TokenWorth(String<Separator> :::= #x22 StringChars<?Separator> #x22) -> Sequence<RealNumber>
-	:= TokenWorth(StringChars<?Separator>);
-TokenWorth(String<Separator> :::= #x22 StringUnfinished #x22) -> Sequence<RealNumber>
+TokenWorth(String :::= #x22 StringChars #x22) -> Sequence<RealNumber>
+	:= TokenWorth(StringChars);
+TokenWorth(String :::= #x22 StringUnfinished #x22) -> Sequence<RealNumber>
 	:= TokenWorth(StringUnfinished);
-TokenWorth(String<Separator> :::= #x22 StringChars<?Separator> StringUnfinished #x22) -> Sequence<RealNumber>
-	:= [...TokenWorth(StringChars<?Separator>), ...TokenWorth(StringUnfinished)];
+TokenWorth(String :::= #x22 StringChars StringUnfinished #x22) -> Sequence<RealNumber>
+	:= [...TokenWorth(StringChars), ...TokenWorth(StringUnfinished)];
 
-	TokenWorth(StringChars<Separator> :::= StringChar<?Separator>) -> Sequence<RealNumber>
-		:= TokenWorth(StringChar<?Separator>);
-	TokenWorth(StringChars<Separator> :::= StringChar<?Separator> StringChars<?Separator>) -> Sequence<RealNumber>
-		:= [...TokenWorth(StringChar<?Separator>), ...TokenWorth(StringChars<?Separator>)];
+	TokenWorth(StringChars :::= StringChar) -> Sequence<RealNumber>
+		:= TokenWorth(StringChar);
+	TokenWorth(StringChars :::= StringChar StringChars) -> Sequence<RealNumber>
+		:= [...TokenWorth(StringChar), ...TokenWorth(StringChars)];
 
-		TokenWorth(StringChar<Separator> :::= [^"\%#x03]) -> Sequence<RealNumber>
+		TokenWorth(StringChar :::= [^"\%#x03]) -> Sequence<RealNumber>
 			:= UTF8Encoding(CodePoint([^"\%#x03]));
-		TokenWorth(StringChar<Separator> :::= "\" StringEscape<?Separator>) -> Sequence<RealNumber>
-			:= TokenWorth(StringEscape<?Separator>);
-		TokenWorth(StringChar<Separator> :::= "\u" [^"{#x03]) -> Sequence<RealNumber>
+		TokenWorth(StringChar :::= "\" StringEscape) -> Sequence<RealNumber>
+			:= TokenWorth(StringEscape);
+		TokenWorth(StringChar :::= "\u" [^"{#x03]) -> Sequence<RealNumber>
 			:= [...UTF8Encoding(\x75), ...UTF8Encoding(CodePoint([^"{#x03]))];
-		TokenWorth(StringChar<Separator> :::= "%" ([^"%#x0a#x03] [^"#x0a#x03]*)? #x0a) -> Sequence<RealNumber>
+		TokenWorth(StringChar :::= "%" ([^"%#x0a#x03] [^"#x0a#x03]*)? #x0a) -> Sequence<RealNumber>
 			:= UTF8Encoding(\x0a);
-		TokenWorth(StringChar<Separator> :::= "%%" ("%"? [^"%#x03])* "%%") -> Sequence<RealNumber>
+		TokenWorth(StringChar :::= "%%" ("%"? [^"%#x03])* "%%") -> Sequence<RealNumber>
 			:= [];
 
-			TokenWorth(StringEscape<Separator> :::= #x22) -> Sequence<RealNumber>
+			TokenWorth(StringEscape :::= #x22) -> Sequence<RealNumber>
 				:= UTF8Encoding(\x22); // U+0022 QUOTATION MARK
-			TokenWorth(StringEscape<Separator> :::= "\") -> Sequence<RealNumber>
+			TokenWorth(StringEscape :::= "\") -> Sequence<RealNumber>
 				:= UTF8Encoding(\x5c); // U+005C REVERSE SOLIDUS
-			TokenWorth(StringEscape<Separator> :::= "%") -> Sequence<RealNumber>
+			TokenWorth(StringEscape :::= "%") -> Sequence<RealNumber>
 				:= UTF8Encoding(\x25); // U+0025 PERCENT SIGN
-			TokenWorth(StringEscape<Separator> :::= "s") -> Sequence<RealNumber>
+			TokenWorth(StringEscape :::= "s") -> Sequence<RealNumber>
 				:= UTF8Encoding(\x20); // U+0020 SPACE
-			TokenWorth(StringEscape<Separator> :::= "t") -> Sequence<RealNumber>
+			TokenWorth(StringEscape :::= "t") -> Sequence<RealNumber>
 				:= UTF8Encoding(\x09); // U+0009 CHARACTER TABULATION
-			TokenWorth(StringEscape<Separator> :::= "n") -> Sequence<RealNumber>
+			TokenWorth(StringEscape :::= "n") -> Sequence<RealNumber>
 				:= UTF8Encoding(\x0a); // U+000A LINE FEED (LF)
-			TokenWorth(StringEscape<Separator> :::= "r") -> Sequence<RealNumber>
+			TokenWorth(StringEscape :::= "r") -> Sequence<RealNumber>
 				:= UTF8Encoding(\x0d); // U+000D CARRIAGE RETURN (CR)
-			TokenWorth(StringEscape<Separator> :::= "u{" "}") -> Sequence<RealNumber>
+			TokenWorth(StringEscape :::= "u{" "}") -> Sequence<RealNumber>
 				:= UTF8Encoding(\x00); // U+0000 NULL
-			TokenWorth(StringEscape<Separator> :::= "u{" DigitSequenceHex<?Separator> "}") -> Sequence<RealNumber>
-				:= UTF8Encoding(TokenWorth(DigitSequenceHex<?Separator>));
-			TokenWorth(StringEscape<Separator> :::= #x0A) -> Sequence<RealNumber>
+			TokenWorth(StringEscape :::= "u{" DigitSequenceHex<+Separator> "}") -> Sequence<RealNumber>
+				:= UTF8Encoding(TokenWorth(DigitSequenceHex<+Separator>));
+			TokenWorth(StringEscape :::= #x0A) -> Sequence<RealNumber>
 				:= UTF8Encoding(\x20); // U+0020 SPACE
-			TokenWorth(StringEscape<Separator> :::= [^"\%stnru#x0a#x03]) -> Sequence<RealNumber>
+			TokenWorth(StringEscape :::= [^"\%stnru#x0a#x03]) -> Sequence<RealNumber>
 				:= UTF8Encoding(CodePoint([^"\%stnru#x0a#x03]));
 
 	TokenWorth(StringUnfinished :::= "\u") -> Sequence<RealNumber>

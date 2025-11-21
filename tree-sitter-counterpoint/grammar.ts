@@ -157,15 +157,6 @@ const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
 
 /* eslint-disable @stylistic/function-call-argument-newline */
-const STRING_ESCAPE__COMMENT = choice(
-	DELIM_STRING,
-	ESCAPER,
-	COMMENTER_LINE,
-	's', 't', 'n', 'r',
-	seq('u{', optional(DIGIT_SEQ_HEX), '}'),
-	'\n',
-	/[^"\\%stnru\n]/,
-);
 const STRING_ESCAPE__COMMENT_SEPARATOR = choice(
 	DELIM_STRING,
 	ESCAPER,
@@ -177,13 +168,6 @@ const STRING_ESCAPE__COMMENT_SEPARATOR = choice(
 );
 /* eslint-enable @stylistic/function-call-argument-newline */
 
-const STRING_CHAR__COMMENT = choice(
-	/[^"\\%]/,
-	seq(ESCAPER, STRING_ESCAPE__COMMENT),
-	/\\u[^"{]/,
-	/%([^"%\n][^"\n]*)?\n/,
-	/%%(%?[^"%])*%%/,
-);
 const STRING_CHAR__COMMENT__SEPARATOR = choice(
 	/[^"\\%]/,
 	seq(ESCAPER, STRING_ESCAPE__COMMENT_SEPARATOR),
@@ -192,7 +176,6 @@ const STRING_CHAR__COMMENT__SEPARATOR = choice(
 	/%%(%?[^"%])*%%/,
 );
 
-const STRING_CHARS__COMMENT            = repeat1(STRING_CHAR__COMMENT);
 const STRING_CHARS__COMMENT__SEPARATOR = repeat1(STRING_CHAR__COMMENT__SEPARATOR);
 
 const STRING_UNFINISHED__COMMENT = choice(
@@ -291,14 +274,12 @@ module.exports = grammar({
 			))
 		), 'separator'),
 
-		...parameterize('string', ({separator}) => (
-			_$ => token(seq(
-				DELIM_STRING,
-				optional((!separator) ? STRING_CHARS__COMMENT : STRING_CHARS__COMMENT__SEPARATOR),
-				optional(STRING_UNFINISHED__COMMENT),
-				DELIM_STRING,
-			))
-		), 'separator'),
+		string: _$ => token(seq(
+			DELIM_STRING,
+			optional(STRING_CHARS__COMMENT__SEPARATOR),
+			optional(STRING_UNFINISHED__COMMENT),
+			DELIM_STRING,
+		)),
 
 		template_full:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
 		template_head:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
@@ -360,7 +341,6 @@ module.exports = grammar({
 			$.float,
 			$.float__separator,
 			$.string,
-			$.string__separator,
 			$.keyword_value,
 			seq('@', $.word),
 		),
