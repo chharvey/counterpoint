@@ -32,22 +32,6 @@ the `--foo` option would override your config file.
 ### `languageFeatures`
 Language features are aspects of the Counterpoint Programming Language that may be enabled and disabled at will.
 
-#### `integerRadices`
-```
-@version v0.2.0
-@type    boolean
-@default false
-```
-Allows integers with a non-decimal radices.
-
-With this feature enabled, integers can be written in five other bases in addition to the default base 10.
-To write an integer in base 2, 4, 8, 16, or 36, prefix it with `\b`, `\q`, `\o`, `\x`, or `\z`, respectively.
-(Integers can also be prefixed with `\d` for base 10.)
-
-For example, `\xff` in hexadecimal (base 16) is `255` decimal (base 10), also written `\d255`.
-
-Disabling this feature requires all integers to be written in base 10, in their non-prefixed form.
-
 #### `numericSeparators`
 ```
 @version v0.2.0

@@ -12,12 +12,6 @@ export type CPConfig = {
 	 */
 	readonly languageFeatures: {
 		/**
-		 * Integer literals with a specified radix or “base.”
-		 * @version v0.2.0
-		 * @default false
-		 */
-		readonly integerRadices:    boolean,
-		/**
 		 * Separators in numeric tokens.
 		 * @version v0.2.0
 		 * @default false

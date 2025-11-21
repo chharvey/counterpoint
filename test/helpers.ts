@@ -19,7 +19,6 @@ export const CONFIG_RADICES_SEPARATORS_ON: CPConfig = {
 	...CONFIG_DEFAULT,
 	languageFeatures: {
 		...CONFIG_DEFAULT.languageFeatures,
-		integerRadices:    true,
 		numericSeparators: true,
 	},
 };

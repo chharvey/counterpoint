@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
-import {LexError01} from '../index.ts';
 import type {CodeUnit} from '../lib/index.ts';
 import {
 	type CPConfig,
@@ -10,7 +9,6 @@ import {
 	Punctuator,
 	type Keyword,
 	KEYWORDS,
-	type Serializable,
 } from '../parser/index.ts';
 import type {SymbolSchema} from './index.ts';
 import {
@@ -206,13 +204,6 @@ export class Validator {
 			['x', 16n],
 			['z', 36n],
 		]).get((has_unary) ? source[2] : source[1])! : RADIX_DEFAULT;
-		if (has_radix && !config.languageFeatures.integerRadices) {
-			throw new LexError01({
-				source,
-				line_index: -1,
-				col_index:  -1,
-			} as Serializable);
-		}
 		/* eslint-disable curly */
 		if (has_unary) source = source.slice(1); // cut off unary, if any
 		if (has_radix) source = source.slice(2); // cut off radix, if any

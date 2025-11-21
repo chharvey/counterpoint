@@ -1,6 +1,5 @@
 {
 	"languageFeatures": {
-		"integerRadices"    : false,
 		"numericSeparators" : false
 	},
 	"compilerOptions": {
