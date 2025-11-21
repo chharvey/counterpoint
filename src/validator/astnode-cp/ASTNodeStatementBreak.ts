@@ -3,7 +3,6 @@ import type binaryen from 'binaryen';
 import {
 	assert_instanceof,
 	memoizeMethod,
-	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -27,30 +26,27 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 	}
 
 
+	public readonly depth: bigint;
+
 	public constructor(
 		start_node: SyntaxNodeType<'statement_break'>,
-		private readonly continu:  boolean,
-		private readonly integer?: SyntaxNodeType<'integer'>,
+		private readonly continu: boolean,
+		integer?: SyntaxNodeType<'integer'>,
 	) {
 		super(start_node, {}, []);
+		if (integer) {
+			// copied from `./ASTNodeIndex.ts`
+			const cooked: bigint | number = Validator.cookTokenNumber(integer.text);
+			assert.ok(typeof cooked === 'bigint', 'Cooked value should be a bigint.'); // better type guard than `assert.strictEqual`
+			this.depth = cooked;
+		} else {
+			this.depth = 0n;
+		}
 	}
 
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return false; // break statements will always have side-effects
-	}
-
-	// TODO: assign this field in constructor
-	@memoizeGetter
-	public get depth(): bigint {
-		if (this.integer) {
-			// copied from `./ASTNodeIndex.ts`
-			const cooked: bigint | number = Validator.cookTokenNumber(this.integer.text);
-			assert.ok(typeof cooked === 'bigint', 'Cooked value should be a bigint.'); // better type guard than `assert.strictEqual`
-			return cooked;
-		} else {
-			return 0n;
-		}
 	}
 
 	public override varCheck(): void {

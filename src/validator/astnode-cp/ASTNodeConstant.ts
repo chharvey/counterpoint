@@ -72,13 +72,13 @@ export class ASTNodeConstant extends ASTNodeExpression {
 				assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
 				const children: readonly SyntaxNode[] = this.start_node.children;
 				switch (true) {
-					case isSyntaxNodeType(children[0], /^integer$/): {
+					case isSyntaxNodeType(children[0], 'integer'): {
 						return valueOfTokenNumber(children[0].text);
 					}
-					case isSyntaxNodeType(children[0], /^float$/): {
+					case isSyntaxNodeType(children[0], 'float'): {
 						return valueOfTokenNumber(children[0].text);
 					}
-					case isSyntaxNodeType(children[0], /^string$/): {
+					case isSyntaxNodeType(children[0], 'string'): {
 						return new VALUE.String(Validator.cookTokenString(children[0].text));
 					}
 					case isSyntaxNodeType(children[0], 'keyword_value'): {
