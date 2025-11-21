@@ -106,6 +106,25 @@ function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name:
 
 
 /* # LEXER HELPERS */
+function rg(s: string | RegExp): RegExp { // s -> (s)
+	return new RegExp(`(${ typeof s === 'string' ? s.replace(/[-[\]{}()*+!<=:?./\\^$|#\s,]/g, '\\$&') : s.source })`); // TODO: in Node 24, use `RegExp.escape()`
+}
+function ro(s: string | RegExp): RegExp { // s -> (s)?
+	return new RegExp(rg(s).source.concat('?'));
+}
+function rr0(s: string | RegExp): RegExp { // s -> (s)*
+	return new RegExp(rg(s).source.concat('*'));
+}
+function rr1(s: string | RegExp): RegExp { // s -> (s)+
+	return new RegExp(rg(s).source.concat('+'));
+}
+function rs(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (s)(t)
+	return new RegExp(ss.map((s) => rg(s).source).join(''));
+}
+function rc(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (s)|(t)
+	return new RegExp(ss.map((s) => rg(s).source).join('|'));
+}
+
 const WORD_BASIC   = /[A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+/;
 const WORD_UNICODE = /'[^']*'/;
 
@@ -117,19 +136,19 @@ const DIGIT_SEQ_DEC = /([0-9]_?)*[0-9]/;
 const DIGIT_SEQ_HEX = /([0-9a-f]_?)*[0-9a-f]/;
 const DIGIT_SEQ_NIF = /([0-9a-z]_?)*[0-9a-z]/;
 
-const WHOLE_DIGITS = choice(
-	seq('\\b',           DIGIT_SEQ_BIN),
-	seq('\\q',           DIGIT_SEQ_QUA),
-	seq('\\s',           DIGIT_SEQ_SEX),
-	seq('\\o',           DIGIT_SEQ_OCT),
-	seq(optional('\\d'), DIGIT_SEQ_DEC),
-	seq('\\x',           DIGIT_SEQ_HEX),
-	seq('\\z',           DIGIT_SEQ_NIF),
+const WHOLE_DIGITS = rc(
+	rs('\\b',     DIGIT_SEQ_BIN),
+	rs('\\q',     DIGIT_SEQ_QUA),
+	rs('\\s',     DIGIT_SEQ_SEX),
+	rs('\\o',     DIGIT_SEQ_OCT),
+	rs(ro('\\d'), DIGIT_SEQ_DEC),
+	rs('\\x',     DIGIT_SEQ_HEX),
+	rs('\\z',     DIGIT_SEQ_NIF),
 );
 
-const SIGNED_DIGIT_SEQ_DEC = seq(/[+-]?/, DIGIT_SEQ_DEC);
+const SIGNED_DIGIT_SEQ_DEC = rs(/[+-]?/, DIGIT_SEQ_DEC);
 
-const EXPONENT_PART = seq('e', SIGNED_DIGIT_SEQ_DEC);
+const EXPONENT_PART = rs('e', SIGNED_DIGIT_SEQ_DEC);
 
 const ESCAPER            = '\\';
 const DELIM_STRING       = '"';
@@ -138,47 +157,47 @@ const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
 
-const STRING_ESCAPE = choice(
+const STRING_ESCAPE = rc(
 	DELIM_STRING,
 	ESCAPER,
 	COMMENTER_LINE,
 	's', 't', 'n', 'r', // eslint-disable-line @stylistic/function-call-argument-newline
-	seq('u{', optional(DIGIT_SEQ_HEX), '}'),
+	rs('u{', ro(DIGIT_SEQ_HEX), '}'),
 	'\n',
 	/[^"\\%stnru\n]/,
 );
 
-const STRING_CHAR = choice(
+const STRING_CHAR = rc(
 	/[^"\\%]/,
-	seq(ESCAPER, STRING_ESCAPE),
+	rs(ESCAPER, STRING_ESCAPE),
 	/\\u[^"{]/,
 	/%([^"%\n][^"\n]*)?\n/,
 	/%%(%?[^"%])*%%/,
 );
 
-const STRING_CHARS = repeat1(STRING_CHAR);
+const STRING_CHARS = rr1(STRING_CHAR);
 
-const STRING_UNFINISHED = choice(
+const STRING_UNFINISHED = rc(
 	'\\u',
 	/%([^"%\n][^"\n]*)?/,
 	/%%(%?[^"%])*/,
 );
 
-const TEMPLATE_CHARS_NO_END = choice(
+const TEMPLATE_CHARS_NO_END = rc(
 	/[^"{]/,
 	/("\{|""\{)*("|"")[^"{]/,
 	/("\{|""\{)+[^"{]/,
 	/(\{"|\{"")*\{[^"{]/,
 	/(\{"|\{"")+[^"{]/,
 );
-const TEMPLATE_CHARS_END_DELIM = seq(repeat(TEMPLATE_CHARS_NO_END), choice(
+const TEMPLATE_CHARS_END_DELIM = rs(rr0(TEMPLATE_CHARS_NO_END), rc(
 	/[^"{]/,
 	/("\{|""\{)*("|"")[^"{]/,
 	/("\{|""\{)+[^"{]?/,
 	/(\{"|\{"")*\{[^"{]?/,
 	/(\{"|\{"")+[^"{]/,
 ));
-const TEMPLATE_CHARS_END_INTERP = seq(repeat(TEMPLATE_CHARS_NO_END), choice(
+const TEMPLATE_CHARS_END_INTERP = rs(rr0(TEMPLATE_CHARS_NO_END), rc(
 	/[^"{]/,
 	/("\{|""\{)*("|"")[^"{]?/,
 	/("\{|""\{)+[^"{]/,
@@ -236,31 +255,31 @@ module.exports = grammar({
 
 
 		/* # LEXICON */
-		identifier: _$ => token(choice(
+		identifier: _$ => token(rc(
 			WORD_BASIC,
 			WORD_UNICODE,
 		)),
 
-		integer: _$ => token(seq(/[+-]?/, WHOLE_DIGITS)),
+		integer: _$ => token(rs(/[+-]?/, WHOLE_DIGITS)),
 
-		float: _$ => token(seq(
+		float: _$ => token(rs(
 			SIGNED_DIGIT_SEQ_DEC,
 			'.',
 			DIGIT_SEQ_DEC,
-			optional(EXPONENT_PART),
+			ro(EXPONENT_PART),
 		)),
 
-		string: _$ => token(seq(
+		string: _$ => token(rs(
 			DELIM_STRING,
-			optional(STRING_CHARS),
-			optional(STRING_UNFINISHED),
+			ro(STRING_CHARS),
+			ro(STRING_UNFINISHED),
 			DELIM_STRING,
 		)),
 
-		template_full:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
-		template_head:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
-		template_middle: _$ => token(seq(DELIM_INTERP_END, optional(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
-		template_tail:   _$ => token(seq(DELIM_INTERP_END, optional(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
+		template_full:   _$ => token(rs(DELIM_TEMPLATE,   ro(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
+		template_head:   _$ => token(rs(DELIM_TEMPLATE,   ro(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
+		template_middle: _$ => token(rs(DELIM_INTERP_END, ro(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
+		template_tail:   _$ => token(rs(DELIM_INTERP_END, ro(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
 
 
 
