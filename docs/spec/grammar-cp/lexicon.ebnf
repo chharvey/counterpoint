@@ -100,35 +100,35 @@ Identifier
 
 
 
-Integer<Separator>
-	:::= ("+" | "-")? IntegerDigitsRadix<?Separator>;
+Integer
+	:::= ("+" | "-")? IntegerDigitsRadix;
 
-IntegerDigitsRadix<Separator> :::=
-	| "\b"  DigitSequenceBin<?Separator>
-	| "\q"  DigitSequenceQua<?Separator>
-	| "\s"  DigitSequenceSex<?Separator>
-	| "\o"  DigitSequenceOct<?Separator>
-	| "\d"? DigitSequenceDec<?Separator>
-	| "\x"  DigitSequenceHex<?Separator>
-	| "\z"  DigitSequenceNif<?Separator>
+IntegerDigitsRadix :::=
+	| "\b"  DigitSequenceBin
+	| "\q"  DigitSequenceQua
+	| "\s"  DigitSequenceSex
+	| "\o"  DigitSequenceOct
+	| "\d"? DigitSequenceDec
+	| "\x"  DigitSequenceHex
+	| "\z"  DigitSequenceNif
 ;
 
 Float
-	:::= SignedDigitSequenceDec "." DigitSequenceDec<+Separator> ExponentPart?;
+	:::= SignedDigitSequenceDec "." DigitSequenceDec ExponentPart?;
 
 ExponentPart
 	:::= "e" SignedDigitSequenceDec;
 
 SignedDigitSequenceDec
-	:::= ("+" | "-")? DigitSequenceDec<+Separator>;
+	:::= ("+" | "-")? DigitSequenceDec;
 
-DigitSequenceBin<Separator> :::= ( DigitSequenceBin<?Separator> & <Separator+>"_"? )? [0-1];
-DigitSequenceQua<Separator> :::= ( DigitSequenceQua<?Separator> & <Separator+>"_"? )? [0-3];
-DigitSequenceSex<Separator> :::= ( DigitSequenceSex<?Separator> & <Separator+>"_"? )? [0-5];
-DigitSequenceOct<Separator> :::= ( DigitSequenceOct<?Separator> & <Separator+>"_"? )? [0-7];
-DigitSequenceDec<Separator> :::= ( DigitSequenceDec<?Separator> & <Separator+>"_"? )? [0-9];
-DigitSequenceHex<Separator> :::= ( DigitSequenceHex<?Separator> & <Separator+>"_"? )? [0-9a-f];
-DigitSequenceNif<Separator> :::= ( DigitSequenceNif<?Separator> & <Separator+>"_"? )? [0-9a-z];
+DigitSequenceBin :::= ( DigitSequenceBin "_"? )? [0-1];
+DigitSequenceQua :::= ( DigitSequenceQua "_"? )? [0-3];
+DigitSequenceSex :::= ( DigitSequenceSex "_"? )? [0-5];
+DigitSequenceOct :::= ( DigitSequenceOct "_"? )? [0-7];
+DigitSequenceDec :::= ( DigitSequenceDec "_"? )? [0-9];
+DigitSequenceHex :::= ( DigitSequenceHex "_"? )? [0-9a-f];
+DigitSequenceNif :::= ( DigitSequenceNif "_"? )? [0-9a-z];
 
 
 
@@ -149,7 +149,7 @@ String
 			StringEscape :::=
 				| #x22 | "\" | "%"
 				| "s" | "t" | "n" | "r"
-				| "u{" DigitSequenceHex<+Separator>? "}"
+				| "u{" DigitSequenceHex? "}"
 				| #x0a
 				| [^"\%stnru#x0a#x03]
 			;
@@ -395,7 +395,7 @@ TemplateTail   :::= "}}"           TemplateChars__EndDelim?  #x22 #x22 #x22;
 
 
 
-Goal<Separator> :::=
+Goal :::=
 	| Filebound
 	| Whitespace
 	| Comment
@@ -404,7 +404,7 @@ Goal<Separator> :::=
 	| KeywordValue
 	| KeywordOther
 	| Identifier
-	| Integer<?Separator>
+	| Integer
 	| Float
 	| String
 	| TemplateFull

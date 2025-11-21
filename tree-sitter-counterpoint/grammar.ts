@@ -109,30 +109,14 @@ function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name:
 const WORD_BASIC   = /[A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+/;
 const WORD_UNICODE = /'[^']*'/;
 
-const DIGIT_SEQ_BIN            = /[0-1]+/;
 const DIGIT_SEQ_BIN__SEPARATOR = /([0-1]_?)*[0-1]/;
-const DIGIT_SEQ_QUA            = /[0-3]+/;
 const DIGIT_SEQ_QUA__SEPARATOR = /([0-3]_?)*[0-3]/;
-const DIGIT_SEQ_SEX            = /[0-5]+/;
 const DIGIT_SEQ_SEX__SEPARATOR = /([0-5]_?)*[0-5]/;
-const DIGIT_SEQ_OCT            = /[0-7]+/;
 const DIGIT_SEQ_OCT__SEPARATOR = /([0-7]_?)*[0-7]/;
-const DIGIT_SEQ_DEC            = /[0-9]+/;
 const DIGIT_SEQ_DEC__SEPARATOR = /([0-9]_?)*[0-9]/;
-const DIGIT_SEQ_HEX            = /[0-9a-f]+/;
 const DIGIT_SEQ_HEX__SEPARATOR = /([0-9a-f]_?)*[0-9a-f]/;
-const DIGIT_SEQ_NIF            = /[0-9a-z]+/;
 const DIGIT_SEQ_NIF__SEPARATOR = /([0-9a-z]_?)*[0-9a-z]/;
 
-const INTEGER_DIGITS_RADIX = choice(
-	seq('\\b',           DIGIT_SEQ_BIN),
-	seq('\\q',           DIGIT_SEQ_QUA),
-	seq('\\s',           DIGIT_SEQ_SEX),
-	seq('\\o',           DIGIT_SEQ_OCT),
-	seq(optional('\\d'), DIGIT_SEQ_DEC),
-	seq('\\x',           DIGIT_SEQ_HEX),
-	seq('\\z',           DIGIT_SEQ_NIF),
-);
 const INTEGER_DIGITS_RADIX__SEPARATOR = choice(
 	seq('\\b',           DIGIT_SEQ_BIN__SEPARATOR),
 	seq('\\q',           DIGIT_SEQ_QUA__SEPARATOR),
@@ -259,9 +243,7 @@ module.exports = grammar({
 			WORD_UNICODE,
 		)),
 
-		...parameterize('integer', ({separator}) => (
-			_$ => token(seq(/[+-]?/, (!separator) ? INTEGER_DIGITS_RADIX : INTEGER_DIGITS_RADIX__SEPARATOR))
-		), 'separator'),
+		integer: _$ => token(seq(/[+-]?/, INTEGER_DIGITS_RADIX__SEPARATOR)),
 
 		float: _$ => token(seq(
 			SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
@@ -333,7 +315,6 @@ module.exports = grammar({
 
 		primitive_literal: $ => choice(
 			$.integer,
-			$.integer__separator,
 			$.float,
 			$.string,
 			$.keyword_value,

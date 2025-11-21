@@ -80,72 +80,69 @@ TokenWorth(Identifier) -> RealNumber
 
 
 
-TokenWorth(Number<Separator> :::= Integer<?Separator>) -> RealNumber
-	:= TokenWorth(Integer<?Separator>);
+TokenWorth(Integer :::= "+"? IntegerDigitsRadix) -> RealNumber
+	:= TokenWorth(IntegerDigitsRadix);
+TokenWorth(Integer :::= "-" IntegerDigitsRadix) -> RealNumber
+	:= -1 * TokenWorth(IntegerDigitsRadix);
 
-TokenWorth(Integer<Separator> :::= "+"? IntegerDigitsRadix<?Separator>) -> RealNumber
-	:= TokenWorth(IntegerDigitsRadix<?Separator>);
-TokenWorth(Integer<Separator> :::= "-" IntegerDigitsRadix<?Separator>) -> RealNumber
-	:= -1 * TokenWorth(IntegerDigitsRadix<?Separator>);
-
-TokenWorth(IntegerDigitsRadix<Separator> :::= "\b"  DigitSequenceBin<?Separator>) -> RealNumber
-	:= TokenWorth(DigitSequenceBin<?Separator>);
-TokenWorth(IntegerDigitsRadix<Separator> :::= "\q"  DigitSequenceQua<?Separator>) -> RealNumber
-	:= TokenWorth(DigitSequenceQua<?Separator>);
-TokenWorth(IntegerDigitsRadix<Separator> :::= "\s"  DigitSequenceSex<?Separator>) -> RealNumber
-	:= TokenWorth(DigitSequenceSex<?Separator>);
-TokenWorth(IntegerDigitsRadix<Separator> :::= "\o"  DigitSequenceOct<?Separator>) -> RealNumber
-	:= TokenWorth(DigitSequenceOct<?Separator>);
-TokenWorth(IntegerDigitsRadix<Separator> :::= "\d"? DigitSequenceDec<?Separator>) -> RealNumber
-	:= TokenWorth(DigitSequenceDec<?Separator>);
-TokenWorth(IntegerDigitsRadix<Separator> :::= "\x"  DigitSequenceHex<?Separator>) -> RealNumber
-	:= TokenWorth(DigitSequenceHex<?Separator>);
-TokenWorth(IntegerDigitsRadix<Separator> :::= "\z"  DigitSequenceNif<?Separator>) -> RealNumber
-	:= TokenWorth(DigitSequenceNif<?Separator>);
+TokenWorth(IntegerDigitsRadix :::= "\b"  DigitSequenceBin) -> RealNumber
+	:= TokenWorth(DigitSequenceBin);
+TokenWorth(IntegerDigitsRadix :::= "\q"  DigitSequenceQua) -> RealNumber
+	:= TokenWorth(DigitSequenceQua);
+TokenWorth(IntegerDigitsRadix :::= "\s"  DigitSequenceSex) -> RealNumber
+	:= TokenWorth(DigitSequenceSex);
+TokenWorth(IntegerDigitsRadix :::= "\o"  DigitSequenceOct) -> RealNumber
+	:= TokenWorth(DigitSequenceOct);
+TokenWorth(IntegerDigitsRadix :::= "\d"? DigitSequenceDec) -> RealNumber
+	:= TokenWorth(DigitSequenceDec);
+TokenWorth(IntegerDigitsRadix :::= "\x"  DigitSequenceHex) -> RealNumber
+	:= TokenWorth(DigitSequenceHex);
+TokenWorth(IntegerDigitsRadix :::= "\z"  DigitSequenceNif) -> RealNumber
+	:= TokenWorth(DigitSequenceNif);
 
 TokenWorth(Float :::= SignedDigitSequenceDec ".") -> RealNumber
 	:= TokenWorth(SignedDigitSequenceDec);
-TokenWorth(Float :::= SignedDigitSequenceDec "." DigitSequenceDec<+Separator>) -> RealNumber
-	:= TokenWorth(SignedDigitSequenceDec) + TokenWorth(DigitSequenceDec<+Separator>);
-TokenWorth(Float :::= SignedDigitSequenceDec "." DigitSequenceDec<+Separator> ExponentPart) -> RealNumber
-	:= (TokenWorth(SignedDigitSequenceDec) + TokenWorth(DigitSequenceDec<+Separator>)) * TokenWorth(ExponentPart);
+TokenWorth(Float :::= SignedDigitSequenceDec "." DigitSequenceDec) -> RealNumber
+	:= TokenWorth(SignedDigitSequenceDec) + TokenWorth(DigitSequenceDec);
+TokenWorth(Float :::= SignedDigitSequenceDec "." DigitSequenceDec ExponentPart) -> RealNumber
+	:= (TokenWorth(SignedDigitSequenceDec) + TokenWorth(DigitSequenceDec)) * TokenWorth(ExponentPart);
 
 TokenWorth(ExponentPart :::= "e" SignedDigitSequenceDec) -> RealNumber
 	:= 10 ^ TokenWorth(SignedDigitSequenceDec);
 
-TokenWorth(SignedDigitSequenceDec :::= "+"? DigitSequenceDec<+Separator>) -> RealNumber
-	:= TokenWorth(DigitSequenceDec<+Separator>);
-TokenWorth(SignedDigitSequenceDec :::= "-"  DigitSequenceDec<+Separator>) -> RealNumber
-	:= -1 * TokenWorth(DigitSequenceDec<+Separator>);
+TokenWorth(SignedDigitSequenceDec :::= "+"? DigitSequenceDec) -> RealNumber
+	:= TokenWorth(DigitSequenceDec);
+TokenWorth(SignedDigitSequenceDec :::= "-"  DigitSequenceDec) -> RealNumber
+	:= -1 * TokenWorth(DigitSequenceDec);
 
-TokenWorth(DigitSequenceBin<Separator> :::= [0-1]) -> RealNumber
+TokenWorth(DigitSequenceBin :::= [0-1]) -> RealNumber
 	:= TokenWorth([0-1]);
-TokenWorth(DigitSequenceBin<Separator> :::= DigitSequenceBin<?Separator> & <Separator+>"_"? [0-1]) -> RealNumber
-	:= 2 * TokenWorth(DigitSequenceBin<?Separator>) + TokenWorth([0-1]);
-TokenWorth(DigitSequenceQua<Separator> :::= [0-3]) -> RealNumber
+TokenWorth(DigitSequenceBin :::= DigitSequenceBin "_"? [0-1]) -> RealNumber
+	:= 2 * TokenWorth(DigitSequenceBin) + TokenWorth([0-1]);
+TokenWorth(DigitSequenceQua :::= [0-3]) -> RealNumber
 	:= TokenWorth([0-3]);
-TokenWorth(DigitSequenceQua<Separator> :::= DigitSequenceQua<?Separator> & <Separator+>"_"? [0-3]) -> RealNumber
-	:= 4 * TokenWorth(DigitSequenceQua<?Separator>) + TokenWorth([0-3]);
-TokenWorth(DigitSequenceOct<Separator> :::= [0-7]) -> RealNumber
-	:= TokenWorth([0-7]);
-TokenWorth(DigitSequenceSex<Separator> :::= [0-5]) -> RealNumber
+TokenWorth(DigitSequenceQua :::= DigitSequenceQua "_"? [0-3]) -> RealNumber
+	:= 4 * TokenWorth(DigitSequenceQua) + TokenWorth([0-3]);
+TokenWorth(DigitSequenceSex :::= [0-5]) -> RealNumber
 	:= TokenWorth([0-5]);
-TokenWorth(DigitSequenceSex<Separator> :::= DigitSequenceSex<?Separator> & <Separator+>"_"? [0-5]) -> RealNumber
-	:= 6 * TokenWorth(DigitSequenceSex<?Separator>) + TokenWorth([0-5]);
-TokenWorth(DigitSequenceOct<Separator> :::= DigitSequenceOct<?Separator> & <Separator+>"_"? [0-7]) -> RealNumber
-	:= 8 * TokenWorth(DigitSequenceOct<?Separator>) + TokenWorth([0-7]);
-TokenWorth(DigitSequenceDec<Separator> :::= [0-9]) -> RealNumber
+TokenWorth(DigitSequenceSex :::= DigitSequenceSex "_"? [0-5]) -> RealNumber
+	:= 6 * TokenWorth(DigitSequenceSex) + TokenWorth([0-5]);
+TokenWorth(DigitSequenceOct :::= [0-7]) -> RealNumber
+	:= TokenWorth([0-7]);
+TokenWorth(DigitSequenceOct :::= DigitSequenceOct "_"? [0-7]) -> RealNumber
+	:= 8 * TokenWorth(DigitSequenceOct) + TokenWorth([0-7]);
+TokenWorth(DigitSequenceDec :::= [0-9]) -> RealNumber
 	:= TokenWorth([0-9]);
-TokenWorth(DigitSequenceDec<Separator> :::= DigitSequenceDec<?Separator> & <Separator+>"_"? [0-9]) -> RealNumber
-	:= 10 * TokenWorth(DigitSequenceDec<?Separator>) + TokenWorth([0-9]);
-TokenWorth(DigitSequenceHex<Separator> :::= [0-9a-f]) -> RealNumber
+TokenWorth(DigitSequenceDec :::= DigitSequenceDec "_"? [0-9]) -> RealNumber
+	:= 10 * TokenWorth(DigitSequenceDec) + TokenWorth([0-9]);
+TokenWorth(DigitSequenceHex :::= [0-9a-f]) -> RealNumber
 	:= TokenWorth([0-9a-f]);
-TokenWorth(DigitSequenceHex<Separator> :::= DigitSequenceHex<?Separator> & <Separator+>"_"? [0-9a-f]) -> RealNumber
-	:= 16 * TokenWorth(DigitSequenceHex<?Separator>) + TokenWorth([0-9a-f]);
-TokenWorth(DigitSequenceNif<Separator> :::= [0-9a-z]) -> RealNumber
+TokenWorth(DigitSequenceHex :::= DigitSequenceHex "_"? [0-9a-f]) -> RealNumber
+	:= 16 * TokenWorth(DigitSequenceHex) + TokenWorth([0-9a-f]);
+TokenWorth(DigitSequenceNif :::= [0-9a-z]) -> RealNumber
 	:= TokenWorth([0-9a-z]);
-TokenWorth(DigitSequenceNif<Separator> :::= DigitSequenceNif<?Separator> & <Separator+>"_"? [0-9a-z]) -> RealNumber
-	:= 36 * TokenWorth(DigitSequenceNif<?Separator>) + TokenWorth([0-9a-z]);
+TokenWorth(DigitSequenceNif :::= DigitSequenceNif "_"? [0-9a-z]) -> RealNumber
+	:= 36 * TokenWorth(DigitSequenceNif) + TokenWorth([0-9a-z]);
 
 TokenWorth([0-9a-z] :::= "0") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "0") -> RealNumber  :=  TokenWorth([0-9] :::= "0") -> RealNumber  :=  TokenWorth([0-7] :::= "0") -> RealNumber  :=  TokenWorth([0-5] :::= "0") -> RealNumber  :=  TokenWorth([0-3] :::= "0") -> RealNumber  :=  TokenWorth([0-1] :::= "0") -> RealNumber  :=  \x00;
 TokenWorth([0-9a-z] :::= "1") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "1") -> RealNumber  :=  TokenWorth([0-9] :::= "1") -> RealNumber  :=  TokenWorth([0-7] :::= "1") -> RealNumber  :=  TokenWorth([0-5] :::= "1") -> RealNumber  :=  TokenWorth([0-3] :::= "1") -> RealNumber  :=  TokenWorth([0-1] :::= "1") -> RealNumber  :=  \x01;
@@ -227,8 +224,8 @@ TokenWorth(String :::= #x22 StringChars StringUnfinished #x22) -> Sequence<RealN
 				:= UTF8Encoding(\x0d); // U+000D CARRIAGE RETURN (CR)
 			TokenWorth(StringEscape :::= "u{" "}") -> Sequence<RealNumber>
 				:= UTF8Encoding(\x00); // U+0000 NULL
-			TokenWorth(StringEscape :::= "u{" DigitSequenceHex<+Separator> "}") -> Sequence<RealNumber>
-				:= UTF8Encoding(TokenWorth(DigitSequenceHex<+Separator>));
+			TokenWorth(StringEscape :::= "u{" DigitSequenceHex "}") -> Sequence<RealNumber>
+				:= UTF8Encoding(TokenWorth(DigitSequenceHex));
 			TokenWorth(StringEscape :::= #x0A) -> Sequence<RealNumber>
 				:= UTF8Encoding(\x20); // U+0020 SPACE
 			TokenWorth(StringEscape :::= [^"\%stnru#x0a#x03]) -> Sequence<RealNumber>
