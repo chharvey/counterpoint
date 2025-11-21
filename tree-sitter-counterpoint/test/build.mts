@@ -65,9 +65,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			`,
 			sourceExpressions(
 				s('primitive_literal', s('integer')),
-				s('primitive_literal', s('integer__radix')),
+				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer__separator')),
-				s('primitive_literal', s('integer__radix__separator')),
+				s('primitive_literal', s('integer__separator')),
 			),
 		],
 

@@ -100,8 +100,8 @@ Identifier
 
 
 
-Integer<Radix, Separator>
-	:::= ("+" | "-")? <Radix->DigitSequenceDec<?Separator> & <Radix+>IntegerDigitsRadix<?Separator>;
+Integer<Separator>
+	:::= ("+" | "-")? IntegerDigitsRadix<?Separator>;
 
 IntegerDigitsRadix<Separator> :::=
 	| "\b"  DigitSequenceBin<?Separator>
@@ -395,7 +395,7 @@ TemplateTail   :::= "}}"           TemplateChars__EndDelim?  #x22 #x22 #x22;
 
 
 
-Goal<Radix, Separator> :::=
+Goal<Separator> :::=
 	| Filebound
 	| Whitespace
 	| Comment
@@ -404,7 +404,7 @@ Goal<Radix, Separator> :::=
 	| KeywordValue
 	| KeywordOther
 	| Identifier
-	| Integer<?Radix><?Separator>
+	| Integer<?Separator>
 	| Float<?Separator>
 	| String<?Separator>
 	| TemplateFull

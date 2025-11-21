@@ -63,7 +63,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
 				const children: readonly SyntaxNode[] = this.start_node.children;
 				switch (true) {
-					case isSyntaxNodeType(children[0], /^integer(__radix)?(__separator)?$/): {
+					case isSyntaxNodeType(children[0], /^integer(__separator)?$/): {
 						return valueOfTokenNumber(children[0].text, this.validator.config).toType();
 					}
 					case isSyntaxNodeType(children[0], /^float(__separator)?$/): {

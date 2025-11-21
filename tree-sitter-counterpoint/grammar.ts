@@ -278,12 +278,9 @@ module.exports = grammar({
 			WORD_UNICODE,
 		)),
 
-		...parameterize('integer', ({radix, separator}) => (
-			_$ => token(seq(/[+-]?/, ((!radix)
-				? (!separator) ? DIGIT_SEQ_DEC        : DIGIT_SEQ_DEC__SEPARATOR
-				: (!separator) ? INTEGER_DIGITS_RADIX : INTEGER_DIGITS_RADIX__SEPARATOR
-			)))
-		), 'radix', 'separator'),
+		...parameterize('integer', ({separator}) => (
+			_$ => token(seq(/[+-]?/, (!separator) ? INTEGER_DIGITS_RADIX : INTEGER_DIGITS_RADIX__SEPARATOR))
+		), 'separator'),
 
 		...parameterize('float', ({separator}) => (
 			_$ => token(seq(
@@ -359,9 +356,7 @@ module.exports = grammar({
 
 		primitive_literal: $ => choice(
 			$.integer,
-			$.integer__radix,
 			$.integer__separator,
-			$.integer__radix__separator,
 			$.float,
 			$.float__separator,
 			$.string,
@@ -592,7 +587,7 @@ module.exports = grammar({
 	 */
 	conflicts: _$ => [
 		// example:
-		// familyNameAll('integer', ['radix', 'separator']).map((rulename) => _$[rulename]),
+		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => _$[rulename]),
 	],
 
 	/**
