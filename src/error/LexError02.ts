@@ -6,8 +6,7 @@ import {LexError} from './LexError.ts';
 /**
  * A LexError02 is thrown when the lexer reaches the end of the file before the end of a token.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-class LexError02 extends LexError {
+export class LexError02 extends LexError {
 	static readonly #CODE = 2;
 
 

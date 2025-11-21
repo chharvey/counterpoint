@@ -1,6 +1,7 @@
 import type {ConstructorType} from '../lib/index.ts';
 import {
 	LexError01,
+	LexError02,
 	LexError03,
 	LexError04,
 	LexError05,
@@ -26,6 +27,7 @@ export class LexError extends ErrorCode {
 	protected static get CODES(): ReadonlyMap<ConstructorType<LexError>, number> {
 		return new Map<ConstructorType<LexError>, number>([
 			[LexError01, 1],
+			[LexError02, 2],
 			[LexError03, 3],
 			[LexError04, 4],
 			[LexError05, 5],
