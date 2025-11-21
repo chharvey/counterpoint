@@ -101,9 +101,9 @@ Identifier
 
 
 Integer
-	:::= ("+" | "-")? IntegerDigitsRadix;
+	:::= ("+" | "-")? WholeDigits;
 
-IntegerDigitsRadix :::=
+WholeDigits :::=
 	| "\b"  DigitSequenceBin
 	| "\q"  DigitSequenceQua
 	| "\s"  DigitSequenceSex

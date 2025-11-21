@@ -80,24 +80,24 @@ TokenWorth(Identifier) -> RealNumber
 
 
 
-TokenWorth(Integer :::= "+"? IntegerDigitsRadix) -> RealNumber
-	:= TokenWorth(IntegerDigitsRadix);
-TokenWorth(Integer :::= "-" IntegerDigitsRadix) -> RealNumber
-	:= -1 * TokenWorth(IntegerDigitsRadix);
+TokenWorth(Integer :::= "+"? WholeDigits) -> RealNumber
+	:= TokenWorth(WholeDigits);
+TokenWorth(Integer :::= "-" WholeDigits) -> RealNumber
+	:= -1 * TokenWorth(WholeDigits);
 
-TokenWorth(IntegerDigitsRadix :::= "\b"  DigitSequenceBin) -> RealNumber
+TokenWorth(WholeDigits :::= "\b"  DigitSequenceBin) -> RealNumber
 	:= TokenWorth(DigitSequenceBin);
-TokenWorth(IntegerDigitsRadix :::= "\q"  DigitSequenceQua) -> RealNumber
+TokenWorth(WholeDigits :::= "\q"  DigitSequenceQua) -> RealNumber
 	:= TokenWorth(DigitSequenceQua);
-TokenWorth(IntegerDigitsRadix :::= "\s"  DigitSequenceSex) -> RealNumber
+TokenWorth(WholeDigits :::= "\s"  DigitSequenceSex) -> RealNumber
 	:= TokenWorth(DigitSequenceSex);
-TokenWorth(IntegerDigitsRadix :::= "\o"  DigitSequenceOct) -> RealNumber
+TokenWorth(WholeDigits :::= "\o"  DigitSequenceOct) -> RealNumber
 	:= TokenWorth(DigitSequenceOct);
-TokenWorth(IntegerDigitsRadix :::= "\d"? DigitSequenceDec) -> RealNumber
+TokenWorth(WholeDigits :::= "\d"? DigitSequenceDec) -> RealNumber
 	:= TokenWorth(DigitSequenceDec);
-TokenWorth(IntegerDigitsRadix :::= "\x"  DigitSequenceHex) -> RealNumber
+TokenWorth(WholeDigits :::= "\x"  DigitSequenceHex) -> RealNumber
 	:= TokenWorth(DigitSequenceHex);
-TokenWorth(IntegerDigitsRadix :::= "\z"  DigitSequenceNif) -> RealNumber
+TokenWorth(WholeDigits :::= "\z"  DigitSequenceNif) -> RealNumber
 	:= TokenWorth(DigitSequenceNif);
 
 TokenWorth(Float :::= SignedDigitSequenceDec ".") -> RealNumber
