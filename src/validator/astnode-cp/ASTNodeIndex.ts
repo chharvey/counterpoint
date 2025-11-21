@@ -11,10 +11,10 @@ export class ASTNodeIndex extends ASTNodeCP {
 		super(start_node);
 	}
 
-	// NOTE: this needs to be a getter instead of a field because it depends on `this.validator`, which is also a getter
+	// TODO: assign this field in constructor
 	@memoizeGetter
 	public get index(): bigint {
-		const cooked: bigint | number = Validator.cookTokenNumber(this.start_node.text, this.validator.config);
+		const cooked: bigint | number = Validator.cookTokenNumber(this.start_node.text);
 		assert.ok(typeof cooked === 'bigint', 'Cooked value should be a bigint.'); // better type guard than `assert.strictEqual`
 		return cooked;
 	}

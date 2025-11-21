@@ -40,12 +40,12 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 		return false; // break statements will always have side-effects
 	}
 
-	// NOTE: this needs to be a getter instead of a field because it depends on `this.validator`, which is also a getter
+	// TODO: assign this field in constructor
 	@memoizeGetter
 	public get depth(): bigint {
 		if (this.integer) {
 			// copied from `./ASTNodeIndex.ts`
-			const cooked: bigint | number = Validator.cookTokenNumber(this.integer.text, this.validator.config);
+			const cooked: bigint | number = Validator.cookTokenNumber(this.integer.text);
 			assert.ok(typeof cooked === 'bigint', 'Cooked value should be a bigint.'); // better type guard than `assert.strictEqual`
 			return cooked;
 		} else {

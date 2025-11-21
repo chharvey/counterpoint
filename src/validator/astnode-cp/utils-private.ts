@@ -11,7 +11,6 @@ import {
 	type ConstructorType,
 	assert_instanceof,
 } from '../../lib/index.ts';
-import type {CPConfig} from '../../core/index.ts';
 import {
 	Operator,
 	type ValidTypeAccessOperator,
@@ -84,8 +83,8 @@ export function bothNumbers(t0: TYPE.Type, t1: TYPE.Type): boolean {
 
 
 
-export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Integer | VALUE.Float {
-	const cooked: bigint | number = Validator.cookTokenNumber(source, config);
+export function valueOfTokenNumber(source: string): VALUE.Integer | VALUE.Float {
+	const cooked: bigint | number = Validator.cookTokenNumber(source);
 	return (typeof cooked === 'bigint') ? new VALUE.Integer(cooked) : new VALUE.Float(cooked);
 }
 

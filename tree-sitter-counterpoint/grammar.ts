@@ -108,22 +108,15 @@ function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name:
 const WORD_BASIC   = /[A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+/;
 const WORD_UNICODE = /'[^']*'/;
 
-const DIGIT_SEQ_BIN            = /[0-1]+/;
-const DIGIT_SEQ_BIN__SEPARATOR = /([0-1]_?)*[0-1]/;
-const DIGIT_SEQ_QUA            = /[0-3]+/;
-const DIGIT_SEQ_QUA__SEPARATOR = /([0-3]_?)*[0-3]/;
-const DIGIT_SEQ_SEX            = /[0-5]+/;
-const DIGIT_SEQ_SEX__SEPARATOR = /([0-5]_?)*[0-5]/;
-const DIGIT_SEQ_OCT            = /[0-7]+/;
-const DIGIT_SEQ_OCT__SEPARATOR = /([0-7]_?)*[0-7]/;
-const DIGIT_SEQ_DEC            = /[0-9]+/;
-const DIGIT_SEQ_DEC__SEPARATOR = /([0-9]_?)*[0-9]/;
-const DIGIT_SEQ_HEX            = /[0-9a-f]+/;
-const DIGIT_SEQ_HEX__SEPARATOR = /([0-9a-f]_?)*[0-9a-f]/;
-const DIGIT_SEQ_NIF            = /[0-9a-z]+/;
-const DIGIT_SEQ_NIF__SEPARATOR = /([0-9a-z]_?)*[0-9a-z]/;
+const DIGIT_SEQ_BIN = /([0-1]_?)*[0-1]/;
+const DIGIT_SEQ_QUA = /([0-3]_?)*[0-3]/;
+const DIGIT_SEQ_SEX = /([0-5]_?)*[0-5]/;
+const DIGIT_SEQ_OCT = /([0-7]_?)*[0-7]/;
+const DIGIT_SEQ_DEC = /([0-9]_?)*[0-9]/;
+const DIGIT_SEQ_HEX = /([0-9a-f]_?)*[0-9a-f]/;
+const DIGIT_SEQ_NIF = /([0-9a-z]_?)*[0-9a-z]/;
 
-const INTEGER_DIGITS_RADIX = choice(
+const WHOLE_DIGITS = choice(
 	seq('\\b',           DIGIT_SEQ_BIN),
 	seq('\\q',           DIGIT_SEQ_QUA),
 	seq('\\s',           DIGIT_SEQ_SEX),
@@ -132,21 +125,10 @@ const INTEGER_DIGITS_RADIX = choice(
 	seq('\\x',           DIGIT_SEQ_HEX),
 	seq('\\z',           DIGIT_SEQ_NIF),
 );
-const INTEGER_DIGITS_RADIX__SEPARATOR = choice(
-	seq('\\b',           DIGIT_SEQ_BIN__SEPARATOR),
-	seq('\\q',           DIGIT_SEQ_QUA__SEPARATOR),
-	seq('\\s',           DIGIT_SEQ_SEX__SEPARATOR),
-	seq('\\o',           DIGIT_SEQ_OCT__SEPARATOR),
-	seq(optional('\\d'), DIGIT_SEQ_DEC__SEPARATOR),
-	seq('\\x',           DIGIT_SEQ_HEX__SEPARATOR),
-	seq('\\z',           DIGIT_SEQ_NIF__SEPARATOR),
-);
 
-const SIGNED_DIGIT_SEQ_DEC            = seq(/[+-]?/, DIGIT_SEQ_DEC);
-const SIGNED_DIGIT_SEQ_DEC__SEPARATOR = seq(/[+-]?/, DIGIT_SEQ_DEC__SEPARATOR);
+const SIGNED_DIGIT_SEQ_DEC = seq(/[+-]?/, DIGIT_SEQ_DEC);
 
-const EXPONENT_PART            = seq('e', SIGNED_DIGIT_SEQ_DEC);
-const EXPONENT_PART__SEPARATOR = seq('e', SIGNED_DIGIT_SEQ_DEC__SEPARATOR);
+const EXPONENT_PART = seq('e', SIGNED_DIGIT_SEQ_DEC);
 
 const ESCAPER            = '\\';
 const DELIM_STRING       = '"';
@@ -155,75 +137,27 @@ const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
 
-/* eslint-disable @stylistic/function-call-argument-newline */
 const STRING_ESCAPE = choice(
 	DELIM_STRING,
 	ESCAPER,
-	's', 't', 'n', 'r',
-	seq('u{', optional(DIGIT_SEQ_HEX), '}'),
-	'\n',
-	/[^"\\stnru\n]/,
-);
-const STRING_ESCAPE__COMMENT = choice(
-	DELIM_STRING,
-	ESCAPER,
 	COMMENTER_LINE,
-	's', 't', 'n', 'r',
+	's', 't', 'n', 'r', // eslint-disable-line @stylistic/function-call-argument-newline
 	seq('u{', optional(DIGIT_SEQ_HEX), '}'),
 	'\n',
 	/[^"\\%stnru\n]/,
 );
-const STRING_ESCAPE__SEPARATOR = choice(
-	DELIM_STRING,
-	ESCAPER,
-	's', 't', 'n', 'r',
-	seq('u{', optional(DIGIT_SEQ_HEX__SEPARATOR), '}'),
-	'\n',
-	/[^"\\stnru\n]/,
-);
-const STRING_ESCAPE__COMMENT_SEPARATOR = choice(
-	DELIM_STRING,
-	ESCAPER,
-	COMMENTER_LINE,
-	's', 't', 'n', 'r',
-	seq('u{', optional(DIGIT_SEQ_HEX__SEPARATOR), '}'),
-	'\n',
-	/[^"\\%stnru\n]/,
-);
-/* eslint-enable @stylistic/function-call-argument-newline */
 
 const STRING_CHAR = choice(
-	/[^"\\]/,
+	/[^"\\%]/,
 	seq(ESCAPER, STRING_ESCAPE),
 	/\\u[^"{]/,
-);
-const STRING_CHAR__COMMENT = choice(
-	/[^"\\%]/,
-	seq(ESCAPER, STRING_ESCAPE__COMMENT),
-	/\\u[^"{]/,
-	/%([^"%\n][^"\n]*)?\n/,
-	/%%(%?[^"%])*%%/,
-);
-const STRING_CHAR__SEPARATOR = choice(
-	/[^"\\]/,
-	seq(ESCAPER, STRING_ESCAPE__SEPARATOR),
-	/\\u[^"{]/,
-);
-const STRING_CHAR__COMMENT__SEPARATOR = choice(
-	/[^"\\%]/,
-	seq(ESCAPER, STRING_ESCAPE__COMMENT_SEPARATOR),
-	/\\u[^"{]/,
 	/%([^"%\n][^"\n]*)?\n/,
 	/%%(%?[^"%])*%%/,
 );
 
-const STRING_CHARS                     = repeat1(STRING_CHAR);
-const STRING_CHARS__COMMENT            = repeat1(STRING_CHAR__COMMENT);
-const STRING_CHARS__SEPARATOR          = repeat1(STRING_CHAR__SEPARATOR);
-const STRING_CHARS__COMMENT__SEPARATOR = repeat1(STRING_CHAR__COMMENT__SEPARATOR);
+const STRING_CHARS = repeat1(STRING_CHAR);
 
-const STRING_UNFINISHED          = '\\u';
-const STRING_UNFINISHED__COMMENT = choice(
+const STRING_UNFINISHED = choice(
 	'\\u',
 	/%([^"%\n][^"\n]*)?/,
 	/%%(%?[^"%])*/,
@@ -306,33 +240,21 @@ module.exports = grammar({
 			WORD_UNICODE,
 		)),
 
-		...parameterize('integer', ({radix, separator}) => (
-			_$ => token(seq(/[+-]?/, ((!radix)
-				? (!separator) ? DIGIT_SEQ_DEC        : DIGIT_SEQ_DEC__SEPARATOR
-				: (!separator) ? INTEGER_DIGITS_RADIX : INTEGER_DIGITS_RADIX__SEPARATOR
-			)))
-		), 'radix', 'separator'),
+		integer: _$ => token(seq(/[+-]?/, WHOLE_DIGITS)),
 
-		...parameterize('float', ({separator}) => (
-			_$ => token(seq(
-				(!separator) ? SIGNED_DIGIT_SEQ_DEC : SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
-				'.',
-				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR, // eslint-disable-line @stylistic/indent
-				optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
-			))
-		), 'separator'),
+		float: _$ => token(seq(
+			SIGNED_DIGIT_SEQ_DEC,
+			'.',
+			DIGIT_SEQ_DEC,
+			optional(EXPONENT_PART),
+		)),
 
-		...parameterize('string', ({comment, separator}) => (
-			_$ => token(seq(
-				DELIM_STRING,
-				optional(((!comment)
-					? (!separator) ? STRING_CHARS          : STRING_CHARS__SEPARATOR
-					: (!separator) ? STRING_CHARS__COMMENT : STRING_CHARS__COMMENT__SEPARATOR
-				)),
-				optional((!comment) ? STRING_UNFINISHED : STRING_UNFINISHED__COMMENT),
-				DELIM_STRING,
-			))
-		), 'comment', 'separator'),
+		string: _$ => token(seq(
+			DELIM_STRING,
+			optional(STRING_CHARS),
+			optional(STRING_UNFINISHED),
+			DELIM_STRING,
+		)),
 
 		template_full:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
 		template_head:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
@@ -391,9 +313,9 @@ module.exports = grammar({
 		),
 
 		primitive_literal: $ => choice(
-			call($, 'integer', ['', 'radix'], ['', 'separator']),
-			call($, 'float', ['', 'separator']),
-			call($, 'string', ['', 'comment'], ['', 'separator']),
+			$.integer,
+			$.float,
+			$.string,
 			$.keyword_value,
 			seq('@', $.word),
 		),
@@ -623,7 +545,7 @@ module.exports = grammar({
 	 */
 	conflicts: _$ => [
 		// example:
-		// familyNameAll('integer', ['radix', 'separator']).map((rulename) => _$[rulename]),
+		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => _$[rulename]),
 	],
 
 	/**
