@@ -80,18 +80,14 @@ TokenWorth(Identifier) -> RealNumber
 
 
 
-TokenWorth(Number<Radix, Separator> :::= Integer<?Radix><?Separator>) -> RealNumber
-	:= TokenWorth(Integer<?Radix><?Separator>);
-TokenWorth(Number<Radix, Separator> :::= Float<?Separator>) -> RealNumber
+TokenWorth(Number<Separator> :::= Integer<?Separator>) -> RealNumber
+	:= TokenWorth(Integer<?Separator>);
+TokenWorth(Number<Separator> :::= Float<?Separator>) -> RealNumber
 	:= TokenWorth(Float<?Separator>);
 
-TokenWorth(Integer<Radix, Separator> :::= "+"? <Radix->DigitSequenceDec<?Separator>) -> RealNumber
-	:= TokenWorth(DigitSequenceDec<?Separator>);
-TokenWorth(Integer<Radix, Separator> :::= "-" <Radix->DigitSequenceDec<?Separator>) -> RealNumber
-	:= -1 * TokenWorth(DigitSequenceDec<?Separator>);
-TokenWorth(Integer<Radix, Separator> :::= "+"? <Radix+>IntegerDigitsRadix<?Separator>) -> RealNumber
+TokenWorth(Integer<Separator> :::= "+"? IntegerDigitsRadix<?Separator>) -> RealNumber
 	:= TokenWorth(IntegerDigitsRadix<?Separator>);
-TokenWorth(Integer<Radix, Separator> :::= "-" <Radix+>IntegerDigitsRadix<?Separator>) -> RealNumber
+TokenWorth(Integer<Separator> :::= "-" IntegerDigitsRadix<?Separator>) -> RealNumber
 	:= -1 * TokenWorth(IntegerDigitsRadix<?Separator>);
 
 TokenWorth(IntegerDigitsRadix<Separator> :::= "\b"  DigitSequenceBin<?Separator>) -> RealNumber
