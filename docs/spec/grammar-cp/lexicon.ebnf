@@ -395,10 +395,10 @@ TemplateTail   :::= "}}"           TemplateChars__EndDelim?  #x22 #x22 #x22;
 
 
 
-Goal<Comment, Radix, Separator> :::=
+Goal<Radix, Separator> :::=
 	| Filebound
 	| Whitespace
-	| <Comment+>Comment
+	| Comment
 	| Punctuator
 	| KeywordType
 	| KeywordValue
@@ -406,7 +406,7 @@ Goal<Comment, Radix, Separator> :::=
 	| Identifier
 	| Integer<?Radix><?Separator>
 	| Float<?Separator>
-	| String<?Comment><?Separator>
+	| String<?Separator>
 	| TemplateFull
 	| TemplateHead
 	| TemplateMiddle
