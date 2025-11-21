@@ -12,12 +12,6 @@ export type CPConfig = {
 	 */
 	readonly languageFeatures: {
 		/**
-		 * Counterpoint code comments.
-		 * @version v0.2.0
-		 * @default true
-		 */
-		readonly comments:          boolean,
-		/**
 		 * Integer literals with a specified radix or “base.”
 		 * @version v0.2.0
 		 * @default false

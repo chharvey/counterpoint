@@ -206,25 +206,6 @@ describe('Validator', () => {
 					});
 				});
 			});
-			it('with comments disabled.', () => {
-				assert.deepStrictEqual(cook({
-					...CONFIG_DEFAULT,
-					languageFeatures: {
-						...CONFIG_DEFAULT.languageFeatures,
-						comments: false,
-					},
-				}), [
-					'The five boxing wizards % jump quickly.',
-					'The five % boxing wizards\njump quickly.',
-					'The five boxing wizards %\njump quickly.',
-					'The five boxing wizards jump quickly.%\n',
-					'The five %% boxing wizards %% jump quickly.',
-					'The five boxing wizards %%%% jump quickly.',
-					'The five %% boxing\nwizards %% jump\nquickly.',
-					'The five boxing\nwizards %% jump\nquickly.%%',
-					'The five boxing\nwizards %% jump\nquickly.',
-				]);
-			});
 			it('`String.fromCodePoint` throws when UTF-8 encoding input is out of range.', () => {
 				const out_of_range = 'a00061'; // NOTE: the valid range of input may change as Unicode evolves
 				assert.throws(() => Validator.cookTokenString(

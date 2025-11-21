@@ -88,7 +88,6 @@ function tokenWorthFloat(
 
 function tokenWorthString(
 	text: string,
-	allow_comments:   CPConfig['languageFeatures']['comments']          = CONFIG_DEFAULT.languageFeatures.comments,
 	allow_separators: CPConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
 ): CodeUnit[] {
 	if (text.length === 0) {
@@ -113,43 +112,43 @@ function tokenWorthString(
 					['n',            utf8Encode(0x0a)],
 					['r',            utf8Encode(0x0d)],
 				]).get(text[1])!,
-				...tokenWorthString(text.slice(2), allow_comments, allow_separators),
+				...tokenWorthString(text.slice(2), allow_separators),
 			];
 		} else if (`${ text[1] }${ text[2] }` === 'u{') {
 			/* an escape sequence */
 			const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/)!;
 			return [
 				...utf8Encode(Number(tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators))),
-				...tokenWorthString(text.slice(sequence[0].length), allow_comments, allow_separators),
+				...tokenWorthString(text.slice(sequence[0].length), allow_separators),
 			];
 		} else if (text[1] === '\n') {
 			/* a line continuation (LF) */
 			return [
 				...utf8Encode(0x20),
-				...tokenWorthString(text.slice(2), allow_comments, allow_separators),
+				...tokenWorthString(text.slice(2), allow_separators),
 			];
 		} else {
 			/* a backslash escapes the following character */
 			return [
 				...utf8Encode(text.codePointAt(1)!),
-				...tokenWorthString([...text].slice(2).join('')/* UTF-16 */, allow_comments, allow_separators),
+				...tokenWorthString([...text].slice(2).join('')/* UTF-16 */, allow_separators),
 			];
 		}
-	} else if (allow_comments && `${ text[0] }${ text[1] }` === COMMENTER_MULTI) {
+	} else if (`${ text[0] }${ text[1] }` === COMMENTER_MULTI) {
 		/* an in-string multiline comment */
 		const match: string = text.match(/%%(?:%?[^'%])*(?:%%)?/)![0];
-		return tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
-	} else if (allow_comments && text.startsWith(COMMENTER_LINE)) {
+		return tokenWorthString(text.slice(match.length), allow_separators);
+	} else if (text.startsWith(COMMENTER_LINE)) {
 		/* an in-string line comment */
 		const match: string = text.match(/%[^'\n]*\n?/)![0];
-		const rest: CodeUnit[] = tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
+		const rest: CodeUnit[] = tokenWorthString(text.slice(match.length), allow_separators);
 		return match.endsWith('\n')
 			? [...utf8Encode(0x0a), ...rest]
 			: rest;
 	} else {
 		return [
 			...utf8Encode(text.codePointAt(0)!),
-			...tokenWorthString([...text].slice(1).join('')/* UTF-16 */, allow_comments, allow_separators),
+			...tokenWorthString([...text].slice(1).join('')/* UTF-16 */, allow_separators),
 		];
 	}
 }
@@ -232,7 +231,6 @@ export class Validator {
 	public static cookTokenString(source: string, config: CPConfig): CodeUnit[] {
 		return tokenWorthString(
 			source.slice(DELIM_STRING.length, -DELIM_STRING.length),
-			config.languageFeatures.comments,
 			config.languageFeatures.numericSeparators,
 		);
 	}

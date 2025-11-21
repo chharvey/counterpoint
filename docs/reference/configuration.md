@@ -16,13 +16,13 @@ Your JSON file should be a single object, with two optional properties: `languag
 - To use a config file during compilation, you must specify it on the command line. Run `npx cplc --help` for details.
 - Even with a config file, you may override it with per-option CLI arguments. Run `npx cplc --config` for details.
 
-For example, the default value of [`comments`](#comments) is `true`.
-If in your `counterpoint-config.json` you have `{"languageFeatures": {"comments": false}}`,
+For example, the default value of an option `‹foo›` might be `true`.
+If in your `counterpoint-config.json` you have `{"languageFeatures": {"foo": false}}`,
 that would override the default. However, if you run
 ```shell
-$ npx cplc c ./my-program.cpls -p=./counterpoint-config.json --comments
+$ npx cplc c ./my-program.cpls -p=./counterpoint-config.json --foo
 ```
-the `--comments` option would override your config file and turn comments back on again.
+the `--foo` option would override your config file.
 
 
 
@@ -31,27 +31,6 @@ the `--comments` option would override your config file and turn comments back o
 
 ### `languageFeatures`
 Language features are aspects of the Counterpoint Programming Language that may be enabled and disabled at will.
-
-#### `comments`
-```
-@version v0.2.0
-@type    boolean
-@default true
-```
-Allows lexing of comments in source code.
-With this disabled, the compiler will not recognize comments:
-```
-% line comments
-
-%% multiline
-comments %%
-
-%%% inline doc comments %%
-
-%%%
-block doc comments
-%%%
-```
 
 #### `integerRadices`
 ```
