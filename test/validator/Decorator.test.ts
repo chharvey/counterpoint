@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import {
 	Query,
 	type QueryCapture,
@@ -15,8 +16,8 @@ import {
 
 
 
-describe('Decorator', () => {
-	describe('#decorateTS', () => {
+test.suite('Decorator', () => {
+	test.suite('#decorateTS', () => {
 		function captureParseNode(source: string, query: string): SyntaxNode {
 			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
 			assert.ok(captures.length, 'could not find any captures.');
@@ -241,7 +242,7 @@ describe('Decorator', () => {
 				}
 				% (type_unary_symbol)
 			`]],
-			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+			['todo: Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				{
 					type T = U!;
 				}
@@ -440,7 +441,7 @@ describe('Decorator', () => {
 				}
 				% (expression_compound)
 			`]],
-			['skip: Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "!." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
+			['todo: Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "!." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
 				{
 					v!.p;
 				}
@@ -555,7 +556,7 @@ describe('Decorator', () => {
 				% (expression_additive)
 			`]],
 
-			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ ['is', 'isnt'].includes(op) ? 'skip: ' : '' }Decorate(ExpressionComparative<Block> ::= ExpressionComparative<?Block> "${ op }" ExpressionAdditive<?Block>) -> SemanticOperation`, [AST.ASTNodeOperation, `
+			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ ['is', 'isnt'].includes(op) ? 'todo: ' : '' }Decorate(ExpressionComparative<Block> ::= ExpressionComparative<?Block> "${ op }" ExpressionAdditive<?Block>) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				{
 					a ${ op } b;
 				}
@@ -766,19 +767,50 @@ describe('Decorator', () => {
 				}
 				% (declaration_reassignment)
 			`]],
-
-		]).forEach(([klass, text], description) => (description.startsWith('only:') ? specify.only : description.startsWith('skip:') ? specify.skip : specify)(description, () => {
-			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
-			return assert_instanceof(new Decorator().decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
-		}));
-		['is', 'isnt'].forEach((op) => describe(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
-			it(`operator \`${ op }\` is not yet supported.`, () => {
-				assert.throws(() => new Decorator().decorateTS(captureParseNode(`
-					{
-						a ${ op } b;
-					}
-				`, '(expression_comparative)')), /not yet supported/);
+		]).forEach(([klass, text], description) => {
+			test.test(description, {
+				skip: description.startsWith('skip:'),
+				todo: description.startsWith('todo:'),
+				only: description.startsWith('only:'),
+			}, () => {
+				const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
+				return assert_instanceof(new Decorator().decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
 			});
-		}));
+		});
+		['!'].forEach((op) => {
+			test.suite(`Decorate(TypeUnarySymbol ::= TypeUnarySymbol "${ op }") -> SemanticTypeOperation`, () => {
+				test.test(`operator \`${ op }\` is not yet supported.`, () => {
+					assert.throws(() => new Decorator().decorateTS(captureParseNode(`
+						{
+							type T = U${ op };
+						}
+					`, '(type_unary_symbol)')), /not yet supported/);
+				});
+			});
+		});
+		['!.'].forEach((op) => {
+			['1', '_', 'p', '[a + b]'].forEach((accessor) => {
+				test.suite(`Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "${ op }" PropertyAccessor) -> SemanticAccess`, () => {
+					test.test(`operator \`${ op }\` is not yet supported.`, () => {
+						assert.throws(() => new Decorator().decorateTS(captureParseNode(`
+							{
+								v${ op }${ accessor };
+							}
+						`, '(expression_compound)')), /not yet supported/);
+					});
+				});
+			});
+		});
+		['is', 'isnt'].forEach((op) => {
+			test.suite(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
+				test.test(`operator \`${ op }\` is not yet supported.`, () => {
+					assert.throws(() => new Decorator().decorateTS(captureParseNode(`
+						{
+							a ${ op } b;
+						}
+					`, '(expression_comparative)')), /not yet supported/);
+				});
+			});
+		});
 	});
 });

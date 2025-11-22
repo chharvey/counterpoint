@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import binaryen from 'binaryen';
 import {
 	drop_then,
@@ -9,8 +10,8 @@ import {buildConst} from '../helpers.ts';
 
 
 
-describe('drop_then', () => {
-	it('returns a (block) containing `n - 1` (drop) exprs followed by a last expr.', () => {
+test.suite('drop_then', () => {
+	test.test('returns a (block) containing `n - 1` (drop) exprs followed by a last expr.', () => {
 		const builder = new Builder();
 		const expr1: binaryen.ExpressionRef = buildConst(builder, 1n);
 		const expr2: binaryen.ExpressionRef = buildConst(builder, 2n);
@@ -21,7 +22,7 @@ describe('drop_then', () => {
 			builder.module.block(null, [builder.module.drop(expr1), builder.module.drop(expr2), expr3], binaryen.v128),
 		);
 	});
-	it('type of (block) is `binaryen.none` if last item is a Counterpoint block.', () => {
+	test.test('type of (block) is `binaryen.none` if last item is a Counterpoint block.', () => {
 		const builder = new Builder();
 		const expr1: binaryen.ExpressionRef = buildConst(builder, 1n);
 		const block: binaryen.ExpressionRef = builder.module.block(null, [

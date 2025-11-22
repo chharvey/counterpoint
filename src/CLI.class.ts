@@ -264,8 +264,8 @@ export class CLI {
 	 * @param cwd the current working directory, `process.cwd()`
 	 */
 	public async run(cwd: string): Promise<[string, ...unknown[]]> {
-		const inputfilepath: string          = this.inputPath(cwd);
-		const bytes:         Promise<Buffer> = fs.promises.readFile(inputfilepath);
+		const inputfilepath: string                = this.inputPath(cwd);
+		const bytes:         Promise<BufferSource> = fs.promises.readFile(inputfilepath);
 		return [
 			xjs.String.dedent`
 				Executing………

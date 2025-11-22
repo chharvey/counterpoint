@@ -1,4 +1,5 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	AST,
@@ -27,10 +28,10 @@ import {extract_lines} from '../../utils.ts';
 
 
 
-describe('ASTNodeDeclaration', () => {
-	describe('ASTNodeDeclarationType', () => {
-		describe('#varCheck', () => {
-			it('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
+test.suite('ASTNodeDeclaration', () => {
+	test.suite('ASTNodeDeclarationType', () => {
+		test.suite('#varCheck', () => {
+			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					type T = int;
 				}`);
@@ -41,7 +42,7 @@ describe('ASTNodeDeclaration', () => {
 				assert_instanceof(info, SymbolSchemaType);
 				assert.strictEqual(info.typevalue, TYPE.ANYTHING);
 			});
-			it('for blank identifiers, does not add to symbol table.', () => {
+			test.test('for blank identifiers, does not add to symbol table.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					type _ = str;
 				}`);
@@ -49,7 +50,7 @@ describe('ASTNodeDeclaration', () => {
 				goal.varCheck();
 				return assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			});
-			it('throws if the validator already contains a record for the symbol.', () => {
+			test.test('throws if the validator already contains a record for the symbol.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type T = int;
 					type T = float;
@@ -64,7 +65,7 @@ describe('ASTNodeDeclaration', () => {
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
-			it('throws if the same identifier was declared in an outer scope (shadowing).', () => {
+			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type T = int;
 					if true then {
@@ -84,7 +85,7 @@ describe('ASTNodeDeclaration', () => {
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
-			it('allows duplicate declaration of blank identifier.', () => {
+			test.test('allows duplicate declaration of blank identifier.', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					type _ = int | float;
 					type _ = (str, bool);
@@ -93,8 +94,8 @@ describe('ASTNodeDeclaration', () => {
 		});
 
 
-		describe('#typeCheck', () => {
-			it('sets `SymbolSchemaType#typevalue`.', () => {
+		test.suite('#typeCheck', () => {
+			test.test('sets `SymbolSchemaType#typevalue`.', () => {
 				assert.strictEqual(
 					(setupScript(`{
 						type T = int;
@@ -105,8 +106,8 @@ describe('ASTNodeDeclaration', () => {
 		});
 
 
-		describe('#build', () => {
-			it('always returns `(nop)`.', () => {
+		test.suite('#build', () => {
+			test.test('always returns `(nop)`.', () => {
 				const {stmts, mod} = setupScript(`{
 					type T = int;
 					type U = T | float;
@@ -118,9 +119,9 @@ describe('ASTNodeDeclaration', () => {
 
 
 
-	describe('ASTNodeDeclarationVariable', () => {
-		describe('#varCheck', () => {
-			it('adds a SymbolSchema to the symbol table with a preset `type` value of `anything` and a preset null `value` value.', () => {
+	test.suite('ASTNodeDeclarationVariable', () => {
+		test.suite('#varCheck', () => {
+			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything` and a preset null `value` value.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let     a:  int = 42;
 					let var b:  int = 42;
@@ -158,7 +159,7 @@ describe('ASTNodeDeclaration', () => {
 					value:           null,
 				});
 			});
-			it('for blank identifiers, does not add to symbol table.', () => {
+			test.test('for blank identifiers, does not add to symbol table.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let _: float = 4.2;
 				}`);
@@ -166,7 +167,7 @@ describe('ASTNodeDeclaration', () => {
 				goal.varCheck();
 				return assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			});
-			it('throws if the validator already contains a record for the variable.', () => {
+			test.test('throws if the validator already contains a record for the variable.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let i: int = 42;
 					let i: int = 43;
@@ -181,7 +182,7 @@ describe('ASTNodeDeclaration', () => {
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
-			it('throws if the same identifier was declared in an outer scope (shadowing).', () => {
+			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let var x: int = 42;
 					if true then {
@@ -201,7 +202,7 @@ describe('ASTNodeDeclaration', () => {
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
-			it('allows duplicate declaration of blank identifier.', () => {
+			test.test('allows duplicate declaration of blank identifier.', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					let _: int = 42;
 					let _: str = "the answer";
@@ -210,7 +211,7 @@ describe('ASTNodeDeclaration', () => {
 		});
 
 
-		describe('#typeCheck', () => {
+		test.suite('#typeCheck', () => {
 			function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
 				if (src instanceof Array) {
 					return src
@@ -224,14 +225,14 @@ describe('ASTNodeDeclaration', () => {
 					? assert.throws(() => goal.typeCheck(), expect_thrown)
 					: goal.typeCheck();
 			}
-			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
+			test.test('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
 					let  the_answer:  int | float =  21  *  2;
 				`);
 				var_.varCheck();
 				return var_.typeCheck();
 			});
-			it('passes when assigned is structurally assignable.', () => {
+			test.test('passes when assigned is structurally assignable.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					let n: Name = "Alice";
 					let n: Name = "Alice" as <str>;
@@ -244,7 +245,7 @@ describe('ASTNodeDeclaration', () => {
 					}`, null, {build: false}); // assert does not throw
 				});
 			});
-			it('passes typechecking when uninitialized.', () => {
+			test.test('passes typechecking when uninitialized.', () => {
 				assert.partialDeepStrictEqual(setupScript(`{
 					let var the_answer?: int | float;
 				}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
@@ -254,17 +255,17 @@ describe('ASTNodeDeclaration', () => {
 					value:           null,
 				});
 			});
-			it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
+			test.test('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 				assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 					let  the_answer:  null =  21  *  2;
 				`).typeCheck(), TypeErrorNotAssignable);
 			});
-			it('throws when assigning int to float.', () => {
+			test.test('throws when assigning int to float.', () => {
 				assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 					let x: float = 42;
 				`).typeCheck(), TypeErrorNotAssignable);
 			});
-			it('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
+			test.test('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
 				const {goal} = setupScript(`{
 					let immut:  (int, int, int)                   = (42, 420, 4200);
 					let 'mut':  mut [int]                         = [42, 420, 4200];
@@ -292,7 +293,7 @@ describe('ASTNodeDeclaration', () => {
 					['mutmut',      null],
 				);
 			});
-			it('immutable lists/dicts/sets/maps should be covariant.', () => {
+			test.test('immutable lists/dicts/sets/maps should be covariant.', () => {
 				typeCheckGoal(extract_lines`
 					let l: List.<int | str> = List.<int>((42, 43));
 					let d: Dict.<int | str> = Dict.<int>((a= 42, b= 43));
@@ -303,7 +304,7 @@ describe('ASTNodeDeclaration', () => {
 					let m:  Map.<int | str, bool | str> = Map.<int, bool>(((42, false), (43, true)));
 				`);
 			});
-			it('mutable lists/dicts/sets/maps should not be covariant.', () => {
+			test.test('mutable lists/dicts/sets/maps should not be covariant.', () => {
 				typeCheckGoal(extract_lines`
 					let l: mut List.<int | str> = List.<int>((42, 43));
 					let d: mut Dict.<int | str> = Dict.<int>((a= 42, b= 43));
@@ -314,7 +315,7 @@ describe('ASTNodeDeclaration', () => {
 					let m:  mut Map.<int | str, bool | str> = Map.<int, bool>(((42, false), (43, true)));
 				`, TypeErrorNotAssignable);
 			});
-			it('assigning collection literals.', () => {
+			test.test('assigning collection literals.', () => {
 				typeCheckGoal(`{
 					let c: (int, int, int) = (42, 420, 4200);
 					let d: (n42: int, n420: int) = (
@@ -325,7 +326,7 @@ describe('ASTNodeDeclaration', () => {
 					let s: (a: int, b: str) = (a= 42, b= "hello");
 				}`);
 			});
-			it('allows assigning a collection literal to super reference type (autoboxing at runtime).', () => {
+			test.test('allows assigning a collection literal to super reference type (autoboxing at runtime).', () => {
 				typeCheckGoal(`{
 					let v: anything = (   42,    "hello");
 					let s: anything = (a= 42, b= "hello");
@@ -335,8 +336,8 @@ describe('ASTNodeDeclaration', () => {
 					let s: mut anything = (a= 42, b= "hello");
 				}`); // mut anything == anything
 			});
-			context('assigning a collection literal to a wider mutable type.', () => {
-				it('disallows assigning Tuples/Records to Lists/Dicts', () => {
+			test.suite('assigning a collection literal to a wider mutable type.', () => {
+				test.test('disallows assigning Tuples/Records to Lists/Dicts', () => {
 					typeCheckGoal(`
 						let t1_1: List.<42 | 4.3> = (42);
 						let t2_1: List.<int>      = (42);
@@ -356,7 +357,7 @@ describe('ASTNodeDeclaration', () => {
 						let r3_2: (inner: mut List.<float>)  = (inner= (4.3,));
 					`.split('\n'), TypeErrorNotAssignable);
 				});
-				it('allows assigning Lists, Dicts, Sets, and Maps.', () => {
+				test.test('allows assigning Lists, Dicts, Sets, and Maps.', () => {
 					typeCheckGoal(`{
 						let l: mut [int | str]   = [   42,      "43"];
 						let d: mut [: int | str] = [a= 42,   b= "43"];
@@ -386,7 +387,7 @@ describe('ASTNodeDeclaration', () => {
 						set record_of_map.k.[43]  = "world";
 					}`);
 				});
-				it('should throw when assigning combo type to union.', () => {
+				test.test('should throw when assigning combo type to union.', () => {
 					typeCheckGoal(`
 						let x: (   bool,    int) | (   int,    bool) = (   true,    false);
 						let x: (a: bool, b: int) | (a: int, b: bool) = (a= true, b= false);
@@ -429,7 +430,7 @@ describe('ASTNodeDeclaration', () => {
 						return true;
 					});
 				});
-				it('throws when not assigned to correct type.', () => {
+				test.test('throws when not assigned to correct type.', () => {
 					typeCheckGoal(`
 						let s: mut {int -> str} = {42,   "43"};
 						let s: mut {int | str}  = {42 -> "43"};
@@ -454,7 +455,7 @@ describe('ASTNodeDeclaration', () => {
 						let m5: mut ({int -> float} | Object) = {42 -> 4.3};
 					}`);
 				});
-				it('throws when entries mismatch.', () => {
+				test.test('throws when entries mismatch.', () => {
 					typeCheckGoal(`
 						let s1: mut {int} = {"42"};
 						let s2: mut {int} = {42, "43"};
@@ -538,7 +539,7 @@ describe('ASTNodeDeclaration', () => {
 		});
 
 
-		describe('#build', () => {
+		test.suite('#build', () => {
 			const SRC = `{
 				%                                      % constant folding on | constant folding off
 				%                                      % ------------------- | --------------------
@@ -562,7 +563,7 @@ describe('ASTNodeDeclaration', () => {
 				let assignee6?: int;
 				%%
 			}`;
-			it('with constant folding on.', () => {
+			test.test('with constant folding on.', () => {
 				const {goal, stmts, mod} = setupScript(SRC);
 				return assertEqualBins(stmts.map((stmt) => stmt.build()), [
 					mod.nop(),
@@ -578,7 +579,7 @@ describe('ASTNodeDeclaration', () => {
 					mod.local.set(3, (stmts[9] as AST.ASTNodeDeclarationVariable).assigned!.build()),
 				]);
 			});
-			it('with constant folding off, never returns `(nop)`.', () => {
+			test.test('with constant folding off, never returns `(nop)`.', () => {
 				const {goal, stmts, mod} = setupScript(SRC, CONFIG_FOLDING_OFF);
 				return assertEqualBins(stmts.map((stmt) => stmt.build()), [
 					mod.drop(        VALUE.NULL.build(goal.builder)),
@@ -594,7 +595,7 @@ describe('ASTNodeDeclaration', () => {
 					mod.local.set(4, (stmts[9] as AST.ASTNodeDeclarationVariable).assigned!.build()),
 				]);
 			});
-			it('tuples and records.', () => {
+			test.test('tuples and records.', () => {
 				const {goal, stmts, mod} = setupScript(`{
 					let tup: (   int,    float,    (   null,    (   null,    bool))) = (   42,    4.2,    (   null,    (   null,    true)));
 					let rec: (a: int, b: float, c: (d: null, e: (f: null, g: bool))) = (a= 42, b= 4.2, c= (d= null, e= (f= null, g= true)));
@@ -618,7 +619,7 @@ describe('ASTNodeDeclaration', () => {
 					],
 				);
 			});
-			it('throws when tuples and records contain each other.', () => {
+			test.test('throws when tuples and records contain each other.', () => {
 				[
 					'let tup: (   int,    float,    (   null,    bool),    (g: bool, h: int),    ((j: float),)) = (   42,    4.2,    (   null,    true),    (g= false, h= 42),    ((j= 4.2),));',
 					'let rec: (a: int, b: float, c: (d: null, e: bool), f: (   bool,    int), i: (k: (float,))) = (a= 42, b= 4.2, c= (d= null, e= true), f= (   false,    42), i= (k= (4.2,)));',
@@ -631,10 +632,10 @@ describe('ASTNodeDeclaration', () => {
 	});
 
 
-	describe('ASTNodeDeclarationClaim', () => {
-		describe('#typeCheck', () => {
-			context('for variables.', () => {
-				it('allows claimed type to be a subtype of assignee type.', () => {
+	test.suite('ASTNodeDeclarationClaim', () => {
+		test.suite('#typeCheck', () => {
+			test.suite('for variables.', () => {
+				test.test('allows claimed type to be a subtype of assignee type.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						claim x: int;
 						claim x: float;
@@ -645,7 +646,7 @@ describe('ASTNodeDeclaration', () => {
 						}`, null, {build: false}); // assert does not throw
 					});
 				});
-				it('throws when the claimed type is not a subtype of the assignee type (including int and float).', () => {
+				test.test('throws when the claimed type is not a subtype of the assignee type (including int and float).', () => {
 					xjs.Array.forEachAggregated([`{
 						let x: int = 3;
 						claim x: str; % disjoint
@@ -670,7 +671,7 @@ describe('ASTNodeDeclaration', () => {
 						return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
 					});
 				});
-				it('accessing variable after claim is narrowed.', () => {
+				test.test('accessing variable after claim is narrowed.', () => {
 					const {stmts} = setupScript(`{
 						let var x: int | float = 4.2;
 						x;            % type \`int | float\`
@@ -682,21 +683,21 @@ describe('ASTNodeDeclaration', () => {
 						[TYPE.INT.union(TYPE.FLOAT), TYPE.INT],
 					);
 				});
-				it('allows claim after reassignment.', () => {
+				test.test('allows claim after reassignment.', () => {
 					setupScript(`{
 						let var x: bool | null = false;
 						set x = true;
 						claim x: null;
 					}`, null, {build: false}); // assert does not throw
 				});
-				it('allows reassigning correct type after claim.', () => {
+				test.test('allows reassigning correct type after claim.', () => {
 					setupScript(`{
 						let var x: bool | null = false;
 						claim x: bool;
 						set x = true;
 					}`, null, {build: false}); // assert does not throw
 				});
-				it('disallows reassigning incorrect type after claim.', () => {
+				test.test('disallows reassigning incorrect type after claim.', () => {
 					const {stmts} = setupScript(`{
 						let var x: bool | null = false;
 						claim x: bool;
@@ -707,8 +708,8 @@ describe('ASTNodeDeclaration', () => {
 					return assert.throws(() => stmts[2].typeCheck(), TypeErrorNotAssignable);
 				});
 			});
-			context('for accesses.', () => {
-				it('allows claiming access of compound types.', () => {
+			test.suite('for accesses.', () => {
+				test.test('allows claiming access of compound types.', () => {
 					setupScript(`{
 						let var tuple: (int | null, (value: int | null)) = (null, (value= 42));
 						claim tuple.0:       int;
@@ -733,7 +734,7 @@ describe('ASTNodeDeclaration', () => {
 						%%
 					}`, null, {build: false}); // assert does not throw
 				});
-				it('accessing property after claim is narrowed.', () => {
+				test.test('accessing property after claim is narrowed.', () => {
 					const {stmts} = setupScript(`{
 						let var record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
 						record.value;               % type \`int | null\`
@@ -749,7 +750,7 @@ describe('ASTNodeDeclaration', () => {
 						[INT_NULL, INT_NULL, TYPE.NULL, TYPE.INT],
 					);
 				});
-				it('allows claim after mutation.', () => {
+				test.test('allows claim after mutation.', () => {
 					xjs.Array.forEachAggregated([`{
 						let var record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
 						set record = (value= 43, tuple= (null,));
@@ -764,7 +765,7 @@ describe('ASTNodeDeclaration', () => {
 						i === 1 && assert.throws(() => setupScript(src, null, {build: false}), /not yet supported/);
 					});
 				});
-				it('allows mutating correct type after claim.', () => {
+				test.test('allows mutating correct type after claim.', () => {
 					xjs.Array.forEachAggregated([`{
 						let var record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
 						claim record.value:   int;
@@ -779,7 +780,7 @@ describe('ASTNodeDeclaration', () => {
 						i === 1 && assert.throws(() => setupScript(src, null, {build: false}), /not yet supported/);
 					});
 				});
-				it('disallows mutating incorrect type after claim.', () => {
+				test.test('disallows mutating incorrect type after claim.', () => {
 					xjs.Array.forEachAggregated([`{
 						let var record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
 						claim record.value:   int;
@@ -814,8 +815,8 @@ describe('ASTNodeDeclaration', () => {
 		});
 
 
-		describe('#build', () => {
-			it('always returns `(nop)`.', () => {
+		test.suite('#build', () => {
+			test.test('always returns `(nop)`.', () => {
 				const {stmts, mod} = setupScript(`{
 					type T = int;
 					let var x: int = 42;
@@ -828,9 +829,9 @@ describe('ASTNodeDeclaration', () => {
 
 
 
-	describe('ASTNodeDeclarationReassignment', () => {
-		describe('#varCheck', () => {
-			it('throws if the variable is not unfixed.', () => {
+	test.suite('ASTNodeDeclarationReassignment', () => {
+		test.suite('#varCheck', () => {
+			test.test('throws if the variable is not unfixed.', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					let var i: int = 42;
 					set i = 43;
@@ -840,13 +841,13 @@ describe('ASTNodeDeclaration', () => {
 					set i = 43;
 				}`).varCheck(), AssignmentErrorReassignment);
 			});
-			it('always throws for type alias reassignment.', () => {
+			test.test('always throws for type alias reassignment.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type T = 42;
 					set T = 43;
 				}`).varCheck(), ReferenceErrorKind);
 			});
-			it('disallows manual reassignment of the iteration variable.', () => {
+			test.test('disallows manual reassignment of the iteration variable.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					for it: int of [11, 22, 33] do {
 						set it = 44;
@@ -856,9 +857,9 @@ describe('ASTNodeDeclaration', () => {
 		});
 
 
-		describe('#typeCheck', () => {
-			context('for variable reassignment.', () => {
-				it('throws when variable assignee type is not supertype.', () => {
+		test.suite('#typeCheck', () => {
+			test.suite('for variable reassignment.', () => {
+				test.test('throws when variable assignee type is not supertype.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 						let var i: int = 42;
 						set i = 4.3;
@@ -866,7 +867,7 @@ describe('ASTNodeDeclaration', () => {
 					goal.varCheck();
 					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
-				it('allows reassignment when uninitialized.', () => {
+				test.test('allows reassignment when uninitialized.', () => {
 					assert.partialDeepStrictEqual(setupScript(`{
 						let var x?: int;
 						set x = 42;
@@ -877,7 +878,7 @@ describe('ASTNodeDeclaration', () => {
 						value:           null,
 					});
 				});
-				it('does not allow reassignment of `null` when uninitialized.', () => {
+				test.test('does not allow reassignment of `null` when uninitialized.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 						let var x?: int;
 						set x = null;
@@ -891,8 +892,8 @@ describe('ASTNodeDeclaration', () => {
 				});
 			});
 
-			context('for property reassignment.', () => {
-				it('allows assignment directly on objects.', () => {
+			test.suite('for property reassignment.', () => {
+				test.test('allows assignment directly on objects.', () => {
 					setupScript(`{
 						set List.<int>((42,)).[0]                 = 42;
 						set Dict.<int>((i= 42)).[@i]              = 42;
@@ -900,7 +901,7 @@ describe('ASTNodeDeclaration', () => {
 						set Map.<bool, int>(((true, 42),)).[true] = 42;
 					}`, null, {build: false}); // assert does not throw
 				});
-				it('throws when property assignee type is not supertype.', () => {
+				test.test('throws when property assignee type is not supertype.', () => {
 					[
 						`{
 							let l: mut [int] = [42];
@@ -924,7 +925,7 @@ describe('ASTNodeDeclaration', () => {
 						assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 					});
 				});
-				it('throws when Set/Map accessor expression is not a valid type.', () => {
+				test.test('throws when Set/Map accessor expression is not a valid type.', () => {
 					xjs.Array.forEachAggregated([`{
 						let s: mut {int} = {42};
 						set s.[4.3] = true;
@@ -937,7 +938,7 @@ describe('ASTNodeDeclaration', () => {
 						assert.throws(() => goal.typeCheck(), TypeErrorNotNarrow);
 					});
 				});
-				it('throws when assignee’s base type is not mutable.', () => {
+				test.test('throws when assignee’s base type is not mutable.', () => {
 					[
 						`{
 							let t: (int,) = (42,);
@@ -973,8 +974,8 @@ describe('ASTNodeDeclaration', () => {
 		});
 
 
-		describe('#build', () => {
-			it('always returns `(local.set)`.', () => {
+		test.suite('#build', () => {
+			test.test('always returns `(local.set)`.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var y: float = 4.2;
 					set y = y * 10.0;
@@ -984,7 +985,7 @@ describe('ASTNodeDeclaration', () => {
 					mod.local.set(0, (stmts[1] as AST.ASTNodeDeclarationReassignment).assigned.build()),
 				);
 			});
-			it('allows switching between union members.', () => {
+			test.test('allows switching between union members.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var x: float | int = 4.2;
 					let var y: int | float = 4.2;
