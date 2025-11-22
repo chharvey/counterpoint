@@ -441,7 +441,7 @@ test.suite('Decorator', () => {
 				}
 				% (expression_compound)
 			`]],
-			['skip: Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "!." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
+			['todo: Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "!." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
 				{
 					v!.p;
 				}
@@ -790,7 +790,7 @@ test.suite('Decorator', () => {
 		});
 		['!.'].forEach((op) => {
 			['1', '_', 'p', '[a + b]'].forEach((accessor) => {
-				test.suite(`Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "${ op }" PropertyAccess) -> SemanticAccess`, () => {
+				test.suite(`Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "${ op }" PropertyAccessor) -> SemanticAccess`, () => {
 					test.test(`operator \`${ op }\` is not yet supported.`, () => {
 						assert.throws(() => new Decorator().decorateTS(captureParseNode(`
 							{
