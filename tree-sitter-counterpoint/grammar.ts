@@ -355,6 +355,8 @@ module.exports = grammar({
 
 		_properties_type: $ => seq(OPT_COM, repCom1(call($, 'entry_type', 'named', ['', 'optional'])), OPT_COM),
 
+		property_accessor_type: $ => choice($.integer, $.word),
+
 		type_grouped:        $ => seq('(', $._type,                            ')'),
 		type_tuple_literal:  $ => seq('(', optional($._items_type),            ')'),
 		type_record_literal: $ => seq('(', $._properties_type,                 ')'),
@@ -377,15 +379,12 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		property_accessor_type: $ => choice($.integer, $.word),
-
 		type_compound: $ => prec(5, seq($._type, choice(
 			seq(choice('.', '?.'), $.property_accessor_type),
 			seq('.',               $.generic_arguments),
 		))),
 
-		type_unary_symbol: $ => prec(4, seq($._type, choice('?', '!'))),
-
+		type_unary_symbol:  $ => prec(4, seq($._type, choice('?', '!'))),
 		type_unary_keyword: $ => prec(3, seq('mut', $._type)),
 
 		type_intersection: $ => prec.left(2, seq($._type, '&', $._type)),
@@ -417,6 +416,8 @@ module.exports = grammar({
 		property: $ => seq($.word,               '=',  $._expression__block),
 		case:     $ => seq($._expression__block, '->', $._expression__block),
 
+		property_accessor: $ => choice($.integer, $.word, seq('[', $._expression__block, ']')),
+
 		expression_grouped: $ => seq('(',                       $._expression__block,                     ')'),
 		tuple_literal:      $ => seq('(', optional(             $._items                               ), ')'),
 		record_literal:     $ => seq('(',              OPT_COM, repCom1($.property),           OPT_COM,   ')'),
@@ -440,17 +441,10 @@ module.exports = grammar({
 			...iff(block, alias($.block, $.expression_block)),
 		), 'block'),
 
-		property_accessor: $ => choice($.integer, $.word, seq('[', $._expression__block, ']')),
-
 		...parameterize('expression_compound', ({block}) => $ => prec(11, seq(call($, '_expression', {block}), choice(
 			seq(choice('.', '?.', '!.'), $.property_accessor),
 			seq('.',                     optional($.generic_arguments), $.function_arguments),
 		))), 'block'),
-
-		assignee: $ => choice(
-			$.identifier,
-			seq($._expression__block, '.', $.property_accessor),
-		),
 
 		...parameterize('expression_unary_symbol',  ({block}) => $ => prec(10, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}))), 'block'),
 		...parameterize('expression_unary_keyword', ({block}) => $ => prec( 9, seq(choice('int', 'float'),     call($, '_expression', {block}))), 'block'),
@@ -514,6 +508,11 @@ module.exports = grammar({
 		),
 
 		block: $ => seq('{', repeat1($._statement), '}'),
+
+		assignee: $ => choice(
+			$.identifier,
+			seq($._expression__block, '.', $.property_accessor),
+		),
 
 		declaration_type: $ => seq('type', choice('_', $.identifier), '=', $._type, ';'),
 
