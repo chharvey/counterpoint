@@ -218,6 +218,56 @@ test.suite('ASTNodeStatement', () => {
 				return assert.throws(() => stmts[1].build(), /not yet supported/);
 			});
 		});
+
+		test.suite('ASTNodeStatementBreak', () => {
+			test.test('produces (br).', () => {
+				const {stmts, mod} = setupScript(`{
+					while true do {
+						break;
+						continue;
+					};
+				}`);
+				const while_block: AST.ASTNodeBlock = (stmts[0] as AST.ASTNodeStatementLoop).block;
+				return assertEqualBins([
+					while_block.children[0].build(),
+					while_block.children[1].build(),
+				], [
+					mod.br('exit0'),
+					mod.br('repeat0'),
+				]);
+			});
+			test.test('nested loops.', () => {
+				const {stmts, mod} = setupScript(`{
+					while true do {
+						break;
+						if true then {
+							while true do {
+								continue;
+							};
+						};
+					};
+				}`);
+				const outer_block: AST.ASTNodeBlock = (stmts[0] as AST.ASTNodeStatementLoop).block;
+				const inner_block: AST.ASTNodeBlock = ((outer_block.children[1] as AST.ASTNodeStatementConditional).consequent.children[0] as AST.ASTNodeStatementLoop).block;
+				return assertEqualBins([
+					outer_block.children[0].build(),
+					inner_block.children[0].build(),
+				], [
+					mod.br('exit0'),
+					mod.br('repeat1'),
+				]);
+			});
+			test.test('throws if the parent block has not been built yet.', () => {
+				const while_block: AST.ASTNodeBlock = (setupScript(`{
+					while true do {
+						break;
+						continue;
+					};
+				}`, null, {build: false}).stmts[0] as AST.ASTNodeStatementLoop).block;
+				assert.throws(() => while_block.children[0].build(), /Expected builder to store/);
+				assert.throws(() => while_block.children[1].build(), /Expected builder to store/);
+			});
+		});
 	});
 
 
