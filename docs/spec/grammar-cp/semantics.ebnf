@@ -168,7 +168,7 @@ SemanticStatementIteration
 
 
 
-SemanticStatementBreak[continue: Boolean][depth: RealNumber]
+SemanticStatementBreak[continue: Boolean]
 	::= ();
 
 

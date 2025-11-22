@@ -1372,18 +1372,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				{
 					while condition do {
 						break;
-						break 2;
 						continue;
-						continue 2;
 					};
 				}
 			`,
 			sourceStatements(s('statement_loop', s('identifier'), s(
 				'block__break',
 				s('statement_break'),
-				s('statement_break', s('integer')),
 				s('statement_break'),
-				s('statement_break', s('integer')),
 			))),
 		],
 

@@ -500,7 +500,7 @@ module.exports = grammar({
 
 		statement_iteration: $ => seq('for', choice('_', $.identifier), ':', $._type, 'of', call($, '_expression', 'block'), 'do', call($, 'block', 'break'), ';'),
 
-		statement_break: $ => seq(choice('break', 'continue'), optional($.integer), ';'),
+		statement_break: _$ => seq(choice('break', 'continue'), ';'),
 
 		...parameterize('_statement', ({break: brk}) => $ => choice(
 			call($, 'statement_expression', {break: brk}),

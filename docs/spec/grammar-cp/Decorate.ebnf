@@ -713,13 +713,9 @@ Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "of" Expression<+Block
 
 
 Decorate(StatementBreak ::= "break" ";") -> SemanticStatementBreak
-	:= (SemanticStatementBreak[continue=false][depth=0]);
-Decorate(StatementBreak ::= "break" INTEGER ";") -> SemanticStatementBreak
-	:= (SemanticStatementBreak[continue=false][depth=TokenWorth(INTEGER)]);
+	:= (SemanticStatementBreak[continue=false]);
 Decorate(StatementBreak ::= "continue" ";") -> SemanticStatementBreak
-	:= (SemanticStatementBreak[continue=true][depth=0]);
-Decorate(StatementBreak ::= "continue" INTEGER ";") -> SemanticStatementBreak
-	:= (SemanticStatementBreak[continue=true][depth=TokenWorth(INTEGER)]);
+	:= (SemanticStatementBreak[continue=true]);
 
 Decorate(Statement<Break> ::= StatementExpression<?Break>) -> SemanticStatementExpression
 	:= Decorate(StatementExpression<?Break>);

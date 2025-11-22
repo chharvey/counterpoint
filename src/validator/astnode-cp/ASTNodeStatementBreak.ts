@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	assert_instanceof,
@@ -9,7 +8,6 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {Validator} from '../Validator.ts';
 import {if_constant_folding} from './Foldable.ts';
 import {
 	buildDeco,
@@ -26,22 +24,11 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 	}
 
 
-	public readonly depth: bigint;
-
 	public constructor(
 		start_node: SyntaxNodeType<'statement_break'>,
 		private readonly continu: boolean,
-		integer?: SyntaxNodeType<'integer'>,
 	) {
 		super(start_node, {}, []);
-		if (integer) {
-			// copied from `./ASTNodeIndex.ts`
-			const cooked: bigint | number = Validator.cookTokenNumber(integer.text);
-			assert.ok(typeof cooked === 'bigint', 'Cooked value should be a bigint.'); // better type guard than `assert.strictEqual`
-			this.depth = cooked;
-		} else {
-			this.depth = 0n;
-		}
 	}
 
 	@if_constant_folding
@@ -49,16 +36,10 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 		return false; // break statements will always have side-effects
 	}
 
-	public override varCheck(): void {
-		super.varCheck();
-		this.continu;
-		// TODO: check if depth is valid
-		throw new Error('`ASTNodeStatementBreak#varCheck` not yet supported.');
-	}
-
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
+		this.continu;
 		throw new Error('`ASTNodeStatementBreak#build` not yet supported.');
 	}
 }

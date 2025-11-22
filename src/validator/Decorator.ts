@@ -672,7 +672,6 @@ export class Decorator {
 			['statement_break', (node) => new AST.ASTNodeStatementBreak(
 				node as SyntaxNodeType<'statement_break'>,
 				node.children[0].text === Keyword.CONTINUE,
-				isSyntaxNodeType(node.children[1], 'integer') ? node.children[1] : undefined,
 			)],
 
 			[/^block(__break)?$/, (node) => this.decorateBlockNode(node as SyntaxNodeFamily<'block', ['break']>)],

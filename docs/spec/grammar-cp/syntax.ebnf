@@ -224,7 +224,7 @@ StatementIteration
 	::= "for" ("_" | IDENTIFIER) ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";";
 
 StatementBreak
-	::= ("break" | "continue") INTEGER? ";";
+	::= ("break" | "continue") ";";
 
 Statement<Break> ::=
 	| StatementExpression<?Break>
