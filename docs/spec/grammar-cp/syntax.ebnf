@@ -84,6 +84,9 @@ ItemsType ::=
 PropertiesType
 	::= ","? EntryType<+Named><∓Optional># ","?;
 
+PropertyAccessorType
+	::= INTEGER | Word;
+
 TypeGrouped       ::= "(" Type             ")";
 TypeTupleLiteral  ::= "(" ItemsType?       ")";
 TypeRecordLiteral ::= "(" PropertiesType   ")";
@@ -106,9 +109,6 @@ TypeUnit ::=
 	| TypeMapLiteral
 ;
 
-PropertyAccessorType
-	::= INTEGER | Word;
-
 TypeCompound ::=
 	| TypeUnit
 	| TypeCompound (
@@ -117,15 +117,8 @@ TypeCompound ::=
 	)
 ;
 
-TypeUnarySymbol ::=
-	| TypeCompound
-	| TypeUnarySymbol ("?" | "!")
-;
-
-TypeUnaryKeyword ::=
-	| TypeUnarySymbol
-	| "mut" TypeUnaryKeyword
-;
+TypeUnarySymbol  ::= TypeCompound    | TypeUnarySymbol ("?" | "!");
+TypeUnaryKeyword ::= TypeUnarySymbol | "mut" TypeUnaryKeyword;
 
 TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;
 TypeUnion        ::= (TypeUnion        "|")? TypeIntersection;
@@ -148,6 +141,9 @@ Items<Break> ::=
 
 Property <Break> ::= Word                       "="  Expression<+Block><?Break>;
 Case     <Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>;
+
+PropertyAccessor<Break>
+	::= INTEGER | Word | "[" Expression<+Block><?Break> "]";
 
 ExpressionGrouped <Break> ::= "("       Expression<+Block><?Break>         ")";
 TupleLiteral      <Break> ::= "("       Items<?Break>?                     ")";
@@ -172,20 +168,12 @@ ExpressionUnit<Block, Break> ::=
 	| <Block+>Block     <?Break>
 ;
 
-PropertyAccessor<Break>
-	::= INTEGER | Word | "[" Expression<+Block><?Break> "]";
-
 ExpressionCompound<Block, Break> ::=
 	| ExpressionUnit<?Block><?Break>
 	| ExpressionCompound<?Block><?Break> (
 		| ("." | "?." | "!.") PropertyAccessor<?Break>
 		|  "."                GenericArguments? FunctionArguments<?Break>
 	)
-;
-
-Assignee<Break> ::=
-	| IDENTIFIER
-	| ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>
 ;
 
 ExpressionUnarySymbol  <Block, Break> ::= ExpressionCompound    <?Block><?Break> | ("!" | "?" | "+" | "-") ExpressionUnarySymbol  <?Block><?Break>;
@@ -251,6 +239,13 @@ Statement<Break> ::=
 
 Block<Break>
 	::= "{" Statement<?Break>+ "}";
+
+
+
+Assignee<Break> ::=
+	| IDENTIFIER
+	| ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>
+;
 
 
 
